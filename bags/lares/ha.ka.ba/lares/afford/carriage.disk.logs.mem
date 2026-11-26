@@ -1,0 +1,96 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.disk.logs`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read the vessel's shore log as records, one per distinct event"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.disk.logs"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.disk.logs"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.disk.logs"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.disk.logs ~ the shore's own log: counts by kind, then each record
+
+`log` reads the vessel's log as records, one per distinct event: the counts by kind first, then each record. `--kind` names one kind, `--held` the unacknowledged, and `--boot <id>` one boot's ring. With no vessel answering, the verb reads the flat `run/vessel-live.log` and its ash. It writes nothing and asks no hand.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ the-log · the-held · one-kind
+
+```memetic-wikitext
+<<has entity=`example` name=`the-log` params=`~ the counts by kind, then each record`>>
+<<has entity=`example` name=`the-held` params=`held/true ~ the records no person acknowledged`>>
+<<has entity=`example` name=`one-kind` params=`kind/standoff ~ the records of one kind`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ kind · held · boot
+
+```memetic-wikitext
+<<has entity=`arg` name=`kind` params=`takes/kind ~ one kind of record`>>
+<<has entity=`arg` name=`held` params=`~ the unacknowledged records`>>
+<<has entity=`arg` name=`boot` params=`takes/boot-id ~ one boot's ring`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ read
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`read` params=`who/seat-or-hand ~ a read of the vessel's log; with no vessel, the flat run/vessel-live.log`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ log
+
+```memetic-wikitext
+<<has entity=`band` name=`log` params=`exit/0 ~ counts by kind, then one record per distinct event`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares shore log
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares shore log]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Mp9QF0hmzQCcEGZ1K6CDOC_o-ZCbjR78FqZAIre0IdA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

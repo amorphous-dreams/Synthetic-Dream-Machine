@@ -5,11 +5,12 @@
  */
 import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
+import { helpLines } from "../command-help.js";
 import { houseExport, bundleRefusal, LIVE_BUNDLE_DOORS, type BundleDoors, type HouseExportResult } from "./house-bundle.js";
 
 export async function cmdExport(args: ParsedArgs, doors: BundleDoors = LIVE_BUNDLE_DOORS): Promise<number> {
   const dest = args.positional[0];
-  if (!dest) { console.error("usage: lares export <dest> [--accept-omissions]"); return 2; }
+  if (!dest) { for (const line of helpLines("export")) console.error(line); return 2; }
   let result: HouseExportResult;
   try { result = await houseExport(dest, { acceptOmissions: args.flags["accept-omissions"] === true, doors }); }
   catch (e) { return bundleRefusal(args, "export", e); }

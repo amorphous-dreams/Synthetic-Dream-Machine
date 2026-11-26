@@ -1,0 +1,104 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.disk.settles`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "resume a settle word that stalled, over the carriers its record names"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.disk.settles"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.disk.settles"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.disk.settles"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.disk.settles ~ a stalled settle word asked again, over its pending carriers alone
+
+`lares ingest --apply` leaves the carriers still waiting as the bag's record under the house's run dir (`settlePendingPath`) when no page settled within the stall window. `settle --bag <bag> --pending` asks the word again over those carriers alone, then clears the record (settled whole) or rewrites it (still waiting). It reads no face, so `--face` refuses as usage, and it asks no confirmation.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ resume
+
+```memetic-wikitext
+<<has entity=`example` name=`resume` params=`bag/lares pending/true ~ ask the stalled word again over its recorded carriers`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ bag · pending
+
+```memetic-wikitext
+<<has entity=`arg` name=`bag` params=`takes/bag-uri-or-slug needs/required ~ the bag whose pending settle record to resume`>>
+<<has entity=`arg` name=`pending` params=`needs/required ~ name the resume; settle takes no other posture`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ the word rides the island's settle gate, which checks the cap on the bag; the record under the run dir rewrites or clears`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.disk.settles bag/<bag> pending/true]] ~ settle resumes a stalled settle word from its record, and needs the bag and --pending`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ settled · waiting
+
+```memetic-wikitext
+<<has entity=`band` name=`settled` params=`exit/0 ~ every recorded carrier settled; the record cleared`>>
+<<has entity=`band` name=`waiting` params=`exit/0 ~ some carriers still wait; the record rewrote with those alone`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares shore settle
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares shore settle]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XwmKdmqL2XlGYg3mSf7bLZDr-BrYz5DRxWK_NsmeR90`>>
+
+<<^ code=`&#x0004;` to=`?`>>

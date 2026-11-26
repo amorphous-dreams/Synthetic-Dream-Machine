@@ -1,0 +1,113 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.disk.restores`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "write a vanished file back from the records"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.disk.restores"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.disk.restores"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.disk.restores"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.disk.restores ~ a pending removal answered toward the records: the file returns
+
+A PENDING REMOVAL names a file that vanished from the path its base names; nothing writes it back and nothing tombstones its records. `restore <uri>…` writes the file back from the records. Name one or more carriers, or `--all --count <n>` for every pending row of the named bag; an answer over more than one carrier names the count that stands pending (read it from `lares shore`), and a count that moved takes nothing.
+
+A terminal asks `Proceed? [y/N]`; a JSON call off a terminal needs `--yes`, and `--yes` approves nothing by itself. `--face N` answers a lit sibling's pending row without wearing it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ restore-one · restore-all
+
+```memetic-wikitext
+<<has entity=`example` name=`restore-one` params=`uri/lar:///ha.ka.ba/lares/docs/pono/example ~ write the one vanished file back`>>
+<<has entity=`example` name=`restore-all` params=`all/true count/3 bag/lares ~ write back every pending row of the bag, the count named`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ uri · all · count · bag · face · yes
+
+```memetic-wikitext
+<<has entity=`arg` name=`uri` params=`takes/lar-address seat/1 as/<uri>… ~ one or more carriers a pending removal names`>>
+<<has entity=`arg` name=`all` params=`~ every pending row of the named bag; rides --count`>>
+<<has entity=`arg` name=`count` params=`takes/number ~ the count that stands pending, read from lares shore; an answer over more than one carrier names it`>>
+<<has entity=`arg` name=`bag` params=`takes/bag-uri ~ narrow to one bag`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ a lit sibling's shore, by handle index`>>
+<<has entity=`arg` name=`yes` params=`~ name the intent for a call off a terminal; approves nothing by itself`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/hand ~ the file returns to the host disk; the settling answers run on a person's hand at a terminal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · count-missing · a-state-that-moved
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.disk.restores uri/<uri>]] ~ name a carrier, or --all with --count; --all beside carriers refuses`>>
+<<has entity=`refusal` name=`count-missing` params=`cure/[[carriage.disk.restores all/true count/3]] ~ an answer over more than one carrier names the count that stands pending`>>
+<<has entity=`refusal` name=`a-state-that-moved` params=`~ an answer names the state its giver read (a standoff's key, or the count that stands pending); where that state moved, the island refuses by name and nothing changes`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ restored · aborted
+
+```memetic-wikitext
+<<has entity=`band` name=`restored` params=`exit/0 ~ the file returned from the records`>>
+<<has entity=`band` name=`aborted` params=`exit/1 ~ the person answered no at the prompt`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares shore restore
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares shore restore]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sPgLU-fHLrik2c2CHXJY7-g6JHufI4j-nAJ1g3FQA7M`>>
+
+<<^ code=`&#x0004;` to=`?`>>

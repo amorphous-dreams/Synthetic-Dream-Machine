@@ -54,6 +54,25 @@ describe("W1 · every door names one address; every skin names a live door", () 
     expect(routes["mcp"], REBAKE).toMatchObject({ ddate: "lar:///oracle.calendar.dates", law_index: "lar:///engine.law.indexes", law_pin: "lar:///engine.law.pins", law_unpin: "lar:///engine.law.unpins" });
   });
 
+  test("SEED: wave 2's doors route each verb, an alias beside its twin, to a carrier", () => {
+    const cli = pack().routes["cli"] ?? {};
+    expect(cli["act ADD"], REBAKE).toBe("lar:///carriage.record.adds");
+    expect(cli["act MOVE"], REBAKE).toBe("lar:///carriage.bag.moves");
+    expect(cli["act"], REBAKE).toBe("lar:///carriage.draft.pulls");
+    expect(cli["ingest"], REBAKE).toBe("lar:///carriage.capture.ingests");
+    expect(cli["export"], REBAKE).toBe("lar:///carriage.bundle.exports");
+    expect(cli["import"], REBAKE).toBe("lar:///carriage.bundle.imports");
+    expect(cli["shore take-records"], REBAKE).toBe("lar:///carriage.record.wins");
+    expect(cli["shore keep-records"], REBAKE).toBe("lar:///carriage.record.wins");
+    expect(cli["shore take-disk"], REBAKE).toBe("lar:///carriage.disk.wins");
+    expect(cli["shore keep-disk"], REBAKE).toBe("lar:///carriage.disk.wins");
+    expect(cli["shore flush"], REBAKE).toBe("lar:///carriage.disk.flushes");
+    expect(cli["bag compact"], REBAKE).toBe("lar:///carriage.bag.compacts");
+    expect(cli["bag share"], REBAKE).toBe("lar:///realm.bag.shares");
+    expect(cli["flow"], REBAKE).toBe("lar:///sense.record.flows");
+    expect(pack().routes["mcp"], REBAKE).toMatchObject({ shore: "lar:///carriage.disk.reads", shore_flush: "lar:///carriage.disk.flushes", flow: "lar:///sense.record.flows" });
+  });
+
   test("★ every skin in the pack names a door a live table holds ★", () => {
     expect(orphans(pack())).toEqual([]);
   });

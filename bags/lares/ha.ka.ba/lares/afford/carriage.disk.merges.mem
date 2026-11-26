@@ -1,0 +1,108 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.disk.merges`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "settle a standoff with both: records take the file, drafts stay"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.disk.merges"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.disk.merges"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.disk.merges"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.disk.merges ~ a person keeps the file's words as parallel drafts and the records' render on disk
+
+`keep-both <uri> --key <key>` writes the records' render over the file and keeps the file's words as parallel drafts in the worn face's draft layer. It appears in the standoff alert where drafts stand; `drafts <uri>` names them by title, and `lares tiddler get` reads each. SETTLING STAYS A HAND ACT: an AI harness on its branch refuses `hand-act-only`, an unreadable branch `hand-unattested`, and `--yes` approves nothing by itself.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ keep-both
+
+```memetic-wikitext
+<<has entity=`example` name=`keep-both` params=`uri/lar:///ha.ka.ba/lares/docs/pono/example key/<key> ~ the records' render lands on disk and the file's words stay as drafts`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ uri · key · bag · yes
+
+```memetic-wikitext
+<<has entity=`arg` name=`uri` params=`takes/lar-address needs/required seat/1 as/<uri> ~ the carrier at the standoff`>>
+<<has entity=`arg` name=`key` params=`takes/key needs/required ~ the standoff's key, as lares shore printed it`>>
+<<has entity=`arg` name=`bag` params=`takes/bag-uri ~ the bag that holds the carrier`>>
+<<has entity=`arg` name=`yes` params=`~ name the intent for a call off a terminal; approves nothing by itself`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand-act
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand-act` params=`who/hand ~ a settling act reads the hand behind this command before anything else; an AI harness on its branch refuses hand-act-only, an unreadable branch hand-unattested, each naming the command the operator runs, and --yes approves nothing by itself`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ hand-act-only · usage · a-state-that-moved
+
+```memetic-wikitext
+<<has entity=`refusal` name=`hand-act-only` params=`cure/[[carriage.disk.reads]] ~ an AI harness settles nothing; the line names the command the operator runs`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.disk.merges uri/<uri> key/<key>]] ~ a carrier and the standoff's key both stand required`>>
+<<has entity=`refusal` name=`a-state-that-moved` params=`~ an answer names the state its giver read (a standoff's key, or the count that stands pending); where that state moved, the island refuses by name and nothing changes`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ took · aborted
+
+```memetic-wikitext
+<<has entity=`band` name=`took` params=`exit/0 ~ the records' render landed and the drafts stayed`>>
+<<has entity=`band` name=`aborted` params=`exit/1 ~ the person answered no at the prompt`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares shore keep-both
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares shore keep-both]] ~ the terminal; settling stays a hand act`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;26wmq6Pk8gGmFQE4WtD3vsnq4fuwKTDUn1rAC_NhULQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

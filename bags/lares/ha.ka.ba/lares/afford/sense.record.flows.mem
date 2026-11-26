@@ -1,0 +1,123 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.record.flows`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "run or list pet-named composed flows over sensorium data"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.record.flows"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.record.flows"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.record.flows"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.record.flows ~ one verb, N flows: a pet name composes the instruments, never another raw verb
+
+The low-level instruments (crystallize · phase · whiten · couple · gate · mismatch) stand as building blocks a FLOW composes, never the surface: the flow set (crystal · rhythm · couple) carries each pet name, its arity and its cap-stack. Bare `flow` LISTS the set with each cap-stack, in process with no daemon (the seeds ship in the mesh package). A pet name with a `signal` matrix (rows = time, columns = signals; `names` labels the columns) RUNS that flow: the daemon looks its cap-stack up and runs each step routed by hull (crystallize and couple in TypeScript, phase in Python, mismatch in the daemon), threading each outcome to the next. New capability arrives as a new flow.
+
+The CLI reads the signal from an NDJSON file, one JSON array per non-blank line; the seat hands the rows. `target` names the sensorium streams a run reads as provenance: a target with no signal asks the projector to extract one from the target's child streams, which stands feature-gated (the projector runs now, empty until the re-pour lands child signals), so auto-extraction from a poured target stays OWED.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ the-flow-set · run-a-flow · with-provenance
+
+```memetic-wikitext
+<<has entity=`example` name=`the-flow-set` params=`~ list the flows with their cap-stacks`>>
+<<has entity=`example` name=`run-a-flow` params=`petname/crystal signal/two-stratum.ndjson names/a,b ~ run one flow against an explicit signal`>>
+<<has entity=`example` name=`with-provenance` params=`petname/rhythm signal/pulse.ndjson target/lar:///ha.ka.ba/sensorium/example ~ name the stream the signal came from`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ petname · signal · names · target · sensorium
+
+```memetic-wikitext
+<<has entity=`arg` name=`petname` params=`takes/flow-name seat/1 as/<petname> ~ the flow to run; absent, list the flow set`>>
+<<has entity=`arg` name=`signal` params=`takes/ndjson-path ~ the signal matrix: an NDJSON file on the cli, a list of rows on the seat`>>
+<<has entity=`arg` name=`names` params=`takes/a,b,c ~ labels for the signal's columns`>>
+<<has entity=`arg` name=`target` params=`takes/uris ~ the sensorium streams the run reads as provenance; a target with no signal auto-extracts one, feature-gated`>>
+<<has entity=`arg` name=`sensorium` params=`takes/name skins/mcp ~ the sensorium the daemon runs against; absent, memory`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ read
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`read` params=`who/seat-or-hand ~ read-only routed compute: the daemon runs each cap-step by hull and writes no record`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ daemon-unreachable · flow-unknown
+
+```memetic-wikitext
+<<has entity=`refusal` name=`daemon-unreachable` params=`~ no vessel stands for a run; the line names lares vessel stand --foreground (a bare list needs none)`>>
+<<has entity=`refusal` name=`flow-unknown` params=`cure/[[sense.record.flows]] ~ the pet name names no flow in the set; the bare call lists the set`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ listed · ran · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`listed` params=`exit/0 fields/[[flows]] ~ each flow's petname, arity, summary and cap-stack`>>
+<<has entity=`band` name=`ran` params=`exit/0 ~ the flow's steps ran by hull, each outcome threaded to the next`>>
+<<has entity=`band` name=`refused` params=`~ the daemon refused by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares flow
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares flow]] ~ the terminal; the signal rides as an NDJSON file`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! flow
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`spells/flow ~ the seat; the signal rides as a list of rows`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1m5Rzt2Mi-rdxpNQGjk0VYITo9qPZ9zb6w4x3QCCKxI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

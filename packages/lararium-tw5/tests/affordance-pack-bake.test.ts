@@ -5,7 +5,7 @@
  * RED-FIRST: written by smith#1, run by the familiar after `build:plugin` packs the templates and the `afford` operator.
  */
 import { describe, expect, test } from "vitest";
-import { bakeAffordancePack, canonicalJson } from "../scripts/build-affordance-pack.js";
+import { bakeAffordancePack, briefOf, canonicalJson } from "../scripts/build-affordance-pack.js";
 import { affordFaceOf } from "../src/modules/afford-face.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
 import { FIXTURE_ADDRESS, FIXTURE_LIMIT, FIXTURE_TITLE, oracleFixtureCarrier } from "./fixtures/affordance-oracle.js";
@@ -92,5 +92,18 @@ describe.skipIf(wikiSkip)(`the affordance bake over the fixture carrier${skipNot
     expect(html).toContain("<code>oracle.cast.throws</code>");
     expect(html).toContain("the door checks the ocap");
     for (const label of ["head", "shows", "takes", "gate", "refuses", "answers", "skins", "edges"]) expect(html).toContain(`▸ ${label}`);
+  });
+
+  test("RED 8: a skin row's `also` spellings route to the one address, and a door of several addresses lists them by name", async () => {
+    const text = oracleFixtureCarrier().replace("spells/[[lares oracle cast]]", "spells/[[lares oracle cast]] also/[[lares oracle throw]]");
+    const pack = await bakeAffordancePack([text]);
+    expect(pack.routes["cli"]).toEqual({ "oracle cast": FIXTURE_ADDRESS, "oracle throw": FIXTURE_ADDRESS });
+    expect(pack.doors["oracle"]!.addresses).toEqual([FIXTURE_ADDRESS]);   // two spellings, one address, one door entry
+    expect(briefOf("oracle", ["cast a throw", "read a cast"], ["oracle cast", "oracle read"])).toBe("cast a throw · read a cast");
+    const roles = ["x".repeat(40), "y".repeat(40)];
+    expect(briefOf("shore", roles, ["shore flush", "shore list", "shore log"])).toBe("flush · list · log");   // the joined roles overrun the list's line: the door names its verbs
+    const many = Array.from({ length: 30 }, (_, i) => `shore verb-${i}`);
+    expect(briefOf("shore", roles, many).endsWith(" · …")).toBe(true);
+    expect(briefOf("shore", roles, many).length).toBeLessThanOrEqual(78);
   });
 });

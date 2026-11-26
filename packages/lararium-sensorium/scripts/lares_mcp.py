@@ -1099,14 +1099,8 @@ def build_mcp(coordinator: LaresCoordinator):
     def flow(petname: "str | None" = None, target: "list | None" = None,
              signal: "list | None" = None, names: "list | None" = None,
              sensorium: "str | None" = None) -> dict:
-        """Run or list named flows over sensorium data.
-        The pet-named COMPOSED-FLOW surface — one tool, N flows (the anti-verb-sprawl door). Bare (no
-        `petname`) lists the flow-set (crystal · rhythm · couple) with their cap-stacks. `petname` + a
-        `signal` matrix (rows=time, cols=signals; `names` labels the columns) RUNS that flow: the @daemon
-        looks its cap-stack up and runs each step routed by hull, threading each outcome to the next. New
-        capability arrives as a new FLOW, never another raw verb. `lares flow <petname> --signal <ndjson>`
-        reads the same. A `target` without a `signal` auto-extracts one from the target's child streams
-        (feature-gated: the projector runs now, empty until the re-pour lands child signals)."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///sense.record.flows): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         return _call("flow", sensorium, petname=petname, targets=target, rows=signal, names=names)
 
     @mcp.tool(annotations=_annotations("plane_record"))
@@ -1722,15 +1716,8 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool(annotations=_annotations("shore"))
     def shore(face: "int | None" = None, bag: "str | None" = None) -> dict:
-        """Read the disk shore: each standoff and pending removal, as `lares shore` lists them.
-        Mirrors `lares shore [list] [--face N] [--bag B]`. The vessel looks at the disk, then names what stands for a hand: each STANDOFF (the file and the records say different things and nothing writes) with its `standoff`
-        key, and each PENDING REMOVAL (a file vanished where a base stands; nothing writes back, nothing tombstones). Both
-        islands read as one shore, every page of each, each row naming its `island` (`wiki`: the active wiki's mirrors;
-        `daemon`: the daemon wiki's and the crossroads). `face` names a LIT SIBLING's shore by handle index: its own projector
-        answers (in the daemon island) without a wear, and a face that stands no projection refuses `face-unprojected`. `bag`
-        narrows to one bag. Returns {standoffs, standoffCount, pending, pendingCount, face?}. The answers that settle a row
-        (`lares shore take-records|take-disk|restore|remove`) stay a person's hand at a terminal: name the command for the
-        operator."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///carriage.disk.reads): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         args: dict = {"op": "list"}
         if face is not None:
             if not isinstance(face, int) or isinstance(face, bool) or face < 0:
@@ -1787,13 +1774,8 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool(annotations=_annotations("shore_flush"))
     def shore_flush() -> dict:
-        """Run the vessel's whole-island flush: every shore writes what it owes, as `lares shore flush` does.
-        Mirrors `lares shore flush`. The vessel asks every island that mounts a disk shore (the daemon's,
-        with each lit face's own projector, and every resident wiki's) to write what it holds in memory to its mirrors now: the
-        same flush the teardown runs. It places no record and takes nothing. Returns {islands, whole}: each island's part names
-        what it `written`, what stayed `unwritten` (each with its state and why; a lit face's row names its `face`) and its
-        `fileWrites`, or `answered: false` with why; `whole` reads true where every island answered and left nothing
-        unwritten. No composition sitting refuses `flush-unavailable`."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///carriage.disk.flushes): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         answer = uds.custody_frame({"op": "shore-flush"}, timeout=60.0)
         if answer.get("status") == "error":
             raise uds.LaresVerbError(str((answer.get("refusal") or {}).get("reason") or answer.get("errorMessage") or "shore-flush refused")

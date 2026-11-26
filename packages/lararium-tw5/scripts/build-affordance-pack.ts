@@ -145,6 +145,15 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
         throw new Error(`affordance-door-claimed-twice: ${surface} \`${spelling}\` skins both ${claimed} and ${address}; one door names one address`);
       }
       routes[surface]![spelling] = address;
+      // A skin row may name further spellings the one door answers (`also/[[lares shore keep-records]]`, comma-joined): two
+      // words for one act ride one address, each routed to it. Another carrier claiming one refuses the bake the same way.
+      for (const alias of (row.params["also"] ?? "").split(",").map((a) => a.trim().replace(/^lares\s+/, "")).filter(Boolean)) {
+        const held = routes[surface]![alias];
+        if (held !== undefined && held !== address) {
+          throw new Error(`affordance-door-claimed-twice: ${surface} \`${alias}\` skins both ${held} and ${address}; one door names one address`);
+        }
+        routes[surface]![alias] = address;
+      }
       // A positional arg (`seat/N`) rides no flag: the door row's `accepts` names flags alone, so W2 reads these apart.
       takes[surface] = rowsOf(textOf, title, "#/takes", surface).filter((r) => r["entity"] === "arg" && r["positional"] !== true).map((r) => String(r["spell"]));
       calls[surface] = [
@@ -160,7 +169,8 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
   const doors: Record<string, { addresses: string[]; brief: string; help: string[] }> = {};
   for (const [spelling, address] of Object.entries(routes["cli"]!).sort(([a], [b]) => a.localeCompare(b))) {
     const door = spelling.split(/\s+/)[0]!;
-    (doors[door] ??= { addresses: [], brief: "", help: [] }).addresses.push(address);
+    const entry = (doors[door] ??= { addresses: [], brief: "", help: [] });
+    if (!entry.addresses.includes(address)) entry.addresses.push(address);
   }
   for (const [door, entry] of Object.entries(doors)) {
     if (entry.addresses.length === 1) {
@@ -168,7 +178,7 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
       entry.brief = c.role;
       entry.help = [...c.renders["cli"]!["whole"]!];
     } else {
-      entry.brief = entry.addresses.map((a) => carriers[a]!.role).join(" · ");
+      entry.brief = briefOf(door, entry.addresses.map((a) => carriers[a]!.role), spellingsOf(routes["cli"]!, entry.addresses));
       entry.help = [
         ...lines(engine.wiki.renderTiddler("text/plain", INDEX, { variables: { surface: "cli", pattern: sharedPattern(entry.addresses) } })),
         "",
@@ -183,7 +193,11 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
   return { title: PACK_TITLE, hash, carriers, routes, doors, index };
 }
 
-/** The wildcard a door's addresses share: their common leading terms (two at most), then `*` (`engine.law.*`, `oracle.*`). */
+/**
+ * What a door's index lists: the wildcard its addresses share (their common leading terms, then `*`: `engine.law.*`,
+ * `oracle.*`) where they share both t1 and t2; otherwise the addresses themselves, named one by one, so a door whose verbs
+ * reach several facets (`act`: `carriage.record.*`, `carriage.bag.*`) never lists a carrier another door will own.
+ */
 function sharedPattern(addresses: readonly string[]): string {
   const terms = addresses.map((a) => bareAddressOf(a)!.split("."));
   const shared: string[] = [];
@@ -192,7 +206,32 @@ function sharedPattern(addresses: readonly string[]): string {
     if (!terms.every((x) => x[i] === t)) break;
     shared.push(t);
   }
-  return `${shared.join(".")}.*`;
+  return shared.length === 2 ? `${shared.join(".")}.*` : addresses.map((a) => bareAddressOf(a)!).join(" ");
+}
+
+/** Every cli spelling that routes to one of the addresses, sorted. */
+function spellingsOf(cli: Readonly<Record<string, string>>, addresses: readonly string[]): string[] {
+  return Object.entries(cli).filter(([, a]) => addresses.includes(a)).map(([s]) => s).sort();
+}
+
+/** The top-level line's width for a door's brief: the list fits one screen, each line within 100 columns. */
+const BRIEF_WIDTH = 78;
+
+/**
+ * A door's brief: its carriers' roles joined where they fit the list's line, else the verbs the door answers (the spellings'
+ * tails, sorted), cut at the last whole verb that fits and closed with an ellipsis.
+ */
+export function briefOf(door: string, roles: readonly string[], spellings: readonly string[]): string {
+  const joined = roles.join(" · ");
+  if (joined.length <= BRIEF_WIDTH) return joined;
+  const verbs = [...new Set(spellings.map((s) => s.slice(door.length).trim()).filter(Boolean))];
+  let out = "";
+  for (const v of verbs) {
+    const next = out === "" ? v : `${out} · ${v}`;
+    if (next.length > BRIEF_WIDTH - 4) return `${out} · …`;
+    out = next;
+  }
+  return out;
 }
 
 /** JSON with every object's keys sorted, two-space indent, one trailing newline: the pack's canonical bytes. */

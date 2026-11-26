@@ -1,0 +1,107 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.hand.lifts`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "lift the kahua items a lay left pending, each under its face's grant"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.hand.lifts"]
+title     = "lar:///ha.ka.ba/lares/afford/face.hand.lifts"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.hand.lifts"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.hand.lifts ~ the count is the confirmation: pending kahua items lift under their faces' grants
+
+`lift-kahua --count <n>` lifts the kahua items a lay previewed and left pending (`seed-mirrors.ts`): it runs the lay's mirror leg again and lifts only where `n` equals the count the preview reads now; a wrong count refuses and lifts nothing. `lares shore` names each pending item (face, title, body digest) beside its own rows, and a face standing shut names the unlock to run first (`lares vault unlock --face N`). The count IS the confirmation, so the verb asks nothing more, and it reads no face (`--face` refuses as usage).
+
+`lares kahua lift` lifts one staged row by its title and digest; this spelling lifts the pending set by count.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ lift-the-count
+
+```memetic-wikitext
+<<has entity=`example` name=`lift-the-count` params=`count/2 ~ lift the two pending items the preview named`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ count
+
+```memetic-wikitext
+<<has entity=`arg` name=`count` params=`takes/number needs/required ~ the count of pending kahua items lares shore lists; a wrong count lifts nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/face-grant ~ each lift signs under its face's own grant; a person runs it at their own terminal, wearing the face`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · count-moved
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.hand.lifts count/<n>]] ~ lift-kahua names the count of pending kahua items: lares shore lift-kahua --count <n>`>>
+<<has entity=`refusal` name=`count-moved` params=`~ the count no longer equals the preview's; nothing lifted, and a new lares shore names the count that stands`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ lifted · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`lifted` params=`exit/0 ~ the pending items lifted under their faces' grants`>>
+<<has entity=`band` name=`refused` params=`~ the mirror leg refused by name; nothing lifted`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares shore lift-kahua
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares shore lift-kahua]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · kahua-memory-stage
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WD7v_63t9TEN7_tTtPhVaq6JuhOA4fgzB56Nn_Kp73g`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -76,6 +76,7 @@ import { handRefusalOf, readOwnHand, type HandReading, type HandRefusal } from "
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor, wantsJson } from "../render.js";
 import { verbFailure } from "../verb-call.js";
+import { helpLines } from "../command-help.js";
 import { vesselDid } from "../env.js";
 import { askShore, askSettle, askShoreFlush, readShoreList, readSettlePending, shoreFlushExit, type ShoreAnswer, type ShoreFlushReading } from "../shore-core.js";
 import { takeDisk } from "../shore-take-disk.js";
@@ -92,45 +93,9 @@ export type ShoreAct = (typeof SHORE_ACTS)[number];
 /** The acts a lit sibling's shore answers by its face (`--face N`); the rest read the worn face, or no face at all. */
 const FACE_ACTS: ReadonlySet<ShoreAct> = new Set(["list", "take-records", "restore", "remove"]);
 
-/** The shore door's own account: `lares shore --help` prints it, and a refusal ends with it. */
-export function shoreHelpLines(): string[] {
-  return [
-    "usage: lares shore [list] [--face N]",
-    "       lares shore take-records <uri> --key <key> [--bag <bagUri>] [--yes]",
-    "       lares shore take-disk    <uri> --key <key> [--bag <bagUri>] [--yes]",
-    "       lares shore keep-disk    <uri> --key <key> [--bag <bagUri>] [--yes]",
-    "       lares shore keep-records <uri> --key <key> [--bag <bagUri>] [--yes]",
-    "       lares shore keep-both    <uri> --key <key> [--bag <bagUri>] [--yes]",
-    "       lares shore drafts       <uri>",
-    "       lares shore restore (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]",
-    "       lares shore remove  (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]",
-    "       lares shore settle  --bag <bagUri|slug> --pending",
-    "       lares shore lift-kahua --count <n>",
-    "       lares shore flush",
-    "       lares shore log [--kind <k>] [--held] [--boot <id>]",
-    "  --face N      list or answer a lit sibling's shore (its own projector) without wearing it;",
-    "  list          look at the disk, then name each standoff with its key and each pending removal;",
-    "  take-records  write the records' render over the file of one standoff, named by its key;",
-    "  take-disk     land the file's words in the records for one standoff, named by its key;",
-    "  keep-disk     land the file's words whole (no merge) for one standoff, and let its drafts go;",
-    "  keep-records  write the records' render over the file of one standoff, and let its drafts go;",
-    "  keep-both     write the records' render over the file, and keep the file's words as parallel drafts;",
-    "  drafts        name the drafts a carrier's standoffs loaded (titles; `lares tiddler get` reads each);",
-    "  the settling acts (take-*, keep-*) run on a person's hand at their own terminal; --yes approves nothing by itself;",
-    "  restore       write a vanished file back from the records;",
-    "  remove        take the vanished carrier out of its own bag: nothing stands in its place, unless a lower layer",
-    "                holds the title too, where the confirmation names it and your y raises a kāpae so it never returns;",
-    "  settle        resume a settle word that stalled, over the carriers its record names (--pending);",
-    "  lift-kahua    lift the kahua items a lay left pending, each under its face's grant (--count names the preview's count);",
-    "  flush         write what every island holds in memory to its mirrors now: the daemon's with each lit face's, and every resident wiki's;",
-    "  log           the vessel's log as records, one per distinct event: the counts by kind, then each record (--kind one kind,",
-    "                --held the unacknowledged, --boot one boot's ring); with no vessel answering, the flat run/vessel-live.log and its ash;",
-    "  an answer over more than one carrier names the count that stands pending (--count).",
-  ];
-}
-
+/** A refusal ends with the door's lines, drawn from the carriers (`lares shore --help` prints the same). */
 function printUsage(): void {
-  for (const line of shoreHelpLines()) console.error(line);
+  for (const line of helpLines("shore")) console.error(line);
 }
 
 /** The args one act sends, or the usage fault that stops it. */

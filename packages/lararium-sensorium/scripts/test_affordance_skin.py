@@ -45,7 +45,7 @@ def test_w2_every_pack_routed_tool_names_exactly_its_carriers_mcp_args():
     pack = read_affordance_pack()
     routed = sorted((pack.get("routes") or {}).get("mcp") or {})
     # SEED: the oracle cast flipped first; a pack that routes no `oracle_cast` reads red until the familiar re-bakes.
-    for seed in ("oracle_cast", "ddate", "law_index", "law_pin", "law_unpin"):
+    for seed in ("oracle_cast", "ddate", "law_index", "law_pin", "law_unpin", "shore", "shore_flush", "flow"):
         assert seed in routed, f"affordance-pack-stale: the pack routes no {seed}; re-bake: pnpm --filter @lararium/tw5 build"
     mcp = build_mcp(DaemonCoordinator(wing="w"))
     for tool in routed:

@@ -1,0 +1,106 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.disk.flushes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "run the vessel's whole-island flush: every shore writes what it owes"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.disk.flushes"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.disk.flushes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.disk.flushes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.disk.flushes ~ the whole-island flush: each shore writes what it holds in memory
+
+`flush` asks the vessel to flush EVERY island that mounts a disk shore: the daemon's with each lit sibling's projector, and every resident wiki's, the same flush the teardown runs, through the custody door's `shore-flush` frame. It places no record, takes no argument and asks no confirmation; the answer names what each island wrote (`written`, with its `fileWrites`), what stayed `unwritten` (each with its state and why; a lit face's row names its face), or `answered: false` with the reason.
+
+A composition sitting that stands no such flush refuses `flush-unavailable`. Exit 0 where every island wrote what it owed; 4 where a carrier stayed unwritten; 3 where an island, or the vessel, could not answer.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ flush
+
+```memetic-wikitext
+<<has entity=`example` name=`flush` params=`~ write every island's owed mirrors now`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ the vessel flushes its own mirrors; the verb takes nothing and places no record`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ flush-unavailable
+
+```memetic-wikitext
+<<has entity=`refusal` name=`flush-unavailable` params=`cure/[[carriage.disk.flushes]] ~ no composition sitting stands to flush; stand the vessel and run it again`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ whole · unwritten · unanswered
+
+```memetic-wikitext
+<<has entity=`band` name=`whole` params=`exit/0 fields/[[islands whole]] ~ every island answered and left nothing unwritten`>>
+<<has entity=`band` name=`unwritten` params=`exit/4 ~ a carrier stayed unwritten; the row names its state and why`>>
+<<has entity=`band` name=`unanswered` params=`exit/3 ~ an island, or the vessel, could not answer`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares shore flush
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares shore flush]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! shore_flush
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`spells/shore_flush ~ the seat`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-hCJ0Ac1Ar8dTnwBaAY7j5RsKJ_3sYHfnohJzJ8CBNs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

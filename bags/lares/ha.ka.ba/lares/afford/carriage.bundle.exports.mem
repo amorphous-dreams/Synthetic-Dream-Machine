@@ -1,0 +1,110 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.bundle.exports`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "carry authored memory out of the house before a re-founding"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.bundle.exports"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.bundle.exports"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.bundle.exports"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.bundle.exports ~ the keep: authored memory leaves the house as a sealed, verified bundle
+
+`export <dest>` carries the operator's AUTHORED memory out before a re-founding. It writes a bundle outside the house root and the workspace: the daemon mount's wiki working carriers, the kāpae shadows and canon carriers, its kahua stage heads, draft recovery files, consented temp carriers, and house-minted bags, with a roster (the re-declare list of pet-names, Handles and chair labels, plus the share rows) sealed under the house's keep key (`<config>/keep-key`). Faces ride by path key, never by a key or a face relation, and the verb reads every byte back against its manifest before it answers.
+
+It waits for a settled projection: an unsettled carrier or a held save refuses by name unless `--accept-omissions` names the bundle partial, and the manifest records each omission. A face whose live stage will not read cuts with no flag: its files travel, its standing heads stay behind as a counted `face-unread` omission, and this terminal alone names the face. Sensoriums never travel (they survive where they stand), and neither does the daemon document or the control document. The bundle rests UNENCRYPTED, private memory as plain files: keep it on a disk only you hold, and remove it once imported.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ cut-a-bundle · accept-the-gaps
+
+```memetic-wikitext
+<<has entity=`example` name=`cut-a-bundle` params=`dest/./house-keep ~ write the bundle and read it back whole`>>
+<<has entity=`example` name=`accept-the-gaps` params=`dest/./house-keep accept-omissions/true ~ cut a partial bundle that names each omission`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ dest · accept-omissions
+
+```memetic-wikitext
+<<has entity=`arg` name=`dest` params=`takes/dir needs/required seat/1 as/<dest> ~ the directory the bundle lands in; it sits outside the house root and the workspace`>>
+<<has entity=`arg` name=`accept-omissions` params=`~ name the bundle partial where an unsettled carrier or a held save stands; the manifest records each omission`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ read · keep-key
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`read` params=`who/hand ~ the verb reads private memory out of the house as plain files; a person runs it at their own terminal`>>
+<<has entity=`gate` name=`keep-key` params=`key/keep-key ~ the roster seals under the house's keep key, <config>/keep-key`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · bundle-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.bundle.exports dest/<dest>]] ~ the destination directory stands required`>>
+<<has entity=`refusal` name=`bundle-refused` params=`cure/[[carriage.bundle.exports dest/<dest> accept-omissions/true]] ~ an unsettled carrier or a held save stands; the line names it, and --accept-omissions cuts a partial bundle that records each omission`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ written · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`written` params=`exit/0 fields/[[dest bundleId faces counts tempBytes omissions unreadFaces]] ~ the bundle written and read back whole; the lines count each layer and name what stayed behind`>>
+<<has entity=`band` name=`refused` params=`~ the bundle refused by name; nothing landed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares export
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares export]] ~ the terminal; the destination rides as <dest>`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · kahua-memory-stage
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2-C_uV42Nk2sfax1S47aCOxZH-iOuwS4xruy76kGFc0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

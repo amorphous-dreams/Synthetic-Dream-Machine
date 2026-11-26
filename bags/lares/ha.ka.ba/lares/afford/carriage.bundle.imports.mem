@@ -1,0 +1,113 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.bundle.imports`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "carry an exported bundle back in after a re-founding"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.bundle.imports"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.bundle.imports"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.bundle.imports"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.bundle.imports ~ the return: an exported bundle verifies whole, previews, then lands as fresh acts
+
+`import <dest>` verifies every hash and path in the bundle before anything moves, then PREVIEWS and stops. `--apply` replays the re-declare list as fresh acts, maps each bundle face to the ONE face here that carries its pet-name (none or two refuse by name), re-pours the working and face canon rows through the ingest gesture (a diverged id stands off and never overwrites), re-lifts the kahua heads under the new face's grant, keyed by title and body digest, and lands draft and temp files where none stands.
+
+A journal under `<root>/config` lets an interrupted import re-enter to the same end, and a second import lands nothing. A face standing shut waits: the lines name `lares vault unlock --face N`, then import again; a workbench lands at the wear of a face that holds a writer's seat there. The exit reads 0 clean, `verb-error` where a row refused, `conflict` where a row stood off.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ preview · apply
+
+```memetic-wikitext
+<<has entity=`example` name=`preview` params=`dest/./house-keep ~ verify the bundle and name what would land; nothing moves`>>
+<<has entity=`example` name=`apply` params=`dest/./house-keep apply/true ~ replay the re-declare list and land the rows`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ dest · apply
+
+```memetic-wikitext
+<<has entity=`arg` name=`dest` params=`takes/dir needs/required seat/1 as/<dest> ~ the bundle directory an export wrote`>>
+<<has entity=`arg` name=`apply` params=`~ land the rows; absent, a preview that verifies the bundle and writes nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write · signs
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/hand ~ --apply writes records and re-lifts kahua heads, each lift signing under the new face's grant; a person runs it at their own terminal`>>
+<<has entity=`gate` name=`signs` params=`key/face-grant ~ the re-lifts sign kahua acts under the face's grant`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · bundle-refused · face-waiting
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.bundle.imports dest/<dest>]] ~ the bundle directory stands required`>>
+<<has entity=`refusal` name=`bundle-refused` params=`cure/[[carriage.bundle.imports dest/<dest>]] ~ a hash or path failed to verify, or two faces carry one pet-name; nothing moved`>>
+<<has entity=`refusal` name=`face-waiting` params=`~ a face stands shut or unworn; the line names lares vault unlock --face N, then import again`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ previewed · applied · stood-off · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`previewed` params=`exit/0 fields/[[bundleId applied faceMap redeclare minted tallies skipped waiting warnings]] ~ the bundle verified whole; the tallies name what would land`>>
+<<has entity=`band` name=`applied` params=`exit/0 ~ every row landed or stood already`>>
+<<has entity=`band` name=`stood-off` params=`exit/conflict ~ a row stood off against a diverged id; nothing overwrote it`>>
+<<has entity=`band` name=`refused` params=`exit/verb-error ~ a row refused; the lines name each`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares import
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares import]] ~ the terminal; the bundle directory rides as <dest>`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · kahua-memory-stage
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GCV-JrVqmbf-IzcgBfBrvXw-w0gbDZGQrLbi0zDrTQ8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

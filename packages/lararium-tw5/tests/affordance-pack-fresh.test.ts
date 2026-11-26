@@ -15,6 +15,16 @@ import { bccOf, headUriOf } from "@lararium/memetic-frame";
 import { PACK_PATH, bakeAffordancePack, canonTexts, canonicalJson } from "../scripts/build-affordance-pack.js";
 import { REPO, skipNote, wikiSkip } from "./test-wiki.js";
 
+/** Wave 2's carriers: `act` · `ingest` · `export` · `import` · `shore` · `bag` · `flow` (the same list the CLI laws seed on). */
+const WAVE_2 = [
+  "carriage.record.adds", "carriage.bag.copies", "carriage.bag.moves", "carriage.bag.clears", "carriage.bag.drops", "carriage.bag.loads",
+  "carriage.bag.creates", "carriage.bundle.repacks", "carriage.draft.pulls", "carriage.capture.ingests", "carriage.bundle.exports",
+  "carriage.bundle.imports", "carriage.disk.reads", "carriage.record.wins", "carriage.disk.wins", "carriage.disk.merges", "carriage.draft.reads",
+  "carriage.disk.restores", "carriage.disk.removes", "carriage.disk.settles", "face.hand.lifts", "carriage.disk.flushes", "carriage.disk.logs",
+  "carriage.bag.reads", "carriage.bag.declares", "carriage.bag.homes", "carriage.bag.registers", "carriage.bag.cools", "carriage.bag.compacts",
+  "carriage.bag.tends", "realm.bag.shares", "sense.record.flows",
+];
+
 const CURE = "re-bake: pnpm --filter @lararium/tw5 build (or tsx scripts/build-affordance-pack.ts), then commit affordance-pack.json";
 
 describe.skipIf(wikiSkip)(`W3 · the tracked pack equals a fresh bake of canon${skipNote}`, () => {
@@ -36,6 +46,17 @@ describe.skipIf(wikiSkip)(`W3 · the tracked pack equals a fresh bake of canon${
   test("SEED: the calendar and the three law verbs stand in the pack, each bcc the canon carrier's own frame check", () => {
     const pack = JSON.parse(readFileSync(PACK_PATH, "utf8")) as { carriers: Record<string, { title: string; bcc: string | null }> };
     for (const address of ["oracle.calendar.dates", "engine.law.indexes", "engine.law.pins", "engine.law.unpins"]) {
+      const carrier = pack.carriers[`lar:///${address}`];
+      expect(carrier, `the pack holds no lar:///${address}; ${CURE}`).toBeDefined();
+      const text = canonTexts(path.join(REPO, "bags")).find((t) => headUriOf(t) === carrier!.title);
+      expect(text).toBeDefined();
+      expect(carrier!.bcc).toBe(bccOf(text!));
+    }
+  });
+
+  test("SEED: wave 2's thirty-two carriers stand in the pack, each bcc the canon carrier's own frame check", () => {
+    const pack = JSON.parse(readFileSync(PACK_PATH, "utf8")) as { carriers: Record<string, { title: string; bcc: string | null }> };
+    for (const address of WAVE_2) {
       const carrier = pack.carriers[`lar:///${address}`];
       expect(carrier, `the pack holds no lar:///${address}; ${CURE}`).toBeDefined();
       const text = canonTexts(path.join(REPO, "bags")).find((t) => headUriOf(t) === carrier!.title);

@@ -118,7 +118,8 @@ export function affordView(textOf: TextOf, address: string, view: string, surfac
     case "edges": return edgesOf(textOf(`${address}#/edges`) ?? "");
     case "surfaces": return skinRows(textOf, address).map((r) => r.name);
     case "address": { const a = addressOfTitle(address); return a === null ? [] : [bareAddressOf(a)!]; }
-    case "match": { const a = addressOfTitle(address); return a !== null && (arg === "" || addressMatcher(arg)(a)) ? [address] : []; }
+    // One pattern, or several named apart by spaces (a door whose addresses share no two leading terms lists them one by one).
+    case "match": { const a = addressOfTitle(address); return a !== null && (arg === "" || arg.split(/\s+/).some((p) => addressMatcher(p)(a))) ? [address] : []; }
     default: throw new Error(`afford-view-unknown: "${view}"; the afford operator answers ${AFFORD_VIEWS.join(" · ")}`);
   }
 }

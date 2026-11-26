@@ -56,6 +56,7 @@ import { verbFailure, refusalCode, refusalHint } from "../verb-call.js";
 import { emit, wantsJson, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { cmdDraft } from "./draft.js";
+import { helpLines } from "../command-help.js";
 
 /**
  * A receipt's `done`/`error` reads exactly like `runVerb`'s own resolved result — build that shape
@@ -104,32 +105,9 @@ function addressTitleForLoad(source: string, file: string, toBag: string): strin
 /** Every ACTION verb the act door answers (INGEST names its own door, `lares ingest`), and REPACK. */
 export const ACT_VERBS: readonly string[] = [...ACTION_VERBS.filter((v) => v !== "INGEST"), "REPACK"];
 
-/** The act door's own account: `lares act --help` prints it, and a refusal ends with it. */
-export function actHelpLines(): string[] {
-  return [
-    "usage: lares act <VERB> [flags...]",
-    "",
-    `  VERB ∈ { ${ACTION_VERBS.join(", ")}, REPACK }`,
-    "",
-    "  ADD / COPY / MOVE  --title <t> --from <bag> --to <bag> [--change-id <id>]",
-    "  MOVE of a layer    --from <bag> --to <bag>   moves every live title the source holds (promotion)",
-    "  MOVE of a tombstone  --title <t> --from <bag> [--to <bag>] [--shadow]",
-    "                     carries the delete down into a bag that holds the title; with no --to the",
-    "                     holders print as candidates; --shadow hides the title from a bag that holds none",
-    "  CLEAR / DROP       --bag <bag> [--change-id <id>]",
-    "  CREATE             --bag <bag> [--plane <catalog|oracle>] [--change-id <id>]",
-    "  LOAD               --source-uri <u> --to <bag> [--change-id <id>]",
-    "  REPACK             --source <bundle-file> --from <bag> [--out <file>]",
-    "  --draft <uri>      pull a tiddler from a lower bag into a writable draft [--to <bag>] (no tombstone)",
-    "",
-    "  --yes              skip confirmation prompt",
-    "  --dry-run          preview the effect without committing it",
-    "  --in-wiki          run any act in the active wiki",
-  ];
-}
-
+/** A refusal that names no usage of its own ends with the door's lines, drawn from the carriers (`lares act --help` prints the same). */
 function printUsage(): void {
-  for (const line of actHelpLines()) console.error(line);
+  for (const line of helpLines("act")) console.error(line);
 }
 
 /**

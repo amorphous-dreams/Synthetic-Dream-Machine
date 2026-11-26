@@ -11,9 +11,20 @@ export const pack = (): AffordancePack => affordancePack();
 /** The address the oracle cast flipped first at: every affordance law seeds on it, so an empty pack reads red, never vacuous. */
 export const SEED_ADDRESS = "lar:///oracle.cast.throws";
 
-/** Every address a canon carrier holds today, by hand: a pack that lacks one reads red, never vacuous. Wave 1a added the calendar and the law. */
+/** Wave 2's carriers: the doors that held no legacy help entry (`act` · `ingest` · `export` · `import` · `shore` · `bag` · `flow`). */
+export const WAVE_2 = [
+  "carriage.record.adds", "carriage.bag.copies", "carriage.bag.moves", "carriage.bag.clears", "carriage.bag.drops", "carriage.bag.loads",
+  "carriage.bag.creates", "carriage.bundle.repacks", "carriage.draft.pulls", "carriage.capture.ingests", "carriage.bundle.exports",
+  "carriage.bundle.imports", "carriage.disk.reads", "carriage.record.wins", "carriage.disk.wins", "carriage.disk.merges", "carriage.draft.reads",
+  "carriage.disk.restores", "carriage.disk.removes", "carriage.disk.settles", "face.hand.lifts", "carriage.disk.flushes", "carriage.disk.logs",
+  "carriage.bag.reads", "carriage.bag.declares", "carriage.bag.homes", "carriage.bag.registers", "carriage.bag.cools", "carriage.bag.compacts",
+  "carriage.bag.tends", "realm.bag.shares", "sense.record.flows",
+] as const;
+
+/** Every address a canon carrier holds today, by hand: a pack that lacks one reads red, never vacuous. Wave 1a added the calendar and the law; wave 2 the seven unhelped doors. */
 export const SEED_ADDRESSES = [
   SEED_ADDRESS, "lar:///oracle.calendar.dates", "lar:///engine.law.indexes", "lar:///engine.law.pins", "lar:///engine.law.unpins",
+  ...WAVE_2.map((a) => `lar:///${a}`),
 ] as const;
 
 /** The cure every pack-shaped red names. */

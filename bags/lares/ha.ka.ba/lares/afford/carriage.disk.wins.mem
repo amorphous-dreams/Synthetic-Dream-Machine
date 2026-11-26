@@ -1,0 +1,111 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.disk.wins`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "settle a standoff for the file: land its words in the records"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.disk.wins"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.disk.wins"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.disk.wins"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.disk.wins ~ a person settles one standoff toward the disk
+
+`take-disk <uri> --key <key>` lands the file's words in the records for one standoff, riding the worn face's ingest leg. `keep-disk` lands the file's words WHOLE, with no merge, and lets the standoff's drafts go. A standoff first loads the file's side as drafts in the worn face's draft layer, and the collapse rules the person set in their daemon face (`$:/config/lares/shore/collapse/<rule>`) settle what they can; what stays raises one alert naming `keep-disk`, `keep-records`, and where drafts stand `keep-both` and `drafts`.
+
+Where no base stands, `lares ingest` of the file names the same adoption. SETTLING STAYS A HAND ACT: the verb reads the hand behind this command first; an AI harness on its branch refuses `hand-act-only`, an unreadable branch `hand-unattested`, and `--yes` approves nothing by itself. A terminal asks `Proceed? [y/N]` (the records give way to the file's present words); a JSON call off a terminal needs `--yes`. The key comes from the alert; an answer that names a state that moved takes nothing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ take-the-disk
+
+```memetic-wikitext
+<<has entity=`example` name=`take-the-disk` params=`uri/lar:///ha.ka.ba/lares/docs/pono/example key/<key> ~ the file's words land in the records`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ uri · key · bag · yes
+
+```memetic-wikitext
+<<has entity=`arg` name=`uri` params=`takes/lar-address needs/required seat/1 as/<uri> ~ the carrier at the standoff`>>
+<<has entity=`arg` name=`key` params=`takes/key needs/required ~ the standoff's key, as lares shore printed it`>>
+<<has entity=`arg` name=`bag` params=`takes/bag-uri ~ the bag that holds the carrier`>>
+<<has entity=`arg` name=`yes` params=`~ name the intent for a call off a terminal; approves nothing by itself`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand-act
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand-act` params=`who/hand ~ a settling act reads the hand behind this command before anything else; an AI harness on its branch refuses hand-act-only, an unreadable branch hand-unattested, each naming the command the operator runs, and --yes approves nothing by itself`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ hand-act-only · hand-unattested · usage · a-state-that-moved
+
+```memetic-wikitext
+<<has entity=`refusal` name=`hand-act-only` params=`cure/[[carriage.disk.reads]] ~ an AI harness settles nothing; the line names the command the operator runs`>>
+<<has entity=`refusal` name=`hand-unattested` params=`cure/[[carriage.disk.reads]] ~ the branch behind this command stays unreadable; read the shore, then run the act on your own terminal`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.disk.wins uri/<uri> key/<key>]] ~ a carrier and the standoff's key both stand required`>>
+<<has entity=`refusal` name=`a-state-that-moved` params=`~ an answer names the state its giver read (a standoff's key, or the count that stands pending); where that state moved, the island refuses by name and nothing changes`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ took · aborted
+
+```memetic-wikitext
+<<has entity=`band` name=`took` params=`exit/0 ~ the file's side won; the line names the carrier and its bag`>>
+<<has entity=`band` name=`aborted` params=`exit/1 ~ the person answered no at the prompt`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares shore take-disk
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares shore take-disk]] also/[[lares shore keep-disk]] ~ the terminal; settling stays a hand act`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VOFgYG0og8e7WeyHrCYKQQV9c0bS8fHHumgTZyCYzIo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

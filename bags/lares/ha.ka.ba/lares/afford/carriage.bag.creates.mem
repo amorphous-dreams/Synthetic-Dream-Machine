@@ -1,0 +1,114 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.bag.creates`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "mint a new empty bag at a fresh coordinate"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.bag.creates"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.bag.creates"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.bag.creates"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.bag.creates ~ the residency CREATE: a bag takes a fresh coordinate, empty
+
+`CREATE` mints a new bag at a fresh coordinate, empty, with its identity a fresh document URL; registration lands as a `holdings` accession in the union catalog. `--plane` picks the bag's plane, `catalog` or `oracle`; any other word refuses. A caller inside the CLI that read the bag off the canon source as house canon (the seed) carries that claim on the verb, and an island that never seated the bag refuses `house-canon-unseated` and mints no catalog row. CREATE carries no content to tell one change from the next, so `--change-id` folds into the effect key's nonce.
+
+A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent off a terminal, `--dry-run` previews and commits nothing, `--in-wiki` runs the act in the active wiki's island.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ create-a-bag · an-oracle-plane
+
+```memetic-wikitext
+<<has entity=`example` name=`create-a-bag` params=`bag/lar:///ha.ka.ba/bags/lares-notes ~ mint an empty bag`>>
+<<has entity=`example` name=`an-oracle-plane` params=`bag/lar:///ha.ka.ba/bags/lares-oracle plane/oracle ~ mint a bag on the oracle plane`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ bag · plane · change-id · dry-run · in-wiki
+
+```memetic-wikitext
+<<has entity=`arg` name=`bag` params=`takes/bag-uri needs/required ~ the bag the act targets`>>
+<<has entity=`arg` name=`plane` params=`takes/catalog-or-oracle ~ the plane the bag lives on; catalog or oracle`>>
+<<has entity=`arg` name=`change-id` params=`takes/id ~ the change's own identity, named once so a re-send reads as the same change; absent, the verb mints one`>>
+<<has entity=`arg` name=`dry-run` params=`~ preview the effect without committing it`>>
+<<has entity=`arg` name=`in-wiki` params=`~ run the act in the active wiki's island`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ the vessel checks the writer's cap on the destination bag; a terminal asks y/N before it submits unless --yes rides, and an agent off a terminal names --yes`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · house-canon-unseated · outcome-unknown
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.bag.creates bag/<bag>]] ~ --bag stands required, and --plane takes catalog or oracle`>>
+<<has entity=`refusal` name=`house-canon-unseated` params=`~ the island never seated a bag the seed read as house canon; it minted no catalog row`>>
+<<has entity=`refusal` name=`outcome-unknown` params=`~ this process stopped waiting after the vessel answered; a short read found no receipt for this attempt's request id; read it back with lares vessel request <id> before any re-run`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ done · preview · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`done` params=`exit/0 fields/[[verb status requestId receipt]] ~ the vessel ran the action and wrote its effect record; the receipt names the outcome tiddler`>>
+<<has entity=`band` name=`preview` params=`exit/0 ~ with --dry-run the vessel names the effect it would land and commits nothing`>>
+<<has entity=`band` name=`refused` params=`~ the vessel refused by name (cap-denied or a verb-error); the line carries its reason and cure`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares act CREATE
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares act CREATE]] ~ the terminal; the verb rides as the first word, ALL-CAPS`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · residency-model
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DwVrUG9GuJRjHvNR_hBZsxlC86x0j1dDLRlcN_4v1Vw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

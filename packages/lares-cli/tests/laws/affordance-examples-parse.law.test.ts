@@ -4,7 +4,7 @@
  * Inputs: every cli example and every cure the baked pack renders for a carrier (a foreign cure, one naming another address,
  * rides no door this carrier skins and stays out). Each line runs through the real arg law: `parseArgs`, the door's verb table,
  * and `unknownFlags` with the handler never called. A renamed flag reds every example still spelling the old one. Seed: the
- * oracle cast. Control: a planted example with an unknown flag, and one with an unknown verb, both read red.
+ * oracle cast. Control: a planted example with an unknown flag, and one with an unknown verb, both read red. The draft pull rides `lares act` with no verb word, so a line carrying `--draft` skips the verb table.
  *
  * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-laws
  */
@@ -21,7 +21,10 @@ export function misparse(line: string): string | null {
   const args = parseArgs(words.slice(1));
   const cmd = COMMANDS.find((c) => c.name === args.command);
   if (!cmd) return `no door "${args.command}"`;
-  if (cmd.verbs !== null) {
+  // THE DRAFT PULL RIDES THE ACT DOOR WITH NO VERB WORD (`lares act <uri> --draft`): its flag names the act, and the door's
+  // handler reads the first word as the tiddler to pull, so no verb table stands to check it against.
+  const verbless = cmd.name === "act" && args.flags["draft"] === true;
+  if (cmd.verbs !== null && !verbless) {
     const verbs = flattenVerbs(cmd.name, cmd.verbs).find((t) => t.door === cmd.name)?.verbs ?? [];
     if (!verbs.includes(args.positional[0] ?? "")) return `the door answers no verb "${args.positional[0] ?? ""}"`;
   }
@@ -49,6 +52,12 @@ describe("W4 · every example and cure parses at its own door", () => {
 
   test.each(lines())("%s · `%s`", (_address, line) => {
     expect(misparse(line)).toBeNull();
+  });
+
+  test("a keep spelling and the draft pull parse where their doors read them", () => {
+    expect(misparse("lares shore keep-records 'lar:///ha.ka.ba/lares/docs/pono/example' --key k")).toBeNull();
+    expect(misparse("lares act lar:///ha.ka.ba/lares/docs/pono/example --draft")).toBeNull();
+    expect(misparse("lares act lar:///ha.ka.ba/lares/docs/pono/example")).toMatch(/no verb/);
   });
 
   test("CONTROL: an unknown flag and an unknown verb each read red", () => {

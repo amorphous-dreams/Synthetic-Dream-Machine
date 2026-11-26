@@ -28,18 +28,11 @@ import { carrierNeedsTag, tagBlobs } from "../tag-blobs.js";
 import { verbFailure } from "../verb-call.js";
 import { askShore, askSettle, type SettleReading } from "../shore-core.js";
 import { cmdWatch } from "./watch.js";
+import { helpLines } from "../command-help.js";
 
+/** The gesture's usage answers with the door's lines, drawn from the carrier (`lares ingest --help` prints the same). */
 function printUsage(): void {
-  console.log("usage: lares ingest --source <dir|file> --to <bagUri> [--apply] [--tag-blobs] [--in-wiki] [--yes]");
-  console.log("       lares ingest --watch --source <dir> --to <bagUri> [--apply] [--debounce ms]");
-  console.log("  --watch    fires the gesture on each settled wave instead of once (preview by default;");
-  console.log("             --apply submits; --debounce sets the quiet window in ms);");
-  console.log("  default    = preview (scan + two-leg diff, no submission);");
-  console.log("  --tag-blobs writes the CAS opt-in flag (`.meta` sidecar / meme ahu meta) for the");
-  console.log("             large un-flagged carriers that would fault during ingest; writes no records;");
-  console.log("  --apply    sends NEW+CHANGED carriers through the island's INGEST gate;");
-  console.log("  --in-wiki  runs the INGEST in the active wiki island (the path for the working");
-  console.log("             write-layer ingest-back — a wikis/ source derives its URIs off that layer).");
+  for (const line of helpLines("ingest")) console.log(line);
 }
 
 /** The working copies that shadow a canon record this INGEST moved past the base each forked from (`override-bases.ts`). */

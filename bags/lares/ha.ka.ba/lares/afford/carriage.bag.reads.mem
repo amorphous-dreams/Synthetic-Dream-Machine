@@ -1,0 +1,111 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.bag.reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "list the bags, or show one bag's declaration and where it resolves"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.bag.reads"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.bag.reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.bag.reads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.bag.reads ~ what a bag declares: its tier, its home, and whether it sits where it belongs
+
+With no bag, `show` surveys every bag the survey dir holds: its declared cap-tier and home, and whether it sits where its declaration says. With a bag, it shows that bag's declaration and where it resolves ON THIS VESSEL: tier (a tier only ever tightens against the structural floor), home (and the repo it names), whether a clone of the repo carries it, where its bytes sit, and where it declares they belong, with an ADRIFT mark and the command that re-anchors it where the two differ.
+
+The survey reads `--dir` (default the bags dir); with no `--dir`, a bag with no canon source resolves in the house's projected bags, and a shared wiki's canon bag under its realm folder. A bag absent from every place names each place it read. `--after` and `--limit` page the whole survey; naming one bag takes `--dir` alone.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ survey · one-bag · a-page
+
+```memetic-wikitext
+<<has entity=`example` name=`survey` params=`~ every bag, its declared tier and home`>>
+<<has entity=`example` name=`one-bag` params=`bag/lares ~ one bag's declaration and its resolution here`>>
+<<has entity=`example` name=`a-page` params=`limit/10 after/<cursor> ~ ten rows behind a cursor an answer named`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ bag · dir · limit · after
+
+```memetic-wikitext
+<<has entity=`arg` name=`bag` params=`takes/slug seat/1 as/<bag> ~ one bag; absent, the whole survey`>>
+<<has entity=`arg` name=`dir` params=`takes/dir ~ where the bags are looked for; default the bags dir`>>
+<<has entity=`arg` name=`limit` params=`takes/count ~ rows per page of the survey`>>
+<<has entity=`arg` name=`after` params=`takes/cursor ~ the page behind a cursor an answer named`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ read
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`read` params=`who/seat-or-hand ~ a local read of the bags and their declarations; it writes nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ bag-absent
+
+```memetic-wikitext
+<<has entity=`refusal` name=`bag-absent` params=`cure/[[carriage.bag.reads]] ~ no place the survey read holds the bag; the line names each place it read`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ survey · declaration
+
+```memetic-wikitext
+<<has entity=`band` name=`survey` params=`exit/0 ~ each bag with its declared tier and home, and whether it sits where it belongs`>>
+<<has entity=`band` name=`declaration` params=`exit/0 fields/[[bag manifest dir adrift]] ~ one bag's declaration and where it resolves here`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares bag show
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares bag show]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cap-tier
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wQHlXAetsqJwe7JnYUyBbxyOUXFNT42JNltjeU994II`>>
+
+<<^ code=`&#x0004;` to=`?`>>

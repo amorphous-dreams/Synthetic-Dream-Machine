@@ -1,0 +1,120 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.bag.shares`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "name who reads and writes a bag, by face pet name"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.bag.shares"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.bag.shares"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.bag.shares"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.bag.shares ~ a bag's share row: names beside names, by reference and never by copy
+
+A share row says who reads and who writes a bag, by face PET-NAME as a title list (`a b [[c d]]`), `*` for every face, or empty; `hN` and `--face N` resolve to that face's pet-name (`--face` adds face N to the readers), so a row always names faces by pet-name. A line names its DELTA: `--read` and `--write` add names beside the standing ones and never replace a list, `--read-remove` and `--write-remove` take names out (each taken-out face's landed grant revokes; a face standing shut keeps the row as it stood, named), and what the line leaves unnamed (the other list, the note, the owner) stands, so the same line twice changes nothing. `--list` shows every row and the one resolver's answer per bag (with `--json`, each row AS WRITTEN beside the resolver's answer); `--remove` unshares the row.
+
+The row writes through to `$LAR_ROOT/config/share.tid` (it survives a re-founding; a person edits it by hand, and the next boot reconciles it in, the file winning) and, with a vessel standing, into the control document (`share-set`); then the operator's hand lands it (`share-apply`): each lit grantee takes the bag's row by reference and a delegation from the owner's hive, and a grant whose face stands shut waits behind an opaque flag until it lights. ONE ROW PER SLUG: a wiki row standing for the slug refuses `share-kind-standing`, and nothing writes. Sharing rides by reference and delegation, never a copy.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ share-with-a-face · narrow-a-list · read-the-rows · unshare
+
+```memetic-wikitext
+<<has entity=`example` name=`share-with-a-face` params=`bag/lares read/[[Lares Alpha]] note/[[the review face reads the lares bag]] ~ add one reader beside the standing ones`>>
+<<has entity=`example` name=`narrow-a-list` params=`bag/lares read-remove/[[Lares Alpha]] ~ take a name out; its landed grant revokes`>>
+<<has entity=`example` name=`read-the-rows` params=`list/true ~ every row and the resolver's answer per bag`>>
+<<has entity=`example` name=`unshare` params=`bag/lares remove/true ~ the row leaves the file and the control document`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ bag · read · write · read-remove · write-remove · note · face · list · remove · workspace
+
+```memetic-wikitext
+<<has entity=`arg` name=`bag` params=`takes/slug seat/1 as/<bag> ~ the bag the row names`>>
+<<has entity=`arg` name=`read` params=`takes/names ~ face pet-names added to the readers`>>
+<<has entity=`arg` name=`write` params=`takes/names ~ face pet-names added to the writers`>>
+<<has entity=`arg` name=`read-remove` params=`takes/names ~ face pet-names taken out of the readers`>>
+<<has entity=`arg` name=`write-remove` params=`takes/names ~ face pet-names taken out of the writers`>>
+<<has entity=`arg` name=`note` params=`takes/words ~ why the row stands`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ add face N to the readers, by its handle index`>>
+<<has entity=`arg` name=`list` params=`~ show every row and the resolver's answer per bag`>>
+<<has entity=`arg` name=`remove` params=`~ unshare: the row leaves the file and the control document`>>
+<<has entity=`arg` name=`workspace` params=`~ refused on a bag (a wiki's workbench rests there); a bag takes none`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand ~ a share lands a grant from the owner's hive; a person runs the landing at their own terminal, and an AI harness on its branch refuses by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ share-kind-standing · workspace-refused · share-filter-unsupported
+
+```memetic-wikitext
+<<has entity=`refusal` name=`share-kind-standing` params=`cure/[[realm.bag.shares bag/<bag> remove/true]] ~ a wiki row stands for the slug; unshare it through its own door first`>>
+<<has entity=`refusal` name=`workspace-refused` params=`cure/[[realm.bag.shares bag/<bag> read/<names>]] ~ --workspace names where a WIKI's workbench rests; a bag takes none`>>
+<<has entity=`refusal` name=`share-filter-unsupported` params=`~ an hN token names no face carrying a pet-name here`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ row · list
+
+```memetic-wikitext
+<<has entity=`band` name=`row` params=`exit/0 ~ the resolved row prints: who reads, who writes, who waits`>>
+<<has entity=`band` name=`list` params=`exit/0 ~ every row and the one resolver's answer per bag`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares bag share
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares bag share]] ~ the terminal; the wiki form stays on its own door`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · sealed-store
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;o6XVayFwnpTluSFYyEfMnEKgiKgDsawcKr6BMGv-Ldg`>>
+
+<<^ code=`&#x0004;` to=`?`>>
