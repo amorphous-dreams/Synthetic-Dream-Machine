@@ -1087,10 +1087,11 @@ export const makeWikiRenderReactor = everyWiki("wiki-render", false, (opts: Tidd
 
 // ── tiddler-put ───────────────────────────────────────────────────────────────────────────────────────
 
-/** The stage meme law (`place-meme.ts`), on a plain record: a title under the memory stage reads one or two lowercase path segments. */
+/** The stage meme law (`place-meme.ts`), on a plain record: a title under the memory stage reads one or two lowercase path
+ *  segments. A slot's title (`<root>#/x`) reads its root's path: the fragment names a slot inside that family, never a segment. */
 function refuseMalformedStagePath(title: string): void {
   if (!title.startsWith(STAGE_MEME_PREFIX)) return;
-  try { stageMemeTitle(title.slice(STAGE_MEME_PREFIX.length)); }
+  try { stageMemeTitle(rootAddressOf(title).slice(STAGE_MEME_PREFIX.length)); }
   catch (fault) { throw new VerbRefusal(STAGE_PATH_SHAPE_CODE, fault instanceof Error ? `${fault.message} (${title})` : String(fault)); }
 }
 

@@ -876,7 +876,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "pointer resolved from the local CAS by CID (a web2 `_canonical_uri` stays named, never fetched), a meme's carrier " +
       "paged on slot boundaries; `--slot` one slot. `put` PATCHES: it sets and unsets " +
       "fields, adds and removes tags, and moves the text only where `--text` or `--file` names it. A meme family moves by the same put: " +
-      "a whole carrier as the root's text lands the family through the Confluence gate (a slot it omits stays standing, `kept`; `--cut '#/x'` " +
+      "a whole carrier as the root's text lands the family through the Confluence gate (a slot it omits stays standing, `kept`; `--cut-slot '#/x'` " +
       "names a slot that leaves), and `--slot '#/x'` folds into the title `<root>#/x`, so a slot's text lands with no base (a partial base " +
       "`partial:#/x:…` patches within its span) and an append honours the slot's standing postamble (`--append` lands words at " +
       "the end with no base, read and written in one step on the live wiki, so two appends through this door at once both land; " +
@@ -948,7 +948,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--unset <a,b>        (put) fields to remove",
       "--tag-add <list>     (put) tags to add, as TiddlyWiki writes a list: one [[two words]]; a repeated --tag-add (or --tag-remove) joins its list to the earlier ones",
       "--tag-remove <list>  (put) tags to remove",
-      "--cut <#/slot>       (put, on a meme root or slot) the slots that leave, by rooted path; repeatable. Absence never deletes: a slot the new text omits stays standing by reference (the answer names it under `kept`), and only a cut tombstones one",
+      "--cut-slot <#/slot>  (put, on a meme root or slot) the slots that leave, by rooted path; repeatable. Absence never deletes: a slot the new text omits stays standing by reference (the answer names it under `kept`), and only a cut tombstones one",
       "--text <words>       (put) the new text (on a root, the whole carrier; on a slot, its body)   ·   --file <host path | ->  the new text from a host file or stdin",
       "--base <hash>        (put) the hash last read (the record's, or a root's carrier hash; a slot read's partial base patches within its span); stale → conflict, nothing lands (a base guards honest reuse, never a lock)",
       "--create             (put) land only where no tiddler stands, a family's root included; an existing one answers `exists` and nothing moves",

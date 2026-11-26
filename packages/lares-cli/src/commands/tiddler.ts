@@ -12,7 +12,7 @@
  * the root's text (`--file <path|->`, `--text <words>`); `--slot '#/x'` folds into the title (`<root>#/x`), so a slot's
  * text put and `--append` land on that slot, a slot's text put naming no base, a partial base (`partial:#/x:…`) patching
  * within its span. ABSENCE NEVER DELETES: a slot the new text omits stays standing by reference (`kept`), and
- * `--cut '#/slot'` names each slot that leaves. A delete reads the one family law: a plain tiddler leaves; a meme root
+ * `--cut-slot '#/slot'` names each slot that leaves. A delete reads the one family law: a plain tiddler leaves; a meme root
  * answers the consequence the delete would land and refuses (`tiddler-delete-in-a-family`) unless the line names the
  * family act (`--family`), which lands it as one change; a slot title (`<root>#/x`) lands as the cut on its parent.
  * A delete deletes plainly: the record leaves its layer and no tombstone rises. Only a lower layer makes it a choice: where
@@ -119,8 +119,8 @@ export function tiddlerPlan(sub: Sub, args: ParsedArgs): DoorPlan {
   if (tagsAdd) out["tagsAdd"] = tagsAdd;
   const tagsRemove = wordOf(args.options["tag-remove"]);
   if (tagsRemove) out["tagsRemove"] = tagsRemove;
-  // THE SLOTS THAT LEAVE, by name: absence never cuts, so a put names each slot it removes (`--cut '#/a'`, repeatable).
-  const cut = wordOf(args.options["cut"]);
+  // THE SLOTS THAT LEAVE, by name: absence never cuts, so a put names each slot it removes (`--cut-slot '#/a'`, repeatable).
+  const cut = wordOf(args.options["cut-slot"]);
   if (cut) out["cut"] = cut;
   const base = wordOf(args.options["base"]);
   if (base) out["base"] = base;

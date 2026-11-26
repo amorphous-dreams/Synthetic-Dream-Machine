@@ -146,7 +146,8 @@ describe("summon reads, verifies and starts", () => {
     expect(r.exit).toBe(0);
     expect(cap.asks).toHaveLength(1);
     expect(cap.asks[0]).toMatchObject({ cap: "claude-cli", model: "claude-fable-5-2", prompt: `wake as cold-reader#00002: lares spirit om cold-reader --mandate ${m.uri}@${m.hash}` });
-    expect(Object.keys(cap.asks[0]!).sort()).toEqual(["cap", "cwd", "model", "prompt"]);
+    // The ask carries the wake line, the model, the reach the house hands the guest, the workdir and the log: nothing else rides.
+    expect(Object.keys(cap.asks[0]!).sort()).toEqual(["allowedTools", "cap", "cwd", "log", "model", "prompt"]);
     expect(data(r)).toMatchObject({ decision: "launched", instance: "cold-reader#00002", hash: m.hash, pid: 4242, offerer: "lares-alpha#00001" });
   });
   test("the mandate reads through the tiddler door on the default recipe before anything starts", async () => {

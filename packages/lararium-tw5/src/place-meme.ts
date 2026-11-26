@@ -820,7 +820,7 @@ export type MemberCarrierReading =
  * one member's record (its text, a field) hands that record here; it takes its place in a copy of the family and the one
  * recompose (`expandMemeRefs`) frames the whole carrier, minting the block check over the bytes it frames. The caller lands
  * that text through `placeMeme` under `canonicalHash`, so the member's write passes the Confluence gate, re-splits the family
- * (a slot the new text no longer calls leaves by the consequence) and reseals, in the family's own turn. A record of the
+ * (a slot the new text stops calling leaves by the consequence) and reseals, in the family's own turn. A record of the
  * carrier type at a root address nothing holds yet founds its family the same way.
  */
 export async function composeMemberCarrier(input: MemberCarrierInput, sink: Pick<MemeSink, "titles" | "read">): Promise<MemberCarrierReading> {

@@ -23,7 +23,7 @@
  * THE ONE LINE (`wakeLine`): `wake as <pet>#<n>: lares spirit om <pet> --mandate <uri>@<hash> [--face <N>]`. The launch cap
  * (`tools/summon-launch.mjs`) refuses any prompt outside that shape, so a host process starts only pointed at a hash-pinned
  * mandate. `WAKE_LINE` holds the shape; the host tool carries the same pattern, and a weld test in each suite reads the other's
- * (the tool's suite reads this source, this core's suite runs `wakeLine` through the tool).
+ * (the tool's suite imports this built core, this core's suite runs `wakeLine` through the tool).
  *
  * Plans: lar:///ha.ka.ba/kahua/memory/plan/mandate-summons · lar:///ha.ka.ba/kahua/memory/plan/companion-context
  */
@@ -195,7 +195,7 @@ export const mandateDescription = (fields: Readonly<Record<string, string | unde
  * A CARRIER MANDATE READS AS ITS FAMILY (`mandate-seed` on the root): `carrier` hands the recomposed carrier the meme lens
  * answered, and the mandate's hash reads that carrier's own sha256, the hash the family holds as its canonical one. A slot
  * that moved, a field that moved in the meta, a slot that joined or left: each moves the recompose, so the hash the caller
- * names no longer answers and the read refuses `mandate-moved`. A line naming no hash reads the family as it stands now.
+ * names stops answering and the read refuses `mandate-moved`. A line naming no hash reads the family as it stands now.
  */
 export function mandateRead(uri: string, fields: Readonly<Record<string, string>>, named: string | null, carrier: MandateCarrier | null = null): SpiritMandate {
   const stored = fields["mandate-hash"];

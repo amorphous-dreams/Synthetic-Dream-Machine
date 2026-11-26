@@ -1,13 +1,13 @@
 /**
  * summon-launch.test — the launch cap carries the one wake line, a model and the tool rules a mandate names (none of its own), and starts nothing else. Every case
  * injects its spawn, its directory read and its log open: no test starts a model or writes a log. The wake line welds to the
- * mesh core: this suite reads the pattern out of `spirit-summons.ts` and holds the tool's to it.
+ * mesh core: this suite imports the built core's patterns (`@lararium/mesh/spirit-summons`, from dist) and holds the tool's to them.
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
-import { readFileSync } from "node:fs";
 import { ALLOWED_TOOLS, LAUNCH_CAPS, LaunchRefused, WAKE_LINE, launchPlan, run } from "./summon-launch.mjs";
+import * as core from "../packages/lararium-mesh/dist/spirit-summons.js";
 
 const HASH = "ab".repeat(32);
 const LINE = `wake as cold-reader#00002: lares spirit om cold-reader --mandate lar:///ha.ka.ba/kahua/memory/mandate/${HASH.slice(0, 16)}@${HASH}`;
@@ -73,18 +73,14 @@ test("a malformed allowed-tools value refuses by name with its cure, and nothing
 });
 
 test("the allowed-tools pattern welds to the mesh core's", () => {
-  const core = readFileSync(new URL("../packages/lararium-mesh/src/spirit-summons.ts", import.meta.url), "utf8");
-  const literal = /^export const ALLOWED_TOOLS = \/(.+)\/;$/m.exec(core);
-  assert.ok(literal, "spirit-summons.ts exports ALLOWED_TOOLS as one regex literal");
-  assert.equal(literal[1], ALLOWED_TOOLS.source);
+  assert.equal(core.ALLOWED_TOOLS.source, ALLOWED_TOOLS.source);
+  assert.equal(core.ALLOWED_TOOLS.flags, ALLOWED_TOOLS.flags);
 });
 
-test("the wake line welds to the mesh core: one pattern, read from the core's own source", () => {
-  const core = readFileSync(new URL("../packages/lararium-mesh/src/spirit-summons.ts", import.meta.url), "utf8");
-  const literal = /^export const WAKE_LINE = \/(.+)\/;$/m.exec(core);
-  assert.ok(literal, "spirit-summons.ts exports WAKE_LINE as one regex literal");
-  assert.equal(literal[1], WAKE_LINE.source);
+test("the wake line welds to the mesh core: one pattern, imported from the built core", () => {
+  assert.equal(core.WAKE_LINE.source, WAKE_LINE.source);
   assert.equal(WAKE_LINE.flags, "");
+  assert.equal(core.WAKE_LINE.flags, "");
 });
 
 test("a workdir the host holds none of refuses launch-workdir-absent, and nothing starts", async () => {

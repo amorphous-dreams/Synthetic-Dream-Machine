@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { deriveWikiRecipe, wikiSlugOfBag } from "../src/surface-recipe.js";
-import { expandRecipe, recipeUri, wikiBagUri, wikiSlotUri, type LarTiddlerRecord } from "../src/index.js";
+import { bagUri, expandRecipe, recipeUri, wikiBagUri, wikiSlotUri, type LarTiddlerRecord } from "../src/index.js";
 import {
   HEARTH_WIKI_SLUG, canonFloorOf, floorUntrueLibraries, foreignDocsOf, isHearthWiki, recipeFloorStack, recipeFromRecord, recipeRecordFields,
 } from "../src/wiki-recipe.js";

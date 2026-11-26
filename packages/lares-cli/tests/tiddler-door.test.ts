@@ -156,11 +156,11 @@ describe("the argument law, no daemon", () => {
       expect(h.calls).toEqual([]);
     } finally { error.mockRestore(); }
   });
-  test("a put reads --slot, --create and --cut beside a whole carrier or a slot; `--create` keeps one law on every put", async () => {
+  test("a put reads --slot, --create and --cut-slot beside a whole carrier or a slot; `--create` keeps one law on every put", async () => {
     const door = COMMANDS.find((row) => row.name === "tiddler")!;
     expect(unknownFlags(door, argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", file: "x" }, { create: true }))).toEqual([]);
     expect(unknownFlags(door, argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", slot: "#/a", text: "w" }, { create: true }))).toEqual([]);
-    expect(unknownFlags(door, argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", file: "x", cut: "#/b" }))).toEqual([]);
+    expect(unknownFlags(door, argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", file: "x", "cut-slot": "#/b" }))).toEqual([]);
     expect(tiddlerPlan("put", argv("tiddler", ["put", "lar:///t/x"], { recipe: "default" }, { create: true })).args).toEqual({ title: "lar:///t/x", recipe: "default", create: true });
     expect(tiddlerPlan("put", argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", slot: "#/a" })).args).toEqual({ title: "lar:///t/x#/a", recipe: "default" });
   });

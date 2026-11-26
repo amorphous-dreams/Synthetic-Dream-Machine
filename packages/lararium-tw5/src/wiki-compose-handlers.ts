@@ -22,6 +22,9 @@ function recipeArgs(args: Readonly<Record<string, unknown>>): { slug: string; ba
 }
 import type { WikiComposeOptions } from "./wiki-handler-options.js";
 
+/** The recipe doors' one clock read: it stamps when a hand moved the record and decides nothing. */
+const stampedAt = (): string => new Date().toISOString();
+
 /** The vessel's recipe for a slug, ready to edit. The effective record may stand in the oracle plane
  *  (a system wiki's default): the edit then writes the vessel's own record into the catalog, the
  *  default's fields beneath it, `composed-from` naming the default. */
@@ -79,7 +82,7 @@ export function makeAddBagReactor(opts: WikiComposeOptions): VerbReactor {
         ...recipeRec.tiddler,
         title: recipeTitle,
         "bag-stack": nextStack.join(" "),
-        "updated-at": new Date().toISOString(),
+        "updated-at": stampedAt(),
       },
       meta: {
         ...(recipeRec.meta ?? {}),
@@ -142,7 +145,7 @@ export function makeRemoveBagReactor(opts: WikiComposeOptions): VerbReactor {
         ...recipeRec.tiddler,
         title: recipeTitle,
         "bag-stack": nextStack.join(" "),
-        "updated-at": new Date().toISOString(),
+        "updated-at": stampedAt(),
       },
       meta: {
         ...(recipeRec.meta ?? {}),
@@ -199,7 +202,7 @@ export function makeTrueFloorReactor(opts: WikiComposeOptions): VerbReactor {
     }
 
     const nextStack = stack.filter((uri) => !dropped.includes(uri));
-    const at = new Date().toISOString();
+    const at = stampedAt();
     const updated: LarTiddlerRecord = {
       tiddler: {
         ...recipeRec.tiddler,

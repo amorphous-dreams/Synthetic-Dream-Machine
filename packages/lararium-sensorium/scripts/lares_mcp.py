@@ -1743,7 +1743,7 @@ def build_mcp(coordinator: LaresCoordinator):
                     tags_add: "str | list | None" = None, tags_remove: "str | list | None" = None,
                     base: "str | None" = None, create: bool = False, cut: "list | None" = None,
                     slot: "str | None" = None) -> dict:
-        """Write one tiddler's text, fields or tags in a wiki or bag; a meme root or slot lands its family.
+        """Patch one tiddler's text, fields or tags in a wiki or bag; a meme root or slot lands its family.
         WRITE ONE TIDDLER — set fields, unset fields, add and remove tags, and move the text ONLY where `text` (or `append`)
         names it; mirrors `lares tiddler put <title>`. A meme family moves by the same put: `text` on a root lands a whole
         carrier through the Confluence gate; a slot's title (`<root>#/x`, or `slot="#/x"` beside the root title, folded

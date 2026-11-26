@@ -1412,7 +1412,9 @@ describe.skipIf(wikiSkip)(`the fold renders through the real wiki-render verb${s
     const text = String(data(r)["text"]);
     expect(canonical(text), "lares meme check reads the wake's text as canonical").toBe(true);
     expect(canonical(String(data(r)["carrier"]))).toBe(true);
-    expect(text.startsWith("<<!DOCTYPE type=`memetic-wikitext+tiddlywiki`")).toBe(true);
+    // `worn: h<N>` leads the wake (om binds every handed command to the face that answered); the carrier follows it.
+    expect(text.startsWith("worn: h1 · ")).toBe(true);
+    expect(text).toContain("\n\n<<!DOCTYPE type=`memetic-wikitext+tiddlywiki`");
     expect(slotCommands(text)).toEqual(SLOT_NAMES.filter((slot) => !["#/entry", "#/attention", "#/open"].includes(slot)));
     expect(text).toContain("PR numbers, heads, what each waits on");
     expect(text).toContain("Slot digests");

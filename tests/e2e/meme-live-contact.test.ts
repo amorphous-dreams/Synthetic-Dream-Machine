@@ -9,7 +9,7 @@
  *   put --bag lares      → refuses: a placement never shadows up (CONTROL)
  *   put (framed)         → put; the root and `#/a` landed (a root text put founds the family)
  *   tiddler get --meme   → the same bytes back, with the canonical hash as `base` (`--recipe lares`)
- *   put --base (fresh)   → put; the slot the text omits stays (`kept`) until `--cut` names it (`tombstoned`)
+ *   put --base (fresh)   → put; the slot the text omits stays (`kept`) until `--cut-slot` names it (`tombstoned`)
  *   put --base (stale)   → conflict; nothing moves  (the CONTROL — a door only shown saying yes is no door)
  *   delete --family      → the family leaves; a slot's own delete lands as the cut of its parent
  *   project --to md      → the submission pair beside `--out`
@@ -155,7 +155,7 @@ describe.skipIf(gaps.length > 0)("★ a meme family through the tiddler door ove
   });
 
   test("put --base (fresh) with a changed slot and a cut → put; `#/b` tombstoned by name, `#/c` born", async () => {
-    const r = await lar.cli(["tiddler", "put", URI, ...WIKI, "--base", base, "--cut", "#/b", "--file", join(scratch, "ac.mem"), "--json"]);
+    const r = await lar.cli(["tiddler", "put", URI, ...WIKI, "--base", base, "--cut-slot", "#/b", "--file", join(scratch, "ac.mem"), "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     const d = r.json?.["data"] as Record<string, unknown>;
     expect(d["decision"]).toBe("put");

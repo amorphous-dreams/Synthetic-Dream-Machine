@@ -98,7 +98,7 @@ export async function cmdFamily(args: ParsedArgs): Promise<number> {
     if (err instanceof UsageError) {
       const msg = err.message;
       const code = msg.startsWith("face-malformed:") ? "face-malformed" : "usage";
-      emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares tiddler get --meme: ${msg}`) });
+      emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`tiddler get --meme: ${msg}`) });
       return exitFor("usage");
     }
     if (err instanceof LocalWaitExpired) {
@@ -107,7 +107,7 @@ export async function cmdFamily(args: ParsedArgs): Promise<number> {
       emit(args, {
         ok: false, ...(w.requestId !== undefined ? { requestId: w.requestId } : {}),
         error: { code: w.code, message: w.message, ...(w.hint !== undefined ? { hint: w.hint } : {}) },
-        human: () => console.error(`lares tiddler get --meme: ${w.message}`),
+        human: () => console.error(`tiddler get --meme: ${w.message}`),
       });
       return exitFor(w.code);
     }
@@ -115,7 +115,7 @@ export async function cmdFamily(args: ParsedArgs): Promise<number> {
     emit(args, {
       ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
       error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
-      human: () => console.error(`lares tiddler get --meme: ${f.message}`),
+      human: () => console.error(`tiddler get --meme: ${f.message}`),
     });
     return exitFor(f.code);
   }

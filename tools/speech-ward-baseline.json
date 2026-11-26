@@ -19,9 +19,9 @@
     "lararium-mesh": 39,
     "lararium-node": 52,
     "lararium-sensorium": 14,
-    "lararium-tw5": 35,
+    "lararium-tw5": 34,
     "lararium-web": 4,
-    "lares-cli": 42
+    "lares-cli": 39
   },
   "silent": [
     "tree-sitter-memetic-wikitext"
