@@ -36,6 +36,7 @@ import { checkoutTracking } from "./checkout-carriers.js";
 import { readBackTempCarriers, TempLayerHousekeeper } from "./temp-layer.js";
 import { loadLaresConfig, tempExpiryDays, tempProjectionConsented } from "./lares-config.js";
 import { SHORE_VERB, answerShore } from "./shore-verb.js";
+import { layersBeneathOf, removeInOwnLayer, viewLeaves } from "./shore-remove-door.js";
 import { bagProjectedEvent } from "./journal-append-gate.js";
 
 export function hostEvent(wikiUri: string, listenable: string, payload: Record<string, string | number | boolean>) {
@@ -302,10 +303,15 @@ export function mountDiskProjection(
   // the audit row and the live alert, and the set's end clears it.
   onPendingRemoval: (info) => ctx.post(hostEvent(ctx.wikiUri, "confluence:pending-removal", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "pending-removal", bagId: info.bagId, uri: info.uris[0] ?? "(none)", reason: info.reason, standoff: info.key })),
   onPendingRemovalResolved: (info) => ctx.post(hostEvent(ctx.wikiUri, "confluence:pending-removal-resolved", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "pending-removal", bagId: info.bagId, uri: "(none)", reason: "resolved", standoff: info.key, resolved: true })),
-  // THE `remove` ANSWER'S DELETE DOOR: a hand's delete of the carrier root in this island's wiki. The wiki
-  // shore carries it like any hand delete: its adaptor routes the tombstone (the working layer, shadowing
-  // canon) and removes the slot children.
-  removeCarrier: (uri) => { ctx.tw5.$tw.wiki.deleteTiddler(uri); },
+  // THE `remove` ANSWER'S DOOR: the carrier family leaves the bag whose mirror lost its file, in that bag's own layer
+  // (`shore-remove-door.ts`), never in the working layer a browser's save takes: a plain retract where no layer beneath
+  // holds the title, a kāpae in that bag where one does, so a shadow file sits in that bag's own mirror. The door returns
+  // once the wiki's view stops answering the carrier from the bag, or its bound passes; the projector reads it back.
+  removeCarrier: async (uri, bagId) => {
+    await removeInOwnLayer(ctx.composite, { kind: "lares-verb", requestId: `shore-remove:${uri}` })(uri, bagId);
+    await viewLeaves(ctx.tw5.$tw.wiki as unknown as Parameters<typeof viewLeaves>[0], uri, bagId);
+  },
+  layersBeneath: layersBeneathOf(ctx.composite),
   // WHAT THE DISK BYTES SAY — `render(parse(disk))`, the `≈` seat the projecting leg of
   // the Confluence has no parse of its own to compute. ONE door, the pure subpath (the
   // barrel drags wasm the plugin build cannot bundle, and this is the same congruence the

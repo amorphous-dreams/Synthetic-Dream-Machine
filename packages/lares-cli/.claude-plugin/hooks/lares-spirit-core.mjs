@@ -18,7 +18,7 @@ import { mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, rmdirSy
 import { homedir } from "node:os";
 import { dirname, join, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { TERM_GRACE_MS, observation, observeArgv, spawnRead } from "./lares-wake-core.mjs";
+import { OWED_READ, TERM_GRACE_MS, observation, observeArgv, spawnRead } from "./lares-wake-core.mjs";
 
 /**
  * The carry's name, a pair: the command spelling (the door's verb, its stage address) and the display spelling people read
@@ -91,19 +91,40 @@ export async function settle(read, budgetMs) {
   return null;
 }
 
-/** Does the vessel answer up? The gate every door read waits on: down, unread or late reads as no. */
-export async function vesselUp(run) {
-  const seen = await settle(run(observeArgv()), OBSERVE_BUDGET_MS);
-  return seen !== null && observation(seen).up;
+/**
+ * What the vessel's observation reads: `up`, `down` (its own answer says node.up false), or `owed` (no answer whole inside the
+ * budget). One retry rides the event the first ask's close leaves (it stopped), never a sleep. Only `down` names a stand.
+ */
+export async function vesselReading(run, asks = 2) {
+  for (let ask = 0; ask < asks; ask += 1) {
+    const seen = await settle(run(observeArgv()), OBSERVE_BUDGET_MS);
+    const read = seen === null ? { up: false, owed: true } : observation(seen);
+    if (read.up) return "up";
+    if (!read.owed) return "down";
+  }
+  return "owed";
 }
+
+/** Does the vessel answer up? The gate every door read waits on; an owed answer reads as no here, and `vesselReading` tells the two apart. */
+export const vesselUp = async (run) => (await vesselReading(run, 1)) === "up";
 
 /** One shell word, single-quoted: what every suggested command wraps a title or a line in. */
 export const shq = (word) => `'${String(word).replace(/'/g, `'\\''`)}'`;
 
 /** The longest slug a pet name holds; a title's slug past it would collide once cut, so it names no familiar. */
 export const SLUG_CHARS = 62;
-/** A title's whole slug, uncut. */
-export const rawSlug = (title) => String(title ?? "").trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
+/**
+ * A title split by the Circle's instance grammar: `<pet>#<n>` names instance n of the pet, so the pet part reads as the title
+ * and the instance rides beside it (`Lares-Alpha#00003` -> pet title `Lares-Alpha`, instance `00003`). A title with no
+ * `#<n>` suffix carries no instance.
+ */
+export function titleParts(title) {
+  const text = String(title ?? "").trim();
+  const m = /^(.*\S)\s*#(\d{1,8})$/.exec(text);
+  return m ? { title: m[1], instance: m[2] } : { title: text, instance: null };
+}
+/** A title's whole slug, uncut; an instance suffix never joins the slug. */
+export const rawSlug = (title) => titleParts(title).title.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
 /** A slug of a session title, as a pet name reads; null where none forms, or where it runs past a pet name's length. */
 export function titleSlug(title) {
   const slug = rawSlug(title);
@@ -155,8 +176,10 @@ export function titleLine(state, title) {
   if (raw.length > SLUG_CHARS) return `this session's title "${named}" names no familiar: its slug runs ${raw.length} chars, past the ${SLUG_CHARS} a pet name holds, and a cut slug could collide with another's.`;
   const slug = titleSlug(title);
   if (slug === null) return null;
-  return `this session's title reads "${named}" and names ${slug} as its own familiar, if the operator named this session so, or a record stands under that name; no wake has seated a pet in this session yet. ` +
-    `Read its card (a starter offered where no record stands): lares spirit om ${slug} --title ${shq(named)}`;
+  const { instance } = titleParts(title);
+  const who = instance === null ? slug : `${slug}#${instance}`;
+  return `this session's title reads "${named}" and names ${who} as its own familiar${instance === null ? "" : ` (instance ${instance} of ${slug}; it wakes from ${slug}'s shrine)`}, if the operator named this session so, or a record stands under that name; no wake has seated a pet in this session yet. ` +
+    `Read its card (a starter offered where no record stands): lares spirit om ${slug} --title ${shq(titleParts(title).title)}`;
 }
 
 /**
@@ -166,7 +189,7 @@ export function titleLine(state, title) {
 export const sessionPet = (state, seated) => (typeof state?.pet === "string" && PET.test(state.pet) ? state.pet : typeof state?.offer === "string" && state.offer !== "" ? null : seated);
 
 /** The wake's context: the record `om` answered, or one line naming why it did not and the read that cures it. */
-export function omContext(pet, result, mismatch = null) {
+export function omContext(pet, result, mismatch = null, instance = null) {
   const cure = `read it by hand: lares spirit om ${pet}`;
   let text;
   if (result === null) text = `Lares spirit om · ${pet}: no answer inside the wake's budget; ${cure}`;
@@ -178,11 +201,15 @@ export function omContext(pet, result, mismatch = null) {
       text = `Lares spirit om · ${pet}: ${why.slice(0, 600)}; ${cure}`;
     }
   }
-  return (mismatch === null ? text : `${mismatch}\n${text}`).slice(0, 9000);
+  const who = instance === null ? "" : `Lares spirit om · this session wakes as ${instance}, an instance of ${pet}, from ${pet}'s shrine.\n`;
+  return (who + (mismatch === null ? text : `${mismatch}\n${text}`)).slice(0, 9000);
 }
 
 /** The wake's one line where the vessel answers no up: nothing read, nothing run offline. */
 export const omDownLine = (pet) => `Lares spirit om · ${pet}: the vessel answers no up, so the wake read nothing; once it stands (tools/lares-container.sh up), read it: lares spirit om ${pet}`;
+
+/** The wake's one line where the vessel's observation stayed owed: the hearth may stand; the read is the arm's to take. */
+export const omOwedLine = (pet) => `Lares spirit om · ${pet}: the hearth did not answer the wake in time, so its record stays owed (never read as dark); take it now: \`${OWED_READ.replace("<pet>", pet)}\``;
 
 /**
  * What the compaction asks of its summary where a familiar stands: the carry in fixed slots, so a filter (or a chanter) sees

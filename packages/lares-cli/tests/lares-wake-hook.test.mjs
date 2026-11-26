@@ -121,15 +121,15 @@ if (process.argv[2] === "mcp") {
     await t.test("names a shim that failed with no answer, by its exit, and never calls that a vessel down", () => {
       writeFileSync(shim, '#!/bin/sh\nexit 127\n');
       const context = run();
-      assert.match(context, /vessel unobserved: the shim exited 127 with no answer/);
-      assert.doesNotMatch(context, /vessel down/);
-      assert.match(context, /memory index skipped: no vessel answers/);
+      assert.match(context, /the hearth did not answer the wake in time \(the shim exited 127 with no answer\)/);
+      assert.doesNotMatch(context, /vessel down|stand it with/);
+      assert.match(context, /memory index owed/);
       assert.doesNotMatch(context, /memory index unread/);
     });
     await t.test("names an answer it could not read", () => {
       writeFileSync(shim, '#!/bin/sh\necho "compose: pulling"\n');
       const context = run();
-      assert.match(context, /vessel unobserved: the shim's answer did not parse/);
+      assert.match(context, /the hearth did not answer the wake in time \(the shim's answer did not parse/);
       assert.doesNotMatch(context, /vessel down/);
     });
     await t.test("reports down only when the vessel itself answers down, and skips the index read", () => {
@@ -144,7 +144,8 @@ if (process.argv[2] === "mcp") {
       writeFileSync(shim, '#!/bin/sh\nsleep 30\n');
       writeFileSync(join(bin, "lares.mjs"), "setTimeout(() => {}, 30000);\n");
       const context = run();
-      assert.match(context, /vessel observation timed out/);
+      assert.match(context, /the hearth did not answer the wake in time/);
+      assert.doesNotMatch(context, /stand it with/);
       assert.match(context, /Lares homes: lares home read gave no answer inside the wake's budget/);
     });
   } finally {

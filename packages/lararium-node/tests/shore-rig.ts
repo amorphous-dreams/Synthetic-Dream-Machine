@@ -34,6 +34,7 @@ import type { SubmitResult } from "../../lares-cli/src/verb-result.js";
 import { boundOutcomeOutput } from "../../lararium-tw5/src/verb-vm.js";
 import { LarDiskProjector, type LarDiskProjectorOptions } from "../src/disk-projector.js";
 import { SyncedTree } from "../src/synced-tree.js";
+import { layersBeneathOf, removeInOwnLayer } from "../src/shore-remove-door.js";
 
 /** `bags/lares` is system canon: the suite stands as a Kahu hand (a counted admission AND a sentinel membership). */
 const KAHU = await kahuHand();
@@ -248,7 +249,8 @@ export class ShoreRig {
       ...({
         onPendingRemoval: (info: Record<string, unknown>) => { this.pendings.push(info); },
         onPendingRemovalResolved: (info: Record<string, unknown>) => { this.pendingsResolved.push(info); },
-        removeCarrier: (uri: string) => this.wikiDelete(uri),
+        removeCarrier: (uri: string) => this.shoreRemove(uri),
+        layersBeneath: layersBeneathOf(this.composite),
       } as Partial<LarDiskProjectorOptions>),
       ...(opts.extra ?? {}),
     });
@@ -282,6 +284,28 @@ export class ShoreRig {
         $tw.wiki.deleteTiddler(title);
         await this.store.tombstone(title, { kind: "lares-verb", requestId: `rig-delete-${this.removed.length}` });
       }
+      if (titles.length > 0) await dispatched;
+    } finally {
+      $tw.wiki.removeEventListener("change", listener);
+    }
+  }
+
+  /**
+   * THE SHORE'S REMOVE, as the island wires it (`shore-remove-door.ts`): the family leaves the bag's own layer, a plain
+   * retract where no layer beneath holds the title, and the wiki comes to read it gone. The rig's wiki rides no adaptor,
+   * so the rig lands the view's half itself.
+   */
+  async shoreRemove(uri: string): Promise<void> {
+    this.removed.push(uri);
+    await removeInOwnLayer(this.composite, { kind: "lares-verb", requestId: `rig-shore-remove-${this.removed.length}` })(uri, RIG_BAG);
+    const $tw = this.$tw;
+    let seen!: () => void;
+    const dispatched = new Promise<void>((resolve) => { seen = resolve; });
+    const listener = (): void => { seen(); };
+    $tw.wiki.addEventListener("change", listener);
+    try {
+      const titles = this.titlesOf(uri);
+      for (const title of titles) $tw.wiki.deleteTiddler(title);
       if (titles.length > 0) await dispatched;
     } finally {
       $tw.wiki.removeEventListener("change", listener);

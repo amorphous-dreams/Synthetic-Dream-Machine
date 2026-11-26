@@ -17,7 +17,8 @@
  *   take-records   take the records' side of one standoff, named by its key
  *   render         answer the records' render one standoff weighed, named by its key (`take-disk` merges it)
  *   restore        write a vanished file back from the records and pin its base
- *   remove         delete the vanished carrier in the wiki, by the wiki shore's own delete door
+ *   remove         take the vanished carrier out of its own bag's layer: a plain retract where no layer beneath
+ *                  holds the title, a kāpae (asked under `kapae: true`) where one does
  *   census         name every carrier the projector has not settled: each its queue still owes (`pending`) and
  *                  each whose latest reconcile threw (`failed`), after a bounded wait for the queue to drain
  *                  (`lares vessel census`, read before a stop); its first page also names, by path, each file a
@@ -80,6 +81,7 @@ import { askerRefusal, handCodesOf, handRefusalOf } from "./hand-act-gate.js";
 import type { LarDiskProjector } from "./disk-projector.js";
 import { basePathsNamed } from "./ingest-scan.js";
 import { PENDING_UNREAD } from "./synced-tree.js";
+import { isHouseCanonBag } from "@lararium/mesh/kahu-canon-reach";
 
 /** The verb an island answers at its disk shore. */
 export const SHORE_VERB = "shore";
@@ -522,7 +524,14 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
     if (after === null) {
       await projector.sense([...new Set([...projector.standing().map((s) => s.uri), ...projector.pendingRemovals().map((p) => p.uri), ...projector.vanished(), ...(only ?? [])])]);
     }
-    return { ok: true, op, ...shoreList(projector, bag, only, { after }) };
+    // A PENDING ROW NAMES THE LAYERS BENEATH that hold its title (`beneath`), so the confirmation a person reads names
+    // the kāpae a removal would raise; a row with none beneath reads as it always did (its removal retracts to absent).
+    const listed = shoreList(projector, bag, only, { after });
+    const pending = await Promise.all(listed.pending.map(async (row) => {
+      const beneath = await projector.beneathOf(row.bagId, row.uri);
+      return beneath.length > 0 ? { ...row, beneath } : row;
+    }));
+    return { ok: true, op, ...listed, pending };
   }
   if (op === "sense") {
     // No carrier named = every carrier this island mirrors. The answer counts what stands; the rows ride
@@ -575,13 +584,18 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
         ? { ok: false, op, refusal: "not-pending", why: all ? "no carrier stands pending at this island's shore" : `${uris.join(", ")} stand(s) in no pending removal at this island's shore`, count: 0 }
         : { ok: false, op, refusal: "shore-answer-incomplete", why: `pending removals stand in ${bags.length} bags (${bags.join(", ")}); name one with \`bag\`` };
     }
-    const answer = await projector.answerRemovals(op, target, { ...(all ? { all: true } : { uris }), ...(count !== undefined ? { count } : {}) });
+    // A REMOVE INTO HOUSE CANON NAMES ITS BAG: the record leaves that bag's own layer, and the routed gate reads the Kahu
+    // hand only for a bag the envelope names (`gateRoutedVerb`). The CLI names it from the rows it read.
+    if (op === "remove" && bag === null && isHouseCanonBag(target)) {
+      return { ok: false, op, refusal: "remove-names-its-bag", why: `${target} holds house canon, and a removal from it names that bag so the Kahu gate reads it: \`lares shore remove ${all ? "--all --count <n>" : uris.join(" ")} --bag ${target}\`` };
+    }
+    const answer = await projector.answerRemovals(op, target, { ...(all ? { all: true } : { uris }), ...(count !== undefined ? { count } : {}), ...(args["kapae"] === true ? { kapae: true } : {}) });
     // The counts ride beside the rows: past the outcome's row cap the rows stay behind, and the counts still
     // say how many carriers the answer reached and how many it left pending.
     // A carrier another bag answers now left this bag's pending set, and the meme still stands: it rides apart.
     return answer.ok
-      ? { ok: true, op, bag: target, done: answer.done, doneCount: answer.done.length, left: answer.left, leftCount: answer.left.length, ...(answer.unshadowed.length > 0 ? { unshadowed: answer.unshadowed, unshadowedCount: answer.unshadowed.length } : {}) }
-      : { ok: false, op, bag: target, refusal: answer.refusal, why: answer.why, ...(answer.count !== undefined ? { count: answer.count } : {}) };
+      ? { ok: true, op, bag: target, done: answer.done, doneCount: answer.done.length, left: answer.left, leftCount: answer.left.length, ...(answer.unshadowed.length > 0 ? { unshadowed: answer.unshadowed, unshadowedCount: answer.unshadowed.length } : {}), ...(answer.raised.length > 0 ? { raised: answer.raised, raisedCount: answer.raised.length } : {}) }
+      : { ok: false, op, bag: target, refusal: answer.refusal, why: answer.why, ...(answer.count !== undefined ? { count: answer.count } : {}), ...(answer.raising !== undefined ? { raising: answer.raising } : {}) };
   }
   if (op === "take-records") {
     const uri = text(args["uri"]);

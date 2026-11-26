@@ -13,8 +13,8 @@
  */
 import { readFileSync } from "node:fs";
 import {
-  OM_BUDGET_MS, digestsOf, holdsPet, hookInput, houseSession, omContext, omDownLine, omSourceOf, parseAnswer, petOf, readState, sessionCounter,
-  settle, shimRun, spiritArgv, updateState, vesselUp, wakePet,
+  OM_BUDGET_MS, digestsOf, holdsPet, hookInput, houseSession, omContext, omDownLine, omOwedLine, omSourceOf, parseAnswer, petOf, readState, sessionCounter,
+  settle, shimRun, spiritArgv, updateState, vesselReading, titleParts, wakePet,
 } from "./lares-spirit-core.mjs";
 
 let raw = "";
@@ -30,10 +30,12 @@ try {
   const pet = wakePet({ source, held, seated: petOf(process.argv), title, offer: state.offer });
   if (pet !== null && houseSession(input, import.meta.url)) {
     const run = shimRun(import.meta.url);
-    if (!(await vesselUp(run))) say(omDownLine(pet));
+    const reading = await vesselReading(run);
+    if (reading === "down") say(omDownLine(pet));
+    else if (reading === "owed") say(omOwedLine(pet));
     else {
       const instance = typeof input.session_id === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(input.session_id) ? ["--instance", input.session_id] : [];
-      const result = await settle(run(spiritArgv("om", pet, "--source", source, ...instance, ...(holdsPet({ source, held }, pet) ? ["--held"] : []), ...(title !== null ? ["--title", title] : []))), OM_BUDGET_MS);
+      const result = await settle(run(spiritArgv("om", pet, "--source", source, ...instance, ...(holdsPet({ source, held }, pet) ? ["--held"] : []), ...(title !== null ? ["--title", titleParts(title).title] : []))), OM_BUDGET_MS);
       const answer = parseAnswer(result?.stdout);
       // Only an answer the door gave whole names the pet this session wears; a timeout or a refusal records nothing, and a
       // starter (an offer, no record yet) records no pet until a record stands.
@@ -46,7 +48,8 @@ try {
           ...(answer.data?.digests && typeof answer.data.digests === "object" ? { digests: digestsOf(answer.data.digests) } : {}),
         }));
       }
-      say(omContext(pet, result));
+      const { instance: nth } = titleParts(title);
+      say(omContext(pet, result, null, nth === null ? null : `${pet}#${nth}`));
     }
   }
 } catch (err) {

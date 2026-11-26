@@ -62,6 +62,26 @@ test("the pure parts", async (t) => {
     assert.equal(titleLine({ pet: null }, "!!!"), null);
     assert.match(titleLine({ pet: null }, "x".repeat(70)), /runs 70 chars, past the 62 a pet name holds/);
   });
+  await t.test("wake-splits-the-instance: a `#n` title wakes the instance from its pet's shrine, never a starter for the suffixed slug", async () => {
+    const { titleParts, vesselReading, omOwedLine } = await import(resolve("packages/lares-cli/.claude-plugin/hooks/lares-spirit-core.mjs"));
+    assert.deepEqual(titleParts("Lares-Alpha#00003"), { title: "Lares-Alpha", instance: "00003" });
+    assert.deepEqual(titleParts("Lares-Alpha"), { title: "Lares-Alpha", instance: null });
+    assert.equal(wakePet({ source: "startup", held: null, seated: null, title: "Lares-Alpha#00003" }), "lares-alpha");
+    const line = titleLine({ pet: null }, "Lares-Alpha#00001");
+    assert.match(line, /names lares-alpha#00001 as its own familiar \(instance 00001 of lares-alpha/);
+    assert.match(line, /lares spirit om lares-alpha --title 'Lares-Alpha'/);
+    assert.doesNotMatch(line, /lares-alpha-00001/);
+    assert.equal(titleLine({ pet: "lares-alpha" }, "Lares-Alpha#00003"), null);
+    assert.match(omContext("lares-alpha", { stdout: JSON.stringify({ ok: true, data: { text: "card" } }), code: 0 }, null, "lares-alpha#00003"), /wakes as lares-alpha#00003, an instance of lares-alpha/);
+    // wake-reads-owed: a slow observation reads owed after one retry, a down answer reads down.
+    const hungRead = { done: new Promise(() => {}), kill() {} };
+    let asks = 0;
+    assert.equal(await vesselReading(() => { asks += 1; return hungRead; }), "owed");
+    assert.equal(asks, 2);
+    assert.equal(await vesselReading(() => ({ done: Promise.resolve({ stdout: JSON.stringify({ data: { node: { up: false } } }), code: 0 }), kill() {} })), "down");
+    assert.match(omOwedLine("lares-alpha"), /owed \(never read as dark\); take it now: `lares spirit om lares-alpha`/);
+    assert.doesNotMatch(omOwedLine("lares-alpha"), /container/);
+  });
   await t.test("a counter's read-modify-write keeps every key another hook wrote", () => {
     const dir = mkdtempSync(join(tmpdir(), "counter-"));
     try {

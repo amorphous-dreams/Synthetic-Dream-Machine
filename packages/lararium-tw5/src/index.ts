@@ -135,7 +135,7 @@ export type { ActionHandlerOptions } from "./action-handler.js";
 export { exportMemeText, exportCarrierFile, exportRecordCarrierFile } from "./meme-write.js";
 export { armRenderedTiddlers, hasRenderedTiddlers, marksRendered, renderedTitleOf, renderTypeOf, RENDER_TYPE_FIELD, RENDER_TITLE_FIELD, RENDERED_TITLE_SUFFIX, type RenderedTiddlerPorts } from "./rendered-tiddler.js";
 export {
-  familyRefsOf, familyViewOf, wikiFamilyView, surfaceOrphanAlert, tendOrphanAlert, tendOrphanAlerts, renameFamilyInWiki, retitleSlotsInWiki,
+  familyRefsOf, familyViewOf, wikiFamilyView, removeMeme, surfaceOrphanAlert, tendOrphanAlert, tendOrphanAlerts, renameFamilyInWiki, retitleSlotsInWiki,
   type FamilyRenameWiki, type MemeAlertWiki,
 } from "./place-meme.js";
 export type { CarrierFile } from "./meme-write.js";
