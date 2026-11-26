@@ -13,11 +13,12 @@
  * and its affordances from the house. `WAKE_LINE` carries the same pattern as the mesh core's (`spirit-summons.ts`); this
  * tool's suite reads that source and the core's suite runs its `wakeLine` through `launchPlan`, so neither drifts alone.
  *
- * THE CAP GRANTS NO PERMISSION OF ITS OWN. A headless process holds no hand to answer a permission ask, so a tool its settings
- * never allowed gets denied. Any wider reach rides the MANDATE: its hash-covered `allowed-tools` field arrives here as
- * `--allowed-tools <rules>` (comma-joined tool rules, e.g. `Bash(lares:*)`) and passes through to the binary exactly; a launch
- * naming none passes no permission flag at all. A value outside `ALLOWED_TOOLS` refuses `launch-allowed-tools-malformed`. The
- * cap passes no permission mode and skips no check.
+ * THE REACH RIDES IN FROM THE HOUSE. A headless process holds no hand to answer a permission ask, so a tool its settings never
+ * allowed gets denied. `lares spirit summon` resolves the instance's reach (the guest's reach, the one table `GUEST_REACH` in
+ * the mesh core, as the mandate's hash-covered `allowed-tools` narrowed or widened it) and hands it here as
+ * `--allowed-tools <rules>`, which passes through to the binary exactly; this tool keeps no table of its own, so the reach
+ * widens in one place. A bare run naming none passes no permission flag. A value outside `ALLOWED_TOOLS` refuses
+ * `launch-allowed-tools-malformed`. The cap passes no permission mode and skips no check.
  *
  *   claude-cli   `claude -p <the one line> [--allowedTools <rules>] [--model <slug>]`, detached, in `--cwd` (default: the
  *                caller's; a directory the host holds none of refuses `launch-workdir-absent`), its stream appended to `--log`
@@ -36,7 +37,7 @@ export const WAKE_LINE = /^wake as ([a-z0-9][a-z0-9-]{0,62})#([A-Za-z0-9_-]{1,12
 export const MODEL_SLUG = /^[A-Za-z0-9][A-Za-z0-9._:[\]-]{0,63}$/;
 
 /** The tool rules a mandate names (the mesh core carries the same pattern): comma-joined `Tool` or `Tool(spec)`, so the value rides one argv word and never reads as a flag. */
-export const ALLOWED_TOOLS = /^[A-Za-z][A-Za-z0-9_]{0,63}(?:\([^(),\n]{1,200}\))?(?:,[A-Za-z][A-Za-z0-9_]{0,63}(?:\([^(),\n]{1,200}\))?){0,15}$/;
+export const ALLOWED_TOOLS = /^[A-Za-z][A-Za-z0-9_]{0,63}(?:\([^(),\n]{1,200}\))?(?:,[A-Za-z][A-Za-z0-9_]{0,63}(?:\([^(),\n]{1,200}\))?){0,63}$/;
 
 /** Each launch cap: the binary it starts and the argv it builds from the one line and the model. */
 export const LAUNCH_CAPS = {

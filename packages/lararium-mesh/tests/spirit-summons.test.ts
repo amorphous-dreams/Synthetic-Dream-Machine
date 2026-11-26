@@ -267,23 +267,36 @@ describe("one wake line: the core writes it and the host launch tool takes it", 
   });
 });
 
-describe("the mandate names the tools a headless instance may use", () => {
-  const granted = land({ pet: "cold-reader", instance: "00002", offerer: "hand", "allowed-tools": "Bash(lares:*)" });
-  test("allowed-tools rides the hash, and a mandate naming none reads null", () => {
-    const bare = land({ pet: "cold-reader", instance: "00002", offerer: "hand" });
-    expect(granted.w.hash).not.toBe(bare.w.hash);
-    const m = S.mandateRead(granted.w.uri, granted.stored, granted.w.hash);
-    expect(m.allowedTools).toBe("Bash(lares:*)");
-    expect(S.mandateWakeLines(m)).toContain("allowed tools: Bash(lares:*)");
+describe("a summoned instance arrives as a guest: its reach", () => {
+  const read = (covered: Partial<Record<S.MandateField, string>>) => { const l = land({ pet: "cold-reader", instance: "00002", offerer: "hand", ...covered }); return S.mandateRead(l.w.uri, l.stored, l.w.hash); };
+  test("the guest's reach stands as one table: the doors, the file tools, and the shell for git, node and pnpm", () => {
+    expect([...S.GUEST_REACH]).toEqual(["Bash(lares:*)", "Bash(git:*)", "Bash(node:*)", "Bash(pnpm:*)", "Read", "Edit", "Write", "Grep", "Glob"]);
+    expect(S.ALLOWED_TOOLS.test(S.GUEST_REACH.join(","))).toBe(true);
+  });
+  test("a mandate naming no allowed tools launches with the guest's reach", () => {
     expect(arm.allowedTools).toBeNull();
+    expect(S.launchReach(arm)).toBe(S.GUEST_REACH.join(","));
+    expect(S.mandateWakeLines(arm)).toContain(`reach: ${S.GUEST_REACH.join(" ")}`);
+  });
+  test("a bare list narrows: the reach reads exactly the mandate's list", () => {
+    const m = read({ "allowed-tools": "Bash(lares:*),Read" });
     expect(S.launchHolds(m)).toBeNull();
+    expect(S.launchReach(m)).toBe("Bash(lares:*),Read");
+  });
+  test("a list led by + widens: the guest's reach, then each rule it lacks, once", () => {
+    const m = read({ "allowed-tools": "+WebFetch,Read,Bash(docker:*)" });
+    expect(S.launchHolds(m)).toBeNull();
+    expect(S.launchReach(m)).toBe(`${S.GUEST_REACH.join(",")},WebFetch,Bash(docker:*)`);
+    expect(S.ALLOWED_TOOLS.test(S.launchReach(m))).toBe(true);
+  });
+  test("allowed-tools rides the hash", () => {
+    expect(new Set([read({}).hash, read({ "allowed-tools": "Read" }).hash, read({ "allowed-tools": "+Read" }).hash]).size).toBe(3);
   });
   test("a value that reads as a flag, nests a parenthesis or trails a comma refuses mandate-allowed-tools-malformed with its cure", () => {
-    for (const rules of ["--dangerously-skip-permissions", "Bash(a(b))", "Bash(lares:*),", "Bash(lares:*) --permission-mode x"]) {
+    for (const rules of ["--dangerously-skip-permissions", "Bash(a(b))", "Bash(lares:*),", "Bash(lares:*) --permission-mode x", "+", "++Read"]) {
       const r = S.launchHolds({ ...arm, allowedTools: rules })!;
       expect(r.code, rules).toBe("mandate-allowed-tools-malformed");
       expect(r.message).toContain("--allowed-tools 'Bash(lares:*)'");
     }
-    expect(S.launchHolds({ ...arm, allowedTools: "Bash(lares:*),Read,Bash(git status)" })).toBeNull();
   });
 });

@@ -58,7 +58,7 @@ vi.mock("../src/env.js", async (orig) => ({
 import { cmdSpirit } from "../src/commands/spirit.js";
 import type { LaunchAnswer, LaunchAsk } from "../src/commands/spirit-summon.js";
 import { COMMANDS } from "../src/bin/lares.js";
-import { lanesHeld, lanesOf, mandateWrite, refLine, summonsOf, type MandateField } from "@lararium/mesh/spirit-summons";
+import { GUEST_REACH, lanesHeld, lanesOf, mandateWrite, refLine, summonsOf, type MandateField } from "@lararium/mesh/spirit-summons";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 const M = "lar:///ha.ka.ba/kahua/memory/";
@@ -460,21 +460,30 @@ describe("the mandate names the workdir and the log", () => {
   });
 });
 
-describe("the mandate, never the cap, names a headless instance's permission", () => {
-  test("a mandate naming no allowed tools launches with none asked of the host", async () => {
+describe("a summoned instance arrives as a guest: the reach it launches with", () => {
+  const GUEST = GUEST_REACH.join(",");
+  test("a mandate naming no allowed tools launches with the guest's reach, and the edge records it", async () => {
     const m = arm(null);
     const cap = stub();
     const r = await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }), { launch: cap.launch });
-    expect(cap.asks[0]!.allowedTools).toBeNull();
-    expect(data(r)["allowedTools"]).toBeNull();
+    expect(cap.asks[0]!.allowedTools).toBe(GUEST);
+    expect(fieldsOf(summonsOf(m.hash))!["launched-reach"]).toBe(GUEST);
+    expect(data(r)["reach"]).toBe(GUEST);
   });
-  test("the allowed tools a mandate names land as a covered field and ride the launch exactly", async () => {
-    const landed = data(await run(argv(["mandate", "cold-reader#00002"], { text: WORDS, "allowed-tools": "Bash(lares:*)" })));
-    expect(fieldsOf(String(landed["uri"]))).toMatchObject({ "allowed-tools": "Bash(lares:*)" });
-    expect(landed["hash"]).not.toBe(data(await run(argv(["mandate", "cold-reader#00002"], { text: WORDS })))["hash"]);
+  test("a narrowing mandate launches with exactly its list", async () => {
+    const landed = data(await run(argv(["mandate", "cold-reader#00002"], { text: WORDS, "allowed-tools": "Bash(lares:*),Read" })));
+    expect(fieldsOf(String(landed["uri"]))).toMatchObject({ "allowed-tools": "Bash(lares:*),Read" });
     const cap = stub();
     await run(argv(["summon", "cold-reader#00002"], { mandate: String(landed["ref"]) }), { launch: cap.launch });
-    expect(cap.asks[0]!.allowedTools).toBe("Bash(lares:*)");
+    expect(cap.asks[0]!.allowedTools).toBe("Bash(lares:*),Read");
+    expect(fieldsOf(summonsOf(String(landed["hash"])))!["launched-reach"]).toBe("Bash(lares:*),Read");
+  });
+  test("a widening mandate launches with the guest's reach and its own rules", async () => {
+    const landed = data(await run(argv(["mandate", "cold-reader#00002"], { text: WORDS, "allowed-tools": "+WebFetch,Read" })));
+    const cap = stub();
+    await run(argv(["summon", "cold-reader#00002"], { mandate: String(landed["ref"]) }), { launch: cap.launch });
+    expect(cap.asks[0]!.allowedTools).toBe(`${GUEST},WebFetch`);
+    expect(fieldsOf(summonsOf(String(landed["hash"])))!["launched-reach"]).toBe(`${GUEST},WebFetch`);
   });
   test("a flag-shaped value refuses mandate-allowed-tools-malformed before anything lands", async () => {
     const before = h.store.size;

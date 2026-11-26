@@ -2,7 +2,7 @@
  * `lares spirit mandate | summon | handback <pet>#<n>` — THE HOUSE STARTS ITS OWN ARMS (plan/mandate-summons).
  *
  *   mandate   `<pet>#<n> --file <carrier|-> | --text <words> [--parent <uri>@<hash>] [--model <slug>] [--cap <launch cap>]
- *              [--allowed-tools <rules>] [--workdir <host dir>] [--log <host file>]
+ *              [--allowed-tools <rules | +rules>] [--workdir <host dir>] [--log <host file>]
  *              [--reads <filters, one per line>] [--links <titles, one per line>] [--paths <words>] [--caps <words>]
  *              [--grants <words>] [--lanes <n>] [--handback <shape>]`
  *             lands the mandate carrier on the answering face's memory stage at `mandate/<id16>`, keyed by its own hash, and
@@ -29,7 +29,7 @@ import { repoRoot } from "@lararium/mesh/node";
 import { SpiritRefusal, fieldsAndHashOf, secretCount, shq, titlesOf } from "@lararium/mesh/spirit-shrine";
 import { spiritOf } from "@lararium/mesh/spirit-stack";
 import {
-  LANE_ROUNDS, SUMMONS_TAG, edgeRead, edgeWrite, instanceTagOf, laneClaim, laneRelease, laneUnsettled, lanesHeld, lanesOf, lanesWrite,
+  LANE_ROUNDS, SUMMONS_TAG, edgeRead, launchReach, edgeWrite, instanceTagOf, laneClaim, laneRelease, laneUnsettled, lanesHeld, lanesOf, lanesWrite,
   launchHolds, mandateFaceTurned, mandateNames, mandateRead, mandateWakeLines, mandateWrite, recordRefOf, refLine, summonsGranted,
   summonsOf, wakeLine,
   type InstanceTag, type MandateField, type SpiritMandate,
@@ -38,7 +38,7 @@ import { emit } from "../render.js";
 import { DoorUsage, wordOf } from "./door-call.js";
 import type { ParsedArgs } from "../parse-args.js";
 
-/** What a launch asks of the host: the cap, the one line, the model, the tool rules the mandate names (null: no permission flag), where the process stands, and where its stream lands (null: nowhere). */
+/** What a launch asks of the host: the cap, the one line, the model, the reach the instance holds (the guest's, or as its mandate shaped it; null: no permission flag), where the process stands, and where its stream lands (null: nowhere). */
 export interface LaunchAsk { readonly cap: string; readonly prompt: string; readonly model: string | null; readonly allowedTools: string | null; readonly cwd: string; readonly log: string | null }
 export type LaunchAnswer = { readonly ok: true; readonly pid: number | null } | { readonly ok: false; readonly code: string; readonly message: string };
 /** The launch seam: the host tool by default; a suite names a stub, so no test starts a model. */
@@ -218,7 +218,9 @@ export async function summonInstance(args: ParsedArgs, ctx: SummonCtx): Promise<
     if (decision !== "put" && decision !== "noop") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${edge.uri}, so nothing started; read it: \`lares tiddler get ${shq(edge.uri)} --recipe default\``, 4);
   }
   const cwd = mandate.workdir ?? process.cwd();
-  const started = await ctx.launch({ cap: mandate.launchCap, prompt, model: mandate.model, allowedTools: mandate.allowedTools, cwd, log: mandate.log });
+  // THE GUEST'S REACH, or the mandate's shaping of it; the edge records what the instance launched holding (a receipt, never a gate).
+  const reach = launchReach(mandate);
+  const started = await ctx.launch({ cap: mandate.launchCap, prompt, model: mandate.model, allowedTools: reach, cwd, log: mandate.log });
   if (!started.ok) {
     // A LAUNCH THAT STARTED NOTHING FREES ITS LANE; one whose receipt never came (`launch-cap-failed`) keeps it, since a process may stand.
     if (coordinator !== null && started.code !== "launch-cap-failed") await releaseLane(ctx, "summon", coordinator, edge.uri);
@@ -228,14 +230,14 @@ export async function summonInstance(args: ParsedArgs, ctx: SummonCtx): Promise<
   const live = await fieldsAt(ctx, "summon", edge.uri);
   await ctx.door("summon", "tiddler-put", {
     recipe: RECIPE, title: edge.uri, ...(live.hash !== null ? { base: live.hash } : {}),
-    fields: { launched, "launched-at": ctx.now().toISOString(), "launched-in": cwd, ...(mandate.log === null ? {} : { "launched-log": mandate.log }), ...(started.pid === null ? {} : { "launched-pid": String(started.pid) }) },
+    fields: { launched, "launched-at": ctx.now().toISOString(), "launched-in": cwd, "launched-reach": reach, ...(mandate.log === null ? {} : { "launched-log": mandate.log }), ...(started.pid === null ? {} : { "launched-pid": String(started.pid) }) },
   });
   const stream = mandate.log === null
     ? `its stream lands nowhere (the mandate names no log; a mandate landed with \`--log /absolute/file\` keeps it)`
     : `its stream: ${mandate.log}`;
   emit(args, {
-    ok: true, data: { instance: mandate.tag, mandate: mandate.uri, hash: mandate.hash, edge: edge.uri, decision: "launched", launched, pid: started.pid, prompt, offerer: mandate.offerer, face: mandate.face, allowedTools: mandate.allowedTools, cwd, log: mandate.log },
-    human: () => console.log(`summoned: ${mandate.tag} under ${refLine(mandate.uri, mandate.hash)}\n  launched: ${launched}${started.pid === null ? "" : ` (pid ${started.pid})`} in ${cwd}\n  ${stream}\n  edge: ${edge.uri}\n  the lane frees at its hand-back: lares spirit handback ${shq(mandate.tag)} --record <uri>`),
+    ok: true, data: { instance: mandate.tag, mandate: mandate.uri, hash: mandate.hash, edge: edge.uri, decision: "launched", launched, pid: started.pid, prompt, offerer: mandate.offerer, face: mandate.face, reach, cwd, log: mandate.log },
+    human: () => console.log(`summoned: ${mandate.tag} under ${refLine(mandate.uri, mandate.hash)}\n  launched: ${launched}${started.pid === null ? "" : ` (pid ${started.pid})`} in ${cwd}\n  reach: ${reach.split(",").join(" ")}\n  ${stream}\n  edge: ${edge.uri}\n  the lane frees at its hand-back: lares spirit handback ${shq(mandate.tag)} --record <uri>`),
   });
   return 0;
 }

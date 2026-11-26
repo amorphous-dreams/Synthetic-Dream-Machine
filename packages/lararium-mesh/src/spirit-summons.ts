@@ -44,8 +44,17 @@ export const MODEL_SLUG = /^[A-Za-z0-9][A-Za-z0-9._:[\]-]{0,63}$/;
 export const FACE_INDEX = /^(0|[1-9][0-9]{0,5})$/;
 /** A host path a mandate names (`workdir`, `log`): absolute, one word, so it rides an argv and a field whole. */
 export const HOST_PATH = /^\/[^\s\0]{0,1023}$/;
-/** The tool rules a mandate names (`allowed-tools`): comma-joined `Tool` or `Tool(spec)`; the host launch tool matches the same source. */
-export const ALLOWED_TOOLS = /^[A-Za-z][A-Za-z0-9_]{0,63}(?:\([^(),\n]{1,200}\))?(?:,[A-Za-z][A-Za-z0-9_]{0,63}(?:\([^(),\n]{1,200}\))?){0,15}$/;
+/**
+ * THE GUEST'S REACH: what a summoned instance holds where its mandate names nothing, the one table the operator widens. A guest
+ * at the hearth receives what a spirit on a bench already works with: the house's doors, the ordinary file tools, and the shell
+ * for git, node and pnpm in its workdir. Hand acts (a route, a lei's stringing, a promote, a kāpae's y, the vault) sit outside
+ * every seat already, so no entry here reaches them: the doors read custody on each act.
+ */
+export const GUEST_REACH = ["Bash(lares:*)", "Bash(git:*)", "Bash(node:*)", "Bash(pnpm:*)", "Read", "Edit", "Write", "Grep", "Glob"] as const;
+/** A mandate's `allowed-tools` leading with this mark WIDENS the guest's reach (the union); a bare list names the reach exactly. */
+export const REACH_WIDENS = "+" as const;
+/** A reach as a launch carries it: comma-joined `Tool` or `Tool(spec)`; the host launch tool matches the same source. */
+export const ALLOWED_TOOLS = /^[A-Za-z][A-Za-z0-9_]{0,63}(?:\([^(),\n]{1,200}\))?(?:,[A-Za-z][A-Za-z0-9_]{0,63}(?:\([^(),\n]{1,200}\))?){0,63}$/;
 /** The one line a launch carries, as a pattern: `wakeLine` writes it and the host launch tool matches the same source. */
 export const WAKE_LINE = /^wake as ([a-z0-9][a-z0-9-]{0,62})#([A-Za-z0-9_-]{1,128}): lares spirit om ([a-z0-9][a-z0-9-]{0,62}) --mandate (lar:\/\/\/[^\s@]+)@([0-9a-f]{64})(?: --face (0|[1-9][0-9]{0,5}))?$/;
 
@@ -54,7 +63,8 @@ export const WAKE_LINE = /^wake as ([a-z0-9][a-z0-9-]{0,62})#([A-Za-z0-9_-]{1,12
  * entry per line; `paths`, `caps` and `grants` hold words. `lanes` names the arm-lane ceiling a COORDINATOR's mandate grants its
  * own summonses; `handback-shape` names what the instance hands back. `workdir` names the host directory the instance starts in and
  * `log` the host file its stream appends to: both ride the hash, so the same mandate starts in the same place. `allowed-tools`
- * names the tool rules the launch grants a headless instance; a mandate naming none grants no permission flag at all.
+ * shapes the reach the launch grants: none named, the instance holds `GUEST_REACH`; a bare list names the reach exactly (a
+ * coordinator narrows for a reader); a list led by `+` widens the guest's reach by its rules (a coordinator widens for a builder).
  */
 export const MANDATE_FIELDS = ["pet", "instance", "offerer", "parent", "face", "model", "launch-cap", "allowed-tools", "workdir", "log", "reads", "links", "paths", "caps", "grants", "lanes", "handback-shape"] as const;
 export type MandateField = (typeof MANDATE_FIELDS)[number];
@@ -109,7 +119,7 @@ export interface SpiritMandate {
   /** The face the mandate echoes (a handle index); null where it names none. */
   readonly face: number | null;
   readonly model: string | null; readonly launchCap: string;
-  /** The tool rules the launch passes to the instance, exactly as named; null: the launch passes no permission flag. */
+  /** The mandate's own word on its reach: a bare list (exact), a `+` list (widens the guest's reach), or null (the guest's reach). `launchReach` resolves it. */
   readonly allowedTools: string | null;
   /** The host directory the instance starts in; null: the summoner's own. */
   readonly workdir: string | null;
@@ -178,6 +188,22 @@ export function mandateFaceTurned(mandate: SpiritMandate, answered: number | nul
   return new SpiritRefusal("mandate-face-turned", `mandate-face-turned: ${mandate.uri} echoes face h${mandate.face}, and h${answered} answered; nothing started. Name the face: \`${line} --face ${mandate.face}\``, 4);
 }
 
+/** A mandate's `allowed-tools` split into whether it widens and the rules it names. */
+const reachWords = (named: string): { widens: boolean; rules: string } =>
+  (named.startsWith(REACH_WIDENS) ? { widens: true, rules: named.slice(REACH_WIDENS.length) } : { widens: false, rules: named });
+/**
+ * THE REACH AN INSTANCE LAUNCHES WITH, comma-joined: the guest's reach where the mandate names none; exactly the mandate's list
+ * where it names a bare one; the guest's reach then the mandate's rules it lacks where the list leads with `+`.
+ */
+export function launchReach(mandate: Pick<SpiritMandate, "allowedTools">): string {
+  if (mandate.allowedTools === null) return GUEST_REACH.join(",");
+  const { widens, rules } = reachWords(mandate.allowedTools);
+  if (!widens) return rules;
+  const held: string[] = [...GUEST_REACH];
+  for (const rule of rules.split(",")) if (!held.includes(rule)) held.push(rule);
+  return held.join(",");
+}
+
 /** The launch cap, the model and the host paths a mandate names, checked before any process starts. */
 export function launchHolds(mandate: SpiritMandate): SpiritRefusal | null {
   if (!(LAUNCH_CAPS as readonly string[]).includes(mandate.launchCap)) {
@@ -186,8 +212,8 @@ export function launchHolds(mandate: SpiritMandate): SpiritRefusal | null {
   if (mandate.model !== null && !MODEL_SLUG.test(mandate.model)) {
     return new SpiritRefusal("mandate-model-malformed", `mandate-model-malformed: ${mandate.uri} names a model no launch cap takes as a slug; nothing started. Land the mandate again: \`lares spirit mandate ${shq(mandate.tag)} --file <carrier> --model <slug>\``, 4);
   }
-  if (mandate.allowedTools !== null && !ALLOWED_TOOLS.test(mandate.allowedTools)) {
-    return new SpiritRefusal("mandate-allowed-tools-malformed", `mandate-allowed-tools-malformed: ${mandate.uri} names allowed tools no launch cap takes as comma-joined rules (\`Tool\` or \`Tool(spec)\`); nothing started. Land the mandate again: \`lares spirit mandate ${shq(mandate.tag)} --file <carrier> --allowed-tools 'Bash(lares:*)'\``, 4);
+  if (mandate.allowedTools !== null && !ALLOWED_TOOLS.test(reachWords(mandate.allowedTools).rules)) {
+    return new SpiritRefusal("mandate-allowed-tools-malformed", `mandate-allowed-tools-malformed: ${mandate.uri} names allowed tools no launch cap takes as comma-joined rules (\`Tool\` or \`Tool(spec)\`, a leading \`${REACH_WIDENS}\` to widen the guest's reach); nothing started. Land the mandate again: \`lares spirit mandate ${shq(mandate.tag)} --file <carrier> --allowed-tools 'Bash(lares:*)'\` (or leave the flag out for the guest's reach)`, 4);
   }
   for (const [flag, path] of [["workdir", mandate.workdir], ["log", mandate.log]] as const) {
     if (path !== null && !HOST_PATH.test(path)) {
@@ -306,7 +332,7 @@ export function mandateWakeLines(mandate: SpiritMandate, cut = 2400): string {
     `om (the seed, then the card below): lares tiddler get 'lar:///ha.ka.ba/lares/api/noosphere-boot' --recipe default${face} --meme --all`,
     ...mandate.reads.map((f) => `reads: lares wiki filter ${shq(f)} --recipe default${face} --collapse --fields title,description`),
     ...mandate.links.map((l) => `link: lares tiddler get ${shq(l)} --recipe default${face} --meme --skinny`),
-    ...(mandate.allowedTools === null ? [] : [`allowed tools: ${mandate.allowedTools}`]),
+    `reach: ${launchReach(mandate).split(",").join(" ")}`,
     ...(mandate.workdir === null ? [] : [`workdir: ${mandate.workdir}`]),
     ...(mandate.log === null ? [] : [`log: ${mandate.log}`]),
     ...(mandate.paths.length === 0 ? [] : [`paths: ${mandate.paths.join(" ")}`]),
