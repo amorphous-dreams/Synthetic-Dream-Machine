@@ -1425,7 +1425,9 @@ async function prepareNodeBootOn(
   const restsSealedDoor: NonNullable<CapabilityRecord["restsSealed"]> = (documentId) => sealedRest.restsSealed(documentId);
   // THE BASE PINS WHAT SEALED: each island's Synced tree asks whether the heads a pin read rest here before the pin reaches
   // its directory. This replica holds them, that one document's flush lands, and no save of it waits in memory.
-  const restsAtDoor: NonNullable<CapabilityRecord["restsAt"]> = repoHeadsRestAt(repo as never, (documentId) => sealedRest.store.waiting(documentId));
+  // The Repo stands further down this boot, so the door reads it at each ask, never at composition.
+  const restsAtDoor: NonNullable<CapabilityRecord["restsAt"]> = (...ask) =>
+    repoHeadsRestAt(repo as never, (documentId) => sealedRest.store.waiting(documentId))(...ask);
   // THE SAVE BOOK'S REST, TOLD: once a save of a document lands and none of its saves waits in memory, every island hears it,
   // and each pending pin of that document asks again (`rest:rested`).
   const restedDoor: NonNullable<CapabilityRecord["rested"]> = (listener) => { restedListeners.add(listener); return () => { restedListeners.delete(listener); }; };
