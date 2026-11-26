@@ -26,8 +26,15 @@ import { census, compareCensus, CENSUS_SCHEMA, MAY_DIFFER, RECEIPT_SCHEMA, recei
 import { unlockTestCustody } from "./unlock-test-custody.mjs";
 import { daemonStood } from "./daemon-stood.mjs";
 
+// THE DRILL'S HOUSES STAND ON THE OPERATOR'S HAND. A harness shell (Claude Code's `CLAUDECODE=1`, Codex's sandbox marks) hands
+// its mark to every process this test spawns, and a marked `lares` line acts as the AI seat (`harnessSeatMarked`): its
+// `persona new 1` then names a face outside the lend (the lend holds lit faces alone, h0 at that hour) and refuses
+// `face-not-lent`. The test plays the operator founding faces, so its children read as CI does: the marks clear here
+// (the list `HARNESS_SEAT_MARKS` names in packages/lares-cli/src/local-connector.ts).
+for (const mark of ["CLAUDECODE", "CODEX_SANDBOX", "CODEX_SANDBOX_NETWORK_DISABLED"]) delete process.env[mark];
+
 const repo = fileURLToPath(new URL("../", import.meta.url));
-const cli = join(repo, "packages/lares-cli/dist/src/bin/lares.js");
+const cli =join(repo, "packages/lares-cli/dist/src/bin/lares.js");
 const nodeMain = join(repo, "packages/lararium-node/dist/src/main.js");
 const tool = join(repo, "tools/census-drill.mjs");
 
