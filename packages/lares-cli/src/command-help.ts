@@ -161,7 +161,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "A lei grants one rite at one branch. A wide lei (the default) names no head and carries its returns; a head lei pins one head. " +
       "The hand strings (kui), unstrings and restrings; any seat reads. The signed lei carries the consent, and a `push` lei adds its ward co-sign. " +
       "Under a pūlama the hand signs at the pūlama's hand door and `land` lands the record; `terms` prints the one JSON line that door takes " +
-      "(the face from --face, else a keep's own face, else the daemon mount; a restring's `after` from the line's tip), and writes nothing. `kui --all` strings one lei for every open face under ONE route, each face's own record by its own hand at its own line's tip, and names each face's cid; a show of one line naming no face reads every open face's line.",
+      "(the face from --face, else a keep's own face, else the daemon mount; a restring's `after` from the line's tip), and writes nothing. `kui --all` strings one lei for every open face under ONE route, each face's own record by its own hand at its own line's tip, and names each face's cid; a show of one line naming no face reads every open face's line. " +
+      "A HOʻĀLA LEI (`--rite hoala`, under a pūlama, through the host shim) names no branch: `kui --rite hoala --returns <n>` strings it under your route at the pūlama, and each host restart then wakes the keeper with no route, one counted return each (`lares rite hoala`); it rests the keeper's keys sealed on this machine in two halves, so whoever reads both (Docker as you plus the house directory, or the raw disk) opens the house while a return stands. " +
+      "`unstring --rite hoala` destroys both at once, lit or unlit; `show --rite hoala` reads its count. A hand's acts alone: a seat strings, unstrings and reads none.",
     examples: [
       "lares lei show --rite kukulu --branch main --json                    # data.lei: standing, reach, returnsLeft",
       "lares lei show --rite push --branch feature/x --head <commit> --json   # ask after one head",
@@ -172,6 +174,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares lei unstring --rite push --branch feature/x --lei <cid>          # revoke it; a signed record, nothing deleted",
       "lares lei restring --rite push --branch feature/x --returns 2          # supersede the standing lei",
       "lares lei land '<the pūlama's answer>'                                 # land a record the hand signed at the pūlama",
+      "lares lei kui --rite hoala --returns 3                                 # three host restarts wake the keeper with no route",
+      "lares lei unstring --rite hoala                                        # end it at once: the sealed keys and their device key die",
       "lares lei terms restring --rite push --branch feature/x --returns 2    # one line: the terms `pulama-main.js lei restring` takes",
     ],
     flags: ["--rite <r>   push, kukulu, keep or exec", "--scope '<json>'   (exec) the wiki, the writer, and titles or one class; the branch derives from the wiki", "--branch <name>   the branch the lei binds (a keep lei: the workspace's name)", "--head <commit>   the head a show reads at, or a head lei pins",
@@ -179,8 +183,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--lei <cid>   (unstring) the lei to revoke", "--face N   face index", "--all   (kui, push or kukulu) one lei for every open face, under one route"],
   },
   rite: {
-    usage: "usage: lares rite kukulu [--branch <name>] [--face N] [--rollback [<rev>]] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] [--image <digest>] | offer --branch <name> --head <commit> --image <digest> [--keeper-to <key> --keeper-next <closure>] [--base <offerBase>] | land --tessera <id> [--head <commit>] [--image <digest>] | land --abandon --tessera <id> [--face N] | receipts [--rite kukulu [--branch <name>]]",
+    usage: "usage: lares rite hoala | kukulu [--branch <name>] [--face N] [--rollback [<rev>]] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] [--image <digest>] | offer --branch <name> --head <commit> --image <digest> [--keeper-to <key> --keeper-next <closure>] [--base <offerBase>] | land --tessera <id> [--head <commit>] [--image <digest>] | land --abandon --tessera <id> [--face N] | receipts [--rite kukulu [--branch <name>]]",
     synopsis:
+      "hoʻāla (`lares rite hoala`, to waken; through the host shim) wakes the house that stands built and never builds: it reads the keeper, the image and the vessel, and walks only what each asks. " +
+      "A dark keeper lights by a hoʻāla lei where one holds a return (no route, no terminal), else it reads your route ONCE on a terminal; a tag left on an image the keeper never admitted steps back to the admitted image kept here, or nothing starts and the line names the admit; " +
+      "a locked vessel opens by the keeper's dial (no unlock try spends on a silent keeper), and the face last worn wears. It prints one verdict line: what it found, what it did, what stands now. " +
       "A rite spends a lei. kūkulu is the one verb that raises the house again around its hearth, and it picks up wherever the " +
       "house stands: it fast-forwards the checkout where it stands clean and behind its upstream (a dirty tree behind, a diverged " +
       "branch or a detached head stops with one line), makes the image (the tag, a kept image, or a build from the commit), spends " +

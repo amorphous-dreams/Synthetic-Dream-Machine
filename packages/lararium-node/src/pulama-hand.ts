@@ -105,6 +105,19 @@
  *                  it), a vested commit unlanded, a red last pair and the struck fire due, then rests the same commit
  *                  `name-successor` rests, naming the license. The vest's live rite spends that lei's return (the same return the
  *                  rite spends for the lent face) and names it. `KEEPER_LEI_STANDS` (a code constant inside the closure) turns it off.
+ * ── THE HOʻĀLA LEI (`pulama-hoala`): a restarted keeper stands lit again, one counted return per restart ──
+ *   hoala-string   THE HAND STRINGS IT. The route PROVES against the lit holder (as `admit`'s does; a miss spends an unlock attempt),
+ *                    then the house's end of the bond (the node key, each lit face's key) seals to a fresh device key and rests: the
+ *                    slot in this keeper's state, the key in its device directory. Unlit, passing, an unreported closure, no device
+ *                    directory, no lit face and a count above twelve without `confirm` each refuse before the route reads;
+ *                    `check: true` answers `ready` there. A later stringing supersedes the one before it.
+ *   hoala          (an unlit keeper that never stood lit in this life, no route: the start path's own act) open the slot under the
+ *                    device key, seat the node key, verify slot and lei under the key that now stands, adopt each face, CLAIM the
+ *                    return's receipt, move the slot to the next return (the last return destroys slot and key), then serve. Any
+ *                    refusal after a key seated locks this keeper. The closure the host reported must equal the one the lei names.
+ *   hoala-unstring REVOKE WINS (no route, lit or unlit): the device key and the slot die at once and the unstring's word rests.
+ *   `status` names a standing hoʻāla lei (`hoala`: its cid, returns, returns left, closure, faces), unverified while unlit.
+ *
  *   `status` folds the chain while lit (`keeper`), and names `vestReady` where a live successor can vest; `keeperLei` names the floor
  *   and each licensed commit (branch, revision, the bench verdict's hash, the CI annotation, the lei returns its vest spent), and `leiReady` where one could rest now.
  *
@@ -137,6 +150,7 @@ import {
   keeperPayloadDrop, keeperSlotBinds, keeperSlotOf, keeperVest, type KeeperEphemeral, type KeeperRiteReading, type KeeperStanding,
 } from "./pulama-keeper.js";
 import type { PulamaAdmissions } from "./pulama-admit.js";
+import { HOALA_HAND_CURE, HOALA_RETURNS_ASK_ABOVE, hoalaLand, hoalaOpen, hoalaPayloadDrop, hoalaStanding, hoalaString, hoalaUnstring, type HoalaDevice } from "./pulama-hoala.js";
 import type { PulamaServer } from "./pulama-server.js";
 import type { RehiveOutcome } from "./face-rehive.js";
 import { rehiveLines } from "./face-rehive-lines.js";
@@ -240,6 +254,8 @@ export function pulamaHandDoor(a: {
   readonly worn?: () => number | undefined;
   /** THE LIVE RITE a vest rides (`keeperRiteOver`): the offer read and bound to this keeper move, its return claimed. Absent, `keeper-vest` refuses `vest-rite-unavailable`. */
   readonly keeperRite?: (offer: unknown, keeper: { readonly to: string; readonly next: string }) => Promise<KeeperRiteReading>;
+  /** THE HOʻĀLA LEI's device keys (`hoalaDevice` over the keeper's device directory). Absent, every hoala act refuses `hoala-unavailable`. */
+  readonly hoala?: HoalaDevice;
   /** THE KEEPER LEI'S FLOOR, a test seam alone: `pulama-main` passes none, so the floor reads `KEEPER_LEI_STANDS` (a code constant). */
   readonly keeperLeiStands?: boolean;
   readonly onLog?: (line: string) => void;
@@ -255,7 +271,9 @@ export function pulamaHandDoor(a: {
   let ephemeral: KeeperEphemeral | null = null;
   let passing = false;
   // HOW THIS KEEPER STANDS LIT: by the hand's light (the struck fire), or by a vest; a lock clears it. Only a struck keeper lands struck.
-  let litBy: "hand" | "vest" | null = null;
+  let litBy: "hand" | "vest" | "hoala" | null = null;
+  // WHETHER THIS KEEPER EVER STOOD LIT IN ITS LIFE: a hoʻāla lei re-stands a RESTARTED keeper alone, so a hand's `lock` stays locked.
+  let lived = holder.isUnlocked();
   const leiFloor = a.keeperLeiStands ?? KEEPER_LEI_STANDS;
   const status = () => {
     const closing = server.closing();
@@ -345,6 +363,7 @@ export function pulamaHandDoor(a: {
         if (opened.reading !== "opens" && opened.reading !== "already-unlocked") { log(`light: ${opened.reading}`); return { op: "light", ...opened, ...status() }; }
         const faces = (await holder.unlockFaces(credentials)).map((r) => r.reading);
         if (opened.reading === "opens") litBy = "hand";
+        lived = true;
         server.refresh();
         log(`lit: ${faces.filter((r) => r === "opens" || r === "already-unlocked").length} face(s) open`);
         // THE STRUCK FIRE IS ONE PROOF: `admit: true` admits the reported image for every lit face under the route that just lit,
@@ -552,7 +571,69 @@ export function pulamaHandDoor(a: {
         log(`close: face h${face} ${closed.reading}`);
         return { op: "close", ...closed, ...status() };
       }
-      case "status": return { op: "status", ...status(), ...await admissionDigests(), ...await keeperDigest() };
+      case "status": {
+        const lei = a.hoala ? await hoalaStanding(a.records).catch(() => null) : null;
+        return { op: "status", ...status(), ...await admissionDigests(), ...await keeperDigest(), ...(litBy === "hoala" ? { litBy } : {}), ...(lei !== null ? { hoala: { ...lei, verified: holder.isUnlocked() } } : {}) };
+      }
+      case "hoala-string": {
+        if (passing) return passingRefusal("hoala-string");
+        if (!a.hoala || !holder.handOver) return { op: "hoala-string", reading: "hoala-unavailable", detail: "this keeper seats no hoʻāla lei" };
+        // UNLIT, UNREPORTED, UNSEATED AND MALFORMED EACH REFUSE BEFORE THE ROUTE READS.
+        if (!holder.isUnlocked()) return { op: "hoala-string", reading: "pulama-locked", detail: "the pūlama stands unlit: light it first (`lares pulama light`), then string the hoʻāla lei", ...status() };
+        if (closure === null) return { op: "hoala-string", reading: "closure-unreported", detail: "the host reported no closure for this keeper, so the lei cannot name the keeper it licenses; `lares up` reports it, then string again" };
+        if (!a.hoala.seated()) return { op: "hoala-string", reading: "hoala-device-unseated", detail: "this keeper mounts no device directory, so no device key rests and no hoʻāla lei strings; raise the keeper on an image and compose file that carry the device volume (`lares rite kukulu`), then string again" };
+        const returns = f["returns"];
+        if (typeof returns !== "number" || !Number.isSafeInteger(returns) || returns < 1) return { op: "hoala-string", reading: "hoala-malformed", detail: "a hoʻāla lei names its returns, a count of at least one: lares lei kui --rite hoala --returns <n>" };
+        if (returns > HOALA_RETURNS_ASK_ABOVE && f["confirm"] !== true) return { op: "hoala-string", reading: "hoala-returns-unconfirmed", detail: `this lei would carry ${returns} returns, more than ${HOALA_RETURNS_ASK_ABOVE}; confirm the count to string it (--yes)` };
+        if ((await openFaces()).length === 0) return { op: "hoala-string", reading: "face-locked", detail: "no face stands lit at this keeper, so a restart would relight none; light it with the route that opens your faces (`lares pulama light`), then string again", ...status() };
+        if (f["check"] === true) return { op: "hoala-string", reading: "ready", returns };
+        const credentials = credentialsOf(f["credentials"]);
+        if (credentials === null) return { op: "hoala-string", reading: "malformed" };
+        // THE ROUTE PROVES A PERSON STANDS HERE, as an admission's does; it opens nothing new.
+        const proof = await holder.proves(credentials);
+        if (proof.reading !== "proves") { log(`hoala-string: ${proof.reading}`); return { op: "hoala-string", ...proof, ...status() }; }
+        const keys = holder.handOver?.() ?? null;
+        if (keys === null) return { op: "hoala-string", reading: "pulama-locked", ...status() };
+        try {
+          const strung = await hoalaString(a.records, await pulamaSignerOf(holder), a.hoala, { returns, closure, image: a.image.raised(), keys, worn: a.worn?.() ?? null });
+          if ("refusal" in strung) { log(`hoala-string: ${strung.refusal}`); return { op: "hoala-string", reading: strung.refusal, detail: strung.detail }; }
+          log(`hoʻāla lei strung by hand: ${strung.returns} return(s) for ${strung.faces.map((n) => `h${n}`).join(", ")}; the slot rests in this keeper's state and its key on this device`);
+          return { op: "hoala-string", reading: "strung", lei: strung.lei, returns: strung.returns, faces: strung.faces, ...(strung.supersedes !== null ? { supersedes: strung.supersedes } : {}) };
+        } finally { keys.treeKey.fill(0); for (const face of keys.faces) face.fck.fill(0); }
+      }
+      case "hoala-unstring": {
+        if (!a.hoala) return { op: "hoala-unstring", reading: "hoala-unavailable", detail: "this keeper seats no hoʻāla lei" };
+        // REVOKE WINS: no route and no light gate a destruction, which lowers power alone.
+        const ended = await hoalaUnstring(a.records, a.hoala, holder.isUnlocked() ? await pulamaSignerOf(holder) : null);
+        log(ended.lei !== null ? "hoʻāla lei unstrung: its slot and device key stand destroyed" : "hoala-unstring: no hoʻāla lei stood");
+        return ended.lei !== null ? { op: "hoala-unstring", reading: "unstrung", lei: ended.lei, keys: ended.keys } : { op: "hoala-unstring", reading: "hoala-lei-absent", keys: ended.keys, detail: "no hoʻāla lei stands at this keeper; nothing to unstring" };
+      }
+      case "hoala": {
+        if (!a.hoala || !holder.adoptFace) return { op: "hoala", reading: "hoala-unavailable", detail: `this keeper seats no hoʻāla lei; ${HOALA_HAND_CURE}` };
+        if (holder.isUnlocked()) return { op: "hoala", reading: "keeper-lit", detail: "this keeper stands lit already, so no return spends", ...status() };
+        // ONE LIFE: a keeper that stood lit and locked stays locked until the hand lights it.
+        if (lived) return { op: "hoala", reading: "hoala-keeper-lived", detail: "this keeper stood lit in this life and a hand locked it, and a hoʻāla lei re-stands a restarted keeper alone; light it by hand on a terminal: lares pulama light", ...status() };
+        const opened = await hoalaOpen(a.records, a.hoala, { closure });
+        if ("refusal" in opened) { log(`hoala: ${opened.refusal}`); return { op: "hoala", reading: opened.refusal, detail: opened.detail, ...status() }; }
+        const red = async (reading: string, detail: string): Promise<PulamaHandAnswer> => { await holder.lock(); litBy = null; log(`hoala: ${reading}; nothing stays seated`); return { op: "hoala", reading, detail, ...status() }; };
+        try {
+          try { await holder.adopt(opened.payload.node as Parameters<CustodyHolder["adopt"]>[0]); }
+          catch { return red("hoala-slot-refused", `the node key the hoʻāla lei's slot carried opens no custody root of this house; ${HOALA_HAND_CURE}`); }
+          lived = true;
+          const by = await pulamaSignerOf(holder);
+          const adopted: Array<{ fcid: string; ordinal: number }> = [];
+          for (const face of opened.payload.faces) {
+            const lit = await holder.adoptFace?.(face.fcid, face.fck);
+            if (lit?.reading === "opens" || lit?.reading === "already-unlocked") adopted.push({ fcid: face.fcid, ordinal: face.ordinal });
+          }
+          const landed = await hoalaLand(a.records, by, a.hoala, { slot: opened.slot, text: opened.text, payload: opened.payload, image: a.image.raised(), lit: adopted });
+          if ("refusal" in landed) return red(landed.refusal, landed.detail);
+          litBy = "hoala";
+          server.refresh();
+          log(`woke by the hoʻāla lei: return ${landed.n} of ${landed.of} spent, ${adopted.length} face(s) lit${landed.left === 0 ? "; the lei's returns lie spent and nothing rests" : ""}`);
+          return { op: "hoala", reading: "woke", lei: landed.lei, n: landed.n, of: landed.of, left: landed.left, receipt: landed.receipt, woke: adopted.map((face) => face.ordinal).sort((x, y) => x - y), ...status() };
+        } finally { hoalaPayloadDrop(opened.payload); }
+      }
       case "closure": {
         if (typeof f["digest"] !== "string" || !CLOSURE.test(f["digest"])) return { op: "closure", reading: "malformed", detail: "a closure reads `sha256:<64 hex>`" };
         closure = f["digest"];
@@ -646,6 +727,7 @@ export function pulamaHandDoor(a: {
           if ("refusal" in landed) return red(landed.refusal, landed.detail);
           if (!landed.pair.par) return red(landed.pair.red ?? "keeper-red", `the keeper pair reads ${landed.pair.red ?? "red"}; the successor locks and the old fire still burns`);
           litBy = "vest";
+          lived = true;
           server.refresh();
           log(`keeper landed by vest: v${landed.fold.v} par, ${adopted.length} face(s) carried`);
           return { op: "keeper-receive", reading: "landed", pair: landed.pair, vestings: landed.fold.vestings, ...status() };

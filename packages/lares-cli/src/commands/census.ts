@@ -60,6 +60,8 @@ export interface CensusReading {
   readonly facesLit?: readonly number[];
   /** THE WORN FACE beside the lit set (present where the lit set reads): the daemon mount, or null where none wears. */
   readonly worn?: number | null;
+  /** THE VESSEL STOOD LOCKED SINCE IT BOOTED: no key ever opened in this life, so no act wrote and a stop drops nothing. */
+  readonly lockedSinceBoot?: true;
   /** Each face its custody serves that stands dark here (its light refused), with its cause and clearing line. */
   readonly facesDark?: ReadonlyArray<{ readonly face: number; readonly cause: string; readonly note: string }>;
 }
@@ -91,6 +93,9 @@ const LIVE_LINES: CensusLines = {
 
 /** The one line a locked hearth's census answers: the cure, in the order a person runs it. */
 export const VESSEL_LOCKED_CENSUS = "vessel locked: run `lares vault unlock`, then down";
+
+/** The line a census prints over a vessel that stood locked since it booted: clean, and why nothing stood at risk. */
+export const LOCKED_SINCE_BOOT_CENSUS = "census: clean — the vessel stood locked since it booted: no key opened in this life, so no act wrote, no save waits in memory and no carrier or shore owes a write";
 
 /** The refusals that keep a save in memory: the sealed doc store owns the list (`HELD_REFUSALS`), so a new one never drifts past this door. */
 const HELD_REFUSAL_SET: ReadonlySet<string> = new Set<string>(HELD_REFUSALS);
@@ -150,6 +155,20 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
   // asks can answer; the cure reads "unlock, then down", never "could not answer". A herm never unlocks, so it never hears it.
   const lockedHearth = (custody?.["locked"] === true && custody["standing"] !== "herm")
     || unanswered.some((u) => /\bvessel-locked\b/.test(u.why));
+  // LOCKED SINCE BOOT HOLDS NOTHING BY CONSTRUCTION. The custody door names whether its key ever stood open in this life
+  // (`everOpened`), and it counts held saves with no key (documents and counts, never a value). A vessel that never opened, whose
+  // sealed rest names no held save (or sits uncomposed, with no store to hold one), wrote nothing: no carrier queue ever ran and
+  // no shore took a record. The census reads clean and says why. A door that names no `everOpened` (an older vessel), a key that
+  // opened and shut again, or a held row in any shape this door cannot read stays unread, and the stop asks.
+  const sealedRestUnread = unanswered.some((u) => u.part === "the sealed rest" && !/^no composition sits/.test(u.why));
+  if (lockedHearth && custody?.["everOpened"] === false && !sealedRestUnread) {
+    if (items.length === 0) return { clean: true, items, unanswered: [], lockedSinceBoot: true, ...(unasked.length > 0 ? { unasked } : {}) };
+    // HELD SAVES OVER A VESSEL THAT NEVER OPENED: the islands' `vessel-locked` refusals name no unread content (no projector ever
+    // ran), so they leave the list, and the census answers its items (exit 3): the stop lists exactly what it would drop.
+    const moot = (u: { readonly part: string; readonly why: string }): boolean => /\bvessel-locked\b/.test(u.why) || (u.part === "the sealed rest" && /^no composition sits/.test(u.why));
+    const rest = unanswered.filter((u) => !moot(u));
+    return { clean: false, items, unanswered: rest, ...(unasked.length > 0 ? { unasked } : {}) };
+  }
   if (lockedHearth && items.length === 0) {
     return { clean: false, items, unanswered: [{ part: "the vessel", why: VESSEL_LOCKED_CENSUS }] };
   }
@@ -193,6 +212,7 @@ export async function cmdCensus(args: ParsedArgs, lines: CensusLines = LIVE_LINE
       for (const d of reading.facesDark ?? []) console.error(`census: ${d.note}`);
       // AN UNASKED ROW (sync states alone) names itself and never turns the census red: it holds no content.
       for (const u of reading.unasked ?? []) console.error(unaskedLine(u));
+      if (code === 0 && reading.lockedSinceBoot === true) { console.log(LOCKED_SINCE_BOOT_CENSUS); return; }
       if (code === 0) { console.log("census: clean — no save waits in memory, and the disk projector owes no carrier"); return; }
       for (const item of reading.items) console.log(censusLine(item));
       for (const u of reading.unanswered) console.error(u.why === VESSEL_LOCKED_CENSUS ? `census: ${u.why}` : `census: unanswered — ${u.part}: ${u.why}`);
