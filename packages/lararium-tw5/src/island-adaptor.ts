@@ -165,7 +165,8 @@ interface PreparedLanding {
 /** The engine's crest door bound to its engine, or a bare run where the engine's applier carries none. */
 function crestDoorOf(lares: LaresTw5Extension["lares"]): <T>(run: () => T) => T {
   const door = lares?.applyNaluCrest;
-  return typeof door === "function" ? (run) => door.call(lares, run) : (run) => run();
+  // `bind` keeps the door's generic signature (`call` would widen its return to unknown).
+  return typeof door === "function" ? door.bind(lares) : (run) => run();
 }
 
 /** How an apply ended: landed (or nothing to land), a standing hand leaves first, or an own write moved since the prepare. */
