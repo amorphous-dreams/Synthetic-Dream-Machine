@@ -5551,8 +5551,11 @@ async function prepareNodeBootOn(
     }
     // A FACE'S HOME WIKI IS ITS OWN PREFERENCE, READ AT LIGHT (research/pin-mu#S2): the record sits in the lit face's own daemon
     // wiki's working layer, so only a face that stands lit reads it, and no boot pin names a wiki for the vessel.
-    // A preference whose wiki refuses activation leaves the boot's wiki standing and says why.
+    // A preference whose wiki refuses activation leaves the boot's wiki standing and says why. The record rests in the
+    // daemon wiki's working layer, which the host mounts once the island answers (`mountHostWorking`): the read waits on
+    // that mount, or it reads the composite before the layer stands and finds no preference.
     if (wornDeviceGroup !== null) homeWikiRead = (async () => {
+      await mountHostWorking();
       const home = readHomeWikiSlug(await daemonVm.composite.get(HOME_WIKI_TITLE));
       if (home === null || home === slotActiveWikiId) return;
       const activation = await wikiActivation.ensureActive(home);
