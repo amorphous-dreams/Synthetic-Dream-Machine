@@ -32,8 +32,10 @@
  *     (`readOwnHand`) before anything else; an AI harness on its branch refuses `hand-act-only`, an unreadable branch
  *     `hand-unattested`, each naming the command the operator runs, and `--yes` approves nothing by itself.
  *   · A PENDING REMOVAL: a file vanished from the path its base names. Nothing writes it back and nothing
- *     tombstones its records. `restore` writes the file back from the records; `remove` deletes the
- *     carrier in the wiki, where the wiki shore lands the tombstone.
+ *     tombstones its records. `restore` writes the file back from the records; `remove` takes the carrier out
+ *     of its own bag's layer and retracts it to absent. Only where a lower layer holds the title too does the
+ *     removal raise a kāpae: the confirmation line names that layer, the person's y approves it (`kapae: true`),
+ *     and `--yes` alone leaves the island refusing `remove-raises-kapae` by name.
  *
  * THE SHORE NAMES WHAT IT LETS GO. Where a commit took a pending removal's file from its checkout, `list`, the `remove`
  * answer and the lay's closing lines name that commit beside the row: short sha, subject, PR, and the ashes git keeps
@@ -116,7 +118,8 @@ export function shoreHelpLines(): string[] {
     "  drafts        name the drafts a carrier's standoffs loaded (titles; `lares tiddler get` reads each);",
     "  the settling acts (take-*, keep-*) run on a person's hand at their own terminal; --yes approves nothing by itself;",
     "  restore       write a vanished file back from the records;",
-    "  remove        delete the vanished carrier in the wiki (its tombstone lands in the working layer);",
+    "  remove        take the vanished carrier out of its own bag: nothing stands in its place, unless a lower layer",
+    "                holds the title too, where the confirmation names it and your y raises a kāpae so it never returns;",
     "  settle        resume a settle word that stalled, over the carriers its record names (--pending);",
     "  lift-kahua    lift the kahua items a lay left pending, each under its face's grant (--count names the preview's count);",
     "  flush         write what every island holds in memory to its mirrors now: the daemon's with each lit face's, and every resident wiki's;",
@@ -175,8 +178,24 @@ export function shoreArgs(act: ShoreAct, args: ParsedArgs): { readonly args: Rec
   return { args: { op: act, ...(all ? { all: true } : { uris }), ...(count !== undefined ? { count } : {}), ...withBag } };
 }
 
-/** What a person confirms before an act that writes. */
-function confirmLine(act: ShoreAct, shaped: Record<string, unknown>): string {
+/** One carrier a remove would raise a kāpae over: the layers beneath its bag that hold its title. */
+export interface RemoveRaising { readonly uri: string; readonly beneath: readonly string[] }
+
+/**
+ * The carriers a remove would raise a kāpae over, read off the pending rows the island named (`beneath`): the
+ * carriers the act names, or with `all` every row of the named bag. A row with nothing beneath retracts to absent.
+ */
+export function removeRaisingOf(rows: ReadonlyArray<Record<string, unknown>>, shaped: Readonly<Record<string, unknown>>): RemoveRaising[] {
+  const uris = Array.isArray(shaped["uris"]) ? (shaped["uris"] as string[]) : null;
+  const bag = typeof shaped["bag"] === "string" ? shaped["bag"] : null;
+  return rows
+    .filter((row) => (uris === null ? shaped["all"] === true : uris.includes(String(row["uri"]))) && (bag === null || row["bagId"] === bag))
+    .filter((row) => Array.isArray(row["beneath"]) && (row["beneath"] as unknown[]).length > 0)
+    .map((row) => ({ uri: String(row["uri"]), beneath: (row["beneath"] as unknown[]).map(String) }));
+}
+
+/** What a person confirms before an act that writes; a remove names each kāpae a lower layer makes it raise. */
+export function confirmLine(act: ShoreAct, shaped: Record<string, unknown>, raising: readonly RemoveRaising[] = []): string {
   if (act === "take-records" || act === "keep-records") return `${act} ${String(shaped["uri"])}: the file's present bytes give way to the records' render. Proceed? [y/N] `;
   if (act === "take-disk") return `take-disk ${String(shaped["uri"])}: the records give way to the file's present words. Proceed? [y/N] `;
   if (act === "keep-disk") return `keep-disk ${String(shaped["uri"])}: the records give way to the file's present words, whole, with no merge. Proceed? [y/N] `;
@@ -184,7 +203,29 @@ function confirmLine(act: ShoreAct, shaped: Record<string, unknown>): string {
   const what = shaped["all"] === true ? `all ${String(shaped["count"])} pending carrier(s)` : (shaped["uris"] as string[]).join(", ");
   return act === "restore"
     ? `restore ${what}: each file returns from the records. Proceed? [y/N] `
-    : `remove ${what}: each carrier leaves the wiki, and its records rest under a tombstone. Proceed? [y/N] `;
+    : raising.length === 0
+      ? `remove ${what}: each carrier leaves its bag, and nothing stands in its place. Proceed? [y/N] `
+      : `remove ${what}: each carrier leaves its bag; ${raising.map((r) => `a lower layer (${r.beneath.join(", ")}) holds ${r.uri}`).join("; ")}, so the removal raises a kāpae and it never returns. Proceed? [y/N] `;
+}
+
+/** The one bag the rows a remove names stand in, where the act names none and one bag alone holds them; else null. */
+export function removeBagOf(rows: ReadonlyArray<Record<string, unknown>>, shaped: Readonly<Record<string, unknown>>): string | null {
+  if (typeof shaped["bag"] === "string") return null;
+  const uris = Array.isArray(shaped["uris"]) ? (shaped["uris"] as string[]) : null;
+  const bags = new Set(rows.filter((row) => (uris === null ? shaped["all"] === true : uris.includes(String(row["uri"])))).map((row) => String(row["bagId"])));
+  return bags.size === 1 ? [...bags][0]! : null;
+}
+
+/** The rows a remove's confirmation reads, inside the receipt's budget; an unread shore names no kāpae. */
+async function readRemoveRaising(shaped: Readonly<Record<string, unknown>>): Promise<RemoveRaising[]> {
+  try {
+    const did = await vesselDid();
+    const listed = await Promise.race([
+      readShoreList((a) => askShore(a, did), typeof shaped["bag"] === "string" ? { bag: shaped["bag"] } : {}),
+      new Promise<null>((resolve) => { const t = setTimeout(() => resolve(null), RETIREMENT_BOUND_MS); t.unref(); }),
+    ]);
+    return listed !== null && listed.ok ? removeRaisingOf(listed.pending, shaped) : [];
+  } catch { return []; }
 }
 
 /** How this command reads the hand that runs it (`readOwnHand`); a test names another reading. */
@@ -239,10 +280,14 @@ export async function cmdShore(args: ParsedArgs, hand: ShoreHandRead = ownHand):
       emit(args, { ok: false, error: { code: "usage", message: "confirmation required", hint: "pass --yes for non-interactive (agent) invocation" }, human: () => { /* unreachable */ } });
       return exitFor("usage");
     }
+    // A REMOVE READS ITS ROWS FIRST, so the line names each kāpae a lower layer makes it raise; the person's y approves
+    // it (`kapae: true`). An unread shore names none, and the island then refuses any kāpae by name.
+    const raising = act === "remove" ? await readRemoveRaising(shaped.args) : [];
     const rl = createInterface({ input: stdin, output: stdout });
-    const answer = await rl.question(confirmLine(act, shaped.args));
+    const answer = await rl.question(confirmLine(act, shaped.args, raising));
     rl.close();
     if (!/^y(es)?$/i.test(answer.trim())) { console.log("aborted"); return 1; }
+    if (raising.length > 0) (shaped.args as Record<string, unknown>)["kapae"] = true;
   }
 
   // SETTLE --PENDING resumes the word a stalled settle left as the bag's record, over those carriers alone.
@@ -390,6 +435,10 @@ export async function cmdShore(args: ParsedArgs, hand: ShoreHandRead = ownHand):
       ]);
       if (listed !== null && listed.ok) { named = listed.pending; receipts = pendingReceipts(named, { deadline }); }
     } catch { /* the receipt stays unread; the answer stands */ }
+    // THE REMOVE NAMES ITS BAG where the rows it read name one, so the routed gate reads that bag's cap and, for house
+    // canon, the Kahu hand: the record leaves that bag's own layer.
+    const bagOf = removeBagOf(named, shaped.args);
+    if (bagOf !== null) (shaped.args as Record<string, unknown>)["bag"] = bagOf;
   }
 
   let answer: ShoreAnswer;
@@ -439,6 +488,8 @@ export async function cmdShore(args: ParsedArgs, hand: ShoreHandRead = ownHand):
       for (const line of removeReceiptLines(reached.done, answeredBag, named, receipts)) console.log(line);
       if (reached.done.length < reached.doneCount) console.log(`  (the answer named ${reached.done.length} of them)`);
       for (const uri of reached.left) console.error(`  ⚠ still pending: ${uri}`);
+      const raised = Array.isArray(answer.output["raised"]) ? (answer.output["raised"] as Array<{ uri: string; beneath: string[] }>) : [];
+      for (const r of raised) console.log(`  kāpae raised over ${r.uri}: a lower layer (${r.beneath.join(", ")}) holds it, and it stays set aside`);
       // A removal that unshadowed a lower copy: this bag let it go, and the meme still stands from that bag.
       const standing = Array.isArray(answer.output["unshadowed"]) ? (answer.output["unshadowed"] as Array<{ uri: string; bag: string }>) : [];
       for (const u of standing) console.error(`  ⚠ still stands from ${u.bag}: ${u.uri}`);

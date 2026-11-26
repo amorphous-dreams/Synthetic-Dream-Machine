@@ -91,6 +91,8 @@ A working layer's projection writes each record it holds to a file, and an opera
 
 So the cut holds on disk too. Where a kāpae rises over a working record, the projector removes the carrier's file and writes a ''shadow file'' at the carrier's own stem: `<carrier-stem>.kapae`, its bytes `{"title":"<title>","kapae":"raised"}`. The file's place names the layer the kāpae stands in, exactly as the carrier's place named the layer its record stood in; its bytes name the title and the act. A retract to absent (MOVE, promotion, an ingest rename's re-link) writes no shadow and takes one down; a record returning live takes its shadow down as its carrier writes back.
 
+''A REMOVE RETRACTS TO ABSENT; ONLY A LOWER COPY RAISES A KĀPAE.'' A shadow earns its file only where something stands to resurrect. A person's `lares shore remove` carries a deletion the disk already holds into the record's OWN bag, the bag whose mirror lost the file, never the working layer a browser's save would take: where no layer beneath that bag holds the title, the record retracts to absent, no tombstone rises and no `.kapae` lands; where one does, the removal raises the kāpae in that bag, its shadow in that bag's own mirror, and the confirmation line names the lower layer in one clause (//a lower layer (<bag>) holds <title>, so the removal raises a kāpae and it never returns//). The person's `y` approves it; without that approval the answer refuses `remove-raises-kapae`, names the layer, and nothing runs. A layer beneath the composition could not read counts as holding the title. The tiddler door's delete holds the same rule (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model#/delete-reveals-or-shadows`>>). A kāpae a remove raised over nothing lowers by the tiddler door: `lares tiddler delete <title> --recipe <slug> --family` retracts a kāpae that hides nothing, and `--mode reveal` retracts one that hides a lower record; either way the projector takes the shadow file down. Witness: `packages/lararium-node/src/shore-remove-door.ts`, the projector's `answerRemovals`, and `packages/lararium-node/tests/shore-remove-kapae-only-over-a-lower-copy.test.ts`.
+
 The ingest gesture reads a shadow as the one exclusion a disk can speak: unlike a vanished file, which proves nothing and stands pending at the vessel's shore, a shadow file states its act. The wave raises a kāpae over its title in the target layer, and a carrier the same export holds under that title never lands (remove-wins inside one export). A shadow whose bytes prove no raise, or name a title its siting does not derive, raises nothing and gets named. Witness: `packages/lararium-node/src/kapae-shadow.ts`, the projector's `settleShadow`, and `packages/lares-cli/tests/kapae-repour.test.ts` (a burned record re-poured into a fresh root stays shadowed over its canon copy).
 
 <<~/ahu>>
@@ -309,6 +311,6 @@ The hand that raised lowers, by an act that cites every raise head, and an effec
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7UdTG6aJqJDODfbL-SKMAzjZmzVQHMy7ph33PVkQvf8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jU34LZeE6UI3WHUpv3QjmMGIveycWFPNO9FIc2S-d2Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>
