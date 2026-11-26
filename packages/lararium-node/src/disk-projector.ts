@@ -811,15 +811,22 @@ export class LarDiskProjector {
   }
 
   /**
-   * The render this island's records hold for one carrier of a bag, folded as the projecting leg folds it (`flush`): the
-   * resolved view's carrier where the view shows it from this bag, else the bag's own record. Null where the bag holds no
-   * such record here, the carrier never reaches disk, or its body rides a pointer whose bytes the tier lacks.
+   * The render this island's records hold for one carrier of a bag, folded as the projecting leg folds it (`flush`) and
+   * chosen as `reconcileCarrier` chooses: the resolved view's carrier where the view shows it from this bag, else the bag's
+   * own record where it stands shadowed and still projects (`shadowedOwnRecords`: none under a top tombstone, none for a
+   * pack member). Null where reconcile projects no such record, the carrier never reaches disk, or its body rides a pointer
+   * whose bytes the tier lacks.
    */
   private async recordsRenderOf(bagId: string, uri: string): Promise<{ readonly file: CarrierFile; readonly hash: string } | null> {
     const mirror = this.mirrors.find((m) => m.bagId === bagId && m.mirrorClass !== "recovery");
     if (!mirror || await this.neverOnDisk(mirror, uri)) return null;
+    // A pack member lives inside its pack file and projects no file of its own.
+    if (this.isPackMember(uri)) return null;
     const fields = this._tw5?.$tw.wiki.getTiddler?.(uri)?.fields as Record<string, unknown> | undefined;
-    const file = fields?.["$origin-bag"] === bagId ? await this.carrierFileFn(uri) : await this.recordFileFn?.(bagId, uri) ?? null;
+    const origin = typeof fields?.["$origin-bag"] === "string" ? fields["$origin-bag"] : undefined;
+    const winner = origin !== undefined && this.mirrors.some((m) => m.bagId === origin && m.mirrorClass !== "recovery") ? origin : undefined;
+    if (winner !== bagId && !(await this.shadowedOwnRecords(uri, winner)).includes(bagId)) return null;
+    const file = winner === bagId ? await this.carrierFileFn(uri) : await this.recordFileFn?.(bagId, uri) ?? null;
     if (file === null) return null;
     const { bodyPending, output } = await this.renderedOutput(uri, file);
     return bodyPending ? null : { file, hash: carrierHash(output, file.metaBody) };
@@ -854,9 +861,11 @@ export class LarDiskProjector {
     });
     if (!within) return "outside-mirror";
     const render = await this.recordsRenderOf(bagId, uri);
+    // The sidecar reads only where the render carries one, as the projecting leg reads it: a stray `.meta` beside a carrier
+    // whose render holds no metaBody stays no part of the disk's state.
     const metaPath = file + ".meta";
     const isBinary = render?.file.encoding === "base64";
-    const onDisk = this.diskCarrierText(file, existsSync(metaPath) ? metaPath : null, isBinary);
+    const onDisk = this.diskCarrierText(file, render?.file.metaBody !== undefined && existsSync(metaPath) ? metaPath : null, isBinary);
     if (onDisk === null) return "unread";
     if (render === null) return "differs";
     const disk = carrierHash(onDisk.body, onDisk.meta);
