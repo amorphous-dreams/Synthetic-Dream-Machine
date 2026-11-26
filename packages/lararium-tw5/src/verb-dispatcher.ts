@@ -84,11 +84,6 @@ export interface VerbContext {
    * (`seat-canon-reach`); never read off args, a payload or a tiddler.
    */
   readonly asker?: Hand;
-  /**
-   * The vessel's exec-lei port (`ExecLeiPort`): a write door asks it to spend one return of a standing executable-record lei
-   * before a seat's executable record lands. Absent, every seat's executable record offers.
-   */
-  readonly execLei?: import("@lararium/mesh/seat-startup-offer").ExecLeiPort;
   readonly cap:   (access: import("@lararium/mesh/capability").CapabilityAccess, bagUrl: string) => Promise<import("@lararium/mesh/capability").CapabilityVerifyResult>;
 }
 
@@ -283,8 +278,6 @@ export class VerbTable {
 
 export interface VerbDispatcherOptions {
   readonly daemonVm:   TW5Engine;
-  /** The vessel's exec-lei port (`islandExecLeiPort` in a daemon island): every local reactor reads it as `ctx.execLei`. */
-  readonly execLei?: import("@lararium/mesh/seat-startup-offer").ExecLeiPort;
   readonly daemon:    CompositeStore;
   /**
    * The vessel's CONTROL document as a store (`controlStoreOf`): the summons this dispatcher heeds, the outcome ledger and
@@ -367,7 +360,6 @@ export class VerbDispatcher {
         ...(this.opts.surfaceOf ? { surfaceOf: this.opts.surfaceOf } : {}),
         ...(this.opts.askerOf ? { askerOf: this.opts.askerOf } : {}),
         ...(this.opts.wornOf ? { wornOf: this.opts.wornOf } : {}),
-        ...(this.opts.execLei ? { execLei: this.opts.execLei } : {}),
       });
     }
     if (this.opts.routeFn) {

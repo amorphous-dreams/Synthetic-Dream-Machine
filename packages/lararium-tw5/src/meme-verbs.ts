@@ -70,7 +70,6 @@ import { VerbRefusal } from "@lararium/mesh/verb-refusal";
 import { floorReadFace } from "@lararium/mesh/floor-manifest";
 import { isHouseCanonBag, requireKahuReach, type KahuReachSource } from "@lararium/mesh/kahu-canon-reach";
 import { refuseRenderedWrite } from "@lararium/mesh/rendered-derives";
-import { admitSeatExecutable } from "@lararium/mesh/seat-startup-offer";
 import { resolveHouseCanon } from "@lararium/mesh/house-canon-doc";
 import { bagUri } from "@lararium/mesh/lar-uris";
 import { designatedBagOf } from "@lararium/mesh/recipe";
@@ -551,18 +550,15 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
         else shown = standing;
       }
     }
-    // THE ONE WALL A SEAT KEEPS: a seat's executable record offers, whatever bag it names, or lands spending one return of a
-    // standing exec lei for the wiki the put names. And ONLY THE RENDERER WRITES A RENDERED TIDDLER: a put over one, or a record
+    // ONLY THE RENDERER WRITES A RENDERED TIDDLER: a put over one, or a record
     // that would land carrying `rendered-from`, refuses.
     const standingRoot = await sink.read(target.uri);
     refuseRenderedWrite(target.uri, standingRoot, null, "meme put");
-    const wiki = target.recipe ?? (typeof args["bag"] === "string" ? args["bag"] : bag);
     const vet = async (records: readonly Record<string, unknown>[]): Promise<void> => {
       for (const record of records) {
         const title = String(record["title"] ?? target.uri);
         refuseEffectLedgerWrite(title, "meme put");
         refuseRenderedWrite(title, null, record, "meme put");
-        await admitSeatExecutable(title, record, "meme put", ctx.asker, { wiki, port: ctx.execLei });
       }
     };
     // `create` LANDS THE FAMILY ONLY WHERE NONE STANDS: a root the write layer holds, or the stack beneath answers, reads `exists`

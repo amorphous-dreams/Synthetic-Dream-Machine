@@ -1158,10 +1158,7 @@ def build_mcp(coordinator: LaresCoordinator):
         Slugs ride bare (`sdm`, `lares`). THE SEAT'S CANON FENCE: this seat never writes house canon live, so a `bag`
         naming a house canon bag (`lares`, `lararium`, every disk-sourced holding but the public board) refuses
         `seat-canon-reach`; edit through the wiki instead (`recipe=<slug>`, a copy-up), then `meme_offer` the record
-        toward the canon bag, and the steward promotes. THE ONE WALL A SEAT KEEPS: a meme whose records carry a
-        `$:/tags/StartupAction` tag (or one beneath it) refuses `seat-startup-offer` and lands nothing, since a wiki's
-        startup action runs in the operator's tab and rides the operator's own hand; every other record lands
-        natively. `base` carries the
+        toward the canon bag, and the steward promotes. `base` carries the
         canonical hash the writer read back from `tiddler_get(meme=True, grain="whole")` (a has-stack's base refuses `base-from-skinny`) — the merge base: stale → the receipt's
         `decision` reads "conflict"; absent → adopt. Returns the receipt {uri, decision, grade, landed,
         tombstoned, canonicalHash, warnings, diagnostics} for a write that stands (`ingest`, or `noop` where the
@@ -1804,10 +1801,7 @@ def build_mcp(coordinator: LaresCoordinator):
         changed, hash, textHash, position}: `decision` reads `put`, or `noop` where the record already says it.
         A WRITE THAT NEVER LANDED RAISES: `conflict` (a stale `base`; the error names the live hash) and `exists`.
         THE FENCES, each refused by name: a meme root or slot takes a field or tag patch here, and its text, type or
-        carriage fields refuse `tiddler-put-in-a-family` (use `tiddler_put(meme=True)`); a record carrying a `$:/tags/StartupAction`
-        tag (or one beneath it) refuses `seat-startup-offer`, since a wiki's startup action runs in the operator's tab
-        and rides the operator's own hand (land it untagged, as data); every other shape lands natively, a `$:/` title
-        or tag, a module or plugin field and a script type alike; a title that stays home refuses `tiddler-withheld`; a
+        carriage fields refuse `tiddler-put-in-a-family` (use `tiddler_put(meme=True)`); a title that stays home refuses `tiddler-withheld`; a
         title under the memory stage reads one or two lowercase, hyphen-joined path segments (`stage-path-shape`); a
         put over a rendered tiddler, or one carrying `rendered-from`, refuses `rendered-derives` (only the renderer
         writes it: edit the source tiddlers). CONTAINER: `recipe` names the wiki (a bag names no wiki and takes no engine verb): `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`; a put lands in that wiki's working layer (this face's personal layer of it where
