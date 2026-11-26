@@ -18,6 +18,7 @@ import {
   CROSS_FACE_READ_VERBS, CROSS_FACE_TARGET_VERBS, bagReachOf, crossFacePrivateRefusal, crossFaceViewSlots, isPrivateBag,
 } from "../src/cross-face-reach.js";
 import { DAEMON_BAG_ID, KAHUA_BAG, ORACLE_BAG, daemonFaceCanonBag, wikiBagUri, wikiSlotUri } from "../src/index.js";
+import { TW5_DEV_BAG, TW5_DOCS_BAG } from "../src/wiki-recipe.js";
 
 const REL = "11111111-1111-4111-8111-111111111111";
 
@@ -38,7 +39,8 @@ describe("a lit face receives visits: the PRIVATE classification", () => {
 
   test("X2 RED: the cross-face view composes canon, working, the libraries and the floor alone", () => {
     const daemon = crossFaceViewSlots({ wikiSlug: "daemon", canonBag: daemonFaceCanonBag(REL), libraryBags: [KAHUA_BAG, "lar:///ha.ka.ba/bags/shared-lib"] });
-    expect(daemon).toEqual([wikiSlotUri("daemon", "working"), daemonFaceCanonBag(REL), "lar:///ha.ka.ba/bags/shared-lib", ORACLE_BAG]);
+    // The herm/hearth wiki stacks TiddlyWiki5's native docs beneath its floor (THE CANON FLOOR BY PLACE): public, read-only, visitable.
+    expect(daemon).toEqual([wikiSlotUri("daemon", "working"), daemonFaceCanonBag(REL), "lar:///ha.ka.ba/bags/shared-lib", ORACLE_BAG, TW5_DOCS_BAG, TW5_DEV_BAG]);
     for (const out of [wikiSlotUri("daemon", "personal"), wikiSlotUri("daemon", "draft"), wikiSlotUri("daemon", "temp"), KAHUA_BAG, DAEMON_BAG_ID]) {
       expect(daemon, out).not.toContain(out);
     }
@@ -50,10 +52,10 @@ describe("a lit face receives visits: the PRIVATE classification", () => {
 
   test("X3 RED: the designated read verbs, and none that writes", () => {
     expect([...CROSS_FACE_READ_VERBS].sort()).toEqual(["meme-list", "tiddler-get", "wiki-filter", "wiki-render", "wiki-status"]);
-    for (const write of ["tiddler-put", "tiddler-delete", "meme-put", "meme-delete", "meme-patch", "INGEST"]) expect(CROSS_FACE_READ_VERBS.has(write), write).toBe(false);
+    for (const write of ["tiddler-put", "tiddler-delete", "meme-project", "INGEST"]) expect(CROSS_FACE_READ_VERBS.has(write), write).toBe(false);
     // The verbs whose `target` names a face: every read above, and the writes a target refuses on.
     for (const verb of CROSS_FACE_READ_VERBS) expect(CROSS_FACE_TARGET_VERBS.has(verb), verb).toBe(true);
-    for (const write of ["tiddler-put", "tiddler-delete", "meme-put", "meme-delete", "meme-patch", "meme-project"]) expect(CROSS_FACE_TARGET_VERBS.has(write), write).toBe(true);
+    for (const write of ["tiddler-put", "tiddler-delete", "meme-project"]) expect(CROSS_FACE_TARGET_VERBS.has(write), write).toBe(true);
     for (const other of ["intent-propose", "kahua-lift", "floor-pin", "INGEST"]) expect(CROSS_FACE_TARGET_VERBS.has(other), other).toBe(false);
   });
 

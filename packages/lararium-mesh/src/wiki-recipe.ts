@@ -18,17 +18,19 @@
  *                            for house canon; shore-law)
  *   libraryBags[]          — optional content libraries, CRDT; each lays its flags from
  *                            `slotLayerFlags`, which writes every slot but the floor
- *                            (the lares wiki-recipe carries the live lararium bag here)
+ *                            (THE CANON FLOOR BY PLACE names no house-canon library: `canonFloorOf`)
  *   oracle                 — the floor's read-face, READ-ONLY, under every recipe: one pinned
- *                            history-free snapshot per PUBLIC house-canon bag (`lares` and `lararium`
- *                            always; a bag declared under `public` keys none), named by a manifest CID (`floor-manifest.ts`), over the
- *                            live seed rows (engine core, plugins, grammar, bag-oracle)
+ *                            history-free snapshot per PUBLIC house-canon bag, named by a manifest CID
+ *                            (`floor-manifest.ts`), over the live seed rows (engine core, plugins, grammar,
+ *                            bag-oracle). THE CANON FLOOR BY PLACE (`canonFloorOf`) picks the system canon's
+ *                            snapshots: `lares` under every wiki, `lararium` under the herm/hearth wiki alone
+ *   tw5-docs · tw5-dev     — the herm/hearth wiki alone, beneath the oracle: TiddlyWiki5's native docs, read-only
  *
  * `bags/lares` NAMES TWO THINGS, AND THE STACK KEEPS THEM APART. The STATIC floor: a snapshot cut from the
  * canon carriers and addressed by CID, which every wiki reads through `oracle` and no hand writes (an edit
  * aimed there copies up into the wiki's working layer). The LIVE canon: one document in the Kahu realm,
  * which the `lares` wiki's own stack composes as its canon slot on a vessel the Kahu cabal admitted, and
- * which a hand in that cabal alone writes (a promotion; the seed's INGEST). The lares wiki-recipe = oracle floor + live lararium + its own live
+ * which a hand in that cabal alone writes (a promotion; the seed's INGEST). The lares wiki-recipe = oracle floor + its own live
  * lares canon; a vessel outside the cabal holds neither live document and reads the floor.
  * The memetic-wikitext plugin rides the oracle island (CID-frozen), so it is universal.
  *
@@ -42,6 +44,7 @@ import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { ORACLE_DOC_URI, LARARIUM_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, KAHUA_DOC_URI, bagUri, wikiUri } from "./lar-uris.js";
 import { bagStackFromRec } from "./bag-stack-from-rec.js";
 import { requireLarDid, type LarDid } from "./lar-did.js";
+import { TW5_DOCS_SLUG, TW5_DEV_SLUG } from "./tw5-docs-name.js";
 
 /** A slot URI in the lar:///ha.ka.ba/{bags,wikis}/@<name> namespace. */
 export type SlotUri = string;
@@ -309,10 +312,93 @@ export function expandRecipe(r: WikiRecipe): readonly SlotUri[] {
     // document, the vessel's own state, in no canon role.
     ...(r.canonBag !== undefined ? [wikiBagUri(slug)] : []),
     // oracle = the universal floor (engine + grammar + bag-oracle, and the house-canon snapshots its
-    // read-face lays by CID). The LIVE lares and lararium documents never stand as the floor — they ride
-    // a system wiki's own stack (the lares wiki-recipe = oracle floor + lararium bag + lares bag).
+    // read-face lays by CID). The LIVE lares and lararium documents never stand as the floor — each rides its own
+    // house-canon wiki's stack as that wiki's canon. Which snapshots the read-face lays follows THE CANON FLOOR BY PLACE
+    // (`canonFloorOf`, `floorRecordsFor`): `lares` under every wiki, `lararium` under the herm/hearth wiki alone.
     ORACLE_BAG,
+    // TiddlyWiki5's own native docs, the canon of a foreign house, lowest of all: every house layer shadows them, and the
+    // herm/hearth wiki alone stacks them (`foreignDocsOf`).
+    ...foreignDocsOf(slug),
   ])];
+}
+
+// ── THE CANON FLOOR BY PLACE ────────────────────────────────────────────────
+
+/**
+ * THE HERM/HEARTH WIKI: the wiki the place signs (a herm-stone, or the hearth a lararium builds upon it), where the daemon face
+ * lives and every companion takes the worn face as its closest context (ruling 2026-11-26-the-place-signs-the-hearth-wiki). On a
+ * lararium it reads as the hearth wiki, on a herm as the herm wiki; on both it stands as the daemon wiki's slug, the one seam a
+ * place-named slug swaps in at.
+ */
+export function isHearthWiki(slug: string): boolean {
+  return slug === DAEMON_WIKI_SLUG;
+}
+
+/** TiddlyWiki5's own native docs as bags: the tw5.com edition and the dev edition, each a wiki folder read whole. */
+export const TW5_DOCS_BAG: SlotUri = bagUri(TW5_DOCS_SLUG) as SlotUri;
+export const TW5_DEV_BAG:  SlotUri = bagUri(TW5_DEV_SLUG) as SlotUri;
+
+/**
+ * THE CANON FLOOR BY PLACE — ONE TABLE BOTH VESSELS READ (ruling 2026-11-26-canon-floor-by-place, operator: "I want `lares` in
+ * all wikis, `lararium+lares` in the herm/hearth wiki"). Each row lists, top first, the house-canon bags a wiki's floor stacks
+ * beneath its own canon and libraries, and the foreign docs bags beneath every house layer:
+ *
+ *   · `every`  — every wiki stacks `lares`: the house's law reaches every wiki.
+ *   · `hearth` — the herm/hearth wiki stacks `lares` and `lararium` both (the lararium's own canon rides only where the place
+ *                holds law), and beneath them TiddlyWiki5's native docs (`tw5-docs`, `tw5-dev`), read-only, never written.
+ *
+ * No other wiki stacks `lararium` (or the TW5 docs) by default; a hand that wants them names them on its own recipe
+ * (`lares wiki add-bag`). A wiki's OWN canon always rides its own floor (`floorAdmits`): the `lararium` quine wiki reads its own
+ * snapshot. The oracle read-face lays exactly the house-canon snapshots this table admits (`floorAdmits`, read by
+ * `floorRecordsFor` in `floor-manifest.ts`); a recipe record never names these rows (`structuralSlots`), so a record that still
+ * stacks `lararium` where the table does not trues through `lares wiki true-floor`, by hand, with a receipt.
+ */
+export const CANON_FLOOR: {
+  readonly every:  { readonly canon: readonly SlotUri[]; readonly foreign: readonly SlotUri[] };
+  readonly hearth: { readonly canon: readonly SlotUri[]; readonly foreign: readonly SlotUri[] };
+} = {
+  every:  { canon: [LARES_DOC_URI as SlotUri],                                foreign: [] },
+  hearth: { canon: [LARES_DOC_URI as SlotUri, LARARIUM_DOC_URI as SlotUri], foreign: [TW5_DOCS_BAG, TW5_DEV_BAG] },
+};
+
+const floorRowOf = (slug: string) => (isHearthWiki(slug) ? CANON_FLOOR.hearth : CANON_FLOOR.every);
+
+/** The house-canon bags `slug`'s floor stacks, top first. */
+export function canonFloorOf(slug: string): readonly SlotUri[] {
+  return floorRowOf(slug).canon;
+}
+
+/** The foreign docs bags `slug`'s recipe stacks beneath every house layer (TiddlyWiki5's native docs), top first. */
+export function foreignDocsOf(slug: string): readonly SlotUri[] {
+  return floorRowOf(slug).foreign;
+}
+
+/** Whether `slug`'s floor lays the house-canon bag `bag`: the table's row, or the wiki's own canon. */
+export function floorAdmits(slug: string, bag: string): boolean {
+  return canonFloorOf(slug).includes(bag) || bag === wikiBagUri(slug);
+}
+
+/**
+ * THE STACK AS THE WIKI READS IT, top first: `expandRecipe` with the oracle floor unfolded into the house-canon snapshots its
+ * read-face lays for this wiki (`canonFloorOf`; a bag the stack already composes live keeps its higher seat), so one list shows
+ * every canon a wiki stacks. Both vessels derive it from this one table; a plain wiki reads `lares` and never `lararium`, the
+ * herm/hearth wiki reads `lares`, `lararium`, then TiddlyWiki5's native docs beneath them.
+ */
+export function recipeFloorStack(r: WikiRecipe): readonly SlotUri[] {
+  const laid = expandRecipe(r);
+  const live = new Set(laid);
+  return laid.flatMap((slot) => (slot === ORACLE_BAG ? [...canonFloorOf(r.wikiSlug).filter((bag) => !live.has(bag)), ORACLE_BAG] : [slot]));
+}
+
+/**
+ * The library bags a recipe record stacks against THE CANON FLOOR BY PLACE: a house-canon bag the table withholds from this wiki
+ * (`lararium` outside the herm/hearth wiki), or a TW5 docs bag outside it. `lararium` rode the `lares` quine wiki's own record
+ * as a library before the ruling; `lares wiki true-floor` drops exactly these, by hand, with a receipt. A `lares` library stays:
+ * every wiki stacks `lares`, and a live `lares` document above its floor snapshot reads the same law, fresher.
+ */
+export function floorUntrueLibraries(slug: string, libraryBags: readonly string[]): string[] {
+  const placed = new Set<string>([LARES_DOC_URI, LARARIUM_DOC_URI, TW5_DOCS_BAG, TW5_DEV_BAG]);
+  return libraryBags.filter((bag) => placed.has(bag) && !floorAdmits(slug, bag) && !foreignDocsOf(slug).includes(bag));
 }
 
 /**
@@ -345,6 +431,9 @@ const FACE_RELATION = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[
  * that face's own catalog; the daemon document (`bags/daemon`) keeps no canon role.
  */
 export const DAEMON_WIKI_SLUG = "daemon";
+
+/** The herm/hearth wiki's slug (`isHearthWiki`): the daemon wiki's, until a place-named slug swaps in. */
+export const HEARTH_WIKI_SLUG: string = DAEMON_WIKI_SLUG;
 
 export function daemonFaceCanonBag(faceRelation: string): SlotUri {
   if (!FACE_RELATION.test(faceRelation)) throw new Error(`daemon face canon: invalid relation ${JSON.stringify(faceRelation)}`);
@@ -395,7 +484,7 @@ export const WIKI_SLOT_KINDS: readonly WikiSlotKind[] = ["temp", "draft", "perso
  * `recipeRecordFields` and recipe-watch all read.
  */
 export function structuralSlots(slug: string): ReadonlySet<SlotUri> {
-  return new Set<SlotUri>([...WIKI_SLOT_KINDS.map((k) => wikiSlotUri(slug, k)), wikiBagUri(slug), ORACLE_BAG]);
+  return new Set<SlotUri>([...WIKI_SLOT_KINDS.map((k) => wikiSlotUri(slug, k)), wikiBagUri(slug), ORACLE_BAG, ...foreignDocsOf(slug)]);
 }
 
 /**
@@ -468,7 +557,8 @@ export function parsePluginOfferings(raw: unknown): string[] {
 export function recipeRecordFields(
   r: WikiRecipe,
 ): { label: string; "bag-stack": string; "writable-bag": string; "plugin-offerings"?: string } {
-  const instance = new Set<SlotUri>(WIKI_SLOT_KINDS.map((k) => wikiSlotUri(r.wikiSlug, k)));
+  // The instance slots and the foreign docs the table places never ride a record: the table derives them on every read.
+  const instance = new Set<SlotUri>([...WIKI_SLOT_KINDS.map((k) => wikiSlotUri(r.wikiSlug, k)), ...foreignDocsOf(r.wikiSlug)]);
   const stack = [...expandRecipe(r)].reverse().filter((uri) => !instance.has(uri));
   return {
     label: r.wikiSlug,

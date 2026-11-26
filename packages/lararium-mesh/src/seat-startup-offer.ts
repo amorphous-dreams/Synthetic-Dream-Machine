@@ -7,7 +7,7 @@
  * `executable-class.ts`: a module, plugin or script type, a startup action, a global macro or procedure, a view template, and every
  * system tag the list leaves unnamed) runs in the tab, so one the AI seat lands would run in the operator's browser. A seat-asked
  * write of such a record therefore OFFERS and never lands, unless an executable-record lei the face strung stands for it: every
- * write door (the tiddler door, `meme put`, INGEST) calls `admitSeatExecutable` over each record it would land, before its first
+ * write door (the tiddler door over a wiki or a bag, INGEST) calls `admitSeatExecutable` over each record it would land, before its first
  * write. Under a standing lei the vessel's port spends one return (`spendExecLei`) and the record lands; with none, or past its
  * returns, or outside its scope, the refusal names the lei's own reading and the operator's own hand. Every other asker (the
  * operator's CLI, the tab, a door that read no asker) lands natively. A plain `$:/config`, `$:/state` or `$:/temp` record lands for

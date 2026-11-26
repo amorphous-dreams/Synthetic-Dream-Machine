@@ -3,10 +3,9 @@ import { CompositeStore } from "@lararium/mesh/composite-store";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import {
-  makeMemeDeleteReactor, makeMemeGetReactor, makeMemeListReactor, makeMemeProjectReactor, makeMemePutReactor,
-  type MemeVerbOptions,
-} from "../src/meme-verbs.js";
+import { makeMemeGetReactor, makeMemeListReactor, makeMemeProjectReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeTiddlerDeleteReactor, makeTiddlerPutReactor } from "../src/tiddler-verbs.js";
+import { placeMeme, wikiMemeSink } from "../src/place-meme.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 
 const URI = "lar:///t/container-default";
@@ -38,16 +37,16 @@ function rig() {
   return { opts, fields, composite };
 }
 
-/** One call of each meme reactor with the given container args; answers the refusals and the caps asked. */
+/** One call of each content reactor with the given container args; answers the refusals and the caps asked. */
 async function refusalsOf(container: Record<string, unknown>): Promise<{ refusals: Array<{ name: string; reason: unknown; message: string }>; caps: string[]; fields: number }> {
   const r = rig();
   const caps: string[] = [];
   const before = r.fields.size;
-  const calls: Array<[ReturnType<typeof makeMemePutReactor>, Record<string, unknown>]> = [
-    [makeMemePutReactor(r.opts), { uri: URI, text: BODY }],
+  const calls: Array<[ReturnType<typeof makeTiddlerPutReactor>, Record<string, unknown>]> = [
+    [makeTiddlerPutReactor(r.opts), { title: URI, text: BODY }],
     [makeMemeGetReactor(r.opts), { uri: URI }],
     [makeMemeListReactor(r.opts), {}],
-    [makeMemeDeleteReactor(r.opts), { uri: URI }],
+    [makeTiddlerDeleteReactor(r.opts), { title: URI }],
     [makeMemeProjectReactor(r.opts), { uri: URI, to: "md" }],
   ];
   const refusals: Array<{ name: string; reason: unknown; message: string }> = [];
@@ -59,12 +58,12 @@ async function refusalsOf(container: Record<string, unknown>): Promise<{ refusal
 }
 
 describe("a content verb names its container at the daemon door", () => {
-  test("every meme verb refuses a missing container as no-container, before any cap ask, read or write", async () => {
+  test("every content verb refuses a missing container as no-container, before any cap ask, read or write", async () => {
     const { refusals, caps, fields } = await refusalsOf({});
     expect(refusals.map((r) => r.reason)).toEqual(["no-container", "no-container", "no-container", "no-container", "no-container"]);
     for (const r of refusals) {
       expect(r.name).toBe("VerbRefusal");
-      expect(r.message).toMatch(/^no-container: meme-(put|get|list|delete|project)/);
+      expect(r.message).toMatch(/^no-container: (tiddler-(put|delete)|meme-(get|list|project))/);
       expect(r.message).toContain("recipe");
       expect(r.message).toContain("bag");
     }
@@ -72,30 +71,29 @@ describe("a content verb names its container at the daemon door", () => {
     expect(fields, "the wiki takes no write").toBe(0);
   });
 
-  test("every meme verb refuses both containers together under the same code", async () => {
+  test("every content verb refuses both containers together under the same code", async () => {
     const { refusals, caps, fields } = await refusalsOf({ recipe: "default", bag: "lares" });
     expect(refusals.map((r) => r.reason)).toEqual(["no-container", "no-container", "no-container", "no-container", "no-container"]);
     expect(caps).toEqual([]);
     expect(fields).toBe(0);
   });
 
-  test("CONTROL: the daemon's own wiki answers to its explicit name and takes the write in its working layer", async () => {
+  test("CONTROL: the daemon's own wiki answers to its explicit name", async () => {
     const explicit = rig();
     const bags: string[] = [];
-    const receipt = await makeMemePutReactor(explicit.opts)({ recipe: "default", uri: URI, text: BODY }, ctx(bags));
-    expect(receipt["decision"]).toBe("ingest");
-    expect(bags).toEqual([WORKING]);
+    await placeMeme({ uri: URI, text: BODY }, wikiMemeSink(explicit.opts.tw5.$tw.wiki as never));
     expect(explicit.fields.has(URI)).toBe(true);
     expect(await explicit.composite.storeForBag(DAEMON_BAG_ID)!.listVisible()).toEqual([]);
     const read = await makeMemeGetReactor(explicit.opts)({ recipe: "default", uri: URI }, ctx(bags));
+    expect(bags).toEqual([WORKING]);
     expect((read["meme"] as { text?: string } | null)?.text).toContain("container-default");
   });
 
   test("CONTROL: an explicit bag goes through unchanged", async () => {
     const r = rig();
     const bags: string[] = [];
-    const receipt = await makeMemePutReactor(r.opts)({ bag: WORKING, uri: URI, text: BODY }, ctx(bags));
-    expect(receipt["decision"]).toBe("ingest");
+    const receipt = await makeTiddlerPutReactor(r.opts)({ bag: WORKING, title: URI, text: BODY }, ctx(bags));
+    expect(receipt).toMatchObject({ decision: "put", bag: WORKING, layer: "working" });
     expect(bags).toEqual([WORKING]);
     expect((await r.composite.storeForBag(WORKING)!.get(URI))?.tiddler.title).toBe(URI);
   });

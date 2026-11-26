@@ -7,7 +7,7 @@
  *   S2 — unseated → the device floor doc keyed by the vessel DID in the catalog (`face-reach: vessel-only`),
  *        and the call never throws for want of a group
  *   S3 — THE WELD: the same slug on the same vessel resolves to ONE doc from every call site — the
- *        island's slot grant (`bindings`), the host mount's read (`draft`), `meme put --recipe`'s
+ *        island's slot grant (`bindings`), the host mount's read (`draft`), `tiddler put --recipe`'s
  *        store, `prune-stale`'s read, and `wiki init`'s report
  *   S4 — personal binds on the vessel's key when unseated, and says so
  *   S5 — THE ONE PATH (cabal-realm#/the-workbench): a wiki's working slot rests in its REALM WORKBENCH. The first stand
@@ -30,7 +30,7 @@ import { ledgerWorkbenches, workbenchKeyDocs } from "@lararium/mesh/workbench";
 import { refusingControlStore, vesselLockedRefusal, VESSEL_LOCKED } from "@lararium/mesh/control-home";
 import { floorRegistryOf } from "@lararium/mesh/floor-registry";
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
-import { MemoryTiddlerStore, makeCatalogAccessor, makeInitWikiReactor, makePruneStaleReactor, makeMemePutReactor, type MemeVerbOptions } from "@lararium/tw5";
+import { MemoryTiddlerStore, makeCatalogAccessor, makeInitWikiReactor, makePruneStaleReactor, makeTiddlerPutReactor, type MemeVerbOptions } from "@lararium/tw5";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
 import { makeSlotDocResolver, type SlotDocResolver } from "../src/slot-doc-resolver.js";
 import { makeFaceBagDoor } from "../src/face-bag-door.js";
@@ -283,7 +283,7 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
         resolveDraftDoc: (slug) => r.resolver.draft(slug),
       })({ slug: "garden" }, { daemon: r.daemon, invocation: { requestId: "p" } as never, cap: async () => ({ ok: true }) });
       sites["prune-stale"] = String(prune["draftDocUrl"]);
-      // ⑤ meme put --recipe lands in the store over that doc
+      // ⑤ a put into the wiki's draft slot, addressed as a bag, reaches the store over that doc
       const recipes = new Map<string, LarTiddlerRecord>([[
         "lar:///ha.ka.ba/bags/catalog/recipes/garden",
         { tiddler: { title: "lar:///ha.ka.ba/bags/catalog/recipes/garden", "bag-stack": `${wikiBagUri("garden")}`, "writable-bag": wikiSlotUri("garden", "draft") } },
@@ -301,8 +301,9 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
         },
       };
       const text = `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///t/x\`>>\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n<<^ code=\`&#x0002;\`>>\n\n<<~ ahu slot=\`#a\`>>\n\n! a\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` -> to=?>>\n`;
-      await makeMemePutReactor(memeOpts)({ recipe: "garden", uri: "lar:///t/x", text }, { daemon: r.daemon, invocation: { requestId: "m" } as never, cap: async () => ({ ok: true }) });
-      sites["meme put --recipe"] = reachedUrls[0] ?? "(none)";
+      // The witness reads which document the door reached; whatever the gate answers for the text rides beside it.
+      await makeTiddlerPutReactor(memeOpts)({ bag: wikiSlotUri("garden", "draft"), title: "lar:///t/x", text }, { daemon: r.daemon, invocation: { requestId: "m" } as never, cap: async () => ({ ok: true }) }).catch(() => undefined);
+      sites["tiddler put --bag <draft slot>"] = reachedUrls[0] ?? "(none)";
 
       const urls = new Set(Object.values(sites));
       expect(urls.size, `the sites disagree: ${JSON.stringify(sites, null, 2)}`).toBe(1);

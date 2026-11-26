@@ -335,11 +335,11 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     old.must(["wiki", "keep", "quiet"]);
     const page = join(scratch, "page.mem");
     writeFileSync(page, memeText(PAGE, "a page on the shared wiki", ""));
-    old.must(["tiddler", "put", "--meme", PAGE, "--recipe", "notes", "--file", page, "--json"]);
+    old.must(["tiddler", "put", PAGE, "--recipe", "notes", "--file", page, "--json"]);
     for (const [uri, body, meta] of [[HERON, "remember the heron", `tags = "stage/index"\ndescription = "the heron"\n`], [POND, "the pond at dusk", ""], [KITE, "fly the kite low", ""]]) {
       const file = join(scratch, `${uri.split("/").pop()}.mem`);
       writeFileSync(file, memeText(uri, body, meta));
-      old.must(["tiddler", "put", "--meme", uri, "--recipe", "default", "--file", file, "--json"]);
+      old.must(["tiddler", "put", uri, "--recipe", "default", "--file", file, "--json"]);
     }
     // Plain records (no uri-path): one under a stable name, and one under a free title, which the mirror sites at the flattened
     // default (`plain note.tid`) and the restore names by the title its own file states.
@@ -376,11 +376,11 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     assert.ok(parAnswer.counts.shares >= 2, `the reading saw both shares: ${JSON.stringify(parAnswer.counts)}`);
 
     // ── THE INSTRUMENT FAILS: delete one meme, change another, drop one share ───────────────────────────────────
-    fresh.must(["tiddler", "delete", "--meme", POND, "--recipe", "default", "--json"]);
+    fresh.must(["tiddler", "delete", POND, "--family", "--recipe", "default", "--json"]);
     const kite = JSON.parse(fresh.must(["tiddler", "get", KITE, "--recipe", "default", "--meme", "--all", "--json"]).stdout).data.meme;
     const kiteFile = join(scratch, "kite-changed.mem");
     writeFileSync(kiteFile, memeText(KITE, "fly the kite high", ""));
-    fresh.must(["tiddler", "put", "--meme", KITE, "--recipe", "default", "--file", kiteFile, "--base", kite.canonicalHash, "--json"]);
+    fresh.must(["tiddler", "put", KITE, "--recipe", "default", "--file", kiteFile, "--base", kite.canonicalHash, "--json"]);
     // The share config's file is the person's own hand door (it wins at the next boot): drop the notes row from it.
     const mesh = await import(pathToFileURL(join(repo, "packages/lararium-mesh/dist/index.js")).href);
     const shareFile = join(fresh.root, "config", mesh.SHARE_CONFIG_FILE);

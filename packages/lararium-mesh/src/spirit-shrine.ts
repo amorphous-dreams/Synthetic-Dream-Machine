@@ -122,7 +122,7 @@ export function residueOf(keys: string | readonly string[], titles: readonly str
 /** Does a title name a carry (and not a handback)? */
 export const isCarry = (t: string): boolean => t.startsWith(`${MEMORY_PREFIX}${COMPACTION_WORD}/`);
 
-/** A slot's body as `meme-patch` reads it: the slot text without its `<<~ ahu …>>` frame. */
+/** A slot's body as a put on the slot reads it: the slot text without its `<<~ ahu …>>` frame. */
 export function slotBody(slotText: string): string {
   const lines = slotText.replace(/\s+$/, "").split("\n");
   if (/^<<~ ahu\b/.test(lines[0] ?? "")) lines.shift();
@@ -639,7 +639,8 @@ export function cardRecordOf(pet: string, uri: string, out: Record<string, unkno
  * AN OFFERING CARRIES NO AUTHORITY BEYOND A NUDGE until per-summon seats get minted (spirit-circle #/admission, #/open): it
  * records its offerer, om names it, and a re-offer over a standing mandate lands only from the same offerer or a hand. HOʻĀLA, THE WAKING: an instance's om pulls the mandate and its hash through the door, and the instance echoes
  * the hash back (`ah <pet> --echo <hash> --instance <id>`); the echo lands on the card's sibling record as `<pet>#<instance> <hash>
- * <seq>`, the seq door-minted, so no clock orders an echo. Where an offering stands, a slot write from an instance that has not
+ * <seq> h<N>`, the seq door-minted, so no clock orders an echo, and `h<N>` the face that answered the echo (plan/companion-context
+ * #/4): the instance stays bound to the face it woke under, and a turned mount meets `spirit-face-turned` (`echoTurned`). Where an offering stands, a slot write from an instance that has not
  * echoed the standing mandate lands and carries an `unechoed:` notice (`echoReceipt`: a receipt, never a gate); a fresh offering
  * asks every instance to echo again.
  * A spirit no summon offered (a familiar) writes as before. The grant rides as a declared slice: the leased register entry it
@@ -697,20 +698,43 @@ export function offeringWrite(was: Readonly<Record<string, string>>, pet: string
   };
 }
 
-export interface SpiritEcho { readonly tag: string; readonly instance: string; readonly hash: string; readonly seq: number }
-/** The `echoes` field read: one `<pet>#<instance> <mandate hash> <seq>` per line; a line that parses not drops. */
+export interface SpiritEcho {
+  readonly tag: string; readonly instance: string; readonly hash: string; readonly seq: number;
+  /** The face (handle index) that answered the echo; null on a line that names none (it binds at its next echo). */
+  readonly face: number | null;
+}
+/** The face word an echo line carries: `h<N>`, a handle index. */
+const ECHO_FACE = /^h(0|[1-9][0-9]{0,5})$/;
+/** The `echoes` field read: one `<pet>#<instance> <mandate hash> <seq> [h<N>]` per line; a line that parses not drops. */
 export function echoesOf(raw: string | undefined): SpiritEcho[] {
   return String(raw ?? "").split("\n").flatMap((line) => {
-    const m = /^(\S+#([A-Za-z0-9_-]{1,128})) ([0-9a-f]{64}) ([0-9]{1,15})$/.exec(line.trim());
-    return m ? [{ tag: m[1]!, instance: m[2]!, hash: m[3]!, seq: Number(m[4]) }] : [];
+    const m = /^(\S+#([A-Za-z0-9_-]{1,128})) ([0-9a-f]{64}) ([0-9]{1,15})(?: (h[0-9]{1,6}))?$/.exec(line.trim());
+    if (!m || (m[5] !== undefined && !ECHO_FACE.test(m[5]))) return [];
+    return [{ tag: m[1]!, instance: m[2]!, hash: m[3]!, seq: Number(m[4]), face: m[5] === undefined ? null : Number(m[5].slice(1)) }];
   });
 }
-/** An instance's echo joins the sibling record: its own line replaced, seq = max + 1 inside the CAS write, the highest `ECHO_CAP` kept. */
-export function echoJoin(fields: Readonly<Record<string, string>>, pet: string, instance: string, hash: string): { seq: number; write: SideWrite } {
+/** One echo line as the field holds it: the face word rides fourth where the answering face named one. */
+const echoLine = (e: SpiritEcho): string => `${e.tag} ${e.hash} ${e.seq}${e.face === null ? "" : ` h${e.face}`}`;
+/**
+ * An instance's echo joins the sibling record: its own line replaced, seq = max + 1 inside the CAS write, the highest `ECHO_CAP`
+ * kept, and the face that answered (`face`, a handle index; null where the island named none) riding as the line's fourth word.
+ */
+export function echoJoin(fields: Readonly<Record<string, string>>, pet: string, instance: string, hash: string, face: number | null = null): { seq: number; write: SideWrite } {
   const was = echoesOf(fields["echoes"]);
   const seq = was.reduce((m, e) => Math.max(m, e.seq), 0) + 1;
-  const kept = [...was.filter((e) => e.instance !== instance), { tag: `${pet}#${instance}`, instance, hash, seq }].sort((x, y) => x.seq - y.seq).slice(-ECHO_CAP);
-  return { seq, write: { patch: { echoes: kept.map((e) => `${e.tag} ${e.hash} ${e.seq}`).join("\n") } } };
+  const kept = [...was.filter((e) => e.instance !== instance), { tag: `${pet}#${instance}`, instance, hash, seq, face }].sort((x, y) => x.seq - y.seq).slice(-ECHO_CAP);
+  return { seq, write: { patch: { echoes: kept.map(echoLine).join("\n") } } };
+}
+/**
+ * THE FACE JOINT (plan/companion-context #/4: finish under the face the echo named, never re-home). An instance whose standing echo
+ * names one face, written to while another face answers, refuses by name; the cure names the face it echoed under. Null where the
+ * echo names no face, the island names none, the faces agree, or no instance writes.
+ */
+export function echoTurned(pet: string, sideFields: Readonly<Record<string, string>>, instance: string | null, answered: number | null, verb: string): SpiritRefusal | null {
+  if (instance === null || answered === null) return null;
+  const echoed = echoesOf(sideFields["echoes"]).find((e) => e.instance === instance)?.face ?? null;
+  if (echoed === null || echoed === answered) return null;
+  return new SpiritRefusal("spirit-face-turned", `spirit-face-turned: ${pet}#${instance} echoed its mandate under h${echoed}, and h${answered} answered; nothing landed. Name the face: \`lares spirit ${verb} ${pet} … --instance ${instance} --face ${echoed}\``, 4);
 }
 /** Does this instance's echo of this mandate stand? */
 export const echoStands = (sideFields: Readonly<Record<string, string>>, instance: string, hash: string): boolean =>

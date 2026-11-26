@@ -1,4 +1,4 @@
-/** What the meme door and the family door share: the usage refusal, the face and target a line names, the dispatch. */
+/** What the meme door, the family listing and the tiddler door share: the usage refusal, the face and target a line names, the dispatch. */
 import { runVerb, runVerbAsFace } from "../verb-call.js";
 import { faceOption, FaceOptionMalformed } from "../face-option.js";
 import { targetOption, TargetOptionMalformed } from "../target-option.js";
@@ -25,12 +25,6 @@ export function targetNamed(args: ParsedArgs): { target?: string } {
 /** Dispatch a plan: the worn face's one-shot, or a session of the face `--face` named. */
 export function dispatch(plan: { readonly verb: string; readonly face?: number }, verbArgs: Record<string, unknown>, did: string): ReturnType<typeof runVerb> {
   return plan.face === undefined ? runVerb(plan.verb, verbArgs, did) : runVerbAsFace(plan.verb, verbArgs, plan.face);
-}
-
-/** A refusal's code: the shut face's by name, a cap's, else the verb's. */
-export function refusalCodeOf(error: string | null | undefined): string {
-  if (/^face-not-open:/.test(error ?? "")) return "face-not-open";
-  return /cap-denied/.test(error ?? "") ? "cap-denied" : "verb-error";
 }
 
 /** Where a write landed, as its answer names it: the bag, and the face where `--face` named one. */

@@ -1,7 +1,7 @@
 /**
- * THE MEME DOOR READS THE ONE FAMILY LAW (wiki-surface-scout #/meme-aware-actions, lane 0).
+ * A FAMILY PLACEMENT READS THE ONE FAMILY LAW (wiki-surface-scout #/meme-aware-actions, lane 0).
  *
- * `meme put` and `meme delete` once swept every `<uri>/` title by prefix. A prefix holds no authority: a
+ * A placement and a removal read the family by its edges, never by a `<uri>/` prefix. A prefix holds no authority: a
  * path child stands as its own meme (or its own plain tiddler), and the door spares it and names it.
  * A removal lands the root and its component slots as ONE store change where the sink can carry one.
  */
@@ -31,7 +31,7 @@ function memorySink(): MemeSink & { store: Map<string, TiddlerFields>; changes: 
   } as MemeSink & { store: Map<string, TiddlerFields>; changes: string[][] };
 }
 
-describe("meme-put-spares-plain-children", () => {
+describe("a placement spares plain children", () => {
   test("★ a bare put at an address leaves a plain tiddler and a meme under its path standing ★", async () => {
     const sink = memorySink();
     sink.store.set(`${URI}/y`, { title: `${URI}/y`, type: "text/vnd.tiddlywiki", text: "a plain note" });
@@ -64,7 +64,7 @@ describe("meme-put-spares-plain-children", () => {
   });
 });
 
-describe("meme delete — the family leaves as one change", () => {
+describe("a family removal — the family leaves as one change", () => {
   test("★ the root and its slots leave in ONE change; a path child stays and the receipt names it ★", async () => {
     const sink = memorySink();
     await placeMeme({ uri: URI, text: meme(URI, ["a", "b", "c"]) }, sink);

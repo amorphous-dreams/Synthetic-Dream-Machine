@@ -125,7 +125,6 @@ describe("a folded sub-path refuses the flags it does not read", () => {
       [["tiddler", "get", "Note", "--recipe", "default", "--after", "1.0123456789abcdef"], "--after"],
       [["tiddler", "get", "lar:///x", "--recipe", "default", "--meme", "--skinny", "--slot", "#/a"], "--slot"],
       [["tiddler", "get", "lar:///x", "--recipe", "default", "--meme", "--all", "--slot", "#/a"], "--slot"],
-      [["tiddler", "put", "Note", "--recipe", "default", "--slot", "#/a"], "--slot"],
     ] as const) {
       const r = await run([...argv, "--no-json"]);
       expect(r.code, argv.join(" ")).toBe(2);

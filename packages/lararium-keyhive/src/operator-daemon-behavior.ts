@@ -20,12 +20,12 @@ import {
   makeRegisterColdReactor, registerActionReactors, makeFresherCanonReactor, makeOverrideBasesReactor, makeTw5Deserializer,
   makeCatalogAccessor, findOrThrow,
   makeInitWikiReactor, makeRetireWikiReactor, makeDraftReactor, makePruneStaleReactor,
-  makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
+  makeMemeGetReactor, makeMemeListReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor, makeWikiStatusReactor, makeWikiActionReactor,
   makeOracleCastReactor,
   ddateVerb,
   makeWardAlertReactor, fileWardRefusal, makeIngestAlertRail,
-  makeAddBagReactor, makeRemoveBagReactor, makeCompactBagReactor, makeRotateRecipeReactor, makeRestampBagTierReactor,
+  makeAddBagReactor, makeRemoveBagReactor, makeTrueFloorReactor, makeCompactBagReactor, makeRotateRecipeReactor, makeRestampBagTierReactor,
   makeSwitcherStateReactor, makePromoteStateReactor,
   makePersonaStateReactor,
   makeCircleStateReactor,
@@ -555,7 +555,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
 
   // THE ONE SLOT-DOC RESOLVER — every site that names a wiki's draft/working/personal doc reads
   // through it (the island's slot grants, the host mount by proxy, wiki init, prune-stale,
-  // `meme put --recipe`, the daemon's own working layer). Built once the keyhive stands, over the
+  // `tiddler put --bag <a wiki slot>`, the daemon's own working layer). Built once the keyhive stands, over the
   // live context; the face-seat read rides the veil's own registry (a pin is standing, a seat is
   // capability), so a binding never delegates to an agent the veil cannot name.
   let slotDocs: SlotDocResolver | null = null;
@@ -1321,8 +1321,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // draft needs no catalog — register it regardless of slot.
       registry.register("draft", makeDraftReactor({ composite: ctx.composite, ...(kahuReach ? { kahuReach } : {}) }));
 
-      // meme-put / meme-get — the daemon skins of the one placement function (`placeMeme`): the anchor
-      // rides the daemon's own $tw.wiki; a named recipe or bag reaches its store by access (access≠load).
+      // THE FAMILY READS AND THE BAG REACH — the options every content door shares: the anchor rides the daemon's own
+      // $tw.wiki; a named recipe or bag reaches its store by access (access≠load).
       // A PERSONAL SLOT A PUT MINTS takes the face's cap on its bag in the same act (a wiki this session never mounted holds
       // none yet), so the write gate that follows reads the face's own hand on the layer that takes the write.
       const personalCap = async (slug: string): Promise<void> => {
@@ -1337,7 +1337,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if (url && kind === "personal") await personalCap(slug);
         return url;
       }, realmCanonUrlOf(ctx)), writeSlot: (slug: string) => slotDocsOf(ctx).writeSlot(slug), ...(kahuReach ? { kahuReach } : {}) };
-      // EACH HAT REACHED BY NAME: each meme verb runs as the face whose session placed it, the mount over its own wiki, a lit
+      // EACH HAT REACHED BY NAME: each verb runs as the face whose session placed it, the mount over its own wiki, a lit
       // sibling on its own lane (its daemon canon, its own document, sealed by its own chain); every answer names the face.
       const lanePorts: FaceLanePorts = {
         mountedKey: () => daemonAuth.atom?.key ?? null,
@@ -1374,13 +1374,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         crossFaceReactor(verb, routed, (view) => make(visitOpts(view)), crossPorts);
       const lane = (verb: string, make: (opts: MemeVerbOptions) => VerbReactor): VerbReactor =>
         visited(verb, faceLaneReactor(verb, make(memeOpts), (faceLane) => make({ ...memeOpts, faceLane }), lanePorts), make);
-      registry.register("meme-put", lane("meme-put", makeMemePutReactor), { summary: "Place a meme (framed text) through the Confluence gate into the anchor wiki, a named recipe's designated bag, or a named bag; `base` = the canonical hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      // ONE DOOR READS: `meme-get` stands internal (no surface declares it, no lane carries it, no chore-free seat), the read-back of
-      // the one placement function the placement tests call; every surface reads a meme through `tiddler-get` with `meme: true`.
+      // ONE DOOR READS AND WRITES: `meme-get` stands internal (no surface declares it, no lane carries it, no chore-free seat), the
+      // read-back of the one placement function the placement tests call; every surface reads a meme through `tiddler-get` with
+      // `meme: true`, and a family lands, patches and leaves through `tiddler-put` and `tiddler-delete`.
       registry.register("meme-get", makeMemeGetReactor(memeOpts));
-      registry.register("meme-patch", visited("meme-patch", makeMemePatchReactor(memeOpts), makeMemePatchReactor), { summary: "Edit one slot's body (`append` a paragraph at its end, or `replace` it whole) against `base`, the canonical hash last read; lands through meme-put's own gate and reseals. A stale base refuses `stale-base`, an absent slot `slot-missing`.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-list", lane("meme-list", makeMemeListReactor), { summary: "List every meme root a seat holds with its canonical hash; `tree` nests the slot tree.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      registry.register("meme-delete", lane("meme-delete", makeMemeDeleteReactor), { summary: "Remove a meme's whole group; `base` = the canonical hash last read, stale → conflict.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-project", visited("meme-project", makeMemeProjectReactor(memeOpts), makeMemeProjectReactor), { summary: "Project a meme root to a target — md · html · tid · json — as { uri, to, text, contentType, meta? }; the anchor renders every target in-VM, a recipe or bag target projects md. The carrier itself reads through tiddler-get (meme: true, grain: whole).", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
 
       // THE TIDDLER DOOR (wiki-surface-scout #/a-lean, lane 1): every TiddlyWiki act over one record or the wiki's engine,
@@ -1402,8 +1400,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       registry.register("wiki-render", engineVerb("wiki-render", makeWikiRenderReactor), { summary: "Wikify a title or a wikitext span through the wiki's own engine (the daemon wiki or any wiki this face reaches) to `text` or `html`, under a byte cap with a `next` cursor.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("wiki-render-out-prepare", engineVerb("wiki-render-out-prepare", makeWikiRenderOutReactor), { summary: "Prepare native render bytes under the reader and output grant; node custody publishes them.", surfaces: [] });
       registry.register("wiki-action", engineVerb("wiki-action", makeWikiActionReactor), { summary: "Run one named action from the admitted table in the wiki's own engine (`recipe` names the wiki, `name` the row, `expected` and `resulting` the checked values; no caller action text). It reads the floor shadow unoverridden, runs it on an isolated view against the one target the row may change, and lands that change through the ordinary gated put; the answer leads with its `<<~ has …>>` line and carries the receipt and `change`. A stale `expected` answers `conflict` and writes nothing; an unknown name or parameter, an overridden shadow, a withheld target or a denied write refuses by name.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      registry.register("tiddler-put", engineVerb("tiddler-put", makeTiddlerPutReactor), { summary: "Patch one tiddler: set fields, unset fields, add and remove tags, and move the text only where named; `base` = the hash last read (stale answers `conflict`), `create` lands only where no tiddler stands. Lands in the wiki's working layer.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      registry.register("tiddler-delete", engineVerb("tiddler-delete", makeTiddlerDeleteReactor), { summary: "Remove one tiddler by the family law: with no `mode` a delete deletes plainly (each record leaves its own layer, no tombstone; `mode: plain` in the answer) and retracts a kāpae that hides nothing; a meme root or slot answers its `consequence` and `decision: refused` (`tiddler-delete-in-a-family`) unless `family: true` names the family act, which lands every member as one change; where a lower layer holds the title too, no mode refuses `delete-mode-needed` and the caller names one: `kapae` tombstones in a writable layer and shadows the records beneath, `reveal` retracts the topmost record so the one beneath surfaces; each act names `holds` and `shadowed` or `reveals`; `base` = the hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("tiddler-put", engineVerb("tiddler-put", makeTiddlerPutReactor), { summary: "Patch one tiddler: set fields, unset fields, add and remove tags, and move the text only where named (`text` whole, `append` at the end); `base` = the hash last read (stale answers `conflict`), `create` lands only where no tiddler stands. `recipe` lands in that wiki's working layer through its engine; `bag` lands in that one bag through its store. A meme family's text (a root's carrier, a slot `<root>#/<slot>`, a `cut` of named slots) lands through the Confluence gate and reseals: a slot the text omits stays (`kept`), a partial base guards a slot within the span it read, and an append on a slot joins its body's end.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("tiddler-delete", engineVerb("tiddler-delete", makeTiddlerDeleteReactor), { summary: "Remove one tiddler by the family law: with no `mode` a delete deletes plainly (each record leaves its own layer, no tombstone; `mode: plain` in the answer) and retracts a kāpae that hides nothing; a meme root or slot answers its `consequence` and `decision: refused` (`tiddler-delete-in-a-family`) unless `family: true` names the family act, which lands every member as one change; where a lower layer holds the title too, no mode refuses `delete-mode-needed` and the caller names one: `kapae` tombstones in a writable layer and shadows the records beneath, `reveal` retracts the topmost record so the one beneath surfaces; each act names `holds` and `shadowed` or `reveals`; `base` = the hash last read. A slot (`<root>#/<slot>`) leaves by the explicit cut of its parent's text (`mode: cut`), and the answer names what the cut tombstoned; `bag` removes a record, or with `family: true` a family, from that one bag through its store.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("tiddler-rename", engineVerb("tiddler-rename", makeTiddlerRenameReactor), { summary: "Rename one tiddler (or a meme root, its slots following) over TiddlyWiki's own relink: every reference the engine's relinkers rewrite (core: tags and list fields; text links only where a relink plugin mounts) follows to `to`, and the old title stays as a forwarder (a pointer tiddler whose `forward-to` names the new title and whose text transcludes it). The move lands in the working layer alone: a record resting elsewhere refuses `rename-source-layer`, referrers outside it refuse `rename-referrers-unreachable` (a count, never titles), a standing target refuses `rename-target-stands`, a slot refuses `slot-without-root`, a `lar:` title another layer holds takes a hand alone, a `$:/` title on either side refuses `rename-system-title`; an answer names only records the face reads and counts the rest (`withheld`); `base` = the hash last read.", surfaces: [VERB_SURFACE.cli] });
       registry.register("wiki-status", engineVerb("wiki-status", makeWikiStatusReactor), { summary: "Name each layer the wiki composes (the daemon wiki, or any wiki this face reaches) and whether the session's face reads and writes it; `working` names the layer a write lands in.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       // THE ORACLE CAST (state/decisions "the oracle designs"): one I Ching cast, an ACT that lands its result as one tiddler
@@ -2010,6 +2008,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // live-layer mount/unmount: the recipe syncs, islands reconcile their own stacks.
         registry.register("add-bag",       underFace("add-bag", makeAddBagReactor({ catalog, ...(sysPlane ? { oracle: sysPlane } : {}), post: ctx.post })));
         registry.register("remove-bag",    underFace("remove-bag", makeRemoveBagReactor({ catalog, ...(sysPlane ? { oracle: sysPlane } : {}), post: ctx.post })));
+        // THE CANON FLOOR BY PLACE's migration door: a hand trues one recipe, with a receipt; no boot moves a record.
+        registry.register("true-floor",    underFace("true-floor", makeTrueFloorReactor({ catalog, ...(sysPlane ? { oracle: sysPlane } : {}), post: ctx.post })));
         // Catalog-writing residency verbs — mint/oracle via accessor + repo, command
         // residency via post. No live-layer swap (oracle/recipe sync; islands reconcile).
         registry.register("bag-compact", makeCompactBagReactor({ repo: ctx.repo, catalog, post: ctx.post }));

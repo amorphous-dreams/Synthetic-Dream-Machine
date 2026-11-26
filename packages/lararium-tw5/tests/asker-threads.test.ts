@@ -77,13 +77,13 @@ async function settle(turns = 20): Promise<void> {
 
 describe("the asker rides the placed ask", () => {
   test("RED: the place-verb message carries the asker its sender names; CONTROL: one naming none carries none", () => {
-    expect(mkDaemonPlaceVerb({ origin: "channel", verb: "meme-put", args: {}, requestedBy: "p", asker: "seat" } as never)).toMatchObject({ asker: "seat" });
-    expect(mkDaemonPlaceVerb({ origin: "channel", verb: "meme-put", args: {}, requestedBy: "p" })).not.toHaveProperty("asker");
+    expect(mkDaemonPlaceVerb({ origin: "channel", verb: "tiddler-put", args: {}, requestedBy: "p", asker: "seat" } as never)).toMatchObject({ asker: "seat" });
+    expect(mkDaemonPlaceVerb({ origin: "channel", verb: "tiddler-put", args: {}, requestedBy: "p" })).not.toHaveProperty("asker");
   });
 
   test("RED: the local ask book names the asker of the exact act; CONTROL: other args, an unbooked id and a retired id name none", () => {
     const book = makeLocalAskBook();
-    const ask = { requestId: "r1", action: "meme-put", args: { bag: "lares" }, requestedBy: "me" };
+    const ask = { requestId: "r1", action: "tiddler-put", args: { bag: "lares" }, requestedBy: "me" };
     book.add({ ...ask, origin: "channel", asker: "seat" } as never);
     expect(book.askerOf(ask)).toBe("seat");
     expect(book.askerOf({ ...ask, args: { bag: "garden" } })).toBeUndefined();

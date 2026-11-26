@@ -466,12 +466,12 @@ lift_vessel() {
 follow_up=yes
 route_cli() {
   # A named host file crosses the container boundary as raw stdin (a put's text, and the spirit verbs that take `--file`: ah, the
-  # carry's verb (its word stands in packages/lares-cli/src/spirit-words.ts; a rename edits this match too) and residue).
+  # carry's verb (its word stands in packages/lares-cli/src/spirit-words.ts; a rename edits this match too), residue and handback).
   # Rotate the positional
   # arguments while replacing only the consuming value, preserving every other byte of argv.
   stream_file=""
   stream_door=""
-  case "${1:-} ${2:-}" in "tiddler put"|"spirit ah"|"spirit hooili"|"spirit residue") stream_door=yes ;; esac
+  case "${1:-} ${2:-}" in "tiddler put"|"spirit ah"|"spirit hooili"|"spirit residue"|"spirit handback") stream_door=yes ;; esac
   if [ -n "$stream_door" ]; then
     stream_n=0 stream_kind="" stream_empty="" stream_want=""
     # One pass names the text sources. A value that rides beside another flag (`--text --file`) counts as a value, never as a flag.
@@ -491,7 +491,7 @@ route_cli() {
         --) break ;;
         --file|--append) stream_want=$stream_arg ;;
         --file=*|--append=*) stream_n=$((stream_n + 1)); stream_kind=${stream_arg%%=*}; [ -n "${stream_arg#*=}" ] || stream_empty=yes ;;
-        --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--accept-loss|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--collapse|--commit|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--observe|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
+        --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--accept-loss|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--collapse|--commit|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--observe|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--witness|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
       esac
     done
     if [ "$stream_n" -gt 1 ]; then printf 'lares-container: name one text source: --file or --append, once\n' >&2; return 2; fi
@@ -518,7 +518,7 @@ route_cli() {
             --file=*|--append=*)
               stream_value=${stream_arg#*=}
               if [ "$stream_value" != - ]; then stream_file=$stream_value; stream_arg="${stream_arg%%=*}=-"; fi ;;
-            --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--accept-loss|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--collapse|--commit|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--observe|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
+            --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--accept-loss|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--collapse|--commit|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--observe|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--witness|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
           esac
         fi
         set -- "$@" "$stream_arg"
@@ -837,15 +837,20 @@ stop_act() { # $1 = the signal caught
 
 run_waited() { # $1 = exec|run; the rest = the compose argv
   act_kind=$1; shift
+  # THE TRAPS STAND BEFORE THE ACT: a signal that lands between the spawn and the traps would end this shell by default and
+  # leave the act running. A signal caught before the act's pid is known stops it again once the pid is known.
+  act_pid=""
+  trap 'stop_act TERM' TERM
+  trap 'stop_act HUP' HUP
+  trap 'stop_act INT' INT
   # The subshell EXECS docker, so the pid waited on and signalled names the compose client itself.
   (
+    trap - TERM HUP INT
     if [ -n "$ENV_ARGS" ]; then exec docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE_PATH" "$@"
     else exec docker compose --env-file /dev/null -f "$COMPOSE_FILE_PATH" "$@"; fi
   ) <&3 3<&- &
   act_pid=$!
-  trap 'stop_act TERM' TERM
-  trap 'stop_act HUP' HUP
-  trap 'stop_act INT' INT
+  if [ -n "$caught" ]; then stop_act "$caught"; fi
   while :; do
     if wait "$act_pid"; then act_rc=0; else act_rc=$?; fi
     kill -0 "$act_pid" 2>/dev/null || break
@@ -1552,7 +1557,7 @@ kukulu_lei_word() { # $1 = the branch
 # `ai`) runs up, down, vessel stand, vessel stop and build only under a standing kukulu lei on the checkout's branch with a
 # return left, read as the rite reads it; one standing lei among the vessel's faces licenses. A hand (chain reads `hand`) passes
 # untouched. The rite's own steps (`rebuild`, `keeper-stand`, `keep-owed`) never come through here. With no vessel standing the
-# lei reads nowhere, and the refusal says so.
+# lei reads nowhere, and the refusal says so. A lei that answered no reading refuses too, and names the read to take again.
 ai_restand_gate() { # $1 = the verb as typed
   [ "$HOST_CHAIN" = ai ] || return 0
   ag_top=$(git -C "$SHIM_DIR" rev-parse --show-toplevel 2>/dev/null) || ag_top=""
@@ -1568,7 +1573,8 @@ ai_restand_gate() { # $1 = the verb as typed
   ag_lei=$(kukulu_lei_word "$ag_branch") || ag_lei=""
   if [ "$ag_lei" = yes ]; then return 0; fi
   case "$ag_lei" in
-    '') ag_why="the kukulu lei on $ag_branch answered no reading" ;;
+    # A LEI UNREAD NAMES ITS READ, never a string: the vessel held the read behind another act, and a lei may stand there whole.
+    '') die "$1 refused to an AI seat: the kukulu lei on $ag_branch answered no reading, so nothing licenses it yet; read it with \`lares lei show --rite kukulu --branch $ag_branch\`, then run \`$1\` again (nothing ran)" ;;
     returns-spent) ag_why="the kukulu lei on $ag_branch stands with no return left" ;;
     *) ag_why="no standing kukulu lei on $ag_branch ($ag_lei)" ;;
   esac
@@ -1692,6 +1698,7 @@ kukulu_reading() {
     if [ "$kr_keeper" = struck-due ]; then kr_say='needs your hand: closure moved; struck due'
     elif [ "$kr_offered" = lei ] && [ -z "$kr_lei" ] && [ "$kr_vessel" = standing ] && [ "$kr_lit" = yes ]; then kr_say=$kr_lei_unread
     elif [ -z "$kr_lei" ] && [ "$kr_vessel" = down ]; then kr_say='needs your hand: closure moved; no vessel stands to read the kukulu lei'
+    elif [ "$kr_offered" = lei ] && [ "$kr_lei" = returns-spent ]; then kr_say="needs your hand: closure moved; the kukulu lei's returns lie spent"
     elif [ -n "$kr_lei_ok" ] || [ -z "$kr_lei" ]; then kr_say='needs your hand: closure moved; keeper lei path off'
     else kr_say='needs your hand: closure moved; no standing kukulu lei'; fi
   elif [ "$kr_current" = true ] && [ "$kr_pulama" != moved ]; then kr_say='runs alone'

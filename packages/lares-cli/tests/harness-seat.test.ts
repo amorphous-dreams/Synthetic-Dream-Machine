@@ -1,5 +1,5 @@
 /**
- * harness-seat.test — an AI shell's CLI line carries the seat's mark (seat-canon-reach, T4-2). A spirit that runs `lares meme
+ * harness-seat.test — an AI shell's CLI line carries the seat's mark (seat-canon-reach, T4-2). A spirit that runs `lares tiddler
  * put --bag lares` through its harness's shell must meet the same gate the MCP seat meets, so the CLI writes `seat: "ai"` on
  * its one-shot line whenever the harness's OWN mark stands in its environment: Claude Code's `CLAUDECODE=1`, and Codex's
  * sandbox marks (`CODEX_SANDBOX`, `CODEX_SANDBOX_NETWORK_DISABLED`). The house mints no variable of its own for this. The
@@ -54,14 +54,14 @@ describe("the harness's own mark makes the CLI's asker the seat", () => {
     expect(marks).toBeDefined();
     for (const mark of marks!) expect(process.env[mark], mark).toBeUndefined();
     const v = await vessel();
-    await invokeLocal("meme-put", { bag: "lares" }, "0xme", { dataDir: v.dataDir });
+    await invokeLocal("tiddler-put", { bag: "lares" }, "0xme", { dataDir: v.dataDir });
     expect(v.lines[0]).not.toHaveProperty("seat");
   });
 
   test("RED: under the harness's mark the one-shot line carries seat ai; CONTROL: the operator's terminal sends none", async () => {
     const v = await vessel();
-    await invokeLocal("meme-put", { bag: "lares" }, "0xme", { dataDir: v.dataDir, env: { CLAUDECODE: "1" } } as never);
-    await invokeLocal("meme-put", { bag: "lares" }, "0xme", { dataDir: v.dataDir, env: {} } as never);
+    await invokeLocal("tiddler-put", { bag: "lares" }, "0xme", { dataDir: v.dataDir, env: { CLAUDECODE: "1" } } as never);
+    await invokeLocal("tiddler-put", { bag: "lares" }, "0xme", { dataDir: v.dataDir, env: {} } as never);
     expect(v.lines.map((l) => l["seat"])).toEqual(["ai", undefined]);
   });
 });

@@ -156,7 +156,7 @@ describe("a place with no readable control document answers its floor", () => {
     expect(FLOOR_VERBS.has("where")).toBe(true);
     expect(FLOOR_VERBS.has("nexus-carry-take")).toBe(true);
     expect(FLOOR_VERBS.has("persona-new")).toBe(true);
-    for (const face of ["kahua-propose", "intent-issue", "memory-write", "meme-put", "circle-list"]) expect(FLOOR_VERBS.has(face), face).toBe(false);
+    for (const face of ["kahua-propose", "intent-issue", "memory-write", "tiddler-put", "circle-list"]) expect(FLOOR_VERBS.has(face), face).toBe(false);
   });
 });
 

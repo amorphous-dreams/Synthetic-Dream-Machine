@@ -30,17 +30,17 @@ export function containerArgs(args: ParsedArgs, verb: string, direction: "read" 
 }
 
 /**
- * Name the wiki an ENGINE verb runs in (`wiki filter | render | status`, `tiddler put | delete`): `--recipe <slug>` alone. A bag
+ * Name the wiki an ENGINE verb runs in (`wiki filter | render | status | act`, `tiddler rename`): `--recipe <slug>` alone. A bag
  * names one store and no wiki, so these verbs refuse `--bag` before the wire and name the door that answers a bag: a read rides
- * `tiddler get --bag` (one record; `--meme` a meme) and `tiddler get --meme --bag` (its roots); a write rides `tiddler put --meme --bag`
- * and `tiddler delete --meme --bag`.
+ * `tiddler get --bag` (one record; `--meme` a meme) and `tiddler get --meme --bag` (its roots); a write rides `tiddler put --bag`
+ * and `tiddler delete --bag`, which take one bag through its store.
  */
 export function engineContainerArgs(args: ParsedArgs, verb: string, direction: "read" | "write" = "read"): Record<string, string> {
   const recipe = typeof args.options["recipe"] === "string" ? args.options["recipe"].trim() : "";
   const bag = typeof args.options["bag"] === "string" ? args.options["bag"].trim() : "";
   if (bag) {
     const door = direction === "write"
-      ? "a bag takes a record through the meme door: `lares tiddler put --meme --bag <slug>` · `lares tiddler delete --meme --bag <slug>`"
+      ? "a bag takes a record through the plain put and delete: `lares tiddler put <title> --bag <slug>` · `lares tiddler delete <title> --bag <slug>`"
       : "a bag reads through its own doors: `lares tiddler get <title> --bag <slug>` (one record; `--meme` a meme) · `lares tiddler get --meme --bag <slug>` (its roots)";
     throw new ContainerTargetRefusal(`lares ${verb}: wiki-not-anchored — ${verb} runs in a wiki's own engine, and --bag names one bag and no wiki; ${door}. To use ${verb}, name the wiki: --recipe <slug> (--recipe default for the daemon wiki).`, "wiki-not-anchored");
   }

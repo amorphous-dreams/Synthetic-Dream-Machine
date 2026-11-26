@@ -4,8 +4,8 @@
  * Five hooks carry a spirit's seasons, each through the checkout's shim and the `lares spirit` door: the wake runs `om`, its
  * group ordered first (Claude Code runs an event's matching hooks in parallel, so the order names the context's order, never a
  * gate); the compaction asks the summary to end on a closing section the PostCompact hook lands; the true-up nudges `ah` and
- * `hum` every N stops or once a landing stays unfiled (Stop); the handback lands each spirit's report as residue (PostToolUse on
- * SubagentHandback). The seated familiar's pet name rides each hook as its argument, never an env var.
+ * `hum` every N stops or once a landing stays unfiled (Stop); the handback runs the one return door for each spirit's report
+ * (`lares spirit handback`, PostToolUse on SubagentHandback). The seated familiar's pet name rides each hook as its argument, never an env var.
  *
  * ONLINE ONLY. A shim verb with no vessel standing runs offline over the store (`compose run`), so every hook that reaches
  * the door asks the observation first and acts only where the vessel answers up. A read the budget closes stops by SIGTERM,
@@ -361,12 +361,35 @@ export function trueUpText(pet, step, instance = null) {
   ].join("\n");
 }
 
-/** A pet name read off a handback's FIRST non-blank line, its filing line (`<pet> (Lares Spirit)` or `<pet>#<n> (Lares Spirit)`, a colon after the name read the same, the instance split off as the wake splits it), else the fallback, slugged. */
-export function handbackPetOf(message, fallback) {
+/**
+ * THE FILING LINE, ONE TABLE. A spirit's hand-back opens on its filing line: `<pet> (Lares Spirit)`, or `<pet>#<n> (Lares Spirit)`
+ * for one instance (a colon after the name reads the same). Every reader of the line reads this table: the role words, the one
+ * pattern built from them (the pet, then the instance), and the return door's verb the one who filed hands back through.
+ */
+const FILING_ROLE = "(Lares Spirit)";
+export const FILING = Object.freeze({
+  role: FILING_ROLE,
+  line: new RegExp(String.raw`^\W*([A-Za-z][\w-]{0,40})(?:#(\d{1,8}))?:?\s*` + FILING_ROLE.replace(/[()]/g, "\\$&")),
+  verb: "handback",
+});
+
+/** What a hand-back's FIRST non-blank line files: the pet as its slug, the instance beside it (null where it names none); null where the line files nothing. */
+export function filingOf(message) {
   const first = String(message ?? "").split("\n").find((line) => line.trim() !== "") ?? "";
-  const tag = /^\W*([A-Za-z][\w-]{0,40})(?:#\d{1,8})?:?\s*\(Lares Spirit\)/.exec(first)?.[1] ?? String(fallback ?? "");
-  return titleSlug(tag) ?? "spirit";
+  const m = FILING.line.exec(first);
+  const pet = m ? titleSlug(m[1]) : null;
+  return pet === null ? null : { pet, instance: m[2] ?? null };
 }
+
+/** Who the return door hears: the filing line's `<pet>` or `<pet>#<n>`, else the fallback (the agent's id), slugged. */
+export function handbackWho(message, fallback) {
+  const filed = filingOf(message);
+  if (filed !== null) return filed.instance === null ? filed.pet : `${filed.pet}#${filed.instance}`;
+  return titleSlug(String(fallback ?? "")) ?? "spirit";
+}
+
+/** The pet alone, the instance split off as the wake splits it. */
+export const handbackPetOf = (message, fallback) => handbackWho(message, fallback).split("#")[0];
 
 /** Does a session's working directory stand inside the checkout or one of the house's bound workspaces? */
 export function inHouse(cwd, checkout, workspaces) {

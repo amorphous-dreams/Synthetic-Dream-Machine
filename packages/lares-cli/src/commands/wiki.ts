@@ -12,6 +12,7 @@
  *   retire                   — the owner face's unmint of a shell it minted by mistake (canon untouched)
  *   keep / unkeep            — the worn face's keep list over the vessel's keep-warm cap
  *   add-bag / remove-bag     — recipe composition (hot-reload via composite.addLayer)
+ *   true-floor               — the hand's door that trues a recipe to the canon floor by place, with a receipt
  *   epoch / rotate-recipe    — bound history (snapshot-restart, Nix-generations)
  *   prune-stale              — surface stale drafts for residency-action-or-prune
  *   filter / render / status — THE TIDDLER DOOR's engine verbs (wiki-surface-scout, lane 1): run a TiddlyWiki
@@ -503,6 +504,34 @@ export async function cmdWikiAddBag(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
+/**
+ * `lares wiki true-floor <slug>` — true one recipe to THE CANON FLOOR BY PLACE, by hand: drop the libraries the table withholds
+ * from this wiki (`lararium` outside the herm/hearth wiki), and print the receipt the record keeps (`floor-trued-from`).
+ */
+export async function cmdWikiTrueFloor(args: ParsedArgs): Promise<number> {
+  const slug = args.positional[0];
+  if (!slug) {
+    console.error("usage: lares wiki true-floor <slug>");
+    return 2;
+  }
+  const did = await vesselDid();
+  const r = await call("true-floor", { slug }, did);
+  if (r.status === "error") {
+    console.error(`true-floor failed: ${r.errorMessage ?? "unknown"}`);
+    return 4;
+  }
+  const result = summaryOutput(r) ?? {};
+  const dropped = (result["dropped"] as string[] | undefined) ?? [];
+  const stack = (result["stack"] as string[] | undefined) ?? [];
+  console.log("");
+  console.log(`wiki ${slug}: ${result["status"]}`);
+  console.log(`  dropped: ${dropped.length === 0 ? "(none)" : dropped.join(", ")}`);
+  console.log(`  stack:   ${stack.length === 0 ? "(empty)" : stack.join(" → ")}`);
+  if (result["receipt"]) console.log(`  receipt: ${JSON.stringify(result["receipt"])}`);
+  console.log("");
+  return 0;
+}
+
 export async function cmdWikiRemoveBag(args: ParsedArgs): Promise<number> {
   const slug   = args.positional[0];
   const bagUrl = args.positional[1];
@@ -946,6 +975,7 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "unkeep":     { handler: cmdWikiUnkeep,    summary: "Drop a wiki from the worn face's keep list: `lares wiki unkeep <slug>`." },
   "add-bag":    { handler: cmdWikiAddBag,    summary: "Add a bag to the wiki's recipe at runtime. Hot-reload via composite.addLayer." },
   "remove-bag": { handler: cmdWikiRemoveBag, summary: "Remove a bag from the wiki's recipe (soft remove; F-arc adds StoryList drain)." },
+  "true-floor": { handler: cmdWikiTrueFloor, summary: "True one recipe to the canon floor by place (`lares wiki true-floor <slug>`): every wiki's floor stacks `lares`, the herm/hearth wiki's stacks `lararium` and `lares`; the door drops the libraries the rule withholds (`lararium` outside the herm/hearth wiki) and prints the receipt the record keeps (`floor-trued-from`). A recipe already true answers `already-true` and changes nothing." },
   "compact":       { handler: cmdWikiCompact,         summary: "DXOS-style snapshot-restart on one of the wiki's bags. Bounds history." },
   "rotate-recipe": { handler: cmdWikiRotateRecipe,  summary: "Nix-generations: mint fresh canonical; retain old as previous-canon underlay." },
   "prune-stale":   { handler: cmdWikiPruneStale,    summary: "Surface stale draft tiddlers (no recent activity) for residency-action-or-prune." },
