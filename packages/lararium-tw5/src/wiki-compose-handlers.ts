@@ -4,10 +4,10 @@ import { bagStackFromRec } from "@lararium/mesh/bag-stack-from-rec";
 import { mutableLarRecord } from "@lararium/mesh/base-doc";
 import { recipeUri } from "@lararium/mesh/lar-uris";
 import { SYSTEM_BAGS, wikiBagUri } from "@lararium/mesh/wiki-recipe";
-import { mkDaemonResidencyOp, mkDaemonWikiAlert } from "@lararium/mesh/island-protocol";
+import { mkDaemonWikiAlert } from "@lararium/mesh/island-protocol";
 import { effectiveRecipeOf, type RecipePlane } from "./recipe-planes.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
-import { makeRequestId, stringArg } from "./handler-args.js";
+import { stringArg } from "./handler-args.js";
 
 /**
  * Read a recipe-verb's {slug, bagUrl} from the structured args — ONE contract for the
@@ -90,8 +90,7 @@ export function makeAddBagReactor(opts: WikiComposeOptions): VerbReactor {
     catalogHandle.change((doc) => { doc.tiddlers[recipeTitle] = storedRecord(updated); });
 
     // Pono: no live-layer mount. The recipe change syncs; each island mounts the bag
-    // when it reconciles its own stack. Command main to pin the bag's residency.
-    opts.post(mkDaemonResidencyOp({ requestId: makeRequestId("resop"), op: "pin", bagId: bagUrl, reason: `wiki:${slug}` }));
+    // when it reconciles its own stack; the bag's residency derives from the islands that reference it.
     // Live islands reconcile this via recipe-watch and clear the notice themselves;
     // the alert stays the FALLBACK for islands that sleep through the change.
     opts.post(mkDaemonWikiAlert({ wikiSlug: slug, message: `Bag added to "${slug}" — live islands mount it automatically; reboot if this notice persists.`, cause: "add-bag" }));
@@ -154,9 +153,8 @@ export function makeRemoveBagReactor(opts: WikiComposeOptions): VerbReactor {
     catalogHandle.change((doc) => { doc.tiddlers[recipeTitle] = storedRecord(updated); });
 
     // Pono: no live-layer unmount from daemon. The recipe change syncs; each island
-    // drops the bag itself (recipe-watch). Command main to release the bag's pin.
+    // drops the bag itself (recipe-watch).
     // The alert stays the FALLBACK for islands that sleep through the change.
-    opts.post(mkDaemonResidencyOp({ requestId: makeRequestId("resop"), op: "unpin", bagId: bagUrl }));
     opts.post(mkDaemonWikiAlert({ wikiSlug: slug, message: `Bag removed from "${slug}" — live islands drop it automatically; reboot if this notice persists.`, cause: "remove-bag" }));
 
     return {

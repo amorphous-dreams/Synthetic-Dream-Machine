@@ -10,7 +10,7 @@
  *   list / which / resolve   — read & inspect: enumerate, presence-query, coordinate-resolve
  *   init / open / sync       — lifecycle: mint, set-active, ingest memes
  *   retire                   — the owner face's unmint of a shell it minted by mistake (canon untouched)
- *   pin / unpin              — whole-recipe residency
+ *   keep / unkeep            — the worn face's keep list over the vessel's keep-warm cap
  *   add-bag / remove-bag     — recipe composition (hot-reload via composite.addLayer)
  *   epoch / rotate-recipe    — bound history (snapshot-restart, Nix-generations)
  *   prune-stale              — surface stale drafts for residency-action-or-prune
@@ -26,7 +26,7 @@ import { summaryOutput, type SubmitResult, type SubmitOptions } from "../verb-re
 import { runVerb, runVerbAsFace, verbFailure } from "../verb-call.js";
 import { faceOption, FaceOptionMalformed } from "../face-option.js";
 import { cmdShare } from "./share-cmd.js";
-import { cmdPin, cmdUnpin, cmdResidency } from "./residency.js";
+import { cmdResidency } from "./residency.js";
 import { ensureWikiRealm, labelRealmOf, LIVE_REALM_DOORS, placeWikiInRealm, releaseWikiRealm, setAsideWikiFolder, type RealmDoors } from "./realm-doors.js";
 import { sealedAct } from "../sealed-act-door.js";
 import { RealmRefused, loadLaresConfig, tempConsentedSlugs } from "@lararium/node";
@@ -127,13 +127,13 @@ async function holdTheMint(slug: string, did: string): Promise<{ held: boolean; 
   const holds = Array.isArray(live?.held) ? live.held.map(String) : [];
   const budget = typeof live?.keepBudget === "number" ? live.keepBudget : null;
   if (budget !== null && holds.length >= budget && !holds.includes(slug)) {
-    return { held: false, note: `not kept: the keep budget stands full (${holds.length}/${budget}: ${holds.join(", ")}); \`lares wiki pin <slug> --rotate --release\` frees one, then \`lares wiki pin ${slug} --rotate\` holds this wiki` };
+    return { held: false, note: `not kept: the keep budget stands full (${holds.length}/${budget}: ${holds.join(", ")}); \`lares wiki unkeep <slug>\` frees one, then \`lares wiki keep ${slug}\` keeps this wiki` };
   }
-  const r = await call("wiki-hold", { slug }, did, { timeoutMs: 30_000 });
+  const r = await call("wiki-keep", { slug }, did, { timeoutMs: 30_000 });
   const out = (r.status === "error" ? null : summaryOutput(r)) as { held?: unknown; cause?: unknown; detail?: unknown } | null;
   const held = out?.held === true;
   const why = typeof out?.cause === "string" ? `${out.cause}: ${String(out.detail ?? "")}` : r.errorMessage ?? "the wiki would not activate";
-  return { held, note: held ? `kept warm (your keep list)` : `not kept: ${why}; \`lares wiki pin ${slug} --rotate\` retries` };
+  return { held, note: held ? `kept warm (your keep list)` : `not kept: ${why}; \`lares wiki keep ${slug}\` retries` };
 }
 
 /**
@@ -273,7 +273,7 @@ export async function cmdWikiRetire(args: ParsedArgs, realmDoors: RealmDoors = L
 
   // THE LOCAL HALF, idempotent: each step changes only what still stands.
   const localHalf = async (realmRetired: boolean) => {
-    const released = await call("wiki-release", { slug }, await vesselDid());
+    const released = await call("wiki-unkeep", { slug }, await vesselDid());
     const folder = setAsideWikiFolder(realmDoors, slug);
     const label = realmRetired ? releaseWikiRealm(realmDoors, slug) : null;
     return { holdReleased: released.status !== "error", folder, label };
@@ -371,53 +371,6 @@ export async function cmdWikiSync(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
-export async function cmdWikiPin(args: ParsedArgs): Promise<number> {
-  if (args.flags["bag"] && args.flags["rotate"]) { console.error("wiki pin: --bag and --rotate cannot stand together"); return 2; }
-  if (args.flags["bag"]) return args.flags["release"] ? cmdUnpin(args) : cmdPin(args);
-  if (args.flags["rotate"]) return args.flags["release"] ? cmdWikiRelease(args) : cmdWikiHold(args);
-  if (args.flags["release"]) return cmdWikiUnpin(args);
-  const slug = args.positional[0];
-  if (!slug) {
-    console.error("usage: lares wiki pin <slug>");
-    return 2;
-  }
-  const did    = await vesselDid();
-  const r = await call("pin-wiki", { slug }, did);
-  if (r.status === "error") {
-    console.error(`pin failed: ${r.errorMessage ?? "unknown"}`);
-    return 4;
-  }
-  const result = summaryOutput(r) ?? {};
-  const pinned = (result["pinned"] ?? []) as Array<{ bagUrl: string; reason: string }>;
-  console.log("");
-  console.log(`wiki ${slug}: pinned ${pinned.length} bag(s)`);
-  for (const p of pinned) console.log(`  ${p.bagUrl}  (${p.reason})`);
-  if (result["note"]) console.log(`  ${result["note"]}`);
-  console.log("");
-  return 0;
-}
-
-export async function cmdWikiUnpin(args: ParsedArgs): Promise<number> {
-  const slug = args.positional[0];
-  if (!slug) {
-    console.error("usage: lares wiki pin <slug> --release");
-    return 2;
-  }
-  const did    = await vesselDid();
-  const r = await call("unpin-wiki", { slug }, did);
-  if (r.status === "error") {
-    console.error(`unpin failed: ${r.errorMessage ?? "unknown"}`);
-    return 4;
-  }
-  const result = summaryOutput(r) ?? {};
-  const unpinned = (result["unpinned"] ?? []) as string[];
-  console.log("");
-  console.log(`wiki ${slug}: unpinned ${unpinned.length} bag(s)`);
-  for (const u of unpinned) console.log(`  ${u}`);
-  console.log("");
-  return 0;
-}
-
 /** `lares wiki switch <slug>` — LIVE-activate a wiki (no reboot; the true swap). On the browser this also
  *  flips the #projection surface to the newly-live wiki. */
 export async function cmdWikiSwitch(args: ParsedArgs): Promise<number> {
@@ -446,18 +399,18 @@ export async function cmdWikiSwitch(args: ParsedArgs): Promise<number> {
   return active ? 0 : 5;
 }
 
-/** `lares wiki pin <slug> --rotate` — keep a wiki warm on the worn face's keep list. The vessel's one keep budget refuses by
- *  name when full (`keep-full`) and drops no keep; `--release` frees one. */
-export async function cmdWikiHold(args: ParsedArgs): Promise<number> {
+/** `lares wiki keep <slug>` — keep a wiki warm on the worn face's keep list. The vessel's one keep budget refuses by
+ *  name when full (`keep-full`) and drops no keep; `wiki unkeep` frees one. */
+export async function cmdWikiKeep(args: ParsedArgs): Promise<number> {
   const slug = args.positional[0];
   if (!slug) {
-    console.error("usage: lares wiki pin <slug> --rotate");
+    console.error("usage: lares wiki keep <slug>");
     return 2;
   }
   const did = await vesselDid();
-  const r = await call("wiki-hold", { slug }, did, { timeoutMs: 30_000 });
+  const r = await call("wiki-keep", { slug }, did, { timeoutMs: 30_000 });
   if (r.status === "error") {
-    console.error(`hold failed: ${r.errorMessage ?? "unknown"}`);
+    console.error(`keep failed: ${r.errorMessage ?? "unknown"}`);
     return 4;
   }
   const result = summaryOutput(r) ?? {};
@@ -471,23 +424,23 @@ export async function cmdWikiHold(args: ParsedArgs): Promise<number> {
   return held ? 0 : 5;
 }
 
-/** `lares wiki pin <slug> --rotate --release` — drop a wiki from the worn face's keep list (it stays live, just becomes a cooling candidate). */
-export async function cmdWikiRelease(args: ParsedArgs): Promise<number> {
+/** `lares wiki unkeep <slug>` — drop a wiki from the worn face's keep list (it stays live, just becomes a cooling candidate). */
+export async function cmdWikiUnkeep(args: ParsedArgs): Promise<number> {
   const slug = args.positional[0];
   if (!slug) {
-    console.error("usage: lares wiki pin <slug> --rotate --release");
+    console.error("usage: lares wiki unkeep <slug>");
     return 2;
   }
   const did = await vesselDid();
-  const r = await call("wiki-release", { slug }, did);
+  const r = await call("wiki-unkeep", { slug }, did);
   if (r.status === "error") {
-    console.error(`release failed: ${r.errorMessage ?? "unknown"}`);
+    console.error(`unkeep failed: ${r.errorMessage ?? "unknown"}`);
     return 4;
   }
   const result = summaryOutput(r) ?? {};
   const holds  = (result["holds"] ?? []) as string[];
   console.log("");
-  console.log(`released ${slug}`);
+  console.log(`unkept ${slug}`);
   console.log(`  your keep list (${holds.length}): ${holds.join(", ") || "(none)"}`);
   console.log("");
   return 0;
@@ -989,7 +942,8 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "share": { handler: cmdShare("wiki"), summary: "Share a wiki with sibling faces through a private cabal: its canon by reference and its working layer as ONE shared workbench every member face syncs (--read <names> --write <names> --note <why> --face N --workspace <name>). A line names its delta: --read and --write add names beside the standing ones, --read-remove and --write-remove take names out, and what it leaves unnamed stands, so the same line twice changes nothing. --read and --write add and never replace a list: narrowing one takes the -remove pair, which revokes each taken-out face's landed grant (a face standing shut keeps the row as it stood, named); --list shows the resolved answer; --remove unshares it. A bag row standing for the slug refuses (share-kind-standing). The daemon wiki never shares." },
   "switch": { handler: cmdWikiSwitch, summary: "Switch a live wiki." },
   "sync":  { handler: cmdWikiSync,  summary: "Walk wikis/<slug>/memes/** and ingest into the canonical bag. Idempotent." },
-  "pin":        { handler: cmdWikiPin,       summary: "Pin a recipe, --bag or --rotate; --release reverses the named pin." },
+  "keep":       { handler: cmdWikiKeep,      summary: "Keep a wiki warm on the worn face's keep list: `lares wiki keep <slug>`; a full keep-warm cap refuses by name and drops no keep." },
+  "unkeep":     { handler: cmdWikiUnkeep,    summary: "Drop a wiki from the worn face's keep list: `lares wiki unkeep <slug>`." },
   "add-bag":    { handler: cmdWikiAddBag,    summary: "Add a bag to the wiki's recipe at runtime. Hot-reload via composite.addLayer." },
   "remove-bag": { handler: cmdWikiRemoveBag, summary: "Remove a bag from the wiki's recipe (soft remove; F-arc adds StoryList drain)." },
   "compact":       { handler: cmdWikiCompact,         summary: "DXOS-style snapshot-restart on one of the wiki's bags. Bounds history." },

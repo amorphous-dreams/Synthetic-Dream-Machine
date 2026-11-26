@@ -17,8 +17,7 @@ import { wearOf } from "@lararium/mesh/repo-wear";
 import { seatGrantsReader } from "./carried-seat.js";   // leaf-fleet
 import {
   makeDaemonBehavior, makeWhereReactor, makeResolveReactor, makeListWikisReactor,
-  makePinReactor, makeUnpinReactor, makeRegisterColdReactor, registerActionReactors, makeFresherCanonReactor, makeOverrideBasesReactor, makeTw5Deserializer,
-  makeWikiPinReactor, makeWikiUnpinReactor,
+  makeRegisterColdReactor, registerActionReactors, makeFresherCanonReactor, makeOverrideBasesReactor, makeTw5Deserializer,
   makeCatalogAccessor, findOrThrow,
   makeInitWikiReactor, makeRetireWikiReactor, makeDraftReactor, makePruneStaleReactor,
   makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
@@ -1311,11 +1310,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       } else {
         for (const v of [...ACTION_VERBS, "REPACK", ...CANON_OFFER_VERBS]) registry.register(v, lightAFace(v));
       }
-      // Residency mutators (pin/unpin/register-cold) — gated in-worker; they command the
+      // The residency mutator (register-cold) — gated in-worker; it commands the
       // main-resident BagStowage via daemon:residency-op (ctx.post). `residency`
       // stats (a read) stays main pending the askMain research.
-      registry.register("pin",           makePinReactor(ctx.post));
-      registry.register("unpin",         makeUnpinReactor(ctx.post));
       registry.register("register-cold", makeRegisterColdReactor(ctx.post));
 
       // draft needs no catalog — register it regardless of slot.
@@ -2006,11 +2003,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         }) : lightAFace("retire-wiki"), { summary: "Retire a wiki shell the worn face minted (its catalog rows, its workbench's ledger rows, its slot bindings and its Keyhive bindings) so the slug mints again under another face; the canon bag and its files stay. A person's hand alone; refuses a face that does not own it, a shell another face reaches, and a shell that holds records unless forced with the count.", surfaces: [VERB_SURFACE.cli] });
         registry.register("prune-stale", underFace("prune-stale", makePruneStaleReactor(wikiMintOpts)));
         registry.register("list-wikis",  makeListWikisReactor(catalog, sysPlane, systemCanonUrl));
-        // Whole-wiki residency policy — read the catalog recipe, command main's manager
-        // per bag via daemon:residency-op. Pure policy, no live-layer mechanism.
-        registry.register("pin-wiki",      makeWikiPinReactor(catalog, ctx.post, sysPlane));
-        registry.register("unpin-wiki",    makeWikiUnpinReactor(catalog, ctx.post, sysPlane));
-        // Recipe composition — write the catalog recipe, command residency via op. NO
+        // Recipe composition — write the catalog recipe. NO
         // live-layer mount/unmount: the recipe syncs, islands reconcile their own stacks.
         registry.register("add-bag",       underFace("add-bag", makeAddBagReactor({ catalog, ...(sysPlane ? { oracle: sysPlane } : {}), post: ctx.post })));
         registry.register("remove-bag",    underFace("remove-bag", makeRemoveBagReactor({ catalog, ...(sysPlane ? { oracle: sysPlane } : {}), post: ctx.post })));

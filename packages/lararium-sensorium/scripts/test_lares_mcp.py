@@ -810,29 +810,25 @@ def test_analyze_lens_reads_weld_to_the_cli_table():
     assert {k: sorted(v) for k, v in ANALYZE_LENS_READS.items()} == {k: sorted(v) for k, v in inv["analyze_lens_reads"].items()}
 
 
-def test_wiki_seat_reach_stays_on_switch_rotate_and_act(monkeypatch):
+def test_wiki_seat_reach_stays_on_switch_keep_and_act(monkeypatch):
     _, tool, calls = _routed_tools(monkeypatch)
     wiki = tool("wiki")
     monkeypatch.setattr("lares_mcp.uds.call", lambda verb, args: (calls.append((verb, args)), {"results": {"summary": {"ok": True, "output": {}}}})[1])
     for args, expected in [
         ({"verb": "switch", "slug": "w"}, ("wiki-switch", {"slug": "w"})),
-        ({"verb": "pin", "slug": "w", "rotate": True}, ("wiki-hold", {"slug": "w"})),
-        ({"verb": "pin", "slug": "w", "rotate": True, "release": True}, ("wiki-release", {"slug": "w"})),
+        ({"verb": "keep", "slug": "w"}, ("wiki-keep", {"slug": "w"})),
+        ({"verb": "unkeep", "slug": "w"}, ("wiki-unkeep", {"slug": "w"})),
         ({"verb": "act", "name": "sidebar-layout", "recipe": "default", "expected": "a", "resulting": "b"}, ("wiki-action", {"recipe": "default", "name": "sidebar-layout", "expected": "a", "resulting": "b"})),
     ]:
         wiki(**args)
         assert calls.pop() == expected
     for args, name in [
-        ({"verb": "pin", "slug": "w"}, "rotate"),
-        ({"verb": "pin", "slug": "w", "release": True}, "rotate"),
-        ({"verb": "pin", "slug": "w", "bag": True}, "bag"),
-        ({"verb": "pin", "slug": "w", "bag": True, "release": True}, "bag"),
-        ({"verb": "switch", "slug": "w", "rotate": True}, "rotate"),
-        ({"verb": "switch", "slug": "w", "release": True}, "release"),
+        ({"verb": "pin", "slug": "w"}, "verb"),
         ({"verb": "hold", "slug": "w"}, "verb"),
-        ({"verb": "pin", "rotate": True}, "slug"),
-        ({"verb": "pin", "slug": "w", "rotate": True, "recipe": "default"}, "action"),
-        ({"verb": "act", "name": "a", "recipe": "default", "expected": "a", "resulting": "b", "bag": True}, "bag"),
+        ({"verb": "keep"}, "slug"),
+        ({"verb": "keep", "slug": "w", "recipe": "default"}, "action"),
+        ({"verb": "unkeep", "slug": "w", "name": "a"}, "action"),
+        ({"verb": "act", "name": "a", "recipe": "default", "expected": "a", "resulting": "b", "slug": "w"}, "slug"),
     ]:
         with pytest.raises(Exception, match=name):
             wiki(**args)

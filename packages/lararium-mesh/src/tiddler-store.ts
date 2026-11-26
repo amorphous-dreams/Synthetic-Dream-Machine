@@ -219,13 +219,10 @@ export interface LarTiddlerStore {
   get(title: string): Promise<LarTiddlerRecord | null>;
 
   /**
-   * Residency Model: optional heads getter for CRDT-backed stores.
+   * Optional heads getter for CRDT-backed stores.
    * Returns the current Automerge Heads when the underlying store carries
    * causal history; returns null for in-memory stores with no Automerge backing.
-   *
-   * Used by CompositeStore.auditPins() to detect bag-pin drift
-   * (Anti-pattern #5 defense). Stores that omit this method behave as if it
-   * returned null — they cannot participate in pin checks.
+   * Stores that omit this method behave as if it returned null.
    */
   getHeads?(): Promise<readonly string[] | null>;
 

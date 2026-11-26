@@ -40,7 +40,6 @@ import type { Server } from "node:http";
 import type { Repo } from "@automerge/automerge-repo";
 import { composeVessel, type CapModule, type ComposedVessel } from "@lararium/mesh/cap-compose";
 import { type VesselKeel, type VesselCoreAssembly } from "@lararium/mesh/open-vessel-core";
-import { type BagStowage } from "@lararium/mesh/bag-residency";
 import { CARRIAGE_CAP, carriageStack, type MeshSelf, type MeshPalaceComponent } from "@lararium/mesh/carriage-caps";
 import { genesisCasCidsFromOracle } from "@lararium/mesh/genesis-intake";
 import { type MeshPalaceDoc } from "@lararium/mesh/mesh-palace";
@@ -159,7 +158,6 @@ export interface HermStackDeps extends DaemonCapDeps {
   readonly repo:           Repo;
   /** The Herm's own vessel key: its meshpalace map's address derives from it, so every compose finds the one map. */
   readonly vesselKey:      string;
-  readonly residency?:     BagStowage;
   readonly httpServer:     Server;
   readonly signer:         PlaceSigner;
   readonly storageDir:     string;
@@ -214,7 +212,6 @@ export async function composeHerm(d: HermStackDeps): Promise<ComposedHerm> {
       repo:        d.repo,
       vesselKey:   d.vesselKey,
       ...(d.meshSelf?.gatePubKey ? { cadenceKey: d.meshSelf.gatePubKey } : {}),
-      ...(d.residency ? { residency: d.residency } : {}),
       ...(d.meshSelf ? { self: d.meshSelf } : {}),
       ...(d.pullFlow ? { pullFlow: d.pullFlow } : {}),
       ...(d.pullIntervalMs !== undefined ? { pullIntervalMs: d.pullIntervalMs } : {}),

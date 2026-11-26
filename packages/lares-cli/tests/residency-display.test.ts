@@ -70,12 +70,12 @@ describe("lares bag stats idleness", () => {
     expect(text).toContain("idle 1m");
   });
 
-  test("control: the pinned, wela count, anu count and hotCap lines read as ever", async () => {
+  test("control: the held, wela count, anu count and hotCap lines read as ever", async () => {
     const { text } = await printed({
       clockKind: "realm", pinned: ["automerge:p"], anuCount: 5, hotCap: 8,
       wela: [{ url: "automerge:a", idleFor: 1 }],
     });
-    expect(text).toContain("pinned (1):");
+    expect(text).toContain("held (1):");
     expect(text).toContain("  automerge:p");
     expect(text).toContain("wela (1/8):");
     expect(text).toContain("anu count: 5");
