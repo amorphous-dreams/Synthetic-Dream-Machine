@@ -85,7 +85,7 @@
  */
 
 import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdirSync, rmdirSync, realpathSync } from "fs";
-import { dirname, isAbsolute, basename, extname, relative as relativePath, resolve as resolvePath, join as joinPath } from "path";
+import { dirname, basename, extname, relative as relativePath, resolve as resolvePath, join as joinPath } from "path";
 import { confineMirrorWrite, carrierBaseRelPath, titleRelPath } from "./bag-paths.js";
 import { KAPAE_EXT, kapaeShadowBody } from "./kapae-shadow.js";
 import { contentHash, syncedTreeKey, SyncedTree, type SyncedBase } from "./synced-tree.js";
