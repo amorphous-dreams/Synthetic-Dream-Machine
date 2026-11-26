@@ -33,3 +33,4 @@ describe("a face's home preference", () => {
     expect(Object.keys(house)).not.toEqual(expect.arrayContaining(["ACTIVE_WIKI_URI", "buildActiveWikiRecord", "readActiveWikiSlug", "selectActiveWikiSlug", "makeOpenWikiReactor"]));
   });
 });
+

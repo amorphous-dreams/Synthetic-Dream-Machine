@@ -223,10 +223,12 @@ import { publishHandleBrowser }              from "./browser-handle-publish.js";
 import { burnFaceBrowser, attestFaceBrowser } from "./browser-handle-verbs.js";
 
 /** Browser advertises the MINIMAL grant (constrained vessel): a small live-wiki set
- *  (the daemon bag always + a couple more on reference) and ONE rotatable pin besides the daemon bag.
+ *  (the daemon bag always + a couple more on reference) and ONE keep-warm wiki besides the daemon bag.
  *  The resolver honors this smaller grant — the same cap, a lower point on the spectrum. */
 const BROWSER_WIKI_ACTIVATION_CAP = 2;
-const BROWSER_WIKI_PIN_BUDGET     = 1;
+const BROWSER_WIKI_KEEP_BUDGET     = 1;
+/** The holder a browser vessel's keeps ride under. A browser vessel wears one face at a time, so one holder names it. */
+const BROWSER_KEEP_HOLDER = "wearer";
 
 /** The founding persona's handle-index. A fresh browser founds its FIRST persona here (never the self-
  *  signed floor); the multitude adds h1, h2, … each with its own root (a stage-4+ UX). Kept explicit so
@@ -1628,7 +1630,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       verb: "switcher-state",
       args: {
         active:        active.join(" "),
-        held:          [...wikiActivation.held()].join(" "),
+        held:          [...wikiActivation.kept(BROWSER_KEEP_HOLDER)].join(" "),
         surface:       activeSurfaceId,
         recipeSlug,
         recipe:        recipe.join(" "),
@@ -1668,13 +1670,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     void daemon.placeVerb({ origin: "channel", verb: "circle-list", args: { circle: circleId }, requestedBy: "circle" });
   };
   // The ONE residency collector + pool-wiring, composed through the SHARED factory (both vessels
-  // call it). Browser advertises the MINIMAL grant (a small live-wiki set + one rotatable pin
+  // call it). Browser advertises the MINIMAL grant (a small live-wiki set + one keep-warm wiki
   // besides the daemon bag) and supplies its vessel-specific hooks: it stays SILENT on a cool (node
   // narrates the cool) and holds NO durable mailbox, so an undeliverable alert WARNS + drops
   // best-effort (node parks it durably). getPool reads vmManager lazily (the forward-ref pattern).
   const residencyWiring: VesselResidency = makeVesselResidency(
     () => vmManager,
-    { wikiActivationCap: BROWSER_WIKI_ACTIVATION_CAP, wikiPinBudget: BROWSER_WIKI_PIN_BUDGET },
+    { wikiActivationCap: BROWSER_WIKI_ACTIVATION_CAP, wikiKeepBudget: BROWSER_WIKI_KEEP_BUDGET },
     {
       onUndeliverableAlert: (wikiId, verbOpts, reason) =>
         warnDroppedBrowserAlert(
@@ -2477,36 +2479,36 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // payload (#48 unified the DOM path onto the CLI's structured-args contract).
         const slug = String(args["slug"] ?? "");
         if (!slug) throw new Error("wiki-switch: `slug` required");
-        const active = await wikiActivation.ensureActive(slug);
+        const active = (await wikiActivation.ensureActive(slug)).ok;
         if (active) {
           activeSurfaceId = slug;   // flip the projection gate to the now-live wiki
           pushSwitcherState();      // reflect the new surface into the daemon widget
         }
-        return { verb: "wiki-switch", slug, active, held: [...wikiActivation.held()] };
+        return { verb: "wiki-switch", slug, active, held: [...wikiActivation.kept(BROWSER_KEEP_HOLDER)] };
       });
-      // wiki-hold / wiki-release — the ROTATABLE keep-warm hold (budget-enforced by the
-      // cap: the daemon bag always + pinBudget rotatable; browser grant = one). The switcher's pin.
+      // wiki-hold / wiki-release — a keep on the vessel's one keep-warm cap (browser grant = one). A full cap refuses
+      // `keep-full` by name and drops no keep. The browser's one wearer holds them under one holder.
       registry.register("wiki-hold", async (args) => {
         const slug = String(args["slug"] ?? "");
         if (!slug) throw new Error("wiki-hold: `slug` required");
-        const held = await wikiActivation.hold(slug);
+        const kept = await wikiActivation.keep(slug, BROWSER_KEEP_HOLDER);
         pushSwitcherState();
-        return { verb: "wiki-hold", slug, held, holds: [...wikiActivation.held()], budget: wikiActivation.grant.pinBudget };
+        return { verb: "wiki-hold", slug, held: kept.ok, ...(kept.ok ? {} : { cause: kept.cause, detail: kept.detail }), holds: [...wikiActivation.kept(BROWSER_KEEP_HOLDER)], budget: wikiActivation.grant.keepBudget };
       });
       registry.register("wiki-release", async (args) => {
         const slug = String(args["slug"] ?? "");
         if (!slug) throw new Error("wiki-release: `slug` required");
-        wikiActivation.release(slug);
+        wikiActivation.unkeep(slug, BROWSER_KEEP_HOLDER);
         pushSwitcherState();
-        return { verb: "wiki-release", slug, holds: [...wikiActivation.held()] };
+        return { verb: "wiki-release", slug, holds: [...wikiActivation.kept(BROWSER_KEEP_HOLDER)] };
       });
       // wiki-active — the live switcher state: which wikis run now + which are held +
       // which surface holds the projection. The daemon widget's state-tiddler reads this.
       registry.register("wiki-active", async () => {
         const active = vmManager.inspect().filter((s) => s.temperature === "wela").map((s) => s.wikiId);
         return {
-          verb: "wiki-active", active, held: [...wikiActivation.held()], activeSurface: activeSurfaceId,
-          activationCap: wikiActivation.grant.activationCap, pinBudget: wikiActivation.grant.pinBudget,
+          verb: "wiki-active", active, held: [...wikiActivation.kept(BROWSER_KEEP_HOLDER)], activeSurface: activeSurfaceId,
+          activationCap: wikiActivation.grant.activationCap, keepBudget: wikiActivation.grant.keepBudget,
         };
       });
 

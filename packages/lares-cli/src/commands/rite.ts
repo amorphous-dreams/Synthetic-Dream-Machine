@@ -139,26 +139,22 @@ const KEEP_PORTS: KeepPorts = {
     const r = await houseExport(dest, { acceptOmissions: opts.acceptOmissions, doors: LIVE_BUNDLE_DOORS, workspace: opts.workspace, houseOnly: true, ...(opts.woken !== undefined ? { woken: opts.woken } : {}) });
     return { ...r.manifest, unreadFaces: r.unreadFaces };
   },
-  // THE WIKI SWITCHER the wake walks: the catalog (`list-wikis`), the live state (`wiki-active`), and the rotatable pin.
+  // THE WIKI SWITCHER the wake walks: the catalog (`list-wikis`), the live state (`wiki-active`), and a bare activation (`wiki-switch`).
   wikis: {
     read: async () => {
       const did = await vesselDid();
       const listed = await runVerb("list-wikis", {}, did), active = await runVerb("wiki-active", {}, did);
       if (listed.status === "error" || active.status === "error") throw new Error(listed.errorMessage ?? active.errorMessage ?? "the wiki switcher would not read");
       const strings = (x: unknown): string[] => (Array.isArray(x) ? x.map(String) : []);
-      const live = (summaryOutput(active) ?? {}) as { active?: unknown; held?: unknown };
+      const live = (summaryOutput(active) ?? {}) as { active?: unknown };
       return {
         listed: (((summaryOutput(listed) ?? {}) as { wikis?: Array<{ slug?: unknown }> }).wikis ?? []).map((w) => String(w.slug)),
-        active: strings(live.active), held: strings(live.held),
+        active: strings(live.active),
       };
     },
-    hold: async (slug) => {
-      const r = await runVerb("wiki-hold", { slug }, await vesselDid(), { timeoutMs: 30_000 });
-      return r.status !== "error" && (summaryOutput(r) as { held?: unknown } | null)?.held === true;
-    },
-    release: async (slug) => {
-      const r = await runVerb("wiki-release", { slug }, await vesselDid());
-      if (r.status === "error") throw new Error(r.errorMessage ?? `wiki-release ${slug} refused`);
+    wake: async (slug) => {
+      const r = await runVerb("wiki-switch", { slug }, await vesselDid(), { timeoutMs: 30_000 });
+      return r.status !== "error" && (summaryOutput(r) as { active?: unknown } | null)?.active === true;
     },
   },
 };

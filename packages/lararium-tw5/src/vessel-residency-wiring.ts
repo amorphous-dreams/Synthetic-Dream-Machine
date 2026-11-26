@@ -12,7 +12,7 @@
  *   E. wiki-alert delivery (the single-flight ensureActive → placeWikiVerb orchestration).
  *
  * Everything genuinely vessel-specific rides a HOOK or a CONFIG value, never a copy-pasted block:
- *   - the live-wiki cap + pin budget (node runs the full grant, browser the minimal one) → config,
+ *   - the live-wiki cap + keep budget (node runs the full grant, browser the minimal one) → config,
  *   - the onEvict LOG (node narrates the cool; browser stays silent) → hooks.onWikiCooled/onBagCooled,
  *   - the undeliverable-alert TAIL (node PARKS in the durable mailbox; browser WARNS + drops
  *     best-effort) → hooks.onUndeliverableAlert,
@@ -90,8 +90,8 @@ export interface VesselResidencyHooks {
 export interface VesselResidencyConfig {
   /** Concurrent live-wiki cap — the collector's `wiki` typeCap (node 4, browser 2). */
   wikiActivationCap: number;
-  /** Rotatable wiki-pin budget BESIDES the daemon bag (node 3, browser 1). */
-  wikiPinBudget: number;
+  /** Keep-warm wiki budget BESIDES the daemon bag (node 3, browser 1). */
+  wikiKeepBudget: number;
   /** Bag hot-cap override (default DEFAULT_HOT_CAP). */
   hotCap?: number;
   /** Idle-cool threshold override on the wall floor (default DEFAULT_IDLE_MS). Read only without `clock`. */
@@ -262,7 +262,7 @@ export function makeVesselResidency(
     const wikiActivation = makeWikiActivationCap(
       residency,
       pool,
-      { activationCap: config.wikiActivationCap, pinBudget: config.wikiPinBudget },
+      { activationCap: config.wikiActivationCap, keepBudget: config.wikiKeepBudget },
       resolveWikiSpec,
     );
 

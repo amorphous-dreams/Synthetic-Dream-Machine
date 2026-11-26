@@ -207,7 +207,7 @@ import type { LarVessel } from "@lararium/mesh/lar-vessel";
 import { composeVessel } from "@lararium/mesh/cap-compose";
 import { islandFloorStack, islandLiftStack, larVesselOf } from "@lararium/mesh/lar-vessel";
 import {
-  DaemonRestarting, HOME_WIKI_TITLE, readHomeWikiSlug,
+  DaemonRestarting, HOME_WIKI_TITLE, readHomeWikiSlug, KEEP_LIST_TITLE, keepListFilter, keepListWith, keepListWithout, readKeepList,
   MemoryTiddlerStore,
   seedVesselDefaults,
   loadCatalogCorpora,
@@ -337,9 +337,9 @@ import { wikiSwitchVerb } from "./wiki-switch-verb.js";
 import { runFlow } from "./flow-run.js";
 import { hostWorkingFollower } from "./host-working-follow.js";
 
-/** Node advertises a few rotatable wiki pins BESIDES the daemon bag (resource-rich vessel).
- *  The user's ONE-plus rotatable pin(s) ride this budget; the surface enforces it. */
-const NODE_WIKI_PIN_BUDGET = 3;
+/** Node advertises a few keep-warm wikis BESIDES the daemon bag (resource-rich vessel).
+ *  Every face's keep list rides this one budget; the cap refuses by name past it and drops no keep. */
+const NODE_WIKI_KEEP_BUDGET = 3;
 /** The daemon wiki's working slot: the outcome ledger and the receipt facts rest there (sealed-store#/owed, U1). */
 const DAEMON_WORKING_SLOT = wikiSlotUri("daemon", "working");
 
@@ -3010,7 +3010,7 @@ async function prepareNodeBootOn(
   let pendingVerbContribution: VerbContribution | null = null;
 
   // The ONE residency collector + pool-wiring, composed through the SHARED factory (both vessels
-  // call it). Node advertises the FULL grant (concurrent multi-wiki + rotatable pins besides
+  // call it). Node advertises the FULL grant (concurrent multi-wiki + keep-warm wikis besides
   // the daemon bag) and supplies its vessel-specific hooks: it NARRATES a cool (browser stays silent),
   // stamps the alert `kind`, and PARKS an undeliverable alert in the durable mailbox (a dropped
   // verb stays observable, never nowhere — the Akka /deadLetters lesson; browser has no mailbox,
@@ -3020,7 +3020,7 @@ async function prepareNodeBootOn(
   const realmPaceCell = makeRealmPaceCell();
   const residencyWiring: VesselResidency = makeVesselResidency(
     () => vmManager,
-    { wikiActivationCap: NODE_WIKI_ACTIVATION_CAP, wikiPinBudget: NODE_WIKI_PIN_BUDGET, clock: realmPaceCell.read,
+    { wikiActivationCap: NODE_WIKI_ACTIVATION_CAP, wikiKeepBudget: NODE_WIKI_KEEP_BUDGET, clock: realmPaceCell.read,
       // A catalog pointer never resolves a wiki onto one of this vessel's private documents (lane `ralias`).
       wikiDocRefused: (wikiUrl) => {
         if (!wikiUrl.startsWith("automerge:")) return null;
@@ -5172,28 +5172,49 @@ async function prepareNodeBootOn(
     // The LIVE chokepoint (the boot reads a face's home preference at light): a reference ACTIVATES
     // the grain (resolveWikiSpec wakes ANY registered wiki cold, single-flight). node is
     // headless — no #projection surface to flip — so a switch here is pure activation.
-    registry.register("wiki-switch", (args) => wikiSwitchVerb(args, { activation: wikiActivation, pool: vmManager }));
-    // wiki-hold / wiki-release — the ROTATABLE keep-warm hold (the switcher's pin
-    // control), budget-enforced by the cap (the daemon bag always + pinBudget rotatable).
-    // Distinct from the recipe-bag `pin-wiki`: this pins the wiki GRAIN in the collector.
+    registry.register("wiki-switch", (args) => wikiSwitchVerb(args, { activation: wikiActivation, pool: vmManager, holder: () => (wornDeviceGroup === null ? null : `face-${wornDeviceGroup}`) }));
+    // wiki-hold / wiki-release — the worn face's KEEP LIST over the vessel's one keep-warm cap. The face's own record
+    // (`$:/config/lares/keep` in its daemon wiki) names what it keeps; a full cap refuses `keep-full` and drops no keep.
+    // Distinct from the recipe-bag `pin-wiki`: this keeps the wiki GRAIN warm in the collector.
+    // The holder rides the lit worn face's own group, never a shared ordinal; the anon floor holds none and refuses by name.
+    const litHolder = (): string | null => (wornDeviceGroup === null ? null : `face-${wornDeviceGroup}`);
+    const keepHolder = (verb: string): string => {
+      const holder = litHolder();
+      if (holder === null) throw new VerbRefusal("keep-floor-refused", `keep-floor-refused: ${verb} needs a lit face; the anon floor carries no wiki keeps, so wear a face and ask again`);
+      return holder;
+    };
+    // The record's read-modify-write rides one queue, so two racing keeps each read the other's landing before they write.
+    let keepWrites: Promise<void> = Promise.resolve();
+    const writeKeepList = (change: (slugs: readonly string[]) => readonly string[]): Promise<void> => {
+      const run = keepWrites.then(async () => {
+        const slugs = change(readKeepList(await daemonVm.composite.get(KEEP_LIST_TITLE)));
+        await daemonVm.composite.put({ tiddler: { title: KEEP_LIST_TITLE, text: keepListFilter(slugs) } }, { kind: "lares-verb", requestId: `keep-${crypto.randomUUID()}` });
+      });
+      keepWrites = run.catch(() => {});
+      return run;
+    };
     registry.register("wiki-hold", async (args) => {
       const slug = routingString(args, "slug", "wiki-hold");
       if (!slug) throw new Error("wiki-hold: `slug` required");
-      const held = await wikiActivation.hold(slug);
-      return { verb: "wiki-hold", slug, held, holds: [...wikiActivation.held()], budget: wikiActivation.grant.pinBudget };
+      const holder = keepHolder("wiki-hold");
+      const kept = await wikiActivation.keep(slug, holder);
+      if (kept.ok) await writeKeepList((slugs) => keepListWith(slugs, slug));
+      return { verb: "wiki-hold", slug, held: kept.ok, ...(kept.ok ? {} : { cause: kept.cause, detail: kept.detail }), holds: [...wikiActivation.kept(holder)], budget: wikiActivation.grant.keepBudget };
     });
     registry.register("wiki-release", async (args) => {
       const slug = routingString(args, "slug", "wiki-release");
       if (!slug) throw new Error("wiki-release: `slug` required");
-      wikiActivation.release(slug);
-      return { verb: "wiki-release", slug, holds: [...wikiActivation.held()] };
+      const holder = keepHolder("wiki-release");
+      wikiActivation.unkeep(slug, holder);
+      await writeKeepList((slugs) => keepListWithout(slugs, slug));
+      return { verb: "wiki-release", slug, holds: [...wikiActivation.kept(holder)] };
     });
     // wiki-active — the live switcher state: which wikis run now + which are held.
     registry.register("wiki-active", async () => {
       const active = vmManager.inspect().filter((s) => s.temperature === "wela").map((s) => s.wikiId);
       return {
-        verb: "wiki-active", active, held: [...wikiActivation.held()],
-        activationCap: wikiActivation.grant.activationCap, pinBudget: wikiActivation.grant.pinBudget,
+        verb: "wiki-active", active, held: [...(litHolder() === null ? [] : wikiActivation.kept(litHolder()!))],
+        activationCap: wikiActivation.grant.activationCap, keepBudget: wikiActivation.grant.keepBudget,
       };
     });
 
@@ -5506,13 +5527,11 @@ async function prepareNodeBootOn(
   };
 
   const afterLive: VesselOrchestration<VesselIslandPool>["afterLive"] = ({ wikiHandle: _wikiHandle }) => {
-    // Boot DEMOTED to a pin. The daemon island stays always-live on its own (never
-    // pooled, never collected — the "daemon bag always there"). The home wiki (the ONE
-    // rotatable user pin BESIDES the daemon bag; a resource-rich node MAY hold up to
-    // pinBudget more) registers in the ONE collector as a PINNED `wiki` grain —
-    // exempt from collection. Everything else activates on reference through the cap.
-    // mountPrimaryWiki already mounted + spec-retained it, so onHydrate → ensureWiki
-    // sees it live and no-ops (idempotent). Rotation unpins the outgoing wiki and pins the incoming one.
+    // The daemon island stays always-live on its own (never pooled, never collected: the "daemon bag always
+    // there"). Every other wiki activates on reference through the cap, and a lit face's keep list holds up to
+    // keepBudget of them warm, exempt from collection.
+    // mountPrimaryWiki already mounted + spec-retained the home wiki, so onHydrate → ensureWiki
+    // sees it live and no-ops (idempotent).
     void pushPromoteSnapshot?.().catch(console.warn);
     const stopPromoteWatch = promoteWiringRef?.watch();
     if (stopPromoteWatch) stood.push({ what: "the promote watcher", phase: "producers", down: stopPromoteWatch });
@@ -5586,9 +5605,18 @@ async function prepareNodeBootOn(
     // wiki's working layer, so only a face that stands lit reads it, and no boot pin names a wiki for the vessel.
     // A preference whose wiki refuses activation leaves the boot's wiki standing and says why. The record rests in the
     // daemon wiki's working layer, which the host mounts once the island answers (`mountHostWorking`): the read waits on
-    // that mount, or it reads the composite before the layer stands and finds no preference.
+    // that mount, or it reads the composite before the layer stands and finds no preference. The same light read seats the
+    // face's keep list: each wiki it names takes a keep where the cap grants one, and a refusal names its cause.
     if (wornDeviceGroup !== null) homeWikiRead = (async () => {
       await mountHostWorking();
+      const holder = `face-${wornDeviceGroup}`;
+      // A fault in the keep list costs the face its keeps, never its home: the home read runs either way.
+      try {
+        for (const slug of readKeepList(await daemonVm.composite.get(KEEP_LIST_TITLE))) {
+          const kept = await wikiActivation.keep(slug, holder);
+          if (!kept.ok) console.warn(`[keep-list] the face's keep of ${slug} refused: ${kept.cause}: ${kept.detail}`);
+        }
+      } catch (e: unknown) { console.warn(`[keep-list] the face's keep list did not seat: ${e instanceof Error ? e.message : String(e)}`); }
       const home = readHomeWikiSlug(await daemonVm.composite.get(HOME_WIKI_TITLE));
       if (home === null || home === slotActiveWikiId) return;
       const activation = await wikiActivation.ensureActive(home);

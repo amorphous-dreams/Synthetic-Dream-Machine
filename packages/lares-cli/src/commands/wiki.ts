@@ -36,7 +36,6 @@ import { DoorUsage, countOf, guardDoor, namesOf, runDoor, wordOf, type DoorPlan 
 import { targetOf } from "../target-option.js";
 import { stdout } from "node:process";
 import type { ParsedArgs } from "../parse-args.js";
-import { HOME_WIKI_TITLE } from "@lararium/tw5";
 
 type WikiSubcommand = (args: ParsedArgs) => Promise<number>;
 
@@ -121,18 +120,20 @@ export async function cmdWikiList(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
-/** The hold a mint takes: held within the budget, or a named refusal that evicts nothing. */
+/** The keep a mint takes: kept within the budget, or a named refusal that drops no keep. */
 async function holdTheMint(slug: string, did: string): Promise<{ held: boolean; note: string }> {
   const active = await call("wiki-active", {}, did);
-  const live = (active.status === "error" ? null : summaryOutput(active)) as { held?: unknown; pinBudget?: unknown } | null;
+  const live = (active.status === "error" ? null : summaryOutput(active)) as { held?: unknown; keepBudget?: unknown } | null;
   const holds = Array.isArray(live?.held) ? live.held.map(String) : [];
-  const budget = typeof live?.pinBudget === "number" ? live.pinBudget : null;
+  const budget = typeof live?.keepBudget === "number" ? live.keepBudget : null;
   if (budget !== null && holds.length >= budget && !holds.includes(slug)) {
-    return { held: false, note: `not held: the hold budget stands full (${holds.length}/${budget}: ${holds.join(", ")}); \`lares wiki pin <slug> --rotate --release\` frees one, then \`lares wiki pin ${slug} --rotate\` holds this wiki` };
+    return { held: false, note: `not kept: the keep budget stands full (${holds.length}/${budget}: ${holds.join(", ")}); \`lares wiki pin <slug> --rotate --release\` frees one, then \`lares wiki pin ${slug} --rotate\` holds this wiki` };
   }
   const r = await call("wiki-hold", { slug }, did, { timeoutMs: 30_000 });
-  const held = r.status !== "error" && (summaryOutput(r) as { held?: unknown } | null)?.held === true;
-  return { held, note: held ? `held (rotatable pin)` : `not held: ${r.errorMessage ?? "the wiki would not activate"}; \`lares wiki pin ${slug} --rotate\` retries` };
+  const out = (r.status === "error" ? null : summaryOutput(r)) as { held?: unknown; cause?: unknown; detail?: unknown } | null;
+  const held = out?.held === true;
+  const why = typeof out?.cause === "string" ? `${out.cause}: ${String(out.detail ?? "")}` : r.errorMessage ?? "the wiki would not activate";
+  return { held, note: held ? `kept warm (your keep list)` : `not kept: ${why}; \`lares wiki pin ${slug} --rotate\` retries` };
 }
 
 /**
@@ -342,13 +343,6 @@ export async function cmdWikiRetire(args: ParsedArgs, realmDoors: RealmDoors = L
   return 0;
 }
 
-/** The refusal the burned boot pointer answers (`lares wiki switch <slug> --next-boot`, `wiki open`): no vessel-scope boot pointer
- *  stands (research/pin-mu#S2), so the cure names the live switch and the face's own home-preference write. */
-export function nextBootRefusal(slug: string | undefined): string {
-  const s = slug ?? "<slug>";
-  return `next-boot-burned: no boot pointer stands; every boot rests on its floor. Switch live with \`lares wiki switch ${s}\`, or write this face's home preference (read at light): \`lares tiddler put ${HOME_WIKI_TITLE} --recipe default --text "[[${s}]]"\``;
-}
-
 export async function cmdWikiSync(args: ParsedArgs): Promise<number> {
   const slug = args.positional[0];
   if (!slug) {
@@ -427,10 +421,6 @@ export async function cmdWikiUnpin(args: ParsedArgs): Promise<number> {
 /** `lares wiki switch <slug>` — LIVE-activate a wiki (no reboot; the true swap). On the browser this also
  *  flips the #projection surface to the newly-live wiki. */
 export async function cmdWikiSwitch(args: ParsedArgs): Promise<number> {
-  if (args.flags["next-boot"]) {
-    console.error(nextBootRefusal(args.positional[0]));
-    return 2;
-  }
   const slug = args.positional[0];
   if (!slug) {
     console.error("usage: lares wiki switch <slug>");
@@ -456,8 +446,8 @@ export async function cmdWikiSwitch(args: ParsedArgs): Promise<number> {
   return active ? 0 : 5;
 }
 
-/** `lares wiki pin <slug> --rotate` — pin a wiki as a rotatable active pin (budget-enforced:
- *  The daemon bag always + N rotatable; a hold past the budget releases the least-recently-held). */
+/** `lares wiki pin <slug> --rotate` — keep a wiki warm on the worn face's keep list. The vessel's one keep budget refuses by
+ *  name when full (`keep-full`) and drops no keep; `--release` frees one. */
 export async function cmdWikiHold(args: ParsedArgs): Promise<number> {
   const slug = args.positional[0];
   if (!slug) {
@@ -474,13 +464,14 @@ export async function cmdWikiHold(args: ParsedArgs): Promise<number> {
   const held   = result["held"] === true;
   const holds  = (result["holds"] ?? []) as string[];
   console.log("");
-  console.log(held ? `held → ${slug}` : `hold ${slug}: not activatable — not held`);
-  console.log(`  rotatable pins (${holds.length}/${result["budget"] ?? "?"}): ${holds.join(", ") || "(none)"}`);
+  if (held) console.log(`kept → ${slug}`);
+  else console.log(`keep ${slug}: not kept (${String(result["cause"] ?? "refused")}: ${String(result["detail"] ?? "the wiki would not activate")})`);
+  console.log(`  your keep list (${holds.length}/${result["budget"] ?? "?"} of the vessel's budget): ${holds.join(", ") || "(none)"}`);
   console.log("");
   return held ? 0 : 5;
 }
 
-/** `lares wiki pin <slug> --rotate --release` — drop a wiki's rotatable pin (it stays live, just becomes a cooling candidate). */
+/** `lares wiki pin <slug> --rotate --release` — drop a wiki from the worn face's keep list (it stays live, just becomes a cooling candidate). */
 export async function cmdWikiRelease(args: ParsedArgs): Promise<number> {
   const slug = args.positional[0];
   if (!slug) {
@@ -497,7 +488,7 @@ export async function cmdWikiRelease(args: ParsedArgs): Promise<number> {
   const holds  = (result["holds"] ?? []) as string[];
   console.log("");
   console.log(`released ${slug}`);
-  console.log(`  rotatable pins (${holds.length}): ${holds.join(", ") || "(none)"}`);
+  console.log(`  your keep list (${holds.length}): ${holds.join(", ") || "(none)"}`);
   console.log("");
   return 0;
 }
@@ -523,7 +514,7 @@ export async function cmdWikiActive(_args: ParsedArgs): Promise<number> {
   }
   // THE DAEMON'S STANDING SLOT: the daemon stands no wiki island, so this list never shows it, yet it holds one slot of the cap.
   console.log(`     daemon  (always live; it holds one of the ${result["activationCap"] ?? "?"} slots and stands outside this list)`);
-  console.log(`  rotatable pin budget: ${result["pinBudget"] ?? "?"}`);
+  console.log(`  keep budget: ${result["keepBudget"] ?? "?"}`);
   console.log("");
   return 0;
 }
@@ -1031,7 +1022,7 @@ export async function cmdWiki(args: ParsedArgs): Promise<number> {
     printWikiHelp();
     return verb ? 0 : 2;
   }
-  // The dispatcher's one MOVED table answers `wiki open`, `wiki list` and kin before this door runs.
+  // The dispatcher's one MOVED table answers `wiki list` and kin before this door runs.
   const entry = SUBCOMMANDS[verb];
   if (!entry) {
     console.error(`lares wiki: unknown verb "${verb}"`);

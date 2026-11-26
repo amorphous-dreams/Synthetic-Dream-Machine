@@ -23,7 +23,7 @@ vi.mock("../src/verb-call.js", () => ({
       ? { status: "error", requestId: "", errorMessage: "face-not-open: face h3 stands shut on this vessel (face-locked); nothing ran" }
       : { status: "done", requestId: "r", results: { summary: { ok: true, output: ANSWER } } };
   },
-  runVerb: async (name: string) => ({ status: "done", requestId: "r", results: { summary: { ok: true, output: name === "wiki-active" ? { active: ["lares"], held: [], activeSurface: "lares", activationCap: 4, pinBudget: 3 } : ANSWER } } }),
+  runVerb: async (name: string) => ({ status: "done", requestId: "r", results: { summary: { ok: true, output: name === "wiki-active" ? { active: ["lares"], held: [], activeSurface: "lares", activationCap: 4, keepBudget: 3 } : ANSWER } } }),
 }));
 vi.mock("../src/env.js", async (orig) => ({
   ...(await orig<typeof import("../src/env.js")>()),

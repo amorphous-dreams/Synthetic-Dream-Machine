@@ -43,7 +43,7 @@ function rig(refused: ((wikiUrl: string) => string | null) | undefined, privateS
   };
   const { wireToPool } = makeVesselResidency(
     () => pool as never,
-    { wikiActivationCap: 4, wikiPinBudget: 3, ...(refused ? { wikiDocRefused: refused } : {}) } as never,
+    { wikiActivationCap: 4, wikiKeepBudget: 3, ...(refused ? { wikiDocRefused: refused } : {}) } as never,
     { onUndeliverableAlert: () => {} },
   );
   const cap = wireToPool({ daemon: daemon as never, pool: pool as never, coreHash: "c0", islandUrl: generateAutomergeUrl(), catalogHandle: { doc: () => catalog, url: generateAutomergeUrl() } as never });
