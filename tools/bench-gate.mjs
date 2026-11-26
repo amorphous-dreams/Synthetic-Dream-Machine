@@ -140,7 +140,8 @@ export function owedSteps({ owed, weights = {}, touched = [], root = ROOT, expan
   const steps = [];
   const e2e = (name, set, files) => ({ name, cmd: "npx", args: [...set.args, ...files], cwd: set.dir, scratch: true });
   const heavyOf = (dir) => tiers(treeTests(dir, root), weights[dir]).heavy;
-  if (owed.via === "dark") {
+  // An owed file the fold names `dark` (no witness reads it) fails the ticket wide: an unread file never passes narrow.
+  if (owed.via === "dark" || owed.files.some((f) => f.tier === "dark")) {
     for (const dir of touched) { const heavy = heavyOf(dir); if (heavy.length) steps.push(vitestStep(`heavy-${slug(dir)}`, dir, heavy, root)); }
     const moved = owed.touched ?? [];
     if (moved.length === 0 || moved.some((p) => E2E_BEARING.some((dir) => p.startsWith(`${dir}/`)))) steps.push(e2e("e2e-node", NODE_E2E, []));
