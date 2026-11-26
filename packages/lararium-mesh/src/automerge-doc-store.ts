@@ -28,7 +28,7 @@
 import { assertStorableTitle } from "./title-law.js";
 import { decodeHeads, encodeHeads, type DocHandle } from "@automerge/automerge-repo";
 import { decodeChange, getChangesSince, hasHeads } from "@automerge/automerge";
-import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin, LarRemoveOptions } from "./tiddler-store.js";
+import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin, LarRemoveOptions, LarTombstoneOptions } from "./tiddler-store.js";
 import { holdsOnly } from "./tiddler-store.js";
 import type { MemeProjection } from "./meme-provider.js";
 import { MemeProvider } from "./meme-provider.js";
@@ -130,15 +130,25 @@ function _mergeRecord(target: MutableLarTiddlerRecord, record: LarTiddlerRecord)
 /** A stored record as every reader past this shore holds it: frozen, every value unwrapped. */
 const _freezeRecord = plainRecord;
 
-/** Mark a title deleted inside a change — the kāpae tombstone, minted when no record stands. */
-function _markDeleted(tiddlers: Record<string, MutableLarTiddlerRecord>, title: string): void {
+/**
+ * Mark a title deleted inside a change — the kāpae tombstone, minted when no record stands. A kāpae keeps the fields the
+ * record held (an un-kāpae reads them back). A BARE tombstone replaces the record with the title and the mark alone, so
+ * the fields leave the document's standing state: the form a ring's eviction takes (`LarTombstoneOptions.bare`).
+ */
+function _markDeleted(tiddlers: Record<string, MutableLarTiddlerRecord>, title: string, bare = false): void {
   const existing = ownEntry(tiddlers, title);
-  if (existing) {
+  if (existing && !bare) {
     if (!existing.meta) existing.meta = {};
     existing.meta.deleted = true;
   } else {
     tiddlers[title] = storedRecord({ tiddler: { title }, meta: { deleted: true } }) as unknown as MutableLarTiddlerRecord;
   }
+}
+
+/** Whether a stored record carries a field beside its title: what a bare tombstone sheds. */
+function _carriesBody(record: StoredLarRecord | null | undefined): boolean {
+  const tiddler = (record as { tiddler?: Record<string, unknown> } | null | undefined)?.tiddler;
+  return !!tiddler && Object.keys(tiddler).some((key) => key !== "title");
 }
 
 function _tombstoneRecord(title: string): LarTiddlerRecord {
@@ -492,7 +502,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
     puts:       readonly LarTiddlerRecord[],
     tombstones: readonly string[],
     origin:     ChangeOrigin,
-    options?:   { bag?: string; base?: readonly string[]; retracts?: readonly string[] },
+    options?:   { bag?: string; base?: readonly string[]; retracts?: readonly string[]; bare?: boolean },
   ): Promise<void> {
     // THE TITLE DOOR. Every durable title passes this write: a put, a family, a tombstone (a tombstone
     // against an absent title MINTS the key). A session-form URI never stands as one, so the whole family
@@ -535,7 +545,12 @@ export class AutomergeDocStore implements LarTiddlerStore {
       const existing = ownEntry(current, r.tiddler.title);
       return !(existing && _contentEquals(existing, r));
     });
-    const movedTombstones = tombstones.filter((title) => !storedDeleted(ownEntry(current, title)));
+    // A BARE tombstone also moves a title that already reads deleted while its record still carries fields: it sheds them.
+    const bare = options?.bare === true;
+    const movedTombstones = tombstones.filter((title) => {
+      const standing = ownEntry(current, title);
+      return !storedDeleted(standing) || (bare && _carriesBody(standing));
+    });
     // A RETRACT drops the key (absent: the cascade falls through), inside the same change as the family's other members.
     const movedRetracts = (options?.retracts ?? []).filter((title) => ownEntry(current, title) !== undefined);
     if (moved.length === 0 && movedTombstones.length === 0 && movedRetracts.length === 0) return;
@@ -580,7 +595,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
           tiddlers[title] = storedRecord({ tiddler: record.tiddler, ...(meta !== undefined ? { meta } : {}) }) as unknown as MutableLarTiddlerRecord;
         }
       }
-      for (const title of movedTombstones) _markDeleted(tiddlers, title);
+      for (const title of movedTombstones) _markDeleted(tiddlers, title, bare);
       for (const title of movedRetracts) delete tiddlers[title];
     };
     let madeAt: readonly string[] | undefined;
@@ -663,7 +678,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
   }
 
   /** A tombstone is a family of one: one change marking the title deleted, one tombstone fire. */
-  async tombstone(title: string, origin: ChangeOrigin, options?: { base?: readonly string[] }): Promise<void> {
+  async tombstone(title: string, origin: ChangeOrigin, options?: LarTombstoneOptions): Promise<void> {
     return this.writeFamily([], [title], origin, options);
   }
 

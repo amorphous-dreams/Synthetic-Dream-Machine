@@ -29,9 +29,11 @@ let house: Scratch;
 let root: string, out: string;
 const put = (rel: string, text: string): void => { const p = join(root, ...rel.split("/")); mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, text); };
 
-/** The checkout's own `wikis/` dir and the first sourced workbench standing there, read only. */
+/** The checkout's own `wikis/` dir and the first sourced workbench standing there, read only. A workbench holds at least one
+ *  file: an empty folder a clone left behind carries nothing an export could show, so it never stands as the fixture. */
 const checkoutWikis = join(repoRoot, "wikis");
-const SOURCED = readdirSync(checkoutWikis, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort()[0]!;
+const holdsAFile = (slug: string): boolean => readdirSync(join(checkoutWikis, slug), { withFileTypes: true, recursive: true }).some((e) => e.isFile());
+const SOURCED = readdirSync(checkoutWikis, { withFileTypes: true }).filter((e) => e.isDirectory() && holdsAFile(e.name)).map((e) => e.name).sort()[0]!;
 
 function doors(canonWikis: string): BundleDoors {
   const no = async (): Promise<never> => { throw new Error("no import here"); };

@@ -63,9 +63,10 @@
 # with the vessel stopped first: the act holds the store.
 #
 # THE HOST HOLDS THE ENGINE. The app gets no docker socket, and the CLI inside never stops or starts the daemon.
-# After each exec'd verb that succeeds, the shim reads the CLI's standing verdict (`vessel stand --observe --json`)
-# and restarts the vessel itself when the verdict reads `restand` (a face lit after boot). `vessel stop` stops the
-# container.
+# Each exec'd verb that succeeds names the CLI's standing verdict in its own exit code (the shim asks with
+# `--standing-report`, the last word of the exec's argv; one CLI process per call), and the shim restarts the vessel itself when the verdict reads
+# `restand` (a face lit after boot). A CLI whose exit names no verdict gets one reading after the verb
+# (`vessel stand --observe --json`). `vessel stop` stops the container.
 # One lararium per HUMAN: nothing here names a face.
 #
 # A STOP NEVER DROPS CONTENT SILENTLY. A stopped container holds no memory to count, so `down` asks the standing vessel
@@ -415,7 +416,7 @@ lift_vessel() {
 }
 
 # Any CLI verb: inside the standing vessel, else through the offline door. A verb that succeeds inside a standing
-# vessel gets followed by one standing check, and the shim lifts the vessel when the verdict asks for it. A caller
+# vessel names the standing verdict as it leaves, and the shim lifts the vessel when the verdict asks for it. A caller
 # that asked for the reading itself (`--observe`) gets that reading alone.
 follow_up=yes
 route_cli() {
@@ -483,22 +484,37 @@ route_cli() {
     fi
   fi
   if running_vessel; then
-    # shellcheck disable=SC2046
+    # ONE CLI PER CALL: a verb whose standing the shim reads asks for it on the exec itself (`standing_ask`), and the
+    # verb's own process names the verdict in its exit code (`standing-report.ts`: 90 attach, 91 restand, 92 no verdict).
+    # The ask rides the call itself, as the last word of its argv: the CLI's entry takes it off before the verb reads it.
+    standing_ask=""
+    if [ -n "$follow_up" ]; then standing_ask='--standing-report'; fi
+    # shellcheck disable=SC2046,SC2086
     if [ -n "$stream_file" ]; then
       exec 4<&3
       exec 3< "$stream_file"
-      if waited_exec $(pass_env) -T lares node "$CLI" "$@"; then rc=0; else rc=$?; fi
+      if waited_exec $(pass_env) -T lares node "$CLI" "$@" $standing_ask; then rc=0; else rc=$?; fi
       exec 3<&4
       exec 4<&-
-    elif waited_exec $(pass_env) $(tty_flag) lares node "$CLI" "$@"; then rc=0; else rc=$?; fi
-    if [ "$rc" -ne 0 ]; then return "$rc"; fi
-    if [ -z "$follow_up" ]; then return 0; fi
-    # The verb landed. A standing check that fails leaves a possible lift unperformed, so it never passes silently.
-    if ! observe_standing || ! verdict_known; then
-      printf '%s\n' 'lares-container: the verb succeeded, and the standing check after it answered no verdict; run `lares-container.sh vessel stand`' >&2
-      return 1
-    fi
-    if verdict_restand; then lift_vessel; fi
+    elif waited_exec $(pass_env) $(tty_flag) lares node "$CLI" "$@" $standing_ask; then rc=0; else rc=$?; fi
+    if [ -z "$follow_up" ]; then return "$rc"; fi
+    # The verb landed (90, 91, 92, or a bare 0). A verdict that fails to read leaves a possible lift unperformed, so it
+    # never passes silently.
+    case "$rc" in
+      90) return 0 ;;
+      91) observe_output=""; lift_vessel ;;
+      92)
+        printf '%s\n' 'lares-container: the verb succeeded, and the standing check after it answered no verdict; run `lares-container.sh vessel stand`' >&2
+        return 1 ;;
+      0)
+        # A bare 0 names no verdict: the image's CLI carries none in its exit, so one reading follows the verb.
+        if ! observe_standing || ! verdict_known; then
+          printf '%s\n' 'lares-container: the verb succeeded, and the standing check after it answered no verdict; run `lares-container.sh vessel stand`' >&2
+          return 1
+        fi
+        if verdict_restand; then lift_vessel; fi ;;
+      *) return "$rc" ;;
+    esac
   else
     printf '%s\n' 'lares-container: no vessel stands; this act runs offline on the store' >&2
     ensure_house
@@ -954,6 +970,23 @@ save_vessel_log() { # $1 = the running vessel's container id
   fi
 }
 
+# THE STOP'S OWN LINES JOIN THE SAVED LOG. The save above reads while the vessel still stands, so it ends before the
+# stand-down speaks. Once the vessel stopped and before its container leaves, the lines from its last `graceful shutdown`
+# line on (the flush spans, each `[sealed-rest]` stand-down row, `N save(s) leave unsealed`) append to that file as the
+# engine printed them, and one line names their count. A stop that printed none appends nothing and says nothing; a log
+# that cannot be read never blocks the removal.
+STAND_DOWN_LINES=2000
+keep_stand_down() { # $1 = the stopped vessel's container id
+  sd_id=$(printf '%s\n' "$1" | tr -d '\r' | sed -n '1p')
+  [ -n "$sd_id" ] || return 0
+  sd_said=$(docker logs --tail "$STAND_DOWN_LINES" "$sd_id" 2>&1 | awk '/graceful shutdown/ { n = 0; on = 1 } on { buf[++n] = $0 } END { for (i = 1; i <= n; i++) print buf[i] }') || return 0
+  [ -n "$sd_said" ] || return 0
+  if printf '%s\n' "$sd_said" >> "$HOUSE/run/vessel-last.log" 2>/dev/null; then
+    printf "lares-container: the stop's own lines (%s, from its graceful shutdown on) join the saved log\n" "$(printf '%s\n' "$sd_said" | wc -l | tr -d ' ')" >&2
+  fi
+  return 0
+}
+
 # THE DOWN PATH (`down`, and every act that must stop the vessel first): the keep while the vessel stands, the census,
 # the refusal of a silent stop, the vessel's log; then the vessel alone stops where a pūlama runs, or the whole project downs.
 down_vessel() { # $@ = compose-down options
@@ -979,7 +1012,7 @@ down_vessel() { # $@ = compose-down options
   fi
   if [ "$d_pulama" = running ]; then
     # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops (with down's options) and leaves.
-    compose stop "$@" lares && compose rm -f lares
+    compose stop "$@" lares && { keep_stand_down "${down_id:-}"; compose rm -f lares; }
   else
     compose down --remove-orphans "$@"
   fi

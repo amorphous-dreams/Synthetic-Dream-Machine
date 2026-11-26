@@ -212,6 +212,10 @@
       "import": "./dist/host-task.js",
       "types": "./dist/host-task.d.ts"
     },
+    "./boot-wait": {
+      "import": "./dist/boot-wait.js",
+      "types": "./dist/boot-wait.d.ts"
+    },
     "./wave-crest": {
       "import": "./dist/wave-crest.js",
       "types": "./dist/wave-crest.d.ts"
@@ -1187,6 +1191,10 @@
     "./call-touches": {
       "import": "./dist/call-touches.js",
       "types": "./dist/call-touches.d.ts"
+    },
+    "./compacting-storage": {
+      "import": "./dist/compacting-storage.js",
+      "types": "./dist/compacting-storage.d.ts"
     },
     "./sealed-rest": {
       "import": "./dist/sealed-rest.js",

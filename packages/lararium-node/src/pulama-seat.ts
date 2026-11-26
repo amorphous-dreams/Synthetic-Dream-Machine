@@ -13,10 +13,17 @@
  * A vessel that names no offer still dials: the pūlama serves it where the image the host reports stands admitted (a kūkulu
  * that landed par, or the hand's `pulama admit`), and refuses `pulama-image-unadmitted` otherwise.
  *
- * After the floor composition stands, the vessel dials the pūlama. A session names the faces the pūlama lends this vessel,
- * and the vessel composes with the sovereign rows over them: the composition names its own daemon mount among the faces
- * served (`daemonMountOrdinal`) and lights the rest beside it, and no session sets a vessel-wide face. A refusal names itself
- * once and the vessel keeps the floor. No timer redials: `lares vault
+ * THE DIAL COMES BEFORE ANY COMPOSITION (`standFirstByPulama`). The floor's claim on the store and the custody door stand
+ * first; then the vessel dials the pūlama, and what the dial answers decides what composes FIRST. A session names the faces the
+ * pūlama lends this vessel, and the vessel composes ONCE, with the sovereign rows over them: the composition names its own
+ * daemon mount among the faces served (`daemonMountOrdinal`) and lights the rest beside it, and no session sets a vessel-wide
+ * face. No floor composition stands first only to tear down: the Repo, the catalog, the Nexus island and the genesis open one
+ * time. A dial that serves no session names its refusal once and the vessel composes at the floor; a composition the vessel
+ * refuses over its session leaves the floor standing, as every refused sovereign composition does. A pūlama that stays
+ * silent past the dial's liveness bound holds no floor back: the floor composes meanwhile, and the dial, once it lands,
+ * composes over it as a custody unlock does. The bound paces that one interim floor and reads no verdict: which composition
+ * the vessel ends on follows the session's own events. Nothing stored lifts a boot: with no session served, the floor stands.
+ * No timer redials: `lares vault
  * unlock` asks the custody door, which runs this same dial. That unlock gathers no credential and sends none: the door
  * names a pūlama in its `custody` reading, so the command asks nobody anything and answers what the pūlama waits on.
  *
@@ -228,4 +235,73 @@ export async function cleanGoodbye(closed: { readonly whole: boolean }, goodbye:
 /** Seat the stand-by and dial once; answers whether a session stood. */
 export async function standByPulama(a: Parameters<typeof pulamaStandBy>[0]): Promise<boolean> {
   return (await pulamaStandBy(a).dial()).session;
+}
+
+/** How long the boot's first dial may stay silent before the floor composes meanwhile: a liveness bound on the floor's
+ *  availability, never a verdict on the session. */
+export const FIRST_DIAL_SILENCE_MS = 5_000;
+
+/** What the boot's first stand reads and asks of the vessel. */
+export interface FirstStandPorts {
+  /** The one dial (`pulamaStandBy().dial`): it composes over the session it is served, and composes nothing where none is served. */
+  readonly dial: () => Promise<PulamaStandingBy>;
+  /** Compose at the floor, on the vessel's one recomposition chain. A floor that refuses rejects, and the boot ends on it. */
+  readonly floor: () => Promise<unknown>;
+  /** The chain holds an ask for a composition: it stands, or it stands next. */
+  readonly asked: () => boolean;
+  /** A composition stands now. */
+  readonly stands: () => boolean;
+  readonly onLog: (line: string) => void;
+  /** The silence bound; `FIRST_DIAL_SILENCE_MS` where none rides. */
+  readonly silenceMs?: number;
+  /** The bound's seat (tests fire it by hand): it calls `fn` once after `ms` unless the returned stop runs first. */
+  readonly after?: (fn: () => void, ms: number) => () => void;
+}
+
+const timerAfter = (fn: () => void, ms: number): (() => void) => {
+  const handle = setTimeout(fn, ms);
+  return () => clearTimeout(handle);
+};
+
+/**
+ * THE BOOT'S FIRST STAND, where the environment names a pūlama: dial before anything composes, so a served session composes
+ * the vessel ONCE. The vessel ends this call with a composition standing, whatever the pūlama answered:
+ *
+ *   a session served          the dial composed over it; no floor composition stood first
+ *   no session served         the dial composed nothing, so the floor composes here
+ *   a composition refused     the refusal's own fallback left the floor standing; where it left none, the floor composes here
+ *   a pūlama silent past the bound   the floor composes meanwhile (unless the chain already holds an ask), and the dial
+ *                             stays asked: once it lands it composes over that floor, as a custody unlock does
+ *
+ * Every composition here runs on the vessel's one recomposition chain (`floor`, and the dial's own recompose), so none overlaps
+ * another. A floor that refuses rejects this call, as a refused floor ends every boot.
+ */
+export async function standFirstByPulama(p: FirstStandPorts): Promise<PulamaStandingBy> {
+  const held: { floor: Promise<unknown> | null } = { floor: null };
+  let floorFell: (cause: unknown) => void = () => {};
+  const fell = new Promise<never>((_resolve, reject) => { floorFell = reject; });
+  // The race below hears it; this hold keeps a fall that lands after the dial from reading unhandled before the await under it.
+  fell.catch(() => undefined);
+  const silenceMs = p.silenceMs ?? FIRST_DIAL_SILENCE_MS;
+  const stop = (p.after ?? timerAfter)(() => {
+    // A dial that already asked for its composition holds the chain: a floor asked now would tear that composition down.
+    if (p.asked()) return;
+    p.onLog(`the pūlama gave the first dial no answer within ${silenceMs}ms; the floor composes meanwhile, and the dial stays asked`);
+    held.floor = p.floor();
+    held.floor.catch(floorFell);
+  }, silenceMs);
+  let by: PulamaStandingBy;
+  try {
+    by = await Promise.race([
+      p.dial().catch((err: unknown): PulamaStandingBy => {
+        p.onLog(`the first dial did not settle (${err instanceof Error ? err.message : String(err)}); this vessel keeps the floor`);
+        return { session: false, waits: "pulama-unreachable" };
+      }),
+      fell,
+    ]);
+  } finally { stop(); }
+  // The interim floor settles before this reads what stands: a floor that refused rises here.
+  if (held.floor !== null) await held.floor;
+  if (!p.stands()) await p.floor();
+  return by;
 }

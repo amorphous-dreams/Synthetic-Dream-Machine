@@ -140,6 +140,34 @@ describe("uds-channel — H1 arbitration ledger", () => {
     });
   });
 
+  test("a hung-up READ drops with no fact: its receipt reads unknown, and a line under the same id reads", async () => {
+    await withChannel(doneWorker, async ({ socketPath, placed }) => {
+      // `ddate` stands in the read allow-list (`READ_VERBS`): it writes no document, so a caller gone leaves nothing to arbitrate.
+      const inv = { verb: "ddate", args: {}, requestedBy: "did:key:test", requestId: "req-h1-read-hung-up" };
+      await writeThenHangUp(socketPath, inv);
+      await new Promise((r) => setTimeout(r, 100));
+      expect(placed).toHaveLength(0); // dropped, never dispatched
+
+      // No fact rests for it: the vessel wrote nothing for a reader already gone.
+      expect(await sendLine(socketPath, { op: "receipt", requestId: inv.requestId })).toEqual({ requestId: inv.requestId, state: "unknown" });
+
+      // The same line from a caller that stays reads: no effect could land twice.
+      const again = await sendLine(socketPath, inv);
+      expect(again["status"]).toBe("done");
+      expect(placed).toHaveLength(1);
+    });
+  });
+
+  test("CONTROL: a hung-up verb outside the read allow-list still rests `abandoned`", async () => {
+    await withChannel(doneWorker, async ({ socketPath, placed }) => {
+      const inv = { verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId: "req-h1-act-hung-up" };
+      await writeThenHangUp(socketPath, inv);
+      await new Promise((r) => setTimeout(r, 100));
+      expect(await sendLine(socketPath, { op: "receipt", requestId: inv.requestId })).toEqual({ requestId: inv.requestId, state: "abandoned" });
+      expect(placed).toHaveLength(0);
+    });
+  });
+
   test("{op:\"receipt\"} on a never-seen id reads unknown, never error, never abandoned", async () => {
     await withChannel(() => { /* unused */ }, async ({ socketPath, placed }) => {
       const receipt = await sendLine(socketPath, { op: "receipt", requestId: "req-never-seen" });

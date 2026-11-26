@@ -6,6 +6,7 @@
  * (content) carries none.
  */
 import { memoryControlStore } from "./control-store-fixture.js";
+import { answerRingOf } from "@lararium/mesh/control-home";
 import { describe, test, expect } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
@@ -103,7 +104,10 @@ async function stand(register: (registry: VerbTable) => void) {
     if (chore !== undefined) book.add({ requestId, action: verb, args, requestedBy: "me", origin: "channel", asker: "seat", chore } as never);
     dispatcher.placeVerb({ verb, args, requestedBy: "me", requestId });
     await settle();
-    return control.getLive(OUTCOME_URI_PREFIX + requestId);
+    // The row rests the verdict and the chore mark; the whole answer's results ride the store's answer ring.
+    const row = await control.getLive(OUTCOME_URI_PREFIX + requestId);
+    const results = answerRingOf(control).get(requestId)?.tiddler["results"];
+    return row && results !== undefined ? { ...row, tiddler: { ...row.tiddler, results } } as typeof row : row;
   };
   return { place, stop: () => dispatcher.stop() };
 }

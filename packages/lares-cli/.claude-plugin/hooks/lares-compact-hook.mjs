@@ -26,7 +26,7 @@ try {
     const run = shimRun(import.meta.url);
     if (await vesselUp(run)) {
       const instance = typeof input.session_id === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(input.session_id) ? ["--instance", input.session_id] : [];
-      const answer = parseAnswer((await settle(run(spiritArgv("om", worn, "--source", "precompact", ...instance)), OM_BUDGET_MS))?.stdout);
+      const answer = parseAnswer((await settle(run(spiritArgv("om", worn, "--source", "precompact", ...instance), null, OM_BUDGET_MS), OM_BUDGET_MS))?.stdout);
       if (answer?.ok === true) {
         shape = answer.data?.carryShape ?? null; inherits = answer.data?.inherits ?? null; card = String(answer.data?.text ?? "");
         // The precompact read stamps the wake epoch for this instance (an ordering stamp); the counter keeps it.

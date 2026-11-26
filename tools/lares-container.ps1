@@ -11,8 +11,9 @@
 # (`run/keep-owed`) to `keep-owed`, which the rite runs once it lands its halves (it waits while a kūkulu half rests
 # unlanded). `vessel-image` prints the image the running vessel runs. The pūlama reads every route; this shim never reads or
 # types one. The CLI runs by exec while a vessel stands and through the offline door while none
-# stands. The host holds the engine: the shim reads the CLI's standing verdict after a verb and restarts the vessel
-# itself when the verdict reads `restand`. The app gets no docker socket.
+# stands. The host holds the engine: a verb that succeeds names the CLI's standing verdict in its own exit code (the shim
+# asks with `--standing-report`, the last word of the exec's argv; one CLI process per call), and the shim restarts the vessel itself when the
+# verdict reads `restand`. The app gets no docker socket.
 # LARES_HOUSE / LARES_WORKSPACE come from the environment or the operator's `~/.lares/lares-surface.env` (outside every
 # bind; never beside the compose file). LARES_WORKSPACE names the workspace the house lays canon from and projects into,
 # a projection target the operator names; for the Kahu cabal it names the repo checkout, the working surface
@@ -456,7 +457,7 @@ function VesselRead([string[]]$rest) {
 }
 
 # Any CLI verb: inside the standing vessel, else through the offline door. A verb that succeeds inside a standing
-# vessel gets followed by one standing check, and the shim lifts the vessel when the verdict asks for it.
+# vessel names the standing verdict as it leaves, and the shim lifts the vessel when the verdict asks for it.
 function RouteCli([string[]]$argv, [bool]$followUp) {
   $script:HostInputFile = $null
   $isPut = $argv.Count -ge 3 -and (($argv[0] -ceq 'tiddler' -and $argv[1] -ceq 'put') -or ($argv[0] -ceq 'spirit' -and $argv[1] -cin @('ah', 'hooili', 'residue')))
@@ -510,15 +511,35 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
   }
   if (HasRunningVessel) {
     $tty = if ($script:HostInputFile) { @('-T') } else { $NoTty }
-    Act 'exec' (@('exec', '-e', 'LARES_EXEC_TAG') + $PassEnv + $tty + @('lares', 'node', $Cli) + $argv)
+    # ONE CLI PER CALL: a verb whose standing the shim reads asks for it on the exec itself, and the verb's own process
+    # names the verdict in its exit code (`standing-report.ts`: 90 attach, 91 restand, 92 no verdict).
+    # The ask rides the call itself, as the last word of its argv: the CLI's entry takes it off before the verb reads it.
+    $ask = @()
+    if ($followUp) { $ask = @('--standing-report') }
+    $keeps = $script:ActKeepsExit
+    if ($followUp) { $script:ActKeepsExit = $true }
+    Act 'exec' (@('exec', '-e', 'LARES_EXEC_TAG') + $PassEnv + $tty + @('lares', 'node', $Cli) + $argv + $ask)
+    $script:ActKeepsExit = $keeps
     if ($followUp) {
-      # The verb landed. A standing check that fails leaves a possible lift unperformed, so it never passes silently.
-      $answer = ObserveStanding
-      if ($script:ObserveFailed -or (VerdictAct $answer) -eq '') {
+      # The verb landed (90, 91, 92, or a bare 0). A verdict that fails to read leaves a possible lift unperformed, so it
+      # never passes silently.
+      $code = $LASTEXITCODE
+      if ($code -eq 90) { $global:LASTEXITCODE = 0 }
+      elseif ($code -eq 91) { LiftVessel @('{"data":{"standing":{"reason":"the standing requires a re-stand"}}}') }
+      elseif ($code -eq 92) {
         [Console]::Error.WriteLine('lares-container: the verb succeeded, and the standing check after it answered no verdict; run `lares-container.ps1 vessel stand`')
         exit 1
       }
-      if (VerdictRestand $answer) { LiftVessel $answer }
+      elseif ($code -eq 0) {
+        # A bare 0 names no verdict: the image's CLI carries none in its exit, so one reading follows the verb.
+        $answer = ObserveStanding
+        if ($script:ObserveFailed -or (VerdictAct $answer) -eq '') {
+          [Console]::Error.WriteLine('lares-container: the verb succeeded, and the standing check after it answered no verdict; run `lares-container.ps1 vessel stand`')
+          exit 1
+        }
+        if (VerdictRestand $answer) { LiftVessel $answer }
+      }
+      elseif (-not $keeps) { exit $code }
     }
   } else {
     [Console]::Error.WriteLine('lares-container: no vessel stands; this act runs offline on the store')
@@ -918,6 +939,25 @@ function SaveVesselLog([string]$id) {
     [Console]::Error.WriteLine("lares-container: the vessel's log (its last $VesselLogLines lines) rests at $file")
   } catch { [Console]::Error.WriteLine("lares-container: the vessel's log could not be read; the down goes on") }
 }
+# THE STOP'S OWN LINES JOIN THE SAVED LOG. The save above reads while the vessel still stands, so it ends before the
+# stand-down speaks. Once the vessel stopped and before its container leaves, the lines from its last `graceful shutdown`
+# line on (the flush spans, each `[sealed-rest]` stand-down row, `N save(s) leave unsealed`) append to that file as the
+# engine printed them, and one line names their count. A stop that printed none appends nothing and says nothing; a log
+# that cannot be read never blocks the removal.
+$StandDownLines = 2000
+function KeepStandDown([string]$id) {
+  $id = (($id -split "`r?`n") | Where-Object { $_.Trim() } | Select-Object -First 1)
+  if ([string]::IsNullOrWhiteSpace($id)) { return }
+  try {
+    $lines = @(& docker logs --tail $StandDownLines $id.Trim() 2>&1 | ForEach-Object { "$_" })
+    $from = -1
+    for ($i = 0; $i -lt $lines.Count; $i++) { if ($lines[$i] -match 'graceful shutdown') { $from = $i } }
+    if ($from -lt 0) { return }
+    $said = @($lines[$from..($lines.Count - 1)])
+    Add-Content -LiteralPath (Join-Path (Join-Path $House 'run') 'vessel-last.log') -Value $said -Encoding utf8
+    [Console]::Error.WriteLine("lares-container: the stop's own lines ($($said.Count), from its graceful shutdown on) join the saved log")
+  } catch { }
+}
 function DownVessel([string[]]$opts) {
   # A pūlama that reads unknown stops nothing: a full down would take a lit pūlama with it.
   $pulama = PulamaState
@@ -940,7 +980,7 @@ function DownVessel([string[]]$opts) {
   else { $script:KeepSaid = 'no vessel stood, so no keep ran' }
   if ($pulama -eq 'running') {
     # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops (with down's options) and leaves.
-    Compose (@('stop') + $opts + @('lares')); Compose @('rm', '-f', 'lares')
+    Compose (@('stop') + $opts + @('lares')); KeepStandDown ($ids -join "`n"); Compose @('rm', '-f', 'lares')
   } else { Compose (@('down', '--remove-orphans') + $opts) }
 }
 

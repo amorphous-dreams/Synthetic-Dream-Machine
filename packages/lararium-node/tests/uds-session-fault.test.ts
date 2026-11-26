@@ -74,7 +74,7 @@ async function stand(label: string, opts: {
   refuse?: (faceRef: string) => string | null; refuseMint?: (n: number) => boolean;
   /** Hold the door's answer for this hint until the test lets it go. */
   hold?: { hint: string; until: Promise<void> };
-  /** Fail the Repo's flush while this reads true; it reads the documents the flush names (none: the whole Repo). */
+  /** Fail the Repo's flush while this reads true; it reads the documents the flush names. */
   failFlush?: (ids?: readonly unknown[]) => boolean;
   /** The door throws for this hint, as a torn row would. */
   throwOn?: string;
@@ -152,11 +152,14 @@ const switchTo = (env: Record<string, unknown>, faceRef: string, requestId: stri
 describe("UDS session fault", () => {
   test("RED: a reply whose durable settle throws answers session-fault under the call's requestId, and no fault text reaches the wire", async () => {
     let failing = false;
-    // The durable settle flushes the daemon doc by name; the fact ledger's own flush (the whole Repo) stands.
-    const v = await stand("reply", { failFlush: (ids) => failing && ids !== undefined });
+    // The ledger and the durable settle each flush the control document by name; the ledger's flush lands before the
+    // verb is placed, so a flush that fails only once the call is placed fails the reply's settle alone.
+    let placedBefore = Number.POSITIVE_INFINITY;
+    const v = await stand("reply", { failFlush: () => failing && v.placed.length > placedBefore });
     try {
       const a = await v.connect();
       const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
+      placedBefore = v.placed.length;
       failing = true;
       const reply = await a.ask(call(envA, "call-torn"));
       failing = false;
@@ -170,8 +173,8 @@ describe("UDS session fault", () => {
 
   test("RED: a call whose fact ledger's whole-Repo flush rejects mid-arbitration answers session-fault under its requestId, and nothing runs", async () => {
     let failing = false;
-    // The fact ledger flushes the whole Repo (no ids) before it answers "run"; that flush rejects here.
-    const v = await stand("ledger", { failFlush: (ids) => failing && ids === undefined });
+    // The fact ledger flushes the control document before it answers "run"; that flush, the call's first, rejects here.
+    const v = await stand("ledger", { failFlush: () => failing });
     try {
       const a = await v.connect();
       const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));

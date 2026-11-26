@@ -6,6 +6,7 @@
  * off an outcome (`island-verb-ask.ts` outcomeOf, the UDS result reader and the dispatcher's dedup read status,
  * output, error, refusal and digest).
  */
+import { answerRingOf } from "@lararium/mesh/control-home";
 import { expect, test } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
@@ -35,7 +36,11 @@ test("RED: the realm-feed outcome names no requester, and its bytes never carry 
   expect(JSON.stringify(outcome!.tiddler)).not.toContain(ATOM.slice(2));
   expect(outcome!.tiddler["verb"]).toBe("realm-feed");
   expect(outcome!.tiddler["status"]).toBe("done");
-  expect(JSON.parse(String(outcome!.tiddler["results"]))[VERB_RESULT_KEY]).toEqual({ ok: true, output: { realm: REALM, fed: true } });
+  // The result rides the answer ring whole, and it names no requester either.
+  const answer = answerRingOf(d).get("feed-1")!.tiddler as Record<string, unknown>;
+  expect(Object.keys(answer)).not.toContain("requested-by");
+  expect(JSON.stringify(answer)).not.toContain(ATOM.slice(2));
+  expect(JSON.parse(String(answer["results"]))[VERB_RESULT_KEY]).toEqual({ ok: true, output: { realm: REALM, fed: true } });
 });
 
 test("RED: an error outcome and an effect copy name no requester either; CONTROL: each keeps its own status", async () => {

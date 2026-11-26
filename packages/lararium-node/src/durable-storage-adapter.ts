@@ -62,6 +62,8 @@ export class DurableNodeFSStorageAdapter extends NodeFSStorageAdapter {
   readonly #pending = new Map<string, PendingSave>();
   readonly #onStranded: (path: string) => void;
   readonly #named = new Set<string>();
+  /** Every target a save held in flight at the start of, or began during, a running directory walk. */
+  readonly #walks = new Set<Set<string>>();
 
   constructor(baseDirectory: string, opts: DurableStorageOptions = {}) {
     super(baseDirectory);
@@ -79,12 +81,17 @@ export class DurableNodeFSStorageAdapter extends NodeFSStorageAdapter {
     return join(this.#root, firstKey.slice(0, 2), firstKey.slice(2), ...rest);
   }
 
-  /** Whether `keyArray` names a staged temp; a temp no save of this adapter has in flight is named once. */
-  #passOver(keyArray: StorageKey): boolean {
+  /**
+   * Whether `keyArray` names a staged temp; a temp no save of this adapter has in flight is named once. `quiet`
+   * passes over without naming: the base walk loads each listed key through `load`, and only the walk's own filter,
+   * holding every save that joined it, may name a temp stranded.
+   */
+  #passOver(keyArray: StorageKey, live?: ReadonlySet<string>, quiet = false): boolean {
     const m = STAGED_TEMP.exec(keyArray[keyArray.length - 1] ?? "");
     if (!m) return false;
+    if (quiet) return true;
     const path = this.#pathOf(keyArray);
-    const ours = Number(m[2]) === process.pid && this.#inFlight.has(join(dirname(path), m[1]!));
+    const ours = Number(m[2]) === process.pid && (live ? live.has(join(dirname(path), m[1]!)) : this.#inFlight.has(join(dirname(path), m[1]!)));
     if (!ours && !this.#named.has(path)) {
       this.#named.add(path);
       this.#onStranded(path);
@@ -93,7 +100,7 @@ export class DurableNodeFSStorageAdapter extends NodeFSStorageAdapter {
   }
 
   override async load(keyArray: StorageKey): Promise<Uint8Array | undefined> {
-    if (this.#passOver(keyArray)) return undefined;
+    if (this.#passOver(keyArray, undefined, this.#walks.size > 0)) return undefined;
     return this.#pending.get(this.#pathOf(keyArray))?.binary ?? await super.load(keyArray);
   }
 
@@ -102,7 +109,14 @@ export class DurableNodeFSStorageAdapter extends NodeFSStorageAdapter {
     // then, so the walk lists it; one read after the walk could miss a key that was neither on disk when the
     // walk passed nor still pending afterwards.
     const held = [...this.#pending.values()].filter((p) => keyPrefix.every((part, i) => p.key[i] === part));
-    const chunks = (await super.loadRange(keyPrefix)).filter((chunk) => !this.#passOver(chunk.key));
+    // The in-flight targets are snapshotted BEFORE the walk too, and every save that begins during it joins the
+    // snapshot: a live writer that settles mid-walk never reads as a stranded temp.
+    const live = new Set(this.#inFlight.keys());
+    this.#walks.add(live);
+    let walked: Chunk[];
+    try { walked = await super.loadRange(keyPrefix); }
+    finally { this.#walks.delete(live); }
+    const chunks = walked.filter((chunk) => !this.#passOver(chunk.key, live));
     const listed = new Set(chunks.map((chunk) => this.#pathOf(chunk.key)));
     for (const p of held) {
       const path = this.#pathOf(p.key);
@@ -144,6 +158,7 @@ export class DurableNodeFSStorageAdapter extends NodeFSStorageAdapter {
       await atomicWriteFile(filePath, binary);
     });
     this.#inFlight.set(filePath, write);
+    for (const live of this.#walks) live.add(filePath);
     try { await write; }
     finally {
       if (this.#inFlight.get(filePath) === write) this.#inFlight.delete(filePath);
