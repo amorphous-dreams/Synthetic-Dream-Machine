@@ -7,6 +7,9 @@
  *
  *   mandate   `kahua/memory/mandate/<id16>`   tag `mandate`; `mandate-hash` over its own fields and words; `parent` names
  *                                             the offering coordinator's mandate (`<uri>@<hash>`), absent where a hand offers
+ *                                             A CARRIER MANDATE FOUNDS ITS FAMILY as any carrier does: its fields ride the
+ *                                             carrier's own `toml meta`, `mandate-seed` (the offer's hash) names its address,
+ *                                             and its hash reads the recomposed carrier: the family's canonical hash
  *   edge      `kahua/memory/summons/<id16>`   tag `summons`; `parent` names the mandate; {offerer, instance, mandate-hash,
  *                                             face, launched, handback}: the ley-line inside the house
  *   lanes     `kahua/memory/lanes/<pet>/<n>`  tag `summons-lanes`; `holds` lists the edges holding a coordinator's arm lanes, one
@@ -102,6 +105,18 @@ export function mandateCanon(fields: Readonly<Record<string, string | undefined>
 }
 /** A mandate's hash: the sha256 of its covered fields and its words. Same mandate, same hash, same wake. */
 export const mandateHashOf = (fields: Readonly<Record<string, string | undefined>>, text: string): string => sha256HexSync(mandateCanon(fields, text));
+/**
+ * THE FIELD A CARRIER MANDATE'S ADDRESS KEYS ON: the offer's own hash (`mandateHashOf` over the covered fields and the carrier
+ * as offered), written into the carrier's meta. A carrier names its own address in its head and meta, so no hash over the
+ * landed carrier could also name that address; the seed names where the family stands, and the family's canonical hash names
+ * what it holds.
+ */
+export const MANDATE_SEED = "mandate-seed" as const;
+/**
+ * The affordances a carrier's own meta may name (a flag naming the same one outranks it). Who the mandate summons, who offers
+ * it, under which coordinator and face stay the door's to write: `pet`, `instance`, `offerer`, `parent`, `face`.
+ */
+export const MANDATE_AFFORDANCES: readonly MandateField[] = ["model", "launch-cap", "allowed-tools", "workdir", "log", "reads", "links", "paths", "caps", "grants", "lanes", "handback-shape"];
 /** Where a mandate rests: keyed by its own hash. */
 export const mandateOf = (hash: string): string => `${MEMORY_PREFIX}${MANDATE_WORD}/${hash.slice(0, 16)}`;
 /** Where the edge of a summons rests: keyed by the mandate's hash. */
@@ -130,7 +145,20 @@ export interface SpiritMandate {
   /** The arm-lane ceiling this mandate grants its holder's own summonses; a mandate naming none reads zero. */
   readonly lanes: number;
   readonly handbackShape: string; readonly text: string;
+  /** True where the mandate stands as a carrier family: `hash` names the family's canonical hash and `text` the recomposed carrier. */
+  readonly family: boolean;
 }
+
+/**
+ * A carrier mandate's family as the meme lens answers it: the recomposed carrier (`text`), the canonical hash the door names
+ * for it, and whether `text` holds the whole carrier (a carrier past one page answers its first page, and the door's hash
+ * speaks for the rest).
+ */
+export interface MandateCarrier { readonly text: string; readonly canonicalHash: string; readonly whole: boolean }
+/** The 64 hex of a canonical hash (`sha256:<hex>`, a partial or card base that ends in one); empty where the word names none. */
+const canonicalHex = (base: string): string => /sha256[:-]([0-9a-f]{64})$/.exec(base)?.[1] ?? "";
+/** The hash a carrier mandate reads by: the sha256 of the recomposed carrier, which the family's canonical hash also names. */
+export const mandateCarrierHash = (carrier: MandateCarrier): string => (carrier.whole ? sha256HexSync(carrier.text) : canonicalHex(carrier.canonicalHash));
 
 /** The record a mandate lands as: its title, its fields (hash, tag and description among them) and its words. */
 export function mandateWrite(covered: Readonly<Partial<Record<MandateField, string>>>, text: string): { uri: string; hash: string; text: string; fields: Record<string, string> } {
@@ -139,27 +167,66 @@ export function mandateWrite(covered: Readonly<Partial<Record<MandateField, stri
   const hash = mandateHashOf(kept, text);
   return {
     uri: mandateOf(hash), hash, text,
-    fields: { ...kept, "mandate-hash": hash, tags: MANDATE_TAG, description: `mandate for ${kept["pet"] ?? "?"}#${kept["instance"] ?? "?"}, offered by ${kept["offerer"] ?? "?"}: the summons, its affordances and the hand-back it asks` },
+    fields: { ...kept, "mandate-hash": hash, tags: MANDATE_TAG, description: mandateDescription(kept) },
   };
 }
+
+/**
+ * WHERE A CARRIER MANDATE FOUNDS ITS FAMILY, and the fields its meta carries. `offered` reads the carrier as the offerer gave
+ * it; the seed hashes the covered fields and those bytes, so the same offer finds the same address. The door binds the
+ * carrier's head and meta to `uri`, writes `meta` into its `toml meta` block and puts the carrier alone: the put founds the
+ * family, and no field rides beside it (`carrier-speaks-whole`).
+ */
+export function mandateFound(covered: Readonly<Partial<Record<MandateField, string>>>, offered: string): { uri: string; seed: string; meta: Record<string, string> } {
+  const kept: Record<string, string> = {};
+  for (const name of MANDATE_FIELDS) { const value = (covered[name] ?? "").trim(); if (value !== "") kept[name] = value; }
+  const seed = mandateHashOf(kept, offered);
+  return { uri: mandateOf(seed), seed, meta: { ...kept, [MANDATE_SEED]: seed } };
+}
+/** The description a mandate's record carries. */
+export const mandateDescription = (fields: Readonly<Record<string, string | undefined>>): string =>
+  `mandate for ${fields["pet"] ?? "?"}#${fields["instance"] ?? "?"}, offered by ${fields["offerer"] ?? "?"}: the summons, its affordances and the hand-back it asks`;
 
 /**
  * A mandate read off its record, verified. `named` carries the hash the caller holds (the `@<hash>` of its ref). A record whose
  * words or covered fields moved since its hash landed, or whose hash names another than the caller's, refuses `mandate-moved`;
  * no record refuses `mandate-unknown`.
+ *
+ * A CARRIER MANDATE READS AS ITS FAMILY (`mandate-seed` on the root): `carrier` hands the recomposed carrier the meme lens
+ * answered, and the mandate's hash reads that carrier's own sha256, the hash the family holds as its canonical one. A slot
+ * that moved, a field that moved in the meta, a slot that joined or left: each moves the recompose, so the hash the caller
+ * names no longer answers and the read refuses `mandate-moved`. A line naming no hash reads the family as it stands now.
  */
-export function mandateRead(uri: string, fields: Readonly<Record<string, string>>, named: string | null): SpiritMandate {
+export function mandateRead(uri: string, fields: Readonly<Record<string, string>>, named: string | null, carrier: MandateCarrier | null = null): SpiritMandate {
   const stored = fields["mandate-hash"];
-  if (stored === undefined) {
+  const seed = fields[MANDATE_SEED];
+  if (stored === undefined && seed === undefined) {
     throw new SpiritRefusal("mandate-unknown", `mandate-unknown: no mandate stands at ${uri} under the face that answered; nothing started. List the mandates this face holds: \`lares wiki filter '[tag[${MANDATE_TAG}]]' --recipe default\``, 4);
   }
-  const text = fields["text"] ?? "";
-  const live = mandateHashOf(fields, text);
-  if (!MANDATE_HASH.test(stored) || live !== stored || (named !== null && named !== stored) || mandateOf(stored) !== uri) {
-    const why = live !== stored ? `its words or fields read ${live.slice(0, 12)} now, and its hash names ${String(stored).slice(0, 12)}`
-      : named !== null && named !== stored ? `it holds ${stored.slice(0, 12)}, and the line names ${named.slice(0, 12)}`
-      : `its hash ${String(stored).slice(0, 12)} names another address`;
-    throw new SpiritRefusal("mandate-moved", `mandate-moved: ${uri} moved since its hash landed (${why}); nothing started. Its offerer lands the mandate again and names the ref that answer prints: \`lares spirit mandate ${fields["pet"] ?? "<pet>"}#${fields["instance"] ?? "<n>"} --file <carrier>\``, 4);
+  const again = `Its offerer lands the mandate again and names the ref that answer prints: \`lares spirit mandate ${fields["pet"] ?? "<pet>"}#${fields["instance"] ?? "<n>"} --file <carrier>\``;
+  let hash: string;
+  let text: string;
+  if (seed !== undefined) {
+    // THE FAMILY'S OWN TRUTH: the recomposed carrier, hashed as the family hashes it.
+    const live = carrier === null ? "" : mandateCarrierHash(carrier);
+    if (carrier === null || !MANDATE_HASH.test(live) || !MANDATE_HASH.test(seed) || mandateOf(seed) !== uri || (named !== null && named !== live)) {
+      const why = carrier === null || !MANDATE_HASH.test(live) ? "its root no longer reads as a carrier family"
+        : !MANDATE_HASH.test(seed) || mandateOf(seed) !== uri ? `its seed ${String(seed).slice(0, 12)} names another address`
+        : `its family reads ${live.slice(0, 12)} now, and the line names ${named!.slice(0, 12)}`;
+      throw new SpiritRefusal("mandate-moved", `mandate-moved: ${uri} moved since its hash landed (${why}); nothing started. ${again}`, 4);
+    }
+    hash = live;
+    text = carrier.text;
+  } else {
+    text = fields["text"] ?? "";
+    const live = mandateHashOf(fields, text);
+    if (stored === undefined || !MANDATE_HASH.test(stored) || live !== stored || (named !== null && named !== stored) || mandateOf(stored) !== uri) {
+      const why = live !== stored ? `its words or fields read ${live.slice(0, 12)} now, and its hash names ${String(stored).slice(0, 12)}`
+        : named !== null && named !== stored ? `it holds ${String(stored).slice(0, 12)}, and the line names ${named.slice(0, 12)}`
+        : `its hash ${String(stored).slice(0, 12)} names another address`;
+      throw new SpiritRefusal("mandate-moved", `mandate-moved: ${uri} moved since its hash landed (${why}); nothing started. ${again}`, 4);
+    }
+    hash = stored;
   }
   const tag = instanceTagOf(`${fields["pet"] ?? ""}#${fields["instance"] ?? ""}`);
   if (tag === null) {
@@ -168,11 +235,11 @@ export function mandateRead(uri: string, fields: Readonly<Record<string, string>
   const face = FACE_INDEX.test(fields["face"] ?? "") ? Number(fields["face"]) : null;
   const lanes = /^[0-9]{1,4}$/.test(fields["lanes"] ?? "") ? Number(fields["lanes"]) : 0;
   return {
-    uri, hash: stored, ...tag, offerer: fields["offerer"] ?? "", parent: recordRefOf(fields["parent"]), face,
+    uri, hash, ...tag, offerer: fields["offerer"] ?? "", parent: recordRefOf(fields["parent"]), face,
     model: (fields["model"] ?? "").trim() || null, launchCap: (fields["launch-cap"] ?? "").trim() || DEFAULT_LAUNCH_CAP,
     allowedTools: (fields["allowed-tools"] ?? "").trim() || null, workdir: (fields["workdir"] ?? "").trim() || null, log: (fields["log"] ?? "").trim() || null,
     reads: linesOf(fields["reads"]), links: linesOf(fields["links"]), paths: wordsOf(fields["paths"]), caps: wordsOf(fields["caps"]),
-    grants: wordsOf(fields["grants"]), lanes, handbackShape: fields["handback-shape"] ?? "", text,
+    grants: wordsOf(fields["grants"]), lanes, handbackShape: fields["handback-shape"] ?? "", text, family: seed !== undefined,
   };
 }
 
@@ -326,7 +393,7 @@ const faceFlag = (face: number | null): string => (face === null ? "" : ` --face
  */
 export function mandateWakeLines(mandate: SpiritMandate, cut = 2400): string {
   const face = faceFlag(mandate.face);
-  const words = mandate.text.length <= cut ? mandate.text : `${mandate.text.slice(0, cut)}\n… cut at ${cut} chars; the whole mandate: lares tiddler get ${shq(mandate.uri)} --recipe default${face}`;
+  const words = mandate.text.length <= cut ? mandate.text : `${mandate.text.slice(0, cut)}\n… cut at ${cut} chars; the whole mandate: lares tiddler get ${shq(mandate.uri)} --recipe default${face}${mandate.family ? " --meme --all" : ""}`;
   return [
     `mandate: ${refLine(mandate.uri, mandate.hash)} · you wake as ${mandate.tag}, offered by ${mandate.offerer || "hand"}${mandate.face === null ? "" : ` · face h${mandate.face}`}${mandate.model === null ? "" : ` · model ${mandate.model}`}`,
     `om (the seed, then the card below): lares tiddler get 'lar:///ha.ka.ba/lares/api/noosphere-boot' --recipe default${face} --meme --all`,

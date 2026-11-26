@@ -7,7 +7,11 @@
  *              [--grants <words>] [--lanes <n>] [--handback <shape>]`
  *             lands the mandate carrier on the answering face's memory stage at `mandate/<id16>`, keyed by its own hash, and
  *             prints the ref (`<uri>@<hash>`) a summon names. A hand offers as `hand`; a seat names its coordinator's mandate
- *             (`--parent`), and the offerer reads off it.
+ *             (`--parent`), and the offerer reads off it. WORDS LAND AS ONE RECORD, its fields beside its text. A MEMETIC
+ *             CARRIER FOUNDS ITS FAMILY, as any carrier does (`mandateCarrier`): the door binds its head and meta to the
+ *             mandate's address, writes the mandate's fields into its own `toml meta` block (an affordance the carrier's meta
+ *             already names stands unless a flag names it too) and puts the carrier alone; the ref's hash reads the family's
+ *             canonical hash, so a slot that moves reads `mandate-moved` at every summon and wake.
  *   summon    `<pet>#<n> --mandate <uri>[@<hash>]` reads the mandate through the door, verifies its hash (`mandate-moved`),
  *             reads custody (a hand on a receipt; a seat only under a coordinator's written `summons` grant), claims one of
  *             the coordinator's lanes on its ledger `lanes/<pet>/<n>` by compare-and-set (`coordinator-lanes-full` at the
@@ -26,15 +30,19 @@ import { execFile } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { stdin } from "node:process";
+import { carrierMarkPattern, headSigil, maskedExec, matchCarrierHead, readFrame, rootMetaFence, stampCarrier } from "@lararium/memetic-frame";
+import { CARRIER_TYPE, isCarrierType } from "@lararium/mesh/carrier-type";
 import { repoRoot } from "@lararium/mesh/node";
 import { SpiritRefusal, fieldsAndHashOf, secretCount, shq, titlesOf } from "@lararium/mesh/spirit-shrine";
 import { spiritOf } from "@lararium/mesh/spirit-stack";
 import {
-  LANE_ROUNDS, SUMMONS_TAG, edgeRead, launchReach, edgeWrite, instanceTagOf, laneClaim, laneRelease, laneUnsettled, lanesHeld, lanesOf, lanesWrite,
-  launchHolds, mandateFaceTurned, mandateNames, mandateRead, mandateWakeLines, mandateWrite, recordRefOf, refLine, summonsGranted,
+  LANE_ROUNDS, MANDATE_AFFORDANCES, MANDATE_FIELDS, MANDATE_SEED, MANDATE_TAG, SUMMONS_TAG, edgeRead, launchReach, edgeWrite, instanceTagOf, laneClaim, laneRelease, laneUnsettled, lanesHeld, lanesOf, lanesWrite,
+  launchHolds, mandateDescription, mandateFaceTurned, mandateFound, mandateNames, mandateRead, mandateWakeLines, mandateWrite, recordRefOf, refLine, summonsGranted,
   summonsOf, wakeLine,
-  type InstanceTag, type MandateField, type SpiritMandate,
+  type InstanceTag, type MandateCarrier, type MandateField, type SpiritMandate,
 } from "@lararium/mesh/spirit-summons";
+import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
+import { rootMetaFields } from "@lararium/tw5/root-meta";
 import { emit } from "../render.js";
 import { DoorUsage, wordOf } from "./door-call.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -85,9 +93,86 @@ function tagOf(args: ParsedArgs, verb: string): InstanceTag {
 const fieldsAt = async (ctx: SummonCtx, label: string, title: string): Promise<{ fields: Record<string, string>; hash: string | null }> =>
   fieldsAndHashOf(await ctx.door(label, "tiddler-get", { recipe: RECIPE, title }));
 
-/** A mandate read through the door and verified against the hash the ref names. */
-async function mandateAt(ctx: SummonCtx, label: string, uri: string, named: string | null): Promise<SpiritMandate> {
-  return mandateRead(uri, (await fieldsAt(ctx, label, uri)).fields, named);
+/**
+ * A carrier mandate's family, read on the meme lens: the recomposed carrier and the canonical hash the door names for it. Null
+ * where the root answers no carrier (a root that left its family reads `mandate-moved`).
+ */
+async function carrierAt(ctx: Pick<SummonCtx, "door">, label: string, uri: string): Promise<MandateCarrier | null> {
+  const out = await ctx.door(label, "tiddler-get", { recipe: RECIPE, title: uri, meme: true, grain: "whole" });
+  const meme = out["meme"] as { text?: unknown; canonicalHash?: unknown } | null | undefined;
+  if (!meme || typeof meme.text !== "string" || typeof meme.canonicalHash !== "string") return null;
+  return { text: meme.text, canonicalHash: meme.canonicalHash, whole: out["next"] === undefined || out["next"] === null };
+}
+
+/**
+ * A mandate read through the door and verified against the hash the ref names. A record carrying `mandate-seed` stands as a
+ * carrier family: its hash reads the recomposed carrier, the truth the family itself holds.
+ */
+async function mandateAt(ctx: Pick<SummonCtx, "door">, label: string, uri: string, named: string | null): Promise<SpiritMandate> {
+  const { fields } = fieldsAndHashOf(await ctx.door(label, "tiddler-get", { recipe: RECIPE, title: uri }));
+  return mandateRead(uri, fields, named, fields[MANDATE_SEED] === undefined ? null : await carrierAt(ctx, label, uri));
+}
+
+/** True where the words carry a carrier's own head mark: they speak as a whole carrier (the put door's `framesCarrier`). */
+export const framesCarrier = (text: string): boolean => maskedExec(text, carrierMarkPattern("head", "g")) !== null;
+
+/** One meta value as the house recompose writes it: a bare integer or boolean where TOML reads it back the same, else a basic string; a list as one array. */
+function metaValue(value: string | readonly string[]): string {
+  const quoted = (s: string): string => `"${s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n").replace(/\r/g, "\\r")}"`;
+  if (typeof value !== "string") return `[${value.map(quoted).join(", ")}]`;
+  if ((/^(?:0|-?[1-9]\d*)$/.test(value) && Number.isSafeInteger(Number(value))) || value === "true" || value === "false") return value;
+  return quoted(value);
+}
+
+/** The root meta a carrier authored, as fields; refuses a block that reads as no TOML, so no landing writes over words it could not read. */
+function authoredMeta(carrier: string): Record<string, string | string[]> {
+  const fence = rootMetaFence(carrier);
+  const out: Record<string, string | string[]> = {};
+  for (const [name, value] of Object.entries(rootMetaFields(carrier))) out[name] = Array.isArray(value) ? value.map(String) : String(value);
+  if (fence !== null && fence.body.trim() !== "" && Object.keys(out).length === 0) {
+    throw new DoorUsage("the carrier's `toml meta` block reads as no TOML, so the mandate's fields found no block to ride; mend it (`lares meme normalize <file>` names the fault), then land the mandate again");
+  }
+  return out;
+}
+
+/** The affordances a carrier's own meta names: a list joins one per line for `reads` and `links`, by spaces elsewhere. */
+export function carrierAffordances(carrier: string): Partial<Record<MandateField, string>> {
+  const authored = authoredMeta(carrier);
+  const out: Partial<Record<MandateField, string>> = {};
+  for (const name of MANDATE_AFFORDANCES) {
+    const value = authored[name];
+    if (value !== undefined) out[name] = typeof value === "string" ? value : value.join(name === "reads" || name === "links" ? "\n" : " ");
+  }
+  return out;
+}
+
+/**
+ * A MANDATE'S CARRIER, BOUND TO ITS ADDRESS. The offered carrier keeps its own frame, body and slots; its head and its meta's
+ * `title` and `uri-path` name the mandate's address, and the mandate's fields ride its `toml meta` block beside whatever
+ * else its author wrote there (the `mandate` tag joins its tags; an authored description stands). Then the house normalize
+ * and the block check minted over the body, as `lares meme normalize` writes them. The put that lands it carries no field
+ * beside the text: the carrier speaks whole and founds its family.
+ */
+export function mandateCarrier(offered: string, uri: string, meta: Readonly<Record<string, string>>): string {
+  const head = matchCarrierHead(offered);
+  const framed = readFrame(offered);
+  if (head === null || !framed.stx || !framed.etx) {
+    throw new DoorUsage("a mandate's carrier holds a whole frame: its head naming an address, then STX and ETX around its body; `lares meme normalize <file>` names what the frame lacks (or hand the words alone: --text <words>)");
+  }
+  const bound = `${offered.slice(0, head.index)}${headSigil({ uri, ...(head.namespace === null ? {} : { namespace: head.namespace }), ...(head.code === "0011" ? { kapu: true } : {}) })}${offered.slice(head.end)}`;
+  const fields = authoredMeta(bound);
+  for (const name of [...MANDATE_FIELDS, "text"]) delete fields[name];
+  const tags = fields["tags"] === undefined ? [] : typeof fields["tags"] === "string" ? [fields["tags"]] : fields["tags"];
+  Object.assign(fields, meta, { title: uri, "uri-path": uri.slice("lar:///".length), tags: tags.includes(MANDATE_TAG) ? tags : [...tags, MANDATE_TAG] });
+  if (fields["description"] === undefined || fields["description"] === "") fields["description"] = mandateDescription(meta);
+  if (!isCarrierType(fields["type"])) fields["type"] = CARRIER_TYPE;
+  const body = Object.keys(fields).sort().filter((name) => fields[name] !== "" && !(Array.isArray(fields[name]) && fields[name]!.length === 0)).map((name) => `${name} = ${metaValue(fields[name]!)}\n`).join("");
+  const fence = rootMetaFence(bound);
+  const stx = readFrame(bound).stx!.end;
+  const text = fence !== null
+    ? `${bound.slice(0, fence.bodyStart)}${body}${bound.slice(fence.bodyEnd)}`
+    : `${bound.slice(0, stx)}\n\n\`\`\`toml meta\n${body}\`\`\`\n${bound.slice(stx)}`;
+  return stampCarrier(normalizeMemeSource(text).text);
 }
 
 /**
@@ -135,6 +220,41 @@ async function words(args: ParsedArgs, what: string): Promise<string> {
   return Buffer.concat(chunks).toString("utf8");
 }
 
+const writeRefused = (uri: string, decision: string, lens = ""): SpiritRefusal =>
+  new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${uri}; read it: \`lares tiddler get ${shq(uri)} --recipe default${lens}\``, 4);
+
+/** WORDS LAND AS ONE RECORD, keyed by its own hash: the same mandate landed twice finds itself standing and writes nothing. */
+async function writeMandate(ctx: SummonCtx, covered: Readonly<Partial<Record<MandateField, string>>>, text: string): Promise<{ uri: string; hash: string; stands: boolean }> {
+  const w = mandateWrite(covered, text);
+  const refused = launchHolds(mandateRead(w.uri, { ...w.fields, text: w.text }, w.hash));
+  if (refused !== null) throw refused;
+  const stands = (await fieldsAt(ctx, "mandate", w.uri)).fields["mandate-hash"] === w.hash;
+  if (!stands) {
+    const receipt = await ctx.door("mandate", "tiddler-put", { recipe: RECIPE, title: w.uri, text: w.text, fields: w.fields });
+    const decision = String(receipt["decision"] ?? "");
+    if (decision !== "put" && decision !== "noop") throw writeRefused(w.uri, decision);
+  }
+  return { uri: w.uri, hash: w.hash, stands };
+}
+
+/**
+ * A CARRIER FOUNDS ITS FAMILY: the carrier goes through the put alone (its fields ride its own meta), at the address its seed
+ * names. The same offer landed twice composes the same carrier, and the gate answers `noop` over a family that already reads
+ * so; over one that moved, the put stands the offered carrier again. The ref's hash then reads off the family itself: the
+ * canonical hash of the carrier it recomposes to.
+ */
+async function foundMandate(ctx: SummonCtx, covered: Readonly<Partial<Record<MandateField, string>>>, offered: string): Promise<{ uri: string; hash: string; stands: boolean }> {
+  const found = mandateFound(covered, offered);
+  const carrier = mandateCarrier(offered, found.uri, found.meta);
+  const refused = launchHolds(mandateRead(found.uri, found.meta, null, { text: carrier, canonicalHash: "", whole: true }));
+  if (refused !== null) throw refused;
+  const receipt = await ctx.door("mandate", "tiddler-put", { recipe: RECIPE, title: found.uri, text: carrier });
+  const decision = String(receipt["decision"] ?? "");
+  if (decision !== "put" && decision !== "noop") throw writeRefused(found.uri, decision, " --meme --all");
+  const landed = await mandateAt(ctx, "mandate", found.uri, null);
+  return { uri: found.uri, hash: landed.hash, stands: decision === "noop" };
+}
+
 /** `lares spirit mandate <pet>#<n>`: the carrier lands, keyed by its own hash. */
 export async function landMandate(args: ParsedArgs, ctx: SummonCtx): Promise<number> {
   const tag = tagOf(args, "mandate");
@@ -163,24 +283,19 @@ export async function landMandate(args: ParsedArgs, ctx: SummonCtx): Promise<num
     reads: args.options["reads"] ?? "", links: args.options["links"] ?? "", paths: args.options["paths"] ?? "", caps: args.options["caps"] ?? "",
     grants: args.options["grants"] ?? "", lanes: lanes ?? "", "handback-shape": args.options["handback"] ?? "",
   };
-  const w = mandateWrite(covered, text);
+  // A CARRIER'S OWN META NAMES AFFORDANCES TOO: each stands where no flag names the same one.
+  const framed = framesCarrier(text);
+  if (framed) for (const [name, value] of Object.entries(carrierAffordances(text)) as Array<[MandateField, string]>) if ((covered[name] ?? "").trim() === "") covered[name] = value;
   // The guard reads the words and every affordance a hand or seat typed; the hashes the house minted stay out of its read.
   const shapes = secretCount([text, covered.model, covered["launch-cap"], covered["allowed-tools"], covered.workdir, covered.log, covered.reads, covered.links, covered.paths, covered.caps, covered.grants, covered["handback-shape"]].join("\n"));
   if (shapes > 0) throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: the mandate holds ${shapes} secret-shaped string(s), so nothing landed; clear them, then land it again: \`lares spirit mandate ${shq(tag.tag)} --file <scrubbed carrier>\``, 4);
-  const refused = launchHolds(mandateRead(w.uri, { ...w.fields, text: w.text }, w.hash));
-  if (refused !== null) throw refused;
-  // KEYED BY ITS OWN HASH: the same mandate landed twice finds itself standing and writes nothing.
-  const stands = (await fieldsAt(ctx, "mandate", w.uri)).fields["mandate-hash"] === w.hash;
-  if (!stands) {
-    const receipt = await ctx.door("mandate", "tiddler-put", { recipe: RECIPE, title: w.uri, text: w.text, fields: w.fields });
-    const decision = String(receipt["decision"] ?? "");
-    if (decision !== "put" && decision !== "noop") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${w.uri}; read it: \`lares tiddler get ${shq(w.uri)} --recipe default\``, 4);
-  }
+  const w = framed ? await foundMandate(ctx, covered, text) : await writeMandate(ctx, covered, text);
+  const stands = w.stands;
   const ref = refLine(w.uri, w.hash);
   const summon = `lares spirit summon ${shq(tag.tag)} --mandate ${ref}${face === null ? "" : ` --face ${face}`}`;
   emit(args, {
-    ok: true, data: { instance: tag.tag, uri: w.uri, hash: w.hash, ref, offerer: covered.offerer, face, card, decision: stands ? "standing" : "put", summon },
-    human: () => console.log(`mandate ${stands ? "stands" : "landed"}: ${ref}\n  ${tag.tag}, offered by ${covered.offerer}${face === null ? "" : `, face h${face}`}\n  the house starts it by: ${summon}${card ? "" : `\n  no record stands at ${spiritOf(tag.pet)} under this face, so the instance wakes on a card or a starter where one answers`}`),
+    ok: true, data: { instance: tag.tag, uri: w.uri, hash: w.hash, ref, offerer: covered.offerer, face, card, decision: stands ? "standing" : "put", family: framed, summon },
+    human: () => console.log(`mandate ${stands ? "stands" : "landed"}${framed ? " as a carrier family" : ""}: ${ref}\n  ${tag.tag}, offered by ${covered.offerer}${face === null ? "" : `, face h${face}`}\n  the house starts it by: ${summon}${card ? "" : `\n  no record stands at ${spiritOf(tag.pet)} under this face, so the instance wakes on a card or a starter where one answers`}`),
   });
   return 0;
 }
@@ -293,7 +408,7 @@ export async function mandateWake(args: ParsedArgs, ctx: Pick<SummonCtx, "door" 
   if (word === null) return null;
   const ref = recordRefOf(word);
   if (ref === null) throw new DoorUsage(`--mandate names the mandate as <uri>@<hash> (got "${word}")`);
-  const mandate = mandateRead(ref.uri, fieldsAndHashOf(await ctx.door("om", "tiddler-get", { recipe: RECIPE, title: ref.uri })).fields, ref.hash);
+  const mandate = await mandateAt(ctx, "om", ref.uri, ref.hash);
   const given = wordOf(args.options["instance"]);
   for (const refused of [mandateNames(mandate, pet, given), mandateFaceTurned(mandate, ctx.face(), `lares spirit om ${pet} --mandate ${refLine(mandate.uri, mandate.hash)}`)]) if (refused !== null) throw refused;
   return { mandate, lead: mandateWakeLines(mandate) };
