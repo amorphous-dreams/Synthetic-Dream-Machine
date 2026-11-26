@@ -124,7 +124,10 @@ const EXCLUDED_BY_DESIGN: Record<string, string> = {
     "stands on its floor wiki, and mounts after the unlock; a floor row's wiki boots. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
   "tests/e2e/session-sign-reach.test.ts":
     "excluded from `main`, absent from `heavy` — three full `openNodeVessel` boots (two at the floor, one sovereign): the floor's record " +
-    "carries no session sign door and answers `signer-unavailable`; the sovereign one signs. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
+    "carries no session sign door and answers `signer-unavailable`; the sovereign one signs. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",  "tests/e2e/lit-face-home-wiki.test.ts":
+    "excluded from `main`, absent from `heavy` — full `openNodeVessel` boots over a founded, unlocked root: a lit face reads its home " +
+    "preference at light and the vessel stands on the wiki it names, or stays where a refused activation leaves it. Runs in CI's `node` e2e shard " +
+    "(`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
 };
 
 describe("the serial heavy roster detects its own staleness", () => {

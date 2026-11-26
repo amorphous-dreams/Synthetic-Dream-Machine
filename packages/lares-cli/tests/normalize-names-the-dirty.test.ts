@@ -57,6 +57,8 @@ describe.skipIf(skip)(`normalize names the dirty it did not stamp${note}`, () =>
     }
   });
 
+  /** Each vector spawns the built CLI cold (two seconds on an idle floor); beside another heavy run the default 5 s clock runs out first. */
+  const SPAWN_CLOCK = 30_000;
   /** `check` reads alone; `normalize` stamps — the guard names the unread dirty under both seats. */
   const run = (sub: "check" | "normalize", ...files: string[]) => {
     try {
@@ -67,17 +69,17 @@ describe.skipIf(skip)(`normalize names the dirty it did not stamp${note}`, () =>
   test("CONTROL — the door still stamps the carrier it was given", () => {
     const out = run("normalize", named);
     expect(out).toContain("normalized:");
-  });
+    }, SPAWN_CLOCK);
 
   test("★ it names the dirty carrier nobody asked it about ★", () => {
     const out = run("check", named);
     expect(out, "a carrier stood dirty and unnamed and the door said nothing").toContain("unnamed.mem");
-  });
+    }, SPAWN_CLOCK);
 
   test("★ and says nothing when every dirty carrier was named ★", () => {
     const out = run("check", named, unnamed);
     expect(out).not.toMatch(/dirty and NOT named/);
-  });
+    }, SPAWN_CLOCK);
   test("★ a check from a cwd outside any git tree answers a verdict, with no git usage dump ★", () => {
     const bare = mkdtempSync(path.join(tmpdir(), "lares-check-nogit-"));
     const f = path.join(bare, "prism.mem");
@@ -86,5 +88,5 @@ describe.skipIf(skip)(`normalize names the dirty it did not stamp${note}`, () =>
     const all = `${r.stdout}${r.stderr}`;
     expect(all, "git's usage dump leaked into the verdict").not.toMatch(/git diff --no-index|Not a git repository/);
     expect(r.stdout, "no verdict answered").toMatch(/canonical|prism\.mem/);
-  });
+    }, SPAWN_CLOCK);
 });
