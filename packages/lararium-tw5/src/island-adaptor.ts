@@ -75,6 +75,7 @@ import type { LaresTw5Extension } from "./types/lares-globals.js";
 import { splitBodyTiddler, quoteblockFence } from "./deserializer.js";
 import { familyRefsOf, retitleSlotsInWiki, wikiFamilyView, type FamilyRenameWiki } from "./place-meme.js";
 import { LandedLedger, same, sameWithStamp } from "./landed-ledger.js";
+import { naluFieldsOf, naluLands } from "./nalu-form.js";
 import { WaveLanding } from "./wave-landing.js";
 import { Drain, macrotask, type DrainOutcome, type DrainSettling } from "./drain.js";
 import {
@@ -605,14 +606,12 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       bag = entry?.bag;
       if (heads === undefined) heads = entry?.heads;
     }
-    const live = record !== null && !record?.meta?.deleted;
+    const live = naluLands({ title, record });
     // The draft-base fields live in the store record; the wiki's draft never holds them.
     const applied = live ? { ...record!, tiddler: withoutDraftBase(record!.tiddler as Record<string, unknown>) } as LarTiddlerRecord : record;
-    const incoming = live ? new this.tw5.$tw.Tiddler({
-      ...applied!.tiddler,
-      title,
-      ...(bag !== undefined ? { "$origin-bag": bag } : {}),
-    }) : null;
+    // THE NALU FORM the applier writes (`naluFieldsOf`): the value this landing would leave, compared with what stands. Wave zero
+    // preloaded the seed through the same form, so a seeded title reads as the same here and writes nothing.
+    const incoming = live ? new this.tw5.$tw.Tiddler(naluFieldsOf({ title, record, ...(bag !== undefined ? { bag } : {}) })) : null;
     const standing = wiki.getTiddler(title) ?? null;
     const known = entry ? entry.tiddler : null;
     if (this.landing?.isStopped()) return "landed";

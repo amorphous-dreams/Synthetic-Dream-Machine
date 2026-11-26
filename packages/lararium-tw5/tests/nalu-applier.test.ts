@@ -3,6 +3,8 @@ import { CompositeStore } from "@lararium/mesh/composite-store";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import { IslandAdaptor, LandingDoorOccupiedError } from "../src/island-adaptor.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
+import { naluFieldsOf } from "../src/nalu-form.js";
+import { DRAFT_BASE_BAG, DRAFT_BASE_HEADS } from "../src/draft-book.js";
 
 describe.skipIf(wikiSkip)(`nalu applier surface${skipNote}`, () => {
   test("400 shore landings leave no timer armed", async () => {
@@ -58,6 +60,24 @@ describe.skipIf(wikiSkip)(`nalu applier surface${skipNote}`, () => {
     expect(() => apply({ title: "nalu/fault", bag: "bag/live", record: { tiddler: { text: "fault" } } })).toThrow("apply fault");
     expect((lares.isApplyingNalu as () => boolean)()).toBe(false);
     wiki.addTiddler = originalAdd;
+  });
+
+  test("the applier writes the nalu form: the tiddler a landing leaves equals the one `naluFieldsOf` builds, draft base stripped", async () => {
+    const engine = await bootTestWiki();
+    const lares = (engine.$tw as unknown as { lares: { applyNalu(change: unknown): void } }).lares;
+    const Tiddler = (engine.$tw as unknown as { Tiddler: new (fields: Record<string, unknown>) => { isEqual(other: unknown): boolean } }).Tiddler;
+    const wiki = engine.$tw.wiki as unknown as { getTiddler(title: string): { fields: Record<string, unknown> } | undefined };
+    const change = {
+      title: "Draft of 'nalu/form'", bag: "bag/draft", origin: { kind: "crdt-remote", edgeIsland: "peer" },
+      record: { tiddler: { title: "Draft of 'nalu/form'", "draft.of": "nalu/form", text: "draft", tags: ["a", "b c"], bag: "author-own", [DRAFT_BASE_BAG]: "bag/working", [DRAFT_BASE_HEADS]: "absent h1" } },
+    };
+    lares.applyNalu(change);
+    const landed = wiki.getTiddler(change.title);
+    expect(landed?.fields[DRAFT_BASE_BAG], "the draft base stays on the store record").toBeUndefined();
+    expect(landed?.fields[DRAFT_BASE_HEADS]).toBeUndefined();
+    expect(landed?.fields["$origin-bag"]).toBe("bag/draft");
+    expect(landed?.fields["bag"], "an author's own bag field rides through").toBe("author-own");
+    expect(new Tiddler(naluFieldsOf(change)).isEqual(landed), "one form above and below").toBe(true);
   });
 
   test("an apply begun inside another leaves the outer apply's guard raised", async () => {

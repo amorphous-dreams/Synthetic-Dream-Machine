@@ -11,7 +11,8 @@ module-type: startup
  * wave with an unsent hand. This module owns HOW one lands, and nothing else:
  *
  *   applyNalu(change)   a tombstone or an absent record deletes the title; anything else adds the
- *                       tiddler `toWikiFields` builds from the envelope. No queue, no timer, no frame.
+ *                       tiddler the NALU FORM builds from the envelope (`naluFieldsOf`, `../nalu-form.ts`).
+ *                       No queue, no timer, no frame.
  *   isApplyingNalu()    true while an `applyNalu` call runs, restored in a `finally`.
  *
  * The shore installs its own queue door at `$tw.lares.enqueueNalu` and removes it at teardown; this
@@ -37,6 +38,9 @@ import type { TW5Instance, TW5Wiki } from "../types/tiddlywiki.js";
 // by inlining. Reach for the module that holds what you need.
 import type { LarTiddlerChange, TW5TiddlerInputFieldsWithTitle } from "@lararium/mesh/tiddler-store";
 import type { LaresTw5Extension } from "../types/lares-globals.js";
+// THE NALU FORM, ONE FORM ABOVE AND BELOW: wave zero preloads the seed through it before TiddlyWiki starts, and every later
+// wave lands through it here. A leaf module, bundled in by its relative path.
+import { naluFieldsOf, naluLands } from "../nalu-form.js";
 
 // ---------------------------------------------------------------------------
 // TW5 startup lifecycle
@@ -63,20 +67,12 @@ export class NaluWikiUnavailableError extends Error {
 }
 
 /**
- * The wiki fields an inbound change lands as. CRDT records store the title as the doc key, not nested
- * in `tiddler` — restore it from `change.title` so the wiki tiddler carries its identity.
- *
- * Residency Model — every inbound write annotates `$origin-bag` from the ENVELOPE so the operator
- * can answer "which bag does this come from?" at every read (Anti-pattern #4 defense). `bag` is
- * user space: an author's own field rides through untouched, as TiddlyWeb's stamp would ride under
- * theirs — the host's provenance wears a name no author collides with.
+ * The wiki fields an inbound change lands as: the nalu form (`naluFieldsOf`), the one builder wave zero's preloads share.
+ * The title comes back from `change.title`, the draft-base fields stay on the store record, and `$origin-bag` annotates the
+ * ENVELOPE's bag (Anti-pattern #4 defense); `bag` stays user space and rides through untouched.
  */
 export function toWikiFields(change: LarTiddlerChange): TW5TiddlerInputFieldsWithTitle {
-  return {
-    ...change.record!.tiddler,
-    title: change.title,
-    ...(change.bag !== undefined ? { "$origin-bag": change.bag } : {}),
-  };
+  return naluFieldsOf(change) as TW5TiddlerInputFieldsWithTitle;
 }
 
 // ---------------------------------------------------------------------------
@@ -92,7 +88,7 @@ export function applyNalu(change: LarTiddlerChange): void {
   const outer = _applying;
   _applying = true;
   try {
-    if (change.record === null || change.record.meta?.deleted) _wiki.deleteTiddler(change.title);
+    if (!naluLands(change)) _wiki.deleteTiddler(change.title);
     else _wiki.addTiddler(new Tiddler(toWikiFields(change)));
   } finally {
     _applying = outer;
