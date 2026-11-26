@@ -94,6 +94,7 @@
     "packages/lararium-node/src/worker-handle.ts: Worker",
     "packages/lararium-node/src/worker-handle.ts: Worker",
     "packages/lararium-node/src/worker-handle.ts: Worker",
+    "packages/lararium-node/src/worker-handle.ts: Worker",
     "packages/lararium-node/src/worker-handle.ts: nodeWorkerHandle",
     "packages/lararium-node/src/worker-handle.ts: Worker",
     "packages/lararium-node/src/worker-handle.ts: nodeWorkerHandle",

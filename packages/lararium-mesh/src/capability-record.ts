@@ -55,6 +55,13 @@ export interface CapabilityRecord {
   /** V2: does the vessel's rest hold a document sealed? The daemon island asks before its own store rests a byte of it
    *  (`islandRestGuard`, `sealed-rest.ts`). Absent → the rest reads unread, and the island rests no byte (`rest-unread`). */
   restsSealed?: ((documentId: string) => Promise<boolean>) | undefined;
+  /** Do these heads of a document rest in the vessel's sealed rest (`headsRestAt`, `sealed-rest.ts`)? A projector's Synced
+   *  base pins only what sealed: each island's tree asks before a pin reaches its directory. Absent → every heads ask
+   *  answers `unread`, and each pin stays pending in memory. */
+  restsAt?: ((documentId: string, heads: readonly string[]) => Promise<"rested" | "waiting" | "unread">) | undefined;
+  /** Hear each document whose save rested with nothing left waiting in memory (the vessel's save book): an island's pending
+   *  pins of it ask `restsAt` again. The answer stops the hearing. Absent → no word, and pins ask at each settle alone. */
+  rested?: ((listener: (documentId: string) => void) => () => void) | undefined;
 }
 
 // ── THE ANSWERS, vessel side ────────────────────────────────────────────────────────────────────────

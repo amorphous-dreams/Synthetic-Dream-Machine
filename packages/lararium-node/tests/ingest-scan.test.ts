@@ -16,6 +16,14 @@
  *   I8 no cycle: the node never imports the CLI, and the vessel's after-live arms the watch with the ingest ports
  *   I9 a `derived` row (a render the island answered on its gradient) fails no wave: it reads accounted for, pins no base, and
  *      a row that warns gets named with its words
+ *   I10 ONE OWNER OF PENDING STATE: a wave lands its bases through the island that PROJECTS their bag (`islandBaseDoor`, the
+ *      shore's `base` act), in that island's own tree, and sends carriers and files alone: the island reads every hash, its
+ *      document and its heads itself. THE WATCH ECHO: the projector's own write echoes as a pool wave over a fresh tree; the
+ *      island answers it noop, and its base waits with the projector's pending pin, which lands only with its heads, only at
+ *      rest. A stopped island blocks nothing; a file the island cannot read, or records that differ, pin nothing; a wave whose
+ *      INGEST another island took routes to the projecting island; a door with no owner behind it (a fault, no shore, no
+ *      projecting island, a seat's refusal) lands nothing and says so; a rename in a caller-owned tree keeps the history its
+ *      source's base vouched for.
  */
 import { describe, test, expect, beforeAll, beforeEach, afterEach } from "vitest";
 import { EventEmitter } from "node:events";
@@ -242,5 +250,216 @@ describe("I8 — no cycle, and the vessel wires the port", () => {
     expect(afterLive).toMatch(/poolIngestPorts\(/);
     expect(afterLive).toMatch(/islandIngestSubmit\(/);
     expect(afterLive).not.toMatch(/shoreLookPorts\(/);
+  });
+});
+
+/**
+ * An island's shore `base` act, as the vessel's door reaches it, over the tree that island's projector owns. The rig reads
+ * what the real act reads (`pinAgreement`, `disk-projector.ts`; its own vectors stand in shore-flush S7): it takes a carrier
+ * and a file from the caller and NOTHING ELSE, hashes the file itself, compares its own records' render (`records`, the file's
+ * own hash where the rig names none: the wave's INGEST just landed it), and pins under its own document and heads.
+ */
+function islandShore(owner: SyncedTree, o: { readonly doc: string; readonly heads?: readonly string[]; readonly projects?: (bag: string) => boolean; readonly records?: (uri: string) => string | null }) {
+  const acts: Array<Record<string, unknown>> = [];
+  const road = async (args: Record<string, unknown>): Promise<Record<string, unknown>> => {
+    acts.push(args);
+    const paths = is.basePathsNamed(args["bases"]);
+    const bag = args["bag"];
+    if (args["op"] !== "base" || typeof bag !== "string" || paths === null) return { ok: false, refusal: "shore-answer-incomplete", why: "the rig reads a base act alone" };
+    if (o.projects?.(bag) === false) return { ok: false, refusal: "bag-unprojected", why: "this island's projector holds no mirror of the bag" };
+    const tally = { recorded: 0, kept: 0, waiting: 0, unread: 0, differs: 0 };
+    for (const path of paths) {
+      let disk: string;
+      try { disk = carrierHash(readFileSync(path.file, "utf8")); } catch { tally.unread += 1; continue; }
+      const records = o.records ? o.records(path.uri) : disk;
+      if (records !== disk) { tally.differs += 1; continue; }
+      const key = syncedTreeKey(bag, path.uri);
+      const standing = owner.baseAt(key, path.file);
+      if (standing?.disk === disk && owner.pendingAt(key, path.file)) { owner.metWaiting(key, path.file); tally.waiting += 1; continue; }
+      if (standing?.disk === disk) { tally.kept += 1; continue; }
+      owner.set(key, path.file, disk, records, o.doc, o.heads);
+      tally.recorded += 1;
+    }
+    await owner.settle();
+    return { ok: true, op: "base", ...tally };
+  };
+  return { acts, road, door: (tree: SyncedTree) => is.islandBaseDoor(() => [road], tree) };
+}
+
+describe("I10 — one owner of pending state: a wave's bases land in the tree of the island that projects their bag", () => {
+  test("THE WATCH ECHO: a projection write echoes as a wave over a fresh tree; its base waits with the island's pin, and the pin lands with its heads at rest", async () => {
+    const dir = join(house, "tree");
+    const text = tid("My Notes", "the projector's own render");
+    const file = put("wikis/daemon/My Notes.tid", text);
+    const key = syncedTreeKey(WORKING, "My Notes"), hash = carrierHash(text);
+    // The projector, in its island, pins its write: its heads rest nowhere yet, so the pin waits in the island's memory.
+    const sealed = { rested: false };
+    const projectorTree = new SyncedTree(dir, { rests: async () => (sealed.rested ? "rested" as const : "waiting" as const) });
+    projectorTree.set(key, file, hash, hash, "doc-working", ["h1"]);
+    await projectorTree.settle();
+    // The watch hears the write and folds a wave over the tree it opens afresh, which reads no pin: the island answers the echo
+    // noop, and the wave names its carrier and file to the island.
+    const { waves, submit } = island(() => "noop");
+    const { sense } = shore();
+    const lines: string[] = [];
+    const owner = islandShore(projectorTree, { doc: "doc-working", heads: ["h1"] });
+    await is.poolIngestPorts({ pool, bags: { wiki: WORKING }, submit, sense, did: "did:vessel", tree: () => new SyncedTree(dir), base: owner.door, log: (l) => lines.push(l) }).wave([file]);
+    expect(waves).toHaveLength(1);
+    // THE CALLER SENDS THE PATH SET ALONE: no hash, no heads, no document crosses the door.
+    expect(owner.acts).toEqual([{ op: "base", bag: WORKING, bases: [{ uri: "My Notes", file }] }]);
+    expect(new SyncedTree(dir).baseAt(key, file), "no headless row lands over the pending pin").toBeNull();
+    expect(projectorTree.waitingBases, "the pin counts the base that waits with it").toBe(1);
+    expect(lines.some((l) => /1 base\(s\) .* wait on the island's pending pin/.test(l)), "the wave names what waits").toBe(true);
+    // The seal arrives: the projector's pin lands, with its heads.
+    sealed.rested = true;
+    expect(await projectorTree.settle()).toBe(1);
+    expect(new SyncedTree(dir).baseAt(key, file)).toMatchObject({ disk: hash, doc: "doc-working", heads: ["h1"] });
+    expect(projectorTree.waitingBases).toBe(0);
+  });
+
+  test("A STOPPED ISLAND LEAVES NOTHING BLOCKING: its pin left with it (same process), and the next boot's island lands the wave's base", async () => {
+    const dir = join(house, "tree");
+    const text = tid("My Notes", "the projector's own render");
+    const file = put("wikis/daemon/My Notes.tid", text);
+    const key = syncedTreeKey(WORKING, "My Notes"), hash = carrierHash(text);
+    const stopped = new SyncedTree(dir, { rests: async () => "waiting" as const });
+    stopped.set(key, file, hash, hash, "doc-working", ["h1"]);
+    await stopped.settle();
+    stopped.dispose();
+    // The next boot: a fresh island tree over the same directory, whose rest answers. The echo's base lands through it.
+    const next = new SyncedTree(dir, { rests: async () => "rested" as const });
+    const { submit } = island(() => "noop");
+    const { sense } = shore();
+    await is.poolIngestPorts({ pool, bags: { wiki: WORKING }, submit, sense, did: "did:vessel", tree: () => new SyncedTree(dir), base: islandShore(next, { doc: "doc-working", heads: ["h2"] }).door, log: () => {} }).wave([file]);
+    expect(new SyncedTree(dir).baseAt(key, file)).toMatchObject({ disk: hash, doc: "doc-working", heads: ["h2"] });
+    // And the second wave over the same bytes reads the carrier unchanged.
+    const again = island(() => "noop");
+    await is.poolIngestPorts({ pool, bags: { wiki: WORKING }, submit: again.submit, sense, did: "did:vessel", tree: () => new SyncedTree(dir), base: islandShore(next, { doc: "doc-working" }).door, log: () => {} }).wave([file]);
+    expect(again.waves).toHaveLength(0);
+  });
+
+  test("THE ISLAND NAMES ITS OWN DOCUMENT AND HEADS: whatever heads the wave's answer carried, the row holds the island's, and waits on their seal", async () => {
+    const dir = join(house, "tree");
+    const file = put("wikis/daemon/My Notes.tid", tid("My Notes", "a hand's new words"));
+    const key = syncedTreeKey(WORKING, "My Notes");
+    const sealed = { rested: false };
+    const owner = new SyncedTree(dir, { rests: async () => (sealed.rested ? "rested" as const : "waiting" as const) });
+    const submit = async (o: Opts) => ({
+      status: "done" as const, requestId: "r1",
+      results: { [VERB_RESULT_KEY]: { ok: true, output: { heads: ["w1", "w2"], carriers: o.candidates.map((c) => ({ uri: c.uri, decision: "ingest", canonicalHash: c.diskHash })) } } },
+    });
+    const { sense } = shore();
+    await is.poolIngestPorts({ pool, bags: { wiki: WORKING }, submit, sense, did: "did:vessel", tree: () => new SyncedTree(dir), base: islandShore(owner, { doc: "doc-working", heads: ["i1"] }).door, log: () => {} }).wave([file]);
+    expect(owner.baseAt(key, file)).toMatchObject({ doc: "doc-working", heads: ["i1"] });
+    expect(new SyncedTree(dir).baseAt(key, file), "the row waits on its seal").toBeNull();
+    sealed.rested = true;
+    await owner.settle();
+    expect(new SyncedTree(dir).baseAt(key, file)).toMatchObject({ doc: "doc-working", heads: ["i1"] });
+  });
+
+  test("NO CALLER'S HASH LANDS: an island that reads no file there, or reads records that differ, pins nothing, and the wave says so", async () => {
+    const dir = join(house, "tree");
+    const file = put("wikis/daemon/My Notes.tid", tid("My Notes", "a hand's new words"));
+    const key = syncedTreeKey(WORKING, "My Notes");
+    const owner = new SyncedTree(dir);
+    // The island's own records render other words than the file holds (the hand's edit never reached them).
+    const differing = islandShore(owner, { doc: "doc-working", records: () => carrierHash("the records' older words") });
+    const { submit } = island();
+    const { sense } = shore();
+    const lines: string[] = [];
+    await is.poolIngestPorts({ pool, bags: { wiki: WORKING }, submit, sense, did: "did:vessel", tree: () => new SyncedTree(dir), base: differing.door, log: (l) => lines.push(l) }).wave([file]);
+    expect(new SyncedTree(dir).baseAt(key, file)).toBeNull();
+    expect(lines.some((l) => /1 base\(s\) .* pinned nothing: .* read 1 carrier\(s\) whose file and records differ and 0 file\(s\) it could not read/.test(l))).toBe(true);
+    // A door asked straight, with hashes a caller made up beside a file no island reads: the door sends the path alone, and nothing lands.
+    const gone = join(pool, "wikis", "daemon", "Never Written.tid");
+    const answer = await differing.door(new SyncedTree(dir)).land(WORKING, [{ uri: "Never Written", file: gone, disk: carrierHash("an edit"), records: carrierHash("anything"), heads: ["x"] }]);
+    expect(answer).toMatchObject({ recorded: 0, kept: 0, waiting: 0, unread: 1, owed: 0 });
+    expect(differing.acts.at(-1)).toEqual({ op: "base", bag: WORKING, bases: [{ uri: "Never Written", file: gone }] });
+    expect(new SyncedTree(dir).size).toBe(0);
+  });
+
+  test("A CROSS-ISLAND WAVE ROUTES TO THE ISLAND THAT PROJECTS THE BAG: the island that took the INGEST holds no mirror of it and pins nothing; the projecting island's row lands sealed, with its document", async () => {
+    const dir = join(house, "tree");
+    const text = tid("My Notes", "a hand's new words");
+    const file = put("wikis/daemon/My Notes.tid", text);
+    const key = syncedTreeKey(WORKING, "My Notes");
+    // Every island's tree rests in the one directory. The daemon island took the wave and projects another bag; the wiki
+    // island projects this one, and its rest answers.
+    const daemonTree = new SyncedTree(dir, { rests: async () => "rested" as const });
+    const wikiTree = new SyncedTree(dir, { rests: async () => "rested" as const });
+    const daemon = islandShore(daemonTree, { doc: "doc-daemon", heads: ["d1"], projects: () => false });
+    const wiki = islandShore(wikiTree, { doc: "doc-wiki", heads: ["k1"] });
+    const { submit } = island();
+    const { sense } = shore();
+    const routed = (tree: SyncedTree) => is.islandBaseDoor(() => [daemon.road, wiki.road], tree);
+    await is.poolIngestPorts({ pool, bags: { wiki: WORKING }, submit, sense, did: "did:vessel", tree: () => new SyncedTree(dir), base: routed, log: () => {} }).wave([file]);
+    expect(daemon.acts).toHaveLength(1);
+    expect(daemonTree.baseAt(key, file), "the island that projects no mirror of the bag sets nothing").toBeNull();
+    expect(new SyncedTree(dir).baseAt(key, file)).toEqual({ path: file, disk: carrierHash(text), records: carrierHash(text), doc: "doc-wiki", heads: ["k1"] });
+  });
+
+  test("A DOOR WITH NO OWNER BEHIND IT LANDS NOTHING: a fallen road, an island with no shore and a bag no island projects each count the bases owed, by name, and no row lands by the wave's own hand", async () => {
+    const dir = join(house, "tree");
+    const file = put("wikis/daemon/My Notes.tid", tid("My Notes", "a hand's new words"));
+    const key = syncedTreeKey(WORKING, "My Notes");
+    const { sense } = shore();
+    const lines: string[] = [];
+    const wave = (roads: Array<(args: Record<string, unknown>) => Promise<unknown>>) =>
+      is.poolIngestPorts({ pool, bags: { wiki: WORKING }, submit: island().submit, sense, did: "did:vessel", tree: () => new SyncedTree(dir), base: (tree) => is.islandBaseDoor(() => roads, tree), log: (l) => lines.push(l) }).wave([file]);
+    await wave([async () => { throw new Error("the island fell"); }]);
+    expect(new SyncedTree(dir).baseAt(key, file)).toBeNull();
+    expect(lines.some((l) => /1 base\(s\) .* reached no owner \(the island fell\)/.test(l))).toBe(true);
+    await wave([async () => ({ ok: false, refusal: "no-disk-shore", why: "this island mounts no disk projection" }), async () => ({ ok: false, refusal: "bag-unprojected", why: "no mirror of the bag" })]);
+    expect(new SyncedTree(dir).baseAt(key, file), "no doc-less row lands where no island projects the bag").toBeNull();
+    expect(lines.some((l) => /1 base\(s\) .* reached no owner \(no island projects /.test(l))).toBe(true);
+    // A seat's line refuses at the door by name, and that too lands nothing.
+    await wave([async () => ({ ok: false, refusal: "hand-act-only", why: "a seat lands no base at the disk shore" })]);
+    expect(new SyncedTree(dir).baseAt(key, file)).toBeNull();
+    expect(lines.some((l) => /reached no owner \(hand-act-only: a seat lands no base/.test(l))).toBe(true);
+    // A fallen road passes the ask on: the island that projects the bag stands behind it, and its pin lands.
+    const behind = islandShore(new SyncedTree(dir), { doc: "doc-working" });
+    await wave([async () => { throw new Error("the island fell"); }, behind.road]);
+    expect(new SyncedTree(dir).baseAt(key, file)?.doc).toBe("doc-working");
+  });
+
+  test("A RENAME KEEPS ITS HISTORY: the moved carrier's base carries the document, the heads and the records side the source's base held", () => {
+    const dir = join(house, "tree");
+    const text = tid("New Name", "the same words");
+    const moved = put("wikis/daemon/New Name.tid", text);
+    const gone = join(pool, "wikis", "daemon", "Old Name.tid");
+    const hash = carrierHash(text), rendered = carrierHash("the records' render");
+    const owner = new SyncedTree(dir);
+    owner.set(syncedTreeKey(WORKING, "Old Name"), gone, hash, rendered, "doc-working", ["h1"]);
+    const row = { file: moved, uri: "New Name", text, diskHash: hash, syncedHash: null, status: "new" as const, ext: ".tid" };
+    expect(is.applyConfirmedRenames(owner, WORKING, [row], { renames: [{ fromUri: "Old Name", toUri: "New Name" }] })).toBe(1);
+    const fresh = new SyncedTree(dir);
+    expect(fresh.baseAt(syncedTreeKey(WORKING, "New Name"), moved)).toEqual({ path: moved, disk: hash, records: rendered, doc: "doc-working", heads: ["h1"] });
+    expect(fresh.bases(syncedTreeKey(WORKING, "Old Name")), "the source's base left with its file").toEqual([]);
+  });
+
+  test("A RENAME IN A TREE ITS CALLER OWNS: over a pin of the same agreement it waits with the pin, and lands no row of its own", async () => {
+    const dir = join(house, "tree");
+    const text = tid("New Name", "the same words");
+    const moved = put("wikis/daemon/New Name.tid", text);
+    const hash = carrierHash(text);
+    const owner = new SyncedTree(dir, { rests: async () => "waiting" as const });
+    // The island's projector already pinned the re-homed carrier at its new file, and that pin waits.
+    owner.set(syncedTreeKey(WORKING, "New Name"), moved, hash, hash, "doc-working", ["h2"]);
+    await owner.settle();
+    const row = { file: moved, uri: "New Name", text, diskHash: hash, syncedHash: null, status: "new" as const, ext: ".tid" };
+    const answer = is.landBases(owner, WORKING, is.renameBaseAsksOf([row], { renames: [{ fromUri: "Old Name", toUri: "New Name" }] }), "doc-working");
+    expect(answer).toMatchObject({ recorded: 0, waiting: 1 });
+    expect(owner.baseAt(syncedTreeKey(WORKING, "New Name"), moved)?.heads).toEqual(["h2"]);
+    expect(new SyncedTree(dir).baseAt(syncedTreeKey(WORKING, "New Name"), moved)).toBeNull();
+  });
+
+  test("CONTROL: with no island door, the same noop echo records the base in the tree the wave holds, as it always did", async () => {
+    const dir = join(house, "tree");
+    const text = tid("My Notes", "a hand's words");
+    const file = put("wikis/daemon/My Notes.tid", text);
+    const { submit } = island(() => "noop");
+    const { sense } = shore();
+    await is.poolIngestPorts({ pool, bags: { wiki: WORKING }, submit, sense, did: "did:vessel", tree: () => new SyncedTree(dir), log: () => {} }).wave([file]);
+    expect(new SyncedTree(dir).baseAt(syncedTreeKey(WORKING, "My Notes"), file)?.disk).toBe(carrierHash(text));
   });
 });

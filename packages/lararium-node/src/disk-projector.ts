@@ -786,11 +786,100 @@ export class LarDiskProjector {
     }
   }
 
-  /** Resolve when no reconcile runs and no root waits in the queue, and every pending-removal set that moved has surfaced. */
+  /** Resolve when no reconcile runs and no root waits in the queue, and every pending-removal set that moved has surfaced.
+   *  The settle lands too each Synced base pin whose heads now rest sealed (`SyncedTree.settle`). */
   async idle(): Promise<void> {
     await this.recoveryScan;
     await (this.gate?.idle() ?? Promise.resolve());
     this._surfacePending();
+    await this.syncedTree.settle();
+  }
+
+  /** Every Synced base pin this projector's tree holds pending in memory, waiting on its seal, with why it waits. */
+  pendingPins(): ReturnType<SyncedTree["pendingPins"]> {
+    return this.syncedTree.pendingPins();
+  }
+
+  /** How many of the waves' bases met a pin of this projector's tree that still waits (`SyncedTree.waitingBases`). */
+  waitingBases(): number {
+    return this.syncedTree.waitingBases;
+  }
+
+  /** Whether an ordinary mirror of this projector holds the bag: this island projects its records. */
+  projects(bagId: string): boolean {
+    return this.mirrors.some((m) => m.bagId === bagId && m.mirrorClass !== "recovery");
+  }
+
+  /**
+   * The render this island's records hold for one carrier of a bag, folded as the projecting leg folds it (`flush`): the
+   * resolved view's carrier where the view shows it from this bag, else the bag's own record. Null where the bag holds no
+   * such record here, the carrier never reaches disk, or its body rides a pointer whose bytes the tier lacks.
+   */
+  private async recordsRenderOf(bagId: string, uri: string): Promise<{ readonly file: CarrierFile; readonly hash: string } | null> {
+    const mirror = this.mirrors.find((m) => m.bagId === bagId && m.mirrorClass !== "recovery");
+    if (!mirror || await this.neverOnDisk(mirror, uri)) return null;
+    const fields = this._tw5?.$tw.wiki.getTiddler?.(uri)?.fields as Record<string, unknown> | undefined;
+    const file = fields?.["$origin-bag"] === bagId ? await this.carrierFileFn(uri) : await this.recordFileFn?.(bagId, uri) ?? null;
+    if (file === null) return null;
+    const { bodyPending, output } = await this.renderedOutput(uri, file);
+    return bodyPending ? null : { file, hash: carrierHash(output, file.metaBody) };
+  }
+
+  /**
+   * THE ISLAND PINS ONLY AN AGREEMENT IT READS ITSELF (the shore's `base` act; ONE OWNER OF PENDING STATE, `synced-tree.ts`). A
+   * wave names a carrier and the file it landed from, and nothing else: no hash a caller sends ever lands. This projector
+   * hashes the file itself, renders its own records, and pins a base at that file only where the two agree, byte for byte or
+   * through the congruence the projecting leg reads (`canonicalizeFn`, `canonicalizeNativeFn`), under its own document and
+   * its own heads (`pin`), so the row waits on its seal like every pin of this tree.
+   *
+   *   unprojected  no ordinary mirror of this projector holds the bag: another island answers for it
+   *   unread       this island reads no file there (it left, or it rests where this island cannot read): nothing lands
+   *   differs      the file and this island's records say different things, the bag holds no such record here, or the
+   *                file answers to another document: no agreement stands, and the gate weighs the carrier as it stands
+   *   waiting      a pin of this same agreement already waits on its seal: the ask waits with it
+   *   kept         the tree already names the agreement
+   *   recorded     the pin set
+   *
+   * `from` names the vanished source of a rename the island confirmed: once the moved carrier's agreement stands, the
+   * source gives up each base of those same bytes whose own file stands no more.
+   */
+  async pinAgreement(bagId: string, uri: string, file: string, from?: string): Promise<"unprojected" | "unread" | "differs" | "waiting" | "kept" | "recorded"> {
+    if (!this.projects(bagId)) return "unprojected";
+    const render = await this.recordsRenderOf(bagId, uri);
+    const metaPath = file + ".meta";
+    const isBinary = render?.file.encoding === "base64";
+    const onDisk = this.diskCarrierText(file, existsSync(metaPath) ? metaPath : null, isBinary);
+    if (onDisk === null) return "unread";
+    if (render === null) return "differs";
+    const disk = carrierHash(onDisk.body, onDisk.meta);
+    const canonical = ((): string | null => {
+      if (render.file.ext === MEME_EXT) {
+        const text = this.canonicalizeFn ? this.canonicalizeFn(uri, onDisk.body) : null;
+        return text === null ? null : carrierHash(text, onDisk.meta);
+      }
+      if (isBinary || !this.canonicalizeNativeFn) return null;
+      const native = this.canonicalizeNativeFn(uri, render.file.ext, onDisk.body, onDisk.meta);
+      return native === null ? null : carrierHash(native.body, native.metaBody);
+    })();
+    if (!digestsEqual(disk, render.hash) && !(canonical !== null && digestsEqual(canonical, render.hash))) return "differs";
+    const key = syncedTreeKey(bagId, uri);
+    const standing = this.syncedTree.baseAt(key, file);
+    if (this.otherDocument(bagId, standing)) return "differs";
+    // THE SOURCE'S BASE LEAVES WITH ITS OWN FILE, now that the moved carrier's agreement stands at the new one.
+    if (from !== undefined && from !== uri) {
+      for (const base of this.ownBases(bagId, from)) if (digestsEqual(base.disk, disk) && !existsSync(base.path)) this.forgetAt(bagId, from, base.path);
+    }
+    const agrees = standing !== null && digestsEqual(standing.disk, disk) && digestsEqual(standing.records, render.hash);
+    if (agrees && this.syncedTree.pendingAt(key, file)) { this.syncedTree.metWaiting(key, file); return "waiting"; }
+    // A row that names the agreement stays put, unless this document's history stands to name and the row names none.
+    if (agrees && (standing!.heads !== undefined || !this.lineageOf?.(bagId)?.heads?.length)) return "kept";
+    this.pin(bagId, uri, file, disk, render.hash);
+    return "recorded";
+  }
+
+  /** Ask the rest again for every pin that waits, and land each whose heads now rest (`SyncedTree.settle`). */
+  settlePins(): Promise<number> {
+    return this.syncedTree.settle();
   }
 
   async stop(): Promise<void> {

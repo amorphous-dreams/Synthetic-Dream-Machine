@@ -65,12 +65,12 @@ import { daemonFaceCanonBag, wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki
 import {
   larProjectionsHome, larConfigHome, isPrivateProjectionSlug, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir,
   FACES_PROJECTION_DIR, FACE_PLANES, faceSegmentRefusal, labelledRelations, readFaceLabel, readFaceBases,
-  mirrorFiles, siteWaveFile, liveLay as layWave, type MirrorWave, type MirrorLaid, realmFoldersOnDisk } from "@lararium/node";
+  mirrorFiles, siteWaveFile, liveLay as layWave, type MirrorWave, type MirrorLaid, type SyncedTree, realmFoldersOnDisk } from "@lararium/node";
 import { parseShareFile, type ShareEntry } from "@lararium/mesh/share-config";
 import { LIVE_BUNDLE_DOORS, mountFaceOf, unlockItLine, FACE_LAYER_WAITS, type BundleDoors, type BundleVesselFace } from "./commands/house-bundle.js";
 import { LIVE_SHARE_DOORS, landShares, unhandedLine } from "./share-doors.js";
 import { runVerb } from "./verb-call.js";
-import { skipLines, submitIngest, type SubmitIngestOpts, type ScanSkip } from "./ingest-core.js";
+import { skipLines, submitIngest, shoreBaseDoor, type SubmitIngestOpts, type ScanSkip, type BaseDoor } from "./ingest-core.js";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { vesselDid } from "./env.js";
 import { canonIsDisk } from "./holdings.js";
@@ -671,8 +671,16 @@ export function mirrorsLeftWork(r: MirrorSeedResult): boolean {
 export interface LayPorts {
   readonly did: () => Promise<string>;
   readonly submit: (o: SubmitIngestOpts) => Promise<SubmitResult>;
+  /** Where the lay's bases land (`BaseDoor`, `@lararium/node` ingest-scan); absent, the tree the lay opened. */
+  readonly base?: (tree: SyncedTree, wave: Pick<MirrorWave, "wiki">) => BaseDoor;
 }
-export const LIVE_LAY_PORTS: LayPorts = { did: vesselDid, submit: submitIngest };
+/** The live lay lands its bases through the island that takes its waves (`shoreBaseDoor`), never by this process's own hand. */
+export const LIVE_LAY_PORTS: LayPorts = {
+  did: vesselDid, submit: submitIngest,
+  base: (tree, wave) => ({
+    land: async (bag, asks) => shoreBaseDoor({ did: await vesselDid(), ...(wave.wiki !== undefined ? { inWiki: true, wiki: wave.wiki } : {}) }, tree).land(bag, asks),
+  }),
+};
 
 /** The title a wave's file reads back under, or why it reads none (`@lararium/node` ingest-scan). */
 export { siteWaveFile };

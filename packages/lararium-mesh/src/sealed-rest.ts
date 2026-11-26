@@ -938,3 +938,77 @@ export function restOwedWatch(ports: { readonly waiting: (documentId: string) =>
     },
   };
 }
+
+// ── The heads-rest door (the base pins what sealed) ──────────────────────────────────────────────────
+/** What the vessel reads of one document's heads at rest: they rest sealed (`rested`), they rest nowhere yet (`waiting`), or
+ *  no rest answered the ask (`unread`: no sealed rest stands, the rest faulted, the ask arrived malformed or never crossed). */
+export type HeadsRestReading = "rested" | "waiting" | "unread";
+/** Island → vessel: do these heads of `documentId` rest in the vessel's sealed rest? */
+export interface RestMsg_HeadsAsk { readonly type: "rest:heads"; readonly requestId: string; readonly documentId: string; readonly heads: readonly string[] }
+/** Vessel → island: the vessel's reading of those heads. */
+export interface RestMsg_HeadsAnswer { readonly type: "rest:heads-answer"; readonly requestId: string; readonly reading: HeadsRestReading }
+
+/** Vessel → island: a save of `documentId` rested, and the document waits on nothing in memory. Each pending pin of that
+ *  document asks again (the save book's rest names the moment, never a clock). */
+export interface RestMsg_Rested { readonly type: "rest:rested"; readonly documentId: string }
+
+const READINGS: readonly HeadsRestReading[] = ["rested", "waiting", "unread"];
+
+/**
+ * THE VESSEL'S READING OF ONE DOCUMENT'S HEADS AT REST. Heads rest where this vessel's replica holds them (an island's change
+ * crosses its sync leg first, so a replica that lacks them reads `waiting`, at once, and never waits), the Repo's flush of that
+ * one document lands, and the sealed store holds no save of it waiting in memory (`save-unbooked`, `save-unsealed`, ...).
+ * A flush that throws reads `unread`: its change stands in memory, and the next ask reads again.
+ */
+export function headsRestAt(ports: {
+  readonly holds: (documentId: string, heads: readonly string[]) => boolean;
+  readonly flush: (documentId: string) => Promise<void>;
+  readonly waiting: (documentId: string) => number;
+}): (documentId: string, heads: readonly string[]) => Promise<HeadsRestReading> {
+  return async (documentId, heads) => {
+    if (heads.length === 0 || !ports.holds(documentId, heads)) return "waiting";
+    try { await ports.flush(documentId); } catch { return "unread"; }
+    return ports.waiting(documentId) === 0 ? "rested" : "waiting";
+  };
+}
+
+/**
+ * Answer one island's heads asks on its port. THE SAFE ANSWER STANDS AS THE DEFAULT: a vessel that stands no sealed rest
+ * (`restsAt` absent), a rest that faults, and a malformed ask each answer `unread`, never `rested`, so no base pins what no
+ * rest vouched for; the pin stays pending in memory and a crash costs nothing.
+ */
+export function answerHeadsAsks(port: Pick<Port, "post" | "listen">, restsAt: () => ((documentId: string, heads: readonly string[]) => Promise<HeadsRestReading>) | undefined): () => void {
+  return port.listen((raw) => {
+    const m = raw as Partial<RestMsg_HeadsAsk> | null;
+    if (!m || m.type !== "rest:heads" || typeof m.requestId !== "string") return;
+    const requestId = m.requestId;
+    const reply = (reading: HeadsRestReading): void => { try { port.post({ type: "rest:heads-answer", requestId, reading } satisfies RestMsg_HeadsAnswer); } catch { /* the island went away */ } };
+    const door = restsAt();
+    if (door === undefined || typeof m.documentId !== "string" || m.documentId === "" || !Array.isArray(m.heads) || !m.heads.every((h) => typeof h === "string")) { reply("unread"); return; }
+    void door(m.documentId, m.heads).then((reading) => reply(READINGS.includes(reading) ? reading : "unread"), () => reply("unread"));
+  });
+}
+
+/**
+ * The island's side of the heads ask: post `rest:heads` to its vessel and read `rest:heads-answer` on the same request id.
+ * No clock reads silence: the vessel answers every ask (`answerHeadsAsks`), and an island outlives no vessel. A post the port
+ * refuses, and an answer in any other shape, read `unread`.
+ */
+export function vesselHeadsAsker(port: Pick<Port, "post" | "listen">, opts: { readonly idPrefix: string }): (documentId: string, heads: readonly string[]) => Promise<HeadsRestReading> {
+  const pending = new Map<string, (reading: HeadsRestReading) => void>();
+  port.listen((raw) => {
+    const m = raw as { type?: unknown; requestId?: unknown; reading?: unknown } | null;
+    if (!m || m.type !== "rest:heads-answer" || typeof m.requestId !== "string") return;
+    const settle = pending.get(m.requestId);
+    if (!settle) return;
+    pending.delete(m.requestId);
+    settle(READINGS.includes(m.reading as HeadsRestReading) ? m.reading as HeadsRestReading : "unread");
+  });
+  let seq = 0;
+  return (documentId, heads) => new Promise<HeadsRestReading>((resolve) => {
+    const requestId = `${opts.idPrefix}-heads-${++seq}`;
+    pending.set(requestId, resolve);
+    try { port.post({ type: "rest:heads", requestId, documentId, heads: [...heads] } satisfies RestMsg_HeadsAsk); }
+    catch { pending.delete(requestId); resolve("unread"); }
+  });
+}
