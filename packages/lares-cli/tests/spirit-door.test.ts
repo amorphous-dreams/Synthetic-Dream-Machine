@@ -1577,6 +1577,52 @@ describe("the ʻĀlana Circle: a card answers the slot verbs, a summon offers fi
     expect(r.exit).toBe(0);
     expect(String(data(r)["unechoed"])).toContain("has not read mandate");
   });
+
+  // THE FACE JOINT (plan/companion-context S1-S3): the island names the face each answer came from, as face-lane stamps it.
+  const answering = { face: 1 };
+  const facedStage = (o: StageOpts): void => {
+    stage(o);
+    const base = h.answer;
+    h.answer = async (verb, args) => {
+      const out = await base(verb, args);
+      return typeof out["refuse"] === "string" ? out : { ...out, face: answering.face };
+    };
+  };
+
+  test("S1: an echo names the face that answered it as the line's fourth word", async () => {
+    answering.face = 1;
+    facedStage({ kind: "none", card: CARD_FIELDS(), offering: offered() });
+    const r = await run(argv(["ah", "lares-alpha"], { echo: sha(MANDATE), instance: "s-1" }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    const fields = puts(SIDE).map((p) => p.args["fields"] as Record<string, string>);
+    expect(fields.some((f) => f["echoes"] === `lares-alpha#s-1 ${sha(MANDATE)} 1 h1`)).toBe(true);
+    expect(data(r)).toMatchObject({ instance: "lares-alpha#s-1", face: 1 });
+  });
+
+  test("S2: a turned mount refuses a face-less ah, hum and re-echo by name (spirit-face-turned, the cure --face 1), and nothing lands; --face 1 lands", async () => {
+    const card = { ...CARD_FIELDS(), instances: "one\ntwo" };
+    facedStage({ kind: "none", card, offering: offered(), side: { echoes: `lares-alpha#s-1 ${sha(MANDATE)} 1 h1` } });
+    answering.face = 2;
+    const turned = await run(argv(["ah", "lares-alpha"], { slot: "#/instances", add: "x", instance: "s-1" }));
+    expect(turned.exit).toBe(4);
+    expect(error(turned).code).toBe("spirit-face-turned");
+    expect(error(turned).message).toContain("lares-alpha#s-1 echoed its mandate under h1, and h2 answered; nothing landed");
+    expect(error(turned).message).toContain("--face 1");
+    expect(card["instances"]).toBe("one\ntwo");
+    expect(puts(CARD)).toEqual([]);
+    const fold = await run(argv(["hum", "lares-alpha"], { fold: "#/instances", line: "1", expect: digest("one"), instance: "s-1" }));
+    expect(error(fold).code).toBe("spirit-face-turned");
+    const reEcho = await run(argv(["ah", "lares-alpha"], { echo: sha(MANDATE), instance: "s-1" }));
+    expect(error(reEcho).code).toBe("spirit-face-turned");
+    expect(puts(SIDE)).toEqual([]);
+    expect(card["instances"]).toBe("one\ntwo");
+    // The instance names its own face: the session of h1 answers, and the write lands clean.
+    answering.face = 1;
+    const named = await run(argv(["ah", "lares-alpha"], { slot: "#/instances", add: "x", instance: "s-1", face: "1" }));
+    expect(named.exit, JSON.stringify(named.printed)).toBe(0);
+    expect(card["instances"]).toBe("one\ntwo\nx");
+    expect(data(named)).not.toHaveProperty("unechoed");
+  });
 });
 
 describe("one spirit record: a pet name answers at lares/spirit/<pet>, holding a stack of what it holds", () => {
