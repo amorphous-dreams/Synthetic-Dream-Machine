@@ -487,7 +487,8 @@ export interface SealedRest<S extends SaveSession = SaveSession> {
    *  by its own signer? The vessel's standing reading passes over a session that answers false, so a save books another live
    *  session of the face, or waits `save-unbooked`, rather than ask a signer that signs nothing. */
   signs(session: S): boolean;
-  /** A face left the lit set: its documents' waiting saves drop from memory (never to disk) and their bookings with them.
+  /** A face left the lit set: its documents' waiting saves drop from memory, none lands clear, and their bookings leave with
+   *  them. A save that rests sealed-pending under the vessel's key, bound to that face, stays at rest for its next light.
    *  Answers how many saves dropped. */
   forget(documentIds: readonly string[]): number;
   /**
@@ -808,7 +809,7 @@ export function heldFateLine(held: HeldNotice): string {
       ? `${head} stood at rest sealed-pending from an earlier boot: it joins this boot's wait, never clear, and the next live session of its face seals it. Cure: ${heldCure(held.refusal)}`
       : `${head} rests sealed-pending under the vessel's own key, never clear: a stop or a crash keeps it, and the next live session of its face seals it. Cure: ${heldCure(held.refusal)}`;
   }
-  return `${head} waits in this process's memory alone, never clear (the vessel's key stands out of reach, so no sealed-pending rest took it): a stop drops it unless a live session of its face seals it first. Cure: ${heldCure(held.refusal)}`;
+  return `${head} waits in this process's memory alone, never clear (no sealed-pending rest took it: the vessel's key stands out of reach, or no lit face owns the save yet): a stop drops it unless a live session of its face seals it first. Cure: ${heldCure(held.refusal)}`;
 }
 
 /** A save the store refused outright, as its printed sentence: it rests nowhere and waits nowhere; a document at its counted

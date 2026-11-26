@@ -37,10 +37,12 @@
  *
  * NEVER CLEAR AND NEVER LOST (the sealed-pending rest). A save of a sealed-class document that no session sealed
  * (`save-unbooked`, `save-unmapped`, `save-unsealed`) waits in memory AND rests at its own storage key sealed under the
- * vessel's own key (`vesselKey`), bound to its document alone (`pendingRestBag`): no clear byte lands, and a crash or a kill
- * keeps the save. The next process that reads the key with the vessel's key in reach carries the save back into its wait
- * (`#carry`), and the next session of the face seals it over the pending value, in place. Where the vessel's key stands out
- * of reach (a locked custody, a store that hands none) the save waits in memory alone and its notice says so.
+ * vessel's own key (`vesselKey`), bound to its document and to the face its bag wears (`pendingRestBag`): no clear byte lands,
+ * and a crash or a kill keeps the save. The next process that reads the key under THAT face, with the vessel's key in reach,
+ * carries the save back into its wait (`#carry`), and the next session of the face seals it over the pending value, in place.
+ * A value held for one face never opens for another: the vessel's key serves every face, so the face rides the seal's
+ * context. Where the vessel's key stands out of reach (a locked custody, a store that hands none), or no lit face owns the
+ * save yet (no bag maps it, its bag's face has not lit), the save waits in memory alone and its notice says so.
  *
  * A COUNTED CEILING PER DOCUMENT (`HELD_MAX_SAVES_PER_DOCUMENT`). One document holds at most that many unsealed saves; a
  * further one refuses by name (`held-bound`): nothing more waits, the engine keeps the change and hands it again inside its
@@ -235,7 +237,8 @@ export interface SealedDocumentPorts {
    * Absent: such a value refuses `pointer-malformed`, as any byte run this store never wrote.
    *
    * THE SEALED-PENDING REST RIDES THE SAME KEY: a save no session sealed rests at its storage key under this key, bound to
-   * its document (`pendingRestBag`), so a stop keeps it; null or absent, such a save waits in memory alone (`HeldNotice.rests`).
+   * its document and its bag's face (`pendingRestBag`), so a stop keeps it; null or absent, or with no lit face owning the
+   * save, such a save waits in memory alone (`HeldNotice.rests`).
    */
   vesselKey?(): HeldRestKey | null;
   /** Told once per save the store holds back unsealed, naming its document, the bag and face the map reads for it, and
@@ -277,10 +280,11 @@ export const UNNAMED_HELD_MAX_BYTES = 64 * 1024 * 1024;
  *  save of that document refuses by name (`held-bound`), so a signer that refuses for a whole boot never grows memory. */
 export const HELD_MAX_SAVES_PER_DOCUMENT = 64;
 
-/** The context a sealed-pending value binds under the vessel's key: its document alone, never a bag (the map may name none
- *  as the save waits), so a pending value opens for its own document's storage key and for no other. */
-export function pendingRestBag(documentId: string): string {
-  return `lar:///ha.ka.ba/lararium/mesh/sealed-store/pending/${documentId}`;
+/** The context a sealed-pending value binds under the vessel's key: its document AND the face its bag wore as the save
+ *  waited. The vessel's key opens for every face of the vessel, so the face rides the seal's own context: a value held for
+ *  face A opens under A alone, whatever bag a later map names its document under, and never for a sibling face. */
+export function pendingRestBag(documentId: string, face: string): string {
+  return `lar:///ha.ka.ba/lararium/mesh/sealed-store/pending/${encodeURIComponent(face)}/${documentId}`;
 }
 
 const ROLES: Readonly<Record<string, DocumentValue["role"]>> = { incremental: "change", snapshot: "checkpoint" };
@@ -346,16 +350,19 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   }
 
   /**
-   * REST ONE WAITING SAVE SEALED-PENDING: its bytes seal under the vessel's key, bound to its document (`pendingRestBag`), and
-   * land at its own storage key, so no clear byte rests and a stop keeps the save. Answers whether it rested: false where the
-   * key names no sealed role, the vessel's key stands out of reach, or the inner rest faulted (the save then waits in memory alone).
+   * REST ONE WAITING SAVE SEALED-PENDING: its bytes seal under the vessel's key, bound to its document and to `face`, the face
+   * its bag wears (`pendingRestBag`), and land at its own storage key, so no clear byte rests and a stop keeps the save.
+   * Answers whether it rested: false where no face owns the save yet (no bag maps it, or its bag's face has not lit: a value
+   * bound to no face would open for any), the key names no sealed role, the vessel's key stands out of reach, or the inner
+   * rest faulted. The save then waits in memory alone.
    */
-  async #restPending(key: StorageKey, data: Uint8Array): Promise<boolean> {
+  async #restPending(key: StorageKey, data: Uint8Array, face: string | null): Promise<boolean> {
     const role = ROLES[key[1] ?? ""];
+    if (face === null) return false;
     const held = this.#pendingKey();
     if (role === undefined || held === null || typeof key[0] !== "string") return false;
     try {
-      const out = sealHeld({ bagId: pendingRestBag(key[0]), held, role, ref: logicalRefOf(key), plaintext: data });
+      const out = sealHeld({ bagId: pendingRestBag(key[0], face), held, role, ref: logicalRefOf(key), plaintext: data });
       if (!("chunk" in out)) return false;
       await this.#ports.inner.save(key, out.chunk.sealed);
       return true;
@@ -381,7 +388,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     const entry = { key: [...key], data: Uint8Array.from(data), refusal };
     this.#waiting.set(name, entry);
     let rests: HeldRest = "memory";
-    if (rest && await this.#restPending(key, entry.data)) {
+    if (rest && await this.#restPending(key, entry.data, bag?.face ?? null)) {
       if (this.#waiting.get(name) === entry) { this.#waiting.set(name, { ...entry, pending: true }); rests = "sealed-pending"; }
       // A LATER SAVE OF THE SAME KEY TOOK THE WAIT: it rests and tells for itself.
       else if (this.#waiting.has(name)) return;
@@ -953,9 +960,11 @@ export class SealedDocumentStore implements StorageAdapterInterface {
         if (held === null) throw new SealedDocumentRefusal("holder-locked", "a value sealed under the vessel's own key rests here, and that key is not in reach");
         const lifted = openHeld({ bagId: bag.bagId, held, role, ref: logicalRefOf(key), sealed: rested });
         if ("plaintext" in lifted) return lifted.plaintext;
-        // A SAVE AN EARLIER PROCESS LEFT SEALED-PENDING opens under the same key and its document's pending context: it reads
-        // here and joins this process's wait, so the next session of the face seals it (`#carry`).
-        const pending = openHeld({ bagId: pendingRestBag(key[0]!), held, role, ref: logicalRefOf(key), sealed: rested });
+        // A SAVE AN EARLIER PROCESS LEFT SEALED-PENDING opens under the same key and the pending context of its document AND
+        // THIS BAG'S FACE: it reads here and joins this process's wait, so the next session of the face seals it (`#carry`).
+        // A value held for another face (its document mapped under a sibling's bag since) opens under no context this face
+        // names: it refuses below, never read and never carried, as a pointer another face signed refuses `writer-face-foreign`.
+        const pending = openHeld({ bagId: pendingRestBag(key[0]!, face), held, role, ref: logicalRefOf(key), sealed: rested });
         if ("plaintext" in pending) { this.#carry(key, pending.plaintext, { bagId: bag.bagId, face }); return pending.plaintext; }
         throw new SealedDocumentRefusal(lifted.refusal);
       }
