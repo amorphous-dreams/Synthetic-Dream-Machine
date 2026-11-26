@@ -12,7 +12,7 @@
 # unlanded). `vessel-image` prints the image the running vessel runs. The pūlama reads every route; this shim never reads or
 # types one. The CLI runs by exec while a vessel stands and through the offline door while none
 # stands. The host holds the engine: a verb that succeeds names the CLI's standing verdict in its own exit code (the shim
-# asks with `LARES_STANDING_REPORT=exit`; one CLI process per call), and the shim restarts the vessel itself when the
+# asks with `--standing-report`, the last word of the exec's argv; one CLI process per call), and the shim restarts the vessel itself when the
 # verdict reads `restand`. The app gets no docker socket.
 # LARES_HOUSE / LARES_WORKSPACE come from the environment or the operator's `~/.lares/lares-surface.env` (outside every
 # bind; never beside the compose file). LARES_WORKSPACE names the workspace the house lays canon from and projects into,
@@ -513,12 +513,12 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
     $tty = if ($script:HostInputFile) { @('-T') } else { $NoTty }
     # ONE CLI PER CALL: a verb whose standing the shim reads asks for it on the exec itself, and the verb's own process
     # names the verdict in its exit code (`standing-report.ts`: 90 attach, 91 restand, 92 no verdict).
-    # The ask rides by NAME, as every env this shim hands the vessel does; its value stands in this shim's own environment.
+    # The ask rides the call itself, as the last word of its argv: the CLI's entry takes it off before the verb reads it.
     $ask = @()
-    if ($followUp) { $env:LARES_STANDING_REPORT = 'exit'; $ask = @('-e', 'LARES_STANDING_REPORT') }
+    if ($followUp) { $ask = @('--standing-report') }
     $keeps = $script:ActKeepsExit
     if ($followUp) { $script:ActKeepsExit = $true }
-    Act 'exec' (@('exec', '-e', 'LARES_EXEC_TAG') + $ask + $PassEnv + $tty + @('lares', 'node', $Cli) + $argv)
+    Act 'exec' (@('exec', '-e', 'LARES_EXEC_TAG') + $PassEnv + $tty + @('lares', 'node', $Cli) + $argv + $ask)
     $script:ActKeepsExit = $keeps
     if ($followUp) {
       # The verb landed (90, 91, 92, or a bare 0). A verdict that fails to read leaves a possible lift unperformed, so it
@@ -763,7 +763,7 @@ function HostChainKind {
 if ((HostChainKind) -ne 'hand') { $env:CLAUDECODE = '1' }
 
 $PassEnv = @()
-foreach ($name in @('NO_COLOR', 'TERM', 'COLORTERM', 'LARES_DEBUG', 'LARES_ASK_BUDGET_MS', 'CLAUDECODE', 'CODEX_SANDBOX', 'CODEX_SANDBOX_NETWORK_DISABLED')) {
+foreach ($name in @('NO_COLOR', 'TERM', 'COLORTERM', 'LARES_DEBUG', 'CLAUDECODE', 'CODEX_SANDBOX', 'CODEX_SANDBOX_NETWORK_DISABLED')) {
   if (Test-Path "env:$name") { $PassEnv += @('-e', $name) }
 }
 

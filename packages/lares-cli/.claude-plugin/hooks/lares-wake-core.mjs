@@ -41,19 +41,19 @@ export const TERM_GRACE_MS = 2_000;
  * container leaves with it), then SIGKILL once `TERM_GRACE_MS` passes with the group still standing. `input`, where
  * given, rides the child's stdin whole.
  *
- * `budgetMs`, where given, rides the child's environment as `ASK_BUDGET_ENV`: the door's own process (the CLI inside the
+ * `budgetMs`, where given, rides the child's argv as its last word (`ASK_BUDGET_FLAG=<N>`): the door's own process (the CLI inside the
  * vessel, which the shim's exec reaches) leaves when that budget runs out, so its ask closes with no signal relayed. The
  * kill above still runs; the budget covers the read whose relay lands late or never (the shim stops an exec'd act through
  * a second exec, and a SIGKILL of the group ends that relay too).
  */
-export const ASK_BUDGET_ENV = "LARES_ASK_BUDGET_MS";
+export const ASK_BUDGET_FLAG = "--ask-budget-ms";
 export function spawnRead(command, argv, input = null, budgetMs = null) {
   let child;
   let output = "";
   const done = new Promise((resolve) => {
     try {
-      const env = Number.isSafeInteger(budgetMs) && budgetMs > 0 ? { ...process.env, [ASK_BUDGET_ENV]: String(budgetMs) } : process.env;
-      child = spawn(command, argv, { detached: true, env, stdio: [input === null ? "ignore" : "pipe", "pipe", "ignore"] });
+      const asked = Number.isSafeInteger(budgetMs) && budgetMs > 0 ? [...argv, `${ASK_BUDGET_FLAG}=${budgetMs}`] : argv;
+      child = spawn(command, asked, { detached: true, stdio: [input === null ? "ignore" : "pipe", "pipe", "ignore"] });
       if (input !== null) { child.stdin.on("error", () => { /* a child that left early reads no more */ }); child.stdin.end(input); }
     } catch (err) {
       resolve({ stdout: "", code: null, signal: null, error: err?.code ?? err?.message ?? "spawn error" });

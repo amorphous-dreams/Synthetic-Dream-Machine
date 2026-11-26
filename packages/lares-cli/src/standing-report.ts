@@ -6,13 +6,13 @@
  * the vessel. So that process reads the verdict as it leaves and names it in its exit code: one CLI process serves one
  * call, and no second one starts to ask.
  *
- * The shim asks by name (`LARES_STANDING_REPORT=exit` on the exec) and reads three codes, each of a verb that SUCCEEDED:
+ * The shim asks on the call itself (`--standing-report`, the last word of the exec's argv) and reads three codes, each of a verb that SUCCEEDED:
  *
  *   90  attach    the vessel stands as its state on disk implies; nothing to do
  *   91  restand   the standing asks for a re-stand; the reason rides stderr, and the shim restarts the vessel
  *   92  unread    no vessel answered the reading, or the reading faulted; the shim says so and exits non-zero
  *
- * A verb that failed keeps its own code and reads no standing. With no ask in the environment nothing changes: every
+ * A verb that failed keeps its own code and reads no standing. With no ask on the call nothing changes: every
  * other caller reads the verb's own code. The three codes stand clear of the CLI's own (0-6, 64, 78) and of the
  * engine's (125-127).
  */
@@ -20,10 +20,10 @@ import { existsSync, readFileSync } from "node:fs";
 import { standingPath, standingVerdict } from "@lararium/mesh/rendezvous-path";
 import { faceStandsOnDisk } from "./floor-cure.js";
 import { larBootstrapPath, larDataDir } from "./env.js";
-import { udsAlive } from "./local-connector.js";
+import { ASK_BUDGET_FLAG, askBudgetMs, udsAlive } from "./local-connector.js";
 
-/** The environment name the host shim asks by; `exit` asks for the verdict in the exit code. */
-export const STANDING_REPORT_ENV = "LARES_STANDING_REPORT";
+/** The flag the host shim asks by: the verdict rides the exit code of the one process that ran the verb. */
+export const STANDING_REPORT_FLAG = "--standing-report";
 /** The exit codes a succeeded verb names its standing verdict by. The shims hold the same three. */
 export const STANDING_EXIT = { attach: 90, restand: 91, unread: 92 } as const;
 
@@ -33,14 +33,32 @@ export function readStandingMarker(): string | null {
   catch { return null; }
 }
 
+/** What a call asks of the entry itself, beside its verb: the standing verdict in the exit, and a budget on this process's wait. */
+export interface EntryAsks {
+  /** The argv the verb reads: every word but the entry's own two flags. */
+  readonly argv:     string[];
+  readonly standing: boolean;
+  readonly budgetMs: number | null;
+}
+
 /**
- * Take the shim's ask out of this process's environment, and answer it. THE ASK NAMES ONE PROCESS: a child this verb
- * spawns would inherit it and leave by 90 where its parent reads 0 for success, so the entry takes it before any verb runs.
+ * Take the entry's own asks off the argv. THE ASKS NAME ONE CALL: they ride its argv and no environment, so a child this
+ * verb spawns inherits neither (it would leave by 90 where its parent reads 0 for success, or under a budget nobody gave
+ * it), and no verb's own parser meets them. The budget takes `--ask-budget-ms=<N>` or `--ask-budget-ms <N>`; a value that
+ * names no positive whole number declares none.
  */
-export function takeStandingAsk(env: Record<string, string | undefined> = process.env): Readonly<Record<string, string | undefined>> {
-  const asked = { [STANDING_REPORT_ENV]: env[STANDING_REPORT_ENV] };
-  delete env[STANDING_REPORT_ENV];
-  return asked;
+export function takeEntryAsks(argv: readonly string[]): EntryAsks {
+  const kept: string[] = [];
+  let standing = false;
+  let budgetMs: number | null = null;
+  for (let i = 0; i < argv.length; i += 1) {
+    const word = argv[i]!;
+    if (word === STANDING_REPORT_FLAG) standing = true;
+    else if (word === ASK_BUDGET_FLAG) { budgetMs = askBudgetMs(argv[i + 1]); i += 1; }
+    else if (word.startsWith(`${ASK_BUDGET_FLAG}=`)) budgetMs = askBudgetMs(word.slice(ASK_BUDGET_FLAG.length + 1));
+    else kept.push(word);
+  }
+  return { argv: kept, standing, budgetMs };
 }
 
 /** What the verdict reads: whether a vessel answers, the standing it published, and whether a face stands on disk. */
@@ -63,11 +81,11 @@ const OWN_READERS: StandingReaders = {
  */
 export async function standingExit(
   code: number,
-  env: Readonly<Record<string, string | undefined>>,
+  asked: boolean,
   readers: StandingReaders = OWN_READERS,
   say: (line: string) => void = (line) => { console.error(line); },
 ): Promise<number> {
-  if (code !== 0 || env[STANDING_REPORT_ENV] !== "exit") return code;
+  if (code !== 0 || !asked) return code;
   try {
     if (!(await readers.alive())) return STANDING_EXIT.unread;
     const verdict = standingVerdict({ marker: readers.marker(), faceOnDisk: readers.faceOnDisk() });

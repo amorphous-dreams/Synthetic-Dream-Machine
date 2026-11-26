@@ -119,7 +119,7 @@ describe("vessel stand and the host-held engine", () => {
 });
 
 describe("a verb's own exit carries the standing verdict to the host shim", () => {
-  const ASK = { LARES_STANDING_REPORT: "exit" };
+  const ASK = true;
   const readers = (alive: boolean) => ({ alive: async () => alive, marker: () => "{}", faceOnDisk: () => true });
 
   it("a verb that succeeded under the shim's ask names a restand verdict by its code, and says the reason", async () => {
@@ -148,21 +148,40 @@ describe("a verb's own exit carries the standing verdict to the host shim", () =
     expect(await standingExit(0, ASK, { ...readers(true), marker: () => { throw new Error("unreadable"); } })).toBe(STANDING_EXIT.unread);
   });
 
-  it("the entry takes the ask out of the environment, so a child a verb spawns never answers it", async () => {
-    const { takeStandingAsk, standingExit, STANDING_EXIT } = await import("../src/standing-report.js");
-    const env: Record<string, string | undefined> = { LARES_STANDING_REPORT: "exit", NO_COLOR: "1" };
-    const asked = takeStandingAsk(env);
-    expect(env).toEqual({ NO_COLOR: "1" });
-    expect(await standingExit(0, asked, readers(true), () => {})).toBe(STANDING_EXIT.restand);
-    // CONTROL: an environment that carries no ask answers none.
-    expect(await standingExit(0, takeStandingAsk({}), readers(true))).toBe(0);
+  it("the entry takes both asks off the argv, so no verb's parser meets them and no environment carries them to a child", async () => {
+    const { takeEntryAsks, standingExit, STANDING_EXIT } = await import("../src/standing-report.js");
+    const asks = takeEntryAsks(["tiddler", "get", "lar:///x", "--recipe", "default", "--ask-budget-ms=3500", "--standing-report"]);
+    expect(asks).toEqual({ argv: ["tiddler", "get", "lar:///x", "--recipe", "default"], standing: true, budgetMs: 3500 });
+    expect(await standingExit(0, asks.standing, readers(true), () => {})).toBe(STANDING_EXIT.restand);
+    // The budget reads in either spelling, wherever it sits; a value that names no positive whole number declares none.
+    expect(takeEntryAsks(["--ask-budget-ms", "40", "vessel", "read"])).toEqual({ argv: ["vessel", "read"], standing: false, budgetMs: 40 });
+    expect(takeEntryAsks(["vessel", "read", "--ask-budget-ms=soon"])).toEqual({ argv: ["vessel", "read"], standing: false, budgetMs: null });
+    // CONTROL: a call that carries neither keeps its argv whole and answers no standing.
+    const plain = takeEntryAsks(["vessel", "read", "--json"]);
+    expect(plain).toEqual({ argv: ["vessel", "read", "--json"], standing: false, budgetMs: null });
+    expect(await standingExit(0, plain.standing, readers(true))).toBe(0);
+  });
+
+  it("no environment name asks for either: the house adds no env var for a call's own asks", async () => {
+    const { standingExit } = await import("../src/standing-report.js");
+    const held = { report: process.env["LARES_STANDING_REPORT"], budget: process.env["LARES_ASK_BUDGET_MS"] };
+    process.env["LARES_STANDING_REPORT"] = "exit";
+    process.env["LARES_ASK_BUDGET_MS"] = "1";
+    try {
+      const { takeEntryAsks } = await import("../src/standing-report.js");
+      const asks = takeEntryAsks(["vessel", "read"]);
+      expect(asks).toMatchObject({ standing: false, budgetMs: null });
+      expect(await standingExit(0, asks.standing, readers(true))).toBe(0);
+    } finally {
+      if (held.report === undefined) delete process.env["LARES_STANDING_REPORT"]; else process.env["LARES_STANDING_REPORT"] = held.report;
+      if (held.budget === undefined) delete process.env["LARES_ASK_BUDGET_MS"]; else process.env["LARES_ASK_BUDGET_MS"] = held.budget;
+    }
   });
 
   it("CONTROL: a verb that failed keeps its own code, and no ask leaves every code as it stands", async () => {
     const { standingExit } = await import("../src/standing-report.js");
     const never = { alive: async () => { throw new Error("no reading runs"); }, marker: () => null, faceOnDisk: () => false };
     expect(await standingExit(7, ASK, never)).toBe(7);
-    expect(await standingExit(0, {}, never)).toBe(0);
-    expect(await standingExit(0, { LARES_STANDING_REPORT: "1" }, never)).toBe(0);
+    expect(await standingExit(0, false, never)).toBe(0);
   });
 });

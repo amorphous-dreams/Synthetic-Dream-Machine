@@ -377,8 +377,9 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
       const named = exec.flatMap((a, i) => a === "-e" ? [exec[i + 1]] : []);
       // The seat mark crosses too wherever this suite itself runs under a harness: the forwarder reads its own host chain.
       const seat = ownPeerKind({}) !== "hand" ? ["CLAUDECODE"] : [];
-      // The shim's own two ride beside them: the exec's tag, and its ask for the standing verdict in the verb's exit.
-      expect(named.sort()).toEqual([...seat, "LARES_DEBUG", "LARES_EXEC_TAG", "LARES_STANDING_REPORT", "NO_COLOR", "TERM"].sort());
+      // The shim's own tag rides beside them; its ask for the standing verdict rides the argv's last word, never an env name.
+      expect(named.sort()).toEqual([...seat, "LARES_DEBUG", "LARES_EXEC_TAG", "NO_COLOR", "TERM"].sort());
+      expect(exec[exec.length - 1]).toBe("--standing-report");
       expect(exec.join(" ")).not.toMatch(/xterm-256color|s3cret|SOME_TOKEN/);
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
