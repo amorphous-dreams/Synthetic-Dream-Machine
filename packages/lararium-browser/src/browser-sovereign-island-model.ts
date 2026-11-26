@@ -37,11 +37,11 @@ import { readCasBlobFromOpfs } from "./browser-genesis.js";
 
 /** Browser storage composition: the daemon island's own IndexedDB partition, the one store a manifest names, behind the
  * vessel's rest guard. Any other manifest stands no store. */
-export function browserIslandStorage(msg: IslandMsg_Manifest, restsAtVessel?: (documentId: string) => Promise<boolean>) {
+export function browserIslandStorage(msg: IslandMsg_Manifest, restsAtVessel: (documentId: string) => Promise<boolean>) {
   if (msg.storage?.type !== "idb") return undefined;
   // V2: the daemon island's own store rests no document the vessel's rest seals (`islandRestGuard`).
   const inner = shoreStorage(new IndexedDBStorageAdapter(msg.storage.dbName));
-  return restsAtVessel ? islandRestGuard(inner, restsAtVessel) : inner;
+  return islandRestGuard(inner, restsAtVessel);
 }
 
 export interface BrowserIslandScope {
