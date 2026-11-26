@@ -821,6 +821,23 @@ describe("the receipt ring bounds BYTES as well as count", () => {
     await s.repo.shutdown();
   });
 
+  test("★ an evicted body leaves the document: the tombstone standing for it carries the title and the mark alone ★", async () => {
+    const s = stores();
+    const b = s.ledgerAt(Math.floor(WEIGHT * 2.5));           // room for two bodies and half a third
+    await land(b, 1);
+    await land(b, 2);
+    await land(b, 3);
+    expect(await stateOf(b, 1)).toBe("evicted");
+    const gone = s.daemonHandle.doc()!.tiddlers[`${OUTCOME_URI_PREFIX}${ID(1)}`]!;
+    expect(gone.meta?.deleted).toBe(true);
+    // The ring counted this body out, so the document holds none of it: no results, no verb, no digest.
+    expect(Object.keys(plainRecord(gone).tiddler)).toEqual(["title"]);
+    // CONTROL: a body the ring still keeps reads whole, at the weight the ledger counts for it.
+    const kept = plainRecord(s.daemonHandle.doc()!.tiddlers[`${OUTCOME_URI_PREFIX}${ID(3)}`]!).tiddler as Record<string, unknown>;
+    expect(outcomeBytesOf(kept)).toBe(WEIGHT);
+    await s.repo.shutdown();
+  });
+
   test("an outcome that lands again under another verdict counts once, at its latest measure", async () => {
     const s = stores();
     const b = s.ledgerAt(Math.floor(WEIGHT * 2.5));

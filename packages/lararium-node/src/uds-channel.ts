@@ -439,6 +439,13 @@ export class VesselWaitExpired extends Error {
  *     a lone outcome heavier than the whole bound leaves when the next body lands.
  * The sum seeds from the facts themselves, so a restart reads the same weight a prior boot left.
  */
+/**
+ * AN EVICTED BODY LEAVES THE DOCUMENT'S STANDING STATE. A kāpae tombstone keeps every field its record held, so a ring
+ * that evicted by one counted the body out while every replica of the control document went on holding it. The ring's
+ * tombstone rides bare: the title and the deleted mark stand, and the body's fields leave.
+ */
+const EVICTED_BODY = { bare: true } as const;
+
 export class FactLedger {
   private readonly cache = new Map<string, ReceiptFact>();
   /** requestIds this ledger has read as TORN — a tiddler under {@link RECEIPT_FACT_URI_PREFIX} that
@@ -775,7 +782,7 @@ export class FactLedger {
     // the eviction. The other order would leave a body no fact answers for, outside every bound.
     const outcomeTitle = `${OUTCOME_URI_PREFIX}${victimId}`;
     for (const bagId of await this.composite.listBagsHolding(outcomeTitle)) {
-      await this.composite.tombstoneInBag(bagId, outcomeTitle, { kind: "lares-verb", requestId: victimId });
+      await this.composite.tombstoneInBag(bagId, outcomeTitle, { kind: "lares-verb", requestId: victimId }, EVICTED_BODY);
     }
     await this.composite.put(buildReceiptFact(evicted), { kind: "lares-verb", requestId: victimId });
     this.release(victimId);
@@ -806,7 +813,7 @@ export class FactLedger {
     };
     const outcomeTitle = `${OUTCOME_URI_PREFIX}${victimId}`;
     for (const bagId of await this.composite.listBagsHolding(outcomeTitle)) {
-      await this.composite.tombstoneInBag(bagId, outcomeTitle, { kind: "lares-verb", requestId: victimId });
+      await this.composite.tombstoneInBag(bagId, outcomeTitle, { kind: "lares-verb", requestId: victimId }, EVICTED_BODY);
     }
     await this.composite.put(buildReceiptFact(evicted), { kind: "lares-verb", requestId: victimId });
     this.tornAt.delete(victimId);

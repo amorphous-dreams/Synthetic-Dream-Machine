@@ -118,6 +118,18 @@ export interface LarWriteOptions {
   readonly retracts?: readonly string[];
 }
 
+/** What a tombstone may name beside its title. */
+export interface LarTombstoneOptions {
+  readonly base?: readonly string[];
+  /**
+   * A BARE tombstone: the record leaves with its fields, and the title and the deleted mark alone stand in its place. A
+   * kāpae hide keeps the fields it held; a ring's eviction (the receipt ledger's count and byte bounds) rides bare, so
+   * a body the ring let go stops weighing on every replica's standing state. A store that keeps no fields under a
+   * tombstone reads it as any other.
+   */
+  readonly bare?: boolean;
+}
+
 // ---------------------------------------------------------------------------
 // Canonical record ↔ TW5 input shore
 // ---------------------------------------------------------------------------
@@ -257,7 +269,7 @@ export interface LarTiddlerStore {
    * default AND SHADOW lower-priority bags in the cascade (kāpae semantics — a
    * deliberate hide; anti-pattern #3, residency-model). origin carries audit.
    */
-  tombstone(title: string, origin: ChangeOrigin, options?: { readonly base?: readonly string[] }): Promise<void>;
+  tombstone(title: string, origin: ChangeOrigin, options?: LarTombstoneOptions): Promise<void>;
 
   /**
    * Write a meme FAMILY — a root, its slot children, and the orphan children it leaves undeclared —
