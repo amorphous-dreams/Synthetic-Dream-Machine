@@ -5610,10 +5610,13 @@ async function prepareNodeBootOn(
     if (wornDeviceGroup !== null) homeWikiRead = (async () => {
       await mountHostWorking();
       const holder = `face-${wornDeviceGroup}`;
-      for (const slug of readKeepList(await daemonVm.composite.get(KEEP_LIST_TITLE))) {
-        const kept = await wikiActivation.keep(slug, holder);
-        if (!kept.ok) console.warn(`[keep-list] the face's keep of ${slug} refused: ${kept.cause}: ${kept.detail}`);
-      }
+      // A fault in the keep list costs the face its keeps, never its home: the home read runs either way.
+      try {
+        for (const slug of readKeepList(await daemonVm.composite.get(KEEP_LIST_TITLE))) {
+          const kept = await wikiActivation.keep(slug, holder);
+          if (!kept.ok) console.warn(`[keep-list] the face's keep of ${slug} refused: ${kept.cause}: ${kept.detail}`);
+        }
+      } catch (e: unknown) { console.warn(`[keep-list] the face's keep list did not seat: ${e instanceof Error ? e.message : String(e)}`); }
       const home = readHomeWikiSlug(await daemonVm.composite.get(HOME_WIKI_TITLE));
       if (home === null || home === slotActiveWikiId) return;
       const activation = await wikiActivation.ensureActive(home);
