@@ -27,6 +27,7 @@ import {
   type IslandMsg_SessionSign,
   type IslandMsg_SessionSigned,
 } from "@lararium/mesh/island-protocol";
+import { answerHeadsAsks, type RestMsg_Rested } from "@lararium/mesh/sealed-rest";
 import { type VesselWorkerHandle } from "@lararium/mesh/vessel-host";
 
 // The answers stand once on the mesh floor (`capability-record.ts`), so the node and the browser answer one ask alike.
@@ -206,6 +207,18 @@ function attachRestAsk(w: Worker, caps: CapabilityRecord): void {
   });
 }
 
+// THE HEADS-REST ASK, vessel side (the base pins what sealed): every island that mounts a disk shore, the daemon island and
+// each wiki island alike, asks before a Synced base's pin reaches its tree's directory, and the vessel answers off its Repo
+// and its sealed rest (`restsAt`, read at ask time).
+function attachHeadsAsk(w: Worker, caps: CapabilityRecord): void {
+  answerHeadsAsks({ post: (msg) => { w.postMessage(msg); }, listen: (cb) => hear(w, cb) }, () => caps.restsAt);
+  // THE SAVE BOOK'S REST, TOLD: each document whose saves rested reaches the island, and its pending pins ask again.
+  const unhear = caps.rested?.((documentId) => {
+    try { w.postMessage({ type: "rest:rested", documentId } satisfies RestMsg_Rested); } catch { /* the worker went away */ }
+  });
+  if (unhear) w.once("exit", unhear);
+}
+
 /**
  * Wrap a worker as a handle, binding the capability record its vessel handed it and attaching the answers its class
  * owns ({@link IslandClass}). No record handed reads as an empty one: every ask answers absent.
@@ -220,8 +233,10 @@ export function nodeWorkerHandle(w: Worker, opts: { readonly island: IslandClass
     attachSessionSignDoor(w, caps);
     attachDocStore(w, caps);
     attachRestAsk(w, caps);
+    attachHeadsAsk(w, caps);
   } else if (opts.island === "wiki") {
     attachCas(w, caps);
+    attachHeadsAsk(w, caps);
     attachRefusals(w, caps);
   } else {
     attachRefusals(w, {}, "session");
@@ -254,7 +269,7 @@ export function nodeSpawnDaemonWorker(url: string | URL, caps: CapabilityRecord,
   return nodeWorkerHandle(new Worker(url, workerData !== undefined ? { workerData } : undefined), { island: "daemon", caps });
 }
 
-/** Spawn a WIKI island: a worker that reaches its record's `cas` alone. */
+/** Spawn a WIKI island: a worker that reaches its record's `cas` and its `restsAt` alone. */
 export function nodeSpawnWikiWorker(url: string | URL, caps: CapabilityRecord, workerData?: unknown): VesselWorkerHandle {
   return nodeWorkerHandle(new Worker(url, workerData !== undefined ? { workerData } : undefined), { island: "wiki", caps });
 }

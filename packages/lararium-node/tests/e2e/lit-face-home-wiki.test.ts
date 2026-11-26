@@ -65,14 +65,27 @@ async function stageFounded(): Promise<Staged> {
   return { root, storageDir, genesisDir };
 }
 
-/** One unlocked composition on the staged root asking for `wikiId`: its face lights as it composes. */
+/**
+ * One unlocked composition on the staged root asking for `wikiId`: its face lights as it composes.
+ *
+ * THE ROOT HOLDS FOR THE VESSEL'S WHOLE LIFE, as a real vessel's process holds `LAR_ROOT` from its start to its stand-down:
+ * each island Worker copies the env at its spawn, and the home read (`homeWikiRead`) spawns the home wiki's island after
+ * `openNodeVessel` returns, once the daemon's working layer mounts. A window that closed at the return let that island wake
+ * with no root (`HouseRootUnnamed` at its manifest), a race any slower mount loses.
+ */
 async function composeLit(at: Staged, wikiId: string): Promise<{ vessel: NodeVesselResult; down: () => Promise<void> }> {
   await withLarRoot(at.root, () => unlockTestCustody());
-  const vessel = await withLarRoot(at.root, () => openNodeVessel({
-    hostId: "lit-face-home", wikiId, storageDir: at.storageDir, genesisDir: at.genesisDir, wss: new EventEmitter() as never,
-  }));
+  const previous = process.env["LAR_ROOT"];
+  process.env["LAR_ROOT"] = at.root;
+  const release = (): void => { if (previous === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = previous; };
+  let vessel: NodeVesselResult;
+  try {
+    vessel = await openNodeVessel({
+      hostId: "lit-face-home", wikiId, storageDir: at.storageDir, genesisDir: at.genesisDir, wss: new EventEmitter() as never,
+    });
+  } catch (err) { release(); throw err; }
   let gone = false;
-  const down = async () => { if (!gone) { gone = true; await withLarRoot(at.root, () => vessel.teardown()); } };
+  const down = async () => { if (!gone) { gone = true; try { await vessel.teardown(); } finally { release(); } } };
   leaving.push(down);
   return { vessel, down };
 }

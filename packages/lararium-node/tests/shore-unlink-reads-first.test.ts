@@ -577,6 +577,16 @@ describe("a base names the history its records side read: records that fell behi
     expect(s.projector.standing().find((x) => x.uri === URI)?.behind?.heads).toEqual(["h2"]);
   });
 
+  test("the file vanished while the records fell behind: the carrier pends and asks, nothing re-projects and nothing tombstones", async () => {
+    const s = await agreeThenFallBehind();
+    rmSync(s.at("a/note.md")); rmSync(s.at("a/note.md.meta"), { force: true });
+    await s.reboot();
+    expect(existsSync(s.at("a/note.md"))).toBe(false);
+    expect(s.projector.pendingRemovals().map((p) => p.uri)).toEqual([URI]);
+    expect(s.tree().baseAt(KEY, s.at("a/note.md"))?.heads).toEqual(["h2"]);
+    expect(s.conflicts).toEqual([]);
+  });
+
   test("a person who names that standoff and takes the records' side lands the older render, by their own word", async () => {
     const s = await agreeThenFallBehind();
     await s.reboot();
