@@ -224,6 +224,15 @@ describe("W2d — the commit seam over the pool's git history", () => {
     expect(await wc.poolCommitSeam(pool, "down")).toEqual({ committed: false, why: "nothing-moved" });
   });
 
+  test("a plane holding no file stands out of the commit: an empty personal plane never refuses the pathspec", async () => {
+    initPool();
+    put("bags/kahua/memory/heron.tid", tid("memory/heron"));
+    mkdirSync(join(pool, "personal"), { recursive: true });
+    const read = await wc.poolCommitSeam(pool, "lock");
+    expect(read.committed).toBe(true);
+    expect(git("show", "--name-only", "--format=", "HEAD")).toBe("bags/kahua/memory/heron.tid");
+  });
+
   test("a pool with no history commits nothing, by name", async () => {
     put("bags/kahua/memory/heron.tid", tid("memory/heron"));
     expect(await wc.poolCommitSeam(pool, "down")).toEqual({ committed: false, why: "no-pool-history" });
