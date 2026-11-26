@@ -80,9 +80,10 @@ test('RED: the CLI passes the command code through, refuses usage with 2, and ex
 test('RED: a lone run always admits; a second run admits only where C: less both budgets holds the 35G floor', () => {
   const b = { floorBytes: 35 * G, budgetBytes: 4 * G };
   assert.equal(admits({ freeNow: 36 * G, ...b, others: [] }), true);
-  const other = { free0: 50 * G, budgetBytes: 4 * G };
-  assert.equal(admits({ freeNow: 44 * G, ...b, others: [other] }), true);   // 44 - 4 - 4 = 36
-  assert.equal(admits({ freeNow: 42 * G, ...b, others: [other] }), false);  // 42 - 4 - 4 = 34, past the floor
+  // Hermetic: every reading rides in as an argument; the other run took its baseline at the same free bytes (4G unspent).
+  assert.equal(admits({ freeNow: 44 * G, ...b, others: [{ free0: 44 * G, budgetBytes: 4 * G }] }), true);   // 44 - 4 - 4 = 36
+  assert.equal(admits({ freeNow: 42 * G, ...b, others: [{ free0: 42 * G, budgetBytes: 4 * G }] }), false);  // 42 - 4 - 4 = 34, past the floor
+  const other = { free0: 44 * G, budgetBytes: 4 * G };
   assert.equal(admits({ freeNow: null, ...b, others: [other] }), true);     // no C: here: unmetered
 });
 
@@ -117,7 +118,7 @@ test('RED: reserve writes this slot once and a nested take under a live holder l
 
 test('RED: the second run waits until bytes admit it: the first reading refuses, a later reading past the freed bytes admits', async () => {
   const d = mkdtempSync(join(tmpdir(), 'floor-wait-'));
-  writeFileSync(join(d, 'slot-1.run'), JSON.stringify({ pid: process.pid, free0: 50 * G, budgetBytes: 4 * G }));
+  writeFileSync(join(d, 'slot-1.run'), JSON.stringify({ pid: process.pid, free0: 42 * G, budgetBytes: 4 * G }));
   const reads = [42 * G, 42 * G, 44 * G]; // the third reading carries C: back up (the first run freed bytes)
   const said = [];
   await awaitAdmission({ floorDir: d, slot: 2, floorBytes: 35 * G, budgetBytes: 4 * G, readFree: () => reads.shift() ?? 44 * G, pace: 1, say: (s) => said.push(s) });

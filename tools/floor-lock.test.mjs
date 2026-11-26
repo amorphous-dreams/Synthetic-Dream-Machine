@@ -182,7 +182,7 @@ test('RED: two real batteries hold slot 1 and slot 2 at once; each reads its own
   await until(`${inA}.slot`); await until(`${inB}.slot`);
   const { readFileSync } = await import('node:fs');
   const slots = [readFileSync(`${inA}.slot`, 'utf8').trim(), readFileSync(`${inB}.slot`, 'utf8').trim()];
-  assert.deepEqual(slots, ['1', '2']);
+  assert.deepEqual([...slots].sort(), ['1', '2'], 'two runs, two slots, each reading its own (the take order races)');
   const status = spawnSync(process.execPath, [join(TOOLS, 'floor-lock.mjs'), '--status'], { encoding: 'utf8', env }).stdout;
   assert.match(status, /^slot 1 held by pid \d+/m);
   assert.match(status, /^slot 2 held by pid \d+/m);
