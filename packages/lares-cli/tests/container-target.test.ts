@@ -108,6 +108,8 @@ function sourceFiles(root: string): string[] {
   const addTree = (dir: string): void => {
     if (!existsSync(dir)) return;
     for (const name of readdirSync(dir)) {
+      // An installed dependency tree holds no caller of this house's CLI, and its links may loop.
+      if (name === "node_modules") continue;
       const path = join(dir, name);
       if (statSync(path).isDirectory()) addTree(path);
       else files.push(path);

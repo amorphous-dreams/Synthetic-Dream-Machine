@@ -132,6 +132,8 @@ export const heavy = [
   // Live MessageChannel ports between a vessel's sealed rest and the island's session and docstore doors (each hat its own
   // chain: a sibling's save travels the book-to-holder route).
   "tests/face-slot-seal-restart.test.ts",
+  // A real worker thread running the built heads door, a real Repo's handle table, and the worker handle's listener between them.
+  "tests/heads-rest-wiring.test.ts",
 ];
 
 /**
