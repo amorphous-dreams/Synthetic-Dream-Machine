@@ -287,7 +287,7 @@ describe("past the cap every landed carrier still pins both sides of its base", 
     expect(tree.base(syncedTreeKey(BAG, uriOf(900)))).toEqual({ path: beside.file, disk: beside.diskHash, records: islandRender(beside) });
   });
 
-  test("a carrier the island re-homed from a vanished source rides the deletion summary: never asked again, never pinned here", async () => {
+  test("a carrier the island re-homed from a vanished source rides the deletion summary: asked once, through the base door, never as a landed row", async () => {
     const { tree, candidates } = seed(40);
     const moved = candidates[11]!;
     const waves: SubmitIngestOpts[] = [];
@@ -300,8 +300,11 @@ describe("past the cap every landed carrier still pins both sides of its base", 
     };
     const s = await settleIngest({ ...opts(candidates), deletions: [{ uri: "lar:///ha.ka.ba/lares/api/gone", syncedHash: moved.diskHash }] }, tree, submit, ONE_WAVE);
     expect(waves.length).toBe(1);
-    expect(s.recorded).toBe(39);
-    expect(tree.base(syncedTreeKey(BAG, moved.uri))).toBeNull();
+    // The 39 landed rows pin through their rows; the re-homed carrier asks once more, through the base door, as the rename's
+    // own ask (`renameBaseAsksOf`: the island confirmed the pair, so its base stands at the new path). Its `rename-target` row
+    // is no landed row and the unnamed-carrier ask skips it, so no carrier asks twice: 39 landed + 1 re-homed.
+    expect(s.recorded).toBe(40);
+    expect(tree.base(syncedTreeKey(BAG, moved.uri))).toMatchObject({ path: moved.file, disk: moved.diskHash });
     expect(s.deletions?.["renames"]).toHaveLength(1);
   });
 
