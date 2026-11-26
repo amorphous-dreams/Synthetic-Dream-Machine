@@ -201,7 +201,7 @@ A lane closes with an o-takiage pass before its branch hands back, and the contr
 # ''A witness that catches burned names burns itself'' once it reads green over the tree.
 # ''Roadmaps move what stands finished'' onto their own o-takiage shelf, verbatim, and keep only what stays owed on the road.
 # ''Owed items travel first.'' A road item that names nothing still owed moves to `#/o-takiage`; an item owed for another item moves to that item before the move.
-# ''Scratch returns too.'' A lane worktree leaves after a census proves every file it holds landed, by a plain `git worktree remove`; one that refuses plain removal waits for the operator's hand. The land script force-removes the train worktree it made, once it has proven the final tree equals the pushed span tree.
+# ''Scratch returns too.'' A lane worktree leaves after a census proves every file it holds landed, by a plain `git worktree remove`; one that refuses plain removal waits for the operator's hand.
 
 <<~/ahu>>
 
@@ -308,6 +308,6 @@ Ruled by the operator, 2026-11-05: "Does it apply to all tasked spirits... all l
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Mum8cp0HB-HqfFXcXt5nL-V8Kk2txduAWI9gFFHj78A`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ed26LFgldM5XZ9mSIbX-NtmFu7oOYadqzNqGcLUcf30`>>
 
 <<^ code=`&#x0004;` to=`?`>>
