@@ -1,18 +1,12 @@
 /**
- * `lares wiki pin <url> --bag [--reason <text>]`
- * `lares wiki pin <url> --bag --release`
  * `lares wiki status` surveys vessel residency.
  * The internal `residency` wire verb carries the stowage snapshot.
  *
- * Operator-driven residency control. Pin guarantees a bag stays hot;
- * unpin demotes (the LRU may then evict if pressure rises). residency
- * prints the current pinned / wela / anu snapshot.
+ * The collector derives what stays warm: a lit face holds the grains it needs for its lit life, and a face's keep list
+ * holds the wikis it names over the vessel's one keep-warm cap. `residency` prints the current held / wela / anu snapshot.
  *
- * unpin demotes standing synchronously, but does NOT force an immediate LRU
- * trim: the collector's background sweeper (wired at boot, default tick
- * 30s — bag-residency.ts's startSweeper/sweepOnce) is what actually evicts
- * an over-cap unpinned bag, on its next tick. So unpin's own report never
- * shows an eviction it just caused; a real one lands within one sweep tick.
+ * The collector's background sweeper (wired at boot, default tick 30s — bag-residency.ts's startSweeper/sweepOnce)
+ * evicts an over-cap grain no hold covers, on its next tick.
  */
 
 import { vesselDid } from "../env.js";
@@ -20,25 +14,6 @@ import { summaryOutput } from "../verb-result.js";
 import { runVerb, verbFailure } from "../verb-call.js";
 import { exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
-
-export async function cmdPin(args: ParsedArgs): Promise<number> {
-  const url    = args.positional[0];
-  const reason = args.options["reason"];
-  if (!url) {
-    console.error("usage: lares wiki pin <bag-url> --bag [--reason <text>]");
-    return 2;
-  }
-  return await runResidencyCommand("pin", { url, ...(reason && { reason }) });
-}
-
-export async function cmdUnpin(args: ParsedArgs): Promise<number> {
-  const url = args.positional[0];
-  if (!url) {
-    console.error("usage: lares wiki pin <bag-url> --bag --release");
-    return 2;
-  }
-  return await runResidencyCommand("unpin", { url });
-}
 
 /**
  * `lares bag register-cold <bag-url>` — mark a URL as known-but-not-loaded.
@@ -92,7 +67,7 @@ export async function cmdResidency(_args: ParsedArgs): Promise<number> {
   const hotCap   = stats["hotCap"]   as number;
 
   console.log("");
-  console.log(`pinned (${pinned.length}):`);
+  console.log(`held (${pinned.length}):`);
   for (const u of pinned) console.log(`  ${u}`);
   console.log("");
   console.log(`wela (${wela.length}/${hotCap}):`);

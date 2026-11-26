@@ -1594,7 +1594,6 @@
   "tests/repo-in-island.test.ts": 0.8,
   "tests/repo-without-a-peer-rejects.test.ts": 0.1,
   "tests/requested-doc-stale-verdict.test.ts": 4.2,
-  "tests/residency-pin-durability.test.ts": 0.1,
   "tests/resolve-binding.test.ts": 0.2,
   "tests/resolve-boot-doc.test.ts": 3.1,
   "tests/resting-repo.test.ts": 0.2,

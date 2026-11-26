@@ -755,16 +755,15 @@ export interface DaemonMsg_EvictResult {
  * Island → vessel: the worker commands a residency-state op on the main-resident
  * BagStowage (sovereign-worker: the worker holds the keyhive-gated POLICY,
  * the manager + its LRU/reachability MECHANISM stays at the resource/main). The
- * worker's residency verbs (pin/unpin/register-cold) post this fire-and-forget — the
+ * worker's residency verb (register-cold) posts this fire-and-forget — the
  * grant records as policy; main executes. (`residency` stats — a read — stays main
  * pending the askMain research.)
  */
 export interface DaemonMsg_ResidencyOp {
   type: "daemon:residency-op";
   requestId: string;
-  op: "pin" | "unpin" | "register-cold";
+  op: "register-cold";
   bagId: string;
-  reason?: string;
 }
 
 /**
@@ -1646,9 +1645,8 @@ export function mkDaemonEvictResult(opts: { requestId: string; ok: boolean; erro
 
 export function mkDaemonResidencyOp(opts: {
   requestId: string;
-  op: "pin" | "unpin" | "register-cold";
+  op: "register-cold";
   bagId: string;
-  reason?: string;
 }): DaemonMsg_ResidencyOp {
   const msg: DaemonMsg_ResidencyOp = {
     type: "daemon:residency-op",
@@ -1656,7 +1654,6 @@ export function mkDaemonResidencyOp(opts: {
     op:        opts.op,
     bagId:     opts.bagId,
   };
-  if (opts.reason !== undefined) msg.reason = opts.reason;
   return msg;
 }
 

@@ -8,7 +8,7 @@
  * Two shapes here, per the grounded read/command rule:
  *  - READS (where · resolve · list-wikis) — read the worker's OWN synced replica
  *    (ctx.composite over syncPort); zero round-trip to main.
- *  - MUTATORS (pin · unpin · register-cold) — gate in-worker, then COMMAND the
+ *  - MUTATOR (register-cold) — gate in-worker, then COMMAND the
  *    main-resident BagStowage fire-and-forget via daemon:residency-op (policy
  *    decides in the worker; the main mechanism executes).
  * Runtime-only reads (residency `stats`) stay at the resource (main) — no askMain.
@@ -23,7 +23,7 @@ import {
 } from "@lararium/mesh/island-protocol";
 import { bagStackFromRec } from "@lararium/mesh/bag-stack-from-rec";
 import { recipeUri } from "@lararium/mesh/lar-uris";
-import { SYSTEM_BAGS, wikiBagUri, wikiSlotUri, type WikiSlotKind } from "@lararium/mesh/wiki-recipe";
+import { wikiBagUri, wikiSlotUri, type WikiSlotKind } from "@lararium/mesh/wiki-recipe";
 import { WARD_AUDIT_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 import { type CompositeStore } from "@lararium/mesh/composite-store";
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
@@ -35,7 +35,6 @@ import { houseCanonUrl, resolveHouseCanon } from "@lararium/mesh/house-canon-doc
 import { HOME_WIKI_TITLE, readHomeWikiSlug } from "./home-wiki.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { findOrThrow, makeCatalogAccessor, type CatalogAccessor } from "./catalog-accessor.js";
-import { effectiveRecipeOf } from "./recipe-planes.js";
 import type { IngestAlert } from "./action-handler.js";
 
 /** True for a draft floor's registry key (`wikis/<slug>/drafts/<did>`) — a doc the slot walk names. */
@@ -75,27 +74,21 @@ function listRegisteredDocUris(doc: LarDoc | undefined): string[] {
   return out;
 }
 
-/** A fire-and-forget poster for worker→main commands: residency-op (pin/unpin/
- *  register-cold) and wiki-alert (reboot-pending notice to affected live islands). */
+/** A fire-and-forget poster for worker→main commands: residency-op (register-cold) and wiki-alert (reboot-pending notice to affected live islands). */
 export type ResidencyOpPost = (msg: DaemonMsg_ResidencyOp | DaemonMsg_WikiAlert) => void;
 let _opSeq = 0;
 
 /** Build a residency mutator reactor: gate the verb in-worker, command main's manager. */
-function residencyVerb(op: "pin" | "unpin" | "register-cold", post: ResidencyOpPost): VerbReactor {
+function residencyVerb(op: "register-cold", post: ResidencyOpPost): VerbReactor {
   return async (args) => {
     const bagId  = typeof args["url"] === "string" ? args["url"] : "";
     if (!bagId) throw new Error("args.url is required");
-    const reason = typeof args["reason"] === "string" ? args["reason"] : undefined;
-    post(mkDaemonResidencyOp({ requestId: `resop-${++_opSeq}`, op, bagId, ...(reason !== undefined ? { reason } : {}) }));
+    post(mkDaemonResidencyOp({ requestId: `resop-${++_opSeq}`, op, bagId }));
     // Policy granted in-worker (keyhive-gated); main's BagStowage executes.
-    return { url: bagId, op, commanded: true, ...(reason !== undefined ? { reason } : {}) };
+    return { url: bagId, op, commanded: true };
   };
 }
 
-/** `pin` — grant a bag pinned residency (worker policy → main manager). */
-export const makePinReactor = (post: ResidencyOpPost): VerbReactor => residencyVerb("pin", post);
-/** `unpin` — release a pin. */
-export const makeUnpinReactor = (post: ResidencyOpPost): VerbReactor => residencyVerb("unpin", post);
 /** `register-cold` — mark a bag known-but-not-loaded. */
 export const makeRegisterColdReactor = (post: ResidencyOpPost): VerbReactor => residencyVerb("register-cold", post);
 
@@ -232,58 +225,6 @@ export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: Catalo
       userRows.push({ slug, uri: bagUri, automergeUrl: await catalog.urlOf(bagUri), kind: "user" });
     }
     return { wikis: [...userRows, ...wikis] };
-  };
-}
-
-// ── Whole-wiki residency policy (pin-wiki / unpin-wiki) — worker-ward ──────────
-// Pure policy: read the recipe (USER registry data in the catalog plane, via the accessor —
-// access≠load), walk its bag-stack, COMMAND main's BagStowage per bag via
-// daemon:residency-op (the mechanism stays at the resource — the manager is pool-driven
-// bookkeeping). No live composite layer mutation, so unlike add-bag/remove-bag these
-// move cleanly.
-
-/** The refusal for a slug with no effective recipe. A system wiki's recipe stands in the oracle plane
- *  and `wiki init` mints nothing for it, so its advice names the oracle, never `wiki init`. */
-function recipeNotFound(slug: string, userAdvice: string): Error {
-  return new Error(SYSTEM_BAGS.has(wikiBagUri(slug))
-    ? `recipe not found for "${slug}" — the oracle plane carries no default recipe for this system wiki`
-    : `recipe not found for "${slug}"${userAdvice}`);
-}
-
-/** `pin-wiki` — pin every bag in the wiki's recipe (worker policy → main manager). */
-export function makeWikiPinReactor(catalog: CatalogAccessor, post: ResidencyOpPost, oracle?: CatalogAccessor): VerbReactor {
-  return async (args) => {
-    const slug = typeof args["slug"] === "string" ? args["slug"] : "";
-    if (!slug) throw new Error("args.slug is required");
-    const effective = await effectiveRecipeOf(slug, { catalog, oracle });
-    if (!effective) throw recipeNotFound(slug, ` — run \`lares wiki init ${slug}\` first`);
-    const { record: recipeRec, title: recipeTitle } = effective;
-    const bagStack = bagStackFromRec(recipeRec);
-    const pinned: Array<{ bagUrl: string; reason: string }> = [];
-    for (const bagUrl of bagStack) {
-      const reason = `wiki:${slug}`;
-      post(mkDaemonResidencyOp({ requestId: `resop-${++_opSeq}`, op: "pin", bagId: bagUrl, reason }));
-      pinned.push({ bagUrl, reason });
-    }
-    return { slug, recipeUri: recipeTitle, pinned, commanded: true };
-  };
-}
-
-/** `unpin-wiki` — unpin every bag in the wiki's recipe (worker policy → main manager). */
-export function makeWikiUnpinReactor(catalog: CatalogAccessor, post: ResidencyOpPost, oracle?: CatalogAccessor): VerbReactor {
-  return async (args) => {
-    const slug = typeof args["slug"] === "string" ? args["slug"] : "";
-    if (!slug) throw new Error("args.slug is required");
-    const effective = await effectiveRecipeOf(slug, { catalog, oracle });
-    if (!effective) throw recipeNotFound(slug, "");
-    const { record: recipeRec, title: recipeTitle } = effective;
-    const bagStack = bagStackFromRec(recipeRec);
-    const unpinned: string[] = [];
-    for (const bagUrl of bagStack) {
-      post(mkDaemonResidencyOp({ requestId: `resop-${++_opSeq}`, op: "unpin", bagId: bagUrl }));
-      unpinned.push(bagUrl);
-    }
-    return { slug, recipeUri: recipeTitle, unpinned, commanded: true };
   };
 }
 

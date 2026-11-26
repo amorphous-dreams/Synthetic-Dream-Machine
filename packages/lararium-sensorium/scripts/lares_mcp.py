@@ -245,7 +245,7 @@ SEAT_INSTRUCTIONS = (
     "included. Operator and node hold the frame together. A human-in-the-loop act (`lares sense harden`, `retire`, "
     "`un-retire`, `purge`, `teardown`) runs on a person's hand at a real terminal alone and holds no tool here: name "
     "the command for the operator to run on their own terminal, since no value a seat fills approves it."
-    " `wiki(verb=\"switch\", slug=...)` switches live; `wiki(verb=\"pin\", slug=..., rotate=True, release=True)` keeps the wiki warm on the worn face's keep list (`release=True` drops it); a full keep budget refuses by name and drops no keep. Bag pins and ordinary wiki pins stay outside this seat. "
+    " `wiki(verb=\"switch\", slug=...)` switches live; `wiki(verb=\"keep\", slug=...)` keeps the wiki warm on the worn face's keep list and `wiki(verb=\"unkeep\", slug=...)` drops it; a full keep budget refuses by name and drops no keep. "
     " `wiki_status()` surveys catalog, activation and vessel residency; name `recipe` for layer write reach."
     " `shore()` lists what stands for a hand at the disk shore (each standoff with its key, each pending removal; `face=N` reads a lit sibling's shore) and `shore_flush()` asks the vessel to write every island's owed mirrors now; settling a row stays the operator's `lares shore` at a terminal, so name that command."
     " The `wiki` tool's `verb=\"act\"` runs one named admitted action (today `sidebar-layout`) in the wiki `recipe` names, with the `expected` and `resulting` values checked; it takes no action text, and a stale `expected` answers `conflict` and writes nothing."
@@ -1073,21 +1073,15 @@ def build_mcp(coordinator: LaresCoordinator):
     @mcp.tool(annotations=_annotations("wiki"))
     def wiki(verb: str, slug: "str | None" = None, name: "str | None" = None,
              recipe: "str | None" = None, expected: "str | None" = None,
-             resulting: "str | None" = None, bag: bool = False, rotate: bool = False,
-             release: bool = False) -> dict:
+             resulting: "str | None" = None) -> dict:
         """Switch a live wiki with `verb="switch", slug=...`; keep it warm on the worn face's keep list with
-        `verb="pin", slug=..., rotate=True` and drop it with `release=True`.
+        `verb="keep", slug=...` and drop it with `verb="unkeep", slug=...`.
         `act` runs an admitted action with recipe, name, expected and resulting.
-        `wiki_status` reads status. Bag pins and ordinary wiki pins stay outside this seat."""
-        allowed = {"switch", "pin", "act"}
+        `wiki_status` reads status."""
+        allowed = {"switch", "keep", "unkeep", "act"}
         if verb not in allowed:
             raise SeatArgumentRefused(f"wiki: `verb` must be one of {sorted(allowed)}, got {verb!r}")
-        for flag, value in (("bag", bag),):
-            if value:
-                raise SeatArgumentRefused(f"wiki: `{flag}` refused on this seat")
         if verb == "act":
-            if rotate or release:
-                raise SeatArgumentRefused("wiki act: `rotate` and `release` refused")
             if slug is not None or not recipe or not name or not expected or not resulting:
                 raise SeatArgumentRefused("wiki act: name, recipe, expected and resulting required; slug refused")
             return _meme_wire("wiki-action", {**_wiki_container("wiki act", recipe), "name": name,
@@ -1096,13 +1090,7 @@ def build_mcp(coordinator: LaresCoordinator):
             raise SeatArgumentRefused("wiki: action parameters ride `verb=act` alone")
         if not slug:
             raise SeatArgumentRefused("wiki: slug required")
-        if verb == "switch":
-            if rotate or release:
-                raise SeatArgumentRefused("wiki switch: `rotate` and `release` refused")
-            return uds.output("wiki-switch", {"slug": slug})
-        if not rotate:
-            raise SeatArgumentRefused("wiki pin: `rotate=True` required on this seat")
-        return uds.output("wiki-release" if release else "wiki-hold", {"slug": slug})
+        return uds.output({"switch": "wiki-switch", "keep": "wiki-keep", "unkeep": "wiki-unkeep"}[verb], {"slug": slug})
 
     # ── the MEME namespace — `meme_put` and its kin, the MCP skin of the one placement function (reads ride `tiddler_get`) ──
 

@@ -156,7 +156,7 @@ const BUILT_INSIDE: Readonly<Record<string, readonly string[]>> = {
  * leaves in the same commit.
  */
 const READ_ELSEWHERE: Readonly<Record<string, Readonly<Record<string, string>>>> = {
-  bag: { bag: "retired pin spelling names its replacement even with --bag", rotate: "retired stats spelling names its replacement even with --rotate" },
+  bag: { rotate: "retired stats spelling names its replacement even with --rotate" },
 };
 
 describe("the accepts rows track the handlers", () => {

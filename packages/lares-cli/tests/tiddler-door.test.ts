@@ -308,17 +308,13 @@ describe("a bag names one store and no wiki", () => {
   });
 });
 
-describe("wiki residency and switch wire", () => {
+describe("wiki keep and switch wire", () => {
   test.each([
-    [{}, "pin-wiki", { slug: "works" }],
-    [{ release: true }, "unpin-wiki", { slug: "works" }],
-    [{ bag: true }, "pin", { url: "works" }],
-    [{ bag: true, release: true }, "unpin", { url: "works" }],
-    [{ rotate: true }, "wiki-hold", { slug: "works" }],
-    [{ rotate: true, release: true }, "wiki-release", { slug: "works" }],
-  ])("pin flags %j send %s", async (flags, verb, wireArgs) => {
+    ["keep", "wiki-keep", { slug: "works" }],
+    ["unkeep", "wiki-unkeep", { slug: "works" }],
+  ])("wiki %s sends %s", async (sub, verb, wireArgs) => {
     vi.spyOn(console, "log").mockImplementation(() => {});
-    await cmdWiki(argv("wiki", ["pin", "works"], {}, flags));
+    await cmdWiki(argv("wiki", [sub, "works"], {}, {}));
     expect(h.calls).toEqual([{ verb, args: wireArgs }]);
     vi.restoreAllMocks();
   });

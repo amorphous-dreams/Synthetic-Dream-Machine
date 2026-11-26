@@ -409,7 +409,6 @@
     "tests/repo-in-island.test.ts": 1,
     "tests/repo-without-a-peer-rejects.test.ts": 1,
     "tests/requested-doc-stale-verdict.test.ts": 4,
-    "tests/residency-pin-durability.test.ts": 1,
     "tests/resolve-binding.test.ts": 1,
     "tests/resolve-boot-doc.test.ts": 3,
     "tests/resting-repo.test.ts": 1,
