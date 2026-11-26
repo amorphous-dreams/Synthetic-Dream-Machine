@@ -40,7 +40,7 @@ import { mountHttpFaceDispatcher } from "../../dist/src/http-face-dispatcher.js"
 import { answerDyad } from "../../dist/src/worker-handle.js";
 import { hearthSovereignPin } from "../../dist/src/hearth-sovereign-pin.js";
 import type { NodeVesselResult } from "../../dist/src/open-node-vessel.js";
-import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
+import { holdLarRoot, withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
 import { TEST_CUSTODY, TEST_SLOT } from "../found-route.js";
 seatFaceRoute(async () => [TEST_SLOT]);
@@ -85,6 +85,7 @@ describe("a carried Nexus's posture: a stranger seated under OPEN, the charter t
   let url: string;
   let pin: GateBundlePin;
   let tornDown = false;
+  let release = (): void => {};
   let ownSeat = "";
   let ownEdge = { fleetRoot: "", deviceKey: "" };
   const knocks = new Set<string>();
@@ -124,13 +125,17 @@ describe("a carried Nexus's posture: a stranger seated under OPEN, the charter t
     wss = new WebSocketServer({ noServer: true });
     await new Promise<void>((resolve) => http.listen(0, "127.0.0.1", resolve));
     const port = (http.address() as AddressInfo).port;
-    vessel = await withLarRoot(ROOT, () => openNodeVessel({ hostId: "lararium-node", wikiId: "lares", storageDir: STORAGE, genesisDir: GENESIS, wss, dispatcher }));
+    // The root holds for the vessel's whole life: islands spawn after `openNodeVessel` returns and copy the env at their spawn.
+    const held = await holdLarRoot(ROOT, () => openNodeVessel({ hostId: "lararium-node", wikiId: "lares", storageDir: STORAGE, genesisDir: GENESIS, wss, dispatcher }));
+    vessel = held.value;
+    release = held.release;
     pin = await withLarRoot(ROOT, async () => hearthSovereignPin(carriedAid));
     url = `ws://127.0.0.1:${port}${pin.route}`;
   }, 180_000);
 
   afterAll(async () => {
     try { if (!tornDown) await vessel?.teardown(); } catch { /* best-effort */ }
+    release();
     await new Promise<void>((res) => wss?.close(() => http?.close(() => res())));
     try { rmSync(ROOT, { recursive: true, force: true }); } catch { /* best-effort */ }
   }, 60_000);

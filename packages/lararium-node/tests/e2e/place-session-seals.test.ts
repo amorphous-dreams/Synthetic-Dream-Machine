@@ -26,7 +26,7 @@ import { EventEmitter } from "node:events";
 import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
+import { holdLarRoot, withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
 import { TEST_CUSTODY, TEST_SLOT } from "../found-route.js";
 import { runInit, runFoundTheFace, foundSeedCharter, openNodeVessel, seatFaceRoute, seatWardGatherer } from "../../dist/src/index.js";
@@ -62,10 +62,16 @@ async function found(): Promise<{ root: string; storageDir: string; genesisDir: 
   await withLarRoot(root, () => direct(runFoundTheFace)({ storageDir, genesisDir }));
   return { root, storageDir, genesisDir };
 }
+/** Each vessel holds `LAR_ROOT` from its open to its teardown (islands spawn after `openNodeVessel` returns): `down` tears it down and releases the root. */
+const releases = new WeakMap<NodeVesselResult, () => void>();
 async function open(at: { root: string; storageDir: string; genesisDir: string }): Promise<NodeVesselResult> {
-  const vessel = await withLarRoot(at.root, () => openNodeVessel({ hostId: "place-seal", wikiId: WIKI, storageDir: at.storageDir, genesisDir: at.genesisDir, wss: new EventEmitter() as never }));
-  await withLarRoot(at.root, () => vessel.daemon.workerEa);
-  return vessel;
+  const held = await holdLarRoot(at.root, () => openNodeVessel({ hostId: "place-seal", wikiId: WIKI, storageDir: at.storageDir, genesisDir: at.genesisDir, wss: new EventEmitter() as never }));
+  releases.set(held.value, held.release);
+  await held.value.daemon.workerEa;
+  return held.value;
+}
+async function down(vessel: NodeVesselResult): Promise<void> {
+  try { await vessel.teardown(); } finally { releases.get(vessel)?.(); }
 }
 /** Write one tiddler into the face's own wiki bag (the active wiki's document) and flush the Repo. */
 async function write(vessel: NodeVesselResult, text: string): Promise<void> {
@@ -87,20 +93,20 @@ describe("a sovereign node with no Nexus seals under its place session", () => {
     let waiting: number;
     try {
       await write(first, SECRET);
-      waiting = await withLarRoot(at.root, () => first.sealedRestStandDown());
-    } finally { await withLarRoot(at.root, () => first.teardown()); }
+      waiting = await first.sealedRestStandDown();
+    } finally { await down(first); }
     expect(waiting, "no save waits in memory: the place session sealed every one").toBe(0);
     expect(restsClear(at.storageDir, SECRET), "the disk holds no clear byte of the face's save").toBe(false);
     const again = await open(at);
     try {
       expect(await readBack(again), "the restart reads the sealed save back").toBe(SECRET);
-    } finally { await withLarRoot(at.root, () => again.teardown()); }
+    } finally { await down(again); }
   }, 300_000);
 
   test("P2 RED: the lock drops the place session's signer; before it, the same signer signs", async () => {
     const at = await found();
     const vessel = await open(at);
-    let down = false;
+    let gone = false;
     try {
       const place = vessel.sessionSigns.seated().find((s) => s.anchor.kind === "place");
       expect(place, "a sovereign node that dials nothing seats its worn face's place session").toBeDefined();
@@ -109,11 +115,11 @@ describe("a sovereign node with no Nexus seals under its place session", () => {
       expect(signer.dropped).toBe(false);
       expect(await signer.sign("act", new Uint8Array([1, 2, 3]))).toHaveProperty("signature");
       // THE LOCK: the vessel recomposes through its teardown.
-      await withLarRoot(at.root, () => vessel.teardown());
-      down = true;
+      await down(vessel);
+      gone = true;
       expect(signer.dropped, "the lock drops the place session's signer").toBe(true);
       expect(await signer.sign("act", new Uint8Array([1, 2, 3])), "a dropped signer signs nothing").toHaveProperty("refusal");
       expect(vessel.sessionSigns.seated(), "no session stays seated").toEqual([]);
-    } finally { if (!down) await withLarRoot(at.root, () => vessel.teardown()); }
+    } finally { if (!gone) await down(vessel); }
   }, 300_000);
 });

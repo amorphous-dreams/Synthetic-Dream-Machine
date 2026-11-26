@@ -30,3 +30,26 @@ export async function withLarRoot<T>(root: string, work: () => Promise<T>): Prom
     else process.env["LAR_ROOT"] = previous;
   }
 }
+
+/**
+ * Hold `LAR_ROOT` for a vessel's WHOLE LIFE, as a real vessel's process holds it from start to stand-down. A vessel spawns
+ * island Workers after `openNodeVessel` returns (the home read, the working-layer mount), and each Worker copies the env at
+ * its spawn: a `withLarRoot` window that closed at the return lets a later island wake rootless (`HouseRootUnnamed`).
+ * `open` runs under the held root; `release` restores the prior value and runs after the vessel's teardown settles (a second
+ * release does nothing). One process-global root: two vessels of different roots cannot hold at once, and such a fixture
+ * keeps `withLarRoot` per call.
+ */
+export async function holdLarRoot<T>(root: string, open: () => Promise<T>): Promise<{ readonly value: T; readonly release: () => void }> {
+  const previous = process.env["LAR_ROOT"];
+  process.env["LAR_ROOT"] = root;
+  let released = false;
+  const release = (): void => {
+    if (released) return;
+    released = true;
+    if (previous === undefined) delete process.env["LAR_ROOT"];
+    else process.env["LAR_ROOT"] = previous;
+  };
+  try {
+    return { value: await open(), release };
+  } catch (err) { release(); throw err; }
+}

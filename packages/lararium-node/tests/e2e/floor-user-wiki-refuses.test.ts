@@ -43,7 +43,7 @@ import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
-import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
+import { holdLarRoot, withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
 import { TEST_CUSTODY, TEST_PASSPHRASE, TEST_SLOT } from "../found-route.js";
 import {
@@ -96,12 +96,13 @@ async function stage(founded: boolean): Promise<Staged> {
 /** One composition on a staged root for `wikiId`: at the floor (`sovereign: null`), else as the seated custody opens it. */
 async function compose(at: Staged, wikiId: string, floor: boolean): Promise<{ phases: NodeOpenPhase[]; vessel: NodeVesselResult; down: () => Promise<void> }> {
   const phases: NodeOpenPhase[] = [];
-  const vessel = await withLarRoot(at.root, () => openNodeVessel({
+  // The root holds for the vessel's whole life: islands spawn after `openNodeVessel` returns and copy the env at their spawn.
+  const { value: vessel, release } = await holdLarRoot(at.root, () => openNodeVessel({
     hostId: "floor-user-wiki", wikiId, storageDir: at.storageDir, genesisDir: at.genesisDir, wss: new EventEmitter() as never,
     ...(floor ? { sovereign: null } : {}), onPhase: (p) => { phases.push(p); },
   }));
   let gone = false;
-  const down = async () => { if (!gone) { gone = true; await withLarRoot(at.root, () => vessel.teardown()); } };
+  const down = async () => { if (!gone) { gone = true; try { await vessel.teardown(); } finally { release(); } } };
   leaving.push(down);
   return { phases, vessel, down };
 }
