@@ -5,7 +5,7 @@
  * projects: a stray `.meta` beside a carrier whose render holds no metaBody, a shadowed own record under a top tombstone,
  * and a pack member whose bytes live inside its pack file.
  */
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, expect, test } from "vitest";
@@ -33,10 +33,10 @@ function engine(fields: Record<string, unknown> | null): unknown {
 const mem = (text: string): CarrierFile => ({ ext: ".mem", body: text, defaultRelPath: "x.mem" });
 const carrier = (): string => join(root, "ha.ka.ba/t/notes/pinned.mem");
 
-function projectorOver(view: Record<string, unknown> | null, work: MemoryTiddlerStore, top?: MemoryTiddlerStore): LarDiskProjector {
+function projectorOver(view: Record<string, unknown> | null, work: MemoryTiddlerStore, top?: MemoryTiddlerStore, mirrorRoot: string = root, allowBagsRootFiles?: boolean): LarDiskProjector {
   return new LarDiskProjector({
     ...(top ? { topRecordFn: async (uri: string) => (await top.get(uri)) ?? (await work.get(uri)) } : {}),
-    mirrors: [{ bagId: WORK, mirrorRoot: root }],
+    mirrors: [{ bagId: WORK, mirrorRoot, ...(allowBagsRootFiles !== undefined ? { allowBagsRootFiles } : {}) }],
     carrierFileFn: async (uri) => { const f = (engine(view) as { $tw: { wiki: { getTiddler(t: string): { fields: Record<string, unknown> } | undefined } } }).$tw.wiki.getTiddler(uri)?.fields; return f ? mem(String(f["text"])) : null; },
     recoveryStore: (bag) => bag === WORK ? work : null,
     recordFileFn: async (bag, uri) => {
@@ -92,4 +92,45 @@ test("a pack member projects no file of its own, so a file holding its words dif
   await projector.idle();
   expect(await projector.pinAgreement(WORK, TITLE, handLeaves("member words"))).toBe("differs");
   await stop();
+});
+
+test("a file beyond the mirror root answers outside-mirror; a symlinked root weighs a realpath'd file as inside", async () => {
+  root = mkdtempSync(join(tmpdir(), "pin-reads-outside-"));
+  const real = join(root, "real-mirror");
+  const link = join(root, "link-mirror");
+  mkdirSync(real);
+  symlinkSync(real, link);
+  const work = new MemoryTiddlerStore(WORK);
+  await work.put({ tiddler: { title: TITLE, text: "working words" } }, origin);
+  const view = { title: TITLE, text: "working words", "$origin-bag": WORK };
+  const projector = projectorOver(view, work, undefined, link);
+  const stop = projector.start(engine(view) as never);
+  await projector.idle();
+  const stray = join(root, "elsewhere.mem");
+  writeFileSync(stray, "working words");
+  expect(await projector.pinAgreement(WORK, TITLE, stray)).toBe("outside-mirror");
+  const inside = join(realpathSync(real), "ha.ka.ba/t/notes/pinned.mem");
+  mkdirSync(dirname(inside), { recursive: true });
+  writeFileSync(inside, "working words");
+  expect(await projector.pinAgreement(WORK, TITLE, inside)).not.toBe("outside-mirror");
+  await stop();
+});
+
+test("a file directly in the bags dir stands inside under the widened grant, outside without it", async () => {
+  root = mkdtempSync(join(tmpdir(), "pin-reads-bagsroot-"));
+  const mirror = join(root, "bags", "notes");
+  mkdirSync(mirror, { recursive: true });
+  const work = new MemoryTiddlerStore(WORK);
+  await work.put({ tiddler: { title: TITLE, text: "working words" } }, origin);
+  const view = { title: TITLE, text: "working words", "$origin-bag": WORK };
+  const file = join(root, "bags", "pinned.mem");
+  writeFileSync(file, "working words");
+  for (const [grant, outside] of [[true, false], [false, true]] as const) {
+    const projector = projectorOver(view, work, undefined, mirror, grant);
+    const stop = projector.start(engine(view) as never);
+    await projector.idle();
+    const answer = await projector.pinAgreement(WORK, TITLE, file);
+    expect(answer === "outside-mirror").toBe(outside);
+    await stop();
+  }
 });
