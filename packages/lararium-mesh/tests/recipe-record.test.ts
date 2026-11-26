@@ -1,6 +1,6 @@
 /**
  * THE RECIPE RECORD AND THE MOUNT STRUCT CONVERGE. A recipe record (`bag-stack` + `writable-bag`)
- * drives `meme put --recipe`, recipe-watch's library membership and the residency pins; the
+ * drives `tiddler put --recipe`, recipe-watch's library membership and the residency pins; the
  * `WikiRecipe` struct drives the mount. One name, one shape: the record a minter writes and the
  * layers `expandRecipe` lays name the SAME bags in the SAME order, and `writable-bag` names the
  * working slot the mount makes the default writable.

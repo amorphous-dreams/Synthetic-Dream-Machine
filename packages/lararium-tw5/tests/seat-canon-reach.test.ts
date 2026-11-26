@@ -1,11 +1,11 @@
 /**
  * seat-canon-reach.test — the AI seat never writes house canon live (reach-mu decision T4-2). The daemon mount holds the Kahu
- * chair and every seat call acts as the mount, so the Kahu predicate alone lets a seat-asked `meme put --bag lares` land. The
+ * chair and every seat call acts as the mount, so the Kahu predicate alone lets a seat-asked `tiddler put --bag lares` land. The
  * asker's hand rides the verb context (`ctx.asker`, set by the vessel's door, never read off args), and a seat asker on a house
  * canon bag refuses `seat-canon-reach` before the Kahu read, naming the copy-up and offer road.
  *
  * CONTROLS: the operator's CLI hand and a context naming no asker land the same put under the Kahu hand; a seat put to a user
- * bag lands; a seat copy-up through a wiki's recipe lands in the wiki's working layer (no house canon bag resolves there).
+ * bag lands; a seat put into a wiki's working layer, addressed as a bag, lands there (no house canon bag resolves there).
  */
 import { describe, test, expect } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
@@ -17,7 +17,8 @@ import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { type Verb } from "@lararium/mesh/verb-tiddler";
 import type { Hand } from "@lararium/mesh/session-contract";
-import { makeMemePutReactor, makeMemeDeleteReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeTiddlerPutReactor, makeTiddlerDeleteReactor } from "../src/tiddler-verbs.js";
 import { makeDraftReactor } from "../src/wiki-draft-handlers.js";
 import { makeActionReactorFor } from "../src/action-handler.js";
 import { VerbDispatcher, VerbTable } from "../src/verb-dispatcher.js";
@@ -68,11 +69,11 @@ const reasonOf = async (go: () => Promise<unknown>): Promise<string | null> => {
 };
 
 describe("seat-canon-reach — the AI seat never writes house canon live", () => {
-  test("RED: a seat-asked meme put --bag lares under the mount's Kahu chair refuses seat-canon-reach and moves no byte", async () => {
+  test("RED: a seat-asked put --bag lares under the mount's Kahu chair refuses seat-canon-reach and moves no byte", async () => {
     const r = await rig();
     try {
       const before = r.heads();
-      const put = async () => makeMemePutReactor(await r.opts())({ uri: URI, bag: "lares", text: meme("/a") }, ctxOf(r.composite, "meme-put", "seat"));
+      const put = async () => makeTiddlerPutReactor(await r.opts())({ title: URI, bag: "lares", text: meme("/a") }, ctxOf(r.composite, "tiddler-put", "seat"));
       expect(await reasonOf(put)).toBe("seat-canon-reach");
       expect(r.heads()).toEqual(before);
       expect(await r.stores.get(LARES)!.get(URI)).toBeNull();
@@ -83,7 +84,7 @@ describe("seat-canon-reach — the AI seat never writes house canon live", () =>
     const r = await rig();
     try {
       let message = "";
-      try { await makeMemePutReactor(await r.opts())({ uri: URI, bag: "lares", text: meme("/a") }, ctxOf(r.composite, "meme-put", "seat")); }
+      try { await makeTiddlerPutReactor(await r.opts())({ title: URI, bag: "lares", text: meme("/a") }, ctxOf(r.composite, "tiddler-put", "seat")); }
       catch (e) { message = e instanceof Error ? e.message : String(e); }
       expect(message).toMatch(/recipe=/);
       expect(message).toMatch(/meme_offer/);
@@ -91,12 +92,12 @@ describe("seat-canon-reach — the AI seat never writes house canon live", () =>
     } finally { await r.repo.shutdown(); }
   });
 
-  test("RED: a seat-asked meme delete and draft into house canon refuse seat-canon-reach", async () => {
+  test("RED: a seat-asked family delete and draft into house canon refuse seat-canon-reach", async () => {
     const r = await rig();
     try {
-      await makeMemePutReactor(await r.opts())({ uri: URI, bag: "lares", text: meme("/a") }, ctxOf(r.composite, "meme-put", "cli"));
+      await makeTiddlerPutReactor(await r.opts())({ title: URI, bag: "lares", text: meme("/a") }, ctxOf(r.composite, "tiddler-put", "cli"));
       const before = r.heads();
-      expect(await reasonOf(async () => makeMemeDeleteReactor(await r.opts())({ uri: URI, bag: "lares" }, ctxOf(r.composite, "meme-delete", "seat")))).toBe("seat-canon-reach");
+      expect(await reasonOf(async () => makeTiddlerDeleteReactor(await r.opts())({ title: URI, bag: "lares", family: true }, ctxOf(r.composite, "tiddler-delete", "seat")))).toBe("seat-canon-reach");
       expect(await reasonOf(async () => makeDraftReactor({ composite: r.composite, kahuReach: await kahuHand() })({ tiddler: "T", toBag: LARES }, ctxOf(r.composite, "draft", "seat")))).toBe("seat-canon-reach");
       expect(r.heads()).toEqual(before);
     } finally { await r.repo.shutdown(); }
@@ -135,18 +136,18 @@ describe("seat-canon-reach — the AI seat never writes house canon live", () =>
     for (const asker of ["cli", undefined] as const) {
       const r = await rig();
       try {
-        expect((await makeMemePutReactor(await r.opts())({ uri: URI, bag: "lares", text: meme("/a") }, ctxOf(r.composite, "meme-put", asker)))["decision"]).toBe("ingest");
+        expect((await makeTiddlerPutReactor(await r.opts())({ title: URI, bag: "lares", text: meme("/a") }, ctxOf(r.composite, "tiddler-put", asker)))["decision"]).toBe("put");
         expect(await r.stores.get(LARES)!.get(URI)).not.toBeNull();
       } finally { await r.repo.shutdown(); }
     }
   });
 
-  test("CONTROL: a seat put to a user bag lands, and a seat copy-up through a wiki's recipe lands in its working layer", async () => {
+  test("CONTROL: a seat put to a user bag lands, and a seat put into a wiki's working layer addressed as a bag lands there", async () => {
     const r = await rig();
     try {
-      expect((await makeMemePutReactor(await r.opts())({ uri: URI, bag: "garden", text: meme("/g") }, ctxOf(r.composite, "meme-put", "seat")))["decision"]).toBe("ingest");
-      const up = await makeMemePutReactor(await r.opts())({ uri: URI, recipe: "trove", text: meme("/w") }, ctxOf(r.composite, "meme-put", "seat"));
-      expect(up).toMatchObject({ decision: "ingest", bag: WORKING });
+      expect((await makeTiddlerPutReactor(await r.opts())({ title: URI, bag: "garden", text: meme("/g") }, ctxOf(r.composite, "tiddler-put", "seat")))["decision"]).toBe("put");
+      const up = await makeTiddlerPutReactor(await r.opts())({ title: URI, bag: WORKING, text: meme("/w") }, ctxOf(r.composite, "tiddler-put", "seat"));
+      expect(up).toMatchObject({ decision: "put", bag: WORKING, layer: "working" });
       expect(await r.stores.get(LARES)!.get(URI)).toBeNull();
     } finally { await r.repo.shutdown(); }
   });

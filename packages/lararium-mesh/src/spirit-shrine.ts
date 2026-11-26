@@ -122,7 +122,7 @@ export function residueOf(keys: string | readonly string[], titles: readonly str
 /** Does a title name a carry (and not a handback)? */
 export const isCarry = (t: string): boolean => t.startsWith(`${MEMORY_PREFIX}${COMPACTION_WORD}/`);
 
-/** A slot's body as `meme-patch` reads it: the slot text without its `<<~ ahu …>>` frame. */
+/** A slot's body as a put on the slot reads it: the slot text without its `<<~ ahu …>>` frame. */
 export function slotBody(slotText: string): string {
   const lines = slotText.replace(/\s+$/, "").split("\n");
   if (/^<<~ ahu\b/.test(lines[0] ?? "")) lines.shift();

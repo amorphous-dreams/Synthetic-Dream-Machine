@@ -46,9 +46,10 @@ import type { TW5Wiki } from "./types/tiddlywiki.js";
 
 import { carrierMarkPattern, headUriOf, maskedExec, maskedExecAll } from "@lararium/memetic-frame";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
+import { isContentAddress } from "@lararium/mesh/pointer-address";
 import {
-  componentsBeneath, consequence, edgeDescendantsOf, isFamilyRoot, memeOrphanAlertTitle, MEME_ORPHAN_ALERT_PREFIX, orphanFamilies, orphansUnder, rootAddressOf, tombstonesOf,
-  type Consequence, type FamilyFields, type FamilyReference, type FamilyView,
+  componentsBeneath, consequence, edgeDescendantsOf, familyOf, isFamilyRoot, memeOrphanAlertTitle, MEME_ORPHAN_ALERT_PREFIX, orphanFamilies, orphansUnder, rootAddressOf, tombstonesOf,
+  type Consequence, type FamilyFields, type FamilyReading, type FamilyReference, type FamilyView,
 } from "@lararium/mesh/family";
 import { carrierHash } from "@lararium/mesh/crypto";
 
@@ -228,6 +229,15 @@ export interface PlaceMemeInput {
   readonly signal?: AbortSignal;
   /** Reads every record an `ingest` decision would land, before the first lands; a throw lands nothing (a door's own wall). */
   readonly vet?: (records: readonly Record<string, unknown>[]) => void | Promise<void>;
+  /**
+   * ABSENCE NEVER DELETES (a door's write law; a disk wave leaves it unset and reads the file as the whole family). A slot
+   * the arriving text neither declares nor calls stays standing, as if folded: its parent's landing record gains the
+   * `kahea` call that keeps it, and the receipt names it under `kept`. A slot leaves only where `cut` names it.
+   */
+  readonly keepAbsent?: boolean;
+  /** The slots this write cuts, each a rooted path (`#/a`, `#/a/b`). Every entry must name a standing slot the arriving
+   *  text omits; one that names anything else refuses `cut-not-omitted` and nothing lands. Read only beside `keepAbsent`. */
+  readonly cut?: readonly string[];
 }
 
 /**
@@ -260,6 +270,8 @@ export interface PlaceMemeReceipt {
   readonly landed: readonly string[];
   /** Group members removed because the new text leaves them undeclared (ingest only). */
   readonly tombstoned: readonly string[];
+  /** Slots the new text omitted that stay standing by reference (`keepAbsent`, ingest only). */
+  readonly kept?: readonly string[];
   /** Hash of the canonical render the records now carry — the next writer's base. */
   readonly canonicalHash?: string;
   readonly warnings: readonly string[];
@@ -457,8 +469,10 @@ function heldText(root: TiddlerFields | undefined): string {
  */
 export async function holdsUnreadPointer(uri: string, sink: Pick<MemeSink, "read">): Promise<boolean> {
   const root = await sink.read(uri);
+  // An authored pointer names its bytes in `_canonical_uri` alone (`ni:///sha-256;…`, `cid:…`); it reads unread too.
   return root !== undefined && typeof root.text !== "string"
-    && (root["_is_skinny"] === "yes" || typeof root["textCid"] === "string");
+    && (root["_is_skinny"] === "yes" || typeof root["textCid"] === "string"
+      || (typeof root["_canonical_uri"] === "string" && isContentAddress(root["_canonical_uri"])));
 }
 
 /** The code a read of an unread pointer refuses under. */
@@ -640,7 +654,6 @@ async function placeMemeNow(input: PlaceMemeInput, sink: MemeSink): Promise<Plac
 
   if (decision.kind !== "ingest") return receiptOfNonIngest(uri, currentRenderHash, decision);
   const grade = gradeOf(decision.diagnostics);
-  await input.vet?.(decision.records);
 
   const lands: string[] = [];
   for (const fields of decision.records) {
@@ -650,9 +663,55 @@ async function placeMemeNow(input: PlaceMemeInput, sink: MemeSink): Promise<Plac
   }
   // THE CONSEQUENCE NAMES THE STALE SLOTS: the family members the new text leaves undeclared, by the one
   // family law. A title the address merely prefixes (`uri/path`, an edge-less `uri#…`) stays where it stands.
-  const stale = tombstonesOf(consequence(view, { kind: "put", title: uri, lands }));
+  const undeclared = tombstonesOf(consequence(view, { kind: "put", title: uri, lands }));
+  let records: readonly TiddlerFields[] = decision.records;
+  let stale: readonly string[] = undeclared;
+  const kept: string[] = [];
+  if (input.keepAbsent) {
+    // ABSENCE NEVER DELETES. Among the members the new text leaves undeclared, a slot stays unless `cut` names it or a slot
+    // above it; a carriage part stays with the slot it belongs to and leaves with a parent that lands anew. Each kept slot
+    // whose parent lands gains its `kahea` call at the end of that parent's text, so the family reads it folded, by reference.
+    const address = rootAddressOf(uri);
+    const cut = new Set((input.cut ?? []).map((slot) => `${address}${slot}`));
+    const held = new Map<string, TiddlerFields>();
+    for (const title of undeclared) { const fields = await sink.read(title); if (fields) held.set(title, fields); }
+    const isSlot = (title: string): boolean => { const slot = held.get(title)?.["$slot"]; return typeof slot === "string" && !slot.startsWith("$"); };
+    const parentOf = (title: string): string | null => { const parent = held.get(title)?.["$fragment-parent"]; return typeof parent === "string" ? parent : null; };
+    const missed = [...cut].filter((title) => !isSlot(title));
+    if (missed.length > 0) {
+      const wall: MemeDiagnostic = {
+        from: 0, to: 0, severity: "error", source: MEMETIC_SOURCE, code: CUT_NOT_OMITTED_CODE,
+        message: `${CUT_NOT_OMITTED_CODE}: a cut names a standing slot the new text omits, and ${missed.join(", ")} ${missed.length === 1 ? "names" : "name"} none (the text still declares it, or no such slot stands); drop the slot's block from the text, or drop the cut. Nothing moved.`,
+      };
+      return { uri, decision: "refuse", grade: "error", landed: [], tombstoned: [], canonicalHash: currentRenderHash, warnings: [wall.message], diagnostics: [...decision.diagnostics, wall] };
+    }
+    const stays = (title: string, seen = 0): boolean => {
+      if (seen > 64 || !held.has(title)) return false;
+      const parent = parentOf(title);
+      const above = parent === null || !held.has(parent) || stays(parent, seen + 1);
+      return isSlot(title) ? !cut.has(title) && above : parent !== null && held.has(parent) && stays(parent, seen + 1);
+    };
+    const calls = new Map<string, string[]>();
+    for (const title of undeclared) {
+      if (!stays(title)) continue;
+      if (!isSlot(title)) continue;
+      kept.push(title);
+      const parent = parentOf(title) ?? uri;
+      if (lands.includes(parent)) calls.set(parent, [...(calls.get(parent) ?? []), `<<~ kahea ahu slot=\`${String(held.get(title)!["$slot"])}\`>>`]);
+    }
+    stale = undeclared.filter((title) => !stays(title));
+    if (calls.size > 0) {
+      records = decision.records.map((fields) => {
+        const add = calls.get(String(fields.title));
+        if (!add) return fields;
+        const standing = typeof fields.text === "string" ? fields.text.replace(/\s+$/, "") : "";
+        return { ...fields, text: [standing, ...add].filter((part) => part !== "").join("\n\n") };
+      });
+    }
+  }
+  await input.vet?.(records);
   const landed: string[] = [];
-  for (const fields of decision.records) {
+  for (const fields of records) {
     await sink.land(fields);
     landed.push(fields.title as string);
   }
@@ -667,7 +726,26 @@ async function placeMemeNow(input: PlaceMemeInput, sink: MemeSink): Promise<Plac
   const fenced = decision.diagnostics.filter((d) => d.code === QUOTEBLOCKED_CODE);
   const warnings = fenced.map((d) => d.message);
   await sink.surface?.(uri, fenced.length === 0 ? null : { child: uri, codes: [QUOTEBLOCKED_CODE], why: warnings.join("; ") });
-  return { uri, decision: "ingest", grade, landed, tombstoned, canonicalHash: hash(decision.canonicalText), warnings, diagnostics: decision.diagnostics };
+  // A kept slot rides the render the records now carry, which the gate's candidate text never held: the base reads off the sink.
+  const canonicalHash = kept.length > 0 ? ((await readMeme(uri, sink, hash))?.canonicalHash ?? hash(decision.canonicalText)) : hash(decision.canonicalText);
+  return { uri, decision: "ingest", grade, landed, tombstoned, ...(input.keepAbsent ? { kept } : {}), canonicalHash, warnings, diagnostics: decision.diagnostics };
+}
+
+/** The code a write refuses under when a cut names something other than a standing slot the new text omits. */
+export const CUT_NOT_OMITTED_CODE = "cut-not-omitted";
+
+/** A text with the `kahea` calls of the named slots (rooted paths) gone, read under the fence mask: the text a cut leaves. */
+export function dropKaheaCalls(text: string, slots: ReadonlySet<string>): string {
+  if (slots.size === 0 || !text.includes("kahea")) return text;
+  const gone = maskedExecAll(text, KAHEA_REF_RE).filter((match) => slots.has(match[1]!));
+  let out = text;
+  // Last call first, so each earlier index still reads true; the words either side of a call rejoin on one blank line.
+  for (const match of gone.reverse()) {
+    const head = out.slice(0, match.index).replace(/\n+$/, "");
+    const tail = out.slice(match.index + match[0].length).replace(/^\n+/, "");
+    out = head !== "" && tail !== "" ? `${head}\n\n${tail}` : head + tail;
+  }
+  return out;
 }
 
 /**
@@ -689,69 +767,81 @@ export async function evaluateMeme(
   return { uri, decision: "ingest", grade, landed: [], tombstoned: [], canonicalHash: hash(decision.canonicalText), warnings: [], diagnostics: decision.diagnostics };
 }
 
-/** The code a slot patch refuses under when the meme holds no slot at the address it names. */
-export const SLOT_MISSING_CODE = "slot-missing";
-/** The code a slot patch refuses under when the meme moved past the base the writer read. */
-export const STALE_BASE_CODE = "stale-base";
+/**
+ * THE PARAGRAPH JOIN, for words that land at the end of a slot's body: the standing text sheds its trailing whitespace, the
+ * words their leading newlines and trailing whitespace, and exactly one blank line stands between them. An empty standing
+ * text takes the words alone.
+ */
+export function joinedParagraph(standing: string, words: string): string {
+  const held = standing.replace(/\s+$/, "");
+  const addition = words.replace(/^\n+/, "").replace(/\s+$/, "");
+  return held === "" ? addition : `${held}\n\n${addition}`;
+}
 
-/** One slot's body edit: `append` lands a paragraph at the end of the body; `replace` swaps the whole body. */
-export interface SlotPatchInput {
+/**
+ * WHERE A SLOT'S APPEND LANDS. The body a slot carries spans its record's text and its `$preamble` / `$postamble` carriage
+ * (the text before its meta, and the text after its last child). Words appended to the slot join the body's end: the
+ * postamble's record where one stands with non-blank text, the slot's own record otherwise. Answers the title that takes the
+ * words and the record it holds now, or null where the sink holds no record of the slot.
+ */
+export async function slotAppendTarget(slotTitle: string, sink: Pick<MemeSink, "read">): Promise<{ readonly title: string; readonly fields: TiddlerFields } | null> {
+  const slot = await sink.read(slotTitle);
+  if (!slot) return null;
+  const post = carriageUri(slotTitle, "postamble");
+  const tail = await sink.read(post);
+  return tail && typeof tail.text === "string" && tail.text.trim() !== "" ? { title: post, fields: tail } : { title: slotTitle, fields: slot };
+}
+
+/** Where a title stands in a sink, by the one family law over the title's own neighbourhood (`familySnapshot`). */
+export async function familyReadingIn(title: string, sink: Pick<MemeSink, "titles" | "read">): Promise<FamilyReading> {
+  const { view } = await familySnapshot(title, sink);
+  return familyOf(view, title);
+}
+
+/** One member record as a writer would leave it: the root, a slot or a carriage part, whole. */
+export interface MemberCarrierInput {
+  /** The family's root address. */
   readonly uri: string;
-  /** The slot's address under the root, `#/name` (or `#/name/child`). */
-  readonly slot: string;
-  readonly mode: "append" | "replace";
-  readonly text: string;
-  /** The canonical hash the writer read; the patch reads against it and nothing else. An append alone may name none: it then
-   *  composes over the carrier as it reads now, and the answer's `canonicalHash` names the base that composition stands on. */
-  readonly baseHash: string | null;
+  /** The member's own title: the root, or `<root>#/slot`. */
+  readonly title: string;
+  /** The member's whole record after the write. */
+  readonly fields: TiddlerFields;
   readonly hash?: (text: string) => string;
 }
 
-export type SlotPatchReading =
-  | { readonly kind: "absent" }
-  | { readonly kind: "stale"; readonly canonicalHash: string }
-  | { readonly kind: "slot-missing"; readonly canonicalHash: string }
-  | { readonly kind: "carrier"; readonly text: string; readonly canonicalHash: string };
+export type MemberCarrierReading =
+  /** No carrier stands or would stand at the root (the root rests absent, or holds another type): nothing recomposes. */
+  | { readonly kind: "no-carrier" }
+  /** The family's carrier with the member's record in place; `canonicalHash` names the render it composed over (null: the root founds here). */
+  | { readonly kind: "carrier"; readonly text: string; readonly canonicalHash: string | null };
 
 /**
- * A SLOT PATCH WRITES NO CARRIER BY HAND: it edits the slot's own record in a copy of the family and lets the one recompose
- * (`expandMemeRefs`) frame the whole carrier, which mints the block check over the bytes it frames. The caller lands that text
- * through the put's own gate under the same base, so a patch passes every law a put passes and reseals as a put does.
- *
- * The body a slot carries spans its record's text and its `$preamble` / `$postamble` carriage (the text before its meta, and
- * the text after its last child). `append` adds to the body's end: the postamble where one stands, the slot's text otherwise.
- * `replace` swaps the whole body: the slot's text takes the new bytes and both carriages leave; a child slot the new body
- * does not call leaves with the put's consequence. The slot's fields (its meta) and its authored delimiters stay.
+ * A MEMBER'S WRITE RECOMPOSES THE FAMILY. A family reads as tiddlers: the root, its slots, their carriage. A writer that moves
+ * one member's record (its text, a field) hands that record here; it takes its place in a copy of the family and the one
+ * recompose (`expandMemeRefs`) frames the whole carrier, minting the block check over the bytes it frames. The caller lands
+ * that text through `placeMeme` under `canonicalHash`, so the member's write passes the Confluence gate, re-splits the family
+ * (a slot the new text no longer calls leaves by the consequence) and reseals, in the family's own turn. A record of the
+ * carrier type at a root address nothing holds yet founds its family the same way.
  */
-export async function patchSlotCarrier(input: SlotPatchInput, sink: Pick<MemeSink, "titles" | "read">): Promise<SlotPatchReading> {
+export async function composeMemberCarrier(input: MemberCarrierInput, sink: Pick<MemeSink, "titles" | "read">): Promise<MemberCarrierReading> {
   const hash = input.hash ?? defaultHash;
-  const { view, records } = await familySnapshot(input.uri, sink);
-  const group = familyGroup(view, input.uri);
-  if (!group.includes(input.uri)) return { kind: "absent" };
+  const { records } = await familySnapshot(input.uri, sink);
   const reader = (map: ReadonlyMap<string, TiddlerFields>) => (title: string): TiddlerFields | undefined => map.get(title);
-  const canonicalHash = hash(expandMemeRefs(reader(records), input.uri) ?? heldText(records.get(input.uri)));
-  if (input.baseHash === null ? input.mode !== "append" : input.baseHash !== canonicalHash) return { kind: "stale", canonicalHash };
-  const title = `${rootAddressOf(input.uri)}${input.slot}`;
-  const slot = records.get(title);
-  if (!slot || !group.includes(title) || slot["$slot"] !== input.slot) return { kind: "slot-missing", canonicalHash };
+  const root = records.get(input.uri);
+  // A slot or a carriage part recomposes only beneath a root that stands; the root's own record may found the family.
+  if (root === undefined && input.title !== input.uri) return { kind: "no-carrier" };
   const next = new Map(records);
-  const addition = input.text.replace(/^\n+/, "").replace(/\s+$/, "");
-  const pre = carriageUri(title, "preamble");
-  const post = carriageUri(title, "postamble");
-  if (input.mode === "replace") {
-    next.set(title, { ...slot, text: addition });
-    next.delete(pre);
-    next.delete(post);
-  } else {
-    const tail = next.get(post);
-    const into = tail && typeof tail.text === "string" && tail.text.trim() !== "" ? post : title;
-    const held = next.get(into)!;
-    const standing = typeof held.text === "string" ? held.text.replace(/\s+$/, "") : "";
-    next.set(into, { ...held, text: standing === "" ? addition : `${standing}\n\n${addition}` });
-  }
+  next.set(input.title, input.fields);
   const text = expandMemeRefs(reader(next), input.uri);
-  if (text === null) return { kind: "slot-missing", canonicalHash };
+  if (text === null) return { kind: "no-carrier" };
+  // The base reads as the gate reads the family's present render (`currentRender`): the recompose, or a held record's own bytes.
+  const canonicalHash = root === undefined ? null : hash(expandMemeRefs(reader(records), input.uri) ?? heldText(root));
   return { kind: "carrier", text, canonicalHash };
+}
+
+/** True where a text carries a carrier's own head mark: it speaks as a whole carrier, never as one record's body. */
+export function framesCarrier(text: string): boolean {
+  return maskedExec(text, carrierMarkPattern("head", "g")) !== null;
 }
 
 /** The read half: the whole meme as text (children recomposed inline) and the canonical hash a

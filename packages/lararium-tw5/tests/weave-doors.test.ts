@@ -19,7 +19,8 @@ import { CompositeStore } from "@lararium/mesh/composite-store";
 import { bagUri } from "@lararium/mesh/lar-uris";
 import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { makeMemePutReactor, makeMemeProjectReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeMemeProjectReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeTiddlerPutReactor } from "../src/tiddler-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -203,8 +204,8 @@ describe("makeMemeProjectReactor — dialect/tongue args", () => {
   test("★ a store-target dialect flag weaves GFM frontmatter over the carrier text alone, resolving its pin by PREFETCH ★", async () => {
     const { opts } = verbRig();
     const PIN_URI = "lar:///t/verb-pinned";
-    await makeMemePutReactor(opts)({ bag: "sdm", uri: PIN_URI, text: meme(PIN_URI, "! pin target\n") }, ctx());
-    await makeMemePutReactor(opts)({ bag: "sdm", uri: VERB_URI, text: meme(VERB_URI, `! root\n\n<<~ aka uri=\`${PIN_URI}\`>>\n`) }, ctx());
+    await makeTiddlerPutReactor(opts)({ bag: "sdm", title: PIN_URI, text: meme(PIN_URI, "! pin target\n") }, ctx());
+    await makeTiddlerPutReactor(opts)({ bag: "sdm", title: VERB_URI, text: meme(VERB_URI, `! root\n\n<<~ aka uri=\`${PIN_URI}\`>>\n`) }, ctx());
     const out = await makeMemeProjectReactor(opts)({ bag: "sdm", uri: VERB_URI, to: "md", dialect: "GFM" }, ctx()) as { text: string };
     expect(out.text.startsWith("---\n")).toBe(true);
     expect(out.text).toContain("pin target");

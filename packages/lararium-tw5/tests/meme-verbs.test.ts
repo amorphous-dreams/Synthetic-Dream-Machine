@@ -1,12 +1,12 @@
 /**
- * MEME VERBS — `meme-put` / `meme-get`, the daemon's skins of `placeMeme` / `readMeme`.
+ * MEME VERBS — `meme-get` / `meme-list` / `meme-project`, the daemon's read skins of the meme laws, and the bag reach
+ * they lend the tiddler door (`tiddler-put` / `tiddler-delete` over one bag's own store).
  *
  * The contract: exactly one of `recipe` / `bag` (neither, or both, refuses as `no-container`); `recipe: "default"` names the host's ANCHOR,
- * the daemon's own wiki, placed through its live `$tw.wiki` so the in-wiki cascade routes it. A named
- * recipe means an edit AS THAT WIKI: its recipe record names the designated writable bag and the
- * placement lands in that bag's own store by access — write-then-sync, never the wiki's island. A named
- * bag means a residency placement through the island's writable layer for it, and a bag the island
- * cannot write fails loud, naming the bag. `base` carries the writer's merge base; stale reads CONFLICT.
+ * the daemon's own wiki, read through its live `$tw.wiki`. A named recipe reads AS THAT WIKI: the whole stack, top-down,
+ * the first bag that holds a record answering. A named bag names that one bag's own store: a put lands a family there
+ * through the Confluence gate, a delete removes it there, and a bag the island cannot write fails loud, naming the bag.
+ * `base` carries the writer's merge base; a stale one answers `conflict`.
  */
 import { describe, test, expect } from "vitest";
 import { CompositeStore, NoWorkingLayerRefusal } from "@lararium/mesh/composite-store";
@@ -17,10 +17,11 @@ import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { effectiveRecipe } from "../src/recipe-planes.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { memeVerbOptions, makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeProjectReactor, makeMemeListReactor, makeMemeDeleteReactor, MEME_LIST_PAGE, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { memeVerbOptions, makeMemeGetReactor, makeMemeProjectReactor, makeMemeListReactor, MEME_LIST_PAGE, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeTiddlerPutReactor, makeTiddlerDeleteReactor } from "../src/tiddler-verbs.js";
 import { READ_PAGE_BYTES } from "../src/read-gradient.js";
 import { AUDIT_ARRAY_CAP, boundOutcomeOutput } from "../src/verb-vm.js";
-import { placeMeme } from "../src/place-meme.js";
+import { placeMeme, wikiMemeSink } from "../src/place-meme.js";
 import { storeMemeSink } from "../src/meme-sinks.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 
@@ -83,173 +84,114 @@ function rig(): Rig {
   return { opts, wiki, composite, reached, slots, recipes };
 }
 
-describe("meme-put — the anchor (recipes/default)", () => {
-  test("no target names the daemon's own wiki: the records land in $tw.wiki, not the composite", async () => {
-    const r = rig();
-    const put = makeMemePutReactor(r.opts);
-    const receipt = await put({ recipe: "default", uri: URI, text: meme(["a"]) }, ctx());
-    expect(receipt["decision"]).toBe("ingest");
-    expect(r.wiki.store.has(URI)).toBe(true);
-    expect(r.wiki.store.has(`${URI}#/a`)).toBe(true);
-    expect(await r.composite.storeForBag(bagUri("daemon"))!.listVisible()).toEqual([]);
-  });
+/** Seed a family into the rig's anchor wiki through the one placement function; the receipt names the base a reader gets back. */
+const seedAnchor = (r: Rig, text: string, uri = URI) =>
+  placeMeme({ uri, text, holdAnswer: true }, wikiMemeSink(r.wiki as unknown as Parameters<typeof wikiMemeSink>[0]));
 
-  test("`create` lands a family where none stands, and answers `exists` over a standing one with nothing moved", async () => {
-    const r = rig();
-    const put = makeMemePutReactor(r.opts);
-    const first = await put({ recipe: "default", uri: URI, text: meme(["a"]), create: "true" }, ctx());
-    expect(first["decision"]).toBe("ingest");
-    const again = await put({ recipe: "default", uri: URI, text: meme(["a", "b"]), create: "true" }, ctx());
-    expect(again["decision"]).toBe("exists");
-    expect(String((again["warnings"] as string[])[0])).toContain("--create lands only where none does");
-    expect(r.wiki.store.has(`${URI}#/b`)).toBe(false);
-  });
+/** Seed a family into one bag through the tiddler door. */
+const seedBag = (r: Rig, bag: string, text: string, uri = URI) =>
+  makeTiddlerPutReactor(r.opts)({ bag, title: uri, text }, ctx());
 
-  test("★ the anchor's cap seat is the bag the CASCADE lands in, never the last-registered writable layer ★", async () => {
+describe("meme-get — the anchor (recipes/default)", () => {
+  test("★ the anchor's cap seat names the bag the CASCADE lands in, never the last-registered writable layer ★", async () => {
     const r = rig();
     // A live island registers its volatile temp layer LAST — the cap gate holds no registration for it.
     r.composite.addLayer({ bagId: "lar:///ha.ka.ba/wikis/daemon/temp", store: new MemoryTiddlerStore("lar:///ha.ka.ba/wikis/daemon/temp"), writable: true });
-    r.wiki.store.set("lar:///ha.ka.ba/lararium/config/current-wiki-bag", { title: "lar:///ha.ka.ba/lararium/config/current-wiki-bag", text: bagUri("daemon") });
+    await seedAnchor(r, meme(["a"]));
     capCalls.length = 0;
-    await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: meme(["a"]) }, ctx());
-    expect(capCalls[0]).toEqual({ access: "admin", bag: bagUri("daemon") });
+    const got = await makeMemeGetReactor(r.opts)({ recipe: "default", uri: URI }, ctx());
+    expect(got["meme"]).not.toBeNull();
+    expect(capCalls[0]).toEqual({ access: "read", bag: bagUri("daemon") });
   });
 
-  test("CONTROL: a mounted working pointer names the anchor's cap seat", async () => {
+  test("a bare anchor refuses by name when its working pointer stands absent", async () => {
     const r = rig();
-    r.composite.addLayer({ bagId: "lar:///ha.ka.ba/wikis/daemon/temp", store: new MemoryTiddlerStore("lar:///ha.ka.ba/wikis/daemon/temp"), writable: true });
-    capCalls.length = 0;
-    await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: meme(["a"]) }, ctx());
-    expect(capCalls[0]?.bag).toBe(bagUri("daemon"));
-  });
-
-  test("a bare anchor refuses by name when its working pointer is absent", async () => {
-    const r = rig();
+    await seedAnchor(r, meme(["a"]));
     r.wiki.setWorkingPointer("");
-    await expect(makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: meme(["a"]) }, ctx()))
+    await expect(makeMemeGetReactor(r.opts)({ recipe: "default", uri: URI }, ctx()))
       .rejects.toBeInstanceOf(NoWorkingLayerRefusal);
-    expect(r.wiki.store.has(URI)).toBe(false);
   });
 
-  test("`recipe: \"default\"` resolves through a standing working pointer", async () => {
+  test("a seeded family rests in $tw.wiki, never the composite, and reads back through a standing working pointer", async () => {
     const r = rig();
-    await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: meme(["a"]) }, ctx());
+    const receipt = await seedAnchor(r, meme(["a"]));
+    expect(receipt.decision).toBe("ingest");
     expect(r.wiki.store.has(URI)).toBe(true);
-  });
-
-  test("★ a stale base CONFLICTS and lands nothing; the receipt carries the live base ★", async () => {
-    const r = rig();
-    const put = makeMemePutReactor(r.opts);
-    const first = await put({ recipe: "default", uri: URI, text: meme(["a"]) }, ctx());
-    await put({ recipe: "default", uri: URI, text: meme(["a", "b"]) }, ctx());
-    const stale = await put({ recipe: "default", uri: URI, text: meme(["a", "z"]), base: first["canonicalHash"] }, ctx());
-    expect(stale["decision"]).toBe("conflict");
-    expect(r.wiki.store.has(`${URI}#/z`)).toBe(false);
-    expect(stale["canonicalHash"]).not.toBe(first["canonicalHash"]);
-  });
-
-  test("CONTROL: a live base lets the write through", async () => {
-    const r = rig();
-    const put = makeMemePutReactor(r.opts);
-    const first = await put({ recipe: "default", uri: URI, text: meme(["a"]) }, ctx());
-    const next = await put({ recipe: "default", uri: URI, text: meme(["a", "z"]), base: first["canonicalHash"] }, ctx());
-    expect(next["decision"]).toBe("ingest");
+    expect(r.wiki.store.has(`${URI}#/a`)).toBe(true);
+    expect(await r.composite.storeForBag(bagUri("daemon"))!.listVisible()).toEqual([]);
+    const got = (await makeMemeGetReactor(r.opts)({ recipe: "default", uri: URI }, ctx()))["meme"] as { canonicalHash: string };
+    expect(got.canonicalHash).toBe(receipt.canonicalHash);
   });
 });
 
-describe("meme-put — a named bag (residency)", () => {
-  test("lands into the island's writable layer for that bag, the slug bare", async () => {
+describe("a bag put — a family lands in the named bag's own store (residency)", () => {
+  test("lands into the island's writable layer for that bag, the slug bare, and the answer names the bag and no wiki", async () => {
     const r = rig();
-    const receipt = await makeMemePutReactor(r.opts)({ bag: "sdm", uri: URI, text: meme(["a"]) }, ctx());
-    expect(receipt["decision"]).toBe("ingest");
+    const answer = await seedBag(r, "sdm", meme(["a"]));
+    expect(answer).toMatchObject({
+      title: URI, decision: "put", bag: bagUri("sdm"), created: true, position: "root", kept: [], tombstoned: [],
+      hash: expect.stringMatching(/^sha256-/), canonicalHash: expect.stringMatching(/^sha256:/),
+    });
+    expect(answer["landed"]).toEqual(expect.arrayContaining([URI, `${URI}#/a`]));
+    expect(answer).not.toHaveProperty("recipe");
+    expect(answer).not.toHaveProperty("uri");
+    expect(answer).not.toHaveProperty("layer");
     expect(await r.composite.storeForBag(bagUri("sdm"))!.listVisible()).toContain(URI);
     expect(r.wiki.store.size).toBe(0);
   });
 
   test("★ a bag the island cannot write fails loud, naming the bag ★", async () => {
     const r = rig();
-    await expect(makeMemePutReactor(r.opts)({ bag: "nope", uri: URI, text: meme(["a"]) }, ctx()))
-      .rejects.toThrow(bagUri("nope"));
+    await expect(seedBag(r, "nope", meme(["a"]))).rejects.toThrow(bagUri("nope"));
     expect(await r.composite.storeForBag(bagUri("daemon"))!.listVisible()).toEqual([]);
   });
 
-  test("the put gates admin on the bag it writes", async () => {
+  test("the put gates admin on the bag it writes, and a denied cap lands nothing", async () => {
     const r = rig();
     capCalls.length = 0;
-    await makeMemePutReactor(r.opts)({ bag: "sdm", uri: URI, text: meme(["a"]) }, ctx());
-    expect(capCalls).toEqual([{ access: "admin", bag: bagUri("sdm") }]);
-  });
-});
-
-describe("meme-put — a named recipe (an edit AS that wiki)", () => {
-  test("★ resolves slug → recipe → its designated writable bag → that bag's own store, through the ONE slot resolver ★", async () => {
-    const r = rig();
-    const working = wikiSlotUri("elyncia", "working");
-    r.recipes.set(recipeUri("catalog", "elyncia"), {
-      tiddler: { title: recipeUri("catalog", "elyncia"), "bag-stack": `${bagUri("lares")} ${bagUri("elyncia")}`, "writable-bag": working },
-    });
-    // The wiki's working doc is the one THE resolver names — the doc the wiki island mounts.
-    const store = new MemoryTiddlerStore(working);
-    r.slots.set("elyncia/working", store);
-    const receipt = await makeMemePutReactor(r.opts)({ recipe: "elyncia", uri: URI, text: meme(["a"]) }, ctx());
-    expect(receipt["decision"]).toBe("ingest");
-    expect(await store.listVisible()).toContain(URI);
-    // Residency rides the store the record sits in; the record carries no stamp of it.
-    expect(await store.get(URI)).toBeTruthy();
-    expect((await store.get(URI))?.tiddler["bag"]).toBeUndefined();
-    expect(r.wiki.store.size).toBe(0);
+    await seedBag(r, "sdm", meme(["a"]));
+    expect(capCalls[0]).toEqual({ access: "admin", bag: bagUri("sdm") });
+    expect(capCalls.filter((c) => c.access === "admin")).toEqual([{ access: "admin", bag: bagUri("sdm") }]);
+    const s = rig();
+    const denying: VerbContext = { ...ctx(), cap: async (access) => (access === "admin" ? { ok: false, reason: "no admin" } : { ok: true }) };
+    await expect(makeTiddlerPutReactor(s.opts)({ bag: "sdm", title: URI, text: meme(["a"]) }, denying)).rejects.toThrow(/cap-denied: admin/);
+    expect(await s.composite.storeForBag(bagUri("sdm"))!.listVisible()).toEqual([]);
   });
 
-  test("a face that holds no writer's seat in the wiki's workbench lands its put in its own personal layer, and the answer names the layer", async () => {
+  test("`create` lands a family where none stands, and answers `exists` over a standing one with nothing moved", async () => {
     const r = rig();
-    const working = wikiSlotUri("elyncia", "working"), personal = wikiSlotUri("elyncia", "personal");
-    r.recipes.set(recipeUri("catalog", "elyncia"), { tiddler: { title: recipeUri("catalog", "elyncia"), "bag-stack": bagUri("elyncia"), "writable-bag": working } });
-    // A reader's seat: the workbench stands and reads, and this face writes none of it.
-    const bench = new MemoryTiddlerStore(working), personalLayer = new MemoryTiddlerStore(personal);
-    r.slots.set("elyncia/working", bench); r.slots.set("elyncia/personal", personalLayer);
-    const unseated = { ...r.opts, writeSlot: async () => "personal" as const };
-    capCalls.length = 0;
-    const receipt = await makeMemePutReactor(unseated)({ recipe: "elyncia", uri: URI, text: meme(["a"]) }, ctx());
-    expect(receipt["decision"]).toBe("ingest");
-    expect(receipt["bag"], "the answer names the bag the put landed in").toBe(personal);
-    expect(receipt["layer"]).toBe("personal");
-    expect(await personalLayer.get(URI), "the save rests in the face's personal layer").toBeTruthy();
-    expect(await bench.get(URI), "the workbench takes no byte of it").toBeNull();
-    expect(capCalls.filter((c) => c.access === "admin").map((c) => c.bag), "the write cap gates the layer that takes the write").toEqual([personal]);
-    // The wiki's own read answers it back: the personal layer rides above the workbench in the stack.
-    const got = await makeMemeGetReactor(unseated)({ recipe: "elyncia", uri: URI }, ctx());
-    expect((got["meme"] as { text?: string } | null)?.text).toContain("! a");
-    // CONTROL: a face that holds a writer's seat lands in the workbench, and its answer says so.
-    const bench2 = new MemoryTiddlerStore(working), personalStore2 = new MemoryTiddlerStore(personal);
-    r.slots.set("elyncia/working", bench2); r.slots.set("elyncia/personal", personalStore2);
-    const seated = await makeMemePutReactor({ ...r.opts, writeSlot: async () => "working" as const })({ recipe: "elyncia", uri: URI, text: meme(["a"]) }, ctx());
-    expect(seated["bag"]).toBe(working);
-    expect(seated["layer"]).toBe("working");
-    expect(await bench2.get(URI)).toBeTruthy();
-    expect(await personalStore2.get(URI)).toBeNull();
+    const put = makeTiddlerPutReactor(r.opts);
+    const first = await put({ bag: "sdm", title: URI, text: meme(["a"]), create: true }, ctx());
+    expect(first).toMatchObject({ decision: "put", created: true });
+    const again = await put({ bag: "sdm", title: URI, text: meme(["a", "b"]), create: true }, ctx());
+    expect(again).toMatchObject({ decision: "exists", created: false });
+    expect(await r.composite.storeForBag(bagUri("sdm"))!.get(`${URI}#/b`)).toBeNull();
   });
 
-  test("a recipe whose writable bag the island mounts writable lands through the composite", async () => {
+  test("★ a stale carrier base answers conflict and lands nothing; the answer names the live hash ★", async () => {
     const r = rig();
-    r.recipes.set(recipeUri("catalog", "sdm"), {
-      tiddler: { title: recipeUri("catalog", "sdm"), "bag-stack": `${bagUri("lares")} ${bagUri("sdm")}` },
-    });
-    await makeMemePutReactor(r.opts)({ recipe: "sdm", uri: URI, text: meme(["a"]) }, ctx());
-    expect(await r.composite.storeForBag(bagUri("sdm"))!.listVisible()).toContain(URI);
+    const put = makeTiddlerPutReactor(r.opts);
+    const first = await put({ bag: "sdm", title: URI, text: meme(["a"]) }, ctx());
+    const moved = await put({ bag: "sdm", title: URI, text: meme(["a", "b"]) }, ctx());
+    const stale = await put({ bag: "sdm", title: URI, text: meme(["a", "z"]), base: first["canonicalHash"] }, ctx());
+    expect(stale).toMatchObject({ decision: "conflict", canonicalHash: moved["canonicalHash"] });
+    expect(stale["canonicalHash"]).not.toBe(first["canonicalHash"]);
+    expect(await r.composite.storeForBag(bagUri("sdm"))!.get(`${URI}#/z`)).toBeNull();
+    // CONTROL: the live base lets the write through.
+    const next = await put({ bag: "sdm", title: URI, text: meme(["a", "b", "z"]), base: moved["canonicalHash"] }, ctx());
+    expect(next["decision"]).toBe("put");
   });
 
-  test("an unknown recipe fails loud, naming the slug", async () => {
+  test("★ absence never deletes: a slot the new text omits stays standing by name, and leaves only where `cut` names it ★", async () => {
     const r = rig();
-    await expect(makeMemePutReactor(r.opts)({ recipe: "ghost", uri: URI, text: meme(["a"]) }, ctx()))
-      .rejects.toThrow(/ghost/);
-  });
-
-  test("a recipe whose designated bag nothing reaches fails loud, naming slug and bag", async () => {
-    const r = rig();
-    const draft = wikiSlotUri("far", "draft");
-    r.recipes.set(recipeUri("catalog", "far"), { tiddler: { title: recipeUri("catalog", "far"), "writable-bag": draft } });
-    await expect(makeMemePutReactor(r.opts)({ recipe: "far", uri: URI, text: meme(["a"]) }, ctx()))
-      .rejects.toThrow(draft);
+    const put = makeTiddlerPutReactor(r.opts);
+    const sdm = r.composite.storeForBag(bagUri("sdm"))!;
+    await put({ bag: "sdm", title: URI, text: meme(["a", "b"]) }, ctx());
+    expect(await put({ bag: "sdm", title: URI, text: meme(["a"]) }, ctx())).toMatchObject({ decision: "put", kept: [`${URI}#/b`], tombstoned: [] });
+    expect(await sdm.listVisible()).toContain(`${URI}#/b`);
+    expect(await put({ bag: "sdm", title: URI, text: meme(["a"]), cut: ["#/b"] }, ctx())).toMatchObject({ decision: "put", kept: [], tombstoned: expect.arrayContaining([`${URI}#/b`]) });
+    expect(await sdm.listVisible()).not.toContain(`${URI}#/b`);
+    expect(await sdm.listVisible()).toContain(`${URI}#/a`);
   });
 });
 
@@ -344,216 +286,66 @@ describe("meme-get — a named recipe READS THE STACK", () => {
     expect(got["meme"]).toBeNull();
   });
 
-  test("★ a delete through the recipe reaches a meme that lives in canon beneath: the tombstones land in the working layer and shadow it ★", async () => {
+  test("a meme the face's personal layer holds reads through the recipe: the personal layer rides above the workbench in the stack", async () => {
     const r = rig();
-    const { canon } = stacked(r);
-    await land(canon, bagUri("garden"), ["a"]);
-    const read = await makeMemeGetReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
-    const base = (read["meme"] as { canonicalHash: string }).canonicalHash;
-    const gone = await makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI, base }, ctx());
-    expect(gone, "the delete read the designated bag alone and answered absent").toMatchObject({ decision: "removed", readFrom: bagUri("garden"), tombstonedIn: [wikiSlotUri("garden", "working")] });
-    expect([...(gone["tombstoned"] as string[])].sort()).toEqual([URI, `${URI}#/a`].sort());
-    // A bag of the stack the island cannot reach shows no titles: the receipt names it.
-    expect(gone["unreached"]).toContain(bagUri("lares"));
-    // An instance slot with no store holds no record yet, and `temp` lives in the wiki island alone: neither stands unreached.
-    expect((gone["unreached"] as string[]).filter((b) => b.startsWith("lar:///ha.ka.ba/wikis/"))).toEqual([]);
-    // The wiki's own read now answers no meme; canon beneath keeps its own record.
-    expect((await makeMemeGetReactor(r.opts)({ recipe: "garden", uri: URI }, ctx()))["meme"]).toBeNull();
-    expect((await r.slots.get("garden/working")!.get(URI))?.meta?.deleted).toBe(true);
-    expect(await canon.get(URI)).not.toBeNull();
-    expect((await canon.get(URI))?.meta?.deleted).toBeFalsy();
+    const working = wikiSlotUri("elyncia", "working"), personal = wikiSlotUri("elyncia", "personal");
+    r.recipes.set(recipeUri("catalog", "elyncia"), { tiddler: { title: recipeUri("catalog", "elyncia"), "bag-stack": bagUri("elyncia"), "writable-bag": working } });
+    const bench = new MemoryTiddlerStore(working), personalLayer = new MemoryTiddlerStore(personal);
+    r.slots.set("elyncia/working", bench); r.slots.set("elyncia/personal", personalLayer);
+    await land(personalLayer, personal, ["a"]);
+    const got = await makeMemeGetReactor(r.opts)({ recipe: "elyncia", uri: URI }, ctx());
+    expect((got["meme"] as { text?: string } | null)?.text).toContain("! a");
+    expect(await bench.get(URI), "the workbench holds no byte of it").toBeNull();
   });
 
-  test("a delete through the recipe reaches a meme in a slot above the designated bag, and tombstones it there", async () => {
+  test("an unknown recipe fails loud, naming the slug", async () => {
     const r = rig();
-    const { canon, draft } = stacked(r);
-    await land(canon, bagUri("garden"), ["a"]);
-    await land(draft, wikiSlotUri("garden", "draft"), ["b"]);
-    const gone = await makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
-    expect(gone).toMatchObject({ decision: "removed", readFrom: wikiSlotUri("garden", "draft") });
-    expect((await draft.get(URI))?.meta?.deleted).toBe(true);
-    // Canon's own slot child stays visible through the stack until a tombstone shadows it: the working layer takes one.
-    expect((await r.slots.get("garden/working")!.get(`${URI}#/a`))?.meta?.deleted).toBe(true);
-    expect((await canon.get(URI))?.meta?.deleted).toBeFalsy();
+    await expect(makeMemeGetReactor(r.opts)({ recipe: "ghost", uri: URI }, ctx())).rejects.toThrow(/ghost/);
   });
 
-  test("a delete through the recipe names a stale base a conflict and tombstones nothing", async () => {
+  test("a recipe whose designated bag nothing reaches fails loud, naming slug and bag", async () => {
     const r = rig();
-    const { canon } = stacked(r);
-    await land(canon, bagUri("garden"), ["a"]);
-    const gone = await makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI, base: "sha256:" + "0".repeat(64) }, ctx());
-    expect(gone).toMatchObject({ decision: "conflict", tombstoned: [] });
-    expect(await r.slots.get("garden/working")!.get(URI)).toBeNull();
-  });
-
-  test("CONTROL: a delete through the recipe of a meme already shadowed, or never held, answers absent; one in the designated bag removes there", async () => {
-    const r = rig();
-    const { canon } = stacked(r);
-    expect(await makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, ctx())).toMatchObject({ decision: "absent" });
-    await land(canon, bagUri("garden"), ["a"]);
-    await shadow(r, ["a"]);
-    expect(await makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, ctx())).toMatchObject({ decision: "absent" });
-    const s = rig();
-    stacked(s);
-    const working = s.slots.get("garden/working")!;
-    await land(working, wikiSlotUri("garden", "working"), ["w"]);
-    const gone = await makeMemeDeleteReactor(s.opts)({ recipe: "garden", uri: URI }, ctx());
-    expect(gone).toMatchObject({ decision: "removed" });
-    expect((await working.get(URI))?.meta?.deleted).toBe(true);
-  });
-
-  test("a delete through the recipe tombstones the slot children the working layer holds by itself, so none stands over the shadow", async () => {
-    const r = rig();
-    const { canon } = stacked(r);
-    await land(canon, bagUri("garden"), ["a"]);
-    const working = r.slots.get("garden/working")!;
-    await working.put({ tiddler: { title: `${URI}#/extra`, text: "a child the working layer holds alone", "$fragment-parent": URI }, meta: {} }, { kind: "canon-hydrate", receipt: "t" }, { bag: wikiSlotUri("garden", "working") });
-    const gone = await makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
-    expect(gone["tombstoned"]).toContain(`${URI}#/extra`);
-    expect((await working.get(`${URI}#/extra`))?.meta?.deleted).toBe(true);
-  });
-
-  test("★ a delete through the recipe of a meme only the working layer holds, every layer beneath read and empty, retracts plainly and raises no tombstone ★", async () => {
-    const r = rig();
-    stacked(r);
-    for (const beneath of ["lares", "oracle"]) r.reached.set(bagUri(beneath), new MemoryTiddlerStore(bagUri(beneath)));
-    const working = r.slots.get("garden/working")!;
-    await land(working, wikiSlotUri("garden", "working"), ["w"]);
-    const gone = await makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
-    expect(gone).toMatchObject({ decision: "removed", tombstoned: [] });
-    expect([...(gone["retracted"] as string[])].sort()).toEqual([URI, `${URI}#/w`].sort());
-    expect(await working.get(URI)).toBeNull();
-    expect(await working.get(`${URI}#/w`)).toBeNull();
-  });
-
-  test("★ a delete through the recipe over a layer that stands in for an unread document (a degraded or pending blank) counts it as holding the meme: the family tombstones ★", async () => {
-    const r = rig();
-    stacked(r);
-    r.reached.set(bagUri("lares"), Object.assign(new MemoryTiddlerStore(bagUri("lares")), { unknown: () => true }));
-    r.reached.set(bagUri("oracle"), new MemoryTiddlerStore(bagUri("oracle")));
-    const working = r.slots.get("garden/working")!;
-    await land(working, wikiSlotUri("garden", "working"), ["w"]);
-    const gone = await makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
-    expect(gone).toMatchObject({ decision: "removed", retracted: [] });
-    expect([...(gone["tombstoned"] as string[])].sort()).toEqual([URI, `${URI}#/w`].sort());
-    expect((await working.get(URI))?.meta?.deleted).toBe(true);
-  });
-
-  test("a child a slot ABOVE the designated bag holds gets its tombstone in that slot; the canon root's lands in the working layer", async () => {
-    const r = rig();
-    const { canon, draft } = stacked(r);
-    await land(canon, bagUri("garden"), ["a"]);
-    await draft.put({ tiddler: { title: `${URI}#/b`, text: "a draft child over canon", "$fragment-parent": URI }, meta: {} }, { kind: "canon-hydrate", receipt: "t" }, { bag: wikiSlotUri("garden", "draft") });
-    const gone = await makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
-    expect(gone).toMatchObject({ decision: "removed", readFrom: bagUri("garden") });
-    expect([...(gone["tombstonedIn"] as string[])].sort()).toEqual([wikiSlotUri("garden", "draft"), wikiSlotUri("garden", "working")].sort());
-    expect((await draft.get(`${URI}#/b`))?.meta?.deleted).toBe(true);
-    expect((await r.slots.get("garden/working")!.get(URI))?.meta?.deleted).toBe(true);
-    expect((await r.slots.get("garden/working")!.get(`${URI}#/b`))).toBeNull();
-  });
-
-  test("a recipe whose designated bag stands outside its own stack refuses the delete by name, and tombstones nothing", async () => {
-    const r = rig();
-    const { canon } = stacked(r);
-    r.recipes.set(recipeUri("catalog", "garden"), { tiddler: { title: recipeUri("catalog", "garden"), "bag-stack": `${bagUri("lares")} ${bagUri("garden")}`, "writable-bag": bagUri("elsewhere") } });
-    const elsewhere = new MemoryTiddlerStore(bagUri("elsewhere"));
-    r.reached.set(bagUri("elsewhere"), elsewhere);
-    await land(canon, bagUri("garden"), ["a"]);
-    await expect(makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, ctx())).rejects.toThrow(/recipe-unshadowed/);
-    expect(await elsewhere.get(URI)).toBeNull();
-  });
-
-  test("a denied admin cap stops the recipe delete before it mints or writes the tombstoning bag", async () => {
-    const r = rig();
-    const { canon } = stacked(r);
-    await land(canon, bagUri("garden"), ["a"]);
-    const minted: string[] = [];
-    const slotStore = r.opts.slotStore!;
-    const opts = { ...r.opts, slotStore: async (...a: Parameters<typeof slotStore>) => { if (a[3]?.mint) minted.push(`${a[0]}/${a[1]}`); return slotStore(...a); } };
-    const denying: VerbContext = { ...ctx(), cap: async (access) => (access === "admin" ? { ok: false, reason: "no admin" } : { ok: true }) };
-    await expect(makeMemeDeleteReactor(opts)({ recipe: "garden", uri: URI }, denying)).rejects.toThrow(/cap-denied: admin/);
-    expect(minted).toEqual([]);
-    expect(await r.slots.get("garden/working")!.get(URI)).toBeNull();
-  });
-
-  test("RED: a bag beneath that answers a child the caller may not read refuses the delete by name, before any write and before any title rides the answer", async () => {
-    const r = rig();
-    const { canon, draft } = stacked(r);
-    await land(draft, wikiSlotUri("garden", "draft"), ["b"]);
-    await canon.put({ tiddler: { title: `${URI}#/secret`, text: "a child canon holds", "$fragment-parent": URI }, meta: {} }, { kind: "canon-hydrate", receipt: "t" }, { bag: bagUri("garden") });
-    const blind: VerbContext = { ...ctx(), cap: async (access, bag) => (access === "read" && bag === bagUri("garden") ? { ok: false, reason: "no read" } : { ok: true }) };
-    await expect(makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, blind)).rejects.toThrow(new RegExp(`cap-denied: read on ${bagUri("garden").replace(/[.*+?^${}()|[\]\\/]/g, "\\$&")}`));
-    expect((await draft.get(URI))?.meta?.deleted).toBeFalsy();
-    expect(await r.slots.get("garden/working")!.get(`${URI}#/secret`)).toBeNull();
-    // CONTROL: the read granted, the same delete lands and names the child.
-    const gone = await makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
-    expect(gone["tombstoned"]).toContain(`${URI}#/secret`);
-  });
-
-  test("RED: a tombstone write that throws leaves the rest to land, and the receipt names both halves", async () => {
-    const r = rig();
-    const { canon } = stacked(r);
-    await land(canon, bagUri("garden"), ["a", "b"]);
-    const working = r.slots.get("garden/working")!;
-    const real = working.tombstone.bind(working);
-    working.tombstone = async (title, origin) => { if (title === `${URI}#/a`) throw new Error("disk full"); return real(title, origin); };
-    const gone = await makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
-    expect(gone["decision"]).toBe("partial");
-    expect(gone["failed"]).toEqual([{ title: `${URI}#/a`, bag: wikiSlotUri("garden", "working"), why: "disk full" }]);
-    expect(gone["tombstoned"]).toContain(URI);
-    expect(gone["tombstoned"]).toContain(`${URI}#/b`);
-    expect((await working.get(URI))?.meta?.deleted).toBe(true);
-  });
-
-  test("RED: a bag the island cannot reach, above the one that answered, leaves the delete unconfirmed", async () => {
-    const r = rig();
-    stacked(r);
-    r.reached.delete(bagUri("garden"));                       // the wiki's own canon, above the library, stays unreached
-    const lib = new MemoryTiddlerStore(bagUri("lares"));
-    r.reached.set(bagUri("lares"), lib);
-    await land(lib, bagUri("lares"), ["a"]);
-    const gone = await makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
-    expect(gone).toMatchObject({ decision: "unconfirmed", readFrom: bagUri("lares"), unreachedAbove: [bagUri("garden")] });
-    expect((await r.slots.get("garden/working")!.get(URI))?.meta?.deleted).toBe(true);
-  });
-
-  test("CONTROL: put still writes the designated bag alone, never the stack", async () => {
-    const r = rig();
-    const { canon, draft } = stacked(r);
-    await makeMemePutReactor(r.opts)({ recipe: "garden", uri: URI, text: meme(["a"]) }, ctx());
-    expect(await r.slots.get("garden/working")!.get(URI)).not.toBeNull();
-    expect(await canon.get(URI)).toBeNull();
-    expect(await draft.get(URI)).toBeNull();
+    const draft = wikiSlotUri("far", "draft");
+    r.recipes.set(recipeUri("catalog", "far"), { tiddler: { title: recipeUri("catalog", "far"), "writable-bag": draft } });
+    await expect(makeMemeGetReactor(r.opts)({ recipe: "far", uri: URI }, ctx())).rejects.toThrow(draft);
   });
 });
 
-describe("meme-put — the argument law", () => {
-  test("recipe AND bag together refuse", async () => {
+describe("the container law", () => {
+  test("recipe AND bag together refuse, at the read and at the bag put alike", async () => {
     const r = rig();
-    await expect(makeMemePutReactor(r.opts)({ recipe: "sdm", bag: "sdm", uri: URI, text: meme(["a"]) }, ctx()))
+    await expect(makeMemeGetReactor(r.opts)({ recipe: "sdm", bag: "sdm", uri: URI }, ctx()))
+      .rejects.toMatchObject({ name: "VerbRefusal", reason: "no-container" });
+    await expect(makeTiddlerPutReactor(r.opts)({ recipe: "sdm", bag: "sdm", title: URI, text: meme(["a"]) }, ctx()))
       .rejects.toMatchObject({ name: "VerbRefusal", reason: "no-container" });
   });
-  test("uri and text stay required", async () => {
+  test("no container at all refuses the same way", async () => {
     const r = rig();
-    await expect(makeMemePutReactor(r.opts)({ recipe: "default", text: meme(["a"]) }, ctx())).rejects.toThrow(/uri/);
-    await expect(makeMemePutReactor(r.opts)({ recipe: "default", uri: URI }, ctx())).rejects.toThrow(/text/);
+    await expect(makeMemeGetReactor(r.opts)({ uri: URI }, ctx())).rejects.toMatchObject({ reason: "no-container" });
+    await expect(makeTiddlerPutReactor(r.opts)({ title: URI, text: meme(["a"]) }, ctx())).rejects.toMatchObject({ reason: "no-container" });
+  });
+  test("a read needs its uri, and a bag put its title", async () => {
+    const r = rig();
+    await expect(makeMemeGetReactor(r.opts)({ recipe: "default" }, ctx())).rejects.toThrow(/uri/);
+    await expect(makeTiddlerPutReactor(r.opts)({ bag: "sdm", text: meme(["a"]) }, ctx())).rejects.toThrow(/title/);
   });
 });
 
 describe("meme-get — the read half", () => {
-  test("reads the anchor back: text + the canonical hash the put reported", async () => {
+  test("reads the anchor back: text + the canonical hash the placement reported", async () => {
     const r = rig();
-    const put = await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: meme(["a"]) }, ctx());
+    const placed = await seedAnchor(r, meme(["a"]));
     const got = (await makeMemeGetReactor(r.opts)({ recipe: "default", uri: URI }, ctx()))["meme"] as { text: string; canonicalHash: string };
-    expect(got.canonicalHash).toBe(put["canonicalHash"]);
+    expect(got.canonicalHash).toBe(placed.canonicalHash);
     expect(got.text).toContain("<<~ ahu slot=`#/a`>>");
   });
 
-  test("reads a named bag back, and a bag's absence reads null", async () => {
+  test("reads a named bag back under the hash the bag put reported, and a bag's absence reads null", async () => {
     const r = rig();
-    await makeMemePutReactor(r.opts)({ bag: "sdm", uri: URI, text: meme(["a"]) }, ctx());
+    const put = await seedBag(r, "sdm", meme(["a"]));
     const got = (await makeMemeGetReactor(r.opts)({ bag: "sdm", uri: URI }, ctx()))["meme"] as { canonicalHash: string };
     expect(got.canonicalHash).toMatch(/^sha256:/);
+    expect(got.canonicalHash).toBe(put["canonicalHash"]);
     expect(await makeMemeGetReactor(r.opts)({ bag: "sdm", uri: "lar:///t/absent" }, ctx())).toEqual({ uri: "lar:///t/absent", meme: null });
   });
 
@@ -589,7 +381,7 @@ describe("meme-project — the daemon skin of the projection", () => {
   test("RED: a named bag projects md over that bag's records; the carrier itself (mem) reads through the one door and refuses here by name", async () => {
     const r = rigWithFace();
     projectCalls.length = 0;
-    await makeMemePutReactor(r.opts)({ bag: "sdm", uri: URI, text: meme(["a"]) }, ctx());
+    await seedBag(r, "sdm", meme(["a"]));
     const project = makeMemeProjectReactor(r.opts);
     await expect(project({ bag: "sdm", uri: URI, to: "mem" }, ctx())).rejects.toThrow(/tiddler-get \(meme: true, grain: "whole"\)/);
     const md = await project({ bag: "sdm", uri: URI, to: "md" }, ctx());
@@ -615,22 +407,21 @@ describe("meme-project — the daemon skin of the projection", () => {
  * with its canonical hash; `tree` nests the slot tree. The same container law as `meme-get`; gates read.
  */
 describe("meme-list — roots by default, the slot tree on request", () => {
-  test("★ the anchor lists every root with the hash the put reported; CONTROL: a plain tiddler never lists ★", async () => {
+  test("★ the anchor lists every root with the hash the placement reported; CONTROL: a plain tiddler never lists ★", async () => {
     const r = rig();
-    const put = makeMemePutReactor(r.opts);
-    const a = await put({ recipe: "default", uri: URI, text: meme(["a", "b"]) }, ctx());
+    const a = await seedAnchor(r, meme(["a", "b"]));
     r.wiki.store.set("plain", { title: "plain", text: "prose" });
     capCalls.length = 0;
     const out = await makeMemeListReactor(r.opts)({ recipe: "default" }, ctx());
     expect(String(out["has"])).toMatch(/^<<~ has name=`.*` params=`kind\/family-list /);
-    expect(out["roots"]).toEqual([{ uri: URI, canonicalHash: a["canonicalHash"] }]);
+    expect(out["roots"]).toEqual([{ uri: URI, canonicalHash: a.canonicalHash }]);
     expect(capCalls[0]?.access).toBe("read");
   });
 
   test("★ `tree` nests `uri#/slot` under its own root; a named bag lists that bag's records alone ★", async () => {
     const r = rig();
-    await makeMemePutReactor(r.opts)({ bag: "sdm", uri: URI, text: meme(["a"]) }, ctx());
-    await makeMemePutReactor(r.opts)({ recipe: "default", uri: "lar:///t/anchor", text: meme(["z"]).replaceAll("t/x", "t/anchor") }, ctx());
+    await seedBag(r, "sdm", meme(["a"]));
+    await seedAnchor(r, meme(["z"]).replaceAll("t/x", "t/anchor"), "lar:///t/anchor");
     const out = await makeMemeListReactor(r.opts)({ bag: "sdm", tree: true }, ctx());
     expect(out["bag"]).toBe(bagUri("sdm"));
     expect(out["roots"]).toEqual([{ uri: URI, canonicalHash: expect.stringMatching(/^sha256:/), slots: [{ slot: "#/a", uri: `${URI}#/a`, slots: [] }] }]);
@@ -643,10 +434,6 @@ describe("meme-list — roots by default, the slot tree on request", () => {
 });
 
 /**
- * THE DELETE VERB — `meme-delete { recipe?, bag?, uri, base? }` over `removeMeme`: the whole group leaves;
- * a stale base answers `conflict` and moves nothing; an absent root answers `absent`. Gates admin.
- */
-/**
  * EVERY ROOT ANSWERS. A verb's outcome carries at most `AUDIT_ARRAY_CAP` rows of an array and turns a
  * longer one into a count and a sample, so a listing that named a large seat's roots in one array reached
  * its reader as no roots at all. The listing pages at that cap: each answer rides whole through the
@@ -656,8 +443,7 @@ describe("meme-list — a seat past the outcome's cap answers every root, a page
   const at = (n: number): string => `lar:///t/many/${String(n).padStart(3, "0")}`;
   const memeAt = (uri: string, slots: readonly string[] = ["a"]): string => meme(slots).replaceAll(URI, uri).replaceAll("t/x", uri.slice("lar:///".length));
   const fill = async (r: Rig, count: number) => {
-    const put = makeMemePutReactor(r.opts);
-    for (let i = 0; i < count; i++) await put({ bag: "sdm", uri: at(i), text: memeAt(at(i)) }, ctx());
+    for (let i = 0; i < count; i++) await seedBag(r, "sdm", memeAt(at(i)), at(i));
   };
   /** Read a listing to its end the way a caller does: hand each `next` back as `after`. */
   const readAll = async (r: Rig, args: Record<string, unknown>) => {
@@ -715,8 +501,7 @@ describe("meme-list — a seat past the outcome's cap answers every root, a page
 
   test("the anchor pages the same way", async () => {
     const r = rig();
-    const put = makeMemePutReactor(r.opts);
-    for (let i = 0; i < MEME_LIST_PAGE + 2; i++) await put({ recipe: "default", uri: at(i), text: memeAt(at(i)) }, ctx());
+    for (let i = 0; i < MEME_LIST_PAGE + 2; i++) await seedAnchor(r, memeAt(at(i)), at(i));
     const { uris, pages } = await readAll(r, { recipe: "default" });
     expect(uris.length).toBe(MEME_LIST_PAGE + 2);
     expect(pages).toBe(2);
@@ -830,50 +615,40 @@ describe("meme-list — a named recipe lists the roots its stack resolves", () =
   });
 });
 
-describe("meme-delete — the daemon skin of removeMeme", () => {
-  test("★ removes the whole group from the anchor; gates admin on the bag the cascade lands in ★", async () => {
+/**
+ * A FAMILY LEAVES ITS BAG THROUGH THE TIDDLER DOOR — `tiddler-delete { bag, title, family: true, base? }` over
+ * `removeMeme`: the root and its slots leave as one change; a stale carrier base answers `conflict` and moves nothing;
+ * an absent root answers `absent`; a slot's own title leaves by the cut of its parent's text. Gates admin.
+ */
+describe("a family delete — a bag's family leaves through its own store", () => {
+  const del = (r: Rig, args: Record<string, unknown>, c: VerbContext = ctx()) => makeTiddlerDeleteReactor(r.opts)(args, c);
+
+  test("a meme root answers `refused` until the call names the family act, and nothing moves", async () => {
     const r = rig();
-    await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: meme(["a", "b"]) }, ctx());
-    r.wiki.store.set("lar:///t/x-not", { title: "lar:///t/x-not", text: "a neighbour under the prefix, never a child" });
+    await seedBag(r, "sdm", meme(["a", "b"]));
+    const out = await del(r, { bag: "sdm", title: URI });
+    expect(out).toMatchObject({ bag: bagUri("sdm"), title: URI, decision: "refused", refusal: "tiddler-delete-in-a-family", tombstoned: [], retracted: [] });
+    expect(await r.composite.storeForBag(bagUri("sdm"))!.listVisible()).toEqual(expect.arrayContaining([URI, `${URI}#/a`, `${URI}#/b`]));
+  });
+
+  test("★ a family delete over nothing beneath raises no tombstone: the family retracts plainly from its layer; gates admin on the bag ★", async () => {
+    const r = rig();
+    await seedBag(r, "sdm", meme(["a", "b"]));
     capCalls.length = 0;
-    const out = await makeMemeDeleteReactor(r.opts)({ recipe: "default", uri: URI }, ctx());
-    expect(String(out["has"])).toMatch(/^<<~ has name=`.*` params=`kind\/family-delete /);
-    expect(out["decision"]).toBe("removed");
-    expect((out["tombstoned"] as string[]).sort()).toEqual([URI, `${URI}#/a`, `${URI}#/b`]);
-    expect([...r.wiki.store.keys()]).toEqual(["lar:///t/x-not"]);
-    expect(capCalls[0]?.access).toBe("admin");
-  });
-
-  test("★ CONTROL: a stale base answers conflict and moves nothing; the receipt carries the live base ★", async () => {
-    const r = rig();
-    const put = makeMemePutReactor(r.opts);
-    const first = await put({ recipe: "default", uri: URI, text: meme(["a"]) }, ctx());
-    const moved = await put({ recipe: "default", uri: URI, text: meme(["a", "b"]) }, ctx());
-    const out = await makeMemeDeleteReactor(r.opts)({ recipe: "default", uri: URI, base: first["canonicalHash"] }, ctx());
-    expect(out["decision"]).toBe("conflict");
-    expect(out["canonicalHash"]).toBe(moved["canonicalHash"]);
-    expect(r.wiki.store.has(`${URI}#/b`)).toBe(true);
-    // The live base lets the removal through.
-    expect((await makeMemeDeleteReactor(r.opts)({ recipe: "default", uri: URI, base: moved["canonicalHash"] }, ctx()))["decision"]).toBe("removed");
-  });
-
-  test("★ a meme delete over nothing beneath raises no tombstone: the family retracts plainly from its layer ★", async () => {
-    const r = rig();
-    await makeMemePutReactor(r.opts)({ bag: "sdm", uri: URI, text: meme(["a", "b"]) }, ctx());
-    const out = await makeMemeDeleteReactor(r.opts)({ bag: "sdm", uri: URI }, ctx());
-    expect(out["decision"]).toBe("removed");
-    expect(out["tombstoned"]).toEqual([]);
+    const out = await del(r, { bag: "sdm", title: URI, family: true });
+    expect(out).toMatchObject({ bag: bagUri("sdm"), title: URI, decision: "removed", mode: "plain", tombstoned: [] });
+    expect(out).not.toHaveProperty("recipe");
     expect([...(out["retracted"] as string[])].sort()).toEqual([URI, `${URI}#/a`, `${URI}#/b`]);
+    expect(capCalls[0]).toEqual({ access: "admin", bag: bagUri("sdm") });
     const sdm = r.composite.storeForBag(bagUri("sdm"))!;
     for (const title of [URI, `${URI}#/a`, `${URI}#/b`]) expect(await sdm.get(title), `${title} leaves with no kāpae`).toBeNull();
   });
 
-  test("★ CONTROL: a meme delete over a lower layer's record still tombstones, so the lower record stays hidden ★", async () => {
+  test("★ CONTROL: a family delete over a lower layer's record still tombstones, so the lower record stays hidden ★", async () => {
     const r = rig();
-    const put = makeMemePutReactor(r.opts);
-    await put({ bag: "sdm", uri: URI, text: meme(["a"]) }, ctx());
-    await put({ bag: "daemon", uri: URI, text: meme(["a"]) }, ctx());
-    const out = await makeMemeDeleteReactor(r.opts)({ bag: "daemon", uri: URI }, ctx());
+    await seedBag(r, "sdm", meme(["a"]));
+    await seedBag(r, "daemon", meme(["a"]));
+    const out = await del(r, { bag: "daemon", title: URI, family: true });
     expect(out["decision"]).toBe("removed");
     expect([...(out["tombstoned"] as string[])].sort()).toEqual([URI, `${URI}#/a`]);
     expect(out["retracted"]).toEqual([]);
@@ -881,25 +656,55 @@ describe("meme-delete — the daemon skin of removeMeme", () => {
     expect((await r.composite.storeForBag(bagUri("sdm"))!.get(URI))?.meta?.deleted, "the lower layer keeps its record").not.toBe(true);
   });
 
-  test("an absent root answers absent; a named bag removes from that bag's writable layer", async () => {
+  test("★ CONTROL: a stale carrier base answers conflict and moves nothing; the answer names the live hash ★", async () => {
     const r = rig();
-    expect((await makeMemeDeleteReactor(r.opts)({ recipe: "default", uri: URI }, ctx()))["decision"]).toBe("absent");
-    await makeMemePutReactor(r.opts)({ bag: "sdm", uri: URI, text: meme(["a"]) }, ctx());
-    const out = await makeMemeDeleteReactor(r.opts)({ bag: "sdm", uri: URI }, ctx());
+    const first = await seedBag(r, "sdm", meme(["a"]));
+    const moved = await seedBag(r, "sdm", meme(["a", "b"]));
+    const out = await del(r, { bag: "sdm", title: URI, family: true, base: first["canonicalHash"] });
+    expect(out).toMatchObject({ decision: "conflict", canonicalHash: moved["canonicalHash"], tombstoned: [] });
+    expect(await r.composite.storeForBag(bagUri("sdm"))!.listVisible()).toContain(`${URI}#/b`);
+    // The live base lets the removal through.
+    expect((await del(r, { bag: "sdm", title: URI, family: true, base: moved["canonicalHash"] }))["decision"]).toBe("removed");
+  });
+
+  test("an absent root answers absent; a standing one removes from that bag's writable layer", async () => {
+    const r = rig();
+    expect(await del(r, { bag: "sdm", title: URI, family: true })).toMatchObject({ bag: bagUri("sdm"), decision: "absent", tombstoned: [], retracted: [] });
+    await seedBag(r, "sdm", meme(["a"]));
+    const out = await del(r, { bag: "sdm", title: URI, family: true });
     expect(out["decision"]).toBe("removed");
     expect(await r.composite.storeForBag(bagUri("sdm"))!.listVisible()).toEqual([]);
+  });
+
+  test("a delete of `<root>#/<slot>` lands as the cut: the slot leaves by name, its sibling stays, the family reseals", async () => {
+    const r = rig();
+    await seedBag(r, "sdm", meme(["a", "b"]));
+    const out = await del(r, { bag: "sdm", title: `${URI}#/b` });
+    expect(out).toMatchObject({ bag: bagUri("sdm"), title: `${URI}#/b`, decision: "removed", mode: "cut", parent: URI, tombstoned: [`${URI}#/b`] });
+    const sdm = r.composite.storeForBag(bagUri("sdm"))!;
+    expect(await sdm.listVisible()).not.toContain(`${URI}#/b`);
+    expect(await sdm.listVisible()).toContain(`${URI}#/a`);
+    const got = (await makeMemeGetReactor(r.opts)({ bag: "sdm", uri: URI }, ctx()))["meme"] as { text: string; canonicalHash: string };
+    expect(got.text).not.toContain("<<~ ahu slot=`#/b`>>");
+    expect(got.canonicalHash).toBe(out["canonicalHash"]);
+  });
+
+  test("a denied admin cap stops the family delete before anything moves", async () => {
+    const r = rig();
+    await seedBag(r, "sdm", meme(["a"]));
+    const denying: VerbContext = { ...ctx(), cap: async (access) => (access === "admin" ? { ok: false, reason: "no admin" } : { ok: true }) };
+    await expect(del(r, { bag: "sdm", title: URI, family: true }, denying)).rejects.toThrow(/cap-denied: admin/);
+    expect(await r.composite.storeForBag(bagUri("sdm"))!.listVisible()).toContain(URI);
   });
 });
 
 /**
  * A NAMED WIKI'S LAYER BY `--bag`. `--bag lar:///ha.ka.ba/wikis/<slug>/working` names the doc THE ONE resolver
- * mints for that wiki's working layer — the same doc `--recipe <slug>` walks. The `--bag` door reached the
- * composite and the planes alone, so a wiki's own working layer read "holds no layer in this island" while a
- * LOAD --to that very bag had landed the records (measured: `tests/e2e/wikis-ingest-back.test.ts` WB1, a
- * settled mirror scanning as all-new). The daemon's own `wikis/daemon/working` rides the composite (attached
- * at boot) and never hit it — the one control that hid the gap.
+ * mints for that wiki's working layer — the same doc `--recipe <slug>` walks. The bag reach answers it through
+ * the slot resolver, beside the composite and the planes, so a wiki's own working layer reads and takes a put
+ * under its bag address, and the put's answer names the layer.
  */
-describe("meme-get/put --bag names a wiki's instance slot", () => {
+describe("a wiki's instance slot answers as a bag", () => {
   const WBAG = "lar:///ha.ka.ba/wikis/garden/working";
   test("get --bag wikis/garden/working reads the working slot's doc", async () => {
     const r = rig();
@@ -909,13 +714,17 @@ describe("meme-get/put --bag names a wiki's instance slot", () => {
     const got = await makeMemeGetReactor(r.opts)({ bag: WBAG, uri: URI }, ctx());
     expect(got["meme"], "the working slot never reached by --bag").not.toBeNull();
   });
-  test("put --bag wikis/garden/working lands in the working slot's doc", async () => {
+  test("a bag put on wikis/garden/working lands in the working slot's doc, and the answer names the layer", async () => {
     const r = rig();
     const working = new MemoryTiddlerStore(WBAG);
     r.slots.set("garden/working", working);
-    const receipt = await makeMemePutReactor(r.opts)({ bag: WBAG, uri: URI, text: meme(["a"]) }, ctx());
-    expect(receipt["decision"]).toBe("ingest");
+    const answer = await seedBag(r, WBAG, meme(["a"]));
+    expect(answer).toMatchObject({ decision: "put", bag: WBAG, layer: "working", created: true });
+    expect(answer).not.toHaveProperty("recipe");
     expect(await working.get(URI)).not.toBeNull();
+    // Residency rides the store the record sits in; the record carries no stamp of it.
+    expect((await working.get(URI))?.tiddler["bag"]).toBeUndefined();
+    expect(r.wiki.store.size).toBe(0);
   });
   /** CONTROL: `temp` lives in the island alone — never reached by any door. */
   test("get --bag wikis/garden/temp still refuses", async () => {
@@ -953,7 +762,7 @@ describe("the recipe readers agree", () => {
   });
 });
 
-describe("meme-put — THE FORK REMEMBERS ITS BASE at the meme door (override-base.ts)", () => {
+describe("a bag put into a wiki's working layer — THE FORK REMEMBERS ITS BASE (override-base.ts)", () => {
   /** A wiki `garden` over its canon; its working slot the resolver hands back. */
   const garden = (r: Rig) => {
     const working = wikiSlotUri("garden", "working");
@@ -967,154 +776,181 @@ describe("meme-put — THE FORK REMEMBERS ITS BASE at the meme door (override-ba
   const seedCanon = async (canon: MemoryTiddlerStore, slots: readonly string[]) =>
     placeMeme({ uri: URI, text: meme(slots) }, storeMemeSink(canon, bagUri("garden"), { kind: "canon-hydrate", receipt: "t" }));
 
-  test("★ a put through --recipe into the working layer over a title canon holds names canon's carrier identity, and a later put keeps it ★", async () => {
+  test("★ a bag put (--bag wikis/<slug>/working) over a title canon holds names canon's carrier identity, and a later put keeps it ★", async () => {
     const r = rig();
-    const { canon, layer } = garden(r);
+    const { canon, layer, working } = garden(r);
     await seedCanon(canon, ["a"]);
     const canonHash = carrierHashOf((await canon.get(URI))!.tiddler);
-    await makeMemePutReactor(r.opts)({ recipe: "garden", uri: URI, text: meme(["a", "b"]) }, ctx());
+    await seedBag(r, working, meme(["a", "b"]));
     expect(overrideBaseOf(await layer.get(URI)), "the working copy forked from canon names no base: canon's fresher warning can never read").toBe(canonHash);
     expect(overrideBaseOf(await layer.get(`${URI}#/a`)), "a slot canon holds forks from canon's slot").toBe(carrierHashOf((await canon.get(`${URI}#/a`))!.tiddler));
     expect(overrideBaseOf(await layer.get(`${URI}#/b`)), "a slot canon holds none of names no base").toBeNull();
     // Canon moves under the copy; a re-put of the copy keeps the base it FORKED from, never canon's new identity.
     await seedCanon(canon, ["a", "moved"]);
-    await makeMemePutReactor(r.opts)({ recipe: "garden", uri: URI, text: meme(["a", "b", "c"]) }, ctx("r2"));
+    await makeTiddlerPutReactor(r.opts)({ bag: working, title: URI, text: meme(["a", "b", "c"]) }, ctx("r2"));
     expect(overrideBaseOf(await layer.get(URI)), "a later write of the copy dropped or re-forked the base it forked from").toBe(canonHash);
-  });
-
-  test("★ a put by slot (--bag wikis/<slug>/working) stamps the same base ★", async () => {
-    const r = rig();
-    const { canon, layer, working } = garden(r);
-    await seedCanon(canon, ["a"]);
-    await makeMemePutReactor(r.opts)({ bag: working, uri: URI, text: meme(["a", "b"]) }, ctx());
-    expect(overrideBaseOf(await layer.get(URI))).toBe(carrierHashOf((await canon.get(URI))!.tiddler));
   });
 
   test("CONTROL: a working-only title (canon holds none) names no base", async () => {
     const r = rig();
-    const { layer } = garden(r);
-    await makeMemePutReactor(r.opts)({ recipe: "garden", uri: URI, text: meme(["a"]) }, ctx());
+    const { layer, working } = garden(r);
+    await seedBag(r, working, meme(["a"]));
+    expect(await layer.get(URI)).toBeTruthy();
     expect(overrideBaseOf(await layer.get(URI))).toBeNull();
-  });
-
-  test("CONTROL: a put into the face's personal layer forks no override (only the working layer does)", async () => {
-    const r = rig();
-    const { canon } = garden(r);
-    await seedCanon(canon, ["a"]);
-    const personalLayer = new MemoryTiddlerStore(wikiSlotUri("garden", "personal"));
-    r.slots.set("garden/personal", personalLayer);
-    await makeMemePutReactor({ ...r.opts, writeSlot: async () => "personal" as const })({ recipe: "garden", uri: URI, text: meme(["a", "b"]) }, ctx());
-    expect(await personalLayer.get(URI)).toBeTruthy();
-    expect(overrideBaseOf(await personalLayer.get(URI))).toBeNull();
   });
 });
 
-describe("meme-patch — one slot's body, through the put's own gate", () => {
+describe("a slot put — one slot's body, through the family's own gate", () => {
   const SEALED = /<<\^ code=`&#x0003;` bcc=`ni:\/\/\/sha-256;[A-Za-z0-9_-]+`>>/;
-  const seeded = async () => {
+  const A = `${URI}#/a`, B = `${URI}#/b`;
+  /** A carrier whose slot `#/a` nests a child `#/a/z` and carries a line after the child's close: the slot's `$postamble`. */
+  const NESTED =
+    `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
+    "<<~ ahu slot=`#/a`>>\n\n! a\n\n<<~ ahu slot=`#/a/z`>>\n\n! z\n\n<<~/ahu>>\n\nafter the child\n\n<<~/ahu>>\n\n" +
+    "<<~ ahu slot=`#/b`>>\n\n! b\n\n<<~/ahu>>\n" +
+    `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
+  const seeded = async (text = meme(["a", "b"])) => {
     const r = rig();
-    const placed = await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: meme(["a", "b"]) }, ctx());
-    expect(placed["decision"]).toBe("ingest");
-    expect(String(placed["has"])).toMatch(/^<<~ has name=`.*` params=`kind\/family-write /);
-    const read = async () => (await makeMemeGetReactor(r.opts)({ recipe: "default", uri: URI }, ctx()))["meme"] as { text: string; canonicalHash: string };
-    return { r, read, patch: makeMemePatchReactor(r.opts) };
+    expect(await seedBag(r, "sdm", text)).toMatchObject({ decision: "put", created: true });
+    const store = r.composite.storeForBag(bagUri("sdm"))!;
+    const read = async () => (await makeMemeGetReactor(r.opts)({ bag: "sdm", uri: URI }, ctx()))["meme"] as { text: string; canonicalHash: string };
+    /** The text one record of the bag holds now. */
+    const body = async (title: string) => String((await store.get(title))?.tiddler["text"]);
+    const reactor = makeTiddlerPutReactor(r.opts);
+    const put = (args: Record<string, unknown>) => reactor({ bag: "sdm", ...args }, ctx());
+    return { r, store, read, body, put };
   };
 
-  test("★ --append lands one paragraph at the end of the slot's body, resealed, and the receipt carries the next base ★", async () => {
-    const { r, read, patch } = await seeded();
+  test("★ an append lands one paragraph at the end of the slot's body, resealed, and the answer carries the next base ★", async () => {
+    const { read, body, put } = await seeded();
     const before = await read();
-    const receipt = await patch({ recipe: "default", uri: URI, slot: "#/a", append: "* a new bullet\n", base: before.canonicalHash }, ctx());
-    expect(receipt).toMatchObject({ decision: "ingest", slot: "#/a" });
-    expect(String(r.wiki.store.get(`${URI}#/a`)!["text"])).toBe("! a\n\n* a new bullet");
-    expect(String(r.wiki.store.get(`${URI}#/b`)!["text"])).toBe("! b");
+    const answer = await put({ title: A, append: "* a new bullet\n" });
+    expect(answer).toMatchObject({ title: A, decision: "put", bag: bagUri("sdm"), position: "slot", family: URI, appended: "* a new bullet\n".length, appendedTo: A });
+    expect(await body(A)).toBe("! a\n\n* a new bullet");
+    expect(await body(B)).toBe("! b");
     const after = await read();
     expect(after.text).toMatch(SEALED);
-    expect(after.canonicalHash).toBe(receipt["canonicalHash"]);
+    expect(after.canonicalHash).toBe(answer["canonicalHash"]);
     expect(after.canonicalHash).not.toBe(before.canonicalHash);
   });
 
-  test("★ an append with no base lands at the end of the slot's body and the family stays sealed whole ★", async () => {
-    const { r, read, patch } = await seeded();
+  test("★ an append names no base, and the family stays sealed whole ★", async () => {
+    const { read, body, put } = await seeded();
     const before = await read();
-    const receipt = await patch({ recipe: "default", uri: URI, slot: "#/a", append: "dated note" }, ctx());
-    expect(receipt).toMatchObject({ decision: "ingest", slot: "#/a" });
-    expect(String(r.wiki.store.get(`${URI}#/a`)!["text"])).toBe("! a\n\ndated note");
-    expect(String(r.wiki.store.get(`${URI}#/b`)!["text"])).toBe("! b");
+    const answer = await put({ title: A, append: "dated note" });
+    expect(answer).toMatchObject({ decision: "put", appendedTo: A });
+    expect(await body(A)).toBe("! a\n\ndated note");
+    expect(await body(B)).toBe("! b");
     const after = await read();
     expect(after.text).toMatch(SEALED);
-    expect(after.canonicalHash).toBe(receipt["canonicalHash"]);
+    expect(after.canonicalHash).toBe(answer["canonicalHash"]);
     expect(after.canonicalHash).not.toBe(before.canonicalHash);
   });
 
-  test("★ base-less slot appends racing one family both land, and a replace on a base read before them refuses stale ★", async () => {
-    const { r, read, patch } = await seeded();
+  test("★ appends racing one family both land, and a text put on a base read before them answers conflict ★", async () => {
+    const { read, body, put } = await seeded();
     for (let i = 0; i < 8; i++) {
       const base = (await read()).canonicalHash;
       const words = [`north ${i}`, `south ${i}`];
-      const receipts = await Promise.all(words.map((append) => patch({ recipe: "default", uri: URI, slot: "#/a", append }, ctx())));
-      expect(receipts.map((x) => x["decision"])).toEqual(["ingest", "ingest"]);
-      const body = String(r.wiki.store.get(`${URI}#/a`)!["text"]);
-      for (const w of words) expect(body).toContain(w);
-      expect((await read()).text).toMatch(SEALED);
-      expect(await patch({ recipe: "default", uri: URI, slot: "#/a", replace: "! a", base }, ctx())).toMatchObject({ decision: "conflict", reason: "stale-base" });
-      expect(String(r.wiki.store.get(`${URI}#/a`)!["text"])).toBe(body);
+      const answers = await Promise.all(words.map((append) => put({ title: A, append })));
+      expect(answers.map((x) => x["decision"])).toEqual(["put", "put"]);
+      const standing = await body(A);
+      for (const w of words) expect(standing).toContain(w);
+      const live = await read();
+      expect(live.text).toMatch(SEALED);
+      expect(await put({ title: A, text: `! a, late ${i}`, base })).toMatchObject({ decision: "conflict", canonicalHash: live.canonicalHash });
+      expect(await body(A)).toBe(standing);
     }
   });
 
-  test("--replace swaps the slot's whole body and leaves its siblings", async () => {
-    const { r, read, patch } = await seeded();
-    const receipt = await patch({ recipe: "default", uri: URI, slot: "#/b", replace: "! b, rewritten\n\nnew prose", base: (await read()).canonicalHash }, ctx());
-    expect(receipt["decision"]).toBe("ingest");
-    expect(String(r.wiki.store.get(`${URI}#/b`)!["text"])).toBe("! b, rewritten\n\nnew prose");
-    expect(String(r.wiki.store.get(`${URI}#/a`)!["text"])).toBe("! a");
+  test("a text put swaps the slot's whole body and leaves its siblings", async () => {
+    const { read, body, put } = await seeded();
+    const answer = await put({ title: B, text: "! b, rewritten\n\nnew prose", base: (await read()).canonicalHash });
+    expect(answer).toMatchObject({ title: B, decision: "put", position: "slot", family: URI });
+    expect(await body(B)).toBe("! b, rewritten\n\nnew prose");
+    expect(await body(A)).toBe("! a");
+    // CONTROL: a slot's text put needs no base.
+    expect(await put({ title: B, text: "! b, again" })).toMatchObject({ decision: "put" });
+    expect(await body(B)).toBe("! b, again");
+    expect((await read()).text).toMatch(SEALED);
   });
 
-  test("★ a stale base refuses by name and moves nothing; the receipt names the live base ★", async () => {
-    const { r, read, patch } = await seeded();
+  test("★ a stale carrier base answers conflict and moves nothing; the answer names the live hash ★", async () => {
+    const { read, body, put } = await seeded();
     const stale = (await read()).canonicalHash;
-    await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: meme(["a", "b", "c"]) }, ctx());
+    await put({ title: URI, text: meme(["a", "b", "c"]) });
     const live = (await read()).canonicalHash;
-    const receipt = await patch({ recipe: "default", uri: URI, slot: "#/a", append: "x", base: stale }, ctx());
-    expect(receipt).toMatchObject({ decision: "conflict", reason: "stale-base", canonicalHash: live });
-    expect(String((receipt["warnings"] as string[])[0])).toMatch(/^stale-base: .*`tiddler get --meme --all`/); // the recovery names the one read door
-    expect(String(r.wiki.store.get(`${URI}#/a`)!["text"])).toBe("! a");
+    expect(live).not.toBe(stale);
+    const answer = await put({ title: A, text: "! a, late", base: stale });
+    expect(answer).toMatchObject({ decision: "conflict", canonicalHash: live });
+    expect(await body(A)).toBe("! a");
   });
 
-  test("an unbound partial base refuses before a slot write", async () => {
-    const { read, patch } = await seeded();
-    await expect(patch({ recipe: "default", uri: URI, slot: "#/a", append: "x", base: `partial:${(await read()).canonicalHash}` }, ctx())).rejects.toMatchObject({ reason: "base-outside-span" });
+  test("a partial base that names no readable span refuses before a slot write", async () => {
+    const { read, body, put } = await seeded();
+    await expect(put({ title: A, text: "x", base: `partial:${(await read()).canonicalHash}` })).rejects.toMatchObject({ reason: "base-outside-span" });
+    expect(await body(A)).toBe("! a");
   });
 
   test("bare and canonical slot reads name the same span", async () => {
     const { r } = await seeded();
     const get = makeMemeGetReactor(r.opts);
-    const bare = await get({ recipe: "default", uri: URI, slot: "a" }, ctx());
-    const canonical = await get({ recipe: "default", uri: URI, slot: "#/a" }, ctx());
+    const bare = await get({ bag: "sdm", uri: URI, slot: "a" }, ctx());
+    const canonical = await get({ bag: "sdm", uri: URI, slot: "#/a" }, ctx());
     expect(bare).toEqual(canonical);
   });
 
-  test("★ a missing slot refuses by name and moves nothing ★", async () => {
-    const { read, patch } = await seeded();
-    const receipt = await patch({ recipe: "default", uri: URI, slot: "#/nowhere", append: "x", base: (await read()).canonicalHash }, ctx());
-    expect(receipt).toMatchObject({ decision: "refuse", slot: "#/nowhere" });
-    expect(String((receipt["warnings"] as string[])[0])).toMatch(/^slot-missing: /);
+  test("★ a slot the family holds none of refuses by name and moves nothing: a slot joins through its parent's text ★", async () => {
+    const { store, read, put } = await seeded();
+    const before = (await read()).canonicalHash;
+    await expect(put({ title: `${URI}#/nowhere`, text: "x" })).rejects.toMatchObject({ reason: "family-joins-by-text" });
+    await expect(put({ title: `${URI}#/nowhere`, append: "x" })).rejects.toMatchObject({ reason: "append-target-missing" });
+    expect(await store.get(`${URI}#/nowhere`)).toBeNull();
+    expect((await read()).canonicalHash).toBe(before);
   });
 
-  test("an absent meme answers absent; the argument law refuses a replace with no base, no slot, and both or neither of append and replace", async () => {
-    const { read, patch } = await seeded();
-    const base = (await read()).canonicalHash;
-    expect(await patch({ recipe: "default", uri: "lar:///t/none", slot: "#/a", append: "x", base }, ctx())).toMatchObject({ decision: "absent" });
-    await expect(patch({ recipe: "default", uri: URI, slot: "#/a", replace: "x" }, ctx())).rejects.toMatchObject({ reason: "base-required", message: expect.stringMatching(/`tiddler get --meme`/) });
-    await expect(patch({ recipe: "default", uri: URI, append: "x", base }, ctx())).rejects.toThrow(/slot/);
-    await expect(patch({ recipe: "default", uri: URI, slot: "#/a", base }, ctx())).rejects.toMatchObject({ reason: "patch-malformed" });
-    await expect(patch({ recipe: "default", uri: URI, slot: "#/a", append: "x", replace: "y", base }, ctx())).rejects.toMatchObject({ reason: "patch-malformed" });
+  test("an append carries its words alone: a base beside it refuses, and so does an append to a family no bag holds", async () => {
+    const { read, body, put } = await seeded();
+    await expect(put({ title: A, append: "x", base: (await read()).canonicalHash })).rejects.toMatchObject({ reason: "append-alone" });
+    await expect(put({ title: A, append: "x", text: "y" })).rejects.toMatchObject({ reason: "append-alone" });
+    await expect(put({ title: "lar:///t/none#/a", append: "x" })).rejects.toMatchObject({ reason: "append-target-missing" });
+    expect(await body(A)).toBe("! a");
   });
 
-  test("CONTROL: the put's own gate still judges the patched carrier: a body that breaks the frame refuses and lands nothing", async () => {
-    const { r, read, patch } = await seeded();
-    const receipt = await patch({ recipe: "default", uri: URI, slot: "#/a", append: "<<^ code=`&#x0003;`>>", base: (await read()).canonicalHash }, ctx());
-    expect(receipt["decision"]).not.toBe("ingest");
-    expect(String(r.wiki.store.get(`${URI}#/a`)!["text"])).toBe("! a");
+  test("CONTROL: the family's gate still judges the recomposed carrier: a body that breaks the frame refuses and lands nothing", async () => {
+    const { read, body, put } = await seeded();
+    const before = (await read()).canonicalHash;
+    await expect(put({ title: A, append: "<<^ code=`&#x0003;`>>" })).rejects.toMatchObject({ reason: "family-gate-refused" });
+    expect(await body(A)).toBe("! a");
+    expect((await read()).canonicalHash).toBe(before);
+  });
+
+  test("★ a slot that carries text after its last child takes an append into that postamble ★", async () => {
+    const { store, read, body, put } = await seeded(NESTED);
+    const POST = `${A}/$postamble`;
+    expect(String((await store.get(POST))?.tiddler["text"])).toContain("after the child");
+    const own = await body(A);
+    const answer = await put({ title: A, append: "more words" });
+    expect(answer).toMatchObject({ title: A, decision: "put", appended: "more words".length, appendedTo: POST });
+    expect(await body(A), "the slot's own record keeps its text").toBe(own);
+    expect(await body(POST)).toMatch(/after the child\n\nmore words/);
+    const after = await read();
+    expect(after.text).toMatch(/<<~\/ahu>>\s+after the child\s+more words\s+<<~\/ahu>>/);
+    expect(after.text).toMatch(SEALED);
+    expect(after.canonicalHash).toBe(answer["canonicalHash"]);
+  });
+
+  test("a text put on that slot moves the slot's own record and leaves its postamble standing", async () => {
+    const { store, read, body, put } = await seeded(NESTED);
+    const POST = `${A}/$postamble`;
+    // The slot's own text, its call to the child and all, with the heading reworded.
+    const answer = await put({ title: A, text: (await body(A)).replace("! a", "! a, rewritten") });
+    expect(answer).toMatchObject({ title: A, decision: "put", position: "slot" });
+    expect(await body(A)).toContain("! a, rewritten");
+    expect(String((await store.get(POST))?.tiddler["text"])).toContain("after the child");
+    const after = await read();
+    expect(after.text).toMatch(/! a, rewritten\s+<<~ ahu slot=`#\/a\/z`>>[\s\S]*?<<~\/ahu>>\s+after the child\s+<<~\/ahu>>/);
+    expect(after.text).toMatch(SEALED);
   });
 });
 
@@ -1124,14 +960,24 @@ describe("meme-get — on a gradient by grain: whole within a page, the has-stac
     `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
     slots.map(([s, n]) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s}\n\n${words(n, word)}\n\n<<~/ahu>>\n`).join("\n") +
     `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
+  const ANCHOR: Record<string, string> = { recipe: "default" };
+  const BAG: Record<string, string> = { bag: "sdm" };
+  /** The carrier seated in the anchor wiki, for the reads. */
   const seat = async (text: string) => {
     const r = rig();
-    await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text }, ctx());
+    await seedAnchor(r, text);
+    return r;
+  };
+  /** The carrier seated in a bag, for the writes a read's base guards. */
+  const seatBag = async (text: string) => {
+    const r = rig();
+    await seedBag(r, "sdm", text);
     return r;
   };
   type Got = { meme: { text?: string; canonicalHash: string; bytes: number; grain: { asked: string | null; applied: string; why: string }; slots: Array<{ slot: string; bytes: number }>; page?: { page: number; pages: number }; next: { grain: string; after?: string } | null } };
-  const get = async (r: Rig, extra: Record<string, unknown> = {}): Promise<Got> =>
-    (await makeMemeGetReactor(r.opts)({ recipe: "default", uri: URI, ...extra }, ctx())) as unknown as Got;
+  const get = async (r: Rig, extra: Record<string, unknown> = {}, from: Record<string, string> = ANCHOR): Promise<Got> =>
+    (await makeMemeGetReactor(r.opts)({ ...from, uri: URI, ...extra }, ctx())) as unknown as Got;
+  const put = (r: Rig, args: Record<string, unknown>) => makeTiddlerPutReactor(r.opts)({ bag: "sdm", ...args }, ctx());
   const size = (text: string): number => new TextEncoder().encode(text).length;
   const read = async (r: Rig): Promise<string> => (await get(r, { grain: "whole" })).meme.text!;
 
@@ -1173,16 +1019,16 @@ describe("meme-get — on a gradient by grain: whole within a page, the has-stac
   });
 
   test("the final page's whole base supports a subsequent whole write", async () => {
-    const r = await seat(carrier([["a", 6_000], ["b", 6_000], ["c", 6_000]]));
-    let page = await get(r, { grain: "whole" });
+    const r = await seatBag(carrier([["a", 6_000], ["b", 6_000], ["c", 6_000]]));
+    let page = await get(r, { grain: "whole" }, BAG);
     const pieces = [page.meme.text!];
     while (page.meme.next?.after) {
-      page = await get(r, { grain: "whole", after: page.meme.next.after });
+      page = await get(r, { grain: "whole", after: page.meme.next.after }, BAG);
       pieces.push(page.meme.text!);
     }
     expect(page.meme.next).toBeNull();
     expect(page.meme.canonicalHash).not.toMatch(/^partial:/);
-    expect(await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: pieces.join("").replace("lorem", "changed"), base: page.meme.canonicalHash }, ctx())).toMatchObject({ decision: "ingest" });
+    expect(await put(r, { title: URI, text: pieces.join("").replace("lorem", "changed"), base: page.meme.canonicalHash })).toMatchObject({ decision: "put" });
   });
 
   test("a slot larger than a page rides its own page whole, never cut", async () => {
@@ -1201,49 +1047,44 @@ describe("meme-get — on a gradient by grain: whole within a page, the has-stac
     const first = await get(r, { grain: "whole" });
     await expect(get(r, { grain: "whole", after: "nonsense" })).rejects.toMatchObject({ reason: "read-cursor-malformed" });
     await expect(get(r, { grain: "thin" })).rejects.toMatchObject({ reason: "grain-unknown" });
-    await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: carrier([["a", 6_001], ["b", 6_000], ["c", 6_000]]) }, ctx());
+    await seedAnchor(r, carrier([["a", 6_001], ["b", 6_000], ["c", 6_000]]));
     await expect(get(r, { grain: "whole", after: first.meme.next!.after! })).rejects.toMatchObject({ reason: "read-cursor-stale" });
   });
 
-  test("RED M2 base-from-skinny: a has-stack answer's base names the card, so a meme put or a slot patch against it refuses by name", async () => {
-    const r = await seat(carrier([["a", 6_000], ["b", 6_000], ["c", 6_000]]));
-    const stack = await get(r);
+  test("RED M2 base-from-skinny: a has-stack answer's base names the card, so a root put or a slot put against it refuses by name", async () => {
+    const r = await seatBag(carrier([["a", 6_000], ["b", 6_000], ["c", 6_000]]));
+    const stack = await get(r, {}, BAG);
     expect(stack.meme.canonicalHash).toMatch(/^skinny:/);
-    await expect(makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: carrier([["a", 1]]), base: stack.meme.canonicalHash }, ctx())).rejects.toMatchObject({ reason: "base-from-skinny" });
-    await expect(makeMemePatchReactor(r.opts)({ recipe: "default", uri: URI, slot: "#/a", append: "more", base: stack.meme.canonicalHash }, ctx())).rejects.toMatchObject({ reason: "base-from-skinny" });
+    await expect(put(r, { title: URI, text: carrier([["a", 1]]), base: stack.meme.canonicalHash })).rejects.toMatchObject({ reason: "base-from-skinny" });
+    await expect(put(r, { title: `${URI}#/a`, text: "! a\n\nmore", base: stack.meme.canonicalHash })).rejects.toMatchObject({ reason: "base-from-skinny" });
     // CONTROL: the whole carrier's base authorizes the write.
-    const whole = await get(r, { grain: "whole" });
+    const whole = await get(r, { grain: "whole" }, BAG);
     expect(whole.meme.canonicalHash).not.toMatch(/^skinny:/);
   });
 
-  test("RED partial-base: a meme put refuses a partial base (one page, one slot) by name; a slot patch takes it", async () => {
-    const r = await seat(carrier([["a", 6_000], ["b", 6_000], ["c", 6_000]]));
-    const first = await get(r, { grain: "whole" });
+  test("RED partial-base: a root put refuses a partial base (a page short of the end) by name; a slot put within the page takes it", async () => {
+    const r = await seatBag(carrier([["a", 6_000], ["b", 6_000], ["c", 6_000]]));
+    const first = await get(r, { grain: "whole" }, BAG);
     expect(first.meme.canonicalHash).toMatch(/^partial:/);
-    await expect(makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: carrier([["a", 1]]), base: first.meme.canonicalHash }, ctx())).rejects.toMatchObject({ reason: "base-from-partial" });
-    expect(await makeMemePatchReactor(r.opts)({ recipe: "default", uri: URI, slot: "#/a", append: "more", base: first.meme.canonicalHash }, ctx())).toMatchObject({ decision: "ingest" });
+    await expect(put(r, { title: URI, text: carrier([["a", 1]]), base: first.meme.canonicalHash })).rejects.toMatchObject({ reason: "base-from-partial" });
+    expect(await put(r, { title: `${URI}#/a`, text: "! a\n\nmore", base: first.meme.canonicalHash })).toMatchObject({ decision: "put" });
   });
 
-  test("RED span: a slot answer's partial base names its slot, and a patch of another slot refuses base-outside-span", async () => {
-    const r = await seat(carrier([["a", 40], ["b", 40]]));
-    const slot = await get(r, { slot: "#/a" });
+  test("RED span: a slot answer's partial base names its slot, and a put on another slot refuses base-outside-span", async () => {
+    const r = await seatBag(carrier([["a", 40], ["b", 40]]));
+    const slot = await get(r, { slot: "#/a" }, BAG);
     expect(slot.meme.canonicalHash).toMatch(/^partial:#\/a:/);
-    await expect(makeMemePatchReactor(r.opts)({ recipe: "default", uri: URI, slot: "#/b", append: "more", base: slot.meme.canonicalHash }, ctx())).rejects.toMatchObject({ reason: "base-outside-span" });
-    expect(await makeMemePatchReactor(r.opts)({ recipe: "default", uri: URI, slot: "#/a", append: "more", base: slot.meme.canonicalHash }, ctx())).toMatchObject({ decision: "ingest" });
+    await expect(put(r, { title: URI, text: carrier([["a", 1]]), base: slot.meme.canonicalHash })).rejects.toMatchObject({ reason: "base-from-partial" });
+    await expect(put(r, { title: `${URI}#/b`, text: "! b\n\nmore", base: slot.meme.canonicalHash })).rejects.toMatchObject({ reason: "base-outside-span" });
+    expect(await put(r, { title: `${URI}#/a`, text: "! a\n\nmore", base: slot.meme.canonicalHash })).toMatchObject({ decision: "put" });
   });
 
-  test("RED span: a page's partial base names its page, and a patch of a slot on another page refuses base-outside-span", async () => {
-    const r = await seat(carrier([["a", 6_000], ["b", 6_000], ["c", 6_000]]));
-    const first = await get(r, { grain: "whole" });
+  test("RED span: a page's partial base names its page, and a put on a slot of another page refuses base-outside-span", async () => {
+    const r = await seatBag(carrier([["a", 6_000], ["b", 6_000], ["c", 6_000]]));
+    const first = await get(r, { grain: "whole" }, BAG);
     expect(first.meme.canonicalHash).toMatch(/^partial:p1:/);
-    await expect(makeMemePatchReactor(r.opts)({ recipe: "default", uri: URI, slot: "#/c", append: "more", base: first.meme.canonicalHash }, ctx())).rejects.toMatchObject({ reason: "base-outside-span" });
-    expect(await makeMemePatchReactor(r.opts)({ recipe: "default", uri: URI, slot: "#/a", append: "more", base: first.meme.canonicalHash }, ctx())).toMatchObject({ decision: "ingest" });
-  });
-
-  test("RED span: meme delete, a whole-family act, refuses a partial base", async () => {
-    const r = await seat(carrier([["a", 40], ["b", 40]]));
-    const slot = await get(r, { slot: "#/a" });
-    await expect(makeMemeDeleteReactor(r.opts)({ recipe: "default", uri: URI, base: slot.meme.canonicalHash }, ctx())).rejects.toMatchObject({ reason: "base-from-partial" });
+    await expect(put(r, { title: `${URI}#/c`, text: "! c\n\nmore", base: first.meme.canonicalHash })).rejects.toMatchObject({ reason: "base-outside-span" });
+    expect(await put(r, { title: `${URI}#/a`, text: "! a\n\nmore", base: first.meme.canonicalHash })).toMatchObject({ decision: "put" });
   });
 
   test("RED M1: a stay-home title answers no read through the internal meme-get either (`tiddler-withheld`)", async () => {

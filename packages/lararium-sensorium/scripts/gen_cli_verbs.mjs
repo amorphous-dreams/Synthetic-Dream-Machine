@@ -49,14 +49,12 @@ const CLI_FORMS = {
   // The wiki-SWITCHER: one MCP `wiki` tool mirrors the `lares wiki <verb>` namespace
   // (switch/hold/release/active) — the host verb is `wiki`, a real top-level CLI command.
   wiki:      "wiki switch",
-  // The MEME door — the MCP skin of the meme family's DAEMON-seated verbs. `meme_put` lands a meme's
-  // text at a `lar:` uri through the island's Confluence gate (a meme READS through `tiddler_get(meme=True)`, the one door);
-  // `meme_list` names every root a seat holds (`--tree` on the CLI, `tree` on the tool);
-  // `meme_delete` removes the whole group (`--if-match` on the CLI, `base` on the tool); `meme_project`
-  // renders the meme the island holds to a target (`--to` on the CLI, `to` on the tool — the target
+  // The MEME door — the MCP skin of the meme family's DAEMON-seated render. A family writes through the tiddler door below
+  // (`tiddler_put` lands a carrier or one slot, `tiddler_delete(family=True)` removes it) and reads through `tiddler_get(meme=True)`;
+  // `meme_project` renders the meme the island holds to a target (`--to` on the CLI, `to` on the tool — the target
   // rides as a parameter, never a suffix on the verb). The host `meme` is a real top-level CLI command,
-  // so each mirrors as `<host> <sub>` — ONE host, four tools, the shape kapae/un_kapae ride under
-  // `sense worldline`. The family's LOCAL seats ride LOCAL_SEAT below.
+  // so it mirrors as `<host> <sub>`, the shape kapae/un_kapae ride under `sense worldline`. The family's LOCAL seats
+  // ride LOCAL_SEAT below.
   meme_project: "meme project",
   // THE TIDDLER DOOR (wiki-surface-scout #/a-lean) — every TiddlyWiki act over one record or one wiki's engine. The record
   // verbs ride their own host (`lares tiddler get|put|delete`); the engine verbs join the `wiki` host beside the switcher

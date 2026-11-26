@@ -599,7 +599,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(await put({ ...A, title: "Note 05", fields: { status: "seen" }, base: card.hash }, ctx())).toMatchObject({ decision: "put" });
   });
 
-  test("RED partial-base: a slot answer and a page short of the end hand a partial base, which no meme put takes; the last page and the whole hand the bare base", async () => {
+  test("RED partial-base: a slot answer and a page short of the end hand a partial base, which a put takes within the span it read; the last page and the whole hand the bare base", async () => {
     const r = await rig();
     const big = (x: string): string => `body of ${x} ${"lorem ".repeat(5_000)}`;
     const text = memeText(["a", "b", "c"]).replace(/body of (\w)/g, (_m, x: string) => big(x));
@@ -801,14 +801,64 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(await put({ ...A, title: "Note 04", fields: { status: "done" }, base: live }, ctx())).toMatchObject({ decision: "put" });
   });
 
-  test("tiddler-put fences: the face's write cap decides, a family member's text stays at the meme door, a title that stays home refuses by name", async () => {
+  test("tiddler-put fences: the face's write cap decides, a family member's text lands through the Confluence gate inside the put, a title that stays home refuses by name", async () => {
     const r = await rig();
     await placeMeme({ uri: MEME, text: memeText(["a"]) }, wikiMemeSink(r.engine.wiki));
     const put = makeTiddlerPutReactor(r.opts);
     await expect(put({ ...A, title: "Note 05", fields: { status: "x" } }, ctx(reader))).rejects.toThrow(/cap-denied: admin on .*daemon/);
-    await expect(put({ ...A, title: MEME, text: "bare" }, ctx())).rejects.toMatchObject({ reason: "tiddler-put-in-a-family" });
-    await expect(put({ ...A, title: `${MEME}#/a`, text: "bare" }, ctx())).rejects.toMatchObject({ reason: "tiddler-put-in-a-family" });
     expect(await put({ ...A, title: MEME, fields: { status: "ripe" }, tagsAdd: "memory" }, ctx())).toMatchObject({ decision: "put", position: "root" });
+    // A FAMILY READS AS TIDDLERS: a text put on a slot, then on the root, lands as the family; the carrier reads back whole and
+    // sealed, and a slot the root's new text no longer calls leaves by the consequence the answer names.
+    const sink = wikiMemeSink(r.engine.wiki);
+    const coherent = async (): Promise<string> => {
+      const now = (await readMeme(MEME, sink))!;
+      expect(verifyBcc(now.text)).toMatch(/^(ok|head-unbound)$/);
+      expect(await evaluateMeme({ uri: MEME, text: now.text, baseHash: now.canonicalHash }, sink)).toMatchObject({ decision: "noop", grade: "clean" });
+      return now.text;
+    };
+    const slot = await put({ ...A, title: `${MEME}#/a`, text: "a slot's new words" }, ctx());
+    expect(slot).toMatchObject({ decision: "put", position: "slot", family: MEME, created: false, landed: expect.arrayContaining([`${MEME}#/a`]) });
+    expect(r.engine.wiki.getTiddlerText(`${MEME}#/a`)).toContain("a slot's new words");
+    expect(slot["canonicalHash"]).toBe((await readMeme(MEME, sink))!.canonicalHash);
+    expect(await coherent()).toContain("a slot's new words");
+    // ABSENCE NEVER DELETES: a root text that names no slot keeps the slot standing, folded behind its `kahea` call.
+    const root = await put({ ...A, title: MEME, text: "bare" }, ctx());
+    expect(root).toMatchObject({ decision: "put", position: "root", kept: [`${MEME}#/a`], tombstoned: [] });
+    expect(r.engine.wiki.getTiddlerText(`${MEME}#/a`)).toContain("a slot's new words");
+    expect(r.engine.wiki.getTiddlerText(MEME)).toContain("bare");
+    expect(r.engine.wiki.getTiddlerText(MEME)).toContain("<<~ kahea ahu slot=`#/a`>>");
+    expect(r.engine.wiki.getTiddler(MEME)?.fields["status"]).toBe("ripe");
+    expect(root["canonicalHash"]).toBe((await readMeme(MEME, sink))!.canonicalHash);
+    const folded = await coherent();
+    expect(folded).toContain("bare");
+    expect(folded).toContain("a slot's new words");
+    // A FOLDED HAND-BACK keeps too: the root's own text, call and all, put back changed lands with nothing kept or cut.
+    const handBack = await put({ ...A, title: MEME, text: "bare, trued\n\n<<~ kahea ahu slot=`#/a`>>" }, ctx());
+    expect(handBack).toMatchObject({ decision: "put", kept: [], tombstoned: [] });
+    expect(r.engine.wiki.tiddlerExists(`${MEME}#/a`)).toBe(true);
+    // A SLOT LEAVES BY NAME ALONE: a cut that names no standing omitted slot refuses and moves nothing; the cut that names
+    // `#/a` takes its call out of the root's text and tombstones it.
+    await expect(put({ ...A, title: MEME, cut: ["#/nope"] }, ctx())).rejects.toMatchObject({ reason: "cut-not-omitted" });
+    await expect(put({ ...A, title: MEME, cut: ["a"] }, ctx())).rejects.toMatchObject({ reason: "cut-malformed" });
+    await expect(put({ ...A, title: "Note 05", cut: ["#/a"] }, ctx())).rejects.toMatchObject({ reason: "cut-not-omitted" });
+    expect(r.engine.wiki.tiddlerExists(`${MEME}#/a`)).toBe(true);
+    const cut = await put({ ...A, title: MEME, cut: ["#/a"] }, ctx());
+    expect(cut).toMatchObject({ decision: "put", position: "root", kept: [], tombstoned: expect.arrayContaining([`${MEME}#/a`]) });
+    expect(r.engine.wiki.tiddlerExists(`${MEME}#/a`)).toBe(false);
+    expect(r.engine.wiki.getTiddlerText(MEME)).not.toContain("kahea");
+    const whole = await coherent();
+    expect(whole).toContain("bare, trued");
+    expect(whole).not.toContain("a slot's new words");
+    // A WHOLE CARRIER ON THE ROOT speaks for the family: the same put re-splits it; a stale carrier base answers conflict.
+    expect(await put({ ...A, title: MEME, text: memeText(["a", "b"]), base: "sha256:" + "0".repeat(64) }, ctx())).toMatchObject({ decision: "conflict" });
+    expect(await put({ ...A, title: MEME, text: memeText(["a", "b"]), base: cut["canonicalHash"] as string }, ctx())).toMatchObject({ decision: "put", landed: expect.arrayContaining([`${MEME}#/a`, `${MEME}#/b`]) });
+    expect(r.engine.wiki.getTiddlerText(`${MEME}#/b`)).toContain("body of b");
+    await coherent();
+    // A whole carrier that omits a standing slot keeps it as well; the same carrier with the cut named drops it.
+    expect(await put({ ...A, title: MEME, text: memeText(["a"]) }, ctx())).toMatchObject({ decision: "put", kept: [`${MEME}#/b`], tombstoned: [] });
+    expect((await coherent())).toContain("body of b");
+    expect(await put({ ...A, title: MEME, text: memeText(["a"]), cut: ["#/b"] }, ctx())).toMatchObject({ decision: "put", kept: [], tombstoned: expect.arrayContaining([`${MEME}#/b`]) });
+    expect((await coherent())).not.toContain("body of b");
     await expect(put({ ...A, title: "$:/temp/lares/secret", text: "y" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
     await expect(put({ ...A, title: "lar:///ha.ka.ba/kahua/memory/Feedback/x", text: "y" }, ctx())).rejects.toMatchObject({ reason: "stage-path-shape" });
     expect(await put({ ...A, title: "lar:///ha.ka.ba/kahua/memory/feedback/x", text: "y" }, ctx())).toMatchObject({ decision: "put" });
@@ -937,13 +987,23 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
       return ["ok", "head-unbound"].includes(verifyBcc(now.text)) && gate.decision === "noop" && gate.grade === "clean";
     };
     expect(await sealedNow()).toBe(true);
-    // The slot's TEXT, through `text` or through `fields.text`, and its carriage fields: each refuses by name and nothing moves.
-    for (const move of [{ text: "a new body" }, { fields: { text: "a new body" } }, { fields: { "$slot": "#/z" } }, { fields: { type: "text/plain" } }, { unset: ["text"] }]) {
-      await expect(put({ ...A, title: `${MEME}#/a`, ...move }, ctx())).rejects.toMatchObject({ reason: "tiddler-put-in-a-family" });
+    // The slot's carriage fields and its type derive from the text at each split: a put that names one refuses and nothing moves.
+    for (const move of [{ fields: { "$slot": "#/z" } }, { fields: { type: "text/plain" } }, { text: "x", fields: { "$slot": "#/z" } }]) {
+      await expect(put({ ...A, title: `${MEME}#/a`, ...move }, ctx())).rejects.toMatchObject({ reason: "family-carriage-derives" });
     }
     expect(r.engine.wiki.getTiddlerText(`${MEME}#/a`)).toContain("body of a");
-    // A NEW slot title joining the family refuses too.
-    await expect(put({ ...A, title: `${MEME}#/c`, text: "x", fields: { "$fragment-parent": MEME } }, ctx())).rejects.toMatchObject({ reason: "tiddler-put-in-a-family" });
+    // A NEW slot title joins through its parent's text alone.
+    await expect(put({ ...A, title: `${MEME}#/c`, text: "x", fields: { "$fragment-parent": MEME } }, ctx())).rejects.toMatchObject({ reason: "family-joins-by-text" });
+    expect(await sealedNow()).toBe(true);
+    // The slot's TEXT, through `text`, through `fields.text` and through an append: each lands through the gate, and after each
+    // the carrier reads sealed and gate-clean, its sibling slot untouched.
+    for (const move of [{ text: "a new body" }, { fields: { text: "a newer body" } }, { append: "and a line more" }]) {
+      expect(await put({ ...A, title: `${MEME}#/a`, ...move }, ctx())).toMatchObject({ decision: "put", position: "slot", family: MEME });
+      expect(await sealedNow()).toBe(true);
+    }
+    expect(r.engine.wiki.getTiddlerText(`${MEME}#/a`)).toContain("a newer body");
+    expect(r.engine.wiki.getTiddlerText(`${MEME}#/a`)).toContain("and a line more");
+    expect(r.engine.wiki.getTiddlerText(`${MEME}#/b`)).toContain("body of b");
     // A field or tag patch lands (a root field rides the render's meta block), and the carrier still reads sealed and gate-clean.
     expect(await put({ ...A, title: `${MEME}#/a`, fields: { status: "ripe" }, tagsAdd: "memory" }, ctx())).toMatchObject({ decision: "put", position: "slot" });
     expect(await sealedNow()).toBe(true);
@@ -951,7 +1011,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(await sealedNow()).toBe(true);
   });
 
-  test("tiddler-delete: a meme root or slot answers its consequence and refuses without the family flag; a plain tiddler leaves plainly with its consequence named; a stale base moves nothing", async () => {
+  test("tiddler-delete: a meme root answers its consequence and refuses without the family flag; a slot leaves by the explicit cut of its parent; a plain tiddler leaves plainly with its consequence named; a stale base moves nothing", async () => {
     const r = await rig();
     await placeMeme({ uri: MEME, text: memeText(["a"]) }, wikiMemeSink(r.engine.wiki));
     const del = makeTiddlerDeleteReactor(r.opts);
@@ -959,9 +1019,19 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(root).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family", tombstoned: [],
       consequence: { act: "delete", target: MEME, position: "root", family: MEME, refusals: [] } });
     expect(retractsOf(root["consequence"] as Consequence)).toEqual([MEME, `${MEME}#/a`]);
-    expect(await del({ ...A, title: `${MEME}#/a` }, ctx())).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family", consequence: { position: "slot", family: MEME } });
+    expect(String(root["why"])).toMatch(/lares tiddler delete "lar:\/\/\/t\/x" --recipe default --family.*Nothing moved\.$/);
     expect(r.engine.wiki.tiddlerExists(MEME)).toBe(true);
     expect(r.engine.wiki.tiddlerExists(`${MEME}#/a`)).toBe(true);
+    // A cut names no layer, so a mode refuses; a stale base on the slot's own record moves nothing.
+    await expect(del({ ...A, title: `${MEME}#/a`, mode: "kapae" }, ctx())).rejects.toMatchObject({ reason: "delete-mode-unread" });
+    expect(await del({ ...A, title: `${MEME}#/a`, base: "sha256-" + "0".repeat(64) }, ctx())).toMatchObject({ decision: "conflict", mode: "cut", tombstoned: [] });
+    expect(r.engine.wiki.tiddlerExists(`${MEME}#/a`)).toBe(true);
+    const cut = await del({ ...A, title: `${MEME}#/a` }, ctx());
+    expect(cut).toMatchObject({ recipe: "default", decision: "removed", mode: "cut", parent: MEME, tombstoned: expect.arrayContaining([`${MEME}#/a`]), consequence: { position: "slot", family: MEME } });
+    expect(String(cut["canonicalHash"])).toMatch(/^sha256:[0-9a-f]{64}$/);
+    expect(r.engine.wiki.tiddlerExists(MEME)).toBe(true);
+    expect(r.engine.wiki.tiddlerExists(`${MEME}#/a`)).toBe(false);
+    expect(r.engine.wiki.getTiddlerText(MEME)).not.toContain("kahea");
     expect(await del({ ...A, title: "Other", base: "sha256-" + "0".repeat(64) }, ctx())).toMatchObject({ decision: "conflict" });
     expect(r.engine.wiki.tiddlerExists("Other")).toBe(true);
     await expect(del({ ...A, title: "Other" }, ctx(reader))).rejects.toThrow(/cap-denied/);
@@ -1345,7 +1415,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(wiki.tiddlerExists(`${MEME}/child`)).toBe(true);
   });
 
-  test("family-delete of a slot: an orphan subtree leaves as one change under the flag; a slot its parent calls refuses toward the meme door, since the call would dangle", async () => {
+  test("family-delete of a slot: an orphan subtree leaves as one change under the flag; a slot its parent calls leaves by the cut, the call going with it", async () => {
     const r = await rig();
     const wiki = r.engine.wiki;
     await placeMeme({ uri: MEME, text: memeText(["a"]) }, wikiMemeSink(wiki));
@@ -1353,9 +1423,9 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     wiki.addTiddler({ title: "lar:///t/gone#/a/b", type: CARRIER, text: "orphan child", "$fragment-parent": "lar:///t/gone#/a" });
     const del = makeTiddlerDeleteReactor(r.opts);
     const called = await del({ ...A, title: `${MEME}#/a`, family: true }, ctx());
-    expect(called).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family", tombstoned: [] });
-    expect(String(called["why"])).toContain("tiddler put --meme");
-    expect(wiki.tiddlerExists(`${MEME}#/a`)).toBe(true);
+    expect(called).toMatchObject({ decision: "removed", mode: "cut", parent: MEME, tombstoned: expect.arrayContaining([`${MEME}#/a`]) });
+    expect(wiki.tiddlerExists(`${MEME}#/a`)).toBe(false);
+    expect(wiki.getTiddlerText(MEME)).not.toContain("kahea");
     expect(await del({ ...A, title: "lar:///t/gone#/a", family: true }, ctx())).toMatchObject({ decision: "removed", retracted: ["lar:///t/gone#/a", "lar:///t/gone#/a/b"] });
     await r.landed();
     expect(wiki.tiddlerExists("lar:///t/gone#/a/b")).toBe(false);
@@ -1593,7 +1663,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     await expect(makeWikiFilterReactor(r.opts)({ filter: "[tag[memory]]" }, ctx())).rejects.toMatchObject({ reason: "no-container" });
     await expect(makeWikiFilterReactor(r.opts)({ recipe: "lares", filter: "[tag[memory]]" }, ctx())).rejects.toMatchObject({ reason: "wiki-unreached" });
     await expect(makeWikiStatusReactor(r.opts)({ recipe: "lares" }, ctx())).rejects.toMatchObject({ reason: "wiki-unreached" });
-    await expect(makeTiddlerPutReactor(r.opts)({ bag: "lares", title: "x", text: "y" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored" });
+    await expect(makeWikiStatusReactor(r.opts)({ bag: "lares" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored" });
   });
 
   test("RED: a named wiki answers in its own engine, never the anchor's: every verb asks the named wiki's door, and every answer names the wiki", async () => {
@@ -1793,13 +1863,15 @@ describe.skipIf(wikiSkip)(`a bag read through the tiddler door${skipNote}`, () =
     await expect(get({ bag: "lares", title: "$:/temp/lares/secret" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
   });
 
-  test("the engine verbs and the writes name the right door where a bag stands: a refusal that points at `tiddler get --bag`, `tiddler get --meme --bag` and `tiddler put --meme --bag`", async () => {
+  test("the engine verbs name the right door where a bag stands: a refusal that points at `tiddler get --bag`, `tiddler put --bag`, `tiddler delete --bag` and `tiddler get --meme --bag`; a put and a delete reach the bag's own store", async () => {
     const r = await rig();
     await expect(makeWikiFilterReactor(r.opts)({ bag: "lares", filter: "[all[]]" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored", message: expect.stringMatching(/runs in a wiki's own engine.*tiddler get <title> --bag.*tiddler get --meme --bag.*--recipe/s) });
     await expect(makeWikiRenderReactor(r.opts)({ bag: "lares", title: "x" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored" });
     await expect(makeWikiStatusReactor(r.opts)({ bag: "lares" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored" });
-    await expect(makeTiddlerPutReactor(r.opts)({ bag: "lares", title: "x", text: "y" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored", message: expect.stringMatching(/tiddler put --meme --bag/) });
-    await expect(makeTiddlerDeleteReactor(r.opts)({ bag: "lares", title: "x" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored", message: expect.stringMatching(/tiddler delete --meme --bag/) });
+    await expect(makeWikiFilterReactor(r.opts)({ bag: "lares", filter: "[all[]]" }, ctx())).rejects.toMatchObject({ message: expect.stringMatching(/tiddler put <title> --bag <slug>.*tiddler delete <title> --bag <slug>.*tiddler delete <root> --bag <slug> --family/s) });
+    // A bag the island mounts no writable layer for refuses a write by the bag's own name: nothing shadows up.
+    await expect(makeTiddlerPutReactor(r.opts)({ bag: "lares", title: "x", text: "y" }, ctx())).rejects.toThrow(/bag "lar:\/\/\/ha\.ka\.ba\/bags\/lares" holds no writable layer/);
+    await expect(makeTiddlerDeleteReactor(r.opts)({ bag: "lares", title: "x" }, ctx())).rejects.toThrow(/holds no writable layer/);
   });
 });
 
@@ -1818,5 +1890,191 @@ describe.skipIf(wikiSkip)(`the person's collapse rules take a hand's write alone
   test("CONTROL: the operator's own line lands the rule", async () => {
     const r = await rig();
     expect(await makeTiddlerPutReactor(r.opts)({ ...A, title: RULE, create: true, text: "", fields: { bags: CANON } }, { ...ctx(), asker: "cli" })).toMatchObject({ decision: "put" });
+  });
+});
+
+/** A carrier whose slot `#/a` nests a child and carries words after the child's close: the slot's `$postamble`. */
+const nestedText = (tail: string): string =>
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${MEME}\`>>\n` +
+  `<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
+  `<<~ ahu slot=\`#/a\`>>\n\n! a\n\nbody of a\n\n<<~ ahu slot=\`#/a/z\`>>\n\nbody of z\n\n<<~/ahu>>\n\n${tail}\n\n<<~/ahu>>\n\n` +
+  `<<~ ahu slot=\`#/b\`>>\n\n! b\n\nbody of b\n\n<<~/ahu>>\n` +
+  `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
+
+describe.skipIf(wikiSkip)(`a family's slot moves by the plain put${skipNote}`, () => {
+  const POST = `${MEME}#/a/$postamble`;
+
+  test("a partial base guards a slot put within the span it read, refuses `base-outside-span` beyond it, and reads stale once the carrier moves; a put that speaks for the whole carrier refuses it", async () => {
+    const r = await rig();
+    await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki));
+    const get = makeTiddlerGetReactor(r.opts);
+    const put = makeTiddlerPutReactor(r.opts);
+    const base = ((await get({ ...A, title: MEME, meme: true, slot: "#/a" }, ctx()))["meme"] as { canonicalHash: string }).canonicalHash;
+    expect(base).toMatch(/^partial:#\/a:sha256:/);
+    await expect(put({ ...A, title: `${MEME}#/b`, text: "b moved", base }, ctx())).rejects.toMatchObject({ reason: "base-outside-span", message: expect.stringMatching(/lares tiddler get "lar:\/\/\/t\/x#\/b" --recipe default --meme.*Nothing moved\.$/) });
+    await expect(put({ ...A, title: `${MEME}#/a`, text: "x", base: "partial:no-span" }, ctx())).rejects.toMatchObject({ reason: "base-outside-span" });
+    await expect(put({ ...A, title: MEME, text: memeText(["a"]), base }, ctx())).rejects.toMatchObject({ reason: "base-from-partial" });
+    expect(r.engine.wiki.getTiddlerText(`${MEME}#/a`)).toContain("body of a");
+    expect(r.engine.wiki.getTiddlerText(`${MEME}#/b`)).toContain("body of b");
+    const landed = await put({ ...A, title: `${MEME}#/a`, text: "a moved", base }, ctx());
+    expect(landed).toMatchObject({ decision: "put", position: "slot", family: MEME, tombstoned: [] });
+    expect(r.engine.wiki.getTiddlerText(`${MEME}#/a`)).toContain("a moved");
+    // The carrier moved past the base: the gate answers conflict and names the hash the family reads now.
+    expect(await put({ ...A, title: `${MEME}#/a`, text: "a moved again", base }, ctx())).toMatchObject({ decision: "conflict", canonicalHash: expect.stringMatching(/^sha256:[0-9a-f]{64}$/) });
+    expect(r.engine.wiki.getTiddlerText(`${MEME}#/a`)).not.toContain("again");
+    // A slot's text put needs no base.
+    expect(await put({ ...A, title: `${MEME}#/a`, text: "a with no base" }, ctx())).toMatchObject({ decision: "put" });
+  });
+
+  test("an append on a slot joins its body's end: the postamble where one stands with text, the slot's own text otherwise, one blank line between; CONTROL: a root and a plain tiddler keep the plain join", async () => {
+    const r = await rig();
+    const sink = wikiMemeSink(r.engine.wiki);
+    expect((await placeMeme({ uri: MEME, text: nestedText("a tail after the child") }, sink)).decision).toBe("ingest");
+    expect(r.engine.wiki.getTiddlerText(POST)).toContain("a tail after the child");
+    const put = makeTiddlerPutReactor(r.opts);
+    const joined = await put({ ...A, title: `${MEME}#/a`, append: "\nwords at the end\n" }, ctx());
+    expect(joined).toMatchObject({ decision: "put", position: "slot", family: MEME, appendedTo: POST, changed: [] });
+    expect(r.engine.wiki.getTiddlerText(POST)).toMatch(/a tail after the child\n\nwords at the end/);
+    expect(r.engine.wiki.getTiddlerText(`${MEME}#/a`)).not.toContain("words at the end");
+    // No postamble stands under `#/b`: the words join the slot's own text.
+    const own = await put({ ...A, title: `${MEME}#/b`, append: "a line for b" }, ctx());
+    expect(own).toMatchObject({ decision: "put", appendedTo: `${MEME}#/b`, changed: ["text"] });
+    expect(r.engine.wiki.getTiddlerText(`${MEME}#/b`)).toMatch(/body of b\n\na line for b/);
+    expect((await readMeme(MEME, sink))!.text).toContain("words at the end");
+    // CONTROL: the plain record join, one newline.
+    const plain = await put({ ...A, title: "Other", append: "more" }, ctx());
+    expect(plain).toMatchObject({ decision: "put" });
+    expect(plain["appendedTo"]).toBeUndefined();
+    expect(r.engine.wiki.getTiddlerText("Other")).toBe("untagged\nmore");
+  });
+
+  test("a slot's text put moves the slot's own record and leaves its standing postamble; a child the new text omits stays by reference", async () => {
+    const r = await rig();
+    const sink = wikiMemeSink(r.engine.wiki);
+    await placeMeme({ uri: MEME, text: nestedText("a tail after the child") }, sink);
+    const put = makeTiddlerPutReactor(r.opts);
+    const swapped = await put({ ...A, title: `${MEME}#/a`, text: "a new body\n\n<<~ kahea ahu slot=`#/a/z`>>" }, ctx());
+    expect(swapped).toMatchObject({ decision: "put", position: "slot", tombstoned: [] });
+    expect(r.engine.wiki.getTiddlerText(`${MEME}#/a`)).toContain("a new body");
+    expect(r.engine.wiki.getTiddlerText(POST)).toContain("a tail after the child");
+    // The text that drops the child's call keeps the child (absence never deletes), and the tail's words still read.
+    const dropped = await put({ ...A, title: `${MEME}#/a`, text: "a body with no call" }, ctx());
+    expect(dropped).toMatchObject({ decision: "put", kept: expect.arrayContaining([`${MEME}#/a/z`]) });
+    const whole = (await readMeme(MEME, sink))!.text;
+    for (const words of ["a body with no call", "body of z", "a tail after the child", "body of b"]) expect(whole, words).toContain(words);
+  });
+
+  test("a put on a slot the family does not hold refuses `family-joins-by-text` and lands nothing; CONTROL: a fragment title under no meme root lands as a plain tiddler", async () => {
+    const r = await rig();
+    await placeMeme({ uri: MEME, text: memeText(["a"]) }, wikiMemeSink(r.engine.wiki));
+    const put = makeTiddlerPutReactor(r.opts);
+    await expect(put({ ...A, title: `${MEME}#/nope`, text: "x" }, ctx())).rejects.toMatchObject({ reason: "family-joins-by-text" });
+    await expect(put({ ...A, title: `${MEME}#/nope`, append: "x" }, ctx())).rejects.toMatchObject({ reason: "append-target-missing" });
+    expect(r.engine.wiki.tiddlerExists(`${MEME}#/nope`)).toBe(false);
+    expect(await put({ ...A, title: "Note 01#/aside", text: "a plain aside" }, ctx())).toMatchObject({ decision: "put", position: "plain" });
+  });
+
+  test("a first record whose text frames a whole carrier founds its family with no type named", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    const founded = await put({ ...A, title: MEME, text: memeText(["a"]) }, ctx());
+    expect(founded).toMatchObject({ decision: "put", created: true, position: "root", landed: expect.arrayContaining([MEME, `${MEME}#/a`]) });
+    expect(r.engine.wiki.getTiddler(MEME)?.fields["type"]).toBe(CARRIER);
+  });
+});
+
+describe.skipIf(wikiSkip)(`a bag takes the plain put and the delete through its own store${skipNote}`, () => {
+  const BAG = { bag: "daemon" } as const;
+  const zero = (mark: "-" | ":"): string => `sha256${mark}${"0".repeat(64)}`;
+
+  test("a plain record lands in the bag by the record-hash base law: `conflict` on a stale base, `exists` under `create`, `noop` on the same bytes; the answer names the bag and no wiki", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    const store = r.composite.storeForBag(DAEMON)!;
+    const made = await put({ ...BAG, title: "Bag note", text: "one", tagsAdd: "kept [[two words]]" }, ctx());
+    expect(made).toMatchObject({ decision: "put", bag: DAEMON, created: true, position: "plain", changed: expect.arrayContaining(["title", "text", "tags"]) });
+    expect(made["recipe"]).toBeUndefined();
+    expect((await store.get("Bag note"))?.tiddler).toMatchObject({ title: "Bag note", text: "one", tags: "kept [[two words]]" });
+    // The hash the put hands back reads as the hash the bag's own get answers.
+    const read = await makeTiddlerGetReactor(r.opts)({ ...BAG, title: "Bag note" }, ctx());
+    expect((read["tiddler"] as { hash: string }).hash).toBe(made["hash"]);
+    expect(await put({ ...BAG, title: "Bag note", text: "two", base: zero("-") }, ctx())).toMatchObject({ decision: "conflict", hash: made["hash"] });
+    expect(await put({ ...BAG, title: "Bag note", text: "two", create: true }, ctx())).toMatchObject({ decision: "exists", hash: made["hash"] });
+    expect(await put({ ...BAG, title: "Bag note", text: "one" }, ctx())).toMatchObject({ decision: "noop" });
+    expect((await store.get("Bag note"))?.tiddler["text"]).toBe("one");
+    expect(await put({ ...BAG, title: "Bag note", text: "two", base: made["hash"] as string }, ctx())).toMatchObject({ decision: "put", created: false, changed: ["text"] });
+    expect(await put({ ...BAG, title: "Bag note", append: "three" }, ctx())).toMatchObject({ decision: "put", appended: 5 });
+    expect((await store.get("Bag note"))?.tiddler["text"]).toBe("two\nthree");
+  });
+
+  test("the bag's gates stand: a bag with no writable layer refuses by name, a hand with no admin cap refuses, a stay-home title and a rendered tiddler refuse; nothing lands", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    const store = r.composite.storeForBag(DAEMON)!;
+    await expect(put({ bag: "lares", title: "x", text: "y" }, ctx())).rejects.toThrow(/holds no writable layer/);
+    await expect(put({ ...BAG, title: "x", text: "y" }, ctx(reader))).rejects.toThrow(/cap-denied: admin/);
+    await expect(put({ ...BAG, title: "$:/temp/lares/secret", text: "y" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    await expect(put({ ...BAG, title: "x", text: "y", fields: { "rendered-from": "lar:///t/road" } }, ctx())).rejects.toMatchObject({ reason: "rendered-derives" });
+    await expect(put({ ...BAG, recipe: "default", title: "x", text: "y" }, ctx())).rejects.toMatchObject({ reason: "no-container" });
+    expect(await store.get("x")).toBeNull();
+  });
+
+  test("a family's text lands in the bag through the Confluence gate: a framed root founds, a slot's text and append move it, a slot the text omits stays until `cut` names it, a stale carrier base answers `conflict`", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    const store = r.composite.storeForBag(DAEMON)!;
+    const founded = await put({ ...BAG, title: MEME, text: memeText(["a", "b"]) }, ctx());
+    expect(founded).toMatchObject({ decision: "put", bag: DAEMON, created: true, position: "root", landed: expect.arrayContaining([MEME, `${MEME}#/a`, `${MEME}#/b`]), kept: [], tombstoned: [] });
+    expect(String(founded["canonicalHash"])).toMatch(/^sha256:[0-9a-f]{64}$/);
+    expect((await store.get(MEME))?.tiddler["type"]).toBe(CARRIER);
+    expect(await put({ ...BAG, title: `${MEME}#/a`, text: "a in the bag" }, ctx())).toMatchObject({ decision: "put", position: "slot", family: MEME });
+    expect(await put({ ...BAG, title: `${MEME}#/a`, append: "and a line" }, ctx())).toMatchObject({ decision: "put", appendedTo: `${MEME}#/a` });
+    expect(String((await store.get(`${MEME}#/a`))?.tiddler["text"])).toMatch(/a in the bag\n\nand a line/);
+    await expect(put({ ...BAG, title: `${MEME}#/a`, fields: { "$slot": "#/z" } }, ctx())).rejects.toMatchObject({ reason: "family-carriage-derives", message: expect.stringMatching(/--bag daemon/) });
+    expect(await put({ ...BAG, title: MEME, text: memeText(["a", "b"]), base: zero(":") }, ctx())).toMatchObject({ decision: "conflict" });
+    // ABSENCE NEVER DELETES: the carrier that omits `#/b` keeps it by reference; the cut names what leaves.
+    expect(await put({ ...BAG, title: MEME, text: memeText(["a"]) }, ctx())).toMatchObject({ decision: "put", kept: [`${MEME}#/b`], tombstoned: [] });
+    expect((await store.get(`${MEME}#/b`))?.meta?.deleted).not.toBe(true);
+    expect(await put({ ...BAG, title: MEME, cut: ["#/b"] }, ctx())).toMatchObject({ decision: "put", kept: [], tombstoned: expect.arrayContaining([`${MEME}#/b`]) });
+    const after = await makeTiddlerGetReactor(r.opts)({ ...BAG, title: MEME, meme: true, grain: "whole" }, ctx());
+    expect(String((after["meme"] as { text: string }).text)).not.toContain("body of b");
+  });
+
+  test("a bag's delete: a plain record leaves its bag, a root refuses without the family act and leaves whole with it, a slot leaves by the cut of its parent, a mode refuses by name", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    const del = makeTiddlerDeleteReactor(r.opts);
+    const store = r.composite.storeForBag(DAEMON)!;
+    const live = async (title: string): Promise<boolean> => { const held = await store.get(title); return held !== null && held.meta?.deleted !== true; };
+    const note = await put({ ...BAG, title: "Bag note", text: "one" }, ctx());
+    await put({ ...BAG, title: MEME, text: memeText(["a", "b"]) }, ctx());
+    // A plain record: a stale base moves nothing, then it leaves.
+    expect(await del({ ...BAG, title: "Bag note", base: zero("-") }, ctx())).toMatchObject({ decision: "conflict", bag: DAEMON, hash: note["hash"] });
+    expect(await live("Bag note")).toBe(true);
+    const left = await del({ ...BAG, title: "Bag note", base: note["hash"] as string }, ctx());
+    expect(left).toMatchObject({ decision: "removed", mode: "plain", bag: DAEMON });
+    expect(left["recipe"]).toBeUndefined();
+    expect([...(left["tombstoned"] as string[]), ...(left["retracted"] as string[])]).toEqual(["Bag note"]);
+    expect(await live("Bag note")).toBe(false);
+    expect(await del({ ...BAG, title: "Bag note" }, ctx())).toMatchObject({ decision: "absent" });
+    // A root: the family act by name.
+    const refused = await del({ ...BAG, title: MEME }, ctx());
+    expect(refused).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family", bag: DAEMON });
+    expect(String(refused["why"])).toMatch(/lares tiddler delete "lar:\/\/\/t\/x" --bag daemon --family.*Nothing moved\.$/);
+    expect(await live(MEME)).toBe(true);
+    await expect(del({ ...BAG, title: MEME, family: true, mode: "kapae" }, ctx())).rejects.toMatchObject({ reason: "delete-mode-unread" });
+    await expect(del({ ...BAG, title: MEME, family: true }, ctx(reader))).rejects.toThrow(/cap-denied: admin/);
+    // A slot: the explicit cut, its answer naming what the cut tombstoned.
+    const cut = await del({ ...BAG, title: `${MEME}#/b` }, ctx());
+    expect(cut).toMatchObject({ decision: "removed", mode: "cut", bag: DAEMON, parent: MEME, tombstoned: expect.arrayContaining([`${MEME}#/b`]) });
+    expect(await live(`${MEME}#/b`)).toBe(false);
+    expect(await live(`${MEME}#/a`)).toBe(true);
+    // The family: a stale carrier base moves nothing, then the root and its slots leave as one change.
+    expect(await del({ ...BAG, title: MEME, family: true, base: zero(":") }, ctx())).toMatchObject({ decision: "conflict" });
+    const gone = await del({ ...BAG, title: MEME, family: true }, ctx());
+    expect(gone).toMatchObject({ decision: "removed", mode: "plain", bag: DAEMON });
+    expect([...(gone["tombstoned"] as string[]), ...(gone["retracted"] as string[])].sort()).toEqual([MEME, `${MEME}#/a`]);
+    expect(await live(MEME)).toBe(false);
+    expect(await del({ ...BAG, title: MEME, family: true }, ctx())).toMatchObject({ decision: "absent" });
   });
 });

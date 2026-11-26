@@ -4,7 +4,7 @@
  * door, so a door left open reads red by name:
  *
  *   residency reactor  ADD · COPY · MOVE · CLEAR · DROP · LOAD · INGEST   (into canon; MOVE also out of it)
- *   meme put · meme delete · draft placement · a realm steward's write (the realm grant stands in for no check)
+ *   a bag put · a family delete · draft placement · a realm steward's write (the realm grant stands in for no check)
  *   wiki-mint          a minted wiki's recipe names no system bag as a live library, and a system slug's canon document is
  *                      named only to a hand the cabal admits
  *
@@ -26,7 +26,8 @@ import { type Verb } from "@lararium/mesh/verb-tiddler";
 import type { KahuReachSource } from "@lararium/mesh/kahu-canon-reach";
 import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { makeActionReactorFor } from "../src/action-handler.js";
-import { makeMemePutReactor, makeMemeDeleteReactor, makeMemeGetReactor, makeMemeListReactor, memeVerbOptions, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeMemeGetReactor, makeMemeListReactor, memeVerbOptions, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeTiddlerPutReactor, makeTiddlerDeleteReactor } from "../src/tiddler-verbs.js";
 import { makeDraftReactor } from "../src/wiki-draft-handlers.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeInitWikiReactor } from "../src/wiki-mint-handlers.js";
@@ -139,33 +140,33 @@ describe("the residency reactor — every verb into canon", () => {
   });
 });
 
-describe("meme put and meme delete", () => {
+describe("a family put and a family delete into a bag", () => {
   const optsFor = (r: Awaited<ReturnType<typeof rig>>, reach?: KahuReachSource): MemeVerbOptions => ({
     composite: r.composite,
     tw5: { $tw: { wiki: { getTiddlerText: () => "" } } } as unknown as MemeVerbOptions["tw5"],
     ...(reach ? { kahuReach: reach } : {}),
   });
 
-  test("meme put --bag lares refuses a stranger, fails closed, and lands for a Kahu hand (CONTROL)", async () => {
+  test("a put --bag lares refuses a stranger, fails closed, and lands for a Kahu hand (CONTROL)", async () => {
     const r = await rig();
     try {
       const before = r.heads();
-      const put = (reach?: KahuReachSource) => makeMemePutReactor(optsFor(r, reach))({ uri: URI, bag: "lares", text: meme("/a") }, ctxOf(r.composite, "meme-put"));
+      const put = (reach?: KahuReachSource) => makeTiddlerPutReactor(optsFor(r, reach))({ title: URI, bag: "lares", text: meme("/a") }, ctxOf(r.composite, "tiddler-put"));
       expect(await reasonOf(async () => put(await strangerHand("joined-without-admission")))).toBe("kahu-reach");
       expect(await reasonOf(async () => put())).toBe("kahu-reach");
       expect(r.heads()).toEqual(before);
-      expect((await put(await kahuHand()))["decision"]).toBe("ingest");
+      expect((await put(await kahuHand()))["decision"]).toBe("put");
       // CONTROL: a user bag asks no source.
-      expect((await makeMemePutReactor(optsFor(r))({ uri: URI, bag: "garden", text: meme("/g") }, ctxOf(r.composite, "meme-put")))["decision"]).toBe("ingest");
+      expect((await makeTiddlerPutReactor(optsFor(r))({ title: URI, bag: "garden", text: meme("/g") }, ctxOf(r.composite, "tiddler-put")))["decision"]).toBe("put");
     } finally { await r.repo.shutdown(); }
   });
 
-  test("meme delete --bag lararium refuses a stranger and removes for a Kahu hand (CONTROL)", async () => {
+  test("a family delete --bag lararium refuses a stranger and removes for a Kahu hand (CONTROL)", async () => {
     const r = await rig();
     try {
-      await makeMemePutReactor(optsFor(r, await kahuHand()))({ uri: URI, bag: "lararium", text: meme("/a") }, ctxOf(r.composite, "meme-put"));
+      await makeTiddlerPutReactor(optsFor(r, await kahuHand()))({ title: URI, bag: "lararium", text: meme("/a") }, ctxOf(r.composite, "tiddler-put"));
       const before = r.heads();
-      const del = (reach?: KahuReachSource) => makeMemeDeleteReactor(optsFor(r, reach))({ uri: URI, bag: "lararium" }, ctxOf(r.composite, "meme-delete"));
+      const del = (reach?: KahuReachSource) => makeTiddlerDeleteReactor(optsFor(r, reach))({ title: URI, bag: "lararium", family: true }, ctxOf(r.composite, "tiddler-delete"));
       expect(await reasonOf(async () => del(await strangerHand("admitted-not-joined")))).toBe("kahu-reach");
       expect(await reasonOf(async () => del())).toBe("kahu-reach");
       expect(r.heads()).toEqual(before);
@@ -180,11 +181,11 @@ describe("meme put and meme delete", () => {
     try {
       const realm: LarTiddlerStore = new MemoryTiddlerStore(LARES);
       const opts = (reach?: KahuReachSource): MemeVerbOptions => ({ ...optsFor(r, reach), realmWritable: async (bag) => (bag === LARES ? realm : null) });
-      const put = (reach?: KahuReachSource) => makeMemePutReactor(opts(reach))({ uri: URI, bag: "lares", text: meme("/s") }, ctxOf(r.composite, "meme-put"));
+      const put = (reach?: KahuReachSource) => makeTiddlerPutReactor(opts(reach))({ title: URI, bag: "lares", text: meme("/s") }, ctxOf(r.composite, "tiddler-put"));
       expect(await reasonOf(async () => put(await strangerHand("removed")))).toBe("kahu-reach");
       expect(await reasonOf(async () => put())).toBe("kahu-reach");
       expect(await realm.get(URI)).toBeNull();
-      expect((await put(await kahuHand()))["decision"]).toBe("ingest");                                          // CONTROL
+      expect((await put(await kahuHand()))["decision"]).toBe("put");                                          // CONTROL
       expect(await realm.get(URI)).not.toBeNull();
     } finally { await r.repo.shutdown(); }
   });
@@ -311,7 +312,7 @@ describe("house canon resolves the Kahu realm's standing document at the action 
       const composite = new CompositeStore();
       composite.addLayer({ bagId: bag, store: into, writable: true });
       const text = meme(slot).replaceAll(URI, uri).replace('uri-path = "t/ford"', `uri-path = "${uri.slice("lar:///".length)}"`);
-      await makeMemePutReactor({ composite, tw5: { $tw: { wiki: { getTiddlerText: () => "" } } } as never, kahuReach: await kahuHand() })({ uri, bag, text }, ctxOf(composite, "meme-put"));
+      await makeTiddlerPutReactor({ composite, tw5: { $tw: { wiki: { getTiddlerText: () => "" } } } as never, kahuReach: await kahuHand() })({ title: uri, bag, text }, ctxOf(composite, "tiddler-put"));
     };
     // The floor carries the released page; live canon has moved past it, and holds a page no release carries yet.
     await lay(floorLararium, LARARIUM, "lar:///t/released", "/floor");
@@ -353,29 +354,6 @@ describe("house canon resolves the Kahu realm's standing document at the action 
     } finally { await f.repo.shutdown(); }
   });
 
-  test("RED: a put through a wiki that names the hash its get just answered lands as a copy-up in the working layer, though that layer held no record of the title", async () => {
-    const f = await outsideFace();
-    try {
-      const got = await makeMemeGetReactor(f.opts)({ uri: "lar:///t/released", recipe: "trove" }, f.ctx("meme-get"));
-      const read = (got["meme"] as { canonicalHash: string; text: string });
-      expect(read.canonicalHash).toMatch(/^sha256:[0-9a-f]{64}$/);
-      const edited = meme("/working").replaceAll(URI, "lar:///t/released").replace('uri-path = "t/ford"', 'uri-path = "t/released"');
-      const put = await makeMemePutReactor(f.opts)({ uri: "lar:///t/released", recipe: "trove", text: edited, base: read.canonicalHash }, f.ctx("meme-put"));
-      expect(put, "the base the writer read still stands below, so the copy-up lands").toMatchObject({ decision: "ingest" });
-      // The wiki now answers the working copy, and the floor's page never moved.
-      const after = await makeMemeGetReactor(f.opts)({ uri: "lar:///t/released", recipe: "trove" }, f.ctx("meme-get"));
-      expect(slotsOf(after)).toContain("/working");
-      expect(after["floor"]).toBeUndefined();
-      // CONTROL: a stale base (the page below moved past what the writer read) stands off, and the receipt names the hash
-      // the wiki answers now, never the hash of no bytes.
-      const g = await outsideFace();
-      try {
-        const stale = await makeMemePutReactor(g.opts)({ uri: "lar:///t/released", recipe: "trove", text: edited, base: `sha256:${"0".repeat(64)}` }, g.ctx("meme-put"));
-        expect(stale).toMatchObject({ decision: "conflict", canonicalHash: read.canonicalHash });
-      } finally { await g.repo.shutdown(); }
-    } finally { await f.repo.shutdown(); }
-  });
-
   test("CONTROLS: the same face writes no house canon (kahu-reach); a house canon bag the floor carries no snapshot of keeps its cap refusal; a hand whose cap holds reads the live document", async () => {
     const f = await outsideFace();
     try {
@@ -384,8 +362,8 @@ describe("house canon resolves the Kahu realm's standing document at the action 
       const before = [f.live.headsNow(), f.floor.headsNow()];
       const mounted = new CompositeStore();
       mounted.addLayer({ bagId: LARARIUM, store: f.live, writable: true });
-      expect(await reasonOf(async () => makeMemePutReactor({ ...f.opts, composite: mounted })({ uri: "lar:///t/released", bag: "lararium", text: meme("/x") }, f.ctx("meme-put")))).toBe("kahu-reach");
-      await expect(makeMemePutReactor(f.opts)({ uri: "lar:///t/released", bag: "lararium", text: meme("/x") }, f.ctx("meme-put"))).rejects.toThrow();
+      expect(await reasonOf(async () => makeTiddlerPutReactor({ ...f.opts, composite: mounted })({ title: "lar:///t/released", bag: "lararium", text: meme("/x") }, f.ctx("tiddler-put")))).toBe("kahu-reach");
+      await expect(makeTiddlerPutReactor(f.opts)({ title: "lar:///t/released", bag: "lararium", text: meme("/x") }, f.ctx("tiddler-put"))).rejects.toThrow();
       expect([f.live.headsNow(), f.floor.headsNow()]).toEqual(before);
       await expect(makeMemeListReactor(f.opts)({ bag: "lares" }, f.ctx("meme-list"))).rejects.toThrow(/cap-denied: read on lar:\/\/\/ha\.ka\.ba\/bags\/lares required \(bag not registered/);
       const held = await makeMemeListReactor(f.opts)({ bag: "lararium" }, { ...f.ctx("meme-list"), cap: async () => ({ ok: true }) });

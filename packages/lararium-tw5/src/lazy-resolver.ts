@@ -39,7 +39,7 @@
  */
 
 import { sha256HexBytesSync } from "@lararium/mesh/crypto";
-import { cidFromUri } from "@lararium/mesh/lar-uris";
+import { casKeyOfCanonicalUri } from "@lararium/mesh/pointer-address";
 import type { TW5Engine } from "./tw5-vm.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 
@@ -83,14 +83,14 @@ function registersBase64(tw5: TW5Engine, type: unknown): boolean {
 /**
  * Read the CAS content-address a skinny handle points its body at, or null when this record
  * carries no lar-native body to resolve. `textCid` wins (the direct CAS key); else a
- * `_canonical_uri` is scheme-discriminated — a `lar:///…/cid/<hash>` yields its hash, a web2
- * src (or anything non-cid) yields null so the native path keeps it.
+ * `_canonical_uri` is scheme-discriminated — a content address (`lar:///…/cid/<hash>`,
+ * `ni:///sha-256;…`, `cid:<hex>`) yields its CAS key, a web2 src yields null so the native path keeps it.
  */
 export function skinnyCid(fields: Record<string, unknown>): string | null {
   const textCid = fields["textCid"];
   if (typeof textCid === "string" && textCid.length > 0) return textCid;
   const canonical = fields["_canonical_uri"];
-  if (typeof canonical === "string") return cidFromUri(canonical);
+  if (typeof canonical === "string") return casKeyOfCanonicalUri(canonical);
   return null;
 }
 

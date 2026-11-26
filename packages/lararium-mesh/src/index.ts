@@ -301,6 +301,7 @@ export * from "./residency-actions.js";
 export { watchStandoffs, standoffOf, type StandoffWatch } from "./standoff-watch.js";
 export * from "./verb-refusal.js";
 export * from "./content-handle.js";
+export * from "./pointer-address.js";
 export * from "./effect-record.js";
 export * from "./shell-leaving-record.js";
 export * from "./kumu-device.js";

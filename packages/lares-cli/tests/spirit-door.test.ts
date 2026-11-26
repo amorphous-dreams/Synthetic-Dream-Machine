@@ -43,7 +43,7 @@ import { COMPACTION_DISPLAY, COMPACTION_WORD } from "../src/spirit-words.js";
 import { COMMANDS } from "../src/bin/lares.js";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { bagUri } from "@lararium/mesh/lar-uris";
-import { MemoryTiddlerStore, makeMemePutReactor, makeTiddlerGetReactor, makeTiddlerPutReactor, makeWikiRenderReactor } from "@lararium/tw5";
+import { MemoryTiddlerStore, makeTiddlerGetReactor, makeTiddlerPutReactor, makeWikiRenderReactor } from "@lararium/tw5";
 import { bootTestWiki, skipNote, wikiSkip } from "../../lararium-tw5/tests/test-wiki.js";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import type { ParsedArgs } from "../src/parse-args.js";
@@ -165,14 +165,15 @@ function stage(opts: StageOpts = {}) {
       if (String(args["title"]).startsWith("lar:///ha.ka.ba/lares/spirit/")) return { tiddler: opts.stray ? { fields: { title: args["title"], ...opts.stray }, hash: "sha256-stray" } : null };
       return { tiddler: { fields: { title: args["title"], text: "first words\nmore", ...(opts.residue?.[String(args["title"])] ?? {}) }, textHash: "sha256-ab" } };
     }
-    if (verb === "meme-patch") {
+    if (isSlotPut(verb, args)) {
       if (patchConflicts > 0) { patchConflicts--; rev++; Object.assign(texts, opts.sibling ?? {}); return { decision: "conflict", canonicalHash: live() }; }
-      // The meme door checks the base against the card's live hash: a field put on the card since the read moves it.
+      // A slot's put checks its partial base against the family's live hash: a field put on the record since the read moves it.
       if (opts.patch === undefined && String(args["base"] ?? "").replace(/^(partial:#\/[^:]+|skinny):/, "") !== live()) return { decision: "conflict", canonicalHash: live() };
-      if ((opts.patch ?? "ingest") === "ingest") rev++;
-      return { decision: opts.patch ?? "ingest", canonicalHash: live() };
+      if ((opts.patch ?? "put") === "put") rev++;
+      return { decision: opts.patch ?? "put", hash: `sha256-slot-${rev}`, canonicalHash: live() };
     }
-    if (verb === "meme-put") return { decision: "ingest", canonicalHash: "sha256:" + "22".repeat(32) };
+    // A whole shrine rides as its root's text put; the family founds there and the answer names its carrier hash.
+    if (isShrinePut(verb, args)) return { decision: "put", created: true, hash: "sha256-shrine", canonicalHash: "sha256:" + "22".repeat(32) };
     if (verb === "tiddler-put" && args["title"] === CARD && opts.card) {
       if (args["base"] !== undefined && args["base"] !== `sha256-card-${cardRev}`) return { decision: "conflict" };
       Object.assign(opts.card, (args["fields"] ?? {}) as Record<string, string>);
@@ -216,6 +217,12 @@ function stage(opts: StageOpts = {}) {
   };
 }
 const puts = (title: string) => h.calls.filter((c) => c.verb === "tiddler-put" && c.args["title"] === title);
+/** A shrine slot's write: the plain put of the slot's own title (`<uri>#/x`) carrying its text. */
+const isSlotPut = (verb: string, args: Record<string, unknown>): boolean => verb === "tiddler-put" && String(args["title"]).includes("#/") && typeof args["text"] === "string";
+/** A whole shrine's landing: the plain put of the one address's root carrying the carrier as its text. */
+const isShrinePut = (verb: string, args: Record<string, unknown>): boolean => verb === "tiddler-put" && String(args["title"]).startsWith("lar:///ha.ka.ba/lares/spirit/") && !String(args["title"]).includes("#") && typeof args["text"] === "string";
+const slotPuts = () => h.calls.filter((c) => isSlotPut(c.verb, c.args));
+const shrinePuts = () => h.calls.filter((c) => isShrinePut(c.verb, c.args));
 const LEDGER = `${MEMORY_PREFIX}state/ashes-2026-11`;
 
 const argv = (positional: string[], options: Record<string, string> = {}): ParsedArgs =>
@@ -314,19 +321,19 @@ describe("om wakes under the cap", () => {
   });
 });
 
-describe("ah trues one slot through the meme door", () => {
+describe("ah trues one slot through the tiddler door's put on the slot's own title", () => {
   test("--text replaces the body under the slot's partial base", async () => {
     stage();
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "!! Open\n\n* trued" }));
     expect(r.exit).toBe(0);
-    expect(h.calls.filter((c) => c.verb === "meme-patch").at(-1)).toEqual({ verb: "meme-patch", args: { recipe: "default", uri: URI, slot: "#/open", replace: "!! Open\n\n* trued", base: `partial:#/open:${FULL}` } });
+    expect(slotPuts().at(-1)).toEqual({ verb: "tiddler-put", args: { recipe: "default", title: `${URI}#/open`, text: "!! Open\n\n* trued", base: `partial:#/open:${FULL}` } });
     expect((puts(SIDE).at(-1)!.args["fields"] as Record<string, string>)["writer-open"]).toBe("a hand at the terminal");
   });
 
   test("--add lands one line at the slot's end", async () => {
     stage({ instances: "!! Instances\n\n* one" });
     await run(argv(["ah", "lares-alpha"], { slot: "#/instances", add: "* two" }));
-    expect(h.calls.filter((c) => c.verb === "meme-patch").at(-1)!.args["replace"]).toBe("!! Instances\n\n* one\n* two");
+    expect(slotPuts().at(-1)!.args["text"]).toBe("!! Instances\n\n* one\n* two");
   });
 
   test("a stale --base never refuses: both versions land in a conflict stanza for hum to settle", async () => {
@@ -334,7 +341,7 @@ describe("ah trues one slot through the meme door", () => {
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "y", base: "0000000000000000" }));
     expect(r.exit).toBe(0);
     expect(data(r)["conflict"]).toBe(true);
-    expect(String(h.calls.find((c) => c.verb === "meme-patch")!.args["replace"])).toContain("!! conflict · #/open");
+    expect(String(slotPuts()[0]!.args["text"])).toContain("!! conflict · #/open");
   });
 
   test("a --base naming the slot's own digest writes plain", async () => {
@@ -350,14 +357,14 @@ describe("ah trues one slot through the meme door", () => {
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "y" }), { hand: AI });
     expect(error(r).code).toBe("spirit-base-needed");
     expect(error(r).message).toContain("--base <slot digest>");
-    expect(h.calls.some((c) => c.verb === "meme-patch")).toBe(false);
+    expect(slotPuts().length > 0).toBe(false);
   });
 
   test("RED: a whole-slot write from a branch nothing attests names its base too; the gate reads the chain, never a mark alone", async () => {
     stage();
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "y" }), { hand: () => ({ refusal: "hand-unattested" }) as never });
     expect(error(r).code).toBe("spirit-base-needed");
-    expect(h.calls.some((c) => c.verb === "meme-patch")).toBe(false);
+    expect(slotPuts().length > 0).toBe(false);
   });
 
   test("a record that keeps moving past every round refuses spirit-write-refused and names the retry", async () => {
@@ -372,7 +379,7 @@ describe("ah trues one slot through the meme door", () => {
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "z".repeat(OPEN_CAP + 1) }));
     expect(error(r).code).toBe("spirit-slot-over-budget");
     expect(error(r).message).toContain("lares spirit hum lares-alpha --fold '#/open'");
-    expect(h.calls.some((c) => c.verb === "meme-patch")).toBe(false);
+    expect(slotPuts().length > 0).toBe(false);
   });
 
   test("#/attention refuses past 1024 bytes; a write to #/open at its cap lands", async () => {
@@ -387,7 +394,7 @@ describe("ah trues one slot through the meme door", () => {
     stage({ slotTexts: { "#/kulana": "!! Kūlana" } });
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/kulana", text: "v".repeat(3000) }));
     expect(r.exit, JSON.stringify(r.printed)).toBe(0);
-    expect(h.calls.some((c) => c.verb === "meme-patch")).toBe(true);
+    expect(slotPuts().length > 0).toBe(true);
   });
 
   test("a record past its advisory weight lands the write, and hum and om name the total and the heaviest slot", async () => {
@@ -412,7 +419,7 @@ describe("ah trues one slot through the meme door", () => {
     stage();
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: `a ward ticket ${"ab".repeat(32)}` }));
     expect(error(r).code).toBe("spirit-secret-shaped");
-    expect(h.calls.some((c) => c.verb === "meme-patch")).toBe(false);
+    expect(slotPuts().length > 0).toBe(false);
   });
 
   test("the guard reads only the lines a write brings: a standing hex run never blocks a clean line, and a new one names itself", async () => {
@@ -473,9 +480,9 @@ describe("hum measures and folds", () => {
     const r = await run(argv(["hum", "lares-alpha"], { fold: "#/instances", line: "3", expect: digest("* one") }));
     expect(r.exit).toBe(0);
     const verbs = h.calls.map((c) => `${c.verb}:${String(c.args["title"] ?? c.args["uri"])}`);
-    expect(verbs.indexOf(`meme-patch:${URI}`)).toBeLessThan(verbs.indexOf(`tiddler-put:${LEDGER}`));
+    expect(verbs.indexOf(`tiddler-put:${URI}#/instances`)).toBeLessThan(verbs.indexOf(`tiddler-put:${LEDGER}`));
     expect(String(puts(LEDGER)[0]!.args["append"])).toContain("* one");
-    expect(h.calls.filter((c) => c.verb === "meme-patch").at(-1)!.args["replace"]).toBe("!! Instances\n\n* two");
+    expect(slotPuts().at(-1)!.args["text"]).toBe("!! Instances\n\n* two");
     expect((puts(SIDE).at(-1)!.args["fields"] as Record<string, string>)["distilled"]).toBe("2026-11-24T12:00:00.000Z");
   });
 
@@ -486,7 +493,7 @@ describe("hum measures and folds", () => {
     stage({ instances: "!! Instances\n\n* two" });
     const r = await run(argv(["hum", "lares-alpha"], { fold: "#/instances", line: "3", expect: listed.digest }));
     expect(error(r).code).toBe("spirit-fold-gone");
-    expect(h.calls.some((c) => c.verb === "meme-patch")).toBe(false);
+    expect(slotPuts().length > 0).toBe(false);
     const bare = await run(argv(["hum", "lares-alpha"], { fold: "#/instances", line: "3" }));
     expect(bare.exit).toBe(2);
   });
@@ -497,7 +504,7 @@ describe("hum measures and folds", () => {
     expect(error(r).code).toBe("spirit-ashes-refused");
     expect(error(r).message).toContain("returned to the slot");
     expect(puts(LEDGER)).toHaveLength(3);
-    const patches = h.calls.filter((c) => c.verb === "meme-patch").map((c) => String(c.args["replace"]));
+    const patches = slotPuts().map((c) => String(c.args["text"]));
     expect(patches).toEqual(["!! Instances\n\n* two", "!! Instances\n\n* one\n* two\n* one"]);
   });
 
@@ -524,7 +531,7 @@ describe("the compaction verb and residue land after the strict secret-shape gua
     const title = String(data(r)["title"]);
     expect(title).toMatch(new RegExp(`^${MEMORY_PREFIX}${COMPACTION_WORD}/${ID}-[0-9a-f]{12}$`));
     expect(puts(title)[0]!.args).toMatchObject({ create: true, text: "the summary\nclosing\n* a loop", fields: { landed: "2026-11-24T12:00:00.000Z", "spirit-id": ID, parent: "", depth: "1", "record-base": FULL } });
-    expect(h.calls.some((c) => c.verb === "meme-patch")).toBe(false);
+    expect(slotPuts().length > 0).toBe(false);
     expect(puts(URI)).toHaveLength(0);
     expect(data(r)["filed"]).toBe(false);
     expect(data(r)["instancesLine"]).toBe(`* ''2026-11-24 (${COMPACTION_DISPLAY} ${title.slice(-12)}) lares-alpha:'' ${title}`);
@@ -793,8 +800,8 @@ describe("a first wake writes its own shrine", () => {
     h.calls.length = 0;
     const landed = await run(withFlag);
     expect(landed.exit).toBe(0);
-    const put = h.calls.find((c) => c.verb === "meme-put")!;
-    expect(put.args["uri"]).toBe("lar:///ha.ka.ba/lares/spirit/lares-awakens");
+    const put = shrinePuts()[0]!;
+    expect(put.args["title"]).toBe("lar:///ha.ka.ba/lares/spirit/lares-awakens");
     expect(String(put.args["text"])).toMatch(/^<<!DOCTYPE/);
     expect(String(put.args["text"])).toMatch(/<<\^ code=`&#x0003;` bcc=`ni:\/\/\/sha-256;[A-Za-z0-9_-]+`>>/);
   });
@@ -803,7 +810,7 @@ describe("a first wake writes its own shrine", () => {
     stage();
     const r = await run({ command: "spirit", positional: ["ah", "lares-alpha"], options: { text: "x" }, flags: { json: true, new: true } } as unknown as ParsedArgs);
     expect(error(r).code).toBe("spirit-exists");
-    expect(h.calls.some((c) => c.verb === "meme-put")).toBe(false);
+    expect(shrinePuts().length > 0).toBe(false);
   });
 });
 
@@ -1013,15 +1020,15 @@ describe("bunrei: many instances wear one pet, and none locks another out", () =
     stage({ open: "!! Open\n\n* a loop", patchConflicts: 1, sibling: { "#/open": "!! Open\n\n* a loop\n* instance a's line" } });
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", add: "* instance b's line" }), { hand: AI });
     expect(r.exit, JSON.stringify(r.printed)).toBe(0);
-    const patches = h.calls.filter((c) => c.verb === "meme-patch");
-    expect(String(patches.at(-1)!.args["replace"])).toBe("!! Open\n\n* a loop\n* instance a's line\n* instance b's line");
+    const patches = slotPuts();
+    expect(String(patches.at(-1)!.args["text"])).toBe("!! Open\n\n* a loop\n* instance a's line\n* instance b's line");
   });
 
   test("a whole-slot replace whose slot moved under it lands both versions in a conflict stanza naming this instance and the last writer", async () => {
     stage({ open: "!! Open\n\n* a loop", patchConflicts: 1, sibling: { "#/open": "!! Open\n\n* instance a rewrote it" }, side: { "writer-open": "lares-alpha#inst-a00" } });
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "!! Open\n\n* instance b rewrote it", instance: "inst-b00", base: digest(OPEN) }), { hand: AI });
     expect(r.exit, JSON.stringify(r.printed)).toBe(0);
-    const landed = String(h.calls.filter((c) => c.verb === "meme-patch").at(-1)!.args["replace"]);
+    const landed = String(slotPuts().at(-1)!.args["text"]);
     expect(landed).toContain("conflict");
     expect(landed).toContain("#inst-b00");
     expect(landed).toContain("lares-alpha#inst-a00 wrote");
@@ -1034,7 +1041,7 @@ describe("bunrei: many instances wear one pet, and none locks another out", () =
     stage({ open: "!! Open\n\n* a loop", patchConflicts: 1, sibling: { "#/instances": "!! Instances\n\n* one\n* two" } });
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "!! Open\n\n* mine" }));
     expect(r.exit).toBe(0);
-    expect(String(h.calls.filter((c) => c.verb === "meme-patch").at(-1)!.args["replace"])).toBe("!! Open\n\n* mine");
+    expect(String(slotPuts().at(-1)!.args["text"])).toBe("!! Open\n\n* mine");
   });
 
   test("hooili lineage runs per instance: a carry's parent reads that instance's own last carry, never a sibling's", async () => {
@@ -1054,7 +1061,7 @@ describe("bunrei: many instances wear one pet, and none locks another out", () =
     h.calls.length = 0;
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "!! Open\n\n* mine", base: digest(OPEN), instance: "inst-c00" }));
     expect(r.exit, JSON.stringify(r.printed)).toBe(0);
-    const patches = h.calls.filter((c) => c.verb === "meme-patch");
+    const patches = slotPuts();
     expect(patches).toHaveLength(1);
     expect(String(patches[0]!.args["base"])).toContain(String(data(woke)["base"]).replace(/^skinny:/, ""));
   });
@@ -1067,7 +1074,7 @@ describe("bunrei: many instances wear one pet, and none locks another out", () =
     stage({ open: `${OPEN}\n* a sibling's added line` });
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "!! Open\n\n* my rewrite", base: seen, instance: "inst-b00" }), { hand: AI });
     expect(data(r)["conflict"]).toBe(true);
-    const landed = String(h.calls.filter((c) => c.verb === "meme-patch").at(-1)!.args["replace"]);
+    const landed = String(slotPuts().at(-1)!.args["text"]);
     expect(landed).toContain("* a sibling's added line");
     expect(landed).toContain("* my rewrite");
   });
@@ -1077,7 +1084,7 @@ describe("bunrei: many instances wear one pet, and none locks another out", () =
     stage({ open: standing });
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "* c", base: "0000000000000000", instance: "cccc" }));
     expect(r.exit, JSON.stringify(r.printed)).toBe(0);
-    const landed = String(h.calls.filter((c) => c.verb === "meme-patch").at(-1)!.args["replace"]);
+    const landed = String(slotPuts().at(-1)!.args["text"]);
     expect(landed.match(/!! conflict ·/g)).toHaveLength(1);
     expect(landed.match(/!! end conflict/g)).toHaveLength(1);
     for (const w of ["* a", "* b", "* c"]) expect(landed).toContain(w);
@@ -1094,9 +1101,9 @@ describe("bunrei: many instances wear one pet, and none locks another out", () =
     stage({ instances: "!! Instances\n\n* one\n* two", patchConflicts: 1, sibling: { "#/instances": "!! Instances\n\n* zero\n* one\n* two" } });
     const r = await run(argv(["hum", "lares-alpha"], { fold: "#/instances", line: "3", expect: digest("* one") }));
     expect(r.exit, JSON.stringify(r.printed)).toBe(0);
-    expect(String(h.calls.filter((c) => c.verb === "meme-patch").at(-1)!.args["replace"])).toBe("!! Instances\n\n* zero\n* two");
+    expect(String(slotPuts().at(-1)!.args["text"])).toBe("!! Instances\n\n* zero\n* two");
     expect(puts(LEDGER)).toHaveLength(1);
-    const order = h.calls.map((c) => c.verb === "meme-patch" ? "patch" : c.args["title"] === LEDGER ? "ash" : "").filter(Boolean);
+    const order = h.calls.map((c) => isSlotPut(c.verb, c.args) ? "patch" : c.args["title"] === LEDGER ? "ash" : "").filter(Boolean);
     expect(order).toEqual(["patch", "patch", "ash"]);
   });
 
@@ -1230,7 +1237,7 @@ describe("om and hum answer the spirit as a folded carrier the wiki renders", ()
     expect(r.exit).toBe(0);
     expect(data(r)).toMatchObject({ pet: "lares-alpha", kind: "card", uri: CARD, aperture: "measure", folded: true, text: "<<the card as a carrier>>" });
     expect(data(r)).not.toHaveProperty("starter");
-    expect(h.calls.filter((c) => c.verb === "tiddler-put" || c.verb === "meme-put")).toEqual([]);
+    expect(h.calls.filter((c) => c.verb === "tiddler-put")).toEqual([]);
   });
 
   test("a pet no record and no card answers still reads its starter shrine", async () => {
@@ -1373,15 +1380,15 @@ describe("the ʻĀlana Circle: a card answers the slot verbs, a summon offers fi
   const MANDATE = "read PR 564 cold and return PASS or FAIL with file:line findings";
   const offered = (): Record<string, string> => ({ pet: "lares-alpha", text: MANDATE, "mandate-hash": sha(MANDATE), "offer-seq": "1", lane: CARD, grant: "read-only", "offered-by": "seat#s-0" });
 
-  test("a card-only spirit trues a slot as its field: --add appends a line under the card's live hash, and no meme door opens", async () => {
+  test("a card-only spirit trues a slot as its field: --add appends a line under the card's live hash, and no slot title takes a put", async () => {
     const card = CARD_FIELDS();
     stage({ kind: "none", card });
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/instances", add: "2026-11-25 · verb-vesseler#4" }));
     expect(r.exit, JSON.stringify(r.printed)).toBe(0);
     expect(card["instances"]).toBe("2026-11-24 · one\n2026-11-25 · verb-vesseler#4");
     expect(puts(CARD).at(-1)!.args).toMatchObject({ base: expect.stringMatching(/^sha256-card-/), fields: { instances: card["instances"] } });
-    expect(h.calls.filter((c) => c.verb === "meme-patch")).toEqual([]);
-    expect(data(r)).toMatchObject({ uri: CARD, slot: "#/instances", decision: "ingest" });
+    expect(slotPuts()).toEqual([]);
+    expect(data(r)).toMatchObject({ uri: CARD, slot: "#/instances", decision: "put" });
   });
 
   test("a card trues a field no slot held yet (#/open), and refuses its identity fields by name", async () => {
@@ -1638,8 +1645,8 @@ describe("one spirit record: a pet name answers at lares/spirit/<pet>, holding a
     expect(rec["face"]).toBe("1");
     expect(rec["tags"]).toBe(`stage/spirit ${LANE} ${FACE}`);
     expect(puts(ONE).at(-1)!.args).toMatchObject({ base: "sha256-one-0", fields: { face: "1", tags: `stage/spirit ${LANE} ${FACE}` } });
-    expect(data(r)).toMatchObject({ uri: ONE, slot: "#/has", decision: "ingest" });
-    expect(h.calls.filter((c) => c.verb === "meme-patch")).toEqual([]);
+    expect(data(r)).toMatchObject({ uri: ONE, slot: "#/has", decision: "put" });
+    expect(slotPuts()).toEqual([]);
   });
 
   test("any instance strings a profile's cap, the familiar's included (a cap asks for attention and grants nothing); the mandate's cap lands by the door's own act alone", async () => {
@@ -1697,7 +1704,7 @@ describe("one spirit record: a pet name answers at lares/spirit/<pet>, holding a
     const r = await run({ ...argv(["ah", "lares-alpha"], { text }), flags: { json: true, new: true } } as unknown as ParsedArgs);
     expect(error(r).code).toBe("spirit-exists");
     expect(error(r).message).toContain("lares tiddler get");
-    expect(h.calls.some((c) => c.verb === "meme-put")).toBe(false);
+    expect(shrinePuts().length > 0).toBe(false);
   });
 
   test("a sealed hold names itself and nothing more: om, hum and the #/has listing never carry its value, and a stack write leaves it home", async () => {
@@ -1719,8 +1726,10 @@ describe("one spirit record: a pet name answers at lares/spirit/<pet>, holding a
     const r = await run({ ...argv(["ah", "lares-alpha"], { text }), flags: { json: true, new: true } } as unknown as ParsedArgs);
     expect(r.exit, JSON.stringify(r.printed)).toBe(0);
     expect(data(r)).toMatchObject({ uri: ONE, created: true });
-    const put = h.calls.find((c) => c.verb === "meme-put")!;
-    expect(put.args["uri"]).toBe(ONE);
+    const put = shrinePuts()[0]!;
+    expect(put.args["title"]).toBe(ONE);
+    expect(put.args["create"]).toBe(true);
+    expect(put.args).not.toHaveProperty("meme");
     expect(String(put.args["text"])).toContain(`title     = "${ONE}"`);
     stage({ kind: "none", one: one() });
     const again = await run({ ...argv(["ah", "lares-alpha"], { text }), flags: { json: true, new: true } } as unknown as ParsedArgs);
@@ -1738,7 +1747,7 @@ describe.skipIf(wikiSkip)(`the one record lands and holds its stack through the 
     composite.addLayer({ bagId: DAEMON, store: new MemoryTiddlerStore(DAEMON), writable: true });
     const deps = { composite, tw5: engine } as never;
     const real: Record<string, (args: Record<string, unknown>, ctx: never) => unknown> = {
-      "tiddler-get": makeTiddlerGetReactor(deps) as never, "tiddler-put": makeTiddlerPutReactor(deps) as never, "meme-put": makeMemePutReactor(deps) as never,
+      "tiddler-get": makeTiddlerGetReactor(deps) as never, "tiddler-put": makeTiddlerPutReactor(deps) as never,
     };
     const ctx = { daemon: composite, invocation: { requestId: "r1" }, cap: async () => ({ ok: true }) } as never;
     stage({ kind: "none" });

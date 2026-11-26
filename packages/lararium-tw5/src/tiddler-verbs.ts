@@ -10,9 +10,11 @@
  *                                                                         → { has, recipe, title, lens, tiddler?: { fields, hash, textHash, bag, position, family?, orphan?, omitted? } | null,
  *                                                                             meme?: { uri, text?, canonicalHash, bytes, slots, slot?, page? }, grain, next, note? }
  *   wiki-render    { recipe, title | text, type?, form?, after?, maxBytes? } → { recipe, title, form, text, bytes, truncated, next }
- *   tiddler-put    { recipe, title, text?, fields?, unset?, tagsAdd?, tagsRemove?, base?, create? }
- *                                                                         → { recipe, title, decision: put|noop|conflict|exists, bag, created, changed, hash, textHash, position, family? }
- *   tiddler-delete { recipe, title, base?, family?, mode? }               → { recipe, title, decision: removed|absent|conflict|refused, mode, tombstoned, retracted, hash?, refusal?, why?, consequence? }
+ *   tiddler-put    { recipe | bag [realm], title, text?, append?, fields?, unset?, tagsAdd?, tagsRemove?, cut?, base?, create? }
+ *                                                                         → { recipe?, title, decision: put|noop|conflict|exists, bag, layer?, created, changed, hash, textHash, position, family?,
+ *                                                                             appended?, appendedTo?, canonicalHash?, landed?, kept?, tombstoned?, warnings? }
+ *   tiddler-delete { recipe | bag [realm], title, base?, family?, mode? } → { recipe? | bag, title, decision: removed|absent|conflict|refused, mode: plain|kapae|reveal|cut, tombstoned, retracted, hash?,
+ *                                                                             parent?, canonicalHash?, landed?, kept?, refusal?, why?, consequence? }
  *   tiddler-rename { recipe, title, to, base? }                          → { recipe, title, to, decision: renamed|absent|conflict|refused, forwarder?, relinked?, moved?, skipped?, unreachable?, withheld?, hash?, refusal?, why?, consequence? }
  *   wiki-status    { recipe }                                             → { recipe, working, layers: [{ bag, mounted: writable|read-only|promotion-only, read, write, working?, why? }] }
  *
@@ -22,9 +24,15 @@
  * layers), which the island's door (`wikis`) composes on the first ask and closes when cold; a write lands in that engine's
  * write layer (`working`, or the face's `personal` where it holds no writer's seat). A wiki the door reaches no engine for
  * (no recipe names it, none of its layers stands for the face, or the island holds no door) refuses `wiki-unreached` by
- * name; `recipe: "daemon"` refuses the same way, since the daemon wiki answers to `default` alone. The container law of the
- * meme door holds (exactly one of `recipe` / `bag`, else `no-container`); a bag names no wiki and so no engine, and refuses
- * `wiki-not-anchored`.
+ * name; `recipe: "daemon"` refuses the same way, since the daemon wiki answers to `default` alone. The container law
+ * holds (exactly one of `recipe` / `bag`, else `no-container`).
+ *
+ * A BAG TAKES ONE RECORD THROUGH ITS OWN STORE. `bag: <slug>` names one bag and no wiki, so no engine runs: a get reads the
+ * record from that bag (`bagGet`), a put lands it there and a delete removes it there (`bagSeat`), under the reach and the
+ * gates every bag placement walks (a lit sibling's own lane, a realm steward's write, a wiki's instance slot addressed as a
+ * bag, a layer the island mounts writable; the Kahu predicate, then the admin cap). The one put law reads the same over a
+ * bag as over a wiki, and the answer names the `bag` in place of a `recipe`. The verbs that compute in an engine (a filter,
+ * a render, a status, a rename, an action) refuse a bag by name (`wiki-not-anchored`).
  *
  * THE FENCES. The caller's face decides reach: every read asks the face's read cap on the anchor's working bag, and a
  * record another bag answers stays out where the face holds no read on that bag (`withheld` counts them). A filter and a
@@ -44,8 +52,19 @@
  * `family` read through `familyOf`; a delete reads its `consequence` before anything lands, over the reader's view,
  * so a record the face may not read enters no consequence. A plain tiddler leaves. A meme root or slot answers its
  * consequence and `decision: "refused"` (`refusal: "tiddler-delete-in-a-family"`) unless the call names the family act
- * (`family: true`); with it the consequence's acts land as ONE change per layer. A slot its parent
- * calls by `kahea` refuses even then, since the parent's text would have to move: that rides `tiddler put --meme`.
+ * (`family: true`); with it the consequence's acts land as ONE change per layer. A SLOT LEAVES BY THE EXPLICIT CUT: a delete
+ * that names `<root>#/<slot>` lands as the put on the slot's parent with `cut` naming it (`cutSlot`), so the parent's text sheds
+ * the call, the family reseals, and the answer (`mode: "cut"`) names what the cut tombstoned.
+ *
+ * A PUT MOVES A FAMILY'S TEXT THROUGH THE CONFLUENCE GATE. A root and its slots stand as tiddlers; a text put on one lands as
+ * the family (the record takes its place, the carrier recomposes, the gate re-splits and reseals in the root's turn), and a
+ * first record of the carrier type founds its family the same way. The answer adds `canonicalHash`, `landed`, `kept`, `tombstoned`. ABSENCE NEVER
+ * DELETES: a slot the new text omits stays standing by reference (`kept`); `cut` names the slots that leave.
+ * `base` reads a record hash (`sha256-…`) or, on a family's text, the carrier's canonical hash (`sha256:…`). A PARTIAL BASE
+ * (a slot's read, a page short of the end) guards a put on a slot within the span it read and refuses `base-outside-span`
+ * beyond it; a put that speaks for the whole carrier refuses it (`base-from-partial`). A slot's text put needs no base and
+ * moves the slot's own record alone: its standing `$preamble` / `$postamble` carriage stays. AN APPEND ON A SLOT joins the
+ * end of the slot's body: its postamble where one stands with text, the slot's own text otherwise, one blank line between.
  *
  * A DELETE DELETES PLAINLY; ONLY A LOWER LAYER MAKES IT A CHOICE (lar:///ha.ka.ba/lares/api/pono/kapae #/core-cut). With
  * no `mode` named, each record leaves its own layer to absent (`mode: "plain"` in the answer): no tombstone rises and no
@@ -70,6 +89,8 @@
 import { NoWorkingLayerRefusal, type CompositeStore } from "@lararium/mesh/composite-store";
 import { VerbRefusal } from "@lararium/mesh/verb-refusal";
 import { verifyCidBytes } from "@lararium/mesh/cas-transit";
+import { ridesAsPointer } from "@lararium/mesh/content-handle";
+import { isContentAddress, POINTER_ADDRESS_FIELDS, POINTER_DIGEST_CODE, POINTER_INTEGRITY_CODE, readPointerAddress } from "@lararium/mesh/pointer-address";
 import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { refuseEffectLedgerWrite } from "@lararium/mesh/effect-record";
 import { refuseRenderedWrite, renderedWriteFault, RENDERED_DERIVES_REASON } from "@lararium/mesh/rendered-derives";
@@ -79,11 +100,12 @@ import { requireKahuReach, type KahuReachSource } from "@lararium/mesh/kahu-cano
 import { wikiSlotKindOf, DAEMON_WIKI_SLUG } from "@lararium/mesh/wiki-recipe";
 import { type ChangeOrigin, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
+import { fieldStringsOf, parseTitleList, stringifyList } from "@lararium/mesh/carrier-form";
 import { askerRefusal, handRefusalOf } from "@lararium/mesh/hand-refusal";
 import { consequence, familyOf, retractsOf, rootAddressOf, tombstonesOf, type Consequence, type DeleteMode, type FamilyPosition, type FamilyView } from "@lararium/mesh/family";
-import { anchorBagOf, readBagStore, readContainer, type MemeVerbOptions } from "./meme-verbs.js";
-import { isMemeRoot, readMeme, renameFamilyInWiki, wikiFamilyView, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX, type MemeSink } from "./place-meme.js";
-import { READ_PAGE_BYTES, byteLength, cardBase, memeBase, readBase, grainOf, hasLine, memeGradient, param, slotHasLines, tagTokens, type CarrierSlot, type GrainEcho, type ReadGrain } from "./read-gradient.js";
+import { anchorBagOf, readBagStore, readContainer, writeBagStore, type MemeVerbOptions } from "./meme-verbs.js";
+import { composeMemberCarrier, CUT_NOT_OMITTED_CODE, dropKaheaCalls, familyReadingIn, framesCarrier, isMemeRoot, joinedParagraph, placeMeme, readMeme, removeMeme, renameFamilyInWiki, slotAppendTarget, wikiFamilyView, wikiMemeSink, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX, type MemeSink } from "./place-meme.js";
+import { READ_PAGE_BYTES, byteLength, cardBase, memeBase, readBase, grainOf, hasLine, memeGradient, pageOfSlot, param, partialSpanOf, slotHasLines, tagTokens, type CarrierSlot, type GrainEcho, type ReadGrain } from "./read-gradient.js";
 import { skinnyCid } from "./lazy-resolver.js";
 import { readCarrierShape } from "./carrier-shape.js";
 import type { TiddlerFields } from "./deserializer.js";
@@ -249,10 +271,8 @@ function wikiOf(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknown>
   const target = readContainer(args, verb);
   const recipe = opts.wiki?.slug ?? "default";
   if (target.recipe !== recipe) {
-    const write = /^tiddler-(put|delete)$/.test(verb);
-    const door = write
-      ? "A bag takes a record through the meme door: `lares tiddler put --meme --bag <slug>` · `lares tiddler delete --meme --bag <slug>`."
-      : "A bag reads through its own doors: `lares tiddler get <title> --bag <slug>` (one record; `--meme` a meme) · `lares tiddler get --meme --bag <slug>` (its roots).";
+    // A bag's own doors: one record reads, lands and leaves there with no engine running.
+    const door = "A bag takes one record through its own store: `lares tiddler get <title> --bag <slug>` · `lares tiddler put <title> --bag <slug>` · `lares tiddler delete <title> --bag <slug>` (a family: `lares tiddler delete <root> --bag <slug> --family`); `lares tiddler get --meme --bag <slug>` lists its roots.";
     const named = target.bag ? `bag "${target.bag}" names one bag and no wiki` : `wiki "${target.recipe}" names another engine than this one`;
     throw new VerbRefusal("wiki-not-anchored", `wiki-not-anchored: ${verb} runs in a wiki's own engine; ${named}. ${door} To use ${verb}, name the wiki: \`--recipe <slug>\` (\`recipe: "default"\` for the daemon wiki).`);
   }
@@ -503,7 +523,7 @@ function placeOf(anchor: Anchor, wiki: EngineWiki, title: string): { position: T
 const placeFields = (place: { position: TiddlerPosition; family: string | null; orphan: boolean }): Record<string, unknown> =>
   ({ position: place.position, ...(place.family ? { family: place.family } : {}), ...(place.orphan ? { orphan: true } : {}) });
 
-/** The write gate, in the meme door's own order: the Kahu predicate, then the face's write cap on the landing bag. */
+/** The write gate, in the one order every write door keeps: the Kahu predicate, then the face's write cap on the landing bag. */
 async function requireWrite(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"], verb: string, asker?: VerbContext["asker"]): Promise<void> {
   await requireKahuReach(anchor.bag, opts.kahuReach, verb, asker);
   const proof = await cap("admin", anchor.bag);
@@ -673,8 +693,30 @@ function recordHas(title: string, fields: Record<string, string>, from: Provenan
 /** The ports a read reaches beyond the engine: the corpus CAS, by CID alone (a web2 address names its body and never fetches). */
 type CasPort = TiddlerVerbOptions["resolveByCid"];
 
+/**
+ * WHAT A POINTER'S BODY STANDS AS, on every answer that names one. `verified`: the bytes the content tier holds hash to the
+ * digest the pointer names (the answer carries them, or the put read them). `owed`: no verified byte rode this answer (the handle
+ * went unread, the tier holds none, a web2 address names them), so `owes` names what stands open and `cure` the act that
+ * closes it. A pointer never answers clean on a body nobody verified.
+ */
+interface PointerBody {
+  readonly cid?: string;
+  readonly uri?: string;
+  readonly integrity?: string;
+  readonly body: "verified" | "owed";
+  readonly owes?: string;
+  readonly cure?: string;
+  /** A put alone: the fields the door wrote to seat the pointer as the house reads it. */
+  readonly seated?: readonly string[];
+}
+const CURE_READ = "read the body: `lares tiddler get <title> --recipe <wiki> --grain resolved` (MCP `grain=\"resolved\"`)";
+const CURE_STAGE = "`lares bag cas` surveys the content tier; an ingest of the file stages its bytes by their hash, and a resolved read then verifies them";
+const CURE_SOURCE = "fetch the bytes by hand, stage them into the content tier, and put the pointer by their hash (`_canonical_uri` as `ni:///sha-256;<base64url>`)";
+const CURE_NAME = "name the bytes in `_canonical_uri` as `ni:///sha-256;<base64url>`, `cid:<sha256 hex>` or `lar:///ha.ka.ba/cid/<sha256 hex>`";
+
 /** What the record lens answers: the fields it shows, what it left home, and the grain it applied and why. */
 interface RecordRead {
+  readonly pointer?: PointerBody;
   readonly fields: Record<string, string>;
   readonly shown: Record<string, string>;
   readonly omitted: string[];
@@ -691,30 +733,44 @@ interface RecordRead {
  */
 async function recordRead(engine: Engine, held: Record<string, string>, title: string, args: Readonly<Record<string, unknown>>, asked: ReadGrain | null, cas: CasPort): Promise<RecordRead> {
   const named = namesArg(args["fields"]) !== null;
-  const done = (fields: Record<string, string>, applied: ReadGrain, why: string, next: RecordRead["next"]): RecordRead => {
+  const done = (fields: Record<string, string>, applied: ReadGrain, why: string, next: RecordRead["next"], pointer?: PointerBody): RecordRead => {
     const carryWhole = asked === "fat" || asked === "whole" || applied === "resolved";
     const { shown, omitted } = narrowRecord(fields, title, args, applied === "skinny", carryWhole);
     // THE ECHO NAMES WHAT RODE. At the tiddler grain, fat only where the text rode (named fields or the byte cap may leave it home);
     // a pointer's body grain (handle, resolved) stays its own word whatever the fields.
     const tiddlerGrain = applied === "fat" || applied === "skinny";
     const rode: ReadGrain = tiddlerGrain ? (typeof shown["text"] === "string" ? "fat" : "skinny") : applied;
-    return { fields, shown, omitted, grain: { asked, applied: rode, why: named ? `the named fields (${rode === "fat" ? "the text among them" : "the text left home"})` : rode === applied ? why : `${why}; the byte cap left the text home` }, next };
+    return { fields, shown, omitted, grain: { asked, applied: rode, why: named ? `the named fields (${rode === "fat" ? "the text among them" : "the text left home"})` : rode === applied ? why : `${why}; the byte cap left the text home` }, next, ...(pointer ? { pointer } : {}) };
   };
   if (isPointer(held)) {
+    // ONE POINTER NAMES ONE DIGEST: names that disagree refuse before any byte reads.
+    const reading = readPointerAddress(held);
+    if (reading.kind === "refused" && reading.code === POINTER_INTEGRITY_CODE) throw new VerbRefusal(reading.code, `${reading.code}: "${title}": ${reading.why}. No byte read.`);
     const cid = skinnyCid(held);
     const web2 = cid === null && typeof held["_canonical_uri"] === "string";
+    const integrity = reading.kind === "address" ? reading.integrity : held["_integrity"];
+    const names = { ...(cid !== null ? { cid } : {}), ...(web2 ? { uri: held["_canonical_uri"]! } : {}), ...(integrity ? { integrity } : {}) };
+    // AN UNREAD OR UNVERIFIED POINTER ANSWERS OWED, NEVER CLEAN.
+    const owed = (owes: string, cure: string): PointerBody => ({ ...names, body: "owed", owes, cure });
+    const unnamed = owed("the pointer names no content address", CURE_NAME);
+    const source = owed("a web2 address names the body and the door never fetches it", CURE_SOURCE);
     // `whole` on a pointer asks for the whole body: the body grain's own word for it reads `resolved`.
     if (asked === "resolved" || asked === "whole") {
-      if (web2) return done(held, "handle", `a web2 \`_canonical_uri\` names the body and the door never fetches it (web3 only): ${held["_canonical_uri"]}`, null);
-      if (cid === null) return done(held, "handle", "the pointer names no CID to resolve", null);
+      if (web2) return done(held, "handle", `a web2 \`_canonical_uri\` names the body and the door never fetches it (web3 only): ${held["_canonical_uri"]}`, null, source);
+      if (cid === null) return done(held, "handle", "the pointer names no CID to resolve", null, unnamed);
       const bytes = cas ? await cas(cid) : null;
-      if (!bytes) return done(held, "handle", cas ? `the local CAS holds no bytes for ${cid}` : "this island holds no CAS shore to resolve from", null);
-      if (!verifyCidBytes(bytes, cid)) return done(held, "handle", `the bytes the local CAS holds for ${cid} hash otherwise: refused, never spliced`, null);
+      if (!bytes) {
+        const miss = cas ? `the local CAS holds no bytes for ${cid}` : "this island holds no CAS shore to resolve from";
+        return done(held, "handle", miss, null, owed(miss, CURE_STAGE));
+      }
+      // A WRONG DIGEST REFUSES BY NAME: bytes that hash otherwise never splice, and never answer as a quiet handle.
+      if (!verifyCidBytes(bytes, cid)) throw new VerbRefusal(POINTER_DIGEST_CODE, `${POINTER_DIGEST_CODE}: the bytes the content tier holds for ${cid} hash otherwise, so "${title}" answers no body. ${CURE_STAGE}. No byte spliced.`);
       const text = isBlob(engine, held) ? base64Of(bytes) : new TextDecoder().decode(bytes);
-      return done({ ...held, text }, "resolved", `the body resolved from the local CAS by CID ${cid}, verified`, null);
+      return done({ ...held, text }, "resolved", `the body resolved from the local CAS by CID ${cid}, verified`, null, { ...names, body: "verified" });
     }
     const why = web2 ? "a pointer: its web2 `_canonical_uri` names the body, never fetched" : "a pointer: the handle names its body by CID";
-    return done(held, "handle", asked === null || asked === "handle" ? why : `${why}; the tiddler grain reads no body a record does not hold`, web2 || cid === null ? null : { grain: "resolved" });
+    const unread = web2 ? source : cid === null ? unnamed : owed("unread: the handle names the body and this answer carries none of it", CURE_READ);
+    return done(held, "handle", asked === null || asked === "handle" ? why : `${why}; the tiddler grain reads no body a record does not hold`, web2 || cid === null ? null : { grain: "resolved" }, unread);
   }
   if (asked === "skinny") return done(held, "skinny", "asked: the fields, the text left home", { grain: "fat" });
   if (asked === "fat" || asked === "whole") return done(held, "fat", "asked: the record with its text", null);
@@ -739,15 +795,49 @@ function recordAnswer(from: Provenance & { readonly answered: Record<string, unk
       ...(read.omitted.length > 0 ? { omitted: read.omitted } : {}),
     },
     grain: read.grain, next: read.next,
+    ...(read.pointer ? { pointer: read.pointer } : {}),
     ...(note ? { note } : {}),
   };
+}
+
+/**
+ * A PUT SEATS A POINTER. A record that lands with no `text` and a content address (`_canonical_uri` as `ni:///sha-256;…`,
+ * `cid:…` or a `lar:` cid name, or a `textCid`) lands as the pointer every reader in the house already reads (THE BLOB LAW,
+ * clause 3): `textCid` carries the CAS key, `_integrity` the RFC 6920 name of the same digest, `_is_skinny` marks the lazy
+ * boundary. A type that rides as a pointer by kind (an image, audio, video, a font, a PDF) sheds its content-address
+ * `_canonical_uri`, which TiddlyWiki's image widget would emit as a dead `src`; a utf8 type keeps the address as written.
+ *
+ * Names that disagree, or an address under no spelling the house reads, refuse by name and nothing lands. Bytes the content
+ * tier already holds verify here: a wrong digest refuses, a right one stamps `size` and answers `verified`. Bytes the tier
+ * lacks leave the pointer `owed`, never clean. Only a put that moves a pointer field seats one: a tag or field patch over a
+ * standing pointer leaves it as it stood. The address names a hash and nothing else: no version, no counter, no clock.
+ */
+async function seatPointer(title: string, before: Record<string, string> | null, next: Record<string, string>, cas: CasPort): Promise<PointerBody | null> {
+  if (!POINTER_ADDRESS_FIELDS.some((name) => (before?.[name] ?? undefined) !== (next[name] ?? undefined))) return null;
+  const reading = readPointerAddress(next);
+  if (reading.kind === "inline" || reading.kind === "source") return null;
+  if (reading.kind === "refused") throw new VerbRefusal(reading.code, `${reading.code}: "${title}": ${reading.why}. Nothing moved.`);
+  const { cid, integrity } = reading;
+  const authored = { ...next };
+  next["textCid"] = cid;
+  next["_integrity"] = integrity;
+  next["_is_skinny"] = "yes";
+  const canonical = next["_canonical_uri"];
+  if (canonical !== undefined && isContentAddress(canonical) && ridesAsPointer(next["type"] ?? "")) delete next["_canonical_uri"];
+  const bytes = cas ? await cas(cid) : null;
+  if (bytes && !verifyCidBytes(bytes, cid)) throw new VerbRefusal(POINTER_DIGEST_CODE, `${POINTER_DIGEST_CODE}: the bytes the content tier holds for ${cid} hash otherwise, so "${title}" lands no pointer at them. ${CURE_STAGE}. Nothing moved.`);
+  if (bytes) next["size"] = String(bytes.length);
+  const seated = Object.keys({ ...authored, ...next }).filter((name) => authored[name] !== next[name]).sort();
+  return bytes
+    ? { cid, integrity, body: "verified", seated }
+    : { cid, integrity, body: "owed", owes: cas ? `the local CAS holds no bytes for ${cid}` : "this island holds no CAS shore to verify against", cure: CURE_STAGE, seated };
 }
 
 /**
  * THE MEME LENS: the root and its slot children recomposed into one carrier, sealed by its bcc, on the gradient (`memeGradient`).
  * A title that names a slot child recomposes from its root and points at the slot. A record that holds no meme answers the record
  * with a plain line saying so (graceful, never a refusal); a pointer root answers its handle. Every answer carries `base/` (the
- * canonical hash `tiddler put --meme --slot --base` takes); a skinny answer carries one has line per top-level slot beneath the root's.
+ * canonical hash a `tiddler put` on the root or a slot takes as its `base`); a skinny answer carries one has line per top-level slot beneath the root's.
  */
 async function memeAnswer(
   engine: Engine, sink: Pick<MemeSink, "titles" | "read">, from: Provenance & { readonly answered: Record<string, unknown> }, named: string,
@@ -804,7 +894,7 @@ async function memeAnswer(
 }
 
 /**
- * A BAG'S RECORD, READ FROM THAT ONE BAG. The reach and the read gate are the meme door's own (`readBagStore`: a mounted layer, an
+ * A BAG'S RECORD, READ FROM THAT ONE BAG. The reach and the read gate are every bag read's own (`readBagStore`: a mounted layer, an
  * instance slot, a bag by access, the floor snapshot where the face holds no read on a live house canon document, which the answer
  * names with `floor: true`). The record answers as the wiki door answers one: fields as TiddlyWiki writes them, `hash`, `textHash`,
  * the `bag`, and a `position` the bag's own titles decide (a title with `#` titles below it stands a root, one with `#/` in it a slot).
@@ -858,7 +948,7 @@ export const makeTiddlerGetReactor = everyWiki("tiddler-get", false, (opts: Tidd
     refuseUnreadWords(args, named, lens, asked, slot);
     // The meme lens reads the slot inside the recomposed carrier; the record lens reads the slot's own record.
     const title = slot && !lens ? slotTitle(named, slot) : named;
-    // A BAG NAMES ONE STORE AND NO WIKI: the record reads from that bag through the meme door's own reach and read gate.
+    // A BAG NAMES ONE STORE AND NO WIKI: the record reads from that bag through the one bag reach and its read gate.
     if (container.bag !== null) {
       refuseWithheld(title, "tiddler-get");
       return await bagGet(opts, container, title, args, ctx, asked);
@@ -1030,110 +1120,367 @@ export function appendedText(standing: string, words: string): string {
 /** How many times one put re-reads a record that moved under its admission before it answers `conflict`. */
 const PUT_SETTLE_ROUNDS = 16;
 
-export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: TiddlerVerbOptions): VerbReactor => {
+/** Where a title stands, as a put's answer names it. */
+type Place = { position: TiddlerPosition; family: string | null; orphan: boolean };
+const PLAIN_PLACE: Place = { position: "plain", family: null, orphan: false };
+
+/**
+ * WHERE A PUT LANDS, as the one put law reads it. A wiki's seat stands over that wiki's live engine: the record reads off
+ * `$tw.wiki` and lands through it, so the in-wiki cascade routes it to the working layer as a person's edit would. A bag's
+ * seat stands over that one bag's own store, no engine running. The law above the seat (the patch, the base, the family's
+ * walls, the Confluence gate, the pointer, the executable wall) reads the same on both.
+ */
+interface PutSeat {
+  /** The container an answer names first: `recipe` for a wiki; a bag's answer names its `bag` alone. */
+  readonly answered: Record<string, unknown>;
+  /** The bag the put lands in, and the slot of a named wiki that bag stands as (`working`, `personal`, `draft`). */
+  readonly landing: { readonly bag: string; readonly layer?: string };
+  /** The container as a cure spells it: `--recipe <slug>` or `--bag <slug>`. */
+  readonly where: string;
+  /** The container's `has` param. */
+  readonly provenance: string;
+  /** The wiki a seat's executable record names to its exec lei. */
+  readonly wiki: string;
+  /** The family's sink: the Confluence gate reads and lands through it. */
+  readonly sink: MemeSink;
+  /** The record under a title, its fields as strings, or null where none stands; a record this face may not read refuses. */
+  read(title: string): Promise<Record<string, string> | null>;
+  /** True where `create` finds a record standing. */
+  exists(title: string): Promise<boolean>;
+  place(title: string): Promise<Place>;
+  /** A record as the family recompose reads a member of this seat. */
+  member(next: Record<string, string>): TiddlerFields;
+  /**
+   * THE SWAP: `next` lands only where the record still hashes as the round read it; false sends the round back. A wiki's
+   * swap runs its re-read and its `addTiddler` in one synchronous step, so no other hand slips between them.
+   */
+  swap(title: string, liveHash: string | null, next: Record<string, string>): boolean | Promise<boolean>;
+}
+
+/** A store record's fields as strings, as TiddlyWiki writes them, read with no engine (the host's residency stamp left out). */
+function stringsOf(held: Record<string, unknown>): Record<string, string> {
+  const fields = fieldStringsOf(held);
+  delete fields[ORIGIN_BAG];
+  return fields;
+}
+
+/** A wiki's seat: the anchor's live engine, read through the reader's view. */
+async function wikiSeat(opts: TiddlerVerbOptions, anchor: Anchor, ctx: VerbContext): Promise<PutSeat> {
+  const { wiki, Tiddler } = anchor.engine;
+  const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
+  const face = wornOrigin(ctx.worn).face;
+  const bare = wikiMemeSink(wiki as unknown as Parameters<typeof wikiMemeSink>[0]);
+  // THE FACE CROSSES THE HOP: the shore's write of each title carries the session's worn face on its origin.
+  const sink: MemeSink = {
+    ...bare,
+    land: (fields) => { wikiWearsNext(opts.tw5, String((fields as { title?: unknown }).title ?? ""), face); return bare.land(fields); },
+    tombstone: (gone) => { wikiWearsNext(opts.tw5, gone, face); return bare.tombstone(gone); },
+  };
+  const layer = opts.wiki ? wikiSlotKindOf(anchor.slug, anchor.bag) : null;
+  return {
+    answered: { recipe: anchor.recipe },
+    landing: { bag: anchor.bag, ...(layer ? { layer } : {}) },
+    where: `--recipe ${anchor.recipe}`,
+    provenance: param("recipe", anchor.recipe),
+    wiki: anchor.recipe,
+    sink,
+    read: async (title) => {
+      const standing = wiki.getTiddler(title);
+      if (!standing) return null;
+      const held = readRecord(standing);
+      if (!(await mayRead(held.bag))) throw new Error(`cap-denied: read on ${held.bag} required (the bag that answers "${title}")`);
+      return held.fields;
+    },
+    exists: async (title) => wiki.tiddlerExists(title),
+    place: async (title) => placeOf(anchor, view, title),
+    member: (next) => (new Tiddler(next) as unknown as EngineTiddler).fields as TiddlerFields,
+    swap: (title, liveHash, next) => {
+      const now = wiki.getTiddler(title);
+      if ((now ? hashOf(readRecord(now).fields) : null) !== liveHash) return false;
+      wikiWearsNext(opts.tw5, title, face);
+      wiki.addTiddler(new Tiddler(next));
+      return true;
+    },
+  };
+}
+
+/**
+ * A BAG'S SEAT: that one bag's own store, by the reach and the write gate every bag placement walks (`writeBagStore`: a lit
+ * sibling's own lane, a realm steward's write, a wiki's instance slot addressed as a bag, a layer the island mounts
+ * writable; the Kahu predicate, then the admin cap). No engine composes the bag, so position reads by the family law over
+ * the bag's own titles, and a record lands as TiddlyWiki writes its fields.
+ */
+async function bagSeat(opts: TiddlerVerbOptions, container: ReturnType<typeof readContainer>, verb: string, ctx: VerbContext): Promise<PutSeat> {
+  const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
+  const { bag, sink, layer } = await writeBagStore(opts as unknown as MemeVerbOptions, { bag: container.bag!, realm: container.realm }, origin, ctx.cap, verb, ctx.asker);
+  const read = async (title: string): Promise<Record<string, string> | null> => {
+    const held = await sink.read(title);
+    return held ? stringsOf(held as Record<string, unknown>) : null;
+  };
+  return {
+    answered: {},
+    landing: { bag, ...(layer ? { layer } : {}) },
+    where: `--bag ${container.bag!}${container.realm ? ` --realm ${container.realm}` : ""}`,
+    provenance: param("bag", bag),
+    wiki: container.bag!,
+    sink,
+    read,
+    exists: async (title) => (await sink.read(title)) !== undefined,
+    place: async (title) => { const reading = await familyReadingIn(title, sink); return { position: reading.position, family: reading.root, orphan: reading.orphan }; },
+    member: (next) => next as unknown as TiddlerFields,
+    swap: async (title, liveHash, next) => {
+      const now = await read(title);
+      if ((now ? hashOf(now) : null) !== liveHash) return false;
+      await sink.land(next as unknown as TiddlerFields);
+      return true;
+    },
+  };
+}
+
+/** The seat a put names: the bag's own store where the call names a bag (a lit sibling's lane among them), else the wiki's engine. */
+async function putSeatOf(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknown>>, ctx: VerbContext): Promise<PutSeat> {
+  const container = readContainer(args, "tiddler-put");
+  if (container.bag !== null) return bagSeat(opts, container, "tiddler put", ctx);
+  const anchor = anchorOf(opts, args, "tiddler-put", true);
+  await requireWrite(opts, anchor, ctx.cap, "tiddler put", ctx.asker);
+  return wikiSeat(opts, anchor, ctx);
+}
+
+/**
+ * THE BASE A PUT NAMES. A record's hash guards the record; a carrier's canonical hash guards the family. A PARTIAL BASE
+ * (one slot's read, `partial:#/a:<hash>`; a page short of the end, `partial:pN:<hash>`) names a carrier its reader saw in
+ * part, so it guards a put WITHIN THE SPAN IT READ: a put whose title names that slot or a slot nested in it, or a slot
+ * the page carried (recomputed from the carrier the base names; a carrier that moved reads stale at the gate). Beyond the
+ * span the put refuses `base-outside-span`, and a partial that names no readable span refuses the same. A put that speaks
+ * for the whole carrier (its title names the root) refuses a partial base by `readBase`'s own law (`base-from-partial`).
+ */
+async function putBaseOf(raw: string | null, title: string, writesText: boolean, seat: PutSeat): Promise<string | null> {
+  const root = rootAddressOf(title);
+  const slot = title.startsWith(`${root}#/`) ? title.slice(root.length) : null;
+  if (raw === null || slot === null || !raw.startsWith("partial:")) return readBase(raw, "tiddler-put", writesText);
+  const span = partialSpanOf(raw);
+  if (!span || !/^partial:(?:#\/[^:]+|p[1-9][0-9]*):.+$/.test(raw)) {
+    throw new VerbRefusal("base-outside-span", `base-outside-span: this partial base names no readable span; read the slot again (\`lares tiddler get "${title}" ${seat.where} --meme\`) or the whole carrier (\`lares tiddler get "${root}" ${seat.where} --meme --all\`) and put against that base. The span guards honest base reuse and grants no authorization. Nothing moved.`);
+  }
+  const base = readBase(raw, "tiddler-put", true, "accept");
+  const outside = (why: string): VerbRefusal => new VerbRefusal("base-outside-span", `base-outside-span: this base came from ${why}, and ${slot} lies outside it; read ${slot} (\`lares tiddler get "${title}" ${seat.where} --meme\`) or the whole carrier (\`lares tiddler get "${root}" ${seat.where} --meme --all\`) and put against that base. Nothing moved.`);
+  if ("slot" in span) {
+    if (slot !== span.slot && !slot.startsWith(`${span.slot}/`)) throw outside(`a read of the slot ${span.slot}`);
+  } else {
+    const standing = await readMeme(root, seat.sink);
+    if (standing && standing.canonicalHash === base && pageOfSlot(standing.text, slot) !== span.page) throw outside(`page ${span.page} of the whole carrier`);
+  }
+  return base;
+}
+
+/**
+ * THE ONE PUT LAW, over a seat. THE LANDING, AS A COMPARE-AND-SWAP. A wiki serializes every writer that passes through it in
+ * this process: its `addTiddler` runs synchronously on the event loop, and the shore's drain carries each title's wiki state
+ * to the store in the order the wiki took it. A writer that reaches a store directly (a bag's seat, INGEST, a face lane, a
+ * peer's wave) meets the drain's per-field merge instead, where two writes of one field resolve last-writer-wins. A round
+ * reads the record, decides, awaits admission, then re-reads it; only a record that still hashes as it read lands (`swap`).
+ * A record that moved meanwhile sends the round back to read again (an append re-composes over the newer text; a base the
+ * moved record fails to match answers `conflict`), bounded, and a round that never settles answers `conflict`.
+ */
+async function putThrough(opts: TiddlerVerbOptions, seat: PutSeat, title: string, args: Readonly<Record<string, unknown>>, ctx: VerbContext): Promise<Record<string, unknown>> {
+  // TiddlyWiki's own list reading, engine-free (`carrier-form`), so a bag's seat composes no engine to parse a tag list.
+  const listOf = (raw: unknown): string[] => Array.isArray(raw) ? raw.map(String) : typeof raw === "string" ? [...(parseTitleList(raw) ?? [])] : [];
+  const append = typeof args["append"] === "string" ? args["append"] : null;
+  if (append !== null) {
+    // AN APPEND NAMES ONLY ITS WORDS: it overwrites nothing, so it carries no base, no whole text and no field patch.
+    const crossed = ["text", "base", "fields", "unset"].filter((name) => args[name] !== undefined && args[name] !== null);
+    if (crossed.length > 0) throw new VerbRefusal("append-alone", `append-alone: an append lands its words at the end of the standing text and carries no ${crossed.map((n) => `\`${n}\``).join(", ")}; send those as their own put. Nothing moved.`);
+    if (append === "") throw new VerbRefusal("append-empty", "append-empty: an append names the words it lands. Nothing moved.");
+  }
+  // A CUT NAMES THE SLOTS THAT LEAVE: rooted paths (`#/a`), as a list or one TiddlyWiki list string. Absence never cuts.
+  const cutRaw = args["cut"];
+  const cut: string[] = listOf(cutRaw);
+  const offPath = cut.filter((slot) => !/^#\/[^$\s]/.test(slot));
+  if (offPath.length > 0) throw new VerbRefusal("cut-malformed", `cut-malformed: a cut names a slot by its rooted path (\`#/name\`, \`#/name/child\`); got ${offPath.map((slot) => `"${slot}"`).join(", ")}. Nothing moved.`);
+
+  let admitted: string | null = null;
+  for (let round = 0; ; round++) {
+    const before = await seat.read(title);
+    const standing = before !== null;
+    const liveHash = before ? hashOf(before) : null;
+    const place = standing ? await seat.place(title) : PLAIN_PLACE;
+    const answer = (decision: string, more: Record<string, unknown>): Record<string, unknown> =>
+      ({ ...seat.answered, title, decision, ...seat.landing, ...more, ...placeFields(place) });
+    const unmoved = { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null };
+    if (round >= PUT_SETTLE_ROUNDS) return answer("conflict", { ...unmoved, unsettled: round });
+
+    // CREATE-ONLY ON REQUEST, and the base where one rides: either answers before any field moves. An append to a missing
+    // title refuses unless `create` names it; with `create`, an append lands a new record or joins the standing one.
+    if (append !== null) {
+      if (!standing && !flagOn(args["create"])) throw new VerbRefusal("append-target-missing", `append-target-missing: no record "${title}" stands to append to; name \`create\` (\`--create\`) to land the words as a new record. Nothing moved.`);
+    } else if (flagOn(args["create"]) && (await seat.exists(title))) return answer("exists", unmoved);
+    // A TEXT WRITE BY ANY PATH: `text`, a field patch naming `text`, or an unset of it. A card's base takes none of them.
+    const writesText = cut.length > 0 || append !== null || typeof args["text"] === "string" || Object.prototype.hasOwnProperty.call(patchArg(args["fields"]), "text") || (namesArg(args["unset"]) ?? []).includes("text");
+    const base = await putBaseOf(optionalStringArg(args, "base"), title, writesText, seat);
+    // TWO BASES, ONE DOOR: a record's hash (`sha256-…`, the record lens) guards the record; a carrier's canonical hash
+    // (`sha256:…`, the meme lens) guards the family, and the Confluence gate reads it below where the put moves a family's text.
+    const carrierBase = base !== null && base.startsWith("sha256:") ? base : null;
+    if (base !== null && carrierBase === null && base !== liveHash) return answer("conflict", unmoved);
+
+    // AN APPEND ON A SLOT JOINS ITS BODY'S END: the postamble's record where one stands with non-blank text, the slot's own
+    // record otherwise, one blank line between (`slotAppendTarget`, `joinedParagraph`). A plain tiddler and a root keep the
+    // plain record join (`appendedText`).
+    const slotWords = append !== null && standing && place.position === "slot" && !place.orphan ? await slotAppendTarget(title, seat.sink) : null;
+    const joined = slotWords && append !== null
+      ? { title: slotWords.title, fields: { ...slotWords.fields, text: joinedParagraph(typeof slotWords.fields.text === "string" ? slotWords.fields.text : "", append) } as TiddlerFields }
+      : null;
+
+    // THE PATCH: named fields set, named fields unset, tags added and removed; the text moves only where the caller names it.
+    const patch = patchArg(args["fields"]);
+    if (patch["title"] !== undefined && patch["title"] !== title) throw new VerbRefusal("fields-malformed", "fields-malformed: a put never re-titles; `fields.title` must match args.title or stay absent.");
+    const next: Record<string, string> = { ...(before ?? {}), ...patch, title };
+    if (typeof args["text"] === "string") next["text"] = args["text"];
+    if (append !== null) {
+      if (joined === null) next["text"] = appendedText(before?.["text"] ?? "", append);
+      else if (joined.title === title) next["text"] = String(joined.fields.text);
+    }
+    // A cut takes the slot's call out of this record's text, so the text omits what the cut names.
+    if (cut.length > 0 && typeof next["text"] === "string") next["text"] = dropKaheaCalls(next["text"], new Set(cut));
+    for (const name of namesArg(args["unset"]) ?? []) if (name !== "title") delete next[name];
+    const add = listOf(args["tagsAdd"]);
+    const remove = new Set(listOf(args["tagsRemove"]));
+    let tags = listOf(next["tags"] ?? "");
+    if (add.length > 0 || remove.size > 0) {
+      tags = [...tags.filter((tag) => !remove.has(tag)), ...add.filter((tag) => !tags.includes(tag) && !remove.has(tag))];
+      if (tags.length > 0) next["tags"] = stringifyList(tags); else delete next["tags"];
+    }
+    // A POINTER SEATS BEFORE ANYTHING COMPARES: the record that lands reads as the house pointer, verified or owed.
+    const pointer = await seatPointer(title, before, next, opts.resolveByCid);
+    if (bytesOf(next) > 1_048_576) throw new VerbRefusal("fields-malformed", "fields-malformed: one record carries at most 1048576 bytes through this door.");
+
+    // A FAMILY READS AS TIDDLERS. A meme root and its slots stand as ordinary records, and a put moves any of them: a field or
+    // tag patch lands as it lands anywhere; a text write lands THROUGH the Confluence gate (below), which re-splits the
+    // family and reseals its block check. A family's `type` and `$` carriage fields derive from the text at each split, so
+    // no put sets them; a new slot joins through its parent's text, and a fragment address founds no meme.
+    const moved = (name: string): boolean => (before?.[name] ?? undefined) !== (next[name] ?? undefined);
+    const structural = Object.keys({ ...(before ?? {}), ...next }).filter((name) => moved(name) && (name === "text" || name === "type" || name.startsWith("$")));
+    const member = place.position !== "plain";
+    // A FIRST RECORD FOUNDS ITS FAMILY where it names the carrier type, or where its text frames a whole carrier and it names
+    // no type at all (the carrier's own head mark says what it holds).
+    const framed = append === null && typeof next["text"] === "string" && framesCarrier(next["text"]);
+    const founds = !standing && next["$fragment-parent"] === undefined && !title.includes("#") && (next["type"] === CARRIER_TYPE || (next["type"] === undefined && framed));
+    const carriage = structural.filter((name) => name !== "text");
+    if (member && carriage.length > 0) {
+      throw new VerbRefusal("family-carriage-derives", `family-carriage-derives: "${title}" stands as a meme ${place.position} and this put moves ${carriage.map((n) => `\`${n}\``).join(", ")}; a family's \`type\` and \`$\` carriage fields derive from its text at each split, and no put sets them. Put the text alone (\`lares tiddler put "${title}" ${seat.where} --text …\`) and the split re-mints them; a field or tag patch lands in the same put. Nothing moved.`);
+    }
+    // A FRAGMENT ADDRESS UNDER A STANDING ROOT NAMES A SLOT: one the family does not hold joins through its parent's text alone.
+    const strays = !standing && !founds && title.includes("#") && isMemeRoot(rootAddressOf(title), await seat.sink.read(rootAddressOf(title)));
+    if (!standing && !founds && (next["type"] === CARRIER_TYPE || next["$fragment-parent"] !== undefined || strays)) {
+      const parent = typeof next["$fragment-parent"] === "string" ? next["$fragment-parent"] : rootAddressOf(title);
+      throw new VerbRefusal("family-joins-by-text", `family-joins-by-text: "${title}" would land as a slot no parent text calls; a slot joins its family through its parent's text, and a fragment address founds no meme. Write the slot's \`<<~ ahu slot=…>>\` block into the parent's text (\`lares tiddler put "${parent}" ${seat.where} --text …\`) and the split lands the slot. Nothing moved.`);
+    }
+    const familyWrite = founds || (member && (structural.includes("text") || cut.length > 0 || joined !== null));
+    if (cut.length > 0 && !(member && standing)) {
+      throw new VerbRefusal("cut-not-omitted", `cut-not-omitted: a cut names slots of a standing meme family, and "${title}" stands as ${standing ? "a plain tiddler" : "no record"}. Name the family's root or the slot's parent (\`lares tiddler put <root> ${seat.where} --cut '#/slot'\`). Nothing moved.`);
+    }
+    if (carrierBase !== null && !familyWrite) return answer("conflict", unmoved);
+    // ONLY THE RENDERER WRITES A RENDERED TIDDLER: a put over one, or one that would land carrying `rendered-from`, refuses.
+    refuseRenderedWrite(title, before, next, "tiddler put");
+    refuseMalformedStagePath(title);
+
+    const changed = Object.keys({ ...(before ?? {}), ...next }).filter(moved);
+    if (standing && changed.length === 0 && cut.length === 0 && joined === null) return answer("noop", { ...unmoved, ...(pointer ? { pointer } : {}) });
+
+    // THE CONFLUENCE GATE, INSIDE THE PUT. A text write on a family member, or a first record that founds, lands as the
+    // family: the member's record takes its place in a copy of the family, the one recompose frames the carrier
+    // (`composeMemberCarrier`), and `placeMeme` lands it in the root's own turn under the hash it composed over. A root
+    // text that frames a whole carrier (its own head mark) speaks for the family as it stands. ABSENCE NEVER DELETES: a slot
+    // the new text omits stays standing by reference (`kept`), as a folded read hands it back; a slot leaves only where
+    // `cut` names it (`tombstoned`), or by its own delete. A SLOT'S TEXT MOVES THE SLOT'S OWN RECORD: its standing
+    // `$preamble` and `$postamble` carriage stays, since the recompose reads every record the put did not name.
+    if (familyWrite) {
+      const root = place.family ?? title;
+      const whole = title === root && append === null && typeof next["text"] === "string" && moved("text") && framesCarrier(next["text"]);
+      let carrier: { text: string; baseHash: string | null } | null = null;
+      if (whole) {
+        const beside = changed.filter((name) => name !== "text" && name !== "title" && !(name === "type" && !standing));
+        if (beside.length > 0) throw new VerbRefusal("carrier-speaks-whole", `carrier-speaks-whole: this text frames a whole carrier, which names its fields in its own meta block, and the put also moves ${beside.map((n) => `\`${n}\``).join(", ")}. Send the carrier alone, or write those fields into its \`toml meta\` block; a field patch lands as its own put. Nothing moved.`);
+        carrier = { text: next["text"]!, baseHash: carrierBase };
+      } else {
+        // The member that takes the write: the record this put names, or the postamble a slot's append joins.
+        const taking = joined !== null && joined.title !== title ? joined : { title, fields: seat.member(next) };
+        const composed = await composeMemberCarrier({ uri: root, title: taking.title, fields: taking.fields }, seat.sink);
+        if (composed.kind === "carrier") carrier = { text: composed.text, baseHash: carrierBase ?? composed.canonicalHash };
+      }
+      // No carrier stands at the root (an orphaned slot, a root that left): the record lands plainly, below.
+      if (carrier !== null) {
+        const vet = async (records: readonly Record<string, unknown>[]): Promise<void> => {
+          for (const record of records) {
+            const landing = String(record["title"] ?? root);
+            refuseEffectLedgerWrite(landing, "tiddler put");
+            refuseRenderedWrite(landing, null, record, "tiddler put");
+            await admitSeatExecutable(landing, record, "tiddler put", ctx.asker, { wiki: seat.wiki, port: ctx.execLei });
+          }
+        };
+        // The record this round read still stands as it read; a record that moved sends the round back.
+        const now = await seat.read(title);
+        if ((now ? hashOf(now) : null) !== liveHash) continue;
+        const receipt = await placeMeme({ uri: root, text: carrier.text, baseHash: carrier.baseHash, vet, keepAbsent: true, cut, holdAnswer: true, ...(ctx.signal ? { signal: ctx.signal } : {}) }, seat.sink);
+        if (receipt.decision === "refuse") {
+          const cutWall = receipt.diagnostics.find((d) => d.code === CUT_NOT_OMITTED_CODE);
+          if (cutWall) throw new VerbRefusal(CUT_NOT_OMITTED_CODE, cutWall.message);
+          throw new VerbRefusal("family-gate-refused", `family-gate-refused: with this text the family of "${root}" no longer reads as one carrier: ${receipt.warnings.join("; ") || "the gate named no finding"}. Mend the text and put again; \`lares tiddler get "${root}" ${seat.where} --meme --all\` shows the carrier as it stands. Nothing moved.`);
+        }
+        const landed = await seat.read(title);
+        const family = { canonicalHash: receipt.canonicalHash ?? null, landed: receipt.landed, kept: receipt.kept ?? [], tombstoned: receipt.tombstoned, ...(receipt.warnings.length > 0 ? { warnings: receipt.warnings } : {}) };
+        if (receipt.decision === "conflict") {
+          // A base the caller named answers; a base this put composed over moved under it, and the round reads again.
+          if (carrierBase === null) continue;
+          return answer("conflict", { ...unmoved, ...family });
+        }
+        if (receipt.decision === "noop" && cut.length > 0) {
+          throw new VerbRefusal(CUT_NOT_OMITTED_CODE, `${CUT_NOT_OMITTED_CODE}: "${title}" calls none of ${cut.map((slot) => `\`${slot}\``).join(", ")}, so the cut moved nothing. Name the slot's parent as the put's title (\`lares tiddler get "${root}" ${seat.where} --meme --tree\` shows which record calls it). Nothing moved.`);
+        }
+        if (receipt.decision === "noop") return answer("noop", { ...unmoved, ...family });
+        const hash = landed ? hashOf(landed) : null;
+        return {
+          ...(append !== null ? { has: hasLine(title, [seat.provenance, param("decision", "put"), param("hash", hash ?? "")]) } : {}),
+          ...seat.answered, title, decision: "put", ...seat.landing, created: !standing, changed, hash, textHash: landed ? textHashOf(landed) : null,
+          ...(append !== null ? { appended: bytesOf(append), ...(joined !== null ? { appendedTo: joined.title } : {}) } : {}), ...family, ...placeFields(await seat.place(title)),
+        };
+      }
+      // A slot's append that named the postamble found no carrier to recompose: the words join the slot's own record.
+      if (joined !== null && joined.title !== title) next["text"] = joinedParagraph(before?.["text"] ?? "", append!);
+    }
+    // THE ONE WALL A SEAT KEEPS: a seat's executable record offers, or lands spending one return of a standing exec lei. A call
+    // spends once: a round the swap sent back re-admits only where the record it would land reads as another executable class.
+    const executable = executableClassOf(next);
+    const admits = executable === null ? null : `${executable.class}\u0000${executable.mark}`;
+    if (round === 0 || admits !== admitted) {
+      await admitSeatExecutable(title, next, "tiddler put", ctx.asker, { wiki: seat.wiki, port: ctx.execLei });
+      admitted = admits;
+    }
+    // THE SWAP: the record lands only where it still stands as this round read it.
+    if (!(await seat.swap(title, liveHash, next))) continue;
+    const landed = (await seat.read(title))!;
+    const hash = hashOf(landed);
+    return {
+      ...(append !== null ? { has: hasLine(title, [seat.provenance, param("decision", "put"), param("hash", hash)]) } : {}),
+      ...answer("put", { created: !standing, changed: Object.keys({ ...(before ?? {}), ...next }).filter(moved), hash, textHash: textHashOf(landed), ...(append !== null ? { appended: bytesOf(append) } : {}), ...(pointer ? { pointer } : {}) }),
+    };
+  }
+}
+
+/** The put over the seat its container names; a delete lands a slot's cut through it. */
+function tiddlerPut(opts: TiddlerVerbOptions): VerbReactor {
   return async (args, ctx) => {
-    const anchor = anchorOf(opts, args, "tiddler-put", true);
+    // THE CONTAINER FIRST, then the title: a call that names no container refuses before anything reads.
+    readContainer(args, "tiddler-put");
     const title = stringArg(args, "title");
     if (!title) throw new Error("tiddler-put: args.title is required");
     refuseWithheld(title, "tiddler-put");
     refuseEffectLedgerWrite(title, "tiddler-put");
     refuseUnhandedCollapseRule(title, "tiddler put", ctx.asker);
-    await requireWrite(opts, anchor, ctx.cap, "tiddler put", ctx.asker);
-    const { wiki, utils, Tiddler } = anchor.engine;
-    const append = typeof args["append"] === "string" ? args["append"] : null;
-    if (append !== null) {
-      // AN APPEND NAMES ONLY ITS WORDS: it overwrites nothing, so it carries no base, no whole text and no field patch.
-      const crossed = ["text", "base", "fields", "unset"].filter((name) => args[name] !== undefined && args[name] !== null);
-      if (crossed.length > 0) throw new VerbRefusal("append-alone", `append-alone: an append lands its words at the end of the standing text and carries no ${crossed.map((n) => `\`${n}\``).join(", ")}; send those as their own put. Nothing moved.`);
-      if (append === "") throw new VerbRefusal("append-empty", "append-empty: an append names the words it lands. Nothing moved.");
-    }
-    const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
-
-    // THE LANDING, AS A COMPARE-AND-SWAP ON THE LIVE WIKI. The wiki serializes every writer that passes through it in this
-    // process: its `addTiddler` runs synchronously on the event loop, and the shore's drain carries each title's wiki state to
-    // the store in the order the wiki took it. A writer that reaches the store directly (a meme door sink, INGEST, a face lane,
-    // a peer's wave) meets the drain's per-field merge instead, where two writes of one field resolve last-writer-wins. A round reads the record, decides, awaits admission, then re-reads it; only a record that
-    // still hashes as it read lands, in the same synchronous step as that re-read, so no other hand slips between the read
-    // and the write. A record that moved meanwhile sends the round back to read again (an append re-composes over the newer
-    // text; a base the moved record fails to match answers `conflict`), bounded, and a round that never settles answers `conflict`.
-    let admitted: string | null = null;
-    for (let round = 0; ; round++) {
-      const standing = wiki.getTiddler(title);
-      const held = standing ? readRecord(standing) : null;
-      if (held && !(await mayRead(held.bag))) throw new Error(`cap-denied: read on ${held.bag} required (the bag that answers "${title}")`);
-      const before = held?.fields ?? null;
-      const liveHash = before ? hashOf(before) : null;
-      const place = standing ? placeOf(anchor, view, title) : { position: "plain" as TiddlerPosition, family: null, orphan: false };
-      const answer = (decision: string, more: Record<string, unknown>): Record<string, unknown> =>
-        ({ recipe: anchor.recipe, title, decision, bag: anchor.bag, ...more, ...placeFields(place) });
-      if (round >= PUT_SETTLE_ROUNDS) return answer("conflict", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null, unsettled: round });
-
-      // CREATE-ONLY ON REQUEST, and the base where one rides: either answers before any field moves. An append to a missing
-      // title refuses unless `create` names it; with `create`, an append lands a new record or joins the standing one.
-      if (append !== null) {
-        if (!standing && !flagOn(args["create"])) throw new VerbRefusal("append-target-missing", `append-target-missing: no record "${title}" stands to append to; name \`create\` (\`--create\`) to land the words as a new record. Nothing moved.`);
-      } else if (flagOn(args["create"]) && wiki.tiddlerExists(title)) return answer("exists", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null });
-      // A TEXT WRITE BY ANY PATH: `text`, a field patch naming `text`, or an unset of it. A card's base takes none of them.
-      const writesText = append !== null || typeof args["text"] === "string" || Object.prototype.hasOwnProperty.call(patchArg(args["fields"]), "text") || (namesArg(args["unset"]) ?? []).includes("text");
-      const base = readBase(optionalStringArg(args, "base"), "tiddler-put", writesText);
-      if (base !== null && base !== liveHash) return answer("conflict", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null });
-
-      // THE PATCH: named fields set, named fields unset, tags added and removed; the text moves only where the caller names it.
-      const patch = patchArg(args["fields"]);
-      if (patch["title"] !== undefined && patch["title"] !== title) throw new VerbRefusal("fields-malformed", "fields-malformed: a put never re-titles; `fields.title` must match args.title or stay absent.");
-      const next: Record<string, string> = { ...(before ?? {}), ...patch, title };
-      if (typeof args["text"] === "string") next["text"] = args["text"];
-      if (append !== null) next["text"] = appendedText(before?.["text"] ?? "", append);
-      for (const name of namesArg(args["unset"]) ?? []) if (name !== "title") delete next[name];
-      const listArg = (raw: unknown): string[] => Array.isArray(raw) ? raw.map(String) : typeof raw === "string" ? (utils.parseStringArray(raw) ?? []) : [];
-      const add = listArg(args["tagsAdd"]);
-      const remove = new Set(listArg(args["tagsRemove"]));
-      let tags = utils.parseStringArray(next["tags"] ?? "") ?? [];
-      if (add.length > 0 || remove.size > 0) {
-        tags = [...tags.filter((tag) => !remove.has(tag)), ...add.filter((tag) => !tags.includes(tag) && !remove.has(tag))];
-        if (tags.length > 0) next["tags"] = utils.stringifyList(tags); else delete next["tags"];
-      }
-      if (bytesOf(next) > 1_048_576) throw new VerbRefusal("fields-malformed", "fields-malformed: one record carries at most 1048576 bytes through this door.");
-
-      // THE FAMILY FENCE. A meme root or slot takes a field or tag patch here; its text, its type and its carriage fields
-      // move through the meme door, which re-splits the family and re-mints its block check. A new record never joins a
-      // family here either.
-      const moved = (name: string): boolean => (before?.[name] ?? undefined) !== (next[name] ?? undefined);
-      const structural = Object.keys({ ...(before ?? {}), ...next }).filter((name) => moved(name) && (name === "text" || name === "type" || name.startsWith("$")));
-      const joinsFamily = !standing && (next["type"] === CARRIER_TYPE || next["$fragment-parent"] !== undefined);
-      if ((place.position !== "plain" && structural.length > 0) || joinsFamily) {
-        throw new VerbRefusal("tiddler-put-in-a-family", `tiddler-put-in-a-family: use the meme door. "${title}" ${joinsFamily ? "would land as a carrier or a slot" : `stands as a meme ${place.position} and this put moves ${structural.map((n) => `\`${n}\``).join(", ")}`}; \`lares tiddler put --meme\` lands a family's text through the Confluence gate${append !== null ? " (`--slot '#/x' --append` appends to a slot)" : ""}. A field or tag patch on a standing root or slot lands here.`);
-      }
-      // ONLY THE RENDERER WRITES A RENDERED TIDDLER: a put over one, or one that would land carrying `rendered-from`, refuses.
-      refuseRenderedWrite(title, before, next, "tiddler put");
-      refuseMalformedStagePath(title);
-
-      const changed = Object.keys({ ...(before ?? {}), ...next }).filter(moved);
-      if (standing && changed.length === 0) return answer("noop", { created: false, changed, hash: liveHash, textHash: textHashOf(before!) });
-      // THE ONE WALL A SEAT KEEPS: a seat's executable record offers, or lands spending one return of a standing exec lei. A call
-      // spends once: a round the swap sent back re-admits only where the record it would land reads as another executable class.
-      const executable = executableClassOf(next);
-      const admits = executable === null ? null : `${executable.class}\u0000${executable.mark}`;
-      if (round === 0 || admits !== admitted) {
-        await admitSeatExecutable(title, next, "tiddler put", ctx.asker, { wiki: anchor.recipe, port: ctx.execLei });
-        admitted = admits;
-      }
-      // THE SWAP: from this re-read to `addTiddler` no await stands, so nothing else runs between them.
-      const now = wiki.getTiddler(title);
-      if ((now ? hashOf(readRecord(now).fields) : null) !== liveHash) continue;
-      // The record lands through the live wiki, so the in-wiki cascade routes it to the working layer as a person's edit would.
-      // THE FACE CROSSES THE HOP: the shore's write of this title carries the session's worn face on its origin.
-      wikiWearsNext(opts.tw5, title, wornOrigin(ctx.worn).face);
-      wiki.addTiddler(new Tiddler(next));
-      const landed = readRecord(wiki.getTiddler(title)!).fields;
-      const hash = hashOf(landed);
-      return {
-        ...(append !== null ? { has: hasLine(title, [param("recipe", anchor.recipe), param("decision", "put"), param("hash", hash)]) } : {}),
-        ...answer("put", { created: !standing, changed, hash, textHash: textHashOf(landed), ...(append !== null ? { appended: bytesOf(append) } : {}) }),
-      };
-    }
+    return putThrough(opts, await putSeatOf(opts, args, ctx), title, args, ctx);
   };
-});
+}
+
+export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, tiddlerPut);
 
 // A row names a verified floor shadow and the sole record its native action may change.
 // The caller supplies values only; no action text or message name crosses this door.
@@ -1444,14 +1791,102 @@ export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts:
 
 // ── tiddler-delete ────────────────────────────────────────────────────────────────────────────────────
 
+/** True where a title stands as a slot the Confluence gate named (`$slot`, a rooted path) under a parent that stands: the delete that cuts. */
+function cutsAsSlot(reading: { readonly position: string; readonly orphan: boolean; readonly parent: string | null }, fields: Record<string, string>): boolean {
+  const slot = fields["$slot"];
+  return reading.position === "slot" && !reading.orphan && reading.parent !== null && typeof slot === "string" && slot.startsWith("#/");
+}
+
+/**
+ * A SLOT LEAVES BY THE EXPLICIT CUT. A delete that names `<root>#/<slot>` lands as the put on the slot's parent with `cut`
+ * naming that slot: the parent's text sheds the slot's call, the Confluence gate re-splits and reseals the family in the
+ * root's turn, and the slot (with the slots and carriage beneath it) leaves by name. The answer names what the cut
+ * tombstoned, the parent whose text moved, and the carrier hash the family reads now. `base` guards the slot's own record
+ * (`sha256-…`) or the family's carrier (`sha256:…`). A cut names no layer, so a `mode` refuses `delete-mode-unread`.
+ */
+async function cutSlot(
+  opts: TiddlerVerbOptions, seat: PutSeat, from: Record<string, unknown>, title: string, parent: string, hash: string, base: string | null,
+  mode: string | null, ctx: VerbContext, read?: Consequence,
+): Promise<Record<string, unknown>> {
+  if (mode !== null) {
+    throw new VerbRefusal("delete-mode-unread", `delete-mode-unread: "${title}" stands as a slot, which leaves by a cut of its parent's text, and a cut names no layer for \`mode: "${mode}"\` to choose; drop the mode (\`lares tiddler delete "${title}" ${seat.where}\`). Nothing moved.`);
+  }
+  const slot = title.slice(rootAddressOf(title).length);
+  const carrierBase = base !== null && base.startsWith("sha256:") ? base : null;
+  const answer = (decision: string, more: Record<string, unknown>): Record<string, unknown> =>
+    ({ ...from, title, decision, mode: "cut", tombstoned: [], retracted: [], hash, parent, ...more, ...(read ? { consequence: read } : {}) });
+  if (base !== null && carrierBase === null && base !== hash) return answer("conflict", {});
+  const put = await putThrough(opts, seat, parent, { cut: [slot], ...(carrierBase !== null ? { base: carrierBase } : {}) }, ctx);
+  const family = { canonicalHash: put["canonicalHash"] ?? null, landed: put["landed"] ?? [], kept: put["kept"] ?? [] };
+  if (put["decision"] !== "put") return answer("conflict", family);
+  return answer("removed", { tombstoned: put["tombstoned"] ?? [], ...family });
+}
+
+/**
+ * A BAG'S DELETE, IN THAT ONE BAG. The reach and the write gate are the bag put's own (`bagSeat`). A plain record leaves its
+ * bag; a meme root answers `refused` (`tiddler-delete-in-a-family`) unless the call names the family act (`family: true`),
+ * which removes the root and its slots through the store as ONE change (`removeMeme`); a slot leaves by the explicit cut
+ * (`cutSlot`). A sink that knows its layers raises a kāpae only where a lower layer would surface and retracts plainly
+ * elsewhere; any other bag's store takes a tombstone. `base` reads the record's hash, or on a family the carrier's
+ * canonical hash; a stale one answers `conflict`. A bag holds one layer, so a `mode` refuses `delete-mode-unread`.
+ */
+async function bagDelete(opts: TiddlerVerbOptions, container: ReturnType<typeof readContainer>, args: Readonly<Record<string, unknown>>, ctx: VerbContext): Promise<Record<string, unknown>> {
+  const title = stringArg(args, "title");
+  if (!title) throw new Error("tiddler-delete: args.title is required");
+  refuseWithheld(title, "tiddler-delete");
+  refuseEffectLedgerWrite(title, "tiddler-delete");
+  refuseUnhandedCollapseRule(title, "tiddler delete", ctx.asker);
+  const mode = optionalStringArg(args, "mode");
+  const seat = await bagSeat(opts, container, "tiddler delete", ctx);
+  const from = { ...seat.landing };
+  const before = await seat.read(title);
+  if (!before) return { ...from, title, decision: "absent", tombstoned: [], retracted: [] };
+  const hash = hashOf(before);
+  const reading = await familyReadingIn(title, seat.sink);
+  const refused = (refusal: string, why: string): Record<string, unknown> =>
+    ({ ...from, title, decision: "refused", mode: "plain", refusal, why: `${refusal}: ${why}`, tombstoned: [], retracted: [], hash });
+  const rendered = renderedWriteFault(title, before, null, "tiddler delete");
+  if (rendered !== null) return refused(RENDERED_DERIVES_REASON, rendered.slice(RENDERED_DERIVES_REASON.length + 2) + " Nothing moved.");
+  const base = readBase(optionalStringArg(args, "base"), "tiddler-delete", false);
+  if (cutsAsSlot(reading, before)) return cutSlot(opts, seat, from, title, reading.parent!, hash, base, mode, ctx);
+  if (mode !== null) {
+    throw new VerbRefusal("delete-mode-unread", `delete-mode-unread: a mode chooses between the layers of a wiki's stack (\`kapae\`, \`reveal\`), and a bag holds one layer; drop the mode (\`lares tiddler delete "${title}" ${seat.where}\`), or name the wiki (\`--recipe <slug>\`). Nothing moved.`);
+  }
+  if (reading.position !== "plain" && !flagOn(args["family"])) {
+    return refused("tiddler-delete-in-a-family", `"${title}" stands as a meme ${reading.position} of ${reading.root}, and this delete would move the family's records. Name the family act (\`family: true\`; \`lares tiddler delete "${reading.root ?? title}" ${seat.where} --family\`) to remove the root and its slots as one change. Nothing moved.`);
+  }
+  const carrierBase = base !== null && base.startsWith("sha256:") ? base : null;
+  const conflict = { ...from, title, decision: "conflict", mode: "plain", tombstoned: [], retracted: [], hash };
+  if (reading.position === "root") {
+    if (base !== null && carrierBase === null && base !== hash) return conflict;
+    const receipt = await removeMeme({ uri: title, baseHash: carrierBase }, seat.sink);
+    return {
+      ...from, title, decision: receipt.decision, mode: "plain", tombstoned: receipt.tombstoned, retracted: receipt.retracted ?? [], hash,
+      ...(receipt.canonicalHash !== undefined ? { canonicalHash: receipt.canonicalHash } : {}), ...(receipt.consequence ? { consequence: receipt.consequence } : {}),
+    };
+  }
+  if (base !== null && base !== hash) return conflict;
+  const sink = seat.sink;
+  if (sink.beneath && sink.leaveFamily) {
+    const hides = await sink.beneath(title);
+    await sink.leaveFamily(hides ? [title] : [], hides ? [] : [title]);
+    return { ...from, title, decision: "removed", mode: "plain", tombstoned: hides ? [title] : [], retracted: hides ? [] : [title], hash };
+  }
+  await sink.tombstone(title);
+  return { ...from, title, decision: "removed", mode: "plain", tombstoned: [title], retracted: [], hash };
+}
+
 export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
-    const anchor = anchorOf(opts, args, "tiddler-delete", true);
+    // A BAG NAMES ONE STORE AND NO WIKI: the delete lands in that bag through its own store.
+    const container = readContainer(args, "tiddler-delete");
+    if (container.bag !== null) return bagDelete(opts, container, args, ctx);
     const title = stringArg(args, "title");
     if (!title) throw new Error("tiddler-delete: args.title is required");
     refuseWithheld(title, "tiddler-delete");
     refuseEffectLedgerWrite(title, "tiddler-delete");
     refuseUnhandedCollapseRule(title, "tiddler delete", ctx.asker);
+    const anchor = anchorOf(opts, args, "tiddler-delete", true);
     await requireWrite(opts, anchor, ctx.cap, "tiddler delete", ctx.asker);
     const named = optionalStringArg(args, "mode");
     if (named !== null && named !== "kapae" && named !== "reveal") {
@@ -1481,8 +1916,18 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
     const tombstones = tombstonesOf(read);
     const retracts = retractsOf(read);
     const moves = tombstones.length + retracts.length;
+    // A SLOT LEAVES BY THE EXPLICIT CUT (`cutSlot`): the put on its parent, with the slot named. A slot whose parent this
+    // face reads none of stands orphaned, and a record that carries no slot name of its own (a carriage part, a fragment a
+    // hand laid) takes no cut: each leaves as the consequence below reads it.
+    const standsAs = familyOf(familyViewAt(anchor, view, layers), title);
+    if (cutsAsSlot(standsAs, fields)) {
+      const fault = renderedWriteFault(title, fields, null, "tiddler delete");
+      if (fault !== null) return refused(RENDERED_DERIVES_REASON, fault.slice(RENDERED_DERIVES_REASON.length + 2) + " Nothing moved.");
+      const slotBase = readBase(optionalStringArg(args, "base"), "tiddler-delete", false);
+      return cutSlot(opts, await wikiSeat(opts, anchor, ctx), { recipe: anchor.recipe }, title, standsAs.parent!, hash, slotBase, named, ctx, read);
+    }
     if (read.position !== "plain" && !flagOn(args["family"])) {
-      return refused("tiddler-delete-in-a-family", `"${title}" stands as a meme ${read.position} of ${read.family}; this delete would move ${moves} record${moves === 1 ? "" : "s"} (the consequence names each). Name the family act (\`family: true\`, \`--family\`) to land it as one change, or use \`lares tiddler delete --meme ${read.family}\`.`);
+      return refused("tiddler-delete-in-a-family", `"${title}" stands as a meme ${read.position} of ${read.family}; this delete would move ${moves} record${moves === 1 ? "" : "s"} (the consequence names each). Name the family act (\`family: true\`; \`lares tiddler delete "${read.family ?? title}" --recipe ${anchor.recipe} --family\`) to land it as one change. Nothing moved.`);
     }
     const rendered = renderedWriteFault(title, fields, null, "tiddler delete");
     if (rendered !== null) return refused(RENDERED_DERIVES_REASON, rendered.slice(RENDERED_DERIVES_REASON.length + 2) + " Nothing moved.");
@@ -1513,10 +1958,10 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
         : `"${first.title}" refuses this delete; nothing moved.`;
       return refused(first.code, why);
     }
-    // A slot its parent calls leaves with the call: the parent's text would move, and a family's text moves through the meme door.
+    // A slot its parent calls leaves with the call: the parent's text would move, and that rides a put of the parent's text.
     const dangling = read.acts.find((row) => row.act === "put") ?? read.leaves.find((row) => row.why === "reference-dangles:kahea");
     if (dangling) {
-      return refused("tiddler-delete-in-a-family", `"${title}" stands as a slot "${dangling.title}" calls by \`kahea\`; the call leaves with the slot, and a family's text moves through the meme door: \`lares tiddler put --meme ${read.family}\` with the slot's block gone.`);
+      return refused("tiddler-delete-in-a-family", `"${title}" stands as a slot "${dangling.title}" calls by \`kahea\`; the call leaves with the slot, and the parent's text moves by its own put: \`lares tiddler put "${dangling.title}" --recipe ${anchor.recipe} --cut '${String(title).slice(rootAddressOf(title).length)}'\` cuts the slot and its call in one put.`);
     }
     // A record no mounted layer holds (the engine's own, or a wiki with no store beneath it) has nothing to retract.
     const unheld = named === "reveal" ? read.acts.find((row) => row.act === "retract" && (row.holds?.length ?? 0) === 0) : undefined;

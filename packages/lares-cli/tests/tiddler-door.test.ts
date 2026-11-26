@@ -46,7 +46,6 @@ import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { cmdTiddler, tiddlerPlan } from "../src/commands/tiddler.js";
 import { cmdWiki, wikiFilterPlan, wikiRenderPlan } from "../src/commands/wiki.js";
 import { cmdKahua } from "../src/commands/kahua.js";
-import { memePlan } from "../src/commands/family.js";
 import { cmdMeme } from "../src/commands/meme.js";
 import { COMMANDS, dispatch, unknownFlags } from "../src/bin/lares.js";
 import type { ParsedArgs } from "../src/parse-args.js";
@@ -141,33 +140,43 @@ describe("the argument law, no daemon", () => {
     expect((await run(argv("wiki", ["render", "[tag[export]]"], { recipe: "notes", output: "workbench", target: "h1" }))).exit).toBe(2);
     expect(h.calls).toEqual([]);
   });
-  test("the row refuses family flags on record paths before dispatch", () => {
+  test("the row reads `--meme` on get alone: on a put or a delete it refuses as any unread flag does", () => {
     const door = COMMANDS.find((row) => row.name === "tiddler")!;
-    expect(unknownFlags(door, argv("tiddler", ["put", "T"], { recipe: "default", slot: "#/a" })).map((x) => x.name)).toContain("slot");
-    expect(unknownFlags(door, argv("tiddler", ["put", "T"], { recipe: "default", file: "x", fields: "{}" }, { meme: true })).map((x) => x.name)).toContain("fields");
-    expect(unknownFlags(door, argv("tiddler", ["delete", "T"], { recipe: "default", mode: "reveal" }, { meme: true })).map((x) => x.name)).toContain("mode");
+    expect(unknownFlags(door, argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", file: "x" }, { meme: true })).map((x) => x.name)).toEqual(["meme"]);
+    expect(unknownFlags(door, argv("tiddler", ["delete", "lar:///t/x"], { recipe: "default" }, { meme: true })).map((x) => x.name)).toEqual(["meme"]);
     expect(unknownFlags(door, argv("tiddler", ["get", "T"], { recipe: "default" }, { meme: true, tree: true })).map((x) => x.name)).toContain("tree");
+    // CONTROL: the read lens and the help reach keep the word.
+    expect(unknownFlags(door, argv("tiddler", ["get", "lar:///t/x"], { recipe: "default" }, { meme: true }))).toEqual([]);
   });
-  test("put --meme --create is accepted for a whole-family put and rides to the verb; a slot patch still refuses it", async () => {
+  test("the dispatcher refuses `tiddler put --meme` by name before anything runs", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      expect(await dispatch(["tiddler", "put", "lar:///t/x", "--meme", "--recipe", "default", "--text", "x"])).toBe(2);
+      expect(error.mock.calls.flat().join(" ")).toContain("unknown flag --meme");
+      expect(h.calls).toEqual([]);
+    } finally { error.mockRestore(); }
+  });
+  test("a put reads --slot, --create and --cut beside a whole carrier or a slot; `--create` keeps one law on every put", async () => {
     const door = COMMANDS.find((row) => row.name === "tiddler")!;
-    expect(unknownFlags(door, argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", file: "x" }, { meme: true, create: true })).map((x) => x.name)).not.toContain("create");
-    expect(unknownFlags(door, argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", slot: "#/a", text: "w" }, { meme: true, create: true })).map((x) => x.name)).toContain("create");
-    expect(memePlan("put", argv("tiddler", ["put", "lar:///t/x"], { recipe: "default" }, { meme: true, create: true })).args).toEqual({ uri: "lar:///t/x", recipe: "default", create: "true" });
-    expect(memePlan("put", argv("tiddler", ["put", "lar:///t/x"], { recipe: "default" }, { meme: true })).args).toEqual({ uri: "lar:///t/x", recipe: "default" });
+    expect(unknownFlags(door, argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", file: "x" }, { create: true }))).toEqual([]);
+    expect(unknownFlags(door, argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", slot: "#/a", text: "w" }, { create: true }))).toEqual([]);
+    expect(unknownFlags(door, argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", file: "x", cut: "#/b" }))).toEqual([]);
+    expect(tiddlerPlan("put", argv("tiddler", ["put", "lar:///t/x"], { recipe: "default" }, { create: true })).args).toEqual({ title: "lar:///t/x", recipe: "default", create: true });
+    expect(tiddlerPlan("put", argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", slot: "#/a" })).args).toEqual({ title: "lar:///t/x#/a", recipe: "default" });
   });
-  test("family writes and listing use the tiddler door while an unqualified empty get refuses", async () => {
+  test("the family listing rides the tiddler door while an unqualified empty get refuses; a family delete names --family", async () => {
     expect((await run(argv("tiddler", ["get"], { recipe: "default" }))).exit).toBe(2);
     h.reply = { recipe: "default", roots: [] };
     expect((await run(argv("tiddler", ["get"], { recipe: "default" }, { meme: true }))).exit).toBe(0);
     expect(h.calls.at(-1)).toEqual({ verb: "meme-list", args: { recipe: "default" } });
-    h.reply = { uri: "lar:///t/x", decision: "removed", tombstoned: [] };
-    expect((await run(argv("tiddler", ["delete", "lar:///t/x"], { recipe: "default" }, { meme: true }))).exit).toBe(0);
-    expect(h.calls.at(-1)).toEqual({ verb: "meme-delete", args: { uri: "lar:///t/x", recipe: "default" } });
+    h.reply = { recipe: "default", title: "lar:///t/x", decision: "removed", tombstoned: [], retracted: ["lar:///t/x"] };
+    expect((await run(argv("tiddler", ["delete", "lar:///t/x"], { recipe: "default" }, { family: true }))).exit).toBe(0);
+    expect(h.calls.at(-1)).toEqual({ verb: "tiddler-delete", args: { title: "lar:///t/x", recipe: "default", family: true } });
   });
-  test("family delete carries --base as the verb's base, so a stale delete answers conflict", async () => {
-    h.reply = { uri: "lar:///t/x", decision: "conflict", tombstoned: [], canonicalHash: "sha256:2" };
-    const r = await run(argv("tiddler", ["delete", "lar:///t/x"], { recipe: "default", base: "sha256:1" }, { meme: true }));
-    expect(h.calls.at(-1)).toEqual({ verb: "meme-delete", args: { uri: "lar:///t/x", recipe: "default", base: "sha256:1" } });
+  test("a family delete carries --base as the verb's base, so a stale delete answers conflict", async () => {
+    h.reply = { recipe: "default", title: "lar:///t/x", decision: "conflict", tombstoned: [], hash: "sha256:2" };
+    const r = await run(argv("tiddler", ["delete", "lar:///t/x"], { recipe: "default", base: "sha256:1" }, { family: true }));
+    expect(h.calls.at(-1)).toEqual({ verb: "tiddler-delete", args: { title: "lar:///t/x", recipe: "default", base: "sha256:1", family: true } });
     expect(r.exit).toBe(4);
   });
   test("a plain append names its words alone: the row refuses --text, --file, --base, --fields and --unset beside it by name", () => {
@@ -191,45 +200,35 @@ describe("the argument law, no daemon", () => {
       expect((await run(argv("tiddler", ["put", "Ledger"], { recipe: "default", append: file }))).exit).toBe(4);
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
-  test("a slot append rides without a base; a whole-slot write without one refuses before the wire", async () => {
-    h.reply = { decision: "ingest", uri: "lar:///t/x", landed: [], tombstoned: [], warnings: [] };
+  test("a slot append and a slot's whole text both ride without a base, on the slot's own title", async () => {
+    h.reply = { recipe: "default", title: "lar:///t/x#/log", decision: "put", hash: "sha256:s", landed: [], kept: [], tombstoned: [], warnings: [] };
     const dir = mkdtempSync(join(tmpdir(), "slot-append-"));
     try {
       const file = join(dir, "note.txt");
       writeFileSync(file, "a dated note\n", "utf8");
-      const appended = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", slot: "#/log", append: file }, { meme: true }));
+      const appended = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", slot: "#/log", append: file }));
       expect(appended.exit).toBe(0);
-      expect(h.calls.at(-1)).toEqual({ verb: "meme-patch", args: { uri: "lar:///t/x", recipe: "default", slot: "#/log", append: "a dated note\n" } });
-      const before = h.calls.length;
-      expect((await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", slot: "#/log", text: "whole" }, { meme: true }))).exit).toBe(2);
-      expect(h.calls).toHaveLength(before);
+      expect(h.calls.at(-1)).toEqual({ verb: "tiddler-put", args: { recipe: "default", title: "lar:///t/x#/log", append: "a dated note\n" } });
+      const whole = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", slot: "#/log", text: "whole" }));
+      expect(whole.exit).toBe(0);
+      expect(h.calls.at(-1)).toEqual({ verb: "tiddler-put", args: { recipe: "default", title: "lar:///t/x#/log", text: "whole" } });
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
-  test("family put keeps the whole input and slot patch keeps its base and replacement bytes", async () => {
-    h.reply = { decision: "ingest", uri: "lar:///t/x", landed: [], tombstoned: [], warnings: [] };
+  test("a whole carrier rides as the root's text put, its bytes whole; a slot keeps its base and its bytes; one text source", async () => {
+    h.reply = { recipe: "default", title: "lar:///t/x", decision: "put", hash: "sha256:r", landed: [], kept: [], tombstoned: [], warnings: [] };
     const dir = mkdtempSync(join(tmpdir(), "family-door-"));
     try {
       const file = join(dir, "body.mem");
       writeFileSync(file, "alpha\n\n", "utf8");
-      const whole = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", file }, { meme: true }));
+      const whole = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", file }));
       expect(whole.exit).toBe(0);
-      expect(h.calls.at(-1)).toEqual({ verb: "meme-put", args: { uri: "lar:///t/x", recipe: "default", text: "alpha\n\n" } });
-      const patch = await run(argv("tiddler", ["put", "lar:///t/x"], { bag: "b", slot: "#/a", file, base: "sha256:old" }, { meme: true }));
-      expect(patch.exit).toBe(0);
-      expect(h.calls.at(-1)).toEqual({ verb: "meme-patch", args: { uri: "lar:///t/x", bag: "b", slot: "#/a", replace: "alpha\n\n", base: "sha256:old" } });
-      const wholeText = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", text: "inline\n" }, { meme: true }));
-      expect(wholeText.exit).toBe(0);
-      expect(h.calls.at(-1)).toEqual({ verb: "meme-put", args: { uri: "lar:///t/x", recipe: "default", text: "inline\n" } });
-      const twoSources = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", text: "x", file }, { meme: true }));
+      expect(h.calls.at(-1)).toEqual({ verb: "tiddler-put", args: { recipe: "default", title: "lar:///t/x", text: "alpha\n\n" } });
+      const slot = await run(argv("tiddler", ["put", "lar:///t/x"], { bag: "b", slot: "#/a", file, base: "partial:#/a:sha256:old" }));
+      expect(slot.exit).toBe(0);
+      expect(h.calls.at(-1)).toEqual({ verb: "tiddler-put", args: { bag: "b", title: "lar:///t/x#/a", text: "alpha\n\n", base: "partial:#/a:sha256:old" } });
+      const twoSources = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", text: "x", file }));
       expect(twoSources.exit).toBe(2);
-      const inline = await run(argv("tiddler", ["put", "lar:///t/x"], { bag: "b", slot: "#/a", text: "no newline", base: "sha256:old" }, { meme: true }));
-      expect(inline.exit).toBe(0);
-      expect(h.calls.at(-1)).toEqual({ verb: "meme-patch", args: { uri: "lar:///t/x", bag: "b", slot: "#/a", replace: "no newline", base: "sha256:old" } });
-      const ambiguous = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", file, slot: "#/a", append: file, base: "sha256:old" }, { meme: true }));
-      expect(ambiguous.exit).toBe(2);
-      const both = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", file, slot: "#/a", text: "x", base: "sha256:old" }, { meme: true }));
-      expect(both.exit).toBe(2);
-      expect(h.calls).toHaveLength(4);
+      expect(h.calls).toHaveLength(2);
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
   test("wiki act narrows its flags before dispatch", () => {
@@ -283,18 +282,18 @@ describe("the argument law, no daemon", () => {
 });
 
 describe("a bag names one store and no wiki", () => {
-  test("RED: the engine verbs and the writes refuse --bag before the wire and name the right door; CONTROL: tiddler get --bag rides the wire", async () => {
+  test("RED: the engine verbs refuse --bag before the wire and name the right door; CONTROL: tiddler get, put and delete --bag ride the wire", async () => {
     for (const [cmd, positional] of [["wiki", ["filter", "[tag[x]]"]], ["wiki", ["render", "T"]], ["wiki", ["status"]]] as const) {
       const r = await run(argv(cmd, [...positional], { bag: "lares" }));
       expect(r.exit).toBe(2);
       expect(r.printed).toMatchObject({ ok: false, error: { code: "wiki-not-anchored", message: expect.stringMatching(/runs in a wiki's own engine.*tiddler get <title> --bag.*--meme.*tiddler get --meme --bag.*--recipe <slug>/s) } });
     }
-    for (const sub of ["put", "delete"]) {
-      const r = await run(argv("tiddler", [sub, "T"], { bag: "lares", text: "x" }));
-      expect(r.exit).toBe(2);
-      expect(r.printed).toMatchObject({ ok: false, error: { code: "wiki-not-anchored", message: expect.stringMatching(/tiddler put --meme --bag.*tiddler delete --meme --bag/s) } });
-    }
+    const renamed = await run(argv("tiddler", ["rename", "T", "U"], { bag: "lares" }));
+    expect(renamed.exit).toBe(2);
+    expect(renamed.printed).toMatchObject({ ok: false, error: { code: "wiki-not-anchored", message: expect.stringMatching(/tiddler put <title> --bag.*tiddler delete <title> --bag/s) } });
     expect(h.calls).toEqual([]);
+    expect(tiddlerPlan("put", argv("tiddler", ["put", "T"], { bag: "lares", text: "x" }))).toEqual({ verb: "tiddler-put", args: { bag: "lares", title: "T" } });
+    expect(tiddlerPlan("delete", argv("tiddler", ["delete", "T"], { bag: "lares" }, { family: true }))).toEqual({ verb: "tiddler-delete", args: { bag: "lares", title: "T", family: true } });
     expect(tiddlerPlan("get", argv("tiddler", ["get", "T"], { bag: "lares" })).args).toEqual({ bag: "lares", title: "T" });
     h.reply = { bag: "lar:///ha.ka.ba/bags/lares", title: "T", tiddler: { fields: { title: "T", text: "words" }, hash: "sha256-x", textHash: "sha256-y", bag: "lar:///ha.ka.ba/bags/lares", position: "plain" } };
     expect(await run(argv("tiddler", ["get", "T"], { bag: "lares" }))).toMatchObject({ exit: 0, printed: { ok: true } });
@@ -420,8 +419,8 @@ describe("the exit classes a receipt maps to", () => {
     h.reply = { recipe: "default", title: "lar:///t/x", decision: "removed", tombstoned: ["lar:///t/x", "lar:///t/x#/b"] };
     expect(await run(argv("tiddler", ["delete", "lar:///t/x"], { recipe: "default" }, { family: true }))).toMatchObject({ exit: 0, printed: { ok: true, data: { tombstoned: ["lar:///t/x", "lar:///t/x#/b"] } } });
     expect(h.calls.at(-1)!.args).toMatchObject({ family: true });
-    h.refuse = "tiddler-put-in-a-family: use the meme door. \"lar:///t/x\" stands as a meme root and this put moves `text`";
-    expect(await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", text: "x" }))).toMatchObject({ exit: 4, printed: { ok: false, error: { code: "verb-error", hint: "refusal: tiddler-put-in-a-family" } } });
+    h.refuse = "family-carriage-derives: \"lar:///t/x\" stands as a meme root and this put moves `type`";
+    expect(await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", text: "x" }))).toMatchObject({ exit: 4, printed: { ok: false, error: { code: "verb-error", hint: "refusal: family-carriage-derives" } } });
     h.refuse = "filter-malformed: Missing ] in filter expression (in \"[tag[x\")";
     expect(await run(argv("wiki", ["filter", "[tag[x"], { recipe: "default" }))).toMatchObject({ exit: 4, printed: { error: { hint: "refusal: filter-malformed" } } });
     h.refuse = "cap-denied: read on lar:///ha.ka.ba/wikis/daemon/working required (no-grant)";
@@ -661,13 +660,13 @@ describe("tiddler get --meme answers the carrier through a pipe (the carrier-fir
 });
 
 describe("tiddler put no longer reads --replace: the word stays free for the exact-once text swap", () => {
-  test("the door refuses --replace on every put path, family or record, before dispatch", async () => {
+  test("the door refuses --replace on every put path, a slot's or a record's, before dispatch", async () => {
     const parseArgs = (await import("../src/parse-args.js")).parseArgs;
     const row = COMMANDS.find((c) => c.name === "tiddler")!;
     for (const argvIn of [
-      ["tiddler", "put", "lar:///t/x", "--meme", "--slot", "#/a", "--replace", "f", "--base", "h", "--recipe", "default"],
+      ["tiddler", "put", "lar:///t/x", "--slot", "#/a", "--replace", "f", "--base", "h", "--recipe", "default"],
       ["tiddler", "put", "T", "--replace", "f", "--recipe", "default"],
     ]) expect(unknownFlags(row, parseArgs(argvIn)).map((f) => f.name), argvIn.join(" ")).toContain("replace");
-    expect(unknownFlags(row, parseArgs(["tiddler", "put", "lar:///t/x", "--meme", "--slot", "#/a", "--text", "x", "--base", "h", "--recipe", "default"]))).toEqual([]);
+    expect(unknownFlags(row, parseArgs(["tiddler", "put", "lar:///t/x", "--slot", "#/a", "--text", "x", "--base", "h", "--recipe", "default"]))).toEqual([]);
   });
 });

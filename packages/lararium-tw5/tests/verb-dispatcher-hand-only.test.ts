@@ -2,7 +2,7 @@
  * verb-dispatcher-hand-only — the verbs only a hand's page gesture may summon (promote and kapae commits): the island's dispatcher
  * answers them ONLY for an ask that arrived on the surface's own control-event path.
  *
- * A seat's session call (origin channel), a `meme put` of a verb tiddler (content) and a synced verb tiddler (content) all refuse
+ * A seat's session call (origin channel), a `tiddler put` of a verb tiddler (content) and a synced verb tiddler (content) all refuse
  * by the verb's own code and dispatch nothing; a verb outside the set routes for any origin (the control). The local ask book
  * binds the surface mark to the exact act, so a reused id lends nothing. Every red pairs with a CONTROL.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
@@ -137,7 +137,7 @@ describe("hand-only verbs", () => {
     s.stop();
   });
 
-  test("RED: a seat's session call (channel) and a meme put or synced verb tiddler (content) refuse by the verb's own code and dispatch nothing; CONTROL: the same refusal for each hand-only verb", async () => {
+  test("RED: a seat's session call (channel) and a tiddler put or synced verb tiddler (content) refuse by the verb's own code and dispatch nothing; CONTROL: the same refusal for each hand-only verb", async () => {
     const s = await stand();
     for (const [id, verb, origin, code] of [
       ["b1", "promote-commit", "channel", "promote-needs-hand"], ["b2", "promote-commit", "content", "promote-needs-hand"],
@@ -197,7 +197,7 @@ describe("the daemon island's hand-only table carries the swarm verbs", () => {
     return { place, routed, dispatcher, stop: () => dispatcher.stop() };
   }
 
-  test("RED: a seat's channel ask and a meme put or synced verb tiddler of each hand-only swarm verb refuse `swarm-needs-hand` and route nothing; CONTROL: swarm-show routes for the same origins", async () => {
+  test("RED: a seat's channel ask and a tiddler put or synced verb tiddler of each hand-only swarm verb refuse `swarm-needs-hand` and route nothing; CONTROL: swarm-show routes for the same origins", async () => {
     const s = await standIsland();
     for (const verb of SWARM) for (const origin of ["channel", "content"] as const) {
       const out = await s.place(`${verb}-${origin}`, verb, origin);

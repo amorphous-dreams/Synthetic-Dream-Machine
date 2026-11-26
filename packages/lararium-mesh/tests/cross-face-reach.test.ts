@@ -50,10 +50,10 @@ describe("a lit face receives visits: the PRIVATE classification", () => {
 
   test("X3 RED: the designated read verbs, and none that writes", () => {
     expect([...CROSS_FACE_READ_VERBS].sort()).toEqual(["meme-list", "tiddler-get", "wiki-filter", "wiki-render", "wiki-status"]);
-    for (const write of ["tiddler-put", "tiddler-delete", "meme-put", "meme-delete", "meme-patch", "INGEST"]) expect(CROSS_FACE_READ_VERBS.has(write), write).toBe(false);
+    for (const write of ["tiddler-put", "tiddler-delete", "meme-project", "INGEST"]) expect(CROSS_FACE_READ_VERBS.has(write), write).toBe(false);
     // The verbs whose `target` names a face: every read above, and the writes a target refuses on.
     for (const verb of CROSS_FACE_READ_VERBS) expect(CROSS_FACE_TARGET_VERBS.has(verb), verb).toBe(true);
-    for (const write of ["tiddler-put", "tiddler-delete", "meme-put", "meme-delete", "meme-patch", "meme-project"]) expect(CROSS_FACE_TARGET_VERBS.has(write), write).toBe(true);
+    for (const write of ["tiddler-put", "tiddler-delete", "meme-project"]) expect(CROSS_FACE_TARGET_VERBS.has(write), write).toBe(true);
     for (const other of ["intent-propose", "kahua-lift", "floor-pin", "INGEST"]) expect(CROSS_FACE_TARGET_VERBS.has(other), other).toBe(false);
   });
 

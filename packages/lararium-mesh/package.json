@@ -96,6 +96,10 @@
       "import": "./dist/cas-transit.js",
       "types": "./dist/cas-transit.d.ts"
     },
+    "./pointer-address": {
+      "import": "./dist/pointer-address.js",
+      "types": "./dist/pointer-address.d.ts"
+    },
     "./content-handle": {
       "import": "./dist/content-handle.js",
       "types": "./dist/content-handle.d.ts"

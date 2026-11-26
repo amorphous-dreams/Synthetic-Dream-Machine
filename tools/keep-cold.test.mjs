@@ -78,7 +78,7 @@ test("W1 the keep wakes each cold wiki before it cuts, so a page put into a cold
     for (const slug of SLUGS) {
       const file = join(scratch, `${slug}.mem`);
       writeFileSync(file, memeText(pageUri(slug), `a page in ${slug}`));
-      h.must(["tiddler", "put", "--meme", pageUri(slug), "--recipe", slug, "--file", file, "--json"]);
+      h.must(["tiddler", "put", pageUri(slug), "--recipe", slug, "--file", file, "--json"]);
     }
     /** The wikis the face keeps, as `wiki status` marks them. */
     const held = () => (h.answer(h.must(["wiki", "status", "--json"])).data.activation.held ?? []).slice().sort();
@@ -139,7 +139,7 @@ test("W2 a restart over wikis that hold workbench folders wakes none of them; an
     for (const slug of SLUGS) {
       const file = join(scratch, `${slug}.mem`);
       writeFileSync(file, memeText(pageUri(slug), `a page in ${slug}`));
-      h.must(["tiddler", "put", "--meme", pageUri(slug), "--recipe", slug, "--file", file, "--json"]);
+      h.must(["tiddler", "put", pageUri(slug), "--recipe", slug, "--file", file, "--json"]);
     }
     // The keep wakes each cold wiki, and a woken wiki projects its workbench: every wiki now holds a folder on disk.
     mkdirSync(join(h.root, "workspaces", "backup", ".git"), { recursive: true });
