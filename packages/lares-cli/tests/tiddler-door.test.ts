@@ -420,8 +420,8 @@ describe("the exit classes a receipt maps to", () => {
     h.reply = { recipe: "default", title: "lar:///t/x", decision: "removed", tombstoned: ["lar:///t/x", "lar:///t/x#/b"] };
     expect(await run(argv("tiddler", ["delete", "lar:///t/x"], { recipe: "default" }, { family: true }))).toMatchObject({ exit: 0, printed: { ok: true, data: { tombstoned: ["lar:///t/x", "lar:///t/x#/b"] } } });
     expect(h.calls.at(-1)!.args).toMatchObject({ family: true });
-    h.refuse = "tiddler-put-in-a-family: use the meme door. \"lar:///t/x\" stands as a meme root and this put moves `text`";
-    expect(await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", text: "x" }))).toMatchObject({ exit: 4, printed: { ok: false, error: { code: "verb-error", hint: "refusal: tiddler-put-in-a-family" } } });
+    h.refuse = "family-carriage-derives: \"lar:///t/x\" stands as a meme root and this put moves `type`";
+    expect(await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", text: "x" }))).toMatchObject({ exit: 4, printed: { ok: false, error: { code: "verb-error", hint: "refusal: family-carriage-derives" } } });
     h.refuse = "filter-malformed: Missing ] in filter expression (in \"[tag[x\")";
     expect(await run(argv("wiki", ["filter", "[tag[x"], { recipe: "default" }))).toMatchObject({ exit: 4, printed: { error: { hint: "refusal: filter-malformed" } } });
     h.refuse = "cap-denied: read on lar:///ha.ka.ba/wikis/daemon/working required (no-grant)";
