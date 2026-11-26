@@ -95,12 +95,16 @@ const unnamedOrQuotedValues = (text: string): string[] =>
     return found;
   });
 
-/** Cut 4: the `hud` key and the `~lares` sigil retire, and the standalone gauges with them. */
+/**
+ * Cut 4: the `hud` key and the old `~lares` frame sigil retire, and the standalone gauges with them. A `lares`
+ * head reads retired by the frame it once carried: ``<<~ lares action=`…`>>``, the house's own act line, reads
+ * pono (operator ruling 2026-11-26, grammar-watch#/the-kupono-cut), and every other `<<~ lares …>>` reads red.
+ */
 const retiredFrame = (text: string): string[] =>
   bodyOf(text).flatMap(({ line, text: t }) => {
     const found: string[] = [];
     if (/\bhud=/.test(t)) found.push(`${line}: hud= key · ${t.trim().slice(0, 70)}`);
-    if (/<<~\s*lares\b/.test(t)) found.push(`${line}: ~lares call · ${t.trim().slice(0, 70)}`);
+    if (/<<~\s*lares\b(?!\s+action=`[^`]*`\s*>>)/.test(t)) found.push(`${line}: ~lares frame call · ${t.trim().slice(0, 70)}`);
     if (/<<~\s*(aperture|ooda-ha|drift-ward)\b/.test(t)) found.push(`${line}: standalone gauge · ${t.trim().slice(0, 70)}`);
     return found;
   });
