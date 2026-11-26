@@ -2,17 +2,19 @@
  * island-verb-ask — the vessel's MAIN THREAD places one verb on its daemon island and awaits the answer.
  *
  * A person's command reaches an island verb through the verb socket, which commits a receipt and then awaits the
- * outcome the island writes into the vessel's control document (`control-home`). The main thread itself sometimes owes the island a
- * question that no person typed: the settle a fold sets off asks `seat-duties`, where a face's group keys live.
- * This module holds that one road: hand the invocation to the island over its direct channel, then read the
- * outcome off the control store when it lands.
+ * answer the island hands the vessel's answer ring (`control-home` `answerRingOf`). The main thread itself sometimes owes
+ * the island a question that no person typed: the settle a fold sets off asks `seat-duties`, where a face's group keys
+ * live. This module holds that one road: hand the invocation to the island over its direct channel, then read the
+ * whole answer off the ring when it stands. The control document rests the verdict row alone, so an id whose answer
+ * left the ring (a restart, the ring's bound) answers its verdict with an empty output, and a caller that needs the
+ * body asks again under a fresh id.
  *
- * NO TIMER. The ask settles when the outcome lands, or when its caller abandons it (the composition that asked
+ * NO TIMER. The ask settles when the answer stands, or when its caller abandons it (the composition that asked
  * tears down). Nothing here measures a wait or decides by one.
  *
- * WHAT MAY RIDE THIS ROAD. A verb's arguments cross to the island and its outcome rests in the control document,
- * clear at the floor and sealed under a lit face, so nothing a sealed row holds rides here: a sealed row's act
- * rides the custody door (`sealed-acts`).
+ * WHAT MAY RIDE THIS ROAD. A verb's arguments cross to the island and its answer waits in the vessel's memory; its
+ * verdict row rests in the control document, clear at the floor and sealed under a lit face. Nothing a sealed row
+ * holds rides here: a sealed row's act rides the custody door (`sealed-acts`).
  */
 import { addCallTouches, currentCall, markCallUntracked, readCallTouches, type CallTouches } from "@lararium/mesh/call-touches";
 import { islandAskRefusal, type EngineWatch } from "./engine-watch.js";
@@ -20,6 +22,7 @@ import { OUTCOME_URI_PREFIX, VERB_RESULT_KEY, newRequestId } from "@lararium/mes
 import { signMemoryAsk, type MemoryAct } from "@lararium/mesh/memory-section";
 import { signSeatDutiesAsk } from "@lararium/mesh/seat-duties";
 import { type CompositeStore } from "@lararium/mesh/composite-store";
+import { answerRingOf } from "@lararium/mesh/control-home";
 
 /** The island's direct channel, as the daemon VM hands it out. */
 export type PlaceIslandVerb = (o: { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string }) => void;
@@ -43,13 +46,19 @@ export interface IslandAsk {
   abandon(): void;
 }
 
-/** The terminal outcome of one request, read through the control store, or null while none stands. */
-async function outcomeOf(store: Pick<CompositeStore, "get">, requestId: string): Promise<{ readonly status: "done" | "error"; readonly output: Record<string, unknown>; readonly errorMessage?: string; readonly refusal?: string; readonly touched: CallTouches | null } | null> {
-  const record = await store.get(`${OUTCOME_URI_PREFIX}${requestId}`);
+/**
+ * The terminal outcome of one request, or null while none stands: the whole answer where the store's answer ring holds
+ * it, else the row the control store rests. `placed` names an ask this call handed the island itself: the island lands
+ * the verdict row a beat before the answer, so such an ask reads past a bare verdict and settles on the answer.
+ */
+async function outcomeOf(store: Pick<CompositeStore, "get">, requestId: string, placed: boolean): Promise<{ readonly status: "done" | "error"; readonly output: Record<string, unknown>; readonly errorMessage?: string; readonly refusal?: string; readonly touched: CallTouches | null } | null> {
+  const held = answerRingOf(store).get(requestId);
+  const record = held ?? await store.get(`${OUTCOME_URI_PREFIX}${requestId}`);
   if (!record || record.meta?.deleted) return null;
   const fields = record.tiddler as Record<string, unknown>;
   const status = fields["status"];
   if (status !== "done" && status !== "error") return null;
+  if (held === null && placed && typeof fields["results"] !== "string") return null;
   let output: Record<string, unknown> = {};
   if (typeof fields["results"] === "string" && fields["results"].length > 0) {
     try {
@@ -98,10 +107,12 @@ export function askIslandVerb(opts: {
       if (settled) return;
       settled = true;
       unsubscribe();
+      unsubscribeRing();
       fn();
     };
+    let placed = false;
     const check = async (): Promise<void> => {
-      const outcome = await outcomeOf(opts.control, opts.requestId);
+      const outcome = await outcomeOf(opts.control, opts.requestId, placed);
       if (!outcome) return;
       fold(outcome.touched);
       if (outcome.status === "done") settle(() => resolve(outcome.output));
@@ -110,10 +121,14 @@ export function askIslandVerb(opts: {
     const fault = (err: unknown): void => settle(() => reject(err instanceof Error ? err : new Error(String(err))));
     const title = `${OUTCOME_URI_PREFIX}${opts.requestId}`;
     const unsubscribe = opts.control.subscribe((change) => { if (change.title === title) void check().catch(fault); });
+    // THE ANSWER STANDS IN THE RING: the ask hears it there, whether or not a verdict row lands beside it (a read lands none).
+    const unsubscribeRing = answerRingOf(opts.control).subscribe((answered) => { if (answered === opts.requestId) void check().catch(fault); });
     abandon = () => settle(() => reject(new IslandAskAbandoned(opts.verb)));
     // An outcome that already stands answers with no placement; otherwise the verb goes to the island once.
     void check().then(() => {
-      if (!settled) opts.placeVerb({ verb: opts.verb, args: opts.args, requestedBy: opts.requestedBy, requestId: opts.requestId });
+      if (settled) return;
+      placed = true;
+      opts.placeVerb({ verb: opts.verb, args: opts.args, requestedBy: opts.requestedBy, requestId: opts.requestId });
     }, fault);
   });
   return { answer, abandon: () => abandon() };

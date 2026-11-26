@@ -3,7 +3,10 @@ import { VerbRefusal } from "@lararium/mesh/verb-refusal";
 import type { CompositeStore } from "@lararium/mesh/composite-store";
 import type { Verb } from "@lararium/mesh/verb-tiddler";
 import type { LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
-import { OUTCOME_URI_PREFIX, VERB_RESULT_KEY, VERB_URI_PREFIX, buildVerb, parseVerb, verbInputDigest } from "@lararium/mesh/verb-tiddler";
+import { OUTCOME_ERROR_BOUND, OUTCOME_URI_PREFIX, VERB_RESULT_KEY, VERB_URI_PREFIX, buildVerb, parseVerb, verbInputDigest, verdictRowOf } from "@lararium/mesh/verb-tiddler";
+import { answerRingOf } from "@lararium/mesh/control-home";
+import { addCallTouches } from "@lararium/mesh/call-touches";
+import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import {
   AUDIT_ARRAY_CAP,
   boundOutcomeOutput,
@@ -56,6 +59,13 @@ class FakeDaemonStore {
   }
 }
 
+/** The whole answer's stored `results` text: it rides the control store's answer ring, memory alone, and rests in no row. */
+const answerResults = (daemon: object, requestId: string): string =>
+  String(answerRingOf(daemon).get(requestId)?.tiddler["results"]);
+/** The whole answer's results map, parsed. */
+const resultsOf = (daemon: object, requestId: string): Record<string, { ok: boolean; output?: Record<string, unknown> }> =>
+  JSON.parse(String(answerRingOf(daemon).get(requestId)?.tiddler["results"] ?? "{}")) as Record<string, { ok: boolean; output?: Record<string, unknown> }>;
+
 function makeInvocation(overrides: Partial<Verb> = {}): Verb {
   const fields = buildVerb({
     verb: "sync-wiki",
@@ -106,7 +116,7 @@ describe("verb-vm", () => {
     expect(tw5.wiki.getTiddler(invocation.title)).toBeUndefined();
   });
 
-  test("writeOutcome emits a durable summary outcome", async () => {
+  test("writeOutcome rests a verdict row and hands the whole answer to the ring", async () => {
     const daemon = new FakeDaemonStore();
     const invocation = makeInvocation();
 
@@ -118,7 +128,8 @@ describe("verb-vm", () => {
 
     expect(daemon.writes).toHaveLength(1);
     expect(daemon.writes[0]?.tiddler.title).toBe(`${OUTCOME_URI_PREFIX}${invocation.requestId}`);
-    const results = JSON.parse(String(daemon.writes[0]?.tiddler.results ?? "{}")) as Record<string, { ok: boolean; output?: Record<string, unknown> }>;
+    expect(daemon.writes[0]?.tiddler.results, "the durable row rests no body").toBeUndefined();
+    const results = resultsOf(daemon, invocation.requestId);
     expect(results[VERB_RESULT_KEY]?.ok).toBe(true);
     expect(results[VERB_RESULT_KEY]?.output?.recordsIngested).toBe(3);
   });
@@ -138,8 +149,7 @@ describe("verb-vm", () => {
         result: { sourceUri: "lar:///ha.ka.ba/bags/x", toBag: "lar:///ha.ka.ba/bags/y", changeId: "c1", carriers },
       });
 
-      const results = JSON.parse(String(daemon.writes[0]?.tiddler.results ?? "{}")) as
-        Record<string, { ok: boolean; output?: Record<string, unknown> }>;
+      const results = resultsOf(daemon, invocation.requestId);
       const output = results[VERB_RESULT_KEY]?.output;
       // the stored field is NOT the 214-entry array — it's a bounded summary object
       expect(Array.isArray(output?.["carriers"])).toBe(false);
@@ -150,8 +160,8 @@ describe("verb-vm", () => {
       expect(typeof summary.sha256).toBe("string");
       expect(summary.sha256.length).toBeGreaterThan(0);
       expect(summary.sample.length).toBeLessThanOrEqual(3);
-      // the serialized doc body is now bounded, not proportional to N
-      expect(String(daemon.writes[0]?.tiddler.results).length).toBeLessThan(2_000);
+      // the answer's serialized body stays bounded, never proportional to N
+      expect(answerResults(daemon, invocation.requestId).length).toBeLessThan(2_000);
       // scalar sibling fields ride through untouched
       expect(output?.["sourceUri"]).toBe("lar:///ha.ka.ba/bags/x");
       expect(output?.["changeId"]).toBe("c1");
@@ -167,8 +177,7 @@ describe("verb-vm", () => {
         result: { sourceUri: "lar:///ha.ka.ba/bags/x", toBag: "lar:///ha.ka.ba/bags/y", changeId: "c2", carriers },
       });
 
-      const results = JSON.parse(String(daemon.writes[0]?.tiddler.results ?? "{}")) as
-        Record<string, { ok: boolean; output?: Record<string, unknown> }>;
+      const results = resultsOf(daemon, invocation.requestId);
       const output = results[VERB_RESULT_KEY]?.output;
       expect(Array.isArray(output?.["carriers"])).toBe(true);
       expect((output?.["carriers"] as unknown[]).length).toBe(5);
@@ -233,14 +242,14 @@ describe("verb-vm", () => {
       const daemon = new FakeDaemonStore();
       const carriers = Array.from({ length: 2000 }, (_, i) => row(i, "refuse"));
       await writeOutcome(daemon as unknown as CompositeStore, { invocation: makeInvocation(), status: "done", result: { carriers } });
-      const stored = String(daemon.writes[0]?.tiddler.results);
+      const stored = answerResults(daemon, "req-test-1");
       const output = (JSON.parse(stored) as Record<string, { output?: Record<string, unknown> }>)[VERB_RESULT_KEY]?.output;
       expect((output?.["carriers"] as Summary).held.length).toBe(AUDIT_ARRAY_CAP);
       expect((output?.["carriers"] as Summary).heldMore).toBe(2000 - AUDIT_ARRAY_CAP);
       // Bounded by the cap, never by the wave: the same store size as a wave of 200 refusals.
       const daemon2 = new FakeDaemonStore();
       await writeOutcome(daemon2 as unknown as CompositeStore, { invocation: makeInvocation(), status: "done", result: { carriers: carriers.slice(0, 200) } });
-      expect(Math.abs(stored.length - String(daemon2.writes[0]?.tiddler.results).length)).toBeLessThan(64);
+      expect(Math.abs(stored.length - answerResults(daemon2, "req-test-1").length)).toBeLessThan(64);
     });
   });
 
@@ -259,7 +268,7 @@ describe("verb-vm", () => {
 
     expect(tw5.wiki.getTiddler(invocation.title)).toBeUndefined();
     expect(daemon.writes).toHaveLength(1);
-    const results = JSON.parse(String(daemon.writes[0]?.tiddler.results ?? "{}")) as Record<string, { ok: boolean; output?: Record<string, unknown> }>;
+    const results = resultsOf(daemon, invocation.requestId);
     expect(results[VERB_RESULT_KEY]?.ok).toBe(true);
     expect(results[VERB_RESULT_KEY]?.output?.status).toBe("ok");
   });
@@ -342,6 +351,11 @@ describe("verb-vm", () => {
       const fact = daemon.writes.find((w) => w.tiddler.title === `${EFFECT_URI_PREFIX}eff-vm-1`);
       expect(fact?.tiddler["effect-key"]).toBe("eff-vm-1");
       expect(fact?.tiddler["request-id"]).toBe(invocation.requestId);
+      // THE EFFECT ROW ANSWERS A DEDUP BY ITSELF: it names its attempt's digest and the measure of the body it left.
+      expect(fact?.tiddler["input-digest"]).toBe(outcome?.tiddler["input-digest"]);
+      expect(fact?.tiddler["result-sha256"]).toBe(outcome?.tiddler["result-sha256"]);
+      expect(fact?.tiddler["result-bytes"]).toBe(outcome?.tiddler["result-bytes"]);
+      expect(typeof fact?.tiddler["result-sha256"]).toBe("string");
     });
 
     test("MUTATION — an ERROR outcome with an effectKey stamps the outcome but indexes NOTHING (a failed effect stays retryable)", async () => {
@@ -380,8 +394,131 @@ describe("verb-vm", () => {
       expect(written?.tiddler["effect-of"]).toBe("req-copy-0");
       expect(written?.tiddler["effect-key"]).toBe("eff-copy");
       expect(written?.tiddler["input-digest"]).toBe("sha256:deadbeef");
-      const results = JSON.parse(String(written?.tiddler.results ?? "{}"));
-      expect(results[VERB_RESULT_KEY]?.output?.recordsIngested).toBe(3);
+      expect(written?.tiddler.results, "the copy's row rests no body").toBeUndefined();
+      expect(written?.tiddler["result-sha256"]).toBe(sha256HexBytesSync(canonicalJsonBytes(priorResults)));
+      expect(resultsOf(daemon, "req-copy-1")[VERB_RESULT_KEY]?.output?.recordsIngested).toBe(3);
+    });
+
+    test("RED (step 2): a copy whose prior body left answers effect-of beside the measure the effect row kept, and carries no results", async () => {
+      const tw5 = new FakeTW5Engine();
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation({ requestId: "req-copy-2", title: `${VERB_URI_PREFIX}req-copy-2`, effectKey: "eff-copy" });
+      tw5.wiki.addTiddler(invocation as unknown as TiddlerFields);
+      await copyEffectOutcome(tw5 as never, daemon as unknown as CompositeStore, invocation, {
+        priorRequestId: "req-copy-0", priorResults: null, inputDigest: "sha256:deadbeef", resultSha256: "abc123", resultBytes: "42",
+      });
+      const row = daemon.writes[0]?.tiddler as Record<string, unknown>;
+      expect(row["effect-of"]).toBe("req-copy-0");
+      expect(row["result-sha256"]).toBe("abc123");
+      expect(row["result-bytes"]).toBe("42");
+      expect(row["results"]).toBeUndefined();
+      const answer = answerRingOf(daemon).get("req-copy-2")?.tiddler as Record<string, unknown>;
+      expect(answer["results"], "an answer whose body left names no results").toBeUndefined();
+      expect(answer["result-sha256"]).toBe("abc123");
+      expect(answer["touched"], "a copy ran nothing and reports an empty tally").toBe("{}");
+    });
+  });
+
+  // ── the outcome ledger diet (lar:///ha.ka.ba/kahua/memory/plan/outcome-ledger-diet) ─────────────────
+  describe("step 2 — the verdict row: what an outcome rests as", () => {
+    test("RED: the durable row keeps the verdict fields and the body's measure, and rests no results, touched, cause or batch mode", async () => {
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation({ requestId: "req-row-1", title: `${VERB_URI_PREFIX}req-row-1`, effectKey: "eff-row", face: "0xface" });
+      const mark = { acting: 1, asker: "cli", session: null } as never;
+      await writeOutcome(daemon as unknown as CompositeStore, { invocation, status: "done", result: { landed: "heron-body" }, touched: { "doc-a": ["h1"] }, chore: mark });
+      const row = daemon.writes.find((w) => w.tiddler.title === `${OUTCOME_URI_PREFIX}req-row-1`)?.tiddler as Record<string, unknown>;
+      expect(Object.keys(row).sort()).toEqual(["chore", "effect-key", "face", "input-digest", "request-id", "result-bytes", "result-sha256", "status", "tags", "title", "verb"]);
+      expect(JSON.stringify(row)).not.toContain("heron-body");
+      for (const gone of ["results", "touched", "cause", "batch-mode", "completed-at"]) expect(row[gone], gone).toBeUndefined();
+      // The measure covers the canonical bytes of the bounded results map the answer carries.
+      const results = resultsOf(daemon, "req-row-1");
+      const bytes = canonicalJsonBytes(results);
+      expect(row["result-sha256"]).toBe(sha256HexBytesSync(bytes));
+      expect(row["result-bytes"]).toBe(String(bytes.length));
+      // The whole answer rides the ring with everything the row dropped.
+      const answer = answerRingOf(daemon).get("req-row-1")?.tiddler as Record<string, unknown>;
+      expect(JSON.stringify(answer)).toContain("heron-body");
+      expect(answer["touched"]).toBe(JSON.stringify({ "doc-a": ["h1"] }));
+      expect(answer["cause"]).toBe(invocation.title);
+    });
+
+    test("RED: an error message past 1 KiB rests cut on the row with error-sha256 naming the whole; the answer carries it whole", async () => {
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation({ requestId: "req-row-err", title: `${VERB_URI_PREFIX}req-row-err` });
+      const long = "é".repeat(OUTCOME_ERROR_BOUND);   // two bytes a character: twice the bound
+      await writeOutcome(daemon as unknown as CompositeStore, { invocation, status: "error", errorMessage: long, refusal: "bag-retired" });
+      const row = daemon.writes[0]?.tiddler as Record<string, unknown>;
+      expect(new TextEncoder().encode(String(row["error-message"])).length).toBeLessThanOrEqual(OUTCOME_ERROR_BOUND);
+      expect(long.startsWith(String(row["error-message"])), "cut on a character's edge").toBe(true);
+      expect(row["error-sha256"]).toBe(sha256HexBytesSync(new TextEncoder().encode(long)));
+      expect(row["refusal"]).toBe("bag-retired");
+      expect(answerRingOf(daemon).get("req-row-err")?.tiddler["error-message"]).toBe(long);
+      // CONTROL: a short message rests whole and names no hash.
+      const short = verdictRowOf({ tiddler: { title: `${OUTCOME_URI_PREFIX}x`, status: "error", "error-message": "boom" } } as never).tiddler as Record<string, unknown>;
+      expect(short["error-message"]).toBe("boom");
+      expect(short["error-sha256"]).toBeUndefined();
+    });
+
+    test("RED: a visit's row carries the visit flag and no body", async () => {
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation({ requestId: "req-row-visit", title: `${VERB_URI_PREFIX}req-row-visit`, action: "tiddler-get", effectKey: "eff-visit-row" });
+      await writeOutcome(daemon as unknown as CompositeStore, { invocation, status: "done", result: { visit: true, face: 1, tiddler: { text: "sibling-secret" } }, touched: {} });
+      expect(daemon.writes, "a visit indexes no effect").toHaveLength(1);
+      const row = daemon.writes[0]?.tiddler as Record<string, unknown>;
+      expect(row["visit"]).toBe("true");
+      expect(JSON.stringify(row)).not.toContain("sibling-secret");
+    });
+  });
+
+  describe("step 1 — a read leaves the ledger alone", () => {
+    test("RED: a READ verb with no effect key writes no row; its whole answer rides the ring", async () => {
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation({ requestId: "req-read-1", title: `${VERB_URI_PREFIX}req-read-1`, action: "tiddler-get" });
+      await writeOutcome(daemon as unknown as CompositeStore, { invocation, status: "done", result: { tiddler: { text: "read-body" } }, touched: {} });
+      expect(daemon.writes, "no outcome row, no effect row").toEqual([]);
+      const answer = answerRingOf(daemon).get("req-read-1")?.tiddler as Record<string, unknown>;
+      expect(JSON.stringify(answer)).toContain("read-body");
+      expect(typeof answer["input-digest"], "the answer names the digest a same-id re-ask compares").toBe("string");
+      // An error answers the same way: a refused read leaves nothing behind either.
+      const refused = makeInvocation({ requestId: "req-read-err", title: `${VERB_URI_PREFIX}req-read-err`, action: "tiddler-get" });
+      await writeOutcome(daemon as unknown as CompositeStore, { invocation: refused, status: "error", errorMessage: "no such title", touched: {} });
+      expect(daemon.writes).toEqual([]);
+      expect(answerRingOf(daemon).get("req-read-err")?.tiddler["status"]).toBe("error");
+    });
+
+    test("CONTROL: a READ verb asked WITH an effect key keeps the ledger's road, row and effect index both", async () => {
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation({ requestId: "req-read-eff", title: `${VERB_URI_PREFIX}req-read-eff`, action: "tiddler-get", effectKey: "eff-read" });
+      await writeOutcome(daemon as unknown as CompositeStore, { invocation, status: "done", result: { tiddler: { text: "x" } }, touched: {} });
+      expect(daemon.writes.map((w) => w.tiddler.title)).toEqual([`${OUTCOME_URI_PREFIX}req-read-eff`, `${EFFECT_URI_PREFIX}eff-read`]);
+    });
+
+    test("RED: a read whose change report comes back non-empty lands its verdict row after the fact (read-verb-wrote)", async () => {
+      const tw5 = new FakeTW5Engine();
+      const daemon = new FakeDaemonStore();
+      const warned: string[] = [];
+      const warn = console.warn;
+      console.warn = (...args: unknown[]) => { warned.push(args.map(String).join(" ")); };
+      try {
+        const invocation = makeInvocation({ requestId: "req-read-wrote", title: `${VERB_URI_PREFIX}req-read-wrote`, action: "wiki-status" });
+        tw5.wiki.addTiddler(invocation as unknown as TiddlerFields);
+        // The handler's call changes a document: the island's report for this call names it.
+        await dispatchVerb(tw5 as never, daemon as unknown as CompositeStore, invocation, async () => {
+          addCallTouches("req-read-wrote", { "doc-written": ["head-1"] });
+          return { status: "read" };
+        });
+        expect(daemon.writes.map((w) => w.tiddler.title)).toEqual([`${OUTCOME_URI_PREFIX}req-read-wrote`]);
+        expect(daemon.writes[0]?.tiddler.status).toBe("done");
+        expect(daemon.writes[0]?.tiddler.results).toBeUndefined();
+        expect(warned.some((line) => line.includes("read-verb-wrote") && line.includes("wiki-status"))).toBe(true);
+        // CONTROL: the same read with an empty report lands nothing and warns nothing.
+        warned.length = 0;
+        const clean = makeInvocation({ requestId: "req-read-clean", title: `${VERB_URI_PREFIX}req-read-clean`, action: "wiki-status" });
+        tw5.wiki.addTiddler(clean as unknown as TiddlerFields);
+        await dispatchVerb(tw5 as never, daemon as unknown as CompositeStore, clean, async () => ({ status: "read" }));
+        expect(daemon.writes).toHaveLength(1);
+        expect(warned).toEqual([]);
+      } finally { console.warn = warn; }
     });
   });
 });

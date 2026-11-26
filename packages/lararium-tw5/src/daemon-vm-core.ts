@@ -31,7 +31,7 @@ import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { computeRecipeFingerprint, wikiSlotUri, kahuaRecipe, type WikiRecipe } from "@lararium/mesh/wiki-recipe";
 import { documentIdOfUrl, mountedDocumentId, rebindWorkingLayer } from "@lararium/mesh/sealed-rest";
 import { attachMessageChannelSync } from "@lararium/mesh/island-repo-door";
-import { controlStoreOf, controlHomeRefusal } from "@lararium/mesh/control-home";
+import { controlStoreOf, controlHomeRefusal, answerRingOf } from "@lararium/mesh/control-home";
 import { floorRefusalOf } from "@lararium/mesh/floor-registry";
 import { awaitIslandMsg, type VesselWorkerHandle } from "@lararium/mesh/vessel-host";
 import {
@@ -632,6 +632,8 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     // A FLOOR'S VERB ANSWER: the island's floor store took it; the vessel's floor store holds it for the verb door that waits.
     if (raw.type === "daemon:floor-answer") {
       const msg = raw as DaemonMsg_FloorAnswer;
+      // A WHOLE ANSWER rides to the vessel's answer ring, memory alone, on every vessel: the door's caller reads it there.
+      if (msg.answer === true) { answerRingOf(control).put(msg.record as unknown as LarTiddlerRecord); return; }
       if (controlRefused) {
         void control.put(msg.record as unknown as LarTiddlerRecord, { kind: "lares-verb", requestId: String(msg.record.tiddler["request-id"] ?? "") })
           .catch((e: unknown) => console.warn(`[daemon] a floor answer for ${String(msg.record.tiddler.title)} found no floor: ${e instanceof Error ? e.message : String(e)}`));

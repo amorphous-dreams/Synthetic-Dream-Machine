@@ -27,7 +27,7 @@ import {
   mintVesselDocumentId,
   vesselHeldHomes,
 } from "@lararium/mesh/secret-home";
-import { concludeVerb, RECEIPT_FACT_URI_PREFIX, OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { concludeVerb, verbInputDigest, RECEIPT_FACT_URI_PREFIX, OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 import {
   controlHomeRefusal,
   controlStoreOf,
@@ -73,6 +73,32 @@ describe("a place with no readable control document answers its floor", () => {
       // NOTHING RESTS: the stand-in's document holds no receipt fact and no outcome.
       expect(titles(control, RECEIPT_FACT_URI_PREFIX)).toEqual([]);
       expect(titles(control, OUTCOME_URI_PREFIX)).toEqual([]);
+    } finally { await seat.close(); }
+    await v.repo.shutdown();
+  });
+
+  test("F6 — RED (ledger diet, step 1): the floor compares too: a held answer that names its request's digest refuses a reused id carrying another input, and reads back for the same input", async () => {
+    const v = faceless();
+    const control = await standControlHome(v.repo, v.daemon);
+    const store = controlStoreOf(control);
+    let placed = 0;
+    // The island's answer names the digest its request carried, as `writeOutcome` stamps it.
+    const seat = await door(control, store, v.repo, (o) => { placed += 1; setTimeout(() => { void (async () => {
+      const asked = o as unknown as { args: Record<string, unknown> };
+      const inputDigest = await verbInputDigest({ verb: o.verb, args: asked.args });
+      await store.put(concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", cause: "test-island", batchMode: "best-effort",
+        results: { summary: { ok: true, output: { answered: o.verb } } }, inputDigest }), { kind: "lares-verb", requestId: o.requestId });
+    })(); }, 20); });
+    try {
+      const first = await send(seat.socketPath, { verb: "where", args: { tiddler: "$:/lares/flow" }, requestedBy: "did:key:warden", requestId: "floor-reuse" });
+      expect(first["status"], JSON.stringify(first)).toBe("done");
+      const same = await send(seat.socketPath, { verb: "where", args: { tiddler: "$:/lares/flow" }, requestedBy: "did:key:warden", requestId: "floor-reuse" });
+      expect(same["status"]).toBe("done");
+      const changed = await send(seat.socketPath, { verb: "where", args: { tiddler: "$:/lares/other" }, requestedBy: "did:key:warden", requestId: "floor-reuse" });
+      expect(changed["status"]).toBe("error");
+      expect(changed["refusal"]).toEqual({ reason: "request-id-reused-with-changed-input" });
+      expect(String(changed["errorMessage"])).toContain("mint a fresh request id");
+      expect(placed, "the island ran the act once").toBe(1);
     } finally { await seat.close(); }
     await v.repo.shutdown();
   });

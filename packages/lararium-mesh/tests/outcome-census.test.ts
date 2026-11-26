@@ -1,6 +1,6 @@
 /** The outcome census reads what it counted and catches a planted pairing; a clean record set reads clean. */
 import { expect, test } from "vitest";
-import { censusOutcomeLinkage, OUTCOME_URI_PREFIX } from "../src/index.js";
+import { censusOutcomeLinkage, concludeVerb, verdictRowOf, OUTCOME_URI_PREFIX } from "../src/index.js";
 
 const ATOM = `0x${"a7".repeat(32)}`;
 const LEAF = "1eaf".repeat(16);
@@ -47,4 +47,19 @@ test("KNOWN POSITIVE: an outcome whose strings rest wrapped, as Automerge hands 
 test("CONTROL: a key with no requester beside it, and a requester with no key, read clean", () => {
   const tiddlers = Object.fromEntries([outcome("c-1", "realm-feed", output({ leaf: LEAF })), outcome("c-2", "load", { "requested-by": ATOM })]);
   expect(censusOutcomeLinkage(tiddlers as never, { socketOnly: new Set(["cabal-face"]), keys: [LEAF] })).toEqual({ outcomes: 2, linked: [] });
+});
+
+test("KNOWN POSITIVE (ledger diet): a verdict row rests no body, so a key in a result leaves the census's reach, and one planted in the row's error-message beside a requester still reads linked", () => {
+  const whole = (id: string, extra: Record<string, unknown>) =>
+    concludeVerb({ requestId: id, verb: "load", status: "error", cause: "t", batchMode: "best-effort", face: "proof-a", ...extra } as never);
+  const rowOf = (id: string, extra: Record<string, unknown>) => [`${OUTCOME_URI_PREFIX}${id}`, { tiddler: verdictRowOf(whole(id, extra)).tiddler, meta: {} }] as const;
+  const tiddlers = Object.fromEntries([
+    // The key rode the result body: the row keeps a hash of it and no byte of it.
+    rowOf("d-1", { status: "done", results: { summary: { ok: true, output: { writer: LEAF } } } }),
+    // The planted positive, in the shape the document keeps after the diet: the key in the error's words.
+    rowOf("d-2", { errorMessage: `writer ${LEAF} refused` }),
+  ]);
+  const r = censusOutcomeLinkage(tiddlers as never, { socketOnly: new Set(), keys: [LEAF] });
+  expect(r.outcomes).toBe(2);
+  expect(r.linked.map((l) => [l.title.slice(OUTCOME_URI_PREFIX.length), l.why])).toEqual([["d-2", "requester-beside-key"]]);
 });
