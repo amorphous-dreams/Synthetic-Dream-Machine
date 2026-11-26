@@ -7,7 +7,8 @@ import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { meteredRun, parseArgs, stopVerdict, verdictOf, DEFAULT_BUDGET_GB, STOPPED_EXIT } from './floor-run.mjs';
+import { admits, awaitAdmission, meteredRun, othersOf, parseArgs, remainingOf, reserve, stopVerdict, verdictOf, DEFAULT_BUDGET_GB, STOPPED_EXIT } from './floor-run.mjs';
+import { writeFileSync } from 'node:fs';
 
 const TOOL = fileURLToPath(new URL('./floor-run.mjs', import.meta.url));
 const G = 1024 ** 3;
@@ -59,10 +60,10 @@ test('RED: the CLI re-enters the lock, runs, and receipts TAKE then DONE in the 
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /inside/);
   assert.match(r.stderr, /battery: holding the box/);
-  assert.match(r.stderr, /floor: GREEN wrote=/);
+  assert.match(r.stderr, /floor: GREEN slot=1 wrote=/);
   const log = readFileSync(join(d, '.floor', 'queue.log'), 'utf8').trim().split('\n');
-  assert.match(log[0], /^TAKE lane-a@abcdef012 test-familiar c-free=/);
-  assert.match(log[1], /^DONE lane-a@abcdef012 GREEN wrote=\S+ c-drop=\S+ · exit 0 · bash -c echo inside; exit 0$/);
+  assert.match(log[0], /^TAKE lane-a@abcdef012 test-familiar c-free=\S+ slot=1$/);
+  assert.match(log[1], /^DONE lane-a@abcdef012 GREEN wrote=\S+ c-drop=\S+ slot=1 · exit 0 · bash -c echo inside; exit 0$/);
 });
 
 test('RED: the CLI passes the command code through, refuses usage with 2, and exits 64 where the lock cannot open', () => {
@@ -73,4 +74,73 @@ test('RED: the CLI passes the command code through, refuses usage with 2, and ex
   assert.equal(walled.status, 64);
   assert.ok(!existsSync(join(d, 'ran')), 'the command ran unlocked');
   assert.equal(STOPPED_EXIT, 65);
+});
+
+// THE SHARED BYTE FLOOR (operator, 2026-11-25). RED-FIRST: written by floor-wright#1, run by the familiar.
+test('RED: a lone run always admits; a second run admits only where C: less both budgets holds the 35G floor', () => {
+  const b = { floorBytes: 35 * G, budgetBytes: 4 * G };
+  assert.equal(admits({ freeNow: 36 * G, ...b, others: [] }), true);
+  const other = { free0: 50 * G, budgetBytes: 4 * G };
+  assert.equal(admits({ freeNow: 44 * G, ...b, others: [other] }), true);   // 44 - 4 - 4 = 36
+  assert.equal(admits({ freeNow: 42 * G, ...b, others: [other] }), false);  // 42 - 4 - 4 = 34, past the floor
+  assert.equal(admits({ freeNow: null, ...b, others: [other] }), true);     // no C: here: unmetered
+});
+
+test('RED: the other run counts only its unspent budget: bytes it already wrote sit in the free reading', () => {
+  const other = { free0: 50 * G, budgetBytes: 4 * G };
+  assert.equal(remainingOf(other, 48 * G), 2 * G);
+  assert.equal(remainingOf(other, 40 * G), 0);
+  assert.equal(admits({ freeNow: 43 * G, floorBytes: 35 * G, budgetBytes: 4 * G, others: [{ ...other, free0: 47 * G }] }), true); // spent 4G, remaining 0: 43 - 4 >= 35
+});
+
+test('RED: othersOf reads live reservations of other slots; a gone pid and its own slot read as none', () => {
+  const d = mkdtempSync(join(tmpdir(), 'floor-slots-'));
+  writeFileSync(join(d, 'slot-1.run'), JSON.stringify({ pid: 111, free0: 50 * G, budgetBytes: 4 * G }));
+  writeFileSync(join(d, 'slot-2.run'), JSON.stringify({ pid: 222, free0: 50 * G, budgetBytes: 3 * G }));
+  const alive = (pid) => pid === 111;
+  assert.deepEqual(othersOf(d, 2, alive).map((o) => o.slot), [1]);
+  assert.deepEqual(othersOf(d, 1, alive), []);   // slot 2's pid is gone, slot 1 is its own
+  assert.deepEqual(othersOf(join(d, 'absent'), 1, alive), []);
+});
+
+test('RED: reserve writes this slot once and a nested take under a live holder leaves the ancestor\'s reservation standing', () => {
+  const d = mkdtempSync(join(tmpdir(), 'floor-resv-'));
+  const release = reserve(d, 1, { pid: process.pid, free0: 1, budgetBytes: 2 });
+  assert.ok(existsSync(join(d, 'slot-1.run')));
+  const nested = reserve(d, 1, { pid: process.pid + 1, free0: 9, budgetBytes: 9 });
+  nested();
+  assert.ok(existsSync(join(d, 'slot-1.run')), 'the nested release never removes the ancestor\'s reservation');
+  assert.equal(JSON.parse(readFileSync(join(d, 'slot-1.run'), 'utf8')).free0, 1);
+  release();
+  assert.ok(!existsSync(join(d, 'slot-1.run')));
+});
+
+test('RED: the second run waits until bytes admit it: the first reading refuses, a later reading past the freed bytes admits', async () => {
+  const d = mkdtempSync(join(tmpdir(), 'floor-wait-'));
+  writeFileSync(join(d, 'slot-1.run'), JSON.stringify({ pid: process.pid, free0: 50 * G, budgetBytes: 4 * G }));
+  const reads = [42 * G, 42 * G, 44 * G]; // the third reading carries C: back up (the first run freed bytes)
+  const said = [];
+  await awaitAdmission({ floorDir: d, slot: 2, floorBytes: 35 * G, budgetBytes: 4 * G, readFree: () => reads.shift() ?? 44 * G, pace: 1, say: (s) => said.push(s) });
+  assert.equal(reads.length, 0, 'it read until the bytes admitted');
+  assert.equal(said.length, 1);
+  assert.match(said[0], /slot 2 waits/);
+});
+
+test('RED: two floor-runs fly at once on two slots; the third waits for one', async () => {
+  const { spawn } = await import('node:child_process');
+  const { d, env } = scratchEnv();
+  const rel = join(d, 'rel'), a = join(d, 'a'), b = join(d, 'b'), c = join(d, 'c');
+  const hold = (mark) => ['--budget-gb', '0.001', '--', 'bash', '-c', `touch ${mark}; while [ ! -e ${rel} ]; do :; done`];
+  const until = async (p) => { for (let i = 0; i < 4000 && !existsSync(p); i++) await new Promise((r) => setTimeout(r, 5)); assert.ok(existsSync(p), `no handshake at ${p}`); };
+  const exited = (ch) => new Promise((res) => ch.on('exit', (code) => res(code)));
+  const one = spawn(process.execPath, [TOOL, ...hold(a)], { env, stdio: 'ignore' });
+  await until(a);
+  const two = spawn(process.execPath, [TOOL, ...hold(b)], { env, stdio: 'ignore' });
+  await until(b);
+  const three = spawn(process.execPath, [TOOL, '--budget-gb', '0.001', '--', 'touch', c], { env, stdio: 'ignore' });
+  for (let i = 0; i < 200; i++) await new Promise((r) => setImmediate(r));
+  assert.ok(!existsSync(c), 'the third ran while both slots stood held');
+  writeFileSync(rel, '');
+  assert.equal(await exited(one), 0); assert.equal(await exited(two), 0); assert.equal(await exited(three), 0);
+  assert.ok(existsSync(c));
 });

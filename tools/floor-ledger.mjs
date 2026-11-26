@@ -43,8 +43,9 @@ export function queueLines({ lane, branch, sha, runs = [], why = '' }) {
   const id = ticketId(lane, sha);
   return [`QUEUE ${id} ${lane} ${branch} ${sha.toLowerCase()}`, ...runs.map(oneLine).filter(Boolean).map((r) => `RUN ${id} ${r}`), ...(oneLine(why) ? [`WHY ${id} ${oneLine(why)}`] : [])];
 }
-export const takeLine = (id, holder, cFreeBytes) => `TAKE ${id} ${holder || 'familiar'} c-free=${gb(cFreeBytes)}`;
-export const doneLine = (id, verdict, wroteBytes, cDropBytes, verdictLine = '') => `DONE ${id} ${verdict} wrote=${gb(wroteBytes)} c-drop=${gb(cDropBytes)} · ${oneLine(verdictLine)}`.trimEnd();
+const slotKey = (slot) => (Number.isInteger(slot) && slot > 0 ? ` slot=${slot}` : '');
+export const takeLine = (id, holder, cFreeBytes, slot) => `TAKE ${id} ${holder || 'familiar'} c-free=${gb(cFreeBytes)}${slotKey(slot)}`;
+export const doneLine = (id, verdict, wroteBytes, cDropBytes, verdictLine = '', slot) => `DONE ${id} ${verdict} wrote=${gb(wroteBytes)} c-drop=${gb(cDropBytes)}${slotKey(slot)} · ${oneLine(verdictLine)}`.trimEnd();
 export const dropLine = (id, reason) => `DROP ${id} ${oneLine(reason)}`;
 
 /** The `lares` command and its leading args. */
