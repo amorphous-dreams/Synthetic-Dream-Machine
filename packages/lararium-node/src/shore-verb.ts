@@ -32,6 +32,12 @@
  *                  `shore-flush` frame), so a hand's flush reaches every island the teardown reaches
  *   drafts         name the drafts the disk side of a carrier's stand-offs loaded (`standoff-drafts.ts`), each with its
  *                  target, its stand-off's key and whether a person kept it; titles alone, never a draft's words
+ *   base           land a wave's bases in the Synced tree this island's projector owns (`landBases`, `ingest-scan.ts`): the
+ *                  wave that landed carriers through this island's INGEST names each base (`bases`: `{ uri, file, disk,
+ *                  records?, heads?, from? }`) and the bag (`bag`). ONE OWNER OF PENDING STATE: this island's tree alone
+ *                  holds its pending pins, so a base whose agreement a pin already names waits with that pin, a newer one
+ *                  supersedes it, and each row that names heads waits on its own seal. Answers counts (`recorded`, `kept`,
+ *                  `waiting`, `moved`) and how many pins still wait (`pendingPinCount`)
  *   keep-both      a person keeps both sides of one stand-off, named by its key: its drafts stay past its end as parallel
  *                  drafts, and the records' render writes over the file, as `take-records` writes it. A stand-off whose
  *                  file loaded no draft holds nothing to keep, and refuses `no-drafts-to-keep`, naming keep-disk and
@@ -67,6 +73,8 @@ import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import type { Hand } from "@lararium/mesh/session-contract";
 import { askerRefusal, handCodesOf, handRefusalOf } from "./hand-act-gate.js";
 import type { LarDiskProjector } from "./disk-projector.js";
+import { baseAsksNamed, landBases } from "./ingest-scan.js";
+import { PENDING_UNREAD } from "./synced-tree.js";
 
 /** The verb an island answers at its disk shore. */
 export const SHORE_VERB = "shore";
@@ -75,7 +83,7 @@ export const SHORE_VERB = "shore";
 const HAND_OPS: ReadonlySet<string> = new Set(["take-records", "keep-both"]);
 
 /** The acts the verb carries. */
-export const SHORE_OPS = ["list", "sense", "settle", "take-records", "render", "restore", "remove", "census", "flush", "drafts", "keep-both"] as const;
+export const SHORE_OPS = ["list", "sense", "settle", "take-records", "render", "restore", "remove", "census", "flush", "drafts", "keep-both", "base"] as const;
 export type ShoreOp = (typeof SHORE_OPS)[number];
 
 /**
@@ -135,6 +143,19 @@ export function shoreList(
   }
   const next = behind.length > taken.length ? taken[taken.length - 1]!.cursor : null;
   return { standoffs, standoffCount: standing.length, pending, pendingCount: pendingAll.length, mark, next };
+}
+
+/**
+ * NO BASE WAITS SILENT. What this island's Synced tree holds back from its directory, by count: each pin waiting on its seal
+ * (`pendingPinCount`), how many of those wait on a rest that answered nothing readable (`pendingPinUnreadCount`), and how many
+ * of the waves' bases met a waiting pin and wait with it (`waitingBaseCount`). Every flush and every `base` act answers them,
+ * and a flush's line names them (`shoreFlushLines`).
+ */
+export interface PinsWaiting { readonly pendingPinCount: number; readonly pendingPinUnreadCount: number; readonly waitingBaseCount: number }
+
+export function pinsWaiting(projector: LarDiskProjector): PinsWaiting {
+  const pins = projector.pendingPins();
+  return { pendingPinCount: pins.length, pendingPinUnreadCount: pins.filter((p) => p.why === PENDING_UNREAD).length, waitingBaseCount: projector.waitingBases() };
 }
 
 /** The counts alone: what an act that names no rows answers, whatever the shore holds. */
@@ -206,6 +227,9 @@ export interface ShoreFlush {
    *  A pending pin costs nothing at a crash: the next boot reads disk == records and pins again. */
   readonly pendingPins?: ReadonlyArray<{ readonly uri: string; readonly bagId: string; readonly path: string; readonly why: string }>;
   readonly pendingPinCount?: number;
+  /** How many of those pins wait on a rest that answered nothing readable, and how many of the waves' bases wait with a pin. */
+  readonly pendingPinUnreadCount?: number;
+  readonly waitingBaseCount?: number;
 }
 
 /**
@@ -237,7 +261,7 @@ export async function shoreFlush(projector: LarDiskProjector, settleMs = CENSUS_
     written: written.slice(0, SHORE_LIST_PAGE), writtenCount: written.length,
     unwritten: unwritten.slice(0, SHORE_LIST_PAGE), unwrittenCount: unwritten.length,
     fileWrites: projector.fileWrites() - writesBefore, drained,
-    pendingPins: pins.slice(0, SHORE_LIST_PAGE), pendingPinCount: pins.length,
+    pendingPins: pins.slice(0, SHORE_LIST_PAGE), ...pinsWaiting(projector),
   };
 }
 
@@ -287,6 +311,8 @@ export async function flushEveryShore(asks: readonly ShoreIslandAsk[], boundMs =
         unwritten: o["unwritten"] as ShoreFlush["unwritten"], unwrittenCount: Number(o["unwrittenCount"] ?? (o["unwritten"] as unknown[]).length),
         fileWrites: o["fileWrites"] as number, drained: o["drained"] === true,
         ...(Array.isArray(o["pendingPins"]) ? { pendingPins: o["pendingPins"] as NonNullable<ShoreFlush["pendingPins"]>, pendingPinCount: Number(o["pendingPinCount"] ?? (o["pendingPins"] as unknown[]).length) } : {}),
+        ...(typeof o["pendingPinUnreadCount"] === "number" ? { pendingPinUnreadCount: o["pendingPinUnreadCount"] as number } : {}),
+        ...(typeof o["waitingBaseCount"] === "number" ? { waitingBaseCount: o["waitingBaseCount"] as number } : {}),
       };
     } catch (err) {
       const reason = (err as { reason?: unknown } | null)?.reason;
@@ -351,6 +377,7 @@ export function shoreFlushLines(reading: ShoreFlushReading): string[] {
   return reading.islands.map((i) => i.answered
     ? `shore flush: the ${i.island} island wrote ${i.writtenCount} owed carrier(s) (${i.fileWrites} file write(s))`
       + (i.unwrittenCount > 0 ? `; ${i.unwrittenCount} unwritten: ${i.unwritten.map((u) => `${u.uri}${typeof (u as { face?: unknown }).face === "number" ? ` on h${(u as { face?: number }).face}` : ""} (${u.state}: ${u.why})`).join("; ")}` : "")
+      + ((i.pendingPinCount ?? 0) > 0 ? `; ${i.pendingPinCount} base pin(s) wait on their seal${(i.pendingPinUnreadCount ?? 0) > 0 ? `, ${i.pendingPinUnreadCount} on a rest that answered nothing readable` : ""}${(i.waitingBaseCount ?? 0) > 0 ? `, and ${i.waitingBaseCount} wave base(s) wait with them` : ""}` : "")
     : `shore flush: the ${i.island} island did not answer: ${i.refusal !== undefined ? `${i.refusal}: ` : ""}${i.why}`);
 }
 
@@ -441,6 +468,11 @@ export async function answerShoreSeats(seats: ShoreSeats, args: Readonly<Record<
     written: written.slice(0, SHORE_LIST_PAGE), writtenCount: parts.reduce((n, p) => n + p.flushed.writtenCount, 0),
     unwritten: unwritten.slice(0, SHORE_LIST_PAGE), unwrittenCount: parts.reduce((n, p) => n + p.flushed.unwrittenCount, 0),
     fileWrites: parts.reduce((n, p) => n + p.flushed.fileWrites, 0), drained: parts.every((p) => p.flushed.drained),
+    // NO BASE WAITS SILENT: each face's pins that still wait ride the one answer, each sibling's row naming its face.
+    pendingPins: parts.flatMap((p) => tagged(p.face, p.flushed.pendingPins ?? [])).slice(0, SHORE_LIST_PAGE),
+    pendingPinCount: parts.reduce((n, p) => n + (p.flushed.pendingPinCount ?? 0), 0),
+    pendingPinUnreadCount: parts.reduce((n, p) => n + (p.flushed.pendingPinUnreadCount ?? 0), 0),
+    waitingBaseCount: parts.reduce((n, p) => n + (p.flushed.waitingBaseCount ?? 0), 0),
     ...(parts.some((p) => p.face !== seats.worn) ? { faces: parts.map((p) => p.face).filter((f): f is number => f !== null) } : {}),
   };
 }
@@ -613,5 +645,16 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
     return { ok: true, op, ...(await shoreCensus(projector, after)) };
   }
   if (op === "flush") return { ok: true, op, ...(await shoreFlush(projector)) };
+  if (op === "base") {
+    // THE TREE'S OWNER LANDS THE WAVE'S BASES (`landBases`): this projector's tree alone holds this island's pending pins. Each
+    // row that names a document and heads waits on its seal; the rest gets asked once before the answer leaves, so a base
+    // whose heads already rest stands in the directory by the time the wave reads it.
+    const asks = baseAsksNamed(args["bases"]);
+    if (bag === null || asks === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "base names the bag the wave landed in (`bag`) and each base (`bases`: `{ uri, file, disk, records?, heads?, from? }`, `heads` a list of head hashes)" };
+    const { tree, doc } = projector.basesOf(bag);
+    const answer = landBases(tree, bag, asks, doc);
+    await projector.settlePins();
+    return { ok: true, op, bag, recorded: answer.recorded, kept: answer.kept, waiting: answer.waiting, moved: answer.moved, ...pinsWaiting(projector) };
+  }
   return { ok: false, op, refusal: "shore-op-unknown", why: `the shore verb carries ${SHORE_OPS.join(", ")}; it names no "${op}"` };
 }

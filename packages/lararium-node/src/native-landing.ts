@@ -15,7 +15,8 @@ import type { Tw5Deserializer } from "@lararium/tw5";
  * THE RECORD A NATIVE CARRIER'S DISK BYTES SAY, for a landing that takes the file whole (`lares shore keep-disk`, and the
  * keeper's own keep where the records fell behind their base): the same deserialize and `.meta` merge
  * `canonicalizeNativeCarrierText` reads, handed back as the one record instead of its render. A bundle, a member titled
- * for another carrier, or a parse that throws lands nothing and says why.
+ * for another carrier, a record that would act (`executableField`, weighed over the `.meta` and over the merged record), or a
+ * parse that throws lands nothing and says why.
  */
 export function nativeCarrierLanding(
   deserializer: Tw5Deserializer,
@@ -36,6 +37,9 @@ export function nativeCarrierLanding(
     const fieldsList = deserializer.deserialize(ext || "text/plain", diskBody, {});
     if (fieldsList.length !== 1) return { why: `the file holds ${fieldsList.length} tiddlers (a pack settles member by member, through \`lares ingest\`)` };
     const merged: Record<string, unknown> = { ...fieldsList[0], ...metaFields };
+    // THE RECORD THAT WOULD LAND GETS WEIGHED WHOLE: a `.tid` states its fields in its own header, with no `.meta` beside it.
+    const acts = executableField(merged);
+    if (acts !== null) return { why: `carrier-executable: the file's own fields name ${acts}, which a keep with no hand never lands; \`lares ingest\` weighs it by name` };
     const ownTitle = typeof merged["title"] === "string" && merged["title"] ? (merged["title"] as string) : uri;
     if (ownTitle !== uri) return { why: `the file names ${ownTitle}, another carrier than ${uri}` };
     merged["title"] = ownTitle;
@@ -49,7 +53,7 @@ export function nativeCarrierLanding(
 const ACTING_TAGS = ["$:/tags/StartupAction", "$:/tags/RawMarkup", "$:/tags/RawMarkupWikified"];
 
 /**
- * THE FIELD OF A `.meta` THAT MAKES A RECORD ACT, or null: a `module-type` or a `plugin-type` (code the engine evaluates), a
+ * THE FIELD THAT MAKES A RECORD ACT, in a `.meta` or in the record a file's own header states, or null: a `module-type` or a `plugin-type` (code the engine evaluates), a
  * JavaScript `type`, or a tag under which TW5 runs the record's words. A keep with no hand lands none of these.
  */
 export function executableField(fields: Readonly<Record<string, unknown>>): string | null {

@@ -11,6 +11,8 @@
  *   S5  a lit sibling's shore answers by its face (`answerShoreSeats`): an act naming `face` reaches that face's projector (the
  *       worn one's or a sibling's) and names the face; a face with no projector refuses `face-unprojected`; a flush naming no
  *       face reaches the worn projector and every lit sibling's, each sibling row naming its face.
+ *   S7  no base waits silent: the `base` act lands a wave's bases in the projector's own Synced tree (one owner of pending
+ *       state), and every flush counts the pins that wait, the ones on an unread rest, and the wave bases that wait with them.
  */
 import { afterEach, describe, expect, test } from "vitest";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -20,7 +22,7 @@ import { fileURLToPath } from "node:url";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { SyncedTree } from "../src/synced-tree.js";
-import { answerShore, answerShoreSeats, flushEveryShore, shoreFlush, shoreHandCode, shoreStuckFaces, SHORE_HAND_CODE, SHORE_OPS, SHORE_VERB } from "../src/shore-verb.js";
+import { answerShore, answerShoreSeats, flushEveryShore, shoreFlush, shoreFlushLines, shoreHandCode, shoreStuckFaces, SHORE_HAND_CODE, SHORE_OPS, SHORE_VERB } from "../src/shore-verb.js";
 import type { TW5Engine } from "@lararium/tw5";
 
 let root = "";
@@ -111,7 +113,7 @@ describe("the shore's flush", () => {
   test("RED S4 — the op keeps its verb, and the MCP seat mirrors the shore", () => {
     expect(SHORE_VERB).toBe("shore");
     // `drafts` reads titles alone; `keep-both` settles a stand-off and rides a person's hand like `take-records`.
-    expect(SHORE_OPS).toEqual(["list", "sense", "settle", "take-records", "render", "restore", "remove", "census", "flush", "drafts", "keep-both"]);
+    expect(SHORE_OPS).toEqual(["list", "sense", "settle", "take-records", "render", "restore", "remove", "census", "flush", "drafts", "keep-both", "base"]);
     const here = dirname(fileURLToPath(import.meta.url));
     const fixture = JSON.parse(readFileSync(join(here, "../../lararium-sensorium/scripts/fixtures/cli-verbs.json"), "utf8")) as { mirrored: string[]; not_yet_mirrored: string[] };
     expect(fixture.mirrored).toEqual(expect.arrayContaining(["shore", "shore_flush"]));
@@ -140,6 +142,45 @@ describe("the shore's flush", () => {
     expect(await answerShoreSeats(seats, { op: "list" })).toMatchObject({ ok: true, op: "list" });
     expect((await answerShoreSeats(seats, { op: "list" }))["face"]).toBeUndefined();
     await worn.stop(); await sibling.stop();
+  });
+
+  test("RED S7 — no base waits silent: the `base` act lands a wave's bases in the projector's own tree, and a flush counts each pin that waits", async () => {
+    if (root) roots.push(root);
+    root = mkdtempSync(join(tmpdir(), "lar-shore-flush-"));
+    const dir = join(root, ".projection", "synced-tree");
+    const rest = { reading: "unread" as "rested" | "waiting" | "unread" };
+    const projector = new LarDiskProjector({
+      mirrors: [{ bagId: BAG, mirrorRoot: root }],
+      carrierFileFn: renders,
+      documentOf: () => "doc-lares",
+      syncedTree: new SyncedTree(dir, { rests: async () => rest.reading }),
+    });
+    projector.start({ $tw: { wiki: { getTiddler: () => undefined, allTitles: () => [], addEventListener: () => {}, removeEventListener: () => {} } } } as unknown as TW5Engine);
+    await projector.idle();
+    const file = join(root, "holding", "note.md");
+    const base = { uri: LANDS, file, disk: "sha256:" + "a".repeat(64), records: "sha256:" + "b".repeat(64), heads: ["h1"] };
+    // The wave's base names heads: it sets in the island's own tree, under the island's document, and waits on a rest that
+    // answers nothing readable. Nothing reaches the directory, and the answer counts the pin.
+    const first = await answerShore(projector, { op: "base", bag: BAG, bases: [base] });
+    expect(first).toMatchObject({ ok: true, op: "base", bag: BAG, recorded: 1, kept: 0, waiting: 0, moved: 0, pendingPinCount: 1, pendingPinUnreadCount: 1, waitingBaseCount: 0 });
+    expect(new SyncedTree(dir).size).toBe(0);
+    // The same agreement asked again (the echo) waits with that pin, and the shore counts it.
+    expect(await answerShore(projector, { op: "base", bag: BAG, bases: [base] })).toMatchObject({ ok: true, recorded: 0, waiting: 1, pendingPinCount: 1, waitingBaseCount: 1 });
+    // The flush names every pin that waits, on one projector and across a daemon island's faces alike, and its line says so.
+    const flushed = await shoreFlush(projector, 100);
+    expect(flushed).toMatchObject({ pendingPinCount: 1, pendingPinUnreadCount: 1, waitingBaseCount: 1, pendingPins: [{ uri: LANDS, bagId: BAG, why: "pending: rest unread" }] });
+    const seats = { own: projector, worn: 0, lit: () => null, litFaces: () => [] };
+    expect(await answerShoreSeats(seats, { op: "flush" })).toMatchObject({ ok: true, pendingPinCount: 1, pendingPinUnreadCount: 1, waitingBaseCount: 1, pendingPins: [{ uri: LANDS }] });
+    const reading = await flushEveryShore([{ island: "daemon", ask: () => answerShoreSeats(seats, { op: "flush" }) }]);
+    expect(shoreFlushLines(reading).join("\n")).toMatch(/1 base pin\(s\) wait on their seal, 1 on a rest that answered nothing readable, and 1 wave base\(s\) wait with them/);
+    // The rest answers: the pin lands with its document and its heads, and the shore's counts read zero.
+    rest.reading = "rested";
+    expect(await shoreFlush(projector, 100)).toMatchObject({ pendingPinCount: 0, pendingPinUnreadCount: 0, waitingBaseCount: 0 });
+    expect(new SyncedTree(dir).rows().map((r) => r.base)).toEqual([expect.objectContaining({ doc: "doc-lares", heads: ["h1"], disk: base.disk, records: base.records })]);
+    // A base act that names no bag, or a base in another shape, refuses by name.
+    expect(await answerShore(projector, { op: "base", bases: [base] })).toMatchObject({ ok: false, refusal: "shore-answer-incomplete" });
+    expect(await answerShore(projector, { op: "base", bag: BAG, bases: [{ uri: LANDS }] })).toMatchObject({ ok: false, refusal: "shore-answer-incomplete" });
+    await projector.stop();
   });
 
   test("RED S6 — the shore's settling ops read hand-only per op, on the shore verb and through wiki-act; the stuck faces read off the rows", () => {

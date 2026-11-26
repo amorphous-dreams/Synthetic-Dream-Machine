@@ -14,34 +14,61 @@ import { digestsEqual } from "@lararium/mesh/agile-digest";
 import { ingestWaveWeight } from "@lararium/mesh/ingest-wave-budget";
 import {
   syncedTreeKey, ingestWaveVerb, ingestWaitBudgetMs, listSourceFiles, scanFiles, fileToUriForSource, settleIngest as settleIngestVia,
+  islandBaseDoor, treeBaseDoor,
   type SyncedTree, type ScanRow, type ScanStatus, type ScanResult, type PendingDeletion, type FileToUriFn, type SubmitIngestOpts, type IngestSettlement,
-  type IngestPacing,
+  type IngestPacing, type BaseDoor,
 } from "@lararium/node";
-import type { SubmitResult } from "./verb-result.js";
+import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
 import { LocalWaitExpired, queryReceipt, type ReceiptAnswer } from "./local-connector.js";
 import { stageBodyToCas, carrierCasFlagged, declaredType } from "./cas-stage.js";
 
 export {
   carriedBasesOf, skipLines, openSyncedTree, readCarrierText, listCarriers, fileToUriForSource, siteMirrorFile, scanFiles,
-  recordLandedCarriers, readCarrierAnswer, INGEST_PAGE, ingestVerdict, renamesOf, renamedSources, absentSources,
+  recordLandedCarriers, landBases, baseAsksOf, renameBaseAsksOf, treeBaseDoor, islandBaseDoor, readCarrierAnswer, INGEST_PAGE, ingestVerdict, renamesOf, renamedSources, absentSources,
   NO_STANDING_ASKS, standsClean, standingAfterFault, standingAfterWave, candidatesOf, applyConfirmedRenames, deletionsOf,
   type ScanStatus, type PendingDeletion, type ArmedDeletion, type ScanRow, type ScanSkip, type ScanResult, type FileToUriFn,
   type MirrorDirs, type CarrierAnswer, type AskingCarrier, type IngestSettlement, type IngestVerdict, type StandingAsks,
-  type SubmitIngestOpts,
+  type SubmitIngestOpts, type BaseAsk, type BaseAnswer, type BaseDoor,
 } from "@lararium/node";
+
+/** How long one page of bases waits on the island that lands them. */
+const BASE_ASK_MS = 60_000;
+
+/**
+ * THE BASE DOOR OVER THE VERB SOCKET (`islandBaseDoor`, `@lararium/node` ingest-scan): a gesture in this process lands no base
+ * by its own hand where a vessel stands. Each page of bases rides the shore's `base` act to the island that took the wave: the
+ * daemon island by the `shore` verb, a wiki's island by `wiki-act` where the wave ran in one. That island's own Synced tree
+ * holds its pending pins, so its answer stands for every reader. A verb that failed outright throws, and the door counts its
+ * page owed.
+ */
+export function shoreBaseDoor(
+  opts: Pick<SubmitIngestOpts, "did" | "inWiki" | "wiki">, tree: SyncedTree,
+  run: (verb: string, args: Record<string, unknown>, did: string, o: { timeoutMs: number }) => Promise<SubmitResult> = runVerb,
+): BaseDoor {
+  return islandBaseDoor(async (args) => {
+    const result = opts.inWiki
+      ? await run("wiki-act", { verb: "shore", args, ...(opts.wiki !== undefined ? { wiki: opts.wiki } : {}) }, opts.did, { timeoutMs: BASE_ASK_MS })
+      : await run("shore", args, opts.did, { timeoutMs: BASE_ASK_MS });
+    if (result.status === "error") throw new Error(result.errorMessage ?? "the daemon refused the base act and named no reason");
+    return summaryOutput(result) ?? {};
+  }, tree);
+}
 
 /**
  * THE WHOLE GESTURE over the verb socket: the node's settle (`settleIngest`, `ingest-scan`) with its submit port filled by
- * `submitIngest` unless a caller lends its own.
+ * `submitIngest` unless a caller lends its own. Its bases land through the island that takes its waves (`shoreBaseDoor`);
+ * a caller that lends its own submit, or a tree held in memory, lands them in the tree it holds, unless it lends a door.
  */
 export function settleIngest(
   opts: SubmitIngestOpts,
   tree: SyncedTree,
-  submit: (o: SubmitIngestOpts) => Promise<SubmitResult> = (o) => submitIngest(o),
+  submit?: (o: SubmitIngestOpts) => Promise<SubmitResult>,
   pacing?: IngestPacing,
+  base?: BaseDoor,
 ): Promise<IngestSettlement> {
-  return settleIngestVia(opts, tree, submit, pacing);
+  const door = base ?? (submit === undefined && tree.persists ? shoreBaseDoor(opts, tree) : treeBaseDoor(tree));
+  return settleIngestVia(opts, tree, submit ?? ((o) => submitIngest(o)), pacing, door);
 }
 
 /**

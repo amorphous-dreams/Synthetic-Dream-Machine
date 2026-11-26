@@ -800,6 +800,24 @@ export class LarDiskProjector {
     return this.syncedTree.pendingPins();
   }
 
+  /** How many of the waves' bases met a pin of this projector's tree that still waits (`SyncedTree.waitingBases`). */
+  waitingBases(): number {
+    return this.syncedTree.waitingBases;
+  }
+
+  /**
+   * THE TREE THIS PROJECTOR OWNS, AND THE DOCUMENT IT READS FOR A BAG: where a wave's bases land (`landBases`, the shore's
+   * `base` act). One instance holds this island's pending pins, so every base of a wave this island took lands through it.
+   */
+  basesOf(bagId: string): { readonly tree: SyncedTree; readonly doc: string | undefined } {
+    return { tree: this.syncedTree, doc: this.docOf(bagId) };
+  }
+
+  /** Ask the rest again for every pin that waits, and land each whose heads now rest (`SyncedTree.settle`). */
+  settlePins(): Promise<number> {
+    return this.syncedTree.settle();
+  }
+
   async stop(): Promise<void> {
     this.stopping = true;
     this.unwatchStandoffs?.();

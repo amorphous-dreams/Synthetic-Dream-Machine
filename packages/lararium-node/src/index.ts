@@ -227,7 +227,7 @@ export { walledGit, poolPlaceOf, blobAt, poolHeadOf, poolHeads, facePoolHeads, b
 // verb socket, the vessel with its daemon island's INGEST, so the watch over the worn face's pool lands an edit by itself.
 export {
   carriedBasesOf, skipLines, openSyncedTree, readCarrierText, listCarriers, listSourceFiles, fileToUriForSource, siteFaceFile, siteMirrorFile,
-  scanFiles, recordLandedCarriers, readCarrierAnswer, INGEST_PAGE, ingestVerdict, renamesOf, renamedSources, absentSources, NO_STANDING_ASKS,
+  scanFiles, recordLandedCarriers, landBases, baseAsksOf, renameBaseAsksOf, baseAsksNamed, treeBaseDoor, islandBaseDoor, BASE_PAGE, readCarrierAnswer, INGEST_PAGE, ingestVerdict, renamesOf, renamedSources, absentSources, NO_STANDING_ASKS,
   standsClean, standingAfterFault, standingAfterWave, settleIngest, candidatesOf, applyConfirmedRenames, deletionsOf, pairedDeletions,
   carrierCasFlagged, declaredType, inlineStage, ridesInline, ingestWaveArgs, ingestWaveVerb, islandIngestSubmit, poolIngestPorts, workspaceIngestPorts,
   foldWaveRefusal, mirrorFiles, siteWaveFile, liveLay,
@@ -236,7 +236,7 @@ export {
   type ScanStatus, type PendingDeletion, type ArmedDeletion, type ScanRow, type ScanSkip, type ScanResult, type FileToUriFn, type MirrorDirs,
   type CarrierAnswer, type AskingCarrier, type IngestSettlement, type IngestVerdict, type StandingAsks, type SubmitIngestOpts,
   type IngestSubmitResult, type IngestSubmit, type StagedCarrier, type CarrierStage, type IslandVerbAsk, type MirrorWave, type MirrorLaid,
-  type LayPorts, type PoolPlaneBags, type PoolIngestOptions, type WorkspaceIngestOptions,
+  type LayPorts, type PoolPlaneBags, type PoolIngestOptions, type WorkspaceIngestOptions, type BaseAsk, type BaseAnswer, type BaseDoor,
 } from "./ingest-scan.js";
 export { parseTidCarrier, readBackTempCarriers, TempLayerHousekeeper, tempAuditPath, TEMP_ORPHAN_SETTLE_MS, HOUSEKEEPING_PERIOD_MS } from "./temp-layer.js";
 export type { TempHousekeepingClock, TempHousekeepingPolicy, TempAuditLine, TempRecordState, TidFields } from "./temp-layer.js";

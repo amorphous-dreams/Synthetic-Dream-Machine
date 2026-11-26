@@ -265,6 +265,11 @@ export async function cmdShore(args: ParsedArgs, hand: ShoreHandRead = ownHand):
           if (!part.answered) { console.log(`${part.island}: did not answer: ${part.refusal}: ${part.why}`); continue; }
           console.log(`${part.island}: wrote ${part.writtenCount} owed carrier(s) (${part.fileWrites} file write(s)); ${part.unwrittenCount} unwritten`);
           for (const u of part.unwritten) console.log(`  ${String(u["state"])} ${String(u["uri"])}${typeof u["face"] === "number" ? ` (h${u["face"]})` : ""}: ${String(u["why"])}`);
+          // NO BASE WAITS SILENT: each Synced base pin still waiting on its seal, by count and by name.
+          if ((part.pendingPinCount ?? 0) > 0) {
+            console.log(`  ${part.pendingPinCount} base pin(s) wait on their seal${(part.pendingPinUnreadCount ?? 0) > 0 ? ` (${part.pendingPinUnreadCount} on a rest that answered nothing readable)` : ""}${(part.waitingBaseCount ?? 0) > 0 ? `; ${part.waitingBaseCount} wave base(s) wait with them` : ""}: each lands once its document's saves rest, and a crash costs none (the next boot pins again)`);
+            for (const pin of part.pendingPins ?? []) console.log(`    ${String(pin["uri"])}${typeof pin["face"] === "number" ? ` (h${pin["face"]})` : ""}: ${String(pin["why"])}`);
+          }
         }
       },
     });

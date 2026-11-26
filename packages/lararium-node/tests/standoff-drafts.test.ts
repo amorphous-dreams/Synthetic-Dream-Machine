@@ -385,6 +385,21 @@ describe("the native landing refuses what INGEST refuses", () => {
     expect((landed as { why: string }).why).toMatch(why);
   });
 
+  test.each([
+    ["module-type: startup", /module-type/],
+    ["plugin-type: plugin", /plugin-type/],
+    ["type: application/javascript", /type application\/javascript/],
+    ["tags: $:/tags/StartupAction", /the tag \$:\/tags\/StartupAction/],
+  ])("a .tid whose own header names %s lands nothing, with no .meta beside it", (line, why) => {
+    const landed = nativeCarrierLanding(plain, URI, ".tid", `title: ${URI}\n${line}\n\nwords`, undefined);
+    expect(landed).toMatchObject({ why: expect.stringMatching(/^carrier-executable/) });
+    expect((landed as { why: string }).why).toMatch(why);
+  });
+
+  test("CONTROL: a .tid with a plain header lands its one record", () => {
+    expect(nativeCarrierLanding(plain, URI, ".tid", `title: ${URI}\ntags: probe\n\nwords`, undefined)).toEqual({ records: [{ title: URI, tags: "probe", text: "words" }] });
+  });
+
   test("CONTROL: an NFC body with a plain .meta lands one record titled for the carrier", () => {
     expect(nativeCarrierLanding(plain, URI, ".md", "words", "tags: probe\ntype: text/markdown")).toEqual({ records: [{ text: "words", tags: "probe", type: "text/markdown", title: URI }] });
   });

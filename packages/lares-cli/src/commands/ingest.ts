@@ -23,7 +23,7 @@ import { emit, wantsJson, exitFor } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
 import { OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
-import { openSyncedTree, scanSource, skipLines, fileToUriForSource, candidatesOf, settleIngest, ingestVerdict, applyConfirmedRenames, type IngestSettlement } from "../ingest-core.js";
+import { openSyncedTree, scanSource, skipLines, fileToUriForSource, candidatesOf, settleIngest, ingestVerdict, type IngestSettlement } from "../ingest-core.js";
 import { carrierNeedsTag, tagBlobs } from "../tag-blobs.js";
 import { verbFailure } from "../verb-call.js";
 import { askShore, askSettle, type SettleReading } from "../shore-core.js";
@@ -148,7 +148,7 @@ export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<nu
   const candidates = candidatesOf(rows);
   // R2 — a full scan discovers a moved carrier's gone source; it rides the wave as a
   // rename-deletion so the island re-links records (change-id preserved) and the
-  // observation survives the move (see applyConfirmedRenames, post-submit).
+  // observation survives the move (see renameBaseAsksOf, the settle's base door).
   const renameDeletions = scan.renameDeletions ?? [];
   // THE KĀPAE THE SOURCE SPEAKS: each shadow file's title rides the wave, and the island raises a kāpae over
   // it in the target bag; a shadow file that proves no kāpae gets named and fails the run.
@@ -271,12 +271,14 @@ export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<nu
     sink.outcome = { state: settled.pageError.outcome, requestId: settled.pageError.requestId };
   }
 
-  // The gesture pinned what it landed (`settleIngest`); the projector pins what it projects; both write
-  // the same key and the same base where they agree. An unchanged carrier then reads `unchanged` on the
-  // next scan instead of re-landing.
-  // R2 — a confirmed rename moves its observation to the new location (delete old key,
-  // set new), so the moved carrier reads `unchanged` next scan instead of re-landing.
-  applyConfirmedRenames(tree, toBag, candidates, settled.deletions);
+  // The gesture's bases landed through the island that took its waves (`settleIngest`, `shoreBaseDoor`); the projector pins
+  // what it projects; both name the same key and the same base where they agree. An unchanged carrier then reads `unchanged`
+  // on the next scan instead of re-landing.
+  // R2 — a confirmed rename moved its base to the new location through the same door, with the history the source's base
+  // vouched for, so the moved carrier reads `unchanged` next scan instead of re-landing.
+  if (settled.bases !== undefined && settled.bases.owed > 0) {
+    console.error(`  ${settled.bases.owed} base(s) reached no owner (${settled.bases.why ?? "the island gave no answer"}): those carriers read as moved at the next scan and ask again; run \`lares ingest\` over the same source once the vessel answers`);
+  }
 
   // THE SETTLE WORD. Each carrier whose records this gesture moved causes a projection; the gesture asks the
   // vessel to say when that projection has run, so the run ends where a scan that follows reads what the

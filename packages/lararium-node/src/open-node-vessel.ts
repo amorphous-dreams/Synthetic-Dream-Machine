@@ -240,7 +240,7 @@ import { ledgerWorkbenches, ledgerWorkbenchRealms, workbenchSeats } from "@larar
 import { wikiSlotOf } from "@lararium/mesh/wiki-island-reach";
 import { armFacePoolWatch, armWorkspaceWatch, tendLitFacePool, type FacePoolWatch } from "./watch-core.js";
 import { ensurePoolTree, faceShelvingLine, healPoolTrees, poolTreeLine, shelveFaceRoot } from "./pool-tree.js";
-import { islandIngestSubmit, openSyncedTree, poolIngestPorts, workspaceIngestPorts } from "./ingest-scan.js";
+import { islandBaseDoor, islandIngestSubmit, openSyncedTree, poolIngestPorts, workspaceIngestPorts } from "./ingest-scan.js";
 import { poolHeads } from "./pool-head.js";
 import { newRequestId } from "@lararium/mesh/verb-tiddler";
 import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
@@ -5528,7 +5528,12 @@ async function prepareNodeBootOn(
       const submit = islandIngestSubmit((verb, args, requestId) => islandAsk(daemonHolder)((ports) => askIslandVerb({ ...ports, verb, args, requestedBy, requestId })).answer);
       const log = (line: string): void => console.log(`[faces] ${line}`);
       const bags = { wiki: DAEMON_WORKING_SLOT, stage: KAHUA_BAG, ...(wornFaceCanonBag !== null ? { canon: wornFaceCanonBag } : {}) };
-      const watch = armFacePoolWatch({ pool, owner: wornFaceSegment, ports: poolIngestPorts({ pool, bags, submit, sense, did: requestedBy, heads: poolHeads(pool), log }), log });
+      // ONE OWNER OF PENDING STATE: the daemon island's own Synced tree holds its projector's pending pins, so each wave's bases
+      // land there through the island's shore (`base`), on the thread that took the wave's INGEST; this thread lands none itself.
+      const base = (tree: ReturnType<typeof openSyncedTree>) => islandBaseDoor((args) => islandAsk(daemonHolder)((ports) => askIslandVerb({
+        ...ports, verb: "shore", args, requestedBy, requestId: newRequestId(),
+      })).answer, tree);
+      const watch = armFacePoolWatch({ pool, owner: wornFaceSegment, ports: poolIngestPorts({ pool, bags, submit, sense, base, did: requestedBy, heads: poolHeads(pool), log }), log });
       facePoolWatch = watch;
       stood.push({ what: "the face pool's watch", phase: "producers", down: async () => { await watch.down("lock"); if (facePoolWatch === watch) facePoolWatch = null; } });
       // THE WATCH OVER EACH SHARED WIKI'S WORKBENCH (a workbench serves as a pool): a wiki's one disk copy whichever face wears,
@@ -5554,7 +5559,9 @@ async function prepareNodeBootOn(
         // The submit port's `wiki-act` carries the INGEST and names this wiki: it places in that wiki's island alone.
         const wsSubmit = islandIngestSubmit((_verb, args) => inWiki(slug, routingString(args, "verb", "wiki-act"), routingObject(args, "args", "wiki-act")));
         const wsSense = (uris?: readonly string[]): Promise<unknown> => inWiki(slug, "shore", { op: "sense", ...(uris !== undefined ? { uris: [...uris] } : {}) });
-        const wsWatch = armWorkspaceWatch({ workspace: dir, tree, name, ports: workspaceIngestPorts({ workspace: dir, slug, submit: wsSubmit, sense: wsSense, did: requestedBy, heads: poolHeads(tree), log: wsLog }), log: wsLog });
+        // The workbench's bases land in that wiki island's own tree, through its shore, as the pool's do in the daemon island's.
+        const wsBase = (synced: ReturnType<typeof openSyncedTree>) => islandBaseDoor((args) => inWiki(slug, "shore", args), synced);
+        const wsWatch = armWorkspaceWatch({ workspace: dir, tree, name, ports: workspaceIngestPorts({ workspace: dir, slug, submit: wsSubmit, sense: wsSense, base: wsBase, did: requestedBy, heads: poolHeads(tree), log: wsLog }), log: wsLog });
         workspaceWatches.add(wsWatch);
         // The last workbench watch's down marks a quiet point: a rename or regroup the operator made while it held the folder moves now.
         stood.push({ what: `the workbench ${name}'s watch`, phase: "producers", down: async () => { await wsWatch.down("lock"); workspaceWatches.delete(wsWatch); if (workspaceWatches.size === 0) settleRealmFolders(); } });

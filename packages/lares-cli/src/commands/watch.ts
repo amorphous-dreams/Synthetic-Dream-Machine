@@ -48,7 +48,7 @@ import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } 
 
 /** The projections root when one stands, as the optional `MirrorDirs` field. */
 const projectionsDirs = (): { projections?: string } => { const p = larProjectionsDirOrNone(); return p === undefined ? {} : { projections: p }; };
-import { openSyncedTree, scanFiles, skipLines, fileToUriForSource, candidatesOf, deletionsOf, settleIngest, applyConfirmedRenames, standingAfterWave, standingAfterFault, standsClean, renamedSources, absentSources, NO_STANDING_ASKS, type StandingAsks } from "../ingest-core.js";
+import { openSyncedTree, scanFiles, skipLines, fileToUriForSource, candidatesOf, deletionsOf, settleIngest, standingAfterWave, standingAfterFault, standsClean, renamedSources, absentSources, NO_STANDING_ASKS, type StandingAsks } from "../ingest-core.js";
 import { askShore } from "../shore-core.js";
 import { OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 
@@ -205,11 +205,11 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
       // A CARRIER THAT STOOD OFF GOES TO THE SHORE. The gate landed nothing for it; the projector weighs
       // the same disk and records, raises the standoff's one keyed alert, and `lares shore` lists it.
       for (const c of settled.conflicts) unsensed.add(c.uri);
-      // The gesture pins what it landed; the projector pins what it projects;
-      // both write the same key and the same base where they agree.
-      // R2: a confirmed rename moves its observation to the new location, so a moved
+      // The gesture's bases landed through the island that took the wave (`settleIngest`, `shoreBaseDoor`); the projector
+      // pins what it projects; both name the same key and the same base where they agree.
+      // R2: a confirmed rename moved its base to the new location through the same door, so a moved
       // carrier reads `unchanged` next settle instead of re-landing (echo-survival).
-      applyConfirmedRenames(tree, toBag, candidates, del);
+      if (settled.bases !== undefined && settled.bases.owed > 0) console.error(`  wave ${n}: ${settled.bases.owed} base(s) reached no owner (${settled.bases.why ?? "the island gave no answer"}); the next wave over those files asks again`);
       console.log(`  wave ${n}: ${candidates.length} change(s) + ${ride.length} rename(s) submitted · audit ${OUTCOME_URI_PREFIX}${result.requestId}`);
       for (const c of carriers) console.log(`    ${String(c["decision"]).toUpperCase().padEnd(10)} ${c["uri"]}`);
       for (const r of [...settled.refused, ...settled.conflicts, ...settled.derived]) console.error(`    ⚠ ${r.decision} ${r.uri}: ${r.why}`);
