@@ -145,8 +145,10 @@ function setOrRemove(element: HTMLElement, name: string, value: string | null): 
   else element.setAttribute(name, value);
 }
 
-/** Paint the vessel's replica of its current relay state; this reports the adapter's causal edges. */
-export function mountLiveStatus(parent: HTMLElement, state: Pick<BrowserConnectionState, "getSnapshot" | "subscribe">): () => void {
+/** Paint the vessel's replica of its current relay state; this reports the adapter's causal edges. A readings model, where one
+ *  stands, hears the crossing and mode wording alone (never the gate key or the document URL the row's attributes carry). */
+export function mountLiveStatus(parent: HTMLElement, state: Pick<BrowserConnectionState, "getSnapshot" | "subscribe">,
+  readings?: { set(k: string, v: string, tone?: ConnectionPresentation["tone"]): unknown }): () => void {
   const connectionRow = makeRow(parent, "crossing", "connection");
   const modeRow = makeRow(parent, "mode", "mode");
   let authenticatedBefore = false;
@@ -161,6 +163,8 @@ export function mountLiveStatus(parent: HTMLElement, state: Pick<BrowserConnecti
     setOrRemove(connectionRow.value, "data-wiki-doc-url", data.wikiDocUrl);
     modeRow.value.textContent = presentation.mode;
     modeRow.value.className = `v ${presentation.tone}`;
+    readings?.set("crossing", presentation.connection, presentation.tone);
+    readings?.set("mode", presentation.mode, presentation.tone);
   };
   paint(state.getSnapshot());
   return state.subscribe(paint);

@@ -1,6 +1,7 @@
 import { standMirror, type MirrorState } from "./glass/stand.js";
 import { makeMirrorDoor } from "./glass/doors.js";
 import type { ReturnTypeOfPagePort } from "./glass/transport-type.js";
+import { mountReadings, type ReadingsEngine, type ReadingsModel } from "./console-readings.js";
 
 type Stand = Parameters<typeof standMirror>[1];
 const NONE = (why: string) => ({ kind: "floor" as const, width: "none" as const, why });
@@ -34,6 +35,8 @@ export async function standPageMirror(root: {
   startupAdmit?: (surface: string, records: readonly { title: string; fields: Record<string, string> }[]) => Promise<readonly string[]>;
   /** Boot the mirror afresh (the `route` door's `reload`): the caller unmounts this mirror and stands another. */
   reload?: () => void | Promise<void>;
+  /** The page's readings model (`console-readings.ts`): mounted on this mirror's engine as tab-local tiddlers, replayed whole at each stand. */
+  readings?: ReadingsModel;
 }, seams: Stand = {}) {
   // `data-lar-mirror` names the width; `data-lar-shown` names which surface the person reads: the mirror once it stands, else the floor.
   // `data-lar-mirror-why` carries the named reason a mirror holds or steps to skinny (`full-promotion-unfinished`, a capacity error), and
@@ -68,8 +71,10 @@ export async function standPageMirror(root: {
   const hold = (event: BeforeUnloadEvent): void => { if (result.pending() > 0) { event.preventDefault(); event.returnValue = ""; } };
   window.addEventListener("beforeunload", hold);
   const letGo = (): void => { window.removeEventListener("beforeunload", hold); };
+  // THE VESSEL'S READINGS AS TIDDLERS: page-side writes into this engine alone; `$:/temp/` titles never cross the port.
+  const unmountReadings = root.readings ? mountReadings(result.tw as unknown as ReadingsEngine, root.readings) : () => {};
   const unmountMirror = result.unmount.bind(result);
-  result.unmount = () => { unmountMirror(); letGo(); mark("none:unmounted"); };
+  result.unmount = () => { unmountReadings(); unmountMirror(); letGo(); mark("none:unmounted"); };
   result.onEvent(event => { if (event.type === "gone" || event.type === "floor") letGo(); });
   void result.settled.then(outcome => { if (outcome.width === "none") letGo(); });
   result.onEvent(event => { mark(event.type === "stepped" ? "skinny" : `none:${event.why}`, event.type === "stepped" ? event.why : null); });
