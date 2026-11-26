@@ -1,11 +1,13 @@
 /**
- * summon-launch.test — the launch cap carries the one wake line and a model, and starts nothing else. Every case injects its
- * spawn: no test starts a model.
+ * summon-launch.test — the launch cap carries the one wake line, the door reach and a model, and starts nothing else. Every case
+ * injects its spawn, its directory read and its log open: no test starts a model or writes a log. The wake line welds to the
+ * mesh core: this suite reads the pattern out of `spirit-summons.ts` and holds the tool's to it.
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
-import { LAUNCH_CAPS, LaunchRefused, launchPlan, run } from "./summon-launch.mjs";
+import { readFileSync } from "node:fs";
+import { DOOR_REACH, LAUNCH_CAPS, LaunchRefused, WAKE_LINE, launchPlan, run } from "./summon-launch.mjs";
 
 const HASH = "ab".repeat(32);
 const LINE = `wake as cold-reader#00002: lares spirit om cold-reader --mandate lar:///ha.ka.ba/kahua/memory/mandate/${HASH.slice(0, 16)}@${HASH}`;
@@ -21,31 +23,66 @@ function fakeSpawn(fail = null) {
     queueMicrotask(() => (fail === null ? child.emit("spawn") : child.emit("error", new Error(fail))));
     return child;
   };
-  return { calls, spawn };
+  return { calls, spawn, holdsDir: () => true };
 }
 const answer = async (argv, deps) => { const out = []; const exit = await run(argv, { ...deps, out: (l) => out.push(JSON.parse(l)) }); return { exit, out: out[0] }; };
 
 test("claude-cli starts `claude -p <the one line> --model <slug>`, detached, and names its pid", async () => {
-  const { calls, spawn } = fakeSpawn();
-  const { exit, out } = await answer(["--cap", "claude-cli", "--prompt", LINE, "--model", "claude-fable-5-2", "--cwd", "/tmp"], { spawn });
+  const { calls, ...deps } = fakeSpawn();
+  const { exit, out } = await answer(["--cap", "claude-cli", "--prompt", LINE, "--model", "claude-fable-5-2", "--cwd", "/tmp"], deps);
   assert.equal(exit, 0);
   assert.equal(calls.length, 1);
   assert.equal(calls[0].bin, "claude");
-  assert.deepEqual(calls[0].argv, ["-p", LINE, "--model", "claude-fable-5-2"]);
+  assert.deepEqual(calls[0].argv, ["-p", LINE, "--allowedTools", DOOR_REACH, "--model", "claude-fable-5-2"]);
   assert.equal(calls[0].opts.detached, true);
   assert.equal(calls[0].opts.cwd, "/tmp");
   assert.equal(calls[0].opts.env.LARES_SUMMONED, "cold-reader#00002");
   assert.equal(calls[0].child.unrefed, true);
-  assert.deepEqual(out, { ok: true, cap: "claude-cli", pid: 4242, argv: ["claude", "-p", LINE, "--model", "claude-fable-5-2"] });
+  assert.deepEqual(out, { ok: true, cap: "claude-cli", pid: 4242, argv: ["claude", "-p", LINE, "--allowedTools", DOOR_REACH, "--model", "claude-fable-5-2"] });
 });
 
 test("a mandate naming no model passes no --model; a face rides the line", () => {
-  assert.deepEqual(launchPlan({ cap: "claude-cli", prompt: `${LINE} --face 1` }).argv, ["-p", `${LINE} --face 1`]);
+  assert.deepEqual(launchPlan({ cap: "claude-cli", prompt: `${LINE} --face 1` }).argv, ["-p", `${LINE} --face 1`, "--allowedTools", DOOR_REACH]);
 });
 
-test("the cap passes no permission flag", () => {
+test("the cap grants the house's doors alone: one allow rule, no permission mode, no skipped check", () => {
   const argv = launchPlan({ cap: "claude-cli", prompt: LINE, model: "opus" }).argv;
+  assert.equal(DOOR_REACH, "Bash(lares:*)");
+  assert.equal(argv.filter((a) => a === "--allowedTools").length, 1);
+  assert.equal(argv[argv.indexOf("--allowedTools") + 1], DOOR_REACH);
   assert.ok(!argv.some((a) => /permission|dangerously/.test(a) && a !== LINE));
+});
+
+test("the wake line welds to the mesh core: one pattern, read from the core's own source", () => {
+  const core = readFileSync(new URL("../packages/lararium-mesh/src/spirit-summons.ts", import.meta.url), "utf8");
+  const literal = /^export const WAKE_LINE = \/(.+)\/;$/m.exec(core);
+  assert.ok(literal, "spirit-summons.ts exports WAKE_LINE as one regex literal");
+  assert.equal(literal[1], WAKE_LINE.source);
+  assert.equal(WAKE_LINE.flags, "");
+});
+
+test("a workdir the host holds none of refuses launch-workdir-absent, and nothing starts", async () => {
+  const { calls, spawn } = fakeSpawn();
+  const { exit, out } = await answer(["--cap", "claude-cli", "--prompt", LINE, "--cwd", "/srv/none"], { spawn, holdsDir: () => false });
+  assert.equal(exit, 2);
+  assert.equal(out.code, "launch-workdir-absent");
+  assert.match(out.message, /--workdir \/absolute\/path/);
+  assert.equal(calls.length, 0);
+});
+
+test("the instance's stream appends to the log the launch names; a log that takes no append refuses and starts nothing", async () => {
+  const opened = [];
+  const { calls, ...deps } = fakeSpawn();
+  const { exit } = await answer(["--cap", "claude-cli", "--prompt", LINE, "--cwd", "/tmp", "--log", "/srv/logs/a.log"], { ...deps, openLog: (file) => { opened.push(file); return "ignore"; } });
+  assert.equal(exit, 0);
+  assert.deepEqual(opened, ["/srv/logs/a.log"]);
+  assert.deepEqual(calls[0].opts.stdio, ["ignore", "ignore", "ignore"]);
+  const shut = fakeSpawn();
+  const refused = await answer(["--cap", "claude-cli", "--prompt", LINE, "--cwd", "/tmp", "--log", "/srv/logs/a.log"], { spawn: shut.spawn, holdsDir: () => true, openLog: () => { throw new Error("EACCES"); } });
+  assert.equal(refused.exit, 2);
+  assert.equal(refused.out.code, "launch-log-unwritable");
+  assert.match(refused.out.message, /--log \/absolute\/file/);
+  assert.equal(shut.calls.length, 0);
 });
 
 test("any prompt past the one line refuses, and nothing starts", async () => {
@@ -66,8 +103,8 @@ test("an unknown cap and a flag-shaped model refuse by name", () => {
 });
 
 test("a host with no such binary answers launch-cap-absent", async () => {
-  const { spawn } = fakeSpawn("spawn claude ENOENT");
-  const { exit, out } = await answer(["--cap", "claude-cli", "--prompt", LINE], { spawn });
+  const { spawn, holdsDir } = fakeSpawn("spawn claude ENOENT");
+  const { exit, out } = await answer(["--cap", "claude-cli", "--prompt", LINE], { spawn, holdsDir });
   assert.equal(exit, 2);
   assert.equal(out.code, "launch-cap-absent");
   assert.match(out.message, /command -v claude/);
@@ -77,7 +114,7 @@ test("--dry-run prints the argv and spawns nothing", async () => {
   const { calls, spawn } = fakeSpawn();
   const { exit, out } = await answer(["--cap", "claude-cli", "--prompt", LINE, "--dry-run"], { spawn });
   assert.equal(exit, 0);
-  assert.deepEqual(out.argv, ["claude", "-p", LINE]);
+  assert.deepEqual(out.argv, ["claude", "-p", LINE, "--allowedTools", DOOR_REACH]);
   assert.equal(calls.length, 0);
 });
 

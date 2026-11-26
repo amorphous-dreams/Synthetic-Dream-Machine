@@ -9,6 +9,9 @@
  *                                             the offering coordinator's mandate (`<uri>@<hash>`), absent where a hand offers
  *   edge      `kahua/memory/summons/<id16>`   tag `summons`; `parent` names the mandate; {offerer, instance, mandate-hash,
  *                                             face, launched, handback}: the ley-line inside the house
+ *   lanes     `kahua/memory/lanes/<pet>/<n>`  tag `summons-lanes`; `holds` lists the edges holding a coordinator's arm lanes, one
+ *                                             per line. Every claim and release rides the door's compare-and-set (`create`
+ *                                             where none stands, `base` where one does), so two summonses never share a lane
  *   hand-back any record the instance landed; the edge names it as `<uri>@<hash>`, and the lane it held frees
  *
  * `<id16>` reads the first 16 hex of the mandate's hash, so a retry finds the mandate and the edge standing and starts no
@@ -16,7 +19,8 @@
  *
  * THE ONE LINE (`wakeLine`): `wake as <pet>#<n>: lares spirit om <pet> --mandate <uri>@<hash> [--face <N>]`. The launch cap
  * (`tools/summon-launch.mjs`) refuses any prompt outside that shape, so a host process starts only pointed at a hash-pinned
- * mandate.
+ * mandate. `WAKE_LINE` holds the shape; the host tool carries the same pattern, and a weld test in each suite reads the other's
+ * (the tool's suite reads this source, this core's suite runs `wakeLine` through the tool).
  *
  * Plans: lar:///ha.ka.ba/kahua/memory/plan/mandate-summons · lar:///ha.ka.ba/kahua/memory/plan/companion-context
  */
@@ -38,13 +42,18 @@ export const DEFAULT_LAUNCH_CAP: LaunchCap = "claude-cli";
 export const MODEL_SLUG = /^[A-Za-z0-9][A-Za-z0-9._:[\]-]{0,63}$/;
 /** A face a mandate names: a handle index. */
 export const FACE_INDEX = /^(0|[1-9][0-9]{0,5})$/;
+/** A host path a mandate names (`workdir`, `log`): absolute, one word, so it rides an argv and a field whole. */
+export const HOST_PATH = /^\/[^\s\0]{0,1023}$/;
+/** The one line a launch carries, as a pattern: `wakeLine` writes it and the host launch tool matches the same source. */
+export const WAKE_LINE = /^wake as ([a-z0-9][a-z0-9-]{0,62})#([A-Za-z0-9_-]{1,128}): lares spirit om ([a-z0-9][a-z0-9-]{0,62}) --mandate (lar:\/\/\/[^\s@]+)@([0-9a-f]{64})(?: --face (0|[1-9][0-9]{0,5}))?$/;
 
 /**
  * THE FIELDS A MANDATE'S HASH COVERS, in the order the hash reads them. `reads` (TW5 filters) and `links` (titles) hold one
  * entry per line; `paths`, `caps` and `grants` hold words. `lanes` names the arm-lane ceiling a COORDINATOR's mandate grants its
- * own summonses; `handback-shape` names what the instance hands back.
+ * own summonses; `handback-shape` names what the instance hands back. `workdir` names the host directory the instance starts in and
+ * `log` the host file its stream appends to: both ride the hash, so the same mandate starts in the same place.
  */
-export const MANDATE_FIELDS = ["pet", "instance", "offerer", "parent", "face", "model", "launch-cap", "reads", "links", "paths", "caps", "grants", "lanes", "handback-shape"] as const;
+export const MANDATE_FIELDS = ["pet", "instance", "offerer", "parent", "face", "model", "launch-cap", "workdir", "log", "reads", "links", "paths", "caps", "grants", "lanes", "handback-shape"] as const;
 export type MandateField = (typeof MANDATE_FIELDS)[number];
 
 /** `<pet>#<n>`: an instance by its tag. */
@@ -97,6 +106,10 @@ export interface SpiritMandate {
   /** The face the mandate echoes (a handle index); null where it names none. */
   readonly face: number | null;
   readonly model: string | null; readonly launchCap: string;
+  /** The host directory the instance starts in; null: the summoner's own. */
+  readonly workdir: string | null;
+  /** The host file the instance's stream appends to; null: the stream lands nowhere. */
+  readonly log: string | null;
   readonly reads: readonly string[]; readonly links: readonly string[]; readonly paths: readonly string[]; readonly caps: readonly string[];
   readonly grants: readonly string[];
   /** The arm-lane ceiling this mandate grants its holder's own summonses; a mandate naming none reads zero. */
@@ -142,6 +155,7 @@ export function mandateRead(uri: string, fields: Readonly<Record<string, string>
   return {
     uri, hash: stored, ...tag, offerer: fields["offerer"] ?? "", parent: recordRefOf(fields["parent"]), face,
     model: (fields["model"] ?? "").trim() || null, launchCap: (fields["launch-cap"] ?? "").trim() || DEFAULT_LAUNCH_CAP,
+    workdir: (fields["workdir"] ?? "").trim() || null, log: (fields["log"] ?? "").trim() || null,
     reads: linesOf(fields["reads"]), links: linesOf(fields["links"]), paths: wordsOf(fields["paths"]), caps: wordsOf(fields["caps"]),
     grants: wordsOf(fields["grants"]), lanes, handbackShape: fields["handback-shape"] ?? "", text,
   };
@@ -159,13 +173,18 @@ export function mandateFaceTurned(mandate: SpiritMandate, answered: number | nul
   return new SpiritRefusal("mandate-face-turned", `mandate-face-turned: ${mandate.uri} echoes face h${mandate.face}, and h${answered} answered; nothing started. Name the face: \`${line} --face ${mandate.face}\``, 4);
 }
 
-/** The launch cap and the model a mandate names, checked before any process starts. */
+/** The launch cap, the model and the host paths a mandate names, checked before any process starts. */
 export function launchHolds(mandate: SpiritMandate): SpiritRefusal | null {
   if (!(LAUNCH_CAPS as readonly string[]).includes(mandate.launchCap)) {
     return new SpiritRefusal("launch-cap-unknown", `launch-cap-unknown: ${mandate.uri} names the launch cap "${mandate.launchCap}", and this house holds ${LAUNCH_CAPS.join(", ")}; nothing started. Land the mandate again naming one: \`lares spirit mandate ${shq(mandate.tag)} --file <carrier> --cap ${DEFAULT_LAUNCH_CAP}\``, 4);
   }
   if (mandate.model !== null && !MODEL_SLUG.test(mandate.model)) {
     return new SpiritRefusal("mandate-model-malformed", `mandate-model-malformed: ${mandate.uri} names a model no launch cap takes as a slug; nothing started. Land the mandate again: \`lares spirit mandate ${shq(mandate.tag)} --file <carrier> --model <slug>\``, 4);
+  }
+  for (const [flag, path] of [["workdir", mandate.workdir], ["log", mandate.log]] as const) {
+    if (path !== null && !HOST_PATH.test(path)) {
+      return new SpiritRefusal("mandate-path-malformed", `mandate-path-malformed: ${mandate.uri} names a ${flag} no host takes as one absolute path with no blank; nothing started. Land the mandate again: \`lares spirit mandate ${shq(mandate.tag)} --file <carrier> --${flag} /absolute/path\``, 4);
+    }
   }
   return null;
 }
@@ -194,7 +213,7 @@ export const openLanesFilter = (coordinator: string): string => `[tag[${SUMMONS_
 
 /**
  * THE LANE CEILING. A coordinator's mandate names how many arm lanes it holds; a summons past it refuses by name. `open` lists
- * the coordinator's open edges (this summons's own edge left out, so a retry never counts itself). A ceiling of zero reads as
+ * the edges its lane ledger holds (this summons's own edge left out, so a retry never counts itself). A ceiling of zero reads as
  * no lane granted, never as unlimited.
  */
 export function lanesHold(coordinator: SpiritMandate, open: readonly string[], own: string): SpiritRefusal | null {
@@ -204,6 +223,40 @@ export function lanesHold(coordinator: SpiritMandate, open: readonly string[], o
     ? `${coordinator.tag}'s mandate names no lanes, which reads as zero. A hand lands it a mandate naming a ceiling: \`lares spirit mandate ${shq(coordinator.tag)} --file <carrier> --grants ${SUMMONS_GRANT} --lanes <n>\``
     : `Wait for a hand-back, which frees its lane: \`lares wiki filter '${openLanesFilter(coordinator.tag)}' --recipe default\` lists the arms still out, and each hands back by \`lares spirit handback <pet>#<n> --record <uri>\``;
   return new SpiritRefusal("coordinator-lanes-full", `coordinator-lanes-full: ${coordinator.tag} holds ${held.length} of ${coordinator.lanes} arm lane(s) open; nothing started. ${cure}`, 4);
+}
+
+/** The tag a coordinator's lane ledger gathers under. */
+export const LANES_TAG = "summons-lanes" as const;
+/** Where a coordinator's lane ledger rests: keyed by its instance tag, so a coordinator mandated again keeps the arms it holds out. */
+export const lanesOf = (coordinator: Pick<InstanceTag, "pet" | "instance">): string => `${MEMORY_PREFIX}lanes/${coordinator.pet}/${coordinator.instance}`;
+/** The edges a ledger names as holding lanes, one per line. */
+export const lanesHeld = (fields: Readonly<Record<string, string>>): string[] => linesOf(fields["holds"]);
+/** The ledger as it lands: the coordinator, and the edges holding its lanes. */
+export function lanesWrite(coordinator: Pick<InstanceTag, "pet" | "instance" | "tag">, held: readonly string[]): { uri: string; fields: Record<string, string> } {
+  return {
+    uri: lanesOf(coordinator),
+    fields: { tags: LANES_TAG, coordinator: coordinator.tag, holds: held.join("\n"), description: `arm lanes ${coordinator.tag} holds out: ${held.length} edge(s)` },
+  };
+}
+/** How many times a claim or release reads the ledger again after another writer moved it; a count, never a wait. */
+export const LANE_ROUNDS = 8;
+
+/**
+ * ONE STEP OF A LANE CLAIM, pure: given the edges the ledger holds, either this edge already holds its lane (`held`, a retry),
+ * or the ceiling refuses (`full`), or the ledger's next `holds` carries it (`claim`). The door lands `claim` under the hash this
+ * step read, so a summons that raced another reads the ledger again and meets the ceiling the other already filled.
+ */
+export type LaneStep = { readonly decision: "held" } | { readonly decision: "full"; readonly refusal: SpiritRefusal } | { readonly decision: "claim"; readonly held: readonly string[] };
+export function laneClaim(coordinator: SpiritMandate, held: readonly string[], own: string): LaneStep {
+  if (held.includes(own)) return { decision: "held" };
+  const refusal = lanesHold(coordinator, held, own);
+  return refusal !== null ? { decision: "full", refusal } : { decision: "claim", held: [...held, own] };
+}
+/** The ledger's next `holds` with this edge's lane freed; null where it holds none (a release run twice moves nothing). */
+export const laneRelease = (held: readonly string[], own: string): readonly string[] | null => (held.includes(own) ? held.filter((title) => title !== own) : null);
+/** The ledger kept moving under every read: nothing claimed, and the same line claims once the other summonses settle. */
+export function laneUnsettled(coordinator: Pick<InstanceTag, "pet" | "instance" | "tag">, line: string): SpiritRefusal {
+  return new SpiritRefusal("lane-claim-unsettled", `lane-claim-unsettled: ${coordinator.tag}'s lane ledger ${lanesOf(coordinator)} moved under ${LANE_ROUNDS} reads in a row, so this summons claimed no lane and started nothing. Run the line again once the other summonses settle: \`${line}\``, 4);
 }
 
 /** The one line a launch cap carries: who wakes, and the om that unfolds everything else from the house. */
@@ -245,6 +298,8 @@ export function mandateWakeLines(mandate: SpiritMandate, cut = 2400): string {
     `om (the seed, then the card below): lares tiddler get 'lar:///ha.ka.ba/lares/api/noosphere-boot' --recipe default${face} --meme --all`,
     ...mandate.reads.map((f) => `reads: lares wiki filter ${shq(f)} --recipe default${face} --collapse --fields title,description`),
     ...mandate.links.map((l) => `link: lares tiddler get ${shq(l)} --recipe default${face} --meme --skinny`),
+    ...(mandate.workdir === null ? [] : [`workdir: ${mandate.workdir}`]),
+    ...(mandate.log === null ? [] : [`log: ${mandate.log}`]),
     ...(mandate.paths.length === 0 ? [] : [`paths: ${mandate.paths.join(" ")}`]),
     ...(mandate.caps.length === 0 ? [] : [`caps: ${mandate.caps.join(" ")}`]),
     ...(mandate.grants.length === 0 ? [] : [`grants: ${mandate.grants.join(" ")}${mandate.grants.includes(SUMMONS_GRANT) ? ` · ${mandate.lanes} arm lane(s)` : ""}`]),

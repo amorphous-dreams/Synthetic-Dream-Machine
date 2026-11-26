@@ -10,16 +10,23 @@
  * THE CAP CARRIES ONE LINE AND A MODEL, NOTHING ELSE. The prompt reads
  *   wake as <pet>#<n>: lares spirit om <pet> --mandate <lar uri>@<64 hex> [--face <N>]
  * and any other prompt refuses (`launch-prompt-malformed`), so no brief rides the harness: the instance reads its seed, its card
- * and its affordances from the house. The cap passes no permission flag: the instance runs under the checkout's own settings,
- * at or below its summoner's reach.
+ * and its affordances from the house. `WAKE_LINE` carries the same pattern as the mesh core's (`spirit-summons.ts`); this
+ * tool's suite reads that source and the core's suite runs its `wakeLine` through `launchPlan`, so neither drifts alone.
  *
- *   claude-cli   `claude -p <the one line> [--model <slug>]`, detached, in `--cwd` (default: the caller's)
+ * THE CAP GRANTS THE HOUSE'S DOORS AND NOTHING WIDER. A headless process holds no hand to answer a permission ask, so a tool
+ * its settings never allowed gets denied and the instance would wake reaching nothing. The cap names one allow rule,
+ * `DOOR_REACH` (`Bash(lares:*)`): the doors every summoner's seat already holds, where custody reads each act. It passes no
+ * permission mode and skips no check; the checkout's own settings narrow it further.
+ *
+ *   claude-cli   `claude -p <the one line> --allowedTools <DOOR_REACH> [--model <slug>]`, detached, in `--cwd` (default: the
+ *                caller's; a directory the host holds none of refuses `launch-workdir-absent`), its stream appended to `--log`
  *
  * It prints one JSON line: `{"ok":true,"cap":…,"pid":…,"argv":[…]}`, or `{"ok":false,"code":…,"message":…}` with exit 2.
  * `--dry-run` prints the argv and spawns nothing. Every reader injects (`deps.spawn`), so a test starts no model.
  */
 import { spawn as nodeSpawn } from "node:child_process";
-import { closeSync, openSync } from "node:fs";
+import { closeSync, mkdirSync, openSync, statSync } from "node:fs";
+import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 /** The one line a launch carries (the mesh core's `wakeLine` writes it). */
@@ -27,9 +34,12 @@ export const WAKE_LINE = /^wake as ([a-z0-9][a-z0-9-]{0,62})#([A-Za-z0-9_-]{1,12
 /** A model's slug: it leads with a letter or digit, so it never reads as a flag. */
 export const MODEL_SLUG = /^[A-Za-z0-9][A-Za-z0-9._:[\]-]{0,63}$/;
 
+/** The one tool rule a launch grants: the house's own doors. */
+export const DOOR_REACH = "Bash(lares:*)";
+
 /** Each launch cap: the binary it starts and the argv it builds from the one line and the model. */
 export const LAUNCH_CAPS = {
-  "claude-cli": { bin: "claude", argv: (prompt, model) => ["-p", prompt, ...(model ? ["--model", model] : [])] },
+  "claude-cli": { bin: "claude", argv: (prompt, model) => ["-p", prompt, "--allowedTools", DOOR_REACH, ...(model ? ["--model", model] : [])] },
 };
 
 export class LaunchRefused extends Error {
@@ -48,12 +58,20 @@ export function launchPlan({ cap, prompt, model = null }) {
 
 /**
  * Start the process, detached, and answer once it stands or fails to: `{pid}` on the child's `spawn` event, a refusal
- * (`launch-cap-absent`) where the host holds no such binary. The child outlives this tool; its output lands in `log` where one
- * rides, else nowhere (the instance hands back through the house).
+ * (`launch-cap-absent`) where the host holds no such binary, (`launch-workdir-absent`) where it holds no such directory,
+ * (`launch-log-unwritable`) where the log takes no append. The child outlives this tool; its output appends to `log` where one
+ * rides (its directory made where absent), else lands nowhere (the instance hands back through the house).
  */
 export function launch(plan, { cwd = process.cwd(), log = null } = {}, deps = {}) {
   const spawn = deps.spawn ?? nodeSpawn;
-  const out = log === null ? "ignore" : openSync(log, "a");
+  const holdsDir = deps.holdsDir ?? ((dir) => { try { return statSync(dir).isDirectory(); } catch { return false; } });
+  const openLog = deps.openLog ?? ((file) => { mkdirSync(dirname(file), { recursive: true }); return openSync(file, "a"); });
+  if (!holdsDir(cwd)) return Promise.reject(new LaunchRefused("launch-workdir-absent", `launch-workdir-absent: this host holds no directory at ${cwd}, so nothing started. Make it, or land the mandate again naming one that stands: \`lares spirit mandate <pet>#<n> --file <carrier> --workdir /absolute/path\``));
+  let out = "ignore";
+  if (log !== null) {
+    try { out = openLog(log); }
+    catch (error) { return Promise.reject(new LaunchRefused("launch-log-unwritable", `launch-log-unwritable: the log ${log} took no append (${String(error?.message ?? error)}), so nothing started. Land the mandate again naming a file this host writes: \`lares spirit mandate <pet>#<n> --file <carrier> --log /absolute/file\``)); }
+  }
   return new Promise((resolve, reject) => {
     let child;
     const done = () => { if (typeof out === "number") closeSync(out); };

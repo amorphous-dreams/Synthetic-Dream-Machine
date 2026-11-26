@@ -2,18 +2,21 @@
  * `lares spirit mandate | summon | handback <pet>#<n>` — THE HOUSE STARTS ITS OWN ARMS (plan/mandate-summons).
  *
  *   mandate   `<pet>#<n> --file <carrier|-> | --text <words> [--parent <uri>@<hash>] [--model <slug>] [--cap <launch cap>]
+ *              [--workdir <host dir>] [--log <host file>]
  *              [--reads <filters, one per line>] [--links <titles, one per line>] [--paths <words>] [--caps <words>]
  *              [--grants <words>] [--lanes <n>] [--handback <shape>]`
  *             lands the mandate carrier on the answering face's memory stage at `mandate/<id16>`, keyed by its own hash, and
  *             prints the ref (`<uri>@<hash>`) a summon names. A hand offers as `hand`; a seat names its coordinator's mandate
  *             (`--parent`), and the offerer reads off it.
  *   summon    `<pet>#<n> --mandate <uri>[@<hash>]` reads the mandate through the door, verifies its hash (`mandate-moved`),
- *             reads custody (a hand on a receipt; a seat only under a coordinator's written `summons` grant), holds the
- *             coordinator's lane ceiling (`coordinator-lanes-full`), lands the edge `summons/<id16>`, then starts the instance
- *             through the host launch cap with the one wake line and the model the mandate names. A summons whose edge already
- *             names a launch answers `standing` and starts nothing.
- *   handback  `<pet>#<n> --record <uri> [--mandate <uri>@<hash>]` names the record the instance handed back on its edge, which
- *             frees the lane it held.
+ *             reads custody (a hand on a receipt; a seat only under a coordinator's written `summons` grant), claims one of
+ *             the coordinator's lanes on its ledger `lanes/<pet>/<n>` by compare-and-set (`coordinator-lanes-full` at the
+ *             ceiling, `lane-claim-unsettled` where the ledger never held still), lands the edge `summons/<id16>`, then starts
+ *             the instance through the host launch cap with the one wake line and the model the mandate names, in the
+ *             mandate's workdir, its stream appended to the mandate's log. A launch that started nothing frees its lane. A
+ *             summons whose edge already names a launch answers `standing` and starts nothing.
+ *   handback  `<pet>#<n> --record <uri> [--mandate <uri>@<hash>]` names the record the instance handed back on its edge, then
+ *             frees the lane it held on the coordinator's ledger.
  *
  * The pure core (shapes, hashes, refusals) stands in `@lararium/mesh/spirit-summons`; the host process gate stands in
  * `tools/summon-launch.mjs`. This door keeps the door calls, the hand read and the launch seam.
@@ -26,16 +29,17 @@ import { repoRoot } from "@lararium/mesh/node";
 import { SpiritRefusal, fieldsAndHashOf, secretCount, shq, titlesOf } from "@lararium/mesh/spirit-shrine";
 import { spiritOf } from "@lararium/mesh/spirit-stack";
 import {
-  SUMMONS_TAG, edgeRead, edgeWrite, instanceTagOf, lanesHold, launchHolds, mandateFaceTurned, mandateNames, mandateRead,
-  mandateWakeLines, mandateWrite, openLanesFilter, recordRefOf, refLine, summonsGranted, summonsOf, wakeLine,
+  LANE_ROUNDS, SUMMONS_TAG, edgeRead, edgeWrite, instanceTagOf, laneClaim, laneRelease, laneUnsettled, lanesHeld, lanesOf, lanesWrite,
+  launchHolds, mandateFaceTurned, mandateNames, mandateRead, mandateWakeLines, mandateWrite, recordRefOf, refLine, summonsGranted,
+  summonsOf, wakeLine,
   type InstanceTag, type MandateField, type SpiritMandate,
 } from "@lararium/mesh/spirit-summons";
 import { emit } from "../render.js";
 import { DoorUsage, wordOf } from "./door-call.js";
 import type { ParsedArgs } from "../parse-args.js";
 
-/** What a launch asks of the host: the cap, the one line, the model, and where the process stands. */
-export interface LaunchAsk { readonly cap: string; readonly prompt: string; readonly model: string | null; readonly cwd: string }
+/** What a launch asks of the host: the cap, the one line, the model, where the process stands, and where its stream lands (null: nowhere). */
+export interface LaunchAsk { readonly cap: string; readonly prompt: string; readonly model: string | null; readonly cwd: string; readonly log: string | null }
 export type LaunchAnswer = { readonly ok: true; readonly pid: number | null } | { readonly ok: false; readonly code: string; readonly message: string };
 /** The launch seam: the host tool by default; a suite names a stub, so no test starts a model. */
 export type Launch = (ask: LaunchAsk) => Promise<LaunchAnswer>;
@@ -58,7 +62,7 @@ export const hostLaunch: Launch = (ask) => new Promise((resolve) => {
     resolve({ ok: false, code: "launch-cap-absent", message: `launch-cap-absent: this install holds no host launch tool (${TOOL}); nothing started. Run the summon from a checkout that holds it` });
     return;
   }
-  execFile(process.execPath, [TOOL, "--cap", ask.cap, "--prompt", ask.prompt, ...(ask.model === null ? [] : ["--model", ask.model]), "--cwd", ask.cwd], { timeout: 30_000 }, (error, stdout) => {
+  execFile(process.execPath, [TOOL, "--cap", ask.cap, "--prompt", ask.prompt, ...(ask.model === null ? [] : ["--model", ask.model]), "--cwd", ask.cwd, ...(ask.log === null ? [] : ["--log", ask.log])], { timeout: 30_000 }, (error, stdout) => {
     const line = String(stdout ?? "").trim().split("\n").pop() ?? "";
     try {
       const out = JSON.parse(line) as { ok?: boolean; pid?: number | null; code?: string; message?: string };
@@ -83,6 +87,40 @@ const fieldsAt = async (ctx: SummonCtx, label: string, title: string): Promise<{
 async function mandateAt(ctx: SummonCtx, label: string, uri: string, named: string | null): Promise<SpiritMandate> {
   return mandateRead(uri, (await fieldsAt(ctx, label, uri)).fields, named);
 }
+
+/**
+ * ONE COMPARE-AND-SET ON A COORDINATOR'S LANE LEDGER. Each round reads the ledger with its hash, asks `move` for the next
+ * `holds` (null: nothing to write), and lands it under that hash (`create` where no ledger stands). A ledger another summons
+ * moved in between answers `conflict` or `exists`, and the round reads again: a count of rounds, never a wait. False where the
+ * ledger never held still.
+ */
+async function lanesMove(ctx: SummonCtx, label: string, coordinator: Pick<InstanceTag, "pet" | "instance" | "tag">, move: (held: string[]) => readonly string[] | null): Promise<boolean> {
+  const uri = lanesOf(coordinator);
+  for (let round = 0; round < LANE_ROUNDS; round++) {
+    const live = await fieldsAt(ctx, label, uri);
+    const next = move(lanesHeld(live.fields));
+    if (next === null) return true;
+    const receipt = await ctx.door(label, "tiddler-put", { recipe: RECIPE, title: uri, fields: lanesWrite(coordinator, next).fields, ...(live.hash === null ? { create: true } : { base: live.hash }) });
+    const decision = String(receipt["decision"] ?? "");
+    if (decision === "put" || decision === "noop") return true;
+    if (decision !== "conflict" && decision !== "exists") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for the lane ledger ${uri}, so no lane moved; read it: \`lares tiddler get ${shq(uri)} --recipe default\``, 4);
+  }
+  return false;
+}
+
+/** Claim one of the coordinator's lanes for this edge: held already (a retry), claimed, or refused at the ceiling by name. */
+async function claimLane(ctx: SummonCtx, coordinator: SpiritMandate, edge: string, line: string): Promise<void> {
+  const settled = await lanesMove(ctx, "summon", coordinator, (held) => {
+    const step = laneClaim(coordinator, held, edge);
+    if (step.decision === "full") throw step.refusal;
+    return step.decision === "held" ? null : step.held;
+  });
+  if (!settled) throw laneUnsettled(coordinator, line);
+}
+
+/** Free the lane this edge held on its coordinator's ledger; true where the ledger settled (an edge holding none settles at once). */
+const releaseLane = (ctx: SummonCtx, label: string, coordinator: Pick<InstanceTag, "pet" | "instance" | "tag">, edge: string): Promise<boolean> =>
+  lanesMove(ctx, label, coordinator, (held) => laneRelease(held, edge));
 
 async function words(args: ParsedArgs, what: string): Promise<string> {
   const file = wordOf(args.options["file"]);
@@ -119,12 +157,13 @@ export async function landMandate(args: ParsedArgs, ctx: SummonCtx): Promise<num
     ...(parent === null ? {} : { parent: refLine(parent.uri, parent.hash) }),
     ...(face === null ? {} : { face: String(face) }),
     model: wordOf(args.options["model"]) ?? "", "launch-cap": wordOf(args.options["cap"]) ?? "",
+    workdir: wordOf(args.options["workdir"]) ?? "", log: wordOf(args.options["log"]) ?? "",
     reads: args.options["reads"] ?? "", links: args.options["links"] ?? "", paths: args.options["paths"] ?? "", caps: args.options["caps"] ?? "",
     grants: args.options["grants"] ?? "", lanes: lanes ?? "", "handback-shape": args.options["handback"] ?? "",
   };
   const w = mandateWrite(covered, text);
   // The guard reads the words and every affordance a hand or seat typed; the hashes the house minted stay out of its read.
-  const shapes = secretCount([text, covered.model, covered["launch-cap"], covered.reads, covered.links, covered.paths, covered.caps, covered.grants, covered["handback-shape"]].join("\n"));
+  const shapes = secretCount([text, covered.model, covered["launch-cap"], covered.workdir, covered.log, covered.reads, covered.links, covered.paths, covered.caps, covered.grants, covered["handback-shape"]].join("\n"));
   if (shapes > 0) throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: the mandate holds ${shapes} secret-shaped string(s), so nothing landed; clear them, then land it again: \`lares spirit mandate ${shq(tag.tag)} --file <scrubbed carrier>\``, 4);
   const refused = launchHolds(mandateRead(w.uri, { ...w.fields, text: w.text }, w.hash));
   if (refused !== null) throw refused;
@@ -170,30 +209,33 @@ export async function summonInstance(args: ParsedArgs, ctx: SummonCtx): Promise<
     });
     return 0;
   }
-  if (coordinator !== null) {
-    const open = titlesOf(await ctx.door("summon", "wiki-filter", { recipe: RECIPE, filter: openLanesFilter(coordinator.tag) }));
-    const full = lanesHold(coordinator, open, edge.uri);
-    if (full !== null) throw full;
-  }
+  // THE LANE CLAIMS AHEAD OF THE EDGE AND THE LAUNCH, atomically: two summonses racing for one lane leave one holding it.
+  if (coordinator !== null) await claimLane(ctx, coordinator, edge.uri, line);
   // THE EDGE LANDS AHEAD OF THE LAUNCH, so a process never stands that the house holds no record of.
   if (standing === null) {
     const receipt = await ctx.door("summon", "tiddler-put", { recipe: RECIPE, title: edge.uri, fields: { ...edge.fields, "offered-as": hand ? "hand" : "seat" } });
     const decision = String(receipt["decision"] ?? "");
     if (decision !== "put" && decision !== "noop") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${edge.uri}, so nothing started; read it: \`lares tiddler get ${shq(edge.uri)} --recipe default\``, 4);
   }
-  const started = await ctx.launch({ cap: mandate.launchCap, prompt, model: mandate.model, cwd: process.cwd() });
+  const cwd = mandate.workdir ?? process.cwd();
+  const started = await ctx.launch({ cap: mandate.launchCap, prompt, model: mandate.model, cwd, log: mandate.log });
   if (!started.ok) {
+    // A LAUNCH THAT STARTED NOTHING FREES ITS LANE; one whose receipt never came (`launch-cap-failed`) keeps it, since a process may stand.
+    if (coordinator !== null && started.code !== "launch-cap-failed") await releaseLane(ctx, "summon", coordinator, edge.uri);
     throw new SpiritRefusal(started.code, `${started.message.startsWith(`${started.code}:`) ? started.message : `${started.code}: ${started.message}`} The edge ${edge.uri} stands with no launch named, so the same line starts it once the cap answers: \`${line}\``, 4);
   }
   const launched = `${mandate.launchCap}${mandate.model === null ? "" : ` ${mandate.model}`}`;
   const live = await fieldsAt(ctx, "summon", edge.uri);
   await ctx.door("summon", "tiddler-put", {
     recipe: RECIPE, title: edge.uri, ...(live.hash !== null ? { base: live.hash } : {}),
-    fields: { launched, "launched-at": ctx.now().toISOString(), ...(started.pid === null ? {} : { "launched-pid": String(started.pid) }) },
+    fields: { launched, "launched-at": ctx.now().toISOString(), "launched-in": cwd, ...(mandate.log === null ? {} : { "launched-log": mandate.log }), ...(started.pid === null ? {} : { "launched-pid": String(started.pid) }) },
   });
+  const stream = mandate.log === null
+    ? `its stream lands nowhere (the mandate names no log; a mandate landed with \`--log /absolute/file\` keeps it)`
+    : `its stream: ${mandate.log}`;
   emit(args, {
-    ok: true, data: { instance: mandate.tag, mandate: mandate.uri, hash: mandate.hash, edge: edge.uri, decision: "launched", launched, pid: started.pid, prompt, offerer: mandate.offerer, face: mandate.face },
-    human: () => console.log(`summoned: ${mandate.tag} under ${refLine(mandate.uri, mandate.hash)}\n  launched: ${launched}${started.pid === null ? "" : ` (pid ${started.pid})`}\n  edge: ${edge.uri}\n  the lane frees at its hand-back: lares spirit handback ${shq(mandate.tag)} --record <uri>`),
+    ok: true, data: { instance: mandate.tag, mandate: mandate.uri, hash: mandate.hash, edge: edge.uri, decision: "launched", launched, pid: started.pid, prompt, offerer: mandate.offerer, face: mandate.face, cwd, log: mandate.log },
+    human: () => console.log(`summoned: ${mandate.tag} under ${refLine(mandate.uri, mandate.hash)}\n  launched: ${launched}${started.pid === null ? "" : ` (pid ${started.pid})`} in ${cwd}\n  ${stream}\n  edge: ${edge.uri}\n  the lane frees at its hand-back: lares spirit handback ${shq(mandate.tag)} --record <uri>`),
   });
   return 0;
 }
@@ -227,9 +269,14 @@ export async function landHandback(args: ParsedArgs, ctx: SummonCtx): Promise<nu
     const decision = String(receipt["decision"] ?? "");
     if (decision !== "put" && decision !== "noop") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${uri}; run the hand-back again once the edge settles: \`lares spirit handback ${shq(tag.tag)} --record ${shq(record)}\``, 4);
   }
+  // THE LANE FREES AFTER THE EDGE NAMES THE RECORD: a hand's summons held none; a coordinator's ledger drops this edge, and a
+  // ledger that never held still leaves the hand-back standing with the line that frees the lane.
+  const coordinator = instanceTagOf(standing.offerer);
+  const freed = coordinator === null ? true : await releaseLane(ctx, "handback", coordinator, uri);
+  const again = `lares spirit handback ${shq(tag.tag)} --record ${shq(record)}`;
   emit(args, {
-    ok: true, data: { instance: tag.tag, edge: uri, handback, offerer: standing.offerer, mandateHash: standing.mandateHash, decision: standing.handback === handback ? "standing" : "put" },
-    human: () => console.log(`handed back: ${tag.tag} → ${standing.offerer || "hand"}\n  ${handback}\n  edge: ${uri} (its lane stands free)`),
+    ok: true, data: { instance: tag.tag, edge: uri, handback, offerer: standing.offerer, mandateHash: standing.mandateHash, decision: standing.handback === handback ? "standing" : "put", lane: coordinator === null ? "none" : freed ? "freed" : "unsettled", ...(freed ? {} : { cure: again }) },
+    human: () => console.log(`handed back: ${tag.tag} → ${standing.offerer || "hand"}\n  ${handback}\n  edge: ${uri} (${coordinator === null ? "a hand's summons holds no lane" : freed ? "its lane stands free" : `its lane still holds: the ledger ${lanesOf(coordinator)} moved under every read; run the line again: ${again}`})`),
   });
   return 0;
 }

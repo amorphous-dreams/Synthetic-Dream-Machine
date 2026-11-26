@@ -1,8 +1,10 @@
 /**
  * spirit-summons.test.ts — the mandate summons' pure core: a mandate keyed by its own hash, the one wake line, custody at
- * hand-vs-seat, the coordinator's lane ceiling, and the edge the house keeps.
- * Plan: lar:///ha.ka.ba/kahua/memory/plan/mandate-summons
+ * hand-vs-seat, the coordinator's lane ceiling and its ledger's claim steps, the host paths a mandate names, and the edge the
+ * house keeps. The wake line welds to the host launch tool: this suite runs `wakeLine` through the tool's own `launchPlan`.
+ * Plan: lar:///ha.ka.ba/kahua/memory/plan/the-house-summons
  */
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { describe, expect, test } from "vitest";
 import * as S from "../src/spirit-summons.js";
 import { SpiritRefusal } from "../src/spirit-shrine.js";
@@ -161,11 +163,102 @@ describe("every refusal names its cure and carries no copula", () => {
       S.mandateNames(arm, "other", null)!, S.mandateFaceTurned(arm, 2, "lares spirit summon x")!,
       S.summonsGranted(false, arm, null)!, S.summonsGranted(false, arm, S.mandateRead(bare.w.uri, bare.stored, null))!,
       S.lanesHold(coordinator, ["a", "b"], "c")!, S.lanesHold(arm, [], "c")!,
+      S.laneUnsettled(coordinator, "lares spirit summon x"),
+      S.launchHolds({ ...arm, workdir: "relative/dir" })!, S.launchHolds({ ...arm, log: "/var/log/two words.log" })!,
     ];
     for (const r of all) {
       expect(r.message.startsWith(`${r.code}: `), r.code).toBe(true);
       expect(r.message, r.code).toMatch(/`[^`]*lares [^`]+`/);
       expect(r.message, r.code).not.toMatch(/\b(is|are|was|were|be|been|being|am)\b/);
     }
+  });
+});
+
+describe("the lane ledger's claim steps", () => {
+  const own = S.summonsOf(ARM.w.hash);
+  const other = `${M}summons/aaaaaaaaaaaaaaaa`;
+  test("the ledger rests under the coordinator's instance tag, so a coordinator mandated again keeps its arms out", () => {
+    expect(S.lanesOf(coordinator)).toBe(`${M}lanes/lares-alpha/00001`);
+    const w = S.lanesWrite(coordinator, [other, own]);
+    expect(w.uri).toBe(`${M}lanes/lares-alpha/00001`);
+    expect(w.fields).toMatchObject({ tags: "summons-lanes", coordinator: "lares-alpha#00001", holds: `${other}\n${own}` });
+    expect(S.lanesHeld(w.fields)).toEqual([other, own]);
+    expect(S.lanesHeld({})).toEqual([]);
+  });
+  test("a free lane claims: the next holds carries this edge after the ones standing", () => {
+    expect(S.laneClaim(coordinator, [], own)).toEqual({ decision: "claim", held: [own] });
+    expect(S.laneClaim(coordinator, [other], own)).toEqual({ decision: "claim", held: [other, own] });
+  });
+  test("an edge already holding its lane answers held, at the ceiling too: a retry claims nothing twice", () => {
+    expect(S.laneClaim(coordinator, [other, own], own)).toEqual({ decision: "held" });
+  });
+  test("the ceiling refuses by name, and a ledger read again after another summons filled it meets that refusal", () => {
+    const step = S.laneClaim(coordinator, [other, `${M}summons/bbbbbbbbbbbbbbbb`], own);
+    expect(step.decision).toBe("full");
+    expect(step.decision === "full" && step.refusal.code).toBe("coordinator-lanes-full");
+  });
+  test("a release drops this edge alone; an edge holding no lane moves nothing", () => {
+    expect(S.laneRelease([other, own], own)).toEqual([other]);
+    expect(S.laneRelease([other], own)).toBeNull();
+  });
+  test("a ledger that never held still refuses lane-claim-unsettled and names the same line as its cure", () => {
+    const r = S.laneUnsettled(coordinator, "lares spirit summon 'cold-reader#00002' --mandate x");
+    expect(r.code).toBe("lane-claim-unsettled");
+    expect(r.message).toContain("`lares spirit summon 'cold-reader#00002' --mandate x`");
+    expect(r.message).toContain(`${M}lanes/lares-alpha/00001`);
+  });
+});
+
+describe("the mandate names where the instance stands and where its stream lands", () => {
+  const placed = land({ pet: "cold-reader", instance: "00002", offerer: "hand", workdir: "/srv/bench/cold-reader", log: "/srv/logs/cold-reader-00002.log" });
+  test("workdir and log ride the hash: the same words in another place name another mandate", () => {
+    const bare = land({ pet: "cold-reader", instance: "00002", offerer: "hand" });
+    const moved = land({ pet: "cold-reader", instance: "00002", offerer: "hand", workdir: "/srv/bench/other", log: "/srv/logs/cold-reader-00002.log" });
+    expect(new Set([placed.w.hash, bare.w.hash, moved.w.hash]).size).toBe(3);
+  });
+  test("the read mandate carries both, null where it names none, and the wake names them", () => {
+    const m = S.mandateRead(placed.w.uri, placed.stored, placed.w.hash);
+    expect(m.workdir).toBe("/srv/bench/cold-reader");
+    expect(m.log).toBe("/srv/logs/cold-reader-00002.log");
+    expect(arm.workdir).toBeNull();
+    expect(arm.log).toBeNull();
+    const lead = S.mandateWakeLines(m);
+    expect(lead).toContain("workdir: /srv/bench/cold-reader");
+    expect(lead).toContain("log: /srv/logs/cold-reader-00002.log");
+  });
+  test("a relative path, or one holding a blank, refuses mandate-path-malformed naming its flag", () => {
+    expect(S.launchHolds({ ...arm, workdir: "/srv/bench", log: "/srv/logs/a.log" })).toBeNull();
+    const dir = S.launchHolds({ ...arm, workdir: "bench/here" })!;
+    expect(dir.code).toBe("mandate-path-malformed");
+    expect(dir.message).toContain("--workdir /absolute/path");
+    const log = S.launchHolds({ ...arm, log: "/srv/logs/two words.log" })!;
+    expect(log.code).toBe("mandate-path-malformed");
+    expect(log.message).toContain("--log /absolute/path");
+  });
+});
+
+describe("one wake line: the core writes it and the host launch tool takes it", () => {
+  const TOOL = fileURLToPath(new URL("../../../tools/summon-launch.mjs", import.meta.url));
+  const tool = async (): Promise<{ WAKE_LINE: RegExp; launchPlan: (ask: { cap: string; prompt: string; model?: string | null }) => { instance: string; mandate: string; argv: string[] } }> =>
+    await import(/* @vite-ignore */ pathToFileURL(TOOL).href);
+  test("the pattern matches every line wakeLine writes, with and without a face", () => {
+    const faceless = S.mandateRead(land({ pet: "cold-reader", instance: "00002", offerer: "hand" }).w.uri, land({ pet: "cold-reader", instance: "00002", offerer: "hand" }).stored, null);
+    for (const m of [arm, coordinator, faceless]) {
+      const hit = S.WAKE_LINE.exec(S.wakeLine(m))!;
+      expect(hit, S.wakeLine(m)).not.toBeNull();
+      expect(`${hit[1]}#${hit[2]}`).toBe(m.tag);
+      expect(hit[3]).toBe(m.pet);
+      expect(`${hit[4]}@${hit[5]}`).toBe(S.refLine(m.uri, m.hash));
+    }
+    expect(S.WAKE_LINE.test(`${S.wakeLine(arm)}\nand a brief`)).toBe(false);
+  });
+  test("the host tool carries the same pattern, and its launchPlan takes the line the core writes", async () => {
+    const t = await tool();
+    expect(t.WAKE_LINE.source).toBe(S.WAKE_LINE.source);
+    expect(t.WAKE_LINE.flags).toBe(S.WAKE_LINE.flags);
+    const plan = t.launchPlan({ cap: S.DEFAULT_LAUNCH_CAP, prompt: S.wakeLine(arm), model: arm.model });
+    expect(plan.instance).toBe(arm.tag);
+    expect(plan.mandate).toBe(S.refLine(arm.uri, arm.hash));
+    expect(plan.argv).toContain(S.wakeLine(arm));
   });
 });

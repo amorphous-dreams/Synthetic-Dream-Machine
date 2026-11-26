@@ -1,8 +1,10 @@
 /**
  * spirit-summon.test.ts — `lares spirit mandate | summon | handback <pet>#<n>` and `om --mandate`: the house reads a mandate
  * through the door, verifies its hash, holds custody and the coordinator's lanes, lands the edge, and starts the instance through
- * the launch cap with the one wake line. The launch cap rides a stub in every case: no test starts a model.
- * Plan: lar:///ha.ka.ba/kahua/memory/plan/mandate-summons
+ * the launch cap with the one wake line. The launch cap rides a stub in every case: no test starts a model. A lane claims on
+ * the coordinator's ledger by compare-and-set: `h.racer` moves the ledger between this door's read and its write, as a second
+ * summons would.
+ * Plan: lar:///ha.ka.ba/kahua/memory/plan/the-house-summons
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
@@ -12,6 +14,8 @@ const h = vi.hoisted(() => ({
   store: new Map<string, { fields: Record<string, string>; rev: number }>(),
   /** The face the island names on every answer; null: it names none. */
   face: null as number | null,
+  /** Another writer, run ahead of each put to the title it names: it moves the record after this door's read (null: none). */
+  racer: null as { title: string; move: () => void } | null,
 }));
 vi.mock("../src/verb-call.js", () => {
   const answer = (verb: string, args: Record<string, unknown>): Record<string, unknown> => {
@@ -23,6 +27,8 @@ vi.mock("../src/verb-call.js", () => {
       return { ...faced, tiddler: held ? { fields: { title, ...held.fields }, hash: `sha256-${title.slice(-6)}-${held.rev}` } : null };
     }
     if (verb === "tiddler-put") {
+      if (h.racer !== null && h.racer.title === title) h.racer.move();
+      if (args["create"] === true && h.store.has(title)) return { ...faced, decision: "exists" };
       const held = h.store.get(title) ?? { fields: {}, rev: 0 };
       if (args["base"] !== undefined && args["base"] !== `sha256-${title.slice(-6)}-${held.rev}`) return { ...faced, decision: "conflict" };
       h.store.set(title, { fields: { ...held.fields, ...((args["fields"] ?? {}) as Record<string, string>), ...(typeof args["text"] === "string" ? { text: args["text"] } : {}) }, rev: held.rev + 1 });
@@ -52,7 +58,7 @@ vi.mock("../src/env.js", async (orig) => ({
 import { cmdSpirit } from "../src/commands/spirit.js";
 import type { LaunchAnswer, LaunchAsk } from "../src/commands/spirit-summon.js";
 import { COMMANDS } from "../src/bin/lares.js";
-import { mandateWrite, refLine, summonsOf, type MandateField } from "@lararium/mesh/spirit-summons";
+import { lanesHeld, lanesOf, mandateWrite, refLine, summonsOf, type MandateField } from "@lararium/mesh/spirit-summons";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 const M = "lar:///ha.ka.ba/kahua/memory/";
@@ -94,14 +100,14 @@ const data = (r: { printed: Record<string, unknown> }) => r.printed["data"] as R
 const error = (r: { printed: Record<string, unknown> }) => r.printed["error"] as { code: string; message: string };
 const fieldsOf = (title: string) => h.store.get(title)?.fields ?? null;
 
-beforeEach(() => { h.store.clear(); h.face = null; });
+beforeEach(() => { h.store.clear(); h.face = null; h.racer = null; });
 afterEach(() => { h.calls.length = 0; });
 
 describe("the command table names the summons verbs", () => {
   test("mandate, summon and handback stand among the spirit door's verbs, their options accepted", () => {
     const row = COMMANDS.find((c) => c.name === "spirit")!;
     expect(row.verbs).toEqual(expect.arrayContaining(["mandate", "summon", "handback"]));
-    expect(row.accepts).toEqual(expect.arrayContaining(["cap", "caps", "grants", "handback", "lanes", "links", "mandate", "model", "parent", "paths", "reads", "record"]));
+    expect(row.accepts).toEqual(expect.arrayContaining(["cap", "caps", "grants", "handback", "lanes", "links", "log", "mandate", "model", "parent", "paths", "reads", "record", "workdir"]));
   });
 });
 
@@ -336,5 +342,120 @@ describe("the wake under a mandate", () => {
   test("a wake naming another pet than the mandate's refuses", async () => {
     const m = arm(coordinator());
     expect(error(await run(argv(["om", "other-pet"], { mandate: m.ref }))).code).toBe("mandate-names-another");
+  });
+});
+
+describe("a lane claims atomically on the coordinator's ledger", () => {
+  const LEDGER = lanesOf({ pet: "lares-alpha", instance: "00001" });
+  const OTHER = `${M}summons/ffffffffffffffff`;
+  const holds = () => lanesHeld(fieldsOf(LEDGER) ?? {});
+  /** A second summons that lands its claim once, between this door's read of the ledger and its write. */
+  const raceOnce = (edge = OTHER) => {
+    h.racer = { title: LEDGER, move: () => { h.racer = null; const held = h.store.get(LEDGER) ?? { fields: {}, rev: 0 }; h.store.set(LEDGER, { fields: { ...held.fields, holds: [...lanesHeld(held.fields), edge].join("\n") }, rev: held.rev + 1 }); } };
+  };
+  test("each launched summons holds one line of the ledger, and a retry claims nothing twice", async () => {
+    const c = coordinator({ lanes: "2" });
+    const m = arm(c);
+    const cap = stub();
+    await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }), { launch: cap.launch });
+    expect(holds()).toEqual([summonsOf(m.hash)]);
+    expect(fieldsOf(LEDGER)).toMatchObject({ tags: "summons-lanes", coordinator: "lares-alpha#00001" });
+    expect(data(await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }), { launch: cap.launch }))["decision"]).toBe("standing");
+    expect(holds()).toEqual([summonsOf(m.hash)]);
+  });
+  test("two summonses racing for the last lane: the one that read first and wrote second refuses, starts nothing, lands no edge", async () => {
+    const m = arm(coordinator({ lanes: "1" }));
+    const cap = stub();
+    raceOnce();
+    const r = await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }), { launch: cap.launch });
+    expect(error(r).code).toBe("coordinator-lanes-full");
+    expect(cap.asks).toHaveLength(0);
+    expect(fieldsOf(summonsOf(m.hash))).toBeNull();
+    expect(holds()).toEqual([OTHER]);
+  });
+  test("a race with a lane to spare: the claim reads the ledger again and lands beside the other", async () => {
+    const m = arm(coordinator({ lanes: "2" }));
+    const cap = stub();
+    raceOnce();
+    expect(data(await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }), { launch: cap.launch }))["decision"]).toBe("launched");
+    expect(holds()).toEqual([OTHER, summonsOf(m.hash)]);
+    expect(cap.asks).toHaveLength(1);
+  });
+  test("a ledger that moves under every read refuses lane-claim-unsettled, names the same line, and starts nothing", async () => {
+    const m = arm(coordinator({ lanes: "9" }));
+    const cap = stub();
+    h.racer = { title: LEDGER, move: () => { const held = h.store.get(LEDGER) ?? { fields: {}, rev: 0 }; h.store.set(LEDGER, { fields: { ...held.fields, note: String(held.rev) }, rev: held.rev + 1 }); } };
+    const r = await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }), { launch: cap.launch });
+    expect(error(r).code).toBe("lane-claim-unsettled");
+    expect(error(r).message).toContain(`lares spirit summon 'cold-reader#00002' --mandate ${m.ref}`);
+    expect(cap.asks).toHaveLength(0);
+    expect(holds()).toEqual([]);
+  });
+  test("a launch that started nothing frees its lane; one whose receipt never came keeps it", async () => {
+    const c = coordinator({ lanes: "1" });
+    const absent = arm(c, "00002");
+    const r = await run(argv(["summon", "cold-reader#00002"], { mandate: absent.ref }), { launch: stub({ ok: false, code: "launch-cap-absent", message: "launch-cap-absent: `claude` started nothing on this host. Check the binary: `command -v claude`" }).launch });
+    expect(error(r).code).toBe("launch-cap-absent");
+    expect(holds()).toEqual([]);
+    const unknown = arm(c, "00003");
+    const f = await run(argv(["summon", "cold-reader#00003"], { mandate: unknown.ref }), { launch: stub({ ok: false, code: "launch-cap-failed", message: "launch-cap-failed: the host launch tool answered no receipt" }).launch });
+    expect(error(f).code).toBe("launch-cap-failed");
+    expect(holds()).toEqual([summonsOf(unknown.hash)]);
+  });
+  test("a hand-back frees the lane on the ledger and says so; a hand's summons holds none", async () => {
+    const c = coordinator({ lanes: "1" });
+    const m = arm(c);
+    await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }));
+    h.store.set(`${M}residue/back-1`, { fields: { text: "done" }, rev: 1 });
+    const back = await run(argv(["handback", "cold-reader#00002"], { record: `${M}residue/back-1` }));
+    expect(data(back)["lane"]).toBe("freed");
+    expect(holds()).toEqual([]);
+    expect(data(await run(argv(["handback", "cold-reader#00002"], { record: `${M}residue/back-1` })))["lane"]).toBe("freed");
+    const byHand = arm(null, "00005");
+    await run(argv(["summon", "cold-reader#00005"], { mandate: byHand.ref }));
+    expect(data(await run(argv(["handback", "cold-reader#00005"], { record: `${M}residue/back-1` })))["lane"]).toBe("none");
+  });
+  test("a hand-back whose ledger never held still lands on the edge and names the line that frees the lane", async () => {
+    const m = arm(coordinator({ lanes: "1" }));
+    await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }));
+    h.store.set(`${M}residue/back-1`, { fields: { text: "done" }, rev: 1 });
+    h.racer = { title: LEDGER, move: () => { const held = h.store.get(LEDGER)!; h.store.set(LEDGER, { fields: { ...held.fields, note: String(held.rev) }, rev: held.rev + 1 }); } };
+    const back = await run(argv(["handback", "cold-reader#00002"], { record: `${M}residue/back-1` }));
+    expect(back.exit).toBe(0);
+    expect(data(back)["lane"]).toBe("unsettled");
+    expect(String(data(back)["cure"])).toContain("lares spirit handback 'cold-reader#00002'");
+    expect(fieldsOf(summonsOf(m.hash))!["handback"]).toContain(`${M}residue/back-1@`);
+    expect(holds()).toEqual([summonsOf(m.hash)]);
+  });
+});
+
+describe("the mandate names the workdir and the log", () => {
+  test("mandate lands both as covered fields, and a relative path refuses before anything lands", async () => {
+    const landed = await run(argv(["mandate", "cold-reader#00002"], { text: WORDS, workdir: "/srv/bench/cold-reader", log: "/srv/logs/cold-reader-00002.log" }));
+    const d = data(landed);
+    expect(fieldsOf(String(d["uri"]))).toMatchObject({ workdir: "/srv/bench/cold-reader", log: "/srv/logs/cold-reader-00002.log" });
+    const bare = data(await run(argv(["mandate", "cold-reader#00002"], { text: WORDS })));
+    expect(bare["hash"]).not.toBe(d["hash"]);
+    const before = h.store.size;
+    const r = await run(argv(["mandate", "cold-reader#00002"], { text: WORDS, workdir: "bench/here" }));
+    expect(error(r).code).toBe("mandate-path-malformed");
+    expect(h.store.size).toBe(before);
+  });
+  test("the launch stands in the mandate's workdir with its log, and the edge records both", async () => {
+    const m = arm(null, "00002", { workdir: "/srv/bench/cold-reader", log: "/srv/logs/cold-reader-00002.log" });
+    const cap = stub();
+    const r = await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }), { launch: cap.launch });
+    expect(cap.asks[0]).toMatchObject({ cwd: "/srv/bench/cold-reader", log: "/srv/logs/cold-reader-00002.log" });
+    expect(fieldsOf(summonsOf(m.hash))).toMatchObject({ "launched-in": "/srv/bench/cold-reader", "launched-log": "/srv/logs/cold-reader-00002.log" });
+    expect(data(r)).toMatchObject({ cwd: "/srv/bench/cold-reader", log: "/srv/logs/cold-reader-00002.log" });
+  });
+  test("a mandate naming neither starts where the summoner stands, and the answer carries a null log", async () => {
+    const m = arm(null);
+    const cap = stub();
+    const r = await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }), { launch: cap.launch });
+    expect(cap.asks[0]).toMatchObject({ cwd: process.cwd(), log: null });
+    expect(fieldsOf(summonsOf(m.hash))!["launched-in"]).toBe(process.cwd());
+    expect(fieldsOf(summonsOf(m.hash))!["launched-log"]).toBeUndefined();
+    expect(data(r)["log"]).toBeNull();
   });
 });
