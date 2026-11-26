@@ -55,7 +55,8 @@ describe("a save the holder refused names the holder's refusal and its cause", (
     const doc = A.change(A.init<{ note?: string }>(), (d) => { d.note = "x"; });
     rest.book.book("2MZ5fCHpbqBkTqmhQ8Gm4hTJ5cDS", { id: "s", subject: own });
     await rest.store.save(["2MZ5fCHpbqBkTqmhQ8Gm4hTJ5cDS", "incremental", "k"], A.save(doc));
-    expect(held).toEqual([{ refusal: "save-unsealed", documentId: "2MZ5fCHpbqBkTqmhQ8Gm4hTJ5cDS", error: "writer-not-capable", cause: "the face registers no such bag" }]);
+    // The notice names the row behind the document (its bag and face) and where the save rests while it waits.
+    expect(held).toEqual([{ refusal: "save-unsealed", documentId: "2MZ5fCHpbqBkTqmhQ8Gm4hTJ5cDS", error: "writer-not-capable", cause: "the face registers no such bag", bagId: BAG, face: own, rests: "memory" }]);
   });
 
   it("CONTROL: a save no session booked names `save-unbooked` alone, with no holder refusal", async () => {
@@ -67,7 +68,7 @@ describe("a save the holder refused names the holder's refusal and its cause", (
       flushRepo: async () => {}, onHeld: (h) => held.push(h),
     });
     await rest.store.save(["2MZ5fCHpbqBkTqmhQ8Gm4hTJ5cDS", "incremental", "k"], A.save(A.change(A.init<{ n?: number }>(), (d) => { d.n = 1; })));
-    expect(held).toEqual([{ refusal: "save-unbooked", documentId: "2MZ5fCHpbqBkTqmhQ8Gm4hTJ5cDS" }]);
+    expect(held).toEqual([{ refusal: "save-unbooked", documentId: "2MZ5fCHpbqBkTqmhQ8Gm4hTJ5cDS", bagId: BAG, face: own, rests: "memory" }]);
   });
 });
 

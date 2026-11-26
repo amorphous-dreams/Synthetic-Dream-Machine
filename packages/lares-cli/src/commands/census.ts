@@ -41,7 +41,11 @@ export interface UnaskedPush { readonly documentId: string; readonly saves: numb
 
 /** One item a stop would drop. */
 export type CensusItem =
-  | { readonly kind: "held-save"; readonly refusal: string; readonly documentId: string; readonly saves: number; readonly bagId: string | null }
+  | { readonly kind: "held-save"; readonly refusal: string; readonly documentId: string; readonly saves: number; readonly bagId: string | null;
+      /** How many of the row's saves also rest sealed-pending under the vessel's key: a stop keeps those. */
+      readonly pending?: number;
+      /** The document's unsealed saves fill their counted ceiling: a further save of it refuses (`held-bound`). */
+      readonly atBound?: true }
   | { readonly kind: "carrier"; readonly state: string; readonly uri: string; readonly bagId: string | null; readonly island: string }
   | { readonly kind: "untracked"; readonly path: string; readonly bagId: string | null; readonly island: string };
 
@@ -125,7 +129,12 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
         unasked.push({ documentId, saves, bytes: countOf(row["bytes"]), heldAcross: countOf(row["heldAcross"]) });
         continue;
       }
-      items.push({ kind: "held-save", refusal, documentId, saves, bagId: typeof row["bagId"] === "string" ? row["bagId"] : null });
+      const pending = countOf(row["pending"]);
+      items.push({
+        kind: "held-save", refusal, documentId, saves, bagId: typeof row["bagId"] === "string" ? row["bagId"] : null,
+        ...(pending > 0 ? { pending } : {}),
+        ...(row["atBound"] === true ? { atBound: true as const } : {}),
+      });
     }
   }
   // A FACE STANDING LOCKED under a held key holds memory no census can read: each reads unanswered, by name, with its cure.
@@ -160,7 +169,9 @@ export const unaskedLine = (u: UnaskedPush): string =>
 /** One item as one printed line: kind, state, name, and where it belongs. Never a body. */
 export function censusLine(item: CensusItem): string {
   if (item.kind === "held-save") {
-    const line = `held-save  ${item.refusal}  doc ${item.documentId}  ${item.saves} save(s) in memory  bag ${item.bagId ?? "(none mapped)"}`;
+    const kept = (item.pending ?? 0) > 0 ? `  (${item.pending} of them rest sealed-pending under the vessel's key: a stop keeps those, and the next session of the face seals them)` : "";
+    const bound = item.atBound === true ? "  AT ITS CEILING: a further save of this document refuses (held-bound); run any `lares` call under its face, or `lares vault unlock`, so a live session seals what waits" : "";
+    const line = `held-save  ${item.refusal}  doc ${item.documentId}  ${item.saves} save(s) in memory  bag ${item.bagId ?? "(none mapped)"}${kept}${bound}`;
     // AN UNNAMED DOCUMENT HOLDING CONTENT: no map or roster names it, so the line names the ways on.
     return item.refusal === "save-unnamed" ? `${line}  (no map or roster names it: read who carries it with \`lares vessel census --docs\`, then open the bag that owns it so its saves land, or type accept-loss at down)` : line;
   }
