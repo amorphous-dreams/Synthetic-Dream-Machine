@@ -1,5 +1,7 @@
 // floor-ledger — the host appends and asks; the queue's law stays in the wiki VM. Dark doors land in the mirror beside the lock.
 // RED-FIRST: written by floor-warden#2 (mandate/floor-gate-1), run by the familiar.
+// THE TICKET COMPUTES (plan/the-harness-proves, phase 1): enqueue takes a lane and a sha and asks the seam fold; a refused
+// path queues nothing. RED-FIRST: written by hoʻāʻo#1, never run by its author.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -7,7 +9,7 @@ import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { append, ask, askText, doneLine, dropLine, gb, LEDGER, mirrorPath, otakiage, queueLines, takeLine, ticketId } from './floor-ledger.mjs';
+import { append, ask, askText, doneLine, dropLine, enqueue, gb, landLine, LEDGER, mirrorPath, missLine, otakiage, queueLines, takeLine, ticketId, ticketLine, ticketOf } from './floor-ledger.mjs';
 
 const TOOL = fileURLToPath(new URL('./floor-ledger.mjs', import.meta.url));
 const SHA = 'abcdef0123456789abcdef0123456789abcdef01';
@@ -17,6 +19,7 @@ test('RED: the line builders write the grammar the VM fold reads', () => {
   assert.equal(ticketId('lane-a', SHA.toUpperCase()), 'lane-a@abcdef012');
   assert.deepEqual(queueLines({ lane: 'lane-a', branch: 'spirit/a', sha: SHA, runs: ['pnpm  --filter x\\n test', ''], why: 'proves  it' }), [
     `QUEUE lane-a@abcdef012 lane-a spirit/a ${SHA}`,
+    'HANDBACK lane-a@abcdef012',
     'RUN lane-a@abcdef012 pnpm --filter x\\n test',
     'WHY lane-a@abcdef012 proves it',
   ]);
@@ -28,6 +31,67 @@ test('RED: the line builders write the grammar the VM fold reads', () => {
   assert.equal(gb(NaN), '?');
   assert.throws(() => queueLines({ lane: 'two words', branch: 'b', sha: SHA }), /--lane/);
   assert.throws(() => queueLines({ lane: 'a', branch: 'b', sha: 'xyz' }), /--sha/);
+  assert.deepEqual(queueLines({ lane: 'hoao', branch: 'spirit/h', sha: SHA, body: '3', owes: 'gate ·  sets=none' }), [
+    `QUEUE hoao@abcdef012 hoao spirit/h ${SHA}`,
+    'HANDBACK hoao@abcdef012 body=3',
+    'OWES hoao@abcdef012 gate · sets=none',
+  ]);
+  assert.throws(() => queueLines({ lane: 'hoao', branch: 'b', sha: SHA, body: 'three' }), /--body/);
+  assert.equal(landLine('hoao@abcdef012', SHA.toUpperCase()), `LAND hoao@abcdef012 ${SHA}`);
+  assert.throws(() => landLine('hoao@abcdef012', 'develop'), /merge's sha/);
+  assert.equal(missLine('hoao@abcdef012', 'develop  read red'), 'MISS hoao@abcdef012 develop read red');
+});
+
+const OWED = {
+  via: 'develop 3268bab41', why: '', touched: ['packages/lararium-node/src/shore-verb.ts', 'packages/lares-cli/src/commands/shore.ts'], refuse: [],
+  sets: [{ name: 'e2e-node', why: 'trunk:island-vessel-boot' }], globs: [{ glob: 'packages/lararium-tw5/tests/wiki-shore*.test.ts', why: 'seam:shore-standoff' }],
+  files: [{ tier: 'vessel', path: 'tests/e2e/watcher-cut-c.test.ts', why: 'seam:shore-standoff' }, { tier: 'heavy', path: 'packages/lararium-node/tests/shore-verb.test.ts', why: 'edge' }, { tier: 'heavy', path: 'packages/lares-cli/tests/shore-cmd.test.ts', why: 'edge' }, { tier: 'swift', path: 'packages/lares-cli/tests/shore-core.test.ts', why: 'edge' }],
+  digest: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+};
+const fakeGit = (branch = 'spirit/hoao-x') => (args) => (args.includes('--abbrev-ref') ? branch : SHA);
+
+test('RED the ticket computes: a lane and a sha enqueue the fold\'s own answer; the spirit names no file', async () => {
+  const asked = [], put = [];
+  const r = await enqueue({ lane: 'hoao', sha: SHA, body: '2', why: 'the shore verb refuses a stale base' }, { owes: (o) => { asked.push(o); return OWED; }, put: (lines) => { put.push(lines); return { via: 'door' }; }, git: fakeGit() });
+  assert.equal(asked.length, 1);
+  assert.equal(asked[0].head, SHA);
+  assert.equal(r.queued, true);
+  assert.equal(r.id, 'hoao@abcdef012');
+  assert.equal(r.line, 'floor ticket hoao#2 · spirit/hoao-x@abcdef012 · gate · sets=e2e-node files=4(vessel:1,heavy:2,swift:1) globs=1 touched=2 owes=0123456789ab via=develop:3268bab41');
+  assert.deepEqual(put, [[
+    `QUEUE hoao@abcdef012 hoao spirit/hoao-x ${SHA}`,
+    'HANDBACK hoao@abcdef012 body=2',
+    'OWES hoao@abcdef012 gate · sets=e2e-node files=4(vessel:1,heavy:2,swift:1) globs=1 touched=2 owes=0123456789ab via=develop:3268bab41',
+    'WHY hoao@abcdef012 the shore verb refuses a stale base',
+  ]]);
+  assert.equal(ticketLine({ lane: 'hoao', branch: 'b', sha: SHA, verb: 'gate', suites: 'x' }), 'floor ticket hoao · b@abcdef012 · gate · x');
+});
+
+test('RED a refused path queues nothing and names its cure; a dark fold queues the wide ticket; CONTROL: an unreadable sha still queues', async () => {
+  const refuse = [{ path: 'packages/lararium-node/src/stray-new-thing.ts', why: 'floor-owes: packages/lararium-node/src/stray-new-thing.ts stands in no seam; add a MOVES row to the seam table, then ask again' }];
+  const put = [];
+  const refused = await enqueue({ lane: 'hoao', sha: SHA }, { owes: () => ({ ...OWED, refuse, sets: [], globs: [], files: [] }), put: (l) => { put.push(l); return { via: 'door' }; }, git: fakeGit() });
+  assert.equal(refused.queued, false);
+  assert.deepEqual(put, [], 'a refusal appends no row');
+  assert.deepEqual(refused.refused, refuse);
+  assert.match(refused.line, /^floor ticket hoao · spirit\/hoao-x@abcdef012 · refuse · packages\/lararium-node\/src\/stray-new-thing\.ts$/);
+  assert.deepEqual(ticketOf({ via: 'dark', why: 'develop: holds no fold', touched: [], refuse: [], sets: [], globs: [], files: [], digest: '' }).verb, 'wide');
+  const wide = await enqueue({ lane: 'hoao', sha: SHA }, { owes: () => ({ via: 'dark', why: 'develop: holds no fold', touched: [], refuse: [], sets: [], globs: [], files: [], digest: '' }), put: (l) => { put.push(l); return { via: 'mirror', mirror: '/x', why: 'dark' }; }, git: fakeGit() });
+  assert.equal(wide.queued, true);
+  assert.match(put[0][2], /^OWES hoao@abcdef012 wide · the touched packages' heavy tier and the whole node e2e set \(no fold answered: develop: holds no fold\)$/);
+  const unread = await enqueue({ lane: 'hoao', sha: SHA, branch: 'spirit/far' }, { owes: (o) => { assert.equal(o.head, SHA); return OWED; }, put: () => ({ via: 'door' }), git: () => '' });
+  assert.equal(unread.queued, true);
+  await assert.rejects(() => enqueue({ lane: 'hoao', sha: SHA }, { owes: () => OWED, put: () => ({ via: 'door' }), git: () => '' }), /--branch/);
+  await assert.rejects(() => enqueue({ lane: 'hoao#2', sha: SHA }, { owes: () => OWED, put: () => ({ via: 'door' }), git: fakeGit() }), /--lane/);
+});
+
+test('RED the CLI refuses an unmapped path with exit 1 and its cure, and lands LAND and MISS rows in the mirror', () => {
+  const { d, env } = scratchEnv();
+  assert.equal(spawnSync(process.execPath, [TOOL, 'land', 'hoao@abcdef012', SHA], { encoding: 'utf8', env }).status, 0);
+  assert.equal(spawnSync(process.execPath, [TOOL, 'miss', 'hoao@abcdef012', 'develop', 'read', 'red'], { encoding: 'utf8', env }).status, 0);
+  assert.equal(readFileSync(join(d, '.floor', 'queue.log'), 'utf8'), `LAND hoao@abcdef012 ${SHA}\nMISS hoao@abcdef012 develop read red\n`);
+  assert.equal(spawnSync(process.execPath, [TOOL, 'land', 'hoao@abcdef012', 'develop'], { encoding: 'utf8', env }).status, 2);
+  assert.equal(spawnSync(process.execPath, [TOOL, 'enqueue', '--sha', SHA], { encoding: 'utf8', env }).status, 2, 'a ticket without a lane refuses');
 });
 
 test('RED: an append lands through the door when it answers, and in the mirror beside the lock when the doors stand dark', () => {
@@ -58,6 +122,10 @@ test('RED: otakiage folds the mirror through the door once, and keeps it whole w
 test('RED: ask renders the VM view through the render door; a dark door answers null', () => {
   assert.equal(askText('waiting'), `<$text text={{{ [[${LEDGER}]floor-queue[waiting]join[ ]] }}}/>`);
   assert.equal(askText('ticket', 'a@1234567'), `<$text text={{{ [[${LEDGER}]floor-queue[ticket],[a@1234567]] }}}/>`);
+  assert.equal(askText('line', 'a@1234567'), `<$text text={{{ [[${LEDGER}]floor-queue[line],[a@1234567]] }}}/>`);
+  assert.equal(askText('lane', 'hoao'), `<$text text={{{ [[${LEDGER}]floor-queue[lane],[hoao]join[ ]] }}}/>`);
+  assert.deepEqual(ask('runs-per-landing', '', { door: () => ({ ok: true, stdout: 'hoao@ddddddddd=2/3 mean=2.00\n' }) }), ['hoao@ddddddddd=2/3', 'mean=2.00']);
+  assert.deepEqual(ask('line', 'a@1234567', { door: () => ({ ok: true, stdout: 'floor ticket a · b@1234567 · gate · sets=none\n' }) }), ['floor ticket a · b@1234567 · gate · sets=none']);
   assert.deepEqual(ask('waiting', '', { door: () => ({ ok: true, stdout: 'a@1234567 b@7654321\n' }) }), ['a@1234567', 'b@7654321']);
   assert.deepEqual(ask('ticket', 'a@1234567', { door: () => ({ ok: true, stdout: 'FLOOR TICKET a b 1234567\n  run:   x\n' }) }), ['FLOOR TICKET a b 1234567\n  run:   x']);
   assert.equal(ask('next', '', { door: () => ({ ok: false, why: 'dark' }) }), null);
