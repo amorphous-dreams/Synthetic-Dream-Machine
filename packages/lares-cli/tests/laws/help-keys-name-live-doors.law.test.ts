@@ -71,7 +71,7 @@ describe("the per-command help registry", () => {
     const wiki = COMMANDS.find((c) => c.name === "wiki")!;
     expect(flag.out).toBe(`${word.out}\n\nAbout:\n  ${wiki.summary}`);
     expect(word.out).not.toMatch(/^About:$/m);   // CONTROL: the bare table (`wiki help`) carries no account
-    for (const verb of ["init", "share", "switch", "pin", "status"]) expect(flag.out).toMatch(new RegExp(`^  ${verb}\\s`, "m"));
+    for (const verb of ["init", "share", "switch", "keep", "unkeep", "status"]) expect(flag.out).toMatch(new RegExp(`^  ${verb}\\s`, "m"));
     expect(flag.code).toBe(0);
   });
 

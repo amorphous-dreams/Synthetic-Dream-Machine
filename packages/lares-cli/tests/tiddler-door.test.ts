@@ -342,7 +342,7 @@ describe("wiki keep and switch wire", () => {
     expect(await cmdWiki(argv("wiki", ["status"], {}, { json: false }))).toBe(0);
     expect(h.calls.map(c => c.verb)).toEqual(["list-wikis", "wiki-active", "residency"]);
     expect(log.mock.calls.flat().join(" ")).toContain("active wikis");
-    expect(log.mock.calls.flat().join(" ")).toContain("pinned");
+    expect(log.mock.calls.flat().join(" ")).toContain("held (");
     log.mockRestore();
   });
   test("status surveys the vessel or reads the named engine", async () => {
