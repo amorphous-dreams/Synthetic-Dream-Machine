@@ -123,7 +123,8 @@ test("one budget bounds all three reads, and each read left open reports itself"
   assert.match(context, /lares spirit om <pet>/);
   assert.doesNotMatch(context, /stand it with|vessel down|no vessel answers/);
   assert.match(context, /Lares homes: lares home read gave no answer inside the wake's budget/);
-  assert.deepEqual(killed.sort(), ["homes", "index", "observe"]);
+  // The observe read retries once after its first ask ends, so a hung hearth leaves two observe asks closed.
+  assert.deepEqual(killed.sort(), ["homes", "index", "observe", "observe"]);
   // A slow index beside an answering vessel reports itself as unread.
   const slow = await wake({ budgetMs: 40, run: runner({ observe: answered(UP), index: hung([], "index"), homes: answered("h") }) });
   assert.match(slow, /memory index unread: no answer inside the wake's budget/);
