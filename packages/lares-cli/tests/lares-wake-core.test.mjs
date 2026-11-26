@@ -74,6 +74,31 @@ test("a fault reads unread by its cause, and the wake still carries everything e
   }
 });
 
+test("wake-reads-owed: a slow vessel reads owed, never dark, and the line names the read to take", async () => {
+  const context = await wake({ budgetMs: 30, run: runner({ observe: hung([], "observe"), index: hung([], "index"), homes: answered("h"), attractors: hung([], "attractors") }) });
+  assert.match(context, /its reads are owed, not dark: take them by hand with `lares spirit om <pet>`/);
+  assert.match(context, /Attractor stores: owed/);
+  assert.match(context, /memory index owed/);
+  assert.doesNotMatch(context, /unavailable|skipped: no vessel|tools\/lares-container\.sh up/);
+});
+
+test("wake-reads-owed: one retry rides the first ask's close, and an answer then reads the hearth up", async () => {
+  let asks = 0;
+  const observe = () => (asks++ === 0 ? hung([], "observe") : answered(UP));
+  const context = await wake({ budgetMs: 30, run: (name) => (name === "observe" ? observe() : name === "index" ? answered(page([])) : name === "homes" ? answered("h") : null) });
+  assert.equal(asks, 2);
+  assert.match(context, /"up":true/);
+  assert.doesNotMatch(context, /owed/);
+});
+
+test("wake-reads-owed: a shim that exits empty or parses to nothing reads owed; only node.up false reads down", () => {
+  assert.equal(core.observation({ stdout: "", code: 127 }).owed, true);
+  assert.equal(core.observation({ stdout: "pulling", code: 0 }).owed, true);
+  const down = core.observation({ stdout: JSON.stringify({ data: { node: { up: false } } }), code: 0 });
+  assert.equal(down.owed, false);
+  assert.match(down.line, /vessel down/);
+});
+
 test("a vessel that answers down skips the index read and says so once", async () => {
   const killed = [];
   const context = await wake({ run: runner({
@@ -94,7 +119,9 @@ test("one budget bounds all three reads, and each read left open reports itself"
   const t0 = performance.now();
   const context = await wake({ budgetMs: 40, run: runner({ observe: hung(killed, "observe"), index: hung(killed, "index"), homes: hung(killed, "homes") }) });
   assert.ok(performance.now() - t0 < 2000, "the wake closed with its budget");
-  assert.match(context, /vessel observation timed out/);
+  assert.match(context, /the hearth did not answer the wake in time \(no answer inside the wake's budget\)/);
+  assert.match(context, /lares spirit om <pet>/);
+  assert.doesNotMatch(context, /stand it with|vessel down|no vessel answers/);
   assert.match(context, /Lares homes: lares home read gave no answer inside the wake's budget/);
   assert.deepEqual(killed.sort(), ["homes", "index", "observe"]);
   // A slow index beside an answering vessel reports itself as unread.
