@@ -10,7 +10,8 @@
  * that stood before the one address read through the same stack, none moved: `familiar/<pet>` or `spirit/<pet>` on the memory
  * stage (where both stand, the door names both and guesses neither), then a card at `spirit-card/<pet>` or `mask-card/<pet>`. Beneath the pet name a stable `spirit-id` keys
  * the residue, so a rename keeps om, hum and otakiage finding it. Every read and write rides the tiddler door's own daemon
- * verbs (`tiddler-get`, `meme-patch`, `tiddler-put`, `tiddler-delete`, `wiki-filter`), so the doors' gates stand over each act.
+ * verbs (`tiddler-get`, `tiddler-put`, `tiddler-delete`, `wiki-filter`), so the doors' gates stand over each act; a shrine's slot
+ * writes as the plain put of its own title (`<uri>#/x`), and a whole shrine as the root's text.
  *
  *   om        (wake, Chaos ✶)       the card: the skinny, #/open, the titles #/attention names, and the latest carry read as
  *                                   testimony (a record moved since it read, a deep chain, a fork), under the wake cap. By
@@ -328,8 +329,10 @@ async function readSlot(args: ParsedArgs, label: string, rec: Record_, slot: str
 }
 
 /**
- * One slot write under the base its read named: a shrine's through the meme door (`meme-patch`), a card's as its field through the
- * tiddler door (`tiddler-put` under the card's hash). Both answer in the meme door's words: `ingest`, `noop` or `conflict`.
+ * One slot write under the base its read named, every kind through the tiddler door's `tiddler-put`: a shrine's as the text of the
+ * slot's own title (`<uri>#/x`) under the partial base its slot read handed back, a card's as its field under the card's hash, the
+ * stack as its tags and fields. Each answers in the put's own words: `put`, `noop` or `conflict`, and `canonicalHash` names the
+ * base the next write hands back (the carrier's, where the put recomposed a family; else the record's).
  */
 async function patchSlot(args: ParsedArgs, label: string, rec: Record_, slot: string, body: string, base: string): Promise<Record<string, unknown>> {
   if (slot === STACK_SLOT) {
@@ -343,14 +346,16 @@ async function patchSlot(args: ParsedArgs, label: string, rec: Record_, slot: st
       recipe: RECIPE, title: rec.uri, ...(base !== "" ? { base } : {}),
       ...(Object.keys(write.patch).length > 0 ? { fields: write.patch } : {}), ...(write.unset.length > 0 ? { unset: write.unset } : {}),
     });
-    const decision = String(receipt["decision"] ?? "");
-    return { ...receipt, decision: decision === "put" ? "ingest" : decision, canonicalHash: String(receipt["hash"] ?? "") };
+    return baseNamed(receipt);
   }
-  if (rec.kind !== "card") return await door(args, label, "meme-patch", { recipe: RECIPE, uri: rec.uri, slot, replace: body, base });
-  const receipt = await door(args, label, "tiddler-put", { recipe: RECIPE, title: rec.uri, ...(base !== "" ? { base } : {}), fields: { [cardField(slot)!]: body } });
-  const decision = String(receipt["decision"] ?? "");
-  return { ...receipt, decision: decision === "put" ? "ingest" : decision, canonicalHash: String(receipt["hash"] ?? "") };
+  // A SHRINE'S SLOT READS AS A TIDDLER: its text put lands on `<uri>#/x` and recomposes the family in the root's turn (absence keeps).
+  if (rec.kind !== "card") return baseNamed(await door(args, label, "tiddler-put", { recipe: RECIPE, title: `${rec.uri}${slot}`, text: body, ...(base !== "" ? { base } : {}) }));
+  return baseNamed(await door(args, label, "tiddler-put", { recipe: RECIPE, title: rec.uri, ...(base !== "" ? { base } : {}), fields: { [cardField(slot)!]: body } }));
 }
+
+/** A put's answer with the base its next write names: the carrier's where the put recomposed a family, else the record's. */
+const baseNamed = (receipt: Record<string, unknown>): Record<string, unknown> =>
+  ({ ...receipt, canonicalHash: String(receipt["canonicalHash"] ?? receipt["hash"] ?? "") });
 
 // ── the ʻĀlana Circle: the offering and the echo ─────────────────────────────────────────────────────────────────────
 
@@ -513,11 +518,12 @@ async function newShrine(args: ParsedArgs, pet: string): Promise<number> {
   if (shapes > 0) throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: the shrine holds ${shapes} secret-shaped string(s), so nothing landed; clear them, then land it again: \`lares spirit ah ${pet} --new --file <scrubbed path>\``, 4);
   const carrier = shrineCarrier(pet, words);
   const uri = spiritOf(pet);
-  const receipt = await door(args, "ah", "meme-put", { recipe: RECIPE, uri, text: carrier });
+  // A WHOLE SHRINE RIDES AS THE ROOT'S TEXT: the put lands the family through the Confluence gate, only where none stands.
+  const receipt = await door(args, "ah", "tiddler-put", { recipe: RECIPE, title: uri, text: carrier, create: true });
   const decision = String(receipt["decision"] ?? "");
-  if (decision !== "ingest" && decision !== "noop") {
+  if (decision !== "put" && decision !== "noop") {
     const warnings = Array.isArray(receipt["warnings"]) ? (receipt["warnings"] as string[]) : [];
-    throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the meme door answered ${decision || "nothing"} for ${uri}${warnings[0] ? ` (${warnings[0]})` : ""}; read the shrine you sent against the skeleton (\`lares spirit om ${pet}\`) and land it again`, 4);
+    throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${uri}${warnings[0] ? ` (${warnings[0]})` : ""}; read the shrine you sent against the skeleton (\`lares spirit om ${pet}\`) and land it again`, 4);
   }
   emit(args, { ok: true, data: { pet, uri, created: true, ...receipt }, human: () => console.log(`landed the shrine: ${uri}\n  wake it: lares spirit om ${pet}`) });
   return 0;
@@ -763,10 +769,10 @@ async function mergeSlot(args: ParsedArgs, rec: Record_, slot: string, write: Sl
     guardWords(rec, slot, read.body, body, true, clash ? 2 : 1);
     const receipt = await patchSlot(args, "ah", rec, slot, body, read.base);
     const decision = String(receipt["decision"] ?? "");
-    if (decision === "ingest" || decision === "noop") return { ...receipt, bytes: bytesOf(body), was: bytesOf(first.body), digest: slotDigest(body), ...(clash ? { conflict: true } : {}) };
+    if (decision === "put" || decision === "noop") return { ...receipt, bytes: bytesOf(body), was: bytesOf(first.body), digest: slotDigest(body), ...(clash ? { conflict: true } : {}) };
     if (decision !== "conflict") {
       const warnings = Array.isArray(receipt["warnings"]) ? (receipt["warnings"] as string[]) : [];
-      throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the meme door answered ${decision || "nothing"} for ${rec.uri}${slot}${warnings[0] ? ` (${warnings[0]})` : ""}; read the record (\`lares tiddler get ${rec.uri} --recipe default --meme --all\`) before you true it again`, 4);
+      throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${rec.uri}${slot}${warnings[0] ? ` (${warnings[0]})` : ""}; read the record (\`lares tiddler get ${rec.uri} --recipe default --meme --all\`) before you true it again`, 4);
     }
     const again = await readSlot(args, "ah", rec, slot);
     if (again === null) throw slotMissing(rec, slot);
@@ -784,8 +790,8 @@ async function foldLine(args: ParsedArgs, rec: Record_, slot: string, line: stri
     if (body === null) throw new SpiritRefusal("spirit-fold-gone", `spirit-fold-gone: the line "${redactedText(line.trim()).slice(0, 120)}" no longer stands in ${rec.uri}${slot} (a sibling instance folded or rewrote it); nothing landed. Number the lines again: \`lares spirit hum ${rec.pet} --fold '${slot}'\``, 4);
     const receipt = await patchSlot(args, "hum", rec, slot, body, read.base);
     const decision = String(receipt["decision"] ?? "");
-    if (decision === "ingest" || decision === "noop") return { ...receipt, bytes: bytesOf(body), was: bytesOf(read.body), digest: slotDigest(body) };
-    if (decision !== "conflict") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the meme door answered ${decision || "nothing"} for ${rec.uri}${slot}; read the record (\`lares tiddler get ${rec.uri} --recipe default --meme --all\`) before you fold again`, 4);
+    if (decision === "put" || decision === "noop") return { ...receipt, bytes: bytesOf(body), was: bytesOf(read.body), digest: slotDigest(body) };
+    if (decision !== "conflict") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${rec.uri}${slot}; read the record (\`lares tiddler get ${rec.uri} --recipe default --meme --all\`) before you fold again`, 4);
   }
   throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: ${rec.uri}${slot} kept moving under ${CAS_ROUNDS} reads, so nothing folded; run the fold again once the record settles`, 4);
 }
@@ -827,7 +833,7 @@ async function ah(args: ParsedArgs, ctx: Ctx): Promise<number> {
   }
   const who = self !== null ? `${pet}#${self}` : "a hand at the terminal";
   const receipt = await mergeSlot(args, rec, slot, line !== null ? { add: line } : { words: words!, base, who });
-  if (receipt["decision"] === "ingest") {
+  if (receipt["decision"] === "put") {
     // The slot's last writer names a later clash's other side; a tell distilled into #/kulana sets the distill mark (otakiage burns
     // only residue that landed before it). Both ride the sibling record, so the card's base holds.
     await writeSide(args, "ah", rec, { [writerField(slot)]: who, ...(slot === DISTILL_SLOT ? { distilled: ctx.now().toISOString() } : {}) });

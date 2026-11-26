@@ -8,19 +8,23 @@
  *
  * A tiddler verb acts on ONE record with its fields, whatever its type: a plain note, a data tiddler, a meme's root or
  * one of its slots. A meme family reads as tiddlers: a text put on a root or a slot lands through the Confluence gate
- * inside the put (split, recompose, the block check), and a field or tag patch lands beside it. ABSENCE NEVER DELETES: a
- * slot the new text omits stays standing by reference (`kept`), and `--cut '#/slot'` names each slot that leaves. A delete reads the one family
- * law: a plain tiddler leaves; a meme root or slot answers the consequence the delete would land and refuses
- * (`tiddler-delete-in-a-family`) unless the line names the family act (`--family`), which lands it as one change.
+ * inside the put (split, recompose, the block check), and a field or tag patch lands beside it. A whole carrier rides as
+ * the root's text (`--file <path|->`, `--text <words>`); `--slot '#/x'` folds into the title (`<root>#/x`), so a slot's
+ * text put and `--append` land on that slot, a slot's text put naming no base, a partial base (`partial:#/x:…`) patching
+ * within its span. ABSENCE NEVER DELETES: a slot the new text omits stays standing by reference (`kept`), and
+ * `--cut '#/slot'` names each slot that leaves. A delete reads the one family law: a plain tiddler leaves; a meme root
+ * answers the consequence the delete would land and refuses (`tiddler-delete-in-a-family`) unless the line names the
+ * family act (`--family`), which lands it as one change; a slot title (`<root>#/x`) lands as the cut on its parent.
  * A delete deletes plainly: the record leaves its layer and no tombstone rises. Only a lower layer makes it a choice: where
  * one holds the title too, no mode refuses `delete-mode-needed`, and the line names one: `--mode kapae` shadows the title
  * from a writable layer and the layers beneath keep their records; `--mode reveal` retracts the topmost record and the
  * one beneath surfaces. A title the wiki reads absent answers too: a plain delete retracts a kāpae that hides nothing.
  *
- * The container law holds: `get` names `--recipe <slug>` or `--bag <slug>`; `put` and `delete` name `--recipe <slug>` alone.
- * `--recipe default` answers the worn face's daemon wiki, and `--recipe <slug>` any wiki that face reaches, in that wiki's own
- * engine; a wiki it reaches none of refuses `wiki-unreached`. `get --bag <slug>` reads that one bag's record (no engine runs);
- * `put` and `delete` refuse `--bag` as `wiki-not-anchored` and name `lares tiddler put | delete --meme --bag`.
+ * The container law holds: `get`, `put` and `delete` name `--recipe <slug>` or `--bag <slug>` (`--realm <id>` beside a bag);
+ * `rename` names `--recipe <slug>` alone. `--recipe default` answers the worn face's daemon wiki, and `--recipe <slug>` any
+ * wiki that face reaches, in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`. `--bag <slug>` reads
+ * or writes that one bag through its store, under the gates the bag's own writes keep (no engine runs). `--face N` rides a
+ * session of face N on every sub-verb.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout
  */
@@ -38,6 +42,7 @@ import { mediaTypeFromExt, ridesAsPointer } from "@lararium/mesh/content-handle"
 import { niUriSha256FromHex } from "@lararium/mesh/crypto";
 import { stageBodyToCas } from "../cas-stage.js";
 import { cmdFamily } from "./family.js";
+import { landedFace } from "./meme-shared.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 /** Every verb the tiddler door answers. */
@@ -59,7 +64,9 @@ export function tiddlerPlan(sub: Sub, args: ParsedArgs): DoorPlan {
   // face it wears, and a put or delete naming it refuses here by name, before any door opens.
   const target = targetOf(args);
   if (sub !== "get" && target.target !== undefined) throw new DoorUsage(targetOnWriteRefusal(`tiddler ${sub}`));
-  const out: Record<string, unknown> = { ...(sub === "get" ? containerArgs(args, "tiddler get", "read") : engineContainerArgs(args, `tiddler ${sub}`, "write")), title, ...target };
+  // A BAG TAKES THE PLAIN PUT AND DELETE through its store; a rename relinks inside one wiki's engine and names a recipe alone.
+  const container = sub === "rename" ? engineContainerArgs(args, "tiddler rename", "write") : containerArgs(args, `tiddler ${sub}`, sub === "get" ? "read" : "write");
+  const out: Record<string, unknown> = { ...container, title: sub === "put" ? slotTitle(title, args.options["slot"]) : title, ...target };
   if (sub === "get") {
     const slot = wordOf(args.options["slot"]);
     if (slot) out["slot"] = slot;
@@ -88,7 +95,7 @@ export function tiddlerPlan(sub: Sub, args: ParsedArgs): DoorPlan {
     return { verb: "tiddler-rename", args: out };
   }
   if (sub === "delete") {
-    // The meme door's own spelling of the base on a delete, kept: one hash, the verb reads it as `base`.
+    // The route spells the base as `If-Match`; the verb reads it as `base`: one hash, two spellings.
     const base = wordOf(args.options["if-match"]) ?? wordOf(args.options["base"]);
     if (base) out["base"] = base;
     if (args.flags["family"] === true) out["family"] = true;
@@ -119,6 +126,22 @@ export function tiddlerPlan(sub: Sub, args: ParsedArgs): DoorPlan {
   if (base) out["base"] = base;
   if (args.flags["create"] === true) out["create"] = true;
   return { verb: "tiddler-put", args: out };
+}
+
+/** A slot path the put folds into its title: `#/name`, nested `#/a/b`, no space, `#`, `$` or empty step. */
+const SLOT_PATH = /^#\/[^\s#$/]+(?:\/[^\s#$/]+)*$/;
+
+/**
+ * THE SLOT FOLDS INTO THE TITLE: `--slot '#/x'` names the record `<root>#/x`, so a slot's text put and an append on a slot ride
+ * the one plain put. A malformed path refuses by name, and so does a slot beside a title that already carries a fragment (the
+ * title names the slot itself there).
+ */
+export function slotTitle(title: string, raw: string | undefined): string {
+  const slot = wordOf(raw);
+  if (slot === null) return title;
+  if (!SLOT_PATH.test(slot)) throw new DoorUsage(`slot-malformed: --slot takes a slot path such as '#/notes' or '#/notes/today' (got "${slot}"); \`lares tiddler get --meme --recipe <slug> --tree\` names the slots a family holds`);
+  if (title.includes("#")) throw new DoorUsage(`slot-beside-fragment: ${title} already names a slot; drop --slot (\`lares tiddler put '${title}' …\`) or name the root with --slot '${slot}'`);
+  return `${title}${slot}`;
 }
 
 /** The raw bytes a named source holds: a host path, or `-` for stdin. */
@@ -286,6 +309,10 @@ async function tiddlerGet(given: ParsedArgs): Promise<number> {
 /** The note a floor read carries: the bag's floor snapshot answered, since this face holds no read on the live house canon document. */
 const FLOOR_NOTE = "read from the floor snapshot: this face holds no read on the live house canon document (the Kahu steward's face reads it live)";
 
+/** The container a plan names, as a command line spells it: a cure names the same wiki or bag the act named. */
+const whereOf = (planned: Record<string, unknown>): string =>
+  typeof planned["bag"] === "string" ? `--bag ${planned["bag"]}${typeof planned["realm"] === "string" ? ` --realm ${planned["realm"]}` : ""}` : `--recipe ${String(planned["recipe"] ?? "<slug>")}`;
+
 async function tiddlerPut(args: ParsedArgs): Promise<number> {
   const plan = tiddlerPlan("put", args);
   const planned = plan.args["fields"] as Record<string, unknown> | undefined;
@@ -303,7 +330,7 @@ async function tiddlerPut(args: ParsedArgs): Promise<number> {
   const code = ok ? "ok" : decision === "conflict" || decision === "exists" ? "conflict" : "verb-error";
   const message = decision === "conflict" && words !== null && "append" in words ? `conflict: ${plan.args["title"]} kept moving under the append; it reads ${receipt["hash"] ?? "absent"} now and nothing landed. Send the append again`
                 : decision === "conflict" ? `conflict: the record moved past ${plan.args["base"] ?? "the base"}; it reads ${receipt["hash"] ?? "absent"} now. Read again and hand back the live hash`
-                : decision === "exists" ? `exists: a tiddler already stands at ${plan.args["title"]} (--create lands only where none does)`
+                : decision === "exists" ? `exists: a tiddler already stands at ${plan.args["title"]} (--create lands only where none does); drop --create and pass --base <hash> from \`lares tiddler get ${plan.args["title"]} ${whereOf(plan.args)} --skinny\` to replace it`
                 : `${decision}: ${plan.args["title"]}`;
   emit(args, {
     ok, requestId: ran.requestId, data: receipt,
@@ -313,8 +340,20 @@ async function tiddlerPut(args: ParsedArgs): Promise<number> {
       if (typeof receipt["has"] === "string") console.log(receipt["has"]);
       console.log(`${decision}: ${plan.args["title"]}`);
       if (decision === "put") console.log(`  ${receipt["created"] === true ? "created" : "changed"} ${changed.join(", ")}`);
-      if (typeof receipt["bag"] === "string" && decision === "put") console.log(`  in ${receipt["bag"]}`);
-      if (receipt["hash"]) console.log(`  base: ${receipt["hash"]}`);
+      // A FAMILY'S ANSWER COUNTS ITS MEMBERS: the records the recompose landed, the slots absence kept, the slots a cut tombstoned.
+      const counted = (key: string): number | null => Array.isArray(receipt[key]) ? (receipt[key] as unknown[]).length : null;
+      const landed = counted("landed"), kept = counted("kept"), tombstoned = counted("tombstoned");
+      if (landed !== null || kept !== null || tombstoned !== null) console.log(`  landed ${landed ?? 0} · kept ${kept ?? 0} · tombstoned ${tombstoned ?? 0}`);
+      // THE ANSWER NAMES THE LAYER: a face that holds no writer's seat in the wiki's workbench lands in its own personal layer.
+      if (typeof receipt["bag"] === "string" && decision === "put") console.log(receipt["layer"] === "personal"
+        ? `  in ${receipt["bag"]}${landedFace(receipt)} (your personal layer: this face holds no writer's seat in the wiki's workbench; \`lares meme offer\` carries a record from here)`
+        : `  in ${receipt["bag"]}${landedFace(receipt)}`);
+      if (decision === "noop" && typeof receipt["reason"] === "string") console.log(`  ${receipt["reason"]}`);
+      for (const w of Array.isArray(receipt["warnings"]) ? (receipt["warnings"] as string[]) : []) console.log(`  ! ${w}`);
+      // TWO BASES, EACH FOR ITS OWN WRITE: the record hash guards a put on this one record; the carrier hash guards a put of the
+      // family's whole carrier on its root.
+      if (receipt["hash"]) console.log(`  base: ${receipt["hash"]} (record: hand it back on a put to ${plan.args["title"]})`);
+      if (receipt["canonicalHash"]) console.log(`  base: ${receipt["canonicalHash"]} (carrier: hand it back on a whole-carrier put to the root)`);
     },
   });
   return exitFor(code);
@@ -350,7 +389,13 @@ async function tiddlerDelete(args: ParsedArgs): Promise<number> {
       console.log(`removed: ${plan.args["title"]}`);
       for (const row of read?.acts ?? []) console.log(`  ${actLine(row)}`);
       for (const row of read?.leaves ?? []) console.log(`  leaves ${row.title} (${row.why})`);
+      // A family's removal counts what left: tombstoned where a lower layer would surface, retracted where none would.
+      const tombstoned = Array.isArray(receipt["tombstoned"]) ? (receipt["tombstoned"] as unknown[]).length : null;
+      const retracted = Array.isArray(receipt["retracted"]) ? (receipt["retracted"] as unknown[]).length : null;
+      if (tombstoned !== null || retracted !== null) console.log(`  tombstoned ${tombstoned ?? 0}${retracted ? ` · retracted ${retracted}` : ""}`);
+      if (typeof receipt["bag"] === "string") console.log(`  in ${receipt["bag"]}${landedFace(receipt)}`);
       if (receipt["hash"]) console.log(`  base: ${receipt["hash"]}`);
+      if (receipt["canonicalHash"]) console.log(`  base: ${receipt["canonicalHash"]} (carrier)`);
     },
   });
   return exitFor(code);
@@ -386,21 +431,9 @@ async function tiddlerRename(args: ParsedArgs): Promise<number> {
 
 export async function cmdTiddler(args: ParsedArgs): Promise<number> {
   const sub = args.positional[0];
-  if (args.flags["meme"] === true && (sub === "get" && !args.positional[1] || sub === "put" || sub === "delete")) {
-    const familySub = sub === "get" ? "list" : sub === "put" && (args.options["slot"] !== undefined || args.options["append"] !== undefined) ? "patch" : sub;
-    // A slot write names one text source: --append <file>, --text <words> or --file <path> (the slot's whole body).
-    const sources = [args.options["append"], args.options["text"], args.options["file"]].filter((value) => value !== undefined);
-    const ambiguous = sub === "put" && (familySub === "patch" ? sources.length !== 1 : args.options["text"] !== undefined && args.options["file"] !== undefined);
-    const incompatible = sub === "put" && [args.options["fields"], args.options["unset"], args.options["tag-add"], args.options["tag-remove"], args.options["cut"]].some((value) => value !== undefined)
-      || familySub === "patch" && args.flags["create"] === true
-      || sub === "delete" && (args.flags["family"] === true || args.options["mode"] !== undefined);
-    if (ambiguous || incompatible) {
-      const message = ambiguous ? "a family write names one text source: --file <path> or --text <words> (a slot write: exactly one of --append <file>, --text, --file)" : "--meme takes family text or removal, not record fields, tags, or modes (--create rides a whole-family put, never a slot patch: a slot patch needs the family to stand)";
-      emit(args, { ok: false, error: { code: "usage", message }, human: () => console.error(`lares tiddler ${sub}: ${message}`) });
-      return exitFor("usage");
-    }
-    const familyArgs = { ...args, command: "meme", positional: sub === "get" ? [familySub] : [familySub, ...args.positional.slice(1)] } as ParsedArgs;
-    return cmdFamily(familyArgs);
+  // THE LISTING: `tiddler get --meme` with no title reads the family roots a seat holds (step 3 folds it into filters).
+  if (args.flags["meme"] === true && sub === "get" && !args.positional[1]) {
+    return cmdFamily({ ...args, command: "meme", positional: ["list"] } as ParsedArgs);
   }
   if (!(SUBS as readonly string[]).includes(sub ?? "")) {
     if (sub) console.error(`lares tiddler: unknown sub-verb "${sub}"`);

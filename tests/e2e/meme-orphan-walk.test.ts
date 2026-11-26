@@ -98,7 +98,7 @@ describe.skipIf(gaps.length > 0)("★ the orphan gradient on a staged hearth ★
   afterAll(async () => { if (lar) await lar.stop(); });
 
   test("CONTROL: a meme with three slots projects ONE carrier file, no orphan folder, and raises no flag", async () => {
-    const r = await lar.cli(["tiddler", "put", "--meme", URI, ...ANCHOR, "--file", join(scratch, "abc.mem"), "--json"]);
+    const r = await lar.cli(["tiddler", "put", URI, ...ANCHOR, "--file", join(scratch, "abc.mem"), "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     expect(((r.json?.["data"] as Record<string, unknown>)["landed"] as string[]).sort()).toEqual([URI, `${URI}#/a`, `${URI}#/b`, `${URI}#/c`]);
     expect(await until(() => existsSync(join(mirror, `${PATH}.mem`))), `no carrier file under ${mirror}: ${JSON.stringify(walkFiles())}`).toBe(true);
@@ -109,12 +109,13 @@ describe.skipIf(gaps.length > 0)("★ the orphan gradient on a staged hearth ★
   });
 
   test("★ a delete takes the family whole: the answer names root and slots, the carrier file leaves, nothing orphans ★", async () => {
-    const r = await lar.cli(["tiddler", "delete", "--meme", URI, ...ANCHOR, "--json"]);
+    const r = await lar.cli(["tiddler", "delete", URI, "--family", ...ANCHOR, "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     const d = r.json?.["data"] as Record<string, unknown>;
-    console.error(`[walk] delete answered: ${JSON.stringify({ decision: d["decision"], tombstoned: d["tombstoned"] })}`);
+    console.error(`[walk] delete answered: ${JSON.stringify({ decision: d["decision"], tombstoned: d["tombstoned"], retracted: d["retracted"] })}`);
     expect(d["decision"]).toBe("removed");
-    expect((d["tombstoned"] as string[]).sort()).toEqual([URI, `${URI}#/a`, `${URI}#/b`, `${URI}#/c`]);
+    // The family act names every member it moved: a kāpae where a lower layer holds the title, a plain retract elsewhere.
+    expect([...(d["tombstoned"] as string[]), ...(d["retracted"] as string[])].sort()).toEqual([URI, `${URI}#/a`, `${URI}#/b`, `${URI}#/c`]);
     expect(await until(() => !existsSync(join(mirror, `${PATH}.mem`)))).toBe(true);
     console.error(`[walk] after delete: ${JSON.stringify(walkFiles())}`);
     expect(walkFiles().filter((f) => f.includes(".orphans/"))).toEqual([]);
@@ -145,7 +146,7 @@ describe.skipIf(gaps.length > 0)("★ the orphan gradient on a staged hearth ★
   });
 
   test("★ the root returns: the slot re-roots, the orphan folder leaves and the flag clears ★", async () => {
-    const r = await lar.cli(["tiddler", "put", "--meme", URI, ...ANCHOR, "--file", join(scratch, "abc.mem"), "--json"]);
+    const r = await lar.cli(["tiddler", "put", URI, ...ANCHOR, "--file", join(scratch, "abc.mem"), "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     expect(await until(() => existsSync(join(mirror, `${PATH}.mem`)) && !existsSync(join(mirror, `${PATH}.orphans`))), `the folder stayed: ${JSON.stringify(walkFiles())}`).toBe(true);
     console.error(`[walk] after the root returned: ${JSON.stringify(walkFiles())}`);

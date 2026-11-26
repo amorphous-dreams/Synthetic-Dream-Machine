@@ -48,8 +48,8 @@ import { carrierMarkPattern, headUriOf, maskedExec, maskedExecAll } from "@larar
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { isContentAddress } from "@lararium/mesh/pointer-address";
 import {
-  componentsBeneath, consequence, edgeDescendantsOf, isFamilyRoot, memeOrphanAlertTitle, MEME_ORPHAN_ALERT_PREFIX, orphanFamilies, orphansUnder, rootAddressOf, tombstonesOf,
-  type Consequence, type FamilyFields, type FamilyReference, type FamilyView,
+  componentsBeneath, consequence, edgeDescendantsOf, familyOf, isFamilyRoot, memeOrphanAlertTitle, MEME_ORPHAN_ALERT_PREFIX, orphanFamilies, orphansUnder, rootAddressOf, tombstonesOf,
+  type Consequence, type FamilyFields, type FamilyReading, type FamilyReference, type FamilyView,
 } from "@lararium/mesh/family";
 import { carrierHash } from "@lararium/mesh/crypto";
 
@@ -767,69 +767,35 @@ export async function evaluateMeme(
   return { uri, decision: "ingest", grade, landed: [], tombstoned: [], canonicalHash: hash(decision.canonicalText), warnings: [], diagnostics: decision.diagnostics };
 }
 
-/** The code a slot patch refuses under when the meme holds no slot at the address it names. */
-export const SLOT_MISSING_CODE = "slot-missing";
-/** The code a slot patch refuses under when the meme moved past the base the writer read. */
-export const STALE_BASE_CODE = "stale-base";
-
-/** One slot's body edit: `append` lands a paragraph at the end of the body; `replace` swaps the whole body. */
-export interface SlotPatchInput {
-  readonly uri: string;
-  /** The slot's address under the root, `#/name` (or `#/name/child`). */
-  readonly slot: string;
-  readonly mode: "append" | "replace";
-  readonly text: string;
-  /** The canonical hash the writer read; the patch reads against it and nothing else. An append alone may name none: it then
-   *  composes over the carrier as it reads now, and the answer's `canonicalHash` names the base that composition stands on. */
-  readonly baseHash: string | null;
-  readonly hash?: (text: string) => string;
+/**
+ * THE PARAGRAPH JOIN, for words that land at the end of a slot's body: the standing text sheds its trailing whitespace, the
+ * words their leading newlines and trailing whitespace, and exactly one blank line stands between them. An empty standing
+ * text takes the words alone.
+ */
+export function joinedParagraph(standing: string, words: string): string {
+  const held = standing.replace(/\s+$/, "");
+  const addition = words.replace(/^\n+/, "").replace(/\s+$/, "");
+  return held === "" ? addition : `${held}\n\n${addition}`;
 }
 
-export type SlotPatchReading =
-  | { readonly kind: "absent" }
-  | { readonly kind: "stale"; readonly canonicalHash: string }
-  | { readonly kind: "slot-missing"; readonly canonicalHash: string }
-  | { readonly kind: "carrier"; readonly text: string; readonly canonicalHash: string };
-
 /**
- * A SLOT PATCH WRITES NO CARRIER BY HAND: it edits the slot's own record in a copy of the family and lets the one recompose
- * (`expandMemeRefs`) frame the whole carrier, which mints the block check over the bytes it frames. The caller lands that text
- * through the put's own gate under the same base, so a patch passes every law a put passes and reseals as a put does.
- *
- * The body a slot carries spans its record's text and its `$preamble` / `$postamble` carriage (the text before its meta, and
- * the text after its last child). `append` adds to the body's end: the postamble where one stands, the slot's text otherwise.
- * `replace` swaps the whole body: the slot's text takes the new bytes and both carriages leave; a child slot the new body
- * does not call leaves with the put's consequence. The slot's fields (its meta) and its authored delimiters stay.
+ * WHERE A SLOT'S APPEND LANDS. The body a slot carries spans its record's text and its `$preamble` / `$postamble` carriage
+ * (the text before its meta, and the text after its last child). Words appended to the slot join the body's end: the
+ * postamble's record where one stands with non-blank text, the slot's own record otherwise. Answers the title that takes the
+ * words and the record it holds now, or null where the sink holds no record of the slot.
  */
-export async function patchSlotCarrier(input: SlotPatchInput, sink: Pick<MemeSink, "titles" | "read">): Promise<SlotPatchReading> {
-  const hash = input.hash ?? defaultHash;
-  const { view, records } = await familySnapshot(input.uri, sink);
-  const group = familyGroup(view, input.uri);
-  if (!group.includes(input.uri)) return { kind: "absent" };
-  const reader = (map: ReadonlyMap<string, TiddlerFields>) => (title: string): TiddlerFields | undefined => map.get(title);
-  const canonicalHash = hash(expandMemeRefs(reader(records), input.uri) ?? heldText(records.get(input.uri)));
-  if (input.baseHash === null ? input.mode !== "append" : input.baseHash !== canonicalHash) return { kind: "stale", canonicalHash };
-  const title = `${rootAddressOf(input.uri)}${input.slot}`;
-  const slot = records.get(title);
-  if (!slot || !group.includes(title) || slot["$slot"] !== input.slot) return { kind: "slot-missing", canonicalHash };
-  const next = new Map(records);
-  const addition = input.text.replace(/^\n+/, "").replace(/\s+$/, "");
-  const pre = carriageUri(title, "preamble");
-  const post = carriageUri(title, "postamble");
-  if (input.mode === "replace") {
-    next.set(title, { ...slot, text: addition });
-    next.delete(pre);
-    next.delete(post);
-  } else {
-    const tail = next.get(post);
-    const into = tail && typeof tail.text === "string" && tail.text.trim() !== "" ? post : title;
-    const held = next.get(into)!;
-    const standing = typeof held.text === "string" ? held.text.replace(/\s+$/, "") : "";
-    next.set(into, { ...held, text: standing === "" ? addition : `${standing}\n\n${addition}` });
-  }
-  const text = expandMemeRefs(reader(next), input.uri);
-  if (text === null) return { kind: "slot-missing", canonicalHash };
-  return { kind: "carrier", text, canonicalHash };
+export async function slotAppendTarget(slotTitle: string, sink: Pick<MemeSink, "read">): Promise<{ readonly title: string; readonly fields: TiddlerFields } | null> {
+  const slot = await sink.read(slotTitle);
+  if (!slot) return null;
+  const post = carriageUri(slotTitle, "postamble");
+  const tail = await sink.read(post);
+  return tail && typeof tail.text === "string" && tail.text.trim() !== "" ? { title: post, fields: tail } : { title: slotTitle, fields: slot };
+}
+
+/** Where a title stands in a sink, by the one family law over the title's own neighbourhood (`familySnapshot`). */
+export async function familyReadingIn(title: string, sink: Pick<MemeSink, "titles" | "read">): Promise<FamilyReading> {
+  const { view } = await familySnapshot(title, sink);
+  return familyOf(view, title);
 }
 
 /** One member record as a writer would leave it: the root, a slot or a carriage part, whole. */

@@ -35,7 +35,7 @@
  * registrations; it holds no key and grants nothing the stewards did not sign.
  *
  * THE WRITE CAP: the named stewards' set. This module names it in the record (`keptBy`); the composite's
- * writable-layer law enforces it on the island (`meme put` to a bag the island mounts no writable layer for
+ * writable-layer law enforces it on the island (`tiddler put --bag` to a bag the island mounts no writable layer for
  * refuses — `meme-sinks.ts`).
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief

@@ -78,7 +78,7 @@ export function parseTitleList(value: unknown): readonly string[] | null {
 }
 
 /** `$tw.utils.stringifyList`. */
-function stringifyList(value: readonly unknown[]): string {
+export function stringifyList(value: readonly unknown[]): string {
   return value.map((v) => { const entry = typeof v === "string" ? v : v ? String(v) : ""; return /[^\S\xA0]/m.test(entry) ? `[[${entry}]]` : entry; }).join(" ");
 }
 
@@ -99,6 +99,16 @@ function fieldString(name: string, value: unknown): string {
   if (name === "created" || name === "modified") return stringifyDate(value as Date);
   if (TITLE_LIST_FIELDS.includes(name)) return stringifyList(value as readonly unknown[]);
   return String(value);
+}
+
+/**
+ * `Tiddler.getFieldStrings`, engine-free: every field a `$tw.Tiddler` would hold of the record, as the string it writes. A
+ * door that reads a bag's store with no engine running names a record's fields (and hashes them) through it.
+ */
+export function fieldStringsOf(fields: CarrierFields): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [name, value] of tiddlerFields(fields)) out[name] = fieldString(name, value);
+  return out;
 }
 
 /**

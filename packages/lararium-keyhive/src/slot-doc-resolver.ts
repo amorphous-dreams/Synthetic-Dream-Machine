@@ -2,7 +2,7 @@
  * slot-doc-resolver — THE ONE resolver of a wiki's instance-slot docs (draft · working · personal).
  *
  * Every site that names one of these docs reads through here: the wiki island's slot grants
- * (`resolveBinding`), the host's wiki-slot mount (through the daemon proxy), `meme put --recipe`,
+ * (`resolveBinding`), the host's wiki-slot mount (through the daemon proxy), `tiddler put --bag <a wiki slot>`,
  * `prune-stale`, `wiki init`, and the daemon's own late-attached working layer. One slug on one
  * vessel resolves to ONE doc per slot from every call site.
  *

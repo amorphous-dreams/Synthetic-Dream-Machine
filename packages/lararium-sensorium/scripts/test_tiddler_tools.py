@@ -305,9 +305,9 @@ def test_the_cards_name_the_rendered_read(daemon):
         assert "rendered-derives" in tools[name].description, name
 
 
-def test_tiddler_get_reads_one_bag_and_the_engine_verbs_name_a_wiki_alone(daemon):
-    # `tiddler_get` reads a bag (one record, no engine) and names it on the wire; every engine verb names `recipe` alone,
-    # so a `bag` there never rides (the call refuses before the wire, the signature carries no `bag`).
+def test_the_record_tools_reach_one_bag_and_the_engine_verbs_name_a_wiki_alone(daemon):
+    # `tiddler_get`, `tiddler_put` and `tiddler_delete` reach a bag (one record through its store, no engine) and name it on
+    # the wire; every engine verb names `recipe` alone, so a `bag` there never rides (the signature carries no `bag`).
     import inspect
     t = _tools()
     daemon.output = {"bag": "lar:///ha.ka.ba/bags/lares", "title": "T", "tiddler": None}
@@ -316,8 +316,7 @@ def test_tiddler_get_reads_one_bag_and_the_engine_verbs_name_a_wiki_alone(daemon
     for name in ("wiki_filter", "wiki_render", "wiki_status"):
         assert "bag" not in inspect.signature(t[name]).parameters, name
     for name in ("tiddler_put", "tiddler_delete"):
-        with pytest.raises(ValueError):
-            t[name](title="T", bag="lares")
+        assert "bag" in inspect.signature(t[name]).parameters, name
     with pytest.raises(TypeError):
         t["wiki_filter"](filter="[tag[x]]", bag="lares")
     overview = t["wiki_status"]()
@@ -359,17 +358,47 @@ def test_an_append_rides_without_a_base_on_a_record_and_a_slot_and_names_its_wor
     daemon.output = {"recipe": "default", "title": "Ledger", "decision": "conflict", "hash": "sha256:3"}
     with pytest.raises(uds.LaresVerbError, match=r"kept moving under the append.*sha256:3"):
         t["tiddler_put"](title="Ledger", recipe="default", append="y")
-    daemon.output = {"uri": "lar:///t/x", "slot": "#/a", "decision": "ingest", "landed": [], "warnings": []}
-    assert t["tiddler_put"](title="lar:///t/x", meme=True, recipe="default", slot="#/a", append="note")["decision"] == "ingest"
-    assert daemon.wire() == {"verb": "meme-patch", "args": {"recipe": "default", "uri": "lar:///t/x", "slot": "#/a", "append": "note"}}
+    daemon.output = {"recipe": "default", "title": "lar:///t/x#/a", "decision": "put", "hash": "sha256:4", "landed": [], "kept": [], "tombstoned": [], "warnings": []}
+    assert t["tiddler_put"](title="lar:///t/x", recipe="default", slot="#/a", append="note")["decision"] == "put"
+    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "lar:///t/x#/a", "append": "note"}}
 
 
-def test_slot_write_names_one_source_and_a_whole_body_write_names_a_base(daemon):
+def test_the_slot_folds_into_the_title_and_a_slot_text_put_names_no_base(daemon):
     t = _tools()
-    for kwargs in ({"slot": "#/a", "base": "sha256:1"}, {"slot": "#/a", "text": "x", "append": "y", "base": "sha256:1"}, {"slot": "#/a", "text": "x"}):
-        with pytest.raises(ValueError):
-            t["tiddler_put"](title="lar:///t/x", meme=True, recipe="default", **kwargs)
-    assert daemon.lines == []
+    daemon.output = {"recipe": "default", "title": "lar:///t/x#/a", "decision": "put", "hash": "sha256:5"}
+    t["tiddler_put"](title="lar:///t/x", recipe="default", slot="#/a", text="a new body")
+    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "lar:///t/x#/a", "text": "a new body"}}
+    t["tiddler_put"](title="lar:///t/x#/a", recipe="default", text="a new body", base="partial:#/a:sha256:9")
+    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "lar:///t/x#/a", "text": "a new body", "base": "partial:#/a:sha256:9"}}
+    before = len(daemon.lines)
+    for bad in ("a", "#/", "#/a b", "#/a//b"):
+        with pytest.raises(ValueError, match="slot-malformed"):
+            t["tiddler_put"](title="lar:///t/x", recipe="default", slot=bad, text="x")
+    with pytest.raises(ValueError, match="slot-beside-fragment"):
+        t["tiddler_put"](title="lar:///t/x#/a", recipe="default", slot="#/b", text="x")
+    assert len(daemon.lines) == before
+
+
+def test_a_bag_takes_the_plain_put_and_the_family_delete(daemon):
+    t = _tools()
+    daemon.output = {"bag": "working", "title": "lar:///t/x", "decision": "put", "hash": "sha256:6", "canonicalHash": "sha256:c"}
+    t["tiddler_put"](title="lar:///t/x", bag="working", text="a whole carrier")
+    assert daemon.wire() == {"verb": "tiddler-put", "args": {"bag": "working", "title": "lar:///t/x", "text": "a whole carrier"}}
+    daemon.output = {"bag": "working", "title": "lar:///t/x", "decision": "removed", "tombstoned": [], "retracted": ["lar:///t/x"]}
+    t["tiddler_delete"](title="lar:///t/x", bag="working", family=True)
+    assert daemon.wire() == {"verb": "tiddler-delete", "args": {"bag": "working", "title": "lar:///t/x", "family": True}}
+    before = len(daemon.lines)
+    for call, kwargs in (("tiddler_put", {"text": "x"}), ("tiddler_delete", {})):
+        with pytest.raises(ValueError, match="no-container"):
+            t[call](title="lar:///t/x", recipe="default", bag="working", **kwargs)
+    assert len(daemon.lines) == before
+
+
+def test_put_and_delete_take_no_meme_argument():
+    t = _tools()
+    for call in ("tiddler_put", "tiddler_delete"):
+        with pytest.raises(TypeError):
+            t[call](title="lar:///t/x", recipe="default", meme=True)
 
 
 def test_meme_all_joins_pages_and_retains_the_first_provenance(daemon):

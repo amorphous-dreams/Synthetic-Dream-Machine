@@ -4,13 +4,13 @@
  * `lararium-mesh/tests/stale-base-write-keeps-the-face-actor.test.ts`).
  *
  * The session's face reaches the verb as `VerbContext.worn` (its ordinal, its presenter, and the PersonaGroup the vessel's
- * worn face maps the ordinal to). The meme door and the tiddler door name that group on the write's origin
+ * worn face maps the ordinal to). The tiddler door, over a wiki's engine and over a bag's store, names that group on the write's origin
  * (`ChangeOrigin.face`); the tiddler door's record crosses TiddlyWiki's `wiki.addTiddler` hop into the island adaptor,
  * which carries the face onto the save it flushes for that title. The stores carry the composition's actor door
  * (`{ wear }`), so the write lands under the face's actor rather than refusing `worn-face-unwritable`.
  *
  *   T1  RED: tool-door-put-lands-under-the-worn-faces-actor (tiddler-put, through the hop)
- *   T2  RED: tool-door-meme-put-lands-under-the-worn-faces-actor (meme-put into a bag the composition holds)
+ *   T2  RED: tool-door-bag-put-lands-under-the-worn-faces-actor (a family put into a bag the composition holds)
  *   T3  RED: tool-door-two-faces-write-disjoint-actors
  *   T4  CONTROL: tool-door-write-with-no-worn-face-rides-the-engine-actor
  *
@@ -27,7 +27,6 @@ import { type DocHandle, type Repo as RepoType, type StorageAdapterInterface } f
 import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { makeTiddlerPutReactor } from "../src/tiddler-verbs.js";
-import { makeMemePutReactor } from "../src/meme-verbs.js";
 import type { VerbContext, SessionWorn } from "../src/verb-dispatcher.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
 
@@ -114,14 +113,14 @@ describe.skipIf(wikiSkip)(`a tool-door write lands under the worn face's actor${
     expect(r.wire.ownsActor(actors[0]!)).toBe(true);
   }, 60_000);
 
-  test("T2 RED: tool-door-meme-put-lands-under-the-worn-faces-actor", async () => {
+  test("T2 RED: tool-door-bag-put-lands-under-the-worn-faces-actor", async () => {
     const r = await rig();
     const before = hashes(r.working);
-    const receipt = await makeMemePutReactor(r.opts)({ bag: WORKING, uri: MEME, text: memeText }, ctx(worn(FACE_A)));
-    expect(receipt["decision"]).toBe("ingest");
+    const receipt = await makeTiddlerPutReactor(r.opts)({ bag: WORKING, title: MEME, text: memeText }, ctx(worn(FACE_A)));
+    expect(receipt["decision"]).toBe("put");
     const actors = added(r.working, before);
     expect(actors.length).toBeGreaterThan(0);
-    expect(new Set(actors), `the meme put lands under the worn face's actor (engine ${r.engineActor()})`).toEqual(new Set([await r.wire.actor(FACE_A, r.working.documentId)]));
+    expect(new Set(actors), `the bag put lands under the worn face's actor (engine ${r.engineActor()})`).toEqual(new Set([await r.wire.actor(FACE_A, r.working.documentId)]));
   }, 60_000);
 
   test("T3 RED: tool-door-two-faces-write-disjoint-actors", async () => {
@@ -138,7 +137,7 @@ describe.skipIf(wikiSkip)(`a tool-door write lands under the worn face's actor${
     const actors = await r.put("Unworn note");
     expect(new Set(actors)).toEqual(new Set([r.engineActor()]));
     const before = hashes(r.working);
-    await makeMemePutReactor(r.opts)({ bag: WORKING, uri: MEME, text: memeText }, ctx());
+    await makeTiddlerPutReactor(r.opts)({ bag: WORKING, title: MEME, text: memeText }, ctx());
     expect(new Set(added(r.working, before))).toEqual(new Set([r.engineActor()]));
   }, 60_000);
 });

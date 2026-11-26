@@ -1109,34 +1109,91 @@
           "recipe": "default",
           "file": "@fixture/family-input.mem"
         },
-        "flags": {
-          "meme": true
-        }
+        "flags": {}
       },
       "mcp": {
         "title": "lar:///ha.ka.ba/docs/family",
         "recipe": "default",
-        "text": "family input\n",
-        "meme": true
+        "text": "family input\n"
       },
       "wire": {
-        "verb": "meme-put",
+        "verb": "tiddler-put",
         "args": {
-          "uri": "lar:///ha.ka.ba/docs/family",
           "recipe": "default",
+          "title": "lar:///ha.ka.ba/docs/family",
           "text": "family input\n"
         }
       },
       "output": {
-        "has": "<<~ has name=`lar:///ha.ka.ba/docs/family` params=`kind/family-write recipe/default`>>",
-        "uri": "lar:///ha.ka.ba/docs/family",
-        "decision": "ingest",
+        "has": "<<~ has name=`lar:///ha.ka.ba/docs/family` params=`recipe/default layer/lar:///ha.ka.ba/wikis/daemon/working position/root base/sha256-family`>>",
+        "recipe": "default",
+        "title": "lar:///ha.ka.ba/docs/family",
+        "decision": "put",
+        "bag": "lar:///ha.ka.ba/wikis/daemon/working",
+        "created": true,
+        "changed": [
+          "text"
+        ],
+        "hash": "sha256-family",
+        "textHash": "sha256-familytext",
+        "position": "root",
+        "canonicalHash": "sha256:live",
         "landed": [
           "lar:///ha.ka.ba/docs/family"
         ],
+        "kept": [],
         "tombstoned": [],
-        "warnings": [],
-        "canonicalHash": "sha256:live"
+        "warnings": []
+      }
+    },
+    {
+      "tool": "tiddler_put",
+      "cli": {
+        "command": "tiddler",
+        "positional": [
+          "put",
+          "lar:///ha.ka.ba/docs/family"
+        ],
+        "options": {
+          "bag": "working",
+          "slot": "#/a",
+          "text": "a new body"
+        },
+        "flags": {}
+      },
+      "mcp": {
+        "title": "lar:///ha.ka.ba/docs/family",
+        "bag": "working",
+        "slot": "#/a",
+        "text": "a new body"
+      },
+      "wire": {
+        "verb": "tiddler-put",
+        "args": {
+          "bag": "working",
+          "title": "lar:///ha.ka.ba/docs/family#/a",
+          "text": "a new body"
+        }
+      },
+      "output": {
+        "has": "<<~ has name=`lar:///ha.ka.ba/docs/family#/a` params=`bag/working position/slot base/sha256-slot`>>",
+        "bag": "working",
+        "title": "lar:///ha.ka.ba/docs/family#/a",
+        "decision": "put",
+        "created": false,
+        "changed": [
+          "text"
+        ],
+        "hash": "sha256-slot",
+        "textHash": "sha256-slottext",
+        "position": "slot",
+        "canonicalHash": "sha256:next",
+        "landed": [
+          "lar:///ha.ka.ba/docs/family#/a"
+        ],
+        "kept": [],
+        "tombstoned": [],
+        "warnings": []
       }
     },
     {
@@ -1152,31 +1209,34 @@
           "if-match": "sha256:live"
         },
         "flags": {
-          "meme": true
+          "family": true
         }
       },
       "mcp": {
         "title": "lar:///ha.ka.ba/docs/family",
         "bag": "working",
         "base": "sha256:live",
-        "meme": true
+        "family": true
       },
       "wire": {
-        "verb": "meme-delete",
+        "verb": "tiddler-delete",
         "args": {
-          "uri": "lar:///ha.ka.ba/docs/family",
           "bag": "working",
-          "base": "sha256:live"
+          "title": "lar:///ha.ka.ba/docs/family",
+          "base": "sha256:live",
+          "family": true
         }
       },
       "output": {
-        "has": "<<~ has name=`lar:///ha.ka.ba/docs/family` params=`kind/family-delete bag/working base/sha256:live`>>",
-        "uri": "lar:///ha.ka.ba/docs/family",
+        "has": "<<~ has name=`lar:///ha.ka.ba/docs/family` params=`bag/working base/sha256:live`>>",
+        "bag": "working",
+        "title": "lar:///ha.ka.ba/docs/family",
         "decision": "removed",
-        "tombstoned": [
+        "mode": "plain",
+        "tombstoned": [],
+        "retracted": [
           "lar:///ha.ka.ba/docs/family"
         ],
-        "retracted": [],
         "canonicalHash": "sha256:live"
       }
     },

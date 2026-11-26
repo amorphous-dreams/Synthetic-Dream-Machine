@@ -114,7 +114,7 @@ draft's store-only base fields record its target's base and route nothing. Resid
 each change with its own bag, the nalu stamps `$origin-bag` on the wiki side for
 the projector, and the outbound save strips that stamp before the write. `bag`
 stays the author's own field and never routes. A ceremony that targets one
-specific bag (MOVE, promotion, `tiddler put --meme --bag`) carries the bag on the write
+specific bag (MOVE, promotion, `tiddler put --bag`) carries the bag on the write
 OPTION (`store.put(record, origin, { bag })`) — never on the record — and a
 bag with no writable layer refuses loud rather than falling through to the
 default writable (wiki-layer-ontology#/write-law).
@@ -178,6 +178,6 @@ title on the console.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;IguzOM6H_FD_5kV-oCbrLBrKUPlOtoIu0aqX8GX5TQg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hjGbQrveR7HYZ_gJ74p-pSbrQoHIQvY44wlIRvz-vAI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -530,7 +530,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     usage: "usage: lares spirit <verb> <pet-name> [...]  (the verbs: `lares spirit` with no word lists the door's table)",
     synopsis:
       "A spirit's record by its pet name: the one record `lar:///ha.ka.ba/lares/spirit/<pet>` answers first (recipe default), holding a stack of what it holds; `familiar/<pet>` or `spirit/<pet>` on the memory stage read through it (both standing refuses, naming both). " +
-      "`om` wakes (the card under 9,000 chars, the latest carry as testimony); `ah` trues one slot through the meme door, base-checked, refusing growth only past a waking slot's " +
+      "`om` wakes (the card under 9,000 chars, the latest carry as testimony); `ah` trues one slot through the tiddler door's plain put on the slot's title, base-checked, refusing growth only past a waking slot's " +
       "cap (#/open 2,048 bytes, #/attention 1,024; field `slot-budget` replaces both) while `hum` and `om` name the record's weight past `record-budget` (6,144) as advice, and `ah --new` lands a first shrine; `hum` (what remains after the fold) " +
       "measures each slot and folds one line to the month's ash ledger; `hooili` (the carry, hoʻoili, which writes nothing to the card) and `residue` " +
       "land a compaction summary or a handback (`--file -` reads stdin) after the strict secret-shape guard; `otakiage` burns the residue and keeps the card, on a person's hand alone. " +
@@ -855,10 +855,10 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   tiddler: {
-    usage: "usage: lares tiddler <get | put | delete | rename> <title> [<new title>] --recipe <slug>   (get also takes --bag <slug>: that one bag's record)",
+    usage: "usage: lares tiddler <get | put | delete | rename> <title> [<new title>] (--recipe <slug> | --bag <slug>)   (rename takes --recipe alone)",
     synopsis:
       "THE TIDDLER DOOR — one record with its fields, whatever its type: a plain note, a data tiddler, a meme's root " +
-      "or one of its slots. Every verb runs in the wiki's own TiddlyWiki engine through the daemon, but `get --bag <slug>`, which reads one bag's record with no engine: `--recipe default` " +
+      "or one of its slots. Every verb runs in the wiki's own TiddlyWiki engine through the daemon, but `--bag <slug>`, which reads or writes one bag's record through its store with no engine (a rename names a recipe alone): `--recipe default` " +
       "names the worn face's daemon wiki, and `--recipe <slug>` any wiki this face reaches (one it hosts, or one shared " +
       "to it), composed over that wiki's canon, its shared working layer and this face's own layers; a wiki the face " +
       "reaches none of refuses `wiki-unreached`. `get` answers ON A GRADIENT and leads with a `<<~ has …>>` line " +
@@ -867,13 +867,16 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "page, its has-stack past it. `--skinny` reads the card; `--all` the whole at the lens's grain: a record fat, a " +
       "pointer resolved from the local CAS by CID (a web2 `_canonical_uri` stays named, never fetched), a meme's carrier " +
       "paged on slot boundaries; `--slot` one slot. `put` PATCHES: it sets and unsets " +
-      "fields, adds and removes tags, and moves the text only where `--text` or `--file` names it (`--append` lands words at " +
+      "fields, adds and removes tags, and moves the text only where `--text` or `--file` names it. A meme family moves by the same put: " +
+      "a whole carrier as the root's text lands the family through the Confluence gate (a slot it omits stays standing, `kept`; `--cut '#/x'` " +
+      "names a slot that leaves), and `--slot '#/x'` folds into the title `<root>#/x`, so a slot's text lands with no base (a partial base " +
+      "`partial:#/x:…` patches within its span) and an append honours the slot's standing postamble (`--append` lands words at " +
       "the end with no base, read and written in one step on the live wiki, so two appends through this door at once both land; " +
       "a writer that reaches the store directly merges per field, last writer winning), landing in the " +
       "wiki's working layer (this face's own personal layer of a wiki where it holds no writer's seat); `delete` removes a plain tiddler plainly: the record leaves its layer and no tombstone " +
-      "rises; a meme root or slot answers the consequence the delete would land and refuses by name " +
+      "rises; a meme root answers the consequence the delete would land and refuses by name " +
       "(`tiddler-delete-in-a-family`) unless `--family` names the family act, which lands the root and its slots as " +
-      "one change. Only a lower layer makes a delete a choice: where one holds the title too, a delete with no mode " +
+      "one change; a slot title (`<root>#/x`) leaves as the cut on its parent. Only a lower layer makes a delete a choice: where one holds the title too, a delete with no mode " +
       "refuses `delete-mode-needed` and names both meanings: `--mode kapae` raises a tombstone that keeps the " +
       "records beneath hidden (they stay in their bags); `--mode reveal` retracts the topmost record and the one " +
       "beneath surfaces. A delete of a title the wiki reads absent retracts a kāpae that hides nothing (its " +
@@ -887,9 +890,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "names the delete that clears it, a slot refuses `slot-without-root` and names its root, and a `lar:` title another " +
       "layer holds too takes a hand alone. A `$:/` title on either side refuses `rename-system-title` (a forwarder would " +
       "answer as the setting; `put` the new title, then `delete` the standing one). An answer names only records this face " +
-      "reads and counts the rest (`withheld`); a referrer that stays home keeps its fields (`skipped`). A meme root or slot " +
-      "takes a field or tag patch here; its text moves through `lares tiddler put --meme`. `--base` carries the hash last " +
-      "read: a record that moved past it answers `conflict` and nothing lands. The engine verbs stand beside this " +
+      "reads and counts the rest (`withheld`); a referrer that stays home keeps its fields (`skipped`). `--base` carries the hash last " +
+      "read (a record's `hash`, or on a root the carrier's `canonicalHash`): a record that moved past it answers `conflict` and nothing lands. The engine verbs stand beside this " +
       "door: `lares wiki filter | render | status --recipe <slug>`; bare status surveys the vessel.",
     examples: [
       "lares tiddler get \"Room 4\" --recipe default                         # the record as a .tid on stdout, the base on stderr",
@@ -901,7 +903,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares tiddler put \"Room 4\" --recipe default --fields '{\"todo\":\"done\"}' --tag-add reviewed --base <hash>   # a field and tag patch; the text stays",
       "lares tiddler put \"New Note\" --recipe default --create --text \"first words\" --fields '{\"tags\":\"memory\"}'",
       "date +'%F a dated note' | lares tiddler put \"Ledger\" --recipe default --append -   # lands at the end; two seats appending through the door at once both land",
-      "lares tiddler put lar:///ha.ka.ba/kahua/memory/x --recipe default --meme --slot '#/log' --append note.txt   # a slot append, no base; the family reseals",
+      "lares tiddler put lar:///ha.ka.ba/kahua/memory/x --recipe default --slot '#/log' --append note.txt   # a slot append, no base; the family reseals",
+      "lares tiddler put lar:///ha.ka.ba/lares/docs/x --recipe lares --file x.mem   # a whole carrier lands the family; an omitted slot stays (kept)",
+      "lares tiddler put lar:///ha.ka.ba/lares/docs/x --bag lares --slot '#/why' --file why.txt   # one slot's text in one bag, no base",
       "lares tiddler delete \"Old Note\" --recipe default --if-match <hash>   # a stale base moves nothing",
       "lares tiddler rename \"Room 4\" \"Room Four\" --recipe default      # references follow; \"Room 4\" stays as a forwarder",
       "lares tiddler delete lar:///t/x --recipe default --family              # a meme root and its slots, one change",
@@ -921,14 +925,15 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     ],
     flags: [
       "--recipe <slug>      the wiki read or written: default (the worn face's daemon wiki) or any wiki this face reaches",
-      "--bag <slug>         (get) read that one bag's record, with no wiki and no engine; put and delete refuse a bag (a family write takes it: `lares tiddler put --meme --bag <slug>`), and so do `lares wiki filter | render | status`",
+      "--bag <slug>         (get | put | delete) that one bag's record through its store, with no wiki and no engine; rename and `lares wiki filter | render | status` refuse a bag",
+      "--realm <id>         (beside --bag) the realm whose registration the bag resolves through",
       "--face N             act as face N on a session of it (the worn face where absent; a shut face refuses face-not-open; a lit sibling answers from its own daemon wiki, --recipe default)",
       "--target <h1|name>   (get, and `wiki filter | render | status`; on put or delete it refuses) READ another lit face's daemon wiki while keeping the face worn: its canon and working layer, never its personal or draft layer (either bag refuses cross-face-private); a shut face refuses face-not-open; a write naming another face refuses cross-face-write-refused",
-      "--slot <#/name>      (get) one slot of the meme the title names",
+      "--slot <#/name>      (get) one slot of the meme the title names   ·   (put) folds into the title (`<root>#/name`); refuses a malformed path (slot-malformed) or a title already naming a slot (slot-beside-fragment)",
       "--fields <a,b>       (get) the named fields alone   ·   (put) a JSON object of field names to string values",
-      "--meme               get: carrier or title-less family listing; put: family text or slot patch; delete: family removal",
+      "--meme               (get) the carrier lens; with no title, the family listing",
       "--tree               (title-less get --meme) nest slots under each listed root",
-      "--append <path | -> (put) words from a host file or stdin land at the end of the standing text, no base needed (an append overwrites nothing): a text that does not end on a newline takes one before them; a missing title refuses unless --create; --tag-add, --tag-remove and --create ride beside it; refuses beside --text, --file, --base, --fields, --unset   ·   (put --meme --slot) a paragraph at the end of the slot's body, the family resealed whole",
+      "--append <path | -> (put) words from a host file or stdin land at the end of the standing text, no base needed (an append overwrites nothing): a text that does not end on a newline takes one before them; a missing title refuses unless --create; --tag-add, --tag-remove and --create ride beside it; refuses beside --text, --file, --base, --fields, --unset   ·   on a slot (`--slot`, or a `<root>#/x` title) the words land before a standing postamble, the family resealed whole",
       "--skinny             (get) every field, the text left home (the card)",
       "--all                (get) the whole at the lens's grain: a record fat, a pointer resolved, a meme's carrier paged to the end",
       "--after <cursor>     (get) one page of the whole carrier: hand back the cursor `next` named",
@@ -936,11 +941,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--tag-add <list>     (put) tags to add, as TiddlyWiki writes a list: one [[two words]]; a repeated --tag-add (or --tag-remove) joins its list to the earlier ones",
       "--tag-remove <list>  (put) tags to remove",
       "--cut <#/slot>       (put, on a meme root or slot) the slots that leave, by rooted path; repeatable. Absence never deletes: a slot the new text omits stays standing by reference (the answer names it under `kept`), and only a cut tombstones one",
-      "--text <words>       (put) the new text (with `--meme --slot`: the slot's whole body)   ·   --file <host path | ->  the new text from a host file or stdin",
-      "--base <hash>        (put) the hash last read; stale → conflict, nothing lands (a base guards honest reuse, never a lock)",
-      "--create             (put) land only where no tiddler stands; an existing one answers `exists`   ·   (put --meme) land the whole family only where none stands; a standing one answers `exists`, nothing moves (a slot patch refuses it: the family must stand)",
+      "--text <words>       (put) the new text (on a root, the whole carrier; on a slot, its body)   ·   --file <host path | ->  the new text from a host file or stdin",
+      "--base <hash>        (put) the hash last read (the record's, or a root's carrier hash; a slot read's partial base patches within its span); stale → conflict, nothing lands (a base guards honest reuse, never a lock)",
+      "--create             (put) land only where no tiddler stands, a family's root included; an existing one answers `exists` and nothing moves",
       "--if-match <hash>    (delete | rename) the hash last read; stale → conflict, nothing moves",
-      "--family             (delete) name the family act: a meme root leaves with its slots, as one change",
+      "--family             (delete) name the family act: a meme root leaves with its slots, as one change, in a recipe or a bag",
       "--mode <kapae|reveal> (delete) over a lower layer's record: kapae hides it   ·   reveal surfaces it (none: a plain delete)",
       "--max-bytes <N>      (get) the byte cap on the answer; the largest fields leave first and get named",
       "--collapse           (wiki filter) each row answers its bytes, and a meme root its slots (`{slot, bytes, first}`), the skinny form of `tiddler get --meme --skinny`; --max-bytes and --limit count the collapsed rows",
@@ -955,14 +960,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     synopsis:
       "THE MEME DOOR — one family for every law over meme text, and each verb DECLARES ITS SEAT: " +
       "`normalize` · `check` · `sitting` · `project --to md` (over a file) run LOCAL with no daemon in " +
-      "reach; `project` to any other target, or from a `lar:` uri, rides the daemon verb. A family lands, patches, lists and leaves " +
-      "through `lares tiddler put | get | delete --meme`. A meme READS through the one door: `lares tiddler get <uri> --recipe <slug> --meme` (whole within a page, " +
+      "reach; `project` to any other target, or from a `lar:` uri, rides the daemon verb. A family lands and patches through " +
+      "`lares tiddler put`, leaves through `lares tiddler delete --family`, and lists through `lares tiddler get --meme`. A meme READS through the one door: `lares tiddler get <uri> --recipe <slug> --meme` (whole within a page, " +
       "its has-stack past it; `--all` the whole carrier). Store-backed verbs require `(--recipe <slug> | --bag <slug>)`; `--recipe` edits AS " +
       "the named wiki; " +
       "`--bag` places into that bag and REFUSES when this island cannot write it; `--realm <id>` beside " +
-      "`--bag` names the realm whose registration that bag resolves through, and reads that realm alone. " +
-      "`--base` carries the " +
-      "canonical hash last read — a record that moved past it CONFLICTS and nothing lands.",
+      "`--bag` names the realm whose registration that bag resolves through, and reads that realm alone.",
     examples: [
       "lares tiddler get lar:///ha.ka.ba/lares/api/corpus --recipe lares --meme   # READ a meme: the carrier, base on stderr (the one door)",
       "lares meme normalize draft.mem                         # re-frame + re-stamp the block check",
@@ -977,11 +980,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: [
       "--recipe <slug>    an edit AS that wiki: its designated writable bag, write-then-sync",
       "--bag <slug>       a residency placement into that bag (refused when this island cannot write it)",
-      "--base <hash>      (put, patch) the canonical hash last read; required on a whole-slot write, never on an append; stale → conflict, nothing lands",
-      "--slot <#/name>    (patch) the slot whose body moves",
-      "--append <file>    (`tiddler put --meme --slot`) a paragraph at the end of the slot's body, no base needed; a slot's whole body rides `--text` or `--file` against `--base`",
-      "--if-match <hash>  (delete) the canonical hash last read; stale → conflict, nothing moves",
-      "--file <path>      (put) the meme text (stdin when absent)",
       "--target <h1|name> (get, list) READ another lit face's daemon wiki (`--recipe default`, or one of its daemon bags) while keeping the face worn; its personal and draft layers never answer (cross-face-private), a shut face refuses face-not-open, and a write naming another face refuses at the CLI",
       "--tree             (list) nest each root's slot tree; roots + canonical hash alone otherwise. " +
         "`list --recipe` names the roots the wiki's whole stack resolves (a removed carrier lists nowhere); " +

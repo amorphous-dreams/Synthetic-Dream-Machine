@@ -39,11 +39,11 @@ export const CHORE_FREE_VERBS: Readonly<Record<string, string>> = Object.freeze(
 
 /**
  * EACH HAT REACHED BY NAME: the chores a LIT sibling's own session carries as ITSELF, on its own lane (the island's per-face
- * lane writes that face's own document, sealed under its own chain): the meme writes, and the tiddler door's writes, which land
- * through that face's own engine in its own working document. Every other chore still spends the mount's authority alone and
+ * lane writes that face's own document, sealed under its own chain): the tiddler door's writes, which land through that
+ * face's own engine in its own working document, or in its own lane's document where the call names that bag. Every other chore still spends the mount's authority alone and
  * refuses from a sibling's session.
  */
-export const FACE_LANE_CHORES: ReadonlySet<string> = new Set(["meme-put", "meme-delete", "tiddler-put", "tiddler-delete", "oracle-cast"]);
+export const FACE_LANE_CHORES: ReadonlySet<string> = new Set(["tiddler-put", "tiddler-delete", "oracle-cast"]);
 
 /**
  * The chore-free verbs that still write into a face's daemon layer, each with its reason. A chore-free verb passes the chore

@@ -34,7 +34,7 @@ describe("every registered verb reports its changes or answers untracked", () =>
   const verbs = registeredVerbs();
   test("the scan reads the house's verb table (not vacuous)", () => {
     expect(verbs.length).toBeGreaterThan(100);
-    for (const known of ["tiddler-put", "meme-put", "kahua-propose", "share-apply", "tiddler-get"]) expect(verbs).toContain(known);
+    for (const known of ["tiddler-put", "tiddler-delete", "kahua-propose", "share-apply", "tiddler-get"]) expect(verbs).toContain(known);
   });
   test("each write verb answering with no report reads untracked; with a report, it reads by its report", () => {
     const writes = verbs.filter((v) => !READ_VERBS.has(v));

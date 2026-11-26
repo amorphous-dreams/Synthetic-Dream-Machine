@@ -1,6 +1,6 @@
 /**
  * NO SILENT STEWARD (keeper-and-hands#/the-direction, red test 1). The daemon island mounts one face (the daemon mount), so
- * a chore the daemon runs (a meme write, a projection, a promote, a sweep: anything it writes or signs) spends the mount's
+ * a chore the daemon runs (a tiddler write, a projection, a promote, a sweep: anything it writes or signs) spends the mount's
  * authority. A session wearing another lent face that asks one refuses `chore-face-not-mounted`, naming both faces, and
  * nothing places; the AI seat naming another lent face on the maintenance frame refuses the same way. A chore asked under
  * the mount places and its answer carries the receipt mark (`ChoreReceiptMark`: the acting face, the asker's hand, its session).
@@ -122,12 +122,12 @@ async function stand(lane: { readonly faceDark?: (face: number) => string | null
   return { peer, open, placed, oneShot, connect, release };
 }
 
-const MEME = { recipe: "default", uri: "lar:///ha.ka.ba/kahua/memory/project/steward", text: "x" };
+const MEME = { recipe: "default", title: "lar:///ha.ka.ba/kahua/memory/project/steward", text: "x" };
 
-test("RED RT1: a session wearing h1 (lent h0, h1; mount h0) asking a meme write refuses chore-face-not-mounted naming both faces, and nothing places", async () => {
+test("RED RT1: a session wearing h1 (lent h0, h1; mount h0) asking a tiddler write refuses chore-face-not-mounted naming both faces, and nothing places", async () => {
   const v = await stand();
   const env = await v.open("h1");
-  const reply = await v.peer.ask({ op: "session:call", ...env, requestId: "put-h1", verb: "meme-put", args: MEME });
+  const reply = await v.peer.ask({ op: "session:call", ...env, requestId: "put-h1", verb: "tiddler-put", args: MEME });
   expect(reply).toMatchObject({ kind: "session:refused", requestId: "put-h1", refusal: "chore-face-not-mounted" });
   expect(String(reply["message"])).toMatch(/h1/);
   expect(String(reply["message"])).toMatch(/h0/);
@@ -144,29 +144,29 @@ test("RED RT1: a projection chore (sweep, promote, reconcile) from the h1 sessio
   expect(v.placed).toEqual([]);
 });
 
-test("RED RT1: the AI seat naming lent h1 on the maintenance frame for a meme write refuses chore-face-not-mounted naming both faces; nothing places", async () => {
+test("RED RT1: the AI seat naming lent h1 on the maintenance frame for a tiddler write refuses chore-face-not-mounted naming both faces; nothing places", async () => {
   const v = await stand();
-  const reply = await v.oneShot({ verb: "meme-put", args: { ...MEME, face: 1 }, requestedBy: "0xseat", seat: "ai" });
+  const reply = await v.oneShot({ verb: "tiddler-put", args: { ...MEME, face: 1 }, requestedBy: "0xseat", seat: "ai" });
   expect(reply).toMatchObject({ status: "error", refusal: { reason: "chore-face-not-mounted" } });
   expect(String(reply["errorMessage"])).toMatch(/h1/);
   expect(String(reply["errorMessage"])).toMatch(/h0/);
   expect(v.placed).toEqual([]);
 });
 
-test("CONTROL: the same meme write from a session wearing h0 places, and its answer carries the mark naming h0 as acting", async () => {
+test("CONTROL: the same tiddler write from a session wearing h0 places, and its answer carries the mark naming h0 as acting", async () => {
   const v = await stand();
   const env = await v.open("h0");
-  const reply = await v.peer.ask({ op: "session:call", ...env, requestId: "put-h0", verb: "meme-put", args: MEME });
+  const reply = await v.peer.ask({ op: "session:call", ...env, requestId: "put-h0", verb: "tiddler-put", args: MEME });
   expect(reply).toMatchObject({ kind: "session:result", requestId: "put-h0", status: "done", chore: { acting: 0, asker: "cli", session: env.sessionId } });
-  expect(v.placed.map((p) => [p.verb, p.ordinal])).toEqual([["meme-put", 0]]);
+  expect(v.placed.map((p) => [p.verb, p.ordinal])).toEqual([["tiddler-put", 0]]);
 });
 
-test("CONTROL: the AI seat's meme write naming no face, or naming the mount, places and its mark names h0 as acting", async () => {
+test("CONTROL: the AI seat's tiddler write naming no face, or naming the mount, places and its mark names h0 as acting", async () => {
   const v = await stand();
   const mark = { acting: 0, asker: "seat", session: null };
-  expect(await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xseat", seat: "ai" })).toMatchObject({ status: "done", chore: mark });
-  expect(await v.oneShot({ verb: "meme-put", args: { ...MEME, face: 0 }, requestedBy: "0xseat", seat: "ai" })).toMatchObject({ status: "done", chore: mark });
-  expect(v.placed.map((p) => p.verb)).toEqual(["meme-put", "meme-put"]);
+  expect(await v.oneShot({ verb: "tiddler-put", args: MEME, requestedBy: "0xseat", seat: "ai" })).toMatchObject({ status: "done", chore: mark });
+  expect(await v.oneShot({ verb: "tiddler-put", args: { ...MEME, face: 0 }, requestedBy: "0xseat", seat: "ai" })).toMatchObject({ status: "done", chore: mark });
+  expect(v.placed.map((p) => p.verb)).toEqual(["tiddler-put", "tiddler-put"]);
 });
 
 test("CONTROL: reads keep their path from the h1 session (a meme read, a recall), and a place row acts as the place", async () => {
@@ -189,15 +189,15 @@ const askerOf = (p: unknown): unknown => (p as { asker?: unknown }).asker;
 
 test("RED: the AI seat's one-shot meme write places with asker seat; the operator's line with asker cli", async () => {
   const v = await stand();
-  await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xseat", seat: "ai" });
-  await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xop" });
+  await v.oneShot({ verb: "tiddler-put", args: MEME, requestedBy: "0xseat", seat: "ai" });
+  await v.oneShot({ verb: "tiddler-put", args: MEME, requestedBy: "0xop" });
   expect(v.placed.map(askerOf)).toEqual(["seat", "cli"]);
 });
 
 test("RED: a frame naming its own asker never chooses it: an unmarked line claiming asker tab places as cli; a seat line claiming cli places as seat", async () => {
   const v = await stand();
-  await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xop", asker: "tab" });
-  await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xseat", seat: "ai", asker: "cli" });
+  await v.oneShot({ verb: "tiddler-put", args: MEME, requestedBy: "0xop", asker: "tab" });
+  await v.oneShot({ verb: "tiddler-put", args: MEME, requestedBy: "0xseat", seat: "ai", asker: "cli" });
   expect(v.placed.map(askerOf)).toEqual(["cli", "seat"]);
 });
 
@@ -205,7 +205,7 @@ test("RED: a session's call places with the session's own hand; CONTROL: a read 
   const v = await stand();
   const opened = await v.peer.ask({ op: "session:open", requestId: "open-tab", faceRef: "h0", hand: "tab" });
   const env = { ownerEpoch: opened["ownerEpoch"], sessionId: opened["sessionId"], generation: opened["generation"], faceRef: opened["faceRef"] };
-  await v.peer.ask({ op: "session:call", ...env, requestId: "put-hand", verb: "meme-put", args: MEME });
+  await v.peer.ask({ op: "session:call", ...env, requestId: "put-hand", verb: "tiddler-put", args: MEME });
   await v.peer.ask({ op: "session:call", ...env, requestId: "read-hand", verb: "tiddler-get", args: {} });
   expect(v.placed.map(askerOf)).toEqual(["tab", "tab"]);
 });
@@ -215,7 +215,7 @@ test("RED: a session's call places with the session's own hand; CONTROL: a read 
 test("RED: the seat's meme write places with its chore mark, and a later receipt read answers that mark; CONTROL: a read carries none", async () => {
   const v = await stand();
   const mark = { acting: 0, asker: "seat", session: null };
-  await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xseat", seat: "ai", requestId: "put-mark" });
+  await v.oneShot({ verb: "tiddler-put", args: MEME, requestedBy: "0xseat", seat: "ai", requestId: "put-mark" });
   expect((v.placed[0] as { chore?: unknown }).chore).toEqual(mark);
   expect(await v.oneShot({ op: "receipt", requestId: "put-mark" })).toMatchObject({ requestId: "put-mark", state: "done", chore: mark });
   await v.oneShot({ verb: "tiddler-get", args: MEME, requestedBy: "0xseat", seat: "ai", requestId: "get-mark" });
@@ -224,20 +224,6 @@ test("RED: the seat's meme write places with its chore mark, and a later receipt
 });
 
 // ── EACH HAT REACHED BY NAME: a LIT sibling's own lane ───────────────────────────────────────────────────────────────
-test("EACH HAT REACHED BY NAME: a session wearing LIT h1 asking a meme write places AS h1 (its mark names h1 acting), and the call books h1's own face key, never the mount's chain", async () => {
-  const held: Array<{ verb: string; face?: string }> = [];
-  const signers = new SessionSignBook({ onHold: (session: BookedSession, verb: string) => { held.push({ verb, ...(session.face !== undefined ? { face: session.face } : {}) }); } });
-  const v = await stand({ lit: [1], signers });
-  const env = await v.open("h1");
-  for (const verb of ["meme-put", "meme-delete"]) {
-    const reply = await v.peer.ask({ op: "session:call", ...env, requestId: `lane-${verb}`, verb, args: MEME });
-    expect(reply, verb).toMatchObject({ kind: "session:result", status: "done", chore: { acting: 1, asker: "cli", session: env.sessionId } });
-  }
-  expect(v.placed.map((p) => [p.verb, p.ordinal])).toEqual([["meme-put", 1], ["meme-delete", 1]]);
-  expect(held.filter((h) => h.verb !== "session:seat")).toEqual([{ verb: "meme-put", face: "atom-h1" }, { verb: "meme-delete", face: "atom-h1" }]);
-  expect(held.find((h) => h.verb === "session:seat")).toEqual({ verb: "session:seat", face: "atom-h1" });
-});
-
 test("EACH HAT REACHED BY NAME: a session wearing LIT h1 asking a tiddler write places AS h1 (its own engine's write), and books h1's own face key", async () => {
   const held: Array<{ verb: string; face?: string }> = [];
   const signers = new SessionSignBook({ onHold: (session: BookedSession, verb: string) => { held.push({ verb, ...(session.face !== undefined ? { face: session.face } : {}) }); } });
@@ -256,14 +242,14 @@ test("EACH HAT REACHED BY NAME, CONTROL: the lane carries its own writes alone; 
   const signers = new SessionSignBook({ onHold: (session: BookedSession, verb: string) => { held.push({ verb, ...(session.face !== undefined ? { face: session.face } : {}) }); } });
   const v = await stand({ lit: [1], signers });
   const env = await v.open("h1");
-  for (const verb of ["sweep", "meme-patch"]) {
+  for (const verb of ["sweep", "draft"]) {
     expect(await v.peer.ask({ op: "session:call", ...env, requestId: `fenced-${verb}`, verb, args: {} }), verb)
       .toMatchObject({ kind: "session:refused", refusal: "chore-face-not-mounted" });
   }
   const other = await v.connect();
   const mount = await v.open("h0", other);
-  expect(await other.ask({ op: "session:call", ...mount, requestId: "put-mount", verb: "meme-put", args: MEME })).toMatchObject({ status: "done", chore: { acting: 0 } });
-  expect(held.filter((h) => h.verb === "meme-put")).toEqual([{ verb: "meme-put" }]);
+  expect(await other.ask({ op: "session:call", ...mount, requestId: "put-mount", verb: "tiddler-put", args: MEME })).toMatchObject({ status: "done", chore: { acting: 0 } });
+  expect(held.filter((h) => h.verb === "tiddler-put")).toEqual([{ verb: "tiddler-put" }]);
 });
 
 
@@ -283,10 +269,10 @@ const replyTo = (peer: Peer, requestId: string) => peer.heard.filter((r) => r["r
 
 test("SOL R6 M (writes enter during the drain): a write dispatched before the close holds the drain until it settles; one sent after refuses face-closing and nothing places", async () => {
   const { lives, drains } = actors(0, 1);
-  const v = await stand({ faceLife: lives, hold: new Set(["meme-put"]) });
+  const v = await stand({ faceLife: lives, hold: new Set(["tiddler-put"]) });
   const env = await v.open("h0");
-  v.peer.send({ op: "session:call", ...env, requestId: "put-before", verb: "meme-put", args: MEME });
-  await vi.waitFor(() => expect(v.placed.map((p) => p.verb)).toEqual(["meme-put"]));
+  v.peer.send({ op: "session:call", ...env, requestId: "put-before", verb: "tiddler-put", args: MEME });
+  await vi.waitFor(() => expect(v.placed.map((p) => p.verb)).toEqual(["tiddler-put"]));
   const closed = lives.close(0, "lock");
   await new Promise((r) => setImmediate(r));
   expect(drains, "the drain waits out the write already dispatched").toHaveLength(0);
@@ -297,7 +283,7 @@ test("SOL R6 M (writes enter during the drain): a write dispatched before the cl
   await vi.waitFor(() => expect(drains).toHaveLength(1));
   const other = await v.connect();
   const env2 = await v.open("h0", other);
-  expect(await other.ask({ op: "session:call", ...env2, requestId: "put-during", verb: "meme-put", args: MEME }))
+  expect(await other.ask({ op: "session:call", ...env2, requestId: "put-during", verb: "tiddler-put", args: MEME }))
     .toMatchObject({ kind: "session:result", status: "error", refusal: { reason: "face-closing" } });
   expect(v.placed.map((p) => p.requestId).filter((id) => id.includes("put-during"))).toEqual([]);
   drains[0]!();
@@ -347,7 +333,7 @@ test("SOL R6 M (a silent confirm blocks the session): a visit's reply rides its 
   const v = await stand({ lit: [1], faceLife: lives, visitVerbs: VISIT, hold: new Set(["tiddler-get"]) });
   const env = await v.open("h0");
   v.peer.send({ op: "session:call", ...env, requestId: "visit-slow", verb: "tiddler-get", args: { title: "x", target: 1 } });
-  v.peer.send({ op: "session:call", ...env, requestId: "put-next", verb: "meme-put", args: MEME });
+  v.peer.send({ op: "session:call", ...env, requestId: "put-next", verb: "tiddler-put", args: MEME });
   await vi.waitFor(() => expect(replyTo(v.peer, "put-next")[0]).toMatchObject({ status: "done" }));
   expect(replyTo(v.peer, "visit-slow"), "the visit still waits on its own channel").toEqual([]);
   v.release();
@@ -365,9 +351,9 @@ test("a visit to a face its actor holds shut refuses face-not-open at the door, 
 
 test("SOL R7 (a caller timeout releases the work ticket): the caller's wait gives up while the verb runs on, and the face's drain waits for the verb itself", async () => {
   const { lives, drains } = actors(0, 1);
-  const v = await stand({ faceLife: lives, hold: new Set(["meme-put"]), timeoutMs: 300 });
+  const v = await stand({ faceLife: lives, hold: new Set(["tiddler-put"]), timeoutMs: 300 });
   const env = await v.open("h0");
-  v.peer.send({ op: "session:call", ...env, requestId: "put-slow", verb: "meme-put", args: MEME });
+  v.peer.send({ op: "session:call", ...env, requestId: "put-slow", verb: "tiddler-put", args: MEME });
   await vi.waitFor(() => expect(replyTo(v.peer, "put-slow")[0]).toMatchObject({ status: "unknown" }), { timeout: 5000 });
   const closed = lives.close(0, "lock");
   await new Promise((r) => setTimeout(r, 300));
@@ -474,11 +460,11 @@ test("ONE GATE PER ONE-SHOT: a one-shot visit to a target whose close drains ref
   expect(await v.oneShot({ verb: "tiddler-get", args: { ...READ, target: 1 }, requestedBy: "0xplace", requestId: "visit-closing" }))
     .toMatchObject({ status: "error", refusal: { reason: "face-closing" } });
   expect(v.placed).toEqual([]);
-  expect(await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xop", requestId: "mount-write" })).toMatchObject({ status: "done" });
+  expect(await v.oneShot({ verb: "tiddler-put", args: MEME, requestedBy: "0xop", requestId: "mount-write" })).toMatchObject({ status: "done" });
   drains[0]!(); await closed;
   const mountClose = lives.close(0, "lock");
   await vi.waitFor(() => expect(drains).toHaveLength(2));
-  expect(await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xop", requestId: "mount-write-closing" }))
+  expect(await v.oneShot({ verb: "tiddler-put", args: MEME, requestedBy: "0xop", requestId: "mount-write-closing" }))
     .toMatchObject({ status: "error", refusal: { reason: "face-closing" } });
   drains[1]!(); await mountClose;
 });
@@ -493,7 +479,7 @@ test("RED XV5 (#407 M1, M3): the door refuses a private bag first, then a write 
   expect(await ask("unknown", "tiddler-get", { ...READ, target: "nobody" })).toMatchObject({ kind: "session:refused", refusal: "target-unknown" });
   expect(await ask("doubled", "tiddler-get", { ...READ, target: "WREN" })).toMatchObject({ kind: "session:refused", refusal: "target-ambiguous" });
   expect(await ask("posing", "tiddler-get", { ...READ, target: "4" })).toMatchObject({ kind: "session:refused", refusal: "target-ambiguous" });
-  expect(await v.oneShot({ verb: "meme-put", args: { ...MEME, target: 1 }, requestedBy: "0xplace" })).toMatchObject({ status: "error", refusal: { reason: "cross-face-write-refused" } });
+  expect(await v.oneShot({ verb: "tiddler-put", args: { ...MEME, target: 1 }, requestedBy: "0xplace" })).toMatchObject({ status: "error", refusal: { reason: "cross-face-write-refused" } });
   expect(v.placed).toEqual([]);
 });
 
@@ -507,9 +493,9 @@ test("CONTROL XV6 (Sol 407e): a verb outside the visit reads, carrying a numeric
 
 test("ONE-SHOT WORK RIDES THE WORK GATE (writes enter during the drain, the maintenance line): a one-shot write on the mount dispatched before its close holds the drain until it settles; one sent during the drain refuses face-closing and nothing places", async () => {
   const { lives, drains } = actors(0, 1);
-  const v = await stand({ faceLife: lives, hold: new Set(["meme-put"]) });
+  const v = await stand({ faceLife: lives, hold: new Set(["tiddler-put"]) });
   const before = await v.connect();
-  before.send({ verb: "meme-put", args: MEME, requestedBy: "0xop", requestId: "one-before" });
+  before.send({ verb: "tiddler-put", args: MEME, requestedBy: "0xop", requestId: "one-before" });
   await vi.waitFor(() => expect(v.placed.map((p) => p.requestId)).toEqual(["one-before"]));
   const closed = lives.close(0, "lock");
   await new Promise((r) => setImmediate(r));
@@ -518,7 +504,7 @@ test("ONE-SHOT WORK RIDES THE WORK GATE (writes enter during the drain, the main
   await vi.waitFor(() => expect(before.heard[0]).toMatchObject({ status: "done" }));
   await vi.waitFor(() => expect(drains).toHaveLength(1));
   for (const [requestId, seat] of [["one-during", {}], ["one-during-seat", { seat: "ai" }]] as const) {
-    expect(await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xop", requestId, ...seat }))
+    expect(await v.oneShot({ verb: "tiddler-put", args: MEME, requestedBy: "0xop", requestId, ...seat }))
       .toMatchObject({ status: "error", refusal: { reason: "face-closing" } });
   }
   expect(v.placed.map((p) => p.requestId)).toEqual(["one-before"]);
@@ -539,11 +525,11 @@ test("ONE-SHOT WORK RIDES THE WORK GATE: the operator's hand naming a sibling fa
   const v = await stand({ faceLife: lives });
   const closed = lives.close(1, "lock");
   await vi.waitFor(() => expect(drains).toHaveLength(1));
-  expect(await v.oneShot({ verb: "meme-put", args: { ...MEME, face: 1 }, requestedBy: "0xop", requestId: "named-closing" }))
+  expect(await v.oneShot({ verb: "tiddler-put", args: { ...MEME, face: 1 }, requestedBy: "0xop", requestId: "named-closing" }))
     .toMatchObject({ status: "error", refusal: { reason: "face-closing" } });
-  expect(await v.oneShot({ verb: "meme-put", args: { ...MEME, face: 7 }, requestedBy: "0xop", requestId: "named-unknown" }))
+  expect(await v.oneShot({ verb: "tiddler-put", args: { ...MEME, face: 7 }, requestedBy: "0xop", requestId: "named-unknown" }))
     .toMatchObject({ status: "done" });
-  expect(await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xop", requestId: "mount-lit" }))
+  expect(await v.oneShot({ verb: "tiddler-put", args: MEME, requestedBy: "0xop", requestId: "mount-lit" }))
     .toMatchObject({ status: "done" });
   expect(v.placed.map((p) => p.requestId)).toEqual(["named-unknown", "mount-lit"]);
   drains[0]!();
