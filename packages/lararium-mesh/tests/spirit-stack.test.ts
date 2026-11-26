@@ -5,6 +5,7 @@
  */
 import { describe, expect, test } from "vitest";
 import * as K from "../src/spirit-stack.js";
+import * as C from "../src/cap-stack.js";
 
 const ONE = K.spiritOf("cold-reader");
 const M = "lar:///ha.ka.ba/kahua/memory/";
@@ -114,5 +115,27 @@ describe("any instance strings a cap (ruling 2026-11-25-body-becomes-instance)",
   test("a bare tag's holder reads instance", async () => {
     const { capHolder } = await import("../src/spirit-stack.js");
     expect(capHolder("lar:///a.bare.tag")).toBe("instance");
+  });
+});
+
+describe("the stack grammar rides one shared core, and the spirit stack reads the same bytes over it", () => {
+  test("the spirit door hands out the shared core's own address law, title list and line reader", () => {
+    expect(K.CAP_ADDRESS).toBe(C.CAP_ADDRESS);
+    expect(K.tagsOf).toBe(C.tagsOf);
+    expect(K.tagsText).toBe(C.tagsText);
+    expect(K.capLine).toBe(C.capLine);
+  });
+
+  test("a record's stack, its slot body, its line and its write read byte for byte as they stood", () => {
+    const fields = { tags: `stage/x ${LANE} [[a title]] lar:///custody.hand.admits`, lane: "read  a PR\ncold", role: "a cold reader" };
+    expect(K.tagsOf(fields.tags)).toEqual(["stage/x", LANE, "a title", "lar:///custody.hand.admits"]);
+    expect(K.tagsText(K.tagsOf("b [[a title]] b c"))).toBe("b [[a title]] c");
+    expect(K.capLine("spirit.lane.holds  two   words")).toEqual({ cap: LANE, value: "two words" });
+    expect(K.capLine("lar:///spirit.lane")).toBeNull();
+    expect(K.stackBody(K.stackOf(fields, ONE))).toBe(`${LANE} read a PR cold\nlar:///custody.hand.admits`);
+    expect(K.stackLine("cold-reader", fields, ONE))
+      .toBe("<<~ has entity=`spirit` name=`cold-reader` params=`kind/tasked lane.holds/[[read a PR cold]] custody.hand.admits ~ a cold reader`>>");
+    expect(K.stackWrite(fields, ONE, `${LANE} read a PR cold\n${FACE} 2`))
+      .toEqual({ patch: { face: "2", tags: `stage/x ${LANE} [[a title]] ${FACE}` }, unset: [] });
   });
 });

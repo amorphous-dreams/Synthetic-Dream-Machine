@@ -32,6 +32,14 @@
       "import": "./dist/spirit-shrine.js",
       "types": "./dist/spirit-shrine.d.ts"
     },
+    "./cap-stack": {
+      "import": "./dist/cap-stack.js",
+      "types": "./dist/cap-stack.d.ts"
+    },
+    "./herm-stack": {
+      "import": "./dist/herm-stack.js",
+      "types": "./dist/herm-stack.d.ts"
+    },
     "./spirit-stack": {
       "import": "./dist/spirit-stack.js",
       "types": "./dist/spirit-stack.d.ts"

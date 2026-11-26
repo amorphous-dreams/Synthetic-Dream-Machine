@@ -7,7 +7,7 @@
  *
  * THE HOUSE (`lares-lararium`) holds what a face-daemon or domain wiki runs: the seven routes, the placement, the face, the
  * backstop and door charm, the root services, the story, the nalu and reaction engines, the in-VM worldline read, wiki-sense,
- * the kahua shadow, the test floor's queue, ddate, the meme fold and the spirit unfold, the widgets and the house config. It requires the grammar; the grammar requires nothing of it, and
+ * the kahua shadow, the test floor's queue, ddate, the meme fold and the spirit unfold, the herm's cap vocabulary, the widgets and the house config. It requires the grammar; the grammar requires nothing of it, and
  * the build refuses a grammar module whose bundle requires a house title.
  *
  * A module the table does not class refuses the build by name: a new module never drifts into a skin unsorted. Static `.tid`
@@ -96,7 +96,7 @@ export const LARARIUM_MODULES: readonly string[] = Object.freeze([
   "modules/place-meme", "modules/meme-face", "modules/meme-backstop", "modules/meme-door-charm", "modules/lar-root-services",
   "modules/host-globals", "modules/lar-story", "modules/lararium-writable", "modules/draft-compare",
   "modules/nalu-engine", "modules/reaction-router", "modules/worldline-read-vm",
-  "modules/wiki-sense-indexer", "lib/wiki-sense-fold", "filters/wikisense", "filters/kahua-shadow", "filters/meme-fold", "filters/floor-queue", "filters/security-class",
+  "modules/wiki-sense-indexer", "lib/wiki-sense-fold", "lib/herm-stack", "filters/wikisense", "filters/kahua-shadow", "filters/meme-fold", "filters/floor-queue", "filters/security-class",
   "macros/ddate", "macros/spirit-unfold",
   "widgets/action-oracle-cast", "widgets/action-meme-place",
 ].map((rest) => `${TW5}${rest}`));

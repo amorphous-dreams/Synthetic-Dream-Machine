@@ -20,10 +20,18 @@
  * A SEALED HOLD NAMES ITSELF AND NOTHING MORE: a field named in `sealed` never rides the stack, its slot body or its line, and
  * a stack write leaves the value home.
  *
+ * THE GRAMMAR RIDES ONE SHARED CORE (`cap-stack.ts`): the cap address, the title list and the `#/has` line read the same for
+ * a spirit and for a herm (`herm-stack.ts`).
+ *
  * Platform-blind and pure: no door, no clock, no env.
  *
  * Design: lar:///ha.ka.ba/kahua/memory/research/alana-reweave · ruling: lar:///ha.ka.ba/kahua/memory/ruling/2026-11-25-one-spirit-record
  */
+
+import { CAP_ADDRESS, capLine, oneLine, tagsOf, tagsText } from "./cap-stack.js";
+
+// The stack grammar's shared core (`cap-stack.ts`), named here so every reader of the spirit stack keeps one door.
+export { CAP_ADDRESS, capLine, tagsOf, tagsText };
 
 /** Where every spirit's one record stands. */
 export const SPIRIT_PREFIX = "lar:///ha.ka.ba/lares/spirit/";
@@ -58,9 +66,6 @@ export const SPIRIT_CAPS: readonly SpiritCapKind[] = Object.freeze([
   { cap: "lar:///spirit.message.sends", field: "outbox", profile: null, held: "instance" },
 ] as const);
 
-const TERM = "[a-z0-9]+(?:-[a-z0-9]+)*";
-/** A cap's address: a three-term root and no path (the root segment law). */
-export const CAP_ADDRESS = new RegExp(`^lar:///${TERM}\\.${TERM}\\.${TERM}$`);
 const kindOf = (cap: string): SpiritCapKind | undefined => SPIRIT_CAPS.find((k) => k.cap === cap);
 /** Who strings this cap: the table's holder, and any instance for a bare tag. */
 /** The fields a record seals (`sealed` names them, as a title list). */
@@ -80,21 +85,6 @@ export const seatedCap = (uri: string): string | null => LEGACY_SEATS.find((s) =
 /** The mask card a pet name's fields rest on, before the one record. */
 export const maskCardOf = (pet: string): string => `${STAGE}mask-card/${pet}`;
 
-// ── the tags ───────────────────────────────────────────────────────────────────────────────────────────────────────
-
-/** A `tags` field read as TiddlyWiki reads a title list: space-joined, a title holding a space double-bracketed. */
-export function tagsOf(raw: string | undefined): string[] {
-  const out: string[] = [];
-  const re = /\[\[([^\]]+)\]\]|(\S+)/g;
-  for (let m = re.exec(raw ?? ""); m !== null; m = re.exec(raw ?? "")) {
-    const tag = m[1] ?? m[2]!;
-    if (!out.includes(tag)) out.push(tag);
-  }
-  return out;
-}
-/** A title list written back as a `tags` field. */
-export const tagsText = (tags: readonly string[]): string => tags.map((t) => (/\s/.test(t) ? `[[${t}]]` : t)).join(" ");
-
 // ── the stack ──────────────────────────────────────────────────────────────────────────────────────────────────────
 
 export interface SpiritHold {
@@ -112,8 +102,6 @@ export interface SpiritHold {
   readonly held: CapHolder;
   readonly profile: SpiritProfile | null;
 }
-
-const oneLine = (value: string): string => value.replace(/\s+/g, " ").trim();
 
 /**
  * THE STACK A RECORD HOLDS, read off its fields and its address: each named cap stands where its tag stands, its field holds
@@ -142,14 +130,6 @@ export const profilesOf = (stack: readonly SpiritHold[]): SpiritProfile[] =>
 /** The stack as the `#/has` slot's body: one cap per line, its address and its value on one line. */
 export const stackBody = (stack: readonly SpiritHold[]): string =>
   stack.map((h) => (oneLine(h.value) === "" ? h.cap : `${h.cap} ${oneLine(h.value)}`)).join("\n");
-
-/** One `#/has` line read: a cap's address (`lar:///a.b.c`, or bare `a.b.c`) and the value that follows it. Null where it names none. */
-export function capLine(line: string): { cap: string; value: string } | null {
-  const m = /^(\S+)(?:\s+([\s\S]*))?$/.exec(line.trim());
-  if (!m) return null;
-  const cap = m[1]!.startsWith("lar:///") ? m[1]! : `lar:///${m[1]!}`;
-  return CAP_ADDRESS.test(cap) ? { cap, value: oneLine(m[2] ?? "") } : null;
-}
 
 export type StackRefusal = { readonly code: "spirit-cap-malformed" | "spirit-cap-seated" | "spirit-cap-sealed"; readonly why: string };
 export interface StackWrite { readonly patch: Record<string, string>; readonly unset: string[] }
