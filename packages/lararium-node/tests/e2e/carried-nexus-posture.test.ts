@@ -126,9 +126,9 @@ describe("a carried Nexus's posture: a stranger seated under OPEN, the charter t
     await new Promise<void>((resolve) => http.listen(0, "127.0.0.1", resolve));
     const port = (http.address() as AddressInfo).port;
     // The root holds for the vessel's whole life: islands spawn after `openNodeVessel` returns and copy the env at their spawn.
-    const held = await holdLarRoot(ROOT, () => openNodeVessel({ hostId: "lararium-node", wikiId: "lares", storageDir: STORAGE, genesisDir: GENESIS, wss, dispatcher }));
-    vessel = held.value;
-    release = held.release;
+    const rooted = await holdLarRoot(ROOT, () => openNodeVessel({ hostId: "lararium-node", wikiId: "lares", storageDir: STORAGE, genesisDir: GENESIS, wss, dispatcher }));
+    vessel = rooted.value;
+    release = rooted.release;
     pin = await withLarRoot(ROOT, async () => hearthSovereignPin(carriedAid));
     url = `ws://127.0.0.1:${port}${pin.route}`;
   }, 180_000);
