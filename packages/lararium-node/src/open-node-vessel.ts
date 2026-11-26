@@ -438,6 +438,7 @@ import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./no
 import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
 import { shoreInbound } from "@lararium/mesh/prototype-key-shore-door";
 import { vesselMountFloorCid, type FloorBootMount } from "@lararium/mesh/floor-pin";
+import { FLOOR_BOOT_NONCE } from "./floor-restand.js";
 import type { FloorMountReading } from "@lararium/mesh/surface-recipe-door";
 
 /** The genesis dir when a caller sites none — resolves through the composable genesis cap
@@ -4456,7 +4457,7 @@ async function prepareNodeBootOn(
       // reading the boot's settle of a staged floor reads (`settleFloorAtBoot`).
       resolvePlugins: async () => keepDaemonFloorMount(await resolveNodeIslandPluginCids({
         islandBlobs: assembly.islandHandle.doc()?.blobs,
-        floorCid: await vesselMountFloorCid({ control: readControlDoc, islandDoc: () => assembly.islandHandle.doc() }),
+        floorCid: await vesselMountFloorCid({ control: readControlDoc, islandDoc: () => assembly.islandHandle.doc(), bootNonce: FLOOR_BOOT_NONCE, flush: () => repo.flush() }),
         onFloorFallback: logFloorFallback,
         recipe: { wikiSlug: "daemon" },
         lookup: nodeOfferingLookup(offerings.doc()),
@@ -5486,13 +5487,13 @@ async function prepareNodeBootOn(
       mountSilenceMs: 120_000,
       mountStallMs:   360_000,
       // THE FLOOR THE VESSEL ACCEPTED (`floor-pin`): each mount reads the pin afresh; no pin mounts genesis.
-      floorCid: () => vesselFloorCid({ control: readControlDoc, islandDoc: () => assembly.islandHandle.doc() }),
+      floorCid: () => vesselFloorCid({ control: readControlDoc, islandDoc: () => assembly.islandHandle.doc(), bootNonce: FLOOR_BOOT_NONCE, flush: () => repo.flush() }),
       foundingRecord: () => assembly.islandHandle.doc(), // the floor shadow read: each mount reads its floor beside the founding record, serving unchanged
       resolvePluginCids: async (recipe) => resolveNodeIslandPluginCids({
         islandBlobs: assembly.islandHandle.doc()?.blobs,
         recipe,
         // THE FLIP (3c): the floor this mount stands on supplies its plugin set; the founding record's boot set serves only where none resolves.
-        floorCid: await vesselMountFloorCid({ control: readControlDoc, islandDoc: () => assembly.islandHandle.doc() }),
+        floorCid: await vesselMountFloorCid({ control: readControlDoc, islandDoc: () => assembly.islandHandle.doc(), bootNonce: FLOOR_BOOT_NONCE, flush: () => repo.flush() }),
         onFloorFallback: logFloorFallback,
         lookup:      nodeOfferingLookup(publicationHandle?.doc()),
         readBytes:   (cid) => readCasBlobFromFs(cid, casDir),

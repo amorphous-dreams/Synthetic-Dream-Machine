@@ -68,6 +68,7 @@ import { parseMeshPeer } from "@lararium/mesh/carriage-caps";
 import { ratedReceiptRing, ratedReceiptRingBytes } from "@lararium/mesh/verb-tiddler";
 import { makeUdsSeat, serveUdsFront, type UdsChannelOptions, type UdsFront, type UdsSeat } from "./uds-channel.js";
 import { floorRestandLane, readFloorQuiet, settleFloorAtBootLines } from "./floor-restand.js";
+import { FLOOR_REMOUNT_ALERT_KIND, STAGED_FLOOR_FAULTED_AT_BOOT, raiseFloorAlert } from "@lararium/mesh/floor-pin";
 import { hearthPlanesOver, readHearthPlane } from "./hearth-roster-read.js";
 import { floorVerbsFor } from "./floor-verbs.js";
 import { nodeSwitchActLog } from "./switch-act-log.js";
@@ -1054,7 +1055,15 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   await markReadyOnceStanding(readinessState, result.daemon.workerEa);
   // THE BOOT SETTLES A STAGED FLOOR by its par (`settleFloorAtBoot`): the daemon island's mount stood on the staged floor, so it
   // commits; anything else reverts it to the prior floor, naming why. A composition with no lit face reads no control home here.
-  if (sovereign !== null) for (const line of settleFloorAtBootLines(result.daemon.controlHandle, result.daemonFloorMount()).lines) console.log(`[lararium] ${line}`);
+  // A staged floor whose one attempt an earlier boot spent (it faulted before par) reverts here and alerts the hand in every live wiki.
+  if (sovereign !== null) {
+    const settled = settleFloorAtBootLines(result.daemon.controlHandle, result.daemonFloorMount());
+    for (const line of settled.lines) console.log(`[lararium] ${line}`);
+    if (settled.settle?.act === "reverted" && settled.settle.cause.startsWith(STAGED_FLOOR_FAULTED_AT_BOOT)) {
+      void raiseFloorAlert(result.pool, { act: "alert", kind: FLOOR_REMOUNT_ALERT_KIND, why: `${settled.lines.join(" ")}` })
+        .catch((e: unknown) => console.warn(`[lararium] the floor fault alert reached no wiki: ${e instanceof Error ? e.message : String(e)}`));
+    }
+  }
 
   // Pre-warm the mempalace read holder so the FIRST recall / recall-into-wake skips
   // the ~8s cold chromadb start (the pool then stays warm for the daemon's life).

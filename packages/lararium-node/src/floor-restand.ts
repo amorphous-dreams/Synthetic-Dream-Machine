@@ -13,6 +13,10 @@
  *   restand the vessel's own graceful stand-down (the composition's teardown: the sealed rest stands down first, then the
  *           shore's flush, #585), then a clean exit the supervisor raises again
  *
+ * THE ATTEMPT GUARD rides the mount pick (`claimStagedFloorMount`, counted by boot nonce, never time): one boot tries a staged
+ * floor; a boot that finds that attempt spent with no settle mounts the prior floor, and its settle reverts naming
+ * `staged-floor-faulted-at-boot`, so a floor whose mount faults the daemon island never loops under the supervisor.
+ *
  * The lane fires once per life, and never after the composition stands down by another road (`disarm`: a signal's stop, a
  * recomposition's teardown), so a drain that turns the door idle mid-stop never asks a second stop. A reading that names a reason logs it once per distinct reason and waits for the next event;
  * nothing retries on a clock. The boot after settles the staged floor by its par (`settleFloorAtBoot`): `settleFloorAtBootLines`
@@ -20,7 +24,14 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin
  */
+import { randomBytes } from "node:crypto";
 import { settleFloorAtBoot, type FloorBootMount, type FloorBootSettle, type FloorPinHome } from "@lararium/mesh/floor-pin";
+
+/**
+ * THIS BOOT'S NONCE: minted once per process, so every composition of one boot spends one attempt on a staged floor
+ * (`claimStagedFloorMount`), and the next boot reads that attempt as another's. An identity, never a clock.
+ */
+export const FLOOR_BOOT_NONCE: string = randomBytes(9).toString("base64url");
 
 /** The parts of the quiet point, each read fresh at every poke. */
 export interface FloorQuietParts {
@@ -113,9 +124,9 @@ export function floorRestandLane(ports: FloorRestandPorts): FloorRestandLane {
 }
 
 /** The boot settles a staged floor by its par and speaks it; a settle that faults names the fault and lands nothing. */
-export function settleFloorAtBootLines(home: FloorPinHome, mount: FloorBootMount): { readonly settle: FloorBootSettle | null; readonly lines: readonly string[] } {
+export function settleFloorAtBootLines(home: FloorPinHome, mount: FloorBootMount, bootNonce: string = FLOOR_BOOT_NONCE): { readonly settle: FloorBootSettle | null; readonly lines: readonly string[] } {
   let settle: FloorBootSettle;
-  try { settle = settleFloorAtBoot(home, mount); }
+  try { settle = settleFloorAtBoot(home, mount, bootNonce); }
   catch (error) { return { settle: null, lines: [`floor settle: unread (${error instanceof Error ? error.message : String(error)}); a staged floor waits for the hand's \`lares vessel floor adopt --commit\` or \`--revert\``] }; }
   switch (settle.act) {
     case "none": return { settle, lines: [] };

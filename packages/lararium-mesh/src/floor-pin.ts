@@ -552,6 +552,56 @@ export async function settleLocalFloor(ports: Pick<FloorPinPorts, "home" | "nexu
   return out.ok ? { ...out, prior: pin } : out;
 }
 
+// ── the attempt guard: one boot tries a staged floor ──────────────────────────────────────────────────
+
+/** Where a staged floor's attempt rests in the vessel's control document: one row per Nexus. */
+export const FLOOR_ATTEMPT_PREFIX = `${CONTROL_HOME_ID}/floor-attempt/` as const;
+
+/** One counted return on a staged floor, in the house's lei shape (`<boot nonce>:<count>`): the boot that spent it, and the count. */
+export interface FloorAttempt { readonly floor: string; readonly nonce: string; readonly count: number }
+
+/** The settle's cause where a staged floor's one attempt went spent with no settle (its boot faulted before par). */
+export const STAGED_FLOOR_FAULTED_AT_BOOT = "staged-floor-faulted-at-boot" as const;
+
+/** The attempt at `nexus` off the control document, or null where none rests (a torn row reads null). */
+export function readFloorAttempt(controlDoc: LarDoc | null | undefined, nexus: string): FloorAttempt | null {
+  const text = tiddlerText(ownEntry(controlDoc?.tiddlers, `${FLOOR_ATTEMPT_PREFIX}${nexus}`));
+  if (text === null) return null;
+  let v: unknown;
+  try { v = JSON.parse(text); } catch { return null; }
+  if (typeof v !== "object" || v === null || Array.isArray(v)) return null;
+  const r = v as Record<string, unknown>;
+  if (typeof r["floor"] !== "string" || typeof r["attempt"] !== "string") return null;
+  const m = /^([0-9A-Za-z_-]+):([1-9][0-9]*)$/.exec(r["attempt"]);
+  return m ? Object.freeze({ floor: r["floor"], nonce: m[1]!, count: Number(m[2]) }) : null;
+}
+
+export type FloorAttemptClaim =
+  | { readonly act: "none" }
+  | { readonly act: "claimed" | "held"; readonly floor: string; readonly attempt: FloorAttempt }
+  | { readonly act: "spent"; readonly floor: string; readonly prior: string; readonly attempt: FloorAttempt };
+
+/**
+ * BEFORE A MOUNT READS A STAGED-BUT-UNSETTLED FLOOR, by counted events and never time: the boot that finds no attempt on that floor
+ * spends its one return (`<nonce>:1`, `claimed`) and mounts it; the boot that spent it mounts it again (`held`); any other boot finds
+ * the return spent (`spent`) and mounts the prior floor, so a floor whose mount faults the boot never loops. No staged floor: `none`.
+ */
+export function claimStagedFloorMount(home: FloorPinHome, nonce: string): FloorAttemptClaim {
+  const staged = floorPinsOf(home.doc()).filter((p) => p.local?.state === "staged");
+  if (staged.length !== 1) return { act: "none" };
+  const pin = staged[0]!;
+  const prior = pin.local!.prior;
+  const held = readFloorAttempt(home.doc(), pin.nexus);
+  if (held !== null && held.floor === pin.manifest) {
+    if (held.nonce === nonce) return { act: "held", floor: pin.manifest, attempt: held };
+    if (held.count >= 1 && prior !== null) return { act: "spent", floor: pin.manifest, prior: prior.manifest, attempt: held };
+  }
+  const attempt: FloorAttempt = Object.freeze({ floor: pin.manifest, nonce, count: 1 });
+  const title = `${FLOOR_ATTEMPT_PREFIX}${pin.nexus}`;
+  home.change((draft) => { draft.tiddlers[title] = storedLarRecord(title, { text: JSON.stringify({ floor: attempt.floor, attempt: `${nonce}:${attempt.count}` }) }, FLOOR_SETTLE_KIND); });
+  return { act: "claimed", floor: pin.manifest, attempt };
+}
+
 // ── the boot's settle: par commits, anything else reverts ─────────────────────────────────────────────
 
 /** Where a settle's receipt rests in the vessel's control document: one row per Nexus, the latest settle. */
@@ -612,12 +662,17 @@ export function readFloorSettle(controlDoc: LarDoc | null | undefined, nexus: st
  * and its one receipt land in one change; the reverted floor's bytes stay in the CAS and the receipt names it and its seed, so
  * the hand reads what stood staged. No staged floor lands nothing. The hand's `--commit` and `--revert` stay explicit acts beside it.
  */
-export function settleFloorAtBoot(home: FloorPinHome, mount: FloorBootMount): FloorBootSettle {
+export function settleFloorAtBoot(home: FloorPinHome, mount: FloorBootMount, bootNonce?: string): FloorBootSettle {
   const staged = floorPinsOf(home.doc()).filter((p) => p.local?.state === "staged");
   if (staged.length === 0) return { act: "none" };
   if (staged.length > 1) return { act: "held", why: `${staged.length} Nexuses hold a staged floor; the hand settles each (\`lares vessel floor adopt --commit\` or \`--revert\`)` };
   const pin = staged[0]!;
-  const reading = floorParOf(pin, mount);
+  // A return another boot spent, with no settle since: that boot faulted before par. This boot mounted the prior floor; it reverts.
+  const attempt = readFloorAttempt(home.doc(), pin.nexus);
+  const faulted = bootNonce !== undefined && attempt !== null && attempt.floor === pin.manifest && attempt.nonce !== bootNonce && attempt.count >= 1;
+  const reading: ReturnType<typeof floorParOf> = faulted
+    ? { par: false, cause: `${STAGED_FLOOR_FAULTED_AT_BOOT}: boot ${attempt!.nonce} spent the staged floor's one attempt (${attempt!.nonce}:${attempt!.count}) and never reached par` }
+    : floorParOf(pin, mount);
   const out = reading.par ? commitLocalFloor(pin) : revertLocalFloor(pin);
   if (!out.ok) return { act: "held", why: `${out.refusal}: ${out.detail}` };
   const receipt: FloorSettleReceipt = Object.freeze({
@@ -626,6 +681,9 @@ export function settleFloorAtBoot(home: FloorPinHome, mount: FloorBootMount): Fl
   });
   home.change((draft) => {
     writeFloorPin(draft, out.pin);
+    // The settle spends the attempt: a later adopt claims afresh.
+    const attemptTitle = `${FLOOR_ATTEMPT_PREFIX}${pin.nexus}`;
+    if (Object.hasOwn(draft.tiddlers, attemptTitle)) delete draft.tiddlers[attemptTitle];
     const title = `${FLOOR_SETTLE_PREFIX}${pin.nexus}`;
     draft.tiddlers[title] = storedLarRecord(title, { text: JSON.stringify(receipt) }, FLOOR_SETTLE_KIND);
   });
@@ -639,11 +697,26 @@ export function settleFloorAtBoot(home: FloorPinHome, mount: FloorBootMount): Fl
  * pins naming different floors mount genesis (`floorCidToMount`).
  */
 export async function vesselFloorCid(args: {
-  readonly control:   () => Promise<{ doc(): LarDoc | undefined } | null>;
+  readonly control:   () => Promise<{ doc(): LarDoc | undefined; change?(fn: (draft: LarDoc) => void): void } | null>;
   readonly islandDoc: () => LarDoc | null | undefined;
+  /** This boot's nonce: present, a staged-but-unsettled floor mounts under the attempt guard (`claimStagedFloorMount`). */
+  readonly bootNonce?: string;
+  /** Make the attempt durable before the mount reads the staged floor (the Repo's flush). */
+  readonly flush?:     () => Promise<void>;
 }): Promise<string | null> {
   let controlDoc: LarDoc | undefined;
-  try { controlDoc = (await args.control())?.doc(); } catch { return null; }
+  let handle: Awaited<ReturnType<typeof args.control>>;
+  try { handle = await args.control(); controlDoc = handle?.doc(); } catch { return null; }
+  // THE ATTEMPT GUARD: at most one boot ever tries a staged floor. A boot that finds its return spent mounts the prior floor.
+  if (args.bootNonce !== undefined && handle?.change) {
+    const claim = claimStagedFloorMount(handle as FloorPinHome, args.bootNonce);
+    if (claim.act === "spent") {
+      console.warn(`[floor] ${claim.floor.slice(0, 12)}… stands staged and unsettled, and boot ${claim.attempt.nonce} spent its one attempt; the prior floor ${claim.prior.slice(0, 12)}… mounts (staged-floor-faulted-at-boot)`);
+      return claim.prior;
+    }
+    if (claim.act === "claimed" && args.flush) await args.flush();
+    controlDoc = handle.doc();
+  }
   const pick = floorCidToMount({ controlDoc, nexus: null, genesis: genesisFloorCidOf(args.islandDoc()) });
   if (pick.note) console.info(`[floor] ${pick.note}`);
   return pick.source === "pin" ? pick.cid : null;
@@ -657,7 +730,7 @@ export async function vesselMountFloorCid(args: Parameters<typeof vesselFloorCid
   let island: LarDoc | null | undefined;
   try { island = args.islandDoc(); } catch { island = null; }
   // An island read that throws never fails the mount: the pick reads the one value read above, and no pin then mounts no floor.
-  return (await vesselFloorCid({ control: args.control, islandDoc: () => island })) ?? genesisFloorCidOf(island);
+  return (await vesselFloorCid({ ...args, islandDoc: () => island })) ?? genesisFloorCidOf(island);
 }
 
 /** The pool doors the floor alert rides: the live islands outside any session, and a wiki verb's placement. */

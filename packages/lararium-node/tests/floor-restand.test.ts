@@ -6,7 +6,9 @@
  * REDS, each with its control:
  *   · apply → quiet → restand → par → a committed receipt naming the floor, the seed and par;
  *   · apply → restand → not par → reverted to the prior floor, the cause named, the staged bytes kept;
- *   · no restand while a write flies: a busy door, an act standing, a save held, an unwritten shore, a call begun mid-flush.
+ *   · no restand while a write flies: a busy door, an act standing, a save held, an unwritten shore, a call begun mid-flush;
+ *   · at most one boot tries a staged floor: a boot whose daemon mount throws on it spends the one attempt, and the next boot
+ *     mounts the prior floor and reverts, the receipt naming `staged-floor-faulted-at-boot`.
  */
 import { describe, expect, test } from "vitest";
 import { sha256HexBytesSync, utf8Bytes } from "@lararium/mesh/crypto";
@@ -14,7 +16,7 @@ import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { FLOOR_MANIFEST_FORMAT, cutFloorSnapshot, floorManifestBytes, type FloorManifest } from "@lararium/mesh/floor-manifest";
 import { signFloorOffering } from "@lararium/mesh/floor-offering";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh/lar-uris";
-import { FLOOR_PIN_KIND, adoptFloorSeed, floorPinOf, readFloorSettle, type FloorPinPorts } from "@lararium/mesh/floor-pin";
+import { FLOOR_PIN_KIND, adoptFloorSeed, floorPinOf, readFloorAttempt, readFloorSettle, vesselMountFloorCid, type FloorPinPorts } from "@lararium/mesh/floor-pin";
 import { floorRestandLane, readFloorQuiet, settleFloorAtBootLines, type FloorQuietParts } from "../src/floor-restand.js";
 
 const NEXUS = "nexus-aid";
@@ -167,5 +169,53 @@ describe("no restand while a write flies", () => {
     await turn();
     expect(v.flushes).toBe(0);
     expect(restands).toEqual([]);
+  });
+});
+
+describe("at most one boot tries a staged floor (counted by boot nonce, never time)", () => {
+  /** One boot of the vessel: its mount pick under its nonce, then its daemon island's mount, which throws on a faulting floor. */
+  async function boot(home: ReturnType<typeof memoryHome>, nonce: string, faults: string | null) {
+    let flushes = 0;
+    const cid = await vesselMountFloorCid({ control: async () => home, islandDoc: () => null, bootNonce: nonce, flush: async () => { flushes += 1; } });
+    if (cid !== null && cid === faults) throw Object.assign(new Error(`the daemon island's mount threw on floor ${cid}`), { cid, flushes });
+    return { cid, flushes };
+  }
+
+  test("RED: a staged floor whose daemon-island mount throws → the next boot mounts the prior floor and the receipt names the fault", async () => {
+    const s = standing();
+    const applied = await adoptFloorSeed(s.ports, { seedCid: RECEIPT, seedFloor: SEED.cid, apply: true });
+    if (!applied.ok || !applied.moved) throw new Error("apply");
+    const staged = applied.pin.manifest;
+
+    // Boot A spends the one attempt, durably, before its mount reads the staged floor; the mount throws (the supervisor raises again).
+    const a = await boot(s.home, "bootA", staged).catch((e: { cid: string; flushes: number }) => e);
+    expect(a).toMatchObject({ cid: staged, flushes: 1 });
+    expect(readFloorAttempt(s.home.doc(), NEXUS)).toEqual({ floor: staged, nonce: "bootA", count: 1 });
+
+    // Boot B finds the attempt spent with no settle: it mounts the PRIOR floor and stands.
+    const b = await boot(s.home, "bootB", staged);
+    expect(b.cid).toBe(BASE.cid);
+    const { settle, lines } = settleFloorAtBootLines(s.home, { source: "floor", manifest: BASE.cid }, "bootB");
+    expect(settle).toMatchObject({ act: "reverted" });
+    expect(lines.join("\n")).toContain("staged-floor-faulted-at-boot");
+    expect(readFloorSettle(s.home.doc(), NEXUS)).toMatchObject({ act: "reverted", floor: staged, seed: RECEIPT, pinned: BASE.cid, par: expect.stringMatching(/^staged-floor-faulted-at-boot: boot bootA/) });
+    expect(floorPinOf(s.home.doc(), NEXUS, BASE.cid).pin).toEqual({ kind: FLOOR_PIN_KIND, nexus: NEXUS, release: null, manifest: BASE.cid });
+    expect(readFloorAttempt(s.home.doc(), NEXUS)).toBeNull();
+    // Boot C finds nothing staged and mounts the prior floor plainly.
+    expect((await boot(s.home, "bootC", staged)).cid).toBe(BASE.cid);
+  });
+
+  test("CONTROL: the boot that spent the attempt mounts the staged floor at every pick, writes once, and commits at par", async () => {
+    const s = standing();
+    const applied = await adoptFloorSeed(s.ports, { seedCid: RECEIPT, seedFloor: SEED.cid, apply: true });
+    if (!applied.ok || !applied.moved) throw new Error("apply");
+    const first = await boot(s.home, "bootA", null);
+    const changes = s.home.changes;
+    const again = await boot(s.home, "bootA", null);
+    expect([first.cid, again.cid]).toEqual([applied.pin.manifest, applied.pin.manifest]);
+    expect([first.flushes, again.flushes]).toEqual([1, 0]);
+    expect(s.home.changes).toBe(changes);
+    expect(settleFloorAtBootLines(s.home, { source: "floor", manifest: applied.pin.manifest }, "bootA").settle).toMatchObject({ act: "committed" });
+    expect(readFloorAttempt(s.home.doc(), NEXUS)).toBeNull();
   });
 });
