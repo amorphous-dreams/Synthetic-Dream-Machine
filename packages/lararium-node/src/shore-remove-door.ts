@@ -65,7 +65,7 @@ interface ViewWiki {
 }
 
 /**
- * Wait until the wiki's view no longer answers `uri` from `bagId`: a store write reaches the view through the
+ * Wait until the wiki's view stops answering `uri` from `bagId`: a store write reaches the view through the
  * landing queue, a beat after the door returns. Each change event looks again; the bound paces the wait and
  * decides nothing, since the caller reads the view back afterward and names a carrier still standing as left.
  */

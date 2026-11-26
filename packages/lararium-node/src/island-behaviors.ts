@@ -306,7 +306,7 @@ export function mountDiskProjection(
   // THE `remove` ANSWER'S DOOR: the carrier family leaves the bag whose mirror lost its file, in that bag's own layer
   // (`shore-remove-door.ts`), never in the working layer a browser's save takes: a plain retract where no layer beneath
   // holds the title, a kāpae in that bag where one does, so a shadow file sits in that bag's own mirror. The door returns
-  // once the wiki's view no longer answers the carrier from the bag, or its bound passes; the projector reads it back.
+  // once the wiki's view stops answering the carrier from the bag, or its bound passes; the projector reads it back.
   removeCarrier: async (uri, bagId) => {
     await removeInOwnLayer(ctx.composite, { kind: "lares-verb", requestId: `shore-remove:${uri}` })(uri, bagId);
     await viewLeaves(ctx.tw5.$tw.wiki as unknown as Parameters<typeof viewLeaves>[0], uri, bagId);
