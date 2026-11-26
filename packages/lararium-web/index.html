@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Lararium — browser vessel</title>
+    <title>Lararium</title>
     <!-- THE PHONE SEAT (basket-one #/the-phone-seat): the manifest lets a phone set this vessel into its own
          house — a Home Screen install, which exempts the origin from WebKit's seven-day clock. The page never
          demands it; `phone-seat.ts` explains and offers, once, where the clock stands. -->
@@ -89,9 +89,35 @@
     #mirror[data-lar-shown="mirror"] { display: block; }
     #mirror[data-lar-shown="mirror"] ~ #projection { display: none; }
     /* The person reads through the mirror wherever it stands; the worker-rendered view beneath it stays the named floor, shown again only when the mirror steps down to teardown. */
+
+    /* THE WIKI TAKES THE PAGE (lar:///ha.ka.ba/kahua/memory/plan/full-glass-whole-page, Land A). Once the mirror
+       stands, it fills the viewport and the page scrolls nowhere else: a person meets the wiki, not the console.
+       The console stays one tap away (the corner toggle), every element keeps its id, and nothing moves in the DOM.
+       Before the mirror stands the boot phases serve as the loading screen; on a step-down (data-lar-shown="floor")
+       none of these rules hold, so the console and #projection show again. A vessel's ask rides above the wiki. */
+    .console-toggle-input { position: absolute; opacity: 0; pointer-events: none; }
+    .console-toggle { display: none; }
+    body:has(#mirror[data-lar-shown="mirror"]) .console-toggle {
+      display: flex; align-items: center; position: fixed; right: 0.75rem; bottom: 0.75rem; z-index: 30;
+      min-height: 44px; padding: 0 0.9rem; border-radius: 22px; border: 1px solid #30363d;
+      background: #1b2029; color: #c9d1d9; font-size: 0.82rem; cursor: pointer; opacity: 0.72;
+    }
+    body:has(#mirror[data-lar-shown="mirror"]) .console-toggle:hover,
+    .console-toggle-input:focus-visible + .console-toggle { opacity: 1; outline: 2px solid #58a6ff; outline-offset: 2px; }
+    .console-toggle .when-open { display: none; }
+    .console-toggle-input:checked + .console-toggle .when-open { display: inline; }
+    .console-toggle-input:checked + .console-toggle .when-shut { display: none; }
+    body:has(#lar-console-toggle:not(:checked)):has(#mirror[data-lar-shown="mirror"]) { overflow: hidden; }
+    body:has(#lar-console-toggle:not(:checked)):has(#mirror[data-lar-shown="mirror"]) #mirror {
+      position: fixed; inset: 0; z-index: 20; width: 100vw; height: 100vh; height: 100dvh;
+      overflow: auto; background: #0d0f14;
+    }
+    body:has(#mirror[data-lar-shown="mirror"]) .ceremony-ask { position: fixed; top: 0; left: 0; right: 0; z-index: 40; }
   </style>
   </head>
   <body>
+    <input type="checkbox" id="lar-console-toggle" class="console-toggle-input" />
+    <label for="lar-console-toggle" class="console-toggle" title="Open or close this browser vessel's console"><span class="when-shut">⚙ vessel console</span><span class="when-open">✕ back to the wiki</span></label>
     <main>
       <h1><span class="glyph">🏛️</span> Lararium — browser vessel</h1>
       <p class="sub">a sovereign causal island, booting in your browser</p>
