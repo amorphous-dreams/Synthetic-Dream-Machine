@@ -5,6 +5,8 @@
  * layer held, and its shadow file landed in the WORKBENCH's mirror (`wikis/lares/…/active-wiki.kapae`) for a record of a
  * canon bag. The remove rode the browser's delete, which tombstones a canon-landed title in the working layer above it.
  *
+ * Every remove names its bag, as the CLI does from the rows it read: a house-canon remove with none refuses by name.
+ *
  * The real projector stands over three mirrored layers of one composition, bottom to top: a lower canon bag, the bag
  * whose mirror lost its file, and the working layer. The shore's remove door rides as the island wires it
  * (`shore-remove-door.ts`); the stub wiki reads the composition's live view.
@@ -85,12 +87,21 @@ async function stand(lower: boolean) {
 }
 
 describe("a shore remove retracts to absent, and raises a kāpae only over a lower copy", () => {
+  test("a remove from house canon that names no bag refuses `remove-names-its-bag`, and runs nothing (the CLI names it from its rows)", async () => {
+    const s = await stand(false);
+    const refused = await answerShore(s.projector, { op: "remove", uris: [URI] });
+    expect(refused).toMatchObject({ ok: false, refusal: "remove-names-its-bag" });
+    expect(String(refused["why"])).toContain(`--bag ${OWN}`);
+    expect(s.asked).toEqual([]);
+    expect((await s.stores.own.get(URI))?.tiddler.text).toBe("own copy");
+  });
+
   test("★ no lower copy: the record leaves its own bag, no tombstone rises, and no shadow file lands in any mirror ★", async () => {
     const s = await stand(false);
     const listed = await answerShore(s.projector, { op: "list" });
     expect((listed["pending"] as Array<Record<string, unknown>>)[0]).not.toHaveProperty("beneath");
 
-    const answer = await answerShore(s.projector, { op: "remove", uris: [URI] });
+    const answer = await answerShore(s.projector, { op: "remove", bag: OWN, uris: [URI] });
     expect(answer).toMatchObject({ ok: true, done: [URI], left: [] });
     expect(answer).not.toHaveProperty("raised");
     expect(s.asked).toEqual([{ uri: URI, bagId: OWN }]);
@@ -107,7 +118,7 @@ describe("a shore remove retracts to absent, and raises a kāpae only over a low
     const listed = await answerShore(s.projector, { op: "list" });
     expect((listed["pending"] as Array<Record<string, unknown>>)[0]).toMatchObject({ uri: URI, bagId: OWN, beneath: [LOW] });
 
-    const refused = await answerShore(s.projector, { op: "remove", uris: [URI] });
+    const refused = await answerShore(s.projector, { op: "remove", bag: OWN, uris: [URI] });
     expect(refused).toMatchObject({ ok: false, refusal: "remove-raises-kapae", raising: [{ uri: URI, beneath: [LOW] }] });
     expect(String(refused["why"])).toContain(`a lower layer (${LOW}) holds ${URI}`);
     expect(s.asked, "no door opens without the approval").toEqual([]);
@@ -117,7 +128,7 @@ describe("a shore remove retracts to absent, and raises a kāpae only over a low
 
   test("★ approved over a lower copy: the kāpae rises in the record's own bag, and its shadow sits in that bag's own mirror ★", async () => {
     const s = await stand(true);
-    const answer = await answerShore(s.projector, { op: "remove", uris: [URI], kapae: true });
+    const answer = await answerShore(s.projector, { op: "remove", bag: OWN, uris: [URI], kapae: true });
     expect(answer).toMatchObject({ ok: true, done: [URI], raised: [{ uri: URI, beneath: [LOW] }], raisedCount: 1 });
     await s.settle();
 

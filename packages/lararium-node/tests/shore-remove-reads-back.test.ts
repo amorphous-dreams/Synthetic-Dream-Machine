@@ -55,7 +55,7 @@ async function stand(door: "removes" | "refused" | "beneath" | "bare") {
 describe("remove reads back that the carrier left the wiki's resolved view", () => {
   test("a door that answers yet leaves the carrier in the view: the answer names it left, and it stays pending", async () => {
     const s = await stand("refused");
-    expect(await answerShore(s.projector, { op: "remove", uris: [URI] })).toMatchObject({ ok: true, done: [], doneCount: 0, left: [URI], leftCount: 1 });
+    expect(await answerShore(s.projector, { op: "remove", bag: BAG, uris: [URI] })).toMatchObject({ ok: true, done: [], doneCount: 0, left: [URI], leftCount: 1 });
     expect(s.asked).toEqual([URI]);
     expect(s.projector.pendingRemovals().map((p) => p.uri)).toEqual([URI]);
     expect(existsSync(s.file)).toBe(false);
@@ -63,14 +63,14 @@ describe("remove reads back that the carrier left the wiki's resolved view", () 
 
   test("CONTROL: a door that removes the carrier: the answer names it done, and nothing pends", async () => {
     const s = await stand("removes");
-    expect(await answerShore(s.projector, { op: "remove", uris: [URI] })).toMatchObject({ ok: true, done: [URI], left: [] });
+    expect(await answerShore(s.projector, { op: "remove", bag: BAG, uris: [URI] })).toMatchObject({ ok: true, done: [URI], left: [] });
     expect(s.projector.pendingRemovals()).toEqual([]);
     expect(existsSync(s.file)).toBe(false);
   });
 
   test("a carrier the view now resolves from a bag beneath leaves this bag's pending set, and the answer says the meme still stands there", async () => {
     const s = await stand("beneath");
-    expect(await answerShore(s.projector, { op: "remove", uris: [URI] })).toMatchObject({
+    expect(await answerShore(s.projector, { op: "remove", bag: BAG, uris: [URI] })).toMatchObject({
       ok: true, done: [], doneCount: 0, left: [], unshadowed: [{ uri: URI, bag: "a-bag-beneath" }], unshadowedCount: 1,
     });
     expect(s.projector.pendingRemovals()).toEqual([]);
@@ -78,20 +78,20 @@ describe("remove reads back that the carrier left the wiki's resolved view", () 
 
   test("a tiddler the view still shows with no origin has not left it: it stays pending, never done", async () => {
     const s = await stand("bare");
-    expect(await answerShore(s.projector, { op: "remove", uris: [URI] })).toMatchObject({ ok: true, done: [], left: [URI] });
+    expect(await answerShore(s.projector, { op: "remove", bag: BAG, uris: [URI] })).toMatchObject({ ok: true, done: [], left: [URI] });
     expect(s.projector.pendingRemovals().map((p) => p.uri)).toEqual([URI]);
   });
 
   test("CONTROL: a carrier that left the view reads done and names nothing unshadowed", async () => {
     const s = await stand("removes");
-    const answered = await answerShore(s.projector, { op: "remove", uris: [URI] });
+    const answered = await answerShore(s.projector, { op: "remove", bag: BAG, uris: [URI] });
     expect(answered).not.toHaveProperty("unshadowed");
   });
 
   test("a remove with no wiki view to read back refuses by name, calls no door, and leaves the carrier pending", async () => {
     const s = await stand("removes");
     (s.projector as unknown as { _tw5: unknown })._tw5 = null;
-    expect(await answerShore(s.projector, { op: "remove", uris: [URI] })).toMatchObject({ ok: false, refusal: "no-wiki-view" });
+    expect(await answerShore(s.projector, { op: "remove", bag: BAG, uris: [URI] })).toMatchObject({ ok: false, refusal: "no-wiki-view" });
     expect(s.asked).toEqual([]);
     expect(s.projector.pendingRemovals().map((p) => p.uri)).toEqual([URI]);
   });
