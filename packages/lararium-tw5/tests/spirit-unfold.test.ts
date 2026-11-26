@@ -155,7 +155,7 @@ describe.skipIf(wikiSkip)(`a spirit folds as a carrier by aperture${skipNote}`, 
     expect(commandsIn(e.wiki.filterTiddlers(`[[${SHRINE}#/open]meme-fold[]]`)[0]!)).toEqual(SLOTS.map((slot) => slotCommand(SHRINE, slot)));
 
     const HANDBACK = `${MEM}spirit/verb-wright-handback-0123456789ab`;
-    const report = ["Verb-Wright: (Lares Spirit)", "", ...Array.from({ length: 40 }, (_, i) => `* line ${i} of a long report`)].join("\n");
+    const report = ["Verb-Wright (Lares Spirit)", "", ...Array.from({ length: 40 }, (_, i) => `* line ${i} of a long report`)].join("\n");
     e.setTiddler({ title: HANDBACK, instance: "s-1", description: "the handback of instance s-1", text: report });
     const [message] = e.wiki.filterTiddlers(`[[${HANDBACK}]meme-fold[],[1]]`);
     canonical(message!);

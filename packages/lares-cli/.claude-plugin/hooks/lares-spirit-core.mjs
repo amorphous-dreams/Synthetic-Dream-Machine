@@ -358,10 +358,10 @@ export function trueUpText(pet, step, instance = null) {
   ].join("\n");
 }
 
-/** A pet name read off a handback's FIRST non-blank line, its filing line (`<pet>: (Lares Spirit)` or `<pet>#<n>: (Lares Spirit)`, the instance split off as the wake splits it), else the fallback, slugged. */
+/** A pet name read off a handback's FIRST non-blank line, its filing line (`<pet> (Lares Spirit)` or `<pet>#<n> (Lares Spirit)`, a colon after the name read the same, the instance split off as the wake splits it), else the fallback, slugged. */
 export function handbackPetOf(message, fallback) {
   const first = String(message ?? "").split("\n").find((line) => line.trim() !== "") ?? "";
-  const tag = /^\W*([A-Za-z][\w-]{0,40})(?:#\d{1,8})?:\s*\(Lares Spirit\)/.exec(first)?.[1] ?? String(fallback ?? "");
+  const tag = /^\W*([A-Za-z][\w-]{0,40})(?:#\d{1,8})?:?\s*\(Lares Spirit\)/.exec(first)?.[1] ?? String(fallback ?? "");
   return titleSlug(tag) ?? "spirit";
 }
 

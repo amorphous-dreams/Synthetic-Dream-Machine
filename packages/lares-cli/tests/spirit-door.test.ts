@@ -548,7 +548,7 @@ describe("the compaction verb and residue land after the strict secret-shape gua
 
   test("a handback lands at spirit/<pet>-handback-<hash12> with no record behind it", async () => {
     stage();
-    const r = await run(argv(["residue", "om-wright"], { text: "Om-Wright: (Lares Spirit) — PR #600" }));
+    const r = await run(argv(["residue", "om-wright"], { text: "Om-Wright (Lares Spirit) — PR #600" }));
     expect(String(data(r)["title"])).toMatch(new RegExp(`^${MEMORY_PREFIX}spirit/om-wright-handback-[0-9a-f]{12}$`));
   });
 

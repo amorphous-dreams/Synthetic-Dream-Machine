@@ -2,7 +2,7 @@
 /*
  * PostToolUse on SubagentHandback (async: it bounds itself): a tasked spirit's report arrives as the tool's `message`, and the
  * hook lands it as residue (`lares spirit residue <pet> --file -`, the report whole on stdin, the strict guard over it), the pet
- * read off the report's first non-blank line (`<pet>: (Lares Spirit)`, `<pet>#<n>:` for an instance), else the agent's id, keyed idempotently by
+ * read off the report's first non-blank line (`<pet> (Lares Spirit)`, `<pet>#<n>:` for an instance), else the agent's id, keyed idempotently by
  * session and agent so a repeated fire lands once. It lands only inside the house, where a familiar wears the session (or one
  * stands seated), and where the vessel answers up. `lares spirit otakiage <pet>` burns it later, by hand. Any fault exits 0
  * (lar:///ha.ka.ba/kahua/memory/wave/spirit-om-ah-hum).

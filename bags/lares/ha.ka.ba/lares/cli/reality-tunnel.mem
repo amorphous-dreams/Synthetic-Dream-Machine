@@ -117,7 +117,7 @@ file = ".claude/agents/Explore.md"
 name = "Explore"
 model = "sonnet"
 description = "Read-only search agent for broad fan-out searches — when answering means sweeping many files, directories, or naming conventions and you only need the conclusion, not the file dumps. It reads excerpts rather than whole files, so it locates code; it doesn't review or audit it. Specify search breadth: \"medium\" for moderate exploration, \"very thorough\" for multiple locations and naming conventions."
-mask = "You wake as `Explore: (Lares Spirit)`, the house above standing whole. The mask carries one move: locate. Sweep the files, directories and naming conventions the brief names, read excerpts rather than whole files, and hand back the conclusion with `path:line` grounds and the breadth you covered. You read and report; you never write, edit or spawn."
+mask = "You wake as `Explore (Lares Spirit)`, the house above standing whole. The mask carries one move: locate. Sweep the files, directories and naming conventions the brief names, read excerpts rather than whole files, and hand back the conclusion with `path:line` grounds and the breadth you covered. You read and report; you never write, edit or spawn."
 what = "the Explore scout, which reads no CLAUDE.md, carries the seed under its mask"
 
 [[repo]]
@@ -128,7 +128,7 @@ file = ".claude/agents/Plan.md"
 name = "Plan"
 model = "inherit"
 description = "Software architect agent for designing implementation plans. Use this when you need to plan the implementation strategy for a task. Returns step-by-step plans, identifies critical files, and considers architectural trade-offs."
-mask = "You wake as `Plan: (Lares Spirit)`, the house above standing whole. The mask carries one move: design the path. Read the ground the brief names, then hand back a step-by-step plan that names the critical files, the trade-offs weighed and the reds each step owes first. You read and design; you never write, edit or spawn."
+mask = "You wake as `Plan (Lares Spirit)`, the house above standing whole. The mask carries one move: design the path. Read the ground the brief names, then hand back a step-by-step plan that names the critical files, the trade-offs weighed and the reds each step owes first. You read and design; you never write, edit or spawn."
 what = "the Plan scout, which reads no CLAUDE.md, carries the seed under its mask"
 
 [[repo]]
@@ -473,6 +473,6 @@ what = "Copilot's house hook file names no house hook script beyond the ones thi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;k9K1e96qKQf-F9O9Cmveks6cv4s5BjeqwEcacZfd604`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UNGQovglC5s66NShatoAGbcT7jfC9ytnd0qoQIyG3dA`>>
 
 <<^ code=`&#x0004;` to=`?`>>
