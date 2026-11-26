@@ -149,7 +149,8 @@ export type SealedActRefusalReason = "unknown-act" | "bad-args" | "act-refused" 
 /** An act that refuses: the table names no such act, the arguments miss the row's shape, or the row said no. */
 export class SealedActRefused extends Error {
   override readonly name = "SealedActRefused";
-  constructor(readonly reason: SealedActRefusalReason, message: string) { super(message); }
+  /** The refusal's own class where the act names one (`none-worn`, `name-one`): the one log line carries it, never the message. */
+  constructor(readonly reason: SealedActRefusalReason, message: string, readonly klass?: string) { super(message); }
 }
 
 type Raw = Readonly<Record<string, unknown>>;
@@ -451,7 +452,8 @@ export const SEALED_ACTS = Object.freeze({
   // MOUNTED face, and a named face answers only while it stands open (`face-selector`).
   "face.resolve": act({ face: optional(index), orNone: optional(flag), worn: optional(flag) }, async (a) => {
     if (a.orNone === true && a.face === undefined && (await unlockedFaceOrdinals()).length === 0) return { face: null };
-    return { face: await resolveFace(a.face, a.worn === true ? { worn: true } : {}) };
+    try { return { face: await resolveFace(a.face, a.worn === true ? { worn: true } : {}) }; }
+    catch (err) { if (err instanceof FaceNotNamed) throw new SealedActRefused("act-refused", err.message, err.klass); throw err; }
   }),
   // THE SEATS' OWN KEYS (`seal-ceremony`, `seat-key-store`). A chair's keys mint behind this door and never cross
   // it: the arming rows answer public halves, the roster to write and a digest, and the charter's own writer stays
