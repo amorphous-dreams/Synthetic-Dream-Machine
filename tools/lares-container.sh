@@ -1069,26 +1069,44 @@ prune_rev_tags() {
   done
 }
 # THE FLOOR TAKES IMAGE BUILDS TOO (mandate/floor-gate-1, operator Q4). An image build writes as much as a test battery (the
-# box's docker held ~54G, 22G of it build cache, the night the VHD died), so it holds the one floor lock (tools/battery.sh's,
+# box's docker held ~54G, 22G of it build cache, the night the VHD died), so it holds a floor slot (tools/battery.sh's,
 # one slot, first come) for the build, and queues behind a run that holds it. A build already inside the held floor (a
 # kukulu run under tools/floor-run.mjs) runs on: tools/floor-lock.mjs reads an ancestor's lock off the kernel's table. With
 # no host node to read the table, it takes the lock outright. After each build the build CACHE prunes (`docker builder prune
 # --all`): cache only, never an image, so the kept revision tags still back `lares rite kukulu --rollback`.
 FLOOR_TAKEN=""
 floor_take() {
-  f_lock=$(bash "$HERE/battery.sh" --lock-path 2>/dev/null) || f_lock=""
-  [ -n "$f_lock" ] || die "build refuses: the floor lock reads nowhere (bash $HERE/battery.sh --lock-path failed); set an absolute LARES_BATTERY_LOCK"
-  if [ -e "$f_lock" ] && command -v node >/dev/null 2>&1 && node "$HERE/floor-lock.mjs" --held >/dev/null 2>&1; then
+  f_locks=$(bash "$HERE/battery.sh" --lock-paths 2>/dev/null) || f_locks=""
+  [ -n "$f_locks" ] || die "build refuses: the floor lock reads nowhere (bash $HERE/battery.sh --lock-paths failed); set an absolute LARES_BATTERY_LOCK"
+  if command -v node >/dev/null 2>&1 && node "$HERE/floor-lock.mjs" --held >/dev/null 2>&1; then
     printf 'lares-container: the floor already stands held by this run; the image builds inside it\n' >&2; return 0
   fi
-  # Probe the open in a subshell first: under a POSIX sh (dash), a failing redirection on the special builtin `exec` exits the
+  f_count=$(printf '%s\n' "$f_locks" | wc -l)
+  # Probe every open in a subshell first: under a POSIX sh (dash), a failing redirection on the special builtin `exec` exits the
   # whole shell at once, so a bare `exec 8>… || die` would die silent and never name the refusal.
-  (exec 8>"$f_lock") 2>/dev/null || die "build refuses: the floor lock $f_lock cannot open here; an image builds only on the floor"
-  exec 8>"$f_lock" || die "build refuses: the floor lock $f_lock cannot open here; an image builds only on the floor"
-  printf 'lares-container: waiting for the floor (%s)\n' "$f_lock" >&2
-  flock 8 || die "build refuses: flock failed on $f_lock"
-  FLOOR_TAKEN=1
-  printf 'lares-container: holding the floor for the image build\n' >&2
+  f_n=1
+  while [ "$f_n" -le "$f_count" ]; do
+    f_lock=$(printf '%s\n' "$f_locks" | sed -n "${f_n}p")
+    (exec 8>"$f_lock") 2>/dev/null || die "build refuses: the floor lock $f_lock cannot open here; an image builds only on the floor"
+    f_n=$((f_n + 1))
+  done
+  printf 'lares-container: waiting for the floor (%s slots)\n' "$f_count" >&2
+  # The first free slot wins; flock -n decides each take, the short sleep between passes only paces.
+  while :; do
+    f_n=1
+    while [ "$f_n" -le "$f_count" ]; do
+      f_lock=$(printf '%s\n' "$f_locks" | sed -n "${f_n}p")
+      exec 8>"$f_lock" || die "build refuses: the floor lock $f_lock cannot open here; an image builds only on the floor"
+      if flock -n 8; then
+        FLOOR_TAKEN=1
+        printf 'lares-container: holding the floor for the image build (slot %s)\n' "$f_n" >&2
+        return 0
+      fi
+      exec 8>&-
+      f_n=$((f_n + 1))
+    done
+    sleep 0.2
+  done
 }
 floor_give() {
   [ -n "$FLOOR_TAKEN" ] || return 0

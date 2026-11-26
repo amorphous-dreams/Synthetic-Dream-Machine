@@ -21,6 +21,8 @@ test('RED: the line builders write the grammar the VM fold reads', () => {
     'WHY lane-a@abcdef012 proves it',
   ]);
   assert.equal(takeLine('t@1234567', 'lares-alpha', 2 * 1024 ** 3), 'TAKE t@1234567 lares-alpha c-free=2.00');
+  assert.equal(takeLine('t@1234567', 'lares-alpha', 2 * 1024 ** 3, 2), 'TAKE t@1234567 lares-alpha c-free=2.00 slot=2');
+  assert.match(doneLine('t@1234567', 'GREEN', 0, 0, 'exit 0', 2), /^DONE t@1234567 GREEN wrote=0\.00 c-drop=0\.00 slot=2 · exit 0$/);
   assert.equal(doneLine('t@1234567', 'GREEN', NaN, 0.5 * 1024 ** 3, 'exit 0 · pnpm build'), 'DONE t@1234567 GREEN wrote=? c-drop=0.50 · exit 0 · pnpm build');
   assert.equal(dropLine('t@1234567', 'lane  withdrawn'), 'DROP t@1234567 lane withdrawn');
   assert.equal(gb(NaN), '?');
