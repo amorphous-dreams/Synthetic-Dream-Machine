@@ -11,11 +11,11 @@ import { censusPreloads } from "../src/glass-mirror.js";
 const bundle = (title: string, shadows: Record<string, unknown>) => ({ title, "plugin-type": "plugin", text: JSON.stringify({ tiddlers: shadows }) });
 
 describe("the mirror census over promoted preloads", () => {
-  test("RED: a promoted plugin bundle carrying a saver or syncadaptor module is refused `plugin-syncadaptor`; CONTROL: a bundle of plain modules passes on a sealed-rest vessel", () => {
+  test("RED: a promoted plugin bundle carrying a saver or syncadaptor module is refused `plugin-syncadaptor`; CONTROL: a bundle of plain modules passes", () => {
     const saver = bundle("$:/plugins/rites/saver", { "$:/rites/save": { "module-type": "saver", text: "x" } });
     const sync = bundle("$:/plugins/rites/sync", { "$:/rites/sync": { "module-type": "syncadaptor", text: "x" } });
     const fine = bundle("$:/plugins/rites/widget", { "$:/rites/w": { "module-type": "widget", text: "x" } });
-    const { accepted, refused } = censusPreloads([saver, sync, fine], true);
+    const { accepted, refused } = censusPreloads([saver, sync, fine]);
     expect(refused).toEqual([{ title: "$:/plugins/rites/saver", kind: "plugin-syncadaptor" }, { title: "$:/plugins/rites/sync", kind: "plugin-syncadaptor" }]);
     expect(accepted).toEqual([fine]);
   });
@@ -25,7 +25,7 @@ describe("the mirror census over promoted preloads", () => {
     const looseSync = { title: "rites/sync", "module-type": "syncadaptor", type: "application/javascript", text: "x" };
     const startup = { title: "rites/startup", "module-type": "startup", type: "application/javascript", text: "x" };
     const macro = { title: "rites/macro", tags: "$:/tags/Macro", text: "\\define m() x" };
-    const { accepted, refused } = censusPreloads([looseSaver, looseSync, startup, macro], false);
+    const { accepted, refused } = censusPreloads([looseSaver, looseSync, startup, macro]);
     expect(refused).toEqual([{ title: "rites/saver", kind: "module-syncadaptor" }, { title: "rites/sync", kind: "module-syncadaptor" }]);
     expect(accepted).toEqual([startup, macro]);
   });

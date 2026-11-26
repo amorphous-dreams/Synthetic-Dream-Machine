@@ -8,7 +8,7 @@
  * every member's carrier form → flags all (broad, but right).
  */
 
-import { houseSkins, skinPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
+import { houseSkins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { describe, test, expect, beforeAll } from "vitest";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
@@ -107,7 +107,7 @@ describe.skipIf(coreBlobSkip)(
   let engine: TW5Engine;
   beforeAll(async () => {
     engine = new TW5Engine();
-    await engine.boot(vendoredCore(), houseSkins(), undefined, { modulePins: skinPins() });
+    await engine.boot(vendoredCore(), houseSkins());
   }, 60_000);
 
   test("one member with BOTH a wiki-edit and a disk-change conflicts; the others land clean", async () => {

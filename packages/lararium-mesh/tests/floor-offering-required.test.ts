@@ -56,14 +56,3 @@ describe("the blobs every mount needs", () => {
     expect(await resolveFloorWhole(whole.cid, whole.fetch, { required })).toHaveProperty("offering");
   });
 });
-
-import { floorSkinCids } from "../src/floor-offering.js";
-import { LARES_LARARIUM_PLUGIN_URI as HOUSE_URI, LARES_MEMETIC_WIKITEXT_PLUGIN_URI as GRAMMAR_URI } from "../src/lar-uris.js";
-describe("floorSkinCids ~ the CIDs the attested island names for the house skins", () => {
-  test("reads each skin's sha256 off the island's own blob rows, never off a hand-kept list; another row names no skin", () => {
-    const blobs = { a: { id: GRAMMAR_URI, sha256: "a".repeat(64) }, b: { id: HOUSE_URI, sha256: "b".repeat(64) }, c: { id: "$:/plugins/x/person", sha256: "c".repeat(64) } };
-    expect(floorSkinCids(blobs)).toEqual({ [GRAMMAR_URI]: "a".repeat(64), [HOUSE_URI]: "b".repeat(64) });
-    expect(floorSkinCids(undefined)).toEqual({});
-    expect(floorSkinCids({ a: { id: GRAMMAR_URI } })).toEqual({});
-  });
-});

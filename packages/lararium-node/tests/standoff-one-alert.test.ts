@@ -9,7 +9,7 @@
  * The stand-off here stands with no base: the file says one thing and the records another, and nothing names which moved
  * last (`no-base`), so the island's first pass meets it at once.
  */
-import { houseSkins, skinPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
+import { houseSkins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { describe, expect, test } from "vitest";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -51,7 +51,7 @@ async function island(before: (s: { $tw: Wiki; working: MemoryTiddlerStore }) =>
   composite.addLayer({ bagId: DAEMON_WORKING, store: working, writable: true });
   composite.addLayer({ bagId: TEMP, store: temp, writable: true });
   const engine = new TW5Engine();
-  await engine.boot(vendoredCore(), houseSkins(), undefined, { modulePins: skinPins() });
+  await engine.boot(vendoredCore(), houseSkins());
   const $tw = engine.$tw as unknown as Wiki;
   for (const fields of carrierRecords(URI, words)!) {
     await store.put({ tiddler: fields as never }, ORIGIN);

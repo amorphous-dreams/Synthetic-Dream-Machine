@@ -38,7 +38,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/island-kernel
  */
 
-import { TW5Engine } from "./tw5-vm.js";
+import { TW5Engine, type TW5BootOptions } from "./tw5-vm.js";
 import type { TW5CoreBootBlob } from "./tw5-host-bridge.js";
 import type { IslandToVesselMsg, IslandMsg_Event } from "@lararium/mesh/island-protocol";
 import { mkEa, mkFault } from "@lararium/mesh/island-protocol";
@@ -71,7 +71,7 @@ export class IslandKernel {
     wikiUri:          string,
     coreBlob:         TW5CoreBootBlob,
     preloadedTiddlers?: readonly Record<string, unknown>[],
-    options?: { onInstance?: (instance: import("./types/tiddlywiki.js").TW5Instance) => void; grantedDigests?: ReadonlySet<string>; modulePins?: ReadonlySet<string> },
+    options?: TW5BootOptions,
   ): Promise<void> {
     this._wikiUri = wikiUri;
     if (coreBlob.bytes.byteLength === 0) {

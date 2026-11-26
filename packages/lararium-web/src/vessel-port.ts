@@ -185,9 +185,7 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
       place(surface: string, binding: string, msg: unknown) { post({ t: "port:place", surface, binding, msg }); return { ok: true as const }; },
       close(binding: string) { post({ t: "port:close", binding }); },
     } satisfies PortTransportDoors,
-    mirrorInputs: (surface: string) => call<{ coreCid: string; pluginCids: readonly string[]; skinCids?: Readonly<Record<string, string>> } | null>((callId) => ({ t: "read:mirror-inputs", callId, surface })),
-    startupAdmit: (surface: string, records: readonly { title: string; fields: Record<string, string> }[]) =>
-      call<readonly string[]>((callId) => ({ t: "read:startup-admit", callId, surface, records: records.map((r) => ({ title: r.title, fields: { ...r.fields } })) })),
+    mirrorInputs: (surface: string) => call<{ coreCid: string; pluginCids: readonly string[] } | null>((callId) => ({ t: "read:mirror-inputs", callId, surface })),
     readFloor: (baseUrl: string) => call<HearthFloorRead>((callId) => ({ t: "read:floor", callId, baseUrl })),
     joinOffer: (text: string, abandonPending: boolean) => call<JoinOfferReply>((callId) => ({ t: "join:offer", callId, text, abandonPending })),
     joinAnswer: (text: string) => call<JoinAnswerReply>((callId) => ({ t: "join:answer", callId, text })),

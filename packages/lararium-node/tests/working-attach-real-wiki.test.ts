@@ -6,7 +6,7 @@
  * slot, and a hand save lands in the working document and not in the daemon bag. Nothing replaces the
  * wiki's reader.
  */
-import { houseSkins, skinPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
+import { houseSkins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { afterEach, beforeAll, describe, expect, test } from "vitest";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import { CompositeStore } from "@lararium/mesh/composite-store";
@@ -23,7 +23,7 @@ let engine: TW5Engine;
 
 beforeAll(async () => {
   engine = new TW5Engine();
-  await engine.boot(vendoredCore(), houseSkins(), undefined, { modulePins: skinPins() });
+  await engine.boot(vendoredCore(), houseSkins());
 }, 60_000);
 afterEach(() => { while (teardown.length) { try { teardown.pop()!(); } catch { /* best-effort */ } } });
 

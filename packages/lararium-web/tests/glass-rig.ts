@@ -14,7 +14,7 @@ const BOOT_CHUNK = 196_608;
  * receives the boot set first (`port:boot`: the engine blob, then the house plugin blob, verbatim and chunked), as an island sends it.
  * The first chunk of an open answers at once; the rest wait on `gate` when one stands (a released promise, never a clock).
  */
-export async function rig(options: { gate?: Promise<void>; chunks?: number; sealedRest?: boolean;
+export async function rig(options: { gate?: Promise<void>; chunks?: number;
   /** The engine preloads the vessel names (default: the house plugin alone). */
   preloads?: Record<string, unknown>[];
   /** Records the wiki carries: each snapshot's first chunk lands them beside its own. */
@@ -47,15 +47,13 @@ export async function rig(options: { gate?: Promise<void>; chunks?: number; seal
       return { ok: true as const };
     }, close() {},
   } });
-  // A test's boot set in place of the port's handoff: the house plugin rides as the vessel's own preload; `sealedRest` is the vessel's word, false unless a test stands for a sealed vessel.
-  // The vessel attests the shipped skins by their bytes; a preload that merely wears a skin title stands unattested.
+  // A test's boot set in place of the port's handoff: the house skins ride as the vessel's own preloads.
   const preloadedTiddlers = options.preloads ?? [housePlugin as Record<string, unknown>, larariumPlugin as Record<string, unknown>];
-  const attestedSkins = new WeakSet<object>(preloadedTiddlers.filter(p => p === (housePlugin as unknown) || p === (larariumPlugin as unknown)));
-  const seams = { readInputs: async () => ({ coreBytes: bytes, coreCid, preloadedTiddlers, sealedRest: options.sealedRest === true, attestedSkins }) };
+  const seams = { readInputs: async () => ({ coreBytes: bytes, coreCid, preloadedTiddlers }) };
   const options2 = { host, port, inputs: { coreCid: "0".repeat(64), pluginCids: [] as string[] }, wikiUri: "wiki", actor: "actor" };
   return { host, port, messages, seams, options: options2, onPlace: (watcher: (msg: Record<string, any>) => void) => { placed.push(watcher); },
     /** The names a vessel gives for this stub's boot set: with them and no `readInputs` seam, the mirror boots from the port's own handoff. */
-    names: { coreCid, pluginCids: [houseCid], sealedRest: options.sealedRest === true, skinCids: { [String(housePlugin["title" as keyof typeof housePlugin])]: houseCid } },
+    names: { coreCid, pluginCids: [houseCid] },
     opens: () => messages.filter(m => m.type === "port:open") };
 }
 

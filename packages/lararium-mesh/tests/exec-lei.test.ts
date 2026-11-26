@@ -13,8 +13,7 @@ import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed255
 import { swarmCommand, type SwarmDoorDeps } from "../src/swarm-door.js";
 import { SWARM_LEI_RITES, leiRiteCosigns } from "../src/swarm-lei-rite.js";
 import { readLei, returnLei, signSwarmAct, swarmLeiHead, type SwarmWikiPort } from "../src/swarm-tiddlers.js";
-import { admitStartupRecords, execLeiBranch, execRecordCid, spendExecLei, type ExecLeiScope } from "../src/exec-lei.js";
-import { SwarmRefused } from "../src/swarm-tiddlers.js";
+import { execLeiBranch, execRecordCid, spendExecLei, type ExecLeiScope } from "../src/exec-lei.js";
 import { soloCosign } from "./ward-cosign-table.js";
 
 const GROUP = "face-group", WIKI = "lar:///ha.ka.ba/wikis/notes";
@@ -97,35 +96,5 @@ describe("exec-lei — the executable-record lei rides the lei grammar", () => {
     await expect(returnLei(f.wiki, { rite: "exec", branch: execLeiBranch(WIKI), head: STARTUP.title, tree: execRecordCid(STARTUP.fields) }, f.trust, GROUP, f.vessel, ONE_DEVICE))
       .rejects.toMatchObject({ code: "swarm-lei-exec-unscoped" });
     await expect(spendExecLei(f.wiki, { wiki: WIKI, writer: "seat", ...STARTUP }, f.trust, GROUP, f.vessel)).resolves.toMatchObject({ n: 1 });
-  });
-});
-
-describe("admitStartupRecords — the tab half's rule, one function for every vessel that boots a wiki", () => {
-  const records = [
-    { title: "Own start", fields: { tags: "$:/tags/StartupAction", text: "a" } },
-    { title: "Member start", fields: { tags: "$:/tags/StartupAction/Browser", text: "b" } },
-  ];
-  test("RED: in a wiki the wearing face alone writes, every startup record runs and no return spends; CONTROL: the port never hears", async () => {
-    const heard: string[] = [];
-    const port = { spend: async (land: { title: string }) => { heard.push(land.title); return { lei: "c".repeat(64), n: 1 }; } };
-    const out = await admitStartupRecords(records, { wiki: WIKI, own: true, port });
-    expect([...out.admitted]).toEqual(["Own start", "Member start"]);
-    expect(out.offered).toEqual([]);
-    expect(heard).toEqual([]);
-  });
-
-  test("RED: in a shared wiki another writer's startup record runs only where the exec lei spends a return; a refused spend offers with the lei's reading; CONTROL: with no port every record offers", async () => {
-    const f = await fixture();
-    await f.string({ wiki: WIKI, writer: "member-b", titles: ["Member start"] }, 1);
-    const port = { spend: (land: { wiki: string; title: string; fields: Readonly<Record<string, unknown>>; writer?: string }) => spendExecLei(f.wiki, land, f.trust, GROUP, f.vessel) };
-    const out = await admitStartupRecords(records, { wiki: WIKI, own: false, port });
-    expect([...out.admitted]).toEqual(["Member start"]);
-    expect(out.offered).toEqual([{ title: "Own start", reason: "swarm-lei-out-of-scope" }]);
-    const again = await admitStartupRecords(records, { wiki: WIKI, own: false, port });
-    expect(again.offered.map((o) => o.reason)).toEqual(["swarm-lei-returns-spent", "swarm-lei-returns-spent"]);
-    const none = await admitStartupRecords(records, { wiki: WIKI, own: false });
-    expect(none.admitted.size).toBe(0);
-    expect(none.offered.map((o) => o.reason)).toEqual(["no-exec-lei-port", "no-exec-lei-port"]);
-    expect(SwarmRefused).toBeDefined();
   });
 });

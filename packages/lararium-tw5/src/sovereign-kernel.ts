@@ -77,7 +77,7 @@ import { waitForSlotDocument } from "./slot-wait.js";
 import { storeLiveness, type StoreLiveness } from "./store-liveness.js";
 import { buildIslandRecipe, seedDrained } from "./island-recipe.js";
 import { openIslandStory } from "./island-story.js";
-import { casBlobPreloads, modulePinsOf } from "./module-pins.js";
+import { casBlobPreloads } from "./module-pins.js";
 import { makeCatalogAccessor, libraryDocUrl } from "./catalog-accessor.js";
 import { librarySlotUrl, liveKahuaFace } from "./kahua-layer.js";
 import { installLazyResolver } from "./lazy-resolver.js";
@@ -565,11 +565,10 @@ export function runSovereignKernel(
     let bootInstance: Record<string, unknown> | undefined;
     let used = false;
     try {
-      // Every blob carries its pin into the engine: the core its manifest coreHash, each plugin module the CID its blob just
-      // verified against, so the engine evaluates exactly the code the manifest named.
+      // The core boots under its manifest coreHash and each plugin blob already rehashed to its CID; TiddlyWiki then unpacks the
+      // plugins and defines their modules natively.
       await handler.bootTw5(msg.wikiUri, { bytes: coreBytes, sha256: msg.coreHash }, pluginTiddlers, {
         grantedDigests: new Set(msg.pluginCids ?? []),
-        modulePins: modulePinsOf(pluginTiddlers),
         onInstance(instance) {
           bootInstance = instance as unknown as Record<string, unknown>;
           Object.defineProperty(instance, "larariumWritableStand", {

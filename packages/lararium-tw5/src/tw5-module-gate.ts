@@ -2,18 +2,13 @@ import { digestsEqual, formatDigest, SHA256_ALGO } from "@lararium/mesh/agile-di
 import { hex } from "@lararium/mesh/crypto";
 import type { TW5Instance } from "./types/tiddlywiki.js";
 import { stackOf } from "./has-stack.js";
-import { modulePin } from "./module-pins.js";
 
 // The has-stack model: a kernel-injectable module WEARS the
 // tw5-module component in its stack (tags), never "implements an interface".
 const MODULE_COMPONENT_URI = "lar:///ha.ka.ba/lararium/tw5/tw5-module";
 
-/**
- * Read genesis and promoted preloads alone, never the composite a stage item joins after boot. `pins` names the module pin gate's
- * live set (`module-pins.ts`): a module this gate admits, its grant read and its `source-sha256` checked, joins the set before it
- * defines, so the pin gate admits exactly the granted bytes.
- */
-export async function bootTrustedModules(tw: TW5Instance, preloaded: ReadonlySet<string>, granted: ReadonlyMap<string, Record<string, unknown>>, pins?: Set<string>): Promise<void> {
+/** Read genesis and promoted preloads alone, never the composite a stage item joins after boot. */
+export async function bootTrustedModules(tw: TW5Instance, preloaded: ReadonlySet<string>, granted: ReadonlyMap<string, Record<string, unknown>>): Promise<void> {
   const wiki = tw.wiki;
 
   let at = "(the module list)";
@@ -65,7 +60,6 @@ export async function bootTrustedModules(tw: TW5Instance, preloaded: ReadonlySet
       }));
       // TW5's module table reaches a module by the name another module `require`s: its title. The gate
       // defines each trusted module under that name, `define(name, moduleType, definition)`.
-      pins?.add(modulePin(title, moduleType, body));
       tw.modules.define(title, moduleType, body);
     }
   } catch (error) {

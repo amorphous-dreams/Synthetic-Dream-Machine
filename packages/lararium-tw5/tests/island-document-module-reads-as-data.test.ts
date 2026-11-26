@@ -21,7 +21,7 @@ import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { createHash } from "node:crypto";
 import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
 import { TW5Engine } from "../src/tw5-vm.js";
-import { bootTestWiki, houseSkins, skinPins, skipNote, vendoredCore, wikiSkip } from "./test-wiki.js";
+import { bootTestWiki, houseSkins, skipNote, vendoredCore, wikiSkip } from "./test-wiki.js";
 
 function handleOver(records: readonly LarTiddlerRecord[]): DocHandle<LarDoc> {
   const doc = emptyLarDoc();
@@ -61,7 +61,7 @@ describe.skipIf(wikiSkip)(`the island holds a document's code as data${skipNote}
       "source-sha256": `sha256:${createHash("sha256").update(body, "utf8").digest("hex")}`, text: body };
     engine = new TW5Engine();
     await engine.boot(vendoredCore(), [...houseSkins(), granted],
-      undefined, { grantedDigests: new Set([sha256HexBytesSync(canonicalJsonBytes(granted))]), modulePins: skinPins() });
+      undefined, { grantedDigests: new Set([sha256HexBytesSync(canonicalJsonBytes(granted))]) });
     await seedInto(engine, "doc-code", records);
     const $tw = engine.$tw as unknown as { wiki: TW5Engine["wiki"]; modules: { titles: Record<string, unknown>; execute(t: string): Record<string, unknown> } };
     expect($tw.modules.execute("lar:///t/doc/granted")["granted"], "CONTROL: the granted preload defines").toBe(42);

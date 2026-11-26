@@ -3,13 +3,10 @@ import { MIRROR_TOKEN } from "./glass-token.js";
 import { glassLocalTitle, makeGlassPortAdaptor } from "./glass-port-adaptor.js";
 import type { GlassPortOptions } from "./glass-port-adaptor.js";
 import type { PortWireRecord } from "@lararium/mesh/record-port";
-import { executableClassOf } from "@lararium/mesh/executable-class";
-import { LARES_LARARIUM_PLUGIN_URI, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh/lar-uris";
 import type { GlassDoor } from "./glass-root.js";
 import { mountGlassCamera } from "./glass-camera.js";
 import { openDefaultStory } from "./default-story.js";
 import { tendOrphanAlerts } from "./place-meme.js";
-import { modulePinsOf } from "./module-pins.js";
 
 export interface MirrorSeams {
   bootEngine?: () => void | Promise<void>; paint?: () => void;
@@ -21,85 +18,54 @@ export interface MirrorSeams {
 type Adaptor = ReturnType<typeof makeGlassPortAdaptor>;
 const nameOf = (error: unknown): string => error instanceof Error ? error.name : "Error";
 
-/** The house's two skins, the grammar and the house plugin: the boot set carries both by CID, and every mount requires both. A title here names a skin; only attested bytes (`attestedSkins`) stand as one. */
-const HOUSE_SKINS: ReadonlySet<string> = new Set([LARES_MEMETIC_WIKITEXT_PLUGIN_URI, LARES_LARARIUM_PLUGIN_URI]);
-/**
- * THE CENSUS AND THE GATE, before any module evaluates. A SKIN IS ADMITTED BY ITS BYTES: a plugin wearing a house skin's title boots
- * only when `attestedSkins` holds that preload object, meaning the blob it came from hashed to the CID the vessel's founding record names for the skin
- * (the live island rows, a self-consistency; the genesis chain binding is owed: course/glass-cid-rides-the-genesis-chain). A second blob wearing the title never rides the true skin's attestation. The URI
- * names; it proves no bytes. Any other bytes under a skin title refuse as `skin-unattested` (the seal never lifts it), and the cure
- * rebuilds the skin through the pipeline. A plugin of any type carrying a `syncadaptor` or a `saver` shadow, or a
- * promoted loose module carrying either type, refuses: the mirror is fed by the port alone. Every other person's plugin (not the
- * house's two skins, not the core) evaluates only on a vessel whose boot inputs carry `sealedRest` (the browser store's sealed-rest
- * capability, S's row); until then the gate holds it by its own name and never defaults open.
- *
- * THE GATE READS CAPABILITY, NEVER A NAME. A theme or a language plugin whose shadows carry no JavaScript module evaluates no code:
- * it lays stylesheets, palettes and wikitext, so it passes the closed gate (the stock vanilla and snowwhite themes the boot set
- * carries by CID among them). A theme or language that carries a module waits on the seal like any plugin. The inputs come from
- * the vessel, never from a page value.
- */
-export function censusPreloads(preloads: Record<string, unknown>[], sealedRest: boolean, attestedSkins: { has(preload: object): boolean } = new WeakSet()) {
-  const refused: { title: string; kind: string }[] = [];
-  const accepted = preloads.filter(plugin => {
-    const title = String(plugin.title ?? "");
-    if (plugin["plugin-type"] === undefined && ["syncadaptor", "saver"].includes(String(plugin["module-type"]))) {
-      refused.push({ title, kind: "module-syncadaptor" });
-      return false;
-    }
-    if (plugin["plugin-type"] === undefined) return true;
-    if (HOUSE_SKINS.has(title) && !attestedSkins.has(plugin)) { refused.push({ title, kind: "skin-unattested" }); return false; }
-    let shadows: Record<string, unknown> = {};
-    try { shadows = (JSON.parse(String(plugin.text ?? "{}")) as { tiddlers?: Record<string, unknown> }).tiddlers ?? {}; }
-    catch { /* Invalid plugin content is left to the engine. */ }
-    const fields = Object.values(shadows).filter((value): value is Record<string, unknown> => !!value && typeof value === "object");
-    const dangerous = fields.some(value => ["syncadaptor", "saver"].includes(String(value["module-type"])));
-    const evaluates = fields.some(value => value["module-type"] !== undefined || value["type"] === "application/javascript");
-    const gated = plugin["plugin-type"] === "plugin" || evaluates;
-    const kind = dangerous ? "plugin-syncadaptor" : gated && !sealedRest && !(HOUSE_SKINS.has(title) && attestedSkins.has(plugin)) && title !== "$:/core" ? "plugin-gate" : "";
-    if (kind) refused.push({ title, kind });
-    return !kind;
-  });
-  return { accepted, refused };
-}
-
-/** A startup record, by the mesh's one executable-class list. */
-const isStartupRecord = (record: PortWireRecord): boolean => executableClassOf(record.fields)?.class === "startup-action";
+/** A plugin or loose module that would stand a syncer in the engine: the mirror takes its truth from the port alone. */
+const SYNCER_TYPES: readonly string[] = ["syncadaptor", "saver"];
 const shadowsOf = (text: unknown): Record<string, unknown>[] | null => {
   try {
     const tiddlers = (JSON.parse(String(text ?? "{}")) as { tiddlers?: Record<string, unknown> }).tiddlers ?? {};
     return Object.values(tiddlers).filter((value): value is Record<string, unknown> => !!value && typeof value === "object");
   } catch { return null; }
 };
+const standsSyncer = (fields: Readonly<Record<string, unknown>>): boolean => {
+  if (fields["plugin-type"] === undefined) return SYNCER_TYPES.includes(String(fields["module-type"]));
+  return (shadowsOf(fields["text"]) ?? []).some(value => SYNCER_TYPES.includes(String(value["module-type"])));
+};
+
+/**
+ * THE BOOT SET'S CENSUS. The mirror boots its boot set the way TiddlyWiki boots any store: every plugin unpacks and every module
+ * it packs defines. One kind refuses: a plugin carrying a `syncadaptor` or `saver` shadow, or a loose module of either type
+ * (`plugin-syncadaptor`, `module-syncadaptor`). The mirror is fed by the port alone, and a syncer standing in the engine fails the
+ * mount (`syncer-stood`): that guards the house's own sync architecture.
+ */
+export function censusPreloads(preloads: Record<string, unknown>[]) {
+  const refused: { title: string; kind: string }[] = [];
+  const accepted = preloads.filter(preload => {
+    if (!standsSyncer(preload)) return true;
+    refused.push({ title: String(preload.title ?? ""), kind: preload["plugin-type"] === undefined ? "module-syncadaptor" : "plugin-syncadaptor" });
+    return false;
+  });
+  return { accepted, refused };
+}
+
 /**
  * THE RECORD CENSUS: which of the wiki's own records the mirror's engine boots with. The whole handoff lands before the engine
- * stands, so a record reaches `$tw.preloadTiddlers` and TW5 unpacks a person's plugin, theme, palette or language at boot, the way
- * it unpacks a store a server handed it. A record boots with the engine unless one of these holds it back:
+ * stands, so a record reaches `$tw.preloadTiddlers` and TW5 unpacks a person's plugin, defines a module, runs a startup action,
+ * and lays a theme, palette or language at boot, the way it boots a store a server handed it. A record boots with the engine
+ * unless one of these holds it back:
  *
- *   boot-set-shadow     its title names a tiddler of the verified boot set (the core, the house plugin, a stock theme): a record
- *                       never replaces bytes the vessel named by CID.
+ *   boot-set-shadow     its title names a tiddler of the verified boot set (the core, the house plugin, a stock theme): the boot
+ *                       set carries it already, and a record never replaces bytes the vessel named by CID.
+ *   (module's namesake) a record that shares its title with a module the boot set packs, or sits under `$:/core/modules/` or
+ *                       `$:/boot/`: held with no alert, so the engine's own module stays defined.
  *   plugin-syncadaptor  a plugin carrying a `syncadaptor` or `saver` shadow, or a loose module of either type: the mirror takes
  *   module-syncadaptor  its truth from the port alone.
- *   plugin-gate         a plugin that evaluates JavaScript, on a vessel whose store does not yet rest sealed (`sealedRest`); a
- *                       plugin that lays only wikitext, styles and data boots at once.
- *   (loose module)      a record carrying a `module-type` of its own: held with no alert, sealed or not. The island evaluates no
- *                       such record either (its module gate admits code by grant), so the surface runs none.
- *   (unreadable)        a plugin or module record whose body the port left out (a skinny open) or whose packed text will not
- *                       parse: nothing can read what it would evaluate, so it waits like a gated one.
- *   (module's namesake) a record that shares its title with a module the boot set packs: held with no alert, so the engine's own
- *                       module stays defined (the core's modules ride `$:/core` in the engine blob and take the same hold by the
- *                       `$:/core/modules/` prefix).
- *   (startup action)    a record tagged `$:/tags/StartupAction` (or a tag beneath it): TW5 runs those during boot, and the
- *   startup-offer       server-side island stays floor-only, so the tab is where a wiki's startup records run. The tab runs the
- *                       ones its vessel admits (`startupAdmitted`: the wearing face's own, or one a standing exec lei spent a
- *                       return for, `admitStartupRecords`); every other waits with a `startup-offer` notice. Where the vessel
- *                       asks no admission (`startupAdmitted` absent) every startup record waits with no alert.
+ *   (unreadable)        a plugin whose body the port left out (a skinny open) or whose packed text will not parse: no engine
+ *                       boots bytes it never received.
  *
- * A held record still LANDS, after boot, as an ordinary record: the person sees it, edits it, deletes it. TW5 defines a module
- * and registers a plugin's modules during boot alone, so a record that lands after boot evaluates nothing; TW5's own ordering
- * keeps the gate, and no field of the record changes.
+ * A held record still LANDS, after boot, as an ordinary record: the person sees it, edits it, deletes it.
  */
-export function censusRecords(records: readonly PortWireRecord[], bootTitles: ReadonlySet<string>, sealedRest: boolean, localFilter: readonly string[] = [],
-  bootModules: ReadonlySet<string> = new Set(), startupAdmitted: ReadonlySet<string> | null = null) {
+export function censusRecords(records: readonly PortWireRecord[], bootTitles: ReadonlySet<string>, localFilter: readonly string[] = [],
+  bootModules: ReadonlySet<string> = new Set()) {
   const preloaded: PortWireRecord[] = [];
   const held: PortWireRecord[] = [];
   const refused: { title: string; kind: string }[] = [];
@@ -110,26 +76,16 @@ export function censusRecords(records: readonly PortWireRecord[], bootTitles: Re
     if (bootTitles.has(record.title)) { hold("boot-set-shadow"); continue; }
     // A record that shares its title with a MODULE the boot set packs (house canon names a carrier and its module alike) waits out
     // the boot: TW5 defines no shadow module an ordinary tiddler overrides, so the record in the boot store would unseat the
-    // engine's own code. Landed after boot it overrides the shadow's text and the module stands, exactly as in the island.
+    // engine's own code. Landed after boot it overrides the shadow's text and the module stands.
     if (bootModules.has(record.title) || record.title.startsWith("$:/core/modules/") || record.title.startsWith("$:/boot/")) { held.push(record); continue; }
-    // A startup record runs in the tab where its vessel admits it; any other lands after boot, and an unadmitted one shows as an offer.
-    if (isStartupRecord(record) && !startupAdmitted?.has(record.title)) { if (startupAdmitted) hold("startup-offer"); else held.push(record); continue; }
-    const moduleType = fields["module-type"];
-    const plugin = fields["plugin-type"] !== undefined;
-    if (!plugin && moduleType === undefined) { preloaded.push(record); continue; }
-    if (!plugin) {
-      // A loose module record never evaluates in the island either (it lands there after the engine boots, and the island's own
-      // module gate admits code by grant alone), so the mirror runs none: held with no alert, whatever the seal reads. House canon
-      // carries such records as plain data.
-      if (moduleType === "syncadaptor" || moduleType === "saver") hold("module-syncadaptor");
-      else held.push(record);
+    if (fields["plugin-type"] === undefined) {
+      if (SYNCER_TYPES.includes(String(fields["module-type"]))) hold("module-syncadaptor");
+      else preloaded.push(record);
       continue;
     }
     const shadows = record.omitted?.includes("text") ? null : shadowsOf(fields["text"]);
-    if (shadows === null) { hold("plugin-gate"); continue; }
-    const evaluates = shadows.some(value => value["module-type"] !== undefined || value["type"] === "application/javascript");
-    if (shadows.some(value => value["module-type"] === "syncadaptor" || value["module-type"] === "saver")) hold("plugin-syncadaptor");
-    else if (evaluates && !sealedRest) hold("plugin-gate");
+    if (shadows === null) { held.push(record); continue; }
+    if (shadows.some(value => SYNCER_TYPES.includes(String(value["module-type"])))) hold("plugin-syncadaptor");
     else preloaded.push(record);
   }
   return { preloaded, held, refused };
@@ -160,11 +116,7 @@ export function bootSetTitles(preloads: readonly Record<string, unknown>[]): Set
  * wait for the port's first snapshot before it paints.
  */
 export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddler" | "adopt" | "inheritTags" | "inheritDeferred" | "opened"> & {
-  inputs: { coreBytes: Uint8Array; coreCid: string; preloadedTiddlers: Record<string, unknown>[]; sealedRest?: boolean;
-    /** The skins whose bytes hash to the attested genesis CID (`GlassBootInputs.attestedSkins`); a skin title outside it refuses. */
-    attestedSkins?: { has(preload: object): boolean };
-    /** The vessel's answer to which of the wiki's startup records this tab runs (`admitStartupRecords` behind it); absent, none runs. */
-    startupAdmit?: (records: readonly PortWireRecord[]) => Promise<ReadonlySet<string>> };
+  inputs: { coreBytes: Uint8Array; coreCid: string; preloadedTiddlers: Record<string, unknown>[] };
   shadowRoot: ShadowRoot;
   deferPaint?: boolean;
   /** The first whole snapshot the boot's handoff read off the already-open port: the engine boots with these records. */
@@ -214,24 +166,16 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
   try {
     try {
       await seams.bootEngine?.();
-      const census = censusPreloads(options.inputs.preloadedTiddlers, options.inputs.sealedRest === true, options.inputs.attestedSkins ?? new WeakSet());
-      const sealed = options.inputs.sealedRest === true;
-      const startups = options.opened ? options.opened.records.filter(record => !record.deleted && isStartupRecord(record)) : [];
-      const startupAdmitted = options.inputs.startupAdmit && startups.length > 0 ? await options.inputs.startupAdmit(startups) : options.inputs.startupAdmit ? new Set<string>() : null;
-      wikiCensus = options.opened ? censusRecords(options.opened.records, bootSetTitles(census.accepted), sealed, options.localFilter, bootSetModuleTitles(census.accepted), startupAdmitted) : null;
+      const census = censusPreloads(options.inputs.preloadedTiddlers);
+      wikiCensus = options.opened ? censusRecords(options.opened.records, bootSetTitles(census.accepted), options.localFilter, bootSetModuleTitles(census.accepted)) : null;
       // THE STORE A SERVER HANDS A BROWSER: the verified boot set, then the wiki's own records, all in `$tw.preloadTiddlers`
       // before TW5 unpacks a plugin or defines a module.
       const wikiPreloads: Record<string, unknown>[] = (wikiCensus?.preloaded ?? []).map(record => ({ ...record.fields, title: record.title }));
       const store = [...census.accepted, ...wikiPreloads];
-      // THE MODULE PINS. The boot set's modules ride the CIDs the handoff verified. A person's plugin the census let through (it
-      // evaluates only on a vessel whose store rests sealed) carries no CID: the vessel's sealed-rest word admits it, and the pin
-      // gate takes that word as its pin (`island-host-contract#/ses-gate` names this path as one no hash covers).
-      const sealedPlugins = sealed ? wikiPreloads.filter(record => record["plugin-type"] !== undefined) : [];
-      const modulePins = new Set([...modulePinsOf(census.accepted), ...modulePinsOf(sealedPlugins)]);
-      await engine.boot({ bytes: options.inputs.coreBytes, sha256: options.inputs.coreCid }, store, MIRROR_TOKEN, { modulePins });
+      await engine.boot({ bytes: options.inputs.coreBytes, sha256: options.inputs.coreCid }, store, MIRROR_TOKEN);
       const tw = engine.$tw;
       census.refused.push(...(wikiCensus?.refused ?? []));
-      for (const refusal of census.refused) tw.wiki.addTiddler(new tw.Tiddler({ title: `$:/temp/lares/alert/refused/${refusal.kind}/${refusal.title}`, text: refusal.kind === "startup-offer" ? `Startup action offered, not run (another writer's, and no exec lei stands for it): ${refusal.title}` : refusal.kind === "skin-unattested" ? `Skin refused: ${refusal.title} carries bytes the attested genesis does not name; rebuild it through the pipeline (pnpm --filter @lararium/tw5 build:plugin) and re-found` : `Plugin refused: ${refusal.title}`, tags: ["$:/tags/Alert"] }));
+      for (const refusal of census.refused) tw.wiki.addTiddler(new tw.Tiddler({ title: `$:/temp/lares/alert/refused/${refusal.kind}/${refusal.title}`, text: `Plugin refused: ${refusal.title}`, tags: ["$:/tags/Alert"] }));
       if (census.refused.length) options.shadowRoot.host.setAttribute("data-lar-refused-plugins", String(census.refused.length));
       const runtime = tw as unknown as { syncer?: unknown; syncadaptor?: unknown };
       if (runtime.syncer !== undefined || runtime.syncadaptor !== undefined) throw new Error("syncer-stood");

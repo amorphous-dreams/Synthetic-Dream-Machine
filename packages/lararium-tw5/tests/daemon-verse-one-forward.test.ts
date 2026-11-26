@@ -16,7 +16,7 @@ import { IslandKernel } from "../src/island-kernel.js";
 import { makeDaemonBehavior } from "../src/daemon-behavior.js";
 import { makeWikiBehavior } from "../src/wiki-behavior.js";
 import type { IslandBehavior, IslandContext } from "../src/island-context.js";
-import { houseSkins, skinPins, vendoredCore, wikiSkip, skipNote } from "./test-wiki.js";
+import { houseSkins, vendoredCore, wikiSkip, skipNote } from "./test-wiki.js";
 
 const VERB = "lar:///lararium.local.vm/verb/kahua-propose";
 const turns = async (n = 32): Promise<void> => { for (let i = 0; i < n; i++) await new Promise<void>((resolve) => setImmediate(resolve)); };
@@ -27,7 +27,7 @@ async function standIsland(slug: string, behavior: IslandBehavior) {
   const post = (msg: unknown): void => { wire.push(msg as { type: string; payload?: Record<string, unknown> }); };
   const kernel = new IslandKernel(post as never);
   const wikiUri = `lar:///ha.ka.ba/wikis/${slug}`;
-  await kernel.bootTw5(wikiUri, vendoredCore(), houseSkins(), { modulePins: skinPins() });
+  await kernel.bootTw5(wikiUri, vendoredCore(), houseSkins());
   const tw5 = kernel.tw5()!;
   const ctx = {
     wikiUri, composite: new CompositeStore(), control: memoryControlStore(), tw5, handles: new Map(), post,

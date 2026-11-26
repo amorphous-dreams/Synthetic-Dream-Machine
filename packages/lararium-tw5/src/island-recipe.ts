@@ -88,14 +88,6 @@ function readOnlyStore(store: LarTiddlerStore, slot: string): LarTiddlerStore {
 }
 
 /**
- * The islands bound by the code wards: the daemon wiki and a face's kahua stage (`kahua-<tag>`). Their seed pass runs no
- * StartupAction at all, not even a floor plugin's shadow laid after boot: code runs there from the boot pass alone.
- */
-export function startupGated(slug: string): boolean {
-  return slug === "daemon" || slug.startsWith("kahua-");
-}
-
-/**
  * Build the sovereign island recipe and return the adaptor.
  *
  * Cascade layering: walks `expandRecipe()` in reverse so the lowest-priority
@@ -197,18 +189,13 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     }
   }
 
-  // TW5 ran `$:/tags/StartupAction` over the preloads alone, before any record landed: the floor-admitted plugins' own startup
-  // actions ran there, once. THE FLOOR ALONE RUNS CODE ON THE ISLAND (state/decisions, "Native TW5 wikis"), as the module gate
-  // admits modules from the granted preloads alone: the seed pass runs a StartupAction only where it stands as a floor plugin's
-  // shadow the boot pass never saw (a house seed laid after boot), unshadowed by any landed record. A record the wiki's document
-  // landed (any layer, any fields, `kahua-cid` or not) rides inert here on every wiki and runs in the tab alone, under that
-  // engine's own accept, so a member's record in a shared realm never runs on the operator's vessel.
+  // STARTUP ACTIONS RUN, as TiddlyWiki runs them. TW5's own startup pass ran `$:/tags/StartupAction` over the preloads at boot; a
+  // startup record that reached the wiki after boot (landed by the seed's waves, or a floor plugin's shadow laid after boot) runs
+  // here once the seed stands, the way it would have run had it stood in the boot store.
   const checkpoint = adaptor.armSeedCheckpoint().then(() => {
-    const tw = tw5.$tw as unknown as { wiki: { filterTiddlers(f: string): string[]; getTiddlerText(t: string): string | undefined; isShadowTiddler(t: string): boolean; tiddlerExists(t: string): boolean }; rootWidget: { invokeActionString(actions: string, triggeringWidget: unknown, event: unknown, variables: Record<string, string>): void } };
+    const tw = tw5.$tw as unknown as { wiki: { filterTiddlers(f: string): string[]; getTiddlerText(t: string): string | undefined }; rootWidget: { invokeActionString(actions: string, triggeringWidget: unknown, event: unknown, variables: Record<string, string>): void } };
     for (const title of tw.wiki.filterTiddlers(STARTUP_ACTIONS)) {
       if (ranAtBoot.has(title)) continue;
-      if (!tw.wiki.isShadowTiddler(title) || tw.wiki.tiddlerExists(title)) continue;
-      if (startupGated(slug)) { console.warn(`[startup-gate] ${slug}: ${title} rides inert (a StartupAction runs here from the boot pass alone)`); continue; }
       tw.rootWidget.invokeActionString(tw.wiki.getTiddlerText(title) ?? "", tw.rootWidget, undefined, {});
     }
   });
