@@ -1048,10 +1048,30 @@ describe("a fault or a refusal never lets a document rest clear", () => {
     expect(fault).toEqual({ type: "rest:answer", requestId: "r1", refused: "rest-fault" });
     const malformed = await answerRestAsk({ restsSealed: async () => false }, { requestId: "r2" });
     expect(malformed).toEqual({ type: "rest:answer", requestId: "r2", refused: "ask-malformed" });
-    // CONTROL: an answering rest answers as it reads, and a vessel that seals no bag answers unsealed.
+    // CONTROL: an answering rest answers as it reads.
     expect(await answerRestAsk({ restsSealed: async () => true }, { requestId: "r3", documentId: "doc-a" })).toEqual({ type: "rest:answer", requestId: "r3", sealed: true });
     expect(await answerRestAsk({ restsSealed: async () => false }, { requestId: "r4", documentId: "doc-a" })).toEqual({ type: "rest:answer", requestId: "r4", sealed: false });
-    expect(await answerRestAsk({}, { requestId: "r5", documentId: "doc-a" })).toEqual({ type: "rest:answer", requestId: "r5", sealed: false });
+  });
+
+  it("a vessel that stands no rest door answers unread, and the island's guard rests no byte behind that answer; the door's unsealed reading still rests (control)", async () => {
+    expect(await answerRestAsk({}, { requestId: "r5", documentId: "doc-a" })).toEqual({ type: "rest:answer", requestId: "r5", refused: "rest-unread" });
+    const channel = new MessageChannel();
+    const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
+    const record: { restsSealed?: (documentId: string) => Promise<boolean> } = {};
+    vesselSide.listen((raw) => {
+      const m = raw as { type?: string; requestId: string; documentId?: string };
+      if (m.type === "rest:ask") void answerRestAsk(record, m).then((answer) => vesselSide.post(answer));
+    });
+    const islandInner = memoryAdapter();
+    const guard = islandRestGuard(islandInner, vesselRestAsker(islandSide, { idPrefix: "doorless" }));
+    const doc = parseAutomergeUrl(generateAutomergeUrl()).documentId;
+    const bytes = Uint8Array.from(utf8Bytes(SECRET));
+    await expect(guard.save([doc, "snapshot", "h1"], bytes)).rejects.toMatchObject({ refusal: "rest-unread" });
+    expect(restsAny(islandInner, doc)).toBe(false);
+    // CONTROL: once the door stands and reads unsealed, the bytes rest.
+    record.restsSealed = async () => false;
+    await guard.save([doc, "snapshot", "h1"], bytes);
+    expect(restsClear(islandInner, doc, SECRET)).toBe(true);
   });
 
   it("the island's asker refuses a refused answer, a shapeless answer and a post that fails, each by name; a sealed answer still reads sealed (control)", async () => {
