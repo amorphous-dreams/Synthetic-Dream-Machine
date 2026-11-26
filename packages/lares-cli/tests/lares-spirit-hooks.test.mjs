@@ -152,8 +152,10 @@ test("the pure parts", async (t) => {
     assert.equal(statePathOf("/d", "../escape"), null);
   });
   await t.test("a handback's pet reads off its FIRST non-blank line alone", () => {
-    assert.equal(handbackPetOf("\n  Om-Wright: Lares (Tasked Spirit)\nreport", "a1"), "om-wright");
-    assert.equal(handbackPetOf("plain report\nEvil: Lares (Tasked Spirit)", "Agent_9"), "agent-9");
+    assert.equal(handbackPetOf("\n  Om-Wright: (Lares Spirit)\nreport", "a1"), "om-wright");
+    assert.equal(handbackPetOf("plain report\nEvil: (Lares Spirit)", "Agent_9"), "agent-9");
+    assert.equal(handbackPetOf("relink-keeper#1: (Lares Spirit)\nreport", "a1"), "relink-keeper");
+    assert.equal(handbackPetOf("Om-Wright: Lares (Tasked Spirit)\nreport", "Agent_9"), "agent-9");
   });
   await t.test("a working directory reads inside the house only under the checkout or a bound workspace", () => {
     const root = mkdtempSync(join(tmpdir(), "in-house-"));
@@ -394,7 +396,7 @@ test("the hooks, spawned whole", async (t) => {
     await t.test("handback: inside the house, the report lands whole on stdin under its first line's pet, keyed by session and agent", () => {
       reset();
       plant({ "vessel stand": UP, "spirit residue": JSON.stringify({ ok: true, data: {} }) });
-      const message = "Om-Wright: Lares (Tasked Spirit)\nreport";
+      const message = "Om-Wright: (Lares Spirit)\nreport";
       spawn("lares-handback-hook.mjs", ["lares-alpha"], at({ tool_name: "SubagentHandback", session_id: "s-h", agent_id: "a-1", tool_input: { message } }));
       assert.ok(calls().split("\n").includes("spirit residue om-wright --file - --key s-h:a-1 --json"));
       assert.equal(readFileSync(fed, "utf8"), message);

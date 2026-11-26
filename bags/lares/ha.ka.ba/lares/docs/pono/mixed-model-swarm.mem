@@ -21,7 +21,7 @@ written   = "2026-10-19"
 
 The house works across several model lineages at once. Each lineage holds the seat it suits, every seat keeps the same lane law, and one hand per lane lands the work. A second lineage earns its place by seeing what the first one misses, never by adding a writer.
 
-The crew lines that bind a running lane stand at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>> #/the-lane-law; a spirit's mask, lifecycle and handback form stand at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>> #/worker-swarm.
+The crew lines that bind a running lane stand at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>> #/the-lane-law; a spirit's mask, lifecycle and handback form stand at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/spirit-swarm`>>.
 
 <<~/ahu>>
 
@@ -308,6 +308,6 @@ Ruled by the operator, 2026-11-05: "Does it apply to all tasked spirits... all l
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iYlwh92Z1DXfiJI89uPbp7_zhg8CA2TZ9m_GvmoCW78`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IkqsOEWSMjx0AtG8rCrDi9BsAFnNGIrKWMWxHjb6gus`>>
 
 <<^ code=`&#x0004;` to=`?`>>

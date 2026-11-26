@@ -1,7 +1,7 @@
 title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-node
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: frame
-lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot#/worker-swarm
+lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot#/spirit-swarm
 lar-pattern: <<~\s*node\s+action=`([^`]*)`\s*>>
 lar-example: <<~ node action=`refreshes the libation dish, the shrine incense burns`>>
 type: text/vnd.tiddlywiki
