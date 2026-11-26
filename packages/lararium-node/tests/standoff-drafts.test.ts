@@ -40,7 +40,11 @@ interface Kept {
 }
 
 /** The history the rig's document holds, as the projector's `lineageOf` door answers it; and why its saves cannot rest, if they cannot. */
-interface Told { lineage?: { heads: string[]; holds: string[]; quiet: boolean }; unrested?: string }
+interface Told {
+  lineage?: { heads: string[]; holds: string[]; quiet: boolean }; unrested?: string;
+  /** Where a save would land, in place of the rig's one bag; whether the grant reaches; whether the bag was DROPped. */
+  saveBag?: string; grantsNone?: true; retired?: true;
+}
 
 /** The keeper the island wires, over the rig's wiki and projector; the base's words read from `bases`. */
 async function keep(r: ShoreRig, rules: ReadonlySet<CollapseRule>, bases: Map<string, string>, told: Told = {}): Promise<Kept> {
@@ -61,8 +65,9 @@ async function keep(r: ShoreRig, rules: ReadonlySet<CollapseRule>, bases: Map<st
     canonical: canonicalizeCarrierText,
     land: carrierLanding,
     // The rig's saves land in its one bag, under its one mirror.
-    saveBag: () => RIG_BAG,
-    grants: (bag) => bag === RIG_BAG,
+    saveBag: () => told.saveBag ?? RIG_BAG,
+    grants: (bag) => told.grantsNone !== true && bag === RIG_BAG,
+    retired: () => told.retired === true,
     audit: (row) => { audits.push(row); },
     alert: (a) => { alerts.push(a); },
     notice: (line) => { notices.push(line); },
@@ -287,7 +292,7 @@ describe.skipIf(coreBlobSkip)("one keeper for every carrier: a native carrier th
     return hit[0]!;
   };
   /** A native record projects, the file and the records agree at `h2`, then the document reads back at `h1` with older words. */
-  const fallBehind = async (fields: Record<string, unknown>, ext: string): Promise<{ kept: Kept; file: string; bytes: string }> => {
+  const fallBehind = async (fields: Record<string, unknown>, ext: string, walls: Pick<Told, "saveBag" | "grantsNone" | "retired"> = {}): Promise<{ kept: Kept; file: string; bytes: string }> => {
     rig = await ShoreRig.stand(1);
     await rig.ingest();
     const told: Told = { lineage: { heads: ["h2"], holds: ["h1", "h2"], quiet: true } };
@@ -297,6 +302,7 @@ describe.skipIf(coreBlobSkip)("one keeper for every carrier: a native carrier th
     const file = fileWith(rig, ext);
     const bytes = readFileSync(file, "utf8");
     told.lineage = { heads: ["h1"], holds: ["h1"], quiet: true };
+    Object.assign(told, walls);
     await rig.save(NOTE, "What the older document said.");
     await kept.settle();
     return { kept, file, bytes };
@@ -322,9 +328,64 @@ describe.skipIf(coreBlobSkip)("one keeper for every carrier: a native carrier th
     expect(kept.audits.map((a) => a.rule)).toEqual(["records-behind-base"]);
   });
 
+  test.each([
+    ["another bag", { saveBag: "lar:///ha.ka.ba/bags/elsewhere" }, /would land .* in lar:\/\/\/ha\.ka\.ba\/bags\/elsewhere, not in/],
+    ["outside the grant", { grantsNone: true as const }, /grant does not reach/],
+    ["a DROPped bag", { retired: true as const }, /bag-retired/],
+  ])("the native keep refuses %s: the file stays whole, the records keep their words, and the alert names why", async (_name, walls, why) => {
+    const { kept, file, bytes } = await fallBehind({ text: "The newest words, which only the file still carries.", tags: "probe", type: "text/vnd.tiddlywiki" }, ".tid", walls);
+    expect(readFileSync(file, "utf8")).toBe(bytes);
+    expect(wikiText(rig!, NOTE)).toBe("What the older document said.");
+    expect(kept.audits).toEqual([]);
+    expect(kept.alerts.filter((a) => a.clear !== true).map((a) => ("why" in a ? a.why : "")).join("\n")).toMatch(why);
+  });
+
   test("the blob law reads at the keeper as it reads at the hand's door: a picture rides a pointer, a `.tid` does not", () => {
     expect(pointerBodyAt("/mirror/a/picture.png", { body: "iVBORw0KGgo=", binary: true })).toBe(true);
     expect(pointerBodyAt("/mirror/a/note.tid", { body: "title: x\n\nwords", binary: false })).toBe(false);
   });
 });
 
+/**
+ * THE NATIVE ROAD KEEPS INGEST'S WALL: a native carrier's bytes land whole only where they say one record titled for the
+ * carrier, in NFC, with no `.meta` field that makes the record act. A deserializer that reads `key: value` lines stands in
+ * for TW5's, so each refusal reads alone.
+ */
+describe("the native landing refuses what INGEST refuses", () => {
+  const fields = (text: string): Record<string, unknown> => Object.fromEntries(text.split("\n").filter((l) => l.includes(": ")).map((l) => [l.slice(0, l.indexOf(": ")), l.slice(l.indexOf(": ") + 2)]));
+  const plain = {
+    parseFields: fields,
+    deserialize: (ext: string, text: string) => {
+      if (ext !== ".tid") return [{ text }];
+      const [head, ...body] = text.split("\n\n");
+      return [{ ...fields(head ?? ""), text: body.join("\n\n") }];
+    },
+  } as unknown as Parameters<typeof nativeCarrierLanding>[0];
+  const URI = "lar:///ha.ka.ba/probe/keeper/note";
+
+  test("another title lands nothing and names the carrier it names", () => {
+    expect(nativeCarrierLanding(plain, URI, ".tid", "title: lar:///ha.ka.ba/probe/other\n\nwords", undefined)).toEqual({ why: `the file names lar:///ha.ka.ba/probe/other, another carrier than ${URI}` });
+  });
+
+  test("text outside NFC lands nothing, in the body or in the .meta", () => {
+    const decomposed = "Hawai\u0069\u0301i";
+    expect(nativeCarrierLanding(plain, URI, ".md", decomposed, undefined)).toMatchObject({ why: expect.stringMatching(/^non-nfc/) });
+    expect(nativeCarrierLanding(plain, URI, ".md", "words", `caption: ${decomposed}`)).toMatchObject({ why: expect.stringMatching(/^non-nfc/) });
+  });
+
+  test.each([
+    ["module-type: startup", /module-type/],
+    ["plugin-type: plugin", /plugin-type/],
+    ["type: application/javascript", /type application\/javascript/],
+    ["tags: probe $:/tags/StartupAction", /the tag \$:\/tags\/StartupAction/],
+    ["tags: [[$:/tags/RawMarkup]]", /the tag \$:\/tags\/RawMarkup/],
+  ])("a .meta naming %s lands nothing", (meta, why) => {
+    const landed = nativeCarrierLanding(plain, URI, ".md", "words", meta);
+    expect(landed).toMatchObject({ why: expect.stringMatching(/^meta-executable/) });
+    expect((landed as { why: string }).why).toMatch(why);
+  });
+
+  test("CONTROL: an NFC body with a plain .meta lands one record titled for the carrier", () => {
+    expect(nativeCarrierLanding(plain, URI, ".md", "words", "tags: probe\ntype: text/markdown")).toEqual({ records: [{ text: "words", tags: "probe", type: "text/markdown", title: URI }] });
+  });
+});

@@ -16,6 +16,8 @@
  *   I8 no cycle: the node never imports the CLI, and the vessel's after-live arms the watch with the ingest ports
  *   I9 a `derived` row (a render the island answered on its gradient) fails no wave: it reads accounted for, pins no base, and
  *      a row that warns gets named with its words
+ *   I10 THE WATCH ECHO: the projector's own write echoes as a pool wave over a fresh tree; the island answers it noop, and the
+ *      wave records no headless base over the projector's pending pin. The base lands only with its heads, only at rest.
  */
 import { describe, test, expect, beforeAll, beforeEach, afterEach } from "vitest";
 import { EventEmitter } from "node:events";
@@ -242,5 +244,39 @@ describe("I8 — no cycle, and the vessel wires the port", () => {
     expect(afterLive).toMatch(/poolIngestPorts\(/);
     expect(afterLive).toMatch(/islandIngestSubmit\(/);
     expect(afterLive).not.toMatch(/shoreLookPorts\(/);
+  });
+});
+
+describe("I10 — the watch echo records no base over a pending pin", () => {
+  test("a projection write echoes as a wave over a fresh tree; the noop records nothing, and the projector's pin lands with its heads at rest", async () => {
+    const dir = join(house, "tree");
+    const text = tid("My Notes", "the projector's own render");
+    const file = put("wikis/daemon/My Notes.tid", text);
+    const key = syncedTreeKey(WORKING, "My Notes"), hash = carrierHash(text);
+    // The projector, in its island, pins its write: its heads rest nowhere yet, so the pin waits pending.
+    const sealed = { rested: false };
+    const projectorTree = new SyncedTree(dir, { rests: async () => (sealed.rested ? "rested" as const : "waiting" as const) });
+    projectorTree.set(key, file, hash, hash, "doc-working", ["h1"]);
+    await projectorTree.settle();
+    // The watch hears the write and folds a wave over the tree it opens afresh: the island answers the echo noop.
+    const { waves, submit } = island(() => "noop");
+    const { sense } = shore();
+    await is.poolIngestPorts({ pool, bags: { wiki: WORKING }, submit, sense, did: "did:vessel", tree: () => new SyncedTree(dir), log: () => {} }).wave([file]);
+    expect(waves).toHaveLength(1);
+    expect(new SyncedTree(dir).baseAt(key, file), "no headless row lands over the pending pin").toBeNull();
+    // The seal arrives: the projector's pin lands, with its heads.
+    sealed.rested = true;
+    expect(await projectorTree.settle()).toBe(1);
+    expect(new SyncedTree(dir).baseAt(key, file)).toMatchObject({ disk: hash, doc: "doc-working", heads: ["h1"] });
+  });
+
+  test("CONTROL: with no pin pending, the same noop echo records the base as it always did", async () => {
+    const dir = join(house, "tree");
+    const text = tid("My Notes", "a hand's words");
+    const file = put("wikis/daemon/My Notes.tid", text);
+    const { submit } = island(() => "noop");
+    const { sense } = shore();
+    await is.poolIngestPorts({ pool, bags: { wiki: WORKING }, submit, sense, did: "did:vessel", tree: () => new SyncedTree(dir), log: () => {} }).wave([file]);
+    expect(new SyncedTree(dir).baseAt(syncedTreeKey(WORKING, "My Notes"), file)?.disk).toBe(carrierHash(text));
   });
 });

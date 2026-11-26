@@ -73,6 +73,14 @@
  * nothing it can read (none stands, it faulted, the ask never crossed) reads `unread`, never rested: the pin stays pending,
  * named so where the shore shows pins. The landing compares and sets on the directory's row the pin was set over, so a
  * sibling island's newer row for the same path stands and the superseded pin drops with no write.
+ *
+ * A PENDING PIN NAMES ITSELF TO EVERY READER OF THE DIRECTORY. The projector runs in an island thread and the face pool's
+ * waves on the vessel's thread, each over its own instance: a pin held in one instance's memory alone would read, to a wave
+ * that opens the tree afresh, as no base, and the wave would land a headless row over the projector's own echo. So each
+ * pending pin leaves a marker in `pending/` inside the tree's directory (`pendingAt` reads it), naming its writer's process;
+ * the marker leaves as the pin lands, drops or yields. A marker whose process no longer runs names nothing (a crash's marker
+ * costs nothing, as the pin it names). The tree re-asks a pending pin's rest whenever the vessel says that document's saves
+ * rested (`rested`), never on a timer.
  */
 
 import { readFileSync, writeFileSync, renameSync, mkdirSync, readdirSync, unlinkSync, statSync } from "fs";
@@ -155,6 +163,15 @@ const PENDING_WAITING = "pending: heads not yet sealed";
 const PENDING_UNREAD = "pending: rest unread";
 const PENDING_UNREAD_ROW = "pending: the directory's row unread";
 
+/** The directory a tree's pending markers rest in, inside the tree's own. No row file takes its name. */
+const PENDING_DIR = "pending";
+
+/** Whether a process still runs: a signal-0 probe that a live process answers (EPERM included) and a gone one refuses. */
+function processRuns(pid: number): boolean {
+  if (pid === process.pid) return true;
+  try { process.kill(pid, 0); return true; } catch (err) { return (err as NodeJS.ErrnoException).code === "EPERM"; }
+}
+
 /** Two rows name one agreement: the same carrier, path, both hashes, document and heads. */
 function sameRow(a: Row | null | undefined, b: Row | null | undefined): boolean {
   if (a === undefined || b === undefined) return false;
@@ -228,9 +245,14 @@ export class SyncedTree {
       /** The vessel's reading of a document's heads at rest (`headsRestAt`, `@lararium/mesh/sealed-rest`). Present, a row
        *  that names a document and its heads waits pending until they rest. */
       readonly rests?: (doc: string, heads: readonly string[]) => Promise<HeadsRestReading>;
+      /** The vessel's word that a document's saves rested (`rest:rested`): each pending pin of that document asks again. */
+      readonly rested?: (listener: (doc: string) => void) => () => void;
     } = {},
   ) {
     this.rests = opts.rests ?? null;
+    this.unhearRested = this.rests !== null && opts.rested ? opts.rested((doc) => {
+      for (const [id, pin] of [...this.pendingRows]) if (pin.row.base.doc === doc) void this.landSealed(id, pin);
+    }) : null;
     if (dirPath === null) return;
     // A file standing at the directory's own path leaves this tree nowhere to rest: it holds its bases in memory.
     let isFile = false;
@@ -324,16 +346,68 @@ export class SyncedTree {
       // THE PIN WAITS ON ITS SEAL: it answers every read here at once, and reaches the directory once its heads rest. It
       // remembers the directory's row it was set over, for the compare at its landing.
       const pin: PendingPin = { row, over: this.dirPath === null ? null : readRow(this.dirPath, key, row.base.path), why: PENDING_ASKED };
+      this.releasePending(id);
       this.pendingRows.set(id, pin);
+      this.markPending(row);
       void this.landSealed(id, pin);
       return;
     }
-    this.pendingRows.delete(id);
+    this.releasePending(id);
     if (!this.land(row)) this.takeBack(key, row.base.path, before);
   }
 
   /** How many pins stand in memory waiting on their seal. */
   get pending(): number { return this.pendingRows.size; }
+
+  /** The tree stops hearing the vessel's rested word (its projector stopped). */
+  dispose(): void { this.unhearRested?.(); this.unhearRested = null; }
+  private unhearRested: (() => void) | null;
+
+  /**
+   * Whether a pin waits on its seal at `file` for this carrier: this instance's own, or another instance's marker in the
+   * directory whose writer's process still runs. A wave records no base over such a path: the projector's pin lands it, with
+   * its heads, once they rest.
+   */
+  pendingAt(key: string, file: string): boolean {
+    const path = syncedPath(file);
+    if (this.pendingRows.has(rowId(key, path))) return true;
+    const dir = this.pendingDirPath();
+    if (dir === null) return false;
+    let marker: { pid?: unknown } | null = null;
+    try { marker = JSON.parse(readFileSync(join(dir, rowFile(key, path)), "utf8")) as { pid?: unknown }; } catch { return false; }
+    return typeof marker?.pid === "number" && processRuns(marker.pid);
+  }
+
+  private pendingDirPath(): string | null { return this.dirPath === null ? null : join(this.dirPath, PENDING_DIR); }
+
+  /** Leave a pending pin's marker, whole (a temp file, then a rename); a refusal leaves the pin in memory alone. */
+  private markPending(row: Row): void {
+    const dir = this.pendingDirPath();
+    if (dir === null) return;
+    const tmp = join(dir, `.pending.${process.pid}.${++SyncedTree.writeSeq}.${randomBytes(4).toString("hex")}.tmp`);
+    const text = JSON.stringify({ key: row.key, ...row.base, pid: process.pid });
+    try {
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(tmp, text, "utf-8");
+      renameSync(tmp, join(dir, rowFile(row.key, row.base.path)));
+    } catch {
+      try { unlinkSync(tmp); } catch { /* it never landed */ }
+    }
+  }
+
+  /** The pin at `id` leaves memory, and its marker with it where the marker still names that pin. */
+  private releasePending(id: string): void {
+    const pin = this.pendingRows.get(id);
+    if (pin === undefined) return;
+    this.pendingRows.delete(id);
+    const dir = this.pendingDirPath();
+    if (dir === null) return;
+    const name = join(dir, rowFile(pin.row.key, pin.row.base.path));
+    try {
+      const marker = rowOf(JSON.parse(readFileSync(name, "utf8")));
+      if (marker !== null && sameRow(marker, pin.row)) unlinkSync(name);
+    } catch { /* no marker stands, or it names another writer's pin */ }
+  }
 
   /** Every pin standing in memory waiting on its seal, with why it waits (`pending: rest unread`, ...): the shore shows them. */
   pendingPins(): Array<{ readonly bagId: string; readonly uri: string; readonly path: string; readonly why: string }> {
@@ -381,7 +455,7 @@ export class SyncedTree {
     if (reading !== "rested") { pin.why = reading === "unread" ? PENDING_UNREAD : PENDING_WAITING; return false; }
     const stands = this.dirPath === null ? null : readRow(this.dirPath, row.key, row.base.path);
     if (stands === undefined) { pin.why = PENDING_UNREAD_ROW; return false; }
-    this.pendingRows.delete(id);
+    this.releasePending(id);
     if (!sameRow(stands, pin.over)) { this.takeBack(row.key, row.base.path, stands); return false; }
     if (!this.land(row)) { this.takeBack(row.key, row.base.path, null); return false; }
     this.sealedLandings += 1;
@@ -409,7 +483,7 @@ export class SyncedTree {
   deleteAt(key: string, file: string): void {
     const path = syncedPath(file);
     const before = this.map.get(rowId(key, path)) ?? null;
-    this.pendingRows.delete(rowId(key, path));
+    this.releasePending(rowId(key, path));
     this.drop(key, path);
     if (this.dirPath === null) return;
     const name = join(this.dirPath, rowFile(key, path));
@@ -511,7 +585,8 @@ export class SyncedTree {
     let moved = 0;
     for (const { key, base } of [...this.map.values()]) {
       if (base.path !== src && !base.path.startsWith(src + sep)) continue;
-      this.set(key, dst + base.path.slice(src.length), base.disk, base.records, base.doc);
+      // THE MOVE CARRIES THE AGREEMENT WHOLE, its heads with it: a moved base still names the history it vouches for.
+      this.set(key, dst + base.path.slice(src.length), base.disk, base.records, base.doc, base.heads);
       this.deleteAt(key, base.path);
       moved++;
     }

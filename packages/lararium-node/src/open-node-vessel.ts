@@ -20,11 +20,11 @@ import { shutdownComposition, closeCompositionRepo, ownDialPresentation, IslandS
 import { provedLitRelation } from "./lit-relation.js";
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
 import { receiptInStore } from "@lararium/mesh/receipt-with-heads";
+import { repoHeadsRestAt, restedOnSave } from "./heads-rest.js";
 import { WardRefused } from "@lararium/mesh/ward-slots";
 import { wornAtOf } from "@lararium/mesh/sealed-doc-store";
 import {
   composeSealedRest,
-  headsRestAt,
   restOwedWatch,
   type RestOwed,
   clearRosterOf,
@@ -1420,22 +1420,22 @@ async function prepareNodeBootOn(
   const restsSealedDoor: NonNullable<CapabilityRecord["restsSealed"]> = (documentId) => sealedRest.restsSealed(documentId);
   // THE BASE PINS WHAT SEALED: each island's Synced tree asks whether the heads a pin read rest here before the pin reaches
   // its directory. This replica holds them, that one document's flush lands, and no save of it waits in memory.
-  const restsAtDoor: NonNullable<CapabilityRecord["restsAt"]> = headsRestAt({
-    holds: (documentId, heads) => {
-      const handle = (repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)[documentId];
-      try { return handle?.isReady() === true && A.hasHeads(handle.doc() as A.Doc<unknown>, [...heads]); } catch { return false; }
-    },
-    flush: (documentId) => repo.flush([documentId as never]),
-    waiting: (documentId) => sealedRest.store.waiting(documentId),
-  });
+  const restsAtDoor: NonNullable<CapabilityRecord["restsAt"]> = repoHeadsRestAt(repo as never, (documentId) => sealedRest.store.waiting(documentId));
+  // THE SAVE BOOK'S REST, TOLD: once a save of a document lands and none of its saves waits in memory, every island hears it,
+  // and each pending pin of that document asks again (`rest:rested`).
+  const restedDoor: NonNullable<CapabilityRecord["rested"]> = (listener) => { restedListeners.add(listener); return () => { restedListeners.delete(listener); }; };
   // THE TRAP-NAMED DOCUMENTS HOLD ON EVERY LOAD PATH (`engine-fall`): each document a resting engine fall names in flight
   // reaches the engine through no path, the storage source's included, until the hand clears the count.
   const heldBack = heldInFlight(readEngineFalls(storageDir));
   // THE REST-OWED WATCH (No silent loss): every save held back numbers here, so a write door reads, after its flush, which
   // documents its call wrote still wait unsealed, and answers `owed` rather than a bare ok (`restOwedAfter`).
   const owedWatch = restOwedWatch({ waiting: (documentId) => sealedRest.store.waiting(documentId) });
+  const restedListeners = new Set<(documentId: string) => void>();
   const sealedRest = composeSealedRest<NodeSaveSession>({
-    inner: holdBackStorage(new DurableNodeFSStorageAdapter(storageDir), heldBack, (line) => console.warn(`[lararium] ${line}`)),
+    inner: restedOnSave(holdBackStorage(new DurableNodeFSStorageAdapter(storageDir), heldBack, (line) => console.warn(`[lararium] ${line}`)), (documentId) => {
+      if (restedListeners.size === 0 || sealedRest.store.waiting(documentId) > 0) return;
+      for (const listener of [...restedListeners]) listener(documentId);
+    }),
     bagOf: sealedBagOf,
     // THE MAP BEFORE THE BYTES: a document named for a sealed bag ahead of its first byte maps by that bag's row (`nameDocument`).
     bagRow: (bagId) => sealedMap.bagRow(bagId),
@@ -3063,7 +3063,7 @@ async function prepareNodeBootOn(
   // THE FLOOR COMPOSES (slice 5b): one record through the one composer, before any island stands. Its stand-down runs
   // after the islands shut (T27): its resource phase follows their shutdown phase, so their final asks still read the floor.
   const islandFloor = await composeVessel(islandFloorStack({
-    receipt: receiptDoor, cas: resolveCid, dyad: dyadDoor, docStore: docStoreDoor, restsSealed: restsSealedDoor, restsAt: restsAtDoor,
+    receipt: receiptDoor, cas: resolveCid, dyad: dyadDoor, docStore: docStoreDoor, restsSealed: restsSealedDoor, restsAt: restsAtDoor, rested: restedDoor,
   }));
   const islandVessel = larVesselOf(islandFloor);
   const islandCaps = islandVessel.record;

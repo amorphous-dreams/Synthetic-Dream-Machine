@@ -27,7 +27,7 @@ import {
   type IslandMsg_SessionSign,
   type IslandMsg_SessionSigned,
 } from "@lararium/mesh/island-protocol";
-import { answerHeadsAsks } from "@lararium/mesh/sealed-rest";
+import { answerHeadsAsks, type RestMsg_Rested } from "@lararium/mesh/sealed-rest";
 import { type VesselWorkerHandle } from "@lararium/mesh/vessel-host";
 
 // The answers stand once on the mesh floor (`capability-record.ts`), so the node and the browser answer one ask alike.
@@ -212,6 +212,11 @@ function attachRestAsk(w: Worker, caps: CapabilityRecord): void {
 // and its sealed rest (`restsAt`, read at ask time).
 function attachHeadsAsk(w: Worker, caps: CapabilityRecord): void {
   answerHeadsAsks({ post: (msg) => { w.postMessage(msg); }, listen: (cb) => hear(w, cb) }, () => caps.restsAt);
+  // THE SAVE BOOK'S REST, TOLD: each document whose saves rested reaches the island, and its pending pins ask again.
+  const unhear = caps.rested?.((documentId) => {
+    try { w.postMessage({ type: "rest:rested", documentId } satisfies RestMsg_Rested); } catch { /* the worker went away */ }
+  });
+  if (unhear) w.once("exit", unhear);
 }
 
 /**

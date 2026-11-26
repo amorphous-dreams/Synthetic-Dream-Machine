@@ -137,6 +137,8 @@ export interface StandoffKeeperDeps {
   readonly notice?: (line: string, kept: { readonly bagId: string; readonly uri: string }) => void;
   /** Why a write to `bagId`'s document could not rest right now (its saves wait unsealed), or null where it can. */
   readonly unrested?: (bagId: string) => string | null;
+  /** Whether `bagId` was DROPped and takes no writes (INGEST's `bag-retired`): a keep lands nothing there. */
+  readonly retired?: (bagId: string) => boolean | Promise<boolean>;
   /** A native carrier as it stands at `path`: its body (base64 where the bytes read binary) and its `.meta`, or null where none stands. */
   readonly readCarrier?: (path: string) => DiskCarrier | null;
   /** Whether that carrier rides a pointer to its bytes (the blob law): such a body lands through `lares ingest` alone. */
@@ -438,6 +440,7 @@ export class StandoffKeeper {
     const moved = (): Promise<KeeperOutcome> => this.awaiting(entry, path, [], "the file moved since the stand-off was weighed");
     const unrested = this.deps.unrested?.(bagId) ?? null;
     if (unrested !== null) return owed(`a write to ${bagId} cannot rest (${unrested})`);
+    if (await this.deps.retired?.(bagId)) return owed(`bag-retired: ${bagId} was DROPped and takes no writes`);
 
     // ONE KEEPER FOR EVERY CARRIER (operator ruling, 2026-11-25): a meme reads through the memetic congruence, and a
     // native carrier (a `.tid`, a file with its `.meta`, a bare text file) through TW5's own deserializer with its sidecar

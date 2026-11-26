@@ -671,6 +671,10 @@ describe("an observation rests the moment it gets recorded", () => {
  *   S6  a rest that answers nothing readable (unread, a fault) never lands a pin: it stays pending and names `pending: rest unread`
  *   S7  two islands pin one path and the earlier pin's seal arrives last: the newer row stands, and the superseded pin drops
  *       with no write (compare-and-set on the base it read, never last-writer-wins)
+ *   S8  a pending pin names itself to a tree another thread opens afresh (`pendingAt`), and its marker leaves as it lands;
+ *       a marker whose process no longer runs names nothing
+ *   S9  the vessel's rested word re-asks that document's pending pins at once, and no other document's
+ *   S10 a folder moved whole carries each base's heads with it
  */
 describe("the base pins only what sealed", () => {
   const KEY = "lar:///ha.ka.ba/bags/sdm\u0000lar:///a.b.c/sealed";
@@ -805,6 +809,59 @@ describe("the base pins only what sealed", () => {
     islandA.set(KEY, AT, contentHash("gamma"), contentHash("gamma"), DOC, ["h3"]);
     await islandA.settle();
     expect(new SyncedTree(dir).baseAt(KEY, AT)).toMatchObject({ disk: contentHash("gamma"), heads: ["h3"] });
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("S8 a pending pin names itself to a fresh tree, its marker leaves as it lands, and a dead writer's marker names nothing", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "synced-sealed-"));
+    const rest = steeredRest();
+    const island = new SyncedTree(dir, { rests: rest.rests });
+    island.set(KEY, AT, contentHash("alpha"), contentHash("alpha"), DOC, HEADS);
+    expect(new SyncedTree(dir).pendingAt(KEY, AT)).toBe(true);
+    expect(new SyncedTree(dir).pendingAt(KEY, "/scratch/mirror/b.mem")).toBe(false);
+    rest.state.rested = true;
+    await island.settle();
+    expect(new SyncedTree(dir).pendingAt(KEY, AT)).toBe(false);
+    // A marker a fallen process left: its pid runs no more, so it names no pin.
+    const markers = join(dir, "pending");
+    island.set(KEY, AT, contentHash("beta"), contentHash("beta"), DOC, ["h9"]);
+    rest.state.rested = false;
+    island.set(KEY, AT, contentHash("gamma"), contentHash("gamma"), DOC, ["h10"]);
+    const [name] = readdirSync(markers).filter((f) => f.endsWith(".json"));
+    const marker = JSON.parse(readFileSync(join(markers, name!), "utf8")) as Record<string, unknown>;
+    writeFileSync(join(markers, name!), JSON.stringify({ ...marker, pid: 2 ** 22 + 7 }));
+    expect(new SyncedTree(dir).pendingAt(KEY, AT)).toBe(false);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("S9 the vessel's rested word re-asks that document's pending pins at once, and no other document's", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "synced-sealed-"));
+    const rest = steeredRest();
+    const hear = new Set<(doc: string) => void>();
+    const tree = new SyncedTree(dir, { rests: rest.rests, rested: (l) => { hear.add(l); return () => hear.delete(l); } });
+    tree.set(KEY, AT, contentHash("alpha"), contentHash("alpha"), DOC, HEADS);
+    await tree.settle();
+    rest.state.rested = true;
+    const asked = rest.asked.length;
+    for (const l of hear) l("another-doc");
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(rest.asked.length).toBe(asked);
+    for (const l of hear) l(DOC);
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(rest.asked.length).toBe(asked + 1);
+    expect(tree.pending).toBe(0);
+    expect(new SyncedTree(dir).baseAt(KEY, AT)).toMatchObject({ heads: HEADS });
+    tree.dispose();
+    expect(hear.size).toBe(0);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("S10 a folder moved whole carries each base's heads with it", () => {
+    const dir = mkdtempSync(join(tmpdir(), "synced-sealed-"));
+    const tree = new SyncedTree(dir);
+    tree.set(KEY, "/scratch/from/a.mem", contentHash("alpha"), contentHash("alpha"), DOC, HEADS);
+    expect(tree.movePaths("/scratch/from", "/scratch/to")).toBe(1);
+    expect(new SyncedTree(dir).baseAt(KEY, "/scratch/to/a.mem")).toMatchObject({ doc: DOC, heads: HEADS });
     rmSync(dir, { recursive: true, force: true });
   });
 });

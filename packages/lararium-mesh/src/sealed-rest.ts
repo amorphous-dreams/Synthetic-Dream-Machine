@@ -948,6 +948,10 @@ export interface RestMsg_HeadsAsk { readonly type: "rest:heads"; readonly reques
 /** Vessel → island: the vessel's reading of those heads. */
 export interface RestMsg_HeadsAnswer { readonly type: "rest:heads-answer"; readonly requestId: string; readonly reading: HeadsRestReading }
 
+/** Vessel → island: a save of `documentId` rested, and the document waits on nothing in memory. Each pending pin of that
+ *  document asks again (the save book's rest names the moment, never a clock). */
+export interface RestMsg_Rested { readonly type: "rest:rested"; readonly documentId: string }
+
 const READINGS: readonly HeadsRestReading[] = ["rested", "waiting", "unread"];
 
 /**

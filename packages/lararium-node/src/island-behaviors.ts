@@ -11,8 +11,8 @@
  */
 
 import { inCallScope, takeCallTouches } from "@lararium/mesh/call-touches";
-import { vesselHeadsAsker, type HeadsRestReading } from "@lararium/mesh/sealed-rest";
-import { isMainThread, parentPort } from "node:worker_threads";
+import { islandHeadsAsker } from "./heads-rest.js";
+import { storeIsRetired } from "@lararium/mesh/effect-record";
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { basename, dirname, join as joinPath, resolve as resolvePath, sep } from "node:path";
 import { mkWikiVerbResult } from "@lararium/mesh/island-protocol";
@@ -124,18 +124,6 @@ export function vmCarrierFile(tw5: Parameters<typeof exportCarrierFile>[0]): (ur
  * A wiki island and the daemon island call the same function — the daemon wiki projects to
  * `<projections>/faces/<pet name>/wikis/daemon/` much as a wiki's working layer projects to `<projections>/realms/<realm pet name>/wikis/<slug>/`.
  */
-/** THIS THREAD'S ONE HEADS ASKER over its vessel port, or null outside an island thread (a projector a test or the CLI
- *  mounts on the main thread pins at once). Every projector the thread mounts, a lit sibling's included, shares it. */
-let threadHeadsAsker: ((doc: string, heads: readonly string[]) => Promise<HeadsRestReading>) | null | undefined;
-function islandHeadsAsker(): ((doc: string, heads: readonly string[]) => Promise<HeadsRestReading>) | null {
-  if (threadHeadsAsker !== undefined) return threadHeadsAsker;
-  const port = isMainThread ? null : parentPort;
-  return (threadHeadsAsker = port === null ? null : vesselHeadsAsker({
-    post: (msg) => { port.postMessage(msg); },
-    listen: (cb) => { port.on("message", cb); return () => { port.off("message", cb); }; },
-  }, { idPrefix: `island-${process.pid}-${Math.random().toString(36).slice(2, 8)}` }));
-}
-
 export function mountDiskProjection(
   manifest: Pick<IslandMsg_Manifest, "diskMirrors"> & Partial<Pick<IslandMsg_Manifest, "recipe" | "shoreCollapse">>,
   ctx: IslandContext,
@@ -184,8 +172,8 @@ export function mountDiskProjection(
   // <root>/bags/<scope> → up two.
   // THE BASE PINS ONLY WHAT SEALED: inside an island thread, each pin that names a document and its heads waits pending
   // until the vessel answers that those heads rest in its sealed rest (`rest:heads`).
-  const rests = islandHeadsAsker();
-  const syncedTree = new SyncedTree(syncedTreeDir(larProjectionCheckpointDir()), rests === null ? {} : { rests });   // runtime → <root>/hearth/checkpoints
+  const heads = islandHeadsAsker();
+  const syncedTree = new SyncedTree(syncedTreeDir(larProjectionCheckpointDir()), heads === null ? {} : { rests: heads.rests, rested: heads.rested });   // runtime → <root>/hearth/checkpoints
   // THE PERSON'S COLLAPSE RULES: the daemon face's own working layer where this island IS that face's daemon wiki, read at
   // each weighing; else the rules the vessel read from the worn face's daemon working layer into the manifest at mount. A
   // shared wiki's own config never enables a rule, nor does a shadow, canon or a plugin the composed wiki holds.
@@ -379,6 +367,8 @@ export function mountDiskProjection(
     readCarrier: readCarrierAt,
     pointerBody: pointerBodyAt,
     landNative: (uri, ext, body, meta) => nativeCarrierLanding(makeTw5Deserializer(ctx.tw5), uri, ext, body, meta),
+    // THE SAME WALL INGEST KEEPS: a DROPped bag takes no keep either (`bag-retired`).
+    retired: async (bagId) => { const store = ctx.composite.storeForBag(bagId); return store !== null && await storeIsRetired(store, bagId).catch(() => true); },
     alert: (a) => {
       if (a.clear === true) return;
       const words = standoffAlertWords(a);
@@ -423,6 +413,7 @@ export function mountDiskProjection(
     bindRecoveryAtRest(ctx.tw5, null);
     if (mountedProjector === projector) mountedProjector = null;
     await stop();
+    syncedTree.dispose();
   };
 }
 

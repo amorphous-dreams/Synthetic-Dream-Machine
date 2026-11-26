@@ -402,7 +402,8 @@ function headBaseOf(uri: string, head: { readonly body: string; readonly meta?: 
  * bytes, else the disk hash names both sides. Never records `conflict`, `refuse`,
  * or a result naming no candidate. Before recording, the file is hashed as it
  * stands NOW: where the disk moved since the scan, the projector wrote it and owns
- * that observation, so nothing records. Returns the count recorded.
+ * that observation, so nothing records. A path where a pin waits on its seal records nothing either (`pendingAt`).
+ * Returns the count recorded.
  */
 export function recordLandedCarriers(
   tree: SyncedTree,
@@ -418,6 +419,9 @@ export function recordLandedCarriers(
     if (!cand || cand.diskHash === "") continue;
     if (diskHashNow(cand.file) !== cand.diskHash) continue;
     const key = syncedTreeKey(toBag, cand.uri);
+    // A PIN WAITS ON ITS SEAL THERE (the projector's, in its island, by its marker): this gesture records no base over it. The
+    // projector's pin lands with the heads its records read, once they rest; a headless row here would stand in its way.
+    if (tree.pendingAt(key, cand.file)) continue;
     const standing = tree.baseAt(key, cand.file);
     // AN ECHO OF HEAD'S BASE PINS HEAD'S RECORDS SIDE: the disk stands at HEAD, and the records may have moved past it, so
     // the records' present render would name an agreement no side reached. The projector then reads the records moved.

@@ -29,7 +29,7 @@ export const ISLAND_RECORD_CAP = "island-record";
 export const ISLAND_LIFT_CAP = "island-lift";
 
 /** What a vessel's floor hands its record: every member a vessel stands with no face lifted. */
-export type IslandFloor = Pick<CapabilityRecord, "receipt" | "cas" | "dyad" | "docStore" | "restsSealed" | "restsAt">;
+export type IslandFloor = Pick<CapabilityRecord, "receipt" | "cas" | "dyad" | "docStore" | "restsSealed" | "restsAt" | "rested">;
 
 /** One face's lift: the members it seats, and the drop its lock runs once (the session's signer, the face's own hold). */
 export interface IslandLift {
@@ -55,7 +55,7 @@ export interface LarVessel {
 interface LiftSeat { lift: IslandLift | null }
 const seats = new WeakMap<LarVessel, { record: CapabilityRecord; seat: LiftSeat }>();
 
-const FLOOR_MEMBERS = ["receipt", "cas", "dyad", "docStore", "restsSealed", "restsAt"] as const;
+const FLOOR_MEMBERS = ["receipt", "cas", "dyad", "docStore", "restsSealed", "restsAt", "rested"] as const;
 
 /** Compose a vessel's floor: one cap that builds the record its islands read, carrying the floor's members alone. */
 export function islandFloorStack(floor: IslandFloor): CapModule[] {
