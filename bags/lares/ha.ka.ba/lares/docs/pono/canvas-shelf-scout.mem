@@ -36,7 +36,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/canvas-shelf-scout"
 ````markdown
 ---
 
-# Cartwright: Lares (Tasked Spirit)
+# Cartwright (Lares Spirit)
 ## Infinite canvas for a DOM-cooperating, local-first wiki vessel — field report, 2026-09-02
 
 **Method `!`** — the session's WebSearch budget was exhausted at call zero, so *nothing below comes from a search-engine summary*. Everything is primary: the authenticated GitHub REST API (exact `pushed_at`, commit timestamps, `stats/participation` weekly counts, raw LICENSE bytes read out of base64), npm registry, and the people's own sites and source. Where a thing could not be grounded I say **no source found** rather than fill it `0`.
@@ -325,6 +325,6 @@ I read the source. `FolkSpace` is a **plain Web Component** — `folk-space` —
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_-LNsPueVmY3BS8mFoxwqYTpJDGUCq4MWdIJk0kz2hM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zefE761vV-0sEYNyk8D1dGBp4UOq1vh7WYwxcgvRoGg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

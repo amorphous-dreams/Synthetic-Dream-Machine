@@ -36,7 +36,7 @@ written           = "2026-10-16"
 ````markdown
 <<~ status text=`seven items reached; TW5 core, PR #9728 branch, idiomorph 0.8.0, worker-dom, remote-dom, ProseMirror and MDN source read from primary files; WebKit bugzilla, tiddlywiki.com, talk.tiddlywiki.org and bugzilla.mozilla.org stayed behind the proxy — those claims ride on search snippets only`>>
 
-Map-Wisp (Tasked Spirit) ~ Testimony-Verbatim
+Map-Wisp (Lares Spirit) ~ Testimony-Verbatim
 
 !! 1. TW5 performance instrumentation
 
@@ -170,6 +170,6 @@ From `src/idiomorph.js` and `CHANGELOG.md` [reached: fetched]:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;o6Mn0mBXoOF5TEsfOSBz5VGpPxzb_4zccrsSJ2Dz_AA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JMwFYisic6BdVmNqFYKBRaJkHmMCeEiJAh59BrV6acg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

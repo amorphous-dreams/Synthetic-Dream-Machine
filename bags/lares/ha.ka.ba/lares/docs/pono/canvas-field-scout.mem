@@ -38,7 +38,7 @@ Understood — re-sending the report body in full. Nothing summarised.
 
 ---
 
-# Horizon: Lares (Tasked Spirit) — THE FIELD REPORT
+# Horizon (Lares Spirit) — THE FIELD REPORT
 
 Mu lens carried. `0` marks where the field has not settled. The session's web-search budget was exhausted early; everything below comes from **direct fetches of primary sources** — vendor sites, changelogs, GitHub and WebKit APIs, author pages, PDFs pulled and text-extracted locally. Where no primary source exists I say so rather than fill it.
 
@@ -710,6 +710,6 @@ Wiggins: *"To this date it remains a mystery why we had solid growth for nearly 
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;LSKikDWbvm6_LpZzVKKGS-OEXt5nv0GPTtmYRa8FCXY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;d08ZFpznmxiff7rBfAlk-AXBBpT-AQ2ORtmT6yK5sBE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

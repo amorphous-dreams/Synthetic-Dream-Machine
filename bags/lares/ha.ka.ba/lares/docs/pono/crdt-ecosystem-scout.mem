@@ -34,7 +34,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/crdt-ecosystem-scout"
 !! The handoff, verbatim
 
 ````markdown
-**Wayfarer: Lares (Tasked Spirit)**
+**Wayfarer (Lares Spirit)**
 
 # 1. Ink & Switch — Keyhive, Subduction, Automerge
 
@@ -178,6 +178,6 @@ Patchwork notebook has six 2026 entries, newest **"Progressions" 2026-05-12**. h
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NAuscNDBTuSm4zJe5WY3yiaN9nuIUmxxaYYXoSsEm0Y`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PUUmOteYwEVAQhBpluB6jWg9RnwnZh5srn5yEcKV7ik`>>
 
 <<^ code=`&#x0004;` to=`?`>>

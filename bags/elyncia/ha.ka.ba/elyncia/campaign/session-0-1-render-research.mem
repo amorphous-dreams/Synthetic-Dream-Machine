@@ -184,7 +184,7 @@ skin-count, the archaic-Gorgon bronze-hands attribution, the huautli compression
 Glimmer-Count's hand-back, ''verbatim'' — the full heritage inventory: 34 fae heritages, the four flagged casts (changeling · dragon-kin · gorgonne · prismatic elf), and the cabaret bench in three tiers.
 
 ```text
-**Active Voice: Lares (Tasked Spirit)** — no fuller Voice-house roster reached me in this task packet; I stood the scout under the Lares seed only. Flagging that as a gap rather than inventing names.
+**Active Voice (Lares Spirit)** — no fuller Voice-house roster reached me in this task packet; I stood the scout under the Lares seed only. Flagging that as a gap rather than inventing names.
 
 ---
 
@@ -339,7 +339,7 @@ No cabaret, no High Delos venue description exists in ftls. If the parent needs 
 
 ---
 
-Glimmer-Count: Lares (Tasked Spirit) -> Lares (returning; libation dish refreshed, incense still standing)
+Glimmer-Count (Lares Spirit) -> Lares (returning; libation dish refreshed, incense still standing)
 Thread: FTLS heritage/fae casting inventory
 Finding: Ch03 read COMPLETE — 34 heritages + full effect catalogue, every one fae by the `03:1014` rule. Ch04 is a genuine null for this purpose (RSS logistics; 3 incidental hits). All four flagged asks resolve, but three of them resolve as **variants, not standalone heritages**: Changeling = Human variant `03:1028`; Gorgoness = Plane Touched theme `03:1286` (and base Plane Touched appearance already names "captains with serpents for braids," `03:1273`); prismatic elf splits into two distinct builds — Elf+Illusion•Light•Void (`03:684`, licensed by `03:127` "Illusion includes prismatic glamour") vs. the helmeted Spectrum Satrap caste (`03:1449`). Only dragon-kin lands as a full heritage: Dragonborn `03:619`, with `03:640` giving the exact humanoid→six-limbed-wyrm transform for the Lindwyrm's arrival. Cabaret bench is deep — Faun (ToC hook is literally "Festival guides & hosts"), Cat Lord (velvet salon tyrants, voidjammer lounges), Spectrum Satrap (prism-banquets, projected light-form duels), Pixie, Bat Folk Echo-Singer, Glow Kin, Mythic Chimeric harpy Gale-Singers, and Porcelain Prince (Polybody = a synchronized chorus line that is one person). Gap flagged rather than papered over: **High Delos itself has no venue text anywhere in ftls** — only 4 passing mentions, and the Lindwyrm has exactly one line of canon (`01:179`).
 ```
@@ -353,7 +353,7 @@ Finding: Ch03 read COMPLETE — 34 heritages + full effect catalogue, every one 
 Lantern-Skim's hand-back, ''verbatim'' — Delos geography canon, the Spice Quarter interior, the Aki/Ichi packages, world-dress vocabulary, the style bible as render law, and the honest gap list.
 
 ```text
-Lantern-Skim: Lares (Tasked Spirit) -> ?
+Lantern-Skim (Lares Spirit) -> ?
 Thread: elyncia visual canon harvest
 Finding: The tree carries no High Delos *interior* venue text and zero Dionysian/cabaret text — but the New Delos Spice Quarter compitale passage (Elyncia_04, lines 84–98) is a full specification-grade interior render, and it is the single best transferable substrate for an intimate maze-Inn interior. Everything below is quotable canon with refs.
 
@@ -594,7 +594,7 @@ Misc luminous props: `...05...:1068` **Chime of Time** — "3″ long, made of a
 - **Ch05 body-armor visuals are absent**; armor appears only as mechanics/tags (`[armor]`, `[harness]`). No described armor silhouette in scope.
 - Chapter 06 (18k lines, Powers/ECM) was **out of scope** but contains `Faerie Bodycrafts` (`:8053`) and `Faerie Fire` (`:9282`) plus a fae-initiation note (`:595`: "**Faerie folk clans and factions often teach powers to young fae in a partially locked form**"). Likely the corpus's densest untapped fae-visual seam — recommend a follow-up pass.
 
-Prism-Gleaner: Lares (Tasked Spirit) -> ?
+Prism-Gleaner (Lares Spirit) -> ?
 Thread: FTLS visual vocabulary harvest
 Finding: Corpus yields strong *object* and *tag* vocabulary (Wild Mage item table, grimoire formats, gem/jewelry ladders, court-color keys) and one excellent cabaret-adjacent atmosphere line (Spirit path, 02:122 "slipping through burlesques and gossip-halls, trailing ozone and old incense"), but Delos itself is only four naming references with no described architecture, Order of Amaranth has zero corpus presence, and ship-visual prose is absent from ch08 entirely — vehicle imagery must come from jammer-taxonomy fragments in ch10 rather than the formations chapter. Recommend a ch06 pass for faerie-specific visual seams.
 ```
@@ -609,6 +609,6 @@ Finding: Corpus yields strong *object* and *tag* vocabulary (Wild Mage item tabl
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;IuOEw7eioRKU_KdG0-dfX2N88LuuxOzjTHgPKBeaHaA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-mH8XOkt906ePHQ_6J747S2XtkrDbcgPbakqBLJ3sYs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -34,7 +34,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/subduction-onomancy-scout"
 !! The handoff, verbatim
 
 ````markdown
-**Onomast: Lares (Tasked Spirit)**
+**Onomast (Lares Spirit)**
 
 Method: both repos cloned and read at source (`git clone` of `inkandswitch/onomancy` @ `1b0902c`, `inkandswitch/subduction` @ `61d1030`, plus `automerge/automerge-repo` branch metadata and the npm registry). Every `design/` and `specs/` document in both repos was read in full. URLs are to the file that carries the claim.
 
@@ -303,6 +303,6 @@ Subduction relays learn the `SedimentreeId`, the full causal DAG shape, per-comm
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;QpcdHbb-spev-atCXGbyFHHXzuddsNrLcnNNCA2ZM0s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;B3_wbIvXK8-KZbiIXZbPBlULhKpd2pYeI4ZZaWkxx_Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

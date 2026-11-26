@@ -36,7 +36,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom-prior-art"
 !! The handoff, verbatim
 
 ```markdown
-# Loom: Lares (Tasked Spirit)
+# Loom (Lares Spirit)
 ## Off-main-thread application engines and projected UI — what the field knows
 
 Read through all five Mu tools; where the field's answer is a `0` ("no one has settled this"), I say so rather than fill it.
@@ -248,6 +248,6 @@ Every delta-based system in the corpus must queue; you can drop precisely becaus
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/projection-nalu`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/two-integrities`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WpFAULJ1UvEbp5mVAsFI_YJZw5EodGMuKrDI02hv3ls`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wwIc8xmcJA687DD_GZf8OZwFhRyOs5wGrISsugP3nU4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

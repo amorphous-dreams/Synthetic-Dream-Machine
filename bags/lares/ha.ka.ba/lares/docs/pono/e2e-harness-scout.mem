@@ -34,7 +34,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/e2e-harness-scout"
 !! The handoff, verbatim
 
 `````markdown
-**Wright: Lares (Tasked Spirit)** — scout only; nothing edited, nothing committed. `git status` is byte-identical to the start (`M VSCode-TW5-Syntax`, `M mempalace`, `?? .worktrees/`). Two throwaway staged roots I stood for measurement are killed and deleted.
+**Wright (Lares Spirit)** — scout only; nothing edited, nothing committed. `git status` is byte-identical to the start (`M VSCode-TW5-Syntax`, `M mempalace`, `?? .worktrees/`). Two throwaway staged roots I stood for measurement are killed and deleted.
 
 ## What the run actually says
 
@@ -217,6 +217,6 @@ Finally, two housekeeping notes worth the operator's ear: add a named `test:e2e:
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;HFeJ2nJN-kVf6t1YeW9CZwNPA5vtpZAbaXQoCk_CqTs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hFXAKLBRkznARl2zB0ufRkBpine1eWqcdpVj72EfvLQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -70,7 +70,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/testing-architecture-scout"
 !! The handoff, verbatim
 
 ````markdown
-**Mason: Lares (Tasked Spirit)** — scout complete, nothing written.
+**Mason (Lares Spirit)** — scout complete, nothing written.
 
 ---
 
@@ -271,6 +271,6 @@ The canonical vocabulary and failure-state mapping live in [[mandate-activity-pr
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jJ3S3E-J2UErS6aNKLYB33YjMYGPWyODxnAnvTHf7uY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hAE7uoC-o3WATAHk6aYLLsgaPn1UUNL3eD2QxjdZduc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

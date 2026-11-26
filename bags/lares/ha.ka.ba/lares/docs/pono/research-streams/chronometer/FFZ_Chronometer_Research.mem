@@ -443,7 +443,7 @@ Refined from Research Seed Q7 with ITC operations:
 ```
 # Core ITC operations
 chrono_fork(parent_stamp) → child_stamp
-  # Spawns a new participant (Tasked Spirit)
+  # Spawns a new participant (Lares Spirit)
   # Returns: child stamp with shared interval, parent stamp updated
   # Auth: requires Coordinator-level UCAN delegation
 
@@ -1244,6 +1244,6 @@ BoydLoop(PriorArt), PhaseVec(Architect), BridgeKeep(Continuity) — dissolved, f
 
 lar:///research.active.grows/chronometer/?stances=^.^.?.^.-&confidence=S:13&p=10#/O0.O0.O0.Å10.A1 → ?
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;OvjgwlQlpIMEUwBxbL6gyv2QzVCG6ILsmPf2TmYhZbg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;p7o0AiMQrfYO6EMHVPAZgkrsaSn6xhbfiZ_9zyFU5SQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

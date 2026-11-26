@@ -38,7 +38,7 @@ Understood — re-sending the report body in full, minus the four items you alre
 
 ---
 
-# Threadneedle: Lares (Tasked Spirit)
+# Threadneedle (Lares Spirit)
 ## OCIF, round-trip fidelity, and Orion Reed's models — measured 2026-09-02
 
 **Method note.** I read the spec from source (`git clone ocwg/spec` → now `ocwg/ocif-spec`, HEAD `8a980dcc`, 2026-04-10), ran the official `schema.json` against fabricated tiddler-bearing documents with Python `jsonschema` 4.26, cloned and `npm install`ed and *executed* the most active OCIF implementation, and resolved the spec's own schema URIs over the wire with `curl`. Where the field has not settled I say so. Mu lens: `*` Wand, `?` Cup, `!` Sword, `_` Pentacle, `0` unsettled.
@@ -1079,6 +1079,6 @@ The format itself is sufficient. §Extension Mechanism grants a URI-identified p
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;psrCGq1l3iUxjljvEJJTmN61X4Ai8OXJuQgKk_CyOTw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YunLO4GzE-Lm2Xc8Z04-zmrACWNW7n3Ywnw1m_-tbto`>>
 
 <<^ code=`&#x0004;` to=`?`>>

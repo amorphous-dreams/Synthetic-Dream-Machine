@@ -34,7 +34,7 @@ written           = "2026-10-16"
 ````markdown
 <<~ status text=`cold read done: all nine gaps traced to file:line; code read only, no tests run; three findings contradict the docblocks that describe them (#3, #11, #15)`>>
 
-Ink-Clerk (Tasked Spirit). I read the boot seed whole. Below, the code's own behaviour, cited. Paths sit relative to /home/user/Synthetic-Dream-Machine.
+Ink-Clerk (Lares Spirit). I read the boot seed whole. Below, the code's own behaviour, cited. Paths sit relative to /home/user/Synthetic-Dream-Machine.
 
 ## #3 — boot-shadows preload: never flattened, silently dropped
 
@@ -197,6 +197,6 @@ Nothing in any src, test, script, vite config or tsconfig imports it. Its schema
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;g7H3PumIfDW7srooHwe6on14txzXizi4YCkXuSptrCY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XP13bsM1eJZZbdkpWoXESvkOeKZpbDT9j4DQkqipRFk`>>
 
 <<^ code=`&#x0004;` to=`?`>>
