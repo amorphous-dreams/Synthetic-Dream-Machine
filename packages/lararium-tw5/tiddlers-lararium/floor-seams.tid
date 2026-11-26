@@ -353,3 +353,9 @@ MOVES glass-record-port m record-port* lar-camera*
 MOVES cli-door-table c bin/** commands/door-call* commands/tunnel-door* commands/law*
 
 BOTH island-vessel-boot cli-door-table e2e-root
+
+# ── placed by the census ───────────────────────────────────────────────────────────────────────────────────────────
+MOVES island-vessel-boot m boot-wait*
+MOVES sealed-store-rest m compacting-storage*
+MOVES shore-standoff n shore-remove-door*
+MOVES cli-door-table c ask-budget* standing-report*

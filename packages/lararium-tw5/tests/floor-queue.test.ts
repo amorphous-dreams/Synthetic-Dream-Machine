@@ -2,9 +2,12 @@
  * floor-queue — the test floor's queue folds inside the wiki (mandate/floor-gate-1): arrival order, dedupe by ticket and by
  * green sha, the ticket block a hand-back carries, the byte rows, and the house skin classing the operator.
  * RED-FIRST: written by floor-warden#2, run by the familiar.
+ * THE LANES AND THE RATCHET ROWS (plan/the-harness-proves, phase 1): the floor serves spirit lanes, a green a later red
+ * contradicts on one sha reads as one MISS, and each LAND counts the runs its lane spent. RED-FIRST: written by hoʻāʻo#1,
+ * never run by its author.
  */
 import { describe, expect, test } from "vitest";
-import { DEFAULT_RUN, FLOOR_LEDGER, floorView, foldLedger, sameSha, ticketId } from "../src/floor-ledger.js";
+import { DEFAULT_RUN, FLOOR_LEDGER, floorView, foldFloor, foldLedger, sameSha, ticketId } from "../src/floor-ledger.js";
 import { floorQueue } from "../src/filters/floor-queue.js";
 import { LARARIUM_MODULES, skinOfModule } from "../plugin-build/skins.js";
 
@@ -69,6 +72,68 @@ describe("the fold", () => {
   });
 });
 
+describe("the floor serves lanes", () => {
+  const D = "d".repeat(40), E = "e".repeat(40), F = "f".repeat(40);
+  const id = (lane: string, sha: string): string => `${lane}@${sha.slice(0, 9)}`;
+  const q = (lane: string, sha: string): string => `QUEUE ${id(lane, sha)} ${lane} spirit/${lane} ${sha}`;
+
+  test("RED 8: a lane's second ticket waits behind a sibling lane's first, whatever order they arrived in", () => {
+    const t = foldLedger([q("hoao", A), q("hoao", B), q("kaula", C)].join("\n"));
+    expect(floorView(t, "waiting")).toEqual([id("hoao", A), id("kaula", C), id("hoao", B)]);
+    expect(floorView(t, "lane")).toEqual(["hoao=2/0", "kaula=1/0"]);
+    expect(floorView(t, "lane", "hoao")).toEqual([id("hoao", A), id("hoao", B)]);
+  });
+
+  test("RED 9: a lane holding a slot yields the next slot to a lane holding none; CONTROL: one lane waiting alone never idles the floor", () => {
+    const held = [q("hoao", A), `TAKE ${id("hoao", A)} lares-alpha c-free=80.00 slot=1`, q("hoao", B), q("kaula", C), q("kaula", D)].join("\n");
+    expect(floorView(foldLedger(held), "next")).toEqual([id("kaula", C)]);
+    expect(floorView(foldLedger(held), "waiting")).toEqual([id("kaula", C), id("hoao", B), id("kaula", D)]);
+    expect(floorView(foldLedger(held), "lane")).toEqual(["kaula=2/0", "hoao=1/1"]);
+    const alone = [q("hoao", A), `TAKE ${id("hoao", A)} lares-alpha c-free=80.00 slot=1`, q("hoao", B)].join("\n");
+    expect(floorView(foldLedger(alone), "next")).toEqual([id("hoao", B)]);
+  });
+
+  test("RED 10: a GREEN ticket, then a RED run on the same sha, writes ONE miss; CONTROL: a red cured by a later green, and a red on another sha, write none", () => {
+    const green = [q("hoao", A), `DONE ${id("hoao", A)} GREEN wrote=0.10 c-drop=0.10 · vitest tests/x.test.ts`];
+    const gate = [q("hoao", A), `DONE ${id("hoao", A)} RED wrote=1.00 c-drop=1.00 · BENCH GATE REFUSES: witnesses-fast (exit 1)`];
+    const twice = foldFloor([...green, ...gate, ...gate, q("gate-b", A), `DONE ${id("gate-b", A)} RED wrote=1.00 c-drop=1.00 · BENCH GATE REFUSES`].join("\n"));
+    expect(floorView(twice, "miss")).toEqual([id("hoao", A)]);
+    const cured = foldFloor([...gate, ...green].join("\n"));
+    expect(floorView(cured, "miss")).toEqual([]);
+    const elsewhere = foldFloor([...green, q("kaula", B), `DONE ${id("kaula", B)} RED wrote=0.10 c-drop=0.10 · exit 1`].join("\n"));
+    expect(floorView(elsewhere, "miss")).toEqual([]);
+  });
+
+  test("RED 11: a MISS row names a miss a hand saw on another sha, once per ticket; a MISS over no ticket folds to nothing", () => {
+    const log = [q("hoao", A), `DONE ${id("hoao", A)} GREEN wrote=0.10 c-drop=0.10 · BENCH GATE GREEN`, `MISS ${id("hoao", A)} develop read red on filter-cts after the merge`, `MISS ${id("hoao", A)} again`, `MISS ${id("nobody", B)} stray`].join("\n");
+    expect(floorView(foldFloor(log), "miss")).toEqual([id("hoao", A)]);
+  });
+
+  test("RED 12: each LAND counts the runs its lane's branch spent since its span opened, beside the floor's turns, then the mean", () => {
+    const log = [
+      q("hoao", A), `HANDBACK ${id("hoao", A)} body=1`,
+      `DONE ${id("hoao", A)} RED wrote=1.00 c-drop=1.00 · BENCH GATE REFUSES`,
+      q("kaula", C), `DONE ${id("kaula", C)} GREEN wrote=1.00 c-drop=1.00 · BENCH GATE GREEN`,
+      `QUEUE ${id("hoao", B)} hoao spirit/hoao ${B}`, `DONE ${id("hoao", B)} GREEN wrote=1.00 c-drop=1.00 · BENCH GATE GREEN`,
+      `LAND ${id("hoao", B)} ${D}`,
+      `LAND ${id("kaula", C)} ${E}`,
+      `QUEUE ${id("hoao", F)} hoao spirit/hoao ${F}`, `DONE ${id("hoao", F)} GREEN wrote=1.00 c-drop=1.00 · BENCH GATE GREEN`,
+      `LAND ${id("hoao", F)} ${F}`,
+      `LAND ${id("hoao", F)} not-a-sha`,
+    ].join("\n");
+    expect(floorView(foldFloor(log), "runs-per-landing")).toEqual([`hoao@${D.slice(0, 9)}=2/3`, `kaula@${E.slice(0, 9)}=1/2`, `hoao@${F.slice(0, 9)}=1/1`, "mean=1.33"]);
+    expect(floorView(foldFloor(q("hoao", A)), "runs-per-landing")).toEqual([]);
+    expect(floorView(foldLedger(log), "runs-per-landing")).toEqual([]);
+  });
+
+  test("RED 13: the OWES and HANDBACK rows ride the ticket block and the one-line ticket", () => {
+    const log = [q("hoao", A), `HANDBACK ${id("hoao", A)} body=3`, `OWES ${id("hoao", A)} gate · sets=e2e-node files=4(vessel:1,heavy:3) globs=0 touched=2 owes=0123456789ab via=door`].join("\n");
+    const f = foldFloor(log);
+    expect(floorView(f, "ticket", id("hoao", A))).toEqual([[`FLOOR TICKET hoao spirit/hoao ${A}`, "  bench: familiar", `  run:   ${DEFAULT_RUN}`, "  owes:  gate · sets=e2e-node files=4(vessel:1,heavy:3) globs=0 touched=2 owes=0123456789ab via=door"].join("\n")]);
+    expect(floorView(f, "line", id("hoao", A))).toEqual([`floor ticket hoao#3 · spirit/hoao@${A.slice(0, 9)} · gate · sets=e2e-node files=4(vessel:1,heavy:3) globs=0 touched=2 owes=0123456789ab via=door`]);
+  });
+});
+
 describe("the operator", () => {
   const wiki = (texts: Record<string, string>) => ({ getTiddler: (title: string) => (title in texts ? { fields: { title, text: texts[title] } } : undefined) });
   const run = (titles: string[], operands: string[], texts: Record<string, string>): string[] =>
@@ -78,6 +143,8 @@ describe("the operator", () => {
     expect(run([FLOOR_LEDGER], ["next"], { [FLOOR_LEDGER]: LOG })).toEqual([`lane-a@${A.slice(0, 9)}`]);
     expect(run([FLOOR_LEDGER], ["sha", `lane-b@${B.slice(0, 9)}`], { [FLOOR_LEDGER]: LOG })).toEqual([B]);
     expect(run(["lar:///nowhere"], ["waiting"], {})).toEqual([]);
+    const missed = `${LOG}\nQUEUE lane-c@${C.slice(0, 9)} lane-c spirit/c ${C}\nDONE lane-c@${C.slice(0, 9)} RED wrote=1.00 c-drop=1.00 · BENCH GATE REFUSES`;
+    expect(run([FLOOR_LEDGER], ["miss"], { [FLOOR_LEDGER]: missed })).toEqual([`lane-c@${C.slice(0, 9)}`]);
   });
 
   test("RED 7: the house skin classes the operator, so it packs as a module tiddler", () => {
