@@ -6,6 +6,8 @@ import { afterEach, beforeEach, expect, test } from "vitest";
 import { standPageMirror } from "../src/page-mirror.js";
 import { createReadings, PHASES_TITLE, READINGS_TITLE } from "../src/console-readings.js";
 import { forgetEvidence, rig } from "./glass-rig.js";
+import housePlugin from "../../lararium-tw5/plugins/lares-memetic-wikitext.json";
+import larariumPlugin from "../../lararium-tw5/plugins/lares-lararium.json";
 
 beforeEach(forgetEvidence); afterEach(forgetEvidence);
 const inputs = async () => ({ coreCid: "0".repeat(64), pluginCids: [] as string[] });
@@ -58,4 +60,35 @@ test("RED: a fresh mirror after an unmount (the reload path) replays every readi
     expect(json(result.tw, PHASES_TITLE)).toEqual([{ p: "live", ms: 1 }]);
     result.unmount();
   } finally { again.host.remove(); }
+});
+
+const REFUSED = "$:/temp/lares/alert/refused/";
+const tagsOf = (tw: any, title: string): string[] => [...(tw.wiki.getTiddler(title)?.fields.tags ?? [])];
+
+test("RED: a held startup offer stands as a refusal with no $:/tags/Alert, so a visitor's first screen carries no house notice; the host still counts it", async () => {
+  const r = await rig({ records: [{ title: "Held start", fields: { tags: "$:/tags/StartupAction", text: `<$action-setfield $tiddler="$:/temp/ran-held" text="yes"/>` } }] });
+  try {
+    const result = await standPageMirror({ port: r.port, host: r.host, actor: "a", surface: () => "notes", mirrorInputs: inputs,
+      startupAdmit: async () => [] }, r.seams) as any;
+    await result.settled;
+    const title = `${REFUSED}startup-offer/Held start`;
+    expect(result.tw.wiki.tiddlerExists(title)).toBe(true);
+    expect(tagsOf(result.tw, title)).not.toContain("$:/tags/Alert");
+    expect(r.host.getAttribute("data-lar-refused-plugins")).toBe("1");
+    expect(r.host.shadowRoot!.querySelectorAll(".tc-alerts .tc-alert").length).toBe(0);
+    result.unmount();
+  } finally { r.host.remove(); }
+});
+
+test("CONTROL: an unattested skin keeps its loud alert", async () => {
+  // A copy wears the house skin's title with bytes the vessel never attested.
+  const r = await rig({ preloads: [housePlugin as Record<string, unknown>, { ...(larariumPlugin as Record<string, unknown>) }] });
+  try {
+    const result = await standPageMirror({ port: r.port, host: r.host, actor: "a", surface: () => "lares", mirrorInputs: inputs }, r.seams) as any;
+    await result.settled;
+    const title = `${REFUSED}skin-unattested/${String((larariumPlugin as Record<string, unknown>)["title"])}`;
+    expect(result.tw.wiki.tiddlerExists(title)).toBe(true);
+    expect(tagsOf(result.tw, title)).toContain("$:/tags/Alert");
+    result.unmount();
+  } finally { r.host.remove(); }
 });
