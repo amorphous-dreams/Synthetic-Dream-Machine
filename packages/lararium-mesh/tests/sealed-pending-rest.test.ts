@@ -19,6 +19,9 @@
  *         and says each
  *   SP6 — four fates, four sentences, each naming its cure, none with a copula
  *   SP7 — the sign book tells the signer's own word for a refused signature, while the island hears `signer-refused` alone
+ *   SP8 — a sealed-pending value binds its face: held for face A, its document mapped under face B's bag since, it refuses
+ *         for B (never read, never carried, never signed under B's session) and still opens for A; a save no lit face owns
+ *         rests nothing and waits in memory alone
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed · lar:///ha.ka.ba/kahua/memory/research/restand-log-read
  */
@@ -64,8 +67,10 @@ type Signer = RecordSigner & { dropped: boolean; refuses: boolean };
 type Session = { readonly id: string; readonly subject: string; readonly signer: Signer };
 
 /** One face's sealed rest over `inner`, with the vessel's key in reach or not; `watch.standing` names the standing session. */
-function standRest(a: Vessel, inner: Adapter, key: HeldRestKey | null) {
+function standRest(a: Vessel, inner: Adapter, key: HeldRestKey | null, map: { readonly bagFace?: string | null } = {}) {
   const face = faceProofSubjectRef(a.chain.scope);
+  // The face the map names for the bag: the vessel's own, unless a vector names another (null: no face has lit for it).
+  const bagFace = map.bagFace !== undefined ? map.bagFace : face;
   const asked: string[] = [];
   const held: HeldNotice[] = [];
   const refused: Array<{ readonly documentId: string; readonly refusal: string; readonly cause?: string }> = [];
@@ -73,7 +78,7 @@ function standRest(a: Vessel, inner: Adapter, key: HeldRestKey | null) {
   let repo: Repo | null = null;
   const rest = composeSealedRest<Session>({
     inner,
-    bagOf: () => ({ bagId: BAG, face }),
+    bagOf: () => ({ bagId: BAG, face: bagFace }),
     sessionFace: () => face,
     vesselKey: () => key,
     door: {
@@ -356,5 +361,52 @@ describe("the sign book tells the signer's own word", () => {
     // THE SIGNER NEVER READ DROPPED, so the book's own standing reading still names it: only the sealed rest's `signs` passes over it.
     expect(book.standing()).toEqual([frozen]);
     release();
+  });
+});
+
+describe("a sealed-pending value binds the face it waited for", () => {
+  it("SP8 — held for face A, its document remapped under face B: B's read refuses, carries nothing and signs nothing; A's still opens", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const b = await vessel(w, "b");
+    // ONE VESSEL, ONE KEY, TWO FACES: the vessel's key serves both, so the key alone tells no face from another.
+    const key = mintHeldRestKey();
+    const inner = memoryAdapter();
+    const forA = standRest(a, inner, key);
+    const saved = change(41);
+    await forA.rest.store.save(["doc", "incremental", "k0"], saved);
+    expect(forA.held.map((h) => `${h.refusal}:${h.rests}:${h.face}`)).toEqual([`save-unbooked:sealed-pending:${forA.face}`]);
+    const atRest = Uint8Array.from(inner.bytes.get(["doc", "incremental", "k0"].join("\u0000"))!);
+
+    // THE NEXT PROCESS MAPS THE SAME DOCUMENT UNDER FACE B'S BAG (a control row that moved, a sibling's slot naming it).
+    const afterKill = memoryAdapter(inner);
+    const forB = standRest(b, afterKill, key);
+    expect(forB.face).not.toBe(forA.face);
+    await expect(forB.rest.store.loadRange(["doc"])).rejects.toThrow(/sealed document store/);
+    await expect(forB.rest.store.load(["doc", "incremental", "k0"])).rejects.toThrow(/sealed document store/);
+    // NEVER CARRIED, NEVER SIGNED: nothing joined B's wait, B's session seals nothing of it, and the value rests as it rested.
+    expect(forB.rest.store.waiting("doc")).toBe(0);
+    expect(forB.held).toEqual([]);
+    expect(await forB.rest.rebook(forB.session("s-face-b"))).toBe(0);
+    expect(forB.asked).toEqual([]);
+    expect(afterKill.bytes.get(["doc", "incremental", "k0"].join("\u0000"))).toEqual(atRest);
+
+    // CONTROL: the face it waited for reads it back, carries it, and its own session seals it.
+    const againA = standRest(a, afterKill, key);
+    const read = await againA.rest.store.loadRange(["doc"]);
+    expect(read.map((c) => c.data)).toEqual([saved]);
+    expect(againA.held.map((h) => `${h.refusal}:${h.carried === true}:${h.face}`)).toEqual([`save-unbooked:true:${againA.face}`]);
+    expect(await againA.rest.rebook(againA.session("s-face-a"))).toBe(1);
+    expect(againA.rest.store.waiting("doc")).toBe(0);
+  });
+
+  it("SP8b — a save whose bag no lit face wears rests nothing: bound to no face it would open for any, so it waits in memory alone", async () => {
+    const a = await vessel(world(), "a");
+    const inner = memoryAdapter();
+    const r = standRest(a, inner, mintHeldRestKey(), { bagFace: null });
+    await r.rest.store.save(["doc", "incremental", "k0"], change(1));
+    expect(r.held.map((h) => `${h.refusal}:${h.rests}:${h.face}`)).toEqual(["save-unmapped:memory:null"]);
+    expect(r.rest.store.held().find((h) => h.documentId === "doc")?.pending).toBeUndefined();
+    expect([...inner.bytes.keys()].some((k) => k.startsWith("doc"))).toBe(false);
   });
 });
