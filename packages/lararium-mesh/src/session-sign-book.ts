@@ -51,10 +51,19 @@ interface Booking { readonly verb: string; readonly session: BookedSession }
 export class SessionSignBook {
   readonly #held = new Map<string, Booking>();
   readonly #onHold: ((session: BookedSession, verb: string) => void) | undefined;
+  readonly #onRefused: ((session: BookedSession, verb: string, why: string) => void) | undefined;
 
   /** `onHold` hears each session as a call of its books here: the vessel's sealed rest books the changes that session
-   *  writes and seals the saves that waited for one (sealed-store#/owed, R2). */
-  constructor(opts: { readonly onHold?: (session: BookedSession, verb: string) => void } = {}) { this.#onHold = opts.onHold; }
+   *  writes and seals the saves that waited for one (sealed-store#/owed, R2). `onRefused` hears each signature a booked
+   *  session's signer refused, with the signer's OWN word (`signer-dropped`, `session-not-live`, `anchor-unread`, ...): the
+   *  island hears `signer-refused` alone, so the vessel's log names which session refused and why. */
+  constructor(opts: { readonly onHold?: (session: BookedSession, verb: string) => void; readonly onRefused?: (session: BookedSession, verb: string, why: string) => void } = {}) {
+    this.#onHold = opts.onHold;
+    this.#onRefused = opts.onRefused;
+  }
+  #refused(booking: Booking, why: string): void {
+    try { this.#onRefused?.(booking.session, booking.verb, why); } catch { /* a listener's fault never changes the answer */ }
+  }
 
   readonly #seated = new Map<object, BookedSession>();
 
@@ -115,7 +124,7 @@ export class SessionSignBook {
       const booking = this.#held.get(ask.ask);
       if (booking === undefined || booking.verb !== ask.verb) return { refusal: "signer-unavailable" };
       const { signer, anchor, subject } = booking.session;
-      if (signer.dropped) return { refusal: "signer-refused" };
+      if (signer.dropped) { this.#refused(booking, "signer-dropped"); return { refusal: "signer-refused" }; }
       const face = booking.session.face ?? null;
       const own = chain(face);
       if (own === null || !chainStandsAt(own, anchor.kind)) return { refusal: "signer-unavailable" };
@@ -127,7 +136,9 @@ export class SessionSignBook {
       }
       if (!(ask.payload instanceof Uint8Array)) return { refusal: "signer-refused" };
       const signed = await signer.sign("act", ask.payload);
-      return "signature" in signed ? { signature: signed.signature } : { refusal: "signer-refused" };
+      if ("signature" in signed) return { signature: signed.signature };
+      this.#refused(booking, typeof signed.refusal === "string" ? signed.refusal : "signer-refused");
+      return { refusal: "signer-refused" };
     };
   }
 }

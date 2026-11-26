@@ -28,7 +28,7 @@ import { PEER_WRITER_BOUND, type DocumentValue, type HolderRefusal, type OpenedV
 import { hex, utf8Bytes } from "./crypto.js";
 import { DOCUMENT_HANG_BOUND_MS } from "./find-or-throw.js";
 import { readSealedAddress } from "./sealed-chunk.js";
-import { SealedDocumentStore, type HeldNotice, type SaveSession, type SealedValueAddresses } from "./sealed-doc-store.js";
+import { HELD_MAX_SAVES_PER_DOCUMENT, SealedDocumentStore, type HeldNotice, type HeldRefusal, type HeldSaves, type SaveSession, type SealedValueAddresses } from "./sealed-doc-store.js";
 import type { HeldRestKey } from "./held-rest-key.js";
 import type { CompositeStore } from "./composite-store.js";
 import type { LarTiddlerStore } from "./tiddler-store.js";
@@ -477,9 +477,16 @@ export interface SealedRest<S extends SaveSession = SaveSession> {
    */
   drain(session: S, documentIds: readonly string[]): Promise<number>;
   /** The stand-down's flush (T3), exactly as the lock's: every waiting save whose face `standing` still wears books it,
-   *  the Repo and the store flush while the island still answers, and the bookings drop. Answers how many saves still
-   *  wait unbooked: those rest nowhere new, and their changes come back by sync from the replica that holds them. */
-  standDown(standing: readonly S[]): Promise<number>;
+   *  the Repo and the store flush while the island still answers, each waiting save seals where a session signs it, and the
+   *  bookings drop. Answers how many saves still wait. THE TEARDOWN TESTIFIES: `testify` hears one row per document that
+   *  waited as the stand-down began its reseal, naming how many of its saves sealed, how many leave carried (at rest
+   *  sealed-pending under the vessel's key: the next boot reads them back) and how many leave in memory alone (dropped with
+   *  the process). */
+  standDown(standing: readonly S[], testify?: (row: StandDownRow) => void): Promise<number>;
+  /** DOES THIS SESSION STAND AND SIGN: its signer has not dropped, and the latest seal asked of it did not come back refused
+   *  by its own signer? The vessel's standing reading passes over a session that answers false, so a save books another live
+   *  session of the face, or waits `save-unbooked`, rather than ask a signer that signs nothing. */
+  signs(session: S): boolean;
   /** A face left the lit set: its documents' waiting saves drop from memory (never to disk) and their bookings with them.
    *  Answers how many saves dropped. */
   forget(documentIds: readonly string[]): number;
@@ -555,7 +562,28 @@ export function composeSealedRest<S extends SaveSession>(input: {
   // A DROPPED SIGNER SIGNS NOTHING (session-sign-book's law): a lock, a close, a switch, a place session's re-mint or an
   // anchor move drops a signer, and only the lock unbooks it here. So every reading of a booking asks whether its session
   // still stands, by the port the vessel hands, else by the signer the session carries.
-  const stands = (session: S): boolean => input.stands ? input.stands(session) : !(session as { signer?: { dropped?: unknown } }).signer?.dropped;
+  const signerStands = (session: S): boolean => input.stands ? input.stands(session) : !(session as { signer?: { dropped?: unknown } }).signer?.dropped;
+  // A SIGNER THAT STANDS AND SIGNS NOTHING STANDS FOR NO SAVE. A session the owner's table holds switching, revoked or
+  // closing keeps its signer undropped, and a place signer whose anchor read fails keeps it too: each refuses every
+  // signature (`signer-refused`) for as long as that state lasts. So a session whose seal came back refused by its own
+  // signer leaves the standing reading, by its id, until an event says it acts again: its own next call or seat (`rebook`),
+  // a seal it signs, or a count of saves that found no session to book (`REFUSING_SIGNER_REASK_SAVES`), after which the next
+  // save asks it once more. No clock re-asks it. Each id maps to the saves that waited unbooked since its refusal.
+  const refusing = new Map<string, number>();
+  const stands = (session: S): boolean => signerStands(session) && !refusing.has(session.id);
+  const sealThrough: typeof input.door.seal = async (args) => {
+    const out = await input.door.seal(args);
+    if ("refusal" in out) { if (namesSignerRefusal(out)) refusing.set(args.session.id, 0); }
+    else refusing.delete(args.session.id);
+    return out;
+  };
+  /** One fresh save found no session to book (the store held it `save-unbooked`; a reseal's pass and a save carried from an
+   *  earlier boot count nothing): each refusing signer counts it, and re-enters the standing reading at its count. */
+  const waitedUnbooked = (): void => {
+    for (const [id, passed] of [...refusing]) {
+      if (passed + 1 >= REFUSING_SIGNER_REASK_SAVES) refusing.delete(id); else refusing.set(id, passed + 1);
+    }
+  };
   // T4: the save reads its change's own writer off its bytes. A change this replica made books the session standing; a
   // peer's change books its peer writer, and its save rests as received under the session that holds the rest.
   const sessionOf = (documentId: string, data?: Uint8Array): S | null => {
@@ -591,8 +619,11 @@ export function composeSealedRest<S extends SaveSession>(input: {
     writerOf: (documentId) => book.writerOf(documentId),
     // P1: a vessel's rest keeps a document's sealed class across a map that drops; its save waits, never clear.
     waitOverSealed: true,
-    seal: input.door.seal, open: input.door.open,
-    ...(input.onHeld ? { onHeld: input.onHeld } : {}),
+    seal: sealThrough, open: input.door.open,
+    onHeld: (held) => {
+      if (held.refusal === "save-unbooked" && held.carried !== true) waitedUnbooked();
+      input.onHeld?.(held);
+    },
     ...(input.onRefused ? { onRefused: input.onRefused } : {}),
     ...(input.onHydrationWait ? { onHydrationWait: input.onHydrationWait } : {}),
     ...(input.hydrates === true ? { hydrates: true } : {}),
@@ -614,6 +645,9 @@ export function composeSealedRest<S extends SaveSession>(input: {
       return () => { watched = null; };
     },
     async rebook(session) {
+      // THE SESSION ACTS AGAIN (its call booked, its seat stood, its door answered): the event its refused signer waited on.
+      // It takes one more ask; a signer that refuses again leaves the standing reading again, at that first ask.
+      refusing.delete(session.id);
       // A dropped signer books nothing: its rebook would only ask the dead signer to refuse.
       if (!stands(session)) return 0;
       for (const id of store.waitingDocuments()) {
@@ -635,26 +669,39 @@ export function composeSealedRest<S extends SaveSession>(input: {
       await input.flushRepo(documentIds);
       await store.flush(documentIds.flatMap((id) => { const bag = store.bagOf(id); return bag !== null ? [bag.bagId] : []; }));
       book.drop(session.id);
+      refusing.delete(session.id);
       return documentIds.reduce((n, id) => n + store.waiting(id), 0);
     },
     async lock(sessionId) {
       try { await input.flushRepo(); } catch { /* a save that refused keeps its change in the store's memory */ }
       await store.flush();
       book.drop(sessionId);
+      if (sessionId === undefined) refusing.clear(); else refusing.delete(sessionId);
     },
-    async standDown(standing) {
-      for (const id of store.waitingDocuments()) {
-        const face = store.bagOf(id)?.face;
-        const session = standing.find((s) => stands(s) && wears(face, s.subject));
-        if (session) book.seal(id, session);
-      }
+    async standDown(standing, testify) {
+      const bookWaiting = (): void => {
+        for (const id of store.waitingDocuments()) {
+          const bag = store.bagOf(id);
+          const session = standing.find((s) => stands(s) && wears(bag?.face, s.subject, bag?.bagId));
+          if (session) book.seal(id, session);
+        }
+      };
+      // THE STOP ASKS EACH SEATED SIGNER ONCE MORE: a session that refused earlier in the boot takes one last ask here.
+      for (const s of standing) refusing.delete(s.id);
+      bookWaiting();
       try { await input.flushRepo(); } catch { /* a save that refused keeps its change in the store's memory */ }
       await store.flush();
+      // A SAVE THE FLUSH JUST HELD BOOKS TOO, so the reseal below asks for every save that waits as the stop begins.
+      bookWaiting();
+      const before = store.held();
       try { await store.reseal(); } catch { /* it keeps waiting */ }
+      if (testify) for (const row of standDownRows(before, store.held())) { try { testify(row); } catch { /* a listener's fault never holds the stop */ } }
       book.drop();
+      refusing.clear();
       store.endHydration();
       return store.waiting();
     },
+    signs: (session) => stands(session),
     forget(documentIds) {
       const dropped = store.forget(documentIds);
       for (const id of documentIds) { book.forget(id); keptActors.delete(id); }
@@ -685,6 +732,93 @@ export function composeSealedRest<S extends SaveSession>(input: {
       return refiled || sealed;
     },
   };
+}
+
+// ── A refusing signer, the stand-down's testimony, and each held save's own sentence ──────────────────────────────
+/** How many saves wait unbooked before a signer that refused takes one more ask (a count, never a clock). */
+export const REFUSING_SIGNER_REASK_SAVES = 16;
+
+/** Does a seal's refusal name the session's own signer refusing its signature (`signer-refused`, bare or as the cause of a
+ *  record that did not sign)? A door with no island, a holder with no key and a bag with no capability name other things. */
+export function namesSignerRefusal(refusal: { readonly refusal: string; readonly cause?: string }): boolean {
+  return refusal.refusal === "signer-refused" || (typeof refusal.cause === "string" && refusal.cause.split(/[:\s]/).includes("signer-refused"));
+}
+
+/** One document's fate at a stand-down: how many of its waiting saves sealed, leave carried (at rest sealed-pending under the
+ *  vessel's key) and leave in memory alone (dropped with the process), with the refusal and bag its row named. */
+export interface StandDownRow {
+  readonly documentId: string;
+  readonly refusal: HeldRefusal;
+  readonly bagId: string | null;
+  readonly sealed: number;
+  readonly carried: number;
+  readonly dropped: number;
+}
+
+/** Fold the held rows read before a stand-down's reseal against the rows read after it: one row per document and refusal. */
+export function standDownRows(before: readonly HeldSaves[], after: readonly HeldSaves[]): StandDownRow[] {
+  const left = new Map<string, HeldSaves>(after.map((row): [string, HeldSaves] => [`${row.documentId}\u0000${row.refusal}`, row]));
+  return before.map((row) => {
+    const still = left.get(`${row.documentId}\u0000${row.refusal}`);
+    const waits = still?.saves ?? 0;
+    const carried = Math.min(waits, still?.pending ?? 0);
+    return { documentId: row.documentId, refusal: row.refusal, bagId: row.bagId, sealed: Math.max(0, row.saves - waits), carried, dropped: waits - carried };
+  });
+}
+
+const shortDoc = (documentId: string): string => `${documentId.slice(0, 12)}…`;
+
+/** One stand-down row as its printed sentence: the teardown's own testimony, never a body. */
+export function standDownLine(row: StandDownRow): string {
+  const parts = [
+    ...(row.sealed > 0 ? [`${row.sealed} save(s) sealed`] : []),
+    ...(row.carried > 0 ? [`${row.carried} carried at rest sealed-pending under the vessel's key (the next boot reads them back and the next session of the face seals them)`] : []),
+    ...(row.dropped > 0 ? [`${row.dropped} leave in this process's memory alone and drop with it (the replica that holds each change hands it back by sync)`] : []),
+  ];
+  return `stand-down ${row.refusal}: ${shortDoc(row.documentId)} bag ${row.bagId ?? "(none mapped)"}: ${parts.length > 0 ? parts.join("; ") : "no save waits"}`;
+}
+
+/** The cure each held refusal names: the act that lets a session seal what waits. */
+function heldCure(refusal: HeldRefusal): string {
+  if (refusal === "save-unsealed") return "run any `lares` call under that face (a live session of it seals what waits), or `lares vault unlock` where its seat stands dark";
+  if (refusal === "save-unbooked") return "run any `lares` call under that face, or `lares vault unlock`: the next live session of the face seals it";
+  if (refusal === "save-unmapped") return "light the face that owns the bag (`lares vault unlock`), or open the wiki whose map names the document";
+  return "read who carries the document with `lares vessel census --docs`, then open the wiki or bag that owns it";
+}
+
+/**
+ * EACH HELD SAVE'S OWN SENTENCE, by the fate its notice carries (four fates, four sentences; the fifth, a save refused
+ * outright, reads `refusedFateLine`):
+ *   - an unnamed document's content: memory, until the roster lands it clear or the map seals it;
+ *   - an unnamed document's sync state: memory, lands clear by the roster, drops once a sealed bag names its document;
+ *   - a sealed-class save at rest sealed-pending: a stop keeps it, and the next session of its face seals it;
+ *   - a sealed-class save in memory alone (the vessel's key out of reach): a stop drops it.
+ */
+export function heldFateLine(held: HeldNotice): string {
+  const why = held.error ? ` (${held.error}${held.cause ? `: ${held.cause}` : ""})` : "";
+  const where = held.bagId ? `, bag ${held.bagId}${held.face ? `, face ${held.face.slice(0, 16)}…` : ", no lit face"}` : "";
+  const head = `${held.refusal}${why}: ${shortDoc(held.documentId)}${where}`;
+  if (held.refusal === "save-unnamed") {
+    return held.syncState === true
+      ? `${head} holds a peer's sync state alone (heads, no change): it waits in this process's memory, lands clear once the roster names its document, and drops once a sealed bag names it; a stop loses no content here. Cure: none owed; \`lares vessel census --docs\` reads who carries the document`
+      : `${head} carries content no map and no roster names: it waits in this process's memory, never clear on a guess; the roster's naming lands it clear, a sealed bag's naming seals it, and a stop drops it. Cure: ${heldCure(held.refusal)}`;
+  }
+  if (held.rests === "sealed-pending") {
+    return held.carried === true
+      ? `${head} stood at rest sealed-pending from an earlier boot: it joins this boot's wait, never clear, and the next live session of its face seals it. Cure: ${heldCure(held.refusal)}`
+      : `${head} rests sealed-pending under the vessel's own key, never clear: a stop or a crash keeps it, and the next live session of its face seals it. Cure: ${heldCure(held.refusal)}`;
+  }
+  return `${head} waits in this process's memory alone, never clear (the vessel's key stands out of reach, so no sealed-pending rest took it): a stop drops it unless a live session of its face seals it first. Cure: ${heldCure(held.refusal)}`;
+}
+
+/** A save the store refused outright, as its printed sentence: it rests nowhere and waits nowhere; a document at its counted
+ *  ceiling (`held-bound`) names the ceiling and the act that lets its waiting saves seal. */
+export function refusedFateLine(refused: { readonly documentId: string; readonly refusal: string; readonly cause?: string }): string {
+  const head = `save-refused (${refused.refusal}${refused.cause ? `: ${refused.cause}` : ""}): ${shortDoc(refused.documentId)}`;
+  if (refused.refusal === "held-bound") {
+    return `${head} stands at its ceiling of ${HELD_MAX_SAVES_PER_DOCUMENT} unsealed save(s): this save neither waits nor rests, the engine keeps its change and hands it again inside its next save, and the writer's door answers owed. Cure: run any \`lares\` call under the face that owns the document, or \`lares vault unlock\`, so a live session seals what waits; \`lares vessel census\` lists the row`;
+  }
+  return `${head} rests nowhere; its change lives in the engine's memory alone. Cure: \`lares vessel census\` lists what a stop would drop`;
 }
 
 // ── The bag map (V3) ──────────────────────────────────────────────────────────────────────────────

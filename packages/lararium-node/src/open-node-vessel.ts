@@ -25,6 +25,9 @@ import { WardRefused } from "@lararium/mesh/ward-slots";
 import { wornAtOf } from "@lararium/mesh/sealed-doc-store";
 import {
   composeSealedRest,
+  heldFateLine,
+  refusedFateLine,
+  standDownLine,
   restOwedWatch,
   type RestOwed,
   clearRosterOf,
@@ -1314,15 +1317,18 @@ async function prepareNodeBootOn(
   const standingSaveSession = (): NodeSaveSession | null => {
     const face = sealedCells.face();
     if (face === null) return null;
-    const standing = sealedCells.book?.standingFor((s) => s.subject === face || sealedCells.wornAt(face, s.subject)) ?? null;
+    const standing = sealedCells.book?.standingFor((s) => (s.subject === face || sealedCells.wornAt(face, s.subject)) && signsSaves(s)) ?? null;
     return standing ? saveSessionOf(standing) : null;
   };
+  // A SIGNER THAT STANDS AND SIGNS NOTHING STANDS FOR NO SAVE (`SealedRest.signs`): a session whose latest seal came back
+  // refused by its own signer gives way to another live session of the face, else the save waits `save-unbooked`.
+  const signsSaves = (s: BookedSession): boolean => sealedRest.signs(saveSessionOf(s));
   // THE SESSION OF A FACE (the lit set): the daemon mount's standing session for its own bags; a sibling's seated session for a
   // bag that sibling owns. A face no seated session wears answers none, and its save waits: never another face's session.
   const sessionOfFace = (subject: string | null): NodeSaveSession | null => {
     if (subject === null) return null;
     if (subject === sealedCells.face() || sealedCells.wornAt(subject, sealedCells.face() ?? "")) return standingSaveSession();
-    const seated = sealedCells.book?.seated().find((s) => s.subject === subject) ?? sealedCells.book?.standing().find((s) => s.subject === subject);
+    const seated = sealedCells.book?.seated().find((s) => s.subject === subject && signsSaves(s)) ?? sealedCells.book?.standing().find((s) => s.subject === subject && signsSaves(s));
     return seated ? saveSessionOf(seated) : null;
   };
   // The session standing FOR ONE DOCUMENT: the one that wears its bag's face (the sealed rest re-checks the match).
@@ -1437,8 +1443,19 @@ async function prepareNodeBootOn(
   // documents its call wrote still wait unsealed, and answers `owed` rather than a bare ok (`restOwedAfter`).
   const owedWatch = restOwedWatch({ waiting: (documentId) => sealedRest.store.waiting(documentId) });
   const restedListeners = new Set<(documentId: string) => void>();
+  // EACH HELD SAVE'S SENTENCE PRINTS ONCE PER DOCUMENT AND FATE while that document waits (`heldFateLine`): a signer that
+  // refuses for a whole boot names itself once, never once per save. The document's next rest clears its told fates.
+  const heldTold = new Map<string, Set<string>>();
+  const tellOnce = (documentId: string, fate: string): boolean => {
+    const told = heldTold.get(documentId) ?? new Set<string>();
+    if (told.has(fate)) return false;
+    told.add(fate);
+    heldTold.set(documentId, told);
+    return true;
+  };
   const sealedRest = composeSealedRest<NodeSaveSession>({
     inner: restedOnSave(holdBackStorage(new DurableNodeFSStorageAdapter(storageDir), heldBack, (line) => console.warn(`[lararium] ${line}`)), (documentId) => {
+      if (sealedRest.store.waiting(documentId) === 0) heldTold.delete(documentId);
       if (restedListeners.size === 0 || sealedRest.store.waiting(documentId) > 0) return;
       for (const listener of [...restedListeners]) listener(documentId);
     }),
@@ -1475,11 +1492,25 @@ async function prepareNodeBootOn(
     stands: (session) => !session.signer.dropped,
     // A SAVE HELD BACK NAMES WHY: the store's refusal, and for a seal the holder refused, the holder's own refusal and cause.
     // A SAVE REFUSED OUTRIGHT rests nowhere and waits nowhere: the watch hears it, so its write door answers owed.
-    onRefused: ({ documentId, refusal, cause }) => {
+    // A DOCUMENT AT ITS COUNTED CEILING ESCALATES (`held-bound`): one error line names it, its writer's door answers owed,
+    // and the census lists its row at its bound.
+    onRefused: (refused) => {
+      const { documentId, refusal, cause } = refused;
       owedWatch.notice({ documentId, refusal: "save-refused", error: refusal, ...(cause !== undefined ? { cause } : {}) });
-      console.log(`[sealed-rest] save-refused (${refusal}${cause ? `: ${cause}` : ""}): ${documentId.slice(0, 12)}… rests nowhere; its change lives in the engine's memory alone`);
+      if (!tellOnce(documentId, `refused\u0000${refusal}`)) return;
+      if (refusal === "held-bound") console.error(`[sealed-rest] ${refusedFateLine(refused)}`);
+      else console.log(`[sealed-rest] ${refusedFateLine(refused)}`);
     },
-    onHeld: (held) => { owedWatch.notice(held); const { refusal, documentId, error, cause } = held; console.log(`[sealed-rest] ${refusal}${error ? ` (${error}${cause ? `: ${cause}` : ""})` : ""}: ${documentId.slice(0, 12)}… waits in memory, never clear, until a session seals it`); },
+    // FOUR FATES, FOUR SENTENCES (`heldFateLine`): each names where the save rests while it waits, what a stop does to it,
+    // and the act that seals it; the bag and the face the map reads name the row behind the document.
+    onHeld: (held) => {
+      owedWatch.notice(held);
+      if (!tellOnce(held.documentId, `${held.refusal}\u0000${held.error ?? ""}\u0000${held.rests ?? ""}\u0000${held.carried === true ? "carried" : ""}`)) return;
+      const line = `[sealed-rest] ${heldFateLine(held)}`;
+      // A content-free sync state loses nothing at a stop, and a save at rest sealed-pending survives one: neither cries.
+      if (held.refusal === "save-unnamed" ? held.syncState !== true : held.rests !== "sealed-pending") console.warn(line);
+      else console.log(line);
+    },
     // A HYDRATING LOAD THAT WAITS NAMES WHAT IT WAITS ON, once per document and refusal: the refusal and the bag holding it.
     onHydrationWait: ({ documentId, refusal, bagId }) => console.log(`[sealed-rest] ${documentId.slice(0, 12)}… waits to hydrate on ${refusal}${bagId ? ` in ${bagId}` : " (no bag names it yet)"}; it reads again at the next map move`),
     // A restart's hydration: a sealed document the engine asks for ahead of the dial waits for its map, never strands;
@@ -1489,8 +1520,19 @@ async function prepareNodeBootOn(
   // A STAND-DOWN THAT LEAVES A SAVE UNSEALED NAMES IT: each document, the refusal that held it and the bag the map names for
   // it now, never a byte of its body. Such a save rests nowhere new; only a replica that holds its change can hand it back.
   const nameHeldSaves = (waiting: number): void => {
-    console.log(`[sealed-rest] ${waiting} save(s) leave unsealed and rest nowhere new; the replica that holds each change hands it back by sync after the next unlock`);
-    for (const held of sealedRest.store.held()) console.log(`[sealed-rest]   ${held.refusal}: ${held.documentId.slice(0, 12)}… ${held.saves} save(s), bag ${held.bagId ?? "(none mapped)"}`);
+    const rows = sealedRest.store.held();
+    const carried = rows.reduce((n, held) => n + (held.pending ?? 0), 0);
+    console.log(`[sealed-rest] ${waiting} save(s) leave unsealed: ${carried} rest sealed-pending under the vessel's key (the next boot reads them back), ${waiting - carried} leave in memory alone (the replica that holds each change hands it back by sync after the next unlock)`);
+    for (const held of rows) console.log(`[sealed-rest]   ${held.refusal}: ${held.documentId.slice(0, 12)}… ${held.saves} save(s), ${held.pending ?? 0} sealed-pending, bag ${held.bagId ?? "(none mapped)"}${held.atBound === true ? " (at its ceiling)" : ""}`);
+  };
+  // THE TEARDOWN TESTIFIES: the stand-down prints one line per document that waited (sealed, carried, dropped) and one
+  // closing line whatever the count, so a stop's log always shows what the sealed rest did with its waiting saves.
+  const standSealedRestDown = async (): Promise<number> => {
+    let rows = 0;
+    const waiting = await sealedRest.standDown((sealedCells.book?.seated() ?? []).map(saveSessionOf), (row) => { rows++; console.log(`[sealed-rest] ${standDownLine(row)}`); });
+    console.log(`[sealed-rest] stand-down: ${rows} document(s) waited as the stop began; ${waiting} save(s) leave unsealed`);
+    if (waiting > 0) nameHeldSaves(waiting);
+    return waiting;
   };
   // THE FLOOR PIN SET (house ruling "The admit's gate pin": a floor route's full pin travels through an authenticated
   // relation): each sovereign session hears, at open, the floor pins this
@@ -1905,10 +1947,7 @@ async function prepareNodeBootOn(
   // `seal`), so every pin its islands still hold pending meets heads that rest; the sealed rest's own entry then reads the
   // same run. A boot that never went live stands no shore flush, and the sealed rest's entry runs it alone.
   let sealedRestDowned: Promise<void> | null = null;
-  const sealedRestDown = (): Promise<void> => (sealedRestDowned ??= (async () => {
-    const waiting = await sealedRest.standDown((sealedCells.book?.seated() ?? []).map(saveSessionOf));
-    if (waiting > 0) nameHeldSaves(waiting);
-  })());
+  const sealedRestDown = (): Promise<void> => (sealedRestDowned ??= (async () => { await standSealedRestDown(); })());
   // The Repo stands down after everything that writes through it: it flushes, then closes its storage and network.
   stood.push({ what: "the Repo", phase: "repo", down: () => closeCompositionRepo({
     flush: () => repo.flush(),
@@ -2763,9 +2802,18 @@ async function prepareNodeBootOn(
     // than meet an island that finds no door.
     let doorSeated = false;
     const rebookUnder = (session: BookedSession): void => rebookWaiting(session, "a session booked");
+    // A SIGNER THAT REFUSES NAMES ITSELF ONCE PER CAUSE: the island hears `signer-refused` alone, so the vessel's log
+    // carries the signer's own word, the session's anchor and its face.
+    const refusedTold = new WeakMap<object, Set<string>>();
     const book = new SessionSignBook({ onHold: (session, verb) => {
       if (verb === DOCSTORE_SEAL_VERB || !doorSeated) return;
       rebookUnder(session);
+    }, onRefused: (session, verb, why) => {
+      const told = refusedTold.get(session.signer) ?? new Set<string>();
+      if (told.has(why)) return;
+      told.add(why);
+      refusedTold.set(session.signer, told);
+      console.warn(`[session-sign] ${verb}: the signer of a ${session.anchor.kind} session of face ${session.subject.slice(0, 16)}…${session.face ? ` (lit sibling ${session.face.slice(0, 12)}…)` : " (worn)"} signed nothing: ${why}. Its saves wait for another live session of that face. Cure: run any \`lares\` call under that face, or \`lares vault unlock\``);
     } });
     sealedCells.book = book;
     dialSeat.book(book);
@@ -5698,11 +5746,7 @@ async function prepareNodeBootOn(
         return owedWatch.owed(since, ids, { unsynced });
       },
     },
-    sealedRestStandDown: async () => {
-      const waiting = await sealedRest.standDown((sealedCells.book?.seated() ?? []).map(saveSessionOf));
-      if (waiting > 0) nameHeldSaves(waiting);
-      return waiting;
-    },
+    sealedRestStandDown: () => standSealedRestDown(),
     facePoolStandDown: async () => { await facePoolWatch?.down("down"); await Promise.all([...workspaceWatches].map((w) => w.down("down"))); },
     heldSaves: () => sealedRest.store.held(),
     shoreFlush: flushShores,

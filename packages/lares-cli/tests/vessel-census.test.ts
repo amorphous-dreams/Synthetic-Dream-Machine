@@ -83,6 +83,20 @@ describe("the vessel census", () => {
     expect(c.err.join("\n")).toContain("census: unasked  doc doc-heads");
   });
 
+  test("V1e — a held row names how many of its saves rest sealed-pending and whether its document stands at its ceiling; it still blocks the stop", async () => {
+    const row = { documentId: "doc-busy", refusal: "save-unsealed", saves: 64, bagId: "lar:///ha.ka.ba/wikis/daemon/working", pending: 64, atBound: true };
+    const c = capture();
+    const reading = await readCensus(lines({ custody: async () => ({ op: "census", held: [row], standing: "hearth" }) }));
+    expect(reading.clean).toBe(false);
+    expect(reading.items).toEqual([{ kind: "held-save", refusal: "save-unsealed", documentId: "doc-busy", saves: 64, bagId: row.bagId, pending: 64, atBound: true }]);
+    expect(await cmdCensus(args(false), lines({ custody: async () => ({ op: "census", held: [row], standing: "hearth" }) }))).toBe(3);
+    const line = c.out.join("\n");
+    expect(line).toContain("held-save  save-unsealed  doc doc-busy  64 save(s) in memory  bag lar:///ha.ka.ba/wikis/daemon/working");
+    expect(line).toContain("64 of them rest sealed-pending under the vessel's key: a stop keeps those");
+    expect(line).toContain("AT ITS CEILING: a further save of this document refuses (held-bound)");
+    expect(line).toContain("`lares vault unlock`");
+  });
+
   test("V1d RED — FAIL CLOSED: an unnamed row holding any content save (a peer's push, a local change), or one from a vessel that names no contentFree, blocks the stop and names its ways on", async () => {
     for (const row of [
       { documentId: "doc-peer-content", refusal: "save-unnamed", saves: 2, bagId: null, bytes: 90, contentFree: false, heldAcross: 1 },

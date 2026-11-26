@@ -35,6 +35,7 @@ import { writeBrowserFaceLabel } from "./browser-face-labels.js";
 import { shoreStorage } from "@lararium/mesh/prototype-key-shore-door";
 import {
   composeSealedRest,
+  heldFateLine,
   clearRosterOf,
   watchCatalogNames,
   docStorePortCell,
@@ -963,7 +964,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     sessionFace: () => sealedCells.face(),
     door: docStoreDoor,
     flushRepo: async () => { await repo.flush(); },
-    onHeld: ({ refusal, documentId }) => console.log(`[sealed-rest] ${refusal}: ${documentId.slice(0, 12)}… waits in memory, never clear, until a session seals it`),
+    // EACH HELD SAVE'S OWN SENTENCE (`heldFateLine`): where it rests while it waits, what a stop does to it, and its cure.
+    onHeld: (held) => console.log(`[sealed-rest] ${heldFateLine(held)}`),
     // A restart's hydration: a sealed document the engine asks for ahead of the lift waits for its map, never strands;
     // the Repo's stand-down ends the wait by name.
     hydrates: true,

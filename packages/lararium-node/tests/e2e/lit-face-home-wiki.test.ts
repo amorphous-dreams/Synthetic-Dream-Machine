@@ -112,6 +112,10 @@ function askOverChannel(socketPath: string, inv: Record<string, unknown>): Promi
   });
 }
 
+/** Each ask takes its own request id: the seat's ledger answers a reused id (same verb, same args) from the outcome already
+ *  on record and never runs the verb again, so two reads of one verb under one id would both read the first answer. */
+let asks = 0;
+
 /** One verb over the composition's served front, as the CLI asks it: the settled outcome's line. */
 async function askVerb(at: Staged, vessel: NodeVesselResult, verb: string, args: Record<string, unknown>): Promise<Record<string, unknown>> {
   const requestedBy = await withLarRoot(at.root, async () => `0x${await loadVesselVerifyingKey()}`);
@@ -121,7 +125,7 @@ async function askVerb(at: Staged, vessel: NodeVesselResult, verb: string, args:
     placeVerb: (o) => vessel.daemon.placeVerb(o), claim: vessel.storeClaim, repo: vessel.repo,
     floorVerbs: floorVerbsFor(vessel.floorKey === "stands"),
   }));
-  try { return await askOverChannel(vessel.storeClaim.socketPath, { verb, args, requestedBy, requestId: `${verb}-${args["slug"] ?? "ask"}` }); }
+  try { return await askOverChannel(vessel.storeClaim.socketPath, { verb, args, requestedBy, requestId: `${verb}-${args["slug"] ?? "ask"}-${++asks}` }); }
   finally { await front.close(); }
 }
 
