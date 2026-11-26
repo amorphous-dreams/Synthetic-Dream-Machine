@@ -49,6 +49,7 @@
 import { describe, expect, test } from "vitest";
 import { bindFirstFaceSlot, lockFaceCustody } from "@lararium/browser";
 import { standVesselHost, type VesselScope } from "../src/workers/vessel-host.js";
+import { VESSEL_PROTOCOL } from "../src/vessel-protocol.js";
 import type { PageToVessel, VesselBoot, VesselToPage } from "../src/vessel-protocol.js";
 
 const SLOW = 300_000;
@@ -172,7 +173,7 @@ const standFace = async (idbName: string, route: string): Promise<string> => {
 const enter = (host: ReturnType<typeof standVesselHost>, t: ReturnType<typeof tab>, tabSession: string, idbName: string, face: string, extra: Partial<VesselBoot> = {}) => {
   const c = host.connect(t.scope);
   t.bind(c.receive);
-  c.receive({ t: "hello", tabSession, boot: { ...boot(idbName), ...extra }, face } as PageToVessel);
+  c.receive({ t: "hello", protocol: VESSEL_PROTOCOL, tabSession, boot: { ...boot(idbName), ...extra }, face } as PageToVessel);
   return c;
 };
 
@@ -250,7 +251,7 @@ describe("surface traffic reaches each session over its own port", () => {
     // CONTROL: a session greeted but not yet admitted hears no frame (its ceremony never answers).
     const pending = tab(ROUTE);
     const cp = host.connect({ postMessage: (msg) => { if (msg.t !== "ask") pending.heard.push(msg); } });
-    cp.receive({ t: "hello", tabSession: "tab-pending", boot: boot(idbName), face } as PageToVessel);
+    cp.receive({ t: "hello", protocol: VESSEL_PROTOCOL, tabSession: "tab-pending", boot: boot(idbName), face } as PageToVessel);
     await until("the pending greeting", () => pending.heard.some((m) => m.t === "greeting"));
     v.hooks.onFrame!({ n: 2 });
     await until("A hears the second frame", () => a.frames().length > 1);

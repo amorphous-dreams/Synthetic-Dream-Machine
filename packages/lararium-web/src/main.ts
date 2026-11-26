@@ -22,7 +22,7 @@ import { mountFleetRootDoor, mountFleetSeatDoor } from "./fleet/fleet-root-door.
 import { showCarriage, takeCarriage } from "./fleet/carriage-panel.js";
 import { createLoafBuffer } from "./loaf-buffer.js";
 import {
-  DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, vesselLockName, type HearthFloorRead,
+  DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, vesselLeaderLockName, type HearthFloorRead,
 } from "@lararium/browser/page";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
 import { standVesselPort, vesselWorkerOfPort, VesselRefused, type VesselAsk, type VesselPort } from "./vessel-port.js";
@@ -482,7 +482,7 @@ async function bootVessel(): Promise<void> {
     return;
   }
   floorTab = standFloorTab({
-    locks: navigator.locks, lockName: `${vesselLockName(VESSEL_IDB)}:leader`, tabSession: crypto.randomUUID(),
+    locks: navigator.locks, lockName: vesselLeaderLockName(VESSEL_IDB), tabSession: crypto.randomUUID(),
     broker: {
       post: (m, t) => broker.worker.postMessage(m, t ?? []),
       listen: (listener) => {

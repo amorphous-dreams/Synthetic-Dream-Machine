@@ -30,6 +30,7 @@
 import { describe, expect, test } from "vitest";
 import { bindFirstFaceSlot, lockFaceCustody } from "@lararium/browser";
 import { standVesselHost, type VesselScope } from "../src/workers/vessel-host.js";
+import { VESSEL_PROTOCOL } from "../src/vessel-protocol.js";
 import type { PageToVessel, VesselBoot, VesselToPage } from "../src/vessel-protocol.js";
 
 const ROUTE = "this face keeps its own fire";
@@ -64,7 +65,7 @@ export async function standLockedTab() {
   const heard: VesselToPage[] = [];
   const scope: VesselScope = { postMessage(msg) { heard.push(msg); } };
   const conn = host.connect(scope);
-  conn.receive({ t: "hello", tabSession: "tab-console", boot: boot(idbName), face } as PageToVessel);
+  conn.receive({ t: "hello", protocol: VESSEL_PROTOCOL, tabSession: "tab-console", boot: boot(idbName), face } as PageToVessel);
   await until("the unlock ask", () => heard.some((m) => m.t === "ask"));
   const ask = heard.find((m): m is Extract<VesselToPage, { t: "ask" }> => m.t === "ask")!;
   let calls = 0;

@@ -54,6 +54,7 @@ import { didFromVerifyingKey } from "@lararium/mesh/lar-did";
 import { foldLarFrame, readLarFrame } from "@lararium/mesh/lar-camera";
 import { mountedDocumentId } from "@lararium/mesh/sealed-rest";
 import { slugFromUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { protocolSkew, VESSEL_PROTOCOL } from "../vessel-protocol.js";
 import type { PageToVessel, SeedRest, VesselBoot, VesselError, VesselStatus, VesselToPage } from "../vessel-protocol.js";
 import { CeremonyRefused, standCeremonyDoor } from "./ceremony-door.js";
 import { ceremonyPlaceCard, PlaceCardRefused } from "./place-card.js";
@@ -390,6 +391,10 @@ export function standVesselHost(env: VesselHostEnv = {}) {
       const refusedQuietly = (what: string) => (err: unknown): void => { console.warn(`[vessel] ${what} refused:`, err instanceof Error ? err.message : err); };
 
       const hello = async (msg: Extract<PageToVessel, { t: "hello" }>): Promise<void> => {
+        // TWO BUILDS, ONE STORE (a deploy left this tab's page on another message table): the hello refuses by name before any
+        // house stands or any session opens, and its words carry the cure.
+        const skew = protocolSkew(msg.protocol);
+        if (skew) { post({ t: "ended", why: skew.why, stage: "open", refusal: skew.refusal }); return; }
         let h: VesselHouse<BrowserVesselResult>;
         try { h = await houseFor(msg.boot); } catch (err) {
           const refusal = err instanceof VesselSessionRefused ? err.refusal : undefined;
@@ -416,7 +421,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
         }
         conn.session = s;
         conns.set(s.sessionId, conn);
-        post({ t: "greeting", ownerEpoch: s.ownerEpoch, sessionId: s.sessionId, lifetimeLock: sessionLifetimeLock(s.sessionId), ...(refused ? { refused } : {}) });
+        post({ t: "greeting", protocol: VESSEL_PROTOCOL, ownerEpoch: s.ownerEpoch, sessionId: s.sessionId, lifetimeLock: sessionLifetimeLock(s.sessionId), ...(refused ? { refused } : {}) });
         statusTo(conn, { floor: h.floor() });
         admitted = admitSession(conn, h, s).then(() => ({ h, s }));
         admitted.catch(() => { /* named to the page already */ });
