@@ -19,20 +19,28 @@
  *      unread; the list (`<base>:tools/security-class-paths.json`) and the matcher
  *      (`<base>:packages/lararium-tw5/src/filters/security-class.ts`) come out of the base's git objects, so neither a dirty
  *      bench file nor anything in the lane's tree reaches the verdict.
- *   4. TWO DIFFS, ONE UNION. `git diff-tree -r --no-renames --ignore-submodules=none --raw -z <base> <lane>` compares the two
- *      trees and reads no ancestry at all (no graft, no shallow line, no choice among several merge bases, which the
- *      three-dot form makes); a lane standing behind develop also names what develop changed since, so it errs toward owing.
- *      A merge can still place a file where neither tree holds it (a directory renamed on one side carries the other side's
- *      new file along), so `git merge-tree --write-tree <base> <lane>` (git 2.38 or later) writes the tree the merge itself
- *      would make and the same diff runs from the base to THAT tree. The class reads the union. A merge-tree that conflicts
- *      answers unread: the familiar resolves by hand, and the re-judging below reads what the hand made.
+ *   4. THE MERGE DELTA, never the two trees. `git merge-tree --write-tree <base> <lane>` (git 2.38 or later) writes the tree
+ *      the merge itself would make, and `git diff-tree -r --no-renames --ignore-submodules=none --raw -z <base> <that tree>`
+ *      names the paths the landing would change ON THE BASE: the class reads that set alone. A lane standing behind develop
+ *      owes nothing for what develop changed since the fork (the merge keeps develop's bytes there, and those paths owed
+ *      their read when they landed); a path the lane itself changed owes; a path a third branch carried into the lane by a
+ *      merge owes until that branch lands on develop by its own read; a file the merge places where neither tree holds it
+ *      (a directory renamed on one side carries the other side's new file along) owes too, since the delta reads the merged
+ *      tree. The lane's tree never diffs against the base's directly: that two-tree read counted develop's own landings
+ *      against every lane forked before them, and a judge that cries custody at a lane which never touched it trains the
+ *      hand to land through the cry. Git's merge picks the ancestry (the merge base, or its recursive stand-in for several);
+ *      the judge picks none. A merge-tree that conflicts answers unread: the familiar resolves by hand, and the re-judging
+ *      below reads what the hand made, by the same rule (first parent against the merge's own tree).
  *   5. THE MATCHER RUNS IN A CHILD NODE, its source written from the base's object to a temp dir (Node strips the types). No
  *      daemon and no wiki door stand on this path. The ask always carries the SENTINEL (the list's own path, which the list
  *      always owes); an answer lacking it reads unread.
  * It prints, and exits 0 either way:
  *   COLD READ OWED: <paths>            or            cold read: none owed
  *   cold-read: owed|none · head <sha> · base <sha> · list <sha256> · paths <n> · record-hash <sha256>
- *   land: git merge --no-ff <head sha> ...        (the pinned sha, never the branch name: a branch can move after the read)
+ *   land: git merge --no-ff <head sha> ...        (ONLY where the read answers none owed; the pinned sha, never the branch
+ *                                                  name: a branch can move after the read)
+ *   read first: ... git merge --no-ff <head sha> ...   (in its place wherever the read answers owed or unread: the cold
+ *                                                  read files first; no line of an owed answer starts with `land:`)
  * The record hash covers the head, the base, the list's sha256, then each owed path, NUL-joined (git refuses a NUL in a path,
  * so no two paths join into one). The familiar files its cold Opus read under that hash and the merge message carries
  * `Cold-Read: <hash>`.
@@ -157,17 +165,18 @@ function owedAmong(changed, judge, match) {
 
 const unreadWord = (e) => `(unread: ${oneLine(e instanceof Error ? e.message : e)})`;
 
-/** The read over two pinned shas, past every place check: fills `pin.listSha`, sets `pin.landable`, returns the owed paths. */
+/** The read over two pinned shas, past every place check: fills `pin.listSha`, sets `pin.landable` (the judge stood on a
+ *  base the familiar lands on; `lines` still withholds the `land:` line from an owed answer), returns the owed paths. */
 function readPinned(pin, { git, self, match }) {
   if (pin.base === pin.head) throw new Error(`the lane head equals the base (${pin.base.slice(0, 9)}): nothing stands there to merge; name the lane's own head, and run from the landing bench, never from the lane`);
   const judge = judgeOn(git, pin.base, self);
   pin.listSha = judge.listSha;
   pin.landable = !pin.offDevelop;
-  const twoTree = changedBetween(git, pin.base, pin.head);
   const merged = git(["merge-tree", "--write-tree", pin.base, pin.head], { raw: true });
   const tree = String(merged.stdout).split("\n")[0].trim();
   if (merged.status !== 0 || !FULL.test(tree)) throw new Error(`merging ${pin.head.slice(0, 9)} into ${pin.base.slice(0, 9)} conflicts or refuses (git merge-tree --write-tree, exit ${merged.status}); the lane owes its cold read whole: resolve the merge by hand, then let --check-merge judge what the hand made`);
-  return owedAmong([...twoTree, ...changedBetween(git, pin.base, tree)], judge, match);
+  // The merge delta: what the landing changes on the base, read from the tree the merge itself would make.
+  return owedAmong(changedBetween(git, pin.base, tree), judge, match);
 }
 
 /**
@@ -239,11 +248,14 @@ export function checkMerge({ root = ROOT, merge, head, base, self = HERE, git = 
 /** A path as the verdict line shows it: quoted wherever a control char, a comma, a quote or a leading paren could forge a line or a word. */
 export const shown = (p) => (/[\u0000-\u001f\u007f,"\\]|^\(|^\s|\s$/.test(p) ? JSON.stringify(p) : p);
 
-/** The lines the familiar reads: the verdict, the record, then the landing command (a read) or the paths past the read (a merge). */
+/** The lines the familiar reads: the verdict, the record, then (a read) the landing command where none owes, or the
+ *  read-first line where one does, never both; or (a merge) the paths past the read. */
 export function lines(r) {
   const verdict = r.unread ? `COLD READ OWED: ${r.paths[0]}` : r.owed ? `COLD READ OWED: ${r.paths.map(shown).join(", ")}` : "cold read: none owed";
   const out = [verdict, `cold-read: ${r.owed ? "owed" : "none"}${r.merge === undefined ? "" : ` · merge ${r.merge || "?"}`} · head ${r.head || "?"} · base ${r.base || "?"} · list ${r.listSha || "?"} · paths ${r.unread ? "unread" : r.paths.length} · record-hash ${r.hash}${r.offDevelop ? " · base≠origin/develop" : ""}`];
-  if (r.landable) out.push(`land: git merge --no-ff ${r.head}   (the merge message carries the line "Cold-Read: ${r.hash}"; then, before the push: node ${SELF} --check-merge HEAD ${r.head})`);
+  const after = `the merge message carries the line "Cold-Read: ${r.hash}"; then, before the push: node ${SELF} --check-merge HEAD ${r.head}`;
+  if (r.landable && !r.owed) out.push(`land: git merge --no-ff ${r.head}   (${after})`);
+  else if (r.landable) out.push(`read first: file the cold read under record-hash ${r.hash}; only after it passes: git merge --no-ff ${r.head}   (${after})`);
   if (r.beyond?.length) out.push(`cold-read: beyond the read: ${r.beyond.map(shown).join(", ")}`);
   return out;
 }
