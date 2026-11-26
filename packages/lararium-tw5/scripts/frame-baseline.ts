@@ -24,7 +24,7 @@ import { performance } from "node:perf_hooks";
 import { LAR_KEY_STYLE, LAR_KEY_SURFACE, readLarFrame } from "@lararium/mesh/lar-camera";
 import { bootSetPluginCids } from "@lararium/mesh/cas";
 import { TW5Engine } from "../src/tw5-vm.js";
-import { casBlobPreloads, modulePinsOf } from "../src/module-pins.js";
+import { casBlobPreloads } from "../src/module-pins.js";
 import { mountProjection, renderIdCensus } from "../src/tw5-projection.js";
 import type { IslandContext } from "../src/island-context.js";
 
@@ -51,7 +51,7 @@ const titleOf = (text: string): string | null => /^title\s*=\s*"(lar:\/\/\/[^"]+
 const row: Record<string, unknown> = { corpus: path.relative(REPO, CORPUS), edits: EDITS };
 const t0 = performance.now();
 const engine = new TW5Engine();
-await engine.boot({ bytes: cas(core.sha256), sha256: core.sha256 }, preloads, undefined, { modulePins: modulePinsOf(preloads) });
+await engine.boot({ bytes: cas(core.sha256), sha256: core.sha256 }, preloads);
 row["bootMs"] = Math.round(performance.now() - t0);
 
 const t1 = performance.now();
