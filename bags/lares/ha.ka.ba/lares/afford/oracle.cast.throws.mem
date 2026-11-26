@@ -17,7 +17,9 @@ uri-path  = "ha.ka.ba/lares/afford/oracle.cast.throws"
 
 ! oracle.cast.throws ~ a blind throw to collide uncertainty with
 
-The house casts the I Ching by three coins a line (heads three, tails two: 6 old yin and 9 old yang change, 7 and 8 hold) and lands the cast once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`). The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. The throw stands, the reading stays open.
+The house casts the I Ching by three coins a line (heads three, tails two: 6 old yin and 9 old yang change, 7 and 8 hold) and lands the cast once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`). The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.
+
+The cast stands as a blind throw to collide uncertainty with: the throw stands, the reading stays open.
 
 <<~/ahu>>
 
@@ -37,9 +39,10 @@ The house casts the I Ching by three coins a line (heads three, tails two: 6 old
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ container · at · asking · uncertain · observe · caster · coins · fresh · seed · nonce
+!! takes ~ container · face · at · asking · uncertain · observe · caster · coins · fresh · seed · nonce
 
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container`>>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
 
 ```memetic-wikitext
 <<has entity=`arg` name=`at` params=`takes/time needs/always skins/mcp,tw5,console ~ the time of the cast, as testimony; the cli reads it once`>>
@@ -126,7 +129,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! oracle_cast
 
 ```memetic-wikitext
-<<has entity=`skin` name=`mcp` params=`spells/oracle_cast ~ the seat; names the time at the call`>>
+<<has entity=`skin` name=`mcp` params=`spells/oracle_cast omits/realm,face,at,fresh,seed,nonce ~ the seat; names the time at the call`>>
 ```
 
 <<~/ahu>>
@@ -164,6 +167,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;t6_ztQC2pgJR2mK32CDyw6dU2txNsxP_43rEY5VRSPA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MobG64HK4nnOzk_tK0aPx3f_IplHpqwoQu9hPsMl8Bw`>>
 
 <<^ code=`&#x0004;` to=`?`>>
