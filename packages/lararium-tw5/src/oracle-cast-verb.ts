@@ -1,18 +1,27 @@
 /**
- * oracle-cast-verb — the `oracle-cast` verb every vessel answers: one I Ching cast, written as one tiddler.
+ * oracle-cast-verb — the `oracle-cast` verb every vessel answers (`lar:///oracle.library.consults`): one consult of an oracle
+ * whose corpus rests on a library shelf, written as one tiddler.
  *
- *   args { recipe | bag, at: string, caster?: string, asking?: string, uncertain?: string, observe?: string[] | string,
- *          nonce?: string, fresh?: true, seed?: string, coins?: number[] | string }
- *   → { band, intent, replayed, decision, created, title, bag, hash, cast, text, readings, asOf, uncertain, observe,
- *       slots, next, note }
+ *   args { recipe | bag, at: string, by?: string, caster?: string, asking?: string, uncertain?: string,
+ *          observe?: string[] | string, nonce?: string, fresh?: true, seed?: string, coins?: number[] | string }
+ *   → { band, intent, replayed, decision, created, title, bag, hash, by, method, cast, text, readings, asOf, uncertain,
+ *       observe, slots, next, note }
  *
- * THE CAST LANDS AS AN OODA-HA MEME (`api/pono/oracle-loop`). The verb reads the act slots from canon: the affordance
- * carrier's `#/loop` (`@lararium/mesh/oracle-loop` ORACLE_CARRIER) calls the procedure's own `#/loop`, whose rows name each
- * slot, its order, its writer, what the house fills and what the seat owes. The ask's `observe` pointers and `uncertain`
+ * THE KIND RIDES AS DATA. `by` names a shelf (`library/oracles/<kind>/`, default `e-jing`), and the shelf's index record
+ * declares its `method`; the verb runs the methods it knows (`RUN_METHODS`: `three-coins`), and a kind no shelf declares,
+ * or a method the verb runs not yet, refuses by name (`oracle-shelf-unknown`, `oracle-method-unrun`) with the shelves that
+ * stand. A new oracle joins as a shelf, never a new address or a new verb.
+ *
+ * THE CAST LANDS AS AN OODA-HA MEME (`api/pono/oracle-loop`). The verb reads the act slots from the house canon: the
+ * affordance carrier's `#/loop` (`@lararium/mesh/oracle-loop` ORACLE_CARRIER) calls the procedure's own `#/loop`, whose rows
+ * name each slot, its order, its writer, what the house fills and what the seat owes. THE SHAPE READS WHEREVER CANON STANDS:
+ * the target wiki first, then the canon wiki (recipe `lares`), then the affordance pack this binary baked from the canon
+ * tree (the carrier's resolved `loop` rows and the shelves' methods), so a house that has not ingested the canon still
+ * casts; the cast lands in the target as before. The ask's `observe` pointers and `uncertain`
  * words fill the first slots, the throw and every reading (each source credited) fill the next, and every slot the seat
  * still owes names its ask. The carrier lands once through the tiddler door's put (`create`), which splits a family's text into its slots; the seat's later
  * writes ride the slot append (`lares tiddler put '<cast>#/<the slot you owe>' --append '<words>'`). No slot name and no
- * ask lives in this file; a wiki answering no loop rows refuses `oracle-loop-unread`. A replay answers the uncertainty and
+ * ask lives in this file; where target, canon wiki and pack all answer no loop rows, the cast refuses `oracle-loop-unread`. A replay answers the uncertainty and
  * the pointers the record kept at the first throw, and never rewrites them.
  *
  * THE DOOR ANSWERS ON A BAND (`@lararium/mesh` door-band): `answered` carries the cast inline; `asks` names the hand
@@ -43,20 +52,21 @@
  * none of. The throw stands and the reading stays open.
  */
 
-import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import { VerbRefusal, isVerbRefusal } from "@lararium/mesh/verb-refusal";
 import { canonicalJsonBytes, hex, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import type { DoorBand } from "@lararium/mesh/door-band";
 import {
-  ORACLE_THROW_STANDS, askingCastTitle, askingId, castFromCoins, castFromLines, castReadingTitles, castRecord,
-  castText, castThreeCoins, parseCoins, type LineValue, type OracleCast,
+  DEFAULT_ORACLE_KIND, KIND_RE, ORACLE_THROW_STANDS, RUN_METHODS, askingCastTitle, askingId, castFromCoins, castFromLines,
+  castReadingTitles, castRecord, castText, castThreeCoins, oracleShelfTitle, parseCoins, type LineValue, type OracleCast,
 } from "@lararium/mesh/oracle-cast";
 import { PLATFORM_ENTROPY, seededEntropy } from "@lararium/mesh/entropy-door";
 import {
-  LOOP_SLOT, ORACLE_CARRIER, castMemeBody, castMeta, fillLoop, kaheaTarget, loopSlots, parseHasRows, type LoopReading, type LoopSlot,
+  LOOP_SLOT, ORACLE_AFFORDANCE, ORACLE_CARRIER, castMemeBody, castMeta, fillLoop, kaheaTarget, loopSlots, parseHasRows, type LoopReading, type LoopSlot,
 } from "@lararium/mesh/oracle-loop";
 import { frameCarrier } from "@lararium/memetic-frame";
 import { makeTiddlerGetReactor, makeTiddlerPutReactor, type TiddlerVerbOptions } from "./tiddler-verbs.js";
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
+import type { AffordancePack } from "./affordance-pack.js";
 
 /** The caster a call names none for: the seat that placed it. */
 const DEFAULT_CASTER = "lares";
@@ -113,7 +123,9 @@ export function bookedAsker(ctx: Pick<VerbContext, "asker" | "presenter" | "worn
 
 /** The line a person runs to give what the seat asked: the asking's own words, with the hand's flag. */
 function handLine(args: Readonly<Record<string, unknown>>, asking: string, mode: "fresh" | "seed" | "coins"): string {
-  const words = asking !== "" ? ` --asking ${JSON.stringify(asking)}` : "";
+  const kind = wordArg(args["by"]);
+  const by = kind !== "" && kind !== DEFAULT_ORACLE_KIND ? ` --by ${kind}` : "";
+  const words = `${by}${asking !== "" ? ` --asking ${JSON.stringify(asking)}` : ""}`;
   const hand = mode === "fresh" ? "--fresh" : mode === "seed" ? "--seed <your words>" : "--coins <the six values you threw>";
   return `lares oracle cast ${containerFlag(args)}${words} ${hand}`;
 }
@@ -123,31 +135,113 @@ function containerFlag(args: Readonly<Record<string, unknown>>): string {
   return typeof args["bag"] === "string" ? `--bag ${args["bag"]}` : `--recipe ${typeof args["recipe"] === "string" ? args["recipe"] : "default"}`;
 }
 
-/**
- * The act slots, read from canon: the carrier's `#/loop`, through the `kahea` it carries to the slot of the law that owns
- * the procedure (or its own rows, where it carries them inline). An empty answer refuses: no act record lands unshaped.
- */
-async function readLoop(get: VerbReactor, container: Record<string, unknown>, ctx: VerbContext): Promise<LoopSlot[]> {
-  const slotText = async (title: string, slot: string): Promise<string> => {
-    const held = (await get({ ...container, title, slot }, ctx))["tiddler"] as { fields: Record<string, string> } | null;
-    return String(held?.fields["text"] ?? "");
-  };
-  const carried = await slotText(ORACLE_CARRIER, LOOP_SLOT);
-  const call = kaheaTarget(carried);
-  const text = call ? await slotText(call.uri, call.slot ?? LOOP_SLOT) : carried;
-  const slots = loopSlots(parseHasRows(text));
-  if (slots.length === 0) {
-    throw new VerbRefusal("oracle-loop-unread", `oracle-loop-unread: this wiki answers no loop rows from ${ORACLE_CARRIER}${LOOP_SLOT}${call ? ` (it calls ${call.uri}${call.slot ?? LOOP_SLOT})` : ""}, so no act record lands; read it with \`lares tiddler get ${call?.uri ?? ORACLE_CARRIER} --recipe default --meme --slot '${call?.slot ?? LOOP_SLOT}'\` and cast in a wiki that stands the lares canon`);
-  }
-  return slots;
+/** The canon wiki: the house canon a cast reads its shape from where the target wiki stands none. */
+const CANON_RECIPE = "lares";
+
+/** What the baked affordance pack carries for the consult: the carrier's resolved loop rows, and each shelf's method. */
+export interface PackedConsult {
+  readonly loop: readonly string[];
+  readonly shelves: Readonly<Record<string, { readonly title: string; readonly method: string }>>;
 }
 
-export function makeOracleCastReactor(opts: TiddlerVerbOptions): VerbReactor {
+/** Options past the tiddler door's own: where the baked pack's consult rows come from (a test seats its own). */
+export interface OracleConsultOptions {
+  readonly packed?: () => Promise<PackedConsult | null>;
+}
+
+/**
+ * THE PACK, LOADED LAZILY AND BY A NAME NO BUNDLER FOLLOWS: the pack reader requires its JSON through `node:module`, which a
+ * browser island never loads, so the browser reads no pack (the target or the canon wiki answers there) and a node vessel
+ * reads the pack its own binary baked.
+ */
+const PACK_MODULE = "./affordance-pack.js";
+async function packedFromAffordancePack(): Promise<PackedConsult | null> {
+  try {
+    const mod = await import(/* @vite-ignore */ PACK_MODULE) as { affordancePack(): AffordancePack };
+    const pack = mod.affordancePack();
+    return { loop: pack.carriers[ORACLE_AFFORDANCE]?.loop ?? [], shelves: pack.shelves ?? {} };
+  } catch {
+    return null;
+  }
+}
+
+/** A door read that a wiki out of reach answers as nothing: the next source of canon then answers. */
+async function quietly<T>(read: () => Promise<T>, none: T): Promise<T> {
+  try { return await read(); } catch (fault) {
+    if (isVerbRefusal(fault)) return none;
+    throw fault;
+  }
+}
+
+/** The containers canon reads from, in order: the target the call names, then the canon wiki where the target differs. */
+function canonContainers(container: Record<string, unknown>): Array<Record<string, unknown>> {
+  const targetIsCanon = container["recipe"] === CANON_RECIPE && container["bag"] === undefined && container["realm"] === undefined;
+  return targetIsCanon ? [container] : [container, { recipe: CANON_RECIPE }];
+}
+
+/**
+ * The act slots, read from the house canon: the carrier's `#/loop`, through the `kahea` it carries to the slot of the law
+ * that owns the procedure (or its own rows, where it carries them inline), in the target wiki, then the canon wiki, then the
+ * baked pack. Where none answers, the cast refuses: no act record lands unshaped.
+ */
+async function readLoop(get: VerbReactor, container: Record<string, unknown>, ctx: VerbContext, packed: () => Promise<PackedConsult | null>): Promise<LoopSlot[]> {
+  let called: ReturnType<typeof kaheaTarget> = null;
+  for (const where of canonContainers(container)) {
+    const slotText = (title: string, slot: string): Promise<string> => quietly(async () => {
+      const held = (await get({ ...where, title, slot }, ctx))["tiddler"] as { fields: Record<string, string> } | null;
+      return String(held?.fields["text"] ?? "");
+    }, "");
+    const carried = await slotText(ORACLE_CARRIER, LOOP_SLOT);
+    const call = kaheaTarget(carried);
+    if (call) called = call;
+    const text = call ? await slotText(call.uri, call.slot ?? LOOP_SLOT) : carried;
+    const slots = loopSlots(parseHasRows(text));
+    if (slots.length > 0) return slots;
+  }
+  const baked = loopSlots(parseHasRows(((await packed())?.loop ?? []).join("\n")));
+  if (baked.length > 0) return baked;
+  throw new VerbRefusal("oracle-loop-unread", `oracle-loop-unread: neither this wiki, the canon wiki (recipe ${CANON_RECIPE}) nor the baked affordance pack answers loop rows from ${ORACLE_CARRIER}${LOOP_SLOT}${called ? ` (it calls ${called.uri}${called.slot ?? LOOP_SLOT})` : ""}, so no act record lands; read it with \`lares tiddler get ${called?.uri ?? ORACLE_CARRIER} --recipe ${CANON_RECIPE} --meme --slot '${called?.slot ?? LOOP_SLOT}'\`, then ingest the lares canon or re-bake the pack (\`pnpm --filter @lararium/tw5 build\`)`);
+}
+
+/**
+ * The shelf a consult names, and the method its index record declares: the target wiki, the canon wiki, then the baked
+ * pack, the first that declares a method answering. A kind no source declares refuses `oracle-shelf-unknown`, a method the
+ * verb runs not yet `oracle-method-unrun`, each naming the shelves that stand.
+ */
+async function readShelf(kind: string, get: VerbReactor, container: Record<string, unknown>, ctx: VerbContext, packed: () => Promise<PackedConsult | null>): Promise<{ kind: string; title: string; method: string }> {
+  const shelves = (await packed())?.shelves ?? {};
+  const kinds = Object.keys(shelves).sort();
+  const standing = kinds.length > 0
+    ? `the shelves that stand: ${kinds.map((k) => `${k} (${shelves[k]!.method})`).join(" · ")}`
+    : `list the shelves with \`lares wiki filter '[prefix[lar:///ha.ka.ba/lares/library/oracles/]suffix[/index]]' --recipe ${CANON_RECIPE}\``;
+  const cure = `consult a shelf that stands (\`lares oracle cast --by ${DEFAULT_ORACLE_KIND}\`); ${standing}`;
+  if (!KIND_RE.test(kind)) throw new VerbRefusal("oracle-shelf-unknown", `oracle-shelf-unknown: \`by\` names a shelf in lower-case words joined by hyphens; got "${kind}"; ${cure}`);
+  const title = oracleShelfTitle(kind);
+  let method = "";
+  for (const where of canonContainers(container)) {
+    method = await quietly(async () => {
+      const held = (await get({ ...where, title, fields: ["method"] }, ctx))["tiddler"] as { fields: Record<string, string> } | null;
+      return String(held?.fields["method"] ?? "").trim();
+    }, "");
+    if (method !== "") break;
+  }
+  if (method === "") method = String(shelves[kind]?.method ?? "").trim();
+  if (method === "") throw new VerbRefusal("oracle-shelf-unknown", `oracle-shelf-unknown: no shelf ${title} declares its method, in this wiki, the canon wiki or the baked pack; ${cure}`);
+  if (!RUN_METHODS.includes(method)) {
+    throw new VerbRefusal("oracle-method-unrun", `oracle-method-unrun: the ${kind} shelf declares method \`${method}\`, which this verb runs not yet (it runs ${RUN_METHODS.join(", ")}); ${cure}`);
+  }
+  return { kind, title, method };
+}
+
+export function makeOracleCastReactor(opts: TiddlerVerbOptions, consult: OracleConsultOptions = {}): VerbReactor {
   const put = makeTiddlerPutReactor(opts);
   const get = makeTiddlerGetReactor(opts);
+  let packedOnce: Promise<PackedConsult | null> | null = null;
+  const packed = consult.packed ?? ((): Promise<PackedConsult | null> => (packedOnce ??= packedFromAffordancePack()));
   return async (args, ctx) => {
     const at = wordArg(args["at"]);
     if (at === "") throw new VerbRefusal("oracle-cast-untimed", "oracle-cast-untimed: name `at`, the time of the cast; the verb reads no clock");
+    const by = wordArg(args["by"]) || DEFAULT_ORACLE_KIND;
     const caster = wordArg(args["caster"]) || DEFAULT_CASTER;
     const coins = coinsOf(args["coins"]);
     const asking = wordArg(args["asking"]);
@@ -182,9 +276,11 @@ export function makeOracleCastReactor(opts: TiddlerVerbOptions): VerbReactor {
       }
       nonce = mintNonce();
     }
-    const intent = askingId({ asker: bookedAsker(ctx), asking, nonce, seed, ...(coins ? { coins } : {}) });
-    const title = askingCastTitle(intent);
     const container = containerOf(args);
+    // THE SHELF ANSWERS FIRST: a kind no shelf declares, or a method the verb runs not yet, refuses before any coin draws.
+    const shelf = await readShelf(by, get, container, ctx, packed);
+    const intent = askingId({ asker: bookedAsker(ctx), asking, nonce, seed, ...(coins ? { coins } : {}), by: shelf.kind });
+    const title = askingCastTitle(intent);
 
     // WHAT THE RECORD KEPT: a replay answers the uncertainty and the pointers of the first throw, never the replay's own words.
     let kept: { uncertain: string; observe: string[] } = { uncertain: "", observe: [] };
@@ -212,12 +308,12 @@ export function makeOracleCastReactor(opts: TiddlerVerbOptions): VerbReactor {
     let receipt: Record<string, unknown> = { decision: "exists", created: false };
     if (cast === null) {
       // The loop's shape reads from canon BEFORE any coin draws: a wiki with no loop rows refuses, and nothing moves.
-      const slots = await readLoop(get, container, ctx);
+      const slots = await readLoop(get, container, ctx, packed);
       const drawn = coins ? castFromCoins(coins, { caster, at })
         : castThreeCoins(seed !== "" ? seededEntropy(seed) : PLATFORM_ENTROPY, { caster, at });
       readings = await readingsOf(drawn);
       const filled = fillLoop(slots, { observe: observeAsked, uncertain: uncertainAsked, asking, cast: drawn, readings: readings as unknown as LoopReading[] });
-      const meta = castMeta(drawn, { title, intent, ...(asking !== "" ? { asking } : {}), ...(uncertainAsked !== "" ? { uncertain: uncertainAsked } : {}), observe: observeAsked });
+      const meta = { ...castMeta(drawn, { title, intent, ...(asking !== "" ? { asking } : {}), ...(uncertainAsked !== "" ? { uncertain: uncertainAsked } : {}), observe: observeAsked }), by: shelf.kind };
       const text = frameCarrier({ head: { uri: title }, body: castMemeBody({ title, meta, cast: drawn, slots: filled }) });
       // ALL TIDDLERS: the carrier lands through the one tiddler door, whose put splits a family's text into its slots.
       const placed = await put({ ...container, title, text, create: true }, ctx) as Record<string, unknown>;
@@ -247,6 +343,7 @@ export function makeOracleCastReactor(opts: TiddlerVerbOptions): VerbReactor {
       decision: receipt["decision"], created: receipt["created"] === true, title,
       ...(receipt["bag"] !== undefined ? { bag: receipt["bag"] } : {}),
       ...(receipt["hash"] !== undefined ? { hash: receipt["hash"] } : {}),
+      by: shelf.kind, method: shelf.method,
       cast: { ...castRecord(cast), title }, text: castText(cast), readings,
       asOf: sha256HexBytesSync(canonicalJsonBytes(readings)).slice(0, 16),
       uncertain: kept.uncertain, observe: kept.observe,

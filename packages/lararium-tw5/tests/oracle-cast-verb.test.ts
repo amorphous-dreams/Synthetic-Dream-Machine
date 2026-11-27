@@ -3,7 +3,8 @@
  * under `casts/`, through the meme door's own gate, its slots read from canon (the carrier's `#/loop` calls
  * api/pono/oracle-loop#/loop; the rig stands both slots from the canon files themselves), and answers the cast with the
  * readings the wiki holds for it. The coins draw through the platform's entropy door, or a person types six. The caller
- * names the time; the verb reads no clock.
+ * names the time; the verb reads no clock. The loop's shape reads from the house canon wherever the cast lands (the target,
+ * the canon wiki, then the baked pack), and `by` names the library shelf whose index declares the method.
  */
 import { readFileSync } from "node:fs";
 import { describe, test, expect } from "vitest";
@@ -14,7 +15,7 @@ import { type Verb } from "@lararium/mesh/verb-tiddler";
 import { ORACLE_THROW_STANDS, askingCastTitle, askingId, readingTitle } from "@lararium/mesh/oracle-cast";
 import { LOOP_SLOT, ORACLE_AFFORDANCE, ORACLE_CARRIER, kaheaTarget, loopSlots, parseHasRows } from "@lararium/mesh/oracle-loop";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { bookedAsker, makeOracleCastReactor } from "../src/oracle-cast-verb.js";
+import { bookedAsker, makeOracleCastReactor, type PackedConsult } from "../src/oracle-cast-verb.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
 
@@ -32,10 +33,19 @@ function canonSlot(rel: string, slot: string): string {
   const body = text.indexOf("\n", open) + 1;
   return text.slice(body, text.indexOf("<<~/ahu>>", body)).trim();
 }
-const CARRIER_LOOP = canonSlot("afford/oracle.cast.throws.mem", LOOP_SLOT);
+const CARRIER_LOOP = canonSlot("afford/oracle.library.consults.mem", LOOP_SLOT);
 const LOOP_CALL = kaheaTarget(CARRIER_LOOP)!;
 const LOOP_ROWS = canonSlot("api/pono/oracle-loop.mem", LOOP_SLOT);
 const SLOT_NAMES = loopSlots(parseHasRows(LOOP_ROWS)).map((s) => s.name);
+/** The loop rows as the bake resolves them into the pack: the law slot's `has` lines. */
+const PACKED_LOOP = LOOP_ROWS.split("\n").map((l) => l.trim()).filter((l) => l.startsWith("<<has "));
+const SHELVES = {
+  "e-jing": { title: "lar:///ha.ka.ba/lares/library/oracles/e-jing/index", method: "three-coins" },
+  doa: { title: "lar:///ha.ka.ba/lares/library/oracles/doa/index", method: "three-coins" },
+};
+/** A pack seated for the rig: the shelves alone by default, so the loop reads from the wiki the rig stands. */
+const seated = (pack: Partial<PackedConsult> | null): (() => Promise<PackedConsult | null>) =>
+  async () => (pack === null ? null : { loop: [], shelves: SHELVES, ...pack });
 
 const ctxOf = (composite: CompositeStore): VerbContext => ({
   daemon: composite,
@@ -44,7 +54,7 @@ const ctxOf = (composite: CompositeStore): VerbContext => ({
 } as VerbContext);
 
 describe.skipIf(wikiSkip)(`oracle-cast — a cast writes its result as a tiddler${skipNote}`, () => {
-  async function rig(opts: { canon?: boolean } = {}) {
+  async function rig(opts: { canon?: boolean; packed?: (() => Promise<PackedConsult | null>) | "baked"; extra?: Array<Record<string, unknown>> } = {}) {
     const doa15 = readingTitle("doa", 15);
     const loop = opts.canon === false ? [] : [
       { title: ORACLE_CARRIER, text: "", "$origin-bag": DAEMON },
@@ -57,11 +67,18 @@ describe.skipIf(wikiSkip)(`oracle-cast — a cast writes its result as a tiddler
       { title: WORKING_POINTER, text: DAEMON },
       { title: doa15, caption: "15. Turn Me On Dead Man", source: "DOA.html", license: "Kopyleft 2022", attribution: "DOA", "$origin-bag": DAEMON },
       { title: `${doa15}#/reading`, text: "! 15\n\nA reading.", "$origin-bag": DAEMON },
+      ...(opts.extra ?? []),
     ] });
     const composite = new CompositeStore();
     composite.addLayer({ bagId: DAEMON, store: new MemoryTiddlerStore(DAEMON), writable: true });
-    return { engine, cast: makeOracleCastReactor({ composite, tw5: engine }), ctx: ctxOf(composite) };
+    const consult = opts.packed === "baked" ? {} : { packed: opts.packed ?? seated({}) };
+    return { engine, cast: makeOracleCastReactor({ composite, tw5: engine }, consult), ctx: ctxOf(composite) };
   }
+
+  const refusalOf = async (r: Awaited<ReturnType<typeof rig>>, args: Record<string, unknown>): Promise<{ reason: string; message: string }> => {
+    try { await r.cast(args, r.ctx); return { reason: "ran", message: "" }; }
+    catch (e) { return isVerbRefusal(e) ? { reason: e.reason, message: e.message } : { reason: String(e), message: String(e) }; }
+  };
 
   test("RED: an operator's typed throw writes one cast tiddler naming method, entropy, lines, both hexagrams, caster and time", async () => {
     const r = await rig();
@@ -246,8 +263,56 @@ describe.skipIf(wikiSkip)(`oracle-cast — a cast writes its result as a tiddler
     expect(String(r.engine.wiki.getTiddler(`${String(first["title"])}${SLOT_NAMES[1]}`)?.fields["text"])).not.toContain("other words");
   }, 60_000);
 
-  test("RED: a wiki that answers no loop rows from canon refuses before any coin draws, and nothing moves", async () => {
-    const r = await rig({ canon: false });
+  test("RED: a target wiki with no loop rows still casts: the shape reads from the baked pack, and the cast lands in the target", async () => {
+    const r = await rig({ canon: false, packed: seated({ loop: PACKED_LOOP }) });
+    const out = await r.cast({ recipe: "default", caster: "operator", coins: "889688", asking: "which lane first?", uncertain: "two leans", at: AT }, r.ctx);
+    expect(out).toMatchObject({ band: "answered", created: true, by: "e-jing", method: "three-coins" });
+    expect((out["slots"] as Array<{ slot: string }>).map((s) => s.slot)).toEqual(SLOT_NAMES);
+    expect(String(r.engine.wiki.getTiddler(`${String(out["title"])}${SLOT_NAMES[1]}`)?.fields["text"])).toContain("two leans");
+    expect(r.engine.wiki.filterTiddlers(CAST_ROOTS)).toEqual([out["title"]]);
+  }, 60_000);
+
+  test("RED: the pack this package baked carries the consult's loop rows and its shelves, so a bare target casts with no seat", async () => {
+    const r = await rig({ canon: false, packed: "baked" });
+    const out = await r.cast({ recipe: "default", caster: "operator", coins: "889688", asking: "which lane first?", at: AT }, r.ctx);
+    expect(out).toMatchObject({ band: "answered", created: true, by: "e-jing", method: "three-coins" });
+    expect((out["slots"] as Array<{ slot: string }>).map((s) => s.slot)).toEqual(SLOT_NAMES);
+  }, 60_000);
+
+  test("RED: by names the shelf: doa casts under its own asking, and the default shelf keys the id every earlier cast kept", async () => {
+    const r = await rig();
+    const ejing = await r.cast({ recipe: "default", caster: "operator", asking: "which road first?", at: AT }, r.ctx);
+    const doa = await r.cast({ recipe: "default", caster: "operator", asking: "which road first?", by: "doa", at: AT }, r.ctx);
+    expect(ejing).toMatchObject({ band: "answered", by: "e-jing", method: "three-coins", intent: askingId({ asker: bookedAsker(r.ctx), asking: "which road first?" }) });
+    expect(doa).toMatchObject({ band: "answered", created: true, by: "doa", method: "three-coins" });
+    expect(doa["intent"]).toBe(askingId({ asker: bookedAsker(r.ctx), asking: "which road first?", by: "doa" }));
+    expect(doa["title"]).not.toBe(ejing["title"]);
+    expect(r.engine.wiki.getTiddler(String(doa["title"]))!.fields["by"]).toBe("doa");
+  }, 60_000);
+
+  test("RED: a kind no shelf declares refuses oracle-shelf-unknown, naming the shelves that stand, and nothing moves", async () => {
+    const r = await rig();
+    const unknown = await refusalOf(r, { recipe: "default", caster: "operator", asking: "q", by: "tarot", at: AT });
+    expect(unknown.reason).toBe("oracle-shelf-unknown");
+    expect(unknown.message).toContain("doa (three-coins) · e-jing (three-coins)");
+    expect(unknown.message).toContain("--by e-jing");
+    expect((await refusalOf(r, { recipe: "default", caster: "operator", asking: "q", by: "../e-jing", at: AT })).reason).toBe("oracle-shelf-unknown");
+    expect(r.engine.wiki.filterTiddlers("[prefix[lar:///ha.ka.ba/lares/oracle/casts/]]")).toEqual([]);
+  }, 60_000);
+
+  test("RED: a shelf whose method the verb runs not yet refuses oracle-method-unrun; the target's own shelf record answers first", async () => {
+    const dice = "lar:///ha.ka.ba/lares/library/oracles/sdm-dice/index";
+    const r = await rig({ extra: [{ title: dice, method: "roll", text: "", "$origin-bag": DAEMON }] });
+    const unrun = await refusalOf(r, { recipe: "default", caster: "operator", asking: "q", by: "sdm-dice", at: AT });
+    expect(unrun.reason).toBe("oracle-method-unrun");
+    expect(unrun.message).toContain("`roll`");
+    const r2 = await rig({ packed: seated({ shelves: { ...SHELVES, tarot: { title: "lar:///ha.ka.ba/lares/library/oracles/tarot/index", method: "draw" } } }) });
+    expect((await refusalOf(r2, { recipe: "default", caster: "operator", asking: "q", by: "tarot", at: AT })).reason).toBe("oracle-method-unrun");
+    expect(r.engine.wiki.filterTiddlers("[prefix[lar:///ha.ka.ba/lares/oracle/casts/]]")).toEqual([]);
+  }, 60_000);
+
+  test("RED: where target, canon wiki and pack all answer no loop rows, the cast refuses before any coin draws, and nothing moves", async () => {
+    const r = await rig({ canon: false, packed: seated({ loop: [] }) });
     let reason = "ran";
     try { await r.cast({ recipe: "default", caster: "operator", asking: "q", at: AT }, r.ctx); }
     catch (e) { reason = isVerbRefusal(e) ? e.reason : String(e); }

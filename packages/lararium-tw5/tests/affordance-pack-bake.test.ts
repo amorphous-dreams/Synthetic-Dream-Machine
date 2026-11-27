@@ -38,7 +38,7 @@ describe.skipIf(wikiSkip)(`the affordance bake over the fixture carrier${skipNot
     expect(pack.routes["cli"]).toEqual({ "oracle cast": FIXTURE_ADDRESS });
     expect(pack.routes["mcp"]).toEqual({ oracle_cast: FIXTURE_ADDRESS });
     expect(pack.routes["tw5"]).toEqual({ "action-oracle-cast": FIXTURE_ADDRESS });
-    expect(pack.routes["console"]).toEqual({ "oracle.cast.throws": FIXTURE_ADDRESS });
+    expect(pack.routes["console"]).toEqual({ "oracle.library.consults": FIXTURE_ADDRESS });
     expect(pack.doors["oracle"]!.addresses).toEqual([FIXTURE_ADDRESS]);
     expect(pack.doors["oracle"]!.help).toEqual(pack.carriers[FIXTURE_ADDRESS]!.renders["cli"]!["whole"]);
     expect(pack.doors["oracle"]!.brief).toBe("Cast the I Ching by three coins; the cast lands as a tiddler.");
@@ -78,18 +78,18 @@ describe.skipIf(wikiSkip)(`the affordance bake over the fixture carrier${skipNot
     engine.ingestCarrier(FIXTURE_TITLE, oracleFixtureCarrier());
     const face = affordFaceOf(engine.wiki as never, { print: false, invoke: () => {} });
     const pack = await bakeAffordancePack([oracleFixtureCarrier()]);
-    expect(face.whole("oracle.cast.throws")).toEqual(pack.carriers[FIXTURE_ADDRESS]!.renders["console"]!["whole"]);
-    expect(face.slot("oracle.cast.throws", "refuses")).toEqual(pack.carriers[FIXTURE_ADDRESS]!.renders["console"]!["#/refuses"]);
-    expect(face.list("oracle.*")).toEqual(["oracle.cast.throws"]);
+    expect(face.whole("oracle.library.consults")).toEqual(pack.carriers[FIXTURE_ADDRESS]!.renders["console"]!["whole"]);
+    expect(face.slot("oracle.library.consults", "refuses")).toEqual(pack.carriers[FIXTURE_ADDRESS]!.renders["console"]!["#/refuses"]);
+    expect(face.list("oracle.*")).toEqual(["oracle.library.consults"]);
     expect(() => face.list("*.cast.throws")).toThrow(/afford-wildcard-heading/);
-    expect(face.run("oracle.cast.throws", { recipe: "default" })).toEqual({ invoked: `<$action-oracle-cast recipe="default"/>` });
+    expect(face.run("oracle.library.consults", { recipe: "default" })).toEqual({ invoked: `<$action-oracle-cast recipe="default"/>` });
   });
 
   test("RED 7: the tw5 view folds each slot and names the gate as testimony", async () => {
     const engine = await bootTestWiki();
     engine.ingestCarrier(FIXTURE_TITLE, oracleFixtureCarrier());
     const html = engine.wiki.renderTiddler("text/html", "lar:///ha.ka.ba/lararium/tw5/afford/view", { variables: { currentTiddler: FIXTURE_TITLE } });
-    expect(html).toContain("<code>oracle.cast.throws</code>");
+    expect(html).toContain("<code>oracle.library.consults</code>");
     expect(html).toContain("the door checks the ocap");
     for (const label of ["head", "shows", "takes", "gate", "refuses", "answers", "skins", "edges"]) expect(html).toContain(`▸ ${label}`);
   });

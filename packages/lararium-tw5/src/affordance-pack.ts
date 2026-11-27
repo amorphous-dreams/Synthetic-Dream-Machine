@@ -26,6 +26,17 @@ export interface AffordancePackCarrier {
   readonly takes: Readonly<Record<string, readonly string[]>>;
   /** Per surface the carrier skins: every example and every cure, runnable. */
   readonly calls: Readonly<Record<string, readonly string[]>>;
+  /**
+   * The act shape a carrier's `#/loop` calls, resolved at bake to the `has` rows of the law slot it names (absent where the
+   * carrier declares none): the shape a vessel reads where neither the target nor the canon wiki stands the canon.
+   */
+  readonly loop?: readonly string[];
+}
+
+/** One library shelf the bake read: its index record's title and the method that record declares (`three-coins`). */
+export interface AffordancePackShelf {
+  readonly title: string;
+  readonly method: string;
 }
 
 export interface AffordancePackDoor {
@@ -41,6 +52,8 @@ export interface AffordancePack {
   readonly routes: Readonly<Record<string, Readonly<Record<string, string>>>>;
   readonly doors: Readonly<Record<string, AffordancePackDoor>>;
   readonly index: Readonly<Record<string, readonly string[]>>;
+  /** Per oracle kind (`e-jing`, `doa`): the shelf `library/oracles/<kind>/` whose index declares a method. */
+  readonly shelves?: Readonly<Record<string, AffordancePackShelf>>;
 }
 
 const EMPTY: AffordancePack = Object.freeze({ title: "", hash: "", carriers: {}, routes: {}, doors: {}, index: {} });

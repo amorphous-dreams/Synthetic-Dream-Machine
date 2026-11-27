@@ -12,16 +12,19 @@
  * carriers and a `kahea` call resolves. A carrier: a root record tagged with the type tag whose title carries an address, the
  * bare root or the stable seat canon gives it (`lar:///ha.ka.ba/lares/afford/<address>`, tagging the bare address). The pack
  * keys every carrier by its ADDRESS and keeps its title beside it.
- * `--carrier <file>` (repeatable) adds a file outside the canon source (a test's fixture).
+ * `--carrier <file>` (repeatable) adds a file outside the canon source (a test's fixture). Beside the carriers it reads every
+ * library shelf's index (`library/oracles/<kind>/index.mem`), whose `method` field the consult reads (`oracle.library.consults`).
  *
  * WHAT IT WRITES (`affordance-pack.json`, beside this package's `package.json`):
  *   carriers    per address: its frame check (`bcc`), `role`, and every render, surface × depth (line · whole · each slot),
- *               the mcp surface also per parameter
+ *               the mcp surface also per parameter; a carrier whose `#/loop` calls a law slot carries that slot's `has` rows
+ *               resolved (`loop`), the act shape a vessel reads where no wiki it reaches stands the canon
  *   routes      per surface: the skin's spelling → address (cli `oracle cast`, mcp `oracle_cast`, tw5 `action-oracle-cast`,
  *               console the bare address), each derived from the carrier's `#/skins`, no hand table
  *   doors       per CLI door (the spelling's first word): its addresses, the brief the top-level index prints, the lines
  *               `lares <door> --help` and its usage refusal print
  *   index       the `lares --help` lines of every carrier, through the index template
+ *   shelves     per oracle kind: the shelf index's title and the `method` it declares (`three-coins`)
  *   hash        sha256 over the pack's canonical bytes with the hash field absent
  *
  * `--check` regenerates in memory and compares bytes with the tracked pack (witness W3); a stale or hand-edited pack exits 1
@@ -40,6 +43,8 @@ import { bootTestWiki } from "../tests/test-wiki.js";
 import { TW5_CORE_SCRIPT_FILENAME } from "../src/generated-tw5-version.js";
 import { AFFORDANCE_TAG, AFFORD_SLOTS, AFFORD_SURFACES, addressOfTitle, bareAddressOf, type AffordSurface } from "../src/affordance-rows.js";
 import { rowsOf, skinRows, type TextOf } from "../src/affordance-read.js";
+import { KIND_RE, ORACLE_SHELF_PREFIX } from "@lararium/mesh/oracle-cast";
+import { kaheaTarget } from "@lararium/mesh/oracle-loop";
 import type { TW5Engine } from "../src/tw5-vm.js";
 
 const PACKAGE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -76,7 +81,7 @@ const lines = (text: string): string[] => {
 };
 
 export interface AffordancePackCarrier {
-  /** The carrier's own title: the stable seat canon gives it (`lar:///ha.ka.ba/lares/afford/oracle.cast.throws`). */
+  /** The carrier's own title: the stable seat canon gives it (`lar:///ha.ka.ba/lares/afford/oracle.library.consults`). */
   readonly title: string;
   readonly bcc: string | null;
   readonly role: string;
@@ -87,6 +92,14 @@ export interface AffordancePackCarrier {
   readonly takes: Record<string, readonly string[]>;
   /** Per surface the carrier skins: every example and every cure as a runnable line (witness W4 parses each at its door). */
   readonly calls: Record<string, readonly string[]>;
+  /** The `has` rows of the law slot the carrier's `#/loop` calls, resolved at bake; absent where the carrier declares no loop. */
+  readonly loop?: readonly string[];
+}
+
+/** One library shelf: its index record's title and the method that record declares. */
+export interface AffordancePackShelf {
+  readonly title: string;
+  readonly method: string;
 }
 
 export interface AffordancePack {
@@ -96,6 +109,25 @@ export interface AffordancePack {
   readonly routes: Record<string, Record<string, string>>;
   readonly doors: Record<string, { readonly addresses: readonly string[]; readonly brief: string; readonly help: readonly string[] }>;
   readonly index: Record<string, readonly string[]>;
+  readonly shelves: Record<string, AffordancePackShelf>;
+}
+
+/** A shelf index's path under a canon source: `.../library/oracles/<kind>/index.mem`. */
+const SHELF_INDEX = /\/library\/oracles\/([a-z0-9]+(?:-[a-z0-9]+)*)\/index\.mem$/;
+
+/** A `has` row line, as a law slot writes one. */
+const HAS_LINE = /^<<~?\s*has\s/;
+
+/**
+ * The act shape a carrier's `#/loop` names, resolved: the `has` rows of the law slot its `kahea` calls (or its own rows, where
+ * it carries them inline); empty where the carrier declares no loop or the law slot stands nowhere in the bake.
+ */
+function resolvedLoop(textOf: TextOf, title: string): string[] {
+  const carried = textOf(`${title}#/loop`);
+  if (carried === undefined) return [];
+  const call = kaheaTarget(carried);
+  const text = call ? textOf(`${call.uri}${call.slot ?? "#/loop"}`) ?? "" : carried;
+  return lines(text).map((l) => l.trim()).filter((l) => HAS_LINE.test(l));
 }
 
 /** Bake the pack from carrier texts: the one function `--check`, the write and a test's fixture bake all call. */
@@ -172,7 +204,8 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
         ...rowsOf(textOf, title, "#/refuses", surface).flatMap((r) => (typeof r["cure"] === "string" && r["foreign"] !== true ? [r["cure"]] : [])),
       ];
     }
-    carriers[address] = { title, bcc: bccs.get(title) ?? null, role, renders, params, takes, calls };
+    const loop = resolvedLoop(textOf, title);
+    carriers[address] = { title, bcc: bccs.get(title) ?? null, role, renders, params, takes, calls, ...(loop.length > 0 ? { loop } : {}) };
     routes["console"]![bare] = address;
   }
 
@@ -206,9 +239,18 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
   }
   const index = { cli: lines(engine.wiki.renderTiddler("text/plain", INDEX, { variables: { surface: "cli", pattern: "" } })) };
 
-  const body = { title: PACK_TITLE, carriers, routes, doors, index };
+  // THE LIBRARY SHELVES: each shelf index the bake read, keyed by its kind, with the method its record declares.
+  const shelves: Record<string, AffordancePackShelf> = {};
+  for (const title of bccs.keys()) {
+    const kind = title.startsWith(ORACLE_SHELF_PREFIX) && title.endsWith("/index") ? title.slice(ORACLE_SHELF_PREFIX.length, -"/index".length) : "";
+    if (!KIND_RE.test(kind)) continue;
+    const method = String((engine.wiki.getTiddler(title) as { fields?: Record<string, unknown> } | undefined)?.fields?.["method"] ?? "").trim();
+    if (method !== "") shelves[kind] = { title, method };
+  }
+
+  const body = { title: PACK_TITLE, carriers, routes, doors, index, shelves };
   const hash = `sha256-${createHash("sha256").update(canonicalJson(body)).digest("hex")}`;
-  return { title: PACK_TITLE, hash, carriers, routes, doors, index };
+  return { title: PACK_TITLE, hash, carriers, routes, doors, index, shelves };
 }
 
 /**
@@ -261,9 +303,15 @@ export function canonicalJson(value: unknown): string {
   return `${JSON.stringify(sort(value), null, 2)}\n`;
 }
 
-/** The carrier texts a bake reads: every `.mem` under the canon source naming the type tag, then the named extra files. */
+/**
+ * The texts a bake reads: every `.mem` under the canon source naming the type tag, then the named extra files, then every
+ * library shelf's index (whose `method` the consult reads).
+ */
 export function canonTexts(bags: string, extra: readonly string[] = []): string[] {
-  return [...memFiles(bags), ...extra].map((f) => readFileSync(f, "utf8")).filter((t) => t.includes(AFFORDANCE_TAG));
+  const files = memFiles(bags);
+  const carriers = [...files, ...extra].map((f) => readFileSync(f, "utf8")).filter((t) => t.includes(AFFORDANCE_TAG));
+  const shelves = files.filter((f) => SHELF_INDEX.test(f.split(path.sep).join("/"))).map((f) => readFileSync(f, "utf8")).filter((t) => !t.includes(AFFORDANCE_TAG));
+  return [...carriers, ...shelves];
 }
 
 async function main(argv: readonly string[]): Promise<number> {

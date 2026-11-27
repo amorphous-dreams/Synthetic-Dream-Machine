@@ -14,7 +14,7 @@ import pytest
 
 from lares_mcp import DaemonCoordinator, _dress_from_pack, build_mcp, pack_tool_skin, read_affordance_pack
 
-ADDRESS = "lar:///oracle.cast.throws"
+ADDRESS = "lar:///oracle.library.consults"
 
 FIXTURE_PACK = {
     "carriers": {ADDRESS: {

@@ -6,13 +6,13 @@ module-type: filteroperator
 /**
  * afford — an affordance carrier's slots, read for one skin inside the wiki that holds the carrier.
  *
- *   [[lar:///oracle.cast.throws]afford:cli[rows],[#/takes]]     one JSON row per `has` line, with what the cli spells
- *   [[lar:///oracle.cast.throws]afford:mcp[usage]]              the usage spine on the mcp surface
- *   [[lar:///oracle.cast.throws]afford:tw5[spells]]           the skin's spelling (absent where the carrier skins none)
- *   [[lar:///oracle.cast.throws]afford[prose],[#/head]]         the slot's prose, one paragraph per title
- *   [[lar:///oracle.cast.throws]afford[digest],[#/takes]]       the slot's digest line
- *   [[lar:///oracle.cast.throws]afford:cli[read],[#/refuses]]   the read that opens the next depth
- *   [[lar:///oracle.cast.throws]afford[surfaces]]               the surfaces the carrier skins
+ *   [[lar:///oracle.library.consults]afford:cli[rows],[#/takes]]     one JSON row per `has` line, with what the cli spells
+ *   [[lar:///oracle.library.consults]afford:mcp[usage]]              the usage spine on the mcp surface
+ *   [[lar:///oracle.library.consults]afford:tw5[spells]]           the skin's spelling (absent where the carrier skins none)
+ *   [[lar:///oracle.library.consults]afford[prose],[#/head]]         the slot's prose, one paragraph per title
+ *   [[lar:///oracle.library.consults]afford[digest],[#/takes]]       the slot's digest line
+ *   [[lar:///oracle.library.consults]afford:cli[read],[#/refuses]]   the read that opens the next depth
+ *   [[lar:///oracle.library.consults]afford[surfaces]]               the surfaces the carrier skins
  *   [all[shadows+tiddlers]tag[…/affordance]afford[match],[oracle.*]]   the carriers a t2/t3 wildcard names
  *
  * The suffix names the surface (cli by default), or a third operand does where a template binds it to a variable

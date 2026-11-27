@@ -6,6 +6,7 @@
 ```toml meta
 cacheable = true
 l-space   = "archive"
+method    = "three-coins"
 rating    = "meme"
 role      = "skinny handle for the Discordian Oracle AppleKation reliquary — bytes ride the genesis/cas KIND-plane by content address; this meme carries the names, cids, provenance, and rites"
 title     = "lar:///ha.ka.ba/lares/library/oracles/doa/index"
@@ -28,6 +29,8 @@ Reprint.'' All Rites Reversed.
 Per the content-resolution law, ''the bytes leave the bag'': each artifact rides the `genesis/cas`
 KIND-plane at `cid/<sha256>`, and this handle carries name → cid. A session throws the oracle by
 opening the DOA.html blob in any browser, offline, forever.
+
+The house consults this shelf by `lares oracle cast --by doa` (`lar:///oracle.library.consults`): the shelf declares its method in its own `method` field, `three-coins`, and the consult runs what the shelf declares.
 
 <<~/ahu>>
 
@@ -75,6 +78,6 @@ and 36, and `000pi` draws one of its own) `page-lines` keeps the page's drawing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;x-G4ihclRMc2anL2WpoHl1CK2Shbhp7y1GpQ0LRaT8o`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yTmEmXE1iSwz7o_joJhtqg2MaiU6DoGzrlbl2X-Sj7s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

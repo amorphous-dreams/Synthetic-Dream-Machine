@@ -39,6 +39,27 @@ export const ORACLE_THROW_STANDS = "a blind throw to collide uncertainty with: t
 /** The prefix every cast tiddler's title sits under. */
 export const CAST_TITLE_PREFIX = "lar:///ha.ka.ba/lares/oracle/casts/";
 
+/**
+ * THE LIBRARY SHELVES (`oracle.library.consults`): every oracle's corpus rests on a shelf `library/oracles/<kind>/`, and the
+ * shelf's index record declares its own `method` (e-jing and doa: `three-coins`). The kind rides as data: a new oracle joins
+ * as a shelf, never a new address or a new verb.
+ */
+export const ORACLE_SHELF_PREFIX = "lar:///ha.ka.ba/lares/library/oracles/";
+
+/** The shelf a consult names none for. */
+export const DEFAULT_ORACLE_KIND = "e-jing";
+
+/** The methods the consult runs today; a shelf declaring another refuses by name until its method lands. */
+export const RUN_METHODS: readonly string[] = [CAST_METHOD];
+
+/** A kind spells one shelf: lower-case words joined by hyphens, never a path. */
+export const KIND_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/** The index record of the shelf a kind names: `library/oracles/<kind>/index`. */
+export function oracleShelfTitle(kind: string): string {
+  return `${ORACLE_SHELF_PREFIX}${kind}/index`;
+}
+
 /** The house's imported readings: one tiddler per hexagram per source. */
 export const READING_SOURCES = ["doa", "e-jing"] as const;
 export type ReadingSource = typeof READING_SOURCES[number];
@@ -200,6 +221,8 @@ export interface OracleAsking {
   readonly nonce?: string;
   readonly seed?: string;
   readonly coins?: readonly LineValue[];
+  /** The shelf consulted; the default shelf (`e-jing`) keys nothing, so every asking cast before the shelves keeps its id. */
+  readonly by?: string;
 }
 
 /**
@@ -215,6 +238,7 @@ export function askingId(a: OracleAsking): string {
   return sha256HexBytesSync(canonicalJsonBytes({
     verb: "oracle-cast", asker: a.asker, asking: normalizeAsking(a.asking ?? ""), nonce: a.nonce ?? "", seed: a.seed ?? "",
     coins: a.coins ? [...a.coins] : [],
+    ...(a.by !== undefined && a.by !== DEFAULT_ORACLE_KIND ? { by: a.by } : {}),
   }));
 }
 

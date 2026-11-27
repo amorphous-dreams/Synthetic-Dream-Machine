@@ -8,13 +8,14 @@ import { readFileSync } from "node:fs";
 import { describe, test, expect } from "vitest";
 import { castFromCoins, ORACLE_THROW_STANDS } from "../src/oracle-cast.js";
 import {
-  CAST_MEME_TAGS, ORACLE_AFFORDANCE, castMemeBody, castMeta, fillLoop, kaheaTarget, loopSlots, parseHasRows, quotedReadings, readingsText,
+  CAST_MEME_TAGS, ORACLE_AFFORDANCE, ORACLE_ALIASED, ORACLE_CARRIER, castMemeBody, castMeta, fillLoop, kaheaTarget, loopSlots, parseHasRows, quotedReadings, readingsText,
   type LoopReading,
 } from "../src/oracle-loop.js";
 
 const canon = (rel: string): string => readFileSync(new URL(`../../../bags/lares/ha.ka.ba/lares/${rel}`, import.meta.url), "utf8");
 const LOOP_LAW = canon("api/pono/oracle-loop.mem");
-const CARRIER = canon("afford/oracle.cast.throws.mem");
+const CARRIER = canon("afford/oracle.library.consults.mem");
+const ALIAS = canon("afford/oracle.cast.throws.mem");
 
 /** The text of one ahu slot of a canon file, up to its own closer. */
 function slotOf(text: string, slot: string): string {
@@ -106,5 +107,20 @@ describe("oracle-loop", () => {
     expect(Object.keys(mod).filter((k) => /unfold|ENVELOPE/i.test(k))).toEqual([]);
     const meta = castMeta(CAST, { title: "lar:///ha.ka.ba/lares/oracle/casts/x", intent: "i".repeat(64), asking: "q", observe: [] });
     expect(() => castMemeBody({ title: "casts/x", meta, cast: CAST, slots: [] })).toThrow();
+  });
+
+  test("RED: the old address stands as a signed alias record (DAM law 4) forwarding to the consult's carrier, and grants nothing", () => {
+    const meta = (key: string): string | undefined => new RegExp(`^${key}\\s*=\\s*"([^"]*)"`, "m").exec(ALIAS)?.[1];
+    expect(meta("forward-to")).toBe(ORACLE_CARRIER);
+    expect(meta("alias-from")).toBe(ORACLE_ALIASED);
+    expect(meta("alias-to")).toBe(ORACLE_AFFORDANCE);
+    expect(meta("title")).toBe(ORACLE_CARRIER.replace("oracle.library.consults", "oracle.cast.throws"));
+    expect(ALIAS).toContain(`{{${ORACLE_CARRIER}}}`);
+    expect(ALIAS).toMatch(/bcc=`ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}`/);
+    // A CARRIER DESCRIBES, NEVER GRANTS: the alias carries no affordance type tag, so no bake reads it as a carrier.
+    expect(/^tags\s*=.*api\/pono\/affordance"/m.test(ALIAS)).toBe(false);
+    // CONTROL: the carrier itself carries the type tag and its new address, and its exception-to-law-3 line left.
+    expect(CARRIER).toMatch(/^tags\s*=.*"lar:\/\/\/ha\.ka\.ba\/lares\/api\/pono\/affordance", "lar:\/\/\/oracle\.library\.consults"\]/m);
+    expect(CARRIER).not.toContain("documented exception");
   });
 });

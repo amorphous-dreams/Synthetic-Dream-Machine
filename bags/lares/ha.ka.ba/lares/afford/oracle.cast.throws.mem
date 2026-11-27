@@ -4,170 +4,39 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable = true
-l-space   = "stable"
-role      = "cast the I Ching at your own fork; the cast lands as an OODA-HA meme"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///oracle.cast.throws"]
-title     = "lar:///ha.ka.ba/lares/afford/oracle.cast.throws"
-type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lares/afford/oracle.cast.throws"
+alias-from = "lar:///oracle.cast.throws"
+alias-to   = "lar:///oracle.library.consults"
+cacheable  = true
+forward-to = "lar:///ha.ka.ba/lares/afford/oracle.library.consults"
+l-space    = "stable"
+role       = "alias record: the oracle consult's old address keeps pointing at its meaning"
+tags       = ["lar:///oracle.cast.throws", "lar:///oracle.library.consults"]
+title      = "lar:///ha.ka.ba/lares/afford/oracle.cast.throws"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/afford/oracle.cast.throws"
 ```
 
 <<~ ahu slot=`#/head`>>
 
-! oracle.cast.throws ~ a blind throw to collide uncertainty with
+! oracle.cast.throws ~ an alias record, forwarding to oracle.library.consults
 
-The house casts the I Ching by three coins a line (heads three, tails two: 6 old yin and 9 old yang change, 7 and 8 hold) and lands the cast once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`). The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.
+The address `lar:///oracle.cast.throws` re-keyed to `lar:///oracle.library.consults` when the oracle family dropped its special case: one affordance consults any oracle whose corpus rests on a library shelf, the kind riding as data (moolelo 2026-11-26, "The oracle family, re-keyed"). Every rename carries a signed alias record (Domain Affordances law 4), so a grant, a note or a cast record that names the old address keeps pointing at what its giver meant.
 
-The cast stands as a blind throw to collide uncertainty with: the throw stands, the reading stays open.
+The record takes the forwarder's shape a `tiddler rename` leaves: `forward-to` names the carrier's new seat, and the body transcludes it. `alias-from` and `alias-to` name the two bare addresses; its tags hold both, so `[tag[lar:///oracle.cast.throws]]` still gathers this record and every cast landed before the re-key. The frame's block check seals the record and the commit that lands it signs it. The record grants nothing: a carrier describes, the door checks the ocap (law 1).
 
-This address stands as the Affordance Map's named example and the one documented exception to facet law 3 (a `t2` means something under more than one heading): `cast` crosses no second heading, and the map keeps the name its example carries (moolelo 2026-11-26, the facet re-cut's appended decision).
-
-<<~/ahu>>
-
-<<~ ahu slot=`#/shows`>>
-
-!! shows ~ first-cast · with-pointers · replay · a-hand-throws · fresh
-
-```memetic-wikitext
-<<has entity=`example` name=`first-cast` params=`recipe/default asking/[[which lane lands first]] uncertain/[[two lanes both ready; the floor runs one at a time]] ~ a seat's cast at its own open fork`>>
-<<has entity=`example` name=`with-pointers` params=`recipe/default observe/[[lar:///ha.ka.ba/kahua/memory/plan/cap-memes spirit/affordance-weaver]] uncertain/[[the seat cannot seat a bare root in canon]] asking/[[stable seat or siting change]] ~ the arm's records ride #/observe`>>
-<<has entity=`example` name=`replay` params=`recipe/default asking/[[which lane lands first]] then/[[tiddler.get.reads]] ~ the same words answer the standing cast, with the uncertainty it kept`>>
-<<has entity=`example` name=`a-hand-throws` params=`recipe/default coins/[[7,8,9,6,7,7]] ~ a person's six lines, bottom first, thrown with real coins`>>
-<<has entity=`example` name=`fresh` params=`recipe/default asking/[[which lane lands first]] fresh/true ~ a person asks the same words anew`>>
-```
-
-<<~/ahu>>
-
-<<~ ahu slot=`#/takes`>>
-
-!! takes ~ container · face · at · asking · uncertain · observe · caster · coins · fresh · seed · nonce
-
-<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container`>>
-<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
-
-```memetic-wikitext
-<<has entity=`arg` name=`at` params=`takes/time needs/always skins/mcp,tw5,console ~ the time of the cast, as testimony; the cli reads it once`>>
-<<has entity=`arg` name=`asking` params=`takes/words needs/seat ~ the query, named before the throw; the same words answer the same throw`>>
-<<has entity=`arg` name=`uncertain` params=`takes/words ~ the gathered uncertainty, in any words; fills #/orient at the first throw`>>
-<<has entity=`arg` name=`observe` params=`takes/pointers ~ the records, hashes and branches the arm holds; fills #/observe at the first throw`>>
-<<has entity=`arg` name=`caster` params=`takes/name default/operator ~ who cast, as annotation; the throw keys on the booked asker`>>
-<<has entity=`arg` name=`coins` params=`takes/six-values gate/hand ~ six line values of 6 to 9, bottom first: a person's own throw`>>
-<<has entity=`arg` name=`fresh` params=`gate/hand ~ a new throw for the same words`>>
-<<has entity=`arg` name=`seed` params=`takes/words gate/hand ~ coins drawn from these words; the record names the seed by a 16-hex digest`>>
-<<has entity=`arg` name=`nonce` params=`takes/hex gate/hand skins/mcp,tw5,console ~ minted at the word; the cli mints one for a bare cast`>>
-```
-
-<<~/ahu>>
-
-<<~ ahu slot=`#/gate`>>
-
-!! gate ~ seat-asks · fresh · seed · coins · nonce
-
-Testimony: the door checks; this slot grants nothing.
-
-```memetic-wikitext
-<<has entity=`gate` name=`seat-asks` params=`who/seat ~ a seat names its query before it casts; a bare seat cast answers asks`>>
-<<has entity=`gate` name=`fresh` params=`who/hand ~ a fresh throw rides a person's hand; a seat's answers asks`>>
-<<has entity=`gate` name=`seed` params=`who/hand ~ a seeded throw rides a person's hand; a seat's answers asks`>>
-<<has entity=`gate` name=`coins` params=`who/hand ~ typed coins ride a person's hand; a seat's answer asks, so a seat never picks the figure`>>
-<<has entity=`gate` name=`nonce` params=`who/hand ~ a seat's own nonce re-throws as surely as fresh, and answers asks`>>
-<<has entity=`gate` name=`write` params=`ocap/admin-on-the-landing-bag ~ the cast lands through the meme door's own gate`>>
-```
-
-<<~/ahu>>
-
-<<~ ahu slot=`#/refuses`>>
-
-!! refuses ~ oracle-cast-untimed · oracle-cast-coins · oracle-cast-fresh-unminted · oracle-cast-record-torn · oracle-loop-unread
-
-```memetic-wikitext
-<<has entity=`refusal` name=`oracle-cast-untimed` params=`cure/[[oracle.cast.throws at/<time>]] ~ the verb reads no clock; the caller names the time`>>
-<<has entity=`refusal` name=`oracle-cast-coins` params=`cure/[[oracle.cast.throws coins/7,8,9,6,7,7]] ~ six line values of 6, 7, 8 or 9, bottom line first`>>
-<<has entity=`refusal` name=`oracle-cast-fresh-unminted` params=`cure/[[oracle.cast.throws fresh/true]] ~ a fresh throw carries the nonce its caller minted at the word`>>
-<<has entity=`refusal` name=`oracle-cast-record-torn` params=`cure/[[tiddler.get.reads title/<cast>]] ~ the cast's title stands but reads as no cast`>>
-<<has entity=`refusal` name=`oracle-loop-unread` params=`cure/[[tiddler.get.reads title/lar:///ha.ka.ba/lares/api/pono/oracle-loop slot/#/loop]] ~ the wiki answers no loop rows from canon, so no act record lands`>>
-```
-
-<<~/ahu>>
-
-<<~ ahu slot=`#/answers`>>
-
-!! answers ~ answered · replayed · asks · owed
-
-```memetic-wikitext
-<<has entity=`band` name=`answered` params=`exit/0 fields/[[intent replayed decision created title bag hash cast text readings asOf uncertain slots next note]] ~ the cast landed; slots name each act slot and who owes it`>>
-<<has entity=`band` name=`replayed` params=`exit/0 ~ the cast already standing answers, naming the uncertainty and the pointers it kept`>>
-<<has entity=`band` name=`asks` params=`exit/5 fields/[[asks note]] ~ a seat asked what a hand alone gives; the line a person runs rides the answer`>>
-<<has entity=`band` name=`owed` params=`exit/6 ~ the vessel took the cast and the caller stopped hearing; the same asking reads it back`>>
-```
-
-<<~/ahu>>
-
-<<~ ahu slot=`#/loop`>>
-
-!! loop ~ observe · orient · decide · act · hooko
-
-<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/oracle-loop#/loop`>>
-
-<<~/ahu>>
-
-<<~ ahu slot=`#/skins`>>
-
-!! skins ~ cli · mcp · tw5 · console
-
-<<~ ahu slot=`#/skins/cli`>>
-
-!!! lares oracle cast
-
-```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`spells/[[lares oracle cast]] ~ the terminal; reads the time once, mints the nonce of a bare cast`>>
-```
-
-<<~/ahu>>
-
-<<~ ahu slot=`#/skins/mcp`>>
-
-!!! oracle_cast
-
-```memetic-wikitext
-<<has entity=`skin` name=`mcp` params=`spells/oracle_cast omits/realm,face,at,fresh,seed,nonce ~ the seat; names the time at the call`>>
-```
-
-<<~/ahu>>
-
-<<~ ahu slot=`#/skins/tw5`>>
-
-!!! action-oracle-cast
-
-```memetic-wikitext
-<<has entity=`skin` name=`tw5` params=`spells/action-oracle-cast ~ the action widget in a wiki`>>
-```
-
-<<~/ahu>>
-
-<<~ ahu slot=`#/skins/console`>>
-
-!!! oracle-cast
-
-```memetic-wikitext
-<<has entity=`skin` name=`console` params=`spells/oracle-cast ~ the wire verb every vessel answers`>>
-```
-
-<<~/ahu>>
+{{lar:///ha.ka.ba/lares/afford/oracle.library.consults}}
 
 <<~/ahu>>
 
 <<~ ahu slot=`#/edges`>>
 
-!! edges ~ affordance · oracle-loop · oracle
+!! edges ~ the carrier · the law
 
+<<~ loulou uri=`lar:///ha.ka.ba/lares/afford/oracle.library.consults`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/oracle-loop`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/oracle`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;pW4RKBXsf1Bg_D27IV2tjZ9eWDOB8ACyu9t770m9LHM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;36HQUD9xI_5MixczBGd7SV0RRL-gBMn6aNh644njiRQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

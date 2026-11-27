@@ -37,7 +37,7 @@ export const AFFORD_SKIN_TEMPLATE = (surface: string): string => `lar:///ha.ka.b
 
 type FaceWiki = Pick<TW5Instance["wiki"], "renderTiddler" | "getTiddler" | "filterTiddlers">;
 
-/** The bare address (`oracle.cast.throws`) a caller names, from either spelling. */
+/** The bare address (`oracle.library.consults`) a caller names, from either spelling. */
 const bareOf = (address: string): string => address.replace(/^lar:\/\/\//, "").replace(/^ha\.ka\.ba\/[a-z0-9-]+\/afford\//, "");
 
 /** The face over one wiki — exported so a test binds it to a wiki it constructs. `print` false keeps the console quiet. */

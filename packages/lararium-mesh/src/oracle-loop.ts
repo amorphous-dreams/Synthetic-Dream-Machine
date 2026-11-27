@@ -1,8 +1,8 @@
 /**
  * oracle-loop — the cast as an OODA-HA meme, its slots read from canon.
  *
- * THE PROCEDURE LIVES IN CANON, never here. The affordance carrier (`lar:///ha.ka.ba/lares/afford/oracle.cast.throws`,
- * tagged with its address `lar:///oracle.cast.throws`) calls the slot of the law that owns the procedure from its own
+ * THE PROCEDURE LIVES IN CANON, never here. The affordance carrier (`lar:///ha.ka.ba/lares/afford/oracle.library.consults`,
+ * tagged with its address `lar:///oracle.library.consults`) calls the slot of the law that owns the procedure from its own
  * `#/loop` (`<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/oracle-loop#/loop`>>`), and that slot's `has` rows name each
  * act slot in loop order, its phase, its writer, what the house fills there (`fills/`) and what the seat owes (`owes/`).
  * This module reads those rows and fills what the ask and the throw carry; it names no slot and writes no ask of its own.
@@ -19,10 +19,16 @@ import { CARRIER_TYPE } from "./carrier-type.js";
 import { ORACLE_THROW_STANDS, castFields, type Hexagram, type OracleCast } from "./oracle-cast.js";
 
 /** The affordance address every cast record tags, so one filter gathers carrier, code, tests and casts. */
-export const ORACLE_AFFORDANCE = "lar:///oracle.cast.throws";
+export const ORACLE_AFFORDANCE = "lar:///oracle.library.consults";
 
 /** The carrier's canon seat: the canon walk seats no bare root, so the carrier rests here and tags the address. */
-export const ORACLE_CARRIER = "lar:///ha.ka.ba/lares/afford/oracle.cast.throws";
+export const ORACLE_CARRIER = "lar:///ha.ka.ba/lares/afford/oracle.library.consults";
+
+/**
+ * The address the consult carried before the oracle family re-keyed (moolelo 2026-11-26, "The oracle family, re-keyed"):
+ * its canon seat stands as a signed alias record (DAM law 4) whose `forward-to` names ORACLE_CARRIER.
+ */
+export const ORACLE_ALIASED = "lar:///oracle.cast.throws";
 
 /** The slot a carrier declares its act shape in (`api/pono/affordance#/loop`). */
 export const LOOP_SLOT = "#/loop";
