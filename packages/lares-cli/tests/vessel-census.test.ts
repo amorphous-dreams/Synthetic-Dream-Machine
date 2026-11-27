@@ -83,7 +83,7 @@ describe("the vessel census", () => {
     expect(c.err.join("\n")).toContain("census: unasked  doc doc-heads");
   });
 
-  test("V1e — a held row names how many of its saves rest sealed-pending and whether its document stands at its ceiling; it still blocks the stop", async () => {
+  test("V1e — a held row names how many of its saves rest sealed-pending and whether its document stands at its ceiling; one that names no kept still blocks the stop", async () => {
     const row = { documentId: "doc-busy", refusal: "save-unsealed", saves: 64, bagId: "lar:///ha.ka.ba/wikis/daemon/working", pending: 64, atBound: true };
     const c = capture();
     const reading = await readCensus(lines({ custody: async () => ({ op: "census", held: [row], standing: "hearth" }) }));
@@ -108,8 +108,39 @@ describe("the vessel census", () => {
       expect(reading.unasked, row.documentId).toBeUndefined();
       expect(reading.items, row.documentId).toEqual([{ kind: "held-save", refusal: "save-unnamed", documentId: row.documentId, saves: row.saves, bagId: null }]);
       expect(await cmdCensus(args(false), lines({ custody: async () => ({ op: "census", held: [row], standing: "hearth" }) })), row.documentId).toBe(3);
-      expect(c.out.join("\n"), row.documentId).toContain(`held-save  save-unnamed  doc ${row.documentId}  ${row.saves} save(s) in memory  bag (none mapped)  (no map or roster names it: read who carries it with \`lares vessel census --docs\`, then open the bag that owns it so its saves land, or type accept-loss at down)`);
+      expect(c.out.join("\n"), row.documentId).toContain(`held-save  save-unnamed  doc ${row.documentId}  ${row.saves} save(s) in memory  bag (none mapped)  (no map or roster names it, and the vessel's key stood out of reach as it arrived: \`lares vault unlock\` rests it in the vessel's inbox; or read who carries it with \`lares vessel census --docs\` and open the bag that owns it so its saves land)`);
+      expect(c.out.join("\n"), row.documentId).not.toMatch(/accept-loss/);
       vi.restoreAllMocks();
+    }
+  });
+
+  test("V1f RED — THE MEASURED CASE: an unsolicited peer push the store reads kept (its content at rest in the vessel's inbox) counts landed: exit 0, named, never an item", async () => {
+    const pushed = { documentId: "2ieLtAdTzp8jRAwUFaEDx8h3brkj", refusal: "save-unnamed", saves: 2, bagId: null, bytes: 900, contentFree: false, heldAcross: 1, pending: 2, kept: true };
+    const ownWrite = { documentId: "doc-own-write", refusal: "save-unsealed", saves: 3, bagId: "lar:///ha.ka.ba/wikis/daemon/working", pending: 3, kept: true };
+    const census = lines({ custody: async () => ({ op: "census", standing: "hearth", held: [pushed, ownWrite] }) });
+    const reading = await readCensus(census);
+    expect(reading.clean).toBe(true);
+    expect(reading.items).toEqual([]);
+    expect(reading.kept).toEqual([
+      { documentId: pushed.documentId, refusal: "save-unnamed", saves: 2, bagId: null },
+      { documentId: "doc-own-write", refusal: "save-unsealed", saves: 3, bagId: ownWrite.bagId },
+    ]);
+    const c = capture();
+    expect(await cmdCensus(args(false), census)).toBe(0);
+    expect(c.out).toEqual(["census: clean — no save waits in memory, and the disk projector owes no carrier"]);
+    expect(c.err.join("\n")).toContain(`census: kept  save-unnamed  doc ${pushed.documentId}  2 save(s)  bag (none mapped): at rest under the vessel's key, so a stop keeps them and the next boot carries them back`);
+    expect(c.err.join("\n")).toContain("census: kept  save-unsealed  doc doc-own-write  3 save(s)");
+  });
+
+  test("V1g CONTROL — FAIL CLOSED: a row that names kept beside no pending save, or a pending row a content save of which waits in memory alone, stays owed", async () => {
+    for (const row of [
+      { documentId: "doc-kept-without-pending", refusal: "save-unnamed", saves: 1, bagId: null, bytes: 9, contentFree: false, heldAcross: 0, kept: true },
+      { documentId: "doc-partly-at-rest", refusal: "save-unbooked", saves: 2, bagId: "lar:///ha.ka.ba/bags/notes", pending: 1 },
+    ]) {
+      const reading = await readCensus(lines({ custody: async () => ({ op: "census", held: [row], standing: "hearth" }) }));
+      expect(reading.clean, row.documentId).toBe(false);
+      expect(reading.kept, row.documentId).toBeUndefined();
+      expect(reading.items.map((i) => i.kind === "held-save" ? i.documentId : null), row.documentId).toEqual([row.documentId]);
     }
   });
 

@@ -788,9 +788,10 @@ function heldCure(refusal: HeldRefusal): string {
 }
 
 /**
- * EACH HELD SAVE'S OWN SENTENCE, by the fate its notice carries (four fates, four sentences; the fifth, a save refused
+ * EACH HELD SAVE'S OWN SENTENCE, by the fate its notice carries (five fates, five sentences; the sixth, a save refused
  * outright, reads `refusedFateLine`):
- *   - an unnamed document's content: memory, until the roster lands it clear or the map seals it;
+ *   - an unnamed document's content in the vessel's inbox: a stop keeps it, until the roster lands it clear or the map seals it;
+ *   - an unnamed document's content in memory alone (the vessel's key out of reach): an unlock rests it in the inbox;
  *   - an unnamed document's sync state: memory, lands clear by the roster, drops once a sealed bag names its document;
  *   - a sealed-class save at rest sealed-pending: a stop keeps it, and the next session of its face seals it;
  *   - a sealed-class save in memory alone (the vessel's key out of reach): a stop drops it.
@@ -800,9 +801,13 @@ export function heldFateLine(held: HeldNotice): string {
   const where = held.bagId ? `, bag ${held.bagId}${held.face ? `, face ${held.face.slice(0, 16)}…` : ", no lit face"}` : "";
   const head = `${held.refusal}${why}: ${shortDoc(held.documentId)}${where}`;
   if (held.refusal === "save-unnamed") {
-    return held.syncState === true
-      ? `${head} holds a peer's sync state alone (heads, no change): it waits in this process's memory, lands clear once the roster names its document, and drops once a sealed bag names it; a stop loses no content here. Cure: none owed; \`lares vessel census --docs\` reads who carries the document`
-      : `${head} carries content no map and no roster names: it waits in this process's memory, never clear on a guess; the roster's naming lands it clear, a sealed bag's naming seals it, and a stop drops it. Cure: ${heldCure(held.refusal)}`;
+    if (held.syncState === true) return `${head} holds a peer's sync state alone (heads, no change): it waits in this process's memory, lands clear once the roster names its document, and drops once a sealed bag names it; a stop loses no content here. Cure: none owed; \`lares vessel census --docs\` reads who carries the document`;
+    if (held.rests === "sealed-pending") {
+      return held.carried === true
+        ? `${head} stood in the vessel's inbox from an earlier boot: it joins this boot's wait, never clear on a guess; the roster's naming lands it clear, and a sealed bag's naming seals it. Cure: none owed at a stop; ${heldCure(held.refusal)}`
+        : `${head} carries content no map and no roster names: it rests in the vessel's inbox, sealed under the vessel's own key and never clear, so a stop or a crash keeps it; the roster's naming lands it clear, and a sealed bag's naming seals it. Cure: none owed at a stop; ${heldCure(held.refusal)}`;
+    }
+    return `${head} carries content no map and no roster names, and the vessel's key stands out of reach: it waits in this process's memory alone, never clear on a guess, until an unlock rests it in the vessel's inbox. Cure: \`lares vault unlock\`; or ${heldCure(held.refusal)}`;
   }
   if (held.rests === "sealed-pending") {
     return held.carried === true

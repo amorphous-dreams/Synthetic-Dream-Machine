@@ -22,6 +22,11 @@
  *   SP8 — a sealed-pending value binds its face: held for face A, its document mapped under face B's bag since, it refuses
  *         for B (never read, never carried, never signed under B's session) and still opens for A; a save no lit face owns
  *         rests nothing and waits in memory alone
+ *   SP9 — the measured case (a restand stopped on `held-save · save-unnamed · 2 save(s) in memory · bag (none mapped)`): an
+ *         unsolicited peer push rests in the vessel's inbox on arrival, sealed under the vessel's key and never clear; its row
+ *         reads kept, so the census counts it landed; a kill keeps it, the next process carries it back (a further push of
+ *         it still reads unnamed), and the roster's naming lands it clear. Control: with the vessel's key out of reach it
+ *         waits in memory alone and stays owed, until the key comes into reach and the inbox takes it
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed · lar:///ha.ka.ba/kahua/memory/research/restand-log-read
  */
@@ -31,7 +36,7 @@ import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from 
 import { faceProofSubjectRef } from "../src/face-proof-subjects.js";
 import { mintHeldRestKey, type HeldRestKey } from "../src/held-rest-key.js";
 import type { RecordSigner } from "../src/sealed-records.js";
-import { HELD_MAX_SAVES_PER_DOCUMENT, type HeldNotice } from "../src/sealed-doc-store.js";
+import { HELD_MAX_SAVES_PER_DOCUMENT, SealedDocumentStore, type HeldNotice } from "../src/sealed-doc-store.js";
 import {
   REFUSING_SIGNER_REASK_SAVES, composeSealedRest, heldFateLine, refusedFateLine, restOwedWatch, standDownLine, type StandDownRow,
 } from "../src/sealed-rest.js";
@@ -129,6 +134,8 @@ describe("a save no session sealed rests sealed-pending: never clear, never lost
     expect(waiting.length).toBeGreaterThan(0);
     expect(waiting.every((h) => h.rests === "sealed-pending" && h.bagId === BAG && h.face === first.face)).toBe(true);
     expect(first.rest.store.held().find((h) => h.documentId === doc.documentId)?.pending).toBeGreaterThan(0);
+    // AN OWN WRITE AT REST SEALED-PENDING HAS LANDED: its row reads kept, so the census counts it landed before any stop.
+    expect(first.rest.store.held().find((h) => h.documentId === doc.documentId)?.kept).toBe(true);
     // NEVER CLEAR: every chunk at rest names a face pointer or a sealed value; none reads as the engine wrote it.
     const atRest = chunksOf(inner, doc.documentId);
     expect(atRest.some((c) => !starts(c, POINTER))).toBe(true);
@@ -315,19 +322,22 @@ describe("each held save names its own fate", () => {
   const COPULA = /\b(is|are|was|were|be|been|being|am)\b/i;
   const base = { documentId: "4Z7nNfywXcoGg7zH8y3fUGqCgqBK" };
 
-  it("SP6 — four fates, four sentences, each naming its cure, none with a copula", () => {
+  it("SP6 — five fates, five sentences, each naming its cure, none with a copula", () => {
     const unnamedContent = heldFateLine({ ...base, refusal: "save-unnamed", bagId: null, face: null, rests: "memory", syncState: false });
+    const unnamedInbox = heldFateLine({ ...base, refusal: "save-unnamed", bagId: null, face: null, rests: "sealed-pending", syncState: false });
     const unnamedSync = heldFateLine({ ...base, refusal: "save-unnamed", bagId: null, face: null, rests: "memory", syncState: true });
     const pending = heldFateLine({ ...base, refusal: "save-unsealed", error: "signer-refused", bagId: BAG, face: "face-subject-of-a-lit-sibling", rests: "sealed-pending" });
     const memory = heldFateLine({ ...base, refusal: "save-unbooked", bagId: BAG, face: null, rests: "memory" });
     const refused = refusedFateLine({ ...base, refusal: "held-bound", cause: "64 save(s) of this document already wait unsealed" });
     // EACH FATE READS ITS OWN WAY ON.
-    expect(unnamedContent).toMatch(/the roster's naming lands it clear, a sealed bag's naming seals it, and a stop drops it/);
+    expect(unnamedContent).toMatch(/the vessel's key stands out of reach: it waits in this process's memory alone, never clear on a guess, until an unlock rests it in the vessel's inbox/);
+    expect(unnamedInbox).toMatch(/rests in the vessel's inbox, sealed under the vessel's own key and never clear, so a stop or a crash keeps it/);
+    expect(unnamedInbox).not.toMatch(/a stop drops it/);
     expect(unnamedSync).toMatch(/drops once a sealed bag names it; a stop loses no content here/);
     expect(pending).toMatch(/rests sealed-pending under the vessel's own key, never clear: a stop or a crash keeps it/);
     expect(memory).toMatch(/waits in this process's memory alone, never clear .* a stop drops it unless a live session of its face seals it first/);
     expect(refused).toMatch(/neither waits nor rests/);
-    expect(new Set([unnamedContent, unnamedSync, pending, memory, refused]).size).toBe(5);
+    expect(new Set([unnamedContent, unnamedInbox, unnamedSync, pending, memory, refused]).size).toBe(6);
     // AN UNNAMED SAVE NEVER PROMISES A SESSION'S SEAL, and a pending one never claims memory alone.
     expect(unnamedContent).not.toMatch(/until a session seals it/);
     expect(unnamedSync).not.toMatch(/until a session seals it/);
@@ -335,7 +345,7 @@ describe("each held save names its own fate", () => {
     // THE ROW BEHIND THE DOCUMENT: the sealed-class sentences name the bag, and the face where one stands lit.
     expect(pending).toContain(`bag ${BAG}, face face-subject-of-`);
     expect(memory).toContain(`bag ${BAG}, no lit face`);
-    for (const line of [unnamedContent, unnamedSync, pending, memory, refused]) {
+    for (const line of [unnamedContent, unnamedInbox, unnamedSync, pending, memory, refused]) {
       expect(line).toMatch(/Cure: /);
       expect(line).not.toMatch(COPULA);
     }
@@ -408,5 +418,85 @@ describe("a sealed-pending value binds the face it waited for", () => {
     expect(r.held.map((h) => `${h.refusal}:${h.rests}:${h.face}`)).toEqual(["save-unmapped:memory:null"]);
     expect(r.rest.store.held().find((h) => h.documentId === "doc")?.pending).toBeUndefined();
     expect([...inner.bytes.keys()].some((k) => k.startsWith("doc"))).toBe(false);
+  });
+});
+
+describe("an unsolicited peer push lands in the vessel's inbox on arrival", () => {
+  const PUSH = "2ieLtAdTzp8jRAwUFaEDx8h3brkj";
+  /** A vessel's store over `inner` whose roster names `named` alone and whose map names no bag: every other document arrives
+   *  unsolicited. `key` reads fresh at each ask (an unlock brings it into reach). */
+  function inboxStore(inner: Adapter, key: () => HeldRestKey | null, named: Set<string>) {
+    const held: HeldNotice[] = [];
+    const store = new SealedDocumentStore({
+      inner, namesClear: (id) => named.has(id), waitOverSealed: true, vesselKey: key,
+      bagOf: () => null, sessionFace: () => null, sessionOf: () => null,
+      seal: async () => ({ refusal: "signer-unavailable" }) as never, open: async () => ({ refusal: "value-absent" }) as never,
+      onHeld: (h) => held.push(h),
+    });
+    return { store, held };
+  }
+
+  it("SP9 RED — the measured case: a peer's push rests in the inbox at receipt, reads kept, survives a kill, and lands clear once named", async () => {
+    const key = mintHeldRestKey();
+    const inner = memoryAdapter();
+    const named = new Set<string>();
+    const first = inboxStore(inner, () => key, named);
+    const pushed = A.save(A.from({ note: "a-peers-own-words" }, { actor: "aa".repeat(16) as A.ActorId }));
+    const more = change(2);
+    await first.store.save([PUSH, "snapshot", "a"], pushed);
+    await first.store.save([PUSH, "incremental", "b"], more);
+    await first.store.save([PUSH, "sync-state", "a-peer-storage-id"], Uint8Array.of(0x43, 0x00));
+
+    // NAMED ON ARRIVAL: each content save rests at its own key sealed under the vessel's key; no clear byte, no face's pointer.
+    const atRest = chunksOf(inner, PUSH);
+    expect(atRest.length).toBe(2);
+    for (const data of atRest) { expect(starts(data, AUTOMERGE)).toBe(false); expect(starts(data, POINTER)).toBe(false); }
+    expect(first.held).toEqual([{ refusal: "save-unnamed", documentId: PUSH, bagId: null, face: null, rests: "sealed-pending", syncState: false }]);
+    // THE CENSUS ROW READS KEPT: every content save rests; the sync state alone waits in memory, and it carries no content.
+    expect(first.store.held()).toEqual([{
+      documentId: PUSH, refusal: "save-unnamed", saves: 3, bagId: null, pending: 2, kept: true,
+      bytes: pushed.byteLength + more.byteLength + 2, contentFree: false, heldAcross: 2,
+    }]);
+    expect(first.store.loose(PUSH)).toBe(0);
+
+    // THE KILL: no stand-down; the next process stands over the same rest, and a further push of the document arrives.
+    const afterKill = memoryAdapter(inner);
+    const second = inboxStore(afterKill, () => key, named);
+    const later = change(3);
+    await second.store.save([PUSH, "incremental", "c"], later);
+    // AN INBOX VALUE NAMES NO SEALED CLASS: the further push still waits unnamed, never `save-unmapped`.
+    expect(second.store.heldRefusalOf(PUSH)).toBe("save-unnamed");
+    // THE READ CARRIES THE INBOX BACK INTO THE WAIT, each value once, never clear at rest.
+    const read = await second.store.loadRange([PUSH]);
+    expect(read.map((c) => c.key[2]).sort()).toEqual(["a", "b", "c"]);
+    expect(read.find((c) => c.key[2] === "a")!.data).toEqual(pushed);
+    expect(second.held.filter((h) => h.carried === true).every((h) => h.rests === "sealed-pending" && h.refusal === "save-unnamed")).toBe(true);
+    expect(second.held.some((h) => h.carried === true)).toBe(true);
+    expect(second.store.held()).toMatchObject([{ documentId: PUSH, refusal: "save-unnamed", saves: 3, pending: 3, kept: true }]);
+    for (const data of chunksOf(afterKill, PUSH)) expect(starts(data, AUTOMERGE)).toBe(false);
+
+    // THE ROSTER NAMES IT: every save lands clear as the engine wrote it, and nothing waits.
+    named.add(PUSH);
+    await second.store.reseal();
+    expect(afterKill.bytes.get([PUSH, "snapshot", "a"].join("\u0000"))).toEqual(pushed);
+    expect(afterKill.bytes.get([PUSH, "incremental", "c"].join("\u0000"))).toEqual(later);
+    expect(second.store.held()).toEqual([]);
+  });
+
+  it("SP9b CONTROL — with the vessel's key out of reach the push waits in memory alone and stays owed; the key in reach rests it in the inbox", async () => {
+    const inner = memoryAdapter();
+    let key: HeldRestKey | null = null;
+    const r = inboxStore(inner, () => key, new Set());
+    await r.store.save([PUSH, "incremental", "a"], change(1));
+    expect(r.held.map((h) => `${h.refusal}:${h.rests}`)).toEqual(["save-unnamed:memory"]);
+    expect(r.store.held()[0]?.kept).toBeUndefined();
+    expect(r.store.loose(PUSH)).toBe(1);
+    expect(chunksOf(inner, PUSH)).toEqual([]);
+    // THE UNLOCK: the key comes into reach and the map moves; the waiting save rests in the inbox, and the row reads kept.
+    key = mintHeldRestKey();
+    await r.store.reseal();
+    expect(r.store.held()).toMatchObject([{ documentId: PUSH, refusal: "save-unnamed", saves: 1, pending: 1, kept: true }]);
+    expect(chunksOf(inner, PUSH).length).toBe(1);
+    expect(starts(chunksOf(inner, PUSH)[0]!, AUTOMERGE)).toBe(false);
   });
 });

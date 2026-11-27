@@ -736,14 +736,17 @@ const riteReceipts = async (h) => {
 };
 
 const shimDown = async (h) => {
-  // On a terminal, as the operator runs it. A vessel at the floor answers no census, so `down` asks for `accept-loss`.
-  const r = await h.pty(h.shimLine(["down"]), { says: [{ prompt: "Type accept-loss to stop anyway: ", answer: "accept-loss" }], timeout: 180_000 });
+  // On a terminal, as the operator runs it. A vessel at the floor stood locked since it booted, so its census reads clean and
+  // `down` stops asking nothing; no typed word stops a vessel over what its census names.
+  const r = await h.pty(h.shimLine(["down"]), { says: [], timeout: 180_000 });
   r.stderr = "";
   const vessel = await h.cid("lares");
   const pulama = await h.cid("pulama");
   const running = pulama ? (await h.docker(["inspect", "--format", "{{.State.Status}}", pulama])).stdout.trim() : "absent";
   const status = lastJson((await h.shim(["pulama", "status"])).stdout);
-  return { ok: r.code === 0 && vessel === "" && running === "running" && status?.lit === true, answer: `exit ${r.code}; accept-loss asked: ${r.typed}; vessel container: ${vessel ? "stands" : "gone"} · pūlama: ${running}, lit ${status?.lit} · ${tail(r.stdout)}`, measures: { exit: r.code, acceptLossAsked: r.typed, said: quote(r.stdout.replace(/\r/g, "")), pulama: status } };
+  const said = r.stdout.replace(/\r/g, "");
+  const refused = /down refuses/.test(said);
+  return { ok: r.code === 0 && !refused && vessel === "" && running === "running" && status?.lit === true, answer: `exit ${r.code}; refused: ${refused}; vessel container: ${vessel ? "stands" : "gone"} · pūlama: ${running}, lit ${status?.lit} · ${tail(r.stdout)}`, measures: { exit: r.code, refused, said: quote(said), pulama: status } };
 };
 
 const teardown = async (h) => {

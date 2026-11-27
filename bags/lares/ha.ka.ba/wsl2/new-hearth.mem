@@ -257,12 +257,12 @@ In the session, `/mcp` lists `lares` connected, and the session opens on the boo
 * ''Never rename or remove a house folder while the vessel stands:'' `down` first. `up` over a container whose mounts point at a moved folder can answer healthy and then read `no face stands`; `down`, then `up`, mends it.
 * ''A paper sheet for a new face'' binds only with the vessel stopped; a standing vessel offers the passphrase alone.
 * ''A mistyped pūlama route'' can read `no route came`; type it again.
-* ''`down` asks for `accept-loss`:'' never type it on a house you keep. `vault unlock`, let the vessel settle, then `down` again.
+* ''`down` refuses over its census:'' the refusal names the act that lands each item. `vault unlock`, let the vessel settle, then `down` again.
 
 ''Preflight owed:'' `tools/wsl2/witness.sh` reads the host and `lares home read` reads the homes; no one door yet reads the house's own prerequisites (the env file's keys and paths, the two submodules, `zstd`, the image label against HEAD, the keep clone's guard) before the founding.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Zvl2sIrOCTMsJP6-6O7E6vuJWNqsHWCldQGod7oaiWA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3_dvHu7vdAXrmf26tDElieOjNYfDUb22o1jA1MpVrPI`>>
 
 <<^ code=`&#x0004;` to=`?`>>
