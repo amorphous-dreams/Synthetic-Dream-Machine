@@ -29,7 +29,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { execFile, spawn } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { createInterface } from "node:readline";
 import { dirname, join } from "node:path";
@@ -37,7 +37,7 @@ import { fileURLToPath } from "node:url";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { emitAnswer, exitFor, refuseUsage } from "../render.js";
-import { INTERRUPTED, priorImageRef, riteKukulu, type HouseLag, syncPlan, type PriorImage, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer, type OfferVouch, type PendingBegin, type StageTarget, type StandingBegin, type StandReading, type SyncAnswer } from "../rite-kukulu.js";
+import { INTERRUPTED, priorImageRef, riteKukulu, type HouseLag, type PermanentMark, syncPlan, type PriorImage, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer, type OfferVouch, type PendingBegin, type StageTarget, type StandingBegin, type StandReading, type SyncAnswer } from "../rite-kukulu.js";
 import { foundingRecordFromStatus, hostSeedOfferPort } from "../seed-offered.js";
 import { storeFailure, storeVerb } from "../store-door.js";
 import { KeepRefused, keepWorkspaceDir, keepFaceLine, riteKeep, type KeepPorts } from "../rite-keep.js";
@@ -550,6 +550,32 @@ const layWorkbenchOnTerminal = (): Promise<number> => new Promise((resolve) => {
   child.once("close", (code, signal) => { process.off("SIGINT", hold); resolve(signal === "SIGINT" ? INTERRUPTED : code ?? 1); });
 });
 
+/** THE PERMANENT MARK's file: `$LARES_HOUSE/config/kukulu-permanent.json` (the house config bind, /lar/config in the vessel); null where no house names one. */
+export function permanentMarkPath(env: Readonly<Record<string, string | undefined>> = process.env): string | null {
+  const envFile = surfaceEnvPath(env);
+  let text: string | null = null;
+  try { text = envFile === null ? null : readFileSync(envFile, "utf8"); } catch { text = null; }
+  const house = envValue("LARES_HOUSE", env, text);
+  return house.startsWith("/") ? join(house, "config", "kukulu-permanent.json") : null;
+}
+
+/** The permanent mark as the file holds it; null where the file stands absent or reads no mark of that shape. */
+export function readPermanentMark(path: string | null = permanentMarkPath()): PermanentMark | null {
+  if (path === null) return null;
+  try {
+    const m = JSON.parse(readFileSync(path, "utf8")) as Record<string, unknown>;
+    return typeof m["head"] === "string" && typeof m["image"] === "string" && typeof m["branch"] === "string" ? { head: m["head"], image: m["image"], branch: m["branch"] } : null;
+  } catch { return null; }
+}
+
+/** Write the permanent mark whole (a sibling file, then a rename), so no reader meets half a mark. */
+export function writePermanentMark(mark: PermanentMark, path: string | null = permanentMarkPath()): void {
+  if (path === null) throw new Error("no LARES_HOUSE names the house config, so the mark rests nowhere: set LARES_HOUSE in ~/.lares/lares-surface.env");
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(`${path}.next`, `${JSON.stringify(mark)}\n`);
+  renameSync(`${path}.next`, path);
+}
+
 /** The host's ports: git in this checkout, this CLI again for a vessel row (the bridge forwards it), and the checkout's shim. */
 function hostPorts(shim: string, say: (line: string) => void): RitePorts {
   return {
@@ -578,6 +604,9 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
       return read.ok ? { ok: true, ...standingOf(read.output, branch) } : read;
     },
     ranImage: () => shimRead(shim, ["vessel-image"]),
+    // THE PERMANENT MARK: written at par, read by the next run's supersede.
+    markPermanent: async (mark) => writePermanentMark(mark),
+    permanent: async () => readPermanentMark(),
     // THE KEEP AFTER THE LANDING: the raise defers the keep a down left owed (`--keep-after-landing`), and the rite runs it here.
     keepOwed: () => runShim(shim, ["keep-owed"]),
     // THE LAG AFTER THE RAISE: read in the vessel that stands; the workbench lay runs diff-gated on this terminal, asking nothing, never canon.

@@ -28,8 +28,8 @@
  *                   half (`rite-begun`). No lei standing on the line runs the restand with no rite. FIRST the vessel reads
  *                   the begin that stands (`standing`: guest halves resting unlanded on the line): one at this head is
  *                   RESUMED (no return, no tessera, the offer that rests reused); one at another head whose landing never
- *                   started (the digest the standing vessel runs names another image than the begin's; the tag's label
- *                   counts only where no digest reads) is
+ *                   started (no permanent mark at its head, and the standing vessel runs another image than the begin's;
+ *                   with no mark the digest decides, the tag's label counting only where no digest reads) is
  *                   SUPERSEDED: the fresh begin names those tesserae and the vessel sets each down as its face, no hand;
  *                   any other at another head refuses `kukulu-begun-stale` with the one line that clears it. A vessel down at the start (a Ctrl+C at the
  *                   light) shows its halves to the vessel the raise stands, and the rite lands them there
@@ -40,7 +40,8 @@
  *                   standing vessel gracefully (SIGTERM under Docker's stop grace), and the node's teardown flushes every shore
  *                   (every resident island with a mirror) before any island goes down; the rite names that before the raise
  *                   ({@link STOP_FLUSHES_LINE})
- *   8. rite-land    IN THE NEW VESSEL: each face's host half (`rite-landed`); the rite reads par only where every pair reads par
+ *   8. rite-land    IN THE NEW VESSEL: each face's host half (`rite-landed`); the rite reads par only where every pair reads par,
+ *                   and at par it writes the permanent mark (head, image, branch) the next run's supersede reads
  *   9. lag          after a raise that stood, the lag reads aloud on every raise: the canon bag behind the canon source (the
  *                   carriers in `bags/` the canon layers lack; canon fills through promote and the floor's sealed cut, never
  *                   from a raise, so the line only names it), each wiki's workbench behind the checkout's `wikis/<slug>`, and a
@@ -206,6 +207,13 @@ export interface RitePorts {
    * outgoing image); null where the host reads none. Absent, the answer names no prior.
    */
   prior?(): Promise<PriorImage | null>;
+  /**
+   * THE PERMANENT MARK (Erlang's installed-vs-permanent): the record a landing writes once it reads par (the vessel stood on the
+   * new image and every half landed), naming the head, the image the vessel runs and the branch. Absent, no mark rests.
+   */
+  markPermanent?(mark: PermanentMark): Promise<void>;
+  /** The permanent mark the last landing at par wrote; null where none rests or none reads. Absent, the rite reads none. */
+  permanent?(): Promise<PermanentMark | null>;
   say(line: string): void;
   /**
    * The founding record's digests beside the seed the image at `head` offers (its CID and digests); null where the host reads
@@ -244,6 +252,9 @@ export interface HouseLag {
 
 /** The line that lays the checkout's workbench projection by hand. */
 export const WORKBENCH_LAY_LINE = "lares vessel lay --workbench --apply";
+
+/** The permanent mark: the head, the image and the branch of the last landing that read par. */
+export interface PermanentMark { readonly head: string; readonly image: string; readonly branch: string }
 
 /** The image a kūkulu replaced: its revision label and the tag the shim keeps it under. */
 export interface PriorImage {
@@ -669,12 +680,26 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
    * stale begin's own image, whose label names the stale head while the vessel still runs the image before it (restand-files-
    * smooth, live at 6a5f6ca8b: the tag named 780870219's image while the vessel ran f2606b2e1's). Then a label naming the half's
    * head reads true, another false. No evidence at all (no digest, no label): null, and unknown never authorizes a set-down.
+   *
+   * THE PERMANENT MARK ANSWERS FIRST, where one rests (Erlang's installed-vs-permanent): a mark at the half's head says its landing
+   * reached par once, true; a mark at another head beside a vessel running another image than the half's (the half's bound image,
+   * or, where the half bound none, the vessel standing on the mark's own image) reads false, superseded; the tag's label never
+   * reads where the mark answers. A vessel whose image reads nowhere still answers null.
    */
   let standingRan: string | null | undefined;
+  let mark: PermanentMark | null | undefined;
+  const sameHead = (a: string, b: string): boolean => a.length >= 7 && b.length >= 7 && (a.startsWith(b) || b.startsWith(a));
   const landingStarted = async (p: PendingBegin): Promise<boolean | null> => {
     if (standingRan === undefined) standingRan = ports.ranImage ? await ports.ranImage().catch(() => null) : null;
+    if (mark === undefined) mark = ports.permanent ? await ports.permanent().catch(() => null) : null;
     const ran = standingRan !== null && standingRan !== "" ? standingRan : null;
     const bound = p.image !== undefined && p.image !== "" ? p.image : null;
+    if (mark !== null) {
+      if (sameHead(mark.head, p.head)) return true;
+      if (ran === null) return null;
+      if (bound !== null) return ran === bound;
+      return ran === mark.image ? false : null;
+    }
     if (ran !== null && bound !== null) return ran === bound;
     const label = prior !== null && prior.revision !== "unlabeled" && prior.revision.trim().length >= 7 ? prior.revision.trim() : null;
     if (label === null) return null;
@@ -735,6 +760,11 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
       return { code: 1, data: { ...data, begun: true, landed: false, par: false, refusal: "rite-land-differs", ...(wayBack === undefined ? {} : { wayBack }) } };
     }
     ports.say(par ? "kūkulu: landed; conferre reads every face's tessera par" : "kūkulu: landed at another head or image than the rite began at; conferre reads a tessera red");
+    // THE PERMANENT MARK AT PAR: the landing stands permanent, so the next run's supersede reads it before any label or digest.
+    if (par && ports.markPermanent) {
+      await ports.markPermanent({ head, image: landImage, branch }).catch((e: unknown) =>
+        ports.say(`kūkulu: the permanent mark did not write (${e instanceof Error ? e.message : String(e)}); the landing stands, and the next run's supersede reads the vessel's digest instead`));
+    }
     if (par || prior === null) return kept({ code: par ? 0 : 1, data: { ...data, begun: true, landed: true, par } });
     // OFF PAR, the way back: the rite rolled back to the replaced image's revision (its kept tag, no rebuild).
     const wayBack = wayBackCommand(prior);
