@@ -1,0 +1,106 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.bag.compacts`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "snapshot-restart one bag to bound its history; lossy by design"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.bag.compacts"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.bag.compacts"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.bag.compacts"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.bag.compacts ~ the one door of compaction: history cuts and nobody's fence moves
+
+`compact <bag-url>` takes a snapshot-restart on one bag, the DXOS-style ceremony: history bounds, and what the cut leaves out stays out (lossy by design). The house names it for what it does and for whose word it borrows: `epoch` stays RESERVED for the monotone fencing frontier a grant binds to, and a compaction CUTS history and fences nobody, so it carries the qualifier and leaves the bare word to the fence.
+
+The answer names the old doc, the new doc, the tiddler and tombstone counts, whether the layer swapped in the composite (`not mounted` where it stands unmounted), and a note where one stands. The verb rides the UDS fast path with a WS fallback and a 30 s wait. `wiki compact <slug> <bag-url>` delegates to this same verb with a slug it never reads.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ compact
+
+```memetic-wikitext
+<<has entity=`example` name=`compact` params=`bag-url/<bag-url> ~ snapshot-restart one bag`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ bag-url
+
+```memetic-wikitext
+<<has entity=`arg` name=`bag-url` params=`takes/bag-url needs/required seat/1 as/<bag-url> ~ the bag to compact`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/hand ~ a lossy cut of one bag's history; a person runs it, and the vessel checks the cap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · compact-failed
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.bag.compacts bag-url/<bag-url>]] ~ the bag's URL stands required`>>
+<<has entity=`refusal` name=`compact-failed` params=`~ the vessel refused by name; the line carries its reason`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ compacted
+
+```memetic-wikitext
+<<has entity=`band` name=`compacted` params=`exit/0 fields/[[bagUrl oldDocUrl newDocUrl tiddlerCount tombstoneCount layerSwapped note]] ~ the bag restarted from a snapshot`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares bag compact
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares bag compact]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · epoch-binding-surfaces
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zMKDAnrKzR1pOCmsjGltgoJy3mSeiHEnT7Opoi_ELJA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

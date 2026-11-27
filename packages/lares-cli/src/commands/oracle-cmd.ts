@@ -1,6 +1,8 @@
 /**
- * `lares oracle cast [--coins <six values>] --recipe <slug>` — the CLI skin of the `oracle-cast` verb: one I Ching cast
- * by three coins a line, written by the vessel as one tiddler under `casts/`.
+ * `lares oracle cast --recipe <slug> [--uncertain <words>] [--observe <pointers>] [--asking <the fork>] [--coins <six values>]`
+ * — the CLI skin of the `oracle-cast` verb (`lar:///oracle.cast.throws`): one I Ching cast by three coins a line, landed by the
+ * vessel once as an OODA-HA meme under `casts/`. `--observe` names the arm's context pointers and `--uncertain` the gathered
+ * uncertainty; they fill the meme's first slots, and the slots the seat owes print with the append line that fills them.
  *
  * A CAST STANDS AS AN ACT. The vessel casts and lands the record once; reading it again never casts again. With no
  * `--coins` the vessel draws the coins through the platform's entropy door (`crypto.getRandomValues`); `--coins` hands
@@ -47,9 +49,13 @@ export function oraclePlan(args: ParsedArgs, at: string, mint: () => string = mi
   const seed = wordOf(args.options["seed"]);
   const fresh = args.flags["fresh"] === true;
   const coins = wordOf(args.options["coins"]);
+  const uncertain = wordOf(args.options["uncertain"]);
+  const observe = wordOf(args.options["observe"]);
   if (seed !== null && fresh) throw new DoorUsage("--seed and --fresh name two hands for one throw; pass one (`--seed <words>` throws the same coins for the same words, `--fresh` throws new ones)");
   if (seed !== null && coins !== null) throw new DoorUsage("--seed draws the coins and --coins names them; pass one");
   if (asking !== null) out["asking"] = asking;
+  if (uncertain !== null) out["uncertain"] = uncertain;
+  if (observe !== null) out["observe"] = observe.split(/\s+/u).filter((p) => p !== "");
   if (seed !== null) out["seed"] = seed;
   if (fresh || (asking === null && seed === null)) out["nonce"] = mint();
   if (fresh) out["fresh"] = true;
@@ -147,7 +153,16 @@ async function oracleCast(args: ParsedArgs): Promise<number> {
       }
       console.log("");
       console.log(`cast: ${String(answer["title"])}`);
-      if (answer["replayed"] === true) console.log("replayed: this asking already holds its throw; the same words answer it again (a person's --fresh throws anew)");
+      if (answer["replayed"] === true) {
+        console.log("replayed: this asking already holds its throw; the same words answer it again (a person's --fresh throws anew)");
+        if (typeof answer["uncertain"] === "string" && answer["uncertain"] !== "") console.log(`kept: the uncertainty of the first throw: ${answer["uncertain"]}`);
+      }
+      for (const s of (answer["slots"] as Array<{ slot: string; phase: string; owed: boolean }> | undefined) ?? []) {
+        if (s.owed) console.log(`owed: ${s.phase} ${s.slot}`);
+      }
+      const next = answer["next"] as { read?: string; append?: string } | undefined;
+      if (next?.read) console.log(`read: ${next.read}`);
+      if (next?.append) console.log(`append: ${next.append}`);
       if (typeof answer["asOf"] === "string") console.log(`readings as of: ${answer["asOf"]}`);
       if (answer["offline"] === true) console.log("offline: this cast remains in this reply; no record was saved");
     },

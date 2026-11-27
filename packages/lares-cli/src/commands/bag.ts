@@ -37,6 +37,7 @@ import { summaryOutput } from "../verb-result.js";
 import { runVerb, verbFailure } from "../verb-call.js";
 import { exitFor } from "../render.js";
 import { cmdShare } from "./share-cmd.js";
+import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 /** `lares bag compact <bag-url>` — DXOS-style snapshot-restart on one bag.
@@ -82,43 +83,39 @@ export async function cmdBagCompact(args: ParsedArgs): Promise<number> {
 
 type BagSubcommand = (args: ParsedArgs) => Promise<number>;
 
-const SUBCOMMANDS: Readonly<Record<string, { handler: BagSubcommand; summary: string }>> = {
-  "register-cold": { handler: cmdRegisterCold, summary: "Mark a bag URL as known-but-not-loaded — the oracle entry alone, no tiddlers loaded. Needs `lares vessel stand --foreground`." },
-  "compact":       { handler: cmdBagCompact,     summary: "DXOS-style snapshot-restart on one bag. Bounds history; lossy by design." },
-  "cas":           { handler: async (a) => cmdCas(a), summary: "The cleartext cid/ CAS tier: blobs · referenced · unreferenced · bytes (references derived from the projection; --all lists each blob). Local read, no daemon. --fetch <cid> reads ONE cid through the running vessel's fetch door (fleet holders over Socket B). --pin <cid> [--tier <t>] [--holder <name>] holds a blob past the grace until released; --release <cid> frees it. --sweep [--dry-run] sweeps the unreferenced blobs past their grace where the composite stands (dry: names them, moves nothing)." },
+const SUBCOMMANDS: Readonly<Record<string, { handler: BagSubcommand }>> = {
+  "register-cold": { handler: cmdRegisterCold },
+  "compact":       { handler: cmdBagCompact },
+  "cas":           { handler: async (a) => cmdCas(a) },
   // ── The LIFECYCLE half. Everything above answers a RUNTIME question (is this doc in RAM); these answer
   // what a bag IS, who may read it, where it belongs, and how to move it — the questions a bag could not
   // answer about itself at all until it carried a declaration.
-  "show":          { handler: bagLifecycle(async (a) => a.positional[0] ? cmdBagShow(a) : cmdBagList(a)), summary: "List bags, or show one bag's declaration and resolution." },
-  "declare":       { handler: bagLifecycle(cmdBagDeclare), summary: "Write/amend a bag's own declaration (--tier --home --repo --role). Moves no bytes." },
-  "home":          { handler: bagLifecycle(cmdBagHome),    summary: "MOVE a bag to a home (--to, --repo). Plans by default; --approve performs it." },
-  "repo":          { handler: bagLifecycle(cmdBagRepo),    summary: "The repo registry: `list` | `add <id> --root <path>` | `drop <id>`. Bags name IDs, never paths." },
-  "share":         { handler: cmdShare("bag"), summary: "Who reads and writes a bag, by face pet-name (--read <names> --write <names> --note <why> --face N). A line names its delta: --read and --write add names beside the standing ones, --read-remove and --write-remove take names out, and what it leaves unnamed stands, so the same line twice changes nothing. --read and --write add and never replace a list: narrowing one takes the -remove pair, which revokes each taken-out face's landed grant (a face standing shut keeps the row as it stood, named); --list shows the resolved answer per bag; --remove unshares it. A wiki row standing for the slug refuses (share-kind-standing). Sharing rides by reference and delegation, never a copy." },
+  "show":          { handler: bagLifecycle(async (a) => a.positional[0] ? cmdBagShow(a) : cmdBagList(a)) },
+  "declare":       { handler: bagLifecycle(cmdBagDeclare) },
+  "home":          { handler: bagLifecycle(cmdBagHome) },
+  "repo":          { handler: bagLifecycle(cmdBagRepo) },
+  "share":         { handler: cmdShare("bag") },
 };
 
 /** Every verb the bag door answers (`help` prints this table). */
 export const BAG_VERBS: readonly string[] = ["help", ...Object.keys(SUBCOMMANDS)];
 
-/** The bag door's own account, drawn from its verb table: `lares bag --help` prints it, and a refusal ends with it. */
-export function bagHelpLines(): string[] {
-  return ["lares bag <verb> [args...]", "", "Verbs:", ...Object.entries(SUBCOMMANDS).map(([verb, entry]) => `  ${verb.padEnd(15)} ${entry.summary}`)];
-}
-
-function printBagHelp(): void {
-  for (const line of bagHelpLines()) console.log(line);
+/** The door's lines, drawn from the carriers `lares bag --help` prints; `lares bag help` and a refusal print the same. */
+function printBagHelp(out: (line: string) => void): void {
+  for (const line of helpLines("bag")) out(line);
 }
 
 export async function cmdBag(args: ParsedArgs): Promise<number> {
   const verb = args.positional[0];
   if (!verb || verb === "help" || args.flags["help"]) {
-    printBagHelp();
+    printBagHelp((line) => console.log(line));
     return verb ? 0 : 2;
   }
   // The dispatcher's one MOVED table answers `bag pin`, `bag list` and kin before this door runs.
   const entry = SUBCOMMANDS[verb];
   if (!entry) {
     console.error(`lares bag: unknown verb "${verb}"`);
-    for (const line of bagHelpLines()) console.error(line);
+    printBagHelp((line) => console.error(line));
     return 2;
   }
   // Shift positional so the inner handler sees args without the verb.

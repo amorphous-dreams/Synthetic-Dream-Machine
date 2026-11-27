@@ -1,0 +1,112 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.bag.homes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "move a bag's bytes to its declared home; a plan unless approved"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.bag.homes"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.bag.homes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.bag.homes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.bag.homes ~ the move that relocates bytes and re-anchors the declaration together
+
+`home <bag> --to <home>` MOVES the bytes to a declared home and re-anchors the declaration together. It plans before it touches anything (the DRY-RUN default prints the plan and the command that performs it) and refuses an occupied destination rather than merging. `--approve` performs the move, and no source-control verb ever runs: the bytes land in a working tree, and what enters a history stays the hand's own act. `--repo` names the registered repo id where the home reads repository.
+
+The move relocates an operator's bytes across a boundary that matters (into a tracked history, or out of one), so it earns the explicit approval.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ plan-the-move · perform-it
+
+```memetic-wikitext
+<<has entity=`example` name=`plan-the-move` params=`bag/lares to/repository repo/lares-repo ~ print the plan and the command that performs it`>>
+<<has entity=`example` name=`perform-it` params=`bag/lares to/repository repo/lares-repo approve/true ~ move the bytes and re-anchor the declaration`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ bag · to · repo · approve
+
+```memetic-wikitext
+<<has entity=`arg` name=`bag` params=`takes/slug needs/required seat/1 as/<bag> ~ the bag to move`>>
+<<has entity=`arg` name=`to` params=`takes/home needs/required ~ the home the bag moves to`>>
+<<has entity=`arg` name=`repo` params=`takes/repo-id ~ a registered repo's id, where the home reads repository`>>
+<<has entity=`arg` name=`approve` params=`~ perform the move; absent, only the plan prints`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/hand ~ the move relocates bytes across a boundary that matters; a plan runs unapproved, and the move itself asks --approve`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ home-unknown · destination-occupied · repo-unregistered
+
+```memetic-wikitext
+<<has entity=`refusal` name=`home-unknown` params=`cure/[[carriage.bag.homes bag/<bag> to/repository]] ~ --to expects one of the homes a bag may name`>>
+<<has entity=`refusal` name=`destination-occupied` params=`cure/[[carriage.bag.homes bag/<bag> to/repository]] ~ the destination stands occupied; the plan names it, and nothing merges`>>
+<<has entity=`refusal` name=`repo-unregistered` params=`cure/[[carriage.bag.registers]] ~ the repo id stands registered on no vessel here; register it first`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ planned · moved
+
+```memetic-wikitext
+<<has entity=`band` name=`planned` params=`exit/0 fields/[[bag planned from to why approved]] ~ the plan, with the command that performs it`>>
+<<has entity=`band` name=`moved` params=`exit/0 ~ the bytes moved and the declaration re-anchored inside the moved directory; a repository home names a working tree with nothing committed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares bag home
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares bag home]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cap-tier
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qi_xyW_qopSa5KAbe5QsQkJFqFecbUYpE0pZedxarQA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

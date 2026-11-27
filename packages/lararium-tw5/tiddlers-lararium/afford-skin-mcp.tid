@@ -1,0 +1,48 @@
+title: lar:///ha.ka.ba/lararium/tw5/afford/skin/mcp
+type: text/vnd.tiddlywiki
+caption: affordance skin · mcp
+
+\whitespace trim
+\function nl() [charcode[10]]
+
+\procedure param()
+\whitespace trim
+<$list filter="[<currentTiddler>afford:mcp[rows],[#/takes]] :filter[<currentTiddler>jsonget[name]match<arg>] +[first[]]" variable="row"><$text text={{{ [<row>jsonget[role]] }}}/><$text text={{{ [<row>jsonget[params],[gate]match[hand]then[ (a person's hand alone; a seat reads asks)]] }}}/></$list>
+\end
+
+\procedure gate()
+\whitespace trim
+<$list filter="[<currentTiddler>afford:mcp[rows],[#/gate]first[]]" variable="_"><$text text=<<nl>>/><$text text="Gate (the carrier's testimony; the door checks):"/><$list filter="[<currentTiddler>afford:mcp[rows],[#/gate]]" variable="row"><$text text=" "/><$text text={{{ [<row>jsonget[name]] }}}/><$text text={{{ [<row>jsonget[role]!is[blank]addprefix[: ]addsuffix[.]] }}}/></$list></$list>
+\end
+
+\procedure refuses()
+\whitespace trim
+<$list filter="[<currentTiddler>afford:mcp[rows],[#/refuses]first[]]" variable="_"><$text text=<<nl>>/><$text text="Refuses: "/><$text text={{{ [<currentTiddler>afford:mcp[rows],[#/refuses]] :map[<currentTiddler>jsonget[name]] +[join[ · ]] }}}/><$text text="."/></$list>
+\end
+
+\procedure answers()
+\whitespace trim
+<$list filter="[<currentTiddler>afford:mcp[rows],[#/answers]first[]]" variable="_"><$text text=<<nl>>/><$text text="Answers band: "/><$text text={{{ [<currentTiddler>afford:mcp[rows],[#/answers]] :map[<currentTiddler>jsonget[name]] +[join[ · ]] }}}/><$text text="."/></$list>
+\end
+
+\procedure line()
+\whitespace trim
+<$text text={{{ [<currentTiddler>get[role]sentencecase[]] }}}/>
+\end
+
+\procedure whole()
+\whitespace trim
+<<line>>
+<$list filter="[<currentTiddler>afford[prose],[#/head]]" variable="p"><$text text=<<nl>>/><$text text=<<p>>/></$list>
+<<gate>><<refuses>><<answers>>
+<$text text=<<nl>>/><$text text="Mirrors: "/><$text text={{{ [<currentTiddler>afford:cli[spells]] }}}/><$text text=" (affordance "/><$text text={{{ [<currentTiddler>afford[address]] }}}/><$text text=")."/>
+<$text text=<<nl>>/><$text text="Examples, cures, every band: "/><$text text={{{ [<currentTiddler>afford:mcp[read],[#/shows]] }}}/>
+\end
+
+<%if [<depth>match[line]] %>
+<<line>>
+<%elseif [<depth>match[param]] %>
+<<param>>
+<%else%>
+<<whole>>
+<%endif%>

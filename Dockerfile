@@ -115,6 +115,7 @@ COPY --from=build /app/packages/lararium-mesh/dist          ./packages/lararium-
 COPY --from=build /app/packages/lararium-mesh/package.json  ./packages/lararium-mesh/package.json
 COPY --from=build /app/packages/lararium-tw5/node_modules  ./packages/lararium-tw5/node_modules
 COPY --from=build /app/packages/lararium-tw5/dist           ./packages/lararium-tw5/dist
+COPY --from=build /app/packages/lararium-tw5/affordance-pack.json ./packages/lararium-tw5/affordance-pack.json
 COPY --from=build /app/packages/lararium-tw5/package.json   ./packages/lararium-tw5/package.json
 COPY --from=build /app/packages/lararium-keyhive/node_modules ./packages/lararium-keyhive/node_modules
 COPY --from=build /app/packages/lararium-keyhive/dist       ./packages/lararium-keyhive/dist

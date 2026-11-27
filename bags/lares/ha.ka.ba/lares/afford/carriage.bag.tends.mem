@@ -1,0 +1,122 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.bag.tends`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read, fetch, pin, release and sweep the cleartext CAS tier"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.bag.tends"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.bag.tends"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.bag.tends"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.bag.tends ~ the cid CAS tier: blobs, references, and the holds that outlast the grace
+
+`cas` is a local read over the cleartext `cid/` CAS tier, with no daemon boot: it lists the blobs the CAS dir holds and DERIVES which the disk projection references (a `.tid` or `.meta` under `bags/` or `wikis/` carrying `textCid`, or a `lar:///…/cid/<hash>` `_canonical_uri`), then reports blobs · referenced · unreferenced · pending · bytes, and names the genesis-manifest blobs as protected (the engine and plugins never sweep). The projection reads as-of-last-projection: a pointer with no loci path reads unreferenced HERE while the daemon holds it, so this read never sweeps. `--all` lists each blob.
+
+`--fetch <cid>` reads ONE cid through the running vessel's fetch door (fleet holders over Socket B). `--pin <cid> [--tier <t>] [--holder <name>]` holds a blob past the grace until released (`--held` names a held pin that ends with the vessel's life, and refuses `held-pin-no-life` where the store names no life), and `--release <cid>` frees it. `--sweep [--dry-run]` sweeps the unreferenced blobs past their grace where the composite stands; dry names them and moves nothing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ survey · every-blob · fetch-one · hold-one · free-one · sweep-dry
+
+```memetic-wikitext
+<<has entity=`example` name=`survey` params=`~ blobs, referenced, unreferenced, pending and bytes`>>
+<<has entity=`example` name=`every-blob` params=`all/true ~ list each blob`>>
+<<has entity=`example` name=`fetch-one` params=`fetch/<cid> ~ read one cid through the vessel's fetch door`>>
+<<has entity=`example` name=`hold-one` params=`pin/<cid> holder/review ~ hold a blob past the grace until released`>>
+<<has entity=`example` name=`free-one` params=`release/<cid> ~ free a held blob`>>
+<<has entity=`example` name=`sweep-dry` params=`sweep/true dry-run/true ~ name the unreferenced blobs past their grace and move nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ all · fetch · pin · tier · holder · held · release · sweep · dry-run
+
+```memetic-wikitext
+<<has entity=`arg` name=`all` params=`~ list each blob`>>
+<<has entity=`arg` name=`fetch` params=`takes/cid ~ read one cid through the running vessel's fetch door`>>
+<<has entity=`arg` name=`pin` params=`takes/cid ~ hold a blob past the grace until released`>>
+<<has entity=`arg` name=`tier` params=`takes/cap-tier ~ the tier a pin carries`>>
+<<has entity=`arg` name=`holder` params=`takes/name ~ who holds the pin`>>
+<<has entity=`arg` name=`held` params=`~ a held pin that ends with the vessel's life`>>
+<<has entity=`arg` name=`release` params=`takes/cid ~ free a held blob`>>
+<<has entity=`arg` name=`sweep` params=`~ sweep the unreferenced blobs past their grace where the composite stands`>>
+<<has entity=`arg` name=`dry-run` params=`~ with --sweep, name the blobs and move nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ read · write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`read` params=`who/seat-or-hand ~ the survey reads local files and boots no daemon; fetch, pin, release and sweep ask the vessel, which checks the cap`>>
+<<has entity=`gate` name=`write` params=`who/hand ~ a sweep removes blobs; run it dry first`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ held-pin-no-life · fetch-failed · sweep-failed
+
+```memetic-wikitext
+<<has entity=`refusal` name=`held-pin-no-life` params=`cure/[[carriage.bag.tends pin/<cid>]] ~ the store names no vessel life, so a held pin has no life to end with`>>
+<<has entity=`refusal` name=`fetch-failed` params=`~ the vessel's fetch door refused; the line carries its reason`>>
+<<has entity=`refusal` name=`sweep-failed` params=`~ the sweep refused where the composite stands; the line carries its reason`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ surveyed · acted
+
+```memetic-wikitext
+<<has entity=`band` name=`surveyed` params=`exit/0 fields/[[blobs referenced unreferenced pending bytes protected]] ~ the CAS tier as the projection reads it`>>
+<<has entity=`band` name=`acted` params=`exit/0 ~ a fetch, pin, release or sweep landed; a dry sweep names what it would sweep`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares bag cas
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares bag cas]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · tiddler-carriage
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage#/pin-and-release`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MeS1oVJvv2880t5ftbfSxRYeyPYgyI7H40Ex4MLJeK4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

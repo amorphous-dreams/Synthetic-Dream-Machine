@@ -1,0 +1,122 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.draft.reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "get the face's verified kahua stage at two grains"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.draft.reads"]
+title     = "lar:///ha.ka.ba/lares/afford/face.draft.reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.draft.reads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.draft.reads ~ the list of verified items, or one title and its history
+
+`kahua get` reads the stage's VERIFIED items, the fold, never a raw tiddler. Without a title it lists bounded items with source, count, relation and continuation (`--after` and `--limit` page it); a fresh face answers `stage: "none"`. With a title it returns the verified item or null, and with `--history` every revision of that title. A staged row rests in `bags/daemon-<F>` and lists here once its lift lands. The bare list stands for the old `kahua list`, which now answers only to name its move here. Reads alone: it writes nothing, and the seat's tool rides a `seat` session.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ the-stage · one-title · with-history
+
+```memetic-wikitext
+<<has entity=`example` name=`the-stage` params=`face/1 ~ list the stage's lifted items`>>
+<<has entity=`example` name=`one-title` params=`title/T face/1 ~ one verified item`>>
+<<has entity=`example` name=`with-history` params=`title/T history face/1 ~ every revision of the title`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ title · history · after · limit · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`title` params=`takes/title seat/1 as/<title> ~ one title's verified item; absent, the list`>>
+<<has entity=`arg` name=`history` params=`~ every revision of the title; needs a title`>>
+<<has entity=`arg` name=`after` params=`takes/cursor ~ the continuation a list answered; a title refuses list pagination`>>
+<<has entity=`arg` name=`limit` params=`takes/count ~ a positive whole row count for the list page`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ any face inside the lent set, by persona index (a whole number from 0); absent, the worn face`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ read
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`read` params=`who/seat-or-hand ~ a read of the verified stage; it writes nothing, and a seat or a hand reads alike`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ history-needs-a-title · title-refuses-pagination · limit-malformed
+
+```memetic-wikitext
+<<has entity=`refusal` name=`history-needs-a-title` params=`cure/[[face.draft.reads title/T history]] ~ the door says 'get --history needs a title': history names one title's revisions, and the list carries none`>>
+<<has entity=`refusal` name=`title-refuses-pagination` params=`cure/[[face.draft.reads title/T]] ~ a title answers one item and takes no after or limit: 'a title refuses list pagination'`>>
+<<has entity=`refusal` name=`limit-malformed` params=`cure/[[face.draft.reads limit/20]] ~ limit takes a positive whole row count`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ listed · item
+
+```memetic-wikitext
+<<has entity=`band` name=`listed` params=`exit/0 fields/[[source count relation next]] ~ bounded verified items with a continuation; a fresh face reads stage none`>>
+<<has entity=`band` name=`item` params=`exit/0 ~ one verified item (or null) and, with history, its revisions`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares kahua get
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares kahua get]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! kahua_get
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`spells/kahua_get ~ the seat; reads alone`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · kahua-memory-stage
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;L3Sov65uqgDD38qY40avltmKojXb_gKHpWj5anPBLiM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

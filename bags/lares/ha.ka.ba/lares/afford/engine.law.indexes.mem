@@ -1,0 +1,115 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.law.indexes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read the house's law, pinned first, derived from canon by filter"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.law.indexes"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.law.indexes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.law.indexes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.law.indexes ~ the house's law, pinned law first, from the worn face's daemon wiki
+
+The index derives from canon by filter and no list stands in code. The pin set (`$:/config/lares/law/pins`, a TiddlyWiki filter the wiki's own engine runs) heads it in its own order, the boot seed then the Mu family; then every root meme under a bag's `api/` tree the pins leave out follows, by title, each with its one line (the meme's description, else its role). Only canon prints: a row stands where a canon layer answers its record, so nothing a face writes reads as law.
+
+Read it before you act, the way you read your working memory. A law row comes from canon's settled ground; turn it through the five tools.
+
+One page holds at most 32 rows, and `next` names the cursor of the page behind (hand it back as `after`; `all` follows every cursor to the end). Both doors answer one shape: {filter, pinsTitle, pins, rows: [{title, description, pinned}], total, next}. A terminal prints it plainly (the pinned titles marked 📌, then the law they leave out) and `--json` carries the body the seat returns.
+
+Read one law whole through the read door: `lares tiddler get <title> --recipe default --meme` on a terminal, `tiddler_get(title=<title>, recipe="default", meme=True, grain="whole")` on the seat. Order the pins with `engine.law.pins` and `engine.law.unpins`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ first-page · every-row · a-page-behind
+
+```memetic-wikitext
+<<has entity=`example` name=`first-page` params=`~ the first page: pins, then law by title`>>
+<<has entity=`example` name=`every-row` params=`all/true ~ every row, page after page (--json answers {filter, pinsTitle, pins, rows, total, next})`>>
+<<has entity=`example` name=`a-page-behind` params=`limit/10 after/<cursor> ~ ten rows behind the cursor a prior answer named in next`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ limit · after · all · face
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`limit` params=`takes/count ~ rows per page; the door's ceiling of 32 holds`>>
+<<has entity=`arg` name=`after` params=`takes/cursor ~ the page behind a cursor a prior answer named in next`>>
+<<has entity=`arg` name=`all` params=`~ follow every cursor to the end and answer every row`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ read
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`read` params=`who/seat-or-hand ~ a read: the index runs the tiddler door's wiki-filter in the worn face's daemon wiki and writes nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ index
+
+```memetic-wikitext
+<<has entity=`band` name=`index` params=`exit/0 fields/[[filter pinsTitle pins rows total next]] ~ the pinned titles, then the law they leave out; each row reads {title, description, pinned}; next names the cursor of the page behind, null at the end`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares law index
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares law index]] ~ the terminal; prints plainly, --json carries the body`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! law_index
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`spells/law_index omits/face ~ the seat; answers the body`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · filters
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/filters`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FipQq34wcK29zE66zh4_7vZgqfHKlKvcdnvUcA3u4BE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

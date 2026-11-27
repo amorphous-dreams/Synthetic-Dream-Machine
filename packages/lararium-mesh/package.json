@@ -28,6 +28,10 @@
       "import": "./dist/oracle-cast.js",
       "types": "./dist/oracle-cast.d.ts"
     },
+    "./oracle-loop": {
+      "import": "./dist/oracle-loop.js",
+      "types": "./dist/oracle-loop.d.ts"
+    },
     "./spirit-shrine": {
       "import": "./dist/spirit-shrine.js",
       "types": "./dist/spirit-shrine.d.ts"

@@ -86,7 +86,11 @@ describe("the per-command help registry", () => {
     const kahua = COMMANDS.find((c) => c.name === "kahua")!;
     expect([...(kahua.signsOnly ?? [])].sort()).toEqual([...KAHUA_OPERATOR_VERBS].map((row) => row.replace(/^kahua-/, "")).sort());
     const r = await said(["help"]);
-    expect(r.out).toMatch(/^\s+✍ kahua\s.*\(✍ mint, lift, withdraw, carry alone\)$/m);
+    // The packed brief lists kahua's verbs, so each signing verb wears its mark in place, and no other verb does.
+    const line = r.out.split("\n").find((l) => /^\s+✍ kahua\s/.test(l));
+    expect(line, "the top-level list draws a ✍ kahua line").toBeDefined();
+    const verbs = line!.replace(/^\s+✍ kahua\s+/, "").split(" · ");
+    expect(verbs.filter((v) => v.startsWith("✍ ")).map((v) => v.slice(2)).sort()).toEqual([...(kahua.signsOnly ?? [])].sort());
     // CONTROL: a command that holds a key whole draws no such line.
     expect(r.out).not.toMatch(/^\s+✍ promote\s.*alone\)$/m);
   });

@@ -1,0 +1,114 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.bag.loads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "bring external content from a source into a bag, carrier by carrier"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.bag.loads"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.bag.loads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.bag.loads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.bag.loads ~ the residency LOAD: content from outside the mesh lands in a bag, its provenance named
+
+`LOAD` brings external content into a bag from outside the mesh. Islands never fetch (the web3-only law), so this operator gesture holds the disk grant: it reads the source on the host, derives each carrier's title (a file under a `bags/<holding>/` or `wikis/<slug>/` mirror tree keeps its stable `lar:` name; any other file namespaces under the destination bag by its path relative to the source), and sends the content WITH the verb. A source that does not resolve locally sends a provenance-only LOAD with no carriers (the line says so); an empty file skips with a warning that names it.
+
+LOAD mints a fresh change-id unless `--change-id` names one, since external content carries no prior mesh identity. A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent off a terminal, `--dry-run` previews and commits nothing, `--in-wiki` runs the act in the active wiki's island. Disk memory that already stands in a bag's source tree takes `lares ingest`, whose gate carries the hashes this act does not.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ load-a-directory · preview-first
+
+```memetic-wikitext
+<<has entity=`example` name=`load-a-directory` params=`source-uri/./imports/notes to/lar:///ha.ka.ba/wikis/lares/working ~ read a host directory and land each carrier in the working layer`>>
+<<has entity=`example` name=`preview-first` params=`source-uri/./imports/notes to/lar:///ha.ka.ba/wikis/lares/working dry-run/true ~ name the effect and commit nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ source-uri · to · change-id · dry-run · in-wiki
+
+```memetic-wikitext
+<<has entity=`arg` name=`source-uri` params=`takes/path-or-uri needs/required ~ the external content source: a host path, or an address whose provenance the record keeps`>>
+<<has entity=`arg` name=`to` params=`takes/bag-uri needs/required ~ the bag the content lands in`>>
+<<has entity=`arg` name=`change-id` params=`takes/id ~ the change's own identity, named once so a re-send reads as the same change; absent, the verb mints one`>>
+<<has entity=`arg` name=`dry-run` params=`~ preview the effect without committing it`>>
+<<has entity=`arg` name=`in-wiki` params=`~ run the act in the active wiki's island`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ the vessel checks the writer's cap on the destination bag; a terminal asks y/N before it submits unless --yes rides, and an agent off a terminal names --yes`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · cap-denied · outcome-unknown
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.bag.loads source-uri/<path> to/<bag>]] ~ --source-uri and --to both stand required`>>
+<<has entity=`refusal` name=`cap-denied` params=`~ the writer's cap on the destination bag falls short; nothing landed`>>
+<<has entity=`refusal` name=`outcome-unknown` params=`~ this process stopped waiting after the vessel answered; a short read found no receipt for this attempt's request id; read it back with lares vessel request <id> before any re-run`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ done · preview · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`done` params=`exit/0 fields/[[verb status requestId receipt]] ~ the vessel ran the action and wrote its effect record; the receipt names the outcome tiddler`>>
+<<has entity=`band` name=`preview` params=`exit/0 ~ with --dry-run the vessel names the effect it would land and commits nothing`>>
+<<has entity=`band` name=`refused` params=`~ the vessel refused by name (cap-denied or a verb-error); the line carries its reason and cure`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares act LOAD
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares act LOAD]] ~ the terminal; the verb rides as the first word, ALL-CAPS`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · residency-model
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zTOG0zqaI88EX3vy7TN-ByYkB6FwBYdc2E6UEW-W_-o`>>
+
+<<^ code=`&#x0004;` to=`?`>>

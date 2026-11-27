@@ -1,0 +1,108 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.offer.drops`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "drop a promotion from a wiki, by the hand"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.offer.drops"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.offer.drops"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.offer.drops"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.offer.drops ~ the hand takes a promoted item back out
+
+Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON.
+
+`trust drop <digest>` unpromotes the item the digest names. A person runs it at a real terminal.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ one-digest
+
+```memetic-wikitext
+<<has entity=`example` name=`one-digest` params=`digest/<digest> ~ drop one promotion`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ digest · wiki · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`digest` params=`takes/hex64 needs/required seat/1 as/<digest> ~ the promotion's digest, 64 lowercase hex`>>
+<<has entity=`arg` name=`wiki` params=`takes/wiki-name ~ the wiki the promotion belongs to; absent, the daemon wiki`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ which face's promotion plane this call reads or acts on, by persona index (a whole number from 0)`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand ~ a hand alone decides: an AI harness refuses promote-needs-hand, naming the command the operator runs`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ promote-digest-malformed · promote-needs-hand
+
+```memetic-wikitext
+<<has entity=`refusal` name=`promote-digest-malformed` params=`cure/[[realm.offer.drops digest/<digest>]] ~ name a hex64 digest`>>
+<<has entity=`refusal` name=`promote-needs-hand` params=`cure/[[realm.offer.reads]] ~ a hand must decide; read what stands, then the operator drops it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ dropped
+
+```memetic-wikitext
+<<has entity=`band` name=`dropped` params=`exit/0 ~ the promotion no longer stands; the answer prints as JSON`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares trust drop
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares trust drop]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · kahua-memory-stage
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fd3lOPKyah10KfgrltJn16R7H2HV4KxvhhjbkmN9gy8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

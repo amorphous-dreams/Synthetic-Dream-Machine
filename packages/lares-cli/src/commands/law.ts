@@ -1,9 +1,9 @@
 /**
- * `lares law list | pin <uri> | unpin <uri>` — the law index, offered where an agent wakes, and the verb that orders it.
+ * `lares law index | pin <uri> | unpin <uri>` — the law index, offered where an agent wakes, and the verb that orders it.
  *
  * THE INDEX DERIVES FROM CANON. `@lararium/tw5`'s `daemon-law-tiddlers` names the law (every root meme under a bag's `api/`
  * tree) and seeds the pin set into the worn face's daemon wiki (a filter whose titles head the index: the boot seed, then
- * the Mu family). `list` runs `LAW_INDEX_FILTER` through the tiddler door's `wiki-filter`, so the wiki's own engine answers
+ * the Mu family). `index` runs `LAW_INDEX_FILTER` through the tiddler door's `wiki-filter`, so the wiki's own engine answers
  * and no list stands here; its canon guard keeps every row to a record a canon layer answers, so nothing a face writes
  * prints as law. Each row reads its title and one line: the meme's `description`, else its `role`.
  *
@@ -12,7 +12,7 @@
  * title stands selected before and after, and land the text with `tiddler-put` against the base it read. House canon takes
  * no byte: the pin set lives apart from every law meme, so the AI seat may pin as the operator may.
  *
- * The list prints plainly on a terminal and through a pipe; `--json` carries `{ filter, pins, rows, total, next }`, the body
+ * The index prints plainly on a terminal and through a pipe; `--json` carries `{ filter, pins, rows, total, next }`, the body
  * the MCP seat's `law_index` answers.
  *
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-law-tiddlers
@@ -103,16 +103,16 @@ async function filterAll(args: ParsedArgs, label: string, filter: string): Promi
   }
 }
 
-async function lawList(args: ParsedArgs): Promise<number> {
+async function lawIndex(args: ParsedArgs): Promise<number> {
   const limit = countOf(args.options["limit"], "limit");
-  const pins = await filterAll(args, "law list", LAW_PINS_FILTER);
+  const pins = await filterAll(args, "law index", LAW_PINS_FILTER);
   if (!pins.ok) return pins.exit;
   const pinned = new Set(pins.titles);
   const rows: LawRow[] = [];
   let last: Record<string, unknown> = {};
   let requestId = "";
   for (let after = wordOf(args.options["after"]); ;) {
-    const page: Ran = await runDoor(args, "law list", {
+    const page: Ran = await runDoor(args, "law index", {
       verb: "wiki-filter",
       args: { recipe: RECIPE, filter: LAW_INDEX_FILTER, fields: [...LAW_ROW_FIELDS], ...(limit !== null ? { limit } : {}), ...(after ? { after } : {}) },
     });
@@ -134,7 +134,7 @@ async function lawList(args: ParsedArgs): Promise<number> {
     human: () => {
       console.log(`Lares law (pinned first): ${pins.titles.length} pinned · ${total} rows${rows.length < total ? ` (${rows.length} shown)` : ""}`);
       for (const row of rows) console.log(`${row.pinned ? "📌" : "  "} ${row.title}${row.description ? ` — ${row.description}` : ""}`);
-      if (next) console.log(`read further: lares law list --after ${next}  (or --all)`);
+      if (next) console.log(`read further: lares law index --after ${next}  (or --all)`);
       console.log(`the filter: lares wiki filter '${LAW_INDEX_FILTER}' --recipe default`);
       console.log(`pin or unpin: lares law pin <uri> · lares law unpin <uri> (the pin set: ${LAW_PINS_TITLE})`);
     },
@@ -196,13 +196,13 @@ async function lawPin(args: ParsedArgs, mode: "pin" | "unpin"): Promise<number> 
 }
 
 /** Every verb the law door answers. */
-export const LAW_VERBS = ["list", "pin", "unpin"] as const;
+export const LAW_VERBS = ["index", "pin", "unpin"] as const;
 type LawVerb = (typeof LAW_VERBS)[number];
 
 export async function cmdLaw(args: ParsedArgs): Promise<number> {
   const sub = args.positional[0] as LawVerb | undefined;
   switch (sub) {
-    case "list":  return guardDoor(args, "law list", () => lawList(args));
+    case "index": return guardDoor(args, "law index", () => lawIndex(args));
     case "pin":   return guardDoor(args, "law pin", () => lawPin(args, "pin"));
     case "unpin": return guardDoor(args, "law unpin", () => lawPin(args, "unpin"));
     default:

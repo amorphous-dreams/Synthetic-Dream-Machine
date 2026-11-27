@@ -65,12 +65,9 @@ function cmdStatus(args: ParsedArgs): number {
   return 0;
 }
 
+/** The door's account: the baked pack's lines (the carriers of `sense.capture.*`), the one home of these words. */
 function printHelp(): void {
-  console.log("lares hooks <verb>\n");
-  console.log("Verbs:");
-  console.log("  pause [--reason <t>]  suppress capture minting (write the marker)");
-  console.log("  resume                un-pause the hooks (remove the marker)");
-  console.log("  status                report the pause state");
+  for (const line of helpLines("hooks")) console.log(line);
   console.log(`\nMarker file: ${hookPauseMarkerPath()}`);
 }
 

@@ -1,0 +1,113 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.carry.restands`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "stand earlier items again after a root rotation, by cid or all"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.carry.restands"]
+title     = "lar:///ha.ka.ba/lares/afford/face.carry.restands"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.carry.restands"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.carry.restands ~ after a root rotation the earlier items stand again once carried
+
+After a root rotation the earlier items read in history alone until the operator's hand carries them: `kahua carry <cid>…` names the revision cids that keep standing, or `--all` names every earlier head the history reads (never both). One root-signed act at the current epoch stands them again. It runs on a person's hand alone, and no tool carries it. Every answer prints as JSON.
+
+Under a pūlama the root signs at the pūlama's hand door, since the vessel there holds no face root: `--terms` runs every gate and prints ONE stdout line (the one unsigned act its root signs) and opens no route; the pūlama's `sign '<terms>'` checks it and signs; `--land '<answer>'` lands the signed record, where the door builds the act afresh and lands it only over a byte-equal body. Neither asks the passphrase on the vessel, and the host shim walks the pattern (`tools/lares-container.sh kahua lift|withdraw|carry`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ one-revision · every-earlier-head
+
+```memetic-wikitext
+<<has entity=`example` name=`one-revision` params=`cid/<cid> face/1 ~ carry one earlier head across the rotation`>>
+<<has entity=`example` name=`every-earlier-head` params=`all face/1 ~ carry every earlier head the history reads`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ cid · all · face · terms · land
+
+```memetic-wikitext
+<<has entity=`arg` name=`cid` params=`takes/cid seat/1 as/<cid> ~ a revision cid that keeps standing; name several in a row, or --all`>>
+<<has entity=`arg` name=`all` params=`~ carry every earlier head the history reads, in place of naming cids`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ which face's stage this call reads or writes, by persona index (a whole number from 0); absent, the one face standing open or the worn face`>>
+<<has entity=`arg` name=`terms` params=`~ print the one terms line a pūlama signs; opens no route; name it or --land, never both`>>
+<<has entity=`arg` name=`land` params=`takes/answer ~ land the signed record from a pūlama's sign answer`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/face-root ~ one act at the current epoch, signed under the face's root out of sealed custody; a person runs it, and an AI seat names the command`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ carry-cids-or-all · kahua-hand-malformed · face-malformed
+
+```memetic-wikitext
+<<has entity=`refusal` name=`carry-cids-or-all` params=`cure/[[face.carry.restands all]] ~ the door says 'carry: name the revision cids that keep standing, or --all (never both)'`>>
+<<has entity=`refusal` name=`kahua-hand-malformed` params=`~ the pūlama's answer names the wrong kind, the wrong face, or both --terms and --land stood on one line`>>
+<<has entity=`refusal` name=`face-malformed` params=`~ --face names a persona index, a whole number from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ carried · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`carried` params=`exit/0 ~ the earlier items stand again at the current epoch; the door's answer prints as JSON`>>
+<<has entity=`band` name=`refused` params=`exit/1 ~ the door refused by name; the line carries its reason`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares kahua carry
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares kahua carry]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · kahua-memory-stage
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VbkGQ1Upnexn3AI6dDk8jlVOpJXCFhA2Gl56u3I73CI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,83 @@
+title: lar:///ha.ka.ba/lararium/tw5/afford/skin/text
+type: text/vnd.tiddlywiki
+caption: affordance skin · the text body the cli, tw5 and console skins share
+
+\whitespace trim
+\function nl() [charcode[10]]
+
+\procedure s.shows()
+\whitespace trim
+<$list filter="[<currentTiddler>afford[rows],[#/shows],<surface>]" variable="row"><$text text="  "/><$text text={{{ [<row>jsonget[call]] }}}/><$text text={{{ [<row>jsonget[role]!is[blank]addprefix[    # ]] }}}/><$text text=<<nl>>/></$list>
+\end
+
+\procedure s.takes()
+\whitespace trim
+<$list filter="[<currentTiddler>afford[rows],[#/takes],<surface>]" variable="row"><$text text="  "/><$text text={{{ [<row>jsonget[spell]] }}}/><$text text={{{ [<row>jsonget[value]!is[blank]addprefix[ <]addsuffix[>]] }}}/><$text text={{{ [<row>jsonget[role]!is[blank]addprefix[  ]] }}}/><$text text=<<nl>>/></$list>
+\end
+
+\procedure s.gate()
+\whitespace trim
+<$list filter="[<currentTiddler>afford[rows],[#/gate],<surface>]" variable="row"><$text text="  "/><$text text={{{ [<row>jsonget[name]] }}}/><$text text={{{ [<row>jsonget[role]!is[blank]addprefix[: ]] }}}/><$text text=<<nl>>/></$list>
+\end
+
+\procedure s.refuses()
+\whitespace trim
+<$list filter="[<currentTiddler>afford[rows],[#/refuses],<surface>]" variable="row"><$text text="  "/><$text text={{{ [<row>jsonget[name]] }}}/><$text text={{{ [<row>jsonget[role]!is[blank]addprefix[  ]] }}}/><$text text=<<nl>>/><$list filter="[<row>jsonget[cure]!is[blank]]" variable="cure"><$text text="    cure: "/><$text text=<<cure>>/><$text text=<<nl>>/></$list></$list>
+\end
+
+\procedure s.answers()
+\whitespace trim
+<$list filter="[<currentTiddler>afford[rows],[#/answers],<surface>]" variable="row"><$text text="  "/><$text text={{{ [<row>jsonget[name]] }}}/><$text text={{{ [<row>jsonget[exit]!is[blank]addprefix[ (exit ]addsuffix[)]] }}}/><$text text={{{ [<row>jsonget[role]!is[blank]addprefix[  ]] }}}/><$text text=<<nl>>/></$list>
+\end
+
+\procedure s.skins()
+\whitespace trim
+<$list filter="[<currentTiddler>afford[rows],[#/skins],<surface>]" variable="row"><$text text="  "/><$text text={{{ [<row>jsonget[name]] }}}/><$text text=": "/><$text text={{{ [<row>jsonget[spells]] }}}/><$text text=<<nl>>/></$list>
+\end
+
+\procedure s.edges()
+\whitespace trim
+<$list filter="[<currentTiddler>afford[edges]]" variable="edge"><$text text="  "/><$text text=<<edge>>/><$text text=<<nl>>/></$list>
+\end
+
+\procedure s.head()
+\whitespace trim
+<$list filter="[<currentTiddler>afford[prose],[#/head]]" variable="p"><$text text="  "/><$text text=<<p>>/><$text text=<<nl>>/></$list>
+\end
+
+\procedure section(title, slot)
+\whitespace trim
+<$list filter="[<slot>match[#/edges]then<currentTiddler>afford[edges]] [<slot>match[#/head]then<currentTiddler>afford[prose],[#/head]] [<slot>!match[#/edges]!match[#/head]then<currentTiddler>afford[rows],<slot>,<surface>] +[first[]]" variable="_">
+<$text text=<<nl>>/><$list filter="[<title>!is[blank]]" variable="t"><$text text=<<t>>/><$text text=<<nl>>/></$list>
+<$transclude $variable={{{ [<slot>removeprefix[#/]addprefix[s.]] }}}/>
+</$list>
+\end
+
+\procedure line()
+\whitespace trim
+<$text text={{{ [<currentTiddler>afford[spells],[],<surface>] }}}/><$text text=" — "/><$text text={{{ [<currentTiddler>get[role]] }}}/>
+\end
+
+\procedure whole()
+\whitespace trim
+<$text text={{{ [<currentTiddler>afford[usage],[],<surface>] }}}/><$text text=<<nl>>/><$text text=<<nl>>/>
+<<line>><$text text=<<nl>>/>
+<<section "" "#/head">>
+<<section "Examples:" "#/shows">>
+<$transclude $variable="section" title={{{ [<surface>match[cli]then[Flags:]else[Arguments:]] }}} slot="#/takes"/>
+<<section "Gate (the carrier's testimony; the door checks):" "#/gate">>
+<<section "Refuses (each with its cure):" "#/refuses">>
+<<section "Answers:" "#/answers">>
+<<section "Skins (one affordance, every door):" "#/skins">>
+<<section "Law:" "#/edges">>
+<$text text=<<nl>>/><$text text="Read deeper (one slot: append #/takes, #/refuses, …):"/><$text text=<<nl>>/>
+<$text text="  "/><$text text={{{ [<currentTiddler>afford[read],[],<surface>] }}}/>
+\end
+
+<%if [<depth>match[line]] %>
+<<line>>
+<%elseif [<depth>match[slot]] %>
+<$transclude $variable={{{ [<slot>removeprefix[#/]addprefix[s.]] }}}/>
+<%else%>
+<<whole>>
+<%endif%>

@@ -1,0 +1,110 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.kapae.lowers`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "lower a wiki's promotion brake on one digest, by the hand"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.kapae.lowers"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.kapae.lowers"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.kapae.lowers"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.kapae.lowers ~ the hand takes the marker down, a deliberate signed act
+
+Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The brake sets one promoted item aside by a signed marker, and a lower takes the marker down. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON. The word names five doors in the house: the nexus quorum ban (`lares nexus kapae`) and a relation's marker (`lares edge kapae`) stay beside it, the seat's branch mute reads at `sense.kapae.mutes`, and a record's tombstone rides `lares tiddler delete`.
+
+`kapae lower <digest>` takes the marker down so the item stands again; the lower signs under the face's grant and a ward route, so a person runs it at a real terminal.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ one-digest
+
+```memetic-wikitext
+<<has entity=`example` name=`one-digest` params=`digest/<digest> ~ lower the brake on one item`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ digest · wiki · face · keep · drop
+
+```memetic-wikitext
+<<has entity=`arg` name=`digest` params=`takes/hex64 needs/required seat/1 as/<digest> ~ the promoted item's digest, 64 lowercase hex`>>
+<<has entity=`arg` name=`wiki` params=`takes/wiki-name ~ the wiki the promotion belongs to; absent, the daemon wiki`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ which face's promotion plane this call reads or acts on, by persona index (a whole number from 0)`>>
+<<has entity=`arg` name=`keep` params=`~ read by no kapae act: the trust door's orphan decision names it, and a kapae line ignores it`>>
+<<has entity=`arg` name=`drop` params=`~ read by no kapae act: the trust door's orphan decision names it, and a kapae line ignores it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand ~ a hand alone lowers: an AI harness refuses kapae-needs-hand, naming the command the operator runs`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ promote-digest-malformed · kapae-needs-hand
+
+```memetic-wikitext
+<<has entity=`refusal` name=`promote-digest-malformed` params=`cure/[[realm.kapae.lowers digest/<digest>]] ~ name a hex64 digest`>>
+<<has entity=`refusal` name=`kapae-needs-hand` params=`cure/[[realm.offer.reads]] ~ a hand must lower`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ lowered
+
+```memetic-wikitext
+<<has entity=`band` name=`lowered` params=`exit/0 ~ the marker stands down; the answer prints as JSON`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares kapae lower
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares kapae lower]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · kapae
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0pVs_9ApLT9m7m-hMsDxXp6iiskgjBEW3RYwiXhkcMg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

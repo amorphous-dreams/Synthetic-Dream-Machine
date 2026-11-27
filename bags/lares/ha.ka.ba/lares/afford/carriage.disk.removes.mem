@@ -1,0 +1,115 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.disk.removes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "take a vanished carrier out of its bag, leaving nothing in its place"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.disk.removes"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.disk.removes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.disk.removes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.disk.removes ~ a pending removal answered toward the disk: the carrier leaves the wiki
+
+`remove <uri>…` takes the vanished carrier out of its own bag's layer and retracts it to absent. Only where a lower layer holds the title too does the removal raise a kāpae: the confirmation line names that layer, the person's `y` approves it (the verb sends `kapae: true`), and `--yes` alone leaves the island refusing `remove-raises-kapae` by name. Name one or more carriers, or `--all --count <n>`; an answer over more than one carrier names the count that stands pending. Where a commit took the file from the checkout, the answer names that commit and where its message says the substance went.
+
+A terminal asks `Proceed? [y/N]`; a JSON call off a terminal needs `--yes`. `--face N` answers a lit sibling's pending row without wearing it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ remove-one · remove-all
+
+```memetic-wikitext
+<<has entity=`example` name=`remove-one` params=`uri/lar:///ha.ka.ba/lares/docs/pono/example ~ retract the carrier from its bag`>>
+<<has entity=`example` name=`remove-all` params=`all/true count/3 bag/lares ~ retract every pending row of the bag, the count named`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ uri · all · count · bag · face · yes
+
+```memetic-wikitext
+<<has entity=`arg` name=`uri` params=`takes/lar-address seat/1 as/<uri>… ~ one or more carriers a pending removal names`>>
+<<has entity=`arg` name=`all` params=`~ every pending row of the named bag; rides --count`>>
+<<has entity=`arg` name=`count` params=`takes/number ~ the count that stands pending, read from lares shore; an answer over more than one carrier names it`>>
+<<has entity=`arg` name=`bag` params=`takes/bag-uri ~ narrow to one bag`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ a lit sibling's shore, by handle index`>>
+<<has entity=`arg` name=`yes` params=`~ name the intent for a call off a terminal; approves nothing by itself`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write · kapae
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/hand ~ the carrier leaves the wiki's records; a kāpae over a lower layer needs the person's own y`>>
+<<has entity=`gate` name=`kapae` params=`who/hand ~ a removal that raises a kāpae over a lower layer asks a person's y at the prompt; --yes alone approves it not`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ remove-raises-kapae · usage · count-missing · a-state-that-moved
+
+```memetic-wikitext
+<<has entity=`refusal` name=`remove-raises-kapae` params=`cure/[[carriage.disk.removes uri/<uri>]] ~ a lower layer holds the title too; answer y at a terminal to raise the kāpae`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.disk.removes uri/<uri>]] ~ name a carrier, or --all with --count; --all beside carriers refuses`>>
+<<has entity=`refusal` name=`count-missing` params=`cure/[[carriage.disk.removes all/true count/3]] ~ an answer over more than one carrier names the count that stands pending`>>
+<<has entity=`refusal` name=`a-state-that-moved` params=`~ an answer names the state its giver read (a standoff's key, or the count that stands pending); where that state moved, the island refuses by name and nothing changes`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ removed · aborted
+
+```memetic-wikitext
+<<has entity=`band` name=`removed` params=`exit/0 fields/[[uri retiredBy]] ~ the carrier left its bag; retiredBy names the commit that took the file, where one did`>>
+<<has entity=`band` name=`aborted` params=`exit/1 ~ the person answered no at the prompt`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares shore remove
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares shore remove]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MXy66C0xeWv8LFh111aIjxm4PjWY7Dezog1QqpwZU1Q`>>
+
+<<^ code=`&#x0004;` to=`?`>>

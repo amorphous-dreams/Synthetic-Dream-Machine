@@ -16,12 +16,17 @@
  * A KEY MAY NAME A SUB-DOOR. `"<door> <sub>"` keys the sub-verb's own entry; the dispatcher prefers the
  * longer key when the positional matches, so a sub-door's flags reach the reader instead of its parent's.
  *
- * PURE DATA, SO ANY VESSEL CAN HOLD IT. This module imports nothing — no `node:fs`, no environment read.
+ * A DOOR FLIPS TO ITS CARRIERS. Where every affordance a door skins holds an affordance carrier, `helpLines` reads the baked
+ * affordance pack (`@lararium/tw5/affordance-pack`) and the door's entry here burns in the same commit: one home, never two.
+ * `oracle` flipped first (lar:///oracle.cast.throws).
+ *
+ * PURE DATA, SO ANY VESSEL CAN HOLD IT. This module reads no `node:fs` and no environment; the pack rides as data.
  * The `meme` field NAMES the wiki record behind a verb door (`lar:` names; it never fetches); the `--meme`
  * reach rides the one read door `lares tiddler get --meme` already uses, which any vessel holding the cap can run.
  * Every URI here comes HARVESTED from the owning module's own `Meme:` header — never invented at this seat.
  */
 import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
+import { packDoor, packRender, packRoute } from "@lararium/tw5/affordance-pack";
 
 export interface CommandHelp {
   /** the spine an operator greps for: `usage: lares <door> <a | b | c>`. */
@@ -41,100 +46,6 @@ export interface CommandHelp {
 }
 
 export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
-  ddate: {
-    usage: "usage: lares ddate [+FORMAT] [day month year]",
-    synopsis:
-      "Print the Discordian date, computed by the house's own calendar (no host ddate binary stands behind it). " +
-      "Five seasons of 73 days (Chaos, Discord, Confusion, Bureaucracy, The Aftermath), a five-day week (Sweetmorn, Boomtime, Pungenday, " +
-      "Prickle-Prickle, Setting Orange), YOLD = the Gregorian year + 1166, St. Tib's Day on February 29 (no season, no weekday), " +
-      "an apostle's holyday on day 5 of a season and its season holyday on day 50. With no date it reads today's local day. " +
-      "X-Day (Confusion 40, 9827 YOLD) is the Church of the SubGenius's date, set forward once the first X-Day passed without incident; %X counts the days to it.",
-    details: [
-      "  %A %a   weekday, long and short          %B %b   season, long and short",
-      "  %d      day of the season                %e      the ordinal (1st, 11th, 21st, 22nd, 23rd)",
-      "  %E      the ordinal by its last digit alone (11st, 12nd, 13rd): the first ddate's reading, an easter egg",
-      "  %H      the day's holyday, if any        %N      stop here unless the day holds a holyday",
-      "  %Y      the YOLD                         %X      days until X-Day (negative once it passed)",
-      "  %n %t   newline, tab                     %.      an exclamation from the platform's entropy door",
-      "  %{ %}   the span between them reads \"St. Tib's Day\" on February 29 and prints plain on every other day",
-    ],
-    examples: [
-      "lares ddate                                       # today, with the default format",
-      "lares ddate 5 1 2024                              # a named day: Setting Orange, Chaos 5, 3190 YOLD",
-      "lares ddate '+%{%A, the %e of %B%}, %Y. %N%nCelebrate %H' 19 2 2025",
-      "lares ddate +%X 20 11 2026                        # days until X-Day",
-      "lares ddate '+%. %E'                              # an exclamation and the first ddate's ordinal",
-    ],
-    flags: [
-      "--json       emit the envelope instead of the bare line: {text, entropy, gregorian, yold, tibs, season, dayOfSeason, weekday, holyday}; `entropy` names the door a `%.` drew from",
-    ],
-  },
-  oracle: {
-    usage: "usage: lares oracle cast --recipe <slug> [--asking <words>] [--fresh | --seed <words>] [--coins <six values>] [--caster <name>]",
-    synopsis:
-      "Cast the I Ching by three coins a line and let the vessel write the cast as one tiddler under lar:///ha.ka.ba/lares/oracle/casts/. " +
-      "A line sums three coins, heads three and tails two: 6 (old yin) and 9 (old yang) change, 7 and 8 hold. The six lines, bottom first, " +
-      "name the primary hexagram by its King Wen number; the changing lines turned over name the relating one. With no --coins the coins draw " +
-      "through the platform's entropy door (crypto.getRandomValues); --coins hands in the operator's own throw with real coins, named " +
-      "operator:three-coins. A cast stands as an act: the tiddler holds the throw, and reading it again never casts again; " +
-      "a blind throw to collide uncertainty with: the throw stands, the reading stays open.",
-    details: [
-      "  The reading names the house's imported texts for each hexagram: the DOA (Kopyleft 2022, Steal and Share Alike) and the",
-      "  e-jing ((K)opyLeft, its quoted snippets under fair use), each with its attribution and license.",
-      "  One asking, one throw: --asking names the question, and the same words by the same caster answer the cast already",
-      "  standing (replayed), at any later time, so a retry never throws twice. A bare cast mints its own nonce at the word.",
-      "  A person's hand opens the second mode: --fresh throws anew for the same words, --seed <words> throws the same coins for",
-      "  the same seed; a seat that asks either reads `asks` with the line a person runs (exit 5). A lost answer reads owed",
-      "  (exit 6), never failed. The readings print as of the digest of the bytes read. The throw keys on the asker the",
-      "  vessel booked (--caster annotates) and on the words normalized (case, spacing, trailing punctuation never re-roll).",
-      "  A seat names its query before it casts: its bare cast reads `asks`. A sleeping vessel honors --seed and refuses a bare",
-      "  --asking. A weak seed reads back: the record names the seed by a 16-hex digest anyone can test guesses against, so",
-      "  choose a strong one.",
-    ],
-    examples: [
-      "lares oracle cast --recipe default                       # a house cast through the platform's entropy door",
-      "lares oracle cast --recipe default --coins 7,8,9,6,7,7   # the six lines you threw with real coins, bottom first",
-      "lares oracle cast --recipe default --json                # the verb's answer: cast, readings, the tiddler's title",
-      "lares oracle cast --recipe default --asking 'which road first?'          # asked again, the same throw answers",
-      "lares oracle cast --recipe default --asking 'which road first?' --fresh  # a person asks the same words anew",
-    ],
-    flags: [
-      "--asking <w>  the question: the same words by the same caster answer the cast already standing",
-      "--fresh       a person's hand: a new throw for the same words",
-      "--seed <w>    a person's hand: coins drawn from these words, the same seed the same throw (named by its digest)",
-      "--coins <v>   six line values of 6, 7, 8 or 9, bottom line first (7,8,9,6,7,7 or 789677): the operator's own throw",
-      "--caster <n>  who cast (default: operator)",
-      "--json        emit {band, intent, replayed, decision, created, title, cast, text, readings, asOf, note}",
-    ],
-  },
-  law: {
-    usage: "usage: lares law list [--limit N] [--after <cursor>] [--all]  |  lares law pin <uri>  |  lares law unpin <uri>",
-    synopsis:
-      "Read the house's law, pinned law first, from the worn face's daemon wiki. The index derives from canon by filter and no list stands " +
-      "in code: the law reads every root meme under a bag's api/ tree, by title, and $:/config/lares/law/pins holds the pin set (the boot " +
-      "seed, then the Mu family), a TiddlyWiki filter the wiki's own engine runs. Only canon prints: a row stands where a canon layer " +
-      "answers its record, so nothing a face writes reads as law. A pin edits the pin set by one run, keeping its layout, and lands it in " +
-      "the face's working layer, never in house canon; a pin orders canon law and adds none.",
-    details: [
-      "  lares law list            the pinned titles (marked 📌), then the law they leave out, each with its description or role",
-      "  lares law pin <uri>       add a law meme to the pin set (a `[[uri]]` run); a title no canon law holds refuses law-pin-absent",
-      "  lares law unpin <uri>     take it out (its `[[uri]]` run leaves; a title a broader run names takes a `-[[uri]]` run)",
-    ],
-    examples: [
-      "lares law list                                              # the first page: pins, then law by title",
-      "lares law list --all --json                                 # every row: {filter, pins, rows, total, next}",
-      "lares law pin lar:///ha.ka.ba/lares/api/pono/lar-uri        # read the address law right after the Mu family",
-      "lares law unpin lar:///ha.ka.ba/lares/api/mu/chao           # drop one Mu member from the pins",
-    ],
-    flags: [
-      "--limit N        rows per page (the door's ceiling holds)",
-      "--after <c>      the page behind a cursor `list` named",
-      "--all            follow every cursor to the end",
-      "--json           emit the answer: list {filter, pinsTitle, pins, rows, total, next}; pin {title, uri, decision, pinned, text, hash}",
-    ],
-    next: ["lares tiddler get <uri> --recipe default --meme   # read one law meme whole"],
-    meme: "lar:///ha.ka.ba/lararium/tw5/daemon-law-tiddlers",
-  },
   herm: {
     usage: "usage: lares herm [--port N] [--relay-port N]  |  lares herm relay-rotate",
     synopsis: "Stand a herm: the wiki-less wayfarer that stands the carriage crossroads a family's hearths dial to carry sealed bodies between each other. It boots the same node the vessel runs, under the herm recipe, and prints the crossroads' dial URL(s) and gate key once the node attests ready.",
@@ -148,12 +59,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--relay-port <N>   the carriage crossroads port hearths dial (LAR_HERM_RELAY_PORT, else 8090)",
     ],
     next: ["where the host holds the engine, a herm stands as the container's own service: docker compose -f docker-compose.surface.yml --profile herm up -d herm"],
-  },
-  trust: {
-    usage: "usage: lares trust list|prepare|commit|drop|orphan [digest] [--wiki wiki] [--face N]",
-    synopsis: "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises.",
-    examples: ["lares trust list --wiki garden", "lares trust prepare <digest> --why reason", "lares trust commit <digest>", "lares trust orphan <digest> --keep"],
-    flags: ["--wiki <wiki>   wiki name", "--face N   face index", "--why <reason>   preparation reason", "--keep   keep an orphan", "--drop   drop an orphan"],
   },
   lei: {
     usage: "usage: lares lei show|kui|unstring|restring --rite push|kukulu|keep|exec --branch <name> [--scope '<json>'] [--head <h>] [--returns <n>] [--reach wide|head] [--after <cid>] [--lei <cid>] [--yes] [--face N | --all]  |  lares lei land '<pūlama answer>' [--face N]  |  lares lei terms kui|restring|unstring --rite <r> --branch <name> [--returns <n>] [--reach wide|head] [--head <h>] [--after <cid>] [--lei <cid>] [--yes] [--face N | --all]",
@@ -241,34 +146,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--keeper-to <key> --keeper-next <closure>   (offer) the keeper move the vouches name: the successor's one-handoff key (64 hex) and the committed closure (sha256:<64 hex>), together or neither",
       "--tessera <id>   (land) the tessera a begin answered", "--face N   face index (a kūkulu naming none acts as the worn face; a keep naming none acts as the keep's face and says so; the floor refuses by name)"],
   },
-  kapae: {
-    usage: "usage: lares kapae raise|lower|flag <digest> [--wiki wiki] [--face N]",
-    synopsis: "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises.",
-    examples: ["lares kapae flag <digest> --why reason", "lares kapae raise <digest> --wiki garden", "lares kapae lower <digest>"],
-    flags: ["--wiki <wiki>   wiki name", "--face N   face index", "--why <reason>   flag reason", "--keep   keep an orphan", "--drop   drop an orphan"],
-  },
   "intent-relay": {
     usage: "usage: lares intent-relay enable|disable|status|rotate [--face N] [--json]",
     synopsis: "Control a face's sealed intent relay and inspect its public pin and admission key.",
     examples: ["lares intent-relay enable --face 1", "lares intent-relay status --face 1", "lares intent-relay rotate"],
     flags: ["--face N   face index", "--json   structured output"],
-  },
-  kahua: {
-    usage: "usage: lares kahua mint|propose|stage|lift|withdraw|carry|get [title|cid...] [--face N]",
-    synopsis: "Read and write one face's kahua stage, the fleet's working-memory stage. The face's founding act pins the stage, by whichever device founds the face; `mint` adopts that pin and registers it, and a face whose log names none refuses `kahua-mint-outside-founding`. Memory climbs in two crossings: `stage` writes a row into the face's local canon bags/daemon-<F> (local, unsigned; any seat may), and a lift carries one staged row to every device the face wears. A lift prints the staged row's preview (title, row digest, fields, body) and lifts only on that row digest typed back at a terminal, or `--digest <hex>` naming the row digest the preview printed; a bare --yes lifts nothing. Two digests share one word: the row digest (what `stage` answers and a lift names) covers the row's body and fields, while a proposal's `digest` names the body digest, the body bytes alone; a lift with `--proposal` compares the proposal's body digest with the staged body. A lift signs under the face's root, so a lift always asks the face's passphrase at a terminal; `--digest` spares the typed-back digest alone. The door reads the row back and refuses `kahua-lift-unstaged` (no such row) or `kahua-lift-digest-moved` (the row moved since the preview); a lift the head already carries lands nothing. An AI seat proposes and stages; the operator's hand lifts, withdraws and carries (after a root rotation, the earlier items stand again only once carried), each act signed under the face's root out of sealed custody. Every answer prints as JSON.",
-    examples: [
-      "lares kahua mint --face 1",
-      "lares kahua propose --face 1 --proposals '[{\"title\":\"T\",\"revision\":\"r1\",\"text\":\"body\",\"taint\":[]}]'",
-      "lares kahua stage T --face 1 --text body",
-      "lares kahua lift T --face 1 --taint none   # previews the staged row, asks for its row digest, then the face's passphrase",
-      "lares kahua lift T --face 1 --taint none --digest <hex> --proposal <intent-id>",
-      "lares kahua withdraw <cid> --face 1",
-      "lares kahua carry <cid> <cid> --face 1",
-      "lares kahua carry --all --face 1",
-      "lares kahua get T --face 1 --history",
-      "lares kahua get --face 1   # the stage's LIFTED items alone; a staged row rests in bags/daemon-<F> and lists here once its lift lands",
-    ],
-    flags: ["--face N   face index", "--text <body> | --file <path>   (stage) the row's body", "--fields <json>   (stage) the row's fields", "--digest <hex>   (lift) the staged row's row digest, as its preview printed it; it stands in for typing the digest back, and the passphrase prompt still needs a terminal", "--taint a,b | none   inputs from outside the face", "--sources <json>   further daemon sources the item distils (the staged row always rides)", "--parent <cid> | none   the revision a lift supersedes", "--proposal <id>   the proposal a lift answers", "--proposals <json>   a proposal batch", "--history   every revision of a title", "--all   (carry) every earlier head the history reads"],
   },
   intent: {
     usage: "usage: lares intent issue|show|ask|answer|claim|takeover|release|cancel|supersede|release-root|delegate|delegate-revoke|delegations|keeper-cosign [verb-or-id] [--face N]",
@@ -517,22 +399,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     next: ["lares sense teardown --confirm --drain   # tear the SOVEREIGN planes", "lares hooks status"],
   },
 
-  mcp: {
-    usage: "usage: lares mcp aho [-- <child argv…>]",
-    synopsis:
-      "The aho: it holds an MCP client's stdio for the session's whole life and spawns the house's own surface (or the argv " +
-      "after `--`) as a child that may fall and rise, so a surface restart never reaches the client. While no child " +
-      "stands the seat answers `initialize` and the tool list from what the child last answered; a call answers the " +
-      "tool error `hearth-sleeps` at once. A call in flight at a child's death answers `outcome-unknown: re-read " +
-      "before re-trying`, and the seat never sends it again. The seat logs event names and counts alone, and holds no key.",
-    examples: [
-      "lares mcp aho                      # the seat a harness config records: the house's own surface, resolved at each spawn",
-      "lares mcp aho -- <child argv…>     # name another child (a test, another surface)",
-      "lares home tend                    # writes the seat into each harness config",
-    ],
-    next: ["lares home read   # the seat each harness config names"],
-  },
-
   spirit: {
     usage: "usage: lares spirit <verb> <pet-name> [...]  (the verbs: `lares spirit` with no word lists the door's table)",
     synopsis:
@@ -563,22 +429,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares spirit summon 'cold-reader#00002' --mandate <uri>@<hash>  # the house starts the instance: one wake line through the launch cap",
       "lares spirit handback 'cold-reader#00002' --record <uri>        # the edge names what came back; the lane frees",
     ],
-  },
-  hooks: {
-    usage: "usage: lares hooks <pause|resume|status>",
-    synopsis:
-      "The hook-lever on its own: `pause` / `resume` / `status` capture hooks by writing / " +
-      "removing a marker file a capture hook checks and steps aside on when present. Lets a migration or a " +
-      "`lares sense teardown` run WITHOUT daemon-spawn contention. `lares mempalace quiesce` pauses AND " +
-      "drains in one gesture; this verb is the lever alone (suppress minting without touching live daemons).",
-    examples: [
-      "lares hooks status                 # is minting paused?",
-      "lares hooks pause                  # suppress capture minting",
-      "lares hooks pause --reason migrate # ... with a recorded reason",
-      "lares hooks resume                 # un-pause",
-    ],
-    flags: ["--reason <t>   (pause) record why the hooks were paused (default: manual)"],
-    next: ["lares mempalace status", "lares mempalace quiesce   # pause AND drain"],
   },
 
   host: {
@@ -1017,24 +867,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     ],
     next: ["lares meme check <file.mem>", "lares meme sitting bags/   # what the fire could take; it BURNS NOTHING"],
     meme: "lar:///ha.ka.ba/lares/api/pono/meme",
-  },
-
-  events: {
-    usage: "usage: lares events [--since <epoch:writer:seq>] [--kind <bag-projected>] [--wait] --json",
-    synopsis:
-      "Read the vessel journal through the daemon. Without --wait it returns the matching entries already standing. " +
-      "With --wait it answers on the first matching entry after --since (or after now when --since is absent).",
-    examples: [
-      "lares events --json",
-      "lares events --kind bag-projected --wait --json",
-      "lares events --since genesis:node-daemon:12 --json",
-    ],
-    flags: [
-      "--since <epoch:writer:seq>  read entries after this cursor",
-      "--kind <k>                  one kind: bag-projected",
-      "--wait                      hold until the first matching entry lands",
-      "--json                      print the structured payload",
-    ],
   },
 
   library: {
@@ -1516,7 +1348,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
  */
 export function helpDoor(command: string, positional: readonly string[]): string {
   const sub = positional[0];
-  if (sub && `${command} ${sub}` in COMMAND_HELP) return `${command} ${sub}`;
+  // A verb a carrier skins reads its own whole (`lares law pin --help`), the way a registry sub-door reads its own entry.
+  if (sub && (`${command} ${sub}` in COMMAND_HELP || packRoute("cli", `${command} ${sub}`) !== undefined)) return `${command} ${sub}`;
   return command;
 }
 
@@ -1536,6 +1369,14 @@ export function seatAbout(door: string, about: string): void { ABOUT.set(door, a
  * from. A module that keeps its own copy of these words splits the two; the weld test refuses that.
  */
 export function helpLines(door: string, summary?: string): string[] {
+  // THE SEAM (lar:///ha.ka.ba/kahua/memory/plan/cap-memes-compass §4): a door every affordance of which holds a carrier reads
+  // the baked pack, and its registry entry leaves in the commit that flips it; every other door reads the registry below. The census
+  // law (tests/laws/affordance-census.law.test.ts) counts the registry doors down to zero, when this registry leaves.
+  const packed = packDoor(door);
+  if (packed !== undefined) return [...packed.help];
+  const verb = packRoute("cli", door);
+  const whole = verb === undefined ? undefined : packRender(verb, "cli", "whole");
+  if (whole !== undefined) return [...whole];
   const help = COMMAND_HELP[door];
   const about = ABOUT.get(door);
   if (!help) {

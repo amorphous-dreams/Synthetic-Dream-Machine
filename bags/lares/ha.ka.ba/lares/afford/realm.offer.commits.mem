@@ -1,0 +1,109 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.offer.commits`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "commit a prepared promotion into the wiki, by the hand"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.offer.commits"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.offer.commits"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.offer.commits"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.offer.commits ~ the hand commits, and the promoted rite stands
+
+Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON.
+
+`trust commit <digest>` promotes the item the digest names. It signs under the face's grant and a ward route, so a person runs it at a real terminal; an AI seat prepares and names the command.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ one-digest · in-a-wiki
+
+```memetic-wikitext
+<<has entity=`example` name=`one-digest` params=`digest/<digest> ~ commit one promotion`>>
+<<has entity=`example` name=`in-a-wiki` params=`digest/<digest> wiki/garden ~ commit it into one wiki`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ digest · wiki · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`digest` params=`takes/hex64 needs/required seat/1 as/<digest> ~ the promotion's digest, 64 lowercase hex`>>
+<<has entity=`arg` name=`wiki` params=`takes/wiki-name ~ the wiki the promotion belongs to; absent, the daemon wiki`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ which face's promotion plane this call reads or acts on, by persona index (a whole number from 0)`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand ~ a hand alone decides: an AI harness refuses promote-needs-hand, naming the command the operator runs`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ promote-digest-malformed · promote-needs-hand
+
+```memetic-wikitext
+<<has entity=`refusal` name=`promote-digest-malformed` params=`cure/[[realm.offer.commits digest/<digest>]] ~ name a hex64 digest`>>
+<<has entity=`refusal` name=`promote-needs-hand` params=`cure/[[realm.offer.prepares digest/<digest> why/<reason>]] ~ a hand must decide; an AI seat prepares and the operator commits`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ committed
+
+```memetic-wikitext
+<<has entity=`band` name=`committed` params=`exit/0 ~ the promotion stands; the answer prints as JSON`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares trust commit
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares trust commit]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · kahua-memory-stage
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jccj7rB26R3fBR3Kje48I67x_zpticckr_yjPum2NGU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

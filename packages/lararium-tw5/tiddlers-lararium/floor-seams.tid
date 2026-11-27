@@ -26,6 +26,7 @@ CONFIG TiddlyWiki5 automerge-repo keyhive subduction
 CONFIG packages/*/package.json packages/*/tsconfig*.json packages/*/vitest*.ts packages/*/vite*.ts packages/*/stryker.config.json
 CONFIG tests/package.json tests/tsconfig.json tests/vitest*.ts
 CONFIG packages/*/src/index.ts packages/lararium-node/src/testing.ts packages/lararium-tw5/src/node.ts
+CONFIG packages/lararium-tw5/affordance-pack.json
 
 # ── the vessel tier and the dark lamps ──────────────────────────────────────────────────────────────────────────────
 VESSEL tools/census-drill.test.mjs tools/house-keep.test.mjs tools/keep-cold.test.mjs tools/vault-restore-door.test.mjs
@@ -126,6 +127,7 @@ SEAM cli-door-table whole=packages/lares-cli
 MOVES cli-door-table c verb-table* verb-call* verb-result* parse-args* command-help* help-meme* problems* store-door* render* target-option* face-option* reality-tunnel/**
 MOVES cli-door-table path packages/lares-cli/bin/**
 MOVES cli-door-table n store-door-registry* store-door-verbs* routing-arg*
+MOVES cli-door-table t affordance-pack* affordance-read* affordance-rows* filters/afford* modules/afford-face*
 GUARDS cli-door-table e2e tiddler-door realm-select mcp-seat-binds-the-hearth
 GUARDS cli-door-table witness law-mutants-witness
 
@@ -222,7 +224,7 @@ GUARDS intent-handle-social e2e herm-floor
 GUARDS intent-handle-social node-e2e fleet-join-dial
 
 SEAM swarm-spirit-floor-queue
-MOVES swarm-spirit-floor-queue m swarm-* spirit-* exec-lei* oracle-cast* ddate*
+MOVES swarm-spirit-floor-queue m swarm-* spirit-* exec-lei* oracle-cast* ddate* oracle-loop*
 MOVES swarm-spirit-floor-queue n swarm-wiki* exec-lei-door*
 MOVES swarm-spirit-floor-queue t floor-ledger* floor-owes* filters/floor-queue* exec-lei-route* oracle-cast-verb*
 MOVES swarm-spirit-floor-queue c commands/spirit* commands/lei* spirit-words*

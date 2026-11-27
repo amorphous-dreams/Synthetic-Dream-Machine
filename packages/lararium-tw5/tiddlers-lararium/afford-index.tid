@@ -1,0 +1,11 @@
+title: lar:///ha.ka.ba/lararium/tw5/afford/index
+type: text/vnd.tiddlywiki
+caption: affordance index · one line per carrier
+
+\whitespace trim
+\function nl() [charcode[10]]
+<$let surface={{{ [<surface>!is[blank]] ~[[cli]] }}}>
+<$list filter="[all[shadows+tiddlers]tag[lar:///ha.ka.ba/lares/api/pono/affordance]!is[draft]afford[match],<pattern>sort[]]">
+<$text text="  "/><$text text={{{ [<currentTiddler>afford[spells],[],<surface>] ~[<currentTiddler>afford[address]] }}}/><$text text="  "/><$text text={{{ [<currentTiddler>get[role]] }}}/><$text text=<<nl>>/>
+</$list>
+</$let>

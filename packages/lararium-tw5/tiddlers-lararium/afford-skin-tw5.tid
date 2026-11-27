@@ -1,0 +1,6 @@
+title: lar:///ha.ka.ba/lararium/tw5/afford/skin/tw5
+type: text/vnd.tiddlywiki
+caption: affordance skin · tw5
+
+\whitespace trim
+<$let surface="tw5"><$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/afford/skin/text"/></$let>

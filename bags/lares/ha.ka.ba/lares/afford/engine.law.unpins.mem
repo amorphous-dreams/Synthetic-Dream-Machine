@@ -1,0 +1,119 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.law.unpins`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "unpin a law meme: its run leaves the pin set"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.law.unpins"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.law.unpins"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.law.unpins"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.law.unpins ~ a law meme taken out of the pin set
+
+The title's `[[uri]]` run leaves the pin set (`$:/config/lares/law/pins`); a title a broader run still names (a Mu member) takes a `-[[uri]]` run instead. The set lands through `tiddler_put` in this face's working layer of its daemon wiki, against the base it read, keeping its layout; house canon takes no byte.
+
+A title not pinned answers `decision: "noop"`; a pin set that moved under the read refuses `law-pins-moved` (call again). The answer carries {title, uri, decision, pinned, text, hash, bag}.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ unpin-a-mu-member
+
+```memetic-wikitext
+<<has entity=`example` name=`unpin-a-mu-member` params=`uri/lar:///ha.ka.ba/lares/api/mu/chao ~ drop one Mu member from the pins`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ uri · face
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`uri` params=`takes/lar-address needs/required seat/1 ~ the law meme by its lar: address, one title with no whitespace, brackets, braces or bar`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ the pin set lands in the face's own working layer through the tiddler door, against the base it read; house canon takes no byte; reversible and trusted, so the seat runs it on the operator's loop`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ law-pins-moved · usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`law-pins-moved` params=`cure/[[engine.law.unpins uri/lar:///ha.ka.ba/lares/api/mu/chao]] ~ the pin set moved since the read; run the unpin again`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.law.unpins uri/lar:///ha.ka.ba/lares/api/mu/chao]] ~ name the law meme by its lar: address; one title with no whitespace, brackets, braces or bar`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ unpinned · noop
+
+```memetic-wikitext
+<<has entity=`band` name=`unpinned` params=`exit/0 fields/[[title uri decision pinned text hash bag]] ~ the pin set landed with the title out of it; decision reads put`>>
+<<has entity=`band` name=`noop` params=`exit/0 ~ the title already stands unpinned; the pin set moved nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares law unpin
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares law unpin]] ~ the terminal; the law meme rides as <uri>`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! law_unpin
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`spells/law_unpin omits/face ~ the seat; answers the body`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · filters
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/filters`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JkHQXHtxK-fMyrG6YZ1UgsaPKwdpg4hu-SfcpgdwTuk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

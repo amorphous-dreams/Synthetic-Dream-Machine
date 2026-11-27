@@ -38,6 +38,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/working-procedures
  */
 
+import { helpLines } from "../command-help.js";
 import { watch as fsWatch, type FSWatcher } from "node:fs";
 import { join, isAbsolute } from "node:path";
 import { drainSeat, isWatchNoise, cookieSelfTest, pairedDeletions } from "@lararium/node";
@@ -67,14 +68,9 @@ export function confirmedRenames(deletions: Record<string, unknown> | undefined)
   return renamedSources(deletions);
 }
 
+/** The watcher's usage answers with the ingest door's lines, drawn from its carrier (`lares ingest --help` prints the same). */
 function printUsage(): void {
-  console.log("usage: lares ingest --watch --source <dir> --to <bagUri> [--apply] [--debounce ms]");
-  console.log("  default = preview (logs what each settle WOULD ingest, submits nothing);");
-  console.log("  --apply submits each settled wave through the island's INGEST gate;");
-  console.log("  a vanished file tombstones nothing: it stands pending at the vessel's shore until a person");
-  console.log("  answers with `lares shore remove` or `lares shore restore`;");
-  console.log("  a file that holds no base never lands over records that say something else, and a file that");
-  console.log("  moved while the records moved never lands: each stands off at the vessel's shore (`lares shore`).");
+  for (const line of helpLines("ingest")) console.log(line);
 }
 
 export async function cmdWatch(args: ParsedArgs): Promise<number> {

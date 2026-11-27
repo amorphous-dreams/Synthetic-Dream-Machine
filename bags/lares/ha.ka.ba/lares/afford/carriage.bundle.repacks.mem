@@ -1,0 +1,111 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.bundle.repacks`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "re-render a multi-tiddler bundle from its aside provenance"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.bundle.repacks"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.bundle.repacks"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.bundle.repacks"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.bundle.repacks ~ the pack's collect-the-residency export: a foreign bundle takes the round trip
+
+A multi-tiddler bundle (a `.json` array of tiddlers, or a `.multids`) rides as a PACK: one file, many tiddlers, whose membership rests ASIDE in the bag's `$:/config/OriginalTiddlerPaths`, never on the tiddlers. `REPACK` asks the island to collect the pack's members from that aside map and re-render the bundle through TW5's own serializer, then writes the bytes to disk: the deliberate round trip a foreign bundle takes before an upstream TW5 PR (a `.mem` path recomposes by itself; a foreign pack re-renders on this verb alone).
+
+The pack path derives from the file's mirror-relative address plus its extension, so the source sits under `bags/` or `wikis/`; `--out` names where the bytes land and defaults to the source. REPACK registers as a QUERY verb (read cap, no residency mutation, no effect record), so it asks no `Proceed?` and carries no effect key; only a fresh request id rides each attempt, and a repeat stays safe. Members the bag tombstoned print as missing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ repack-in-place · repack-aside
+
+```memetic-wikitext
+<<has entity=`example` name=`repack-in-place` params=`source/./wikis/lares/bundles/plugin.json from/lar:///ha.ka.ba/bags/lares ~ re-render the bundle over itself from the bag's aside provenance`>>
+<<has entity=`example` name=`repack-aside` params=`source/./wikis/lares/bundles/plugin.json from/lar:///ha.ka.ba/bags/lares out/./out/plugin.json ~ land the re-rendered bytes in another file`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ source · from · out · in-wiki
+
+```memetic-wikitext
+<<has entity=`arg` name=`source` params=`takes/file needs/required ~ the disk bundle (.json or .multids) whose pack the island collects`>>
+<<has entity=`arg` name=`from` params=`takes/bag-uri needs/required ~ the bag holding the pack's members, whose aside provenance names them`>>
+<<has entity=`arg` name=`out` params=`takes/file ~ where the re-rendered bundle lands; defaults to the source`>>
+<<has entity=`arg` name=`in-wiki` params=`~ run the act in the active wiki's island`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ read
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`read` params=`who/seat-or-hand ~ a QUERY verb: read cap, no residency mutation and no effect record; the only write lands the bytes in the named host file`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · outcome-unknown
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.bundle.repacks source/<bundle> from/<bag>]] ~ --source and --from both stand required; a source outside bags/ and wikis/ derives no address`>>
+<<has entity=`refusal` name=`outcome-unknown` params=`~ this process stopped waiting after the vessel answered; a short read found no receipt for this attempt's request id; read it back with lares vessel request <id> before any re-run`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ repacked · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`repacked` params=`exit/0 fields/[[verb pack out count missing]] ~ the bundle re-rendered; count names the members, missing the tombstoned ones`>>
+<<has entity=`band` name=`refused` params=`~ the island refused by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares act REPACK
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares act REPACK]] ~ the terminal; the verb rides as the first word, ALL-CAPS`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · residency-model
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yqWRlkGgE-i3p0aJSJ2iQH09K7k4ZH-FAp6ejSNMOkI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

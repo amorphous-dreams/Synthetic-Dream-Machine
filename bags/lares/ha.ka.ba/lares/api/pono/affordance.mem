@@ -1,0 +1,160 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "the affordance carrier: one canon meme per affordance address, every door a skin of it"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/pono/affordance"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/affordance"
+```
+
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
+
+<<~ ahu slot=`#/head`>>
+
+! Affordance ~ one carrier per affordance address
+
+An ''affordance carrier'' describes one thing the house affords: its arguments, its examples, its gate, its refusals with their cures, its answers, and every door that reaches it. A CLI verb, an MCP tool, a TW5 action widget and a console call each stand as a ''skin'' of one carrier and hold no words of their own; each renders the carrier. One filter on the address gathers the carrier, its code, its tests, its canon law and its act records, so two doors for one power show as two skins under one address, in plain sight.
+
+''A carrier describes; it never grants'' (Domain Affordances law 1). No slot, field or tag of a carrier feeds an admission check. `#/gate` carries testimony of the gate; the door checks the ocap. A drift law compares the testimony to the handler, never the reverse.
+
+The type tag `lar:///ha.ka.ba/lares/api/pono/affordance`, written fully qualified, gathers every carrier: `[tag[lar:///ha.ka.ba/lares/api/pono/affordance]]` derives the Affordance Map, and no table lists it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/residency`>>
+
+!! residency ~ address tag · stable seat · canon bag · role
+
+''The address.'' An affordance address takes the three-term root of the `lar:` URI law (`lar:///oracle.cast.throws`: heading, angle, dynamic), held to the seed headings at t1. A carrier never names a wildcard as its own address; `oracle.*` rides a help filter alone.
+
+''The seat (measured in source, 2026-11-26).'' The canon walk seats a carrier only at a `uri-path` that opens on a three-term root FOLLOWED BY a path: the siting function (`carrierBaseRelPath`, `lararium-node/src/bag-paths.ts`) answers null for a bare root, the genesis cut then refuses the carrier as a title/path disagreement (`genesis-floor.ts`), and the mirror's reverse derivation (`mirrorDirFileToUri`) skips the file. The daemon working layer seats a bare-root title through the tiddler door; canon and genesis do not. So a canon carrier seats at the stable path `lar:///ha.ka.ba/lares/afford/<address terms>` and TAGS its bare address:
+
+```memetic-wikitext
+<<has entity=`seat` name=`lar:///ha.ka.ba/lares/afford/oracle.cast.throws` params=`tags/lar:///oracle.cast.throws ~ the carrier of the oracle cast`>>
+```
+
+`[tag[lar:///oracle.cast.throws]]` then gathers carrier, code, tests and every cast record under one spelling. Where the siting function learns the bare root, the carrier moves to the bare title whole, and the stable seat leaves as a forwarder.
+
+''The bag'' follows the package that owns the handler: `lares` for the house's own, `lararium` for mesh affordances. Placement chooses residency; the title never does.
+
+''Meta.'' `role` holds the one line, written from the verb, 72 characters or fewer, so the has-stack's root line reads whole as the short help. `l-space = "stable"` and `cacheable = true` ride every carrier.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/slots`>>
+
+!! slots ~ head · shows · takes · gate · refuses · answers · loop · skins · edges
+
+The slot set stays closed and runs in loop order, so a paged whole-read, cut on slot boundaries, stops at a phase edge. An absent slot says "nothing to say here", never a fault, except `#/head` and `#/skins`.
+
+```memetic-wikitext
+<<has entity=`slot` name=`#/head` params=`phase/✶ row/prose ~ the one line, then a synopsis: what the house does here, its record, its radius`>>
+<<has entity=`slot` name=`#/shows` params=`phase/✶ row/example ~ examples as neutral calls each skin renders runnable`>>
+<<has entity=`slot` name=`#/takes` params=`phase/⏿ row/arg ~ every argument, surface-neutral`>>
+<<has entity=`slot` name=`#/gate` params=`phase/◇ row/gate ~ testimony: seat or hand, the ocap species asked, whether the act holds a key`>>
+<<has entity=`slot` name=`#/refuses` params=`phase/◇ row/refusal ~ every refusal code, each with its cure as a neutral call`>>
+<<has entity=`slot` name=`#/answers` params=`phase/▶ row/band ~ every band the act answers, its exit class and its envelope fields`>>
+<<has entity=`slot` name=`#/loop` params=`phase/▶ row/kahea ~ the act shape: a call to the law that owns the procedure`>>
+<<has entity=`slot` name=`#/skins` params=`phase/↺ row/skin ~ one nested slot per surface: the spelling, and only the names that break the rule`>>
+<<has entity=`slot` name=`#/edges` params=`phase/↺ row/loulou ~ the canon law the affordance enacts, and its tests' law module`>>
+```
+
+''Every slot leads with a digest line'' (`!! takes ~ recipe · asking · observe`), so the card lists argument names, refusal codes and surfaces before any slot unfolds. An author writes the digest; a check law reds where it drifts from the rows beneath.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rows`>>
+
+!! rows ~ arg · band · refusal · example · gate · skin
+
+Rows ride the `has` grammar and its `key/value` params; `[[…]]` brackets a value holding spaces; the tagline after `~` carries the row's one line.
+
+```memetic-wikitext
+<<has entity=`arg` name=`asking` params=`takes/words needs/seat ~ the query, named before the throw`>>
+<<has entity=`arg` name=`fresh` params=`gate/hand ~ throw anew for the same words`>>
+<<has entity=`band` name=`asks` params=`exit/5 ~ a seat asked what a hand alone gives; the line a person runs rides the answer`>>
+<<has entity=`refusal` name=`oracle-cast-untimed` params=`cure/[[oracle.cast.throws at/<time>]] ~ the verb reads no clock`>>
+<<has entity=`example` name=`first-cast` params=`recipe/default asking/[[which lane lands first]] ~ a seat's cast at its own open fork`>>
+<<has entity=`gate` name=`coins` params=`who/hand ~ a person's own throw; a seat's coins answer asks`>>
+<<has entity=`skin` name=`cli` params=`spells/[[lares oracle cast]] ~ the terminal`>>
+```
+
+* ''An arg with no `takes/` reads as a boolean flag.'' `needs/` names a requirement, `default/` a default, `seat/N` a positional seat, `gate/hand` testimony that the arg rides a person's hand (the door enforces it).
+* ''Skins derive argument spellings by rule'': `cli` writes `--kebab-case`, `mcp` writes `snake_case`, `tw5` an attribute, `console` an object key. A skin row names only an exception (`maps/asking:query`).
+* ''An example and a cure ride as neutral calls'' (an address and bound args), so every skin renders its own runnable line from one row. A call binding an arg a skin never takes (`skins/`, `omits/`) runs on no door of that skin, so that skin renders no line for it: the example drops there, and the refusal keeps its words without a cure. A lesson that lives in shell composition rides a literal fenced line inside `#/skins/cli`.
+* The surface words read `cli` · `mcp` · `tw5` · `console`. `mcp` names the protocol every seat speaks.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ container · face · json
+
+''Shared args stand once, here.'' A carrier calls one by reference, never by copy: ``<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container`>>``.
+
+<<~ ahu slot=`#/takes/container`>>
+
+!!! container ~ recipe · bag · realm
+
+```memetic-wikitext
+<<has entity=`arg` name=`recipe` params=`takes/slug needs/one-of:recipe,bag ~ the wiki the act reads and writes; default names the worn face's daemon wiki`>>
+<<has entity=`arg` name=`bag` params=`takes/slug needs/one-of:recipe,bag ~ one bag, placed into directly; refused where this island cannot write it`>>
+<<has entity=`arg` name=`realm` params=`takes/id ~ beside bag, the realm whose registration resolves it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes/face`>>
+
+!!! face ~ the lit face the act wears
+
+```memetic-wikitext
+<<has entity=`arg` name=`face` params=`takes/handle ~ the lit face this call wears, by handle or pet name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes/json`>>
+
+!!! json ~ the answer verbatim
+
+```memetic-wikitext
+<<has entity=`arg` name=`json` params=`skins/cli ~ print the verb's own answer as data, the body the mcp skin hands back`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/loop`>>
+
+!! loop ~ an act record by declaration
+
+A carrier declares its act shape or declares none. A `#/loop` slot calls the slot of the law that owns the procedure (``<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/oracle-loop#/loop`>>``), and that slot's rows name each act slot, its phase, its writer, what the house fills there (`fills/`) and what the seat owes (`owes/`). The presence of `#/loop` decides whether a run lands an act record; nobody keeps a list of procedural affordances.
+
+A verb that lands an act record MUST read its slot names, their order and their asks from the procedure's canon rows, and MUST hold no procedure prose of its own. The act record tags the affordance address, lands once at the act, and fills by slot append through the one tiddler door (a slot append needs no base).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ the law beneath
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ahu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kahea`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/oracle-loop`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/afford/oracle.cast.throws`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GHfiHe8SbFPNw57Nm2ZhIT4wGCLtY9_h1Evu62G06FY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

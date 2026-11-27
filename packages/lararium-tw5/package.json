@@ -48,6 +48,10 @@
       "import": "./dist/plugin-tiddler.generated.js",
       "types": "./dist/plugin-tiddler.generated.d.ts"
     },
+    "./affordance-pack": {
+      "import": "./dist/affordance-pack.js",
+      "types": "./dist/affordance-pack.d.ts"
+    },
     "./weave": {
       "import": "./dist/weave/index.js",
       "types": "./dist/weave/index.d.ts"
@@ -57,13 +61,15 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "clean": "node ../../tools/clean-output.mjs dist dist-plugin",
-    "build": "tsx scripts/build-tw5-themes.ts && tsx scripts/build-tw5-docs.ts && tsx scripts/build-plugin-tiddler.ts && tsc -p tsconfig.build.json && tsx scripts/sync-heleuma.ts",
+    "build": "tsx scripts/build-tw5-themes.ts && tsx scripts/build-tw5-docs.ts && tsx scripts/build-plugin-tiddler.ts && tsx scripts/build-affordance-pack.ts && tsc -p tsconfig.build.json && tsx scripts/sync-heleuma.ts",
     "build:tw5-vendor": "tsx scripts/build-tw5-vendor.ts",
     "build:tw5-themes": "tsx scripts/build-tw5-themes.ts",
     "build:tw5-docs": "tsx scripts/build-tw5-docs.ts",
     "build:heleuma": "tsx scripts/sync-heleuma.ts",
     "build:heleuma:commit": "tsx scripts/sync-heleuma.ts --commit",
     "build:plugin": "tsx scripts/build-plugin-tiddler.ts",
+    "build:affordance-pack": "tsx scripts/build-affordance-pack.ts",
+    "check:affordance-pack": "tsx scripts/build-affordance-pack.ts --check",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test": "vitest run",

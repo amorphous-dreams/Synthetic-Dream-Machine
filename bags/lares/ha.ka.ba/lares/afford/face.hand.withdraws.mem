@@ -1,0 +1,111 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.hand.withdraws`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "withdraw one lifted item by its revision cid, signed by the hand"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.hand.withdraws"]
+title     = "lar:///ha.ka.ba/lares/afford/face.hand.withdraws"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.hand.withdraws"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.hand.withdraws ~ the hand takes one lifted revision off the stage
+
+`kahua withdraw <cid>` withdraws one lifted revision of the face's stage, an act signed under the face's root out of sealed custody (the lōkahi cap and the operator's grant). It runs on a person's hand alone: an AI seat proposes and stages, and its session never withdraws; no tool carries it. Every answer prints as JSON.
+
+Under a pūlama the root signs at the pūlama's hand door, since the vessel there holds no face root: `--terms` runs every gate and prints ONE stdout line (the one unsigned act its root signs) and opens no route; the pūlama's `sign '<terms>'` checks it and signs; `--land '<answer>'` lands the signed record, where the door builds the act afresh and lands it only over a byte-equal body. Neither asks the passphrase on the vessel, and the host shim walks the pattern (`tools/lares-container.sh kahua lift|withdraw|carry`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ one-revision
+
+```memetic-wikitext
+<<has entity=`example` name=`one-revision` params=`cid/<cid> face/1 ~ withdraw one revision of the face's stage`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ cid · face · terms · land
+
+```memetic-wikitext
+<<has entity=`arg` name=`cid` params=`takes/cid needs/required seat/1 as/<cid> ~ the revision cid to withdraw, as 'lares kahua get <title> --history' names it`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ which face's stage this call reads or writes, by persona index (a whole number from 0); absent, the one face standing open or the worn face`>>
+<<has entity=`arg` name=`terms` params=`~ print the one terms line a pūlama signs; opens no route; name it or --land, never both`>>
+<<has entity=`arg` name=`land` params=`takes/answer ~ land the signed record from a pūlama's sign answer`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/face-root ~ signs under the face's root out of sealed custody; a person runs it at their own terminal, and an AI seat names the command`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ withdraw-needs-a-cid · kahua-hand-malformed · face-malformed
+
+```memetic-wikitext
+<<has entity=`refusal` name=`withdraw-needs-a-cid` params=`cure/[[face.hand.withdraws cid/<cid>]] ~ the door says 'withdraw: name a revision cid'`>>
+<<has entity=`refusal` name=`kahua-hand-malformed` params=`~ the pūlama's answer names the wrong kind, the wrong face, or both --terms and --land stood on one line`>>
+<<has entity=`refusal` name=`face-malformed` params=`~ --face names a persona index, a whole number from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ withdrawn · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`withdrawn` params=`exit/0 ~ the revision stands withdrawn; the door's answer prints as JSON`>>
+<<has entity=`band` name=`refused` params=`exit/1 ~ the door refused by name; the line carries its reason`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares kahua withdraw
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares kahua withdraw]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · kahua-memory-stage
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6fQTin6ZauKqTdiEqbC13S-Mc-eyl8AuCj6m83KePO8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

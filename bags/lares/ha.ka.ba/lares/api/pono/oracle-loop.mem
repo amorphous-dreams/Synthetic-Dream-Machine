@@ -1,0 +1,96 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/oracle-loop`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "the oracle loop: a cast stands as a meme whose five slots run OODA-HA, filled as the procedure runs"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/pono/oracle-loop"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/oracle-loop"
+```
+
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
+
+<<~ ahu slot=`#/head`>>
+
+! Oracle Loop ~ a cast that runs OODA-HA
+
+A cast stands as a meme. Its five slots run the loop (noosphere-boot #/ooda-ha), and the record fills as the procedure runs: the house writes what the ask carried and what it measured, the seat appends what it read, chose and did. The throw stands, the reading stays open: the coins collide with the seat's uncertainty and decide nothing.
+
+The operator approved this cast model (2026-11-26) for every surface; the names of the pulls and the moves stay candidate until the operator rules them. The affordance `lar:///oracle.cast.throws` calls `#/loop` from its carrier (`lar:///ha.ka.ba/lares/afford/oracle.cast.throws`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/loop`>>
+
+!! loop ~ observe · orient · decide · act · hooko
+
+```memetic-wikitext
+<<has entity=`slot` name=`#/observe` params=`phase/✶ writer/seat-at-the-ask fills/observe owes/[[the records, hashes and branches this arm holds]] ~ context pointers: the records, hashes and branches the arm holds`>>
+<<has entity=`slot` name=`#/orient` params=`phase/⏿ writer/seat-at-the-ask fills/uncertain owes/[[the uncertainty and the pull that tugs, ending in the one query]] ~ the talk-out: the uncertainty, the pull named, ending in ONE query`>>
+<<has entity=`slot` name=`#/decide` params=`phase/◇ writer/house-then-seat fills/throw owes/[[the seat's memorized reading, marked as memory; where it collides with the quoted readings; the move chosen]] ~ the throw and the readings with every source's credit; then the seat's memorized reading, the collision, the move chosen`>>
+<<has entity=`slot` name=`#/act` params=`phase/▶ writer/seat owes/[[the move taken, with pointers to what it made]] ~ the move taken, with pointers to what it made`>>
+<<has entity=`slot` name=`#/hooko` params=`phase/↺ writer/seat owes/[[each loop closing back to the wiki, then one aftermath over the whole cast]] ~ each loop closing back to the wiki, then one final aftermath over the whole cast`>>
+```
+
+''Fills.'' `fills/observe` takes the ask's context pointers, `fills/uncertain` the ask's gathered uncertainty with its query, `fills/throw` the cast and every reading the wiki holds, each distinct text quoted once with every source's credit beneath it. A slot whose fill the ask left empty, and every slot whose writer reaches the seat, carries its `owes/` ask, marked owed.
+
+The house lands the meme once at the throw; the seat's later writes append to a slot through the one tiddler door (`lares tiddler put <cast> --meme --slot '#/decide' --append '<words>'`; a slot append needs no base). The asking's id hashes asker, query, nonce, seed and coins, so the same query replays the standing cast; a replay names the uncertainty the record kept and never rewrites it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/pulls`>>
+
+!! pulls ~ Re-roll · Idle · Stall · Confirm · Abdicate · Rote (candidate names)
+
+Asking an oracle threatens agency in a small, safe way, so the procedure provokes the shapes of the morale-failure states (fight, flight, freeze, fawn, flop). A seat feels no threat; its generation carries attractors of the same shapes. `#/orient` names the pull that tugs, as the turn frame's open ward does.
+
+```memetic-wikitext
+<<has entity=`pull` name=`Re-roll` params=`shape/fight tell/asks-again-until-the-coins-agree`>>
+<<has entity=`pull` name=`Idle` params=`shape/flight tell/caution-read-as-leave-to-do-nothing`>>
+<<has entity=`pull` name=`Stall` params=`shape/freeze tell/a-hold-with-no-reason-and-no-return`>>
+<<has entity=`pull` name=`Confirm` params=`shape/fawn tell/the-throw-read-as-endorsing-what-someone-already-wanted`>>
+<<has entity=`pull` name=`Abdicate` params=`shape/flop tell/the-coins-left-to-choose`>>
+<<has entity=`pull` name=`Rote` params=`shape/the-procedure-itself tell/a-fork-manufactured-to-feed-the-timer`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/moves`>>
+
+!! moves ~ Lol · Leap · Lean · Lodge · Land · * (candidate names)
+
+Each move answers a pull by choice. `#/decide` names the move; `#/act` takes it.
+
+```memetic-wikitext
+<<has entity=`move` name=`Lol` params=`answers/Re-roll plain/play ~ the throw stands and the seat laughs with it`>>
+<<has entity=`move` name=`Leap` params=`answers/Idle plain/go ~ toward the strange vector`>>
+<<has entity=`move` name=`Lean` params=`answers/Stall plain/act ~ take the standing lean; a lean toward waiting names its re-entry key (Let), or it reads as Stall`>>
+<<has entity=`move` name=`Lodge` params=`answers/Confirm plain/ask ~ lodge the disagreement with its owner: a kue in a hoike, or a question to the deciding hand`>>
+<<has entity=`move` name=`Land` params=`answers/Abdicate plain/own ~ make the choice real in the record`>>
+<<has entity=`move` name=`*` params=`answers/any ~ a vector the five never name`>>
+```
+
+Rote takes no move but one: say so, and let the throw seed free talk.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ seed · oracle · e-jing · affordance
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/oracle`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/loop`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/afford/oracle.cast.throws`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/library/oracles/e-jing/index`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VrYKOF2f7deL_DsLNqG2CQctaZolqyyoIMmEt0CFqAg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

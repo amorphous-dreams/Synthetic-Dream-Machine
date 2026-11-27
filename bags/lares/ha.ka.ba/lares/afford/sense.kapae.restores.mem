@@ -1,0 +1,98 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.kapae.restores`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "restore a muted conversation branch in a sensorium"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.kapae.restores"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.kapae.restores"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.kapae.restores"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.kapae.restores ~ the muted branch's entries reappear in recall
+
+Restores a branch a mute set aside, across a sensorium: the rows never left (move-not-delete), so the restore finds each entry again and the entries reappear in recall. `sensorium` names it; absent, memory.
+
+The answer is {branch, restored_entries, resolved}; a branch no turn names answers `resolved: false` with nothing restored. The terminal's `lares sense worldline un-kapae <branch>` names the same act and joins this address as a cli skin when the sense door flips.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ a-branch
+
+```memetic-wikitext
+<<has entity=`example` name=`a-branch` params=`branch/<branch> tick/1 ~ restore one branch at a tick`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ branch · tick · sensorium
+
+```memetic-wikitext
+<<has entity=`arg` name=`branch` params=`takes/branch-root needs/required ~ the muted branch to restore, by the root turn-key of its fork`>>
+<<has entity=`arg` name=`tick` params=`takes/whole-number needs/required ~ the tick the restore lands at`>>
+<<has entity=`arg` name=`sensorium` params=`takes/name ~ the sensorium to restore across; absent, memory`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ reversible and trusted: a restore the seat runs on the operator's loop`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ restored · unresolved
+
+```memetic-wikitext
+<<has entity=`band` name=`restored` params=`exit/0 fields/[[branch restored_entries resolved]] ~ the branch's entries reappear in recall`>>
+<<has entity=`band` name=`unresolved` params=`exit/0 ~ the branch names no turn; resolved reads false and nothing restored`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ mcp
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! un_kapae
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`spells/un_kapae ~ the seat`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · kapae
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cf1JRYHJLkKE4t4F5XCUPbc5OMegNDj_RVuAUl9sI_w`>>
+
+<<^ code=`&#x0004;` to=`?`>>

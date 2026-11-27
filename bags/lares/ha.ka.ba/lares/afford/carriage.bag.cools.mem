@@ -1,0 +1,103 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.bag.cools`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "mark a bag known but not loaded: the oracle entry alone"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.bag.cools"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.bag.cools"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.bag.cools"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.bag.cools ~ a bag registers cold: its URL stands known, its tiddlers stay unloaded
+
+`register-cold <bag-url>` marks a bag URL known-but-not-loaded: the oracle entry alone, with no tiddlers loaded. It rides the vessel's residency runner and needs `lares vessel stand --foreground`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ register-cold
+
+```memetic-wikitext
+<<has entity=`example` name=`register-cold` params=`url/<bag-url> ~ mark the bag known and leave it unloaded`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ url
+
+```memetic-wikitext
+<<has entity=`arg` name=`url` params=`takes/bag-url needs/required seat/1 as/<bag-url> ~ the bag's URL`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ a residency command through the vessel; it loads no tiddler`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · daemon-unreachable
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.bag.cools url/<bag-url>]] ~ the bag's URL stands required`>>
+<<has entity=`refusal` name=`daemon-unreachable` params=`~ no vessel stands in the foreground; run lares vessel stand --foreground`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ registered
+
+```memetic-wikitext
+<<has entity=`band` name=`registered` params=`exit/0 ~ the bag registered cold`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares bag register-cold
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares bag register-cold]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VJjLi7TTAX1SXUw1S3ZJOQihEaLVKJVXR0PycYnFzuU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

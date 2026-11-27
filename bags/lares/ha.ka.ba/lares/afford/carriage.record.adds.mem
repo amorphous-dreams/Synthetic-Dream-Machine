@@ -1,0 +1,115 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.record.adds`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "grant a tiddler residency in a second bag; the source keeps its copy"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.record.adds"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.record.adds"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.record.adds"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.record.adds ~ the residency ADD: one title takes a second home, and the first keeps its own
+
+The residency model derives its verbs from SPARQL Update over (title × bag). `ADD` grants one tiddler residency in the destination bag while the source bag retains its copy: the tiddler's Work-level identity travels, so downstream tooling reads the landing as the same change in a second bag, never a new record. The verb takes the title, the source bag, the destination bag and a change-id (named, or minted when absent), submits one verb-tiddler to the vessel, and the wiki island's action-handler family runs it wrapped in an effect record that writes the archival audit tiddlers (an `accession` row on the destination).
+
+A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent for a call off a terminal, `--dry-run` previews the effect and commits nothing, and `--in-wiki` runs the act in the active wiki's island. Run `lares act` for the door's index of every residency action.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ add-a-title · preview-first
+
+```memetic-wikitext
+<<has entity=`example` name=`add-a-title` params=`title/lar:///ha.ka.ba/lares/docs/pono/example from/lar:///ha.ka.ba/bags/lares to/lar:///ha.ka.ba/wikis/lares/working ~ grant the title residency in the working layer; the source bag keeps its copy`>>
+<<has entity=`example` name=`preview-first` params=`title/lar:///ha.ka.ba/lares/docs/pono/example from/lar:///ha.ka.ba/bags/lares to/lar:///ha.ka.ba/wikis/lares/working dry-run/true ~ name the effect and commit nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ title · from · to · change-id · dry-run · in-wiki
+
+```memetic-wikitext
+<<has entity=`arg` name=`title` params=`takes/title needs/required ~ the tiddler's title (its Work-level identity)`>>
+<<has entity=`arg` name=`from` params=`takes/bag-uri needs/required ~ the bag the tiddler leaves or reads from`>>
+<<has entity=`arg` name=`to` params=`takes/bag-uri needs/required ~ the bag the tiddler lands in`>>
+<<has entity=`arg` name=`change-id` params=`takes/id ~ the change's own identity, named once so a re-send reads as the same change; absent, the verb mints one`>>
+<<has entity=`arg` name=`dry-run` params=`~ preview the effect without committing it`>>
+<<has entity=`arg` name=`in-wiki` params=`~ run the act in the active wiki's island`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ the vessel checks the writer's cap on the destination bag; a terminal asks y/N before it submits unless --yes rides, and an agent off a terminal names --yes`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · cap-denied · outcome-unknown
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.record.adds title/<title> from/<bag> to/<bag>]] ~ --title, --from and --to all stand required; the line names the one missing`>>
+<<has entity=`refusal` name=`cap-denied` params=`~ the writer's cap on the destination bag falls short; nothing landed`>>
+<<has entity=`refusal` name=`outcome-unknown` params=`~ this process stopped waiting after the vessel answered; a short read found no receipt for this attempt's request id; read it back with lares vessel request <id> before any re-run`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ done · preview · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`done` params=`exit/0 fields/[[verb status requestId receipt]] ~ the vessel ran the action and wrote its effect record; the receipt names the outcome tiddler`>>
+<<has entity=`band` name=`preview` params=`exit/0 ~ with --dry-run the vessel names the effect it would land and commits nothing`>>
+<<has entity=`band` name=`refused` params=`~ the vessel refused by name (cap-denied or a verb-error); the line carries its reason and cure`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares act ADD
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares act ADD]] ~ the terminal; the verb rides as the first word, ALL-CAPS`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · residency-model
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mMjS7M7bf8duIxj8YxA040LC7e6hImHVdyTw_KG8OUg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

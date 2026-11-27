@@ -1,0 +1,120 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.law.pins`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "pin a law meme so it heads the law index"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.law.pins"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.law.pins"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.law.pins"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.law.pins ~ a law meme added to the pin set, heading the law index
+
+The pin set (`$:/config/lares/law/pins`, a TiddlyWiki filter) takes one `[[uri]]` run (or drops a `-[[uri]]` run that kept the title out) and lands through `tiddler_put` in this face's working layer of its daemon wiki, against the base it read, keeping its layout; house canon takes no byte. A pin orders canon law and adds none: a title no canon law holds refuses `law-pin-absent`.
+
+One already pinned answers `decision: "noop"`; a pin set that moved under the read refuses `law-pins-moved` (call again). The answer carries {title, uri, decision, pinned, text, hash, bag}. The pin set lives apart from every law meme, so the AI seat may pin as the operator may.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ pin-the-address-law
+
+```memetic-wikitext
+<<has entity=`example` name=`pin-the-address-law` params=`uri/lar:///ha.ka.ba/lares/api/pono/lar-uri ~ read the address law right after the Mu family`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ uri · face
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`uri` params=`takes/lar-address needs/required seat/1 ~ the law meme by its lar: address, one title with no whitespace, brackets, braces or bar`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ the pin set lands in the face's own working layer through the tiddler door, against the base it read; house canon takes no byte; reversible and trusted, so the seat runs it on the operator's loop`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ law-pin-absent · law-pins-moved · usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`law-pin-absent` params=`cure/[[engine.law.indexes]] ~ no canon law stands at the title in the worn face's daemon wiki (a pin orders canon law and adds none); nothing moved`>>
+<<has entity=`refusal` name=`law-pins-moved` params=`cure/[[engine.law.pins uri/lar:///ha.ka.ba/lares/api/pono/lar-uri]] ~ the pin set moved since the read; run the pin again`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.law.pins uri/lar:///ha.ka.ba/lares/api/pono/lar-uri]] ~ name the law meme by its lar: address; a pin names one title with no whitespace, brackets, braces or bar`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ pinned · noop
+
+```memetic-wikitext
+<<has entity=`band` name=`pinned` params=`exit/0 fields/[[title uri decision pinned text hash bag]] ~ the pin set landed with the title in it; decision reads put`>>
+<<has entity=`band` name=`noop` params=`exit/0 ~ the title already stands pinned; the pin set moved nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares law pin
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares law pin]] ~ the terminal; the law meme rides as <uri>`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! law_pin
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`spells/law_pin omits/face ~ the seat; answers the body`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · filters
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/filters`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;p4_nqKZROMXJ6oKeCsNnXi5cmGMB6hCHxMOJ_JkpCzQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

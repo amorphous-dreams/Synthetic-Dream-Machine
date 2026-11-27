@@ -1,0 +1,110 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.bag.registers`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "list, add or drop the repo registry; bags name ids, never paths"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.bag.registers"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.bag.registers"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.bag.registers"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.bag.registers ~ the operator's repo registry: an id maps to a root only this vessel knows
+
+A bag that homes at a repository names a REGISTERED id; the operator maps ids to roots once, on their own vessel, so a declaration stays portable and the path stays local. `repo list` (the default) prints the registry, `repo add <id> --root <path> [--vcs git|other]` registers one (`--vcs` defaults to git), and `repo drop <id>` removes one: bags naming it keep their declaration and simply stop resolving here. An unregistered id refuses rather than resolving somewhere convenient.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ list · add · drop
+
+```memetic-wikitext
+<<has entity=`example` name=`list` params=`op/list ~ print every registered repo`>>
+<<has entity=`example` name=`add` params=`op/add id/lares-repo root/./checkouts/lares ~ register an id at a root on this vessel`>>
+<<has entity=`example` name=`drop` params=`op/drop id/lares-repo ~ remove the id; bags naming it stop resolving here`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ op · id · root · vcs
+
+```memetic-wikitext
+<<has entity=`arg` name=`op` params=`takes/list-add-drop seat/1 as/<op> ~ the registry operation; absent, list`>>
+<<has entity=`arg` name=`id` params=`takes/repo-id seat/2 as/<id> ~ the repo id an add or a drop names`>>
+<<has entity=`arg` name=`root` params=`takes/path ~ the checkout root an add registers; it never leaves this vessel`>>
+<<has entity=`arg` name=`vcs` params=`takes/git-or-other ~ the repo's version control; default git`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ a local write of the registry beside the vessel's config; a list writes nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · op-unknown
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.bag.registers op/add id/<id> root/<path>]] ~ an add wants the id and --root; a drop wants the id`>>
+<<has entity=`refusal` name=`op-unknown` params=`cure/[[carriage.bag.registers op/list]] ~ the registry takes list, add or drop`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ listed · changed
+
+```memetic-wikitext
+<<has entity=`band` name=`listed` params=`exit/0 fields/[[path repos]] ~ every registered repo with its vcs and root`>>
+<<has entity=`band` name=`changed` params=`exit/0 fields/[[id root vcs count]] ~ the registry after an add or a drop`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares bag repo
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares bag repo]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cap-tier
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WDadkWhYiovFgBxNqHWtzXR3SlpOfKsas8T5Eu30mYA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

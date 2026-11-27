@@ -1,5 +1,5 @@
 /**
- * law-door — `lares law list | pin | unpin`, the law index offered at the CLI and the verb that orders it.
+ * law-door — `lares law index | pin | unpin`, the law index offered at the CLI and the verb that orders it.
  *
  * The daemon wire stands mocked: a small pin store answers `tiddler-get` / `tiddler-put`, and a filter reader answers
  * `wiki-filter` for the runs a pin set holds (`[[t]]`, `-[[t]]`, a `[prefix[…]]` run naming the Mu members, `+[match[t]]`).
@@ -92,9 +92,9 @@ const puts = (): Array<Record<string, unknown>> => h.calls.filter((c) => c.verb 
 beforeEach(() => { h.calls = []; h.pins = LAW_PINS_DEFAULT; h.hash = 0; h.putDecision = "put"; });
 afterEach(() => vi.restoreAllMocks());
 
-describe("lares law list", () => {
+describe("lares law index", () => {
   test("pins head the index in the pin set's order, each marked; the law follows by title; the wire runs the one index filter", async () => {
-    const r = await run(argv(["list"]));
+    const r = await run(argv(["index"]));
     expect(r.exit).toBe(0);
     const data = json(r.out)["data"] as { pins: string[]; rows: Array<{ title: string; description: string; pinned: boolean }>; filter: string; total: number };
     expect(Object.keys(data).sort()).toEqual(["filter", "next", "pins", "pinsTitle", "rows", "total"]);
@@ -110,8 +110,8 @@ describe("lares law list", () => {
     expect(index).toEqual({ verb: "wiki-filter", args: { recipe: "default", filter: LAW_INDEX_FILTER, fields: ["description", "role"] } });
   });
 
-  test("the list prints plainly through a pipe unless --json asks; CONTROL: --limit and --after ride the wire", async () => {
-    const r = await run(argv(["list"], {}, { limit: "3", after: "3.abc" }));
+  test("the index prints plainly through a pipe unless --json asks; CONTROL: --limit and --after ride the wire", async () => {
+    const r = await run(argv(["index"], {}, { limit: "3", after: "3.abc" }));
     expect(r.out).toMatch(/^Lares law \(pinned first\): 4 pinned · 6 rows\n📌 lar:\/\/\/ha\.ka\.ba\/lares\/api\/noosphere-boot\n/);
     expect(r.out).toContain(`   ${LAW[0]} — the role of drift-ward\n`);
     expect(r.out).toContain(`the filter: lares wiki filter '${LAW_INDEX_FILTER}' --recipe default`);
@@ -126,7 +126,7 @@ describe("lares law pin | unpin", () => {
     expect(pinned.exit).toBe(0);
     expect(puts()).toEqual([{ recipe: "default", title: LAW_PINS_TITLE, text: `${LAW_PINS_DEFAULT} [[${uri}]]`, base: "h0" }]);
     expect((json(pinned.out)["data"] as Record<string, unknown>)["decision"]).toBe("put");
-    const listed = json((await run(argv(["list"]))).out)["data"] as { pins: string[] };
+    const listed = json((await run(argv(["index"]))).out)["data"] as { pins: string[] };
     expect(listed.pins.at(-1)).toBe(uri);
     const unpinned = await run(argv(["unpin", uri]));
     expect(unpinned.exit).toBe(0);

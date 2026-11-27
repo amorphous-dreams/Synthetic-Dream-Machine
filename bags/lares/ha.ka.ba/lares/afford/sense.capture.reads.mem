@@ -1,0 +1,84 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.capture.reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read whether the capture hooks stand paused, and why"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.capture.reads"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.capture.reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.capture.reads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.capture.reads ~ live, or paused with its reason and since
+
+The hook-lever stands on its own: a marker file a capture hook checks and steps aside on when present (whatever runs the `lares sense capture` and `lares sense telemetry` legs on a session event). A migration or a `lares sense teardown` then runs WITHOUT daemon-spawn contention: the minting stops at the source, with no whack-a-mole against spawned children. `lares mempalace quiesce` pauses AND drains the warm daemons in one gesture; this lever suppresses minting alone, touching no live daemon.
+
+`hooks status` answers {hooksPaused, marker, since?, reason?}: LIVE (minting on dispatch) or PAUSED with the recorded reason and the time it began. It writes nothing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ is-minting-paused
+
+```memetic-wikitext
+<<has entity=`example` name=`is-minting-paused` params=`~ read the lever`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ read
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`read` params=`who/seat-or-hand ~ a read of the marker file; it writes nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ standing
+
+```memetic-wikitext
+<<has entity=`band` name=`standing` params=`exit/0 fields/[[hooksPaused marker since reason]] ~ the lever's state: live, or paused with its reason`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares hooks status
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares hooks status]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eWosPR9LDelNLAycAySQWLFE2PxpsCPvJU0Hurupt0c`>>
+
+<<^ code=`&#x0004;` to=`?`>>

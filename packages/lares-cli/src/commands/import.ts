@@ -5,11 +5,12 @@
  */
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor } from "../render.js";
+import { helpLines } from "../command-help.js";
 import { houseImport, bundleRefusal, unlockItLine, LIVE_BUNDLE_DOORS, type BundleDoors, type HouseImportResult } from "./house-bundle.js";
 
 export async function cmdImport(args: ParsedArgs, doors: BundleDoors = LIVE_BUNDLE_DOORS): Promise<number> {
   const src = args.positional[0];
-  if (!src) { console.error("usage: lares import <dest> [--apply]"); return 2; }
+  if (!src) { for (const line of helpLines("import")) console.error(line); return 2; }
   let result: HouseImportResult;
   try { result = await houseImport(src, { apply: args.flags["apply"] === true, doors }); }
   catch (e) { return bundleRefusal(args, "import", e); }

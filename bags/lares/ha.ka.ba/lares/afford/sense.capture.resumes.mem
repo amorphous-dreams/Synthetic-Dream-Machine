@@ -1,0 +1,85 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.capture.resumes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "resume the capture hooks by removing the marker file"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.capture.resumes"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.capture.resumes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.capture.resumes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.capture.resumes ~ capture mints the warm daemon lazily again
+
+The hook-lever stands on its own: a marker file a capture hook checks and steps aside on when present (whatever runs the `lares sense capture` and `lares sense telemetry` legs on a session event). A migration or a `lares sense teardown` then runs WITHOUT daemon-spawn contention: the minting stops at the source, with no whack-a-mole against spawned children. `lares mempalace quiesce` pauses AND drains the warm daemons in one gesture; this lever suppresses minting alone, touching no live daemon.
+
+`hooks resume` removes the marker and answers {wasPaused, hooksPaused, marker}; hooks already live answer an idempotent no-op.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ resume
+
+```memetic-wikitext
+<<has entity=`example` name=`resume` params=`~ un-pause the hooks`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ removes the marker file; idempotent, reversible by pause, trusted`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ resumed · already-live
+
+```memetic-wikitext
+<<has entity=`band` name=`resumed` params=`exit/0 fields/[[wasPaused hooksPaused marker]] ~ the marker stands removed; capture mints lazily again`>>
+<<has entity=`band` name=`already-live` params=`exit/0 ~ the hooks were already live; nothing to do`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares hooks resume
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares hooks resume]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ia5AUcHW0mf1QdI1mM_2CoL1BrMusuUWU5bxBTsmvTc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

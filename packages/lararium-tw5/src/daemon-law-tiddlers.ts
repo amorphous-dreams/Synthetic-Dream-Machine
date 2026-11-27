@@ -14,7 +14,7 @@
  * prints nothing. The pin set itself may rest in the working layer: it orders canon law and adds none.
  *
  * {@link LAW_INDEX_FILTER} calls `lares.law`, which composes the two: the canon pins first, then the canon law the pins left out.
- * Every surface that offers the index (`lares law list`, the MCP seat's `law_index`, the SessionStart wake) runs that one call; the
+ * Every surface that offers the index (`lares law index`, the MCP seat's `law_index`, the SessionStart wake) runs that one call; the
  * function lives in canon alone (`house-filters`), so no working-layer record redefines it.
  *
  * WHY A CONFIG TIDDLER AND NOT A `pin` FIELD. A field on a law meme patches house canon: the canon layer takes no put
@@ -53,7 +53,7 @@ export const lawStandsFilter = (uri: string): string => `[lares.law[]match[${uri
 
 /** The born-from-source pin set: a shadow a hand's save overrides. */
 export const DAEMON_LAW_TIDDLERS: readonly Readonly<Record<string, string>>[] = [
-  { title: LAW_PINS_TITLE, text: LAW_PINS_DEFAULT, description: "The law index's pin set: a filter whose titles head `lares law list` and the wake, in order; only canon law prints. `lares law pin <uri>` and `lares law unpin <uri>` edit it." },
+  { title: LAW_PINS_TITLE, text: LAW_PINS_DEFAULT, description: "The law index's pin set: a filter whose titles head `lares law index` and the wake, in order; only canon law prints. `lares law pin <uri>` and `lares law unpin <uri>` edit it." },
 ];
 
 /** Lay the pin set into the live wiki's shadow layer. Idempotent (each call re-lays the shadow plugin). */

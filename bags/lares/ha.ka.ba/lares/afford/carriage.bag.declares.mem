@@ -1,0 +1,112 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.bag.declares`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "write or amend a bag's own declaration; no bytes move"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.bag.declares"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.bag.declares"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.bag.declares"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.bag.declares ~ a bag names its tier, its home, its repo and its role
+
+`declare <bag>` writes (or amends) the bag's own declaration: `--tier` (its cap-tier), `--home` (one of the homes a bag may name), `--repo` (a REGISTERED repo id, never a directory; an unregistered id refuses), `--role` (one line). It wants at least one of the four. Declaring moves NO bytes: relocation takes `lares bag home`, and a declaration that now disagrees with where the bytes sit marks the bag ADRIFT. A standing daemon re-stamps the catalog row at once (`restamp-bag-tier`), so a tier change takes the row's stamp; with no daemon the next boot stamps it.
+
+The reserved TW5 docs name refuses (`bag declare`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ tighten-the-tier · name-a-home
+
+```memetic-wikitext
+<<has entity=`example` name=`tighten-the-tier` params=`bag/lares tier/private ~ declare the bag's cap-tier`>>
+<<has entity=`example` name=`name-a-home` params=`bag/lares home/repository repo/lares-repo ~ declare the bag's home as a registered repo`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ bag · tier · home · repo · role
+
+```memetic-wikitext
+<<has entity=`arg` name=`bag` params=`takes/slug needs/required seat/1 as/<bag> ~ the bag to declare`>>
+<<has entity=`arg` name=`tier` params=`takes/cap-tier ~ the bag's cap-tier; it only ever tightens against the structural floor`>>
+<<has entity=`arg` name=`home` params=`takes/home ~ where the bag belongs`>>
+<<has entity=`arg` name=`repo` params=`takes/repo-id ~ a registered repo's id; the declaration carries the id and never a path`>>
+<<has entity=`arg` name=`role` params=`takes/words ~ one line naming what the bag holds`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ a local write of the bag's own declaration beside its bytes; moves nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ declare-nothing · home-unknown · repo-unregistered
+
+```memetic-wikitext
+<<has entity=`refusal` name=`declare-nothing` params=`cure/[[carriage.bag.declares bag/<bag> tier/private]] ~ declare wants something to declare: --tier, --home, --repo or --role`>>
+<<has entity=`refusal` name=`home-unknown` params=`~ --home expects one of the homes a bag may name`>>
+<<has entity=`refusal` name=`repo-unregistered` params=`cure/[[carriage.bag.registers]] ~ the repo id stands registered on no vessel here; register it first`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ declared
+
+```memetic-wikitext
+<<has entity=`band` name=`declared` params=`exit/0 fields/[[bag path manifest adrift restamp]] ~ the declaration written; adrift names a mismatch with the bytes, restamp what the catalog row took`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares bag declare
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares bag declare]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cap-tier
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZZgwPE6-1a0iXGxiHSmz1GFM2hdx6iX52T7iCUUTEeA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

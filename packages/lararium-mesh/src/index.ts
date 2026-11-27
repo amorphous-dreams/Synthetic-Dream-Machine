@@ -141,6 +141,7 @@ export * from "./aperture-selector.js";
 export * from "./entropy-door.js";
 export * from "./ddate.js";
 export * from "./oracle-cast.js";
+export * from "./oracle-loop.js";
 export * from "./door-band.js";
 export * from "./epoch-lease.js";
 export { controlHomeUrlOf, standControlHome, readControlHome, nameControlHome, ControlHomeUnavailable, controlStoreOf, vesselOnlyDocIds, floorOnlyDocIds, makeVesselOnlyDocs, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, controlHomeRefusal, assertControlHomeOpen, refusingControlStore, floorAnswerStore, isFloorAnswerTitle, FLOOR_ANSWER_RING, answerRingOf, makeAnswerRing, ANSWER_RING_COUNT, ANSWER_RING_BYTES, vesselLockedRefusal, type AnswerRing, type ControlHomeRefusal } from "./control-home.js";

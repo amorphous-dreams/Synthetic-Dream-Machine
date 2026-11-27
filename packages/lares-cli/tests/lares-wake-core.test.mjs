@@ -406,7 +406,7 @@ test("wake-offers-the-law: the pins lead, marked, then the first law rows they l
   assert.equal(lines[head + 3], `📌 ${API}/mu — null-oracle core`);
   assert.equal(lines[head + 6], `   ${API}/pono/law-00 — the law of pono/law-00`);
   assert.equal(lines[head + 5 + LAW_ROWS], `   ${API}/pono/law-07 — the law of pono/law-07`);
-  assert.ok(lines[head + 6 + LAW_ROWS].startsWith(`read the rest: law_index(after=<next>) or lares law list --all; the filter: wiki_filter(filter="${LAW_INDEX_FILTER}", recipe="default", fields=["title","description","role"]); pin or unpin: law_pin(`));
+  assert.ok(lines[head + 6 + LAW_ROWS].startsWith(`read the rest: law_index(after=<next>) or lares law index --all; the filter: wiki_filter(filter="${LAW_INDEX_FILTER}", recipe="default", fields=["title","description","role"]); pin or unpin: law_pin(`));
   assert.doesNotMatch(context, /law-08/);
   // Both reads ride the vessel's own filter door over the daemon wiki.
   assert.deepEqual(calls.law, lawArgv());
@@ -449,7 +449,7 @@ test("F1c/d: a title that reads as no single lar: address never prints, and the 
   const many = Array.from({ length: LAW_PIN_ROWS + 5 }, (_, i) => `pono/pin-${String(i).padStart(2, "0")}`);
   const capped = renderLaw(JSON.parse(lawPage([...many, ...LAW])), JSON.parse(pinsPage(many)));
   assert.equal(capped.split("\n").filter((l) => l.startsWith("📌 lar:")).length, LAW_PIN_ROWS);
-  assert.match(capped, /\n📌 \+5 more pinned \(lares law list, law_index\)\n/);
+  assert.match(capped, /\n📌 \+5 more pinned \(lares law index, law_index\)\n/);
   assert.match(capped, new RegExp(`^Lares law \\(pinned first\\): ${LAW_PIN_ROWS + 5} pinned · ${LAW_PIN_ROWS + 17} rows \\(${LAW_PIN_ROWS + LAW_ROWS} shown\\)`));
   assert.match(capped, /   lar:\/\/\/ha\.ka\.ba\/lares\/api\/pono\/law-00/);
 });

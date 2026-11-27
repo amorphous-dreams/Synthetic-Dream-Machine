@@ -203,7 +203,7 @@ KAHUA_VERBS = ("kahua_propose", "kahua_stage", "kahua_get")
 
 # THE LAW INDEX — the house's law offered where an agent wakes: `law_index` reads the pinned law first (the boot seed, then
 # the Mu family), then every root meme under a bag's `api/` tree, each with its one line (description, else role);
-# `law_pin` / `law_unpin` order the pins. Each mirrors `lares law list|pin|unpin`. The filters are `@lararium/tw5`'s
+# `law_pin` / `law_unpin` order the pins. Each mirrors `lares law index|pin|unpin`. The filters are `@lararium/tw5`'s
 # `daemon-law-tiddlers`: the law by address (every root meme under a bag's `api/` tree), the pin set the worn face's daemon
 # wiki holds (`$:/config/lares/law/pins`), and a canon guard that keeps every row to a record a canon layer answers (the
 # oracle floor, the system canon bags) under a title that reads as one `lar:` address, so nothing a face writes prints as
@@ -261,6 +261,53 @@ TOOL_NATURE = {
     # A put replaces named text whole (destructive) and an append lands its words again on each call (never idempotent).
     **dict.fromkeys(('tiddler_put',), 'puts'),
 }
+
+# THE AFFORDANCE PACK — the words a tool's skin carries, baked from its affordance carrier
+# (lar:///ha.ka.ba/lares/api/pono/affordance) by `packages/lararium-tw5/scripts/build-affordance-pack.ts`. A tool the pack
+# routes (`routes.mcp`) takes its description and each parameter's from the pack at seat build; a tool it routes none of keeps
+# its docstring until its carrier lands. One file the CLI reads too, so a seat and a terminal render one carrier's bytes.
+AFFORDANCE_PACK_PATH = os.environ.get("LARES_AFFORDANCE_PACK") or os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "..", "lararium-tw5", "affordance-pack.json")
+
+
+def read_affordance_pack(path=None):
+    """The baked pack, or an empty one where none stands (every tool then keeps its own words; witness W3 reads the gap)."""
+    try:
+        with open(path or AFFORDANCE_PACK_PATH, encoding="utf-8") as fh:
+            pack = json.load(fh)
+    except (OSError, ValueError):
+        return {"carriers": {}, "routes": {}}
+    return pack if isinstance(pack, dict) else {"carriers": {}, "routes": {}}
+
+
+def pack_tool_skin(tool, pack=None):
+    """One tool's skin from the pack: (description, {param: description}), or None where the pack routes no carrier to it."""
+    pack = read_affordance_pack() if pack is None else pack
+    address = ((pack.get("routes") or {}).get("mcp") or {}).get(tool)
+    carrier = (pack.get("carriers") or {}).get(address) if address else None
+    if not carrier:
+        return None
+    whole = ((carrier.get("renders") or {}).get("mcp") or {}).get("whole") or []
+    return "\n".join(whole), dict(carrier.get("params") or {})
+
+
+def _dress_from_pack(mcp, pack=None):
+    """Hand every pack-routed tool its carrier's words: the description, then each parameter's in the input schema. A
+    parameter the carrier names and the signature lacks (or the reverse) stays as it stands; witness W2 reads that red."""
+    pack = read_affordance_pack() if pack is None else pack
+    manager = getattr(mcp, "_tool_manager", None)
+    for tool in sorted((pack.get("routes") or {}).get("mcp") or {}):
+        skin = pack_tool_skin(tool, pack)
+        held = manager.get_tool(tool) if manager is not None else None
+        if skin is None or held is None:
+            continue
+        description, params = skin
+        held.description = description
+        properties = (held.parameters or {}).get("properties") or {}
+        for name, words in params.items():
+            if name in properties and words:
+                properties[name]["description"] = words
+
 
 def tool_annotation_hints(name):
     reversible, crossing = VERB_SEATS[name]
@@ -995,15 +1042,14 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool(annotations=_annotations("kapae"))
     def kapae(branch: str, tick: int, sensorium: "str | None" = None) -> dict:
-        """Mute a conversation branch and its descendants in a sensorium.
-        Mute a worldline branch (a fork-path-dead-end) + cascade the mute across a sensorium
-        (`sensorium` names it; absent → memory)."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///sense.kapae.mutes): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         return _call("kapae", sensorium, branch, tick)
 
     @mcp.tool(annotations=_annotations("un_kapae"))
     def un_kapae(branch: str, tick: int, sensorium: "str | None" = None) -> dict:
-        """Restore a muted conversation branch in a sensorium.
-        Restore a previously kapae-muted branch across a sensorium (`sensorium` names it; absent → memory)."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///sense.kapae.restores): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         return _call("un_kapae", sensorium, branch, tick)
 
     @mcp.tool(annotations=_annotations("analyze"))
@@ -1052,14 +1098,8 @@ def build_mcp(coordinator: LaresCoordinator):
     def flow(petname: "str | None" = None, target: "list | None" = None,
              signal: "list | None" = None, names: "list | None" = None,
              sensorium: "str | None" = None) -> dict:
-        """Run or list named flows over sensorium data.
-        The pet-named COMPOSED-FLOW surface — one tool, N flows (the anti-verb-sprawl door). Bare (no
-        `petname`) lists the flow-set (crystal · rhythm · couple) with their cap-stacks. `petname` + a
-        `signal` matrix (rows=time, cols=signals; `names` labels the columns) RUNS that flow: the @daemon
-        looks its cap-stack up and runs each step routed by hull, threading each outcome to the next. New
-        capability arrives as a new FLOW, never another raw verb. `lares flow <petname> --signal <ndjson>`
-        reads the same. A `target` without a `signal` auto-extracts one from the target's child streams
-        (feature-gated: the projector runs now, empty until the re-pour lands child signals)."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///sense.record.flows): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         return _call("flow", sensorium, petname=petname, targets=target, rows=signal, names=names)
 
     @mcp.tool(annotations=_annotations("plane_record"))
@@ -1423,16 +1463,8 @@ def build_mcp(coordinator: LaresCoordinator):
     @mcp.tool(annotations=_annotations("ddate"))
     def ddate(format: "str | None" = None, day: "int | None" = None, month: "int | None" = None,
               year: "int | None" = None) -> dict:
-        """Read THE DISCORDIAN DATE through the house's own calendar (no host `ddate` binary) — mirrors `lares ddate
-        [+FORMAT] [day month year]`. With no date it reads TODAY, the seat's own local day (the verb reads no clock). `day`,
-        `month` and `year` ride together or not at all (a BCE year rides negative). `format` takes the ddate(1) codes:
-        %A %a weekday · %B %b season · %d day of the season · %e its ordinal (11th, 21st) · %E the ordinal by its last digit
-        alone (the first ddate's 11st) · %H the holyday · %N stop unless it is a holyday · %n %t newline and tab · %Y the YOLD ·
-        %X days until X-Day (Confusion 40, 9827 YOLD, the Church of the SubGenius's date) · %. an exclamation drawn through the
-        platform's entropy door · %{ %} the span that reads "St. Tib's Day" on February 29. A bare call answers the default line
-        ("Today is Prickle-Prickle, the 32nd day of The Aftermath in the YOLD 3192"). Returns {text, entropy, gregorian,
-        yold, tibs, season, dayOfSeason, weekday, holyday}: `entropy` names the source a `%.` drew from, else null. A date out
-        of range raises. Rides the @daemon wire."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///oracle.calendar.dates): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         import datetime
         args: dict = {}
         if format is not None:
@@ -1446,26 +1478,10 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool(annotations=_annotations("oracle_cast"))
     def oracle_cast(recipe: "str | None" = None, bag: "str | None" = None, coins: "list | None" = None,
-                    caster: "str | None" = None, asking: "str | None" = None) -> dict:
-        """Cast THE I CHING and let the vessel write the cast as one tiddler — mirrors `lares oracle cast`. Three coins a
-        line (heads three, tails two): 6 (old yin) and 9 (old yang) change, 7 and 8 hold; six lines, bottom first, name the
-        PRIMARY hexagram by its King Wen number (1-64), and the changing lines turned over name the RELATING one (none where
-        no line changes). With no `coins` the vessel draws the coins through the platform's entropy door
-        (`platform:crypto.getRandomValues`), so this seat never picks the figure; `coins` hands in six values the operator
-        threw with real coins (6, 7, 8 or 9, bottom line first), named `operator:three-coins`. `caster` names who cast
-        (default `agent`). The tiddler lands once under `lar:///ha.ka.ba/lares/oracle/casts/` in the wiki's working layer
-        with fields method, entropy, lines, changing, primary, relating, caster, cast-at and readings; reading it again
-        never casts again. ONE ASKING, ONE THROW: `asking` names the fork you cast at, in words; the same words by the same
-        caster answer the cast already standing (`replayed`; case, spacing and trailing punctuation never re-roll, and the
-        throw keys on the seat the vessel booked, `caster` annotating alone), so a retried call never throws twice. Name the
-        query before the cast: a call with no `asking` reads band `asks`. A fresh throw for the same words, or a seeded one, rides a person's hand alone (the
-        CLI's `--fresh` / `--seed`); a seat that asks either reads band `asks`. Returns {band, intent, replayed, decision,
-        created, title, cast, text, readings, asOf, note} (`asOf` labels the readings by the digest of the bytes read): `readings` carries the house's imported DOA and e-jing texts for each hexagram this wiki holds,
-        with their attribution and license, and names the ones it holds none of. A spirit's jolt rides this tool only when
-        its brief opts in, and the hand-back names the cast. CONTAINER LAW: exactly one of `recipe` / `bag`
-        (`recipe="default"` names the worn face's daemon wiki).
-        THE PLACE: a blind throw to collide uncertainty with: the throw stands, the reading stays open.
-        The seat casts at its own open forks, never at the operator's decisions uninvited, and enacts after."""
+                    caster: "str | None" = None, asking: "str | None" = None, uncertain: "str | None" = None,
+                    observe: "list | str | None" = None) -> dict:
+        # THE WORDS LIVE IN THE CARRIER (lar:///oracle.cast.throws): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         import datetime
         args: dict = dict(_meme_container("oracle_cast", recipe, bag))
         if coins is not None:
@@ -1476,6 +1492,15 @@ def build_mcp(coordinator: LaresCoordinator):
         args["caster"] = caster.strip() if isinstance(caster, str) and caster.strip() else "agent"
         if isinstance(asking, str) and asking.strip():
             args["asking"] = asking.strip()
+        if isinstance(uncertain, str) and uncertain.strip():
+            args["uncertain"] = uncertain.strip()
+        if observe is not None:
+            pointers = observe.split() if isinstance(observe, str) else observe
+            if not isinstance(pointers, list) or not all(isinstance(x, str) for x in pointers):
+                raise SeatArgumentRefused("oracle_cast: `observe` names context pointers, a list of strings or one line")
+            pointers = [x.strip() for x in pointers if x.strip()]
+            if pointers:
+                args["observe"] = pointers
         now = datetime.datetime.now(datetime.timezone.utc)
         args["at"] = now.isoformat(timespec="milliseconds").replace("+00:00", "Z")
         return _meme_wire("oracle-cast", args)
@@ -1571,48 +1596,42 @@ def build_mcp(coordinator: LaresCoordinator):
                 "hash": put.get("hash"), "bag": put.get("bag")}
 
     @mcp.tool(annotations=_annotations("law_index"))
-    def law_index(limit: "int | None" = None, after: "str | None" = None) -> dict:
-        """Read THE HOUSE'S LAW, PINNED LAW FIRST — mirrors `lares law list`. Read it before you act, the way you read your
-        working memory. The index derives from canon in the worn face's daemon wiki and no list stands in this seat: the pin
-        set (`$:/config/lares/law/pins`: the boot seed, then the Mu family) heads it in its own order, then every root meme
-        under a bag's `api/` tree the pins leave out, by title. Only canon prints: a row stands where a canon layer answers
-        its record, so nothing a face writes reads as law. Returns {filter, pinsTitle, pins, rows: [{title, description,
-        pinned}], total, next}: `description` reads the meme's description,
-        else its role; one page holds at most 32 rows, and `next` names the cursor of the page behind (hand it back as
-        `after`). Read one law whole with `tiddler_get(title=<title>, recipe="default", meme=True, grain="whole")`; order the pins with `law_pin` /
-        `law_unpin`. A law row comes from canon's settled ground; turn it through the five tools."""
+    def law_index(limit: "int | None" = None, after: "str | None" = None, all: bool = False) -> dict:
+        # THE WORDS LIVE IN THE CARRIER (lar:///engine.law.indexes): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         pins = _law_titles(LAW_PINS_FILTER)
-        args: dict = {"recipe": "default", "filter": LAW_INDEX_FILTER, "fields": list(LAW_ROW_FIELDS)}
-        if limit is not None:
-            args["limit"] = limit
-        if after:
-            args["after"] = after
-        page = _meme_wire("wiki-filter", args) or {}
         pinned = set(pins)
-        rows = [{"title": r.get("title"), "description": _law_line(r.get("fields")), "pinned": r.get("title") in pinned}
-                for r in (page.get("rows") or [])]
+        rows: list = []
+        page: dict = {}
+        cursor = after or None
+        while True:
+            args: dict = {"recipe": "default", "filter": LAW_INDEX_FILTER, "fields": list(LAW_ROW_FIELDS)}
+            if limit is not None:
+                args["limit"] = limit
+            if cursor:
+                args["after"] = cursor
+            page = _meme_wire("wiki-filter", args) or {}
+            rows.extend({"title": r.get("title"), "description": _law_line(r.get("fields")), "pinned": r.get("title") in pinned}
+                        for r in (page.get("rows") or []))
+            nxt = page.get("next")
+            # `all` follows every cursor to the end, as `lares law index --all` does; otherwise one page answers.
+            if not all or not nxt or nxt == cursor:
+                break
+            cursor = nxt
         total = page.get("total")
         return {"filter": LAW_INDEX_FILTER, "pinsTitle": LAW_PINS_TITLE, "pins": pins,
                 "rows": rows, "total": total if isinstance(total, int) else len(rows), "next": page.get("next") or None}
 
     @mcp.tool(annotations=_annotations("law_pin"))
     def law_pin(uri: str) -> dict:
-        """Pin A LAW MEME so it heads the law index — mirrors `lares law pin <uri>`. The pin set
-        (`$:/config/lares/law/pins`, a TiddlyWiki filter) takes one `[[uri]]` run (or drops a `-[[uri]]` run that kept the
-        title out) and lands through `tiddler_put` in this face's working layer of its daemon wiki, against the base it
-        read, keeping its layout; house canon takes no byte. A title no canon law holds refuses `law-pin-absent` (a pin
-        orders canon law and adds none); one already pinned answers
-        `decision: "noop"`; a pin set that moved under the read refuses `law-pins-moved` (call again). Returns {title, uri,
-        decision, pinned, text, hash, bag}."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///engine.law.pins): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         return _law_move("law_pin", _law_uri("law_pin", uri), "pin")
 
     @mcp.tool(annotations=_annotations("law_unpin"))
     def law_unpin(uri: str) -> dict:
-        """Unpin A LAW MEME — mirrors `lares law unpin <uri>`. Its `[[uri]]` run leaves the pin set
-        (`$:/config/lares/law/pins`); a title a broader run still names (a Mu member) takes a `-[[uri]]` run instead. The
-        set lands through `tiddler_put` in this face's working layer, against the base it read. A title not pinned answers
-        `decision: "noop"`; a pin set that moved under the read refuses `law-pins-moved`. Returns {title, uri, decision,
-        pinned, text, hash, bag}."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///engine.law.unpins): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         return _law_move("law_unpin", _law_uri("law_unpin", uri), "unpin")
 
     # ── THE HEARTH ROSTER — who is home, the vessel's own reading ──
@@ -1640,15 +1659,8 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool(annotations=_annotations("shore"))
     def shore(face: "int | None" = None, bag: "str | None" = None) -> dict:
-        """Read the disk shore: each standoff and pending removal, as `lares shore` lists them.
-        Mirrors `lares shore [list] [--face N] [--bag B]`. The vessel looks at the disk, then names what stands for a hand: each STANDOFF (the file and the records say different things and nothing writes) with its `standoff`
-        key, and each PENDING REMOVAL (a file vanished where a base stands; nothing writes back, nothing tombstones). Both
-        islands read as one shore, every page of each, each row naming its `island` (`wiki`: the active wiki's mirrors;
-        `daemon`: the daemon wiki's and the crossroads). `face` names a LIT SIBLING's shore by handle index: its own projector
-        answers (in the daemon island) without a wear, and a face that stands no projection refuses `face-unprojected`. `bag`
-        narrows to one bag. Returns {standoffs, standoffCount, pending, pendingCount, face?}. The answers that settle a row
-        (`lares shore take-records|take-disk|restore|remove`) stay a person's hand at a terminal: name the command for the
-        operator."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///carriage.disk.reads): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         args: dict = {"op": "list"}
         if face is not None:
             if not isinstance(face, int) or isinstance(face, bool) or face < 0:
@@ -1705,13 +1717,8 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool(annotations=_annotations("shore_flush"))
     def shore_flush() -> dict:
-        """Run the vessel's whole-island flush: every shore writes what it owes, as `lares shore flush` does.
-        Mirrors `lares shore flush`. The vessel asks every island that mounts a disk shore (the daemon's,
-        with each lit face's own projector, and every resident wiki's) to write what it holds in memory to its mirrors now: the
-        same flush the teardown runs. It places no record and takes nothing. Returns {islands, whole}: each island's part names
-        what it `written`, what stayed `unwritten` (each with its state and why; a lit face's row names its `face`) and its
-        `fileWrites`, or `answered: false` with why; `whole` reads true where every island answered and left nothing
-        unwritten. No composition sitting refuses `flush-unavailable`."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///carriage.disk.flushes): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         answer = uds.custody_frame({"op": "shore-flush"}, timeout=60.0)
         if answer.get("status") == "error":
             raise uds.LaresVerbError(str((answer.get("refusal") or {}).get("reason") or answer.get("errorMessage") or "shore-flush refused")
@@ -1938,18 +1945,8 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool(annotations=_annotations("kahua_propose"))
     def kahua_propose(proposals: list, face: "int | None" = None, session: "str | None" = None) -> dict:
-        """Propose items for the face's kahua stage — mirrors `lares kahua propose`. `proposals` lists
-        {title, revision, text | digest, taint}: the daemon title and revision the item distils, its body (or the body's
-        sha-256 digest) and every input from outside the face (web page, tool output, pasted text); an AI summary
-        inherits the taint of what it summarised. ONE batch per call rides the face's intents plane, pinned to this
-        device; it carries digests and never a body, and it grants nothing: the operator's hand lifts it with
-        `lares kahua lift <title> --proposal <id>`. TWO DIGESTS, ONE WORD: a proposal's `digest` names the BODY
-        digest, the sha-256 of the raw body bytes (UTF-8, lowercase hex), which this tool computes from `text`. The
-        ROW digest that `lares kahua stage` prints and `lift --digest` takes covers the body AND the row's carried
-        fields, so it differs. Hand `text`, or the BODY digest; a proposal built from the ROW digest refuses at the
-        lift with `proposal-digest`, as does one whose body differs by a byte from the staged row's. `face` may name any face inside the lent set (absent: the worn face); a face outside it refuses `face-not-lent`, a shut one `face-not-open`.
-        Returns {id, cid}. Rides a `seat` session over the @daemon wire; no MCP tool lifts (`kahua_stage` writes
-        the local row a lift names)."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///face.draft.proposes): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         if not isinstance(proposals, list) or not proposals:
             raise SeatArgumentRefused("kahua_propose: name `proposals` as a non-empty list of {title, revision, text|digest, taint}")
         args: dict = {"proposals": proposals}
@@ -1959,16 +1956,8 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool(annotations=_annotations("kahua_stage"))
     def kahua_stage(title: str, text: str, fields: "dict | None" = None, face: "int | None" = None) -> dict:
-        """Stage one row into the face's local canon `bags/daemon-<F>` — mirrors `lares kahua stage <title> --text
-        <body> [--fields <json>]`. The first of memory's two crossings: local to this device, unsigned, and it lifts
-        nothing; the operator's hand carries a staged row to the fleet with `lares kahua lift <title>`, reading its
-        preview first. `text` carries the row's whole body; `fields` carries its string-valued fields (`title`, `text`
-        and any `kahua-` field never ride). A row already standing at `title` gives way to this one. Returns
-        {title, digest, relation, staged}: `digest` names the ROW digest (sha-256 over the body and the carried fields),
-        the one `lift --digest` takes, never the BODY digest a proposal carries (`kahua_propose`); `staged` reads
-        false where the row already stood at that digest and nothing moved. `face` may name any face inside the lent
-        set (absent: the worn face); a face outside it refuses `face-not-lent`, a shut one `face-not-open`. A face with no local canon
-        standing refuses `kahua-stage-no-canon`. Rides a `seat` session over the @daemon wire."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///face.draft.stages): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         if not isinstance(title, str) or not title:
             raise SeatArgumentRefused("kahua_stage: name the row's `title`")
         if not isinstance(text, str):
@@ -1983,9 +1972,8 @@ def build_mcp(coordinator: LaresCoordinator):
     @mcp.tool(annotations=_annotations("kahua_get"))
     def kahua_get(title: "str | None" = None, history: bool = False, face: "int | None" = None,
                   after: "str | None" = None, limit: "int | None" = None) -> dict:
-        """Get the face's verified kahua stage at two grains — mirrors `lares kahua get [<title>]`.
-        Without a title, lists bounded items with source, count, relation and continuation; a fresh face answers
-        `stage: "none"`. With a title, returns the verified item or null and optional history. Reads alone."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///face.draft.reads): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         if title is not None and (not isinstance(title, str) or not title):
             raise SeatArgumentRefused("kahua_get: name a nonempty `title`")
         if title is None and history:
@@ -2040,6 +2028,7 @@ def build_mcp(coordinator: LaresCoordinator):
             args["name"] = name
         return uds.output("reconcile", args)
 
+    _dress_from_pack(mcp)
     return mcp
 
 
