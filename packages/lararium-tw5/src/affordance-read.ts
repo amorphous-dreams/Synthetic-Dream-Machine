@@ -61,8 +61,14 @@ export function rowsOf(textOf: TextOf, address: string, slot: string, surface: A
   const spells = spellsOf(textOf, address, surface) ?? "";
   const omitted = skinOmits(skin);
   const own = addressOfTitle(address) ?? address;
+  // AN ARG THE SKIN NEVER TAKES RIDES THE WIRE ALONE (`at/` on the cli, which reads the time itself): a call binding one runs
+  // on no door of this skin, so the skin renders no line for it (an example drops; a refusal keeps its words, without a cure).
+  const offSurface = new Set(parseHasRows(slotText(textOf, address, "#/takes"))
+    .filter((r) => r.entity === "arg" && !argOnSurface(r, surface, omitted)).map((r) => r.name));
+  const runsHere = (call: NeutralCall): boolean => call.args.every(([k]) => !offSurface.has(k));
   const rows = (slot === "#/skins" ? skinRows(textOf, address) : parseHasRows(slotText(textOf, address, slot)))
-    .filter((row) => !(row.entity === "arg" && !argOnSurface(row, surface, omitted)));
+    .filter((row) => !(row.entity === "arg" && !argOnSurface(row, surface, omitted)))
+    .filter((row) => !(row.entity === "example" && !runsHere(exampleCall(row, own))));
   // A call naming another affordance (a cure that reads `tiddler.get.reads`) renders under that address, marked foreign: this
   // carrier knows no spelling of another door, and witness W4 parses only the calls that name this one.
   const seats = surface === "cli" ? seatsOf(parseHasRows(slotText(textOf, address, "#/takes")).filter((r) => argOnSurface(r, surface, omitted))) : undefined;
@@ -83,7 +89,7 @@ export function rowsOf(textOf: TextOf, address: string, slot: string, surface: A
       out["call"] = line;
       if (foreign) out["foreign"] = true;
     }
-    if (row.entity === "refusal" && row.params["cure"]) {
+    if (row.entity === "refusal" && row.params["cure"] && runsHere(neutralCallOf(row.params["cure"], own))) {
       const { line, foreign } = callOn(neutralCallOf(row.params["cure"], own));
       out["cure"] = line;
       if (foreign) out["foreign"] = true;

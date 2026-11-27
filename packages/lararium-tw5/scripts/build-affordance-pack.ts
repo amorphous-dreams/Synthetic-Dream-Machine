@@ -114,6 +114,8 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
 
   const carriers: Record<string, AffordancePackCarrier> = {};
   const routes: Record<string, Record<string, string>> = Object.fromEntries(AFFORD_SURFACES.map((s) => [s, {}]));
+  /** Each address's own cli spelling (its skin row's `spells/`), apart from the `also/` spellings routed beside it. */
+  const ownCli = new Map<string, string>();
   for (const title of tagged) {
     const address = addressOfTitle(title)!;
     // ONE CLOSED SLOT SET: a carrier slot the set never names would bake silently unrendered, so it refuses the bake by name.
@@ -152,6 +154,7 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
         throw new Error(`affordance-door-claimed-twice: ${surface} \`${spelling}\` skins both ${claimed} and ${address}; one door names one address`);
       }
       routes[surface]![spelling] = address;
+      if (surface === "cli") ownCli.set(address, spelling);
       // A skin row may name further spellings the one door answers (`also/[[lares shore keep-records]]`, comma-joined): two
       // words for one act ride one address, each routed to it. Another carrier claiming one refuses the bake the same way.
       for (const alias of (row.params["also"] ?? "").split(",").map((a) => a.trim().replace(/^lares\s+/, "")).filter(Boolean)) {
@@ -186,8 +189,15 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
       entry.help = [...c.renders["cli"]!["whole"]!];
     } else {
       entry.brief = briefOf(door, entry.addresses.map((a) => carriers[a]!.role), spellingsOf(routes["cli"]!, entry.addresses));
+      // AN `also` SPELLING STANDS IN THE DOOR'S ACCOUNT: the index lists each address by its own spelling, so a second word for
+      // one act (`shore keep-records` beside `shore take-records`) names itself here, or the door answers a verb its help never says.
+      const also = Object.entries(routes["cli"]!)
+        .filter(([s, a]) => entry.addresses.includes(a) && ownCli.get(a) !== s)
+        .sort(([x], [y]) => x.localeCompare(y))
+        .map(([s, a]) => `  lares ${s}  (${ownCli.get(a) ?? bareAddressOf(a)!})`);
       entry.help = [
         ...lines(engine.wiki.renderTiddler("text/plain", INDEX, { variables: { surface: "cli", pattern: sharedPattern(entry.addresses) } })),
+        ...(also.length > 0 ? ["", "Also spelled:", ...also] : []),
         "",
         `Read one: lares ${door} <verb> --help`,
       ];

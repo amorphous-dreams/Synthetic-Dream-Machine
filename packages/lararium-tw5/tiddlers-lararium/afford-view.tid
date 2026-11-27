@@ -11,10 +11,10 @@ caption: affordance carrier · the wiki view
 <$let state={{{ [<currentTiddler>addsuffix<slot>addprefix[$:/state/lares/afford/]] }}}>
 <div class="lar-afford-slot">
 <$reveal type="nomatch" state=<<state>> text="open">
-<$button set=<<state>> setTo="open" class="tc-btn-invisible">▸ <$text text=<<label>>/> <span class="lar-afford-digest"><$text text={{{ [<currentTiddler>afford[digest],<slot>] }}}/></span></$button>
+<$button set=<<state>> setTo="open" class="tc-btn-invisible">▸&#32;<$text text=<<label>>/>&#32;<span class="lar-afford-digest"><$text text={{{ [<currentTiddler>afford[digest],<slot>] }}}/></span></$button>
 </$reveal>
 <$reveal type="match" state=<<state>> text="open">
-<$button set=<<state>> setTo="closed" class="tc-btn-invisible">▾ <$text text=<<label>>/></$button>
+<$button set=<<state>> setTo="closed" class="tc-btn-invisible">▾&#32;<$text text=<<label>>/></$button>
 <pre><$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/afford/skin/tw5" $mode="inline"/></pre>
 </$reveal>
 </div>

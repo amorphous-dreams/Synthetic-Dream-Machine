@@ -160,15 +160,14 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/edges`>>
 
-!! edges ~ affordance · oracle-loop · oracle · joints
+!! edges ~ affordance · oracle-loop · oracle
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/oracle-loop`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/oracle`>>
-<<~ loulou uri=`lar:///ha.ka.ba/kahua/memory/research/oracle-joints`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;I9bhJWpMgg-oYQgxORTGhlx4PohRH5N7XgSkIeqI3Z8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pW4RKBXsf1Bg_D27IV2tjZ9eWDOB8ACyu9t770m9LHM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

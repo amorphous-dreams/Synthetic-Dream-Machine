@@ -101,7 +101,8 @@ describe("fewer front doors", () => {
     expect(b.err).toContain("unknown flag --debounce");
     const c = await run(["ingest", "--watch"]);
     expect(c.code).toBe(2);
-    expect(c.out).toContain("lares ingest --watch --source");
+    expect(c.out).toContain("usage: lares ingest --source <dir-or-file> --to <bag-uri>");   // the carrier's spine: --watch rides it
+    expect(c.out).toContain("[--watch] [--debounce <ms>]");
   });
 
   test("act --draft with no uri refuses with the new usage", async () => {

@@ -58,7 +58,7 @@ describe("carrier-shape — every source reads as a carrier, with its marks and 
       .map(([f, u]) => `${f} — ${u}`);
     expect(files.length).toBeGreaterThan(500);
     expect(mangled).toEqual([]);
-  });
+  }, 60_000);   // the whole corpus reads in this one test: a loaded floor slot runs it past the 5 s default
 
   /**
    * THE OPENER LAW: spelling is judged on the opener's own bytes alone, independent of whether the

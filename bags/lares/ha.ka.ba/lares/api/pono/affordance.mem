@@ -87,7 +87,7 @@ Rows ride the `has` grammar and its `key/value` params; `[[…]]` brackets a val
 
 * ''An arg with no `takes/` reads as a boolean flag.'' `needs/` names a requirement, `default/` a default, `seat/N` a positional seat, `gate/hand` testimony that the arg rides a person's hand (the door enforces it).
 * ''Skins derive argument spellings by rule'': `cli` writes `--kebab-case`, `mcp` writes `snake_case`, `tw5` an attribute, `console` an object key. A skin row names only an exception (`maps/asking:query`).
-* ''An example and a cure ride as neutral calls'' (an address and bound args), so every skin renders its own runnable line from one row. A lesson that lives in shell composition rides a literal fenced line inside `#/skins/cli`.
+* ''An example and a cure ride as neutral calls'' (an address and bound args), so every skin renders its own runnable line from one row. A call binding an arg a skin never takes (`skins/`, `omits/`) runs on no door of that skin, so that skin renders no line for it: the example drops there, and the refusal keeps its words without a cure. A lesson that lives in shell composition rides a literal fenced line inside `#/skins/cli`.
 * The surface words read `cli` · `mcp` · `tw5` · `console`. `mcp` names the protocol every seat speaks.
 
 <<~/ahu>>
@@ -155,6 +155,6 @@ A verb that lands an act record MUST read its slot names, their order and their 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;HFuozKDjeDC3Z8FXOIxwifvN4yO262-0NTYEDKH2HYw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GHfiHe8SbFPNw57Nm2ZhIT4wGCLtY9_h1Evu62G06FY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

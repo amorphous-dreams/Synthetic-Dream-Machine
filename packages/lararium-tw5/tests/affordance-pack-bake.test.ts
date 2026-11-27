@@ -50,7 +50,7 @@ describe.skipIf(wikiSkip)(`the affordance bake over the fixture carrier${skipNot
     const c = pack.carriers[FIXTURE_ADDRESS]!;
     for (const surface of ["cli", "mcp", "tw5", "console"]) expect(c.renders[surface]!["line"]!.join("\n").toLowerCase()).toContain(c.role.toLowerCase());
     expect(c.renders["mcp"]!["whole"]![0]).toBe(c.role);
-    expect(c.renders["mcp"]!["whole"]!.join("\n")).toContain("Refuses: query-unnamed.");
+    expect(c.renders["mcp"]!["whole"]!.join("\n")).toContain("Refuses: query-unnamed · record-torn.");   // the skin names every refusal row, the foreign cure's too
     expect(c.params["asking"]).toBe("the question, named before the throw");
     expect(Object.keys(c.params).sort()).toEqual(["asking", "at", "bag", "caster", "coins", "recipe"]);   // the mcp skin omits fresh, seed
     expect(c.takes["cli"]).toEqual(["--recipe", "--bag", "--asking", "--fresh", "--seed", "--coins", "--caster"]);

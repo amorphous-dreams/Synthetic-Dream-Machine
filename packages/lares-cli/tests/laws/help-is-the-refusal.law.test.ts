@@ -14,6 +14,7 @@ import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { packDoor, packRoute } from "@lararium/tw5/affordance-pack";
 import { helpLines } from "../../src/command-help.js";
 import { commands, door, helpKeys, UNKNOWN, verbTables } from "./harness.js";
 
@@ -32,13 +33,16 @@ function refusingDoors(): string[] {
   return [...found].sort();
 }
 
+/** A key `helpLines` answers from one home: the registry, or the baked pack where the door flipped to its carriers. */
+const answersHelp = (k: string): boolean => helpKeys().includes(k) || packDoor(k) !== undefined || packRoute("cli", k) !== undefined;
+
 /**
- * The lines a door answers with, by the dispatcher's own rule: the longest registry key that leads the door (a sub-door with
- * no row of its own answers with its parent's), else the sub-verb table the door keeps itself (`wiki`, `bag`, `shore`).
+ * The lines a door answers with, by the dispatcher's own rule: the longest registry or pack key that leads the door (a sub-door
+ * with no row of its own answers with its parent's), else the sub-verb table the door keeps itself (`wiki`, `bag`, `shore`).
  */
 function doorKey(key: string): string | null {
   const words = key.split(" ");
-  for (let n = words.length; n > 0; n--) { const k = words.slice(0, n).join(" "); if (helpKeys().includes(k)) return k; }
+  for (let n = words.length; n > 0; n--) { const k = words.slice(0, n).join(" "); if (answersHelp(k)) return k; }
   return null;
 }
 function doorLines(key: string): string[] {
@@ -87,7 +91,7 @@ describe("L3 · help and refusal render the same bytes", () => {
   test("the source scan finds the refusing doors, and each names a registry key", () => {
     const doors = refusingDoors();
     expect(doors.length).toBeGreaterThan(10);
-    // Each answers from a registry key, or from the sub-verb table it keeps itself.
+    // Each answers from a registry key, a pack door, or the sub-verb table it keeps itself.
     expect(doors.filter((d) => doorKey(d) === null && commands().find((c) => c.name === d.split(" ")[0])?.help === undefined)).toEqual([]);
   });
 

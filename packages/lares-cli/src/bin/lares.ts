@@ -393,9 +393,16 @@ export const COMMAND_NAMES: readonly string[] = COMMANDS.map((c) => c.name);
 function printHelp(surface: string = VERB_SURFACE.cli, executableOnly = false): void {
   const shown = projectCommands(surface, executableOnly);
   // A row whose key rests on SOME sub-verbs alone names them beside its brief, so the ✍ mark never vows more than the doors do.
+  // A brief that already lists the verbs (a packed door names them where its roles overrun the line) marks each signing
+  // verb in place, so the one line still fits; any other brief names them after it.
   const brief = (name: string, summary: string): string => {
     const row = COMMANDS.find((c) => c.name === name);
-    return `${row?.brief ?? summary}${row?.signsOnly ? ` (✍ ${row.signsOnly.join(", ")} alone)` : ""}`;
+    const text = row?.brief ?? summary;
+    const only = row?.signsOnly;
+    if (!only) return text;
+    const verbs = text.split(" · ");
+    if (only.every((v) => verbs.includes(v))) return verbs.map((v) => (only.includes(v) ? `✍ ${v}` : v)).join(" · ");
+    return `${text} (✍ ${only.join(", ")} alone)`;
   };
   // `law` took the blank under the title: the usage line follows it at once, so the list stays within 66 lines.
   console.log("lares — operator CLI for the Lares lararium stack");

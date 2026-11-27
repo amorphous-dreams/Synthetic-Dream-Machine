@@ -81,17 +81,16 @@ Rote takes no move but one: say so, and let the throw seed free talk.
 
 <<~ ahu slot=`#/edges`>>
 
-!! edges ~ seed · oracle · e-jing · joints · affordance
+!! edges ~ seed · oracle · e-jing · affordance
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/oracle`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/loop`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/afford/oracle.cast.throws`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/library/oracles/e-jing/index`>>
-<<~ loulou uri=`lar:///ha.ka.ba/kahua/memory/research/oracle-joints`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;cH6HJNMeYllW9ZLnWYrLw3RoGkgpJkatIk70eK1bMa8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VrYKOF2f7deL_DsLNqG2CQctaZolqyyoIMmEt0CFqAg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

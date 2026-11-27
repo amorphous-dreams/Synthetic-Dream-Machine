@@ -71,7 +71,7 @@ describe("lares ddate", () => {
     expect(bad.err).toContain("Invalid date -- out of range");
     const few = await run(["ddate", "1", "1"]);
     expect(few.code).toBe(2);
-    expect(few.err).toContain("usage: lares ddate [+FORMAT] [day month year]");
+    expect(few.err).toContain("usage: lares ddate [+FORMAT] [<day>] [<month>] [<year>]");   // the spine the carrier's seats derive
   });
 
   test("a BCE year rides as a bare negative number", async () => {

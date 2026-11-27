@@ -33,7 +33,7 @@
 export const BOOLEAN_FLAGS: ReadonlySet<string> = new Set([
   "abandon", "accept-loss", "accept-omissions", "added", "all", "all-strata", "apply", "approve", "brief", "bulk", "cancel", "cards", "collapse", "commit", "cosign", "confirm", "create", "cut", "drain",
   "deny", "docs", "draft", "drop", "dry-run", "edge", "ephemeral", "every", "executable", "family", "force", "fresh", "foreground", "from-persona", "held", "help", "help-mempalace", "history",
-  "hearth", "hold", "if-due", "in-wiki", "init", "join", "json", "keep", "keep-hooks", "keyhive-trace", "lag", "launch", "list", "meme", "memory", "new", "observe", "offer", "orphans", "over-fresher",
+  "hearth", "hold", "if-due", "in-wiki", "init", "join", "json", "keep", "keep-hooks", "keyhive-trace", "lag", "launch", "list", "meme", "memory", "new", "offer", "orphans", "over-fresher",
   "page", "pair", "palaces", "paper", "partial", "passphrase", "pending", "probe", "quorum", "overwrite", "remove", "repour", "restart", "revert", "rotate", "seat", "sessions", "shadow", "skinny", "skip-build", "spectral", "split-root",
   "staged", "sweep", "tag-blobs", "terms", "tree", "verbose", "wait", "watch", "with-web", "witness", "workbench", "writeback", "yes",
 ]);
@@ -42,9 +42,10 @@ export const BOOLEAN_FLAGS: ReadonlySet<string> = new Set([
  * Names a command reads as a flag in one spelling and as a valued option in another (`meme project --check`
  * alone or `--check <x>`; `--grammar`; `rite kukulu --rollback` alone or `--rollback <rev>`). The parser cannot tell which spelling comes, so these
  * stay greedy. `--face` takes a value (`fleet join offer --face 1`), and so does `--target` (`tiddler get T --target h1`) and `--land`
- * (`kahua lift <uri> --land <answer>`); each flag read only refuses the bare spelling.
+ * (`kahua lift <uri> --land <answer>`); each flag read only refuses the bare spelling. `--observe` stands alone on `vessel stand`
+ * (read the standing, act on nothing) and takes the arm's pointers on `oracle cast --observe <pointers>`.
  */
-export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "grammar", "land", "rollback", "target", "recipe", "realm"]);
+export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "grammar", "land", "observe", "rollback", "target", "recipe", "realm"]);
 
 
 /**
