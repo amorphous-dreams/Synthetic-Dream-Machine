@@ -7,7 +7,7 @@ import {
   addressMatcher, addressOfTitle, bodyOf, digestOf, edgesOf, exampleCall, kaheaTitles, neutralCallOf, parseHasRows, parseParams, proseOf, renderCall,
   seatsOf, spellArg, tokenize, usageOf, unfoldRead, type HasRow,
 } from "../src/affordance-rows.js";
-import { affordView } from "../src/affordance-read.js";
+import { affordView, carrierOf, carrierViewOfText, seatTitleOf } from "../src/affordance-read.js";
 
 const TAKES = [
   "!! takes ~ recipe · bag · asking · fresh",
@@ -145,5 +145,59 @@ describe("a positional arg (`seat/N`)", () => {
     ].join("\n"));
     expect(usageOf("cli", "lares ddate", shuffled)).toBe("usage: lares ddate [<day> <month> <year>]");
     expect(usageOf("mcp", "ddate", shuffled)).toBe("ddate([year=<number>, day=<number>, month=<number>])");
+  });
+});
+
+describe("a bare root resolves, and the stack decides (`carrierOf`)", () => {
+  const SEAT = "lar:///ha.ka.ba/lares/afford/oracle.library.consults";
+  const BARE = "lar:///oracle.library.consults";
+  const carrier = (title: string, role: string): Record<string, string> => ({
+    [title]: "",
+    [`${title}#/skins/cli`]: "<<has entity=`skin` name=`cli` params=`spells/[[lares oracle cast]]`>>",
+    [`${title}#/head`]: `! oracle.library.consults ~ ${role}\n\nA line sums three coins.`,
+  });
+  const viewOf = (records: Record<string, string>) => {
+    const textOf = (t: string): string | undefined => records[t];
+    return { textOf, carriers: carrierViewOfText(textOf) };
+  };
+
+  test("RED 1: the stable seat answers a bare root no record titles; every spelling of the address names the same carrier", () => {
+    const { carriers } = viewOf(carrier(SEAT, "canon line"));
+    expect(carrierOf(carriers, BARE)).toBe(SEAT);
+    expect(carrierOf(carriers, "oracle.library.consults")).toBe(SEAT);
+    expect(carrierOf(carriers, SEAT)).toBe(SEAT);
+    expect(seatTitleOf(BARE)).toBe(SEAT);
+  });
+
+  test("RED 2: a record titled with the bare root wins over the seat, whichever spelling asks", () => {
+    const { carriers } = viewOf({ ...carrier(SEAT, "canon line"), ...carrier(BARE, "working line") });
+    expect(carrierOf(carriers, BARE)).toBe(BARE);
+    expect(carrierOf(carriers, SEAT)).toBe(BARE);
+  });
+
+  test("RED 3: a mesh seat answers where the house seat stands empty; a tagged carrier answers past both; nothing answers null", () => {
+    const mesh = "lar:///ha.ka.ba/lararium/afford/oracle.library.consults";
+    expect(carrierOf(viewOf(carrier(mesh, "mesh line")).carriers, BARE)).toBe(mesh);
+    const other = "lar:///ha.ka.ba/elsewhere/afford/oracle.library.consults";
+    const tagged = { has: (t: string) => t === other, tagged: (a: string) => (a === BARE ? [other] : []) };
+    expect(carrierOf(tagged, BARE)).toBe(other);
+    expect(carrierOf(viewOf({}).carriers, BARE)).toBeNull();
+    expect(carrierOf(viewOf(carrier(SEAT, "x")).carriers, "lar:///ha.ka.ba/lares/api/pono/affordance")).toBeNull();
+  });
+
+  test("RED 4: every view reads through the carrier the stack seats: a bare root reads the seat's rows, and a bare-root carrier above the seat answers in its place", () => {
+    const canon = viewOf(carrier(SEAT, "canon line"));
+    expect(affordView(canon.textOf, BARE, "prose", "cli", "#/head")).toEqual(["canon line", "A line sums three coins."]);
+    expect(affordView(canon.textOf, BARE, "spells", "cli", "")).toEqual(["lares oracle cast"]);
+    const stacked = viewOf({ ...carrier(SEAT, "canon line"), ...carrier(BARE, "working line") });
+    expect(affordView(stacked.textOf, SEAT, "prose", "cli", "#/head")[0]).toBe("working line");
+    expect(affordView(stacked.textOf, BARE, "prose", "cli", "#/head")[0]).toBe("working line");
+  });
+
+  test("RED 5: `match` answers the carrier that answers, so the seat and the bare root above it name one address once", () => {
+    const stacked = viewOf({ ...carrier(SEAT, "canon line"), ...carrier(BARE, "working line") });
+    expect(affordView(stacked.textOf, SEAT, "match", "cli", "oracle.*")).toEqual([BARE]);
+    expect(affordView(stacked.textOf, BARE, "match", "cli", "oracle.*")).toEqual([BARE]);
+    expect(affordView(viewOf(carrier(SEAT, "canon line")).textOf, SEAT, "match", "cli", "")).toEqual([SEAT]);
   });
 });

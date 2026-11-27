@@ -6,7 +6,7 @@
 import { describe, expect, test, vi } from "vitest";
 import { wikiSkip, skipNote } from "./test-wiki.js";
 import {
-  afterDispatch, arrived, draftBag, ManualBoundary, openDraft, peerWrite, remote, saveSequence, shoreRig, storeDeleted,
+  afterDispatch, arrived, draftBag, landWhole, ManualBoundary, openDraft, peerWrite, remote, saveSequence, shoreRig, storeDeleted,
   storeText, turns, workingBag, type Rig,
 } from "./wiki-shore-rig.js";
 
@@ -96,24 +96,26 @@ describe.skipIf(wikiSkip)(`wiki shore residue${skipNote}`, () => {
     await r.stop();
   }, 120_000);
 
-  test("a stopped shore holds no account of the wiki and turns resident again at its own seed checkpoint", async () => {
+  test("a stopped shore holds no account of the wiki and stands its rows afresh from the wiki when it starts again", async () => {
     const boundary = new ManualBoundary();
     const r = await shoreRig({ boundary });
     const x = "lar:///t/residue/restart";
     await seed(r, [{ title: x, text: "landed" }]);
-    expect(r.adaptor.isResident()).toBe(true);
     expect(r.adaptor.ledger.landedOf(x)).toBeDefined();
     r.unbridge();
     await r.adaptor.stop();
-    expect(r.adaptor.isResident(), "a stopped shore stands non-resident").toBe(false);
-    expect(r.adaptor.ledger.landedOf(x), "and keeps no landed value").toBeUndefined();
-    // The restart seeds afresh: the ledger fills from the replay and the shore turns resident at its checkpoint.
+    expect(r.adaptor.ledger.landedOf(x), "a stopped shore keeps no landed value").toBeUndefined();
+    // The restart reads the wiki's value as synced (the start baseline, TW5's readTiddlerInfo), and the layer landing whole stands
+    // the landed row with its bag.
     r.adaptor.installLandingQueue();
     r.adaptor.start();
-    r.working.emitInitialReplay();
+    expect(r.adaptor.ledger.landedOf(x), "no layer has landed it since the restart").toBeUndefined();
+    expect(r.adaptor.isFoam(x, r.wiki.getTiddler(x) ?? null), "the restart reads the wiki's value as synced").toBe(true);
+    landWhole(r.adaptor, r.working);
     await r.adaptor.armSeedCheckpoint();
-    expect(r.adaptor.isResident()).toBe(true);
     expect(r.adaptor.ledger.landedOf(x)!.tiddler).toBe(r.wiki.getTiddler(x));
+    expect(r.adaptor.ledger.landedOf(x)!.bag).toBe(workingBag);
+    expect(r.adaptor.pendingTitles(), "the landing over an unchanged wiki raised no hand").toEqual([]);
     await r.adaptor.stop();
     await r.repo.shutdown();
   }, 120_000);

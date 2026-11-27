@@ -58,6 +58,8 @@ class FakeEngine {
     getTiddlerText: (t: string, d = ""): string => this.texts.get(t) ?? d,
     // The cascade's one rule, read against the title the source yields.
     filterTiddlers: (filter: string, _w: unknown, source: unknown): string[] => {
+      // A sourceless filter (the shore's synced-title read at start) reads this wiki's ordinary tiddlers: it holds none.
+      if (typeof source !== "function") return [];
       let title = "";
       (source as (fn: (t: unknown, ti: string) => void) => void)((_t, ti) => { title = ti; });
       return /^\[prefix\[lar:\]/.test(filter) && title.startsWith("lar:") ? [ORIGIN_BAG] : [];

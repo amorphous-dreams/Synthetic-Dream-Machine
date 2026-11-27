@@ -176,6 +176,21 @@ export async function shoreRig(opts: RigOptions = {}) {
   };
 }
 
+/**
+ * Land every record a bag's document holds (a tombstone included) through the shore's own door, one wave per title carrying the
+ * document's heads: what a fresh shore over standing documents hears when that layer joins it (`CompositeStore.addLayer`).
+ */
+export function landWhole(adaptor: IslandAdaptor, store: AutomergeDocStore): void {
+  const doc = (store as unknown as { handle: { doc(): LarDoc | undefined } }).handle.doc();
+  const heads = store.headsNow() ?? undefined;
+  const bag = store.bagId;
+  for (const title of Object.keys(doc?.tiddlers ?? {})) {
+    const { record } = store.readNow(title);
+    if (!record) continue;
+    adaptor.onUriChanged({ title, record, origin: { kind: "crdt-remote", edgeIsland: bag ?? "automerge" }, ...(bag !== undefined ? { bag } : {}), ...(heads !== undefined ? { heads } : {}) });
+  }
+}
+
 /** A second actor over its own Repo: imports the bag's doc, writes, and merges back into the shore's handle. */
 export async function peerWrite(r: Rig, bag: string, records: readonly LarTiddlerRecord[], beforeMerge?: () => void): Promise<void> {
   const peerRepo = new Repo({ network: [] });

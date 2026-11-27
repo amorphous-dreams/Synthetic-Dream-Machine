@@ -7,9 +7,13 @@
  * children (`uri#/takes`, `uri#/skins/cli`), so this adds no parser beyond the `has` row reader. A slot that calls a shared slot
  * by `kahea` (`#/takes/container` in the affordance law) reads that slot's rows in place, never a copy.
  *
- * A CARRIER'S TITLE AND ITS ADDRESS DIFFER IN CANON (measured by weaver#1, lar:///ha.ka.ba/lares/api/pono/affordance#/residency):
- * the canon walk seats no bare root, so a carrier rests at `lar:///ha.ka.ba/lares/afford/<address terms>` and TAGS its bare
- * address. Every view here takes the carrier's TITLE (the records hang under it) and derives the address from it.
+ * WHICH CARRIER ANSWERS AN ADDRESS: THE STACK DECIDES (`carrierOf`, lar:///ha.ka.ba/lares/api/pono/affordance#/residency). The
+ * canon walk seats no bare root, so a canon carrier rests at its stable seat (`lar:///ha.ka.ba/lares/afford/<address terms>`)
+ * and TAGS its bare address; a working layer may seat one at the bare root itself. A record titled with the bare root wins
+ * where any layer holds one; else the stable seat answers; and TiddlyWiki's own shadow cascade picks the topmost layer for
+ * either title, so a carrier a spirit or an operator seats above canon answers in canon's place, and a reveal returns canon.
+ * Every view here resolves the title it takes through `carrierOf` first, then reads the records that hang under the carrier
+ * that answered.
  *
  * The `afford` filter operator (`filters/afford.ts`) hands these views to the skin templates; the bake and the console face ask
  * through that operator, so one reading serves every render.
@@ -23,6 +27,44 @@ import {
 
 /** How this module reads one record's text: `undefined` where the wiki holds no such record. */
 export type TextOf = (title: string) => string | undefined;
+
+/** The bags whose stable seat (`lar:///ha.ka.ba/<bag>/afford/<address>`) a carrier may rest at, in the order they answer. */
+export const AFFORD_SEAT_BAGS = ["lares", "lararium"] as const;
+
+/** One address's stable seat in one bag: `lar:///ha.ka.ba/lares/afford/oracle.library.consults`. */
+export function seatTitleOf(address: string, bag: string = AFFORD_SEAT_BAGS[0]): string {
+  return `lar:///ha.ka.ba/${bag}/afford/${address.replace(/^lar:\/\/\//, "")}`;
+}
+
+/**
+ * What `carrierOf` reads of a wiki: whether a title answers (over the reader's view, so a record the caller may not read
+ * answers nothing), and, where the wiki can filter, the carriers that tag an address (a seat in a bag past `AFFORD_SEAT_BAGS`).
+ */
+export interface CarrierView {
+  has(title: string): boolean;
+  tagged?(address: string): readonly string[];
+}
+
+/** A carrier view over a text lookup: a title answers where the lookup holds a record for it. */
+export const carrierViewOfText = (textOf: TextOf): CarrierView => ({ has: (title) => textOf(title) !== undefined });
+
+/**
+ * THE CARRIER THAT ANSWERS AN ADDRESS (fork 3 of lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts). The address rides any
+ * spelling: `lar:///oracle.library.consults`, `oracle.library.consults`, or a seat title. A record titled with the bare root
+ * wins where one stands; else the first stable seat that stands (`AFFORD_SEAT_BAGS` order); else the first carrier that tags
+ * the address. The view already answers each title from its topmost layer, so the cascade picks the layer for either title.
+ * Null where nothing answers, or where the spelling carries no address.
+ */
+export function carrierOf(view: CarrierView, address: string): string | null {
+  const own = addressOfTitle(address) ?? addressOfTitle(`lar:///${address.replace(/^lar:\/\/\//, "")}`);
+  if (own === null) return null;
+  if (view.has(own)) return own;
+  for (const bag of AFFORD_SEAT_BAGS) {
+    const seat = seatTitleOf(own, bag);
+    if (view.has(seat)) return seat;
+  }
+  return [...(view.tagged?.(own) ?? [])].filter((t) => addressOfTitle(t) === own && view.has(t)).sort()[0] ?? null;
+}
 
 /** The text of one slot record and of every shared slot it calls by `kahea`, joined in order. */
 function slotText(textOf: TextOf, address: string, slot: string): string {
@@ -112,8 +154,14 @@ export function usageLine(textOf: TextOf, address: string, surface: AffordSurfac
 export const AFFORD_VIEWS = ["rows", "usage", "spells", "prose", "body", "digest", "read", "surfaces", "edges", "address", "match"] as const;
 export type AffordView = (typeof AFFORD_VIEWS)[number];
 
-/** Answer one view for one carrier address. `arg` carries the slot (rows · prose · body · digest · read) or the pattern (match). */
-export function affordView(textOf: TextOf, address: string, view: string, surface: AffordSurface, arg: string): string[] {
+/**
+ * Answer one view for one carrier address. `arg` carries the slot (rows · prose · body · digest · read) or the pattern (match).
+ * The title it takes resolves through `carrierOf` first (over `carriers`, else over `textOf`), so a bare root reads the carrier
+ * the stack seats, and a seat title reads a bare-root carrier standing above it. `match` answers the carrier that answers, so
+ * a filter over every tagged carrier names each address once.
+ */
+export function affordView(textOf: TextOf, title: string, view: string, surface: AffordSurface, arg: string, carriers?: CarrierView): string[] {
+  const address = carrierOf(carriers ?? carrierViewOfText(textOf), title) ?? title;
   switch (view as AffordView) {
     case "rows": return rowsOf(textOf, address, arg, surface).map((r) => JSON.stringify(r));
     case "usage": return [usageLine(textOf, address, surface)];

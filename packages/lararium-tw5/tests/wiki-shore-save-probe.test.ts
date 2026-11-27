@@ -27,8 +27,12 @@ describe.skipIf(wikiSkip)(`the wiki shore's save probe${skipNote}`, () => {
     const r = await shoreRig();
     r.wiki.addTiddler(new r.Tiddler({ title: "lar:///ha.ka.ba/lararium/config/current-wiki-bag", text: "" }));
     await turns(16);
+    // The pointer's own write rides the bridge as a hand (TW5 saves a write made after its syncer stands), and with the pointer empty
+    // that save raises the unrouted alert itself. Clear it, then probe synchronously: the probe alone raises nothing.
+    const alert = unroutedSaveAlertTitle("lar:///ha.ka.ba/lararium/config/current-wiki-bag");
+    if (r.wiki.getTiddler(alert)) r.wiki.deleteTiddler(alert);
     expect(r.adaptor.saveBagOf("lar:///t/probe/unroutable")).toBeNull();
-    expect(r.wiki.getTiddler(unroutedSaveAlertTitle("lar:///ha.ka.ba/lararium/config/current-wiki-bag"))).toBeUndefined();
+    expect(r.wiki.getTiddler(alert)).toBeUndefined();
     await r.stop();
   }, 120_000);
 });

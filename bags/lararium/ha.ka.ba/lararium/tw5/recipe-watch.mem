@@ -28,12 +28,13 @@ house-canon bag carries no catalog entry and resolves through the Kahu realm's
 standing registration (`libraryDocUrl`).
 
 * ''bag added'' → resolve via the owning plane's oracle, insert the layer above
-  `lares` (library position, below the wiki bag), replay its content into
-  the running wiki.
+  `lares` (library position, below the wiki bag); the join lands its visible
+  delta into the running wiki (`CompositeStore.addLayer`: one change per title
+  whose topmost record it moves).
 * ''bag removed'' → `CompositeStore.removeLayerLive`: departed titles
   tombstone to projections, records the bag shadowed resurface.
 * ''oracle URL moved'' (bag compact / rotate-recipe) → swap the layer's store
-  in place at the same cascade position, replay from the new doc.
+  in place at the same cascade position; the new doc lands its visible delta.
 
 Reconciles serialize (one at a time; a change mid-run queues one rerun). The
 wiki behavior starts it at `onEa`, stops it at demote.
@@ -82,6 +83,6 @@ CRDT slot the oracles point at.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;cfIh5Ffe_cTKFOTzgfZePIqZHyGyiHjFefHPY-4jFRg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kT5M1Q5p1Dkx1NyI1061k3qH9JpsUWk4CJm_LL1rMjk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

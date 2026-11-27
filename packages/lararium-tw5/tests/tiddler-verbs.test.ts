@@ -1672,6 +1672,45 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(r.engine.wiki.tiddlerExists(`${MEME}#/a`)).toBe(true);
   });
 
+  test("a bare root resolves, and the stack decides: a get of an affordance address reads the canon seat, a working-layer carrier at the seat (and one at the bare root) answers over canon naming its layer, and a reveal returns canon", async () => {
+    const r = await rig();
+    const o = { kind: "lares-verb", requestId: "seed" } as const;
+    const BARE = "lar:///oracle.library.consults";
+    const SEAT = "lar:///ha.ka.ba/lares/afford/oracle.library.consults";
+    const TYPE = "lar:///ha.ka.ba/lares/api/pono/affordance";
+    const seat = (bag: string, title: string, role: string) =>
+      r.composite.storeForBag(bag)!.put({ tiddler: { title, role, tags: [TYPE, BARE], text: `! oracle.library.consults ~ ${role}` }, meta: {} }, o);
+    await seat(CANON, SEAT, "canon line");
+    await r.landed();
+    const get = makeTiddlerGetReactor(r.opts);
+    const canon = await get({ ...A, title: BARE }, ctx());
+    expect(canon).toMatchObject({ address: BARE, title: SEAT, tiddler: { bag: CANON, fields: { role: "canon line" } } });
+    expect(String(canon["has"])).toContain(`layer/${CANON}`);
+    // A slot of the bare root rides along to the carrier that answers it.
+    expect(await get({ ...A, title: `${BARE}#/head` }, ctx())).toMatchObject({ address: BARE, title: `${SEAT}#/head`, tiddler: null });
+    // A working-layer carrier at the seat answers over canon, and the has line names the working bag.
+    await seat(DAEMON, SEAT, "working line");
+    await r.landed();
+    const working = await get({ ...A, title: BARE }, ctx());
+    expect(working).toMatchObject({ address: BARE, title: SEAT, tiddler: { bag: DAEMON, fields: { role: "working line" } } });
+    expect(String(working["has"])).toContain(`layer/${DAEMON}`);
+    // A carrier at the bare root wins over the seat: the title answers as written, no address resolve.
+    await seat(DAEMON, BARE, "bare line");
+    await r.landed();
+    const bare = await get({ ...A, title: BARE }, ctx());
+    expect(bare).toMatchObject({ title: BARE, tiddler: { bag: DAEMON, fields: { role: "bare line" } } });
+    expect(bare["address"]).toBeUndefined();
+    const del = makeTiddlerDeleteReactor(r.opts);
+    expect(await del({ ...A, title: BARE }, ctx())).toMatchObject({ decision: "removed", mode: "plain" });
+    // The reveal retracts the working seat, and canon answers the bare root again.
+    expect(await del({ ...A, title: SEAT, mode: "reveal" }, ctx())).toMatchObject({ decision: "removed", mode: "reveal", retracted: [SEAT],
+      consequence: { acts: [{ title: SEAT, act: "retract", bag: DAEMON, reveals: CANON }] } });
+    await r.landed();
+    expect(await get({ ...A, title: BARE }, ctx())).toMatchObject({ address: BARE, title: SEAT, tiddler: { bag: CANON, fields: { role: "canon line" } } });
+    // CONTROL: an address no layer seats answers absent under its own title.
+    expect(await get({ ...A, title: "lar:///oracle.nothing.seats" }, ctx())).toEqual({ recipe: "default", title: "lar:///oracle.nothing.seats", tiddler: null });
+  });
+
   test("a hidden record never enters a consequence: a slot another bag answers stays out of a face that holds no read on that bag", async () => {
     const r = await rig();
     const wiki = r.engine.wiki;

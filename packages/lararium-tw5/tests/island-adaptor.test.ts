@@ -564,6 +564,33 @@ describe("IslandAdaptor — outbound deleteTiddler", () => {
     expect(await store.get(LAR_URI), "the record leaves its layer; no kāpae stands in its place").toBeNull();
   });
 
+  /**
+   * A fake engine whose wiki HOLDS what lands, as TiddlyWiki does: the landed ledger keeps the wiki's value, so a record the wave
+   * landed reads as landed and a delete of it leaves (the base fake answers every `getTiddler` undefined, which reads as a title
+   * nobody holds).
+   */
+  function holdingEngine(): FakeTW5Engine {
+    const engine = new FakeTW5Engine();
+    const held = new Map<string, { fields: TW5FieldsMap }>();
+    const wiki = engine.wiki as unknown as Record<string, unknown>;
+    const add = engine.wiki.addTiddler, del = engine.wiki.deleteTiddler;
+    wiki["addTiddler"] = (tiddler: { fields?: TW5FieldsMap } | TW5FieldsMap): void => {
+      add(tiddler);
+      const fields = (tiddler && typeof tiddler === "object" && "fields" in tiddler && tiddler.fields) ? tiddler.fields as TW5FieldsMap : tiddler as TW5FieldsMap;
+      held.set(String(fields["title"]), { fields });
+    };
+    wiki["deleteTiddler"] = (title: string): void => { del(title); held.delete(title); };
+    wiki["getTiddler"] = (title: string) => held.get(title);
+    // The fake's applier only records each change; here it also lands it in the wiki, as the engine's crest door does.
+    const apply = engine.$tw.lares.applyNalu;
+    engine.$tw.lares.applyNalu = (change: LarTiddlerChange): void => {
+      apply(change);
+      if (change.record && !change.record.meta?.deleted) held.set(change.title, { fields: change.record.tiddler as TW5FieldsMap });
+      else held.delete(change.title);
+    };
+    return engine;
+  }
+
   /** The stacks the two controls share: a writable canon layer beneath the working layer, the default writable. */
   const WORKING = wikiSlotUri("test-wiki", "working");
   const CANON = "lar:///ha.ka.ba/bags/writable-canon";
@@ -579,7 +606,7 @@ describe("IslandAdaptor — outbound deleteTiddler", () => {
   test("★ a record only the working layer holds leaves plainly, with no kāpae over it ★", async () => {
     vi.useFakeTimers();
     const { composite, working, canon } = stackOf();
-    const adaptor = new IslandAdaptor(new FakeTW5Engine() as never, composite, INSTANCE_ID);
+    const adaptor = new IslandAdaptor(holdingEngine() as never, composite, INSTANCE_ID);
     adaptor.start();
     await working.put({ tiddler: { title: LAR_URI, text: "mine" } }, crdtRemote());
     await vi.advanceTimersByTimeAsync(1);
@@ -595,7 +622,7 @@ describe("IslandAdaptor — outbound deleteTiddler", () => {
   test("★ CONTROL: a delete over a lower canon title still raises the kāpae, so the browser's delete keeps the canon record hidden ★", async () => {
     vi.useFakeTimers();
     const { composite, working, canon } = stackOf();
-    const adaptor = new IslandAdaptor(new FakeTW5Engine() as never, composite, INSTANCE_ID);
+    const adaptor = new IslandAdaptor(holdingEngine() as never, composite, INSTANCE_ID);
     adaptor.start();
     await canon.put({ tiddler: { title: LAR_URI, text: "canon" } }, crdtRemote());
     await vi.advanceTimersByTimeAsync(1);
@@ -611,7 +638,7 @@ describe("IslandAdaptor — outbound deleteTiddler", () => {
   /** Delete a record only the working layer holds, over `composite`; answers the working layer's record after. */
   async function deleteWorkingOnly(composite: CompositeStore, working: MemoryTiddlerStore): Promise<LarTiddlerRecord | null> {
     vi.useFakeTimers();
-    const adaptor = new IslandAdaptor(new FakeTW5Engine() as never, composite, INSTANCE_ID);
+    const adaptor = new IslandAdaptor(holdingEngine() as never, composite, INSTANCE_ID);
     adaptor.start();
     await working.put({ tiddler: { title: LAR_URI, text: "mine" } }, crdtRemote());
     await vi.advanceTimersByTimeAsync(1);

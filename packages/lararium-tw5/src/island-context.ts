@@ -160,7 +160,7 @@ export interface IslandContext {
 export type WritableOutcome = { readonly state: "standing" } | { readonly state: "no-route"; readonly reason: string };
 
 export interface IslandBehavior {
-  /** Runs INSIDE the `lararium-writable` marker, after the recipe, bridge and resident seed and before any promoted module: stand the working route (authority, archive, working-only attachment, pointer landed). Absent: the route stands as the recipe left it. */
+  /** Runs INSIDE the `lararium-writable` marker, after the recipe, bridge and drained seed and before any promoted module: stand the working route (authority, archive, working-only attachment, pointer landed). Absent: the route stands as the recipe left it. */
   onWritable?(ctx: IslandContext): Promise<WritableOutcome>;
   onEa(ctx: IslandContext): void | Promise<void>;
   onSignal(type: string, raw: unknown, ctx: IslandContext): boolean;

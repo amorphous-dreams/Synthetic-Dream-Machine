@@ -24,7 +24,7 @@ module-type: startup
 import type { LaresAffordFace, LaresTw5Extension } from "../types/lares-globals.js";
 import type { TW5Instance } from "../types/tiddlywiki.js";
 import { AFFORDANCE_TAG, addressMatcher, addressOfTitle, renderCall } from "../affordance-rows.js";
-import { spellsOf } from "../affordance-read.js";
+import { carrierOf, spellsOf, type CarrierView } from "../affordance-read.js";
 
 export const name        = "lararium-afford-face";
 export const after       = ["startup"];
@@ -45,13 +45,13 @@ export function affordFaceOf(
   wiki: FaceWiki,
   opts: { print?: boolean; invoke?: (actions: string) => void } = {},
 ): LaresAffordFace {
-  // An address resolves to the carrier that TAGS it (canon seats the carrier at `lar:///ha.ka.ba/<bag>/afford/<address>`);
-  // a bare-root title answers where a working layer seats one.
-  const titleOf = (address: string): string => {
-    const bare = bareOf(address);
-    const tagged = wiki.filterTiddlers(`[all[shadows+tiddlers]tag[${AFFORDANCE_TAG}]tag[lar:///${bare}]!is[draft]sort[]]`);
-    return tagged[0] ?? `lar:///${bare}`;
+  // AN ADDRESS RESOLVES THROUGH THE STACK (`carrierOf`): a bare-root record in any layer wins, else the stable seat
+  // (`lar:///ha.ka.ba/<bag>/afford/<address>`), else a carrier that tags the address; the topmost layer answers each title.
+  const carriers: CarrierView = {
+    has: (title) => wiki.getTiddler(title) !== undefined,
+    tagged: (address) => wiki.filterTiddlers(`[all[shadows+tiddlers]tag[${AFFORDANCE_TAG}]tag[${address}]!is[draft]]`),
   };
+  const titleOf = (address: string): string => carrierOf(carriers, bareOf(address)) ?? `lar:///${bareOf(address)}`;
   const render = (address: string, depth: string, slot = ""): string[] =>
     wiki.renderTiddler("text/plain", AFFORD_SKIN_TEMPLATE("console"), {
       variables: { currentTiddler: titleOf(address), depth, slot },
@@ -68,8 +68,9 @@ export function affordFaceOf(
   return {
     list: (pattern) => {
       const match = pattern ? addressMatcher(pattern) : () => true;
-      return wiki.filterTiddlers(`[all[shadows+tiddlers]tag[${AFFORDANCE_TAG}]!is[draft]sort[]]`)
-        .map((t) => addressOfTitle(t)).filter((a): a is string => a !== null && match(a)).map(bare).sort();
+      // A carrier at the bare root and the canon seat beneath it name one address: it lists once.
+      return [...new Set(wiki.filterTiddlers(`[all[shadows+tiddlers]tag[${AFFORDANCE_TAG}]!is[draft]sort[]]`)
+        .map((t) => addressOfTitle(t)).filter((a): a is string => a !== null && match(a)).map(bare))].sort();
     },
     line: (address) => {
       const lines = render(address, "line");

@@ -31,11 +31,8 @@ export class KahuaStageWriteRefusal extends Error {
   constructor(title: string) { super(`kahua-stage-read-only: "${title}" lands on the kahua stage only by a signed lift through the kahua door`); }
 }
 
-export interface KahuaStageStore extends LarTiddlerStore {
-  /** Tell every subscriber each standing item, once. */
-  emitInitialReplay(): void;
-  markSyncComplete(): void;
-}
+/** The stage reads its fold as the doc stands, so it owes no replay and no sync flush: a joining stage lands through the composite (`CompositeStore.addLayer`). */
+export type KahuaStageStore = LarTiddlerStore;
 
 type Items = ReadonlyMap<string, LarTiddlerRecord>;
 
@@ -103,10 +100,5 @@ export function kahuaStageStore(opts: {
       listeners.add(fn);
       return () => { listeners.delete(fn); };
     },
-    emitInitialReplay() {
-      told = items();
-      for (const [title, record] of told) tell(title, record);
-    },
-    markSyncComplete() { /* the fold reads the doc as it stands; no pending wave to settle */ },
   };
 }
