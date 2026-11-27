@@ -8,6 +8,7 @@ import { describe, expect, test } from "vitest";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
 import { ofType, open, realPort } from "./record-port-real-rig.js";
 import { WIKI_FILTER_ROWS } from "../src/filter-page.js";
+import { VerbTable } from "../src/verb-dispatcher.js";
 
 type Page = { titles?: string[]; rows?: Array<{ title: string; fields: Record<string, string> }>; total: number; next: string | null; asOf: string };
 
@@ -93,6 +94,49 @@ describe.skipIf(wikiSkip)(`the record port's filter ask, bounded${skipNote}`, ()
       expect(await ask({ subject: "[lares.nope[]]" })).toMatchObject({ status: "refused" });
       engine.setTiddler({ title: "$:/y", text: "[lares.bogus[]]" });
       expect(await ask({ subject: "[subfilter{$:/y}]" })).toMatchObject({ status: "refused" });
+    } finally { await r.close(); }
+  });
+});
+
+/** One carrier standing in the island's own wiki: its root, its `#/takes` and its `#/skins`, the act seated by address. */
+const ECHO = "lar:///test.echo.answers";
+const ECHO_SEAT = "lar:///ha.ka.ba/lares/afford/test.echo.answers";
+
+describe.skipIf(wikiSkip)(`the record port's call ask: the glass speaks the one call${skipNote}`, () => {
+  const seated = async () => {
+    const engine = await bootTestWiki({ tiddlers: [
+      { title: ECHO_SEAT, tags: `lar:///ha.ka.ba/lares/api/pono/affordance ${ECHO}`, text: "! test.echo.answers ~ the echo the port's call reaches" },
+      { title: `${ECHO_SEAT}#/takes`, text: "<<has entity=`arg` name=`word` params=`needs/required ~ the word echoed`>>" },
+      { title: `${ECHO_SEAT}#/skins`, text: "<<has entity=`skin` name=`tw5` params=`spells/echo-word ~ the glass`>>" },
+    ] });
+    const ran: Array<Record<string, unknown>> = [];
+    const verbs = () => {
+      const table = new VerbTable();
+      table.register("echo-word", async (args) => { ran.push({ ...args }); return { has: "<<~ has name=`echo`>>", echoed: args["word"] }; });
+      table.answer(ECHO, "echo-word");
+      return table;
+    };
+    const r = await realPort({ faceOf: () => ({ id: "admin" }), authority: () => ({ allowed: true }), verbs }, engine);
+    await r.send(open);
+    let n = 0;
+    const ask = async (more: Record<string, unknown>) => {
+      await r.send({ type: "port:ask", portId: "p", askId: `c${++n}`, kind: "call", ...more });
+      return ofType(r.messages, "port:answer").at(-1)!;
+    };
+    return { r, ask, ran };
+  };
+
+  test("RED: a call ask carrying {verb, params} resolves the address over the island's own stack, binds the carrier's #/takes and runs the seated verb, its answer naming the carrier; a sigil rides the same ask; CONTROL: a missing param refuses by name and runs nothing", async () => {
+    const { r, ask, ran } = await seated();
+    try {
+      const by = await ask({ subject: ECHO, args: { word: "hi" } });
+      expect(by).toMatchObject({ status: "answered", result: { echoed: "hi", carrier: { carrier: ECHO_SEAT } } });
+      expect(String((by.result as Record<string, unknown>)["has"])).toContain(`carrier/${ECHO_SEAT}`);
+      expect(await ask({ subject: "echo-word", args: { word: "by its spelling" } })).toMatchObject({ status: "answered", result: { echoed: "by its spelling" } });
+      expect(await ask({ subject: `<<~ "${ECHO}" word=\`by sigil\`>>` })).toMatchObject({ status: "answered", result: { echoed: "by sigil" } });
+      expect(ran).toEqual([{ word: "hi" }, { word: "by its spelling" }, { word: "by sigil" }]);
+      expect(await ask({ subject: ECHO, args: {} })).toMatchObject({ status: "refused", reason: "param-needed" });
+      expect(ran).toHaveLength(3);
     } finally { await r.close(); }
   });
 });

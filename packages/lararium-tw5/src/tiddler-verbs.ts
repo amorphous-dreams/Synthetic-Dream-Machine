@@ -2527,9 +2527,10 @@ export function tiddlerCallSource(opts: TiddlerVerbOptions): CallSource {
     // boots no engine renders none and the plain words stand. The baked pack carries canon's templates as the floor.
     get voice(): CallVoice | undefined {
       const wiki = (opts.tw5?.$tw as unknown as { wiki?: { renderText?: (out: string, type: string, text: string, o?: { variables?: Record<string, string> }) => string } } | undefined)?.wiki;
-      if (typeof wiki?.renderText !== "function") return undefined;
+      const renderText = wiki?.renderText;
+      if (wiki === undefined || typeof renderText !== "function") return undefined;
       return {
-        render: (template, variables) => wiki.renderText!("text/plain", "text/vnd.tiddlywiki", template, { variables: { ...variables } }),
+        render: (template, variables) => renderText.call(wiki, "text/plain", "text/vnd.tiddlywiki", template, { variables: { ...variables } }),
         floor: packedVoice,
       };
     },

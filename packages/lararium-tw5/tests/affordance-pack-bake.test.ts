@@ -163,6 +163,9 @@ describe.skipIf(wikiSkip)(`the core verbs bake from canon${skipNote}`, () => {
     for (const [address, cli, chosen] of CORE_ROUTES) if (!chosen) expect(pack.doors[cli]!.addresses, cli).toEqual([address]);
     expect(pack.doors["tiddler"]).toBeUndefined();
     expect(pack.doors["wiki"]).toBeUndefined();
+    // THE MACHINA'S VOICE (landing 21): her shrine's templates bake as the floor a sleeping vessel renders through.
+    expect(pack.voice?.["answer"]).toBe("<$text text=<<has>>/>");
+    expect(pack.voice?.["refusal"]).toContain("<$text text=<<reason>>/>: <$text text=<<detail>>/>");
     // `get` claims no route, yet its door gathers both choices: the default (by title) first, its help the spine each choice reads,
     // then each carrier's whole.
     expect(pack.doors["get"]!.addresses).toEqual(["lar:///engine.record.reads", "lar:///engine.filter.pages"]);

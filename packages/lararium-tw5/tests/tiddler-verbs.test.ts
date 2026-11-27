@@ -27,7 +27,7 @@ import { AUDIT_ARRAY_CAP, boundOutcomeOutput, placeVerb, removeVerb } from "../s
 import { VerbTable, callDoorOf, makeCallReactor, type VerbContext } from "../src/verb-dispatcher.js";
 import { TIDDLER_CALL_SEATS, tiddlerCallSource } from "../src/tiddler-verbs.js";
 import { ORACLE_CALL_SEATS } from "../src/oracle-cast-verb.js";
-import { CallRefusal, callFaceOf, callReaderOf, hostHandled, type MacroCallParse } from "../src/modules/call.js";
+import { CallRefusal, IRIS_SHRINE, callFaceOf, callReaderOf, hostHandled, type MacroCallParse } from "../src/modules/call.js";
 import { skinRows } from "../src/affordance-read.js";
 import { AFFORDANCE_TAG, addressOfTitle } from "../src/affordance-rows.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
@@ -2324,6 +2324,52 @@ describe.skipIf(wikiSkip)(`the one act keeps the hand at the door${skipNote}`, (
   });
 });
 
+describe.skipIf(wikiSkip)(`who runs the door: handler/host, handler/seat and dry/walks read per surface${skipNote}`, () => {
+  test("RED: a residency act binds by its address and answers handler/host with its bound params, a dry carry reaching it through dry/walks; a seat act answers handler/seat on the seat's surface alone; CONTROL: a layer that drops dry/walks makes the dry call refuse mu-cell-empty", async () => {
+    const r = await callRig();
+    for (const rel of ["afford/carriage.record.adds.mem", "afford/sense.memory.recalls.mem"]) { const text = canonFile(rel); r.engine.ingestCarrier(headTitleOf(text), text, { "$origin-bag": CANON }); }
+    const reactor = makeCallReactor(r.table, tiddlerCallSource(r.opts));
+    const on = (surface: string, verb: string, params: Record<string, unknown>) => reactor({ verb, params, surface }, ctx());
+    const ADDS = "lar:///carriage.record.adds";
+    const bound = { title: "T", from: "lar:///a", to: "lar:///b" };
+    expect(await on("cli", ADDS, bound)).toMatchObject({ handler: "host", address: ADDS, params: bound });
+    expect(await on("cli", ADDS, { ...bound, mu: "dry" })).toMatchObject({ handler: "host", address: ADDS, mu: { carry: "_" } });
+    const RECALLS = "lar:///sense.memory.recalls";
+    expect(await on("mcp", RECALLS, { query: "q" })).toMatchObject({ handler: "seat", address: RECALLS, params: { query: "q" } });
+    await expect(on("console", RECALLS, { query: "q" })).rejects.toMatchObject({ reason: "affordance-unhandled" });
+    const skin = r.engine.wiki.getTiddler("lar:///ha.ka.ba/lares/afford/carriage.record.adds#/skins/cli")!.getFieldStrings();
+    r.engine.wiki.addTiddler({ ...skin, "$origin-bag": DAEMON, text: skin["text"]!.replace("dry/walks ", "") });
+    await expect(on("cli", ADDS, { ...bound, mu: "dry" })).rejects.toMatchObject({ reason: "mu-cell-empty" });
+  });
+});
+
+// ── the machina's voice (comms-ux-enacts landing 21) ─────────────────────────────────────────────────────────────────
+
+describe.skipIf(wikiSkip)(`the machina's voice: answers and refusals render through Iris-Sprite's templates${skipNote}`, () => {
+  test("RED: with her canon shrine standing, an answer's human line reads its has line and a refusal reads code, detail and cure byte for byte; a working-layer edit of #/refusal/template changes the next refusal's line, and no line prints her name", async () => {
+    const r = await callRig();
+    const text = canonFile("spirit/iris-sprite.mem");
+    r.engine.ingestCarrier(headTitleOf(text), text, { "$origin-bag": CANON });
+    const got = await r.call("get", { title: "Note 04" });
+    expect(got["human"]).toBe(got["has"]);
+    const refusalOf = async (): Promise<CallRefusal> => {
+      const err = await r.call("get", { titel: "Note 04" }).then(() => null, (e: unknown) => e);
+      expect(err).toBeInstanceOf(CallRefusal);
+      return err as CallRefusal;
+    };
+    const plain = await refusalOf();
+    expect(plain.reason).toBe("param-unknown");
+    expect(plain.message).toBe(`param-unknown: ${plain.detail}; cure: ${plain.cure}`);
+    // A LAYER ABOVE CANON re-shapes her voice by seating the slot: the next refusal reads the new shape, its code and cure kept.
+    const slot = r.engine.wiki.getTiddler(`${IRIS_SHRINE}#/refusal/template`)!.getFieldStrings();
+    r.engine.wiki.addTiddler({ ...slot, "$origin-bag": DAEMON, text: "```text/vnd.tiddlywiki template\nrefused/<$text text=<<reason>>/> then <$text text=<<cure>>/>\n```" });
+    const moved = await refusalOf();
+    expect(moved.reason).toBe("param-unknown");
+    expect(moved.message).toBe(`refused/param-unknown then ${moved.cure}`);
+    for (const line of [String(got["human"]), plain.message, moved.message]) expect(line).not.toMatch(/Iris|Messenger/);
+  });
+});
+
 describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the live stack${skipNote}`, () => {
   test("RED: call(\"get\", {title}) answers what tiddler-get answers on the same fixture, the container defaulting through the canon row, and the has line names the carrier", async () => {
     const r = await callRig();
@@ -2461,7 +2507,7 @@ describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the 
     await expect(r.call("trim", { wick: "long" }, ctx(unsealed))).rejects.toMatchObject({ reason: "call-unrouted" });
   });
 
-  test("WELD: every canon carrier finds a registered reactor, an acts/ row or handler/host; every seat names a carrier canon holds", async () => {
+  test("WELD: every canon carrier finds a registered reactor, an acts/ row, handler/host or handler/seat; every seat names a carrier canon holds", async () => {
     const engine = await bootTestWiki();
     const dir = new URL("../../../bags/lares/ha.ka.ba/lares/afford/", import.meta.url);
     const { readdirSync } = await import("node:fs");
@@ -2477,6 +2523,8 @@ describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the 
       const address = addressOfTitle(title);
       if (address !== null && seats[address] !== undefined) return false;
       if (hostHandled(reader, title)) return false;
+      // AN ACT WHOSE HANDLER RESTS IN THE SEAT (fork 10): the vessel binds it and the MCP seat's own process runs it.
+      if (skinRows(reader.textOf, title).some((row) => row.params["handler"] === "seat")) return false;
       return !skinRows(reader.textOf, title).some((row) => row.name === "tw5" && row.params["acts"] !== undefined);
     });
     expect(orphans).toEqual([]);
