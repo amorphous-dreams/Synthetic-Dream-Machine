@@ -125,6 +125,65 @@
       }
     },
     {
+      "tool": "wiki_filter",
+      "cli": {
+        "command": "wiki",
+        "positional": [
+          "filter",
+          "[prefix[lar:///ha.ka.ba/kahua/memory/]search:text[ is ]]"
+        ],
+        "options": {
+          "recipe": "default",
+          "match": "/\\b(is|are)\\b/",
+          "context": "1"
+        },
+        "flags": {}
+      },
+      "mcp": {
+        "filter": "[prefix[lar:///ha.ka.ba/kahua/memory/]search:text[ is ]]",
+        "recipe": "default",
+        "match": "/\\b(is|are)\\b/",
+        "context": 1
+      },
+      "wire": {
+        "verb": "wiki-filter",
+        "args": {
+          "recipe": "default",
+          "filter": "[prefix[lar:///ha.ka.ba/kahua/memory/]search:text[ is ]]",
+          "match": "/\\b(is|are)\\b/",
+          "context": 1
+        }
+      },
+      "output": {
+        "recipe": "default",
+        "filter": "[prefix[lar:///ha.ka.ba/kahua/memory/]search:text[ is ]]",
+        "rows": [
+          {
+            "title": "lar:///ha.ka.ba/kahua/memory/state/handoff",
+            "fields": {},
+            "lines": [
+              {
+                "n": 3,
+                "text": "! Handoff"
+              },
+              {
+                "n": 4,
+                "text": "The floor is green."
+              },
+              {
+                "n": 5,
+                "text": ""
+              }
+            ],
+            "matches": 1
+          }
+        ],
+        "total": 1,
+        "next": null,
+        "asOf": "0123456789abcdef"
+      }
+    },
+    {
       "tool": "tiddler_get",
       "cli": {
         "command": "tiddler",

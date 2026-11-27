@@ -272,6 +272,23 @@ describe("the argument law, no daemon", () => {
     expect(tiddlerPlan("put", argv("tiddler", ["put", "T"], { recipe: "default" }, { create: true })).args).toEqual({ recipe: "default", title: "T", create: true });
   });
 
+  // S5 THE LINES LENS (course/ai-surface-gestures): an L-Prime sweep runs as one call.
+  test("filter --match rides untrimmed as args.match and --context as a count from 0; a context that reads no count refuses before the wire; the human print sets each matching line under its full title, grep-shaped", async () => {
+    expect(wikiFilterPlan(argv("wiki", ["[tag[x]]"], { recipe: "default", match: " is ", context: "0" })).args)
+      .toEqual({ recipe: "default", filter: "[tag[x]]", match: " is ", context: 0 });
+    expect(wikiFilterPlan(argv("wiki", ["[tag[x]]"], { recipe: "default", match: "--x" })).args).toEqual({ recipe: "default", filter: "[tag[x]]", match: "--x" });
+    for (const context of ["two", "-1", "1.5"]) expect(() => wikiFilterPlan(argv("wiki", ["[tag[x]]"], { recipe: "default", match: "is", context })), context).toThrow(/count of lines from 0/);
+    const title = "lar:///ha.ka.ba/kahua/memory/state/handoff";
+    h.reply = { recipe: "default", filter: "[tag[x]]", rows: [{ title, fields: {}, lines: [{ n: 4, text: "The floor is green." }, { n: 9, text: "x".repeat(8), cut: true }], matches: 2 }], total: 1, next: null, asOf: "0123456789abcdef" };
+    const out: string[] = [];
+    const log = vi.spyOn(console, "log").mockImplementation((...parts: unknown[]) => { out.push(parts.join(" ")); });
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      expect(await cmdWiki({ command: "wiki", positional: ["filter", "[tag[x]]"], options: { recipe: "default", match: " is " }, flags: { json: false } } as unknown as ParsedArgs)).toBe(0);
+    } finally { log.mockRestore(); err.mockRestore(); }
+    expect(out).toEqual([`${title}\tmatches=2`, "  4:\tThe floor is green.", `  9:\t${"x".repeat(8)}…`]);
+  });
+
   test("a write naming --target refuses at the CLI by name (writes across faces wait on the rusuban rite); nothing rides the wire", async () => {
     for (const sub of ["put", "delete"] as const) expect(() => tiddlerPlan(sub, argv("tiddler", [sub, "T"], { recipe: "default", target: "h1" })), sub).toThrow(/cross-face-write-refused/);
     expect(tiddlerPlan("get", argv("tiddler", ["get", "T"], { recipe: "default", target: "h1" })).args).toEqual({ recipe: "default", title: "T", target: "h1" });

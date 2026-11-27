@@ -294,6 +294,24 @@ def test_house_refusals_cross_the_seat_in_their_own_words(daemon):
         assert is_error and refusal.split(":", 1)[0] in said, (name, said)
 
 
+def test_a_line_sweep_rides_match_and_context_on_the_one_filter_door(daemon):
+    """S5 THE LINES LENS (course/ai-surface-gestures): `match` rides untrimmed and `context` as its count (0 included) on
+    `wiki-filter`, no new tool; the vessel's own refusal (`filter-context-alone`) comes back in its words; the card
+    names the sweep."""
+    t = _tools()
+    daemon.output = {"recipe": "default", "filter": "[tag[x]]", "rows": [{"title": "T", "fields": {}, "lines": [{"n": 2, "text": "it is"}], "matches": 1}], "total": 1, "next": None, "asOf": "0123456789abcdef"}
+    assert t["wiki_filter"](filter="[tag[x]]", recipe="default", match=" is ", context=0)["rows"][0]["matches"] == 1
+    assert daemon.wire() == {"verb": "wiki-filter", "args": {"recipe": "default", "filter": "[tag[x]]", "match": " is ", "context": 0}}
+    t["wiki_filter"](filter="[tag[x]]", recipe="default", match="/\\bare\\b/i")
+    assert daemon.wire() == {"verb": "wiki-filter", "args": {"recipe": "default", "filter": "[tag[x]]", "match": "/\\bare\\b/i"}}
+    refusal = "filter-context-alone: `context` shapes the lines `match` finds; name `--match <words>` beside it, or drop `--context`."
+    daemon.error = {"errorMessage": refusal, "refusal": {"reason": "filter-context-alone"}}
+    is_error, said = _call(_mcp(), "wiki_filter", {"filter": "[tag[x]]", "recipe": "default", "context": 1})
+    assert is_error and "filter-context-alone" in said
+    card = {x.name: x for x in asyncio.run(_mcp().list_tools())}["wiki_filter"].description
+    assert "`match`" in card and "lines: [{n, text}]" in card and "filter-context-alone" in card
+
+
 def test_the_cards_name_the_rendered_read(daemon):
     # THE RENDERED TIDDLER (backlog-awakens): an agent reads a whole render with ONE `tiddler_get` and any slice with its
     # own `wiki_filter` over the sources, so the cards say so; the write cards name the wall only the renderer passes.

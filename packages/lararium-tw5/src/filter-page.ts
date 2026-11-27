@@ -25,6 +25,81 @@ const utf8 = new TextEncoder();
 const bytesOf = (value: unknown): number => utf8.encode(typeof value === "string" ? value : JSON.stringify(value)).length;
 const digestOf = (value: unknown): string => sha256HexBytesSync(canonicalJsonBytes(value));
 
+// ── THE LINES LENS (S5, lar:///ha.ka.ba/kahua/memory/course/ai-surface-gestures) ──────────────────────
+
+/** The context lines a matching line carries on each side, at most. */
+export const FILTER_CONTEXT_MAX = 8;
+/** The lines one row carries at most (matches and their context together); `matches` still counts every matching line. */
+export const FILTER_LINES_PER_ROW = 64;
+/** The bytes one line's text carries at most; a longer line rides cut at a character boundary and says so (`cut: true`). */
+export const FILTER_LINE_BYTES = 512;
+
+/** One line of a record's text: its 1-based number and its words, a matching line or the context around one. */
+export interface FilterLine { n: number; text: string; cut?: true }
+
+/** What a row's lines read: the line test the ask names, and the context it carries. */
+export interface LineLens { readonly test: (line: string) => boolean; readonly context: number }
+
+/**
+ * THE LINE TEST AN ASK NAMES. `match` reads as plain words a line must hold, byte for byte; a `/source/flags` spelling
+ * reads as a regular expression (`/\b(is|are|was)\b/i`). `context` (0..8) names the lines around each match; it shapes
+ * the lines `match` finds, so `context` alone refuses `filter-context-alone`. Neither named answers null: the rows stay as
+ * they were. Each refusal names the spelling that cures it.
+ */
+export function lineLensOf(match: unknown, context: unknown): LineLens | null {
+  const words = typeof match === "string" ? match : match === undefined || match === null ? null : String(match);
+  const hasContext = context !== undefined && context !== null && context !== "";
+  if (words === null || words === "") {
+    if (words === "") throw new VerbRefusal("filter-match-empty", "filter-match-empty: `match` names the words a line must hold; name them (`--match ' is '`, or `--match '/\\bis\\b/'` for a regexp), or drop `match`.");
+    if (hasContext) throw new VerbRefusal("filter-context-alone", "filter-context-alone: `context` shapes the lines `match` finds; name `--match <words>` beside it, or drop `--context`.");
+    return null;
+  }
+  const n = !hasContext ? 0 : typeof context === "number" ? context : typeof context === "string" && /^[0-9]+$/.test(context.trim()) ? Number(context.trim()) : NaN;
+  if (!Number.isInteger(n) || n < 0 || n > FILTER_CONTEXT_MAX) throw new VerbRefusal("filter-context-range", `filter-context-range: \`context\` reads a whole number of lines from 0 to ${FILTER_CONTEXT_MAX} (got ${JSON.stringify(context)}); name one in range, e.g. \`--context 2\`.`);
+  const spelled = /^\/(.+)\/([a-z]*)$/s.exec(words);
+  if (spelled) {
+    let re: RegExp;
+    // A regexp tests one line at a time: `g` and `y` would carry state from line to line, so the lens drops them.
+    try { re = new RegExp(spelled[1]!, spelled[2]!.replace(/[gy]/g, "")); }
+    catch (fault) { throw new VerbRefusal("filter-match-malformed", `filter-match-malformed: ${fault instanceof Error ? fault.message : String(fault)}; fix the regexp, or spell plain words without the enclosing slashes.`); }
+    return { test: (line) => re.test(line), context: n };
+  }
+  return { test: (line) => line.includes(words), context: n };
+}
+
+/** A line's words cut to `FILTER_LINE_BYTES` at a character boundary. */
+function boundLine(n: number, text: string): FilterLine {
+  if (bytesOf(text) <= FILTER_LINE_BYTES) return { n, text };
+  let end = 0;
+  let size = 0;
+  while (end < text.length) {
+    const point = text.codePointAt(end)!;
+    const cost = point < 0x80 ? 1 : point < 0x800 ? 2 : point < 0x10000 ? 3 : 4;
+    if (size + cost > FILTER_LINE_BYTES) break;
+    size += cost;
+    end += point > 0xffff ? 2 : 1;
+  }
+  return { n, text: text.slice(0, end), cut: true };
+}
+
+/**
+ * ONE RECORD'S MATCHING LINES. Each line the lens's test holds rides with `context` lines on each side; windows that touch
+ * merge, so a line rides once, in text order. A row carries at most `FILTER_LINES_PER_ROW` lines; `matches` counts every
+ * matching line in the text, so a sweep sees what the bound left behind.
+ */
+export function matchingLines(text: string, lens: LineLens): { lines: FilterLine[]; matches: number } {
+  const all = text.split("\n").map((line) => (line.endsWith("\r") ? line.slice(0, -1) : line));
+  const keep = new Set<number>();
+  let matches = 0;
+  for (let i = 0; i < all.length; i++) {
+    if (!lens.test(all[i]!)) continue;
+    matches++;
+    for (let j = Math.max(0, i - lens.context); j <= Math.min(all.length - 1, i + lens.context); j++) keep.add(j);
+  }
+  const lines = [...keep].sort((a, b) => a - b).slice(0, FILTER_LINES_PER_ROW).map((i) => boundLine(i + 1, all[i]!));
+  return { lines, matches };
+}
+
 export interface FilterPageQuery {
   /** The cursor a prior page handed back as `next`; absent reads the first page. */
   readonly after?: string | null;
@@ -39,6 +114,8 @@ export interface FilterRow {
   bytes?: number; slots?: Array<{ slot: string; bytes: number; first: string | null }>;
   /** Slot records of a collapsed meme root that rest in a layer this face may not read, left out of its slots. */
   withheld?: number;
+  /** The lines lens (`match`, `context`): the record's matching lines with their context, and how many lines matched in all. */
+  lines?: FilterLine[]; matches?: number;
 }
 export interface FilterPage {
   readonly titles: string[];
@@ -66,7 +143,7 @@ export function filterCursor(all: readonly string[], after?: string | null): { a
  * and the digest of the whole title list (`asOf`). No clock and no counter decides staleness: a re-run that answers
  * another list refuses `filter-cursor-stale`, and the caller reads again from the first page. A page ends at the row
  * cap or the byte cap, whichever comes first, and always carries at least one row; a single row past the byte cap sheds
- * its largest fields and names them `omitted`.
+ * its largest fields and names them `omitted`, then its tail lines (`omitted: ["lines"]`).
  */
 export function pageFilterAnswer(all: readonly string[], query: FilterPageQuery = {}): FilterPage {
   const { asOf, offset } = filterCursor(all, query.after);
@@ -88,6 +165,12 @@ export function pageFilterAnswer(all: readonly string[], query: FilterPageQuery 
           if (2 + bytesOf(shed) <= maxBytes) break;
           delete shed.fields[name];
           shed.omitted!.push(name);
+        }
+        // The lines shed next, from the tail, so the first matches still ride; `matches` keeps the whole count.
+        if (2 + bytesOf(shed) > maxBytes && shed.lines && shed.lines.length > 0) {
+          shed.lines = [...shed.lines];
+          while (shed.lines.length > 0 && 2 + bytesOf(shed) > maxBytes) shed.lines.pop();
+          shed.omitted!.push("lines");
         }
         // A collapsed row's slots shed last, by name: the meme unfolds by `tiddler get --meme --skinny`.
         if (2 + bytesOf(shed) > maxBytes && shed.slots) { delete shed.slots; shed.omitted!.push("slots"); }

@@ -51,10 +51,10 @@ export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "gra
 /**
  * THE VALUE FLAGS: names that carry free text (a tiddler body, a note, a reason, a field list) and ALWAYS take the next
  * token as their value, whatever it starts with: `--text "---\nfront: matter\n---"` binds the front matter, never reads
- * as a flag; a replace's span and words (`--replace`, `--with`) bind the same way, so a span may open on `--`. Every other non-boolean name keeps the peek (`--key --other` leaves `--key` bare). `tests/parse-args.test.ts`
+ * as a flag; a replace's span and words (`--replace`, `--with`) bind the same way, so a span may open on `--`, and so does a filter's line test (`wiki filter --match`). Every other non-boolean name keeps the peek (`--key --other` leaves `--key` bare). `tests/parse-args.test.ts`
  * reds a name here that a handler reads as a flag, or that sits in `BOOLEAN_FLAGS` / `VALUE_OR_FLAG`.
  */
-export const VALUE_FLAGS: ReadonlySet<string> = new Set(["fields", "note", "reason", "replace", "text", "with"]);
+export const VALUE_FLAGS: ReadonlySet<string> = new Set(["fields", "match", "note", "reason", "replace", "text", "with"]);
 
 /**
  * THE SUB-VERB FLAGS: a name one sub-verb reads as a bare flag while the rest of its door reads it as a value. `--text` carries

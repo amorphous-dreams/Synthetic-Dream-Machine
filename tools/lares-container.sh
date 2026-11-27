@@ -479,7 +479,7 @@ route_cli() {
     for stream_arg do
       if [ -n "$stream_want" ]; then
         case "$stream_want" in
-          --fields|--note|--reason|--replace|--text|--with) stream_want=""; continue ;;
+          --fields|--match|--note|--reason|--replace|--text|--with) stream_want=""; continue ;;
           *) case "$stream_arg" in --*) stream_want="" ;;
           *)
             case "$stream_want" in
@@ -504,7 +504,7 @@ route_cli() {
         stream_arg=$1; shift; stream_i=$((stream_i + 1))
         if [ -z "$stream_end" ] && [ -n "$stream_want" ]; then
           case "$stream_want" in
-            --fields|--note|--reason|--replace|--text|--with) stream_want=""; set -- "$@" "$stream_arg"; continue ;;
+            --fields|--match|--note|--reason|--replace|--text|--with) stream_want=""; set -- "$@" "$stream_arg"; continue ;;
             *) case "$stream_arg" in --*) stream_want="" ;;
             *)
               case "$stream_want" in

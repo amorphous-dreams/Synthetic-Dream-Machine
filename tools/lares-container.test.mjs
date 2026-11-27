@@ -2907,7 +2907,7 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
       const r = await run(shim, [...wire, flag, "--file", "@HOST_FILE@"], { env, hostInput: "host" });
       assert.equal(r.status, 0, `${flag}: ${r.stderr}`); assert.deepEqual(r.received, Buffer.from("host"), flag);
     }
-    for (const flag of ["--fields", "--note", "--reason", "--text"]) {
+    for (const flag of ["--fields", "--match", "--note", "--reason", "--text"]) {
       const r = await run(shim, [...wire, flag, "--file", "@HOST_FILE@"], { env, hostInput: "host" });
       assert.equal(r.status, 0, r.stderr); assert.equal(r.received, null, flag);
     }
@@ -2920,7 +2920,7 @@ test("shim flag sets track the built CLI parser", async () => {
   const sh = await readFile(SH, "utf8"), ps = await readFile(PS1, "utf8");
   const sorted = (xs) => [...xs].sort();
   const shBoolean = [...sh.matchAll(/\*=\*\|--no-\*\|(--accept-omissions[^)]*)\)/g)].map(m => m[1].split("|").map(x => x.slice(2)));
-  const shValue = [...sh.matchAll(/(--fields\|--note\|[^)]*)\) stream_want/g)].map(m => m[1].split("|").map(x => x.slice(2)));
+  const shValue = [...sh.matchAll(/(--fields\|--[^)]*)\) stream_want/g)].map(m => m[1].split("|").map(x => x.slice(2)));
   const psList = (name) => [...ps.match(new RegExp(`\\$${name} = @\\(([^)]*)\\)`))[1].matchAll(/'([^']+)'/g)].map(m => m[1].replace(/^--/, ""));
   assert.equal(shBoolean.length, 2); assert.equal(shValue.length, 2);
   for (const flags of [...shBoolean, psList("boolean")]) assert.deepEqual(sorted(flags), sorted(BOOLEAN_FLAGS));

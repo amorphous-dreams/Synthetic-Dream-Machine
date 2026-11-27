@@ -5,7 +5,8 @@
  *
  * The contract every skin (this, the CLI's `lares tiddler|wiki`, the MCP seat's `tiddler_*|wiki_*`) carries verbatim:
  *
- *   wiki-filter    { recipe, filter, fields?, collapse?, after?, limit?, maxBytes? } → { recipe, filter, titles | rows, total, next, asOf, withheld? }
+ *   wiki-filter    { recipe, filter, fields?, collapse?, match?, context?, after?, limit?, maxBytes? } → { recipe, filter, titles | rows, total, next, asOf, withheld? }
+ *                                                                         (`match` adds each row's `lines: [{n, text, cut?}]` and `matches`)
  *   tiddler-get    { recipe, title, meme?, grain?, slot?, after?, fields?, maxBytes? }
  *                                                                         → { has, recipe, title, lens, tiddler?: { fields, hash, textHash, bag, position, family?, orphan?, omitted? } | null,
  *                                                                             meme?: { uri, text?, canonicalHash, bytes, slots, slot?, page? }, grain, next, note? }
@@ -109,7 +110,7 @@ import { readCarrierShape } from "./carrier-shape.js";
 import type { TiddlerFields } from "./deserializer.js";
 import { alertNamedTitles, isHouseAlert, isOpenAlert, redactedAlertFields, staysHome, withheldFromReads } from "./stay-home.js";
 import { canonFiltersText, functionPragmasOf, houseWidgetOf, refuseUnknownHouseOperators } from "./house-filters.js";
-import { pageFilterAnswer, filterCursor, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
+import { pageFilterAnswer, filterCursor, checkFilter, lineLensOf, matchingLines, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { wornOrigin } from "./verb-dispatcher.js";
@@ -557,6 +558,8 @@ export const makeWikiFilterReactor = everyWiki("wiki-filter", false, (opts: Tidd
     const { view, visible } = await viewFor(opts, anchor, ctx.cap);
     const wiki = anchor.engine.wiki;
     checkFilter(view, filter);
+    // A misspelt lines lens refuses by name before the filter runs (`filter-context-alone`, `filter-context-range`, `filter-match-*`).
+    const lens = lineLensOf(args["match"], args["context"]);
     // The filter runs on the reader's view; the answer gate then drops a hidden TITLE an index still named.
     const answered = view.filterTiddlers(filter);
     const titles: string[] = [];
@@ -588,12 +591,16 @@ export const makeWikiFilterReactor = everyWiki("wiki-filter", false, (opts: Tidd
         collapsed.set(title, withheldSlots > 0 ? { ...row, withheld: withheldSlots } : row);
       }
     }
-    const rowOf = names === null && !collapse ? undefined : (title: string): FilterRow => {
+    // THE LINES LENS (S5): `match` names the words (or a `/regexp/`) a line must hold and `context` the lines around each; every
+    // row then carries its record's matching lines, read off the same view the filter ran on, so a sweep takes no read per title.
+    // A record that holds no text (a pointer) carries no lines; a withheld title never reaches a row.
+    const rowOf = names === null && !collapse && lens === null ? undefined : (title: string): FilterRow => {
       const tiddler = view.getTiddler(title);
       const held = tiddler ? readRecord(tiddler).fields : {};
       const fields: Record<string, string> = {};
       for (const name of names ?? []) if (typeof held[name] === "string") fields[name] = held[name]!;
-      return { title, fields, ...collapsed.get(title) };
+      const lines = lens !== null && typeof held["text"] === "string" ? matchingLines(held["text"], lens) : {};
+      return { title, fields, ...collapsed.get(title), ...lines };
     };
     const page = pageFilterAnswer(titles, {
       after,
