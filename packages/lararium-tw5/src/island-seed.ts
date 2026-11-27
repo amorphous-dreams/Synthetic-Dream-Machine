@@ -11,9 +11,10 @@
  *
  * ONE BOOT SHAPE, the glass mirror's: census partition (`boot-census.ts`) -> nalu form
  * (`nalu-form.ts`, the applier's own builder) -> `$tw.preloadTiddlers`. One form above and below: the seed replay that still runs
- * after boot (`mountIslandShore`) lands each preloaded title through `_applyLanding`, which compares the same form with what
- * stands (`sameWithStamp`), reads it as the same, and writes nothing; the ledger, the landed heads, the draft book and the kahua
- * shadow stamps fill through that road unchanged.
+ * after boot (`mountIslandShore`) lands each preloaded title through `_applyLanding`, which reads the seed's own form as already
+ * landed (`IslandAdaptor.countSeedAsLanded`, TW5's `Syncer.readTiddlerInfo`) and writes nothing, so a startup action's write over
+ * a preload stands in the VM, unsaved, as native TW5 keeps it; the ledger, the landed heads, the draft book and the kahua shadow
+ * stamps fill through that road unchanged.
  *
  * PER TITLE, ONE ANSWER: the composition's topmost record (`resolveLayered`, kāpae honoured). A title whose topmost record
  * stands as a tombstone preloads nothing, so a lower live copy never shows. The enumeration reads the composite's visible titles,
