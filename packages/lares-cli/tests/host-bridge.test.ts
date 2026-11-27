@@ -320,8 +320,8 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
       const exec = execCall(b);
       expect(exec).toBeDefined();
       const at = exec!.indexOf("packages/lares-cli/bin/lares.mjs");
-      // The shim's standing ask rides the exec's last word (the CLI's entry takes it off); the call's own argv precedes it whole.
-      expect(exec!.slice(at + 1)).toEqual([...argv, "--standing-report"]);
+      // The call's own argv rides whole and alone: the standing arrives as the image's report, asked by no word.
+      expect(exec!.slice(at + 1)).toEqual(argv);
       expect(exec).toContain("-T");
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
@@ -378,9 +378,9 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
       const named = exec.flatMap((a, i) => a === "-e" ? [exec[i + 1]] : []);
       // The seat mark crosses too wherever this suite itself runs under a harness: the forwarder reads its own host chain.
       const seat = ownPeerKind({}) !== "hand" ? ["CLAUDECODE"] : [];
-      // The shim's own tag rides beside them; its ask for the standing verdict rides the argv's last word, never an env name.
+      // The shim's own tag rides beside them (the image's standing report rests under it); no word and no env name asks.
       expect(named.sort()).toEqual([...seat, "LARES_DEBUG", "LARES_EXEC_TAG", "NO_COLOR", "TERM"].sort());
-      expect(exec[exec.length - 1]).toBe("--standing-report");
+      expect(exec).not.toContain("--standing-report");
       expect(exec.join(" ")).not.toMatch(/xterm-256color|s3cret|SOME_TOKEN/);
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
@@ -403,7 +403,7 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
       mkdirSync(join(house, "config"), { recursive: true });
       const r = spawnSync(process.execPath, [BIN, "export", "carry/b1"], { env: b.env, cwd: join(house, "config"), encoding: "utf8" });
       expect(r.status, r.stderr).toBe(0);
-      expect(execCall(b)!.slice(-3)).toEqual(["export", "/lar/config/carry/b1", "--standing-report"]);
+      expect(execCall(b)!.slice(-2)).toEqual(["export", "/lar/config/carry/b1"]);
       const b2 = bench();
       try {
         const out = spawnSync(process.execPath, [BIN, "export", join(b2.dir, "elsewhere")], { env: b2.env, encoding: "utf8" });
@@ -453,7 +453,7 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
       const exec = execCall(b)!;
       expect(exec).toBeDefined();
       expect(exec).not.toContain("-T");
-      expect(exec.slice(-3)).toEqual(["vault", "unlock", "--standing-report"]);
+      expect(exec.slice(-2)).toEqual(["vault", "unlock"]);
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
 
@@ -481,8 +481,12 @@ describe.skipIf(!builtExists)("a lone SIGTERM to the host process leaves nothing
     const b = bench({ running });
     const child = spawn(process.execPath, [BIN, "persona", "list"], { env: { ...b.env, FAKE_SLEEP: "1" }, stdio: "ignore" });
     const pidFile = `${b.log}.pid`;
-    for (let i = 0; i < 100 && !existsSync(pidFile); i++) await new Promise((r) => setTimeout(r, 50));
-    expect(existsSync(pidFile)).toBe(true);
+    // THE WAIT FOR THE ACT TO START reads the act, never a clock the box sets: a cold start of the built CLI measured 4.0-4.5 s
+    // at load 30 (BUILT_CLI_BUDGET), so a 5 s poll read a loaded box as a shim that never ran. It polls inside the case's
+    // own budget, and a start that never came names itself.
+    const started = Date.now();
+    while (!existsSync(pidFile) && child.exitCode === null && Date.now() - started < 40_000) await new Promise((r) => setTimeout(r, 50));
+    expect(existsSync(pidFile), `the shim's act never started (host process exit ${child.exitCode}, calls ${JSON.stringify(calls(b))})`).toBe(true);
     const sleeper = Number(readFileSync(pidFile, "utf8").trim());
     // The host node pid ALONE: no terminal, no group.
     process.kill(child.pid!, sig);
@@ -497,7 +501,7 @@ describe.skipIf(!builtExists)("a lone SIGTERM to the host process leaves nothing
   it("standing vessel: the compose client ends, and the shim stops the tagged process inside the vessel", async () => {
     const { b, ended, sleeperAlive } = await lone("SIGTERM", true);
     try {
-      expect(ended.signal === "SIGTERM" || ended.code === 143).toBe(true);
+      expect(ended.signal === "SIGTERM" || ended.code === 143, `the host process ended ${JSON.stringify(ended)}`).toBe(true);
       expect(sleeperAlive).toBe(false);
       const exec = execCall(b)!;
       expect(exec).toContain("LARES_EXEC_TAG");
@@ -510,12 +514,12 @@ describe.skipIf(!builtExists)("a lone SIGTERM to the host process leaves nothing
   it("offline door: the compose client ends, and the shim removes the named run container", async () => {
     const { b, ended, sleeperAlive } = await lone("SIGHUP", false);
     try {
-      expect(ended.signal === "SIGHUP" || ended.code === 129).toBe(true);
+      expect(ended.signal === "SIGHUP" || ended.code === 129, `the host process ended ${JSON.stringify(ended)}`).toBe(true);
       expect(sleeperAlive).toBe(false);
       const run = calls(b).find((c) => c.includes("run"))!;
       const name = run[run.indexOf("--name") + 1];
       expect(name).toMatch(/^lares-offline-[0-9a-f]+$/);
-      expect(calls(b).some((c) => c.includes("rm") && c.includes(name))).toBe(true);
+      expect(calls(b).some((c) => c.includes("rm") && c.includes(name)), JSON.stringify(calls(b))).toBe(true);
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
 });

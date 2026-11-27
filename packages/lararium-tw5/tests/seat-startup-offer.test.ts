@@ -1,7 +1,7 @@
 /**
  * seat-startup-offer — a seat-asked write carrying a `$:/tags/StartupAction*` tag offers and never lands
  * (state/decisions, "Native TW5 wikis, and the one wall a seat keeps"). A wiki-landed startup action runs in the tab alone,
- * so the one wall a seat keeps guards the operator's browser: at the tiddler door, the meme door and INGEST alike, the AI
+ * so the one wall a seat keeps guards the operator's browser: at the tiddler door (a wiki's engine, a bag's store) and INGEST alike, the AI
  * seat's write naming a startup tag refuses `seat-startup-offer`, names the operator's own hand, and moves no byte.
  *
  * The wall reads the mesh's one executable-class list (`executable-class.ts`), which fails closed: a tag that only begins like
@@ -18,7 +18,8 @@ import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
 import { type ExecLeiPort } from "@lararium/mesh/seat-startup-offer";
 import { type Verb } from "@lararium/mesh/verb-tiddler";
 import type { Hand } from "@lararium/mesh/session-contract";
-import { makeMemePutReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeTiddlerPutReactor } from "../src/tiddler-verbs.js";
 import { makeActionReactorFor } from "../src/action-handler.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -61,7 +62,7 @@ function rig(execLei?: ExecLeiPort) {
   composite.addLayer({ bagId: GARDEN, store: garden, writable: true });
   composite.addLayer({ bagId: WORKING, store: working, writable: true, defaultWritable: true });
   const opts: MemeVerbOptions = { composite, tw5: { $tw: { wiki: { getTiddlerText: () => "" } } } as unknown as MemeVerbOptions["tw5"] };
-  const put = (text: string, asker?: Hand) => makeMemePutReactor(opts)({ uri: URI, bag: "garden", text }, ctxOf(composite, "meme-put", asker, execLei));
+  const put = (text: string, asker?: Hand) => makeTiddlerPutReactor(opts)({ title: URI, bag: "garden", text }, ctxOf(composite, "tiddler-put", asker, execLei));
   const ingest = (text: string, asker?: Hand) => makeActionReactorFor("INGEST", { composite, diskMirrors: [{ bagId: WORKING, mirrorRoot: SOURCE, scope: "garden" }] })({
     "source-uri": SOURCE, "to-bag": WORKING, "change-id": `chg-${asker ?? "none"}`,
     carriers: [{ uri: URI, text, diskHash: "sha256:0f", syncedHash: null, file: `${SOURCE}/offer.mem` }],
@@ -70,7 +71,7 @@ function rig(execLei?: ExecLeiPort) {
 }
 
 describe("seat-startup-offer — a seat's startup action offers and never lands", () => {
-  test("RED: a seat-asked meme put carrying a StartupAction tag refuses seat-startup-offer and lands nothing; CONTROL a seat put with no startup tag lands", async () => {
+  test("RED: a seat-asked bag put carrying a StartupAction tag refuses seat-startup-offer and lands nothing; CONTROL a seat put with no startup tag lands", async () => {
     const r = rig();
     for (const tags of [`["$:/tags/StartupAction"]`, `["memory", "$:/tags/StartupAction/Browser"]`]) {
       expect(await reasonOf(() => r.put(meme(tags), "seat")), tags).toBe("seat-startup-offer");
@@ -78,7 +79,7 @@ describe("seat-startup-offer — a seat's startup action offers and never lands"
     }
     // An unlisted system tag reads executable (the one list fails closed); a plain user tag lands.
     expect(await reasonOf(() => r.put(meme(`["$:/tags/StartupActionX"]`), "seat"))).toBe("seat-startup-offer");
-    expect((await r.put(meme(`["memory"]`), "seat"))["decision"]).toBe("ingest");
+    expect((await r.put(meme(`["memory"]`), "seat"))["decision"]).toBe("put");
   });
 
   test("RED: a seat-asked INGEST carrying a StartupAction tag refuses seat-startup-offer and lands nothing", async () => {
@@ -95,10 +96,10 @@ describe("seat-startup-offer — a seat's startup action offers and never lands"
     expect(message).toMatch(/tab/);
   });
 
-  test("CONTROL: the operator's CLI hand and a context naming no asker land the same startup action natively, through the meme door and INGEST", async () => {
+  test("CONTROL: the operator's CLI hand and a context naming no asker land the same startup action natively, through the bag put and INGEST", async () => {
     for (const asker of ["cli", undefined] as const) {
       const r = rig();
-      expect((await r.put(meme(`["$:/tags/StartupAction"]`), asker))["decision"]).toBe("ingest");
+      expect((await r.put(meme(`["$:/tags/StartupAction"]`), asker))["decision"]).toBe("put");
       expect(await r.garden.get(URI)).not.toBeNull();
       const out = await r.ingest(meme(`["$:/tags/StartupAction"]`), asker) as Record<string, unknown>;
       expect((out["carriers"] as Array<Record<string, unknown>>)[0]).toMatchObject({ uri: URI, decision: "ingest" });
@@ -106,10 +107,10 @@ describe("seat-startup-offer — a seat's startup action offers and never lands"
     }
   });
 
-  test("RED: a seat's executable record lands under a standing exec lei, spending one return per land at the door (meme put and INGEST); CONTROL: past its returns it offers again and lands nothing", async () => {
+  test("RED: a seat's executable record lands under a standing exec lei, spending one return per land at the door (the bag put and INGEST); CONTROL: past its returns it offers again and lands nothing", async () => {
     const port = leiPort(2);
     const r = rig(port);
-    expect((await r.put(meme(`["$:/tags/StartupAction"]`), "seat"))["decision"]).toBe("ingest");
+    expect((await r.put(meme(`["$:/tags/StartupAction"]`), "seat"))["decision"]).toBe("put");
     expect(await r.garden.get(URI)).not.toBeNull();
     expect(port.spends).toEqual([{ wiki: "garden", title: URI, writer: "seat" }]);
     const out = await r.ingest(meme(`["$:/tags/StartupAction"]`), "seat") as Record<string, unknown>;
@@ -128,7 +129,7 @@ describe("seat-startup-offer — a seat's startup action offers and never lands"
     expect(message).toMatch(/seat-startup-offer/);
     expect(message).toMatch(/swarm-lei-absent/);
     expect(await r.garden.get(URI)).toBeNull();
-    expect((await r.put(meme(`["memory"]`), "seat"))["decision"]).toBe("ingest");
+    expect((await r.put(meme(`["memory"]`), "seat"))["decision"]).toBe("put");
     expect(port.spends).toHaveLength(0);
   });
 });

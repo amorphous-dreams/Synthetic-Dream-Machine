@@ -11,7 +11,7 @@
  *   ② B founds a place under its OWN root                 `vessel found` on B's own marked scratch root
  *   ③ A offers its face's fleet; B requests over it       `fleet join offer` · `fleet join request`
  *   ④ A answers, naming A's dial; B lands the answer      `fleet join answer --sync-url …` · `fleet join land`
- *   ⑤ A stands; the meme lands on A's wiki                `meme put --recipe lares`
+ *   ⑤ A stands; the meme lands on A's wiki                `tiddler put --recipe lares`
  *   ⑥ B stands dialing A                                  the pin `fleet join land` wrote (sync url · gate pin)
  *   ⑦ A promotes in its own lares book; B measures no live record from A (W24/W27 BOOK crossing)
  *   ⑧ B promotes in its own lares book (OWED: a sibling device's reach follows the face's counted admission, `test.fails` until then); A keeps A’s record
@@ -93,7 +93,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     pair = await openStagedJoinee({ tag: "bag", beforeB: async (a) => {
       const f = join(a.root, "npc.mem");
       writeFileSync(f, meme(["a"]));
-      const put = await a.cli(["tiddler", "put", "--meme", URI, ...WIKI, "--file", f, "--json"]);
+      const put = await a.cli(["tiddler", "put", URI, ...WIKI, "--file", f, "--json"]);
       if (put.json?.["ok"] !== true) throw new Error(`A: put refused\n${said(put)}`);
     } });
     A = pair.A; B = pair.B; rootB = pair.rootB; admitted = pair.admitted; joinGate = pair.joinGate ?? "";
@@ -149,11 +149,11 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     const anchorUri = "lar:///t.witness.npc/anchor";
     const f = join(A!.root, "anchor.mem");
     writeFileSync(f, meme(["a"]).replaceAll(URI, anchorUri).replace(`uri-path = "${PATH}"`, `uri-path = "t.witness.npc/anchor"`));
-    const put = await A!.cli(["tiddler", "put", "--meme", anchorUri, "--recipe", "default", "--file", f, "--json"]);
+    const put = await A!.cli(["tiddler", "put", anchorUri, "--recipe", "default", "--file", f, "--json"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
     await new Promise((r) => setTimeout(r, 1500));
     const which = await A!.cli(["wiki", "which", anchorUri, "--no-json"]);
-    console.error(`meme-two-vessel-bag MEASURE A: anchor meme put → wiki which ${anchorUri}\n${which.stdout.trim()}`);
+    console.error(`meme-two-vessel-bag MEASURE A: anchor tiddler put → wiki which ${anchorUri}\n${which.stdout.trim()}`);
   });
 
   test("⑥ B stands, dialing A — the founder's persona doc resolved over the crossing", () => {
@@ -173,8 +173,8 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     }
     // CONTROL for the projection witness below: nothing sits on B's disk before the promotion.
     expect(existsSync(join(B!.root, "projections/bags/lares", `${PATH}.mem`))).toBe(false);
-    const refused = await A!.cli(["tiddler", "put", "--meme", URI, "--bag", "lares", "--file", join(A!.root, "npc.mem"), "--json"]);
-    console.error(`meme-two-vessel-bag MEASURE A: meme put --bag lares → ${said(refused).trim().slice(0, 300)}`);
+    const refused = await A!.cli(["tiddler", "put", URI, "--bag", "lares", "--file", join(A!.root, "npc.mem"), "--json"]);
+    console.error(`meme-two-vessel-bag MEASURE A: tiddler put --bag lares → ${said(refused).trim().slice(0, 300)}`);
     expect(refused.json?.["ok"]).toBe(false);
   });
 
@@ -248,7 +248,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
 
   // THE LATER GRANT (basket-one #/the-later-grant, ruled 2026-09-11). A's door answers B's `face-join` intent and seats B in the group
   // AND writes the grant as a SIGNED RECORD on the PersonaGroup plane (the doc both sync by membership).
-  // B's own kit, on its next present (a `meme put --recipe lares` resolves the binding → `faceSeated`),
+  // B's own kit, on its next present (a `tiddler put --recipe lares` resolves the binding → `faceSeated`),
   // reads the record, verifies it offline against the persona root it pinned at admit and A's root-signed
   // edge, ingests the cap events by its own act, and the face reads SEATED; `regrantOnSeat` then rewrites
   // B's `vessel-only` binding to `face`. Reading alone re-cuts nothing (the keyhive control witnesses a
@@ -278,8 +278,8 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     const deadline = Date.now() + 90_000;
     let taken = false;
     while (Date.now() < deadline) {
-      const put = await B!.cli(["tiddler", "put", "--meme", URI, ...WIKI, "--file", f, "--json"]);
-      console.error(`meme-two-vessel-bag MEASURE B: meme put --recipe lares (after the grant) → ${said(put).trim().slice(0, 200)}`);
+      const put = await B!.cli(["tiddler", "put", URI, ...WIKI, "--file", f, "--json"]);
+      console.error(`meme-two-vessel-bag MEASURE B: tiddler put --recipe lares (after the grant) → ${said(put).trim().slice(0, 200)}`);
       if (/grant record taken .* SEATED/.test(B!.bootLog())) { taken = true; break; }
       await new Promise((res) => setTimeout(res, 3000));
     }

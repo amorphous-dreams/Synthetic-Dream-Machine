@@ -1,6 +1,6 @@
 /**
  * THE RECIPE RECORD AND THE MOUNT STRUCT CONVERGE. A recipe record (`bag-stack` + `writable-bag`)
- * drives `meme put --recipe`, recipe-watch's library membership and the residency pins; the
+ * drives `tiddler put --recipe`, recipe-watch's library membership and the residency pins; the
  * `WikiRecipe` struct drives the mount. One name, one shape: the record a minter writes and the
  * layers `expandRecipe` lays name the SAME bags in the SAME order, and `writable-bag` names the
  * working slot the mount makes the default writable.
@@ -13,7 +13,7 @@ import {
 } from "../src/index.js";
 import { buildGenesisSeed } from "../src/genesis-doc.js";
 import { houseCanonBagsSeated } from "../src/kahu-canon-reach.js";
-import { kahuaRecipe, CROSSROADS_BAG } from "../src/wiki-recipe.js";
+import { kahuaRecipe, foreignDocsOf, recipeFloorStack, CROSSROADS_BAG } from "../src/wiki-recipe.js";
 import { recipeUri } from "../src/lar-uris.js";
 import type { LarTiddlerRecord } from "../src/tiddler-store.js";
 
@@ -56,7 +56,8 @@ describe("★ the recipe record ↔ the mount struct ★", () => {
       actorSeed: "00".repeat(32), coreBlob: new Uint8Array([1, 2, 3]), coreVersion: "0.0.0-test",
       plugins: [],
     });
-    for (const [slug, libs] of [["lares", [LARARIUM_BAG]], ["lararium", []]] as const) {
+    // THE CANON FLOOR BY PLACE: neither quine wiki names the other as a library (`lararium` stacks in the herm/hearth wiki alone).
+    for (const [slug, libs] of [["lares", []], ["lararium", []]] as const) {
       const rec = seed.tiddlers[recipeUri("oracle", slug)] as LarTiddlerRecord | undefined;
       expect(rec, `genesis carries no recipe for ${slug}`).toBeDefined();
       const laid = expandRecipe({ wikiSlug: slug, libraryBags: libs }).filter((s) => !INSTANCE(slug).has(s));
@@ -71,16 +72,16 @@ describe("★ the recipe record ↔ the mount struct ★", () => {
 });
 
 /**
- * ★ THE LARES WIKI MOUNTS LIVE CANON; THE DAEMON WIKI MOUNTS THE FLOOR (operator ruling, 2026-11-23) ★
+ * ★ THE LARES WIKI MOUNTS ITS OWN LIVE CANON; THE DAEMON WIKI MOUNTS THE FLOOR (operator rulings 2026-11-23 and
+ * 2026-11-26-canon-floor-by-place) ★
  *
- * "Approve mounting a live lares and lararium layer for a kahu-cabal-shared `lares` wiki (in the kahu realm), not the daemon
- * (daemon mounts the floor for these 2)." The pair reads from the one recipe each wiki stands: the `lares` system recipe the
- * genesis carries lays EVERY house canon bag as a live layer above the oracle floor (its own canon slot plus the lararium
- * library), and the daemon wiki's recipe, as the daemon VM composes it (kahua stack over crossroads), lays none, so the daemon
- * reads `lares` and `lararium` through the floor's CID-pinned snapshots alone. The house canon set derives from the seated set,
- * never a list here. Which vessel holds the live documents rides the cabal's admission (register-bags.test, W26 slice 3).
+ * The 2026-11-23 ruling keeps the daemon off every live house canon document: it reads `lares` and `lararium` through the floor's
+ * CID-pinned snapshots alone. THE CANON FLOOR BY PLACE ("I want `lares` in all wikis, `lararium+lares` in the herm/hearth wiki")
+ * places the canon each wiki stacks: the `lares` system recipe the genesis carries lays its own canon live above the oracle floor
+ * and stacks no `lararium` (neither live nor through its floor), and the herm/hearth (daemon) wiki's floor lays both snapshots,
+ * TiddlyWiki5's native docs beneath. Which vessel holds the live documents rides the cabal's admission (register-bags.test).
  */
-describe("★ the lares wiki mounts live house canon above the floor; the daemon wiki mounts the floor alone ★", () => {
+describe("★ the lares wiki mounts its own live canon above the floor; the daemon wiki mounts the floor alone ★", () => {
   const genesisLares = () => {
     const seed = buildGenesisSeed({ actorSeed: "00".repeat(32), coreBlob: new Uint8Array([1, 2, 3]), coreVersion: "0.0.0-test", plugins: [] });
     const rec = seed.tiddlers[recipeUri("oracle", "lares")] as LarTiddlerRecord | undefined;
@@ -88,123 +89,23 @@ describe("★ the lares wiki mounts live house canon above the floor; the daemon
     return recipeFromRecord(rec!, "lares");
   };
 
-  test("the lares wiki lays every house canon bag live, each above the oracle floor, and its working slot stands writable on top", () => {
+  test("the lares wiki lays its own canon live above the oracle floor, its working slot writable on top, and stacks no lararium", () => {
     const slots = expandRecipe(genesisLares());
     const floorAt = slots.indexOf(ORACLE_BAG);
     expect(floorAt, "the lares wiki lost its floor").toBe(slots.length - 1);
-    const live = houseCanonBagsSeated();
-    expect(live.length).toBeGreaterThan(0);
-    for (const bag of live) {
-      expect(slots, `the lares wiki lays no live ${bag}`).toContain(bag);
-      expect(slots.indexOf(bag)).toBeLessThan(floorAt);
-      expect(slots.indexOf(bag)).toBeGreaterThan(slots.indexOf(wikiSlotUri("lares", "working")));
-    }
+    expect(houseCanonBagsSeated()).toContain(LARES_BAG);
+    expect(slots, "the lares wiki lays no live lares canon").toContain(LARES_BAG);
+    expect(slots.indexOf(LARES_BAG)).toBeLessThan(floorAt);
+    expect(slots.indexOf(LARES_BAG)).toBeGreaterThan(slots.indexOf(wikiSlotUri("lares", "working")));
+    expect(slots).not.toContain(LARARIUM_BAG);
+    expect(recipeFloorStack(genesisLares())).not.toContain(LARARIUM_BAG);
   });
 
   test("the daemon wiki, as the daemon VM composes it, lays no house canon bag: it reads lares and lararium through the floor", () => {
     const slots = expandRecipe(kahuaRecipe({ wikiSlug: "daemon", libraryBags: [CROSSROADS_BAG] }));
-    expect(slots[slots.length - 1]).toBe(ORACLE_BAG);
+    // The floor, then TiddlyWiki5's native docs beneath every house layer (the herm/hearth wiki alone stacks them).
+    expect(slots.slice(slots.indexOf(ORACLE_BAG))).toEqual([ORACLE_BAG, ...foreignDocsOf("daemon")]);
+    expect(foreignDocsOf("daemon").length).toBeGreaterThan(0);
     for (const bag of houseCanonBagsSeated()) expect(slots, `the daemon wiki mounts live ${bag}`).not.toContain(bag);
-  });
-});
-
-/**
- * ★ R1 — plugin-offerings round-trips through the record, in order, with no overloading of bag-stack. ★
- */
-describe("★ the recipe's plugin-offerings list round-trips through the record ★", () => {
-  const OFF_A = "sha256:" + "aa".repeat(32);
-  const OFF_B = "sha256:" + "bb".repeat(32);
-
-  test("CONTROL — a recipe naming no offerings writes no plugin-offerings field at all", () => {
-    const fields = recipeRecordFields({ wikiSlug: "solo" });
-    expect(fields).not.toHaveProperty("plugin-offerings");
-    expect(recipeFromRecord({ tiddler: { title: recipeUri("catalog", "solo"), ...fields } }, "solo").pluginOfferings).toBeUndefined();
-  });
-
-  test("one offering round-trips to exactly itself", () => {
-    const rec: LarTiddlerRecord = { tiddler: { title: recipeUri("catalog", "solo"), ...recipeRecordFields({ wikiSlug: "solo", pluginOfferings: [OFF_A] }) } };
-    expect(rec.tiddler["plugin-offerings"]).toBe(OFF_A);
-    expect(recipeFromRecord(rec, "solo").pluginOfferings).toEqual([OFF_A]);
-  });
-
-  test("ORDER HOLDS across a round-trip — the record never silently reorders the list", () => {
-    for (const order of [[OFF_A, OFF_B], [OFF_B, OFF_A]]) {
-      const rec: LarTiddlerRecord = { tiddler: { title: recipeUri("catalog", "solo"), ...recipeRecordFields({ wikiSlug: "solo", pluginOfferings: order }) } };
-      expect(recipeFromRecord(rec, "solo").pluginOfferings).toEqual(order);
-    }
-  });
-
-  test("plugin-offerings never rides bag-stack — a library bag and an offering CID never collide fields", () => {
-    const rec: LarTiddlerRecord = {
-      tiddler: {
-        title: recipeUri("catalog", "sdm"),
-        ...recipeRecordFields({ wikiSlug: "sdm", libraryBags: [LARES_BAG], pluginOfferings: [OFF_A] }),
-      },
-    };
-    expect(bagStackFromRec(rec)).not.toContain(OFF_A);
-    expect(recipeFromRecord(rec, "sdm").libraryBags).toEqual([LARES_BAG]);
-    expect(recipeFromRecord(rec, "sdm").pluginOfferings).toEqual([OFF_A]);
-  });
-
-  test("★ MUTATION PROOF — a hand-tampered record that drops one offering CID loses exactly that CID on read-back ★", () => {
-    const rec: LarTiddlerRecord = { tiddler: { title: recipeUri("catalog", "solo"), ...recipeRecordFields({ wikiSlug: "solo", pluginOfferings: [OFF_A, OFF_B] }) } };
-    expect(recipeFromRecord(rec, "solo").pluginOfferings).toEqual([OFF_A, OFF_B]);
-    const tampered = { ...rec, tiddler: { ...rec.tiddler, "plugin-offerings": OFF_A } };
-    expect(recipeFromRecord(tampered, "solo").pluginOfferings).toEqual([OFF_A]);
-  });
-});
-
-/**
- * ★ M4/M2 — a malformed `plugin-offerings` field never reads as an empty or successful recipe.
- * `parsePluginOfferings` still THROWS on its own contract (unit-tested directly below); M2 moves
- * the catch boundary to `recipeFromRecord` itself, which NEVER throws — a torn field names its
- * own `pluginOfferingsFault` instead, so the bag-stack walk on the SAME record stays unaffected
- * and a caller that never asked about plugins (the grain swap, `meme get`) never bricks over it.
- */
-describe("★ a malformed plugin-offerings field names its own fault, never throws or reads empty ★", () => {
-  const recordWith = (raw: unknown): LarTiddlerRecord => ({
-    tiddler: { title: recipeUri("catalog", "solo"), label: "solo", "bag-stack": "", "writable-bag": wikiSlotUri("solo", "working"), "plugin-offerings": raw as never },
-  });
-
-  test("CONTROL — an absent field reads as no offerings, the lawful empty case, with no fault", () => {
-    const rec = recipeFromRecord({ tiddler: { title: recipeUri("catalog", "solo"), label: "solo", "bag-stack": "", "writable-bag": wikiSlotUri("solo", "working") } }, "solo");
-    expect(rec.pluginOfferings).toBeUndefined();
-    expect(rec.pluginOfferingsFault).toBeUndefined();
-  });
-
-  test("a bare number names its fault, by the same message `parsePluginOfferings` throws — never a throw out of recipeFromRecord", () => {
-    expect(() => recipeFromRecord(recordWith(42), "solo")).not.toThrow();
-    const rec = recipeFromRecord(recordWith(42), "solo");
-    expect(rec.pluginOfferingsFault).toMatch(/plugin-offerings field is a number/);
-    expect(rec.pluginOfferings).toBeUndefined();
-  });
-
-  test("an array carrying a non-string entry names its fault — it must NOT silently drop the junk and keep the rest", () => {
-    const rec = recipeFromRecord(recordWith(["sha256:" + "aa".repeat(32), 42, null]), "solo");
-    expect(rec.pluginOfferingsFault).toMatch(/plugin-offerings\[1\] is a number/);
-    expect(rec.pluginOfferings).toBeUndefined();
-  });
-
-  test("a plain object names its fault", () => {
-    const rec = recipeFromRecord(recordWith({ not: "a list" }), "solo");
-    expect(rec.pluginOfferingsFault).toMatch(/plugin-offerings field is a object/);
-  });
-
-  test("★ the fault NEVER bricks the rest of the record — library bags still read, on the SAME torn record ★", () => {
-    const rec: LarTiddlerRecord = {
-      tiddler: {
-        title: recipeUri("catalog", "sdm"),
-        ...recipeRecordFields({ wikiSlug: "sdm", libraryBags: [LARES_BAG] }),
-        "plugin-offerings": 42 as never,
-      },
-    };
-    const recipe = recipeFromRecord(rec, "sdm");
-    expect(recipe.pluginOfferingsFault).toMatch(/plugin-offerings field is a number/);
-    expect(recipe.libraryBags).toEqual([LARES_BAG]);
-  });
-
-  test("CONTROL — parsePluginOfferings itself still throws on the same malformed shapes (the contract recipeFromRecord catches)", () => {
-    expect(() => parsePluginOfferings(42)).toThrow(/plugin-offerings field is a number/);
-    expect(() => parsePluginOfferings(["sha256:" + "aa".repeat(32), 42, null])).toThrow(/plugin-offerings\[1\] is a number/);
   });
 });

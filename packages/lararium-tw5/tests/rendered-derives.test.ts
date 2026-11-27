@@ -1,6 +1,6 @@
 /**
  * rendered-derives — only the renderer writes a rendered tiddler (backlog-awakens, "The rendered tiddler"). The tiddler
- * door (put and delete) and `meme put` refuse a write to a `rendered-from` tiddler by name, `rendered-derives`, and the
+ * door (put and delete, over a wiki and over a bag) refuses a write to a `rendered-from` tiddler by name, `rendered-derives`, and the
  * refusal names the cure: edit the source tiddlers.
  *
  * INGEST (which the watcher's read-back and the lay ride) lands no render either, and answers each render carrier on a
@@ -17,7 +17,7 @@ import { bagUri } from "@lararium/mesh/lar-uris";
 import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
 import { type Verb } from "@lararium/mesh/verb-tiddler";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { makeMemePutReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { type MemeVerbOptions } from "../src/meme-verbs.js";
 import { makeActionReactorFor, makeTw5Deserializer, type IngestAlert } from "../src/action-handler.js";
 import { makeTiddlerPutReactor, makeTiddlerDeleteReactor } from "../src/tiddler-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -82,11 +82,11 @@ describe.skipIf(wikiSkip)(`rendered-derives — only the renderer writes a rende
     const garden = new MemoryTiddlerStore(GARDEN);
     composite.addLayer({ bagId: GARDEN, store: garden, writable: true, defaultWritable: true });
     const opts: MemeVerbOptions = { composite, tw5: { $tw: { wiki: { getTiddlerText: () => "" } } } as unknown as MemeVerbOptions["tw5"] };
-    const put = (uri: string, text: string) => makeMemePutReactor(opts)({ uri, bag: "garden", text }, ctxOf(composite, "meme-put"));
+    const put = (uri: string, text: string) => makeTiddlerPutReactor(opts)({ title: uri, bag: "garden", text }, ctxOf(composite, "tiddler-put"));
     return { garden, put };
   }
 
-  test("RED: a meme put over a standing rendered tiddler, or one whose record would carry rendered-from, refuses rendered-derives; CONTROL: a plain meme put lands", async () => {
+  test("RED: a bag put over a standing rendered tiddler, or one whose record would carry rendered-from, refuses rendered-derives; CONTROL: a plain family put lands", async () => {
     const r = memeRig();
     await r.garden.put({ tiddler: { title: RENDERED_URI, type: "text/plain", text: "noted", "rendered-from": "lar:///t/road" }, meta: {} }, { kind: "lares-verb", requestId: "seed" });
     expect((await refusalOf(() => r.put(RENDERED_URI, memeText(RENDERED_URI)))).reason).toBe("rendered-derives");
@@ -94,7 +94,7 @@ describe.skipIf(wikiSkip)(`rendered-derives — only the renderer writes a rende
     const forged = "lar:///t/forged";
     expect((await refusalOf(() => r.put(forged, memeText(forged, `rendered-from = "lar:///t/road"\n`)))).reason).toBe("rendered-derives");
     expect(await r.garden.get(forged)).toBeNull();
-    expect((await r.put("lar:///t/plain", memeText("lar:///t/plain")))["decision"]).toBe("ingest");
+    expect((await r.put("lar:///t/plain", memeText("lar:///t/plain")))["decision"]).toBe("put");
   });
 
   /** The INGEST rig: one working bag under a disk mirror, and the alerts the wave raises. */

@@ -43,7 +43,7 @@
  */
 import { lentFacesOf, type LentFaces } from "@lararium/mesh/lent-faces";
 import {
-  CustodyLocked, CustodyRecordUnavailable,
+  CustodyLocked, CustodyRecordUnavailable, UNLOCK_ATTEMPTS_PER_BOOT,
   type CustodyHolder, type FaceRef, type FaceUnlock, type HolderUnlock, type RecordReading, type RecordUpdate,
 } from "./custody-holder.js";
 import { PulamaRefused, copyReading, readingOf, unpackRefusal, type PulamaChannel, type PulamaFrame } from "./pulama-wire.js";
@@ -330,7 +330,9 @@ export function makePulamaHolder(a: {
       }
     },
     async landRite() { return { par: (await call("rite.land") as { par?: unknown }).par === true }; },
-    attemptsLeft: () => session?.standing.attemptsLeft ?? 0,
+    // NO SESSION, NO SPEND READ: the budget rides the keeper, and a keeper that served no session (dark, absent, refusing) told this
+    // side no count. The whole budget answers, since no route presented here ever spends one; `0` would name five spends that never ran.
+    attemptsLeft: () => session?.standing.attemptsLeft ?? UNLOCK_ATTEMPTS_PER_BOOT,
     openedSlot: () => session?.standing.slot ?? null,
     async readRecord(home, file) {
       if (session === null) return { reading: "locked" };

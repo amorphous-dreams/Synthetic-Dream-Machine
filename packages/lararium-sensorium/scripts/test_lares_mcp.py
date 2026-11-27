@@ -267,7 +267,7 @@ def test_parity_inventory_three_way(tmp_path):
     # (c) the name-normalization BRIDGE: each MCP tool's CLI spelling lands on a REAL host verb — so a
     # sub-verb mirror (kapae → `worldline kapae`, status → `sensorium status`) still resolves to a top-level
     # verb the CLI actually carries (no orphan tool; MCP ⊆ CLI reads through the spelling, not the raw name).
-    # A NAMESPACE PAIR spells its host + sub-verb: meme_put/meme_list → `meme put`/`meme list` — ONE host
+    # A NAMESPACE PAIR spells its host + sub-verb: meme_offer/meme_offer_show → `meme offer`/`meme offer show` — ONE host
     # (`meme`), two tools, the same `<host> <sub>` shape kapae/un_kapae ride under `sense worldline`.
     for m in mirrored_tools:
         head = cli_forms[m].split()[0]

@@ -1,5 +1,5 @@
 /**
- * A SESSION-FORM URI NEVER STANDS AS A TITLE — through `meme put`, through ingest, through LOAD, and
+ * A SESSION-FORM URI NEVER STANDS AS A TITLE — through a bag put, through ingest, through LOAD, and
  * through the wiki shore.
  *
  * The law binds the TITLE SLOT alone (`lar:///ha.ka.ba/lares/api/pono/lar-uri#/security`): a userinfo in a
@@ -23,7 +23,8 @@ import { type Verb } from "@lararium/mesh/verb-tiddler";
 import { type VerbContext } from "../src/verb-dispatcher.js";
 import { carrierHash } from "@lararium/mesh/crypto";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { makeMemePutReactor, makeMemeGetReactor, makeMemeDeleteReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeMemeGetReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeTiddlerPutReactor, makeTiddlerDeleteReactor } from "../src/tiddler-verbs.js";
 import { LOAD_YIELD_QUANTUM, registerActionReactors, makeTw5Deserializer } from "../src/action-handler.js";
 import { VerbTable } from "../src/verb-dispatcher.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
@@ -71,14 +72,15 @@ function wikiWithWorkingLayer(slug: string, storeOf: (bag: string) => LarTiddler
   return { opts, working };
 }
 
-describe("meme put: the title law through the verb path", () => {
+describe("a bag put: the title law through the verb path", () => {
+  const SLOT = wikiSlotUri("lares", "working");
   for (const [storeName, storeOf] of STORES) {
     test(`A: a session-form title refuses by name over ${storeName}, and nothing lands`, async () => {
       const { opts, working } = wikiWithWorkingLayer("lares", storeOf);
       // A bare body, and a framed carrier whose head names the session-form address.
       const headed = framed(BAD_URI, "framed prose").replace('uri-path = "t.title.context/capture"', 'role = "a carrier under a session-form head"');
       for (const text of ["a body\n", headed]) {
-        const refusal = await makeMemePutReactor(opts)({ recipe: "lares", uri: BAD_URI, text }, verbCtx()).catch((e: unknown) => e);
+        const refusal = await makeTiddlerPutReactor(opts)({ bag: SLOT, title: BAD_URI, text }, verbCtx()).catch((e: unknown) => e);
         expect(isVerbRefusal(refusal)).toBe(true);
         expect((refusal as { reason: string }).reason).toBe(CODE);
         expect((refusal as Error).message).toContain(BAD_URI);
@@ -91,8 +93,8 @@ describe("meme put: the title law through the verb path", () => {
     test(`B: a userinfo in the BODY passes untouched over ${storeName}`, async () => {
       const { opts } = wikiWithWorkingLayer("lares", storeOf);
       const uri = "lar:///t.title.context/capture";
-      const receipt = await makeMemePutReactor(opts)({ recipe: "lares", uri, text: framed(uri, CAPTURE_BODY) }, verbCtx());
-      expect(receipt["decision"]).toBe("ingest");
+      const receipt = await makeTiddlerPutReactor(opts)({ bag: SLOT, title: uri, text: framed(uri, CAPTURE_BODY) }, verbCtx());
+      expect(receipt["decision"]).toBe("put");
       const meme = (await makeMemeGetReactor(opts)({ recipe: "lares", uri }, verbCtx("r2")))["meme"] as { text: string };
       // Three speaker URIs and one quoted link went in; all four read back.
       expect(meme.text.match(/lar:\/\/[a-z]+:[a-z]+@[a-z.]+/g)).toEqual([
@@ -102,15 +104,15 @@ describe("meme put: the title law through the verb path", () => {
 
     test(`C: the permitted hostful title lands and reads back over ${storeName}`, async () => {
       const { opts } = wikiWithWorkingLayer("lares", storeOf);
-      const receipt = await makeMemePutReactor(opts)({ recipe: "lares", uri: OK_URI, text: "a permitted body\n" }, verbCtx());
-      expect(receipt["decision"]).toBe("ingest");
+      const receipt = await makeTiddlerPutReactor(opts)({ bag: SLOT, title: OK_URI, text: "a permitted body\n" }, verbCtx());
+      expect(receipt["decision"]).toBe("put");
       const meme = (await makeMemeGetReactor(opts)({ recipe: "lares", uri: OK_URI }, verbCtx("r2")))["meme"] as { text: string };
       expect(meme.text).toBe("a permitted body\n");
     });
 
     test(`a delete of a session-form title nothing holds answers absent over ${storeName}, and mints no key`, async () => {
       const { opts, working } = wikiWithWorkingLayer("lares", storeOf);
-      expect((await makeMemeDeleteReactor(opts)({ recipe: "lares", uri: BAD_URI }, verbCtx()))["decision"]).toBe("absent");
+      expect((await makeTiddlerDeleteReactor(opts)({ bag: SLOT, title: BAD_URI }, verbCtx()))["decision"]).toBe("absent");
       expect(await working.get(BAD_URI)).toBeNull();
     });
   }

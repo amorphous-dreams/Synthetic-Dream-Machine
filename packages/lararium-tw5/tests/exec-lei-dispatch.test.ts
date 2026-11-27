@@ -18,7 +18,8 @@ import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { VerbDispatcher, VerbTable } from "../src/verb-dispatcher.js";
 import { DAEMON_HAND_ONLY_CODES, makeLocalAskBook } from "../src/daemon-behavior.js";
 import { islandExecLeiPort } from "../src/exec-lei-route.js";
-import { makeMemePutReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeTiddlerPutReactor } from "../src/tiddler-verbs.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 
 type Fields = Record<string, unknown>;
@@ -49,7 +50,7 @@ const meme = (tags: string): string =>
   `<$action-setfield $tiddler="$:/temp/x" text="ran"/>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 describe("exec-lei-dispatch — the port rides the live dispatch", () => {
-  test("RED: a seat's executable meme put under a standing exec lei lands through the dispatcher, the island's port routing one spend to main; CONTROL: with the route refusing, the put offers and lands nothing", async () => {
+  test("RED: a seat's executable bag put under a standing exec lei lands through the dispatcher, the island's port routing one spend to main; CONTROL: with the route refusing, the put offers and lands nothing", async () => {
     for (const answers of [true, false]) {
       const garden = new MemoryTiddlerStore(bagUri("garden"));
       const composite = new CompositeStore();
@@ -62,7 +63,7 @@ describe("exec-lei-dispatch — the port rides the live dispatch", () => {
         return { lei: "c".repeat(64), n: 1 };
       };
       const registry = new VerbTable();
-      registry.register("meme-put", makeMemePutReactor({ composite, tw5: { $tw: { wiki: { getTiddlerText: () => "" } } } } as unknown as MemeVerbOptions));
+      registry.register("tiddler-put", makeTiddlerPutReactor({ composite, tw5: { $tw: { wiki: { getTiddlerText: () => "" } } } } as unknown as MemeVerbOptions));
       const book = makeLocalAskBook();
       const dispatcher = new VerbDispatcher({
         daemonVm: new FakeTW5Engine() as unknown as TW5Engine, daemon: composite, control: memoryControlStore(), registry,
@@ -70,9 +71,9 @@ describe("exec-lei-dispatch — the port rides the live dispatch", () => {
         execLei: islandExecLeiPort(route, () => "spend-1"),
       });
       dispatcher.start();
-      const args = { uri: URI, bag: "garden", text: meme(`["$:/tags/StartupAction"]`) };
-      book.add({ requestId: "p1", action: "meme-put", args, requestedBy: "me", origin: "channel", asker: "seat" } as never);
-      dispatcher.placeVerb({ verb: "meme-put", args, requestedBy: "me", requestId: "p1" });
+      const args = { title: URI, bag: "garden", text: meme(`["$:/tags/StartupAction"]`) };
+      book.add({ requestId: "p1", action: "tiddler-put", args, requestedBy: "me", origin: "channel", asker: "seat" } as never);
+      dispatcher.placeVerb({ verb: "tiddler-put", args, requestedBy: "me", requestId: "p1" });
       await settle();
       dispatcher.stop();
       expect(routed.map((r) => r.action)).toEqual([EXEC_LEI_SPEND_VERB]);

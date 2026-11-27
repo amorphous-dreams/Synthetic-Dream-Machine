@@ -235,3 +235,30 @@ describe("the instance names a spirit's model stream (ruling 2026-11-25-body-bec
     expect(S.mandateLines("p", offering, null, false)).toContain("--instance <id>");
   });
 });
+
+describe("the echo names the face it woke under (plan/companion-context S1)", () => {
+  const H = "ab".repeat(32);
+  test("a four-word line parses with its face; a three-word line parses face-unbound; a malformed face word drops the line", () => {
+    expect(S.echoesOf(`p#s-1 ${H} 3 h1\np#s-2 ${H} 4\np#s-3 ${H} 5 h01\np#s-4 ${H} 6 face1`)).toEqual([
+      { tag: "p#s-1", instance: "s-1", hash: H, seq: 3, face: 1 },
+      { tag: "p#s-2", instance: "s-2", hash: H, seq: 4, face: null },
+    ]);
+  });
+  test("echoJoin writes the answering face as the fourth word, and none where the island named none", () => {
+    expect(S.echoJoin({}, "p", "s-1", H, 2).write).toEqual({ patch: { echoes: `p#s-1 ${H} 1 h2` } });
+    expect(S.echoJoin({ echoes: `p#s-1 ${H} 1 h2` }, "p", "s-2", H).write).toEqual({ patch: { echoes: `p#s-1 ${H} 1 h2\np#s-2 ${H} 2` } });
+    // A face-unbound line binds at its next echo.
+    expect(S.echoJoin({ echoes: `p#s-1 ${H} 1` }, "p", "s-1", H, 1).write).toEqual({ patch: { echoes: `p#s-1 ${H} 2 h1` } });
+  });
+  test("echoTurned refuses spirit-face-turned where the echo names another face than the one answering, naming the cure", () => {
+    const side = { echoes: `p#s-1 ${H} 1 h1\np#s-2 ${H} 2` };
+    const turned = S.echoTurned("p", side, "s-1", 2, "ah");
+    expect(turned).toMatchObject({ code: "spirit-face-turned", exit: 4 });
+    expect(turned!.message).toContain("echoed its mandate under h1, and h2 answered; nothing landed");
+    expect(turned!.message).toContain("--face 1");
+    expect(S.echoTurned("p", side, "s-1", 1, "ah")).toBeNull();
+    expect(S.echoTurned("p", side, "s-2", 2, "ah")).toBeNull();
+    expect(S.echoTurned("p", side, "s-1", null, "ah")).toBeNull();
+    expect(S.echoTurned("p", side, null, 2, "ah")).toBeNull();
+  });
+});

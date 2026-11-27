@@ -119,3 +119,62 @@ test('fileLines streams a file line by line, across chunk edges', () => {
   writeFileSync(join(dir, 'a.jsonl'), text);
   assert.deepEqual([...fileLines(join(dir, 'a.jsonl'))], text.split('\n'));
 });
+
+// THE GREY FAILURE (2026-11-26): a burn spike just before the weekly reset, read through a window that crossed the reset,
+// inflated this week's velocity, and the projection raised an alarm the true readings did not hold.
+const H = 3.6e6, RESET_PREV = Date.parse('2026-11-26T12:00:00Z'), RESET_NEXT = RESET_PREV + 7 * 24 * H;
+const at = (iso) => Date.parse(iso);
+const rd = (iso, pct, reset) => ({ t: at(iso), pct, reset, src: 'statusline' });
+
+test('RED: the pace never crosses a reset; a pre-reset spike leaves this week\'s projection alone', () => {
+  const recs = [...usageRecords([
+    line(1, '2026-11-26T10:00:00Z', 'm', { output_tokens: 4_000_000 }), // the spike, last week
+    line(2, '2026-11-26T14:00:00Z', 'm', { output_tokens: 100_000 }),
+    line(3, '2026-11-26T20:00:00Z', 'm', { output_tokens: 100_000 }),
+  ])];
+  const readings = [
+    rd('2026-11-26T11:59:00Z', 62, RESET_PREV),
+    rd('2026-11-26T12:00:00Z', 1, RESET_NEXT),
+    rd('2026-11-26T16:00:00Z', 3, RESET_NEXT),
+    rd('2026-11-26T20:00:00Z', 5, RESET_NEXT),
+  ];
+  const end = at('2026-11-26T20:00:00Z');
+  const between = (a, b) => aggregate(recs, { since: a, until: b }).weighted;
+  const proj = project(aggregate(recs, { since: RESET_PREV, until: end }), { since: RESET_PREV, until: end, readings, spans: [], reset: RESET_NEXT, weightedBetween: between });
+  assert.equal(proj.window.reset, RESET_NEXT);
+  assert.equal(proj.pct_now, 5);
+  assert.equal(proj.level_source, 'reading');
+  assert.match(proj.pace_source, /^readings/);
+  assert.ok(Math.abs(proj.pct_per_hour - 0.5) < 1e-9, `pace reads 0.5%/h off this week's readings, got ${proj.pct_per_hour}`);
+  assert.ok(proj.hours_to_100 > 150, 'no false alarm');
+  assert.ok(proj.burn.slow < 1, 'under even spend');
+});
+
+test('a burst at the window\'s opening weighs the slow slope; the projection rides the fast one', () => {
+  const readings = [
+    rd('2026-11-26T12:01:00Z', 1, RESET_NEXT), rd('2026-11-26T12:18:00Z', 6, RESET_NEXT),
+    rd('2026-11-26T19:00:00Z', 8, RESET_NEXT), rd('2026-11-26T22:00:00Z', 9, RESET_NEXT),
+  ];
+  const end = at('2026-11-26T22:00:00Z');
+  const proj = project({ weighted: 0, last: end }, { since: RESET_PREV, until: end, readings, spans: [], reset: RESET_NEXT, weightedBetween: () => 0 });
+  assert.ok(proj.burn.slow > proj.burn.fast, 'the opening burst lifts the slow slope above the fast one');
+  assert.equal(proj.pace_source, 'readings (fast window)');
+  assert.ok(Math.abs(proj.pct_per_hour - 1 / 3) < 1e-9);
+});
+
+test('staggered readings from parallel sessions read as the running maximum', () => {
+  const readings = [
+    rd('2026-11-26T18:00:00Z', 10, RESET_NEXT), rd('2026-11-26T18:30:00Z', 9, RESET_NEXT),
+    rd('2026-11-26T19:00:00Z', 10, RESET_NEXT), rd('2026-11-26T20:00:00Z', 9, RESET_NEXT),
+  ];
+  const end = at('2026-11-26T20:00:00Z');
+  const proj = project({ weighted: 0, last: end }, { since: RESET_PREV, until: end, readings, spans: [], reset: RESET_NEXT, weightedBetween: () => 0 });
+  assert.equal(proj.pct_now, 10);
+  assert.equal(proj.pct_per_hour, 0);
+});
+
+test('the anchor names its source', () => {
+  const { readings } = loadReadings(JSON.stringify({ t: '2026-11-26T20:00:00Z', seven_day: { used_percentage: 5, resets_at: RESET_NEXT / 1000 } }));
+  assert.equal(readings[0].src, 'statusline');
+  assert.equal(parseArgs(['--reading', '2026-11-26T20:00:00Z=5']).readings.find(r => r.src === 'operator')?.pct, 5);
+});

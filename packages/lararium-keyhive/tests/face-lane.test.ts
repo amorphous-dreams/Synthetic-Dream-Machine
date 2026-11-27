@@ -13,7 +13,7 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
 import { describe, expect, it } from "vitest";
-import { crossFaceReactor, faceEngineReactor, faceLaneReactor, FACE_ENGINE_VERBS, FACE_LANE_READ_VERBS, FACE_LANE_VERBS } from "../src/face-lane.js";
+import { crossFaceReactor, faceEngineReactor, faceLaneReactor, FACE_ENGINE_VERBS, FACE_LANE_BAG_VERBS, FACE_LANE_VERBS } from "../src/face-lane.js";
 
 const MOUNT = "a".repeat(64), SIB = "b".repeat(64), SHUT = "c".repeat(64);
 const LANE = "lar:///ha.ka.ba/bags/daemon-rel-b";
@@ -27,7 +27,7 @@ function rig() {
     lit: (key: string) => (key === SIB ? { handleIndex: 1 } : null),
     target: async (face: number, bag: string) => (face === 1 && bag === LANE ? { store: laneStore as never, owner: 1 } : bag === LANE ? { store: laneStore as never, owner: 2 } : null),
   };
-  const reactor = faceLaneReactor("meme-put",
+  const reactor = faceLaneReactor("meme-list",
     async () => { ran.push("mounted"); return { decision: "ingest", bag: "lar:///ha.ka.ba/wikis/daemon/working" }; },
     (lane) => async () => { ran.push(`lane:${lane.bag}:${(lane.store as unknown as { documentId: string }).documentId}`); return { decision: "ingest", bag: lane.bag }; },
     ports);
@@ -36,20 +36,20 @@ function rig() {
 }
 
 describe("each hat reached by name: the island's per-face lane", () => {
-  it("the lane carries the meme verbs and the tiddler door's engine verbs", () => {
+  it("the lane carries the family listing and the tiddler door's engine verbs", () => {
     expect([...FACE_ENGINE_VERBS].sort()).toEqual(["oracle-cast", "tiddler-delete", "tiddler-get", "tiddler-put", "wiki-filter", "wiki-render", "wiki-status"]);
-    // ONE DOOR READS: a lit sibling reads through `tiddler-get` on its own engine; the internal `meme-get` rides no lane.
-    expect([...FACE_LANE_VERBS].sort()).toEqual(["meme-delete", "meme-list", "meme-put", ...FACE_ENGINE_VERBS].sort());
+    // ONE DOOR READS AND WRITES: a lit sibling reads, lands and removes through the tiddler door; the internal `meme-get` rides no lane.
+    expect([...FACE_LANE_VERBS].sort()).toEqual(["meme-list", ...FACE_ENGINE_VERBS].sort());
   });
 
-  it("LIT SIBLING: its put runs on its own lane (its own document) and the answer names its face", async () => {
+  it("LIT SIBLING: its lane verb runs on its own lane (its own document) and the answer names its face", async () => {
     const r = rig();
     const out = await r.reactor({ uri: "lar:///t/x", bag: LANE, text: "t" }, r.ctx(`0x${SIB}`));
     expect(out).toEqual({ decision: "ingest", bag: LANE, face: 1 });
     expect(r.ran).toEqual([`lane:${LANE}:doc-b`]);
   });
 
-  it("MOUNTED: its put runs as before and the answer names the mounted face; no presenter reads as the mount", async () => {
+  it("MOUNTED: its lane verb runs as before and the answer names the mounted face; no presenter reads as the mount", async () => {
     const r = rig();
     expect(await r.reactor({ uri: "lar:///t/x", recipe: "default", text: "t" }, r.ctx(`0x${MOUNT}`))).toMatchObject({ face: 0 });
     expect(await r.reactor({ uri: "lar:///t/x", recipe: "default", text: "t" }, r.ctx())).toMatchObject({ face: 0 });
@@ -67,7 +67,7 @@ describe("each hat reached by name: the island's per-face lane", () => {
     for (const args of [{ recipe: "default" }, { bag: "lar:///ha.ka.ba/bags/daemon-rel-a" }, { bag: LANE, realm: "r" }]) {
       await expect(r.reactor({ uri: "lar:///t/x", text: "t", ...args }, r.ctx(`0x${SIB}`)), JSON.stringify(args)).rejects.toMatchObject({ reason: "face-lane-holds-its-own" });
     }
-    const other = faceLaneReactor("meme-put", async () => ({}), () => async () => ({}), {
+    const other = faceLaneReactor("meme-list", async () => ({}), () => async () => ({}), {
       mountedKey: () => MOUNT, mountedOrdinal: () => 0, lit: () => ({ handleIndex: 1 }),
       target: async () => ({ store: laneStore as never, owner: 2 }),
     });
@@ -120,7 +120,7 @@ describe("each hat reached by name: a lit sibling's own engine answers the tiddl
   });
 });
 
-describe("one door reads a lane: a lit sibling's tiddler-get naming its own bag reads its own lane", () => {
+describe("the door reaches a lane: a lit sibling's get, put or delete naming its own bag runs on its own lane", () => {
   function laneReadRig(verb = "tiddler-get", owner: (face: number) => number = (face) => (face === 1 ? 1 : 2)) {
     const ran: string[] = [];
     const reactor = faceEngineReactor(verb,
@@ -137,24 +137,32 @@ describe("one door reads a lane: a lit sibling's tiddler-get naming its own bag 
     return { reactor, ran, ctx };
   }
 
-  it("the read door alone rides the lane by bag", () => {
-    expect([...FACE_LANE_READ_VERBS]).toEqual(["tiddler-get"]);
+  it("the record doors ride the lane by bag: one record read, landed or removed there", () => {
+    expect([...FACE_LANE_BAG_VERBS]).toEqual(["tiddler-get", "tiddler-put", "tiddler-delete"]);
   });
 
-  it("LIT SIBLING: `tiddler-get --bag <its own lane>` reads that one document and names its face (meme-get --bag's reach, folded)", async () => {
+  it("LIT SIBLING: `tiddler-put --bag <its own lane>` and `tiddler-delete --bag <its own lane>` run over that one document and name its face", async () => {
+    for (const verb of ["tiddler-put", "tiddler-delete"]) {
+      const r = laneReadRig(verb);
+      expect(await r.reactor({ title: "lar:///t/x", bag: LANE }, r.ctx(`0x${SIB}`)), verb).toEqual({ bag: LANE, title: "lar:///t/x", face: 1 });
+      expect(r.ran, verb).toEqual([`lane:${LANE}:doc-b`]);
+    }
+  });
+
+  it("LIT SIBLING: `tiddler-get --bag <its own lane>` reads that one document and names its face", async () => {
     const r = laneReadRig();
     expect(await r.reactor({ title: "lar:///t/x", bag: LANE, meme: true }, r.ctx(`0x${SIB}`))).toEqual({ bag: LANE, title: "lar:///t/x", face: 1 });
     expect(r.ran).toEqual([`lane:${LANE}:doc-b`]);
   });
 
-  it("ITS OWN LANE ALONE: a bag no document of its own answers, a bag beside a recipe or realm, or a write naming a bag refuses face-lane-holds-its-own", async () => {
+  it("ITS OWN LANE ALONE: a bag no document of its own answers, a bag beside a recipe or realm, or an engine verb naming a bag refuses face-lane-holds-its-own", async () => {
     const r = laneReadRig();
     for (const args of [{ bag: "lar:///ha.ka.ba/bags/daemon-rel-a" }, { bag: LANE, realm: "r" }, { bag: LANE, recipe: "default" }, { bag: LANE, recipe: "garden" }]) {
       await expect(r.reactor({ title: "T", ...args }, r.ctx(`0x${SIB}`)), JSON.stringify(args)).rejects.toMatchObject({ reason: "face-lane-holds-its-own" });
     }
-    const put = laneReadRig("tiddler-put");
-    await expect(put.reactor({ title: "T", bag: LANE }, put.ctx(`0x${SIB}`))).rejects.toMatchObject({ reason: "face-lane-holds-its-own" });
-    expect([...r.ran, ...put.ran]).toEqual([]);
+    const filter = laneReadRig("wiki-filter");
+    await expect(filter.reactor({ filter: "[all[]]", bag: LANE }, filter.ctx(`0x${SIB}`))).rejects.toMatchObject({ reason: "face-lane-holds-its-own" });
+    expect([...r.ran, ...filter.ran]).toEqual([]);
   });
 
   it("ANOTHER FACE'S LANE: a bag the lit set resolves to a real document face 2 owns refuses face 1's read, and nothing runs", async () => {
@@ -221,13 +229,13 @@ describe("a lit face receives visits: a read names another lit face as its targe
     for (const target of [1, 7]) {
       await expect(r.reactor({ uri: "lar:///t/x", bag: "lar:///ha.ka.ba/wikis/daemon/personal", target }, r.ctx(`0x${MOUNT}`))).rejects.toMatchObject({ reason: "cross-face-private" });
     }
-    const write = visitRig("meme-put");
+    const write = visitRig("tiddler-put");
     await expect(write.reactor({ uri: "lar:///t/x", bag: "lar:///ha.ka.ba/wikis/garden/personal", target: 1 }, write.ctx(`0x${MOUNT}`))).rejects.toMatchObject({ reason: "cross-face-private" });
     expect([...r.ran, ...write.ran]).toEqual([]);
   });
 
   it("V4 RED: a write naming another face refuses `cross-face-write-refused`, and nothing runs", async () => {
-    for (const verb of ["tiddler-put", "tiddler-delete", "meme-put", "meme-delete"]) {
+    for (const verb of ["tiddler-put", "tiddler-delete"]) {
       const r = visitRig(verb);
       await expect(r.reactor({ recipe: "default", title: "T", target: 1 }, r.ctx(`0x${MOUNT}`)), verb).rejects.toMatchObject({ reason: "cross-face-write-refused" });
       expect(r.ran).toEqual([]);

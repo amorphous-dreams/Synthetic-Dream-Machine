@@ -356,19 +356,46 @@ The KEK stays ''passphrase-primary''; a random key beside the ciphertext reads a
 isolation and gets refused; a missing passphrase ''NEVER silently degrades to weak key handling''. ''The
 floor names WHAT A VESSEL SERVES, never what it weakens.''
 
-''RULED'': every boot rests at the floor until a living answer lifts it, and nothing stored may lift it. Two
-answers lift a boot: a human's unlock at a terminal, and a lit pūlama's dial, the keeper that holds the living fire
-the operator's own hand struck (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama`>>). A
-stored passphrase, a stored key, a stored file, an environment variable and a flag lift nothing: the dial lifts the
-boot because a keeper holds the key in its memory and answers now, never because the vessel read anything at rest. An
-unattended boot rests and never refuses.
+''RULED'': every boot rests at the floor until one of three lifts raises it, and no stored passphrase, file,
+environment variable or flag lifts it. The dial lifts a boot because a keeper holds the key in its memory and
+answers now, never because the vessel read anything at rest. An unattended boot rests and never refuses.
+
+''THE THREE LIFTS'' (the third by operator ruling, 2026-11-26: //"Re-standing after a system re-start fully
+unlocked via a Lei … We have more caps than when we set that last 'hand only' point in place"//):
+
+# ''A human's unlock.'' The route, typed on a terminal: at the vessel's own door, or under a pūlama at the
+  keeper's (`light`). The only lift that asks nothing stored.
+# ''A lit pūlama's dial.'' A vessel under a keeper that stands lit and admitted its image opens by the dial,
+  as part of standing: no route rides the vessel, so no unlock try spends there.
+# ''A hoʻāla lei with returns left.'' The hand strings it once under its route; each host restart then
+  wakes the keeper with no terminal, one counted return each, and the keeper's dial raises the vessel
+  (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-hoala-lei`>>).
+
+''What the third lift costs, named.'' It rests the house's end of the bond on the machine: sealed keys the
+house minted (the node key, each lit face's custody key), never the human's route. The slot rests in the
+house's `pulama/state`; the key that opens it rests in a Docker volume the keeper alone mounts. Whoever
+reads both halves (Docker as the operator plus the house directory, or the raw disk where it carries no
+encryption) opens the house with no route while a return stands; a copy of the house alone opens nothing.
+A count bounds it, never a clock; an unstring destroys both halves at once, lit or unlit. While a
+return stands the lei carries the operator's authorization for every act of the waking: the light, the
+admit of an image the keeper never admitted, and both across a move of the keeper's own code. The
+rollback guards the code move: the prior closure's image stays tagged, and a keeper whose new code fails
+its waking steps back to it and wakes there by the same lei. Returns spent, the lei unstrung or either
+half missing: the boot rests at the floor as before and names the hand's cure.
+The lift raises a restarted keeper alone: a keeper a hand locked stays locked.
+
+''One rite walks the lifts'': `lares rite hoala` (hoʻāla, to waken) reads the keeper, the image and the
+vessel, takes the cheapest living lift each layer offers, and prints one verdict line. Kūkulu stays the
+rite that raises a new image.
 
 ''What the code does'': every boot composes at the floor. `packages/lararium-node/src/main.ts` hands its
 first composition no sovereign readers, and a composition reaches a private record only through the custody
 seat (`packages/lararium-node/src/custody-seat.ts`), which refuses `CustodyLocked` while no key rests in
-it. A human's unlock raises the vessel. The keyhive archive, each face's veil archive and each face's
+it. A human's unlock raises the vessel, or under a pūlama the lit keeper's dial does; a keeper gone dark
+with its host wakes by a hoʻāla lei where one holds a return (`packages/lararium-node/src/pulama-hoala.ts`,
+the shim's `keeper_light`). The keyhive archive, each face's veil archive and each face's
 anchors rest sealed under the vessel key from the founding's first write, so no stored passphrase and no
-unsealed archive lifts a boot.
+unsealed archive lifts a boot; a hoʻāla lei rests the sealed node key, and its device key apart from it.
 
 ''Where the dial stands in the boot'' (`packages/lararium-node/src/pulama-seat.ts`, `standFirstByPulama`). A vessel
 whose environment names a pūlama (`LAR_PULAMA_SOCKET`) still claims its store and stands its custody door first,
@@ -440,6 +467,6 @@ keeps ''the place'' — which is precisely the floor. The myth bore this load be
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nSWYfdJQBlfvp2Q0l3J6AoPeXyzWM36Bj3tfXC7booQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RJKvJzLCNLa8iKnAkeQL-lNIfdcL2kyQOLLPxYh2hvw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

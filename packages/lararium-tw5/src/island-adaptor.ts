@@ -639,7 +639,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const isHand = !handSettled && this.resident
       && (marked || (!shadowOnly && !same(standing, known) && !(this.sent.has(title) && this.sent.get(title) === standing)));
     if (isHand) return "hand";
-    // AN OWN WRITE MOVED SINCE THE PREPARE: the composition read then may predate it, so the wave never lands a stale answer over it.
+    // AN OWN WRITE MOVED SINCE THE PREPARE: the composition the prepare read misses it, so the wave never lands a stale answer over it.
     if (this.sent.has(title) !== prepared.sentHas || this.sent.get(title) !== prepared.sentValue) return "stale";
     const applies = !sameWithStamp(incoming, standing);
     if (applies) {

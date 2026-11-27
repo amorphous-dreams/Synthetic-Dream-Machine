@@ -16,7 +16,7 @@ const lent = (raw: unknown): LentFaces => {
   if (!r.ok) throw new Error(r.refusal);
   return r.faces;
 };
-const ask = (face: number | null, chore = "meme-put"): ChoreAsk => ({ chore, face, asker: { hand: "seat", session: "s-1", generation: 0 } });
+const ask = (face: number | null, chore = "tiddler-put"): ChoreAsk => ({ chore, face, asker: { hand: "seat", session: "s-1", generation: 0 } });
 
 describe("actingFaceOf: the acting face of a chore", () => {
   test("a lent face this process carries acts", () => {
@@ -31,7 +31,7 @@ describe("actingFaceOf: the acting face of a chore", () => {
     expect(r.message).toMatch(/^chore-face-not-mounted: /);
     expect(r.message).toMatch(/h1/);
     expect(r.message).toMatch(/h0/);
-    expect(r.message).toMatch(/meme-put/);
+    expect(r.message).toMatch(/tiddler-put/);
   });
 
   test("no face named over a two-face lend refuses face-not-named: never a silent steward", () => {

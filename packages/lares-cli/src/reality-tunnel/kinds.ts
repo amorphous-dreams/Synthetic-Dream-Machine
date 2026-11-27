@@ -298,15 +298,24 @@ export const headLine = (line: string, render: string): Transform => (cur) => {
 };
 
 /**
- * A file carrying no pointer line. A file left holding nothing past its frontmatter takes `render`,
- * or goes whole when none is given; an absent file takes `render` the same way.
+ * A text that keeps `line` as one whole line of its own: held already, it stands byte for byte; missing, it lands at the
+ * end, every other line standing. An absent text takes the line alone.
  */
-export const seedless = (render?: string): Transform => (cur) => {
-  if (cur === null) return render ?? null;
-  if (!cur.split("\n").some(namesSeed)) return cur;
+export const keepsLine = (line: string) => (text: string | null): string =>
+  (text === null ? `${line}\n` : text.split("\n").includes(line) ? text : `${text.replace(/\n*$/, "")}${text.trim() === "" ? "" : "\n"}${line}\n`);
+
+/**
+ * A file carrying no pointer line. A file left holding nothing past its frontmatter takes `render`,
+ * or goes whole when none is given; an absent file takes `render` the same way. A row that names a
+ * `line` keeps it too: the one line a host that reads this file needs beside the seed it reads elsewhere.
+ */
+export const seedless = (render?: string, line?: string): Transform => (cur) => {
+  const keep = (text: string | null): string | null => (line === undefined ? text : keepsLine(line)(text));
+  if (cur === null) return keep(render ?? null);
+  if (!cur.split("\n").some(namesSeed)) return keep(cur);
   const kept = cur.split("\n").filter((l) => !namesSeed(l)).join("\n");
-  if (kept.replace(/^---\n[\s\S]*?\n---\n?/, "").trim() === "") return render ?? null;
-  return kept.replace(/^\n+/, "");
+  if (kept.replace(/^---\n[\s\S]*?\n---\n?/, "").trim() === "") return keep(render ?? null);
+  return keep(kept.replace(/^\n+/, ""));
 };
 
 /** A file the house owns whole: its bytes are `content`, and a file lacking `marker` is someone else's. */

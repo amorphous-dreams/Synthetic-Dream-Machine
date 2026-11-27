@@ -64,7 +64,7 @@ import {
 } from "@lararium/mesh/island-protocol";
 import { makeIslandRepo, replicaHeads } from "@lararium/mesh/island-repo-door";
 import { sha256HexBytesSync } from "@lararium/mesh/crypto";
-import { GENESIS_FLOOR_TIDDLER, resolveFloor, floorRecordsInOrder, floorCanonReader } from "@lararium/mesh/floor-manifest";
+import { GENESIS_FLOOR_TIDDLER, resolveFloor, floorRecordsFor, floorCanonReader } from "@lararium/mesh/floor-manifest";
 import { plainRecordOrNull, ownEntry } from "@lararium/mesh/stored-value";
 import { islandSecretHome } from "@lararium/mesh/secret-home";
 import { type KahuaStageFace } from "@lararium/mesh/kahua-stage-store";
@@ -76,8 +76,9 @@ import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { IslandKernel } from "./island-kernel.js";
 import { waitForSlotDocument } from "./slot-wait.js";
 import { storeLiveness, type StoreLiveness } from "./store-liveness.js";
-import { layIslandComposition, mountIslandShore, seedDrained } from "./island-recipe.js";
+import { layIslandComposition, mountIslandShore, seedDrained, type RecipeReadyBinding } from "./island-recipe.js";
 import { readIslandSeed } from "./island-seed.js";
+import { isTw5DocsLibraryBag, tw5LibraryStackStore } from "./tw5-docs-library.js";
 import { openIslandStory } from "./island-story.js";
 import { casBlobPreloads } from "./module-pins.js";
 import { makeCatalogAccessor, libraryDocUrl } from "./catalog-accessor.js";
@@ -468,7 +469,7 @@ export function runSovereignKernel(
     }
 
     const slots = expandRecipe(msg.recipe);
-    const ready: Array<{ slot: SlotUri; handle: DocHandle<LarDoc> }> = [];
+    const ready: RecipeReadyBinding[] = [];
     // THE FACE'S CANON MOUNTS AFTER EA. It rests sealed under the face, and its values open only through this island's own
     // document-store door, which stands with the island's holder at `onEa`: a restart that waited on it here, before ea,
     // would wait on itself (the vessel's load refuses `holder-locked` until the door answers). So it mounts once ea lands,
@@ -478,6 +479,8 @@ export function runSovereignKernel(
     for (const slot of slots) {
       if (slot === wikiSlotUri(slug, "temp")) continue;
       if (slot === ORACLE_BAG) { ready.push({ slot, handle: laraiumHandle }); continue; }
+      // TiddlyWiki5's native docs (the herm/hearth wiki's foreign floor) ride code, read-only: no document, no grant.
+      if (isTw5DocsLibraryBag(slot)) { ready.push({ slot, store: await tw5LibraryStackStore(slot) }); continue; }
       const docUrl = await slotUrl(slot);
       if (!docUrl) continue;   // ungranted/unregistered slot — in-memory or absent
       if (msg.recipe.canonBag !== undefined && slot === msg.recipe.canonBag) { deferredCanon = { slot, url: docUrl }; continue; }
@@ -558,7 +561,8 @@ export function runSovereignKernel(
         _post(mkFault(msg.wikiUri, `${PLANE_LABELS.oracle} mount refused (${floor.refusal}): ${floor.reason}`));
         return;
       }
-      floorRecords = floorRecordsInOrder(floor);
+      // THE CANON FLOOR BY PLACE: this wiki's read-face lays the house-canon snapshots its place admits (`floorRecordsFor`).
+      floorRecords = floorRecordsFor(floor, slug);
       floorCanon = floorCanonReader(floor);
     } else {
       console.info(`[floor] the genesis seed names no floor; the ${PLANE_LABELS.oracle} reads the seed rows alone`);
