@@ -6,32 +6,31 @@
  * slot, and a hand save lands in the working document and not in the daemon bag. Nothing replaces the
  * wiki's reader.
  */
-import { houseSkins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
-import { afterEach, beforeAll, describe, expect, test } from "vitest";
+import { standIslandOverSeed } from "../../lararium-tw5/tests/test-wiki.js";
+import { afterEach, describe, expect, test } from "vitest";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { type LarDoc } from "@lararium/mesh/base-doc";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
 import { bridgeWikiToAdaptor } from "../../lararium-tw5/src/outbound-bridge.js";
-import { buildIslandRecipe, seedDrained } from "../../lararium-tw5/src/island-recipe.js";
+import { seedDrained } from "../../lararium-tw5/src/island-recipe.js";
 import { standFoundedIsland } from "./stand-founded-island.js";
 
 const POINTER = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 const teardown: Array<() => void> = [];
 let engine: TW5Engine;
 
-beforeAll(async () => {
-  engine = new TW5Engine();
-  await engine.boot(vendoredCore(), houseSkins());
-}, 60_000);
 afterEach(() => { while (teardown.length) { try { teardown.pop()!(); } catch { /* best-effort */ } } });
 
 describe("the real attach points a real wiki's saves at the working document", () => {
   test("before the attach the pointer reads empty; after it saves land in the working document", async () => {
     const composite = new CompositeStore();
-    const st = await standFoundedIsland(teardown, { composite, tw5: engine });
-    const { adaptor } = buildIslandRecipe({ tw5: engine, composite, recipe: { wikiSlug: "daemon" }, ready: [{ slot: wikiBagUri("daemon"), handle: st.daemonHandle }] });
+    const st = await standFoundedIsland(teardown, { composite });
+    const { tw5, adaptor } = await standIslandOverSeed({ composite, recipe: { wikiSlug: "daemon" }, ready: [{ slot: wikiBagUri("daemon"), handle: st.daemonHandle }] });
+    engine = tw5;
+    (st.ctx as unknown as { tw5: TW5Engine }).tw5 = engine;
+    teardown.push(() => engine.dispose());
     teardown.push(bridgeWikiToAdaptor(engine, adaptor));
     await seedDrained(engine);
     const wiki = engine.$tw.wiki as unknown as {

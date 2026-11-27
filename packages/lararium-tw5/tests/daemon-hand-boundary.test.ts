@@ -16,14 +16,14 @@ import { LAR_CONTROL_EVENT } from "@lararium/mesh/lar-camera";
 import { wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import type { DocHandle } from "@lararium/mesh/automerge";
 import type { LarDoc } from "@lararium/mesh/base-doc";
-import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
+import { seedDrained } from "../src/island-recipe.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { makeDaemonBehavior } from "../src/daemon-behavior.js";
 import { makeWikiBehavior } from "../src/wiki-behavior.js";
 import { composeIsland, type IslandCap } from "../src/island-caps.js";
 import { hasHandBoundary } from "../src/has-island-watches.js";
 import type { IslandBehavior, IslandContext } from "../src/island-context.js";
-import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
+import { standIslandOverSeed, wikiSkip, skipNote } from "./test-wiki.js";
 
 const POINTER = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 const HAND = "L4/page-new";
@@ -61,12 +61,11 @@ const gated = (adaptor: unknown): string[] => (adaptor as { pendingTitles(): str
 
 /** A one-top island (working over the wiki's own bag), the shape the daemon surface mounts, under `behavior`. */
 async function rig(slug: string, make: (attach: () => Promise<void>) => IslandBehavior) {
-  const engine = await bootTestWiki();
   const composite = new CompositeStore();
   const canon = fakeHandle();
   const working = fakeHandle();
   const workingSlot = wikiSlotUri(slug, "working");
-  const { adaptor } = buildIslandRecipe({ tw5: engine, composite, recipe: { wikiSlug: slug }, ready: [{ slot: wikiBagUri(slug), handle: canon }] });
+  const { tw5: engine, adaptor } = await standIslandOverSeed({ composite, recipe: { wikiSlug: slug }, ready: [{ slot: wikiBagUri(slug), handle: canon }] });
   const stop = bridgeWikiToAdaptor(engine, adaptor);
   await seedDrained(engine);
   const attach = async (): Promise<void> => {

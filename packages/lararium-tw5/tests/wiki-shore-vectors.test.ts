@@ -20,14 +20,13 @@ const plainDoc = (doc: unknown): { tiddlers: Record<string, LarTiddlerRecord> } 
 import { IslandAdaptor, LandingDoorUnavailableError } from "../src/island-adaptor.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { WaveLanding } from "../src/wave-landing.js";
-import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
+import { seedDrained } from "../src/island-recipe.js";
 import { armBackstop } from "../src/modules/meme-backstop.js";
 import { placeMeme, type MemeSink } from "../src/place-meme.js";
 import { installLazyResolver } from "../src/lazy-resolver.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { landWhole } from "./wiki-shore-rig.js";
-import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
-import type { TW5Engine } from "../src/tw5-vm.js";
+import { standIslandOverSeed, bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 
 const canonBag = wikiSlotUri("shore-vector", "canon");
 const workingBag = wikiSlotUri("shore-vector", "working");
@@ -705,9 +704,6 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
 
   // The kernel-facing checkpoint observes the shore queue's drained seed.
   test("hydration + control: seedDrained follows the last seed landing and arms the first hand", async () => {
-    const engine = await bootTestWiki();
-    const wiki = engine.$tw.wiki as unknown as { getTiddler(title: string): unknown; addTiddler(t: unknown): void };
-    const Tiddler = (engine.$tw as unknown as { Tiddler: new (f: Record<string, unknown>) => unknown }).Tiddler;
     const repo = new Repo({ network: [] });
     const hydCanon = wikiBagUri("shore-hydration");
     const hydWorking = wikiSlotUri("shore-hydration", "working");
@@ -720,8 +716,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     }
     canonHandle.change((doc) => { Object.assign(doc.tiddlers, seed); });
     const composite = new CompositeStore();
-    const { adaptor, stores } = buildIslandRecipe({
-      tw5: engine,
+    const { tw5: engine, adaptor, stores } = await standIslandOverSeed({
       composite,
       recipe: { wikiSlug: "shore-hydration" },
       ready: [
@@ -729,9 +724,11 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
         { slot: hydWorking, handle: workingHandle },
       ],
     });
+    const wiki = engine.$tw.wiki as unknown as { getTiddler(title: string): unknown; addTiddler(t: unknown): void };
+    const Tiddler = (engine.$tw as unknown as { Tiddler: new (f: Record<string, unknown>) => unknown }).Tiddler;
     const save = vi.spyOn(adaptor, "saveTiddler");
     const unbridge = bridgeWikiToAdaptor(engine, adaptor);
-    expect(wiki.getTiddler("lar:///t/shore/hydration-400")).toBeUndefined();
+    expect(wiki.getTiddler("lar:///t/shore/hydration-400")).toBeTruthy();
     await seedDrained(engine);
     expect(wiki.getTiddler("lar:///t/shore/hydration-400")).toBeTruthy();
     expect(save).toHaveBeenCalledTimes(0);

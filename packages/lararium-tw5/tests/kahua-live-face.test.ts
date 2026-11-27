@@ -27,7 +27,7 @@ import { writePersonaKelEvent } from "@lararium/mesh/persona-kel-board";
 import { type DocHandle } from "@lararium/mesh/automerge";
 import { type LarTiddlerChange } from "@lararium/mesh/tiddler-store";
 import * as tw5src from "../src/index.js";
-import { buildIslandRecipe, type TW5Engine } from "../src/index.js";
+import { layIslandComposition, type TW5Engine } from "../src/index.js";
 
 const GROUP = "0x" + "d7".repeat(16);
 const seeds = { opA: new Uint8Array(32).fill(41), opB: new Uint8Array(32).fill(42), g1: new Uint8Array(32).fill(43), g2: new Uint8Array(32).fill(44), g3: new Uint8Array(32).fill(45) };
@@ -71,7 +71,7 @@ async function island(opts: { readonly board: boolean }) {
   const composite = new CompositeStore();
   const heard: LarTiddlerChange[] = [];
   composite.subscribe((c) => { if (c.title === "t") heard.push(c); });
-  buildIslandRecipe({ tw5: fakeTw5(), composite, recipe: kahuaRecipe({ wikiSlug: "daemon" }), ready: [...handles].map(([slot, handle]) => ({ slot, handle })),
+  layIslandComposition({ composite, recipe: kahuaRecipe({ wikiSlug: "daemon" }), ready: [...handles].map(([slot, handle]) => ({ slot, handle })),
     kahuaFace: live.read as never, kahuaFaceWatch: live.watch } as never);
   const rotate = () => board.change((d) => writePersonaKelEvent(d, rot.event));
   const carry = async () => { const act = await signKahuaCarry({ group: GROUP, epoch: 1, carries: [kahuaActCid(lifted)] }, b); stage.change((d) => writeKahuaAct(d, act)); };

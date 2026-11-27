@@ -1,7 +1,8 @@
+import { readIslandSeed } from "../src/island-seed.js";
 /**
  * island-recipe.test.ts — the working-layer seed gate.
  *
- * buildIslandRecipe points config/current-wiki-bag at the wiki's working layer
+ * mountIslandShore points config/current-wiki-bag at the wiki's working layer
  * when its binding stands. A mount without that document has no default writable,
  * seeds an empty pointer, and refuses a save until the binding attaches.
  *
@@ -10,11 +11,11 @@
 
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
+import { layIslandComposition, mountIslandShore, seedDrained } from "../src/island-recipe.js";
 import { routeBag, type CascadeWiki } from "../src/bag-cascade.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { IslandAdaptor, UnroutedSaveRefusal } from "../src/island-adaptor.js";
-import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
+import { standIslandOverSeed, wikiSkip, skipNote } from "./test-wiki.js";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { wikiSlotUri, wikiBagUri } from "@lararium/mesh/wiki-recipe";
 import type { LarDoc } from "@lararium/mesh/base-doc";
@@ -25,7 +26,7 @@ import type { TW5Engine } from "../src/tw5-vm.js";
 
 const CURRENT_WIKI_BAG = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 
-/** Minimal TW5 engine — buildIslandRecipe only constructs an adaptor + flushes. */
+/** Minimal TW5 engine for the shore and pointer checks. */
 function fakeTw5(): TW5Engine {
   class FakeTiddler {
     constructor(readonly fields: Record<string, unknown>) {}
@@ -81,16 +82,16 @@ async function currentWikiBag(
   return rec?.tiddler.text as string | undefined;
 }
 
-describe("buildIslandRecipe — the write-layer seed gate", () => {
+describe("mountIslandShore — the write-layer seed gate", () => {
   test("a working grant present → live edits route to the working layer (operator content wiki)", async () => {
     const composite = new CompositeStore();
     const workingSlot = wikiSlotUri("myproject", "working");
-    const { stores } = buildIslandRecipe({
-      tw5: fakeTw5(),
+    const laid = layIslandComposition({
       composite,
       recipe: { wikiSlug: "myproject" },
       ready: [{ slot: workingSlot, handle: fakeHandle() }],
     });
+    const { stores } = mountIslandShore(fakeTw5(), laid, await readIslandSeed(composite, []));
     expect(await currentWikiBag("myproject", stores)).toBe(workingSlot);
   });
 
@@ -103,12 +104,12 @@ describe("buildIslandRecipe — the write-layer seed gate", () => {
       getTiddlerText(title: string, fallback?: string): string | undefined;
     };
     wiki.addTiddler = (tiddler) => alerts.push(tiddler);
-    const { stores } = buildIslandRecipe({
-      tw5,
+    const laid = layIslandComposition({
       composite,
       recipe: { wikiSlug: "daemon" },
       ready: [{ slot: wikiBagUri("daemon"), handle: fakeHandle() }],
     });
+    const { stores } = mountIslandShore(tw5, laid, await readIslandSeed(composite, []));
     expect(await currentWikiBag("daemon", stores)).toBe("");
     expect(composite.defaultWritableBagId()).toBeNull();
     const adaptor = new IslandAdaptor(tw5, composite, "daemon");
@@ -126,13 +127,11 @@ describe("buildIslandRecipe — the write-layer seed gate", () => {
  * store alone routes nothing, and every save then refuses for want of a bag. Driven over the REAL
  * engine and the REAL cascade, so the read is the one a hand edit takes.
  */
-describe.skipIf(wikiSkip)(`buildIslandRecipe — the slot pointers reach the wiki the cascade reads${skipNote}`, () => {
+describe.skipIf(wikiSkip)(`mountIslandShore — the slot pointers reach the wiki the cascade reads${skipNote}`, () => {
   test("after the seed drains, the wiki holds all four pointers and the shipped cascade routes by them", async () => {
-    const engine = await bootTestWiki();
     const slug = "myproject";
     const workingSlot = wikiSlotUri(slug, "working");
-    buildIslandRecipe({
-      tw5: engine,
+    const { tw5: engine } = await standIslandOverSeed({
       composite: new CompositeStore(),
       recipe: { wikiSlug: slug },
       ready: [{ slot: workingSlot, handle: fakeHandle() }],
@@ -156,7 +155,6 @@ describe.skipIf(wikiSkip)(`buildIslandRecipe — the slot pointers reach the wik
    * kernel's own order: the recipe, then the bridge, then the drain.
    */
   test("the seed wave (corpus and pointers) drains into the wiki and writes nothing back to any layer", async () => {
-    const engine = await bootTestWiki();
     const slug = "seedwave";
     const canonSlot = wikiBagUri(slug);
     const workingSlot = wikiSlotUri(slug, "working");
@@ -164,8 +162,7 @@ describe.skipIf(wikiSkip)(`buildIslandRecipe — the slot pointers reach the wik
     const canon = fakeHandle();
     (canon.doc() as unknown as { tiddlers: Record<string, unknown> }).tiddlers[SEEDED] = { tiddler: { title: SEEDED, text: "canon holds this" } };
     const working = fakeHandle();
-    const { adaptor } = buildIslandRecipe({
-      tw5: engine,
+    const { tw5: engine, adaptor } = await standIslandOverSeed({
       composite: new CompositeStore(),
       recipe: { wikiSlug: slug },
       ready: [{ slot: canonSlot, handle: canon }, { slot: workingSlot, handle: working }],
@@ -194,22 +191,18 @@ describe.skipIf(wikiSkip)(`buildIslandRecipe — the slot pointers reach the wik
  * the default story never lands over the person's stored one, and never refuses for want of a bag.
  */
 describe.skipIf(wikiSkip)(`a boot write stands synced when the shore starts${skipNote}`, () => {
-  test("the engine's own startup write, made before the shore starts, leaves nothing and raises no refusal; the same title edited after the checkpoint lands", async () => {
-    const engine = await bootTestWiki();
+  test("the engine's own startup write leaves nothing and raises no refusal; the same title edited after the checkpoint lands", async () => {
     const slug = "boot-synced";
     const personalSlot = wikiSlotUri(slug, "personal");
     const personal = fakeHandle();
-    const wiki = engine.$tw.wiki as never as CascadeWiki & { addTiddler(t: unknown): void; filterTiddlers(f: string): string[] };
-    const Tiddler = (engine.$tw as never as { Tiddler: new (f: unknown) => unknown }).Tiddler;
-    const held = (h: DocHandle<LarDoc>): Record<string, { tiddler?: { list?: unknown } }> => (h.doc() as unknown as { tiddlers: Record<string, { tiddler?: { list?: unknown } }> }).tiddlers;
-    // The engine's own startup write, standing in the wiki before the shore starts (TW5 tells it on a later tick).
-    wiki.addTiddler(new Tiddler({ title: "$:/StoryList", list: "GettingStarted" }));
-    const { adaptor } = buildIslandRecipe({
-      tw5: engine,
+    const { tw5: engine, adaptor } = await standIslandOverSeed({
       composite: new CompositeStore(),
       recipe: { wikiSlug: slug },
       ready: [{ slot: wikiBagUri(slug), handle: fakeHandle() }, { slot: personalSlot, handle: personal }],
     });
+    const wiki = engine.$tw.wiki as never as CascadeWiki & { addTiddler(t: unknown): void; filterTiddlers(f: string): string[] };
+    const Tiddler = (engine.$tw as never as { Tiddler: new (f: unknown) => unknown }).Tiddler;
+    const held = (h: DocHandle<LarDoc>): Record<string, { tiddler?: { list?: unknown } }> => (h.doc() as unknown as { tiddlers: Record<string, { tiddler?: { list?: unknown } }> }).tiddlers;
     const stop = bridgeWikiToAdaptor(engine, adaptor);
     await seedDrained(engine);
     await adaptor.handsRested();
@@ -231,14 +224,12 @@ describe.skipIf(wikiSkip)(`a boot write stands synced when the shore starts${ski
  */
 describe.skipIf(wikiSkip)(`seedDrained — the checkpoint the kernel awaits before behavior${skipNote}`, () => {
   test("resolves once the paced seed wave stands in the wiki: corpus and pointers, with no flush called", async () => {
-    const engine = await bootTestWiki();
     const slug = "checkpoint";
     const SEEDED = "lar:///t/recipe/resident-before-behavior";
     const canon = fakeHandle();
     const working = fakeHandle();
     (canon.doc() as unknown as { tiddlers: Record<string, unknown> }).tiddlers[SEEDED] = { tiddler: { title: SEEDED, text: "resident" } };
-    buildIslandRecipe({
-      tw5: engine,
+    const { tw5: engine } = await standIslandOverSeed({
       composite: new CompositeStore(),
       recipe: { wikiSlug: slug },
       ready: [
@@ -247,27 +238,11 @@ describe.skipIf(wikiSkip)(`seedDrained — the checkpoint the kernel awaits befo
       ],
     });
     const wiki = engine.$tw.wiki as never as CascadeWiki;
-    // CONTROL — the rail is paced: straight after the recipe returns, the wiki holds neither.
-    expect(wiki.getTiddlerText!(SEEDED, "")).toBe("");
+    // The composition record already stands after the seeded boot.
+    expect(wiki.getTiddlerText!(SEEDED, "")).toBe("resident");
     await seedDrained(engine);
     expect(wiki.getTiddlerText!(SEEDED, ""), "the checkpoint resolved over a wiki the seed had not reached").toBe("resident");
     expect(wiki.getTiddlerText!(CURRENT_WIKI_BAG, "")).toBe(wikiSlotUri(slug, "working"));
-  }, 120_000);
-
-  test("the seed drain breathes as it works: a seed of several slices tells the kernel's breath once per slice before the checkpoint resolves; a drain nobody listens to still resolves (control)", async () => {
-    const seedOf = (slug: string, rows: number) => {
-      const canon = fakeHandle();
-      const tiddlers = (canon.doc() as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
-      for (let i = 0; i < rows; i++) { const title = `lar:///t/recipe/breath/${i}`; tiddlers[title] = { tiddler: { title, text: `row ${i}` } }; }
-      const engine = fakeTw5();
-      buildIslandRecipe({ tw5: engine, composite: new CompositeStore(), recipe: { wikiSlug: slug }, ready: [{ slot: wikiBagUri(slug), handle: canon }, { slot: wikiSlotUri(slug, "working"), handle: fakeHandle() }] });
-      return engine;
-    };
-    let breaths = 0;
-    await seedDrained(seedOf("breathing", 450), () => { breaths++; });
-    expect(breaths, "a slow drain that moves must read as moving: one breath per landed slice").toBeGreaterThanOrEqual(3);
-    // CONTROL: the same seed with no listener resolves as before.
-    await expect(seedDrained(seedOf("silent", 450))).resolves.toBeUndefined();
   }, 120_000);
 
   test("★ the kernel lays the composition, mounts the shore, awaits `seedDrained(tw5, …)`, then `behavior.onEa`, handing it the breath's own tick ★", () => {

@@ -62,7 +62,7 @@ function sharedWiki(opts: { writeSlot?: "working" | "personal" | null; standing?
   if (working) seed(working, { title: "Shared note", text: "every member reads this" });
   let minted = 0;
   const deps: WikiEngineDeps = {
-    boot: () => bootTestWiki(),
+    boot: async (seedFor) => bootTestWiki({ seed: await seedFor([]) }),
     recipeOf: async (slug) => (slug === SLUG && opts.recipe !== false ? { tiddler: { title: `lar:///ha.ka.ba/recipes/${SLUG}` } } as unknown as LarTiddlerRecord : null),
     slotStore: async (_slug, kind, bag, { mint }) => {
       let handle = slots.get(kind);

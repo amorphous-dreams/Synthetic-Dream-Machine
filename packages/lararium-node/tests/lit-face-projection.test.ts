@@ -27,7 +27,7 @@ import { CompositeStore } from "@lararium/mesh/composite-store";
 import { wikiSlotUri, daemonFaceCanonBag } from "@lararium/mesh/wiki-recipe";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { type Repo as RepoType } from "@lararium/mesh/automerge";
-import { faceEngines } from "../../lararium-tw5/src/face-engine.js";
+import { faceEngines, type FaceEngineSource } from "../../lararium-tw5/src/face-engine.js";
 import { makeTiddlerPutReactor } from "../../lararium-tw5/src/tiddler-verbs.js";
 import { litFaceProjections } from "../../lararium-keyhive/src/lit-face-projections.js";
 import { faceEngineReactor } from "../../lararium-keyhive/src/face-lane.js";
@@ -105,7 +105,7 @@ describe("every lit face projects its own writes", () => {
     const working = repo.create<LarDoc>(emptyLarDoc());
     const canonBag = daemonFaceCanonBag(relationOf(1));
     let slotted = false;
-    const source = () => ({ boot: () => bootTestWiki(), recipe: { wikiSlug: "daemon", canonBag }, ready: [
+    const source = () => ({ boot: async (seedFor: Parameters<FaceEngineSource["boot"]>[0]) => bootTestWiki({ seed: await seedFor([]) }), recipe: { wikiSlug: "daemon", canonBag }, ready: [
       { slot: canonBag, handle: canon }, ...(slotted ? [{ slot: WORKING, handle: working }] : []),
     ] });
     const order: string[] = [];

@@ -9,7 +9,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { createRequire } from "node:module";
-import { buildIslandRecipe } from "../src/island-recipe.js";
+import { layIslandComposition } from "../src/island-recipe.js";
 import { openDaemonVmCore, type DaemonVmHost } from "../src/daemon-vm-core.js";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
@@ -74,7 +74,7 @@ async function stand(withKahua: boolean) {
   await store(WORKING).put(rec("Item", "draft-item"), origin);
   const composite = new CompositeStore();
   const ready = [...handles].filter(([slot]) => withKahua || slot !== KAHUA_BAG).map(([slot, handle]) => ({ slot, handle }));
-  buildIslandRecipe({ tw5: fakeTw5(), composite, recipe: kahuaRecipe({ wikiSlug: "daemon" }), ready, kahuaFace: () => face });
+  layIslandComposition({ composite, recipe: kahuaRecipe({ wikiSlug: "daemon" }), ready, kahuaFace: () => face });
   const kahua = kahuaStageStore({ handle: stage, face: () => face });
   return { composite, store, repo, kahua };
 }
@@ -87,7 +87,7 @@ describe("the kahua layer reads the fold", () => {
     await lift("Lifted", "kahua-lifted");
     hand("Poison", "a member's raw write");
     const composite = new CompositeStore();
-    buildIslandRecipe({ tw5: fakeTw5(), composite, recipe: kahuaRecipe({ wikiSlug: "daemon" }), kahuaFace: () => face,
+    layIslandComposition({ composite, recipe: kahuaRecipe({ wikiSlug: "daemon" }), kahuaFace: () => face,
       ready: [{ slot: ORACLE_BAG, handle: floor }, { slot: KAHUA_BAG, handle: stage }] });
     expect(await composite.get("Poison")).toBeNull();
     expect((await composite.listVisible()).filter((t) => t.startsWith("lar:///ha.ka.ba/dreamnet/kahua-act/"))).toEqual([]);
@@ -102,7 +102,7 @@ describe("the kahua layer reads the fold", () => {
     await new AutomergeDocStore(floor, ORACLE_BAG).put(rec("Lifted", "canon-lifted"), origin);
     await lift("Lifted", "kahua-lifted");
     const composite = new CompositeStore();
-    buildIslandRecipe({ tw5: fakeTw5(), composite, recipe: kahuaRecipe({ wikiSlug: "daemon" }),
+    layIslandComposition({ composite, recipe: kahuaRecipe({ wikiSlug: "daemon" }),
       ready: [{ slot: ORACLE_BAG, handle: floor }, { slot: KAHUA_BAG, handle: stage }] });
     expect((await composite.get("Lifted"))?.tiddler.text).toBe("canon-lifted");
     await repo.shutdown();
@@ -192,7 +192,7 @@ describe("a page proposes from the daemon surface, never from the pinned canon w
   const standOver = (recipe: ReturnType<typeof kahuaRecipe>, repo: RepoType) => {
     const composite = new CompositeStore();
     const ready = expandRecipe(recipe).filter((slot) => slot !== wikiSlotUri(recipe.wikiSlug, "temp")).map((slot) => ({ slot, handle: repo.create<LarDoc>(emptyLarDoc()) }));
-    buildIslandRecipe({ tw5: fakeTw5(), composite, recipe, ready });
+    layIslandComposition({ composite, recipe, ready });
     return composite;
   };
 

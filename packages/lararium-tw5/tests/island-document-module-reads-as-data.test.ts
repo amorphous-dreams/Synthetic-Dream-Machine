@@ -1,28 +1,14 @@
-/**
- * island-document-module-reads-as-data — what the server-side island runs as code, and what it holds as data
- * (lar:///ha.ka.ba/kahua/memory/research/ground-island-boot #/witness).
- *
- * W1: a module, script or plugin record the wiki's document lands reads as data on the island: its text stands, the
- * module table never names it, and nothing it says runs. The island's code comes from the floor-admitted preloads alone
- * (a granted `library` module defines, the CONTROL).
- *
- * W2: a `$:/tags/StartupAction` record the wiki's document lands RUNS on the island, once, whatever the wiki's slug, as native
- * TW5 runs a store's startup actions (alpha admits every startup action; the guard's re-entry key rests in
- * lar:///ha.ka.ba/kahua/memory/wave/pono-guards-return). A StartupAction a floor-admitted plugin carries runs, once, at the
- * engine's own boot pass (the CONTROL).
- */
+/** A document's records join native TW5 boot through wave zero. Modules and plugins define at boot,
+ * and document and floor StartupActions each run once. */
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { type DocHandle } from "@lararium/mesh/automerge";
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
-import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
-import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
-import { createHash } from "node:crypto";
-import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
+import { seedDrained } from "../src/island-recipe.js";
 import { TW5Engine } from "../src/tw5-vm.js";
-import { bootTestWiki, houseSkins, skipNote, vendoredCore, wikiSkip } from "./test-wiki.js";
+import { standIslandOverSeed, skipNote, wikiSkip } from "./test-wiki.js";
 
 function handleOver(records: readonly LarTiddlerRecord[]): DocHandle<LarDoc> {
   const doc = emptyLarDoc();
@@ -37,18 +23,13 @@ function handleOver(records: readonly LarTiddlerRecord[]): DocHandle<LarDoc> {
   } as unknown as DocHandle<LarDoc>;
 }
 
-async function seedInto(engine: TW5Engine, slug: string, records: readonly LarTiddlerRecord[]): Promise<void> {
-  buildIslandRecipe({ tw5: engine, composite: new CompositeStore(), recipe: { wikiSlug: slug }, ready: [{ slot: wikiSlotUri(slug, "working"), handle: handleOver(records) }] });
-  await seedDrained(engine);
-}
-
 const count = (probe: string): string => `<$action-setfield $tiddler="${probe}" text={{{ [{${probe}}else[0]add[1]] }}}/>`;
 
-describe.skipIf(wikiSkip)(`the island holds a document's code as data${skipNote}`, () => {
+describe.skipIf(wikiSkip)(`the island boots a document's code from the seed${skipNote}`, () => {
   let engine: TW5Engine | undefined;
   afterEach(() => { engine?.dispose(); engine = undefined; });
 
-  test("W1: a document module, filter operator and plugin read as data; CONTROL a granted library preload defines", async () => {
+  test("W1: a document module, filter operator and plugin boot from the seed", async () => {
     const MOD = "lar:///t/doc/mod", OP = "lar:///t/doc/op", PLUGIN = "lar:///t/doc/plugin", RAN = "$:/temp/doc-mod-ran";
     const modText = `exports.probe = function(){ $tw.wiki.addTiddler({title:'${RAN}', text:'ran'}); };`;
     const records: LarTiddlerRecord[] = [
@@ -56,27 +37,22 @@ describe.skipIf(wikiSkip)(`the island holds a document's code as data${skipNote}
       { tiddler: { title: OP, type: "application/javascript", "module-type": "filteroperator", text: `exports.docprobe = function(){ $tw.wiki.addTiddler({title:'${RAN}', text:'ran'}); return ["probe"]; };` } },
       { tiddler: { title: PLUGIN, "plugin-type": "plugin", type: "application/json", text: JSON.stringify({ tiddlers: { "lar:///t/doc/plugin/shadow": { title: "lar:///t/doc/plugin/shadow", text: "shadow" } } }) } },
     ];
-    // CONTROL: the same shape of library, preloaded with a granted digest and the tw5-module component, defines.
-    const body = "exports.granted = 42;";
-    const granted = { title: "lar:///t/doc/granted", type: CARRIER_TYPE, tags: "lar:///ha.ka.ba/lararium/tw5/tw5-module", "module-type": "library",
-      "source-sha256": `sha256:${createHash("sha256").update(body, "utf8").digest("hex")}`, text: body };
-    engine = new TW5Engine();
-    await engine.boot(vendoredCore(), [...houseSkins(), granted],
-      undefined, { grantedDigests: new Set([sha256HexBytesSync(canonicalJsonBytes(granted))]) });
-    await seedInto(engine, "doc-code", records);
+    const stood = await standIslandOverSeed({ composite: new CompositeStore(), recipe: { wikiSlug: "doc-code" }, ready: [{ slot: wikiSlotUri("doc-code", "working"), handle: handleOver(records) }] });
+    engine = stood.tw5;
+    await seedDrained(engine);
     const $tw = engine.$tw as unknown as { wiki: TW5Engine["wiki"]; modules: { titles: Record<string, unknown>; execute(t: string): Record<string, unknown> } };
-    expect($tw.modules.execute("lar:///t/doc/granted")["granted"], "CONTROL: the granted preload defines").toBe(42);
+
 
     expect($tw.wiki.getTiddler(MOD)?.fields["text"], "the module's source stands as data").toBe(modText);
-    expect($tw.modules.titles[MOD], "the module table never names it").toBeUndefined();
-    expect($tw.modules.titles[OP]).toBeUndefined();
-    expect(() => $tw.modules.execute(MOD)).toThrow();
+    expect($tw.modules.titles[MOD], "the seeded module defines at boot").toBeDefined();
+    expect($tw.modules.titles[OP]).toBeDefined();
+    expect($tw.modules.execute(MOD)["probe"]).toBeTypeOf("function");
     let answered: string[] = [];
     try { answered = $tw.wiki.filterTiddlers("[docprobe[]]"); } catch { answered = []; }
-    expect(answered.includes("probe"), "the document's filter operator never registers").toBe(false);
+    expect(answered.includes("probe"), "the seeded filter operator registers").toBe(true);
     expect($tw.wiki.getTiddler(PLUGIN), "the plugin record landed").toBeDefined();
-    expect($tw.wiki.isShadowTiddler("lar:///t/doc/plugin/shadow"), "and never unpacked its shadows").toBe(false);
-    expect($tw.wiki.getTiddler(RAN), "nothing the document says ran").toBeUndefined();
+    expect($tw.wiki.isShadowTiddler("lar:///t/doc/plugin/shadow"), "the seeded plugin unpacked its shadows").toBe(true);
+    expect($tw.wiki.getTiddler(RAN), "the invoked filter ran").toBeDefined();
   }, 120_000);
 
   for (const slug of ["startup-user", "daemon"]) {
@@ -86,8 +62,8 @@ describe.skipIf(wikiSkip)(`the island holds a document's code as data${skipNote}
         text: JSON.stringify({ tiddlers: { "$:/plugins/lararium/test-floor-startup/act": { title: "$:/plugins/lararium/test-floor-startup/act", tags: "$:/tags/StartupAction", text: count(FLOOR) } } }) };
       const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
       try {
-        engine = await bootTestWiki({ extraPlugins: [plugin] });
-        await seedInto(engine, slug, [{ tiddler: { title: "lar:///t/doc/startup", tags: ["$:/tags/StartupAction"], text: count(DOC) } }]);
+        ({ tw5: engine } = await standIslandOverSeed({ composite: new CompositeStore(), recipe: { wikiSlug: slug }, ready: [{ slot: wikiSlotUri(slug, "working"), handle: handleOver([{ tiddler: { title: "lar:///t/doc/startup", tags: ["$:/tags/StartupAction"], text: count(DOC) } }]) }], boot: { extraPlugins: [plugin] } }));
+        await seedDrained(engine);
       } finally { warn.mockRestore(); }
       const wiki = engine.$tw.wiki;
       expect(wiki.getTiddler(FLOOR)?.fields["text"], "CONTROL: the floor plugin's StartupAction ran once, at boot").toBe("1");

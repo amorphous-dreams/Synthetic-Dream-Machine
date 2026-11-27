@@ -65,8 +65,7 @@ export interface FaceEngine {
  * Compose one face's engine over WAVE ZERO, as the island's own engine composes: lay the recipe over the face's documents
  * before anything boots, read the seed off the laid composition, boot over it (TW5 adds the records before its change queue
  * wakes, unpacks their plugins, defines their modules and runs their startup actions natively), mount the shore from the same
- * seed, bridge the wiki, and wait for the seed to land. A boot that never asks for its seed boots bare, and the shore lands the
- * composition as waves.
+ * seed, bridge the wiki, and wait for the seed to land. A boot that never asks for its seed refuses `face-engine-unseeded`.
  */
 export async function composeFaceEngine(source: FaceEngineSource): Promise<FaceEngine> {
   const composite = new CompositeStore();
@@ -83,6 +82,11 @@ export async function composeFaceEngine(source: FaceEngineSource): Promise<FaceE
   } catch (error) {
     seed?.release();
     throw error;
+  }
+  // Every face boots over wave zero: a boot that never asked for its seed booted bare, and no bare road stands.
+  if (seed === null) {
+    tw5.dispose();
+    throw new Error("face-engine-unseeded: the boot never asked for its seed (a FaceBoot hands its boot set to seedFor)");
   }
   const { adaptor } = mountIslandShore(tw5, laid, seed);
   const unbridge = bridgeWikiToAdaptor(tw5, adaptor);

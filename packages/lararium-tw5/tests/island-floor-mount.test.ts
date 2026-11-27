@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { buildIslandRecipe } from "../src/island-recipe.js";
+import { layIslandComposition } from "../src/island-recipe.js";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { ORACLE_BAG, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { type DocHandle } from "@lararium/mesh/automerge";
@@ -53,13 +53,13 @@ function fakeHandle(): DocHandle<LarDoc> {
   } as unknown as DocHandle<LarDoc>;
 }
 
-describe("buildIslandRecipe mounts the floor under a user wiki", () => {
+describe("layIslandComposition mounts the floor under a user wiki", () => {
   test("@oracle reads a carrier and rejects writes while an edit copies into working", async () => {
     const slug = "floor-mount";
     const workingSlot = wikiSlotUri(slug, "working");
     const composite = new CompositeStore();
-    const { stores } = buildIslandRecipe({
-      tw5: fakeTw5(), composite, recipe: { wikiSlug: slug },
+    const { stores } = layIslandComposition({
+      composite, recipe: { wikiSlug: slug },
       ready: [
         { slot: ORACLE_BAG, handle: fakeHandle() },
         { slot: workingSlot, handle: fakeHandle() },
@@ -85,8 +85,8 @@ describe("buildIslandRecipe mounts the floor under a user wiki", () => {
 
   test("without floor rows, @oracle cannot read the carrier", async () => {
     const composite = new CompositeStore();
-    buildIslandRecipe({
-      tw5: fakeTw5(), composite, recipe: { wikiSlug: "floor-control" },
+    layIslandComposition({
+      composite, recipe: { wikiSlug: "floor-control" },
       ready: [{ slot: ORACLE_BAG, handle: fakeHandle() }],
     });
     expect(await composite.get(title)).toBeNull();
