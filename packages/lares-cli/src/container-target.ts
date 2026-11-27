@@ -5,15 +5,14 @@ class ContainerTargetRefusal extends Error {
 }
 
 /**
- * A CONTAINER FLAG NAMED WITH NO VALUE NAMES NOTHING: `--recipe` or `--bag` standing bare refuses, so the default reaches a call
- * that names neither, never one that named a flag and dropped its slug.
+ * A CONTAINER FLAG STANDING BARE NAMES NOTHING: `--recipe`, `--bag` or `--realm` with no value token at all (the parser reads it as
+ * a flag) refuses, so the default reaches a call that names neither, never one that named a flag and dropped its slug. A value
+ * token that reads blank stands as unnamed, as before.
  */
-function refuseBare(args: ParsedArgs, verb: string, names: readonly string[]): void {
-  for (const name of names) {
-    const value = args.options[name];
-    if (args.flags[name] === true || (value !== undefined && String(value).trim() === "")) {
-      throw new ContainerTargetRefusal(`lares ${verb}: no-container — --${name} takes a slug (\`--${name} <slug>\`); name one, or name none and the worn face's daemon wiki answers.`);
-    }
+function refuseBare(args: ParsedArgs, verb: string): void {
+  const bare = args.flags["recipe"] === true ? "recipe" : args.flags["bag"] === true ? "bag" : args.flags["realm"] === true ? "realm" : null;
+  if (bare !== null) {
+    throw new ContainerTargetRefusal(`lares ${verb}: no-container — --${bare} takes a slug (\`--${bare} <slug>\`); name one, or name none and the worn face's daemon wiki answers.`);
   }
 }
 
@@ -24,7 +23,7 @@ function refuseBare(args: ParsedArgs, verb: string, names: readonly string[]): v
  * refuses: a wiki lives in no realm.
  */
 export function containerArgs(args: ParsedArgs, verb: string, _direction: "read" | "write" = "read"): Record<string, string> {
-  refuseBare(args, verb, ["recipe", "bag", "realm"]);
+  refuseBare(args, verb);
   const recipe = typeof args.options["recipe"] === "string" ? args.options["recipe"].trim() : "";
   const bag = typeof args.options["bag"] === "string" ? args.options["bag"].trim() : "";
   if (recipe && bag) {
@@ -46,7 +45,7 @@ export function containerArgs(args: ParsedArgs, verb: string, _direction: "read"
  * rides `lares put title=… bag=<slug>` and `lares delete title=… bag=<slug>`, which take one bag through its store.
  */
 export function engineContainerArgs(args: ParsedArgs, verb: string, direction: "read" | "write" = "read"): Record<string, string> {
-  refuseBare(args, verb, ["recipe", "bag", "realm"]);
+  refuseBare(args, verb);
   const recipe = typeof args.options["recipe"] === "string" ? args.options["recipe"].trim() : "";
   const bag = typeof args.options["bag"] === "string" ? args.options["bag"].trim() : "";
   if (bag) {

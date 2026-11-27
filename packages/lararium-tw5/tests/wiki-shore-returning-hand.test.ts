@@ -20,6 +20,9 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
     await r.working.put({ tiddler: { title: x, text: "landed" } }, remote);
     await turns();
     await r.adaptor.armSeedCheckpoint();
+    // The setup's own wave lands first: this vector reads a refusal with no store change on its way (a wave that meets a
+    // refused hand surfaces the hand's words as a parallel draft and lands; that road has its own vectors).
+    await r.adaptor.landingIdle();
     const alert = `$:/temp/lares/alert/unsaved/${x}`;
     r.failures.family = new Error("disk full");
     edit(r, x, "edit one");

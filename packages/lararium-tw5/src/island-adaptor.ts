@@ -711,10 +711,21 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // own write answers, and a newer hand marked meanwhile goes first again.
     for (let pass = 0; pass < 8; pass++) {
       const outcome = await this._drainTitle(title);
-      // NO WAVE WAITS ON A REFUSED HAND. Every field syncs through the CRDT and a person's edit lives in its draft, a separate
-      // tiddler; a write the store refused never reached the store, so the store's change lands over it, and the refusal's alert
-      // tells the person. The hand stays owed, and its next request reads the wiki as the wave left it.
-      if (outcome.kind === "failed") { if (this.drain.owes(title)) return this._landOne(change, true); throw outcome.error; }
+      // NO WAVE WAITS ON A REFUSED HAND, AND NO HAND VANISHES UNDER A WAVE. Every field syncs through the CRDT, and a conflict
+      // surfaces as parallel drafts (the house's one conflict shape): a value the person wrote that the store refused stands as a
+      // parallel draft of the title before the store's change lands over the page, so the person's words live on as a draft.
+      if (outcome.kind === "failed") {
+        if (!this.drain.owes(title)) throw outcome.error;
+        const standing = wiki.getTiddler(title) ?? null;
+        const source = change.bag ?? this.handBase.get(title)?.bag ?? this.ledger.landedOf(title)?.bag;
+        if (standing !== null && source !== undefined && !same(standing, this._knownOf(title))) {
+          await this._surfaceHand(title, extractFields(this.tw5, standing), source);
+        }
+        // THE REFUSAL OUTLIVES THE PAINT: the alert the refusal raised marks that the store's change landed over the hand, so the
+        // hand's next flush, reading the page equal to what landed, never clears it. The mark rides the alert, in the wiki.
+        this._markUnsavedLandedOver(title);
+        return this._landOne(change, true);
+      }
       const wrote = this.lastFlushWrote.get(title) === true;
       const latest = wiki.getTiddler(title) ?? null;
       const currentEntry = this.ledger.landedOf(title);
@@ -1355,6 +1366,20 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     if (wiki.getTiddler(unsavedHandAlertTitle(title))) wiki.deleteTiddler(unsavedHandAlertTitle(title));
   }
 
+  /** Stamp a standing refusal alert: the store's change landed over the refused hand, so only an acknowledged write clears it. */
+  private _markUnsavedLandedOver(title: string): void {
+    const wiki = this.tw5.$tw.wiki;
+    const alert = wiki.getTiddler(unsavedHandAlertTitle(title)) as { fields?: Record<string, unknown> } | undefined;
+    if (!alert || alert.fields?.["landed-over"] === "yes") return;
+    this._addAlertIfChanged({ ...alert.fields, "landed-over": "yes" });
+  }
+
+  /** True where the title's refusal alert stands with the store's change landed over it: a settle by the page alone keeps it. */
+  private _unsavedLandedOver(title: string): boolean {
+    const alert = this.tw5.$tw.wiki.getTiddler(unsavedHandAlertTitle(title)) as { fields?: Record<string, unknown> } | undefined;
+    return alert?.fields?.["landed-over"] === "yes";
+  }
+
   // ---------------------------------------------------------------------------
   // The draft book
   // ---------------------------------------------------------------------------
@@ -1685,7 +1710,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       if (!this.sent.has(title)) this.handBase.delete(title);
       this.lastFlushWrote.set(title, false);
       this.failedAtTeardown.delete(title);
-      this._clearUnsaved(title);
+      if (!this._unsavedLandedOver(title)) this._clearUnsaved(title);
       return;
     }
     const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId, ...this._handFace(title) };
