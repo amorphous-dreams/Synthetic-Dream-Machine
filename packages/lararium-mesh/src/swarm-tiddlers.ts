@@ -27,7 +27,8 @@
  *                              vessel goes down, `rite-landed` after it stands again; each the VESSEL's witness
  *   tessera/<tessera>/abandoned
  *                              `rite-abandoned`: the hand set a begun half down unlanded (a tombstone beside it, never a delete);
- *                              the vessel witnesses it once the one hand gate admits the act
+ *                              the vessel witnesses it once the one hand gate admits the act; or a kūkulu over a newer head set
+ *                              down a half whose landing never started (`by: "kukulu"`, naming the head that supersedes it)
  *   house-cap · lane/<lane>/share
  *                              ride the face-private board (`swarm-board.ts`) so a fleet folds one cap; their titles belong to this family
  *
@@ -164,7 +165,12 @@ export interface SwarmRiteLandedBody { readonly act: "rite-landed"; readonly gro
  * after. `begun` names the exact guest half by its cid; `by` names who set it down (the hand, whose gate admitted the act); the
  * vessel witnesses it, as it witnesses both halves.
  */
-export interface SwarmRiteAbandonedBody { readonly act: "rite-abandoned"; readonly group: string; readonly rite: SwarmLeiRite; readonly branch: string; readonly tessera: string; readonly begun: string; readonly by: "hand" }
+export type SwarmRiteAbandonedBody = { readonly act: "rite-abandoned"; readonly group: string; readonly rite: SwarmLeiRite; readonly branch: string; readonly tessera: string; readonly begun: string }
+  & ({ readonly by: "hand" } | {
+    /** A kūkulu over a newer head set the half down: its landing never started (the vessel stood on the image the begin left). */
+    readonly by: "kukulu";
+    /** The head whose fresh begin supersedes the half. */
+    readonly supersededBy: string });
 export type SwarmBodyParts = SwarmLeiBody | SwarmLeiReturnedBody | SwarmLeiUnstrungBody | SwarmRiteBegunBody | SwarmRiteLandedBody | SwarmRiteAbandonedBody | SwarmLaneStateBody | SwarmRosterBody;
 export type SwarmBody = SwarmBodyParts & { readonly kind: typeof SWARM_ACT_DOMAIN };
 export interface SignedSwarmAct { readonly body: SwarmBody; readonly signer: string; readonly sig: string }
@@ -190,7 +196,8 @@ function shape(b: Record<string, unknown>): boolean {
     case "lei-unstrung": return hex(b["lei"], 64) && isSwarmLeiRite(b["rite"]) && str(b["branch"]);
     case "rite-begun": return isSwarmLeiRite(b["rite"]) && str(b["branch"]) && str(b["head"]) && str(b["tree"]) && hex(b["lei"], 64) && positive(b["n"]) && hex(b["tessera"], 64) && imageOrNone(b);
     case "rite-landed": return isSwarmLeiRite(b["rite"]) && hex(b["tessera"], 64) && hex(b["begun"], 64) && str(b["head"]) && imageOrNone(b);
-    case "rite-abandoned": return isSwarmLeiRite(b["rite"]) && str(b["branch"]) && hex(b["tessera"], 64) && hex(b["begun"], 64) && b["by"] === "hand";
+    case "rite-abandoned": return isSwarmLeiRite(b["rite"]) && str(b["branch"]) && hex(b["tessera"], 64) && hex(b["begun"], 64)
+      && (b["by"] === "hand" ? !("supersededBy" in b) : b["by"] === "kukulu" && str(b["supersededBy"]));
     case "lane-state": return str(b["lane"]) && str(b["seat"]) && object(b["state"]) && Object.values(b["state"]).every((v) => v === null || ["string", "number", "boolean"].includes(typeof v));
     case "roster": return str(b["seat"]) && str(b["model"]) && str(b["mode"]) && count(b["reading"]) && count(b["ceiling"]) && str(b["outcome"]);
     default: return false;

@@ -27,8 +27,10 @@
  *   5. rite-begin   IN THE VESSEL, where a vessel stands: every lent face's kukulu lei returns once and rests its guest
  *                   half (`rite-begun`). No lei standing on the line runs the restand with no rite. FIRST the vessel reads
  *                   the begin that stands (`standing`: guest halves resting unlanded on the line): one at this head is
- *                   RESUMED (no return, no tessera, the offer that rests reused); one at another head refuses
- *                   `kukulu-begun-stale` with the one line that clears it. A vessel down at the start (a Ctrl+C at the
+ *                   RESUMED (no return, no tessera, the offer that rests reused); one at another head whose landing never
+ *                   started (the standing vessel's revision label and digest name the prior image, never the begin's) is
+ *                   SUPERSEDED: the fresh begin names those tesserae and the vessel sets each down as its face, no hand;
+ *                   any other at another head refuses `kukulu-begun-stale` with the one line that clears it. A vessel down at the start (a Ctrl+C at the
  *                   light) shows its halves to the vessel the raise stands, and the rite lands them there
  *   6. rite-offer   IN THE STANDING VESSEL, over the image the host made: one vouch per face, rested for the next vessel to
  *                   carry to the pūlama (`kukulu-offer.json`), so the pūlama lends on it with no admit
@@ -662,6 +664,39 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
       line: `a kūkulu begun and never landed stands on ${branch}, and this run cannot resume it: ${halves}; it never stacks a second begin. clear it with: ${clear}${back}`,
     };
   };
+  /**
+   * THE LANDING THAT NEVER STARTED (kukulu-supersedes-a-stale-begin), read off the standing vessel, never off a clock: the
+   * revision label of the image it stands from (`prior`) and the digest it runs (`ranImage`, read before any raise). A half whose
+   * head that label names, or whose image that digest names, saw its landing start (the new vessel stood): true. Evidence that
+   * names another revision or another image, and neither of the half's: false, the begin spent nothing a landing ever used. No
+   * evidence at all (no label, no digest): null, and unknown never authorizes a set-down.
+   */
+  let standingRan: string | null | undefined;
+  const landingStarted = async (p: PendingBegin): Promise<boolean | null> => {
+    if (standingRan === undefined) standingRan = ports.ranImage ? await ports.ranImage().catch(() => null) : null;
+    const label = prior !== null && prior.revision !== "unlabeled" && prior.revision.trim().length >= 7 ? prior.revision.trim() : null;
+    const ran = standingRan !== null && standingRan !== "" ? standingRan : null;
+    const bound = p.image !== undefined && p.image !== "" ? p.image : null;
+    const sameRev = label !== null && (label.startsWith(p.head) || p.head.startsWith(label));
+    if (sameRev || (ran !== null && bound !== null && ran === bound)) return true;
+    return label !== null || (ran !== null && bound !== null) ? false : null;
+  };
+  /**
+   * A STALE BEGIN THIS RUN SUPERSEDES, where the debt allows it: every pending half began at another head than this run raises,
+   * a lent face lands each, and each landing never started. The run then begins fresh under the same lei, naming those tesserae
+   * in its begin (the vessel sets each down as its own face, `by: "kukulu"`). Null where any half fails that: the refusal stands.
+   */
+  const supersedable = async (read: Extract<StandingAnswer, { ok: true }>, j: { refusal: string; stale: readonly PendingBegin[] }): Promise<Array<PendingBegin & { readonly face: string }> | null> => {
+    if (j.refusal !== BEGUN_STALE || read.pending === undefined || j.stale.length !== read.pending.length || j.stale.length === 0) return null;
+    const landable = new Map(read.begins.map((b) => [b.tessera, b]));
+    const out: Array<PendingBegin & { readonly face: string }> = [];
+    for (const p of j.stale) {
+      const b = landable.get(p.tessera);
+      if (p.head === head || b === undefined || (await landingStarted(p)) !== false) return null;
+      out.push({ ...p, face: p.face ?? b.face });
+    }
+    return out;
+  };
   const refuseDebt = (j: { refusal: string; stale: readonly PendingBegin[]; line: string }, extra: Record<string, unknown> = {}) => {
     ports.say(`kūkulu: ${j.line}; nothing spent, nothing moved`);
     return { code: 1, data: { ...base, ...extra, begun: false, stopped: j.refusal === BEGUN_STALE ? "begun-stale" : "begun-unmatched", refusal: j.refusal, stale: j.stale.map((p) => ({ face: p.face ?? p.group, tessera: p.tessera, head: p.head })) } };
@@ -737,6 +772,8 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
   /** The resting offer's base as the standing read named it: the offer below overwrites only over it. */
   let offerBase: string | null | undefined;
   let debtUnread = false;
+  /** The stale halves this run's begin sets down (`supersedes`), where their landing never started. */
+  let superseding: Array<PendingBegin & { readonly face: string }> = [];
   let readAfter = r.vessel === "down";
   if (r.vessel === "standing" && ports.standing) {
     const read = await ports.standing(branch, opts.face);
@@ -748,15 +785,22 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
       return { code: 1, data: { ...base, begun: false, stopped: "standing", refusal: read.code } };
     } else {
       const j = judge(read);
-      if ("refusal" in j) return refuseDebt(j);
-      resume = j.resume;
-      offerMatches = j.offerMatches;
-      offerBase = read.offerBase;
-      if (j.unread) {
-        debtUnread = true;
-        ports.say("kūkulu: this vessel reads no raw debt, so a half whose face stands shut or was rehived reads nowhere; the rite resumes what it reads, and the debt beyond it stays unread");
-        // UNREAD DEBT NEVER AUTHORIZES A FRESH BEGIN: with nothing to resume, the rite raises and reads the debt in the new vessel.
-        if (resume.length === 0) readAfter = true;
+      if ("refusal" in j) {
+        // A QUIET DAY BEGINS NO RITE, so nothing would carry the set-down: the refusal stands there.
+        const sup = r.current && !light ? null : await supersedable(read, j);
+        if (sup === null) return refuseDebt(j);
+        superseding = sup;
+        offerBase = read.offerBase;
+      } else {
+        resume = j.resume;
+        offerMatches = j.offerMatches;
+        offerBase = read.offerBase;
+        if (j.unread) {
+          debtUnread = true;
+          ports.say("kūkulu: this vessel reads no raw debt, so a half whose face stands shut or was rehived reads nowhere; the rite resumes what it reads, and the debt beyond it stays unread");
+          // UNREAD DEBT NEVER AUTHORIZES A FRESH BEGIN: with nothing to resume, the rite raises and reads the debt in the new vessel.
+          if (resume.length === 0) readAfter = true;
+        }
       }
     }
   }
@@ -795,12 +839,18 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
     spent["resumed"] = true;
     ports.say(resumeLine(resume));
   } else if (r.vessel === "standing" && !readAfter) {
-    let begun = await ports.row("rite-begin", { rite: RITE_KUKULU, branch, head, ...asImage, ...asFace });
+    const asSupersedes = superseding.length === 0 ? {} : { supersedes: superseding.map((p) => p.tessera).join(",") };
+    if (superseding.length > 0) {
+      const at = [...new Set(superseding.map((p) => p.head.slice(0, 12)))].join(", ");
+      const stood = prior !== null && prior.revision !== "unlabeled" ? `revision ${prior.revision.slice(0, 12)}` : standingRan ? standingRan : "its prior image";
+      ports.say(`kūkulu: this run supersedes the begin at ${at}, whose landing never started (the vessel still stands on ${stood}, not the head or image the begin bound): ${superseding.map((p) => `${p.face} tessera ${p.tessera}`).join(", ")}; the fresh begin at ${short} sets each down (it spends nothing more and records no par; conferre reads it abandoned) under the same lei`);
+    }
+    let begun = await ports.row("rite-begin", { rite: RITE_KUKULU, branch, head, ...asImage, ...asFace, ...asSupersedes });
     let remedy = "";
     if (!begun.ok && begun.code === RETURNS_SPENT && ports.refill) {
       // A SPENT LEI OFFERS ITS OWN REFILL on a terminal, then the rite goes on; elsewhere the refusal names the plain line.
       const again = await ports.refill({ rite: "kukulu", branch, ...(opts.face === undefined ? { all: true } : { face: opts.face }) });
-      if (again.strung) begun = await ports.row("rite-begin", { rite: RITE_KUKULU, branch, head, ...asImage, ...asFace });
+      if (again.strung) begun = await ports.row("rite-begin", { rite: RITE_KUKULU, branch, head, ...asImage, ...asFace, ...asSupersedes });
       else remedy = `; string more by hand: ${again.remedy}`;
     }
     if (!begun.ok && begun.code === LEI_ABSENT) { if (!absentSaid) ports.say(`kūkulu: no kukulu lei stands on ${branch}, so the restand goes on with no rite`); }
@@ -812,6 +862,7 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
         .map((f) => ({ face: String(f["face"]), ordinal: Number(f["ordinal"]), tessera: String(f["tessera"]), head, ...asImage }));
       const waits = Array.isArray(begun.output["waits"]) ? (begun.output["waits"] as unknown[]).map(String) : [];
       spent["tesserae"] = tesseraeOf(begunFaces);
+      if (superseding.length > 0) spent["superseded"] = superseding.map((p) => ({ face: p.face, tessera: p.tessera, head: p.head }));
       if (waits.length > 0) spent["waits"] = waits;
       ports.say(`kūkulu: begun; each lent face's lei returned and its guest half rests (${begunFaces.map((f) => `${f.face} tessera ${f.tessera}`).join(", ")})`);
       for (const face of waits) ports.say(`kūkulu: ${face} carries no kukulu lei on this line and waits; the other faces' rite goes on`);

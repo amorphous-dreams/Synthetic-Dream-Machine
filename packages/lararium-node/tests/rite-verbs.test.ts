@@ -7,7 +7,7 @@
 import { expect, test } from "vitest";
 import { STORE_DOOR_FACE_VERBS, STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, rowRefusalName, storeDoorReactors, type StoreDoorDeps } from "../src/store-door-verbs.js";
 import { storeVerbGatesFirst, storeVerbNeedsWard } from "../src/ward-credential.js";
-import { beginLentFaces, lentOfferFaces, offerVouchesOf, refuseStandingBegin, standingKukuluBegins, tesseraFaceRefusal } from "../src/commands/rite.js";
+import { beginLentFaces, lentOfferFaces, offerVouchesOf, refuseStandingBegin, standingKukuluBegins, supersedeBegins, tesseraFaceRefusal } from "../src/commands/rite.js";
 import { kukuluRiteOver } from "../src/kukulu-lei-seat.js";
 import {
   SwarmRefused,
@@ -178,6 +178,49 @@ test("RED: a kūkulu begun and never landed reads each lent face's guest half st
   expect(read.abandoned.map((t) => t.tessera)).toEqual([second.faces[0]!.tessera]);
   // CONTROL: the fresh begin proceeds over the set-down halves, one return more per face.
   expect((await begin()).faces.map((f) => f.n)).toEqual([3, 3]);
+});
+
+/**
+ * KUKULU-SUPERSEDES-A-STALE-BEGIN: a kūkulu over a newer head names the halves it read as never landed (the host read the vessel
+ * standing on the image the begin left), and its begin sets each down as the face that carries it before the fresh begin, so one
+ * stopped restand never blocks the next behind a hand act.
+ */
+test("RED: a begin naming the stale halves it supersedes sets each down as its own face (`by: kukulu`, naming the new head), spends nothing for them, and the fresh begin at the new head proceeds under the same lei; CONTROL: a named tessera no longer pending is passed, and an unnamed stale half still refuses `rite-begun-stands`", async () => {
+  const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
+  const rows = new Map<string, string>();
+  const wiki: SwarmWikiPort = { read: async (t) => rows.get(t) ?? null, write: async (t, x) => { rows.set(t, x); }, writeNew: async (t, x) => (rows.has(t) ? false : (rows.set(t, x), true)),
+    list: async (prefix) => [...rows.keys()].filter((t) => t.startsWith(prefix)) };
+  const faces: { group: string; trust: SwarmTrust; atom: Awaited<ReturnType<typeof keyed>>; lei: string }[] = [];
+  for (const ordinal of [0, 1]) {
+    const group = `face-group-${ordinal}`, hand = await keyed(50 + ordinal), atom = await keyed(60 + ordinal);
+    const trust: SwarmTrust = { hand: (k) => k === hand.key, vessel: (k) => k === atom.key, lead: () => false };
+    const lei = await signSwarmAct({ act: "lei", group, rite: "kukulu", branch: "develop", after: null, reach: "wide", returns: 3 }, hand);
+    await wiki.write(swarmLeiRecordTitle("kukulu", "develop", swarmActCid(lei)), JSON.stringify(lei));
+    faces.push({ group, trust, atom, lei: swarmActCid(lei) });
+  }
+  const A = "a".repeat(40), B = "b".repeat(40);
+  const beginAt = async (head: string) => {
+    refuseStandingBegin((await pendingBegins(wiki, "kukulu", "develop")).map((p) => ({ ...p, face: `h${faces.findIndex((f) => f.group === p.group)}` })));
+    const at = { rite: "kukulu" as const, branch: "develop", head, tree: "1".repeat(40) };
+    return beginLentFaces([0, 1], (o) => checkReturn(wiki, at, faces[o]!.trust, faces[o]!.group, faces[o]!.atom, { accepts: () => true }), (c) => beginChecked(wiki, c));
+  };
+  const claimed = () => faces.map((f) => [...rows.keys()].filter((t) => t.startsWith(swarmLeiReturnedPrefix(f.lei))).length);
+  const faceOf = new Map(faces.map((f, i) => [f.group, `h${i}`]));
+  const faceAt = async (ordinal: number) => ({ trust: faces[ordinal]!.trust, group: faces[ordinal]!.group, vessel: faces[ordinal]!.atom });
+  const stale = await beginAt(A);
+  // CONTROL: unnamed, the stale halves still refuse the fresh begin by name, and nothing more spends.
+  await expect(beginAt(B)).rejects.toMatchObject({ code: "rite-begun-stands" });
+  expect(claimed()).toEqual([1, 1]);
+  const named = [...stale.faces.map((f) => f.tessera), "9".repeat(64)];
+  const down = await supersedeBegins(wiki, named, B, "develop", faceOf, faceAt);
+  expect(down).toEqual(stale.faces.map((f) => ({ face: f.face, tessera: f.tessera, head: A })));
+  expect(claimed()).toEqual([1, 1]);
+  expect(await pendingBegins(wiki, "kukulu", "develop")).toEqual([]);
+  expect((await conferre(wiki, faces[0]!.trust, faces[0]!.group)).abandoned.map((t) => t.tessera)).toEqual([stale.faces[0]!.tessera]);
+  const fresh = await beginAt(B);
+  expect(fresh.faces.map((f) => [f.lei, f.n])).toEqual(faces.map((f) => [f.lei, 2]));
+  // A RETRY naming the same halves (a refill re-ran the begin) sets nothing down twice.
+  expect(await supersedeBegins(wiki, named, B, "develop", faceOf, faceAt)).toEqual([]);
 });
 
 /**

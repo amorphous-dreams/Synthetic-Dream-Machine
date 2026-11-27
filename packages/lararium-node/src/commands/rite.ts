@@ -12,6 +12,9 @@
  * THE LEI CARRIES THE GRANT. No spending row here reads hand-only: the hand strung the lei under the ward, and any seat holding
  * the line may spend it.
  *
+ * A KŪKULU SUPERSEDES A STALE BEGIN: a kukulu `begin` naming `supersedes` sets those halves down first (`supersedeBegins`), as the
+ * faces that carry them, where the host read their landing as never started; it rides the begin, so no hand act stands between.
+ *
  * A BEGUN RITE SETS DOWN BY THE HAND. `abandon` sets one stale begun half down (`abandonRite`, a kāpae over it): the mark rests
  * beside the half naming the hand, no return spends, no host half rests, and the line frees for a fresh begin. It stays the
  * hand's act: the socket's one hand gate refuses a seat `hand-act-only` (`STORE_DOOR_HAND_CODES`) before this row runs, and the
@@ -194,6 +197,32 @@ export function refuseStandingBegin(standing: ReadonlyArray<{ readonly tessera: 
 }
 
 /**
+ * A KŪKULU SUPERSEDES A STALE BEGIN (kukulu-supersedes-a-stale-begin). The host names the halves it read as never landed: begun
+ * at an older head, with the vessel still standing on the image the begin left (its revision label and running digest name the
+ * prior image, never the begin's), so the begin spent nothing a landing ever used. Each named half still pending on the line
+ * sets down as the lent face that carries it (`abandonRite`, `by: "kukulu"`, naming the head that supersedes it); a named
+ * tessera no longer pending (landed, or set down by an earlier try of this begin) passes, and a half no lent face carries stays
+ * as debt for `refuseStandingBegin` to name. Answers each half it set down, by face, tessera and the head it began at.
+ */
+export async function supersedeBegins(
+  wiki: SwarmWikiPort, named: readonly string[], head: string, branch: string, faceOf: ReadonlyMap<string, string>,
+  faceAt: (ordinal: number) => Promise<{ readonly trust: SwarmTrust; readonly group: string; readonly vessel: SwarmSignerPort }>,
+): Promise<Array<{ face: string; tessera: string; head: string }>> {
+  if (named.length === 0) return [];
+  const pending = await pendingBegins(wiki, "kukulu", branch);
+  const out: Array<{ face: string; tessera: string; head: string }> = [];
+  for (const tessera of named) {
+    const p = pending.find((x) => x.tessera === tessera);
+    const face = p === undefined ? undefined : faceOf.get(p.group);
+    if (p === undefined || face === undefined || !/^h\d+$/.test(face)) continue;
+    const f = await faceAt(Number(face.slice(1)));
+    await abandonRite(wiki, { tessera }, f.trust, f.group, f.vessel, { kukulu: head });
+    out.push({ face, tessera, head: p.head });
+  }
+  return out;
+}
+
+/**
  * THE LANDING NAMES ITS FACE (course land-names-its-face). A landing or an abandon acts as one face, and a begun half another face
  * rested (a keep acts as the keep's face) verifies as no record under it: `rite-begun-absent … (group)`, with no cure. This reads the
  * raw guest row's group and names the face that carries it with the `--face` cure, or, where no lent face carries it (shut or
@@ -320,13 +349,17 @@ export async function runRiteVerb(opts: {
     // A BEGIN ALREADY STANDING ON THE LINE spends nothing more: it refuses by name over the raw debt before any face's return is
     // checked, a shut or rehived face's half included.
     const faceOf = await facesOfGroups(lent).catch(() => new Map<string, string>());
+    // THE HALVES THIS KŪKULU SUPERSEDES (`supersedes`, comma-joined tesserae the host read as never landed) set down first, as
+    // their own faces, so the begin below reads only the debt that still stands.
+    const named = str("supersedes").split(",").map((t) => t.trim()).filter((t) => /^[0-9a-f]{64}$/.test(t));
+    const superseded = await supersedeBegins(wiki, named, at.head, at.branch, faceOf, (ordinal) => riteFaceOf(opts.repo, opts.catalogUrl, ordinal));
     refuseStandingBegin((await pendingBegins(wiki, "kukulu", at.branch)).map((p) => ({ ...p, ...(faceOf.has(p.group) ? { face: faceOf.get(p.group)! } : {}) })));
     return { ...await beginLentFaces(lent, async (ordinal) => {
       let face: RiteFace;
       try { face = await riteFaceOf(opts.repo, opts.catalogUrl, ordinal); }
       catch (e) { if (e instanceof SwarmRefused) throw e; throw new SwarmRefused("face-log-unreadable", `the lent face h${ordinal} loads no log: ${e instanceof Error ? e.message : String(e)}`); }
       return checkReturn(wiki, at, face.trust, face.group, face.vessel, face.ward, { orphan: true });
-    }, (checked) => beginChecked(wiki, checked)) };
+    }, (checked) => beginChecked(wiki, checked)), ...(superseded.length > 0 ? { superseded } : {}) };
   }
   let loaded: FaceFold;
   try { loaded = await loadFaceFold(opts.repo, opts.catalogUrl, { index: opts.face }); }
