@@ -2917,7 +2917,7 @@ test("shim flag sets track the built CLI parser", async () => {
   const sh = await readFile(SH, "utf8"), ps = await readFile(PS1, "utf8");
   const sorted = (xs) => [...xs].sort();
   const shBoolean = [...sh.matchAll(/\*=\*\|--no-\*\|(--accept-omissions[^)]*)\)/g)].map(m => m[1].split("|").map(x => x.slice(2)));
-  const shValue = [...sh.matchAll(/(--fields\|--note\|--reason\|--text)\)/g)].map(m => m[1].split("|").map(x => x.slice(2)));
+  const shValue = [...sh.matchAll(/(--fields\|--note\|[^)]*)\) stream_want/g)].map(m => m[1].split("|").map(x => x.slice(2)));
   const psList = (name) => [...ps.match(new RegExp(`\\$${name} = @\\(([^)]*)\\)`))[1].matchAll(/'([^']+)'/g)].map(m => m[1].replace(/^--/, ""));
   assert.equal(shBoolean.length, 2); assert.equal(shValue.length, 2);
   for (const flags of [...shBoolean, psList("boolean")]) assert.deepEqual(sorted(flags), sorted(BOOLEAN_FLAGS));
