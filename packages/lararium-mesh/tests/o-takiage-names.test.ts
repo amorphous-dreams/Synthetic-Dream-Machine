@@ -46,6 +46,8 @@ const TOKENS: Record<string, string> = Object.fromEntries([
     // The consult as an OODA-HA act record (`library.oracle.speaks`): its affordance address, its carrier, and the bake
     // test's fixture of that carrier.
     "ORACLE_AFFORDANCE", "ORACLE_CARRIER", "oracleFixtureCarrier",
+    // The call seat the one `call` verb answers the consult's address with (comms-ux-enacts landing 4).
+    "ORACLE_CALL_SEATS",
     // The library shelves the consult names by kind: the shelf prefix, the default kind, a shelf's index title, the verb's options.
     "ORACLE_SHELF_PREFIX", "DEFAULT_ORACLE_KIND", "oracleShelfTitle", "OracleConsultOptions",
     // The cast's MCP tool spelling, which the affordance bake and row tests render.
