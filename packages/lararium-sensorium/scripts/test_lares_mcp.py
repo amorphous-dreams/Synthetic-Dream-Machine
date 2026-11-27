@@ -842,7 +842,7 @@ def test_registered_tools_carry_seat_annotations_and_plain_first_lines():
     tools = asyncio.run(build_mcp(DaemonCoordinator(wing="w")).list_tools())
     assert next(t for t in tools if t.name == "analyze").annotations.read_only_hint is False
     assert set(TOOL_NATURE) == {t.name for t in tools}
-    verbs = set("capture recall report render mute restore read run switch wikify survey cast pin unpin patch remove offer show propose stage get roster build reconcile".split())
+    verbs = set("capture recall report render mute restore read run switch wikify survey cast pin unpin patch remove offer show propose stage get roster build reconcile consult".split())
 
     def check(tool):
         assert tool.name in VERB_SEATS and VERB_SEATS[tool.name] == (True, False)
@@ -895,7 +895,7 @@ def test_the_four_record_tools_dress_from_their_carriers():
         description, params = pack_tool_skin(tool, pack)
         assert listed[tool].description == description, tool
         for name, words in params.items():
-            assert listed[tool].inputSchema["properties"][name]["description"] == words, (tool, name)
+            assert listed[tool].input_schema["properties"][name]["description"] == words, (tool, name)
         assert inspect.getdoc(mcp._tool_manager.get_tool(tool).fn) is None, tool  # noqa: SLF001
     # CONTROL: rename skins the terminal alone, so no seat tool rides its carrier.
     assert "tiddler_rename" not in ((pack.get("routes") or {}).get("mcp") or {})
