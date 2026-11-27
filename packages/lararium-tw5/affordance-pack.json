@@ -7411,7 +7411,7 @@
       "title": "lar:///ha.ka.ba/lares/afford/carriage.disk.wins"
     },
     "lar:///carriage.draft.lifts": {
-      "bcc": "ni:///sha-256;xKx-kI4WBxIm1y2jBzvqoNXZ8IXXsWnNKYHCHU5f5vQ",
+      "bcc": "ni:///sha-256;eGHC7OacuqaM9VBm20EirDvBTf0kKb9D_XsYGACN84k",
       "calls": {
         "cli": [
           "lares shore lift-kahua --count 2",
@@ -7441,9 +7441,10 @@
           ],
           "#/loop": [],
           "#/refuses": [
-            "  usage  lift-kahua names the count of pending kahua items: lares shore lift-kahua --count <n>",
+            "  usage  lift-kahua names the count of pending kahua items",
             "    cure: lares shore lift-kahua --count <n>",
-            "  count-moved  the count no longer equals the preview's; nothing lifted, and a new lares shore names the count that stands"
+            "  count-moved  the count no longer equals the preview's; nothing lifted, and the shore names the count that stands",
+            "    cure: carriage.disk.reads"
           ],
           "#/shows": [
             "  lares shore lift-kahua --count 2    # lift the two pending items the preview named"
@@ -7476,9 +7477,10 @@
             "  hand: each lift signs under its face's own grant; a person runs it at their own terminal, wearing the face",
             "",
             "Refuses (each with its cure):",
-            "  usage  lift-kahua names the count of pending kahua items: lares shore lift-kahua --count <n>",
+            "  usage  lift-kahua names the count of pending kahua items",
             "    cure: lares shore lift-kahua --count <n>",
-            "  count-moved  the count no longer equals the preview's; nothing lifted, and a new lares shore names the count that stands",
+            "  count-moved  the count no longer equals the preview's; nothing lifted, and the shore names the count that stands",
+            "    cure: carriage.disk.reads",
             "",
             "Answers:",
             "  lifted (exit 0)  the pending items lifted under their faces' grants",
@@ -7514,9 +7516,10 @@
           ],
           "#/loop": [],
           "#/refuses": [
-            "  usage  lift-kahua names the count of pending kahua items: lares shore lift-kahua --count <n>",
+            "  usage  lift-kahua names the count of pending kahua items",
             "    cure: $tw.lares.call(\"carriage.draft.lifts\", {\"count\": \"<n>\"})",
-            "  count-moved  the count no longer equals the preview's; nothing lifted, and a new lares shore names the count that stands"
+            "  count-moved  the count no longer equals the preview's; nothing lifted, and the shore names the count that stands",
+            "    cure: $tw.lares.call(\"carriage.disk.reads\", {})"
           ],
           "#/shows": [
             "  $tw.lares.call(\"carriage.draft.lifts\", {\"count\": 2})    # lift the two pending items the preview named"
@@ -7549,9 +7552,10 @@
             "  hand: each lift signs under its face's own grant; a person runs it at their own terminal, wearing the face",
             "",
             "Refuses (each with its cure):",
-            "  usage  lift-kahua names the count of pending kahua items: lares shore lift-kahua --count <n>",
+            "  usage  lift-kahua names the count of pending kahua items",
             "    cure: $tw.lares.call(\"carriage.draft.lifts\", {\"count\": \"<n>\"})",
-            "  count-moved  the count no longer equals the preview's; nothing lifted, and a new lares shore names the count that stands",
+            "  count-moved  the count no longer equals the preview's; nothing lifted, and the shore names the count that stands",
+            "    cure: $tw.lares.call(\"carriage.disk.reads\", {})",
             "",
             "Answers:",
             "  lifted (exit 0)  the pending items lifted under their faces' grants",
@@ -7602,9 +7606,10 @@
           ],
           "#/loop": [],
           "#/refuses": [
-            "  usage  lift-kahua names the count of pending kahua items: lares shore lift-kahua --count <n>",
+            "  usage  lift-kahua names the count of pending kahua items",
             "    cure: <$ count=\"<n>\"/>",
-            "  count-moved  the count no longer equals the preview's; nothing lifted, and a new lares shore names the count that stands"
+            "  count-moved  the count no longer equals the preview's; nothing lifted, and the shore names the count that stands",
+            "    cure: <$carriage.disk.reads/>"
           ],
           "#/shows": [
             "  <$ count=\"2\"/>    # lift the two pending items the preview named"
@@ -7637,9 +7642,10 @@
             "  hand: each lift signs under its face's own grant; a person runs it at their own terminal, wearing the face",
             "",
             "Refuses (each with its cure):",
-            "  usage  lift-kahua names the count of pending kahua items: lares shore lift-kahua --count <n>",
+            "  usage  lift-kahua names the count of pending kahua items",
             "    cure: <$ count=\"<n>\"/>",
-            "  count-moved  the count no longer equals the preview's; nothing lifted, and a new lares shore names the count that stands",
+            "  count-moved  the count no longer equals the preview's; nothing lifted, and the shore names the count that stands",
+            "    cure: <$carriage.disk.reads/>",
             "",
             "Answers:",
             "  lifted (exit 0)  the pending items lifted under their faces' grants",
@@ -20733,7 +20739,7 @@
       ]
     }
   },
-  "hash": "sha256-26aba3c5f00c7da822228da3f919bddd964a37d8a5864f47f634b7ec13441524",
+  "hash": "sha256-30b1678a5782c2a078ab1aacca8a4ed980b041be874ba0a5a9284ddff87aaa0e",
   "index": {
     "cli": [
       "  lares act CLEAR  empty a bag but keep its identity; the effect log stays",
