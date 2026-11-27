@@ -251,6 +251,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   /** THE one drain: every owed title, one write in flight across the shore. */
   private drain: Drain = this._newDrain();
   private landing: WaveLanding | null = null;
+  /** The waves a refused hand holds back, by title: the wiki shows the hand, never the wave, until a later wave of the title lands. */
+  private readonly heldWaves = new Map<string, LarTiddlerChange>();
   private engineApply: ((change: LarTiddlerChange) => void) | null = null;
   /** The queue door this shore installed at `$tw.lares.enqueueNalu`; null while it holds none. */
   private door: ((change: LarTiddlerChange) => void) | null = null;
@@ -688,6 +690,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       this.engineApply({ ...change, record: applied, ...(bag !== undefined ? { bag } : {}) });
     }
     this.familyPlaced.delete(title);
+    this.heldWaves.delete(title);
     this.ledger.set(title, { tiddler: wiki.getTiddler(title) ?? null, ...(bag !== undefined ? { bag } : {}), ...(heads !== undefined ? { heads } : {}) });
     if (change.bag !== undefined && envelopeHeads !== undefined && envelopeHeads.length > 0) this._noteLanded(change.bag, envelopeHeads);
     this._learnDraft(title, live ? record : null, bag);
@@ -712,7 +715,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     for (let pass = 0; pass < 8; pass++) {
       const outcome = await this._drainTitle(title);
       // A refused hand stays owed and carries the title's state on its next request; the wave never lands over it.
-      if (outcome.kind === "failed") { if (this.drain.owes(title)) return; throw outcome.error; }
+      if (outcome.kind === "failed") { if (this.drain.owes(title)) { this.heldWaves.set(title, change); return; } throw outcome.error; }
       const wrote = this.lastFlushWrote.get(title) === true;
       const latest = wiki.getTiddler(title) ?? null;
       const currentEntry = this.ledger.landedOf(title);
@@ -1150,6 +1153,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // landed value reads a later change as foam.
     this.ledger.clear();
     this.landedHeads.clear();
+    this.heldWaves.clear();
     this.sent.clear();
     this.handBase.clear();
     this.lastWriteBag.clear();
@@ -1199,12 +1203,15 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
   /**
    * True where this shore has landed, in the wiki, every change of `bag`'s document up to `named`: the heads of
-   * its last landed change cover them. A store with no causal history, and a bag this shore landed nothing of,
-   * answer false.
+   * its last landed change cover them, and no wave of the bag stays behind (a wave a refused hand holds back, or one
+   * whose landing failed twice and stays owed), since a later title's landing moves the bag's heads past a wave the
+   * wiki never took. A store with no causal history, and a bag this shore landed nothing of, answer false.
    */
   landedCovers(bag: string, named: readonly string[]): boolean {
     const have = this.landedHeads.get(bag);
-    return have !== undefined && this._storeFor(bag)?.coversHeads?.(have, named) === true;
+    if (have === undefined || this.landing?.owesBag(bag) === true) return false;
+    for (const change of this.heldWaves.values()) if (change.bag === bag) return false;
+    return this._storeFor(bag)?.coversHeads?.(have, named) === true;
   }
 
   /** The store of any layer for `bag`, or null when the composite offers none (a double without layers). */
