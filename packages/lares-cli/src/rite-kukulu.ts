@@ -28,7 +28,8 @@
  *                   half (`rite-begun`). No lei standing on the line runs the restand with no rite. FIRST the vessel reads
  *                   the begin that stands (`standing`: guest halves resting unlanded on the line): one at this head is
  *                   RESUMED (no return, no tessera, the offer that rests reused); one at another head whose landing never
- *                   started (the standing vessel's revision label and digest name the prior image, never the begin's) is
+ *                   started (the digest the standing vessel runs names another image than the begin's; the tag's label
+ *                   counts only where no digest reads) is
  *                   SUPERSEDED: the fresh begin names those tesserae and the vessel sets each down as its face, no hand;
  *                   any other at another head refuses `kukulu-begun-stale` with the one line that clears it. A vessel down at the start (a Ctrl+C at the
  *                   light) shows its halves to the vessel the raise stands, and the rite lands them there
@@ -666,20 +667,23 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
   };
   /**
    * THE LANDING THAT NEVER STARTED (kukulu-supersedes-a-stale-begin), read off the standing vessel, never off a clock: the
-   * revision label of the image it stands from (`prior`) and the digest it runs (`ranImage`, read before any raise). A half whose
-   * head that label names, or whose image that digest names, saw its landing start (the new vessel stood): true. Evidence that
-   * names another revision or another image, and neither of the half's: false, the begin spent nothing a landing ever used. No
-   * evidence at all (no label, no digest): null, and unknown never authorizes a set-down.
+   * digest the vessel runs (`ranImage`, the running container's own image, read before any raise) and the revision label of the
+   * image the tag names (`prior`). THE DIGEST DECIDES where it reads beside the half's bound image: the vessel runs that image,
+   * true (the new vessel stood); it runs another, false (the begin spent nothing a landing ever used). The label reads only where
+   * the digest cannot decide, since it names the TAG, not the vessel: a stage that built and never raised moves the tag onto the
+   * stale begin's own image, whose label names the stale head while the vessel still runs the image before it (restand-files-
+   * smooth, live at 6a5f6ca8b: the tag named 780870219's image while the vessel ran f2606b2e1's). Then a label naming the half's
+   * head reads true, another false. No evidence at all (no digest, no label): null, and unknown never authorizes a set-down.
    */
   let standingRan: string | null | undefined;
   const landingStarted = async (p: PendingBegin): Promise<boolean | null> => {
     if (standingRan === undefined) standingRan = ports.ranImage ? await ports.ranImage().catch(() => null) : null;
-    const label = prior !== null && prior.revision !== "unlabeled" && prior.revision.trim().length >= 7 ? prior.revision.trim() : null;
     const ran = standingRan !== null && standingRan !== "" ? standingRan : null;
     const bound = p.image !== undefined && p.image !== "" ? p.image : null;
-    const sameRev = label !== null && (label.startsWith(p.head) || p.head.startsWith(label));
-    if (sameRev || (ran !== null && bound !== null && ran === bound)) return true;
-    return label !== null || (ran !== null && bound !== null) ? false : null;
+    if (ran !== null && bound !== null) return ran === bound;
+    const label = prior !== null && prior.revision !== "unlabeled" && prior.revision.trim().length >= 7 ? prior.revision.trim() : null;
+    if (label === null) return null;
+    return label.startsWith(p.head) || p.head.startsWith(label);
   };
   /**
    * A STALE BEGIN THIS RUN SUPERSEDES, where the debt allows it: every pending half began at another head than this run raises,
@@ -842,7 +846,7 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
     const asSupersedes = superseding.length === 0 ? {} : { supersedes: superseding.map((p) => p.tessera).join(",") };
     if (superseding.length > 0) {
       const at = [...new Set(superseding.map((p) => p.head.slice(0, 12)))].join(", ");
-      const stood = prior !== null && prior.revision !== "unlabeled" ? `revision ${prior.revision.slice(0, 12)}` : standingRan ? standingRan : "its prior image";
+      const stood = standingRan ? standingRan : prior !== null && prior.revision !== "unlabeled" ? `revision ${prior.revision.slice(0, 12)}` : "its prior image";
       ports.say(`kūkulu: this run supersedes the begin at ${at}, whose landing never started (the vessel still stands on ${stood}, not the head or image the begin bound): ${superseding.map((p) => `${p.face} tessera ${p.tessera}`).join(", ")}; the fresh begin at ${short} sets each down (it spends nothing more and records no par; conferre reads it abandoned) under the same lei`);
     }
     let begun = await ports.row("rite-begin", { rite: RITE_KUKULU, branch, head, ...asImage, ...asFace, ...asSupersedes });

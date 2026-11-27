@@ -952,6 +952,23 @@ describe("kukulu-survives-a-ctrl-c", () => {
     expect(label.calls).toContain(`rite-begin ${JSON.stringify({ rite: "kukulu", branch: "main", head: HEAD, image: IMAGE, supersedes: TESSERA })}`);
   });
 
+  it("RED (restand-files-smooth, live at 6a5f6ca8b): the tag names the stale begin's own image (its stage built and never raised, so `prior` reads the stale head's label) while the vessel runs the image before it: the running digest decides, the rite supersedes and says the vessel stands on the digest it runs, never the tag's revision", async () => {
+    const F2 = "sha256:" + "f2".repeat(32);
+    const f = standingFakes(read(BEGUN(OLD, D2)));
+    let raised = false;
+    const raise = f.ports.raise;
+    f.ports.raise = async (rev, keeper) => { raised = true; return raise(rev, keeper); };
+    // THE LIVE SHAPES: `docker image inspect <tag>` answers the stale head's label; `vessel-image` answers the running container's id.
+    f.ports.prior = async () => ({ revision: OLD, tag: "lares-surface:rev-bbbbbbbbbbbb" });
+    f.ports.ranImage = async () => (raised ? IMAGE : F2);
+    const out = await riteKukulu(f.ports, {});
+    expect(out).toMatchObject({ code: 0, data: { begun: true, landed: true, par: true, superseded: [{ face: "h0", tessera: TESSERA, head: OLD }] } });
+    expect(f.calls).toContain(`rite-begin ${JSON.stringify({ rite: "kukulu", branch: "main", head: HEAD, image: IMAGE, supersedes: TESSERA })}`);
+    const said = f.said.join("\n");
+    expect(said).toContain(`whose landing never started (the vessel still stands on ${F2}`);
+    expect(said).not.toMatch(/still stands on revision bbbbbbbbbbbb/);
+  });
+
   it("CONTROL (kukulu-supersedes-a-stale-begin): a begin whose landing started (the standing vessel runs the image the begin bound, or the revision it began at) still refuses `kukulu-begun-stale` with the hand's lines; so does a begin whose evidence reads nowhere (no prior read, no image read), and a half no lent face lands", async () => {
     const ran = standingFakes(read(BEGUN(OLD, D2)));
     ran.ports.prior = async () => ({ revision: "9".repeat(40), tag: "t" });
