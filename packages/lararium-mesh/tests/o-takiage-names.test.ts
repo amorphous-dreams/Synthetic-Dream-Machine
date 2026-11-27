@@ -38,6 +38,8 @@ const TOKENS: Record<string, string> = Object.fromEntries([
   ...["oracleTw", "oracleRel", "oracleReadFace"].map((t) => [t, OTHER] as const),
   // The seed law that checks each `<<~ oracle>>` throw (die == face == tail) names the live blind gauge itself.
   ["oracleCrossCheck", OTHER],
+  // The residue witness reads each hand-back's `<<~ oracle throw>>` sigil and its cross-check: the blind gauge, never the pointer.
+  ...["OracleReading", "oracleSigil"].map((t) => [t, OTHER] as const),
   // The I Ching cast: its core, its verb, its widget and its CLI door each name the divination sense.
   ...["ORACLE_THROW_STANDS", "OracleCast", "OracleAsking", "makeOracleCastReactor", "ActionOracleCast", "ActionOracleCastWidget", "oracleCastFor",
     "cmdOracle", "oraclePlan", "oracleCast"].map((t) => [t, DIVINATION] as const),

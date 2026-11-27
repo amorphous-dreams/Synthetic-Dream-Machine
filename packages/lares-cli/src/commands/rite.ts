@@ -58,8 +58,11 @@ export type RiteVerb = "rite-begin" | "rite-land" | "rite-abandon" | "rite-recei
 export interface RitePlan { readonly verb: RiteVerb; readonly args: Record<string, unknown> }
 
 /** The host sub-verb's two spellings. */
-/** Every verb the rite door answers (`kūkulu` reads as `kukulu`). */
-export const RITE_VERBS = ["kukulu", "keep", "keep-cut", "begin", "offer", "land", "receipts"] as const;
+/** Every verb the rite door answers (`kūkulu` reads as `kukulu`; `hoala`, hoʻāla, the host shim walks itself). */
+export const RITE_VERBS = ["hoala", "kukulu", "keep", "keep-cut", "begin", "offer", "land", "receipts"] as const;
+
+/** hoʻāla stands and wakes containers, so the host shim walks it (`tools/lares-container.sh rite hoala`); no CLI row answers it. */
+const HOALA_IN_THE_SHIM = "hoala runs in the host shim, which stands and wakes the keeper and the vessel: run `lares rite hoala` on the host with LAR_ROOT unset (the shim answers it), and it plans no single row";
 
 export const isKukulu = (word: string | undefined): boolean => word === "kukulu" || word === "kūkulu";
 
@@ -111,7 +114,7 @@ export function ritePlan(args: ParsedArgs): RitePlan {
     if (tessera === undefined) throw new RiteUsage("land names its tessera: --tessera <id> (a --head or --image must match what the half began at)");
     return { verb: "rite-land", args: { tessera, ...(head === undefined ? {} : { head }), ...image, ...face } };
   }
-  throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : act === "keep" || act === "keep-cut" ? `${act} runs several rows and plans no single one` : `name a sub-verb: ${RITE_VERBS.join(", ")}`);
+  throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : act === "hoala" ? HOALA_IN_THE_SHIM : act === "keep" || act === "keep-cut" ? `${act} runs several rows and plans no single one` : `name a sub-verb: ${RITE_VERBS.join(", ")}`);
 }
 
 /** What a `rite keep` line names, or a `RiteUsage` naming what it lacks. */

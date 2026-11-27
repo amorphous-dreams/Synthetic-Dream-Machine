@@ -3,7 +3,7 @@
  * e2e/outbound-bridge — the two seams between the daemon's live wiki and its disk, typed through the
  * daemon's own door.
  *
- *   B1  the OUTBOUND BRIDGE: `lares meme put <uri> --recipe default` lands in the daemon's `$tw.wiki`
+ *   B1  the OUTBOUND BRIDGE: `lares tiddler put <uri> --recipe default` lands in the daemon's `$tw.wiki`
  *       (the anchor). Nothing carries that wiki change to `IslandAdaptor.saveTiddler`, so the daemon's
  *       working store never receives it — `tiddler get --bag wikis/daemon/working --meme` answers not-found.
  *   B2  the DAEMON MIRROR: a record put DIRECTLY into `wikis/daemon/working` (`--bag`, the composite
@@ -73,7 +73,7 @@ describe.skipIf(gaps.length > 0)("★ the outbound bridge and the daemon mirror,
   });
 
   test("CONTROL: explicit `--recipe default` lands in the daemon wiki and reads it back", async () => {
-    const put = await lar.cli(["tiddler", "put", "--meme", uriOf(PATH_A), "--recipe", "default", "--file", join(scratch, "anchor.mem"), "--json"]);
+    const put = await lar.cli(["tiddler", "put", uriOf(PATH_A), "--recipe", "default", "--file", join(scratch, "anchor.mem"), "--json"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
     const got = await lar.cli(["tiddler", "get", uriOf(PATH_A), "--recipe", "default", "--meme", "--all", "--json"]);
     expect(got.json?.["ok"], said(got)).toBe(true);

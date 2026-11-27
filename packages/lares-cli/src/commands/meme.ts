@@ -1,11 +1,8 @@
 /**
  * `lares meme` — ONE FAMILY FOR EVERY LAW OVER MEME TEXT.
  *
- *   put <uri> (--recipe <slug> | --bag <slug>) [--base <hash>] [--file <path>]
- *   patch <uri> (--recipe <slug> | --bag <slug>) --slot '#/x' (--append <file> [--base <hash>] | --replace <file> --base <hash>)   (the public door: `tiddler put --meme --slot … --append <file> | --text|--file`)
- *                                                 — one slot's body through the put's own gate, resealed
- *   list (--recipe <slug> | --bag <slug>) [--tree]
- *   delete <uri> (--recipe <slug> | --bag <slug>) [--if-match <hash>]
+ *   (a family's writes ride the plain tiddler door: `tiddler put <uri> --file <path>` lands the whole carrier, `tiddler put <uri>
+ *    --slot '#/x' --text|--file|--append` one slot, `tiddler delete <uri> --family` the family; `tiddler get --meme [--tree]` lists)
  *   normalize <file.mem ...> [--grammar]
  *   check <file.mem ...> [--gradient | --edges | --grammar]
  *   project <file.mem> --to md [--out <path>]
@@ -21,10 +18,9 @@
  *
  * A VERB DECLARES ITS SEAT. `normalize` · `check` · `project --to md` over a file run LOCAL — they open a
  * path, read its bytes, and (normalize, project) write bytes back: no daemon, no store, no cap gate, no
- * effect record. The offline re-stamp of a stale block check keeps working with no socket. `put` · `list`
- * · `delete` · `project` over a `lar:` uri or to any rendered target ride the daemon verb (`meme-put` ·
- * `meme-list` · `meme-delete` · `meme-project`) — the one placement function, the one removal, the one listing
- * and the island's own renderers, reached from a terminal. A READ rides the one door: `lares tiddler get <uri>
+ * effect record. The offline re-stamp of a stale block check keeps working with no socket. `project` over a
+ * `lar:` uri or to any rendered target rides the daemon verb (`meme-project`): the island's own renderers, reached
+ * from a terminal; the family listing (`tiddler get --meme`) rides `meme-list`. A READ rides the one door: `lares tiddler get <uri>
  * --meme` answers the carrier on a gradient (whole within a page, its has-stack past it), and `--meme --all` the
  * whole carrier, paged on slot boundaries.
  *
@@ -35,12 +31,9 @@
  *   · --recipe <slug>  — an edit AS that wiki: its designated writable bag, write-then-sync.
  *   · --bag <slug>     — a residency placement into that bag; a bag the island cannot write refuses.
  *   · --realm <id>     — beside --bag: the realm whose registration that bag resolves through; it reads that realm alone.
- *   · --base <hash>    — (put) the canonical hash the writer read (`tiddler get --meme` reports it); records that
- *                        moved past it read as a CONFLICT and nothing lands.
- *   · --if-match <hash>— (delete) the same base, spelled as the route's header: stale → CONFLICT, nothing moves.
- *   · --tree           — (list) nest each root's slot tree beneath it; roots + canonical hash alone otherwise.
+ *   · --tree           — (the listing) nest each root's slot tree beneath it; roots + canonical hash alone otherwise.
  *
- * `list` names EVERY root its seat holds. `--bag` lists that one bag's records; `--recipe <slug>` lists the
+ * The listing names EVERY root its seat holds. `--bag` lists that one bag's records; `--recipe <slug>` lists the
  * roots the wiki's whole stack resolves, as `tiddler get --recipe` reads them (a tombstone in the working layer
  * shadows canon, so a carrier the wiki removed lists nowhere), each row naming the bag that answered.
  *
@@ -216,18 +209,6 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
     });
     return exitFor(f.code);
   }
-}
-
-/** The public family spellings now enter through the tiddler door; keep the handlers for that door. */
-export async function cmdMemeSurface(args: ParsedArgs): Promise<number> {
-  const sub = args.positional[0];
-  if (sub === "put" || sub === "patch" || sub === "list" || sub === "delete") {
-    const moved = sub === "list" ? "tiddler get --meme" : `tiddler ${sub === "patch" ? "put" : sub} <uri> --meme`;
-    const message = `meme ${sub} moved to lares ${moved}`;
-    emit(args, { ok: false, error: { code: "usage", message }, human: () => console.error(message) });
-    return exitFor("usage");
-  }
-  return cmdMeme(args);
 }
 
 // ── the local laws: normalize · check ──────────────────────────────────────────────────────────

@@ -1,8 +1,9 @@
 /**
  * The host shims (lares-container.sh / .ps1) against a fake `docker` that records argv. The fake answers the two
  * questions the shim asks of a vessel: whether one runs (FAKE_RUNNING_ID) and what standing verdict the CLI reads
- * (FAKE_OBSERVE_OUTPUT: named in a followed verb's own exit code, and printed by `vessel stand --observe`); FAKE_PS_RC,
- * FAKE_EXEC_RC and FAKE_OBSERVE_RC make each of the three fail, and FAKE_STANDING_RC scripts the verb's exit. Nothing here starts
+ * (FAKE_OBSERVE_OUTPUT: named in a followed verb's own report, and printed by `vessel stand --observe`); FAKE_PS_RC,
+ * FAKE_EXEC_RC and FAKE_OBSERVE_RC make each of the three fail, FAKE_STANDING_REPORT scripts the report's line, and FAKE_OLD_IMAGE
+ * plays an image older than the report (it writes none). Nothing here starts
  * a container: the live proof (found, up, vessel read, ingest, restart, both holder refusals) runs against the
  * real image. This pins the shim's own contract: the verb routing, the refusals by name, the read-only capture
  * binds, and that no argv ever carries the docker socket.
@@ -80,7 +81,7 @@ process.exit(code);
 `);
 }
 
-async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false, rawStanding = false, hostInput, input, refuseInput = false, hostName = "host.mem", hostSibling, fifo = false, hostCwd = false, origin = false, sync, readFiles = [] } = {}) {
+async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false, hostInput, input, refuseInput = false, hostName = "host.mem", hostSibling, fifo = false, hostCwd = false, origin = false, sync, readFiles = [] } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
     const log = join(dir, "calls.log");
@@ -121,9 +122,26 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       // THE PŪLAMA'S STATUS (lit, the admitted set): lit and admitting nothing unless a test scripts another answer; a light
       // marks the run, and a status after it answers FAKE_PULAMA_STATUS_AFTER where a test names one.
       `case " $* " in *"pulama-main.js light"*) : > "$CALL_LOG.lit"; exit "\${FAKE_EXEC_RC:-0}";; esac\n` +
+      // THE HOʻĀLA LEI at the keeper: the stringing (attached), the unstring, and the waking a test scripts (FAKE_HOALA_ANSWER); a
+      // waking that answers `woke` marks the run lit, as a light does, so a status after it answers FAKE_PULAMA_STATUS_AFTER.
+      `case " $* " in *"pulama-main.js hoala-string"*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '[pulama] a hoʻāla lei reads its route from a real terminal alone'; exit 1;; esac; printf '%s\\n' "\${FAKE_HOALA_STRUNG:-{\\"op\\":\\"hoala-string\\",\\"reading\\":\\"strung\\",\\"returns\\":3}}"; exit "\${FAKE_HOALA_STRING_RC:-0}";; esac\n` +
+      `case " $* " in *"pulama-main.js hoala-unstring"*) printf '%s\\n' '{"op":"hoala-unstring","reading":"unstrung"}'; exit 0;; esac\n` +
+      // THE LEI'S ADMIT (a lit keeper spends a return to admit the reported image): a test scripts its answer; `admitted` marks the run.
+      `case " $* " in *"pulama-main.js hoala-admit"*) printf '%s\\n' "\${FAKE_HOALA_ADMIT:-{\\"op\\":\\"hoala-admit\\",\\"reading\\":\\"hoala-lei-absent\\"}}"; case "\${FAKE_HOALA_ADMIT:-}" in *'"admitted"'*) : > "$CALL_LOG.admitted"; exit 0;; esac; exit 1;; esac\n` +
+      // A KEEPER STEPPED BACK TO ITS PRIOR IMAGE marks the run; FAKE_HOALA_FAILS_UNTIL_RECREATE names the reading the new code's waking
+      // refuses by until then (the new keeper code failing its own check), after which FAKE_HOALA_ANSWER answers.
+      `case " $* " in *" up -d --force-recreate pulama "*) : > "$CALL_LOG.recreated"; [ -z "\${LARES_IMAGE:-}" ] || printf 'LARES_IMAGE=%s\\n' "\${LARES_IMAGE}" >> "$CALL_LOG"; exit 0;; esac\n` +
+      `case " $* " in *"pulama-main.js hoala "*) if [ -n "\${FAKE_HOALA_FAILS_UNTIL_RECREATE:-}" ] && [ ! -e "$CALL_LOG.recreated" ]; then printf '{"op":"hoala","reading":"%s"}\\n' "\${FAKE_HOALA_FAILS_UNTIL_RECREATE}"; exit 1; fi;; esac\n` +
+      `case " $* " in *"pulama-main.js hoala"*) printf '%s\\n' "\${FAKE_HOALA_ANSWER:-{\\"op\\":\\"hoala\\",\\"reading\\":\\"hoala-lei-absent\\"}}"; case "\${FAKE_HOALA_ANSWER:-}" in *'"woke"'*) : > "$CALL_LOG.lit"; exit 0;; esac; exit 1;; esac\n` +
+      // THE VESSEL'S UNLOCK (the keeper's dial): it opens where a test lets it (FAKE_UNLOCK_NEEDS_LIT: only once the keeper lit in this
+      // run), and an unlock that landed marks the run, so a custody read after it answers FAKE_CUSTODY_AFTER where a test names one.
+      `case " $* " in *" vault unlock "*|*" vault unlock") if [ -n "\${FAKE_UNLOCK_NEEDS_LIT:-}" ] && [ ! -e "$CALL_LOG.lit" ]; then exit 1; fi; rc="\${FAKE_UNLOCK_RC:-\${FAKE_EXEC_RC:-0}}"; [ "$rc" = 0 ] && : > "$CALL_LOG.unlocked"; exit "$rc";; esac\n` +
       `case " $* " in *"pulama-main.js keeper-offer"*) printf '%s\\n' '{"op":"keeper-offer","reading":"offered","to":"${"ab".repeat(32)}"}'; exit 0;; esac\n` +
       `case " $* " in *"pulama-main.js keeper-vest"*) printf '%s\\n' "\${FAKE_VEST_ANSWER:-}"; exit "\${FAKE_VEST_RC:-0}";; esac\n` +
       `case " $* " in *"pulama-main.js keeper-receive"*) printf '%s\\n' "\${FAKE_RECEIVE_ANSWER:-{\\"reading\\":\\"landed\\"}}"; exit "\${FAKE_RECEIVE_RC:-0}";; esac\n` +
+      // A HAND'S ADMIT marks the run, and a status after it answers FAKE_PULAMA_STATUS_ADMITTED where a test names one.
+      `case " $* " in *"pulama-main.js admit"*) : > "$CALL_LOG.admitted"; exit "\${FAKE_EXEC_RC:-0}";; esac\n` +
+      `case " $* " in *"pulama-main.js status"*) if [ -e "$CALL_LOG.admitted" ] && [ -n "\${FAKE_PULAMA_STATUS_ADMITTED:-}" ]; then printf '%s\\n' "\${FAKE_PULAMA_STATUS_ADMITTED}"; exit 0; fi;; esac\n` +
       `case " $* " in *"pulama-main.js status"*) lit='{"op":"status","lit":true}'; if [ -e "$CALL_LOG.lit" ] && [ -n "\${FAKE_PULAMA_STATUS_AFTER:-}" ]; then printf '%s\\n' "\${FAKE_PULAMA_STATUS_AFTER}"; else printf '%s\\n' "\${FAKE_PULAMA_STATUS-$lit}"; fi; exit 0;; esac\n` +
       // THE KUKULU LEI on a branch, as the standing vessel's `lei show --json` answers it (the kūkulu reading reads it).
       `case " $* " in *" lei show --rite kukulu "*) printf '%s\\n' "\${FAKE_LEI_SHOW:-}"; exit 0;; esac\n` +
@@ -141,7 +159,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" vessel census --json "*) printf '%s\\n' "\${FAKE_CENSUS_JSON:-}"; exit 0;; esac\n` +
       // After a stop (a down marks the run), the census answers FAKE_CENSUS_AFTER where a test names one: the new vessel's census.
       `case " $* " in *" vessel census "*) if [ -e "$CALL_LOG.down" ] && [ -n "\${FAKE_CENSUS_AFTER:-}" ]; then printf '%s\\n' "\${FAKE_CENSUS_AFTER}"; exit "\${FAKE_CENSUS_AFTER_RC:-0}"; fi; [ -z "\${FAKE_CENSUS_OUTPUT:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_OUTPUT}"; [ -z "\${FAKE_CENSUS_ERR:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_ERR}" >&2; exit "\${FAKE_CENSUS_RC:-0}";; esac\n` +
-      `case " $* " in *" vault status --json "*) printf '%s\\n' "\${FAKE_CUSTODY_OUTPUT:-}"; exit 0;; esac\n` +
+      `case " $* " in *" vault status --json "*) if [ -e "$CALL_LOG.unlocked" ] && [ -n "\${FAKE_CUSTODY_AFTER:-}" ]; then printf '%s\\n' "\${FAKE_CUSTODY_AFTER}"; else printf '%s\\n' "\${FAKE_CUSTODY_OUTPUT:-}"; fi; exit 0;; esac\n` +
       `case " $* " in *" ps -q lares "*) printf '%s' "\${FAKE_STOOD_ID:-\${FAKE_RUNNING_ID:-}}"; exit 0;; esac\n` +
       `case " $* " in *"inspect --format"*) printf '%s\\n' "\${FAKE_IMAGE_REV:-}"; exit 0;; esac\n` +
       // A build lists its context (the folder the override names), so a test reads what rode into the image.
@@ -155,13 +173,17 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" tiddler put "*" --file - "*|*" tiddler put "*" --file=- "*|*" tiddler put "*" --append - "*|*" tiddler put "*" --append=- "*|*" spirit "*" --file - "*) cat > "$CALL_LOG.stdin";; esac\n` +
       // A WEAR the vessel answers as a test scripts (its prose and its exit); unscripted, it answers as any exec does.
       `case " $* " in *" wear "*) if [ -n "\${FAKE_WEAR_OUT:-}" ]; then printf '%s\\n' "\${FAKE_WEAR_OUT}" >&2; exit "\${FAKE_WEAR_RC:-0}"; fi;; esac\n` +
-      // THE VERB'S OWN EXIT NAMES THE STANDING where the shim asked for it (`--standing-report`, the exec's last word), as the CLI's does: a verb
-      // that fails keeps its code; one that succeeds leaves by FAKE_STANDING_RC where a test scripts it (0 = a CLI whose exit
-      // names no verdict), else by the verdict the vessel's standing reads (FAKE_OBSERVE_OUTPUT: 90 attach, 91 restand with
-      // its reason on stderr, 92 none).
-      `case " $* " in *" exec "*) rc="\${FAKE_EXEC_RC:-0}"; if [ "$rc" = 0 ]; then case " $* " in *" --standing-report "*) ` +
-      `if [ -n "\${FAKE_STANDING_RC:-}" ]; then rc=$FAKE_STANDING_RC; elif [ "\${FAKE_OBSERVE_RC:-0}" != 0 ]; then rc=92; else case "\${FAKE_OBSERVE_OUTPUT:-}" in ` +
-      `*'"standing":{"act":"restand"'*) rc=91; printf 'lares: the standing asks for a re-stand: %s\\n' "$(printf '%s' "$FAKE_OBSERVE_OUTPUT" | sed -n 's/.*"reason":"\\([^"]*\\)".*/\\1/p')" >&2;; *'"standing":{"act":"attach"'*) rc=90;; *) rc=92;; esac; fi;; esac; fi; exit "$rc";; esac\n`);
+      // THE VERB'S OWN PROCESS REPORTS THE STANDING, asked by nothing (`standing-report.ts`): a tagged exec (`-e LARES_EXEC_TAG`) whose
+      // verb succeeded writes one line to the house's config bind, config/standing-report.<tag>, as the image's CLI does; the exit
+      // stays the verb's own. The line reads FAKE_STANDING_REPORT where a test scripts it, else the verdict the vessel's standing
+      // reads (FAKE_OBSERVE_OUTPUT: attach, restand <reason>, unread where none reads or the reading fails). FAKE_OLD_IMAGE plays an
+      // image older than the report: it writes none. Each report written logs `REPORT <line>`.
+      `case " $* " in *" exec -e LARES_EXEC_TAG "*) rc="\${FAKE_EXEC_RC:-0}"; if [ "$rc" = 0 ] && [ -z "\${FAKE_OLD_IMAGE:-}" ] && [ -n "\${LARES_EXEC_TAG:-}" ]; then ` +
+      `house="\${LARES_HOUSE:-}"; if [ -z "$house" ]; then ef=''; prev=''; for a in "$@"; do [ "$prev" = --env-file ] && ef=$a; prev=$a; done; [ -f "$ef" ] && house=$(sed -n 's/^[[:space:]]*LARES_HOUSE=//p' "$ef" | tail -n 1); fi; ` +
+      `if [ -n "\${FAKE_STANDING_REPORT:-}" ]; then line=$FAKE_STANDING_REPORT; elif [ "\${FAKE_OBSERVE_RC:-0}" != 0 ]; then line=unread; else case "\${FAKE_OBSERVE_OUTPUT:-}" in ` +
+      `*'"standing":{"act":"restand"'*) line="restand $(printf '%s' "$FAKE_OBSERVE_OUTPUT" | sed -n 's/.*"reason":"\\([^"]*\\)".*/\\1/p')";; *'"standing":{"act":"attach"'*) line=attach;; *) line=unread;; esac; fi; ` +
+      `if [ -n "$house" ]; then mkdir -p "$house/config" && printf '%s\\n' "$line" > "$house/config/standing-report.$LARES_EXEC_TAG" && printf 'REPORT %s\\n' "$line" >> "$CALL_LOG"; fi; fi; exit "$rc";; esac\n` +
+      `case " $* " in *" exec "*) exit "\${FAKE_EXEC_RC:-0}";; esac\n`);
     await chmod(join(dir, "docker"), 0o755);
     // The host's own build answers through pnpm: the fake names each call and fails where a test asks it to.
     await writeFile(join(dir, "pnpm"), `#!/bin/sh\nprintf 'PNPM %s\\n' "$*" >> "$CALL_LOG"\nexit "\${FAKE_PNPM_RC:-0}"\n`);
@@ -256,8 +278,6 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
     let received = null; try { received = await readFile(`${log}.stdin`); } catch {}
     if (SUITE_SEAT && !rawSeat && filled.CLAUDECODE === undefined && !viaHarnessShell) calls = calls.replaceAll(" -e CLAUDECODE", "");
-    // The shim's ask for the standing verdict rides each followed verb's exec; a case reads it only where it asks for the raw calls.
-    if (!rawStanding) calls = calls.replaceAll(" --standing-report", "");
     let worn = null; try { worn = (await readFile(join(house, "config", "last-worn-face"), "utf8")).trim(); } catch {}
     let seat = null; let seatMode = null; try { seat = JSON.parse(await readFile(join(house, "config", "keep-seat.json"), "utf8")); seatMode = (await stat(join(house, "config", "keep-seat.json"))).mode & 0o777; } catch {}
     const made = {};
@@ -266,7 +286,9 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     let vesselLog = null; try { vesselLog = await readFile(join(house, "run", "vessel-last.log"), "utf8"); } catch {}
     const read = {}; for (const rel of readFiles) { try { read[rel] = await readFile(join(house, rel), "utf8"); read[`${rel}:mode`] = (await stat(join(house, rel))).mode & 0o777; } catch {} }
     let keepOwed = false; try { await stat(join(house, "run", "keep-owed")); keepOwed = true; } catch {}
-    return { ...r, read, calls, received, dir, made, worn, seat, seatMode, cacheLeft, vesselLog, keepOwed, house };
+    // A standing report outlives no call: the shim reads and removes the one its route asked about, and drops every other.
+    let reportsLeft = []; try { reportsLeft = (await readdir(join(house, "config"))).filter((f) => f.startsWith("standing-report.")); } catch {}
+    return { ...r, read, calls, received, dir, made, worn, seat, seatMode, cacheLeft, vesselLog, keepOwed, reportsLeft, house };
   } finally { await rm(dir, { recursive: true, force: true }); }
 }
 
@@ -277,15 +299,15 @@ const haveScript = spawnSync("script", ["--version"]).status === 0;
 for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
   test(`${name}: a named family file crosses as exact stdin bytes and an absent file refuses before exec`, { skip }, async () => {
     const bytes = Buffer.from("first\n\nlast\n", "utf8");
-    const landed = await run(shim, ["tiddler", "put", "lar:///t/x", "--meme", "--recipe", "default", "--file", "@HOST_FILE@"],
+    const landed = await run(shim, ["tiddler", "put", "lar:///t/x", "--recipe", "default", "--file", "@HOST_FILE@"],
       { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" }, hostInput: bytes });
     assert.equal(landed.status, 0, landed.stderr);
     assert.deepEqual(landed.received, bytes);
     assert.match(landed.calls, /--file -/);
-    const piped = await run(shim, ["tiddler", "put", "lar:///t/x", "--meme", "--recipe", "default", "--file", "-"],
+    const piped = await run(shim, ["tiddler", "put", "lar:///t/x", "--recipe", "default", "--file", "-"],
       { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" }, input: bytes });
     assert.deepEqual(piped.received, bytes);
-    const absent = await run(shim, ["tiddler", "put", "lar:///t/x", "--meme", "--recipe", "default", "--file", "@HOST_FILE@"],
+    const absent = await run(shim, ["tiddler", "put", "lar:///t/x", "--recipe", "default", "--file", "@HOST_FILE@"],
       { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" } });
     assert.notEqual(absent.status, 0);
     assert.doesNotMatch(absent.calls, / node .* tiddler put /);
@@ -297,7 +319,7 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
     const bytes = Buffer.from("!! Open\n\n* a loop\n", "utf8");
     // The carry's verb reads from the built table (`spirit-words.ts`), so a rename of the word reaches this match too.
     const { COMPACTION_WORD } = await import("../packages/lares-cli/dist/src/spirit-words.js");
-    for (const wire of [["spirit", "ah", "lares-alpha", "--slot", "#/open"], ["spirit", COMPACTION_WORD, "lares-alpha"], ["spirit", "residue", "om-wright"]]) {
+    for (const wire of [["spirit", "ah", "lares-alpha", "--slot", "#/open"], ["spirit", COMPACTION_WORD, "lares-alpha"], ["spirit", "residue", "om-wright"], ["spirit", "handback", "om-wright#2"]]) {
       const r = await run(shim, [...wire, "--file", "@HOST_FILE@"], { env, hostInput: bytes });
       assert.equal(r.status, 0, `${wire.join(" ")}: ${r.stderr}`);
       assert.deepEqual(r.received, bytes, wire.join(" "));
@@ -313,7 +335,7 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
   const standing = { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" };
   const crlf = Buffer.from("one\r\ntwo\r\n\r\n", "utf8");
   test(`${name}: a slot write streams a named host file whole, by --file, --file= or --append`, { skip }, async () => {
-    const wire = ["tiddler", "put", "lar:///t/x", "--meme", "--recipe", "default", "--slot", "#/a", "--base", "sha256:1"];
+    const wire = ["tiddler", "put", "lar:///t/x", "--recipe", "default", "--slot", "#/a", "--base", "sha256:1"];
     for (const [flag, sink] of [[["--file", "@HOST_FILE@"], /--file -/], ...(name === "sh" ? [[["--file=@HOST_FILE@"], /--file=-/]] : []), [["--append", "@HOST_FILE@"], /--append -/]]) {
       const r = await run(shim, [...wire, ...flag], { env: standing, hostInput: crlf });
       assert.equal(r.status, 0, `${flag.join(" ")}: ${r.stderr}`);
@@ -335,7 +357,7 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
     assert.doesNotMatch(missing.calls, / node .* tiddler put /);
   });
   test(`${name}: a missing --append file, an empty source, a repeated source and a flag-shaped value refuse or pass as the CLI would`, { skip }, async () => {
-    const wire = ["tiddler", "put", "lar:///t/x", "--meme", "--recipe", "default", "--slot", "#/a", "--base", "sha256:1"];
+    const wire = ["tiddler", "put", "lar:///t/x", "--recipe", "default", "--slot", "#/a", "--base", "sha256:1"];
     const missing = await run(shim, [...wire, "--append", "@HOST_FILE@"], { env: standing });
     assert.notEqual(missing.status, 0);
     assert.doesNotMatch(missing.calls, / node .* tiddler put /);
@@ -387,12 +409,15 @@ test("sh: RED reset under an AI seat refuses hand-act-only by name before the te
   for (const argv of verbs) {
     const label = argv.join(" ");
     test(`sh: RED ai-restand-spends-the-lei: ${label} refuses an AI seat with no standing kukulu lei, names the cure, and runs nothing`, async () => {
-      for (const [lei, why] of [[undefined, /answered no reading/], [leiOf({ standing: false, refusal: "absent" }), /no standing kukulu lei on \S+ \(absent\)/], [leiOf({ standing: true, returnsLeft: 0 }), /no return left/]]) {
+      // A lei that answered no reading names its read (a lei may stand there whole); an absent or spent one names the hand's string.
+      const kui = /lares lei kui --rite kukulu --branch \S+ --returns <n> --all/, reread = new RegExp(`read it with \`lares lei show --rite kukulu --branch \\S+\`, then run \`${label}\` again`);
+      for (const [lei, why, cure] of [[undefined, /answered no reading, so nothing licenses it yet/, reread], [leiOf({ standing: false, refusal: "absent" }), /no standing kukulu lei on \S+ \(absent\)/, kui], [leiOf({ standing: true, returnsLeft: 0 }), /no return left/, kui]]) {
         const r = await run(SH, argv, { checkout: "clean", env: { ...AI, FAKE_RUNNING_ID: "cid", ...(lei ? { FAKE_LEI_SHOW: lei } : {}) }, rawSeat: true });
         assert.equal(r.status, 2, r.stderr);
         assert.match(r.stderr, new RegExp(`${label} refused to an AI seat`));
         assert.match(r.stderr, why);
-        assert.match(r.stderr, /lares lei kui --rite kukulu --branch \S+ --returns <n> --all/);
+        assert.match(r.stderr, cure);
+        if (cure === reread) assert.doesNotMatch(r.stderr, kui, "a lei unread asks no string");
         assert.equal(acted(r.calls), false, r.calls);
       }
     });
@@ -640,11 +665,12 @@ for (const [name, shim] of shims) {
     });
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.calls, /restart lares[\s\S]*up -d --wait lares/);
-    // The verb's own process says why (the CLI's line); the shim says what it does about it.
-    assert.match(r.stderr, /lares: the standing asks for a re-stand: face lit/);
-    assert.match(r.stderr, /lares-container: the standing requires a re-stand; restarting the vessel/);
-    // ONE CLI PER CALL: the verdict rode the verb's own exit, so no second CLI ran to read it.
+    // The verb's own process reported why (its report's reason); the shim names it and what it does about it.
+    assert.match(r.calls, /^REPORT restand face lit$/m);
+    assert.match(r.stderr, /lares-container: face lit; restarting the vessel/);
+    // ONE CLI PER CALL: the verdict rode the verb's own report, so no second CLI ran to read it, and the report outlived nothing.
     assert.doesNotMatch(r.calls, /--observe/);
+    assert.deepEqual(r.reportsLeft, []);
   });
 
   // A VESSEL STANDS HOLDING NO KEY. With no TTY the shim names the one command that opens it, after every act
@@ -803,51 +829,75 @@ for (const [name, shim] of shims) {
     assert.doesNotMatch(r.calls, /restart lares/);
   });
 
-  // ONE CLI PER CALL: the shim asks for the standing on the verb's own exec, as its argv's last word, and reads the verdict off its exit.
-  test(`${name}: a verb on a standing vessel runs one CLI: its exec carries the standing ask, and no observe follows`, async () => {
-    const r = await run(shim, ["tiddler", "get", "lar:///x", "--recipe", "default"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" }, rawStanding: true });
+  // ONE CLI PER CALL, AND NOTHING ASKS: the verb's own exec carries its argv alone, and the image's CLI REPORTS the standing as it
+  // leaves (config/standing-report.<tag>); the shim reads the report, removes it, and the exit stays the verb's own.
+  test(`${name}: RED a verb on a new image runs one CLI: its exec carries no standing word, the report reads attach, no observe follows, and no report outlives the call`, async () => {
+    const r = await run(shim, ["tiddler", "get", "lar:///x", "--recipe", "default"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(r.status, 0, r.stderr);
     const execs = r.calls.split("\n").filter((line) => / lares node \S+ tiddler get /.test(line));
     assert.equal(execs.length, 1, r.calls);
-    assert.match(execs[0], /exec -e LARES_EXEC_TAG (?:-e \S+ )*-T lares node \S+ tiddler get lar:\/\/\/x --recipe default --standing-report$/);
-    // The ask rides the call itself: no environment name carries it.
-    assert.doesNotMatch(r.calls, /LARES_STANDING_REPORT/);
+    assert.match(execs[0], /exec -e LARES_EXEC_TAG (?:-e \S+ )*-T lares node \S+ tiddler get lar:\/\/\/x --recipe default$/);
+    assert.doesNotMatch(r.calls, /--standing-report|LARES_STANDING_REPORT/);
+    assert.match(r.calls, /^REPORT attach$/m);
     assert.doesNotMatch(r.calls, /--observe/);
     assert.doesNotMatch(r.calls, /restart lares/);
+    assert.doesNotMatch(r.stdout + r.stderr, /standing-report|^attach$/m, "the report never reaches what the call prints");
+    assert.deepEqual(r.reportsLeft, []);
   });
 
-  test(`${name}: a verb whose exit names no verdict (92) exits non-zero and says so, with no second CLI`, async () => {
-    const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_STANDING_RC: "92" } });
+  // HOST/IMAGE SKEW BREAKS NO CALL: an image older than the report runs the same exec (no word it could refuse), writes nothing,
+  // and the shim takes one observe reading; its absence IS the capability signal.
+  test(`${name}: RED an old image (no report) still serves the call: the exec carries no word it could refuse, one observe reading follows, and a restand there still lifts`, async () => {
+    const steady = await run(shim, ["tiddler", "get", "lar:///x", "--recipe", "default"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OLD_IMAGE: "1" } });
+    assert.equal(steady.status, 0, steady.stderr);
+    assert.doesNotMatch(steady.calls, /--standing-report|^REPORT /m);
+    assert.equal((steady.calls.match(/vessel stand --observe --json/g) ?? []).length, 1, steady.calls);
+    assert.doesNotMatch(steady.calls, /restart lares/);
+    const lifted = await run(shim, ["persona", "new", "0", "--name", "ci-face"], {
+      env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OLD_IMAGE: "1", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
+    });
+    assert.equal(lifted.status, 0, lifted.stderr);
+    assert.equal((lifted.calls.match(/vessel stand --observe --json/g) ?? []).length, 1);
+    assert.match(lifted.calls, /vessel stand --observe --json[\s\S]*restart lares[\s\S]*up -d --wait lares/);
+    assert.match(lifted.stderr, /lares-container: face lit; restarting the vessel/);
+  });
+
+  test(`${name}: a verb whose report names no verdict (unread) exits non-zero and says so, with no second CLI`, async () => {
+    const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_STANDING_REPORT: "unread" } });
     assert.equal(r.status, 1);
     assert.match(r.stderr, /the standing check after it answered no verdict/);
     assert.doesNotMatch(r.calls, /--observe/);
     assert.doesNotMatch(r.calls, /restart lares/);
+    assert.deepEqual(r.reportsLeft, []);
   });
 
-  // THE SAFE ANSWER AS DEFAULT: a bare 0 names no verdict, so the shim never reads it as "no lift"; one reading follows.
-  test(`${name}: a verb that exits a bare 0 under the ask gets one reading after it, and a restand there still lifts`, async () => {
-    const r = await run(shim, ["persona", "new", "0", "--name", "ci-face"], {
-      env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_STANDING_RC: "0", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
-    });
-    assert.equal(r.status, 0, r.stderr);
-    assert.equal((r.calls.match(/vessel stand --observe --json/g) ?? []).length, 1);
-    assert.match(r.calls, /vessel stand --observe --json[\s\S]*restart lares[\s\S]*up -d --wait lares/);
-    assert.match(r.stderr, /lares-container: face lit; restarting the vessel/);
+  // THE EXIT STAYS THE VERB'S OWN: a verb that failed keeps its code (no report, no reading), and a verb that succeeded leaves 0
+  // through the shim whatever its report says, so no caller ever reads a changed code.
+  test(`${name}: RED the exit stays the verb's own: a failed verb keeps its code with no report, and a succeeded one reads 0 under every report`, async () => {
+    const failed = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "7" } });
+    assert.equal(failed.status, 7);
+    assert.doesNotMatch(failed.calls, /^REPORT |--observe/m);
+    for (const report of ["attach", "restand face lit"]) {
+      const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_STANDING_REPORT: report } });
+      assert.equal(r.status, 0, `${report}: ${r.stderr}`);
+    }
   });
 
-  test(`${name}: CONTROL a reading the shim takes for itself carries no standing ask`, async () => {
-    const read = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" }, rawStanding: true });
+  test(`${name}: CONTROL a reading the shim takes for itself carries no standing word, and leaves no report behind`, async () => {
+    const read = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(read.status, 0, read.stderr);
     assert.doesNotMatch(read.calls, /--standing-report/);
-    const observe = await run(shim, ["vessel", "stand", "--observe", "--json"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" }, rawStanding: true });
+    assert.deepEqual(read.reportsLeft, []);
+    const observe = await run(shim, ["vessel", "stand", "--observe", "--json"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(observe.status, 0, observe.stderr);
     assert.doesNotMatch(observe.calls, /--standing-report/);
+    assert.deepEqual(observe.reportsLeft, []);
   });
 
-  test(`${name}: a caller's ask budget rides the call's own argv to the vessel, ahead of the standing ask, and no environment name carries one`, async () => {
-    const r = await run(shim, ["tiddler", "get", "lar:///x", "--recipe", "default", "--ask-budget-ms=3500"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", LARES_ASK_BUDGET_MS: "9" }, rawStanding: true });
+  test(`${name}: a caller's ask budget rides the call's own argv to the vessel as its last word, and no environment name carries one`, async () => {
+    const r = await run(shim, ["tiddler", "get", "lar:///x", "--recipe", "default", "--ask-budget-ms=3500"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", LARES_ASK_BUDGET_MS: "9" } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /-T lares node \S+ tiddler get lar:\/\/\/x --recipe default --ask-budget-ms=3500 --standing-report$/m);
+    assert.match(r.calls, /-T lares node \S+ tiddler get lar:\/\/\/x --recipe default --ask-budget-ms=3500$/m);
     assert.doesNotMatch(r.calls, /LARES_ASK_BUDGET_MS/);
   });
 
@@ -914,8 +964,8 @@ for (const [name, shim] of shims) {
   });
 
   test(`${name}: a standing check that fails after a verb landed exits non-zero and says so`, async () => {
-    // The verb's exit named no verdict (a bare 0), so one reading follows it, and that reading fails.
-    const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_STANDING_RC: "0", FAKE_OBSERVE_RC: "1" } });
+    // The image reported nothing (one older than the report), so one reading follows the verb, and that reading fails.
+    const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OLD_IMAGE: "1", FAKE_OBSERVE_RC: "1" } });
     assert.equal(r.status, 1);
     assert.match(r.stderr, /the standing check after it answered no verdict/);
     assert.doesNotMatch(r.calls, /restart lares/);
@@ -923,8 +973,8 @@ for (const [name, shim] of shims) {
 
   test(`${name}: a standing check that exits zero and names no verdict never passes as "no lift"`, async () => {
     for (const answer of ["", "not json", '{"data":{}}', '{"data":{"standing":{"act":"dance"}}}']) {
-      // Both roads refuse alike: the verb's own exit (92 off the same unreadable standing), and the reading after a bare 0.
-      for (const road of [{}, { FAKE_STANDING_RC: "0" }]) {
+      // Both roads refuse alike: the verb's own report (unread off the same unreadable standing), and the reading after no report.
+      for (const road of [{}, { FAKE_OLD_IMAGE: "1" }]) {
         const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: answer, ...road } });
         assert.equal(r.status, 1, JSON.stringify(answer));
         assert.match(r.stderr, /answered no verdict/);
@@ -1925,9 +1975,16 @@ async function lone(shim, sig, standing) { return loneSignal(shim, sig, { standi
 
 // ── THE PŪLAMA (road L47e): the house's custody holder standing in its own container beside the vessel ──
 const PULAMA_ENV = "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=@HOUSE@/ws\nLARES_PULAMA=1\n";
+// A LIT KEEPER THAT ADMITTED THE IMAGE THE TAG HOLDS (sha256:abc123): the boot order's step 3 reads it standing admitted, so an
+// `up` with no vessel standing raises one on it (an unadmitted image steps back or stops; see the waking cases below).
+const ADMITTED_ABC = { FAKE_PULAMA_STATUS: '{"op":"status","lit":true,"admitted":["sha256:abc123"],"ended":[]}' };
+// A CODE CLOSURE by one repeated hex digit, and a house after a kūkulu's build: module scope, since the pūlama cases and the waking
+// cases below both read them.
+const CL = (h) => "sha256:" + h.repeat(64);
+const REBUILT = { FAKE_PULAMA_ID: "p1", FAKE_PULAMA_IMAGE: "sha256:old", FAKE_IMAGE_ID: "sha256:new", FAKE_IMAGE_REV_LABEL: "0123456789abcdef0123456789abcdef01234567", FAKE_CUSTODY_OUTPUT: '{"ok":true,"data":{"door":{"op":"custody","unlocked":true}}}', FAKE_CENSUS_JSON: '{"ok":true,"data":{"facesLit":[0,2],"worn":null}}' };
 for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
 test(`${name}: pulama-mode up stands the pūlama first, reports the image digest to it, then raises the vessel over its socket`, { skip }, async () => {
-  const r = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123" } });
+  const r = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123", ...ADMITTED_ABC } });
   assert.equal(r.status, 0, r.stderr);
   const lines = r.calls.split("\n");
   const pul = lines.findIndex((l) => /--profile pulama up -d --no-recreate pulama/.test(l));
@@ -1937,14 +1994,14 @@ test(`${name}: pulama-mode up stands the pūlama first, reports the image digest
 });
 test(`${name}: pulama-mode up reads the image's offered seed one-shot (no house mounted) and reports the whole frame; a read that prints nothing falls back to the bare digest`, { skip }, async () => {
   const frame = '{"digest":"sha256:abc123","seed":"seed bafkseed offered; the founding record reads at boot"}';
-  const r = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123", FAKE_SEED_FRAME: frame } });
+  const r = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123", ...ADMITTED_ABC, FAKE_SEED_FRAME: frame } });
   assert.equal(r.status, 0, r.stderr);
   const read = r.calls.split("\n").find((l) => / vessel floor seed /.test(l));
   assert.ok(read, r.calls);
   assert.match(read, /^run --rm -e LAR_ROOT=\/lar \S+ node packages\/lares-cli\/bin\/lares\.mjs vessel floor seed --genesis \/app\/genesis --image sha256:abc123$/);
   assert.doesNotMatch(read, / -v /, "the one-shot mounts no house");
   assert.ok(r.calls.includes(`pulama-main.js image ${frame}`), `the frame reaches the pūlama whole:\n${r.calls}`);
-  const bare = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123" } });
+  const bare = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123", ...ADMITTED_ABC } });
   assert.equal(bare.status, 0, bare.stderr);
   assert.match(bare.calls, /pulama-main\.js image sha256:abc123$/m);
 });
@@ -2153,22 +2210,22 @@ test(`${name}: pulama-follows-the-house: the env file's LARES_PULAMA=1 names its
   assert.equal(other.status, 0, other.stderr);
   assert.doesNotMatch(other.calls, /pulama|LAR_PULAMA_SOCKET|LAR_KUKULU_OFFER/);
   assert.match(other.stderr, /LARES_PULAMA=1 in .* names the pūlama of .*; this house \(.*-next\) holds its own custody/);
-  const own = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123" } });
+  const own = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123", ...ADMITTED_ABC } });
   assert.equal(own.status, 0, own.stderr);
   assert.match(own.calls, /pulama/);
-  const named = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { LARES_HOUSE: "@HOUSE@-next", LARES_PULAMA: "1", FAKE_IMAGE_ID: "sha256:abc123" } });
+  const named = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { LARES_HOUSE: "@HOUSE@-next", LARES_PULAMA: "1", FAKE_IMAGE_ID: "sha256:abc123", ...ADMITTED_ABC } });
   assert.equal(named.status, 0, named.stderr);
   assert.match(named.calls, /pulama/);
 });
 test(`${name}: kukulu-offer-path: pulama mode hands the vessel the offer file's path inside the config bind`, { skip }, async () => {
-    const r = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123" } });
+    const r = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123", ...ADMITTED_ABC } });
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.calls, /LAR_KUKULU_OFFER=\/lar\/config\/kukulu-offer\.json/);
   });
   // ONE COMPOSITION PER RAISE: the vessel reads config/last-worn-face through its config bind and wears that face from its
   // first composition where the pūlama forgot it, so the census reads it worn and the shim sends no second wear; no new env.
   test(`${name}: worn-face-rides-the-config-bind: pulama mode names no worn-face env, and a raise whose census reads the face worn sends no wear`, { skip }, async () => {
-    const r = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_IMAGE_ID: "sha256:abc123" } });
+    const r = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_IMAGE_ID: "sha256:abc123", ...ADMITTED_ABC } });
     assert.equal(r.status, 0, r.stderr);
     assert.doesNotMatch(r.calls, /LAR_WORN_FACE/);
     const worn = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: KEY_HELD, FAKE_CENSUS_JSON: WORN_JSON } });
@@ -2262,7 +2319,7 @@ test(`${name}: down-carries-its-options-beside-a-pulama: the vessel's stop takes
   assert.match(r.calls, /stop --timeout 5 lares/);
 });
 test(`${name}: pulama-skew-names-the-old-image: up and pulama status name a pūlama running another image than the one that stands, and point at pulama restand; one image names nothing`, { skip }, async () => {
-  const skewed = { FAKE_IMAGE_ID: "sha256:new", FAKE_PULAMA_ID: "p1", FAKE_PULAMA_IMAGE: "sha256:old" };
+  const skewed = { FAKE_IMAGE_ID: "sha256:new", FAKE_PULAMA_ID: "p1", FAKE_PULAMA_IMAGE: "sha256:old", FAKE_PULAMA_STATUS: '{"op":"status","lit":true,"admitted":["sha256:new"],"ended":[]}' };
   const up = await run(shim, ["up"], { envFile: PULAMA_ENV, env: skewed });
   assert.equal(up.status, 0, up.stderr);
   assert.match(up.calls, /inspect --format \{\{\.Image\}\} p1/);
@@ -2273,7 +2330,7 @@ test(`${name}: pulama-skew-names-the-old-image: up and pulama status name a pūl
   assert.match(status.stderr, /the pūlama runs image sha256:old, and lares-surface:local stands at sha256:new/);
   assert.match(status.calls, /pulama-main\.js status/);
   // L6: ONE LINE NAMES THE PŪLAMA'S IMAGE BESIDE THE VESSEL'S, level as well as skewed; it names no restand when level.
-  const level = { FAKE_IMAGE_ID: "sha256:new", FAKE_PULAMA_ID: "p1", FAKE_PULAMA_IMAGE: "sha256:new" };
+  const level = { FAKE_IMAGE_ID: "sha256:new", FAKE_PULAMA_ID: "p1", FAKE_PULAMA_IMAGE: "sha256:new", FAKE_PULAMA_STATUS: '{"op":"status","lit":true,"admitted":["sha256:new"],"ended":[]}' };
   for (const argv of [["up"], ["pulama", "status"]]) {
     const r = await run(shim, argv, { envFile: PULAMA_ENV, env: level });
     assert.equal(r.status, 0, r.stderr);
@@ -2296,7 +2353,7 @@ test(`${name}: pulama-skew-names-the-old-image: up and pulama status name a pūl
 });
 test(`${name}: pulama-skew-reads-the-closure: a pūlama on an older image whose code closure matches the new image's stands as lit, no restand named; a moved or unlabeled closure names the restand`, { skip }, async () => {
   const c = (h) => "sha256:" + h.repeat(64);
-  const same = { FAKE_IMAGE_ID: "sha256:new", FAKE_PULAMA_ID: "p1", FAKE_PULAMA_IMAGE: "sha256:old", FAKE_IMAGE_CLOSURE: c("a"), FAKE_PULAMA_CLOSURE: c("a") };
+  const same = { FAKE_IMAGE_ID: "sha256:new", FAKE_PULAMA_ID: "p1", FAKE_PULAMA_IMAGE: "sha256:old", FAKE_IMAGE_CLOSURE: c("a"), FAKE_PULAMA_CLOSURE: c("a"), FAKE_PULAMA_STATUS: '{"op":"status","lit":true,"admitted":["sha256:new"],"ended":[]}' };
   for (const argv of [["up"], ["pulama", "status"]]) {
     const r = await run(shim, argv, { envFile: PULAMA_ENV, env: same });
     assert.equal(r.status, 0, r.stderr);
@@ -2312,8 +2369,6 @@ test(`${name}: pulama-skew-reads-the-closure: a pūlama on an older image whose 
 // and lights it ATTACHED on this terminal in the same run; a lit pūlama on a closure that stands stays lit; the admit asks
 // the route only where no admission and no kūkulu offer carries the image; with no terminal, a light or an admit owed stops
 // the run before anything moves, and a day that owes neither flows through.
-const CL = (h) => "sha256:" + h.repeat(64);
-const REBUILT = { FAKE_PULAMA_ID: "p1", FAKE_PULAMA_IMAGE: "sha256:old", FAKE_IMAGE_ID: "sha256:new", FAKE_IMAGE_REV_LABEL: "0123456789abcdef0123456789abcdef01234567", FAKE_CUSTODY_OUTPUT: '{"ok":true,"data":{"door":{"op":"custody","unlocked":true}}}', FAKE_CENSUS_JSON: '{"ok":true,"data":{"facesLit":[0,2],"worn":null}}' };
 const OFFER = { "config/kukulu-offer.json": '{"lei":[],"unstrung":[],"vouch":[{"body":{"image":"sha256:new"}}]}\n' };
 const ADMITTED = '{"op":"status","lit":true,"admitted":["sha256:new"],"ended":[]}';
 test(`${name}: rebuild-lights-a-moved-closure-in-the-same-run: on a terminal, build, down, pulama restand, ONE proof (the light attached admits the image), up, unlock, wear, one closing line`, { skip: skip || !haveScript }, async () => {
@@ -2799,13 +2854,15 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
   }
   test(`${name}: plain put passes stdin and leaves a flag-shaped value alone`, { skip }, async () => {
     const piped = await run(shim, [...wire, "--file", "-"], { env, input: bytes });
+    // A run that never reached its exec (a refusal, a spawn timeout under load) names itself here, never as a bare null below.
+    assert.equal(piped.status, 0, `${piped.stderr}${piped.error ? ` (${piped.error.message})` : ""}${piped.signal ? ` (signal ${piped.signal})` : ""}`);
     assert.deepEqual(piped.received, bytes);
-    const value = await run(shim, [...wire, "--text", "--file", "--text", "--meme"], { env });
+    const value = await run(shim, [...wire, "--text", "--file", "--text", "--create"], { env });
     assert.equal(value.status, 0, value.stderr); assert.equal(value.received, null);
-    // `--text --meme` carries "--meme" as a value, so this put stays plain, and its `--append` streams the host file.
-    const memeValue = await run(shim, [...wire, "--text", "--meme", "--slot", "#/a", "--append", "@HOST_FILE@"], { env, hostInput: bytes });
-    assert.equal(memeValue.status, 0, memeValue.stderr); assert.deepEqual(memeValue.received, bytes);
-    assert.match(memeValue.calls, /--append -/);
+    // `--text --create` carries "--create" as a value, never as a flag, and the slot append beside it streams the host file.
+    const flagValue = await run(shim, [...wire, "--text", "--create", "--slot", "#/a", "--append", "@HOST_FILE@"], { env, hostInput: bytes });
+    assert.equal(flagValue.status, 0, flagValue.stderr); assert.deepEqual(flagValue.received, bytes);
+    assert.match(flagValue.calls, /--append -/);
     const get = await run(shim, ["tiddler", "get", "T", "--file", "@HOST_FILE@"], { env, hostInput: bytes });
     assert.equal(get.status, 0, get.stderr); assert.equal(get.received, null);
     assert.match(get.calls, /--file .*host\.mem/);
@@ -2875,7 +2932,7 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
 }
 test("ps1: equals sources refuse before a colon can select a different host file", { skip: !havePwsh }, async () => {
   for (const flag of ["--file", "--append"]) {
-    const r = await run(PS1, ["tiddler", "put", "T", "--meme", "--slot", "#/a", `${flag}=@HOST_FILE@`], { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" }, hostName: "a:b", hostInput: "named", hostSibling: "wrong" });
+    const r = await run(PS1, ["tiddler", "put", "T", "--slot", "#/a", `${flag}=@HOST_FILE@`], { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" }, hostName: "a:b", hostInput: "named", hostSibling: "wrong" });
     assert.notEqual(r.status, 0); assert.match(r.stderr, /SeparateSourceToken/); assert.equal(r.received, null); assert.equal(r.calls, "");
   }
 });
@@ -2884,7 +2941,7 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
   const env = { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" };
   test(`${name}: dash-prefixed source paths preserve the host file or refuse before docker`, { skip }, async () => {
     for (const flag of ["--file", "--append"]) {
-      for (const slot of [[], ["--meme", "--slot", "#/a"]]) {
+      for (const slot of [[], ["--slot", "#/a"]]) {
         const r = await run(shim, ["tiddler", "put", "T", ...slot, flag, "-x:y"], { env, hostCwd: true, hostName: "-x:y", hostInput: "right", hostSibling: "wrong" });
         if (name === "ps1") {
           assert.notEqual(r.status, 0); assert.match(r.stderr, /path starts with \.\//); assert.equal(r.calls, "");
@@ -2896,7 +2953,7 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
   });
   test(`${name}: equals stdin sources pass through`, { skip }, async () => {
     for (const flag of ["--file", "--append"]) {
-      const r = await run(shim, ["tiddler", "put", "T", "--meme", "--slot", "#/a", `${flag}=-`], { env, input: "stdin bytes" });
+      const r = await run(shim, ["tiddler", "put", "T", "--slot", "#/a", `${flag}=-`], { env, input: "stdin bytes" });
       assert.equal(r.status, 0, r.stderr); assert.deepEqual(r.received, Buffer.from("stdin bytes"));
     }
   });
@@ -2917,3 +2974,287 @@ test("the hand verbs the shims send to the pūlama stay the names it dispatches 
   assert.match(sh, /node "\$PULAMA_MAIN" name-successor-lei "/);
   assert.match(ps, /\$PulamaMain, 'name-successor'/);
 });
+
+// ── THE WAKING (`lares rite hoala`, hoʻāla) AND THE HOʻĀLA LEI: the boot order, keeper first ──
+// The sh shim alone carries these (the ps1 twin owes the same walk). A case that reads a HAND runs as one where a harness stands
+// above the suite only through `run`'s fresh pid namespace, so it skips where that namespace cannot stand.
+{
+  const shim = SH;
+  const handless = SUITE_SEAT && !HAVE_UNSHARE;
+  const DARK = '{"op":"status","lit":false}';
+  const litAdmitting = (...ids) => `{"op":"status","lit":true,"admitted":[${ids.map((i) => `"${i}"`).join(",")}],"ended":[]}`;
+  const LOCKED = '{"ok":true,"data":{"door":{"op":"custody","unlocked":false}}}';
+  const HELD = '{"ok":true,"data":{"door":{"op":"custody","unlocked":true}}}';
+  const WORN = '{"ok":true,"data":{"clean":true,"items":[],"unanswered":[],"facesLit":[0,2],"worn":2}}';
+  const WOKE = '{"op":"hoala","reading":"woke","n":1,"of":3,"left":2}';
+  /** After a host restart: the vessel came back attached and locked, the keeper came back dark, on the image it admitted. */
+  const RESTARTED = { FAKE_RUNNING_ID: "cid", FAKE_PULAMA_ID: "pid", FAKE_PULAMA_STATUS: DARK, FAKE_PULAMA_STATUS_AFTER: litAdmitting("sha256:feedface"), FAKE_CUSTODY_OUTPUT: LOCKED, FAKE_CUSTODY_AFTER: HELD, FAKE_UNLOCK_NEEDS_LIT: "1", FAKE_CENSUS_JSON: WORN };
+  const verdict = (r) => (r.stdout.match(/^lares-container: hoala: .*$/m) ?? [""])[0];
+
+  test("sh: RED hoala-wakes-by-the-lei: a restart with a hoʻāla lei standing -> the keeper lit with no route and no terminal, one return spent, the vessel opened by the keeper's dial, one verdict line", async () => {
+    const r = await run(shim, ["rite", "hoala"], { envFile: PULAMA_ENV, env: { ...RESTARTED, FAKE_HOALA_ANSWER: WOKE } });
+    assert.equal(r.status, 0, r.stderr);
+    const lines = r.calls.split("\n");
+    const keeper = lines.findIndex((l) => /--profile pulama up -d --no-recreate pulama/.test(l));
+    const wake = lines.findIndex((l) => /exec -T pulama node \S+pulama-main\.js hoala$/.test(l));
+    const dial = lines.findIndex((l) => /-T lares node \S+ vault unlock --all$/.test(l));
+    assert.ok(keeper >= 0 && wake > keeper && dial > wake, `order keeper, waking, dial:\n${r.calls}`);
+    assert.equal(lines.filter((l) => /pulama-main\.js hoala$/.test(l)).length, 1, "one return spent, by one waking");
+    assert.doesNotMatch(r.calls, /pulama-main\.js light/, "no route was asked");
+    assert.doesNotMatch(r.calls, / build |restart lares/, "the waking builds no image and restarts no vessel that opens");
+    assert.match(r.stderr, /the keeper stands lit again by the hoʻāla lei: one return spent, 2 left; it asked no route and left one receipt/);
+    assert.equal(verdict(r), "lares-container: hoala: found the keeper dark, the vessel locked; did lit the keeper by the hoʻāla lei (2 return(s) left), opened the vessel by the keeper's dial; now the keeper lit, the vessel unlocked, faces open: h0, h2, wearing h2");
+  });
+
+  test("sh: RED hoala-a-seat-spends-through-the-start-path: an AI seat's hoala wakes by the lei and dials, as a hand's does", async () => {
+    const r = await run(shim, ["rite", "hoala"], { envFile: PULAMA_ENV, rawSeat: true, env: { ...RESTARTED, FAKE_HOALA_ANSWER: WOKE, CLAUDECODE: "1" } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(verdict(r), /did lit the keeper by the hoʻāla lei \(2 return\(s\) left\), opened the vessel by the keeper's dial/);
+    assert.doesNotMatch(r.calls, /pulama-main\.js light/);
+  });
+
+  for (const [reading, why] of [["hoala-returns-spent", "the hoʻāla lei's returns lie spent"], ["hoala-lei-unstrung", "the hoʻāla lei stands unstrung"], ["hoala-lei-absent", "no hoʻāla lei stands"]]) {
+    test(`sh: RED hoala-stops-at-the-locked-floor (${reading}): with no terminal the keeper stays dark, no route reads, no try spends, and the verdict names the hand's one act and the re-string cure`, async () => {
+      const r = await run(shim, ["rite", "hoala"], { envFile: PULAMA_ENV, env: { ...RESTARTED, FAKE_HOALA_ANSWER: `{"op":"hoala","reading":"${reading}"}` } });
+      assert.equal(r.status, 1, r.stderr);
+      assert.doesNotMatch(r.calls, /pulama-main\.js light/, "no terminal: no route asked");
+      assert.doesNotMatch(r.calls, /vault unlock/, "a dark keeper draws no dial, so no unlock try spends");
+      assert.doesNotMatch(r.calls, /up -d --wait lares|restart lares/);
+      const v = verdict(r);
+      assert.ok(v.includes(`found the keeper dark; did nothing; now the keeper stays dark and the vessel at the locked floor: ${why}, and the keeper's light reads a hand's route on a terminal: run \`lares rite hoala\` on one`), v);
+      assert.match(v, /lares lei kui --rite hoala --returns <n>/);
+    });
+  }
+
+  // A MOVED KEEPER CODE STOPS NOTHING: the lei's return wakes it, and the prior closure stays the rollback.
+  const LEI_AT = (closure) => `{"op":"status","lit":false,"hoala":{"lei":"${"1e".repeat(32)}","returns":3,"left":3,"closure":"${closure}","faces":[0],"verified":false}}`;
+  test("sh: RED hoala-wakes-across-a-moved-closure: the keeper's code moved since the stringing + a lei with returns -> woke under the NEW closure, one return spent, no route, and the verdict names the prior closure as the rollback", async () => {
+    const r = await run(shim, ["rite", "hoala"], { envFile: PULAMA_ENV, env: { ...RESTARTED, FAKE_PULAMA_STATUS: LEI_AT(CL("a")), FAKE_PULAMA_CLOSURE: CL("b"), FAKE_HOALA_ANSWER: WOKE } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.calls.split("\n").filter((l) => /pulama-main\.js hoala$/.test(l)).length, 1, "one return spent");
+    assert.doesNotMatch(r.calls, /pulama-main\.js light|--force-recreate/, "no route asked and no step back: the new code woke");
+    assert.match(r.stderr, /the keeper woke under its NEW code closure sha256:bbbbbbbbbbbb by the lei; the prior closure sha256:aaaaaaaaaaaa stays the rollback \(its image keeps its revision tag: `lares rite kukulu --rollback`\)/);
+    assert.equal(verdict(r), "lares-container: hoala: found the keeper dark, the keeper's code moved, the vessel locked; did lit the keeper under its new code by the hoʻāla lei (2 return(s) left; rollback: the prior closure sha256:aaaaaaaaaaaa stays tagged, `lares rite kukulu --rollback`), opened the vessel by the keeper's dial; now the keeper lit, the vessel unlocked, faces open: h0, h2, wearing h2");
+  });
+  test("sh: RED hoala-steps-back-when-the-new-code-fails: the new keeper code fails its own waking -> the keeper steps back to the kept image of the prior closure and wakes there by the same lei, named in the verdict; no route asked. With no kept image of that closure, the verdict names the failure and the missing rollback", async () => {
+    const env = { ...RESTARTED, FAKE_PULAMA_STATUS: LEI_AT(CL("a")), FAKE_PULAMA_CLOSURE: CL("b"), FAKE_IMAGE_CLOSURE: CL("a"), FAKE_IMAGE_TAGS: "local\nrev-0123456789ab", FAKE_HOALA_FAILS_UNTIL_RECREATE: "hoala-slot-unsigned", FAKE_HOALA_ANSWER: WOKE };
+    const r = await run(shim, ["rite", "hoala"], { envFile: PULAMA_ENV, env });
+    assert.equal(r.status, 0, r.stderr);
+    const lines = r.calls.split("\n");
+    assert.equal(lines.filter((l) => /pulama-main\.js hoala$/.test(l)).length, 2, "the new code's waking, then the prior keeper's");
+    assert.equal(lines.filter((l) => /--profile pulama up -d --force-recreate pulama$/.test(l)).length, 1, r.calls);
+    // The fake logs each call, then the pūlama mode's LAR_KUKULU_OFFER export and every file the call names under the scratch
+    // dir (the env file, the compose file), then the recreate's own LARES_IMAGE, before any next call's line.
+    assert.match(r.calls, /--force-recreate pulama\n(?:(?!compose |LARES_IMAGE=)[^\n]*\n)*LARES_IMAGE=lares-surface:rev-0123456789ab\n/, "the prior keeper image stands for that recreate");
+    assert.doesNotMatch(r.calls, /pulama-main\.js light/);
+    assert.match(r.stderr, /the new keeper code failed its waking \(hoala-slot-unsigned\) and locked, keeping what rests; the keeper steps back to the prior closure sha256:aaaaaaaaaaaa on lares-surface:rev-0123456789ab/);
+    assert.equal(verdict(r), "lares-container: hoala: found the keeper dark, the new keeper code failing its waking, the vessel locked; did stepped the keeper back to the prior closure on lares-surface:rev-0123456789ab and lit it there by the hoʻāla lei (2 return(s) left), opened the vessel by the keeper's dial; now the keeper lit, the vessel unlocked, faces open: h0, h2, wearing h2");
+    const none = await run(shim, ["rite", "hoala"], { envFile: PULAMA_ENV, env: { ...env, FAKE_IMAGE_TAGS: "local" } });
+    assert.equal(none.status, 1, none.stderr);
+    assert.doesNotMatch(none.calls, /--force-recreate|pulama-main\.js light/);
+    assert.match(verdict(none), /the keeper stays dark and the vessel at the locked floor: the new keeper code failed its waking \(hoala-slot-unsigned\), and no kept image carries the prior keeper closure sha256:aaaaaaaaaaaa to step back to/);
+  });
+  test("sh: RED hoala-asks-the-route-once: a hand at a terminal with no lei -> ONE light (it admits under the same proof), then the dial; never a second prompt", { skip: !haveScript || handless }, async () => {
+    const r = await run(shim, ["rite", "hoala"], { envFile: PULAMA_ENV, tty: "", env: { ...RESTARTED } });
+    assert.equal(r.status, 0, r.stdout);
+    const lights = r.calls.split("\n").filter((l) => /pulama-main\.js light/.test(l));
+    assert.equal(lights.length, 1, r.calls);
+    assert.match(lights[0], /exec pulama node \S+pulama-main\.js light --admit$/);
+    assert.match(r.calls, /pulama-main\.js light --admit[\s\S]*-T lares node \S+ vault unlock --all/);
+    assert.match(r.stdout, /hoala: found the keeper dark, the vessel locked; did lit the keeper by your route, opened the vessel by the keeper's dial; now the keeper lit, the vessel unlocked/);
+  });
+
+  test("sh: RED hoala-on-a-house-awake: keeper lit and vessel unlocked -> a status line, and nothing lights, dials, stops or restarts", async () => {
+    const r = await run(shim, ["rite", "hoala"], { envFile: PULAMA_ENV, env: { FAKE_RUNNING_ID: "cid", FAKE_PULAMA_ID: "pid", FAKE_CUSTODY_OUTPUT: HELD, FAKE_CENSUS_JSON: WORN } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.doesNotMatch(r.calls, /pulama-main\.js (hoala|light)|vault unlock|restart lares|up -d --wait lares| stop | tag /);
+    assert.equal(verdict(r), "lares-container: hoala: found the house standing awake; did nothing; now the keeper lit, the vessel unlocked, faces open: h0, h2, wearing h2");
+  });
+
+  test("sh: RED hoala-a-fresh-boot-once: a vessel that stays shut under a lit keeper restarts once and dials again; a seat with no lei return stops and names the hand", { skip: handless }, async () => {
+    const SHUT = { FAKE_RUNNING_ID: "cid", FAKE_PULAMA_ID: "pid", FAKE_PULAMA_STATUS: litAdmitting("sha256:feedface"), FAKE_CUSTODY_OUTPUT: LOCKED, FAKE_UNLOCK_RC: "1" };
+    const r = await run(shim, ["rite", "hoala"], { envFile: PULAMA_ENV, env: SHUT });
+    assert.equal(r.status, 1, r.stderr);
+    assert.equal(r.calls.split("\n").filter((l) => / restart lares$/.test(l)).length, 1, r.calls);
+    assert.equal(r.calls.split("\n").filter((l) => /vault unlock --all$/.test(l)).length, 2, "one dial, one fresh boot, one more dial");
+    assert.match(verdict(r), /found the vessel locked; did nothing; now the keeper stands lit and the vessel stays at the locked floor after a fresh boot/);
+    const seat = await run(shim, ["rite", "hoala"], { envFile: PULAMA_ENV, rawSeat: true, env: { ...SHUT, CLAUDECODE: "1" } });
+    assert.equal(seat.status, 1, seat.stderr);
+    assert.doesNotMatch(seat.calls, / restart lares$/m);
+    assert.match(verdict(seat), /the house waits on a hand: an AI seat's hoʻāla lights and admits by the hoʻāla lei and dials, and it may restart the vessel only in a run where that lei spent a return; a hand runs `lares rite hoala` on a terminal/);
+  });
+
+  // THE IMAGE LAYER: a tag left on a build no gate passed.
+  const UNGATED = { FAKE_PULAMA_ID: "pid", FAKE_IMAGE_ID: "sha256:ungated", FAKE_KEPT_ID: "sha256:admitted0", FAKE_IMAGE_TAGS: "local\nrev-0123456789ab", FAKE_PULAMA_STATUS: litAdmitting("sha256:admitted0"), FAKE_CUSTODY_OUTPUT: HELD, FAKE_CENSUS_JSON: WORN };
+  test("sh: RED up-steps-back-to-the-admitted-image: with no vessel standing, a tag on an image the lit keeper never admitted steps back to the admitted image kept here, names both, and the ungated build keeps its revision tag", { skip: handless }, async () => {
+    const r = await run(shim, ["up"], { envFile: PULAMA_ENV, env: UNGATED });
+    assert.equal(r.status, 0, r.stderr);
+    const lines = r.calls.split("\n");
+    const kept = lines.findIndex((l) => /^tag lares-surface:local lares-surface:rev-unlabeled-ungated$/.test(l));
+    const back = lines.findIndex((l) => /^tag lares-surface:rev-0123456789ab lares-surface:local$/.test(l));
+    const up = lines.findIndex((l) => /up -d --wait lares/.test(l));
+    assert.ok(kept >= 0 && back > kept && up > back, `order keep the ungated tag, step back, stand:\n${r.calls}`);
+    assert.match(r.stderr, /lares-surface:local held sha256:ungated, an image the pūlama never admitted[\s\S]*the tag steps back to the admitted image lares-surface:rev-0123456789ab \(sha256:admitted0\), and the unadmitted build keeps its revision tag: `lares rite kukulu` raises it through its gate/);
+  });
+  test("sh: RED up-names-the-unadmitted-image: with no admitted image kept, up stops BEFORE a vessel starts and names the image and the two acts that admit one", { skip: handless }, async () => {
+    const r = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { ...UNGATED, FAKE_IMAGE_TAGS: "local", FAKE_KEPT_ID: "" } });
+    assert.equal(r.status, 2, r.stderr);
+    assert.doesNotMatch(r.calls, /up -d --wait lares/);
+    assert.match(r.stderr, /up stops before a vessel starts: lares-surface:local holds sha256:ungated, an image the pūlama never admitted and no kūkulu offer carries, and no admitted image stands kept here; admit it by hand on a terminal \(`lares pulama admit`\), or raise it through its gate \(`lares rite kukulu`\); no standing lei covers the admit \(no hoʻāla lei stands: lares lei kui --rite hoala --returns <n>\) \(nothing started\)/);
+    // CONTROL: an image the keeper admitted stands with no step and no stop.
+    const ok = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { ...UNGATED, FAKE_PULAMA_STATUS: litAdmitting("sha256:ungated") } });
+    assert.equal(ok.status, 0, ok.stderr);
+    assert.doesNotMatch(ok.calls, /^tag /m);
+    assert.match(ok.calls, /up -d --wait lares/);
+  });
+  test("sh: RED hoala-reads-the-image-layer: keeper lit, the tag on an unadmitted image, no admitted image kept -> the rite starts nothing and its verdict names the admit and the kūkulu", async () => {
+    const r = await run(shim, ["rite", "hoala"], { envFile: PULAMA_ENV, env: { ...UNGATED, FAKE_IMAGE_TAGS: "local", FAKE_KEPT_ID: "" } });
+    assert.equal(r.status, 1, r.stderr);
+    assert.doesNotMatch(r.calls, /up -d --wait lares/);
+    assert.match(verdict(r), /found the tag on an image the keeper never admitted; did nothing; now nothing started: lares-surface:local holds sha256:ungated, an image the pūlama never admitted[\s\S]*`lares pulama admit`[\s\S]*`lares rite kukulu`/);
+    // NO LEI COVERS IT, so the hand's admit gets named, with why the lei stood aside; a lei whose returns lie spent reads the same way.
+    assert.match(verdict(r), /no standing lei covers the admit \(no hoʻāla lei stands: lares lei kui --rite hoala --returns <n>\)/);
+    assert.equal(r.calls.split("\n").filter((l) => /pulama-main\.js hoala-admit$/.test(l)).length, 1, "the lei was asked once, and answered none stands");
+    assert.doesNotMatch(r.calls, /pulama-main\.js admit$/m, "no terminal: the hand's admit gets named, never run");
+    const spent = await run(shim, ["rite", "hoala"], { envFile: PULAMA_ENV, env: { ...UNGATED, FAKE_IMAGE_TAGS: "local", FAKE_KEPT_ID: "", FAKE_HOALA_ADMIT: '{"op":"hoala-admit","reading":"hoala-returns-spent"}' } });
+    assert.equal(spent.status, 1, spent.stderr);
+    assert.match(verdict(spent), /`lares pulama admit`[\s\S]*no standing lei covers the admit \(the hoʻāla lei's returns lie spent: lares lei kui --rite hoala --returns <n>\)/);
+  });
+  test("sh: RED hoala-admits-under-the-lei: a standing hoʻāla lei with a return left + an unadmitted image -> admitted under the lei with no prompt and no terminal, one return spent, the receipt named, the vessel opened; a seat's run does the same; the lei comes before any step back", async () => {
+    const ADMITS = '{"op":"hoala-admit","reading":"admitted","admitted":"sha256:ungated","n":1,"of":3,"left":2,"receipt":"r1"}';
+    const env = { ...UNGATED, FAKE_RUNNING_ID: "cid", FAKE_VESSEL_IMAGE: "sha256:ungated", FAKE_PULAMA_STATUS: litAdmitting(), FAKE_PULAMA_STATUS_ADMITTED: litAdmitting("sha256:ungated"), FAKE_CUSTODY_OUTPUT: LOCKED, FAKE_CUSTODY_AFTER: HELD, FAKE_HOALA_ADMIT: ADMITS };
+    for (const seat of [false, true]) {
+      const r = await run(shim, ["rite", "hoala"], { envFile: PULAMA_ENV, rawSeat: seat, env: { ...env, ...(seat ? { CLAUDECODE: "1" } : {}) } });
+      assert.equal(r.status, 0, r.stderr);
+      const lines = r.calls.split("\n");
+      assert.equal(lines.filter((l) => /exec -T pulama node \S+pulama-main\.js hoala-admit$/.test(l)).length, 1, "one return spent, by one admit");
+      assert.doesNotMatch(r.calls, /pulama-main\.js (admit|light)( |$)/m, "no hand was asked");
+      assert.doesNotMatch(r.calls, /^tag /m, "the lei admits the standing image; nothing steps back");
+      assert.doesNotMatch(r.calls, /restart lares| stop lares/, "the vessel that runs the image stays standing");
+      assert.ok(lines.findIndex((l) => /hoala-admit$/.test(l)) < lines.findIndex((l) => /vault unlock --all$/.test(l)), r.calls);
+      assert.match(r.stderr, /the pūlama admitted sha256:ungated under the hoʻāla lei: one return spent, 2 left; it asked no route and left one receipt/);
+      assert.equal(verdict(r), "lares-container: hoala: found the tag on an image the keeper never admitted, the vessel locked; did admitted it under the hoʻāla lei (2 return(s) left), opened the vessel by the keeper's dial; now the keeper lit, the vessel unlocked, faces open: h0, h2, wearing h2");
+    }
+    // `up` walks the same step: with no vessel standing, the lei admits the image the tag names and the vessel stands on it.
+    if (!handless) {
+      const up = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { ...UNGATED, FAKE_PULAMA_STATUS: litAdmitting(), FAKE_HOALA_ADMIT: ADMITS } });
+      assert.equal(up.status, 0, up.stderr);
+      assert.match(up.calls, /pulama-main\.js hoala-admit\n[\s\S]*up -d --wait lares/);
+      assert.doesNotMatch(up.calls, /^tag /m);
+    }
+  });
+  test("sh: RED hoala-admits-by-the-hand: keeper lit, the tag on an unadmitted image, none admitted kept, a hand at a terminal -> ONE admit (the keeper reads the route), then the vessel stands; a seat never reaches it", { skip: !haveScript || handless }, async () => {
+    const env = { ...UNGATED, FAKE_IMAGE_TAGS: "local", FAKE_KEPT_ID: "", FAKE_PULAMA_STATUS_ADMITTED: litAdmitting("sha256:ungated") };
+    const r = await run(shim, ["rite", "hoala"], { envFile: PULAMA_ENV, tty: "", env });
+    assert.equal(r.status, 0, r.stdout);
+    assert.equal(r.calls.split("\n").filter((l) => /exec pulama node \S+pulama-main\.js admit$/.test(l)).length, 1, r.calls);
+    assert.match(r.calls, /pulama-main\.js admit\n[\s\S]*up -d --wait lares/);
+    assert.match(r.stdout, /hoala: found the tag on an image the keeper never admitted, no vessel standing; did admitted the image by your route, stood the vessel; now the keeper lit, the vessel unlocked/);
+    const seat = await run(shim, ["rite", "hoala"], { envFile: PULAMA_ENV, rawSeat: true, env: { ...env, CLAUDECODE: "1" } });
+    assert.equal(seat.status, 1);
+    assert.doesNotMatch(seat.calls, /pulama-main\.js admit|up -d --wait lares/);
+  });
+  test("sh: RED kukulu-gate-refusal-leaves-the-tag-on-the-admitted-image: a red bench verdict steps the tag back to the admitted image before the refusal speaks", { skip: handless }, async () => {
+    const LEI = { ...REBUILT, FAKE_INTENT_SHOW: '{"devices":1}', FAKE_GH_RUN: "77:completed:success" };
+    const spend = (env) => run(shim, ["pulama", "name-successor", "--lei", "HEAD", "develop"], { envFile: PULAMA_ENV, checkout: "pulama", origin: true, env: { ...LEI, ...env } });
+    const label = await spend({ FAKE_IMAGE_CLOSURE: CL("b") });
+    const d = label.stderr.match(/reads (sha256:[0-9a-f]{64}) \(keeper-lei-image-differs\)/)?.[1];
+    assert.ok(d, label.stderr);
+    const red = await spend({ FAKE_IMAGE_CLOSURE: d, FAKE_BENCH: "red", FAKE_KEPT_ID: "sha256:admitted0", FAKE_IMAGE_TAGS: "local\nrev-0123456789ab", FAKE_PULAMA_STATUS: litAdmitting("sha256:admitted0") });
+    assert.notEqual(red.status, 0);
+    assert.match(red.calls, /^tag lares-surface:rev-0123456789ab lares-surface:local$/m);
+    assert.match(red.stderr.replace(/\s+/g, " "), /the tag steps back to the admitted image lares-surface:rev-0123456789ab[\s\S]*\(keeper-lei-bench-red\)/);
+    assert.doesNotMatch(red.calls, /name-successor-lei/);
+    assert.doesNotMatch(red.calls, /hoala-admit/, "a build whose gate just refused never admits under a lei: it steps back alone");
+  });
+
+  // THE UNLOCK NEVER SPENDS A TRY ON A SILENT KEEPER.
+  test("sh: RED unlock-over-a-dark-keeper-falls-through: `vault unlock` whose dial found no session wakes the keeper by the lei and dials once more; with no lei and no terminal it names the keeper's light, and no route enters the vessel", async () => {
+    const r = await run(shim, ["vault", "unlock", "--all"], { envFile: PULAMA_ENV, env: { ...RESTARTED, FAKE_HOALA_ANSWER: WOKE } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /vault unlock --all[\s\S]*pulama-main\.js hoala\n[\s\S]*vault unlock --all/);
+    assert.doesNotMatch(r.calls, /pulama-main\.js light/);
+    assert.doesNotMatch(r.calls, /exec (?:-e \S+ )*lares node \S+ vault unlock/, "the vessel's unlock runs detached under a pūlama: no prompt, so no route and no try");
+    const dark = await run(shim, ["vault", "unlock", "--all"], { envFile: PULAMA_ENV, env: { ...RESTARTED } });
+    assert.notEqual(dark.status, 0);
+    assert.equal(dark.calls.split("\n").filter((l) => /vault unlock --all$/.test(l)).length, 1, "one dial, no retry against a keeper still dark");
+    assert.match(dark.stderr, /the keeper stays dark: no hoʻāla lei stands, and the keeper's light reads a hand's route on a terminal: run `lares rite hoala` on one/);
+  });
+  test("sh: RED unlock-over-a-dark-keeper-asks-the-route-once: on a hand's terminal with no lei, the keeper's own light reads the route (one prompt), then the vessel dials again", { skip: !haveScript || handless }, async () => {
+    const r = await run(shim, ["vault", "unlock", "--all"], { envFile: PULAMA_ENV, tty: "", env: { ...RESTARTED } });
+    assert.equal(r.status, 0, r.stdout);
+    assert.equal(r.calls.split("\n").filter((l) => /pulama-main\.js light --admit$/.test(l)).length, 1, r.calls);
+    assert.match(r.calls, /vault unlock --all[\s\S]*pulama-main\.js light --admit[\s\S]*vault unlock --all/);
+  });
+
+  // THE HOʻĀLA LEI's own verbs: a hand's at a terminal; a seat strings, unstrings and reads none.
+  test("sh: RED hoala-lei-a-seat-string-refuses: an AI seat's kui, unstring and show of a hoʻāla lei each refuse hand-act-only and reach no keeper", async () => {
+    for (const act of [["kui", "--rite", "hoala", "--returns", "3"], ["unstring", "--rite", "hoala"], ["show", "--rite", "hoala"]]) {
+      const r = await run(shim, ["lei", ...act], { envFile: PULAMA_ENV, rawSeat: true, env: { FAKE_RUNNING_ID: "cid", FAKE_PULAMA_ID: "pid", CLAUDECODE: "1" } });
+      assert.equal(r.status, 2, r.stderr);
+      assert.match(r.stderr, /refused hand-act-only: an AI seat strings, unstrings and reads no hoʻāla lei; it spends a return through the start path alone \(`lares rite hoala`\)/);
+      assert.doesNotMatch(r.calls, /pulama-main\.js/);
+    }
+  });
+  test("sh: RED hoala-lei-strings-on-a-hand's-terminal: kui names the custody it moves, then the keeper reads the route attached; with no terminal, no count or no pūlama it refuses and reaches no keeper; unstring destroys with no route", { skip: !haveScript || handless }, async () => {
+    const env = { FAKE_RUNNING_ID: "cid", FAKE_PULAMA_ID: "pid" };
+    const r = await run(shim, ["lei", "kui", "--rite", "hoala", "--returns", "3"], { envFile: PULAMA_ENV, tty: "", env });
+    assert.equal(r.status, 0, r.stdout);
+    assert.match(r.calls, /--profile pulama exec --no-TTY=false pulama node \S+pulama-main\.js hoala-string 3$/m);
+    assert.doesNotMatch(r.calls, / lei terms | lei land /, "a hoʻāla lei rides the keeper's own records, never the vessel's swarm");
+    assert.match(r.stdout, /a hoʻāla lei rests the keys this keeper holds on THIS machine[\s\S]*Whoever reads BOTH[\s\S]*`lares lei unstring --rite hoala` destroys both at once/);
+    const noTty = await run(shim, ["lei", "kui", "--rite", "hoala", "--returns", "3"], { envFile: PULAMA_ENV, env });
+    assert.equal(noTty.status, 2);
+    assert.match(noTty.stderr, /lei kui --rite hoala reads your route on a terminal; run it on one \(nothing strung\)/);
+    assert.doesNotMatch(noTty.calls, /pulama-main\.js/);
+    const noCount = await run(shim, ["lei", "kui", "--rite", "hoala"], { envFile: PULAMA_ENV, tty: "", env });
+    assert.match(noCount.stdout, /a hoʻāla lei names its returns, a count of at least one: lares lei kui --rite hoala --returns <n> \(nothing strung\)/);
+    assert.doesNotMatch(noCount.calls, /hoala-string/);
+    const noKeeper = await run(shim, ["lei", "kui", "--rite", "hoala", "--returns", "3"], { tty: "", env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "@HOUSE@/ws", FAKE_RUNNING_ID: "cid" } });
+    assert.match(noKeeper.stdout, /a hoʻāla lei wakes a pūlama, and this house holds its own custody/);
+    const un = await run(shim, ["lei", "unstring", "--rite", "hoala"], { envFile: PULAMA_ENV, tty: "", env });
+    assert.equal(un.status, 0, un.stdout);
+    assert.match(un.calls, /exec -T pulama node \S+pulama-main\.js hoala-unstring$/m);
+  });
+
+  // THE DOWN ASKS ONLY OVER WHAT A STOP WOULD DROP.
+  const VESSEL = { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "@HOUSE@/ws", FAKE_RUNNING_ID: "cid" };
+  const stopped = (calls) => /(^| )(down --remove-orphans|stop lares)( |$)/m.test(calls);
+  const SINCE_BOOT = "census: clean — the vessel stood locked since it booted: no key opened in this life, so no act wrote, no save waits in memory and no carrier or shore owes a write";
+  test("sh: RED down-locked-since-boot-asks-nothing: a vessel that stood locked since it booted stops with no prompt, one line naming why, and its keep skips by name instead of failing", async () => {
+    const cliDir = await mkdtemp(join(tmpdir(), "lares-keep-cli-"));
+    try {
+      const cli = join(cliDir, "lares"), ran = join(cliDir, "ran");
+      await writeFile(cli, `#!/bin/sh\n: > "${ran}"\nexit 1\n`); await chmod(cli, 0o755);
+      const r = await run(shim, ["down"], { env: { ...VESSEL, FAKE_CENSUS_OUTPUT: SINCE_BOOT, FAKE_CUSTODY_OUTPUT: LOCKED, LARES_KEEP_WORKSPACE: "house-backup", LARES_HOST_CLI: cli } });
+      assert.equal(r.status, 0, r.stderr);
+      assert.equal(stopped(r.calls), true, r.calls);
+      assert.doesNotMatch(r.stderr, /accept-loss|refuses a silent stop/);
+      assert.match(r.stderr, /down asks nothing: the vessel stood locked since it booted, so no act wrote and nothing waits in memory to drop/);
+      assert.match(r.stderr, /the keep skips a locked vessel/);
+      await assert.rejects(stat(ran), "the keep never ran over a vessel read locked");
+    } finally { await rm(cliDir, { recursive: true, force: true }); }
+  });
+  test("sh: RED down-with-held-saves-lists-them: a census naming held saves refuses a silent stop, lists each item with its count of saves, and stops only on the typed word", { skip: !haveScript }, async () => {
+    const ITEMS = "held-save  save-unbooked  doc aaaa1111  3 save(s) in memory  bag (none mapped)\nheld-save  save-unsealed  doc bbbb2222  1 save(s) in memory  bag wiki:sdm";
+    const env = { ...VESSEL, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_ERR: "census: 2 item(s) rest nowhere yet; a stop now drops them", FAKE_CENSUS_RC: "3", FAKE_CUSTODY_OUTPUT: LOCKED };
+    const r = await run(shim, ["down"], { env });
+    assert.equal(r.status, 2);
+    assert.equal(stopped(r.calls), false, r.calls);
+    assert.match(r.stderr, /the census names content that rests nowhere yet, and a stop now drops it:\n {2}held-save {2}save-unbooked {2}doc aaaa1111 {2}3 save\(s\) in memory[\s\S]*\n {2}held-save {2}save-unsealed {2}doc bbbb2222 {2}1 save\(s\) in memory/);
+    assert.match(r.stderr, /the census names held saves alone \(2 documents\)/);
+    const typed = await run(shim, ["down"], { env, tty: "accept-loss\n" });
+    assert.equal(stopped(typed.calls), true, typed.calls);
+  });
+  test("sh: RED down-over-an-unread-census-asks: a locked vessel whose key opened in this life, and a census that cannot answer, each read UNREAD and ask; neither assumes a loss or a clean stop", async () => {
+    const opened = await run(shim, ["down"], { env: { ...VESSEL, FAKE_CENSUS_RC: "2", FAKE_CENSUS_ERR: "census: vessel locked: run `lares vault unlock`, then down", FAKE_CUSTODY_OUTPUT: LOCKED } });
+    assert.equal(opened.status, 2);
+    assert.equal(stopped(opened.calls), false, opened.calls);
+    assert.match(opened.stderr, /what the locked vessel holds reads unread \(its key opened in this life, or its image predates the locked census\), so the stop asks/);
+    assert.match(opened.stderr, /type accept-loss below/);
+    const silent = await run(shim, ["down"], { env: { ...VESSEL, FAKE_CENSUS_RC: "1" } });
+    assert.equal(silent.status, 2);
+    assert.equal(stopped(silent.calls), false, silent.calls);
+    assert.match(silent.stderr, /the census could not answer \(the census exec ended with status 1\), so what a stop would drop reads unknown/);
+  });
+}

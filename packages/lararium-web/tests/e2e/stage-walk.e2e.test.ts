@@ -2,7 +2,7 @@
  * e2e/stage-walk — the stage walk's two halves as they stand (road `L4`, measured 2026-11-01): a staged hearth (a scratch
  * `LAR_ROOT`, founded and unlocked through the test door) and a real Chromium joined to its face through the fleet-join door.
  *
- *   S1 — the node half: a CLI `meme put --recipe default` lands in the daemon wiki's working layer, its carrier projects
+ *   S1 — the node half: a CLI `tiddler put --recipe default` lands in the daemon wiki's working layer, its carrier projects
  *        under `<root>/projections/faces/<pet name>/wiki/` (the face-bound daemon wiki the operator works in), and `tiddler get --recipe default --meme` reads the same bytes; the repo's tree takes no write.
  *        It doubles as the KNOWN POSITIVE for S3's disk instrument: a write under the root reads as a write.
  *   S2 — a fresh browser joins the hearth's face (offer → request → answer → land), crosses connected, and SUMMONS its own
@@ -274,7 +274,7 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     const file = join(scratch, "cli.txt");
     writeFileSync(file, "hello from the CLI\n");
     const repoBefore = filesUnder(join(REPO, "wikis")).length;
-    const put = await hearth!.cli(["tiddler", "put", "--meme", uri, "--recipe", "default", "--file", file, "--json"]);
+    const put = await hearth!.cli(["tiddler", "put", uri, "--recipe", "default", "--file", file, "--json"]);
     expect(put.code, `${put.stdout.slice(-400)}\n${put.stderr.slice(-400)}`).toBe(0);
     const carrier = draftPath("t.stage.walk/cli-put", ".txt");
     const deadline = performance.now() + 30_000;

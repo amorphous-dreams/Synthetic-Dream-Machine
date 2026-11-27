@@ -18,7 +18,8 @@ import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { VerbDispatcher, VerbTable } from "../src/verb-dispatcher.js";
 import { makeLocalAskBook } from "../src/daemon-behavior.js";
-import { makeMemePutReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeTiddlerPutReactor } from "../src/tiddler-verbs.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 
 type TiddlerFields = Record<string, unknown>;
@@ -120,7 +121,7 @@ const markOf = (rec: LarTiddlerRecord | null): unknown => {
 describe("the chore mark rests in the durable outcome", () => {
   test("RED: the local ask book names the chore mark of the exact act; CONTROL: other args name none", () => {
     const book = makeLocalAskBook() as Book;
-    const ask = { requestId: "r1", action: "meme-put", args: { x: 1 }, requestedBy: "me" };
+    const ask = { requestId: "r1", action: "tiddler-put", args: { x: 1 }, requestedBy: "me" };
     book.add({ ...ask, origin: "channel", chore: MARK } as never);
     expect(book.choreOf(ask)).toEqual(MARK);
     expect(book.choreOf({ ...ask, args: { x: 2 } })).toBeUndefined();
@@ -151,10 +152,10 @@ describe("the chore mark rests in the durable outcome", () => {
         recipeOf: async (slug) => (slug === "notes" || slug === "works" ? recipe(slug) : null),
         slotStore: async (slug, kind) => (kind === "working" ? stores.get(slug) ?? null : null),
       };
-      const s = await stand((r) => r.register("meme-put", makeMemePutReactor(opts)));
+      const s = await stand((r) => r.register("tiddler-put", makeTiddlerPutReactor(opts)));
       for (const slug of ["notes", "works"]) {
         const uri = `lar:///t/${slug}-page`;
-        const outcome = await s.place(`put-${slug}`, "meme-put", { uri, recipe: slug, text: meme(uri, "/a") }, MARK);
+        const outcome = await s.place(`put-${slug}`, "tiddler-put", { title: uri, bag: working(slug), text: meme(uri, "/a") }, MARK);
         expect(outcome?.tiddler["status"], slug).toBe("done");
         expect(markOf(outcome), slug).toEqual(MARK);
         const output = (JSON.parse(String(outcome?.tiddler["results"])) as Record<string, { output?: Record<string, unknown> }>)["summary"]?.output;

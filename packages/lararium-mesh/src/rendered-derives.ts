@@ -3,7 +3,7 @@
  *
  * A tiddler marked `projection: rendered` derives a live tiddler of its own: the island renders the source (list resolved,
  * transclusions filled) and the render stands as a record of its `render-type`, carrying `rendered-from: <source title>`.
- * ONLY THE RENDERER WRITES IT. A hand's direct door (the tiddler door, `meme put`) calls `renderedWriteFault` over each
+ * ONLY THE RENDERER WRITES IT. A hand's direct door (the tiddler door, over a wiki or a bag) calls `renderedWriteFault` over each
  * record it would land, and refuses `rendered-derives` where the title already stands as a render or the record would land
  * carrying `rendered-from`. The cure names the sources: edit them, and the render follows.
  *

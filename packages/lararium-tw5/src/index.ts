@@ -112,7 +112,7 @@ export type { BuildIslandRecipeInput, RecipeReadyBinding } from "./island-recipe
 export { composeCrossFaceView, composeFaceEngine, crossFaceViewSource, enginePool, faceEngines } from "./face-engine.js";
 export { composeWikiEngine, composeWikiEngineSource, wikiEngines } from "./wiki-engine.js";
 export type { WikiEngine, WikiEngineDeps, WikiEngineSource, WikiEngines } from "./wiki-engine.js";
-export { TW5_DOCS_BAG, isTw5Docs, isTw5DocsBag, tw5DocsRecords } from "./tw5-docs-library.js";
+export { TW5_DEV_BAG, TW5_DOCS_BAG, isTw5Docs, isTw5DocsBag, tw5DocsRecords, tw5LibraryStackStore } from "./tw5-docs-library.js";
 export type { CrossFaceViewGuard, CrossFaceViewSource, EnginePool, FaceEngine, FaceEngines, FaceEngineSource } from "./face-engine.js";
 export { placeVerb, patchVerb, removeVerb, writeOutcome, dispatchVerb } from "./verb-vm.js";
 export type { VerbPlacement } from "./verb-vm.js";
@@ -214,7 +214,7 @@ export type { CabalRealmVerbOptions, ResolveDaemonStore } from "./cabal-realm-ve
 // Verb-plane reactors (composite/repo-only — pono home is tw5, not node; both vessels hold them).
 export { makeInitWikiReactor, makeRetireWikiReactor, WikiRetireRefusal } from "./wiki-mint-handlers.js";
 export { makeDraftReactor, makePruneStaleReactor }    from "./wiki-draft-handlers.js";
-export { makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions } from "./meme-verbs.js";
+export { makeMemeGetReactor, makeMemeListReactor, makeMemeProjectReactor, memeVerbOptions } from "./meme-verbs.js";
 export { READ_PAGE_BYTES, READ_GRAINS, grainOf, hasLine, param, pagePlaneRows, tagTokens, carrierSlots, carrierSlotText, pageCarrier, memeGradient, slotHasLines, type ReadGrain, type GrainEcho, type CarrierSlot, type MemeGradient } from "./read-gradient.js";
 export type { MemeVerbOptions } from "./meme-verbs.js";
 // The tiddler door: every TiddlyWiki act over one record or one wiki's engine, on the anchor (wiki-surface-scout, lane 1).
@@ -230,7 +230,7 @@ export { projectMeme, projectCarrierText, projectTargetOf, recomposeMeme, wikiRe
 export type { ProjectTarget, ProjectRoute, MemeProjection } from "./meme-project.js";
 export type { LaresMemeFace, MemeCheck } from "./types/lares-globals.js";
 export { storeMemeSink, compositeMemeSink } from "./meme-sinks.js";
-export { makeAddBagReactor, makeRemoveBagReactor }    from "./wiki-compose-handlers.js";
+export { makeAddBagReactor, makeRemoveBagReactor, makeTrueFloorReactor } from "./wiki-compose-handlers.js";
 export type {
   WikiMintHandlerOptions, WikiRetireOptions, WikiShellPorts, WikiShellCounts, RetiredShellCarry, PruneStaleOptions, WikiComposeOptions, DraftHandlerOptions,
 } from "./wiki-handler-options.js";

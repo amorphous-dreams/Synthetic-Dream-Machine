@@ -92,7 +92,7 @@ test("★ retracting a kāpae that shadows nothing (a plain delete of a tombston
   expect(shadowWrite()).toBeNull();
 });
 
-test("★ a meme delete over nothing beneath raises no tombstone and no .kapae: the sink retracts, the carrier leaves, no shadow rises ★", async () => {
+test("★ a tiddler delete --family over nothing beneath raises no tombstone and no .kapae: the sink retracts, the carrier leaves, no shadow rises ★", async () => {
   const { store, internal, stem } = await rig();
   const sink = storeMemeSink(store, bag, origin, undefined, async () => false);
   expect(await sink.beneath!(title)).toBe(false);
@@ -103,7 +103,7 @@ test("★ a meme delete over nothing beneath raises no tombstone and no .kapae: 
   expect(existsSync(stem + ".kapae")).toBe(false);
 });
 
-test("control: a meme delete over a lower layer's title still raises the tombstone and the .kapae", async () => {
+test("control: a tiddler delete --family over a lower layer's title still raises the tombstone and the .kapae", async () => {
   const { store, internal, stem } = await rig();
   const sink = storeMemeSink(store, bag, origin, undefined, async () => true);
   await sink.leaveFamily!([title], []);

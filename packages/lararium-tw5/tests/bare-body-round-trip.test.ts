@@ -3,9 +3,10 @@
  * lands the bytes a person gave or refuses by name.
  *
  * The gate holds a frameless body verbatim as ONE record (`ingest-gate.ts`, leg 1½). The read half
- * answers those same bytes: the held record's text IS its canonical render, so `meme-get` reads back
- * what `meme-put` took, the hash a put reports equals the hash a get reports, a second put of the
- * same bytes reads as a noop, and a delete under that base removes the hold.
+ * answers those same bytes: the held record's text IS its canonical render, so a read hands back what a
+ * placement took, the hash a placement reports equals the hash a read reports, a second placement of the
+ * same bytes reads as a noop, and a delete under that base removes the hold. Through the tiddler door a
+ * frameless body lands as a plain record of the bag, and the same read answers its bytes.
  */
 import { describe, test, expect } from "vitest";
 import { createRequire } from "node:module";
@@ -18,7 +19,8 @@ import { type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tidd
 import { type Repo as RepoType } from "@lararium/mesh/automerge";
 import { carrierHash } from "@lararium/mesh/crypto";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { makeMemePutReactor, makeMemeGetReactor, makeMemeDeleteReactor, makeMemeProjectReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeMemeGetReactor, makeMemeProjectReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeTiddlerPutReactor, makeTiddlerDeleteReactor } from "../src/tiddler-verbs.js";
 import { memeFaceOf } from "../src/modules/meme-face.js";
 import { EMPTY_BODY_CODE, holdsUnreadPointer, placeMeme, readMeme, removeMeme, type MemeSink } from "../src/place-meme.js";
 import type { TiddlerFields } from "../src/deserializer.js";
@@ -238,50 +240,49 @@ function wikiWithWorkingLayer(slug: string, storeOf: (bag: string) => LarTiddler
   return { opts, working };
 }
 
-describe("meme-put then meme-get on a wiki with a working layer", () => {
+describe("a put then a read on a wiki's working layer", () => {
+  const SLOT = wikiSlotUri("lares", "working");
   for (const [storeName, storeOf] of STORES) for (const [name, body] of BARE_BODIES) {
     test(`a frameless body reads back byte for byte from ${storeName}: ${name}`, async () => {
       const { opts, working } = wikiWithWorkingLayer("lares", storeOf);
-      const receipt = await makeMemePutReactor(opts)({ recipe: "lares", uri: URI, text: body }, ctx());
-      expect(receipt["decision"]).toBe("ingest");
-      expect(receipt["landed"]).toEqual([URI]);
+      const receipt = await makeTiddlerPutReactor(opts)({ bag: SLOT, title: URI, text: body }, ctx());
+      expect(receipt).toMatchObject({ decision: "put", bag: SLOT, layer: "working", position: "plain", created: true });
+      expect(receipt["recipe"]).toBeUndefined();
       expect((await working.get(URI))?.tiddler["text"]).toBe(body);
 
       const got = await makeMemeGetReactor(opts)({ recipe: "lares", uri: URI }, ctx("r2"));
       const meme = got["meme"] as { text: string; canonicalHash: string } | null;
       expect(meme).not.toBeNull();
       expect(meme!.text).toBe(body);
-      expect(meme!.canonicalHash).toBe(receipt["canonicalHash"]);
       expect(meme!.canonicalHash).toBe(carrierHash(body));
     });
   }
 
-  test("a delete under the base a get reported removes the bare hold from the working layer", async () => {
+  test("a delete under the hash the put reported removes the bare hold from the working layer; a stale base moves nothing", async () => {
     const { opts } = wikiWithWorkingLayer("lares");
-    await makeMemePutReactor(opts)({ recipe: "lares", uri: URI, text: "a body\n" }, ctx());
-    const got = await makeMemeGetReactor(opts)({ recipe: "lares", uri: URI }, ctx("r2"));
-    const base = (got["meme"] as { canonicalHash: string }).canonicalHash;
-    const gone = await makeMemeDeleteReactor(opts)({ recipe: "lares", uri: URI, base }, ctx("r3"));
-    expect(gone["decision"]).toBe("removed");
-    expect((await makeMemeGetReactor(opts)({ recipe: "lares", uri: URI }, ctx("r4")))["meme"]).toBeNull();
+    const put = await makeTiddlerPutReactor(opts)({ bag: SLOT, title: URI, text: "a body\n" }, ctx());
+    expect(await makeTiddlerDeleteReactor(opts)({ bag: SLOT, title: URI, base: `sha256-${"0".repeat(64)}` }, ctx("r2"))).toMatchObject({ decision: "conflict", hash: put["hash"] });
+    expect((await makeMemeGetReactor(opts)({ recipe: "lares", uri: URI }, ctx("r3")))["meme"]).not.toBeNull();
+    const gone = await makeTiddlerDeleteReactor(opts)({ bag: SLOT, title: URI, base: put["hash"] }, ctx("r4"));
+    expect(gone).toMatchObject({ decision: "removed", bag: SLOT, mode: "plain" });
+    expect((await makeMemeGetReactor(opts)({ recipe: "lares", uri: URI }, ctx("r5")))["meme"]).toBeNull();
   });
 
-  test("CONTROL: a framed carrier reads back with the hash the put reported", async () => {
+  test("CONTROL: a framed carrier founds its family and reads back with the hash the put reported", async () => {
     const { opts } = wikiWithWorkingLayer("lares");
-    const receipt = await makeMemePutReactor(opts)({ recipe: "lares", uri: URI, text: framed(URI, ["a"]) }, ctx());
-    expect(receipt["decision"]).toBe("ingest");
+    const receipt = await makeTiddlerPutReactor(opts)({ bag: SLOT, title: URI, text: framed(URI, ["a"]) }, ctx());
+    expect(receipt).toMatchObject({ decision: "put", position: "root", landed: expect.arrayContaining([URI, `${URI}#/a`]) });
     const got = await makeMemeGetReactor(opts)({ recipe: "lares", uri: URI }, ctx("r2"));
     const meme = got["meme"] as { text: string; canonicalHash: string };
     expect(meme.canonicalHash).toBe(receipt["canonicalHash"]);
     expect(meme.text).toContain("<<~ ahu slot=`#/a`>>");
   });
 
-  test("REFUSAL: a torn frame answers refuse, names the tear, and the working layer stays empty", async () => {
+  test("REFUSAL: a torn frame refuses by name, names the tear, and the working layer stays empty", async () => {
     const { opts, working } = wikiWithWorkingLayer("lares");
-    const receipt = await makeMemePutReactor(opts)({ recipe: "lares", uri: URI, text: TORN }, ctx());
-    expect(receipt["decision"]).toBe("refuse");
-    expect(receipt["landed"]).toEqual([]);
-    expect((receipt["warnings"] as string[]).length).toBeGreaterThan(0);
+    const refusal = await makeTiddlerPutReactor(opts)({ bag: SLOT, title: URI, text: TORN }, ctx()).catch((e: unknown) => e) as { reason?: string; message?: string };
+    expect(refusal.reason).toBe("family-gate-refused");
+    expect(refusal.message).toMatch(/Nothing moved\.$/);
     expect(await working.listVisible()).toEqual([]);
   });
 
@@ -316,11 +317,6 @@ describe("meme-put then meme-get on a wiki with a working layer", () => {
     // CONTROL: the face reads a bare hold as its bytes.
     w.store.set(URI, { title: URI, type: "text/plain", text: "a body\n" } as TiddlerFields);
     expect((await memeFaceOf(w as never).read(URI))!.text).toBe("a body\n");
-  });
-
-  test("REFUSAL: a put that carries no text refuses by name", async () => {
-    const { opts } = wikiWithWorkingLayer("lares");
-    await expect(makeMemePutReactor(opts)({ recipe: "lares", uri: URI, text: "" }, ctx())).rejects.toThrow(/args\.text is required/);
   });
 });
 

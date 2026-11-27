@@ -161,7 +161,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "A lei grants one rite at one branch. A wide lei (the default) names no head and carries its returns; a head lei pins one head. " +
       "The hand strings (kui), unstrings and restrings; any seat reads. The signed lei carries the consent, and a `push` lei adds its ward co-sign. " +
       "Under a pūlama the hand signs at the pūlama's hand door and `land` lands the record; `terms` prints the one JSON line that door takes " +
-      "(the face from --face, else a keep's own face, else the daemon mount; a restring's `after` from the line's tip), and writes nothing. `kui --all` strings one lei for every open face under ONE route, each face's own record by its own hand at its own line's tip, and names each face's cid; a show of one line naming no face reads every open face's line.",
+      "(the face from --face, else a keep's own face, else the daemon mount; a restring's `after` from the line's tip), and writes nothing. `kui --all` strings one lei for every open face under ONE route, each face's own record by its own hand at its own line's tip, and names each face's cid; a show of one line naming no face reads every open face's line. " +
+      "A HOʻĀLA LEI (`--rite hoala`, under a pūlama, through the host shim) names no branch: `kui --rite hoala --returns <n>` strings it under your route at the pūlama, and each host restart then wakes the keeper with no route, one counted return each (`lares rite hoala`), and while a return stands the lei also admits an image the keeper never admitted and carries across a move of the keeper's code; it rests the keeper's keys sealed on this machine in two halves, so whoever reads both (Docker as you plus the house directory, or the raw disk) opens the house while a return stands. " +
+      "`unstring --rite hoala` destroys both at once, lit or unlit; `show --rite hoala` reads its count. A hand's acts alone: a seat strings, unstrings and reads none.",
     examples: [
       "lares lei show --rite kukulu --branch main --json                    # data.lei: standing, reach, returnsLeft",
       "lares lei show --rite push --branch feature/x --head <commit> --json   # ask after one head",
@@ -172,6 +174,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares lei unstring --rite push --branch feature/x --lei <cid>          # revoke it; a signed record, nothing deleted",
       "lares lei restring --rite push --branch feature/x --returns 2          # supersede the standing lei",
       "lares lei land '<the pūlama's answer>'                                 # land a record the hand signed at the pūlama",
+      "lares lei kui --rite hoala --returns 3                                 # three host restarts wake the keeper with no route",
+      "lares lei unstring --rite hoala                                        # end it at once: the sealed keys and their device key die",
       "lares lei terms restring --rite push --branch feature/x --returns 2    # one line: the terms `pulama-main.js lei restring` takes",
     ],
     flags: ["--rite <r>   push, kukulu, keep or exec", "--scope '<json>'   (exec) the wiki, the writer, and titles or one class; the branch derives from the wiki", "--branch <name>   the branch the lei binds (a keep lei: the workspace's name)", "--head <commit>   the head a show reads at, or a head lei pins",
@@ -179,8 +183,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--lei <cid>   (unstring) the lei to revoke", "--face N   face index", "--all   (kui, push or kukulu) one lei for every open face, under one route"],
   },
   rite: {
-    usage: "usage: lares rite kukulu [--branch <name>] [--face N] [--rollback [<rev>]] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] [--image <digest>] | offer --branch <name> --head <commit> --image <digest> [--keeper-to <key> --keeper-next <closure>] [--base <offerBase>] | land --tessera <id> [--head <commit>] [--image <digest>] | land --abandon --tessera <id> [--face N] | receipts [--rite kukulu [--branch <name>]]",
+    usage: "usage: lares rite hoala | kukulu [--branch <name>] [--face N] [--rollback [<rev>]] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] [--image <digest>] | offer --branch <name> --head <commit> --image <digest> [--keeper-to <key> --keeper-next <closure>] [--base <offerBase>] | land --tessera <id> [--head <commit>] [--image <digest>] | land --abandon --tessera <id> [--face N] | receipts [--rite kukulu [--branch <name>]]",
     synopsis:
+      "hoʻāla (`lares rite hoala`, to waken; through the host shim) wakes the house that stands built and never builds: it reads the keeper, the image and the vessel, and walks only what each asks. " +
+      "A dark keeper lights by a hoʻāla lei where one holds a return (no route, no terminal; a keeper whose code moved included, with the prior closure kept as the rollback), else it reads your route ONCE on a terminal; an image the keeper never admitted gets admitted under a standing lei (one return), else the tag steps back to the admitted image kept here, or nothing starts and the line names the admit; " +
+      "a locked vessel opens by the keeper's dial (no unlock try spends on a silent keeper), and the face last worn wears. It prints one verdict line: what it found, what it did, what stands now. " +
       "A rite spends a lei. kūkulu is the one verb that raises the house again around its hearth, and it picks up wherever the " +
       "house stands: it fast-forwards the checkout where it stands clean and behind its upstream (a dirty tree behind, a diverged " +
       "branch or a detached head stops with one line), makes the image (the tag, a kept image, or a build from the commit), spends " +
@@ -530,23 +537,31 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     usage: "usage: lares spirit <verb> <pet-name> [...]  (the verbs: `lares spirit` with no word lists the door's table)",
     synopsis:
       "A spirit's record by its pet name: the one record `lar:///ha.ka.ba/lares/spirit/<pet>` answers first (recipe default), holding a stack of what it holds; `familiar/<pet>` or `spirit/<pet>` on the memory stage read through it (both standing refuses, naming both). " +
-      "`om` wakes (the card under 9,000 chars, the latest carry as testimony); `ah` trues one slot through the meme door, base-checked, refusing growth only past a waking slot's " +
+      "`om` wakes (the card under 9,000 chars, the latest carry as testimony); `ah` trues one slot through the tiddler door's plain put on the slot's title, base-checked, refusing growth only past a waking slot's " +
       "cap (#/open 2,048 bytes, #/attention 1,024; field `slot-budget` replaces both) while `hum` and `om` name the record's weight past `record-budget` (6,144) as advice, and `ah --new` lands a first shrine; `hum` (what remains after the fold) " +
       "measures each slot and folds one line to the month's ash ledger; `hooili` (the carry, hoʻoili, which writes nothing to the card) and `residue` " +
       "land a compaction summary or a handback (`--file -` reads stdin) after the strict secret-shape guard; `otakiage` burns the residue and keeps the card, on a person's hand alone. " +
+      "`handback <pet>[#<n>]` stands as the one return door every fire runs (a hook, a Codex or Copilot session, a summoned instance, a hand): `--file -` or `--text` lands the report as residue once per key, `--record <uri>[@<hash>]` names one already landed, and a summons edge standing for the instance names the record after it stands. " +
       "The stack reads and writes as the slot `#/has`, one cap per line (`<a.b.c> <value>`): `ah --slot '#/has' --add` strings a cap (its tag and its field, one write), `hum --fold '#/has'` unstrings one; a cap names what the spirit holds and grants nothing, so any instance strings one (the mandate's cap alone lands by `--offer`), and a field named in `sealed` rides as its name alone. " +
-      "A card alone (`spirit-card/<pet>`, or a mask's `mask-card/<pet>`) answers through its fields; `ah --offer` sets a summon's offering (ʻālana) on `alana/<pet>` before any instance wakes, and an instance echoes its hash (`ah --echo <hash> --instance <id>`); a write from an instance that has not echoed lands and carries an `unechoed:` notice (a receipt, never a gate).",
+      "A card alone (`spirit-card/<pet>`, or a mask's `mask-card/<pet>`) answers through its fields; `ah --offer` sets a summon's offering (ʻālana) on `alana/<pet>` before any instance wakes, and an instance echoes its hash (`ah --echo <hash> --instance <id>`); a write from an instance that has not echoed lands and carries an `unechoed:` notice (a receipt, never a gate). " +
+      "The house starts its own arms: `mandate <pet>#<n>` lands a hash-keyed mandate (`mandate/<id16>`): words (`--text`) as one record, a memetic carrier (`--file x.mem`) as its own family with the mandate's fields in its `toml meta` and the ref's hash reading the family's canonical hash, `summon <pet>#<n> --mandate <uri>@<hash>` verifies it, holds custody (a seat needs the coordinator's written `summons` grant), claims a lane on the coordinator's ledger by compare-and-set, lands the edge `summons/<id16>` and starts the instance through the host launch cap with one wake line, in the mandate's `--workdir`, its stream appended to the mandate's `--log`, and `handback <pet>#<n> --record <uri>` frees the lane.",
     examples: [
       "lares spirit om lares-alpha                                   # the wake text",
       "lares spirit ah lares-alpha --slot '#/open' --file open.txt     # true one slot",
       "lares spirit ah lares-alpha --slot '#/kulana' --add '* a tell'  # one line at its end",
+      "lares spirit handback cold-reader --file -                    # the return door: the report on stdin lands as residue (`cold-reader#2` names one instance)",
       "lares spirit hum lares-alpha                                  # each waking slot against its cap, the record against its advisory weight",
       "lares spirit hum lares-alpha --fold '#/instances' --line 3    # move a line to the ash ledger",
       "lares spirit ah cold-reader --slot '#/has' --add 'spirit.lane.holds read a PR cold'   # string one cap on the stack (a cap gathers; it grants nothing)",
       "lares spirit hum cold-reader --fold '#/has'                   # the stack, cap by cap; --line <n> --expect <digest> unstrings one",
       "lares spirit otakiage lares-alpha                             # burn the residue (your hand)",
+      "lares spirit residue cold-reader --witness --transcripts <dir>  # read landed hand-backs and subagent transcripts for the frame and Personas: receipts and a tally, exit 0",
       "lares spirit ah blind-reader --offer --file mandate.txt        # ʻālana: the offering lands before any instance wakes",
       "lares spirit ah blind-reader --echo <hash> --instance <id>     # hoʻāla: an instance echoes the mandate's hash om handed it",
+      "lares spirit mandate 'cold-reader#00002' --file mandate.mem --model claude-fable-5-2 --parent <uri>@<hash>   # land a mandate carrier under its coordinator's",
+      "lares spirit mandate 'cold-reader#00002' --file mandate.mem --workdir /srv/bench/cold-reader --log /srv/logs/cold-reader-00002.log   # name where the instance starts and where its stream lands",
+      "lares spirit summon 'cold-reader#00002' --mandate <uri>@<hash>  # the house starts the instance: one wake line through the launch cap",
+      "lares spirit handback 'cold-reader#00002' --record <uri>        # the edge names what came back; the lane frees",
     ],
   },
   hooks: {
@@ -855,10 +870,10 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   tiddler: {
-    usage: "usage: lares tiddler <get | put | delete | rename> <title> [<new title>] --recipe <slug>   (get also takes --bag <slug>: that one bag's record)",
+    usage: "usage: lares tiddler <get | put | delete | rename> <title> [<new title>] (--recipe <slug> | --bag <slug>)   (rename takes --recipe alone)",
     synopsis:
       "THE TIDDLER DOOR — one record with its fields, whatever its type: a plain note, a data tiddler, a meme's root " +
-      "or one of its slots. Every verb runs in the wiki's own TiddlyWiki engine through the daemon, but `get --bag <slug>`, which reads one bag's record with no engine: `--recipe default` " +
+      "or one of its slots. Every verb runs in the wiki's own TiddlyWiki engine through the daemon, but `--bag <slug>`, which reads or writes one bag's record through its store with no engine (a rename names a recipe alone): `--recipe default` " +
       "names the worn face's daemon wiki, and `--recipe <slug>` any wiki this face reaches (one it hosts, or one shared " +
       "to it), composed over that wiki's canon, its shared working layer and this face's own layers; a wiki the face " +
       "reaches none of refuses `wiki-unreached`. `get` answers ON A GRADIENT and leads with a `<<~ has …>>` line " +
@@ -867,13 +882,16 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "page, its has-stack past it. `--skinny` reads the card; `--all` the whole at the lens's grain: a record fat, a " +
       "pointer resolved from the local CAS by CID (a web2 `_canonical_uri` stays named, never fetched), a meme's carrier " +
       "paged on slot boundaries; `--slot` one slot. `put` PATCHES: it sets and unsets " +
-      "fields, adds and removes tags, and moves the text only where `--text` or `--file` names it (`--append` lands words at " +
+      "fields, adds and removes tags, and moves the text only where `--text` or `--file` names it. A meme family moves by the same put: " +
+      "a whole carrier as the root's text lands the family through the Confluence gate (a slot it omits stays standing, `kept`; `--cut-slot '#/x'` " +
+      "names a slot that leaves), and `--slot '#/x'` folds into the title `<root>#/x`, so a slot's text lands with no base (a partial base " +
+      "`partial:#/x:…` patches within its span) and an append honours the slot's standing postamble (`--append` lands words at " +
       "the end with no base, read and written in one step on the live wiki, so two appends through this door at once both land; " +
       "a writer that reaches the store directly merges per field, last writer winning), landing in the " +
       "wiki's working layer (this face's own personal layer of a wiki where it holds no writer's seat); `delete` removes a plain tiddler plainly: the record leaves its layer and no tombstone " +
-      "rises; a meme root or slot answers the consequence the delete would land and refuses by name " +
+      "rises; a meme root answers the consequence the delete would land and refuses by name " +
       "(`tiddler-delete-in-a-family`) unless `--family` names the family act, which lands the root and its slots as " +
-      "one change. Only a lower layer makes a delete a choice: where one holds the title too, a delete with no mode " +
+      "one change; a slot title (`<root>#/x`) leaves as the cut on its parent. Only a lower layer makes a delete a choice: where one holds the title too, a delete with no mode " +
       "refuses `delete-mode-needed` and names both meanings: `--mode kapae` raises a tombstone that keeps the " +
       "records beneath hidden (they stay in their bags); `--mode reveal` retracts the topmost record and the one " +
       "beneath surfaces. A delete of a title the wiki reads absent retracts a kāpae that hides nothing (its " +
@@ -887,9 +905,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "names the delete that clears it, a slot refuses `slot-without-root` and names its root, and a `lar:` title another " +
       "layer holds too takes a hand alone. A `$:/` title on either side refuses `rename-system-title` (a forwarder would " +
       "answer as the setting; `put` the new title, then `delete` the standing one). An answer names only records this face " +
-      "reads and counts the rest (`withheld`); a referrer that stays home keeps its fields (`skipped`). A meme root or slot " +
-      "takes a field or tag patch here; its text moves through `lares tiddler put --meme`. `--base` carries the hash last " +
-      "read: a record that moved past it answers `conflict` and nothing lands. The engine verbs stand beside this " +
+      "reads and counts the rest (`withheld`); a referrer that stays home keeps its fields (`skipped`). `--base` carries the hash last " +
+      "read (a record's `hash`, or on a root the carrier's `canonicalHash`): a record that moved past it answers `conflict` and nothing lands. The engine verbs stand beside this " +
       "door: `lares wiki filter | render | status --recipe <slug>`; bare status surveys the vessel.",
     examples: [
       "lares tiddler get \"Room 4\" --recipe default                         # the record as a .tid on stdout, the base on stderr",
@@ -901,7 +918,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares tiddler put \"Room 4\" --recipe default --fields '{\"todo\":\"done\"}' --tag-add reviewed --base <hash>   # a field and tag patch; the text stays",
       "lares tiddler put \"New Note\" --recipe default --create --text \"first words\" --fields '{\"tags\":\"memory\"}'",
       "date +'%F a dated note' | lares tiddler put \"Ledger\" --recipe default --append -   # lands at the end; two seats appending through the door at once both land",
-      "lares tiddler put lar:///ha.ka.ba/kahua/memory/x --recipe default --meme --slot '#/log' --append note.txt   # a slot append, no base; the family reseals",
+      "lares tiddler put lar:///ha.ka.ba/kahua/memory/x --recipe default --slot '#/log' --append note.txt   # a slot append, no base; the family reseals",
+      "lares tiddler put lar:///ha.ka.ba/lares/docs/x --recipe lares --file x.mem   # a whole carrier lands the family; an omitted slot stays (kept)",
+      "lares tiddler put lar:///ha.ka.ba/lares/docs/x --bag lares --slot '#/why' --file why.txt   # one slot's text in one bag, no base",
       "lares tiddler delete \"Old Note\" --recipe default --if-match <hash>   # a stale base moves nothing",
       "lares tiddler rename \"Room 4\" \"Room Four\" --recipe default      # references follow; \"Room 4\" stays as a forwarder",
       "lares tiddler delete lar:///t/x --recipe default --family              # a meme root and its slots, one change",
@@ -921,25 +940,27 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     ],
     flags: [
       "--recipe <slug>      the wiki read or written: default (the worn face's daemon wiki) or any wiki this face reaches",
-      "--bag <slug>         (get) read that one bag's record, with no wiki and no engine; put and delete refuse a bag (a family write takes it: `lares tiddler put --meme --bag <slug>`), and so do `lares wiki filter | render | status`",
+      "--bag <slug>         (get | put | delete) that one bag's record through its store, with no wiki and no engine; rename and `lares wiki filter | render | status` refuse a bag",
+      "--realm <id>         (beside --bag) the realm whose registration the bag resolves through",
       "--face N             act as face N on a session of it (the worn face where absent; a shut face refuses face-not-open; a lit sibling answers from its own daemon wiki, --recipe default)",
       "--target <h1|name>   (get, and `wiki filter | render | status`; on put or delete it refuses) READ another lit face's daemon wiki while keeping the face worn: its canon and working layer, never its personal or draft layer (either bag refuses cross-face-private); a shut face refuses face-not-open; a write naming another face refuses cross-face-write-refused",
-      "--slot <#/name>      (get) one slot of the meme the title names",
+      "--slot <#/name>      (get) one slot of the meme the title names   ·   (put) folds into the title (`<root>#/name`); refuses a malformed path (slot-malformed) or a title already naming a slot (slot-beside-fragment)",
       "--fields <a,b>       (get) the named fields alone   ·   (put) a JSON object of field names to string values",
-      "--meme               get: carrier or title-less family listing; put: family text or slot patch; delete: family removal",
+      "--meme               (get) the carrier lens; with no title, the family listing",
       "--tree               (title-less get --meme) nest slots under each listed root",
-      "--append <path | -> (put) words from a host file or stdin land at the end of the standing text, no base needed (an append overwrites nothing): a text that does not end on a newline takes one before them; a missing title refuses unless --create; --tag-add, --tag-remove and --create ride beside it; refuses beside --text, --file, --base, --fields, --unset   ·   (put --meme --slot) a paragraph at the end of the slot's body, the family resealed whole",
+      "--append <path | -> (put) words from a host file or stdin land at the end of the standing text, no base needed (an append overwrites nothing): a text that does not end on a newline takes one before them; a missing title refuses unless --create; --tag-add, --tag-remove and --create ride beside it; refuses beside --text, --file, --base, --fields, --unset   ·   on a slot (`--slot`, or a `<root>#/x` title) the words land before a standing postamble, the family resealed whole",
       "--skinny             (get) every field, the text left home (the card)",
       "--all                (get) the whole at the lens's grain: a record fat, a pointer resolved, a meme's carrier paged to the end",
       "--after <cursor>     (get) one page of the whole carrier: hand back the cursor `next` named",
       "--unset <a,b>        (put) fields to remove",
       "--tag-add <list>     (put) tags to add, as TiddlyWiki writes a list: one [[two words]]; a repeated --tag-add (or --tag-remove) joins its list to the earlier ones",
       "--tag-remove <list>  (put) tags to remove",
-      "--text <words>       (put) the new text (with `--meme --slot`: the slot's whole body)   ·   --file <host path | ->  the new text from a host file or stdin",
-      "--base <hash>        (put) the hash last read; stale → conflict, nothing lands (a base guards honest reuse, never a lock)",
-      "--create             (put) land only where no tiddler stands; an existing one answers `exists`   ·   (put --meme) land the whole family only where none stands; a standing one answers `exists`, nothing moves (a slot patch refuses it: the family must stand)",
+      "--cut-slot <#/slot>  (put, on a meme root or slot) the slots that leave, by rooted path; repeatable. Absence never deletes: a slot the new text omits stays standing by reference (the answer names it under `kept`), and only a cut tombstones one",
+      "--text <words>       (put) the new text (on a root, the whole carrier; on a slot, its body)   ·   --file <host path | ->  the new text from a host file or stdin",
+      "--base <hash>        (put) the hash last read (the record's, or a root's carrier hash; a slot read's partial base patches within its span); stale → conflict, nothing lands (a base guards honest reuse, never a lock)",
+      "--create             (put) land only where no tiddler stands, a family's root included; an existing one answers `exists` and nothing moves",
       "--if-match <hash>    (delete | rename) the hash last read; stale → conflict, nothing moves",
-      "--family             (delete) name the family act: a meme root leaves with its slots, as one change",
+      "--family             (delete) name the family act: a meme root leaves with its slots, as one change, in a recipe or a bag",
       "--mode <kapae|reveal> (delete) over a lower layer's record: kapae hides it   ·   reveal surfaces it (none: a plain delete)",
       "--max-bytes <N>      (get) the byte cap on the answer; the largest fields leave first and get named",
       "--collapse           (wiki filter) each row answers its bytes, and a meme root its slots (`{slot, bytes, first}`), the skinny form of `tiddler get --meme --skinny`; --max-bytes and --limit count the collapsed rows",
@@ -954,14 +975,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     synopsis:
       "THE MEME DOOR — one family for every law over meme text, and each verb DECLARES ITS SEAT: " +
       "`normalize` · `check` · `sitting` · `project --to md` (over a file) run LOCAL with no daemon in " +
-      "reach; `project` to any other target, or from a `lar:` uri, rides the daemon verb. A family lands, patches, lists and leaves " +
-      "through `lares tiddler put | get | delete --meme`. A meme READS through the one door: `lares tiddler get <uri> --recipe <slug> --meme` (whole within a page, " +
+      "reach; `project` to any other target, or from a `lar:` uri, rides the daemon verb. A family lands and patches through " +
+      "`lares tiddler put`, leaves through `lares tiddler delete --family`, and lists through `lares tiddler get --meme`. A meme READS through the one door: `lares tiddler get <uri> --recipe <slug> --meme` (whole within a page, " +
       "its has-stack past it; `--all` the whole carrier). Store-backed verbs require `(--recipe <slug> | --bag <slug>)`; `--recipe` edits AS " +
       "the named wiki; " +
       "`--bag` places into that bag and REFUSES when this island cannot write it; `--realm <id>` beside " +
-      "`--bag` names the realm whose registration that bag resolves through, and reads that realm alone. " +
-      "`--base` carries the " +
-      "canonical hash last read — a record that moved past it CONFLICTS and nothing lands.",
+      "`--bag` names the realm whose registration that bag resolves through, and reads that realm alone.",
     examples: [
       "lares tiddler get lar:///ha.ka.ba/lares/api/corpus --recipe lares --meme   # READ a meme: the carrier, base on stderr (the one door)",
       "lares meme normalize draft.mem                         # re-frame + re-stamp the block check",
@@ -976,11 +995,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: [
       "--recipe <slug>    an edit AS that wiki: its designated writable bag, write-then-sync",
       "--bag <slug>       a residency placement into that bag (refused when this island cannot write it)",
-      "--base <hash>      (put, patch) the canonical hash last read; required on a whole-slot write, never on an append; stale → conflict, nothing lands",
-      "--slot <#/name>    (patch) the slot whose body moves",
-      "--append <file>    (`tiddler put --meme --slot`) a paragraph at the end of the slot's body, no base needed; a slot's whole body rides `--text` or `--file` against `--base`",
-      "--if-match <hash>  (delete) the canonical hash last read; stale → conflict, nothing moves",
-      "--file <path>      (put) the meme text (stdin when absent)",
       "--target <h1|name> (get, list) READ another lit face's daemon wiki (`--recipe default`, or one of its daemon bags) while keeping the face worn; its personal and draft layers never answer (cross-face-private), a shut face refuses face-not-open, and a write naming another face refuses at the CLI",
       "--tree             (list) nest each root's slot tree; roots + canonical hash alone otherwise. " +
         "`list --recipe` names the roots the wiki's whole stack resolves (a removed carrier lists nowhere); " +

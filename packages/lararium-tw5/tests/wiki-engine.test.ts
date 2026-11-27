@@ -25,7 +25,6 @@ import { type DocHandle, type Repo as RepoType } from "@lararium/mesh/automerge"
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { composeWikiEngineSource, wikiEngines, type WikiEngineDeps } from "../src/wiki-engine.js";
 import { makeTiddlerDeleteReactor, makeTiddlerGetReactor, makeTiddlerPutReactor, makeWikiActionReactor, makeWikiFilterReactor, makeWikiRenderOutReactor, makeWikiStatusReactor } from "../src/tiddler-verbs.js";
-import { makeMemeDeleteReactor, makeMemePatchReactor, makeMemePutReactor } from "../src/meme-verbs.js";
 import { TW5_DOCS_BAG, TW5_DOCS_READ_ONLY, TW5_DOCS_SLUG } from "../src/tw5-docs-library.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
@@ -85,18 +84,12 @@ describe.skipIf(wikiSkip)(`every wiki its engine${skipNote}`, () => {
     await expect(makeTiddlerDeleteReactor(opts)({ recipe: TW5_DOCS_SLUG, title: "backlinks Operator" }, ctx())).rejects.toMatchObject(refusal);
     await expect(makeWikiActionReactor(opts)({ recipe: TW5_DOCS_SLUG, name: "x", expected: "x", resulting: "x" }, ctx())).rejects.toMatchObject(refusal);
     await expect(makeWikiRenderOutReactor(opts)({ recipe: TW5_DOCS_SLUG, title: "backlinks Operator", output: "workbench" }, ctx())).rejects.toMatchObject(refusal);
-    for (const make of [makeMemePutReactor, makeMemePatchReactor, makeMemeDeleteReactor]) {
-      await expect(make({} as never)({ recipe: TW5_DOCS_SLUG, uri: "lar:///ha.ka.ba/x", text: "x", slot: "#/x" }, ctx())).rejects.toMatchObject(refusal);
-    }
   });
 
   test("the TW5 docs library's bag refuses every --bag write door by name, by its slug and by its bag uri", async () => {
     const opts = { composite: null as never, tw5: null as never };
     const refusal = { reason: TW5_DOCS_READ_ONLY };
     for (const bag of [TW5_DOCS_SLUG, `@${TW5_DOCS_SLUG}`, TW5_DOCS_BAG]) {
-      for (const make of [makeMemePutReactor, makeMemePatchReactor, makeMemeDeleteReactor]) {
-        await expect(make({} as never)({ bag, uri: "lar:///ha.ka.ba/x", text: "x", slot: "#/x" }, ctx()), bag).rejects.toMatchObject(refusal);
-      }
       await expect(makeTiddlerPutReactor(opts)({ bag, title: "No", text: "no" }, ctx()), bag).rejects.toMatchObject(refusal);
       await expect(makeTiddlerDeleteReactor(opts)({ bag, title: "backlinks Operator" }, ctx()), bag).rejects.toMatchObject(refusal);
     }

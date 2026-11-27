@@ -274,6 +274,12 @@ services:
   # `pulama-b` share one stanza, so a successor stands beside the lit keeper over the same socket volume and state dir. Exactly
   # one holds the vessel socket (an exclusive claim); the other stands as its successor on its own hand door until a vest lights
   # it and `take-fire` claims the socket the fire-holder let go. Outside a handoff one alone runs.
+  #
+  # THE DEVICE VOLUME (`lares-pulama-device`, the hoʻāla lei: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-hoala-lei): the
+  # keeper alone mounts it, at the state directory's sibling `/pulama/device`. A hoʻāla lei's device key rests there and nowhere
+  # else, so it belongs to THIS machine's Docker and travels with no copy of the house; the sealed slot it opens rests in the
+  # house's pulama/state. A host process under the operator's uid reaches the volume only through Docker; removing the volume
+  # (`docker volume rm`) ends every hoʻāla lei at once.
   pulama: &pulama-keeper
     image: ${LARES_IMAGE:-lares-surface:local}
     profiles: [pulama]
@@ -295,6 +301,9 @@ services:
       - type: bind
         source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/pulama/state
         target: /pulama/state
+      - type: volume
+        source: lares-pulama-device
+        target: /pulama/device
     tmpfs:
       - /tmp:mode=1777
       - /lar/run:mode=1777
@@ -642,6 +651,8 @@ volumes:
   household-zone:
   # The pūlama's socket directory, shared by the vessel and the pūlama and by no host path (the pūlama's block above).
   lares-pulama-socket:
+  # The pūlama's device directory: a hoʻāla lei's device key, mounted in the pūlama alone and by no host path.
+  lares-pulama-device:
 
 configs:
   household-terminator-nginx-main:
