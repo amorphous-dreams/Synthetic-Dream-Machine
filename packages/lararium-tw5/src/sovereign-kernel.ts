@@ -243,8 +243,17 @@ export function runSovereignKernel(
     const breathe = (): void => {
       _post(mkBreath(msg.wikiUri, _phase, _progress));
     };
+    // THE PHASES SPEAK THEIR SPANS: each named phase tells, as it ends, how long it held the mount. The clock annotates and never
+    // decides (no global now); the stamps let a slow boot name its phase from the vessel log alone.
+    const clock = (): number => (typeof performance !== "undefined" ? performance.now() : Date.now());
+    let _phaseAt = clock();
     const tick = (next?: string): void => {
-      if (next) _phase = next;
+      if (next) {
+        const now = clock();
+        console.log(`[kernel] ${msg.wikiUri} phase ${_phase} held ${Math.round(now - _phaseAt)}ms -> ${next}`);
+        _phase = next;
+        _phaseAt = now;
+      }
       _progress++;
       breathe();
     };
