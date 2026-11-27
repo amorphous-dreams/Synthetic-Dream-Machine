@@ -1791,10 +1791,8 @@ def build_mcp(coordinator: LaresCoordinator):
         slot refuses `cut-not-omitted`), so hand back what you read, folded or whole, and name what you remove.
         THE FENCES, each refused by name: a family's `type` and `$` carriage fields derive from its text
         (`family-carriage-derives`); a new slot joins through its parent's text (`family-joins-by-text`); a text the gate
-        cannot read as one carrier refuses `family-gate-refused`; a record carrying a `$:/tags/StartupAction`
-        tag (or one beneath it) refuses `seat-startup-offer`, since a wiki's startup action runs in the operator's tab
-        and rides the operator's own hand (land it untagged, as data); every other shape lands natively, a `$:/` title
-        or tag, a module or plugin field and a script type alike; a title that stays home refuses `tiddler-withheld`; a
+        cannot read as one carrier refuses `family-gate-refused`; every other shape lands natively, a `$:/` title or
+        tag, a `$:/tags/StartupAction` record, a module or plugin field and a script type alike; a title that stays home refuses `tiddler-withheld`; a
         title under the memory stage reads one or two lowercase, hyphen-joined path segments (`stage-path-shape`); a
         put over a rendered tiddler, or one carrying `rendered-from`, refuses `rendered-derives` (only the renderer
         writes it: edit the source tiddlers). CONTAINER: exactly one of `recipe` / `bag`: `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`; a put lands in that wiki's working layer (this face's personal layer of it where

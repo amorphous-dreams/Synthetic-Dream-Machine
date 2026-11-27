@@ -54,9 +54,7 @@ import type {
 import type { WikiSlotKind } from "@lararium/mesh/wiki-recipe";
 import { isHouseCanonBag, holdsKahuReach, requireKahuReach } from "@lararium/mesh/kahu-canon-reach";
 import { plainRecordOrNull, ownEntry } from "@lararium/mesh/stored-value";
-import { admitSeatExecutable } from "@lararium/mesh/seat-startup-offer";
 import { resolveHouseCanon } from "@lararium/mesh/house-canon-doc";
-import { isExecutableRecord } from "@lararium/mesh/executable-class";
 import {
   renderedFromOf,
   renderedRungOf,
@@ -511,7 +509,7 @@ export interface CapturedEffect {
  * whole projected effect while the executor runs UNCHANGED. (CREATE's mint +
  * registry write live OUTSIDE access — its executor guards on `dryRun` itself.)
  */
-function makeCapturingBagAccess(real: BagAccess, onPut?: (record: LarTiddlerRecord) => void): { access: BagAccess; captured: CapturedEffect } {
+function makeCapturingBagAccess(real: BagAccess): { access: BagAccess; captured: CapturedEffect } {
   const puts: Array<{ bag: string; title: string }> = [];
   const tombstones: Array<{ bag: string; title: string }> = [];
   const removes: Array<{ bag: string; title: string }> = [];
@@ -522,7 +520,7 @@ function makeCapturingBagAccess(real: BagAccess, onPut?: (record: LarTiddlerReco
       const capturing: LarTiddlerStore = {
         listVisible: () => (realStore ? realStore.listVisible() : Promise.resolve([])),
         get: (title) => (realStore ? realStore.get(title) : Promise.resolve(null)),
-        put: async (record) => { puts.push({ bag, title: String(record.tiddler.title) }); onPut?.(record); },
+        put: async (record) => { puts.push({ bag, title: String(record.tiddler.title) }); },
         tombstone: async (title) => { tombstones.push({ bag, title }); },
         remove: async (title) => { removes.push({ bag, title }); },
         subscribe: () => () => {},
@@ -774,17 +772,6 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
           `CREATE ${destBag} to stand a fresh bag, then write again.`,
         );
       }
-    }
-
-    // THE ONE WALL A SEAT KEEPS (state/decisions, "Native TW5 wikis"; "Five floors walked" (2)): a wave a seat asks lands no
-    // executable record, since one runs in the operator's tab. The executor runs once through the capturing access first, and a
-    // record it would land that the mesh's one executable-class list names refuses the whole wave before a byte moves, unless a
-    // standing exec lei for the destination admits it (each such record spends one return).
-    if (ctx.asker === "seat" && (action.verb === "INGEST" || action.verb === "LOAD")) {
-      const startup: LarTiddlerRecord[] = [];
-      const vet = makeCapturingBagAccess(access, (record) => { if (isExecutableRecord(record.tiddler)) startup.push(record); });
-      await executeAction(action, vet.access, opts);
-      for (const record of startup) await admitSeatExecutable(String(record.tiddler.title), record.tiddler, action.verb, ctx.asker, { wiki: destBag, port: ctx.execLei });
     }
 
     // `--dry-run`: run the executor through the capturing access — content writes

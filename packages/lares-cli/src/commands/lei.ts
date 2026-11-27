@@ -38,7 +38,6 @@ import { houseFaces } from "../custody-door.js";
 import { gatherWardRoute } from "../ward-door.js";
 import { keepFaceOf, lineHeld, type HouseFaces } from "../rite-keep.js";
 import type { RiteVerbAnswer } from "../rite-kukulu.js";
-import { execLeiBranch } from "@lararium/mesh/exec-lei";
 
 export class LeiUsage extends Error {}
 /** A terms line the vessel's own reading refuses, by name: no lei to restring, a forked line, a keep lei standing unseen. */
@@ -108,25 +107,17 @@ export function leiPlan(args: ParsedArgs): LeiPlan {
   };
   const out: Record<string, unknown> = {};
   const rite = word(args.options["rite"]);
-  // AN EXEC LEI'S SCOPE (`--scope '<json>'`: its wiki, the writer, and a title set or one class): the branch derives from the wiki.
-  const scopeRaw = word(args.options["scope"]);
-  let scope: Record<string, unknown> | undefined;
-  if (scopeRaw !== undefined) {
-    if (rite !== "exec") throw new LeiUsage("only an exec lei names a --scope");
-    try { scope = JSON.parse(scopeRaw) as Record<string, unknown>; } catch { throw new LeiUsage("--scope takes one JSON object: {\"wiki\":…,\"writer\":…, \"titles\":[…] | \"class\":…}"); }
-    if (typeof scope !== "object" || scope === null || Array.isArray(scope) || typeof scope["wiki"] !== "string") throw new LeiUsage("--scope names its wiki, the writer, and a title set or one class");
-  } else if (rite === "exec" && args.positional[0] !== "show" && args.positional[0] !== "unstring") throw new LeiUsage("an exec lei names its --scope '<json>' (wiki, writer, titles or class)");
-  const branch = word(args.options["branch"]) ?? (scope ? execLeiBranch(scope["wiki"] as string) : undefined);
+  const branch = word(args.options["branch"]);
   const head = word(args.options["head"]);
   const face = count("face", word(args.options["face"]), 0);
   // ONE STRINGING FOR EVERY FACE (`--all`): a kui alone, each open face's lei by its own hand at its own line's tip, so it names
-  // no face and no `after`; a keep stands one per house and an exec lei names one writer, so neither strings that way.
+  // no face and no `after`; a keep stands one per house, so it never strings that way.
   const all = args.flags["all"] === true;
   if (all) {
     if (sub !== "kui") throw new LeiUsage("only a kui strings for every open face (--all)");
     if (face !== undefined) throw new LeiUsage("--all strings for every open face; it names no --face");
     if (word(args.options["after"]) !== undefined) throw new LeiUsage("--all follows each face's own line's tip; it names no --after");
-    if (rite === "keep" || rite === "exec") throw new LeiUsage(`a ${rite} lei names one face, so it strings with no --all`);
+    if (rite === "keep") throw new LeiUsage(`a ${rite} lei names one face, so it strings with no --all`);
   }
   if (sub === "show") {
     // The board reads with no line named; one rite's line reads by rite and branch, and a head rides along to ask after one head.
@@ -135,9 +126,9 @@ export function leiPlan(args: ParsedArgs): LeiPlan {
       Object.assign(out, { rite, branch, ...(head !== undefined ? { head } : {}) });
     }
   } else {
-    if (rite === undefined) throw new LeiUsage("name the lei's rite: --rite push | kukulu | keep | exec");
+    if (rite === undefined) throw new LeiUsage("name the lei's rite: --rite push | kukulu | keep");
     if (branch === undefined) throw new LeiUsage("name the lei's branch: --branch <name>");
-    Object.assign(out, { rite, branch, ...(scope !== undefined && (sub === "kui" || sub === "restring") ? { scope } : {}) });
+    Object.assign(out, { rite, branch });
     if (sub === "unstring") {
       const lei = word(args.options["lei"]);
       if (lei === undefined) throw new LeiUsage("name the lei to unstring by its cid: --lei <cid>");
@@ -169,16 +160,16 @@ export interface LeiTermsPorts {
 
 /** The flags each pūlama act takes beside `--rite`, `--branch` and `--face`; any other lei flag refuses. */
 const TERMS_TAKES: Readonly<Record<string, readonly string[]>> = {
-  kui: ["returns", "reach", "head", "after", "yes", "scope", "all"],
-  restring: ["returns", "reach", "head", "yes", "scope"],
+  kui: ["returns", "reach", "head", "after", "yes", "all"],
+  restring: ["returns", "reach", "head", "yes"],
   unstring: ["lei"],
 };
-const LEI_FLAGS = ["rite", "branch", "face", "returns", "reach", "head", "after", "lei", "yes", "scope", "all"] as const;
+const LEI_FLAGS = ["rite", "branch", "face", "returns", "reach", "head", "after", "lei", "yes", "all"] as const;
 
 /** One face's terms object, in the pūlama's order: `face`, `rite`, `branch`, then the act's own. */
 function termsAt(act: string, a: Readonly<Record<string, unknown>>, face: number, after: unknown): Record<string, unknown> {
   const out: Record<string, unknown> = { face, rite: a["rite"], branch: a["branch"] };
-  for (const key of ["reach", "returns", "head", "scope"] as const) if (a[key] !== undefined) out[key] = a[key];
+  for (const key of ["reach", "returns", "head"] as const) if (a[key] !== undefined) out[key] = a[key];
   if (act !== "unstring") out["after"] = after ?? null;
   if (a["confirm"] === true) out["confirm"] = true;
   if (a["lei"] !== undefined) out["lei"] = a["lei"];

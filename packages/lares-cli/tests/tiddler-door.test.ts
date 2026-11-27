@@ -673,15 +673,3 @@ describe("tiddler get --meme answers the carrier through a pipe (the carrier-fir
     expect(r.err.join(" ")).toMatch(/no tiddler at lar:\/\/\/t\/x/);
   });
 });
-
-describe("tiddler put no longer reads --replace: the word stays free for the exact-once text swap", () => {
-  test("the door refuses --replace on every put path, a slot's or a record's, before dispatch", async () => {
-    const parseArgs = (await import("../src/parse-args.js")).parseArgs;
-    const row = COMMANDS.find((c) => c.name === "tiddler")!;
-    for (const argvIn of [
-      ["tiddler", "put", "lar:///t/x", "--slot", "#/a", "--replace", "f", "--base", "h", "--recipe", "default"],
-      ["tiddler", "put", "T", "--replace", "f", "--recipe", "default"],
-    ]) expect(unknownFlags(row, parseArgs(argvIn)).map((f) => f.name), argvIn.join(" ")).toContain("replace");
-    expect(unknownFlags(row, parseArgs(["tiddler", "put", "lar:///t/x", "--slot", "#/a", "--text", "x", "--base", "h", "--recipe", "default"]))).toEqual([]);
-  });
-});

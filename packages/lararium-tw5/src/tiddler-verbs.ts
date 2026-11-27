@@ -44,9 +44,7 @@
  * answers no read and takes no write. Every other record lands natively, as a person's edit in the wiki lands it: a `$:/`
  * title or tag, a module or plugin field and a script type alike (the island holds a document's code as data; its code
  * comes from the floor-admitted preloads alone). A RENDERED TIDDLER (`rendered-from`) takes no put and no delete here:
- * only the renderer writes it, and both refuse `rendered-derives`. THE ONE WALL A SEAT KEEPS: a seat-asked put carrying a
- * record the mesh's one executable-class list names refuses `seat-startup-offer` (it runs in the operator's tab), and the
- * operator's own hand lands it. No action string and no `tm-*` message rides this door (the `act` ask, phase 2).
+ * only the renderer writes it, and both refuse `rendered-derives`. No action string and no `tm-*` message rides this door (the `act` ask, phase 2).
  *
  * THE FAMILY LAW (`@lararium/mesh/family`) DECIDES WHERE A RECORD STANDS AND WHAT A DELETE MOVES. `position` and
  * `family` read through `familyOf`; a delete reads its `consequence` before anything lands, over the reader's view,
@@ -96,8 +94,6 @@ import { isContentAddress, POINTER_ADDRESS_FIELDS, POINTER_DIGEST_CODE, POINTER_
 import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { refuseEffectLedgerWrite } from "@lararium/mesh/effect-record";
 import { refuseRenderedWrite, renderedWriteFault, RENDERED_DERIVES_REASON } from "@lararium/mesh/rendered-derives";
-import { admitSeatExecutable } from "@lararium/mesh/seat-startup-offer";
-import { executableClassOf } from "@lararium/mesh/executable-class";
 import { requireKahuReach, type KahuReachSource } from "@lararium/mesh/kahu-canon-reach";
 import { wikiSlotKindOf, DAEMON_WIKI_SLUG } from "@lararium/mesh/wiki-recipe";
 import { type ChangeOrigin, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
@@ -1339,7 +1335,6 @@ async function putThrough(opts: TiddlerVerbOptions, seat: PutSeat, title: string
 
   // The receipt a replace carries: the bytes the span held and the bytes that took its place.
   const replaced = replace !== null ? { span: bytesOf(replace), with: bytesOf(replaceWith) } : null;
-  let admitted: string | null = null;
   for (let round = 0; ; round++) {
     const before = await seat.read(title);
     const standing = before !== null;
@@ -1460,7 +1455,6 @@ async function putThrough(opts: TiddlerVerbOptions, seat: PutSeat, title: string
             const landing = String(record["title"] ?? root);
             refuseEffectLedgerWrite(landing, "tiddler put");
             refuseRenderedWrite(landing, null, record, "tiddler put");
-            await admitSeatExecutable(landing, record, "tiddler put", ctx.asker, { wiki: seat.wiki, port: ctx.execLei });
           }
         };
         // The record this round read still stands as it read; a record that moved sends the round back.
@@ -1492,14 +1486,6 @@ async function putThrough(opts: TiddlerVerbOptions, seat: PutSeat, title: string
       }
       // A slot's append that named the postamble found no carrier to recompose: the words join the slot's own record.
       if (joined !== null && joined.title !== title) next["text"] = joinedParagraph(before?.["text"] ?? "", append!);
-    }
-    // THE ONE WALL A SEAT KEEPS: a seat's executable record offers, or lands spending one return of a standing exec lei. A call
-    // spends once: a round the swap sent back re-admits only where the record it would land reads as another executable class.
-    const executable = executableClassOf(next);
-    const admits = executable === null ? null : `${executable.class}\u0000${executable.mark}`;
-    if (round === 0 || admits !== admitted) {
-      await admitSeatExecutable(title, next, "tiddler put", ctx.asker, { wiki: seat.wiki, port: ctx.execLei });
-      admitted = admits;
     }
     // THE SWAP: the record lands only where it still stands as this round read it.
     if (!(await seat.swap(title, liveHash, next))) continue;
@@ -1637,7 +1623,7 @@ function relinkImpossibles(wiki: EngineWiki, tw: unknown, from: string, to: stri
  *
  * THE FENCES, in the order put and delete keep them: no padded title (the relink trims), withheld titles, the effect ledger and the collapse rule on BOTH
  * titles, then the system-title wall on both (`rename-system-title`), the Kahu predicate and the write cap, then the
- * rendered and seat-executable walls. The move lands in the working layer alone, and a layer reads from a record's STAMP
+ * rendered-record guard. The move lands in the working layer alone, and a layer reads from a record's STAMP
  * and never from a guess: a record resting in any other layer, or carrying no stamp (the engine's own, or a write the shore
  * still carries), refuses `rename-source-layer` (a copy-up would hand its content to a layer with other readers), and a
  * `lar:` title that stands in another layer too takes a hand alone (`hand-act-only`).
@@ -1686,7 +1672,6 @@ export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts:
     /** A standing record this face reads. */
     const seen = (name: string): boolean => { const held = wiki.getTiddler(name); return held !== undefined && visible(name, held); };
     const reaches = `\`lares wiki status --recipe ${anchor.recipe}\` names the layers this face reaches`;
-    let admitted = false;
 
     for (let round = 0; ; round++) {
       const standing = wiki.tiddlerExists(title) ? wiki.getTiddler(title) : undefined;
@@ -1722,11 +1707,6 @@ export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts:
       }
       const rendered = renderedWriteFault(title, fields, null, "tiddler rename");
       if (rendered !== null) return refused(RENDERED_DERIVES_REASON, rendered.slice(RENDERED_DERIVES_REASON.length + 2) + " Nothing moved.");
-      if (!admitted) {
-        await admitSeatExecutable(to, { ...fields, title: to }, "tiddler rename", ctx.asker, { wiki: anchor.recipe, port: ctx.execLei });
-        admitted = true;
-      }
-
       // ── THE SYNCHRONOUS STEP: no await from here to the last write, so every read below holds until the forwarder lands. ──
       const now = wiki.getTiddler(title);
       if ((now ? hashOf(readRecord(now).fields) : null) !== hash) continue;

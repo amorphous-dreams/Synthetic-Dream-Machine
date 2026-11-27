@@ -61,7 +61,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     next: ["where the host holds the engine, a herm stands as the container's own service: docker compose -f docker-compose.surface.yml --profile herm up -d herm"],
   },
   lei: {
-    usage: "usage: lares lei show|kui|unstring|restring --rite push|kukulu|keep|exec --branch <name> [--scope '<json>'] [--head <h>] [--returns <n>] [--reach wide|head] [--after <cid>] [--lei <cid>] [--yes] [--face N | --all]  |  lares lei land '<pūlama answer>' [--face N]  |  lares lei terms kui|restring|unstring --rite <r> --branch <name> [--returns <n>] [--reach wide|head] [--head <h>] [--after <cid>] [--lei <cid>] [--yes] [--face N | --all]",
+    usage: "usage: lares lei show|kui|unstring|restring --rite push|kukulu|keep --branch <name> [--head <h>] [--returns <n>] [--reach wide|head] [--after <cid>] [--lei <cid>] [--yes] [--face N | --all]  |  lares lei land '<pūlama answer>' [--face N]  |  lares lei terms kui|restring|unstring --rite <r> --branch <name> [--returns <n>] [--reach wide|head] [--head <h>] [--after <cid>] [--lei <cid>] [--yes] [--face N | --all]",
     synopsis:
       "A lei grants one rite at one branch. A wide lei (the default) names no head and carries its returns; a head lei pins one head. " +
       "The hand strings (kui), unstrings and restrings; any seat reads. The signed lei carries the consent, and a `push` lei adds its ward co-sign. " +
@@ -83,7 +83,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares lei unstring --rite hoala                                        # end it at once: the sealed keys and their device key die",
       "lares lei terms restring --rite push --branch feature/x --returns 2    # one line: the terms `pulama-main.js lei restring` takes",
     ],
-    flags: ["--rite <r>   push, kukulu, keep or exec", "--scope '<json>'   (exec) the wiki, the writer, and titles or one class; the branch derives from the wiki", "--branch <name>   the branch the lei binds (a keep lei: the workspace's name)", "--head <commit>   the head a show reads at, or a head lei pins",
+    flags: ["--rite <r>   push, kukulu or keep", "--branch <name>   the branch the lei binds (a keep lei: the workspace's name)", "--head <commit>   the head a show reads at, or a head lei pins",
       "--returns <n>   a wide lei's count of returns (more than twelve asks --yes)", "--reach wide|head   the lei's reach (wide where absent)", "--after <cid>   (kui) the lei this one follows; absent for the first",
       "--lei <cid>   (unstring) the lei to revoke", "--face N   face index", "--all   (kui, push or kukulu) one lei for every open face, under one route"],
   },
