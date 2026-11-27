@@ -126,7 +126,7 @@ export interface Command {
   readonly name:        string;
   /** The one-line spelling the top-level list prints (aim <= 72 chars); absent, the summary stands there. The long
    *  `summary` rides the verb's own `--help`, so no fact leaves the CLI when the list shortens. */
-  readonly brief?:      string;
+  readonly brief?:      string | undefined;
   readonly summary:     string;
   readonly handler:     Handler;
   /**
