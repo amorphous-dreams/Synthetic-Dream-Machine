@@ -216,9 +216,11 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       // The closure reader rides beside the shim, as it does in the checkout.
       await writeFile(join(repo, "tools", "pulama-closure.mjs"), await readFile(join(ROOT, "tools", "pulama-closure.mjs"), "utf8"));
       // THE FLOOR rides beside the shim too (mandate/floor-gate-1): an image build takes the floor lock through battery.sh's
-      // lock path and floor-lock's ancestor read, as it does in the checkout.
-      await writeFile(join(repo, "tools", "battery.sh"), await readFile(join(ROOT, "tools", "battery.sh"), "utf8"));
-      await writeFile(join(repo, "tools", "floor-lock.mjs"), await readFile(join(ROOT, "tools", "floor-lock.mjs"), "utf8"));
+      // door, floor-lock's ancestor read and floor-run's headroom admit (with the ledger and disk limits it imports), as it does
+      // in the checkout; a build whose admit finds no floor-run refuses "the floor's headroom read failed".
+      for (const tool of ["battery.sh", "floor-lock.mjs", "floor-run.mjs", "floor-ledger.mjs", "disk-guard.mjs"]) {
+        await writeFile(join(repo, "tools", tool), await readFile(join(ROOT, "tools", tool), "utf8"));
+      }
       // "pulama": a clean checkout that carries a pūlama entry, so a build reads its code closure.
       if (checkout === "pulama") await plantPulamaTree(repo);
       gitEnv.GIT_CEILING_DIRECTORIES = dir;

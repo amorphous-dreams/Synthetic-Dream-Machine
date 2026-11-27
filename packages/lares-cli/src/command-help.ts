@@ -108,7 +108,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "checkout's wikis/<slug>, and a newer seed offer the release carries (the seed's floor), named by its floor card and `lares vessel floor status --grain seed`. Where the canon source stands " +
       "in a checkout and the owner holds the terminal, it previews the workbench lay (each title a workbench the worn face mounts " +
       "would take) and lays it (`lares vessel lay --workbench --apply`) with no question, diff-gated (a row both sides moved stands " +
-      "off by name); a workbench that does not mount is named and left, and a seat with no terminal, an AI launcher or a source in no " +
+      "off by name); it names a workbench that does not mount and leaves it, and a seat with no terminal, an AI launcher or a source in no " +
       "checkout names the lag and lays nothing. A Ctrl+C at any prompt (the light, the admit) leaves the house where the " +
       "next run reads it: a begin standing unlanded at this head and over this image, every half landable, is resumed (no lei " +
       "spent, no new tessera, the resting offer reused where its vouches match), and any other (another head or image, a face " +
