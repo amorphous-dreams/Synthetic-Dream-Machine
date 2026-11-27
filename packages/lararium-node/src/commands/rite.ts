@@ -201,7 +201,7 @@ export function refuseStandingBegin(standing: ReadonlyArray<{ readonly tessera: 
  * at an older head, with the vessel still standing on the image the begin left (its revision label and running digest name the
  * prior image, never the begin's), so the begin spent nothing a landing ever used. Each named half still pending on the line
  * sets down as the lent face that carries it (`abandonRite`, `by: "kukulu"`, naming the head that supersedes it); a named
- * tessera no longer pending (landed, or set down by an earlier try of this begin) passes, and a half no lent face carries stays
+ * tessera that reads pending nowhere (landed, or set down by a prior try of this begin) passes, and a half no lent face carries stays
  * as debt for `refuseStandingBegin` to name. Answers each half it set down, by face, tessera and the head it began at.
  */
 export async function supersedeBegins(
