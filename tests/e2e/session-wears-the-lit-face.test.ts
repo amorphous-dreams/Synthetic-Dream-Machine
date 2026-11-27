@@ -52,7 +52,7 @@ describe("e2e/session-wears-the-lit-face", () => {
  * Two faces stand lit on one vessel: persona zero (worn: the default reach) and a second face of the same operator.
  * Each act names its face by `--face N`, rides a session of that face, and lands in that face's own layer:
  *
- *   W1  a meme put (the lane) as face 1 lands in face 1's working layer; face 1 reads it back; the worn face reads absent
+ *   W1  a tiddler put (the lane) as face 1 lands in face 1's working layer; face 1 reads it back; the worn face reads absent
  *   W2  a tiddler put (the sibling's own TW5 engine) as face 1 lands there; face 1 reads it back; the worn face reads absent
  *   W3  the worn face's own write lands in its own layer, and face 1 reads it absent
  *   W4  CONTROL: a face that stands shut refuses `face-not-open`, and nothing writes
@@ -147,10 +147,10 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     expect(status.layers.find((l) => l.bag === siblingBag), `the sibling daemon canon never opened: ${JSON.stringify(status.layers)}`).toMatchObject({ read: true, mounted: "promotion-only" });
   }, 120_000);
 
-  test("W1: a meme put as face 1 lands in face 1's working layer, face 1 reads it back, the worn face reads absent", async () => {
+  test("W1: a tiddler put as face 1 lands in face 1's working layer, face 1 reads it back, the worn face reads absent", async () => {
     const file = join(scratch, "sibling-lane.mem");
     writeFileSync(file, memeText(MEME, "Sibling"));
-    const put = await walk.cli(["tiddler", "put", "--meme", MEME, "--bag", siblingBag, "--file", file, "--face", "1", "--json"]);
+    const put = await walk.cli(["tiddler", "put", MEME, "--bag", siblingBag, "--file", file, "--face", "1", "--json"]);
     expect(put.code, out(put)).toBe(0);
     expect(data(put)["face"], "the answer names the face it landed in").toBe(1);
     const back = await walk.cli(["tiddler", "get", MEME, "--bag", siblingBag, "--face", "1", "--meme", "--all", "--json"]);
@@ -210,7 +210,7 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
   test("W3: the worn face's own write still lands in its own layer, and the sibling reads it absent", async () => {
     const file = join(scratch, "worn-lane.mem");
     writeFileSync(file, memeText(WORN_MEME, "Worn"));
-    const put = await walk.cli(["tiddler", "put", "--meme", WORN_MEME, "--recipe", "default", "--file", file, "--json"]);
+    const put = await walk.cli(["tiddler", "put", WORN_MEME, "--recipe", "default", "--file", file, "--json"]);
     expect(put.code, out(put)).toBe(0);
     const back = await walk.cli(["tiddler", "get", WORN_MEME, "--recipe", "default", "--meme", "--all", "--json"]);
     expect(back.code, out(back)).toBe(0);
@@ -234,10 +234,10 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     expect(items.filter((i) => i.kind === "held-save"), `the census holds saves in memory: ${out(census)}`).toEqual([]);
   }, 120_000);
 
-  test("W4 CONTROL: a face that stands shut refuses `face-not-open` on a meme put and a tiddler put, and nothing writes", async () => {
+  test("W4 CONTROL: a face that stands shut refuses `face-not-open` on a tiddler put and a tiddler put, and nothing writes", async () => {
     const file = join(scratch, "shut-lane.mem");
     writeFileSync(file, memeText("lar:///ha.ka.ba/kahua/memory/walk/shut-lane", "Shut"));
-    const meme = await walk.cli(["tiddler", "put", "--meme", "lar:///ha.ka.ba/kahua/memory/walk/shut-lane", "--recipe", "default", "--file", file, "--face", "7", "--json"]);
+    const meme = await walk.cli(["tiddler", "put", "lar:///ha.ka.ba/kahua/memory/walk/shut-lane", "--recipe", "default", "--file", file, "--face", "7", "--json"]);
     expect(meme.code).not.toBe(0);
     expect(errCode(meme), out(meme)).toBe("face-not-open");
     const tid = await walk.cli(["tiddler", "put", "$:/walk/shut-engine", "--recipe", "default", "--text", "x", "--create", "--face", "7", "--json"]);
@@ -273,7 +273,7 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     const PERSONAL = "lar:///ha.ka.ba/wikis/daemon/personal";
     const file = join(scratch, "sibling-private.mem");
     writeFileSync(file, memeText(PRIVATE, "Private"));
-    const put = await walk.cli(["tiddler", "put", "--meme", PRIVATE, "--bag", PERSONAL, "--file", file, "--face", "1", "--json"]);
+    const put = await walk.cli(["tiddler", "put", PRIVATE, "--bag", PERSONAL, "--file", file, "--face", "1", "--json"]);
     expect(put.code, out(put)).toBe(0);
     expect(data(put)["face"]).toBe(1);
     const own = await walk.cli(["tiddler", "get", PRIVATE, "--bag", PERSONAL, "--face", "1", "--meme", "--all", "--json"]);
@@ -294,7 +294,7 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     const WORN_PRIVATE = "lar:///ha.ka.ba/kahua/memory/walk/worn-private";
     const wornFile = join(scratch, "worn-private.mem");
     writeFileSync(wornFile, memeText(WORN_PRIVATE, "WornPrivate"));
-    const wornPut = await walk.cli(["tiddler", "put", "--meme", WORN_PRIVATE, "--bag", PERSONAL, "--file", wornFile, "--json"]);
+    const wornPut = await walk.cli(["tiddler", "put", WORN_PRIVATE, "--bag", PERSONAL, "--file", wornFile, "--json"]);
     expect(wornPut.code, out(wornPut)).toBe(0);
     const wornOwn = await walk.cli(["tiddler", "get", WORN_PRIVATE, "--bag", PERSONAL, "--meme", "--all", "--json"]);
     expect(out(wornOwn), "the worn face reads its own personal layer").toContain("WornPrivate stands in its own layer");
@@ -355,12 +355,12 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     expect(locked, JSON.stringify(locked)).toMatchObject({ locked: true, face: 1 });
     const file = join(scratch, "closed-lane.mem");
     writeFileSync(file, memeText("lar:///ha.ka.ba/kahua/memory/walk/closed-lane", "Closed"));
-    const shut = await walk.cli(["tiddler", "put", "--meme", "lar:///ha.ka.ba/kahua/memory/walk/closed-lane", "--bag", siblingBag, "--file", file, "--face", "1", "--json"]);
+    const shut = await walk.cli(["tiddler", "put", "lar:///ha.ka.ba/kahua/memory/walk/closed-lane", "--bag", siblingBag, "--file", file, "--face", "1", "--json"]);
     expect(shut.code, out(shut)).not.toBe(0);
     expect(["face-not-open", "face-closing"], out(shut)).toContain(errCode(shut));
     const wornFile = join(scratch, "worn-after-close.mem");
     writeFileSync(wornFile, memeText("lar:///ha.ka.ba/kahua/memory/walk/worn-after-close", "Worn"));
-    const worn = await walk.cli(["tiddler", "put", "--meme", "lar:///ha.ka.ba/kahua/memory/walk/worn-after-close", "--recipe", "default", "--file", wornFile, "--json"]);
+    const worn = await walk.cli(["tiddler", "put", "lar:///ha.ka.ba/kahua/memory/walk/worn-after-close", "--recipe", "default", "--file", wornFile, "--json"]);
     expect(worn.code, out(worn)).toBe(0);
     // The light again: the unlock lights the sibling under a fresh opening, and its lane takes a write.
     await door.unlockTestCustody(walk.root, "unlock", 0);
@@ -395,7 +395,7 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     const SIB_MEME = "lar:///ha.ka.ba/kahua/memory/walk/sibling-before-stop";
     const sibFile = join(scratch, "sibling-before-stop.mem");
     writeFileSync(sibFile, memeText(SIB_MEME, "Before-stop"));
-    const sibPut = await walk.cli(["tiddler", "put", "--meme", SIB_MEME, "--bag", faceZeroBag, "--file", sibFile, "--face", "0", "--json"]);
+    const sibPut = await walk.cli(["tiddler", "put", SIB_MEME, "--bag", faceZeroBag, "--file", sibFile, "--face", "0", "--json"]);
     expect(sibPut.code, out(sibPut)).toBe(0);
     // Before the stop the sibling's save rests sealed: the census names no save held in memory. A sibling's push this island
     // never asked for may wait for a name (`save-unnamed`); it reads under `unasked`, never as an item, since the pushing

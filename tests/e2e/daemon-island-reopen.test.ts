@@ -46,7 +46,7 @@ describe("e2e/daemon-island-reopen", () => {
   }, 60_000);
 
   test("R1 RED: the same hand reads its marker from the NEW island, under a changed leg, with custody still open", async () => {
-    const put = await lar.cli(["tiddler", "put", "--meme", URI, "--recipe", "default", "--file", join(scratch, "marker.mem"), "--json"]);
+    const put = await lar.cli(["tiddler", "put", URI, "--recipe", "default", "--file", join(scratch, "marker.mem"), "--json"]);
     expect(put.code, put.stderr).toBe(0);
     const before = await lar.cli(["tiddler", "get", URI, "--recipe", "default", "--meme", "--all", "--json"]);
     expect(JSON.stringify(before.json)).toContain("the marker the island carries");

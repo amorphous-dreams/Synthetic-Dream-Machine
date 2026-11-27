@@ -7,6 +7,22 @@ export interface LandingQueueDoor {
 }
 
 /**
+ * A prepared landing's synchronous half: true when it landed (or found nothing to land), false when the change must take the
+ * lander's whole async road instead (`landOne`), e.g. a hand that has to leave before the wave can land.
+ */
+export type ApplyPrepared = () => boolean;
+
+/**
+ * A lander that splits each landing in two: `prepare` does every read that awaits (the composition, heads, ledgers) and
+ * answers the synchronous `apply`, which re-checks whatever may have moved since and writes the wiki. `landOne` stays the
+ * single-change road (the owed pass, the retry pass, and a change whose apply declines).
+ */
+export interface SliceLander {
+  landOne(change: LarTiddlerChange): Promise<void>;
+  prepare(change: LarTiddlerChange): Promise<ApplyPrepared>;
+}
+
+/**
  * The shore owns the ordered wave queue, its slices, and the seed checkpoint.
  *
  * THE GRAIN: the queue holds FAMILIES. A family names the envelopes of one or more whole store changes
@@ -14,6 +30,12 @@ export interface LandingQueueDoor {
  * quota and lands them with no turn handed to the host in between, so the wiki dispatches its `change`
  * for a root and its children together and no reader of the wiki meets half a carrier. A family larger
  * than the quota lands whole in a slice of its own.
+ *
+ * ONE TICK PER SLICE: a lander that splits its landing (`SliceLander`) has every change of a slice prepared first (each
+ * await allowed), then every prepared change applied in ONE synchronous run with no await between applies, so the wiki
+ * coalesces the slice into one `change` dispatch instead of one per tiddler (each dispatch re-runs the wiki's trackers, and
+ * a per-tiddler dispatch costs O(N²) across a bulk feed). A change whose apply declines, and every later change of its
+ * title in the slice, lands after the run through `landOne`, in slice order. A plain function lander lands one at a time.
  *
  * THE BREATH: the queue tells each slice it lands (`onSliceLanded`). A watchdog that bounds a wait on PROGRESS reads a
  * drain of many slices as moving, slice by slice, and a drain that lands nothing tells nothing and still reads as stuck.
@@ -35,14 +57,20 @@ export class WaveLanding {
   private seedCompleted = false;
   private seedFailure: Error | null = null;
 
+  private readonly landOne: (change: LarTiddlerChange) => Promise<void>;
+  private readonly prepare: ((change: LarTiddlerChange) => Promise<ApplyPrepared>) | null;
+
   constructor(
-    private readonly landOne: (change: LarTiddlerChange) => Promise<void>,
+    lander: ((change: LarTiddlerChange) => Promise<void>) | SliceLander,
     private readonly yieldHost: HostTaskYield = yieldToHost,
     private readonly onLandingFailed: (title: string, error: Error) => void = () => {},
     private readonly onLandingRecovered: (title: string) => void = () => {},
     /** Told once per slice the drain landed, with the rows it landed: the drain's own evidence that it moves. */
     private readonly onSliceLanded: (landed: number) => void = () => {},
-  ) {}
+  ) {
+    if (typeof lander === "function") { this.landOne = lander; this.prepare = null; }
+    else { this.landOne = (change) => lander.landOne(change); this.prepare = (change) => lander.prepare(change); }
+  }
 
   enqueue(change: LarTiddlerChange): void { this.enqueueFamily([change]); }
 
@@ -129,15 +157,46 @@ export class WaveLanding {
       const count = slice.length;
       const failed: Array<{ item: LarTiddlerChange; error: unknown; at: number }> = [];
       const landedAt = new Map<string, number>();
-      for (let i = 0; i < count; i++) {
-        const item = slice[i]!;
-        try {
-          await this.landOne(item);
-          landedAt.set(item.title, i);
-          if (this.owed.delete(item.title)) this.onLandingRecovered(item.title);
+      const landed = (item: LarTiddlerChange, at: number): void => {
+        landedAt.set(item.title, at);
+        if (this.owed.delete(item.title)) this.onLandingRecovered(item.title);
+      };
+      if (this.prepare) {
+        // PREPARE every change (awaits allowed), then APPLY them all in one synchronous run: one wiki tick per slice.
+        const prepared: Array<ApplyPrepared | null> = new Array(count).fill(null);
+        for (let i = 0; i < count && !this.stopped; i++) {
+          try { prepared[i] = await this.prepare(slice[i]!); }
+          catch (error) { failed.push({ item: slice[i]!, error, at: i }); }
         }
-        catch (error) { failed.push({ item, error, at: i }); }
+        const deferred: number[] = [];
+        const deferredTitles = new Set<string>();
+        // No await from here to the end of this loop: the applies share one tick.
+        for (let i = 0; i < count && !this.stopped; i++) {
+          const item = slice[i]!, apply = prepared[i];
+          if (!apply) continue;
+          // A title whose earlier change waits for the async road keeps its order: every later change of it waits too.
+          if (deferredTitles.has(item.title)) { deferred.push(i); continue; }
+          try {
+            if (apply()) landed(item, i);
+            else { deferred.push(i); deferredTitles.add(item.title); }
+          }
+          catch (error) { failed.push({ item, error, at: i }); }
+        }
+        for (const i of deferred) {
+          const item = slice[i]!;
+          try { await this.landOne(item); landed(item, i); }
+          catch (error) { failed.push({ item, error, at: i }); }
+        }
       }
+      else {
+        for (let i = 0; i < count; i++) {
+          const item = slice[i]!;
+          try { await this.landOne(item); landed(item, i); }
+          catch (error) { failed.push({ item, error, at: i }); }
+        }
+      }
+      // The retry pass walks the failures in slice order, whichever half (prepare, apply, or the async road) failed them.
+      failed.sort((a, b) => a.at - b.at);
       for (const failure of failed) {
         // A later change of the same title landed in this slice: it superseded the failed one.
         if ((landedAt.get(failure.item.title) ?? -1) > failure.at) continue;

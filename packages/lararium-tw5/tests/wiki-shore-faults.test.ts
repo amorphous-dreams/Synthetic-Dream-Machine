@@ -126,11 +126,12 @@ describe("wiki shore fault vectors", () => {
       ready: [{ slot: bag, handle }],
     });
     let attempts = 0;
-    const landOne = adaptor as unknown as { _landOne(change: { title: string }): Promise<void> };
-    const originalLand = landOne._landOne.bind(adaptor);
-    landOne._landOne = async (change) => {
+    // Every landing road reads the change through `_prepareLanding` (the slice's prepare and the single-change retry alike).
+    const prepare = adaptor as unknown as { _prepareLanding(change: { title: string }): Promise<unknown> };
+    const originalPrepare = prepare._prepareLanding.bind(adaptor);
+    prepare._prepareLanding = async (change) => {
       if (change.title === title) { attempts++; throw new Error("seed wiki write failed"); }
-      await originalLand(change as never);
+      return originalPrepare(change as never);
     };
 
     let fault: unknown;

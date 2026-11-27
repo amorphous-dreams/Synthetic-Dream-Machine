@@ -72,7 +72,8 @@ export type PulamaAdmitBody =
   | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "admit-begun"; readonly image: string; readonly faces: readonly AdmittedFace[]; readonly tessera: string }
   | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "admit-landed"; readonly image: string; readonly faces: readonly AdmittedFace[]; readonly tessera: string; readonly begun: string }
   | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "image-unadmitted"; readonly image: string; readonly ends: string }
-  | KeeperBegunBody | KeeperVestedBody | KeeperLapsedBody | KeeperLandedBody | KeeperSlotBody;
+  | KeeperBegunBody | KeeperVestedBody | KeeperLapsedBody | KeeperLandedBody | KeeperSlotBody
+  | HoalaStrungBody | HoalaSlotBody | HoalaWokeBody | HoalaUnstrungBody;
 
 /** THE KEEPER TALLY's records (`pulama-keeper`): the budget a keeper spent, carried down the chain. */
 export interface KeeperBudget { readonly spent: number }
@@ -133,6 +134,34 @@ export interface KeeperSlotBody {
   readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "keeper-slot"; readonly tessera: string; readonly begun: string; readonly next: string;
   readonly to: string; readonly box: { readonly e: string; readonly n: string; readonly c: string };
 }
+/**
+ * THE HOʻĀLA LEI's records (`pulama-hoala`): the hand strings ONE lei of counted returns, and each host restart spends one.
+ * `hoala-strung` names the lei (its returns, the keeper closure it licenses, the faces lit at the stringing); `hoala-slot`
+ * carries the sealed keys for the return that comes next (`n` returns spent so far), alive at rest between restarts;
+ * `hoala-woke` rests one receipt per return spent; `hoala-unstrung` ends the lei.
+ */
+export interface HoalaStrungBody {
+  readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "hoala-strung"; readonly returns: number; readonly closure: string;
+  readonly image: string | null; readonly faces: readonly AdmittedFace[]; readonly nonce: string;
+}
+/** THE HOALA SLOT: the house's end of the bond sealed to ONE device key, for the lei's next return. It rests in the pūlama's state. */
+export interface HoalaSlotBody {
+  readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "hoala-slot"; readonly lei: string; readonly returns: number; readonly n: number;
+  readonly closure: string; readonly faces: readonly AdmittedFace[]; readonly to: string; readonly box: { readonly e: string; readonly n: string; readonly c: string };
+  /** THE ROLLBACK TARGET: the keeper closure the slot named before a return carried it across a code move; absent where none moved it. */
+  readonly prior?: string;
+}
+/** THE RECEIPT one spent return leaves: which lei, which return of how many, the closure and image the keeper stood on, the faces lit. */
+export interface HoalaWokeBody {
+  readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "hoala-woke"; readonly lei: string; readonly n: number; readonly of: number;
+  readonly slot: string; readonly closure: string; readonly image: string | null; readonly faces: readonly AdmittedFace[]; readonly nonce: string;
+  /** THE CLOSURE THE RETURN CARRIED THE LEI FROM, where the keeper's code moved under it: the rollback target. Absent on a level spend. */
+  readonly prior?: string;
+  /** WHAT THE RETURN LICENSED where it lit no keeper: `admit` names a return a lit keeper spent to admit `image` with no route. Absent: a waking. */
+  readonly licensed?: "admit";
+}
+/** THE UNSTRING: the lei ends, its slot and device key destroyed. A lit keeper signs it; an unlit one rests the bare word. */
+export interface HoalaUnstrungBody { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "hoala-unstrung"; readonly lei: string; readonly nonce: string }
 export interface SignedPulamaAdmit { readonly body: PulamaAdmitBody; readonly signer: string; readonly sig: string }
 
 export const pulamaRecordCid = (act: { readonly body: PulamaAdmitBody; readonly signer: string }): string => sha256HexBytesSync(canonicalJsonBytes({ body: act.body, signer: act.signer }));

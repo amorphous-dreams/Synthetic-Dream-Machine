@@ -309,7 +309,7 @@ describe("a stranded temp after a death mid-write", () => {
       // And the document opens whole over it.
       const repo = new Repo({ storage: new DurableNodeFSStorageAdapter(dir, { onStrandedTemp: () => { /* named above */ } }) });
       const h = await repo.find<{ text: string }>(`automerge:${docId}` as AutomergeUrl);
-      expect(h.doc().text).toBe("kept, and changed");
+      expect(h.doc()!.text).toBe("kept, and changed");
       await repo.shutdown();
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
@@ -350,6 +350,34 @@ describe("a stranded temp after a death mid-write", () => {
       expect(listed.map((c) => c.key[c.key.length - 1]).filter((k) => k!.endsWith(".tmp"))).toEqual([]);
       expect(named).toEqual([]);
     } finally { proto.sync = realSync; open(); rmSync(dir, { recursive: true, force: true }); }
+  });
+
+  test("a save that settles during the directory walk never reads stranded; an orphaned temp still does", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "lares-stranded-"));
+    try {
+      const named: string[] = [];
+      const a = new DurableNodeFSStorageAdapter(dir, { onStrandedTemp: (p) => named.push(p) });
+      await a.save(KEY, Uint8Array.from([1]));
+      const shardDir = join(dir, KEY[0]!.slice(0, 2), KEY[0]!.slice(2), "snapshot");
+      const base = readdirSync(shardDir)[0]!;
+      // A live writer: its temp stands for the walk, its rename lands before the filter reads.
+      const liveTemp = join(shardDir, `${base}.${process.pid}.u1.tmp`);
+      writeFileSync(liveTemp, "half");
+      const orphan = join(shardDir, `${base}.${process.pid + 1}.u2.tmp`);
+      writeFileSync(orphan, "half");
+      const proto = Object.getPrototypeOf(a) as { loadRange: (k: unknown) => Promise<unknown> };
+      const stock = Object.getPrototypeOf(proto) as { loadRange: (this: unknown, k: unknown) => Promise<Array<{ key: string[] }>> };
+      const real = stock.loadRange;
+      stock.loadRange = async function (this: unknown, k: unknown) {
+        const listed = await real.call(this, k);
+        // The save begins and settles after the walk listed the temp.
+        const saving = a.save(KEY, Uint8Array.from([2]));
+        await saving;
+        return listed;
+      };
+      try { await a.loadRange([KEY[0]!]); } finally { stock.loadRange = real; }
+      expect(named).toEqual([orphan]);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
   });
 });
 

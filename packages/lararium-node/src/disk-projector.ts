@@ -1544,7 +1544,7 @@ export class LarDiskProjector {
         const where = held.map((h) => h.path).join(", ");
         const lost = held.every((h) => h.behind === true);
         this._enterStandoff(bagId, uri, standoff, "home", lost
-          ? `${why}: the records fell behind their last agreement with the file at ${where} (the document read back without the write that agreement saw: a save that never rested, or a document that failed to load), so the file stays${toward !== null ? ` and nothing writes at ${toward}` : ""}. Land the file's words again through the wiki's own door (a meme: \`lares tiddler put ${uri} --recipe <wiki> --meme --file ${where}\`). Or take the records' side under key ${standoff} (the file then leaves)`
+          ? `${why}: the records fell behind their last agreement with the file at ${where} (the document read back without the write that agreement saw: a save that never rested, or a document that failed to load), so the file stays${toward !== null ? ` and nothing writes at ${toward}` : ""}. Land the file's words again through the wiki's own door (a meme: \`lares tiddler put ${uri} --recipe <wiki> --file ${where}\`). Or take the records' side under key ${standoff} (the file then leaves)`
           : `${why}: the file at ${where} holds bytes no agreement covers, so it stays${toward !== null ? ` and nothing writes at ${toward}` : ""}. Ingest that file, or take the records' side under key ${standoff} (the file then leaves)`);
         return false;
       }

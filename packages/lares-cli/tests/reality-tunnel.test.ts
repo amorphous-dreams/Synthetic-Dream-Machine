@@ -3,17 +3,18 @@
  * red plants against a scratch clone or a scratch home; nothing here writes the live tree or a real
  * home.
  */
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { execFileSync, spawnSync } from "node:child_process";
 import {
   chmodSync, existsSync, lstatSync, statSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, realpathSync, rmSync, symlinkSync, writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { EXIT, Ledger, exitOf, read, tend, undo, type External, type Item, type Row } from "../src/reality-tunnel/engine.js";
 import { windowsProfile } from "../src/reality-tunnel/homes.js";
 import { radiusLock } from "../src/reality-tunnel/lock.js";
-import { briefLine, externalLines, indexReader, liftedLines } from "../src/commands/tunnel-door.js";
+import { briefLine, cmdTunnelDoor, externalLines, indexReader, itemsFor, liftedLines } from "../src/commands/tunnel-door.js";
+import { parseArgs } from "../src/parse-args.js";
 import {
   claudeHook, headLine, jsonFloor, tomlHookForeign, jsonForeign, jsonIncludes, jsonListForeign, jsonSet, namesSeed, seedless, tomlHook, tomlMcpServer,
   tomlTableKey, tomlTableUnset, tomlTopFloor,
@@ -85,6 +86,79 @@ describe("pointer lines and prose", () => {
   });
   it("a file whose pointer was all it carried, frontmatter and all, lifts whole", () => {
     expect(seedless()("---\npaths: ['**']\n---\n\n-> [noosphere-boot.mem](x)\n")).toBeNull();
+  });
+});
+
+describe("a seedless file keeps the one line its row names", () => {
+  const LINE = "- hand back with `lares spirit handback <pet> --file -`";
+  it("an absent file takes the render, or the line alone where the row renders none", () => {
+    expect(seedless("## Surface\n\n" + LINE + "\n", LINE)(null)).toBe("## Surface\n\n" + LINE + "\n");
+    expect(seedless("## Surface\n", LINE)(null)).toBe("## Surface\n" + LINE + "\n");
+    expect(seedless(undefined, LINE)(null)).toBe(LINE + "\n");
+  });
+  it("a file another hand wrote gains the line at its end, every other line standing, and a second pass moves no byte", () => {
+    const mine = "## Mine\n\n- my own rule\n";
+    const kept = seedless(undefined, LINE)(mine)!;
+    expect(kept).toBe(mine + LINE + "\n");
+    expect(seedless(undefined, LINE)(kept)).toBe(kept);
+  });
+  it("the line counts only whole: prose that quotes it mid-sentence still takes it", () => {
+    const quoted = "note: " + LINE + " (quoted)\n";
+    expect(seedless(undefined, LINE)(quoted)).toBe(quoted + LINE + "\n");
+  });
+  it("a pointer lifts and the line lands in one pass; a row naming no line reads as before", () => {
+    expect(seedless(undefined, LINE)("-> [noosphere-boot.mem](x)\n")).toBe(LINE + "\n");
+    expect(seedless(undefined, LINE)("## Mine\n-> [noosphere-boot.mem](x)\n")).toBe("## Mine\n" + LINE + "\n");
+    expect(seedless()("## Mine\n")).toBe("## Mine\n");
+    expect(seedless()(null)).toBeNull();
+  });
+});
+
+describe("every fire reads the one return door (lar:///ha.ka.ba/lares/cli/reality-tunnel#/the-return-door)", () => {
+  const row = (id: string) => [...declared(REPO).repo, ...declared(REPO).home].find((s) => s.id === id)!;
+  const DOOR = "lares spirit handback <pet> --file -";
+
+  it("the carrier names the return line where Copilot and Codex read, and the hook that runs it for Claude", async () => {
+    // The hooks ship as plain .mjs a harness runs unbuilt; the weld loads the module itself.
+    const core = (await import(new URL("../.claude-plugin/hooks/lares-spirit-core.mjs", import.meta.url).href)) as { FILING: { verb: string } };
+    expect(DOOR).toContain(`lares spirit ${core.FILING.verb} `);
+    expect(row("copilot.github-seedless")).toMatchObject({ host: "copilot", kind: "seedless", file: ".github/copilot-instructions.md" });
+    expect(row("codex.home-seedless")).toMatchObject({ host: "codex", kind: "seedless", file: ".codex/AGENTS.md" });
+    for (const id of ["copilot.github-seedless", "codex.home-seedless"]) expect(String(row(id)["line"])).toContain(DOOR);
+    expect(String(row("copilot.github-seedless")["render"]).split("\n")).toContain(row("copilot.github-seedless")["line"]);
+    expect(row("claude.handback-hook")).toMatchObject({ event: "PostToolUse", matcher: "SubagentHandback" });
+    expect(String(row("claude.handback-hook").what)).toContain("lares spirit handback");
+    // AGENTS.md stays seedless and thin: Copilot's own file carries the line, and Codex never reads AGENTS.md inside the clone.
+    expect(row("agents.seedless")["line"]).toBeUndefined();
+  });
+
+  it("the checkout: a bare clone's tend writes Copilot's file holding the line; a file a hand wrote gains it and keeps its own lines", async () => {
+    const root = clone();
+    const l = ledger();
+    await tend(repoItems(root), l);
+    const at = join(root, ".github/copilot-instructions.md");
+    expect(readFileSync(at, "utf8").split("\n")).toContain(row("copilot.github-seedless")["line"]);
+    writeFileSync(at, "## Copilot\n\n- my own rule\n");
+    expect(read(repoItems(root), l).find((x) => x.id === "copilot.github-seedless")!.state).toBe("drift");
+    await tend(repoItems(root), l);
+    expect(readFileSync(at, "utf8")).toBe(`## Copilot\n\n- my own rule\n${String(row("copilot.github-seedless")["line"])}\n`);
+    expect((await tend(repoItems(root), l)).wrote).toEqual([]);
+  });
+
+  it("the home: Codex's own file takes the line beside whatever the operator keeps there, and a home with no Codex takes nothing", async () => {
+    const root = clone();
+    const native = mkdtempSync(join(dir, "home-"));
+    const bare = mkdtempSync(join(dir, "bare-"));
+    mkdirSync(join(native, ".codex"));
+    writeFileSync(join(native, ".codex/AGENTS.md"), "my own Codex notes\n");
+    const l = ledger();
+    const items = () => homeItems({ repo: root, homes: { native, windows: null }, mcp: MCP, claudeCli: false });
+    expect(read(items(), l).find((x) => x.id === "codex.home-seedless")!.state).toBe("drift");
+    await tend(items(), l);
+    expect(readFileSync(join(native, ".codex/AGENTS.md"), "utf8")).toBe(`my own Codex notes\n${String(row("codex.home-seedless")["line"])}\n`);
+    expect(read(items(), l).find((x) => x.id === "codex.home-seedless")!.state).toBe("aligned");
+    await tend(homeItems({ repo: root, homes: { native: bare, windows: null }, mcp: MCP, claudeCli: false }), ledger());
+    expect(existsSync(join(bare, ".codex"))).toBe(false);
   });
 });
 
@@ -805,7 +879,8 @@ describe("the brief line", () => {
     const out = r.stdout;
     expect(out.trim().split("\n")).toHaveLength(1);
     expect(out).toMatch(/^reality tunnel: /);
-  });
+    // A cold spawn of the built CLI (two seconds on an idle floor): beside another heavy run the default 5 s clock runs out first.
+  }, 30_000);
 });
 
 describe("the brief line's count", () => {
@@ -1036,8 +1111,8 @@ describe("the pre-commit gate cannot be staged away", () => {
 });
 
 describe("the staged gate asks for a build only when a commit stages the seat", () => {
-  /** A scratch repo carrying the real carrier and gate, its staged paths named, read with no CLI built. */
-  function gate(stage: readonly string[]): { code: number; err: string } {
+  /** A scratch repo carrying the real carrier and gate, its staged paths named, read with no CLI built (or the CLI `lares` names). */
+  function gate(stage: readonly string[], lares?: string): { code: number; err: string; root: string } {
     const root = mkdtempSync(join(dir, "gate-"));
     execFileSync("git", ["init", "-q", root]);
     mkdirSync(join(root, "tools"), { recursive: true });
@@ -1052,11 +1127,11 @@ describe("the staged gate asks for a build only when a commit stages the seat", 
       execFileSync("git", ["-C", root, "add", f]);
     }
     try {
-      execFileSync(join(root, "tools/repo-tunnel-staged.sh"), { cwd: root, stdio: "pipe", env: { ...process.env, LARES_BIN: join(root, "no-such-cli.js") } });
-      return { code: 0, err: "" };
+      execFileSync(join(root, "tools/repo-tunnel-staged.sh"), { cwd: root, stdio: "pipe", env: { ...process.env, LARES_BIN: lares ?? join(root, "no-such-cli.js") } });
+      return { code: 0, err: "", root };
     } catch (e) {
       const x = e as { status?: number; stderr?: Buffer };
-      return { code: x.status ?? -1, err: String(x.stderr ?? "") };
+      return { code: x.status ?? -1, err: String(x.stderr ?? ""), root };
     }
   }
 
@@ -1075,6 +1150,70 @@ describe("the staged gate asks for a build only when a commit stages the seat", 
     const r = gate([CARRIER]);
     expect(r.code).toBe(1);
     expect(r.err).toMatch(/no built CLI/);
+  });
+
+  it("a CLI that lives in another checkout reads the committing repository, and the refusal names the tree it read", () => {
+    // The borrowed CLI stands outside the committing repo; it records its argv and answers drift, judging the root it was handed.
+    const elsewhere = mkdtempSync(join(dir, "elsewhere-"));
+    const argvAt = join(elsewhere, "argv.json");
+    const cli = join(elsewhere, "lares.js");
+    writeFileSync(cli, [
+      `const fs = require("node:fs");`,
+      `const argv = process.argv.slice(2);`,
+      `fs.writeFileSync(${JSON.stringify(argvAt)}, JSON.stringify(argv));`,
+      `const at = argv.indexOf("--root");`,
+      `const root = at < 0 ? ${JSON.stringify(elsewhere)} : argv[at + 1];`,
+      `process.stdout.write(JSON.stringify({ ok: false, data: { radius: "repo", root, rows: [{ state: "drift", id: "claude.import", detail: "d" }], exit: 1 } }) + "\\n");`,
+      `process.exit(1);`,
+    ].join("\n"));
+    const r = gate(["CLAUDE.md"], cli);
+    const top = realpathSync(r.root);
+    const argv = JSON.parse(readFileSync(argvAt, "utf8")) as string[];
+    expect(argv.slice(0, 3)).toEqual(["repo", "read", "--staged"]);
+    expect(argv[argv.indexOf("--root") + 1]).toBe(top);
+    expect(r.code).toBe(1);
+    expect(r.err).toContain(`read the staged seat of ${top}`);
+    expect(r.err).not.toContain(elsewhere);
+  });
+});
+
+describe("the repo door keeps the checkout --root names", () => {
+  /** A second repository whose index carries the carrier and the seed: a checkout this CLI does not live in. */
+  function second(): string {
+    const root = clone();
+    execFileSync("git", ["-C", root, "add", CARRIER, declared(REPO).seed]);
+    return root;
+  }
+
+  it("the staged items of a named root rest under that root, never under the checkout the CLI lives in", () => {
+    const root = second();
+    const { items, root: read } = itemsFor("repo", true, false, null, root);
+    expect(read).toBe(root);
+    expect(items.length).toBeGreaterThan(0);
+    for (const i of items) expect(i.path.startsWith(root)).toBe(true);
+  });
+
+  it("`repo read --staged --root <dir>` names the root it read in its answer", async () => {
+    const root = second();
+    const out: string[] = [];
+    vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { out.push(String(chunk)); return true; });
+    try { await cmdTunnelDoor("repo", parseArgs(["repo", "read", "--staged", "--root", root, "--json"])); }
+    finally { vi.restoreAllMocks(); }
+    const answer = JSON.parse(out.join("")) as { data: { root: string; rows: Row[] } };
+    expect(answer.data.root).toBe(resolve(root));
+    for (const r of answer.data.rows) expect(r.path.startsWith(root)).toBe(true);
+  });
+
+  it("CONTROL: no --root keeps the checkout the CLI lives in", () => {
+    expect(resolve(itemsFor("repo", true).root)).toBe(resolve(REPO));
+  });
+
+  it("--root names no directory: usage, with the cure", async () => {
+    const said: string[] = [];
+    vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { said.push(a.join(" ")); });
+    try { expect(await cmdTunnelDoor("repo", parseArgs(["repo", "read", "--root", join(dir, "no-such-tree")]))).toBe(EXIT.usage); }
+    finally { vi.restoreAllMocks(); }
+    expect(said.join("\n")).toContain("git rev-parse --show-toplevel");
   });
 });
 

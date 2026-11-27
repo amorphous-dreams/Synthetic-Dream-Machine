@@ -107,6 +107,22 @@ export async function cmdVault(given: ParsedArgs): Promise<number> {
   }
 }
 
+/**
+ * THE NOT-HELD LINE NAMES WHOSE COUNT IT READS. Under a pūlama the try budget rides the keeper, and only a route presented at the
+ * keeper's hand door spends one: a keeper that serves this vessel no session (dark after a host restart, absent, refusing) spent
+ * none, so the line names what the keeper waits on and the one act that re-stands the house, and prints no count it never read.
+ */
+export function notHeldLine(door: Readonly<Record<string, unknown>>): string {
+  const pulama = door["pulama"] as { session?: unknown; waits?: unknown } | undefined;
+  const standing = String(door["standing"]);
+  if (pulama !== undefined && pulama.session !== true) {
+    const waits = typeof pulama.waits === "string" ? pulama.waits : "unknown";
+    // THE KEEPER'S STATE, NEVER A TRY COUNT: unlit, unreachable, an image it never admitted, a composition refused; each by its own next act.
+    return `vessel key     NOT held: the vessel stands as ${standing}; ${pulamaWaitsLine(waits)} No unlock try was spent here: the try budget rides the pūlama and counts only routes presented at its hand door (\`lares pulama status\` reads it). \`lares rite hoala\` reads all three layers (the keeper, the image, the vessel) and walks what each asks.`;
+  }
+  return `vessel key     NOT held: the vessel stands as ${standing} with ${String(door["attemptsLeft"])} of ${ATTEMPT_BUDGET} unlock tries left this boot (each try spent was a route presented at this vessel's own unlock that opened no slot). \`lares vault unlock\` opens it.`;
+}
+
 async function vaultStatus(args: ParsedArgs, daemonUp: boolean): Promise<number> {
   const homes = custodyHomes();
   const custody = await custodyStatus({ io: new FsCustodyIo(homes), homes });
@@ -120,7 +136,7 @@ async function vaultStatus(args: ParsedArgs, daemonUp: boolean): Promise<number>
       if (door && typeof door["unlocked"] === "boolean") {
         console.log(door["unlocked"]
           ? `vessel key     HELD by the standing vessel (slot ${String(door["slot"])}); it stands as ${String(door["standing"])}. \`lares vault lock\` drops it.`
-          : `vessel key     NOT held: the vessel stands as ${String(door["standing"])} with ${String(door["attemptsLeft"])} of ${ATTEMPT_BUDGET} unlock tries left this boot. \`lares vault unlock\` opens it.`);
+          : notHeldLine(door));
       } else {
         console.log("vessel key     no vessel stands on this store, so no process holds it.");
       }
@@ -268,9 +284,9 @@ export function unlockLine(a: CustodyDoorAnswer): string {
  */
 /** What each reading a pūlama waits on asks of the operator. */
 function pulamaWaitsLine(waits: string): string {
-  const next = waits === "pulama-locked" ? "the pūlama rests unlit; light it by hand (`lares-container.sh pulama light`), then run this again"
-    : waits === "pulama-image-unadmitted" ? "this vessel's image stands unadmitted and it carries no offer; admit the image by hand at the pūlama (`lares-container.sh pulama admit`), or raise the vessel by the rite (`lares rite kukulu`)"
-    : waits === "pulama-unreachable" ? "no pūlama answers its socket; raise it (`lares-container.sh pulama up`) and light it"
+  const next = waits === "pulama-locked" ? "the pūlama rests unlit, and no unlock try was spent on it; `lares rite hoala` lights it (a hoʻāla lei where one holds a return, else your route once on a terminal: `lares-container.sh pulama light`) and dials again"
+    : waits === "pulama-image-unadmitted" ? "this vessel's image stands unadmitted and it carries no offer; `lares rite hoala` steps the tag back to an admitted image kept here and stands that; or admit this image by hand at the pūlama (`lares-container.sh pulama admit`), or raise it through its gate (`lares rite kukulu`)"
+    : waits === "pulama-unreachable" ? "no pūlama answers its socket, and no unlock try was spent on the silence; `lares rite hoala` stands the keeper first (by hand: `lares-container.sh pulama up`), lights it (a hoʻāla lei, else your route once on a terminal) and dials again"
     : waits === "composition-refused" ? "the pūlama served a session and the vessel refused to compose over it, so the session left; the vessel's log names the fault (`[lararium] the sovereign composition refused: …`), and a restart alone changes nothing"
     : waits.startsWith("kukulu-") || waits.startsWith("swarm-lei-") || waits.startsWith("rite-") ? "a rebuilt vessel enters by the rite: string a kukulu lei and run `lares rite kukulu`, which carries the lei and its vouch to the pūlama"
     : "read the pūlama's own log for that reading";

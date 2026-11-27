@@ -141,12 +141,12 @@ describe("the dyad capability", () => {
     // The door the vessel serves is the ring's own (`ringDyadDoor`, edge-shadow-ring.ts), bound once over this ring.
     const ringSrc = readFileSync(join(__dirname, "..", "src", "edge-shadow-ring.ts"), "utf8");
     expect((src.match(/^\s*const dyadDoor: DyadReader = ringDyadDoor\(shadowRing\);$/gm) ?? []).length).toBe(1);
-    expect((src.match(/await standDaemonIsland\(\{/g) ?? []).length).toBe(1);
+    expect((src.match(/bootWait\("daemon-island", [^\n]*standDaemonIsland\(\{/g) ?? []).length).toBe(1);
     expect(src).toMatch(/islandFloorStack\(\{[\s\S]*?dyad: dyadDoor/);
     const door = src.indexOf("const dyadDoor: DyadReader = ringDyadDoor(shadowRing);");
     const floor = src.indexOf("islandFloorStack({");
     const fold = src.indexOf("if (activeAtom) await shadowRing.refold();");
-    const boot = src.indexOf("await standDaemonIsland({");
+    const boot = src.indexOf("standDaemonIsland({");
     expect(door).toBeGreaterThan(-1);
     expect(floor).toBeGreaterThan(-1);
     expect(fold).toBeGreaterThan(-1);

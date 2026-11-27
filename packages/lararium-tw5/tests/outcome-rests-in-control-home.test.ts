@@ -7,6 +7,7 @@
  *
  * Control: the outcome's own content (status, results) stands unchanged.
  */
+import { answerRingOf } from "@lararium/mesh/control-home";
 import { describe, expect, test } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { CONTROL_HOME_ID, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
@@ -45,6 +46,11 @@ describe("an outcome and its effect index rest in the control document", () => {
     expect(index?.tiddler["request-id"], "CONTROL: the row still names its attempt").toBe("r3");
     expect(await slot.listVisible(), "the mirrored working slot rests neither").toEqual([]);
     expect(await daemonBag.listVisible(), "the daemon document rests neither").toEqual([]);
-    expect(JSON.parse(String((await control.get(`${OUTCOME_URI_PREFIX}r3`))?.tiddler["results"]))).toEqual({ summary: { ok: true, output: { body: "private-heron" } } });
+    // THE ROW RESTS THE VERDICT ALONE (the ledger diet): no body in the control document, the whole answer in the ring.
+    const row = (await control.get(`${OUTCOME_URI_PREFIX}r3`))?.tiddler as Record<string, unknown>;
+    expect(row["results"]).toBeUndefined();
+    expect(JSON.stringify(row)).not.toContain("private-heron");
+    expect(typeof row["result-sha256"]).toBe("string");
+    expect(JSON.parse(String(answerRingOf(control).get("r3")?.tiddler["results"]))).toEqual({ summary: { ok: true, output: { body: "private-heron" } } });
   });
 });

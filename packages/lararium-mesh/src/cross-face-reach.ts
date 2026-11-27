@@ -38,12 +38,12 @@ export const PRIVATE_SLOT_KINDS: ReadonlySet<WikiSlotKind> = new Set(["personal"
 export const CROSS_FACE_READ_VERBS: ReadonlySet<string> = new Set(["tiddler-get", "wiki-filter", "wiki-render", "wiki-status", "meme-list"]);
 
 /**
- * The verbs whose `target` names a FACE: the tiddler door and the meme verbs. A read among them visits a lit target; a write
+ * The verbs whose `target` names a FACE: the tiddler door and the meme reads. A read among them visits a lit target; a write
  * among them naming another face refuses. Any other verb's `target` means what that verb says (an intent's, a pin's) and no
  * cross-face door reads it.
  */
 export const CROSS_FACE_TARGET_VERBS: ReadonlySet<string> = new Set([
-  ...CROSS_FACE_READ_VERBS, "tiddler-put", "tiddler-delete", "meme-put", "meme-delete", "meme-patch", "meme-project",
+  ...CROSS_FACE_READ_VERBS, "tiddler-put", "tiddler-delete", "meme-project",
 ]);
 
 /** The refusal a private bag answers at a cross-face door. */

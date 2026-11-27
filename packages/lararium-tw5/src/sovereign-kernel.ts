@@ -63,19 +63,20 @@ import {
 } from "@lararium/mesh/island-protocol";
 import { makeIslandRepo, replicaHeads } from "@lararium/mesh/island-repo-door";
 import { sha256HexBytesSync } from "@lararium/mesh/crypto";
-import { GENESIS_FLOOR_TIDDLER, resolveFloor, floorRecordsInOrder, floorCanonReader } from "@lararium/mesh/floor-manifest";
+import { GENESIS_FLOOR_TIDDLER, resolveFloor, floorRecordsFor, floorCanonReader } from "@lararium/mesh/floor-manifest";
 import { plainRecordOrNull, ownEntry } from "@lararium/mesh/stored-value";
 import { islandSecretHome } from "@lararium/mesh/secret-home";
 import { type KahuaStageFace } from "@lararium/mesh/kahua-stage-store";
 import { type Repo, type DocHandle, type AutomergeUrl, type StorageAdapterInterface } from "@lararium/mesh/automerge";
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
-import { controlStoreOf, floorAnswerStore, ControlHomeUnavailable } from "@lararium/mesh/control-home";
+import { controlStoreOf, floorAnswerStore, answerRingOf, ControlHomeUnavailable } from "@lararium/mesh/control-home";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { IslandKernel } from "./island-kernel.js";
 import { waitForSlotDocument } from "./slot-wait.js";
 import { storeLiveness, type StoreLiveness } from "./store-liveness.js";
-import { buildIslandRecipe, seedDrained } from "./island-recipe.js";
+import { buildIslandRecipe, seedDrained, type RecipeReadyBinding } from "./island-recipe.js";
+import { isTw5DocsLibraryBag, tw5LibraryStackStore } from "./tw5-docs-library.js";
 import { openIslandStory } from "./island-story.js";
 import { casBlobPreloads, modulePinsOf } from "./module-pins.js";
 import { makeCatalogAccessor, libraryDocUrl } from "./catalog-accessor.js";
@@ -457,9 +458,16 @@ export function runSovereignKernel(
       _handles.set(CONTROL_HOME_ID, controlHandle);
       _control = controlStoreOf(controlHandle);
     }
+    // EVERY WHOLE ANSWER CROSSES TO THE VESSEL'S ANSWER RING, floor or not: the island's ring holds each outcome its verbs
+    // conclude (`writeOutcome`), and hands it to the vessel's own ring over this message, where the verb door's caller
+    // waits. The control document rests the verdict row alone; the body rides here and rests nowhere.
+    if (_control) {
+      answerRingOf(_control).subscribe((_requestId, record) =>
+        _post(mkDaemonFloorAnswer({ tiddler: { ...record.tiddler }, ...(record.meta ? { meta: { ...record.meta } } : {}) }, true)));
+    }
 
     const slots = expandRecipe(msg.recipe);
-    const ready: Array<{ slot: SlotUri; handle: DocHandle<LarDoc> }> = [];
+    const ready: RecipeReadyBinding[] = [];
     // THE FACE'S CANON MOUNTS AFTER EA. It rests sealed under the face, and its values open only through this island's own
     // document-store door, which stands with the island's holder at `onEa`: a restart that waited on it here, before ea,
     // would wait on itself (the vessel's load refuses `holder-locked` until the door answers). So it mounts once ea lands,
@@ -469,6 +477,8 @@ export function runSovereignKernel(
     for (const slot of slots) {
       if (slot === wikiSlotUri(slug, "temp")) continue;
       if (slot === ORACLE_BAG) { ready.push({ slot, handle: laraiumHandle }); continue; }
+      // TiddlyWiki5's native docs (the herm/hearth wiki's foreign floor) ride code, read-only: no document, no grant.
+      if (isTw5DocsLibraryBag(slot)) { ready.push({ slot, store: await tw5LibraryStackStore(slot) }); continue; }
       const docUrl = await slotUrl(slot);
       if (!docUrl) continue;   // ungranted/unregistered slot — in-memory or absent
       if (msg.recipe.canonBag !== undefined && slot === msg.recipe.canonBag) { deferredCanon = { slot, url: docUrl }; continue; }
@@ -549,7 +559,8 @@ export function runSovereignKernel(
         _post(mkFault(msg.wikiUri, `${PLANE_LABELS.oracle} mount refused (${floor.refusal}): ${floor.reason}`));
         return;
       }
-      floorRecords = floorRecordsInOrder(floor);
+      // THE CANON FLOOR BY PLACE: this wiki's read-face lays the house-canon snapshots its place admits (`floorRecordsFor`).
+      floorRecords = floorRecordsFor(floor, slug);
       floorCanon = floorCanonReader(floor);
     } else {
       console.info(`[floor] the genesis seed names no floor; the ${PLANE_LABELS.oracle} reads the seed rows alone`);

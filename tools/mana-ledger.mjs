@@ -39,7 +39,7 @@ export function loadReadings(text) {
     const w = d?.seven_day, t = Date.parse(d?.t);
     if (!w || typeof w.used_percentage !== 'number' || Number.isNaN(t)) continue;
     const reset = typeof w.resets_at === 'number' && Number.isFinite(w.resets_at) ? w.resets_at * 1000 : undefined;
-    const r = { t, pct: w.used_percentage, ...(reset !== undefined && { reset }) };
+    const r = { t, pct: w.used_percentage, src: 'statusline', ...(reset !== undefined && { reset }) };
     readings.push(r);
     if (reset === undefined) continue;
     const g = windows.get(reset) ?? []; g.push(r); windows.set(reset, g);
@@ -68,7 +68,7 @@ export function parseArgs(argv, home = homedir()) {
     else if (a === '--json') o.json = true;
     else if (a === '--reading') {
       const r = point(v()); if (!r) throw new Error(`--reading takes <iso>=<percent>\n${USAGE}`);
-      o.readings.push(r);
+      o.readings.push({ ...r, src: 'operator' });
     } else if (a === '--calibrate') {
       const [x, y] = v().split('..').map(point);
       if (!x || !y || y.t <= x.t || y.pct <= x.pct) throw new Error(`--calibrate takes <iso>=<pct>..<iso>=<pct>, later and higher\n${USAGE}`);
@@ -152,6 +152,28 @@ export function aggregate(records, { since = -Infinity, until = Infinity } = {})
 }
 
 /** Velocity over the window; %/token from operator readings; projection to reset. Testimony only. */
+/** The plan window a reading at `t` falls in: its own `resets_at` minus the window length. */
+export const WINDOW_MS = 7 * 24 * 3.6e6;
+/** A reading counts as the current level while it stays this fresh. */
+export const FRESH_MS = 15 * 60e3;
+/** The fast slope reads the last few hours of the current window (the SRE pair: a slow window and a fast one). */
+export const FAST_MS = 3 * 3.6e6;
+
+/**
+ * The OBSERVED slope (% per hour) over readings inside ONE reset window, never across a reset: a spike before a reset
+ * belongs to the week it burned in. Null where fewer than two readings, or under 20 minutes of span, stand in the window.
+ */
+export function observedSlope(readings, reset, end, span = Infinity, minHours = 1 / 3) {
+  // A plan's used percent never falls inside its window, yet parallel sessions tee staggered readings (10, 9, 10 …): the
+  // slope reads the running maximum, the envelope the plan actually holds.
+  let top = -Infinity;
+  const all = readings.filter(r => r.reset === reset && r.t <= end).map(r => ({ t: r.t, pct: (top = Math.max(top, r.pct)) }));
+  const w = all.filter(r => r.t >= end - span);
+  if (w.length < 2) return null;
+  const a = w[0], b = w[w.length - 1], h = (b.t - a.t) / 3.6e6;
+  return h >= minHours ? Math.max(b.pct - a.pct, 0) / h : null;
+}
+
 export function project(agg, { since, until, readings = [], spans = [], reset, weightedBetween }) {
   const end = Number.isFinite(until) ? until : agg.last;
   const hours = Math.max((end - since) / 3.6e6, 1 / 60);
@@ -175,6 +197,34 @@ export function project(agg, { since, until, readings = [], spans = [], reset, w
       }
     }
   }
+  // THE TRUE GAUGE OUTRANKS THE ESTIMATE. Where the statusline's readings stand inside the current reset window, the level is
+  // the freshest reading and the pace is the readings' own slope inside that window (slow: the whole window so far; fast: its
+  // last few hours); token velocity only fills in where no such readings stand. Burn reads as pace over the even-spend rate
+  // (what is left over the hours to reset), the SRE burn-rate form, so 1.0x spends the plan exactly at reset.
+  const last = readings.findLast(r => Number.isFinite(r.reset) && r.t <= end);
+  if (last && last.reset > end) {
+    out.window = { start: last.reset - WINDOW_MS, reset: last.reset };
+    // The fast slope wants an hour of readings: the plan reports whole percents, so a shorter span reads mostly rounding.
+    const slow = observedSlope(readings, last.reset, end), fast = observedSlope(readings, last.reset, end, FAST_MS, 1);
+    const fresh = end - last.t <= FRESH_MS;
+    const peak = readings.filter(r => r.reset === last.reset && r.t <= end).reduce((m, r) => Math.max(m, r.pct), -Infinity);
+    const level = fresh ? peak : out.pct_now ?? peak;
+    const left = (last.reset - end) / 3.6e6;
+    out.pct_now = level;
+    out.level_source = fresh ? 'reading' : out.pct_per_mweighted ? 'reading+tokens' : 'stale-reading';
+    out.hours_to_reset = left;
+    if (slow !== null) {
+      // THE PROJECTION RIDES THE CURRENT PACE: the fast slope where it stands, the slow one only where it does not. A burst
+      // at the window's opening (a spike landing right after the reset) weighs the slow slope for days; the fast one forgets it.
+      const pace = fast ?? slow;
+      out.pct_per_hour = pace;
+      out.pace_source = fast !== null ? 'readings (fast window)' : 'readings (whole week)';
+      out.pct_at_reset = level + left * pace;
+      out.hours_to_100 = pace > 0 ? (100 - level) / pace : Infinity;
+      const even = left > 0 ? Math.max(100 - level, 0) / left : Infinity;
+      out.burn = { slow: even > 0 ? slow / even : Infinity, ...(fast !== null && { fast: even > 0 ? fast / even : Infinity }), even_pct_per_hour: even };
+    } else if (out.pct_per_hour !== undefined) out.pace_source = 'tokens';
+  } else if (out.pct_per_hour !== undefined) out.pace_source = 'tokens';
   return out;
 }
 
@@ -186,11 +236,13 @@ export function render(agg, proj, o) {
   for (const [m, r] of Object.entries(agg.byModel).sort((a, b) => b[1].weighted - a[1].weighted))
     L.push(`${m} | ${r.requests} (${r.sidechain_requests}) | ${fmt(r.input)} | ${fmt(r.cache_write)} | ${fmt(r.cache_read)} | ${fmt(r.output)} | ${fmt(r.weighted)}`);
   L.push(`velocity: ${fmt(proj.weighted_per_hour)} weighted tokens/h (weights ${JSON.stringify(WEIGHTS)})`);
-  if (proj.anchor) L.push(`anchor: ${proj.anchor.pct}% at ${new Date(proj.anchor.t).toISOString()} (operator reading)`);
+  if (proj.anchor) L.push(`anchor: ${proj.anchor.pct}% at ${new Date(proj.anchor.t).toISOString()} (${proj.anchor.src === 'statusline' ? 'statusline reading' : 'operator reading'})`);
   if (proj.pct_per_mweighted) {
     L.push(`calibration: ${proj.pct_per_mweighted.toFixed(3)}% per M weighted -> est now ${proj.pct_now.toFixed(1)}%, ${proj.pct_per_hour.toFixed(2)}%/h`);
-    if (proj.pct_at_reset !== undefined) L.push(`projection (testimony): ${proj.pct_at_reset.toFixed(0)}% at reset in ${proj.hours_to_reset.toFixed(1)} h; 100% in ${proj.hours_to_100.toFixed(1)} h at this pace`);
-  } else if (proj.anchor) L.push('calibration: needs a second operator reading after burn, or a --calibrate span, to price % per token');
+  } else if (proj.anchor && proj.pace_source !== 'readings') L.push('calibration: needs a second operator reading after burn, or a --calibrate span, to price % per token');
+  if (proj.window) L.push(`window: this plan week ${new Date(proj.window.start).toISOString()} -> reset ${new Date(proj.window.reset).toISOString()}; level ${proj.pct_now.toFixed(1)}% (${proj.level_source})`);
+  if (proj.burn) L.push(`burn: ${proj.burn.slow.toFixed(2)}x slow${proj.burn.fast !== undefined ? ` · ${proj.burn.fast.toFixed(2)}x fast` : ''} of even spend (${proj.burn.even_pct_per_hour.toFixed(2)}%/h to land at 100% on reset); pace ${proj.pct_per_hour.toFixed(2)}%/h from ${proj.pace_source}`);
+  if (proj.pct_at_reset !== undefined) L.push(`projection (testimony): ${proj.pct_at_reset.toFixed(0)}% at reset in ${proj.hours_to_reset.toFixed(1)} h; 100% in ${proj.hours_to_100.toFixed(1)} h at this pace (${proj.pace_source ?? 'tokens'})`);
   return L.join('\n');
 }
 
@@ -198,7 +250,10 @@ export function main(argv = process.argv.slice(2)) {
   const o = parseArgs(argv);
   if (o.help) { console.log(USAGE); return 0; }
   const now = Date.now();
-  o.since ??= o.readings[0]?.t ?? now - 24 * 3.6e6;
+  // THE WINDOW NEVER CROSSES A RESET: by default it opens where the current plan week opened (its reset minus seven days),
+  // so a spike that burned in last week never inflates this week's velocity.
+  const currentReset = o.readings.findLast(r => Number.isFinite(r.reset) && r.reset > now)?.reset;
+  o.since ??= currentReset !== undefined ? currentReset - WINDOW_MS : o.readings[0]?.t ?? now - 24 * 3.6e6;
   const from = Math.min(o.since, o.readings[0]?.t ?? o.since, ...o.spans.map(([a]) => a.t));
   const records = [];
   for (const p of walk(o.dir)) {

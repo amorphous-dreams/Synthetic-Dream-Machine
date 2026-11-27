@@ -332,7 +332,7 @@ export function scanFiles(
       // until a person answers). A gone path that holds no base skips: no agreement ever stood there.
       const goneSynced = tree.baseAt(syncedTreeKey(toBag, uri), file)?.disk ?? null;
       if (goneSynced !== null) rows.push({ file, uri, text: "", diskHash: "", syncedHash: goneSynced, status: "deleted", ext });
-      else skipped.push({ file, why: "gone from disk, and no base ever stood at its path" });
+      else if (!isStray(file)) skipped.push({ file, why: "gone from disk, and no base ever stood at its path" });  // the projector's own atomic-write temp passes unnamed
       continue;
     }
     // The NFC shore assertion (spec: memetic-wikitext-framing #carrier-bytes) — foreign
@@ -1693,6 +1693,9 @@ interface WaveFolder {
   readonly label: string;
 }
 
+/** The pending-pin count last printed per folder label. */
+const waitingPins = new Map<string, number>();
+
 /** What one folder's wave owes the shore, and whether a carrier newly vanished. */
 type FolderWaveReading = { readonly sense: string[]; readonly vanishedNow: boolean };
 
@@ -1741,7 +1744,12 @@ async function folderWave(
   // NO BASE WAITS SILENT: the settle landed each base, and each confirmed rename's, through the base door. One that rides
   // the island's pending pin, and one that reached no owner, each get named here, and the shore counts the pins that wait.
   const bases = settled.bases;
-  if (bases !== undefined && bases.waiting > 0) log(`${bases.waiting} base(s) from ${folder.label} wait on the island's pending pin until its heads rest; \`lares shore flush\` names each pin that waits`);
+  // A count prints when it moves, never again for the same count: a pin that waits across a hundred waves names itself once.
+  if (bases === undefined || bases.waiting === 0) waitingPins.delete(folder.label);
+  else if (waitingPins.get(folder.label) !== bases.waiting) {
+    waitingPins.set(folder.label, bases.waiting);
+    log(`${bases.waiting} base(s) from ${folder.label} wait on the island's pending pin until its heads rest; \`lares shore flush\` names each pin that waits`);
+  }
   if (bases !== undefined && bases.unread + bases.differs > 0) log(`${bases.unread + bases.differs} base(s) from ${folder.label} pinned nothing: the island that projects ${folder.bag} read ${bases.differs} carrier(s) whose file and records differ and ${bases.unread} file(s) it could not read; its gate weighs each as it stands`);
   if (bases !== undefined && bases.outsideMirror > 0) log(`${bases.outsideMirror} base(s) from ${folder.label} pinned nothing: each file lies outside every mirror root of ${folder.bag}, so a rescan changes nothing; move the file under a mirror root or leave it unpinned`);
   if (bases !== undefined && bases.owed > 0) log(`${bases.owed} base(s) from ${folder.label} reached no owner (${bases.why ?? "the island gave no answer"}); the next wave over those files asks again`);

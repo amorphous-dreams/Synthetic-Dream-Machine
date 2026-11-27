@@ -61,7 +61,7 @@ const short = (cid: string | null | undefined): string => (cid ? `${cid.slice(0,
 export type FloorStatusOutput = Partial<FloorStatus> & {
   readonly genesis?: {
     readonly record: GenesisDigests;
-    readonly seed: { readonly cid: string; readonly ratchets: readonly RatchetDifference[] } | null;
+    readonly seed: { readonly cid: string; readonly ratchets: readonly RatchetDifference[]; readonly onPin?: boolean } | null;
     readonly floorPin: { readonly manifestCid: string; readonly ratchets: readonly RatchetDifference[] } | null;
     readonly line: string;
     readonly unread?: string;
@@ -128,6 +128,8 @@ export function floorStatusLines(s: FloorStatusOutput, grain: FloorGrain = "all"
     lines.push(`  founding record: engine ${d(g.record.engine)} · grammar ${d(g.record.grammar)} · lararium ${d(g.record.lararium)} · plugins ${d(g.record.plugins)} · floor ${d(g.record.floor)}`);
     lines.push(g.seed === null
       ? "  seed (offered):  none reads"
+      : ratchetsDiffer(g.seed.ratchets) && g.seed.onPin === true && g.seed.ratchets.every((r) => r.ratchet !== "engine" || r.reading === "same")
+        ? `  seed (offered):  ${g.seed.cid} — the pin already carries this seed; serving stands on the founding record because mounts read the floor beside it`
       : ratchetsDiffer(g.seed.ratchets)
         ? `  seed (offered):  ${g.seed.cid} — a newer seed waits: ${seedWords(g.seed.ratchets)}; the founding record keeps serving, and lay moves canon, never the founding record`
         : `  seed (offered):  ${g.seed.cid} — same on every ratchet`);

@@ -1,5 +1,5 @@
 /**
- * meme-realm-write.test — THE STEWARD WRITE PATH: `meme put --bag <x>` for a bag the REALM carries.
+ * meme-realm-write.test — THE STEWARD WRITE PATH: `tiddler put --bag <x>` for a bag the REALM carries.
  *
  * The ruling (realm-bag-brief #/what-a-relation-bag-needs, item 5): the read cap is CONTRACT — the whole
  * contracted cabal — and the write cap is the NAMED STEWARDS' SET. The daemon island mounts no layer for a
@@ -19,7 +19,8 @@ import { CompositeStore } from "@lararium/mesh/composite-store";
 import { bagUri } from "@lararium/mesh/lar-uris";
 import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { makeMemePutReactor, makeMemeGetReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeMemeGetReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeTiddlerPutReactor } from "../src/tiddler-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { kahuHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
 
@@ -64,15 +65,15 @@ function rig(keptBy: readonly string[], caller: string | null) {
 }
 
 const refusalOf = async (opts: MemeVerbOptions, bag = "lares"): Promise<string> => {
-  try { await makeMemePutReactor(opts)({ uri: URI, bag, text: meme("/x") }, ctx()); return "(landed)"; }
+  try { await makeTiddlerPutReactor(opts)({ title: URI, bag, text: meme("/x") }, ctx()); return "(landed)"; }
   catch (e) { return e instanceof Error ? e.message : String(e); }
 };
 
-describe("meme-put --bag — a bag the realm carries", () => {
+describe("a put --bag — a bag the realm carries", () => {
   test("a STEWARD's put lands on the REALM doc — B writes the ford's one book", async () => {
     const r = rig(["nym-a", "nym-b"], "nym-b");
-    const receipt = await makeMemePutReactor(r.opts)({ uri: URI, bag: "lares", text: meme("/b") }, ctx());
-    expect(receipt["decision"]).toBe("ingest");
+    const receipt = await makeTiddlerPutReactor(r.opts)({ title: URI, bag: "lares", text: meme("/b") }, ctx());
+    expect(receipt["decision"]).toBe("put");
     expect(await r.realmDoc.get(URI)).not.toBeNull();
   });
 
@@ -93,15 +94,15 @@ describe("meme-put --bag — a bag the realm carries", () => {
 
   test("CONTROL: the READ path is unmoved — a get still reaches the realm doc by access", async () => {
     const r = rig(["nym-a"], "nym-a");
-    await makeMemePutReactor(r.opts)({ uri: URI, bag: "lares", text: meme("/a") }, ctx());
+    await makeTiddlerPutReactor(r.opts)({ title: URI, bag: "lares", text: meme("/a") }, ctx());
     const got = await makeMemeGetReactor(r.opts)({ uri: URI, bag: "lares" }, ctx());
     expect((got["meme"] as { text: string } | null)?.text).toContain("#/a");
   });
 
   test("two realms on one vessel keep the same bag name on separate docs", async () => {
     const r = rig(["nym-a", "nym-b"], "nym-b");
-    await makeMemePutReactor(r.opts)({ uri: URI, bag: "lares", text: meme("/realm-a") }, ctx());
-    await makeMemePutReactor(r.opts)({ uri: URI, bag: "lares", realm: REALM_B, text: meme("/realm-b") }, ctx());
+    await makeTiddlerPutReactor(r.opts)({ title: URI, bag: "lares", text: meme("/realm-a") }, ctx());
+    await makeTiddlerPutReactor(r.opts)({ title: URI, bag: "lares", realm: REALM_B, text: meme("/realm-b") }, ctx());
     const defaultGet = await makeMemeGetReactor(r.opts)({ uri: URI, bag: "lares" }, ctx());
     const realmGet = await makeMemeGetReactor(r.opts)({ uri: URI, bag: "lares", realm: REALM_B }, ctx());
     expect((defaultGet["meme"] as { text: string }).text).toContain("#/realm-a");
@@ -116,7 +117,7 @@ describe("meme-put --bag — a bag the realm carries", () => {
 
   test("named realm refuses an unkept hand and recipe container", async () => {
     const r = rig(["nym-a"], "nym-a");
-    await expect(makeMemePutReactor(r.opts)({ uri: URI, bag: "lares", realm: REALM_B, text: meme("/no") }, ctx()))
+    await expect(makeTiddlerPutReactor(r.opts)({ title: URI, bag: "lares", realm: REALM_B, text: meme("/no") }, ctx()))
       .rejects.toThrow(`meme: bag "${LARES}" holds no steward's write in realm ${REALM_B}`);
     expect(await r.realmDocs.get(REALM_B)!.get(URI)).toBeNull();
     // CONTROL: the same hand, a steward of the DEFAULT realm, lands its put where no realm gets named.

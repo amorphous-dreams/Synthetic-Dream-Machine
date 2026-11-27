@@ -145,6 +145,7 @@ describe("multi-persona-per-vessel (#63)", () => {
     try {
       setMountedFace(undefined);
       await expect(resolveFace(undefined, { worn: true })).rejects.toThrow(/wears none of them[\s\S]*lares vault unlock --face N/);
+      await expect(resolveFace(undefined, { worn: true })).rejects.toMatchObject({ klass: "none-worn" });   // the log keeps the class
       setMountedFace(1);
       expect(await resolveFace(undefined, { worn: true })).toBe(1);   // the face the operator wears
       expect(await resolveFace(0, { worn: true })).toBe(0);           // a named face that stands open

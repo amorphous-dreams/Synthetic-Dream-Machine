@@ -11,15 +11,32 @@
  * ── WHAT THIS HOLDS ───────────────────────────────────────────────────────────────────────────────────────
  * Each law runs as a pure function of the seed text that returns its findings. The CONTROLS feed every law a
  * planted fault it MUST name, so a law that reads nothing cannot pass for green. The SEED block asserts that
- * the repo seed yields no finding. The seat orders come from the seed's own `set-aim`, `set-steer` and
- * `set-yield` procedures, never from a list kept here.
+ * the repo seed yields no finding.
+ *
+ * ── WHERE THE VOCABULARY COMES FROM (derive, never enumerate) ─────────────────────────────────────────────
+ * The seed owns its living grammar and the operator owns the seed, so no law here keeps a word list of its own.
+ * The seat orders and the firing names come from the seed's `set-aim`, `set-steer` and `set-yield` procedures.
+ * The RETIRED names come from one canon row, grammar-watch#/the-kupono-cut's
+ * ``<<has entity=`kupono-cut` name=`retired` params=`…`>>``: a name the operator rules pono again leaves that
+ * row and this gate follows with no edit. The sigil vocabulary itself stays open (a new sigil enters the
+ * grammar as a tagged tiddler), so no law lists the LIVE heads. The old frame sigil reads retired by what it
+ * DID, never by its head: a firing (`aim`, `steer`, `yield`) rides `set` alone, and ``<<~ lares action=`…`>>``,
+ * the house's own act line, reads pono (operator ruling 2026-11-26).
+ *
+ * ── THE SHELF FOLLOWS THE SAME ROW ────────────────────────────────────────────────────────────────────────
+ * The sigil tiddlers under `tiddlers/sigil-*.tid` generate the grammar table, so a retired name that kept its
+ * tiddler would keep its sigil. This gate already reads the retired row, so the burn rides here: no retired
+ * name stands as `sigil-<name>.tid`, and `sigil-lares.tid` (the act line) stands.
  */
 
 import { describe, test, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 const SEED = new URL("../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem", import.meta.url).pathname;
 const seed = readFileSync(SEED, "utf8");
+const SHELF = new URL("../tiddlers/", import.meta.url).pathname;
+const CANON = new URL("../../../bags/lares/ha.ka.ba/lares/docs/pono/grammar-watch.mem", import.meta.url).pathname;
+const canon = readFileSync(CANON, "utf8");
 
 const TICKED = /`[^`]*`/g;
 const CALL = /<<(?:[^>\n]|>(?!>))*>>/g;
@@ -52,14 +69,23 @@ const arrowsBetweenValues = (text: string): string[] =>
 const spacedAtSigns = (text: string): string[] =>
   text.split("\n").flatMap((l, i) => (/(^|\s)@/.test(l) ? [`${i + 1}: spaced @ · ${l.trim().slice(0, 70)}`] : []));
 
-/** Cut 3: every value rides named in a backtick span; no quoted value, no positional residue. */
+/**
+ * An elision standing where further keys would ride (``<<~ set lares=`aim` …>>``, `<<~ name ...>>`): the ellipsis
+ * glyph or three dots, alone. It elides whole ``key=`value` `` pairs and never a value: `note=...` binds a key to
+ * an unticked value and teaches that form by example, so it reads as a finding (the seed's own glyph rule seats
+ * every value in a backtick span, an elided one too: `` throw=`…` ``).
+ */
+const ELISION = /^(?:…|\.\.\.)$/;
+
+/** Cut 3: every value rides named in a backtick span; no quoted value, no unticked value, no positional residue. */
 const unnamedOrQuotedValues = (text: string): string[] =>
   callsOf(text).flatMap((c) => {
     const masked = c.rest.replace(TICKED, "T");
     const found: string[] = [];
     if (/[a-z0-9-]+="/i.test(masked)) found.push(at(c, 'quoted key="value"'));
     const residue = masked.replace(/\b[a-z][a-z0-9-]*=T/gi, "").trim();
-    if (residue !== "" && residue !== "…") found.push(at(c, `positional residue «${residue.slice(0, 30)}»`));
+    if (residue === "" || ELISION.test(residue)) return found;
+    found.push(at(c, /^[a-z][a-z0-9-]*=/i.test(residue) ? `unticked value «${residue.slice(0, 30)}»` : `positional residue «${residue.slice(0, 30)}»`));
     return found;
   });
 
@@ -67,17 +93,39 @@ const unnamedOrQuotedValues = (text: string): string[] =>
 const valueHazards = (text: string): string[] =>
   callsOf(text).flatMap((c) => [...c.rest.matchAll(TICKED)].filter((m) => m[0].includes("$(")).map(() => at(c, "$( in a value")));
 
-/** Envelope and openers: DOCTYPE names type= and spec=; every ahu opener names slot=; the old frame names stand nowhere. */
-const envelopeAndRetired = (text: string): string[] => {
+/** Envelope and openers: DOCTYPE names type= and spec=; every ahu opener names slot=. */
+const envelopeAndOpeners = (text: string): string[] => {
   const found: string[] = [];
   const calls = callsOf(text);
   const doctype = calls.find((c) => c.prefix === "!" && c.head === "DOCTYPE");
   if (!doctype || !/^type=`[^`]+` spec=`[^`]+`$/.test(doctype.rest)) found.push("DOCTYPE lacks type=`…` spec=`…`");
   for (const c of calls.filter((c) => c.head === "ahu" && c.prefix === "~"))
     if (!/^slot=`#\/[^`]+`$/.test(c.rest)) found.push(at(c, "ahu opener without slot="));
-  if (/^\\procedure ~lares\(/m.test(text)) found.push("\\procedure ~lares still stands");
-  for (const c of calls.filter((c) => c.head === "lares")) found.push(at(c, "<<~ lares …>> still stands"));
-  for (const c of calls.filter((c) => /\bhud=/.test(c.rest))) found.push(at(c, "hud= still stands"));
+  return found;
+};
+
+/** The firing names the seed's own `set-<firing>()` seat orders declare. */
+const firingsOf = (text: string): string[] => [...text.matchAll(/^\\procedure set-([a-z]+)\(\)/gm)].map((m) => m[1]!);
+
+/**
+ * The turn frame holds one owner: a firing rides `set` alone. No sigil stands under a firing's name
+ * (`<<~ yield >>`, `\procedure ~aim(`), and no call on another head carries a firing as a value or a bare word
+ * (``<<~ lares fires=`aim` …>>``, `<<~ lares aim "…">>`). The law reads what a call DOES, so a head the old
+ * frame once wore stays free for another act: ``<<~ lares action=`…`>>`` reads clean.
+ */
+const firingsRideSet = (text: string): string[] => {
+  const firings = new Set(firingsOf(text));
+  if (firings.size === 0) return ["no \\procedure set-<firing>() to read the firing names from"];
+  const found: string[] = [];
+  for (const f of firings) if (new RegExp(`^\\\\procedure ~${f}\\(`, "m").test(text)) found.push(`\\procedure ~${f} stands as a sigil of its own`);
+  for (const c of callsOf(text)) {
+    if (c.prefix !== "~" || c.head === "set" || c.head.startsWith("/")) continue;
+    if (firings.has(c.head)) found.push(at(c, `the firing «${c.head}» stands as a sigil of its own`));
+    const valued = [...c.rest.matchAll(KEYED)].find((m) => firings.has(m[2]!));
+    const bare = c.rest.replace(TICKED, "T").split(/\s+/).find((w) => firings.has(w));
+    if (valued) found.push(at(c, `${valued[1]}=\`${valued[2]}\` fires outside set`));
+    if (bare) found.push(at(c, `a bare «${bare}» fires outside set`));
+  }
   return found;
 };
 
@@ -98,18 +146,47 @@ const muCallsNameTools = (text: string): string[] => {
     });
 };
 
-/** The fold retires the frame-row sigil and the standalone gauge sigils: no procedure, no call, no HUD word, no "two grips" line. */
-const retiredSurface = (text: string): string[] => {
+interface Retired { slot: string; name: string }
+const CUT_SLOTS = ["sigil", "key", "word", "phrase"];
+
+/** The retired names one canon row carries: ``<<has entity=`kupono-cut` name=`retired` params=`slot/name …`>>``. */
+const retiredOf = (record: string): Retired[] =>
+  (/<<has entity=`kupono-cut` name=`retired` params=`([^`]*)`>>/.exec(record)?.[1] ?? "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((p) => ({ slot: p.slice(0, Math.max(p.indexOf("/"), 0)), name: p.slice(p.indexOf("/") + 1) }));
+
+const esc = (x: string) => x.replace(/[.*+?^${}()|[\]\\-]/g, "\\$&");
+
+/**
+ * No retired name stands in the carrier. The names come from the canon row (`retiredOf`), each under the slot
+ * that says how it stood: `sigil/x` (no `\procedure ~x`, no `<<~ x …>>` call), `key/x` (no call carries `x=`),
+ * `word/x` (the word stands on no line), `phrase/x-y` (the phrase, hyphens read as spaces, stands on no line).
+ * An empty row and a slot no law reads both read red, so the record cannot go unread.
+ */
+const retiredSurface = (text: string, retired: Retired[] = retiredOf(canon)): string[] => {
+  if (retired.length === 0) return ["no <<has entity=`kupono-cut` name=`retired` …>> row in grammar-watch#/the-kupono-cut to read the retired names from"];
   const found: string[] = [];
-  for (const name of ["frame", "aperture", "ooda-ha", "drift-ward"]) {
-    if (new RegExp(`^\\\\procedure ~${name}\\(`, "m").test(text)) found.push(`\\procedure ~${name} still stands`);
-    if (new RegExp(`<<~ ?${name} `).test(text)) found.push(`a <<~ ${name} …>> call still stands`);
+  const calls = callsOf(text);
+  const lines = text.split("\n");
+  for (const { slot, name } of retired) {
+    if (!CUT_SLOTS.includes(slot) || name === "") { found.push(`the retired row carries «${slot}/${name}», a slot no law reads`); continue; }
+    const n = esc(name);
+    if (slot === "sigil") {
+      if (new RegExp(`^\\\\procedure ~${n}\\(`, "m").test(text)) found.push(`\\procedure ~${name} still stands`);
+      if (new RegExp(`<<~ ?${n}[ >]`).test(text)) found.push(`a <<~ ${name} …>> call still stands`);
+    }
+    if (slot === "key") for (const c of calls.filter((c) => new RegExp(`(^|\\s)${n}=`).test(c.rest))) found.push(at(c, `${name}= still stands`));
+    if (slot === "word") lines.forEach((l, i) => { if (new RegExp(`\\b${n}\\b`, "i").test(l)) found.push(`${i + 1}: the retired word «${name}» · ${l.trim().slice(0, 60)}`); });
+    if (slot === "phrase") lines.forEach((l, i) => { if (l.includes(name.replace(/-/g, " "))) found.push(`${i + 1}: the "${name.replace(/-/g, " ")}" line still stands`); });
   }
-  text.split("\n").forEach((l, i) => {
-    if (/\bhud\b/i.test(l)) found.push(`${i + 1}: the retired HUD word · ${l.trim().slice(0, 60)}`);
-    if (/two grips/.test(l)) found.push(`${i + 1}: the "two grips" line still stands`);
-  });
   return found;
+};
+
+/** No retired name keeps a sigil tiddler on the shelf, whatever slot it retired under (`sigil-<name>.tid`). */
+const retiredOnShelf = (retired: Retired[], stands: (file: string) => boolean = (f) => existsSync(SHELF + f)): string[] => {
+  if (retired.length === 0) return ["no <<has entity=`kupono-cut` name=`retired` …>> row in grammar-watch#/the-kupono-cut to read the retired names from"];
+  return [...new Set(retired.map((r) => r.name))].map((n) => `sigil-${n}.tid`).filter(stands).map((f) => `${f} still stands on the shelf`);
 };
 
 /** Every internal cite of a slot carries the slash (`#/slot`), the form the openers mint. */
@@ -293,16 +370,19 @@ const fenceOpeners = (text: string): string[] => {
   return found;
 };
 
-const LAWS = { arrowsBetweenValues, spacedAtSigns, unnamedOrQuotedValues, procedureValues, valueHazards, entityTicks, muCallsNameTools, envelopeAndRetired, retiredSurface, slashedCites, oracleCrossCheck, bandLaw, frameLaw, fenceOpeners };
+const LAWS = { arrowsBetweenValues, spacedAtSigns, unnamedOrQuotedValues, procedureValues, valueHazards, entityTicks, muCallsNameTools, envelopeAndOpeners, firingsRideSet, retiredSurface, slashedCites, oracleCrossCheck, bandLaw, frameLaw, fenceOpeners };
 
 // ── CONTROLS: a planted fault each law MUST name ───────────────────────────────────────────────────────
+const FRAME_OWNERS = "\\procedure set-aim() lares from to drift-ward\n\\procedure set-steer() lares to drift-ward\n\\procedure set-yield() lares drift-ward from to";
+const ROW = "<<has entity=`kupono-cut` name=`retired` params=`sigil/frame sigil/aperture sigil/ooda-ha sigil/drift-ward key/hud word/hud phrase/two-grips`>>";
 const PLANTED: Record<keyof typeof LAWS, string> = {
   arrowsBetweenValues: '<<~ pranala from=`a` -> to=`b`>>',
   spacedAtSigns: "the daemon rides @daemon",
   unnamedOrQuotedValues: '<<~ season Chaos "glyph/✶">>',
   procedureValues: "\\procedure ~season(name params) ~ <<has season name=<<name>> params=<<params>>>>",
   valueHazards: "<<~ set note=`$(x)$`>>",
-  envelopeAndRetired: '<<!DOCTYPE root=`x` spec=`y`>>\n<<~ ahu #/entry>>\n<<~ lares fires=`aim` from=`a`>>',
+  envelopeAndOpeners: '<<!DOCTYPE root=`x` spec=`y`>>\n<<~ ahu #/entry>>',
+  firingsRideSet: FRAME_OWNERS + "\n<<~ lares fires=`aim` from=`a`>>",
   entityTicks: "\\procedure ~oracle(throw) ~ oracle throw=&#96;<<throw>>&#96;",
   muCallsNameTools: "\\procedure ~mu(name:Arcana params:\"x\") y\n<<~ mu name=`Wand` params=`ascii/*`>>\n<<~ mu name=`*!`>>",
   retiredSurface: "\\procedure ~frame(name params) x\n<<~ aperture at=`9/measure`>>\n!!! The HUD\nthe same instruments ride ~set as keys ~ two grips, one handle",
@@ -338,12 +418,38 @@ describe("controls: each law names its planted fault", () => {
     expect(bandLaw(PLANTED.bandLaw).join("\n")).toMatch(/aperture 13\/measure sits outside measure@9\.\.12[\s\S]*ooda-ha 9\/declare-glyphs sits outside/);
     expect(procedureValues(PLANTED.procedureValues).join("\n")).toContain("season name=V params=V");
   });
-  test("retiredSurface names each retirement by name; slashedCites reads #/slot clean", () => {
-    const f = retiredSurface(["\\procedure ~aperture(at) x", "\\procedure ~ooda-ha(at) x", "\\procedure ~drift-ward(pull) x", "\\procedure ~frame(name params) x", "<<~ ooda-ha at=`7/declare-glyphs`>>", "<<~ drift-ward pull=`p`>>", "<<~ frame name=`set`>>"].join("\n")).join("\n");
+  test("retiredSurface names each retirement the row carries; slashedCites reads #/slot clean", () => {
+    const row = retiredOf(ROW);
+    const f = retiredSurface(["\\procedure ~aperture(at) x", "\\procedure ~ooda-ha(at) x", "\\procedure ~drift-ward(pull) x", "\\procedure ~frame(name params) x", "<<~ ooda-ha at=`7/declare-glyphs`>>", "<<~ drift-ward pull=`p`>>", "<<~ frame name=`set`>>", "<<~ set hud=`aim`>>", "!!! The HUD", "two grips, one handle"].join("\n"), row).join("\n");
     for (const name of ["frame", "aperture", "ooda-ha", "drift-ward"]) expect(f).toContain(`\\procedure ~${name} still stands`);
     for (const name of ["ooda-ha", "drift-ward", "frame"]) expect(f).toContain(`a <<~ ${name} …>> call still stands`);
-    expect(retiredSurface("<<~ season name=`Bureaucracy` params=`patron/Zarathud`>>\n<<~ stance named=`poet`>> · <<~ mu name=`*?`>>")).toEqual([]);
+    for (const want of ["hud= still stands", "the retired word «hud»", 'the "two grips" line still stands']) expect(f).toContain(want);
+    expect(retiredSurface("<<~ season name=`Bureaucracy` params=`patron/Zarathud`>>\n<<~ stance named=`poet`>> · <<~ mu name=`*?`>>\n<<~ set aperture=`9/measure` drift-ward=`w`>>", row)).toEqual([]);
     expect(slashedCites("<<~ ahu slot=`#/ooda-ha`>>\nthe tally lives at #/ooda-ha; `#section` stays a placeholder; &#x0001;\n<<~/ahu>>")).toEqual([]);
+  });
+  test("the cut names follow the canon row: a name that leaves the row reads pono, an unread row reads red", () => {
+    const call = "<<~ frame name=`set`>>";
+    expect(retiredSurface(call, retiredOf(ROW)).length).toBeGreaterThan(0);
+    expect(retiredSurface(call, retiredOf(ROW.replace("sigil/frame ", "")))).toEqual([]);
+    expect(retiredSurface(call, retiredOf("a record with no row")).join("\n")).toContain("no <<has entity=`kupono-cut` name=`retired`");
+    expect(retiredSurface(call, retiredOf(ROW.replace("key/hud", "gauge/hud"))).join("\n")).toContain("«gauge/hud», a slot no law reads");
+  });
+  test("the canon row stands and names retirements (vacuity gate on the record)", () => {
+    const row = retiredOf(canon);
+    expect(row.length).toBeGreaterThan(0);
+    expect(row.every((r) => CUT_SLOTS.includes(r.slot) && r.name !== "")).toBe(true);
+  });
+  test("★ <<~ lares action=`…`>> reads pono; the old frame on any head reads red ★", () => {
+    const act = FRAME_OWNERS + "\n``<<~ lares action=`refreshes the libation dish, the shrine incense burns`>> ${pet-name} (Lares Spirit)``";
+    for (const name of ["firingsRideSet", "retiredSurface", "unnamedOrQuotedValues", "arrowsBetweenValues"] as const) expect(LAWS[name](act), name).toEqual([]);
+    const f = firingsRideSet(FRAME_OWNERS + "\n<<~ lares fires=`aim` from=`a`>>\n<<~ lares aim from=`a`>>\n<<~ yield >>\n\\procedure ~steer(to) x").join("\n");
+    for (const want of ["fires=`aim` fires outside set", "a bare «aim» fires outside set", "the firing «yield» stands as a sigil of its own", "\\procedure ~steer stands as a sigil of its own"]) expect(f).toContain(want);
+    expect(firingsRideSet("<<~ lares action=`a`>>").join("\n")).toContain("no \\procedure set-<firing>()");
+  });
+  test("an elision passes where keys would ride; a key bound to an unticked value reads red", () => {
+    for (const ok of ["<<~ set lares=`aim` …>>", "<<~ set note=`...` ...>>", "<<~ name …>>", "<<~ oracle throw=`…`>>"]) expect(unnamedOrQuotedValues(ok), ok).toEqual([]);
+    expect(unnamedOrQuotedValues("<<~ set note=...>>").join("\n")).toContain("unticked value «note=...»");
+    expect(unnamedOrQuotedValues("<<~ set note=…>>").join("\n")).toContain("unticked value");
   });
   test("a middle-key shuffle reads green: the law fixes only the bracket keys", () => {
     const shuffled = [
@@ -374,7 +480,7 @@ describe("controls: each law names its planted fault", () => {
   });
   test("the laws read a clean carrier clean (the control cuts both ways)", () => {
     const clean = "<<!DOCTYPE type=`t` spec=`s`>>\n<<~ ahu slot=`#/a`>>\n<<~ oracle throw=`↯7 ✲ ⚁(2) ⁂:⌗🜄`>>\n<<~/ahu>>";
-    for (const name of ["arrowsBetweenValues", "spacedAtSigns", "unnamedOrQuotedValues", "procedureValues", "valueHazards", "envelopeAndRetired", "oracleCrossCheck"] as const)
+    for (const name of ["arrowsBetweenValues", "spacedAtSigns", "unnamedOrQuotedValues", "procedureValues", "valueHazards", "envelopeAndOpeners", "oracleCrossCheck"] as const)
       expect(LAWS[name](clean), name).toEqual([]);
   });
 });
@@ -389,4 +495,21 @@ describe("the boot seed speaks the kupono grammar", () => {
       expect(law(seed)).toEqual([]);
     });
   }
+});
+
+// ── THE SHELF ──────────────────────────────────────────────────────────────────────────────────────────
+describe("no cut name keeps a sigil tiddler", () => {
+  test("CONTROL — a planted tiddler under a cut name reads red, under any slot; a name that leaves the row frees its tiddler", () => {
+    const planted = (file: string) => (f: string) => f === file;
+    expect(retiredOnShelf(retiredOf(ROW), planted("sigil-frame.tid"))).toEqual(["sigil-frame.tid still stands on the shelf"]);
+    expect(retiredOnShelf(retiredOf(ROW), planted("sigil-hud.tid"))).toEqual(["sigil-hud.tid still stands on the shelf"]);
+    expect(retiredOnShelf(retiredOf(ROW.replace("sigil/frame ", "")), planted("sigil-frame.tid"))).toEqual([]);
+    expect(retiredOnShelf(retiredOf("a record with no row")).join("\n")).toContain("no <<has entity=`kupono-cut` name=`retired`");
+  });
+  test("CONTROL — the shelf stands where this gate looks: live siblings answer", () => {
+    for (const live of ["sigil-set.tid", "sigil-oracle.tid", "sigil-lares.tid"]) expect(existsSync(SHELF + live), live).toBe(true);
+  });
+  test("★ the shelf carries no tiddler under a name the canon row retires ★", () => {
+    expect(retiredOnShelf(retiredOf(canon))).toEqual([]);
+  });
 });

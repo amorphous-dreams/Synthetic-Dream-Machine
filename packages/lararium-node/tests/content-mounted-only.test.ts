@@ -77,7 +77,7 @@ test("a routed wiki-act crosses the same presenter fence before routing", async 
 
 const SEALED = ["sealed-seal", "sealed-open", "sealed-reading", "sealed-choose-head", "sealed-hand-over", "sealed-admit", "sealed-parcels", "sealed-receive", "sealed-serve", "sealed-memory-cut", "sealed-memory-door", "sealed-memory-import", "sealed-rolls", "seat-duties"];
 // The verbs that close over the mounted face's mint, slot documents or catalog (Aftermath M1 on PR #110).
-const MOUNTED_MATERIAL = ["add-bag", "remove-bag", "prune-stale", "bag-compact", "rotate-recipe", "restamp-bag-tier", "meme-put", "meme-patch", "meme-delete", "draft", "pin", "register-cold"];
+const MOUNTED_MATERIAL = ["add-bag", "remove-bag", "true-floor", "prune-stale", "bag-compact", "rotate-recipe", "restamp-bag-tier", "draft", "register-cold"];
 
 test("a content verb refuses a presenter that is not the mounted face, by name", async () => {
   const { registry, call, sibling, mounted } = await standTwoFaces();
@@ -104,7 +104,7 @@ test("a content verb refuses a presenter that is not the mounted face, by name",
 
 test("the vessel's own channel pushes under a label that names no face: it passes the fence, and the same label synced refuses", async () => {
   const { registry, call } = await standTwoFaces();
-  for (const verb of ["switcher-state", "persona-state", "ward-alert", "pin"]) {
+  for (const verb of ["switcher-state", "persona-state", "ward-alert", "register-cold"]) {
     expect(registry.has(verb), verb).toBe(true);
     expect(await call(verb, "persona", {}, true), `${verb} local label`).not.toMatchObject({ reason: "content-mounted-only" });
     expect(await call(verb, "persona", {}, false), `${verb} synced label`).toMatchObject({ reason: "content-mounted-only" });

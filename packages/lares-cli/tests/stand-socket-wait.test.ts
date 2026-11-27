@@ -168,4 +168,17 @@ describe("bootStage", () => {
     // every milestone name reads, the digit in tw5-booted too
     for (const [i, name] of BOOT_MILESTONES.entries()) expect(bootStage(phases(name))).toBe(i);
   });
+  test("a boot step's own wait lines and a later composition's fold line name no milestone and move no stage", () => {
+    const waits = [
+      "[boot] face-catalog: awaits the face's sealed catalog, which hydrates through the daemon island's holder once its keyhive stands",
+      "[boot] face-catalog: still awaits the face's sealed catalog, which hydrates through the daemon island's holder once its keyhive stands (2 pacing figure(s) of 10000ms)",
+      "[boot] face-catalog: stood in 15012ms (41 row(s))",
+      "[boot] island-working: failed after 40ms (holder-locked)",
+      "[lararium] composition 2 of pid 7: a custody unlock, a lock or a mount's close stood a fresh composition over the same store, so its pid and phase lines print again; catalog, oracle, daemon read as an earlier composition printed them",
+    ].map((l) => `${l}\n`).join("");
+    expect(bootStage(waits)).toBe(-1);
+    // Between two milestones they renew nothing: the furthest milestone alone reads.
+    expect(bootStage(`${phases("catalog-ready")}${waits}`)).toBe(BOOT_MILESTONES.indexOf("catalog-ready"));
+    expect(bootStage(`${phases("catalog-ready")}${waits}${phases("island-ready")}`)).toBe(BOOT_MILESTONES.indexOf("island-ready"));
+  });
 });

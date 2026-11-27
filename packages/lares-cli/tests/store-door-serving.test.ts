@@ -5,6 +5,9 @@
  * own answer however long the island runs ahead of the act: no budget spends, no "parked … no discoverable holder" reads
  * against a live vessel. The serving phase's figure paces the progress lines alone, each naming the request id; a
  * person's interrupt ends the wait, closes the door's own socket, and names the id to read back.
+ * A door that stands SILENT reads its holder's own CPU counter: a holder that burns CPU runs hot and is paced and named,
+ * never refused; a holder whose counter stands still (or one this seat cannot read) spends the wedged figure, and its
+ * refusal names the process, the seat, the evidence and a command to run.
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
 import { describe, expect, it, vi } from "vitest";
@@ -17,7 +20,7 @@ vi.mock("../src/custody-door.js", () => ({ vesselStanding: vi.fn(async () => ({ 
 vi.mock("../src/env.js", () => ({ vesselDid: vi.fn(async () => "did:test"), larSealHome: vi.fn(() => "/tmp/unused-seal") }));
 
 import { udsAlive, whoHolds, invokeLocal } from "../src/local-connector.js";
-import { throughStoreDoor, storeFailure, RequestLost, StoreDoorInterrupted, StoreDoorEnded, STORE_DOOR_PHASES, SlowBootTimeout, hostPidAlive, standBootLog } from "../src/store-door.js";
+import { throughStoreDoor, storeFailure, RequestLost, StoreDoorInterrupted, StoreDoorEnded, StoreDoorSilent, STORE_DOOR_PHASES, SlowBootTimeout, hostPidAlive, standBootLog, holderWords, type HolderReading } from "../src/store-door.js";
 
 /** Every phase's figure tiny, so a clock-decided refusal, were one left, would fire many times over inside the wait. */
 const TINY = [
@@ -284,5 +287,143 @@ describe("a wait with no person at the keys ends on the seat's own word", () => 
     await throughStoreDoor({ verb: "tiddler-put", args: {}, direct: async () => ({}), phases: TINY, interactive: false, progress: (line) => { lines.push(line); if (lines.length === 3) release(); } });
     expect(lines[0]).not.toMatch(/Ctrl-C/);
     expect(lines[0]).toMatch(/lares vessel request/);
+  });
+});
+
+describe("a silent door reads its holder's own counters: hot is paced, frozen is named", () => {
+  /** TINY with the hot phase the shipped door carries. */
+  const TINY_HOT = [...TINY, { name: "hot", budgetMs: 5, paced: true as const }];
+  const SILENT = { phase: "wedged" as const, holder: null, message: "a listener at /tmp/x accepted the connection but gave no answer within 1500ms — silent, still held by pid(s) 7" };
+  const VESSEL: HolderReading = { pid: 7, command: "node packages/lararium-node/dist/src/main.js --root /lar --genesis /app/genesis", state: "R", cpuTicks: 1000, rssBytes: 8 * 2 ** 30 };
+  const SEAT = "inside container lares-surface-lares-1";
+  const hang = () => vi.mocked(invokeLocal).mockImplementation((_verb, _args, _by, opts) => new Promise((_resolve, reject) => {
+    opts?.signal?.addEventListener("abort", () => { reject(new Error("aborted")); }, { once: true });
+  }));
+
+  it("the shipped door carries a paced hot phase, and wedged keeps a figure", () => {
+    expect(STORE_DOOR_PHASES.find((p) => p.name === "hot")).toMatchObject({ paced: true });
+    expect(STORE_DOOR_PHASES.find((p) => p.name === "wedged")?.paced).toBeUndefined();
+  });
+
+  it("RED: a holder that burns CPU behind a silent door is waited on past many wedged figures; the lines name the vessel itself, its seat, the burn and the request id", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockResolvedValue(SILENT);
+    let ticks = 1000;
+    let sentId = "";
+    let release!: () => void;
+    const answered = new Promise<void>((resolve) => { release = resolve; });
+    vi.mocked(invokeLocal).mockImplementation(async (_verb, _args, _by, opts) => { sentId = opts?.requestId ?? ""; await answered; return { status: "done", requestId: sentId }; });
+    const lines: string[] = [];
+    const r = await throughStoreDoor({ verb: "kahua-read", args: {}, direct: async () => ({}), phases: TINY_HOT, seat: SEAT,
+      holderReading: (pid) => ({ ...VESSEL, pid, cpuTicks: (ticks += 150) }),
+      progress: (line) => { lines.push(line); if (lines.length === 4) release(); } });
+    expect(r.via).toBe("daemon");                       // the vessel's own answer ended the wait; no clock refused it
+    expect(lines.length).toBeGreaterThanOrEqual(4);
+    expect(lines[0]).toContain("runs hot");
+    expect(lines[0]).toContain("pid 7");
+    expect(lines[0]).toContain("the standing vessel itself");
+    expect(lines[0]).toContain(SEAT);
+    expect(lines[0]).toMatch(/burned \d+\.\d CPU-s/);
+    expect(lines[0]).toContain("8.00 GiB resident");
+    expect(lines[0]).toContain(`lares vessel request ${sentId}`);
+  });
+
+  it("RED: a hot holder draws fewer socket probes than readings: the door reads /proc between its paced asks", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockClear();
+    vi.mocked(whoHolds).mockResolvedValue(SILENT);
+    let ticks = 0;
+    let readings = 0;
+    let release!: () => void;
+    const answered = new Promise<void>((resolve) => { release = resolve; });
+    vi.mocked(invokeLocal).mockImplementation(async (_verb, _args, _by, opts) => { await answered; return { status: "done", requestId: opts?.requestId ?? "" }; });
+    // A hot cadence far past the test's span: once hot, the socket gets asked no further time.
+    const phases = [...TINY, { name: "hot", budgetMs: 60_000, paced: true as const }];
+    await throughStoreDoor({ verb: "kahua-read", args: {}, direct: async () => ({}), phases, seat: SEAT, progress: () => {},
+      holderReading: (pid) => { readings += 1; if (readings === 6) release(); return { ...VESSEL, pid, cpuTicks: (ticks += 10) }; } });
+    expect(readings).toBeGreaterThanOrEqual(6);
+    expect(vi.mocked(whoHolds).mock.calls.length).toBeLessThanOrEqual(3);
+  });
+
+  it("RED: a holder whose counter never moves spends the wedged figure; the refusal names the process, the seat, the idle readings and a command", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockResolvedValue(SILENT);
+    hang();
+    await expect(throughStoreDoor({ verb: "kahua-read", args: {}, direct: async () => ({}), phases: TINY_HOT, seat: SEAT, holderReading: (pid) => ({ ...VESSEL, pid, state: "S" }) }))
+      .rejects.toSatisfy((e: unknown) => {
+        expect(e).toBeInstanceOf(StoreDoorSilent);
+        expect(e).toBeInstanceOf(SlowBootTimeout);        // the same refusal family and exit class
+        const err = e as StoreDoorSilent;
+        expect(err.phase).toBe("wedged");
+        expect(err.evidence).toBe("idle");
+        expect(err.holderPids).toEqual([7]);
+        expect(err.message).toContain("the standing vessel itself");
+        expect(err.message).toContain(SEAT);
+        expect(err.message).toMatch(/burned no CPU across \d+ silent reading/);
+        expect(err.message).toMatch(/`lares vessel read`/);   // the message alone carries the cure, for a caller that prints no hint
+        const f = storeFailure(e);
+        expect(f.code).toBe("store-door-timeout");
+        expect(f.hint).toMatch(/`lares vessel stand`/);
+        return true;
+      });
+  });
+
+  it("a stopped holder's cure names the signal that continues it", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockResolvedValue(SILENT);
+    hang();
+    await expect(throughStoreDoor({ verb: "kahua-read", args: {}, direct: async () => ({}), phases: TINY_HOT, seat: SEAT, holderReading: (pid) => ({ ...VESSEL, pid, state: "T" }) }))
+      .rejects.toSatisfy((e: unknown) => {
+        expect((e as Error).message).toContain("stopped");
+        expect(storeFailure(e).hint).toContain("`kill -CONT 7`");
+        return true;
+      });
+  });
+
+  it("RED: a holder this seat cannot read says unread, never frozen, and names the read to take from the holder's own seat", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockResolvedValue(SILENT);
+    hang();
+    await expect(throughStoreDoor({ verb: "kahua-read", args: {}, direct: async () => ({}), phases: TINY_HOT, seat: "on host bench", holderReading: () => null }))
+      .rejects.toSatisfy((e: unknown) => {
+        const err = e as StoreDoorSilent;
+        expect(err.evidence).toBe("unread");
+        expect(err.message).toContain("on host bench");
+        expect(err.message).not.toMatch(/frozen or stopped, never/);
+        expect(storeFailure(e).hint).toMatch(/`lares vessel read`/);
+        return true;
+      });
+  });
+
+  it("CONTROL: a door that answers again clears the silent readings: a later silence starts its own count", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    let probes = 0;
+    // silent, silent (idle), then serving once, then silent for good: the second silence must not inherit the first one's readings.
+    vi.mocked(whoHolds).mockImplementation(async () => ((probes += 1) === 3 ? SERVING : SILENT));
+    hang();
+    await expect(throughStoreDoor({ verb: "kahua-read", args: {}, direct: async () => ({}), interactive: true, seat: SEAT, progress: () => {}, holderReading: (pid) => ({ ...VESSEL, pid }),
+      phases: [{ name: "unbound", budgetMs: 5 }, { name: "wedged", budgetMs: 450 }, { name: "serving", budgetMs: 5, paced: true as const }, { name: "hot", budgetMs: 5, paced: true as const }] }))
+      .rejects.toSatisfy((e: unknown) => { expect((e as StoreDoorSilent).reads).toBe(probes - 3); return true; });   // two silent and one serving probe stand before the count restarts
+  });
+
+  it("RED: a holder that burned and then stands still falls back to wedged and refuses by name; a burn long past never keeps it hot", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockResolvedValue(SILENT);
+    hang();
+    let readings = 0;
+    const lines: string[] = [];
+    await expect(throughStoreDoor({ verb: "kahua-read", args: {}, direct: async () => ({}), phases: TINY_HOT, seat: SEAT, progress: (line) => { lines.push(line); },
+      holderReading: (pid) => ({ ...VESSEL, pid, cpuTicks: 1000 + 150 * Math.min((readings += 1), 3) }) }))
+      .rejects.toSatisfy((e: unknown) => {
+        expect(e).toBeInstanceOf(StoreDoorSilent);
+        expect((e as StoreDoorSilent).evidence).toBe("idle");
+        expect((e as StoreDoorSilent).reads).toBeGreaterThanOrEqual(2);
+        return true;
+      });
+    expect(readings).toBeGreaterThan(3);   // it went hot first, and the refusal came only once the counter stood still
+  });
+
+  it("holderWords names an unnamed process and an unknown state plainly", () => {
+    expect(holderWords({ pid: 3, command: "", state: "X", cpuTicks: 0, rssBytes: 0 })).toBe("pid 3 (an unnamed process; state X)");
   });
 });

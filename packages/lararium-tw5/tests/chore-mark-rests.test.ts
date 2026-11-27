@@ -6,6 +6,7 @@
  * (content) carries none.
  */
 import { memoryControlStore } from "./control-store-fixture.js";
+import { answerRingOf } from "@lararium/mesh/control-home";
 import { describe, test, expect } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
@@ -17,7 +18,8 @@ import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { VerbDispatcher, VerbTable } from "../src/verb-dispatcher.js";
 import { makeLocalAskBook } from "../src/daemon-behavior.js";
-import { makeMemePutReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeTiddlerPutReactor } from "../src/tiddler-verbs.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 
 type TiddlerFields = Record<string, unknown>;
@@ -103,7 +105,10 @@ async function stand(register: (registry: VerbTable) => void) {
     if (chore !== undefined) book.add({ requestId, action: verb, args, requestedBy: "me", origin: "channel", asker: "seat", chore } as never);
     dispatcher.placeVerb({ verb, args, requestedBy: "me", requestId });
     await settle();
-    return control.getLive(OUTCOME_URI_PREFIX + requestId);
+    // The row rests the verdict and the chore mark; the whole answer's results ride the store's answer ring.
+    const row = await control.getLive(OUTCOME_URI_PREFIX + requestId);
+    const results = answerRingOf(control).get(requestId)?.tiddler["results"];
+    return row && results !== undefined ? { ...row, tiddler: { ...row.tiddler, results } } as typeof row : row;
   };
   return { place, stop: () => dispatcher.stop() };
 }
@@ -116,7 +121,7 @@ const markOf = (rec: LarTiddlerRecord | null): unknown => {
 describe("the chore mark rests in the durable outcome", () => {
   test("RED: the local ask book names the chore mark of the exact act; CONTROL: other args name none", () => {
     const book = makeLocalAskBook() as Book;
-    const ask = { requestId: "r1", action: "meme-put", args: { x: 1 }, requestedBy: "me" };
+    const ask = { requestId: "r1", action: "tiddler-put", args: { x: 1 }, requestedBy: "me" };
     book.add({ ...ask, origin: "channel", chore: MARK } as never);
     expect(book.choreOf(ask)).toEqual(MARK);
     expect(book.choreOf({ ...ask, args: { x: 2 } })).toBeUndefined();
@@ -147,10 +152,10 @@ describe("the chore mark rests in the durable outcome", () => {
         recipeOf: async (slug) => (slug === "notes" || slug === "works" ? recipe(slug) : null),
         slotStore: async (slug, kind) => (kind === "working" ? stores.get(slug) ?? null : null),
       };
-      const s = await stand((r) => r.register("meme-put", makeMemePutReactor(opts)));
+      const s = await stand((r) => r.register("tiddler-put", makeTiddlerPutReactor(opts)));
       for (const slug of ["notes", "works"]) {
         const uri = `lar:///t/${slug}-page`;
-        const outcome = await s.place(`put-${slug}`, "meme-put", { uri, recipe: slug, text: meme(uri, "/a") }, MARK);
+        const outcome = await s.place(`put-${slug}`, "tiddler-put", { title: uri, bag: working(slug), text: meme(uri, "/a") }, MARK);
         expect(outcome?.tiddler["status"], slug).toBe("done");
         expect(markOf(outcome), slug).toEqual(MARK);
         const output = (JSON.parse(String(outcome?.tiddler["results"])) as Record<string, { output?: Record<string, unknown> }>)["summary"]?.output;

@@ -699,7 +699,8 @@ export function buildGenesisSeed(inputs: GenesisInputs, coreSha256?: string): Ge
   // SYSTEM wiki-recipes — the lares + lararium quine
   // wikis ride the oracle system plane, never the catalog registry (USER recipes mint into it).
   // The record spells the SAME cascade the mount lays (`recipeRecordFields` ⇆ `recipeFromRecord`):
-  // the lares wiki = oracle floor + lararium library + its own canon; `writable-bag` = working.
+  // the lares wiki = oracle floor + its own canon; `writable-bag` = working. THE CANON FLOOR BY PLACE (`canonFloorOf`)
+  // stacks `lararium` in the herm/hearth wiki alone, so neither quine wiki names the other as a library.
   const systemRecipe = (recipe: WikiRecipe) => {
     const title = recipeUri("oracle", recipe.wikiSlug);
     tiddlers[title] = {
@@ -707,7 +708,7 @@ export function buildGenesisSeed(inputs: GenesisInputs, coreSha256?: string): Ge
       meta: { authority: "genesis" },
     };
   };
-  systemRecipe({ wikiSlug: "lares", libraryBags: [LARARIUM_DOC_URI] });
+  systemRecipe({ wikiSlug: "lares" });
   systemRecipe({ wikiSlug: "lararium" });
 
   // Blob descriptor tiddlers (sorted by blob id — deterministic).

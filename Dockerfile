@@ -162,9 +162,12 @@ RUN ln -s /app/packages/lares-cli/bin/lares.mjs /usr/local/bin/lares
 # path (docker-compose.surface.yml). A fresh named volume copies its mount point's owner and mode from the image at its
 # first mount, so the image stands it node-owned and sticky, world-writable: the runtime uid compose names (LARES_UID)
 # makes its socket there whichever uid that is, and the socket file's own 0600 under that uid gates every dial.
-RUN mkdir -p /lar/hearth /lar/sensoriums /lar/projections /lar/library /lar/config /lar/cache /lar/run /state /workspace /pulama/socket \
- && chown node:node /lar /lar/hearth /lar/sensoriums /lar/projections /lar/library /lar/config /state /workspace /pulama/socket \
- && chmod 1777 /lar/cache /lar/run /pulama/socket
+# THE PŪLAMA'S DEVICE DIRECTORY (/pulama/device) rides a named volume the pūlama alone mounts: a hoʻāla lei's device key rests
+# there (packages/lararium-node/src/pulama-hoala.ts), each file 0600 under the keeper's uid. It stands node-owned and sticky,
+# world-writable, for the same first-mount reason as the socket directory; no vessel and no host path reaches it.
+RUN mkdir -p /lar/hearth /lar/sensoriums /lar/projections /lar/library /lar/config /lar/cache /lar/run /state /workspace /pulama/socket /pulama/device \
+ && chown node:node /lar /lar/hearth /lar/sensoriums /lar/projections /lar/library /lar/config /state /workspace /pulama/socket /pulama/device \
+ && chmod 1777 /lar/cache /lar/run /pulama/socket /pulama/device
 VOLUME /lar/hearth
 VOLUME /lar/sensoriums
 VOLUME /lar/projections

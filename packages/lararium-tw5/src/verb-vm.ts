@@ -2,14 +2,15 @@
  * verb-vm — volatile verb invocation lifecycle for the daemon causal island.
  *
  * Manages the in-TW5-wiki invocation tiddlers (volatile scratch, never synced)
- * and writes durable outcome tiddlers into the vessel's CONTROL document (`control-home`): a store no recipe composes
- * and no mirror names, sealed under the lit face like the daemon wiki's slots
- * (lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed, U1). The daemon wiki's layers rest no outcome body.
+ * and writes each outcome two ways: a VERDICT ROW into the vessel's CONTROL document (`control-home`: a store no recipe
+ * composes and no mirror names, sealed under the lit face like the daemon wiki's slots,
+ * lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed, U1), and the WHOLE ANSWER into the vessel's answer ring
+ * (`answerRingOf`), memory alone. No outcome body rests anywhere, and a read with no effect key leaves no row at all.
  *
  * Meme: lar:///ha.ka.ba/lararium/tw5/verb-vm
  */
 
-import { inCallScope, takeCallTouches, type CallTouches } from "@lararium/mesh/call-touches";
+import { inCallScope, ridesAnswerRing, takeCallTouches, type CallTouches } from "@lararium/mesh/call-touches";
 import type { BatchMode, Verb, VerbTargetResult } from "@lararium/mesh/verb-tiddler";
 import type { ChoreReceiptMark } from "@lararium/mesh/chore-ask";
 import type { CompositeStore } from "@lararium/mesh/composite-store";
@@ -20,10 +21,11 @@ import {
   buildVerb,
   buildRunningPatch,
   verbInputDigest,
+  verdictRowOf,
 } from "@lararium/mesh/verb-tiddler";
 import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
-import { ControlHomeUnavailable } from "@lararium/mesh/control-home";
+import { ControlHomeUnavailable, answerRingOf } from "@lararium/mesh/control-home";
 import type { TW5Engine } from "./tw5-vm.js";
 
 // ── Effect index — single writer: the daemon worker (D1, P2.5 iter 4) ──────
@@ -32,25 +34,17 @@ import type { TW5Engine } from "./tw5-vm.js";
 // find it (verb-dispatcher.ts owns the reuse decision; this module owns the write).
 export { EFFECT_URI_PREFIX };
 
-// ── audit-doc write-amplification cure (the dd4da8481 class, a new site) ────────────────────────────
+// ── The answer's own bound (the dd4da8481 class) ────────────────────────────────────────────────────
 //
-// A verb's durable outcome (`writeOutcome` below → `bags/control/outcomes/<id>`) embeds the handler's
-// FULL return value under `results[summary].output` — for a batch verb (e.g. INGEST) that means a
-// per-carrier result array, unbounded across a corpus seed (214 entries measured for one lararium
-// ingest). That array lands in an Automerge doc that syncs to every vessel and never shrinks — the
-// SAME write-amplification class the FLOW-map carried (4571c394b), at a new site (the audit bag).
+// A verb's whole answer embeds the handler's FULL return value under `results[summary].output`. For a batch verb (e.g.
+// INGEST) that means a per-carrier result array, unbounded across a corpus seed (214 entries measured for one lararium
+// ingest). The control document rests none of it (the verdict row carries a hash and a byte count), yet the answer
+// still crosses the island's message, rides the socket and waits in the answer ring's bounded memory.
 //
-// Cure: any top-level array field in the outcome's `output` that crosses AUDIT_ARRAY_CAP entries is
-// replaced by a BOUNDED summary — count, a per-"decision"/"grade" tally, a content-hash of the full
-// array (so a full-detail re-derivation stays possible/verifiable), and a small sample — never the
-// full body. Below the cap, the array rides FAITHFULLY (a small outcome needs no compaction; a caller
-// polling for a normal-sized ingest's outcome still reads exact per-carrier detail).
-//
-// Read-path note: the co-located CLI (`lararium-node/src/uds-channel.ts`) reads this SAME durable
-// `results` field back as its own printed/returned answer — there is no separate "live response"
-// distinct from the stored doc for that path. So capping the durable field also caps what a
-// large-batch CLI invocation reads; that is the intended trade (a durable receipt the mesh must
-// carry forever cannot hold an unbounded per-run body).
+// So any top-level array field in the answer's `output` that crosses AUDIT_ARRAY_CAP entries gives way to a BOUNDED
+// summary: a count, a per-"decision" tally, a content-hash of the full array (so a full-detail re-derivation stays
+// possible and verifiable), and a small sample. Below the cap the array rides FAITHFULLY, and a caller reads exact
+// per-carrier detail.
 //
 // A ROW A PERSON MUST ACT ON STAYS NAMED. A summary that counted refusals and named none would leave a
 // refused carrier unfindable, and a refusal nobody can find stays unfixable. So the summary HOLDS every
@@ -165,6 +159,23 @@ export function isVisitResults(results: unknown): boolean {
   return output !== null && typeof output === "object" && (output as Record<string, unknown>)["visit"] === true;
 }
 
+/** True where a change report names at least one document. */
+function reportsChange(touched: CallTouches | undefined): boolean {
+  return touched !== undefined && Object.keys(touched).length > 0;
+}
+
+/**
+ * CONCLUDE ONE VERB: the verdict row rests, the whole answer rides the ring.
+ *
+ * The whole outcome (`concludeVerb`: results, the change report, the cause) goes to the vessel's answer ring, memory
+ * alone, for the caller that waits. The control document takes the VERDICT ROW (`verdictRowOf`): no `results`, no
+ * `touched`, no `cause`; a hash and a byte count stand for the body. The row lands first, then the effect index, then
+ * the answer, so a caller that hears the answer finds its verdict already standing.
+ *
+ * A READ LEAVES NO ROW (`ridesAnswerRing`: a READ verb asked with no effect key): its answer rides the ring and nothing
+ * rests. EVIDENCE BACKS THE DECLARATION: a read whose change report names a document wrote something after all, so its
+ * verdict row lands after the fact and the island says `read-verb-wrote` by the verb's name.
+ */
 export async function writeOutcome(
   control: CompositeStore,
   opts: {
@@ -191,7 +202,7 @@ export async function writeOutcome(
     ...(opts.invocation.face !== undefined && { face: opts.invocation.face }),
     ...(opts.invocation.effectKey !== undefined && { effectKey: opts.invocation.effectKey }),
   });
-  const outcome = concludeVerb({
+  const answer = concludeVerb({
     requestId:   opts.invocation.requestId,
     ...(opts.invocation.face !== undefined && { face: opts.invocation.face }),
     verb:        opts.invocation.action,
@@ -212,47 +223,72 @@ export async function writeOutcome(
     inputDigest,
     ...(opts.invocation.effectKey !== undefined && { effectKey: opts.invocation.effectKey }),
   });
-  // THE LEDGER RESTS IN THE CONTROL DOCUMENT: the control store's one layer, never a layer any mirror reads.
-  await control.put(outcome, origin);
+  const row = verdictRowOf(answer);
+  const read = ridesAnswerRing(opts.invocation.action, opts.invocation.effectKey);
+  const wrote = read && reportsChange(opts.touched);
+  if (wrote) console.warn(`[verb-vm] read-verb-wrote: "${opts.invocation.action}" (request ${opts.invocation.requestId}) stands in the read set and its call changed ${Object.keys(opts.touched!).length} document(s); its verdict row lands after the fact. Take "${opts.invocation.action}" out of READ_VERBS (mesh call-touches) or end the write in its handler.`);
+  // THE LEDGER RESTS IN THE CONTROL DOCUMENT: the control store's one layer, never a layer any mirror reads. It rests the
+  // verdict alone, and a read that changed nothing rests none.
+  if (!read || wrote) await control.put(row, origin);
 
   // Effect index — single writer (the daemon worker). Only a `done` outcome with an
   // effect key indexes; an `error` outcome indexes nothing, so a failed effect may be
   // retried under a fresh requestId without the dedup path ever shadowing it.
+  // THE ROW ANSWERS A DEDUP BY ITSELF: it names the digest its attempt carried and the measure of the body it left, so a
+  // later attempt under the same effect key decides against this row alone and joins no outcome row.
   if (opts.status === "done" && opts.invocation.effectKey !== undefined && opts.result?.["visit"] !== true) {
+    const measure = row.tiddler as Record<string, unknown>;
     await control.put({
       tiddler: {
         title:          `${EFFECT_URI_PREFIX}${opts.invocation.effectKey}`,
         "effect-key":   opts.invocation.effectKey,
         ...(opts.invocation.face !== undefined && { face: opts.invocation.face }),
         "request-id":   opts.invocation.requestId,
+        "input-digest": inputDigest,
+        ...(typeof measure["result-sha256"] === "string" && { "result-sha256": measure["result-sha256"] }),
+        ...(typeof measure["result-bytes"] === "string" && { "result-bytes": measure["result-bytes"] }),
       },
       meta: { authority: "lares-dispatcher" },
     }, origin);
   }
+
+  // THE WHOLE ANSWER, LAST: it waits in memory for its caller and rests nowhere.
+  answerRingOf(control).put(answer);
 }
 
 /**
- * Effect-dedup shortcut (D1, P2.5 iter 4): write a COPY of a prior `done` attempt's outcome
- * for THIS invocation — `effect-of: priorRequestId` — instead of invoking the handler, then
- * tombstone the volatile invocation exactly as `dispatchVerb` does on a real run. The caller
- * (verb-dispatcher.ts) is the one that decided the digests match; this function only performs
- * the write + cleanup, mirroring `dispatchVerb`'s own lifecycle so the two paths read alike.
+ * Effect-dedup shortcut (D1, P2.5 iter 4): conclude THIS invocation as a COPY of a prior `done` attempt
+ * (`effect-of: priorRequestId`) instead of invoking the handler, then tombstone the volatile invocation exactly as
+ * `dispatchVerb` does on a real run. The caller (verb-dispatcher.ts) is the one that decided the digests match; this
+ * function only performs the write + cleanup, mirroring `dispatchVerb`'s own lifecycle so the two paths read alike.
+ *
+ * `priorResults` carries the prior attempt's body where this island's answer ring still holds it: the copy's answer
+ * then rides whole. Where the body already left (`priorResults` null), the copy answers `effect-of` beside the measure
+ * the effect row kept (`resultSha256`, `resultBytes`), and its caller reads a released body. Either way the verdict row
+ * rests no body.
  */
 export async function copyEffectOutcome(
   tw5: TW5Engine,
   control: CompositeStore,
   invocation: Verb,
-  opts: { priorRequestId: string; priorResults: Record<string, VerbTargetResult>; inputDigest: string; chore?: ChoreReceiptMark },
+  opts: {
+    priorRequestId: string;
+    priorResults: Record<string, VerbTargetResult> | null;
+    inputDigest: string;
+    chore?: ChoreReceiptMark;
+    resultSha256?: string;
+    resultBytes?: string;
+  },
 ): Promise<void> {
   const origin = { kind: "lares-verb" as const, requestId: invocation.requestId };
-  const outcome = concludeVerb({
+  const whole = concludeVerb({
     requestId:   invocation.requestId,
     ...(invocation.face !== undefined && { face: invocation.face }),
     verb:        invocation.action,
     status:      "done",
     cause:       invocation.title,
     batchMode:   invocation.batchMode,
-    results:     opts.priorResults,
+    ...(opts.priorResults !== null && { results: opts.priorResults }),
     inputDigest: opts.inputDigest,
     ...(invocation.effectKey !== undefined && { effectKey: invocation.effectKey }),
     effectOf:    opts.priorRequestId,
@@ -260,7 +296,18 @@ export async function copyEffectOutcome(
     touched:     {},
     ...(opts.chore !== undefined && { chore: opts.chore }),
   });
-  await control.put(outcome, origin);
+  // A copy whose body left carries no `results` at all, and names the measure the effect row kept in its place.
+  const { results: _empty, ...bare } = whole.tiddler as Record<string, unknown>;
+  const answer = opts.priorResults !== null ? whole : {
+    ...whole,
+    tiddler: {
+      ...bare,
+      ...(opts.resultSha256 !== undefined && { "result-sha256": opts.resultSha256 }),
+      ...(opts.resultBytes !== undefined && { "result-bytes": opts.resultBytes }),
+    } as typeof whole.tiddler,
+  };
+  await control.put(verdictRowOf(answer), origin);
+  answerRingOf(control).put(answer);
   removeVerb(tw5, invocation.title);
 }
 

@@ -24,7 +24,7 @@ describe("containerArgs", () => {
 
   test("returns exactly the named container", () => {
     expect(containerArgs(args({ recipe: " lares " }), "tiddler get")).toEqual({ recipe: "lares" });
-    expect(containerArgs(args({ bag: " sd m " }), "meme put", "write")).toEqual({ bag: "sd m" });
+    expect(containerArgs(args({ bag: " sd m " }), "tiddler put", "write")).toEqual({ bag: "sd m" });
   });
 
   test("a realm rides beside a bag and names that bag's realm; control: with none named the bag stands alone", () => {
@@ -56,8 +56,8 @@ describe("containerArgs", () => {
 });
 
 type BareCall = { file: string; line: number; command: string };
-const VERB = "(?:put|get|list|delete|project)";
-/** The doors a content caller names a container on: the meme door's verbs, and the one read door's meme lens (`tiddler get … --meme`). */
+const VERB = "(?:project)";
+/** The doors a content caller names a container on: the meme door's render, and the one read door's meme lens (`tiddler get … --meme`). */
 const DOOR = `(?:meme\\s+${VERB}|tiddler\\s+get)`;
 
 function scanBareCalls(file: string, source: string): BareCall[] {
@@ -88,7 +88,7 @@ function scanBareCalls(file: string, source: string): BareCall[] {
       }
     }
 
-    const array = /["']meme["']\s*,\s*["'](put|get|list|delete|project)["']|["']tiddler["']\s*,\s*["']get["'](?=[^\]]*["']--meme["'])/.exec(code);
+    const array = /["']meme["']\s*,\s*["'](project)["']|["']tiddler["']\s*,\s*["']get["'](?=[^\]]*["']--meme["'])/.exec(code);
     if (!array) continue;
     const start = code.lastIndexOf("[", array.index);
     const close = code.indexOf("]", array.index);
@@ -108,6 +108,8 @@ function sourceFiles(root: string): string[] {
   const addTree = (dir: string): void => {
     if (!existsSync(dir)) return;
     for (const name of readdirSync(dir)) {
+      // An installed dependency tree holds no caller of this house's CLI, and its links may loop.
+      if (name === "node_modules") continue;
       const path = join(dir, name);
       if (statSync(path).isDirectory()) addTree(path);
       else files.push(path);
@@ -132,15 +134,15 @@ describe("repository content-container law", () => {
   });
 
   test("CONTROL: the law scanner catches a planted bare call", () => {
-    expect(scanBareCalls("planted.test.ts", 'const bad = ["meme", "put", uri, "--json"];')).toEqual([
-      { file: "planted.test.ts", line: 1, command: '["meme", "put", uri, "--json"]' },
+    expect(scanBareCalls("planted.test.ts", 'const bad = ["meme", "project", uri, "--to", "html", "--json"];')).toEqual([
+      { file: "planted.test.ts", line: 1, command: '["meme", "project", uri, "--to", "html", "--json"]' },
     ]);
   });
 
   test("CONTROL: each supported call spelling is detected when bare", () => {
     const planted = [
       ["shell.sh", "lares tiddler get lar:///t/x --meme"],
-      ["node.sh", "node ./packages/lares-cli/bin/lares.mjs meme put lar:///t/x"],
+      ["node.sh", "node ./packages/lares-cli/bin/lares.mjs meme project lar:///t/x --to html"],
       ["function.sh", "function pull() { lares tiddler get lar:///t/x --meme; }"],
       ["json.sh", "json_verb tiddler get lar:///t/x --meme"],
       ["array.ts", 'const args = ["tiddler", "get", "lar:///t/x", "--meme"];'],

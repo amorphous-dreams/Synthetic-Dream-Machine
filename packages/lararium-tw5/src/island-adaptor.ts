@@ -62,7 +62,7 @@ import type { CompositeStore } from "@lararium/mesh/composite-store";
 import type { LarTiddlerStore, LarTiddlerRecord, LarTiddlerChange, ChangeOrigin, MemeProjection } from "@lararium/mesh/tiddler-store";
 import type { ParallelDraftsChange, ParallelDraftsReader } from "@lararium/mesh/parallel-drafts";
 import type { SlotUri } from "@lararium/mesh/wiki-recipe";
-import { KAHUA_SHADOW_PREFIX, kahuaShadowOf, kahuaShadowTitle } from "./kahua-shadow.js";
+import { KAHUA_SHADOW_PREFIX, kahuaShadowOf, kahuaShadowTitle, type KahuaShadow } from "./kahua-shadow.js";
 import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
 import { toLarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { isVolatileVmUri } from "@lararium/mesh/lar-uris";
@@ -150,6 +150,19 @@ export class LandingDoorOccupiedError extends Error {
   override readonly name = "LandingDoorOccupiedError";
   constructor() { super("another wiki shore holds this engine's queue door — stop that shore before a second one lands waves into the same wiki"); }
 }
+
+/** What a landing's prepare read (everything that awaited), and the `sent` it saw, for the apply to check against. */
+interface PreparedLanding {
+  readonly record: LarTiddlerRecord | null;
+  readonly bag: string | undefined;
+  readonly heads: readonly string[] | undefined;
+  readonly shadow: KahuaShadow | null | undefined;
+  readonly sentHas: boolean;
+  readonly sentValue: unknown;
+}
+
+/** How an apply ended: landed (or nothing to land), a standing hand leaves first, or an own write moved since the prepare. */
+type LandingVerdict = "landed" | "hand" | "stale";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -286,7 +299,13 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     if (lares.enqueueNalu !== undefined) throw new LandingDoorOccupiedError();
     const apply = lares.applyNalu.bind(lares);
     const landing = new WaveLanding(
-      (change) => this._landOne(change),
+      {
+        landOne: (change) => this._landOne(change),
+        prepare: async (change) => {
+          const prepared = await this._prepareLanding(change);
+          return () => this._applyLanding(change, prepared, false) === "landed";
+        },
+      },
       yieldHost,
       (title, error) => {
         console.warn(`[wave-landing] ${error.message}`);
@@ -543,10 +562,16 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     return (this.drain.owes(title) && !this.drain.parked(title)) || this.sent.has(title);
   }
 
-  private async _landOne(change: LarTiddlerChange, handSettled = false): Promise<void> {
+  /**
+   * A landing in two halves (WaveLanding's `SliceLander`): `_prepareLanding` does every read that awaits (the composition's
+   * answer for the title, its heads, the kahua shadow it casts); `_applyLanding` decides the hand and writes the wiki in one
+   * synchronous call, so a slice of applies shares one wiki tick. Everything the hand decision reads (the drain, `sent`, the
+   * ledger, the wiki's standing value, an act's removal) it reads at APPLY, so a hand typed while the slice prepared still
+   * leaves ahead of the wave. A write of this shore's own that moved `sent` since the prepare declines the apply: the change
+   * takes the whole road (`_landOne`), which resolves the composition afresh.
+   */
+  private async _prepareLanding(change: LarTiddlerChange): Promise<PreparedLanding> {
     const title = change.title;
-    const wiki = this.tw5.$tw.wiki;
-    const envelopeHeads = change.heads;
     let heads = change.heads;
     let record = change.record;
     let bag = change.bag;
@@ -560,6 +585,21 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       bag = resolved?.bagId ?? change.bag;
       heads = resolved ? resolved.heads : this._headsOfBag(change.bag);
     }
+    // A stopped shore lands nothing (the apply answers so), so it spends no shadow read either.
+    const shadow = this.landing?.isStopped() ? undefined : await this._kahuaShadowFor(title, change.bag ? (resolvedTop ?? null) : undefined);
+    return { record, bag, heads, shadow, sentHas: this.sent.has(title), sentValue: this.sent.get(title) };
+  }
+
+  /**
+   * `landed` when the change landed (or had nothing to land); `hand` when a hand stands and must leave first; `stale` when an
+   * own write moved `sent` since the prepare. Either of the last two writes nothing and takes `_landOne`.
+   */
+  private _applyLanding(change: LarTiddlerChange, prepared: PreparedLanding, handSettled: boolean): LandingVerdict {
+    const title = change.title;
+    const wiki = this.tw5.$tw.wiki;
+    const envelopeHeads = change.heads;
+    const { record } = prepared;
+    let { bag, heads } = prepared;
     const entry = this.ledger.landedOf(title);
     if (bag === undefined) {
       bag = entry?.bag;
@@ -575,7 +615,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     }) : null;
     const standing = wiki.getTiddler(title) ?? null;
     const known = entry ? entry.tiddler : null;
-    if (this.landing?.isStopped()) return;
+    if (this.landing?.isStopped()) return "landed";
     // A marked title holds a hand even when its state has returned to the landed value: the flush decides
     // from the state at flush, and a write still in flight for it must be superseded before this wave lands.
     const marked = this.drain.owes(title) && !this.drain.parked(title);
@@ -585,30 +625,13 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // lands over it.
     // AN ACT'S REMOVAL OWNS THE WIKI'S VIEW of its title until it leaves: a queued wave of the title's earlier write never lands it back.
     const removal = this.actRemovals.get(title);
-    if (!handSettled && this.resident && removal && this._removalStands(title, removal)) return;
+    if (!handSettled && this.resident && removal && this._removalStands(title, removal)) return "landed";
     const shadowOnly = standing !== null && typeof wiki.tiddlerExists === "function" && !wiki.tiddlerExists(title);
     const isHand = !handSettled && this.resident
       && (marked || (!shadowOnly && !same(standing, known) && !(this.sent.has(title) && this.sent.get(title) === standing)));
-    if (isHand) {
-      // The hand leaves through the drain ahead of the wave, never around the write in flight: the wave lands only once the hand's
-      // own write answers, and a newer hand marked meanwhile goes first again.
-      for (let pass = 0; pass < 8; pass++) {
-        const outcome = await this._drainTitle(title);
-        // A refused hand stays owed and carries the title's state on its next request; the wave never lands over it.
-        if (outcome.kind === "failed") { if (this.drain.owes(title)) return; throw outcome.error; }
-        const wrote = this.lastFlushWrote.get(title) === true;
-        const latest = wiki.getTiddler(title) ?? null;
-        const currentEntry = this.ledger.landedOf(title);
-        const unsent = (this.drain.owes(title) && !this.drain.parked(title))
-          || (!same(latest, currentEntry ? currentEntry.tiddler : null) && !(this.sent.has(title) && this.sent.get(title) === latest));
-        if (wrote) {
-          if (unsent) continue;
-          return;
-        }
-        return this._landOne(change, true);
-      }
-      return;
-    }
+    if (isHand) return "hand";
+    // AN OWN WRITE MOVED SINCE THE PREPARE: the composition the prepare read misses it, so the wave never lands a stale answer over it.
+    if (this.sent.has(title) !== prepared.sentHas || this.sent.get(title) !== prepared.sentValue) return "stale";
     const applies = !sameWithStamp(incoming, standing);
     if (applies) {
       if (!this.engineApply) throw new LandingDoorUnavailableError();
@@ -618,25 +641,61 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     this.ledger.set(title, { tiddler: wiki.getTiddler(title) ?? null, ...(bag !== undefined ? { bag } : {}), ...(heads !== undefined ? { heads } : {}) });
     if (change.bag !== undefined && envelopeHeads !== undefined && envelopeHeads.length > 0) this._noteLanded(change.bag, envelopeHeads);
     this._learnDraft(title, live ? record : null, bag);
-    await this._stampKahuaShadow(title, change.bag ? (resolvedTop ?? null) : undefined);
+    this._applyKahuaShadow(title, prepared.shadow);
     this.sent.delete(title);
     this.handBase.delete(title);
     this.unlanded.delete(title);
     if (applies) this.lastWriteBag.delete(title);
+    return "landed";
+  }
+
+  /** The single-change road: prepare and apply back to back, and where a hand stands, the hand leaves through the drain first. */
+  private async _landOne(change: LarTiddlerChange, handSettled = false): Promise<void> {
+    const title = change.title;
+    const wiki = this.tw5.$tw.wiki;
+    const verdict = this._applyLanding(change, await this._prepareLanding(change), handSettled);
+    if (verdict === "landed") return;
+    // An own write moved during the prepare: resolve afresh (the next prepare reads the moved `sent`).
+    if (verdict === "stale") return this._landOne(change, handSettled);
+    // The hand leaves through the drain ahead of the wave, never around the write in flight: the wave lands only once the hand's
+    // own write answers, and a newer hand marked meanwhile goes first again.
+    for (let pass = 0; pass < 8; pass++) {
+      const outcome = await this._drainTitle(title);
+      // A refused hand stays owed and carries the title's state on its next request; the wave never lands over it.
+      if (outcome.kind === "failed") { if (this.drain.owes(title)) return; throw outcome.error; }
+      const wrote = this.lastFlushWrote.get(title) === true;
+      const latest = wiki.getTiddler(title) ?? null;
+      const currentEntry = this.ledger.landedOf(title);
+      const unsent = (this.drain.owes(title) && !this.drain.parked(title))
+        || (!same(latest, currentEntry ? currentEntry.tiddler : null) && !(this.sent.has(title) && this.sent.get(title) === latest));
+      if (wrote) {
+        if (unsent) continue;
+        return;
+      }
+      return this._landOne(change, true);
+    }
+  }
+
+  /**
+   * The "local draft over shared" stamp a landing of `title` owes, read at the prepare: the shadow it casts, null where none stands
+   * (the stamp clears), undefined where no stamp applies (a title that never persists, a composition laying no kahua stage).
+   */
+  private async _kahuaShadowFor(title: string, resolved?: { readonly bagId: string; readonly record: LarTiddlerRecord } | null): Promise<KahuaShadow | null | undefined> {
+    if (neverPersists(title)) return undefined;
+    // A shadow stands only where the composition lays the kahua stage: a pool wiki (or any store composing no
+    // `bags/kahua` layer) asks nothing per landing.
+    if (typeof this.store.layerIndexOf !== "function" || this.store.layerIndexOf(KAHUA_BAG) === -1) return undefined;
+    return kahuaShadowOf(this.store, title, resolved);
   }
 
   /**
    * Stamp or clear the "local draft over shared" record for a title the wave just landed: the temp-plane
    * stamp carries the kahua body the draft covers and exists only while a shadow stands on this device.
    */
-  private async _stampKahuaShadow(title: string, resolved?: { readonly bagId: string; readonly record: LarTiddlerRecord } | null): Promise<void> {
-    if (neverPersists(title)) return;
-    // A shadow stands only where the composition lays the kahua stage: a pool wiki (or any store composing no
-    // `bags/kahua` layer) asks nothing per landing.
-    if (typeof this.store.layerIndexOf !== "function" || this.store.layerIndexOf(KAHUA_BAG) === -1) return;
+  private _applyKahuaShadow(title: string, shadow: KahuaShadow | null | undefined): void {
+    if (shadow === undefined) return;
     const wiki = this.tw5.$tw.wiki;
     const stamp = kahuaShadowTitle(title);
-    const shadow = await kahuaShadowOf(this.store, title, resolved);
     if (!shadow) {
       if (wiki.getTiddler(stamp)) wiki.deleteTiddler(stamp);
       return;

@@ -86,7 +86,7 @@ One word carries five unlike acts. Only the select sense assumes one lit daemon:
 | ''verify'' | binds bytes to a digest | module pins, `pinnedDoc`, the vendored automerge pin | `pin` |
 | ''share'' | carries one human route's share of a slot key | the keyslot passphrase and paper pins | `pin` |
 
-''The narrowed word'' (<<~ loulou uri=`lar:///ha.ka.ba/kahua/memory/ruling/2026-11-25-the-leans-collapse`>>, Pin Q4). `pin` keeps key and byte anchors: trust, verify and share. Select takes the word ''accept''. Keep takes ''a face's keep list'': a record the face writes in its own daemon wiki, bound to its lit life, over one vessel cap that refuses by name when full and never drops one face's hold to seat another's. Order stays with ''law pins'', a face's own record that orders canon law and adds none.
+''The narrowed word'' (`lar:///ha.ka.ba/kahua/memory/ruling/2026-11-25-the-leans-collapse`, a ruling the memory stage holds, Pin Q4). `pin` keeps key and byte anchors: trust, verify and share. Select takes the word ''accept''. Keep takes ''a face's keep list'': a record the face writes in its own daemon wiki, bound to its lit life, over one vessel cap that refuses by name when full and never drops one face's hold to seat another's. Order stays with ''law pins'', a face's own record that orders canon law and adds none.
 
 ''As built:'' a wiki keep rides a face's keep list. The face writes `$:/config/lares/keep` (a filter naming wiki slugs) in its own daemon wiki; the lit face reads it at light and keeps each wiki the vessel's one keep-warm cap grants. The cap counts distinct kept wikis against its budget, shares a wiki two faces keep, and answers `keep-full` with the holders named when the budget stands full: no keep drops to seat another. The system bags derive from the lit set (#/pin-flag): a lit face holds them for its lit life and the hold ends at its close. The `pinned` flag of #/pin-flag still names the exempt state in the word the collector carries.
 
@@ -119,7 +119,9 @@ Consequences (the rule's design, UNBUILT as wiring — no production path derive
 
 * A bag referenced by ANY `wela` island reads ''`wela`'' — its handle stays in cache.
 * A bag referenced by NO `wela` island reads ''`anu`'' — its handle MAY drop (the eviction `automerge-repo` does not do on its own; see [[issue #358|https://github.com/automerge/automerge-repo/issues/358]]).
-* ''Referenced bags inherit liveness.'' `lares` / `lararium` corpus and the session event-bus bag ride in multiple recipes; a wiki's own per-wiki live slots (`wikis/{slug}/{personal,draft,working}`) each bind one recipe. Either way, referenced by the pinned admin/primary/Session islands, they would read ''`wela` by derivation'' and keep their handles while a pinned island holds them. As built, the boot pins each such bag directly.
+* ''Referenced bags inherit liveness.'' The `lares` corpus rides under every recipe, the `lararium` corpus under the herm/hearth wiki's (the canon floor by place, below), and the session event-bus bag rides in several; a wiki's own per-wiki live slots (`wikis/{slug}/{personal,draft,working}`) each bind one recipe. Either way, referenced by the pinned admin/primary/Session islands, they would read ''`wela` by derivation'' and keep their handles while a pinned island holds them. As built, the boot pins each such bag directly.
+
+''The canon floor by place'' (ruling 2026-11-26-canon-floor-by-place, operator: //"I want `lares` in all wikis, `lararium+lares` in the herm/hearth wiki."//) names which house-canon bags each recipe references, so the derivation reads one table on both vessels: every wiki's recipe stacks `lares`; the herm/hearth wiki's stacks `lararium` and `lares`, and beneath every house layer TiddlyWiki5's own native docs (`tw5-docs`, `tw5-dev`, read-only); no other wiki stacks `lararium` by default. ''Why:'' the house's law reaches every wiki, while the lararium's own canon rides where the place holds law, and one table keeps the node and the browser from deriving two floors (normalize + check: `CANON_FLOOR` in `packages/lararium-mesh/src/wiki-recipe.ts`, read by `floorRecordsFor`; the witness `packages/lararium-mesh/tests/derive-wiki-recipe.test.ts` runs the vector both hosts share). A recipe record from before the ruling trues by hand through `lares wiki true-floor <slug>`, with a receipt; no boot moves it (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>> #/canon-floor-by-place).
 
 Two disciplines survive the collapse as bag-level mechanism (driven by the pool, not an independent authority):
 
@@ -180,6 +182,6 @@ through #third-tier-gate, and only after the research that meme charges.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;FT3acqI1isBnDHo954WPWybHJcwGUlZpFODhpUbaezk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FJ6ydowebjLXpHw-GUlChnBrE7fXW8Id8Jx7sjJ-fM4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

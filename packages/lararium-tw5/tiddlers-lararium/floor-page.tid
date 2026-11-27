@@ -15,7 +15,10 @@ caption: Test floor
 <h3>On the floor</h3>
 <<rows view:"taken">>
 
-<h3>Waiting (arrival order)</h3>
+<h3>Lanes (service order; waiting/taken)</h3>
+<<rows view:"lane">>
+
+<h3>Waiting (served by lane, arrival within a lane)</h3>
 <$list filter="[<ledger>floor-queue[waiting]]" variable="ticket" emptyMessage="<em>the queue stands empty</em>">
 <pre><$text text={{{ [<ledger>floor-queue[ticket],<ticket>] }}}/></pre>
 </$list>
@@ -25,6 +28,12 @@ caption: Test floor
 
 <h3>Verdicts and bytes</h3>
 <<rows view:"budget">>
+
+<h3>Misses (a green a later red contradicts)</h3>
+<<rows view:"miss">>
+
+<h3>Runs per landing (runs/floor turns)</h3>
+<<rows view:"runs-per-landing">>
 
 <h3>Dropped</h3>
 <<rows view:"dropped">>

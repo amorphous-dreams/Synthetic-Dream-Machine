@@ -22,7 +22,8 @@ import { openLocalSession, SessionRefused } from "./session-connector.js";
 import { sealedAct } from "./sealed-act-door.js";
 import { vesselStanding, type VesselStanding } from "./custody-door.js";
 import { vesselDid, larSealHome, larDataDir } from "./env.js";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { hostname } from "node:os";
 import { join } from "node:path";
 import { DaemonUnreachable, refusalCode, refusalHint, verbFailure } from "./verb-call.js";
 import { udsAlive, udsSocketPresent, udsSocketPath, whoHolds, invokeLocal, UdsUnreachable, LocalWaitExpired, type WhoHoldsAnswer } from "./local-connector.js";
@@ -156,11 +157,12 @@ export type StoreDoorVia = "daemon" | "direct";
 /**
  * This door's own patience for a store it cannot yet reach serving verbs: the rendezvous name may stand with
  * no answer at all yet (the vessel still opening its claim), stand PARKED (claimed, but its boot has not yet
- * opened a verb channel — `owned-store.ts`'s `park`), or stand WEDGED (M4: something accepted the connection
- * and then never answered at all — frozen, not merely slow-but-live). Each phase spends its OWN budget, so a
- * slow-but-live boot earns more patience than a name nothing answers at all, a wedged holder earns its own
- * bounded patience distinct from both, and a timeout NAMES the pid still holding rather than a flat "timed
- * out after 30000ms".
+ * opened a verb channel — `owned-store.ts`'s `park`), or stand SILENT (M4: something accepted the connection
+ * and then never answered the probe). A silent holder gets read off the kernel's own tables ({@link readHolder}):
+ * one whose CPU counter moves across the silence WORKS (`hot`: a starved event loop, a long compaction), and the
+ * door paces and names it; one whose counter stands still, or one this seat cannot read, stays `wedged` and spends
+ * that phase's figure. Each phase spends its OWN budget, so a slow-but-live boot earns more patience than a name
+ * nothing answers at all, and a timeout NAMES the process still holding rather than a flat "timed out after 30000ms".
  */
 export const STORE_DOOR_PHASES: readonly BootPhase[] = [
   { name: "unbound", budgetMs: 10_000 },
@@ -168,7 +170,14 @@ export const STORE_DOOR_PHASES: readonly BootPhase[] = [
   // paces the "still boots" line alone; the holder gone, a boot-log fault or refusal, a stand-socket exit, the seat's serving
   // answer, or a person's interrupt ends the wait.
   { name: "parked",  budgetMs: 45_000, paced: true },
+  // WEDGED spans the readings that tell a frozen holder from a working one: the holder's own CPU counter decides, and this
+  // figure only bounds how long a counter that never moves (or a holder this seat cannot read) gets watched.
   { name: "wedged",  budgetMs: 10_000 },
+  // HOT spends no budget (No Global Now): the holder's CPU counter moved while its door stood silent, so the vessel works
+  // and answers slow. The figure paces the progress lines and the door's own re-probe, and spans the window a counter
+  // must move in to stay hot; the vessel's answer, a counter that stands still (back to wedged), or a person's interrupt
+  // ends the wait.
+  { name: "hot",     budgetMs: 15_000, paced: true },
   // SERVING spends no budget (No Global Now): the live seat took the act and answers for it, however long the island
   // runs ahead of it. The figure names the PACING of the progress lines alone; the vessel's answer, its named refusal,
   // or a person's interrupt ends the wait.
@@ -237,6 +246,92 @@ function parkedLine(log: string, holder: string): string {
   return `[lares] the vessel still boots (stage ${stage}); the act stays owed. To look: \`lares vessel read\` names the holder${named}. To stop waiting: interrupt this act; it stays owed.`;
 }
 
+/**
+ * WHAT THIS SEAT READS OF A HOLDER off the kernel's own tables: the process behind a pid, its run state, the CPU it has
+ * burned (user and system ticks, every thread) and the memory it holds resident. The pid counts in this seat's own pid
+ * namespace, the one `socketHolderPids` read it in.
+ */
+export interface HolderReading {
+  readonly pid:      number;
+  /** The process's argv, space-joined; empty where the kernel names none. */
+  readonly command:  string;
+  /** The kernel's one-letter run state: R runs, S sleeps, D waits on disk, T and t stand stopped, Z left a zombie. */
+  readonly state:    string;
+  readonly cpuTicks: number;
+  readonly rssBytes: number;
+}
+
+/** Read `pid` off `/proc`, or null where this seat cannot (the pid gone, another user's process, no `/proc`). */
+export function readHolder(pid: number): HolderReading | null {
+  try {
+    // `/proc/<pid>/stat`: `pid (comm) state ppid … utime stime …`; `comm` may hold spaces and parentheses, so the
+    // fields count from the LAST `)`.
+    const stat = readFileSync(`/proc/${pid}/stat`, "utf8");
+    const rest = stat.slice(stat.lastIndexOf(")") + 2).split(" ");
+    const cpuTicks = Number(rest[11]) + Number(rest[12]);
+    if (!Number.isFinite(cpuTicks)) return null;
+    let command = "";
+    try { command = readFileSync(`/proc/${pid}/cmdline`, "utf8").split("\0").filter((a) => a !== "").join(" "); } catch { /* unnamed */ }
+    let rssBytes = 0;
+    try {
+      const m = /^VmRSS:\s+(\d+) kB/m.exec(readFileSync(`/proc/${pid}/status`, "utf8"));
+      if (m) rssBytes = Number(m[1]) * 1024;
+    } catch { /* unread */ }
+    return { pid, command, state: rest[0] ?? "?", cpuTicks, rssBytes };
+  } catch { return null; }
+}
+
+/** Where this CLI stands, as a holder's pid reads from it: a container counts its own pids, and names itself by hostname. */
+export const doorSeat = (): string => existsSync("/.dockerenv") ? `inside container ${hostname()}` : `on host ${hostname()}`;
+
+/** Does this argv name the vessel's own process (`lararium-node`'s `main.js`)? */
+const isVesselCommand = (command: string): boolean => /lararium-node\/(?:dist\/src\/)?main\.js/.test(command);
+const STOPPED_STATES: ReadonlySet<string> = new Set(["T", "t"]);
+const STATE_WORDS: Readonly<Record<string, string>> = { R: "running", S: "sleeping", D: "waiting on disk", T: "stopped", t: "stopped under a tracer", Z: "a zombie", I: "idle" };
+/** `/proc` counts CPU in USER_HZ ticks, which the Linux ABI holds at 100 a second. */
+const cpuSeconds = (ticks: number): string => (ticks / 100).toFixed(1);
+
+/** One holder in words: its pid as this seat counts it, its process, whether it stands as the vessel itself, its state and its mass. */
+export function holderWords(r: HolderReading): string {
+  const command = r.command === "" ? "an unnamed process" : r.command.length > 96 ? `${r.command.slice(0, 95)}…` : r.command;
+  const vessel = isVesselCommand(r.command) ? ", the standing vessel itself" : "";
+  const resident = r.rssBytes > 0 ? `, ${(r.rssBytes / 2 ** 30).toFixed(2)} GiB resident` : "";
+  return `pid ${r.pid} (${command}${vessel}; ${STATE_WORDS[r.state] ?? `state ${r.state}`}${resident})`;
+}
+
+/**
+ * THE STORE DOOR STOOD SILENT AND ITS HOLDER SHOWED NO WORK: the probe drew no answer across the wedged phase, and the
+ * holder's own CPU counter never moved (`idle`), or this seat could read no process behind the door (`unread`: another pid
+ * namespace, no `/proc`). A holder that works never lands here: its moving counter turns the wait `hot`, and the door paces it.
+ * The words name each holder by process and seat and carry the cure, so a caller that prints the message alone still
+ * hands its reader a command to run.
+ */
+export class StoreDoorSilent extends SlowBootTimeout {
+  override readonly name = "StoreDoorSilent";
+  readonly evidence: "idle" | "unread";
+  constructor(spent: SlowBootTimeout, readonly holders: readonly HolderReading[], /** Silent readings since a holder's counter last moved. */ readonly reads: number, readonly seat: string) {
+    super(spent.phase, spent.resource, spent.holderPids);
+    this.evidence = holders.length > 0 ? "idle" : "unread";
+    this.message = `${this.message} ${this.evidence === "idle"
+      ? `Read ${seat}: ${holders.map(holderWords).join("; ")} burned no CPU across ${reads} silent reading(s), so it stands frozen or stopped, never merely hot.`
+      : `No process behind that door reads ${seat} (another pid namespace, or no /proc), so nothing here tells a hot holder from a frozen one.`} ${silentCure(this)}`;
+  }
+}
+
+/** The runnable cure for a silent door, by what the readings showed. */
+function silentCure(err: StoreDoorSilent): string {
+  if (err.evidence === "unread") return "Read the holder from its own seat with `lares vessel read`, then run this act again.";
+  const stopped = err.holders.filter((r) => STOPPED_STATES.has(r.state));
+  if (stopped.length > 0) return `Continue it with \`kill -CONT ${stopped.map((r) => r.pid).join(" ")}\` from that seat, then run this act again.`;
+  return "Read it from outside this door with `lares vessel read`; where it stays silent, weigh what a stop drops with `lares vessel census`, then restand it with `lares vessel stand`.";
+}
+
+/** The progress line a hot wait prints: the holder works, its door answers slow, and the act stays sent. */
+function hotLine(verb: string, requestId: string, holders: readonly HolderReading[], burnedTicks: number, seat: string, interactive: boolean, face?: number): string {
+  const exit = interactive ? " Ctrl-C ends this wait, never the act." : " This wait goes on while the holder works.";
+  return `[lares] the vessel runs hot and answers slow: ${holders.map(holderWords).join("; ")}, read ${seat}, burned ${cpuSeconds(burnedTicks)} CPU-s while its door stood silent. Your act "${verb}" (request ${requestId}) stays sent.${exit} ${readBack(requestId, face)}`;
+}
+
 /** The ask a paced door sends the vessel: its servo's own ceiling (one hour), the most patience the vessel holds, never the 30 s a missing figure defaults to. */
 const NO_SERVO_MS = 3_600_000;
 
@@ -297,6 +392,10 @@ export async function throughStoreDoor(opts: {
   readonly bootLog?: (holderPids: readonly number[]) => string;
   /** Has the stand socket's node exited? Absent, never. */
   readonly standExited?: () => boolean;
+  /** Test seam — what this seat reads of a holder pid; defaults to {@link readHolder} (`/proc`). */
+  readonly holderReading?: (pid: number) => HolderReading | null;
+  /** Test seam — where this CLI stands, for the lines that name a holder; defaults to {@link doorSeat}. */
+  readonly seat?: string;
 }): Promise<{ readonly output: Record<string, unknown>; readonly via: StoreDoorVia }> {
   if (opts.daemonUp ?? (await udsAlive())) {
     const phases = opts.phases ?? STORE_DOOR_PHASES;
@@ -307,6 +406,20 @@ export async function throughStoreDoor(opts: {
     const holderAlive = opts.holderAlive ?? hostPidAlive;
     const bootLog = opts.bootLog ?? ((pids: readonly number[]): string => standBootLog(pids));
     let holderGoneReads = 0;
+    // A SILENT DOOR READS ITS HOLDER'S OWN COUNTERS: the ticks each holder showed at the first silent reading (the burn a
+    // line names), the ticks at the last mark (the window that decides), and the readings taken since a counter last moved.
+    // A counter that moves turns the wait hot; one that stands still across a whole hot cadence turns it back; the silence
+    // ending clears them all.
+    const holderReading = opts.holderReading ?? readHolder;
+    const hotPhase = phases.find((p) => p.name === "hot");
+    const silentFirst = new Map<number, number>();
+    const silentMark = new Map<number, number>();
+    let silentHolders: readonly HolderReading[] = [];
+    let silentBurned = 0;
+    let silentIdleReads = 0;
+    let hot = false;
+    /** PACING alone: while the holder works, the door asks its socket again only at the hot cadence, and reads `/proc` between. */
+    let reProbeAt = 0;
     // The named pid counts only once THIS host has read it alive: a vessel in another pid namespace names a pid the host never
     // sees, and a host-side ESRCH there says nothing about the boot.
     const seenAlive = new Set<number>();
@@ -348,7 +461,10 @@ export async function throughStoreDoor(opts: {
       until: () => settled,
       probe: async () => settled,
       phase: async () => {
-        const met = await whoHolds(undefined, undefined, requestId);
+        // A HOT HOLDER GETS FEWER PROBES: each one costs the vessel a connection it must read while it already runs behind.
+        const quiet = hot && performance.now() < reProbeAt;
+        const met = quiet ? lastMet : await whoHolds(undefined, undefined, requestId);
+        if (!quiet) reProbeAt = performance.now() + (hotPhase?.budgetMs ?? 0);
         lastMessage = met?.message ?? "";
         lastMet = met;
         if (met?.phase === "serving" && !settled) {
@@ -374,6 +490,27 @@ export async function throughStoreDoor(opts: {
           else if (opts.standExited?.() === true) endWait(new StoreDoorEnded(opts.verb, "stand-exited", "the stand socket's node exited"));
           else if (holderGoneReads >= 2) endWait(new StoreDoorEnded(opts.verb, "holder-gone", `pid(s) ${pids.join(", ")} no longer run`));
         }
+        // SILENT: the probe drew no answer. The holder's own CPU counter tells a working vessel from a frozen one: a tick
+        // burned since the last mark reads `hot` (paced, never refused); a counter that stands still keeps `wedged` and its
+        // figure. While hot, each paced re-probe closes a window: a holder that burned nothing across it reads wedged again.
+        if (met?.phase === "wedged" && !settled) {
+          silentHolders = pidsNamedIn(met.message).map((pid) => holderReading(pid)).filter((r): r is HolderReading => r !== null);
+          let moved = false;
+          for (const r of silentHolders) {
+            const first = silentFirst.get(r.pid);
+            if (first === undefined) silentFirst.set(r.pid, r.cpuTicks);
+            else silentBurned = Math.max(silentBurned, r.cpuTicks - first);
+            const mark = silentMark.get(r.pid);
+            if (mark === undefined) silentMark.set(r.pid, r.cpuTicks);
+            else if (r.cpuTicks > mark) moved = true;
+          }
+          const setMarks = (): void => { for (const r of silentHolders) silentMark.set(r.pid, r.cpuTicks); };
+          silentIdleReads = moved ? 0 : silentIdleReads + 1;
+          if (!hot && moved) { hot = hotPhase !== undefined; setMarks(); }
+          else if (hot && !quiet) { hot = moved; setMarks(); }
+          return hot ? "hot" : "wedged";
+        }
+        silentFirst.clear(); silentMark.clear(); silentHolders = []; silentBurned = 0; silentIdleReads = 0; hot = false;
         // A serving reading prints nothing yet: a verb that answers inside one cadence leaves no line behind.
         return met === null ? "unbound" : met.phase;
       },
@@ -382,12 +519,18 @@ export async function throughStoreDoor(opts: {
         if (settled) return;
         if (phase === "serving") progress(servingLine(opts.verb, requestId, lastMet, interactive, opts.face));
         else if (phase === "parked") progress(parkedLine(bootLog(pidsNamedIn(lastMessage)), lastMessage));
+        else if (phase === "hot") progress(hotLine(opts.verb, requestId, silentHolders, silentBurned, opts.seat ?? doorSeat(), interactive, opts.face));
       },
     }).then((): { readonly quiet: true } => ({ quiet: true }));
     let raced: { readonly quiet: true } | { readonly quiet: false; readonly v: Record<string, unknown> };
     try {
       raced = await Promise.race([verbPromise.then((v): { readonly quiet: false; readonly v: Record<string, unknown> } => ({ quiet: false, v })), named, interruption]);
-    } catch (err) {
+    } catch (caught) {
+      // A SILENT DOOR'S REFUSAL NAMES WHAT THE READINGS SHOWED: the holder by process and seat, its idle counter (or that
+      // this seat could not read it), and the command that cures it.
+      const err = caught instanceof SlowBootTimeout && caught.phase === "wedged"
+        ? new StoreDoorSilent(caught, silentHolders, silentIdleReads, opts.seat ?? doorSeat())
+        : caught;
       // THIS DOOR'S OWN DECISION CLOSES THE SOCKET AT ONCE (H1). A budgeted wait that names a holder and
       // gives up must not leave the verb's own flat timer holding a channel open for the rest of ITS budget
       // while nobody is still listening on this end — the vessel sees the hang-up as an `end` right then
@@ -463,7 +606,7 @@ const REFUSAL_NAMES = new WeakMap<Error, string>();
  *   the vessel refused by name      → that name's code (`waking-floor`, `bag-retired`, `request-abandoned`, …)
  *   the control document unread     → `vessel-locked` (the key did not open) or `control-home-unnamed` (no face)
  *   another holder holds the store  → `store-held`
- *   the door's wait named a holder  → `store-door-timeout`
+ *   the door's wait named a holder  → `store-door-timeout` (a silent door whose holder showed no work carries its own cure)
  *   this process stopped listening  → `outcome-unknown`, with the request id and its cure
  *   no vessel answered              → `daemon-unreachable`
  *
@@ -489,6 +632,7 @@ export function storeFailure(err: unknown, fallback = "error"): { readonly code:
     return { code: err.refusal, message, ...(err.refusal === VESSEL_LOCKED ? { hint: "open the vessel key with `lares vault unlock`, then run again." } : err.refusal === "control-home-unnamed" ? { hint: "this place holds no face; light one with `lares persona new 0 --name '<label>'`." } : {}) };
   }
   if (err instanceof StoreHeld) return { code: "store-held", message, hint: "another holder holds this store: a standing vessel, or a command mid-act. Run again once it has gone." };
+  if (err instanceof StoreDoorSilent) return { code: "store-door-timeout", message, hint: silentCure(err) };
   if (err instanceof SlowBootTimeout) return { code: "store-door-timeout", message, hint: "the vessel's store door gave no answer inside its budget. `lares vessel read` names what holds it." };
   if (err instanceof StoreDoorEnded) return { code: "store-door-ended", message, hint: endedCure[err.ended] };
   if (err instanceof RequestLost) {

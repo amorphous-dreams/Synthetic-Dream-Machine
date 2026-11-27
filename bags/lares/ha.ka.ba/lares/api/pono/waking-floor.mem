@@ -90,7 +90,7 @@ meme forbids outright (the struck quorum design: <<~ loulou uri=`lar:///ha.ka.ba
 signs THAT, because a clockless vessel accepting pre-signed material accepts a bearer credential that replays
 forever (#the-breaks b).
 
-''THE CUSTODY DOOR OPENS THE VESSEL'S OWN KEY, AND THE CREDENTIAL TAKES ONE ROAD.'' A vessel stands holding no vessel key: it binds its socket, serves the public shelf, reads no private record and mints nothing. `lares vault unlock` reads a credential on a TTY and sends ONE custody frame on the owner-only socket; the frame meets the custody door ahead of every verb, so it never becomes an invocation and leaves no digest, receipt, outcome or log line. The door hands the credential to the one holder in node-main, which opens the key and the custody root; the standing composition then tears down whole and a fresh one stands on the same floor with what the key opens. `lares vault lock` drops the key and returns the vessel to the floor, and so does every restart: nothing an unlock did touches disk. A refusal names its reading (`no-slot-opens` · `tree-absent` · `tree-unreadable` · `attempts-spent`) and never the input; five failed unlocks spend a boot's attempts, and only a restart restores them (#/rulings). ''The warning climbs'' (`packages/lararium-mesh/src/attempt-budget.ts`, `ATTEMPT_BUDGET`, the one count every security door derives): each miss carries `attemptsLeft` beside its reading and words that name the tries left, what the burn does and the road back; misses one and two read calm, the third reads CAREFUL, the fourth LAST TRY, the fifth SPENT. A composition that refuses above the floor leaves the floor standing.
+''THE CUSTODY DOOR OPENS THE VESSEL'S OWN KEY, AND THE CREDENTIAL TAKES ONE ROAD.'' A vessel stands holding no vessel key: it binds its socket, serves the public shelf, reads no private record and mints nothing. `lares vault unlock` reads a credential on a TTY and sends ONE custody frame on the owner-only socket; the frame meets the custody door ahead of every verb, so it never becomes an invocation and leaves no digest, receipt, outcome or log line. The door hands the credential to the one holder in node-main, which opens the key and the custody root; the standing composition then tears down whole and a fresh one stands on the same floor with what the key opens. `lares vault lock` drops the key and returns the vessel to the floor, and so does every restart, until a person unlocks again or a lit pūlama's dial answers (#/the-open-question): nothing an unlock did touches disk. A refusal names its reading (`no-slot-opens` · `tree-absent` · `tree-unreadable` · `attempts-spent`) and never the input; five failed unlocks spend a boot's attempts, and only a restart restores them (#/rulings). ''The warning climbs'' (`packages/lararium-mesh/src/attempt-budget.ts`, `ATTEMPT_BUDGET`, the one count every security door derives): each miss carries `attemptsLeft` beside its reading and words that name the tries left, what the burn does and the road back; misses one and two read calm, the third reads CAREFUL, the fourth LAST TRY, the fifth SPENT. A composition that refuses above the floor leaves the floor standing.
 
 ''A LOCKED HEARTH FAILS CLOSED'' (#/rulings). Every act that needs the vessel's control document refuses `vessel-locked` until custody opens: the verb door places no verb outside the floor and writes no receipt fact, no receipt claims durability over memory, and the floor mints no device slot. THE FLOOR STILL ANSWERS (`packages/lararium-node/src/floor-verbs.ts`): a one-shot read-only query (`where`, `resolve`, `unbound-docs`) or verb of the place (the store door's verbs that act as no face: a herm's carry take, a lift's founding answering its own refusal) runs unledgered, and its answer waits in the floor store's memory alone (`floorAnswerStore`), crossing from the daemon island to the verb door as one message and resting nowhere; an act that writes a control fact on the way refuses at that write by the same name. The control document stands at the floor as a stand-in no Repo holds (`packages/lararium-mesh/src/control-home.ts` `standControlHome`), so the floor finds, syncs and loads no sealed document; its daemon wiki writes engine state into a layer held in memory alone, gone at the next composition. The custody door (`unlock`, `lock`, `custody`, the census) never touches the control document and answers throughout. The browser's locked boot and the CLI's direct holder answer the same name; a direct holder whose key will not open says why and stands no stand-in. The control document and the secret home mint with the FACE, never the place, so a herm that never lights a face holds neither: it answers its floor the same way, and every act beyond the floor refuses `control-home-unnamed`.
 
@@ -356,15 +356,63 @@ The KEK stays ''passphrase-primary''; a random key beside the ciphertext reads a
 isolation and gets refused; a missing passphrase ''NEVER silently degrades to weak key handling''. ''The
 floor names WHAT A VESSEL SERVES, never what it weakens.''
 
-''RULED'': every boot rests at the floor until a human unlocks, and nothing stored may lift it. An
-unattended boot rests and never refuses.
+''RULED'': every boot rests at the floor until one of three lifts raises it, and no stored passphrase, file,
+environment variable or flag lifts it. The dial lifts a boot because a keeper holds the key in its memory and
+answers now, never because the vessel read anything at rest. An unattended boot rests and never refuses.
+
+''THE THREE LIFTS'' (the third by operator ruling, 2026-11-26: //"Re-standing after a system re-start fully
+unlocked via a Lei … We have more caps than when we set that last 'hand only' point in place"//):
+
+# ''A human's unlock.'' The route, typed on a terminal: at the vessel's own door, or under a pūlama at the
+  keeper's (`light`). The only lift that asks nothing stored.
+# ''A lit pūlama's dial.'' A vessel under a keeper that stands lit and admitted its image opens by the dial,
+  as part of standing: no route rides the vessel, so no unlock try spends there.
+# ''A hoʻāla lei with returns left.'' The hand strings it once under its route; each host restart then
+  wakes the keeper with no terminal, one counted return each, and the keeper's dial raises the vessel
+  (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-hoala-lei`>>).
+
+''What the third lift costs, named.'' It rests the house's end of the bond on the machine: sealed keys the
+house minted (the node key, each lit face's custody key), never the human's route. The slot rests in the
+house's `pulama/state`; the key that opens it rests in a Docker volume the keeper alone mounts. Whoever
+reads both halves (Docker as the operator plus the house directory, or the raw disk where it carries no
+encryption) opens the house with no route while a return stands; a copy of the house alone opens nothing.
+A count bounds it, never a clock; an unstring destroys both halves at once, lit or unlit. While a
+return stands the lei carries the operator's authorization for every act of the waking: the light, the
+admit of an image the keeper never admitted, and both across a move of the keeper's own code. The
+rollback guards the code move: the prior closure's image stays tagged, and a keeper whose new code fails
+its waking steps back to it and wakes there by the same lei. Returns spent, the lei unstrung or either
+half missing: the boot rests at the floor as before and names the hand's cure.
+The lift raises a restarted keeper alone: a keeper a hand locked stays locked.
+
+''One rite walks the lifts'': `lares rite hoala` (hoʻāla, to waken) reads the keeper, the image and the
+vessel, takes the cheapest living lift each layer offers, and prints one verdict line. Kūkulu stays the
+rite that raises a new image.
 
 ''What the code does'': every boot composes at the floor. `packages/lararium-node/src/main.ts` hands its
 first composition no sovereign readers, and a composition reaches a private record only through the custody
 seat (`packages/lararium-node/src/custody-seat.ts`), which refuses `CustodyLocked` while no key rests in
-it. A human's unlock raises the vessel. The keyhive archive, each face's veil archive and each face's
+it. A human's unlock raises the vessel, or under a pūlama the lit keeper's dial does; a keeper gone dark
+with its host wakes by a hoʻāla lei where one holds a return (`packages/lararium-node/src/pulama-hoala.ts`,
+the shim's `keeper_light`). The keyhive archive, each face's veil archive and each face's
 anchors rest sealed under the vessel key from the founding's first write, so no stored passphrase and no
-unsealed archive lifts a boot.
+unsealed archive lifts a boot; a hoʻāla lei rests the sealed node key, and its device key apart from it.
+
+''Where the dial stands in the boot'' (`packages/lararium-node/src/pulama-seat.ts`, `standFirstByPulama`). A vessel
+whose environment names a pūlama (`LAR_PULAMA_SOCKET`) still claims its store and stands its custody door first,
+holding no key, and then dials before anything composes. The pronaos composes ahead of both readings, so the arrival
+page, the worker and the seed answer at every step below (#/the-arrival-page), and the MCP seat's messenger (the iris
+core) keeps answering across the hearth's sleep, naming `hearth-sleeps` for a call no child stands to take.
+* ''A session served'': the dial names the faces the pūlama lends, and the vessel composes ONCE over them, sovereign. No floor composition stands first only to tear down for the sovereign one.
+* ''No session served'' (the pūlama locked, unreachable or refusing; a composition the vessel refused over the session): the dial names its refusal once and the floor composes. A cure rides the refusal: `lares vault unlock` asks the custody door, which runs this same dial again and carries no credential.
+* ''A pūlama silent past the first dial's bound'' (`FIRST_DIAL_SILENCE_MS`, five seconds): an interim floor composes meanwhile, so the house answers while the keeper stays quiet, and the dial stays asked. When the dial lands, it composes over that interim floor as a custody unlock does. A dial that already asked for its composition holds the chain, and no interim floor stands.
+* ''The session drops'' (the pūlama locked, its process ended or the socket went): the vessel composes at the floor again.
+* ''A vessel that names no pūlama'' composes its floor first, and a human's unlock raises it.
+
+''The bound paces and never decides.'' The clock chooses whether an interim floor stands for a while, a small thing that
+only keeps the house reachable. The composition the vessel ENDS on follows the session's own events (the dial's lend,
+a refusal, a drop, a human's unlock), and a late answer composes over an early floor exactly as an early one would
+have. No clock lifts a boot and none lowers one; an attacker who owns the clock gains an interim floor and no key
+(<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>>).
 
 ''OWED'': a bounded ember, its law stated and unbuilt (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/ember`>>). It raises to SERVING alone and never
 signs or admits; a count dial bounds it, and no clock; it wants the device's own unlock plus a second
@@ -419,6 +467,6 @@ keeps ''the place'' — which is precisely the floor. The myth bore this load be
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4zOYtaWHBPSoKPcsvSILqz8my-hy4TTJ2tw85wtnqZc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RJKvJzLCNLa8iKnAkeQL-lNIfdcL2kyQOLLPxYh2hvw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

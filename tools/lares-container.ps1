@@ -11,8 +11,11 @@
 # (`run/keep-owed`) to `keep-owed`, which the rite runs once it lands its halves (it waits while a kūkulu half rests
 # unlanded). `vessel-image` prints the image the running vessel runs. The pūlama reads every route; this shim never reads or
 # types one. The CLI runs by exec while a vessel stands and through the offline door while none
-# stands. The host holds the engine: the shim reads the CLI's standing verdict after a verb and restarts the vessel
-# itself when the verdict reads `restand`. The app gets no docker socket.
+# stands. The host holds the engine: a verb that succeeds REPORTS the CLI's standing verdict as it leaves, asked by nothing
+# (one line at config/standing-report.<LARES_EXEC_TAG>: attach | restand <reason> | unread; one CLI process per call; the exit
+# code stays the verb's own), and the shim restarts the vessel itself when the report reads `restand`. The image owns what its
+# CLI reports and this shim owns only reading it: an image that reports nothing gets one observe reading after the verb, so a
+# skew between shim and image breaks no call. The app gets no docker socket.
 # LARES_HOUSE / LARES_WORKSPACE come from the environment or the operator's `~/.lares/lares-surface.env` (outside every
 # bind; never beside the compose file). LARES_WORKSPACE names the workspace the house lays canon from and projects into,
 # a projection target the operator names; for the Kahu cabal it names the repo checkout, the working surface
@@ -166,6 +169,11 @@ public sealed class LaresSignalStop : IDisposable {
   return [LaresSignalStop]::new([string[]]$Base, $kind, $env:LARES_EXEC_TAG, $RunName, $StopScript)
 }
 
+# THE STANDING REPORT an exec'd verb leaves (`standing-report.ts`) rests at config/standing-report.<this run's tag>. Only the
+# CLI route reads it; every other exec drops it as it returns, so no report outlives its call.
+function ReportPath { if ($House) { return (Join-Path (Join-Path $House 'config') "standing-report.$($env:LARES_EXEC_TAG)") } return '' }
+function DropReport { $rp = ReportPath; if ($rp) { try { [System.IO.File]::Delete($rp) } catch {} } }
+
 function Act([string]$kind, [string[]]$more) {
   $ended = $false
   $armed = ArmSignalStop $kind
@@ -316,11 +324,11 @@ function RememberWornFace([string[]]$argv) {
 # so it runs detached from this terminal, its stdin empty: an image that prompts anyway reads no keystroke.
 function DetachedUnlock([string[]]$argv) {
   $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli vault unlock @argv
-  return $LASTEXITCODE
+  $rc = $LASTEXITCODE; DropReport; return $rc
 }
 function DetachedWear([string]$face) {
   $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli wear $face
-  return $LASTEXITCODE
+  $rc = $LASTEXITCODE; DropReport; return $rc
 }
 # THE SHIM'S OWN WEAR TURNS OVER THE SHORE'S FLUSH. A wear that turns the face flushes every shore first, and refuses
 # `shore-unwritten` where records stay unwritten. The shim wears only a face just opened, which no hand has touched since, so it
@@ -331,7 +339,7 @@ function DetachedWear([string]$face) {
 function ShimWear([string]$face) {
   $script:ShimWearWhy = ''
   $out = @($null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli wear $face --yes 2>&1)
-  $rc = $LASTEXITCODE
+  $rc = $LASTEXITCODE; DropReport
   foreach ($line in $out) { [Console]::Error.WriteLine("$line") }
   if ($rc -eq 0) { return 0 }
   $said = ($out | ForEach-Object { "$_" }) -join "`n"
@@ -370,6 +378,7 @@ function UnlockOrName {
   if ($script:Tty) {
     [Console]::Error.WriteLine("lares-container: the vessel stands holding no vessel key; unlocking it on this terminal (every face the credential opens$thenWear)")
     & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv lares node $Cli vault unlock --all
+    $unlockRc = $LASTEXITCODE; DropReport; $global:LASTEXITCODE = $unlockRc
     if ($LASTEXITCODE -ne 0) {
       if ($wear) { [Console]::Error.WriteLine("lares-container: the vessel still stands at the floor; open every face the credential opens with ``lares-container.ps1 vault unlock --all``, then ``lares-container.ps1 wear $wear``") }
       else { [Console]::Error.WriteLine('lares-container: the vessel still stands at the floor; open every face the credential opens with `lares-container.ps1 vault unlock --all`') }
@@ -456,13 +465,13 @@ function VesselRead([string[]]$rest) {
 }
 
 # Any CLI verb: inside the standing vessel, else through the offline door. A verb that succeeds inside a standing
-# vessel gets followed by one standing check, and the shim lifts the vessel when the verdict asks for it.
+# vessel names the standing verdict as it leaves, and the shim lifts the vessel when the verdict asks for it.
 function RouteCli([string[]]$argv, [bool]$followUp) {
   $script:HostInputFile = $null
-  $isPut = $argv.Count -ge 3 -and (($argv[0] -ceq 'tiddler' -and $argv[1] -ceq 'put') -or ($argv[0] -ceq 'spirit' -and $argv[1] -cin @('ah', 'hooili', 'residue')))
+  $isPut = $argv.Count -ge 3 -and (($argv[0] -ceq 'tiddler' -and $argv[1] -ceq 'put') -or ($argv[0] -ceq 'spirit' -and $argv[1] -cin @('ah', 'hooili', 'residue', 'handback')))
   if ($argv.Count -gt 0) {
     $alwaysValued = @('--fields', '--note', '--reason', '--text')
-    $boolean = @('abandon', 'accept-loss', 'accept-omissions', 'added', 'all', 'all-strata', 'apply', 'approve', 'brief', 'bulk', 'cancel', 'cards', 'collapse', 'commit', 'cosign', 'confirm', 'create', 'cut', 'drain', 'deny', 'docs', 'draft', 'drop', 'dry-run', 'edge', 'ephemeral', 'every', 'executable', 'family', 'force', 'foreground', 'fresh', 'from-persona', 'held', 'help', 'help-mempalace', 'history', 'hearth', 'hold', 'if-due', 'in-wiki', 'init', 'join', 'json', 'keep', 'keep-hooks', 'keyhive-trace', 'lag', 'launch', 'list', 'meme', 'memory', 'new', 'observe', 'offer', 'orphans', 'over-fresher', 'page', 'pair', 'palaces', 'paper', 'partial', 'passphrase', 'pending', 'probe', 'quorum', 'overwrite', 'remove', 'repour', 'restart', 'revert', 'rotate', 'seat', 'sessions', 'shadow', 'skinny', 'skip-build', 'spectral', 'split-root', 'staged', 'sweep', 'tag-blobs', 'terms', 'tree', 'verbose', 'wait', 'watch', 'with-web', 'workbench', 'writeback', 'yes')
+    $boolean = @('abandon', 'accept-loss', 'accept-omissions', 'added', 'all', 'all-strata', 'apply', 'approve', 'brief', 'bulk', 'cancel', 'cards', 'collapse', 'commit', 'cosign', 'confirm', 'create', 'cut', 'drain', 'deny', 'docs', 'draft', 'drop', 'dry-run', 'edge', 'ephemeral', 'every', 'executable', 'family', 'force', 'foreground', 'fresh', 'from-persona', 'held', 'help', 'help-mempalace', 'history', 'hearth', 'hold', 'if-due', 'in-wiki', 'init', 'join', 'json', 'keep', 'keep-hooks', 'keyhive-trace', 'lag', 'launch', 'list', 'meme', 'memory', 'new', 'observe', 'offer', 'orphans', 'over-fresher', 'page', 'pair', 'palaces', 'paper', 'partial', 'passphrase', 'pending', 'probe', 'quorum', 'overwrite', 'remove', 'repour', 'restart', 'revert', 'rotate', 'seat', 'sessions', 'shadow', 'skinny', 'skip-build', 'spectral', 'split-root', 'staged', 'sweep', 'tag-blobs', 'terms', 'tree', 'verbose', 'wait', 'watch', 'with-web', 'witness', 'workbench', 'writeback', 'yes')
     $sources = @()
     for ($i = 0; $i -lt $argv.Count; $i++) {
       $word = $argv[$i]
@@ -510,15 +519,46 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
   }
   if (HasRunningVessel) {
     $tty = if ($script:HostInputFile) { @('-T') } else { $NoTty }
+    # ONE CLI PER CALL, AND THE STANDING ARRIVES AS A REPORT (`standing-report.ts`): the exec carries no word that asks, the
+    # verb's exit stays its own, and a verb that succeeded leaves one line in config/standing-report.<tag>, which this reads and
+    # removes. No report (an image older than the report) takes one observe reading instead.
+    DropReport
+    $keeps = $script:ActKeepsExit
+    if ($followUp) { $script:ActKeepsExit = $true }
     Act 'exec' (@('exec', '-e', 'LARES_EXEC_TAG') + $PassEnv + $tty + @('lares', 'node', $Cli) + $argv)
+    $script:ActKeepsExit = $keeps
+    $code = $LASTEXITCODE
+    $report = ''
+    $reportFile = ReportPath
+    if ($reportFile -and [System.IO.File]::Exists($reportFile)) {
+      try { $report = ([System.IO.File]::ReadAllLines($reportFile) | Select-Object -First 1).TrimEnd("`r") } catch { $report = '' }
+      DropReport
+    }
+    $global:LASTEXITCODE = $code
     if ($followUp) {
-      # The verb landed. A standing check that fails leaves a possible lift unperformed, so it never passes silently.
-      $answer = ObserveStanding
-      if ($script:ObserveFailed -or (VerdictAct $answer) -eq '') {
+      # The verb landed or failed by its own code. A verdict that fails to read leaves a possible lift unperformed, so it never
+      # passes silently.
+      if ($code -ne 0) { if (-not $keeps) { exit $code } }
+      elseif ($report -ceq 'attach') { $global:LASTEXITCODE = 0 }
+      elseif ($report -cmatch '^restand( |$)') {
+        # The report's reason names the lift as an observe reading's does (LiftVessel reads it there).
+        $reason = $report.Substring(7).Trim()
+        if ($reason) { LiftVessel @((@{ data = @{ standing = @{ act = 'restand'; reason = $reason } } } | ConvertTo-Json -Depth 4 -Compress)) }
+        else { LiftVessel @('{"data":{"standing":{"reason":"the standing requires a re-stand"}}}') }
+      }
+      elseif ($report -ceq 'unread') {
         [Console]::Error.WriteLine('lares-container: the verb succeeded, and the standing check after it answered no verdict; run `lares-container.ps1 vessel stand`')
         exit 1
       }
-      if (VerdictRestand $answer) { LiftVessel $answer }
+      else {
+        # NO REPORT ARRIVED: the image's CLI reports none (older than the report), so one reading follows the verb.
+        $answer = ObserveStanding
+        if ($script:ObserveFailed -or (VerdictAct $answer) -eq '') {
+          [Console]::Error.WriteLine('lares-container: the verb succeeded, and the standing check after it answered no verdict; run `lares-container.ps1 vessel stand`')
+          exit 1
+        }
+        if (VerdictRestand $answer) { LiftVessel $answer }
+      }
     }
   } else {
     [Console]::Error.WriteLine('lares-container: no vessel stands; this act runs offline on the store')
@@ -918,6 +958,25 @@ function SaveVesselLog([string]$id) {
     [Console]::Error.WriteLine("lares-container: the vessel's log (its last $VesselLogLines lines) rests at $file")
   } catch { [Console]::Error.WriteLine("lares-container: the vessel's log could not be read; the down goes on") }
 }
+# THE STOP'S OWN LINES JOIN THE SAVED LOG. The save above reads while the vessel still stands, so it ends before the
+# stand-down speaks. Once the vessel stopped and before its container leaves, the lines from its last `graceful shutdown`
+# line on (the flush spans, each `[sealed-rest]` stand-down row, `N save(s) leave unsealed`) append to that file as the
+# engine printed them, and one line names their count. A stop that printed none appends nothing and says nothing; a log
+# that cannot be read never blocks the removal.
+$StandDownLines = 2000
+function KeepStandDown([string]$id) {
+  $id = (($id -split "`r?`n") | Where-Object { $_.Trim() } | Select-Object -First 1)
+  if ([string]::IsNullOrWhiteSpace($id)) { return }
+  try {
+    $lines = @(& docker logs --tail $StandDownLines $id.Trim() 2>&1 | ForEach-Object { "$_" })
+    $from = -1
+    for ($i = 0; $i -lt $lines.Count; $i++) { if ($lines[$i] -match 'graceful shutdown') { $from = $i } }
+    if ($from -lt 0) { return }
+    $said = @($lines[$from..($lines.Count - 1)])
+    Add-Content -LiteralPath (Join-Path (Join-Path $House 'run') 'vessel-last.log') -Value $said -Encoding utf8
+    [Console]::Error.WriteLine("lares-container: the stop's own lines ($($said.Count), from its graceful shutdown on) join the saved log")
+  } catch { }
+}
 function DownVessel([string[]]$opts) {
   # A pūlama that reads unknown stops nothing: a full down would take a lit pūlama with it.
   $pulama = PulamaState
@@ -940,7 +999,7 @@ function DownVessel([string[]]$opts) {
   else { $script:KeepSaid = 'no vessel stood, so no keep ran' }
   if ($pulama -eq 'running') {
     # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops (with down's options) and leaves.
-    Compose (@('stop') + $opts + @('lares')); Compose @('rm', '-f', 'lares')
+    Compose (@('stop') + $opts + @('lares')); KeepStandDown ($ids -join "`n"); Compose @('rm', '-f', 'lares')
   } else { Compose (@('down', '--remove-orphans') + $opts) }
 }
 
@@ -1874,7 +1933,7 @@ switch ($verb) {
       }
       if (-not $answer.StartsWith('{')) { Die 'the pūlama signed nothing; nothing lands' }
       $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli lei land $answer
-      exit $LASTEXITCODE
+      $landRc = $LASTEXITCODE; DropReport; exit $landRc
     }
     RouteCli (@($verb) + $rest) $true
   }
@@ -1900,7 +1959,7 @@ switch ($verb) {
       }
       if (-not $answer.StartsWith('{')) { Die 'the pūlama signed nothing; nothing lands' }
       $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli kahua @rest --land $answer
-      exit $LASTEXITCODE
+      $landRc = $LASTEXITCODE; DropReport; exit $landRc
     }
     RouteCli (@($verb) + $rest) $true
   }
@@ -1923,7 +1982,7 @@ switch ($verb) {
       }
       if (-not $answer.StartsWith('{')) { Die 'the pūlama signed nothing; nothing lands' }
       $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli nexus @line --land $answer
-      exit $LASTEXITCODE
+      $landRc = $LASTEXITCODE; DropReport; exit $landRc
     }
     RouteCli (@($verb) + $rest) $true
   }

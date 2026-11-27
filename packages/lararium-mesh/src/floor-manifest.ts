@@ -14,6 +14,7 @@ import type { ChangeOrigin, LarTiddlerChange, LarTiddlerRecord, LarTiddlerStore 
 import { docPrototypeKeyFault } from "./prototype-key-shore.js";
 import { SYSTEM_CANON_SLUGS } from "./kahu-canon-reach.js";
 import { bagUri } from "./lar-uris.js";
+import { floorAdmits } from "./wiki-recipe.js";
 import type { CapTier } from "./cap-tier.js";
 import type { PluginOffering } from "./plugin-offering.js";
 
@@ -324,6 +325,18 @@ export function floorBlobCids(manifestCid: string, m: FloorManifest, offering?: 
 /** Each snapshot's rows in the manifest's slug order: the read-only layers the oracle floor stacks. */
 export function floorRecordsInOrder(floor: ResolvedFloor): Readonly<Record<string, LarTiddlerRecord>>[] {
   return floorSlugs(floor.manifest).map((slug) => floor.snapshots[slug]!);
+}
+
+/**
+ * THE SNAPSHOTS ONE WIKI'S FLOOR LAYS, in the manifest's slug order: THE CANON FLOOR BY PLACE (`floorAdmits`, `wiki-recipe.ts`)
+ * decides each system-canon snapshot (`lares` on every wiki, `lararium` on the herm/hearth wiki and its own quine wiki alone),
+ * and every other house-canon snapshot rides as the floor carries it. Both vessels' islands lay their oracle read-face through
+ * this one call.
+ */
+export function floorRecordsFor(floor: ResolvedFloor, wikiSlug: string): Readonly<Record<string, LarTiddlerRecord>>[] {
+  return floorSlugs(floor.manifest)
+    .filter((slug) => !SYSTEM_CANON_SLUGS.includes(slug) || floorAdmits(wikiSlug, bagUri(slug)))
+    .map((slug) => floor.snapshots[slug]!);
 }
 
 /**

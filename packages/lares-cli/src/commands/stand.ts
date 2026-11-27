@@ -25,7 +25,8 @@ import { repoRoot } from "@lararium/mesh/node";
 import { fatalLine, derivePronaosDeskInputs, originDeclaration } from "@lararium/node";
 import { faceStandsOnDisk } from "../floor-cure.js";
 import { engineHeldByHost } from "../port-control.js";
-import { standingPath, standingVerdict } from "@lararium/mesh/rendezvous-path";
+import { standingVerdict } from "@lararium/mesh/rendezvous-path";
+import { readStandingMarker } from "../standing-report.js";
 import { larRoot, larBootstrapPath, larDataDir, larCasDir, vesselDid } from "../env.js";
 import { udsAlive } from "../local-connector.js";
 import { awaitBootPhase, awaitVerbSocket } from "../stand-socket-wait.js";
@@ -81,12 +82,6 @@ async function recallIntoWake(): Promise<WakeRecall> {
   } catch (e) {
     return { ok: false, wing, note: e instanceof Error ? e.message : String(e) };
   }
-}
-
-/** The standing a running vessel published beside its socket, or null when it published none. */
-function readStandingMarker(): string | null {
-  try { return readFileSync(standingPath({ root: larDataDir(), uid: process.getuid?.() ?? 0 }), "utf8"); }
-  catch { return null; }
 }
 
 

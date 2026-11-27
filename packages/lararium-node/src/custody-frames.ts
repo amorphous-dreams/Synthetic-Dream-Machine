@@ -122,11 +122,11 @@ export type CustodyAnswer =
   /** A wear that stood: the face it wears, or (`switchRefused`) the face it named, why, and the face worn again. */
   | ({ readonly op: "wear"; readonly face: number; readonly held: boolean; readonly already?: true; readonly switchRefused?: string; readonly wornAgain?: number; readonly shore?: ShoreFlushReading } & Partial<CustodyStanding>)
   | ({ readonly op: "lock"; readonly locked: true; readonly was: "unlocked" | "locked"; readonly face?: number } & Partial<CustodyStanding>)
-  | { readonly op: "custody"; readonly pulama?: { readonly session: boolean; readonly waits: string | null }; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly wikiAwaits: string | null; readonly testScratch: boolean; readonly composing: boolean; readonly facesOpen?: number }
+  | { readonly op: "custody"; readonly pulama?: { readonly session: boolean; readonly waits: string | null }; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly attempts?: { readonly heldBy: "pulama" | "vessel"; readonly read: boolean }; readonly standing: string; readonly wikiAwaits: string | null; readonly testScratch: boolean; readonly composing: boolean; readonly facesOpen?: number }
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
   /** Each document with saves held in memory (`SealedDocumentStore.held`), by id and never by body; `standing` names
    *  the composition that answered ("recomposing" while none sits, when `held` reads null). */
-  | { readonly op: "census"; readonly held: readonly HeldSaves[] | null; readonly standing: string; readonly locked: boolean; readonly facesLocked?: readonly number[]; readonly facesLit?: readonly number[]; readonly facesDark?: readonly ServedDark[]; readonly worn?: number }
+  | { readonly op: "census"; readonly held: readonly HeldSaves[] | null; readonly standing: string; readonly locked: boolean; readonly everOpened?: boolean; readonly facesLocked?: readonly number[]; readonly facesLit?: readonly number[]; readonly facesDark?: readonly ServedDark[]; readonly worn?: number }
   /** Each document by id, its store, counts and class, and the names that reach it; never a body. */
   | { readonly op: "doc-census"; readonly census: DocCensusReading; readonly standing: string }
   /** What each island the composition holds wrote to its mirrors, and what it left and why. */
@@ -403,6 +403,12 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
    * yet. The state query answers outside the chain with this flag, so a caller asking mid-unlock hears it at once.
    */
   let composingDepth = 0;
+  /**
+   * WHETHER THIS VESSEL'S KEY EVER STOOD OPEN IN THIS LIFE. A vessel that stood locked since it booted composed nothing under a
+   * key, so no act wrote and nothing waits in memory; the census names that (`everOpened: false`), and a stop then asks nothing.
+   */
+  let everOpened = holder.isUnlocked();
+  holder.onOpened?.(() => { everOpened = true; });
   /**
    * Whether the standing mount came by the opening rule (`unlock --all` mounting the lowest face it opened) rather than a face
    * a person named (`--face N`, `wear`). Such a mount slides: locking it moves the mount to the next face standing open, as the
@@ -716,8 +722,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
   const runAct = (name: string, args: unknown) => async (): Promise<CustodyAnswer> => {
     // The log names an act only where the table names it: a caller's own text never reaches the log.
     const logged = isSealedActName(name) ? name : "(an act the table does not name)";
-    const refuse = (reason: string, errorMessage: string, extra: object = {}): CustodyAnswer => {
-      deps.onLog(`act ${logged}: refused (${reason})`);
+    const refuse = (reason: string, errorMessage: string, extra: object = {}, klass = ""): CustodyAnswer => {
+      deps.onLog(`act ${logged}: refused (${reason}${klass})`);
       return { op: "act", status: "error", errorMessage, refusal: { reason, ...extra } };
     };
     if (!deps.runAct) return refuse("acts-unavailable", "this vessel's custody door runs no acts");
@@ -728,7 +734,9 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       return { op: "act", act: name, result };
     } catch (e) {
       const fault = actFault(e);
-      return refuse(fault.reason, e instanceof Error ? e.message : String(e), fault.extra);
+      // The log keeps the refusal's class beside its code (the caller alone hears the message).
+      const klass = e instanceof SealedActRefused && e.klass !== undefined ? `, ${e.klass}` : "";
+      return refuse(fault.reason, e instanceof Error ? e.message : String(e), fault.extra, klass);
     }
   };
 
@@ -1103,13 +1111,17 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       // `facesDark` names each face the custody serves (lit set) that stands dark here, its light refused, with its clearing line.
       let facesDark: ServedDark[] = [];
       try { facesDark = servedDark(deps.refusedLights?.() ?? [], facesLit, deps.pulama !== undefined, deps.refusedCloses?.() ?? [], deps.refusedHolds?.() ?? []); } catch { facesDark = []; }
-      answer(sock, { op: "census", held, standing: deps.standing(), locked: !holder.isUnlocked(), ...(facesLocked.length > 0 ? { facesLocked } : {}), ...(facesLit.length > 0 ? { facesLit } : {}), ...(facesDark.length > 0 ? { facesDark } : {}), ...(worn !== undefined ? { worn } : {}) });
+      if (holder.isUnlocked()) everOpened = true;
+      answer(sock, { op: "census", held, standing: deps.standing(), locked: !holder.isUnlocked(), everOpened, ...(facesLocked.length > 0 ? { facesLocked } : {}), ...(facesLit.length > 0 ? { facesLit } : {}), ...(facesDark.length > 0 ? { facesDark } : {}), ...(worn !== undefined ? { worn } : {}) });
       return true;
     } else {
       // THE STATE QUERY IS READ-ONLY: it answers at once, beside the chain, so a caller asking while an unlock
       // recomposes hears `composing: true` instead of waiting behind the recomposition.
       answer(sock, {
         op: "custody", unlocked: holder.isUnlocked(), slot: holder.openedSlot(), attemptsLeft: holder.attemptsLeft(), facesOpen: holder.unlockedFaces().length,
+        // WHOSE COUNT THIS IS: under a pūlama the try budget rides the keeper (only a route presented at its hand door spends one),
+        // and a vessel with no session read none of it, so `read: false` there and the number beside it names no spend.
+        attempts: deps.pulama ? { heldBy: "pulama" as const, read: deps.pulama.standing().session } : { heldBy: "vessel" as const, read: true },
         ...(deps.pulama ? { pulama: deps.pulama.standing() } : {}),
         standing: deps.standing(), wikiAwaits: deps.wikiAwaits?.() ?? null, testScratch: deps.testScratch, composing: composingDepth > 0,
       });

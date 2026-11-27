@@ -4,7 +4,7 @@
  * so the test reads which doors the command reached for.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync, writeSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync, writeSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { parseArgs } from "../src/parse-args.js";
@@ -115,5 +115,65 @@ describe("vessel stand and the host-held engine", () => {
     expect(await cmdStand(parseArgs(["vessel", "stand", "--json"])) ).toBe(0);
     expect(stopIncumbent).toHaveBeenCalledOnce();
     expect(spawn).toHaveBeenCalledOnce();
+  });
+});
+
+describe("a verb's own process REPORTS the standing to the host shim, and never asks or changes its exit", () => {
+  const TAG = "0123456789abcdef";
+  const readers = (alive: boolean) => ({ alive: async () => alive, marker: () => "{}", faceOnDisk: () => true });
+  const reportAt = () => join(base, "config", `standing-report.${TAG}`);
+  const readReport = () => readFileSync(reportAt(), "utf8");
+
+  it("a verb that succeeded under a shim's exec tag reports a restand verdict and its reason, one line in the config bind", async () => {
+    mkdirSync(join(base, "config"));
+    const { reportStanding } = await import("../src/standing-report.js");
+    await reportStanding(0, TAG, readers(true));
+    expect(readReport()).toBe("restand face lit after boot\n");
+  });
+
+  it("an attach verdict reports itself, so a bare success never passes for a reading", async () => {
+    mkdirSync(join(base, "config"));
+    verdict = { act: "attach", reason: "steady" };
+    const { reportStanding } = await import("../src/standing-report.js");
+    await reportStanding(0, TAG, readers(true));
+    expect(readReport()).toBe("attach\n");
+  });
+
+  it("the process's own readers read the marker and the face the stand command reads", async () => {
+    const { standingLine } = await import("../src/standing-report.js");
+    expect(await standingLine()).toBe("restand face lit after boot");
+  });
+
+  it("no vessel answering, or a reading that throws, reports no verdict (unread)", async () => {
+    const { standingLine } = await import("../src/standing-report.js");
+    expect(await standingLine(readers(false))).toBe("unread");
+    expect(await standingLine({ ...readers(true), marker: () => { throw new Error("unreadable"); } })).toBe("unread");
+  });
+
+  it("RED no word asks for the standing: the entry reads the budget alone, and the retired --standing-report (an older shim's) comes off and changes nothing", async () => {
+    const { takeEntryAsks } = await import("../src/standing-report.js");
+    expect(takeEntryAsks(["tiddler", "get", "lar:///x", "--recipe", "default", "--ask-budget-ms=3500"])).toEqual({ argv: ["tiddler", "get", "lar:///x", "--recipe", "default"], budgetMs: 3500 });
+    expect(takeEntryAsks(["--ask-budget-ms", "40", "vessel", "read"])).toEqual({ argv: ["vessel", "read"], budgetMs: 40 });
+    expect(takeEntryAsks(["vessel", "read", "--ask-budget-ms=soon"])).toEqual({ argv: ["vessel", "read"], budgetMs: null });
+    expect(takeEntryAsks(["vessel", "read", "--json"])).toEqual({ argv: ["vessel", "read", "--json"], budgetMs: null });
+    // HOST/IMAGE SKEW BREAKS NO CALL: a shim from before the report still appends the word; the verb never meets it, and the
+    // exit stays the verb's own (that shim then reads a bare 0 and takes its own observe reading).
+    expect(takeEntryAsks(["vessel", "read", "--standing-report"])).toEqual({ argv: ["vessel", "read"], budgetMs: null, retiredAsk: true });
+    const mod: Record<string, unknown> = await import("../src/standing-report.js");
+    expect(mod["STANDING_REPORT_FLAG"]).toBeUndefined();
+    expect(mod["STANDING_EXIT"]).toBeUndefined();
+    expect(mod["standingExit"]).toBeUndefined();
+  });
+
+  it("CONTROL: a verb that failed, a call no shim tagged, or a house with no config bind reports nothing", async () => {
+    const { reportStanding } = await import("../src/standing-report.js");
+    const never = { alive: async () => { throw new Error("no reading runs"); }, marker: () => null, faceOnDisk: () => false };
+    await reportStanding(0, TAG, never);
+    expect(existsSync(reportAt())).toBe(false);
+    mkdirSync(join(base, "config"));
+    await reportStanding(7, TAG, never);
+    await reportStanding(0, "", never);
+    await reportStanding(0, "not-a-tag", never);
+    expect(readdirSync(join(base, "config"))).toEqual([]);
   });
 });

@@ -143,7 +143,7 @@ export * from "./ddate.js";
 export * from "./oracle-cast.js";
 export * from "./door-band.js";
 export * from "./epoch-lease.js";
-export { controlHomeUrlOf, standControlHome, readControlHome, nameControlHome, ControlHomeUnavailable, controlStoreOf, vesselOnlyDocIds, floorOnlyDocIds, makeVesselOnlyDocs, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, controlHomeRefusal, assertControlHomeOpen, refusingControlStore, floorAnswerStore, isFloorAnswerTitle, FLOOR_ANSWER_RING, vesselLockedRefusal, type ControlHomeRefusal } from "./control-home.js";
+export { controlHomeUrlOf, standControlHome, readControlHome, nameControlHome, ControlHomeUnavailable, controlStoreOf, vesselOnlyDocIds, floorOnlyDocIds, makeVesselOnlyDocs, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, controlHomeRefusal, assertControlHomeOpen, refusingControlStore, floorAnswerStore, isFloorAnswerTitle, FLOOR_ANSWER_RING, answerRingOf, makeAnswerRing, ANSWER_RING_COUNT, ANSWER_RING_BYTES, vesselLockedRefusal, type AnswerRing, type ControlHomeRefusal } from "./control-home.js";
 export { vesselOnlyBook, repoReverdict } from "./vessel-only-book.js";
 export * from "./lar-did.js";
 export * from "./device-delegation.js";
@@ -301,6 +301,7 @@ export * from "./residency-actions.js";
 export { watchStandoffs, standoffOf, type StandoffWatch } from "./standoff-watch.js";
 export * from "./verb-refusal.js";
 export * from "./content-handle.js";
+export * from "./pointer-address.js";
 export * from "./effect-record.js";
 export * from "./shell-leaving-record.js";
 export * from "./kumu-device.js";
@@ -697,6 +698,7 @@ export * from "./lockbox-wrap.js";
 export * from "./content-key-holder.js";
 export * from "./sealed-doc-store.js";
 export * from "./sealed-rest.js";
+export * from "./compacting-storage.js";
 export * from "./call-touches.js";
 export { deviceDaemonDocs, vesselHeldBagOf, daemonSlotTitle, hearthDaemonOf, DAEMON_SLOT_PREFIX, FLOOR_REGISTRY_ROOT, FLOOR_SLOT_ROOT, FLOOR_DAEMON_SLOT_ROOT, floorSlotTitle, floorDaemonSlotTitle, isFloorRegistryTitle, floorSlotOf, type DeviceDaemonDocs, type LitDeviceFace, type LitDeviceFaces } from "./device-daemon-docs.js";
 export * from "./published-bag-key.js";
@@ -726,3 +728,8 @@ export * from "./attempt-budget.js";
 // The one spirit record's stack and the fold's ranks and commands: each subpath lends what the barrel lends from its module.
 export * from "./spirit-stack.js";
 export * from "./spirit-unfold.js";
+export * from "./spirit-summons.js";
+export * from "./spirit-witness.js";
+
+// A boot step names what it awaits and its measured span: the subpath lends what the barrel lends from its module.
+export * from "./boot-wait.js";

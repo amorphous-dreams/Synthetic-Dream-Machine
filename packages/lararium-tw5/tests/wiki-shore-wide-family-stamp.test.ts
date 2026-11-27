@@ -4,7 +4,7 @@
  * A store change that touches many titles once rode a bulk path that enqueued each title with no bag, so
  * the wiki held those tiddlers with no `$origin-bag` stamp and the landed ledger with no bag. Every
  * envelope now carries its bag and heads, whatever the family's width (`automerge-doc-store` builds each,
- * `island-adaptor` lands each through `_landOne`). This vector pins that: one peer change of fourteen
+ * `island-adaptor` lands each through `_prepareLanding` / `_applyLanding`). This vector pins that: one peer change of fourteen
  * titles, merged from another Repo, lands every title stamped with the bag it came from.
  *
  * Control: a narrow family of two lands stamped the same way, so the width alone decides nothing.

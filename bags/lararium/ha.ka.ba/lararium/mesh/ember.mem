@@ -219,7 +219,7 @@ Each refusal names `serving-standing` and `lares vault unlock`.
 * ''The per-Nexus keys'': a face's proof key rests cold on the root holder, and a vessel's face-scoped key rests hot under the S key, so a serving hearth presents as no face at any Nexus and signs no hand-over. Its gate verifies a hand-over a presenter carries, since that act stands public and signed.
 * ''The gate's tiers'': the floor gates keep deriving from the floor key, and the sovereign gate from the sealed custody root, as ruled. The serving gate stands as the third tier, its bundle derived from SK under its own name, so a dialer that pinned the sovereign tier never mistakes a serving hearth for an unlocked one (#/rulings).
 * ''The sealed store's content keys'' stay in the daemon island's holder, which stands only on an unlocked vessel. SERVING mints, rolls and opens none. A roll a counted raise owes waits for the next human unlock, and the gates close on the shadow at once.
-* ''The waking floor's rulings'' hold: every boot rests at its floor, and nothing stored lifts it, since a raise needs a live answer from another device for each boot; the raise's next causal boundary stands as the expiry the waking floor requires.
+* ''The waking floor's rulings'' hold: every boot rests at its floor until a human's unlock or a lit pūlama's dial lifts it, and nothing stored lifts it, since a raise needs a live answer from another device for each boot; the raise's next causal boundary stands as the expiry the waking floor requires.
 
 <<~/ahu>>
 
@@ -296,6 +296,6 @@ Each stands as a house ruling under the operator's delegation, with the conditio
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qwh-ss4QNZqqDEWWgslrhTBDOkTPOiSPzU2zwjIbMcE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wN1In4eDkfpkjUwGqY4o2pCMygKT7FdaNUgQ6Mnn0_A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

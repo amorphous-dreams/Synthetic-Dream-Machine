@@ -9,7 +9,9 @@
  * Meme: lar:///ha.ka.ba/lares/cli/reality-tunnel
  */
 import { execFileSync } from "node:child_process";
+import { existsSync, statSync } from "node:fs";
 import { homedir } from "node:os";
+import { resolve } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { repoRoot } from "@lararium/mesh/node";
 import { handRefusalOf, readOwnHand, type HandReading } from "@lararium/node";
@@ -131,11 +133,11 @@ export const indexText = (repo: string) => (rel: string): string | null => {
   catch { return null; }
 };
 
-export function itemsFor(door: Door, staged = false, persist = false, familiar: string | null = null): { items: Item[]; ledger: Ledger; root: string } {
+export function itemsFor(door: Door, staged = false, persist = false, familiar: string | null = null, repo: string = repoRoot): { items: Item[]; ledger: Ledger; root: string } {
   if (door === "repo") {
     // `--staged` reads the carrier and the seed the commit carries, never the working tree's.
-    const items = staged ? repoItems(repoRoot, declared(repoRoot, indexText(repoRoot)), indexText(repoRoot), { staged: true }) : repoItems(repoRoot);
-    return { items, ledger: new Ledger(repoLedgerDir(repoRoot)), root: repoRoot };
+    const items = staged ? repoItems(repo, declared(repo, indexText(repo)), indexText(repo), { staged: true }) : repoItems(repo);
+    return { items, ledger: new Ledger(repoLedgerDir(repo)), root: repo };
   }
   return { items: homeItems({ repo: repoRoot, homes: resolveHomes({ persist }), familiar }), ledger: new Ledger(homeLedgerDir()), root: homedir() };
 }
@@ -158,16 +160,29 @@ export async function cmdTunnelDoor(door: Door, args: ParsedArgs, hand: () => Ha
     console.error(`lares ${door} ${verb}: --familiar names a home's familiar; run \`lares home ${verb} --familiar ${familiar}\``);
     return EXIT.usage;
   }
+  // `--root <dir>` names the checkout the repo door keeps; a commit gate names the repository the commit runs in. Absent, the
+  // checkout this CLI lives in stands (`repoRoot`, a walk up from the module's own install path).
+  const rootOpt = typeof args.options["root"] === "string" && args.options["root"].trim() !== "" ? resolve(args.options["root"].trim()) : null;
+  if (rootOpt !== null && door !== "repo") {
+    console.error(`lares ${door} ${verb}: --root names a checkout, and only \`lares repo\` keeps one; run \`lares repo ${verb} --root ${rootOpt}\``);
+    return EXIT.usage;
+  }
+  if (rootOpt !== null && !(existsSync(rootOpt) && statSync(rootOpt).isDirectory())) {
+    console.error(`lares repo ${verb}: --root ${rootOpt} names no directory; run \`lares repo ${verb} --root "$(git rev-parse --show-toplevel)"\` from inside the checkout`);
+    return EXIT.usage;
+  }
+  const repo = rootOpt ?? repoRoot;
   if (door === "home" && verb === "undo" && !(await undoConsent(args, hand))) return EXIT.usage;
-  const { items, ledger } = itemsFor(door, args.flags["staged"] === true, verb === "tend" || verb === "undo", familiar);
+  const { items, ledger, root } = itemsFor(door, args.flags["staged"] === true, verb === "tend" || verb === "undo", familiar, repo);
 
   if (verb === "read") {
-    const reader = args.flags["staged"] === true ? indexReader(repoRoot) : undefined;
+    const reader = args.flags["staged"] === true ? indexReader(repo) : undefined;
     const rows = read(items, ledger, reader);
     const code = exitOf(rows);
     // `--brief` prints the one line a hook reads, terminal or none: the wake hook calls it with no TTY.
     if (args.flags["brief"] === true) { show(rows, true, door); return code; }
-    emit(args, { ok: code === 0, data: { radius: door, rows, exit: code }, human: () => show(rows, false) });
+    // `root` names the tree the reading judged, so a gate's refusal shows which checkout it read.
+    emit(args, { ok: code === 0, data: { radius: door, root, rows, exit: code }, human: () => show(rows, false) });
     return code;
   }
 
@@ -214,7 +229,7 @@ export async function cmdTunnelDoor(door: Door, args: ParsedArgs, hand: () => Ha
     return EXIT.aligned;
   }
 
-  const v: VerifyResult = verifyLoads({ door, repo: repoRoot, home: homedir(), probe: args.flags["probe"] === true });
+  const v: VerifyResult = verifyLoads({ door, repo, home: homedir(), probe: args.flags["probe"] === true });
   emit(args, { ok: v.ok, data: { radius: door, ...v }, human: () => {
     console.log(v.ok ? "verify: every host loads the seed once" : "verify: a host's loads read off the tunnel");
     for (const line of v.lines) console.log(`  ${line}`);

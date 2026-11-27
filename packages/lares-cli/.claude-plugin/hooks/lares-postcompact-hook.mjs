@@ -31,7 +31,7 @@ try {
       const bearing = [
         ...(typeof input.session_id === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(input.session_id) ? ["--instance", input.session_id] : []),
       ];
-      const answer = parseAnswer((await settle(run(spiritArgv(COMPACTION_WORD, pet, "--file", "-", ...bearing), summary), LANDING_BUDGET_MS))?.stdout);
+      const answer = parseAnswer((await settle(run(spiritArgv(COMPACTION_WORD, pet, "--file", "-", ...bearing), summary, LANDING_BUDGET_MS), LANDING_BUDGET_MS))?.stdout);
       unfiled = answer?.ok !== true ? String(answer?.error?.message ?? `the door answered nothing; ${byHand}`)
         : answer.data?.filed === false ? String(answer.data?.unfiled ?? "the #/instances line stayed unfiled") : null;
     }
