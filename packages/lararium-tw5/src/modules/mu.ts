@@ -96,7 +96,7 @@ export function readMu(raw: unknown): MuCarry | MuFault {
   return { tools: held, axis: axisOf(held) };
 }
 
-export const isMuFault = (read: MuCarry | MuFault): read is MuFault => "reason" in read;
+export const isMuFault = <T extends object>(read: T | MuFault): read is MuFault => "reason" in read;
 
 /** One cell a carrier tables: its canonical carry, whether its door owes it yet, whether its tool rides every carry, its line. */
 export interface MuCell { readonly carry: string; readonly owed: string | null; readonly implied: boolean; readonly role: string }
