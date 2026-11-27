@@ -5,6 +5,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { execFileSync, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import {
   chmodSync, existsSync, lstatSync, statSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, realpathSync, rmSync, symlinkSync, writeFileSync,
 } from "node:fs";
@@ -253,6 +254,35 @@ describe("the repo radius", () => {
     expect(readlinkSync(join(root, ".claude/noosphere-boot"))).toBe(`../${declared(REPO).seed}`);
     expect(readFileSync(join(root, "CLAUDE.md"), "utf8").split("\n")[0]).toBe("@.claude/noosphere-boot");
     expect(readFileSync(join(root, ".claude/agents/Explore.md"), "utf8")).toContain("disallowedTools: Agent, Edit, Write");
+  });
+
+  it("tend writes the tasked-spirit stance file: the stance alone, no seed bytes", async () => {
+    const root = clone();
+    const l = ledger();
+    await tend(repoItems(root), l);
+    const body = readFileSync(join(root, ".claude/agents/tasked-spirit.md"), "utf8");
+    expect(body).toContain("name: tasked-spirit");
+    expect(body).toContain("Lares Spirit");
+    expect(body).not.toContain("disallowedTools");
+    expect(body).not.toContain(readFileSync(join(root, declared(REPO).seed), "utf8").slice(0, 400));
+    writeFileSync(join(root, ".claude/agents/tasked-spirit.md"), "my own agent\n");
+    expect(read(repoItems(root), l).find((x) => x.id === "claude.tasked-spirit")!.state).toBe("foreign");
+  });
+
+  it("H5 witness: the tasked-spirit stance file carries no copy of the seed, while the scouts keep theirs", async () => {
+    const root = clone();
+    await tend(repoItems(root), ledger());
+    const seed = readFileSync(join(root, declared(REPO).seed), "utf8");
+    const seedSha = createHash("sha256").update(seed).digest("hex");
+    const stance = readFileSync(join(root, ".claude/agents/tasked-spirit.md"), "utf8");
+    expect(stance).not.toContain(seedSha);
+    expect(stance).not.toContain(seed.slice(0, 400));
+    expect(stance).not.toContain(seed.slice(-400));
+    for (const scout of ["Explore", "Plan"]) {
+      const text = readFileSync(join(root, `.claude/agents/${scout}.md`), "utf8");
+      expect(text).toContain(`sha256 ${seedSha}`);
+      expect(text).toContain(seed.slice(0, 400));
+    }
   });
 
   it("a scout edited by hand without its marker refuses; a seed edit moves the projection", async () => {

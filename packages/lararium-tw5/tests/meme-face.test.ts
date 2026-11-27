@@ -112,11 +112,12 @@ describe.skipIf(wikiSkip)(`$tw.lares.meme — the in-VM face${skipNote}`, () => 
     expect(parsed.meme.kind).toBe("Meme");
     expect(parsed.failures).toEqual([]);
     // CONTROL: `$tw.lares` carries the engine plumbing, the worldline VM entries, the meme face and the
-    // affordance console skin (`afford`, a door's skin over carriers, never a meme law) — and no meme law
+    // affordance console skin (`afford`, a door's skin over carriers, never a meme law), the one call (`call`, a
+    // verb resolved over the live routes, never a meme law) — and no meme law
     // flat beside the face. One namespace, one spelling per law.
     const flat = (engine.$tw as unknown as { lares: Record<string, unknown> }).lares;
     expect(Object.keys(flat).sort()).toEqual([
-      "afford", "applyNalu", "applyNaluCrest", "isApplyingNalu",
+      "afford", "applyNalu", "applyNaluCrest", "call", "isApplyingNalu",
       "meme", "worldlineCompareVm", "worldlineTrajectoryVm",
     ]);
   });
