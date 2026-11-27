@@ -38,8 +38,10 @@ export function bridgeWikiToAdaptor(tw5: TW5Engine, adaptor: IslandAdaptor): () 
       if (reactions.get(title) === task) reactions.delete(title);
     });
   };
-  // A write the wiki makes BEFORE the shore stands resident reaches no bag: TW5's own boot writes (slot pointers, status titles) notify
-  // after the bridge stands, so a save of every one would flood the stores with boot noise. The loss is NAMED instead, once, when the
+  // A write the wiki makes BEFORE the shore stands resident reaches no bag. The seed stands the shore's books at mount, yet only for
+  // the titles a layer holds: TW5's own boot writes to titles no layer holds (status titles, the story) notify after the bridge
+  // stands, and the mount's own waves (slot pointers, boot-set ground, the boot's gap) still land until the checkpoint, so a save of
+  // every one would flood the stores with boot noise. The loss is NAMED instead, once, when the
   // shore stands resident: the titles the seed did not carry and no hand holds ride into the log, so a promoted startup module that
   // writes early learns where its write went (it rewrites after the attach).
   const early = new Set<string>();

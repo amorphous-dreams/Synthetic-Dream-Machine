@@ -581,7 +581,7 @@ export function runSovereignKernel(
     // WAVE ZERO. The composition lays before the engine boots (`layIslandComposition`: temp + every resolved CRDT slot, the floor
     // beneath), and every record it resolves joins the boot store through the nalu form (`readIslandSeed`): TW5 adds them before
     // its change queue wakes, so the seed raises no dispatch, and defines their modules, unpacks their plugins and runs their
-    // startup actions natively. The shore mounts inside the startup marker and its replay finds each preloaded title standing.
+    // startup actions natively. The shore mounts inside the startup marker and stands its books from the same seed (no replay).
     tick("seed");
     const laid = layIslandComposition({
       composite: _composite!,
@@ -619,8 +619,8 @@ export function runSovereignKernel(
               return guardWritableStand(async () => {
               const tw5 = handler.tw5()!;
               // One recipe model — the composition laid before boot (wave zero); the shore mounts here: it registers the
-              // adaptor, ARMS the seed replay on the shore's quota-bounded host-task queue, and lands afresh whatever the
-              // composition told while the engine booted.
+              // adaptor, stands its books from the seed, and lands afresh, on the shore's quota-bounded host-task queue, the
+              // boot-set ground the boot store never took and whatever the composition told while the engine booted.
               tick("recipe");
               const { adaptor } = mountIslandShore(tw5, laid, seed);
               _adaptor = adaptor;

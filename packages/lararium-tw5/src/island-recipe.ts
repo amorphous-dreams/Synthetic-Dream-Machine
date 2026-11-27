@@ -6,12 +6,13 @@
  *   2) addLayer for each slot in cascade order (bottom-up): oracle floor first, temp last
  *   3) temp uses memory, oracle wraps its seed store with the floor read-face, the kahua slot reads the stage's fold under
  *      the face (`kahuaStageStore`), and other slots use AutomergeDocStore
- *   4) IslandAdaptor projection registers
- *   5) initial replay enters the shore landing queue; its checkpoint resolves when that queue empties
+ *   4) IslandAdaptor projection registers and stands its books from the seed (`standFromSeed`)
+ *   5) the records that wait for boot (boot-set ground, the boot's gap) enter the shore landing queue; its checkpoint resolves
+ *      when that queue empties
  *
  * WAVE ZERO splits the assembly at the engine: `layIslandComposition` (steps 1-3) stands before TiddlyWiki boots, the seed's
  * records join the engine's boot store through the nalu form (`island-seed.ts`), and `mountIslandShore` (steps 4-5)
- * runs once the engine stands. The replay still lands every title; each preloaded one reads as the same and writes nothing.
+ * runs once the engine stands. No layer replays at mount: the seed alone teaches the shore what already stands.
  *
  * Node and browser sovereign workers both call this helper so recipe behavior
  * stays one shape across platforms.
@@ -35,17 +36,17 @@ import { floorReadFace } from "@lararium/mesh/floor-manifest";
 import { type KahuaStageFace } from "@lararium/mesh/kahua-stage-store";
 import { type LarDoc } from "@lararium/mesh/base-doc";
 import { type DocHandle } from "@lararium/mesh/automerge";
-import { type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
+import { type LarTiddlerChange, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { IslandAdaptor } from "./island-adaptor.js";
 import { kahuaLayerStore } from "./kahua-layer.js";
 import { MemoryTiddlerStore } from "./memory-store.js";
 import type { TW5Engine } from "./tw5-vm.js";
-import type { IslandSeed } from "./island-seed.js";
+import { readIslandSeed, type IslandSeed } from "./island-seed.js";
 
 /**
  * One slot's binding: a CRDT handle the recipe wraps in its own store, or a store already standing over that slot's document
  * (a named wiki's layer reached by reference, or its floor snapshot), which the recipe lays as it stands. A store handed here
- * belongs to this composition alone: the recipe replays it into this engine.
+ * belongs to this composition alone: the seed reads it into this engine.
  */
 export type RecipeReadyBinding =
   | { /** Slot URI from the expanded recipe. */ slot: SlotUri; handle: DocHandle<LarDoc> }
@@ -97,7 +98,7 @@ export type LayIslandCompositionInput = Omit<BuildIslandRecipeInput, "tw5">;
 
 /**
  * A composition laid and not yet mounted on an engine: the layers stand in the composite, and each one's store waits for the
- * shore that will replay it (`mountIslandShore`).
+ * shore that will mount over it (`mountIslandShore`).
  */
 export interface LaidComposition {
   readonly composite: CompositeStore;
@@ -110,8 +111,9 @@ export interface LaidComposition {
 
 /**
  * Build the sovereign island recipe and return the adaptor: lay the composition, then mount the shore on the engine at once.
- * A caller that boots its engine over wave zero lays first (`layIslandComposition`), reads the seed off the laid composition
- * (`readIslandSeed`), boots, then mounts (`mountIslandShore`).
+ * The engine stood before the composition laid, so the shore reads its seed as a booted engine's and lands it as wave zero's
+ * waves. A caller that boots its engine over wave zero lays first (`layIslandComposition`), reads the seed off the laid
+ * composition (`readIslandSeed`), boots, then mounts (`mountIslandShore`).
  */
 export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   adaptor: IslandAdaptor;
@@ -158,7 +160,7 @@ export function layIslandComposition(input: LayIslandCompositionInput): LaidComp
       : slot === KAHUA_BAG
         ? kahuaLayerStore(bound.handle, input.kahuaFace ?? (() => null), input.kahuaFaceWatch)
         : new AutomergeDocStore(bound.handle, slot, input.wear ? { wear: input.wear } : {});
-    const store = slot === ORACLE_BAG ? floorReadFace({ rows: floorRecords ?? [], base, bagId: slot }) : base;
+    const store = slot === ORACLE_BAG ? floorReadFace({ rows: floorRecords ?? [], base }) : base;
     // Oracle takes no writes; other CRDT slots accept writes through the in-wiki bag-paths cascade
     // (lar:///ha.ka.ba/lararium/config/bag-paths). A ceremony that names its own slot writes the
     // slot's store directly, carrying the bag on the put option — never a field on the record. The
@@ -180,12 +182,13 @@ export function layIslandComposition(input: LayIslandCompositionInput): LaidComp
 }
 
 /**
- * Mount the shore on a booted engine over a laid composition: the adaptor registers, the slot pointers seed, every layer replays
- * through the shore's landing queue, and the seed checkpoint arms. `seed`, where the engine booted over wave zero, counts its
- * preloads as landed (the glass's shape, TW5's `Syncer.readTiddlerInfo`): the replay fills the ledger without painting the seed
- * back over the boot pass's writes, and the changes the composition told during the boot (`IslandSeed.release`) land afresh.
+ * Mount the shore on a booted engine over a laid composition: the adaptor registers, stands its books from the seed
+ * (`standFromSeed`, TW5's `Syncer.readTiddlerInfo`), the slot pointers seed, the records that wait for boot land through the
+ * shore's queue, and the seed checkpoint arms. `seed`, where the engine booted over wave zero, carries what the boot store
+ * took; the changes the composition told during the boot (`IslandSeed.release`) land afresh. With no seed the engine booted
+ * bare, so the shore reads one off the composition (`readIslandSeed`, booted) and lands every record it resolves as a wave.
  */
-export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: Pick<IslandSeed, "preloads" | "release" | "titles"> | null): {
+export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: Pick<IslandSeed, "release" | "titles" | "stands" | "waves" | "layerHeads"> | null): {
   adaptor: IslandAdaptor;
   stores: Array<{ slot: SlotUri; store: LarTiddlerStore }>;
 } {
@@ -198,8 +201,13 @@ export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: P
 
   const adaptor = new IslandAdaptor(tw5, composite, recipe.wikiSlug);
   adaptor.installLandingQueue();
-  if (seed) adaptor.countSeedAsLanded(seed.preloads);
+  // The books stand before the shore hears anything: a change heard after this lands over the seed's rows, never under them.
+  if (seed) adaptor.standFromSeed(seed);
   adaptor.start();
+  // THE BOOT'S GAP closes here: the seed stops hearing as the shore starts, and hands back what the composition told meanwhile.
+  const gap = seed ? seed.release() : [];
+  // A booted engine's seed starts hearing after the shore does, so the shore hears every change past the read itself.
+  const booted = seed ? null : readIslandSeed(composite, [], { booted: true });
 
   // Per-wiki cascade reference — the default `lar:///ha.ka.ba/lararium/config/bag-paths`
   // reads this value via `{lar:///ha.ka.ba/lararium/config/current-wiki-bag}` to
@@ -212,9 +220,9 @@ export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: P
   // these to route by prefix to the wiki's OWN per-wiki live layers — the address tells
   // the truth (no global slot names).
   //
-  // Pointer and corpus seeds share the shore queue. A `then{pointer}` rule dereferences against `$tw.wiki`, and the
+  // Pointer and boot-wave seeds share the shore queue. A `then{pointer}` rule dereferences against `$tw.wiki`, and the
   // temp store emits each put when it lands — to every registered projection. The adaptor carries the
-  // pointers into the wiki on the same seed wave as the corpus, ahead of the seed checkpoint;
+  // pointers into the wiki ahead of the seed checkpoint;
   // an empty write-layer pointer makes unrouted saves raise the alert-rail refusal.
   if (tempStore) {
     const configSeed: Record<string, string> = {
@@ -228,18 +236,21 @@ export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: P
     }
   }
 
-  // Drive existing CRDT state through the projection bus → adaptor → shore queue.
-  for (const { store } of stores) {
-    const replays = store as LarTiddlerStore & { emitInitialReplay?: () => void; markSyncComplete?: () => void };
-    if (store instanceof AutomergeDocStore || typeof replays.emitInitialReplay === "function") {
-      replays.emitInitialReplay?.();
-      replays.markSyncComplete?.();
-    }
-  }
+  // NO LAYER REPLAYS AT MOUNT. MemeProvider's subscribe-then-replay pattern (meme-provider.ts) taught a projection a document's
+  // existing state by one replay envelope per record, then `markSyncComplete`: a projection hears only changes. Before wave zero
+  // the wiki booted empty, and that replay WAS its load. Wave zero made the load a TW5 preload, and the replay stayed only to fill
+  // the shore's books by re-landing every title TW5 already held, painting the seed back over the boot pass's writes on the way.
+  // The seed read now stands those books (`standFromSeed`), so each store only flushes its debounces and announces its sync. A
+  // layer added after mount (recipe-watch, the face canon after ea) still replays: its records reach the wiki for the first time.
+  for (const { store } of stores) (store as LarTiddlerStore & { markSyncComplete?: () => void }).markSyncComplete?.();
 
-  // THE BOOT'S GAP, closed: every change the composition told while the engine booted over wave zero lands afresh. A replay names
-  // each title a layer still holds; this names the one a layer let go of during the boot, so its preload leaves the wiki too.
-  for (const change of seed?.release() ?? []) adaptor.onUriChanged(change);
+  // THE RECORDS THAT WAIT FOR BOOT land as waves: boot-set ground the boot store never took, and THE BOOT'S GAP, every change the
+  // composition told while the engine booted over wave zero (a record that left every layer leaves the wiki; one that arrived
+  // lands). A booted engine lands its whole seed this way, once its read answers.
+  const landWaves = (waves: readonly LarTiddlerChange[]): void => { for (const change of waves) adaptor.onUriChanged(change); };
+  const standing: Promise<void> = booted
+    ? booted.then((read) => { read.release(); adaptor.standFromSeed(read); landWaves(read.waves); })
+    : Promise.resolve(landWaves([...seed!.waves, ...gap]));
 
   // STARTUP ACTIONS RUN, as TiddlyWiki runs them. TW5's own startup pass ran `$:/tags/StartupAction` over the preloads at boot; a
   // startup record that reached the wiki after boot (landed by the seed's waves, or a floor plugin's shadow laid after boot) runs
@@ -248,9 +259,9 @@ export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: P
   // WAVE ZERO REACHES EVERY OBSERVER, IN ONE DISPATCH (lar:///ha.ka.ba/lares/api/pono/nalu: one wave, all observers, one
   // dispatch). The preloads stood before TiddlyWiki's change queue woke, so no `change` listener ever heard them: a dispatch-marked
   // summon the store already held would never reach the reaction router. Once the seed stands, each preloaded title still in
-  // the wiki joins one change event; the replay already set each in the landed ledger, so the bridge reads it as landed, never as
+  // the wiki joins one change event; the seed already stood each in the landed ledger, so the bridge reads it as landed, never as
   // a hand.
-  const checkpoint = adaptor.armSeedCheckpoint().then(() => {
+  const checkpoint = standing.then(() => adaptor.armSeedCheckpoint()).then(() => {
     const tw = tw5.$tw as unknown as { wiki: { filterTiddlers(f: string): string[]; getTiddlerText(t: string): string | undefined; tiddlerExists(t: string): boolean; enqueueTiddlerEvent(title: string, isDeleted?: boolean): void }; rootWidget: { invokeActionString(actions: string, triggeringWidget: unknown, event: unknown, variables: Record<string, string>): void } };
     for (const title of seed?.titles ?? []) if (tw.wiki.tiddlerExists(title)) tw.wiki.enqueueTiddlerEvent(title, false);
     for (const title of tw.wiki.filterTiddlers(STARTUP_ACTIONS)) {

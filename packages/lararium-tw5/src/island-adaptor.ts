@@ -63,6 +63,7 @@ import type { LarTiddlerStore, LarTiddlerRecord, LarTiddlerChange, ChangeOrigin,
 import type { ParallelDraftsChange, ParallelDraftsReader } from "@lararium/mesh/parallel-drafts";
 import type { SlotUri } from "@lararium/mesh/wiki-recipe";
 import { KAHUA_SHADOW_PREFIX, kahuaShadowOf, kahuaShadowTitle, type KahuaShadow } from "./kahua-shadow.js";
+import type { IslandSeed } from "./island-seed.js";
 import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
 import { toLarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { isVolatileVmUri } from "@lararium/mesh/lar-uris";
@@ -260,14 +261,11 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   /** Titles this shore wrote whose wave has not landed: the store stands ahead of the ledger for them. */
   private readonly unlanded = new Set<string>();
   private readonly handed = new Map<string, unknown | null>();
-  private resident = false;
   /**
-   * WAVE ZERO COUNTS AS LANDED, as TiddlyWiki's syncer counts its boot state (`Syncer.readTiddlerInfo`): the nalu form each
-   * title preloaded with, until a landing brings a record that moved past it. A landing that still brings that form lands nothing
-   * into the wiki, so a write TiddlyWiki's own boot pass made over the preload (a startup action) stands in the VM, unsaved,
-   * exactly as in native client-server TW5 and in the glass, whose port adaptor holds its preloads as landed.
+   * True once the mount's own waves (the slot pointers, boot-set ground, the boot's gap) have drained: before then a landing
+   * reads no wiki value as a hand, and the outbound bridge holds the wiki's writes (`whenResident`).
    */
-  private readonly seededForms = new Map<string, unknown>();
+  private resident = false;
   /** What the shore knows of each draft, keyed by the draft's title (see `draft-book.ts`). */
   private readonly draftBook = new Map<string, DraftEntry>();
   /** Last draft fields seen for each draft title, used when a save outruns draft persistence. */
@@ -295,7 +293,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   ) {}
 
   /**
-   * Install the shore queue door before seed replay or any other inbound caller. One shore owns an
+   * Install the shore queue door before the mount's waves or any other inbound caller. One shore owns an
    * engine's door: a second shore on the same engine refuses by `LandingDoorOccupiedError`. A shore that
    * stopped installs a fresh queue and its door again.
    */
@@ -355,11 +353,20 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     return () => { this.sliceHearers.delete(hear); };
   }
 
-  /** Hold wave zero's preloads as landed (see `seededForms`): call before the shore lands its first wave. */
-  countSeedAsLanded(preloads: readonly Record<string, unknown>[]): void {
-    for (const fields of preloads) {
-      const title = fields["title"];
-      if (typeof title === "string") this.seededForms.set(title, new this.tw5.$tw.Tiddler(fields));
+  /**
+   * WAVE ZERO STANDS THE BOOKS, as TiddlyWiki's syncer stands after the boot pass and reads every tiddler in memory as synced
+   * (`Syncer.readTiddlerInfo`). Per title the seed read resolved: the ledger row holds what the wiki holds NOW (a startup action's
+   * write over a preload included, so it reads as landed and never saves) beside the seed's bag and heads; the draft book learns
+   * the seed's record; the kahua shadow stamp the seed computed before boot lands. Each layer's heads at the read stand as landed
+   * (`landedCovers`). No replay re-lands a title the wiki already holds: a change after the read reaches the shore as a wave.
+   */
+  standFromSeed(seed: Pick<IslandSeed, "stands" | "layerHeads">): void {
+    const wiki = this.tw5.$tw.wiki;
+    for (const [bag, heads] of seed.layerHeads) this._noteLanded(bag, heads);
+    for (const [title, stand] of seed.stands) {
+      this.ledger.set(title, { tiddler: wiki.getTiddler(title) ?? null, bag: stand.bag, ...(stand.heads !== undefined ? { heads: stand.heads } : {}) });
+      this._learnDraft(title, naluLands({ title, record: stand.record }) ? stand.record : null, stand.bag);
+      if (!neverPersists(title)) this._applyKahuaShadow(title, stand.shadow);
     }
   }
 
@@ -635,7 +642,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // The draft-base fields live in the store record; the wiki's draft never holds them.
     const applied = live ? { ...record!, tiddler: withoutDraftBase(record!.tiddler as Record<string, unknown>) } as LarTiddlerRecord : record;
     // THE NALU FORM the applier writes (`naluFieldsOf`): the value this landing would leave, compared with what stands. Wave zero
-    // preloaded the seed through the same form, so a seeded title reads as the same here and writes nothing.
+    // preloaded the seed through the same form and stood the books from it (`standFromSeed`), so no landing re-lands a preload.
     const incoming = live ? new this.tw5.$tw.Tiddler(naluFieldsOf({ title, record, ...(bag !== undefined ? { bag } : {}) })) : null;
     const standing = wiki.getTiddler(title) ?? null;
     const known = entry ? entry.tiddler : null;
@@ -656,10 +663,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     if (isHand) return "hand";
     // AN OWN WRITE MOVED SINCE THE PREPARE: the composition the prepare read misses it, so the wave never lands a stale answer over it.
     if (this.sent.has(title) !== prepared.sentHas || this.sent.get(title) !== prepared.sentValue) return "stale";
-    // The record wave zero preloaded, unmoved: already landed, so the wiki keeps whatever its boot pass made of it.
-    const seeded = this.seededForms.has(title) && sameWithStamp(incoming, this.seededForms.get(title) as typeof incoming);
-    if (!seeded) this.seededForms.delete(title);
-    const applies = !seeded && !sameWithStamp(incoming, standing);
+    const applies = !sameWithStamp(incoming, standing);
     if (applies) {
       if (!this.engineApply) throw new LandingDoorUnavailableError();
       this.engineApply({ ...change, record: applied, ...(bag !== undefined ? { bag } : {}) });
@@ -968,7 +972,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
   /**
    * onSyncComplete is observability-only under the unified-nalu model.
-   * Initial replay and live changes share the shore queue and its host-task slices.
+   * A late layer's replay and live changes share the shore queue and its host-task slices.
    */
   onSyncComplete(_islandId = "automerge"): void {
     // intentionally empty
@@ -1644,7 +1648,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // returned to the landed value inside its window. A title the store never saw and the wiki does not
     // hold raises no tombstone. A state identical to the value already sent owes nothing either.
     const landed = this.ledger.landedOf(title);
-    // The ledger answers only once the seed wave has rebuilt it (a resident shore), and never for a title
+    // The ledger answers only once the mount's waves have drained (a resident shore), and never for a title
     // this shore wrote whose wave has not landed: there the state leaves and the store decides.
     const placed = this.familyPlaced.get(title);
     const placedByFamily = placed !== undefined && state !== null && this._matchesPlaced(placed, state);
