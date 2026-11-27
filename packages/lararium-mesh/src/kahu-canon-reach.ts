@@ -147,7 +147,7 @@ export function refuseSeatCanonReach(bag: string, act: string, asker: Hand | und
   // The seat offers and never promotes: a promotion's cure names the operator's own hand, every other act's the offer road.
   const cure = act === "offer promote"
     ? "the AI seat offers and never promotes; the promotion rides the operator's own hand: `lares meme offer promote <cid>` from the operator's own terminal."
-    : "write the wiki's working layer instead (`recipe=<slug>`, a copy-up), then offer the record toward the canon bag (`act(address="lar:///realm.offer.signs", args={...})` on the seat), and the steward promotes it.";
+    : "write the wiki's working layer instead (`recipe=<slug>`, a copy-up), then offer the record toward the canon bag (`act(address='lar:///realm.offer.signs', args={...})` on the seat), and the steward promotes it.";
   throw new VerbRefusal(SEAT_CANON_REACH_REASON,
     `${SEAT_CANON_REACH_REASON}: ${act} into ${bag} refused — the AI seat never writes house canon live, whatever face it acts as; ${cure}`);
 }
