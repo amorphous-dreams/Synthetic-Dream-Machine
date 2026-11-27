@@ -1,11 +1,16 @@
 /**
- * oracle-loop — the cast as an OODA-HA meme, its slots read from canon.
+ * oracle-loop — the cast as an OODA-HA meme, its slots read from the caller's stack, the baked pack the floor.
  *
- * THE PROCEDURE LIVES IN CANON, never here. The affordance carrier (`lar:///ha.ka.ba/lares/afford/oracle.library.consults`,
+ * THE PROCEDURE LIVES IN THE CARRIER, never here. The affordance carrier (`lar:///ha.ka.ba/lares/afford/oracle.library.consults`,
  * tagged with its address `lar:///oracle.library.consults`) calls the slot of the law that owns the procedure from its own
  * `#/loop` (`<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/oracle-loop#/loop`>>`), and that slot's `has` rows name each
  * act slot in loop order, its phase, its writer, what the house fills there (`fills/`) and what the seat owes (`owes/`).
  * This module reads those rows and fills what the ask and the throw carry; it names no slot and writes no ask of its own.
+ *
+ * THE STACK FIRST, THE PACK THE FLOOR (`loopOfRungs`). The carrier that answers the address over the caller's view (a working
+ * layer's above canon's, the stable seat or the bare root) hands its `#/loop` rows first; where it answers none, the rows the
+ * pack baked from canon stand. The rung that answered hands a receipt naming the carrier slot, its bag (`pack` for the floor)
+ * and its base, so the act's answer names the carrier that shaped it.
  *
  * WHAT STAYS HERE: the row reader, the throw's plain facts, and the reading-and-credit logic (each distinct reading text
  * quoted once, EVERY source's credit beneath it, since each quote rides with the attribution its page gives it).
@@ -21,7 +26,7 @@ import { ORACLE_THROW_STANDS, castFields, type Hexagram, type OracleCast } from 
 /** The affordance address every cast record tags, so one filter gathers carrier, code, tests and casts. */
 export const ORACLE_AFFORDANCE = "lar:///oracle.library.consults";
 
-/** The carrier's canon seat: the canon walk seats no bare root, so the carrier rests here and tags the address. */
+/** The carrier's canon seat: the canon walk seats no bare root, so the carrier rests here and tags the address; a working layer may seat one above it, at this seat or at the bare root, and the stack's answers in its place. */
 export const ORACLE_CARRIER = "lar:///ha.ka.ba/lares/afford/oracle.library.consults";
 
 /**
@@ -85,6 +90,37 @@ export function loopSlots(rows: readonly HasRow[]): LoopSlot[] {
     fills: r.params["fills"] ? r.params["fills"] : null,
     owes: r.params["owes"] || r.tagline,
   }));
+}
+
+/** The record that answered a carrier slot: its title, the bag that held it (`pack` for the baked floor), and its base. */
+export interface CarrierReceipt {
+  readonly carrier: string;
+  readonly bag: string;
+  readonly base: string;
+}
+
+/** One rung a loop's shape may read from: the text that carries its rows, and the receipt naming where that text rested. */
+export interface LoopRung {
+  readonly text: string;
+  readonly receipt: CarrierReceipt;
+}
+
+/** The act slots a loop answered, and the receipt of the rung they came from. */
+export interface LoopRead {
+  readonly slots: readonly LoopSlot[];
+  readonly receipt: CarrierReceipt;
+}
+
+/**
+ * The first rung whose rows name act slots answers, in the order given (the caller's stack, then the pack's floor); null where
+ * none does. A working-layer carrier's rows therefore shape the act record in canon's place, and an empty stack falls to the floor.
+ */
+export function loopOfRungs(rungs: readonly LoopRung[]): LoopRead | null {
+  for (const rung of rungs) {
+    const slots = loopSlots(parseHasRows(rung.text));
+    if (slots.length > 0) return { slots, receipt: rung.receipt };
+  }
+  return null;
 }
 
 /** A writer whose last hand reaches the seat (`seat`, `house-then-seat`) leaves the slot owed after any fill. */

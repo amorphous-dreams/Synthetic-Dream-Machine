@@ -8,7 +8,7 @@ import { readFileSync } from "node:fs";
 import { describe, test, expect } from "vitest";
 import { castFromCoins, ORACLE_THROW_STANDS } from "../src/oracle-cast.js";
 import {
-  CAST_MEME_TAGS, ORACLE_AFFORDANCE, ORACLE_ALIASED, ORACLE_CARRIER, castMemeBody, castMeta, fillLoop, kaheaTarget, loopSlots, parseHasRows, quotedReadings, readingsText,
+  CAST_MEME_TAGS, ORACLE_AFFORDANCE, ORACLE_ALIASED, ORACLE_CARRIER, castMemeBody, castMeta, fillLoop, kaheaTarget, loopOfRungs, loopSlots, parseHasRows, quotedReadings, readingsText,
   type LoopReading,
 } from "../src/oracle-loop.js";
 
@@ -122,5 +122,32 @@ describe("oracle-loop", () => {
     // CONTROL: the carrier itself carries the type tag and its new address, and its exception-to-law-3 line left.
     expect(CARRIER).toMatch(/^tags\s*=.*"lar:\/\/\/ha\.ka\.ba\/lares\/api\/pono\/affordance", "lar:\/\/\/oracle\.library\.consults"\]/m);
     expect(CARRIER).not.toContain("documented exception");
+  });
+});
+
+describe("the loop reads the stack first, the pack the floor (`loopOfRungs`)", () => {
+  const LAW_ROWS = slotOf(LOOP_LAW, "#/loop");
+  const PACKED = LAW_ROWS.split("\n").map((l) => l.trim()).filter((l) => l.startsWith("<<has "));
+  const FLOOR = { text: PACKED.join("\n"), receipt: { carrier: `${ORACLE_CARRIER}#/loop`, bag: "pack", base: "sha256-floor" } };
+  const WITNESS = "<<has entity=`slot` name=`#/witness` params=`phase/↺ writer/seat owes/[[who else reads the move]] ~ the witness the seat names`>>";
+
+  test("RED: a working-layer `#/loop` row changes the act record's slots, and the receipt names the working bag", () => {
+    const stack = { text: `${LAW_ROWS}\n${WITNESS}`, receipt: { carrier: "lar:///oracle.library.consults#/loop", bag: "daemon-working", base: "sha256-work" } };
+    const read = loopOfRungs([stack, FLOOR])!;
+    expect(read.slots.map((s) => s.name)).toEqual([...SLOTS.map((s) => s.name), "#/witness"]);
+    expect(read.receipt).toEqual(stack.receipt);
+    const title = "lar:///ha.ka.ba/lares/oracle/casts/asked-0123456789abcdef";
+    const meta = castMeta(CAST, { title, intent: "i".repeat(64), asking: "q" });
+    const body = castMemeBody({ title, meta, cast: CAST, slots: fillLoop(read.slots, { observe: [], uncertain: "", asking: "q", cast: CAST, readings: [] }) });
+    expect(body).toContain("<<~ ahu slot=`#/witness`>>");
+    expect(body).toContain("(owed: who else reads the move)");
+  });
+
+  test("RED: a stack whose carrier answers no rows falls to the pack's floor, whose receipt names the pack; nothing answers null", () => {
+    const empty = { text: "", receipt: { carrier: "lar:///oracle.library.consults#/loop", bag: "daemon-working", base: "sha256-work" } };
+    const read = loopOfRungs([empty, FLOOR])!;
+    expect(read.slots.map((s) => s.name)).toEqual(SLOTS.map((s) => s.name));
+    expect(read.receipt).toEqual(FLOOR.receipt);
+    expect(loopOfRungs([empty])).toBeNull();
   });
 });

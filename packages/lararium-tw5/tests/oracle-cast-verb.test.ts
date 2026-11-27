@@ -3,8 +3,9 @@
  * under `casts/`, through the meme door's own gate, its slots read from canon (the carrier's `#/loop` calls
  * api/pono/oracle-loop#/loop; the rig stands both slots from the canon files themselves), and answers the cast with the
  * readings the wiki holds for it. The coins draw through the platform's entropy door, or a person types six. The caller
- * names the time; the verb reads no clock. The loop's shape reads from the house canon wherever the cast lands (the target,
- * the canon wiki, then the baked pack), and `by` names the library shelf whose index declares the method.
+ * names the time; the verb reads no clock. The loop's shape reads from the carrier the target's stack seats (a bare-root
+ * carrier above the seat answers in canon's place), then the baked pack as the floor, and the answer names the carrier slot
+ * that shaped it; `by` names the library shelf whose index declares the method.
  */
 import { readFileSync } from "node:fs";
 import { describe, test, expect } from "vitest";
@@ -311,7 +312,29 @@ describe.skipIf(wikiSkip)(`oracle-cast — a cast writes its result as a tiddler
     expect(r.engine.wiki.filterTiddlers("[prefix[lar:///ha.ka.ba/lares/oracle/casts/]]")).toEqual([]);
   }, 60_000);
 
-  test("RED: where target, canon wiki and pack all answer no loop rows, the cast refuses before any coin draws, and nothing moves", async () => {
+  test("RED: a carrier seated at the bare root with one more loop slot shapes the act record in canon's place, and the answer's has line names it", async () => {
+    const witness = "<<has entity=`slot` name=`#/witness` params=`phase/↺ writer/seat owes/[[who else reads the move]] ~ the witness the seat names`>>";
+    const r = await rig({ extra: [
+      { title: ORACLE_AFFORDANCE, text: "", "$origin-bag": DAEMON },
+      { title: `${ORACLE_AFFORDANCE}${LOOP_SLOT}`, text: `${LOOP_ROWS}\n${witness}`, "$origin-bag": DAEMON },
+    ] });
+    const out = await r.cast({ recipe: "default", caster: "operator", coins: "889688", asking: "which lane first?", at: AT }, r.ctx);
+    expect((out["slots"] as Array<{ slot: string }>).map((s) => s.slot)).toEqual([...SLOT_NAMES, "#/witness"]);
+    expect(String(r.engine.wiki.getTiddler(`${String(out["title"])}#/witness`)?.fields["text"])).toContain("who else reads the move");
+    expect(out["carrier"]).toMatchObject({ carrier: `${ORACLE_AFFORDANCE}${LOOP_SLOT}`, bag: DAEMON });
+    expect(String(out["has"])).toContain(`carrier/${ORACLE_AFFORDANCE}${LOOP_SLOT}`);
+    expect(String(out["has"])).toContain(`bag/${DAEMON}`);
+    // CONTROL: the canon seat answers where no bare root stands; the floor names the pack where the stack answers nothing.
+    const canon = await rig();
+    const seat = await canon.cast({ recipe: "default", caster: "operator", coins: "889688", asking: "which lane first?", at: AT }, canon.ctx);
+    expect(seat["carrier"]).toMatchObject({ carrier: `${ORACLE_CARRIER}${LOOP_SLOT}`, bag: DAEMON });
+    const floor = await rig({ canon: false, packed: seated({ loop: PACKED_LOOP, carrier: ORACLE_CARRIER, hash: "sha256-floor" }) });
+    const fell = await floor.cast({ recipe: "default", caster: "operator", coins: "889688", asking: "which lane first?", at: AT }, floor.ctx);
+    expect(fell["carrier"]).toEqual({ carrier: `${ORACLE_CARRIER}${LOOP_SLOT}`, bag: "pack", base: "sha256-floor" });
+    expect(String(fell["has"])).toContain("bag/pack");
+  }, 60_000);
+
+  test("RED: where the stack and the pack both answer no loop rows, the cast refuses before any coin draws, and nothing moves", async () => {
     const r = await rig({ canon: false, packed: seated({ loop: [] }) });
     let reason = "ran";
     try { await r.cast({ recipe: "default", caster: "operator", asking: "q", at: AT }, r.ctx); }

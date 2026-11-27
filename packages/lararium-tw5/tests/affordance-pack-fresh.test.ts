@@ -1,6 +1,9 @@
 /**
  * W3 · THE PACK EQUALS A FRESH BAKE (lar:///ha.ka.ba/kahua/memory/plan/cap-memes-lantern #/witness-laws).
  *
+ * The pack bakes the CANON FLOOR a sleeping vessel answers from; a standing vessel reads routes, loops and cures from its own
+ * live stack (comms-ux-enacts landing 3), so this witness holds the floor to canon and never the stack to the pack.
+ *
  * Inputs: every canon carrier under `bags/` naming the affordance type tag. The tracked `affordance-pack.json` must equal the
  * bytes a fresh bake writes, and each entry's `bcc` the frame check of the carrier it baked; a hand-edited pack and a stale one
  * both read red, naming the cure. Seed: the oracle cast flipped first, so the pack holds `lar:///oracle.library.consults` (re-keyed from `oracle.cast.throws`, whose seat stands as an alias record).
@@ -13,7 +16,8 @@ import path from "node:path";
 import { describe, expect, test } from "vitest";
 import { bccOf, headUriOf } from "@lararium/memetic-frame";
 import { PACK_PATH, bakeAffordancePack, canonTexts, canonicalJson } from "../scripts/build-affordance-pack.js";
-import { REPO, skipNote, wikiSkip } from "./test-wiki.js";
+import { REPO, bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
+import { routesOf } from "../src/affordance-read.js";
 
 /** Wave 2's carriers: `act` · `ingest` · `export` · `import` · `shore` · `bag` · `flow` (the same list the CLI laws seed on). */
 const WAVE_2 = [
@@ -85,6 +89,23 @@ describe.skipIf(wikiSkip)(`W3 · the tracked pack equals a fresh bake of canon${
       expect(carrier!.bcc).toBe(bccOf(text!));
     }
   });
+
+  test("RED: the floor still matches canon: the pack's routes equal `routesOf` over canon's carriers, the rule the live stack reads by", async () => {
+    const pack = JSON.parse(readFileSync(PACK_PATH, "utf8")) as { routes: Record<string, Record<string, string>> };
+    const engine = await bootTestWiki();
+    for (const text of canonTexts(path.join(REPO, "bags"))) {
+      const uri = headUriOf(text);
+      if (uri) engine.ingestCarrier(uri, text);
+    }
+    const textOf = (title: string): string | undefined => {
+      const fields = (engine.wiki.getTiddler(title) as { fields?: Record<string, unknown> } | undefined)?.fields;
+      return fields === undefined ? undefined : String(fields["text"] ?? "");
+    };
+    // Every title the canon engine holds, with no tag pre-filter: the stack's own reading (the skinless alias routes nothing).
+    const live = routesOf(textOf, engine.wiki.filterTiddlers("[all[tiddlers]]"));
+    expect(live.twice, "canon claims one spelling twice").toEqual([]);
+    expect(live.routes, `the floor's routes drift from canon's; ${CURE}`).toEqual(pack.routes);
+  }, 60_000);   // a whole-canon ingest boots a wiki
 
   test("CONTROL: one byte moved in the pack disagrees with the bake", async () => {
     const fresh = canonicalJson(await bakeAffordancePack(canonTexts(path.join(REPO, "bags"))));

@@ -45,6 +45,8 @@ The type tag `lar:///ha.ka.ba/lares/api/pono/affordance`, written fully qualifie
 
 ''A slot put over a canon family (measured 2026-11-27, stack#1: the floor build's door over a read-only canon layer and a working layer, in one process under a scratch root; the probe modelled the island adaptor's routing of each non-foam change to the working layer, so a live vessel's shore gives the confirming read).'' A text put on one slot of a family whose every member rests in read-only canon answers `decision: put` in the working bag, and the Confluence gate re-lands the whole family in the wiki (`landed` names every member). Only the members the wiki now holds otherwise than canon move: the edited slot and the root (its reseal moves its record). Under the shore's foam rule those two copy up to the working layer, and every untouched slot stays in canon by reference, so the family stands split across two layers and recomposes whole under a new canonical hash, the root's has line naming the working layer. A field put on the root copies up the root alone. A family reveal (`family: true`, `mode: reveal`) retracts the working members and canon's carrier returns byte for byte, its canonical hash equal to the one read before the put. A first edit copies up what it moves, never the whole family.
 
+''Routes, loops and cures read the live stack; the pack holds the floor.'' Spelling to address, per surface, derives from the `#/skins` of the carrier that answers each address over the caller's view (`routesOf`, `lararium-tw5/src/affordance-read.ts`), so a working-layer skin row moves a route and a reveal returns canon's. A bare-root carrier a layer seats with no type tag joins by its `#/skins` slots alone; a record that skins no surface (an alias) routes nothing. A verb that lands an act record reads its `#/loop` rows from the same carrier first. The baked pack (`affordance-pack.json`) runs the same derivation over canon and keeps its content hash: it stands as the floor a sleeping vessel answers from, and answers in the stack's place only where the stack answers nothing. Every answer names the carrier that answered, `carrier/<title> bag/<bag> base/<hash>` on its has line; the floor names itself `bag/pack base/<pack hash>`.
+
 ''An alias record (Domain Affordances law 4).'' Every rename of an address carries a signed alias record, so an old grant keeps pointing at what its giver meant. The record seats at the old address's stable seat in the forwarder's shape a `tiddler rename` leaves: `forward-to` names the carrier's new seat and the body transcludes it; `alias-from` and `alias-to` name the two bare addresses, and its tags hold both, so the old tag still gathers the record and every act landed before the re-key. It carries no type tag, so the bake reads it as no carrier and no door routes to it. The frame's block check seals it and the landing commit signs it.
 
 ```memetic-wikitext
@@ -99,6 +101,7 @@ Rows ride the `has` grammar and its `key/value` params; `[[…]]` brackets a val
 * ''`needs/` groups args by the rows themselves.'' `needs/required` stands the arg bare in the usage spine; `needs/one-of:a,b` names a choice, exactly one member riding, and the spine reads `(a | b)`; `needs/all-of:a,b,c` names a group whose members ride together or not at all, and the spine reads one bracket, members in spine order (seat order on the cli): `usage: lares ddate [+FORMAT] [<day> <month> <year>]`, never `[<day>] [<month>] [<year>]`. Every member row carries the same `needs/` value, so each row reads its group alone.
 * ''Skins derive argument spellings by rule'': `cli` writes `--kebab-case`, `mcp` writes `snake_case`, `tw5` an attribute, `console` an object key. A skin row names only an exception (`maps/asking:query`).
 * ''An example and a cure ride as neutral calls'' (an address and bound args), so every skin renders its own runnable line from one row. A call binding an arg a skin never takes (`skins/`, `omits/`) runs on no door of that skin, so that skin renders no line for it: the example drops there, and the refusal keeps its words without a cure. A lesson that lives in shell composition rides a literal fenced line inside `#/skins/cli`.
+* ''A skin row may name more than its spelling.'' `also/` names further spellings the one door answers, comma-joined (`also/[[lares shore keep-records]]`), each routed to the same address. `door/part` marks a cli skin as one verb of a door whose other verbs keep the door's own table (`wiki filter` beside the rest of `wiki`): the spelling routes to its carrier and its own `--help` reads the carrier whole, while the door gathers no pack entry until every verb it answers holds a carrier and the door flips whole.
 * The surface words read `cli` · `mcp` · `tw5` · `console`. `mcp` names the protocol every seat speaks.
 
 <<~/ahu>>
@@ -149,7 +152,7 @@ Rows ride the `has` grammar and its `key/value` params; `[[…]]` brackets a val
 
 A carrier declares its act shape or declares none. A `#/loop` slot calls the slot of the law that owns the procedure (``<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/oracle-loop#/loop`>>``), and that slot's rows name each act slot, its phase, its writer, what the house fills there (`fills/`) and what the seat owes (`owes/`). The presence of `#/loop` decides whether a run lands an act record; nobody keeps a list of procedural affordances.
 
-A verb that lands an act record MUST read its slot names, their order and their asks from the procedure's canon rows, and MUST hold no procedure prose of its own. The act record tags the affordance address, lands once at the act, and fills by slot append through the one tiddler door (a slot append needs no base).
+A verb that lands an act record MUST read its slot names, their order and their asks from the procedure's rows as the caller's stack seats them (the carrier that answers the address, a working layer's above canon's), the baked pack the floor, and MUST hold no procedure prose of its own. The act's answer names the carrier slot whose rows shaped it. The act record tags the affordance address, lands once at the act, and fills by slot append through the one tiddler door (a slot append needs no base).
 
 <<~/ahu>>
 
@@ -166,6 +169,6 @@ A verb that lands an act record MUST read its slot names, their order and their 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5G-9Yx8md1GmhDyP35DkvRdiGgFM-9BoIU6c8F8LV88`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SmA_iXuopSSEUc93ScBFqHSdenR423yIW9qo2KqNTJ4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

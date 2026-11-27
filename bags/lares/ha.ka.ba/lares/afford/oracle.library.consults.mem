@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/oracle.library.consults"
 
 The house consults an oracle whose corpus rests on a library shelf (`lar:///ha.ka.ba/lares/library/oracles/<kind>/`). The kind rides as data: `by` names the shelf (the E-Jing by default), and the shelf's index record declares its own `method`, its corpus and its credits. The e-jing and doa shelves declare `three-coins`: the I Ching by three coins a line (heads three, tails two: 6 old yin and 9 old yang change, 7 and 8 hold). A new oracle joins as a shelf, never a new address or a new verb; a shelf whose method the verb runs not yet refuses by name.
 
-Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the house canon wherever the cast lands: the target wiki, then the canon wiki, then the affordance pack its binary baked. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.
+Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the carrier the caller's stack seats for this address (a carrier a working layer seats above canon shapes the act in its place), the affordance pack its binary baked standing as the floor, and the answer names the carrier slot that shaped it. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.
 
 The cast stands as a blind throw to collide uncertainty with: the throw stands, the reading stays open.
 
@@ -92,7 +92,7 @@ Testimony: the door checks; this slot grants nothing.
 <<has entity=`refusal` name=`oracle-cast-record-torn` params=`cure/[[tiddler.get.reads title/<cast>]] ~ the cast's title stands but reads as no cast`>>
 <<has entity=`refusal` name=`oracle-shelf-unknown` params=`cure/[[oracle.library.consults by/e-jing]] ~ no shelf library/oracles/<kind>/ declares its method; the answer names the shelves that stand`>>
 <<has entity=`refusal` name=`oracle-method-unrun` params=`cure/[[oracle.library.consults by/e-jing]] ~ the shelf declares a method the verb runs not yet; the answer names the shelves that stand`>>
-<<has entity=`refusal` name=`oracle-loop-unread` params=`cure/[[tiddler.get.reads title/lar:///ha.ka.ba/lares/api/pono/oracle-loop slot/#/loop]] ~ neither the target, the canon wiki nor the baked pack answers loop rows, so no act record lands`>>
+<<has entity=`refusal` name=`oracle-loop-unread` params=`cure/[[tiddler.get.reads title/lar:///oracle.library.consults slot/#/loop]] ~ neither the carrier the stack seats nor the baked pack answers loop rows, so no act record lands`>>
 ```
 
 <<~/ahu>>
@@ -102,7 +102,7 @@ Testimony: the door checks; this slot grants nothing.
 !! answers ~ answered · replayed · asks · owed
 
 ```memetic-wikitext
-<<has entity=`band` name=`answered` params=`exit/0 fields/[[intent replayed decision created title bag hash by method cast text readings asOf uncertain slots next note]] ~ the cast landed; slots name each act slot and who owes it`>>
+<<has entity=`band` name=`answered` params=`exit/0 fields/[[has intent replayed decision created title carrier bag hash by method cast text readings asOf uncertain slots next note]] ~ the cast landed; slots name each act slot and who owes it, carrier the slot that shaped them`>>
 <<has entity=`band` name=`replayed` params=`exit/0 ~ the cast already standing answers, naming the uncertainty and the pointers it kept`>>
 <<has entity=`band` name=`asks` params=`exit/5 fields/[[asks note]] ~ a seat asked what a hand alone gives; the line a person runs rides the answer`>>
 <<has entity=`band` name=`owed` params=`exit/6 ~ the vessel took the cast and the caller stopped hearing; the same asking reads it back`>>
@@ -176,6 +176,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1LDCTE5YIu9Ar2PJD7pZc7Oa4Ppa5IixtFblwvLbFvk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cXZjFexdX4AeJwuDQYvJjyaQ9UtGJ-XmEYsuPys5E68`>>
 
 <<^ code=`&#x0004;` to=`?`>>

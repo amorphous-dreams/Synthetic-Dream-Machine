@@ -7,7 +7,7 @@ import {
   addressMatcher, addressOfTitle, bodyOf, digestOf, edgesOf, exampleCall, kaheaTitles, neutralCallOf, parseHasRows, parseParams, proseOf, renderCall,
   seatsOf, spellArg, tokenize, usageOf, unfoldRead, type HasRow,
 } from "../src/affordance-rows.js";
-import { affordView, carrierOf, carrierViewOfText, seatTitleOf } from "../src/affordance-read.js";
+import { affordView, carrierOf, carrierRootsIn, carrierViewOfText, routesOf, seatTitleOf } from "../src/affordance-read.js";
 
 const TAKES = [
   "!! takes ~ recipe · bag · asking · fresh",
@@ -199,5 +199,61 @@ describe("a bare root resolves, and the stack decides (`carrierOf`)", () => {
     expect(affordView(stacked.textOf, SEAT, "match", "cli", "oracle.*")).toEqual([BARE]);
     expect(affordView(stacked.textOf, BARE, "match", "cli", "oracle.*")).toEqual([BARE]);
     expect(affordView(viewOf(carrier(SEAT, "canon line")).textOf, SEAT, "match", "cli", "")).toEqual([SEAT]);
+  });
+});
+
+describe("routes read the live stack (`routesOf`)", () => {
+  const SEAT = "lar:///ha.ka.ba/lares/afford/oracle.library.consults";
+  const BARE = "lar:///oracle.library.consults";
+  const skinned = (title: string, cli: string, mcp = "oracle_cast"): Record<string, string> => ({
+    [title]: "",
+    [`${title}#/skins/cli`]: `<<has entity=\`skin\` name=\`cli\` params=\`spells/[[${cli}]]\`>>`,
+    [`${title}#/skins/mcp`]: `<<has entity=\`skin\` name=\`mcp\` params=\`spells/${mcp}\`>>`,
+  });
+  const routed = (records: Record<string, string>) => routesOf((t) => records[t], Object.keys(records));
+
+  test("RED 1: canon's seat routes its spellings per surface, the console its bare key", () => {
+    const r = routed(skinned(SEAT, "lares oracle cast"));
+    expect(r.routes.cli).toEqual({ "oracle cast": BARE });
+    expect(r.routes.mcp).toEqual({ oracle_cast: BARE });
+    expect(r.routes.console).toEqual({ "oracle.library.consults": BARE });
+    expect(r.carriers).toEqual({ [BARE]: SEAT });
+    expect(r.twice).toEqual([]);
+  });
+
+  test("RED 2: a working-layer `skin` row moves a route: a bare-root carrier above the seat answers, and canon's spelling routes no more", () => {
+    const r = routed({ ...skinned(SEAT, "lares oracle cast"), ...skinned(BARE, "lares oracle throw", "oracle_throw") });
+    expect(r.routes.cli).toEqual({ "oracle throw": BARE });
+    expect(r.routes.mcp).toEqual({ oracle_throw: BARE });
+    expect(r.carriers[BARE]).toBe(BARE);
+    // The seat re-shaped in a working layer (the topmost layer's text answers the seat title) moves the route alike.
+    const atSeat = routed(skinned(SEAT, "lares oracle consult"));
+    expect(atSeat.routes.cli).toEqual({ "oracle consult": BARE });
+  });
+
+  test("RED 3: a bare-root carrier with no type tag routes by its skins alone; a skinless alias record routes nothing", () => {
+    const spirit = "lar:///lantern.wick.trims";
+    expect(carrierRootsIn([`${spirit}#/skins/cli`, `${spirit}#/head`])).toEqual([spirit]);
+    const skin = "<<has entity=`skin` name=`cli` params=`spells/[[lares wick trim]]`>>";
+    const r = routesOf((t) => (t === `${spirit}#/skins/cli` ? skin : undefined), [`${spirit}#/skins/cli`], { has: (t) => t === spirit });
+    expect(r.routes.cli).toEqual({ "wick trim": spirit });
+    const alias = routed({ "lar:///ha.ka.ba/lares/afford/oracle.cast.throws": "forwards" });
+    expect(alias.routes.console).toEqual({});
+  });
+
+  test("RED 4: `also/` routes beside the own spelling, `door/part` names its spelling, and two addresses on one spelling land in `twice`", () => {
+    const other = "lar:///ha.ka.ba/lares/afford/oracle.calendar.dates";
+    const records: Record<string, string> = {
+      [SEAT]: "",
+      [`${SEAT}#/skins/cli`]: "<<has entity=`skin` name=`cli` params=`spells/[[lares oracle cast]] also/[[lares oracle throw]] door/part`>>",
+      [other]: "",
+      [`${other}#/skins/cli`]: "<<has entity=`skin` name=`cli` params=`spells/[[lares oracle throw]]`>>",
+    };
+    const r = routed(records);
+    expect(r.own[BARE]).toBe("oracle cast");
+    expect(r.part).toEqual(["oracle cast"]);
+    expect(r.routes.cli["oracle cast"]).toBe(BARE);
+    expect(r.routes.cli["oracle throw"]).toBe("lar:///oracle.calendar.dates");
+    expect(r.twice).toEqual([{ surface: "cli", spelling: "oracle throw", addresses: ["lar:///oracle.calendar.dates", BARE] }]);
   });
 });

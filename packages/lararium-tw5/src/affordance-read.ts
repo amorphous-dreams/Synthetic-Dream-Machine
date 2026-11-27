@@ -18,6 +18,10 @@
  * The `afford` filter operator (`filters/afford.ts`) hands these views to the skin templates; the bake and the console face ask
  * through that operator, so one reading serves every render.
  *
+ * ROUTES READ THE LIVE STACK (`routesOf`): spelling to address, per surface, from the skins of the carrier that answers each
+ * address. The baked pack (`affordance-pack.ts`) runs the same derivation over canon and stands as the floor a sleeping vessel
+ * answers from; a standing vessel reads its own stack.
+ *
  * Meme: lar:///ha.ka.ba/lares/api/pono/affordance
  */
 import {
@@ -140,6 +144,89 @@ export function rowsOf(textOf: TextOf, address: string, slot: string, surface: A
     if (row.entity === "skin") out["spells"] = row.params["spells"] ?? row.name;
     return out;
   });
+}
+
+/** Two carriers that skin one spelling on one surface: the address that claimed it first (sorted order) and the one after. */
+export interface RouteClaim {
+  readonly surface: AffordSurface;
+  readonly spelling: string;
+  readonly addresses: readonly [string, string];
+}
+
+/** What `routesOf` derives from the carriers a view holds. */
+export interface AffordRoutes {
+  /** Per surface: the skin's spelling to the address it reaches (cli `oracle cast`, mcp `oracle_cast`, console the bare address). */
+  readonly routes: Record<AffordSurface, Record<string, string>>;
+  /** Per address: the carrier title that answered it (`carrierOf`), the one whose skins the routes read. */
+  readonly carriers: Record<string, string>;
+  /** Per address: its own cli spelling (the skin row's `spells/`), apart from the `also/` spellings routed beside it. */
+  readonly own: Record<string, string>;
+  /** The cli spellings whose skin row reads `door/part`: one verb of a door whose other verbs keep the door's own table. */
+  readonly part: readonly string[];
+  /** Every spelling two addresses claim; the first claim keeps the route, and the bake refuses on any. */
+  readonly twice: readonly RouteClaim[];
+}
+
+/**
+ * The carrier roots a list of titles names: every title that carries an address (the bare root, or a stable seat) where the
+ * list holds the root itself or one of its `#/skins` slots. A bare-root carrier a layer seats with no type tag joins by its
+ * skins alone, so a spirit's carrier routes without the tag.
+ */
+export function carrierRootsIn(titles: Iterable<string>): string[] {
+  const roots = new Set<string>();
+  for (const title of titles) {
+    const cut = title.indexOf("#/");
+    const root = cut < 0 ? title : title.slice(0, cut);
+    if (addressOfTitle(root) === null) continue;
+    if (cut < 0 || title.startsWith(`${root}#/skins`)) roots.add(root);
+  }
+  return [...roots].sort();
+}
+
+/**
+ * THE ROUTES THE LIVE STACK SPELLS (comms-ux-enacts landing 3). Spelling to address, per surface, derived from the `#/skins`
+ * of the carrier that answers each address over the caller's view (`carrierOf`): a working-layer carrier at the seat or the
+ * bare root moves the routes its address takes, and a reveal returns canon's. `titles` lists what the view holds (the roots
+ * and slots of every candidate carrier); `carriers` answers which title stands (default: the text lookup). The baked pack
+ * runs this same derivation over canon, so the floor a sleeping vessel answers from and the live stack read by one rule.
+ * Addresses claim in sorted order; a spelling two addresses claim keeps its first claim and lands in `twice`. A carrier that
+ * skins no surface routes nothing, not even its console key.
+ */
+export function routesOf(textOf: TextOf, titles: Iterable<string>, carriers: CarrierView = carrierViewOfText(textOf)): AffordRoutes {
+  const routes = Object.fromEntries(AFFORD_SURFACES.map((s) => [s, {} as Record<string, string>])) as Record<AffordSurface, Record<string, string>>;
+  const answered: Record<string, string> = {};
+  const own: Record<string, string> = {};
+  const part: string[] = [];
+  const twice: RouteClaim[] = [];
+  const claim = (surface: AffordSurface, spelling: string, address: string): void => {
+    const held = routes[surface][spelling];
+    if (held !== undefined && held !== address) { twice.push({ surface, spelling, addresses: [held, address] }); return; }
+    routes[surface][spelling] = address;
+  };
+  const addresses = [...new Set(carrierRootsIn(titles).map((root) => addressOfTitle(root)!))].sort();
+  for (const address of addresses) {
+    const title = carrierOf(carriers, address);
+    if (title === null) continue;
+    answered[address] = title;
+    // A RECORD WITH NO SKIN ROUTES NOTHING: an alias record at an old seat (DAM law 4) answers its address and no door reaches it.
+    const skins = skinRows(textOf, title);
+    if (skins.length === 0) continue;
+    for (const row of skins) {
+      const surface = row.name as AffordSurface;
+      if (!(AFFORD_SURFACES as readonly string[]).includes(surface)) continue;
+      const spells = (row.params["spells"] ?? row.name).trim();
+      const spelling = surface === "cli" ? spells.replace(/^lares\s+/, "") : spells;
+      claim(surface, spelling, address);
+      if (surface === "cli") {
+        own[address] = spelling;
+        if (row.params["door"] === "part") part.push(spelling);
+      }
+      // A skin row may name further spellings the one door answers (`also/[[lares shore keep-records]]`, comma-joined).
+      for (const alias of (row.params["also"] ?? "").split(",").map((a) => a.trim().replace(/^lares\s+/, "")).filter(Boolean)) claim(surface, alias, address);
+    }
+    claim("console", bareAddressOf(address)!, address);
+  }
+  return { routes, carriers: answered, own, part: part.sort(), twice };
 }
 
 /** The usage spine on one surface, from `#/takes` and its shared slots. */

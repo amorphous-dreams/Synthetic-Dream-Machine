@@ -3,8 +3,12 @@
  *
  * `scripts/build-affordance-pack.ts` renders every canon affordance carrier through the skin templates in a vessel-less
  * engine and writes ONE content-addressed file, `affordance-pack.json`, beside this package's `package.json`. The CLI's
- * `helpLines(door)` and its top-level index read it synchronously; the MCP seat reads the same file at seat build. A sleeping
- * vessel therefore answers the bytes the waking store renders, and help bytes never depend on vessel state.
+ * `helpLines(door)` and its top-level index read it synchronously; the MCP seat reads the same file at seat build.
+ *
+ * THE PACK STANDS AS THE SLEEPING VESSEL'S FLOOR. It holds canon as baked; a standing vessel reads routes, loops and cures
+ * from its live stack (`routesOf` and `carrierOf` in `affordance-read.ts`), where a carrier a working layer seats above canon
+ * answers in canon's place. Where the stack answers nothing (a vessel asleep, a wiki that holds no carrier), the pack answers,
+ * and its receipt names it (`floorReceipt`: `bag/pack base/<hash>`), so every answer names the carrier that answered.
  *
  * PURE DATA. The pack loads once, through `require` of the JSON (no `node:fs`, no environment read); a missing or unreadable
  * pack reads as an EMPTY pack, so every door reads its registry help rather than throwing at import, and witness W3 reads
@@ -28,7 +32,7 @@ export interface AffordancePackCarrier {
   readonly calls: Readonly<Record<string, readonly string[]>>;
   /**
    * The act shape a carrier's `#/loop` calls, resolved at bake to the `has` rows of the law slot it names (absent where the
-   * carrier declares none): the shape a vessel reads where neither the target nor the canon wiki stands the canon.
+   * carrier declares none): the floor a vessel reads where its own stack answers no loop rows.
    */
   readonly loop?: readonly string[];
 }
@@ -79,6 +83,12 @@ export function seatAffordancePack(pack: AffordancePack | null): void {
 /** The pack's hash, cut to twelve hex: the `source: pack@<hash12>` a render names. */
 export function packHash12(pack: AffordancePack = affordancePack()): string {
   return pack.hash.replace(/^sha256-/, "").slice(0, 12);
+}
+
+/** The receipt the pack's floor hands where it answers in the stack's place: the canon carrier's title, `bag/pack`, the pack's hash. */
+export function floorReceipt(address: string, slot = "", pack: AffordancePack = affordancePack()): { carrier: string; bag: "pack"; base: string } | undefined {
+  const carrier = pack.carriers[address];
+  return carrier === undefined ? undefined : { carrier: `${carrier.title}${slot}`, bag: "pack", base: pack.hash };
 }
 
 /** A CLI door the pack flips (every affordance it skins holds a carrier), or undefined where the door reads the help registry. */

@@ -1,6 +1,11 @@
 /**
  * build-affordance-pack — bake every canon affordance carrier through the skin templates into ONE content-addressed pack.
  *
+ * THE PACK BAKES THE CANON FLOOR. A sleeping vessel (and every surface that answers before one stands) reads the pack; a
+ * standing vessel reads routes, loops and cures from its own live stack, where a carrier a working layer seats above canon
+ * answers in canon's place (`routesOf`, `carrierOf`, lar:///ha.ka.ba/lares/api/pono/affordance#/residency). The pack keeps its
+ * bake and its content hash so the floor names itself (`bag/pack base/<hash>`) wherever it answers.
+ *
  * THE READ LANTERN NEVER RAN, SETTLED IN SOURCE: the engine renders a carrier through a text template at bake time with no
  * vessel. A `TW5Engine` boots in-process off the vendored core and the two packed skins (`tests/test-wiki.ts`, the boot
  * `scripts/smoke-plugin-boot.ts` already runs at build), `ingestCarrier` splits a `.mem` through TW5's own registered
@@ -18,9 +23,10 @@
  * WHAT IT WRITES (`affordance-pack.json`, beside this package's `package.json`):
  *   carriers    per address: its frame check (`bcc`), `role`, and every render, surface × depth (line · whole · each slot),
  *               the mcp surface also per parameter; a carrier whose `#/loop` calls a law slot carries that slot's `has` rows
- *               resolved (`loop`), the act shape a vessel reads where no wiki it reaches stands the canon
+ *               resolved (`loop`), the act shape a vessel reads where its stack answers no loop rows
  *   routes      per surface: the skin's spelling → address (cli `oracle cast`, mcp `oracle_cast`, tw5 `action-oracle-cast`,
- *               console the bare address), each derived from the carrier's `#/skins`, no hand table
+ *               console the bare address), each derived from the carrier's `#/skins` by `routesOf`, the rule the live stack
+ *               reads by, no hand table
  *   doors       per CLI door (the spelling's first word): its addresses, the brief the top-level index prints, the lines
  *               `lares <door> --help` and its usage refusal print; a `door/part` skin (one verb of a door that keeps its
  *               own table, `wiki filter`) routes and gathers no door entry
@@ -43,7 +49,7 @@ import { bccOf, headUriOf } from "@lararium/memetic-frame";
 import { bootTestWiki } from "../tests/test-wiki.js";
 import { TW5_CORE_SCRIPT_FILENAME } from "../src/generated-tw5-version.js";
 import { AFFORDANCE_TAG, AFFORD_SLOTS, AFFORD_SURFACES, addressOfTitle, bareAddressOf, type AffordSurface } from "../src/affordance-rows.js";
-import { rowsOf, skinRows, type TextOf } from "../src/affordance-read.js";
+import { routesOf, rowsOf, skinRows, type TextOf } from "../src/affordance-read.js";
 import { KIND_RE, ORACLE_SHELF_PREFIX } from "@lararium/mesh/oracle-cast";
 import { kaheaTarget } from "@lararium/mesh/oracle-loop";
 import type { TW5Engine } from "../src/tw5-vm.js";
@@ -147,13 +153,26 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
     lines(engine.wiki.renderTiddler("text/plain", SKIN(surface), { variables: { currentTiddler: title, ...variables } }));
 
   const carriers: Record<string, AffordancePackCarrier> = {};
-  const routes: Record<string, Record<string, string>> = Object.fromEntries(AFFORD_SURFACES.map((s) => [s, {}]));
+  // THE ROUTES READ BY THE ONE RULE THE LIVE STACK READS BY (`routesOf`): the bake runs it over canon's carriers, so the floor a
+  // sleeping vessel answers from and a standing vessel's own stack derive spelling to address alike.
+  const derived = routesOf(textOf, tagged, {
+    has: (t) => textOf(t) !== undefined,
+    tagged: (address) => engine.wiki.filterTiddlers(`[all[tiddlers]tag[${AFFORDANCE_TAG}]tag[${address}]]`),
+  });
+  // ONE DOOR, ONE ADDRESS: two carriers claiming one spelling refuse the bake by name (witness W1's red, at the source).
+  const twice = derived.twice[0];
+  if (twice !== undefined) {
+    throw new Error(`affordance-door-claimed-twice: ${twice.surface} \`${twice.spelling}\` skins both ${twice.addresses[0]} and ${twice.addresses[1]}; one door names one address`);
+  }
+  const routes: Record<string, Record<string, string>> = derived.routes;
   /** Each address's own cli spelling (its skin row's `spells/`), apart from the `also/` spellings routed beside it. */
-  const ownCli = new Map<string, string>();
+  const ownCli = new Map<string, string>(Object.entries(derived.own));
   /** The cli spellings whose skin row reads `door/part`: one verb of a door whose other verbs keep the door's own table. */
-  const partCli = new Set<string>();
+  const partCli = new Set<string>(derived.part);
   for (const title of tagged) {
     const address = addressOfTitle(title)!;
+    // THE CARRIER THAT ANSWERS: where two titles carry one address, the one `carrierOf` seats bakes.
+    if (derived.carriers[address] !== title) continue;
     // ONE CLOSED SLOT SET: a carrier slot the set never names would bake silently unrendered, so it refuses the bake by name.
     for (const child of engine.wiki.filterTiddlers(`[prefix[${title}#/]]`)) {
       const slot = `#/${child.slice(title.length + 2).split("/")[0]}`;
@@ -178,29 +197,9 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
     }
     const takes: Record<string, string[]> = {};
     const calls: Record<string, string[]> = {};
-    const bare = bareAddressOf(address)!;
     for (const row of skinRows(textOf, title)) {
-      const spells = (row.params["spells"] ?? row.name).trim();
       const surface = row.name as AffordSurface;
       if (!(surface in routes)) continue;
-      const spelling = surface === "cli" ? spells.replace(/^lares\s+/, "") : spells;
-      const claimed = routes[surface]![spelling];
-      // ONE DOOR, ONE ADDRESS: two carriers claiming one spelling refuse the bake by name (witness W1's red, at the source).
-      if (claimed !== undefined && claimed !== address) {
-        throw new Error(`affordance-door-claimed-twice: ${surface} \`${spelling}\` skins both ${claimed} and ${address}; one door names one address`);
-      }
-      routes[surface]![spelling] = address;
-      if (surface === "cli") ownCli.set(address, spelling);
-      if (surface === "cli" && row.params["door"] === "part") partCli.add(spelling);
-      // A skin row may name further spellings the one door answers (`also/[[lares shore keep-records]]`, comma-joined): two
-      // words for one act ride one address, each routed to it. Another carrier claiming one refuses the bake the same way.
-      for (const alias of (row.params["also"] ?? "").split(",").map((a) => a.trim().replace(/^lares\s+/, "")).filter(Boolean)) {
-        const held = routes[surface]![alias];
-        if (held !== undefined && held !== address) {
-          throw new Error(`affordance-door-claimed-twice: ${surface} \`${alias}\` skins both ${held} and ${address}; one door names one address`);
-        }
-        routes[surface]![alias] = address;
-      }
       // A positional arg (`seat/N`) rides no flag: the door row's `accepts` names flags alone, so W2 reads these apart.
       takes[surface] = rowsOf(textOf, title, "#/takes", surface).filter((r) => r["entity"] === "arg" && r["positional"] !== true).map((r) => String(r["spell"]));
       calls[surface] = [
@@ -210,7 +209,6 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
     }
     const loop = resolvedLoop(textOf, title);
     carriers[address] = { title, bcc: bccs.get(title) ?? null, role, renders, params, takes, calls, ...(loop.length > 0 ? { loop } : {}) };
-    routes["console"]![bare] = address;
   }
 
   // A CLI door gathers every address whose cli skin spells beneath it: one address renders its whole, several an index. A
