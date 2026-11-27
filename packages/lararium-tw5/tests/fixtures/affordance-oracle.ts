@@ -1,16 +1,16 @@
 /**
- * affordance-oracle — a FIXTURE affordance carrier at `lar:///oracle.library.consults`, written against Loom's schema
+ * affordance-oracle — a FIXTURE affordance carrier at `lar:///library.oracle.speaks`, written against Loom's schema
  * (lar:///ha.ka.ba/kahua/memory/plan/cap-memes-loom) so the renderer, the bake and the witnesses run before the canon
- * carrier stands. The canon carrier (weaver's, `bags/lares/ha.ka.ba/lares/afford/oracle.library.consults.mem`) supersedes it wherever the pack is read;
+ * carrier stands. The canon carrier (weaver's, `bags/lares/ha.ka.ba/lares/afford/library.oracle.speaks.mem`) supersedes it wherever the pack is read;
  * this fixture rides tests and the known-positive controls alone, never the tracked pack.
  *
  * The frame writer mints the frame (`frameCarrier`), so the fixture spells only what an author writes.
  */
 import { frameCarrier } from "@lararium/memetic-frame";
 
-export const FIXTURE_ADDRESS = "lar:///oracle.library.consults";
+export const FIXTURE_ADDRESS = "lar:///library.oracle.speaks";
 /** Canon seats no bare root (weaver#1, api/pono/affordance#/residency): the carrier rests at the stable seat and tags its address. */
-export const FIXTURE_TITLE = "lar:///ha.ka.ba/lares/afford/oracle.library.consults";
+export const FIXTURE_TITLE = "lar:///ha.ka.ba/lares/afford/library.oracle.speaks";
 export const FIXTURE_LAW = "lar:///ha.ka.ba/lares/api/pono/affordance";
 
 /** The phrase the oracle's help has always carried (`ORACLE_THROW_STANDS`); the fixture holds it in its head. */
@@ -24,11 +24,11 @@ export const FIXTURE_BODY = [
   `tags      = ["${FIXTURE_LAW}", "${FIXTURE_ADDRESS}"]`,
   `title     = "${FIXTURE_TITLE}"`,
   "type      = \"text/memetic-wikitext+tiddlywiki\"",
-  "uri-path  = \"ha.ka.ba/lares/afford/oracle.library.consults\"",
+  "uri-path  = \"ha.ka.ba/lares/afford/library.oracle.speaks\"",
   "```",
   "",
   "<<~ ahu slot=`#/head`>>",
-  "! oracle.library.consults ~ Cast the I Ching by three coins; the cast lands as a tiddler.",
+  "! library.oracle.speaks ~ Cast the I Ching by three coins; the cast lands as a tiddler.",
   "",
   "A line sums three coins, heads three and tails two: 6 and 9 change, 7 and 8 hold; the six lines name the primary hexagram and the changing lines turned over name the relating one.",
   "",
@@ -64,7 +64,7 @@ export const FIXTURE_BODY = [
   "",
   "<<~ ahu slot=`#/refuses`>>",
   "!! refuses ~ query-unnamed",
-  "<<has entity=`refusal` name=`query-unnamed` params=`cure/[[oracle.library.consults recipe/default asking/<words>]] ~ a seat names its query before it casts`>>",
+  "<<has entity=`refusal` name=`query-unnamed` params=`cure/[[library.oracle.speaks recipe/default asking/<words>]] ~ a seat names its query before it casts`>>",
   "<<has entity=`refusal` name=`record-torn` params=`cure/[[tiddler.get.reads title/<cast>]] ~ the cast's title stands but reads as no cast`>>",
   "<<~/ahu>>",
   "",

@@ -19,6 +19,8 @@
  *       refuses, and a binding whose document cannot be named refuses; nothing boots
  *   E8  RED (Sol M2): no layer of the view takes a write, its temp layer included, and the stores it hands out refuse a put
  *   E9  RED (fail closed): a deny set that could not read whole (`unread`) refuses `cross-face-private-unread`; nothing boots
+ *   E10 RED (wave zero): a face engine boots over its composition as the island's own engine does: the boot takes the face's
+ *       canon as preloads, and a canon startup action reads that canon at boot
  *
  * A real engine boots here (`bootTestWiki`), with the real recipe, adaptor and bridge.
  */
@@ -49,7 +51,7 @@ function faceDocs(repo: RepoType, relation: string, canonTitle: string) {
   canon.change((d) => { (d.tiddlers as Record<string, unknown>)[canonTitle] = { tiddler: { title: canonTitle, text: `canon of ${relation}` } }; });
   const working = repo.create<LarDoc>(emptyLarDoc());
   const source: FaceEngineSource = {
-    boot: () => bootTestWiki(),
+    boot: async (seedFor) => bootTestWiki({ seed: await seedFor([]) }),
     recipe: { wikiSlug: "daemon", canonBag: daemonFaceCanonBag(relation) },
     ready: [{ slot: daemonFaceCanonBag(relation), handle: canon }, { slot: WORKING, handle: working }],
   };
@@ -74,6 +76,22 @@ describe.skipIf(wikiSkip)(`a lit face's own engine answers the tiddler door${ski
     expect(put).toMatchObject({ decision: "put", bag: WORKING });
     expect(holds(h1.working, "Note of h1"), "the put lands in the face's own working document").toBe(true);
     expect(holds(h1.canon, "Note of h1"), "and never in its canon").toBe(false);
+  }, 60_000);
+
+  test("E10 RED: a face engine boots over wave zero: its canon rides the boot as preloads, and a canon startup action reads it", async () => {
+    const repo = new Repo({ network: [] }); downs.push(() => repo.shutdown());
+    const h1 = faceDocs(repo, R1, "Canon of h1");
+    h1.canon.change((d) => {
+      (d.tiddlers as Record<string, unknown>)["Startup of h1"] = { tiddler: {
+        title: "Startup of h1", tags: "$:/tags/StartupAction",
+        text: `<$action-setfield $tiddler="$:/temp/booted-over" text={{Canon of h1}}/>`,
+      } };
+    });
+    let handed: readonly Record<string, unknown>[] = [];
+    const engine = await composeFaceEngine({ ...h1.source, boot: async (seedFor) => bootTestWiki({ seed: handed = await seedFor([]) }) });
+    downs.push(() => engine.close());
+    expect(handed.map((t) => t["title"]), "the boot takes the face's canon as preloads").toContain("Canon of h1");
+    expect(engine.tw5.$tw.wiki.getTiddlerText("$:/temp/booted-over"), "TW5's startup pass reads the canon at boot").toBe(`canon of ${R1}`);
   }, 60_000);
 
   test("E2 RED: two faces' engines stand apart", async () => {

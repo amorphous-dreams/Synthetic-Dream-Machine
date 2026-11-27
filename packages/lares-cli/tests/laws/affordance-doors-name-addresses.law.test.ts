@@ -5,7 +5,7 @@
  * functions of the seat (mcp), the widget modules (tw5). A skin naming a door no table holds reads red; a flipped door whose
  * verbs some carrier leaves unrouted reads red (a door flips whole; a `door/part` skin gathers no door entry, so its door keeps
  * its own table and counts legacy until every verb holds a carrier). Two carriers claiming one spelling refuse at the bake
- * (`affordance-door-claimed-twice`), before this law reads. Seed: `oracle cast` routes to lar:///oracle.library.consults.
+ * (`affordance-door-claimed-twice`), before this law reads. Seed: `oracle cast` routes to lar:///library.oracle.speaks.
  * Control: a planted orphan skin reads red.
  *
  * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-laws

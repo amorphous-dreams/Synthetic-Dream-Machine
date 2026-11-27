@@ -27,7 +27,7 @@ in `lines` (1 for yang). The page draws hexagrams 23, 36 and 37 with the figures
 three readings keep the page's drawing in `page-lines` beside the King Wen figure. The DOA readings (oracles/doa) carry the same prose under the AppleKatation's
 own Kopyleft.
 
-A house consult (`lares oracle cast`, the default shelf of `lar:///oracle.library.consults`) names the readings of the hexagrams it lands on. The shelf declares its method in its own `method` field, `three-coins`, and the consult runs what the shelf declares. The cast gives the house a blind throw to collide uncertainty with: no faction, Persona or entity argues with it as a gut-lean, and its reading stays open (ruling/2026-11-24-the-throw-stands).
+A house consult (`lares oracle cast`, the default shelf of `lar:///library.oracle.speaks`) names the readings of the hexagrams it lands on. The shelf declares its method in its own `method` field, `three-coins`, and the consult runs what the shelf declares. The cast gives the house a blind throw to collide uncertainty with: no faction, Persona or entity argues with it as a gut-lean, and its reading stays open (ruling/2026-11-24-the-throw-stands).
 
 <<~/ahu>>
 
@@ -51,6 +51,6 @@ A house consult (`lares oracle cast`, the default shelf of `lar:///oracle.librar
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0iYrvP1e3aNFFEwMJO7EoJFD7RVZZui1FcHUDRgSako`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;URk9rHFdR5XyLm5CHQKueDrmWMN_HofqREwn598ExTE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,7 +6,7 @@
  *
  * Inputs: every canon carrier under `bags/` naming the affordance type tag. The tracked `affordance-pack.json` must equal the
  * bytes a fresh bake writes, and each entry's `bcc` the frame check of the carrier it baked; a hand-edited pack and a stale one
- * both read red, naming the cure. Seed: the oracle cast flipped first, so the pack holds `lar:///oracle.library.consults` (re-keyed from `oracle.cast.throws`, whose seat stands as an alias record).
+ * both read red, naming the cure. Seed: the oracle cast flipped first, so the pack holds `lar:///library.oracle.speaks`.
  * Control: a pack with one byte moved disagrees with the bake.
  *
  * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws
@@ -49,8 +49,8 @@ describe.skipIf(wikiSkip)(`W3 · the tracked pack equals a fresh bake of canon${
 
   test("SEED: the oracle cast stands in the pack, its bcc the canon carrier's own frame check", () => {
     const pack = JSON.parse(readFileSync(PACK_PATH, "utf8")) as { carriers: Record<string, { title: string; bcc: string | null }> };
-    const oracle = pack.carriers["lar:///oracle.library.consults"];
-    expect(oracle, `the pack holds no lar:///oracle.library.consults; ${CURE}`).toBeDefined();
+    const oracle = pack.carriers["lar:///library.oracle.speaks"];
+    expect(oracle, `the pack holds no lar:///library.oracle.speaks; ${CURE}`).toBeDefined();
     const text = canonTexts(path.join(REPO, "bags")).find((t) => headUriOf(t) === oracle!.title);
     expect(text).toBeDefined();
     expect(oracle!.bcc).toBe(bccOf(text!));
@@ -58,14 +58,12 @@ describe.skipIf(wikiSkip)(`W3 · the tracked pack equals a fresh bake of canon${
 
   test("RED: the consult carries its loop rows resolved, and the pack its shelves, so a vessel with no canon wiki still casts", () => {
     const pack = JSON.parse(readFileSync(PACK_PATH, "utf8")) as { carriers: Record<string, { loop?: string[] }>; shelves?: Record<string, { title: string; method: string }> };
-    const loop = pack.carriers["lar:///oracle.library.consults"]?.loop ?? [];
+    const loop = pack.carriers["lar:///library.oracle.speaks"]?.loop ?? [];
     expect(loop.map((l) => /name=`([^`]*)`/.exec(l)?.[1]), `the pack carries no consult loop; ${CURE}`).toEqual(["#/observe", "#/orient", "#/decide", "#/act", "#/hooko"]);
     expect(pack.shelves, `the pack carries no shelves; ${CURE}`).toMatchObject({
       "e-jing": { title: "lar:///ha.ka.ba/lares/library/oracles/e-jing/index", method: "three-coins" },
       doa: { title: "lar:///ha.ka.ba/lares/library/oracles/doa/index", method: "three-coins" },
     });
-    // CONTROL: the alias record at the old seat bakes as no carrier.
-    expect(pack.carriers["lar:///oracle.cast.throws"]).toBeUndefined();
   });
 
   test("SEED: the calendar and the three law verbs stand in the pack, each bcc the canon carrier's own frame check", () => {
