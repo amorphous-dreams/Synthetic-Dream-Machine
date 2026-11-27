@@ -541,6 +541,69 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(row.slots.map((x) => x.slot)).toEqual(["#/a"]);
   });
 
+  // S5 THE LINES LENS (lar:///ha.ka.ba/kahua/memory/course/ai-surface-gestures): a sweep reads its matches in one call.
+  const PROSE = "line one\nthe floor is green\nline three\nline four\nline five\nthe sky is wide\r\nline seven";
+  test("S5 filter-lines: `match` carries each row's matching lines under its full title, `matches` counting them; `context` adds the lines around each, touching windows merged; a `/regexp/` spelling reads as a regexp; CONTROL: no match leaves the rows as they were", async () => {
+    const r = await rig();
+    r.engine.setTiddler({ title: "Prose", text: PROSE });
+    const filter = makeWikiFilterReactor(r.opts);
+    const plain = await filter({ ...A, filter: "[[Prose]] [[Other]]", match: " is " }, ctx());
+    expect(plain["rows"]).toEqual([
+      { title: "Prose", fields: {}, lines: [{ n: 2, text: "the floor is green" }, { n: 6, text: "the sky is wide" }], matches: 2 },
+      { title: "Other", fields: {}, lines: [], matches: 0 },
+    ]);
+    const one = await filter({ ...A, filter: "[[Prose]]", match: "/\\b(FLOOR|sky)\\b/i", context: 1 }, ctx());
+    expect((one["rows"] as Array<{ lines: Array<{ n: number }> }>)[0]!.lines.map((l) => l.n)).toEqual([1, 2, 3, 5, 6, 7]);
+    const two = await filter({ ...A, filter: "[[Prose]]", match: " is ", context: "2" }, ctx());
+    expect((two["rows"] as Array<{ lines: Array<{ n: number }> }>)[0]!.lines.map((l) => l.n), "windows 1-4 and 4-7 merge, line 4 once").toEqual([1, 2, 3, 4, 5, 6, 7]);
+    const named = await filter({ ...A, filter: "[tag[memory]sort[title]]", match: "Note 01", fields: ["priority"], limit: 3 }, ctx());
+    expect((named["rows"] as Array<Record<string, unknown>>).map((x) => [x["title"], x["matches"]])).toEqual([["Note 01", 0], ["Note 02", 1], ["Note 03", 1]]);
+    expect((named["rows"] as Array<Record<string, unknown>>)[0]!["fields"]).toEqual({ priority: "high" });
+    const control = await filter({ ...A, filter: "[[Prose]] [[Other]]" }, ctx());
+    expect(control["titles"]).toEqual(["Prose", "Other"]);
+    expect(control["rows"]).toBeUndefined();
+  });
+
+  test("S5 filter-lines: a withheld title carries no row and no lines; a record holding no text (a pointer) carries no lines; a misspelt lens refuses by name before the filter runs, naming its cure", async () => {
+    const r = await rig();
+    r.engine.setTiddler({ title: "Prose", text: PROSE });
+    r.engine.setTiddler({ title: "Web", _canonical_uri: "https://example.org/a.png", type: "image/png" });
+    const filter = makeWikiFilterReactor(r.opts);
+    const out = await filter({ ...A, filter: "[[$:/temp/lares/secret]] [[Web]] [[Prose]]", match: "device" }, ctx());
+    expect(out).toMatchObject({ total: 2, withheld: 1 });
+    expect(out["rows"]).toEqual([{ title: "Web", fields: {} }, { title: "Prose", fields: {}, lines: [], matches: 0 }]);
+    await expect(filter({ ...A, filter: "[[Prose]]", context: 1 }, ctx())).rejects.toMatchObject({ reason: "filter-context-alone", message: expect.stringMatching(/--match/) });
+    await expect(filter({ ...A, filter: "[[Prose]]", match: "is", context: 9 }, ctx())).rejects.toMatchObject({ reason: "filter-context-range", message: expect.stringMatching(/--context 2/) });
+    await expect(filter({ ...A, filter: "[[Prose]]", match: "is", context: "-1" }, ctx())).rejects.toMatchObject({ reason: "filter-context-range" });
+    await expect(filter({ ...A, filter: "[[Prose]]", match: "/(/" }, ctx())).rejects.toMatchObject({ reason: "filter-match-malformed", message: expect.stringMatching(/slashes/) });
+    await expect(filter({ ...A, filter: "[[Prose]]", match: "" }, ctx())).rejects.toMatchObject({ reason: "filter-match-empty" });
+  });
+
+  test("S5 filter-lines: a row carries at most 64 lines and a line at most 512 bytes (`cut: true`), `matches` still counting all; a first row past the page's byte cap sheds its tail lines by name and the page never overruns; the next row rides the next page", async () => {
+    const r = await rig();
+    const many = Array.from({ length: 100 }, (_, i) => `the line ${i} is here`).join("\n");
+    r.engine.setTiddler({ title: "Many", text: many });
+    r.engine.setTiddler({ title: "Long", text: `short\n${"é is ".repeat(400)}` });
+    const filter = makeWikiFilterReactor(r.opts);
+    const bounded = await filter({ ...A, filter: "[[Many]] [[Long]]", match: " is " }, ctx());
+    const rows = bounded["rows"] as Array<{ title: string; lines: Array<{ n: number; text: string; cut?: true }>; matches: number }>;
+    expect(rows[0]!.lines).toHaveLength(64);
+    expect(rows[0]!.matches).toBe(100);
+    expect(rows[1]!.lines).toHaveLength(1);
+    expect(rows[1]!.lines[0]).toMatchObject({ n: 2, cut: true });
+    expect(new TextEncoder().encode(rows[1]!.lines[0]!.text).length).toBeLessThanOrEqual(512);
+    const cap = 400;
+    const first = await filter({ ...A, filter: "[[Many]] [[Long]]", match: " is ", maxBytes: cap }, ctx());
+    const shed = first["rows"] as Array<{ title: string; lines: unknown[]; matches: number; omitted?: string[] }>;
+    expect(shed.map((x) => x.title)).toEqual(["Many"]);
+    expect(shed[0]!.omitted).toContain("lines");
+    expect(shed[0]!.lines.length).toBeGreaterThan(0);
+    expect(shed[0]!.matches).toBe(100);
+    expect(JSON.stringify(shed).length).toBeLessThanOrEqual(cap);
+    const second = await filter({ ...A, filter: "[[Many]] [[Long]]", match: " is ", after: first["next"] }, ctx());
+    expect((second["rows"] as Array<{ title: string }>).map((x) => x.title)).toEqual(["Long"]);
+  });
+
   test("RED L1: a word the lens or the grain does not read refuses by name, before anything reads", async () => {
     const r = await rig();
     expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");

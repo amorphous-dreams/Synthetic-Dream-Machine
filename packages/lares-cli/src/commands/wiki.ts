@@ -760,6 +760,13 @@ export function wikiFilterPlan(args: ParsedArgs): DoorPlan {
   const fields = namesOf(args.options["fields"]);
   if (fields) out["fields"] = fields;
   if (args.flags["collapse"] === true) out["collapse"] = true;
+  // THE LINES LENS (S5): `--match` rides untrimmed (a VALUE_FLAGS name, so its words may open on `--`); `--context` a count from 0.
+  if (typeof args.options["match"] === "string") out["match"] = args.options["match"];
+  const context = wordOf(args.options["context"]);
+  if (context !== null) {
+    if (!/^[0-9]+$/.test(context)) throw new DoorUsage(`--context takes a count of lines from 0 (got "${context}")`);
+    out["context"] = Number(context);
+  }
   const limit = countOf(args.options["limit"], "limit");
   if (limit !== null) out["limit"] = limit;
   const maxBytes = countOf(args.options["max-bytes"], "max-bytes");
@@ -829,7 +836,7 @@ async function cmdWikiAction(args: ParsedArgs): Promise<number> {
   });
 }
 
-interface FilterRowOut { title: string; fields: Record<string, string>; omitted?: string[]; bytes?: number; slots?: Array<{ slot: string; bytes: number; first: string | null }> }
+interface FilterRowOut { title: string; fields: Record<string, string>; omitted?: string[]; bytes?: number; slots?: Array<{ slot: string; bytes: number; first: string | null }>; lines?: Array<{ n: number; text: string; cut?: true }>; matches?: number }
 
 /**
  * A FILTER'S ANSWER ARRIVES IN PAGES. One call prints one page and names the cursor of the next on stderr (`--after`
@@ -869,8 +876,10 @@ async function cmdWikiFilter(args: ParsedArgs): Promise<number> {
         // One title per line; named fields follow their title, tab-joined, so a shell cuts them.
         for (const title of titles) console.log(title);
         for (const row of rows) {
-          console.log([row.title, ...(row.bytes === undefined ? [] : [`bytes=${row.bytes}`]), ...Object.entries(row.fields).map(([name, value]) => `${name}=${value}`)].join("\t"));
+          console.log([row.title, ...(row.bytes === undefined ? [] : [`bytes=${row.bytes}`]), ...(row.matches === undefined ? [] : [`matches=${row.matches}`]), ...Object.entries(row.fields).map(([name, value]) => `${name}=${value}`)].join("\t"));
           for (const slot of row.slots ?? []) console.log(`  ${slot.slot}\tbytes=${slot.bytes}\t${slot.first ?? ""}`);
+          // The lines lens, grep-shaped: the line number, then the line's own words (a cut line ends on `…`), under the full title.
+          for (const line of row.lines ?? []) console.log(`  ${line.n}:\t${line.text}${line.cut ? "…" : ""}`);
         }
         const shown = titles.length + rows.length;
         if (typeof last["next"] === "string" && last["next"] !== "") console.error(`${shown} of ${last["total"]} · next: --after ${last["next"]}`);
@@ -981,7 +990,7 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "prune-stale":   { handler: cmdWikiPruneStale,    summary: "Surface stale draft tiddlers (no recent activity) for residency-action-or-prune." },
   "which":      { handler: cmdWikiWhich,     summary: "Recipe-presence query — list bags holding a tiddler. Needs `lares vessel stand --foreground`." },
   "resolve":    { handler: cmdWikiResolve,   summary: "Residency Model coordinate-inspection — list all Manifestations of a tiddler across bags; highlight winning bag per recipe priority. Needs `lares vessel stand --foreground`." },
-  "filter":     { handler: cmdWikiFilter,    summary: "Run a TiddlyWiki filter in the wiki's own engine (`--recipe default` the daemon wiki, `--recipe <slug>` any wiki this face reaches): `lares wiki filter '[tag[memory]sort[title]]' --recipe default [--fields a,b] [--collapse] [--limit N] [--max-bytes N] [--after <cursor>] [--all]`. `--collapse` answers each row's bytes and a meme root's slots (`{slot, bytes, first}`) in place of its fields, the skinny has-stack of `lares tiddler get <root> --recipe <slug> --meme --skinny`, and `lares tiddler get <root> --recipe <slug> --meme --slot <name>` unfolds one slot. One bounded page per call, the next cursor on stderr; a malformed filter refuses `filter-malformed`. The link graph rides filters: `[[T]backlinks[]]`, `links[]`, `transcludes[]`, `backtranscludes[]`. `--target <h1|pet name>` reads another lit face's daemon wiki (its canon and working layer, never its personal layer) while keeping the face worn." },
+  "filter":     { handler: cmdWikiFilter,    summary: "Run a TiddlyWiki filter in the wiki's own engine (`--recipe default` the daemon wiki, `--recipe <slug>` any wiki this face reaches): `lares wiki filter '[tag[memory]sort[title]]' --recipe default [--fields a,b] [--collapse] [--match <words|/regexp/> [--context N]] [--limit N] [--max-bytes N] [--after <cursor>] [--all]`. `--match` carries each row's matching lines (`lines: [{n, text}]`, `matches`) with `--context` lines (0..8) around each, so a sweep reads matches in one call. `--collapse` answers each row's bytes and a meme root's slots (`{slot, bytes, first}`) in place of its fields, the skinny has-stack of `lares tiddler get <root> --recipe <slug> --meme --skinny`, and `lares tiddler get <root> --recipe <slug> --meme --slot <name>` unfolds one slot. One bounded page per call, the next cursor on stderr; a malformed filter refuses `filter-malformed`. The link graph rides filters: `[[T]backlinks[]]`, `links[]`, `transcludes[]`, `backtranscludes[]`. `--target <h1|pet name>` reads another lit face's daemon wiki (its canon and working layer, never its personal layer) while keeping the face worn." },
   "render":     { handler: cmdWikiRender,    summary: "Wikify a title or a span through the wiki's own engine (the daemon wiki or any wiki this face reaches): `lares wiki render <title> --recipe default [--form text|html] [--max-bytes N] [--after <cursor>]`, or `--text '<wikitext>' [--type <mime>]`. The read reaches stdout; `--target` visits another lit face's read view. `render '<source-filter>' --recipe <slug> --output workbench [--filename <filter>] [--type <mime>] [--template <title>] [--variables <json>] [--overwrite]` writes under rendered/ in that wiki's bound workbench, then answers a manifest. A writer's seat must hold the workbench; existing files refuse without --overwrite." },
   "status":     { handler: cmdWikiStatus,    summary: "Survey catalog, activation and residency; --recipe names each layer and its write reach: `lares wiki status --recipe default` (or `--recipe <slug>`, any wiki this face reaches). The working layer takes every write (this face's personal layer of a wiki where it holds no writer's seat). A wiki's temp layer reads `temp (opt-in, off)` until `projection.temp.<slug>` consents to it. `--target <h1|pet name>` names another lit face's view, whose layers read `write: false`." },
   "act":        { handler: cmdWikiAction, summary: "Run one admitted native action: `wiki act sidebar-layout --recipe <wiki> --expected fixed-fluid --resulting fluid-fixed`." },

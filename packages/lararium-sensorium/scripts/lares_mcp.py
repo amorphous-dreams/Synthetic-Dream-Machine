@@ -1241,7 +1241,8 @@ def build_mcp(coordinator: LaresCoordinator):
     @mcp.tool(annotations=_annotations("wiki_filter"))
     def wiki_filter(filter: str, recipe: "str | None" = None,  # noqa: A002 — TiddlyWiki's own word
                     fields: "list | None" = None, limit: "int | None" = None, after: "str | None" = None,
-                    max_bytes: "int | None" = None, target: "str | None" = None, collapse: bool = False) -> dict:
+                    max_bytes: "int | None" = None, target: "str | None" = None, collapse: bool = False,
+                    match: "str | None" = None, context: "int | None" = None) -> dict:
         """Run A TIDDLYWIKI FILTER in the wiki's own engine and read ONE BOUNDED PAGE of its answer — mirrors `lares wiki
         filter '<filter>'`. The filter language reads as TiddlyWiki's own: `[tag[memory]sort[title]]`, `[search[cursor]]`,
         `[prefix[lar:///ha.ka.ba/kahua/memory/]]`, `[has[status]!status[done]]`; the LINK GRAPH rides it too:
@@ -1250,7 +1251,13 @@ def build_mcp(coordinator: LaresCoordinator):
         {…, rows: [{title, fields}], …} in place of `titles`. `collapse=True` reads the UPCOMING WORK SKINNY: each row carries
         `bytes`, and a meme root its `slots: [{slot, bytes, first}]` (the has-stack `tiddler_get(meme=True, grain="skinny")`
         answers, built by the same code), so one filter surveys N memes; unfold the one you need with
-        `tiddler_get(title=<root>, meme=True, slot="#/name")`. THE ANSWER PAGES: at most 32 rows and `max_bytes` (default
+        `tiddler_get(title=<root>, meme=True, slot="#/name")`. `match` SWEEPS LINES IN ONE CALL: each row carries its record's
+        matching lines, `lines: [{n, text}]` (a line past 512 bytes rides cut, `cut: true`), and `matches` counting every
+        matching line, so a sweep (an L-Prime pass, a stale word) reads its matches with no `tiddler_get` per title; plain
+        words match byte for byte, a `/source/flags` spelling reads as a regexp (`match="/\\b(is|are)\\b/"`); `context=N`
+        (0..8) carries N lines around each match, touching windows merged; at most 64 lines a row, and a page past its
+        byte cap sheds a row's tail lines and names `omitted: ["lines"]`. A record holding no text (a pointer) carries no
+        lines. `context` without `match` refuses `filter-context-alone`. THE ANSWER PAGES: at most 32 rows and `max_bytes` (default
         65536) per call; `total` counts every match and `next` names the cursor of the page behind: hand it back as
         `after` until `next` reads null. A wiki that moved between pages refuses `filter-cursor-stale` (read again from
         the first page). A filter the engine cannot parse refuses `filter-malformed` with the engine's words. `withheld`
@@ -1270,6 +1277,10 @@ def build_mcp(coordinator: LaresCoordinator):
             args["after"] = after
         if collapse:
             args["collapse"] = True
+        if match is not None:
+            args["match"] = match
+        if context is not None:
+            args["context"] = context
         if max_bytes is not None:
             args["maxBytes"] = max_bytes
         return _meme_wire("wiki-filter", args)
