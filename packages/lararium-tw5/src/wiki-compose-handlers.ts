@@ -3,7 +3,7 @@ import { storedRecord } from "@lararium/mesh/stored-record";
 import { bagStackFromRec } from "@lararium/mesh/bag-stack-from-rec";
 import { mutableLarRecord } from "@lararium/mesh/base-doc";
 import { recipeUri } from "@lararium/mesh/lar-uris";
-import { SYSTEM_BAGS, wikiBagUri } from "@lararium/mesh/wiki-recipe";
+import { SYSTEM_BAGS, floorUntrueLibraries, structuralSlots, wikiBagUri } from "@lararium/mesh/wiki-recipe";
 import { mkDaemonWikiAlert } from "@lararium/mesh/island-protocol";
 import { effectiveRecipeOf, type RecipePlane } from "./recipe-planes.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
@@ -21,6 +21,9 @@ function recipeArgs(args: Readonly<Record<string, unknown>>): { slug: string; ba
   };
 }
 import type { WikiComposeOptions } from "./wiki-handler-options.js";
+
+/** The recipe doors' one clock read: it stamps when a hand moved the record and decides nothing. */
+const stampedAt = (): string => new Date().toISOString();
 
 /** The vessel's recipe for a slug, ready to edit. The effective record may stand in the oracle plane
  *  (a system wiki's default): the edit then writes the vessel's own record into the catalog, the
@@ -79,7 +82,7 @@ export function makeAddBagReactor(opts: WikiComposeOptions): VerbReactor {
         ...recipeRec.tiddler,
         title: recipeTitle,
         "bag-stack": nextStack.join(" "),
-        "updated-at": new Date().toISOString(),
+        "updated-at": stampedAt(),
       },
       meta: {
         ...(recipeRec.meta ?? {}),
@@ -142,7 +145,7 @@ export function makeRemoveBagReactor(opts: WikiComposeOptions): VerbReactor {
         ...recipeRec.tiddler,
         title: recipeTitle,
         "bag-stack": nextStack.join(" "),
-        "updated-at": new Date().toISOString(),
+        "updated-at": stampedAt(),
       },
       meta: {
         ...(recipeRec.meta ?? {}),
@@ -167,6 +170,67 @@ export function makeRemoveBagReactor(opts: WikiComposeOptions): VerbReactor {
       stack: nextStack,
       rebootRequired: false,
       note: "recipe updated + synced; live islands reconcile via recipe-watch (alert seeded as fallback for sleeping islands)",
+    };
+  };
+}
+/**
+ * `lares wiki true-floor <slug>` — TRUE ONE RECIPE TO THE CANON FLOOR BY PLACE (ruling 2026-11-26-canon-floor-by-place), by hand.
+ *
+ * The rule rides every derivation (`canonFloorOf`, `floorRecordsFor`): every wiki's floor stacks `lares`, the herm/hearth wiki's
+ * stacks `lararium` and `lares`, and no other wiki stacks `lararium` by default. A recipe record written before the ruling may
+ * still name `lararium` (or a TW5 docs bag) as a library where the table withholds it, and a library outranks the floor. No boot
+ * moves that record: this door drops exactly those libraries (`floorUntrueLibraries`) when a hand asks, and answers a RECEIPT,
+ * which the record carries too (`floor-trued-from`: the stack it held before). No recipe lacks `lares`: the floor lays it under
+ * every wiki, so the door adds none.
+ *
+ * Idempotent: a recipe that stacks nothing untrue answers `already-true` and writes nothing.
+ */
+export function makeTrueFloorReactor(opts: WikiComposeOptions): VerbReactor {
+  return async (args) => {
+    const slug = stringArg(args, "slug");
+    if (!slug) throw new Error("true-floor: the verb takes a slug (`lares wiki true-floor <slug>`)");
+
+    const { recipeTitle, recipeRec, adopt, standsAt } = await recipeToEdit(
+      opts, slug, "lares-cli:wiki-true-floor", `recipe not found for "${slug}"`,
+    );
+
+    const stack = bagStackFromRec(recipeRec);
+    const structural = structuralSlots(slug);
+    const dropped = floorUntrueLibraries(slug, stack.filter((uri) => !structural.has(uri)));
+    if (dropped.length === 0) {
+      return { slug, recipeUri: standsAt.title, recipePlane: standsAt.plane, status: "already-true", dropped: [], stack };
+    }
+
+    const nextStack = stack.filter((uri) => !dropped.includes(uri));
+    const at = stampedAt();
+    const updated: LarTiddlerRecord = {
+      tiddler: {
+        ...recipeRec.tiddler,
+        title: recipeTitle,
+        "bag-stack": nextStack.join(" "),
+        "floor-trued-from": stack.join(" "),
+        "updated-at": at,
+      },
+      meta: {
+        ...(recipeRec.meta ?? {}),
+        authority: recipeRec.meta?.authority ?? "lares-cli:wiki-true-floor",
+      },
+    };
+    const catalogHandle = await opts.catalog.handle();
+    catalogHandle.change((doc) => { doc.tiddlers[recipeTitle] = storedRecord(updated); });
+
+    opts.post(mkDaemonWikiAlert({ wikiSlug: slug, message: `"${slug}" trued to the canon floor by place (dropped ${dropped.join(", ")}): live islands reconcile; reboot if this notice persists.`, cause: "true-floor" }));
+
+    return {
+      slug,
+      recipeUri: recipeTitle,
+      recipePlane: "catalog" as RecipePlane,
+      ...(adopt ? { adopted: true } : {}),
+      status: "trued",
+      dropped,
+      stack: nextStack,
+      receipt: { verb: "true-floor", slug, recipe: recipeTitle, at, before: stack, after: nextStack, dropped },
+      note: "recipe trued + synced; live islands reconcile via recipe-watch; the record keeps its prior stack under floor-trued-from",
     };
   };
 }

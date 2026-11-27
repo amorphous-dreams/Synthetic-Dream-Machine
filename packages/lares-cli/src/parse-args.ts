@@ -35,7 +35,7 @@ export const BOOLEAN_FLAGS: ReadonlySet<string> = new Set([
   "deny", "docs", "draft", "drop", "dry-run", "edge", "ephemeral", "every", "executable", "family", "force", "fresh", "foreground", "from-persona", "held", "help", "help-mempalace", "history",
   "hearth", "hold", "if-due", "in-wiki", "init", "join", "json", "keep", "keep-hooks", "keyhive-trace", "lag", "launch", "list", "meme", "memory", "new", "observe", "offer", "orphans", "over-fresher",
   "page", "pair", "palaces", "paper", "partial", "passphrase", "pending", "probe", "quorum", "overwrite", "remove", "repour", "restart", "revert", "rotate", "seat", "sessions", "shadow", "skinny", "skip-build", "spectral", "split-root",
-  "staged", "sweep", "tag-blobs", "terms", "tree", "verbose", "wait", "watch", "with-web", "workbench", "writeback", "yes",
+  "staged", "sweep", "tag-blobs", "terms", "tree", "verbose", "wait", "watch", "with-web", "witness", "workbench", "writeback", "yes",
 ]);
 
 /**
@@ -56,11 +56,11 @@ export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "gra
 export const VALUE_FLAGS: ReadonlySet<string> = new Set(["fields", "note", "reason", "text"]);
 
 /**
- * THE LIST FLAGS: names that carry one TiddlyWiki list (`--tag-add 'one [[two words]]'`). A repeat gathers: each later
+ * THE LIST FLAGS: names that carry one TiddlyWiki list (`--tag-add 'one [[two words]]'`, `--cut-slot '#/a #/b'`). A repeat gathers: each later
  * value joins the earlier with a space, in the order written, so `--tag-add a --tag-add b` reads `a b` and no tag drops
  * without a word (every other valued name keeps its last spelling).
  */
-export const LIST_FLAGS: ReadonlySet<string> = new Set(["tag-add", "tag-remove"]);
+export const LIST_FLAGS: ReadonlySet<string> = new Set(["cut-slot", "tag-add", "tag-remove"]);
 
 /** One valued option into the table: a list flag's repeat joins the list, every other name takes the latest value. */
 function setOption(options: Record<string, string>, key: string, value: string): void {

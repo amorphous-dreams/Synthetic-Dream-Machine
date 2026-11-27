@@ -1,0 +1,44 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/ui/vessel-console`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+caption   = "Vessel"
+role      = "Vessel console — the browser vessel's public readings, boot phases and what the glass held back at boot, read off the tab-local $:/temp/lares/vessel/ tiddlers the page writes; a sidebar More tab"
+tags      = ["$:/tags/MoreSideBar"]
+title     = "lar:///ha.ka.ba/lararium/tw5/ui/vessel-console"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/tw5/ui/vessel-console"
+```
+
+<$let readings={{$:/temp/lares/vessel/readings}} phases={{$:/temp/lares/vessel/phases}}>
+<div class="lar-vessel-console">
+
+!! Readings
+
+<$list filter="[<readings>jsonindexes[]]" variable="i" emptyMessage="<p>//The vessel has said nothing yet.//</p>">
+<div class={{{ [<readings>jsonget<i>,[tone]addprefix[lar-reading lar-tone-]else[lar-reading]] }}}><strong><$text text={{{ [<readings>jsonget<i>,[k]] }}}/></strong> · <$text text={{{ [<readings>jsonget<i>,[v]] }}}/></div>
+</$list>
+
+!! Phases
+
+<$list filter="[<phases>jsonindexes[]]" variable="i" emptyMessage="<p>//No boot phase yet.//</p>">
+<div class="lar-phase"><$text text={{{ [<phases>jsonget<i>,[p]] }}}/> · <$text text={{{ [<phases>jsonget<i>,[ms]addsuffix[ ms]] }}}/></div>
+</$list>
+
+!! Held back at boot
+
+<$list filter="[all[tiddlers]prefix[$:/temp/lares/alert/refused/]sort[]]" variable="held" emptyMessage="<p>//Nothing held back.//</p>">
+<$let rest={{{ [<held>removeprefix[$:/temp/lares/alert/refused/]] }}} kind={{{ [<rest>splitbefore[/]removesuffix[/]] }}}>
+<div class="lar-held"><strong><$text text=<<kind>>/></strong> · <$text text={{{ [<rest>removeprefix<kind>removeprefix[/]] }}}/><br/><$text text={{{ [<held>get[text]] }}}/></div>
+</$let>
+</$list>
+
+</div>
+</$let>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vGm9HC_gRQUWrgwwECWN30XPzdNd6ATYi54RuYu0qhE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

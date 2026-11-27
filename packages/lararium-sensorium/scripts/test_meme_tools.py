@@ -1,7 +1,8 @@
-"""Witness — the `meme_put` / `meme_list` / `meme_delete` / `meme_project` MCP tools (a meme reads through `tiddler_get(meme=True)`): the MCP
-skin of the meme family's DAEMON-seated verbs.
+"""Witness — a meme family through the MCP seat: `tiddler_put` lands a family's carrier or one slot, `tiddler_delete(family=True)`
+removes it, title-less `tiddler_get(meme=True)` lists its roots, a meme reads through `tiddler_get(meme=True)`, and `meme_project`
+renders it.
 
-Each tool rides `lares_uds.call("meme-put" | "meme-get" | "meme-list" | "meme-delete" | "meme-project",
+Each tool rides `lares_uds.call("tiddler-put" | "tiddler-get" | "meme-list" | "tiddler-delete" | "meme-project",
 args)` to the @daemon, never a
 store. The witness spawns a FAKE daemon on a temp unix socket (it records every request line and answers a
 canned receipt), so each assertion reads the EXACT `{verb, args}` the tool put on the wire — the contract
@@ -23,11 +24,12 @@ import lares_uds as uds
 from lares_mcp import MEME_VERBS, VERB_SEATS, DaemonCoordinator, build_mcp, seat_of
 
 _URI = "lar:///ha.ka.ba/lares/api/pono/meme"
-_PUT_OUTPUT = {"uri": _URI, "decision": "ingest", "grade": "ok", "landed": [_URI], "tombstoned": [],
-               "canonicalHash": "sha256-put", "warnings": [], "diagnostics": []}
+_PUT_OUTPUT = {"recipe": "sdm", "title": _URI, "decision": "put", "bag": "lar:///ha.ka.ba/bags/sdm", "created": False,
+               "changed": ["text"], "hash": "sha256-record", "textHash": "sha256-text", "position": "root",
+               "canonicalHash": "sha256-put", "landed": [_URI], "kept": [], "tombstoned": [], "warnings": []}
 _PROJECT_OUTPUT = {"uri": _URI, "to": "html", "text": "<p>the body</p>", "contentType": "text/html"}
 _LIST_OUTPUT = {"bag": "lar:///ha.ka.ba/bags/daemon", "roots": [{"uri": _URI, "canonicalHash": "sha256-get"}]}
-_DELETE_OUTPUT = {"uri": _URI, "decision": "removed", "tombstoned": [_URI], "canonicalHash": "sha256-get"}
+_DELETE_OUTPUT = {"recipe": "default", "title": _URI, "decision": "removed", "mode": "plain", "tombstoned": [], "retracted": [_URI], "canonicalHash": "sha256-get"}
 
 
 class _FakeDaemon:
@@ -94,7 +96,8 @@ def _tools():
 
 
 def _put(**kw):
-    return _tools()["tiddler_put"](title=kw.pop("uri"), meme=True, **kw)
+    # A family's carrier rides as its root's text: the plain put, no family word.
+    return _tools()["tiddler_put"](title=kw.pop("uri"), **kw)
 
 
 def _get(**kw):
@@ -112,7 +115,7 @@ def _list(**kw):
 
 
 def _delete(**kw):
-    return _tools()["tiddler_delete"](title=kw.pop("uri"), meme=True, **kw)
+    return _tools()["tiddler_delete"](title=kw.pop("uri"), family=True, **kw)
 
 
 def test_meme_tools_register_and_seat_hotl(daemon):
@@ -140,58 +143,59 @@ def test_every_meme_tool_refuses_a_missing_container_before_the_wire(daemon):
     assert daemon.lines == []
 
 
-def test_meme_put_names_the_daemon_wiki_by_its_explicit_name(daemon):
+def test_a_family_put_names_the_daemon_wiki_by_its_explicit_name(daemon):
     # CONTROL: the daemon's own wiki answers to `recipe="default"`, spelled by the caller and sent as spelled.
     daemon.output = _PUT_OUTPUT
     out = _put(uri=_URI, text="the body", recipe="default")
-    assert daemon.wire() == {"verb": "meme-put", "args": {"recipe": "default", "uri": _URI, "text": "the body"}}
+    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": _URI, "text": "the body"}}
     assert daemon.lines[-1]["requestedBy"] == "0xwitness"
     assert out == _PUT_OUTPUT
 
 
-def test_meme_put_named_recipe(daemon):
+def test_a_family_put_named_recipe(daemon):
     daemon.output = _PUT_OUTPUT
     _put(uri=_URI, text="the body", recipe="sdm")
-    assert daemon.wire() == {"verb": "meme-put", "args": {"recipe": "sdm", "uri": _URI, "text": "the body"}}
+    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "sdm", "title": _URI, "text": "the body"}}
 
 
-def test_meme_put_bag(daemon):
+def test_a_family_put_in_one_bag(daemon):
     daemon.output = _PUT_OUTPUT
     _put(uri=_URI, text="the body", bag="lares")
-    assert daemon.wire() == {"verb": "meme-put", "args": {"bag": "lares", "uri": _URI, "text": "the body"}}
+    assert daemon.wire() == {"verb": "tiddler-put", "args": {"bag": "lares", "title": _URI, "text": "the body"}}
 
 
-def test_meme_put_carries_the_base(daemon):
+def test_a_family_put_carries_the_base(daemon):
     # `base` = the canonical hash the writer read back from tiddler_get(meme=True) — the merge base the gate reads.
     daemon.output = _PUT_OUTPUT
     out = _put(uri=_URI, text="the body", recipe="sdm", base="sha256-get")
-    assert daemon.wire() == {"verb": "meme-put",
-                             "args": {"recipe": "sdm", "uri": _URI, "text": "the body", "base": "sha256-get"}}
-    assert out["decision"] == "ingest"
+    assert daemon.wire() == {"verb": "tiddler-put",
+                             "args": {"recipe": "sdm", "title": _URI, "text": "the body", "base": "sha256-get"}}
+    assert out["decision"] == "put"
 
 
-def test_meme_put_conflict_raises_a_tool_error_naming_the_live_hash(daemon):
+def test_a_family_put_conflict_raises_a_tool_error_naming_the_live_hashes(daemon):
     # A WRITE THAT NEVER LANDED NEVER READS AS SUCCESS: a stale base answers `decision: conflict` inside the
-    # receipt, and the tool raises (the MCP skin answers isError), naming the decision, its reason and the live
-    # hash the writer re-reads against. An AI that skips `decision` still hears the refusal.
-    daemon.output = dict(_PUT_OUTPUT, decision="conflict", reason="both-moved", landed=[], canonicalHash="sha256-live")
-    with pytest.raises(uds.LaresVerbError, match=r"meme-put conflict.*both-moved.*sha256-live"):
+    # receipt, and the tool raises (the MCP skin answers isError), naming the decision and the live record and carrier
+    # hashes the writer re-reads against. An AI that skips `decision` still hears the refusal.
+    daemon.output = dict(_PUT_OUTPUT, decision="conflict", landed=[], hash="sha256-record-live", canonicalHash="sha256-live")
+    with pytest.raises(uds.LaresVerbError, match=r"tiddler-put conflict.*sha256-record-live.*sha256-live"):
         _put(uri=_URI, text="the body", recipe="sdm", base="sha256-stale")
 
 
-def test_meme_put_refuse_raises_a_tool_error_naming_the_warnings(daemon):
-    daemon.output = dict(_PUT_OUTPUT, decision="refuse", landed=[], warnings=["the carrier names no title"])
-    with pytest.raises(uds.LaresVerbError, match=r"meme-put refuse.*the carrier names no title"):
+def test_a_family_put_the_gate_refuses_raises_its_refusal_by_name(daemon):
+    # The gate refuses by a thrown refusal with its own code, never a receipt that reads as a landing.
+    daemon.error = {"errorMessage": "family-gate-refused: the carrier names no title", "refusal": {"reason": "family-gate-refused"}}
+    with pytest.raises(uds.LaresVerbError, match=r"family-gate-refused.*the carrier names no title"):
         _put(uri=_URI, text="the body", recipe="sdm")
 
 
-def test_meme_put_noop_answers_success(daemon):
+def test_a_family_put_noop_answers_success(daemon):
     # CONTROL: a noop moved nothing because the records already say it; that write stands, so it answers.
     daemon.output = dict(_PUT_OUTPUT, decision="noop", reason="canonical-equivalent", landed=[])
     assert _put(uri=_URI, text="the body", recipe="sdm")["decision"] == "noop"
 
 
-def test_meme_put_on_a_locked_vessel_names_the_unlock(daemon):
+def test_a_family_put_on_a_locked_vessel_names_the_unlock(daemon):
     # A LOCKED VESSEL FAILS CLOSED and the seat refuses by name: the tool error leads with `vessel-locked` and
     # names the one act that opens it.
     daemon.error = {"errorMessage": "control-home-unavailable: vessel-locked: the vessel's key stays shut",
@@ -201,7 +205,7 @@ def test_meme_put_on_a_locked_vessel_names_the_unlock(daemon):
     assert caught.value.refusal == "vessel-locked"
 
 
-def test_meme_put_refuses_recipe_and_bag_together(daemon):
+def test_a_family_put_refuses_recipe_and_bag_together(daemon):
     daemon.output = _PUT_OUTPUT
     with pytest.raises(ValueError, match="no-container"):
         _put(uri=_URI, text="x", recipe="sdm", bag="lares")
@@ -285,22 +289,22 @@ def test_meme_list_wire_container_and_tree(daemon):
         _list(recipe="sdm", bag="lares")
 
 
-def test_meme_delete_wire_uri_container_and_base(daemon):
-    # `meme_delete` rides `meme-delete` with {uri} + the container law; `base` = the hash the writer read.
+def test_a_family_delete_wire_title_container_and_base(daemon):
+    # `tiddler_delete(family=True)` rides `tiddler-delete` with {title, family} + the container law; `base` = the hash read.
     daemon.output = _DELETE_OUTPUT
     out = _delete(uri=_URI, recipe="default")
-    assert daemon.wire() == {"verb": "meme-delete", "args": {"recipe": "default", "uri": _URI}}
+    assert daemon.wire() == {"verb": "tiddler-delete", "args": {"recipe": "default", "title": _URI, "family": True}}
     assert out == _DELETE_OUTPUT
     _delete(uri=_URI, bag="lares", base="sha256-get")
-    assert daemon.wire() == {"verb": "meme-delete", "args": {"bag": "lares", "uri": _URI, "base": "sha256-get"}}
+    assert daemon.wire() == {"verb": "tiddler-delete", "args": {"bag": "lares", "title": _URI, "family": True, "base": "sha256-get"}}
 
 
-def test_meme_delete_stale_base_reads_conflict_and_moves_nothing(daemon):
-    # CONTROL: the daemon's 412-shaped answer rides back as the receipt — `decision: conflict`, nothing
-    # tombstoned — never an exception, so the caller reads the live hash and decides.
-    daemon.output = {"uri": _URI, "decision": "conflict", "tombstoned": [], "canonicalHash": "sha256-live"}
-    out = _delete(uri=_URI, recipe="default", base="sha256-stale")
-    assert out["decision"] == "conflict" and out["tombstoned"] == [] and out["canonicalHash"] == "sha256-live"
+def test_a_family_delete_on_a_stale_base_raises_and_moves_nothing(daemon):
+    # A stale base answers `decision: conflict`, nothing tombstoned, and the tool raises naming the live hash, so a caller
+    # that skips `decision` still hears that nothing moved.
+    daemon.output = {"recipe": "default", "title": _URI, "decision": "conflict", "tombstoned": [], "hash": "sha256-live"}
+    with pytest.raises(uds.LaresVerbError, match=r"tiddler-delete conflict.*sha256-live"):
+        _delete(uri=_URI, recipe="default", base="sha256-stale")
     with pytest.raises(ValueError, match="no-container"):
         _delete(uri=_URI, recipe="sdm", bag="lares")
     assert len(daemon.lines) == 1                                    # the refused call never reached the wire
@@ -315,11 +319,9 @@ def _seat_call(name: str, args: dict, mcp=None):
     from mcp import Client
 
     server = mcp or build_mcp(DaemonCoordinator(wing="w"))
-    if name in ("meme_put", "meme_list", "meme_delete"):
-        name = {"meme_put": "tiddler_put", "meme_list": "tiddler_get", "meme_delete": "tiddler_delete"}[name]
-        args = {**args, "meme": True}
-        if "uri" in args:
-            args["title"] = args.pop("uri")
+    if name == "meme_list":
+        # The family listing rides the read door's meme lens with no title.
+        name, args = "tiddler_get", {**args, "meme": True}
 
     async def ask():
         async with Client(server) as client:
@@ -333,13 +335,14 @@ def _said(result) -> str:
 
 
 def test_a_refused_write_reaches_the_caller_naming_decision_reason_and_live_hash(daemon):
-    daemon.output = dict(_PUT_OUTPUT, decision="conflict", reason="both-moved", landed=[], canonicalHash="sha256-live")
-    result = _seat_call("meme_put", {"uri": _URI, "text": "the body", "recipe": "sdm", "base": "sha256-stale"})
+    daemon.output = dict(_PUT_OUTPUT, decision="conflict", landed=[], hash="sha256-record-live", canonicalHash="sha256-live")
+    result = _seat_call("tiddler_put", {"title": _URI, "text": "the body", "recipe": "sdm", "base": "sha256-stale"})
     assert result.is_error
-    assert "meme-put conflict" in _said(result) and "both-moved" in _said(result) and "sha256-live" in _said(result)
-    daemon.output = dict(_PUT_OUTPUT, decision="refuse", landed=[], warnings=["stage-path-shape: the stage meme path reads no segment"])
-    result = _seat_call("meme_put", {"uri": _URI, "text": "the body", "recipe": "default"})
-    assert result.is_error and "meme-put refuse" in _said(result) and "stage-path-shape" in _said(result)
+    assert "tiddler-put conflict" in _said(result) and "sha256-record-live" in _said(result) and "sha256-live" in _said(result)
+    daemon.output = None
+    daemon.error = {"errorMessage": "stage-path-shape: the stage meme path reads no segment", "refusal": {"reason": "stage-path-shape"}}
+    result = _seat_call("tiddler_put", {"title": _URI, "text": "the body", "recipe": "default"})
+    assert result.is_error and "stage-path-shape" in _said(result)
 
 
 def test_every_refusal_family_reaches_the_caller_by_name(daemon, monkeypatch):
@@ -362,7 +365,7 @@ def test_a_landed_write_answers_unchanged_and_an_internal_fault_stays_unnamed(da
     # CONTROL, both sides: a write that landed answers its receipt and no error; a fault the seat never named (a bug in
     # a tool body) still answers the bare line, carrying neither its own text nor a traceback.
     daemon.output = _PUT_OUTPUT
-    landed = _seat_call("meme_put", {"uri": _URI, "text": "the body", "recipe": "sdm"})
+    landed = _seat_call("tiddler_put", {"title": _URI, "text": "the body", "recipe": "sdm"})
     assert not landed.is_error and json.loads(_said(landed)) == _PUT_OUTPUT
 
     mcp = build_mcp(DaemonCoordinator(wing="w"))
@@ -408,14 +411,14 @@ def test_a_stray_builtin_error_stays_unnamed_and_only_a_house_raised_refusal_cro
 
 def _described(name: str) -> str:
     mcp = build_mcp(DaemonCoordinator(wing="w"))
-    name = {"meme_put": "tiddler_put", "meme_list": "tiddler_get", "meme_delete": "tiddler_delete"}.get(name, name)
+    name = {"meme_list": "tiddler_get"}.get(name, name)
     return next(t.description for t in asyncio.run(mcp.list_tools()) if t.name == name)
 
 
-def test_meme_put_text_names_the_stage_meme_law():
+def test_tiddler_put_text_names_the_stage_meme_law():
     # A writer meets the law in the tool's own text, before the gate refuses: a meme under the memory stage carries
     # its stage path in the title, and the refusal the law answers stands named.
-    said = _described("meme_put")
+    said = _described("tiddler_put")
     assert 'lar:///ha.ka.ba/kahua/memory/<class>/<slug>' in said and "stage-path-shape" in said
 
 
@@ -437,11 +440,11 @@ def test_tiddler_get_and_meme_list_texts_name_the_floor_word():
     assert "{bag, floor, roots, next}" in listed and "each row" in listed
 
 
-def test_meme_put_text_names_the_seat_canon_refusal_and_the_true_layer():
+def test_tiddler_put_text_names_the_seat_canon_refusal_and_the_true_layer():
     # The seat meets its canon fence in the tool's own text (reach-mu T4-2): a `bag` naming house canon refuses
     # `seat-canon-reach`, and the road reads copy-up then offer. A `recipe` lands in the wiki's writable bag (its working
     # layer, or the face's personal layer without a writer's seat), never "its top bag" (reach-mu decision 8).
-    said = _described("meme_put")
+    said = _described("tiddler_put")
     assert "seat-canon-reach" in said and "meme_offer" in said
     assert "personal" in said and "`layer`" in said
 

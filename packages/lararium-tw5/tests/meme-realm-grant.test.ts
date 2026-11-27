@@ -4,7 +4,7 @@
  * A member reads a book another operator keeps through the realm that registers it; the member's Keyhive never
  * registered that book, since the book is nobody's local layer here. So `meme get --bag <book> --realm <id>` reads
  * the registration's doc on the realm's grant (its counted, steward-signed registration at the read tier), and a
- * steward's `meme put --bag <book> --realm <id>` writes on the steward check alone. A bag reached any other way
+ * steward's `tiddler put --bag <book> --realm <id>` writes on the steward check alone. A bag reached any other way
  * still asks this vessel's own cap.
  */
 import { describe, test, expect } from "vitest";
@@ -26,7 +26,8 @@ import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { type Repo as RepoType } from "@lararium/mesh/automerge";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { makeMemePutReactor, makeMemeGetReactor, memeVerbOptions, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeMemeGetReactor, memeVerbOptions, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeTiddlerPutReactor } from "../src/tiddler-verbs.js";
 
 const Repo = createRequire(import.meta.resolve("@lararium/mesh"))("@automerge/automerge-repo").Repo as new (options: { network: unknown[] }) => RepoType;
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -63,8 +64,8 @@ function rig() {
 describe("a realm-carried bag answers by the realm's grant", () => {
   test("a member's get through the named realm reads the registration's doc with no local registration", async () => {
     const r = rig();
-    const placed = await makeMemePutReactor(r.opts)({ uri: URI, bag: "ford-book", realm: REALM, text: meme("/a") }, unregistered());
-    expect(placed["decision"]).toBe("ingest");
+    const placed = await makeTiddlerPutReactor(r.opts)({ title: URI, bag: "ford-book", realm: REALM, text: meme("/a") }, unregistered());
+    expect(placed["decision"]).toBe("put");
     const got = await makeMemeGetReactor(r.opts)({ uri: URI, bag: "ford-book", realm: REALM }, unregistered());
     expect(String((got["meme"] as { text?: unknown } | undefined)?.text ?? "")).toContain("! /a");
     expect(await r.own.get(URI)).toBeNull();
@@ -74,7 +75,7 @@ describe("a realm-carried bag answers by the realm's grant", () => {
     const r = rig();
     const said = await makeMemeGetReactor(r.opts)({ uri: URI, bag: "ford-book" }, unregistered()).then(() => "(read)", (e: Error) => e.message);
     expect(said).toContain("cap-denied: read on");
-    const put = await makeMemePutReactor(r.opts)({ uri: URI, bag: "ford-book", text: meme("/a") }, unregistered()).then(() => "(landed)", (e: Error) => e.message);
+    const put = await makeTiddlerPutReactor(r.opts)({ title: URI, bag: "ford-book", text: meme("/a") }, unregistered()).then(() => "(landed)", (e: Error) => e.message);
     expect(put).toContain("cap-denied: admin on");
   });
 });
@@ -103,8 +104,8 @@ describe("the realm's grant reaches only a member of that realm, by the producti
 
   test("a member whose realm counts the book reads it; a vessel outside every realm, one naming a realm it never pinned, and one whose realm counts no such book each refuse and read nothing", async () => {
     const steward = await vessel([{ realm: REALM, doc: DOC, steward: "hand-a" }]);
-    const placed = await makeMemePutReactor(steward)({ uri: URI, bag: "ford-book", realm: REALM, text: meme("/a") }, unregistered());
-    expect(placed["decision"]).toBe("ingest");
+    const placed = await makeTiddlerPutReactor(steward)({ title: URI, bag: "ford-book", realm: REALM, text: meme("/a") }, unregistered());
+    expect(placed["decision"]).toBe("put");
     const member = await read(steward, REALM);
     expect("read" in member, JSON.stringify(member)).toBe(true);
 

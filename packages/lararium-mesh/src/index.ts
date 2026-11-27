@@ -300,6 +300,7 @@ export * from "./residency-actions.js";
 export { watchStandoffs, standoffOf, type StandoffWatch } from "./standoff-watch.js";
 export * from "./verb-refusal.js";
 export * from "./content-handle.js";
+export * from "./pointer-address.js";
 export * from "./effect-record.js";
 export * from "./shell-leaving-record.js";
 export * from "./kumu-device.js";
@@ -724,6 +725,8 @@ export * from "./attempt-budget.js";
 // The one spirit record's stack and the fold's ranks and commands: each subpath lends what the barrel lends from its module.
 export * from "./spirit-stack.js";
 export * from "./spirit-unfold.js";
+export * from "./spirit-summons.js";
+export * from "./spirit-witness.js";
 
 // A boot step names what it awaits and its measured span: the subpath lends what the barrel lends from its module.
 export * from "./boot-wait.js";

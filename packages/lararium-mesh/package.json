@@ -40,6 +40,14 @@
       "import": "./dist/spirit-unfold.js",
       "types": "./dist/spirit-unfold.d.ts"
     },
+    "./spirit-summons": {
+      "import": "./dist/spirit-summons.js",
+      "types": "./dist/spirit-summons.d.ts"
+    },
+    "./spirit-witness": {
+      "import": "./dist/spirit-witness.js",
+      "types": "./dist/spirit-witness.d.ts"
+    },
     "./hand-refusal": {
       "import": "./dist/hand-refusal.js",
       "types": "./dist/hand-refusal.d.ts"
@@ -91,6 +99,10 @@
     "./cas-transit": {
       "import": "./dist/cas-transit.js",
       "types": "./dist/cas-transit.d.ts"
+    },
+    "./pointer-address": {
+      "import": "./dist/pointer-address.js",
+      "types": "./dist/pointer-address.d.ts"
     },
     "./content-handle": {
       "import": "./dist/content-handle.js",

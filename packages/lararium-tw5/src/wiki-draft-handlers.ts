@@ -80,7 +80,7 @@ export function makePruneStaleReactor(opts: PruneStaleOptions): VerbReactor {
     const daysThreshold = numberArg(args, "daysThreshold", 7);
 
     const draftBagId = wikiSlotUri(slug, "draft");
-    // The draft doc through THE ONE resolver — the same doc the mounts and `meme put --recipe` reach.
+    // The draft doc through THE ONE resolver — the same doc the mounts and `tiddler put --bag <a wiki slot>` reach.
     const draft = await opts.resolveDraftDoc(slug);
 
     const handle = await opts.repo.find<LarDoc>(draft.url as AutomergeUrl);

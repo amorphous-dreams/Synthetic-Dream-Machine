@@ -270,13 +270,16 @@ describe.skipIf(wikiSkip)(`seedDrained — the checkpoint the kernel awaits befo
     await expect(seedDrained(seedOf("silent", 450))).resolves.toBeUndefined();
   }, 120_000);
 
-  test("★ the kernel awaits `seedDrained(tw5, …)` after the recipe and before `behavior.onEa`, and hands it the breath's own tick ★", () => {
+  test("★ the kernel lays the composition, mounts the shore, awaits `seedDrained(tw5, …)`, then `behavior.onEa`, handing it the breath's own tick ★", () => {
     const src = readFileSync(new URL("../src/sovereign-kernel.ts", import.meta.url), "utf8")
       .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-    const recipe = src.indexOf("buildIslandRecipe({");
+    // Wave zero: the composition lays before the engine boots, and the shore mounts on the booted engine.
+    const laid = src.indexOf("layIslandComposition({");
+    const recipe = src.indexOf("mountIslandShore(tw5, laid, seed)");
     const drained = src.indexOf("await seedDrained(tw5, () => tick())");
     const behavior = src.indexOf("await behavior.onEa(");
-    expect(recipe, "the kernel builds no recipe").toBeGreaterThan(-1);
+    expect(laid, "the kernel lays no composition").toBeGreaterThan(-1);
+    expect(recipe, "the kernel mounts no shore after laying the composition").toBeGreaterThan(laid);
     expect(drained, "the kernel never awaits the shore's seed checkpoint").toBeGreaterThan(recipe);
     expect(behavior, "behavior arms ahead of the shore's seed checkpoint").toBeGreaterThan(drained);
   });

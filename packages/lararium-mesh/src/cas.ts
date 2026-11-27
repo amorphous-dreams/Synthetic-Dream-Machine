@@ -14,7 +14,7 @@
 
 import { ENGINE_CORE_ID } from "./base-doc.js";
 import { plainValue } from "./stored-value.js";
-import { cidFromUri } from "./lar-uris.js";
+import { casKeyOfCanonicalUri } from "./pointer-address.js";
 
 /** A blob entry shape the CAS reads — id + sha256 (the CID) + the raw bytes. */
 export interface CasBlobLike {
@@ -183,7 +183,7 @@ export function casCidOfRecord(fields: Record<string, unknown>): string | null {
   const textCid = fields["textCid"];
   if (typeof textCid === "string" && textCid.length > 0) return textCid;
   const canonical = fields["_canonical_uri"];
-  if (typeof canonical === "string") return cidFromUri(canonical);
+  if (typeof canonical === "string") return casKeyOfCanonicalUri(canonical);
   return null;
 }
 

@@ -53,7 +53,6 @@
   "packages/lararium-node/tests/e2e/composer-mounts-working-first.test.ts",
   "packages/lararium-node/tests/ed25519-door-node.test.ts",
   "packages/lararium-node/tests/edge-seats.test.ts",
-  "packages/lararium-node/tests/exec-lei-door.test.ts",
   "packages/lararium-node/tests/face-plane-registration.test.ts",
   "packages/lararium-node/tests/faced-boot-requires-proof.test.ts",
   "packages/lararium-node/tests/floor-cut.test.ts",

@@ -38,6 +38,7 @@ import { createProjectionSink } from "./projection-sink.js";
 import { pageLifeOf, paintRest } from "./page-life.js";
 import { pagePortDelivery, standPagePort } from "./page-port.js";
 import { standPageMirror } from "./page-mirror.js";
+import { pageReadings, toneOfClass } from "./console-readings.js";
 import { paintPaneLabel } from "./pane-label.js";
 import { standFloorTab } from "./floor-tab.js";
 import { defaultReadFace, keptFloorOf, readFloorCarriage, mountLiveStatus, sameOriginRelayUrl, arrivalRelayUrl } from "./live-status.js";
@@ -93,6 +94,7 @@ const showPageInstruments = (): void => {
       .find((item) => item.querySelector(".k")?.textContent === label)?.querySelector<HTMLElement>(".v");
     if (existing) existing.textContent = value;
     else row(vessel, label, value);
+    pageReadings.set(label, value);
   };
   show("LoAF", vesselLoafSupported ? `${vesselLoaf.observed()} observed` : "absent");
   show("heap after first paint", firstPaintHeap === null ? "absent" : `${firstPaintHeap} bytes`);
@@ -136,8 +138,12 @@ function row(parent: HTMLElement, k: string, v: string, cls = ""): void {
   d.append(ke, ve);
   parent.appendChild(d);
 }
+/** The readings a page id says too (`console-readings.ts`): the mirror lists them as tiddlers. */
+const READING_OF_ID: Readonly<Record<string, string>> = { "status": "status", "floor-status": "floor" };
 function set(id: string, text: string, cls = ""): void {
   const el = $(id); el.textContent = text; el.className = "v " + cls;
+  const reading = READING_OF_ID[id];
+  if (reading) pageReadings.set(reading, text, toneOfClass(cls));
 }
 
 // The floor — the Nexus's one public answer. The page reads it only through its own vessel, which fetches the hearth's porch
@@ -157,6 +163,9 @@ async function readFloor(read: FloorReader): Promise<void> {
       row(floorEl, "status", "✓ verified floor", "ok");
       row(floorEl, "release", r.head.cid.slice(0, 16) + "…");
       row(floorEl, "epoch", r.head.body.epoch.slice(0, 22) + "…");
+      pageReadings.set("floor", "✓ verified floor", "ok");
+      pageReadings.set("floor release", r.head.cid.slice(0, 16) + "…");
+      pageReadings.set("floor epoch", r.head.body.epoch.slice(0, 22) + "…");
       row(floorEl, "prior", r.head.body.prior ? r.head.body.prior.slice(0, 16) + "…" : "(the Nexus's first release)");
       row(floorEl, "manifest", r.head.body.manifest);
       for (const [slug, rows] of Object.entries(r.snapshots).sort(([a], [b]) => (a < b ? -1 : 1))) row(floorEl, `${slug} rows`, String(Object.keys(rows).length));
@@ -414,9 +423,11 @@ async function bootVessel(): Promise<void> {
   document.getElementById("retry-unlock")?.remove();
   const phasesEl = $("phases");
   phasesEl.replaceChildren();
+  pageReadings.restartPhases();
   const paint = (p: string): void => {
     const d = document.createElement("div"); d.className = "phase"; d.textContent = p;
     phasesEl.appendChild(d);
+    pageReadings.phase(p);
   };
 
   set("status", "booting…");
@@ -631,7 +642,7 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
     mirrorStanding = true;
     mirrorSurface = shown;
     void standPageMirror({ port: pageBinding, host: $("mirror"), actor: did, surface: () => mirrorSurface,
-      mirrorInputs: vessel.mirrorInputs, onState: (state) => console.warn(`[mirror] ${state.kind}`, state),
+      mirrorInputs: vessel.mirrorInputs, readings: pageReadings, onState: (state) => console.warn(`[mirror] ${state.kind}`, state),
       // Stock's "refresh" boots the mirror afresh from a new handoff; the page itself stays. A write still waiting holds it, as it holds a leave.
       reload: () => {
         if (!standingMirror) throw new Error("no mirror stands");
@@ -659,28 +670,30 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
     if (e.ctrlKey && e.shiftKey && (e.key === "D" || e.key === "d")) { e.preventDefault(); summon(); }
   });
   const vesselEl = $("vessel"); vesselEl.replaceChildren();
-  row(vesselEl, "status", "live — sovereign local island", "ok");
-  row(vesselEl, "did", did);
-  row(vesselEl, "origin", location.origin);
-  row(vesselEl, "relay", relayUrl ?? `not pinned · ${sameOriginRelayUrl(location)}`);
-  mountLiveStatus(vesselEl, vessel.connectionState);
-  row(vesselEl, "wiki", result.activeWikiId);
-  if (result.wikiAwaits) row(vesselEl, "wiki awaits", result.wikiAwaits, "warn");
-  row(vesselEl, "wiki doc", result.wikiDocUrl ?? "(the floor: no live canon document on this vessel)");
-  row(vesselEl, "oracle doc", result.oracleDocUrl ?? "(local genesis)");
+  // Each row says its reading too; the model keeps the safe rows alone and words a document URL as standing or absent.
+  const vrow = (k: string, v: string, cls = "", reading: string | null = v): void => { row(vesselEl, k, v, cls); pageReadings.set(k, reading, toneOfClass(cls)); };
+  vrow("status", "live — sovereign local island", "ok");
+  vrow("did", did);
+  vrow("origin", location.origin);
+  vrow("relay", relayUrl ?? `not pinned · ${sameOriginRelayUrl(location)}`);
+  mountLiveStatus(vesselEl, vessel.connectionState, pageReadings);
+  vrow("wiki", result.activeWikiId);
+  if (result.wikiAwaits) vrow("wiki awaits", result.wikiAwaits, "warn");
+  vrow("wiki doc", result.wikiDocUrl ?? "(the floor: no live canon document on this vessel)", "", result.wikiDocUrl ?? null);
+  vrow("oracle doc", result.oracleDocUrl ?? "(local genesis)", "", result.oracleDocUrl ?? null);
   showPageInstruments();
   // THE SEVEN-DAY CLOCK, REPORTED — the eviction class + estimate() as one line (never a fault), and the
   // PHONE SEAT's offer beneath it, rendered only where the clock stands and the page is not yet installed. The page alone
   // offers `navigator.storage.persist()`, so the page asks it.
   void requestDurableStorage().then((reading) => {
     const floor = storageFloorReport(reading);
-    if (floor) { console.log(floor); row(vesselEl, "storage", floor.replace(/^\[vessel\] storage floor: /, ""), "warn"); }
+    if (floor) { console.log(floor); vrow("storage", floor.replace(/^\[vessel\] storage floor: /, ""), "warn"); }
     const offer = phoneSeatExplanation(ambientPhoneSeatHost(reading.persistence));
     if (offer) row(vesselEl, "phone seat", offer, "warn");
   }).catch(() => { /* an unreadable storage surface reports nothing — never a fault */ });
   // THE SEED AT REST — the vessel names its resting state (sealed under this browser's slot tree, a passkey wrap and its class,
   // or no wrap), and the page words it once the vessel reports it.
-  paintSeed = () => { if (seedLine) { row(vesselEl, "seed", seedLine.text, seedLine.ok ? "ok" : "warn"); seedLine = null; } };
+  paintSeed = () => { if (seedLine) { vrow("seed", seedLine.text, seedLine.ok ? "ok" : "warn"); seedLine = null; } };
   paintSeed();
 }
 

@@ -332,7 +332,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       },
       (landed) => { for (const hear of [...this.sliceHearers]) hear(landed); },
       // THE ENGINE'S CREST DOOR: each slice's applies land as one crest the engine names (`applyNaluCrest`). An engine whose
-      // applier predates the door (a fake engine, a plugin not yet rebuilt) lands the same run bare, in the same one tick.
+      // applier carries no door (a fake engine) lands the same run bare, in the same one tick.
       crestDoorOf(lares),
     );
     this.landing = landing;
@@ -639,7 +639,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const isHand = !handSettled && this.resident
       && (marked || (!shadowOnly && !same(standing, known) && !(this.sent.has(title) && this.sent.get(title) === standing)));
     if (isHand) return "hand";
-    // AN OWN WRITE MOVED SINCE THE PREPARE: the composition read then may predate it, so the wave never lands a stale answer over it.
+    // AN OWN WRITE MOVED SINCE THE PREPARE: the composition the prepare read misses it, so the wave never lands a stale answer over it.
     if (this.sent.has(title) !== prepared.sentHas || this.sent.get(title) !== prepared.sentValue) return "stale";
     const applies = !sameWithStamp(incoming, standing);
     if (applies) {

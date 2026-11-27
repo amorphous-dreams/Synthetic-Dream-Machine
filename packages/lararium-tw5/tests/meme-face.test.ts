@@ -115,7 +115,7 @@ describe.skipIf(wikiSkip)(`$tw.lares.meme — the in-VM face${skipNote}`, () => 
     // no meme law flat beside the face. One namespace, one spelling per law.
     const flat = (engine.$tw as unknown as { lares: Record<string, unknown> }).lares;
     expect(Object.keys(flat).sort()).toEqual([
-      "applyNalu", "isApplyingNalu",
+      "applyNalu", "applyNaluCrest", "isApplyingNalu",
       "meme", "worldlineCompareVm", "worldlineTrajectoryVm",
     ]);
   });

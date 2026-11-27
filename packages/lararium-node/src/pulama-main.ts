@@ -29,6 +29,17 @@
  *                                                   real terminal, the face root signs one record here, and the answer prints
  *                                                   it for the vessel to land (`lares lei land`); terms naming `faces` sign
  *                                                   one record per face under that one route
+ *   node dist/src/pulama-main.js hoala-string <returns> [--yes]
+ *                                                   the operator strings a HOʻĀLA LEI (`pulama-hoala`): reads the route on a real
+ *                                                   terminal, proves it against the lit holder, and the keys this keeper holds rest
+ *                                                   sealed (the slot in its state, the key in its device directory) for that many
+ *                                                   restarts
+ *   node dist/src/pulama-main.js hoala            the start path's own act, no route: an unlit keeper that never stood lit in this
+ *                                                   life spends ONE return of the hoʻāla lei and stands lit; exit 1 where none licenses
+ *   node dist/src/pulama-main.js hoala-admit      the start path's own act, no route: a LIT keeper spends ONE return of a standing hoʻāla lei
+ *                                                   to admit the image the host reports (the lei's caps license it); exit 1 where
+ *                                                   none covers it, and the hand's `admit` stays the path
+ *   node dist/src/pulama-main.js hoala-unstring   end the hoʻāla lei at once, lit or unlit, no route: its slot and device key die
  *   node dist/src/pulama-main.js publish '<terms>'  the operator signs one plugin offering (`lares nexus publish plugins --terms`
  *                                                   prints the terms: the face and the closed descriptor): reads the route on a
  *                                                   real terminal, the face root signs that one descriptor here, and the answer
@@ -69,6 +80,7 @@ import { PulamaVerbUsage, handVerbExit, keepSeatLine, readRoute, runHandVerb } f
 import { servePulama } from "./pulama-server.js";
 import { listenPulama, pulamaAnswers, socketPathFits } from "./pulama-socket.js";
 import { pulamaImage, pulamaRecords } from "./pulama-state.js";
+import { hoalaDevice, hoalaDeviceDir } from "./pulama-hoala.js";
 import { vesselCustodyHomes } from "./vault-carriers.js";
 import { wardCredential } from "./ward-credential.js";
 import { wardRootSigner } from "./ward-signer.js";
@@ -130,7 +142,7 @@ async function serve(): Promise<void> {
   };
   // THIS KEEPER HOLDS THE FIRE while its claim still names the socket path (a claim another keeper displaced reads as none).
   const fire = { holds: () => listener !== null && listener.owns(), take: claim };
-  const door = pulamaHandDoor({ holder, server, image, records, admissions, lei, publish, sign, rehive, fire, keeperRite, worn: () => server.worn?.(), onLog: log });
+  const door = pulamaHandDoor({ holder, server, image, records, admissions, lei, publish, sign, rehive, fire, keeperRite, hoala: hoalaDevice(hoalaDeviceDir(state)), worn: () => server.worn?.(), onLog: log });
 
   const successor = await pulamaAnswers(socket);
   if (!successor) { const first = await claim(); if ("refusal" in first) throw new Error(first.detail); }
@@ -149,7 +161,8 @@ async function serve(): Promise<void> {
       buffered = "";
       // A HAND ACT reads its peer first (`hand-act-gate`): a detected AI seat refuses; the face's own route and per-face budget are the gate.
       const op = (frame as { op?: unknown } | null)?.op;
-      const gated = op === "rehive" || op === "recard"
+      // A HOʻĀLA LEI'S STRINGING AND UNSTRINGING READ THE PEER TOO: a seat spends a return through `hoala` alone, and strings none.
+      const gated = op === "rehive" || op === "recard" || op === "hoala-string" || op === "hoala-unstring"
         ? readHand(sock, { proveRoute: true }).then((hand) => ("refusal" in hand ? { op, reading: hand.refusal } : door(frame)))
         : door(frame);
       gated.then(
@@ -206,7 +219,7 @@ async function main(): Promise<void> {
     process.exit(code);
   }
   try {
-    const answer = await runHandVerb(verb, verb === "admit" || verb === "lei" || (verb === "name-successor" && args.length > 1) ? args : args.length === 1 ? args[0] : args.length === 0 ? undefined : args, { ask: askHand, route: (label, what) => readRoute(label, what)});
+    const answer = await runHandVerb(verb, verb === "admit" || verb === "lei" || verb === "hoala-string" || (verb === "name-successor" && args.length > 1) ? args : args.length === 1 ? args[0] : args.length === 0 ? undefined : args, { ask: askHand, route: (label, what) => readRoute(label, what)});
     console.log(JSON.stringify(answer, null, 2));
     // A REFUSED REHIVE EXITS NON-ZERO: the JSON names the refusal, and the status keeps a script from reading it as landed.
     const exit = handVerbExit(verb, answer);

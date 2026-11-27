@@ -38,6 +38,9 @@ function dispatchesOf(r: Rig, titles: readonly string[]): () => number {
   return () => count;
 }
 
+/** The provider's gate flushes a redelivery by its max wait (120 ms); the margin covers a loaded host. */
+const REDELIVERY_SETTLES_MS = 400;
+
 const records = (prefix: string, n: number): LarTiddlerRecord[] =>
   Array.from({ length: n }, (_, i) => ({ tiddler: { title: `${prefix}/${i}`, text: `body ${i}`, tags: "SliceTag" } }));
 
@@ -49,19 +52,26 @@ describe.skipIf(wikiSkip)(`a slice lands in one wiki tick${skipNote}`, () => {
     const family = records("lar:///t/slice-one-tick", 150);
     const titles = family.map((record) => record.tiddler.title);
     const seen = dispatchesOf(r, titles);
-    let slices = 0;
-    r.adaptor.onSliceLanded(() => { slices++; });
+    const slices: number[] = [];
+    r.adaptor.onSliceLanded((rows) => { slices.push(rows); });
     const before = r.arrivals.length;
     await r.working.writeFamily(family, [], remote, { bag: workingBag });
     await arrived(r, before, titles);
+    // The store fires the family at once, then its own change event re-delivers it through the provider's gate (40 ms
+    // debounce, 120 ms max wait). Wait the gate out so both arrivals stand before anything counts, under load or idle.
+    await new Promise<void>((done) => setTimeout(done, REDELIVERY_SETTLES_MS));
     await r.adaptor.landingIdle();
     await turns(2);
     expect(titles.filter((title) => r.wiki.getTiddler(title)?.fields.text === undefined), "every record lands").toEqual([]);
     expect(titles.map((title) => r.adaptor.ledger.landedOf(title)?.bag), "the ledger names each record's layer").toEqual(titles.map(() => workingBag));
     expect(r.wiki.filterTiddlers("[tag[SliceTag]]"), "the tag index answers the whole slice").toHaveLength(150);
-    // One family of 150 rides one slice; the bound reads "a dispatch per slice", never one per tiddler (150 before the cure).
-    expect(slices, "the family rides one slice").toBe(1);
-    expect(seen(), "one dispatch for the slice, never one per tiddler").toBe(slices);
+    // Every slice carries the whole family (a slice never cuts it): the fired family, and its redelivery when that rides a
+    // slice of its own. The redelivery carries the values already standing, so it applies nothing and dispatches nothing.
+    expect(slices.length, "the family rides a slice, its redelivery at most one more").toBeGreaterThanOrEqual(1);
+    expect(slices.length, "the family rides a slice, its redelivery at most one more").toBeLessThanOrEqual(2);
+    expect(slices, "a slice never cuts the family").toEqual(slices.map(() => 150));
+    // ONE dispatch lands the 150, never one per tiddler (150 before the cure).
+    expect(seen(), "one dispatch for the family, never one per tiddler").toBe(1);
     expect(r.adaptor.pendingTitles(), "a landed wave leaves no hand owed").toEqual([]);
     await r.stop();
   }, 120_000);

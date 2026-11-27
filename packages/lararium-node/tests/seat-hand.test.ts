@@ -115,8 +115,8 @@ describe("a lit face receives visits: the door resolves a read's target", () => 
   test("SH8 — private first, then the write wall; pet names refuse by name; the worn face reads as none; the lit set is the actor's", async () => {
     const refusal = async (verb: string, args: Record<string, unknown>) => { const r = await door(verb, args); return r.ok ? null : r.refusal; };
     expect(await refusal("tiddler-get", { bag: "lar:///ha.ka.ba/wikis/daemon/personal", target: 1 })).toBe("cross-face-private");
-    expect(await refusal("meme-put", { bag: "lar:///ha.ka.ba/wikis/garden/personal", target: 7 })).toBe("cross-face-private");
-    for (const verb of ["tiddler-put", "tiddler-delete", "meme-put", "meme-delete", "meme-patch", "meme-project"]) expect(await refusal(verb, { recipe: "default", target: 1 }), verb).toBe("cross-face-write-refused");
+    expect(await refusal("tiddler-put", { bag: "lar:///ha.ka.ba/wikis/garden/personal", target: 7 })).toBe("cross-face-private");
+    for (const verb of ["tiddler-put", "tiddler-delete", "meme-project"]) expect(await refusal(verb, { recipe: "default", target: 1 }), verb).toBe("cross-face-write-refused");
     // A shut target passes the door resolved: its own actor refuses it at the gate (`admitVisit`), never a second lit set here.
     expect(await door("tiddler-get", { recipe: "default", target: "shut-face" })).toEqual({ ok: true, args: { recipe: "default", target: 2 } });
     expect(await refusal("tiddler-get", { recipe: "default", target: "nobody" })).toBe("target-unknown");

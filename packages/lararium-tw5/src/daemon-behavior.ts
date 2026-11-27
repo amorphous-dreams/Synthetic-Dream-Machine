@@ -196,7 +196,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
       if (opts.runnableHulls) seedDaemonProtocol(tw5, opts.runnableHulls, opts.faceIntents === true);
       const registry = new VerbTable();
       // The panel's six verbs, the store door's `promote-orphan` row and the swarm's hand-only rows answer an ask that arrived on the surface path alone; every other
-      // origin (a session call, a meme put, a synced verb tiddler) refuses by the verb's own code before anything routes to main.
+      // origin (a session call, a bag put, a synced verb tiddler) refuses by the verb's own code before anything routes to main.
       registry.handOnly(DAEMON_HAND_ONLY_CODES);
       // Sovereign-worker: the data-plane reactors register HERE, in-worker, over the
       // IslandContext (ctx.composite/ctx.repo) — so they ride the dispatcher's
@@ -431,7 +431,7 @@ export interface LocalAsk {
 /**
  * The verbs the daemon island answers to a hand's surface gesture alone, each with the code it refuses under elsewhere: the promote panel's
  * six, the store door's `promote-orphan`, and the swarm's three that set or issue (`swarm-show` stays open). A session-cleared face row
- * passes (the socket already refused a seat); a channel ask, a meme put and a synced verb tiddler refuse by code.
+ * passes (the socket already refused a seat); a channel ask, a bag put and a synced verb tiddler refuse by code.
  */
 export const DAEMON_HAND_ONLY_CODES: Readonly<Record<string, string>> = { ...PROMOTE_PANEL_HAND_CODES, "promote-orphan": handCodeOf("promote-orphan")!, ...SWARM_VERB_HAND_CODES,
 };

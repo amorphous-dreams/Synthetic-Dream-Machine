@@ -1,0 +1,361 @@
+title: lar:///ha.ka.ba/lararium/tw5/floor/seams
+type: text/plain
+caption: Floor seams
+
+# THE SEAM TABLE the `floor-owes` filter folds (research/corpus-seams). Grammar: packages/lararium-tw5/src/floor-owes.ts.
+# A lane's touched paths map to seams by MOVES rows; each seam hit owes its GUARDS. A path no row places REFUSES the ticket,
+# so the map grows by refusal, never by memory. Override a row by editing this record in the working layer.
+# MOVES rows come from a static read of the tree; GUARDS rows name what no import shows and stand as leads until a red
+# proves or moves them.
+
+HUB 40
+WIDE 8
+SWIFT 5
+
+PKG n packages/lararium-node
+PKG m packages/lararium-mesh
+PKG t packages/lararium-tw5
+PKG c packages/lares-cli
+PKG k packages/lararium-keyhive
+
+# ── what owes nothing, and what owes whole sets ─────────────────────────────────────────────────────────────────────
+FREE **/*.md LICENSE **/.gitignore scratch/** _osr/** elyncia/** sdm/** wtf/** ftls/** packages/.shelf/**
+FREE folkjs kowloon kowloon-client kowloon-frontend onomancy
+CONFIG package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json .npmrc .gitmodules third-party/**
+CONFIG TiddlyWiki5 automerge-repo keyhive subduction
+CONFIG packages/*/package.json packages/*/tsconfig*.json packages/*/vitest*.ts packages/*/vite*.ts packages/*/stryker.config.json
+CONFIG tests/package.json tests/tsconfig.json tests/vitest*.ts
+CONFIG packages/*/src/index.ts packages/lararium-node/src/testing.ts packages/lararium-tw5/src/node.ts
+
+# ── the vessel tier and the dark lamps ──────────────────────────────────────────────────────────────────────────────
+VESSEL tools/census-drill.test.mjs tools/house-keep.test.mjs tools/keep-cold.test.mjs tools/vault-restore-door.test.mjs
+VESSEL tools/custody-door.test.mjs tools/floor-unlock-door.test.mjs tools/vault-backup-door.test.mjs tools/two-phase-boot.test.mjs
+DARK packages/lararium-web/tests/e2e/**
+DARK packages/lararium-tw5/tests/filter-cts-chromium.e2e.test.ts packages/lararium-tw5/tests/standalone-single-file.e2e.test.ts packages/lararium-tw5/tests/syncer-back-parity.e2e.test.ts
+
+# ── the seams ───────────────────────────────────────────────────────────────────────────────────────────────────────
+SEAM projector-base-pin trunk
+MOVES projector-base-pin n disk-projector* heads-rest* synced-tree* projection-gate* carrier-render* native-landing* partial-landing* temp-layer*
+MOVES projector-base-pin m projection-* mirror-paths* pinned-doc* override-base*
+MOVES projector-base-pin t tw5-projection* landed-ledger* wave-landing* override-bases*
+MOVES projector-base-pin c seed-mirrors* commands/refresh*
+GUARDS projector-base-pin e2e carrier-roundtrip corpus-feed nonmeme-parity minted-canon-projection meme-orphan-walk promotion-publish-diff wikis-ingest-back ingest-quiescence dogfood-memory-restand meme-live-contact
+GUARDS projector-base-pin path packages/lares-cli/tests/ingest-settles-every-row.test.ts packages/lares-cli/tests/shore-*.test.ts
+
+SEAM ingest-gate
+MOVES ingest-gate n ingest-scan* guest-import*
+MOVES ingest-gate t ingest-gate* deserializer* load-corpora*
+MOVES ingest-gate c ingest-core* commands/ingest* commands/import* seal-import*
+MOVES ingest-gate m ingest-wave-budget* parallel-ingest*
+MOVES ingest-gate k ingest-tolerant*
+GUARDS ingest-gate e2e ingest-quiescence wikis-ingest-back watcher-cut-c corpus-feed carrier-roundtrip smoke load-tw5-filetypes
+GUARDS ingest-gate path packages/lares-cli/tests/ingest-settles-every-row.test.ts
+
+SEAM shore-standoff
+MOVES shore-standoff n shore-verb* standoff-*
+MOVES shore-standoff m shore-log* standoff-watch* sensory-shore* parallel-drafts*
+MOVES shore-standoff c shore-core* shore-merge* shore-retirement* shore-take-disk* commands/shore*
+MOVES shore-standoff t shore-log-island* draft-book* wiki-draft-handlers*
+GUARDS shore-standoff e2e watcher-cut-c ingest-quiescence herm-reshares-public-blob.e2e
+GUARDS shore-standoff path packages/lararium-tw5/tests/wiki-shore*.test.ts
+
+SEAM island-vessel-boot trunk
+MOVES island-vessel-boot n open-node-vessel* open-daemon-vm* node-wiki-island* node-daemon-island* island-* vessel-island-pool* worker-handle* vessel-life* vessel-raise* vessel-paths* main boot-* lares-config*
+MOVES island-vessel-boot m island-protocol* island-repo* open-vessel-core* lar-vessel* lararium-vessel* boot-resolver*
+MOVES island-vessel-boot t island-* daemon-vm-* tw5-vm* verb-vm* sovereign-kernel* vessel-steps* boot-census* nalu-form*
+MOVES island-vessel-boot c commands/vessel* commands/stand* standup* spawn* env house-config*
+GUARDS island-vessel-boot e2e smoke vessel-reboot boot-holds-the-store daemon-island-reopen face-lit-stays-bootable sealed-wiki-restart
+GUARDS island-vessel-boot tool two-phase-boot
+
+SEAM uds-seat-gates trunk
+MOVES uds-seat-gates n uds-channel* uds-peer* uds-session-door* socket-claim* socket-sorter* vessel-gates* hand-act-gate* seat-hand* seat-settle* session-sign-door* journal-append-gate* promote-act-gate*
+MOVES uds-seat-gates c local-connector* session-connector* sealed-act-door* port-control*
+MOVES uds-seat-gates m session-* signed-act* signer-class* hand-refusal* ed25519-door* wait-handle*
+MOVES uds-seat-gates t native-door-gate* record-port-invoke-gate* tw5-module-gate*
+GUARDS uds-seat-gates node-e2e session-sign-reach session-sign-two-vessels.e2e place-session-seals seat-settle-before-mount
+GUARDS uds-seat-gates e2e session-wears-the-lit-face sealed-session-store sealed-roll-before-session mcp-seat-binds-the-hearth tiddler-door
+GUARDS uds-seat-gates tool custody-door floor-unlock-door
+
+SEAM vault-custody-unlock trunk
+MOVES vault-custody-unlock n custody-* face-custody* face-key-custody* face-anchor-store* face-atom-store* secret-home-store* cadence-key-store*
+MOVES vault-custody-unlock m keyslot* kdf-native* crypto fck* lockbox-wrap* content-key-* tree-key* secret-home* sealed-box* face-anchor* face-atom*
+MOVES vault-custody-unlock c custody-door* custody-prompt* vault-* offline-custody* prompt-secret*
+GUARDS vault-custody-unlock e2e vessel-sealed daemon-island-reopen first-admit-lands-second promote-probe
+GUARDS vault-custody-unlock node-e2e floor-user-wiki-refuses lit-face-home-wiki
+GUARDS vault-custody-unlock tool custody-door vault-backup-door vault-restore-door
+GUARDS vault-custody-unlock witness custody-census-witness
+
+SEAM keyhive-capability-plane
+MOVES keyhive-capability-plane path packages/lararium-keyhive/src/**
+GUARDS keyhive-capability-plane e2e face-join share-grant-reaches-face face-grant-unseated-joinee
+GUARDS keyhive-capability-plane node-e2e persona-ring-cross-operator-admit two-vessel-mesh
+
+SEAM sealed-store-rest trunk
+MOVES sealed-store-rest m sealed-* s-envelope* stored-record* store-integrity* automerge* base-doc* deterministic-doc* composite-store* tiddler-store* cas*
+MOVES sealed-store-rest n sealed-store-* plane-seal* ciphertext-cas-seal* durable-storage-adapter* owned-store* node-cas*
+MOVES sealed-store-rest t memory-store* wiki-store-adapter*
+GUARDS sealed-store-rest e2e boot-holds-the-store sealed-wiki-restart sealed-session-store vessel-sealed nexus-two-root face-catalog-split
+GUARDS sealed-store-rest node-e2e composer-mounts-working-first
+
+SEAM residency-keep-cap
+MOVES residency-keep-cap m bag-residency* residency-actions* capability capability-record* cap-compose* cap-tier* sink* chartered-classes* delegation-edge*
+MOVES residency-keep-cap t residency-handlers* residency-surface* keep-list* verb-caps* core-caps* island-caps* share-verbs*
+MOVES residency-keep-cap n node-caps* vessel-bag-tier* vessel-only-share*
+MOVES residency-keep-cap c commands/residency* share-doors*
+MOVES residency-keep-cap k share-apply* share-grant* kahua-cap*
+GUARDS residency-keep-cap e2e residency-create share-grant-reaches-face
+
+SEAM canon-carriers
+MOVES canon-carriers t carrier-* modules/carrier-filetype* meme-normalize* native-canonical* tw5-file-info*
+MOVES canon-carriers m carrier-form* carrier-type* meme-merge* lar-uris* title-law*
+MOVES canon-carriers n checkout-carriers* vault-carriers* carried-set* git-tree-reader* bag-paths*
+MOVES canon-carriers path genesis/** bags/**/*.meta bags/**/*.tid bags/**/*.json bags/**/*.txt bags/**/*.csv bags/**/*.css
+MOVES canon-carriers path packages/lararium-tw5/tiddlers/** packages/lararium-tw5/tiddlers-lararium/** packages/lararium-tw5/plugin-build/** packages/lararium-tw5/plugins/** packages/lararium-tw5/scripts/** packages/lararium-tw5/offerings/** packages/lararium-tw5/tw5-memes-root.*
+GUARDS canon-carriers e2e carrier-roundtrip nonmeme-parity load-tw5-filetypes corpus-feed
+
+# Prose canon: the fixed floor (witnesses-fast, carrier-pins) guards it, as tools/ci-ignored-paths.json holds for CI.
+SEAM canon-prose
+MOVES canon-prose path bags/**/*.mem wikis/**
+
+SEAM meme-grammar
+MOVES meme-grammar t meme-ast/** memetic-parser* wikirules/** toml-ast* grammar-* has-* sigil-attrs* meme-laws* filters/stack* filters/meme-fold*
+MOVES meme-grammar path packages/lararium-memetic-frame/src/** packages/tree-sitter-memetic-wikitext/** VSCode-TW5-Syntax
+GUARDS meme-grammar e2e corpus-feed meme-orphan-walk
+
+SEAM cli-door-table whole=packages/lares-cli
+MOVES cli-door-table c verb-table* verb-call* verb-result* parse-args* command-help* help-meme* problems* store-door* render* target-option* face-option* reality-tunnel/**
+MOVES cli-door-table path packages/lares-cli/bin/**
+MOVES cli-door-table n store-door-registry* store-door-verbs* routing-arg*
+GUARDS cli-door-table e2e tiddler-door realm-select mcp-seat-binds-the-hearth
+GUARDS cli-door-table witness law-mutants-witness
+
+SEAM verb-dispatch
+MOVES verb-dispatch t verb-dispatcher* verb-local-dispatch* verb-summons* action-handler* handler-args* tiddler-verbs* meme-verbs* receipt*
+MOVES verb-dispatch m verb-tiddler* verb-refusal* effect-record* lar-event-bus*
+GUARDS verb-dispatch e2e tiddler-door working-loop promotion-publish-diff
+GUARDS verb-dispatch node-e2e composer-mounts-working-first seat-settle-before-mount
+
+SEAM tiddler-meme-doors
+MOVES tiddler-meme-doors t routes/** meme-write* meme-project* delete-gate* read-gradient* modules/meme-* filters/meme-pin* house-filters*
+MOVES tiddler-meme-doors c commands/tiddler* commands/meme* commands/read* commands/export*
+MOVES tiddler-meme-doors m meme-provider*
+GUARDS tiddler-meme-doors e2e tiddler-door mcp-seat-binds-the-hearth meme-live-contact recipe-parity meme-realm-bag meme-two-vessel-bag book-put-then-promote
+
+SEAM recipe-wiki-bag
+MOVES recipe-wiki-bag m recipe recipe-* wiki-recipe* wiki-activation* surface-recipe* bag-* catalog-* register-bags* workbench* domains*
+MOVES recipe-wiki-bag t bag-cascade* island-recipe* recipe-watch* wiki-compose-handlers* wiki-mint-handlers* home-wiki*
+MOVES recipe-wiki-bag n bag-declare* bag-tracker* wiki-switch-verb*
+MOVES recipe-wiki-bag c commands/wiki* commands/bag*
+GUARDS recipe-wiki-bag e2e recipe-parity face-catalog-split kahua-founding-stage smoke meme-two-vessel-bag
+GUARDS recipe-wiki-bag node-e2e composer-mounts-working-first lit-face-home-wiki
+
+SEAM face-lifecycle
+MOVES face-lifecycle n face-* cofound-* lit-relation* worn-mount* joined-face-* node-vessel-identity* commands/found-hearth* commands/init* commands/device-admit*
+MOVES face-lifecycle m face-* session-face* who-face* device-* leaf-*
+MOVES face-lifecycle k face-* lit-face-* operator-daemon-behavior*
+MOVES face-lifecycle c commands/found* commands/wear* commands/family* holdings*
+GUARDS face-lifecycle e2e face-join face-lit-stays-bootable first-admit-lands-second face-grant-unseated-joinee session-wears-the-lit-face arrival-surfaces.e2e
+GUARDS face-lifecycle node-e2e carried-nexus-posture fleet-join-dial
+
+SEAM persona-kel-ring
+MOVES persona-kel-ring m persona-* lease-advance* epoch-lease* quorum-* wire-identity* place-kel-board* place-signer*
+MOVES persona-kel-ring n persona-* local-persona-kel* roll-circle-* node-circle-store* lease-*
+MOVES persona-kel-ring k persona-*
+MOVES persona-kel-ring c commands/persona* commands/circle*
+GUARDS persona-kel-ring e2e leaf-sibling-sync sealed-roll-before-session
+GUARDS persona-kel-ring node-e2e persona-ring-cross-operator-admit nexus-rekey-full-boot
+
+SEAM nexus-cabal-realm
+MOVES nexus-cabal-realm m nexus-* cabal-* realm-* federation-gate* hosting* pronaos* wax-stamp*
+MOVES nexus-cabal-realm n nexus-* realm-* kahu-realm* pool-* hosting-* herm-* pulama-* commands/nexus-* commands/cabal-*
+MOVES nexus-cabal-realm c commands/nexus* commands/cabal* commands/realm* commands/herm*
+MOVES nexus-cabal-realm k cabal-realm-ceremony* fork-realm* realm-*
+GUARDS nexus-cabal-realm e2e nexus-two-root realm-select meme-realm-bag nexus-offering-replication herm-floor hosted-walk herm-reshares-public-blob.e2e joinee-offering-inspect
+GUARDS nexus-cabal-realm node-e2e carried-nexus-posture nexus-rekey-full-boot
+
+SEAM gate-sync-wire
+MOVES gate-sync-wire m pointer-address* gate-* gated-sync-leg* noise-ik* ws-dial-socket* carriage-* sibling-* membership-channel* cas-transit* itc* dyad*
+MOVES gate-sync-wire n gate-* wire-legs* carriage-* node-dial-socket* lan-* intent-relay* cas-wire* cas-reshare*
+GUARDS gate-sync-wire e2e fleet-join leaf-sibling-sync blob-follows-pointer hosted-walk vessel-sealed
+GUARDS gate-sync-wire node-e2e two-vessel-mesh fleet-join-dial
+
+SEAM promote-kahua-offering
+MOVES promote-kahua-offering m promote* promotion-approval* kahua-* canon-offer* offering-* plugin-offering* nucleation-gate* linearity-gate*
+MOVES promote-kahua-offering n promoted-store* kahua-* kukulu-* commands/promote* commands/kahua*
+MOVES promote-kahua-offering t kahua-* canon-offer-verbs*
+MOVES promote-kahua-offering c commands/promote* commands/meme-promote* commands/kahua* cas-stage*
+GUARDS promote-kahua-offering e2e kahua-founding-stage promote-probe promotion-publish-diff book-put-then-promote nexus-offering-replication joinee-offering-inspect working-loop minted-canon-projection
+
+SEAM floor-fleet-hearth
+MOVES floor-fleet-hearth m floor-* fleet-* hearth-floor-pins* place-floor-pin* genesis-*
+MOVES floor-fleet-hearth n floor-* fleet-* hearth-* genesis-* commands/floor* commands/fleet-join*
+MOVES floor-fleet-hearth c commands/floor* commands/fleet* floor-cure*
+GUARDS floor-fleet-hearth e2e fleet-join herm-floor arrival-surfaces.e2e
+GUARDS floor-fleet-hearth node-e2e floor-user-wiki-refuses fleet-join-dial
+GUARDS floor-fleet-hearth tool floor-unlock-door census-drill
+
+SEAM recovery-keep-backup
+MOVES recovery-keep-backup m recovery-* slip39* shamir-gf256* cold-key-card* keep-seat* custodian-card*
+MOVES recovery-keep-backup n recovery-* recard-arms* face-bundle-cut* face-bundle-restore*
+MOVES recovery-keep-backup c keep-* rite-keep* rite-keep-host* rite-kukulu* cold-card-readback* commands/rite*
+GUARDS recovery-keep-backup e2e leaf-sibling-sync dogfood-memory-restand
+GUARDS recovery-keep-backup tool house-keep keep-cold vault-backup-door vault-restore-door
+
+SEAM ward-cosign
+MOVES ward-cosign m ward-* keeper-cosign*
+MOVES ward-cosign n ward-credential* ward-signer*
+MOVES ward-cosign c ward-door*
+MOVES ward-cosign path packages/lararium-browser/src/**/ward-* packages/lararium-browser/src/ward-*
+GUARDS ward-cosign node-e2e fleet-join-dial two-vessel-mesh
+
+SEAM immune-edge-veil
+MOVES immune-edge-veil m edge-* veil-* vouch-* kapae-antigen* antigen-board* anergy-ledger*
+MOVES immune-edge-veil n edge-* kapae-shadow* antigen-ring* node-veil-lift* commands/edge-*
+GUARDS immune-edge-veil e2e face-join
+GUARDS immune-edge-veil node-e2e fleet-join-dial nexus-rekey-full-boot
+
+SEAM intent-handle-social
+MOVES intent-handle-social m intent-* handle-* social-* flow*
+MOVES intent-handle-social n intent-relay-face* flow-run* commands/intent* commands/handle*
+MOVES intent-handle-social t daemon-*-tiddlers* tw5-host-bridge*
+GUARDS intent-handle-social e2e herm-floor
+GUARDS intent-handle-social node-e2e fleet-join-dial
+
+SEAM swarm-spirit-floor-queue
+MOVES swarm-spirit-floor-queue m swarm-* spirit-* oracle-cast* ddate*
+MOVES swarm-spirit-floor-queue n swarm-wiki*
+MOVES swarm-spirit-floor-queue t floor-ledger* floor-owes* filters/floor-queue* oracle-cast-verb*
+MOVES swarm-spirit-floor-queue c commands/spirit* commands/lei* spirit-words*
+GUARDS swarm-spirit-floor-queue path packages/lararium-tw5/tests/floor-queue.test.ts packages/lararium-tw5/tests/floor-owes.test.ts
+
+SEAM sensorium-capture-recall
+MOVES sensorium-capture-recall path packages/lararium-sensorium/** packages/lararium-mempalace/** mempalace pyproject.toml requirements.txt setup.cfg
+MOVES sensorium-capture-recall n sense-* recall-holder* palace-organs* watch-core*
+MOVES sensorium-capture-recall c commands/sense* commands/recall* commands/watch* mcp*
+MOVES sensorium-capture-recall m transfer-entropy* gaussian-cmi* fisher-rao*
+GUARDS sensorium-capture-recall e2e mcp-seat-binds-the-hearth watcher-cut-c
+
+SEAM glass-record-port
+MOVES glass-record-port t glass* record-port* recording-* tw5-browser-surface* tw5-camera* outbound-bridge* boot-census* nalu-form*
+GUARDS glass-record-port e2e outbound-bridge.e2e
+GUARDS glass-record-port path packages/lararium-tw5/tests/outbound-bridge*.test.ts
+
+SEAM browser-web
+MOVES browser-web path packages/lararium-browser/** packages/lararium-web/**
+
+SEAM test-rig
+MOVES test-rig path tests/harness/** tests/e2e/** packages/*/tests/** packages/*/test/** tools/vitest-*.mjs
+GUARDS test-rig e2e smoke
+GUARDS test-rig path tests/harness/*.test.ts
+
+# A vessel-boot helper under the harness moves every standing walk.
+SEAM harness-boot trunk root
+MOVES harness-boot path tests/harness/instance.ts tests/harness/seat-launch.ts tests/harness/with-lar-root.ts tests/harness/vessel-key.ts
+
+SEAM floor-ci-tools
+MOVES floor-ci-tools path tools/** .github/** .githooks/** scripts/** deploy/** Dockerfile* docker-compose*.yml Makefile
+MOVES floor-ci-tools path .claude/** .codex/** .mcp.json .gitattributes .playwright/** .vscode/**
+MOVES floor-ci-tools path packages/lares-cli/.claude-plugin/** packages/*/probes/** packages/lararium-mesh/scripts/** packages/lararium-node/scripts/** packages/lararium-node/debug-arrows.mts
+
+# ── seated by basename: source the seam rows above left unplaced; each row a lead, moved by the first red that proves it wrong ──
+MOVES sensorium-capture-recall m sensorium-* capture-* capture/** worldline* *coupling* mesh-couple* mesh-palace* cmi-significance* te-hodge* rank-te* bures-metric* change-point* spectral-keel* subspace-track* temporal-rigidity* numerics* null-harness* synthetic-drift* signed-innovation* independence-reading* clock-recovery* ffz-* crystallization* partition-monitor* persistence-keel* rank-consensus* stream-adapter* text-stream-adapter* who-sensory-shore* memory-section* iris* aperture-selector* arl-dial* commit-dial* concurrency-dial* conviction-dial* wave-crest* reaction-graph* mu-void* purple-minter*
+MOVES sensorium-capture-recall n sensorium* capture/** embed-cap* graph-cap* kg-cap* search-cap* memetic-wikitext-sensorium* lares-query*
+MOVES sensorium-capture-recall t filters/wikisense* modules/wiki-sense-indexer* wiki-sense-* wiki-sensorium-cap* memetic-wikitext-sensorium* worldline-read-vm* wiki-coherence-projection* wiki-corpus-reader* form-layer/** tw5-docs-library*
+MOVES sensorium-capture-recall c commands/analyze* commands/capture/** commands/couple-r* commands/forecast* commands/mempalace* commands/palace-teardown* commands/sensorium* commands/telemetry* commands/worldline* commands/mismatch* commands/jing* commands/ki* commands/li* commands/rejim* commands/meta* palace-procs* setup-sensorium* wing-law* ephemeral*
+
+MOVES island-vessel-boot m vessel-* host-task* node readiness* repo-root* repo-wear* control-home* house-canon-doc* stood-document* cold-boot-ceremony* wiki-island-reach* doc-swarm-wiki* find-or-throw* lar-ws-client-adapter* doctor-sweep* call-touches*
+MOVES island-vessel-boot n bulb* kindle* composition-shutdown* daemon-island-* doctor* engine-* node-host* node-call-scope* node-plugin-resolution* sovereign-island-model* vessel-* stop-receipt-fence* host-working-follow* commands/host* http-face-dispatcher* readiness-face* reach-face-watch* repo-helpers* fs-atomic* test-scratch-notice* switch-act-log* call-heads*
+MOVES island-vessel-boot t daemon-behavior* daemon-protocol-seed* engine-watch* face-engine* fake-dom* host-globals-lend* modules/host-globals* lazy-resolver* module-pins* wiki-engine* wiki-behavior* wiki-handler-options* worker-data-verbs* vessel-residency-wiring* view-channel* slot-wait* generated-tw5-version* types/** modules/lar-root-services* modules/lararium-writable* lar-field-engine*
+MOVES island-vessel-boot c build-freshness* container-target* host-bridge* integration-check* link-bin* shim-locate* stand-page* stand-socket-wait* surface-env* vessel-condition* commands/host-cmd* commands/surface* commands/scripted* commands/posture-plan* commands/lay* hook-pause* commands/hooks*
+
+MOVES sealed-store-rest m ciphertext-cas* content-handle* stored-value* durability-receipt* receipt-with-heads* doc-census* doc-load-probe-contract* protected-doc-guard* anchor-store* held-rest-key* frontier-carry* merge-gate* agile-digest* plane-labels*
+MOVES sealed-store-rest n doc-census-door* doc-load-probe* plane-secrets* plain-records* store-integrity* library-store* seal-* sealed-acts*
+MOVES sealed-store-rest t cas-preloads* compaction-handlers* envelope-fields* store-liveness*
+MOVES sealed-store-rest c commands/cas* commands/plane-record* commands/doc-census* sealed-records* lock-receipt*
+
+MOVES vault-custody-unlock m secret-shapes* key-class* serving-key* published-bag-key* prototype-key-shore* identity-slot* custody-carrier-context* entropy-door* attempt-budget* steward-seal* re-anchoring* outcome-census*
+MOVES vault-custody-unlock n outbox-key* seat-key-store*
+MOVES vault-custody-unlock c commands/vault*
+
+MOVES uds-seat-gates m door-band* authority-verdict* holder-continuity* holder-session-proof* port-lease* raise-challenge* wire-names* seat-*
+MOVES uds-seat-gates n commands/raise-sign*
+MOVES uds-seat-gates c commands/raise*
+
+MOVES face-lifecycle m cofound* introduction* join-face-documents* lent-faces* me-circle* kumu-device* holdings-witness* cross-face-reach* lar-did* admission-price* admit-gate-pin*
+MOVES face-lifecycle n admit-bundle* carry-bundle* bundle-manifest* founder-self-certificate* identity-anchors* identity-home-closure* leaf-identity* self-slot-share* node-face-presentation* dial-presentation* dial-relation*
+MOVES face-lifecycle c ashes* face-labels* face-route-prompt* bundle-manifest*
+
+MOVES persona-kel-ring m place-founding-card* roll-circle* hand-lineage* charter-hand-lineage* lineage-rank*
+MOVES persona-kel-ring n after-roll-chain* place-rotation* place-session-cell* held-quorum* reserve-transition*
+MOVES persona-kel-ring t circle-verbs* persona-selves*
+MOVES persona-kel-ring c commands/rotate-place* daemon-circle-store* daemon-persona-store*
+
+MOVES nexus-cabal-realm m kahu-cabal-admission* kahu-canon-reach* held-nexus-root* walk-* walker-grant* cadence-*
+MOVES nexus-cabal-realm n pronaos-* commands/walk* node-walk-store*
+MOVES nexus-cabal-realm t cabal-realm-verbs*
+MOVES nexus-cabal-realm c commands/walk-cmd* nexus-phase*
+
+MOVES gate-sync-wire m crossroads-cry* crossing-direction* rendezvous-path* peer-arrivals* cert-expiry-gauge* credit-gate*
+MOVES gate-sync-wire n relay-gate-seed* file-membership-channel* qr-transport*
+
+MOVES promote-kahua-offering m kukulu-vouch*
+MOVES promote-kahua-offering n commands/offer-retire*
+MOVES promote-kahua-offering t promote-ui-tiddlers*
+MOVES promote-kahua-offering c promotion-receipt* seed-offered*
+
+MOVES floor-fleet-hearth m ahi-ka* hearth-roster*
+MOVES floor-fleet-hearth c commands/census* commands/hearth-roster* roster-standing*
+
+MOVES recovery-keep-backup n commands/rite*
+MOVES recovery-keep-backup c commands/house-bundle*
+
+MOVES immune-edge-veil m immune-read*
+MOVES immune-edge-veil c commands/edge*
+
+MOVES intent-handle-social m chore-ask*
+MOVES intent-handle-social n chore-face* flow-read-face*
+MOVES intent-handle-social c commands/flow-run* commands/handle* commands/intent* handle-carriage*
+
+MOVES swarm-spirit-floor-queue n commands/swarm* discordian-*
+MOVES swarm-spirit-floor-queue t ddate-verb* macros/ddate* macros/spirit-unfold* widgets/action-oracle-cast* filters/security-class*
+MOVES swarm-spirit-floor-queue c commands/oracle-cmd* commands/ddate-cmd*
+
+MOVES canon-carriers m pack-provenance* rendered-derives* tw5-docs-name* resolver*
+MOVES canon-carriers n commands/canon-rows* render-output*
+MOVES canon-carriers t plugin-tiddler.generated*
+
+MOVES meme-grammar t filters/all-memes* filters/bag-path* filters/lar-* filters/project* filters/toml-field* lib-memetic-frame* lib-smol-toml* meme-ast-entry* meta-parity* root-meta* weave/** modules/import-floor-upgrader*
+
+MOVES tiddler-meme-doors m family*
+MOVES tiddler-meme-doors t meme-sinks* place-meme* widgets/action-meme-place* rendered-tiddler* modules/lar-story* stay-home*
+MOVES tiddler-meme-doors c commands/kapae*
+
+MOVES verb-dispatch m conformance-verb-breathing*
+MOVES verb-dispatch n lar-event-bus-impl*
+MOVES verb-dispatch t modules/nalu-engine* modules/reaction-router* nalu-form*
+MOVES verb-dispatch c commands/events* commands/receipt-cmd*
+
+MOVES recipe-wiki-bag m compose-follow* library-tier* shell-leaving-record* mint-census*
+MOVES recipe-wiki-bag t recipe-planes* catalog-accessor* default-story* filter-page*
+MOVES recipe-wiki-bag c commands/library*
+
+MOVES residency-keep-cap m share-config*
+MOVES residency-keep-cap t bag-tier-restamp* delegation-book*
+MOVES residency-keep-cap c commands/act* commands/share-cmd*
+
+MOVES shore-standoff t drain* modules/draft-compare*
+MOVES shore-standoff c commands/draft*
+
+MOVES projector-base-pin c commands/partial-file* seed-mirror-leg*
+MOVES ingest-gate m executable-class*
+MOVES ingest-gate c tag-blobs*
+MOVES glass-record-port m record-port* lar-camera*
+MOVES cli-door-table c bin/** commands/door-call* commands/tunnel-door* commands/law*
+
+BOTH island-vessel-boot cli-door-table e2e-root
+
+# ── placed by the census ───────────────────────────────────────────────────────────────────────────────────────────
+MOVES island-vessel-boot m boot-wait*
+MOVES sealed-store-rest m compacting-storage*
+MOVES shore-standoff n shore-remove-door*
+MOVES cli-door-table c ask-budget* standing-report*

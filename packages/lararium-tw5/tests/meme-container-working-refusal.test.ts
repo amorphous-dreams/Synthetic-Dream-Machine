@@ -4,7 +4,7 @@ import { CompositeStore, NoWorkingLayerRefusal } from "@lararium/mesh/composite-
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { makeMemeDeleteReactor, makeMemePatchReactor, makeMemePutReactor } from "../src/meme-verbs.js";
+import { makeTiddlerDeleteReactor, makeTiddlerPutReactor } from "../src/tiddler-verbs.js";
 import { VerbDispatcher, VerbTable, type VerbContext } from "../src/verb-dispatcher.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 
@@ -36,10 +36,10 @@ class Wiki {
  * (that working layer), never in the clear daemon bag. A daemon wiki with no working layer therefore stands
  * unreachable in the product: no outcome can land there, and a refusal-only outcome written into the clear daemon bag
  * by name would reopen the very path 0d3ca666f closed. So the premise "the refusal arrives as an outcome" left with
- * those commits. The test now reads the refusal where it fires, at the meme-put reactor, and pins that the clear
+ * those commits. The test now reads the refusal where it fires, at the put reactor, and pins that the clear
  * daemon bag takes neither the content nor an outcome.
  */
-describe("a meme write into the daemon's own wiki without a working layer", () => {
+describe("a write into the daemon's own wiki without a working layer", () => {
   function stand() {
     const daemon = new CompositeStore();
     const daemonBag = new MemoryTiddlerStore(DAEMON_BAG_ID);
@@ -49,10 +49,10 @@ describe("a meme write into the daemon's own wiki without a working layer", () =
     return { daemon, daemonBag, tw5, options };
   }
 
-  test("the meme-put reactor refuses by name, carries the --recipe remedy, and writes no content", async () => {
+  test("the put reactor refuses by name, carries the --recipe remedy, and writes no content", async () => {
     const { daemon, daemonBag, options } = stand();
-    const reactor = makeMemePutReactor(options);
-    const invocation = { verb: "meme-put", args: { recipe: "default", uri: "lar:///t/no-working", text: "content" }, requestedBy: "did:key:test", requestId: "meme-no-working" };
+    const reactor = makeTiddlerPutReactor(options);
+    const invocation = { verb: "tiddler-put", args: { recipe: "default", title: "lar:///t/no-working", text: "content" }, requestedBy: "did:key:test", requestId: "meme-no-working" };
     const refused = await reactor(invocation.args, { daemon, invocation } as unknown as VerbContext).then(() => null, (err: unknown) => err);
     expect(refused, "the write went through with no working layer").toBeInstanceOf(NoWorkingLayerRefusal);
     expect(String((refused as Error).message)).toContain("no default writable layer");
@@ -64,7 +64,7 @@ describe("a meme write into the daemon's own wiki without a working layer", () =
   test("through the dispatcher, the refused write rests its outcome in the control document; the clear daemon bag holds no outcome and no content", async () => {
     const { daemon, daemonBag, tw5, options } = stand();
     const registry = new VerbTable();
-    registry.register("meme-put", makeMemePutReactor(options));
+    registry.register("tiddler-put", makeTiddlerPutReactor(options));
     const control = memoryControlStore();
     const dispatcher = new VerbDispatcher({ daemonVm: tw5 as unknown as TW5Engine, daemon, control, registry });
     const landed = new Promise<void>((resolve) => {
@@ -72,7 +72,7 @@ describe("a meme write into the daemon's own wiki without a working layer", () =
     });
     try {
       dispatcher.start();
-      dispatcher.placeVerb({ verb: "meme-put", args: { recipe: "default", uri: "lar:///t/no-working", text: "content" }, requestedBy: "did:key:test", requestId: "meme-no-working" });
+      dispatcher.placeVerb({ verb: "tiddler-put", args: { recipe: "default", title: "lar:///t/no-working", text: "content" }, requestedBy: "did:key:test", requestId: "meme-no-working" });
       await landed;
       const outcome = await control.getLive(`${OUTCOME_URI_PREFIX}meme-no-working`);
       expect(outcome?.tiddler["status"], "the refused write's outcome rests in the control document").toBe("error");
@@ -84,32 +84,32 @@ describe("a meme write into the daemon's own wiki without a working layer", () =
   });
 });
 
-describe("RED (#428 F1) — the meme door never writes a residency ledger", () => {
-  test("meme put, patch and delete of a ledger uri refuse `effect-ledger-house-only` before any write", async () => {
+describe("RED (#428 F1) — the tiddler door never writes a residency ledger", () => {
+  test("a put, an append and a delete of a ledger uri refuse `effect-ledger-house-only` before any write", async () => {
     const daemon = new CompositeStore();
     const daemonBag = new MemoryTiddlerStore(DAEMON_BAG_ID);
     daemon.addLayer({ bagId: DAEMON_BAG_ID, store: daemonBag, writable: true });
     const options = { composite: daemon, tw5: new Wiki() as unknown as Pick<TW5Engine, "$tw"> };
     const uri = "lar:///ha.ka.ba/wikis/elyncia-referee/working/ledger/residency/forged";
     const ctx = (verb: string) => ({ daemon, invocation: { verb, requestId: "r", requestedBy: "did:key:test", args: {} } } as unknown as VerbContext);
-    await expect(makeMemePutReactor(options)({ recipe: "default", uri, text: "content" }, ctx("meme-put"))).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
-    await expect(makeMemePatchReactor(options)({ recipe: "default", uri, slot: "#/a", append: "x", base: "sha256-x" }, ctx("meme-patch"))).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
-    await expect(makeMemeDeleteReactor(options)({ recipe: "default", uri }, ctx("meme-delete"))).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    await expect(makeTiddlerPutReactor(options)({ recipe: "default", title: uri, text: "content" }, ctx("tiddler-put"))).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    await expect(makeTiddlerPutReactor(options)({ recipe: "default", title: uri, append: "x" }, ctx("tiddler-put"))).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    await expect(makeTiddlerDeleteReactor(options)({ recipe: "default", title: uri }, ctx("tiddler-delete"))).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
     expect(await daemonBag.get(uri)).toBeNull();
   });
 });
 
-describe("RED (the record of leaving stays) — the meme door never writes a shell's record of leaving", () => {
-  test("meme put, patch and delete of `shell-leavings/<slug>` refuse `effect-ledger-house-only` before any write", async () => {
+describe("RED (the record of leaving stays) — the tiddler door never writes a shell's record of leaving", () => {
+  test("a put, an append and a delete of `shell-leavings/<slug>` refuse `effect-ledger-house-only` before any write", async () => {
     const daemon = new CompositeStore();
     const daemonBag = new MemoryTiddlerStore(DAEMON_BAG_ID);
     daemon.addLayer({ bagId: DAEMON_BAG_ID, store: daemonBag, writable: true });
     const options = { composite: daemon, tw5: new Wiki() as unknown as Pick<TW5Engine, "$tw"> };
     const uri = "lar:///ha.ka.ba/lararium/shell-leavings/elyncia-referee";
     const ctx = (verb: string) => ({ daemon, invocation: { verb, requestId: "r", requestedBy: "did:key:test", args: {} } } as unknown as VerbContext);
-    await expect(makeMemePutReactor(options)({ recipe: "default", uri, text: "content" }, ctx("meme-put"))).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
-    await expect(makeMemePatchReactor(options)({ recipe: "default", uri, slot: "#/a", append: "x", base: "sha256-x" }, ctx("meme-patch"))).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
-    await expect(makeMemeDeleteReactor(options)({ recipe: "default", uri }, ctx("meme-delete"))).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    await expect(makeTiddlerPutReactor(options)({ recipe: "default", title: uri, text: "content" }, ctx("tiddler-put"))).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    await expect(makeTiddlerPutReactor(options)({ recipe: "default", title: uri, append: "x" }, ctx("tiddler-put"))).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    await expect(makeTiddlerDeleteReactor(options)({ recipe: "default", title: uri }, ctx("tiddler-delete"))).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
     expect(await daemonBag.get(uri)).toBeNull();
   });
 });

@@ -19,7 +19,7 @@
  * stands as a tombstone preloads nothing, so a lower live copy never shows. The enumeration reads the composite's visible titles,
  * a superset of every title a replay could land live.
  *
- * THE GAP: TW5's boot runs between this read and the shore's start. The seed hears the composition from before its read until
+ * THE GAP: TW5's boot runs between this read and the shore's start. The seed starts hearing the composition ahead of its read, until
  * the shore mounts (`release`), and hands back every change it heard for a preloaded title; the shore lands those afresh, so a
  * record that left every layer during boot (where no replay names it again) leaves the wiki too.
  *

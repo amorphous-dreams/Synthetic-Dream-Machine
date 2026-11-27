@@ -6,7 +6,7 @@
  * Three matrices, each read from a live declaration:
  *   - `act`: every ACTION verb (mesh's ACTION_VERBS) x every destination shape -> daemon verb or wiki-act
  *   - `meme project`: every PROJECT_TARGETS entry x source shape -> local or daemon seat (projectPlan)
- *   - `meme put|get|delete|list`: every sub -> its declared daemon verb, container riding along
+ *   - `tiddler put|delete` and the family listing: every sub -> its declared daemon verb, container riding along
  *
  * `act` mocks only the wire (`runVerb`) and records which verb the command submits: the destination
  * the routing decision chose, with the routing code itself running real. Every routed act also
@@ -33,7 +33,8 @@ vi.mock("../../src/env.js", async (orig) => ({
 import { ACTION_VERBS } from "@lararium/mesh/residency-actions";
 import { cmdAct } from "../../src/commands/act.js";
 import { projectPlan, PROJECT_TARGETS } from "../../src/commands/meme.js";
-import { listPlan, memePlan } from "../../src/commands/family.js";
+import { listPlan } from "../../src/commands/family.js";
+import { tiddlerPlan } from "../../src/commands/tiddler.js";
 import type { ParsedArgs } from "../../src/parse-args.js";
 
 const ROOT = "lar:///ha.ka.ba";
@@ -196,34 +197,34 @@ describe("L8 · meme project: the target and source shape decide the seat", () =
   });
 });
 
-describe("L8 · meme put|delete|list: each sub reaches its declared daemon verb with the container (a read rides `tiddler get --meme`)", () => {
+describe("L8 · tiddler put|delete and the family listing: each sub reaches its declared daemon verb with the container (a recipe or a bag)", () => {
   const args = (positional: string[], options: Record<string, string>, flags: Record<string, boolean> = {}): ParsedArgs =>
-    ({ command: "meme", positional, options, flags: { json: true, ...flags } }) as unknown as ParsedArgs;
-  const VERB_OF = { put: "meme-put", delete: "meme-delete" } as const;
+    ({ command: "tiddler", positional, options, flags: { json: true, ...flags } }) as unknown as ParsedArgs;
+  const VERB_OF = { put: "tiddler-put", delete: "tiddler-delete" } as const;
 
   for (const sub of ["put", "delete"] as const) {
     for (const container of [{ recipe: "sdm" }, { bag: "lares" }]) {
       test(`${sub} ${Object.keys(container)[0]} -> ${VERB_OF[sub]}`, () => {
-        const plan = memePlan(sub, args([sub, "lar:///t/x"], container));
+        const plan = tiddlerPlan(sub, args([sub, "lar:///t/x"], container));
         expect(plan.verb).toBe(VERB_OF[sub]);
-        expect(plan.args).toEqual({ uri: "lar:///t/x", ...container });
+        expect(plan.args).toEqual({ title: "lar:///t/x", ...container });
       });
     }
     test(`${sub} names no container: refuses before any route`, () => {
-      expect(() => memePlan(sub, args([sub, "lar:///t/x"], {}))).toThrow(/no-container/);
+      expect(() => tiddlerPlan(sub, args([sub, "lar:///t/x"], {}))).toThrow(/no-container/);
     });
   }
-  test("list addresses the seat, never one meme", () => {
+  test("the listing addresses the seat, never one meme", () => {
     expect(listPlan(args(["list"], { bag: "lares" })).verb).toBe("meme-list");
     expect(listPlan(args(["list"], { recipe: "sdm" }, { tree: true })).args).toEqual({ recipe: "sdm", tree: true });
   });
   test("seed: the delete base rides as `base` from --if-match; put reads --base", () => {
-    expect(memePlan("delete", args(["delete", "lar:///t/x"], { bag: "b", "if-match": " h " })).args["base"]).toBe("h");
-    expect(memePlan("put", args(["put", "lar:///t/x"], { bag: "b", base: "h" })).args["base"]).toBe("h");
+    expect(tiddlerPlan("delete", args(["delete", "lar:///t/x"], { bag: "b", "if-match": " h " })).args["base"]).toBe("h");
+    expect(tiddlerPlan("put", args(["put", "lar:///t/x"], { bag: "b", base: "h" })).args["base"]).toBe("h");
   });
   test("CONTROL: two subs reach two different verbs", () => {
-    const a = memePlan("delete", args(["delete", "lar:///t/x"], { bag: "b" })).verb;
-    const b = memePlan("put", args(["put", "lar:///t/x"], { bag: "b" })).verb;
+    const a = tiddlerPlan("delete", args(["delete", "lar:///t/x"], { bag: "b" })).verb;
+    const b = tiddlerPlan("put", args(["put", "lar:///t/x"], { bag: "b" })).verb;
     expect(a).not.toBe(b);
   });
 });

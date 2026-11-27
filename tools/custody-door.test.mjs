@@ -230,7 +230,7 @@ test("the custody door opens the vessel key and leaves no trace of the credentia
     try {
       const plantPath = "t/custody-door/planted";
       writeFileSync(join(plantDir, "planted.mem"), `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///${plantPath}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${plantPath}"\n\`\`\`\n\n${PLANTED}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`);
-      const plant = vessel.verb(["tiddler", "put", "--meme", `lar:///${plantPath}`, "--recipe", "lares", "--file", join(plantDir, "planted.mem"), "--json"]);
+      const plant = vessel.verb(["tiddler", "put", `lar:///${plantPath}`, "--recipe", "lares", "--file", join(plantDir, "planted.mem"), "--json"]);
       assert.equal(plant.status, 0, `the plant lands through an ordinary verb: ${plant.stderr}${plant.stdout}`);
     } finally { rmSync(plantDir, { recursive: true, force: true }); }
     await vessel.stop();

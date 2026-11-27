@@ -45,7 +45,7 @@ async function standIsland(slug: string, behavior: IslandBehavior) {
 
 describe.skipIf(wikiSkip)(`one summon in an island crosses as one verb event${skipNote}`, () => {
   test("RED: the daemon island under the kernel posts ONE kahua-propose event for one marked summon", async () => {
-    const island = await standIsland("daemon", makeDaemonBehavior({ runnableHulls: HULLS_TS_ONLY, verifierFactory: async () => undefined }));
+    const island = await standIsland("daemon", makeDaemonBehavior({ runnableHulls: HULLS_TS_ONLY, verifierFactory: async () => undefined as never }));
     await island.summon();
     expect(island.verbEvents().length, "the daemon island forwarded one summon more than once").toBe(1);
   }, 60_000);

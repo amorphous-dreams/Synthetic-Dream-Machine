@@ -272,7 +272,7 @@ export interface VestPayload {
  *  a golden slot in `pulama-keeper.test.ts`), so a successor never locks on a slot its elder sealed; a new version adds its golden. */
 const PAYLOAD_V = 1, KEY = 32;
 /** Pack a payload: v1 · node(32) · spent u32 · worn i32 (-1 null) · faces u16 · each [fcid u16+utf8 · ordinal u32 · fck(32) · spent u32]. */
-function packPayload(p: { readonly node: Uint8Array; readonly faces: ReadonlyArray<{ readonly fcid: string; readonly ordinal: number; readonly fck: Uint8Array; readonly spent: number }>; readonly spent: number; readonly worn: number | null }): Uint8Array {
+export function keeperPayloadPack(p: { readonly node: Uint8Array; readonly faces: ReadonlyArray<{ readonly fcid: string; readonly ordinal: number; readonly fck: Uint8Array; readonly spent: number }>; readonly spent: number; readonly worn: number | null }): Uint8Array {
   const ids = p.faces.map((f) => new TextEncoder().encode(f.fcid));
   const out = new Uint8Array(1 + KEY + 4 + 4 + 2 + ids.reduce((n, id) => n + 2 + id.length + 4 + KEY + 4, 0));
   const view = new DataView(out.buffer);
@@ -286,7 +286,7 @@ function packPayload(p: { readonly node: Uint8Array; readonly faces: ReadonlyArr
   return out;
 }
 /** Read a packed payload into fresh key buffers; null where it reads short or under another version. */
-function unpackPayload(b: Uint8Array): VestPayload | null {
+export function keeperPayloadUnpack(b: Uint8Array): VestPayload | null {
   const view = new DataView(b.buffer, b.byteOffset, b.byteLength);
   let at = 0;
   const need = (n: number): boolean => at + n <= b.length;
@@ -417,7 +417,7 @@ export async function keeperVest(records: SwarmWikiPort, by: KukuluSigner, at: {
     if (!started.ok) return lapse(refuse(started.refusal, started.detail), started.begun ?? []);
     const mark = await signPulamaRecord<"keeper-vested">({ act: "keeper-vested", tessera, begun, next, to: sha256HexBytesSync(unhex(at.to)), node: true, faces: keys.faces.map((f) => f.fcid), nonce: randomUUID(), rite: [...started.rite], ...(started.leis && started.leis.length > 0 ? { leis: started.leis.map((l) => ({ lei: l.lei, n: l.n })) } : {}), ...(license?.bench !== undefined ? { bench: license.bench } : {}) }, by);
     if (!(await records.writeNew(pulamaKeeperTitle(tessera, "vest"), JSON.stringify(mark)))) return refuse("vest-spent", "this commit already spent its one rite attempt; commit again on a terminal (`lares pulama name-successor`), or light the successor by hand: lares rite kukulu");
-    const plain = packPayload({ node: keys.treeKey, faces: keys.faces.map((f) => ({ fcid: f.fcid, ordinal: f.ordinal, fck: f.fck, spent: f.spent ?? 0 })), spent: at.spent, worn: at.worn });
+    const plain = keeperPayloadPack({ node: keys.treeKey, faces: keys.faces.map((f) => ({ fcid: f.fcid, ordinal: f.ordinal, fck: f.fck, spent: f.spent ?? 0 })), spent: at.spent, worn: at.worn });
     let box;
     try { box = sealToRecipient({ recipientPub: unhex(at.to), plaintext: plain, info: VEST_INFO, extraSalt: [unhex(begun), new TextEncoder().encode(next)] }); } finally { plain.fill(0); }
     const slot = await signPulamaRecord<"keeper-slot">({ act: "keeper-slot", tessera, begun, next, to: at.to, box: { e: hex(box.senderEphemeralPub), n: hex(box.aeadNonce), c: hex(box.ciphertext) } }, by);
@@ -433,7 +433,7 @@ export async function keeperVest(records: SwarmWikiPort, by: KukuluSigner, at: {
 export function keeperSlotOpen(secret: Uint8Array, slot: KeeperSlotBody): VestPayload | null {
   const plain = openFromSender({ recipientSecret: secret, senderEphemeralPub: unhex(slot.box.e), aeadNonce: unhex(slot.box.n), ciphertext: unhex(slot.box.c), info: VEST_INFO, extraSalt: [unhex(slot.begun), new TextEncoder().encode(slot.next)] });
   if (plain === null) return null;
-  try { return unpackPayload(plain); } finally { plain.fill(0); }
+  try { return keeperPayloadUnpack(plain); } finally { plain.fill(0); }
 }
 
 /** The successor's one-handoff key: minted at its offer, zero-filled at its first open, so a slot spends once. */

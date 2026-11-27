@@ -127,7 +127,7 @@ A lead may add note entries beside its roster entries under its own seat name; i
 * ''Off disk, by placement.'' Every swarm record rests in the vessel's control document (`swarmRecordFields`, `SWARM_URI_PREFIX` in `lar-uris.ts`), which no recipe composes and no mirror names, so no record reaches disk whatever its title spells; `tools/placement-residency-witness.mjs` reads red where a control family titles outside the control home. A name refuses before it can spell such an escape: no swarm name, decoded or not, holds an empty, `.` or `..` segment, a one-segment name (lane, seat, tree, spend) holds no `/`, and a lei's branch keeps git's ref-name rules (`git check-ref-format`).
 * ''The verbs.'' `swarm-show` reads (open to a seat); `swarm-cap-set`, `swarm-share-set`, `swarm-lei-kui`, `swarm-lei-unstring` and `swarm-lei-restring` are hand-only (`swarm-needs-hand`), at the socket and on the daemon island. They sign through `SwarmSignerPort`, wired to the ward's signer (#/the-ward): each signing verb opens the face root fresh under the route typed for it, so a script holding unlocked custody signs none. The `who` check stays advisory for `show` alone.
 * ''Before the wiki stands'', every swarm act refuses by name: "no standing daemon: swarm controls need the founded wiki". There is no flat-file fallback.
-* ''Still to land'': the co-sign of a second device for the house cap and the push lei (S3); the capability channel and the unix-socket probe (S4); the vessel-signed roster, the broker swap and the retirement of the flat push lei and the HMAC key (S5). The lei's return and the vessel's claim stand (`returnLei` under `beginRite`, `trust.vessel`), and the broker's push reads the flat push lei until S5 swaps it. A two-device witness that swarm tiddlers stay device-local, a live probe of the store-door verbs against a founded face, and a probe of whether a seat's `meme-put` or a synced tiddler can write a `$:/lares/swarm/` title outside the control document stay owed.
+* ''Still to land'': the co-sign of a second device for the house cap and the push lei (S3); the capability channel and the unix-socket probe (S4); the vessel-signed roster, the broker swap and the retirement of the flat push lei and the HMAC key (S5). The lei's return and the vessel's claim stand (`returnLei` under `beginRite`, `trust.vessel`), and the broker's push reads the flat push lei until S5 swaps it. A two-device witness that swarm tiddlers stay device-local, a live probe of the store-door verbs against a founded face, and a probe of whether a seat's `tiddler-put` or a synced tiddler can write a `$:/lares/swarm/` title outside the control document stay owed.
 
 <<~/ahu>>
 
@@ -252,6 +252,6 @@ This carrier gains its standing sections and rewrites the broker bullets and the
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8YctI8EyAh3qIWQfnvUbGQlfeK3mQGVSriXeNYvv8vQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZrQr0GZcnQ20GDyvbDlsmDGPEKLKXYemIRZRUiPAmAY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

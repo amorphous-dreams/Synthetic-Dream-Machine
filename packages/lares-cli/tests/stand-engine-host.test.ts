@@ -4,7 +4,7 @@
  * so the test reads which doors the command reached for.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync, writeSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync, writeSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { parseArgs } from "../src/parse-args.js";
@@ -118,70 +118,62 @@ describe("vessel stand and the host-held engine", () => {
   });
 });
 
-describe("a verb's own exit carries the standing verdict to the host shim", () => {
-  const ASK = true;
+describe("a verb's own process REPORTS the standing to the host shim, and never asks or changes its exit", () => {
+  const TAG = "0123456789abcdef";
   const readers = (alive: boolean) => ({ alive: async () => alive, marker: () => "{}", faceOnDisk: () => true });
+  const reportAt = () => join(base, "config", `standing-report.${TAG}`);
+  const readReport = () => readFileSync(reportAt(), "utf8");
 
-  it("a verb that succeeded under the shim's ask names a restand verdict by its code, and says the reason", async () => {
-    const { standingExit, STANDING_EXIT } = await import("../src/standing-report.js");
-    const said: string[] = [];
-    expect(await standingExit(0, ASK, readers(true), (line) => { said.push(line); })).toBe(STANDING_EXIT.restand);
-    expect(said).toEqual(["lares: the standing asks for a re-stand: face lit after boot"]);
+  it("a verb that succeeded under a shim's exec tag reports a restand verdict and its reason, one line in the config bind", async () => {
+    mkdirSync(join(base, "config"));
+    const { reportStanding } = await import("../src/standing-report.js");
+    await reportStanding(0, TAG, readers(true));
+    expect(readReport()).toBe("restand face lit after boot\n");
   });
 
-  it("an attach verdict names its own code, so a bare 0 never passes for a reading", async () => {
+  it("an attach verdict reports itself, so a bare success never passes for a reading", async () => {
+    mkdirSync(join(base, "config"));
     verdict = { act: "attach", reason: "steady" };
-    const { standingExit, STANDING_EXIT } = await import("../src/standing-report.js");
-    const said: string[] = [];
-    expect(await standingExit(0, ASK, readers(true), (line) => { said.push(line); })).toBe(STANDING_EXIT.attach);
-    expect(said).toEqual([]);
+    const { reportStanding } = await import("../src/standing-report.js");
+    await reportStanding(0, TAG, readers(true));
+    expect(readReport()).toBe("attach\n");
   });
 
   it("the process's own readers read the marker and the face the stand command reads", async () => {
-    const { standingExit, STANDING_EXIT } = await import("../src/standing-report.js");
-    expect(await standingExit(0, ASK, undefined, () => {})).toBe(STANDING_EXIT.restand);
+    const { standingLine } = await import("../src/standing-report.js");
+    expect(await standingLine()).toBe("restand face lit after boot");
   });
 
-  it("no vessel answering, or a reading that throws, names no verdict", async () => {
-    const { standingExit, STANDING_EXIT } = await import("../src/standing-report.js");
-    expect(await standingExit(0, ASK, readers(false))).toBe(STANDING_EXIT.unread);
-    expect(await standingExit(0, ASK, { ...readers(true), marker: () => { throw new Error("unreadable"); } })).toBe(STANDING_EXIT.unread);
+  it("no vessel answering, or a reading that throws, reports no verdict (unread)", async () => {
+    const { standingLine } = await import("../src/standing-report.js");
+    expect(await standingLine(readers(false))).toBe("unread");
+    expect(await standingLine({ ...readers(true), marker: () => { throw new Error("unreadable"); } })).toBe("unread");
   });
 
-  it("the entry takes both asks off the argv, so no verb's parser meets them and no environment carries them to a child", async () => {
-    const { takeEntryAsks, standingExit, STANDING_EXIT } = await import("../src/standing-report.js");
-    const asks = takeEntryAsks(["tiddler", "get", "lar:///x", "--recipe", "default", "--ask-budget-ms=3500", "--standing-report"]);
-    expect(asks).toEqual({ argv: ["tiddler", "get", "lar:///x", "--recipe", "default"], standing: true, budgetMs: 3500 });
-    expect(await standingExit(0, asks.standing, readers(true), () => {})).toBe(STANDING_EXIT.restand);
-    // The budget reads in either spelling, wherever it sits; a value that names no positive whole number declares none.
-    expect(takeEntryAsks(["--ask-budget-ms", "40", "vessel", "read"])).toEqual({ argv: ["vessel", "read"], standing: false, budgetMs: 40 });
-    expect(takeEntryAsks(["vessel", "read", "--ask-budget-ms=soon"])).toEqual({ argv: ["vessel", "read"], standing: false, budgetMs: null });
-    // CONTROL: a call that carries neither keeps its argv whole and answers no standing.
-    const plain = takeEntryAsks(["vessel", "read", "--json"]);
-    expect(plain).toEqual({ argv: ["vessel", "read", "--json"], standing: false, budgetMs: null });
-    expect(await standingExit(0, plain.standing, readers(true))).toBe(0);
+  it("RED no word asks for the standing: the entry reads the budget alone, and the retired --standing-report (an older shim's) comes off and changes nothing", async () => {
+    const { takeEntryAsks } = await import("../src/standing-report.js");
+    expect(takeEntryAsks(["tiddler", "get", "lar:///x", "--recipe", "default", "--ask-budget-ms=3500"])).toEqual({ argv: ["tiddler", "get", "lar:///x", "--recipe", "default"], budgetMs: 3500 });
+    expect(takeEntryAsks(["--ask-budget-ms", "40", "vessel", "read"])).toEqual({ argv: ["vessel", "read"], budgetMs: 40 });
+    expect(takeEntryAsks(["vessel", "read", "--ask-budget-ms=soon"])).toEqual({ argv: ["vessel", "read"], budgetMs: null });
+    expect(takeEntryAsks(["vessel", "read", "--json"])).toEqual({ argv: ["vessel", "read", "--json"], budgetMs: null });
+    // HOST/IMAGE SKEW BREAKS NO CALL: a shim from before the report still appends the word; the verb never meets it, and the
+    // exit stays the verb's own (that shim then reads a bare 0 and takes its own observe reading).
+    expect(takeEntryAsks(["vessel", "read", "--standing-report"])).toEqual({ argv: ["vessel", "read"], budgetMs: null, retiredAsk: true });
+    const mod: Record<string, unknown> = await import("../src/standing-report.js");
+    expect(mod["STANDING_REPORT_FLAG"]).toBeUndefined();
+    expect(mod["STANDING_EXIT"]).toBeUndefined();
+    expect(mod["standingExit"]).toBeUndefined();
   });
 
-  it("no environment name asks for either: the house adds no env var for a call's own asks", async () => {
-    const { standingExit } = await import("../src/standing-report.js");
-    const held = { report: process.env["LARES_STANDING_REPORT"], budget: process.env["LARES_ASK_BUDGET_MS"] };
-    process.env["LARES_STANDING_REPORT"] = "exit";
-    process.env["LARES_ASK_BUDGET_MS"] = "1";
-    try {
-      const { takeEntryAsks } = await import("../src/standing-report.js");
-      const asks = takeEntryAsks(["vessel", "read"]);
-      expect(asks).toMatchObject({ standing: false, budgetMs: null });
-      expect(await standingExit(0, asks.standing, readers(true))).toBe(0);
-    } finally {
-      if (held.report === undefined) delete process.env["LARES_STANDING_REPORT"]; else process.env["LARES_STANDING_REPORT"] = held.report;
-      if (held.budget === undefined) delete process.env["LARES_ASK_BUDGET_MS"]; else process.env["LARES_ASK_BUDGET_MS"] = held.budget;
-    }
-  });
-
-  it("CONTROL: a verb that failed keeps its own code, and no ask leaves every code as it stands", async () => {
-    const { standingExit } = await import("../src/standing-report.js");
+  it("CONTROL: a verb that failed, a call no shim tagged, or a house with no config bind reports nothing", async () => {
+    const { reportStanding } = await import("../src/standing-report.js");
     const never = { alive: async () => { throw new Error("no reading runs"); }, marker: () => null, faceOnDisk: () => false };
-    expect(await standingExit(7, ASK, never)).toBe(7);
-    expect(await standingExit(0, false, never)).toBe(0);
+    await reportStanding(0, TAG, never);
+    expect(existsSync(reportAt())).toBe(false);
+    mkdirSync(join(base, "config"));
+    await reportStanding(7, TAG, never);
+    await reportStanding(0, "", never);
+    await reportStanding(0, "not-a-tag", never);
+    expect(readdirSync(join(base, "config"))).toEqual([]);
   });
 });
