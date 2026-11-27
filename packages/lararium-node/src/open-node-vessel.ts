@@ -431,9 +431,7 @@ import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
 import { cosignPortWitness, WARD_WITNESS_CLOSED } from "@lararium/mesh/ward-cosign-gate";
 import { placeCarriedNexuses, unionReadings }      from "./vessel-raise.js";
 import { landEveryHostingAct }                    from "./commands/host.js";
-import { loadNodeWardCosignPort, loadFaceFold }    from "./commands/intent.js";
-import { makeExecLeiSpendReactor }                 from "./exec-lei-door.js";
-import { EXEC_LEI_SPEND_VERB } from "@lararium/mesh/exec-lei";
+import { loadNodeWardCosignPort }                  from "./commands/intent.js";
 import { listWalkRecords }        from "./node-walk-store.js";
 import { storeDoorReactors, awaitOnRolled }       from "./store-door-verbs.js";
 import { controlSwarmWiki }                       from "./swarm-wiki.js";
@@ -5092,16 +5090,6 @@ async function prepareNodeBootOn(
         skipped: Array.isArray(prepared["skipped"]) ? prepared["skipped"] as string[] : [], overwrite: args["overwrite"] === true }) };
     }, { summary: "Publish native wiki render output inside the selected wiki's bound workbench.", surfaces: ["cli"] });
     registry.register("residency", makeResidencyStatsReactor({ residency }));
-    // THE EXEC LEI'S MAIN HALF: the daemon island routes `exec-lei-spend` here (it holds no key); this vessel spends one return
-    // of the standing exec lei over the control document's swarm wiki, under the mounted face's trust and its own atom.
-    registry.register(EXEC_LEI_SPEND_VERB, makeExecLeiSpendReactor({ wiki: controlSwarmWiki(readControlDoc), face: async () => {
-      const { group, face, signer } = await loadFaceFold(repo, assembly.catalogHandle.url, { index: mountFace ?? undefined });
-      const vesselKey = signer.key.toLowerCase();
-      return { group, spender: { key: signer.key, sign: (bytes: Uint8Array) => signer.sign(bytes) },
-        // An exec spend runs its scope check and rests on no receipt, so no place signs for it here.
-        trust: { hand: (key: string) => face.currentSigner(key), vessel: (key: string) => key === vesselKey, place: () => false, lead: () => false } };
-    } }));
-
     // THE STORE'S DOOR TABLE — `lares nexus kapae/posture/admit-take`, and every other store-touching verb run
     // here while this vessel stands, against the Repo its peers sync, so no second Repo ever writes beside this
     // one. (`lares host` and `lares walk` ride the custody door: their rows rest sealed, and their acts read the

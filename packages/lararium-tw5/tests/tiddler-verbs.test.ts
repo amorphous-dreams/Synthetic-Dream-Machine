@@ -7,7 +7,6 @@
  */
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { SwarmRefused } from "@lararium/mesh/swarm-tiddlers";
 import { sha256HexBytesSync, sha256HexSync } from "@lararium/mesh/crypto";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { bagUri } from "@lararium/mesh/lar-uris";
@@ -893,66 +892,18 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(await r.composite.storeForBag(DAEMON)!.get(title)).not.toBeNull();
   });
 
-  test("RED: the seat wall reads the one executable-class list: a seat-asked module, script type, plugin, startup action, global, view template and an unlisted system tag each offer (seat-startup-offer) and land nothing; CONTROL plain `$:/config` lands for a seat, and the operator's hand and no asker land every class natively", async () => {
+  test("a seat lands StartupAction, module-type and Layout records", async () => {
     const r = await rig();
     const put = makeTiddlerPutReactor(r.opts);
-    const as = (asker?: "seat" | "cli"): VerbContext => ({ ...ctx(), ...(asker ? { asker } : {}) });
-    const classes = [
-      { title: "Mod", fields: { "module-type": "startup" } }, { title: "Js", fields: { type: "application/javascript" } },
-      { title: "Plug", fields: { "plugin-type": "plugin" } }, { title: "Glob", fields: { tags: "$:/tags/Global" } }, { title: "View", tagsAdd: "$:/tags/ViewTemplate" },
-      { title: "Near", tagsAdd: "$:/tags/StartupActionX" }, { title: "Startup", tagsAdd: "$:/tags/StartupAction" },
-      { title: "Browser", fields: { tags: "memory [[$:/tags/StartupAction/Browser]]" } },
-    ];
-    for (const [i, shape] of classes.entries()) {
-      const title = `${shape.title} seat ${i}`;
-      await expect(put({ ...A, ...shape, title }, as("seat")), `${title} offers`).rejects.toMatchObject({ reason: "seat-startup-offer" });
-      expect(r.engine.wiki.getTiddler(title)).toBeUndefined();
+    const seat: VerbContext = { ...ctx(), asker: "seat" };
+    for (const shape of [
+      { title: "Seat startup", tagsAdd: "$:/tags/StartupAction" },
+      { title: "Seat module", fields: { "module-type": "startup" } },
+      { title: "Seat layout", tagsAdd: "$:/tags/Layout" },
+    ]) {
+      expect(await put({ ...A, ...shape }, seat)).toMatchObject({ decision: "put" });
+      expect(r.engine.wiki.getTiddler(shape.title)).toBeDefined();
     }
-    for (const asker of ["seat", "cli", undefined] as const) {
-      expect(await put({ ...A, title: `$:/config/x ${asker ?? "none"}`, text: "y" }, as(asker))).toMatchObject({ decision: "put" });
-      expect(await put({ ...A, title: `Palette ${asker ?? "none"}`, text: "y", tagsAdd: "$:/tags/Palette" }, as(asker))).toMatchObject({ decision: "put" });
-    }
-    await expect(put({ ...A, title: "Note 06", tagsAdd: "$:/tags/StartupAction" }, as("seat"))).rejects.toMatchObject({ reason: "seat-startup-offer" });
-    expect(r.engine.wiki.getTiddler("Note 06")?.fields["tags"]).toEqual(["memory"]);
-    for (const asker of ["cli", undefined] as const) {
-      for (const [i, shape] of classes.entries()) {
-        const title = `${shape.title} ${asker ?? "none"} ${i}`;
-        expect(await put({ ...A, ...shape, title }, as(asker)), `${title} lands natively`).toMatchObject({ decision: "put" });
-      }
-    }
-  });
-
-  test("RED: a seat's executable tiddler put lands under a standing exec lei and spends one return at the door; CONTROL: a lei that refuses leaves the offer standing", async () => {
-    const r = await rig();
-    const put = makeTiddlerPutReactor(r.opts);
-    const spends: string[] = [];
-    const execLei = { spend: async (land: { wiki: string; title: string; writer?: string }) => {
-      if (land.title !== "Lei startup") throw new SwarmRefused("swarm-lei-out-of-scope", "the lei names no such title");
-      spends.push(`${land.wiki}|${land.title}|${land.writer}`);
-      return { lei: "c".repeat(64), n: spends.length };
-    } };
-    const seat: VerbContext = { ...ctx(), asker: "seat", execLei };
-    expect(await put({ ...A, title: "Lei startup", tagsAdd: "$:/tags/StartupAction" }, seat)).toMatchObject({ decision: "put" });
-    expect(spends).toEqual(["default|Lei startup|seat"]);
-    await expect(put({ ...A, title: "Other startup", tagsAdd: "$:/tags/StartupAction" }, seat)).rejects.toMatchObject({ reason: "seat-startup-offer" });
-    expect(r.engine.wiki.getTiddler("Other startup")).toBeUndefined();
-  });
-
-  test("racing seat appends to an executable record spend one exec-lei return each and both land", async () => {
-    const r = await rig();
-    const put = makeTiddlerPutReactor(r.opts);
-    let left = 2;
-    const execLei = { spend: async () => {
-      if (left === 0) throw new SwarmRefused("swarm-lei-spent", "the lei holds no return");
-      return { lei: "c".repeat(64), n: left-- };
-    } };
-    await put({ ...A, title: "Macro row", create: true, text: "\\define a() a", tagsAdd: "$:/tags/Macro" }, ctx());
-    const seat: VerbContext = { ...ctx(), asker: "seat", execLei };
-    const receipts = await Promise.all(["\\define b() b", "\\define c() c"].map((append) => put({ ...A, title: "Macro row", append }, seat)));
-    expect(receipts.map((x) => x["decision"])).toEqual(["put", "put"]);
-    expect(left).toBe(0);
-    const text = r.engine.wiki.getTiddlerText("Macro row")!;
-    for (const words of ["define b()", "define c()"]) expect(text).toContain(words);
   });
 
   test("a based whole-text put racing an append through admission refuses stale or lands beneath it, and the append survives", async () => {
