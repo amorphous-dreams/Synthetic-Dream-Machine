@@ -452,3 +452,15 @@ def test_the_one_get_reads_a_whole_carrier_page_by_page_and_refuses_a_mismatch(d
     daemon.answers = [_page(1, 2, "ab", 4, "c1"), {**_page(2, 2, "cd", 4, None), "meme": {**_page(2, 2, "cd", 4, None)["meme"], "canonicalHash": "h2"}}]
     with pytest.raises(Exception, match="read-page-mismatch"):
         t["get"](title="lar:///t/x", recipe="default", mu="assert")
+
+
+def test_an_unlanded_write_raises_by_the_class_that_answered_through_act_too(daemon):
+    """F2 through `act`: a record write asked by its address answers the same receipt, and the seat raises it by the class
+    the answer's carrier names, whichever tool asked."""
+    daemon.output = {"has": "<<~ has name=`T` params=`decision/conflict`>>", "title": "T", "decision": "conflict", "hash": "sha256-live",
+                     "carrier": {"carrier": "lar:///ha.ka.ba/lares/afford/engine.record.puts", "bag": "b", "base": "x"}}
+    is_error, said = _call(_mcp(), "act", {"address": "lar:///engine.record.puts", "args": {"title": "T", "text": "x", "base": "sha256-old", "recipe": "default"}})
+    assert is_error and "put-conflict: nothing landed" in said and "sha256-live" in said
+    # CONTROL: a landed receipt through `act` returns whole.
+    daemon.output = {**daemon.output, "decision": "put", "hash": "sha256-new"}
+    assert _tools()["act"](address="lar:///engine.record.puts", args={"title": "T", "text": "x", "recipe": "default"})["decision"] == "put"
