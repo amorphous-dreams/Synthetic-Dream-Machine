@@ -14,7 +14,7 @@
  *     1. `await handler.bootTw5(wikiUri, coreBlob, pluginTiddlers)` — boots TW5, wires verse events,
  *         starts the in-wiki nalu applier ($tw.lares.applyNalu)
  *     2. entry file: wire Repo with syncPort, await Repo ready
- *     3. `buildIslandRecipe(...)` — composite layers + IslandAdaptor projection +
+ *     3. lay → seed → boot → mount — composite layers + IslandAdaptor projection +
  *         the shore queue door ($tw.lares.enqueueNalu) + seed replay through that queue,
  *         checkpointed when it empties
  *     4. `handler.sendEa(wikiUri)` — signal vessel: island is live
@@ -106,7 +106,7 @@ export class IslandKernel {
 
   /**
    * Return the live TW5Engine, or null if not yet booted / already torn down.
-   * Entry files use this to pass the engine to IslandAdaptor / buildIslandRecipe.
+   * Entry files use this to pass the engine to the shore after lay → seed → boot.
    */
   tw5(): TW5Engine | null {
     return this._tw5;

@@ -14,11 +14,12 @@ import { HULLS_TS_ONLY } from "@lararium/mesh/flow";
 import { wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import type { DocHandle } from "@lararium/mesh/automerge";
 import type { LarDoc } from "@lararium/mesh/base-doc";
-import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
+import { seedDrained } from "../src/island-recipe.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { makeDaemonBehavior } from "../src/daemon-behavior.js";
 import type { IslandContext } from "../src/island-context.js";
-import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
+import { wikiSkip, skipNote } from "./test-wiki.js";
+import { standIslandOverSeed } from "./island-over-seed.js";
 
 const POINTER = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 
@@ -53,12 +54,11 @@ function eventsDelivered(engine: { $tw: { wiki: unknown; Tiddler: unknown } }): 
 const markedHands = (adaptor: unknown): string[] => (adaptor as { pendingTitles(): string[] }).pendingTitles().filter((t) => !t.startsWith("$:/test/barrier"));
 
 async function rig(releaseAttach: Promise<void>, attach: boolean) {
-  const engine = await bootTestWiki();
   const slug = "daemon";
   const composite = new CompositeStore();
   const canon = fakeHandle();
   const working = fakeHandle();
-  const { adaptor } = buildIslandRecipe({ tw5: engine, composite, recipe: { wikiSlug: slug }, ready: [{ slot: wikiBagUri(slug), handle: canon }] });
+  const { tw5: engine, adaptor } = await standIslandOverSeed({ composite, recipe: { wikiSlug: slug }, ready: [{ slot: wikiBagUri(slug), handle: canon }] });
   const stop = bridgeWikiToAdaptor(engine, adaptor);
   await seedDrained(engine);
   const workingSlot = wikiSlotUri(slug, "working");

@@ -9,10 +9,11 @@ import { CompositeStore } from "@lararium/mesh/composite-store";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { wikiBagUri } from "@lararium/mesh/wiki-recipe";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
-import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
+import { seedDrained } from "../src/island-recipe.js";
 import { unroutedSaveAlertTitle } from "../src/island-adaptor.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
+import { wikiSkip, skipNote } from "./test-wiki.js";
+import { standIslandOverSeed } from "./island-over-seed.js";
 import {
   Repo, afterDispatch, canonBag, draftBag, landWhole, ManualBoundary, openDraft, peerWrite, remote, saveSequence,
   shoreRig, storeDeleted, storeText, turns, typeInto, workingBag, type Rig,
@@ -303,7 +304,13 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
 
   test("a delete with no working layer refuses by name through the real recipe, and when the pointer names an unmounted slot", async () => {
     // The recipe seeds an EMPTY write-layer pointer when it binds no working slot.
-    const engine = await bootTestWiki();
+    const repo = new Repo({ network: [] });
+    const slug = "shadow-recipe";
+    const canonHandle = repo.create<LarDoc>(emptyLarDoc());
+    const x = "lar:///t/shadow/no-working-recipe";
+    canonHandle.change((doc) => { doc.tiddlers[x] = { tiddler: { title: x, text: "canon text" } }; });
+    const composite = new CompositeStore();
+    const { tw5: engine, adaptor } = await standIslandOverSeed({ composite, recipe: { wikiSlug: slug }, ready: [{ slot: wikiBagUri(slug), handle: canonHandle }] });
     const wiki = engine.$tw.wiki as unknown as {
       getTiddler(t: string): { fields: Record<string, unknown> } | undefined;
       addTiddler(t: unknown): void;
@@ -322,13 +329,6 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
       };
       wiki.addEventListener("change", onChange);
     });
-    const repo = new Repo({ network: [] });
-    const slug = "shadow-recipe";
-    const canonHandle = repo.create<LarDoc>(emptyLarDoc());
-    const x = "lar:///t/shadow/no-working-recipe";
-    canonHandle.change((doc) => { doc.tiddlers[x] = { tiddler: { title: x, text: "canon text" } }; });
-    const composite = new CompositeStore();
-    const { adaptor } = buildIslandRecipe({ tw5: engine, composite, recipe: { wikiSlug: slug }, ready: [{ slot: wikiBagUri(slug), handle: canonHandle }] });
     const writes: string[] = [];
     vi.spyOn(composite, "tombstoneInBag").mockImplementation(async (bag) => { writes.push(bag); });
     vi.spyOn(composite, "writeFamily").mockImplementation(async (_p, _d, _o, options) => { writes.push(String(options?.bag)); });
