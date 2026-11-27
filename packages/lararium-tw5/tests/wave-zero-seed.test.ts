@@ -258,7 +258,8 @@ describe.skipIf(wikiSkip)(`wave zero: the seed boots as preloads through the nal
       await adaptor.landingIdle();
       expect(wiki.getTiddler(BORN)?.fields["text"], "the wiki keeps the creation").toBe("born");
       expect(await composite.get(BORN), "no store holds it").toBeNull();
-      expect(adaptor.ledger.landedOf(BORN), "its row stands synced, with no bag").toMatchObject({ bag: undefined });
+      expect(adaptor.ledger.landedOf(BORN), "no layer landed it: the landed ledger keeps no row, the start baseline reads it synced").toBeUndefined();
+      expect(adaptor.isFoam(BORN, wiki.getTiddler(BORN) ?? null), "the boot's value reads as synced").toBe(true);
       expect(await composite.storeForBag(WORKING)!.get(BORN), "the working layer never took a write of it").toBeNull();
       expect(adaptor.holdsHand(BORN), "the bridge raised no hand").toBe(false);
       expect(adaptor.pendingTitles(), "the bridge sent nothing and owes nothing").toEqual([]);

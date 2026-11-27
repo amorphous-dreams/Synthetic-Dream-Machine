@@ -373,10 +373,26 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    */
   private _standSyncedRows(): void {
     const wiki = this.tw5.$tw.wiki;
+    this.syncedAtStart.clear();
     for (const title of wiki.filterTiddlers("[all[tiddlers]]")) {
       if (neverPersists(title) || this.ledger.landedOf(title) !== undefined) continue;
-      this.ledger.set(title, { tiddler: wiki.getTiddler(title) ?? null });
+      this.syncedAtStart.set(title, wiki.getTiddler(title) ?? null);
     }
+  }
+
+  /**
+   * THE START BASELINE, TW5's `readTiddlerInfo` for titles no layer answered: what the wiki held when the shore started, for every
+   * persisting title the seed's rows did not cover (a startup action's creation, a rig's own writes). The landed ledger keeps what
+   * a LAYER holds, and its readers (the delete's retract or kāpae, the save's route) read it so; this baseline answers only "has the
+   * title moved since the start", the one question the hand decision and the bridge ask. A title leaves it the first time it moves.
+   */
+  private readonly syncedAtStart = new Map<string, unknown>();
+
+  /** The value the hand decision compares against: the landed row where a layer answered, else the start baseline. */
+  private _knownOf(title: string): unknown | null {
+    const entry = this.ledger.landedOf(title);
+    if (entry) return entry.tiddler;
+    return this.syncedAtStart.has(title) ? (this.syncedAtStart.get(title) ?? null) : null;
   }
 
   /**
@@ -579,8 +595,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
   /** True when a wiki notification repeats the value the last wave left. */
   isFoam(title: string, value: unknown | null): boolean {
-    const entry = this.ledger.landedOf(title);
-    return entry ? same(entry.tiddler, value) : value === null;
+    const foam = same(this._knownOf(title), value);
+    if (!foam) this.syncedAtStart.delete(title);
+    return foam;
   }
 
   /**
@@ -647,7 +664,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // preloaded the seed through the same form and stood the books from it (`standFromSeed`), so no landing re-lands a preload.
     const incoming = live ? new this.tw5.$tw.Tiddler(naluFieldsOf({ title, record, ...(bag !== undefined ? { bag } : {}) })) : null;
     const standing = wiki.getTiddler(title) ?? null;
-    const known = entry ? entry.tiddler : null;
+    const known = this._knownOf(title);
     if (this.landing?.isStopped()) return "landed";
     // A marked title holds a hand even when its state has returned to the landed value: the flush decides
     // from the state at flush, and a write still in flight for it must be superseded before this wave lands.

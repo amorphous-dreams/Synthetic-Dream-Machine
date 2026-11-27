@@ -58,10 +58,8 @@ describe("landed composite laws", () => {
     const composite = new CompositeStore();
     const seen: LarTiddlerChange[] = [];
     composite.subscribe((change) => seen.push(change));
-    composite.addLayer({ bagId: "low", store: lower, writable: false });
-    composite.addLayer({ bagId: "high", store: upper, writable: false });
-    await Promise.resolve();
-    await Promise.resolve();
+    await composite.addLayer({ bagId: "low", store: lower, writable: false });
+    await composite.addLayer({ bagId: "high", store: upper, writable: false });
     const added = seen.find((change) => change.bag === "high");
     expect(added?.heads).toEqual(["high-head"]);
 
@@ -77,9 +75,7 @@ describe("landed composite laws", () => {
     await lone.put(rec, origin);
     const loneSeen: LarTiddlerChange[] = [];
     emptyComposite.subscribe((change) => loneSeen.push(change));
-    emptyComposite.addLayer({ bagId: "lone", store: lone, writable: true });
-    await Promise.resolve();
-    await Promise.resolve();
+    await emptyComposite.addLayer({ bagId: "lone", store: lone, writable: true });
     expect(loneSeen[0]?.bag).toBe("lone");
     expect(loneSeen[0]?.heads).toEqual(["lone-head"]);
   });
