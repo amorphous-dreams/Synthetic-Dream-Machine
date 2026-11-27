@@ -100,8 +100,9 @@ test('RED: the other run counts only its unspent budget: bytes it already wrote 
 test('RED: no count decides: five small runs beside a sixth admit where the bytes and the cores hold them', () => {
   const others = Array.from({ length: 5 }, () => ({ free0: 100 * G, budgetBytes: 1 * G }));
   assert.equal(headroom({ freeNow: 100 * G, floorBytes: 35 * G, budgetBytes: 1 * G, others, load: 2, cores: 16 }), null);
-  // The bytes refuse once the unspent budgets would carry C: past the floor: 40 - 1 - 5 = 34.
-  assert.match(headroom({ freeNow: 40 * G, floorBytes: 35 * G, budgetBytes: 1 * G, others, load: 2, cores: 16 }), /past the 35\.00G floor/);
+  // The bytes refuse once the unspent budgets would carry C: past the floor: five runs that took at 40G, none spent, 40 - 1 - 5 = 34.
+  const fresh = Array.from({ length: 5 }, () => ({ free0: 40 * G, budgetBytes: 1 * G }));
+  assert.match(headroom({ freeNow: 40 * G, floorBytes: 35 * G, budgetBytes: 1 * G, others: fresh, load: 2, cores: 16 }), /past the 35\.00G floor/);
 });
 
 test('RED: the cores read the load: beside another run the load must stand under the cores, each live run counting at least one', () => {
@@ -186,7 +187,7 @@ test('RED: a bench run adds a worktree at the ref, provisions it by the ref\'s o
   const git = (...a) => { const r = spawnSync('git', ['-C', repo, ...a], { encoding: 'utf8' }); assert.equal(r.status, 0, r.stderr); return r.stdout.trim(); };
   git('init', '-q');
   // The ref's own provisioner, a stub that marks the tree it provisions: the bench runs the ref's tool, never the floor's.
-  writeFileSync(join(repo, 'tools', 'provision-worktree.mjs'), "import { writeFileSync } from 'node:fs'; import { join } from 'node:path'; if (process.argv[2] !== '--existing') process.exit(9); writeFileSync(join(process.argv[3], 'provisioned'), 'yes');\n");
+  writeFileSync(join(repo, 'tools', 'provision-worktree.mjs'), "import { writeFileSync } from 'node:fs'; import { join } from 'node:path'; if (process.argv[2] !== '--existing') process.exit(9); writeFileSync(join(process.argv[3], 'provisioned'), 'yes\\n');\n");
   git('add', '.'); git('-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'stub');
   const head = git('rev-parse', 'HEAD');
   const bench = join(d, 'floor', 'bench-1');
