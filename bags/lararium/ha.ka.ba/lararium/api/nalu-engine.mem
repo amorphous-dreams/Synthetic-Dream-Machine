@@ -120,9 +120,10 @@ per title, topmost wins, a tombstone included, the boot set's own titles left ou
 record in the nalu form to the engine as a preload. TiddlyWiki adds the preloads while its change queue
 still sleeps, so wave zero raises no `change` dispatch, and it defines their modules, unpacks their
 plugins and runs their startup actions as it does any store's. The shore then mounts
-(`mountIslandShore`) and drives `emitInitialReplay()` per bag as before: each preloaded title compares
-the same form with what stands and writes nothing, while the ledger, the landed heads, the draft book
-and the kahua shadow stamps fill through the one road. Every change the composition told while the
+(`mountIslandShore`) and stands its account from the seed itself (`standFromSeed`, TW5's
+`Syncer.readTiddlerInfo` shape): the landed rows, the landed heads and the draft bases come from the seed's
+own read, the kahua shadow stamps ride the preloads, and no layer re-emits its corpus. A startup action's
+write over a preload therefore stands in the VM and never saves, as native TW5 keeps it. Every change the composition told while the
 engine booted lands afresh, so a record that left every layer during the boot leaves the wiki too.
 The shore's seed checkpoint resolves once its queue and its tracked work settle, and the kernel awaits
 it before it arms the island's behavior. Later waves carry what changed after the seed.
@@ -175,6 +176,6 @@ gates (`mesh/meme-provider.ts`, `mesh/projection-nalu.ts`).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;V7DOoMZscpzOHrAeihWt7JZH9GcVazwqzccO4ngEjsA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AxKPjstdMopGUvAZxH4Lx5D-X3oes-3fOBFrnlq2xbk`>>
 
 <<^ code=`&#x0004;` to=`?`>>
