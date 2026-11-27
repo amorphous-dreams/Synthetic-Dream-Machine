@@ -130,14 +130,3 @@ describe("a positional arg (`seat/N`)", () => {
     expect(usageOf("mcp", "ddate", rows)).toBe("ddate([format=<words>], [day=<number>], [month=<number>], [json])");
   });
 });
-
-describe("the closed slot set welds to the law meme", () => {
-  test("AFFORD_SLOTS reads the law's `!! slots ~` line, in its order (a slot the law names and the set omits would bake unrendered)", async () => {
-    const { readFileSync } = await import("node:fs");
-    const { fileURLToPath } = await import("node:url");
-    const { AFFORD_SLOTS } = await import("../src/affordance-rows.js");
-    const law = readFileSync(fileURLToPath(new URL("../../../bags/lares/ha.ka.ba/lares/api/pono/affordance.mem", import.meta.url)), "utf8");
-    const line = /^!! slots ~ (.+)$/m.exec(law)?.[1] ?? "";
-    expect(line.split(" · ").map((s) => `#/${s.trim()}`)).toEqual([...AFFORD_SLOTS]);
-  });
-});

@@ -15,6 +15,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/oracle-loop
  */
 
+import { CARRIER_TYPE } from "./carrier-type.js";
 import { ORACLE_THROW_STANDS, castFields, type Hexagram, type OracleCast } from "./oracle-cast.js";
 
 /** The affordance address every cast record tags, so one filter gathers carrier, code, tests and casts. */
@@ -195,7 +196,7 @@ export const CAST_MEME_TAGS = ["oracle/cast", ORACLE_AFFORDANCE] as const;
  */
 export function castMemeBody(input: { readonly title: string; readonly meta: Readonly<Record<string, string>>; readonly cast: OracleCast; readonly slots: readonly FilledSlot[] }): string {
   if (!input.title.startsWith("lar:///")) throw new RangeError(`oracle loop: a cast meme's title names a lar:/// address; got "${input.title}"`);
-  const meta: Record<string, string> = { ...input.meta, title: input.title, type: "text/memetic-wikitext+tiddlywiki", "uri-path": input.title.slice("lar:///".length) };
+  const meta: Record<string, string> = { ...input.meta, title: input.title, type: CARRIER_TYPE, "uri-path": input.title.slice("lar:///".length) };
   const lines = Object.keys(meta).sort().map((k) => `${k} = ${tomlString(meta[k]!)}`);
   lines.push(`tags = [${CAST_MEME_TAGS.map(tomlString).join(", ")}]`);
   lines.sort();

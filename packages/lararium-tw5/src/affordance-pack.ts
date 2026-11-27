@@ -7,7 +7,7 @@
  * vessel therefore answers the bytes the waking store renders, and help bytes never depend on vessel state.
  *
  * PURE DATA. The pack loads once, through `require` of the JSON (no `node:fs`, no environment read); a missing or unreadable
- * pack reads as an EMPTY pack, so every door falls to its legacy help rather than throwing at import, and witness W3 reads
+ * pack reads as an EMPTY pack, so every door reads its registry help rather than throwing at import, and witness W3 reads
  * the gap red with its cure.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/affordance
@@ -68,7 +68,7 @@ export function packHash12(pack: AffordancePack = affordancePack()): string {
   return pack.hash.replace(/^sha256-/, "").slice(0, 12);
 }
 
-/** A CLI door the pack flips (every affordance it skins holds a carrier), or undefined where the door still reads legacy help. */
+/** A CLI door the pack flips (every affordance it skins holds a carrier), or undefined where the door reads the help registry. */
 export function packDoor(door: string, pack: AffordancePack = affordancePack()): AffordancePackDoor | undefined {
   return Object.prototype.hasOwnProperty.call(pack.doors, door) ? pack.doors[door] : undefined;
 }

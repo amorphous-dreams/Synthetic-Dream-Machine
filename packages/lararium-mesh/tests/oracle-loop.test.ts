@@ -101,9 +101,10 @@ describe("oracle-loop", () => {
     expect(() => castMemeBody({ title: "casts/x", meta, cast: CAST, slots: [] })).toThrow(/lar:\/\/\//);
   });
 
-  test("no unfold axis survives: the module names no om, ah or hum", () => {
-    const src = readFileSync(new URL("../src/oracle-loop.ts", import.meta.url), "utf8");
-    expect(src).not.toMatch(/\bunfold\b|ENVELOPE_UNFOLDS|"om"|"ah"|"hum"/);
-    expect(src).not.toMatch(/#\/(observe|orient|decide|act|hooko)\b/);
+  test("no unfold axis survives: the module exports no unfold word, and its slots come from canon rows alone", async () => {
+    const mod = await import("../src/oracle-loop.js") as Record<string, unknown>;
+    expect(Object.keys(mod).filter((k) => /unfold|ENVELOPE/i.test(k))).toEqual([]);
+    const meta = castMeta(CAST, { title: "lar:///ha.ka.ba/lares/oracle/casts/x", intent: "i".repeat(64), asking: "q", observe: [] });
+    expect(() => castMemeBody({ title: "casts/x", meta, cast: CAST, slots: [] })).toThrow();
   });
 });

@@ -1348,7 +1348,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
  */
 export function helpDoor(command: string, positional: readonly string[]): string {
   const sub = positional[0];
-  // A verb a carrier skins reads its own whole (`lares law pin --help`), the way a legacy sub-door reads its own entry.
+  // A verb a carrier skins reads its own whole (`lares law pin --help`), the way a registry sub-door reads its own entry.
   if (sub && (`${command} ${sub}` in COMMAND_HELP || packRoute("cli", `${command} ${sub}`) !== undefined)) return `${command} ${sub}`;
   return command;
 }
@@ -1370,8 +1370,8 @@ export function seatAbout(door: string, about: string): void { ABOUT.set(door, a
  */
 export function helpLines(door: string, summary?: string): string[] {
   // THE SEAM (lar:///ha.ka.ba/kahua/memory/plan/cap-memes-compass §4): a door every affordance of which holds a carrier reads
-  // the baked pack, its legacy entry burned in the flipping commit; every other door reads the registry below. The census law
-  // (tests/laws/affordance-census.law.test.ts) counts the legacy doors down to zero, when this registry leaves.
+  // the baked pack, and its registry entry leaves in the commit that flips it; every other door reads the registry below. The census
+  // law (tests/laws/affordance-census.law.test.ts) counts the registry doors down to zero, when this registry leaves.
   const packed = packDoor(door);
   if (packed !== undefined) return [...packed.help];
   const verb = packRoute("cli", door);
