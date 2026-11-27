@@ -1,8 +1,9 @@
 /**
  * affordance-rows — the pure reading an affordance carrier's slots take before any skin renders them.
  *
- * An affordance carrier (lar:///ha.ka.ba/lares/api/pono/affordance) titles at its bare address (`lar:///oracle.library.consults`)
- * and keeps a closed slot set, in loop order: `#/head · #/shows · #/takes · #/gate · #/refuses · #/answers · #/skins · #/edges`.
+ * An affordance carrier (lar:///ha.ka.ba/lares/api/pono/affordance) answers its bare address (`lar:///oracle.library.consults`)
+ * from whichever title the bag stack seats it at (the bare root, or the stable seat canon gives it; `carrierOf` in
+ * `affordance-read` decides) and keeps a closed slot set, in loop order: `#/head · #/shows · #/takes · #/gate · #/refuses · #/answers · #/skins · #/edges`.
  * Each slot leads with a digest line (`!! takes ~ recipe · asking · fresh`) and carries its rows as `has` lines with key/value
  * params, the `~` tail holding the row's one line:
  *

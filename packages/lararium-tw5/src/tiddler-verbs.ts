@@ -8,8 +8,9 @@
  *   wiki-filter    { recipe, filter, fields?, collapse?, match?, context?, after?, limit?, maxBytes? } → { recipe, filter, titles | rows, total, next, asOf, withheld? }
  *                                                                         (`match` adds each row's `lines: [{n, text, cut?}]` and `matches`)
  *   tiddler-get    { recipe, title, meme?, grain?, slot?, after?, fields?, maxBytes? }
- *                                                                         → { has, recipe, title, lens, tiddler?: { fields, hash, textHash, bag, position, family?, orphan?, omitted? } | null,
+ *                                                                         → { has, recipe, address?, title, lens, tiddler?: { fields, hash, textHash, bag, position, family?, orphan?, omitted? } | null,
  *                                                                             meme?: { uri, text?, canonicalHash, bytes, slots, slot?, page? }, grain, next, note? }
+ *                                                                         (a bare affordance root no record titles reads the carrier the stack seats: `title` names it, `address` the root)
  *   wiki-render    { recipe, title | text, type?, form?, after?, maxBytes? } → { recipe, title, form, text, bytes, truncated, next }
  *   tiddler-put    { recipe | bag [realm], title, text?, append?, replace?, with?, fields?, unset?, tagsAdd?, tagsRemove?, cut?, base?, create? }
  *                                                                         → { recipe?, title, decision: put|noop|conflict|exists, bag, layer?, created, changed, hash, textHash, position, family?,
@@ -106,6 +107,8 @@ import { anchorBagOf, readBagStore, readContainer, writeBagStore, type MemeVerbO
 import { composeMemberCarrier, CUT_NOT_OMITTED_CODE, dropKaheaCalls, familyReadingIn, framesCarrier, isMemeRoot, joinedParagraph, placeMeme, readMeme, removeMeme, renameFamilyInWiki, slotAppendTarget, wikiFamilyView, wikiMemeSink, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX, type MemeSink } from "./place-meme.js";
 import { READ_PAGE_BYTES, byteLength, cardBase, memeBase, readBase, grainOf, hasLine, memeGradient, pageOfSlot, param, partialSpanOf, slotHasLines, tagTokens, type CarrierSlot, type GrainEcho, type ReadGrain } from "./read-gradient.js";
 import { skinnyCid } from "./lazy-resolver.js";
+import { carrierOf } from "./affordance-read.js";
+import { AFFORDANCE_TAG, bareAddressOf } from "./affordance-rows.js";
 import { readCarrierShape } from "./carrier-shape.js";
 import type { TiddlerFields } from "./deserializer.js";
 import { alertNamedTitles, isHouseAlert, isOpenAlert, redactedAlertFields, staysHome, withheldFromReads } from "./stay-home.js";
@@ -942,6 +945,21 @@ function refuseUnreadWords(args: Readonly<Record<string, unknown>>, title: strin
   if (lens && slotted && (asked === "skinny" || asked === "whole")) throw unread("slot", `a slot names one slot, and the ${asked === "skinny" ? "has-stack" : "whole carrier"} reads them all; drop the slot, or the grain`);
 }
 
+/**
+ * THE CARRIER A BARE ROOT READS (fork 3, `carrierOf`). A title whose root names an affordance address at the bare root
+ * (`lar:///oracle.library.consults`, or one of its slots) and which no record in the reader's view titles resolves to the
+ * carrier the stack seats for that address (its stable seat, the topmost layer answering), the slot riding along. Null where
+ * the title answers as written: a record titles it, its root names no bare address, or no carrier stands.
+ */
+function carrierTitleOf(view: EngineWiki, title: string): string | null {
+  const root = rootAddressOf(title);
+  if (bareAddressOf(root) === null) return null;
+  const has = (t: string): boolean => view.getTiddler(t) !== undefined;
+  if (has(root) || has(title)) return null;
+  const carrier = carrierOf({ has, tagged: (address) => view.filterTiddlers(`[all[shadows+tiddlers]tag[${AFFORDANCE_TAG}]tag[${address}]!is[draft]]`) }, root);
+  return carrier === null || carrier === root ? null : `${carrier}${title.slice(root.length)}`;
+}
+
 export const makeTiddlerGetReactor = everyWiki("tiddler-get", false, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
     const container = readContainer(args, "tiddler-get");
@@ -952,7 +970,7 @@ export const makeTiddlerGetReactor = everyWiki("tiddler-get", false, (opts: Tidd
     const slot = optionalStringArg(args, "slot");
     refuseUnreadWords(args, named, lens, asked, slot);
     // The meme lens reads the slot inside the recomposed carrier; the record lens reads the slot's own record.
-    const title = slot && !lens ? slotTitle(named, slot) : named;
+    let title = slot && !lens ? slotTitle(named, slot) : named;
     // A BAG NAMES ONE STORE AND NO WIKI: the record reads from that bag through the one bag reach and its read gate.
     if (container.bag !== null) {
       refuseWithheld(title, "tiddler-get");
@@ -965,7 +983,11 @@ export const makeTiddlerGetReactor = everyWiki("tiddler-get", false, (opts: Tidd
     const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
     const engine = anchor.engine;
     const wiki = engine.wiki;
-    const answered = { recipe: anchor.recipe };
+    // A BARE ROOT RESOLVES, AND THE STACK DECIDES (`carrierTitleOf`): an affordance address no record titles reads the carrier
+    // the reader's view seats for it, and the answer names the address beside the carrier's title and layer.
+    const carrier = carrierTitleOf(view, title);
+    const answered = { recipe: anchor.recipe, ...(carrier !== null ? { address: rootAddressOf(named) } : {}) };
+    if (carrier !== null) title = carrier;
     const placeIn = (t: string): { position: TiddlerPosition; family?: string | null; orphan?: boolean } => placeOf(anchor, view, t);
     if (lens) {
       // The meme lens reads through the reader's view, so a record this face may not read enters no carrier.
