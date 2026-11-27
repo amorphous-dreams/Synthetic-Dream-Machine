@@ -2186,10 +2186,13 @@ export const TIDDLER_CALL_SEATS: Readonly<Record<string, CallSeat>> = Object.fre
  * enters no route and no `#/takes`. A sigil reads through the same engine's own macro-call parser.
  */
 export function tiddlerCallSource(opts: TiddlerVerbOptions): CallSource {
-  const utils = (engineOf(opts) as unknown as { utils?: { parseMacroInvocationAsTransclusion?: MacroCallParse } }).utils;
-  const parse = utils?.parseMacroInvocationAsTransclusion?.bind(utils);
   return {
-    ...(parse ? { parse } : {}),
+    // The parser reads at the call, never at registration: a host that seats the verb before its engine boots (or a rig that
+    // boots none) registers cleanly, and a sigil met with no engine answers `sigil-malformed` through callOfSigil's own path.
+    get parse(): MacroCallParse | undefined {
+      const utils = (opts.tw5?.$tw as unknown as { utils?: { parseMacroInvocationAsTransclusion?: MacroCallParse } } | undefined)?.utils;
+      return utils?.parseMacroInvocationAsTransclusion?.bind(utils);
+    },
     readerOf: async (ctx, params) => {
       const asked = params["recipe"];
       const container = { recipe: typeof asked === "string" && asked.trim() !== "" ? asked.trim() : "default" };
