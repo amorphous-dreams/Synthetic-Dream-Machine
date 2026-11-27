@@ -15340,7 +15340,7 @@
       "title": "lar:///ha.ka.ba/lares/afford/oracle.calendar.dates"
     },
     "lar:///oracle.library.consults": {
-      "bcc": "ni:///sha-256;1LDCTE5YIu9Ar2PJD7pZc7Oa4Ppa5IixtFblwvLbFvk",
+      "bcc": "ni:///sha-256;cXZjFexdX4AeJwuDQYvJjyaQ9UtGJ-XmEYsuPys5E68",
       "calls": {
         "cli": [
           "lares oracle cast --recipe default --asking 'which lane lands first' --uncertain 'two lanes both ready; the floor runs one at a time'",
@@ -15408,7 +15408,7 @@
       "renders": {
         "cli": {
           "#/answers": [
-            "  answered (exit 0)  the cast landed; slots name each act slot and who owes it",
+            "  answered (exit 0)  the cast landed; slots name each act slot and who owes it, carrier the slot that shaped them",
             "  replayed (exit 0)  the cast already standing answers, naming the uncertainty and the pointers it kept",
             "  asks (exit 5)  a seat asked what a hand alone gives; the line a person runs rides the answer",
             "  owed (exit 6)  the vessel took the cast and the caller stopped hearing; the same asking reads it back"
@@ -15431,7 +15431,7 @@
           "#/head": [
             "  a blind throw to collide uncertainty with",
             "  The house consults an oracle whose corpus rests on a library shelf (`lar:///ha.ka.ba/lares/library/oracles/<kind>/`). The kind rides as data: `by` names the shelf (the E-Jing by default), and the shelf's index record declares its own `method`, its corpus and its credits. The e-jing and doa shelves declare `three-coins`: the I Ching by three coins a line (heads three, tails two: 6 old yin and 9 old yang change, 7 and 8 hold). A new oracle joins as a shelf, never a new address or a new verb; a shelf whose method the verb runs not yet refuses by name.",
-            "  Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the house canon wherever the cast lands: the target wiki, then the canon wiki, then the affordance pack its binary baked. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.",
+            "  Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the carrier the caller's stack seats for this address (a carrier a working layer seats above canon shapes the act in its place), the affordance pack its binary baked standing as the floor, and the answer names the carrier slot that shaped it. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.",
             "  The cast stands as a blind throw to collide uncertainty with: the throw stands, the reading stays open.",
             "  The facet `library` names reading from a curated corpus, and the house reads curated corpora under more than one heading (the oracle shelves, the TW5 docs library, the library door's shelves), so the address holds facet law 3. It re-keys `lar:///oracle.cast.throws`, whose seat stands as a signed alias record pointing here (DAM law 4; moolelo 2026-11-26, \"The oracle family, re-keyed\")."
           ],
@@ -15448,8 +15448,8 @@
             "    cure: lares oracle cast --by e-jing",
             "  oracle-method-unrun  the shelf declares a method the verb runs not yet; the answer names the shelves that stand",
             "    cure: lares oracle cast --by e-jing",
-            "  oracle-loop-unread  neither the target, the canon wiki nor the baked pack answers loop rows, so no act record lands",
-            "    cure: tiddler.get.reads --title lar:///ha.ka.ba/lares/api/pono/oracle-loop --slot '#/loop'"
+            "  oracle-loop-unread  neither the carrier the stack seats nor the baked pack answers loop rows, so no act record lands",
+            "    cure: tiddler.get.reads --title lar:///oracle.library.consults --slot '#/loop'"
           ],
           "#/shows": [
             "  lares oracle cast --recipe default --asking 'which lane lands first' --uncertain 'two lanes both ready; the floor runs one at a time'    # a seat's cast at its own open fork",
@@ -15489,7 +15489,7 @@
             "",
             "  a blind throw to collide uncertainty with",
             "  The house consults an oracle whose corpus rests on a library shelf (`lar:///ha.ka.ba/lares/library/oracles/<kind>/`). The kind rides as data: `by` names the shelf (the E-Jing by default), and the shelf's index record declares its own `method`, its corpus and its credits. The e-jing and doa shelves declare `three-coins`: the I Ching by three coins a line (heads three, tails two: 6 old yin and 9 old yang change, 7 and 8 hold). A new oracle joins as a shelf, never a new address or a new verb; a shelf whose method the verb runs not yet refuses by name.",
-            "  Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the house canon wherever the cast lands: the target wiki, then the canon wiki, then the affordance pack its binary baked. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.",
+            "  Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the carrier the caller's stack seats for this address (a carrier a working layer seats above canon shapes the act in its place), the affordance pack its binary baked standing as the floor, and the answer names the carrier slot that shaped it. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.",
             "  The cast stands as a blind throw to collide uncertainty with: the throw stands, the reading stays open.",
             "  The facet `library` names reading from a curated corpus, and the house reads curated corpora under more than one heading (the oracle shelves, the TW5 docs library, the library door's shelves), so the address holds facet law 3. It re-keys `lar:///oracle.cast.throws`, whose seat stands as a signed alias record pointing here (DAM law 4; moolelo 2026-11-26, \"The oracle family, re-keyed\").",
             "",
@@ -15535,11 +15535,11 @@
             "    cure: lares oracle cast --by e-jing",
             "  oracle-method-unrun  the shelf declares a method the verb runs not yet; the answer names the shelves that stand",
             "    cure: lares oracle cast --by e-jing",
-            "  oracle-loop-unread  neither the target, the canon wiki nor the baked pack answers loop rows, so no act record lands",
-            "    cure: tiddler.get.reads --title lar:///ha.ka.ba/lares/api/pono/oracle-loop --slot '#/loop'",
+            "  oracle-loop-unread  neither the carrier the stack seats nor the baked pack answers loop rows, so no act record lands",
+            "    cure: tiddler.get.reads --title lar:///oracle.library.consults --slot '#/loop'",
             "",
             "Answers:",
-            "  answered (exit 0)  the cast landed; slots name each act slot and who owes it",
+            "  answered (exit 0)  the cast landed; slots name each act slot and who owes it, carrier the slot that shaped them",
             "  replayed (exit 0)  the cast already standing answers, naming the uncertainty and the pointers it kept",
             "  asks (exit 5)  a seat asked what a hand alone gives; the line a person runs rides the answer",
             "  owed (exit 6)  the vessel took the cast and the caller stopped hearing; the same asking reads it back",
@@ -15563,7 +15563,7 @@
         },
         "console": {
           "#/answers": [
-            "  answered (exit 0)  the cast landed; slots name each act slot and who owes it",
+            "  answered (exit 0)  the cast landed; slots name each act slot and who owes it, carrier the slot that shaped them",
             "  replayed (exit 0)  the cast already standing answers, naming the uncertainty and the pointers it kept",
             "  asks (exit 5)  a seat asked what a hand alone gives; the line a person runs rides the answer",
             "  owed (exit 6)  the vessel took the cast and the caller stopped hearing; the same asking reads it back"
@@ -15586,7 +15586,7 @@
           "#/head": [
             "  a blind throw to collide uncertainty with",
             "  The house consults an oracle whose corpus rests on a library shelf (`lar:///ha.ka.ba/lares/library/oracles/<kind>/`). The kind rides as data: `by` names the shelf (the E-Jing by default), and the shelf's index record declares its own `method`, its corpus and its credits. The e-jing and doa shelves declare `three-coins`: the I Ching by three coins a line (heads three, tails two: 6 old yin and 9 old yang change, 7 and 8 hold). A new oracle joins as a shelf, never a new address or a new verb; a shelf whose method the verb runs not yet refuses by name.",
-            "  Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the house canon wherever the cast lands: the target wiki, then the canon wiki, then the affordance pack its binary baked. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.",
+            "  Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the carrier the caller's stack seats for this address (a carrier a working layer seats above canon shapes the act in its place), the affordance pack its binary baked standing as the floor, and the answer names the carrier slot that shaped it. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.",
             "  The cast stands as a blind throw to collide uncertainty with: the throw stands, the reading stays open.",
             "  The facet `library` names reading from a curated corpus, and the house reads curated corpora under more than one heading (the oracle shelves, the TW5 docs library, the library door's shelves), so the address holds facet law 3. It re-keys `lar:///oracle.cast.throws`, whose seat stands as a signed alias record pointing here (DAM law 4; moolelo 2026-11-26, \"The oracle family, re-keyed\")."
           ],
@@ -15604,8 +15604,8 @@
             "    cure: $tw.lares.afford.run(\"oracle.library.consults\", {\"by\": \"e-jing\"})",
             "  oracle-method-unrun  the shelf declares a method the verb runs not yet; the answer names the shelves that stand",
             "    cure: $tw.lares.afford.run(\"oracle.library.consults\", {\"by\": \"e-jing\"})",
-            "  oracle-loop-unread  neither the target, the canon wiki nor the baked pack answers loop rows, so no act record lands",
-            "    cure: $tw.lares.afford.run(\"tiddler.get.reads\", {\"title\": \"lar:///ha.ka.ba/lares/api/pono/oracle-loop\", \"slot\": \"#/loop\"})"
+            "  oracle-loop-unread  neither the carrier the stack seats nor the baked pack answers loop rows, so no act record lands",
+            "    cure: $tw.lares.afford.run(\"tiddler.get.reads\", {\"title\": \"lar:///oracle.library.consults\", \"slot\": \"#/loop\"})"
           ],
           "#/shows": [
             "  $tw.lares.afford.run(\"oracle.library.consults\", {\"recipe\": \"default\", \"asking\": \"which lane lands first\", \"uncertain\": \"two lanes both ready; the floor runs one at a time\"})    # a seat's cast at its own open fork",
@@ -15647,7 +15647,7 @@
             "",
             "  a blind throw to collide uncertainty with",
             "  The house consults an oracle whose corpus rests on a library shelf (`lar:///ha.ka.ba/lares/library/oracles/<kind>/`). The kind rides as data: `by` names the shelf (the E-Jing by default), and the shelf's index record declares its own `method`, its corpus and its credits. The e-jing and doa shelves declare `three-coins`: the I Ching by three coins a line (heads three, tails two: 6 old yin and 9 old yang change, 7 and 8 hold). A new oracle joins as a shelf, never a new address or a new verb; a shelf whose method the verb runs not yet refuses by name.",
-            "  Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the house canon wherever the cast lands: the target wiki, then the canon wiki, then the affordance pack its binary baked. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.",
+            "  Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the carrier the caller's stack seats for this address (a carrier a working layer seats above canon shapes the act in its place), the affordance pack its binary baked standing as the floor, and the answer names the carrier slot that shaped it. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.",
             "  The cast stands as a blind throw to collide uncertainty with: the throw stands, the reading stays open.",
             "  The facet `library` names reading from a curated corpus, and the house reads curated corpora under more than one heading (the oracle shelves, the TW5 docs library, the library door's shelves), so the address holds facet law 3. It re-keys `lar:///oracle.cast.throws`, whose seat stands as a signed alias record pointing here (DAM law 4; moolelo 2026-11-26, \"The oracle family, re-keyed\").",
             "",
@@ -15696,11 +15696,11 @@
             "    cure: $tw.lares.afford.run(\"oracle.library.consults\", {\"by\": \"e-jing\"})",
             "  oracle-method-unrun  the shelf declares a method the verb runs not yet; the answer names the shelves that stand",
             "    cure: $tw.lares.afford.run(\"oracle.library.consults\", {\"by\": \"e-jing\"})",
-            "  oracle-loop-unread  neither the target, the canon wiki nor the baked pack answers loop rows, so no act record lands",
-            "    cure: $tw.lares.afford.run(\"tiddler.get.reads\", {\"title\": \"lar:///ha.ka.ba/lares/api/pono/oracle-loop\", \"slot\": \"#/loop\"})",
+            "  oracle-loop-unread  neither the carrier the stack seats nor the baked pack answers loop rows, so no act record lands",
+            "    cure: $tw.lares.afford.run(\"tiddler.get.reads\", {\"title\": \"lar:///oracle.library.consults\", \"slot\": \"#/loop\"})",
             "",
             "Answers:",
-            "  answered (exit 0)  the cast landed; slots name each act slot and who owes it",
+            "  answered (exit 0)  the cast landed; slots name each act slot and who owes it, carrier the slot that shaped them",
             "  replayed (exit 0)  the cast already standing answers, naming the uncertainty and the pointers it kept",
             "  asks (exit 5)  a seat asked what a hand alone gives; the line a person runs rides the answer",
             "  owed (exit 6)  the vessel took the cast and the caller stopped hearing; the same asking reads it back",
@@ -15729,7 +15729,7 @@
           "whole": [
             "Consult an oracle shelf at your own fork; the cast lands an OODA-HA meme",
             "The house consults an oracle whose corpus rests on a library shelf (`lar:///ha.ka.ba/lares/library/oracles/<kind>/`). The kind rides as data: `by` names the shelf (the E-Jing by default), and the shelf's index record declares its own `method`, its corpus and its credits. The e-jing and doa shelves declare `three-coins`: the I Ching by three coins a line (heads three, tails two: 6 old yin and 9 old yang change, 7 and 8 hold). A new oracle joins as a shelf, never a new address or a new verb; a shelf whose method the verb runs not yet refuses by name.",
-            "Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the house canon wherever the cast lands: the target wiki, then the canon wiki, then the affordance pack its binary baked. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.",
+            "Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the carrier the caller's stack seats for this address (a carrier a working layer seats above canon shapes the act in its place), the affordance pack its binary baked standing as the floor, and the answer names the carrier slot that shaped it. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.",
             "The cast stands as a blind throw to collide uncertainty with: the throw stands, the reading stays open.",
             "The facet `library` names reading from a curated corpus, and the house reads curated corpora under more than one heading (the oracle shelves, the TW5 docs library, the library door's shelves), so the address holds facet law 3. It re-keys `lar:///oracle.cast.throws`, whose seat stands as a signed alias record pointing here (DAM law 4; moolelo 2026-11-26, \"The oracle family, re-keyed\").",
             "Gate (the carrier's testimony; the door checks): seat-asks: a seat names its query before it casts; a bare seat cast answers asks. fresh: a fresh throw rides a person's hand; a seat's answers asks. seed: a seeded throw rides a person's hand; a seat's answers asks. coins: typed coins ride a person's hand; a seat's answer asks, so a seat never picks the figure. nonce: a seat's own nonce re-throws as surely as fresh, and answers asks. write: the cast lands through the meme door's own gate.",
@@ -15741,7 +15741,7 @@
         },
         "tw5": {
           "#/answers": [
-            "  answered (exit 0)  the cast landed; slots name each act slot and who owes it",
+            "  answered (exit 0)  the cast landed; slots name each act slot and who owes it, carrier the slot that shaped them",
             "  replayed (exit 0)  the cast already standing answers, naming the uncertainty and the pointers it kept",
             "  asks (exit 5)  a seat asked what a hand alone gives; the line a person runs rides the answer",
             "  owed (exit 6)  the vessel took the cast and the caller stopped hearing; the same asking reads it back"
@@ -15764,7 +15764,7 @@
           "#/head": [
             "  a blind throw to collide uncertainty with",
             "  The house consults an oracle whose corpus rests on a library shelf (`lar:///ha.ka.ba/lares/library/oracles/<kind>/`). The kind rides as data: `by` names the shelf (the E-Jing by default), and the shelf's index record declares its own `method`, its corpus and its credits. The e-jing and doa shelves declare `three-coins`: the I Ching by three coins a line (heads three, tails two: 6 old yin and 9 old yang change, 7 and 8 hold). A new oracle joins as a shelf, never a new address or a new verb; a shelf whose method the verb runs not yet refuses by name.",
-            "  Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the house canon wherever the cast lands: the target wiki, then the canon wiki, then the affordance pack its binary baked. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.",
+            "  Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the carrier the caller's stack seats for this address (a carrier a working layer seats above canon shapes the act in its place), the affordance pack its binary baked standing as the floor, and the answer names the carrier slot that shaped it. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.",
             "  The cast stands as a blind throw to collide uncertainty with: the throw stands, the reading stays open.",
             "  The facet `library` names reading from a curated corpus, and the house reads curated corpora under more than one heading (the oracle shelves, the TW5 docs library, the library door's shelves), so the address holds facet law 3. It re-keys `lar:///oracle.cast.throws`, whose seat stands as a signed alias record pointing here (DAM law 4; moolelo 2026-11-26, \"The oracle family, re-keyed\")."
           ],
@@ -15780,8 +15780,8 @@
             "    cure: <$tiddler.get.reads title=\"<cast>\"/>",
             "  oracle-shelf-unknown  no shelf library/oracles/<kind>/ declares its method; the answer names the shelves that stand",
             "  oracle-method-unrun  the shelf declares a method the verb runs not yet; the answer names the shelves that stand",
-            "  oracle-loop-unread  neither the target, the canon wiki nor the baked pack answers loop rows, so no act record lands",
-            "    cure: <$tiddler.get.reads title=\"lar:///ha.ka.ba/lares/api/pono/oracle-loop\" slot=\"#/loop\"/>"
+            "  oracle-loop-unread  neither the carrier the stack seats nor the baked pack answers loop rows, so no act record lands",
+            "    cure: <$tiddler.get.reads title=\"lar:///oracle.library.consults\" slot=\"#/loop\"/>"
           ],
           "#/shows": [
             "  <$action-oracle-cast recipe=\"default\" asking=\"which lane lands first\" uncertain=\"two lanes both ready; the floor runs one at a time\"/>    # a seat's cast at its own open fork",
@@ -15821,7 +15821,7 @@
             "",
             "  a blind throw to collide uncertainty with",
             "  The house consults an oracle whose corpus rests on a library shelf (`lar:///ha.ka.ba/lares/library/oracles/<kind>/`). The kind rides as data: `by` names the shelf (the E-Jing by default), and the shelf's index record declares its own `method`, its corpus and its credits. The e-jing and doa shelves declare `three-coins`: the I Ching by three coins a line (heads three, tails two: 6 old yin and 9 old yang change, 7 and 8 hold). A new oracle joins as a shelf, never a new address or a new verb; a shelf whose method the verb runs not yet refuses by name.",
-            "  Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the house canon wherever the cast lands: the target wiki, then the canon wiki, then the affordance pack its binary baked. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.",
+            "  Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the carrier the caller's stack seats for this address (a carrier a working layer seats above canon shapes the act in its place), the affordance pack its binary baked standing as the floor, and the answer names the carrier slot that shaped it. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.",
             "  The cast stands as a blind throw to collide uncertainty with: the throw stands, the reading stays open.",
             "  The facet `library` names reading from a curated corpus, and the house reads curated corpora under more than one heading (the oracle shelves, the TW5 docs library, the library door's shelves), so the address holds facet law 3. It re-keys `lar:///oracle.cast.throws`, whose seat stands as a signed alias record pointing here (DAM law 4; moolelo 2026-11-26, \"The oracle family, re-keyed\").",
             "",
@@ -15866,11 +15866,11 @@
             "    cure: <$tiddler.get.reads title=\"<cast>\"/>",
             "  oracle-shelf-unknown  no shelf library/oracles/<kind>/ declares its method; the answer names the shelves that stand",
             "  oracle-method-unrun  the shelf declares a method the verb runs not yet; the answer names the shelves that stand",
-            "  oracle-loop-unread  neither the target, the canon wiki nor the baked pack answers loop rows, so no act record lands",
-            "    cure: <$tiddler.get.reads title=\"lar:///ha.ka.ba/lares/api/pono/oracle-loop\" slot=\"#/loop\"/>",
+            "  oracle-loop-unread  neither the carrier the stack seats nor the baked pack answers loop rows, so no act record lands",
+            "    cure: <$tiddler.get.reads title=\"lar:///oracle.library.consults\" slot=\"#/loop\"/>",
             "",
             "Answers:",
-            "  answered (exit 0)  the cast landed; slots name each act slot and who owes it",
+            "  answered (exit 0)  the cast landed; slots name each act slot and who owes it, carrier the slot that shaped them",
             "  replayed (exit 0)  the cast already standing answers, naming the uncertainty and the pointers it kept",
             "  asks (exit 5)  a seat asked what a hand alone gives; the line a person runs rides the answer",
             "  owed (exit 6)  the vessel took the cast and the caller stopped hearing; the same asking reads it back",
@@ -20490,7 +20490,7 @@
         "",
         "  a blind throw to collide uncertainty with",
         "  The house consults an oracle whose corpus rests on a library shelf (`lar:///ha.ka.ba/lares/library/oracles/<kind>/`). The kind rides as data: `by` names the shelf (the E-Jing by default), and the shelf's index record declares its own `method`, its corpus and its credits. The e-jing and doa shelves declare `three-coins`: the I Ching by three coins a line (heads three, tails two: 6 old yin and 9 old yang change, 7 and 8 hold). A new oracle joins as a shelf, never a new address or a new verb; a shelf whose method the verb runs not yet refuses by name.",
-        "  Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the house canon wherever the cast lands: the target wiki, then the canon wiki, then the affordance pack its binary baked. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.",
+        "  Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the carrier the caller's stack seats for this address (a carrier a working layer seats above canon shapes the act in its place), the affordance pack its binary baked standing as the floor, and the answer names the carrier slot that shaped it. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.",
         "  The cast stands as a blind throw to collide uncertainty with: the throw stands, the reading stays open.",
         "  The facet `library` names reading from a curated corpus, and the house reads curated corpora under more than one heading (the oracle shelves, the TW5 docs library, the library door's shelves), so the address holds facet law 3. It re-keys `lar:///oracle.cast.throws`, whose seat stands as a signed alias record pointing here (DAM law 4; moolelo 2026-11-26, \"The oracle family, re-keyed\").",
         "",
@@ -20536,11 +20536,11 @@
         "    cure: lares oracle cast --by e-jing",
         "  oracle-method-unrun  the shelf declares a method the verb runs not yet; the answer names the shelves that stand",
         "    cure: lares oracle cast --by e-jing",
-        "  oracle-loop-unread  neither the target, the canon wiki nor the baked pack answers loop rows, so no act record lands",
-        "    cure: tiddler.get.reads --title lar:///ha.ka.ba/lares/api/pono/oracle-loop --slot '#/loop'",
+        "  oracle-loop-unread  neither the carrier the stack seats nor the baked pack answers loop rows, so no act record lands",
+        "    cure: tiddler.get.reads --title lar:///oracle.library.consults --slot '#/loop'",
         "",
         "Answers:",
-        "  answered (exit 0)  the cast landed; slots name each act slot and who owes it",
+        "  answered (exit 0)  the cast landed; slots name each act slot and who owes it, carrier the slot that shaped them",
         "  replayed (exit 0)  the cast already standing answers, naming the uncertainty and the pointers it kept",
         "  asks (exit 5)  a seat asked what a hand alone gives; the line a person runs rides the answer",
         "  owed (exit 6)  the vessel took the cast and the caller stopped hearing; the same asking reads it back",
@@ -20634,7 +20634,7 @@
       ]
     }
   },
-  "hash": "sha256-080fed5620e2266a7b147da6ff5730c862172d84288b465ab71204f712e262f2",
+  "hash": "sha256-b60567e81c064d457acf556f60a2d93faabafc0c5b4ca485e9e0c51d8085a989",
   "index": {
     "cli": [
       "  lares act CLEAR  empty a bag but keep its identity; the effect log stays",
