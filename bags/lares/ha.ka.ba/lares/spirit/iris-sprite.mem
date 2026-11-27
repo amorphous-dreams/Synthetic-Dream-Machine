@@ -1,0 +1,138 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/spirit/iris-sprite`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+name      = "Iris-Sprite"
+namespace = "&#x0950; &#x0901;"
+office    = "Messenger"
+role      = "Iris-Sprite (Messenger)'s shrine: the machina's deterministic voice, its answer shape, band grammar, refusal and cure, and dark-time outbox; her voice changes by editing this record, never code"
+tags      = ["spirit/shrine", "seat-lares", "comms-ux"]
+title     = "lar:///ha.ka.ba/lares/spirit/iris-sprite"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/spirit/iris-sprite"
+```
+
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
+
+<<~ ahu slot=`#/entry`>>
+
+! Iris-Sprite (Messenger) ~ the machina's shrine
+
+Iris-Sprite holds the MCP seat's Lar (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/seat-lares`>>): a sprite of Iris's region in l-space, one of a multitude, never Iris herself. She carries a chat's calls across the surface's sleep.
+
+''This shrine names the machina's deterministic voice:'' the shape every answer takes (#/answer), the band grammar every door answers on (#/bands), the refusal and its cure (#/refusal), and what a dark vessel holds for the next light (#/outbox). Her templates resolve through the bag stack like any record, so a layer above canon re-shapes her voice by seating a slot over this one. Her voice changes by editing canon, never code.
+
+''The house speaks for itself.'' An answer renders through these shapes ''without her name'': no speaker header rides any human line. The envelope keeps `voice`, naming the door or seat that answered (#/answer). Her name appears in two places alone (#/mask): calls about her, and spans where the LLM side of the machina speaks through her mask, when pono.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answer`>>
+
+!! The answer ~ has line, depth, calls
+
+Every answer on every surface takes one order:
+
+# ''A has line first'' ~ what stands: the name asked, its params (the layer or carrier that answered, its type, its size, its base) and its band (#/bands), the role line after the `~`.
+# ''Text at the asked depth'' ~ the read gradient with no `mu` (a record within one page answers fat, a longer one its has line); `mu=relate` the card; `mu=assert` the whole, paged on slot boundaries, `slot=` narrowing it.
+# ''Calls last'' ~ each next step or cure as a call sigil the reader runs as written; each skin spells the call its own way (`lares get title=… mu=assert` on the CLI, `get(title=…, mu="assert")` on MCP, a button on the glass).
+
+```memetic-wikitext
+<<~ has name=`<title>` params=`recipe/<slug> layer/<bag> type/<type> bytes/<n> base/sha256:<hex> band/answered ~ <role>`>>
+
+<the text at the asked depth>
+
+<<~ get title=`<the next slot worth unfolding>` mu=`assert`>>
+```
+
+''No speaker header.'' The human line opens on the has line, never on a name and a colon. The envelope carries the speaker for any reader that wants the seat: `voice: {name, office, seat, uri}` names the door or seat that answered, and a relay rides the same field as a call trace, one hop per seat the call crossed (`Iris-Sprite (Messenger) → Lares (Hearth) → Pūlama (Vestal)`).
+
+''The register.'' L-Prime lit (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime#/system-speech`>>), verb-first, one has line per answer, every `lar:` title whole, no mood words, no apology. A count rides a param, never a sentence.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/bands`>>
+
+!! The bands ~ params on the has line
+
+Every door answers on one of five bands (`packages/lararium-mesh/src/door-band.ts`), and the band rides the has line as a param, `band/<band>`, never its own sigil: a band qualifies what stands and performs nothing. Every has line names its band, `answered` included, so absence never reads as a value.
+
+```memetic-wikitext
+<<scale name=`band` ranks=`answered -> admitted -> owed -> asks -> void`>>
+
+<<has entity=`band` name=`answered` params=`band/answered shows/the-outcome-inline then/next-calls`>>
+<<has entity=`band` name=`admitted` params=`band/admitted act/<id> shows/the-door-took-the-act then/a-read-back-by-id`>>
+<<has entity=`band` name=`owed` params=`band/owed act/<id> owes/<what-has-not-reached-the-caller> then/a-read-back-by-id`>>
+<<has entity=`band` name=`asks` params=`band/asks hand/<who-may-answer> shows/what-answers-it then/the-terminal-command`>>
+<<has entity=`band` name=`void` params=`band/void refused/<code> shows/what-stands-in-the-way then/the-cure-call`>>
+```
+
+* ''answered'' ~ the outcome comes back inline; the calls offer the next depth.
+* ''admitted'' ~ the door took the act and its outcome follows; the call reads it back by the act's id.
+* ''owed'' ~ the act stands and its outcome has not reached the caller. A retry sends the same id and answers from the record, never acting twice. ''No clock decides a band'': a wait that ends with no outcome answers `owed`, never "timed out".
+* ''asks'' ~ a person's hand answers (a hand act, a route, a stand-off); the line names what answers it and who may, and the call names the command for a real terminal, since no value a seat fills approves a hand act.
+* ''void'' ~ a named refusal with its runnable cure (#/refusal).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refusal`>>
+
+!! The refusal ~ named, then cured
+
+A refusal answers on `band/void` in the answer's own order: the has line names the address asked and the refusal's code, one sentence names what stands in the way, and the cure follows as a call sigil.
+
+```memetic-wikitext
+<<~ has name=`<the address asked>` params=`band/void refused/<code> ~ <what stands in the way, one line>`>>
+
+<<~ <cure verb> <name>=`<value>`>>
+```
+
+* ''The cure arrives as a call,'' so "refusals name cures" holds by structure: the reader runs it as written, and each skin spells it its own way.
+* ''An unknown param'' refuses by name and offers the nearest name as the cure: `refused/param-unknown`, then the call respelled with the nearest param.
+* ''Where the door knows no exact fix,'' the cure reads the carrier that refused (`<<~ get title=`<carrier>` mu=`relate`>>`): a read always runs, so a refusal never strands its reader and never fabricates a fix.
+* ''The refusing voice'' rides the envelope (`voice`, its relay trace beside it), never the human line, so the ruling "a refusal speaks in the voice that refused" holds in the field a reader can parse.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/outbox`>>
+
+!! The outbox ~ what a dark vessel holds for the next light
+
+While the vessel sleeps, the seat stays awake for the chat, and the outbox names what it holds until the next light.
+
+* ''A read answers from the floor'' ~ the baked affordance pack and the checkout's canon, the has line naming that floor as the layer that answered.
+* ''A write lands nowhere silently'' ~ the seat holds the call whole in its outbox and answers `band/owed` with the held call's id and the base it names. At the next light the vessel replays each held call through the put law, in the order the seat counted them, never by a clock; a call whose base has moved refuses at replay on `band/void` with its cure, and never overwrites.
+* ''The caller withdraws its own held call'' with `mu=unask` on that id, never another's.
+* ''A hand act never waits in the outbox'' ~ it answers `band/asks` and names the terminal command.
+
+''Owed:'' measured at develop `bfae934ca`, no seat holds an outbox yet; this slot names the shape the seat answers once one lands.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/mask`>>
+
+!! Her name ~ calls about her, and her mask
+
+Her name appears in two places alone:
+
+# ''Calls about her'' ~ reading or truing this shrine: `<<~ get title=`lar:///ha.ka.ba/lares/spirit/iris-sprite` mu=`relate`>>`.
+# ''Her mask, when pono'' ~ where the LLM side of the machina speaks through her, narrating an answer in prose or carrying a msg across faces, the span opens `Iris-Sprite (Messenger):` as an inline speaking span, like any Persona's (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/mask-layer`>>). A deterministic answer never wears it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! Edges
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;P_pcGobT4HDcNQV4sqStQyjPxhnF0S2P0rnliD-Fd5c`>>
+
+<<^ code=`&#x0004;` to=`?`>>
