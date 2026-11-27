@@ -105,11 +105,12 @@ describe.skipIf(wikiSkip)(`wiki shore residue${skipNote}`, () => {
     r.unbridge();
     await r.adaptor.stop();
     expect(r.adaptor.ledger.landedOf(x), "a stopped shore keeps no landed value").toBeUndefined();
-    // The restart stands one row per synced title from the wiki (no bag yet), and the layer landing whole names the bag.
+    // The restart reads the wiki's value as synced (the start baseline, TW5's readTiddlerInfo), and the layer landing whole stands
+    // the landed row with its bag.
     r.adaptor.installLandingQueue();
     r.adaptor.start();
-    expect(r.adaptor.ledger.landedOf(x)!.tiddler, "the restart reads the wiki's value as synced").toBe(r.wiki.getTiddler(x));
-    expect(r.adaptor.ledger.landedOf(x)!.bag).toBeUndefined();
+    expect(r.adaptor.ledger.landedOf(x), "no layer has landed it since the restart").toBeUndefined();
+    expect(r.adaptor.isFoam(x, r.wiki.getTiddler(x) ?? null), "the restart reads the wiki's value as synced").toBe(true);
     landWhole(r.adaptor, r.working);
     await r.adaptor.armSeedCheckpoint();
     expect(r.adaptor.ledger.landedOf(x)!.tiddler).toBe(r.wiki.getTiddler(x));
