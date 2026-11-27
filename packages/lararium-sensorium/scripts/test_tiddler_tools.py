@@ -312,7 +312,8 @@ def test_the_text_alone_rides_a_named_key_and_takes_no_parameter(daemon):
     tools = {t.name: t for t in asyncio.run(_mcp().list_tools())}
     card = tools["tiddler_get"].description
     assert "--text" in card and "tiddler.fields.text" in card and "meme.text" in card and "meme.slotText" in card, card
-    assert "text" not in tools["tiddler_get"].inputSchema["properties"]
+    import inspect
+    assert "text" not in inspect.signature(_tools()["tiddler_get"]).parameters
     daemon.output = {"recipe": "default", "title": "Note", "lens": "record", "tiddler": {"fields": {"title": "Note", "text": "words"}, "hash": "sha256:1"}}
     assert _tools()["tiddler_get"](title="Note", recipe="default", grain="whole")["tiddler"]["fields"]["text"] == "words"
     assert daemon.wire() == {"verb": "tiddler-get", "args": {"recipe": "default", "title": "Note", "grain": "whole"}}
