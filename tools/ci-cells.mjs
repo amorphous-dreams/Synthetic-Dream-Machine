@@ -57,18 +57,18 @@ const dealt = (name, dir, part, parts) => pkg(name, dir, null, { deal: "node-uni
  * all stay in the tree, untouched, for the browser Mu to relight.
  *
  * What still runs from the browser packages is the node-environment slice (isomorphic-by-intent code needs no real browser):
- *   - `@lararium/browser`  `packages/lararium-browser/vitest.config.ts`: project `browser-node`, 48 of 113 files.
- *   - `@lararium/web`      `packages/lararium-web/vitest.config.ts`: project `web-node`, 13 of 53 files.
+ *   - `@lararium/browser`  `packages/lararium-browser/vitest.config.ts`: project `browser-node`.
+ *   - `@lararium/web`      `packages/lararium-web/vitest.config.ts`: project `web-node`.
  *   - `@lararium/tw5`      `packages/lararium-tw5/vitest.config.ts`: every node suite; meme-routes.e2e keeps its node contact (its one
  *                          Chromium describe skips loudly without an engine).
- * What went dark: `@lararium/browser` projects chromium + firefox (the other 65 files); `@lararium/web` projects web-browser, vessel-host and the
- * four Playwright e2e projects (40 files under tests/ and 13 e2e files, the floor-crossing config's three among them); tw5's
- * filter-cts-chromium, standalone-single-file and syncer-back-parity e2e files; the ci.yml floor-crossing and Chromium-pull steps;
- * and held-out's browser-weld driver (tools/held-out-cells.mjs).
  *
- * TO RELIGHT: in each package config, add the exported `browserProjects` back into `projects`; in ci.yml restore the `engines`
- * and `container` of the two matrix rows and the dropped quick-job steps; in held-out-cells.mjs restore the browser-weld driver.
+ * THE ACCOUNT STANDS AS DATA in tools/browser-lamps.mjs and reads here under the names every pointer cites:
+ * `BROWSER_LAMPS_DIM` (what went dark, project by project, and how each part relights) and `BROWSER_LAMPS_LIT` (the thin lamp
+ * set the Pono Browser relit against the standing hull, each file with its proof). `node tools/browser-lamps.mjs` counts lit,
+ * lamp and dim off the tree, so no count rests in a comment to go stale; tools/browser-lamps.test.mjs holds the account to
+ * the tree and the configs. The lamps run on the familiar's floor under `LAR_BROWSER_LAMPS=1`; no cell below runs one.
  */
+export { BROWSER_LAMPS_DIM, BROWSER_LAMPS_LIT } from "./browser-lamps.mjs";
 export const TEST_CELLS = Object.freeze([
   { cell: "node-a", packages: [dealt("@lararium/node", "packages/lararium-node", 1, 2)] },
   { cell: "node-b", packages: [dealt("@lararium/node", "packages/lararium-node", 2, 2)] },
