@@ -58,7 +58,7 @@ describe.skipIf(wikiSkip)(`rendered-derives — only the renderer writes a rende
     return { engine, put: makeTiddlerPutReactor(opts), del: makeTiddlerDeleteReactor(opts), ctx: ctxOf(composite, "tiddler-put") };
   }
 
-  test("RED: a tiddler put over a rendered tiddler, or one that would land carrying rendered-from, refuses rendered-derives and names the sources; CONTROL: a put over the source lands", async () => {
+  test("RED: a put over a rendered tiddler, or one that would land carrying rendered-from, refuses rendered-derives and names the sources; CONTROL: a put over the source lands", async () => {
     const r = await doorRig();
     const over = await refusalOf(() => r.put({ recipe: "default", title: "Road.rendered", text: "hand edit" }, r.ctx));
     expect(over.reason).toBe("rendered-derives");
@@ -70,7 +70,7 @@ describe.skipIf(wikiSkip)(`rendered-derives — only the renderer writes a rende
     expect((await r.put({ recipe: "default", title: "Road", text: "{{Note}} and more" }, r.ctx))["decision"]).toBe("put");
   }, 60_000);
 
-  test("RED: a tiddler delete of a rendered tiddler refuses rendered-derives; CONTROL: the render still stands", async () => {
+  test("RED: a delete of a rendered tiddler refuses rendered-derives; CONTROL: the render still stands", async () => {
     const r = await doorRig();
     const out = await r.del({ recipe: "default", title: "Road.rendered" }, r.ctx);
     expect(out).toMatchObject({ decision: "refused", refusal: "rendered-derives" });

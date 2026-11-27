@@ -1038,7 +1038,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     }
   });
 
-  test("★ slot-level-put witness: a tiddler put on a meme family's `#/slot` either refuses by name or leaves the carrier sealed; it never lands bytes the block check no longer covers ★", async () => {
+  test("★ slot-level-put witness: a put on a meme family's `#/slot` either refuses by name or leaves the carrier sealed; it never lands bytes the block check no longer covers ★", async () => {
     const r = await rig();
     const sealed = stampCarrier(memeText(["a", "b"]));
     expect(verifyBcc(sealed)).toMatch(/^(ok|head-unbound)$/);

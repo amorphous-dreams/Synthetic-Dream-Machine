@@ -258,7 +258,7 @@ The lane runs after the founding, since `L4p` needs a stood hearth (road items `
 ''House decisions'' (talked out):
 * The face proof's SIGNED projection names `hearthDaemonUrl`, so the gate never opens an unproven URL.
 * `default` stays the daemon wiki on the page, backed by the hearth's document.
-* A named-wiki filter reuses `mountAimedWiki` and `W27`.
+* A filter over a named wiki reuses `mountAimedWiki` and `W27`.
 * The lares MCP reads down until a hearth stands, so the MCP parity tests run after the standing.
 * Lane law: a bwrap PID namespace for every process test, no pid 0 or 1 fakes, single test files only, e2e in CI, a cold Terra read at the punctures, and a blind Opus reader colliding on custody paths.
 
@@ -372,6 +372,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;VfBZ-9Kb4qlbfipz8zlTJeft-CQWPg_EIjuJvSszcyA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9yMmbIyW_ctdIXgZFal_AgXULpoTfW4YrUG6_k3qRfw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

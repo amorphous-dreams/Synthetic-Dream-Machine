@@ -17,7 +17,7 @@
  *              admits on any reading (its own stop reads the floor). Until the readings admit it waits at the door; the pace
  *              only spaces the reads, each reading decides. The admitted run's reservation sits at `.floor/run-<pid>.json`.
  *   THE BENCH  with `--ref`, the run proves that ref in its own ephemeral worktree: `git worktree add --detach` under the floor
- *              directory, the ref's own `provision-worktree.mjs --existing` (submodules against local objects, the offline
+ *              directory, the floor's own `provision-worktree.mjs --existing` (submodules against local objects, the offline
  *              frozen install COPIED from the pnpm store, the grammar wasm, the TW5 vendor), the command run inside it, and the
  *              worktree removed after, green, red or stopped. Measured 2026-11-27 on a built bench: node_modules 1.25G, the
  *              whole tree 1.71G; so a `--ref` run's default budget reads 4G plus a 2G bench.
@@ -148,9 +148,12 @@ export async function admitAt(argv, { say = (s) => console.error(s), env = proce
   reserve(dir, key, { pid: key, free0: (readers.readFree ?? cFree)(), budgetBytes });
 }
 
-/** The command a `--ref` run meters: its own worktree added at the ref, provisioned by the ref's own tool, the command run inside. */
-export function benchCommand(root, bench, ref, command) {
-  return ['bash', '-c', 'set -e; git -C "$0" worktree add --detach "$1" "$2"; node "$1/tools/provision-worktree.mjs" --existing "$1"; cd "$1"; exec "${@:3}"', root, bench, ref, ...command];
+/** The floor's own provisioner: the bench's tree comes from the ref, its install from the floor that admits it, so the floor's guard and env always agree. */
+export const FLOOR_PROVISIONER = fileURLToPath(new URL('./provision-worktree.mjs', import.meta.url));
+
+/** The command a `--ref` run meters: its own worktree added at the ref, provisioned by the floor's own tool, the command run inside. */
+export function benchCommand(root, bench, ref, command, provisioner = FLOOR_PROVISIONER) {
+  return ['bash', '-c', 'set -e; git -C "$0" worktree add --detach "$1" "$2"; node "$3" --existing "$1"; cd "$1"; exec "${@:4}"', root, bench, ref, provisioner, ...command];
 }
 
 /** Remove an ephemeral bench, whatever its run read. */

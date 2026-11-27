@@ -5,7 +5,7 @@
  * A door FLIPS when every affordance it skins holds a carrier: the baked pack then carries its help (`doors.<door>`), and the
  * flipping commit burns its `COMMAND_HELP` entry and every `"<door> <sub>"` key with it. LEGACY_CEILING records the legacy
  * count as it stands; a commit that flips a door lowers it by hand in the same act, and no commit may raise it. At zero,
- * `command-help.ts` leaves and the seam's second branch burns. Seed: `oracle` flipped first, `ddate` and `law` with wave 1a, `act` · `ingest` · `export` · `import` · `shore` · `bag` · `flow` with wave 2, `kahua` · `trust` · `kapae` · `events` · `hooks` · `mcp` with wave 3a, `put` · `delete` · `rename` with the comms course's call shape (landing 8: the `tiddler` door and `wiki filter` burned whole; `get` chooses its carrier by the param a call names, so it claims no route of its own). Control: a door planted in both
+ * `command-help.ts` leaves and the seam's second branch burns. Seed: `oracle` flipped first, `ddate` and `law` with wave 1a, `act` · `ingest` · `export` · `import` · `shore` · `bag` · `flow` with wave 2, `kahua` · `trust` · `kapae` · `events` · `hooks` · `mcp` with wave 3a, `put` · `delete` · `rename` with the comms course's call shape (`get` chooses its carrier by the param a call names, so it claims no route of its own). Control: a door planted in both
  * homes reads red, and a census over a pack that flips nothing breaks the ceiling.
  *
  * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-laws
