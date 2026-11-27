@@ -29,8 +29,8 @@
  *
  * A SHORT TITLE READS FULL (S6, `short-title`). Every title a get, put, delete, rename or render takes (a rename's `to` too)
  * reads through the one closed prefix set first: `kahua:road/x` reaches the verb as `lar:///ha.ka.ba/kahua/memory/road/x`,
- * so every answer names the full title and no record stands at the short form; a prefix no law declares refuses
- * `short-title-unknown` naming the prefixes that stand.
+ * so every answer names the full title and no record stands at the short form; every other title rides as named, and
+ * where a `word:path` title under a prefix no law declares reads absent, the answer adds a `hint` naming the prefixes that stand.
  *
  * A BAG TAKES ONE RECORD THROUGH ITS OWN STORE. `bag: <slug>` names one bag and no wiki, so no engine runs: a get reads the
  * record from that bag (`bagGet`), a put lands it there and a delete removes it there (`bagSeat`), under the reach and the
@@ -116,7 +116,7 @@ import { alertNamedTitles, isHouseAlert, isOpenAlert, redactedAlertFields, stays
 import { canonFiltersText, functionPragmasOf, houseWidgetOf, refuseUnknownHouseOperators } from "./house-filters.js";
 import { pageFilterAnswer, filterCursor, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
-import { readShortTitle } from "./short-title.js";
+import { readShortTitle, shortTitleHint } from "./short-title.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { wornOrigin } from "./verb-dispatcher.js";
 import { wikiWearsNext } from "./island-recipe.js";
@@ -262,7 +262,7 @@ async function namedWikiOptions(opts: TiddlerVerbOptions, args: Readonly<Record<
 /**
  * SHORT TITLES READ FULL AT THE DOOR (S6): each title argument a verb names (`title`, a rename's `to`) reads through the one
  * closed prefix set (`readShortTitle`), so `kahua:road/x` reaches the verb as `lar:///ha.ka.ba/kahua/memory/road/x` and every
- * answer names the full title; a prefix no law declares refuses by name before anything reads.
+ * answer names the full title; every other title rides through as named (a title stays a title, its colons included).
  */
 function fullTitles(args: Readonly<Record<string, unknown>>, keys: readonly string[]): Readonly<Record<string, unknown>> {
   let out: Record<string, unknown> | null = null;
@@ -276,6 +276,17 @@ function fullTitles(args: Readonly<Record<string, unknown>>, keys: readonly stri
   return out ?? args;
 }
 
+/**
+ * THE CURE RIDES THE NOT-FOUND ANSWER: a title in the short shape (`word:path`) under a prefix no law declares rode through as
+ * named; where it reads absent (a record lens's `tiddler: null`, a delete's or a rename's `decision: "absent"`), the answer
+ * adds one `hint` naming the prefixes that stand.
+ */
+function withShortTitleHint(answer: Record<string, unknown>, title: unknown): Record<string, unknown> {
+  if (typeof title !== "string" || !(answer["tiddler"] === null || answer["decision"] === "absent")) return answer;
+  const hint = shortTitleHint(title);
+  return hint === null ? answer : { ...answer, hint };
+}
+
 /** A reactor that answers the anchor itself, and a named wiki in that wiki's own engine; `titled` names its title arguments. */
 function everyWiki(verb: string, write: boolean, make: (opts: TiddlerVerbOptions) => VerbReactor, titled: readonly string[] = []): (opts: TiddlerVerbOptions) => VerbReactor {
   return (opts) => {
@@ -283,7 +294,8 @@ function everyWiki(verb: string, write: boolean, make: (opts: TiddlerVerbOptions
     return async (given, ctx) => {
       const args = fullTitles(given, titled);
       const named = await namedWikiOptions(opts, args, verb, write);
-      return named ? make(named)(args, ctx) : anchor(args, ctx);
+      const answer = await (named ? make(named)(args, ctx) : anchor(args, ctx));
+      return titled.length > 0 ? withShortTitleHint(answer, args["title"]) : answer;
     };
   };
 }

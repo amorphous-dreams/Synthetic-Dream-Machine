@@ -1,11 +1,11 @@
 /**
  * SHORT TITLES (S6, lar:///ha.ka.ba/kahua/memory/course/ai-surface-gestures #/stories) — the one pure reading every tiddler
- * door calls: `kahua:<path>` reads the stage meme law's full title, a prefix no law declares refuses by name with the
- * prefixes that stand, and every other title rides through untouched.
+ * door calls: `kahua:<path>` reads the stage meme law's full title, and every other title rides through untouched, a prefix
+ * no law declares included; its not-found hint names the prefixes that stand.
  */
 import { describe, expect, test } from "vitest";
 import { STAGE_MEME_PREFIX } from "../src/place-meme.js";
-import { readShortTitle, SHORT_TITLE_EMPTY_CODE, SHORT_TITLE_PREFIXES, SHORT_TITLE_UNKNOWN_CODE } from "../src/short-title.js";
+import { readShortTitle, shortTitleHint, SHORT_TITLE_EMPTY_CODE, SHORT_TITLE_PREFIXES } from "../src/short-title.js";
 
 describe("readShortTitle", () => {
   test("the closed set derives from the stage meme law: `kahua` names STAGE_MEME_PREFIX and nothing else stands", () => {
@@ -25,13 +25,16 @@ describe("readShortTitle", () => {
     }
   });
 
-  test("an unknown prefix over a stage-shaped path refuses by name and names the prefixes that stand", () => {
-    const read = readShortTitle("kahu:road/x");
-    expect(read).toMatchObject({ kind: "refused", code: SHORT_TITLE_UNKNOWN_CODE });
-    const message = read.kind === "refused" ? read.message : "";
-    expect(message).toMatch(/^short-title-unknown: "kahu:road\/x" names the prefix "kahu:"/);
-    expect(message).toContain(`kahua: (${STAGE_MEME_PREFIX})`);
-    expect(message).toContain("`kahua:road/x`");
+  test("a title stays a title: an unknown prefix rides through as named, and its hint names the prefixes that stand", () => {
+    for (const title of ["kahu:road/x", "todo:buy-milk"]) expect(readShortTitle(title)).toEqual({ kind: "full", title });
+    const hint = shortTitleHint("kahu:road/x") ?? "";
+    expect(hint).toContain(`kahua: → ${STAGE_MEME_PREFIX}`);
+    expect(hint).toContain(`\`kahua:road/x\` reads \`${STAGE_MEME_PREFIX}road/x\``);
+    expect(shortTitleHint("todo:buy-milk")).toContain("kahua: →");
+  });
+
+  test("CONTROL: no hint for a standing prefix, a full address, a plain title or a colon before no stage path", () => {
+    for (const title of ["kahua:road/x", "lar:///ha.ka.ba/kahua/memory/road/x", "Note 01", "did:key:z6MkExample", "Note: draft"]) expect(shortTitleHint(title)).toBeNull();
   });
 
   test("a standing prefix with no path refuses short-title-empty", () => {

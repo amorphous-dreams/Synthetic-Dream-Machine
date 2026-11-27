@@ -29,7 +29,7 @@ export type {
 export { TW5Engine } from "./tw5-vm.js";
 export { bagScopeOf, qualifyStackTag, stackOf } from "./has-stack.js";
 export type { StackEntry } from "./has-stack.js";
-export { SHORT_TITLE_PREFIXES, SHORT_TITLE_EMPTY_CODE, SHORT_TITLE_UNKNOWN_CODE, readShortTitle, shortTitlePrefixesLine, type ShortTitleReading } from "./short-title.js";
+export { SHORT_TITLE_PREFIXES, SHORT_TITLE_EMPTY_CODE, readShortTitle, shortTitleHint, shortTitlePrefixesLine, type ShortTitleReading } from "./short-title.js";
 export type { TW5CoreBootBlob } from "./tw5-vm.js";
 export { HOME_WIKI_TITLE, HOME_WIKI_DEFAULT, homeWikiFilter, readHomeWikiSlug, selectHomeWikiSlug } from "./home-wiki.js";
 export type { HomeWikiSelectionSource } from "./home-wiki.js";

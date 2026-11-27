@@ -28,7 +28,7 @@
  *
  * A SHORT TITLE READS FULL (S6): `lares tiddler get kahua:road/x` rides the wire as written, the vessel's one reading
  * (`@lararium/tw5` `readShortTitle`) names `lar:///ha.ka.ba/kahua/memory/road/x`, and every line here prints the title the
- * answer carries; a prefix no law declares refuses `short-title-unknown` in the vessel's words.
+ * answer carries; any other title rides as named, and a `word:path` title that reads absent prints the answer's `hint` naming the prefixes that stand.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout
  */
@@ -267,7 +267,7 @@ async function tiddlerGet(given: ParsedArgs): Promise<number> {
   const tiddler = output["tiddler"] as GotTiddler | null | undefined;
   const meme = output["meme"] as GotMeme | undefined;
   if (!meme && !tiddler) {
-    emit(args, { ok: false, requestId: ran.requestId, data: output, error: { code: "not-found", message: `no tiddler at ${title}` }, human: () => console.error(`lares tiddler get: no tiddler at ${title}`) });
+    emit(args, { ok: false, requestId: ran.requestId, data: output, error: { code: "not-found", message: `no tiddler at ${title}${hintOf(output)}` }, human: () => console.error(`lares tiddler get: no tiddler at ${title}${hintOf(output)}`) });
     return exitFor("not-found");
   }
   const has = String(output["has"] ?? "");
@@ -372,6 +372,11 @@ const whereOf = (planned: Record<string, unknown>): string =>
 const answeredTitle = (receipt: Record<string, unknown>, plan: DoorPlan, key: "title" | "to" = "title"): string =>
   String(typeof receipt[key] === "string" ? receipt[key] : plan.args[key]);
 
+/** A not-found answer's `hint` (a `word:path` title under no standing prefix: the prefixes that stand), as a line's tail. */
+function hintOf(answer: Record<string, unknown>): string {
+  return typeof answer["hint"] === "string" ? ` (${answer["hint"]})` : "";
+}
+
 async function tiddlerPut(args: ParsedArgs): Promise<number> {
   const plan = tiddlerPlan("put", args);
   const planned = plan.args["fields"] as Record<string, unknown> | undefined;
@@ -432,7 +437,7 @@ async function tiddlerDelete(args: ParsedArgs): Promise<number> {
   // A refusal the family law answers rides the receipt with the consequence it read: the code leads the message.
   const refusal = decision === "refused" && typeof receipt["refusal"] === "string" ? receipt["refusal"] : null;
   const message = decision === "conflict" ? `conflict: the record moved past ${plan.args["base"] ?? "the base"}; it reads ${receipt["hash"] ?? "absent"} now`
-                : decision === "absent" ? `no tiddler at ${named}`
+                : decision === "absent" ? `no tiddler at ${named}${hintOf(receipt)}`
                 : refusal ? String(receipt["why"] ?? `${refusal}: ${named}`) : `${decision}: ${named}`;
   const read = receipt["consequence"] as { acts?: Array<{ title: string; act: string; bag?: string | null; shadowed?: string[]; reveals?: string | null }>; leaves?: Array<{ title: string; why: string }> } | undefined;
   /** One act as a line: the layer it writes and what the wiki reads afterward. */
@@ -475,7 +480,7 @@ async function tiddlerRename(args: ParsedArgs): Promise<number> {
   const code = decision === "renamed" ? "ok" : decision === "conflict" ? "conflict" : decision === "absent" ? "not-found" : "verb-error";
   const refusal = decision === "refused" && typeof receipt["refusal"] === "string" ? receipt["refusal"] : null;
   const message = decision === "conflict" ? `conflict: the record moved past ${plan.args["base"] ?? "the base"}; it reads ${receipt["hash"] ?? "absent"} now`
-                : decision === "absent" ? `no tiddler at ${named}`
+                : decision === "absent" ? `no tiddler at ${named}${hintOf(receipt)}`
                 : refusal ? String(receipt["why"] ?? `${refusal}: ${named}`) : `${decision}: ${named}`;
   const relinked = Array.isArray(receipt["relinked"]) ? (receipt["relinked"] as string[]) : [];
   emit(args, {

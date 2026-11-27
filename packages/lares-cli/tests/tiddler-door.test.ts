@@ -816,11 +816,15 @@ describe("a short title rides as written and every answer line names the full ti
     expect(gone.lines).not.toMatch(/kahua:road\/y/);
   });
 
-  test("a prefix no law declares crosses back as the vessel's refusal, in its own words with the prefixes that stand", async () => {
-    h.refuse = "short-title-unknown: \"kahu:road/x\" names the prefix \"kahu:\", which no law declares; the prefixes that stand: kahua: (lar:///ha.ka.ba/kahua/memory/). Name one (`kahua:road/x`), or the record's full title.";
-    const r = await human(["get", "kahu:road/x"]);
-    expect(r.code).not.toBe(0);
-    expect(r.lines).toContain("short-title-unknown");
-    expect(r.lines).toContain("kahua: (lar:///ha.ka.ba/kahua/memory/)");
+  test("a title under no standing prefix rides as named, and its not-found line carries the answer's hint naming the prefixes that stand", async () => {
+    const hint = "\"kahu:road/x\" reads as a title as named; \"kahu:\" names no short prefix. The prefixes that stand: kahua: → lar:///ha.ka.ba/kahua/memory/ (`kahua:road/x` reads `lar:///ha.ka.ba/kahua/memory/road/x`).";
+    h.reply = { recipe: "default", title: "kahu:road/x", lens: "record", tiddler: null, hint };
+    const got = await human(["get", "kahu:road/x"]);
+    expect(got.code).not.toBe(0);
+    expect(got.lines).toContain(`no tiddler at kahu:road/x (${hint})`);
+    expect(h.calls.at(-1)).toEqual({ verb: "tiddler-get", args: { recipe: "default", title: "kahu:road/x" } });
+    h.reply = { recipe: "default", title: "kahu:road/x", decision: "absent", tombstoned: [], retracted: [], hint };
+    const gone = await human(["delete", "kahu:road/x"]);
+    expect(gone.lines).toContain(`no tiddler at kahu:road/x (${hint})`);
   });
 });
