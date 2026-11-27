@@ -31,6 +31,10 @@ export const LAMP_PROOFS = Object.freeze(["relit-unproven", "lit", "red"]);
 export const LAMPS_ENV = "LAR_BROWSER_LAMPS";
 
 const unproven = (file) => Object.freeze({ file, proof: "relit-unproven" });
+/** A lamp a floor run read green, with the run that read it. */
+const lit = (file, note) => Object.freeze({ file, proof: "lit", note });
+/** A lamp a floor run read red: it stays in the set, its finding in `note`. */
+const red = (file, note) => Object.freeze({ file, proof: "red", note });
 
 /**
  * THE LAMP SET. `project` names the lamp's own vitest project; `from` names the dark project whose settings it takes
@@ -41,23 +45,23 @@ export const BROWSER_LAMPS_LIT = Object.freeze([
     pkg: "@lararium/web", dir: "packages/lararium-web", project: "lamp-vessel-host", from: "vessel-host",
     holds: "the vessel worker's host over a real engine: sessions, faces, the follower's brokered port, the console door, the place card, the reset gate",
     files: [
-      unproven("tests/vessel-host-console.test.ts"),
-      unproven("tests/vessel-host-faces.test.ts"),
-      unproven("tests/vessel-host-follower.test.ts"),
-      unproven("tests/vessel-host-place-card.test.ts"),
-      unproven("tests/vessel-host-reset-gate.test.ts"),
-      unproven("tests/vessel-host-surface.test.ts"),
+      lit("tests/vessel-host-console.test.ts", "floor run 2026-11-27 (#00001, adc8802dd + develop): lamp-vessel-host 72 passed / 4 skipped over 12 files"),
+      lit("tests/vessel-host-faces.test.ts", "floor run 2026-11-27 (#00001, adc8802dd + develop): lamp-vessel-host 72 passed / 4 skipped over 12 files"),
+      lit("tests/vessel-host-follower.test.ts", "floor run 2026-11-27 (#00001, adc8802dd + develop): lamp-vessel-host 72 passed / 4 skipped over 12 files"),
+      lit("tests/vessel-host-place-card.test.ts", "floor run 2026-11-27 (#00001, adc8802dd + develop): lamp-vessel-host 72 passed / 4 skipped over 12 files"),
+      lit("tests/vessel-host-reset-gate.test.ts", "floor run 2026-11-27 (#00001, adc8802dd + develop): lamp-vessel-host 72 passed / 4 skipped over 12 files"),
+      lit("tests/vessel-host-surface.test.ts", "floor run 2026-11-27 (#00001, adc8802dd + develop): lamp-vessel-host 72 passed / 4 skipped over 12 files"),
     ],
   },
   {
     pkg: "@lararium/web", dir: "packages/lararium-web", project: "lamp-vessel-e2e", from: "shore-writes-e2e",
     holds: "the second boot reads what the first wrote; the vessel runs on its own worker",
-    files: [unproven("tests/e2e/second-boot.e2e.test.ts"), unproven("tests/e2e/vessel-worker.e2e.test.ts")],
+    files: [lit("tests/e2e/second-boot.e2e.test.ts", "floor run 2026-11-27 (#00001, adc8802dd + develop): lamp-vessel-e2e 2/2"), lit("tests/e2e/vessel-worker.e2e.test.ts", "floor run 2026-11-27 (#00001, adc8802dd + develop): lamp-vessel-e2e 2/2")],
   },
   {
     pkg: "@lararium/web", dir: "packages/lararium-web", project: "lamp-ceremony-e2e", from: "ceremony-e2e",
     holds: "a founding, an unlock and one ward act through the ceremony document",
-    files: [unproven("tests/e2e/ceremony.e2e.test.ts")],
+    files: [red("tests/e2e/ceremony.e2e.test.ts", "floor run 2026-11-27 (#00001, adc8802dd + develop): K3 waits 90 s for the page's load event and times out; the page never loads, likely behind the vessel's ~3-minute boot (the control and daemon slot loads, seal-manifest-diet)")],
   },
   {
     pkg: "@lararium/web", dir: "packages/lararium-web", project: "lamp-hearth-e2e", from: "golden-whole-road-e2e",
