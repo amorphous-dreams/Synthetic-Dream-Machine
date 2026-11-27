@@ -12,7 +12,7 @@ import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { seedDrained } from "../src/island-recipe.js";
 import { unroutedSaveAlertTitle } from "../src/island-adaptor.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
+import { wikiSkip, skipNote } from "./test-wiki.js";
 import { standIslandOverSeed } from "./island-over-seed.js";
 import {
   Repo, afterDispatch, canonBag, draftBag, landWhole, ManualBoundary, openDraft, peerWrite, remote, saveSequence,
