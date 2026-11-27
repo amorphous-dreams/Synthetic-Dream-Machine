@@ -168,7 +168,7 @@ describe.skipIf(wikiSkip)(`wave zero: the seed boots as preloads through the nal
     } finally { seed.release(); await repo.shutdown(); }
   }, 120_000);
 
-  test("A STARTUP WRITE STANDS: a startup action that rewrites a seeded title at TW5's boot pass keeps its write in the wiki and saves it to the store, and runs once", async () => {
+  test("A STARTUP WRITE STANDS: a startup action that rewrites a seeded title at TW5's boot pass keeps its write in the wiki, leaves the store's value standing (native TW5 stands its syncer after the boot pass and reads boot state as synced), and runs once", async () => {
     const COUNTER = "seed/counter", ACT = "lar:///t/seed/startup-rewrites", RUNS = "$:/temp/seed/startup-runs";
     const repo = new Repo({ network: [] });
     const handle = repo.create<LarDoc>(emptyLarDoc());
@@ -188,15 +188,13 @@ describe.skipIf(wikiSkip)(`wave zero: the seed boots as preloads through the nal
     try {
       await seedDrained(engine);
       await adaptor.landingIdle();
-      // The store hears the write as TW5's syncer would save it: a hand, drained on the shore's own pace.
-      const store = composite.storeForBag(WORKING)!;
-      const deadline = performance.now() + 30_000;
-      while ((await store.get(COUNTER))?.tiddler.text !== "booted" && performance.now() < deadline) {
-        await new Promise<void>((resolve) => setTimeout(resolve, 25));
-      }
+      // Native TW5 (core startup.js) runs every StartupAction, then stands the syncer; Syncer.readTiddlerInfo
+      // reads every tiddler in memory as already synced. A boot-pass write stands in the VM and never saves.
+      await new Promise<void>((resolve) => setTimeout(resolve, 400));
       await adaptor.landingIdle();
-      expect(wiki.getTiddler(COUNTER)?.fields["text"], "the replay never paints the seed back over the boot's write").toBe("booted");
-      expect((await store.get(COUNTER))?.tiddler.text, "the boot's write saves to the store").toBe("booted");
+      const store = composite.storeForBag(WORKING)!;
+      expect(wiki.getTiddler(COUNTER)?.fields["text"], "the shore never paints the seed back over the boot's write").toBe("booted");
+      expect((await store.get(COUNTER))?.tiddler.text, "the store keeps its own value: a boot-pass write never saves").toBe("seeded");
       expect(wiki.getTiddler(RUNS)?.fields["text"], "the action ran once: the shore never re-runs a boot-pass action").toBe("1");
     } finally { await adaptor.stop(); engine.dispose(); await repo.shutdown(); }
   }, 240_000);
