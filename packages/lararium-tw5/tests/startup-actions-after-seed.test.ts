@@ -11,7 +11,8 @@ import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { type DocHandle } from "@lararium/mesh/automerge";
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { seedDrained } from "../src/island-recipe.js";
-import { standIslandOverSeed, skipNote, wikiSkip } from "./test-wiki.js";
+import { skipNote, wikiSkip } from "./test-wiki.js";
+import { standIslandOverSeed } from "./island-over-seed.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 
 const PROBE = "$:/temp/lararium/startup-probe";

@@ -26,7 +26,8 @@ import { placeMeme, type MemeSink } from "../src/place-meme.js";
 import { installLazyResolver } from "../src/lazy-resolver.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { landWhole } from "./wiki-shore-rig.js";
-import { standIslandOverSeed, bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
+import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
+import { standIslandOverSeed } from "./island-over-seed.js";
 
 const canonBag = wikiSlotUri("shore-vector", "canon");
 const workingBag = wikiSlotUri("shore-vector", "working");

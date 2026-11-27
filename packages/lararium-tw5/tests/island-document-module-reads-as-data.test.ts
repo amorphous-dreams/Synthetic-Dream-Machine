@@ -8,7 +8,8 @@ import { type DocHandle } from "@lararium/mesh/automerge";
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { seedDrained } from "../src/island-recipe.js";
 import { TW5Engine } from "../src/tw5-vm.js";
-import { standIslandOverSeed, skipNote, wikiSkip } from "./test-wiki.js";
+import { skipNote, wikiSkip } from "./test-wiki.js";
+import { standIslandOverSeed } from "./island-over-seed.js";
 
 function handleOver(records: readonly LarTiddlerRecord[]): DocHandle<LarDoc> {
   const doc = emptyLarDoc();

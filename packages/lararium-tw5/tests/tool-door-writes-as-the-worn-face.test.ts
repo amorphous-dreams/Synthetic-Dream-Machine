@@ -28,7 +28,8 @@ import { seedDrained } from "../src/island-recipe.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { makeTiddlerPutReactor } from "../src/tiddler-verbs.js";
 import type { VerbContext, SessionWorn } from "../src/verb-dispatcher.js";
-import { standIslandOverSeed, skipNote, wikiSkip } from "./test-wiki.js";
+import { skipNote, wikiSkip } from "./test-wiki.js";
+import { standIslandOverSeed } from "./island-over-seed.js";
 
 // THE ENGINE THE MESH LOADS: this package holds no automerge dependency of its own, so the suite reads the mesh's copy.
 const meshRequire = createRequire(import.meta.resolve("@lararium/mesh"));

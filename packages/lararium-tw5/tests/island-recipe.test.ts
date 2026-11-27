@@ -15,7 +15,8 @@ import { layIslandComposition, mountIslandShore, seedDrained } from "../src/isla
 import { routeBag, type CascadeWiki } from "../src/bag-cascade.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { IslandAdaptor, UnroutedSaveRefusal } from "../src/island-adaptor.js";
-import { standIslandOverSeed, wikiSkip, skipNote } from "./test-wiki.js";
+import { wikiSkip, skipNote } from "./test-wiki.js";
+import { standIslandOverSeed } from "./island-over-seed.js";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { wikiSlotUri, wikiBagUri } from "@lararium/mesh/wiki-recipe";
 import type { LarDoc } from "@lararium/mesh/base-doc";

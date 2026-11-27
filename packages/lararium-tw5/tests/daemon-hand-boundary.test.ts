@@ -23,7 +23,8 @@ import { makeWikiBehavior } from "../src/wiki-behavior.js";
 import { composeIsland, type IslandCap } from "../src/island-caps.js";
 import { hasHandBoundary } from "../src/has-island-watches.js";
 import type { IslandBehavior, IslandContext } from "../src/island-context.js";
-import { standIslandOverSeed, wikiSkip, skipNote } from "./test-wiki.js";
+import { wikiSkip, skipNote } from "./test-wiki.js";
+import { standIslandOverSeed } from "./island-over-seed.js";
 
 const POINTER = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 const HAND = "L4/page-new";

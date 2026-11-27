@@ -18,7 +18,8 @@ import { seedDrained } from "../src/island-recipe.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { makeDaemonBehavior } from "../src/daemon-behavior.js";
 import type { IslandContext } from "../src/island-context.js";
-import { standIslandOverSeed, wikiSkip, skipNote } from "./test-wiki.js";
+import { wikiSkip, skipNote } from "./test-wiki.js";
+import { standIslandOverSeed } from "./island-over-seed.js";
 
 const POINTER = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 

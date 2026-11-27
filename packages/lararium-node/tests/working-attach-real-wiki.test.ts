@@ -6,7 +6,7 @@
  * slot, and a hand save lands in the working document and not in the daemon bag. Nothing replaces the
  * wiki's reader.
  */
-import { standIslandOverSeed } from "../../lararium-tw5/tests/test-wiki.js";
+import { standIslandOverSeed } from "../../lararium-tw5/tests/island-over-seed.js";
 import { afterEach, describe, expect, test } from "vitest";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import { CompositeStore } from "@lararium/mesh/composite-store";

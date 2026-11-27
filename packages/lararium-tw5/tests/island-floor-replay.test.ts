@@ -19,18 +19,6 @@ import { ORACLE_BAG, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { type DocHandle } from "@lararium/mesh/automerge";
 import { type LarDoc } from "@lararium/mesh/base-doc";
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
-import type { TW5Engine } from "../src/tw5-vm.js";
-
-function fakeTw5(): TW5Engine {
-  return {
-    $tw: {
-      Tiddler: class { constructor(readonly fields: Record<string, unknown>) {} getFieldStrings() { return {}; } isEqual() { return false; } },
-      rootWidget: { invokeActionsByTag: () => {} },
-      wiki: { getTiddlerText: () => "", getTiddler: () => undefined, filterTiddlers: () => [], addEventListener: () => {}, removeEventListener: () => {}, transact: (fn: () => void) => fn() },
-      lares: { applyNalu: () => {}, isApplyingNalu: () => false },
-    },
-  } as unknown as TW5Engine;
-}
 
 function fakeHandle(tiddlers: Record<string, LarTiddlerRecord> = {}): DocHandle<LarDoc> {
   const doc = { tiddlers } as unknown as LarDoc;

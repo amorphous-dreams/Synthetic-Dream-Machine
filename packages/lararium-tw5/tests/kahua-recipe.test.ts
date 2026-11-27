@@ -27,19 +27,11 @@ import type { DocHandle, Repo as RepoType } from "@lararium/mesh/automerge";
 import type { IslandMsg_Manifest } from "@lararium/mesh/island-protocol";
 import type { LarDoc } from "@lararium/mesh/base-doc";
 import type { SlotUri } from "@lararium/mesh/wiki-recipe";
-import type { TW5Engine } from "../src/tw5-vm.js";
 
 const Repo = createRequire(import.meta.resolve("@lararium/mesh"))("@automerge/automerge-repo").Repo as new (options: { sharePolicy?: () => Promise<boolean> }) => RepoType;
 const origin: ChangeOrigin = { kind: "canon-hydrate", receipt: "system" };
 const rec = (title: string, text: string) => ({ tiddler: { title, text } });
 const WORKING = wikiSlotUri("daemon", "working");
-
-function fakeTw5(): TW5Engine {
-  class FakeTiddler { constructor(readonly fields: Record<string, unknown>) {} getFieldStrings() { return {}; } isEqual() { return false; } }
-  return { $tw: { Tiddler: FakeTiddler, rootWidget: { invokeActionsByTag: () => {} },
-    wiki: { getTiddlerText: () => "", getTiddler: () => undefined, addTiddler: () => {}, deleteTiddler: () => {}, filterTiddlers: () => [], addEventListener: () => {}, removeEventListener: () => {}, transact: (fn: () => void) => fn() },
-    lares: { applyNalu: () => {}, isApplyingNalu: () => false } } } as unknown as TW5Engine;
-}
 
 const FACE = "0x" + "6b".repeat(16);
 

@@ -33,8 +33,6 @@
 
 import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
-import { layIslandComposition, mountIslandShore, type LayIslandCompositionInput } from "../src/island-recipe.js";
-import { readIslandSeed } from "../src/island-seed.js";
 import { TW5Engine } from "../src/tw5-vm.js";
 import LARES_MEMETIC_WIKITEXT_PLUGIN from "../plugins/lares-memetic-wikitext.json" with { type: "json" };
 import LARES_LARARIUM_PLUGIN from "../plugins/lares-lararium.json" with { type: "json" };
@@ -97,16 +95,6 @@ export async function bootTestWiki(opts: {
   ], undefined, opts.seed ? { seedTiddlers: opts.seed } : undefined);
   for (const t of opts.tiddlers ?? []) engine.setTiddler(t);
   return engine;
-}
-
-/** Lay the composition, read wave zero, boot over its preloads, and mount the shore. */
-export async function standIslandOverSeed(input: LayIslandCompositionInput & { boot?: Parameters<typeof bootTestWiki>[0] }) {
-  const { boot, ...composition } = input;
-  const laid = layIslandComposition(composition);
-  const seed = await readIslandSeed(input.composite, []);
-  const tw5 = await bootTestWiki({ ...boot, seed: seed.preloads });
-  const { adaptor, stores } = mountIslandShore(tw5, laid, seed);
-  return { tw5, adaptor, stores, laid, seed };
 }
 
 /**

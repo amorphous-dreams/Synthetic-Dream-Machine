@@ -5,41 +5,11 @@ import { ORACLE_BAG, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { type DocHandle } from "@lararium/mesh/automerge";
 import { type LarDoc } from "@lararium/mesh/base-doc";
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
-import type { TW5Engine } from "../src/tw5-vm.js";
 
 const title = "lar:///ha.ka.ba/lares/api/floor-carrier";
 const floorRecords: Readonly<Record<string, LarTiddlerRecord>> = {
   [title]: { tiddler: { title, text: "floor carrier" } },
 };
-
-function fakeTw5(): TW5Engine {
-  return {
-    $tw: {
-      Tiddler: class {
-        constructor(readonly fields: Record<string, unknown>) {}
-        getFieldStrings(): Record<string, string> {
-          return Object.fromEntries(Object.entries(this.fields).map(([key, value]) => [key, String(value)]));
-        }
-        isEqual(other: unknown, exclude: string[] = []): boolean {
-          const fields = (other as { fields?: Record<string, unknown> } | null)?.fields;
-          if (!fields) return false;
-          const keys = new Set([...Object.keys(this.fields), ...Object.keys(fields)]);
-          return [...keys].filter((key) => !exclude.includes(key)).every((key) => this.fields[key] === fields[key]);
-        }
-      },
-      rootWidget: { invokeActionsByTag: () => {} },
-      wiki: {
-        getTiddlerText: () => "",
-        getTiddler: () => undefined,
-        filterTiddlers: () => [],
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        transact: (fn: () => void) => fn(),
-      },
-      lares: { applyNalu: () => {}, isApplyingNalu: () => false },
-    },
-  } as unknown as TW5Engine;
-}
 
 function fakeHandle(): DocHandle<LarDoc> {
   const doc = { tiddlers: {} } as unknown as LarDoc;

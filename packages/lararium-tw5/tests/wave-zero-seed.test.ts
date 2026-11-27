@@ -47,7 +47,6 @@ const DRAFT = "Draft of 'seed/plain/7'";
 const MODULE = "lar:///t/seed/module.js";
 const STARTUP = "lar:///t/seed/startup";
 const PROBE = "$:/temp/seed/startup-ran";
-const ALL = [...PLAIN, SHADOWED, DRAFT, MODULE, STARTUP];
 
 let saved: { canon: Uint8Array; working: Uint8Array };
 
