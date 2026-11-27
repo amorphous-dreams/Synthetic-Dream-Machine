@@ -97,23 +97,6 @@ function includes(s: Spec): Pick<Item, "transform" | "taking" | "foreign"> {
   return { transform: jsonIncludes(path, values as string[]), taking: jsonIncludesTaking(path, values as string[]), foreign: jsonListForeign(path) };
 }
 
-/**
- * The tasked-spirit's agent file: the stance alone, no seed copy. A general-purpose spirit reads CLAUDE.md, whose
- * import seats the seed; only the scouts wake bare, and they carry the seed above. The tools stay whole (alpha trusts the spirit).
- */
-export function projectStance(seedPath: string, s: Spec): string {
-  return [
-    "---",
-    `name: ${str(s, "name")}`,
-    `description: ${JSON.stringify(str(s, "description"))}`,
-    `model: ${str(s, "model")}`,
-    `${SCOUT_MARKER} lares repo tend from ${seedPath} (stance only; the seed seats through CLAUDE.md); the seed is the source`,
-    "---",
-    str(s, "stance"),
-    "",
-  ].join("\n");
-}
-
 const item = (radius: Radius, s: Spec, path: string, rest: Partial<Item>): Item =>
   ({ id: s.id, radius, host: s.host, path, what: s.what, ...rest });
 
@@ -183,7 +166,6 @@ export function repoItems(repo: string, d: Declared = declared(repo), textOf: Te
         const o = owned(projectScout(d.seed, seed, s), SCOUT_MARKER);
         return item("repo", s, path, { ...o, ...(seed ? {} : { unreachable: `${d.seed} absent; the scout would carry nothing` }) });
       }
-      case "stance": return item("repo", s, path, owned(projectStance(d.seed, s), SCOUT_MARKER));
       default: throw new Error(`${CARRIER}: repo item ${s.id} names an unknown kind ${s.kind}`);
     }
   });
