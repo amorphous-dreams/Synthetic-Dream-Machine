@@ -406,7 +406,8 @@ function printHelp(surface: string = VERB_SURFACE.cli, executableOnly = false): 
     if (only.every((v) => verbs.includes(v))) return verbs.map((v) => (only.includes(v) ? `✍ ${v}` : v)).join(" · ");
     return `${text} (✍ ${only.join(", ")} alone)`;
   };
-  // `law` took the blank under the title: the usage line follows it at once, so the list stays within 66 lines.
+  // THE FIRST RUNG OF PROGRESSIVE DISPLAY: one line per door, its carrier's one line beside it; depth unfolds per door
+  // (`lares <door> --help`, a slot, the whole), so the list caps no terminal width (the role law caps each line at its carrier).
   console.log("lares — operator CLI for the Lares lararium stack");
   console.log("Usage:  lares <command> [args...]    (lares <command> --help: examples, then the full account)\n");
   if (surface !== VERB_SURFACE.cli || executableOnly) {
@@ -417,15 +418,14 @@ function printHelp(surface: string = VERB_SURFACE.cli, executableOnly = false): 
     return;
   }
   const groups: [string, string][] = [["host", "Host (runs on this machine)"], ["vessel", "Vessel (answers from the house)"], ["mixed", "Mixed (some of each)"]];
-  // `oracle` took the blank after the last group: a blank parts two groups, and the footer follows the last one, so the
-  // list stays within 66 lines.
+  // A blank parts two groups; the footer follows the last one.
   const listed = groups.map(([scope, title]) => [title, shown.filter((c) => commandScope(c.name) === scope)] as const).filter(([, rows]) => rows.length > 0);
   listed.forEach(([title, rows], at) => {
     console.log(`${title}:`);
     for (const c of rows) console.log(`  ${c.signs ? "✍ " : "  "}${c.name.padEnd(13)} ${brief(c.name, c.summary)}`);
     if (at < listed.length - 1) console.log("");
   });
-  // `realm` took the second footer line: the house and the path spelling share one, so the list stays within 66 lines.
+  // The house and the path spelling share one footer line.
   console.log("  The house: LAR_ROOT's, else ~/.lares/lares-surface.env's; a path crosses as /lar/<class>.");
   if (shown.some((c) => c.signs)) {
     console.log("  ✍ = holds a key. An agent surface may compose these and MUST NOT execute them.");
