@@ -44,7 +44,9 @@ const TOKENS: Record<string, string> = Object.fromEntries([
   ...["ORACLE_THROW_STANDS", "OracleCast", "OracleAsking", "makeOracleCastReactor", "ActionOracleCast", "ActionOracleCastWidget", "oracleCastFor",
     "cmdOracle", "oraclePlan", "oracleCast",
     // The cast as an OODA-HA act record: its affordance address, its carrier, and the bake test's fixture of that carrier.
-    "ORACLE_AFFORDANCE", "ORACLE_CARRIER", "oracleFixtureCarrier"].map((t) => [t, DIVINATION] as const),
+    "ORACLE_AFFORDANCE", "ORACLE_CARRIER", "oracleFixtureCarrier",
+    // The cast's MCP tool spelling, which the affordance bake and row tests render.
+    "oracle_cast"].map((t) => [t, DIVINATION] as const),
 ]);
 
 const FILES: Record<string, string> = {

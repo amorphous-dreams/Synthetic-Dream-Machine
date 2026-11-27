@@ -41,7 +41,7 @@ describe.skipIf(wikiSkip)(`W3 · the tracked pack equals a fresh bake of canon${
     expect(existsSync(PACK_PATH), `affordance-pack-absent: ${PACK_PATH}; ${CURE}`).toBe(true);
     const fresh = canonicalJson(await bakeAffordancePack(canonTexts(path.join(REPO, "bags"))));
     expect(readFileSync(PACK_PATH, "utf8") === fresh, `affordance-pack-stale: ${CURE}`).toBe(true);
-  });
+  }, 60_000);   // a whole-canon bake boots a wiki and renders every carrier: a loaded floor slot runs it past the 5 s default
 
   test("SEED: the oracle cast stands in the pack, its bcc the canon carrier's own frame check", () => {
     const pack = JSON.parse(readFileSync(PACK_PATH, "utf8")) as { carriers: Record<string, { title: string; bcc: string | null }> };
@@ -77,5 +77,5 @@ describe.skipIf(wikiSkip)(`W3 · the tracked pack equals a fresh bake of canon${
   test("CONTROL: one byte moved in the pack disagrees with the bake", async () => {
     const fresh = canonicalJson(await bakeAffordancePack(canonTexts(path.join(REPO, "bags"))));
     expect(fresh.replace("oracle", "orac1e") === fresh).toBe(false);
-  });
+  }, 60_000);   // the same whole-canon bake
 });
