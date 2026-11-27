@@ -4,7 +4,7 @@
  * Inputs: the baked pack's routes against the live tables: `COMMANDS` and each door's verb table (cli), the `@mcp.tool`
  * functions of the seat (mcp), the widget modules (tw5). A skin naming a door no table holds reads red; a flipped door whose
  * verbs some carrier leaves unrouted reads red (a door flips whole). Two carriers claiming one spelling refuse at the bake
- * (`affordance-door-claimed-twice`), before this law reads. Seed: `oracle cast` routes to lar:///oracle.cast.throws.
+ * (`affordance-door-claimed-twice`), before this law reads. Seed: `oracle cast` routes to lar:///oracle.library.consults.
  * Control: a planted orphan skin reads red.
  *
  * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-laws

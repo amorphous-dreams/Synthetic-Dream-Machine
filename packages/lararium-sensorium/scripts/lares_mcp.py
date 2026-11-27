@@ -1479,8 +1479,8 @@ def build_mcp(coordinator: LaresCoordinator):
     @mcp.tool(annotations=_annotations("oracle_cast"))
     def oracle_cast(recipe: "str | None" = None, bag: "str | None" = None, coins: "list | None" = None,
                     caster: "str | None" = None, asking: "str | None" = None, uncertain: "str | None" = None,
-                    observe: "list | str | None" = None) -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///oracle.cast.throws): `_dress_from_pack` hands this tool its description and
+                    observe: "list | str | None" = None, by: "str | None" = None) -> dict:
+        # THE WORDS LIVE IN THE CARRIER (lar:///oracle.library.consults): `_dress_from_pack` hands this tool its description and
         # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         import datetime
         args: dict = dict(_meme_container("oracle_cast", recipe, bag))
@@ -1490,6 +1490,13 @@ def build_mcp(coordinator: LaresCoordinator):
                 raise SeatArgumentRefused("oracle_cast: `coins` names six line values of 6, 7, 8 or 9, bottom line first")
             args["coins"] = list(coins)
         args["caster"] = caster.strip() if isinstance(caster, str) and caster.strip() else "agent"
+        # THE KIND RIDES AS DATA: `by` names the library shelf (library/oracles/<kind>/, default e-jing); the vessel reads the
+        # method the shelf declares and refuses an unknown kind or an unrun method by name, the shelves that stand in its cure.
+        if by is not None:
+            if not isinstance(by, str) or not by.strip():
+                raise SeatArgumentRefused("oracle_cast: `by` names a library shelf, e.g. e-jing or doa")
+            if by.strip() != "e-jing":
+                args["by"] = by.strip()
         if isinstance(asking, str) and asking.strip():
             args["asking"] = asking.strip()
         if isinstance(uncertain, str) and uncertain.strip():

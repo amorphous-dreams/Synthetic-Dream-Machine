@@ -9,7 +9,7 @@ import { affordancePack, type AffordancePack } from "@lararium/tw5/affordance-pa
 export const pack = (): AffordancePack => affordancePack();
 
 /** The address the oracle cast flipped first at: every affordance law seeds on it, so an empty pack reads red, never vacuous. */
-export const SEED_ADDRESS = "lar:///oracle.cast.throws";
+export const SEED_ADDRESS = "lar:///oracle.library.consults";
 
 /** Wave 2's carriers: the doors that held no legacy help entry (`act` · `ingest` · `export` · `import` · `shore` · `bag` · `flow`). */
 export const WAVE_2 = [

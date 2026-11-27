@@ -1,7 +1,9 @@
 /**
- * `lares oracle cast --recipe <slug> [--uncertain <words>] [--observe <pointers>] [--asking <the fork>] [--coins <six values>]`
- * — the CLI skin of the `oracle-cast` verb (`lar:///oracle.cast.throws`): one I Ching cast by three coins a line, landed by the
- * vessel once as an OODA-HA meme under `casts/`. `--observe` names the arm's context pointers and `--uncertain` the gathered
+ * `lares oracle cast --recipe <slug> [--by <kind>] [--uncertain <words>] [--observe <pointers>] [--asking <the fork>] [--coins <six values>]`
+ * — the CLI skin of the `oracle-cast` verb (`lar:///oracle.library.consults`): one consult of the oracle whose corpus rests on
+ * the library shelf `--by` names (`library/oracles/<kind>/`, default `e-jing`), landed by the vessel once as an OODA-HA meme
+ * under `casts/`. The shelf's index declares its method (e-jing and doa: `three-coins`, the I Ching by three coins a line);
+ * the door keeps the spelling `oracle cast` as its skin. `--observe` names the arm's context pointers and `--uncertain` the gathered
  * uncertainty; they fill the meme's first slots, and the slots the seat owes print with the append line that fills them.
  *
  * A CAST STANDS AS AN ACT. The vessel casts and lands the record once; reading it again never casts again. With no
@@ -16,13 +18,14 @@
  * The container law holds: name `--recipe <slug>` (`--recipe default`, the worn face's daemon wiki) or `--bag <slug>`.
  */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { PLATFORM_ENTROPY, seededEntropy } from "@lararium/mesh/entropy-door";
 import { hex } from "@lararium/mesh/crypto";
 import {
-  ORACLE_THROW_STANDS, castFromCoins, castThreeCoins, castReadingTitles, castRecord, castText, parseCoins,
+  DEFAULT_ORACLE_KIND, KIND_RE, ORACLE_SHELF_PREFIX, ORACLE_THROW_STANDS, RUN_METHODS, castFromCoins, castThreeCoins, castReadingTitles,
+  castRecord, castText, parseCoins,
 } from "@lararium/mesh/oracle-cast";
 import { DaemonUnreachable, verbFailure } from "../verb-call.js";
 import { containerArgs } from "../container-target.js";
@@ -51,8 +54,10 @@ export function oraclePlan(args: ParsedArgs, at: string, mint: () => string = mi
   const coins = wordOf(args.options["coins"]);
   const uncertain = wordOf(args.options["uncertain"]);
   const observe = wordOf(args.options["observe"]);
+  const by = wordOf(args.options["by"]);
   if (seed !== null && fresh) throw new DoorUsage("--seed and --fresh name two hands for one throw; pass one (`--seed <words>` throws the same coins for the same words, `--fresh` throws new ones)");
   if (seed !== null && coins !== null) throw new DoorUsage("--seed draws the coins and --coins names them; pass one");
+  if (by !== null && by !== DEFAULT_ORACLE_KIND) out["by"] = by;
   if (asking !== null) out["asking"] = asking;
   if (uncertain !== null) out["uncertain"] = uncertain;
   if (observe !== null) out["observe"] = observe.split(/\s+/u).filter((p) => p !== "");
@@ -67,6 +72,31 @@ export function oraclePlan(args: ParsedArgs, at: string, mint: () => string = mi
   return { verb: "oracle-cast", args: out };
 }
 
+/** The checkout's library shelves: `bags/crossroads/.../library/oracles/<kind>/index.mem`, the corpus a sleeping vessel reads. */
+const SHELVES = join(repoRoot, "bags/crossroads/ha.ka.ba/lares/library/oracles");
+
+/** Each shelf the checkout holds, with the method its index's meta declares (empty where it declares none). */
+function checkoutShelves(): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const kind of existsSync(SHELVES) ? readdirSync(SHELVES).sort() : []) {
+    const index = join(SHELVES, kind, "index.mem");
+    if (!KIND_RE.test(kind) || !existsSync(index)) continue;
+    out[kind] = /^method\s*=\s*"([^"]*)"/m.exec(readFileSync(index, "utf8"))?.[1]?.trim() ?? "";
+  }
+  return out;
+}
+
+/** The shelf a sleeping vessel's consult reads: an unknown kind or a method the verb runs not yet refuses by name. */
+function offlineShelf(kind: string): string {
+  const shelves = checkoutShelves();
+  const standing = Object.entries(shelves).filter(([, m]) => m !== "").map(([k, m]) => `${k} (${m})`).join(" · ") || "none";
+  const cure = `consult a shelf that stands (\`lares oracle cast --by ${DEFAULT_ORACLE_KIND}\`); the shelves that stand: ${standing}`;
+  const method = shelves[kind] ?? "";
+  if (!KIND_RE.test(kind) || method === "") throw new DoorUsage(`oracle-shelf-unknown: no shelf ${ORACLE_SHELF_PREFIX}${kind}/index declares its method; ${cure}`);
+  if (!RUN_METHODS.includes(method)) throw new DoorUsage(`oracle-method-unrun: the ${kind} shelf declares method \`${method}\`, which this verb runs not yet; ${cure}`);
+  return method;
+}
+
 interface Reading { title: string; absent?: boolean; caption?: string; attribution?: string; license?: string; source?: string; text?: string }
 
 /** Read the checkout's carrier families using the same deserializer as the vessel. */
@@ -79,11 +109,13 @@ async function offlineCast(plan: DoorPlan): Promise<Record<string, unknown>> {
   if (plan.args["asking"] !== undefined && seed === null && !coins && plan.args["fresh"] !== true) {
     throw new DoorUsage("the vessel sleeps, and an asking keeps its one throw in the vessel's record: stand it (`lares vessel stand`) and ask again, or name a seed (`--seed <strong words>`) for a throw any later ask replays");
   }
+  const by = typeof plan.args["by"] === "string" ? plan.args["by"] : DEFAULT_ORACLE_KIND;
+  const method = offlineShelf(by);
   const cast = coins ? castFromCoins(coins, ask) : castThreeCoins(seed !== null ? seededEntropy(seed) : PLATFORM_ENTROPY, ask);
   const { deserializeCarrier } = await import("@lararium/tw5");
   const readings = castReadingTitles(cast).map((title) => {
     const relative = title.slice("lar:///ha.ka.ba/lares/library/oracles/".length);
-    const path = join(repoRoot, "bags/crossroads/ha.ka.ba/lares/library/oracles", `${relative}.mem`);
+    const path = join(SHELVES, `${relative}.mem`);
     const records = deserializeCarrier(readFileSync(path, "utf8"), { title }).records;
     const root = records.find((record) => record["title"] === title);
     const slot = records.find((record) => record["title"] === `${title}#/reading`);
@@ -93,7 +125,7 @@ async function offlineCast(plan: DoorPlan): Promise<Record<string, unknown>> {
     if (slot["text"] !== undefined) named["text"] = slot["text"];
     return named;
   });
-  return { band: "answered", decision: "put", created: false, title: castRecord(cast)["title"], cast: castRecord(cast), text: castText(cast), readings, note: ORACLE_THROW_STANDS, offline: true };
+  return { band: "answered", decision: "put", created: false, title: castRecord(cast)["title"], by, method, cast: castRecord(cast), text: castText(cast), readings, note: ORACLE_THROW_STANDS, offline: true };
 }
 
 async function oracleCast(args: ParsedArgs): Promise<number> {

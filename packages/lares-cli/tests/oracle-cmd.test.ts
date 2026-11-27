@@ -220,6 +220,25 @@ describe("lares oracle cast", () => {
     expect(one.cast.lines).toEqual(two.cast.lines);
   });
 
+  test("RED: --by names the library shelf; the default shelf rides nothing, so every earlier plan keeps its bytes", () => {
+    expect(oraclePlan(argv(["cast"], { recipe: "default", asking: "which road?", by: "doa" }), AT, MINT).args)
+      .toEqual({ recipe: "default", at: AT, caster: "operator", asking: "which road?", by: "doa" });
+    expect(oraclePlan(argv(["cast"], { recipe: "default", asking: "which road?", by: "e-jing" }), AT, MINT).args)
+      .toEqual({ recipe: "default", at: AT, caster: "operator", asking: "which road?" });
+    expect(COMMANDS.find((c) => c.name === "oracle")?.accepts).toContain("by");
+  });
+
+  test("RED: a sleeping vessel reads the checkout's shelves: --by doa casts, an unknown kind refuses by name with the shelves that stand", async () => {
+    h.offline = true;
+    const doa = JSON.parse((await run(argv(["cast"], { recipe: "default", coins: "889688", by: "doa" }, { json: true }))).out).data;
+    expect(doa).toMatchObject({ offline: true, by: "doa", method: "three-coins" });
+    const r = await run(argv(["cast"], { recipe: "default", coins: "889688", by: "tarot" }, { json: true }));
+    expect(r.exit).toBe(2);
+    const message = String(JSON.parse(r.out).error.message);
+    expect(message).toContain("oracle-shelf-unknown");
+    expect(message).toContain("doa (three-coins) · e-jing (three-coins)");
+  });
+
   test("the help warns that a weak seed reads back from its digest", () => {
     expect(helpLines("oracle").join("\n")).toContain("guess");
   });
