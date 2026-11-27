@@ -7,7 +7,6 @@
  */
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { SwarmRefused } from "@lararium/mesh/swarm-tiddlers";
 import { sha256HexBytesSync, sha256HexSync } from "@lararium/mesh/crypto";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { bagUri } from "@lararium/mesh/lar-uris";
@@ -768,6 +767,54 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(r.engine.wiki.getTiddlerText("Ledger")).toBe("one\ntwo\nthree");
   });
 
+  // S4, REPLACE IN PLACE (lar:///ha.ka.ba/kahua/memory/course/ai-surface-gestures #/stories): one exact span changes, the
+  // rest of the text never crosses the wire, and the write rides the one put law (base, swap, family split).
+  test("a replace changes one exact span: it refuses a span that occurs 0 or 2+ times by name with the count and the read that cures it, rides the base guard, and lands nothing on a refusal", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    const get = makeTiddlerGetReactor(r.opts);
+    await expect(put({ ...A, title: "Errata", replace: "cat", with: "dog" }, ctx())).rejects.toMatchObject({ reason: "replace-target-missing" });
+    await put({ ...A, title: "Errata", create: true, text: "the cat sat on the mat; the cat ran" }, ctx());
+    const ambiguous = put({ ...A, title: "Errata", replace: "the cat", with: "a dog" }, ctx());
+    await expect(ambiguous).rejects.toMatchObject({ reason: "replace-ambiguous" });
+    await expect(ambiguous).rejects.toThrow(/occurs 2 times.*lares tiddler get "Errata" --recipe default/);
+    // Overlaps count: `aa` in `aaa` reads twice, so the door never guesses which.
+    await put({ ...A, title: "Overlap", create: true, text: "aaa" }, ctx());
+    await expect(put({ ...A, title: "Overlap", replace: "aa", with: "b" }, ctx())).rejects.toMatchObject({ reason: "replace-ambiguous" });
+    const absent = put({ ...A, title: "Errata", replace: "a bird", with: "a dog" }, ctx());
+    await expect(absent).rejects.toMatchObject({ reason: "replace-absent" });
+    await expect(absent).rejects.toThrow(/occurs 0 times/);
+    expect(r.engine.wiki.getTiddlerText("Errata")).toBe("the cat sat on the mat; the cat ran");
+    // A stale base answers conflict and lands nothing; the live base lands the one span, a tag patch beside it.
+    const live = ((await get({ ...A, title: "Errata" }, ctx()))["tiddler"] as { hash: string }).hash;
+    expect(await put({ ...A, title: "Errata", replace: "sat on the mat", with: "slept", base: "sha256-" + "0".repeat(64) }, ctx())).toMatchObject({ decision: "conflict", hash: live });
+    expect(r.engine.wiki.getTiddlerText("Errata")).toBe("the cat sat on the mat; the cat ran");
+    const landed = await put({ ...A, title: "Errata", replace: "sat on the mat", with: "slept", base: live, tagsAdd: "trued" }, ctx());
+    expect(landed).toMatchObject({ decision: "put", created: false, replaced: { span: 14, with: 5 } });
+    expect([...(landed["changed"] as string[])].sort()).toEqual(["tags", "text"]);
+    expect(r.engine.wiki.getTiddlerText("Errata")).toBe("the cat slept; the cat ran");
+    // An empty `with` removes the span; a whitespace span counts as it rides, never trimmed.
+    await put({ ...A, title: "Errata", replace: "; the cat ran", with: "" }, ctx());
+    expect(r.engine.wiki.getTiddlerText("Errata")).toBe("the cat slept");
+    await expect(put({ ...A, title: "Errata", replace: " ", with: "_" }, ctx())).rejects.toMatchObject({ reason: "replace-ambiguous" });
+  });
+
+  test("a replace names its span and its words alone: another text source, a cut or create beside it refuses `replace-alone`; a missing span or `with` refuses by name", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    await put({ ...A, title: "Errata", create: true, text: "one two" }, ctx());
+    for (const crossed of [{ text: "x" }, { append: "x" }, { create: true }, { cut: ["#/a"] }, { fields: { text: "x" } }, { unset: ["text"] }]) {
+      await expect(put({ ...A, title: "Errata", replace: "one", with: "1", ...crossed }, ctx())).rejects.toMatchObject({ reason: "replace-alone" });
+    }
+    await expect(put({ ...A, title: "Errata", replace: "one" }, ctx())).rejects.toMatchObject({ reason: "replace-with-missing" });
+    await expect(put({ ...A, title: "Errata", with: "1" }, ctx())).rejects.toMatchObject({ reason: "replace-span-missing" });
+    await expect(put({ ...A, title: "Errata", replace: "", with: "1" }, ctx())).rejects.toMatchObject({ reason: "replace-span-missing" });
+    expect(r.engine.wiki.getTiddlerText("Errata")).toBe("one two");
+    // CONTROL: a field patch beside the replace rides, as beside any text put.
+    expect(await put({ ...A, title: "Errata", replace: "one", with: "1", fields: { status: "trued" } }, ctx())).toMatchObject({ decision: "put" });
+    expect(r.engine.wiki.getTiddler("Errata")!.fields).toMatchObject({ text: "1 two", status: "trued" });
+  });
+
   test("concurrent appends retain both texts and a stale whole-text put refuses", async () => {
     const r = await rig();
     const put = makeTiddlerPutReactor(r.opts);
@@ -893,66 +940,18 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(await r.composite.storeForBag(DAEMON)!.get(title)).not.toBeNull();
   });
 
-  test("RED: the seat wall reads the one executable-class list: a seat-asked module, script type, plugin, startup action, global, view template and an unlisted system tag each offer (seat-startup-offer) and land nothing; CONTROL plain `$:/config` lands for a seat, and the operator's hand and no asker land every class natively", async () => {
+  test("a seat lands StartupAction, module-type and Layout records", async () => {
     const r = await rig();
     const put = makeTiddlerPutReactor(r.opts);
-    const as = (asker?: "seat" | "cli"): VerbContext => ({ ...ctx(), ...(asker ? { asker } : {}) });
-    const classes = [
-      { title: "Mod", fields: { "module-type": "startup" } }, { title: "Js", fields: { type: "application/javascript" } },
-      { title: "Plug", fields: { "plugin-type": "plugin" } }, { title: "Glob", fields: { tags: "$:/tags/Global" } }, { title: "View", tagsAdd: "$:/tags/ViewTemplate" },
-      { title: "Near", tagsAdd: "$:/tags/StartupActionX" }, { title: "Startup", tagsAdd: "$:/tags/StartupAction" },
-      { title: "Browser", fields: { tags: "memory [[$:/tags/StartupAction/Browser]]" } },
-    ];
-    for (const [i, shape] of classes.entries()) {
-      const title = `${shape.title} seat ${i}`;
-      await expect(put({ ...A, ...shape, title }, as("seat")), `${title} offers`).rejects.toMatchObject({ reason: "seat-startup-offer" });
-      expect(r.engine.wiki.getTiddler(title)).toBeUndefined();
+    const seat: VerbContext = { ...ctx(), asker: "seat" };
+    for (const shape of [
+      { title: "Seat startup", tagsAdd: "$:/tags/StartupAction" },
+      { title: "Seat module", fields: { "module-type": "startup" } },
+      { title: "Seat layout", tagsAdd: "$:/tags/Layout" },
+    ]) {
+      expect(await put({ ...A, ...shape }, seat)).toMatchObject({ decision: "put" });
+      expect(r.engine.wiki.getTiddler(shape.title)).toBeDefined();
     }
-    for (const asker of ["seat", "cli", undefined] as const) {
-      expect(await put({ ...A, title: `$:/config/x ${asker ?? "none"}`, text: "y" }, as(asker))).toMatchObject({ decision: "put" });
-      expect(await put({ ...A, title: `Palette ${asker ?? "none"}`, text: "y", tagsAdd: "$:/tags/Palette" }, as(asker))).toMatchObject({ decision: "put" });
-    }
-    await expect(put({ ...A, title: "Note 06", tagsAdd: "$:/tags/StartupAction" }, as("seat"))).rejects.toMatchObject({ reason: "seat-startup-offer" });
-    expect(r.engine.wiki.getTiddler("Note 06")?.fields["tags"]).toEqual(["memory"]);
-    for (const asker of ["cli", undefined] as const) {
-      for (const [i, shape] of classes.entries()) {
-        const title = `${shape.title} ${asker ?? "none"} ${i}`;
-        expect(await put({ ...A, ...shape, title }, as(asker)), `${title} lands natively`).toMatchObject({ decision: "put" });
-      }
-    }
-  });
-
-  test("RED: a seat's executable tiddler put lands under a standing exec lei and spends one return at the door; CONTROL: a lei that refuses leaves the offer standing", async () => {
-    const r = await rig();
-    const put = makeTiddlerPutReactor(r.opts);
-    const spends: string[] = [];
-    const execLei = { spend: async (land: { wiki: string; title: string; writer?: string }) => {
-      if (land.title !== "Lei startup") throw new SwarmRefused("swarm-lei-out-of-scope", "the lei names no such title");
-      spends.push(`${land.wiki}|${land.title}|${land.writer}`);
-      return { lei: "c".repeat(64), n: spends.length };
-    } };
-    const seat: VerbContext = { ...ctx(), asker: "seat", execLei };
-    expect(await put({ ...A, title: "Lei startup", tagsAdd: "$:/tags/StartupAction" }, seat)).toMatchObject({ decision: "put" });
-    expect(spends).toEqual(["default|Lei startup|seat"]);
-    await expect(put({ ...A, title: "Other startup", tagsAdd: "$:/tags/StartupAction" }, seat)).rejects.toMatchObject({ reason: "seat-startup-offer" });
-    expect(r.engine.wiki.getTiddler("Other startup")).toBeUndefined();
-  });
-
-  test("racing seat appends to an executable record spend one exec-lei return each and both land", async () => {
-    const r = await rig();
-    const put = makeTiddlerPutReactor(r.opts);
-    let left = 2;
-    const execLei = { spend: async () => {
-      if (left === 0) throw new SwarmRefused("swarm-lei-spent", "the lei holds no return");
-      return { lei: "c".repeat(64), n: left-- };
-    } };
-    await put({ ...A, title: "Macro row", create: true, text: "\\define a() a", tagsAdd: "$:/tags/Macro" }, ctx());
-    const seat: VerbContext = { ...ctx(), asker: "seat", execLei };
-    const receipts = await Promise.all(["\\define b() b", "\\define c() c"].map((append) => put({ ...A, title: "Macro row", append }, seat)));
-    expect(receipts.map((x) => x["decision"])).toEqual(["put", "put"]);
-    expect(left).toBe(0);
-    const text = r.engine.wiki.getTiddlerText("Macro row")!;
-    for (const words of ["define b()", "define c()"]) expect(text).toContain(words);
   });
 
   test("a based whole-text put racing an append through admission refuses stale or lands beneath it, and the append survives", async () => {
@@ -1961,6 +1960,26 @@ describe.skipIf(wikiSkip)(`a family's slot moves by the plain put${skipNote}`, (
     expect(dropped).toMatchObject({ decision: "put", kept: expect.arrayContaining([`${MEME}#/a/z`]) });
     const whole = (await readMeme(MEME, sink))!.text;
     for (const words of ["a body with no call", "body of z", "a tail after the child", "body of b"]) expect(whole, words).toContain(words);
+  });
+
+  test("a replace on a slot lands as that slot's text: the span counts within the slot alone, the family recomposes and reseals, and its sibling slots stand", async () => {
+    const r = await rig();
+    const sink = wikiMemeSink(r.engine.wiki);
+    await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, sink);
+    const sealed = (await readMeme(MEME, sink))!.canonicalHash;
+    const put = makeTiddlerPutReactor(r.opts);
+    // `body of` reads twice in the carrier and once in `#/b`: the slot's own text answers the count.
+    const trued = await put({ ...A, title: `${MEME}#/b`, replace: "body of b", with: "a trued body" }, ctx());
+    expect(trued).toMatchObject({ decision: "put", position: "slot", family: MEME, replaced: { span: 9, with: 12 } });
+    expect(r.engine.wiki.getTiddlerText(`${MEME}#/b`)).toContain("a trued body");
+    const whole = (await readMeme(MEME, sink))!;
+    expect(whole.text).toContain("a trued body");
+    expect(whole.text).toContain("body of a");
+    expect(whole.text).not.toContain("body of b");
+    expect(whole.canonicalHash).not.toBe(sealed);
+    expect(trued["canonicalHash"]).toBe(whole.canonicalHash);
+    await expect(put({ ...A, title: `${MEME}#/a`, replace: "a", with: "z" }, ctx())).rejects.toMatchObject({ reason: "replace-ambiguous" });
+    expect((await readMeme(MEME, sink))!.canonicalHash).toBe(whole.canonicalHash);
   });
 
   test("a put on a slot the family does not hold refuses `family-joins-by-text` and lands nothing; CONTROL: a fragment title under no meme root lands as a plain tiddler", async () => {

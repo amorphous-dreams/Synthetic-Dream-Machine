@@ -51,10 +51,10 @@ export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "gra
 /**
  * THE VALUE FLAGS: names that carry free text (a tiddler body, a note, a reason, a field list) and ALWAYS take the next
  * token as their value, whatever it starts with: `--text "---\nfront: matter\n---"` binds the front matter, never reads
- * as a flag. Every other non-boolean name keeps the peek (`--key --other` leaves `--key` bare). `tests/parse-args.test.ts`
+ * as a flag; a replace's span and words (`--replace`, `--with`) bind the same way, so a span may open on `--`. Every other non-boolean name keeps the peek (`--key --other` leaves `--key` bare). `tests/parse-args.test.ts`
  * reds a name here that a handler reads as a flag, or that sits in `BOOLEAN_FLAGS` / `VALUE_OR_FLAG`.
  */
-export const VALUE_FLAGS: ReadonlySet<string> = new Set(["fields", "note", "reason", "text"]);
+export const VALUE_FLAGS: ReadonlySet<string> = new Set(["fields", "note", "reason", "replace", "text", "with"]);
 
 /**
  * THE LIST FLAGS: names that carry one TiddlyWiki list (`--tag-add 'one [[two words]]'`, `--cut-slot '#/a #/b'`). A repeat gathers: each later

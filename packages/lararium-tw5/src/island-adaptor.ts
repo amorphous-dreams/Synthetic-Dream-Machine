@@ -261,6 +261,13 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   private readonly unlanded = new Set<string>();
   private readonly handed = new Map<string, unknown | null>();
   private resident = false;
+  /**
+   * WAVE ZERO COUNTS AS LANDED, as TiddlyWiki's syncer counts its boot state (`Syncer.readTiddlerInfo`): the nalu form each
+   * title preloaded with, until a landing brings a record that moved past it. A landing that still brings that form lands nothing
+   * into the wiki, so a write TiddlyWiki's own boot pass made over the preload (a startup action) stands in the VM, unsaved,
+   * exactly as in native client-server TW5 and in the glass, whose port adaptor holds its preloads as landed.
+   */
+  private readonly seededForms = new Map<string, unknown>();
   /** What the shore knows of each draft, keyed by the draft's title (see `draft-book.ts`). */
   private readonly draftBook = new Map<string, DraftEntry>();
   /** Last draft fields seen for each draft title, used when a save outruns draft persistence. */
@@ -346,6 +353,14 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   onSliceLanded(hear: (landed: number) => void): () => void {
     this.sliceHearers.add(hear);
     return () => { this.sliceHearers.delete(hear); };
+  }
+
+  /** Hold wave zero's preloads as landed (see `seededForms`): call before the shore lands its first wave. */
+  countSeedAsLanded(preloads: readonly Record<string, unknown>[]): void {
+    for (const fields of preloads) {
+      const title = fields["title"];
+      if (typeof title === "string") this.seededForms.set(title, new this.tw5.$tw.Tiddler(fields));
+    }
   }
 
   armSeedCheckpoint(): Promise<void> {
@@ -641,7 +656,10 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     if (isHand) return "hand";
     // AN OWN WRITE MOVED SINCE THE PREPARE: the composition the prepare read misses it, so the wave never lands a stale answer over it.
     if (this.sent.has(title) !== prepared.sentHas || this.sent.get(title) !== prepared.sentValue) return "stale";
-    const applies = !sameWithStamp(incoming, standing);
+    // The record wave zero preloaded, unmoved: already landed, so the wiki keeps whatever its boot pass made of it.
+    const seeded = this.seededForms.has(title) && sameWithStamp(incoming, this.seededForms.get(title) as typeof incoming);
+    if (!seeded) this.seededForms.delete(title);
+    const applies = !seeded && !sameWithStamp(incoming, standing);
     if (applies) {
       if (!this.engineApply) throw new LandingDoorUnavailableError();
       this.engineApply({ ...change, record: applied, ...(bag !== undefined ? { bag } : {}) });

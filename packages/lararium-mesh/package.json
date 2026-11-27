@@ -68,10 +68,6 @@
       "import": "./dist/record-port.js",
       "types": "./dist/record-port.d.ts"
     },
-    "./executable-class": {
-      "import": "./dist/executable-class.js",
-      "types": "./dist/executable-class.d.ts"
-    },
     "./port-lease": {
       "import": "./dist/port-lease.js",
       "types": "./dist/port-lease.d.ts"
@@ -531,10 +527,6 @@
     "./epoch-lease": {
       "import": "./dist/epoch-lease.js",
       "types": "./dist/epoch-lease.d.ts"
-    },
-    "./exec-lei": {
-      "import": "./dist/exec-lei.js",
-      "types": "./dist/exec-lei.d.ts"
     },
     "./face-anchor": {
       "import": "./dist/face-anchor.js",
@@ -1227,10 +1219,6 @@
     "./seat-duties": {
       "import": "./dist/seat-duties.js",
       "types": "./dist/seat-duties.d.ts"
-    },
-    "./seat-startup-offer": {
-      "import": "./dist/seat-startup-offer.js",
-      "types": "./dist/seat-startup-offer.d.ts"
     },
     "./secret-home": {
       "import": "./dist/secret-home.js",

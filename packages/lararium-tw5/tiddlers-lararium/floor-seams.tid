@@ -224,9 +224,9 @@ GUARDS intent-handle-social e2e herm-floor
 GUARDS intent-handle-social node-e2e fleet-join-dial
 
 SEAM swarm-spirit-floor-queue
-MOVES swarm-spirit-floor-queue m swarm-* spirit-* exec-lei* oracle-cast* ddate* oracle-loop*
-MOVES swarm-spirit-floor-queue n swarm-wiki* exec-lei-door*
-MOVES swarm-spirit-floor-queue t floor-ledger* floor-owes* filters/floor-queue* exec-lei-route* oracle-cast-verb*
+MOVES swarm-spirit-floor-queue m swarm-* spirit-* oracle-cast* ddate* oracle-loop*
+MOVES swarm-spirit-floor-queue n swarm-wiki*
+MOVES swarm-spirit-floor-queue t floor-ledger* floor-owes* filters/floor-queue* oracle-cast-verb*
 MOVES swarm-spirit-floor-queue c commands/spirit* commands/lei* spirit-words*
 GUARDS swarm-spirit-floor-queue path packages/lararium-tw5/tests/floor-queue.test.ts packages/lararium-tw5/tests/floor-owes.test.ts
 

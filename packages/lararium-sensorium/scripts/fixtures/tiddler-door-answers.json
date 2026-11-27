@@ -1197,6 +1197,66 @@
       }
     },
     {
+      "tool": "tiddler_put",
+      "cli": {
+        "command": "tiddler",
+        "positional": [
+          "put",
+          "lar:///ha.ka.ba/docs/family"
+        ],
+        "options": {
+          "recipe": "default",
+          "slot": "#/a",
+          "replace": "an old phrase",
+          "with": "a trued phrase",
+          "base": "sha256-slot"
+        },
+        "flags": {}
+      },
+      "mcp": {
+        "title": "lar:///ha.ka.ba/docs/family",
+        "recipe": "default",
+        "slot": "#/a",
+        "replace": "an old phrase",
+        "replace_with": "a trued phrase",
+        "base": "sha256-slot"
+      },
+      "wire": {
+        "verb": "tiddler-put",
+        "args": {
+          "recipe": "default",
+          "title": "lar:///ha.ka.ba/docs/family#/a",
+          "replace": "an old phrase",
+          "with": "a trued phrase",
+          "base": "sha256-slot"
+        }
+      },
+      "output": {
+        "recipe": "default",
+        "title": "lar:///ha.ka.ba/docs/family#/a",
+        "decision": "put",
+        "bag": "lar:///ha.ka.ba/wikis/daemon/working",
+        "created": false,
+        "changed": [
+          "text"
+        ],
+        "hash": "sha256-slot2",
+        "textHash": "sha256-slottext2",
+        "replaced": {
+          "span": 13,
+          "with": 14
+        },
+        "canonicalHash": "sha256:next2",
+        "landed": [
+          "lar:///ha.ka.ba/docs/family#/a"
+        ],
+        "kept": [],
+        "tombstoned": [],
+        "position": "slot",
+        "family": "lar:///ha.ka.ba/docs/family"
+      }
+    },
+    {
       "tool": "tiddler_delete",
       "cli": {
         "command": "tiddler",

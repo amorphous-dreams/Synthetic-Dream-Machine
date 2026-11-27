@@ -363,6 +363,30 @@ def test_an_append_rides_without_a_base_on_a_record_and_a_slot_and_names_its_wor
     assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "lar:///t/x#/a", "append": "note"}}
 
 
+def test_a_replace_rides_its_span_and_words_on_the_one_put_and_names_them_alone(daemon):
+    """S4 REPLACE IN PLACE (course/ai-surface-gestures): `replace` + `replace_with` ride the wire as `replace` + `with`,
+    untrimmed, beside a base and a field patch; another text source, a cut or create beside them refuses before the
+    wire; the door's own refusals (`replace-ambiguous`, `replace-absent`) come back as the verb error they are."""
+    t = _tools()
+    daemon.output = {"recipe": "default", "title": "Errata", "decision": "put", "hash": "sha256:2", "replaced": {"span": 9, "with": 6}}
+    assert t["tiddler_put"](title="Errata", recipe="default", replace=" the cat ", replace_with=" a dog", base="sha256:1")["replaced"] == {"span": 9, "with": 6}
+    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "Errata", "replace": " the cat ", "with": " a dog", "base": "sha256:1"}}
+    t["tiddler_put"](title="Errata", recipe="default", replace="gone", replace_with="", fields={"status": "trued"})
+    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "Errata", "replace": "gone", "with": "", "fields": {"status": "trued"}}}
+    t["tiddler_put"](title="lar:///t/x", recipe="default", slot="#/a", replace="old", replace_with="new")
+    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "lar:///t/x#/a", "replace": "old", "with": "new"}}
+    before = len(daemon.lines)
+    for crossed in ({"text": "x"}, {"append": "x"}, {"cut": ["#/a"]}, {"create": True}):
+        with pytest.raises(ValueError, match="a replace changes one span"):
+            t["tiddler_put"](title="Errata", recipe="default", replace="old", replace_with="new", **crossed)
+    with pytest.raises(ValueError, match="replace_with"):
+        t["tiddler_put"](title="Errata", recipe="default", replace="old")
+    for span in (None, ""):
+        with pytest.raises(ValueError, match="names the one span"):
+            t["tiddler_put"](title="Errata", recipe="default", replace=span, replace_with="new")
+    assert len(daemon.lines) == before
+
+
 def test_the_slot_folds_into_the_title_and_a_slot_text_put_names_no_base(daemon):
     t = _tools()
     daemon.output = {"recipe": "default", "title": "lar:///t/x#/a", "decision": "put", "hash": "sha256:5"}

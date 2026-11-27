@@ -61,7 +61,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     next: ["where the host holds the engine, a herm stands as the container's own service: docker compose -f docker-compose.surface.yml --profile herm up -d herm"],
   },
   lei: {
-    usage: "usage: lares lei show|kui|unstring|restring --rite push|kukulu|keep|exec --branch <name> [--scope '<json>'] [--head <h>] [--returns <n>] [--reach wide|head] [--after <cid>] [--lei <cid>] [--yes] [--face N | --all]  |  lares lei land '<pūlama answer>' [--face N]  |  lares lei terms kui|restring|unstring --rite <r> --branch <name> [--returns <n>] [--reach wide|head] [--head <h>] [--after <cid>] [--lei <cid>] [--yes] [--face N | --all]",
+    usage: "usage: lares lei show|kui|unstring|restring --rite push|kukulu|keep --branch <name> [--head <h>] [--returns <n>] [--reach wide|head] [--after <cid>] [--lei <cid>] [--yes] [--face N | --all]  |  lares lei land '<pūlama answer>' [--face N]  |  lares lei terms kui|restring|unstring --rite <r> --branch <name> [--returns <n>] [--reach wide|head] [--head <h>] [--after <cid>] [--lei <cid>] [--yes] [--face N | --all]",
     synopsis:
       "A lei grants one rite at one branch. A wide lei (the default) names no head and carries its returns; a head lei pins one head. " +
       "The hand strings (kui), unstrings and restrings; any seat reads. The signed lei carries the consent, and a `push` lei adds its ward co-sign. " +
@@ -83,7 +83,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares lei unstring --rite hoala                                        # end it at once: the sealed keys and their device key die",
       "lares lei terms restring --rite push --branch feature/x --returns 2    # one line: the terms `pulama-main.js lei restring` takes",
     ],
-    flags: ["--rite <r>   push, kukulu, keep or exec", "--scope '<json>'   (exec) the wiki, the writer, and titles or one class; the branch derives from the wiki", "--branch <name>   the branch the lei binds (a keep lei: the workspace's name)", "--head <commit>   the head a show reads at, or a head lei pins",
+    flags: ["--rite <r>   push, kukulu or keep", "--branch <name>   the branch the lei binds (a keep lei: the workspace's name)", "--head <commit>   the head a show reads at, or a head lei pins",
       "--returns <n>   a wide lei's count of returns (more than twelve asks --yes)", "--reach wide|head   the lei's reach (wide where absent)", "--after <cid>   (kui) the lei this one follows; absent for the first",
       "--lei <cid>   (unstring) the lei to revoke", "--face N   face index", "--all   (kui, push or kukulu) one lei for every open face, under one route"],
   },
@@ -732,7 +732,10 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "page, its has-stack past it. `--skinny` reads the card; `--all` the whole at the lens's grain: a record fat, a " +
       "pointer resolved from the local CAS by CID (a web2 `_canonical_uri` stays named, never fetched), a meme's carrier " +
       "paged on slot boundaries; `--slot` one slot. `put` PATCHES: it sets and unsets " +
-      "fields, adds and removes tags, and moves the text only where `--text` or `--file` names it. A meme family moves by the same put: " +
+      "fields, adds and removes tags, and moves the text only where `--text` or `--file` names it; `--replace <span> --with <words>` " +
+      "changes one exact span of the standing text in place, the rest of the text never crossing the wire: the span must occur " +
+      "exactly once (`replace-absent` and `replace-ambiguous` name the count and the read that cures it), and the result lands as " +
+      "a text put does, under the same `--base` guard and, on a slot, as that slot's text with the family resealed. A meme family moves by the same put: " +
       "a whole carrier as the root's text lands the family through the Confluence gate (a slot it omits stays standing, `kept`; `--cut-slot '#/x'` " +
       "names a slot that leaves), and `--slot '#/x'` folds into the title `<root>#/x`, so a slot's text lands with no base (a partial base " +
       "`partial:#/x:…` patches within its span) and an append honours the slot's standing postamble (`--append` lands words at " +
@@ -769,6 +772,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares tiddler put \"New Note\" --recipe default --create --text \"first words\" --fields '{\"tags\":\"memory\"}'",
       "date +'%F a dated note' | lares tiddler put \"Ledger\" --recipe default --append -   # lands at the end; two seats appending through the door at once both land",
       "lares tiddler put lar:///ha.ka.ba/kahua/memory/x --recipe default --slot '#/log' --append note.txt   # a slot append, no base; the family reseals",
+      "lares tiddler put \"Room 4\" --recipe default --replace 'by the window' --with 'by the door' --base <hash>   # one exact span changes; 0 or 2+ occurrences refuse",
+      "lares tiddler put lar:///ha.ka.ba/kahua/memory/x --recipe default --slot '#/why' --replace 'it is' --with 'it reads'   # a slot's span; the family reseals",
       "lares tiddler put lar:///ha.ka.ba/lares/docs/x --recipe lares --file x.mem   # a whole carrier lands the family; an omitted slot stays (kept)",
       "lares tiddler put lar:///ha.ka.ba/lares/docs/x --bag lares --slot '#/why' --file why.txt   # one slot's text in one bag, no base",
       "lares tiddler delete \"Old Note\" --recipe default --if-match <hash>   # a stale base moves nothing",
@@ -799,6 +804,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--meme               (get) the carrier lens; with no title, the family listing",
       "--tree               (title-less get --meme) nest slots under each listed root",
       "--append <path | -> (put) words from a host file or stdin land at the end of the standing text, no base needed (an append overwrites nothing): a text that does not end on a newline takes one before them; a missing title refuses unless --create; --tag-add, --tag-remove and --create ride beside it; refuses beside --text, --file, --base, --fields, --unset   ·   on a slot (`--slot`, or a `<root>#/x` title) the words land before a standing postamble, the family resealed whole",
+      "--replace <span>     (put, beside --with) one exact span of the standing text, taken as written (never trimmed; it may open on `--`): it must occur exactly once, else replace-absent (0) or replace-ambiguous (N, overlaps counted) and nothing moves; --base, --fields (not text), --unset, --tag-add and --tag-remove ride beside it; refuses beside --text, --file, --append, --cut-slot, --create   ·   on a slot (`--slot`, or a `<root>#/x` title) the span counts within that slot's text, and the family reseals",
+      "--with <words>       (put, beside --replace) the words the span turns into; --with '' removes the span",
       "--skinny             (get) every field, the text left home (the card)",
       "--all                (get) the whole at the lens's grain: a record fat, a pointer resolved, a meme's carrier paged to the end",
       "--after <cursor>     (get) one page of the whole carrier: hand back the cursor `next` named",

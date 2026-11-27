@@ -132,7 +132,6 @@
  * only sealed to one successor's key.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
-import type { ExecLeiScope } from "@lararium/mesh/exec-lei";
 import { LEI_RETURNS_ASK_ABOVE } from "@lararium/mesh/swarm-door";
 import { encodeKeepSeat, mintKeepSeatUnder } from "@lararium/mesh/keep-seat-door";
 import { isSwarmLeiRite } from "@lararium/mesh/swarm-lei-rite";
@@ -213,7 +212,7 @@ const CID = /^[0-9a-f]{64}$/;
 function leiPartsOf(act: LeiAct, group: string, f: Readonly<Record<string, unknown>>): { readonly parts: SwarmBodyParts; readonly after?: string } | { readonly reading: string; readonly detail: string } {
   const malformed = (detail: string) => ({ reading: "lei-malformed", detail });
   const rite = f["rite"], branch = f["branch"];
-  if (!isSwarmLeiRite(rite)) return malformed("a lei names its rite: push, kukulu, keep or exec");
+  if (!isSwarmLeiRite(rite)) return malformed("a lei names its rite: push, kukulu or keep");
   if (typeof branch !== "string" || branch === "") return malformed("a lei names its branch");
   if (act === "unstring") {
     const lei = f["lei"];
@@ -229,13 +228,13 @@ function leiPartsOf(act: LeiAct, group: string, f: Readonly<Record<string, unkno
     if (f["head"] !== undefined) return malformed("a wide lei names no head");
     if (typeof returns !== "number" || !Number.isSafeInteger(returns) || returns < 1) return malformed("a wide lei names its returns, a count of at least one");
     if (returns > LEI_RETURNS_ASK_ABOVE && f["confirm"] !== true) return { reading: "swarm-lei-returns-unconfirmed", detail: `this lei would carry ${returns} returns, more than ${LEI_RETURNS_ASK_ABOVE}; confirm the count to string it` };
-    return { parts: { act: "lei", group, rite, branch, after, reach, returns, ...(rite === "exec" ? { scope: f["scope"] as ExecLeiScope } : {}) }, ...(after !== null ? { after } : {}) };
+    return { parts: { act: "lei", group, rite, branch, after, reach, returns }, ...(after !== null ? { after } : {}) };
   }
   if (reach === "head") {
     const head = f["head"];
     if (f["returns"] !== undefined) return malformed("a head lei spends once and names no returns");
     if (typeof head !== "string" || head === "") return malformed("a head lei names its head");
-    return { parts: { act: "lei", group, rite, branch, after, reach, head, ...(rite === "exec" ? { scope: f["scope"] as ExecLeiScope } : {}) }, ...(after !== null ? { after } : {}) };
+    return { parts: { act: "lei", group, rite, branch, after, reach, head }, ...(after !== null ? { after } : {}) };
   }
   return malformed("a lei's reach reads wide or head");
 }

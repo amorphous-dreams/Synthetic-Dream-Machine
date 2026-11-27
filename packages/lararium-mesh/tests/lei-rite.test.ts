@@ -91,9 +91,9 @@ describe("lei-rite-separates-powers", () => {
     await expect(returnLei(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-returned" });
   });
 
-  test("RED: the rite list holds four names (the executable-record lei's `exec` beside the three restart and keep rites), and a lei of any other rite forms no record, no title and no ward verb; CONTROL: the push rite registers its co-signed ward verb", async () => {
+  test("RED: the rite list holds three names (the restart and keep rites; the exec rite left with the seat fence), and a lei of any other rite forms no record, no title and no ward verb; CONTROL: the push rite registers its co-signed ward verb", async () => {
     const f = await fixture();
-    expect([...SWARM_LEI_RITES]).toEqual(["push", "kukulu", "keep", "exec"]);
+    expect([...SWARM_LEI_RITES]).toEqual(["push", "kukulu", "keep"]);
     for (const rite of ["merge", "", "PUSH", "push/x", undefined]) {
       await expect(signSwarmAct({ act: "lei", group: GROUP, rite, reach: "head", branch: BRANCH, head: HEAD, after: null } as unknown as SwarmBodyParts, f.hand), String(rite)).rejects.toMatchObject({ code: "swarm-shape" });
       expect(() => swarmLeiTitle(rite as never, BRANCH), String(rite)).toThrow(SwarmRefused);

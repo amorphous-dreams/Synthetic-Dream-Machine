@@ -470,7 +470,7 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
   $script:HostInputFile = $null
   $isPut = $argv.Count -ge 3 -and (($argv[0] -ceq 'tiddler' -and $argv[1] -ceq 'put') -or ($argv[0] -ceq 'spirit' -and $argv[1] -cin @('ah', 'hooili', 'residue', 'handback')))
   if ($argv.Count -gt 0) {
-    $alwaysValued = @('--fields', '--note', '--reason', '--text')
+    $alwaysValued = @('--fields', '--note', '--reason', '--replace', '--text', '--with')
     $boolean = @('abandon', 'accept-loss', 'accept-omissions', 'added', 'all', 'all-strata', 'apply', 'approve', 'brief', 'bulk', 'cancel', 'cards', 'collapse', 'commit', 'cosign', 'confirm', 'create', 'cut', 'drain', 'deny', 'docs', 'draft', 'drop', 'dry-run', 'edge', 'ephemeral', 'every', 'executable', 'family', 'force', 'foreground', 'fresh', 'from-persona', 'held', 'help', 'help-mempalace', 'history', 'hearth', 'hold', 'if-due', 'in-wiki', 'init', 'join', 'json', 'keep', 'keep-hooks', 'keyhive-trace', 'lag', 'launch', 'list', 'meme', 'memory', 'new', 'offer', 'orphans', 'over-fresher', 'page', 'pair', 'palaces', 'paper', 'partial', 'passphrase', 'pending', 'probe', 'quorum', 'overwrite', 'remove', 'repour', 'restart', 'revert', 'rotate', 'seat', 'sessions', 'shadow', 'skinny', 'skip-build', 'spectral', 'split-root', 'staged', 'sweep', 'tag-blobs', 'terms', 'tree', 'verbose', 'wait', 'watch', 'with-web', 'witness', 'workbench', 'writeback', 'yes')
     $sources = @()
     for ($i = 0; $i -lt $argv.Count; $i++) {

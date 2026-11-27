@@ -181,10 +181,11 @@ export function layIslandComposition(input: LayIslandCompositionInput): LaidComp
 
 /**
  * Mount the shore on a booted engine over a laid composition: the adaptor registers, the slot pointers seed, every layer replays
- * through the shore's landing queue, and the seed checkpoint arms. `seed`, where the engine booted over wave zero, hands the
- * changes the composition told during the boot (`IslandSeed.release`): each lands afresh, after the replay.
+ * through the shore's landing queue, and the seed checkpoint arms. `seed`, where the engine booted over wave zero, counts its
+ * preloads as landed (the glass's shape, TW5's `Syncer.readTiddlerInfo`): the replay fills the ledger without painting the seed
+ * back over the boot pass's writes, and the changes the composition told during the boot (`IslandSeed.release`) land afresh.
  */
-export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: Pick<IslandSeed, "release" | "titles"> | null): {
+export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: Pick<IslandSeed, "preloads" | "release" | "titles"> | null): {
   adaptor: IslandAdaptor;
   stores: Array<{ slot: SlotUri; store: LarTiddlerStore }>;
 } {
@@ -197,6 +198,7 @@ export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: P
 
   const adaptor = new IslandAdaptor(tw5, composite, recipe.wikiSlug);
   adaptor.installLandingQueue();
+  if (seed) adaptor.countSeedAsLanded(seed.preloads);
   adaptor.start();
 
   // Per-wiki cascade reference — the default `lar:///ha.ka.ba/lararium/config/bag-paths`
