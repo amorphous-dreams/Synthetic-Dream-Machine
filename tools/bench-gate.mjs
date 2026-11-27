@@ -140,8 +140,8 @@ export function owedSteps({ owed, weights = {}, touched = [], root = ROOT, expan
   const steps = [];
   const e2e = (name, set, files) => ({ name, cmd: "npx", args: [...set.args, ...files], cwd: set.dir, scratch: true });
   const heavyOf = (dir) => tiers(treeTests(dir, root), weights[dir]).heavy;
-  // An owed file the fold names `dark` (no witness reads it) fails the ticket wide: an unread file never passes narrow.
-  if (owed.via === "dark" || owed.files.some((f) => f.tier === "dark")) {
+  // A `dark` FILE (its test lane lit by no lamp) rides receipted and unrun, the DARK line names it; going wide would not run it either.
+  if (owed.via === "dark") {
     for (const dir of touched) { const heavy = heavyOf(dir); if (heavy.length) steps.push(vitestStep(`heavy-${slug(dir)}`, dir, heavy, root)); }
     const moved = owed.touched ?? [];
     if (moved.length === 0 || moved.some((p) => E2E_BEARING.some((dir) => p.startsWith(`${dir}/`)))) steps.push(e2e("e2e-node", NODE_E2E, []));
@@ -195,7 +195,8 @@ export function plan({ weights = readWeights(), touched = [], root = ROOT, verdi
     const { swift } = tiers(treeTests(dir, root), weights[dir]);
     if (swift.length) steps.push(vitestStep(`swift-${slug(dir)}`, dir, swift, root));
   }
-  if (owed && !verdict) return [...steps, ...owedSteps({ owed, weights, touched, root, ...(expand ? { expand } : {}) })];
+  // A PATH IN NO SEAM RUNS THE WHOLE GATE: the fold reads develop's table, so a wave adding files cannot seat them first; it pays the full floor instead of stopping.
+  if (owed && !verdict && owed.refuse.length === 0) return [...steps, ...owedSteps({ owed, weights, touched, root, ...(expand ? { expand } : {}) })];
   for (const dir of touched) {
     const { heavy } = tiers(treeTests(dir, root), weights[dir]);
     if (heavy.length) steps.push(vitestStep(`heavy-${slug(dir)}`, dir, heavy, root));
@@ -289,8 +290,8 @@ export function checkOwes(owed, say = console.log) {
   if (dark.length) say(`DARK ${dark.length} · owed and unrun, no lamp lit: ${dark.map((f) => f.path).join(", ")}`);
   if (owed.via === "dark") say("floor-owes: no fold answered, so the gate fails wide; land the fold on develop or light the doors for the narrow ticket");
   if (owed.refuse.length === 0) return 0;
-  say("pono: seat each refused path in packages/lararium-tw5/tiddlers-lararium/floor-seams.tid (a MOVES row on the seam it moves, or FREE, or CONFIG), land that on develop, then run the gate again");
-  return 1;
+  say(`floor-owes: ${owed.refuse.length} path(s) stand in no seam on develop's table, so the gate runs whole; seat them in packages/lararium-tw5/tiddlers-lararium/floor-seams.tid (a MOVES row, or FREE, or CONFIG) and the next ticket narrows`);
+  return 0;
 }
 
 /** A step that stands vessels runs under a scratch LAR_ROOT of its own and no LAR_BAGS (the e2e isolation law), as CI's shards do. */
