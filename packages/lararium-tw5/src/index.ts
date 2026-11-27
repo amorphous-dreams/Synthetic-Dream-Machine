@@ -113,7 +113,7 @@ export { composeCrossFaceView, composeFaceEngine, crossFaceViewSource, enginePoo
 export { composeWikiEngine, composeWikiEngineSource, wikiEngines } from "./wiki-engine.js";
 export type { WikiEngine, WikiEngineDeps, WikiEngineSource, WikiEngines } from "./wiki-engine.js";
 export { TW5_DEV_BAG, TW5_DOCS_BAG, isTw5Docs, isTw5DocsBag, tw5DocsRecords, tw5LibraryStackStore } from "./tw5-docs-library.js";
-export type { CrossFaceViewGuard, CrossFaceViewSource, EnginePool, FaceEngine, FaceEngines, FaceEngineSource } from "./face-engine.js";
+export type { CrossFaceViewGuard, CrossFaceViewSource, EnginePool, FaceBoot, FaceEngine, FaceEngines, FaceEngineSource, SeedFor } from "./face-engine.js";
 export { placeVerb, patchVerb, removeVerb, writeOutcome, dispatchVerb } from "./verb-vm.js";
 export type { VerbPlacement } from "./verb-vm.js";
 export { MemoryTiddlerStore } from "./memory-store.js";

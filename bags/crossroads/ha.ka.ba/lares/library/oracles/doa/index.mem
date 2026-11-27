@@ -30,7 +30,7 @@ Per the content-resolution law, ''the bytes leave the bag'': each artifact rides
 KIND-plane at `cid/<sha256>`, and this handle carries name → cid. A session throws the oracle by
 opening the DOA.html blob in any browser, offline, forever.
 
-The house consults this shelf by `lares oracle cast --by doa` (`lar:///oracle.library.consults`): the shelf declares its method in its own `method` field, `three-coins`, and the consult runs what the shelf declares.
+The house consults this shelf by `lares oracle cast --by doa` (`lar:///library.oracle.speaks`): the shelf declares its method in its own `method` field, `three-coins`, and the consult runs what the shelf declares.
 
 <<~/ahu>>
 
@@ -78,6 +78,6 @@ and 36, and `000pi` draws one of its own) `page-lines` keeps the page's drawing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yTmEmXE1iSwz7o_joJhtqg2MaiU6DoGzrlbl2X-Sj7s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4jykI3EYL5eRCbukOsgD8-hQPDM36LOe1hfDQWkVyaM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

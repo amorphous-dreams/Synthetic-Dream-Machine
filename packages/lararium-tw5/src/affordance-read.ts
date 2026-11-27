@@ -35,7 +35,7 @@ export type TextOf = (title: string) => string | undefined;
 /** The bags whose stable seat (`lar:///ha.ka.ba/<bag>/afford/<address>`) a carrier may rest at, in the order they answer. */
 export const AFFORD_SEAT_BAGS = ["lares", "lararium"] as const;
 
-/** One address's stable seat in one bag: `lar:///ha.ka.ba/lares/afford/oracle.library.consults`. */
+/** One address's stable seat in one bag: `lar:///ha.ka.ba/lares/afford/library.oracle.speaks`. */
 export function seatTitleOf(address: string, bag: string = AFFORD_SEAT_BAGS[0]): string {
   return `lar:///ha.ka.ba/${bag}/afford/${address.replace(/^lar:\/\/\//, "")}`;
 }
@@ -54,7 +54,7 @@ export const carrierViewOfText = (textOf: TextOf): CarrierView => ({ has: (title
 
 /**
  * THE CARRIER THAT ANSWERS AN ADDRESS (fork 3 of lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts). The address rides any
- * spelling: `lar:///oracle.library.consults`, `oracle.library.consults`, or a seat title. A record titled with the bare root
+ * spelling: `lar:///library.oracle.speaks`, `library.oracle.speaks`, or a seat title. A record titled with the bare root
  * wins where one stands; else the first stable seat that stands (`AFFORD_SEAT_BAGS` order); else the first carrier that tags
  * the address. The view already answers each title from its topmost layer, so the cascade picks the layer for either title.
  * Null where nothing answers, or where the spelling carries no address.
@@ -83,6 +83,17 @@ function slotText(textOf: TextOf, address: string, slot: string): string {
  */
 export function takesRows(textOf: TextOf, address: string, entity: "arg" | "cell" = "arg"): HasRow[] {
   return parseHasRows(slotText(textOf, address, "#/takes")).filter((r) => r.entity === entity);
+}
+
+/**
+ * THE CARRIER'S SEAT HINTS (landing 7; the model's "seat hints answered on every call"): the `gate` rows its `#/gate` tables (who
+ * may ask, the ocap the door checks: testimony, never a grant) and any `signs` row it tables in any slot (nature, reversible,
+ * crossing, hand). A dry call answers them beside its preview, so a caller reads what the real call would ask of it.
+ */
+export function seatHintRows(textOf: TextOf, address: string): HasRow[] {
+  const gate = parseHasRows(slotText(textOf, address, "#/gate"), "gate");
+  const signs = ["", "#/head", "#/takes", "#/gate", "#/skins"].flatMap((slot) => parseHasRows(textOf(`${address}${slot}`) ?? "", "signs"));
+  return [...gate, ...signs];
 }
 
 /** Every skin row the carrier holds: `#/skins` itself and each nested `#/skins/<surface>` slot. */

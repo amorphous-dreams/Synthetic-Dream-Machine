@@ -56,8 +56,9 @@ The fences refuse by name: a family's `type` and carriage fields derive from its
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
 
 ```memetic-wikitext
-<<has entity=`cell` name=`_?` params=`mu/dry-relate owed/[[comms-ux-enacts landing 7 builds the dry previews]] ~ the dry summary: what the put would land, the base it needs, landing nothing`>>
-<<has entity=`cell` name=`_!` params=`mu/dry-assert owed/[[comms-ux-enacts landing 7 builds the dry previews]] ~ the dry diff: the summary and the full diff of text and fields, landing nothing`>>
+<<has entity=`cell` name=`_` params=`mu/dry ~ a dry run: the put walks its law to the last step and answers the summary, landing nothing`>>
+<<has entity=`cell` name=`_?` params=`mu/dry-relate ~ the dry summary: what the put would land, the bag and layer, the base it needs, landing nothing`>>
+<<has entity=`cell` name=`_!` params=`mu/dry-assert ~ the dry diff: the summary and each record it would move, fields before and after and text line by line, landing nothing`>>
 <<has entity=`arg` name=`title` params=`takes/title needs/required seat/1 as/<title> ~ the record written, any right-intent string; a slot title <root>#/x names one slot`>>
 <<has entity=`arg` name=`text` params=`takes/words ~ the new text: on a root the whole carrier, on a slot its body`>>
 <<has entity=`arg` name=`file` params=`takes/host-path skins/cli ~ the new text from a host file, or - for stdin; a pointer kind stages its bytes and lands as a pointer`>>
@@ -118,13 +119,14 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/answers`>>
 
-!! answers ~ put · noop · family · conflict · exists
+!! answers ~ put · noop · family · conflict · exists · dry
 
 ```memetic-wikitext
 <<has entity=`band` name=`put` params=`exit/0 fields/[[title decision bag layer created changed hash textHash position appended replaced]] ~ the record landed; decision reads put`>>
 <<has entity=`band` name=`noop` params=`exit/0 ~ the record already says it; nothing moved`>>
 <<has entity=`band` name=`family` params=`exit/0 fields/[[canonicalHash landed kept tombstoned]] ~ a family text landed through the Confluence gate and resealed`>>
 <<has entity=`band` name=`conflict` params=`exit/4 fields/[[hash canonicalHash]] ~ the base read stale; the live hash rides the answer and nothing landed`>>
+<<has entity=`band` name=`dry` params=`exit/0 fields/[[dry needs diff hints]] ~ a dry put: the answer the real put would give, the base it needs and the carrier's seat hints; nothing landed`>>
 <<has entity=`band` name=`exists` params=`exit/4 ~ create met a standing record; nothing landed`>>
 ```
 
@@ -176,6 +178,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;q0ZJ6GhA_mm9DnaqprLvxxx2MyE0pAtzC7psiSyulpQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8khAqZ7zDZdKaTeD65XmDZX4ZwuPHq87uXDOXm4n1Xg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

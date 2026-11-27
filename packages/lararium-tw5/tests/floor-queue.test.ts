@@ -84,12 +84,12 @@ describe("the floor serves lanes", () => {
     expect(floorView(t, "lane", "hoao")).toEqual([id("hoao", A), id("hoao", B)]);
   });
 
-  test("RED 9: a lane holding a slot yields the next slot to a lane holding none; CONTROL: one lane waiting alone never idles the floor", () => {
-    const held = [q("hoao", A), `TAKE ${id("hoao", A)} lares-alpha c-free=80.00 slot=1`, q("hoao", B), q("kaula", C), q("kaula", D)].join("\n");
+  test("RED 9: a lane holding a run yields the next admission to a lane holding none; CONTROL: one lane waiting alone never idles the floor", () => {
+    const held = [q("hoao", A), `TAKE ${id("hoao", A)} lares-alpha c-free=80.00 run=4242`, q("hoao", B), q("kaula", C), q("kaula", D)].join("\n");
     expect(floorView(foldLedger(held), "next")).toEqual([id("kaula", C)]);
     expect(floorView(foldLedger(held), "waiting")).toEqual([id("kaula", C), id("hoao", B), id("kaula", D)]);
     expect(floorView(foldLedger(held), "lane")).toEqual(["kaula=2/0", "hoao=1/1"]);
-    const alone = [q("hoao", A), `TAKE ${id("hoao", A)} lares-alpha c-free=80.00 slot=1`, q("hoao", B)].join("\n");
+    const alone = [q("hoao", A), `TAKE ${id("hoao", A)} lares-alpha c-free=80.00 run=4242`, q("hoao", B)].join("\n");
     expect(floorView(foldLedger(alone), "next")).toEqual([id("hoao", B)]);
   });
 

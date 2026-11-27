@@ -62,7 +62,7 @@ import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
 import { runLocalVerb, gateRoutedVerb, refuseSeatCanonRouted, RoutedCapDenied, makeCapVerify, routedAddressesWiki, routedWikiSlug } from "./verb-local-dispatch.js";
-import { callOfSigil, hostAnswer, isCallSigil, muAnswer, planCall, reactorArgs, seatVerbOf, stampAnswer, unhandled, type CallPlan, type CallReader, type CallSeat, type MacroCallParse } from "./modules/call.js";
+import { callOfSigil, dryUnwalked, hostAnswer, isCallSigil, isDryPlan, muAnswer, planCall, reactorArgs, seatVerbOf, stampAnswer, unhandled, type CallPlan, type CallReader, type CallSeat, type MacroCallParse } from "./modules/call.js";
 import { surfaceOf } from "./affordance-read.js";
 
 export interface VerbContext {
@@ -298,10 +298,14 @@ export class VerbTable {
 /**
  * RUN ONE BOUND PLAN through the registry: the seat's verb, wrapped by its own fence and hand (`VerbTable.get`), answers with the
  * plan's params in the reactor's spellings. An address no seat answers refuses `affordance-unhandled` with a cure.
+ * A dry carry (landing 7) reaches only a seat that names `dry`; any other refuses `mu-cell-empty` naming the plain call.
  */
 export async function runPlan(table: VerbTable, plan: CallPlan, ctx: VerbContext): Promise<Record<string, unknown>> {
   const seat = table.seatOf(plan.address);
   if (seat === undefined) throw unhandled(plan);
+  // A DRY CARRY REACHES ONLY A SEAT THAT WALKS A DRY PATH (landing 7): any other refuses and names the plain call, so a layer
+  // that tables a dry cell on a door with no preview still lands no write.
+  if (isDryPlan(plan) && seat.dry !== true) throw dryUnwalked(plan);
   // A SEAT MAY CHOOSE ITS VERB BY THE CALL'S ARGS (landing 6): a get with `meme` and no title lists the families.
   const args = reactorArgs(plan.params, seat);
   const reactor = table.get(seatVerbOf(seat, args));

@@ -18,7 +18,7 @@
  *
  * A DOOR FLIPS TO ITS CARRIERS. Where every affordance a door skins holds an affordance carrier, `helpLines` reads the baked
  * affordance pack (`@lararium/tw5/affordance-pack`) and the door's entry here burns in the same commit: one home, never two.
- * `oracle` flipped first (lar:///oracle.library.consults); `tiddler` flipped with the core verbs' carriers
+ * `oracle` flipped first (lar:///library.oracle.speaks); `tiddler` flipped with the core verbs' carriers
  * (lar:///engine.record.reads · puts · removes · renames, candidate addresses), and `wiki filter` reads its carrier
  * (lar:///engine.filter.pages) while the rest of the wiki door keeps its own table.
  *

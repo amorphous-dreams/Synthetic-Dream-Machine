@@ -6,7 +6,7 @@
  *   ?  relate  Cup       zoom axis, out   the card: the has line, what stands, its size, its base
  *   !  assert  Sword     zoom axis, in    the whole, every slot; `slot=` narrows it to one span
  *   *  many    Wand      feed axis, seen  a filter's page (a filter call reads as `*` already)
- *   _  dry     Pentacle  feed axis, held  a dry run: what a write would land, landing nothing (its previews: landing 7)
+ *   _  dry     Pentacle  feed axis, held  a dry run: what a write would land and the base it needs, landing nothing
  *   0  unask   Arcana    no axis          the caller withdrawing its own ask
  *
  * Two tools across the axes carry together (complementary: `*?` a page of has lines, `*!` a page whose rows carry their lines,
@@ -24,7 +24,7 @@
  * refuses `mu-cell-empty` and names the nearest cell as a call: one sharing a tool, else the plain call with no `mu`.
  *
  * A LEAF: pure over the rows the call already read; `modules/call.ts` turns a fault into a refusal with a cure sigil, and the
- * seats (`TIDDLER_CALL_SEATS`) turn a carry into their reactor's args (`readDepthArgs`, `filterDepthArgs`).
+ * seats (`TIDDLER_CALL_SEATS`) turn a carry into their reactor's args (`readDepthArgs`, `filterDepthArgs`, `dryDepthOf`).
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/affordance
  */
@@ -182,3 +182,17 @@ export function filterDepthArgs(carry: string): Record<string, unknown> {
   if (carry === "*!") return { depth: "whole" };
   return {};
 }
+
+/**
+ * THE WRITE DOORS' DEPTH (landing 7: `engine.record.puts`, `removes`, `renames`): `_` (dry) and `_?` (dry-relate) the summary
+ * (the decision, the bag and layer it would land in, the base it needs, what it keeps and tombstones, a delete's consequence),
+ * `_!` (dry-assert) the summary and the full diff of text and fields. Null: the carry names no dry depth.
+ */
+export function dryDepthOf(carry: string): "summary" | "diff" | null {
+  if (carry === "_" || carry === "_?") return "summary";
+  if (carry === "_!") return "diff";
+  return null;
+}
+
+/** True where a carry holds the dry tool: the call walks its door's law to the last step and lands nothing. */
+export const isDryCarry = (carry: string): boolean => carry.includes("_");

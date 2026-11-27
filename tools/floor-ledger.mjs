@@ -113,9 +113,9 @@ export function landLine(id, merge) {
   return `LAND ${id} ${merge.toLowerCase()}`;
 }
 export const missLine = (id, words) => `MISS ${id} ${oneLine(words)}`;
-const slotKey = (slot) => (Number.isInteger(slot) && slot > 0 ? ` slot=${slot}` : '');
-export const takeLine = (id, holder, cFreeBytes, slot) => `TAKE ${id} ${holder || 'familiar'} c-free=${gb(cFreeBytes)}${slotKey(slot)}`;
-export const doneLine = (id, verdict, wroteBytes, cDropBytes, verdictLine = '', slot) => `DONE ${id} ${verdict} wrote=${gb(wroteBytes)} c-drop=${gb(cDropBytes)}${slotKey(slot)} · ${oneLine(verdictLine)}`.trimEnd();
+const runKey = (run) => (Number.isInteger(run) && run > 0 ? ` run=${run}` : '');
+export const takeLine = (id, holder, cFreeBytes, run) => `TAKE ${id} ${holder || 'familiar'} c-free=${gb(cFreeBytes)}${runKey(run)}`;
+export const doneLine = (id, verdict, wroteBytes, cDropBytes, verdictLine = '', run) => `DONE ${id} ${verdict} wrote=${gb(wroteBytes)} c-drop=${gb(cDropBytes)}${runKey(run)} · ${oneLine(verdictLine)}`.trimEnd();
 export const dropLine = (id, reason) => `DROP ${id} ${oneLine(reason)}`;
 
 /** The `lares` command and its leading args. */

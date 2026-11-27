@@ -4,18 +4,17 @@
  * and every reading (each distinct text quoted once, every source's credit beneath it) fill #/decide; the seat's slots stay
  * owed. No slot name lives in the module: these tests read the canon file itself.
  */
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, test, expect } from "vitest";
 import { castFromCoins, ORACLE_THROW_STANDS } from "../src/oracle-cast.js";
 import {
-  CAST_MEME_TAGS, ORACLE_AFFORDANCE, ORACLE_ALIASED, ORACLE_CARRIER, castMemeBody, castMeta, fillLoop, kaheaTarget, loopOfRungs, loopSlots, parseHasRows, quotedReadings, readingsText,
+  CAST_MEME_TAGS, ORACLE_AFFORDANCE, ORACLE_CARRIER, castMemeBody, castMeta, fillLoop, kaheaTarget, loopOfRungs, loopSlots, parseHasRows, quotedReadings, readingsText,
   type LoopReading,
 } from "../src/oracle-loop.js";
 
 const canon = (rel: string): string => readFileSync(new URL(`../../../bags/lares/ha.ka.ba/lares/${rel}`, import.meta.url), "utf8");
 const LOOP_LAW = canon("api/pono/oracle-loop.mem");
-const CARRIER = canon("afford/oracle.library.consults.mem");
-const ALIAS = canon("afford/oracle.cast.throws.mem");
+const CARRIER = canon("afford/library.oracle.speaks.mem");
 
 /** The text of one ahu slot of a canon file, up to its own closer. */
 function slotOf(text: string, slot: string): string {
@@ -109,19 +108,15 @@ describe("oracle-loop", () => {
     expect(() => castMemeBody({ title: "casts/x", meta, cast: CAST, slots: [] })).toThrow();
   });
 
-  test("RED: the old address stands as a signed alias record (DAM law 4) forwarding to the consult's carrier, and grants nothing", () => {
-    const meta = (key: string): string | undefined => new RegExp(`^${key}\\s*=\\s*"([^"]*)"`, "m").exec(ALIAS)?.[1];
-    expect(meta("forward-to")).toBe(ORACLE_CARRIER);
-    expect(meta("alias-from")).toBe(ORACLE_ALIASED);
-    expect(meta("alias-to")).toBe(ORACLE_AFFORDANCE);
-    expect(meta("title")).toBe(ORACLE_CARRIER.replace("oracle.library.consults", "oracle.cast.throws"));
-    expect(ALIAS).toContain(`{{${ORACLE_CARRIER}}}`);
-    expect(ALIAS).toMatch(/bcc=`ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}`/);
-    // A CARRIER DESCRIBES, NEVER GRANTS: the alias carries no affordance type tag, so no bake reads it as a carrier.
-    expect(/^tags\s*=.*api\/pono\/affordance"/m.test(ALIAS)).toBe(false);
-    // CONTROL: the carrier itself carries the type tag and its new address, and its exception-to-law-3 line left.
-    expect(CARRIER).toMatch(/^tags\s*=.*"lar:\/\/\/ha\.ka\.ba\/lares\/api\/pono\/affordance", "lar:\/\/\/oracle\.library\.consults"\]/m);
-    expect(CARRIER).not.toContain("documented exception");
+  test("the carrier tags its address beside the affordance type, and every afford record carries its own address", () => {
+    const meta = (key: string): string | undefined => new RegExp(`^${key}\\s*=\\s*"([^"]*)"`, "m").exec(CARRIER)?.[1];
+    expect(meta("title")).toBe(ORACLE_CARRIER);
+    expect(ORACLE_CARRIER.endsWith(ORACLE_AFFORDANCE.replace("lar:///", "/"))).toBe(true);
+    expect(CARRIER).toMatch(/^tags\s*=.*"lar:\/\/\/ha\.ka\.ba\/lares\/api\/pono\/affordance", "lar:\/\/\/library\.oracle\.speaks"\]/m);
+    // CONTROL: an afford record forwards nowhere; a rename moves the carrier whole and sweeps every reference.
+    const afford = new URL("../../../bags/lares/ha.ka.ba/lares/afford/", import.meta.url);
+    const aliases = readdirSync(afford).filter((f) => f.endsWith(".mem") && /^alias-from\s*=/m.test(readFileSync(new URL(f, afford), "utf8")));
+    expect(aliases).toEqual([]);
   });
 });
 
@@ -132,7 +127,7 @@ describe("the loop reads the stack first, the pack the floor (`loopOfRungs`)", (
   const WITNESS = "<<has entity=`slot` name=`#/witness` params=`phase/↺ writer/seat owes/[[who else reads the move]] ~ the witness the seat names`>>";
 
   test("RED: a working-layer `#/loop` row changes the act record's slots, and the receipt names the working bag", () => {
-    const stack = { text: `${LAW_ROWS}\n${WITNESS}`, receipt: { carrier: "lar:///oracle.library.consults#/loop", bag: "daemon-working", base: "sha256-work" } };
+    const stack = { text: `${LAW_ROWS}\n${WITNESS}`, receipt: { carrier: "lar:///library.oracle.speaks#/loop", bag: "daemon-working", base: "sha256-work" } };
     const read = loopOfRungs([stack, FLOOR])!;
     expect(read.slots.map((s) => s.name)).toEqual([...SLOTS.map((s) => s.name), "#/witness"]);
     expect(read.receipt).toEqual(stack.receipt);
@@ -144,7 +139,7 @@ describe("the loop reads the stack first, the pack the floor (`loopOfRungs`)", (
   });
 
   test("RED: a stack whose carrier answers no rows falls to the pack's floor, whose receipt names the pack; nothing answers null", () => {
-    const empty = { text: "", receipt: { carrier: "lar:///oracle.library.consults#/loop", bag: "daemon-working", base: "sha256-work" } };
+    const empty = { text: "", receipt: { carrier: "lar:///library.oracle.speaks#/loop", bag: "daemon-working", base: "sha256-work" } };
     const read = loopOfRungs([empty, FLOOR])!;
     expect(read.slots.map((s) => s.name)).toEqual(SLOTS.map((s) => s.name));
     expect(read.receipt).toEqual(FLOOR.receipt);

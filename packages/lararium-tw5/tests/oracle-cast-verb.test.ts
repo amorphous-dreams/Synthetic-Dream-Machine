@@ -34,7 +34,7 @@ function canonSlot(rel: string, slot: string): string {
   const body = text.indexOf("\n", open) + 1;
   return text.slice(body, text.indexOf("<<~/ahu>>", body)).trim();
 }
-const CARRIER_LOOP = canonSlot("afford/oracle.library.consults.mem", LOOP_SLOT);
+const CARRIER_LOOP = canonSlot("afford/library.oracle.speaks.mem", LOOP_SLOT);
 const LOOP_CALL = kaheaTarget(CARRIER_LOOP)!;
 const LOOP_ROWS = canonSlot("api/pono/oracle-loop.mem", LOOP_SLOT);
 const SLOT_NAMES = loopSlots(parseHasRows(LOOP_ROWS)).map((s) => s.name);

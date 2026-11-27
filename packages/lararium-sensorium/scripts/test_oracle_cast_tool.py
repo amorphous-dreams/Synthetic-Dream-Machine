@@ -112,7 +112,7 @@ def test_pointers_that_read_wrong_refuse_at_the_seat_and_blank_words_ride_as_non
 def test_one_door_no_unfold_and_no_collapse(daemon):
     # ONE door: the cast takes the uncertainty itself; no unfold axis and no second skin ride this tool.
     tool = {t.name: t for t in asyncio.run(_mcp().list_tools())}["oracle_cast"]
-    props = set((tool.inputSchema or {}).get("properties", {}))
+    props = set((tool.input_schema or {}).get("properties", {}))
     assert {"uncertain", "observe"} <= props
     assert "unfold" not in props
     assert "collapse" not in tool.description and "unfold" not in tool.description

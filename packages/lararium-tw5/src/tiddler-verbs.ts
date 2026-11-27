@@ -13,13 +13,20 @@
  *                                                                             meme?: { uri, text?, canonicalHash, bytes, slots, slot?, page? }, grain, next, note? }
  *                                                                         (a bare affordance root no record titles reads the carrier the stack seats: `title` names it, `address` the root)
  *   wiki-render    { recipe, title | text, type?, form?, after?, maxBytes? } → { recipe, title, form, text, bytes, truncated, next }
- *   tiddler-put    { recipe | bag [realm], title, text?, append?, replace?, with?, fields?, unset?, tagsAdd?, tagsRemove?, cut?, base?, create? }
+ *   tiddler-put    { recipe | bag [realm], title, text?, append?, replace?, with?, fields?, unset?, tagsAdd?, tagsRemove?, cut?, base?, create?, dry? }
  *                                                                         → { recipe?, title, decision: put|noop|conflict|exists, bag, layer?, created, changed, hash, textHash, position, family?,
  *                                                                             appended?, appendedTo?, replaced?, canonicalHash?, landed?, kept?, tombstoned?, warnings? }
- *   tiddler-delete { recipe | bag [realm], title, base?, family?, mode? } → { recipe? | bag, title, decision: removed|absent|conflict|refused, mode: plain|kapae|reveal|cut, tombstoned, retracted, hash?,
+ *   tiddler-delete { recipe | bag [realm], title, base?, family?, mode?, dry? } → { recipe? | bag, title, decision: removed|absent|conflict|refused, mode: plain|kapae|reveal|cut, tombstoned, retracted, hash?,
  *                                                                             parent?, canonicalHash?, landed?, kept?, refusal?, why?, consequence? }
- *   tiddler-rename { recipe, title, to, base? }                          → { recipe, title, to, decision: renamed|absent|conflict|refused, forwarder?, relinked?, moved?, skipped?, unreachable?, withheld?, hash?, refusal?, why?, consequence? }
+ *   tiddler-rename { recipe, title, to, base?, dry? }                    → { recipe, title, to, decision: renamed|absent|conflict|refused, forwarder?, relinked?, moved?, skipped?, unreachable?, withheld?, hash?, refusal?, why?, consequence? }
  *   wiki-status    { recipe }                                             → { recipe, working, layers: [{ bag, mounted: writable|read-only|promotion-only, read, write, working?, why? }] }
+ *
+ * A DRY WRITE LANDS NOTHING (comms-ux-enacts landing 7; `mu=_` on the call, `dry: "summary" | "diff"` here). Put, delete and
+ * rename walk the same law to the last step: every fence, the ocap, the base, the family law and the Confluence gate. A put
+ * runs whole over a DRY SEAT (`drySeatOf`), the real seat beneath an overlay that takes every landing and every tombstone, so
+ * its answer names what the real put then lands, hash for hash; a delete and a rename stop at the step before their first
+ * write. The answer adds `dry` (the depth), `needs` (the base the real call takes: `base`, and `carrierBase` on a family) and,
+ * at `diff`, `diff` (each record the call would move: its fields before and after, its text line by line, `lineDiff`).
  *
  * EVERY WIKI ITS ENGINE. `recipe: "default"` answers through the daemon island's live `$tw.wiki`, the daemon mount's daemon
  * wiki. `recipe: <slug>` answers through THAT wiki's own engine (`wiki-engine`: the one per-face engine machinery laid over
@@ -124,7 +131,7 @@ import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { wornOrigin } from "./verb-dispatcher.js";
 import { CallRefusal, callReaderOf, cureCall, type CallSeat, type MacroCallParse } from "./modules/call.js";
-import { filterDepthArgs, readDepthArgs } from "./modules/mu.js";
+import { dryDepthOf, filterDepthArgs, muWordsOf, readDepthArgs } from "./modules/mu.js";
 import { wikiWearsNext } from "./island-recipe.js";
 import { isTw5DocsBag, refuseTw5DocsWrite } from "./tw5-docs-library.js";
 import type { CallSource, VerbContext, VerbReactor } from "./verb-dispatcher.js";
@@ -970,7 +977,7 @@ function refuseUnreadWords(args: Readonly<Record<string, unknown>>, title: strin
 
 /**
  * THE CARRIER A BARE ROOT READS (fork 3, `carrierOf`). A title whose root names an affordance address at the bare root
- * (`lar:///oracle.library.consults`, or one of its slots) and which no record in the reader's view titles resolves to the
+ * (`lar:///library.oracle.speaks`, or one of its slots) and which no record in the reader's view titles resolves to the
  * carrier the stack seats for that address (its stable seat, the topmost layer answering), the slot riding along. Null where
  * the title answers as written: a record titles it, its root names no bare address, or no carrier stands.
  */
@@ -1221,13 +1228,18 @@ interface PutSeat {
   exists(title: string): Promise<boolean>;
   place(title: string): Promise<Place>;
   /** A record as the family recompose reads a member of this seat. */
-  member(next: Record<string, string>): TiddlerFields;
+  member(next: Record<string, unknown>): TiddlerFields;
+  /** A record as it would read once it lands, landing nothing: the fields the sink would hold and the strings a read answers. */
+  settle(next: Record<string, unknown>): Settled;
   /**
    * THE SWAP: `next` lands only where the record still hashes as the round read it; false sends the round back. A wiki's
    * swap runs its re-read and its `addTiddler` in one synchronous step, so no other hand slips between them.
    */
   swap(title: string, liveHash: string | null, next: Record<string, string>): boolean | Promise<boolean>;
 }
+
+/** A record as it reads once it lands: the fields a sink holds and the strings a read answers (the residency stamp left out). */
+interface Settled { readonly fields: TiddlerFields; readonly strings: Record<string, string> }
 
 /** A store record's fields as strings, as TiddlyWiki writes them, read with no engine (the host's residency stamp left out). */
 function stringsOf(held: Record<string, unknown>): Record<string, string> {
@@ -1266,6 +1278,7 @@ async function wikiSeat(opts: TiddlerVerbOptions, anchor: Anchor, ctx: VerbConte
     exists: async (title) => wiki.tiddlerExists(title),
     place: async (title) => placeOf(anchor, view, title),
     member: (next) => (new Tiddler(next) as unknown as EngineTiddler).fields as TiddlerFields,
+    settle: (next) => { const record = new Tiddler(next); return { fields: record.fields as TiddlerFields, strings: readRecord(record).fields }; },
     swap: (title, liveHash, next) => {
       const now = wiki.getTiddler(title);
       if ((now ? hashOf(readRecord(now).fields) : null) !== liveHash) return false;
@@ -1300,6 +1313,7 @@ async function bagSeat(opts: TiddlerVerbOptions, container: ReturnType<typeof re
     exists: async (title) => (await sink.read(title)) !== undefined,
     place: async (title) => { const reading = await familyReadingIn(title, sink); return { position: reading.position, family: reading.root, orphan: reading.orphan }; },
     member: (next) => next as unknown as TiddlerFields,
+    settle: (next) => ({ fields: next as unknown as TiddlerFields, strings: stringsOf(next) }),
     swap: async (title, liveHash, next) => {
       const now = await read(title);
       if ((now ? hashOf(now) : null) !== liveHash) return false;
@@ -1550,7 +1564,201 @@ async function putThrough(opts: TiddlerVerbOptions, seat: PutSeat, title: string
   }
 }
 
-/** The put over the seat its container names; a delete lands a slot's cut through it. */
+// ── THE DRY PATH (comms-ux-enacts landing 7) ──────────────────────────────────────────────────────────
+
+/** How deep a dry write answers: the summary (`_`, `_?`), or the summary and the full diff (`_!`). */
+type DryDepth = "summary" | "diff";
+
+/** The depth a write's `dry` arg names (the call's seat folds a `_` carry into it), or null for a write that lands. */
+function dryOf(args: Readonly<Record<string, unknown>>): DryDepth | null {
+  const raw = args["dry"];
+  if (raw === "diff") return "diff";
+  return raw === "summary" || raw === true || raw === "true" ? "summary" : null;
+}
+
+/** A dry seat: the real seat beneath an overlay holding what the run would land (a record as it would read, null where it leaves). */
+interface DrySeat extends PutSeat { readonly overlay: ReadonlyMap<string, Settled | null> }
+
+/**
+ * THE DRY SEAT: the real seat beneath an overlay. Every read sees the overlay first; every landing (`swap`, the sink's `land`)
+ * and every removal (`tombstone`, `leaveFamily`) writes the overlay alone, settled as the real seat would read it back. So the
+ * one put law, the family recompose and the Confluence gate run whole over it and answer what the real call lands, while the
+ * store, the wiki and the shore take nothing (no face rides `wikiWearsNext`, no alert rail rises).
+ */
+function drySeatOf(seat: PutSeat): DrySeat {
+  const overlay = new Map<string, Settled | null>();
+  const real = seat.sink;
+  const { beneath, leaveFamily } = real;
+  const sink: MemeSink = {
+    titles: async () => {
+      const held = new Set(await real.titles());
+      for (const [title, next] of overlay) { if (next === null) held.delete(title); else held.add(title); }
+      return [...held];
+    },
+    read: async (title) => (overlay.has(title) ? overlay.get(title)?.fields : await real.read(title)),
+    land: (fields) => { overlay.set(String((fields as { title?: unknown }).title ?? ""), seat.settle(fields as unknown as Record<string, unknown>)); },
+    tombstone: (gone) => { overlay.set(gone, null); },
+    tombstoneFamily: (titles) => { for (const gone of titles) overlay.set(gone, null); },
+    // A sink that knows its layers still answers which removal raises a kāpae; the removal itself lands in the overlay.
+    ...(beneath !== undefined && leaveFamily !== undefined ? {
+      beneath: (title: string) => beneath.call(real, title),
+      leaveFamily: (tombstones: readonly string[], retracts: readonly string[]) => { for (const gone of [...tombstones, ...retracts]) overlay.set(gone, null); },
+    } : {}),
+  };
+  const shown = (title: string): Record<string, string> | null => { const next = overlay.get(title); return next ? { ...next.strings } : null; };
+  return {
+    ...seat,
+    sink,
+    overlay,
+    read: async (title) => (overlay.has(title) ? shown(title) : seat.read(title)),
+    exists: async (title) => (overlay.has(title) ? overlay.get(title) !== null : seat.exists(title)),
+    // Where the run moved nothing yet the real seat's reading stands; past that the family law reads over the overlay.
+    place: async (title) => {
+      if (overlay.size === 0) return seat.place(title);
+      const reading = await familyReadingIn(title, sink);
+      return { position: reading.position, family: reading.root, orphan: reading.orphan };
+    },
+    swap: async (title, liveHash, next) => {
+      const now = overlay.has(title) ? shown(title) : await seat.read(title);
+      if ((now ? hashOf(now) : null) !== liveHash) return false;
+      overlay.set(title, seat.settle(next));
+      return true;
+    },
+  };
+}
+
+/** The most cells a line diff's table spans; past it the diff answers every old line removed and every new line added. */
+const LINE_DIFF_CELLS = 4_000_000;
+
+/**
+ * A LINE DIFF, unified: `@@ -a,n +b,m @@` hunk heads, then each line under ` ` (kept), `-` (leaves) or `+` (lands), three lines of
+ * context around each change. The longest common run of lines decides what stays; a text pair past `LINE_DIFF_CELLS` answers
+ * the whole middle removed and added, never a guess.
+ */
+export function lineDiff(before: string, after: string, context = 3): string[] {
+  const a = before === "" ? [] : before.split("\n");
+  const b = after === "" ? [] : after.split("\n");
+  let head = 0;
+  while (head < a.length && head < b.length && a[head] === b[head]) head++;
+  let tail = 0;
+  while (tail < a.length - head && tail < b.length - head && a[a.length - 1 - tail] === b[b.length - 1 - tail]) tail++;
+  const midA = a.slice(head, a.length - tail);
+  const midB = b.slice(head, b.length - tail);
+  const ops: Array<{ readonly op: " " | "-" | "+"; readonly line: string }> = a.slice(0, head).map((line) => ({ op: " " as const, line }));
+  if (midA.length * midB.length <= LINE_DIFF_CELLS) {
+    const n = midA.length;
+    const m = midB.length;
+    const run = Array.from({ length: n + 1 }, () => new Uint32Array(m + 1));
+    for (let i = n - 1; i >= 0; i--) {
+      for (let j = m - 1; j >= 0; j--) run[i]![j] = midA[i] === midB[j] ? run[i + 1]![j + 1]! + 1 : Math.max(run[i + 1]![j]!, run[i]![j + 1]!);
+    }
+    let i = 0;
+    let j = 0;
+    while (i < n && j < m) {
+      if (midA[i] === midB[j]) { ops.push({ op: " ", line: midA[i]! }); i++; j++; }
+      else if (run[i + 1]![j]! >= run[i]![j + 1]!) { ops.push({ op: "-", line: midA[i]! }); i++; }
+      else { ops.push({ op: "+", line: midB[j]! }); j++; }
+    }
+    for (; i < n; i++) ops.push({ op: "-", line: midA[i]! });
+    for (; j < m; j++) ops.push({ op: "+", line: midB[j]! });
+  } else {
+    for (const line of midA) ops.push({ op: "-", line });
+    for (const line of midB) ops.push({ op: "+", line });
+  }
+  for (const line of a.slice(a.length - tail)) ops.push({ op: " ", line });
+  // Each op's line number on either side, before it.
+  const atA: number[] = [];
+  const atB: number[] = [];
+  let na = 0;
+  let nb = 0;
+  for (const { op } of ops) { atA.push(na); atB.push(nb); if (op !== "+") na++; if (op !== "-") nb++; }
+  const changed = ops.flatMap((row, k) => (row.op === " " ? [] : [k]));
+  const out: string[] = [];
+  for (let g = 0; g < changed.length;) {
+    let last = g;
+    while (last + 1 < changed.length && changed[last + 1]! - changed[last]! <= 2 * context + 1) last++;
+    const from = Math.max(0, changed[g]! - context);
+    const to = Math.min(ops.length, changed[last]! + context + 1);
+    const span = ops.slice(from, to);
+    const countA = span.filter((row) => row.op !== "+").length;
+    const countB = span.filter((row) => row.op !== "-").length;
+    out.push(`@@ -${atA[from]! + (countA > 0 ? 1 : 0)},${countA} +${atB[from]! + (countB > 0 ? 1 : 0)},${countB} @@`);
+    for (const row of span) out.push(`${row.op}${row.line}`);
+    g = last + 1;
+  }
+  return out;
+}
+
+/** One record a dry run would move: how (`create`, `change`, `remove`, `retract`, `move`), its fields before and after, its text diff. */
+interface DryChange {
+  readonly title: string;
+  readonly act: "create" | "change" | "remove" | "retract" | "move";
+  readonly fields: Record<string, { readonly before: string | null; readonly after: string | null }>;
+  /** The text, line by line (`lineDiff`), where it moves. */
+  readonly text?: readonly string[];
+  /** A move's new title. */
+  readonly to?: string;
+}
+
+/** The change between a record as it stands and as it would read (null: absent), or null where nothing moves. */
+function changeOf(title: string, before: Record<string, string> | null, after: Record<string, string> | null): DryChange | null {
+  if (before === null && after === null) return null;
+  const fields: Record<string, { before: string | null; after: string | null }> = {};
+  for (const name of [...new Set([...Object.keys(before ?? {}), ...Object.keys(after ?? {})])].sort()) {
+    if (name === "text") continue;
+    const was = before?.[name] ?? null;
+    const now = after?.[name] ?? null;
+    if (was !== now) fields[name] = { before: was, after: now };
+  }
+  const textMoves = (before?.["text"] ?? null) !== (after?.["text"] ?? null);
+  if (before !== null && after !== null && !textMoves && Object.keys(fields).length === 0) return null;
+  return {
+    title, act: before === null ? "create" : after === null ? "remove" : "change", fields,
+    ...(textMoves ? { text: lineDiff(before?.["text"] ?? "", after?.["text"] ?? "") } : {}),
+  };
+}
+
+const changesOf = (rows: ReadonlyArray<DryChange | null>): DryChange[] => rows.filter((row): row is DryChange => row !== null);
+
+/** The diff a dry seat's overlay holds: each record it would move, read against the real seat beneath. */
+async function dryDiffOf(shadow: DrySeat, seat: PutSeat): Promise<DryChange[]> {
+  const rows: Array<DryChange | null> = [];
+  for (const title of [...shadow.overlay.keys()].sort()) {
+    const held = await seat.sink.read(title);
+    const before = held ? seat.settle(held as unknown as Record<string, unknown>).strings : null;
+    rows.push(changeOf(title, before, shadow.overlay.get(title)?.strings ?? null));
+  }
+  return changesOf(rows);
+}
+
+/** The removals a delete would land, read off a wiki (the reader's view): each record as it stands, leaving. */
+function removalsOf(wiki: EngineWiki, titles: readonly string[]): DryChange[] {
+  return changesOf(titles.map((title) => { const held = wiki.getTiddler(title); return changeOf(title, held ? readRecord(held).fields : null, null); }));
+}
+
+/** A dry answer: the real call's answer as it would land, its depth, the base it needs, and at `diff` every record it would move. */
+function dryAnswer(answer: Record<string, unknown>, depth: DryDepth, needs: Record<string, unknown>, diff: readonly DryChange[] | null): Record<string, unknown> {
+  return { ...answer, dry: depth, needs, ...(diff !== null ? { diff } : {}), note: "a dry run: the door walked its law to the last step and landed nothing" };
+}
+
+/** The base a write on `title` takes: the record's hash, and on a family member the carrier's canonical hash. */
+async function baseNeeded(seat: PutSeat, title: string): Promise<Record<string, unknown>> {
+  const before = await seat.read(title);
+  if (before === null) return { base: null };
+  const place = await seat.place(title);
+  const carrier = place.position === "plain" ? null : await readMeme(place.family ?? rootAddressOf(title), seat.sink);
+  return { base: hashOf(before), ...(carrier ? { carrierBase: carrier.canonicalHash } : {}) };
+}
+
+/** A DRY PUT: the one put law, whole, over a dry seat; the answer names what the real put lands, hash for hash. */
+async function dryPut(opts: TiddlerVerbOptions, seat: PutSeat, title: string, args: Readonly<Record<string, unknown>>, ctx: VerbContext, depth: DryDepth): Promise<Record<string, unknown>> {
+  const needs = await baseNeeded(seat, title);
+  const shadow = drySeatOf(seat);
+  const answer = await putThrough(opts, shadow, title, args, ctx);
+  return dryAnswer(answer, depth, needs, depth === "diff" ? await dryDiffOf(shadow, seat) : null);
+}
+
+/** The put over the seat its container names; a delete lands a slot's cut through it. A dry put lands nothing (`dryPut`). */
 function tiddlerPut(opts: TiddlerVerbOptions): VerbReactor {
   return async (args, ctx) => {
     // THE CONTAINER FIRST, then the title: a call that names no container refuses before anything reads.
@@ -1560,7 +1768,9 @@ function tiddlerPut(opts: TiddlerVerbOptions): VerbReactor {
     refuseWithheld(title, "tiddler-put");
     refuseEffectLedgerWrite(title, "tiddler-put");
     refuseUnhandedCollapseRule(title, "tiddler put", ctx.asker);
-    return putThrough(opts, await putSeatOf(opts, args, ctx), title, args, ctx);
+    const seat = await putSeatOf(opts, args, ctx);
+    const dry = dryOf(args);
+    return dry === null ? putThrough(opts, seat, title, args, ctx) : dryPut(opts, seat, title, args, ctx, dry);
   };
 }
 
@@ -1834,6 +2044,34 @@ export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts:
       }
       const family = new Set(members);
       const target = (member: string): string => (member === title ? to : to + member.slice(title.length));
+      // A DRY RENAME (landing 7) stops here, every fence passed: it answers the move, the forwarder and the relinks, landing none.
+      const dry = dryOf(args);
+      if (dry !== null) {
+        const own = family.has(title) ? captured.get(title) : undefined;
+        const source = own ? readRecord(own).fields : fields;
+        const forwarder = readRecord(new Tiddler({ title, type: WIKITEXT, text: forwarderText(to), "forward-to": to })).fields;
+        const rows: Array<DryChange | null> = [changeOf(title, fields, forwarder)];
+        let landsAs: string | null = null;
+        if (read.position === "root") {
+          for (const member of members) rows.push({ title: member, act: "move", to: target(member), fields: {} });
+        } else {
+          const moved: Record<string, string> = { ...source, title: to };
+          if (typeof source["uri-path"] === "string" && to.startsWith("lar:///")) moved["uri-path"] = to.slice("lar:///".length);
+          const settled = readRecord(new Tiddler(moved)).fields;
+          landsAs = hashOf(settled);
+          rows.push(changeOf(to, null, settled));
+        }
+        for (const [name, record] of captured) {
+          if (family.has(name)) continue;
+          const held = wiki.getTiddler(name);
+          rows.push(changeOf(name, held ? readRecord(held).fields : null, readRecord(record).fields));
+        }
+        return dryAnswer({
+          recipe: anchor.recipe, title, to, decision: "renamed", forwarder: title, relinked: [...captured.keys()].map((name) => (family.has(name) ? target(name) : name)),
+          ...(landsAs !== null ? { hash: landsAs } : {}), ...(skipped > 0 ? { skipped } : {}),
+          ...(read.position === "root" ? { moves: Object.fromEntries(members.map((member) => [member, target(member)])) } : {}), ...answers,
+        }, dry, { base: hash }, dry === "diff" ? changesOf(rows) : null);
+      }
       // THE RELINK FOLLOWS THE MOVE: a member the relinkers rewrite takes its relinked fields in place, and the move carries them.
       for (const [name, record] of captured) if (family.has(name)) { wikiWearsNext(opts.tw5, name, face); wiki.addTiddler(record); }
       for (const member of members) { wikiWearsNext(opts.tw5, member, face); wikiWearsNext(opts.tw5, target(member), face); }
@@ -1900,6 +2138,18 @@ async function cutSlot(
   return answer("removed", { tombstoned: put["tombstoned"] ?? [], ...family });
 }
 
+/** A slot's cut, dry or landing: a dry cut runs the put on the parent over a dry seat and answers what it would land. */
+async function cutOrDry(
+  opts: TiddlerVerbOptions, seat: PutSeat, from: Record<string, unknown>, title: string, parent: string, hash: string, base: string | null,
+  mode: string | null, ctx: VerbContext, dry: DryDepth | null, read?: Consequence,
+): Promise<Record<string, unknown>> {
+  if (dry === null) return cutSlot(opts, seat, from, title, parent, hash, base, mode, ctx, read);
+  const carrier = await readMeme(rootAddressOf(title), seat.sink);
+  const shadow = drySeatOf(seat);
+  const answer = await cutSlot(opts, shadow, from, title, parent, hash, base, mode, ctx, read);
+  return dryAnswer(answer, dry, { base: hash, ...(carrier ? { carrierBase: carrier.canonicalHash } : {}) }, dry === "diff" ? await dryDiffOf(shadow, seat) : null);
+}
+
 /**
  * A BAG'S DELETE, IN THAT ONE BAG. The reach and the write gate are the bag put's own (`bagSeat`). A plain record leaves its
  * bag; a meme root answers `refused` (`tiddler-delete-in-a-family`) unless the call names the family act (`family: true`),
@@ -1926,7 +2176,8 @@ async function bagDelete(opts: TiddlerVerbOptions, container: ReturnType<typeof 
   const rendered = renderedWriteFault(title, before, null, "tiddler delete");
   if (rendered !== null) return refused(RENDERED_DERIVES_REASON, rendered.slice(RENDERED_DERIVES_REASON.length + 2) + " Nothing moved.");
   const base = readBase(optionalStringArg(args, "base"), "tiddler-delete", false);
-  if (cutsAsSlot(reading, before)) return cutSlot(opts, seat, from, title, reading.parent!, hash, base, mode, ctx);
+  const dry = dryOf(args);
+  if (cutsAsSlot(reading, before)) return cutOrDry(opts, seat, from, title, reading.parent!, hash, base, mode, ctx, dry);
   if (mode !== null) {
     throw new VerbRefusal("delete-mode-unread", `delete-mode-unread: a mode chooses between the layers of a wiki's stack (\`kapae\`, \`reveal\`), and a bag holds one layer; drop the mode (\`lares tiddler delete "${title}" ${seat.where}\`), or name the wiki (\`--recipe <slug>\`). Nothing moved.`);
   }
@@ -1937,14 +2188,24 @@ async function bagDelete(opts: TiddlerVerbOptions, container: ReturnType<typeof 
   const conflict = { ...from, title, decision: "conflict", mode: "plain", tombstoned: [], retracted: [], hash };
   if (reading.position === "root") {
     if (base !== null && carrierBase === null && base !== hash) return conflict;
-    const receipt = await removeMeme({ uri: title, baseHash: carrierBase }, seat.sink);
-    return {
+    // A DRY FAMILY REMOVAL runs the removal over a dry seat: the consequence and the split it reads, landing nothing.
+    const shadow = dry !== null ? drySeatOf(seat) : null;
+    const receipt = await removeMeme({ uri: title, baseHash: carrierBase }, shadow?.sink ?? seat.sink);
+    const answer = {
       ...from, title, decision: receipt.decision, mode: "plain", tombstoned: receipt.tombstoned, retracted: receipt.retracted ?? [], hash,
       ...(receipt.canonicalHash !== undefined ? { canonicalHash: receipt.canonicalHash } : {}), ...(receipt.consequence ? { consequence: receipt.consequence } : {}),
     };
+    if (dry === null || shadow === null) return answer;
+    const needs = { base: hash, ...(receipt.canonicalHash !== undefined ? { carrierBase: receipt.canonicalHash } : {}) };
+    return dryAnswer(answer, dry, needs, dry === "diff" ? await dryDiffOf(shadow, seat) : null);
   }
   if (base !== null && base !== hash) return conflict;
   const sink = seat.sink;
+  if (dry !== null) {
+    const hides = sink.beneath && sink.leaveFamily ? await sink.beneath(title) : true;
+    const answer = { ...from, title, decision: "removed", mode: "plain", tombstoned: hides ? [title] : [], retracted: hides ? [] : [title], hash };
+    return dryAnswer(answer, dry, { base: hash }, dry === "diff" ? changesOf([changeOf(title, before, null)]) : null);
+  }
   if (sink.beneath && sink.leaveFamily) {
     const hides = await sink.beneath(title);
     await sink.leaveFamily(hides ? [title] : [], hides ? [] : [title]);
@@ -2002,7 +2263,7 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
       const fault = renderedWriteFault(title, fields, null, "tiddler delete");
       if (fault !== null) return refused(RENDERED_DERIVES_REASON, fault.slice(RENDERED_DERIVES_REASON.length + 2) + " Nothing moved.");
       const slotBase = readBase(optionalStringArg(args, "base"), "tiddler-delete", false);
-      return cutSlot(opts, await wikiSeat(opts, anchor, ctx), { recipe: anchor.recipe }, title, standsAs.parent!, hash, slotBase, named, ctx, read);
+      return cutOrDry(opts, await wikiSeat(opts, anchor, ctx), { recipe: anchor.recipe }, title, standsAs.parent!, hash, slotBase, named, ctx, dryOf(args), read);
     }
     if (read.position !== "plain" && !flagOn(args["family"])) {
       return refused("tiddler-delete-in-a-family", `"${title}" stands as a meme ${read.position} of ${read.family}; this delete would move ${moves} record${moves === 1 ? "" : "s"} (the consequence names each). Name the family act (\`family: true\`; \`lares tiddler delete "${read.family ?? title}" --recipe ${anchor.recipe} --family\`) to land it as one change. Nothing moved.`);
@@ -2046,6 +2307,12 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
     if (unheld) return refused("reveal-top-unwritable", `no mounted layer holds a record of "${unheld.title}", so a reveal has nothing to retract; \`mode: "kapae"\` removes it. Nothing moved.`);
     const base = readBase(optionalStringArg(args, "base"), "tiddler-delete", false);
     if (base !== null && base !== hash) return { recipe: anchor.recipe, title, decision: "conflict", mode: modeName, tombstoned: [], retracted: [], hash };
+    // A DRY DELETE (landing 7) stops here, every fence passed: the consequence, the split between kāpae and retract, landing none.
+    const dry = dryOf(args);
+    if (dry !== null) {
+      const answer = { recipe: anchor.recipe, title, decision: "removed", mode: modeName, tombstoned: tombstones, retracted: retracts, hash, consequence: read };
+      return dryAnswer(answer, dry, { base: hash }, dry === "diff" ? removalsOf(view, [...tombstones, ...retracts]) : null);
+    }
 
     // THE LANDING: each layer takes its members as ONE change (tombstones and retracts together), and the shore lands
     // that change in the wiki as one grain. A record no layer holds leaves through the live wiki, as a hand's delete.
@@ -2123,6 +2390,11 @@ async function retractBareKapae(
   if (surfacing !== undefined && named !== "reveal") {
     return refused("delete-mode-needed", `the kāpae over "${surfacing.title}" in ${surfacing.bag} hides a record in ${surfacing.reveals}; \`--mode reveal\` (\`mode: "reveal"\`) retracts the kāpae and lets ${surfacing.reveals}'s surface, and \`--mode kapae\` keeps it hidden (it already stands). Nothing moved.`);
   }
+  const dry = dryOf(args);
+  if (dry !== null) {
+    const answer = { recipe: anchor.recipe, title, decision: "removed", mode, tombstoned: [], retracted: acts.map((row) => row.title), consequence };
+    return dryAnswer(answer, dry, { base: null }, dry === "diff" ? acts.map((row): DryChange => ({ title: row.title, act: "retract", fields: {} })) : null);
+  }
   const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
   const perBag = new Map<string, string[]>();
   for (const row of acts) perBag.set(row.bag, [...(perBag.get(row.bag) ?? []), row.title]);
@@ -2197,27 +2469,30 @@ export const TIDDLER_CALL_SEATS: Readonly<Record<string, CallSeat>> = Object.fre
   "lar:///engine.filter.pages": { verb: "wiki-filter", fold: ({ mu, ...args }) => (typeof mu === "string" ? { ...args, ...filterDepthArgs(mu) } : args) },
   "lar:///engine.record.puts": {
     verb: "tiddler-put",
+    dry: true,
     args: { "tag-add": "tagsAdd", "tag-remove": "tagsRemove", "cut-slot": "cut" },
     fold: (raw) => {
-      const { slot, ...args } = noDryYet(raw, "put");
+      const { slot, ...args } = dryArgs(raw, "put");
       return typeof slot === "string" && slot !== "" && typeof args["title"] === "string" ? { ...args, title: `${args["title"]}${slot}` } : args;
     },
   },
-  "lar:///engine.record.removes": { verb: "tiddler-delete", fold: (args) => noDryYet(args, "delete") },
-  "lar:///engine.record.renames": { verb: "tiddler-rename", fold: (args) => noDryYet(args, "rename") },
+  "lar:///engine.record.removes": { verb: "tiddler-delete", dry: true, fold: (args) => dryArgs(args, "delete") },
+  "lar:///engine.record.renames": { verb: "tiddler-rename", dry: true, fold: (args) => dryArgs(args, "rename") },
 });
 
 /**
- * A DRY CALL NEVER LANDS (landing 6 tables the write doors' `_` cells owed; landing 7 builds their previews). Until a write door
- * walks its dry path, a `mu` that reaches it (a layer above re-tabling a cell) refuses `mu-cell-empty` and names the plain call,
- * so a preview never lands as a write. The `mu` leaves the args a reactor reads.
+ * THE WRITE DOORS' DEPTH (landing 7): a dry carry folds into the reactor's `dry` arg (`_` and `_?` the summary, `_!` the diff,
+ * `dryDepthOf`), and the door walks its law to the last step, landing nothing. Any other carry a layer above tables on a write
+ * door refuses `mu-cell-empty` and names the plain call, so a depth never lands as a write. The `mu` leaves the args.
  */
-function noDryYet(args: Record<string, unknown>, word: string): Record<string, unknown> {
+function dryArgs(args: Record<string, unknown>, word: string): Record<string, unknown> {
   const { mu, ...rest } = args;
   if (typeof mu !== "string") return rest;
+  const depth = dryDepthOf(mu);
+  if (depth !== null) return { ...rest, dry: depth };
   // The fold reads reactor spellings; the cure names the title alone, the plain call a reader completes.
   const title = typeof rest["title"] === "string" ? { title: rest["title"] } : {};
-  throw new CallRefusal("mu-cell-empty", `the ${word} door walks no ${mu} path yet (its dry previews land in comms-ux-enacts landing 7), so it lands nothing`, cureCall(word, title));
+  throw new CallRefusal("mu-cell-empty", `the ${word} door answers the dry depths alone (_ dry · _? dry-relate · _! dry-assert), and ${mu} (${muWordsOf(mu)}) names none, so it lands nothing`, cureCall(word, title));
 }
 
 /**

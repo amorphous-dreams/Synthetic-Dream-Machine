@@ -50,8 +50,9 @@ A rendered tiddler (one carrying `rendered-from`) refuses `rendered-derives`: on
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
 
 ```memetic-wikitext
-<<has entity=`cell` name=`_?` params=`mu/dry-relate owed/[[comms-ux-enacts landing 7 builds the dry previews]] ~ the dry summary: what the delete would land, the base it needs, landing nothing`>>
-<<has entity=`cell` name=`_!` params=`mu/dry-assert owed/[[comms-ux-enacts landing 7 builds the dry previews]] ~ the dry diff: the summary and the full diff of text and fields, landing nothing`>>
+<<has entity=`cell` name=`_` params=`mu/dry ~ a dry run: the delete walks its law to the last step and answers the summary, landing nothing`>>
+<<has entity=`cell` name=`_?` params=`mu/dry-relate ~ the dry summary: what the delete would land, the bag and layer, the base it needs, landing nothing`>>
+<<has entity=`cell` name=`_!` params=`mu/dry-assert ~ the dry diff: the summary and each record it would move, fields before and after and text line by line, landing nothing`>>
 <<has entity=`arg` name=`title` params=`takes/title needs/required seat/1 as/<title> ~ the record removed; a slot title <root>#/x leaves as the cut on its parent`>>
 <<has entity=`arg` name=`base` params=`takes/hash ~ the hash last read; a stale one answers conflict and nothing moves`>>
 <<has entity=`arg` name=`family` params=`~ name the family act: a meme root leaves with its slots, one change`>>
@@ -90,13 +91,14 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/answers`>>
 
-!! answers ~ removed · absent · refused · conflict
+!! answers ~ removed · absent · refused · conflict · dry
 
 ```memetic-wikitext
 <<has entity=`band` name=`removed` params=`exit/0 fields/[[title decision mode tombstoned retracted hash consequence]] ~ the act landed; mode reads plain, kapae, reveal or cut`>>
 <<has entity=`band` name=`absent` params=`exit/3 ~ nothing stood to remove`>>
 <<has entity=`band` name=`refused` params=`exit/4 fields/[[refusal why consequence]] ~ the family law or a lower layer refused; the consequence rides the answer and nothing moved`>>
 <<has entity=`band` name=`conflict` params=`exit/4 fields/[[hash]] ~ the base read stale; nothing moved`>>
+<<has entity=`band` name=`dry` params=`exit/0 fields/[[dry needs diff hints]] ~ a dry delete: the answer the real delete would give, the base it needs and the carrier's seat hints; nothing landed`>>
 ```
 
 <<~/ahu>>
@@ -147,6 +149,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0bx2h4IamG2LrUV8IcFQZKfT5dIGS-mEs3oPUrVCJYk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZyI27p13YNRALud3MmHuCpra9w_ZZld53UQtG_365NY`>>
 
 <<^ code=`&#x0004;` to=`?`>>
