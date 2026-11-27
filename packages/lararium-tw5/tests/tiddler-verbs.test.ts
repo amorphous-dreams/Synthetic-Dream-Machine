@@ -21,7 +21,7 @@ import { evaluateMeme, placeMeme, readMeme, wikiMemeSink } from "../src/place-me
 import { stampCarrier, verifyBcc } from "@lararium/memetic-frame";
 import {
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor,
-  makeWikiStatusReactor, makeWikiActionReactor, pageFilterAnswer, WIKI_FILTER_ROWS, SHORE_COLLAPSE_CONFIG_PREFIX, type FilterPage, type TiddlerVerbOptions,
+  makeWikiStatusReactor, makeWikiActionReactor, lineDiff, pageFilterAnswer, WIKI_FILTER_ROWS, SHORE_COLLAPSE_CONFIG_PREFIX, type FilterPage, type TiddlerVerbOptions,
 } from "../src/tiddler-verbs.js";
 import { AUDIT_ARRAY_CAP, boundOutcomeOutput, placeVerb, removeVerb } from "../src/verb-vm.js";
 import { VerbTable, callDoorOf, makeCallReactor, type VerbContext } from "../src/verb-dispatcher.js";
@@ -2525,23 +2525,16 @@ describe.skipIf(wikiSkip)(`mu sets the depth: glyphs and words meet the carrier'
     await expect(r.call("get", { title: MEME, mu: "*?!" })).rejects.toMatchObject({ reason: "mu-malformed" });
   });
 
-  test("RED: the write doors table their dry cells owed: a dry put refuses and lands nothing; a layer that re-tables the cell still lands no write", async () => {
+  test("RED: a write door answers the dry depths alone: a layer that tables a read depth on the put refuses it and lands no write", async () => {
     const r = await muRig();
-    for (const mu of ["dry", "dry-relate", "_!"]) {
-      await expect(r.call("put", { title: "Dry one", text: "x", create: true, mu }), mu).rejects.toMatchObject({ reason: "mu-cell-empty" });
-    }
-    await expect(r.call("delete", { title: "Note 04", mu: "dry-assert" })).rejects.toMatchObject({ reason: "mu-cell-empty" });
-    await r.landed();
-    expect(r.engine.wiki.getTiddler("Dry one"), "a dry call lands nothing").toBeUndefined();
-    expect(r.engine.wiki.getTiddler("Note 04")).toBeDefined();
-    // MUTABILITY AT THE ROOT: a working layer re-tables the put's `_?` cell as answered; the door still walks no dry path, so it refuses.
+    // MUTABILITY AT THE ROOT: a working layer tables `?` on the put; the put door walks no read depth, so it refuses and names the plain call.
     const takes = r.engine.wiki.getTiddler(`${PUTS_SEAT}#/takes`)!.getFieldStrings();
-    const moved = takes["text"]!.replace(/(name=`_\?` params=`mu\/dry-relate) owed\/\[\[[^\]]*\]\]/, "$1");
-    expect(moved).not.toBe(takes["text"]);
+    const moved = `${takes["text"]!}\n<<has entity=\`cell\` name=\`?\` params=\`mu/relate ~ a card the put never answers\`>>\n`;
     r.engine.wiki.addTiddler({ ...takes, text: moved, "$origin-bag": DAEMON });
-    await expect(r.call("put", { title: "Dry one", text: "x", create: true, mu: "dry-relate" })).rejects.toMatchObject({ reason: "mu-cell-empty" });
+    const cure = await cureOf(r.call("put", { title: "Dry one", text: "x", create: true, mu: "relate" }));
+    expect(cure).not.toContain("mu=");
     await r.landed();
-    expect(r.engine.wiki.getTiddler("Dry one")).toBeUndefined();
+    expect(r.engine.wiki.getTiddler("Dry one"), "a depth never lands as a write").toBeUndefined();
   });
 
   test("RED: the cells rest in carrier rows: a working layer that drops the get's relate cell refuses relate, and assert still answers", async () => {
@@ -2573,5 +2566,164 @@ describe.skipIf(wikiSkip)(`mu sets the depth: glyphs and words meet the carrier'
     const whole = await call("get", { title: MEME, mu: "assert" });
     expect((whole["meme"] as { slots: Array<{ slot: string }> }).slots.map((s) => s.slot)).toEqual(["#/a", "#/b"]);
     expect(String((whole["meme"] as { text?: string }).text)).toContain("body of b");
+  });
+});
+
+// ── dry, the preview of every write and act (comms-ux-enacts landing 7) ──────────────────────────────
+
+describe.skipIf(wikiSkip)(`dry previews every write and act: the door walks its law to the last step and lands nothing${skipNote}`, () => {
+  /** The call rig with the standing meme fixture placed: a root and two slots. */
+  async function dryRig() {
+    const r = await callRig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    return r;
+  }
+  /** THE STORE, READ WHOLE: every record the wiki holds, and every record (and kāpae) each layer's store holds. */
+  async function storeOf(r: Awaited<ReturnType<typeof dryRig>>): Promise<string> {
+    const wiki = r.engine.wiki.allTitles().sort().map((title) => [title, r.engine.wiki.getTiddler(title)!.getFieldStrings()]);
+    const layers: unknown[] = [];
+    for (const bag of [CANON, DAEMON]) {
+      const store = r.composite.storeForBag(bag) as MemoryTiddlerStore;
+      for (const title of [...(await store.listVisible()), ...store.listTombstoned()].sort()) layers.push([bag, title, await store.get(title)]);
+    }
+    return JSON.stringify({ wiki, layers });
+  }
+  /** One dry call between two reads of the store: the answer, once the store reads unmoved (and no layer heard a change). */
+  async function dryly(r: Awaited<ReturnType<typeof dryRig>>, verb: string, params: Record<string, unknown>): Promise<Record<string, unknown>> {
+    const before = await storeOf(r);
+    let heard = 0;
+    const stop = r.composite.subscribe(() => { heard++; });
+    const answer = await r.call(verb, params);
+    await r.landed();
+    stop();
+    expect(await storeOf(r), `${verb} ${JSON.stringify(params)}: a dry call moves nothing`).toBe(before);
+    expect(heard, `${verb}: no layer hears a change`).toBe(0);
+    return answer;
+  }
+
+  test("RED: a dry put on a plain record and on a meme slot answers what the real put then lands, hash for hash, and the store holds no change between them", async () => {
+    const r = await dryRig();
+    const live = ((await makeTiddlerGetReactor(r.opts)({ ...A, title: "Note 04" }, ctx()))["tiddler"] as { hash: string }).hash;
+    const carrier = (await readMeme(MEME, wikiMemeSink(r.engine.wiki)))!.canonicalHash;
+    const cases: Array<{ params: Record<string, unknown>; needs: Record<string, unknown> }> = [
+      { params: { title: "Note 04", text: "a dry rewrite" }, needs: { base: live } },
+      { params: { title: `${MEME}#/a`, text: "! a\n\nthe slot rewritten" }, needs: { carrierBase: carrier } },
+      { params: { title: "Fresh note", text: "first words", create: true }, needs: { base: null } },
+    ];
+    for (const { params, needs } of cases) {
+      for (const mu of ["dry", "_", "dry-relate", "_?"]) {
+        const dry = await dryly(r, "put", { ...params, mu });
+        expect(dry, `${params["title"]} ${mu}`).toMatchObject({ dry: "summary", decision: "put", bag: DAEMON, needs });
+        expect(dry["diff"], `${mu}: the summary carries no diff`).toBeUndefined();
+      }
+      const dry = await dryly(r, "put", { ...params, mu: "dry" });
+      const real = await r.call("put", params);
+      await r.landed();
+      expect(real["dry"], "the real put lands").toBeUndefined();
+      for (const key of ["decision", "bag", "created", "changed", "hash", "textHash", "canonicalHash", "landed", "kept", "tombstoned"]) {
+        expect(dry[key], `${params["title"]}: ${key}`).toEqual(real[key]);
+      }
+    }
+    // The family's base moved with the real slot put; a dry put now names the carrier's new base.
+    const resealed = (await readMeme(MEME, wikiMemeSink(r.engine.wiki)))!.canonicalHash;
+    expect(resealed).not.toBe(carrier);
+    expect(await dryly(r, "put", { title: `${MEME}#/b`, text: "! b\n\nagain", mu: "dry" })).toMatchObject({ needs: { carrierBase: resealed } });
+  });
+
+  test("RED: a dry diff (_!) names each record the put would move, its fields before and after and its text line by line; the answer carries the carrier's seat hints", async () => {
+    const r = await dryRig();
+    const dry = await dryly(r, "put", { title: "Note 04", text: "a dry rewrite", "tag-add": "reviewed", mu: "dry-assert" });
+    expect(dry).toMatchObject({ dry: "diff", decision: "put", mu: { carry: "_!", words: "dry-assert" } });
+    expect(dry["diff"]).toEqual([{
+      title: "Note 04", act: "change", fields: { tags: { before: "memory", after: "memory reviewed" } },
+      text: ["@@ -1,1 +1,1 @@", "-see [[Note 01]] and note 4", "+a dry rewrite"],
+    }]);
+    // A family write's diff names the slot that moves and the root that reseals over it.
+    const slot = await dryly(r, "put", { title: `${MEME}#/a`, text: "! a\n\nthe slot rewritten", mu: "_!" });
+    const moved = (slot["diff"] as Array<{ title: string; act: string; text?: string[] }>);
+    expect(moved.map((row) => row.title)).toContain(`${MEME}#/a`);
+    expect(moved.find((row) => row.title === `${MEME}#/a`)!.text).toEqual(expect.arrayContaining(["-body of a", "+the slot rewritten"]));
+    // SEAT HINTS: the carrier's #/gate rows ride every dry answer, read off the carrier the stack seats.
+    expect(dry["hints"]).toEqual(expect.arrayContaining([expect.objectContaining({ entity: "gate", name: "write", params: expect.objectContaining({ ocap: "write-on-the-landing-bag" }) })]));
+    expect((await r.call("get", { title: "Note 04" }))["hints"], "a read carries no dry hints").toBeUndefined();
+  });
+
+  test("RED: a dry family delete answers the consequence the refusal answers today; a dry cut answers the slot it would tombstone; neither lands", async () => {
+    const r = await dryRig();
+    const refused = await r.call("delete", { title: MEME });
+    expect(refused).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family" });
+    const dry = await dryly(r, "delete", { title: MEME, family: true, mu: "dry-assert" });
+    expect(dry).toMatchObject({ dry: "diff", decision: "removed", mode: "plain", needs: { base: expect.stringMatching(/^sha256-/) } });
+    expect(dry["consequence"]).toEqual(refused["consequence"]);
+    const leaving = [...(dry["tombstoned"] as string[]), ...(dry["retracted"] as string[])].sort();
+    expect(leaving).toEqual(expect.arrayContaining([MEME, `${MEME}#/a`, `${MEME}#/b`]));
+    const removals = dry["diff"] as Array<{ title: string; act: string }>;
+    expect(removals.map((row) => row.title).sort()).toEqual(leaving);
+    expect(new Set(removals.map((row) => row.act))).toEqual(new Set(["remove"]));
+    // A slot leaves by the cut of its parent's text: the dry cut answers what the real cut then tombstones and the base it reseals to.
+    const cut = await dryly(r, "delete", { title: `${MEME}#/b`, mu: "dry" });
+    expect(cut).toMatchObject({ dry: "summary", decision: "removed", mode: "cut" });
+    const realCut = await r.call("delete", { title: `${MEME}#/b` });
+    await r.landed();
+    for (const key of ["decision", "mode", "tombstoned", "canonicalHash", "parent"]) expect(cut[key], key).toEqual(realCut[key]);
+    // The real family delete removes what the dry one named.
+    const again = await dryly(r, "delete", { title: MEME, family: true, mu: "dry" });
+    const real = await r.call("delete", { title: MEME, family: true });
+    await r.landed();
+    for (const key of ["decision", "mode", "tombstoned", "retracted", "consequence"]) expect(again[key], key).toEqual(real[key]);
+  });
+
+  test("RED: a dry rename answers the move, the forwarder and the hash the real rename lands, landing nothing", async () => {
+    const r = await dryRig();
+    await r.hold(DAEMON, ["Note 03"]);
+    const dry = await dryly(r, "rename", { title: "Note 03", to: "Note 03b", mu: "dry-assert" });
+    expect(dry).toMatchObject({ dry: "diff", decision: "renamed", forwarder: "Note 03", needs: { base: expect.stringMatching(/^sha256-/) } });
+    const rows = dry["diff"] as Array<{ title: string; act: string; fields: Record<string, { before: string | null; after: string | null }> }>;
+    expect(rows.find((row) => row.title === "Note 03b")?.act).toBe("create");
+    expect(rows.find((row) => row.title === "Note 03")?.fields["forward-to"]).toEqual({ before: null, after: "Note 03b" });
+    const real = await r.call("rename", { title: "Note 03", to: "Note 03b" });
+    await r.landed();
+    expect(real).toMatchObject({ decision: "renamed", hash: dry["hash"], relinked: dry["relinked"] });
+  });
+
+  test("RED: an act whose seat walks no dry path refuses mu-cell-empty and names the plain call, even where a layer tables the cell; a door the host runs refuses the same", async () => {
+    const r = await dryRig();
+    const seat = (address: string, skin: string): void => {
+      r.engine.wiki.addTiddler({ title: address, text: `! ${address.slice(7)} ~ a spirit's door`, tags: `[[${AFFORDANCE_TAG}]]`, "$origin-bag": DAEMON });
+      r.engine.wiki.addTiddler({ title: `${address}#/takes`, "$origin-bag": DAEMON,
+        text: "<<has entity=`arg` name=`wick` params=`takes/words ~ the wick`>>\n<<has entity=`arg` name=`mu` params=`takes/depth ~ the depth`>>\n<<has entity=`cell` name=`_?` params=`mu/dry-relate ~ a dry trim`>>" });
+      r.engine.wiki.addTiddler({ title: `${address}#/skins/console`, text: `<<has entity=\`skin\` name=\`console\` params=\`${skin}\`>>`, "$origin-bag": DAEMON });
+    };
+    const wick = "lar:///lantern.wick.trims";
+    seat(wick, "spells/trim ~ trim the wick");
+    let ran = 0;
+    r.table.register("wick-trim", async () => { ran++; return { trimmed: true }; });
+    r.table.answer(wick, { verb: "wick-trim" });
+    expect(await r.call("trim", { wick: "long" })).toMatchObject({ trimmed: true });
+    const cure = await cureOf(r.call("trim", { wick: "long", mu: "dry-relate" }));
+    expect(ran, "the reactor never ran for the dry call").toBe(1);
+    expect(cure).not.toContain("mu=");
+    expect(await r.sigil(cure), "the cure lands the plain call").toMatchObject({ trimmed: true });
+    expect(ran).toBe(2);
+    const oil = "lar:///lantern.oil.pours";
+    seat(oil, "spells/pour handler/host ~ the host pours");
+    expect(await r.call("pour", { wick: "long" })).toMatchObject({ handler: "host", address: oil });
+    await expect(r.call("pour", { wick: "long", mu: "dry-relate" })).rejects.toMatchObject({ reason: "mu-cell-empty" });
+  });
+});
+
+describe("lineDiff: a dry diff reads text line by line", () => {
+  test("a changed line answers one hunk with its context; an add and a removal count on their own side", () => {
+    expect(lineDiff("one\ntwo\nthree", "one\n2\nthree")).toEqual(["@@ -1,3 +1,3 @@", " one", "-two", "+2", " three"]);
+    expect(lineDiff("", "first words")).toEqual(["@@ -0,0 +1,1 @@", "+first words"]);
+    expect(lineDiff("gone", "")).toEqual(["@@ -1,1 +0,0 @@", "-gone"]);
+    expect(lineDiff("same", "same")).toEqual([]);
+  });
+
+  test("changes far apart answer two hunks, each with three lines of context", () => {
+    const before = Array.from({ length: 20 }, (_, i) => `line ${i + 1}`);
+    const after = before.map((line, i) => (i === 1 ? "second" : i === 17 ? "eighteenth" : line));
+    const hunks = lineDiff(before.join("\n"), after.join("\n")).filter((line) => line.startsWith("@@"));
+    expect(hunks).toEqual(["@@ -1,5 +1,5 @@", "@@ -15,6 +15,6 @@"]);
   });
 });

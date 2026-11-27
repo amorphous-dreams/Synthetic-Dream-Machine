@@ -44,8 +44,9 @@ An answer names only records this face reads and counts the rest (`withheld`); a
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
 
 ```memetic-wikitext
-<<has entity=`cell` name=`_?` params=`mu/dry-relate owed/[[comms-ux-enacts landing 7 builds the dry previews]] ~ the dry summary: what the rename would land, the base it needs, landing nothing`>>
-<<has entity=`cell` name=`_!` params=`mu/dry-assert owed/[[comms-ux-enacts landing 7 builds the dry previews]] ~ the dry diff: the summary and the full diff of text and fields, landing nothing`>>
+<<has entity=`cell` name=`_` params=`mu/dry ~ a dry run: the rename walks its law to the last step and answers the summary, landing nothing`>>
+<<has entity=`cell` name=`_?` params=`mu/dry-relate ~ the dry summary: what the rename would land, the bag and layer, the base it needs, landing nothing`>>
+<<has entity=`cell` name=`_!` params=`mu/dry-assert ~ the dry diff: the summary and each record it would move, fields before and after and text line by line, landing nothing`>>
 <<has entity=`arg` name=`title` params=`takes/title needs/required seat/1 as/<old> ~ the record moved, a meme root with its slots`>>
 <<has entity=`arg` name=`to` params=`takes/title needs/required seat/2 as/<new> ~ the title it moves to`>>
 <<has entity=`arg` name=`recipe` params=`takes/slug needs/required default/default ~ the wiki whose engine relinks; default names the worn face's daemon wiki`>>
@@ -87,13 +88,14 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/answers`>>
 
-!! answers ~ renamed · absent · refused · conflict
+!! answers ~ renamed · absent · refused · conflict · dry
 
 ```memetic-wikitext
 <<has entity=`band` name=`renamed` params=`exit/0 fields/[[recipe title to decision forwarder relinked moved skipped withheld hash]] ~ the record moved, its referrers relinked and the forwarder stands`>>
 <<has entity=`band` name=`absent` params=`exit/3 ~ no record stands at the old title`>>
 <<has entity=`band` name=`refused` params=`exit/4 fields/[[refusal why consequence unreachable]] ~ a fence refused by name; nothing moved`>>
 <<has entity=`band` name=`conflict` params=`exit/4 fields/[[hash]] ~ the base read stale; nothing moved`>>
+<<has entity=`band` name=`dry` params=`exit/0 fields/[[dry needs diff hints]] ~ a dry rename: the answer the real rename would give, the base it needs and the carrier's seat hints; nothing landed`>>
 ```
 
 <<~/ahu>>
@@ -133,6 +135,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uJq6bV0eUWzaEOkWtKeKeWw_zW_58iJvPj4CqCbdHPA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0EmQhh8ISHIrvxs86jvdz3ZZNbgRZNcDCBSmcsGWKk4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

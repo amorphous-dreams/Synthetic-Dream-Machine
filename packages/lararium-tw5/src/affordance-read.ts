@@ -85,6 +85,17 @@ export function takesRows(textOf: TextOf, address: string, entity: "arg" | "cell
   return parseHasRows(slotText(textOf, address, "#/takes")).filter((r) => r.entity === entity);
 }
 
+/**
+ * THE CARRIER'S SEAT HINTS (landing 7; the model's "seat hints answered on every call"): the `gate` rows its `#/gate` tables (who
+ * may ask, the ocap the door checks: testimony, never a grant) and any `signs` row it tables in any slot (nature, reversible,
+ * crossing, hand). A dry call answers them beside its preview, so a caller reads what the real call would ask of it.
+ */
+export function seatHintRows(textOf: TextOf, address: string): HasRow[] {
+  const gate = parseHasRows(slotText(textOf, address, "#/gate"), "gate");
+  const signs = ["", "#/head", "#/takes", "#/gate", "#/skins"].flatMap((slot) => parseHasRows(textOf(`${address}${slot}`) ?? "", "signs"));
+  return [...gate, ...signs];
+}
+
 /** Every skin row the carrier holds: `#/skins` itself and each nested `#/skins/<surface>` slot. */
 export function skinRows(textOf: TextOf, address: string): HasRow[] {
   const texts = [textOf(`${address}#/skins`) ?? "", ...AFFORD_SURFACES.map((s) => textOf(`${address}#/skins/${s}`) ?? "")];

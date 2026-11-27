@@ -33,6 +33,11 @@ module-type: startup
  * keeps the read gradient. A conflict carry answers its first tool and names the second as the next call (`mu.then`); a carry
  * outside the table refuses `mu-cell-empty` with the nearest cell as a cure sigil.
  *
+ * DRY PREVIEWS EVERY WRITE AND ACT (landing 7): a carry holding `_` reaches a seat that walks its door's law to the last step
+ * and lands nothing (`CallSeat.dry`), and the answer carries the carrier's seat hints (`hints`: its `#/gate` rows and any
+ * `signs` row). A seat that walks no dry path, or a door the host runs, refuses the dry carry `mu-cell-empty` and names the
+ * plain call (`dryUnwalked`), so a preview never lands as a write, whatever a layer above tables.
+ *
  * In the VM the call dispatches through `$tw.lares.callDoor`, the host's seat of the registry; where no host seats one, the
  * call answers its plan (`handler/host`, the bound params), so a reader sees what would run.
  *
@@ -43,9 +48,9 @@ import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import type { LaresCallDoor, LaresTw5Extension } from "../types/lares-globals.js";
 import type { TW5Instance } from "../types/tiddlywiki.js";
 import { AFFORDANCE_TAG, AFFORD_SURFACES, type AffordSurface, type HasRow, bareAddressOf, renderCall, skinOmits, skinRow } from "../affordance-rows.js";
-import { argOnSurface, carrierOf, routeOfCall, routesOf, skinRows, takesRows, type AffordRoutes, type CarrierView, type TextOf } from "../affordance-read.js";
+import { argOnSurface, carrierOf, routeOfCall, routesOf, seatHintRows, skinRows, takesRows, type AffordRoutes, type CarrierView, type TextOf } from "../affordance-read.js";
 import { param } from "../has-line.js";
-import { isMuFault, lookupMu, muCellsOf, muWordsOf, readMu, type MuFault, type MuReading } from "./mu.js";
+import { isDryCarry, isMuFault, lookupMu, muCellsOf, muWordsOf, readMu, type MuFault, type MuReading } from "./mu.js";
 
 export const name        = "lararium-call";
 export const after       = ["startup"];
@@ -78,8 +83,15 @@ export interface CallPlan {
   readonly mu?: MuCall | undefined;
 }
 
-/** A plan's depth: the cell's reading, and the next call a conflict names, rendered as a call sigil. */
-export interface MuCall extends MuReading { readonly next: string | null }
+/** One seat hint a carrier tables: a `gate` row (who may ask, the ocap the door checks) or a `signs` row. */
+export interface SeatHint { readonly entity: string; readonly name: string; readonly params: Readonly<Record<string, string>>; readonly role: string }
+
+/** A plan's depth: the cell's reading, the next call a conflict names (a call sigil), and a dry carry's seat hints. */
+export interface MuCall extends MuReading {
+  readonly next: string | null;
+  /** The carrier's seat hints, read where the carry holds the dry tool (landing 7); absent otherwise. */
+  readonly hints?: readonly SeatHint[] | undefined;
+}
 
 /** A refusal the call itself answers (before any reactor): its code leads the message, and `cure` renders a runnable call. */
 export class CallRefusal extends VerbRefusal {
@@ -300,7 +312,10 @@ export function muOfCall(reader: CallReader, carrier: string, word: string, boun
   if (isMuFault(read)) return refuse(read);
   const reading = lookupMu(asked, read, muCellsOf(takesCells(reader, carrier)));
   if (isMuFault(reading)) return refuse(reading);
-  return { ...reading, next: reading.then === null ? null : cureCall(word, { ...bound, mu: muWordsOf(reading.then) }) };
+  const next = reading.then === null ? null : cureCall(word, { ...bound, mu: muWordsOf(reading.then) });
+  if (!isDryCarry(reading.carry)) return { ...reading, next };
+  const hints = seatHintRows(reader.textOf, carrier).map(({ entity, name, params, role }): SeatHint => ({ entity, name, params, role }));
+  return { ...reading, next, hints };
 }
 
 /** The `cell` rows of a carrier's `#/takes`, the shared slots it calls by `kahea` read in place. */
@@ -319,8 +334,8 @@ export function planCall(reader: CallReader, word: string, params: Readonly<Reco
 /** An answer beside the depth that shaped it: `mu: {asked, carry, axis, next?}`, a conflict's second tool named as the next call. */
 export function muAnswer(answer: Record<string, unknown>, plan: CallPlan): Record<string, unknown> {
   if (plan.mu === undefined) return answer;
-  const { asked, carry, axis, next } = plan.mu;
-  return { ...answer, mu: { asked, carry, words: muWordsOf(carry), axis, ...(next !== null ? { next } : {}) } };
+  const { asked, carry, axis, next, hints } = plan.mu;
+  return { ...answer, mu: { asked, carry, words: muWordsOf(carry), axis, ...(next !== null ? { next } : {}) }, ...(hints !== undefined ? { hints } : {}) };
 }
 
 /** The camelCase a reactor reads for a neutral param (`max-bytes` → `maxBytes`). */
@@ -336,6 +351,21 @@ export interface CallSeat {
   readonly fold?: (args: Record<string, unknown>) => Record<string, unknown>;
   /** A seat that chooses its verb by the call's args (a get with `meme` and no title lists the families, `meme-list`). */
   readonly verbOf?: (args: Readonly<Record<string, unknown>>) => string;
+  /** True where the seat walks a dry path (landing 7): its fold turns a `_` carry into its reactor's `dry` arg. */
+  readonly dry?: boolean;
+}
+
+/** True where a plan's carry holds the dry tool. */
+export const isDryPlan = (plan: CallPlan): boolean => plan.mu !== undefined && isDryCarry(plan.mu.carry);
+
+/**
+ * THE DRY CARRY A DOOR CANNOT WALK (landing 7): a seat with no dry path, or a door the host runs, refuses `mu-cell-empty` and
+ * names the plain call with no `mu`, so a preview never lands as a write.
+ */
+export function dryUnwalked(plan: CallPlan): CallRefusal {
+  const { mu: _drop, ...plain } = plan.params;
+  const carry = plan.mu?.carry ?? "_";
+  return new CallRefusal("mu-cell-empty", `${bare(plan.address)} walks no dry path, so a ${carry} (${muWordsOf(carry)}) call lands nothing; the plain call lands the act`, cureCall(plan.address, plain));
 }
 
 /** The daemon verb a seat answers with for one call's reactor args: its `verbOf` choice, else its one verb. */
@@ -371,6 +401,8 @@ export function stampAnswer(answer: Record<string, unknown>, address: string, re
 
 /** The answer a host-run door gives: the plan itself, so the host runs the door with the bound params. */
 export function hostAnswer(plan: CallPlan, receipt: CallReceipt): Record<string, unknown> {
+  // THE HOST RUNS ITS DOOR WITH THE BOUND PARAMS and walks no dry path: a dry carry refuses here, before the host sees a plan.
+  if (isDryPlan(plan)) throw dryUnwalked(plan);
   return muAnswer(stampAnswer({ handler: "host", address: plan.address, params: plan.params }, plan.address, receipt), plan);
 }
 
