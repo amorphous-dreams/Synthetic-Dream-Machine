@@ -11,7 +11,7 @@ import { wikiSkip, skipNote } from "./test-wiki.js";
 import { afterDispatch, ManualBoundary, shoreRig, storeAbsent, turns, workingBag } from "./wiki-shore-rig.js";
 
 describe.skipIf(wikiSkip)(`the bridge and the shadow layer${skipNote}`, () => {
-  test("a shadow laid after the shore stands resident writes no record to any bag", async () => {
+  test("a shadow laid after the shore stands writes no record to any bag", async () => {
     const boundary = new ManualBoundary();
     const r = await shoreRig({ boundary });
     await r.adaptor.armSeedCheckpoint();

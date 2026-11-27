@@ -360,30 +360,6 @@ export class AutomergeDocStore implements LarTiddlerStore {
     this.provider.markSyncComplete(this.bagId ?? "automerge");
   }
 
-  /**
-   * Emit every current record as an initial state envelope carrying the bag's
-   * heads snapshot. Projections receive the same record and heads read together.
-   */
-  emitInitialReplay(): void {
-    const tiddlers = this.handle.doc()?.tiddlers;
-    if (!tiddlers) return;
-    const origin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: this.bagId ?? "automerge" };
-    const heads = this._headsForEnvelope();
-    for (const raw of Object.values(tiddlers)) {
-      if (!raw) continue;
-      const record = _freezeRecord(raw);
-      const title = record.tiddler.title;
-      if (!title) continue;
-      this.provider.fireImmediate({
-        title,
-        record,
-        origin,
-        ...(this.bagId !== undefined ? { bag: this.bagId } : {}),
-        ...(heads !== undefined ? { heads } : {}),
-      });
-    }
-  }
-
   async listVisible(): Promise<string[]> {
     const tiddlers = this.handle.doc()?.tiddlers;
     if (!tiddlers) return [];

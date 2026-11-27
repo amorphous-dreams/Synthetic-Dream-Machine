@@ -100,7 +100,7 @@ export function unsavedHandAlertTitle(title: string): string {
   return `$:/temp/lares/alert/unsaved/${title}`;
 }
 
-/** The alert a title whose resident landing failed raises until a later wave lands it. */
+/** The alert a title whose landing failed raises until a later wave lands it. */
 export function landingFailedAlertTitle(title: string): string {
   return `$:/temp/lares/alert/landing-failed/${title}`;
 }
@@ -261,11 +261,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   /** Titles this shore wrote whose wave has not landed: the store stands ahead of the ledger for them. */
   private readonly unlanded = new Set<string>();
   private readonly handed = new Map<string, unknown | null>();
-  /**
-   * True once the mount's own waves (the slot pointers, boot-set ground, the boot's gap) have drained: before then a landing
-   * reads no wiki value as a hand, and the outbound bridge holds the wiki's writes (`whenResident`).
-   */
-  private resident = false;
   /** What the shore knows of each draft, keyed by the draft's title (see `draft-book.ts`). */
   private readonly draftBook = new Map<string, DraftEntry>();
   /** Last draft fields seen for each draft title, used when a save outruns draft persistence. */
@@ -354,11 +349,11 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   }
 
   /**
-   * WAVE ZERO STANDS THE BOOKS, as TiddlyWiki's syncer stands after the boot pass and reads every tiddler in memory as synced
-   * (`Syncer.readTiddlerInfo`). Per title the seed read resolved: the ledger row holds what the wiki holds NOW (a startup action's
-   * write over a preload included, so it reads as landed and never saves) beside the seed's bag and heads; the draft book learns
-   * the seed's record; the kahua shadow stamp the seed computed before boot lands. Each layer's heads at the read stand as landed
-   * (`landedCovers`). No replay re-lands a title the wiki already holds: a change after the read reaches the shore as a wave.
+   * WAVE ZERO TEACHES THE BOOKS WHERE EACH SEED TITLE LIVES. Per title the seed read resolved, the ledger row names the seed's
+   * bag and heads beside what the wiki holds NOW (a startup action's write over a preload included, so it reads as landed and
+   * never saves), and the draft book learns the seed's record. Each layer's heads at the read stand as landed (`landedCovers`).
+   * `start` then stands a row for every other synced title the wiki holds. No replay re-lands a title the wiki already holds: a
+   * change after the read reaches the shore as a wave.
    */
   standFromSeed(seed: Pick<IslandSeed, "stands" | "layerHeads">): void {
     const wiki = this.tw5.$tw.wiki;
@@ -366,26 +361,35 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     for (const [title, stand] of seed.stands) {
       this.ledger.set(title, { tiddler: wiki.getTiddler(title) ?? null, bag: stand.bag, ...(stand.heads !== undefined ? { heads: stand.heads } : {}) });
       this._learnDraft(title, naluLands({ title, record: stand.record }) ? stand.record : null, stand.bag);
-      if (!neverPersists(title)) this._applyKahuaShadow(title, stand.shadow);
     }
   }
 
-  armSeedCheckpoint(): Promise<void> {
-    this.installLandingQueue();
-    return this.landing!.checkpoint().then(() => {
-      this.resident = true;
-      const waiting = [...this.residentWaiters]; this.residentWaiters.clear();
-      for (const fn of waiting) fn();
-    });
+  /**
+   * ONE ROW PER SYNCED TITLE, as TiddlyWiki's syncer stands after the boot pass (`Syncer.readTiddlerInfo` over
+   * `getSyncedTiddlers`): every ordinary tiddler the wiki holds that may persist (`neverPersists` plays `$:/config/SyncFilter`)
+   * and holds no row yet reads as landed with no bag, holding the wiki's value. A title no layer holds (a status title, the
+   * story, a startup action's creation) stands synced, so the change TW5 raises for it after the bridge stands reads as foam
+   * and sends nothing; only a later move of it saves.
+   */
+  private _standSyncedRows(): void {
+    const wiki = this.tw5.$tw.wiki;
+    for (const title of wiki.filterTiddlers("[all[tiddlers]]")) {
+      if (neverPersists(title) || this.ledger.landedOf(title) !== undefined) continue;
+      this.ledger.set(title, { tiddler: wiki.getTiddler(title) ?? null });
+    }
   }
 
-  private readonly residentWaiters = new Set<() => void>();
+  /**
+   * THE SEED CHECKPOINT: resolves once the mount's own waves (the slot pointers, boot-set ground, the boot's gap) have drained.
+   * It orders nothing on the shore itself; the kernel awaits it (`seedDrained`) so behavior arms over a wiki the seed reached.
+   */
+  armSeedCheckpoint(): Promise<void> {
+    this.installLandingQueue();
+    return this.landing!.checkpoint();
+  }
+
   /** The slot children a family call put, by address, until a landing wave or a different state replaces them. */
   private readonly familyPlaced = new Map<string, LarTiddlerRecord>();
-  /** Run `fn` once the shore stands resident (at once when it does): the outbound bridge holds a pre-resident write here. */
-  whenResident(fn: () => void): void {
-    if (this.resident) fn(); else this.residentWaiters.add(fn);
-  }
 
   landingIdle(): Promise<void> { return this.landing?.idle() ?? Promise.resolve(); }
 
@@ -573,8 +577,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     if (outcome.kind === "failed") throw outcome.error;
   }
 
-  isResident(): boolean { return this.resident; }
-
   /** True when a wiki notification repeats the value the last wave left. */
   isFoam(title: string, value: unknown | null): boolean {
     const entry = this.ledger.landedOf(title);
@@ -656,9 +658,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // lands over it.
     // AN ACT'S REMOVAL OWNS THE WIKI'S VIEW of its title until it leaves: a queued wave of the title's earlier write never lands it back.
     const removal = this.actRemovals.get(title);
-    if (!handSettled && this.resident && removal && this._removalStands(title, removal)) return "landed";
+    if (!handSettled && removal && this._removalStands(title, removal)) return "landed";
     const shadowOnly = standing !== null && typeof wiki.tiddlerExists === "function" && !wiki.tiddlerExists(title);
-    const isHand = !handSettled && this.resident
+    const isHand = !handSettled
       && (marked || (!shadowOnly && !same(standing, known) && !(this.sent.has(title) && this.sent.get(title) === standing)));
     if (isHand) return "hand";
     // AN OWN WRITE MOVED SINCE THE PREPARE: the composition the prepare read misses it, so the wave never lands a stale answer over it.
@@ -1091,6 +1093,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   // ---------------------------------------------------------------------------
 
   start(): () => void {
+    this._standSyncedRows();
     if (typeof this.store.addProjection === "function") {
       this._unsubscribe = this.store.addProjection(this);
     } else {
@@ -1126,10 +1129,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     this.door = null;
     this.landing = null;
     this.engineApply = null;
-    // A stopped shore holds no account of the wiki: a restart seeds its ledger afresh and turns resident
-    // again at its own seed checkpoint, so no stale landed value reads a later change as foam.
-    this.resident = false;
-    this.residentWaiters.clear();
+    // A stopped shore holds no account of the wiki: a restart stands its rows afresh from the wiki (`start`), so no stale
+    // landed value reads a later change as foam.
     this.ledger.clear();
     this.landedHeads.clear();
     this.sent.clear();
@@ -1648,13 +1649,12 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // returned to the landed value inside its window. A title the store never saw and the wiki does not
     // hold raises no tombstone. A state identical to the value already sent owes nothing either.
     const landed = this.ledger.landedOf(title);
-    // The ledger answers only once the mount's waves have drained (a resident shore), and never for a title
-    // this shore wrote whose wave has not landed: there the state leaves and the store decides.
+    // The ledger never answers for a title this shore wrote whose wave has not landed: there the state leaves and the store decides.
     const placed = this.familyPlaced.get(title);
     const placedByFamily = placed !== undefined && state !== null && this._matchesPlaced(placed, state);
     const settled = placedByFamily || (this.sent.has(title)
       ? this.sent.get(title) === state
-      : this.resident && !this.unlanded.has(title) && same(state, landed ? landed.tiddler : null));
+      : !this.unlanded.has(title) && same(state, landed ? landed.tiddler : null));
     if (!placedByFamily) this.familyPlaced.delete(title);
     if (settled) {
       this.handFaces.delete(title);
@@ -1849,9 +1849,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   // ---------------------------------------------------------------------------
 
   /** True while the wiki holds `uri`, or the last wave landed it live. */
-  /** Refuse new outbound hands while a faulted shore detaches. */
-  dropResidency(): void { this.resident = false; this.residentWaiters.clear(); }
-
   private _stands(uri: string): boolean {
     return this.tw5.$tw.wiki.getTiddler(uri) !== undefined || (this.ledger.landedOf(uri)?.tiddler ?? null) !== null;
   }

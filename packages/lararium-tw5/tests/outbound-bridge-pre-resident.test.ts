@@ -1,4 +1,4 @@
-/** A write the wiki makes BEFORE the shore stands resident (a startup module) is NAMED in the log when the shore stands; a landed seed title is not. */
+/** The bridge holds nothing back: a write the wiki makes while the mount's waves still drain is a hand like any other, and a title a mount wave lands echoes nothing. */
 
 import { describe, test, expect, vi } from "vitest";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
@@ -51,8 +51,6 @@ test("repeated dispatches over one pending generation attach one fault reaction"
   const pending = new Promise<void>((_resolve, rej) => { reject = rej; });
   const adaptor = {
     installLandingQueue() {},
-    isResident: () => true,
-    whenResident() {},
     handleChangeDispatch: () => new Set<string>(),
     holdsHand: () => false,
     isFoam: () => false,
@@ -77,8 +75,8 @@ test("repeated dispatches over one pending generation attach one fault reaction"
   }
 });
 
-describe.skipIf(wikiSkip)(`outbound bridge — a write before the shore stands resident${skipNote}`, () => {
-  test("RED: a startup module's write before the seed checkpoint is named, never silent; CONTROL: a seed-landed title is not named and echoes nothing", async () => {
+describe.skipIf(wikiSkip)(`outbound bridge — no hold while the mount drains${skipNote}`, () => {
+  test("a write made before the seed checkpoint reaches the store as a hand, and nothing warns of it; CONTROL: a title the mount wave lands echoes nothing", async () => {
     const engine = await bootTestWiki();
     const wiki = engine.$tw.wiki as unknown as { addTiddler(t: unknown): void };
     const Tiddler = (engine.$tw as never as { Tiddler: new (f: Record<string, unknown>) => unknown }).Tiddler;
@@ -92,29 +90,26 @@ describe.skipIf(wikiSkip)(`outbound bridge — a write before the shore stands r
     const warns: string[] = [];
     const spy = vi.spyOn(console, "warn").mockImplementation((...a: unknown[]) => { warns.push(a.join(" ")); });
     const store = new RecordingStore();
-    const adaptor = new IslandAdaptor(engine, asIslandStore(store), "pre-resident");
+    const adaptor = new IslandAdaptor(engine, asIslandStore(store), "mount-drains");
     adaptor.start();
     bridgeWikiToAdaptor(engine, adaptor);
-    // The seed wave is queued; the shore is not resident yet.
+    // A mount wave is queued and the checkpoint not yet passed.
     await MemoryTiddlerStore.prototype.put.call(store, { tiddler: { title: "lar:///t/pre/seeded", text: "from the fleet" } }, { kind: "crdt-remote", edgeIsland: "peer" });
     lares.enqueueNalu!({ title: "lar:///t/pre/seeded", bag: SLOTS.working, record: { tiddler: { title: "lar:///t/pre/seeded", text: "from the fleet" } }, origin: { kind: "crdt-remote", edgeIsland: "peer" } });
     const checkpoint = adaptor.armSeedCheckpoint();
-    expect(adaptor.isResident()).toBe(false);
     wiki.addTiddler(new Tiddler({ title: "probe/ran/1", text: "ran" }));
     await checkpoint;
     await adaptor.handsRested();
     await new Promise((r) => setTimeout(r, 50));
     await adaptor.handsRested();
     spy.mockRestore();
-    const named = warns.find((w) => w.includes("before the shore stood resident"));
-    expect(named, "a write made before the shore stood resident vanished without a trace").toBeDefined();
-    expect(named).toContain("probe/ran/1");
-    expect(named, "a seed-landed title was named as lost").not.toContain("lar:///t/pre/seeded");
-    expect(store.puts.filter((p) => p.title === "lar:///t/pre/seeded"), "a seed-landed title echoed back out").toEqual([]);
+    expect(store.puts.filter((p) => p.title === "probe/ran/1" && p.bag === SLOTS.working), "the write before the checkpoint reached the working bag").toHaveLength(1);
+    expect(warns.filter((w) => w.includes("probe/ran/1")), "nothing warned of it").toEqual([]);
+    expect(store.puts.filter((p) => p.title === "lar:///t/pre/seeded"), "a title the mount wave landed echoed back out").toEqual([]);
   }, 120_000);
 });
 
-describe.skipIf(wikiSkip)(`outbound bridge — a lone async write on a resident island${skipNote}`, () => {
+describe.skipIf(wikiSkip)(`outbound bridge — a lone async write on a standing island${skipNote}`, () => {
   test("RED (measured, no cure yet): one fresh tiddler, the change delivered and scheduled work drained, with no handsRested, teardown, inbound wave or signal, reaches the store", async () => {
     const engine = await bootTestWiki();
     const wiki = engine.$tw.wiki as unknown as { addTiddler(t: unknown): void };
@@ -174,7 +169,7 @@ describe.skipIf(wikiSkip)(`outbound bridge — a lone async write on a resident 
 });
 
 describe.skipIf(wikiSkip)(`outbound bridge — draft recovery follows the idle drain${skipNote}`, () => {
-  async function residentWith(label: string, store = new RecordingStore()) {
+  async function standingWith(label: string, store = new RecordingStore()) {
     const engine = await bootTestWiki();
     const wiki = engine.$tw.wiki as unknown as { addTiddler(t: unknown): void };
     const Tiddler = (engine.$tw as never as { Tiddler: new (f: Record<string, unknown>) => unknown }).Tiddler;
@@ -206,7 +201,7 @@ describe.skipIf(wikiSkip)(`outbound bridge — draft recovery follows the idle d
   const draftPuts = (store: RecordingStore): number => store.puts.filter((p) => p.title === "Draft of 'Note'").length;
 
   test("an attached recovery trigger alone decides when ordinary hands fire", async () => {
-    const { adaptor, store, wiki, Tiddler } = await residentWith("trigger-seam");
+    const { adaptor, store, wiki, Tiddler } = await standingWith("trigger-seam");
     let fire!: (titles?: readonly string[]) => Promise<void>;
     adaptor.setRecoveryTrigger({ attach(fn) { fire = fn; return () => {}; } });
     wiki.addTiddler(new Tiddler({ title: "probe/trigger", text: "latest" }));
@@ -218,7 +213,7 @@ describe.skipIf(wikiSkip)(`outbound bridge — draft recovery follows the idle d
   }, 120_000);
 
   test("twelve draft dispatches reach the store at idle", async () => {
-    const { adaptor, store, type } = await residentWith("draft-twelve");
+    const { adaptor, store, type } = await standingWith("draft-twelve");
     for (let n = 0; n < 12; n++) await type(n);
     expect(draftPuts(store)).toBeLessThanOrEqual(12);
     expect(store.puts.filter((p) => p.title === "Draft of 'Note'").at(-1)?.fields.text).toBe("keystroke 11");
@@ -240,7 +235,7 @@ describe.skipIf(wikiSkip)(`outbound bridge — draft recovery follows the idle d
         await super.put(record, origin, options);
       }
     }
-    const { adaptor, store, type } = await residentWith("draft-flight", new HeldStore());
+    const { adaptor, store, type } = await standingWith("draft-flight", new HeldStore());
     await type(0);
     await writing;
     await type(1);
@@ -254,7 +249,7 @@ describe.skipIf(wikiSkip)(`outbound bridge — draft recovery follows the idle d
   }, 120_000);
 
   test("the default drain holds newer draft state until the durable acknowledgement", async () => {
-    const { adaptor, store, type } = await residentWith("draft-ack-paced");
+    const { adaptor, store, type } = await standingWith("draft-ack-paced");
     let release!: () => void;
     let asked!: () => void;
     const held = new Promise<void>((resolve) => { release = resolve; });
@@ -277,7 +272,7 @@ describe.skipIf(wikiSkip)(`outbound bridge — draft recovery follows the idle d
   }, 120_000);
 
   test("an inbound landing neither flushes nor loses an unrelated draft", async () => {
-    const { adaptor, store, type, land } = await residentWith("draft-inbound");
+    const { adaptor, store, type, land } = await standingWith("draft-inbound");
     await type(1);
     expect(draftPuts(store)).toBe(1);
     await land();
@@ -287,7 +282,7 @@ describe.skipIf(wikiSkip)(`outbound bridge — draft recovery follows the idle d
   }, 120_000);
 
   test("a synchronous burst of draft dispatches produces one latest recovery copy", async () => {
-    const { adaptor, store, wiki, Tiddler } = await residentWith("draft-burst");
+    const { adaptor, store, wiki, Tiddler } = await standingWith("draft-burst");
     for (let n = 0; n < 12; n++) {
       wiki.addTiddler(new Tiddler({ title: "Draft of 'Note'", "draft.of": "Note", "draft.title": "Note", text: `keystroke ${n}` }));
     }

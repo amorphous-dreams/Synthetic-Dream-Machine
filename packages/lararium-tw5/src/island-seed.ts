@@ -14,10 +14,16 @@
  * (`nalu-form.ts`, the applier's own builder) -> `$tw.preloadTiddlers`. One form above and below.
  *
  * THE SEED TEACHES THE SHORE WHAT STANDS. The same read keeps, per preloaded title, the bag, the heads and the record it resolved
- * (`stands`, a tombstoned title's row included), each layer's heads at the read (`layerHeads`), and the kahua shadow each title
- * casts. The shore stands its books from them at mount (`IslandAdaptor.standFromSeed`), the way TW5's syncer reads every tiddler
- * in memory as synced when it stands after the boot pass (`Syncer.readTiddlerInfo`): no replay re-lands a title the wiki already
- * holds, so a startup action's write over a preload stands in the VM, unsaved, as native TW5 keeps it.
+ * (`stands`, a tombstoned title's row included) and each layer's heads at the read (`layerHeads`). The shore names each seed
+ * title's bag from them at mount (`IslandAdaptor.standFromSeed`) and stands a row for every other synced title, the way TW5's
+ * syncer reads every tiddler in memory as synced when it stands after the boot pass (`Syncer.readTiddlerInfo`): no replay
+ * re-lands a title the wiki already holds, so a startup action's write over a preload stands in the VM, unsaved, as native TW5
+ * keeps it.
+ *
+ * THE KAHUA SHADOW STAMPS BOOT BESIDE THE RECORDS. Where the composition lays the kahua stage, a title whose topmost record
+ * covers a kahua twin casts a "local draft over shared" stamp (`kahua-shadow.ts`). The stamp lives as a wiki tiddler on the
+ * temp plane, so it rides the preloads in the form the shore writes it (`kahuaShadowTitle`), and joins `titles` beside the
+ * record it marks.
  *
  * PER TITLE, ONE ANSWER: the composition's topmost record (`resolveLayered`, kāpae honoured). A title whose topmost record
  * stands as a tombstone preloads nothing, so a lower live copy never shows.
@@ -35,7 +41,8 @@ import type { CompositeStore } from "@lararium/mesh/composite-store";
 import type { ChangeOrigin, LarTiddlerChange, LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
 import { bootCensusOf, islandSeedPreloadable } from "./boot-census.js";
-import { kahuaShadowOf, type KahuaShadow } from "./kahua-shadow.js";
+import { kahuaShadowOf, kahuaShadowTitle, type KahuaShadow } from "./kahua-shadow.js";
+import { neverPersists } from "./island-adaptor.js";
 import { naluFieldsOf, naluLands } from "./nalu-form.js";
 
 /** What the seed read resolved for one title the wiki boots holding (or, for a tombstone, boots without). */
@@ -43,13 +50,11 @@ export interface SeedStand {
   readonly bag: string;
   readonly record: LarTiddlerRecord;
   readonly heads?: readonly string[];
-  /** The kahua shadow the title casts (null: none stands); undefined where the composition lays no kahua stage. */
-  readonly shadow?: KahuaShadow | null;
 }
 
 /** Wave zero: the records the engine boots with, what the shore learns from them, and the changes the composition told during the boot. */
 export interface IslandSeed {
-  /** The nalu-form fields of each preloaded record, in the composite's title order: hand these to `bootTw5` as `seedTiddlers`. */
+  /** The nalu-form fields of each preloaded record (each kahua shadow stamp after the record it marks), in the composite's title order: hand these to `bootTw5` as `seedTiddlers`. */
   readonly preloads: readonly Record<string, unknown>[];
   readonly titles: ReadonlySet<string>;
   /** Per title the boot store took (or a tombstone kept out of it): the composition's answer, for the shore's books. */
@@ -60,6 +65,11 @@ export interface IslandSeed {
   readonly layerHeads: ReadonlyMap<string, readonly string[]>;
   /** Stop hearing the composition and answer the last change heard per title since the read began. Idempotent. */
   release(): LarTiddlerChange[];
+}
+
+/** The stamp a shadowed title casts, in the fields the shore writes it with (`IslandAdaptor._applyKahuaShadow`). */
+function stampFieldsOf(title: string, shadow: KahuaShadow): { title: string } & Record<string, unknown> {
+  return { title: kahuaShadowTitle(title), text: shadow.shared, "draft-bag": shadow.draftBag, "shadow-of": title };
 }
 
 /**
@@ -89,11 +99,17 @@ export async function readIslandSeed(composite: CompositeStore, bootPreloads: re
       const origin: ChangeOrigin = { kind: "canon-hydrate", receipt: top.bagId };
       const change: LarTiddlerChange = { title, record: top.record, origin, bag: top.bagId, ...(top.heads !== undefined ? { heads: top.heads } : {}) };
       if (opts.booted || !islandSeedPreloadable(title, census)) { waves.push(change); continue; }
-      const shadow = kahua ? await kahuaShadowOf(composite, title, top) : undefined;
-      stands.set(title, { bag: top.bagId, record: top.record, ...(top.heads !== undefined ? { heads: top.heads } : {}), ...(shadow !== undefined ? { shadow } : {}) });
-      if (!naluLands(change)) continue;
-      preloads.push(naluFieldsOf(change));
-      titles.add(title);
+      stands.set(title, { bag: top.bagId, record: top.record, ...(top.heads !== undefined ? { heads: top.heads } : {}) });
+      if (naluLands(change)) {
+        preloads.push(naluFieldsOf(change));
+        titles.add(title);
+      }
+      const shadow = kahua && !neverPersists(title) ? await kahuaShadowOf(composite, title, top) : null;
+      if (shadow) {
+        const stamp = stampFieldsOf(title, shadow);
+        preloads.push(stamp);
+        titles.add(stamp.title);
+      }
     }
   } catch (error) {
     off();

@@ -870,9 +870,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       if (!resolved) continue;
       const handle = await findOrThrow(ctx.repo, resolved.url, `${bag} (the daemon's ${kind} layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS });
       const store = new AutomergeDocStore(handle, bag, wearOf(ctx.repo));
-      ctx.composite.addLayer({ bagId: bag, store, writable: true, defaultWritable: false }, recipeLayerIndex(ctx.composite, ctx.recipe, bag));
+      // The slot's visible delta lands as one wave: a title a higher layer covers moves nothing.
+      const joined = ctx.composite.addLayer({ bagId: bag, store, writable: true, defaultWritable: false }, recipeLayerIndex(ctx.composite, ctx.recipe, bag));
       ctx.handles.set(bag, handle);
-      store.emitInitialReplay();
+      await joined;
       store.markSyncComplete();
       if (faceDoor() && await kh!.knowsAgent(daemonAuth.personaGroupId!)) await faceDoor()!.mint(bag, "admin");
       else if (kh) await registerBagsDurably({ provider: kh, bags: [bag], ledger: daemonBagDocLedger(ctx.composite, daemonAuth.personaGroupId) });
@@ -918,9 +919,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       const store = new AutomergeDocStore(handle, working, wearOf(ctx.repo));
       // The face canon mounts after ea, so the working layer reads its seat off the recipe, never off the canon alone: an
       // absent canon read as index -1 seated working beneath the kahua stage, which then shadowed every working edit.
-      ctx.composite.addLayer({ bagId: working, store, writable: true, defaultWritable: true }, recipeLayerIndex(ctx.composite, ctx.recipe, working));
+      const joined = ctx.composite.addLayer({ bagId: working, store, writable: true, defaultWritable: true }, recipeLayerIndex(ctx.composite, ctx.recipe, working));
       ctx.handles.set(working, handle);
-      store.emitInitialReplay();
+      await joined;
       store.markSyncComplete();
       // Keyhive gates this slot by its lar: URI; register the working doc and grant the seated face its reach.
       if (faceDoor() && await kh!.knowsAgent(daemonAuth.personaGroupId!)) await faceDoor()!.mint(working, "admin");

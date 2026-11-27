@@ -14,16 +14,16 @@ import { unroutedSaveAlertTitle } from "../src/island-adaptor.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import {
-  Repo, afterDispatch, canonBag, draftBag, ManualBoundary, openDraft, peerWrite, remote, saveSequence,
+  Repo, afterDispatch, canonBag, draftBag, landWhole, ManualBoundary, openDraft, peerWrite, remote, saveSequence,
   shoreRig, storeDeleted, storeText, turns, typeInto, workingBag, type Rig,
 } from "./wiki-shore-rig.js";
 
 const WORKING_POINTER = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 const heads = (r: Rig, bag: string): string => JSON.stringify(r.handles[bag]!.heads());
-/** A fresh engine and adaptor over the same docs; the layers replay in `order`, the landing queue draining after each. */
+/** A fresh engine and adaptor over the same docs; each layer lands whole in `order`, the landing queue draining after each. */
 async function reload(r: Rig, order: ReadonlyArray<"canon" | "working" | "draft">): Promise<Rig> {
   const again = await shoreRig({ instanceId: "shore-reload", boundary: new ManualBoundary(), docs: r.saved() });
-  for (const name of order) { again[name].emitInitialReplay(); await again.adaptor.landingIdle(); }
+  for (const name of order) { landWhole(again.adaptor, again[name]); await again.adaptor.landingIdle(); }
   return again;
 }
 

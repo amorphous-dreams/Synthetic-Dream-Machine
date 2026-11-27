@@ -6,7 +6,7 @@
  *   2) addLayer for each slot in cascade order (bottom-up): oracle floor first, temp last
  *   3) temp uses memory, oracle wraps its seed store with the floor read-face, the kahua slot reads the stage's fold under
  *      the face (`kahuaStageStore`), and other slots use AutomergeDocStore
- *   4) IslandAdaptor projection registers and stands its books from the seed (`standFromSeed`)
+ *   4) IslandAdaptor projection registers, names each seed title's bag (`standFromSeed`) and stands one row per synced title (`start`)
  *   5) the records that wait for boot (boot-set ground, the boot's gap) enter the shore landing queue; its checkpoint resolves
  *      when that queue empties
  *
@@ -182,8 +182,8 @@ export function layIslandComposition(input: LayIslandCompositionInput): LaidComp
 }
 
 /**
- * Mount the shore on a booted engine over a laid composition: the adaptor registers, stands its books from the seed
- * (`standFromSeed`, TW5's `Syncer.readTiddlerInfo`), the slot pointers seed, the records that wait for boot land through the
+ * Mount the shore on a booted engine over a laid composition: the adaptor registers and stands one row per synced title, each
+ * seed title's naming its bag (`standFromSeed`, then `start`: TW5's `Syncer.readTiddlerInfo`), the slot pointers seed, the records that wait for boot land through the
  * shore's queue, and the seed checkpoint arms. `seed`, where the engine booted over wave zero, carries what the boot store
  * took; the changes the composition told during the boot (`IslandSeed.release`) land afresh. With no seed the engine booted
  * bare, so the shore reads one off the composition (`readIslandSeed`, booted) and lands every record it resolves as a wave.
@@ -201,7 +201,9 @@ export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: P
 
   const adaptor = new IslandAdaptor(tw5, composite, recipe.wikiSlug);
   adaptor.installLandingQueue();
-  // The books stand before the shore hears anything: a change heard after this lands over the seed's rows, never under them.
+  // The books stand before the shore hears anything: a change heard after this lands over the rows, never under them. The seed
+  // names its titles' bags; `start` stands every other synced title the boot pass left as landed with no bag, so a boot write
+  // to a title no layer holds reads as foam when TW5 tells it, and no hold waits on any checkpoint.
   if (seed) adaptor.standFromSeed(seed);
   adaptor.start();
   // THE BOOT'S GAP closes here: the seed stops hearing as the shore starts, and hands back what the composition told meanwhile.
@@ -241,7 +243,8 @@ export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: P
   // the wiki booted empty, and that replay WAS its load. Wave zero made the load a TW5 preload, and the replay stayed only to fill
   // the shore's books by re-landing every title TW5 already held, painting the seed back over the boot pass's writes on the way.
   // The seed read now stands those books (`standFromSeed`), so each store only flushes its debounces and announces its sync. A
-  // layer added after mount (recipe-watch, the face canon after ea) still replays: its records reach the wiki for the first time.
+  // layer added after mount (recipe-watch, the face canon after ea) lands its visible delta through the composite
+  // (`CompositeStore.addLayer`): only the titles whose topmost record it moves reach the wiki.
   for (const { store } of stores) (store as LarTiddlerStore & { markSyncComplete?: () => void }).markSyncComplete?.();
 
   // THE RECORDS THAT WAIT FOR BOOT land as waves: boot-set ground the boot store never took, and THE BOOT'S GAP, every change the
@@ -278,7 +281,8 @@ export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: P
 /**
  * THE HYDRATION CHECKPOINT. Resolves once the seed wave `buildIslandRecipe` armed stands in the wiki —
  * the corpus and the slot pointers both. The kernel awaits it between the recipe and `behavior.onEa`, so
- * behavior arms over a resident seed and its first write finds every slot named. An engine no recipe was
+ * behavior arms over a wiki the seed reached and its first write finds every slot named. It orders the kernel alone: the
+ * shore takes hands from its start. An engine no recipe was
  * built over holds no checkpoint, and asking for one refuses by name: a seed nobody queued must never
  * read as a seed that landed. `breathe` hears each slice the shore's queue lands while the seed drains: the kernel hands
  * its progress tick, so the vessel's watchdog (which bounds the mount on PROGRESS) reads a long drain as moving and still

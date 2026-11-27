@@ -11,7 +11,7 @@ import { wikiSkip, skipNote } from "./test-wiki.js";
 import { sameHeads } from "../src/draft-book.js";
 import { parallelDraftAlertTitle, unroutedSaveAlertTitle } from "../src/island-adaptor.js";
 import {
-  afterDispatch, arrived, atDispatch, canonBag, draftBag, draftTitleOf, landingDeadline, ManualBoundary, openDraft, peerWrite, remote, saveSequence,
+  afterDispatch, arrived, atDispatch, canonBag, draftBag, draftTitleOf, landingDeadline, landWhole, ManualBoundary, openDraft, peerWrite, remote, saveSequence,
   shoreRig, storeAbsent, storeDeleted, storeText, turns, typeInto, workingBag, type Rig,
 } from "./wiki-shore-rig.js";
 
@@ -357,7 +357,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
       await turns(8);
 
       const b = await shoreRig({ instanceId: "shore-B", boundary: boundaryB, docs: a.saved() });
-      b.canon.emitInitialReplay(); b.working.emitInitialReplay(); b.draft.emitInitialReplay();
+      landWhole(b.adaptor, b.canon); landWhole(b.adaptor, b.working); landWhole(b.adaptor, b.draft);
       await b.adaptor.armSeedCheckpoint();
       expect(b.wiki.getTiddler(d), "the draft arrived by a wave").toBeDefined();
       if (moved) expect(b.adaptor.ledger.landedOf(x)!.heads).not.toEqual(openedAt);
@@ -603,7 +603,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     boundaryA.fire();
     await turns(24);
     const b = await shoreRig({ instanceId: "shore-B", boundary: new ManualBoundary(), docs: a.saved() });
-    b.canon.emitInitialReplay(); b.working.emitInitialReplay(); b.draft.emitInitialReplay();
+    landWhole(b.adaptor, b.canon); landWhole(b.adaptor, b.working); landWhole(b.adaptor, b.draft);
     await b.adaptor.armSeedCheckpoint();
     typeInto(a, d, "v2", { "draft.title": y });
     await afterDispatch();

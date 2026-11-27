@@ -113,7 +113,6 @@ export async function guardWritableStand<T>(run: () => Promise<T>, detach: () =>
 }
 
 export async function detachFaultedWritable(adaptor: import("./island-adaptor.js").IslandAdaptor | null, unsub: (() => void) | null): Promise<void> {
-  adaptor?.dropResidency();
   unsub?.();
   await adaptor?.stop();
 }
@@ -636,7 +635,7 @@ export function runSovereignKernel(
               adaptor.receiptRequired = opts?.caps?.receipt === true && view === null;
               // The bridge compares wiki notifications with the landed ledger and sends hands through the gate.
               _bridgeUnsub = bridgeWikiToAdaptor(tw5, adaptor);
-              // Await the shore's seed checkpoint before arming behavior: onEa observes a fully resident seed,
+              // Await the shore's seed checkpoint before arming behavior: onEa observes the seed fully drained,
               // landed by the shore's queue in host-task slices. Each landed slice ticks the breath's progress, so the
               // vessel's stall watchdog reads a long seed as moving; a drain that lands no slice ticks nothing.
               tick("seed-drain");
@@ -729,9 +728,10 @@ export function runSovereignKernel(
     }
     if (composite.hasBag(slot)) return;
     const store = new AutomergeDocStore(out.handle, slot, wearOf(repo));
-    composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, msg.recipe.wikiSlug) }, recipeLayerIndex(composite, msg.recipe, slot));
+    // The canon's visible delta lands as one wave: a title a working or kahua record already covers moves nothing.
+    const joined = composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, msg.recipe.wikiSlug) }, recipeLayerIndex(composite, msg.recipe, slot));
     _handles.set(slot, out.handle);
-    store.emitInitialReplay();
+    await joined;
     store.markSyncComplete();
   }
 

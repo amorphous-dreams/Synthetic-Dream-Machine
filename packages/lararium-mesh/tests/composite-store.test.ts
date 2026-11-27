@@ -558,6 +558,32 @@ describe("CompositeStore live layer surgery", () => {
     expect(projected.some((c) => c.title === "only-high" && c.record === null)).toBe(true);
   });
 
+  test("RED: a late layer whose titles a higher layer already covers lands zero rows; CONTROL: a title it alone answers lands once, to subscribers and projections both", async () => {
+    const composite = new CompositeStore();
+    const low  = new MemoryTiddlerStore("lar:///low");
+    const high = new MemoryTiddlerStore("lar:///high");
+    await high.put({ tiddler: { title: "covered", text: "from high" } }, systemOrigin());
+    composite.addLayer({ bagId: "lar:///low",  store: low,  writable: false });
+    composite.addLayer({ bagId: "lar:///high", store: high, writable: false });
+    const heard: LarTiddlerChange[] = [];
+    composite.subscribe((c) => heard.push(c));
+    const projected: LarTiddlerChange[] = [];
+    composite.addProjection({ onUriChanged: (c: LarTiddlerChange) => { projected.push(c); } });
+
+    const late = new MemoryTiddlerStore("lar:///late");
+    await late.put({ tiddler: { title: "covered", text: "from late" } }, systemOrigin());
+    await late.put({ tiddler: { title: "fresh", text: "from late" } }, systemOrigin());
+    await composite.addLayer({ bagId: "lar:///late", store: late, writable: false }, 1);
+
+    expect(heard.filter((c) => c.title === "covered"), "a covered title moves nothing").toEqual([]);
+    expect(projected.filter((c) => c.title === "covered")).toEqual([]);
+    for (const seen of [heard, projected]) {
+      const fresh = seen.filter((c) => c.title === "fresh");
+      expect(fresh, "the title the join moved lands once").toHaveLength(1);
+      expect(fresh[0]).toMatchObject({ bag: "lar:///late", record: { tiddler: { text: "from late" } } });
+    }
+  });
+
   test("removeLayerLive on an absent bag stays a no-op", async () => {
     const composite = new CompositeStore();
     await expect(composite.removeLayerLive("lar:///ghost")).resolves.toBeUndefined();
