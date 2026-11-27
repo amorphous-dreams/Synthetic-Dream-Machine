@@ -28,7 +28,7 @@ Two callers exist:
    triggering subscribers.
 
 # ''The `@temp` slot in every booted island.'' Constructed by
-   `buildIslandRecipe()` at the top of the cascade (highest priority).
+   `layIslandComposition()` at the top of the cascade (highest priority).
    Comes up empty on every island boot; tears down on demote. No CRDT,
    no wire, no disk.
 
@@ -110,7 +110,7 @@ cabal per `(PersonaGroup × recipe-fingerprint)`.
 exists entirely within the worker's heap.
 
 ''M-2 — Per-island lifetime.'' A fresh `MemoryTiddlerStore` materialises at
-`buildIslandRecipe()` time and is released when the island demotes.
+`layIslandComposition()` time and is released when the island demotes.
 No persistence across island lifecycles.
 
 ''M-3 — Tombstone visibility.'' A tombstoned title disappears from
@@ -138,6 +138,6 @@ same change record any AutomergeDocStore would emit.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JRSjKpBe4RvYPzAtV9US4qmaC2-HjCdtH5HowHg6Llw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1KbiB_hYMiPYf4HY4LrrP8yRt6vusk0vrY5RH137tD4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

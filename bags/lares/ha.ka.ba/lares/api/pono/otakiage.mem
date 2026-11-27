@@ -42,7 +42,7 @@ The name borrows the Shinto return-rite (お焚き上げ), which //returns// a t
 !!! Axis A ~ standing: the stages, in order
 
 |! stage |! the tag |! what the carrier holds |! what `status-why` reads |! what `meme check` ENFORCES |
-| ''`fleeting`'' | ''none — no carrier exists'' | a turn's scratch: a `$:/temp` tiddler, a draft in the wiki island's `temp` slot (a `MemoryTiddlerStore`, `island-recipe.ts` `buildIslandRecipe`), a spirit's working note | //nothing — it never reaches a meta block// | ''nothing''. A fleeting thing that wants a check has stopped being fleeting |
+| ''`fleeting`'' | ''none — no carrier exists'' | a turn's scratch: a `$:/temp` tiddler, a draft in the wiki island's `temp` slot (a `MemoryTiddlerStore`, `island-recipe.ts` `layIslandComposition`), a spirit's working note | //nothing — it never reaches a meta block// | ''nothing''. A fleeting thing that wants a check has stopped being fleeting |
 | ''`designed`'' | `lifecycle/designed` | a shape argued whole against the house and the field; leans open by design | what stands ''unbuilt'', in those words | open `-> ?` leans read ''correct''. An empty `#/leans` slot reads ''wrong'': a design with no open question has either been ruled or never argued |
 | ''`standing`'' | `lifecycle/standing` | a ruling enacted, or a measurement taken and held | the ''witness'': a commit sha, a named test, a measured run, or an honest partial | an open `-> ?` in `#/leans` reads ''wrong'' unless `status-why` names it held open with its blocker. A `standing` `build` carrier whose `status-why` names no witness reads ''wrong'' |
 | ''`folded`'' | `lifecycle/folded` | pointers alone: each slot says where its content went | "folded to `lar:///…`, welded, nothing points here" | ''zero'' inbound `loulou`; ''zero'' open leans; every slot carrying a fold target. Any of the three failing reads ''wrong'' and the carrier stays `standing` |
@@ -212,6 +212,6 @@ Worked calls and a single-stage invocation stand in <<~ loulou uri=`lar:///ha.ka
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4BZnZumycGARiqDsvgf4nmw0g_Yifdv1ad50wtOgF94`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;v0ceFzrYjUNKvihW3EfsYfoj67VsyTS76AQ9iUMqEOw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

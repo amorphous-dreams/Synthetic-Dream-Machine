@@ -26,7 +26,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/outbound-bridge"
 
 ''Register: Model-Standing.'' Every claim below names a file and a line; a claim without one names itself as inference. The operator's words, verbatim (quote license): "(1) we don't use the syncer in our `lararium` vessels, but I suppose we should scout the back-parity flow there. (2) Write red-tests for this, we still work on cleaning up the architecture and re-founding in the parallel session. (3) daemon wiki projects to disk as `wikis/daemon`, and if it holds bags (it does have 'public system bags') can use residency verbs to move data to `bags/*`."
 
-''What stands.'' Road B (#/back-parity), the ruled road: `packages/lararium-tw5/src/outbound-bridge.ts` `bridgeWikiToAdaptor` subscribes the wiki's `change` bus and reads each dispatch whole for `IslandAdaptor` (#/the-shore-law); `packages/lararium-tw5/src/sovereign-kernel.ts` stands ONE per island after `buildIslandRecipe` and cancels it at teardown (`_bridgeUnsub`). No `module-type: syncadaptor` ships and `$tw.syncer` never stands. An anchor placement into the daemon's own wiki leaves by the same listener. Witnesses: #/reds.
+''What stands.'' Road B (#/back-parity), the ruled road: `packages/lararium-tw5/src/outbound-bridge.ts` `bridgeWikiToAdaptor` subscribes the wiki's `change` bus and reads each dispatch whole for `IslandAdaptor` (#/the-shore-law); `packages/lararium-tw5/src/sovereign-kernel.ts` stands ONE per island after `mountIslandShore` and cancels it at teardown (`_bridgeUnsub`). No `module-type: syncadaptor` ships and `$tw.syncer` never stands. An anchor placement into the daemon's own wiki leaves by the same listener. Witnesses: #/reds.
 
 <<~/ahu>>
 
@@ -94,7 +94,7 @@ Two facts the stock adaptors carry that the island's shape already mirrors: the 
 | the inbound half | `onUriChanged` → the landing queue (`wave-landing.ts`) → `_prepareLanding` / `_applyLanding` (a standing hand: `_landOne`) → `$tw.lares.applyNalu` (`modules/nalu-engine.ts`) | every envelope joins one queue; each landing resolves its title through the composition (`resolveLayered`), meets any unsent hand, applies, and records the result in the ledger; a slice's applies share one wiki tick; `$origin-bag` rides from the envelope |
 | who calls the outbound methods | `outbound-bridge.ts` (the `change` listener `sovereign-kernel.ts` holds) and the tests | the one production caller |
 
-''The seam.'' `packages/lararium-tw5/src/sovereign-kernel.ts` keeps `buildIslandRecipe`'s `adaptor` and hands it to `bridgeWikiToAdaptor(tw5, adaptor)`, the one `$tw.wiki.addEventListener("change", …)` the island holds, cancelled at teardown after the kernel awaits the wiki's queued dispatch (`awaitWikiDispatch`), so an edit whose notification had not fired reaches `stop()` as a marked hand. No `module-type: syncadaptor` ships in the plugin, so `$tw.syncer` never stands (`tw5-vm.ts` names the syncer as discarded on purpose).
+''The seam.'' `packages/lararium-tw5/src/sovereign-kernel.ts` keeps `mountIslandShore`'s `adaptor` and hands it to `bridgeWikiToAdaptor(tw5, adaptor)`, the one `$tw.wiki.addEventListener("change", …)` the island holds, cancelled at teardown after the kernel awaits the wiki's queued dispatch (`awaitWikiDispatch`), so an edit whose notification had not fired reaches `stop()` as a marked hand. No `module-type: syncadaptor` ships in the plugin, so `$tw.syncer` never stands (`tw5-vm.ts` names the syncer as discarded on purpose).
 
 ''Why no flag can serve, MEASURED'' (`packages/lararium-tw5/tests/outbound-bridge.test.ts` "CONTROL (5b)"): `change` dispatches on `nextTick`, AFTER an apply lowered `isApplyingNalu()`. Inside a `change` listener the flag reads `false` for every inbound apply, so it tells a SYNCHRONOUS caller alone. TW5's own `changeCount` lives in memory and a set of expected titles goes stale across a multi-change apply; the landed ledger asks only what stands, so one answer serves a live wave, a seed and a restart.
 
@@ -121,7 +121,7 @@ Two facts the stock adaptors carry that the island's shape already mirrors: the 
 
 ''Road B — keep the direct listener; parity by shape.''
 
-* Gains: one subscription in the kernel (`sovereign-kernel.ts` after `buildIslandRecipe`), the adaptor's routing and the cascade's temp route kept, no packed module, no syncer global, no poll timer. The echo law lives at the shore as the landed ledger: content decides, so one law serves a live wave, a seed and a restart.
+* Gains: one subscription in the kernel (`sovereign-kernel.ts` after `mountIslandShore`), the adaptor's routing and the cascade's temp route kept, no packed module, no syncer global, no poll timer. The echo law lives at the shore as the landed ledger: content decides, so one law serves a live wave, a seed and a restart.
 * Costs: the dirty set, `isDirty()`, the unload warning and `tc-dirty` stay OWED to the island. Every upstream change to `syncer.js` demands a fresh reading and a re-spelling by hand — parity by shape drifts the way every hand-derived enumeration drifts. The `SyncFilter` dial stays absent; the cascade alone says what leaves.
 * Where it lands: `sovereign-kernel.ts` (the subscription + teardown) · `outbound-bridge.ts` (the dispatch read whole) · `island-adaptor.ts` (the ledger, the gate, the acts).
 
@@ -199,6 +199,6 @@ CONTROLS standing green beside them: an explicit `--recipe default` put lands in
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TezKEYvzzM1eIXi9g0KFTIY8w0aoxM01Rftry0ZwJJQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2mGzTntqU-nvCeZIBloBVjOR38LO2FnlT4Wdy5vkGuU`>>
 
 <<^ code=`&#x0004;` to=`?`>>
