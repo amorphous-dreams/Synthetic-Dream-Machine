@@ -6,7 +6,7 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-role      = "consult an oracle from its library shelf at your own fork; the cast lands as an OODA-HA meme"
+role      = "consult an oracle shelf at your own fork; the cast lands an OODA-HA meme"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///oracle.library.consults"]
 title     = "lar:///ha.ka.ba/lares/afford/oracle.library.consults"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -176,6 +176,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8I_TYkdlDo3y_EK7K7D5VMTBGRBMOBIFtoIE74VsYx4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1LDCTE5YIu9Ar2PJD7pZc7Oa4Ppa5IixtFblwvLbFvk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

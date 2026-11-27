@@ -1298,7 +1298,12 @@ def build_mcp(coordinator: LaresCoordinator):
         body; `resolved` reads it from the local CAS by CID and verifies it (a web2 `_canonical_uri` stays named, never
         fetched); `slot` (with `slot="#/name"`) answers one slot's span at `meme.slotText` (never `text`, the whole carrier's field); `whole` reads the whole at the lens's grain (a record fat, a pointer resolved), and on a meme the whole carrier one page at a time,
         each page cut on a slot boundary: hand `next.after` back as `after` until `next` reads null; `all=True` joins and validates all pages, retaining the first provenance and the whole base. A partial span guards honest base reuse and grants no authorization. `fields=[…]` answers the
-        named fields alone; `max_bytes` caps a record answer (the largest fields leave first and `omitted` names them). AN
+        named fields alone; `max_bytes` caps a record answer (the largest fields leave first and `omitted` names them). THE
+        TEXT ALONE (the CLI's `tiddler get <title> --text`) takes no parameter here: a seat's answer arrives as values, never
+        as bytes it must parse, so the text already rides one named key per lens: `grain="whole"` answers a record's text at
+        `tiddler.fields.text` (a pointer's body resolved), `meme=True, all=True` the recomposed carrier at `meme.text`, and
+        `meme=True, slot="#/name"` one slot's span at `meme.slotText`; a pointer whose body rode no text names its cure at
+        `pointer.cure`. AN
         ANSWER THAT LEFT THE TEXT HOME hands a card's base (`skinny:sha256-…`): a field patch takes it, a text write refuses
         `base-from-skinny`, so read fat (`grain="fat"`, a meme `grain="whole"`) before you rewrite a text. A slot answer, or a
         page short of the end, hands a partial base bound to what it read (`partial:#/a:…`, `partial:p1:…`): a slot's put

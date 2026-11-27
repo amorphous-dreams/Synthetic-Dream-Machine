@@ -134,6 +134,9 @@ export const EXIT_FOR: Readonly<Record<string, number>> = {
   // outcome-committed's kin (6): the write landed in the vessel's memory and its save waits unsealed (`rest` band `owed`,
   // sealed-store#/owed): it rests nowhere yet, and a down before a session seals it loses it. Never a bare ok, never a fault.
   "owed":              6,
+  // The USAGE family (2): `tiddler get --text` read an answer that carries no text (a pointer's unread body, a card, a
+  // has-stack); the cure is the read the refusal names, never a retry of the same one.
+  "text-unread":       2,
   error:               1,
 };
 

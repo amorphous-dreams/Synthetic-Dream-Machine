@@ -57,6 +57,15 @@ export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "gra
 export const VALUE_FLAGS: ReadonlySet<string> = new Set(["fields", "note", "reason", "replace", "text", "with"]);
 
 /**
+ * THE SUB-VERB FLAGS: a name one sub-verb reads as a bare flag while the rest of its door reads it as a value. `--text` carries
+ * the words a `tiddler put` writes (a VALUE_FLAGS name, so `--text --x` binds `--x`); on `tiddler get` it asks for the text
+ * alone, so there it takes no value in any position (`--text=x` refuses by name) and `tiddler get T --text --recipe default`
+ * keeps its recipe. The key reads `<command> <sub-verb>`, the sub-verb being the first positional, so the flag rides after it,
+ * as every door's help writes it. `tests/parse-args.test.ts` reads a name here as a value flag a handler may also read as a flag.
+ */
+export const SUB_VERB_FLAGS: Readonly<Record<string, ReadonlySet<string>>> = { "tiddler get": new Set(["text"]) };
+
+/**
  * THE LIST FLAGS: names that carry one TiddlyWiki list (`--tag-add 'one [[two words]]'`, `--cut-slot '#/a #/b'`). A repeat gathers: each later
  * value joins the earlier with a space, in the order written, so `--tag-add a --tag-add b` reads `a b` and no tag drops
  * without a word (every other valued name keeps its last spelling).
@@ -109,10 +118,12 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
         const key = body.slice(0, eq);
         if (key === "") throw new ArgsError(`${tok}: a flag needs a name before "="`);
         if (BOOLEAN_FLAGS.has(key)) throw new ArgsError(`${tok}: --${key} is a flag and takes no value`);
+        const sub = `${command} ${positional[0]}`;
+        if (SUB_VERB_FLAGS[sub]?.has(key)) throw new ArgsError(`${tok}: --${key} on \`${sub}\` reads as a bare flag and takes no value (\`lares ${sub} <title> --${key}\`)`);
         setOption(options, key, body.slice(eq + 1));
         continue;
       }
-      if (BOOLEAN_FLAGS.has(body)) { flags[body] = true; continue; }
+      if (BOOLEAN_FLAGS.has(body) || SUB_VERB_FLAGS[`${command} ${positional[0]}`]?.has(body)) { flags[body] = true; continue; }
       const next = tokens[0];
       // --key value form: peek; consume next token if it does not look like an option (a VALUE_FLAGS name consumes it whatever it starts with).
       if (next !== undefined && (VALUE_FLAGS.has(body) || !next.startsWith("--"))) {

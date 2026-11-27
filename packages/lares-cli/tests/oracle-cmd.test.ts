@@ -56,7 +56,7 @@ describe("lares oracle cast", () => {
   test("RED: the verb stands in the command table, rides the vessel, and its help names the oracle's limit", () => {
     const row = COMMANDS.find((c) => c.name === "oracle");
     expect(row).toBeDefined();
-    expect(row?.accepts).toEqual(["asking", "bag", "caster", "coins", "face", "fresh", "observe", "realm", "recipe", "seed", "uncertain"]);
+    expect(row?.accepts).toEqual(["asking", "bag", "by", "caster", "coins", "face", "fresh", "observe", "realm", "recipe", "seed", "uncertain"]);
     expect(commandScope("oracle")).toBe("vessel");
     expect(row?.summary).toContain(ORACLE_THROW_STANDS);
     expect(helpLines("oracle").join("\n")).toContain(ORACLE_THROW_STANDS);

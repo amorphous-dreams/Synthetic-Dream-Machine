@@ -9,7 +9,7 @@
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { parseArgs, ArgsError, BOOLEAN_FLAGS, LIST_FLAGS, VALUE_FLAGS, VALUE_OR_FLAG } from "../src/parse-args.js";
+import { parseArgs, ArgsError, BOOLEAN_FLAGS, LIST_FLAGS, SUB_VERB_FLAGS, VALUE_FLAGS, VALUE_OR_FLAG } from "../src/parse-args.js";
 import { dispatch, unknownFlags, COMMANDS } from "../src/bin/lares.js";
 
 afterEach(() => vi.restoreAllMocks());
@@ -77,6 +77,17 @@ describe("parseArgs: a boolean flag takes no value, in every position", () => {
     expect(parseArgs(["tiddler", "put", "T", `--text=${body}`]).options).toEqual({ text: body });
     expect(parseArgs(["tiddler", "put", "T", "--text", body]).positional).toEqual(["put", "T"]);
   });
+  // S3 TEXT ALONE (course/ai-surface-gestures): `--text` writes words on put and reads the text alone on get, one name per sub-verb.
+  test("★ `tiddler get T --text` reads --text bare in every position, keeps the flag after it, and refuses `--text=x`; put still binds its words ★", () => {
+    for (const argv of [["tiddler", "get", "T", "--text", "--recipe", "default"], ["tiddler", "get", "T", "--recipe", "default", "--text"]]) {
+      const a = parseArgs(argv);
+      expect(a.flags).toEqual({ text: true });
+      expect(a.options).toEqual({ recipe: "default" });
+      expect(a.positional).toEqual(["get", "T"]);
+    }
+    expect(() => parseArgs(["tiddler", "get", "T", "--text=x"])).toThrow(/takes no value/);
+    expect(parseArgs(["tiddler", "put", "T", "--text", "--recipe"]).options).toEqual({ text: "--recipe" });
+  });
   test("CONTROL: any other valued name still peeks, so `--key --other` leaves the first bare and an unknown flag stays a flag", () => {
     const a = parseArgs(["x", "--root", "--mystery"]);
     expect(a.flags).toEqual({ root: true, mystery: true });
@@ -97,9 +108,12 @@ describe("parseArgs: a boolean flag takes no value, in every position", () => {
       for (const m of text.matchAll(/\bflags\["([a-z0-9-]+)"\]/g)) flagReads.add(m[1]!);
       for (const m of text.matchAll(/\boptions\["([a-z0-9-]+)"\]/g)) optionReads.add(m[1]!);
     }
-    expect([...flagReads].filter((n) => !BOOLEAN_FLAGS.has(n) && !VALUE_OR_FLAG.has(n) && !["bag", "release"].includes(n)), "read as a flag, never declared").toEqual([]);
+    // A sub-verb flag (`--text` on `tiddler get`) is the one value flag a handler also reads as a flag: its sub-verb parses it bare.
+    const subVerb = new Set(Object.values(SUB_VERB_FLAGS).flatMap((names) => [...names]));
+    expect([...flagReads].filter((n) => !BOOLEAN_FLAGS.has(n) && !VALUE_OR_FLAG.has(n) && !subVerb.has(n) && !["bag", "release"].includes(n)), "read as a flag, never declared").toEqual([]);
     expect([...BOOLEAN_FLAGS].filter((n) => optionReads.has(n)), "declared boolean, read as an option").toEqual([]);
-    expect([...VALUE_FLAGS].filter((n) => !optionReads.has(n) || flagReads.has(n) || BOOLEAN_FLAGS.has(n) || VALUE_OR_FLAG.has(n)), "value flag read other than as an option").toEqual([]);
+    expect([...VALUE_FLAGS].filter((n) => !optionReads.has(n) || (flagReads.has(n) && !subVerb.has(n)) || BOOLEAN_FLAGS.has(n) || VALUE_OR_FLAG.has(n)), "value flag read other than as an option").toEqual([]);
+    expect([...subVerb].filter((n) => !flagReads.has(n) || BOOLEAN_FLAGS.has(n) || VALUE_OR_FLAG.has(n)), "sub-verb flag never read as a flag, or declared globally").toEqual([]);
     expect([...VALUE_OR_FLAG].filter((n) => !optionReads.has(n) || !flagReads.has(n)), "listed as dual, read one way only").toEqual([]);
   });
 });

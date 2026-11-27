@@ -305,6 +305,20 @@ def test_the_cards_name_the_rendered_read(daemon):
         assert "rendered-derives" in tools[name].description, name
 
 
+def test_the_text_alone_rides_a_named_key_and_takes_no_parameter(daemon):
+    """S3 TEXT ALONE (course/ai-surface-gestures): the CLI's `tiddler get <title> --text` writes the text's bytes alone;
+    the MCP seat reads values, so its card names the key each lens carries the text at, and `tiddler_get` takes no
+    `text` parameter (on `tiddler_put`, `text` names the words written). The record lens reads it at `grain="whole"`."""
+    tools = {t.name: t for t in asyncio.run(_mcp().list_tools())}
+    card = tools["tiddler_get"].description
+    assert "--text" in card and "tiddler.fields.text" in card and "meme.text" in card and "meme.slotText" in card, card
+    import inspect
+    assert "text" not in inspect.signature(_tools()["tiddler_get"]).parameters
+    daemon.output = {"recipe": "default", "title": "Note", "lens": "record", "tiddler": {"fields": {"title": "Note", "text": "words"}, "hash": "sha256:1"}}
+    assert _tools()["tiddler_get"](title="Note", recipe="default", grain="whole")["tiddler"]["fields"]["text"] == "words"
+    assert daemon.wire() == {"verb": "tiddler-get", "args": {"recipe": "default", "title": "Note", "grain": "whole"}}
+
+
 def test_the_record_tools_reach_one_bag_and_the_engine_verbs_name_a_wiki_alone(daemon):
     # `tiddler_get`, `tiddler_put` and `tiddler_delete` reach a bag (one record through its store, no engine) and name it on
     # the wire; every engine verb names `recipe` alone, so a `bag` there never rides (the signature carries no `bag`).
