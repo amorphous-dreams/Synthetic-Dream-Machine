@@ -1298,7 +1298,12 @@ def build_mcp(coordinator: LaresCoordinator):
         body; `resolved` reads it from the local CAS by CID and verifies it (a web2 `_canonical_uri` stays named, never
         fetched); `slot` (with `slot="#/name"`) answers one slot's span at `meme.slotText` (never `text`, the whole carrier's field); `whole` reads the whole at the lens's grain (a record fat, a pointer resolved), and on a meme the whole carrier one page at a time,
         each page cut on a slot boundary: hand `next.after` back as `after` until `next` reads null; `all=True` joins and validates all pages, retaining the first provenance and the whole base. A partial span guards honest base reuse and grants no authorization. `fields=[…]` answers the
-        named fields alone; `max_bytes` caps a record answer (the largest fields leave first and `omitted` names them). AN
+        named fields alone; `max_bytes` caps a record answer (the largest fields leave first and `omitted` names them). THE
+        TEXT ALONE (the CLI's `tiddler get <title> --text`) takes no parameter here: a seat's answer arrives as values, never
+        as bytes it must parse, so the text already rides one named key per lens: `grain="whole"` answers a record's text at
+        `tiddler.fields.text` (a pointer's body resolved), `meme=True, all=True` the recomposed carrier at `meme.text`, and
+        `meme=True, slot="#/name"` one slot's span at `meme.slotText`; a pointer whose body rode no text names its cure at
+        `pointer.cure`. AN
         ANSWER THAT LEFT THE TEXT HOME hands a card's base (`skinny:sha256-…`): a field patch takes it, a text write refuses
         `base-from-skinny`, so read fat (`grain="fat"`, a meme `grain="whole"`) before you rewrite a text. A slot answer, or a
         page short of the end, hands a partial base bound to what it read (`partial:#/a:…`, `partial:p1:…`): a slot's put
@@ -1479,8 +1484,8 @@ def build_mcp(coordinator: LaresCoordinator):
     @mcp.tool(annotations=_annotations("oracle_cast"))
     def oracle_cast(recipe: "str | None" = None, bag: "str | None" = None, coins: "list | None" = None,
                     caster: "str | None" = None, asking: "str | None" = None, uncertain: "str | None" = None,
-                    observe: "list | str | None" = None) -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///oracle.cast.throws): `_dress_from_pack` hands this tool its description and
+                    observe: "list | str | None" = None, by: "str | None" = None) -> dict:
+        # THE WORDS LIVE IN THE CARRIER (lar:///oracle.library.consults): `_dress_from_pack` hands this tool its description and
         # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         import datetime
         args: dict = dict(_meme_container("oracle_cast", recipe, bag))
@@ -1490,6 +1495,13 @@ def build_mcp(coordinator: LaresCoordinator):
                 raise SeatArgumentRefused("oracle_cast: `coins` names six line values of 6, 7, 8 or 9, bottom line first")
             args["coins"] = list(coins)
         args["caster"] = caster.strip() if isinstance(caster, str) and caster.strip() else "agent"
+        # THE KIND RIDES AS DATA: `by` names the library shelf (library/oracles/<kind>/, default e-jing); the vessel reads the
+        # method the shelf declares and refuses an unknown kind or an unrun method by name, the shelves that stand in its cure.
+        if by is not None:
+            if not isinstance(by, str) or not by.strip():
+                raise SeatArgumentRefused("oracle_cast: `by` names a library shelf, e.g. e-jing or doa")
+            if by.strip() != "e-jing":
+                args["by"] = by.strip()
         if isinstance(asking, str) and asking.strip():
             args["asking"] = asking.strip()
         if isinstance(uncertain, str) and uncertain.strip():

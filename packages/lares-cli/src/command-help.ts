@@ -18,7 +18,7 @@
  *
  * A DOOR FLIPS TO ITS CARRIERS. Where every affordance a door skins holds an affordance carrier, `helpLines` reads the baked
  * affordance pack (`@lararium/tw5/affordance-pack`) and the door's entry here burns in the same commit: one home, never two.
- * `oracle` flipped first (lar:///oracle.cast.throws).
+ * `oracle` flipped first (lar:///oracle.library.consults).
  *
  * PURE DATA, SO ANY VESSEL CAN HOLD IT. This module reads no `node:fs` and no environment; the pack rides as data.
  * The `meme` field NAMES the wiki record behind a verb door (`lar:` names; it never fetches); the `--meme`
@@ -731,7 +731,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "text), a longer one skinny; `--meme` recomposes a meme's root and slots into one sealed carrier, whole within a " +
       "page, its has-stack past it. `--skinny` reads the card; `--all` the whole at the lens's grain: a record fat, a " +
       "pointer resolved from the local CAS by CID (a web2 `_canonical_uri` stays named, never fetched), a meme's carrier " +
-      "paged on slot boundaries; `--slot` one slot. `put` PATCHES: it sets and unsets " +
+      "paged on slot boundaries; `--slot` one slot. `--text` answers the TEXT ALONE: its bytes on stdout and nothing else, a " +
+      "terminal or a pipe alike (the has line and base on stderr), so a pipe into an editor, a diff or a sweep needs no parse " +
+      "step: a record's text whole (a pointer's body resolved), with `--meme` the recomposed carrier whole (its pages joined), " +
+      "with `--slot` that slot's span; an answer that carries no text (an unread pointer body) refuses `text-unread` and names " +
+      "the read that cures it, and `--json` keeps the envelope. On `get` the flag takes no value; on `put`, `--text <words>` " +
+      "names the words written. `put` PATCHES: it sets and unsets " +
       "fields, adds and removes tags, and moves the text only where `--text` or `--file` names it; `--replace <span> --with <words>` " +
       "changes one exact span of the standing text in place, the rest of the text never crossing the wire: the span must occur " +
       "exactly once (`replace-absent` and `replace-ambiguous` name the count and the read that cures it), and the result lands as " +
@@ -768,6 +773,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares tiddler get lar:///ha.ka.ba/kahua/memory/feedback/x --recipe default --slot '#/why'   # one slot of a meme",
       "lares tiddler get lar:///ha.ka.ba/lares/api/corpus --recipe lares --meme    # the carrier on stdout (a pipe too); past a page, its has-stack",
       "lares tiddler get lar:///ha.ka.ba/lares/docs/x --recipe lares --meme --all > x.mem   # the whole carrier, paged on slot boundaries",
+      "lares tiddler get \"Room 4\" --recipe default --text | diff - room4.txt   # the text alone on stdout; the has line and base on stderr",
+      "lares tiddler get lar:///ha.ka.ba/kahua/memory/x --recipe default --meme --slot '#/why' --text   # one slot's span alone",
       "lares tiddler put \"Room 4\" --recipe default --fields '{\"todo\":\"done\"}' --tag-add reviewed --base <hash>   # a field and tag patch; the text stays",
       "lares tiddler put \"New Note\" --recipe default --create --text \"first words\" --fields '{\"tags\":\"memory\"}'",
       "date +'%F a dated note' | lares tiddler put \"Ledger\" --recipe default --append -   # lands at the end; two seats appending through the door at once both land",
@@ -814,6 +821,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--tag-remove <list>  (put) tags to remove",
       "--cut-slot <#/slot>  (put, on a meme root or slot) the slots that leave, by rooted path; repeatable. Absence never deletes: a slot the new text omits stays standing by reference (the answer names it under `kept`), and only a cut tombstones one",
       "--text <words>       (put) the new text (on a root, the whole carrier; on a slot, its body)   ·   --file <host path | ->  the new text from a host file or stdin",
+      "--text               (get, a bare flag: it takes no value there, `--text=x` refuses) the text alone on stdout, no field line and no added newline: a record whole (a pointer resolved), with --meme the whole carrier, with --slot one slot's span; refuses beside --skinny, --fields, --max-bytes; an answer carrying no text refuses text-unread, naming the read that cures it",
       "--base <hash>        (put) the hash last read (the record's, or a root's carrier hash; a slot read's partial base patches within its span); stale → conflict, nothing lands (a base guards honest reuse, never a lock)",
       "--create             (put) land only where no tiddler stands, a family's root included; an existing one answers `exists` and nothing moves",
       "--if-match <hash>    (delete | rename) the hash last read; stale → conflict, nothing moves",

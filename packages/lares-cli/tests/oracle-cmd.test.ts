@@ -56,7 +56,7 @@ describe("lares oracle cast", () => {
   test("RED: the verb stands in the command table, rides the vessel, and its help names the oracle's limit", () => {
     const row = COMMANDS.find((c) => c.name === "oracle");
     expect(row).toBeDefined();
-    expect(row?.accepts).toEqual(["asking", "bag", "caster", "coins", "face", "fresh", "observe", "realm", "recipe", "seed", "uncertain"]);
+    expect(row?.accepts).toEqual(["asking", "bag", "by", "caster", "coins", "face", "fresh", "observe", "realm", "recipe", "seed", "uncertain"]);
     expect(commandScope("oracle")).toBe("vessel");
     expect(row?.summary).toContain(ORACLE_THROW_STANDS);
     expect(helpLines("oracle").join("\n")).toContain(ORACLE_THROW_STANDS);
@@ -218,6 +218,25 @@ describe("lares oracle cast", () => {
     const two = JSON.parse((await run(argv(["cast"], { recipe: "default", seed: "a strong seed" }, { json: true }))).out).data;
     expect(one.cast.entropy).toMatch(/^seed:sha256:[0-9a-f]{16}$/);
     expect(one.cast.lines).toEqual(two.cast.lines);
+  });
+
+  test("RED: --by names the library shelf; the default shelf rides nothing, so every earlier plan keeps its bytes", () => {
+    expect(oraclePlan(argv(["cast"], { recipe: "default", asking: "which road?", by: "doa" }), AT, MINT).args)
+      .toEqual({ recipe: "default", at: AT, caster: "operator", asking: "which road?", by: "doa" });
+    expect(oraclePlan(argv(["cast"], { recipe: "default", asking: "which road?", by: "e-jing" }), AT, MINT).args)
+      .toEqual({ recipe: "default", at: AT, caster: "operator", asking: "which road?" });
+    expect(COMMANDS.find((c) => c.name === "oracle")?.accepts).toContain("by");
+  });
+
+  test("RED: a sleeping vessel reads the checkout's shelves: --by doa casts, an unknown kind refuses by name with the shelves that stand", async () => {
+    h.offline = true;
+    const doa = JSON.parse((await run(argv(["cast"], { recipe: "default", coins: "889688", by: "doa" }, { json: true }))).out).data;
+    expect(doa).toMatchObject({ offline: true, by: "doa", method: "three-coins" });
+    const r = await run(argv(["cast"], { recipe: "default", coins: "889688", by: "tarot" }, { json: true }));
+    expect(r.exit).toBe(2);
+    const message = String(JSON.parse(r.out).error.message);
+    expect(message).toContain("oracle-shelf-unknown");
+    expect(message).toContain("doa (three-coins) · e-jing (three-coins)");
   });
 
   test("the help warns that a weak seed reads back from its digest", () => {

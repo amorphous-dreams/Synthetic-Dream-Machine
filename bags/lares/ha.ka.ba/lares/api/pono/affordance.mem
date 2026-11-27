@@ -31,15 +31,21 @@ The type tag `lar:///ha.ka.ba/lares/api/pono/affordance`, written fully qualifie
 
 !! residency ~ address tag · stable seat · canon bag · role
 
-''The address.'' An affordance address takes the three-term root of the `lar:` URI law (`lar:///oracle.cast.throws`: heading, angle, dynamic), held to the seed headings at t1. A carrier never names a wildcard as its own address; `oracle.*` rides a help filter alone.
+''The address.'' An affordance address takes the three-term root of the `lar:` URI law (`lar:///oracle.library.consults`: heading, angle, dynamic), held to the seed headings at t1. A carrier never names a wildcard as its own address; `oracle.*` rides a help filter alone.
 
 ''The seat (measured in source, 2026-11-26).'' The canon walk seats a carrier only at a `uri-path` that opens on a three-term root FOLLOWED BY a path: the siting function (`carrierBaseRelPath`, `lararium-node/src/bag-paths.ts`) answers null for a bare root, the genesis cut then refuses the carrier as a title/path disagreement (`genesis-floor.ts`), and the mirror's reverse derivation (`mirrorDirFileToUri`) skips the file. The daemon working layer seats a bare-root title through the tiddler door; canon and genesis do not. So a canon carrier seats at the stable path `lar:///ha.ka.ba/lares/afford/<address terms>` and TAGS its bare address:
 
 ```memetic-wikitext
-<<has entity=`seat` name=`lar:///ha.ka.ba/lares/afford/oracle.cast.throws` params=`tags/lar:///oracle.cast.throws ~ the carrier of the oracle cast`>>
+<<has entity=`seat` name=`lar:///ha.ka.ba/lares/afford/oracle.library.consults` params=`tags/lar:///oracle.library.consults ~ the carrier of the oracle consult`>>
 ```
 
-`[tag[lar:///oracle.cast.throws]]` then gathers carrier, code, tests and every cast record under one spelling. Where the siting function learns the bare root, the carrier moves to the bare title whole, and the stable seat leaves as a forwarder.
+`[tag[lar:///oracle.library.consults]]` then gathers carrier, code, tests and every cast record under one spelling. Where the siting function learns the bare root, the carrier moves to the bare title whole, and the stable seat leaves as a forwarder.
+
+''An alias record (Domain Affordances law 4).'' Every rename of an address carries a signed alias record, so an old grant keeps pointing at what its giver meant. The record seats at the old address's stable seat in the forwarder's shape a `tiddler rename` leaves: `forward-to` names the carrier's new seat and the body transcludes it; `alias-from` and `alias-to` name the two bare addresses, and its tags hold both, so the old tag still gathers the record and every act landed before the re-key. It carries no type tag, so the bake reads it as no carrier and no door routes to it. The frame's block check seals it and the landing commit signs it.
+
+```memetic-wikitext
+<<has entity=`alias` name=`lar:///ha.ka.ba/lares/afford/oracle.cast.throws` params=`forward-to/lar:///ha.ka.ba/lares/afford/oracle.library.consults alias-from/lar:///oracle.cast.throws alias-to/lar:///oracle.library.consults ~ the oracle family's re-key, moolelo 2026-11-26`>>
+```
 
 ''The bag'' follows the package that owns the handler: `lares` for the house's own, `lararium` for mesh affordances. Placement chooses residency; the title never does.
 
@@ -79,7 +85,7 @@ Rows ride the `has` grammar and its `key/value` params; `[[…]]` brackets a val
 <<has entity=`arg` name=`asking` params=`takes/words needs/seat ~ the query, named before the throw`>>
 <<has entity=`arg` name=`fresh` params=`gate/hand ~ throw anew for the same words`>>
 <<has entity=`band` name=`asks` params=`exit/5 ~ a seat asked what a hand alone gives; the line a person runs rides the answer`>>
-<<has entity=`refusal` name=`oracle-cast-untimed` params=`cure/[[oracle.cast.throws at/<time>]] ~ the verb reads no clock`>>
+<<has entity=`refusal` name=`oracle-cast-untimed` params=`cure/[[oracle.library.consults at/<time>]] ~ the verb reads no clock`>>
 <<has entity=`example` name=`first-cast` params=`recipe/default asking/[[which lane lands first]] ~ a seat's cast at its own open fork`>>
 <<has entity=`gate` name=`coins` params=`who/hand ~ a person's own throw; a seat's coins answer asks`>>
 <<has entity=`skin` name=`cli` params=`spells/[[lares oracle cast]] ~ the terminal`>>
@@ -151,10 +157,10 @@ A verb that lands an act record MUST read its slot names, their order and their 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kahea`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/oracle-loop`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/afford/oracle.cast.throws`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/afford/oracle.library.consults`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GHfiHe8SbFPNw57Nm2ZhIT4wGCLtY9_h1Evu62G06FY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lSi-dfxA3Bfr_8JWALA_J3NMvu9pZ6hwwnf1X8Us9FA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

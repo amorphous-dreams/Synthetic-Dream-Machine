@@ -52,14 +52,14 @@ describe("the skins derive spellings by rule", () => {
   });
 
   test("RED 5: one neutral call renders runnable on every surface", () => {
-    const call = neutralCallOf("oracle.cast.throws recipe/default asking/<words>", "lar:///x.y.z");
-    expect(call.address).toBe("lar:///oracle.cast.throws");
+    const call = neutralCallOf("oracle.library.consults recipe/default asking/<words>", "lar:///x.y.z");
+    expect(call.address).toBe("lar:///oracle.library.consults");
     expect(renderCall("cli", "lares oracle cast", call)).toBe("lares oracle cast --recipe default --asking <words>");
     expect(renderCall("mcp", "oracle_cast", call)).toBe(`oracle_cast(recipe="default", asking="<words>")`);
     expect(renderCall("tw5", "action-oracle-cast", call)).toBe(`<$action-oracle-cast recipe="default" asking="<words>"/>`);
-    expect(renderCall("console", "", call)).toBe(`$tw.lares.afford.run("oracle.cast.throws", {"recipe": "default", "asking": "<words>"})`);
+    expect(renderCall("console", "", call)).toBe(`$tw.lares.afford.run("oracle.library.consults", {"recipe": "default", "asking": "<words>"})`);
     const example = parseHasRows("<<has entity=`example` name=`e` params=`recipe/default asking/[[which road first?]] fresh then/oracle.read.casts ~ x`>>")[0]!;
-    expect(renderCall("cli", "lares oracle cast", exampleCall(example, "lar:///oracle.cast.throws"))).toBe("lares oracle cast --recipe default --asking 'which road first?' --fresh");
+    expect(renderCall("cli", "lares oracle cast", exampleCall(example, "lar:///oracle.library.consults"))).toBe("lares oracle cast --recipe default --asking 'which road first?' --fresh");
   });
 
   test("RED 6: the usage spine groups a one-of choice and brackets every optional arg", () => {
@@ -69,43 +69,43 @@ describe("the skins derive spellings by rule", () => {
   });
 
   test("RED 7: the unfold read speaks the read door's own words on each surface", () => {
-    expect(unfoldRead("cli", "lar:///oracle.cast.throws", "#/refuses")).toBe("lares tiddler get lar:///oracle.cast.throws#/refuses --recipe lares --meme");
-    expect(unfoldRead("mcp", "lar:///oracle.cast.throws", "#/refuses")).toContain(`grain="slot", slot="#/refuses"`);
+    expect(unfoldRead("cli", "lar:///oracle.library.consults", "#/refuses")).toBe("lares tiddler get lar:///oracle.library.consults#/refuses --recipe lares --meme");
+    expect(unfoldRead("mcp", "lar:///oracle.library.consults", "#/refuses")).toContain(`grain="slot", slot="#/refuses"`);
   });
 });
 
 describe("addresses and wildcards (DAM law 2)", () => {
   test("RED 8: t2/t3 wildcards match; a t1 wildcard refuses by name", () => {
-    expect(addressMatcher("oracle.*")("lar:///oracle.cast.throws")).toBe(true);
-    expect(addressMatcher("oracle.cast.*")("oracle.cast.throws")).toBe(true);
-    expect(addressMatcher("custody.hand.*")("oracle.cast.throws")).toBe(false);
+    expect(addressMatcher("oracle.*")("lar:///oracle.library.consults")).toBe(true);
+    expect(addressMatcher("oracle.library.*")("oracle.library.consults")).toBe(true);
+    expect(addressMatcher("custody.hand.*")("oracle.library.consults")).toBe(false);
     expect(() => addressMatcher("*.cast.throws")).toThrow(/afford-wildcard-heading/);
   });
 
   test("RED 9: the reader answers views over records, and an unknown view throws rather than reading empty", () => {
     const records: Record<string, string> = {
-      "lar:///oracle.cast.throws#/takes": TAKES,
-      "lar:///oracle.cast.throws#/skins/cli": "<<has entity=`skin` name=`cli` params=`spells/[[lares oracle cast]]`>>",
+      "lar:///oracle.library.consults#/takes": TAKES,
+      "lar:///oracle.library.consults#/skins/cli": "<<has entity=`skin` name=`cli` params=`spells/[[lares oracle cast]]`>>",
     };
     const textOf = (t: string): string | undefined => records[t];
-    expect(affordView(textOf, "lar:///oracle.cast.throws", "spells", "cli", "")).toEqual(["lares oracle cast"]);
-    expect(affordView(textOf, "lar:///oracle.cast.throws", "spells", "mcp", "")).toEqual([]);
-    expect(JSON.parse(affordView(textOf, "lar:///oracle.cast.throws", "rows", "cli", "#/takes")[2]!)).toMatchObject({ name: "asking", spell: "--asking", value: "words" });
-    expect(() => affordView(textOf, "lar:///oracle.cast.throws", "nope", "cli", "")).toThrow(/afford-view-unknown/);
+    expect(affordView(textOf, "lar:///oracle.library.consults", "spells", "cli", "")).toEqual(["lares oracle cast"]);
+    expect(affordView(textOf, "lar:///oracle.library.consults", "spells", "mcp", "")).toEqual([]);
+    expect(JSON.parse(affordView(textOf, "lar:///oracle.library.consults", "rows", "cli", "#/takes")[2]!)).toMatchObject({ name: "asking", spell: "--asking", value: "words" });
+    expect(() => affordView(textOf, "lar:///oracle.library.consults", "nope", "cli", "")).toThrow(/afford-view-unknown/);
   });
 });
 
 describe("the canon seat (weaver#1: canon seats no bare root)", () => {
   test("RED 10: a carrier's title carries its address, at the bare root or at the stable afford seat", () => {
-    expect(addressOfTitle("lar:///oracle.cast.throws")).toBe("lar:///oracle.cast.throws");
-    expect(addressOfTitle("lar:///ha.ka.ba/lares/afford/oracle.cast.throws")).toBe("lar:///oracle.cast.throws");
+    expect(addressOfTitle("lar:///oracle.library.consults")).toBe("lar:///oracle.library.consults");
+    expect(addressOfTitle("lar:///ha.ka.ba/lares/afford/oracle.library.consults")).toBe("lar:///oracle.library.consults");
     expect(addressOfTitle("lar:///ha.ka.ba/lares/api/pono/affordance")).toBeNull();
   });
 
   test("RED 11: the canon kahea spelling resolves; `fresh/true` reads as a switch", () => {
     expect(kaheaTitles("<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container`>>"))
       .toEqual(["lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container"]);
-    const call = neutralCallOf("oracle.cast.throws fresh/true", "lar:///x.y.z");
+    const call = neutralCallOf("oracle.library.consults fresh/true", "lar:///x.y.z");
     expect(renderCall("cli", "lares oracle cast", call)).toBe("lares oracle cast --fresh");
   });
 });

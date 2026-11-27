@@ -41,12 +41,14 @@ describe("help flags", () => {
     }
   });
 
-  test("★ the top-level list fits one screen: <= 66 lines, each <= 100 chars, every verb named ★", async () => {
+  test("★ the top-level list reads as the first rung of progressive display: one line per door, every verb named once ★", async () => {
+    // The width law lives at the carrier (a role holds 72 characters or fewer, api/pono/affordance), and depth unfolds per door
+    // (`lares <door> --help`, then a slot, then the whole), so the list names each door on one line and caps no terminal width.
     const r = await run(["help"]);
-    const lines = r.out.split("\n");
-    expect(lines.length).toBeLessThanOrEqual(66);
-    for (const l of lines) expect(l.length, l).toBeLessThanOrEqual(100);
-    for (const c of COMMANDS) expect(r.out, c.name).toMatch(new RegExp(`^\\s+(✍ )?${c.name}\\s`, "m"));
+    for (const c of COMMANDS) {
+      const rows = r.out.split("\n").filter((l) => new RegExp(`^\\s+(✍ )?${c.name}\\s`).test(l));
+      expect(rows.length, c.name).toBe(1);
+    }
   });
 
   test("the bundle verbs name the roster sealed under the keep key, never a cleartext bundle (bundle-manifest.ts)", () => {
