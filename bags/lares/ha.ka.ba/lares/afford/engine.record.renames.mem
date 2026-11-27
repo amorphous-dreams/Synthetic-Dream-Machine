@@ -1,0 +1,126 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.record.renames`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "move one record to a new title; references follow, the old one forwards"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.record.renames", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.record.renames"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.record.renames"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.record.renames ~ a move over TiddlyWiki's own relink, the old title left as a forwarder
+
+A rename moves one record (a meme root takes its slots along) over TiddlyWiki's own relink: every reference the engine's relinkers rewrite follows (the core relinks tags and list fields; wikitext links follow only where a relink plugin mounts), and the old title stays as a forwarder, a pointer tiddler (`forward-to`) whose text transcludes the new one, so old roads keep answering. The address stays a candidate until the operator reads the landing's list.
+
+The move runs in one wiki's engine and lands in its working layer alone, so it names a `recipe` and never a bag (`wiki-not-anchored`). A record resting in another layer (or one the shore still carries, with no layer named yet) refuses `rename-source-layer`; referrers outside the working layer refuse `rename-referrers-unreachable`, a count and never titles; a standing target refuses `rename-target-stands` and names the delete that clears it; a slot refuses `slot-without-root` and names its root; a `lar:` title another layer holds too takes a hand alone. A `$:/` title on either side refuses `rename-system-title`, since a forwarder would answer as the setting: put the new title, then delete the standing one.
+
+An answer names only records this face reads and counts the rest (`withheld`); a referrer that stays home keeps its fields (`skipped`). `base` carries the hash last read: a record that moved past it answers `conflict` and nothing moves.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ a-rename · under-a-base
+
+```memetic-wikitext
+<<has entity=`example` name=`a-rename` params=`title/[[Room 4]] to/[[Room Four]] recipe/default ~ references follow; the old title stays as a forwarder`>>
+<<has entity=`example` name=`under-a-base` params=`title/[[Room 4]] to/[[Room Four]] recipe/default base/<hash> ~ a stale base moves nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ title · to · recipe · face · base · if-match
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`title` params=`takes/title needs/required seat/1 as/<old> ~ the record moved, a meme root with its slots`>>
+<<has entity=`arg` name=`to` params=`takes/title needs/required seat/2 as/<new> ~ the title it moves to`>>
+<<has entity=`arg` name=`recipe` params=`takes/slug needs/required ~ the wiki whose engine relinks; default names the worn face's daemon wiki`>>
+<<has entity=`arg` name=`base` params=`takes/hash ~ the hash last read; a stale one answers conflict and nothing moves`>>
+<<has entity=`arg` name=`if-match` params=`takes/hash skins/cli ~ the base under its older terminal spelling`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ocap/write-on-the-working-layer ~ the move, its forwarder and every relinked referrer land in the working layer through the put law`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ wiki-not-anchored · rename-same-title · rename-source-layer · rename-referrers-unreachable · rename-target-stands · rename-relink-impossible · tiddler-rename-in-a-family · slot-without-root · rename-system-title · conflict
+
+```memetic-wikitext
+<<has entity=`refusal` name=`wiki-not-anchored` params=`cure/[[engine.record.renames title/<old> to/<new> recipe/default]] ~ a rename runs in a wiki's engine; a bag names no wiki`>>
+<<has entity=`refusal` name=`rename-same-title` params=`~ the record already stands at that title; name a different new title`>>
+<<has entity=`refusal` name=`rename-source-layer` params=`~ the record rests in a layer other than the working one; the move lands in the working layer alone`>>
+<<has entity=`refusal` name=`rename-referrers-unreachable` params=`~ referrers outside the working layer cannot follow; the answer counts them and names none`>>
+<<has entity=`refusal` name=`rename-target-stands` params=`cure/[[engine.record.removes title/<new> recipe/default]] ~ a record already stands at the new title; clear it first`>>
+<<has entity=`refusal` name=`rename-relink-impossible` params=`~ a reference cannot quote the new title, so it could not follow; the answer names the titles this face reads`>>
+<<has entity=`refusal` name=`tiddler-rename-in-a-family` params=`~ a slot moves with its root, never alone`>>
+<<has entity=`refusal` name=`slot-without-root` params=`cure/[[engine.record.renames title/<root> to/<new> recipe/default]] ~ a slot moves with its root; the refusal names the root`>>
+<<has entity=`refusal` name=`rename-system-title` params=`cure/[[engine.record.puts title/<new> recipe/default text/<words>]] ~ a forwarder would answer as the setting; put the new title, then delete the standing one`>>
+<<has entity=`refusal` name=`conflict` params=`cure/[[engine.record.reads title/<old> recipe/default]] ~ the record moved past the base; read again, then rename with the live base`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ renamed · absent · refused · conflict
+
+```memetic-wikitext
+<<has entity=`band` name=`renamed` params=`exit/0 fields/[[recipe title to decision forwarder relinked moved skipped withheld hash]] ~ the record moved, its referrers relinked and the forwarder stands`>>
+<<has entity=`band` name=`absent` params=`exit/3 ~ no record stands at the old title`>>
+<<has entity=`band` name=`refused` params=`exit/4 fields/[[refusal why consequence unreachable]] ~ a fence refused by name; nothing moved`>>
+<<has entity=`band` name=`conflict` params=`exit/4 fields/[[hash]] ~ the base read stale; nothing moved`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares tiddler rename
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares tiddler rename]] ~ the terminal; the old and new titles ride as <old> <new>`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · wiki-surface-scout
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WQumB75JN6ehltMI9ntnKTXVGNmZIAgGb1N6ZWEycsM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -103,6 +103,32 @@ describe("verb-table-parity — the CLI half of the tiddler door's one table", (
   }
 });
 
+describe("the door's words read its carriers (lar:///engine.record.reads · puts · removes · renames, candidate)", () => {
+  test("the tiddler row's brief and account come from the baked pack, and an unknown verb refuses with the carriers' index", async () => {
+    const row = COMMANDS.find((c) => c.name === "tiddler")!;
+    expect(row.brief).toBe("delete · get · put · rename");
+    expect(row.summary).toContain("lares tiddler get");
+    expect(row.summary).toContain("lares tiddler rename");
+    const said: string[] = [];
+    const err = vi.spyOn(console, "error").mockImplementation((...parts: unknown[]) => { said.push(parts.map(String).join(" ")); });
+    try {
+      expect(await cmdTiddler(argv("tiddler", ["zz-no-such-verb"], {}, { json: false }))).toBe(2);
+    } finally { err.mockRestore(); }
+    expect(said.join("\n")).toContain("Read one: lares tiddler <verb> --help");
+    expect(said.join("\n")).toContain("lares tiddler get  read one record or meme by title");
+  });
+
+  test("`tiddler <verb> --help` prints that verb's carrier whole, its usage spine first", async () => {
+    for (const verb of ["get", "put", "delete", "rename"]) {
+      const out: string[] = [];
+      const log = vi.spyOn(console, "log").mockImplementation((...parts: unknown[]) => { out.push(parts.map(String).join(" ")); });
+      try { expect(await dispatch(["tiddler", verb, "--help"])).toBe(0); } finally { log.mockRestore(); }
+      expect(out[0], verb).toMatch(new RegExp(`^usage: lares tiddler ${verb} `));
+      expect(out.join("\n"), verb).toContain(`lar:///ha.ka.ba/lares/afford/engine.record.`);
+    }
+  });
+});
+
 describe("the argument law, no daemon", () => {
   test("wiki render output takes a distinct effectful route", () => {
     const plan = wikiRenderPlan(argv("wiki", ["[tag[export]]"], {

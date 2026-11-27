@@ -22,7 +22,8 @@
  *   routes      per surface: the skin's spelling → address (cli `oracle cast`, mcp `oracle_cast`, tw5 `action-oracle-cast`,
  *               console the bare address), each derived from the carrier's `#/skins`, no hand table
  *   doors       per CLI door (the spelling's first word): its addresses, the brief the top-level index prints, the lines
- *               `lares <door> --help` and its usage refusal print
+ *               `lares <door> --help` and its usage refusal print; a `door/part` skin (one verb of a door that keeps its
+ *               own table, `wiki filter`) routes and gathers no door entry
  *   index       the `lares --help` lines of every carrier, through the index template
  *   shelves     per oracle kind: the shelf index's title and the `method` it declares (`three-coins`)
  *   hash        sha256 over the pack's canonical bytes with the hash field absent
@@ -149,6 +150,8 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
   const routes: Record<string, Record<string, string>> = Object.fromEntries(AFFORD_SURFACES.map((s) => [s, {}]));
   /** Each address's own cli spelling (its skin row's `spells/`), apart from the `also/` spellings routed beside it. */
   const ownCli = new Map<string, string>();
+  /** The cli spellings whose skin row reads `door/part`: one verb of a door whose other verbs keep the door's own table. */
+  const partCli = new Set<string>();
   for (const title of tagged) {
     const address = addressOfTitle(title)!;
     // ONE CLOSED SLOT SET: a carrier slot the set never names would bake silently unrendered, so it refuses the bake by name.
@@ -188,6 +191,7 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
       }
       routes[surface]![spelling] = address;
       if (surface === "cli") ownCli.set(address, spelling);
+      if (surface === "cli" && row.params["door"] === "part") partCli.add(spelling);
       // A skin row may name further spellings the one door answers (`also/[[lares shore keep-records]]`, comma-joined): two
       // words for one act ride one address, each routed to it. Another carrier claiming one refuses the bake the same way.
       for (const alias of (row.params["also"] ?? "").split(",").map((a) => a.trim().replace(/^lares\s+/, "")).filter(Boolean)) {
@@ -209,9 +213,12 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
     routes["console"]![bare] = address;
   }
 
-  // A CLI door gathers every address whose cli skin spells beneath it: one address renders its whole, several an index.
+  // A CLI door gathers every address whose cli skin spells beneath it: one address renders its whole, several an index. A
+  // spelling whose skin row reads `door/part` routes to its carrier (its own `--help` reads the carrier's whole) and gathers no
+  // door entry: the door's other verbs keep the door's own table, and the door flips whole once every verb holds a carrier.
   const doors: Record<string, { addresses: string[]; brief: string; help: string[] }> = {};
   for (const [spelling, address] of Object.entries(routes["cli"]!).sort(([a], [b]) => a.localeCompare(b))) {
+    if (partCli.has(spelling)) continue;
     const door = spelling.split(/\s+/)[0]!;
     const entry = (doors[door] ??= { addresses: [], brief: "", help: [] });
     if (!entry.addresses.includes(address)) entry.addresses.push(address);

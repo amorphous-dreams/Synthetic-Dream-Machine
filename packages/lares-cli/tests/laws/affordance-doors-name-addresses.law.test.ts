@@ -3,7 +3,8 @@
  *
  * Inputs: the baked pack's routes against the live tables: `COMMANDS` and each door's verb table (cli), the `@mcp.tool`
  * functions of the seat (mcp), the widget modules (tw5). A skin naming a door no table holds reads red; a flipped door whose
- * verbs some carrier leaves unrouted reads red (a door flips whole). Two carriers claiming one spelling refuse at the bake
+ * verbs some carrier leaves unrouted reads red (a door flips whole; a `door/part` skin gathers no door entry, so its door keeps
+ * its own table and counts legacy until every verb holds a carrier). Two carriers claiming one spelling refuse at the bake
  * (`affordance-door-claimed-twice`), before this law reads. Seed: `oracle cast` routes to lar:///oracle.library.consults.
  * Control: a planted orphan skin reads red.
  *
@@ -16,7 +17,7 @@ import { describe, expect, test } from "vitest";
 import type { AffordancePack } from "@lararium/tw5/affordance-pack";
 import { COMMANDS } from "../../src/bin/lares.js";
 import { flattenVerbs } from "../../src/verb-table.js";
-import { REBAKE, SEED_ADDRESS, cliRoutes, pack } from "./affordance-harness.js";
+import { REBAKE, SEED_ADDRESS, cliRoutes, pack, partDoors } from "./affordance-harness.js";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 const SEAT = readFileSync(join(REPO, "packages/lararium-sensorium/scripts/lares_mcp.py"), "utf8");
@@ -95,6 +96,21 @@ describe("W1 · every door names one address; every skin names a live door", () 
       kahua_propose: "lar:///face.draft.proposes", kahua_stage: "lar:///face.draft.stages", kahua_get: "lar:///face.draft.reads",
       kapae: "lar:///sense.kapae.mutes", un_kapae: "lar:///sense.kapae.restores",
     });
+  });
+
+  test("SEED: the core verbs route to their carriers on both skins; `wiki filter` rides as one part of the wiki door", () => {
+    const routes = pack().routes;
+    expect(routes["cli"], REBAKE).toMatchObject({
+      "tiddler get": "lar:///engine.record.reads", "tiddler put": "lar:///engine.record.puts", "tiddler delete": "lar:///engine.record.removes",
+      "tiddler rename": "lar:///engine.record.renames", "wiki filter": "lar:///engine.filter.pages",
+    });
+    expect(routes["mcp"], REBAKE).toMatchObject({
+      tiddler_get: "lar:///engine.record.reads", tiddler_put: "lar:///engine.record.puts", tiddler_delete: "lar:///engine.record.removes",
+      wiki_filter: "lar:///engine.filter.pages",
+    });
+    expect(pack().doors["tiddler"]?.addresses.length, REBAKE).toBe(4);
+    expect(pack().doors["wiki"], "a `door/part` skin gathers no door entry: the wiki door keeps its own table").toBeUndefined();
+    expect(partDoors()).toEqual(["wiki"]);
   });
 
   test("★ every skin in the pack names a door a live table holds ★", () => {
