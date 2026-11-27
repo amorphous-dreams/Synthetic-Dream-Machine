@@ -10,7 +10,7 @@
  * agent_type) to distinguish subagent calls from main-thread calls"). So a call carrying a non-empty `agent_id` stands a
  * tasked spirit's, and a heavy verb in it refuses; a main-thread call (the familiar) passes. A seat the harness never wraps
  * (a Codex seat, a hand-typed shell, a headless `claude -p` lane) meets the TOOL WALL instead: the heavy tools refuse to run
- * outside a floor slot (`tools/floor-lock.mjs`), so this hook stays the early, polite wall and never the only one.
+ * outside a held run on the floor (`tools/floor-lock.mjs`), so this hook stays the early, polite wall and never the only one.
  *
  * ── HOW IT READS A COMMAND ──────────────────────────────────────────────────────────────────────
  * stash-guard's quote-aware lexer: every word, `bash -c`, `eval`, `$( )`, backticks, heredocs fed to a shell. EVERY word
@@ -39,7 +39,7 @@ const HEAVY_TOOLS_SH = new Set(['battery.sh', 'witness-all.sh', 'typecheck-witne
 /** A raw command naming any of these, when the lexer cannot read it, refuses for a sub-agent. */
 const HEAVY_RAW = /\b(pnpm|npm|npx|vitest|tsc|playwright|docker|kukulu|provision-worktree|bench-gate|battery|witness-all|floor-run)\b|node\s+--test/;
 
-export const REASON_HEAD = 'floor-guard: refused — a tasked spirit never runs builds, tests or image builds; only the familiar holds the floor, two heavy runs at a time (operator, 2026-11-25)';
+export const REASON_HEAD = 'floor-guard: refused — a tasked spirit never runs builds, tests or image builds; only the familiar holds the floor, each run admitted by measured headroom (operator, 2026-11-25)';
 
 const name = (w) => basename(String(w).replace(/^\\/, ''));
 const rest = (cmd, k) => cmd.slice(k + 1);

@@ -12,9 +12,10 @@
  *                        with no end. The record (`exitCode`, `signalCode`) outlives the event, so the order two
  *                        children exit in never decides.
  *   floorEnv(lock, extra) the environment a spawned floor tool reads: this process's own, less every mark a live floor
- *                        or a test runner hands down, plus the per-test lock. Every slot path derives from that lock
- *                        (battery.sh --lock-paths), the reservations sit beside it, and the disk floor reads 0 so the
- *                        box's real C: never admits, holds or stops a test's run.
+ *                        or a test runner hands down, plus the per-test door. The floor directory derives from that
+ *                        door (battery.sh --floor-dir), each run's lock and reservation sit in it, the disk floor reads
+ *                        0 and the load per core reads a million, so neither the box's real C: nor its real load ever
+ *                        admits, holds or stops a test's run.
  */
 
 /** The names a child must never inherit from the floor (or the test runner) that happens to run the test. */
@@ -22,14 +23,15 @@ export const FLOOR_MARKS = Object.freeze([
   'LARES_BATTERY_LOCK', // the live floor's lock: every test names its own
   'LARES_BIN', // the live house's doors: a floor test's ledger lands in its mirror
   'LARES_DISK_MIN_C_GB', 'LARES_DISK_MIN_ROOT_GB', 'LARES_DISK_MAX_SPIRITS', 'LARES_DISK_MAX_CODEX', // the box's disk limits
+  'LARES_FLOOR_LOAD_PER_CORE', // the box's load headroom
   'NODE_TEST_CONTEXT', // the runner's own mark: a `node --test` child that inherits it skips its files
 ]);
 
-/** The hermetic environment for one test's floor: `lock` names slot 1 (an absolute temp path), `extra` rides last. */
+/** The hermetic environment for one test's floor: `lock` names the door (an absolute temp path), `extra` rides last. */
 export function floorEnv(lock, extra = {}, base = process.env) {
   const env = {};
   for (const [k, v] of Object.entries(base)) if (!FLOOR_MARKS.includes(k)) env[k] = v;
-  return { ...env, LARES_BATTERY_LOCK: lock, LARES_DISK_MIN_C_GB: '0', ...extra };
+  return { ...env, LARES_BATTERY_LOCK: lock, LARES_DISK_MIN_C_GB: '0', LARES_FLOOR_LOAD_PER_CORE: '1000000', ...extra };
 }
 
 /** True once the child has gone, by its own record (an exit code or the signal that ended it). */
