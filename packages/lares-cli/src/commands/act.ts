@@ -146,7 +146,9 @@ export function actArgsOf(args: ParsedArgs, verb: string | null, params: Readonl
   const options: Record<string, string> = {};
   const flags: Record<string, boolean> = {};
   for (const [key, value] of Object.entries(params)) {
-    if (key === "mu" || key === "recipe") continue;
+    // A PREVIEW RIDES THE MU CARRY ALONE, which the call door's gate reads: a bound `dry-run` (a row a layer added) never
+    // becomes the runner's flag.
+    if (key === "mu" || key === "recipe" || key === "dry-run") continue;
     if (value === true) flags[key] = true;
     else if (value === false || value === undefined || value === null) continue;
     else options[key] = String(value);

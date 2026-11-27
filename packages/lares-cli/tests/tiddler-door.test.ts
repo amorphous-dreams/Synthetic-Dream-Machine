@@ -47,6 +47,7 @@ vi.mock("../src/env.js", async (orig) => ({
 
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { cmdCall, callPlan, isCallHead, type CallSources } from "../src/commands/call.js";
+import { actArgsOf } from "../src/commands/act.js";
 import { DoorUsage } from "../src/commands/door-call.js";
 import { cmdWiki, wikiRenderPlan } from "../src/commands/wiki.js";
 import { cmdKahua } from "../src/commands/kahua.js";
@@ -258,6 +259,13 @@ describe("the call door plans one call: {verb, params, surface: cli}", () => {
         out.mockClear();
       }
     } finally { h.replyFor = null; err.mockRestore(); out.mockRestore(); }
+  });
+
+  test("★ a preview rides the mu carry alone: a bound dry-run param (a row a layer added) never becomes the runner's flag; CONTROL: a _ carry does ★", () => {
+    const line = argv("act", [], {}, {});
+    expect(actArgsOf(line, null, { uri: "lar:///t", "dry-run": true }, null).flags["dry-run"]).toBeUndefined();
+    expect(actArgsOf(line, "ADD", { title: "T", "dry-run": true }, null).flags["dry-run"]).toBeUndefined();
+    expect(actArgsOf(line, "ADD", { title: "T" }, "_").flags["dry-run"]).toBe(true);
   });
 
   test("★ an old flag on a call verb refuses by name before anything runs; the burned `tiddler` door answers unknown command ★", async () => {

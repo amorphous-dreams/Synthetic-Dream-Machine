@@ -1727,8 +1727,11 @@ def build_mcp(coordinator: LaresCoordinator):
                 raise SeatArgumentRefused(f"mu-cell-empty: {address} walks no dry path in this seat, so a {carry} call lands nothing; "
                                           f"the plain call (no mu) lands the act")
             return _run_seat(address, out.get("params") or {})
-        if tool in ("put", "delete", "rename"):
-            refusal = unlanded_refusal(tool, out)
+        # AN UNLANDED WRITE RAISES BY THE CLASS THAT ANSWERED: the record write's address, whichever tool (or `act`) asked.
+        writer = tool if tool in ("put", "delete", "rename") else next(
+            (name for name in ("put", "delete", "rename") if answered in RECORD_ADDRESSES[name]), None)
+        if writer is not None:
+            refusal = unlanded_refusal(writer, out)
             if refusal is not None:
                 raise uds.LaresVerbError(refusal)
         if isinstance(out, dict) and out.get("handler") == "host":
