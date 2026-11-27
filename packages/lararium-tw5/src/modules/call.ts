@@ -35,8 +35,10 @@ module-type: startup
  *
  * DRY PREVIEWS EVERY WRITE AND ACT (landing 7): a carry holding `_` reaches a seat that walks its door's law to the last step
  * and lands nothing (`CallSeat.dry`), and the answer carries the carrier's seat hints (`hints`: its `#/gate` rows and any
- * `signs` row). A seat that walks no dry path, or a door the host runs, refuses the dry carry `mu-cell-empty` and names the
- * plain call (`dryUnwalked`), so a preview never lands as a write, whatever a layer above tables.
+ * `signs` row). A registry seat that walks no dry path refuses the dry carry `mu-cell-empty` and names the plain call
+ * (`dryUnwalked`); a host or seat door takes the carry only where its row names `dry/walks`, and the door's own code decides
+ * past that (the terminal's `HostDoor.dry`, the seat's `SEAT_DRY`), refusing `mu-cell-empty` where it walks none. So a preview
+ * never lands as a write, whatever a layer above tables.
  *
  * In the VM the call dispatches through `$tw.lares.callDoor`, the host's seat of the registry; where no host seats one, the
  * call answers its plan (`handler/host`, the bound params), so a reader sees what would run.
@@ -45,7 +47,9 @@ module-type: startup
  * reads host files or asks y/N) and `handler/seat` (an act whose handler rests in the MCP seat's own process) answer the bound
  * params for that host or seat to run; a row naming neither reaches the registry. The call's own surface row decides, and a
  * surface with no row of its own takes `handler/host` where any row names it. A host door that walks a dry path says so on its
- * row (`dry/walks`), and only then does a `_` carry reach it.
+ * row (`dry/walks`), and only then does the plan carry a `_` to it; the row is testimony, never the gate. Whether a host or seat
+ * door previews is a fact of its own code: the terminal's door (`HostDoor.dry`) and the seat (`SEAT_DRY`) refuse a `_` carry
+ * `mu-cell-empty` at any door whose code walks none, as `runPlan` reads `CallSeat.dry` for the registry.
  *
  * THE MACHINA'S VOICE (landing 21): every answer's human line and every call refusal render through Iris-Sprite's templates
  * (`lar:///ha.ka.ba/lares/spirit/iris-sprite`, `#/answer/template` and `#/refusal/template`), read through the caller's stack

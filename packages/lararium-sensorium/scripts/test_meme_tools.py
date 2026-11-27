@@ -157,11 +157,12 @@ def _said(result) -> str:
 
 
 def test_a_refused_write_reaches_the_caller_naming_its_reason(daemon):
-    daemon.error = {"errorMessage": "put-conflict: nothing landed at the meme · the record reads hash sha256-record-live now",
-                    "refusal": {"reason": "put-conflict"}}
+    # The vessel answers a stale base as a receipt naming its decision; the seat raises it by name with the live hash.
+    daemon.output = {"has": "<<~ has name=`" + _URI + "` params=`decision/conflict`>>", "title": _URI, "decision": "conflict", "hash": "sha256-record-live"}
     result = _seat_call("put", {"title": _URI, "text": "the body", "recipe": "sdm", "base": "sha256-stale"})
     assert result.is_error
     assert "put-conflict" in _said(result) and "sha256-record-live" in _said(result)
+    daemon.output = None
     daemon.error = {"errorMessage": "stage-path-shape: the stage meme path reads no segment", "refusal": {"reason": "stage-path-shape"}}
     result = _seat_call("put", {"title": _URI, "text": "the body", "recipe": "default"})
     assert result.is_error and "stage-path-shape" in _said(result)

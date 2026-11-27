@@ -287,6 +287,127 @@ PROJECT_TARGETS = ("md", "html", "tid", "json")
 # refused would only stand as surface. A seat names the command for the operator to run on their own terminal.
 SENSE_HAND_VERBS = ("harden", "retire", "un-retire", "purge", "teardown")
 
+# THE SEAT ACTS THAT WALK A DRY PATH, by address: whether a door can preview is a fact of its code, never a carrier's claim. A
+# `_` carry the vessel lets through to a seat act outside this set refuses `mu-cell-empty` here and runs nothing. Empty today:
+# no seat handler previews.
+SEAT_DRY: frozenset = frozenset()
+
+# THE RECORD TOOLS' OWN ADDRESSES: each record tool sends its address, never its word, so no spelling a layer seats can turn a
+# tool into another act; and an answer from any other address refuses by name (`tool-class-crossed`).
+RECORD_ADDRESSES = {
+    "get": ("lar:///engine.record.reads", "lar:///engine.filter.pages"),
+    "put": ("lar:///engine.record.puts",),
+    "delete": ("lar:///engine.record.removes",),
+    "rename": ("lar:///engine.record.renames",),
+}
+
+# A record write the vessel answers without landing: its receipt names the decision, and the seat raises it by name.
+UNLANDED = ("conflict", "exists", "refused")
+
+
+def record_address(tool: str, params: dict) -> str:
+    """The address a record tool sends: `get` reads by filter where it names one, else by title (the meme listing included)."""
+    if tool == "get":
+        return RECORD_ADDRESSES["get"][1] if params.get("filter") is not None else RECORD_ADDRESSES["get"][0]
+    return RECORD_ADDRESSES[tool][0]
+
+
+def answered_address(out) -> "str | None":
+    """The address an answer names: a plan's `address`, else the carrier its stamp names (a seat title or a bare root)."""
+    if not isinstance(out, dict):
+        return None
+    if isinstance(out.get("address"), str) and out["address"]:
+        return out["address"]
+    carrier = (out.get("carrier") or {}).get("carrier") if isinstance(out.get("carrier"), dict) else None
+    if not isinstance(carrier, str):
+        return None
+    m = re.search(r"/afford/([^/#]+)$", carrier) or re.fullmatch(r"lar:///([^/#]+)", carrier)
+    return f"lar:///{m.group(1)}" if m else None
+
+
+def unlanded_refusal(tool: str, out) -> "str | None":
+    """The words a record write's unlanded receipt raises: `<tool>-<decision>`, the has line, the refusal and its consequence."""
+    if not isinstance(out, dict) or out.get("decision") not in UNLANDED:
+        return None
+    said = [f"{tool}-{out['decision']}: nothing landed"]
+    for key in ("refusal", "consequence", "hash", "observed"):
+        if out.get(key) is not None:
+            said.append(f"{key} {out[key] if isinstance(out[key], str) else json.dumps(out[key])}")
+    if isinstance(out.get("has"), str):
+        said.append(out["has"])
+    return " · ".join(said)
+
+
+def whole_carrier(first, fetch):
+    """THE WHOLE CARRIER, PAGE BY PAGE (`read-page-mismatch`): a meme read whole that answers past one page follows its cursor
+    to the end, and every page must name the same carrier, provenance and hash, in order; any break refuses by name."""
+    if not isinstance(first, dict) or not isinstance(first.get("meme"), dict) or not isinstance(first.get("next"), dict):
+        return first
+
+    def refuse():
+        raise SeatArgumentRefused("read-page-mismatch: whole carrier pages failed validation; read again")
+
+    origin_keys = ("title", "recipe", "bag", "lens", "face", "worn", "floor")
+    origin = tuple(first.get(k) for k in origin_keys)
+    first_meme = first["meme"]
+
+    def provenance(answer):
+        has = answer.get("has")
+        if not isinstance(has, str) or not has.startswith("<<~ has "):
+            refuse()
+        return tuple(re.findall(r"(?:^|\s)(?:layer|floor)/[^\s`]+", has))
+
+    first_provenance = provenance(first)
+    page, parts, seen, expected_hash, count, index = first, [], set(), None, None, 1
+    while True:
+        m = page.get("meme")
+        if (not isinstance(m, dict) or not isinstance(m.get("text"), str) or not isinstance(m.get("canonicalHash"), str)
+                or not m["canonicalHash"] or not isinstance(m.get("uri"), str) or not m["uri"]):
+            refuse()
+        if (provenance(page) != first_provenance or tuple(page.get(k) for k in origin_keys) != origin
+                or m.get("uri") != first_meme.get("uri") or m.get("bytes") != first_meme.get("bytes")):
+            refuse()
+        mark = m["canonicalHash"]
+        match = re.fullmatch(r"partial:p([1-9][0-9]*):(.+)", mark)
+        bare = match.group(2) if match else mark
+        if mark.startswith("partial:") and (not match or int(match.group(1)) != index):
+            refuse()
+        expected_hash = bare if expected_hash is None else expected_hash
+        if bare != expected_hash:
+            refuse()
+        info = m.get("page")
+        if info is not None:
+            if not isinstance(info, dict) or info.get("page") != index or not isinstance(info.get("pages"), int) or info["pages"] < index:
+                refuse()
+            count = info["pages"] if count is None else count
+            if info["pages"] != count:
+                refuse()
+        elif index > 1:
+            refuse()
+        parts.append(m["text"])
+        nxt = page.get("next")
+        if nxt is None:
+            if match or (count is not None and count != index) or len("".join(parts).encode("utf-8")) != m.get("bytes"):
+                refuse()
+            break
+        if (not isinstance(nxt, dict) or nxt.get("grain") != "whole" or not isinstance(nxt.get("after"), str) or not nxt["after"]
+                or not match or count is None or index >= count):
+            refuse()
+        cursor = nxt["after"]
+        if cursor in seen:
+            refuse()
+        seen.add(cursor)
+        page = fetch(cursor)
+        if not isinstance(page, dict):
+            refuse()
+        index += 1
+    if index == 1:
+        return first
+    whole = {**first_meme, "text": "".join(parts), "canonicalHash": expected_hash}
+    whole.pop("page", None)
+    has = re.sub(r"(?<= )base/[^\s`]+", lambda _: f"base/{expected_hash}", first["has"], count=1)
+    return {**first, "has": has, "meme": whole, "next": None}
+
 class SeatArgumentRefused(HouseRefusal, ValueError):
     """A tool's own argument guard: the call named something this seat cannot route (no container, a bare-slug law, ...)."""
 
@@ -1588,13 +1709,28 @@ def build_mcp(coordinator: LaresCoordinator):
         kwargs = {k.replace("-", "_"): v for k, v in (bound or {}).items()}
         return handler(**{k: v for k, v in kwargs.items() if k in names})
 
-    def _door(word: str, params: dict):
-        """THE ONE CALL (landing 11): every tool sends `{verb, params}` to the vessel's `call`; the vessel resolves the word or
-        address through the caller's stack, binds the params against the carrier's live #/takes, checks the hand, and answers.
-        A `handler/seat` answer runs here; a `handler/host` answer names the terminal's command, since a terminal runs that door."""
+    def _door(word: str, params: dict, tool: "str | None" = None):
+        """THE ONE CALL (landing 11): every tool sends `{verb, params}` to the vessel's `call`; the vessel resolves the address
+        through the caller's stack, binds the params against the carrier's live #/takes, checks the hand, and answers.
+        A record tool sends its own address and takes an answer from that class alone (`tool-class-crossed`), and a record write
+        the vessel answers without landing raises by name. A `handler/seat` answer runs here, a `_` carry only where the seat
+        act walks a dry path in code (`SEAT_DRY`); a `handler/host` answer names the terminal's command."""
         out = _meme_wire("call", {"verb": word, "params": params, "surface": "mcp"})
+        answered = answered_address(out)
+        if tool is not None and answered is not None and answered not in RECORD_ADDRESSES[tool]:
+            raise SeatArgumentRefused(f"tool-class-crossed: `{tool}` answers from {' or '.join(RECORD_ADDRESSES[tool])} alone, and the "
+                                      f"stack answered {answered}; run that affordance by name with act(address=\"{answered}\")")
         if isinstance(out, dict) and out.get("handler") == "seat":
-            return _run_seat(str(out.get("address") or word), out.get("params") or {})
+            address = str(out.get("address") or word)
+            carry = (out.get("mu") or {}).get("carry") if isinstance(out.get("mu"), dict) else None
+            if isinstance(carry, str) and "_" in carry and address not in SEAT_DRY:
+                raise SeatArgumentRefused(f"mu-cell-empty: {address} walks no dry path in this seat, so a {carry} call lands nothing; "
+                                          f"the plain call (no mu) lands the act")
+            return _run_seat(address, out.get("params") or {})
+        if tool in ("put", "delete", "rename"):
+            refusal = unlanded_refusal(tool, out)
+            if refusal is not None:
+                raise uds.LaresVerbError(refusal)
         if isinstance(out, dict) and out.get("handler") == "host":
             address = str(out.get("address") or word)
             raise SeatArgumentRefused(f"host-door: {address} runs at a terminal's own door (it reads host files or asks y/N); "
@@ -1614,24 +1750,30 @@ def build_mcp(coordinator: LaresCoordinator):
     def get(title: "str | None" = None, filter: "str | None" = None, mu: "str | None" = None,  # noqa: A002 — TiddlyWiki's own word
             recipe: "str | None" = None, bag: "str | None" = None, slot: "str | None" = None, after: "str | None" = None,
             params: "dict | None" = None) -> dict:
-        return _door("get", _params({"title": title, "filter": filter, "mu": mu, "recipe": recipe, "bag": bag, "slot": slot, "after": after}, params))
+        bound = _params({"title": title, "filter": filter, "mu": mu, "recipe": recipe, "bag": bag, "slot": slot, "after": after}, params)
+        address = record_address("get", bound)
+        first = _door(address, bound, "get")
+        if address != RECORD_ADDRESSES["get"][0] or str(bound.get("mu") or "") not in ("!", "assert"):
+            return first
+        return whole_carrier(first, lambda cursor: _door(address, {**bound, "after": cursor}, "get"))
 
     @mcp.tool(annotations=writes)
     def put(title: str, text: "str | None" = None, append: "str | None" = None, fields: "dict | None" = None,
             base: "str | None" = None, create: "bool | None" = None, mu: "str | None" = None, recipe: "str | None" = None,
             bag: "str | None" = None, params: "dict | None" = None) -> dict:
-        return _door("put", _params({"title": title, "text": text, "append": append, "fields": fields, "base": base, "create": create,
-                                     "mu": mu, "recipe": recipe, "bag": bag}, params))
+        return _door(RECORD_ADDRESSES["put"][0], _params({"title": title, "text": text, "append": append, "fields": fields, "base": base,
+                                                        "create": create, "mu": mu, "recipe": recipe, "bag": bag}, params), "put")
 
     @mcp.tool(annotations=writes)
     def delete(title: str, mode: "str | None" = None, family: "bool | None" = None, base: "str | None" = None,
                mu: "str | None" = None, recipe: "str | None" = None, bag: "str | None" = None, params: "dict | None" = None) -> dict:
-        return _door("delete", _params({"title": title, "mode": mode, "family": family, "base": base, "mu": mu, "recipe": recipe, "bag": bag}, params))
+        return _door(RECORD_ADDRESSES["delete"][0], _params({"title": title, "mode": mode, "family": family, "base": base, "mu": mu,
+                                                           "recipe": recipe, "bag": bag}, params), "delete")
 
     @mcp.tool(annotations=writes)
     def rename(title: str, to: str, base: "str | None" = None, mu: "str | None" = None, recipe: "str | None" = None,
                params: "dict | None" = None) -> dict:
-        return _door("rename", _params({"title": title, "to": to, "base": base, "mu": mu, "recipe": recipe}, params))
+        return _door(RECORD_ADDRESSES["rename"][0], _params({"title": title, "to": to, "base": base, "mu": mu, "recipe": recipe}, params), "rename")
 
     @mcp.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=False, openWorldHint=True))
     def act(address: str, args: "dict | None" = None) -> dict:

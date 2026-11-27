@@ -128,8 +128,18 @@ export const RESIDENCY_ACTS: Readonly<Record<string, string>> = Object.freeze({
 /** The draft pull's address: the door pulls a lower-bag tiddler into a writable draft. */
 export const DRAFT_PULL = "lar:///carriage.draft.pulls";
 
-/** A host door the call answers `handler/host` for: it runs with the parsed line and the bound params, and answers an exit code. */
-export type HostDoor = (args: ParsedArgs, params: Readonly<Record<string, unknown>>, carry: string | null) => Promise<number>;
+/**
+ * A host door the call answers `handler/host` for: it runs with the parsed line and the bound params, and answers an exit code.
+ * `dry` names whether its code walks a dry path; a door that walks none never sees a `_` carry (the call door refuses it
+ * `mu-cell-empty`), whatever a carrier's row claims.
+ */
+export interface HostDoor {
+  readonly dry: boolean;
+  readonly run: (args: ParsedArgs, params: Readonly<Record<string, unknown>>, carry: string | null) => Promise<number>;
+}
+
+/** The residency acts whose runner previews: the island runs each through a capturing access (REPACK writes the bundle, so none). */
+const DRY_WALKS: ReadonlySet<string> = new Set(["ADD", "COPY", "MOVE", "CLEAR", "DROP", "LOAD", "CREATE"]);
 
 /** The bound params as the runner's parsed shape: a word rides as an option, a switch as a flag; a `_` carry asks the preview. */
 export function actArgsOf(args: ParsedArgs, verb: string | null, params: Readonly<Record<string, unknown>>, carry: string | null): ParsedArgs {
@@ -152,12 +162,15 @@ export function actArgsOf(args: ParsedArgs, verb: string | null, params: Readonl
  */
 export function actHostDoor(address: string): HostDoor | null {
   const verb = RESIDENCY_ACTS[address];
-  if (verb !== undefined) return async (args, params, carry) => await cmdAct(actArgsOf(args, verb, params, carry));
+  if (verb !== undefined) return { dry: DRY_WALKS.has(verb), run: async (args, params, carry) => await cmdAct(actArgsOf(args, verb, params, carry)) };
   if (address === DRAFT_PULL) {
-    return async (args, params, carry) => {
-      const { uri, ...rest } = params;
-      const parsed = actArgsOf(args, null, rest, carry);
-      return await cmdDraft({ ...parsed, positional: typeof uri === "string" ? [uri] : [] });
+    return {
+      dry: false,
+      run: async (args, params, carry) => {
+        const { uri, ...rest } = params;
+        const parsed = actArgsOf(args, null, rest, carry);
+        return await cmdDraft({ ...parsed, positional: typeof uri === "string" ? [uri] : [] });
+      },
     };
   }
   return null;
@@ -189,6 +202,11 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   const source  = args.options["source"];
   const fromBag = args.options["from"];
   if (!source || !fromBag) { printUsage(); return 2; }
+  // REPACK WRITES THE BUNDLE: it walks no dry path, so a preview asked of it refuses before anything reads or writes.
+  if (args.flags["dry-run"] === true) {
+    emit(args, { ok: false, error: { code: "mu-cell-empty", message: "lar:///carriage.bundle.repacks walks no dry path; the plain call writes the bundle" }, human: () => console.error("lares act lar:///carriage.bundle.repacks: walks no dry path; the plain call writes the bundle") });
+    return exitFor("usage");
+  }
   const out = args.options["out"] ?? source;
 
   const root = larRoot();

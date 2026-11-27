@@ -164,10 +164,19 @@ export async function cmdCall(given: ParsedArgs, sources: CallSources = LIVE_SOU
     // A DOOR THE TERMINAL RUNS (landing 9): the vessel bound the act by its address and answered `handler/host` with the bound
     // params; the terminal's own door runs them (a residency act reads host files and asks y/N; the draft pull), a `_` carry
     // reaching it only where the carrier's row names `dry/walks`.
+    // WHETHER A DOOR PREVIEWS IS A FACT OF ITS CODE: a `_` carry reaches only a door whose code walks a dry path (`HostDoor.dry`),
+    // and refuses `mu-cell-empty` before anything runs at any other, whatever the carrier's row claims.
     if (ran.output["handler"] === "host") {
-      const door = actHostDoor(String(ran.output["address"] ?? ""));
+      const address = String(ran.output["address"] ?? "");
+      const door = actHostDoor(address);
       const mu = ran.output["mu"] as { carry?: unknown } | undefined;
-      if (door !== null) return await door(args, (ran.output["params"] as Record<string, unknown> | undefined) ?? {}, typeof mu?.carry === "string" ? mu.carry : null);
+      const carry = typeof mu?.carry === "string" ? mu.carry : null;
+      if (door !== null && carry !== null && carry.includes("_") && !door.dry) {
+        const message = `${address} walks no dry path at the terminal, so a ${carry} call lands nothing; the plain call (no mu) lands the act`;
+        emit(args, { ok: false, requestId: ran.requestId, error: { code: "mu-cell-empty", message }, human: () => console.error(`lares act: mu-cell-empty: ${message}`) });
+        return exitFor("usage");
+      }
+      if (door !== null) return await door.run(args, (ran.output["params"] as Record<string, unknown> | undefined) ?? {}, carry);
     }
     switch (answeredBy(ran.output)) {
       case "engine.record.reads": return await printRead(prose, plan, ran);

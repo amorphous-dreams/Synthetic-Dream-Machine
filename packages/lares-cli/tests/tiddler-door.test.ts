@@ -244,6 +244,22 @@ describe("the call door plans one call: {verb, params, surface: cli}", () => {
     } finally { h.refuse = ""; h.replyFor = null; out.mockRestore(); err.mockRestore(); }
   });
 
+  test("★ whether a host door previews is a fact of its code: a layer that claims dry/walks for the repack or the draft pull makes the dry call refuse mu-cell-empty before anything runs ★", async () => {
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const out = vi.spyOn(process.stdout, "write").mockImplementation((() => true) as never);
+    try {
+      for (const [address, params] of [["lar:///carriage.bundle.repacks", { source: "x.json", from: "lar:///b" }], ["lar:///carriage.draft.pulls", { uri: "lar:///t" }]] as const) {
+        h.calls.length = 0;
+        h.replyFor = () => ({ has: "<<~ has name=`" + address + "`>>", handler: "host", address, params, mu: { asked: "dry", carry: "_" } });
+        const exit = await dispatch(["act", address, ...Object.entries(params).map(([k, v]) => `${k}=${v}`), "mu=dry", "--json"]);
+        expect(exit, address).not.toBe(0);
+        expect(h.calls, address).toHaveLength(1);   // the vessel's call alone: no REPACK, no where, no draft ever rides
+        expect(out.mock.calls.flat().join(" "), address).toContain("mu-cell-empty");
+        out.mockClear();
+      }
+    } finally { h.replyFor = null; err.mockRestore(); out.mockRestore(); }
+  });
+
   test("★ an old flag on a call verb refuses by name before anything runs; the burned `tiddler` door answers unknown command ★", async () => {
     const err = vi.spyOn(console, "error").mockImplementation(() => {});
     try {

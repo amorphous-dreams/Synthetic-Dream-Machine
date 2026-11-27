@@ -107,9 +107,16 @@ def seated(address: str, params: dict) -> dict:
     return {"handler": "seat", "address": address, "params": params}
 
 
+#: Each record tool's own address: the tool sends it, never its word, so no spelling a layer seats turns it into another act.
+RECORD_ADDRESS = {"put": "lar:///engine.record.puts", "delete": "lar:///engine.record.removes", "rename": "lar:///engine.record.renames"}
+
+
 def call_line(verb: str, params: dict) -> dict:
-    """The one line a seat tool puts on the socket: the vessel's `call`, the params in their neutral names."""
-    return {"verb": "call", "args": {"verb": verb, "params": params, "surface": "mcp"}}
+    """The one line a seat tool puts on the socket: the vessel's `call` naming the tool's own address (a `get` by filter
+    the filter pages, else the record read), the params in their neutral names."""
+    if verb == "get":
+        verb = "lar:///engine.filter.pages" if "filter" in params else "lar:///engine.record.reads"
+    return {"verb": "call", "args": {"verb": RECORD_ADDRESS.get(verb, verb), "params": params, "surface": "mcp"}}
 
 
 def by_signature(fn, params: dict) -> dict:
@@ -265,7 +272,6 @@ def test_house_refusals_cross_the_seat_in_their_own_words(daemon):
         ("filter-malformed: Missing ] in filter expression (in \"[tag[x\")", "get", {"filter": "[tag[x", "recipe": "default"}),
         ("cap-denied: read on lar:///ha.ka.ba/wikis/daemon/working required (no-grant)", "act", {"address": ENGINE_ACTS["wiki_status"], "args": {"recipe": "default"}}),
         ("wiki-unreached: wiki-filter — no wiki \"elsewhere\" this face reaches", "get", {"filter": "[tag[x]]", "recipe": "elsewhere"}),
-        ("put-conflict: nothing landed at T · the record reads hash sha256-live now", "put", {"title": "T", "recipe": "default", "text": "x", "base": "sha256-old"}),
     ):
         daemon.error = {"errorMessage": refusal, "refusal": {"reason": refusal.split(":", 1)[0]}}
         is_error, said = _call(mcp, name, args)
@@ -365,3 +371,84 @@ def test_the_seat_instructions_a_waking_client_receives_name_the_call_shapes_and
     assert 'mu="assert"' in served
     assert 'act(address="lar:///engine.law.indexes")' in served
     assert "Read the house's law first" in served
+
+
+# ── the seat's own doors hold (ward#1's custody read: F1-F4) ───────────────────────────────────────────────────────
+
+def test_a_record_write_the_vessel_answers_unlanded_raises_by_name(daemon):
+    """F2: the vessel answers a stale base, a standing record or a family delete as a receipt naming its decision, never an
+    error; the seat raises each by name with what the receipt says, and a landed receipt returns whole."""
+    mcp = _mcp()
+    for name, args, receipt in (
+        ("put", {"title": "T", "recipe": "default", "text": "x", "base": "sha256-old"},
+         {"has": "<<~ has name=`T` params=`decision/conflict`>>", "title": "T", "decision": "conflict", "hash": "sha256-live"}),
+        ("put", {"title": "T", "recipe": "default", "text": "x", "create": True},
+         {"has": "<<~ has name=`T` params=`decision/exists`>>", "title": "T", "decision": "exists", "hash": "sha256-live"}),
+        ("delete", {"title": "lar:///t/x#/a", "recipe": "default"},
+         {"has": "<<~ has name=`lar:///t/x#/a` params=`decision/refused`>>", "decision": "refused", "refusal": "tiddler-delete-in-a-family",
+          "consequence": {"family": "lar:///t/x", "members": 3}}),
+        ("rename", {"title": "Old", "to": "New", "recipe": "default", "base": "sha256-old"},
+         {"has": "<<~ has name=`Old` params=`decision/conflict`>>", "decision": "conflict", "hash": "sha256-live"}),
+    ):
+        daemon.output = receipt
+        is_error, said = _call(mcp, name, args)
+        assert is_error and f"{name}-{receipt['decision']}: nothing landed" in said, (name, said)
+        if "refusal" in receipt:
+            assert "tiddler-delete-in-a-family" in said and "members" in said
+        else:
+            assert "sha256-live" in said
+    # CONTROL: a landed receipt returns as the vessel wrote it.
+    daemon.output = {"has": "<<~ has name=`T` params=`decision/put`>>", "title": "T", "decision": "put", "hash": "sha256-new"}
+    assert _tools()["put"](title="T", recipe="default", text="x")["decision"] == "put"
+
+
+def test_a_seat_act_walks_no_dry_path_its_code_never_walks(daemon):
+    """F1: a layer that claims dry/walks for a seat act lets the vessel carry `_` to the seat; whether the seat previews is a
+    fact of its code (`SEAT_DRY`, empty today), so the call refuses mu-cell-empty and the handler never runs."""
+    from lares_mcp import SEAT_DRY
+    assert SEAT_DRY == frozenset()
+    t = _tools()
+    daemon.answers = [{**seated("lar:///face.draft.stages", {"title": "T", "text": "x"}), "mu": {"asked": "dry", "carry": "_"}}]
+    with pytest.raises(Exception, match="mu-cell-empty"):
+        t["act"](address="lar:///face.draft.stages", args={"title": "T", "text": "x", "mu": "dry"})
+    assert len(daemon.lines) == 1   # the vessel's call alone: no session, no stage
+
+
+def test_a_record_tool_takes_an_answer_from_its_own_class_alone(daemon):
+    """F3: each record tool sends its own address, and an answer from any other address (a seat act a layer spelled `get`,
+    or a stamp naming another carrier) refuses tool-class-crossed and runs nothing."""
+    t = _tools()
+    t["get"](title="T", recipe="default")
+    assert daemon.wire(0)["args"]["verb"] == "lar:///engine.record.reads"
+    daemon.answers = [seated("lar:///face.draft.stages", {"title": "T", "text": "x"})]
+    with pytest.raises(Exception, match="tool-class-crossed"):
+        t["get"](title="T", recipe="default", params={"text": "x"})
+    assert len(daemon.lines) == 2
+    daemon.output = {"has": "<<~ has name=`T`>>", "decision": "put", "carrier": {"carrier": "lar:///ha.ka.ba/lares/afford/engine.record.puts", "bag": "b", "base": "x"}}
+    with pytest.raises(Exception, match="tool-class-crossed"):
+        t["get"](title="T", recipe="default")
+    # CONTROL: an answer its own carrier stamps returns whole.
+    daemon.output = {"has": "<<~ has name=`T`>>", "title": "T", "carrier": {"carrier": "lar:///ha.ka.ba/lares/afford/engine.record.reads", "bag": "b", "base": "x"}}
+    assert t["get"](title="T", recipe="default")["title"] == "T"
+
+
+def _page(n: int, pages: int, text: str, total: int, after: "str | None", hashed: str = "h1", uri: str = "lar:///t/x") -> dict:
+    mark = f"partial:p{n}:{hashed}" if after is not None else hashed
+    if after is None and pages > 1:
+        mark = f"partial:p{n}:{hashed}"
+    return {"has": "<<~ has name=`lar:///t/x` params=`layer/lar:///b base/x`>>", "title": uri, "recipe": "default",
+            "meme": {"uri": uri, "text": text, "canonicalHash": mark, "bytes": total, "page": {"page": n, "pages": pages}},
+            "next": {"grain": "whole", "after": after} if after is not None else None}
+
+
+def test_the_one_get_reads_a_whole_carrier_page_by_page_and_refuses_a_mismatch(daemon):
+    """F4: `get(mu="assert")` on a meme that answers past one page follows the cursor to the end and joins the carrier; a page
+    naming another hash refuses read-page-mismatch."""
+    t = _tools()
+    daemon.answers = [_page(1, 2, "ab", 4, "c1"), {**_page(2, 2, "cd", 4, None), "meme": {**_page(2, 2, "cd", 4, None)["meme"], "canonicalHash": "h1"}}]
+    out = t["get"](title="lar:///t/x", recipe="default", mu="assert")
+    assert out["meme"]["text"] == "abcd" and out["meme"]["canonicalHash"] == "h1" and out["next"] is None
+    assert daemon.wire(1)["args"]["params"]["after"] == "c1"
+    daemon.answers = [_page(1, 2, "ab", 4, "c1"), {**_page(2, 2, "cd", 4, None), "meme": {**_page(2, 2, "cd", 4, None)["meme"], "canonicalHash": "h2"}}]
+    with pytest.raises(Exception, match="read-page-mismatch"):
+        t["get"](title="lar:///t/x", recipe="default", mu="assert")
