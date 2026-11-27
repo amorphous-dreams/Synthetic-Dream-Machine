@@ -1666,12 +1666,14 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // returned to the landed value inside its window. A title the store never saw and the wiki does not
     // hold raises no tombstone. A state identical to the value already sent owes nothing either.
     const landed = this.ledger.landedOf(title);
-    // The ledger never answers for a title this shore wrote whose wave has not landed: there the state leaves and the store decides.
+    // The ledger never answers for a title this shore wrote whose wave has not landed, nor for a title it holds no row or start
+    // baseline of (a store change still in flight to the wiki reads the same as a title nobody saw): there the state leaves and the
+    // store decides. TW5's syncer answers the same way: only a title its `readTiddlerInfo` row covers can read as settled.
     const placed = this.familyPlaced.get(title);
     const placedByFamily = placed !== undefined && state !== null && this._matchesPlaced(placed, state);
     const settled = placedByFamily || (this.sent.has(title)
       ? this.sent.get(title) === state
-      : !this.unlanded.has(title) && same(state, landed ? landed.tiddler : null));
+      : !this.unlanded.has(title) && (landed !== undefined || this.syncedAtStart.has(title)) && same(state, this._knownOf(title)));
     if (!placedByFamily) this.familyPlaced.delete(title);
     if (settled) {
       this.handFaces.delete(title);
