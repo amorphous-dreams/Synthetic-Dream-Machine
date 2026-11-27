@@ -1,5 +1,5 @@
 /**
- * oracle-cast-verb — the `oracle-cast` verb every vessel answers (`lar:///oracle.library.consults`): one consult of an oracle
+ * oracle-cast-verb — the `oracle-cast` verb every vessel answers (`lar:///library.oracle.speaks`): one consult of an oracle
  * whose corpus rests on a library shelf, written as one tiddler.
  *
  *   args { recipe | bag, at: string, by?: string, caster?: string, asking?: string, uncertain?: string,
@@ -13,7 +13,7 @@
  * stand. A new oracle joins as a shelf, never a new address or a new verb.
  *
  * THE CAST LANDS AS AN OODA-HA MEME (`api/pono/oracle-loop`). The verb reads the act slots from the carrier that answers
- * `lar:///oracle.library.consults` over the caller's stack: its `#/loop` calls the procedure's own `#/loop` (or carries rows
+ * `lar:///library.oracle.speaks` over the caller's stack: its `#/loop` calls the procedure's own `#/loop` (or carries rows
  * inline), whose rows name each slot, its order, its writer, what the house fills and what the seat owes. THE STACK FIRST,
  * THE PACK THE FLOOR: the target's own stack answers (a carrier a working layer seats above canon, at the seat or the bare
  * root, shapes the act in canon's place), then the affordance pack this binary baked from the canon tree (the carrier's

@@ -21,8 +21,8 @@
  * A LANE NAMES A SPIRIT, never one of its bodies: `<lane>` carries the spirit's pet name, and every body of that spirit
  * queues under it (`body=<n>` rides the HANDBACK row as a note). THE FLOOR SERVES LANES: the queue orders waiting tickets by
  * turn, a ticket's turn counting the tickets its own lane holds taken plus the lane's waiting tickets ahead of it, and
- * arrival breaks a tie. So a lane's second ticket waits behind every sibling lane's first, a lane holding a slot yields the
- * next slot to a lane holding none, and a floor with one lane waiting never idles.
+ * arrival breaks a tie. So a lane's second ticket waits behind every sibling lane's first, a lane holding a run yields the
+ * next admission to a lane holding none, and a floor with one lane waiting never idles.
  *
  * ORDER IS ARRIVAL within a lane and within a turn: the line's place in the log orders the queue, never a clock (an attacker
  * owns every clock). A ticket names itself `<lane>@<sha9>`; a QUEUE over a ticket that stands DONE or DROPped re-enters it at

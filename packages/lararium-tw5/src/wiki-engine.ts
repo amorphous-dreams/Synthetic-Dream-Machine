@@ -40,9 +40,8 @@ import { type DocHandle } from "@lararium/mesh/automerge";
 import { type FaceActorDoor } from "@lararium/mesh/automerge-doc-store";
 import { type LarDoc } from "@lararium/mesh/base-doc";
 import { type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
-import { composeFaceEngine, enginePool, type FaceEngine, type FaceEngineSource } from "./face-engine.js";
+import { composeFaceEngine, enginePool, type FaceBoot, type FaceEngine, type FaceEngineSource } from "./face-engine.js";
 import type { RecipeReadyBinding } from "./island-recipe.js";
-import type { TW5Engine } from "./tw5-vm.js";
 import { isTw5Docs, isTw5DocsLibraryBag, tw5DocsStore, tw5LibraryBag, tw5LibraryRecipe, tw5LibraryStackStore } from "./tw5-docs-library.js";
 
 /** The doors a named wiki's engine composes through: the meme door's own reaches, the island's held documents, and the boot. */
@@ -59,8 +58,8 @@ export interface WikiEngineDeps {
   readonly reach?: (key: string, bag: string) => Promise<LarTiddlerStore | null>;
   /** A house canon bag's floor snapshot, where the floor this island mounted carries one. */
   readonly floorCanon?: (bag: string) => LarTiddlerStore | null;
-  /** A fresh engine, booted from the island's own boot set. */
-  readonly boot: () => Promise<TW5Engine>;
+  /** A fresh engine, booted from the island's own boot set over wave zero. */
+  readonly boot: FaceBoot;
   /** The island Repo's actor door. */
   readonly wear?: FaceActorDoor;
 }

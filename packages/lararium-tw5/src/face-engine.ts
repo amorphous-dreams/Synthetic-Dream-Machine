@@ -3,7 +3,7 @@
  * (`tiddler-verbs`) answers through a live `$tw.wiki` over one composition; the mount's engine composes the worn face's daemon
  * wiki alone, so a sibling face reached by name stands its own engine over the anchor composition of ITS OWN documents (its
  * daemon canon by its relation, and the working, draft and personal slots its own wear named), laid by the one recipe model
- * (`buildIslandRecipe`) with the one adaptor and bridge every island runs. The engine boots from the bytes the island's own
+ * (`layIslandComposition`, wave zero, `mountIslandShore`) with the one adaptor and bridge every island runs. The engine boots from the bytes the island's own
  * engine booted from, so the sibling reads through the same grammar and module gate.
  *
  * One engine per face: `faceEngines` composes a face's engine on its first ask and answers the same one after, until the face
@@ -26,14 +26,21 @@ import { VerbRefusal } from "@lararium/mesh/verb-refusal";
 import { wikiSlotUri, type WikiRecipe } from "@lararium/mesh/wiki-recipe";
 import { crossFacePrivateRefusal, crossFaceViewSlots, CROSS_FACE_PRIVATE } from "@lararium/mesh/cross-face-reach";
 import { type FaceActorDoor } from "@lararium/mesh/automerge-doc-store";
-import { buildIslandRecipe, seedDrained, type RecipeReadyBinding } from "./island-recipe.js";
+import { layIslandComposition, mountIslandShore, seedDrained, type RecipeReadyBinding } from "./island-recipe.js";
+import { readIslandSeed, type IslandSeed } from "./island-seed.js";
 import { bridgeWikiToAdaptor } from "./outbound-bridge.js";
 import type { TW5Engine } from "./tw5-vm.js";
 
+/** WAVE ZERO's hand to a boot: given the boot set's preloads, the composition's records in the nalu form (`readIslandSeed`). */
+export type SeedFor = (bootPreloads: readonly Record<string, unknown>[]) => Promise<readonly Record<string, unknown>[]>;
+
+/** Boot a fresh engine from the island's own boot set, over the records `seedFor` answers (`TW5BootOptions.seedTiddlers`). */
+export type FaceBoot = (seedFor: SeedFor) => Promise<TW5Engine>;
+
 /** What one face's engine composes from. */
 export interface FaceEngineSource {
-  /** A fresh engine, booted from the island's own boot set. */
-  readonly boot: () => Promise<TW5Engine>;
+  /** A fresh engine, booted from the island's own boot set over wave zero. */
+  readonly boot: FaceBoot;
   /** The face's daemon wiki recipe: the island's own, its canon following this face's relation. */
   readonly recipe: WikiRecipe;
   /** The face's own documents by slot (and any shared library the recipe names); a slot absent here stays unmounted. */
@@ -54,16 +61,30 @@ export interface FaceEngine {
   close(): Promise<void>;
 }
 
-/** Compose one face's engine: boot, lay the recipe over its own documents, bridge the wiki, and wait for the seed to land. */
+/**
+ * Compose one face's engine over WAVE ZERO, as the island's own engine composes: lay the recipe over the face's documents
+ * before anything boots, read the seed off the laid composition, boot over it (TW5 adds the records before its change queue
+ * wakes, unpacks their plugins, defines their modules and runs their startup actions natively), mount the shore from the same
+ * seed, bridge the wiki, and wait for the seed to land. A boot that never asks for its seed boots bare, and the shore lands the
+ * composition as waves.
+ */
 export async function composeFaceEngine(source: FaceEngineSource): Promise<FaceEngine> {
-  const tw5 = await source.boot();
   const composite = new CompositeStore();
-  const { adaptor } = buildIslandRecipe({
-    tw5, composite, recipe: source.recipe, ready: source.ready,
+  const laid = layIslandComposition({
+    composite, recipe: source.recipe, ready: source.ready,
     ...(source.wear ? { wear: source.wear } : {}),
     ...(source.writeSlot ? { writeSlot: source.writeSlot } : {}),
     ...(source.readOnly ? { readOnly: true as const } : {}),
   });
+  let seed = null as IslandSeed | null;
+  let tw5: TW5Engine;
+  try {
+    tw5 = await source.boot(async (bootPreloads) => (seed = await readIslandSeed(composite, bootPreloads)).preloads);
+  } catch (error) {
+    seed?.release();
+    throw error;
+  }
+  const { adaptor } = mountIslandShore(tw5, laid, seed);
   const unbridge = bridgeWikiToAdaptor(tw5, adaptor);
   let closed: Promise<void> | null = null;
   const close = (): Promise<void> => (closed ??= (async () => {
@@ -83,7 +104,7 @@ export type CrossFaceViewSource = Pick<FaceEngineSource, "boot" | "recipe" | "re
  * vessel's own daemon document.
  */
 export async function crossFaceViewSource(deps: {
-  readonly boot: () => Promise<TW5Engine>;
+  readonly boot: FaceBoot;
   readonly recipe: WikiRecipe;
   readonly bind: (slot: string) => Promise<RecipeReadyBinding | null>;
 }): Promise<CrossFaceViewSource> {

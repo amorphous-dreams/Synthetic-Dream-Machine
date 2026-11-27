@@ -43,7 +43,7 @@ describe.skipIf(wikiSkip)(`the affordance bake over the fixture carrier${skipNot
     expect(pack.routes["cli"]).toEqual({ "oracle cast": FIXTURE_ADDRESS });
     expect(pack.routes["mcp"]).toEqual({ oracle_cast: FIXTURE_ADDRESS });
     expect(pack.routes["tw5"]).toEqual({ "action-oracle-cast": FIXTURE_ADDRESS });
-    expect(pack.routes["console"]).toEqual({ "oracle.library.consults": FIXTURE_ADDRESS });
+    expect(pack.routes["console"]).toEqual({ "library.oracle.speaks": FIXTURE_ADDRESS });
     expect(pack.doors["oracle"]!.addresses).toEqual([FIXTURE_ADDRESS]);
     expect(pack.doors["oracle"]!.help).toEqual(pack.carriers[FIXTURE_ADDRESS]!.renders["cli"]!["whole"]);
     expect(pack.doors["oracle"]!.brief).toBe("Cast the I Ching by three coins; the cast lands as a tiddler.");
@@ -87,12 +87,12 @@ describe.skipIf(wikiSkip)(`the affordance bake over the fixture carrier${skipNot
     engine.ingestCarrier(FIXTURE_TITLE, oracleFixtureCarrier());
     const face = affordFaceOf(engine.wiki as never, { print: false });
     const pack = await bakeAffordancePack([oracleFixtureCarrier()]);
-    expect(face.whole("oracle.library.consults")).toEqual(pack.carriers[FIXTURE_ADDRESS]!.renders["console"]!["whole"]);
-    expect(face.slot("oracle.library.consults", "refuses")).toEqual(pack.carriers[FIXTURE_ADDRESS]!.renders["console"]!["#/refuses"]);
-    expect(face.list("oracle.*")).toEqual(["oracle.library.consults"]);
-    expect(() => face.list("*.cast.throws")).toThrow(/afford-wildcard-heading/);
+    expect(face.whole("library.oracle.speaks")).toEqual(pack.carriers[FIXTURE_ADDRESS]!.renders["console"]!["whole"]);
+    expect(face.slot("library.oracle.speaks", "refuses")).toEqual(pack.carriers[FIXTURE_ADDRESS]!.renders["console"]!["#/refuses"]);
+    expect(face.list("library.*")).toEqual(["library.oracle.speaks"]);
+    expect(() => face.list("*.oracle.speaks")).toThrow(/afford-wildcard-heading/);
     // The face reads the live stack's routes (landing 4 burned `run`: a call rides `$tw.lares.call`).
-    expect(face.routes().routes["console"]["oracle.library.consults"]).toBe(FIXTURE_ADDRESS);
+    expect(face.routes().routes["console"]["library.oracle.speaks"]).toBe(FIXTURE_ADDRESS);
     expect(face.routes().routes["tw5"]["action-oracle-cast"]).toBe(FIXTURE_ADDRESS);
     expect("run" in face).toBe(false);
   });
@@ -101,7 +101,7 @@ describe.skipIf(wikiSkip)(`the affordance bake over the fixture carrier${skipNot
     const engine = await bootTestWiki();
     engine.ingestCarrier(FIXTURE_TITLE, oracleFixtureCarrier());
     const html = engine.wiki.renderTiddler("text/html", "lar:///ha.ka.ba/lararium/tw5/afford/view", { variables: { currentTiddler: FIXTURE_TITLE } });
-    expect(html).toContain("<code>oracle.library.consults</code>");
+    expect(html).toContain("<code>library.oracle.speaks</code>");
     expect(html).toContain("the door checks the ocap");
     for (const label of ["head", "shows", "takes", "gate", "refuses", "answers", "skins", "edges"]) expect(html).toContain(`▸ ${label}`);
   });

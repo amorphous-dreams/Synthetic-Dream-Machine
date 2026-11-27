@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir, userInfo } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -11,7 +11,7 @@ const dir = () => mkdtempSync(join(tmpdir(), "battery-"));
 // Bounded by turns, not by a clock: the handshake file is the signal, the turn count only keeps a broken run from hanging.
 const until = async (path, turns = 4000) => { for (let i = 0; i < turns && !existsSync(path); i++) await new Promise((r) => setTimeout(r, 5)); if (!existsSync(path)) throw new Error(`no handshake at ${path}`); };
 // The exit reads off the child's own record first: an exit that fired before anyone listened still answers (floor-test-kit).
-import { exited } from "./floor-test-kit.mjs";
+import { exited, floorEnv } from "./floor-test-kit.mjs";
 
 test("CONTROL: a free lock runs the command at once and its output reaches us", () => {
   const d = dir();
@@ -35,42 +35,61 @@ test("an unopenable lock exits 64 and never runs the command", () => {
   assert.ok(!existsSync(marker), "the command ran unlocked");
 });
 
-test("TWO SLOTS: two runs under two different HOMEs hold two slots at once; a third waits until one exits (handshake files, no sleep)", async () => {
+// THE HEADROOM (no count of runs stands; the disk's write churn sets the only limit). RED-FIRST: written by floor-wright#2,
+// run by the familiar.
+test("HEADROOM: three runs under three HOMEs hold the floor at once where the readings admit them; no count stands (handshake files, no sleep)", async () => {
   const d = dir();
   const lock = join(d, "lock");
   const homes = ["homeA", "homeB", "homeC"].map((n) => { const h = join(d, n); mkdirSync(h); return h; });
-  const inA = join(d, "a-holding"), inB = join(d, "b-holding"), releaseA = join(d, "a-release"), releaseB = join(d, "b-release"), cStarted = join(d, "c-started"), aDone = join(d, "a-done");
-  const holder = (inFile, release, done) => `touch ${inFile}; while [ ! -e ${release} ]; do :; done; ${done ? `touch ${done}` : "true"}`;
-  const env = (home) => ({ ...process.env, HOME: home, LARES_BATTERY_LOCK: lock });
+  const marks = ["a", "b", "c"].map((n) => join(d, `${n}-holding`));
+  const release = join(d, "release");
+  const holder = (inFile) => `touch ${inFile}; while [ ! -e ${release} ]; do :; done`;
   const kids = [];
   const fly = (...a) => { const c = spawn(...a, { detached: true }); kids.push(c); return c; };
   try {
-  const first = fly("bash", [BATTERY, "bash", "-c", holder(inA, releaseA, aDone)], { env: env(homes[0]), stdio: "ignore" });
-  await until(inA);
-  // The second flies beside the first: two heavy runs at once.
-  const second = fly("bash", [BATTERY, "bash", "-c", holder(inB, releaseB)], { env: env(homes[1]), stdio: "ignore" });
-  await until(inB);
-  // The third queues: its command may only run once a slot frees, so it records whether a-done stood when it began.
-  const third = fly("bash", [BATTERY, "bash", "-c", `[ -e ${aDone} ] && touch ${cStarted}`], { env: env(homes[2]), stdio: "ignore" });
-  for (let i = 0; i < 200; i++) await new Promise((r) => setImmediate(r));
-  assert.ok(!existsSync(cStarted));
-  assert.equal(third.exitCode, null, "the third exited while both slots stood held");
-  writeFileSync(releaseA, "");
-  assert.equal(await exited(first), 0);
-  assert.equal(await exited(third), 0, "the third ran only after a slot freed");
-  assert.ok(existsSync(cStarted));
-  writeFileSync(releaseB, "");
-  assert.equal(await exited(second), 0);
-  } finally { writeFileSync(releaseA, ""); writeFileSync(releaseB, ""); for (const c of kids) { try { process.kill(-c.pid, "SIGKILL"); } catch { /* gone */ } } }
+  const runs = marks.map((m, i) => fly("bash", [BATTERY, "bash", "-c", holder(m)], { env: floorEnv(lock, { HOME: homes[i] }), stdio: "ignore" }));
+  // All three hold at once: two would have filled a fixed count, and the third flies beside them.
+  for (const m of marks) await until(m);
+  writeFileSync(release, "");
+  for (const r of runs) assert.equal(await exited(r), 0);
+  } finally { writeFileSync(release, ""); for (const c of kids) { try { process.kill(-c.pid, "SIGKILL"); } catch { /* gone */ } } }
 });
 
-test("--lock-paths names both slots: slot 1 the lock, slot 2 beside it with -2 before the .lock suffix", () => {
+test("HEADROOM: a run beside another waits while its load reading refuses, and admits once the other leaves (the measurement decides)", async () => {
   const d = dir();
-  const paths = (lock) => spawnSync("bash", [BATTERY, "--lock-paths"], { encoding: "utf8", env: { ...process.env, LARES_BATTERY_LOCK: lock } }).stdout.trim().split("\n");
-  assert.deepEqual(paths(join(d, ".battery.lock")), [join(d, ".battery.lock"), join(d, ".battery-2.lock")]);
-  assert.deepEqual(paths(join(d, "plain")), [join(d, "plain"), join(d, "plain-2")]);
-  const r = spawnSync("bash", [BATTERY, "--lock-paths"], { encoding: "utf8", env: { ...process.env, LARES_BATTERY_LOCK: "" } });
-  assert.deepEqual(r.stdout.trim().split("\n"), [join(userInfo().homedir, ".lares-scratch", ".battery.lock"), join(userInfo().homedir, ".lares-scratch", ".battery-2.lock")]);
+  const lock = join(d, "lock");
+  const inA = join(d, "a-holding"), releaseA = join(d, "a-release"), aDone = join(d, "a-done"), bStarted = join(d, "b-started");
+  const kids = [];
+  const fly = (...a) => { const c = spawn(...a, { detached: true }); kids.push(c); return c; };
+  try {
+  const first = fly("bash", [BATTERY, "bash", "-c", `touch ${inA}; while [ ! -e ${releaseA} ]; do :; done; touch ${aDone}`], { env: floorEnv(lock), stdio: "ignore" });
+  await until(inA);
+  // Zero cores of headroom: beside a live run the load reading refuses; alone it admits (its own stop reads the floor).
+  const second = fly("bash", [BATTERY, "bash", "-c", `[ -e ${aDone} ] && touch ${bStarted}`], { env: floorEnv(lock, { LARES_FLOOR_LOAD_PER_CORE: "0" }), stdio: ["ignore", "ignore", "pipe"] });
+  let err = ""; second.stderr.on("data", (c) => { err += c; });
+  for (let i = 0; i < 4000 && !/waits: the load reads/.test(err); i++) await new Promise((r) => setTimeout(r, 5));
+  assert.match(err, /floor: run \d+ waits: the load reads [\d.]+ against 0 cores/);
+  assert.equal(second.exitCode, null, "the second ran while the load refused it");
+  writeFileSync(releaseA, "");
+  assert.equal(await exited(first), 0);
+  assert.equal(await exited(second), 0, "the second ran only after the first left");
+  assert.ok(existsSync(bStarted));
+  } finally { writeFileSync(releaseA, ""); for (const c of kids) { try { process.kill(-c.pid, "SIGKILL"); } catch { /* gone */ } } }
+});
+
+test("each run's lock and reservation key by its own pid and leave with it; --floor-dir names the floor beside the door", () => {
+  const d = dir();
+  const lock = join(d, ".battery.lock");
+  const floor = spawnSync("bash", [BATTERY, "--floor-dir"], { encoding: "utf8", env: floorEnv(lock) }).stdout.trim();
+  assert.equal(floor, join(d, ".floor"));
+  const r = spawnSync("bash", [BATTERY, "bash", "-c", `ls ${floor}`], { encoding: "utf8", env: floorEnv(lock) });
+  assert.equal(r.status, 0, r.stderr);
+  const key = /holding the box, run (\d+)/.exec(r.stderr)?.[1];
+  assert.ok(key, r.stderr);
+  assert.deepEqual(r.stdout.trim().split("\n").sort(), [`run-${key}.json`, `run-${key}.lock`]);
+  assert.deepEqual(readdirSync(floor), [], "the run's lock and reservation left with it");
+  const plain = spawnSync("bash", [BATTERY, "--floor-dir"], { encoding: "utf8", env: { ...process.env, LARES_BATTERY_LOCK: "" } });
+  assert.equal(plain.stdout.trim(), join(userInfo().homedir, ".lares-scratch", ".floor"));
 });
 
 test("--lock-path names the lock: LARES_BATTERY_LOCK wins; otherwise the PASSWD home's .lares-scratch, never $HOME", () => {

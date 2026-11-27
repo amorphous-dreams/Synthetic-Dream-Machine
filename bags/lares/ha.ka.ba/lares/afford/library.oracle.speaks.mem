@@ -1,21 +1,21 @@
 <<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/oracle.library.consults`>>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/library.oracle.speaks`>>
 <<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
 l-space   = "stable"
 role      = "consult an oracle shelf at your own fork; the cast lands an OODA-HA meme"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///oracle.library.consults"]
-title     = "lar:///ha.ka.ba/lares/afford/oracle.library.consults"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///library.oracle.speaks"]
+title     = "lar:///ha.ka.ba/lares/afford/library.oracle.speaks"
 type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lares/afford/oracle.library.consults"
+uri-path  = "ha.ka.ba/lares/afford/library.oracle.speaks"
 ```
 
 <<~ ahu slot=`#/head`>>
 
-! oracle.library.consults ~ a blind throw to collide uncertainty with
+! library.oracle.speaks ~ a blind throw to collide uncertainty with
 
 The house consults an oracle whose corpus rests on a library shelf (`lar:///ha.ka.ba/lares/library/oracles/<kind>/`). The kind rides as data: `by` names the shelf (the E-Jing by default), and the shelf's index record declares its own `method`, its corpus and its credits. The e-jing and doa shelves declare `three-coins`: the I Ching by three coins a line (heads three, tails two: 6 old yin and 9 old yang change, 7 and 8 hold). A new oracle joins as a shelf, never a new address or a new verb; a shelf whose method the verb runs not yet refuses by name.
 
@@ -23,7 +23,7 @@ Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`,
 
 The cast stands as a blind throw to collide uncertainty with: the throw stands, the reading stays open.
 
-The facet `library` names reading from a curated corpus, and the house reads curated corpora under more than one heading (the oracle shelves, the TW5 docs library, the library door's shelves), so the address holds facet law 3. It re-keys `lar:///oracle.cast.throws`, whose seat stands as a signed alias record pointing here (DAM law 4; moolelo 2026-11-26, "The oracle family, re-keyed").
+The heading `library` names where the consult reads: the oracle shelves rest among the library's holdings, the ones the `lares library` door keeps. The facet `oracle` names the shelf family it reads under, and the dynamic `speaks` names the act: the library's oracle speaks to a fork. No alias stands at an older address (early alpha burns aliases, the operator's word 2026-11-27).
 
 <<~/ahu>>
 
@@ -86,13 +86,13 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ oracle-cast-untimed · oracle-cast-coins · oracle-cast-fresh-unminted · oracle-cast-record-torn · oracle-shelf-unknown · oracle-method-unrun · oracle-loop-unread
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`oracle-cast-untimed` params=`cure/[[oracle.library.consults at/<time>]] ~ the verb reads no clock; the caller names the time`>>
-<<has entity=`refusal` name=`oracle-cast-coins` params=`cure/[[oracle.library.consults coins/7,8,9,6,7,7]] ~ six line values of 6, 7, 8 or 9, bottom line first`>>
-<<has entity=`refusal` name=`oracle-cast-fresh-unminted` params=`cure/[[oracle.library.consults fresh/true]] ~ a fresh throw carries the nonce its caller minted at the word`>>
+<<has entity=`refusal` name=`oracle-cast-untimed` params=`cure/[[library.oracle.speaks at/<time>]] ~ the verb reads no clock; the caller names the time`>>
+<<has entity=`refusal` name=`oracle-cast-coins` params=`cure/[[library.oracle.speaks coins/7,8,9,6,7,7]] ~ six line values of 6, 7, 8 or 9, bottom line first`>>
+<<has entity=`refusal` name=`oracle-cast-fresh-unminted` params=`cure/[[library.oracle.speaks fresh/true]] ~ a fresh throw carries the nonce its caller minted at the word`>>
 <<has entity=`refusal` name=`oracle-cast-record-torn` params=`cure/[[tiddler.get.reads title/<cast>]] ~ the cast's title stands but reads as no cast`>>
-<<has entity=`refusal` name=`oracle-shelf-unknown` params=`cure/[[oracle.library.consults by/e-jing]] ~ no shelf library/oracles/<kind>/ declares its method; the answer names the shelves that stand`>>
-<<has entity=`refusal` name=`oracle-method-unrun` params=`cure/[[oracle.library.consults by/e-jing]] ~ the shelf declares a method the verb runs not yet; the answer names the shelves that stand`>>
-<<has entity=`refusal` name=`oracle-loop-unread` params=`cure/[[tiddler.get.reads title/lar:///oracle.library.consults slot/#/loop]] ~ neither the carrier the stack seats nor the baked pack answers loop rows, so no act record lands`>>
+<<has entity=`refusal` name=`oracle-shelf-unknown` params=`cure/[[library.oracle.speaks by/e-jing]] ~ no shelf library/oracles/<kind>/ declares its method; the answer names the shelves that stand`>>
+<<has entity=`refusal` name=`oracle-method-unrun` params=`cure/[[library.oracle.speaks by/e-jing]] ~ the shelf declares a method the verb runs not yet; the answer names the shelves that stand`>>
+<<has entity=`refusal` name=`oracle-loop-unread` params=`cure/[[tiddler.get.reads title/lar:///library.oracle.speaks slot/#/loop]] ~ neither the carrier the stack seats nor the baked pack answers loop rows, so no act record lands`>>
 ```
 
 <<~/ahu>>
@@ -176,6 +176,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;cXZjFexdX4AeJwuDQYvJjyaQ9UtGJ-XmEYsuPys5E68`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kgBI3RhERt-W9bcQ6d6V98yioe26Uc_90AcLXi2Q1bg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

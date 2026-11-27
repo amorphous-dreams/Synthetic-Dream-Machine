@@ -21,7 +21,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/oracle-loop"
 
 A cast stands as a meme. Its five slots run the loop (noosphere-boot #/ooda-ha), and the record fills as the procedure runs: the house writes what the ask carried and what it measured, the seat appends what it read, chose and did. The throw stands, the reading stays open: the coins collide with the seat's uncertainty and decide nothing.
 
-The operator approved this cast model (2026-11-26) for every surface; the names of the pulls and the moves stay candidate until the operator rules them. The affordance `lar:///oracle.library.consults` calls `#/loop` from its carrier (`lar:///ha.ka.ba/lares/afford/oracle.library.consults`), whatever oracle its shelf names: every consult lands this one loop.
+The operator approved this cast model (2026-11-26) for every surface; the names of the pulls and the moves stay candidate until the operator rules them. The affordance `lar:///library.oracle.speaks` calls `#/loop` from its carrier (`lar:///ha.ka.ba/lares/afford/library.oracle.speaks`), whatever oracle its shelf names: every consult lands this one loop.
 
 <<~/ahu>>
 
@@ -86,11 +86,11 @@ Rote takes no move but one: say so, and let the throw seed free talk.
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/oracle`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/loop`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/afford/oracle.library.consults`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/afford/library.oracle.speaks`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/library/oracles/e-jing/index`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Fcs-JlJFfNMK47fblKEuJaQT9YYFx570Kwq3De6zNNQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Kp3XGu7E0uLfVCXXqvOJGIIAFrTXNQpPxxpbOSc_hjE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

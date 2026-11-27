@@ -35,7 +35,7 @@ export type TextOf = (title: string) => string | undefined;
 /** The bags whose stable seat (`lar:///ha.ka.ba/<bag>/afford/<address>`) a carrier may rest at, in the order they answer. */
 export const AFFORD_SEAT_BAGS = ["lares", "lararium"] as const;
 
-/** One address's stable seat in one bag: `lar:///ha.ka.ba/lares/afford/oracle.library.consults`. */
+/** One address's stable seat in one bag: `lar:///ha.ka.ba/lares/afford/library.oracle.speaks`. */
 export function seatTitleOf(address: string, bag: string = AFFORD_SEAT_BAGS[0]): string {
   return `lar:///ha.ka.ba/${bag}/afford/${address.replace(/^lar:\/\/\//, "")}`;
 }
@@ -54,7 +54,7 @@ export const carrierViewOfText = (textOf: TextOf): CarrierView => ({ has: (title
 
 /**
  * THE CARRIER THAT ANSWERS AN ADDRESS (fork 3 of lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts). The address rides any
- * spelling: `lar:///oracle.library.consults`, `oracle.library.consults`, or a seat title. A record titled with the bare root
+ * spelling: `lar:///library.oracle.speaks`, `library.oracle.speaks`, or a seat title. A record titled with the bare root
  * wins where one stands; else the first stable seat that stands (`AFFORD_SEAT_BAGS` order); else the first carrier that tags
  * the address. The view already answers each title from its topmost layer, so the cascade picks the layer for either title.
  * Null where nothing answers, or where the spelling carries no address.

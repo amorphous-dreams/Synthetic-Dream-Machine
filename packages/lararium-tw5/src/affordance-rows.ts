@@ -1,7 +1,7 @@
 /**
  * affordance-rows — the pure reading an affordance carrier's slots take before any skin renders them.
  *
- * An affordance carrier (lar:///ha.ka.ba/lares/api/pono/affordance) answers its bare address (`lar:///oracle.library.consults`)
+ * An affordance carrier (lar:///ha.ka.ba/lares/api/pono/affordance) answers its bare address (`lar:///library.oracle.speaks`)
  * from whichever title the bag stack seats it at (the bare root, or the stable seat canon gives it; `carrierOf` in
  * `affordance-read` decides) and keeps a closed slot set, in loop order: `#/head · #/shows · #/takes · #/gate · #/refuses · #/answers · #/skins · #/edges`.
  * Each slot leads with a digest line (`!! takes ~ recipe · asking · fresh`) and carries its rows as `has` lines with key/value
@@ -194,7 +194,7 @@ export function skinRow(rows: readonly HasRow[], surface: AffordSurface): HasRow
   return rows.find((r) => r.entity === "skin" && r.name === surface);
 }
 
-/** Read a neutral call off a cure or example value: `oracle.library.consults asking/<words>` (the address leads; args follow). */
+/** Read a neutral call off a cure or example value: `library.oracle.speaks asking/<words>` (the address leads; args follow). */
 export function neutralCallOf(value: string, fallbackAddress: string): NeutralCall {
   const tokens = tokenize(value);
   const lead = tokens[0] ?? "";
@@ -387,15 +387,15 @@ export function unfoldRead(surface: AffordSurface, address: string, slot?: strin
   }
 }
 
-/** The bare address an affordance title carries (`lar:///oracle.library.consults` → `oracle.library.consults`), or null where it holds none. */
+/** The bare address an affordance title carries (`lar:///library.oracle.speaks` → `library.oracle.speaks`), or null where it holds none. */
 export function bareAddressOf(title: string): string | null {
   const m = /^lar:\/\/\/([a-z0-9-]+\.[a-z0-9-]+\.[a-z0-9-]+)$/.exec(title);
   return m ? m[1]! : null;
 }
 
 /**
- * The address a carrier's title carries: the bare root itself (`lar:///oracle.library.consults`), or the stable seat canon gives it
- * (`lar:///ha.ka.ba/lares/afford/oracle.library.consults`, whose record tags the bare address). Null for any other title.
+ * The address a carrier's title carries: the bare root itself (`lar:///library.oracle.speaks`), or the stable seat canon gives it
+ * (`lar:///ha.ka.ba/lares/afford/library.oracle.speaks`, whose record tags the bare address). Null for any other title.
  */
 export function addressOfTitle(title: string): string | null {
   const m = /^lar:\/\/\/(?:ha\.ka\.ba\/[a-z0-9-]+\/afford\/)?([a-z0-9-]+\.[a-z0-9-]+\.[a-z0-9-]+)$/.exec(title);

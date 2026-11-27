@@ -1441,7 +1441,7 @@ def build_mcp(coordinator: LaresCoordinator):
     def oracle_cast(recipe: "str | None" = None, bag: "str | None" = None, coins: "list | None" = None,
                     caster: "str | None" = None, asking: "str | None" = None, uncertain: "str | None" = None,
                     observe: "list | str | None" = None, by: "str | None" = None) -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///oracle.library.consults): `_dress_from_pack` hands this tool its description and
+        # THE WORDS LIVE IN THE CARRIER (lar:///library.oracle.speaks): `_dress_from_pack` hands this tool its description and
         # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         import datetime
         args: dict = dict(_meme_container("oracle_cast", recipe, bag))

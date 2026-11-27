@@ -977,7 +977,7 @@ function refuseUnreadWords(args: Readonly<Record<string, unknown>>, title: strin
 
 /**
  * THE CARRIER A BARE ROOT READS (fork 3, `carrierOf`). A title whose root names an affordance address at the bare root
- * (`lar:///oracle.library.consults`, or one of its slots) and which no record in the reader's view titles resolves to the
+ * (`lar:///library.oracle.speaks`, or one of its slots) and which no record in the reader's view titles resolves to the
  * carrier the stack seats for that address (its stable seat, the topmost layer answering), the slot riding along. Null where
  * the title answers as written: a record titles it, its root names no bare address, or no carrier stands.
  */
