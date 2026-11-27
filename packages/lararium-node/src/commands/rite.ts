@@ -47,7 +47,7 @@ import { isSwarmLeiRite, type SwarmLeiRite } from "@lararium/mesh/swarm-lei-rite
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
 import { treeOfHead } from "../git-tree-reader.js";
 import { openedCustody, unlockedFaceOrdinals } from "../custody-seat.js";
-import { kukuluOfferBase, kukuluOfferPath, writeKukuluOffer, type KukuluOfferFace } from "../kukulu-offer.js";
+import { kukuluOfferBase, kukuluOfferPath, spendKukuluOffer, writeKukuluOffer, type KukuluOfferFace } from "../kukulu-offer.js";
 import { larWorkspacesHome } from "../vessel-paths.js";
 import { BundleVerifyRefused, unsafeRelPath, verifyBundle } from "../bundle-manifest.js";
 
@@ -202,24 +202,41 @@ export function refuseStandingBegin(standing: ReadonlyArray<{ readonly tessera: 
  * prior image, never the begin's), so the begin spent nothing a landing ever used. Each named half still pending on the line
  * sets down as the lent face that carries it (`abandonRite`, `by: "kukulu"`, naming the head that supersedes it); a named
  * tessera that reads pending nowhere (landed, or set down by a prior try of this begin) passes, and a half no lent face carries stays
- * as debt for `refuseStandingBegin` to name. Answers each half it set down, by face, tessera and the head it began at.
+ * as debt for `refuseStandingBegin` to name. Answers each half it set down, by face, tessera and the head it began at, and
+ * `offerSpent` where setting it down spent the resting offer its vouch named (`setHalfDown`).
  */
 export async function supersedeBegins(
   wiki: SwarmWikiPort, named: readonly string[], head: string, branch: string, faceOf: ReadonlyMap<string, string>,
   faceAt: (ordinal: number) => Promise<{ readonly trust: SwarmTrust; readonly group: string; readonly vessel: SwarmSignerPort }>,
-): Promise<Array<{ face: string; tessera: string; head: string }>> {
+  offerPath?: string,
+): Promise<Array<{ face: string; tessera: string; head: string; offerSpent?: true }>> {
   if (named.length === 0) return [];
   const pending = await pendingBegins(wiki, "kukulu", branch);
-  const out: Array<{ face: string; tessera: string; head: string }> = [];
+  const out: Array<{ face: string; tessera: string; head: string; offerSpent?: true }> = [];
   for (const tessera of named) {
     const p = pending.find((x) => x.tessera === tessera);
     const face = p === undefined ? undefined : faceOf.get(p.group);
     if (p === undefined || face === undefined || !/^h\d+$/.test(face)) continue;
     const f = await faceAt(Number(face.slice(1)));
-    await abandonRite(wiki, { tessera }, f.trust, f.group, f.vessel, { kukulu: head });
-    out.push({ face, tessera, head: p.head });
+    const down = await setHalfDown(wiki, { tessera }, f.trust, f.group, f.vessel, offerPath, { kukulu: head });
+    out.push({ face, tessera, head: p.head, ...(down.offerSpent ? { offerSpent: true as const } : {}) });
   }
   return out;
+}
+
+/**
+ * ONE SET-DOWN, BOTH ROADS (restand-files-smooth): the hand's abandon and a kūkulu's supersede rest the kāpae mark
+ * (`abandonRite`), then spend the resting offer whose vouch names that half (`spendKukuluOffer`), so no stale offer holds the
+ * next vessel's door over an image that never runs. Answers the mark, with `offerSpent` where the offer went; with no
+ * `offerPath` the offer stays as it rests.
+ */
+export async function setHalfDown(
+  wiki: SwarmWikiPort, at: { readonly tessera: string }, trust: SwarmTrust, group: string, vessel: SwarmSignerPort,
+  offerPath: string | undefined, superseded?: { readonly kukulu: string },
+): Promise<Awaited<ReturnType<typeof abandonRite>> & { offerSpent?: true }> {
+  const down = await abandonRite(wiki, at, trust, group, vessel, superseded);
+  const spent = offerPath !== undefined && down.rite === "kukulu" && spendKukuluOffer(offerPath, { group, branch: down.branch, head: down.head, ...(down.image === undefined ? {} : { image: down.image }) });
+  return { ...down, ...(spent ? { offerSpent: true as const } : {}) };
 }
 
 /**
@@ -352,7 +369,7 @@ export async function runRiteVerb(opts: {
     // THE HALVES THIS KŪKULU SUPERSEDES (`supersedes`, comma-joined tesserae the host read as never landed) set down first, as
     // their own faces, so the begin below reads only the debt that still stands.
     const named = str("supersedes").split(",").map((t) => t.trim()).filter((t) => /^[0-9a-f]{64}$/.test(t));
-    const superseded = await supersedeBegins(wiki, named, at.head, at.branch, faceOf, (ordinal) => riteFaceOf(opts.repo, opts.catalogUrl, ordinal));
+    const superseded = await supersedeBegins(wiki, named, at.head, at.branch, faceOf, (ordinal) => riteFaceOf(opts.repo, opts.catalogUrl, ordinal), opts.offerPath ?? kukuluOfferPath());
     refuseStandingBegin((await pendingBegins(wiki, "kukulu", at.branch)).map((p) => ({ ...p, ...(faceOf.has(p.group) ? { face: faceOf.get(p.group)! } : {}) })));
     return { ...await beginLentFaces(lent, async (ordinal) => {
       let face: RiteFace;
@@ -378,7 +395,7 @@ export async function runRiteVerb(opts: {
   if (opts.action === "abandon") {
     // THE HAND SETS A BEGUN HALF DOWN: the socket's hand gate admitted the act; the vessel witnesses the mark and spends nothing.
     if (!/^[0-9a-f]{64}$/.test(str("tessera"))) throw new SwarmRefused("rite-malformed", "an abandon names the tessera it sets down");
-    try { return { ...await abandonRite(opts.wiki, { tessera: str("tessera") }, trust, group, vessel) }; }
+    try { return { ...await setHalfDown(opts.wiki, { tessera: str("tessera") }, trust, group, vessel, opts.offerPath ?? kukuluOfferPath()) }; }
     catch (e) { throw await tesseraFaceRefusal(e, opts.wiki, str("tessera"), await facesOfGroups(await (opts.lentOrdinals ?? unlockedFaceOrdinals)()).catch(() => new Map<string, string>()), "abandon"); }
   }
   const rite = opts.args["rite"];
