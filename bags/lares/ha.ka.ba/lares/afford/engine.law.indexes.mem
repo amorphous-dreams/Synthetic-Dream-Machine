@@ -91,10 +91,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/mcp`>>
 
-!!! law_index
+!!! act lar:///engine.law.indexes
 
 ```memetic-wikitext
-<<has entity=`skin` name=`mcp` params=`spells/law_index omits/face ~ the seat; answers the body`>>
+<<has entity=`skin` name=`mcp` params=`handler/seat spells/[[act lar:///engine.law.indexes]] omits/face ~ the seat; answers the body`>>
 ```
 
 <<~/ahu>>
@@ -110,6 +110,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;sCmUC0_F6YpREEv5Ulwg6yGSwXOBeB7Rdy8BdkLUNlQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XnrQy8uHPWyESXCVhib1zzf_L-TPdfiDePAzpQVqu0w`>>
 
 <<^ code=`&#x0004;` to=`?`>>

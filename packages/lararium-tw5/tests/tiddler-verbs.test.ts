@@ -2280,6 +2280,50 @@ async function cureOf(refused: Promise<unknown>): Promise<string> {
   return String((err as CallRefusal).cure);
 }
 
+// ── the one act keeps the hand at the door (comms-ux-enacts landings 9 and 11) ─────────────────────────────────────────
+
+const COMMITS_SEAT = "lar:///ha.ka.ba/lares/afford/realm.offer.commits";
+const DIGEST = "a".repeat(64);
+/** Every grant open: the cap the asker holds answers yes for every bag and every access. */
+const everyGrant: Cap = async () => ({ ok: true });
+
+describe.skipIf(wikiSkip)(`the one act keeps the hand at the door${skipNote}`, () => {
+  /** A seat's `act` on the hand-gated promote commit: the canon carrier, every grant open, the hand-only verb seated by address. */
+  async function handRig() {
+    const r = await callRig();
+    const text = canonFile("afford/realm.offer.commits.mem");
+    r.engine.ingestCarrier(headTitleOf(text), text, { "$origin-bag": CANON });
+    const ran: Array<Record<string, unknown>> = [];
+    r.table.handOnly({ "promote-commit": "promote-needs-hand" });
+    r.table.register("promote-commit", async (args) => { ran.push({ ...args }); return { has: "<<~ has name=`promote-commit`>>", committed: true }; });
+    r.table.answer("lar:///realm.offer.commits", { verb: "promote-commit" });
+    const reactor = makeCallReactor(r.table, tiddlerCallSource(r.opts));
+    /** An MCP seat's call: the seat's surface, a channel ask (no hand's path), every grant open; `hand` stands the surface's own path. */
+    const act = (address: string, params: Record<string, unknown>, hand = false) =>
+      reactor({ verb: address, params, surface: "mcp" }, { ...ctx(everyGrant), ...(hand ? { surface: true } : {}) });
+    return { ...r, ran, act };
+  }
+
+  test("RED: a working layer re-seats the hand-gated commit for the seat (no handler/host, an mcp row, a #/gate claiming who/seat), and the seat's act with every grant open refuses promote-needs-hand and runs nothing; CONTROL: a hand's own path runs the same call", async () => {
+    const r = await handRig();
+    // CANON ALONE: the cli row names handler/host, so the seat's call answers the plan for a terminal and runs nothing.
+    expect(await r.act("lar:///realm.offer.commits", { digest: DIGEST })).toMatchObject({ handler: "host", address: "lar:///realm.offer.commits" });
+    expect(r.ran).toEqual([]);
+    // THE LAYER ABOVE: mutability at the root lets a layer move every row a carrier reads; none of it grants a hand.
+    const skins = r.engine.wiki.getTiddler(`${COMMITS_SEAT}#/skins/cli`)!.getFieldStrings();
+    const seatRow = "<<has entity=`skin` name=`mcp` params=`spells/[[act lar:///realm.offer.commits]] ~ the seat`>>\n";
+    r.engine.wiki.addTiddler({ ...skins, "$origin-bag": DAEMON, text: seatRow + skins["text"]!.replace("handler/host ", "") });
+    const gate = r.engine.wiki.getTiddler(`${COMMITS_SEAT}#/gate`)!.getFieldStrings();
+    r.engine.wiki.addTiddler({ ...gate, "$origin-bag": DAEMON, text: gate["text"]!.replace("who/hand", "who/seat") });
+    const refused = await r.act("lar:///realm.offer.commits", { digest: DIGEST }).then(() => null, (e: unknown) => e);
+    expect(refused).toMatchObject({ reason: "promote-needs-hand" });
+    expect(r.ran).toEqual([]);
+    // CONTROL: the same call on a hand's own path (the surface's control-event path) runs, the stack unchanged.
+    expect(await r.act("lar:///realm.offer.commits", { digest: DIGEST }, true)).toMatchObject({ committed: true });
+    expect(r.ran).toEqual([{ digest: DIGEST }]);
+  });
+});
+
 describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the live stack${skipNote}`, () => {
   test("RED: call(\"get\", {title}) answers what tiddler-get answers on the same fixture, the container defaulting through the canon row, and the has line names the carrier", async () => {
     const r = await callRig();
@@ -2295,7 +2339,7 @@ describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the 
     expect(String(called["has"])).toContain(`carrier/${READS_SEAT} bag/${CANON} base/${seat.hash}`);
     // The address and any skin's spelling reach the same door.
     expect(await r.call("lar:///engine.record.reads", { title: "Note 04" })).toMatchObject(plain);
-    expect(await r.call("tiddler_get", { title: "Note 04" })).toMatchObject(plain);
+    expect(await r.call("lares get", { title: "Note 04" })).toMatchObject(plain);
     // `get` with a filter chooses the other carrier by its `by/filter` row.
     expect(await r.call("get", { filter: "[tag[memory]limit[2]]" })).toMatchObject({ recipe: "default", titles: ["Note 01", "Note 02"] });
   });
@@ -2362,7 +2406,7 @@ describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the 
   test("RED: a sigil goes in: the call sigil reads through the engine's own macro-call parser and answers what the call answers", async () => {
     const r = await callRig();
     const called = await r.call("get", { title: "Note 04" });
-    for (const sigil of ["<<~ get title=`Note 04`>>", `<<~get title="Note 04">>`, `<<~ tiddler_get title=[[Note 04]] recipe=default>>`, `<<~ "lar:///engine.record.reads" title=\`Note 04\`>>`]) {
+    for (const sigil of ["<<~ get title=`Note 04`>>", `<<~get title="Note 04">>`, `<<~ "lares get" title=[[Note 04]] recipe=default>>`, `<<~ "lar:///engine.record.reads" title=\`Note 04\`>>`]) {
       const read = await r.sigil(sigil);
       expect(read, sigil).toMatchObject({ recipe: "default", title: "Note 04", carrier: called["carrier"] });
       expect(read["tiddler"], sigil).toEqual(called["tiddler"]);
@@ -2622,10 +2666,10 @@ describe.skipIf(wikiSkip)(`mu sets the depth: glyphs and words meet the carrier'
     const r = await muRig();
     let listed: Record<string, unknown> | null = null;
     r.table.register("meme-list", async (args) => { listed = args; return { roots: [], next: null }; });
-    expect(await r.call("tiddler_get", { meme: true, tree: true })).toMatchObject({ roots: [], carrier: { carrier: READS_SEAT } });
+    expect(await r.call("lares get", { meme: true, tree: true })).toMatchObject({ roots: [], carrier: { carrier: READS_SEAT } });
     expect(listed).toMatchObject({ meme: true, tree: true, recipe: "default" });
     // CONTROL: a title beside meme still reads the record door.
-    expect(await r.call("tiddler_get", { title: MEME, meme: true })).toMatchObject({ lens: "meme", title: MEME });
+    expect(await r.call("lares get", { title: MEME, meme: true })).toMatchObject({ lens: "meme", title: MEME });
   });
 
   test("REACH: $tw.lares.call(\"get\", {title, mu: \"relate\"}) answers one has line; the same with assert answers every slot", async () => {

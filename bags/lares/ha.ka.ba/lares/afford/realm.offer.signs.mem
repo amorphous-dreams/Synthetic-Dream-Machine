@@ -1,0 +1,77 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.offer.signs`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "offer memes toward a house-canon bag, signed"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.offer.signs"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.offer.signs"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.offer.signs"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.offer.signs ~ offer memes toward a house-canon bag
+
+`uris` names the memes and `bag` the house-canon bag; `nexus` names the Nexus whose offer table takes the signed row. An offer grants nothing and moves no canon byte: the promotion stays a hand act at a terminal.
+
+The address stands ''candidate'' until the operator reads the landing's list. The MCP seat runs this act in its own process: the vessel's `call` binds the params against this carrier's live `#/takes` and answers `handler/seat` with the bound params, and the seat runs them (`act(address="lar:///realm.offer.signs", args={…})`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ uris · bag · nexus
+
+```memetic-wikitext
+<<has entity=`arg` name=`uris` params=`takes/json needs/required ~ the memes offered`>>
+<<has entity=`arg` name=`bag` params=`takes/word needs/required ~ one bag`>>
+<<has entity=`arg` name=`nexus` params=`takes/word ~ the Nexus whose offer table takes the row`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ the vessel verbs the seat's handler reaches check the face's cap and the asker's hand themselves; a hand act refuses a seat by its own code`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ mcp
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! act lar:///realm.offer.signs
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`handler/seat spells/[[act lar:///realm.offer.signs]] ~ the seat runs it in its own process`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · lares-mcp
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/sensorium/lares-mcp`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mtWFoEf4t-rm-LjvOe4mXQDTgU9YJnvoCvrRBS7ukjQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

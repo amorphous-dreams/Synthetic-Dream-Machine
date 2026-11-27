@@ -141,7 +141,7 @@ PLANE_VERBS = ("plane_record",)
 # mirrors the `lares wiki <verb>` CLI namespace, honest to its subcommand shape (never 4 flat tools that
 # would flatten the namespace). A PROPER CLI mirror — the host `wiki` is a real top-level command — so it
 # rides `mirrored`/`cli_forms` in the fixture, not an ahead-of-CLI allowance. All four sub-verbs are
-# uniformly low-trust · reversible · LOCAL residency ops (one conservative VERB_SEATS seat covers them).
+# uniformly low-trust · reversible · LOCAL residency ops.
 WIKI_VERBS = ("wiki",)
 
 # The MEME namespace — the MCP skin of the meme family's DAEMON-seated verbs. A family writes through the plain tiddler
@@ -234,33 +234,33 @@ SHORE_VERB = "shore"
 SHORE_ISLANDS = ("wiki", "daemon")
 
 # What the seat tells a client at its first contact: read the house's law before acting.
-SEAT_INSTRUCTIONS = (
-    "Read the house's law before you act: `law_index` lists the pinned law first (the boot seed, then the Mu family), "
-    "then every law meme under a bag's api/ tree, each with its one line; `tiddler_get(title=<title>, recipe=\"default\", meme=True, grain=\"whole\")` "
-    "reads one whole (paged on slot boundaries past one page; without the grain a long one answers its has-stack first); `law_pin` / `law_unpin` order the pins in this face's own daemon wiki. Every read names the wiki or bag that "
-    "answered. `kahua_get` and `meme_offer_show` list without an identifier and read one verified item with one; "
-    "the local `bag show [<slug>]` surveys bags and has no MCP route. Turn what you read through the five tools: let it spark a move (🜂), weigh how it sits with the mutual "
-    "frame (🜄), verify its claims whatever their layer (🜁), let its residency ground its standing without crowning it "
-    "(🜃), and hold the ladder itself as catma (🜍). Working-layer notes carry the house's live thinking, your own "
-    "included. Operator and node hold the frame together. A human-in-the-loop act (`lares sense harden`, `retire`, "
-    "`un-retire`, `purge`, `teardown`) runs on a person's hand at a real terminal alone and holds no tool here: name "
-    "the command for the operator to run on their own terminal, since no value a seat fills approves it."
-    " Your three gestures: `tiddler_get` reads (`meme=True, grain=\"whole\"` unfolds a carrier, and every affordance a carrier names unfolds through that one read line); `tiddler_put` writes (`append=` with `create=True` adds a paragraph or a new record with no base); `wiki_filter` finds titles by TiddlyWiki filter."
-    " `wiki(verb=\"switch\", slug=...)` switches live; `wiki(verb=\"keep\", slug=...)` keeps the wiki warm on the worn face's keep list and `wiki(verb=\"unkeep\", slug=...)` drops it; a full keep budget refuses by name and drops no keep. "
-    " `wiki_status()` surveys catalog, activation and vessel residency; name `recipe` for layer write reach."
-    " `shore()` lists what stands for a hand at the disk shore (each standoff with its key, each pending removal; `face=N` reads a lit sibling's shore) and `shore_flush()` asks the vessel to write every island's owed mirrors now; settling a row stays the operator's `lares shore` at a terminal, so name that command."
-    " The `wiki` tool's `verb=\"act\"` runs one named admitted action (today `sidebar-layout`) in the wiki `recipe` names, with the `expected` and `resulting` values checked; it takes no action text, and a stale `expected` answers `conflict` and writes nothing."
+SEAT_LEAD = (
+    "Seven tools reach the house, each one call shape: `get`, `put`, `delete` and `rename` move records (`get(title=..., "
+    "mu=\"assert\")` reads a meme whole, `mu=\"relate\"` its card; `get(filter=...)` pages a TiddlyWiki filter; `put` and "
+    "`delete` take `mu=\"dry\"` to preview and land nothing), and `act(address=..., args={...})` runs any affordance by its "
+    "lar: address, its args bound at the vessel against the carrier's #/takes as the stack resolves it. A carrier seated in any "
+    "layer brings its affordance with no new tool. Read the house's law first: `act(address=\"lar:///engine.law.indexes\")` "
+    "lists the pinned law (the boot seed, then the Mu family), then every law meme with its one line; `get(filter=\"[tag[lar:"
+    "///ha.ka.ba/lares/api/pono/affordance]]\")` lists every carrier, and `get(title=<carrier>, mu=\"relate\")` reads one. "
+    "Every answer leads with its has line and names the carrier that answered. Turn what you read through the five tools: "
+    "let it spark a move (🜂), weigh how it sits with the mutual frame (🜄), verify its claims whatever their layer (🜁), let "
+    "its residency ground its standing without crowning it (🜃), and hold the ladder itself as catma (🜍). A hand act refuses "
+    "every seat by its own code and names the command for the operator to run on their own terminal, since no value a seat "
+    "fills approves it."
 )
 
-# Each tool declares its verb nature once; the seat and its weld derive hints from this table.
-TOOL_NATURE = {
-    **dict.fromkeys(('recall', 'status', 'worldline', 'flow', 'plane_record', 'meme_project', 'wiki_filter', 'tiddler_get', 'wiki_render', 'wiki_status', 'ddate', 'law_index', 'vessel_roster', 'meme_offer_show', 'kahua_get', 'roster', 'shore'), 'reads'),
-    **dict.fromkeys(('kapae', 'un_kapae', 'wiki', 'law_pin', 'law_unpin', 'kahua_stage', 'reconcile', 'analyze', 'shore_flush'), 'patches'),
-    **dict.fromkeys(('tiddler_delete',), 'removes'),
-    **dict.fromkeys(('pour', 'oracle_cast', 'meme_offer', 'kahua_propose', 'build'), 'casts'),
-    # A put replaces named text whole (destructive) and an append lands its words again on each call (never idempotent).
-    **dict.fromkeys(('tiddler_put',), 'puts'),
-}
+
+def seat_instructions(pack=None) -> str:
+    """The server's instruction text: the lead, then each affordance the pack's carriers seat for this seat, by address and role."""
+    pack = read_affordance_pack() if pack is None else pack
+    rows = []
+    seated = set(((pack.get("routes") or {}).get("mcp") or {}).values())
+    for address, carrier in sorted((pack.get("carriers") or {}).items()):
+        if address not in seated:
+            continue
+        role = str(carrier.get("role") or "").strip()
+        rows.append(f"{address} ~ {role}" if role else address)
+    return SEAT_LEAD + (" The affordances: " + " · ".join(rows) + "." if rows else "")
 
 # THE AFFORDANCE PACK — the words a tool's skin carries, baked from its affordance carrier
 # (lar:///ha.ka.ba/lares/api/pono/affordance) by `packages/lararium-tw5/scripts/build-affordance-pack.ts`. A tool the pack
@@ -268,6 +268,24 @@ TOOL_NATURE = {
 # its docstring until its carrier lands. One file the CLI reads too, so a seat and a terminal render one carrier's bytes.
 AFFORDANCE_PACK_PATH = os.environ.get("LARES_AFFORDANCE_PACK") or os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "..", "..", "lararium-tw5", "affordance-pack.json")
+
+
+def carrier_words(address, pack=None):
+    """One carrier's words on the seat: its mcp whole from the pack, or none where the pack holds no such carrier."""
+    pack = read_affordance_pack() if pack is None else pack
+    carrier = (pack.get("carriers") or {}).get(address) or {}
+    return list(((carrier.get("renders") or {}).get("mcp") or {}).get("whole") or [])
+
+
+def act_description(pack=None) -> str:
+    """The `act` tool's description: the call shape, then each carrier by address and role, rendered from the pack."""
+    pack = read_affordance_pack() if pack is None else pack
+    lines = ["Run any affordance by its lar: address: `act(address=\"lar:///<t1.t2.t3>\", args={...})`. The vessel binds the args "
+             "against the carrier's #/takes as the caller's stack resolves it; an act refuses by name with a cure. Each carrier:"]
+    for address, carrier in sorted((pack.get("carriers") or {}).items()):
+        role = str(carrier.get("role") or "").strip()
+        lines.append(f"{address} ~ {role}" if role else address)
+    return "\n".join(lines)
 
 
 def read_affordance_pack(path=None):
@@ -280,44 +298,8 @@ def read_affordance_pack(path=None):
     return pack if isinstance(pack, dict) else {"carriers": {}, "routes": {}}
 
 
-def pack_tool_skin(tool, pack=None):
-    """One tool's skin from the pack: (description, {param: description}), or None where the pack routes no carrier to it."""
-    pack = read_affordance_pack() if pack is None else pack
-    address = ((pack.get("routes") or {}).get("mcp") or {}).get(tool)
-    carrier = (pack.get("carriers") or {}).get(address) if address else None
-    if not carrier:
-        return None
-    whole = ((carrier.get("renders") or {}).get("mcp") or {}).get("whole") or []
-    return "\n".join(whole), dict(carrier.get("params") or {})
-
-
-def _dress_from_pack(mcp, pack=None):
-    """Hand every pack-routed tool its carrier's words: the description, then each parameter's in the input schema. A
-    parameter the carrier names and the signature lacks (or the reverse) stays as it stands; witness W2 reads that red."""
-    pack = read_affordance_pack() if pack is None else pack
-    manager = getattr(mcp, "_tool_manager", None)
-    for tool in sorted((pack.get("routes") or {}).get("mcp") or {}):
-        skin = pack_tool_skin(tool, pack)
-        held = manager.get_tool(tool) if manager is not None else None
-        if skin is None or held is None:
-            continue
-        description, params = skin
-        held.description = description
-        properties = (held.parameters or {}).get("properties") or {}
-        for name, words in params.items():
-            if name in properties and words:
-                properties[name]["description"] = words
-
-
-def tool_annotation_hints(name):
-    reversible, crossing = VERB_SEATS[name]
-    nature = TOOL_NATURE[name]
-    return (nature == "reads", nature in ("removes", "puts") or not reversible,
-            nature not in ("casts", "puts"), crossing)
-
-
 # The targets `meme_project` renders — the same list `lares meme project --to` takes. The carrier itself reads through
-# `tiddler_get(meme=True, grain="whole")`.
+# `get(title=<uri>, mu="assert")`.
 PROJECT_TARGETS = ("md", "html", "tid", "json")
 
 # The DURABLE sensorium LIFECYCLE sub-verbs a seat runs — roster (bare: every sensorium; `name`: one's facets) · build ·
@@ -332,77 +314,6 @@ SENSE_LIFECYCLE_VERBS = ("roster", "build", "reconcile")
 # vessel refuses every asker but a terminal's, so a seat's approval value approves nothing and a tool that always
 # refused would only stand as surface. A seat names the command for the operator to run on their own terminal.
 SENSE_HAND_VERBS = ("harden", "retire", "un-retire", "purge", "teardown")
-
-# The reversibility×trust GRID: each verb declares (reversible, trust_crossing). The seat follows —
-# HOTL (reversible AND trusted) runs on the operator's loop, no pause; HITL (irreversible OR trust-
-# crossing) waits for a person's hand at a real terminal, which no tool argument stands in for, so an HITL
-# verb holds no tool here (SENSE_HAND_VERBS above; attach and release below wait for their own talk).
-VERB_SEATS = {
-    "pour": (True, False),       # append-only capture, one pointer or `bulk` — reversible (an edit rides kapae), trusted
-    "recall": (True, False),     # read — reversible, trusted
-    "status": (True, False),     # read — reversible, trusted
-    "worldline": (True, False),  # read — reversible, trusted
-    "kapae": (True, False),      # move-not-delete mute — reversible, trusted
-    "un_kapae": (True, False),   # restore — reversible, trusted
-    "plane_record": (True, False),      # cross-plane read — reversible, trusted (structure/form fold onto recall --lens)
-    "analyze": (True, False),           # rhythm `repour` writes a reversible refresh → HOTL
-    "flow": (True, False),              # the pet-named composed cap-stack runner — read-only compute, routed → HOTL
-    "wiki": (True, False),              # switcher and admitted action — reversible gated wiki write → HOTL
-    # The meme render — a family's put and delete ride the tiddler door below; the render reads, on the operator's own island → HOTL.
-    "meme_project": (True, False),      # render a meme to a target — a read, deterministic, trusted → HOTL
-    # The tiddler door — the reads run the wiki's own engine and move nothing; a put patches one record in the working
-    # layer against a base (a re-put restores) and a delete lands a kāpae tombstone a re-put restores; all stay on the
-    # face's own daemon wiki → HOTL. The vessel's own gates decide reach (the face's cap, the Kahu predicate, the
-    # Confluence gate on a family's text, and the one wall a seat keeps: its startup action offers); the seat adds none of its own.
-    "wiki_filter": (True, False),       # run a TiddlyWiki filter, one bounded page — a read → HOTL
-    "tiddler_get": (True, False),       # one record with its fields and its base hash — a read → HOTL
-    "wiki_render": (True, False),       # wikify a title or a span to text or html — a read → HOTL
-    "wiki_status": (True, False),       # each layer's writeability for the session's face — a read → HOTL
-    "ddate": (True, False),             # the Discordian date from a date the caller names — pure compute, a read → HOTL
-    # The law index — the read runs the wiki's own engine and moves nothing; a pin edits one run of the face's pin set in its
-    # working layer against a base (an unpin restores it) → HOTL. House canon takes no byte from either.
-    "law_index": (True, False),         # the pinned law, then the law the pins leave out — a read → HOTL
-    "law_pin": (True, False),           # add one `[[uri]]` run to the face's pin set — reversible, trusted → HOTL
-    "law_unpin": (True, False),         # take a title out of the pin set — reversible, trusted → HOTL
-    "vessel_roster": (True, False),     # who is home: the vessel's own reading of its seats, lanes and vota — a read → HOTL
-    # The disk shore — the list looks at the disk and names what stands, placing nothing; the flush writes owed mirrors from the
-    # records the vessel already holds, placing no record (a second flush writes nothing new) → HOTL.
-    "shore": (True, False),             # each standoff and pending removal, both islands or one lit face's — a read → HOTL
-    "shore_flush": (True, False),       # every island's owed mirror writes, now — places no record, trusted → HOTL
-    "oracle_cast": (True, False),       # one cast written as one new tiddler in the working layer — reversible, trusted → HOTL
-    "tiddler_put": (True, False),       # write fields, tags, or named text (a family's root or slot too) in the working layer or one bag — reversible, trusted → HOTL
-    "tiddler_delete": (True, False),    # remove one plain tiddler plainly, or a meme family where `family=True` names the act; a lower layer asks `mode` → HOTL
-    # The offering door — an offer appends a signed row to the Nexus's offer table and moves no canon byte; the reads fold
-    # the table → HOTL. The promotion never seats here: no MCP tool carries it.
-    "meme_offer": (True, False),        # one signed offer toward a house-canon bag — grants nothing, trusted → HOTL
-    "meme_offer_show": (True, False),   # one offer's field diff against canon — a read → HOTL
-    # The kahua seat verbs — a proposal grants nothing (the operator's signed lift decides) and the reads fold the
-    # verified stage; both stay on the face's own fleet → HOTL. The lift itself never seats here: no MCP tool carries it.
-    "kahua_propose": (True, False),     # one proposal batch on the face's intents plane — grants nothing, trusted → HOTL
-    "kahua_stage": (True, False),       # one row in the face's local canon, unsigned and on this device alone → HOTL
-    "kahua_get": (True, False),         # one title's verified item (and its history) — a read → HOTL
-    # 6b control verbs — the SEAT stands now; execution rides in after the HITL talk-story locks.
-    "attach": (True, True),      # admit a guest sensorium — TRUST-CROSSING → HITL
-    "release": (False, False),   # let a guest sensorium GO (drops its handle) — IRREVERSIBLE → HITL
-    "reconcile": (True, False),  # re-settle a sensorium against its source — reversible, trusted → HOTL
-    # The DURABLE sensorium-lifecycle sub-verbs a seat runs (SENSE_LIFECYCLE_VERBS) — the read and the pioneer build.
-    "roster": (True, False),     # read every sensorium's lifecycle, or one's manifest facets — reversible, trusted → HOTL
-    "build": (True, False),      # mint an ephemeral pioneer (an operator's retire undoes it) — reversible, trusted → HOTL
-}
-
-
-def seat_of(verb: str) -> str:
-    """HOTL when a verb runs reversible AND trusted; HITL (needs the operator's hand) when it turns
-    irreversible OR crosses a trust boundary."""
-    reversible, trust_crossing = VERB_SEATS[verb]
-    return "HOTL" if (reversible and not trust_crossing) else "HITL"
-
-
-# THE RETIRED PARAMETERS, by tool: the word that replaced each. The seat refuses a call naming one before any wire.
-RETIRED_PARAMS: dict = {
-    "tiddler_get": {"text": 'the grain names it: grain="skinny" leaves the text home, grain="fat" carries it'},
-}
-
 
 class SeatArgumentRefused(HouseRefusal, ValueError):
     """A tool's own argument guard: the call named something this seat cannot route (no container, a bare-slug law, ...)."""
@@ -944,10 +855,6 @@ def build_mcp(coordinator: LaresCoordinator):
         stays unnamed."""
 
         async def call_tool(self, name, arguments, context=None):
-            # A RETIRED PARAMETER REFUSES ALOUD: the SDK drops a name no tool declares, so a caller still sending a retired
-            # one would read an answer it never asked for. Each retired name refuses here with the word that replaced it.
-            for word in sorted(set(arguments or {}) & set(RETIRED_PARAMS.get(name, {}))):
-                raise ToolError(f"Error executing tool {name}: param-retired: `{word}` retired; {RETIRED_PARAMS[name][word]}. Nothing was read.")
             try:
                 return await super().call_tool(name, arguments, context)
             except UnexpectedToolError as crash:
@@ -955,12 +862,8 @@ def build_mcp(coordinator: LaresCoordinator):
                     raise ToolError(f"Error executing tool {name}: {crash.__cause__}") from crash.__cause__
                 raise
 
-    mcp = _Seat("lares", instructions=SEAT_INSTRUCTIONS)
-
-    def _annotations(name):
-        read, destructive, idempotent, open_world = tool_annotation_hints(name)
-        return ToolAnnotations(readOnlyHint=read, destructiveHint=destructive,
-                               idempotentHint=idempotent, openWorldHint=open_world)
+    pack = read_affordance_pack()
+    mcp = _Seat("lares", instructions=seat_instructions(pack))
 
     # The addressed-sensorium shore: an AI names a sensorium; the tool resolves the name to its root and
     # threads it up the @daemon cap-ladder (the routed recall/capture/refresh verbs pick the holder by
@@ -986,7 +889,6 @@ def build_mcp(coordinator: LaresCoordinator):
         method = getattr(coordinator, verb)
         return method(*args, sensorium_root=root, **kwargs) if routed else method(*args, **kwargs)
 
-    @mcp.tool(annotations=_annotations("pour"))
     def pour(surface: str = "all", pointer: "str | None" = None, bulk: bool = False, writeback: bool = False,
              dry_run: bool = False, wing: "str | None" = None, room: "str | None" = None,
              project: "str | None" = None, limit: "int | None" = None, sensorium: "str | None" = None) -> dict:
@@ -1009,7 +911,6 @@ def build_mcp(coordinator: LaresCoordinator):
         return _call("pour", sensorium, surface, pointer, writeback=writeback, dry_run=dry_run,
                      wing=wing, room=room or "conversations")
 
-    @mcp.tool(annotations=_annotations("recall"))
     def recall(query: str, k: int = 8, wing: "str | None" = None, imago: "str | None" = None,
                list: bool = False, agent: "str | None" = None, surface: "str | None" = None,
                speaker: "str | None" = None, channel: "str | None" = None, function: "str | None" = None,
@@ -1028,31 +929,26 @@ def build_mcp(coordinator: LaresCoordinator):
                      agent=agent, surface=surface, speaker=speaker, channel=channel, function=function,
                      pair=pair, lens=lens)
 
-    @mcp.tool(annotations=_annotations("status"))
     def status(sensorium: "str | None" = None) -> dict:
         """Report what a sensorium holds (the taxonomy). `sensorium` names it; absent → memory."""
         return _call("status", sensorium)
 
-    @mcp.tool(annotations=_annotations("worldline"))
     def worldline(selector: "str | None" = None, sensorium: "str | None" = None) -> dict:
         """Render the graph of conversation turns.
         Render the fork-DAG rhizome of turns. `selector` names which run/handle to walk; `sensorium`
         names the sensorium (absent → memory)."""
         return _call("worldline", sensorium, selector)
 
-    @mcp.tool(annotations=_annotations("kapae"))
     def kapae(branch: str, tick: int, sensorium: "str | None" = None) -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///sense.kapae.mutes): `_dress_from_pack` hands this tool its description and
-        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
+        # THE SEAT'S OWN ACT FOR lar:///sense.kapae.mutes: the vessel binds its args against the carrier and answers handler/seat;
+        # this function keeps behaviour alone, and the carrier holds its words.
         return _call("kapae", sensorium, branch, tick)
 
-    @mcp.tool(annotations=_annotations("un_kapae"))
     def un_kapae(branch: str, tick: int, sensorium: "str | None" = None) -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///sense.kapae.restores): `_dress_from_pack` hands this tool its description and
-        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
+        # THE SEAT'S OWN ACT FOR lar:///sense.kapae.restores: the vessel binds its args against the carrier and answers handler/seat;
+        # this function keeps behaviour alone, and the carrier holds its words.
         return _call("un_kapae", sensorium, branch, tick)
 
-    @mcp.tool(annotations=_annotations("analyze"))
     def analyze(lens: "str | None" = None, spectral: bool = False, halves: "str | None" = None, span: "int | None" = None,
                 repour: bool = False, channel: "str | None" = None, rows: "list | None" = None,
                 names: "list | None" = None, sensorium: "str | None" = None) -> dict:
@@ -1094,15 +990,13 @@ def build_mcp(coordinator: LaresCoordinator):
             out = _call(verb, sensorium)
         return {"lens": resolved, **out} if isinstance(out, dict) else {"lens": resolved, "result": out}
 
-    @mcp.tool(annotations=_annotations("flow"))
     def flow(petname: "str | None" = None, target: "list | None" = None,
              signal: "list | None" = None, names: "list | None" = None,
              sensorium: "str | None" = None) -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///sense.record.flows): `_dress_from_pack` hands this tool its description and
-        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
+        # THE SEAT'S OWN ACT FOR lar:///sense.record.flows: the vessel binds its args against the carrier and answers handler/seat;
+        # this function keeps behaviour alone, and the carrier holds its words.
         return _call("flow", sensorium, petname=petname, targets=target, rows=signal, names=names)
 
-    @mcp.tool(annotations=_annotations("plane_record"))
     def plane_record(cid: str, sensorium: "str | None" = None) -> dict:
         """Read a record across the sensorium planes.
         The cross-plane witness: one cid -> presence + payload summary across content,
@@ -1110,24 +1004,11 @@ def build_mcp(coordinator: LaresCoordinator):
         (absent → memory)."""
         return _call("plane_record", sensorium, cid)
 
-    @mcp.tool(annotations=_annotations("wiki"))
-    def wiki(verb: str, slug: "str | None" = None, name: "str | None" = None,
-             recipe: "str | None" = None, expected: "str | None" = None,
-             resulting: "str | None" = None) -> dict:
-        """Switch a live wiki with `verb="switch", slug=...`; keep it warm on the worn face's keep list with
-        `verb="keep", slug=...` and drop it with `verb="unkeep", slug=...`.
-        `act` runs an admitted action with recipe, name, expected and resulting.
-        `wiki_status` reads status."""
-        allowed = {"switch", "keep", "unkeep", "act"}
+    def wiki(verb: str, slug: "str | None" = None) -> dict:
+        """The worn face's live wiki and keep list: `switch`, `keep` or `unkeep` one wiki by `slug`."""
+        allowed = {"switch", "keep", "unkeep"}
         if verb not in allowed:
             raise SeatArgumentRefused(f"wiki: `verb` must be one of {sorted(allowed)}, got {verb!r}")
-        if verb == "act":
-            if slug is not None or not recipe or not name or not expected or not resulting:
-                raise SeatArgumentRefused("wiki act: name, recipe, expected and resulting required; slug refused")
-            return _meme_wire("wiki-action", {**_wiki_container("wiki act", recipe), "name": name,
-                                              "expected": expected, "resulting": resulting})
-        if any(value is not None for value in (name, recipe, expected, resulting)):
-            raise SeatArgumentRefused("wiki: action parameters ride `verb=act` alone")
         if not slug:
             raise SeatArgumentRefused("wiki: slug required")
         return uds.output({"switch": "wiki-switch", "keep": "wiki-keep", "unkeep": "wiki-unkeep"}[verb], {"slug": slug})
@@ -1212,7 +1093,6 @@ def build_mcp(coordinator: LaresCoordinator):
             args["after"] = after
         return _meme_wire("meme-list", args)
 
-    @mcp.tool(annotations=_annotations("meme_project"))
     def meme_project(uri: str, to: str, recipe: "str | None" = None, bag: "str | None" = None) -> dict:
         """Render the meme the island holds at its `lar:` `uri` to a target — mirrors `lares meme project
         <uri> --to <target>`. `to` names the target: `md` (the submission markdown) · `html` · `tid` · `json`;
@@ -1238,140 +1118,6 @@ def build_mcp(coordinator: LaresCoordinator):
             raise SeatArgumentRefused(f"{verb}: `{key}` takes a list of field names, got {value!r}")
         return [n for n in value if n]
 
-    @mcp.tool(annotations=_annotations("wiki_filter"))
-    def wiki_filter(filter: str, recipe: "str | None" = None,  # noqa: A002 — TiddlyWiki's own word
-                    fields: "list | None" = None, limit: "int | None" = None, after: "str | None" = None,
-                    max_bytes: "int | None" = None, target: "str | None" = None, collapse: bool = False,
-                    match: "str | None" = None, context: "int | None" = None) -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///engine.filter.pages, a candidate address): `_dress_from_pack` hands this tool its
-        # description and each parameter's from the baked affordance pack, so this function keeps behaviour alone and
-        # holds no docstring.
-        args: dict = {**_wiki_container("wiki_filter", recipe), "filter": filter, **_target(target)}
-        names = _names("wiki_filter", "fields", fields)
-        if names is not None:
-            args["fields"] = names
-        if limit is not None:
-            args["limit"] = limit
-        if after:
-            args["after"] = after
-        if collapse:
-            args["collapse"] = True
-        if match is not None:
-            args["match"] = match
-        if context is not None:
-            args["context"] = context
-        if max_bytes is not None:
-            args["maxBytes"] = max_bytes
-        return _meme_wire("wiki-filter", args)
-
-    @mcp.tool(annotations=_annotations("tiddler_get"))
-    def tiddler_get(title: "str | None" = None, recipe: "str | None" = None, bag: "str | None" = None, meme: bool = False,
-                    grain: "str | None" = None, slot: "str | None" = None, after: "str | None" = None,
-                    fields: "list | None" = None, max_bytes: "int | None" = None, target: "str | None" = None,
-                    tree: bool = False, all: bool = False) -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///engine.record.reads, a candidate address): `_dress_from_pack` hands this tool its
-        # description and each parameter's from the baked affordance pack, so this function keeps behaviour alone and
-        # holds no docstring.
-        if all and (not meme or title is None or slot or after or grain not in (None, "whole")):
-            raise SeatArgumentRefused("tiddler_get: all requires a titled meme whole read without slot or after")
-        if title is None:
-            if not meme:
-                raise SeatArgumentRefused("tiddler_get: a title is required unless meme=True lists families")
-            stray = [name for name, value in (("slot", slot), ("grain", grain), ("fields", fields), ("max_bytes", max_bytes)) if value is not None]
-            if stray:
-                raise SeatArgumentRefused(f"tiddler_get: a title-less meme listing reads no {', '.join(stray)}")
-            return meme_list(recipe=recipe, bag=bag, tree=tree, after=after, target=target)
-        if tree:
-            raise SeatArgumentRefused("tiddler_get: tree belongs to a title-less meme listing")
-        args: dict = {**_meme_container("tiddler_get", recipe, bag), "title": title, **_target(target)}
-        if meme:
-            args["meme"] = True
-        if grain:
-            args["grain"] = grain
-        if slot:
-            args["slot"] = slot
-        if after:
-            args["after"] = after
-        names = _names("tiddler_get", "fields", fields)
-        if names is not None:
-            args["fields"] = names
-        if max_bytes is not None:
-            args["maxBytes"] = max_bytes
-        if not all:
-            return _meme_wire("tiddler-get", args)
-        args["grain"] = "whole"
-        first = _meme_wire("tiddler-get", args)
-        if not isinstance(first, dict) or not isinstance(first.get("meme"), dict):
-            return first
-        import re
-        def refuse():
-            raise SeatArgumentRefused("read-page-mismatch: whole carrier pages failed validation; read again")
-        page = first
-        parts = []
-        seen = set()
-        origin_keys = ("title", "recipe", "bag", "lens", "face", "worn", "floor")
-        origin = tuple(first.get(k) for k in origin_keys)
-        first_meme = first["meme"]
-        def provenance(answer):
-            has = answer.get("has")
-            if not isinstance(has, str) or not has.startswith("<<~ has "):
-                refuse()
-            return tuple(re.findall(r"(?:^|\s)(?:layer|floor)/[^\s`]+", has))
-        first_provenance = provenance(first)
-        expected_hash = None
-        count = None
-        index = 1
-        while True:
-            m = page.get("meme")
-            if (not isinstance(m, dict) or not isinstance(m.get("text"), str) or
-                    not isinstance(m.get("canonicalHash"), str) or not m["canonicalHash"] or
-                    not isinstance(m.get("uri"), str) or not m["uri"]):
-                refuse()
-            if provenance(page) != first_provenance or tuple(page.get(k) for k in origin_keys) != origin or m.get("uri") != first_meme.get("uri") or m.get("bytes") != first_meme.get("bytes"):
-                refuse()
-            mark = m["canonicalHash"]
-            match = re.fullmatch(r"partial:p([1-9][0-9]*):(.+)", mark)
-            bare = match.group(2) if match else mark
-            if mark.startswith("partial:") and (not match or int(match.group(1)) != index):
-                refuse()
-            if expected_hash is None:
-                expected_hash = bare
-            if bare != expected_hash:
-                refuse()
-            info = m.get("page")
-            if info is not None:
-                if not isinstance(info, dict) or info.get("page") != index or not isinstance(info.get("pages"), int) or info["pages"] < index:
-                    refuse()
-                if count is None:
-                    count = info["pages"]
-                if info["pages"] != count:
-                    refuse()
-            elif index > 1:
-                refuse()
-            parts.append(m["text"])
-            nxt = page.get("next")
-            if nxt is None:
-                if match or (count is not None and count != index) or len("".join(parts).encode("utf-8")) != m.get("bytes"):
-                    refuse()
-                break
-            if not isinstance(nxt, dict) or nxt.get("grain") != "whole" or not isinstance(nxt.get("after"), str) or not nxt["after"] or not match or count is None or index >= count:
-                refuse()
-            cursor = nxt["after"]
-            if cursor in seen:
-                refuse()
-            seen.add(cursor)
-            page = _meme_wire("tiddler-get", {**args, "after": cursor})
-            if not isinstance(page, dict):
-                refuse()
-            index += 1
-        if index == 1:
-            return first
-        whole = {**first_meme, "text": "".join(parts), "canonicalHash": expected_hash}
-        whole.pop("page", None)
-        has = re.sub(r"(?<= )base/[^\s`]+", lambda _: f"base/{expected_hash}", first["has"], count=1)
-        return {**first, "has": has, "meme": whole, "next": None}
-
-    @mcp.tool(annotations=_annotations("wiki_render"))
     def wiki_render(title: "str | None" = None, text: "str | None" = None, recipe: "str | None" = None,
                     form: str = "text", type: "str | None" = None,  # noqa: A002 — the tiddler field's own name
                     after: "str | None" = None, max_bytes: "int | None" = None, target: "str | None" = None,
@@ -1406,7 +1152,6 @@ def build_mcp(coordinator: LaresCoordinator):
             args["maxBytes"] = max_bytes
         return _meme_wire("wiki-render", args)
 
-    @mcp.tool(annotations=_annotations("wiki_status"))
     def wiki_status(recipe: "str | None" = None, target: "str | None" = None) -> dict:
         """Survey wiki residency and layer access.
         Without a recipe, survey the catalog, activation and vessel residency. With a recipe, NAME EACH LAYER THE WIKI COMPOSES AND WHETHER THIS SESSION'S FACE READS AND WRITES IT — mirrors `lares wiki
@@ -1421,11 +1166,10 @@ def build_mcp(coordinator: LaresCoordinator):
                     "residency": {"scope": "vessel", **uds.output("residency", {})}}
         return _meme_wire("wiki-status", {**_wiki_container("wiki_status", recipe), **_target(target)})
 
-    @mcp.tool(annotations=_annotations("ddate"))
     def ddate(format: "str | None" = None, day: "int | None" = None, month: "int | None" = None,
               year: "int | None" = None) -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///oracle.calendar.dates): `_dress_from_pack` hands this tool its description and
-        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
+        # THE SEAT'S OWN ACT FOR lar:///oracle.calendar.dates: the vessel binds its args against the carrier and answers handler/seat;
+        # this function keeps behaviour alone, and the carrier holds its words.
         import datetime
         args: dict = {}
         if format is not None:
@@ -1437,12 +1181,11 @@ def build_mcp(coordinator: LaresCoordinator):
         args["today"] = {"year": today.year, "month": today.month, "day": today.day}
         return _meme_wire("ddate", args)
 
-    @mcp.tool(annotations=_annotations("oracle_cast"))
     def oracle_cast(recipe: "str | None" = None, bag: "str | None" = None, coins: "list | None" = None,
                     caster: "str | None" = None, asking: "str | None" = None, uncertain: "str | None" = None,
                     observe: "list | str | None" = None, by: "str | None" = None) -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///library.oracle.speaks): `_dress_from_pack` hands this tool its description and
-        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
+        # THE SEAT'S OWN ACT FOR lar:///library.oracle.speaks: the vessel binds its args against the carrier and answers handler/seat;
+        # this function keeps behaviour alone, and the carrier holds its words.
         import datetime
         args: dict = dict(_meme_container("oracle_cast", recipe, bag))
         if coins is not None:
@@ -1563,10 +1306,9 @@ def build_mcp(coordinator: LaresCoordinator):
         return {"title": LAW_PINS_TITLE, "uri": uri, "decision": decision, "pinned": mode == "pin", "text": candidate,
                 "hash": put.get("hash"), "bag": put.get("bag")}
 
-    @mcp.tool(annotations=_annotations("law_index"))
     def law_index(limit: "int | None" = None, after: "str | None" = None, all: bool = False) -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///engine.law.indexes): `_dress_from_pack` hands this tool its description and
-        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
+        # THE SEAT'S OWN ACT FOR lar:///engine.law.indexes: the vessel binds its args against the carrier and answers handler/seat;
+        # this function keeps behaviour alone, and the carrier holds its words.
         pins = _law_titles(LAW_PINS_FILTER)
         pinned = set(pins)
         rows: list = []
@@ -1590,21 +1332,18 @@ def build_mcp(coordinator: LaresCoordinator):
         return {"filter": LAW_INDEX_FILTER, "pinsTitle": LAW_PINS_TITLE, "pins": pins,
                 "rows": rows, "total": total if isinstance(total, int) else len(rows), "next": page.get("next") or None}
 
-    @mcp.tool(annotations=_annotations("law_pin"))
     def law_pin(uri: str) -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///engine.law.pins): `_dress_from_pack` hands this tool its description and
-        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
+        # THE SEAT'S OWN ACT FOR lar:///engine.law.pins: the vessel binds its args against the carrier and answers handler/seat;
+        # this function keeps behaviour alone, and the carrier holds its words.
         return _law_move("law_pin", _law_uri("law_pin", uri), "pin")
 
-    @mcp.tool(annotations=_annotations("law_unpin"))
     def law_unpin(uri: str) -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///engine.law.unpins): `_dress_from_pack` hands this tool its description and
-        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
+        # THE SEAT'S OWN ACT FOR lar:///engine.law.unpins: the vessel binds its args against the carrier and answers handler/seat;
+        # this function keeps behaviour alone, and the carrier holds its words.
         return _law_move("law_unpin", _law_uri("law_unpin", uri), "unpin")
 
     # ── THE HEARTH ROSTER — who is home, the vessel's own reading ──
 
-    @mcp.tool(annotations=_annotations("vessel_roster"))
     def vessel_roster() -> dict:
         """Read WHO IS HOME — mirrors `lares vessel roster --json`. The vessel answers from what it holds now and places
         nothing. Returns {grain, rotation, seats, asker, lanes, lanesGap, vota, unread, counts, more}: `rotation` names the face
@@ -1625,10 +1364,9 @@ def build_mcp(coordinator: LaresCoordinator):
 
     # ── THE DISK SHORE — what stands for a hand, and the vessel's whole-island flush ──
 
-    @mcp.tool(annotations=_annotations("shore"))
     def shore(face: "int | None" = None, bag: "str | None" = None) -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///carriage.disk.reads): `_dress_from_pack` hands this tool its description and
-        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
+        # THE SEAT'S OWN ACT FOR lar:///carriage.disk.reads: the vessel binds its args against the carrier and answers handler/seat;
+        # this function keeps behaviour alone, and the carrier holds its words.
         args: dict = {"op": "list"}
         if face is not None:
             if not isinstance(face, int) or isinstance(face, bool) or face < 0:
@@ -1683,10 +1421,9 @@ def build_mcp(coordinator: LaresCoordinator):
         return {"standoffs": standoffs, "standoffCount": len(standoffs), "pending": pending, "pendingCount": len(pending),
                 **({"face": face} if face is not None else {})}
 
-    @mcp.tool(annotations=_annotations("shore_flush"))
     def shore_flush() -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///carriage.disk.flushes): `_dress_from_pack` hands this tool its description and
-        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
+        # THE SEAT'S OWN ACT FOR lar:///carriage.disk.flushes: the vessel binds its args against the carrier and answers handler/seat;
+        # this function keeps behaviour alone, and the carrier holds its words.
         answer = uds.custody_frame({"op": "shore-flush"}, timeout=60.0)
         if answer.get("status") == "error":
             raise uds.LaresVerbError(str((answer.get("refusal") or {}).get("reason") or answer.get("errorMessage") or "shore-flush refused")
@@ -1712,97 +1449,6 @@ def build_mcp(coordinator: LaresCoordinator):
                                       f"as `title` with slot={slot!r}")
         return f"{title}{slot}"
 
-    @mcp.tool(annotations=_annotations("tiddler_put"))
-    def tiddler_put(title: str, recipe: "str | None" = None, bag: "str | None" = None, fields: "dict | None" = None,
-                    text: "str | None" = None, append: "str | None" = None, unset: "list | None" = None,
-                    tags_add: "str | list | None" = None, tags_remove: "str | list | None" = None,
-                    base: "str | None" = None, create: bool = False, cut: "list | None" = None,
-                    slot: "str | None" = None, replace: "str | None" = None, replace_with: "str | None" = None) -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///engine.record.puts, a candidate address): `_dress_from_pack` hands this tool its
-        # description and each parameter's from the baked affordance pack, so this function keeps behaviour alone and
-        # holds no docstring.
-        args: dict = {**_meme_container("tiddler_put", recipe, bag), "title": _slot_title("tiddler_put", title, slot)}
-        if replace is not None or replace_with is not None:
-            if not isinstance(replace, str) or replace == "":
-                raise SeatArgumentRefused("tiddler_put: a replace names the one span it changes (`replace`), copied from the standing text")
-            if not isinstance(replace_with, str):
-                raise SeatArgumentRefused("tiddler_put: a replace names the words its span turns into (`replace_with`; \"\" removes the span)")
-            crossed = [name for name, value in (("text", text), ("append", append), ("cut", cut)) if value is not None]
-            if create:
-                crossed.append("create")
-            if crossed:
-                raise SeatArgumentRefused(f"tiddler_put: a replace changes one span of the standing text; {', '.join(crossed)} rides as its own put")
-            args["replace"] = replace
-            args["with"] = replace_with
-        if append is not None:
-            crossed = [name for name, value in (("text", text), ("base", base), ("fields", fields), ("unset", unset)) if value is not None]
-            if crossed:
-                raise SeatArgumentRefused(f"tiddler_put: an append names its words alone; {', '.join(crossed)} rides as its own put")
-            args["append"] = append
-        if fields is not None:
-            if not isinstance(fields, dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in fields.items()):
-                raise SeatArgumentRefused("tiddler_put: `fields` maps field names to string values "
-                                          "(a list rides as TiddlyWiki writes it: \"one [[two words]]\")")
-            args["fields"] = fields
-        if text is not None:
-            args["text"] = text
-        names = _names("tiddler_put", "unset", unset)
-        if names:
-            args["unset"] = names
-        if tags_add:
-            args["tagsAdd"] = tags_add
-        if tags_remove:
-            args["tagsRemove"] = tags_remove
-        if cut:
-            if not isinstance(cut, list) or not all(isinstance(s, str) and s.startswith("#/") for s in cut):
-                raise SeatArgumentRefused("tiddler_put: `cut` lists the slots that leave, each a rooted path (\"#/name\")")
-            args["cut"] = cut
-        if base is not None:
-            args["base"] = base
-        if create:
-            args["create"] = True
-        receipt = _meme_wire("tiddler-put", args) or {}
-        decision = receipt.get("decision")
-        if decision in ("conflict", "exists"):
-            said = [f"tiddler-put {decision}: nothing landed at {title}"]
-            if decision == "conflict" and append is not None:
-                said.append(f"the record kept moving under the append and reads hash {receipt.get('hash') or 'absent'} now: send the append again")
-            elif decision == "conflict":
-                said.append(f"the record reads hash {receipt.get('hash') or 'absent'} now: tiddler_get, merge, put with that base")
-                if receipt.get("canonicalHash"):
-                    said.append(f"the family's carrier reads canonicalHash {receipt['canonicalHash']}: tiddler_get(meme=True, grain=\"whole\"), merge, put the carrier with that base")
-            else:
-                said.append("a tiddler already stands there (create lands only where none does)")
-            raise uds.LaresVerbError(" · ".join(said), f"tiddler-put-{decision}")
-        return receipt
-
-    @mcp.tool(annotations=_annotations("tiddler_delete"))
-    def tiddler_delete(title: str, recipe: "str | None" = None, bag: "str | None" = None,
-                       base: "str | None" = None, family: bool = False, mode: "str | None" = None) -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///engine.record.removes, a candidate address): `_dress_from_pack` hands this tool its
-        # description and each parameter's from the baked affordance pack, so this function keeps behaviour alone and
-        # holds no docstring.
-        args: dict = {**_meme_container("tiddler_delete", recipe, bag), "title": title}
-        if base is not None:
-            args["base"] = base
-        if family is True:
-            args["family"] = True
-        if mode is not None:
-            if mode not in ("kapae", "reveal"):
-                raise SeatArgumentRefused(f"tiddler_delete: mode reads \"kapae\" or \"reveal\"; got {mode!r}")
-            args["mode"] = mode
-        receipt = _meme_wire("tiddler-delete", args) or {}
-        if receipt.get("decision") == "refused":
-            refusal = str(receipt.get("refusal") or "tiddler-delete-refused")
-            read = json.dumps(receipt.get("consequence") or {}, ensure_ascii=False, separators=(",", ":"))
-            raise uds.LaresVerbError(f"{receipt.get('why') or refusal} · nothing moved at {title} · consequence: "
-                                     f"{read[:4000]}", refusal)
-        if receipt.get("decision") == "conflict":
-            raise uds.LaresVerbError(f"tiddler-delete conflict: nothing moved at {title} · the record reads hash "
-                                     f"{receipt.get('hash') or 'absent'} now: tiddler_get, then delete with that base",
-                                     "tiddler-delete-conflict")
-        return receipt
-
     # ── the OFFERING door — an AI seat offers toward house canon; the steward's hand alone promotes ──
 
     def _offer_bag(verb: str, bag: "str | None") -> str:
@@ -1816,7 +1462,6 @@ def build_mcp(coordinator: LaresCoordinator):
             raise uds.LaresVerbError(str(out.get("why") or out.get("refusal") or f"{verb} refused"), str(out.get("refusal") or f"{verb}-refused"))
         return out
 
-    @mcp.tool(annotations=_annotations("meme_offer"))
     def meme_offer(uris: list, bag: str, nexus: "str | None" = None) -> dict:
         """Offer records from the worn face's working layer toward a house-canon `bag` — mirrors `lares meme offer <uri…>
         --bag <slug>`. Each record names its carrier digest and its fork base (the canon carrier its working copy forked
@@ -1831,7 +1476,6 @@ def build_mcp(coordinator: LaresCoordinator):
             args["nexus"] = nexus
         return _offer_wire("offer-make", args)
 
-    @mcp.tool(annotations=_annotations("meme_offer_show"))
     def meme_offer_show(cid: "str | None" = None, bag: "str | None" = None, all: bool = False,
                         after: "str | None" = None, limit: "int | None" = None, nexus: "str | None" = None) -> dict:
         """Show offers at two grains — mirrors `lares meme offer show [<cid>]`. Without a CID, reads a bounded page
@@ -1863,10 +1507,9 @@ def build_mcp(coordinator: LaresCoordinator):
             raise SeatArgumentRefused(f"kahua: `face` takes a whole persona index from 0, got {face!r}")
         return face
 
-    @mcp.tool(annotations=_annotations("kahua_propose"))
     def kahua_propose(proposals: list, face: "int | None" = None, session: "str | None" = None) -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///face.draft.proposes): `_dress_from_pack` hands this tool its description and
-        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
+        # THE SEAT'S OWN ACT FOR lar:///face.draft.proposes: the vessel binds its args against the carrier and answers handler/seat;
+        # this function keeps behaviour alone, and the carrier holds its words.
         if not isinstance(proposals, list) or not proposals:
             raise SeatArgumentRefused("kahua_propose: name `proposals` as a non-empty list of {title, revision, text|digest, taint}")
         args: dict = {"proposals": proposals}
@@ -1874,10 +1517,9 @@ def build_mcp(coordinator: LaresCoordinator):
             args["session"] = session
         return uds.session_act("kahua-propose", args, face=_kahua_face(face))
 
-    @mcp.tool(annotations=_annotations("kahua_stage"))
     def kahua_stage(title: str, text: str, fields: "dict | None" = None, face: "int | None" = None) -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///face.draft.stages): `_dress_from_pack` hands this tool its description and
-        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
+        # THE SEAT'S OWN ACT FOR lar:///face.draft.stages: the vessel binds its args against the carrier and answers handler/seat;
+        # this function keeps behaviour alone, and the carrier holds its words.
         if not isinstance(title, str) or not title:
             raise SeatArgumentRefused("kahua_stage: name the row's `title`")
         if not isinstance(text, str):
@@ -1889,11 +1531,10 @@ def build_mcp(coordinator: LaresCoordinator):
             args["fields"] = fields
         return uds.session_act("kahua-stage", args, face=_kahua_face(face))
 
-    @mcp.tool(annotations=_annotations("kahua_get"))
     def kahua_get(title: "str | None" = None, history: bool = False, face: "int | None" = None,
                   after: "str | None" = None, limit: "int | None" = None) -> dict:
-        # THE WORDS LIVE IN THE CARRIER (lar:///face.draft.reads): `_dress_from_pack` hands this tool its description and
-        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
+        # THE SEAT'S OWN ACT FOR lar:///face.draft.reads: the vessel binds its args against the carrier and answers handler/seat;
+        # this function keeps behaviour alone, and the carrier holds its words.
         if title is not None and (not isinstance(title, str) or not title):
             raise SeatArgumentRefused("kahua_get: name a nonempty `title`")
         if title is None and history:
@@ -1915,7 +1556,6 @@ def build_mcp(coordinator: LaresCoordinator):
     #    over the @daemon wire to the pure manifest.json reducer in open-node-vessel.ts. The hand verbs
     #    (harden·retire·un-retire·purge) hold no tool: the operator runs `lares sense <verb>` on a terminal. ──
 
-    @mcp.tool(annotations=_annotations("roster"))
     def roster(name: "str | None" = None) -> dict:
         """Roster at two grains — bare: every durable sensorium + its lifecycle facet (state · caps · half-life ·
         retirement); `name`: that one sensorium's full manifest facets (caps · coupling · apertures · retirement).
@@ -1924,7 +1564,6 @@ def build_mcp(coordinator: LaresCoordinator):
             return uds.output("inspect", {"name": name})
         return uds.output("roster", {})
 
-    @mcp.tool(annotations=_annotations("build"))
     def build(name: str, half_life: "int | None" = None) -> dict:
         """Build a fresh EPHEMERAL pioneer sensorium (agent self-service; a retire undoes it → HOTL). Refuses
         a name-collision LOUD. Mirrors `lares sense build <name> --ephemeral`; `half_life` tunes the hardening
@@ -1934,7 +1573,6 @@ def build_mcp(coordinator: LaresCoordinator):
             args["halfLife"] = half_life
         return uds.output("build", args)
 
-    @mcp.tool(annotations=_annotations("reconcile"))
     def reconcile(name: "str | None" = None, all: bool = False) -> dict:
         """Reconcile — re-settle one sensorium (`name`) or every sensorium (`all`) against its evidence
         (idempotent; the pure reducer writes only on change). Reversible re-settle → HOTL. Mirrors
@@ -1948,7 +1586,102 @@ def build_mcp(coordinator: LaresCoordinator):
             args["name"] = name
         return uds.output("reconcile", args)
 
-    _dress_from_pack(mcp)
+    # THE SEAT'S OWN ACTS, BY ADDRESS (fork 10): the vessel binds each against its carrier's #/takes and answers
+    # `handler/seat` with the bound args; the seat runs the handler here, in its own process.
+    seat_acts = {
+        "lar:///sense.capture.pours": pour, "lar:///sense.memory.recalls": recall, "lar:///sense.taxonomy.counts": status,
+        "lar:///sense.worldline.reads": worldline, "lar:///sense.kapae.mutes": kapae, "lar:///sense.kapae.restores": un_kapae,
+        "lar:///sense.rhythm.analyzes": analyze, "lar:///sense.record.flows": flow, "lar:///sense.plane.reads": plane_record,
+        "lar:///sense.roster.reads": roster, "lar:///sense.pioneer.builds": build, "lar:///sense.source.reconciles": reconcile,
+        "lar:///engine.wiki.switches": lambda slug: wiki("switch", slug), "lar:///engine.wiki.keeps": lambda slug: wiki("keep", slug),
+        "lar:///engine.wiki.unkeeps": lambda slug: wiki("unkeep", slug),
+        "lar:///engine.meme.projects": meme_project, "lar:///engine.wiki.renders": wiki_render, "lar:///engine.layer.reads": wiki_status,
+        "lar:///oracle.calendar.dates": ddate, "lar:///library.oracle.speaks": oracle_cast,
+        "lar:///engine.law.indexes": law_index, "lar:///engine.law.pins": law_pin, "lar:///engine.law.unpins": law_unpin,
+        "lar:///face.roster.reads": vessel_roster, "lar:///carriage.disk.reads": shore, "lar:///carriage.disk.flushes": shore_flush,
+        "lar:///realm.offer.signs": meme_offer, "lar:///realm.offer.shows": meme_offer_show,
+        "lar:///face.draft.proposes": kahua_propose, "lar:///face.draft.stages": kahua_stage, "lar:///face.draft.reads": kahua_get,
+    }
+    mcp.seat_acts = seat_acts
+
+    def _run_seat(address: str, bound: dict):
+        """Run one seat act with the args the vessel bound: each neutral name in its Python spelling, the handler's own names alone
+        (a shared row's default the handler takes no word for stays at the vessel)."""
+        import inspect
+        handler = seat_acts.get(address)
+        if handler is None:
+            raise SeatVerbOwed(f"seat-act-unheld: the vessel answered handler/seat for {address}, and this seat holds no handler "
+                               "for it; read its carrier with get(title=\"" + address + "\", mu=\"relate\")")
+        names = set(inspect.signature(handler).parameters)
+        kwargs = {k.replace("-", "_"): v for k, v in (bound or {}).items()}
+        return handler(**{k: v for k, v in kwargs.items() if k in names})
+
+    def _door(word: str, params: dict):
+        """THE ONE CALL (landing 11): every tool sends `{verb, params}` to the vessel's `call`; the vessel resolves the word or
+        address through the caller's stack, binds the params against the carrier's live #/takes, checks the hand, and answers.
+        A `handler/seat` answer runs here; a `handler/host` answer names the terminal's command, since a terminal runs that door."""
+        out = _meme_wire("call", {"verb": word, "params": params, "surface": "mcp"})
+        if isinstance(out, dict) and out.get("handler") == "seat":
+            return _run_seat(str(out.get("address") or word), out.get("params") or {})
+        if isinstance(out, dict) and out.get("handler") == "host":
+            address = str(out.get("address") or word)
+            raise SeatArgumentRefused(f"host-door: {address} runs at a terminal's own door (it reads host files or asks y/N); "
+                                      f"ask the operator to run `lares act {address} ...` on their own terminal")
+        return out
+
+    def _params(named: dict, more: "dict | None") -> dict:
+        """The call's params in their neutral names: the named ones a tool declares, then any others the carrier takes."""
+        merged = {k.replace("_", "-"): v for k, v in (more or {}).items()}
+        merged.update({k.replace("_", "-"): v for k, v in named.items() if v is not None})
+        return merged
+
+    reads = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False)
+    writes = ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=False, openWorldHint=False)
+
+    @mcp.tool(annotations=reads)
+    def get(title: "str | None" = None, filter: "str | None" = None, mu: "str | None" = None,  # noqa: A002 — TiddlyWiki's own word
+            recipe: "str | None" = None, bag: "str | None" = None, slot: "str | None" = None, after: "str | None" = None,
+            params: "dict | None" = None) -> dict:
+        return _door("get", _params({"title": title, "filter": filter, "mu": mu, "recipe": recipe, "bag": bag, "slot": slot, "after": after}, params))
+
+    @mcp.tool(annotations=writes)
+    def put(title: str, text: "str | None" = None, append: "str | None" = None, fields: "dict | None" = None,
+            base: "str | None" = None, create: "bool | None" = None, mu: "str | None" = None, recipe: "str | None" = None,
+            bag: "str | None" = None, params: "dict | None" = None) -> dict:
+        return _door("put", _params({"title": title, "text": text, "append": append, "fields": fields, "base": base, "create": create,
+                                     "mu": mu, "recipe": recipe, "bag": bag}, params))
+
+    @mcp.tool(annotations=writes)
+    def delete(title: str, mode: "str | None" = None, family: "bool | None" = None, base: "str | None" = None,
+               mu: "str | None" = None, recipe: "str | None" = None, bag: "str | None" = None, params: "dict | None" = None) -> dict:
+        return _door("delete", _params({"title": title, "mode": mode, "family": family, "base": base, "mu": mu, "recipe": recipe, "bag": bag}, params))
+
+    @mcp.tool(annotations=writes)
+    def rename(title: str, to: str, base: "str | None" = None, mu: "str | None" = None, recipe: "str | None" = None,
+               params: "dict | None" = None) -> dict:
+        return _door("rename", _params({"title": title, "to": to, "base": base, "mu": mu, "recipe": recipe}, params))
+
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=False, openWorldHint=True))
+    def act(address: str, args: "dict | None" = None) -> dict:
+        if not isinstance(address, str) or not address.strip():
+            raise SeatArgumentRefused("act: name an affordance `address`, e.g. lar:///engine.law.indexes")
+        return _door(address.strip(), _params({}, args))
+
+    # THE WORDS LIVE IN THE CARRIERS: each tool's description renders from the pack (the carriers' mcp wholes), the act's from
+    # every carrier the seat reaches.
+    descriptions = {
+        "get": ["lar:///engine.record.reads", "lar:///engine.filter.pages"], "put": ["lar:///engine.record.puts"],
+        "delete": ["lar:///engine.record.removes"], "rename": ["lar:///engine.record.renames"],
+    }
+    manager = getattr(mcp, "_tool_manager", None)
+    for tool, addresses in descriptions.items():
+        held = manager.get_tool(tool) if manager is not None else None
+        words = [line for a in addresses for line in carrier_words(a, pack)]
+        if held is not None and words:
+            held.description = "\n".join(words)
+    held = manager.get_tool("act") if manager is not None else None
+    if held is not None:
+        held.description = act_description(pack)
     return mcp
 
 

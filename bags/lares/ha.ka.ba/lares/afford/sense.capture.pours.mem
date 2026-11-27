@@ -1,0 +1,84 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.capture.pours`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "capture transcripts into a sensorium, one pointer or every one"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.capture.pours"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.capture.pours"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.capture.pours"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.capture.pours ~ capture conversation transcripts into a sensorium
+
+One pointer (`surface` with `pointer`) captures that transcript; `bulk` captures or recaptures every local operator-AI transcript in one pass (`surface` all folds claude, codex and copilot; `project` narrows claude; `limit` caps each surface, oldest first). Already-landed turns skip, so a re-run catches up. `bulk` reads no `pointer`, `room`, `dry-run` or `writeback`: each refuses by name beside it, since the sweep previews nothing. `sensorium` names the sensorium; absent, memory.
+
+The address stands ''candidate'' until the operator reads the landing's list. The MCP seat runs this act in its own process: the vessel's `call` binds the params against this carrier's live `#/takes` and answers `handler/seat` with the bound params, and the seat runs them (`act(address="lar:///sense.capture.pours", args={…})`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ surface · pointer · bulk · writeback · dry-run · wing · room · project · limit · sensorium
+
+```memetic-wikitext
+<<has entity=`arg` name=`surface` params=`takes/word ~ the transcript surface (claude, codex, copilot; all with bulk)`>>
+<<has entity=`arg` name=`pointer` params=`takes/word ~ the transcript to capture`>>
+<<has entity=`arg` name=`bulk` params=`~ capture every local transcript in one pass`>>
+<<has entity=`arg` name=`writeback` params=`~ re-enrich a wing`>>
+<<has entity=`arg` name=`dry-run` params=`~ preview one pointer's capture`>>
+<<has entity=`arg` name=`wing` params=`takes/word ~ the wing`>>
+<<has entity=`arg` name=`room` params=`takes/word ~ the room a capture lands in`>>
+<<has entity=`arg` name=`project` params=`takes/word ~ narrow claude to one project`>>
+<<has entity=`arg` name=`limit` params=`takes/count ~ cap each surface's transcripts, oldest first`>>
+<<has entity=`arg` name=`sensorium` params=`takes/word ~ the sensorium by name; absent, memory`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ the vessel verbs the seat's handler reaches check the face's cap and the asker's hand themselves; a hand act refuses a seat by its own code`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ mcp
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! act lar:///sense.capture.pours
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`handler/seat spells/[[act lar:///sense.capture.pours]] ~ the seat runs it in its own process`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · lares-mcp
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/sensorium/lares-mcp`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uBhhYK2r55zeOQUaPli8tw_ii2Vu-SbnDKe-er3ahq0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

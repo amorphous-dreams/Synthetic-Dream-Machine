@@ -105,10 +105,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/mcp`>>
 
-!!! ddate
+!!! act lar:///oracle.calendar.dates
 
 ```memetic-wikitext
-<<has entity=`skin` name=`mcp` params=`spells/ddate ~ the seat; reads the local day once at the call`>>
+<<has entity=`skin` name=`mcp` params=`handler/seat spells/[[act lar:///oracle.calendar.dates]] ~ the seat; reads the local day once at the call`>>
 ```
 
 <<~/ahu>>
@@ -126,6 +126,6 @@ The calendar core stands at `@lararium/mesh/ddate` and its chance at `@lararium/
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3iUeYrPcmZeef07rJf-2MC_o5voqtd35E53M49T21gI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pyRpAcPMrDnvl3lVMvDPvVIrnszcE7CdC4qSwaubPDA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

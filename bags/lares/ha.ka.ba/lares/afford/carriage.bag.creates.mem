@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.bag.creates"
 
 `CREATE` mints a new bag at a fresh coordinate, empty, with its identity a fresh document URL; registration lands as a `holdings` accession in the union catalog. `--plane` picks the bag's plane, `catalog` or `oracle`; any other word refuses. A caller inside the CLI that read the bag off the canon source as house canon (the seed) carries that claim on the verb, and an island that never seated the bag refuses `house-canon-unseated` and mints no catalog row. CREATE carries no content to tell one change from the next, so `--change-id` folds into the effect key's nonce.
 
-A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent off a terminal, `--dry-run` previews and commits nothing, `--in-wiki` runs the act in the active wiki's island.
+A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent off a terminal, `mu=dry` previews and commits nothing, `in-wiki=true` runs the act in the active wiki's island.
 
 <<~/ahu>>
 
@@ -36,14 +36,16 @@ A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent off
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ bag · plane · change-id · dry-run · in-wiki
+!! takes ~ bag · plane · change-id · in-wiki · yes · mu
 
 ```memetic-wikitext
 <<has entity=`arg` name=`bag` params=`takes/bag-uri needs/required ~ the bag the act targets`>>
 <<has entity=`arg` name=`plane` params=`takes/catalog-or-oracle ~ the plane the bag lives on; catalog or oracle`>>
 <<has entity=`arg` name=`change-id` params=`takes/id ~ the change's own identity, named once so a re-send reads as the same change; absent, the verb mints one`>>
-<<has entity=`arg` name=`dry-run` params=`~ preview the effect without committing it`>>
 <<has entity=`arg` name=`in-wiki` params=`~ run the act in the active wiki's island`>>
+<<has entity=`arg` name=`yes` params=`~ the intent a call off a terminal names in place of the y/N a terminal asks`>>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
+<<has entity=`cell` name=`_` params=`mu/dry ~ a dry run: the island walks the act through a capturing access and names the effect it would land, committing nothing`>>
 ```
 
 <<~/ahu>>
@@ -55,7 +57,7 @@ A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent off
 Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
-<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ the vessel checks the writer's cap on the destination bag; a terminal asks y/N before it submits unless --yes rides, and an agent off a terminal names --yes`>>
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ the vessel checks the writer's cap on the destination bag; a terminal asks y/N before it submits unless yes=true rides, and an agent off a terminal names yes=true`>>
 ```
 
 <<~/ahu>>
@@ -78,7 +80,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`band` name=`done` params=`exit/0 fields/[[verb status requestId receipt]] ~ the vessel ran the action and wrote its effect record; the receipt names the outcome tiddler`>>
-<<has entity=`band` name=`preview` params=`exit/0 ~ with --dry-run the vessel names the effect it would land and commits nothing`>>
+<<has entity=`band` name=`preview` params=`exit/0 ~ with mu=dry the vessel names the effect it would land and commits nothing`>>
 <<has entity=`band` name=`refused` params=`~ the vessel refused by name (cap-denied or a verb-error); the line carries its reason and cure`>>
 ```
 
@@ -90,10 +92,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/cli`>>
 
-!!! lares act CREATE
+!!! lares act lar:///carriage.bag.creates
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares act CREATE]] ~ the terminal; the verb rides as the first word, ALL-CAPS`>>
+<<has entity=`skin` name=`cli` params=`handler/host dry/walks spells/[[lares act lar:///carriage.bag.creates]] ~ the terminal; the act rides by its address through the call door, and the terminal runs the bound act (host files, y/N)`>>
 ```
 
 <<~/ahu>>
@@ -109,6 +111,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;un2iAB4D7kSBf0xKsg8WEJISo4fLbod_abC3-A2L4a8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;My6EEmR0IjxWvIvnMmNKo8_trK3WaaT0WxhESPPru6A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

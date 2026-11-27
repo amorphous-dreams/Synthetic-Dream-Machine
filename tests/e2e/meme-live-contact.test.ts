@@ -252,7 +252,7 @@ describe.skipIf(gaps.length > 0)("★ a meme family through the call door over a
     writeFileSync(join(scratch, "move.mem"), meme(["a"]).replaceAll(URI, MOVE_URI).replaceAll(PATH, MOVE_PATH));
     const put = await lar.cli(["put", `title=${MOVE_URI}`, `bag=${DAEMON_WORKING}`, `file=${join(scratch, "move.mem")}`, "--json"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
-    const r = await lar.cli(["act", "MOVE", "--title", MOVE_URI, "--from", DAEMON_WORKING, "--to", CROSSROADS_URI, "--yes", "--json"]);
+    const r = await lar.cli(["act", "lar:///carriage.bag.moves", `title=${MOVE_URI}`, `from=${DAEMON_WORKING}`, `to=${CROSSROADS_URI}`, "yes=true", "--json"]);
     expect(r.json?.["ok"], `the MOVE out of the daemon wiki refused — ${said(r)}`).toBe(true);
     const gone = await lar.cli(["get", `title=${MOVE_URI}`, `bag=${DAEMON_WORKING}`, "mu=assert", "--json"]);
     expect((gone.json?.["error"] as Record<string, unknown>)?.["code"], `the carrier still stands in the daemon's working layer — ${said(gone)}`).toBe("not-found");
@@ -296,7 +296,7 @@ describe.skipIf(gaps.length > 0)("★ a meme family through the call door over a
     mkdirSync(holding, { recursive: true });
     writeFileSync(join(holding, "photo.png"), PNG);
     writeFileSync(join(holding, "photo.png.meta"), HAND_META);
-    const ld = await lar.cli(["act", "LOAD", "--source-uri", holding, "--to", DAEMON_WORKING, "--yes", "--json"]);
+    const ld = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${holding}`, `to=${DAEMON_WORKING}`, "yes=true", "--json"]);
     expect(ld.json?.["ok"], `the LOAD refused — ${said(ld)}`).toBe(true);
     // the pointer landed: the CID over the RAW bytes, the projected sidecar carries it
     const srcDir  = join(daemonWikiDir(lar.root), "ha.ka.ba/t/witness");
@@ -311,7 +311,7 @@ describe.skipIf(gaps.length > 0)("★ a meme family through the call door over a
     expect(readFileSync(join(holding, "photo.png")).equals(PNG)).toBe(true);
     expect(readFileSync(join(holding, "photo.png.meta"), "utf8")).toBe(HAND_META);
 
-    const mv = await lar.cli(["act", "MOVE", "--title", BLOB_URI, "--from", DAEMON_WORKING, "--to", CROSSROADS_URI, "--yes", "--json"]);
+    const mv = await lar.cli(["act", "lar:///carriage.bag.moves", `title=${BLOB_URI}`, `from=${DAEMON_WORKING}`, `to=${CROSSROADS_URI}`, "yes=true", "--json"]);
     expect(mv.json?.["ok"], `the MOVE of the pointer refused — ${said(mv)}`).toBe(true);
     const landedPng  = join(lar.root, "projections/bags", "crossroads", `${BLOB_PATH}.png`);
     const landedMeta = `${landedPng}.meta`;

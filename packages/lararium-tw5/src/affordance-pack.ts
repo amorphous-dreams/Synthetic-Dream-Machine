@@ -58,6 +58,8 @@ export interface AffordancePack {
   readonly index: Readonly<Record<string, readonly string[]>>;
   /** Per oracle kind (`e-jing`, `doa`): the shelf `library/oracles/<kind>/` whose index declares a method. */
   readonly shelves?: Readonly<Record<string, AffordancePackShelf>>;
+  /** Iris-Sprite's templates by slot (`answer`, `refusal`): the floor a sleeping vessel's answers render through. */
+  readonly voice?: Readonly<Record<string, string>>;
 }
 
 const EMPTY: AffordancePack = Object.freeze({ title: "", hash: "", carriers: {}, routes: {}, doors: {}, index: {} });

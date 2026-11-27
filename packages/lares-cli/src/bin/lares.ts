@@ -40,7 +40,6 @@ import { cmdBag }                                   from "../commands/bag.js";
 import { cmdEvents }                  from "../commands/events.js";
 import { cmdWiki, wikiHelpLines }                  from "../commands/wiki.js";
 import { cmdCall, isCallHead, CALL_VERBS as CALL_WORDS } from "../commands/call.js";
-import { ACT_VERBS, cmdAct }                                 from "../commands/act.js";
 import { cmdIngest }                  from "../commands/ingest.js";
 import { cmdExport }                  from "../commands/export.js";
 import { cmdImport }                  from "../commands/import.js";
@@ -62,7 +61,7 @@ import { cmdRite }                    from "../commands/rite.js";
 import { cmdSensorium }               from "../commands/sensorium.js";
 import { cmdHome, cmdRepo }           from "../commands/tunnel-door.js";
 import type { VerbTable } from "../verb-table.js";
-import { COMMAND_HELP, renderCommandHelp, helpDoor, seatAbout } from "../command-help.js";
+import { COMMAND_HELP, renderCommandHelp, helpDoor, helpLines, seatAbout } from "../command-help.js";
 import { packDoor } from "@lararium/tw5/affordance-pack";
 import { emit, exitFor } from "../render.js";
 import { storeFailure } from "../store-door.js";
@@ -294,7 +293,6 @@ export const COMMANDS: readonly Command[] = [
   { name: "herm", brief: "Stand the herm crossroads; rotate its relay gate.", summary: "Stand the herm crossroads; `herm relay-rotate` mints a new durable relay service gate and prints the new pin. Restart the herm and hand dialing hearths the new pin.", handler: cmdHerm, verbs: HERM_VERBS, accepts: ["port", "relay-port"] },
   { name: "host",          brief: "Read and roll what this hearth hosts; mint invites.", summary: "THE HEARTH'S HOSTING DOOR — a hearth hosts walkers in a Nexus it carries. `lares host` reads what it hosts: per Nexus, the live epochs (each the CID of a signed hosting act), the cap, and how many invites were redeemed (counts, never rows). `host roll [--nexus <aid>] [--cap <n>]` signs the next hosting act with the per-Nexus leaf of the hosting face (at the first roll, `--face N`, else the one face standing open) and lands it on this hearth's hosting doc in the Nexus; grants and tokens live for the current and previous epoch, so rolling twice is the hard roll. `host invite [--nexus <aid>] [--relay <ws-url>]` mints this hearth's own invite at the current epoch and prints the one `lar-invite:` string to carry — it redeems once, at this hearth's own gate, and nothing about it is kept. While the vessel stands, each door runs inside it. The walker route ships SHUT by name (the shut-routes house ruling, stable-founding-road #/rulings): the epoch and the invite are written, but no gate seats a walker until a live grant reader opens the route.", handler: cmdHost, verbs: HOST_VERBS, accepts: ["cap", "face", "nexus", "relay"], signs: true },
   { name: "walk",          brief: "Walk in at another hearth on an invite.", summary: "THIS VESSEL'S WALKING DOOR — a vessel walks in at another hearth on an invite, as one face (`--face N`, else the one face standing open). `lares walk` reads where it walks: per hearth, the Nexus, whether its invite still waits to settle, the grant it holds, and how many invites its wallet holds. `walk take <lar-invite:…>` keeps a carried invite durably, and the vessel's hearth dial walks in on it; a vessel walks at one hearth, so a take for a second refuses and writes nothing. `walk invite` hands the newest invite out of the wallet as one string to carry. A node carries none of its documents at a hearth — it is its own durable store. While the vessel stands, each door runs inside it. The walker route ships SHUT by name (the shut-routes house ruling, stable-founding-road #/rulings): the invite is kept, but no hearth gate seats a walk until a live grant reader opens the route.", handler: cmdWalk, verbs: WALK_VERBS, accepts: ["face"] },
-  { name: "act",           brief: packedBrief("act"), summary: packedAccount("act"), handler: cmdAct, pathAccepts: (a) => a.flags["draft"] === true ? ["draft", "to"] : ACT_ROW.filter((n) => n !== "draft"), verbs: ACT_VERBS, accepts: ["bag", "change-id", "draft", "dry-run", "from", "in-wiki", "out", "plane", "shadow", "source", "source-uri", "title", "to"] },
   { name: "ingest",        brief: packedBrief("ingest"), summary: packedAccount("ingest"), handler: cmdIngest, pathAccepts: (a) => a.flags["watch"] === true ? ["watch", "apply", "debounce", "source", "to"] : INGEST_ROW.filter((n) => n !== "watch" && n !== "debounce"), verbs: null, accepts: ["apply", "change-id", "debounce", "in-wiki", "source", "tag-blobs", "to", "watch"] },
   { name: "export",        brief: packedBrief("export"), summary: packedAccount("export"), handler: cmdExport, verbs: null, accepts: ["accept-omissions"] },
   { name: "import",        brief: packedBrief("import"), summary: packedAccount("import"), handler: cmdImport, verbs: null, accepts: ["apply"], signs: true /* re-lifts sign kahua acts under the face's grant */ },
@@ -304,7 +302,7 @@ export const COMMANDS: readonly Command[] = [
   { name: "bag",           brief: packedBrief("bag"), summary: packedAccount("bag"), handler: cmdBag, pathAccepts: (a) => a.positional[0] === "show" ? (a.positional[1] ? ["dir"] : ["dir", "after", "limit"]) : a.positional[0] === "list" ? null : null, verbs: BAG_VERBS, accepts: ["all", "after", "limit", "approve", "dir", "dry-run", "face", "fetch", "held", "holder", "home", "list", "note", "pin", "read", "read-remove", "release", "remove", "repo", "role", "root", "sweep", "tier", "to", "vcs", "write", "write-remove", "workspace"] },
   { name: "events",        brief: packedBrief("events"), summary: packedAccount("events"), handler: cmdEvents, verbs: null, accepts: ["kind", "since", "wait"] },
   { name: "realm",         brief: "Rename realms and move wikis between them (local pet names).", summary: "THE REALM'S PET NAME — a realm holds its wikis on disk at projections/realms/<realm pet name>/wikis/<slug>/ and its domain bags at projections/realms/<realm pet name>/bags/<slug>/, as a face holds its planes under projections/faces/<pet name>/. Every realm carries a pet name: one minted with none takes its wiki's slug (projections/realms/<slug>/wikis/<slug>/), and the vessel mints that label on first read, so nothing waits. The label rests local (projections/realm-labels/<pet>.json, 0600): never a share row, never a replicated document. `realm rename <current pet> --to <new pet>` renames a realm (path-safe, unique without case, never a face's pet name); `realm move <wiki slug> --to <realm pet>` moves a wiki and its canon bag into that realm (named now where none wears the pet name), keeping its canon realm id, and drops a label the move empties. Each moves the folder (its .git with it) at once while no vessel answers, else at the vessel's next lock or re-stand, never half-moved. `realm list` reads every realm back; `lares wiki init <slug> --realm <pet>` mints a wiki into an existing realm.", handler: (args) => cmdRealm(args), verbs: REALM_VERBS, accepts: ["to"] },
-  { name: "wiki",          brief: "Switch, keep and inspect wikis; run engine verbs.", summary: "Use `wiki keep <slug>` and `wiki unkeep <slug>` for the worn face's keep list, `wiki switch <slug>`, and `wiki status [--recipe <slug>]`. Render and act run in a wiki engine (`lares get filter=<filter>` pages a filter); `wiki render <filter> --recipe <slug> --output workbench [--filename <filter>] [--overwrite]` lands native render output in the wiki's bound workbench (rendered/).", handler: cmdWiki, pathAccepts: (a) => a.positional[0] === "act" ? ["recipe", "expected", "resulting", "face"] : a.positional[0] === "keep" || a.positional[0] === "unkeep" || a.positional[0] === "switch" ? [] : a.positional[0] === "render" ? (a.options["output"] === "workbench" ? ["recipe", "output", "filename", "type", "template", "variables", "overwrite", "face"] : ["recipe", "text", "form", "type", "max-bytes", "after", "target", "face", "bag"]) : a.positional[0] === "status" ? ["recipe", "target", "face", "bag", "realm"] : null, verbs: WIKI_VERBS, accepts: ["after", "bag", "count", "days", "dry-run", "expected", "face", "filename", "force", "form", "list", "max-bytes", "note", "output", "overwrite", "read", "read-remove", "realm", "recipe", "remove", "resulting", "target", "template", "text", "type", "variables", "write", "write-remove", "workspace"], help: wikiHelpLines },
+  { name: "wiki",          brief: "Switch, keep and inspect wikis; run engine verbs.", summary: "Use `wiki keep <slug>` and `wiki unkeep <slug>` for the worn face's keep list, `wiki switch <slug>`, and `wiki status [--recipe <slug>]`. Render runs in a wiki engine (`lares get filter=<filter>` pages a filter); `wiki render <filter> --recipe <slug> --output workbench [--filename <filter>] [--overwrite]` lands native render output in the wiki's bound workbench (rendered/).", handler: cmdWiki, pathAccepts: (a) => a.positional[0] === "keep" || a.positional[0] === "unkeep" || a.positional[0] === "switch" ? [] : a.positional[0] === "render" ? (a.options["output"] === "workbench" ? ["recipe", "output", "filename", "type", "template", "variables", "overwrite", "face"] : ["recipe", "text", "form", "type", "max-bytes", "after", "target", "face", "bag"]) : a.positional[0] === "status" ? ["recipe", "target", "face", "bag", "realm"] : null, verbs: WIKI_VERBS, accepts: ["after", "bag", "count", "days", "dry-run", "face", "filename", "force", "form", "list", "max-bytes", "note", "output", "overwrite", "read", "read-remove", "realm", "recipe", "remove", "target", "template", "text", "type", "variables", "write", "write-remove", "workspace"], help: wikiHelpLines },
   { name: "law",           brief: packedBrief("law"), summary: packedAccount("law"), handler: cmdLaw, verbs: LAW_VERBS, accepts: ["after", "all", "face", "limit"] },
   { name: "oracle",        brief: packedBrief("oracle"), summary: packedAccount("oracle"), handler: cmdOracle, verbs: CAST_DOOR_VERBS, accepts: ["asking", "bag", "by", "caster", "coins", "face", "fresh", "observe", "realm", "recipe", "seed", "uncertain"] },
   // THE CALL SHAPE (comms-ux-enacts landing 8): each verb word takes `name=value` params alone, read by one token rule and bound in
@@ -346,7 +344,6 @@ function movedRelease(args: ParsedArgs): boolean {
 function rowOf(name: string): readonly string[] { return COMMANDS.find((c) => c.name === name)?.accepts ?? []; }
 const VESSEL_ROW  = { filter: (f: (n: string) => boolean) => rowOf("vessel").filter(f) };
 const INGEST_ROW  = { filter: (f: (n: string) => boolean) => rowOf("ingest").filter(f) };
-const ACT_ROW     = { filter: (f: (n: string) => boolean) => rowOf("act").filter(f) };
 const PERSONA_ROW = { filter: (f: (n: string) => boolean) => rowOf("persona").filter(f) };
 
 /**
@@ -436,7 +433,7 @@ export const MOVED: ReadonlyArray<{ readonly argv: readonly string[]; readonly t
   { argv: ["receipt"], to: "lares vessel request <id>" },
   { argv: ["cancel"], to: "lares vessel request <id> --cancel" },
   { argv: ["watch"], to: "lares ingest --watch" },
-  { argv: ["draft"], to: "lares act --draft <uri>" },
+  { argv: ["draft"], to: "lares act lar:///carriage.draft.pulls uri=<uri>" },
   { argv: ["raise"], to: "lares persona raise-sign <challenge-json-text>" },
   { argv: ["wing-of"], to: "node tools/wing-of.mjs" },
   // Residency rides `wiki status`; the wiki's pointer rides `wiki switch` and the face's keep list rides `wiki keep`.
@@ -495,6 +492,11 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
     if (flags.length > 0) {
       for (const name of flags) console.error(`lares: unknown flag --${name} for a call; a call takes name=value params (${name}=…)`);
       return 2;
+    }
+    // THE ONE ACT'S HELP (landing 9): `lares act --help` with no address prints the act carriers' call shapes, drawn from the pack.
+    if (args.command === "act" && args.positional.length === 0 && args.flags["help"] === true) {
+      for (const line of helpLines("act")) console.log(line);
+      return 0;
     }
     return await cmdCall(args);
   }

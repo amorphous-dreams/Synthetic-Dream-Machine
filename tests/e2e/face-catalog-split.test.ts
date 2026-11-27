@@ -57,7 +57,7 @@ afterAll(async () => { await A?.stop(); });
 
 describe.skipIf(!stagedTarget)("the catalog splits by face on a running node vessel", () => {
   test("S1 — a lit vessel's user bag rests in the face's own catalog, sealed; the floor's names no face-class row", async () => {
-    const mint = await A!.cli(["act", "CREATE", "--bag", BAG, "--yes", "--json"]);
+    const mint = await A!.cli(["act", "lar:///carriage.bag.creates", `bag=${BAG}`, "yes=true", "--json"]);
     expect(mint.json?.["ok"], said(mint)).toBe(true);
     const faceUrl = faceCatalogOf(A!);
     const floorUrl = bootDocUrl(A!, "catalog");

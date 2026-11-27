@@ -81,7 +81,7 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
     // The live system canon rests in the Kahu realm, which IS the charter-derived realm: it lists `lares` and `lararium`
     // beside any user bag. The relation here keeps a user bag.
     expect(bagsOf(list)).toEqual(expect.arrayContaining(["lar:///ha.ka.ba/bags/lares", "lar:///ha.ka.ba/bags/lararium"]));
-    const mint = await A!.cli(["act", "CREATE", "--bag", LARES_BAG, "--yes", "--json"]);
+    const mint = await A!.cli(["act", "lar:///carriage.bag.creates", `bag=${LARES_BAG}`, "yes=true", "--json"]);
     expect(mint.json?.["ok"], said(mint)).toBe(true);
     const file = join(A!.root, "realms-stage-minutes.mem");
     writeFileSync(file, meme());

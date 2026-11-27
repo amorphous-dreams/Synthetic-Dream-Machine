@@ -133,10 +133,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/mcp`>>
 
-!!! tiddler_get
+!!! get
 
 ```memetic-wikitext
-<<has entity=`skin` name=`mcp` params=`spells/tiddler_get omits/realm,face ~ the seat; answers values`>>
+<<has entity=`skin` name=`mcp` params=`spells/get by/title default/true omits/realm,face ~ the seat; get by title reads one record or meme on its gradient`>>
 ```
 
 <<~/ahu>>
@@ -163,6 +163,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;B_NeQyFj-ax8LTirsgFW2owR8VXgjDa2bgkmR3zkRiE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dRekf-CFtpmJzBu-i1jOSJ696klSVdfr1ZLBhM9nK2s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

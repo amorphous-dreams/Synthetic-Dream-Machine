@@ -135,28 +135,30 @@ describe.skipIf(wikiSkip)(`the affordance bake over the fixture carrier${skipNot
 
 /**
  * The core verbs' carriers (comms-ux-enacts landing 1; the call shape since landing 8) and the spellings each skin routes to them:
- * the cli word, whether a `by/` choice selects it (`get` claims no route; the call's param chooses), and the mcp tool.
+ * the verb word both skins spell (the cli word and the seat's tool, landing 11) and whether a `by/` choice selects it (`get` claims no
+ * route on either surface; the call's param chooses).
  */
-const CORE_ROUTES: ReadonlyArray<readonly [string, string, boolean, string | null]> = [
-  ["lar:///engine.record.reads", "get", true, "tiddler_get"],
-  ["lar:///engine.record.puts", "put", false, "tiddler_put"],
-  ["lar:///engine.record.removes", "delete", false, "tiddler_delete"],
-  ["lar:///engine.record.renames", "rename", false, null],
-  ["lar:///engine.filter.pages", "get", true, "wiki_filter"],
+const CORE_ROUTES: ReadonlyArray<readonly [string, string, boolean]> = [
+  ["lar:///engine.record.reads", "get", true],
+  ["lar:///engine.record.puts", "put", false],
+  ["lar:///engine.record.removes", "delete", false],
+  ["lar:///engine.record.renames", "rename", false],
+  ["lar:///engine.filter.pages", "get", true],
 ];
 const CORE_FILES = ["engine.record.reads", "engine.record.puts", "engine.record.removes", "engine.record.renames", "engine.filter.pages"];
 
 describe.skipIf(wikiSkip)(`the core verbs bake from canon${skipNote}`, () => {
   test("RED 10: the five canon carriers bake in the call shape: put, delete and rename route their own word, get chooses by its param and claims none, its door gathering both; no door/part row remains, and no tiddler or wiki door gathers them", async () => {
     const pack = await bakeAffordancePack(canonTexts(path.join(REPO, "bags")));
-    for (const [address, cli, chosen, mcp] of CORE_ROUTES) {
+    for (const [address, cli, chosen] of CORE_ROUTES) {
       expect(pack.carriers[address], address).toBeDefined();
-      if (chosen) expect(pack.routes["cli"]![cli], address).toBeUndefined();
-      else expect(pack.routes["cli"]![cli], address).toBe(address);
-      if (mcp !== null) expect(pack.routes["mcp"]![mcp]).toBe(address);
+      for (const surface of ["cli", "mcp"]) {
+        if (chosen) expect(pack.routes[surface]![cli], `${surface} ${address}`).toBeUndefined();
+        else expect(pack.routes[surface]![cli], `${surface} ${address}`).toBe(address);
+      }
       expect(pack.carriers[address]!.renders["cli"]!["whole"]![0]).toMatch(new RegExp(`^usage: lares ${cli} `));
     }
-    expect(pack.routes["mcp"]!["tiddler_rename"]).toBeUndefined();
+    for (const old of ["tiddler_get", "tiddler_put", "tiddler_delete", "tiddler_rename", "wiki_filter"]) expect(pack.routes["mcp"]![old], old).toBeUndefined();
     for (const old of ["tiddler get", "tiddler put", "tiddler delete", "tiddler rename", "wiki filter"]) expect(pack.routes["cli"]![old], old).toBeUndefined();
     for (const [address, cli, chosen] of CORE_ROUTES) if (!chosen) expect(pack.doors[cli]!.addresses, cli).toEqual([address]);
     expect(pack.doors["tiddler"]).toBeUndefined();
@@ -169,8 +171,8 @@ describe.skipIf(wikiSkip)(`the core verbs bake from canon${skipNote}`, () => {
     for (const file of CORE_FILES) expect(readFileSync(path.join(REPO, "bags/lares/ha.ka.ba/lares/afford", `${file}.mem`), "utf8"), file).not.toContain("door/part");
     // The persona hearing rides the filter's examples: a literal search beside the line lens, each param a shell word.
     expect(pack.carriers["lar:///engine.filter.pages"]!.calls["cli"]).toContain("lares get 'filter=[all[tiddlers]search:text:literal[Lares (Stranger)]]' 'match=Lares (Stranger)' recipe=default");
-    // The seat's spellings break the rule by the skin's maps alone: the put's tags, cut and replacement words.
+    // The seat spells every param by the one rule (snake case), with no map beside it: the seat hands each back to its neutral name.
     expect(Object.keys(pack.carriers["lar:///engine.record.puts"]!.params).sort()).toEqual(
-      ["append", "bag", "base", "create", "cut", "fields", "recipe", "replace", "replace_with", "slot", "tags_add", "tags_remove", "text", "title", "unset"]);
+      ["append", "bag", "base", "create", "cut_slot", "fields", "recipe", "replace", "slot", "tag_add", "tag_remove", "text", "title", "unset", "with"]);
   }, 60_000);   // a whole-canon bake boots a wiki and renders every carrier: a loaded floor slot runs it past the 5 s default
 });

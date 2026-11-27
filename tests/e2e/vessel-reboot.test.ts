@@ -78,7 +78,7 @@ async function readBack(uris: readonly string[]): Promise<Map<string, string>> {
 describe.skipIf(!stagedTarget)("vessel reboot — a hearth survives restarting on its own fed store", () => {
   test("boot → feed → stop at once → REBOOT reaches live → every LOADed carrier reads back", async () => {
 
-    const fed = await lar.cli(["act", "LOAD", "--source-uri", CORPUS, "--to", LARES_URI, "--yes", "--json"]);
+    const fed = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${CORPUS}`, `to=${LARES_URI}`, "yes=true", "--json"]);
     expect(fed.json?.["ok"]).toBe(true);
 
     // THE STOP IS THE FLUSH. SIGTERM flushes the main replica before any island teardown, the budget bounds only

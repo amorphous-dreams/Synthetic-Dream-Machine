@@ -102,10 +102,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/mcp`>>
 
-!!! kahua_stage
+!!! act lar:///face.draft.stages
 
 ```memetic-wikitext
-<<has entity=`skin` name=`mcp` params=`spells/kahua_stage ~ the seat; rides a seat session over the @daemon wire`>>
+<<has entity=`skin` name=`mcp` params=`handler/seat spells/[[act lar:///face.draft.stages]] ~ the seat; rides a seat session over the @daemon wire`>>
 ```
 
 <<~/ahu>>
@@ -121,6 +121,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EUoBX5msxBaJoreSQJssilQOMUGbEmPVB1lmVXArDLo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9Debz-JajCO9IfDjuos6dX3jVkIgLDFRYXiVgP0UOmw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

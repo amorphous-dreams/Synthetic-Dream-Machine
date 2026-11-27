@@ -59,7 +59,7 @@
  * answers no read and takes no write. Every other record lands natively, as a person's edit in the wiki lands it: a `$:/`
  * title or tag, a module or plugin field and a script type alike (the island holds a document's code as data; its code
  * comes from the floor-admitted preloads alone). A RENDERED TIDDLER (`rendered-from`) takes no put and no delete here:
- * only the renderer writes it, and both refuse `rendered-derives`. No action string and no `tm-*` message rides this door (the `act` ask, phase 2).
+ * only the renderer writes it, and both refuse `rendered-derives`. No action string and no `tm-*` message rides this door; an act rides `call` by its address.
  *
  * THE FAMILY LAW (`@lararium/mesh/family`) DECIDES WHERE A RECORD STANDS AND WHAT A DELETE MOVES. `position` and
  * `family` read through `familyOf`; a delete reads its `consequence` before anything lands, over the reader's view,
@@ -130,7 +130,7 @@ import { pageFilterAnswer, filterCursor, checkFilter, lineLensOf, matchingLines,
 import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { wornOrigin } from "./verb-dispatcher.js";
-import { CallRefusal, callReaderOf, cureCall, type CallSeat, type MacroCallParse } from "./modules/call.js";
+import { CallRefusal, VOICE_SLOTS, callReaderOf, cureCall, type CallSeat, type CallVoice, type MacroCallParse, type VoiceSlot } from "./modules/call.js";
 import { dryDepthOf, filterDepthArgs, muWordsOf, readDepthArgs } from "./modules/mu.js";
 import { wikiWearsNext } from "./island-recipe.js";
 import { isTw5DocsBag, refuseTw5DocsWrite } from "./tw5-docs-library.js";
@@ -2482,6 +2482,9 @@ export const TIDDLER_CALL_SEATS: Readonly<Record<string, CallSeat>> = Object.fre
   },
   "lar:///engine.record.removes": { verb: "tiddler-delete", dry: true, fold: (args) => dryArgs(args, "delete") },
   "lar:///engine.record.renames": { verb: "tiddler-rename", dry: true, fold: (args) => dryArgs(args, "rename") },
+  // THE SIDEBAR ACT (landing 9): `wiki(verb="act")`'s one admitted action seats as a carrier and rides `call` by its address; the
+  // reactor's own table names the action (`sidebar-layout`), so the call carries values alone, never action text.
+  "lar:///render.sidebar.lays": { verb: "wiki-action", fold: ({ face: _face, ...args }) => ({ ...args, name: "sidebar-layout" }) },
 });
 
 /**
@@ -2520,5 +2523,32 @@ export function tiddlerCallSource(opts: TiddlerVerbOptions): CallSource {
       const { view } = await viewFor(wiki, anchorOf(wiki, container, "call"), ctx.cap);
       return callReaderOf(view as never);
     },
+    // THE MACHINA'S VOICE (landing 21): Iris-Sprite's templates render in the anchor's own engine, read at the call; a rig that
+    // boots no engine renders none and the plain words stand. The baked pack carries canon's templates as the floor.
+    get voice(): CallVoice | undefined {
+      const wiki = (opts.tw5?.$tw as unknown as { wiki?: { renderText?: (out: string, type: string, text: string, o?: { variables?: Record<string, string> }) => string } } | undefined)?.wiki;
+      if (typeof wiki?.renderText !== "function") return undefined;
+      return {
+        render: (template, variables) => wiki.renderText!("text/plain", "text/vnd.tiddlywiki", template, { variables: { ...variables } }),
+        floor: packedVoice,
+      };
+    },
   };
+}
+
+/**
+ * THE PACK, LOADED LAZILY AND BY A NAME NO BUNDLER FOLLOWS (as the consult's): the floor templates a node vessel's own binary
+ * baked; a browser island reads none, and its stack answers.
+ */
+const VOICE_PACK_MODULE = "./affordance-pack.js";
+async function packedVoice(): Promise<Partial<Record<VoiceSlot, string>>> {
+  try {
+    const mod = await import(/* @vite-ignore */ VOICE_PACK_MODULE) as { affordancePack(): { voice?: Partial<Record<string, string>> } };
+    const voice = mod.affordancePack().voice ?? {};
+    const out: Partial<Record<VoiceSlot, string>> = {};
+    for (const slot of VOICE_SLOTS) { const t = voice[slot]; if (typeof t === "string") out[slot] = t; }
+    return out;
+  } catch {
+    return {};
+  }
 }

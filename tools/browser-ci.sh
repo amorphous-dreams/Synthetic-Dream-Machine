@@ -12,7 +12,7 @@
 #                                           against the standing hearth); prints the offer JSON alone
 #   browser-ci.sh join answer <request>     pipe a host-side request file into the node and `lares fleet join answer` it;
 #                                           prints the answer JSON alone. BROWSER_CI_SYNC_URL, when set, rides as --sync-url
-#   browser-ci.sh bag <name>                stand a writable scratch bag (`lares act CREATE --bag … --yes`); prints its URI.
+#   browser-ci.sh bag <name>                stand a writable scratch bag (`lares act lar:///carriage.bag.creates bag=… yes=true`); prints its URI.
 #                                           A bare name becomes lar:///ha.ka.ba/bags/<name>; a lar: URI passes through
 #   browser-ci.sh ingest <path>             copy a repo carrier (bags/<bag>/<w.w.w>/…) into the scratch workspace volume and
 #                                           `lares ingest --source … --to <bag uri> --apply --yes`
@@ -191,7 +191,7 @@ case "$verb" in
   bag)
     [ "$#" -eq 1 ] || die "bag wants one name"
     uri=$(bag_uri "$1")
-    out=$(lares act CREATE --bag "$uri" --yes)
+    out=$(lares act lar:///carriage.bag.creates bag="$uri" yes=true)
     ok_or_die "$out"
     printf '%s\n' "$out" >&2
     printf '%s\n' "$uri" ;;

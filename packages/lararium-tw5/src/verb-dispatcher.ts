@@ -62,7 +62,7 @@ import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
 import { runLocalVerb, gateRoutedVerb, refuseSeatCanonRouted, RoutedCapDenied, makeCapVerify, routedAddressesWiki, routedWikiSlug } from "./verb-local-dispatch.js";
-import { callOfSigil, dryUnwalked, hostAnswer, isCallSigil, isDryPlan, muAnswer, planCall, reactorArgs, seatVerbOf, stampAnswer, unhandled, type CallPlan, type CallReader, type CallSeat, type MacroCallParse } from "./modules/call.js";
+import { callOfSigil, dryUnwalked, hostAnswer, isCallSigil, isDryPlan, muAnswer, planCall, reactorArgs, seatVerbOf, stampAnswer, unhandled, voicedAnswer, voicedRefusal, type CallPlan, type CallReader, type CallSeat, type CallVoice, type MacroCallParse } from "./modules/call.js";
 import { surfaceOf } from "./affordance-read.js";
 
 export interface VerbContext {
@@ -317,6 +317,8 @@ export async function runPlan(table: VerbTable, plan: CallPlan, ctx: VerbContext
 export interface CallSource {
   readerOf(ctx: VerbContext, params: Readonly<Record<string, unknown>>): CallReader | Promise<CallReader>;
   readonly parse?: MacroCallParse | undefined;
+  /** The machina's voice (landing 21): the renderer and floor Iris-Sprite's templates read through; absent, the plain words stand. */
+  readonly voice?: CallVoice | undefined;
 }
 
 /** The host's seat of the registry inside a wiki VM (`$tw.lares.callDoor`): each plan runs under one context. */
@@ -334,6 +336,13 @@ export const callDoorOf = (table: VerbTable, ctx: VerbContext) => (plan: CallPla
  * THE NAMED RECIPE'S STACK DECIDES: each call reads its carriers over the reader view of the recipe its params name (`recipe`,
  * else `default`), so a carrier seated in that wiki's working layers shapes the call and one the caller's face may not read
  * shapes none. The operator's stack decides per recipe (mutability at the root).
+ *
+ * THE HAND STAYS AT THE DOOR: a seated address runs through `VerbTable.get`, so a hand-only verb refuses every ask that did
+ * not arrive on a hand's own path by its own code, whatever the carrier's `#/gate` or `#/skins` rows say and whatever grants
+ * the asker holds. A carrier describes; it never grants.
+ *
+ * THE MACHINA'S VOICE (landing 21): the answer carries its human line (`human`) and a call refusal its line, each rendered
+ * through Iris-Sprite's templates over the same reader view (`source.voice`).
  */
 export function makeCallReactor(table: VerbTable, source: CallSource): VerbReactor {
   return async (args, ctx) => {
@@ -349,10 +358,14 @@ export function makeCallReactor(table: VerbTable, source: CallSource): VerbReact
     if (verb === "") throw new Error("call: name args.verb (a verb word, a skin spelling or an affordance address) or args.sigil (a whole call sigil)");
     const surface = surfaceOf(typeof args["surface"] === "string" ? args["surface"] : "console");
     const reader = await source.readerOf(ctx, params);
-    const plan = planCall(reader, verb, params, surface);
-    const receipt = reader.receiptOf(plan.carrier);
-    if (plan.host) return hostAnswer(plan, receipt);
-    return muAnswer(stampAnswer(await runPlan(table, plan, ctx), plan.address, receipt), plan);
+    try {
+      const plan = planCall(reader, verb, params, surface);
+      const receipt = reader.receiptOf(plan.carrier);
+      const answer = plan.host ? hostAnswer(plan, receipt) : muAnswer(stampAnswer(await runPlan(table, plan, ctx), plan.address, receipt), plan);
+      return await voicedAnswer(answer, reader, source.voice);
+    } catch (fault) {
+      throw await voicedRefusal(fault, reader, source.voice);
+    }
   };
 }
 

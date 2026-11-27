@@ -44,7 +44,7 @@ describe.skipIf(!stagedTarget)("a minted book takes a put and promotes it", () =
     const putData = put.json?.["data"] as { bag?: string; canonicalHash?: string } | undefined;
     expect(putData?.bag, `the put names its layer: ${JSON.stringify(put.json)}`).toBe(WORKING);
 
-    const moved = await lar.cli(["act", "MOVE", "--title", URI, "--from", WORKING, "--to", CANON, "--yes", "--json"]);
+    const moved = await lar.cli(["act", "lar:///carriage.bag.moves", `title=${URI}`, `from=${WORKING}`, `to=${CANON}`, "yes=true", "--json"]);
     expect(moved.json?.["ok"], `MOVE refused: ${JSON.stringify(moved.json)}`).toBe(true);
     expect(Number((moved.json?.["data"] as { moved?: unknown } | undefined)?.moved ?? 0)).toBeGreaterThan(0);
 

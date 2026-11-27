@@ -37,7 +37,7 @@ export type PortVesselKind = typeof PORT_OPEN | typeof PORT_WRITE | typeof PORT_
 export type PortIslandKind = typeof PORT_BOOT | typeof PORT_SNAPSHOT | typeof PORT_CHANGES | typeof PORT_RESET | typeof PORT_WRITTEN | typeof PORT_ANSWER | typeof PORT_PRESENCE;
 
 export type PortWidthName = "full" | "skinny" | "story" | "none";
-export type PortAskKind = "filter" | "render" | "load" | "verb" | "cas" | "invoke";
+export type PortAskKind = "filter" | "render" | "load" | "verb" | "call" | "cas" | "invoke";
 export type PortRenderForm = "html" | "text" | "blocks" | "label-html";
 
 export interface PortGrant {
@@ -99,10 +99,10 @@ export interface PortMsg_Ask {
   portId: string;
   askId: string;
   kind: PortAskKind;
-  /** filter: the filter string. render/load: the title. verb: the verb name. cas: the CID. */
+  /** filter: the filter string. render/load: the title. verb: the verb name. call: the verb word, skin spelling, address or whole call sigil. cas: the CID. */
   subject?: string;
   titles?: string[];
-  /** String arguments for a verb; at most 64 keys and 65536 UTF-8 bytes per value. */
+  /** String arguments for a verb, or a call's named params; at most 64 keys and 65536 UTF-8 bytes per value. */
   args?: Record<string, string>;
   fields?: string[];
   form?: PortRenderForm;
@@ -218,7 +218,7 @@ const PORT_BYTES_MAX = 16 * 1024 * 1024;
 export const PORT_BOOT_CHUNK_BYTES = 196_608;
 const PORT_BOOT_CHUNK_BASE64_MAX = Math.ceil(PORT_BOOT_CHUNK_BYTES / 3) * 4;
 const WIDTHS: ReadonlySet<string> = new Set<PortWidthName>(["full", "skinny", "story", "none"]);
-const ASKS: ReadonlySet<string> = new Set<PortAskKind>(["filter", "render", "load", "verb", "cas", "invoke"]);
+const ASKS: ReadonlySet<string> = new Set<PortAskKind>(["filter", "render", "load", "verb", "call", "cas", "invoke"]);
 const FORMS: ReadonlySet<string> = new Set<PortRenderForm>(["html", "text", "blocks", "label-html"]);
 const RESETS: ReadonlySet<string> = new Set(["island-restarted", "compacted", "shape-changed", "lagged"]);
 const TIERS: ReadonlySet<string> = new Set(["veil", "personagroup", "contract", "public"]);

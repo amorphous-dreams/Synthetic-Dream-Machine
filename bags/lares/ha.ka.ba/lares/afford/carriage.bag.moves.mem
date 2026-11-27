@@ -21,7 +21,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.bag.moves"
 
 A MOVE of a tombstone carries a delete down: `--title` and `--from` with `--to` name the bag where the delete takes place; with no `--to` the bags holding the title print as candidates (and the line asks for --to). `--shadow` hides a title from a bag that holds none, a delete that shadows the lower layers, and rides a title-grain MOVE alone: a layer move, or any other verb, refuses it.
 
-A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent off a terminal, `--dry-run` previews and commits nothing, `--in-wiki` runs the act in the active wiki's island.
+A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent off a terminal, `mu=dry` previews and commits nothing, `in-wiki=true` runs the act in the active wiki's island.
 
 <<~/ahu>>
 
@@ -40,7 +40,7 @@ A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent off
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ title · from · to · shadow · change-id · dry-run · in-wiki
+!! takes ~ title · from · to · shadow · change-id · in-wiki · yes · mu
 
 ```memetic-wikitext
 <<has entity=`arg` name=`title` params=`takes/title ~ the tiddler's title; absent beside --from and --to, the whole layer moves`>>
@@ -48,8 +48,10 @@ A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent off
 <<has entity=`arg` name=`to` params=`takes/bag-uri ~ the destination bag; a title-grain MOVE of a tombstone may leave it out and read the candidate holders`>>
 <<has entity=`arg` name=`shadow` params=`~ hide the title from a bag that holds none; names one tombstoned title, so a layer move refuses it`>>
 <<has entity=`arg` name=`change-id` params=`takes/id ~ the change's own identity, named once so a re-send reads as the same change; absent, the verb mints one`>>
-<<has entity=`arg` name=`dry-run` params=`~ preview the effect without committing it`>>
 <<has entity=`arg` name=`in-wiki` params=`~ run the act in the active wiki's island`>>
+<<has entity=`arg` name=`yes` params=`~ the intent a call off a terminal names in place of the y/N a terminal asks`>>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
+<<has entity=`cell` name=`_` params=`mu/dry ~ a dry run: the island walks the act through a capturing access and names the effect it would land, committing nothing`>>
 ```
 
 <<~/ahu>>
@@ -61,7 +63,7 @@ A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent off
 Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
-<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ the vessel checks the writer's cap on the destination bag; a terminal asks y/N before it submits unless --yes rides, and an agent off a terminal names --yes`>>
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ the vessel checks the writer's cap on the destination bag; a terminal asks y/N before it submits unless yes=true rides, and an agent off a terminal names yes=true`>>
 ```
 
 <<~/ahu>>
@@ -85,7 +87,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`band` name=`done` params=`exit/0 fields/[[verb status requestId receipt]] ~ the vessel ran the action and wrote its effect record; the receipt names the outcome tiddler`>>
-<<has entity=`band` name=`preview` params=`exit/0 ~ with --dry-run the vessel names the effect it would land and commits nothing`>>
+<<has entity=`band` name=`preview` params=`exit/0 ~ with mu=dry the vessel names the effect it would land and commits nothing`>>
 <<has entity=`band` name=`refused` params=`~ the vessel refused by name (cap-denied or a verb-error); the line carries its reason and cure`>>
 <<has entity=`band` name=`candidates` params=`exit/0 ~ no destination named: the bags holding the title print, and the line asks for --to`>>
 ```
@@ -98,10 +100,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/cli`>>
 
-!!! lares act MOVE
+!!! lares act lar:///carriage.bag.moves
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares act MOVE]] ~ the terminal; the verb rides as the first word, ALL-CAPS`>>
+<<has entity=`skin` name=`cli` params=`handler/host dry/walks spells/[[lares act lar:///carriage.bag.moves]] ~ the terminal; the act rides by its address through the call door, and the terminal runs the bound act (host files, y/N)`>>
 ```
 
 <<~/ahu>>
@@ -117,6 +119,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;C6ZWV35-Bu1U7EyjA3_XpqHlf_PbzWsnKDL4xKy0qLQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fYutJCrj9ViPuu73m9cPdmtaufUK7YACuNb2Dq2xTh0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

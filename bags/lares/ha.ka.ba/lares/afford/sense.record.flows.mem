@@ -100,10 +100,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/mcp`>>
 
-!!! flow
+!!! act lar:///sense.record.flows
 
 ```memetic-wikitext
-<<has entity=`skin` name=`mcp` params=`spells/flow ~ the seat; the signal rides as a list of rows`>>
+<<has entity=`skin` name=`mcp` params=`handler/seat spells/[[act lar:///sense.record.flows]] ~ the seat; the signal rides as a list of rows`>>
 ```
 
 <<~/ahu>>
@@ -118,6 +118,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;f8X8oL_lXX4e8F8w2yoQMRya3fXT_goK8p4xH-6Ob8I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;M7iQtvJCEv3G1rjXtSikogt9wS3Hp16_Vwdg16wBBNg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

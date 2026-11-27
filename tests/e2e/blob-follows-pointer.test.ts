@@ -124,7 +124,7 @@ describe.skipIf(gaps.length > 0)("★ A’s live pointer stays local while B mea
         mkdirSync(earlyDir, { recursive: true });
         writeFileSync(join(earlyDir, "photo.png"), PNG_BYTES);
         writeFileSync(join(earlyDir, "photo.png.meta"), "type: image/png\n");
-        const early = await a.cli(["act", "LOAD", "--source-uri", earlyDir, "--to", WORKING_LARES, "--yes", "--json"]);
+        const early = await a.cli(["act", "lar:///carriage.bag.loads", `source-uri=${earlyDir}`, `to=${WORKING_LARES}`, "yes=true", "--json"]);
         const earlyWhich = await a.cli(["wiki", "which", `lar:///${LOCI_EARLY}/photo`, "--no-json"]);
         console.error(`blob-follows-pointer MEASURE A (before B stands): LOAD ${early.json?.["ok"]} → wiki which: ${/primary:\s+(\S+)/.exec(earlyWhich.stdout)?.[1]}`);
       },
@@ -147,7 +147,7 @@ describe.skipIf(gaps.length > 0)("★ A’s live pointer stays local while B mea
     mkdirSync(srcDir, { recursive: true });
     writeFileSync(join(srcDir, "photo.png"), PNG_BYTES);
     writeFileSync(join(srcDir, "photo.png.meta"), "type: image/png\n");
-    const ld = await A!.cli(["act", "LOAD", "--source-uri", srcDir, "--to", WORKING_LARES, "--yes", "--json"]);
+    const ld = await A!.cli(["act", "lar:///carriage.bag.loads", `source-uri=${srcDir}`, `to=${WORKING_LARES}`, "yes=true", "--json"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
     await promoteLoadedTitles(A!, ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
     const casA = listCas(A!);

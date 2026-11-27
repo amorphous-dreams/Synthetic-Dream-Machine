@@ -148,10 +148,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/mcp`>>
 
-!!! tiddler_put
+!!! put
 
 ```memetic-wikitext
-<<has entity=`skin` name=`mcp` params=`spells/tiddler_put omits/realm,face maps/tag-add:tags-add,tag-remove:tags-remove,cut-slot:cut,with:replace-with ~ the seat; answers the receipt`>>
+<<has entity=`skin` name=`mcp` params=`spells/put omits/realm,face ~ the seat; answers the receipt`>>
 ```
 
 <<~/ahu>>
@@ -178,6 +178,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;b1eLGhfEAK1l2kLGtNCcd9tu1z1HTHeW0bFPnXy25tQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RvEyK_SAJMqrWWoVi1jTZqSYWh-n7DVQiFHyFEHDmGQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

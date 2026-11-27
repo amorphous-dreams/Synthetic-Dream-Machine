@@ -106,8 +106,8 @@ describe("L9 · a named outcome keeps its cause and its exit class", () => {
     const CURES: ReadonlyArray<readonly [cause: string, cure: () => string | undefined, names: string]> = [
       ["request-interrupted, with a change id", () => refusalHint("request-interrupted", "cid-9"), "--change-id cid-9"],
       ["request-abandoned, with a change id", () => refusalHint("request-abandoned", "cid-9"), "--change-id cid-9"],
-      ["bag-retired", () => refusalHint("bag-retired", undefined), "lares act CREATE --bag"],
-      ["bag-retired through the store door", () => storeFailure(new RoutedVerbRefused("m", "bag-retired")).hint, "lares act CREATE --bag"],
+      ["bag-retired", () => refusalHint("bag-retired", undefined), "lares act lar:///carriage.bag.creates bag="],
+      ["bag-retired through the store door", () => storeFailure(new RoutedVerbRefused("m", "bag-retired")).hint, "lares act lar:///carriage.bag.creates bag="],
       ["daemon-unreachable", () => verbFailure(new DaemonUnreachable("/x")).hint, "lares vessel stand"],
       ["outcome-unknown", () => verbFailure(new LocalWaitExpired("v", 1, "req-7")).hint, "lares vessel request req-7"],
     ];

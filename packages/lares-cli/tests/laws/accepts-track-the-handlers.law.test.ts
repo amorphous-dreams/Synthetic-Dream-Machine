@@ -43,7 +43,7 @@ const SRC = resolve(dirname(fileURLToPath(import.meta.url)), "../../src");
 /** Which file each command's handler lives in (the `import` the table row names). */
 const HANDLER_FILE: Readonly<Record<string, string>> = {
   vessel: "commands/vessel", herm: "commands/herm", host: "commands/host-cmd", walk: "commands/walk-cmd",
-  act: "commands/act", ingest: "commands/ingest", export: "commands/export", import: "commands/import", shore: "commands/shore", surface: "commands/surface", realm: "commands/realm",
+  ingest: "commands/ingest", export: "commands/export", import: "commands/import", shore: "commands/shore", surface: "commands/surface", realm: "commands/realm",
   events: "commands/events", meme: "commands/meme", bag: "commands/bag",
   wiki: "commands/wiki", get: "commands/call", put: "commands/call", delete: "commands/call", rename: "commands/call", repo: "commands/tunnel-door", home: "commands/tunnel-door", sense: "commands/sense", flow: "commands/flow-run",
   ddate: "commands/ddate-cmd", oracle: "commands/oracle-cmd", law: "commands/law", mempalace: "commands/mempalace", hooks: "commands/hooks", spirit: "commands/spirit", mcp: "commands/mcp", lei: "commands/lei", rite: "commands/rite",

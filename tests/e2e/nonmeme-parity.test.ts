@@ -141,7 +141,7 @@ describe.skipIf(gaps.length > 0)("★ NON-MEME PARITY — one file, two doors, o
       await sleep(500);
     }
     await sleep(3_000);
-    const repack = await lar.cli(["act", "REPACK", "--source", join(islandIn, "pack.json"), "--from", BAG_URI, "--out", join(lar.root, "repack.json"), "--json"]);
+    const repack = await lar.cli(["act", "lar:///carriage.bundle.repacks", `source=${join(islandIn, "pack.json")}`, `from=${BAG_URI}`, `out=${join(lar.root, "repack.json")}`, "--json"]);
     if (repack.json?.["ok"] === true) {
       islandRepack = { count: Number((repack.json["data"] as Record<string, unknown>)["count"]), text: readFileSync(join(lar.root, "repack.json"), "utf8") };
     } else {

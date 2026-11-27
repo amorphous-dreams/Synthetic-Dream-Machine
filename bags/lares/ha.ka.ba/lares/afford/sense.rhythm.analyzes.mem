@@ -1,0 +1,83 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.rhythm.analyzes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "run one analysis lens over a sensorium or a rows matrix"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.rhythm.analyzes"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.rhythm.analyzes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.rhythm.analyzes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.rhythm.analyzes ~ run one analysis lens
+
+`lens` chooses the instrument: changes, rhythm, couple (house name ki), cohere (house name li), square, lead, forecast, mismatch. The first five read the poured sensorium; lead, forecast and mismatch read the `rows` matrix the caller hands in (`names` labels its columns) and touch no plane. A missing or unknown lens refuses naming every lens, and an argument the lens reads none of refuses by name.
+
+The address stands ''candidate'' until the operator reads the landing's list. The MCP seat runs this act in its own process: the vessel's `call` binds the params against this carrier's live `#/takes` and answers `handler/seat` with the bound params, and the seat runs them (`act(address="lar:///sense.rhythm.analyzes", args={…})`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ lens · spectral · halves · span · repour · channel · rows · names · sensorium
+
+```memetic-wikitext
+<<has entity=`arg` name=`lens` params=`takes/word ~ the plane or instrument`>>
+<<has entity=`arg` name=`spectral` params=`~ read change-points spectrally`>>
+<<has entity=`arg` name=`halves` params=`takes/word ~ the halving scales, e.g. 4,8,16`>>
+<<has entity=`arg` name=`span` params=`takes/count ~ the change-point span`>>
+<<has entity=`arg` name=`repour` params=`~ re-derive the rhythm plane first`>>
+<<has entity=`arg` name=`channel` params=`takes/word ~ one channel stratum (speech, thought, tool)`>>
+<<has entity=`arg` name=`rows` params=`takes/json ~ the signal matrix, rows as time and columns as signals`>>
+<<has entity=`arg` name=`names` params=`takes/json ~ the column labels`>>
+<<has entity=`arg` name=`sensorium` params=`takes/word ~ the sensorium by name; absent, memory`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ the vessel verbs the seat's handler reaches check the face's cap and the asker's hand themselves; a hand act refuses a seat by its own code`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ mcp
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! act lar:///sense.rhythm.analyzes
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`handler/seat spells/[[act lar:///sense.rhythm.analyzes]] ~ the seat runs it in its own process`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · lares-mcp
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/sensorium/lares-mcp`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KjYgHD9o-DDXbYG_scJnIx_AJaAtLDfd4r5wFkaJXAY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

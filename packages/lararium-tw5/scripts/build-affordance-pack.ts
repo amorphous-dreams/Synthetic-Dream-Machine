@@ -33,6 +33,8 @@
  *               `by/filter`) claims no route of its own, and its door gathers every choice, the spine each reads first
  *   index       the `lares --help` lines of every carrier, through the index template
  *   shelves     per oracle kind: the shelf index's title and the `method` it declares (`three-coins`)
+ *   voice       Iris-Sprite's templates (`#/answer/template`, `#/refusal/template` of lar:///ha.ka.ba/lares/spirit/iris-sprite):
+ *               the floor a sleeping vessel's answers and refusals render through, where no stack seats her shrine
  *   hash        sha256 over the pack's canonical bytes with the hash field absent
  *
  * `--check` regenerates in memory and compares bytes with the tracked pack (witness W3); a stale or hand-edited pack exits 1
@@ -53,6 +55,7 @@ import { AFFORDANCE_TAG, AFFORD_SLOTS, AFFORD_SURFACES, addressOfTitle, bareAddr
 import { routesOf, rowsOf, skinRows, type TextOf } from "../src/affordance-read.js";
 import { KIND_RE, ORACLE_SHELF_PREFIX } from "@lararium/mesh/oracle-cast";
 import { kaheaTarget } from "@lararium/mesh/oracle-loop";
+import { IRIS_SHRINE, VOICE_SLOTS, templateOf, voiceTitle } from "../src/modules/call.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 
 const PACKAGE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -118,6 +121,8 @@ export interface AffordancePack {
   readonly doors: Record<string, { readonly addresses: readonly string[]; readonly brief: string; readonly help: readonly string[] }>;
   readonly index: Record<string, readonly string[]>;
   readonly shelves: Record<string, AffordancePackShelf>;
+  /** Iris-Sprite's templates by slot (`answer`, `refusal`); absent where the bake read no shrine. */
+  readonly voice?: Record<string, string>;
 }
 
 /** A shelf index's path under a canon source: `.../library/oracles/<kind>/index.mem`. */
@@ -271,9 +276,14 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
     if (method !== "") shelves[kind] = { title, method };
   }
 
-  const body = { title: PACK_TITLE, carriers, routes, doors, index, shelves };
+  // THE MACHINA'S VOICE: each template her shrine carries, the floor every answer and refusal renders through with no stack.
+  const voice: Record<string, string> = {};
+  for (const slot of VOICE_SLOTS) { const t = templateOf(textOf(voiceTitle(slot))); if (t !== null) voice[slot] = t; }
+  const voiced = Object.keys(voice).length > 0 ? { voice } : {};
+
+  const body = { title: PACK_TITLE, carriers, routes, doors, index, shelves, ...voiced };
   const hash = `sha256-${createHash("sha256").update(canonicalJson(body)).digest("hex")}`;
-  return { title: PACK_TITLE, hash, carriers, routes, doors, index, shelves };
+  return { title: PACK_TITLE, hash, carriers, routes, doors, index, shelves, ...voiced };
 }
 
 /**
@@ -328,7 +338,9 @@ export function canonTexts(bags: string, extra: readonly string[] = []): string[
   const files = memFiles(bags);
   const carriers = [...files, ...extra].map((f) => readFileSync(f, "utf8")).filter((t) => t.includes(AFFORDANCE_TAG));
   const shelves = files.filter((f) => SHELF_INDEX.test(f.split(path.sep).join("/"))).map((f) => readFileSync(f, "utf8")).filter((t) => !t.includes(AFFORDANCE_TAG));
-  return [...carriers, ...shelves];
+  // Iris-Sprite's shrine rides the bake for her templates alone (the pack's `voice`).
+  const shrine = files.map((f) => readFileSync(f, "utf8")).filter((t) => !t.includes(AFFORDANCE_TAG) && headUriOf(t) === IRIS_SHRINE);
+  return [...carriers, ...shelves, ...shrine];
 }
 
 async function main(argv: readonly string[]): Promise<number> {

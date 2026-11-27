@@ -95,10 +95,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/mcp`>>
 
-!!! law_unpin
+!!! act lar:///engine.law.unpins
 
 ```memetic-wikitext
-<<has entity=`skin` name=`mcp` params=`spells/law_unpin omits/face ~ the seat; answers the body`>>
+<<has entity=`skin` name=`mcp` params=`handler/seat spells/[[act lar:///engine.law.unpins]] omits/face ~ the seat; answers the body`>>
 ```
 
 <<~/ahu>>
@@ -114,6 +114,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;O3nx2FBoCglPN_OOu3ERqCKD3kwOTxnsO60JPpII42Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nXYBEPy2ZHYEL1gaU-B8NjqeSPCgaVeW_TvRLSh1sbk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

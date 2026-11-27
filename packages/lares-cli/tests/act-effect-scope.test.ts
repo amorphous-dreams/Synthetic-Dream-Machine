@@ -230,7 +230,7 @@ describe("the SYNCHRONOUS (live) refusal carries the SAME hint as the read-back"
     expect(code).toBe(2);
     const payload = JSON.parse(cap.join("")) as { error: { code: string; hint: string } };
     expect(payload.error.code).toBe("bag-retired");
-    expect(payload.error.hint).toContain("lares act CREATE --bag");
+    expect(payload.error.hint).toContain("lares act lar:///carriage.bag.creates bag=");
   });
 
   test("MUTATION: a verb-error refusal carries no hint field — the shared helper never invents one", async () => {
