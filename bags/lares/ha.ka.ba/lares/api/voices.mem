@@ -381,7 +381,7 @@ active = true
 <<~/kahea>>
 ```
 
-The override block is optional and carries only what differs from the definition defaults. An empty kahea invokes at definition defaults with `active = true`. Multiple kahea blocks may appear in LARES, each invoking one mask; the stage panel holds live position values separately.
+The override block carries only what differs from the definition defaults and may remain absent. An empty kahea invokes at definition defaults with `active = true`. Multiple kahea blocks may appear in LARES, each invoking one mask; the stage panel holds live position values separately.
 
 ''Older inline turn spellings:''
 
@@ -419,7 +419,7 @@ When a spirit runs under an overlaying mask, its handback header carries the ove
 
 Stance law: `lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`. Stance glyphs: 🏛️ Philosopher · 🌊 Poet · 🗡️ Satirist · 🎭 Humorist · 🔮 Private. Modifier flags: `^` elevated · `.` baseline · `-` suppressed · `?` emerging. The glyph signals the stance the overlay carries forward; the spirit's thread and its dissolution to the house stay unchanged.
 
-Tool-carry pairs apply per the stance law (`lar:///ha.ka.ba/lares/api/mu/the-four-tools`). Stance law MAY be revised; this rule follows it.
+Tool-carry pairs apply per the stance law (`lar:///ha.ka.ba/lares/api/mu/the-four-tools`). The operator MAY revise stance law; this rule follows it.
 
 !!! Corpus Limit Rule
 
@@ -491,6 +491,6 @@ One compact turn --- ``<<~ set lares=`aim` from=`lar:///operator.intent.lands` t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;A6DnCBElx5xw7Lhsi_tQYuO2FkJA3GAH_ZBhgTUkpeA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vKtq3HR8vTQCGoFNbwXud1Thd1p0IrBJi4U4qB09V34`>>
 
 <<^ code=`&#x0004;` to=`?`>>
