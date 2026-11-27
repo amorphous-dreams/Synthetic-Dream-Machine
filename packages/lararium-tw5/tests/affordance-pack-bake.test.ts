@@ -50,6 +50,10 @@ describe.skipIf(wikiSkip)(`the affordance bake over the fixture carrier${skipNot
     const c = pack.carriers[FIXTURE_ADDRESS]!;
     for (const surface of ["cli", "mcp", "tw5", "console"]) expect(c.renders[surface]!["line"]!.join("\n").toLowerCase()).toContain(c.role.toLowerCase());
     expect(c.renders["mcp"]!["whole"]![0]).toBe(c.role);
+    // The mcp whole names the role once: its line leads, and the head's tagline (the role restated) rides no second line.
+    const said = c.renders["mcp"]!["whole"]!.join("\n").toLowerCase().split(c.role.toLowerCase()).length - 1;
+    expect(said).toBe(1);
+    expect(c.renders["mcp"]!["whole"]!.join("\n")).toContain("A line sums three coins");   // the head's body still rides
     expect(c.renders["mcp"]!["whole"]!.join("\n")).toContain("Refuses: query-unnamed · record-torn.");   // the skin names every refusal row, the foreign cure's too
     expect(c.params["asking"]).toBe("the question, named before the throw");
     expect(Object.keys(c.params).sort()).toEqual(["asking", "at", "bag", "caster", "coins", "recipe"]);   // the mcp skin omits fresh, seed
@@ -102,8 +106,13 @@ describe.skipIf(wikiSkip)(`the affordance bake over the fixture carrier${skipNot
     expect(briefOf("oracle", ["cast a throw", "read a cast"], ["oracle cast", "oracle read"])).toBe("cast a throw · read a cast");
     const roles = ["x".repeat(40), "y".repeat(40)];
     expect(briefOf("shore", roles, ["shore flush", "shore list", "shore log"])).toBe("flush · list · log");   // the joined roles overrun the list's line: the door names its verbs
+    // Progressive display retires the screen budget: the joined roles hold the carrier's width law (a role, 72 or fewer), and
+    // past it the door's one line names every verb whole, never cut to a terminal's columns; `lares shore --help` unfolds the rest.
+    expect(briefOf("oracle", ["x".repeat(35), "y".repeat(34)], ["oracle cast", "oracle read"])).toBe(`${"x".repeat(35)} · ${"y".repeat(34)}`);
+    expect(briefOf("oracle", ["x".repeat(35), "y".repeat(35)], ["oracle cast", "oracle read"])).toBe("cast · read");
     const many = Array.from({ length: 30 }, (_, i) => `shore verb-${i}`);
-    expect(briefOf("shore", roles, many).endsWith(" · …")).toBe(true);
-    expect(briefOf("shore", roles, many).length).toBeLessThanOrEqual(78);
+    const brief = briefOf("shore", roles, many);
+    expect(brief).not.toContain("…");
+    expect(brief.split(" · ")).toHaveLength(30);
   });
 });

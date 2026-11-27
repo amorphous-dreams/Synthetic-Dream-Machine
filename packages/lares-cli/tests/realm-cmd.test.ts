@@ -121,7 +121,7 @@ describe("lares realm", () => {
     expect(own.label).toEqual({ schema: "lar-realm-label", petName: "notes", realms: [{ slug: "notes", id: ID }], bags: ["notes"] });
   });
 
-  test("RC5 the help keeps its row and the ceiling", async () => {
+  test("RC5 the help keeps its row: one line for the door on the list, depth on the unfold", async () => {
     const row = COMMANDS.find((c) => c.name === "realm");
     expect(row).toBeDefined();
     expect(row!.accepts).toEqual(["to"]);
@@ -131,7 +131,7 @@ describe("lares realm", () => {
     vi.spyOn(console, "log").mockImplementation((...a) => { out.push(a.map(String).join(" ")); });
     vi.spyOn(console, "error").mockImplementation(() => {});
     expect(await dispatch(["help"])).toBe(0);
-    expect(out.join("\n").split("\n").length).toBeLessThanOrEqual(66);
-    expect(out.join("\n")).toMatch(/^\s+realm\s/m);
+    // Progressive display retires the screen budget: the list's rung names the door on one line, and `lares realm --help` unfolds it.
+    expect(out.join("\n").split("\n").filter((l) => /^\s+(✍ )?realm\s/.test(l))).toHaveLength(1);
   });
 });

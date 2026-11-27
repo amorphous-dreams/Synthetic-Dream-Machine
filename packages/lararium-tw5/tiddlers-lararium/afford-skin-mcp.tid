@@ -33,7 +33,7 @@ caption: affordance skin · mcp
 \procedure whole()
 \whitespace trim
 <<line>>
-<$list filter="[<currentTiddler>afford[prose],[#/head]]" variable="p"><$text text=<<nl>>/><$text text=<<p>>/></$list>
+<$list filter="[<currentTiddler>afford[body],[#/head]]" variable="p"><$text text=<<nl>>/><$text text=<<p>>/></$list>
 <<gate>><<refuses>><<answers>>
 <$text text=<<nl>>/><$text text="Mirrors: "/><$text text={{{ [<currentTiddler>afford:cli[spells]] }}}/><$text text=" (affordance "/><$text text={{{ [<currentTiddler>afford[address]] }}}/><$text text=")."/>
 <$text text=<<nl>>/><$text text="Examples, cures, every band: "/><$text text={{{ [<currentTiddler>afford:mcp[read],[#/shows]] }}}/>

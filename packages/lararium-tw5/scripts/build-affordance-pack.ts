@@ -274,24 +274,18 @@ function spellingsOf(cli: Readonly<Record<string, string>>, addresses: readonly 
   return Object.entries(cli).filter(([, a]) => addresses.includes(a)).map(([s]) => s).sort();
 }
 
-/** The top-level line's width for a door's brief: the list fits one screen, each line within 100 columns. */
-const BRIEF_WIDTH = 78;
+/** The carrier's width law (api/pono/affordance#/residency): a role holds 72 characters or fewer, so its line reads whole. */
+const ROLE_WIDTH = 72;
 
 /**
- * A door's brief: its carriers' roles joined where they fit the list's line, else the verbs the door answers (the spellings'
- * tails, sorted), cut at the last whole verb that fits and closed with an ellipsis.
+ * A door's brief, the list's one line for the door (progressive display: one line per door, depth per unfold, no screen
+ * budget): its carriers' roles joined where the join holds the role's width law, else every verb the door answers (the
+ * spellings' tails, sorted), named whole; `lares <door> --help` unfolds the rest.
  */
 export function briefOf(door: string, roles: readonly string[], spellings: readonly string[]): string {
   const joined = roles.join(" · ");
-  if (joined.length <= BRIEF_WIDTH) return joined;
-  const verbs = [...new Set(spellings.map((s) => s.slice(door.length).trim()).filter(Boolean))];
-  let out = "";
-  for (const v of verbs) {
-    const next = out === "" ? v : `${out} · ${v}`;
-    if (next.length > BRIEF_WIDTH - 4) return `${out} · …`;
-    out = next;
-  }
-  return out;
+  if (joined.length <= ROLE_WIDTH) return joined;
+  return [...new Set(spellings.map((s) => s.slice(door.length).trim()).filter(Boolean))].join(" · ");
 }
 
 /** JSON with every object's keys sorted, two-space indent, one trailing newline: the pack's canonical bytes. */

@@ -17,7 +17,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/affordance
  */
 import {
-  type NeutralCall, AFFORD_SURFACES, type AffordSurface, type HasRow, addressMatcher, addressOfTitle, bareAddressOf, digestOf, edgesOf, exampleCall, kaheaTitles, neutralCallOf,
+  type NeutralCall, AFFORD_SURFACES, type AffordSurface, type HasRow, addressMatcher, addressOfTitle, bareAddressOf, bodyOf, digestOf, edgesOf, exampleCall, kaheaTitles, neutralCallOf,
   parseHasRows, proseOf, renderCall, seatOf, seatsOf, skinOmits, skinRow, spellArg, unfoldRead, usageOf,
 } from "./affordance-rows.js";
 
@@ -109,16 +109,18 @@ export function usageLine(textOf: TextOf, address: string, surface: AffordSurfac
 }
 
 /** The views the `afford` operator answers, by name. A view the operator does not name throws: an empty answer would read as an empty carrier. */
-export const AFFORD_VIEWS = ["rows", "usage", "spells", "prose", "digest", "read", "surfaces", "edges", "address", "match"] as const;
+export const AFFORD_VIEWS = ["rows", "usage", "spells", "prose", "body", "digest", "read", "surfaces", "edges", "address", "match"] as const;
 export type AffordView = (typeof AFFORD_VIEWS)[number];
 
-/** Answer one view for one carrier address. `arg` carries the slot (rows · prose · digest · read) or the pattern (match). */
+/** Answer one view for one carrier address. `arg` carries the slot (rows · prose · body · digest · read) or the pattern (match). */
 export function affordView(textOf: TextOf, address: string, view: string, surface: AffordSurface, arg: string): string[] {
   switch (view as AffordView) {
     case "rows": return rowsOf(textOf, address, arg, surface).map((r) => JSON.stringify(r));
     case "usage": return [usageLine(textOf, address, surface)];
     case "spells": { const s = spellsOf(textOf, address, surface); return s === null ? [] : [s]; }
     case "prose": return proseOf(textOf(`${address}${arg}`) ?? "");
+    // The prose without the head's tagline: the role restated, which a surface naming the role on its own line leaves out.
+    case "body": return bodyOf(textOf(`${address}${arg}`) ?? "");
     case "digest": { const d = digestOf(textOf(`${address}${arg}`) ?? ""); return d ? [d] : []; }
     case "read": return [unfoldRead(surface, address, arg || undefined)];
     case "edges": return edgesOf(textOf(`${address}#/edges`) ?? "");

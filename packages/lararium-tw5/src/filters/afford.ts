@@ -10,6 +10,7 @@ module-type: filteroperator
  *   [[lar:///oracle.library.consults]afford:mcp[usage]]              the usage spine on the mcp surface
  *   [[lar:///oracle.library.consults]afford:tw5[spells]]           the skin's spelling (absent where the carrier skins none)
  *   [[lar:///oracle.library.consults]afford[prose],[#/head]]         the slot's prose, one paragraph per title
+ *   [[lar:///oracle.library.consults]afford[body],[#/head]]          the prose without the head's tagline (the role restated)
  *   [[lar:///oracle.library.consults]afford[digest],[#/takes]]       the slot's digest line
  *   [[lar:///oracle.library.consults]afford:cli[read],[#/refuses]]   the read that opens the next depth
  *   [[lar:///oracle.library.consults]afford[surfaces]]               the surfaces the carrier skins

@@ -133,6 +133,15 @@ export function digestOf(text: string): string {
 export function proseOf(text: string): string[] {
   // A head's `! <address> ~ <tagline>` heading reads its tagline as the first paragraph; a digest line (`!!`) reads as none.
   const head = /^!\s+[^~\n]*~\s*(.+)$/m.exec(text.split("\n").find((l) => /^!\s/.test(l)) ?? "");
+  const paragraphs = bodyOf(text);
+  return head ? [head[1]!.trim(), ...paragraphs] : paragraphs;
+}
+
+/**
+ * A slot's body: its prose with the head's tagline left out. The tagline restates the carrier's role, so a surface that
+ * names the role on its own line (the mcp whole) reads the body and names the role once.
+ */
+export function bodyOf(text: string): string[] {
   const kept = text.split("\n").filter((l) => !/^!+\s/.test(l) && !/^\s*<<[~^]?\s*\w/.test(l) && !/^```/.test(l));
   const paragraphs: string[] = [];
   let open: string[] = [];
@@ -141,7 +150,7 @@ export function proseOf(text: string): string[] {
     open.push(l.trim());
   }
   if (open.length) paragraphs.push(open.join(" "));
-  return head ? [head[1]!.trim(), ...paragraphs] : paragraphs;
+  return paragraphs;
 }
 
 const kebab = (name: string): string => name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").replace(/_/g, "-").toLowerCase();
@@ -255,13 +264,21 @@ export function renderCall(surface: AffordSurface, spells: string, call: Neutral
   }
 }
 
-/** Whether an arg row reads as required: `needs/required` or `needs/always`, or one side of a `needs/one-of:a,b` choice. */
-const oneOf = (row: HasRow): string[] | null => {
+/** The members a `needs/<kind>:a,b,c` param names, or null where the arg names no such group. */
+const groupOf = (row: HasRow, kind: "one-of" | "all-of"): string[] | null => {
   const needs = row.params["needs"] ?? "";
-  return needs.startsWith("one-of:") ? needs.slice("one-of:".length).split(",").map((s) => s.trim()).filter(Boolean) : null;
+  return needs.startsWith(`${kind}:`) ? needs.slice(kind.length + 1).split(",").map((s) => s.trim()).filter(Boolean) : null;
 };
+/** One side of a `needs/one-of:a,b` choice: exactly one member rides. */
+const oneOf = (row: HasRow): string[] | null => groupOf(row, "one-of");
+/** One member of a `needs/all-of:a,b,c` group: the members ride together or not at all (ddate's day, month and year). */
+const allOf = (row: HasRow): string[] | null => groupOf(row, "all-of");
 
-/** The usage spine on one surface, derived from `#/takes` (the cli spine reads `usage: <spells> …`; positionals lead it). */
+/**
+ * The usage spine on one surface, derived from `#/takes` (the cli spine reads `usage: <spells> …`; positionals lead it).
+ * `needs/required` or `needs/always` stands bare; `needs/one-of:a,b` reads `(a | b)`; `needs/all-of:a,b,c` reads one
+ * bracket `[a b c]` (the members ride together or not at all); any other arg rides `[a]`.
+ */
 export function usageOf(surface: AffordSurface, spells: string, takes: readonly HasRow[], skin?: HasRow): string {
   const parts: string[] = [];
   const grouped = new Set<string>();
@@ -282,6 +299,14 @@ export function usageOf(surface: AffordSurface, spells: string, takes: readonly 
       const members = takes.filter((r) => r.entity === "arg" && choice.includes(r.name));
       for (const m of members) grouped.add(m.name);
       parts.push(`(${members.map(spell).join(" | ")})`);
+      continue;
+    }
+    // A group that rides together or not at all reads as ONE optional bracket, its members in spine order (seat order on the cli).
+    const together = allOf(row);
+    if (together !== null) {
+      const members = ordered.filter((r) => r.entity === "arg" && together.includes(r.name));
+      for (const m of members) grouped.add(m.name);
+      parts.push(`[${members.map(spell).join(surface === "cli" ? " " : ", ")}]`);
       continue;
     }
     parts.push(row.params["needs"] === "required" || row.params["needs"] === "always" ? spell(row) : `[${spell(row)}]`);
