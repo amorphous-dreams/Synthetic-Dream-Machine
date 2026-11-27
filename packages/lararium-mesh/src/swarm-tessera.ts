@@ -64,7 +64,7 @@ export interface TesseraReading {
  */
 export async function beginRite(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly head: string; readonly tree: string; readonly image?: string }, trust: SwarmTrust, group: string, vessel: SwarmSignerPort, ward: WardActWitness):
   Promise<{ tessera: string; rite: SwarmLeiRite; lei: string; n: number; begun: string }> {
-  return beginChecked(wiki, await checkReturn(wiki, at, trust, group, vessel, ward, undefined, { orphan: true }));
+  return beginChecked(wiki, await checkReturn(wiki, at, trust, group, vessel, ward, { orphan: true }));
 }
 
 /**

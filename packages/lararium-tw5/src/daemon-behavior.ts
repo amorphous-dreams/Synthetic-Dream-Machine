@@ -17,8 +17,6 @@
  */
 
 import { addCallTouches, readCallTouches } from "@lararium/mesh/call-touches";
-import { EXEC_LEI_SPEND_VERB } from "@lararium/mesh/exec-lei";
-import { islandExecLeiPort } from "./exec-lei-route.js";
 import { makeDelegationBook } from "./delegation-book.js";
 import { makeIslandWearDoor, type IslandWearDoor } from "./island-wear.js";
 import { seatRepoWear } from "@lararium/mesh/repo-wear";
@@ -212,8 +210,6 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
         control:   controlOf(ctx),
         registry,
         routeFn:  (invocation, signal) => delegations.route(invocation, signal),
-        // THE EXEC LEI'S ISLAND HALF: a write door's spend routes `exec-lei-spend` to main, which signs; the island holds no key.
-        execLei:  islandExecLeiPort((invocation) => delegations.route(invocation), () => crypto.randomUUID()),
         ...(verifier ? { verifier } : {}),
         ...(opts.presenterOf ? { presenterOf: (inv: Verb) => opts.presenterOf!(inv, localAsks.has(inv)) } : {}),
         localOf: (inv: Verb) => localAsks.has(inv),
@@ -438,8 +434,7 @@ export interface LocalAsk {
  * passes (the socket already refused a seat); a channel ask, a bag put and a synced verb tiddler refuse by code.
  */
 export const DAEMON_HAND_ONLY_CODES: Readonly<Record<string, string>> = { ...PROMOTE_PANEL_HAND_CODES, "promote-orphan": handCodeOf("promote-orphan")!, ...SWARM_VERB_HAND_CODES,
-  // The island's own spend route (`islandExecLeiPort`) never rides the dispatcher; an ask for it from outside answers nothing.
-  [EXEC_LEI_SPEND_VERB]: "exec-lei-spend-internal" };
+};
 
 export function makeLocalAskBook(bound = 4096): {
   add(ask: LocalAsk): void;

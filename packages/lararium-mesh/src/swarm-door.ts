@@ -21,7 +21,6 @@ import {
 } from "./swarm-tiddlers.js";
 import { canonicalJsonBytes } from "./crypto.js";
 import { isSwarmLeiRite, leiRiteCosigns, wardLeiVerb, type SwarmLeiRite } from "./swarm-lei-rite.js";
-import { execLeiBranch, execLeiScopeRefusal, type ExecLeiScope } from "./exec-lei-scope.js";
 import { cosignPortWitness, WardActAlreadyRun, wardCosignGate, type WardCosignAct, type WardCosignPort } from "./ward-cosign-gate.js";
 import { WARD_GATE_DECIDED } from "./ward-door-decided.js";
 import { WardRefused } from "./ward-slots.js";
@@ -48,16 +47,14 @@ export type SwarmRequest =
       readonly reach?: SwarmLeiReach; readonly returns?: number; readonly head?: string;
       /** A count above `LEI_RETURNS_ASK_ABOVE` strings only with this confirm. */
       readonly confirm?: boolean;
-      /** An `exec` lei's scope (`exec-lei-scope.ts`): its wiki, the writer it was strung for, and a title set or one class. The
-       *  branch names the wiki's line (`execLeiBranch`). No other rite carries one. */
-      readonly scope?: ExecLeiScope }
+      }
   /** UNSTRING: revoke a lei that still holds returns. `lei` names it by cid on its rite's line at the branch. The hand signs
    *  `lei-unstrung/<lei cid>` and nothing gets deleted; no co-sign waits, since a revoke only narrows. */
   | { readonly action: "lei-unstring"; readonly rite: SwarmLeiRite; readonly branch: string; readonly lei: string }
   /** RESTRING: supersede the standing lei with a newer one. The door reads the line's tip and strings the new lei after it (a
    *  `lei-kui` whose `after` the door fills), so the newer lei's own signed row names the one it supersedes. */
   | { readonly action: "lei-restring"; readonly rite: SwarmLeiRite; readonly branch: string;
-      readonly reach?: SwarmLeiReach; readonly returns?: number; readonly head?: string; readonly confirm?: boolean; readonly scope?: ExecLeiScope }
+      readonly reach?: SwarmLeiReach; readonly returns?: number; readonly head?: string; readonly confirm?: boolean }
   /** LAND A HAND RECORD: a lei (a kui, or a restring the hand signed after the tip it read) or an unstring the hand signed apart,
    *  as a `SignedSwarmAct` or its JSON text. The door verifies it, then runs the act it names over the record's own signature. */
   | { readonly action: "lei-land"; readonly record: unknown };
@@ -134,7 +131,7 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
   const reading = async () => readSwarmBoard(await deps.board.records(), { ...deps.face, ward: await witness() });
   if (req.action === "show") {
     const r = await reading();
-    if (req.branch !== undefined && !isSwarmLeiRite(req.rite)) throw new SwarmRefused("swarm-lei-malformed", "a lei names its rite (push, kukulu, keep or exec): show reads one rite's lei");
+    if (req.branch !== undefined && !isSwarmLeiRite(req.rite)) throw new SwarmRefused("swarm-lei-malformed", "a lei names its rite (push, kukulu or keep): show reads one rite's lei");
     // A line reads by rite and branch; a head rides along only to ask after one head (a wide lei names none).
     const at = req.branch !== undefined ? { rite: req.rite as SwarmLeiRite, branch: req.branch, ...(req.head !== undefined ? { head: req.head } : {}) } : undefined;
     const lei = at ? await readLei(wiki, at, deps.trust, deps.group, await lineWitness(at.rite)) : undefined;
@@ -168,11 +165,11 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
     if (body.act !== "lei") throw new SwarmRefused("swarm-hand-record-unverified", "the hand record names no lei and no unstring; nothing landed");
     const terms = body.reach === "wide" ? { reach: "wide" as const, returns: body.returns } : { reach: "head" as const, head: body.head };
     // The hand wrote the count into the record it signed, so a large one stands confirmed by that signature (the hand door asks it).
-    return { ...await swarmCommand({ action: "lei-kui", rite: body.rite, branch: body.branch, after: body.after, ...terms, ...(body.scope !== undefined ? { scope: body.scope } : {}), confirm: true }, landing), landed: cid };
+    return { ...await swarmCommand({ action: "lei-kui", rite: body.rite, branch: body.branch, after: body.after, ...terms, confirm: true }, landing), landed: cid };
   }
   if (!deps.face.grant(deps.signer.key.toLowerCase())) throw new SwarmRefused("swarm-signer-not-grant", "the signer holds no grant of this face");
   if (req.action === "lei-unstring") {
-    if (!isSwarmLeiRite(req.rite)) throw new SwarmRefused("swarm-lei-malformed", "a lei names its rite (push, kukulu, keep or exec)");
+    if (!isSwarmLeiRite(req.rite)) throw new SwarmRefused("swarm-lei-malformed", "a lei names its rite (push, kukulu or keep)");
     if (typeof req.branch !== "string" || req.branch.length === 0) throw new SwarmRefused("swarm-lei-malformed", "a lei names a branch");
     if (typeof req.lei !== "string" || !/^[0-9a-f]{64}$/.test(req.lei)) throw new SwarmRefused("swarm-lei-malformed", "an unstring names its lei by cid");
     const { rite, branch } = req, cid = req.lei;
@@ -188,7 +185,7 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
     return { rite, branch, lei: cid, unstrung: true };
   }
   if (req.action === "lei-restring") {
-    if (!isSwarmLeiRite(req.rite)) throw new SwarmRefused("swarm-lei-malformed", "a lei names its rite (push, kukulu, keep or exec)");
+    if (!isSwarmLeiRite(req.rite)) throw new SwarmRefused("swarm-lei-malformed", "a lei names its rite (push, kukulu or keep)");
     if (typeof req.branch !== "string" || req.branch.length === 0) throw new SwarmRefused("swarm-lei-malformed", "a lei names a branch");
     const chain = await readLeiChain(wiki, { rite: req.rite, branch: req.branch }, deps.trust, deps.group, await lineWitness(req.rite));
     if (chain.tips.length > 1) throw new SwarmRefused("swarm-lei-forked", `the ${req.rite} line at "${req.branch}" forks; name one tip with a kui`);
@@ -198,12 +195,12 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
     return { ...await swarmCommand({ action: "lei-kui", ...terms, after: tip.cid }, deps), restrung: tip.cid };
   }
   if (req.action === "lei-kui") {
-    if (!isSwarmLeiRite(req.rite)) throw new SwarmRefused("swarm-lei-malformed", "a lei names its rite (push, kukulu, keep or exec)");
+    if (!isSwarmLeiRite(req.rite)) throw new SwarmRefused("swarm-lei-malformed", "a lei names its rite (push, kukulu or keep)");
     if (typeof req.branch !== "string" || req.branch.length === 0) throw new SwarmRefused("swarm-lei-malformed", "a lei names a branch");
     // THE REACH: wide stands as the default, and each reach holds its own terms whole.
     const reach = req.reach ?? "wide";
     if (reach !== "wide" && reach !== "head") throw new SwarmRefused("swarm-lei-malformed", "a lei's reach reads wide or head");
-    let terms: SwarmLeiTerms & { readonly scope?: ExecLeiScope };
+    let terms: SwarmLeiTerms;
     if (reach === "wide") {
       if (req.head !== undefined) throw new SwarmRefused("swarm-lei-malformed", "a wide lei names no head; name the head reach to pin one");
       if (typeof req.returns !== "number" || !Number.isSafeInteger(req.returns) || req.returns < 1) throw new SwarmRefused("swarm-lei-malformed", "a wide lei names its returns, a count of at least one");
@@ -216,13 +213,6 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
       terms = { reach, head: req.head };
     }
     if (req.after !== null && !(typeof req.after === "string" && /^[0-9a-f]{64}$/.test(req.after))) throw new SwarmRefused("swarm-lei-malformed", "a lei names the lei it follows at its branch (`after`, a cid), or null for the branch's first");
-    // THE EXEC SCOPE: an exec lei names its wiki, writer and reach within the wiki, at its wiki's line; no other rite names one.
-    if (req.rite === "exec") {
-      const why = execLeiScopeRefusal(req.scope);
-      if (why !== null) throw new SwarmRefused("swarm-lei-malformed", why);
-      if (req.branch !== execLeiBranch(req.scope!.wiki)) throw new SwarmRefused("swarm-lei-malformed", "an exec lei rests at its wiki's line (execLeiBranch of the scope's wiki)");
-    } else if (req.scope !== undefined) throw new SwarmRefused("swarm-lei-malformed", "only an exec lei names a scope");
-    if (req.rite === "exec") terms = { ...terms, scope: req.scope! };
     const rite = req.rite, branch = req.branch, after = req.after;
     const verb = wardLeiVerb(rite), leiHead = swarmLeiHead({ rite, branch, after, ...terms });
     // A fork or a moved chain refuses before the gate asks, so no second device answers an act that cannot land.

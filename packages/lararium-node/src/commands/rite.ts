@@ -325,7 +325,7 @@ export async function runRiteVerb(opts: {
       let face: RiteFace;
       try { face = await riteFaceOf(opts.repo, opts.catalogUrl, ordinal); }
       catch (e) { if (e instanceof SwarmRefused) throw e; throw new SwarmRefused("face-log-unreadable", `the lent face h${ordinal} loads no log: ${e instanceof Error ? e.message : String(e)}`); }
-      return checkReturn(wiki, at, face.trust, face.group, face.vessel, face.ward, undefined, { orphan: true });
+      return checkReturn(wiki, at, face.trust, face.group, face.vessel, face.ward, { orphan: true });
     }, (checked) => beginChecked(wiki, checked)) };
   }
   let loaded: FaceFold;
