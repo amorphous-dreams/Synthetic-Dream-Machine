@@ -25,9 +25,9 @@ import {
 } from "../src/tiddler-verbs.js";
 import { AUDIT_ARRAY_CAP, boundOutcomeOutput, placeVerb, removeVerb } from "../src/verb-vm.js";
 import { VerbTable, callDoorOf, makeCallReactor, type VerbContext } from "../src/verb-dispatcher.js";
-import { TIDDLER_CALL_SEATS, tiddlerCallReader } from "../src/tiddler-verbs.js";
+import { TIDDLER_CALL_SEATS, tiddlerCallSource } from "../src/tiddler-verbs.js";
 import { ORACLE_CALL_SEATS } from "../src/oracle-cast-verb.js";
-import { callFaceOf, callReaderOf, hostHandled } from "../src/modules/call.js";
+import { CallRefusal, callFaceOf, callReaderOf, hostHandled, type MacroCallParse } from "../src/modules/call.js";
 import { skinRows } from "../src/affordance-read.js";
 import { AFFORDANCE_TAG, addressOfTitle } from "../src/affordance-rows.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
@@ -2250,19 +2250,31 @@ const PUTS_SEAT = "lar:///ha.ka.ba/lares/afford/engine.record.puts";
 const CALL_CANON = ["api/pono/affordance.mem", "afford/engine.record.reads.mem", "afford/engine.record.puts.mem", "afford/engine.record.removes.mem", "afford/engine.record.renames.mem", "afford/engine.filter.pages.mem"];
 
 /** The anchor rig with the core verbs' canon carriers (and the affordance law their container row rides) standing in canon. */
-async function callRig() {
+async function callRig(named?: Awaited<ReturnType<typeof rig>>) {
   const r = await rig();
-  for (const rel of CALL_CANON) { const text = canonFile(rel); r.engine.ingestCarrier(headTitleOf(text), text, { "$origin-bag": CANON }); }
+  for (const e of named ? [r.engine, named.engine] : [r.engine]) {
+    for (const rel of CALL_CANON) { const text = canonFile(rel); e.ingestCarrier(headTitleOf(text), text, { "$origin-bag": CANON }); }
+  }
+  // A NAMED WIKI (`recipe: "lares"`) answers in its own engine, its own stack seating its own carriers.
+  const opts: TiddlerVerbOptions = named ? { ...r.opts, wikis: { of: async (slug) => (slug === "lares" ? { tw5: named.engine, composite: named.composite } : null) } } : r.opts;
   const table = new VerbTable();
-  table.register("tiddler-get", makeTiddlerGetReactor(r.opts));
-  table.register("tiddler-put", makeTiddlerPutReactor(r.opts));
-  table.register("tiddler-delete", makeTiddlerDeleteReactor(r.opts));
-  table.register("tiddler-rename", makeTiddlerRenameReactor(r.opts));
-  table.register("wiki-filter", makeWikiFilterReactor(r.opts));
+  table.register("tiddler-get", makeTiddlerGetReactor(opts));
+  table.register("tiddler-put", makeTiddlerPutReactor(opts));
+  table.register("tiddler-delete", makeTiddlerDeleteReactor(opts));
+  table.register("tiddler-rename", makeTiddlerRenameReactor(opts));
+  table.register("wiki-filter", makeWikiFilterReactor(opts));
   for (const [address, seat] of Object.entries(TIDDLER_CALL_SEATS)) table.answer(address, seat);
-  const reactor = makeCallReactor(table, () => tiddlerCallReader(r.opts));
+  const reactor = makeCallReactor(table, tiddlerCallSource(opts));
   const call = (verb: string, params: Record<string, unknown> = {}, c: VerbContext = ctx()) => reactor({ verb, params }, c);
-  return { ...r, table, call };
+  const sigil = (text: string, c: VerbContext = ctx()) => reactor({ sigil: text }, c);
+  return { ...r, opts, table, call, sigil };
+}
+
+/** The cure a call's refusal carries: the call sigil after `cure: `. */
+async function cureOf(refused: Promise<unknown>): Promise<string> {
+  const err = await refused.then(() => null, (e: unknown) => e);
+  expect(err).toBeInstanceOf(CallRefusal);
+  return String((err as CallRefusal).cure);
 }
 
 describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the live stack${skipNote}`, () => {
@@ -2314,7 +2326,7 @@ describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the 
     const r = await callRig();
     await expect(r.call("get", { titel: "Note 04" })).rejects.toMatchObject({ reason: "call-ambiguous" });
     await expect(r.call("get", { title: "Note 04", titel: "x" })).rejects.toMatchObject({ reason: "param-unknown" });
-    await expect(r.call("get", { title: "Note 04", titel: "x" })).rejects.toThrow(/the nearest: title.*cure: \$tw\.lares\.call\("get"/);
+    await expect(r.call("get", { title: "Note 04", titel: "x" })).rejects.toThrow(/the nearest: title.*cure: <<~ get title=`x`>>$/);
     await expect(r.call("get", { title: "Note 04", recipe: "default", bag: "lares" })).rejects.toMatchObject({ reason: "one-of-doubled" });
     await expect(r.call("put", { text: "no title" })).rejects.toMatchObject({ reason: "param-needed" });
     await expect(r.call("fetch", { title: "Note 04" })).rejects.toMatchObject({ reason: "call-unrouted" });
@@ -2340,6 +2352,64 @@ describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the 
     // CONTROL: no door seated, the call answers its bound plan.
     const planned = await callFaceOf(r.engine.wiki as never, () => undefined)("get", { title: "Note 04" });
     expect(planned).toMatchObject({ handler: "host", params: { title: "Note 04", recipe: "default" } });
+  });
+
+  test("RED: a sigil goes in: the call sigil reads through the engine's own macro-call parser and answers what the call answers", async () => {
+    const r = await callRig();
+    const called = await r.call("get", { title: "Note 04" });
+    for (const sigil of ["<<~ get title=`Note 04`>>", `<<~get title="Note 04">>`, `<<~ tiddler_get title=[[Note 04]] recipe=default>>`, `<<~ "lar:///engine.record.reads" title=\`Note 04\`>>`]) {
+      const read = await r.sigil(sigil);
+      expect(read, sigil).toMatchObject({ recipe: "default", title: "Note 04", carrier: called["carrier"] });
+      expect(read["tiddler"], sigil).toEqual(called["tiddler"]);
+    }
+    // A value holding a tick rides the triple tick; one holding a substitution mark rides the triple quote; a bare word, a switch.
+    expect(await r.sigil("<<~ put title=```Odd `one` here``` text=`x` create>>")).toMatchObject({ decision: "put", created: true });
+    expect(await r.sigil('<<~ put title=`Greeting` text="""$(who)$ greets""" create>>')).toMatchObject({ decision: "put", created: true });
+    await r.landed();
+    expect(r.engine.wiki.getTiddler("Odd `one` here")?.fields["text"]).toBe("x");
+    expect(r.engine.wiki.getTiddler("Greeting")?.fields["text"]).toBe("$(who)$ greets");
+    // The console reads a whole sigil too, through the same parser.
+    const utils = (r.engine.$tw as unknown as { utils: { parseMacroInvocationAsTransclusion: MacroCallParse } }).utils;
+    const face = callFaceOf(r.engine.wiki as never, () => callDoorOf(r.table, ctx()), utils.parseMacroInvocationAsTransclusion.bind(utils));
+    expect(await face("<<~ get title=`Note 04`>>")).toMatchObject({ title: "Note 04", carrier: { carrier: READS_SEAT } });
+    // A sigil the parser reads no call in refuses by name, and nothing runs.
+    await expect(r.sigil("<<~ get title=`Note 04`")).rejects.toMatchObject({ reason: "sigil-malformed" });
+    await expect(r.sigil("<<~ get title={{Note 04}}>>")).rejects.toThrow(/cure: <<~ get title=`\{\{Note 04\}\}`>>/);
+  });
+
+  test("REACH: a refusal from call carries a cure sigil, and feeding that sigil back to call lands the cure", async () => {
+    const r = await callRig();
+    const live = ((await makeTiddlerGetReactor(r.opts)({ ...A, title: "Note 04" }, ctx()))["tiddler"] as { hash: string }).hash;
+    const cure = await cureOf(r.call("put", { title: "Note 04", txt: "mended", base: live }));
+    expect(cure).toBe(`<<~ put title=\`Note 04\` base=\`${live}\` text=\`mended\`>>`);
+    expect(await r.sigil(cure)).toMatchObject({ decision: "put" });
+    await r.landed();
+    expect(r.engine.wiki.getTiddler("Note 04")?.fields["text"]).toBe("mended");
+  });
+
+  test("RED: call reads its carriers over the NAMED recipe's reader view: that wiki's layers shape the call, and a record the face may not read shapes none", async () => {
+    const named = await rig();
+    const r = await callRig(named);
+    // The named wiki's working layer re-seats the put carrier's #/takes with a default tag; the anchor's stack keeps canon's.
+    const takes = named.engine.wiki.getTiddler(`${PUTS_SEAT}#/takes`)!.getFieldStrings();
+    const moved = takes["text"]!.replace("name=`tag-add` params=`takes/list ~", "name=`tag-add` params=`takes/list default/stamped ~");
+    expect(moved).not.toBe(takes["text"]);
+    named.engine.wiki.addTiddler({ ...takes, text: moved, "$origin-bag": DAEMON });
+    expect(await r.call("put", { recipe: "lares", title: "In lares", text: "x", create: true })).toMatchObject({ recipe: "lares", decision: "put" });
+    await named.landed();
+    expect(named.engine.wiki.getTiddler("In lares")?.fields["tags"]).toEqual(["stamped"]);
+    expect(await r.call("put", { title: "In default", text: "x", create: true })).toMatchObject({ recipe: "default", decision: "put" });
+    await r.landed();
+    expect(r.engine.wiki.getTiddler("In default")?.fields["tags"] ?? [], "the anchor's stack seats canon's takes").toEqual([]);
+    // A spirit's carrier resting in a bag the face may not read routes nothing for that face; a face that reads it reaches it.
+    const sealed = bagUri("sealed");
+    const spirit = "lar:///lantern.wick.trims";
+    r.engine.wiki.addTiddler({ title: spirit, text: "! lantern.wick.trims ~ a spirit's door", tags: `[[${AFFORDANCE_TAG}]]`, "$origin-bag": sealed });
+    r.engine.wiki.addTiddler({ title: `${spirit}#/takes`, text: "<<has entity=`arg` name=`wick` params=`takes/words ~ the wick`>>", "$origin-bag": sealed });
+    r.engine.wiki.addTiddler({ title: `${spirit}#/skins/console`, text: "<<has entity=`skin` name=`console` params=`spells/trim handler/host ~ trim`>>", "$origin-bag": sealed });
+    expect(await r.call("trim", { wick: "long" })).toMatchObject({ handler: "host", address: spirit });
+    const unsealed: Cap = async (access, bag) => (bag === sealed ? { ok: false, reason: "no-grant" } : writer(access, bag));
+    await expect(r.call("trim", { wick: "long" }, ctx(unsealed))).rejects.toMatchObject({ reason: "call-unrouted" });
   });
 
   test("WELD: every canon carrier finds a registered reactor, an acts/ row or handler/host; every seat names a carrier canon holds", async () => {

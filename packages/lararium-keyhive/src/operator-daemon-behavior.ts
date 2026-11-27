@@ -22,7 +22,7 @@ import {
   makeInitWikiReactor, makeRetireWikiReactor, makeDraftReactor, makePruneStaleReactor,
   makeMemeGetReactor, makeMemeListReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor, makeWikiStatusReactor, makeWikiActionReactor,
-  makeOracleCastReactor, ORACLE_CALL_SEATS, makeCallReactor, TIDDLER_CALL_SEATS, tiddlerCallReader,
+  makeOracleCastReactor, ORACLE_CALL_SEATS, makeCallReactor, TIDDLER_CALL_SEATS, tiddlerCallSource,
   ddateVerb,
   makeWardAlertReactor, fileWardRefusal, makeIngestAlertRail,
   makeAddBagReactor, makeRemoveBagReactor, makeTrueFloorReactor, makeCompactBagReactor, makeRotateRecipeReactor, makeRestampBagTierReactor,
@@ -1420,7 +1420,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // verb word, a skin spelling or an address through the live stack's routes, binds the params against the live `#/takes`,
       // and runs the registered verb under the caller's own context; every answer names the carrier that shaped it.
       for (const [address, seat] of Object.entries({ ...TIDDLER_CALL_SEATS, ...ORACLE_CALL_SEATS })) registry.answer(address, seat);
-      registry.register("call", makeCallReactor(registry, () => tiddlerCallReader(engineOpts)), { summary: "One call shape: `verb` names a verb word (`get`, `put`, `delete`, `rename`), any skin spelling or an affordance address, and `params` its named params. The verb resolves through the routes the live stack's carriers spell, the params bind against the carrier's live `#/takes` (defaults filled, the container defaulting through `#/takes/container`; an unknown param refuses `param-unknown` naming the nearest), and the registered verb answers under the caller's own context; a carrier whose door the host runs answers `handler/host` with its bound params, and an address no reactor answers refuses `affordance-unhandled`. Every answer's has line names `carrier/ bag/ base/`.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("call", makeCallReactor(registry, tiddlerCallSource(engineOpts)), { summary: "One call shape: `verb` names a verb word (`get`, `put`, `delete`, `rename`), any skin spelling or an affordance address, and `params` its named params; `sigil` may stand for both, a whole call sigil (``<<~ get title=`Room 4`>>``) read by the engine's own macro-call parser (a malformed one refuses `sigil-malformed`). The carriers read over the reader view of the recipe the params name (`recipe`, else `default`): the verb resolves through the routes that stack's carriers spell, the params bind against the carrier's live `#/takes` (defaults filled, the container defaulting through `#/takes/container`; an unknown param refuses `param-unknown` naming the nearest), and the registered verb answers under the caller's own context; a carrier whose door the host runs answers `handler/host` with its bound params, and an address no reactor answers refuses `affordance-unhandled`. Every cure renders as a call sigil, runnable as written. Every answer's has line names `carrier/ bag/ base/`.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
 
       // switcher-state — the daemon UX widget's IN path: main pushes the live
       // activation state and this writes the LOCAL, volatile $:/temp/lares/switcher

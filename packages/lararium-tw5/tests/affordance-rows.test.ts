@@ -2,12 +2,15 @@
  * affordance-rows — the pure reading of an affordance carrier's rows, and the spellings every skin derives by rule
  * (lar:///ha.ka.ba/kahua/memory/plan/cap-memes-loom #/slots). RED-FIRST: written by smith#1, run by the familiar.
  */
-import { describe, expect, test } from "vitest";
+import { beforeAll, describe, expect, test } from "vitest";
 import {
   addressMatcher, addressOfTitle, bodyOf, digestOf, edgesOf, exampleCall, kaheaTitles, neutralCallOf, parseHasRows, parseParams, proseOf, renderCall,
-  seatsOf, spellArg, tokenize, usageOf, unfoldRead, type HasRow,
+  seatsOf, sigilQuote, spellArg, tokenize, usageOf, unfoldRead, type HasRow, type NeutralCall,
 } from "../src/affordance-rows.js";
 import { affordView, carrierOf, carrierRootsIn, carrierViewOfText, routeOfCall, routesOf, seatTitleOf } from "../src/affordance-read.js";
+import { callOfSigil, type MacroCallParse } from "../src/modules/call.js";
+import type { TW5Engine } from "../src/tw5-vm.js";
+import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
 
 const TAKES = [
   "!! takes ~ recipe · bag · asking · fresh",
@@ -288,5 +291,73 @@ describe("one verb word, two addresses: a `by/` skin row chooses (comms-ux-enact
     expect(routeOfCall(r, "fetch", {})).toBeNull();
     expect(routeOfCall(r, "get", {})).toMatchObject({ address: null });
     expect(routeOfCall(r, "get", { title: "a", filter: "b" })).toMatchObject({ address: null });
+  });
+});
+
+// ── a sigil goes in, a sigil comes out (comms-ux-enacts landing 5) ──────────────────────────────────
+
+describe.skipIf(wikiSkip)(`the call sigil: rendered by renderCall, read back by TiddlyWiki's own macro-call parser${skipNote}`, () => {
+  let parse: MacroCallParse;
+  let engine: TW5Engine;
+  beforeAll(async () => {
+    engine = await bootTestWiki();
+    const utils = (engine.$tw as unknown as { utils: { parseMacroInvocationAsTransclusion: MacroCallParse } }).utils;
+    parse = utils.parseMacroInvocationAsTransclusion.bind(utils);
+  }, 60_000);
+  /** What a neutral call reads back as: its word and its params, a switch `true`. */
+  const asRead = (word: string, call: NeutralCall) => ({ word, params: Object.fromEntries(call.args) });
+
+  test("RED: one neutral call renders as a call sigil in the house's value grammar, a switch as a bare word, an address bare", () => {
+    expect(renderCall("sigil", "get", { address: "lar:///engine.record.reads", args: [["title", "Room 4"]] })).toBe("<<~ get title=`Room 4`>>");
+    const call = neutralCallOf("oracle.library.consults recipe/default asking/<words> fresh", "lar:///x.y.z");
+    expect(renderCall("sigil", "", call)).toBe("<<~ oracle.library.consults recipe=`default` asking=`<words>` fresh>>");
+    // A word the parser would split (an address with its scheme, a spelling with a space) rides a string literal.
+    expect(renderCall("sigil", "lar:///oracle.library.consults", { address: "", args: [] })).toBe(`<<~ "lar:///oracle.library.consults">>`);
+    expect(renderCall("sigil", "oracle cast", { address: "", args: [] })).toBe(`<<~ "oracle cast">>`);
+  });
+
+  test("RED: parse of render returns the call, for a backtick, a single quote, both quotes, and the seed's own ${copula} mock", () => {
+    const values = [
+      "plain words",
+      "it's `odd` here",
+      "`leads` with a tick",
+      "ends with a tick`",
+      "`a` 'b' \"c\"",
+      "say \"hi\"",
+      "the seed's own ${copula} mock",
+      "a ``` triple inside",
+      "",
+    ];
+    for (const value of values) {
+      const call: NeutralCall = { address: "", args: [["title", value], ["fresh", true]] };
+      const sigil = renderCall("sigil", "get", call);
+      expect(callOfSigil(sigil, parse), sigil).toEqual(asRead("get", call));
+    }
+    // A cure's word may name an address: the string literal keeps its scheme, and so does the bare scheme the parser splits.
+    expect(callOfSigil(renderCall("sigil", "lar:///oracle.library.consults", { address: "", args: [["asking", "which road?"]] }), parse)).toEqual({ word: "lar:///oracle.library.consults", params: { asking: "which road?" } });
+    expect(callOfSigil("<<~ lar:///oracle.library.consults asking=`x`>>", parse)).toEqual({ word: "lar:///oracle.library.consults", params: { asking: "x" } });
+    expect(callOfSigil("<<~get title=```it's `odd` ok```>>", parse)).toEqual({ word: "get", params: { title: "it's `odd` ok" } });
+  });
+
+  test("RED: THE TRIPLE-QUOTE SUBSTITUTION LAW: a value holding $(…)$ or ${…}$ rides the triple quote, which no engine substitutes", () => {
+    expect(sigilQuote("$(who)$ greets")).toBe(`"""$(who)$ greets"""`);
+    expect(sigilQuote("a ${ [[x]] }$ filter")).toBe(`"""a ${"${ [[x]] }$"} filter"""`);
+    expect(sigilQuote("the seed's own ${copula} mock")).toBe("`the seed's own ${copula} mock`");   // no closing `}$`: no substitution
+    expect(sigilQuote(`$(who)$ said "hi"`)).toBe(`'$(who)$ said "hi"'`);   // a value ending on a quote falls to the next literal
+    for (const value of ["$(who)$ greets", "a ${ [[x]] }$ filter", `$(who)$ said "hi"`]) {
+      expect(callOfSigil(renderCall("sigil", "put", { address: "", args: [["text", value]] }), parse)).toEqual({ word: "put", params: { text: value } });
+    }
+    // WHY: where the engine runs the value (a glass button's attribute), the tick substitutes and the triple quote keeps its bytes.
+    const glass = (attr: string): string => engine.wiki.renderText("text/plain", "text/vnd.tiddlywiki", `<$let who="Aloha"><$text text=${attr}/></$let>`).trim();
+    expect(glass("`$(who)$ greets`")).toBe("Aloha greets");
+    expect(glass(sigilQuote("$(who)$ greets"))).toBe("$(who)$ greets");
+  });
+
+  test("RED: a malformed sigil refuses sigil-malformed in the parser's own measure; a value typed for a render names its cure", () => {
+    expect(() => callOfSigil("<<~ get title=`x`", parse)).toThrow(/sigil-malformed: TiddlyWiki's macro-call parser .* reads no call/);
+    expect(() => callOfSigil("<<~ get title=`x`>> and more", parse)).toThrow(/sigil-malformed: .*ending at offset 19; " and more" stays unread/);
+    expect(() => callOfSigil("<<~>>", parse)).toThrow(/sigil-malformed: .*names no verb/);
+    expect(() => callOfSigil("<<~ get title={{Room 4}}>>", parse)).toThrow(/sigil-malformed: .*title \(indirect\).*cure: <<~ get title=`\{\{Room 4\}\}`>>/);
+    expect(() => callOfSigil("<<~ get title=`x`>>", undefined)).toThrow(/sigil-malformed: no TiddlyWiki engine stands here/);
   });
 });

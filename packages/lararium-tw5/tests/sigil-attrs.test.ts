@@ -5,6 +5,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { readSigilAttrs, sigilAttrValue, quotableAttrs } from "../src/sigil-attrs.js";
+import { sigilQuote } from "../src/affordance-rows.js";
 
 describe("both spellings reach one reading", () => {
   test("★ bare and quoted name the same value ★", () => {
@@ -119,6 +120,29 @@ describe("★ A KEY INSIDE A QUOTED VALUE IS NOT A PARAMETER ★", () => {
 
   test("a quoted value carrying an `=` binds nothing either", () => {
     expect(readSigilAttrs('x "a note with a=b inside it"').map((a) => a.name)).toEqual([]);
+  });
+});
+
+describe("★ THE TRIPLE FORM: what the call sigil writes, this reader reads (comms-ux-enacts landing 5) ★", () => {
+  // `sigilQuote` writes a value holding a substitution mark in the triple QUOTE (a string literal no engine substitutes), and a
+  // value holding a tick in the triple TICK; the call reads both back through TiddlyWiki's parser, and this reader agrees.
+  test("★ the triple quote carries a substitution mark whole, a plain string ★", () => {
+    const body = ` text=${sigilQuote("$(who)$ greets")} note=${sigilQuote("a ${ [[x]] }$ filter")}`;
+    expect(body).toBe(' text="""$(who)$ greets""" note="""a ${ [[x]] }$ filter"""');
+    expect(readSigilAttrs(body).map((a) => [a.name, a.value, a.kind, a.quoted])).toEqual([
+      ["text", "$(who)$ greets", "string", true],
+      ["note", "a ${ [[x]] }$ filter", "string", true],
+    ]);
+  });
+
+  test("★ the triple tick carries an inner tick whole, its interior the value ★", () => {
+    const body = ` title=${sigilQuote("it's `odd` here")}`;
+    expect(body).toBe(" title=```it's `odd` here```");
+    expect(readSigilAttrs(body)[0]).toMatchObject({ name: "title", value: "it's `odd` here", kind: "substituted" });
+  });
+
+  test("CONTROL — the seed's ${copula} mock holds no closing mark, so it rides the single tick", () => {
+    expect(sigilAttrValue(` note=${sigilQuote("the ${copula} mock")}`, "note")).toBe("the ${copula} mock");
   });
 });
 

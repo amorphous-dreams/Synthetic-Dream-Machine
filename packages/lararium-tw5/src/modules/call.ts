@@ -24,6 +24,10 @@ module-type: startup
  * whole stack, working layers included; no fence guards a carrier. A CARRIER DESCRIBES; IT NEVER GRANTS (DAM law 1): the
  * reactor's own door checks the ocap, the base and the hand. `base` stands as the one guard name.
  *
+ * A SIGIL GOES IN, A SIGIL COMES OUT (landing 5): a whole call sigil (``<<~ get title=`Room 4`>>``) reads through TiddlyWiki's own
+ * macro-call parser in the VM (`callOfSigil`), and every cure renders as a call sigil a reader runs as written (`cureCall`), the
+ * triple quote carrying any value that holds a substitution mark (`sigilQuote` in `affordance-rows`).
+ *
  * In the VM the call dispatches through `$tw.lares.callDoor`, the host's seat of the registry; where no host seats one, the
  * call answers its plan (`handler/host`, the bound params), so a reader sees what would run.
  *
@@ -101,10 +105,78 @@ export function nearestName(word: string, names: Iterable<string>): string | nul
   return best;
 }
 
-/** A neutral call rendered on the console surface: the cure a reader runs as written. */
-function cureCall(word: string, params: Readonly<Record<string, unknown>>): string {
-  const args = Object.entries(params).map(([k, v]) => [k, v === true ? true : String(v)] as const);
-  return renderCall("console", word, { address: "", args });
+/** A param's value as the sigil writes it: a switch stays `true`, a list or a map rides as its JSON, anything else as its string. */
+const sigilArg = (v: unknown): string | true => (v === true ? true : typeof v === "object" && v !== null ? JSON.stringify(v) : String(v));
+
+/** A neutral call rendered as a call sigil (landing 5): the cure a reader runs as written, on any surface, `call` reading it back. */
+export function cureCall(word: string, params: Readonly<Record<string, unknown>>): string {
+  return renderCall("sigil", word, { address: "", args: Object.entries(params).map(([k, v]) => [k, sigilArg(v)] as const) });
+}
+
+/** One attribute of a macro call as TiddlyWiki's parser hands it (`parseMacroParameterAsAttribute`). */
+export interface MacroCallAttribute {
+  readonly name: string;
+  readonly type: string;
+  readonly value?: unknown;
+  readonly rawValue?: string;
+  readonly isPositional?: boolean;
+  readonly assignmentOperator?: string;
+  readonly start?: number;
+  readonly end?: number;
+}
+
+/** A macro call as TiddlyWiki's parser hands it (`parseMacroInvocationAsTransclusion`): a transclusion node. */
+export interface MacroCallNode {
+  readonly end: number;
+  readonly attributes: Readonly<Record<string, MacroCallAttribute>>;
+  readonly orderedAttributes: readonly MacroCallAttribute[];
+}
+
+/** TiddlyWiki's own macro-call parser, `$tw.utils.parseMacroInvocationAsTransclusion`: the one reader a call sigil meets. */
+export type MacroCallParse = (source: string, pos: number) => MacroCallNode | null;
+
+/**
+ * A SIGIL GOES IN (comms-ux-enacts landing 5): ``<<~ get title=`Room 4`>>`` read by TiddlyWiki's own macro-call parser inside the
+ * VM, never a second parser beside it. The head names the verb (`<<~ get …>>` and `<<~get …>>` read alike; a word the parser
+ * would split, an address or a spelling with a space, rides a string literal); each named param keeps the value the parser
+ * hands, a ticked one its `rawValue` as written (a call substitutes nothing), the triple tick and every string literal
+ * included; a bare word past the verb reads as a switch. A value the parser types for a render (a filter, a text reference, a
+ * macro call) refuses `sigil-malformed`, its cure the same call with that value written as text; a source the parser reads no
+ * call in, or reads past before its end, refuses `sigil-malformed` in the parser's own measure.
+ */
+export function callOfSigil(sigil: string, parse: MacroCallParse | undefined): { word: string; params: Record<string, unknown> } {
+  const source = sigil.trim();
+  if (parse === undefined) throw new CallRefusal("sigil-malformed", `no TiddlyWiki engine stands here to read ${source}; a call sigil parses in the VM alone`);
+  const node = parse(source, 0);
+  if (node === null) throw new CallRefusal("sigil-malformed", `TiddlyWiki's macro-call parser (parseMacroInvocationAsTransclusion) reads no call in ${source}`);
+  if (node.end !== source.length) {
+    throw new CallRefusal("sigil-malformed", `TiddlyWiki's macro-call parser reads one call ending at offset ${node.end}; ${JSON.stringify(source.slice(node.end))} stays unread`);
+  }
+  const head = String(node.attributes["$variable"]?.value ?? "");
+  const rest = node.orderedAttributes.filter((a) => a.name !== "$variable");
+  let word = head.startsWith("~") ? head.slice(1) : head;
+  if (word === "") {
+    const lead = rest.shift();
+    // A SCHEME IS NO PARAM: an unquoted `lar:///x.y.z` reads to the parser as a param `lar` (the colon caveat); the head rejoins it.
+    if (lead !== undefined && !lead.isPositional && lead.assignmentOperator === ":" && String(lead.value ?? "").startsWith("//")) word = `${lead.name}:${String(lead.value)}`;
+    else if (lead !== undefined && lead.isPositional && lead.type === "string") word = String(lead.value ?? "");
+    else throw new CallRefusal("sigil-malformed", `${source} names no verb: the head reads \`${head}\`, and no word follows it`, `<<~ get title=\`<title>\`>>`);
+  }
+  const params: Record<string, unknown> = {};
+  const typed: string[] = [];
+  for (const a of rest) {
+    if (a.isPositional) { params[String(a.value ?? "")] = true; continue; }
+    if (a.type === "string") { params[a.name] = String(a.value ?? ""); continue; }
+    if (a.type === "substituted") { params[a.name] = a.rawValue ?? ""; continue; }
+    // A VALUE TYPED FOR A RENDER: the cure writes its source text as the value.
+    const raw = a.start !== undefined && a.end !== undefined ? source.slice(a.start, a.end).trim() : "";
+    params[a.name] = raw.slice(raw.indexOf("=") + 1).trim();
+    typed.push(`${a.name} (${a.type})`);
+  }
+  if (typed.length > 0) {
+    throw new CallRefusal("sigil-malformed", `${source} carries a value the parser types for a render: ${typed.join(", ")}; a call reads its values as written`, cureCall(word, params));
+  }
+  return { word, params };
 }
 
 /** The members a `needs/<kind>:a,b` param names on one row, or null. */
@@ -289,9 +361,23 @@ export function callReaderOf(wiki: ReaderWiki): CallReader {
   };
 }
 
-/** The face `$tw.lares.call` publishes over one wiki, dispatching through `door` where the host seats one. */
-export function callFaceOf(wiki: ReaderWiki, door: () => LaresCallDoor | undefined): (word: string, params?: Record<string, unknown>) => Promise<Record<string, unknown>> {
-  return async (word, params = {}) => {
+/** A leading word that opens a bracketed call: the call reads it as a sigil. */
+export const isCallSigil = (word: string): boolean => word.trimStart().startsWith("<<");
+
+/**
+ * The face `$tw.lares.call` publishes over one wiki, dispatching through `door` where the host seats one. The leading word may
+ * stand as a whole call sigil (``$tw.lares.call("<<~ get title=`Room 4`>>")``), read through `parse`, the engine's own parser;
+ * params given beside it fill what the sigil leaves out.
+ */
+export function callFaceOf(wiki: ReaderWiki, door: () => LaresCallDoor | undefined, parse?: MacroCallParse): (word: string, params?: Record<string, unknown>) => Promise<Record<string, unknown>> {
+  return async (given, more = {}) => {
+    let word = given;
+    let params: Record<string, unknown> = more;
+    if (isCallSigil(given)) {
+      const read = callOfSigil(given, parse);
+      word = read.word;
+      params = { ...more, ...read.params };
+    }
     const reader = callReaderOf(wiki);
     const plan = planCall(reader, word, params);
     const receipt = reader.receiptOf(plan.carrier);
@@ -306,6 +392,7 @@ export function startup(): void {
   if (!$tw?.wiki) return;
   $tw.lares ??= {};
   const lares = $tw.lares;
-  lares.call = callFaceOf($tw.wiki as unknown as ReaderWiki, () => lares.callDoor);
+  const utils = ($tw as unknown as { utils?: { parseMacroInvocationAsTransclusion?: MacroCallParse } }).utils;
+  lares.call = callFaceOf($tw.wiki as unknown as ReaderWiki, () => lares.callDoor, utils?.parseMacroInvocationAsTransclusion?.bind(utils));
 }
 

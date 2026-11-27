@@ -62,7 +62,7 @@ import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
 import { runLocalVerb, gateRoutedVerb, refuseSeatCanonRouted, RoutedCapDenied, makeCapVerify, routedAddressesWiki, routedWikiSlug } from "./verb-local-dispatch.js";
-import { hostAnswer, planCall, reactorArgs, stampAnswer, unhandled, type CallPlan, type CallReader, type CallSeat } from "./modules/call.js";
+import { callOfSigil, hostAnswer, isCallSigil, planCall, reactorArgs, stampAnswer, unhandled, type CallPlan, type CallReader, type CallSeat, type MacroCallParse } from "./modules/call.js";
 import { surfaceOf } from "./affordance-read.js";
 
 export interface VerbContext {
@@ -306,6 +306,12 @@ export async function runPlan(table: VerbTable, plan: CallPlan, ctx: VerbContext
   return reactor(reactorArgs(plan.params, seat), ctx);
 }
 
+/** Where the daemon `call` reads: the reader view of the recipe a call's params name, and the engine's own macro-call parser. */
+export interface CallSource {
+  readerOf(ctx: VerbContext, params: Readonly<Record<string, unknown>>): CallReader | Promise<CallReader>;
+  readonly parse?: MacroCallParse;
+}
+
 /** The host's seat of the registry inside a wiki VM (`$tw.lares.callDoor`): each plan runs under one context. */
 export const callDoorOf = (table: VerbTable, ctx: VerbContext) => (plan: CallPlan): Promise<Record<string, unknown>> => runPlan(table, plan, ctx);
 
@@ -314,15 +320,28 @@ export const callDoorOf = (table: VerbTable, ctx: VerbContext) => (plan: CallPla
  * resolves through the live routes the reader's stack spells, the params bind against the live `#/takes` (`planCall`), and
  * the plan runs through the registry (`runPlan`); a carrier whose door the host runs answers `handler/host` with its bound
  * params. Every answer names the carrier that shaped it (`carrier/ bag/ base/` on the has line).
+ *
+ * A SIGIL GOES IN (landing 5): `{sigil: "<<~ get title=`…`>>"}` stands for `{verb, params}`, read by the engine's own macro-call
+ * parser (`source.parse`); params given beside it fill what the sigil leaves out.
+ *
+ * THE NAMED RECIPE'S STACK DECIDES: each call reads its carriers over the reader view of the recipe its params name (`recipe`,
+ * else `default`), so a carrier seated in that wiki's working layers shapes the call and one the caller's face may not read
+ * shapes none. The operator's stack decides per recipe (mutability at the root).
  */
-export function makeCallReactor(table: VerbTable, readerOf: (ctx: VerbContext) => CallReader): VerbReactor {
+export function makeCallReactor(table: VerbTable, source: CallSource): VerbReactor {
   return async (args, ctx) => {
-    const verb = typeof args["verb"] === "string" ? args["verb"].trim() : "";
-    if (verb === "") throw new Error("call: name args.verb (a verb word, a skin spelling or an affordance address)");
     const raw = args["params"];
-    const params = typeof raw === "object" && raw !== null && !Array.isArray(raw) ? raw as Record<string, unknown> : {};
+    let params = typeof raw === "object" && raw !== null && !Array.isArray(raw) ? raw as Record<string, unknown> : {};
+    let verb = typeof args["verb"] === "string" ? args["verb"].trim() : "";
+    const sigil = typeof args["sigil"] === "string" ? args["sigil"] : (isCallSigil(verb) ? verb : "");
+    if (sigil !== "") {
+      const read = callOfSigil(sigil, source.parse);
+      verb = read.word;
+      params = { ...params, ...read.params };
+    }
+    if (verb === "") throw new Error("call: name args.verb (a verb word, a skin spelling or an affordance address) or args.sigil (a whole call sigil)");
     const surface = surfaceOf(typeof args["surface"] === "string" ? args["surface"] : "console");
-    const reader = readerOf(ctx);
+    const reader = await source.readerOf(ctx, params);
     const plan = planCall(reader, verb, params, surface);
     const receipt = reader.receiptOf(plan.carrier);
     if (plan.host) return hostAnswer(plan, receipt);

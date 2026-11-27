@@ -127,6 +127,11 @@ export function rowsOf(textOf: TextOf, address: string, slot: string, surface: A
     call.address === own
       ? { line: renderCall(surface, spells, call, skin, seats), foreign: false }
       : { line: renderCall(surface, bareAddressOf(call.address) ?? call.address, call), foreign: true };
+  // THE SAME CALL AS A SIGIL (landing 5): one runnable line every surface reads alike, beside the skin's own spelling, so a glass
+  // button, a seat and a terminal hand `call` the same bytes. Its word is the console spelling where this carrier skins one.
+  const word = spellsOf(textOf, address, "console");
+  const sigilOf = (call: NeutralCall): string =>
+    renderCall("sigil", call.address === own && word !== null && word !== "console" ? word : bareAddressOf(call.address) ?? call.address, call);
   return rows.map((row) => {
     const out: Record<string, unknown> = { entity: row.entity, name: row.name, role: row.role, params: row.params, bare: row.bare };
     if (row.entity === "arg") {
@@ -138,11 +143,13 @@ export function rowsOf(textOf: TextOf, address: string, slot: string, surface: A
     if (row.entity === "example") {
       const { line, foreign } = callOn(exampleCall(row, own));
       out["call"] = line;
+      out["sigil"] = sigilOf(exampleCall(row, own));
       if (foreign) out["foreign"] = true;
     }
     if (row.entity === "refusal" && row.params["cure"] && runsHere(neutralCallOf(row.params["cure"], own))) {
       const { line, foreign } = callOn(neutralCallOf(row.params["cure"], own));
       out["cure"] = line;
+      out["sigil"] = sigilOf(neutralCallOf(row.params["cure"], own));
       if (foreign) out["foreign"] = true;
     }
     if (row.entity === "band" && row.params["exit"]) out["exit"] = row.params["exit"];

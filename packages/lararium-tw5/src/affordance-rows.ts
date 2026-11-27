@@ -239,9 +239,59 @@ export function seatsOf(rows: readonly HasRow[]): Map<string, Seat> {
 /** A value as a literal on the code surfaces: a whole number stands bare, anything else rides as a JSON string. */
 const literal = (v: string): string => (/^-?\d+$/.test(v) ? v : JSON.stringify(v));
 
+/**
+ * The surfaces a neutral call renders on: every skin's own, and the `sigil` (comms-ux-enacts landing 5), the bracketed call every
+ * surface reads alike (``<<~ get title=`Room 4`>>``). The sigil skins no door and routes no spelling: it renders the call in the
+ * house's one value grammar, and `call` reads it back through TiddlyWiki's own macro-call parser in the VM.
+ */
+export type RenderSurface = AffordSurface | "sigil";
+
+/** TiddlyWiki's own substitution marks (`$(name)$`; the filtered `${ filter }$`), read by the expressions the engine substitutes with. */
+const SUBSTITUTES = [/\$\(([^\)\$]+)\)\$/, /\$\{([\S\s]+?)\}\$/] as const;
+
+/** The first string literal whose delimiter a value lacks (`"""…"""`, `"…"`, `'…'`, `[[…]]`), each a plain string to the parser; null where none holds it. */
+function stringLiteralOf(value: string): string | null {
+  if (!value.includes('"""') && !value.endsWith('"')) return `"""${value}"""`;
+  if (!value.includes('"')) return `"${value}"`;
+  if (!value.includes("'")) return `'${value}'`;
+  if (!value.includes("]]") && !value.endsWith("]")) return `[[${value}]]`;
+  return null;
+}
+
+/**
+ * THE TRIPLE-QUOTE SUBSTITUTION LAW. A value rides the house's one spelling, the tick (`` `…` ``; the triple tick where it holds a
+ * tick and neither leads nor trails with one). But TiddlyWiki SUBSTITUTES a ticked value where it runs it (a glass button's
+ * `$(name)$` and `${ filter }$` turn into their values), so a value holding either mark rides the triple quote (`"""…"""`), a
+ * string literal no engine substitutes: a glass button and the CLI then write the same bytes. A value the triple quote cannot
+ * hold falls to the next literal whose delimiter it lacks. The seed's `${copula}` mock holds no closing `}$`, so it rides the tick.
+ */
+export function sigilQuote(value: string): string {
+  if (SUBSTITUTES.some((re) => re.test(value))) {
+    const quoted = stringLiteralOf(value);
+    if (quoted !== null) return quoted;
+  }
+  if (!value.includes("`")) return `\`${value}\``;
+  if (!value.includes("```") && !value.startsWith("`") && !value.endsWith("`")) return `\`\`\`${value}\`\`\``;
+  return stringLiteralOf(value) ?? `\`\`\`${value}\`\`\``;
+}
+
+/** The sigil's head word: a word the parser reads as one positional stands bare; any other (an address, a spelling with a space) rides a string literal. */
+function sigilWord(word: string): string {
+  if (/^[^\s>"'`=:/]+$/.test(word)) return word;
+  if (!word.includes('"')) return `"${word}"`;
+  return stringLiteralOf(word) ?? `"""${word}"""`;
+}
+
 /** One neutral call rendered runnable on one surface, given that surface's spelling (`lares oracle cast`, `oracle_cast`, …). */
-export function renderCall(surface: AffordSurface, spells: string, call: NeutralCall, skin?: HasRow, seats?: ReadonlyMap<string, Seat>): string {
+export function renderCall(surface: RenderSurface, spells: string, call: NeutralCall, skin?: HasRow, seats?: ReadonlyMap<string, Seat>): string {
   switch (surface) {
+    case "sigil": {
+      // THE ONE CALL AS A SIGIL: the verb word (the console spelling where one stands, the bare address otherwise), each param by
+      // its neutral name in the house's value grammar, a bare switch as a bare word (a positional reads back as the switch).
+      const word = spells.trim() || call.address.replace(/^lar:\/\/\//, "");
+      const args = call.args.map(([k, v]) => (v === true ? ` ${k}` : ` ${k}=${sigilQuote(v)}`)).join("");
+      return `<<~ ${sigilWord(word)}${args}>>`;
+    }
     case "cli": {
       const seated = call.args
         .filter(([k]) => seats?.has(k))

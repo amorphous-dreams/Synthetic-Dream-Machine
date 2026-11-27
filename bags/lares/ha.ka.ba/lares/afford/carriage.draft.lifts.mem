@@ -60,8 +60,8 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · count-moved
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[carriage.draft.lifts count/<n>]] ~ lift-kahua names the count of pending kahua items: lares shore lift-kahua --count <n>`>>
-<<has entity=`refusal` name=`count-moved` params=`~ the count no longer equals the preview's; nothing lifted, and a new lares shore names the count that stands`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.draft.lifts count/<n>]] ~ lift-kahua names the count of pending kahua items`>>
+<<has entity=`refusal` name=`count-moved` params=`cure/[[carriage.disk.reads]] ~ the count no longer equals the preview's; nothing lifted, and the shore names the count that stands`>>
 ```
 
 <<~/ahu>>
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xKx-kI4WBxIm1y2jBzvqoNXZ8IXXsWnNKYHCHU5f5vQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eGHC7OacuqaM9VBm20EirDvBTf0kKb9D_XsYGACN84k`>>
 
 <<^ code=`&#x0004;` to=`?`>>

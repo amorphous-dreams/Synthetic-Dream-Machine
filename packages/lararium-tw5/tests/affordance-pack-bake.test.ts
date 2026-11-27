@@ -158,5 +158,5 @@ describe.skipIf(wikiSkip)(`the core verbs bake from canon${skipNote}`, () => {
     // The seat's spellings break the rule by the skin's maps alone: the put's tags, cut and replacement words.
     expect(Object.keys(pack.carriers["lar:///engine.record.puts"]!.params).sort()).toEqual(
       ["append", "bag", "base", "create", "cut", "fields", "recipe", "replace", "replace_with", "slot", "tags_add", "tags_remove", "text", "title", "unset"]);
-  });
+  }, 60_000);   // a whole-canon bake boots a wiki and renders every carrier: a loaded floor slot runs it past the 5 s default
 });

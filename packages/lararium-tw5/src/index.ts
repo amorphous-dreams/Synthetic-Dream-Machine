@@ -157,9 +157,9 @@ export { composeIsland } from "./island-caps.js";
 export type { IslandCap, CapTeardown } from "./island-caps.js";
 export { hasCapture, TELEMETRY_FRAME } from "./capture/has-capture.js";
 export type { CaptureCapOptions } from "./capture/has-capture.js";
-export { VerbDispatcher, VerbTable, VERB_SURFACE, projectOntoSurface, makeCallReactor, runPlan, callDoorOf } from "./verb-dispatcher.js";
+export { VerbDispatcher, VerbTable, VERB_SURFACE, projectOntoSurface, makeCallReactor, runPlan, callDoorOf, type CallSource } from "./verb-dispatcher.js";
 // The one call (comms-ux-enacts landing 4): a verb and named params, resolved, bound and dispatched by one rule.
-export { planCall, resolveCall, bindCall, stampAnswer, callReaderOf, CallRefusal, type CallPlan, type CallReader, type CallReceipt, type CallSeat } from "./modules/call.js";
+export { planCall, resolveCall, bindCall, stampAnswer, callReaderOf, callOfSigil, cureCall, CallRefusal, type CallPlan, type CallReader, type CallReceipt, type CallSeat, type MacroCallParse } from "./modules/call.js";
 export type { VerbContext, VerbReactor, VerbDispatcherOptions, VerbSpec, VerbFence, SurfaceDeclared, SessionWorn } from "./verb-dispatcher.js";
 export { heedSummons } from "./verb-summons.js";
 export type { SummonsRequest, SummonsRelayOptions } from "./verb-summons.js";
@@ -222,7 +222,7 @@ export type { MemeVerbOptions } from "./meme-verbs.js";
 // The tiddler door: every TiddlyWiki act over one record or one wiki's engine, on the anchor (wiki-surface-scout, lane 1).
 export {
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor, makeWikiStatusReactor, makeWikiActionReactor, SHORE_COLLAPSE_CONFIG_PREFIX,
-  TIDDLER_CALL_SEATS, tiddlerCallReader,
+  TIDDLER_CALL_SEATS, tiddlerCallSource,
 } from "./tiddler-verbs.js";
 export type { NamedWikiEngine, TiddlerVerbOptions } from "./tiddler-verbs.js";
 // The oracle cast: one I Ching cast written as one tiddler through the tiddler door's own put.

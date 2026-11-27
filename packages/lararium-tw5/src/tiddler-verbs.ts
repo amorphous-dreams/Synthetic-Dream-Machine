@@ -122,10 +122,10 @@ import { pageFilterAnswer, filterCursor, checkFilter, lineLensOf, matchingLines,
 import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { wornOrigin } from "./verb-dispatcher.js";
-import { callReaderOf, type CallReader, type CallSeat } from "./modules/call.js";
+import { callReaderOf, type CallSeat, type MacroCallParse } from "./modules/call.js";
 import { wikiWearsNext } from "./island-recipe.js";
 import { isTw5DocsBag, refuseTw5DocsWrite } from "./tw5-docs-library.js";
-import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
+import type { CallSource, VerbContext, VerbReactor } from "./verb-dispatcher.js";
 
 export interface TiddlerVerbOptions extends Partial<Pick<MemeVerbOptions, "reach" | "slotStore" | "realmWritable" | "recipeOf" | "writeSlot" | "faceLane">> {
   readonly composite: CompositeStore;
@@ -2179,7 +2179,23 @@ export const TIDDLER_CALL_SEATS: Readonly<Record<string, CallSeat>> = Object.fre
   "lar:///engine.record.renames": { verb: "tiddler-rename" },
 });
 
-/** The reader a call resolves and binds over: the daemon wiki's live stack, the topmost layer answering each carrier title. */
-export function tiddlerCallReader(opts: Pick<TiddlerVerbOptions, "tw5">): CallReader {
-  return callReaderOf(engineOf(opts as TiddlerVerbOptions).wiki as never);
+/**
+ * Where the daemon `call` reads (landing 5): THE NAMED RECIPE'S READER VIEW. Each call resolves and binds over the stack of the
+ * wiki its params name (`recipe`, else `default`; a call naming a `bag` reads the daemon wiki's), through that wiki's own engine
+ * and the face's reader view (`viewFor`), so a carrier that wiki's layers seat shapes the call and a record the face may not read
+ * enters no route and no `#/takes`. A sigil reads through the same engine's own macro-call parser.
+ */
+export function tiddlerCallSource(opts: TiddlerVerbOptions): CallSource {
+  const utils = (engineOf(opts) as unknown as { utils?: { parseMacroInvocationAsTransclusion?: MacroCallParse } }).utils;
+  const parse = utils?.parseMacroInvocationAsTransclusion?.bind(utils);
+  return {
+    ...(parse ? { parse } : {}),
+    readerOf: async (ctx, params) => {
+      const asked = params["recipe"];
+      const container = { recipe: typeof asked === "string" && asked.trim() !== "" ? asked.trim() : "default" };
+      const wiki = (await namedWikiOptions(opts, container, "call", false)) ?? opts;
+      const { view } = await viewFor(wiki, anchorOf(wiki, container, "call"), ctx.cap);
+      return callReaderOf(view as never);
+    },
+  };
 }
