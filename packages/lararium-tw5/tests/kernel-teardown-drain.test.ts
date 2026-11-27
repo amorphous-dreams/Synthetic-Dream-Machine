@@ -12,7 +12,9 @@ vi.mock("@lararium/mesh/island-repo-door", async (original) => {
   return { ...mesh, makeIslandRepo: () => ({ flush: async () => {}, shutdown: async () => {} }), replicaHeads: () => ["head-1"] };
 });
 vi.mock("../src/slot-wait.js", () => ({ waitForSlotDocument: async () => ({ outcome: "ready", handle: fake.handle }) }));
-vi.mock("../src/island-recipe.js", () => ({ buildIslandRecipe: () => ({ adaptor: fake.adaptor }), seedDrained: async () => {} }));
+// Wave zero: the composition lays before boot, the seed reads off it, and the shore mounts on the booted engine.
+vi.mock("../src/island-recipe.js", () => ({ layIslandComposition: () => ({}), mountIslandShore: () => ({ adaptor: fake.adaptor, stores: [] }), seedDrained: async () => {} }));
+vi.mock("../src/island-seed.js", () => ({ readIslandSeed: async () => ({ preloads: [], titles: new Set(), release: () => [] }) }));
 vi.mock("../src/outbound-bridge.js", () => ({ bridgeWikiToAdaptor: () => () => {} }));
 vi.mock("../src/lazy-resolver.js", () => ({ installLazyResolver: () => () => {} }));
 vi.mock("../src/island-kernel.js", () => ({ IslandKernel: class {

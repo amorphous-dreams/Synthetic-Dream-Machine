@@ -184,7 +184,7 @@ export function layIslandComposition(input: LayIslandCompositionInput): LaidComp
  * through the shore's landing queue, and the seed checkpoint arms. `seed`, where the engine booted over wave zero, hands the
  * changes the composition told during the boot (`IslandSeed.release`): each lands afresh, after the replay.
  */
-export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: Pick<IslandSeed, "release"> | null): {
+export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: Pick<IslandSeed, "release" | "titles"> | null): {
   adaptor: IslandAdaptor;
   stores: Array<{ slot: SlotUri; store: LarTiddlerStore }>;
 } {
@@ -242,8 +242,15 @@ export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: P
   // STARTUP ACTIONS RUN, as TiddlyWiki runs them. TW5's own startup pass ran `$:/tags/StartupAction` over the preloads at boot; a
   // startup record that reached the wiki after boot (landed by the seed's waves, or a floor plugin's shadow laid after boot) runs
   // here once the seed stands, the way it would have run had it stood in the boot store.
+  //
+  // WAVE ZERO REACHES EVERY OBSERVER, IN ONE DISPATCH (lar:///ha.ka.ba/lares/api/pono/nalu: one wave, all observers, one
+  // dispatch). The preloads stood before TiddlyWiki's change queue woke, so no `change` listener ever heard them: a dispatch-marked
+  // summon the store already held would never reach the reaction router. Once the seed stands, each preloaded title still in
+  // the wiki joins one change event; the replay already set each in the landed ledger, so the bridge reads it as landed, never as
+  // a hand.
   const checkpoint = adaptor.armSeedCheckpoint().then(() => {
-    const tw = tw5.$tw as unknown as { wiki: { filterTiddlers(f: string): string[]; getTiddlerText(t: string): string | undefined }; rootWidget: { invokeActionString(actions: string, triggeringWidget: unknown, event: unknown, variables: Record<string, string>): void } };
+    const tw = tw5.$tw as unknown as { wiki: { filterTiddlers(f: string): string[]; getTiddlerText(t: string): string | undefined; tiddlerExists(t: string): boolean; enqueueTiddlerEvent(title: string, isDeleted?: boolean): void }; rootWidget: { invokeActionString(actions: string, triggeringWidget: unknown, event: unknown, variables: Record<string, string>): void } };
+    for (const title of seed?.titles ?? []) if (tw.wiki.tiddlerExists(title)) tw.wiki.enqueueTiddlerEvent(title, false);
     for (const title of tw.wiki.filterTiddlers(STARTUP_ACTIONS)) {
       if (ranAtBoot.has(title)) continue;
       tw.rootWidget.invokeActionString(tw.wiki.getTiddlerText(title) ?? "", tw.rootWidget, undefined, {});

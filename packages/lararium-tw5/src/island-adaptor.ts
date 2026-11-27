@@ -332,7 +332,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       },
       (landed) => { for (const hear of [...this.sliceHearers]) hear(landed); },
       // THE ENGINE'S CREST DOOR: each slice's applies land as one crest the engine names (`applyNaluCrest`). An engine whose
-      // applier predates the door (a fake engine, a plugin not yet rebuilt) lands the same run bare, in the same one tick.
+      // applier carries no door (a fake engine) lands the same run bare, in the same one tick.
       crestDoorOf(lares),
     );
     this.landing = landing;

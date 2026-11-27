@@ -9,8 +9,9 @@
  *   WAVE ZERO   the seed read off the laid composition and booted as preloads: everything the composition resolves preloads, the
  *               module defines and evaluates, the startup action runs at TW5's boot pass.
  *
- * Both then mount the same shore and await the seed checkpoint. The vectors read: (a) no wiki `change` dispatch, from the
- * listener's install to the checkpoint, names a preloaded title (CONTROL: every seeded title rides one); (b) the landed ledger
+ * Both then mount the same shore and await the seed checkpoint. The vectors read: (a) wave zero reaches the wiki's observers
+ * as ONE `change` dispatch naming every preloaded title, once the seed stands (the nalu law: one wave, all observers, one
+ * dispatch), never one per tiddler (CONTROL: the per-change road dispatches every seeded title too); (b) the landed ledger
  * holds, title for title, the row the per-change road writes (bag, heads, fields); (c) the module and the startup record preloaded
  * and ran; (d) the tombstoned title stands absent and preloads nothing.
  */
@@ -73,6 +74,8 @@ interface Stood {
   readonly seed: IslandSeed | null;
   /** Every title a wiki `change` dispatch named, from the listener's install (right after boot) to the seed checkpoint. */
   readonly dispatched: Set<string>;
+  /** Each `change` dispatch's titles, in order. */
+  readonly dispatches: string[][];
   readonly repo: RepoType;
 }
 
@@ -87,13 +90,14 @@ async function stand(run: { preload: boolean }): Promise<Stood> {
   const seed = run.preload ? await readIslandSeed(composite, houseSkins()) : null;
   const engine = await bootTestWiki(seed ? { seed: seed.preloads } : {});
   const dispatched = new Set<string>();
+  const dispatches: string[][] = [];
   (engine.$tw.wiki as unknown as { addEventListener(type: "change", fn: (changes: Record<string, unknown>) => void): void })
-    .addEventListener("change", (changes) => { for (const title of Object.keys(changes)) dispatched.add(title); });
+    .addEventListener("change", (changes) => { dispatches.push(Object.keys(changes)); for (const title of Object.keys(changes)) dispatched.add(title); });
   const { adaptor } = mountIslandShore(engine, laid, seed);
   await seedDrained(engine);
   // The wiki's own dispatch of the last slice runs on its next tick: let it land before reading.
   for (let i = 0; i < 2; i++) await new Promise<void>((resolve) => process.nextTick(resolve));
-  return { engine, adaptor, seed, dispatched, repo };
+  return { engine, adaptor, seed, dispatched, dispatches, repo };
 }
 
 /** The landed row as a test compares it: bag, heads and the tiddler's field strings (null where the wave left no tiddler). */
@@ -112,7 +116,7 @@ describe.skipIf(wikiSkip)(`wave zero: the seed boots as preloads through the nal
     for (const s of stood.splice(0)) { await s.adaptor.stop(); s.engine.dispose(); await s.repo.shutdown(); }
   });
 
-  test("every resolved record preloads and no dispatch names one; the ledger matches the per-change road row for row; the module defines and the startup action ran at boot; the tombstoned title stands absent", async () => {
+  test("every resolved record preloads and wave zero reaches observers in ONE dispatch; the ledger matches the per-change road row for row; the module defines and the startup action ran at boot; the tombstoned title stands absent", async () => {
     const control = await stand({ preload: false });
     stood.push(control);
     const zero = await stand({ preload: true });
@@ -122,8 +126,11 @@ describe.skipIf(wikiSkip)(`wave zero: the seed boots as preloads through the nal
     // (c) what preloaded: everything the composition resolves, the module and the startup record included.
     expect([...seed.titles].sort()).toEqual([...PLAIN, DRAFT, MODULE, STARTUP].sort());
 
-    // (a) zero dispatches for the preloaded titles; CONTROL: the per-change road dispatched every one.
-    expect([...seed.titles].filter((title) => zero.dispatched.has(title)), "a preloaded title rode a dispatch").toEqual([]);
+    // (a) one dispatch carries every preloaded title (live ones: the tombstoned title preloads nothing); CONTROL: the per-change
+    // road dispatched every one.
+    const naming = zero.dispatches.filter((titles) => titles.some((title) => seed.titles.has(title)));
+    expect(naming.length, "wave zero reaches observers in one dispatch, never one per tiddler").toBe(1);
+    expect([...seed.titles].filter((title) => !naming[0]!.includes(title)), "the one dispatch names every preloaded title").toEqual([]);
     expect([...seed.titles].filter((title) => !control.dispatched.has(title)), "CONTROL: the waves dispatched every seeded title").toEqual([]);
 
     // (b) the ledger holds the row the per-change road writes, title for title.
