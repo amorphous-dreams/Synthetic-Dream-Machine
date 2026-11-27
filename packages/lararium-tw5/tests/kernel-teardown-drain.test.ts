@@ -211,7 +211,7 @@ describe("vessel stand-down releases receipt waits", () => {
     deliver(mkManifest("lar:///test.kernel.drain/wiki", port, { wikiSlug: "daemon" }, { islandUrl: "automerge:oracle", workingUrl: "automerge:working" }, hash, { pluginCids: [pluginCid] }));
     await ea;
     // A clock that never fires: no advance can manufacture the vessel's stand-down.
-    const clock = vi.spyOn(globalThis, "setTimeout").mockImplementation((() => 1) as typeof setTimeout);
+    const clock = vi.spyOn(globalThis, "setTimeout").mockImplementation((() => 1) as unknown as typeof setTimeout);
     try {
       deliver(mkTeardown());
       for (let i = 0; i < 20; i++) await Promise.resolve();
