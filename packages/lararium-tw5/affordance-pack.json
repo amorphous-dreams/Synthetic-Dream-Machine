@@ -8802,7 +8802,7 @@
       "title": "lar:///ha.ka.ba/lares/afford/carriage.record.wins"
     },
     "lar:///engine.filter.pages": {
-      "bcc": "ni:///sha-256;yb4Sbx_UYneUj_3ITyxajvWTugFjwLO6LthL9v08xbI",
+      "bcc": "ni:///sha-256;cII_kK46FMIKhKexWbT67aQydLlGxS1DE5MVl_6p2Gw",
       "calls": {
         "cli": [
           "lares wiki filter '[tag[memory]sort[title]]' --recipe default --limit 5",
@@ -8820,6 +8820,7 @@
           "$tw.lares.call(\"get\", {\"filter\": \"[tag[memory]sort[title]]\", \"recipe\": \"default\", \"limit\": 5})",
           "$tw.lares.call(\"get\", {\"filter\": \"[[Room 4]backlinks[]]\", \"recipe\": \"default\"})",
           "$tw.lares.call(\"get\", {\"filter\": \"[prefix[lar:///ha.ka.ba/kahua/memory/road/]]\", \"recipe\": \"default\", \"collapse\": true})",
+          "$tw.lares.call(\"get\", {\"filter\": \"[tag[memory]sort[title]]\", \"recipe\": \"default\", \"mu\": \"relate\"})",
           "$tw.lares.call(\"get\", {\"filter\": \"[all[tiddlers]search:text:literal[Lares (Stranger)]]\", \"match\": \"Lares (Stranger)\", \"recipe\": \"default\"})",
           "$tw.lares.call(\"get\", {\"filter\": \"[tag[memory]]\", \"recipe\": \"default\", \"target\": \"h1\"})",
           "$tw.lares.call(\"get\", {\"filter\": \"<filter>\", \"recipe\": \"default\"})",
@@ -9029,6 +9030,7 @@
             "  $tw.lares.call(\"get\", {\"filter\": \"[tag[memory]sort[title]]\", \"recipe\": \"default\", \"limit\": 5})    # one page; after continues it, all walks it",
             "  $tw.lares.call(\"get\", {\"filter\": \"[[Room 4]backlinks[]]\", \"recipe\": \"default\"})    # every record that links to Room 4",
             "  $tw.lares.call(\"get\", {\"filter\": \"[prefix[lar:///ha.ka.ba/kahua/memory/road/]]\", \"recipe\": \"default\", \"collapse\": true})    # each meme row skinny: its bytes and its slots",
+            "  $tw.lares.call(\"get\", {\"filter\": \"[tag[memory]sort[title]]\", \"recipe\": \"default\", \"mu\": \"relate\"})    # a page of has lines: the lone relate joins the many a filter already reads",
             "  $tw.lares.call(\"get\", {\"filter\": \"[all[tiddlers]search:text:literal[Lares (Stranger)]]\", \"match\": \"Lares (Stranger)\", \"recipe\": \"default\"})    # one persona heard across every body: the filter narrows, the lens shows the lines",
             "  $tw.lares.call(\"get\", {\"filter\": \"[tag[memory]]\", \"recipe\": \"default\", \"target\": \"h1\"})    # a lit sibling's daemon wiki, read while you keep your own face"
           ],
@@ -9038,6 +9040,9 @@
             "  console: get"
           ],
           "#/takes": [
+            "  mu=many  a filter call reads as many already: the page of titles, and every lone depth joins it",
+            "  mu=many-relate  a page of has lines, one per row, each the card a get answers",
+            "  mu=many-assert  a page whose rows carry their has line and their text; beside match, their matching lines",
             "  filter <filter>  a TiddlyWiki filter, run by the wiki's own engine",
             "  recipe <slug>  the wiki whose engine runs the filter; default names the worn face's daemon wiki",
             "  fields <names>  each row carries these fields",
@@ -9048,13 +9053,14 @@
             "  max-bytes <count>  the byte cap on one page, 65536 by default",
             "  after <cursor>  the page behind the cursor a prior answer named in next",
             "  target <face>  another lit face this read visits, by handle index or pet name",
-            "  face <handle>  the lit face this call wears, by handle or pet name"
+            "  face <handle>  the lit face this call wears, by handle or pet name",
+            "  mu <depth>  the depth: relate ?, assert !, many *, dry _, unask 0; the carrier's cell rows table what each reads"
           ],
           "line": [
             "get — run a TiddlyWiki filter in the wiki's own engine, one bounded page"
           ],
           "whole": [
-            "get(filter=<filter>, recipe=<slug>, [fields=<names>], [collapse], [match=<words>], [context=<count>], [limit=<count>], [max-bytes=<count>], [after=<cursor>], [target=<face>], [face=<handle>])",
+            "get(filter=<filter>, recipe=<slug>, [fields=<names>], [collapse], [match=<words>], [context=<count>], [limit=<count>], [max-bytes=<count>], [after=<cursor>], [target=<face>], [face=<handle>], [mu=<depth>])",
             "",
             "get — run a TiddlyWiki filter in the wiki's own engine, one bounded page",
             "",
@@ -9069,10 +9075,14 @@
             "  $tw.lares.call(\"get\", {\"filter\": \"[tag[memory]sort[title]]\", \"recipe\": \"default\", \"limit\": 5})    # one page; after continues it, all walks it",
             "  $tw.lares.call(\"get\", {\"filter\": \"[[Room 4]backlinks[]]\", \"recipe\": \"default\"})    # every record that links to Room 4",
             "  $tw.lares.call(\"get\", {\"filter\": \"[prefix[lar:///ha.ka.ba/kahua/memory/road/]]\", \"recipe\": \"default\", \"collapse\": true})    # each meme row skinny: its bytes and its slots",
+            "  $tw.lares.call(\"get\", {\"filter\": \"[tag[memory]sort[title]]\", \"recipe\": \"default\", \"mu\": \"relate\"})    # a page of has lines: the lone relate joins the many a filter already reads",
             "  $tw.lares.call(\"get\", {\"filter\": \"[all[tiddlers]search:text:literal[Lares (Stranger)]]\", \"match\": \"Lares (Stranger)\", \"recipe\": \"default\"})    # one persona heard across every body: the filter narrows, the lens shows the lines",
             "  $tw.lares.call(\"get\", {\"filter\": \"[tag[memory]]\", \"recipe\": \"default\", \"target\": \"h1\"})    # a lit sibling's daemon wiki, read while you keep your own face",
             "",
             "Arguments:",
+            "  mu=many  a filter call reads as many already: the page of titles, and every lone depth joins it",
+            "  mu=many-relate  a page of has lines, one per row, each the card a get answers",
+            "  mu=many-assert  a page whose rows carry their has line and their text; beside match, their matching lines",
             "  filter <filter>  a TiddlyWiki filter, run by the wiki's own engine",
             "  recipe <slug>  the wiki whose engine runs the filter; default names the worn face's daemon wiki",
             "  fields <names>  each row carries these fields",
@@ -9084,6 +9094,7 @@
             "  after <cursor>  the page behind the cursor a prior answer named in next",
             "  target <face>  another lit face this read visits, by handle index or pet name",
             "  face <handle>  the lit face this call wears, by handle or pet name",
+            "  mu <depth>  the depth: relate ?, assert !, many *, dry _, unask 0; the carrier's cell rows table what each reads",
             "",
             "Gate (the carrier's testimony; the door checks):",
             "  read: the filter computes over the reader's view, so the gate stands inside the engine; it writes nothing",
@@ -9297,7 +9308,8 @@
           "max-bytes",
           "after",
           "target",
-          "face"
+          "face",
+          "mu"
         ],
         "mcp": [
           "filter",
@@ -10178,7 +10190,7 @@
       "title": "lar:///ha.ka.ba/lares/afford/engine.law.unpins"
     },
     "lar:///engine.record.puts": {
-      "bcc": "ni:///sha-256;VJJsjhXALEGhWWy0uXSBgFrlx1lOVyhUaMicxekm--c",
+      "bcc": "ni:///sha-256;q0ZJ6GhA_mm9DnaqprLvxxx2MyE0pAtzC7psiSyulpQ",
       "calls": {
         "cli": [
           "lares tiddler put 'Room 4' --recipe default --fields '{\"todo\":\"done\"}' --tag-add reviewed --base <hash>",
@@ -10486,6 +10498,8 @@
             "  console: put"
           ],
           "#/takes": [
+            "  mu=dry-relate  the dry summary: what the put would land, the base it needs, landing nothing",
+            "  mu=dry-assert  the dry diff: the summary and the full diff of text and fields, landing nothing",
             "  title <title>  the record written, any right-intent string; a slot title <root>#/x names one slot",
             "  text <words>  the new text: on a root the whole carrier, on a slot its body",
             "  append <words>  words that land at the end of the standing text, no base; a terminal reads them from a host path or - for stdin",
@@ -10502,13 +10516,14 @@
             "  recipe <slug>  the wiki the act reads and writes; default names the worn face's daemon wiki",
             "  bag <slug>  one bag, placed into directly; refused where this island cannot write it",
             "  realm <id>  beside bag, the realm whose registration resolves it",
-            "  face <handle>  the lit face this call wears, by handle or pet name"
+            "  face <handle>  the lit face this call wears, by handle or pet name",
+            "  mu <depth>  the depth: relate ?, assert !, many *, dry _, unask 0; the carrier's cell rows table what each reads"
           ],
           "line": [
             "put — patch one record's text, fields or tags; a meme root lands its family"
           ],
           "whole": [
-            "put(title=<title>, [text=<words>], [append=<words>], [replace=<span>, with=<words>], [fields=<json>], [unset=<names>], [tag-add=<list>], [tag-remove=<list>], [cut-slot=<slots>], [slot=<slot-path>], [base=<hash>], [create], (recipe=<slug> | bag=<slug>), [realm=<id>], [face=<handle>])",
+            "put(title=<title>, [text=<words>], [append=<words>], [replace=<span>, with=<words>], [fields=<json>], [unset=<names>], [tag-add=<list>], [tag-remove=<list>], [cut-slot=<slots>], [slot=<slot-path>], [base=<hash>], [create], (recipe=<slug> | bag=<slug>), [realm=<id>], [face=<handle>], [mu=<depth>])",
             "",
             "put — patch one record's text, fields or tags; a meme root lands its family",
             "",
@@ -10528,6 +10543,8 @@
             "  $tw.lares.call(\"put\", {\"title\": \"lar:///ha.ka.ba/kahua/memory/x\", \"recipe\": \"default\", \"slot\": \"#/why\", \"text\": \"the reason, rewritten\"})    # one slot's text, no base; the family reseals",
             "",
             "Arguments:",
+            "  mu=dry-relate  the dry summary: what the put would land, the base it needs, landing nothing",
+            "  mu=dry-assert  the dry diff: the summary and the full diff of text and fields, landing nothing",
             "  title <title>  the record written, any right-intent string; a slot title <root>#/x names one slot",
             "  text <words>  the new text: on a root the whole carrier, on a slot its body",
             "  append <words>  words that land at the end of the standing text, no base; a terminal reads them from a host path or - for stdin",
@@ -10545,6 +10562,7 @@
             "  bag <slug>  one bag, placed into directly; refused where this island cannot write it",
             "  realm <id>  beside bag, the realm whose registration resolves it",
             "  face <handle>  the lit face this call wears, by handle or pet name",
+            "  mu <depth>  the depth: relate ?, assert !, many *, dry _, unask 0; the carrier's cell rows table what each reads",
             "",
             "Gate (the carrier's testimony; the door checks):",
             "  write: the Kahu predicate, then the face's write cap on the bag the cascade lands in, wikis first: the working layer",
@@ -10838,7 +10856,8 @@
           "recipe",
           "bag",
           "realm",
-          "face"
+          "face",
+          "mu"
         ],
         "mcp": [
           "title",
@@ -10861,7 +10880,7 @@
       "title": "lar:///ha.ka.ba/lares/afford/engine.record.puts"
     },
     "lar:///engine.record.reads": {
-      "bcc": "ni:///sha-256;ms1JKn8ofJQ5SM1rgrW1oK4Y3qLYeisRSxOF3vv-uVQ",
+      "bcc": "ni:///sha-256;CD0ym4C5h7p2z35foQ1nT00Pp4obAQVyyeZNxxq1LnA",
       "calls": {
         "cli": [
           "lares tiddler get 'Room 4' --recipe default",
@@ -10878,6 +10897,8 @@
         ],
         "console": [
           "$tw.lares.call(\"get\", {\"title\": \"Room 4\", \"recipe\": \"default\"})",
+          "$tw.lares.call(\"get\", {\"title\": \"lar:///ha.ka.ba/lares/api/pono/affordance\", \"recipe\": \"lares\", \"mu\": \"relate\"})",
+          "$tw.lares.call(\"get\", {\"title\": \"lar:///ha.ka.ba/lares/api/pono/affordance\", \"recipe\": \"lares\", \"mu\": \"assert\", \"slot\": \"#/takes\"})",
           "$tw.lares.call(\"get\", {\"title\": \"Room 4\", \"bag\": \"lares\"})",
           "$tw.lares.call(\"get\", {\"title\": \"lar:///ha.ka.ba/lares/api/pono/affordance\", \"recipe\": \"lares\", \"meme\": true, \"slot\": \"#/takes\"})",
           "$tw.lares.call(\"get\", {\"title\": \"lar:///ha.ka.ba/lares/api/pono/affordance\", \"recipe\": \"lares\", \"meme\": true, \"all\": true})",
@@ -11105,6 +11126,8 @@
           ],
           "#/shows": [
             "  $tw.lares.call(\"get\", {\"title\": \"Room 4\", \"recipe\": \"default\"})    # the record on its gradient, fat within a page; the base rides beside it",
+            "  $tw.lares.call(\"get\", {\"title\": \"lar:///ha.ka.ba/lares/api/pono/affordance\", \"recipe\": \"lares\", \"mu\": \"relate\"})    # the card at mu relate: the has-stack, one line per slot",
+            "  $tw.lares.call(\"get\", {\"title\": \"lar:///ha.ka.ba/lares/api/pono/affordance\", \"recipe\": \"lares\", \"mu\": \"assert\", \"slot\": \"#/takes\"})    # the whole at mu assert, slot narrowing it to one span",
             "  $tw.lares.call(\"get\", {\"title\": \"Room 4\", \"bag\": \"lares\"})    # that one bag's record, its base and the bag that answered",
             "  $tw.lares.call(\"get\", {\"title\": \"lar:///ha.ka.ba/lares/api/pono/affordance\", \"recipe\": \"lares\", \"meme\": true, \"slot\": \"#/takes\"})    # one slot of a meme, its partial base beside it",
             "  $tw.lares.call(\"get\", {\"title\": \"lar:///ha.ka.ba/lares/api/pono/affordance\", \"recipe\": \"lares\", \"meme\": true, \"all\": true})    # the whole carrier, paged on slot boundaries and joined",
@@ -11118,48 +11141,8 @@
             "  console: get"
           ],
           "#/takes": [
-            "  title <title>  the record, any right-intent string, a lar: title whole; absent beside meme, the family listing",
-            "  meme  the carrier lens: a meme's root and slots recomposed into one sealed carrier; with no title, the family listing",
-            "  grain <grain>  skinny, fat, handle, resolved, slot or whole; none named, the door picks by size",
-            "  all  the whole at the lens's grain: a record fat, a pointer resolved, a meme's carrier followed page after page and joined",
-            "  slot <slot-path>  one slot of the meme the title names, as #/name",
-            "  fields <names>  the named fields alone",
-            "  max-bytes <count>  the byte cap on a record answer; the largest fields leave first, named under omitted",
-            "  after <cursor>  the page behind the cursor a prior answer named in next",
-            "  target <face>  another lit face this read visits, by handle index or pet name",
-            "  tree  with no title beside meme: nest each listed root's slots",
-            "  recipe <slug>  the wiki the act reads and writes; default names the worn face's daemon wiki",
-            "  bag <slug>  one bag, placed into directly; refused where this island cannot write it",
-            "  realm <id>  beside bag, the realm whose registration resolves it",
-            "  face <handle>  the lit face this call wears, by handle or pet name"
-          ],
-          "line": [
-            "get — read one record or meme by title, on a gradient, from a wiki or bag"
-          ],
-          "whole": [
-            "get([title=<title>], [meme], [grain=<grain>], [all], [slot=<slot-path>], [fields=<names>], [max-bytes=<count>], [after=<cursor>], [target=<face>], [tree], (recipe=<slug> | bag=<slug>), [realm=<id>], [face=<handle>])",
-            "",
-            "get — read one record or meme by title, on a gradient, from a wiki or bag",
-            "",
-            "  one record or one meme, read on a gradient",
-            "  Every record reads through this door, whatever its type: a plain note, a data tiddler, a meme's root or one of its slots. `recipe` names the wiki, and the read runs in that wiki's own TiddlyWiki engine: `default` names the worn face's daemon wiki, a slug any wiki this face reaches (one it hosts or one shared to it), and a wiki it reaches none of refuses `wiki-unreached`. `bag` names one bag and reads that bag's own record through its store, with no engine: the answer names the `bag`, and carries `floor: true` where the bag's floor snapshot answered. Exactly one of the two rides; a call that names neither reads `recipe/default`, the default the container row carries. The address stays a candidate until the operator reads the landing's list.",
-            "  Every answer leads with a `has` line: provenance (`recipe/` or `bag/`, `layer/`, `floor/true`), the record's own tags, its measures (`type/ position/ family/ slots/ bytes/ base/`, a pointer's `_canonical_uri/ textCid/ _integrity/ size/` verbatim), then the description or role; a meme's has-stack adds one line per slot. Beside it `grain` echoes {asked, applied, why} and `next` names the next unfold, or null.",
-            "  Two axes ride apart. The lens: the record by default, {recipe or bag, title, lens: \"record\", tiddler: {fields, hash, textHash, bag, position, family?, omitted?}}, `tiddler` null where none stands; `meme` recomposes the root and its slot children into one carrier sealed by its block check, {title, lens: \"meme\", meme: {uri, text?, slotText?, canonicalHash, bytes, slots, slot?, page?}, withheld?}, and a record that holds no meme answers the record with a `note` saying so. The grain: none named, a record within one page (65536 bytes) answers fat and a longer one skinny, a pointer its handle; a meme within a page answers its whole carrier and a longer one its has-stack. `skinny` leaves the text home, `fat` carries it, `handle` names a pointer's body, `resolved` reads it from the local CAS by CID and verifies it (a web2 `_canonical_uri` stays named, never fetched), `slot` answers one slot's span at `meme.slotText`, and `whole` reads the whole at the lens's grain, a meme's carrier one page at a time, each page cut on a slot boundary: hand `next.after` back as `after` until `next` reads null; `all` follows every page to the end and joins them. A terminal spells the grain with `--skinny` (the card) and `--all` (the whole); a seat names `grain`.",
-            "  The text alone: a terminal's `--text` writes the text's bytes to stdout and nothing else (the has line and the base go to stderr), a record's text whole with a pointer's body resolved, with `meme` the recomposed carrier, with `slot` that slot's span; an answer that carries no text refuses `text-unread` and names the read that cures it. A seat reads values, so the text already rides one named key per lens: `grain=\"whole\"` answers a record's text at `tiddler.fields.text`, `meme` with `all` the recomposed carrier at `meme.text`, and `meme` with `slot` one slot's span at `meme.slotText`.",
-            "  Hand the answer's base to a write: a record's `hash`, a carrier's `canonicalHash`. An answer that left the text home hands a card's base (`skinny:sha256-…`): a field patch takes it, a text write refuses `base-from-skinny`, so read fat before you rewrite a text. A slot answer, or a page short of the end, hands a partial base bound to what it read (`partial:#/a:…`, `partial:p1:…`): a slot's put takes it within that span, a whole-carrier write or a family delete refuses `base-from-partial`, and the last page hands the bare base. A partial span guards honest base reuse and grants nothing.",
-            "  With no title and `meme`, the door lists families: `tree` nests their slots and `after` names the next page. A bag listing answers {bag, roots, next}; a named recipe answers {recipe, bags, roots, next}; under `recipe=\"default\"` no row names a `bag`. A floor read answers {bag, floor, roots, next}, and each row from a recipe's floor bag carries `floor: true`.",
-            "  A rendered tiddler answers whole here: a source marked `projection: rendered` derives a live tiddler (`<source>.rendered`, or the source's `render-title`) whose `rendered-from` names the source. `fields` answers the named fields alone; `max-bytes` caps a record answer, the largest fields leaving first, named under `omitted`. `target` names another lit face this read visits, by handle index or pet name, while the call keeps the face it wears: a visit reads that face's daemon wiki through its canon and working layer, never its personal or draft layer (`cross-face-private`), and a shut face refuses `face-not-open`. A record's text carries the words of the layer that answered; turn it through the five tools.",
-            "",
-            "Examples:",
-            "  $tw.lares.call(\"get\", {\"title\": \"Room 4\", \"recipe\": \"default\"})    # the record on its gradient, fat within a page; the base rides beside it",
-            "  $tw.lares.call(\"get\", {\"title\": \"Room 4\", \"bag\": \"lares\"})    # that one bag's record, its base and the bag that answered",
-            "  $tw.lares.call(\"get\", {\"title\": \"lar:///ha.ka.ba/lares/api/pono/affordance\", \"recipe\": \"lares\", \"meme\": true, \"slot\": \"#/takes\"})    # one slot of a meme, its partial base beside it",
-            "  $tw.lares.call(\"get\", {\"title\": \"lar:///ha.ka.ba/lares/api/pono/affordance\", \"recipe\": \"lares\", \"meme\": true, \"all\": true})    # the whole carrier, paged on slot boundaries and joined",
-            "  $tw.lares.call(\"get\", {\"title\": \"Room 4\", \"recipe\": \"default\", \"grain\": \"whole\"})    # the record fat, its text at tiddler.fields.text",
-            "  $tw.lares.call(\"get\", {\"recipe\": \"default\", \"meme\": true, \"tree\": true})    # the family roots this view holds, each with its slots",
-            "  $tw.lares.call(\"get\", {\"title\": \"Sibling note\", \"recipe\": \"default\", \"target\": \"h1\"})    # a lit sibling's daemon wiki, read while you keep your own face",
-            "",
-            "Arguments:",
+            "  mu=relate  the card: a meme's has-stack, a record's has line with its text left home; beside a slot, that slot's own card",
+            "  mu=assert  the whole: a meme's carrier at the whole grain, paged on slot boundaries; beside a slot, that one span",
             "  title <title>  the record, any right-intent string, a lar: title whole; absent beside meme, the family listing",
             "  meme  the carrier lens: a meme's root and slots recomposed into one sealed carrier; with no title, the family listing",
             "  grain <grain>  skinny, fat, handle, resolved, slot or whole; none named, the door picks by size",
@@ -11174,6 +11157,54 @@
             "  bag <slug>  one bag, placed into directly; refused where this island cannot write it",
             "  realm <id>  beside bag, the realm whose registration resolves it",
             "  face <handle>  the lit face this call wears, by handle or pet name",
+            "  mu <depth>  the depth: relate ?, assert !, many *, dry _, unask 0; the carrier's cell rows table what each reads"
+          ],
+          "line": [
+            "get — read one record or meme by title, on a gradient, from a wiki or bag"
+          ],
+          "whole": [
+            "get([title=<title>], [meme], [grain=<grain>], [all], [slot=<slot-path>], [fields=<names>], [max-bytes=<count>], [after=<cursor>], [target=<face>], [tree], (recipe=<slug> | bag=<slug>), [realm=<id>], [face=<handle>], [mu=<depth>])",
+            "",
+            "get — read one record or meme by title, on a gradient, from a wiki or bag",
+            "",
+            "  one record or one meme, read on a gradient",
+            "  Every record reads through this door, whatever its type: a plain note, a data tiddler, a meme's root or one of its slots. `recipe` names the wiki, and the read runs in that wiki's own TiddlyWiki engine: `default` names the worn face's daemon wiki, a slug any wiki this face reaches (one it hosts or one shared to it), and a wiki it reaches none of refuses `wiki-unreached`. `bag` names one bag and reads that bag's own record through its store, with no engine: the answer names the `bag`, and carries `floor: true` where the bag's floor snapshot answered. Exactly one of the two rides; a call that names neither reads `recipe/default`, the default the container row carries. The address stays a candidate until the operator reads the landing's list.",
+            "  Every answer leads with a `has` line: provenance (`recipe/` or `bag/`, `layer/`, `floor/true`), the record's own tags, its measures (`type/ position/ family/ slots/ bytes/ base/`, a pointer's `_canonical_uri/ textCid/ _integrity/ size/` verbatim), then the description or role; a meme's has-stack adds one line per slot. Beside it `grain` echoes {asked, applied, why} and `next` names the next unfold, or null.",
+            "  Two axes ride apart. The lens: the record by default, {recipe or bag, title, lens: \"record\", tiddler: {fields, hash, textHash, bag, position, family?, omitted?}}, `tiddler` null where none stands; `meme` recomposes the root and its slot children into one carrier sealed by its block check, {title, lens: \"meme\", meme: {uri, text?, slotText?, canonicalHash, bytes, slots, slot?, page?}, withheld?}, and a record that holds no meme answers the record with a `note` saying so. The grain: none named, a record within one page (65536 bytes) answers fat and a longer one skinny, a pointer its handle; a meme within a page answers its whole carrier and a longer one its has-stack. `skinny` leaves the text home, `fat` carries it, `handle` names a pointer's body, `resolved` reads it from the local CAS by CID and verifies it (a web2 `_canonical_uri` stays named, never fetched), `slot` answers one slot's span at `meme.slotText`, and `whole` reads the whole at the lens's grain, a meme's carrier one page at a time, each page cut on a slot boundary: hand `next.after` back as `after` until `next` reads null; `all` follows every page to the end and joins them. A terminal spells the grain with `--skinny` (the card) and `--all` (the whole); a seat names `grain`.",
+            "  The text alone: a terminal's `--text` writes the text's bytes to stdout and nothing else (the has line and the base go to stderr), a record's text whole with a pointer's body resolved, with `meme` the recomposed carrier, with `slot` that slot's span; an answer that carries no text refuses `text-unread` and names the read that cures it. A seat reads values, so the text already rides one named key per lens: `grain=\"whole\"` answers a record's text at `tiddler.fields.text`, `meme` with `all` the recomposed carrier at `meme.text`, and `meme` with `slot` one slot's span at `meme.slotText`.",
+            "  Hand the answer's base to a write: a record's `hash`, a carrier's `canonicalHash`. An answer that left the text home hands a card's base (`skinny:sha256-…`): a field patch takes it, a text write refuses `base-from-skinny`, so read fat before you rewrite a text. A slot answer, or a page short of the end, hands a partial base bound to what it read (`partial:#/a:…`, `partial:p1:…`): a slot's put takes it within that span, a whole-carrier write or a family delete refuses `base-from-partial`, and the last page hands the bare base. A partial span guards honest base reuse and grants nothing.",
+            "  With no title and `meme`, the door lists families: `tree` nests their slots and `after` names the next page. A bag listing answers {bag, roots, next}; a named recipe answers {recipe, bags, roots, next}; under `recipe=\"default\"` no row names a `bag`. A floor read answers {bag, floor, roots, next}, and each row from a recipe's floor bag carries `floor: true`.",
+            "  A rendered tiddler answers whole here: a source marked `projection: rendered` derives a live tiddler (`<source>.rendered`, or the source's `render-title`) whose `rendered-from` names the source. `fields` answers the named fields alone; `max-bytes` caps a record answer, the largest fields leaving first, named under `omitted`. `target` names another lit face this read visits, by handle index or pet name, while the call keeps the face it wears: a visit reads that face's daemon wiki through its canon and working layer, never its personal or draft layer (`cross-face-private`), and a shut face refuses `face-not-open`. A record's text carries the words of the layer that answered; turn it through the five tools.",
+            "",
+            "Examples:",
+            "  $tw.lares.call(\"get\", {\"title\": \"Room 4\", \"recipe\": \"default\"})    # the record on its gradient, fat within a page; the base rides beside it",
+            "  $tw.lares.call(\"get\", {\"title\": \"lar:///ha.ka.ba/lares/api/pono/affordance\", \"recipe\": \"lares\", \"mu\": \"relate\"})    # the card at mu relate: the has-stack, one line per slot",
+            "  $tw.lares.call(\"get\", {\"title\": \"lar:///ha.ka.ba/lares/api/pono/affordance\", \"recipe\": \"lares\", \"mu\": \"assert\", \"slot\": \"#/takes\"})    # the whole at mu assert, slot narrowing it to one span",
+            "  $tw.lares.call(\"get\", {\"title\": \"Room 4\", \"bag\": \"lares\"})    # that one bag's record, its base and the bag that answered",
+            "  $tw.lares.call(\"get\", {\"title\": \"lar:///ha.ka.ba/lares/api/pono/affordance\", \"recipe\": \"lares\", \"meme\": true, \"slot\": \"#/takes\"})    # one slot of a meme, its partial base beside it",
+            "  $tw.lares.call(\"get\", {\"title\": \"lar:///ha.ka.ba/lares/api/pono/affordance\", \"recipe\": \"lares\", \"meme\": true, \"all\": true})    # the whole carrier, paged on slot boundaries and joined",
+            "  $tw.lares.call(\"get\", {\"title\": \"Room 4\", \"recipe\": \"default\", \"grain\": \"whole\"})    # the record fat, its text at tiddler.fields.text",
+            "  $tw.lares.call(\"get\", {\"recipe\": \"default\", \"meme\": true, \"tree\": true})    # the family roots this view holds, each with its slots",
+            "  $tw.lares.call(\"get\", {\"title\": \"Sibling note\", \"recipe\": \"default\", \"target\": \"h1\"})    # a lit sibling's daemon wiki, read while you keep your own face",
+            "",
+            "Arguments:",
+            "  mu=relate  the card: a meme's has-stack, a record's has line with its text left home; beside a slot, that slot's own card",
+            "  mu=assert  the whole: a meme's carrier at the whole grain, paged on slot boundaries; beside a slot, that one span",
+            "  title <title>  the record, any right-intent string, a lar: title whole; absent beside meme, the family listing",
+            "  meme  the carrier lens: a meme's root and slots recomposed into one sealed carrier; with no title, the family listing",
+            "  grain <grain>  skinny, fat, handle, resolved, slot or whole; none named, the door picks by size",
+            "  all  the whole at the lens's grain: a record fat, a pointer resolved, a meme's carrier followed page after page and joined",
+            "  slot <slot-path>  one slot of the meme the title names, as #/name",
+            "  fields <names>  the named fields alone",
+            "  max-bytes <count>  the byte cap on a record answer; the largest fields leave first, named under omitted",
+            "  after <cursor>  the page behind the cursor a prior answer named in next",
+            "  target <face>  another lit face this read visits, by handle index or pet name",
+            "  tree  with no title beside meme: nest each listed root's slots",
+            "  recipe <slug>  the wiki the act reads and writes; default names the worn face's daemon wiki",
+            "  bag <slug>  one bag, placed into directly; refused where this island cannot write it",
+            "  realm <id>  beside bag, the realm whose registration resolves it",
+            "  face <handle>  the lit face this call wears, by handle or pet name",
+            "  mu <depth>  the depth: relate ?, assert !, many *, dry _, unask 0; the carrier's cell rows table what each reads",
             "",
             "Gate (the carrier's testimony; the door checks):",
             "  read: a read asks the face's read cap on the anchor's working bag; a record another bag answers stays out where the face holds no read on it, and withheld counts it",
@@ -11402,7 +11433,8 @@
           "recipe",
           "bag",
           "realm",
-          "face"
+          "face",
+          "mu"
         ],
         "mcp": [
           "title",
@@ -11422,7 +11454,7 @@
       "title": "lar:///ha.ka.ba/lares/afford/engine.record.reads"
     },
     "lar:///engine.record.removes": {
-      "bcc": "ni:///sha-256;WrE8vJMzVQD9mN4mTobp0Q980scwcTrWrxPnHxD5b3o",
+      "bcc": "ni:///sha-256;0bx2h4IamG2LrUV8IcFQZKfT5dIGS-mEs3oPUrVCJYk",
       "calls": {
         "cli": [
           "lares tiddler delete 'Old Note' --recipe default --base <hash>",
@@ -11644,6 +11676,8 @@
             "  console: delete"
           ],
           "#/takes": [
+            "  mu=dry-relate  the dry summary: what the delete would land, the base it needs, landing nothing",
+            "  mu=dry-assert  the dry diff: the summary and the full diff of text and fields, landing nothing",
             "  title <title>  the record removed; a slot title <root>#/x leaves as the cut on its parent",
             "  base <hash>  the hash last read; a stale one answers conflict and nothing moves",
             "  family  name the family act: a meme root leaves with its slots, one change",
@@ -11651,13 +11685,14 @@
             "  recipe <slug>  the wiki the act reads and writes; default names the worn face's daemon wiki",
             "  bag <slug>  one bag, placed into directly; refused where this island cannot write it",
             "  realm <id>  beside bag, the realm whose registration resolves it",
-            "  face <handle>  the lit face this call wears, by handle or pet name"
+            "  face <handle>  the lit face this call wears, by handle or pet name",
+            "  mu <depth>  the depth: relate ?, assert !, many *, dry _, unask 0; the carrier's cell rows table what each reads"
           ],
           "line": [
             "delete — remove one record, or a meme family by name, from a wiki or bag"
           ],
           "whole": [
-            "delete(title=<title>, [base=<hash>], [family], [mode=<kapae-or-reveal>], (recipe=<slug> | bag=<slug>), [realm=<id>], [face=<handle>])",
+            "delete(title=<title>, [base=<hash>], [family], [mode=<kapae-or-reveal>], (recipe=<slug> | bag=<slug>), [realm=<id>], [face=<handle>], [mu=<depth>])",
             "",
             "delete — remove one record, or a meme family by name, from a wiki or bag",
             "",
@@ -11675,6 +11710,8 @@
             "  $tw.lares.call(\"delete\", {\"title\": \"Old Note\", \"bag\": \"notes\"})    # that one bag's record leaves through its store",
             "",
             "Arguments:",
+            "  mu=dry-relate  the dry summary: what the delete would land, the base it needs, landing nothing",
+            "  mu=dry-assert  the dry diff: the summary and the full diff of text and fields, landing nothing",
             "  title <title>  the record removed; a slot title <root>#/x leaves as the cut on its parent",
             "  base <hash>  the hash last read; a stale one answers conflict and nothing moves",
             "  family  name the family act: a meme root leaves with its slots, one change",
@@ -11683,6 +11720,7 @@
             "  bag <slug>  one bag, placed into directly; refused where this island cannot write it",
             "  realm <id>  beside bag, the realm whose registration resolves it",
             "  face <handle>  the lit face this call wears, by handle or pet name",
+            "  mu <depth>  the depth: relate ?, assert !, many *, dry _, unask 0; the carrier's cell rows table what each reads",
             "",
             "Gate (the carrier's testimony; the door checks):",
             "  write: the Kahu predicate, then the face's write cap on each layer the consequence writes",
@@ -11885,7 +11923,8 @@
           "recipe",
           "bag",
           "realm",
-          "face"
+          "face",
+          "mu"
         ],
         "mcp": [
           "title",
@@ -11899,7 +11938,7 @@
       "title": "lar:///ha.ka.ba/lares/afford/engine.record.removes"
     },
     "lar:///engine.record.renames": {
-      "bcc": "ni:///sha-256;I-sMQmf7nK9eVdvInS8AzcqzyYlZ_jUfWW0xokx0IjQ",
+      "bcc": "ni:///sha-256;uJq6bV0eUWzaEOkWtKeKeWw_zW_58iJvPj4CqCbdHPA",
       "calls": {
         "cli": [
           "lares tiddler rename 'Room 4' 'Room Four' --recipe default",
@@ -12084,17 +12123,20 @@
             "  console: rename"
           ],
           "#/takes": [
+            "  mu=dry-relate  the dry summary: what the rename would land, the base it needs, landing nothing",
+            "  mu=dry-assert  the dry diff: the summary and the full diff of text and fields, landing nothing",
             "  title <title>  the record moved, a meme root with its slots",
             "  to <title>  the title it moves to",
             "  recipe <slug>  the wiki whose engine relinks; default names the worn face's daemon wiki",
             "  base <hash>  the hash last read; a stale one answers conflict and nothing moves",
-            "  face <handle>  the lit face this call wears, by handle or pet name"
+            "  face <handle>  the lit face this call wears, by handle or pet name",
+            "  mu <depth>  the depth: relate ?, assert !, many *, dry _, unask 0; the carrier's cell rows table what each reads"
           ],
           "line": [
             "rename — move one record to a new title; references follow, the old one forwards"
           ],
           "whole": [
-            "rename(title=<title>, to=<title>, recipe=<slug>, [base=<hash>], [face=<handle>])",
+            "rename(title=<title>, to=<title>, recipe=<slug>, [base=<hash>], [face=<handle>], [mu=<depth>])",
             "",
             "rename — move one record to a new title; references follow, the old one forwards",
             "",
@@ -12108,11 +12150,14 @@
             "  $tw.lares.call(\"rename\", {\"title\": \"Room 4\", \"to\": \"Room Four\", \"recipe\": \"default\", \"base\": \"<hash>\"})    # a stale base moves nothing",
             "",
             "Arguments:",
+            "  mu=dry-relate  the dry summary: what the rename would land, the base it needs, landing nothing",
+            "  mu=dry-assert  the dry diff: the summary and the full diff of text and fields, landing nothing",
             "  title <title>  the record moved, a meme root with its slots",
             "  to <title>  the title it moves to",
             "  recipe <slug>  the wiki whose engine relinks; default names the worn face's daemon wiki",
             "  base <hash>  the hash last read; a stale one answers conflict and nothing moves",
             "  face <handle>  the lit face this call wears, by handle or pet name",
+            "  mu <depth>  the depth: relate ?, assert !, many *, dry _, unask 0; the carrier's cell rows table what each reads",
             "",
             "Gate (the carrier's testimony; the door checks):",
             "  write: the move, its forwarder and every relinked referrer land in the working layer through the put law",
@@ -12296,7 +12341,8 @@
           "to",
           "recipe",
           "base",
-          "face"
+          "face",
+          "mu"
         ]
       },
       "title": "lar:///ha.ka.ba/lares/afford/engine.record.renames"
@@ -20739,7 +20785,7 @@
       ]
     }
   },
-  "hash": "sha256-30b1678a5782c2a078ab1aacca8a4ed980b041be874ba0a5a9284ddff87aaa0e",
+  "hash": "sha256-a3202e0dcf71173dd87ba7397beacde821152fac78020eaa6687bf1198313ce3",
   "index": {
     "cli": [
       "  lares act CLEAR  empty a bag but keep its identity; the effect log stays",
