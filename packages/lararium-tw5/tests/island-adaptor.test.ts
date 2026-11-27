@@ -581,6 +581,13 @@ describe("IslandAdaptor — outbound deleteTiddler", () => {
     };
     wiki["deleteTiddler"] = (title: string): void => { del(title); held.delete(title); };
     wiki["getTiddler"] = (title: string) => held.get(title);
+    // The fake's applier only records each change; here it also lands it in the wiki, as the engine's crest door does.
+    const apply = engine.$tw.lares.applyNalu;
+    engine.$tw.lares.applyNalu = (change: LarTiddlerChange): void => {
+      apply(change);
+      if (change.record && !change.record.meta?.deleted) held.set(change.title, { fields: change.record.tiddler as TW5FieldsMap });
+      else held.delete(change.title);
+    };
     return engine;
   }
 
