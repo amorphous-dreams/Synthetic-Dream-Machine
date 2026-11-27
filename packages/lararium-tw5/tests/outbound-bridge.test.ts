@@ -62,7 +62,7 @@ describe.skipIf(wikiSkip)(`outbound bridge — a live wiki change reaches the ad
     store   = new RecordingStore();
     adaptor = new IslandAdaptor(engine, asIslandStore(store), "outbound-bridge");
     // The projection registers — the INBOUND half — and the OUTBOUND BRIDGE (Road B) stands over it, the SAME
-    // call the kernel makes after `buildIslandRecipe`: one `change` listener, the echo law read off the
+    // call the kernel makes after lay → seed → boot → mount: one `change` listener, the echo law read off the
     // adaptor's landed ledger.
     adaptor.start();
     bridgeWikiToAdaptor(engine, adaptor);

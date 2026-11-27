@@ -181,6 +181,26 @@ export async function writeKukuluOffer(a: {
   return { path: a.path, vouch: vouch.map((v) => kukuluVouchDigest(v)), lei: offer.lei.length, faces: a.faces.map(nameOf), waits };
 }
 
+/**
+ * A HALF SET DOWN SPENDS THE OFFER ITS VOUCHES NAME (restand-files-smooth). Each vouch binds one begun half (its face's group,
+ * the line, the head and the image the half began with), and the pūlama refuses the whole offer `kukulu-image-mismatch` once
+ * the host raises any other image. So where an abandon (the hand's, or a kūkulu's supersede) sets down a half some vouch in the
+ * resting offer names, that offer can serve nothing: it goes, and the next vessel enters by the image the host reports where
+ * that image stands admitted (the gate's NO OFFER path). An offer whose vouches name another half stays. Answers whether a
+ * file went; a file that reads as no offer, or will not go, stays.
+ */
+export function spendKukuluOffer(path: string, half: { readonly group: string; readonly branch: string; readonly head: string; readonly image?: string }): boolean {
+  let parsed: unknown;
+  try { parsed = JSON.parse(readFileSync(path, "utf8")); } catch { return false; }
+  const vouch = typeof parsed === "object" && parsed !== null ? (parsed as { vouch?: unknown }).vouch : undefined;
+  if (!Array.isArray(vouch)) return false;
+  const names = vouch.some((v) => {
+    const b = (typeof v === "object" && v !== null ? (v as { body?: unknown }).body : undefined) as Record<string, unknown> | undefined;
+    return b !== undefined && b["group"] === half.group && b["branch"] === half.branch && b["head"] === half.head && (half.image === undefined || b["image"] === half.image);
+  });
+  return names && consumeKukuluOffer(path);
+}
+
 /** Remove a spent offer; answers whether a file went. A file that will not go stays, and the caller names it. */
 export function consumeKukuluOffer(path: string | undefined): boolean {
   if (!path || path.trim() === "") return false;

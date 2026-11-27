@@ -24,11 +24,12 @@ import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { wireIdentityOf } from "@lararium/mesh/wire-identity-door";
 import { type DocHandle, type Repo as RepoType, type StorageAdapterInterface } from "@lararium/mesh/automerge";
-import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
+import { seedDrained } from "../src/island-recipe.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { makeTiddlerPutReactor } from "../src/tiddler-verbs.js";
 import type { VerbContext, SessionWorn } from "../src/verb-dispatcher.js";
-import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
+import { skipNote, wikiSkip } from "./test-wiki.js";
+import { standIslandOverSeed } from "./island-over-seed.js";
 
 // THE ENGINE THE MESH LOADS: this package holds no automerge dependency of its own, so the suite reads the mesh's copy.
 const meshRequire = createRequire(import.meta.resolve("@lararium/mesh"));
@@ -75,14 +76,13 @@ const holds = (h: DocHandle<LarDoc>, title: string): boolean => Object.prototype
 
 /** A daemon island over one Repo: the canon slot and the working slot stand as AutomergeDocStores seated with the door. */
 async function rig() {
-  const engine = await bootTestWiki();
   const wire = wireIdentityOf({ store: new MemoryStore(), face: FACE_A });
   const repo = new Repo({ storage: wire.storage, peerId: wire.peerId, network: [] });
   downs.push(() => repo.shutdown());
   const canon = repo.create<LarDoc>(emptyLarDoc());
   const working = repo.create<LarDoc>(emptyLarDoc());
   const composite = new CompositeStore();
-  const { adaptor } = buildIslandRecipe({ tw5: engine, composite, recipe: { wikiSlug: SLUG }, ready: [{ slot: wikiBagUri(SLUG), handle: canon }], wear: wire });
+  const { tw5: engine, adaptor } = await standIslandOverSeed({ composite, recipe: { wikiSlug: SLUG }, ready: [{ slot: wikiBagUri(SLUG), handle: canon }], wear: wire });
   const stop = bridgeWikiToAdaptor(engine, adaptor);
   downs.push(async () => { await adaptor.stop(); stop(); });
   await seedDrained(engine);

@@ -952,6 +952,68 @@ describe("kukulu-survives-a-ctrl-c", () => {
     expect(label.calls).toContain(`rite-begin ${JSON.stringify({ rite: "kukulu", branch: "main", head: HEAD, image: IMAGE, supersedes: TESSERA })}`);
   });
 
+  it("RED (restand-files-smooth, live at 6a5f6ca8b): the tag names the stale begin's own image (its stage built and never raised, so `prior` reads the stale head's label) while the vessel runs the image before it: the running digest decides, the rite supersedes and says the vessel stands on the digest it runs, never the tag's revision", async () => {
+    const F2 = "sha256:" + "f2".repeat(32);
+    const f = standingFakes(read(BEGUN(OLD, D2)));
+    let raised = false;
+    const raise = f.ports.raise;
+    f.ports.raise = async (rev, keeper) => { raised = true; return raise(rev, keeper); };
+    // THE LIVE SHAPES: `docker image inspect <tag>` answers the stale head's label; `vessel-image` answers the running container's id.
+    f.ports.prior = async () => ({ revision: OLD, tag: "lares-surface:rev-bbbbbbbbbbbb" });
+    f.ports.ranImage = async () => (raised ? IMAGE : F2);
+    const out = await riteKukulu(f.ports, {});
+    expect(out).toMatchObject({ code: 0, data: { begun: true, landed: true, par: true, superseded: [{ face: "h0", tessera: TESSERA, head: OLD }] } });
+    expect(f.calls).toContain(`rite-begin ${JSON.stringify({ rite: "kukulu", branch: "main", head: HEAD, image: IMAGE, supersedes: TESSERA })}`);
+    const said = f.said.join("\n");
+    expect(said).toContain(`whose landing never started (the vessel still stands on ${F2}`);
+    expect(said).not.toMatch(/still stands on revision bbbbbbbbbbbb/);
+  });
+
+  // THE PERMANENT MARK AT PAR (Erlang's installed-vs-permanent): a landing that reads par writes the mark (head, image, branch);
+  // the supersede reads it before any tag label or bare digest guess.
+  it("RED (the permanent mark at par): a landing that reads par writes the permanent mark naming the head, the image the vessel runs and the branch; CONTROL: a landing off par, or one the vessel refused, writes none", async () => {
+    const marks: unknown[] = [];
+    const f = fakes();
+    f.ports.markPermanent = async (mark) => { marks.push(mark); };
+    expect(await riteKukulu(f.ports, {})).toMatchObject({ code: 0, data: { landed: true, par: true } });
+    expect(marks).toEqual([{ head: HEAD, image: IMAGE, branch: "main" }]);
+    const off = fakes({ land: { ok: true, output: { tessera: TESSERA, rite: "kukulu", par: false } } });
+    const offMarks: unknown[] = [];
+    off.ports.markPermanent = async (mark) => { offMarks.push(mark); };
+    expect(await riteKukulu(off.ports, {})).toMatchObject({ data: { landed: true, par: false } });
+    expect(offMarks).toEqual([]);
+    const refused = fakes({ land: { ok: false, code: "rite-land-differs", message: "another image" } });
+    const refusedMarks: unknown[] = [];
+    refused.ports.markPermanent = async (mark) => { refusedMarks.push(mark); };
+    await riteKukulu(refused.ports, {});
+    expect(refusedMarks).toEqual([]);
+  });
+
+  it("RED (the permanent mark at par): a begun half with no permanent mark at its head, beside a vessel running another image, reads superseded even where the tag's label names the half's own head and the half bound no image; the mark at the half's head reads its landing started; CONTROL: a mark beside a vessel whose image reads nowhere still refuses", async () => {
+    const P = "sha256:" + "e1".repeat(32);
+    const f = standingFakes(read(BEGUN(OLD, undefined)));
+    let raised = false;
+    const raise = f.ports.raise;
+    f.ports.raise = async (rev, keeper) => { raised = true; return raise(rev, keeper); };
+    // The label alone once read "started" here: the tag names the stale head's image; the mark says the house stands permanent on P.
+    f.ports.prior = async () => ({ revision: OLD, tag: "lares-surface:rev-bbbbbbbbbbbb" });
+    f.ports.ranImage = async () => (raised ? IMAGE : P);
+    f.ports.permanent = async () => ({ head: "9".repeat(40), image: P, branch: "main" });
+    const out = await riteKukulu(f.ports, {});
+    expect(out).toMatchObject({ code: 0, data: { begun: true, landed: true, par: true, superseded: [{ face: "h0", tessera: TESSERA, head: OLD }] } });
+    expect(f.calls).toContain(`rite-begin ${JSON.stringify({ rite: "kukulu", branch: "main", head: HEAD, image: IMAGE, supersedes: TESSERA })}`);
+    // The mark names the half's own head: its landing reached par once, so nothing supersedes it (the bare digest alone would).
+    const atHead = standingFakes(read(BEGUN(OLD, D2)));
+    atHead.ports.ranImage = async () => P;
+    atHead.ports.permanent = async () => ({ head: OLD, image: D2, branch: "main" });
+    expect(await riteKukulu(atHead.ports, {})).toMatchObject({ code: 1, data: { refusal: "kukulu-begun-stale" } });
+    // CONTROL: a mark beside a vessel whose image reads nowhere authorizes nothing.
+    const blind = standingFakes(read(BEGUN(OLD, D2)));
+    blind.ports.ranImage = async () => null;
+    blind.ports.permanent = async () => ({ head: "9".repeat(40), image: P, branch: "main" });
+    expect(await riteKukulu(blind.ports, {})).toMatchObject({ code: 1, data: { refusal: "kukulu-begun-stale" } });
+  });
+
   it("CONTROL (kukulu-supersedes-a-stale-begin): a begin whose landing started (the standing vessel runs the image the begin bound, or the revision it began at) still refuses `kukulu-begun-stale` with the hand's lines; so does a begin whose evidence reads nowhere (no prior read, no image read), and a half no lent face lands", async () => {
     const ran = standingFakes(read(BEGUN(OLD, D2)));
     ran.ports.prior = async () => ({ revision: "9".repeat(40), tag: "t" });

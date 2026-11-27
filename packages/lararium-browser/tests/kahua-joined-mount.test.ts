@@ -5,11 +5,11 @@
  * act, the admit bundle carries it into the joinee's daemon doc (`runApplyAdmitPayload`), the face proof folds it
  * (`proveFaceFromLog` over `faceRecordsOf`), the adoption reads the pin against the catalog hint (`adoptKahuaPlane`),
  * the island resolves `bags/kahua` from the grant alone (`librarySlotUrl`), and the daemon recipe stacks the device's
- * own top over the stage over canon (`kahuaRecipe`, `buildIslandRecipe`, the `kahuaLayerStore` seam).
+ * own top over the stage over canon (`kahuaRecipe`, `layIslandComposition`, the `kahuaLayerStore` seam).
  *
  * The stage stands where every device of the face derives it (`kahuaStageDocUrl`, materialized the way
  * `adoptKahuaStage` does) and carries SIGNED LIFTS alone; the layer reads them through the fold under the worn face
- * (`readFace` over the chain, handed to `buildIslandRecipe` as `kahuaFace`).
+ * (`readFace` over the chain, handed to `layIslandComposition` as `kahuaFace`).
  *
  * SECURITY CLASS. Reds: the joinee obtains the founder's stage url from the verified bundle and mounts it; a page
  * draft over a stage title casts the shadow mark; a page write lands in the top, never the stage. Controls: a catalog
@@ -40,7 +40,7 @@ import { CompositeStore } from "@lararium/mesh/composite-store";
 import { type ChangeOrigin } from "@lararium/mesh/tiddler-store";
 import { type DocHandle } from "@lararium/mesh/automerge";
 import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge } from "@lararium/keyhive";
-import { buildIslandRecipe, kahuaShadowOf, librarySlotUrl, type TW5Engine } from "@lararium/tw5";
+import { layIslandComposition, kahuaShadowOf, librarySlotUrl } from "@lararium/tw5";
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "../../lararium-keyhive/tests/admit-acts.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
@@ -50,13 +50,6 @@ const newRepo = () => makeIslandRepo({ syncPort: new MessageChannel().port1 });
 const origin: ChangeOrigin = { kind: "canon-hydrate", receipt: "system" };
 const rec = (title: string, text: string) => ({ tiddler: { title, text } });
 const TOP = wikiSlotUri("daemon", "working");
-
-function fakeTw5(): TW5Engine {
-  class FakeTiddler { constructor(readonly fields: Record<string, unknown>) {} getFieldStrings() { return {}; } isEqual() { return false; } }
-  return { $tw: { Tiddler: FakeTiddler, rootWidget: { invokeActionsByTag: () => {} },
-    wiki: { getTiddlerText: () => "", getTiddler: () => undefined, addTiddler: () => {}, deleteTiddler: () => {}, filterTiddlers: () => [], addEventListener: () => {}, removeEventListener: () => {}, transact: (fn: () => void) => fn() },
-    lares: { applyNalu: () => {}, isApplyingNalu: () => false } } } as unknown as TW5Engine;
-}
 
 /** A founder pins (or not) a stage, admits the joinee, and the joinee's page boots its daemon recipe under `catalogRow`. */
 async function joinedPage(opts: { readonly pin: boolean; readonly catalogRow?: (stageUrl: string) => string }) {
@@ -113,7 +106,7 @@ async function joinedPage(opts: { readonly pin: boolean; readonly catalogRow?: (
   if (!reading) throw new Error("face reading refused");
   const kahuaFace = { group: face.personaGroupId, grant: reading.currentSigner };
   const composite = new CompositeStore();
-  buildIslandRecipe({ tw5: fakeTw5(), composite, recipe: kahuaRecipe({ wikiSlug: "daemon" }), ready: [...handles].map(([slot, handle]) => ({ slot, handle })), kahuaFace: () => kahuaFace });
+  layIslandComposition({ composite, recipe: kahuaRecipe({ wikiSlug: "daemon" }), ready: [...handles].map(([slot, handle]) => ({ slot, handle })), kahuaFace: () => kahuaFace });
   return { applied, adoption, kahuaUrl, asked, composite, stage, stageUrl: stage.url, top: new AutomergeDocStore(handles.get(TOP)!, TOP) };
 }
 

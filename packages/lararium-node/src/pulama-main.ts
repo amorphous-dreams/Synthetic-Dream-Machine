@@ -67,7 +67,7 @@ import { connect, createServer } from "node:net";
 import { dirname } from "node:path";
 import { makeCustodyHolder } from "./custody-holder.js";
 import { FsCustodyIo } from "./custody-io.js";
-import { PULAMA_SESSION_DERIVES, keeperRiteOver, kukuluGate } from "./kukulu-gate.js";
+import { PULAMA_SESSION_DERIVES, halfRestsAtPulama, keeperRiteOver, kukuluGate } from "./kukulu-gate.js";
 import { kukuluRiteOver } from "./kukulu-lei-seat.js";
 import { seatCustody } from "./custody-seat.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
@@ -108,8 +108,9 @@ async function serve(): Promise<void> {
   const log = (line: string): void => console.log(`[pulama] ${line}`);
   const server = servePulama({
     holder, derives: PULAMA_SESSION_DERIVES, onLog: log,
-    // THE HAND'S KEY reads off the face's own roster row, through this pūlama's seated holder.
-    gate: kukuluGate({ holder, hand: handKey, rite, image: () => image.raised(), admissions }),
+    // THE HAND'S KEY reads off the face's own roster row, through this pūlama's seated holder. An offer whose every vouched half
+    // reads gone (its face stands here nowhere) reads as no offer: the vessel enters by its image.
+    gate: kukuluGate({ holder, hand: handKey, rite, image: () => image.raised(), admissions, halfRests: halfRestsAtPulama({ holder, records }) }),
   });
   // THE LIVE RITE A VEST RIDES reads the same rite port the gate does, so the vest's begin and the next vessel's hello share one turn.
   const keeperRite = keeperRiteOver({ holder, hand: handKey, rite, image: () => image.raised() });

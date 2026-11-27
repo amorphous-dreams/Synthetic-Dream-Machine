@@ -27,7 +27,7 @@ import { writePersonaKelEvent } from "@lararium/mesh/persona-kel-board";
 import { type DocHandle } from "@lararium/mesh/automerge";
 import { type LarTiddlerChange } from "@lararium/mesh/tiddler-store";
 import * as tw5src from "../src/index.js";
-import { buildIslandRecipe, type TW5Engine } from "../src/index.js";
+import { layIslandComposition } from "../src/index.js";
 
 const GROUP = "0x" + "d7".repeat(16);
 const seeds = { opA: new Uint8Array(32).fill(41), opB: new Uint8Array(32).fill(42), g1: new Uint8Array(32).fill(43), g2: new Uint8Array(32).fill(44), g3: new Uint8Array(32).fill(45) };
@@ -36,13 +36,6 @@ const rootOf = async (s: Uint8Array) => ({ key: await pubOf(s), sign: ed25519Sig
 type LiveFace = { read: () => unknown; watch: (fn: () => void) => () => void };
 const liveKahuaFace = (input: Record<string, unknown>): LiveFace =>
   (tw5src as unknown as { liveKahuaFace: (i: Record<string, unknown>) => LiveFace }).liveKahuaFace(input);
-
-function fakeTw5(): TW5Engine {
-  class FakeTiddler { constructor(readonly fields: Record<string, unknown>) {} getFieldStrings() { return {}; } isEqual() { return false; } }
-  return { $tw: { Tiddler: FakeTiddler, rootWidget: { invokeActionsByTag: () => {} },
-    wiki: { getTiddlerText: () => "", getTiddler: () => undefined, addTiddler: () => {}, deleteTiddler: () => {}, filterTiddlers: () => [], addEventListener: () => {}, removeEventListener: () => {}, transact: (fn: () => void) => fn() },
-    lares: { applyNalu: () => {}, isApplyingNalu: () => false } } } as unknown as TW5Engine;
-}
 
 async function island(opts: { readonly board: boolean }) {
   const keys = await Promise.all([pubOf(seeds.g1), pubOf(seeds.g2), pubOf(seeds.g3)]);
@@ -71,7 +64,7 @@ async function island(opts: { readonly board: boolean }) {
   const composite = new CompositeStore();
   const heard: LarTiddlerChange[] = [];
   composite.subscribe((c) => { if (c.title === "t") heard.push(c); });
-  buildIslandRecipe({ tw5: fakeTw5(), composite, recipe: kahuaRecipe({ wikiSlug: "daemon" }), ready: [...handles].map(([slot, handle]) => ({ slot, handle })),
+  layIslandComposition({ composite, recipe: kahuaRecipe({ wikiSlug: "daemon" }), ready: [...handles].map(([slot, handle]) => ({ slot, handle })),
     kahuaFace: live.read as never, kahuaFaceWatch: live.watch } as never);
   const rotate = () => board.change((d) => writePersonaKelEvent(d, rot.event));
   const carry = async () => { const act = await signKahuaCarry({ group: GROUP, epoch: 1, carries: [kahuaActCid(lifted)] }, b); stage.change((d) => writeKahuaAct(d, act)); };

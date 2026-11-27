@@ -711,8 +711,10 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // own write answers, and a newer hand marked meanwhile goes first again.
     for (let pass = 0; pass < 8; pass++) {
       const outcome = await this._drainTitle(title);
-      // A refused hand stays owed and carries the title's state on its next request; the wave never lands over it.
-      if (outcome.kind === "failed") { if (this.drain.owes(title)) return; throw outcome.error; }
+      // NO WAVE WAITS ON A REFUSED HAND. Every field syncs through the CRDT and a person's edit lives in its draft, a separate
+      // tiddler; a write the store refused never reached the store, so the store's change lands over it, and the refusal's alert
+      // tells the person. The hand stays owed, and its next request reads the wiki as the wave left it.
+      if (outcome.kind === "failed") { if (this.drain.owes(title)) return this._landOne(change, true); throw outcome.error; }
       const wrote = this.lastFlushWrote.get(title) === true;
       const latest = wiki.getTiddler(title) ?? null;
       const currentEntry = this.ledger.landedOf(title);
@@ -1199,12 +1201,14 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
   /**
    * True where this shore has landed, in the wiki, every change of `bag`'s document up to `named`: the heads of
-   * its last landed change cover them. A store with no causal history, and a bag this shore landed nothing of,
-   * answer false.
+   * its last landed change cover them, and no wave of the bag stays owed (its landing failed twice), since a later
+   * title's landing moves the bag's heads past a wave the wiki never took. A store with no causal history, and a bag
+   * this shore landed nothing of, answer false.
    */
   landedCovers(bag: string, named: readonly string[]): boolean {
     const have = this.landedHeads.get(bag);
-    return have !== undefined && this._storeFor(bag)?.coversHeads?.(have, named) === true;
+    if (have === undefined || this.landing?.owesBag(bag) === true) return false;
+    return this._storeFor(bag)?.coversHeads?.(have, named) === true;
   }
 
   /** The store of any layer for `bag`, or null when the composite offers none (a double without layers). */

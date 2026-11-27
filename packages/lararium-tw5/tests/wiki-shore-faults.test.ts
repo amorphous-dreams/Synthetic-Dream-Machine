@@ -1,3 +1,4 @@
+import { readIslandSeed } from "../src/island-seed.js";
 import { createRequire } from "node:module";
 import { describe, expect, test, vi } from "vitest";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
@@ -7,7 +8,7 @@ import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { type Repo as RepoType } from "@lararium/mesh/automerge";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { IslandAdaptor } from "../src/island-adaptor.js";
-import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
+import { layIslandComposition, mountIslandShore, seedDrained } from "../src/island-recipe.js";
 import { landWhole } from "./wiki-shore-rig.js";
 import { bootTestWiki } from "./test-wiki.js";
 
@@ -119,12 +120,15 @@ describe("wiki shore fault vectors", () => {
     const title = "lar:///t/shore/fault/seed-title";
     handle.change((doc) => { doc.tiddlers[title] = { tiddler: { title, text: "seed" } }; });
     const bag = wikiSlotUri("shore-fault-seed", "working");
-    const { adaptor } = buildIslandRecipe({
-      tw5: engine as never,
-      composite: new CompositeStore(),
+    const composite = new CompositeStore();
+    const laid = layIslandComposition({
+      composite,
       recipe: { wikiSlug: "shore-fault-seed" },
       ready: [{ slot: bag, handle }],
     });
+    // Boot-set ground waits as a wave; its failed landing reaches the checkpoint.
+    const seed = await readIslandSeed(composite, [{ title }]);
+    const { adaptor } = mountIslandShore(engine as never, laid, seed);
     let attempts = 0;
     // Every landing road reads the change through `_prepareLanding` (the slice's prepare and the single-change retry alike).
     const prepare = adaptor as unknown as { _prepareLanding(change: { title: string }): Promise<unknown> };

@@ -15,9 +15,11 @@ import {
 } from "@lararium/mesh/swarm-tiddlers";
 import { beginRite, pendingBegins } from "@lararium/mesh/swarm-tessera";
 import type { CustodyHolder } from "../src/custody-holder.js";
-import { kukuluGate, vouchKeyOf } from "../src/kukulu-gate.js";
+import { kukuluGate, pulamaSignerOf, vouchKeyOf } from "../src/kukulu-gate.js";
+import { pulamaAdmissions } from "../src/pulama-admit.js";
+import { setHalfDown, supersedeBegins } from "../src/commands/rite.js";
 import { kukuluRiteOver } from "../src/kukulu-lei-seat.js";
-import { KUKULU_OFFER_FILE, consumeKukuluOffer, kukuluOfferBase, writeKukuluOffer, type KukuluOffer } from "../src/kukulu-offer.js";
+import { KUKULU_OFFER_FILE, consumeKukuluOffer, kukuluOfferBase, spendKukuluOffer, writeKukuluOffer, type KukuluOffer } from "../src/kukulu-offer.js";
 import { generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey } from "../src/node-vessel-identity.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
 import { pulamaStandBy, readKukuluOffer } from "../src/pulama-seat.js";
@@ -51,15 +53,19 @@ function controlWiki(): SwarmWikiPort {
   };
 }
 
-async function stand() {
+async function stand(o: { readonly admissions?: boolean } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "lar-kukulu-offer-"));
   dirs.push(dir);
   const path = join(dir, "config", KUKULU_OFFER_FILE);
   let raised: string | null = IMAGE;
+  const records = pulamaRecords(join(dir, "pulama-state"));
+  // THE ADMITTED SET, where a test asks it: the pūlama's own records, so an image the hand admitted enters with no offer.
+  const admissions = o.admissions ? pulamaAdmissions(records) : undefined;
   fx = await standPulama("kukulu-offer", (kept: CustodyHolder) => kukuluGate({
-    holder: kept, hand: (ordinal) => loadPersonaGroupRootVerifyingKey(ordinal), rite: kukuluRiteOver(pulamaRecords(join(dir, "pulama-state"))), image: () => raised,
+    holder: kept, hand: (ordinal) => loadPersonaGroupRootVerifyingKey(ordinal), rite: kukuluRiteOver(records), image: () => raised,
+    ...(admissions ? { admissions } : {}),
   }));
-  await fx.kept.foundFace({ group: personaGroupDigest(GROUP), ordinal: 0, slots: fixtureSlots });
+  const founded = await fx.kept.foundFace({ group: personaGroupDigest(GROUP), ordinal: 0, slots: fixtureSlots });
   expect((await fx.local.unlockFace({ ordinal: 0 }, fixtureRoute)).reading).toBe("opens");
   const root = await generateOrLoadPersonaGroupRoot(0, fixtureWard());
   const hand: SwarmSignerPort = { key: root.verifyingKey, sign: async (bytes) => (await wardRootSigner(0, fixtureWard(), "a swarm control")).sign(bytes) };
@@ -82,7 +88,9 @@ async function stand() {
     try { return (await fx!.vessel(offered).unlock([])).reading; }
     catch (err) { return (err as { reading?: string }).reading ?? String(err); }
   };
-  return { fx, path, wiki, hand, string, begin, offer, hello, raise: (d: string | null) => { raised = d; } };
+  /** The hand's admission of `image` at the pūlama, for the one face (`pulama admit`). */
+  const admit = async (image: string): Promise<void> => { await admissions!.admitByHand(image, [{ fcid: founded.fcid, ordinal: founded.ordinal }], await pulamaSignerOf(fx!.kept)); };
+  return { fx, path, wiki, hand, trust, atom, string, begin, offer, hello, admit, raise: (d: string | null) => { raised = d; } };
 }
 
 describe("RED kukulu-offer-reaches-the-new-vessel", () => {
@@ -298,5 +306,47 @@ describe("RED rite-offer-keeps-the-honest-paths", () => {
     await expect(writeKukuluOffer({ wiki: s.wiki, faces: [{ group: GROUP, trust: { hand: () => true, vessel: () => true, lead: () => false }, ward: NO_COSIGN }],
       branch: BRANCH, head: HEAD, tree: TREE, image: IMAGE, holder, path: s.path, base: null })).rejects.toMatchObject({ code: "conflict" });
     expect(readFileSync(s.path, "utf8")).toBe("another hand's offer");
+  });
+});
+
+/**
+ * RESTAND-FILES-SMOOTH (1) A STALE OFFER HOLDS THE DOOR: a set-down half left the offer resting with vouches over an image
+ * that never ran, so the next vessel offered it and the pūlama refused `kukulu-image-mismatch`, though its NO OFFER path
+ * would have opened by the admitted image. Setting the half down spends the offer its vouch names.
+ */
+describe("RED a half set down spends the offer its vouches name", () => {
+  test("RED begin → offer rests → abandon → a vessel on an admitted image opens with no hand; CONTROL: before the set-down the stale offer refuses kukulu-image-mismatch, and a half no vouch names leaves the offer", async () => {
+    const s = await stand({ admissions: true });
+    await s.string({ reach: "wide", returns: 3 });
+    // THE STALE BEGIN: a kūkulu at HEAD2 over IMAGE2, an image no vessel ever ran; its offer rests.
+    const stale = await s.begin(IMAGE2, HEAD2);
+    await s.offer(IMAGE2, { head: HEAD2 });
+    // THE HOST RAISES THE ADMITTED IMAGE: the vessel the hand admitted earlier.
+    await s.admit(IMAGE);
+    s.raise(IMAGE);
+    // CONTROL: while the stale offer rests, the next vessel offers it and the pūlama refuses it.
+    expect(await s.hello(readKukuluOffer(s.path))).toBe("kukulu-image-mismatch");
+    // CONTROL: a half no vouch names (another head, another group) spends nothing.
+    expect(spendKukuluOffer(s.path, { group: GROUP, branch: BRANCH, head: HEAD, image: IMAGE2 })).toBe(false);
+    expect(spendKukuluOffer(s.path, { group: "group-other", branch: BRANCH, head: HEAD2, image: IMAGE2 })).toBe(false);
+    expect(existsSync(s.path)).toBe(true);
+    // THE HAND SETS THE STALE HALF DOWN: the offer its vouch named goes with it.
+    const down = await setHalfDown(s.wiki, { tessera: stale.tessera }, s.trust, GROUP, s.atom, s.path);
+    expect(down).toMatchObject({ tessera: stale.tessera, by: "hand", offerSpent: true });
+    expect(existsSync(s.path)).toBe(false);
+    // THE NEXT VESSEL carries no offer and enters by the admitted image, with no hand.
+    expect(await s.hello(readKukuluOffer(s.path))).toBe("opens");
+  });
+
+  test("RED a kūkulu's supersede spends the offer its vouch names, as the hand's abandon does", async () => {
+    const s = await stand();
+    await s.string({ reach: "wide", returns: 3 });
+    const stale = await s.begin(IMAGE2, HEAD2);
+    await s.offer(IMAGE2, { head: HEAD2 });
+    const down = await supersedeBegins(s.wiki, [stale.tessera], HEAD, BRANCH, new Map([[GROUP, "h0"]]),
+      async () => ({ trust: s.trust, group: GROUP, vessel: s.atom }), s.path);
+    expect(down).toEqual([{ face: "h0", tessera: stale.tessera, head: HEAD2, offerSpent: true }]);
+    expect(existsSync(s.path)).toBe(false);
+    expect(await pendingBegins(s.wiki, "kukulu", BRANCH)).toEqual([]);
   });
 });

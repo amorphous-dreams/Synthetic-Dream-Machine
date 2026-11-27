@@ -28,7 +28,8 @@
  *                   half (`rite-begun`). No lei standing on the line runs the restand with no rite. FIRST the vessel reads
  *                   the begin that stands (`standing`: guest halves resting unlanded on the line): one at this head is
  *                   RESUMED (no return, no tessera, the offer that rests reused); one at another head whose landing never
- *                   started (the standing vessel's revision label and digest name the prior image, never the begin's) is
+ *                   started (no permanent mark at its head, and the standing vessel runs another image than the begin's;
+ *                   with no mark the digest decides, the tag's label counting only where no digest reads) is
  *                   SUPERSEDED: the fresh begin names those tesserae and the vessel sets each down as its face, no hand;
  *                   any other at another head refuses `kukulu-begun-stale` with the one line that clears it. A vessel down at the start (a Ctrl+C at the
  *                   light) shows its halves to the vessel the raise stands, and the rite lands them there
@@ -39,14 +40,15 @@
  *                   standing vessel gracefully (SIGTERM under Docker's stop grace), and the node's teardown flushes every shore
  *                   (every resident island with a mirror) before any island goes down; the rite names that before the raise
  *                   ({@link STOP_FLUSHES_LINE})
- *   8. rite-land    IN THE NEW VESSEL: each face's host half (`rite-landed`); the rite reads par only where every pair reads par
+ *   8. rite-land    IN THE NEW VESSEL: each face's host half (`rite-landed`); the rite reads par only where every pair reads par,
+ *                   and at par it writes the permanent mark (head, image, branch) the next run's supersede reads
  *   9. lag          after a raise that stood, the lag reads aloud on every raise: the canon bag behind the canon source (the
  *                   carriers in `bags/` the canon layers lack; canon fills through promote and the floor's sealed cut, never
  *                   from a raise, so the line only names it), each wiki's workbench behind the checkout's `wikis/<slug>`, and a
  *                   newer seed offer (the seed's floor) the release carries than the vessel serves, named by its card. Where the canon source stands in a checkout
  *                   and the owner holds this terminal, the workbench lay's preview (each title a workbench the worn face mounts
- *                   would take) asks once, and the lay (`lares vessel lay --workbench --apply`) runs only on an explicit yes; a
- *                   workbench that does not mount is named and left. A seat (no terminal, or an AI launcher), a source in no
+ *                   would take) prints and the lay (`lares vessel lay --workbench --apply`) runs with no question: it reads
+ *                   diff-gated and stands off a both-moved row by name; a workbench that does not mount is named and left. A seat (no terminal, or an AI launcher), a source in no
  *                   checkout, or a vessel waiting on its unlock names the lag and lays nothing
  *
  * A QUIET DAY spends nothing: a vessel that already runs the image under a lit pūlama begins no rite; the raise only tops
@@ -205,6 +207,13 @@ export interface RitePorts {
    * outgoing image); null where the host reads none. Absent, the answer names no prior.
    */
   prior?(): Promise<PriorImage | null>;
+  /**
+   * THE PERMANENT MARK (Erlang's installed-vs-permanent): the record a landing writes once it reads par (the vessel stood on the
+   * new image and every half landed), naming the head, the image the vessel runs and the branch. Absent, no mark rests.
+   */
+  markPermanent?(mark: PermanentMark): Promise<void>;
+  /** The permanent mark the last landing at par wrote; null where none rests or none reads. Absent, the rite reads none. */
+  permanent?(): Promise<PermanentMark | null>;
   say(line: string): void;
   /**
    * The founding record's digests beside the seed the image at `head` offers (its CID and digests); null where the host reads
@@ -218,9 +227,7 @@ export interface RitePorts {
   houseLag?(): Promise<HouseLag | null>;
   /** The floor card the vessel's status refreshed (title only), or null where no vessel answers one. */
   floorCard?(): Promise<{ readonly title: string } | null>;
-  /** One yes-or-no on this terminal (a Ctrl+C reads as no); absent, the rite asks nothing and lays nothing. */
-  ask?(question: string): Promise<boolean>;
-  /** The workbench lay on this terminal (`lares vessel lay --workbench --apply`), run only after the owner's yes; its exit code. */
+  /** The workbench lay on this terminal (`lares vessel lay --workbench --apply`), diff-gated, asking nothing; its exit code. Absent, nothing lays. */
   layWorkbench?(): Promise<number>;
   /** Whether an AI seat launched this rite (the harness's mark, or a host chain that reads no person's hand); absent, false. */
   seat?(): boolean;
@@ -245,6 +252,9 @@ export interface HouseLag {
 
 /** The line that lays the checkout's workbench projection by hand. */
 export const WORKBENCH_LAY_LINE = "lares vessel lay --workbench --apply";
+
+/** The permanent mark: the head, the image and the branch of the last landing that read par. */
+export interface PermanentMark { readonly head: string; readonly image: string; readonly branch: string }
 
 /** The image a kūkulu replaced: its revision label and the tag the shim keeps it under. */
 export interface PriorImage {
@@ -423,7 +433,8 @@ const floorMoved = (words: unknown): boolean => typeof words === "string" && /(?
  * what it carries: the canon bag behind the canon source, each workbench behind the checkout's `wikis/<slug>`, and a newer sealed
  * floor the release carries. The raise never writes canon: canon fills through promote and the floor's sealed cut. Where the canon
  * source stands in a checkout and the owner holds this terminal, the rite previews the workbench lay (each title a workbench the
- * worn face mounts would take) and asks; the lay runs only on an explicit yes, and a no or a Ctrl+C leaves every layer as it stood.
+ * worn face mounts would take) and lays it with no question (restand-files-smooth: the operator found the y friction): the lay reads
+ * diff-gated, so a row both sides moved stands off by name and `lares vessel lay --workbench --apply` lays it later.
  * A seat (no terminal, or an AI launcher) names the lag and never lays; so does a source in no checkout, and a vessel that waits on
  * its unlock.
  */
@@ -466,21 +477,17 @@ export async function lagAfterRaise(ports: RitePorts, out: { code: number; data:
     : out.data["awaits"] === "unlock" ? `the new vessel waits on its unlock, so nothing lays; once it opens: ${WORKBENCH_LAY_LINE}`
     : seat ? `an AI seat launched this rite, so nothing lays; your hand: ${HAND_ACT} on a terminal (or ${WORKBENCH_LAY_LINE})`
     : !tty ? `this seat holds no terminal, so nothing lays; your hand: ${HAND_ACT} on a terminal (or ${WORKBENCH_LAY_LINE})`
-    : !ports.ask || !ports.layWorkbench ? `this rite carries no lay, so nothing lays; your hand: ${WORKBENCH_LAY_LINE}`
+    : !ports.layWorkbench ? `this rite carries no lay, so nothing lays; your hand: ${WORKBENCH_LAY_LINE}`
     : null;
   if (why !== null) {
     ports.say(`kūkulu: ${why}`);
     return { ...out, data: { ...out.data, lag, workbench: { offered, laid: false, ...(seat || !tty ? { seat: true } : {}) } } };
   }
-  // THE PREVIEW, before the question: where the files go (each wiki's working layer, canon untouched), then every title.
+  // THE PREVIEW, before the lay: where the files go (each wiki's working layer, canon untouched), then every title.
   ports.say(`kūkulu: the workbench lay carries each file under ${read.wikis}/<slug> into that wiki's working layer; canon stays as it stands:`);
   for (const b of mounted) {
     ports.say(`  ${b.slug} -> ${b.toBag}: ${b.planned.length}`);
     for (const t of b.planned) ports.say(`    ${t}`);
-  }
-  if (!(await ports.ask!(`lay these ${offered} carrier(s) into the workbench now?`))) {
-    ports.say(`kūkulu: nothing laid; the workbench stands as it stood: ${WORKBENCH_LAY_LINE} lays it later`);
-    return { ...out, data: { ...out.data, lag, workbench: { offered, laid: false } } };
   }
   const code = await ports.layWorkbench!();
   if (code === INTERRUPTED) {
@@ -666,20 +673,37 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
   };
   /**
    * THE LANDING THAT NEVER STARTED (kukulu-supersedes-a-stale-begin), read off the standing vessel, never off a clock: the
-   * revision label of the image it stands from (`prior`) and the digest it runs (`ranImage`, read before any raise). A half whose
-   * head that label names, or whose image that digest names, saw its landing start (the new vessel stood): true. Evidence that
-   * names another revision or another image, and neither of the half's: false, the begin spent nothing a landing ever used. No
-   * evidence at all (no label, no digest): null, and unknown never authorizes a set-down.
+   * digest the vessel runs (`ranImage`, the running container's own image, read before any raise) and the revision label of the
+   * image the tag names (`prior`). THE DIGEST DECIDES where it reads beside the half's bound image: the vessel runs that image,
+   * true (the new vessel stood); it runs another, false (the begin spent nothing a landing ever used). The label reads only where
+   * the digest cannot decide, since it names the TAG, not the vessel: a stage that built and never raised moves the tag onto the
+   * stale begin's own image, whose label names the stale head while the vessel still runs the image before it (restand-files-
+   * smooth, live at 6a5f6ca8b: the tag named 780870219's image while the vessel ran f2606b2e1's). Then a label naming the half's
+   * head reads true, another false. No evidence at all (no digest, no label): null, and unknown never authorizes a set-down.
+   *
+   * THE PERMANENT MARK ANSWERS FIRST, where one rests (Erlang's installed-vs-permanent): a mark at the half's head says its landing
+   * reached par once, true; a mark at another head beside a vessel running another image than the half's (the half's bound image,
+   * or, where the half bound none, the vessel standing on the mark's own image) reads false, superseded; the tag's label never
+   * reads where the mark answers. A vessel whose image reads nowhere still answers null.
    */
   let standingRan: string | null | undefined;
+  let mark: PermanentMark | null | undefined;
+  const sameHead = (a: string, b: string): boolean => a.length >= 7 && b.length >= 7 && (a.startsWith(b) || b.startsWith(a));
   const landingStarted = async (p: PendingBegin): Promise<boolean | null> => {
     if (standingRan === undefined) standingRan = ports.ranImage ? await ports.ranImage().catch(() => null) : null;
-    const label = prior !== null && prior.revision !== "unlabeled" && prior.revision.trim().length >= 7 ? prior.revision.trim() : null;
+    if (mark === undefined) mark = ports.permanent ? await ports.permanent().catch(() => null) : null;
     const ran = standingRan !== null && standingRan !== "" ? standingRan : null;
     const bound = p.image !== undefined && p.image !== "" ? p.image : null;
-    const sameRev = label !== null && (label.startsWith(p.head) || p.head.startsWith(label));
-    if (sameRev || (ran !== null && bound !== null && ran === bound)) return true;
-    return label !== null || (ran !== null && bound !== null) ? false : null;
+    if (mark !== null) {
+      if (sameHead(mark.head, p.head)) return true;
+      if (ran === null) return null;
+      if (bound !== null) return ran === bound;
+      return ran === mark.image ? false : null;
+    }
+    if (ran !== null && bound !== null) return ran === bound;
+    const label = prior !== null && prior.revision !== "unlabeled" && prior.revision.trim().length >= 7 ? prior.revision.trim() : null;
+    if (label === null) return null;
+    return label.startsWith(p.head) || p.head.startsWith(label);
   };
   /**
    * A STALE BEGIN THIS RUN SUPERSEDES, where the debt allows it: every pending half began at another head than this run raises,
@@ -736,6 +760,11 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
       return { code: 1, data: { ...data, begun: true, landed: false, par: false, refusal: "rite-land-differs", ...(wayBack === undefined ? {} : { wayBack }) } };
     }
     ports.say(par ? "kūkulu: landed; conferre reads every face's tessera par" : "kūkulu: landed at another head or image than the rite began at; conferre reads a tessera red");
+    // THE PERMANENT MARK AT PAR: the landing stands permanent, so the next run's supersede reads it before any label or digest.
+    if (par && ports.markPermanent) {
+      await ports.markPermanent({ head, image: landImage, branch }).catch((e: unknown) =>
+        ports.say(`kūkulu: the permanent mark did not write (${e instanceof Error ? e.message : String(e)}); the landing stands, and the next run's supersede reads the vessel's digest instead`));
+    }
     if (par || prior === null) return kept({ code: par ? 0 : 1, data: { ...data, begun: true, landed: true, par } });
     // OFF PAR, the way back: the rite rolled back to the replaced image's revision (its kept tag, no rebuild).
     const wayBack = wayBackCommand(prior);
@@ -842,7 +871,7 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
     const asSupersedes = superseding.length === 0 ? {} : { supersedes: superseding.map((p) => p.tessera).join(",") };
     if (superseding.length > 0) {
       const at = [...new Set(superseding.map((p) => p.head.slice(0, 12)))].join(", ");
-      const stood = prior !== null && prior.revision !== "unlabeled" ? `revision ${prior.revision.slice(0, 12)}` : standingRan ? standingRan : "its prior image";
+      const stood = standingRan ? standingRan : prior !== null && prior.revision !== "unlabeled" ? `revision ${prior.revision.slice(0, 12)}` : "its prior image";
       ports.say(`kūkulu: this run supersedes the begin at ${at}, whose landing never started (the vessel still stands on ${stood}, not the head or image the begin bound): ${superseding.map((p) => `${p.face} tessera ${p.tessera}`).join(", ")}; the fresh begin at ${short} sets each down (it spends nothing more and records no par; conferre reads it abandoned) under the same lei`);
     }
     let begun = await ports.row("rite-begin", { rite: RITE_KUKULU, branch, head, ...asImage, ...asFace, ...asSupersedes });

@@ -9,6 +9,9 @@
  * Red first: with no `heads` on the row and no `landedCovers`, a settle word can follow nothing but the hash.
  * Controls: a store with no history names none; a bag the shore landed nothing of covers nothing; heads of a
  * write the shore has not landed yet cover nothing.
+ *
+ * LC1: no wave waits on a refused hand; the store's change lands over the refused write. LC2: a wave whose landing failed
+ * twice keeps its bag's coverage false while a later title's landing moves the bag's heads.
  */
 import { describe, expect, test, vi } from "vitest";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
@@ -133,6 +136,53 @@ describe("the shore answers whether it landed the named heads", () => {
       await turns(24);
       expect(r.adaptor.landedCovers(workingBag, ahead), "the later change lands in its turn").toBe(true);
       expect(r.adaptor.landedCovers(workingBag, ["f".repeat(64)]), "heads the document never held").toBe(false);
+    } finally { await r.stop(); }
+  });
+});
+
+describe("coverage follows what the wiki took", () => {
+  test("LC1: a refused hand never holds a wave: the store's change lands over the refused write, and its bag reads covered", async () => {
+    const r = await shoreRig();
+    try {
+      const title = "lar:///t.ingest.heads/refused", after = "lar:///t.ingest.heads/after";
+      await r.working.put({ tiddler: { title, text: "base" } }, remote);
+      await turns(24);
+      await r.adaptor.landingIdle();
+      // The store refuses the write: it never reached the store, so nothing in the CRDT holds it.
+      r.failures.family = new Error("the store refuses the write");
+      r.wiki.addTiddler(new r.Tiddler({ title, text: "a refused write" }));
+      await turns(24);
+      await r.working.put({ tiddler: { title, text: "the store moves the title" } }, remote);
+      const movedAt = [...r.working.headsNow()!];
+      await turns(24);
+      await r.working.put({ tiddler: { title: after, text: "a later title lands" } }, remote);
+      await turns(24);
+      await r.adaptor.landingIdle();
+      expect(r.wiki.getTiddler(title)?.fields["text"], "the store's change landed over the refused write").toBe("the store moves the title");
+      expect(r.wiki.getTiddler(after)?.fields["text"], "the later title landed").toBe("a later title lands");
+      expect(r.adaptor.landedCovers(workingBag, movedAt), "the store's change reached the wiki").toBe(true);
+    } finally { await r.stop(); }
+  });
+
+  test("LC2: a wave whose landing failed twice keeps its bag's coverage false while a later title lands", async () => {
+    const r = await shoreRig();
+    try {
+      await r.adaptor.armSeedCheckpoint();
+      const failing = "lar:///t.ingest.heads/failing", after = "lar:///t.ingest.heads/after-failure";
+      const warnings = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const resolve = r.composite.resolveLayered.bind(r.composite);
+      vi.spyOn(r.composite, "resolveLayered").mockImplementation((title) => title === failing ? Promise.reject(new Error("the composition read fails")) : resolve(title));
+      await r.working.put({ tiddler: { title: failing, text: "never lands" } }, remote);
+      const failedAt = [...r.working.headsNow()!];
+      await turns(24);
+      await r.adaptor.landingIdle();
+      await r.working.put({ tiddler: { title: after, text: "a later title lands" } }, remote);
+      await turns(24);
+      await r.adaptor.landingIdle();
+      expect(r.wiki.getTiddler(after)?.fields["text"], "the later title landed").toBe("a later title lands");
+      expect(r.wiki.getTiddler(failing), "the failed wave never landed").toBeUndefined();
+      expect(r.adaptor.landedCovers(workingBag, failedAt), "the owed wave never reached the wiki").toBe(false);
+      warnings.mockRestore();
     } finally { await r.stop(); }
   });
 });
