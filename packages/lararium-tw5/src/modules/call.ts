@@ -232,6 +232,39 @@ export function resolveCall(reader: CallReader, word: string, params: Readonly<R
 }
 
 /**
+ * A TERMINAL'S VALUES ARRIVE AS WORDS (landing 8): on the cli surface each string value turns by its row's `takes/` kind before
+ * the bind reads it. `takes/json` parses to the value it spells, `takes/count` to a whole number, `takes/names` splits on commas,
+ * and a row naming no `takes/` (a flag: `create`, `family`, `tree`) reads `true` or `false`; every other kind rides as written.
+ * A value its kind refuses answers `param-malformed` with the call's cure. The conversion runs here, in the VM, so a layer that
+ * re-tables a row's kind moves what a terminal's word means.
+ */
+export function cliValuesOf(address: string, word: string, params: Readonly<Record<string, unknown>>, rows: readonly HasRow[]): Record<string, unknown> {
+  const kinds = new Map<string, string>();
+  for (const row of rows) if (!kinds.has(row.name)) kinds.set(row.name, row.params["takes"] ?? "");
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(params)) {
+    const kind = kinds.get(key);
+    if (typeof value !== "string" || kind === undefined) { out[key] = value; continue; }
+    const malformed = (why: string): never => {
+      const { [key]: _drop, ...rest } = params;
+      throw new CallRefusal("param-malformed", `${bare(address)} reads ${key} as ${why} (got ${JSON.stringify(value)})`, cureCall(word, { ...rest, [key]: `<${key}>` }));
+    };
+    if (kind === "json") {
+      try { out[key] = JSON.parse(value); } catch { malformed("JSON (e.g. {\"status\":\"done\"})"); }
+    } else if (kind === "count") {
+      if (!/^[0-9]+$/.test(value.trim())) malformed("a whole count");
+      out[key] = Number(value.trim());
+    } else if (kind === "names") {
+      out[key] = value.split(",").map((s) => s.trim()).filter((s) => s !== "");
+    } else if (kind === "") {
+      if (value !== "true" && value !== "false") malformed("a flag, true or false");
+      out[key] = value === "true";
+    } else out[key] = value;
+  }
+  return out;
+}
+
+/**
  * BIND: the params against the live `#/takes` rows of the carrier, on one surface (an arg whose `skins/` leaves the surface out,
  * or that its skin row `omits/`, takes no value there). Defaults fill first (a `one-of` member's default only where no member
  * rides); then `needs/` holds. Answers the params in neutral names, defaults filled.
@@ -247,7 +280,7 @@ export function bindCall(reader: CallReader, address: string, carrier: string, w
     throw new CallRefusal("param-unknown", `${bare(address)} takes no param "${key}"${near ? `; the nearest: ${near}` : ""} (its takes: ${[...names].join(" · ")})`,
       near ? cureCall(word, { ...rest, [near]: params[key] }) : undefined);
   }
-  const bound: Record<string, unknown> = { ...params };
+  const bound: Record<string, unknown> = surface === "cli" ? cliValuesOf(address, word, params, rows) : { ...params };
   const present = (n: string): boolean => bound[n] !== undefined;
   for (const row of rows) {
     const fallback = row.params["default"];

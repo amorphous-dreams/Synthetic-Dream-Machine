@@ -46,9 +46,9 @@ describe("e2e/daemon-island-reopen", () => {
   }, 60_000);
 
   test("R1 RED: the same hand reads its marker from the NEW island, under a changed leg, with custody still open", async () => {
-    const put = await lar.cli(["tiddler", "put", URI, "--recipe", "default", "--file", join(scratch, "marker.mem"), "--json"]);
+    const put = await lar.cli(["put", `title=${URI}`, "recipe=default", `file=${join(scratch, "marker.mem")}`, "--json"]);
     expect(put.code, put.stderr).toBe(0);
-    const before = await lar.cli(["tiddler", "get", URI, "--recipe", "default", "--meme", "--all", "--json"]);
+    const before = await lar.cli(["get", `title=${URI}`, "recipe=default", "mu=assert", "--json"]);
     expect(JSON.stringify(before.json)).toContain("the marker the island carries");
     const first = (await act("island.state"))?.["result"] as { leg: string };
     const custodyBefore = await sendCustodyFrame({ op: "custody" }, dataDir);
@@ -56,7 +56,7 @@ describe("e2e/daemon-island-reopen", () => {
     const result = restarted?.["result"] as { restarts: number; leg: string } | undefined;
     expect(result, JSON.stringify(restarted)).toMatchObject({ restarts: 1, leg: expect.any(String) });
     expect(result!.leg, "a boot nonce the first island never held").not.toBe(first.leg);
-    const after = await lar.cli(["tiddler", "get", URI, "--recipe", "default", "--meme", "--all", "--json"]);
+    const after = await lar.cli(["get", `title=${URI}`, "recipe=default", "mu=assert", "--json"]);
     expect(JSON.stringify(after.json), `after: ${after.stdout.slice(0, 600)} ${after.stderr.slice(-400)}`).toContain("the marker the island carries");
     const custody = await sendCustodyFrame({ op: "custody" }, dataDir);
     expect(custody?.["unlocked"]).toBe(true);
@@ -69,7 +69,7 @@ describe("e2e/daemon-island-reopen", () => {
       const r = (await act("island.restart", { reason: `loop-${i}` }))?.["result"] as { restarts: number; leg: string };
       expect(r.restarts).toBe(2 + i);
       legs.add(r.leg);
-      const got = await lar.cli(["tiddler", "get", URI, "--recipe", "default", "--meme", "--all", "--json"]);
+      const got = await lar.cli(["get", `title=${URI}`, "recipe=default", "mu=assert", "--json"]);
       expect(JSON.stringify(got.json), `loop ${i}: ${got.stdout.slice(0, 600)} ${got.stderr.slice(-400)}`).toContain("the marker the island carries");
     }
     expect(legs.size).toBe(4);

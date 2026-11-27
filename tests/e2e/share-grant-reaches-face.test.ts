@@ -94,8 +94,8 @@ describe.skipIf(gaps.length > 0)("★ a landed grant reaches its face: a house c
     expect(status.code, said(status)).toBe(0);
     expect(said(status)).toMatch(new RegExp(`read-only\\s+lar:///ha\\.ka\\.ba/bags/${SLUG}`));
     expect(said(status)).toMatch(new RegExp(`read \\+ write lar:///ha\\.ka\\.ba/wikis/${SLUG}/working\\s+<- a write lands here`));
-    const put = await lar.cli(["tiddler", "put", "Referee smoke", "--recipe", SLUG, "--create", "--text=the referee writes here", "--no-json"]);
-    say("h2 tiddler put", put);
+    const put = await lar.cli(["put", "title=Referee smoke", `recipe=${SLUG}`, "create=true", "text=the referee writes here", "--no-json"]);
+    say("h2 put", put);
     expect(put.code, said(put)).toBe(0);
     expect(said(put)).toMatch(new RegExp(`in lar:///ha\\.ka\\.ba/wikis/${SLUG}/working`));
   }, 240_000);
@@ -107,8 +107,8 @@ describe.skipIf(gaps.length > 0)("★ a landed grant reaches its face: a house c
     expect(again.code, said(again)).toBe(0);
     expect(said(again)).toMatch(/stands worn already/);
     expect(said(again), "a replay over a landed share names no move").not.toMatch(/shares: /);
-    const get = await lar.cli(["tiddler", "get", "Referee smoke", "--recipe", SLUG, "--no-json"]);
-    say("h2 tiddler get", get);
+    const get = await lar.cli(["get", "title=Referee smoke", `recipe=${SLUG}`, "--no-json"]);
+    say("h2 get", get);
     expect(get.code, said(get)).toBe(0);
     expect(said(get)).toMatch(/the referee writes here/);
   }, 240_000);
@@ -125,19 +125,19 @@ describe.skipIf(gaps.length > 0)("★ a landed grant reaches its face: a house c
     say("h1 wiki status (a reader)", status);
     expect(status.code, said(status)).toBe(0);
     expect(said(status)).toMatch(new RegExp(`read-only\\s+lar:///ha\\.ka\\.ba/wikis/${SLUG}/working`));
-    const get = await lar.cli(["tiddler", "get", "Referee smoke", "--recipe", SLUG, "--no-json"]);
-    say("h1 tiddler get (a reader)", get);
+    const get = await lar.cli(["get", "title=Referee smoke", `recipe=${SLUG}`, "--no-json"]);
+    say("h1 get (a reader)", get);
     expect(get.code, said(get)).toBe(0);
     expect(said(get)).toMatch(/the referee writes here/);
-    const put = await lar.cli(["tiddler", "put", "Engineer smoke", "--recipe", SLUG, "--create", "--text=a reader tries to write", "--no-json"]);
-    say("h1 tiddler put (a reader)", put);
+    const put = await lar.cli(["put", "title=Engineer smoke", `recipe=${SLUG}`, "create=true", "text=a reader tries to write", "--no-json"]);
+    say("h1 put (a reader)", put);
     expect(said(status), "no shared layer takes the reader's write").toMatch(/working layer: \(none attached; no layer takes a write\)/);
     expect(said(put)).not.toMatch(new RegExp(`in lar:///ha\\.ka\\.ba/wikis/${SLUG}/working`));
     expect(said(put)).toMatch(new RegExp(`in lar:///ha\\.ka\\.ba/wikis/${SLUG}/personal`));
     // The writer reads the shared working layer and finds no record of the reader's there.
     await wear(2);
-    const theirs = await lar.cli(["tiddler", "get", "Engineer smoke", "--recipe", SLUG, "--no-json"]);
-    say("h2 tiddler get of the reader's title", theirs);
+    const theirs = await lar.cli(["get", "title=Engineer smoke", `recipe=${SLUG}`, "--no-json"]);
+    say("h2 get of the reader's title", theirs);
     expect(said(theirs)).not.toMatch(new RegExp(`bag: lar:///ha\\.ka\\.ba/wikis/${SLUG}/working`));
   }, 240_000);
 });

@@ -152,7 +152,7 @@ describe("a verb's own process REPORTS the standing to the host shim, and never 
 
   it("RED no word asks for the standing: the entry reads the budget alone, and the retired --standing-report (an older shim's) comes off and changes nothing", async () => {
     const { takeEntryAsks } = await import("../src/standing-report.js");
-    expect(takeEntryAsks(["tiddler", "get", "lar:///x", "--recipe", "default", "--ask-budget-ms=3500"])).toEqual({ argv: ["tiddler", "get", "lar:///x", "--recipe", "default"], budgetMs: 3500 });
+    expect(takeEntryAsks(["get", "title=lar:///x", "--ask-budget-ms=3500"])).toEqual({ argv: ["get", "title=lar:///x"], budgetMs: 3500 });
     expect(takeEntryAsks(["--ask-budget-ms", "40", "vessel", "read"])).toEqual({ argv: ["vessel", "read"], budgetMs: 40 });
     expect(takeEntryAsks(["vessel", "read", "--ask-budget-ms=soon"])).toEqual({ argv: ["vessel", "read"], budgetMs: null });
     expect(takeEntryAsks(["vessel", "read", "--json"])).toEqual({ argv: ["vessel", "read", "--json"], budgetMs: null });

@@ -4,6 +4,7 @@
  * the carrier's own skins. The fixture carrier (`fixtures/affordance-oracle.ts`) stands in until the canon carrier lands.
  * RED-FIRST: written by smith#1, run by the familiar after `build:plugin` packs the templates and the `afford` operator.
  */
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
@@ -32,7 +33,7 @@ describe.skipIf(wikiSkip)(`the affordance bake over the fixture carrier${skipNot
     expect(whole).toContain("  lares oracle cast --recipe default --asking 'which road first?' --fresh    # a person asks the same words anew");
     expect(whole).toContain("    cure: tiddler.get.reads --title <cast>");
     expect(whole).not.toContain("--at");   // `at` skins mcp, tw5 and console alone: the cli reads the time once
-    expect(whole).toContain(`lares tiddler get ${FIXTURE_TITLE} --recipe lares --meme --skinny`);
+    expect(whole).toContain(`lares get title=${FIXTURE_TITLE} recipe=lares mu=relate`);
     expect(carrier!.title).toBe(FIXTURE_TITLE);
     expect(carrier!.calls["cli"]).not.toContain("tiddler.get.reads --title <cast>");   // a foreign cure is no call this door parses
   });
@@ -132,29 +133,38 @@ describe.skipIf(wikiSkip)(`the affordance bake over the fixture carrier${skipNot
   });
 });
 
-/** The core verbs' carriers (comms-ux-enacts landing 1; candidate addresses) and the spellings each skin routes to them. */
-const CORE_ROUTES: ReadonlyArray<readonly [string, string, string | null]> = [
-  ["lar:///engine.record.reads", "tiddler get", "tiddler_get"],
-  ["lar:///engine.record.puts", "tiddler put", "tiddler_put"],
-  ["lar:///engine.record.removes", "tiddler delete", "tiddler_delete"],
-  ["lar:///engine.record.renames", "tiddler rename", null],
-  ["lar:///engine.filter.pages", "wiki filter", "wiki_filter"],
+/**
+ * The core verbs' carriers (comms-ux-enacts landing 1; the call shape since landing 8) and the spellings each skin routes to them:
+ * the cli word, whether a `by/` choice selects it (`get` claims no route; the call's param chooses), and the mcp tool.
+ */
+const CORE_ROUTES: ReadonlyArray<readonly [string, string, boolean, string | null]> = [
+  ["lar:///engine.record.reads", "get", true, "tiddler_get"],
+  ["lar:///engine.record.puts", "put", false, "tiddler_put"],
+  ["lar:///engine.record.removes", "delete", false, "tiddler_delete"],
+  ["lar:///engine.record.renames", "rename", false, null],
+  ["lar:///engine.filter.pages", "get", true, "wiki_filter"],
 ];
+const CORE_FILES = ["engine.record.reads", "engine.record.puts", "engine.record.removes", "engine.record.renames", "engine.filter.pages"];
 
 describe.skipIf(wikiSkip)(`the core verbs bake from canon${skipNote}`, () => {
-  test("RED 10: the five canon carriers bake, each routed from its cli and mcp spelling; the tiddler door gathers four, the wiki door none", async () => {
+  test("RED 10: the five canon carriers bake in the call shape: put, delete and rename route their own word, get chooses by its param and claims none; no door/part row remains, and no tiddler or wiki door gathers them", async () => {
     const pack = await bakeAffordancePack(canonTexts(path.join(REPO, "bags")));
-    for (const [address, cli, mcp] of CORE_ROUTES) {
+    for (const [address, cli, chosen, mcp] of CORE_ROUTES) {
       expect(pack.carriers[address], address).toBeDefined();
-      expect(pack.routes["cli"]![cli]).toBe(address);
+      if (chosen) expect(pack.routes["cli"]![cli], address).toBeUndefined();
+      else expect(pack.routes["cli"]![cli], address).toBe(address);
       if (mcp !== null) expect(pack.routes["mcp"]![mcp]).toBe(address);
       expect(pack.carriers[address]!.renders["cli"]!["whole"]![0]).toMatch(new RegExp(`^usage: lares ${cli} `));
     }
     expect(pack.routes["mcp"]!["tiddler_rename"]).toBeUndefined();
-    expect([...pack.doors["tiddler"]!.addresses].sort()).toEqual(CORE_ROUTES.slice(0, 4).map(([a]) => a).sort());
+    for (const old of ["tiddler get", "tiddler put", "tiddler delete", "tiddler rename", "wiki filter"]) expect(pack.routes["cli"]![old], old).toBeUndefined();
+    for (const [address, cli, chosen] of CORE_ROUTES) if (!chosen) expect(pack.doors[cli]!.addresses, cli).toEqual([address]);
+    expect(pack.doors["tiddler"]).toBeUndefined();
     expect(pack.doors["wiki"]).toBeUndefined();
-    // The persona hearing rides the filter's examples: a literal search beside the line lens.
-    expect(pack.carriers["lar:///engine.filter.pages"]!.calls["cli"]).toContain("lares wiki filter '[all[tiddlers]search:text:literal[Lares (Stranger)]]' --match 'Lares (Stranger)' --recipe default");
+    expect(pack.doors["get"]).toBeUndefined();
+    for (const file of CORE_FILES) expect(readFileSync(path.join(REPO, "bags/lares/ha.ka.ba/lares/afford", `${file}.mem`), "utf8"), file).not.toContain("door/part");
+    // The persona hearing rides the filter's examples: a literal search beside the line lens, each param a shell word.
+    expect(pack.carriers["lar:///engine.filter.pages"]!.calls["cli"]).toContain("lares get 'filter=[all[tiddlers]search:text:literal[Lares (Stranger)]]' 'match=Lares (Stranger)' recipe=default");
     // The seat's spellings break the rule by the skin's maps alone: the put's tags, cut and replacement words.
     expect(Object.keys(pack.carriers["lar:///engine.record.puts"]!.params).sort()).toEqual(
       ["append", "bag", "base", "create", "cut", "fields", "recipe", "replace", "replace_with", "slot", "tags_add", "tags_remove", "text", "title", "unset"]);

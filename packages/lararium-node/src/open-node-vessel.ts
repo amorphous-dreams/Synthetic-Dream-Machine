@@ -3784,7 +3784,7 @@ async function prepareNodeBootOn(
     // ── THE REALM PLANE — the relation's shared CRDT, materialized on every member's boot ──────────────
     // The realm doc's id derives from the charter both stewards hold (its genesis epoch), so A and B compute
     // ONE address from the charter alone. A bag REGISTERS on it (`realm-bag`), and the daemon island's reach
-    // (`tiddler get --meme --bag <x>`) walks this plane FIRST through the pointer this stand pins on the oracle plane.
+    // (`lares get title=… bag=<x> meme=true`) walks this plane FIRST through the pointer this stand pins on the oracle plane.
     // The wire gate widens the self-slot shelf by the member-read lane and nothing else: a stranger draws
     // the same denial as any private plane. A vessel with no primary or carried charter stands no realm.
     if (!realmPlane && nexusMembership && selfSlotFedGate) {

@@ -12,13 +12,13 @@
  *      one home and the refusal path draws from it.
  *
  * The registry stays PURE DATA: no `node:fs`, no imports, so any vessel that can hold the module can read
- * the door. The `--meme` reach rides the one read door (`lares tiddler get --meme`), never a file read.
+ * the door. The `--meme` reach rides the one read door (`lares get title=<uri> recipe=lares mu=assert`), never a file read.
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { COMMAND_HELP, memeForDoor, helpLines, renderCommandHelp, verbRole } from "../src/command-help.js";
+import { COMMAND_HELP, memeForDoor, helpLines, renderCommandHelp } from "../src/command-help.js";
 import { COMMAND_NAMES, COMMANDS } from "../src/bin/lares.js";
 
 const CLI = join(repoRoot, "packages", "lares-cli", "src");
@@ -47,10 +47,11 @@ describe("★ the help registry names the meme behind each verb door ★", () =>
   test("store usage and examples require an explicit container", () => {
     const meme = COMMAND_HELP.meme!;
     expect(meme.usage).toContain("(--recipe <slug> | --bag <slug>)");
-    // The family verbs moved to the tiddler door: no meme example teaches a retired spelling.
+    // The family verbs moved to the call door: no meme example teaches a retired spelling.
     for (const verb of ["put", "patch", "list", "delete"]) {
       expect(meme.examples?.some((line) => new RegExp(`\\blares meme ${verb}\\b`).test(line)), `meme ${verb} example`).toBe(false);
     }
+    expect(meme.examples?.some((line) => /\blares (?:tiddler|wiki filter)\b/.test(line)), "a burned door's example").toBe(false);
     expect(meme.synopsis).not.toMatch(/anchor|default wiki/i);
     const summary = COMMANDS.find((command) => command.name === "meme")!.summary;
     expect(summary).toContain("(--recipe <slug> | --bag <slug>)");
@@ -155,26 +156,26 @@ describe("★ the core verbs' help reads their carriers, one home ★", () => {
     expect(Object.keys(COMMAND_HELP).filter((k) => k.startsWith("tiddler "))).toEqual([]);
   });
 
-  test("`lares tiddler --help` lists the four carriers and names the unfold", async () => {
-    const text = (await helpOf(["tiddler"])).join("\n");
-    for (const verb of ["get", "put", "delete", "rename"]) expect(text).toContain(`lares tiddler ${verb}  `);
-    expect(text).toContain("Read one: lares tiddler <verb> --help");
+  test("★ each call verb's help prints its carrier whole, its call-shaped usage spine first ★", async () => {
+    for (const [verb, carrier] of [["get", "engine.record.reads"], ["put", "engine.record.puts"], ["delete", "engine.record.removes"], ["rename", "engine.record.renames"]] as const) {
+      const out = await helpOf([verb]);
+      expect(out[0], verb).toMatch(new RegExp(`^usage: lares ${verb} [a-z][a-z0-9-]*=`));
+      expect(out.join("\n"), verb).toContain(`lar:///ha.ka.ba/lares/afford/${carrier}`);
+      vi.restoreAllMocks();
+    }
   });
 
-  test("`lares wiki filter --help` prints the filter's carrier whole, never the wiki door's table", async () => {
-    const out = await helpOf(["wiki", "filter"]);
-    expect(out[0]).toMatch(/^usage: lares wiki filter <filter> --recipe <slug> /);
-    expect(out.join("\n")).toContain("filter-context-alone");
-    expect(out.join("\n")).toContain("lar:///ha.ka.ba/lares/afford/engine.filter.pages");
-  });
-
-  test("`lares wiki --help` keeps the door's own table, its filter line read from the carrier's role", async () => {
+  test("the burned spellings answer no help: `lares tiddler --help` refuses as an unknown command, and the wiki door's table names no filter", async () => {
+    const { dispatch } = await import("../src/bin/lares.js");
+    const err: string[] = [];
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { err.push(a.map(String).join(" ")); });
+    expect(await dispatch(["tiddler", "--help"])).toBe(2);
+    expect(err.join("\n")).toContain('unknown command "tiddler"');
+    vi.restoreAllMocks();
     const text = (await helpOf(["wiki"])).join("\n");
-    const role = verbRole("wiki filter");
-    expect(role).toBe("run a TiddlyWiki filter in the wiki's own engine, one bounded page");
-    expect(text).toMatch(new RegExp(`^  filter +${role.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "m"));
+    expect(text).not.toMatch(/^  filter /m);
     expect(text).toContain("switch");
-    expect(text).not.toContain("Run a TiddlyWiki filter in the wiki's own engine (`--recipe default`");
   });
 });
 
@@ -200,9 +201,9 @@ describe("★ `--help --meme` reaches the wiki through the meme rail ★", () =>
     );
     expect(code).toBe(0);
     expect(seen, "the help path never wrote a second meme reader").toHaveLength(1);
-    expect(seen[0]!.command).toBe("tiddler");
-    expect(seen[0]!.positional).toEqual(["get", "lar:///ha.ka.ba/lares/cli/vessel-door"]);
-    expect(seen[0]!.options).toEqual({ recipe: "lares" });
+    expect(seen[0]!.command).toBe("get");
+    expect(seen[0]!.positional).toEqual(["title=lar:///ha.ka.ba/lares/cli/vessel-door", "recipe=lares", "mu=assert"]);
+    expect(seen[0]!.options).toEqual({});
   });
 
   test("`--json` on the help call rides through to the meme rail; a bare call carries no flag", async () => {
@@ -211,8 +212,8 @@ describe("★ `--help --meme` reaches the wiki through the meme rail ★", () =>
     const push = async (a: { flags: Readonly<Record<string, boolean>> }) => { seen.push(a); return 0; };
     await reachHelpMeme("vessel", { command: "vessel", positional: [], options: {}, flags: { help: true, meme: true, json: true } }, push);
     await reachHelpMeme("vessel", { command: "vessel", positional: [], options: {}, flags: { help: true, meme: true } }, push);
-    expect(seen[0]!.flags).toEqual({ meme: true, all: true, json: true });
-    expect(seen[1]!.flags, "CONTROL — nothing invents a --json the operator never typed").toEqual({ meme: true, all: true });
+    expect(seen[0]!.flags).toEqual({ json: true });
+    expect(seen[1]!.flags, "CONTROL — nothing invents a --json the operator never typed").toEqual({});
   });
 
   test("CONTROL — a plain `--help` (no `--meme`) touches the meme rail not at all", async () => {

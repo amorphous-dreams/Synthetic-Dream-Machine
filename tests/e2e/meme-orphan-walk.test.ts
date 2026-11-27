@@ -11,10 +11,10 @@
  *   delete                   → the family leaves whole; the carrier file leaves; nothing orphaned
  *   LOAD of a lone slot      → the child lands with no root above it: `<stem>.orphans/<slot>.tid` appears in
  *                              the daemon wiki's folder and the flag reads back through the one read door
- *                              (`tiddler get`: a house alert reads, though the rest of `$:/temp` stays home)
+ *                              (`get title=`: a house alert reads, though the rest of `$:/temp` stays home)
  *   put (the root returns)   → the slot re-roots: the folder leaves and the flag clears, read through the same door
  *
- * A staged hearth holds no bare single-title delete door yet (the tiddler door lands it), so the orphan
+ * A staged hearth holds no bare single-title delete door yet (the delete door lands it), so the orphan
  * arrives the second way the field makes one: a lone child landing by ingest.
  *
  * SKIPS LOUDLY when the built CLI or vessel stands absent. Staged only.
@@ -29,7 +29,7 @@ const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
 const NODE_MAIN = join(REPO_ROOT, "packages/lararium-node/dist/src/main.js");
 const DAEMON_WORKING = "lar:///ha.ka.ba/wikis/daemon/working";
-const ANCHOR = ["--recipe", "default"] as const;
+const ANCHOR = ["recipe=default"] as const;
 
 const PATH = "ha.ka.ba/t/orphan-walk/npc";
 const URI  = `lar:///${PATH}`;
@@ -98,18 +98,18 @@ describe.skipIf(gaps.length > 0)("★ the orphan gradient on a staged hearth ★
   afterAll(async () => { if (lar) await lar.stop(); });
 
   test("CONTROL: a meme with three slots projects ONE carrier file, no orphan folder, and raises no flag", async () => {
-    const r = await lar.cli(["tiddler", "put", URI, ...ANCHOR, "--file", join(scratch, "abc.mem"), "--json"]);
+    const r = await lar.cli(["put", `title=${URI}`, ...ANCHOR, `file=${join(scratch, "abc.mem")}`, "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     expect(((r.json?.["data"] as Record<string, unknown>)["landed"] as string[]).sort()).toEqual([URI, `${URI}#/a`, `${URI}#/b`, `${URI}#/c`]);
     expect(await until(() => existsSync(join(mirror, `${PATH}.mem`))), `no carrier file under ${mirror}: ${JSON.stringify(walkFiles())}`).toBe(true);
     console.error(`[walk] after put: ${JSON.stringify(walkFiles())}`);
     expect(walkFiles()).toEqual([`${PATH}.mem`]);
     // The flag, a house alert, reads through the one door: none stands over a whole family.
-    expect(flagOf(await lar.cli(["tiddler", "get", FLAG, ...ANCHOR, "--json"])), "no orphan flag over a whole family").toBeNull();
+    expect(flagOf(await lar.cli(["get", `title=${FLAG}`, ...ANCHOR, "--json"])), "no orphan flag over a whole family").toBeNull();
   });
 
   test("★ a delete takes the family whole: the answer names root and slots, the carrier file leaves, nothing orphans ★", async () => {
-    const r = await lar.cli(["tiddler", "delete", URI, "--family", ...ANCHOR, "--json"]);
+    const r = await lar.cli(["delete", `title=${URI}`, "family=true", ...ANCHOR, "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     const d = r.json?.["data"] as Record<string, unknown>;
     console.error(`[walk] delete answered: ${JSON.stringify({ decision: d["decision"], tombstoned: d["tombstoned"], retracted: d["retracted"] })}`);
@@ -138,7 +138,7 @@ describe.skipIf(gaps.length > 0)("★ the orphan gradient on a staged hearth ★
     // `$:/temp` staying home), beside the `<stem>.orphans/` folder above.
     let flag: Record<string, unknown> | null = null;
     for (let tries = 0; tries < 20 && flag === null; tries++) {
-      flag = flagOf(await lar.cli(["tiddler", "get", FLAG, ...ANCHOR, "--json"]));
+      flag = flagOf(await lar.cli(["get", `title=${FLAG}`, ...ANCHOR, "--json"]));
       if (flag === null) await new Promise((r) => setTimeout(r, 500));
     }
     expect(flag, "the orphan flag reads through the one door").not.toBeNull();
@@ -146,11 +146,11 @@ describe.skipIf(gaps.length > 0)("★ the orphan gradient on a staged hearth ★
   });
 
   test("★ the root returns: the slot re-roots, the orphan folder leaves and the flag clears ★", async () => {
-    const r = await lar.cli(["tiddler", "put", URI, ...ANCHOR, "--file", join(scratch, "abc.mem"), "--json"]);
+    const r = await lar.cli(["put", `title=${URI}`, ...ANCHOR, `file=${join(scratch, "abc.mem")}`, "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     expect(await until(() => existsSync(join(mirror, `${PATH}.mem`)) && !existsSync(join(mirror, `${PATH}.orphans`))), `the folder stayed: ${JSON.stringify(walkFiles())}`).toBe(true);
     console.error(`[walk] after the root returned: ${JSON.stringify(walkFiles())}`);
     // The pass that removes the folder clears the flag first, so a folder that left names a flag that left: the door reads none.
-    expect(flagOf(await lar.cli(["tiddler", "get", FLAG, ...ANCHOR, "--json"])), "the flag cleared with the folder").toBeNull();
+    expect(flagOf(await lar.cli(["get", `title=${FLAG}`, ...ANCHOR, "--json"])), "the flag cleared with the folder").toBeNull();
   });
 });

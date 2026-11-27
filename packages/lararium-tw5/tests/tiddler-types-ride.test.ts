@@ -172,7 +172,7 @@ describe.skipIf(wikiSkip)(`a pointer tiddler names content-addressed bytes${skip
     expect(r.engine.wiki.getTiddler("Later")!.fields["size"]).toBeUndefined();
     // No grain named: the handle, and the body owed (unread), with the read that closes it.
     const handle = await r.get({ ...A, title: "Later" }, ctx());
-    expect(handle).toMatchObject({ grain: { applied: "handle" }, next: { grain: "resolved" }, pointer: { cid: hex, integrity: ni, body: "owed", owes: expect.stringMatching(/^unread/), cure: expect.stringContaining("--grain resolved") } });
+    expect(handle).toMatchObject({ grain: { applied: "handle" }, next: { grain: "resolved" }, pointer: { cid: hex, integrity: ni, body: "owed", owes: expect.stringMatching(/^unread/), cure: expect.stringContaining("form=text") } });
     // Asked for the body while the tier lacks it: still the handle, still owed, the tier named.
     const missed = await r.get({ ...A, title: "Later", grain: "resolved" }, ctx());
     expect(missed).toMatchObject({ grain: { applied: "handle" }, pointer: { body: "owed", owes: expect.stringContaining("holds no bytes") } });

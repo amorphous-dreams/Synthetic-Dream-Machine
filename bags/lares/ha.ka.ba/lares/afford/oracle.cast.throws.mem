@@ -22,7 +22,7 @@ uri-path   = "ha.ka.ba/lares/afford/oracle.cast.throws"
 
 The address `lar:///oracle.cast.throws` re-keyed to `lar:///oracle.library.consults` when the oracle family dropped its special case: one affordance consults any oracle whose corpus rests on a library shelf, the kind riding as data (moolelo 2026-11-26, "The oracle family, re-keyed"). Every rename carries a signed alias record (Domain Affordances law 4), so a grant, a note or a cast record that names the old address keeps pointing at what its giver meant.
 
-The record takes the forwarder's shape a `tiddler rename` leaves: `forward-to` names the carrier's new seat, and the body transcludes it. `alias-from` and `alias-to` name the two bare addresses; its tags hold both, so `[tag[lar:///oracle.cast.throws]]` still gathers this record and every cast landed before the re-key. The frame's block check seals the record and the commit that lands it signs it. The record grants nothing: a carrier describes, the door checks the ocap (law 1).
+The record takes the forwarder's shape a rename leaves: `forward-to` names the carrier's new seat, and the body transcludes it. `alias-from` and `alias-to` name the two bare addresses; its tags hold both, so `[tag[lar:///oracle.cast.throws]]` still gathers this record and every cast landed before the re-key. The frame's block check seals the record and the commit that lands it signs it. The record grants nothing: a carrier describes, the door checks the ocap (law 1).
 
 {{lar:///ha.ka.ba/lares/afford/oracle.library.consults}}
 
@@ -37,6 +37,6 @@ The record takes the forwarder's shape a `tiddler rename` leaves: `forward-to` n
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;36HQUD9xI_5MixczBGd7SV0RRL-gBMn6aNh644njiRQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ga0NWMIKzPwILej6yaHHCz8XKr04Ck_Tnpn5GcSGUJE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -114,7 +114,7 @@ describe("lares law index", () => {
     const r = await run(argv(["index"], {}, { limit: "3", after: "3.abc" }));
     expect(r.out).toMatch(/^Lares law \(pinned first\): 4 pinned · 6 rows\n📌 lar:\/\/\/ha\.ka\.ba\/lares\/api\/noosphere-boot\n/);
     expect(r.out).toContain(`   ${LAW[0]} — the role of drift-ward\n`);
-    expect(r.out).toContain(`the filter: lares wiki filter '${LAW_INDEX_FILTER}' --recipe default`);
+    expect(r.out).toContain(`the filter: lares get filter='${LAW_INDEX_FILTER}'`);
     expect(h.calls.find((c) => c.args["filter"] === LAW_INDEX_FILTER)!.args).toMatchObject({ limit: 3, after: "3.abc" });
   });
 });

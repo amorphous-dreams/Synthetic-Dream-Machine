@@ -29,7 +29,8 @@
  *               reads by, no hand table
  *   doors       per CLI door (the spelling's first word): its addresses, the brief the top-level index prints, the lines
  *               `lares <door> --help` and its usage refusal print; a `door/part` skin (one verb of a door that keeps its
- *               own table, `wiki filter`) routes and gathers no door entry
+ *               own table) routes and gathers no door entry; a word several carriers share by a `by/` choice (`get`: `by/title`,
+ *               `by/filter`) claims no route of its own
  *   index       the `lares --help` lines of every carrier, through the index template
  *   shelves     per oracle kind: the shelf index's title and the `method` it declares (`three-coins`)
  *   hash        sha256 over the pack's canonical bytes with the hash field absent

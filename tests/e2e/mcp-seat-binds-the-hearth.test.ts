@@ -5,7 +5,7 @@
  * A harness spawns the seat from the entry `lares home tend` writes, with nothing of its own in the
  * environment. So the walk spawns exactly what `resolveLaresMcp` hands back, under a process env that names
  * NO root, and speaks MCP to it over stdio as a harness does: `meme_put` with `recipe="default"` lands a
- * meme, and the CLI's `lares tiddler get --recipe default --meme` reads the same bytes back from the staged hearth.
+ * meme, and the CLI's `lares get recipe=default mu=assert` reads the same bytes back from the staged hearth.
  *
  * CONTROLS: before the put the CLI answers `not-found`; and the same seat spawned WITHOUT the entry's
  * `LAR_ROOT` reaches no daemon at all: the aho resolves no child, and the call answers `hearth-sleeps` from
@@ -145,12 +145,12 @@ describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harnes
   });
 
   test("control: before the put, the CLI answers not-found", async () => {
-    const r = await lar.cli(["tiddler", "get", URI, "--recipe", "default", "--meme", "--all", "--json"]);
+    const r = await lar.cli(["get", `title=${URI}`, "recipe=default", "mu=assert", "--json"]);
     expect(r.code).not.toBe(0);
     expect(`${r.stdout}${r.stderr}`).toMatch(/not-found/);
   });
 
-  test("tiddler_put with meme=true through the seat, and `lares tiddler get --recipe default --meme` read the same bytes", async () => {
+  test("tiddler_put with meme=true through the seat, and `lares get recipe=default mu=assert` read the same bytes", async () => {
     const projection = join(daemonWikiDir(lar.root), `${PATH}.mem`);
     expect(existsSync(projection), "control: the fresh daemon wiki has no seat tiddler yet").toBe(false);
     const said = await speak(entry, harnessEnv(entry.env), [
@@ -163,7 +163,7 @@ describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harnes
     const seatGet = payload(said.results[1])["meme"] as Record<string, unknown>;
     expect(put["decision"], JSON.stringify(put)).not.toBe("conflict");
 
-    const r = await lar.cli(["tiddler", "get", URI, "--recipe", "default", "--meme", "--all", "--json"]);
+    const r = await lar.cli(["get", `title=${URI}`, "recipe=default", "mu=assert", "--json"]);
     expect(r.code, r.stderr).toBe(0);
     const cli = (JSON.parse(r.stdout) as { data: { meme: { text: string; canonicalHash: string } } }).data.meme;
     expect(cli.text).toBe(seatGet["text"]);

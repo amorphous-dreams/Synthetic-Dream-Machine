@@ -7,7 +7,7 @@
  *   S2 — unseated → the device floor doc keyed by the vessel DID in the catalog (`face-reach: vessel-only`),
  *        and the call never throws for want of a group
  *   S3 — THE WELD: the same slug on the same vessel resolves to ONE doc from every call site — the
- *        island's slot grant (`bindings`), the host mount's read (`draft`), `tiddler put --recipe`'s
+ *        island's slot grant (`bindings`), the host mount's read (`draft`), `lares put recipe=<slug>`'s
  *        store, `prune-stale`'s read, and `wiki init`'s report
  *   S4 — personal binds on the vessel's key when unseated, and says so
  *   S5 — THE ONE PATH (cabal-realm#/the-workbench): a wiki's working slot rests in its REALM WORKBENCH. The first stand
@@ -303,7 +303,7 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
       const text = `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///t/x\`>>\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n<<^ code=\`&#x0002;\`>>\n\n<<~ ahu slot=\`#a\`>>\n\n! a\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` -> to=?>>\n`;
       // The witness reads which document the door reached; whatever the gate answers for the text rides beside it.
       await makeTiddlerPutReactor(memeOpts)({ bag: wikiSlotUri("garden", "draft"), title: "lar:///t/x", text }, { daemon: r.daemon, invocation: { requestId: "m" } as never, cap: async () => ({ ok: true }) }).catch(() => undefined);
-      sites["tiddler put --bag <draft slot>"] = reachedUrls[0] ?? "(none)";
+      sites["lares put bag=<draft slot>"] = reachedUrls[0] ?? "(none)";
 
       const urls = new Set(Object.values(sites));
       expect(urls.size, `the sites disagree: ${JSON.stringify(sites, null, 2)}`).toBe(1);

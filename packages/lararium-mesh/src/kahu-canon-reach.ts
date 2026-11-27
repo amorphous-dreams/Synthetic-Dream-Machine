@@ -7,7 +7,7 @@
  * holding (`houseCanonSlugs`). A hand reaches house canon when
  * `kahuCabalCanonAccess` holds for the group that holds the Kahu realm: a counted seat-quorum admission AND a
  * sentinel membership, read apart. This module is that predicate's production caller. Every door that can land
- * a byte in a house canon bag (the shared residency reactor with every verb it carries, `tiddler put` and `tiddler delete` on a bag,
+ * a byte in a house canon bag (the shared residency reactor with every verb it carries, `lares put` and `lares delete` on a bag,
  * draft placement, a realm steward's write) calls `requireKahuReach` with the bag it resolved and the source its
  * vessel handed it. A READ and a copy OUT of canon call nothing: canon stays cheap to read and to shadow.
  *

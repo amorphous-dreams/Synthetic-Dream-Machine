@@ -282,7 +282,7 @@ describe("the pet name resolves the record", () => {
     const r = await run(argv(["ah", "nobody"], { slot: "#/open", text: "y" }));
     expect(r.exit).toBe(3);
     expect(error(r).code).toBe("spirit-unknown");
-    expect(error(r).message).toContain("lares wiki filter");
+    expect(error(r).message).toContain("lares get filter=");
   });
 
   test("a malformed pet name refuses before any door opens", async () => {
@@ -658,7 +658,7 @@ describe("handback: the one return door every fire runs", () => {
     standingRecord("sha256-moved");
     const moved = await run(argv(["handback", "om-wright#2"], { record: `${BACK}@sha256-back` }), { edge: seam.edge });
     expect(error(moved).code).toBe("handback-moved");
-    expect(error(moved).message).toContain("lares tiddler get");
+    expect(error(moved).message).toContain("lares get title=");
     expect(seam.asks).toEqual([]);
     expect(h.calls.some((c) => c.verb === "tiddler-put")).toBe(false);
   });
@@ -1274,7 +1274,7 @@ describe("om and hum answer the spirit as a folded carrier the wiki renders", ()
     const text = String(data(r)["text"]);
     expect(text).toContain("<<~ has name=`rec`>>");
     expect(text).toContain("* a loop");
-    expect(text).toContain("lares wiki filter '[[lar:///ha.ka.ba/lararium/tw5/filters/meme-fold]is[shadow]]' --recipe default");
+    expect(text).toContain("lares get filter='[[lar:///ha.ka.ba/lararium/tw5/filters/meme-fold]is[shadow]]'");
     expect(data(r)).toMatchObject({ aperture: "measure", folded: false, unfolded: "absent" });
   });
 
@@ -1285,7 +1285,7 @@ describe("om and hum answer the spirit as a folded carrier the wiki renders", ()
     const text = String(data(om)["text"]);
     expect(text).toContain("* a loop");
     expect(text).toContain("The wiki's render door refused the fold (cap-denied: read on lar:///ha.ka.ba/wikis/daemon/working required)");
-    expect(text).toContain(`lares tiddler get '${URI}' --recipe default --meme --all`);
+    expect(text).toContain(`lares get title='${URI}' mu=assert`);
     expect(data(om)).toMatchObject({ folded: false, unfolded: "refused" });
     const hum = await run(argv(["hum", "lares-alpha"]));
     expect(hum.exit).toBe(0);
@@ -1389,7 +1389,7 @@ describe.skipIf(wikiSkip)(`the fold renders through the real wiki-render verb${s
   const SLOT_NAMES = SHRINE_SLOTS.map(([slot]) => slot);
   /** Canonical as `lares meme check` reads it: the normalize law moves nothing and names no fault. */
   const canonical = (text: string): boolean => { const read = normalizeMemeSource(text); return read.faults.length === 0 && read.text === text; };
-  const slotCommands = (text: string): string[] => [...text.matchAll(/^`lares tiddler get \S+ --recipe default --face 1 --meme --slot '([^']+)'`$/gm)].map((m) => m[1]!);
+  const slotCommands = (text: string): string[] => [...text.matchAll(/^`lares get title=\S+ face=1 mu=assert slot='([^']+)'`$/gm)].map((m) => m[1]!);
 
   async function realRender() {
     const DAEMON = bagUri("daemon");
@@ -1900,7 +1900,7 @@ describe("one spirit record: a pet name answers at lares/spirit/<pet>, holding a
     const text = SHRINE_SLOTS.map(([slot, prompt]) => framed(slot, prompt)).join("\n");
     const r = await run({ ...argv(["ah", "lares-alpha"], { text }), flags: { json: true, new: true } } as unknown as ParsedArgs);
     expect(error(r).code).toBe("spirit-exists");
-    expect(error(r).message).toContain("lares tiddler get");
+    expect(error(r).message).toContain("lares get title=");
     expect(shrinePuts().length > 0).toBe(false);
   });
 

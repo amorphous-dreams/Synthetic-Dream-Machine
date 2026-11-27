@@ -39,7 +39,7 @@ The operator approved this cast model (2026-11-26) for every surface; the names 
 
 ''Fills.'' `fills/observe` takes the ask's context pointers, `fills/uncertain` the ask's gathered uncertainty with its query, `fills/throw` the cast and every reading the wiki holds, each distinct text quoted once with every source's credit beneath it. A slot whose fill the ask left empty, and every slot whose writer reaches the seat, carries its `owes/` ask, marked owed.
 
-The house lands the meme once at the throw; the seat's later writes append to a slot through the one tiddler door (`lares tiddler put <cast> --meme --slot '#/decide' --append '<words>'`; a slot append needs no base). The asking's id hashes asker, query, nonce, seed and coins, so the same query replays the standing cast; a replay names the uncertainty the record kept and never rewrites it.
+The house lands the meme once at the throw; the seat's later writes append to a slot through the one put (`lares put title=<cast> slot='#/decide' append='<words>'`; a slot append needs no base). The asking's id hashes asker, query, nonce, seed and coins, so the same query replays the standing cast; a replay names the uncertainty the record kept and never rewrites it.
 
 <<~/ahu>>
 
@@ -91,6 +91,6 @@ Rote takes no move but one: say so, and let the throw seed free talk.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nHl04b6jgWAf75tt7bKWrh_OWoGNakyMtRpHJ0HyG0Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Fcs-JlJFfNMK47fblKEuJaQT9YYFx570Kwq3De6zNNQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

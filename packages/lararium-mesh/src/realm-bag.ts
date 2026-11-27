@@ -35,7 +35,7 @@
  * registrations; it holds no key and grants nothing the stewards did not sign.
  *
  * THE WRITE CAP: the named stewards' set. This module names it in the record (`keptBy`); the composite's
- * writable-layer law enforces it on the island (`tiddler put --bag` to a bag the island mounts no writable layer for
+ * writable-layer law enforces it on the island (`lares put bag=…` to a bag the island mounts no writable layer for
  * refuses — `meme-sinks.ts`).
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief
@@ -140,7 +140,7 @@ export interface RealmBagRegistration {
   readonly kind:       typeof REALM_BAG_DOMAIN;
   /** The realm this registration lives in — a record carried onto another realm's doc never counts. */
   readonly realmId:    string;
-  /** The bag's lar: URI — the name both sides ask by (`tiddler get --meme --bag lares`). */
+  /** The bag's lar: URI — the name both sides ask by (`lares get meme=true bag=lares`). */
   readonly bagUri:     string;
   /** The Automerge doc URL the bag's tiddlers live in — the doc the members replicate. */
   readonly docUrl:     string;

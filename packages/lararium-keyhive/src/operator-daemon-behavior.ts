@@ -555,7 +555,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
 
   // THE ONE SLOT-DOC RESOLVER — every site that names a wiki's draft/working/personal doc reads
   // through it (the island's slot grants, the host mount by proxy, wiki init, prune-stale,
-  // `tiddler put --bag <a wiki slot>`, the daemon's own working layer). Built once the keyhive stands, over the
+  // `lares put bag=<a wiki slot>`, the daemon's own working layer). Built once the keyhive stands, over the
   // live context; the face-seat read rides the veil's own registry (a pin is standing, a seat is
   // capability), so a binding never delegates to an agent the veil cannot name.
   let slotDocs: SlotDocResolver | null = null;

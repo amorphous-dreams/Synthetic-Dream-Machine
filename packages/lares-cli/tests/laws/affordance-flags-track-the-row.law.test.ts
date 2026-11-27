@@ -6,12 +6,15 @@
  * welds to the handler's own reads. So the carrier, the row and the handler agree, transitively. The MCP twin lives beside the
  * seat (`packages/lararium-sensorium/scripts/test_affordance_skin.py`). A door row's `accepts` names the flags of the whole door,
  * so a door of several verbs (`law index | pin | unpin`) holds the UNION of its routes' flags; a positional arg (`seat/N`) rides
- * no flag and stands outside it. Seed: the oracle cast and the law. Control: a carrier missing one flag disagrees with its row.
+ * no flag and stands outside it. A CALL-SHAPE door (`lares get · put · delete · rename`, comms-ux-enacts landing 8) reads no flag at
+ * all: its row accepts nothing, and its carrier's cli takes spell `name=…` params, bound in the VM. Seed: the oracle cast and the
+ * law. Control: a carrier missing one flag disagrees with its row.
  *
  * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-laws
  */
 import { describe, expect, test } from "vitest";
 import { COMMANDS } from "../../src/bin/lares.js";
+import { cmdCall } from "../../src/commands/call.js";
 import { REBAKE, SEED_ADDRESS, cliRoutes, pack, partDoors } from "./affordance-harness.js";
 
 /**
@@ -32,7 +35,9 @@ function sides(door: string, takesOf: (address: string) => readonly string[] = (
   };
 }
 
-const DOORS = [...new Set(cliRoutes().map((r) => r.door))].sort();
+/** The doors the call door answers: their lines take params alone. */
+const CALL_DOORS = COMMANDS.filter((c) => c.handler === cmdCall).map((c) => c.name).sort();
+const DOORS = [...new Set(cliRoutes().map((r) => r.door))].filter((d) => !CALL_DOORS.includes(d)).sort();
 
 describe("W2 · a door's carrier flags equal its row's accepts", () => {
   test("SEED: the oracle cast's carrier names its cli flags, and the law's three verbs name the door's four", () => {
@@ -41,9 +46,14 @@ describe("W2 · a door's carrier flags equal its row's accepts", () => {
     expect(sides("ddate").carrier).toEqual([]);   // the format and the date ride positionals, no flag
   });
 
-  test("SEED: the tiddler door's four carriers name the row's flags whole; the wiki filter's carrier names its own path's", () => {
-    expect(sides("tiddler").carrier, `the pack holds no tiddler carriers; ${REBAKE}`).toEqual(sides("tiddler").row);
-    expect(sides("wiki").row).toEqual(["after", "all", "bag", "collapse", "context", "face", "fields", "limit", "match", "max-bytes", "recipe", "target"]);
+  test("★ a call-shape door's row accepts no flag, and its carriers' cli takes spell params, never flags ★", () => {
+    expect(CALL_DOORS).toEqual(["delete", "get", "put", "rename"]);
+    for (const door of CALL_DOORS) {
+      expect(COMMANDS.find((c) => c.name === door)!.accepts, door).toEqual([]);
+      const takes = cliRoutes().filter((r) => r.door === door).flatMap((r) => pack().carriers[r.address]?.takes["cli"] ?? []);
+      expect(takes.filter((t) => t.startsWith("--")), `${door}: a carrier's cli takes spell a flag; ${REBAKE}`).toEqual([]);
+    }
+    expect(cliRoutes().map((r) => r.door), `the burned tiddler door routes nowhere; ${REBAKE}`).not.toContain("tiddler");
   });
 
   test.each(DOORS.map((d) => [d] as const))("`lares %s`", (door) => {

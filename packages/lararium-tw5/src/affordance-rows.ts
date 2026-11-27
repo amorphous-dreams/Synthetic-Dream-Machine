@@ -173,10 +173,16 @@ export function skinOmits(skin: HasRow | undefined): Set<string> {
 }
 
 /** An argument's spelling on one surface: the skin's exception where it names one, the rule otherwise. */
+/**
+ * A CLI SKIN ROW READING `grammar/call` speaks the call shape (comms-ux-enacts landing 8): its params ride `name=value`, a flag
+ * `name=true`, and no position; every other cli row keeps its door's `--flag` table until that door flips.
+ */
+export const callGrammar = (skin?: HasRow): boolean => skin?.params["grammar"] === "call";
+
 export function spellArg(surface: AffordSurface, name: string, skin?: HasRow): string {
   const own = skinMaps(skin).get(name) ?? name;
   switch (surface) {
-    case "cli": return `--${kebab(own)}`;
+    case "cli": return callGrammar(skin) ? kebab(own) : `--${kebab(own)}`;
     case "mcp": return snake(own);
     case "tw5": return kebab(own);
     case "console": return own;
@@ -293,6 +299,7 @@ export function renderCall(surface: RenderSurface, spells: string, call: Neutral
       return `<<~ ${sigilWord(word)}${args}>>`;
     }
     case "cli": {
+      if (callGrammar(skin)) return [spells, ...call.args.map(([k, v]) => shellQuote(`${spellArg(surface, k, skin)}=${v === true ? "true" : v}`))].join(" ");
       const seated = call.args
         .filter(([k]) => seats?.has(k))
         .sort((a, b) => seats!.get(a[0])!.seat - seats!.get(b[0])!.seat)
@@ -335,15 +342,17 @@ const allOf = (row: HasRow): string[] | null => groupOf(row, "all-of");
 export function usageOf(surface: AffordSurface, spells: string, takes: readonly HasRow[], skin?: HasRow): string {
   const parts: string[] = [];
   const grouped = new Set<string>();
-  const seated = surface === "cli" ? takes.filter((r) => seatOf(r) !== null).sort((a, b) => seatOf(a)!.seat - seatOf(b)!.seat) : [];
+  const called = surface === "cli" && callGrammar(skin);
+  const seated = surface === "cli" && !called ? takes.filter((r) => seatOf(r) !== null).sort((a, b) => seatOf(a)!.seat - seatOf(b)!.seat) : [];
   const ordered = [...seated, ...takes.filter((r) => !seated.includes(r))];
   for (const row of ordered) {
     if (row.entity !== "arg" || grouped.has(row.name)) continue;
     const spell = (r: HasRow): string => {
-      const own = surface === "cli" ? seatOf(r) : null;
+      const own = surface === "cli" && !called ? seatOf(r) : null;
       if (own !== null) return own.as;
       const flag = spellArg(surface, r.name, skin);
       const value = r.params["takes"];
+      if (called) return `${flag}=<${value ?? "true"}>`;
       if (surface === "cli") return value ? `${flag} <${value}>` : flag;
       return value ? `${flag}=<${value}>` : flag;
     };
@@ -371,7 +380,7 @@ export function usageOf(surface: AffordSurface, spells: string, takes: readonly 
 export function unfoldRead(surface: AffordSurface, address: string, slot?: string): string {
   const title = slot ? `${address}${slot}` : address;
   switch (surface) {
-    case "cli": return `lares tiddler get ${title} --recipe lares --meme${slot ? "" : " --skinny"}`;
+    case "cli": return `lares get title=${title} recipe=lares${slot ? " mu=assert" : " mu=relate"}`;
     case "mcp": return `tiddler_get(title=${JSON.stringify(address)}, recipe="lares", meme=True, grain=${slot ? `"slot", slot=${JSON.stringify(slot)}` : `"skinny"`})`;
     case "tw5": return `[[${title}]]`;
     case "console": return slot ? `$tw.lares.afford.slot(${JSON.stringify(address.replace(/^lar:\/\/\//, ""))}, ${JSON.stringify(slot)})` : `$tw.lares.afford.whole(${JSON.stringify(address.replace(/^lar:\/\/\//, ""))})`;

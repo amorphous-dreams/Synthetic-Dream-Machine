@@ -33,8 +33,8 @@ export const WAVE_3A = [
 export const WAVE_3A_SEAT = ["sense.kapae.mutes", "sense.kapae.restores"] as const;
 
 /**
- * The core verbs' carriers (lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts, landing 1; candidate addresses): the tiddler door
- * whole, and `wiki filter` as one part of the wiki door, whose other verbs keep the door's own table.
+ * The core verbs' carriers (lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts, landing 1; candidate addresses), skinned on the
+ * terminal as the call shape since landing 8: `lares get` (by title or by filter), `lares put`, `lares delete`, `lares rename`.
  */
 export const CORE_VERBS = ["engine.record.reads", "engine.record.puts", "engine.record.removes", "engine.record.renames", "engine.filter.pages"] as const;
 
@@ -48,7 +48,7 @@ export const SEED_ADDRESSES = [
 
 /**
  * The doors a cli route names that the pack gathers no door entry for: each holds `door/part` skins, verbs a carrier skins beside
- * a table the door keeps itself (`wiki`, whose `filter` holds a carrier). Such a door counts legacy until every verb holds one.
+ * a table the door keeps itself. Such a door counts legacy until every verb holds one.
  */
 export const partDoors = (p: AffordancePack = pack()): string[] =>
   [...new Set(cliRoutes(p).map((r) => r.door))].filter((d) => !Object.prototype.hasOwnProperty.call(p.doors, d)).sort();

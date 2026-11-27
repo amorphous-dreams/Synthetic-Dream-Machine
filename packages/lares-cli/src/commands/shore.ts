@@ -27,7 +27,7 @@
  *     `$:/config/lares/shore/collapse/<rule>`) settle what they can. What stays raises one awaiting alert naming its
  *     actions: `keep-disk` lands the file's words whole (no merge), `keep-records` writes the records' render over the file
  *     and lets the drafts go, and, where drafts stand, `keep-both` writes the records' render and keeps the drafts as
- *     parallel drafts, and `drafts` names the drafts by title (`lares tiddler get` reads each).
+ *     parallel drafts, and `drafts` names the drafts by title (`lares get title=…` reads each).
  *   · SETTLING STAYS A HAND ACT: `take-records`, `take-disk` and the keep acts read the hand behind this command
  *     (`readOwnHand`) before anything else; an AI harness on its branch refuses `hand-act-only`, an unreadable branch
  *     `hand-unattested`, each naming the command the operator runs, and `--yes` approves nothing by itself.
@@ -438,14 +438,14 @@ export async function cmdShore(args: ParsedArgs, hand: ShoreHandRead = ownHand):
       if (act === "take-records" || act === "keep-records") { console.log(`took the records' side: ${String(answer.output["uri"])} (${String(answer.output["bag"])})`); return; }
       if (act === "keep-both") {
         console.log(`kept both: the records' render stands in ${String(answer.output["uri"])}'s file (${String(answer.output["bag"])}), and ${String(answer.output["keptCount"] ?? 0)} draft(s) of the file's words stay`);
-        for (const t of Array.isArray(answer.output["kept"]) ? (answer.output["kept"] as string[]) : []) console.log(`  ${t}  (\`lares tiddler get "${t}"\`)`);
+        for (const t of Array.isArray(answer.output["kept"]) ? (answer.output["kept"] as string[]) : []) console.log(`  ${t}  (\`lares get title="${t}"\`)`);
         return;
       }
       if (act === "drafts") {
         const rows = Array.isArray(answer.output["drafts"]) ? (answer.output["drafts"] as Array<Record<string, unknown>>) : [];
         if (rows.length === 0) { console.log(`no stand-off of ${String(answer.output["uri"])} holds a draft`); return; }
         console.log(`${String(answer.output["draftCount"] ?? rows.length)} draft(s) hold the file's side of ${String(answer.output["uri"])}'s stand-off(s):`);
-        for (const r of rows) console.log(`  ${String(r["title"])}  of ${String(r["of"])}  key ${String(r["standoff"])}${r["kept"] === true ? "  (kept)" : ""}\n      read it: \`lares tiddler get "${String(r["title"])}"\``);
+        for (const r of rows) console.log(`  ${String(r["title"])}  of ${String(r["of"])}  key ${String(r["standoff"])}${r["kept"] === true ? "  (kept)" : ""}\n      read it: \`lares get title="${String(r["title"])}"\``);
         return;
       }
       const reached = answeredRows(answer.output);

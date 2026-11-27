@@ -5,13 +5,13 @@
  * in a cabal realm R (a 64-hex name): it registers a bag there, sealed by the key its worn face presents to the
  * Nexus. The law (`cabal-realm#/many-realms`):
  *
- *   · a verb names its realm (`--realm <id>`), and with none named it routes to the charter-derived realm;
+ *   · a verb names its realm (`realm=<id>`), and with none named it routes to the charter-derived realm;
  *   · a write to one realm never appears in another's plane;
  *   · an act stands the vessel in a realm, and a read never does;
  *   · a verb that names a realm reads that realm alone.
  *
- * THE VECTOR: the bag registered in R lists under `realm-bags --realm R`; `tiddler get --meme
- * --bag lares --realm R` answers through R's registration. CONTROLS: the charter-derived and R listings each
+ * THE VECTOR: the bag registered in R lists under `realm-bags --realm R`; `get mu=assert
+ * bag=lares realm=R` answers through R's registration. CONTROLS: the charter-derived and R listings each
  * hold their own record, while the unscoped listing names both stood realms; a
  * realm the vessel never entered reads empty, answers `not-found`, and stays unentered.
  *
@@ -94,7 +94,7 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
     expect(bagsOf(list)).toEqual([]);
     expect(dataOf(list)["realmDoc"]).toBeNull();
     expect(dataOf(list)["realms"]).toEqual([charterRealm]);
-    const got = await A!.cli(["tiddler", "get", URI, "--bag", "ford", "--realm", REALM_R, "--meme", "--all", "--json"]);
+    const got = await A!.cli(["get", `title=${URI}`, "bag=ford", `realm=${REALM_R}`, "mu=assert", "--json"]);
     expect(got.json?.["ok"], said(got)).toBe(false);
   }, 60_000);
 
@@ -117,19 +117,19 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
     expect((dataOf(elsewhere)["realms"] as string[])).not.toContain(REALM_NEVER);      // a read never enters
   }, 120_000);
 
-  test("★ `tiddler get --meme --bag lares --realm R` answers through R's registration, and no other realm's ★", async () => {
+  test("★ `get mu=assert bag=lares realm=R` answers through R's registration, and no other realm's ★", async () => {
     const until = Date.now() + 60_000;
-    let got = await A!.cli(["tiddler", "get", URI, "--bag", "ford", "--realm", REALM_R, "--meme", "--all", "--json"]);
+    let got = await A!.cli(["get", `title=${URI}`, "bag=ford", `realm=${REALM_R}`, "mu=assert", "--json"]);
     while (got.json?.["ok"] !== true && Date.now() < until) {
       await new Promise((res) => setTimeout(res, 3_000));
-      got = await A!.cli(["tiddler", "get", URI, "--bag", "ford", "--realm", REALM_R, "--meme", "--all", "--json"]);
+      got = await A!.cli(["get", `title=${URI}`, "bag=ford", `realm=${REALM_R}`, "mu=assert", "--json"]);
     }
     expect(got.json?.["ok"], said(got)).toBe(true);
     expect(String((dataOf(got)["meme"] as Record<string, unknown> | undefined)?.["text"] ?? "")).toContain("#/minutes");
-    const never = await A!.cli(["tiddler", "get", URI, "--bag", "ford", "--realm", REALM_NEVER, "--meme", "--all", "--json"]);
+    const never = await A!.cli(["get", `title=${URI}`, "bag=ford", `realm=${REALM_NEVER}`, "mu=assert", "--json"]);
     expect(never.json?.["ok"], said(never)).toBe(false);
-    // `--realm` names a bag's realm, never a wiki's.
-    const both = await A!.cli(["tiddler", "get", URI, "--recipe", "lares", "--realm", REALM_R, "--meme", "--all", "--json"]);
+    // `realm=` names a bag's realm, never a wiki's: naming both containers refuses.
+    const both = await A!.cli(["get", `title=${URI}`, "recipe=lares", `realm=${REALM_R}`, "mu=assert", "--json"]);
     expect(both.json?.["ok"], said(both)).toBe(false);
     expect(said(both)).toContain("no-container");
   }, 120_000);

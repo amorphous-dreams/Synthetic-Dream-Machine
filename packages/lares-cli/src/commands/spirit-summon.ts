@@ -190,7 +190,7 @@ async function lanesMove(ctx: SummonCtx, label: string, coordinator: Pick<Instan
     const receipt = await ctx.door(label, "tiddler-put", { recipe: RECIPE, title: uri, fields: lanesWrite(coordinator, next).fields, ...(live.hash === null ? { create: true } : { base: live.hash }) });
     const decision = String(receipt["decision"] ?? "");
     if (decision === "put" || decision === "noop") return true;
-    if (decision !== "conflict" && decision !== "exists") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for the lane ledger ${uri}, so no lane moved; read it: \`lares tiddler get ${shq(uri)} --recipe default\``, 4);
+    if (decision !== "conflict" && decision !== "exists") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for the lane ledger ${uri}, so no lane moved; read it: \`lares get title=${shq(uri)}\``, 4);
   }
   return false;
 }
@@ -221,7 +221,7 @@ async function words(args: ParsedArgs, what: string): Promise<string> {
 }
 
 const writeRefused = (uri: string, decision: string, lens = ""): SpiritRefusal =>
-  new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${uri}; read it: \`lares tiddler get ${shq(uri)} --recipe default${lens}\``, 4);
+  new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${uri}; read it: \`lares get title=${shq(uri)}${lens}\``, 4);
 
 /** WORDS LAND AS ONE RECORD, keyed by its own hash: the same mandate landed twice finds itself standing and writes nothing. */
 async function writeMandate(ctx: SummonCtx, covered: Readonly<Partial<Record<MandateField, string>>>, text: string): Promise<{ uri: string; hash: string; stands: boolean }> {
@@ -250,7 +250,7 @@ async function foundMandate(ctx: SummonCtx, covered: Readonly<Partial<Record<Man
   if (refused !== null) throw refused;
   const receipt = await ctx.door("mandate", "tiddler-put", { recipe: RECIPE, title: found.uri, text: carrier });
   const decision = String(receipt["decision"] ?? "");
-  if (decision !== "put" && decision !== "noop") throw writeRefused(found.uri, decision, " --meme --all");
+  if (decision !== "put" && decision !== "noop") throw writeRefused(found.uri, decision, " mu=assert");
   const landed = await mandateAt(ctx, "mandate", found.uri, null);
   return { uri: found.uri, hash: landed.hash, stands: decision === "noop" };
 }
@@ -332,7 +332,7 @@ export async function summonInstance(args: ParsedArgs, ctx: SummonCtx): Promise<
   if (standing === null) {
     const receipt = await ctx.door("summon", "tiddler-put", { recipe: RECIPE, title: edge.uri, fields: { ...edge.fields, "offered-as": hand ? "hand" : "seat" } });
     const decision = String(receipt["decision"] ?? "");
-    if (decision !== "put" && decision !== "noop") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${edge.uri}, so nothing started; read it: \`lares tiddler get ${shq(edge.uri)} --recipe default\``, 4);
+    if (decision !== "put" && decision !== "noop") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${edge.uri}, so nothing started; read it: \`lares get title=${shq(edge.uri)}\``, 4);
   }
   const cwd = mandate.workdir ?? process.cwd();
   // THE GUEST'S REACH, or the mandate's shaping of it; the edge records what the instance launched holding (a receipt, never a gate).

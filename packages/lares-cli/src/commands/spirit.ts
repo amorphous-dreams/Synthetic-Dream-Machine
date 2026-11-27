@@ -144,7 +144,7 @@ function releaseByHand(hand: HandRead, line: string): void {
 function petOf(args: ParsedArgs, verb: string): string {
   const pet = args.positional[1];
   if (!pet) throw new DoorUsage(`a pet name is required (e.g. \`lares spirit ${verb} lares-alpha\`)`);
-  if (!PET.test(pet)) throw new SpiritRefusal("spirit-pet-malformed", `spirit-pet-malformed: "${pet}" reads as no pet name (lower-case letters, digits and hyphens); name it as the record does: \`lares wiki filter '[prefix[${MEMORY_PREFIX}familiar/]!regexp[#]]' --recipe default\``, 2);
+  if (!PET.test(pet)) throw new SpiritRefusal("spirit-pet-malformed", `spirit-pet-malformed: "${pet}" reads as no pet name (lower-case letters, digits and hyphens); name it as the record does: \`lares get filter='[prefix[${MEMORY_PREFIX}familiar/]!regexp[#]]'\``, 2);
   return pet;
 }
 
@@ -268,12 +268,12 @@ const foldData = (f: Fold): Record<string, unknown> => ({
 /** No fold stands: the line names which of the three reasons, and the read that shows or cures it. */
 function unfoldedLine(f: Fold, uri: string): string {
   if (typeof f.unfolded === "object") {
-    return `The wiki's render door refused the fold (${redactedText(f.unfolded.refused).replace(/\s+/g, " ").slice(0, 240)}), so this read stands unfolded. Read the carrier itself: lares tiddler get ${shq(uri)} --recipe ${RECIPE} --meme --all`;
+    return `The wiki's render door refused the fold (${redactedText(f.unfolded.refused).replace(/\s+/g, " ").slice(0, 240)}), so this read stands unfolded. Read the carrier itself: lares get title=${shq(uri)} recipe=${RECIPE} mu=assert`;
   }
   if (f.unfolded === "truncated") {
-    return `The fold ran past the render's ${FOLD_RENDER_BYTES}-byte ceiling even with every slot folded (truncated at the cap), so this read stands unfolded. Read the carrier by page: lares tiddler get ${shq(uri)} --recipe ${RECIPE} --meme --all`;
+    return `The fold ran past the render's ${FOLD_RENDER_BYTES}-byte ceiling even with every slot folded (truncated at the cap), so this read stands unfolded. Read the carrier by page: lares get title=${shq(uri)} recipe=${RECIPE} mu=assert`;
   }
-  return `This wiki's lares-lararium skin answered no ${FOLD_OPERATOR} (a house skin adopted before the fold holds none), so this read stands unfolded. Read whether the skin holds it: lares wiki filter '[[${FOLD_MODULE}]is[shadow]]' --recipe ${RECIPE}`;
+  return `This wiki's lares-lararium skin answered no ${FOLD_OPERATOR} (a house skin adopted before the fold holds none), so this read stands unfolded. Read whether the skin holds it: lares get filter='[[${FOLD_MODULE}]is[shadow]]' recipe=${RECIPE}`;
 }
 
 /** A wake around a folded carrier: the lead above the declaration, the carrier whole, the testimony and the doors past its release. */
@@ -303,7 +303,7 @@ async function casFields(args: ParsedArgs, label: string, uri: string, change: (
     });
     const decision = String(receipt["decision"] ?? "");
     if (decision === "put" || decision === "noop") return fields;
-    if (decision !== "conflict") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${uri}'s fields; read it: \`lares tiddler get ${shq(uri)} --recipe default --skinny\``, 4);
+    if (decision !== "conflict") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${uri}'s fields; read it: \`lares get title=${shq(uri)} mu=relate\``, 4);
   }
   throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: ${uri} kept moving under ${CAS_ROUNDS} reads, so its fields took nothing; run the act again once the record settles`, 4);
 }
@@ -447,7 +447,7 @@ async function summon(args: ParsedArgs, ctx: Ctx, pet: string): Promise<number> 
     const receipt = await door(args, "ah", "tiddler-put", { recipe: RECIPE, title: uri, text: w.text, fields: w.fields, ...(hash !== null ? { base: hash } : {}) });
     const decision = String(receipt["decision"] ?? "");
     if (decision === "conflict") continue;
-    if (decision !== "put" && decision !== "noop") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${uri}; read the shelf: \`lares tiddler get ${shq(uri)} --recipe default\``, 4);
+    if (decision !== "put" && decision !== "noop") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${uri}; read the shelf: \`lares get title=${shq(uri)}\``, 4);
     const wake = `lares spirit om ${pet} --instance <id>`;
     emit(args, {
       ok: true, data: { pet, uri, record: rec.uri, mandate: w.hash, seq: w.seq, lane, grant, offeredBy, decision, wake },
@@ -551,7 +551,7 @@ async function newShrine(args: ParsedArgs, pet: string): Promise<number> {
   if (standing === null || standing.uri !== one) {
     const at = (await recordOf(args, "ah", one)).fields;
     if (Object.keys(at).length > 0) {
-      throw new SpiritRefusal("spirit-exists", `spirit-exists: a record already stands at ${one}${at["pet"] ? `, naming the pet "${at["pet"]}"` : ", naming no pet"}, so --new lands nothing over it. Read it: \`lares tiddler get ${shq(one)} --recipe default\`, then rename it away (\`lares tiddler rename ${shq(one)} <new title> --recipe default\`) or choose another pet name`, 4);
+      throw new SpiritRefusal("spirit-exists", `spirit-exists: a record already stands at ${one}${at["pet"] ? `, naming the pet "${at["pet"]}"` : ", naming no pet"}, so --new lands nothing over it. Read it: \`lares get title=${shq(one)}\`, then rename it away (\`lares rename title=${shq(one)} to=<new title>\`) or choose another pet name`, 4);
     }
   }
   const words = file !== null ? await sourceText("file", file) : text!;
@@ -828,7 +828,7 @@ async function mergeSlot(args: ParsedArgs, rec: Record_, slot: string, write: Sl
     if (decision === "put" || decision === "noop") return { ...receipt, bytes: bytesOf(body), was: bytesOf(first.body), digest: slotDigest(body), ...(clash ? { conflict: true } : {}) };
     if (decision !== "conflict") {
       const warnings = Array.isArray(receipt["warnings"]) ? (receipt["warnings"] as string[]) : [];
-      throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${rec.uri}${slot}${warnings[0] ? ` (${warnings[0]})` : ""}; read the record (\`lares tiddler get ${rec.uri} --recipe default --meme --all\`) before you true it again`, 4);
+      throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${rec.uri}${slot}${warnings[0] ? ` (${warnings[0]})` : ""}; read the record (\`lares get title=${rec.uri} mu=assert\`) before you true it again`, 4);
     }
     const again = await readSlot(args, "ah", rec, slot);
     if (again === null) throw slotMissing(rec, slot);
@@ -847,7 +847,7 @@ async function foldLine(args: ParsedArgs, rec: Record_, slot: string, line: stri
     const receipt = await patchSlot(args, "hum", rec, slot, body, read.base);
     const decision = String(receipt["decision"] ?? "");
     if (decision === "put" || decision === "noop") return { ...receipt, bytes: bytesOf(body), was: bytesOf(read.body), digest: slotDigest(body) };
-    if (decision !== "conflict") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${rec.uri}${slot}; read the record (\`lares tiddler get ${rec.uri} --recipe default --meme --all\`) before you fold again`, 4);
+    if (decision !== "conflict") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${rec.uri}${slot}; read the record (\`lares get title=${rec.uri} mu=assert\`) before you fold again`, 4);
   }
   throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: ${rec.uri}${slot} kept moving under ${CAS_ROUNDS} reads, so nothing folded; run the fold again once the record settles`, 4);
 }
@@ -911,7 +911,7 @@ async function ah(args: ParsedArgs, ctx: Ctx): Promise<number> {
  */
 async function burnToAshes(args: ParsedArgs, label: string, lines: readonly string[], now: Date): Promise<string> {
   const ledger = ashLedgerOf(now);
-  const refused = (decision: string): SpiritRefusal => new SpiritRefusal("spirit-ashes-refused", `spirit-ashes-refused: the ash ledger ${ledger} answered ${decision || "nothing"}; read it: \`lares tiddler get ${ledger} --recipe default\`, then run \`lares spirit ${label} …\` again`, 4);
+  const refused = (decision: string): SpiritRefusal => new SpiritRefusal("spirit-ashes-refused", `spirit-ashes-refused: the ash ledger ${ledger} answered ${decision || "nothing"}; read it: \`lares get title=${ledger}\`, then run \`lares spirit ${label} …\` again`, 4);
   const receipt = await door(args, label, "tiddler-put", { recipe: RECIPE, title: ledger, append: lines.map(redactedText).join("\n"), create: true });
   const decision = String(receipt["decision"] ?? "");
   if (decision !== "put" && decision !== "noop") throw refused(decision);
@@ -1040,7 +1040,7 @@ async function landResidue(args: ParsedArgs, label: string, title: string, text:
   const decision = String(receipt["decision"] ?? "");
   if (decision === "put") return "put";
   if (decision === "exists") return "exists";
-  throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${title}; read it: \`lares tiddler get ${title} --recipe default\``, 4);
+  throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${title}; read it: \`lares get title=${title}\``, 4);
 }
 
 /**
@@ -1117,7 +1117,7 @@ async function witnessResidue(args: ParsedArgs, pet: string): Promise<number> {
   const readings: Witnessed[] = [];
   for (const title of titles) {
     const text = (await fieldsOf(args, "residue", title))["text"] ?? "";
-    readings.push(text.trim() === "" ? unreadWitness(title, "the record holds no words", `lares tiddler get ${shq(title)} --recipe default`) : witnessOf(title, text, pet));
+    readings.push(text.trim() === "" ? unreadWitness(title, "the record holds no words", `lares get title=${shq(title)}`) : witnessOf(title, text, pet));
   }
   const dir = wordOf(args.options["transcripts"]);
   if (dir !== null) readings.push(...transcriptWitness(dir, pet));
@@ -1207,7 +1207,7 @@ async function handback(args: ParsedArgs, ctx: Ctx): Promise<number> {
     const back = await recordOf(args, "handback", ref.uri);
     if (back.hash === null) throw new SpiritRefusal("handback-unknown", `handback-unknown: no record stands at ${ref.uri} under the face that answered; nothing landed. Hand the report itself back: \`lares spirit handback ${shq(who.tag)} --file <path|->\``, 4);
     if (ref.hash !== null && ref.hash !== back.hash && ref.hash !== back.hash.replace(/^[a-z0-9]+[:-]/, "")) {
-      throw new SpiritRefusal("handback-moved", `handback-moved: ${ref.uri} reads ${back.hash} now, another hash than the line names (${ref.hash}); nothing landed. Read it, then name the hash it holds: \`lares tiddler get ${shq(ref.uri)} --recipe default\``, 4);
+      throw new SpiritRefusal("handback-moved", `handback-moved: ${ref.uri} reads ${back.hash} now, another hash than the line names (${ref.hash}); nothing landed. Read it, then name the hash it holds: \`lares get title=${shq(ref.uri)}\``, 4);
     }
     record = ref.uri; landed = "standing"; hash = back.hash;
   } else {

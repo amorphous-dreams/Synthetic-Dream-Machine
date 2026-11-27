@@ -151,7 +151,7 @@ WIKI_VERBS = ("wiki",)
 # holds with its canonical hash (`tree` nests the slot tree); `meme_project` renders the meme the island holds to a target (`md` · `html` · `tid` · `json`) — the TARGET rides as a parameter, never a suffix on the verb. A
 # meme READS through the one door, `tiddler_get(meme=True)` (whole within a page, its has-stack past it, the whole
 # paged on slot boundaries), which carries the text and the canonical hash a write hands back as `base`.
-# Each mirrors `lares tiddler put|get|delete` and `lares meme project` (the host `meme` stands as a real top-level command, so `mirrored`/
+# Each mirrors `lares put|get|delete name=value…` and `lares meme project` (the host `meme` stands as a real top-level command, so `mirrored`/
 # `cli_forms` carry it). A VERB DECLARES ITS SEAT: the CLI's `meme normalize` and `meme check` run LOCAL
 # over a file with no daemon, so they hold NO MCP tool — the MCP mirrors the daemon-seated verbs only, and
 # the fixture names that allowance as `local_seat`. THE CONTAINER LAW: exactly one of `recipe`/`bag` names
@@ -166,7 +166,7 @@ MEME_VERBS = ("meme_project",)
 # every TiddlyWiki act over ONE record with its fields (`tiddler_get` · `tiddler_put` · `tiddler_delete`) or over a wiki's
 # own engine (`wiki_filter` · `wiki_render` · `wiki_status`). Base operations stop wearing `meme_*`: a tiddler verb reads
 # and patches any record, whatever its type; a meme family's text lands through the same put, the gate inside it. Each mirrors
-# `lares tiddler get|put|delete` and `lares wiki filter|render|status`, puts the same `{verb, args}` on the wire and
+# `lares get|put|delete name=value…` (a filter: `lares get filter=…`) and `lares wiki render|status`, puts the same `{verb, args}` on the wire and
 # hands back the same answer body (`fixtures/tiddler-door-answers.json` welds both skins to one table). THE CONTAINER
 # LAW holds; `recipe="default"` names the worn face's daemon wiki and `recipe=<slug>` any wiki that face reaches (one it
 # hosts, or one shared to it), each answered in that wiki's own engine; a wiki the face reaches none of refuses

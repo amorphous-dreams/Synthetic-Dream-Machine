@@ -466,20 +466,41 @@ lift_vessel() {
 # that asked for the reading itself (`--observe`) gets that reading alone.
 follow_up=yes
 route_cli() {
-  # A named host file crosses the container boundary as raw stdin (a put's text, and the spirit verbs that take `--file`: ah, the
+  # A named host file crosses the container boundary as raw stdin (a put's `file=<path>`, and the spirit verbs that take `--file`: ah, the
   # carry's verb (its word stands in packages/lares-cli/src/spirit-words.ts; a rename edits this match too), residue and handback).
   # Rotate the positional
   # arguments while replacing only the consuming value, preserving every other byte of argv.
   stream_file=""
   stream_door=""
-  case "${1:-} ${2:-}" in "tiddler put"|"spirit ah"|"spirit hooili"|"spirit residue"|"spirit handback") stream_door=yes ;; esac
+  # THE CALL SHAPE'S PUT (`lares put title=… file=<path>`): its one host file rides the `file=` param, a token of its own; the
+  # path crosses as stdin and the token reads `file=-`. Every other token rides untouched.
+  if [ "${1:-}" = put ]; then
+    stream_n=0 stream_empty=""
+    for stream_arg do
+      case "$stream_arg" in file=*) stream_n=$((stream_n + 1)); [ -n "${stream_arg#file=}" ] || stream_empty=yes ;; esac
+    done
+    if [ "$stream_n" -gt 1 ]; then printf 'lares-container: name one host file: file=, once\n' >&2; return 2; fi
+    if [ -n "$stream_empty" ]; then printf 'lares-container: file= names no host file (an empty value)\n' >&2; return 2; fi
+    if [ "$stream_n" -eq 1 ]; then
+      stream_count=$# stream_i=0
+      while [ "$stream_i" -lt "$stream_count" ]; do
+        stream_arg=$1; shift; stream_i=$((stream_i + 1))
+        case "$stream_arg" in file=*) [ "${stream_arg#file=}" = - ] || { stream_file=${stream_arg#file=}; stream_arg=file=-; } ;; esac
+        set -- "$@" "$stream_arg"
+      done
+      if [ -n "$stream_file" ]; then
+        if [ "$(stat -f -c %T -- "$stream_file" 2>/dev/null || :)" = proc ] || [ ! -r "$stream_file" ] || [ ! -f "$stream_file" ]; then printf 'lares-container: cannot read host file %s\n' "$stream_file" >&2; return 2; fi
+      fi
+    fi
+  fi
+  case "${1:-} ${2:-}" in "spirit ah"|"spirit hooili"|"spirit residue"|"spirit handback") stream_door=yes ;; esac
   if [ -n "$stream_door" ]; then
     stream_n=0 stream_kind="" stream_empty="" stream_want=""
     # One pass names the text sources. A value that rides beside another flag (`--text --file`) counts as a value, never as a flag.
     for stream_arg do
       if [ -n "$stream_want" ]; then
         case "$stream_want" in
-          --fields|--match|--note|--reason|--replace|--text|--with) stream_want=""; continue ;;
+          --fields|--note|--reason|--text) stream_want=""; continue ;;
           *) case "$stream_arg" in --*) stream_want="" ;;
           *)
             case "$stream_want" in
@@ -492,19 +513,19 @@ route_cli() {
         --) break ;;
         --file|--append) stream_want=$stream_arg ;;
         --file=*|--append=*) stream_n=$((stream_n + 1)); stream_kind=${stream_arg%%=*}; [ -n "${stream_arg#*=}" ] || stream_empty=yes ;;
-        --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--collapse|--commit|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--witness|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
+        --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--commit|--cosign|--confirm|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--witness|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
       esac
     done
     if [ "$stream_n" -gt 1 ]; then printf 'lares-container: name one text source: --file or --append, once\n' >&2; return 2; fi
     if [ -n "$stream_empty" ]; then printf 'lares-container: %s names no host file (an empty value)\n' "$stream_kind" >&2; return 2; fi
-    # Every put streams its one named source: `--file` (the whole text) and `--append` (words at the end, on a record or a slot).
+    # Every spirit verb streams its one named source: `--file` (the whole text) and `--append` (words at the end).
     if [ "$stream_n" -eq 1 ]; then
       stream_count=$# stream_want="" stream_end="" stream_i=0
       while [ "$stream_i" -lt "$stream_count" ]; do
         stream_arg=$1; shift; stream_i=$((stream_i + 1))
         if [ -z "$stream_end" ] && [ -n "$stream_want" ]; then
           case "$stream_want" in
-            --fields|--match|--note|--reason|--replace|--text|--with) stream_want=""; set -- "$@" "$stream_arg"; continue ;;
+            --fields|--note|--reason|--text) stream_want=""; set -- "$@" "$stream_arg"; continue ;;
             *) case "$stream_arg" in --*) stream_want="" ;;
             *)
               case "$stream_want" in
@@ -519,7 +540,7 @@ route_cli() {
             --file=*|--append=*)
               stream_value=${stream_arg#*=}
               if [ "$stream_value" != - ]; then stream_file=$stream_value; stream_arg="${stream_arg%%=*}=-"; fi ;;
-            --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--collapse|--commit|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--witness|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
+            --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--commit|--cosign|--confirm|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--witness|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
           esac
         fi
         set -- "$@" "$stream_arg"

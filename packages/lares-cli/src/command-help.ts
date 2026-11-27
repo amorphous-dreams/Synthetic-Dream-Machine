@@ -18,13 +18,13 @@
  *
  * A DOOR FLIPS TO ITS CARRIERS. Where every affordance a door skins holds an affordance carrier, `helpLines` reads the baked
  * affordance pack (`@lararium/tw5/affordance-pack`) and the door's entry here burns in the same commit: one home, never two.
- * `oracle` flipped first (lar:///oracle.library.consults); `tiddler` flipped with the core verbs' carriers
- * (lar:///engine.record.reads · puts · removes · renames, candidate addresses), and `wiki filter` reads its carrier
- * (lar:///engine.filter.pages) while the rest of the wiki door keeps its own table.
+ * `oracle` flipped first (lar:///oracle.library.consults); `get` · `put` · `delete` · `rename` stand on the core verbs' carriers
+ * (lar:///engine.record.reads · puts · removes · renames, candidate addresses), `get` choosing lar:///engine.filter.pages by
+ * its `filter=` param, so none of them holds an entry here.
  *
  * PURE DATA, SO ANY VESSEL CAN HOLD IT. This module reads no `node:fs` and no environment; the pack rides as data.
  * The `meme` field NAMES the wiki record behind a verb door (`lar:` names; it never fetches); the `--meme`
- * reach rides the one read door `lares tiddler get --meme` already uses, which any vessel holding the cap can run.
+ * reach rides the one read door `lares get title=<uri> mu=assert` already uses, which any vessel holding the cap can run.
  * Every URI here comes HARVESTED from the owning module's own `Meme:` header — never invented at this seat.
  */
 import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
@@ -732,13 +732,13 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "THE MEME DOOR — one family for every law over meme text, and each verb DECLARES ITS SEAT: " +
       "`normalize` · `check` · `sitting` · `project --to md` (over a file) run LOCAL with no daemon in " +
       "reach; `project` to any other target, or from a `lar:` uri, rides the daemon verb. A family lands and patches through " +
-      "`lares tiddler put`, leaves through `lares tiddler delete --family`, and lists through `lares tiddler get --meme`. A meme READS through the one door: `lares tiddler get <uri> --recipe <slug> --meme` (whole within a page, " +
-      "its has-stack past it; `--all` the whole carrier). Store-backed verbs require `(--recipe <slug> | --bag <slug>)`; `--recipe` edits AS " +
+      "`lares put`, leaves through `lares delete … family=true`, and lists through `lares get meme=true`. A meme READS through the one door: `lares get title=<uri> recipe=<slug>` (whole within a page, " +
+      "its has-stack past it; `mu=relate` the card, `mu=assert` the whole carrier). Store-backed verbs require `(--recipe <slug> | --bag <slug>)`; `--recipe` edits AS " +
       "the named wiki; " +
       "`--bag` places into that bag and REFUSES when this island cannot write it; `--realm <id>` beside " +
       "`--bag` names the realm whose registration that bag resolves through, and reads that realm alone.",
     examples: [
-      "lares tiddler get lar:///ha.ka.ba/lares/api/corpus --recipe lares --meme   # READ a meme: the carrier, base on stderr (the one door)",
+      "lares get title=lar:///ha.ka.ba/lares/api/corpus recipe=lares mu=assert   # READ a meme: the carrier, base on stderr (the one door)",
       "lares meme normalize draft.mem                         # re-frame + re-stamp the block check",
       "lares meme check bags/**/*.mem                         # CI / pre-commit: drift exits 1",
       "lares meme project note.mem --to md --out ./out        # the submission pair, clock-free",
@@ -752,9 +752,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--recipe <slug>    an edit AS that wiki: its designated writable bag, write-then-sync",
       "--bag <slug>       a residency placement into that bag (refused when this island cannot write it)",
       "--target <h1|name> (get, list) READ another lit face's daemon wiki (`--recipe default`, or one of its daemon bags) while keeping the face worn; its personal and draft layers never answer (cross-face-private), a shut face refuses face-not-open, and a write naming another face refuses at the CLI",
-      "--tree             (list) nest each root's slot tree; roots + canonical hash alone otherwise. " +
-        "`list --recipe` names the roots the wiki's whole stack resolves (a removed carrier lists nowhere); " +
-        "`list --bag` names that one bag's own",
       "--dest-bag <uri>   (promote) the canon bag crossed into; the cap is read against this name",
       `--approval <file>  (promote) the seats' approval over these exact bytes; a crossing into the ${PLANE_LABELS.crossroads} refuses without one`,
       "--nexus <aid>      (promote) the Nexus whose charter reads the approval",
@@ -766,7 +763,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
         "editor's problem matcher (lar:///ha.ka.ba/lares/cli/problems); a clean file prints nothing, the exit stays",
       "--grammar          (normalize/check) also apply GRAMMAR-authority clauses (authored spelling, " +
         "e.g. a call site's `:` vs `=`) — default reports them as a preference and moves no byte",
-      "--to <md|html|tid|json>   (project) the render target (the carrier itself: `lares tiddler get <uri> --recipe <slug> --meme --all`)",
+      "--to <md|html|tid|json>   (project) the render target (the carrier itself: `lares get title=<uri> recipe=<slug> mu=assert`)",
       "--out <path>       (project) the pair's directory (--to md) or the rendered file; stdout otherwise",
       "--check            (project --to md, over a <file.md|dir>) prove currency by re-projection alone; " +
         "writes nothing, exits 1 naming each pair whose source moved or vanished, or whose bytes drifted",
@@ -1268,8 +1265,8 @@ const ABOUT = new Map<string, string>();
 export function seatAbout(door: string, about: string): void { ABOUT.set(door, about); }
 
 /**
- * A carried verb's one line, its carrier's role, for a door that keeps its own sub-verb table beside it (`wiki filter` in
- * `lares wiki --help`): the table prints the carrier's words and holds none of its own. Empty where the pack routes no carrier.
+ * A carried verb's one line, its carrier's role, for a door that keeps its own sub-verb table beside it: the table prints the
+ * carrier's words and holds none of its own. Empty where the pack routes no carrier.
  */
 export function verbRole(spelling: string): string {
   const address = packRoute("cli", spelling);

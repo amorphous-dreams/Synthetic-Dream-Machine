@@ -236,8 +236,8 @@ export interface IngestCarrier {
   readonly diskHash:   string;
   /** The MERGE BASE — the hash the writer last read, whichever door it wrote
    *  through: a disk gesture carries the Synced tree's last-projected hash; a
-   *  text-writer (`tiddler put`) carries the `canonicalHash` it read back from
-   *  `tiddler get --meme`. One slot, one truth: the Confluence gate reads it as the base
+   *  text-writer (`lares put`) carries the `canonicalHash` it read back from
+   *  `lares get title=… meme=true`. One slot, one truth: the Confluence gate reads it as the base
    *  a writer stood on, so a stale base surfaces as a conflict rather than a
    *  silent overwrite. null = the writer read nothing (never projected / never
    *  read) → the gate adopts. */

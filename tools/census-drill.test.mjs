@@ -138,8 +138,8 @@ test("P1 RED: the census reads the face row the vessel answers `mounted`, and a 
       "if (s.startsWith('persona list')) out({ ok: true, data: { personas: [{ petname: 'steward', handleIndex: 0 }] } });",
       "else if (s.startsWith('kahua get')) out({ [process.env.FAKE_FACE_WORD]: true, relation: 'rel-1', items: [] });",
       "else if (s.startsWith('wiki status')) out({ ok: true, data: { catalog: { wikis: [] } } });",
-      "else if (s.startsWith('tiddler get --meme')) out({ ok: true, data: { roots: [{ uri: 'lar:///ha.ka.ba/kahua/memory/state/heron', canonicalHash: 'sha256:aa' }] } });",
-      "else if (s.startsWith('wiki filter')) out({ ok: true, data: { rows: [] } });",
+      "else if (s.startsWith('get meme=true')) out({ ok: true, data: { roots: [{ uri: 'lar:///ha.ka.ba/kahua/memory/state/heron', canonicalHash: 'sha256:aa' }] } });",
+      "else if (s.startsWith('get filter=')) out({ ok: true, data: { rows: [] } });",
       "else { console.error('unread door: ' + s); process.exit(9); }",
     ].join("\n"));
     const root = join(dir, "root");
@@ -335,16 +335,16 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     old.must(["wiki", "keep", "quiet"]);
     const page = join(scratch, "page.mem");
     writeFileSync(page, memeText(PAGE, "a page on the shared wiki", ""));
-    old.must(["tiddler", "put", PAGE, "--recipe", "notes", "--file", page, "--json"]);
+    old.must(["put", `title=${PAGE}`, "recipe=notes", `file=${page}`, "--json"]);
     for (const [uri, body, meta] of [[HERON, "remember the heron", `tags = "stage/index"\ndescription = "the heron"\n`], [POND, "the pond at dusk", ""], [KITE, "fly the kite low", ""]]) {
       const file = join(scratch, `${uri.split("/").pop()}.mem`);
       writeFileSync(file, memeText(uri, body, meta));
-      old.must(["tiddler", "put", uri, "--recipe", "default", "--file", file, "--json"]);
+      old.must(["put", `title=${uri}`, `file=${file}`, "--json"]);
     }
     // Plain records (no uri-path): one under a stable name, and one under a free title, which the mirror sites at the flattened
     // default (`plain note.tid`) and the restore names by the title its own file states.
-    old.must(["tiddler", "put", PLAIN, "--recipe", "default", "--text", "a plain record", "--json"]);
-    old.must(["tiddler", "put", FREE, "--recipe", "default", "--text", "a free-titled note", "--json"]);
+    old.must(["put", `title=${PLAIN}`, "text=a plain record", "--json"]);
+    old.must(["put", `title=${FREE}`, "text=a free-titled note", "--json"]);
     const bundle = join(scratch, "bundle");
     old.must(["export", bundle, "--json"]);
     // THE SNAPSHOT BEFORE DOWN: the rite takes the exporting house down before the new one stands (one image tag, one port),
@@ -376,11 +376,11 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     assert.ok(parAnswer.counts.shares >= 2, `the reading saw both shares: ${JSON.stringify(parAnswer.counts)}`);
 
     // ── THE INSTRUMENT FAILS: delete one meme, change another, drop one share ───────────────────────────────────
-    fresh.must(["tiddler", "delete", POND, "--family", "--recipe", "default", "--json"]);
-    const kite = JSON.parse(fresh.must(["tiddler", "get", KITE, "--recipe", "default", "--meme", "--all", "--json"]).stdout).data.meme;
+    fresh.must(["delete", `title=${POND}`, "family=true", "--json"]);
+    const kite = JSON.parse(fresh.must(["get", `title=${KITE}`, "mu=assert", "--json"]).stdout).data.meme;
     const kiteFile = join(scratch, "kite-changed.mem");
     writeFileSync(kiteFile, memeText(KITE, "fly the kite high", ""));
-    fresh.must(["tiddler", "put", KITE, "--recipe", "default", "--file", kiteFile, "--base", kite.canonicalHash, "--json"]);
+    fresh.must(["put", `title=${KITE}`, `file=${kiteFile}`, `base=${kite.canonicalHash}`, "--json"]);
     // The share config's file is the person's own hand door (it wins at the next boot): drop the notes row from it.
     const mesh = await import(pathToFileURL(join(repo, "packages/lararium-mesh/dist/index.js")).href);
     const shareFile = join(fresh.root, "config", mesh.SHARE_CONFIG_FILE);

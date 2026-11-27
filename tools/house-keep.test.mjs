@@ -120,9 +120,9 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     for (const [uri, body, meta] of [[HERON, "remember the heron", `tags = "stage/index"\ndescription = "the heron"\n`], [POND, "the pond at dusk", ""], [KITE, "fly the kite low", ""]]) {
       const file = join(scratch, `${uri.split("/").pop()}.mem`);
       writeFileSync(file, memeText(uri, body, meta));
-      old.must(["tiddler", "put", uri, "--recipe", "default", "--file", file, "--json"]);
+      old.must(["put", `title=${uri}`, `file=${file}`, "--json"]);
     }
-    old.must(["tiddler", "put", FREE, "--recipe", "default", "--text", "a free-titled note", "--json"]);
+    old.must(["put", `title=${FREE}`, "text=a free-titled note", "--json"]);
 
     // ── THE WORKSPACE: a clone of the operator's repo (here a bare scratch remote), bound under the house's workspaces ──
     const remote = join(scratch, "remote.git");

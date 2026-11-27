@@ -9,7 +9,7 @@
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { parseArgs, ArgsError, BOOLEAN_FLAGS, LIST_FLAGS, SUB_VERB_FLAGS, VALUE_FLAGS, VALUE_OR_FLAG } from "../src/parse-args.js";
+import { parseArgs, splitCall, ArgsError, BOOLEAN_FLAGS, PARAM_TOKEN, VALUE_FLAGS, VALUE_OR_FLAG } from "../src/parse-args.js";
 import { dispatch, unknownFlags, COMMANDS } from "../src/bin/lares.js";
 
 afterEach(() => vi.restoreAllMocks());
@@ -72,21 +72,10 @@ describe("parseArgs: a boolean flag takes no value, in every position", () => {
   });
   test("★ a value flag takes the next token whatever it starts with: front matter binds as the body ★", () => {
     const body = "---\nfront: matter\n---\nbody";
-    expect(parseArgs(["tiddler", "put", "T", "--text", body]).options).toEqual({ text: body });
-    expect(parseArgs(["tiddler", "put", "T", "--text", "--literal"]).options).toEqual({ text: "--literal" });
-    expect(parseArgs(["tiddler", "put", "T", `--text=${body}`]).options).toEqual({ text: body });
-    expect(parseArgs(["tiddler", "put", "T", "--text", body]).positional).toEqual(["put", "T"]);
-  });
-  // S3 TEXT ALONE (course/ai-surface-gestures): `--text` writes words on put and reads the text alone on get, one name per sub-verb.
-  test("★ `tiddler get T --text` reads --text bare in every position, keeps the flag after it, and refuses `--text=x`; put still binds its words ★", () => {
-    for (const argv of [["tiddler", "get", "T", "--text", "--recipe", "default"], ["tiddler", "get", "T", "--recipe", "default", "--text"]]) {
-      const a = parseArgs(argv);
-      expect(a.flags).toEqual({ text: true });
-      expect(a.options).toEqual({ recipe: "default" });
-      expect(a.positional).toEqual(["get", "T"]);
-    }
-    expect(() => parseArgs(["tiddler", "get", "T", "--text=x"])).toThrow(/takes no value/);
-    expect(parseArgs(["tiddler", "put", "T", "--text", "--recipe"]).options).toEqual({ text: "--recipe" });
+    expect(parseArgs(["kahua", "stage", "T", "--text", body]).options).toEqual({ text: body });
+    expect(parseArgs(["kahua", "stage", "T", "--text", "--literal"]).options).toEqual({ text: "--literal" });
+    expect(parseArgs(["kahua", "stage", "T", `--text=${body}`]).options).toEqual({ text: body });
+    expect(parseArgs(["kahua", "stage", "T", "--text", body]).positional).toEqual(["stage", "T"]);
   });
   test("CONTROL: any other valued name still peeks, so `--key --other` leaves the first bare and an unknown flag stays a flag", () => {
     const a = parseArgs(["x", "--root", "--mystery"]);
@@ -108,28 +97,46 @@ describe("parseArgs: a boolean flag takes no value, in every position", () => {
       for (const m of text.matchAll(/\bflags\["([a-z0-9-]+)"\]/g)) flagReads.add(m[1]!);
       for (const m of text.matchAll(/\boptions\["([a-z0-9-]+)"\]/g)) optionReads.add(m[1]!);
     }
-    // A sub-verb flag (`--text` on `tiddler get`) is the one value flag a handler also reads as a flag: its sub-verb parses it bare.
-    const subVerb = new Set(Object.values(SUB_VERB_FLAGS).flatMap((names) => [...names]));
-    expect([...flagReads].filter((n) => !BOOLEAN_FLAGS.has(n) && !VALUE_OR_FLAG.has(n) && !subVerb.has(n) && !["bag", "release"].includes(n)), "read as a flag, never declared").toEqual([]);
+    expect([...flagReads].filter((n) => !BOOLEAN_FLAGS.has(n) && !VALUE_OR_FLAG.has(n) && !["bag", "release"].includes(n)), "read as a flag, never declared").toEqual([]);
     expect([...BOOLEAN_FLAGS].filter((n) => optionReads.has(n)), "declared boolean, read as an option").toEqual([]);
-    expect([...VALUE_FLAGS].filter((n) => !optionReads.has(n) || (flagReads.has(n) && !subVerb.has(n)) || BOOLEAN_FLAGS.has(n) || VALUE_OR_FLAG.has(n)), "value flag read other than as an option").toEqual([]);
-    expect([...subVerb].filter((n) => !flagReads.has(n) || BOOLEAN_FLAGS.has(n) || VALUE_OR_FLAG.has(n)), "sub-verb flag never read as a flag, or declared globally").toEqual([]);
+    expect([...VALUE_FLAGS].filter((n) => !optionReads.has(n) || flagReads.has(n) || BOOLEAN_FLAGS.has(n) || VALUE_OR_FLAG.has(n)), "value flag read other than as an option").toEqual([]);
     expect([...VALUE_OR_FLAG].filter((n) => !optionReads.has(n) || !flagReads.has(n)), "listed as dual, read one way only").toEqual([]);
   });
 });
 
-describe("parseArgs: a list flag gathers every repeat (tag-add-keeps-one-list)", () => {
-  // Measured before: `--tag-add a --tag-add b` parsed to `{ "tag-add": "b" }`, so a multi-flag put dropped `a` without a word.
-  test("★ repeated --tag-add and --tag-remove join as one TiddlyWiki list, in order ★", () => {
-    expect(parseArgs(["tiddler", "put", "T", "--tag-add", "a", "--tag-add", "[[b c]]", "--tag-add=d"]).options).toEqual({ "tag-add": "a [[b c]] d" });
-    expect(parseArgs(["tiddler", "put", "T", "--tag-remove", "x", "--tag-remove", "y"]).options).toEqual({ "tag-remove": "x y" });
+describe("splitCall: the call shape's one token rule", () => {
+  test("★ a leading run of words names the verb; every name=value token names a param ★", () => {
+    expect(splitCall(["get", "title=lar:///ha.ka.ba/x", "mu=relate"])).toEqual({ words: ["get"], params: { title: "lar:///ha.ka.ba/x", mu: "relate" } });
+    expect(splitCall(["oracle", "cast", "query=q"])).toEqual({ words: ["oracle", "cast"], params: { query: "q" } });
   });
-  test("CONTROL: one --tag-add keeps its list as written, and any other valued name still takes the last", () => {
-    expect(parseArgs(["tiddler", "put", "T", "--tag-add", "[[a]] [[b]]"]).options).toEqual({ "tag-add": "[[a]] [[b]]" });
-    expect(parseArgs(["x", "--root", "/a", "--root", "/b"]).options).toEqual({ root: "/b" });
+  test("★ a leading address names the verb ★", () => {
+    expect(splitCall(["lar:///engine.record.reads", "title=x"])).toEqual({ words: ["lar:///engine.record.reads"], params: { title: "x" } });
   });
-  test("every list flag reads as an option, never a flag", () => {
-    for (const n of LIST_FLAGS) expect(BOOLEAN_FLAGS.has(n) || VALUE_OR_FLAG.has(n) || VALUE_FLAGS.has(n), n).toBe(false);
+  test("★ a param splits at its FIRST `=`: a title or a filter holding `=` stays a value ★", () => {
+    expect(splitCall(["get", "title=a=b"]).params).toEqual({ title: "a=b" });
+    expect(splitCall(["get", "filter=[field:x[=y]]"]).params).toEqual({ filter: "[field:x[=y]]" });
+    expect(splitCall(["put", "title=T", "text="]).params).toEqual({ title: "T", text: "" });
+  });
+  test("★ a value that starts like a flag rides whole: `with=--x` ★", () => {
+    expect(splitCall(["put", "title=T", "replace=a", "with=--x"]).params).toEqual({ title: "T", replace: "a", with: "--x" });
+  });
+  test("★ a word after a param refuses by name (ArgsError) ★", () => {
+    expect(() => splitCall(["get", "title=x", "stray"])).toThrow(ArgsError);
+    expect(() => splitCall(["get", "title=x", "stray"])).toThrow(/"stray" stands after a param/);
+  });
+  test("★ a repeated param joins its values with a space, in the order written ★", () => {
+    expect(splitCall(["put", "title=T", "tag-add=a", "tag-add=[[b c]]", "tag-add=d"]).params).toEqual({ title: "T", "tag-add": "a [[b c]] d" });
+    // An empty repeat adds nothing, and a value after an empty one stands alone.
+    expect(splitCall(["put", "tag-add=", "tag-add=a", "tag-add="]).params).toEqual({ "tag-add": "a" });
+  });
+  test("the token rule reads a lowercase name before the `=`; anything else stays a word", () => {
+    for (const tok of ["title=x", "max-bytes=4", "a1=b"]) expect(PARAM_TOKEN.test(tok), tok).toBe(true);
+    for (const tok of ["Title=x", "=x", "-x=y", "1a=b", "lar:///a=b", "--k=v"]) expect(PARAM_TOKEN.test(tok), tok).toBe(false);
+    expect(splitCall(["Title=x"])).toEqual({ words: ["Title=x"], params: {} });
+  });
+  test("CONTROL: a line with no params is words alone", () => {
+    expect(splitCall(["-"])).toEqual({ words: ["-"], params: {} });
+    expect(splitCall([])).toEqual({ words: [], params: {} });
   });
 });
 

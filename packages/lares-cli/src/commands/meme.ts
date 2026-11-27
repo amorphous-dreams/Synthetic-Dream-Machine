@@ -1,8 +1,9 @@
 /**
  * `lares meme` — ONE FAMILY FOR EVERY LAW OVER MEME TEXT.
  *
- *   (a family's writes ride the plain tiddler door: `tiddler put <uri> --file <path>` lands the whole carrier, `tiddler put <uri>
- *    --slot '#/x' --text|--file|--append` one slot, `tiddler delete <uri> --family` the family; `tiddler get --meme [--tree]` lists)
+ *   (a family's writes ride the plain record calls: `lares put title=<uri> file=<path>` lands the whole carrier, `lares put
+ *    title=<uri> slot='#/x' text=|file=|append=` one slot, `lares delete title=<uri> family=true` the family; `lares get meme=true
+ *    [tree=true]` lists)
  *   normalize <file.mem ...> [--grammar]
  *   check <file.mem ...> [--gradient | --edges | --grammar]
  *   project <file.mem> --to md [--out <path>]
@@ -20,8 +21,8 @@
  * path, read its bytes, and (normalize, project) write bytes back: no daemon, no store, no cap gate, no
  * effect record. The offline re-stamp of a stale block check keeps working with no socket. `project` over a
  * `lar:` uri or to any rendered target rides the daemon verb (`meme-project`): the island's own renderers, reached
- * from a terminal; the family listing (`tiddler get --meme`) rides `meme-list`. A READ rides the one door: `lares tiddler get <uri>
- * --meme` answers the carrier on a gradient (whole within a page, its has-stack past it), and `--meme --all` the
+ * from a terminal; the family listing (`lares get meme=true`) rides `meme-list`. A READ rides the one door: `lares get title=<uri>`
+ * answers the carrier on a gradient (whole within a page, its has-stack past it), `mu=relate` its card, and `mu=assert` the
  * whole carrier, paged on slot boundaries.
  *
  * THE CONTAINER LAW (every store-backed seat):
@@ -31,10 +32,10 @@
  *   · --recipe <slug>  — an edit AS that wiki: its designated writable bag, write-then-sync.
  *   · --bag <slug>     — a residency placement into that bag; a bag the island cannot write refuses.
  *   · --realm <id>     — beside --bag: the realm whose registration that bag resolves through; it reads that realm alone.
- *   · --tree           — (the listing) nest each root's slot tree beneath it; roots + canonical hash alone otherwise.
+ *   · tree=true        — (the listing, `lares get meme=true`) nest each root's slot tree beneath it; roots + canonical hash alone otherwise.
  *
- * The listing names EVERY root its seat holds. `--bag` lists that one bag's records; `--recipe <slug>` lists the
- * roots the wiki's whole stack resolves, as `tiddler get --recipe` reads them (a tombstone in the working layer
+ * The listing names EVERY root its seat holds. `bag=` lists that one bag's records; `recipe=<slug>` lists the
+ * roots the wiki's whole stack resolves, as `lares get title=… recipe=<slug>` reads them (a tombstone in the working layer
  * shadows canon, so a carrier the wiki removed lists nowhere), each row naming the bag that answered.
  *
  * Slugs ride bare (`sdm`, `lares`). Exit classes: a conflict exits `conflict`; an island refusal `verb-error`;
@@ -109,7 +110,7 @@ import type { ParsedArgs } from "../parse-args.js";
 import { UsageError } from "./meme-shared.js";
 
 /** The targets `project --to` renders. `md` over a file seats local; every other pairing rides the daemon. */
-/** `mem` left the list: the composed carrier reads through the one door, `lares tiddler get <uri> --recipe <slug> --meme --all`. */
+/** `mem` left the list: the composed carrier reads through the one door, `lares get title=<uri> recipe=<slug> mu=assert`. */
 export const PROJECT_TARGETS = ["md", "html", "tid", "json"] as const;
 export type ProjectTarget = typeof PROJECT_TARGETS[number];
 
@@ -667,8 +668,8 @@ async function memeProject(args: ParsedArgs): Promise<number> {
     return exitFor(code);
   }
   const text = String(outcome.output["text"] ?? "");
-  // A `mem` projection left this verb: the composed carrier reads through the one door (`lares tiddler get <uri> --meme
-  // --all`), and the composition reading (`readCarrierShape`) rides that read, the one place a human waits on a carrier.
+  // A `mem` projection left this verb: the composed carrier reads through the one door (`lares get title=<uri>
+  // mu=assert`), and the composition reading (`readCarrierShape`) rides that read, the one place a human waits on a carrier.
   const out = typeof args.options["out"] === "string" ? args.options["out"] : "";
   if (out) writeFileSync(out, text, "utf8");
   // THE SIDECAR PAIR IS A CARRIER IN TWO FILES: an `md` projection rides its `.meta` in the reply, and it

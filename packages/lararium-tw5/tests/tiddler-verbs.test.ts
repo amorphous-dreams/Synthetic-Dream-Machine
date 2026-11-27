@@ -420,7 +420,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(got).toMatchObject({ lens: "record", grain: { asked: null, applied: "fat" }, next: null });
   });
 
-  test("RED one-door-record-gradient: a record past one page answers skinny with next fat; --grain fat carries the text; an unknown grain refuses loudly", async () => {
+  test("RED one-door-record-gradient: a record past one page answers skinny with next fat; the fat grain carries the text; an unknown grain refuses loudly", async () => {
     const r = await rig();
     r.engine.setTiddler({ title: "Big", text: "x".repeat(70_000) });
     const get = makeTiddlerGetReactor(r.opts);
@@ -448,7 +448,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(fetched).toEqual([]);
     const resolved = await get({ ...A, title: "Pointer", grain: "resolved" }, ctx());
     expect(resolved).toMatchObject({ grain: { applied: "resolved" }, tiddler: { fields: { text: "the body the handle names" } } });
-    // `whole` on a pointer (the CLI's `--all`) reads the body grain's whole: resolved.
+    // `whole` on a pointer (the CLI's `mu=assert`) reads the body grain's whole: resolved.
     expect(await get({ ...A, title: "Pointer", grain: "whole" }, ctx())).toMatchObject({ grain: { asked: "whole", applied: "resolved" } });
     const web = await get({ ...A, title: "Web", grain: "resolved" }, ctx());
     expect(web).toMatchObject({ grain: { applied: "handle", why: expect.stringMatching(/never fetch/) }, next: null });
@@ -456,13 +456,13 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(fetched).toEqual([cid, cid]);
   });
 
-  test("RED M2 base-from-skinny: a skinny answer's base names the card, so a text put against it refuses by name (naming --all); a field patch against it lands", async () => {
+  test("RED M2 base-from-skinny: a skinny answer's base names the card, so a text put against it refuses by name (naming mu=assert); a field patch against it lands", async () => {
     const r = await rig();
     const get = makeTiddlerGetReactor(r.opts);
     const put = makeTiddlerPutReactor(r.opts);
     const card = (await get({ ...A, title: "Note 04", grain: "skinny" }, ctx()))["tiddler"] as { hash: string };
     expect(card.hash).toMatch(/^skinny:sha256-/);
-    await expect(put({ ...A, title: "Note 04", text: "a blind rewrite", base: card.hash }, ctx())).rejects.toMatchObject({ reason: "base-from-skinny", message: expect.stringMatching(/--all/) });
+    await expect(put({ ...A, title: "Note 04", text: "a blind rewrite", base: card.hash }, ctx())).rejects.toMatchObject({ reason: "base-from-skinny", message: expect.stringMatching(/mu=assert/) });
     expect(await put({ ...A, title: "Note 04", fields: { status: "seen" }, base: card.hash }, ctx())).toMatchObject({ decision: "put" });
     // CONTROL: a fat answer's base authorizes the text write.
     const fat = (await get({ ...A, title: "Note 04" }, ctx()))["tiddler"] as { hash: string };
@@ -577,8 +577,8 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     const out = await filter({ ...A, filter: "[[$:/temp/lares/secret]] [[Web]] [[Prose]]", match: "device" }, ctx());
     expect(out).toMatchObject({ total: 2, withheld: 1 });
     expect(out["rows"]).toEqual([{ title: "Web", fields: {} }, { title: "Prose", fields: {}, lines: [], matches: 0 }]);
-    await expect(filter({ ...A, filter: "[[Prose]]", context: 1 }, ctx())).rejects.toMatchObject({ reason: "filter-context-alone", message: expect.stringMatching(/--match/) });
-    await expect(filter({ ...A, filter: "[[Prose]]", match: "is", context: 9 }, ctx())).rejects.toMatchObject({ reason: "filter-context-range", message: expect.stringMatching(/--context 2/) });
+    await expect(filter({ ...A, filter: "[[Prose]]", context: 1 }, ctx())).rejects.toMatchObject({ reason: "filter-context-alone", message: expect.stringMatching(/match=<words>/) });
+    await expect(filter({ ...A, filter: "[[Prose]]", match: "is", context: 9 }, ctx())).rejects.toMatchObject({ reason: "filter-context-range", message: expect.stringMatching(/context=2/) });
     await expect(filter({ ...A, filter: "[[Prose]]", match: "is", context: "-1" }, ctx())).rejects.toMatchObject({ reason: "filter-context-range" });
     await expect(filter({ ...A, filter: "[[Prose]]", match: "/(/" }, ctx())).rejects.toMatchObject({ reason: "filter-match-malformed", message: expect.stringMatching(/slashes/) });
     await expect(filter({ ...A, filter: "[[Prose]]", match: "" }, ctx())).rejects.toMatchObject({ reason: "filter-match-empty" });
@@ -680,7 +680,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect((page["meme"] as { canonicalHash: string }).canonicalHash).toMatch(/^sha256/);
   });
 
-  test("RED fat-carries: an explicit fat or whole read of a record past the byte cap (a plugin-sized text) carries the text whole; a named --max-bytes still caps", async () => {
+  test("RED fat-carries: an explicit fat or whole read of a record past the byte cap (a plugin-sized text) carries the text whole; a named max-bytes still caps", async () => {
     const r = await rig();
     r.engine.setTiddler({ title: "lar:///ha.ka.ba/lararium/plugins/lares/big", type: "application/json", "plugin-type": "plugin", text: JSON.stringify({ tiddlers: { a: { text: "x".repeat(400_000) } } }) });
     const get = makeTiddlerGetReactor(r.opts);
@@ -693,7 +693,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(capped).toMatchObject({ grain: { applied: "skinny" }, tiddler: { omitted: expect.arrayContaining(["text"]) } });
   });
 
-  test("RED two-skinnies: `grain: skinny` (the CLI's --skinny) leaves a record's text home; `_is_skinny` marks a POINTER, which answers its handle, never the tiddler grain's card", async () => {
+  test("RED two-skinnies: `grain: skinny` (the CLI's mu=relate) leaves a record's text home; `_is_skinny` marks a POINTER, which answers its handle, never the tiddler grain's card", async () => {
     const r = await rig();
     r.engine.setTiddler({ title: "Handle", _is_skinny: "yes", textCid: "ab".repeat(32), type: "text/plain" });
     const get = makeTiddlerGetReactor(r.opts);
@@ -708,7 +708,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect((asked["tiddler"] as { omitted?: string[] }).omitted).toBeUndefined();
   });
 
-  test("RED one-door-meme-lens: --meme on a meme within a page answers the whole carrier byte for byte, sealed, with base/ on its has line", async () => {
+  test("RED one-door-meme-lens: the meme lens on a meme within a page answers the whole carrier byte for byte, sealed, with base/ on its has line", async () => {
     const r = await rig();
     expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
     const whole = await readMeme(MEME, wikiMemeSink(r.engine.wiki));
@@ -717,7 +717,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(got["has"]).toMatch(new RegExp(`^<<~ has name=\`${MEME}\` params=\`recipe/default .*type/${CARRIER.replace(/[+/]/g, "\\$&")} position/root slots/2 bytes/\\d+ base/${whole!.canonicalHash}\``));
   });
 
-  test("RED one-door-meme-gradient: past a page --meme answers the has-stack (root line plus one per slot); --all pages on slot boundaries and the pages join to the carrier", async () => {
+  test("RED one-door-meme-gradient: past a page the meme lens answers the has-stack (root line plus one per slot); the whole grain pages on slot boundaries and the pages join to the carrier", async () => {
     const r = await rig();
     const big = (s: string): string => `body of ${s} ${"lorem ".repeat(5_000)}`;
     const text = memeText(["a", "b", "c"]).replace(/body of (\w)/g, (_m, s: string) => big(s));
@@ -845,7 +845,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     await put({ ...A, title: "Errata", create: true, text: "the cat sat on the mat; the cat ran" }, ctx());
     const ambiguous = put({ ...A, title: "Errata", replace: "the cat", with: "a dog" }, ctx());
     await expect(ambiguous).rejects.toMatchObject({ reason: "replace-ambiguous" });
-    await expect(ambiguous).rejects.toThrow(/occurs 2 times.*lares tiddler get "Errata" --recipe default/);
+    await expect(ambiguous).rejects.toThrow(/occurs 2 times.*lares get title="Errata" recipe=default/);
     // Overlaps count: `aa` in `aaa` reads twice, so the door never guesses which.
     await put({ ...A, title: "Overlap", create: true, text: "aaa" }, ctx());
     await expect(put({ ...A, title: "Overlap", replace: "aa", with: "b" }, ctx())).rejects.toMatchObject({ reason: "replace-ambiguous" });
@@ -1085,7 +1085,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(root).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family", tombstoned: [],
       consequence: { act: "delete", target: MEME, position: "root", family: MEME, refusals: [] } });
     expect(retractsOf(root["consequence"] as Consequence)).toEqual([MEME, `${MEME}#/a`]);
-    expect(String(root["why"])).toMatch(/lares tiddler delete "lar:\/\/\/t\/x" --recipe default --family.*Nothing moved\.$/);
+    expect(String(root["why"])).toMatch(/lares delete title="lar:\/\/\/t\/x" recipe=default family=true.*Nothing moved\.$/);
     expect(r.engine.wiki.tiddlerExists(MEME)).toBe(true);
     expect(r.engine.wiki.tiddlerExists(`${MEME}#/a`)).toBe(true);
     // A cut names no layer, so a mode refuses; a stale base on the slot's own record moves nothing.
@@ -1151,11 +1151,11 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     const rename = makeTiddlerRenameReactor(r.opts);
     const onto = await rename({ ...A, title: "Note 01", to: "Other" }, ctx());
     expect(onto).toMatchObject({ decision: "refused", refusal: "rename-target-stands" });
-    expect(String(onto["why"])).toMatch(/lares tiddler delete "Other"/);
+    expect(String(onto["why"])).toMatch(/lares delete title="Other"/);
     expect(r.engine.wiki.getTiddler("Note 01")!.fields["text"]).toBe("the first note");
     const slot = await rename({ ...A, title: `${MEME}#/a`, to: `${MEME}#/z` }, ctx());
     expect(slot).toMatchObject({ decision: "refused", refusal: "slot-without-root" });
-    expect(String(slot["why"])).toContain(`lares tiddler rename "${MEME}"`);
+    expect(String(slot["why"])).toContain(`lares rename title="${MEME}"`);
     expect(await rename({ ...A, title: "Missing", to: "Else" }, ctx())).toMatchObject({ decision: "absent" });
     expect(await rename({ ...A, title: "Note 02", to: "Note Two", base: "sha256-" + "0".repeat(64) }, ctx())).toMatchObject({ decision: "conflict" });
     expect(r.engine.wiki.tiddlerExists("Note Two")).toBe(false);
@@ -1317,7 +1317,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
       await expect(rename({ ...A, title: "$:/config/Thing", to: "Thing" }, as)).rejects.toMatchObject({ reason: "rename-system-title" });
       await expect(rename({ ...A, title: "Plain", to: "$:/tags/StartupAction" }, as)).rejects.toMatchObject({ reason: "rename-system-title" });
     }
-    await expect(rename({ ...A, title: "$:/config/Thing", to: "Thing" }, { ...ctx(), asker: "seat" })).rejects.toThrow(/lares tiddler put "Thing" --recipe default.*lares tiddler delete "\$:\/config\/Thing" --recipe default/s);
+    await expect(rename({ ...A, title: "$:/config/Thing", to: "Thing" }, { ...ctx(), asker: "seat" })).rejects.toThrow(/lares put title="Thing" recipe=default.*lares delete title="\$:\/config\/Thing" recipe=default/s);
     // The engine's relink trims both titles, so a padded title would relink onto the title behind its padding.
     await expect(rename({ ...A, title: "Plain", to: " $:/tags/StartupAction" }, { ...ctx(), asker: "seat" })).rejects.toMatchObject({ reason: "fields-malformed" });
     await expect(rename({ ...A, title: "Plain", to: "Plainer " }, { ...ctx(), asker: "cli" })).rejects.toMatchObject({ reason: "fields-malformed" });
@@ -1365,7 +1365,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
       expect(String(out["why"])).not.toContain(`${to}#/a`);
       expect(String(out["why"])).toMatch(/1 title .*lares wiki status --recipe default/);
       expect(out["consequence"] as Consequence).toMatchObject({ refusals: [], versions: { [`${to}#/a`]: null } });
-      expect(String((await rename({ ...A, title: MEME, to }, ctx()))["why"])).toContain(`lares tiddler delete "${to}#/a"`);
+      expect(String((await rename({ ...A, title: MEME, to }, ctx()))["why"])).toContain(`lares delete title="${to}#/a"`);
     }
     // A slot whose root the face may not read names no root and no rename of one.
     {
@@ -1373,8 +1373,8 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
       rest(wiki, PERSONAL, [MEME]);
       const out = await rename({ ...A, title: `${MEME}#/a`, to: `${MEME}#/z` }, ctx(sees));
       expect(out).toMatchObject({ decision: "refused", refusal: "slot-without-root" });
-      expect(String(out["why"])).not.toContain("lares tiddler rename");
-      expect(String(out["why"])).toContain(`lares tiddler get "${MEME}#/a" --recipe default`);
+      expect(String(out["why"])).not.toContain("lares rename");
+      expect(String(out["why"])).toContain(`lares get title="${MEME}#/a" recipe=default`);
     }
     // A hidden record holding the new title itself: no delete cure and no bag name.
     {
@@ -1382,7 +1382,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
       wiki.addTiddler({ title: "Hidden Note", text: "theirs", "$origin-bag": PERSONAL });
       const out = await rename({ ...A, title: "Note 01", to: "Hidden Note" }, ctx(sees));
       expect(out).toMatchObject({ decision: "refused", refusal: "rename-target-stands" });
-      expect(String(out["why"])).not.toContain("lares tiddler delete");
+      expect(String(out["why"])).not.toContain("lares delete");
       expect(JSON.stringify(out)).not.toContain(PERSONAL);
       expect(wiki.getTiddler("Hidden Note")!.fields["text"]).toBe("theirs");
     }
@@ -1415,7 +1415,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     const own = Object.getOwnPropertyDescriptor(wiki, "addTiddler");
     const loose = await rename({ ...A, title: "Note 01", to: "Note One" }, ctx());
     expect(loose).toMatchObject({ decision: "refused", refusal: "rename-source-layer" });
-    expect(String(loose["why"])).toContain(`lares tiddler get "Note 01" --recipe default`);
+    expect(String(loose["why"])).toContain(`lares get title="Note 01" recipe=default`);
     expect(wiki.tiddlerExists("Note One")).toBe(false);
     rest(wiki, DAEMON, ["Note 01"]);
     wiki.addTiddler({ title: "Loose", tags: "[[Note 01]]" });
@@ -1572,8 +1572,8 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(await r.composite.storeForBag(DAEMON)!.get("Solo")).toBeNull();
     const needed = await del({ ...A, title: "Dup" }, ctx());
     expect(needed).toMatchObject({ decision: "refused", refusal: "delete-mode-needed", tombstoned: [], retracted: [] });
-    expect(String(needed["why"])).toContain("--mode kapae");
-    expect(String(needed["why"])).toContain("--mode reveal");
+    expect(String(needed["why"])).toContain("mode=kapae");
+    expect(String(needed["why"])).toContain("mode=reveal");
     expect(String(needed["why"])).toContain(CANON);
     expect(r.engine.wiki.getTiddlerText("Dup")).toBe("my words");
     // A record that rests beneath the working layer alone (canon) leaves only by a kāpae: no mode named refuses toward it.
@@ -1581,7 +1581,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     await r.landed();
     const canonOnly = await del({ ...A, title: "Canon Only" }, ctx());
     expect(canonOnly).toMatchObject({ decision: "refused", refusal: "delete-mode-needed" });
-    expect(String(canonOnly["why"])).toContain("--mode kapae");
+    expect(String(canonOnly["why"])).toContain("mode=kapae");
     expect(r.engine.wiki.tiddlerExists("Canon Only")).toBe(true);
   });
 
@@ -1649,7 +1649,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect([await working.get(MEME), await working.get(`${MEME}#/a`)]).toEqual([null, null]);
     const veiled = await del({ ...A, title: "Veiled" }, ctx());
     expect(veiled).toMatchObject({ decision: "refused", refusal: "delete-mode-needed" });
-    expect(String(veiled["why"])).toContain("--mode reveal");
+    expect(String(veiled["why"])).toContain("mode=reveal");
     expect(r.engine.wiki.tiddlerExists("Veiled")).toBe(false);
     expect(await del({ ...A, title: "Veiled", mode: "reveal" }, ctx())).toMatchObject({ decision: "removed", mode: "reveal", retracted: ["Veiled"],
       consequence: { acts: [{ title: "Veiled", act: "retract", bag: DAEMON, reveals: CANON }] } });
@@ -1765,7 +1765,8 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     await expect(makeWikiFilterReactor(r.opts)({ ...A, filter: "[tag[memory]]" }, ctx(stranger))).rejects.toThrow(/cap-denied: read/);
     await expect(makeTiddlerGetReactor(r.opts)({ ...A, title: "Note 01" }, ctx(stranger))).rejects.toThrow(/cap-denied: read/);
     await expect(makeWikiRenderReactor(r.opts)({ ...A, title: "Note 01" }, ctx(stranger))).rejects.toThrow(/cap-denied: read/);
-    await expect(makeWikiFilterReactor(r.opts)({ filter: "[tag[memory]]" }, ctx())).rejects.toMatchObject({ reason: "no-container" });
+    // A call naming neither recipe nor bag reads the worn face's daemon wiki, `recipe: "default"`.
+    expect(await makeWikiFilterReactor(r.opts)({ filter: "[tag[memory]limit[2]]" }, ctx())).toMatchObject({ recipe: "default", titles: ["Note 01", "Note 02"] });
     await expect(makeWikiFilterReactor(r.opts)({ recipe: "lares", filter: "[tag[memory]]" }, ctx())).rejects.toMatchObject({ reason: "wiki-unreached" });
     await expect(makeWikiStatusReactor(r.opts)({ recipe: "lares" }, ctx())).rejects.toMatchObject({ reason: "wiki-unreached" });
     await expect(makeWikiStatusReactor(r.opts)({ bag: "lares" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored" });
@@ -1897,7 +1898,7 @@ describe.skipIf(wikiSkip)(`the reader's view: a filter and a render compute over
     expect(blind).toBe("A: B: C: D:");
     const seen = String((await render({ ...A, text: span }, ctx()))["text"]);
     expect(seen).toContain("the sealed tagline");
-    expect(seen).toContain("`lares tiddler get 'Sealed report' --recipe default`");
+    expect(seen).toContain("`lares get title='Sealed report' recipe=default`");
     expect(seen).toContain("* a sealed line");
     expect(seen).toContain("the sealed role");
     expect(seen).not.toContain("device-local");
@@ -1968,12 +1969,12 @@ describe.skipIf(wikiSkip)(`a bag read through the tiddler door${skipNote}`, () =
     await expect(get({ bag: "lares", title: "$:/temp/lares/secret" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
   });
 
-  test("the engine verbs name the right door where a bag stands: a refusal that points at `tiddler get --bag`, `tiddler put --bag`, `tiddler delete --bag` and `tiddler get --meme --bag`; a put and a delete reach the bag's own store", async () => {
+  test("the engine verbs name the right door where a bag stands: a refusal that points at `lares get bag=`, `lares put bag=`, `lares delete bag=` and `lares get meme=true bag=`; a put and a delete reach the bag's own store", async () => {
     const r = await rig();
-    await expect(makeWikiFilterReactor(r.opts)({ bag: "lares", filter: "[all[]]" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored", message: expect.stringMatching(/runs in a wiki's own engine.*tiddler get <title> --bag.*tiddler get --meme --bag.*--recipe/s) });
+    await expect(makeWikiFilterReactor(r.opts)({ bag: "lares", filter: "[all[]]" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored", message: expect.stringMatching(/runs in a wiki's own engine.*lares get title=<title> bag=<slug>.*lares get meme=true bag=<slug>.*recipe=<slug>/s) });
     await expect(makeWikiRenderReactor(r.opts)({ bag: "lares", title: "x" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored" });
     await expect(makeWikiStatusReactor(r.opts)({ bag: "lares" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored" });
-    await expect(makeWikiFilterReactor(r.opts)({ bag: "lares", filter: "[all[]]" }, ctx())).rejects.toMatchObject({ message: expect.stringMatching(/tiddler put <title> --bag <slug>.*tiddler delete <title> --bag <slug>.*tiddler delete <root> --bag <slug> --family/s) });
+    await expect(makeWikiFilterReactor(r.opts)({ bag: "lares", filter: "[all[]]" }, ctx())).rejects.toMatchObject({ message: expect.stringMatching(/lares put title=<title> bag=<slug>.*lares delete title=<title> bag=<slug>.*lares delete title=<root> bag=<slug> family=true/s) });
     // A bag the island mounts no writable layer for refuses a write by the bag's own name: nothing shadows up.
     await expect(makeTiddlerPutReactor(r.opts)({ bag: "lares", title: "x", text: "y" }, ctx())).rejects.toThrow(/bag "lar:\/\/\/ha\.ka\.ba\/bags\/lares" holds no writable layer/);
     await expect(makeTiddlerDeleteReactor(r.opts)({ bag: "lares", title: "x" }, ctx())).rejects.toThrow(/holds no writable layer/);
@@ -1986,7 +1987,7 @@ describe.skipIf(wikiSkip)(`the person's collapse rules take a hand's write alone
   test("a seat's put or delete of a collapse rule refuses hand-act-only; a line no door read refuses hand-unattested; nothing lands", async () => {
     const r = await rig();
     const put = makeTiddlerPutReactor(r.opts);
-    await expect(put({ ...A, title: RULE, create: true, bags: CANON }, { ...ctx(), asker: "seat" })).rejects.toMatchObject({ reason: "hand-act-only", message: expect.stringContaining(`lares tiddler put "${RULE}"`) });
+    await expect(put({ ...A, title: RULE, create: true, bags: CANON }, { ...ctx(), asker: "seat" })).rejects.toMatchObject({ reason: "hand-act-only", message: expect.stringContaining(`lares put title="${RULE}"`) });
     await expect(put({ ...A, title: RULE, create: true, bags: CANON }, ctx())).rejects.toMatchObject({ reason: "hand-unattested" });
     expect(r.engine.wiki.getTiddler(RULE)).toBeUndefined();
     await expect(makeTiddlerDeleteReactor(r.opts)({ ...A, title: RULE }, { ...ctx(), asker: "seat" })).rejects.toMatchObject({ reason: "hand-act-only" });
@@ -2016,7 +2017,7 @@ describe.skipIf(wikiSkip)(`a family's slot moves by the plain put${skipNote}`, (
     const put = makeTiddlerPutReactor(r.opts);
     const base = ((await get({ ...A, title: MEME, meme: true, slot: "#/a" }, ctx()))["meme"] as { canonicalHash: string }).canonicalHash;
     expect(base).toMatch(/^partial:#\/a:sha256:/);
-    await expect(put({ ...A, title: `${MEME}#/b`, text: "b moved", base }, ctx())).rejects.toMatchObject({ reason: "base-outside-span", message: expect.stringMatching(/lares tiddler get "lar:\/\/\/t\/x#\/b" --recipe default --meme.*Nothing moved\.$/) });
+    await expect(put({ ...A, title: `${MEME}#/b`, text: "b moved", base }, ctx())).rejects.toMatchObject({ reason: "base-outside-span", message: expect.stringMatching(/lares get title="lar:\/\/\/t\/x#\/b" recipe=default mu=assert.*Nothing moved\.$/) });
     await expect(put({ ...A, title: `${MEME}#/a`, text: "x", base: "partial:no-span" }, ctx())).rejects.toMatchObject({ reason: "base-outside-span" });
     await expect(put({ ...A, title: MEME, text: memeText(["a"]), base }, ctx())).rejects.toMatchObject({ reason: "base-from-partial" });
     expect(r.engine.wiki.getTiddlerText(`${MEME}#/a`)).toContain("body of a");
@@ -2191,7 +2192,7 @@ describe.skipIf(wikiSkip)(`a bag takes the plain put and the delete through its 
     expect(await put({ ...BAG, title: `${MEME}#/a`, text: "a in the bag" }, ctx())).toMatchObject({ decision: "put", position: "slot", family: MEME });
     expect(await put({ ...BAG, title: `${MEME}#/a`, append: "and a line" }, ctx())).toMatchObject({ decision: "put", appendedTo: `${MEME}#/a` });
     expect(String((await store.get(`${MEME}#/a`))?.tiddler["text"])).toMatch(/a in the bag\n\nand a line/);
-    await expect(put({ ...BAG, title: `${MEME}#/a`, fields: { "$slot": "#/z" } }, ctx())).rejects.toMatchObject({ reason: "family-carriage-derives", message: expect.stringMatching(/--bag daemon/) });
+    await expect(put({ ...BAG, title: `${MEME}#/a`, fields: { "$slot": "#/z" } }, ctx())).rejects.toMatchObject({ reason: "family-carriage-derives", message: expect.stringMatching(/bag=daemon/) });
     expect(await put({ ...BAG, title: MEME, text: memeText(["a", "b"]), base: zero(":") }, ctx())).toMatchObject({ decision: "conflict" });
     // ABSENCE NEVER DELETES: the carrier that omits `#/b` keeps it by reference; the cut names what leaves.
     expect(await put({ ...BAG, title: MEME, text: memeText(["a"]) }, ctx())).toMatchObject({ decision: "put", kept: [`${MEME}#/b`], tombstoned: [] });
@@ -2221,7 +2222,7 @@ describe.skipIf(wikiSkip)(`a bag takes the plain put and the delete through its 
     // A root: the family act by name.
     const refused = await del({ ...BAG, title: MEME }, ctx());
     expect(refused).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family", bag: DAEMON });
-    expect(String(refused["why"])).toMatch(/lares tiddler delete "lar:\/\/\/t\/x" --bag daemon --family.*Nothing moved\.$/);
+    expect(String(refused["why"])).toMatch(/lares delete title="lar:\/\/\/t\/x" bag=daemon family=true.*Nothing moved\.$/);
     expect(await live(MEME)).toBe(true);
     await expect(del({ ...BAG, title: MEME, family: true, mode: "kapae" }, ctx())).rejects.toMatchObject({ reason: "delete-mode-unread" });
     await expect(del({ ...BAG, title: MEME, family: true }, ctx(reader))).rejects.toThrow(/cap-denied: admin/);
@@ -2267,7 +2268,9 @@ async function callRig(named?: Awaited<ReturnType<typeof rig>>) {
   const reactor = makeCallReactor(table, tiddlerCallSource(opts));
   const call = (verb: string, params: Record<string, unknown> = {}, c: VerbContext = ctx()) => reactor({ verb, params }, c);
   const sigil = (text: string, c: VerbContext = ctx()) => reactor({ sigil: text }, c);
-  return { ...r, opts, table, call, sigil };
+  /** A terminal's call: the same reactor on the cli surface, every value a word as the shell hands it over. */
+  const cli = (verb: string, params: Record<string, string> = {}, c: VerbContext = ctx()) => reactor({ verb, params, surface: "cli" }, c);
+  return { ...r, opts, table, call, sigil, cli };
 }
 
 /** The cure a call's refusal carries: the call sigil after `cure: `. */
@@ -2322,9 +2325,11 @@ describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the 
     expect(r.engine.wiki.getTiddler("Fresh two")?.fields["tags"]).toEqual(["stamped"]);
   });
 
-  test("RED: the binding refuses by name with a cure: an unknown param names the nearest, both containers double, a shared word naming neither param names both", async () => {
+  test("RED: the binding refuses by name with a cure: an unknown param names the nearest, both containers double, a shared word naming both choices names both", async () => {
     const r = await callRig();
-    await expect(r.call("get", { titel: "Note 04" })).rejects.toMatchObject({ reason: "call-ambiguous" });
+    // A shared word naming neither choice takes the `default/true` row (the record read), whose binding names the nearest param.
+    await expect(r.call("get", { titel: "Note 04" })).rejects.toMatchObject({ reason: "param-unknown" });
+    await expect(r.call("get", { title: "Note 04", filter: "[all[]]" })).rejects.toMatchObject({ reason: "call-ambiguous" });
     await expect(r.call("get", { title: "Note 04", titel: "x" })).rejects.toMatchObject({ reason: "param-unknown" });
     await expect(r.call("get", { title: "Note 04", titel: "x" })).rejects.toThrow(/the nearest: title.*cure: <<~ get title=`x`>>$/);
     await expect(r.call("get", { title: "Note 04", recipe: "default", bag: "lares" })).rejects.toMatchObject({ reason: "one-of-doubled" });
@@ -2433,6 +2438,69 @@ describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the 
     expect(orphans).toEqual([]);
     const held = new Set(carriers.map((t) => addressOfTitle(t)));
     expect(Object.keys(seats).filter((a) => !held.has(a))).toEqual([]);
+  });
+});
+
+// ── the terminal speaks the call shape (comms-ux-enacts landing 8) ───────────────────────────────────
+
+describe.skipIf(wikiSkip)(`a terminal's call: words turn by their row's kind, and the default choice reads${skipNote}`, () => {
+  test("RED: a cli call turns each word by its row's takes/ kind: json lands the field, names split on commas, a count reads a number, a flag reads true", async () => {
+    const r = await callRig();
+    expect(await r.cli("put", { title: "Note 04", fields: '{"a":"1","b":"2"}' })).toMatchObject({ decision: "put" });
+    await r.landed();
+    expect(r.engine.wiki.getTiddler("Note 04")?.fields).toMatchObject({ a: "1", b: "2" });
+    expect(await r.cli("put", { title: "Note 04", unset: "a,b" })).toMatchObject({ decision: "put" });
+    await r.landed();
+    expect(r.engine.wiki.getTiddler("Note 04")?.fields["a"]).toBeUndefined();
+    expect(r.engine.wiki.getTiddler("Note 04")?.fields["b"]).toBeUndefined();
+    expect(await r.cli("put", { title: "Fresh by terminal", text: "first", create: "true" })).toMatchObject({ decision: "put", created: true });
+    // A count reads as a number: a byte cap of ten leaves the text home.
+    expect(await r.cli("get", { title: "Note 04", "max-bytes": "10" })).toMatchObject({ tiddler: { omitted: expect.arrayContaining(["text"]) } });
+    // CONTROL: the console surface takes the same param as a value, untouched.
+    expect(await r.call("put", { title: "Note 05", fields: { c: "3" } })).toMatchObject({ decision: "put" });
+  });
+
+  test("RED: a word its kind refuses answers param-malformed with a cure sigil, and nothing lands", async () => {
+    const r = await callRig();
+    await expect(r.cli("put", { title: "Fresh flag", text: "x", create: "yes" })).rejects.toMatchObject({ reason: "param-malformed" });
+    await expect(r.cli("get", { title: "Note 04", "max-bytes": "ten" })).rejects.toMatchObject({ reason: "param-malformed" });
+    const cure = await cureOf(r.cli("put", { title: "Note 04", fields: "{not json" }));
+    expect(cure).toMatch(/^<<~ put .*fields=`<fields>`.*>>$/);
+    expect(cure).toContain("title=`Note 04`");
+    await r.landed();
+    expect(r.engine.wiki.tiddlerExists("Fresh flag")).toBe(false);
+  });
+
+  test("RED: a bare get naming neither title nor filter takes the default choice: meme=true lists the families", async () => {
+    const r = await callRig();
+    let listed: Record<string, unknown> | null = null;
+    r.table.register("meme-list", async (args) => { listed = args; return { roots: [], next: null }; });
+    expect(await r.cli("get", { meme: "true" })).toMatchObject({ roots: [], carrier: { carrier: READS_SEAT } });
+    expect(listed).toMatchObject({ meme: true, recipe: "default" });
+    expect(await r.call("get", { meme: true })).toMatchObject({ roots: [], carrier: { carrier: READS_SEAT } });
+  });
+
+  test("RED: get title=… form=text reads the whole text where the gradient would leave it home; the form leaves the reactor's args", async () => {
+    const r = await callRig();
+    r.engine.setTiddler({ title: "Big", text: "x".repeat(70_000) });
+    expect(await r.cli("get", { title: "Big" })).toMatchObject({ grain: { applied: "skinny" }, tiddler: { omitted: ["text"] } });
+    const whole = await r.cli("get", { title: "Big", form: "text" });
+    expect(whole).toMatchObject({ grain: { asked: "whole" } });
+    expect((whole["tiddler"] as { fields: Record<string, string> }).fields["text"]).toHaveLength(70_000);
+    expect(whole["form"]).toBeUndefined();
+  });
+
+  test("RED: mu binds on the cli surface: get title=… mu=relate answers the card", async () => {
+    const r = await callRig();
+    const card = await r.cli("get", { title: "Note 04", mu: "relate" });
+    expect(card).toMatchObject({ mu: { carry: "?", words: "relate" } });
+    expect((card["tiddler"] as { fields: Record<string, string> }).fields["text"]).toBeUndefined();
+  });
+
+  test("RED: a read naming neither recipe nor bag reads the daemon wiki; naming both still refuses no-container", async () => {
+    const r = await rig();
+    expect(await makeTiddlerGetReactor(r.opts)({ title: "Note 04" }, ctx())).toMatchObject({ recipe: "default", title: "Note 04", tiddler: { fields: { title: "Note 04" } } });
+    await expect(makeTiddlerGetReactor(r.opts)({ recipe: "default", bag: "daemon", title: "Note 04" }, ctx())).rejects.toMatchObject({ reason: "no-container" });
   });
 });
 

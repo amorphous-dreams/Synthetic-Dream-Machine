@@ -23,7 +23,7 @@ Read it before you act, the way you read your working memory. A law row comes fr
 
 One page holds at most 32 rows, and `next` names the cursor of the page behind (hand it back as `after`; `all` follows every cursor to the end). Both doors answer one shape: {filter, pinsTitle, pins, rows: [{title, description, pinned}], total, next}. A terminal prints it plainly (the pinned titles marked 📌, then the law they leave out) and `--json` carries the body the seat returns.
 
-Read one law whole through the read door: `lares tiddler get <title> --recipe default --meme` on a terminal, `tiddler_get(title=<title>, recipe="default", meme=True, grain="whole")` on the seat. Order the pins with `engine.law.pins` and `engine.law.unpins`.
+Read one law whole through the read door: `lares get title=<title> mu=assert` on a terminal, `tiddler_get(title=<title>, recipe="default", meme=True, grain="whole")` on the seat. Order the pins with `engine.law.pins` and `engine.law.unpins`.
 
 <<~/ahu>>
 
@@ -110,6 +110,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GWCoYmw3dbhSvN9GS0auKQvSdI1RzeRFWNAPT5Y_oQ8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sCmUC0_F6YpREEv5Ulwg6yGSwXOBeB7Rdy8BdkLUNlQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

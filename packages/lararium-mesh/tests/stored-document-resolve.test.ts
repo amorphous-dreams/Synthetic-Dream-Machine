@@ -1,7 +1,7 @@
 /**
  * stored-document-resolve — a document this vessel's own store holds resolves from the STORE, not on a peer's clock.
  *
- * Measured on a live house: the first `wiki filter` over a named wiki after boot refused `never arrived (8000ms)` for a
+ * Measured on a live house: the first `lares get filter=…` over a named wiki after boot refused `never arrived (8000ms)` for a
  * working slot that rested in the vessel's own store, and the second identical call answered. The 8s bound raced the
  * store's cold load and named it a peer that never answered. The library reports which source still works
  * (`sources.storage`), so the resolve waits on that event while the store loads, starts the peer bound only once the store

@@ -35,7 +35,7 @@
  *   · `recipe: <slug>` — a read AS THAT WIKI. THE READ WALKS THE STACK: the wiki's whole cascade top-down — the instance
  *     slots above, the canon and libraries beneath, the oracle floor — exactly as the wiki's own face reads it, answering
  *     from the first bag holding a record under the meme's root. The draft shadows canon when both hold it; a meme living
- *     in canon reads through `--recipe` when the draft holds nothing; a TOMBSTONE in a bag above shadows canon too, so the
+ *     in canon reads through `recipe` when the draft holds nothing; a TOMBSTONE in a bag above shadows canon too, so the
  *     read answers no meme.
  *   · `bag: <slug>` — that one bag's own store: a layer the island mounts (writable, for a write), an instance slot's doc
  *     through THE ONE slot-doc resolver, a registered bag by access. A bag the island cannot write fails a write loud,
@@ -140,7 +140,7 @@ export interface MemeVerbOptions {
 function laneResolved(lane: NonNullable<MemeVerbOptions["faceLane"]>, target: Omit<MemeArgs, "uri">, origin: ChangeOrigin): Resolved {
   const named = target.bag && !target.realm && !target.recipe ? bagUriOf(target.bag) : null;
   if (named !== lane.bag) {
-    throw new VerbRefusal("face-lane-holds-its-own", `face-lane-holds-its-own: a lit sibling face reaches its own lane alone (--bag ${lane.bag}); this container names another, and nothing moved.`);
+    throw new VerbRefusal("face-lane-holds-its-own", `face-lane-holds-its-own: a lit sibling face reaches its own lane alone (bag=${lane.bag}); this container names another, and nothing moved.`);
   }
   return { bag: lane.bag, sink: storeMemeSink(lane.store, lane.bag, origin), anchor: false };
 }
@@ -271,19 +271,20 @@ function unmarked(slug: string | null): string | null {
 }
 
 /**
- * THE CONTAINER LAW, for every meme verb at this door: a content verb names its container. Exactly one of
- * `args.recipe` (a wiki, read or written AS that wiki) or `args.bag` (that one bag) stands; neither, or
- * both, refuses as `no-container` before any cap ask, read or write. No default wiki exists: the daemon's
- * own wiki answers to its explicit name, `recipe: "default"`.
+ * THE CONTAINER LAW, for every meme verb at this door: at most one of `args.recipe` (a wiki, read or written AS
+ * that wiki) or `args.bag` (that one bag) stands, and naming neither reads the worn face's daemon wiki,
+ * `recipe: "default"` (comms-ux-enacts fork 5, the default the shared `#/takes/container` row carries). Both
+ * refuse as `no-container` before any cap ask, read or write.
  */
 export function readContainer(args: Readonly<Record<string, unknown>>, verb: string): Omit<MemeArgs, "uri"> {
   const recipe = unmarked(optionalStringArg(args, "recipe"));
   const bag = unmarked(optionalStringArg(args, "bag"));
   const realm = optionalStringArg(args, "realm")?.trim().toLowerCase() || null;
-  if (realm && recipe) throw new VerbRefusal("no-container", `no-container: ${verb} --realm names a bag's realm; it cannot accompany args.recipe.`);
+  if (realm && recipe) throw new VerbRefusal("no-container", `no-container: ${verb} realm= names a bag's realm; it cannot accompany args.recipe.`);
   if (recipe && bag) throw new VerbRefusal("no-container", `no-container: ${verb} names both args.recipe and args.bag; name one of them, never both.`);
   if (!recipe && !bag) {
-    throw new VerbRefusal("no-container", `no-container: ${verb} names no container; pass args.recipe (a wiki, e.g. "lares"; the daemon's own wiki answers to "default") or args.bag (that one bag). No default wiki exists.`);
+    if (realm) throw new VerbRefusal("no-container", `no-container: ${verb} realm= names a bag's realm; name args.bag beside it.`);
+    return { recipe: "default", bag: null, realm: null };
   }
   return { recipe: recipe ?? null, bag: bag ?? null, realm };
 }
@@ -405,7 +406,7 @@ const CURRENT_WIKI_BAG = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 export function anchorBagOf(opts: Pick<MemeVerbOptions, "tw5">): string {
   const wiki = opts.tw5.$tw.wiki as { getTiddlerText?: (t: string, d?: string) => string };
   const configured = wiki.getTiddlerText?.(CURRENT_WIKI_BAG, "") ?? "";
-  if (!configured) throw new NoWorkingLayerRefusal("The write into the daemon's own wiki", "Wait until the daemon working layer attaches, or name another container (--recipe <slug> or --bag <slug>).");
+  if (!configured) throw new NoWorkingLayerRefusal("The write into the daemon's own wiki", "Wait until the daemon working layer attaches, or name another container (recipe=<slug> or bag=<slug>).");
   return configured;
 }
 
@@ -414,7 +415,7 @@ async function resolveSink(opts: MemeVerbOptions, target: Omit<MemeArgs, "uri"> 
   if (target.bag) {
     const bag = bagUriOf(target.bag);
     if (target.realm) {
-      if (WIKI_SLOT_BAG_RE.test(bag)) throw new VerbRefusal("no-container", "no-container: --realm names a bag's realm; a wiki slot lives in no realm.");
+      if (WIKI_SLOT_BAG_RE.test(bag)) throw new VerbRefusal("no-container", "no-container: realm= names a bag's realm; a wiki slot lives in no realm.");
       if (mode === "put") {
         const steward = await opts.realmWritable?.(bag, target.realm);
         if (!steward) throw new Error(`meme: bag "${bag}" holds no steward's write in realm ${target.realm}`);
@@ -424,8 +425,8 @@ async function resolveSink(opts: MemeVerbOptions, target: Omit<MemeArgs, "uri"> 
       if (!store) throw new Error(`meme: bag "${bag}" holds no layer in this island and nothing reaches it by access in realm ${target.realm}`);
       return { bag, sink: storeMemeSink(store, bag, origin), anchor: false, realmGrant: true };
     }
-    // A NAMED WIKI'S INSTANCE SLOT, addressed as a bag. `--bag lar:///ha.ka.ba/wikis/<slug>/working` names the
-    // doc THE ONE slot-doc resolver mints — the same doc `--recipe <slug>` walks and a `LOAD --to` that bag
+    // A NAMED WIKI'S INSTANCE SLOT, addressed as a bag. `bag=lar:///ha.ka.ba/wikis/<slug>/working` names the
+    // doc THE ONE slot-doc resolver mints — the same doc `recipe=<slug>` walks and a `LOAD --to` that bag
     // lands in. The three reaches answer it (`storeOfBag`), and `temp` refuses there: it lives in the wiki
     // island alone and no door reaches it.
     const slot = WIKI_SLOT_BAG_RE.exec(bag);
@@ -671,7 +672,7 @@ export function makeMemeProjectReactor(opts: MemeVerbOptions): VerbReactor {
     const to = stringArg(args, "to");
     if (!to) throw new Error("meme-project: args.to is required (md · html · tid · json)");
     // THE CARRIER ITSELF READS THROUGH THE ONE DOOR: `mem` left this verb's targets for `tiddler-get` with `meme: true` and
-    // `grain: "whole"` (`lares tiddler get <uri> --meme --all`), which pages the composed carrier on slot boundaries.
+    // `grain: "whole"` (`lares get title=<uri> mu=assert`), which pages the composed carrier on slot boundaries.
     if (!(PROJECT_VERB_TARGETS as readonly string[]).includes(to)) {
       throw new Error(`meme-project: unknown target "${to}"; it renders md · html · tid · json, and the carrier itself reads through tiddler-get (meme: true, grain: "whole")`);
     }

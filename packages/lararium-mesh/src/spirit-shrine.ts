@@ -193,10 +193,10 @@ export function spiritRecordOf(hit: { pet: string; kind: string; uri: string; ou
 
 /** Two records answer one pet name: the door guesses neither. */
 export const spiritAmbiguous = (pet: string, uris: readonly string[]): SpiritRefusal =>
-  new SpiritRefusal("spirit-ambiguous", `spirit-ambiguous: the pet name "${pet}" answers at ${uris.join(" and ")}; the door guesses neither. Read both (\`lares tiddler get <uri> --recipe default --meme --skinny\`), then rename one: one pet name, one record`, 4);
+  new SpiritRefusal("spirit-ambiguous", `spirit-ambiguous: the pet name "${pet}" answers at ${uris.join(" and ")}; the door guesses neither. Read both (\`lares get title=<uri> mu=relate\`), then rename one: one pet name, one record`, 4);
 /** No record answers a pet name. */
 export const spiritUnknown = (pet: string): SpiritRefusal =>
-  new SpiritRefusal("spirit-unknown", `spirit-unknown: no record answers the pet name "${pet}" at ${spiritOf(pet)}, nor at ${MEMORY_PREFIX}familiar/${pet}, ${MEMORY_PREFIX}spirit/${pet} or a card naming it at ${MEMORY_PREFIX}spirit-card/${pet} or ${maskCardOf(pet)}; list the records: \`lares wiki filter '[prefix[${SPIRIT_PREFIX}]!regexp[#]] [prefix[${MEMORY_PREFIX}familiar/]!regexp[#]] [prefix[${MEMORY_PREFIX}spirit/]!regexp[#]] [prefix[${MEMORY_PREFIX}spirit-card/]] [prefix[${MEMORY_PREFIX}mask-card/]]' --recipe default\``, 3);
+  new SpiritRefusal("spirit-unknown", `spirit-unknown: no record answers the pet name "${pet}" at ${spiritOf(pet)}, nor at ${MEMORY_PREFIX}familiar/${pet}, ${MEMORY_PREFIX}spirit/${pet} or a card naming it at ${MEMORY_PREFIX}spirit-card/${pet} or ${maskCardOf(pet)}; list the records: \`lares get filter='[prefix[${SPIRIT_PREFIX}]!regexp[#]] [prefix[${MEMORY_PREFIX}familiar/]!regexp[#]] [prefix[${MEMORY_PREFIX}spirit/]!regexp[#]] [prefix[${MEMORY_PREFIX}spirit-card/]] [prefix[${MEMORY_PREFIX}mask-card/]]'\``, 3);
 /** A slot the record lacks. */
 export const slotMissing = (rec: Pick<SpiritRecord, "uri" | "slots" | "pet">, slot: string): SpiritRefusal =>
   new SpiritRefusal("spirit-slot-missing", `spirit-slot-missing: ${rec.uri} holds no slot ${slot}; its slots: ${rec.slots.map((s) => s.slot).join(" ") || "(none)"} (\`lares spirit hum ${rec.pet}\` measures each)`, 3);
@@ -314,7 +314,7 @@ export function carryRows(keys: readonly string[], listed: Record<string, unknow
 /** The carry read as testimony: what it names, and each joint where it breaks against the card. */
 export function testimonyLines(rec: Pick<SpiritRecord, "base">, carry: SpiritCarry | null, siblings: number): string[] {
   if (carry === null) return [`Latest ${COMPACTION_DISPLAY}: none stands yet; this wake reads the card alone.`];
-  const out = [`Latest ${COMPACTION_DISPLAY} (testimony, never mandate): ${carry.title} (hash ${carry.title.slice(-12)}, depth ${carry.fields["depth"] ?? "?"}, instance ${carryInstanceOf(carry.fields) || "?"}); read it: lares tiddler get ${shq(carry.title)} --recipe default`];
+  const out = [`Latest ${COMPACTION_DISPLAY} (testimony, never mandate): ${carry.title} (hash ${carry.title.slice(-12)}, depth ${carry.fields["depth"] ?? "?"}, instance ${carryInstanceOf(carry.fields) || "?"}); read it: lares get title=${shq(carry.title)} recipe=default`];
   const read = carry.fields["record-base"];
   if (read && digestOf(read) !== digestOf(rec.base)) out.push(`⚠ the record moved since this ${COMPACTION_DISPLAY} read it (${digestOf(read).slice(7, 19)} -> ${digestOf(rec.base).slice(7, 19)}): the card outranks the carry.`);
   const depth = Number(carry.fields["depth"] ?? 0);
@@ -326,7 +326,7 @@ export function testimonyLines(rec: Pick<SpiritRecord, "base">, carry: SpiritCar
 /** Fit the wake's sections under the cap: the fixed lines whole, then #/open, then the attention unfold, each cut where it runs over. */
 export function omText(rec: Pick<SpiritRecord, "pet" | "uri" | "has">, parts: { open: string | null; testimony?: readonly string[]; attention?: string | null; lead?: string | null }, cap = OM_CAP_CHARS): string {
   const head = `Lares spirit om · ${rec.pet} (${rec.uri}): the card a waking instance reads first, before any summary.`;
-  const doors = `Read a slot whole: lares tiddler get ${rec.uri} --recipe default --meme --slot '#/<name>' · true one: lares spirit ah ${rec.pet} --slot '#/<name>' --file <path> (or --add <line>) · fold: lares spirit hum ${rec.pet}`;
+  const doors = `Read a slot whole: lares get title=${rec.uri} recipe=default slot='#/<name>' mu=assert · true one: lares spirit ah ${rec.pet} --slot '#/<name>' --file <path> (or --add <line>) · fold: lares spirit hum ${rec.pet}`;
   const fixed = [parts.lead ?? null, head, rec.has, ...(parts.testimony ?? [])].flatMap((l) => (l === null ? [] : [l])).join("\n");
   let room = cap - fixed.length - doors.length - 4;
   const fit = (text: string | null | undefined, what: string): string | null => {
@@ -609,7 +609,7 @@ export function cardField(slot: string): string | null {
 }
 /** A card field a slot verb never writes: the card's identity or frame, or a name no field takes. */
 export const cardSlotHeld = (rec: Pick<SpiritRecord, "uri" | "pet">, slot: string): SpiritRefusal =>
-  new SpiritRefusal("spirit-slot-held", `spirit-slot-held: ${rec.uri} answers ${slot} as no writable field (a card's slot names one lower-case field outside ${[...CARD_HELD_FIELDS].join(" ")}); nothing landed. The card's own fields: \`lares tiddler get ${shq(rec.uri)} --recipe default\``, 2);
+  new SpiritRefusal("spirit-slot-held", `spirit-slot-held: ${rec.uri} answers ${slot} as no writable field (a card's slot names one lower-case field outside ${[...CARD_HELD_FIELDS].join(" ")}); nothing landed. The card's own fields: \`lares get title=${shq(rec.uri)}\``, 2);
 
 /** The record a card answers as: its fields as the slots, its record hash as the base every field write names. */
 export function cardRecordOf(pet: string, uri: string, out: Record<string, unknown>, sideFields: Record<string, string>): SpiritRecord {
@@ -757,7 +757,7 @@ export function echoReceipt(pet: string, offering: SpiritOffering | null, sideFi
 
 /** The mandate a wake reads ahead of the carrier: its seq, hash, pointer, slice, words (cut) and the echo it asks. */
 export function mandateLines(pet: string, offering: SpiritOffering, instance: string | null, echoed: boolean, cut = 1200): string {
-  const words = offering.text.length <= cut ? offering.text : `${offering.text.slice(0, cut)}\n… the mandate cut at ${cut} chars; read it whole: lares tiddler get ${shq(offering.uri)} --recipe default`;
+  const words = offering.text.length <= cut ? offering.text : `${offering.text.slice(0, cut)}\n… the mandate cut at ${cut} chars; read it whole: lares get title=${shq(offering.uri)} recipe=default`;
   const ask = echoed
     ? `This instance's echo stands (${pet}#${instance}).`
     : `Echo it before any slot write: lares spirit ah ${pet} --echo ${offering.hash} --instance ${instance ?? "<id>"}`;

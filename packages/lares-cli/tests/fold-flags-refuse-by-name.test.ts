@@ -118,17 +118,17 @@ describe("a folded sub-path refuses the flags it does not read", () => {
     expect(needsFreshBuild(parseArgs(["vessel", "found"]))).toBe(true);
   });
 
-  test("★ tiddler get folds by lens and grain: the meme lens refuses --fields and --max-bytes, the record lens refuses --after, a slot refuses beside --skinny or --all under --meme ★", async () => {
+  test("★ a call verb folds no flag on this side: every old get flag refuses by name, whatever lens it once folded (the carrier's #/takes binds params in the VM) ★", async () => {
     for (const [argv, flag] of [
-      [["tiddler", "get", "lar:///x", "--recipe", "default", "--meme", "--fields", "text"], "--fields"],
-      [["tiddler", "get", "lar:///x", "--recipe", "default", "--meme", "--max-bytes", "4096"], "--max-bytes"],
-      [["tiddler", "get", "Note", "--recipe", "default", "--after", "1.0123456789abcdef"], "--after"],
-      [["tiddler", "get", "lar:///x", "--recipe", "default", "--meme", "--skinny", "--slot", "#/a"], "--slot"],
-      [["tiddler", "get", "lar:///x", "--recipe", "default", "--meme", "--all", "--slot", "#/a"], "--slot"],
+      [["get", "title=lar:///x", "--fields", "text"], "--fields"],
+      [["get", "title=lar:///x", "--max-bytes", "4096"], "--max-bytes"],
+      [["get", "title=Note", "--after", "1.0123456789abcdef"], "--after"],
+      [["get", "title=lar:///x", "--slot", "#/a"], "--slot"],
+      [["get", "title=lar:///x", "--all"], "--all"],
     ] as const) {
       const r = await run([...argv, "--no-json"]);
       expect(r.code, argv.join(" ")).toBe(2);
-      expect(r.err).toContain(`unknown flag ${flag} for \`lares tiddler\``);
+      expect(r.err).toContain(`unknown flag ${flag} for \`lares get\``);
     }
   });
 });

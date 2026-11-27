@@ -76,8 +76,23 @@ describe("the skins derive spellings by rule", () => {
     expect(usageOf("mcp", "oracle_cast", rows)).toBe("oracle_cast((recipe=<slug> | bag=<slug>), [asking=<words>], [fresh])");
   });
 
+  test("RED: a cli skin row reading grammar/call speaks the call shape: name=value, a flag name=true, a spaced value shell-quoted, no position; its usage reads name=<kind>", () => {
+    const called = (spells: string): HasRow => ({ entity: "skin", name: "cli", params: { spells, grammar: "call" }, bare: [], role: "" });
+    expect(spellArg("cli", "max_bytes", called("[[lares get]]"))).toBe("max-bytes");
+    expect(renderCall("cli", "lares get", { address: "lar:///engine.record.reads", args: [["title", "x"], ["mu", "relate"]] }, called("[[lares get]]"))).toBe("lares get title=x mu=relate");
+    expect(renderCall("cli", "lares put", { address: "lar:///engine.record.puts", args: [["title", "Room 4"], ["create", true]] }, called("[[lares put]]"))).toBe("lares put 'title=Room 4' create=true");
+    expect(usageOf("cli", "lares oracle cast", parseHasRows(TAKES), called("[[lares oracle cast]]"))).toBe("usage: lares oracle cast (recipe=<slug> | bag=<slug>) [asking=<words>] [fresh=<true>]");
+    // A seat/N row rides by name under the call shape: no position.
+    const seated = parseHasRows("<<has entity=`arg` name=`title` params=`takes/title seat/1 as/<title> ~ the record`>>");
+    expect(usageOf("cli", "lares get", seated, called("[[lares get]]"))).toBe("usage: lares get [title=<title>]");
+    expect(renderCall("cli", "lares get", { address: "lar:///engine.record.reads", args: [["title", "x"]] }, called("[[lares get]]"), seatsOf(seated))).toBe("lares get title=x");
+    // CONTROL: a cli row with no grammar/call keeps its door's --flag table.
+    expect(usageOf("cli", "lares oracle cast", parseHasRows(TAKES))).toBe("usage: lares oracle cast (--recipe <slug> | --bag <slug>) [--asking <words>] [--fresh]");
+  });
+
   test("RED 7: the unfold read speaks the read door's own words on each surface", () => {
-    expect(unfoldRead("cli", "lar:///oracle.library.consults", "#/refuses")).toBe("lares tiddler get lar:///oracle.library.consults#/refuses --recipe lares --meme");
+    expect(unfoldRead("cli", "lar:///oracle.library.consults", "#/refuses")).toBe("lares get title=lar:///oracle.library.consults#/refuses recipe=lares mu=assert");
+    expect(unfoldRead("cli", "lar:///oracle.library.consults")).toBe("lares get title=lar:///oracle.library.consults recipe=lares mu=relate");
     expect(unfoldRead("mcp", "lar:///oracle.library.consults", "#/refuses")).toContain(`grain="slot", slot="#/refuses"`);
   });
 });
@@ -268,17 +283,21 @@ describe("one verb word, two addresses: a `by/` skin row chooses (comms-ux-enact
   const PAGES = "lar:///ha.ka.ba/lares/afford/engine.filter.pages";
   const records: Record<string, string> = {
     [READS]: "",
-    [`${READS}#/skins/console`]: "<<has entity=`skin` name=`console` params=`spells/get by/title`>>",
-    [`${READS}#/skins/cli`]: "<<has entity=`skin` name=`cli` params=`spells/[[lares tiddler get]]`>>",
+    [`${READS}#/skins/console`]: "<<has entity=`skin` name=`console` params=`spells/get by/title default/true`>>",
+    [`${READS}#/skins/cli`]: "<<has entity=`skin` name=`cli` params=`spells/[[lares get]] by/title default/true grammar/call`>>",
     [PAGES]: "",
     [`${PAGES}#/skins/console`]: "<<has entity=`skin` name=`console` params=`spells/get by/filter`>>",
+    [`${PAGES}#/skins/cli`]: "<<has entity=`skin` name=`cli` params=`spells/[[lares get]] by/filter grammar/call`>>",
   };
   const r = routesOf((t) => records[t], Object.keys(records));
 
   test("RED: the shared word claims no route and lands in no twice; each carrier joins the word's choices by its param", () => {
     expect(r.routes.console["get"]).toBeUndefined();
     expect(r.twice).toEqual([]);
-    expect(r.chosen.console["get"]).toEqual([{ address: "lar:///engine.filter.pages", by: "filter" }, { address: "lar:///engine.record.reads", by: "title" }]);
+    expect(r.chosen.console["get"]).toEqual([{ address: "lar:///engine.filter.pages", by: "filter" }, { address: "lar:///engine.record.reads", by: "title", default: true }]);
+    // The terminal's `lares get` joins the same choices: it claims no cli route of its own.
+    expect(r.routes.cli["get"]).toBeUndefined();
+    expect(r.chosen.cli["get"]).toEqual([{ address: "lar:///engine.filter.pages", by: "filter" }, { address: "lar:///engine.record.reads", by: "title", default: true }]);
   });
 
   test("RED: a call's leading word routes by the param it names; an address stands for itself; a skin spelling routes too", () => {
@@ -286,11 +305,22 @@ describe("one verb word, two addresses: a `by/` skin row chooses (comms-ux-enact
     expect(routeOfCall(r, "get", { filter: "[tag[x]]" })).toEqual({ address: "lar:///engine.filter.pages" });
     expect(routeOfCall(r, "lar:///engine.filter.pages", {})).toEqual({ address: "lar:///engine.filter.pages" });
     expect(routeOfCall(r, "engine.record.reads", {})).toEqual({ address: "lar:///engine.record.reads" });
-    expect(routeOfCall(r, "tiddler get", { title: "x" })).toEqual({ address: "lar:///engine.record.reads" });
-    // CONTROL: a word nothing spells reaches nothing; a shared word naming neither param (or both) hands back the choices.
+    // CONTROL: a word nothing spells reaches nothing; a shared word naming both params hands back the choices.
     expect(routeOfCall(r, "fetch", {})).toBeNull();
-    expect(routeOfCall(r, "get", {})).toMatchObject({ address: null });
+    expect(routeOfCall(r, "tiddler get", { title: "x" })).toBeNull();
     expect(routeOfCall(r, "get", { title: "a", filter: "b" })).toMatchObject({ address: null });
+  });
+
+  test("RED: a call naming no choice takes the one row reading `default/true`; two such rows leave the word ambiguous", () => {
+    expect(routeOfCall(r, "get", {})).toEqual({ address: "lar:///engine.record.reads" });
+    expect(routeOfCall(r, "get", { meme: true })).toEqual({ address: "lar:///engine.record.reads" });
+    const twice = routesOf((t) => ({ ...records, [`${PAGES}#/skins/console`]: "<<has entity=`skin` name=`console` params=`spells/get by/filter default/true`>>" })[t], Object.keys(records));
+    expect(routeOfCall(twice, "get", {})).toMatchObject({ address: null, choices: expect.arrayContaining([expect.objectContaining({ by: "filter", default: true }), expect.objectContaining({ by: "title", default: true })]) });
+    // CONTROL: a named choice still wins over the default rows.
+    expect(routeOfCall(twice, "get", { filter: "[tag[x]]" })).toEqual({ address: "lar:///engine.filter.pages" });
+    // With no default row at all, a call naming neither stays ambiguous.
+    const none = routesOf((t) => ({ ...records, [`${READS}#/skins/console`]: "<<has entity=`skin` name=`console` params=`spells/get by/title`>>", [`${READS}#/skins/cli`]: "<<has entity=`skin` name=`cli` params=`spells/[[lares get]] by/title grammar/call`>>" })[t], Object.keys(records));
+    expect(routeOfCall(none, "get", {})).toMatchObject({ address: null });
   });
 });
 

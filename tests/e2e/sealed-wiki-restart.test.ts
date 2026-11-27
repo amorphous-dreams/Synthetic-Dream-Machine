@@ -7,7 +7,7 @@
  * fleet-join answer and dials A's Nexus, so B's worn face's wiki bags map sealed while that chain stands, and the dial's
  * own session stands seated in B's book (V6).
  *
- *   R1 — POSITIVE FIRST: a marker placed into the daemon document by name (`--bag daemon`, the floor half that rests
+ *   R1 — POSITIVE FIRST: a marker placed into the daemon document by name (`bag=daemon`, the floor half that rests
  *        clear) reads back off B's store, so the scan reads what rests
  *   R2 — B puts a marker into its face's working bag through the meme door, and B stands down at once
  *   R3 — at rest, no file of B's root outside the disk projection (`bags/`, `wikis/`, the operator's cleartext) holds
@@ -153,9 +153,9 @@ describe.runIf(staged)("a sealed wiki write survives a stand-down at once and a 
   test("R1-R3 — the positive control reads a clear marker at rest; the sealed marker rests as no clear byte after a stand-down at once", async () => {
     const B = pair!.B!;
     // The daemon wiki's working slot seals under the lit face (U1's D half); the daemon document beneath stays the floor's.
-    const clear = await B.cli(["tiddler", "put", CLEAR_URI, "--bag", "daemon", "--file", memeFile(CLEAR_URI, CLEAR_MARK), "--json"]);
+    const clear = await B.cli(["put", `title=${CLEAR_URI}`, "bag=daemon", `file=${memeFile(CLEAR_URI, CLEAR_MARK)}`, "--json"]);
     expect(clear.code, clear.stderr + clear.stdout).toBe(0);
-    const put = await B.cli(["tiddler", "put", SEALED_URI, "--recipe", "lares", "--file", memeFile(SEALED_URI, SEALED_MARK), "--json"]);
+    const put = await B.cli(["put", `title=${SEALED_URI}`, "recipe=lares", `file=${memeFile(SEALED_URI, SEALED_MARK)}`, "--json"]);
     expect(put.code, put.stderr + put.stdout).toBe(0);
     // THE STAND-DOWN AT ONCE: no wait past the put's own answer.
     await B.stopDaemonOnly();
@@ -174,7 +174,7 @@ describe.runIf(staged)("a sealed wiki write survives a stand-down at once and a 
     let text = "";
     const deadline = performance.now() + 120_000;
     while (performance.now() < deadline) {
-      const got = await B2.cli(["tiddler", "get", SEALED_URI, "--recipe", "lares", "--meme", "--all", "--json"]);
+      const got = await B2.cli(["get", `title=${SEALED_URI}`, "recipe=lares", "mu=assert", "--json"]);
       text = got.stdout + got.stderr;
       if (got.code === 0 && text.includes(SEALED_MARK)) break;
       await new Promise((r) => setTimeout(r, 2_000));

@@ -253,7 +253,7 @@ describe.skipIf(wikiSkip)(`oracle-cast — a cast writes its result as a tiddler
     expect(slotText(SLOT_NAMES[2]!)).toContain("A reading.");
     expect(slotText(SLOT_NAMES[2]!)).toContain("Kopyleft 2022");
     expect(slotText(SLOT_NAMES[3]!)).toContain("(owed:");
-    expect(String((out["next"] as Record<string, unknown>)["append"])).toContain("--append");
+    expect(String((out["next"] as Record<string, unknown>)["append"])).toContain("append='<your words>'");
   }, 60_000);
 
   test("RED: a replay names the uncertainty the record kept, and the replay's own words never rewrite it", async () => {

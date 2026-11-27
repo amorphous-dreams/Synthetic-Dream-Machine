@@ -39,7 +39,7 @@ const NODE_MAIN = join(REPO_ROOT, "packages/lararium-node/dist/src/main.js");
 
 const PATH = "t.witness.seal/carrier";
 const URI  = `lar:///${PATH}`;
-const WIKI = ["--recipe", "lares"] as const;
+const WIKI = ["recipe=lares"] as const;
 
 const meme = (): string =>
   `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\n\`\`\`\n\n` +
@@ -104,7 +104,7 @@ async function custodyReading(): Promise<Record<string, unknown>> {
 }
 
 /** A recipe read of the witness carrier, as the vessel answers it right now. */
-const readCarrier = (): Promise<CliResult> => cli(PLAIN, ["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--json"]);
+const readCarrier = (): Promise<CliResult> => cli(PLAIN, ["get", `title=${URI}`, ...WIKI, "mu=assert", "--json"]);
 
 /**
  * This suite's rite: the Stable founding act, then persona zero's root split, so a device share rests beside the sealed rows
@@ -159,7 +159,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
 
     const f = join(lar!.root, "seal-carrier.mem");
     writeFileSync(f, meme());
-    const put = await cli(PLAIN, ["tiddler", "put", URI, ...WIKI, "--file", f, "--json"]);
+    const put = await cli(PLAIN, ["put", `title=${URI}`, ...WIKI, `file=${f}`, "--json"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
     carrierHash = String(dataOf(put)["canonicalHash"]);
     const got = await readCarrier();

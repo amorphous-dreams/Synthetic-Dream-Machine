@@ -1,6 +1,6 @@
 /**
- * harness-seat.test — an AI shell's CLI line carries the seat's mark (seat-canon-reach, T4-2). A spirit that runs `lares tiddler
- * put --bag lares` through its harness's shell must meet the same gate the MCP seat meets, so the CLI writes `seat: "ai"` on
+ * harness-seat.test — an AI shell's CLI line carries the seat's mark (seat-canon-reach, T4-2). A spirit that runs `lares put
+ * bag=lares` through its harness's shell must meet the same gate the MCP seat meets, so the CLI writes `seat: "ai"` on
  * its one-shot line whenever the harness's OWN mark stands in its environment: Claude Code's `CLAUDECODE=1`, and Codex's
  * sandbox marks (`CODEX_SANDBOX`, `CODEX_SANDBOX_NETWORK_DISABLED`). The house mints no variable of its own for this. The
  * operator's own terminal carries none, and its line carries no seat (CONTROL).

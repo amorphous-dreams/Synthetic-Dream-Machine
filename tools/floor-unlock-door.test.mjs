@@ -5,7 +5,7 @@
 // holds no key, so the process composes at the floor and lives; `lares vault unlock` hands the key in on the custody
 // door, and the composition that opens mounts the face's home wiki at light.
 //
-//   F0  the unlocked vessel takes `lares wiki init` + a `lares tiddler put` of the home preference: the face names the user wiki.
+//   F0  the unlocked vessel takes `lares wiki init` + a `lares put` of the home preference: the face names the user wiki.
 //   F1  a fresh `lares vessel stand` stands the floor: the process lives, the custody door reads the key not held, and
 //       the marker's wiki stands unmounted (`lares wiki status` names it not). The floor stands as the herm and names no
 //       wiki: the preference rests in the face's sealed daemon wiki, behind the key the floor waits on.
@@ -61,7 +61,7 @@ test("the floor stands over the face's home wiki and lives; the unlock mounts it
     const first = await unlockTestCustody(root);
     assert.equal(first?.reading, "opens", JSON.stringify(first));
     ok("wiki", "init", WIKI);
-    ok("tiddler", "put", "$:/config/lares/home/wiki", "--recipe", "default", "--text", `[[${WIKI}]]`);
+    ok("put", "title=$:/config/lares/home/wiki", `text=[[${WIKI}]]`);
     ok("vessel", "stop", "--port", String(port));
 
     // F1: a fresh boot holds no key, so it stands at the floor, and the process lives.

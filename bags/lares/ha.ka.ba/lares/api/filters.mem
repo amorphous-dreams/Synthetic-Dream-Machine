@@ -72,7 +72,7 @@ These reference titles name the engineer face's instance of the attractor-store 
 
 ! The house's named filters
 
-The house filters stand here as `\function` definitions, defined for every filter the house runs: `[lares.law[]]` (the law index: the pins first, then every canon root meme under a bag's `api/` tree, each row answered from a canon layer), `[lares.law.pins[]]` (the pins that stand as canon law), `[lares.road[state]]` (the road reader until stage road items move; a later change retires it under the canon retirement law), `[lares.course[open]]` (course items whose proof reads blank), `[lares.course[closed]]` (items carrying proof), `[lares.course[ash-ready]]` (proved items without inbound citations), `[lares.waves[]]` (wave titles) and `[lares.stage[state]]` (every title under `lar:///ha.ka.ba/kahua/memory/<stage>/`, slots too; `[lares.stage[state]!regexp[#]]` keeps the root memes). Citations count only from other memory-stage titles, excluding the item and its slots; literal text matches case and a whole title, with links also checked through backlinks. `lares wiki filter '[lares.law[]]'`, the wake and the MCP seat's `law_index` all run these same functions.
+The house filters stand here as `\function` definitions, defined for every filter the house runs: `[lares.law[]]` (the law index: the pins first, then every canon root meme under a bag's `api/` tree, each row answered from a canon layer), `[lares.law.pins[]]` (the pins that stand as canon law), `[lares.road[state]]` (the road reader until stage road items move; a later change retires it under the canon retirement law), `[lares.course[open]]` (course items whose proof reads blank), `[lares.course[closed]]` (items carrying proof), `[lares.course[ash-ready]]` (proved items without inbound citations), `[lares.waves[]]` (wave titles) and `[lares.stage[state]]` (every title under `lar:///ha.ka.ba/kahua/memory/<stage>/`, slots too; `[lares.stage[state]!regexp[#]]` keeps the root memes). Citations count only from other memory-stage titles, excluding the item and its slots; literal text matches case and a whole title, with links also checked through backlinks. `lares get filter='[lares.law[]]'`, the wake and the MCP seat's `law_index` all run these same functions.
 
 <<~/ahu>>
 
@@ -88,10 +88,10 @@ TiddlyWiki resolves a user function as a filter operator only where its name hol
 
 !! Canon only
 
-The daemon reads this carrier's text from the canon layers (the oracle floor and the system canon bags) and builds the functions from it; a house name that fails to parse from the carrier (dropped, renamed, in a form no reader takes) reads from the floor the code holds, name by name. The carrier carries no `$:/tags/Global`, so no stock `\import` reads a shadowable copy. A working-layer tiddler that redefines `lares.law`, `lares.law.pins`, `lares.course`, its helpers, `lares.waves` or `lares.stage`, at this title or tagged `$:/tags/Global` elsewhere, changes no answer of `lares wiki filter`, the MCP `wiki_filter`, `lares wiki render` or the record port's filter ask. A filter naming any other `lares.` operator refuses by name. A raw `\import` a hand writes into its own wikitext stands outside that guarantee.
+The daemon reads this carrier's text from the canon layers (the oracle floor and the system canon bags) and builds the functions from it; a house name that fails to parse from the carrier (dropped, renamed, in a form no reader takes) reads from the floor the code holds, name by name. The carrier carries no `$:/tags/Global`, so no stock `\import` reads a shadowable copy. A working-layer tiddler that redefines `lares.law`, `lares.law.pins`, `lares.course`, its helpers, `lares.waves` or `lares.stage`, at this title or tagged `$:/tags/Global` elsewhere, changes no answer of `lares get filter=…`, the MCP `wiki_filter`, `lares wiki render` or the record port's filter ask. A filter naming any other `lares.` operator refuses by name. A raw `\import` a hand writes into its own wikitext stands outside that guarantee.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4-bVFuuNH3suxNOnt7ZcP6gGwF2D9CuI7ActRz9L6i4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Px-iJuJqQPVEAdB-1z7glmWD-TFTVssbZ1TgIoPyfiE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -539,7 +539,7 @@ today, and Wave C's Kahu-face group swaps in at that function alone, since the r
 
 ''ONE PREDICATE GUARDS EVERY WRITE DOOR.'' `requireKahuReach` (`kahu-canon-reach.ts`) calls `kahuCabalCanonAccess` for
 the hand at the door, before any write: the residency reactor with every verb it carries (a MOVE out of canon too,
-since it tombstones the source), `tiddler put --bag` and `tiddler delete --bag`, draft placement, and a realm steward's write, whose
+since it tombstones the source), the put and the delete naming `bag=`, draft placement, and a realm steward's write, whose
 realm grant stands in for no check. The shore hands the island the charter's roster and the board's acts
 (`readKahuCabalBoard`); the island adds the sentinel read and the group at ACCESS, never at boot
 (`kahu-reach-source.ts`). A vessel that composes no source reads as a stranger and refuses a house-canon bag. A READ and a
@@ -699,6 +699,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6-4TzqwENnKHG4QokotpPN-xLFW4EKE0I4-ywB2mUoU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2S6sq_-U4atq3mmFD8bnUvvaQ4VoUx317ij4mq6oFO8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -120,7 +120,7 @@ describe("the witness reads the landed hand-backs", () => {
     h.store.set(empty, { text: "" });
     const r = await witness();
     expect(r.exit).toBe(0);
-    expect(data(r).lines[0]).toBe(`unread ${empty} · the record holds no words; read it: lares tiddler get '${empty}' --recipe default`);
+    expect(data(r).lines[0]).toBe(`unread ${empty} · the record holds no words; read it: lares get title='${empty}'`);
   });
   test("no residue reads an empty tally, exit 0", async () => {
     const r = await witness();

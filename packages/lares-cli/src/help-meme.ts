@@ -2,8 +2,8 @@
  * help-meme — the WIKI REACH behind `lares <door> --help --meme`.
  *
  * A verb door's help names the meme standing behind it (`command-help.ts`, `meme:`); this reach READS that
- * meme. It writes no reader of its own: the URI goes straight to `cmdTiddler`, the same mouth `lares tiddler get
- * --meme` uses, which rides the daemon `tiddler-get` verb. So the fetch runs wherever the vessel runs — phone, node,
+ * meme. It writes no reader of its own: the URI goes straight to `cmdCall`, the same mouth `lares get title=<uri>
+ * mu=assert` uses, which rides the daemon `call` verb. So the fetch runs wherever the vessel runs — phone, node,
  * browser — for any vessel holding the cap, and the help path itself touches no filesystem.
  *
  * A DOOR THAT NAMES NO MEME SAYS SO AND EXITS CLEAN. Naming no record describes the registry, not a fault:
@@ -13,7 +13,7 @@
  */
 
 import { memeForDoor } from "./command-help.js";
-import { cmdTiddler } from "./commands/tiddler.js";
+import { cmdCall } from "./commands/call.js";
 import type { ParsedArgs } from "./parse-args.js";
 
 /** The meme reader this reach hands the URI to — injectable so a test never dials a daemon. */
@@ -23,7 +23,7 @@ export type MemeReader = (args: ParsedArgs) => Promise<number>;
  * Read the meme behind one verb door. Returns 0 when the door names none (with a plain word on stderr),
  * else whatever the meme rail returns.
  */
-export async function reachHelpMeme(door: string, args: ParsedArgs, read: MemeReader = cmdTiddler): Promise<number> {
+export async function reachHelpMeme(door: string, args: ParsedArgs, read: MemeReader = cmdCall): Promise<number> {
   const uri = memeForDoor(door);
   if (!uri) {
     console.error(`lares ${door}: this door names no meme — its help above is the whole record.`);
@@ -32,10 +32,10 @@ export async function reachHelpMeme(door: string, args: ParsedArgs, read: MemeRe
   // Door memes are wiki help records held by the `lares` recipe. The door's flags never ride along, so a
   // `--help` on the help call cannot re-enter the meme door's own help.
   const passthrough: ParsedArgs = {
-    command:    "tiddler",
-    positional: ["get", uri],
-    options:    { recipe: "lares" },
-    flags:      { meme: true, all: true, ...(args.flags["json"] === true ? { json: true } : {}) },
+    command:    "get",
+    positional: [`title=${uri}`, "recipe=lares", "mu=assert"],
+    options:    {},
+    flags:      args.flags["json"] === true ? { json: true } : {},
   };
   return await read(passthrough);
 }

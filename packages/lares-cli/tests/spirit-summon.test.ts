@@ -367,7 +367,7 @@ describe("the wake under a mandate", () => {
     const text = String(data(r)["text"]);
     expect(text).toContain(`mandate: ${m.ref} · you wake as cold-reader#00002, offered by lares-alpha#00001`);
     expect(text).toContain("lar:///ha.ka.ba/lares/api/noosphere-boot");
-    expect(text).toContain("reads: lares wiki filter '[tag[ruling]]'");
+    expect(text).toContain("reads: lares get filter='[tag[ruling]]'");
     expect(text).toContain("lares spirit handback 'cold-reader#00002' --record <uri>");
     expect(text).toContain(WORDS);
   });
