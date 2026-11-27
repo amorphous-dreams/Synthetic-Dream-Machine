@@ -33,7 +33,7 @@
  * or holds in other bytes (CHANGED), scanned against the Synced tree the INGEST gate keeps; each checkout workbench folder's titles
  * new or moved against its wiki's working layer, with whether the worn face mounts that workbench; and whether the canon source
  * stands in a checkout (an SDM repo: `pnpm-workspace.yaml` beside its `bags/`), the one case where the raise offers the workbench
- * lay on the owner's yes. Canon itself fills through promote and the floor's sealed cut: no raise lays it.
+ * lay after the raise. Canon itself fills through promote and the floor's sealed cut: no raise lays it.
  */
 
 import { existsSync, readdirSync, statSync } from "node:fs";
@@ -325,7 +325,7 @@ export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_M
     console.error(`lares vessel lay: --apply needs a confirmation and no terminal stands to give it; run \`${cure}\` to confirm (add --lift-kahua <N> to lift kahua items).`);
     return exitFor("usage");
   }
-  // `--workbench` walks the checkout's workbench folders alone (the lay a kūkulu offers on the owner's yes): no holdings leg, no
+  // `--workbench` walks the checkout's workbench folders alone (the lay a kūkulu runs after its raise): no holdings leg, no
   // face root, no share, no kahua; each workbench lays only where the worn face holds a writer's seat.
   if (args.flags["workbench"]) return runMirrors({ apply: args.flags["apply"] === true, json: args.flags["json"] === true, benchesOnly: true }, mirrorDoors);
   const holdings = discoverHoldings(bagsDir);

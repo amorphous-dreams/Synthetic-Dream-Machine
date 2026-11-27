@@ -1,14 +1,14 @@
 /**
- * kukulu-reads-the-lag — every raise reads the house's lag aloud, and the owner's yes lays the checkout's workbench
- * projection, never canon (story U4, re-scoped under Mu: operator, 2026-11-22).
+ * kukulu-reads-the-lag — every raise reads the house's lag aloud, and lays the checkout's workbench projection with no
+ * question, never canon (story U4, re-scoped under Mu: operator, 2026-11-22; the y retired, restand-files-smooth 2026-11-27).
  *
  * After the restand, `lares rite kukulu` reads two gaps and names each: the canon bag behind the canon source (the
  * carriers in `bags/` the canon layers lack: canon fills through promote and the floor's sealed cut alone, so the raise
  * only names it) and each wiki's workbench behind the checkout's `wikis/<slug>`. Where the release the vessel runs
  * carries a newer seed (the seed offer) than it serves, the line names that by its own word, the floor card's title and the runnable line. Where the canon source stands in a checkout and
  * the owner holds a terminal, the raise previews the workbench lay (each title a mounted workbench would take) and lays
- * it on an explicit yes, into each wiki's working layer the worn face mounts; a workbench that does not mount is named
- * and left. No prompt ever writes the canon bag. A seat (no terminal, or an AI launcher) names the lag and lays nothing.
+ * it diff-gated with no question, into each wiki's working layer the worn face mounts; a workbench that does not mount is
+ * named and left. No lay ever writes the canon bag. A seat (no terminal, or an AI launcher) names the lag and lays nothing.
  *
  * The vessel half: `lares vessel lay --lag` reads both gaps off disk and the worn face's seats, writing nothing, and names the
  * floor's drift behind live canon beside them (`floorDrift`, its own field: lag keeps its meaning, an unread drift reads null); and
@@ -46,7 +46,7 @@ const LAG: HouseLag = {
 };
 
 /** The rite's ports with the lag ports beside them; every call recorded in order. */
-function fakes(over: { lag?: HouseLag | null; tty?: boolean; seat?: boolean; yes?: boolean; lay?: number; raise?: number; seed?: string } = {}) {
+function fakes(over: { lag?: HouseLag | null; tty?: boolean; seat?: boolean; lay?: number; raise?: number; seed?: string } = {}) {
   const calls: string[] = [], said: string[] = [];
   const ports: RitePorts = {
     checkout: async () => ({ head: HEAD, branch: "main" }),
@@ -57,15 +57,14 @@ function fakes(over: { lag?: HouseLag | null; tty?: boolean; seat?: boolean; yes
     say: (line) => { said.push(line); },
     seat: () => over.seat ?? false,
     houseLag: async () => { calls.push("house-lag"); return over.lag === undefined ? LAG : over.lag; },
-    ask: async (q) => { calls.push(`ask ${q}`); return over.yes ?? false; },
     layWorkbench: async () => { calls.push("lay-workbench"); return over.lay ?? 0; },
   };
   return { ports, calls, said };
 }
 
-describe("kukulu reads the lag on every raise and lays the workbench on the owner's yes", () => {
+describe("kukulu reads the lag on every raise and lays the workbench with no question", () => {
   it("RED: the lag line names both gaps: canon behind the canon source (it fills through promote), and each workbench behind the checkout's wikis/", async () => {
-    const f = fakes({ yes: false });
+    const f = fakes();
     await riteKukulu(f.ports, {});
     const text = f.said.join("\n");
     expect(text).toMatch(/canon lags the canon source by 2 carrier\(s\) \(1 new, 1 changed\) in \/workspace\/bags; canon fills through promote and the floor's sealed cut, never from a raise/);
@@ -77,37 +76,35 @@ describe("kukulu reads the lag on every raise and lays the workbench on the owne
     expect(text).toMatch(/workbench lares does not mount under the worn face \(the worn face holds no writer's seat there\); nothing of it lays/);
   });
 
-  it("RED: the owner's terminal over a checkout previews the workbench lay (each title a mounted workbench takes, canon untouched) before the yes, then lays it", async () => {
-    const f = fakes({ yes: true });
+  it("RED (restand-files-smooth): the owner's terminal over a checkout previews the workbench lay (each title a mounted workbench takes, canon untouched), then lays it diff-gated with no question", async () => {
+    const f = fakes();
     const out = await riteKukulu(f.ports, {});
-    expect(f.calls.map((c) => c.split(" ")[0])).toEqual(["raise", "house-lag", "ask", "lay-workbench"]);
+    expect(f.calls).toEqual(["raise", "house-lag", "lay-workbench"]);
     const text = f.said.join("\n");
     expect(text).toMatch(/the workbench lay carries each file under \/workspace\/wikis\/<slug> into that wiki's working layer; canon stays as it stands:/);
     expect(text).toMatch(/sdm -> lar:\/\/\/ha\.ka\.ba\/wikis\/sdm\/working: 2/);
     expect(text).toMatch(/lar:\/\/\/ha\.ka\.ba\/sdm\/notes\/one/);
     expect(text).not.toMatch(/lar:\/\/\/ha\.ka\.ba\/lares\/docs\/x/);
-    expect(f.calls[2]).toMatch(/lay these 2 carrier\(s\) into the workbench now\?/);
+    expect(text).not.toMatch(/\[y\/N\]|lay these/);
     expect(out).toMatchObject({ code: 0, data: { raised: true, lag: { canon: 2, workbench: 3 }, workbench: { offered: 2, laid: true } } });
   });
 
-  it("RED: no prompt ever writes the canon bag: a lag in canon alone asks nothing and lays nothing", async () => {
-    const f = fakes({ lag: { ...LAG, benches: [], benchLag: 0 }, yes: true });
+  it("RED: no lay ever writes the canon bag: a lag in canon alone lays nothing", async () => {
+    const f = fakes({ lag: { ...LAG, benches: [], benchLag: 0 } });
     const out = await riteKukulu(f.ports, {});
     expect(f.calls).toEqual(["raise", "house-lag"]);
     expect(out.data).not.toHaveProperty("canon");
     expect(f.said.join("\n")).toMatch(/the checkout's workbenches stand level with \/workspace\/wikis/);
   });
 
-  it("RED: no yes, no lay: a no (or a Ctrl+C at the question) leaves every layer untouched and names the line that lays it later", async () => {
-    const f = fakes({ yes: false });
-    const out = await riteKukulu(f.ports, {});
-    expect(f.calls).not.toContain("lay-workbench");
-    expect(f.said.join("\n")).toMatch(/nothing laid; the workbench stands as it stood: lares vessel lay --workbench --apply lays it later/);
-    expect(out).toMatchObject({ code: 0, data: { workbench: { laid: false } } });
+  it("CONTROL: a rite that carries no lay port names the line that lays it, and lays nothing", async () => {
+    const { layWorkbench: _w, ...bare } = fakes().ports;
+    const out = await riteKukulu(bare, {});
+    expect(out).toMatchObject({ code: 0, data: { workbench: { offered: 2, laid: false } } });
   });
 
-  it("RED: a seat with no terminal names the lag and never asks, never lays", async () => {
-    const f = fakes({ tty: false, yes: true });
+  it("RED: a seat with no terminal names the lag and never lays", async () => {
+    const f = fakes({ tty: false });
     const out = await riteKukulu(f.ports, {});
     expect(f.calls).toEqual(["raise", "house-lag"]);
     expect(f.said.join("\n")).toMatch(/this seat holds no terminal, so nothing lays; your hand: lares rite kukulu on a terminal \(or lares vessel lay --workbench --apply\)/);
@@ -115,14 +112,14 @@ describe("kukulu reads the lag on every raise and lays the workbench on the owne
   });
 
   it("RED: an AI launcher on a terminal is a seat too", async () => {
-    const f = fakes({ seat: true, yes: true });
+    const f = fakes({ seat: true });
     await riteKukulu(f.ports, {});
     expect(f.calls).toEqual(["raise", "house-lag"]);
     expect(f.said.join("\n")).toMatch(/an AI seat launched this rite, so nothing lays/);
   });
 
   it("RED: a canon source in no checkout names the lag and offers nothing", async () => {
-    const f = fakes({ lag: { ...LAG, source: "/elsewhere/bags", checkout: false }, yes: true });
+    const f = fakes({ lag: { ...LAG, source: "/elsewhere/bags", checkout: false } });
     await riteKukulu(f.ports, {});
     expect(f.calls).toEqual(["raise", "house-lag"]);
     expect(f.said.join("\n")).toMatch(/\/elsewhere\/bags stands in no checkout, so the raise offers no lay/);
@@ -148,7 +145,7 @@ describe("kukulu reads the lag on every raise and lays the workbench on the owne
     expect(same.said.join("\n")).not.toMatch(/seed offer waits/);
   });
 
-  it("RED: level, and unread: each says so and asks nothing", async () => {
+  it("RED: level, and unread: each says so and lays nothing", async () => {
     const level = fakes({ lag: { ...LAG, holdings: [], lag: 0, benches: [], benchLag: 0 } });
     await riteKukulu(level.ports, {});
     expect(level.calls).toEqual(["raise", "house-lag"]);
@@ -158,8 +155,8 @@ describe("kukulu reads the lag on every raise and lays the workbench on the owne
     expect(unread.said.join("\n")).toMatch(/the lag reads nowhere/);
   });
 
-  it("RED: a par landing reads green when the workbench lay after the yes answers non-zero: the lay waits, named, with its cure", async () => {
-    const f = fakes({ yes: true, lay: 1 });
+  it("RED: a par landing reads green when the workbench lay answers non-zero: the lay waits, named, with its cure", async () => {
+    const f = fakes({ lay: 1 });
     const out = await riteKukulu(f.ports, {});
     // THE BALANCE ALREADY STANDS: the house landed par, so the lay's refusal reads as a warning, never the rite's red.
     expect(out).toMatchObject({ code: 0, data: { workbench: { laid: false }, warnings: ["workbench-lay-waits"] } });
@@ -169,7 +166,7 @@ describe("kukulu reads the lag on every raise and lays the workbench on the owne
   });
 
   it("RED: a Ctrl+C during the workbench lay (exit 130) reads as interrupted, never failed", async () => {
-    const f = fakes({ yes: true, lay: 130 });
+    const f = fakes({ lay: 130 });
     const out = await riteKukulu(f.ports, {});
     // The --json answer names it by its own code (`refusal` feeds the error code), never `rite-stopped-at-landing` nor the failed lay's.
     expect(out).toMatchObject({ code: 1, data: { workbench: { laid: false, interrupted: true }, refusal: "kukulu-workbench-lay-interrupted" } });
@@ -177,10 +174,10 @@ describe("kukulu reads the lag on every raise and lays the workbench on the owne
   });
 
   it("CONTROL: a raise that fails reads no lag; ports with no lag read leave the answer as it stood", async () => {
-    const f = fakes({ raise: 9, yes: true });
+    const f = fakes({ raise: 9 });
     await riteKukulu(f.ports, {});
     expect(f.calls).toEqual(["raise"]);
-    const { houseLag: _l, ask: _a, layWorkbench: _w, ...bare } = fakes().ports;
+    const { houseLag: _l, layWorkbench: _w, ...bare } = fakes().ports;
     const out = await riteKukulu(bare, {});
     expect(out.data).not.toHaveProperty("lag");
   });

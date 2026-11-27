@@ -251,7 +251,7 @@ export interface SeedMirrorsOpts {
   /** Skip every layer and read kahua alone (`lares shore lift-kahua`). */
   readonly kahuaOnly?: boolean;
   /**
-   * Lay the checkout's workbench folders alone (`<canon source>/../wikis/<slug>`, the lay a kūkulu offers on the owner's yes): no
+   * Lay the checkout's workbench folders alone (`<canon source>/../wikis/<slug>`, the lay a kūkulu runs after its raise): no
    * face root, no house bag or wiki, no share landing, no kahua. Each workbench still lays only where the worn face holds a writer's seat.
    */
   readonly benchesOnly?: boolean;

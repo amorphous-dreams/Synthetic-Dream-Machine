@@ -46,8 +46,8 @@
  *                   from a raise, so the line only names it), each wiki's workbench behind the checkout's `wikis/<slug>`, and a
  *                   newer seed offer (the seed's floor) the release carries than the vessel serves, named by its card. Where the canon source stands in a checkout
  *                   and the owner holds this terminal, the workbench lay's preview (each title a workbench the worn face mounts
- *                   would take) asks once, and the lay (`lares vessel lay --workbench --apply`) runs only on an explicit yes; a
- *                   workbench that does not mount is named and left. A seat (no terminal, or an AI launcher), a source in no
+ *                   would take) prints and the lay (`lares vessel lay --workbench --apply`) runs with no question: it reads
+ *                   diff-gated and stands off a both-moved row by name; a workbench that does not mount is named and left. A seat (no terminal, or an AI launcher), a source in no
  *                   checkout, or a vessel waiting on its unlock names the lag and lays nothing
  *
  * A QUIET DAY spends nothing: a vessel that already runs the image under a lit pūlama begins no rite; the raise only tops
@@ -219,9 +219,7 @@ export interface RitePorts {
   houseLag?(): Promise<HouseLag | null>;
   /** The floor card the vessel's status refreshed (title only), or null where no vessel answers one. */
   floorCard?(): Promise<{ readonly title: string } | null>;
-  /** One yes-or-no on this terminal (a Ctrl+C reads as no); absent, the rite asks nothing and lays nothing. */
-  ask?(question: string): Promise<boolean>;
-  /** The workbench lay on this terminal (`lares vessel lay --workbench --apply`), run only after the owner's yes; its exit code. */
+  /** The workbench lay on this terminal (`lares vessel lay --workbench --apply`), diff-gated, asking nothing; its exit code. Absent, nothing lays. */
   layWorkbench?(): Promise<number>;
   /** Whether an AI seat launched this rite (the harness's mark, or a host chain that reads no person's hand); absent, false. */
   seat?(): boolean;
@@ -424,7 +422,8 @@ const floorMoved = (words: unknown): boolean => typeof words === "string" && /(?
  * what it carries: the canon bag behind the canon source, each workbench behind the checkout's `wikis/<slug>`, and a newer sealed
  * floor the release carries. The raise never writes canon: canon fills through promote and the floor's sealed cut. Where the canon
  * source stands in a checkout and the owner holds this terminal, the rite previews the workbench lay (each title a workbench the
- * worn face mounts would take) and asks; the lay runs only on an explicit yes, and a no or a Ctrl+C leaves every layer as it stood.
+ * worn face mounts would take) and lays it with no question (restand-files-smooth: the operator found the y friction): the lay reads
+ * diff-gated, so a row both sides moved stands off by name and `lares vessel lay --workbench --apply` lays it later.
  * A seat (no terminal, or an AI launcher) names the lag and never lays; so does a source in no checkout, and a vessel that waits on
  * its unlock.
  */
@@ -467,21 +466,17 @@ export async function lagAfterRaise(ports: RitePorts, out: { code: number; data:
     : out.data["awaits"] === "unlock" ? `the new vessel waits on its unlock, so nothing lays; once it opens: ${WORKBENCH_LAY_LINE}`
     : seat ? `an AI seat launched this rite, so nothing lays; your hand: ${HAND_ACT} on a terminal (or ${WORKBENCH_LAY_LINE})`
     : !tty ? `this seat holds no terminal, so nothing lays; your hand: ${HAND_ACT} on a terminal (or ${WORKBENCH_LAY_LINE})`
-    : !ports.ask || !ports.layWorkbench ? `this rite carries no lay, so nothing lays; your hand: ${WORKBENCH_LAY_LINE}`
+    : !ports.layWorkbench ? `this rite carries no lay, so nothing lays; your hand: ${WORKBENCH_LAY_LINE}`
     : null;
   if (why !== null) {
     ports.say(`kūkulu: ${why}`);
     return { ...out, data: { ...out.data, lag, workbench: { offered, laid: false, ...(seat || !tty ? { seat: true } : {}) } } };
   }
-  // THE PREVIEW, before the question: where the files go (each wiki's working layer, canon untouched), then every title.
+  // THE PREVIEW, before the lay: where the files go (each wiki's working layer, canon untouched), then every title.
   ports.say(`kūkulu: the workbench lay carries each file under ${read.wikis}/<slug> into that wiki's working layer; canon stays as it stands:`);
   for (const b of mounted) {
     ports.say(`  ${b.slug} -> ${b.toBag}: ${b.planned.length}`);
     for (const t of b.planned) ports.say(`    ${t}`);
-  }
-  if (!(await ports.ask!(`lay these ${offered} carrier(s) into the workbench now?`))) {
-    ports.say(`kūkulu: nothing laid; the workbench stands as it stood: ${WORKBENCH_LAY_LINE} lays it later`);
-    return { ...out, data: { ...out.data, lag, workbench: { offered, laid: false } } };
   }
   const code = await ports.layWorkbench!();
   if (code === INTERRUPTED) {

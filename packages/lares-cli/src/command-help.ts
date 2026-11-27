@@ -107,8 +107,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "source (canon fills through promote and the floor's sealed cut, never from a raise), each wiki's workbench behind the " +
       "checkout's wikis/<slug>, and a newer seed offer the release carries (the seed's floor), named by its floor card and `lares vessel floor status --grain seed`. Where the canon source stands " +
       "in a checkout and the owner holds the terminal, it previews the workbench lay (each title a workbench the worn face mounts " +
-      "would take) and lays it (`lares vessel lay --workbench --apply`) only on an explicit yes; a workbench that does not mount is " +
-      "named and left, a no or a Ctrl+C leaves every layer as it stood, and a seat with no terminal, an AI launcher or a source in no " +
+      "would take) and lays it (`lares vessel lay --workbench --apply`) with no question, diff-gated (a row both sides moved stands " +
+      "off by name); a workbench that does not mount is named and left, and a seat with no terminal, an AI launcher or a source in no " +
       "checkout names the lag and lays nothing. A Ctrl+C at any prompt (the light, the admit) leaves the house where the " +
       "next run reads it: a begin standing unlanded at this head and over this image, every half landable, is resumed (no lei " +
       "spent, no new tessera, the resting offer reused where its vouches match), and any other (another head or image, a face " +
@@ -1138,7 +1138,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vessel lay                           # preview every holding; writes nothing",
       "lares vessel lay --apply --yes             # lay every holding (idempotent)",
       "lares vessel lay --apply --lift-kahua 3    # also lift the 3 kahua items the preview named",
-      "lares vessel lay --workbench --apply       # the checkout's workbenches alone (the lay a kūkulu offers on the owner's yes)",
+      "lares vessel lay --workbench --apply       # the checkout's workbenches alone (the lay a kūkulu runs after its raise)",
       "lares vessel lay --lag --json              # data.lag, data.benchLag, data.checkout; writes nothing",
     ],
     flags: [

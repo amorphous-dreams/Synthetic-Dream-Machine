@@ -538,15 +538,8 @@ export function houseLagOf(output: Record<string, unknown>): HouseLag | null {
   };
 }
 
-/** One yes-or-no on this terminal, asked on stderr; a Ctrl+C at the question reads as no. */
-const askOnTerminal = (q: string): Promise<boolean> => new Promise((resolve) => {
-  const rl = createInterface({ input: process.stdin, output: process.stderr });
-  rl.once("SIGINT", () => { rl.close(); process.stderr.write("\n"); resolve(false); });
-  rl.question(`${q} [y/N] `, (a) => { rl.close(); resolve(/^y(es)?$/i.test(a.trim())); });
-});
-
 /**
- * The workbench lay on this terminal, after the owner's yes: this CLI again (the bridge forwards it into the vessel), the checkout's
+ * The workbench lay on this terminal, asking nothing (it reads diff-gated): this CLI again (the bridge forwards it into the vessel), the checkout's
  * workbench folders alone. A Ctrl+C reaches the lay, which shares this terminal; this process holds SIGINT until it ends.
  */
 const layWorkbenchOnTerminal = (): Promise<number> => new Promise((resolve) => {
@@ -587,10 +580,9 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
     ranImage: () => shimRead(shim, ["vessel-image"]),
     // THE KEEP AFTER THE LANDING: the raise defers the keep a down left owed (`--keep-after-landing`), and the rite runs it here.
     keepOwed: () => runShim(shim, ["keep-owed"]),
-    // THE LAG AFTER THE RAISE: read in the vessel that stands; the workbench lay rides the owner's yes on this terminal, never canon.
+    // THE LAG AFTER THE RAISE: read in the vessel that stands; the workbench lay runs diff-gated on this terminal, asking nothing, never canon.
     floorCard: async () => { const read = await cliVerb(["vessel", "floor", "status"]); const card = read.ok ? read.output["card"] as { title?: unknown } | undefined : undefined; return typeof card?.title === "string" ? { title: card.title } : null; },
     houseLag: async () => { const read = await cliVerb(["vessel", "lay", "--lag"]); return read.ok ? houseLagOf(read.output) : null; },
-    ask: askOnTerminal,
     layWorkbench: layWorkbenchOnTerminal,
     // An AI launcher seats the rite: the house hand gate reads this command's branch (`readOwnHand`), and any refusal (a harness's
     // mark or chain, or a chain that reads no person's hand; the bridge marks it the same way) reads as a seat that never lays.
