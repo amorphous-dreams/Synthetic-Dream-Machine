@@ -27,6 +27,11 @@
  * name; `recipe: "daemon"` refuses the same way, since the daemon wiki answers to `default` alone. The container law
  * holds (exactly one of `recipe` / `bag`, else `no-container`).
  *
+ * A SHORT TITLE READS FULL (S6, `short-title`). Every title a get, put, delete, rename or render takes (a rename's `to` too)
+ * reads through the one closed prefix set first: `kahua:road/x` reaches the verb as `lar:///ha.ka.ba/kahua/memory/road/x`,
+ * so every answer names the full title and no record stands at the short form; a prefix no law declares refuses
+ * `short-title-unknown` naming the prefixes that stand.
+ *
  * A BAG TAKES ONE RECORD THROUGH ITS OWN STORE. `bag: <slug>` names one bag and no wiki, so no engine runs: a get reads the
  * record from that bag (`bagGet`), a put lands it there and a delete removes it there (`bagSeat`), under the reach and the
  * gates every bag placement walks (a lit sibling's own lane, a realm steward's write, a wiki's instance slot addressed as a
@@ -111,6 +116,7 @@ import { alertNamedTitles, isHouseAlert, isOpenAlert, redactedAlertFields, stays
 import { canonFiltersText, functionPragmasOf, houseWidgetOf, refuseUnknownHouseOperators } from "./house-filters.js";
 import { pageFilterAnswer, filterCursor, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
+import { readShortTitle } from "./short-title.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { wornOrigin } from "./verb-dispatcher.js";
 import { wikiWearsNext } from "./island-recipe.js";
@@ -253,11 +259,29 @@ async function namedWikiOptions(opts: TiddlerVerbOptions, args: Readonly<Record<
   return { ...rest, tw5: engine.tw5, composite: engine.composite, wiki: { slug, ...(engine.gate !== undefined ? { gate: engine.gate } : {}) } };
 }
 
-/** A reactor that answers the anchor itself, and a named wiki in that wiki's own engine. */
-function everyWiki(verb: string, write: boolean, make: (opts: TiddlerVerbOptions) => VerbReactor): (opts: TiddlerVerbOptions) => VerbReactor {
+/**
+ * SHORT TITLES READ FULL AT THE DOOR (S6): each title argument a verb names (`title`, a rename's `to`) reads through the one
+ * closed prefix set (`readShortTitle`), so `kahua:road/x` reaches the verb as `lar:///ha.ka.ba/kahua/memory/road/x` and every
+ * answer names the full title; a prefix no law declares refuses by name before anything reads.
+ */
+function fullTitles(args: Readonly<Record<string, unknown>>, keys: readonly string[]): Readonly<Record<string, unknown>> {
+  let out: Record<string, unknown> | null = null;
+  for (const key of keys) {
+    const named = args[key];
+    if (typeof named !== "string") continue;
+    const read = readShortTitle(named);
+    if (read.kind === "refused") throw new VerbRefusal(read.code, read.message);
+    if (read.kind === "expanded") (out ??= { ...args })[key] = read.title;
+  }
+  return out ?? args;
+}
+
+/** A reactor that answers the anchor itself, and a named wiki in that wiki's own engine; `titled` names its title arguments. */
+function everyWiki(verb: string, write: boolean, make: (opts: TiddlerVerbOptions) => VerbReactor, titled: readonly string[] = []): (opts: TiddlerVerbOptions) => VerbReactor {
   return (opts) => {
     const anchor = make(opts);
-    return async (args, ctx) => {
+    return async (given, ctx) => {
+      const args = fullTitles(given, titled);
       const named = await namedWikiOptions(opts, args, verb, write);
       return named ? make(named)(args, ctx) : anchor(args, ctx);
     };
@@ -978,7 +1002,7 @@ export const makeTiddlerGetReactor = everyWiki("tiddler-get", false, (opts: Tidd
     const read = await recordRead(engine, fields, title, args, asked, opts.resolveByCid);
     return recordAnswer({ recipe: anchor.recipe, layer: bag, answered }, title, read, bag, placeIn(title));
   };
-});
+}, ["title"]);
 
 // ── wiki-render ───────────────────────────────────────────────────────────────────────────────────────
 
@@ -1081,7 +1105,7 @@ export const makeWikiRenderReactor = everyWiki("wiki-render", false, (opts: Tidd
       truncated: end < rendered.length, next: end < rendered.length ? `${end}.${asOf}` : null,
     };
   };
-});
+}, ["title"]);
 
 // ── tiddler-put ───────────────────────────────────────────────────────────────────────────────────────
 
@@ -1512,7 +1536,7 @@ function tiddlerPut(opts: TiddlerVerbOptions): VerbReactor {
   };
 }
 
-export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, tiddlerPut);
+export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, tiddlerPut, ["title"]);
 
 // A row names a verified floor shadow and the sole record its native action may change.
 // The caller supplies values only; no action text or message name crosses this door.
@@ -1813,7 +1837,7 @@ export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts:
       };
     }
   };
-});
+}, ["title", "to"]);
 
 // ── tiddler-delete ────────────────────────────────────────────────────────────────────────────────────
 
@@ -2013,7 +2037,7 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
     for (const member of byHand) { wikiWearsNext(opts.tw5, member, wornOrigin(ctx.worn).face); wiki.deleteTiddler(member); }
     return { recipe: anchor.recipe, title, decision: "removed", mode: modeName, tombstoned: tombstones, retracted: retracts, hash, consequence: read };
   };
-});
+}, ["title"]);
 
 /**
  * A TOMBSTONE OVER A TITLE THE WIKI READS ABSENT still answers a delete. Where the wiki reads the title absent and a layer this

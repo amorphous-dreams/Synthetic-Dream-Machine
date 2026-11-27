@@ -26,6 +26,10 @@
  * or writes that one bag through its store, under the gates the bag's own writes keep (no engine runs). `--face N` rides a
  * session of face N on every sub-verb.
  *
+ * A SHORT TITLE READS FULL (S6): `lares tiddler get kahua:road/x` rides the wire as written, the vessel's one reading
+ * (`@lararium/tw5` `readShortTitle`) names `lar:///ha.ka.ba/kahua/memory/road/x`, and every line here prints the title the
+ * answer carries; a prefix no law declares refuses `short-title-unknown` in the vessel's words.
+ *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout
  */
 
@@ -361,6 +365,13 @@ const FLOOR_NOTE = "read from the floor snapshot: this face holds no read on the
 const whereOf = (planned: Record<string, unknown>): string =>
   typeof planned["bag"] === "string" ? `--bag ${planned["bag"]}${typeof planned["realm"] === "string" ? ` --realm ${planned["realm"]}` : ""}` : `--recipe ${String(planned["recipe"] ?? "<slug>")}`;
 
+/**
+ * THE ANSWER NAMES THE TITLE (S6): a short title (`kahua:road/x`) rides the wire as written and the vessel reads it full, so
+ * every line a write prints names the title its answer carries, never the line's own spelling.
+ */
+const answeredTitle = (receipt: Record<string, unknown>, plan: DoorPlan, key: "title" | "to" = "title"): string =>
+  String(typeof receipt[key] === "string" ? receipt[key] : plan.args[key]);
+
 async function tiddlerPut(args: ParsedArgs): Promise<number> {
   const plan = tiddlerPlan("put", args);
   const planned = plan.args["fields"] as Record<string, unknown> | undefined;
@@ -372,21 +383,22 @@ async function tiddlerPut(args: ParsedArgs): Promise<number> {
   const ran = await runDoor(args, "tiddler put", words === null ? plan : { verb: plan.verb, args: { ...plan.args, ...carried } });
   if (!ran.ok) return ran.exit;
   const receipt = ran.output;
+  const named = answeredTitle(receipt, plan);
   const decision = String(receipt["decision"] ?? "");
   const changed = Array.isArray(receipt["changed"]) ? (receipt["changed"] as string[]) : [];
   const ok = decision === "put" || decision === "noop";
   const code = ok ? "ok" : decision === "conflict" || decision === "exists" ? "conflict" : "verb-error";
-  const message = decision === "conflict" && words !== null && "append" in words ? `conflict: ${plan.args["title"]} kept moving under the append; it reads ${receipt["hash"] ?? "absent"} now and nothing landed. Send the append again`
+  const message = decision === "conflict" && words !== null && "append" in words ? `conflict: ${named} kept moving under the append; it reads ${receipt["hash"] ?? "absent"} now and nothing landed. Send the append again`
                 : decision === "conflict" ? `conflict: the record moved past ${plan.args["base"] ?? "the base"}; it reads ${receipt["hash"] ?? "absent"} now. Read again and hand back the live hash`
-                : decision === "exists" ? `exists: a tiddler already stands at ${plan.args["title"]} (--create lands only where none does); drop --create and pass --base <hash> from \`lares tiddler get ${plan.args["title"]} ${whereOf(plan.args)} --skinny\` to replace it`
-                : `${decision}: ${plan.args["title"]}`;
+                : decision === "exists" ? `exists: a tiddler already stands at ${named} (--create lands only where none does); drop --create and pass --base <hash> from \`lares tiddler get ${named} ${whereOf(plan.args)} --skinny\` to replace it`
+                : `${decision}: ${named}`;
   emit(args, {
     ok, requestId: ran.requestId, data: receipt,
     ...(ok ? {} : { error: { code, message } }),
     human: () => {
       if (!ok) { console.error(`lares tiddler put: ${message}`); return; }
       if (typeof receipt["has"] === "string") console.log(receipt["has"]);
-      console.log(`${decision}: ${plan.args["title"]}`);
+      console.log(`${decision}: ${named}`);
       if (decision === "put") console.log(`  ${receipt["created"] === true ? "created" : "changed"} ${changed.join(", ")}`);
       const replaced = receipt["replaced"] as { span?: number; with?: number } | undefined;
       if (decision === "put" && replaced) console.log(`  replaced one span (${replaced.span ?? 0} bytes) with ${replaced.with ?? 0} bytes`);
@@ -402,7 +414,7 @@ async function tiddlerPut(args: ParsedArgs): Promise<number> {
       for (const w of Array.isArray(receipt["warnings"]) ? (receipt["warnings"] as string[]) : []) console.log(`  ! ${w}`);
       // TWO BASES, EACH FOR ITS OWN WRITE: the record hash guards a put on this one record; the carrier hash guards a put of the
       // family's whole carrier on its root.
-      if (receipt["hash"]) console.log(`  base: ${receipt["hash"]} (record: hand it back on a put to ${plan.args["title"]})`);
+      if (receipt["hash"]) console.log(`  base: ${receipt["hash"]} (record: hand it back on a put to ${named})`);
       if (receipt["canonicalHash"]) console.log(`  base: ${receipt["canonicalHash"]} (carrier: hand it back on a whole-carrier put to the root)`);
     },
   });
@@ -414,13 +426,14 @@ async function tiddlerDelete(args: ParsedArgs): Promise<number> {
   const ran = await runDoor(args, "tiddler delete", plan);
   if (!ran.ok) return ran.exit;
   const receipt = ran.output;
+  const named = answeredTitle(receipt, plan);
   const decision = String(receipt["decision"] ?? "");
   const code = decision === "removed" ? "ok" : decision === "conflict" ? "conflict" : decision === "absent" ? "not-found" : "verb-error";
   // A refusal the family law answers rides the receipt with the consequence it read: the code leads the message.
   const refusal = decision === "refused" && typeof receipt["refusal"] === "string" ? receipt["refusal"] : null;
   const message = decision === "conflict" ? `conflict: the record moved past ${plan.args["base"] ?? "the base"}; it reads ${receipt["hash"] ?? "absent"} now`
-                : decision === "absent" ? `no tiddler at ${plan.args["title"]}`
-                : refusal ? String(receipt["why"] ?? `${refusal}: ${plan.args["title"]}`) : `${decision}: ${plan.args["title"]}`;
+                : decision === "absent" ? `no tiddler at ${named}`
+                : refusal ? String(receipt["why"] ?? `${refusal}: ${named}`) : `${decision}: ${named}`;
   const read = receipt["consequence"] as { acts?: Array<{ title: string; act: string; bag?: string | null; shadowed?: string[]; reveals?: string | null }>; leaves?: Array<{ title: string; why: string }> } | undefined;
   /** One act as a line: the layer it writes and what the wiki reads afterward. */
   const actLine = (row: NonNullable<NonNullable<typeof read>["acts"]>[number]): string =>
@@ -436,7 +449,7 @@ async function tiddlerDelete(args: ParsedArgs): Promise<number> {
         if (refusal) for (const row of read?.acts ?? []) console.error(`  would ${actLine(row)}`);
         return;
       }
-      console.log(`removed: ${plan.args["title"]}`);
+      console.log(`removed: ${named}`);
       for (const row of read?.acts ?? []) console.log(`  ${actLine(row)}`);
       for (const row of read?.leaves ?? []) console.log(`  leaves ${row.title} (${row.why})`);
       // A family's removal counts what left: tombstoned where a lower layer would surface, retracted where none would.
@@ -456,20 +469,22 @@ async function tiddlerRename(args: ParsedArgs): Promise<number> {
   const ran = await runDoor(args, "tiddler rename", plan);
   if (!ran.ok) return ran.exit;
   const receipt = ran.output;
+  const named = answeredTitle(receipt, plan);
+  const movedTo = answeredTitle(receipt, plan, "to");
   const decision = String(receipt["decision"] ?? "");
   const code = decision === "renamed" ? "ok" : decision === "conflict" ? "conflict" : decision === "absent" ? "not-found" : "verb-error";
   const refusal = decision === "refused" && typeof receipt["refusal"] === "string" ? receipt["refusal"] : null;
   const message = decision === "conflict" ? `conflict: the record moved past ${plan.args["base"] ?? "the base"}; it reads ${receipt["hash"] ?? "absent"} now`
-                : decision === "absent" ? `no tiddler at ${plan.args["title"]}`
-                : refusal ? String(receipt["why"] ?? `${refusal}: ${plan.args["title"]}`) : `${decision}: ${plan.args["title"]}`;
+                : decision === "absent" ? `no tiddler at ${named}`
+                : refusal ? String(receipt["why"] ?? `${refusal}: ${named}`) : `${decision}: ${named}`;
   const relinked = Array.isArray(receipt["relinked"]) ? (receipt["relinked"] as string[]) : [];
   emit(args, {
     ok: code === "ok", requestId: ran.requestId, data: receipt,
     ...(code === "ok" ? {} : { error: { code, message, ...(refusal ? { hint: `refusal: ${refusal}` } : {}) } }),
     human: () => {
       if (code !== "ok") { console.error(`lares tiddler rename: ${message}`); return; }
-      console.log(`renamed: ${plan.args["title"]} -> ${plan.args["to"]}`);
-      console.log(`  forwarder stands at ${plan.args["title"]}`);
+      console.log(`renamed: ${named} -> ${movedTo}`);
+      console.log(`  forwarder stands at ${named}`);
       for (const name of relinked) console.log(`  relinked ${name}`);
       if (typeof receipt["skipped"] === "number") console.log(`  skipped ${receipt["skipped"]} stay-home referrer(s): each keeps its fields`);
       if (typeof receipt["withheld"] === "number") console.log(`  withheld ${receipt["withheld"]} record(s) this face may not read: counted, never named`);

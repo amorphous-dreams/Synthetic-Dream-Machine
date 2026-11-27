@@ -748,6 +748,39 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(r.engine.wiki.getTiddlerText("Room 4")).toBe("bed by the window");
   });
 
+  // S6, SHORT TITLES (lar:///ha.ka.ba/kahua/memory/course/ai-surface-gestures #/stories): a seat writes `kahua:road/x`, every
+  // door reads the stage's full title, and every answer names it; no record ever stands at the short form.
+  test("a short title reads full on every door: put, get, rename and delete take `kahua:<path>` and answer the full title; an unknown prefix refuses by name on each, nothing landing", async () => {
+    const r = await rig();
+    const FULL = "lar:///ha.ka.ba/kahua/memory/road/short-x";
+    const MOVED = "lar:///ha.ka.ba/kahua/memory/road/short-y";
+    const made = await makeTiddlerPutReactor(r.opts)({ ...A, title: "kahua:road/short-x", create: true, text: "a road note" }, ctx());
+    expect(made).toMatchObject({ title: FULL, decision: "put", created: true });
+    await r.landed();
+    expect(r.engine.wiki.getTiddlerText(FULL)).toBe("a road note");
+    expect(r.engine.wiki.tiddlerExists("kahua:road/short-x")).toBe(false);
+    const got = await makeTiddlerGetReactor(r.opts)({ ...A, title: "kahua:road/short-x" }, ctx());
+    expect(got).toMatchObject({ title: FULL, tiddler: { fields: { title: FULL, text: "a road note" } } });
+    expect(String(got["has"])).toContain(`name=\`${FULL}\``);
+    const moved = await makeTiddlerRenameReactor(r.opts)({ ...A, title: "kahua:road/short-x", to: "kahua:road/short-y" }, ctx());
+    expect(moved).toMatchObject({ title: FULL, to: MOVED, decision: "renamed" });
+    await r.landed();
+    expect(r.engine.wiki.getTiddlerText(MOVED)).toBe("a road note");
+    const gone = await makeTiddlerDeleteReactor(r.opts)({ ...A, title: "kahua:road/short-y" }, ctx());
+    expect(gone).toMatchObject({ title: MOVED, decision: "removed" });
+    // An unknown prefix refuses by name, naming the prefixes that stand, before any read or write.
+    const unknown = { reason: "short-title-unknown" };
+    await expect(makeTiddlerGetReactor(r.opts)({ ...A, title: "kahu:road/short-x" }, ctx())).rejects.toThrow("the prefixes that stand: kahua: (lar:///ha.ka.ba/kahua/memory/)");
+    await expect(makeTiddlerPutReactor(r.opts)({ ...A, title: "kahu:road/short-z", create: true, text: "x" }, ctx())).rejects.toMatchObject(unknown);
+    await expect(makeTiddlerGetReactor(r.opts)({ ...A, title: "kahu:road/short-x" }, ctx())).rejects.toMatchObject(unknown);
+    await expect(makeTiddlerDeleteReactor(r.opts)({ ...A, title: "kahu:road/short-x" }, ctx())).rejects.toMatchObject(unknown);
+    await expect(makeTiddlerRenameReactor(r.opts)({ ...A, title: "Note 01", to: "kahu:road/short-z" }, ctx())).rejects.toMatchObject(unknown);
+    expect(r.engine.wiki.tiddlerExists("kahu:road/short-z")).toBe(false);
+    expect(r.engine.wiki.tiddlerExists("Note 01")).toBe(true);
+    // CONTROL: a plain title and a full address ride through as named.
+    expect(await makeTiddlerGetReactor(r.opts)({ ...A, title: "Note 01" }, ctx())).toMatchObject({ title: "Note 01" });
+  });
+
   test("an append lands at the end with one joining newline, leads with its has line, and refuses a base, a text, a field patch or a missing title", async () => {
     const r = await rig();
     const put = makeTiddlerPutReactor(r.opts);

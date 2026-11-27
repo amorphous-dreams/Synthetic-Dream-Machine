@@ -778,3 +778,49 @@ describe("tiddler get --text answers the text alone (S3)", () => {
     expect(JSON.parse(r.out)["data"]).toEqual(record);
   });
 });
+
+/**
+ * S6 SHORT TITLES (lar:///ha.ka.ba/kahua/memory/course/ai-surface-gestures #/stories): the line sends `kahua:road/x` as written
+ * (the vessel's one reading expands it, so the CLI and the MCP seat put one wire), and every line a write prints names the full
+ * title the answer carries, never the line's own short spelling.
+ */
+describe("a short title rides as written and every answer line names the full title (S6)", () => {
+  const FULL = "lar:///ha.ka.ba/kahua/memory/road/x";
+  const MOVED = "lar:///ha.ka.ba/kahua/memory/road/y";
+  const human = async (positional: string[], options: Record<string, string> = {}, flags: Record<string, boolean> = {}): Promise<{ code: number; lines: string }> => {
+    const lines: string[] = [];
+    const log = vi.spyOn(console, "log").mockImplementation((...parts: unknown[]) => { lines.push(parts.join(" ")); });
+    const err = vi.spyOn(console, "error").mockImplementation((...parts: unknown[]) => { lines.push(parts.join(" ")); });
+    try {
+      const code = await cmdTiddler({ command: "tiddler", positional, options: { recipe: "default", ...options }, flags: { json: false, ...flags } } as unknown as ParsedArgs);
+      return { code, lines: lines.join("\n") };
+    } finally { log.mockRestore(); err.mockRestore(); }
+  };
+
+  test("RED: put, rename and delete print the answered full title; the wire carries the short form as written", async () => {
+    h.reply = { recipe: "default", title: FULL, decision: "put", bag: "lar:///ha.ka.ba/wikis/daemon/working", created: true, changed: ["title", "text"], hash: "sha256-s6", position: "plain" };
+    const put = await human(["put", "kahua:road/x"], { text: "a road note" }, { create: true });
+    expect(put.code).toBe(0);
+    expect(put.lines).toContain(`put: ${FULL}`);
+    expect(put.lines).toContain(`hand it back on a put to ${FULL}`);
+    expect(put.lines).not.toMatch(/kahua:road\/x/);
+    expect(h.calls.at(-1)).toEqual({ verb: "tiddler-put", args: { recipe: "default", title: "kahua:road/x", text: "a road note", create: true } });
+    h.reply = { recipe: "default", title: FULL, to: MOVED, decision: "renamed", forwarder: FULL, relinked: [] };
+    const moved = await human(["rename", "kahua:road/x", "kahua:road/y"]);
+    expect(moved.lines).toContain(`renamed: ${FULL} -> ${MOVED}`);
+    expect(moved.lines).toContain(`forwarder stands at ${FULL}`);
+    expect(h.calls.at(-1)).toEqual({ verb: "tiddler-rename", args: { recipe: "default", title: "kahua:road/x", to: "kahua:road/y" } });
+    h.reply = { recipe: "default", title: MOVED, decision: "removed", mode: "plain", tombstoned: [], retracted: [MOVED] };
+    const gone = await human(["delete", "kahua:road/y"]);
+    expect(gone.lines).toContain(`removed: ${MOVED}`);
+    expect(gone.lines).not.toMatch(/kahua:road\/y/);
+  });
+
+  test("a prefix no law declares crosses back as the vessel's refusal, in its own words with the prefixes that stand", async () => {
+    h.refuse = "short-title-unknown: \"kahu:road/x\" names the prefix \"kahu:\", which no law declares; the prefixes that stand: kahua: (lar:///ha.ka.ba/kahua/memory/). Name one (`kahua:road/x`), or the record's full title.";
+    const r = await human(["get", "kahu:road/x"]);
+    expect(r.code).not.toBe(0);
+    expect(r.lines).toContain("short-title-unknown");
+    expect(r.lines).toContain("kahua: (lar:///ha.ka.ba/kahua/memory/)");
+  });
+});

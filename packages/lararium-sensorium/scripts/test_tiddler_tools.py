@@ -319,6 +319,24 @@ def test_the_text_alone_rides_a_named_key_and_takes_no_parameter(daemon):
     assert daemon.wire() == {"verb": "tiddler-get", "args": {"recipe": "default", "title": "Note", "grain": "whole"}}
 
 
+def test_a_short_title_rides_as_written_and_the_answer_names_the_full_title(daemon):
+    """S6 SHORT TITLES (course/ai-surface-gestures): the seat writes `kahua:road/x` and the vessel's one reading expands it, so
+    the tool sends the short form as written (the CLI's wire, the parity rows) and hands back the answer's full title; each
+    record tool's card names the gesture and the refusal an unknown prefix draws."""
+    tools = {t.name: t for t in asyncio.run(_mcp().list_tools())}
+    assert "short-title-unknown" in tools["tiddler_get"].description
+    for name in ("tiddler_get", "tiddler_put", "tiddler_delete"):
+        assert "kahua:road/x" in tools[name].description, name
+    full = "lar:///ha.ka.ba/kahua/memory/road/x"
+    daemon.output = {"recipe": "default", "title": full, "lens": "record", "tiddler": {"fields": {"title": full, "text": "w"}, "hash": "sha256:1"}}
+    assert _tools()["tiddler_get"](title="kahua:road/x", recipe="default")["title"] == full
+    assert daemon.wire() == {"verb": "tiddler-get", "args": {"recipe": "default", "title": "kahua:road/x"}}
+    refusal = "short-title-unknown: \"kahu:road/x\" names the prefix \"kahu:\", which no law declares; the prefixes that stand: kahua: (lar:///ha.ka.ba/kahua/memory/)."
+    daemon.error = {"errorMessage": refusal, "refusal": {"reason": "short-title-unknown"}}
+    is_error, said = _call(_mcp(), "tiddler_get", {"title": "kahu:road/x", "recipe": "default"})
+    assert is_error and "short-title-unknown" in said and "kahua: (lar:///ha.ka.ba/kahua/memory/)" in said, said
+
+
 def test_the_record_tools_reach_one_bag_and_the_engine_verbs_name_a_wiki_alone(daemon):
     # `tiddler_get`, `tiddler_put` and `tiddler_delete` reach a bag (one record through its store, no engine) and name it on
     # the wire; every engine verb names `recipe` alone, so a `bag` there never rides (the signature carries no `bag`).

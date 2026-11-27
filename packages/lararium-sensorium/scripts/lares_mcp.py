@@ -1280,7 +1280,7 @@ def build_mcp(coordinator: LaresCoordinator):
                     fields: "list | None" = None, max_bytes: "int | None" = None, target: "str | None" = None,
                     tree: bool = False, all: bool = False) -> dict:
         """Read a tiddler or meme from a wiki or bag.
-        READ ONE TIDDLER OR ONE MEME, ON A GRADIENT — mirrors `lares tiddler get <title>`. With no title and `meme=True`, list families: `tree=True` nests their slots, `after` names the next page. A bag listing returns {bag, roots, next}; a named recipe returns {recipe, bags, roots, next}; under `recipe="default"` no row names a `bag`. A floor read returns {bag, floor, roots, next}, and each row from a recipe's floor bag carries `floor: true`.
+        READ ONE TIDDLER OR ONE MEME, ON A GRADIENT — mirrors `lares tiddler get <title>`. With no title and `meme=True`, list families: `tree=True` nests their slots, `after` names the next page. A bag listing returns {bag, roots, next}; a named recipe returns {recipe, bags, roots, next}; under `recipe="default"` no row names a `bag`. A floor read returns {bag, floor, roots, next}, and each row from a recipe's floor bag carries `floor: true`. A SHORT TITLE READS FULL: `title="kahua:road/x"` names `lar:///ha.ka.ba/kahua/memory/road/x` and the answer names the full title (no record stands at the short form); a prefix no law declares refuses `short-title-unknown`, naming the prefixes that stand.
         EVERY ANSWER LEADS WITH `has`,
         a `<<~ has name=`…` params=`…`>>` line: provenance (`recipe/` or `bag/`, `layer/`, `floor/true`), the record's own
         tags, the measure keys (`type/ position/ family/ slots/ bytes/ base/`, a pointer's `_canonical_uri/ textCid/
@@ -1757,7 +1757,7 @@ def build_mcp(coordinator: LaresCoordinator):
                     slot: "str | None" = None, replace: "str | None" = None, replace_with: "str | None" = None) -> dict:
         """Patch one tiddler's text, fields or tags in a wiki or bag; a meme root or slot lands its family.
         WRITE ONE TIDDLER — set fields, unset fields, add and remove tags, and move the text ONLY where `text` (or `append`, or `replace`)
-        names it; mirrors `lares tiddler put <title>`. A meme family moves by the same put: `text` on a root lands a whole
+        names it; mirrors `lares tiddler put <title>` (a short `title`, `kahua:road/x`, reads full, as `tiddler_get` reads it). A meme family moves by the same put: `text` on a root lands a whole
         carrier through the Confluence gate; a slot's title (`<root>#/x`, or `slot="#/x"` beside the root title, folded
         exactly as the CLI's `--slot` folds) takes its own text with no `base` and an `append` that honours a standing
         postamble. A family under `lar:///ha.ka.ba/kahua/memory/<class>/<slug>` follows `stage-path-shape`.
@@ -1862,7 +1862,7 @@ def build_mcp(coordinator: LaresCoordinator):
     def tiddler_delete(title: str, recipe: "str | None" = None, bag: "str | None" = None,
                        base: "str | None" = None, family: bool = False, mode: "str | None" = None) -> dict:
         """Remove one tiddler, or a meme family with `family=True`, from a wiki or bag.
-        REMOVE ONE TIDDLER, BY THE FAMILY LAW — mirrors `lares tiddler delete <title> [--family] [--mode kapae|reveal]`.
+        REMOVE ONE TIDDLER, BY THE FAMILY LAW — mirrors `lares tiddler delete <title> [--family] [--mode kapae|reveal]`; a short `title` (`kahua:road/x`) reads full, as `tiddler_get` reads it.
         A DELETE DELETES PLAINLY: with no `mode`, each record leaves its own layer to absent and no tombstone rises (the
         receipt reads `mode: "plain"` and names each title under `retracted`). `base` carries the `hash` read from
         `tiddler_get`: a record that moved past it moves nothing and the call raises `conflict` naming the live hash.
