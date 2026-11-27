@@ -192,7 +192,6 @@
           ],
           "whole": [
             "Empty a bag but keep its identity; the effect log stays",
-            "the residency CLEAR: a bag empties, and its identity and history log stand",
             "`CLEAR` empties one bag and preserves its identity; the effect log keeps a deaccession for each title it took out, so the history reads whole. It takes the bag and a change-id (CLEAR carries no content to tell one change from the next, so the change-id folds into the effect key's nonce: two separate CLEARs of one bag take two ids, and the same id on a re-send reads as the same change).",
             "A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent off a terminal, `--dry-run` previews and commits nothing, `--in-wiki` runs the act in the active wiki's island.",
             "Gate (the carrier's testimony; the door checks): write: the vessel checks the writer's cap on the destination bag; a terminal asks y/N before it submits unless --yes rides, and an agent off a terminal names --yes.",
@@ -459,7 +458,6 @@
           ],
           "whole": [
             "Snapshot-restart one bag to bound its history; lossy by design",
-            "the one door of compaction: history cuts and nobody's fence moves",
             "`compact <bag-url>` takes a snapshot-restart on one bag, the DXOS-style ceremony: history bounds, and what the cut leaves out stays out (lossy by design). The house names it for what it does and for whose word it borrows: `epoch` stays RESERVED for the monotone fencing frontier a grant binds to, and a compaction CUTS history and fences nobody, so it carries the qualifier and leaves the bare word to the fence.",
             "The answer names the old doc, the new doc, the tiddler and tombstone counts, whether the layer swapped in the composite (`not mounted` where it stands unmounted), and a note where one stands. The verb rides the UDS fast path with a WS fallback and a 30 s wait. `wiki compact <slug> <bag-url>` delegates to this same verb with a slug it never reads.",
             "Gate (the carrier's testimony; the door checks): write: a lossy cut of one bag's history; a person runs it, and the vessel checks the cap.",
@@ -699,7 +697,6 @@
           ],
           "whole": [
             "Mark a bag known but not loaded: the oracle entry alone",
-            "a bag registers cold: its URL stands known, its tiddlers stay unloaded",
             "`register-cold <bag-url>` marks a bag URL known-but-not-loaded: the oracle entry alone, with no tiddlers loaded. It rides the vessel's residency runner and needs `lares vessel stand --foreground`.",
             "Gate (the carrier's testimony; the door checks): write: a residency command through the vessel; it loads no tiddler.",
             "Refuses: usage · daemon-unreachable.",
@@ -984,7 +981,6 @@
           ],
           "whole": [
             "Overwrite a bag's version of a tiddler with another's; both keep history",
-            "the residency COPY: the destination's version gives way to the source's",
             "`COPY` overwrites the destination bag's version of one tiddler with the source bag's; both bags keep their history, and the change-id travels with the tiddler so the copy reads as the same change in another bag. It takes the title, the source bag, the destination bag and a change-id (named, or minted when absent), and the vessel runs it as one verb-tiddler wrapped in an effect record.",
             "A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent off a terminal, `--dry-run` previews and commits nothing, `--in-wiki` runs the act in the active wiki's island. At bag grain the same verb grants every title the source holds in a new or existing destination (one transfer-id family audits the batch), and it carries the wiki-level crossing beside CREATE.",
             "Gate (the carrier's testimony; the door checks): write: the vessel checks the writer's cap on the destination bag; a terminal asks y/N before it submits unless --yes rides, and an agent off a terminal names --yes.",
@@ -1294,7 +1290,6 @@
           ],
           "whole": [
             "Mint a new empty bag at a fresh coordinate",
-            "the residency CREATE: a bag takes a fresh coordinate, empty",
             "`CREATE` mints a new bag at a fresh coordinate, empty, with its identity a fresh document URL; registration lands as a `holdings` accession in the union catalog. `--plane` picks the bag's plane, `catalog` or `oracle`; any other word refuses. A caller inside the CLI that read the bag off the canon source as house canon (the seed) carries that claim on the verb, and an island that never seated the bag refuses `house-canon-unseated` and mints no catalog row. CREATE carries no content to tell one change from the next, so `--change-id` folds into the effect key's nonce.",
             "A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent off a terminal, `--dry-run` previews and commits nothing, `--in-wiki` runs the act in the active wiki's island.",
             "Gate (the carrier's testimony; the door checks): write: the vessel checks the writer's cap on the destination bag; a terminal asks y/N before it submits unless --yes rides, and an agent off a terminal names --yes.",
@@ -1597,7 +1592,6 @@
           ],
           "whole": [
             "Write or amend a bag's own declaration; no bytes move",
-            "a bag names its tier, its home, its repo and its role",
             "`declare <bag>` writes (or amends) the bag's own declaration: `--tier` (its cap-tier), `--home` (one of the homes a bag may name), `--repo` (a REGISTERED repo id, never a directory; an unregistered id refuses), `--role` (one line). It wants at least one of the four. Declaring moves NO bytes: relocation takes `lares bag home`, and a declaration that now disagrees with where the bytes sit marks the bag ADRIFT. A standing daemon re-stamps the catalog row at once (`restamp-bag-tier`), so a tier change takes the row's stamp; with no daemon the next boot stamps it.",
             "The reserved TW5 docs name refuses (`bag declare`).",
             "Gate (the carrier's testimony; the door checks): write: a local write of the bag's own declaration beside its bytes; moves nothing.",
@@ -1896,7 +1890,6 @@
           ],
           "whole": [
             "Retire a bag from memory, with a disposition record",
-            "the residency DROP: a bag retires whole, and a record names its disposition",
             "`DROP` retires one bag entirely and writes a disposition record (`bag-retired` on each deaccession). It takes the bag and a change-id (the same nonce rule as CLEAR: two separate DROPs of one bag take two ids).",
             "A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent off a terminal, `--dry-run` previews and commits nothing, `--in-wiki` runs the act in the active wiki's island.",
             "Gate (the carrier's testimony; the door checks): write: the vessel checks the writer's cap on the destination bag; a terminal asks y/N before it submits unless --yes rides, and an agent off a terminal names --yes.",
@@ -2200,7 +2193,6 @@
           ],
           "whole": [
             "Move a bag's bytes to its declared home; a plan unless approved",
-            "the move that relocates bytes and re-anchors the declaration together",
             "`home <bag> --to <home>` MOVES the bytes to a declared home and re-anchors the declaration together. It plans before it touches anything (the DRY-RUN default prints the plan and the command that performs it) and refuses an occupied destination rather than merging. `--approve` performs the move, and no source-control verb ever runs: the bytes land in a working tree, and what enters a history stays the hand's own act. `--repo` names the registered repo id where the home reads repository.",
             "The move relocates an operator's bytes across a boundary that matters (into a tracked history, or out of one), so it earns the explicit approval.",
             "Gate (the carrier's testimony; the door checks): write: the move relocates bytes across a boundary that matters; a plan runs unapproved, and the move itself asks --approve.",
@@ -2505,7 +2497,6 @@
           ],
           "whole": [
             "Bring external content from a source into a bag, carrier by carrier",
-            "the residency LOAD: content from outside the mesh lands in a bag, its provenance named",
             "`LOAD` brings external content into a bag from outside the mesh. Islands never fetch (the web3-only law), so this operator gesture holds the disk grant: it reads the source on the host, derives each carrier's title (a file under a `bags/<holding>/` or `wikis/<slug>/` mirror tree keeps its stable `lar:` name; any other file namespaces under the destination bag by its path relative to the source), and sends the content WITH the verb. A source that does not resolve locally sends a provenance-only LOAD with no carriers (the line says so); an empty file skips with a warning that names it.",
             "LOAD mints a fresh change-id unless `--change-id` names one, since external content carries no prior mesh identity. A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent off a terminal, `--dry-run` previews and commits nothing, `--in-wiki` runs the act in the active wiki's island. Disk memory that already stands in a bag's source tree takes `lares ingest`, whose gate carries the hashes this act does not.",
             "Gate (the carrier's testimony; the door checks): write: the vessel checks the writer's cap on the destination bag; a terminal asks y/N before it submits unless --yes rides, and an agent off a terminal names --yes.",
@@ -2844,7 +2835,6 @@
           ],
           "whole": [
             "Move a tiddler, or a whole layer, to another bag; promotion rides here",
-            "the residency MOVE: an atomic ADD to the destination and a CLEAR from the source",
             "`MOVE` pairs an ADD to the destination with a CLEAR of the title from the source, as one transfer: a live source lands its whole family in the destination (the root and its component slots) and retracts the family to absent in the source; the change-id travels, and one transfer-id ties the accession to the deaccession. A MOVE that names `--from` and `--to` and no `--title` promotes the WHOLE source layer, every live title it holds, in one act.",
             "A MOVE of a tombstone carries a delete down: `--title` and `--from` with `--to` name the bag where the delete takes place; with no `--to` the bags holding the title print as candidates (and the line asks for --to). `--shadow` hides a title from a bag that holds none, a delete that shadows the lower layers, and rides a title-grain MOVE alone: a layer move, or any other verb, refuses it.",
             "A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent off a terminal, `--dry-run` previews and commits nothing, `--in-wiki` runs the act in the active wiki's island.",
@@ -3156,7 +3146,6 @@
           ],
           "whole": [
             "List the bags, or show one bag's declaration and where it resolves",
-            "what a bag declares: its tier, its home, and whether it sits where it belongs",
             "With no bag, `show` surveys every bag the survey dir holds: its declared cap-tier and home, and whether it sits where its declaration says. With a bag, it shows that bag's declaration and where it resolves ON THIS VESSEL: tier (a tier only ever tightens against the structural floor), home (and the repo it names), whether a clone of the repo carries it, where its bytes sit, and where it declares they belong, with an ADRIFT mark and the command that re-anchors it where the two differ.",
             "The survey reads `--dir` (default the bags dir); with no `--dir`, a bag with no canon source resolves in the house's projected bags, and a shared wiki's canon bag under its realm folder. A bag absent from every place names each place it read. `--after` and `--limit` page the whole survey; naming one bag takes `--dir` alone.",
             "Gate (the carrier's testimony; the door checks): read: a local read of the bags and their declarations; it writes nothing.",
@@ -3448,7 +3437,6 @@
           ],
           "whole": [
             "List, add or drop the repo registry; bags name ids, never paths",
-            "the operator's repo registry: an id maps to a root only this vessel knows",
             "A bag that homes at a repository names a REGISTERED id; the operator maps ids to roots once, on their own vessel, so a declaration stays portable and the path stays local. `repo list` (the default) prints the registry, `repo add <id> --root <path> [--vcs git|other]` registers one (`--vcs` defaults to git), and `repo drop <id>` removes one: bags naming it keep their declaration and simply stop resolving here. An unregistered id refuses rather than resolving somewhere convenient.",
             "Gate (the carrier's testimony; the door checks): write: a local write of the registry beside the vessel's config; a list writes nothing.",
             "Refuses: usage · op-unknown.",
@@ -3787,7 +3775,6 @@
           ],
           "whole": [
             "Read, fetch, pin, release and sweep the cleartext CAS tier",
-            "the cid CAS tier: blobs, references, and the holds that outlast the grace",
             "`cas` is a local read over the cleartext `cid/` CAS tier, with no daemon boot: it lists the blobs the CAS dir holds and DERIVES which the disk projection references (a `.tid` or `.meta` under `bags/` or `wikis/` carrying `textCid`, or a `lar:///…/cid/<hash>` `_canonical_uri`), then reports blobs · referenced · unreferenced · pending · bytes, and names the genesis-manifest blobs as protected (the engine and plugins never sweep). The projection reads as-of-last-projection: a pointer with no loci path reads unreferenced HERE while the daemon holds it, so this read never sweeps. `--all` lists each blob.",
             "`--fetch <cid>` reads ONE cid through the running vessel's fetch door (fleet holders over Socket B). `--pin <cid> [--tier <t>] [--holder <name>]` holds a blob past the grace until released (`--held` names a held pin that ends with the vessel's life, and refuses `held-pin-no-life` where the store names no life), and `--release <cid>` frees it. `--sweep [--dry-run]` sweeps the unreferenced blobs past their grace where the composite stands; dry names them and moves nothing.",
             "Gate (the carrier's testimony; the door checks): read: the survey reads local files and boots no daemon; fetch, pin, release and sweep ask the vessel, which checks the cap. write: a sweep removes blobs; run it dry first.",
@@ -4100,7 +4087,6 @@
           ],
           "whole": [
             "Carry authored memory out of the house before a re-founding",
-            "the keep: authored memory leaves the house as a sealed, verified bundle",
             "`export <dest>` carries the operator's AUTHORED memory out before a re-founding. It writes a bundle outside the house root and the workspace: the daemon mount's wiki working carriers, the kāpae shadows and canon carriers, its kahua stage heads, draft recovery files, consented temp carriers, and house-minted bags, with a roster (the re-declare list of pet-names, Handles and chair labels, plus the share rows) sealed under the house's keep key (`<config>/keep-key`). Faces ride by path key, never by a key or a face relation, and the verb reads every byte back against its manifest before it answers.",
             "It waits for a settled projection: an unsettled carrier or a held save refuses by name unless `--accept-omissions` names the bundle partial, and the manifest records each omission. A face whose live stage will not read cuts with no flag: its files travel, its standing heads stay behind as a counted `face-unread` omission, and this terminal alone names the face. Sensoriums never travel (they survive where they stand), and neither does the daemon document or the control document. The bundle rests UNENCRYPTED, private memory as plain files: keep it on a disk only you hold, and remove it once imported.",
             "Gate (the carrier's testimony; the door checks): read: the verb reads private memory out of the house as plain files; a person runs it at their own terminal. keep-key: the roster seals under the house's keep key, <config>/keep-key.",
@@ -4395,7 +4381,6 @@
           ],
           "whole": [
             "Carry an exported bundle back in after a re-founding",
-            "the return: an exported bundle verifies whole, previews, then lands as fresh acts",
             "`import <dest>` verifies every hash and path in the bundle before anything moves, then PREVIEWS and stops. `--apply` replays the re-declare list as fresh acts, maps each bundle face to the ONE face here that carries its pet-name (none or two refuse by name), re-pours the working and face canon rows through the ingest gesture (a diverged id stands off and never overwrites), re-lifts the kahua heads under the new face's grant, keyed by title and body digest, and lands draft and temp files where none stands.",
             "A journal under `<root>/config` lets an interrupted import re-enter to the same end, and a second import lands nothing. A face standing shut waits: the lines name `lares vault unlock --face N`, then import again; a workbench lands at the wear of a face that holds a writer's seat there. The exit reads 0 clean, `verb-error` where a row refused, `conflict` where a row stood off.",
             "Gate (the carrier's testimony; the door checks): write: --apply writes records and re-lifts kahua heads, each lift signing under the new face's grant; a person runs it at their own terminal. signs: the re-lifts sign kahua acts under the face's grant.",
@@ -4685,7 +4670,6 @@
           ],
           "whole": [
             "Re-render a multi-tiddler bundle from its aside provenance",
-            "the pack's collect-the-residency export: a foreign bundle takes the round trip",
             "A multi-tiddler bundle (a `.json` array of tiddlers, or a `.multids`) rides as a PACK: one file, many tiddlers, whose membership rests ASIDE in the bag's `$:/config/OriginalTiddlerPaths`, never on the tiddlers. `REPACK` asks the island to collect the pack's members from that aside map and re-render the bundle through TW5's own serializer, then writes the bytes to disk: the deliberate round trip a foreign bundle takes before an upstream TW5 PR (a `.mem` path recomposes by itself; a foreign pack re-renders on this verb alone).",
             "The pack path derives from the file's mirror-relative address plus its extension, so the source sits under `bags/` or `wikis/`; `--out` names where the bytes land and defaults to the source. REPACK registers as a QUERY verb (read cap, no residency mutation, no effect record), so it asks no `Proceed?` and carries no effect key; only a fresh request id rides each attempt, and a repeat stays safe. Members the bag tombstoned print as missing.",
             "Gate (the carrier's testimony; the door checks): read: a QUERY verb: read cap, no residency mutation and no effect record; the only write lands the bytes in the named host file.",
@@ -5037,7 +5021,6 @@
           ],
           "whole": [
             "Scan disk into records through the Confluence gate",
-            "the disk-to-records gesture: scan, diff, preview, then apply through the gate",
             "The gesture holds the disk grant and the Synced tree (the island holds neither; readiness reads local on both sides of the shore). It scans the source for `.mem` carriers, derives each address by the address-siting rule, and diffs the disk hash against the synced hash per carrier. The default posture PREVIEWS: it prints NEW, UNCHANGED and CHANGED rows and submits nothing. `--apply` sends the NEW and CHANGED carriers, their hashes riding an INGEST verb, and the island runs the full Confluence gate (its currentRenderHash stands as the third leg) and answers per carrier.",
             "`--tag-blobs` stamps the CAS opt-in flag (a `.meta` sidecar, or a meme's ahu meta) on the large un-flagged carriers that would fault during LOAD or INGEST; it writes no records, and the preview names the count. `--watch` fires the same gesture per settled wave instead of once: one wave per quiet window (`--debounce` ms), preview by default, `--apply` submits. A file that vanished tombstones nothing: the watcher hands it to the vessel's shore, where it stands pending until a person answers with `lares shore remove` or `lares shore restore`. A file that holds no base never lands over records that say something else, and a file that moved while the records moved never lands: each stands off at the vessel's shore (`lares shore`), and every wave says no person stands behind it (`unattended`). `--in-wiki` runs the INGEST in the active wiki's island, the path for the working write-layer ingest-back (a `wikis/` source derives its URIs off that layer).",
             "The one-shot flags (`--yes`, `--tag-blobs`, `--in-wiki`, `--change-id`) ride the one-shot ingest and refuse beside `--watch`; `--debounce` rides `--watch` alone. A scan that skipped every carrier answers usage and names the mirror directories it derived against, since the source must sit under the bags dir (LAR_BAGS) or wikis dir (LAR_WIKIS) as `<holding>/<w.w.w>/…/<name>.<ext>`.",
@@ -5329,7 +5312,6 @@
           ],
           "whole": [
             "Run the vessel's whole-island flush: every shore writes what it owes",
-            "the whole-island flush: each shore writes what it holds in memory",
             "`flush` asks the vessel to flush EVERY island that mounts a disk shore: the daemon's with each lit sibling's projector, and every resident wiki's, the same flush the teardown runs, through the custody door's `shore-flush` frame. It places no record, takes no argument and asks no confirmation; the answer names what each island wrote (`written`, with its `fileWrites`), what stayed `unwritten` (each with its state and why; a lit face's row names its face), or `answered: false` with the reason.",
             "A composition sitting that stands no such flush refuses `flush-unavailable`. Exit 0 where every island wrote what it owed; 4 where a carrier stayed unwritten; 3 where an island, or the vessel, could not answer.",
             "Gate (the carrier's testimony; the door checks): write: the vessel flushes its own mirrors; the verb takes nothing and places no record.",
@@ -5568,7 +5550,6 @@
           ],
           "whole": [
             "Read the vessel's shore log as records, one per distinct event",
-            "the shore's own log: counts by kind, then each record",
             "`log` reads the vessel's log as records, one per distinct event: the counts by kind first, then each record. `--kind` names one kind, `--held` the unacknowledged, and `--boot <id>` one boot's ring. With no vessel answering, the verb reads the flat `run/vessel-live.log` and its ash. It writes nothing and asks no hand.",
             "Gate (the carrier's testimony; the door checks): read: a read of the vessel's log; with no vessel, the flat run/vessel-live.log.",
             "Answers band: log.",
@@ -5832,7 +5813,6 @@
           ],
           "whole": [
             "Settle a standoff with both: records take the file, drafts stay",
-            "a person keeps the file's words as parallel drafts and the records' render on disk",
             "`keep-both <uri> --key <key>` writes the records' render over the file and keeps the file's words as parallel drafts in the worn face's draft layer. It appears in the standoff alert where drafts stand; `drafts <uri>` names them by title, and `lares tiddler get` reads each. SETTLING STAYS A HAND ACT: an AI harness on its branch refuses `hand-act-only`, an unreadable branch `hand-unattested`, and `--yes` approves nothing by itself.",
             "Gate (the carrier's testimony; the door checks): hand-act: a settling act reads the hand behind this command before anything else; an AI harness on its branch refuses hand-act-only, an unreadable branch hand-unattested, each naming the command the operator runs, and --yes approves nothing by itself.",
             "Refuses: hand-act-only · usage · a-state-that-moved.",
@@ -6142,7 +6122,6 @@
           ],
           "whole": [
             "Read the disk shore: each standoff and each pending removal",
-            "what stands for a hand at the disk shore",
             "The vessel looks at the disk first, so the list stands true to the bytes at that instant, then names every row the shore holds: each STANDOFF (the disk and the records say different things and nothing writes) with its key, and each PENDING REMOVAL (a file vanished where a base stands; nothing writes back and nothing tombstones). Both islands read as one shore, every page of each, each row naming its island (`wiki`, the active wiki's mirrors; `daemon`, the daemon wiki's and the crossroads). A bare `lares shore` lists.",
             "`--face N` names a LIT SIBLING's shore by handle index: its own projector answers in the daemon island with no wear, and a face that stands no projection refuses `face-unprojected`. `--bag` narrows to one bag. The list refuses to state a shore nobody measured: rows with no count, a page with no mark, a cursor that stands still, or rows short of the counts refuse `shore-list-unpaged`, and a mark that moves mid-read refuses `shore-list-moved`. Where a commit took a pending removal's file from its checkout, the row names that commit beside it (short sha, subject, PR, and the ashes git keeps) as `retiredBy`.",
             "A seat reads the shore through `shore`; the answers that settle a row stay a person's hand at a terminal, so a seat names the command for the operator.",
@@ -6468,7 +6447,6 @@
           ],
           "whole": [
             "Take a vanished carrier out of its bag, leaving nothing in its place",
-            "a pending removal answered toward the disk: the carrier leaves the wiki",
             "`remove <uri>…` takes the vanished carrier out of its own bag's layer and retracts it to absent. Only where a lower layer holds the title too does the removal raise a kāpae: the confirmation line names that layer, the person's `y` approves it (the verb sends `kapae: true`), and `--yes` alone leaves the island refusing `remove-raises-kapae` by name. Name one or more carriers, or `--all --count <n>`; an answer over more than one carrier names the count that stands pending. Where a commit took the file from the checkout, the answer names that commit and where its message says the substance went.",
             "A terminal asks `Proceed? [y/N]`; a JSON call off a terminal needs `--yes`. `--face N` answers a lit sibling's pending row without wearing it.",
             "Gate (the carrier's testimony; the door checks): write: the carrier leaves the wiki's records; a kāpae over a lower layer needs the person's own y. kapae: a removal that raises a kāpae over a lower layer asks a person's y at the prompt; --yes alone approves it not.",
@@ -6783,7 +6761,6 @@
           ],
           "whole": [
             "Write a vanished file back from the records",
-            "a pending removal answered toward the records: the file returns",
             "A PENDING REMOVAL names a file that vanished from the path its base names; nothing writes it back and nothing tombstones its records. `restore <uri>…` writes the file back from the records. Name one or more carriers, or `--all --count <n>` for every pending row of the named bag; an answer over more than one carrier names the count that stands pending (read it from `lares shore`), and a count that moved takes nothing.",
             "A terminal asks `Proceed? [y/N]`; a JSON call off a terminal needs `--yes`, and `--yes` approves nothing by itself. `--face N` answers a lit sibling's pending row without wearing it.",
             "Gate (the carrier's testimony; the door checks): write: the file returns to the host disk; the settling answers run on a person's hand at a terminal.",
@@ -7050,7 +7027,6 @@
           ],
           "whole": [
             "Resume a settle word that stalled, over the carriers its record names",
-            "a stalled settle word asked again, over its pending carriers alone",
             "`lares ingest --apply` leaves the carriers still waiting as the bag's record under the house's run dir (`settlePendingPath`) when no page settled within the stall window. `settle --bag <bag> --pending` asks the word again over those carriers alone, then clears the record (settled whole) or rewrites it (still waiting). It reads no face, so `--face` refuses as usage, and it asks no confirmation.",
             "Gate (the carrier's testimony; the door checks): write: the word rides the island's settle gate, which checks the cap on the bag; the record under the run dir rewrites or clears.",
             "Refuses: usage.",
@@ -7329,7 +7305,6 @@
           ],
           "whole": [
             "Settle a standoff for the file: land its words in the records",
-            "a person settles one standoff toward the disk",
             "`take-disk <uri> --key <key>` lands the file's words in the records for one standoff, riding the worn face's ingest leg. `keep-disk` lands the file's words WHOLE, with no merge, and lets the standoff's drafts go. A standoff first loads the file's side as drafts in the worn face's draft layer, and the collapse rules the person set in their daemon face (`$:/config/lares/shore/collapse/<rule>`) settle what they can; what stays raises one alert naming `keep-disk`, `keep-records`, and where drafts stand `keep-both` and `drafts`.",
             "Where no base stands, `lares ingest` of the file names the same adoption. SETTLING STAYS A HAND ACT: the verb reads the hand behind this command first; an AI harness on its branch refuses `hand-act-only`, an unreadable branch `hand-unattested`, and `--yes` approves nothing by itself. A terminal asks `Proceed? [y/N]` (the records give way to the file's present words); a JSON call off a terminal needs `--yes`. The key comes from the alert; an answer that names a state that moved takes nothing.",
             "Gate (the carrier's testimony; the door checks): hand-act: a settling act reads the hand behind this command before anything else; an AI harness on its branch refuses hand-act-only, an unreadable branch hand-unattested, each naming the command the operator runs, and --yes approves nothing by itself.",
@@ -7599,7 +7574,6 @@
           ],
           "whole": [
             "Lift the kahua items a lay left pending, by the count, under each grant",
-            "the count is the confirmation: pending kahua items lift under their faces' grants",
             "`lift-kahua --count <n>` lifts the kahua items a lay previewed and left pending (`seed-mirrors.ts`): it runs the lay's mirror leg again and lifts only where `n` equals the count the preview reads now; a wrong count refuses and lifts nothing. `lares shore` names each pending item (face, title, body digest) beside its own rows, and a face standing shut names the unlock to run first (`lares vault unlock --face N`). The count IS the confirmation, so the verb asks nothing more, and it reads no face (`--face` refuses as usage).",
             "`lares kahua lift` lifts one staged row by its title and digest (`face.hand.lifts`); this address lifts the pending set a lay left, by count. The two read one verb word and differ in what they take and what they lift: a title and its row digest against a count, one staged row in the face's local canon against every item the lay's mirror leg previewed, so each holds its own address.",
             "Gate (the carrier's testimony; the door checks): hand: each lift signs under its face's own grant; a person runs it at their own terminal, wearing the face.",
@@ -7870,7 +7844,6 @@
           ],
           "whole": [
             "--draft: pull a tiddler from a lower bag into a writable draft",
-            "the pull-into-draft ceremony: a lower bag's tiddler gains a writable copy above it",
             "`lares act --draft <uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `--to` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act MOVE`, `lares act COPY`).",
             "The verb first asks the vessel which bags hold the tiddler (a title no bag holds answers `not found in any bag` and exits 5), then asks a terminal `Proceed? [y/N]` (a call off a terminal names `--yes`). The draft rides the door with no verb word: the flag names the pull, and an ACTION verb beside it refuses.",
             "Gate (the carrier's testimony; the door checks): write: a write into the draft layer; a terminal asks y/N unless --yes rides, and a JSON call off a terminal refuses without it.",
@@ -8117,7 +8090,6 @@
           ],
           "whole": [
             "Name the drafts a carrier's standoffs loaded, by title",
-            "the drafts a standoff brought inside",
             "`drafts <uri>` names the drafts the carrier's standoffs loaded into the worn face's draft layer, by title, so a person sees what `keep-both` would keep. `lares tiddler get` reads each draft. The verb writes nothing and asks no confirmation.",
             "Gate (the carrier's testimony; the door checks): read: a read of the worn face's draft layer; it writes nothing.",
             "Refuses: usage.",
@@ -8400,7 +8372,6 @@
           ],
           "whole": [
             "Grant a tiddler residency in a second bag; the source keeps its copy",
-            "the residency ADD: one title takes a second home, and the first keeps its own",
             "The residency model derives its verbs from SPARQL Update over (title × bag). `ADD` grants one tiddler residency in the destination bag while the source bag retains its copy: the tiddler's Work-level identity travels, so downstream tooling reads the landing as the same change in a second bag, never a new record. The verb takes the title, the source bag, the destination bag and a change-id (named, or minted when absent), submits one verb-tiddler to the vessel, and the wiki island's action-handler family runs it wrapped in an effect record that writes the archival audit tiddlers (an `accession` row on the destination).",
             "A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent for a call off a terminal, `--dry-run` previews the effect and commits nothing, and `--in-wiki` runs the act in the active wiki's island. Run `lares act` for the door's index of every residency action.",
             "Gate (the carrier's testimony; the door checks): write: the vessel checks the writer's cap on the destination bag; a terminal asks y/N before it submits unless --yes rides, and an agent off a terminal names --yes.",
@@ -8714,7 +8685,6 @@
           ],
           "whole": [
             "Settle a standoff for the records: write their render over the file",
-            "a person settles one standoff toward the records",
             "A standoff names a carrier whose file and records disagree while no rule picks. `take-records <uri> --key <key>` writes the records' render over that file; `keep-records` does the same where drafts stand, and lets the drafts go. The key comes from the alert (`lares shore` prints it), and an answer that names a state that moved takes nothing: the island refuses by name.",
             "SETTLING STAYS A HAND ACT: the verb reads the hand behind this command before it asks or runs anything; an AI harness on its branch refuses `hand-act-only`, an unreadable branch `hand-unattested`, each naming the command the operator runs, and `--yes` approves nothing by itself. A terminal asks `Proceed? [y/N]` (the file's present bytes give way to the records' render); a JSON call off a terminal needs `--yes`. `--face N` answers a lit sibling's standoff without wearing it; `--bag` narrows the carrier's bag.",
             "Gate (the carrier's testimony; the door checks): hand-act: a settling act reads the hand behind this command before anything else; an AI harness on its branch refuses hand-act-only, an unreadable branch hand-unattested, each naming the command the operator runs, and --yes approves nothing by itself.",
@@ -9007,7 +8977,6 @@
           ],
           "whole": [
             "Read the house's law, pinned first, derived from canon by filter",
-            "the house's law, pinned law first, from the worn face's daemon wiki",
             "The index derives from canon by filter and no list stands in code. The pin set (`$:/config/lares/law/pins`, a TiddlyWiki filter the wiki's own engine runs) heads it in its own order, the boot seed then the Mu family; then every root meme under a bag's `api/` tree the pins leave out follows, by title, each with its one line (the meme's description, else its role). Only canon prints: a row stands where a canon layer answers its record, so nothing a face writes reads as law.",
             "Read it before you act, the way you read your working memory. A law row comes from canon's settled ground; turn it through the five tools.",
             "One page holds at most 32 rows, and `next` names the cursor of the page behind (hand it back as `after`; `all` follows every cursor to the end). Both doors answer one shape: {filter, pinsTitle, pins, rows: [{title, description, pinned}], total, next}. A terminal prints it plainly (the pinned titles marked 📌, then the law they leave out) and `--json` carries the body the seat returns.",
@@ -9303,7 +9272,6 @@
           ],
           "whole": [
             "Pin a law meme so it heads the law index",
-            "a law meme added to the pin set, heading the law index",
             "The pin set (`$:/config/lares/law/pins`, a TiddlyWiki filter) takes one `[[uri]]` run (or drops a `-[[uri]]` run that kept the title out) and lands through `tiddler_put` in this face's working layer of its daemon wiki, against the base it read, keeping its layout; house canon takes no byte. A pin orders canon law and adds none: a title no canon law holds refuses `law-pin-absent`.",
             "One already pinned answers `decision: \"noop\"`; a pin set that moved under the read refuses `law-pins-moved` (call again). The answer carries {title, uri, decision, pinned, text, hash, bag}. The pin set lives apart from every law meme, so the AI seat may pin as the operator may.",
             "Gate (the carrier's testimony; the door checks): write: the pin set lands in the face's own working layer through the tiddler door, against the base it read; house canon takes no byte; reversible and trusted, so the seat runs it on the operator's loop.",
@@ -9590,7 +9558,6 @@
           ],
           "whole": [
             "Unpin a law meme: its run leaves the pin set",
-            "a law meme taken out of the pin set",
             "The title's `[[uri]]` run leaves the pin set (`$:/config/lares/law/pins`); a title a broader run still names (a Mu member) takes a `-[[uri]]` run instead. The set lands through `tiddler_put` in this face's working layer of its daemon wiki, against the base it read, keeping its layout; house canon takes no byte.",
             "A title not pinned answers `decision: \"noop\"`; a pin set that moved under the read refuses `law-pins-moved` (call again). The answer carries {title, uri, decision, pinned, text, hash, bag}.",
             "Gate (the carrier's testimony; the door checks): write: the pin set lands in the face's own working layer through the tiddler door, against the base it read; house canon takes no byte; reversible and trusted, so the seat runs it on the operator's loop.",
@@ -9859,7 +9826,6 @@
           ],
           "whole": [
             "Hold an MCP client's seat steady while the surface falls and rises",
-            "the aho: the client never sees a respawn",
             "`lares mcp aho` holds an MCP client's stdio for the session's whole life and spawns the house's own surface as a child that may fall and rise, resolved again at each spawn (the container's seat where the container house stands, else the native one); `lares mcp aho -- <child argv…>` names another child (a test, another surface), and everything after `--` rides to it as written, flags and all. A bare `--` with nothing after it refuses as usage (exit 2).",
             "While no child stands the seat answers `initialize` and the tool list from what the child last answered, replays the handshake to each new child itself, and answers a call at once with the tool error `hearth-sleeps`. A call in flight at a child's death answers `outcome-unknown: re-read before re-trying`, and the seat never sends it again. It sends one `list_changed` when a new child lists other tools. It logs event names and counts alone and holds no key.",
             "A harness config records `lares mcp aho` and nothing beneath it (`lares home tend` writes that entry), so what stands under the verb may change with no config rewritten. The committed bin runs this seat before it loads the dispatcher, so the seat a harness spawns loads no custody, no vessel and no house root.",
@@ -10141,7 +10107,6 @@
           ],
           "whole": [
             "Read the vessel journal from a cursor, optionally waiting on the next",
-            "the journal's matching entries, or the first one still to land",
             "Reads the vessel journal through the daemon. Without `--wait` it returns the matching entries already standing, within a ten-second read; with `--wait` it holds (up to two minutes) and answers on the first matching entry after `--since`, or after now where `--since` is absent. The cursor reads `<epoch:writer:seq>`, the seq a whole number from 1; the one kind today is `bag-projected`. Without a vessel standing the verb refuses by name and carries its hint.",
             "`--json` prints the structured payload; the human line reads `events: N`, then one JSON line per entry.",
             "Gate (the carrier's testimony; the door checks): read: a read of the journal through the daemon; it writes nothing.",
@@ -10438,7 +10403,6 @@
           ],
           "whole": [
             "Stand earlier items again after a root rotation, by cid or all",
-            "after a root rotation the earlier items stand again once carried",
             "After a root rotation the earlier items read in history alone until the operator's hand carries them: `kahua carry <cid>…` names the revision cids that keep standing, or `--all` names every earlier head the history reads (never both). One root-signed act at the current epoch stands them again. It runs on a person's hand alone, and no tool carries it. Every answer prints as JSON.",
             "Under a pūlama the root signs at the pūlama's hand door, since the vessel there holds no face root: `--terms` runs every gate and prints ONE stdout line (the one unsigned act its root signs) and opens no route; the pūlama's `sign '<terms>'` checks it and signs; `--land '<answer>'` lands the signed record, where the door builds the act afresh and lands it only over a byte-equal body. Neither asks the passphrase on the vessel, and the host shim walks the pattern (`tools/lares-container.sh kahua lift|withdraw|carry`).",
             "Gate (the carrier's testimony; the door checks): hand: one act at the current epoch, signed under the face's root out of sealed custody; a person runs it, and an AI seat names the command.",
@@ -10747,7 +10711,6 @@
           ],
           "whole": [
             "Propose items for the face's kahua stage; a proposal grants nothing",
-            "a seat proposes one batch; the operator's hand lifts",
             "`proposals` lists {title, revision, text | digest, taint}: the daemon title and revision the item distils, its body (or the body's sha-256 digest) and every input from outside the face (a web page, tool output, pasted text); an AI summary inherits the taint of what it summarised. ONE batch per call rides the face's intents plane, pinned to this device; it carries digests and never a body, and it GRANTS NOTHING: the operator's hand lifts it with `lares kahua lift <title> --proposal <id>`.",
             "TWO DIGESTS, ONE WORD. A proposal's `digest` names the BODY digest, the sha-256 of the raw body bytes (UTF-8, lowercase hex); the seat's tool computes it from `text`. The ROW digest that `kahua stage` prints and `lift --digest` takes covers the body AND the row's carried fields, so it differs. Hand `text`, or the BODY digest; a proposal built from the ROW digest refuses at the lift with `proposal-digest`, as does one whose body differs by a byte from the staged row's.",
             "Any seat proposes. The seat's tool rides a local `seat` session over the @daemon wire, whose profile the vessel refuses every kahua pin, lift, withdraw and carry; no tool lifts (`face.draft.stages` writes the local row a lift names). Returns {id, cid}.",
@@ -11076,7 +11039,6 @@
           ],
           "whole": [
             "Get the face's verified kahua stage at two grains",
-            "the list of verified items, or one title and its history",
             "`kahua get` reads the stage's VERIFIED items, the fold, never a raw tiddler. Without a title it lists bounded items with source, count, relation and continuation (`--after` and `--limit` page it); a fresh face answers `stage: \"none\"`. With a title it returns the verified item or null, and with `--history` every revision of that title. A staged row rests in `bags/daemon-<F>` and lists here once its lift lands. The bare list stands for the old `kahua list`, which now answers only to name its move here. Reads alone: it writes nothing, and the seat's tool rides a `seat` session.",
             "Gate (the carrier's testimony; the door checks): read: a read of the verified stage; it writes nothing, and a seat or a hand reads alike.",
             "Refuses: history-needs-a-title · title-refuses-pagination · limit-malformed.",
@@ -11414,7 +11376,6 @@
           ],
           "whole": [
             "Stage one row into the face's local canon, unsigned, on this device",
-            "the first of memory's two crossings: a local row a lift later names",
             "`kahua stage <title>` writes ONE row into the face's local canon `bags/daemon-<F>`: local to this device, unsigned, and it lifts nothing. The operator's hand carries a staged row to the fleet with `lares kahua lift <title>`, reading its preview first. `text` carries the row's whole body; `fields` carries its string-valued fields (`title`, `text` and any `kahua-` field never ride). A row already standing at the title gives way to this one.",
             "The answer is {title, digest, relation, staged}. `digest` names the ROW digest (sha-256 over the body and the carried fields), the one a lift's `--digest` takes, never the BODY digest a proposal carries (`face.draft.proposes`); `staged` reads false where the row already stood at that digest and nothing moved. The terminal prints the same note on stderr beside the door's JSON. A face with no local canon standing refuses `kahua-stage-no-canon`. The seat's tool rides a `seat` session over the @daemon wire.",
             "Gate (the carrier's testimony; the door checks): seat-or-hand: a local, unsigned row on this device alone, in the face's local canon bags/daemon-<F>; any seat may stage, and a lift (the hand's act) is what carries it to the fleet.",
@@ -11795,7 +11756,6 @@
           ],
           "whole": [
             "Lift one staged row by title and digest, signed under the face's root",
-            "the hand reads the preview, names the row digest, and the lift signs",
             "`kahua lift <title>` carries one staged row to every device the face wears: the second crossing of memory. It reads the staged row back first and prints its PREVIEW (title, row digest, fields, body, and whether a head already carries it), then lifts only on that row digest typed back at a terminal (its first eight hex), or on `--digest <hex>` naming the digest the preview printed. A bare `--yes` names no digest and lifts nothing. A lift signs under the face's root, so a lift always asks the face's passphrase at a terminal; `--digest` spares the typed-back digest alone.",
             "The lift names its taint list: `--taint none` when every input came from inside the face, else `--taint a,b`. A lift carries the staged row's own body and fields, so stage them first (`face.draft.stages`); a lift naming `--text`, `--file` or `--fields` refuses `kahua-lift-unstaged`. `--parent <cid>` names the revision it supersedes (`none` for a first lift), `--sources` further daemon sources the item distils (the staged row always rides), and `--proposal <id>` the proposal it answers: the proposal's body digest must equal the staged body's. Two digests share one word: the ROW digest (what `kahua stage` answers and a lift names) covers the row's body and fields, while a proposal's `digest` names the BODY digest, the body bytes alone.",
             "The door re-reads the row at the act and refuses `kahua-lift-unstaged` (no such row) or `kahua-lift-digest-moved` (the row moved since the preview); a lift the head already carries lands nothing. The lift reads the lōkahi cap off the vessel's island and the operator's grant out of sealed custody, and refuses by name; an AI seat proposes and stages, and its session never lifts. `lares shore lift-kahua` lifts a different thing, the pending set a lay left behind (`carriage.draft.lifts`).",
@@ -12121,7 +12081,6 @@
           ],
           "whole": [
             "Withdraw one lifted item by its revision cid, signed by the hand",
-            "the hand takes one lifted revision off the stage",
             "`kahua withdraw <cid>` withdraws one lifted revision of the face's stage, an act signed under the face's root out of sealed custody (the lōkahi cap and the operator's grant). It runs on a person's hand alone: an AI seat proposes and stages, and its session never withdraws; no tool carries it. Every answer prints as JSON.",
             "Under a pūlama the root signs at the pūlama's hand door, since the vessel there holds no face root: `--terms` runs every gate and prints ONE stdout line (the one unsigned act its root signs) and opens no route; the pūlama's `sign '<terms>'` checks it and signs; `--land '<answer>'` lands the signed record, where the door builds the act afresh and lands it only over a byte-equal body. Neither asks the passphrase on the vessel, and the host shim walks the pattern (`tools/lares-container.sh kahua lift|withdraw|carry`).",
             "Gate (the carrier's testimony; the door checks): hand: signs under the face's root out of sealed custody; a person runs it at their own terminal, and an AI seat names the command.",
@@ -12397,7 +12356,6 @@
           ],
           "whole": [
             "Adopt the pin a face's founding act signed and register its stage",
-            "the hand adopts the pin the founding act signed, and the stage stands",
             "`kahua mint` adopts the kahua pin the face's founding act signed, by whichever device founds the face, and registers it, so the face's stage stands for every device it wears. A face whose signed log names no pin refuses `kahua-mint-outside-founding`: the pin comes from the founding act alone, and the door mints none of its own.",
             "The act signs under the face's root out of sealed custody, so a person at a real terminal runs it; an AI seat names the command for the operator. Every answer prints as JSON.",
             "Gate (the carrier's testimony; the door checks): hand: the lōkahi cap and the grant come out of sealed custody and the act signs under the face's root; a person runs it at their own terminal, and an AI seat names the command.",
@@ -12494,7 +12452,7 @@
       "title": "lar:///ha.ka.ba/lares/afford/face.key.mints"
     },
     "lar:///oracle.calendar.dates": {
-      "bcc": "ni:///sha-256;JgW3vlQBwkTLQ7qVt2mkQ2OZSkr4ZrEnmKxSGk8EvC4",
+      "bcc": "ni:///sha-256;nTR4CPI4Pg_cFnczqxjx0VjEp2truBFgqdQ0MjFdFAU",
       "calls": {
         "cli": [
           "lares ddate",
@@ -12570,7 +12528,7 @@
             "lares ddate — read the Discordian date from the house's own calendar; no vessel"
           ],
           "whole": [
-            "usage: lares ddate [+FORMAT] [<day>] [<month>] [<year>]",
+            "usage: lares ddate [+FORMAT] [<day> <month> <year>]",
             "",
             "lares ddate — read the Discordian date from the house's own calendar; no vessel",
             "",
@@ -12667,7 +12625,7 @@
             " — read the Discordian date from the house's own calendar; no vessel"
           ],
           "whole": [
-            "oracle.calendar.dates([format=<words>], [day=<number>], [month=<number>], [year=<number>])",
+            "oracle.calendar.dates([format=<words>], [day=<number>, month=<number>, year=<number>])",
             "",
             " — read the Discordian date from the house's own calendar; no vessel",
             "",
@@ -12722,7 +12680,6 @@
           ],
           "whole": [
             "Read the Discordian date from the house's own calendar; no vessel",
-            "the day in the Discordian calendar, from the house's own core",
             "The house computes the day in the Discordian calendar with its own isomorphic core, so a machine with no host `ddate` binary (a vessel's container, a bare host) reads it all the same. Five seasons of 73 days (Chaos, Discord, Confusion, Bureaucracy, The Aftermath) run a five-day week (Sweetmorn, Boomtime, Pungenday, Prickle-Prickle, Setting Orange); the YOLD runs the Gregorian year plus 1166; St. Tib's Day falls on February 29 with no season and no weekday; an apostle's holyday falls on day 5 of a season and its season holyday on day 50.",
             "With no date the verb reads today's local day: the command and the seat each read the clock once, at the caller's side of the seam, and hand the day to the core, which reads none. The `day`, `month` and `year` ride together or not at all (a BCE year rides negative), and a date out of range refuses. X-Day (Confusion 40, 9827 YOLD) stands as the Church of the SubGenius's date, moved forward once the first X-Day passed without incident; `%X` counts the days to it.",
             "Format codes follow ddate(1), with `%E` added: `%A %a` weekday, long and short · `%B %b` season, long and short · `%d` day of the season · `%e` the ordinal (1st, 11th, 21st, 22nd, 23rd) · `%E` the ordinal by its last digit alone (11st, 12nd, 13rd), the first ddate's reading, an easter egg · `%H` the day's holyday, if any · `%N` stop here unless the day holds a holyday · `%Y` the YOLD · `%X` days until X-Day (negative once it passed) · `%n %t` newline, tab · `%.` an exclamation from the platform's entropy door (crypto.getRandomValues) · `%{ %}` the span between them reads \"St. Tib's Day\" on February 29 and prints plain on every other day.",
@@ -12782,7 +12739,7 @@
             " — read the Discordian date from the house's own calendar; no vessel"
           ],
           "whole": [
-            "oracle.calendar.dates([format=<words>], [day=<number>], [month=<number>], [year=<number>])",
+            "oracle.calendar.dates([format=<words>], [day=<number>, month=<number>, year=<number>])",
             "",
             " — read the Discordian date from the house's own calendar; no vessel",
             "",
@@ -13233,7 +13190,6 @@
           ],
           "whole": [
             "Consult an oracle shelf at your own fork; the cast lands an OODA-HA meme",
-            "a blind throw to collide uncertainty with",
             "The house consults an oracle whose corpus rests on a library shelf (`lar:///ha.ka.ba/lares/library/oracles/<kind>/`). The kind rides as data: `by` names the shelf (the E-Jing by default), and the shelf's index record declares its own `method`, its corpus and its credits. The e-jing and doa shelves declare `three-coins`: the I Ching by three coins a line (heads three, tails two: 6 old yin and 9 old yang change, 7 and 8 hold). A new oracle joins as a shelf, never a new address or a new verb; a shelf whose method the verb runs not yet refuses by name.",
             "Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the house canon wherever the cast lands: the target wiki, then the canon wiki, then the affordance pack its binary baked. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.",
             "The cast stands as a blind throw to collide uncertainty with: the throw stands, the reading stays open.",
@@ -13692,7 +13648,6 @@
           ],
           "whole": [
             "Name who reads and writes a bag, by face pet name",
-            "a bag's share row: names beside names, by reference and never by copy",
             "A share row says who reads and who writes a bag, by face PET-NAME as a title list (`a b [[c d]]`), `*` for every face, or empty; `hN` and `--face N` resolve to that face's pet-name (`--face` adds face N to the readers), so a row always names faces by pet-name. A line names its DELTA: `--read` and `--write` add names beside the standing ones and never replace a list, `--read-remove` and `--write-remove` take names out (each taken-out face's landed grant revokes; a face standing shut keeps the row as it stood, named), and what the line leaves unnamed (the other list, the note, the owner) stands, so the same line twice changes nothing. `--list` shows every row and the one resolver's answer per bag (with `--json`, each row AS WRITTEN beside the resolver's answer); `--remove` unshares the row.",
             "The row writes through to `$LAR_ROOT/config/share.tid` (it survives a re-founding; a person edits it by hand, and the next boot reconciles it in, the file winning) and, with a vessel standing, into the control document (`share-set`); then the operator's hand lands it (`share-apply`): each lit grantee takes the bag's row by reference and a delegation from the owner's hive, and a grant whose face stands shut waits behind an opaque flag until it lights. ONE ROW PER SLUG: a wiki row standing for the slug refuses `share-kind-standing`, and nothing writes. Sharing rides by reference and delegation, never a copy.",
             "Gate (the carrier's testimony; the door checks): hand: a share lands a grant from the owner's hive; a person runs the landing at their own terminal, and an AI harness on its branch refuses by name.",
@@ -14010,7 +13965,6 @@
           ],
           "whole": [
             "Flag a promoted item for the hand to raise the brake on",
-            "the AI flags with a reason; the hand raises",
             "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The brake sets one promoted item aside by a signed marker, and a lower takes the marker down. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON. The word names five doors in the house: the nexus quorum ban (`lares nexus kapae`) and a relation's marker (`lares edge kapae`) stay beside it, the seat's branch mute reads at `sense.kapae.mutes`, and a record's tombstone rides `lares tiddler delete`.",
             "`kapae flag <digest> --why <reason>` puts a flag on the board for an item, found among the waiting items or the carried rows; it raises nothing. The reason rides the flag.",
             "Gate (the carrier's testimony; the door checks): seat-or-hand: a flag grants nothing: the hand's raise decides.",
@@ -14300,7 +14254,6 @@
           ],
           "whole": [
             "Lower a wiki's promotion brake on one digest, by the hand",
-            "the hand takes the marker down, a deliberate signed act",
             "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The brake sets one promoted item aside by a signed marker, and a lower takes the marker down. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON. The word names five doors in the house: the nexus quorum ban (`lares nexus kapae`) and a relation's marker (`lares edge kapae`) stay beside it, the seat's branch mute reads at `sense.kapae.mutes`, and a record's tombstone rides `lares tiddler delete`.",
             "`kapae lower <digest>` takes the marker down so the item stands again; the lower signs under the face's grant and a ward route, so a person runs it at a real terminal.",
             "Gate (the carrier's testimony; the door checks): hand: a hand alone lowers: an AI harness refuses kapae-needs-hand, naming the command the operator runs.",
@@ -14592,7 +14545,6 @@
           ],
           "whole": [
             "Raise a wiki's promotion brake on one digest, by the hand",
-            "the hand raises the brake and the promoted item stands aside",
             "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The brake sets one promoted item aside by a signed marker, and a lower takes the marker down. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON. The word names five doors in the house: the nexus quorum ban (`lares nexus kapae`) and a relation's marker (`lares edge kapae`) stay beside it, the seat's branch mute reads at `sense.kapae.mutes`, and a record's tombstone rides `lares tiddler delete`.",
             "`kapae raise <digest>` sets the item aside by a signed marker, a move-not-delete: the marker holds until a lower takes it down. A person runs it at a real terminal, and an AI seat flags (`realm.kapae.flags`) and names the command.",
             "Gate (the carrier's testimony; the door checks): hand: a hand alone raises: an AI harness refuses kapae-needs-hand, naming the command the operator runs.",
@@ -14876,7 +14828,6 @@
           ],
           "whole": [
             "Commit a prepared promotion into the wiki, by the hand",
-            "the hand commits, and the promoted rite stands",
             "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON.",
             "`trust commit <digest>` promotes the item the digest names. It signs under the face's grant and a ward route, so a person runs it at a real terminal; an AI seat prepares and names the command.",
             "Gate (the carrier's testimony; the door checks): hand: a hand alone decides: an AI harness refuses promote-needs-hand, naming the command the operator runs.",
@@ -15149,7 +15100,6 @@
           ],
           "whole": [
             "Drop a promotion from a wiki, by the hand",
-            "the hand takes a promoted item back out",
             "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON.",
             "`trust drop <digest>` unpromotes the item the digest names. A person runs it at a real terminal.",
             "Gate (the carrier's testimony; the door checks): hand: a hand alone decides: an AI harness refuses promote-needs-hand, naming the command the operator runs.",
@@ -15444,7 +15394,6 @@
           ],
           "whole": [
             "Decide an orphaned promotion: keep it or drop it, by the hand",
-            "the hand keeps or drops what lost its source",
             "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON.",
             "`trust orphan <digest> --keep|--drop` decides a promoted item whose source went away: `--keep` keeps it standing, `--drop` drops it. Name one, never both or neither. A person runs it at a real terminal.",
             "Gate (the carrier's testimony; the door checks): hand: a hand alone decides: an AI harness refuses promote-needs-hand, naming the command the operator runs.",
@@ -15741,7 +15690,6 @@
           ],
           "whole": [
             "Prepare a waiting promotion with a reason, for the hand to commit",
-            "the AI prepares; the hand commits",
             "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON.",
             "`trust prepare <digest> --why <reason>` puts a waiting item on the board with the reason it should be promoted; it commits nothing. A digest no waiting item carries refuses `promote-unknown`.",
             "Gate (the carrier's testimony; the door checks): seat-or-hand: a preparation grants nothing: the hand's commit decides.",
@@ -16011,7 +15959,6 @@
           ],
           "whole": [
             "List a wiki's promotions: those waiting and the rows it carries",
-            "what waits, and what the wiki already carries",
             "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON.",
             "`trust list` reads the wiki's promotions: the items waiting for a decision and the rows already carried. It writes nothing.",
             "Gate (the carrier's testimony; the door checks): read: a read of the promotion board; it writes nothing.",
@@ -16246,7 +16193,6 @@
           ],
           "whole": [
             "Pause the capture hooks by writing the marker file they step aside on",
-            "capture minting stops at the source",
             "The hook-lever stands on its own: a marker file a capture hook checks and steps aside on when present (whatever runs the `lares sense capture` and `lares sense telemetry` legs on a session event). A migration or a `lares sense teardown` then runs WITHOUT daemon-spawn contention: the minting stops at the source, with no whack-a-mole against spawned children. `lares mempalace quiesce` pauses AND drains the warm daemons in one gesture; this lever suppresses minting alone, touching no live daemon.",
             "`hooks pause [--reason <t>]` writes the marker (the reason defaults to `manual`) and answers {wasPaused, hooksPaused, marker, since, reason}; pausing again refreshes the reason. Run `lares mempalace quiesce` to drain the warm daemons, and `hooks resume` to un-pause.",
             "Gate (the carrier's testimony; the door checks): write: a marker file in the house's own run space; reversible by resume, trusted.",
@@ -16451,7 +16397,6 @@
           ],
           "whole": [
             "Read whether the capture hooks stand paused, and why",
-            "live, or paused with its reason and since",
             "The hook-lever stands on its own: a marker file a capture hook checks and steps aside on when present (whatever runs the `lares sense capture` and `lares sense telemetry` legs on a session event). A migration or a `lares sense teardown` then runs WITHOUT daemon-spawn contention: the minting stops at the source, with no whack-a-mole against spawned children. `lares mempalace quiesce` pauses AND drains the warm daemons in one gesture; this lever suppresses minting alone, touching no live daemon.",
             "`hooks status` answers {hooksPaused, marker, since?, reason?}: LIVE (minting on dispatch) or PAUSED with the recorded reason and the time it began. It writes nothing.",
             "Gate (the carrier's testimony; the door checks): read: a read of the marker file; it writes nothing.",
@@ -16651,7 +16596,6 @@
           ],
           "whole": [
             "Resume the capture hooks by removing the marker file",
-            "capture mints the warm daemon lazily again",
             "The hook-lever stands on its own: a marker file a capture hook checks and steps aside on when present (whatever runs the `lares sense capture` and `lares sense telemetry` legs on a session event). A migration or a `lares sense teardown` then runs WITHOUT daemon-spawn contention: the minting stops at the source, with no whack-a-mole against spawned children. `lares mempalace quiesce` pauses AND drains the warm daemons in one gesture; this lever suppresses minting alone, touching no live daemon.",
             "`hooks resume` removes the marker and answers {wasPaused, hooksPaused, marker}; hooks already live answer an idempotent no-op.",
             "Gate (the carrier's testimony; the door checks): write: removes the marker file; idempotent, reversible by pause, trusted.",
@@ -16879,7 +16823,6 @@
           ],
           "whole": [
             "Mute a conversation branch and its descendants in a sensorium",
-            "a worldline branch sets aside, move-not-delete",
             "Mutes a worldline branch (a fork-path-dead-end) and cascades the mute across a sensorium: the branch's turn-keys and every store's entries for them stop answering a recall. `sensorium` names the sensorium; absent, memory. Reversible, move-not-delete throughout: `sense.kapae.restores` brings the entries back, and the rows never leave.",
             "The answer is {branch, muted_entries, resolved}; a branch no turn names answers `resolved: false` with nothing muted, never a phantom mute. The word names five doors in the house: this is the seat's branch mute, beside a wiki's promotion brake (`realm.kapae.raises`), a nexus quorum ban and a relation's marker. The terminal's `lares sense worldline kapae <branch>` names the same act and refuses honestly where its handle reads read-only; it joins this address as a cli skin when the sense door flips.",
             "Gate (the carrier's testimony; the door checks): write: reversible and trusted: a move-not-delete mute the seat runs on the operator's loop.",
@@ -17122,7 +17065,6 @@
           ],
           "whole": [
             "Restore a muted conversation branch in a sensorium",
-            "the muted branch's entries reappear in recall",
             "Restores a branch a mute set aside, across a sensorium: the rows never left (move-not-delete), so the restore finds each entry again and the entries reappear in recall. `sensorium` names it; absent, memory.",
             "The answer is {branch, restored_entries, resolved}; a branch no turn names answers `resolved: false` with nothing restored. The terminal's `lares sense worldline un-kapae <branch>` names the same act and joins this address as a cli skin when the sense door flips.",
             "Gate (the carrier's testimony; the door checks): write: reversible and trusted: a restore the seat runs on the operator's loop.",
@@ -17410,7 +17352,6 @@
           ],
           "whole": [
             "Run or list pet-named composed flows over sensorium data",
-            "one verb, N flows: a pet name composes the instruments, never another raw verb",
             "The low-level instruments (crystallize · phase · whiten · couple · gate · mismatch) stand as building blocks a FLOW composes, never the surface: the flow set (crystal · rhythm · couple) carries each pet name, its arity and its cap-stack. Bare `flow` LISTS the set with each cap-stack, in process with no daemon (the seeds ship in the mesh package). A pet name with a `signal` matrix (rows = time, columns = signals; `names` labels the columns) RUNS that flow: the daemon looks its cap-stack up and runs each step routed by hull (crystallize and couple in TypeScript, phase in Python, mismatch in the daemon), threading each outcome to the next. New capability arrives as a new flow.",
             "The CLI reads the signal from an NDJSON file, one JSON array per non-blank line; the seat hands the rows. `target` names the sensorium streams a run reads as provenance: a target with no signal asks the projector to extract one from the target's child streams, which stands feature-gated (the projector runs now, empty until the re-pour lands child signals), so auto-extraction from a poured target stays OWED.",
             "Gate (the carrier's testimony; the door checks): read: read-only routed compute: the daemon runs each cap-step by hull and writes no record.",
@@ -17583,7 +17524,7 @@
       ],
       "brief": "read the Discordian date from the house's own calendar; no vessel",
       "help": [
-        "usage: lares ddate [+FORMAT] [<day>] [<month>] [<year>]",
+        "usage: lares ddate [+FORMAT] [<day> <month> <year>]",
         "",
         "lares ddate — read the Discordian date from the house's own calendar; no vessel",
         "",
@@ -18097,7 +18038,7 @@
         "lar:///carriage.disk.restores",
         "lar:///carriage.disk.settles"
       ],
-      "brief": "drafts · flush · keep-both · keep-disk · keep-records · lift-kahua · list · …",
+      "brief": "drafts · flush · keep-both · keep-disk · keep-records · lift-kahua · list · log · remove · restore · settle · take-disk · take-records",
       "help": [
         "  lares shore flush  run the vessel's whole-island flush: every shore writes what it owes",
         "  lares shore log  read the vessel's shore log as records, one per distinct event",
@@ -18138,7 +18079,7 @@
       ]
     }
   },
-  "hash": "sha256-079c8f385096ebfd4e2b29d65e29955d54443935b68506e48c5665902366ab5a",
+  "hash": "sha256-c592c06ac1a9e691d0126fab671b18f961d4d15ef351ddd7629512bde96c35a6",
   "index": {
     "cli": [
       "  lares act CLEAR  empty a bag but keep its identity; the effect log stays",

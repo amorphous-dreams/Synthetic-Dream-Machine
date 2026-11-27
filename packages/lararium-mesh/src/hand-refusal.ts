@@ -58,7 +58,7 @@ export function askerRefusal(asker: string | undefined, opts: { readonly termina
 }
 
 /** The wing a hand act rides: the door family that answers it, each refusing by its own code. */
-export type HandWing = "promote" | "kapae" | "swarm" | "sense" | "shore" | "retire" | "accept-loss" | "share" | "floor" | "render-output";
+export type HandWing = "promote" | "kapae" | "swarm" | "sense" | "shore" | "retire" | "share" | "floor" | "render-output";
 
 /** One hand act's row: the code every door answers a refused asker with, and the wing that act rides. */
 export interface HandAdmitRow { readonly code: string; readonly wing: HandWing }
@@ -77,7 +77,7 @@ const SHARE = row("share", "share-needs-hand");
  * code moves in one row and every door that answers it moves with it. The codes stay as every caller reads them; the gate's
  * own two (`hand-act-only`, `hand-unattested`) word the sentence (`handRefusalOf`), and a wing's code names the family.
  *
- * An act whose hand-only reach turns on its arguments names its verb and its turn (`shore take-records`, `wear accept-loss`),
+ * An act whose hand-only reach turns on its arguments names its verb and its turn (`shore take-records`),
  * so no bare op word reaches a verb table. Keys stay disjoint by construction: an object literal refuses a duplicate key.
  *
  *   promote / kapae   the promote panel and the store door's settling rows (a stage's commit, drop or orphan; a kapae's raise, lower)
@@ -85,7 +85,6 @@ const SHARE = row("share", "share-needs-hand");
  *   sense             the sense lifecycle verbs that move what the house keeps
  *   shore             the shore's settling ops (a standoff settles only by a person); a seat lists, reads and flushes
  *   retire            the daemon island's unmint of a face's wiki shell
- *   accept-loss       a wear that drops the saves a refused face holds, on a person's typed word
  *   share             who reads and writes a bag, and its landing (sealed-store#/the-share-config)
  *   floor             the vessel floor's accept (w26-floor-lane#/the-vessel-pin); a seat reads the status
  *   render-output     derived bytes landing in a bound workbench (a disk write grant)
@@ -97,7 +96,6 @@ export const HAND_ADMITS: Readonly<Record<string, HandAdmitRow>> = Object.freeze
   promote: SENSE, retire: SENSE, "un-retire": SENSE, purge: SENSE,
   "shore take-records": SHORE, "shore keep-both": SHORE, "shore restore": SHORE, "shore remove": SHORE,
   "retire-wiki": row("retire", "retire-needs-hand"),
-  "wear accept-loss": row("accept-loss", "accept-loss-needs-hand"),
   "share-set": SHARE, "share-apply": SHARE,
   "floor-accept": row("floor", "floor-needs-hand"), "floor-adopt-apply": row("floor", "floor-needs-hand"),
   "wiki-render-out": row("render-output", "render-output-needs-hand"),

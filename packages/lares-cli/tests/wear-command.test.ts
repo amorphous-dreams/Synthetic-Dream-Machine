@@ -174,10 +174,11 @@ describe("RED lares wear N", () => {
     expect(landings).toEqual([]);
   });
 
-  it("the command table seats `wear`, accepting `face`, `yes` (turn over records the shore's flush left unwritten) and `accept-loss` (turn over a refused face's held saves) alone", () => {
+  it("the command table seats `wear`, accepting `face` and `yes` (turn over records the shore's flush left unwritten) alone: no word drops a held save", () => {
     const row = COMMANDS.find((c) => c.name === "wear");
     expect(row).toBeDefined();
-    expect(row!.accepts).toEqual(["face", "yes", "accept-loss"]);
+    expect(row!.accepts).toEqual(["face", "yes"]);
+    expect(COMMANDS.find((c) => c.name === "vault")!.accepts).not.toContain("accept-loss");
   });
 });
 
@@ -247,24 +248,7 @@ describe("RED a seat wears on word (the command)", () => {
   });
 });
 
-describe("RED the loss reads the hand through the one gate, never a mark alone", () => {
-  for (const refusal of ["hand-act-only", "hand-unattested"] as const) {
-    it(`an UNMARKED caller whose branch reads ${refusal} sends no wear for --accept-loss, even typed at a terminal`, async () => {
-      setWearHand(() => ({ refusal }));
-      door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 1, held: true, standing: "hearth" };
-      typedLine = "accept-loss"; terminal = true;
-      try {
-        expect(await wear("1", "--accept-loss")).toBe(1);
-      } finally { typedLine = ""; }
-      expect(frames.filter((f) => f["op"] === "wear")).toEqual([]);
-      expect(prompts, "the gate refuses before any word is asked").toBe(0);
-      const a = answer();
-      expect(a).toMatchObject({ ok: false, error: { code: "accept-loss-needs-hand" } });
-      expect(a.error!.message).toContain(refusal);
-      expect(a.error!.message).toContain("lares wear 1 --accept-loss");
-    });
-  }
-
+describe("RED the seat reads the hand through the one gate, never a mark alone", () => {
   it("an unmarked branch that reads ai names the frame's seat on a plain wear, which the vessel answers as the operator's own", async () => {
     setWearHand(() => ({ refusal: "hand-act-only" }));
     door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 1, held: true, standing: "hearth" };
@@ -291,31 +275,16 @@ describe("RED a wear flushes every shore before it turns the face (the vessel as
     expect(a.error!.message).toContain("lares wear 1 --yes");
   });
 
-  it("WS3 `--accept-loss` asks the person to type accept-loss, and only that word sends `acceptLoss: true`; `--yes` never carries it, and a saves-held refusal prints the vessel's words", async () => {
-    door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 1, held: true, standing: "hearth" };
-    typedLine = "accept-loss"; terminal = true;
-    try {
-      expect(await wear("1", "--accept-loss")).toBe(0);
-      expect(frames).toEqual([{ op: "custody" }, { op: "wear", face: 1, acceptLoss: true }]);
-      // ANY OTHER WORD sends no wear at all: the saves stay.
-      frames.length = 0; out.length = 0; typedLine = "y";
-      expect(await wear("1", "--accept-loss")).toBe(1);
-      expect(frames.filter((f) => f["op"] === "wear")).toEqual([]);
-      expect(answer()).toMatchObject({ ok: false, error: { code: "accept-loss-not-typed" } });
-      // NO TERMINAL, NO WORD: a pipe or a harness cannot speak for the loss.
-      frames.length = 0; out.length = 0; typedLine = "accept-loss"; terminal = false;
-      expect(await wear("1", "--accept-loss")).toBe(1);
-      expect(frames.filter((f) => f["op"] === "wear")).toEqual([]);
-      expect(answer()).toMatchObject({ ok: false, error: { code: "accept-loss-needs-hand" } });
-    } finally { typedLine = ""; terminal = true; }
-    frames.length = 0; out.length = 0;
+  it("WS3 a saves-held refusal prints the vessel's words and the act that lights the face; `--yes` never turns it, and the frame carries no other word", async () => {
     door = (frame) => frame["op"] === "custody" ? custody(true)
-      : { op: "wear", status: "error", errorMessage: "wearing h1 composes the vessel again, which would drop them, so nothing moved. face h2 holds 1 save(s) … Or drop them knowingly: wear again with --accept-loss (`lares wear 1 --accept-loss`)", refusal: { reason: "saves-held" } };
+      : { op: "wear", status: "error", errorMessage: "wearing h1 composes the vessel again, which would drop them, so nothing moved. face h2 holds 1 save(s) in memory that no seat has sealed (its light refused); unlock it again (`lares vault unlock --face 2`), and its own seat seals them", refusal: { reason: "saves-held" } };
     expect(await wear("1", "--yes")).toBe(1);
     expect(frames).toEqual([{ op: "custody" }, { op: "wear", face: 1, yes: true }]);
+    expect(prompts, "no word is asked").toBe(0);
     const a = answer();
     expect(a).toMatchObject({ ok: false, error: { code: "saves-held" } });
-    expect(a.error!.message).toContain("lares wear 1 --accept-loss");
+    expect(a.error!.message).toContain("lares vault unlock --face 2");
+    expect(a.error!.message).not.toMatch(/accept-loss/);
   });
 
   it("WS2 `--yes` carries `yes: true` on the wear frame, and the wear prints the flush's reading beside its line", async () => {

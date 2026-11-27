@@ -95,14 +95,15 @@
 # (`vessel stand --observe --json`) and a skew between shim and image breaks no call. `vessel stop` stops the container.
 # One lararium per HUMAN: nothing here names a face.
 #
-# A STOP NEVER DROPS CONTENT SILENTLY. A stopped container holds no memory to count, so `down` asks the standing vessel
-# first (`vessel census`, by compose exec): the saves its sealed rest holds in memory and the carriers its disk
-# projector has not settled. A clean answer stops as before, printing each unasked row it names (`census: unasked`,
-# an unnamed document's sync states alone, no content); a refusal lists them beside its items. Any item, or a census that cannot answer (a wedged vessel,
-# a failed exec, the bound passing), prints what it learned and refuses, naming two ways on: let it settle, by the way the
-# vessel's state names (`wear N` where faces stand open and none worn, `vault unlock` where the key stands shut, a wait
-# where a worn face holds it), then `down` again; or type `accept-loss` on this terminal to stop anyway. With no terminal it
-# refuses. With no vessel standing, `down` runs as it always has.
+# A STOP NEVER DROPS CONTENT. A stopped container holds no memory to count, so `down` asks the standing vessel first
+# (`vessel census`, by compose exec): the saves its sealed rest holds in memory alone and the carriers its disk projector has
+# not settled. A save at rest under the vessel's key (sealed-pending under its face, or an unnamed peer push in the vessel's
+# inbox) has landed: the census names it `kept` and a stop keeps it. A clean answer stops, printing each unasked row
+# (`census: unasked`, an unnamed document's sync states alone, no content) and each kept row it names. Any item, or a census
+# that cannot answer (a wedged vessel, a failed exec, the bound passing), prints what it learned and refuses, naming the way
+# that lands it, by the vessel's state (`wear N` where faces stand open and none worn, `vault unlock` where the key stands
+# shut, a wait where a worn face holds it), then `down` again. No typed word stops over an item. With no vessel standing,
+# `down` runs as it always has.
 #
 # LARES_HOUSE and LARES_WORKSPACE come from the environment or the operator's `~/.lares/lares-surface.env` (KEY=VALUE
 # lines, as compose reads them). LARES_WORKSPACE names the workspace the house lays canon from and projects into, a
@@ -321,8 +322,8 @@ NO_FACE_REMEMBERED='no face rests remembered (config/last-worn-face reads empty)
 # `shore-unwritten` where records stay unwritten. The shim wears only a face just opened, which no hand has touched since, so it
 # carries `--yes`; the wear's own lines (the flush's reading among them) ride stderr. A refusal reads as itself: a
 # `shore-unwritten` that ever surfaces names the flush, never a lend or a lock. `--yes` speaks for the shore alone: where a face
-# whose light refused holds unsealed saves, the vessel refuses `saves-held` all the same, and the shim never carries the
-# `--accept-loss` that would drop them; it names the refusal and leaves that word to a person. $1 = the face; sets SW_WHY on a refusal.
+# whose light refused holds saves in memory alone, the vessel refuses `saves-held` all the same, and the shim names the refusal
+# and the act that lights that face. $1 = the face; sets SW_WHY on a refusal.
 shim_wear() {
   SW_WHY=""
   # shellcheck disable=SC2046
@@ -330,7 +331,7 @@ shim_wear() {
   [ -z "$sw_out" ] || printf '%s\n' "$sw_out" >&2
   [ "$sw_rc" -eq 0 ] && return 0
   case "$sw_out" in
-    *saves-held*|*"save(s) in memory that no seat has sealed"*) SW_WHY="h$1 did not turn: a face whose light refused holds saves no seat has sealed (the lines above name it and the act that lights it, so its own seat seals them); wear h$1 after that, or drop them knowingly with \`lares-container.sh wear $1 --accept-loss\`" ;;
+    *saves-held*|*"save(s) in memory that no seat has sealed"*) SW_WHY="h$1 did not turn: a face whose light refused holds saves no seat has sealed (the lines above name it and the act that lights it, so its own seat seals them); wear h$1 after that" ;;
     *shore-unwritten*|*"the shore's flush left records unwritten"*) SW_WHY="h$1 did not turn: the shore's flush left records unwritten (the lines above name each; they rest in the store); wear it with \`lares-container.sh wear $1 --yes\`, or read them with \`lares-container.sh shore\`" ;;
     *) SW_WHY="h$1 stands outside the lent set or locked; wear another face with \`lares-container.sh wear N\`" ;;
   esac
@@ -491,7 +492,7 @@ route_cli() {
         --) break ;;
         --file|--append) stream_want=$stream_arg ;;
         --file=*|--append=*) stream_n=$((stream_n + 1)); stream_kind=${stream_arg%%=*}; [ -n "${stream_arg#*=}" ] || stream_empty=yes ;;
-        --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--accept-loss|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--collapse|--commit|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--witness|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
+        --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--collapse|--commit|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--witness|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
       esac
     done
     if [ "$stream_n" -gt 1 ]; then printf 'lares-container: name one text source: --file or --append, once\n' >&2; return 2; fi
@@ -518,7 +519,7 @@ route_cli() {
             --file=*|--append=*)
               stream_value=${stream_arg#*=}
               if [ "$stream_value" != - ]; then stream_file=$stream_value; stream_arg="${stream_arg%%=*}=-"; fi ;;
-            --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--accept-loss|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--collapse|--commit|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--witness|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
+            --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--collapse|--commit|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--witness|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
           esac
         fi
         set -- "$@" "$stream_arg"
@@ -679,21 +680,24 @@ settle_way() {
   fi
 }
 
-# The two ways on, then the typed acceptance: only the word `accept-loss`, typed on this terminal, stops anyway.
-offer_accept_loss() {
-  printf '%s\n' 'lares-container: the vessel stands. Two ways on:' \
-    "$(settle_way)" \
-    '  - stop anyway, dropping what the list names: type accept-loss below' >&2
-  [ -n "$HAVE_TTY" ] || die "down refuses: no terminal stands here to type accept-loss on; the vessel stands"
-  printf 'Type accept-loss to stop anyway: '
-  IFS= read -r answer || die "down: no answer read; the vessel stands"
-  [ "$answer" = accept-loss ] || die "down: the answer did not read accept-loss; the vessel stands"
-  printf '%s\n' 'lares-container: accept-loss typed; stopping the vessel' >&2
+# The way on, then the refusal: the vessel stands until what the census names lands.
+refuse_stop() {
+  printf '%s\n' 'lares-container: the vessel stands. The way on:' "$(settle_way)" >&2
+  die "down refuses: the vessel stands until what the census names lands"
 }
 
-# A CENSUS OF HELD SAVES ALONE says so plainly before the accept-loss offer: how many documents, that each waits in memory for a
-# session in this vessel, and that no carrier and no untracked file waits, so accept-loss drops exactly these. Under a restand it
-# adds that the keep runs after the raise once the new vessel's census reads clean.
+# A CENSUS THAT CANNOT ANSWER reads its vessel's memory as unknown: the house stops it on no word. A vessel that stays wedged
+# past its logs stops by hand, outside the census, and what its memory held reads unknown.
+refuse_unread_stop() {
+  printf '%s\n' 'lares-container: the vessel stands. The way on:' \
+    '  - read why it does not answer: tools/lares-container.sh logs, then tools/lares-container.sh down again' \
+    '  - a vessel that never answers stops by hand, outside the census: docker stop <its container> (what its memory held reads unknown)' >&2
+  die "down refuses: the census could not answer, so what the vessel holds reads unknown"
+}
+
+# A CENSUS OF HELD SAVES ALONE says so plainly before the refusal: how many documents, that each waits in this process's memory
+# alone for a session in this vessel, and that no carrier and no untracked file waits. Under a restand it adds that the keep
+# runs after the raise once the new vessel's census reads clean.
 held_only_line() {
   ho_lines=$(printf '%s\n' "$census_out" | sed -e '/^$/d')
   [ -n "$ho_lines" ] || return 0
@@ -701,15 +705,17 @@ held_only_line() {
   ho_n=$(printf '%s\n' "$ho_lines" | wc -l | tr -d ' ')
   if [ "$ho_n" = 1 ]; then ho_docs="1 document"; else ho_docs="$ho_n documents"; fi
   ho_more=""; [ -z "$IN_REBUILD" ] || ho_more="; the keep runs after the raise once the new vessel's census reads clean"
-  printf 'lares-container: the census names held saves alone (%s): each a save the sealed rest keeps in memory until a session books it in this vessel; no carrier and no untracked file waits, so accept-loss drops exactly these%s\n' "$ho_docs" "$ho_more" >&2
+  printf 'lares-container: the census names held saves alone (%s): each a save the sealed rest keeps in memory alone until a session books it in this vessel; no carrier and no untracked file waits; the way on below lands them%s\n' "$ho_docs" "$ho_more" >&2
 }
 
-# Census the standing vessel; return only when the stop may go on (clean, or accept-loss typed).
+# Census the standing vessel; return only when the stop may go on (clean: nothing rests in memory alone).
 census_before_stop() {
   if run_census; then rc=0; else rc=$?; fi
   if [ "$rc" -eq 0 ] && printf '%s\n' "$census_out" | grep -q '^census: clean'; then
     # AN UNASKED ROW (an unnamed document's sync states alone, no content) leaves with the stop: each line names it, never silent.
     printf '%s\n' "$census_err" | grep '^census: unasked' >&2 || true
+    # A KEPT ROW (its content at rest under the vessel's key) stays with the house: each line names it, never silent.
+    printf '%s\n' "$census_err" | grep '^census: kept' >&2 || true
     # LOCKED SINCE BOOT: the census read clean because no key ever opened in this vessel's life, so no act wrote. One line says so.
     if printf '%s\n' "$census_out" | grep -q '^census: clean — the vessel stood locked since it booted'; then
       printf '%s\n' 'lares-container: down asks nothing: the vessel stood locked since it booted, so no act wrote and nothing waits in memory to drop' >&2
@@ -719,28 +725,26 @@ census_before_stop() {
   # A LOCKED HEARTH: the census names the cure in one line (`census: vessel locked: …`); say it plainly, not "could not answer".
   if [ -z "$census_timed_out" ] && printf '%s\n' "$census_err" | grep -q '^census: vessel locked'; then
     # A KEY THAT OPENED AND SHUT AGAIN (or a vessel too old to say): what its memory holds reads UNREAD, never assumed lost or clean.
-    printf '%s\n' 'lares-container: down refuses a silent stop: vessel locked: run tools/lares-container.sh vault unlock, then down' >&2
-    printf '%s\n' 'lares-container: what the locked vessel holds reads unread (its key opened in this life, or its image predates the locked census), so the stop asks; a vessel locked since it booted stops with no ask' >&2
-    offer_accept_loss
-    return 0
+    printf '%s\n' 'lares-container: what the locked vessel holds reads unread (its key opened in this life, or its image predates the locked census); a vessel locked since it booted stops with no ask' >&2
+    die "down refuses: vessel locked: run tools/lares-container.sh vault unlock, then down"
   fi
   if [ "$rc" -eq 3 ] && [ -z "$census_timed_out" ]; then
-    printf '%s\n' 'lares-container: down refuses a silent stop: the census names content that rests nowhere yet, and a stop now drops it:' >&2
+    printf '%s\n' 'lares-container: down refuses: the census names content that rests nowhere yet, and a stop now drops it:' >&2
     printf '%s\n' "$census_out" | sed -e '/^$/d' -e 's/^/  /' >&2
     # Each unasked row beside the items (sync states alone, no content): named, never hidden.
     printf '%s\n' "$census_err" | grep '^census: unasked' | sed -e 's/^/  /' >&2 || true
     held_only_line
+    refuse_stop
   else
     if [ -n "$census_timed_out" ]; then why="no answer within ${CENSUS_WAIT_SECONDS}s (the vessel may stand wedged)"
     else why="the census exec ended with status $rc"; fi
-    printf 'lares-container: down refuses a silent stop: the census could not answer (%s), so what a stop would drop reads unknown\n' "$why" >&2
-    printf '%s\n' 'lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.' >&2
+    printf 'lares-container: down refuses: the census could not answer (%s), so what a stop would drop reads unknown\n' "$why" >&2
     if [ "${LARES_DEBUG:-}" = 1 ]; then
       if [ -n "$census_out" ]; then printf '%s\n' "$census_out" | sed -e '/^$/d' -e 's/^/  /' >&2; fi
       if [ -n "$census_err" ]; then printf '%s\n' "$census_err" | sed -e '/^$/d' -e 's/^/  /' >&2; fi
     fi
+    refuse_unread_stop
   fi
-  offer_accept_loss
 }
 
 # Read the terminal NOW: inside `$(tty_flag)` stdout is the substitution's pipe, so a `[ -t 1 ]` there is always false
@@ -1062,12 +1066,11 @@ down_vessel() { # $@ = compose-down options
   # A pūlama that reads unknown stops nothing: a full down would take a lit pūlama with it.
   d_pulama=$(pulama_state)
   [ "$d_pulama" != unknown ] || die "down refuses: docker compose ps failed for the pūlama, so whether the pūlama stands reads unknown; the vessel and the pūlama stand"
-  # A ps that fails reads as UNKNOWN: whether a vessel stands, and what it holds, goes uncounted, so the same typed
-  # acceptance guards the stop.
+  # A ps that fails reads as UNKNOWN: whether a vessel stands, and what it holds, goes uncounted, so the same
+  # refusal guards the stop.
   if ! down_id=$(compose ps -q --status running lares); then
-    printf '%s\n' 'lares-container: down refuses a silent stop: docker compose ps failed, so whether a vessel stands reads unknown' >&2
-    printf '%s\n' 'lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.' >&2
-    offer_accept_loss
+    printf '%s\n' 'lares-container: down refuses: docker compose ps failed, so whether a vessel stands reads unknown' >&2
+    refuse_unread_stop
   elif [ -n "$down_id" ]; then
     # UNDER THE RITE an owed keep waits for its landing: the down keeps nothing while the mark stands.
     if [ -n "$R_KEEP_LATER" ] && [ -e "$(keep_owed_mark)" ]; then

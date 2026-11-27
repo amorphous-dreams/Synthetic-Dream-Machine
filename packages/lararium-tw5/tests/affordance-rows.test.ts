@@ -4,7 +4,7 @@
  */
 import { describe, expect, test } from "vitest";
 import {
-  addressMatcher, addressOfTitle, digestOf, edgesOf, exampleCall, kaheaTitles, neutralCallOf, parseHasRows, parseParams, proseOf, renderCall,
+  addressMatcher, addressOfTitle, bodyOf, digestOf, edgesOf, exampleCall, kaheaTitles, neutralCallOf, parseHasRows, parseParams, proseOf, renderCall,
   seatsOf, spellArg, tokenize, usageOf, unfoldRead, type HasRow,
 } from "../src/affordance-rows.js";
 import { affordView } from "../src/affordance-read.js";
@@ -34,6 +34,9 @@ describe("the row reader", () => {
   test("RED 3: the digest, the prose, the kahea calls and the loulou edges read off a slot's text", () => {
     expect(digestOf(TAKES)).toBe("takes ~ recipe · bag · asking · fresh");
     expect(proseOf("! head ~ one\n\nfirst para\nruns on\n\n<<has entity=`x` name=`y`>>\nsecond")).toEqual(["one", "first para runs on", "second"]);
+    // The body leaves the head's tagline out: a surface that names the role on its own line names it once.
+    expect(bodyOf("! head ~ one\n\nfirst para\nruns on\n\n<<has entity=`x` name=`y`>>\nsecond")).toEqual(["first para runs on", "second"]);
+    expect(bodyOf("!! takes ~ a · b\n\nonly prose")).toEqual(["only prose"]);
     expect(kaheaTitles("<<~ kahea ahu slot=`#/takes/container` to=`lar:///ha.ka.ba/lares/api/pono/affordance`>>"))
       .toEqual(["lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container"]);
     expect(edgesOf("!! edges\n<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/oracle-loop`>>")).toEqual(["lar:///ha.ka.ba/lares/api/pono/oracle-loop"]);
@@ -86,11 +89,14 @@ describe("addresses and wildcards (DAM law 2)", () => {
     const records: Record<string, string> = {
       "lar:///oracle.library.consults#/takes": TAKES,
       "lar:///oracle.library.consults#/skins/cli": "<<has entity=`skin` name=`cli` params=`spells/[[lares oracle cast]]`>>",
+      "lar:///oracle.library.consults#/head": "! oracle.library.consults ~ cast the coins\n\nA line sums three coins.",
     };
     const textOf = (t: string): string | undefined => records[t];
     expect(affordView(textOf, "lar:///oracle.library.consults", "spells", "cli", "")).toEqual(["lares oracle cast"]);
     expect(affordView(textOf, "lar:///oracle.library.consults", "spells", "mcp", "")).toEqual([]);
     expect(JSON.parse(affordView(textOf, "lar:///oracle.library.consults", "rows", "cli", "#/takes")[2]!)).toMatchObject({ name: "asking", spell: "--asking", value: "words" });
+    expect(affordView(textOf, "lar:///oracle.library.consults", "prose", "mcp", "#/head")).toEqual(["cast the coins", "A line sums three coins."]);
+    expect(affordView(textOf, "lar:///oracle.library.consults", "body", "mcp", "#/head")).toEqual(["A line sums three coins."]);
     expect(() => affordView(textOf, "lar:///oracle.library.consults", "nope", "cli", "")).toThrow(/afford-view-unknown/);
   });
 });
@@ -113,8 +119,9 @@ describe("the canon seat (weaver#1: canon seats no bare root)", () => {
 describe("a positional arg (`seat/N`)", () => {
   const DATE = [
     "<<has entity=`arg` name=`format` params=`takes/words seat/1 as/+FORMAT lead/+ ~ the format codes`>>",
-    "<<has entity=`arg` name=`day` params=`takes/number seat/2 as/<day> ~ the day`>>",
-    "<<has entity=`arg` name=`month` params=`takes/number seat/3 as/<month> ~ the month`>>",
+    "<<has entity=`arg` name=`day` params=`takes/number seat/2 as/<day> needs/all-of:day,month,year ~ the day`>>",
+    "<<has entity=`arg` name=`month` params=`takes/number seat/3 as/<month> needs/all-of:day,month,year ~ the month`>>",
+    "<<has entity=`arg` name=`year` params=`takes/number seat/4 as/<year> needs/all-of:day,month,year ~ the year`>>",
     "<<has entity=`arg` name=`json` params=`~ the envelope`>>",
   ].join("\n");
   const rows = parseHasRows(DATE);
@@ -126,7 +133,17 @@ describe("a positional arg (`seat/N`)", () => {
   });
 
   test("RED 2: the cli usage spine leads with the positionals in seat order, then the flags", () => {
-    expect(usageOf("cli", "lares ddate", rows)).toBe("usage: lares ddate [+FORMAT] [<day>] [<month>] [--json]");
-    expect(usageOf("mcp", "ddate", rows)).toBe("ddate([format=<words>], [day=<number>], [month=<number>], [json])");
+    expect(usageOf("cli", "lares ddate", rows)).toBe("usage: lares ddate [+FORMAT] [<day> <month> <year>] [--json]");
+    expect(usageOf("mcp", "ddate", rows)).toBe("ddate([format=<words>], [day=<number>, month=<number>, year=<number>], [json])");
+  });
+
+  test("RED 3: `needs/all-of:` groups args that ride together or not at all, one bracket for the group, in seat order", () => {
+    const shuffled = parseHasRows([
+      "<<has entity=`arg` name=`year` params=`takes/number seat/4 as/<year> needs/all-of:day,month,year ~ the year`>>",
+      "<<has entity=`arg` name=`day` params=`takes/number seat/2 as/<day> needs/all-of:day,month,year ~ the day`>>",
+      "<<has entity=`arg` name=`month` params=`takes/number seat/3 as/<month> needs/all-of:day,month,year ~ the month`>>",
+    ].join("\n"));
+    expect(usageOf("cli", "lares ddate", shuffled)).toBe("usage: lares ddate [<day> <month> <year>]");
+    expect(usageOf("mcp", "ddate", shuffled)).toBe("ddate([year=<number>, day=<number>, month=<number>])");
   });
 });

@@ -1261,7 +1261,9 @@ async function prepareNodeBootOn(
   const refusedHeldDocs = new Map<number, string[]>();
   /** Why each such face's light refused, kept from that teardown: its row keeps its cause once a relight clears the actor's. */
   const refusedHeldCause = new Map<number, string>();
-  const heldSavesOf = (ordinal: number): number => (refusedHeldDocs.get(ordinal) ?? []).reduce((n, id) => n + sealedRest.store.waiting(id), 0);
+  /** The saves a refused face holds in this composition's memory alone: a save at rest under the vessel's key survives any
+   *  composition, so it gates nothing. */
+  const heldSavesOf = (ordinal: number): number => (refusedHeldDocs.get(ordinal) ?? []).reduce((n, id) => n + sealedRest.store.loose(id), 0);
   /**
    * EACH FACE LIVES ONE LIFE (`face-lifecycle`): one lifecycle actor per face this composition may light, the mount's beside each
    * sibling's. The actor alone holds a face's opening, its island atom key and its custody opening; the door admits work and
@@ -1507,8 +1509,8 @@ async function prepareNodeBootOn(
       owedWatch.notice(held);
       if (!tellOnce(held.documentId, `${held.refusal}\u0000${held.error ?? ""}\u0000${held.rests ?? ""}\u0000${held.carried === true ? "carried" : ""}`)) return;
       const line = `[sealed-rest] ${heldFateLine(held)}`;
-      // A content-free sync state loses nothing at a stop, and a save at rest sealed-pending survives one: neither cries.
-      if (held.refusal === "save-unnamed" ? held.syncState !== true : held.rests !== "sealed-pending") console.warn(line);
+      // A content-free sync state loses nothing at a stop, and a save at rest under the vessel's key survives one: neither cries.
+      if (held.syncState !== true && held.rests !== "sealed-pending") console.warn(line);
       else console.log(line);
     },
     // A HYDRATING LOAD THAT WAITS NAMES WHAT IT WAITS ON, once per document and refusal: the refusal and the bag holding it.

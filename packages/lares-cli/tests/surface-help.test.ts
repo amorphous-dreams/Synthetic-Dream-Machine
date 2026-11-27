@@ -1,6 +1,6 @@
 /**
  * surface-help — `lares surface` stands in the command table with its own help entries, one per sub-door, and the
- * top-level list keeps its 66-line ceiling (help-flags.test.ts reads every row).
+ * top-level list names it on one line, its depth unfolding per door (progressive display; help-flags.test.ts reads every row).
  */
 import { describe, expect, test, vi, afterEach } from "vitest";
 import { COMMANDS, dispatch } from "../src/bin/lares.js";
@@ -40,9 +40,8 @@ describe("lares surface help", () => {
     expect(r.out).toContain("lar:///surface.keeps.the-sitting/");
   });
 
-  test("★ the top-level list stays within 66 lines with `surface` named ★", async () => {
+  test("★ the top-level list names `surface` on one line; its depth unfolds at `lares surface --help` ★", async () => {
     const r = await run(["help"]);
-    expect(r.out.split("\n").length).toBeLessThanOrEqual(66);
-    expect(r.out).toMatch(/^\s+surface\s/m);
+    expect(r.out.split("\n").filter((l) => /^\s+(✍ )?surface\s/.test(l))).toHaveLength(1);
   });
 });

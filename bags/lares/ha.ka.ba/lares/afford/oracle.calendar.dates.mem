@@ -47,9 +47,9 @@ A bare call answers the default line ("Today is Prickle-Prickle, the 32nd day of
 
 ```memetic-wikitext
 <<has entity=`arg` name=`format` params=`takes/words seat/1 as/+FORMAT lead/+ ~ the ddate(1) format codes the head lists; absent, the default line`>>
-<<has entity=`arg` name=`day` params=`takes/number seat/2 as/<day> ~ the day of the month; day, month and year ride together or not at all`>>
-<<has entity=`arg` name=`month` params=`takes/number seat/3 as/<month> ~ the month, 1 to 12; rides with day and year`>>
-<<has entity=`arg` name=`year` params=`takes/number seat/4 as/<year> ~ the Gregorian year (a BCE year rides negative); rides with day and month`>>
+<<has entity=`arg` name=`day` params=`takes/number seat/2 as/<day> needs/all-of:day,month,year ~ the day of the month; day, month and year ride together or not at all`>>
+<<has entity=`arg` name=`month` params=`takes/number seat/3 as/<month> needs/all-of:day,month,year ~ the month, 1 to 12; rides with day and year`>>
+<<has entity=`arg` name=`year` params=`takes/number seat/4 as/<year> needs/all-of:day,month,year ~ the Gregorian year (a BCE year rides negative); rides with day and month`>>
 ```
 
 <<~/ahu>>
@@ -126,6 +126,6 @@ The calendar core stands at `@lararium/mesh/ddate` and its chance at `@lararium/
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JgW3vlQBwkTLQ7qVt2mkQ2OZSkr4ZrEnmKxSGk8EvC4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nTR4CPI4Pg_cFnczqxjx0VjEp2truBFgqdQ0MjFdFAU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

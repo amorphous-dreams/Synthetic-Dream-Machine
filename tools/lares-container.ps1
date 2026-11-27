@@ -25,12 +25,13 @@
 # A VESSEL STANDS HOLDING NO KEY. Every start returns it to the floor, so after `up`, after `vessel stand`, and after
 # each restart this shim performs, it runs `vault unlock` attached when this shell holds a TTY, and otherwise names
 # that one command. `vault lock` routes to the CLI like any other verb. No flag, env var or pipe carries a credential.
-# A STOP NEVER DROPS CONTENT SILENTLY. While a vessel stands, `down` asks it first (`vessel census`, by compose exec,
-# bounded): the saves its sealed rest holds in memory and the carriers its disk projector has not settled. A clean
-# answer stops as before, printing each unasked row it names (`census: unasked`: an unnamed document's sync states alone, no content); any item, or a census that cannot answer, prints what it learned and refuses, naming two ways
-# on: let it settle, by the way the vessel's state names (`wear N` where faces stand open and none worn, `vault unlock`
-# where the key stands shut, a wait where a worn face holds it), then `down` again; or type `accept-loss` on this terminal. With no
-# terminal it refuses. With no vessel standing, `down` runs as it always has.
+# A STOP NEVER DROPS CONTENT. While a vessel stands, `down` asks it first (`vessel census`, by compose exec, bounded): the
+# saves its sealed rest holds in memory alone and the carriers its disk projector has not settled. A save at rest under the
+# vessel's key (sealed-pending under its face, or an unnamed peer push in the vessel's inbox) has landed: the census names it
+# `kept`. A clean answer stops, printing each unasked and kept row it names; any item, or a census that cannot answer, prints
+# what it learned and refuses, naming the way that lands it, by the vessel's state (`wear N` where faces stand open and none
+# worn, `vault unlock` where the key stands shut, a wait where a worn face holds it), then `down` again. No typed word stops
+# over an item. With no vessel standing, `down` runs as it always has.
 $ErrorActionPreference = 'Stop'
 
 function Die([string]$m) { [Console]::Error.WriteLine("lares-container: $m"); exit 2 }
@@ -334,8 +335,8 @@ function DetachedWear([string]$face) {
 # `shore-unwritten` where records stay unwritten. The shim wears only a face just opened, which no hand has touched since, so it
 # carries `--yes`; the wear's own lines (the flush's reading among them) ride stderr. A refusal reads as itself: a
 # `shore-unwritten` that ever surfaces names the flush, never a lend or a lock. `--yes` speaks for the shore alone: where a face
-# whose light refused holds unsealed saves, the vessel refuses `saves-held` all the same, and the shim never carries the
-# `--accept-loss` that would drop them; it names the refusal and leaves that word to a person. Sets $script:ShimWearWhy on a refusal.
+# whose light refused holds saves in memory alone, the vessel refuses `saves-held` all the same, and the shim names the refusal
+# and the act that lights that face. Sets $script:ShimWearWhy on a refusal.
 function ShimWear([string]$face) {
   $script:ShimWearWhy = ''
   $out = @($null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli wear $face --yes 2>&1)
@@ -344,7 +345,7 @@ function ShimWear([string]$face) {
   if ($rc -eq 0) { return 0 }
   $said = ($out | ForEach-Object { "$_" }) -join "`n"
   if ($said -match "saves-held|save\(s\) in memory that no seat has sealed") {
-    $script:ShimWearWhy = "h$face did not turn: a face whose light refused holds saves no seat has sealed (the lines above name it and the act that lights it, so its own seat seals them); wear h$face after that, or drop them knowingly with ``lares-container.ps1 wear $face --accept-loss``"
+    $script:ShimWearWhy = "h$face did not turn: a face whose light refused holds saves no seat has sealed (the lines above name it and the act that lights it, so its own seat seals them); wear h$face after that"
   } elseif ($said -match "shore-unwritten|the shore's flush left records unwritten") {
     $script:ShimWearWhy = "h$face did not turn: the shore's flush left records unwritten (the lines above name each; they rest in the store); wear it with ``lares-container.ps1 wear $face --yes``, or read them with ``lares-container.ps1 shore``"
   } else {
@@ -471,7 +472,7 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
   $isPut = $argv.Count -ge 3 -and (($argv[0] -ceq 'tiddler' -and $argv[1] -ceq 'put') -or ($argv[0] -ceq 'spirit' -and $argv[1] -cin @('ah', 'hooili', 'residue', 'handback')))
   if ($argv.Count -gt 0) {
     $alwaysValued = @('--fields', '--note', '--reason', '--replace', '--text', '--with')
-    $boolean = @('abandon', 'accept-loss', 'accept-omissions', 'added', 'all', 'all-strata', 'apply', 'approve', 'brief', 'bulk', 'cancel', 'cards', 'collapse', 'commit', 'cosign', 'confirm', 'create', 'cut', 'drain', 'deny', 'docs', 'draft', 'drop', 'dry-run', 'edge', 'ephemeral', 'every', 'executable', 'family', 'force', 'foreground', 'fresh', 'from-persona', 'held', 'help', 'help-mempalace', 'history', 'hearth', 'hold', 'if-due', 'in-wiki', 'init', 'join', 'json', 'keep', 'keep-hooks', 'keyhive-trace', 'lag', 'launch', 'list', 'meme', 'memory', 'new', 'offer', 'orphans', 'over-fresher', 'page', 'pair', 'palaces', 'paper', 'partial', 'passphrase', 'pending', 'probe', 'quorum', 'overwrite', 'remove', 'repour', 'restart', 'revert', 'rotate', 'seat', 'sessions', 'shadow', 'skinny', 'skip-build', 'spectral', 'split-root', 'staged', 'sweep', 'tag-blobs', 'terms', 'tree', 'verbose', 'wait', 'watch', 'with-web', 'witness', 'workbench', 'writeback', 'yes')
+    $boolean = @('abandon', 'accept-omissions', 'added', 'all', 'all-strata', 'apply', 'approve', 'brief', 'bulk', 'cancel', 'cards', 'collapse', 'commit', 'cosign', 'confirm', 'create', 'cut', 'drain', 'deny', 'docs', 'draft', 'drop', 'dry-run', 'edge', 'ephemeral', 'every', 'executable', 'family', 'force', 'foreground', 'fresh', 'from-persona', 'held', 'help', 'help-mempalace', 'history', 'hearth', 'hold', 'if-due', 'in-wiki', 'init', 'join', 'json', 'keep', 'keep-hooks', 'keyhive-trace', 'lag', 'launch', 'list', 'meme', 'memory', 'new', 'offer', 'orphans', 'over-fresher', 'page', 'pair', 'palaces', 'paper', 'partial', 'passphrase', 'pending', 'probe', 'quorum', 'overwrite', 'remove', 'repour', 'restart', 'revert', 'rotate', 'seat', 'sessions', 'shadow', 'skinny', 'skip-build', 'spectral', 'split-root', 'staged', 'sweep', 'tag-blobs', 'terms', 'tree', 'verbose', 'wait', 'watch', 'with-web', 'witness', 'workbench', 'writeback', 'yes')
     $sources = @()
     for ($i = 0; $i -lt $argv.Count; $i++) {
       $word = $argv[$i]
@@ -583,16 +584,19 @@ function SettleWay([string]$err, [bool]$timedOut) {
   }
   return '  - unlock it and let it settle: tools/lares-container.ps1 vault unlock, then tools/lares-container.ps1 down again'
 }
-function OfferAcceptLoss([string]$err = '', [bool]$timedOut = $false) {
-  [Console]::Error.WriteLine('lares-container: the vessel stands. Two ways on:')
+# The way on, then the refusal: the vessel stands until what the census names lands.
+function RefuseStop([string]$err = '', [bool]$timedOut = $false) {
+  [Console]::Error.WriteLine('lares-container: the vessel stands. The way on:')
   [Console]::Error.WriteLine((SettleWay $err $timedOut))
-  [Console]::Error.WriteLine('  - stop anyway, dropping what the list names: type accept-loss below')
-  if (-not $script:Tty) { Die 'down refuses: no terminal stands here to type accept-loss on; the vessel stands' }
-  [Console]::Out.Write('Type accept-loss to stop anyway: ')
-  $answer = [Console]::In.ReadLine()
-  if ($null -eq $answer) { Die 'down: no answer read; the vessel stands' }
-  if ($answer.TrimEnd("`r") -ne 'accept-loss') { Die 'down: the answer did not read accept-loss; the vessel stands' }
-  [Console]::Error.WriteLine('lares-container: accept-loss typed; stopping the vessel')
+  Die 'down refuses: the vessel stands until what the census names lands'
+}
+# A CENSUS THAT CANNOT ANSWER reads its vessel's memory as unknown: the house stops it on no word. A vessel that stays wedged
+# past its logs stops by hand, outside the census, and what its memory held reads unknown.
+function RefuseUnreadStop {
+  [Console]::Error.WriteLine('lares-container: the vessel stands. The way on:')
+  [Console]::Error.WriteLine('  - read why it does not answer: tools/lares-container.ps1 logs, then tools/lares-container.ps1 down again')
+  [Console]::Error.WriteLine('  - a vessel that never answers stops by hand, outside the census: docker stop <its container> (what its memory held reads unknown)')
+  Die 'down refuses: the census could not answer, so what the vessel holds reads unknown'
 }
 function Indent([string]$text) {
   foreach ($line in ($text -split "`r?`n")) { if ($line) { [Console]::Error.WriteLine("  $line") } }
@@ -687,15 +691,15 @@ function WearLastFace {
   if ((ShimWear "$wear") -eq 0) { $script:Wore = "h$wear" }
   else { $script:Wore = ''; [Console]::Error.WriteLine("lares-container: $script:ShimWearWhy") }
 }
-# A CENSUS OF HELD SAVES ALONE says so plainly before the accept-loss offer: how many documents, that each waits in memory for a
-# session in this vessel, and that no carrier and no untracked file waits, so accept-loss drops exactly these. Under a restand it
-# adds that the keep runs after the raise once the new vessel's census reads clean.
+# A CENSUS OF HELD SAVES ALONE says so plainly before the refusal: how many documents, that each waits in this process's memory
+# alone for a session in this vessel, and that no carrier and no untracked file waits. Under a restand it adds that the keep
+# runs after the raise once the new vessel's census reads clean.
 function HeldOnlyLine([string]$out) {
   $lines = @($out -split "`r?`n" | Where-Object { $_ })
   if ($lines.Count -eq 0 -or ($lines | Where-Object { -not $_.StartsWith('held-save ') })) { return }
   $docs = if ($lines.Count -eq 1) { '1 document' } else { "$($lines.Count) documents" }
   $more = if ($script:InRebuild) { "; the keep runs after the raise once the new vessel's census reads clean" } else { '' }
-  [Console]::Error.WriteLine("lares-container: the census names held saves alone ($docs): each a save the sealed rest keeps in memory until a session books it in this vessel; no carrier and no untracked file waits, so accept-loss drops exactly these$more")
+  [Console]::Error.WriteLine("lares-container: the census names held saves alone ($docs): each a save the sealed rest keeps in memory alone until a session books it in this vessel; no carrier and no untracked file waits; the way on below lands them$more")
 }
 function CensusBeforeStop {
   $c = RunCensus '--no-json'
@@ -703,27 +707,26 @@ function CensusBeforeStop {
   if ($rc -eq 0 -and ($out -split "`r?`n" | Where-Object { $_ -like 'census: clean*' })) {
     # AN UNASKED ROW (an unnamed document's sync states alone, no content) leaves with the stop: each line names it, never silent.
     foreach ($l in ($err -split "`r?`n" | Where-Object { $_ -like 'census: unasked*' })) { [Console]::Error.WriteLine($l) }
+    # A KEPT ROW (its content at rest under the vessel's key) stays with the house: each line names it, never silent.
+    foreach ($l in ($err -split "`r?`n" | Where-Object { $_ -like 'census: kept*' })) { [Console]::Error.WriteLine($l) }
     return
   }
   # A LOCKED HEARTH: the census names the cure in one line (`census: vessel locked: ...`); say it plainly, not "could not answer".
   if (-not $timedOut -and ($err -split "`r?`n" | Where-Object { $_ -like 'census: vessel locked*' })) {
-    [Console]::Error.WriteLine('lares-container: down refuses a silent stop: vessel locked: run tools/lares-container.ps1 vault unlock, then down')
-    OfferAcceptLoss $err $timedOut
-    return
+    Die 'down refuses: vessel locked: run tools/lares-container.ps1 vault unlock, then down'
   }
   if ($rc -eq 3 -and -not $timedOut) {
-    [Console]::Error.WriteLine('lares-container: down refuses a silent stop: the census names content that rests nowhere yet, and a stop now drops it:')
+    [Console]::Error.WriteLine('lares-container: down refuses: the census names content that rests nowhere yet, and a stop now drops it:')
     Indent $out
     # Each unasked row beside the items (sync states alone, no content): named, never hidden.
     foreach ($l in ($err -split "`r?`n" | Where-Object { $_ -like 'census: unasked*' })) { [Console]::Error.WriteLine("  $l") }
     HeldOnlyLine $out
-  } else {
-    $why = if ($timedOut) { "no answer within ${CensusWaitSeconds}s (the vessel may stand wedged)" } else { "the census exec ended with status $rc" }
-    [Console]::Error.WriteLine("lares-container: down refuses a silent stop: the census could not answer ($why), so what a stop would drop reads unknown")
-    [Console]::Error.WriteLine('lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.')
-    if ($env:LARES_DEBUG -eq '1') { Indent $out; Indent $err }
+    RefuseStop $err $timedOut
   }
-  OfferAcceptLoss $err $timedOut
+  $why = if ($timedOut) { "no answer within ${CensusWaitSeconds}s (the vessel may stand wedged)" } else { "the census exec ended with status $rc" }
+  [Console]::Error.WriteLine("lares-container: down refuses: the census could not answer ($why), so what a stop would drop reads unknown")
+  if ($env:LARES_DEBUG -eq '1') { Indent $out; Indent $err }
+  RefuseUnreadStop
 }
 
 $script:Tty = (-not [Console]::IsInputRedirected) -and (-not [Console]::IsOutputRedirected)
@@ -981,13 +984,12 @@ function DownVessel([string[]]$opts) {
   # A pūlama that reads unknown stops nothing: a full down would take a lit pūlama with it.
   $pulama = PulamaState
   if ($pulama -eq 'unknown') { Die 'down refuses: docker compose ps failed for the pūlama, so whether the pūlama stands reads unknown; the vessel and the pūlama stand' }
-  # A ps that fails reads as UNKNOWN: whether a vessel stands, and what it holds, goes uncounted, so the same typed
-  # acceptance guards the stop.
+  # A ps that fails reads as UNKNOWN: whether a vessel stands, and what it holds, goes uncounted, so the same
+  # refusal guards the stop.
   $ids = & docker compose @Base ps -q --status running lares
   if ($LASTEXITCODE -ne 0) {
-    [Console]::Error.WriteLine('lares-container: down refuses a silent stop: docker compose ps failed, so whether a vessel stands reads unknown')
-    [Console]::Error.WriteLine('lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.')
-    OfferAcceptLoss
+    [Console]::Error.WriteLine('lares-container: down refuses: docker compose ps failed, so whether a vessel stands reads unknown')
+    RefuseUnreadStop
   } elseif (-not [string]::IsNullOrWhiteSpace(($ids -join ''))) {
     # UNDER THE RITE an owed keep waits for its landing: the down keeps nothing while the mark stands.
     if ($script:KeepLater -and (Test-Path -LiteralPath (KeepOwedMark))) {

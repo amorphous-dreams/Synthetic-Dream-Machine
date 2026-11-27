@@ -549,8 +549,8 @@ async function main(): Promise<void> {
     const prior = composition;
     composition = null;
     // THE LIFE REMEMBERS: a teardown here that left a face unsealed, or threw, keeps this life's goodbye unsent at its exit.
-    // NO HELD SAVE DROPS UNNAMED: the doors refuse first (`heldSavesRefusal`); a composition that ends over them all the same
-    // (a person's `--accept-loss`, a mount's close, a pūlama session's drop) says which face lost how many.
+    // NO HELD SAVE DROPS UNNAMED: the doors refuse first (`heldSavesRefusal`); a composition that ends over saves held in memory
+    // alone all the same (a mount's close, a pūlama session's drop) says which face lost how many.
     if (prior !== null) { try { for (const line of heldSavesLossLines(prior.refusedHolds?.() ?? [])) console.warn(`[sealed-rest] ${line}`); } catch { /* a composition half down reads nothing */ } }
     if (prior !== null) await lifeClosed.noteTeardown(() => prior.teardown());
     const out = await composeOrFloor(sovereign && sovereignStands() ? seatedSovereignReaders() : null, ward);
