@@ -168,6 +168,39 @@ describe.skipIf(wikiSkip)(`wave zero: the seed boots as preloads through the nal
     } finally { seed.release(); await repo.shutdown(); }
   }, 120_000);
 
+  test("A STARTUP WRITE STANDS: a startup action that rewrites a seeded title at TW5's boot pass keeps its write in the wiki and saves it to the store, and runs once", async () => {
+    const COUNTER = "seed/counter", ACT = "lar:///t/seed/startup-rewrites", RUNS = "$:/temp/seed/startup-runs";
+    const repo = new Repo({ network: [] });
+    const handle = repo.create<LarDoc>(emptyLarDoc());
+    const seeded = new AutomergeDocStore(handle, WORKING);
+    await seeded.put({ tiddler: { title: COUNTER, text: "seeded" } }, origin);
+    await seeded.put({ tiddler: { title: ACT, tags: ["$:/tags/StartupAction"],
+      text: `<$action-setfield $tiddler="${COUNTER}" text="booted"/><$action-setfield $tiddler="${RUNS}" text={{{ [{${RUNS}}else[0]add[1]] }}}/>` } }, origin);
+    const composite = new CompositeStore();
+    const laid = layIslandComposition({ composite, recipe: { wikiSlug: SLUG }, ready: [{ slot: WORKING, handle: handle as DocHandle<LarDoc> }] });
+    const seed = await readIslandSeed(composite, houseSkins());
+    expect([...seed.titles].sort()).toEqual([ACT, COUNTER].sort());
+    const engine = await bootTestWiki({ seed: seed.preloads });
+    const wiki = engine.$tw.wiki as unknown as WikiReader;
+    // TW5's boot pass ran the action over the preloads, before any shore stood.
+    expect(wiki.getTiddler(COUNTER)?.fields["text"], "the boot pass wrote the seeded title").toBe("booted");
+    const { adaptor } = mountIslandShore(engine, laid, seed);
+    try {
+      await seedDrained(engine);
+      await adaptor.landingIdle();
+      // The store hears the write as TW5's syncer would save it: a hand, drained on the shore's own pace.
+      const store = composite.storeForBag(WORKING)!;
+      const deadline = performance.now() + 30_000;
+      while ((await store.get(COUNTER))?.tiddler.text !== "booted" && performance.now() < deadline) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 25));
+      }
+      await adaptor.landingIdle();
+      expect(wiki.getTiddler(COUNTER)?.fields["text"], "the replay never paints the seed back over the boot's write").toBe("booted");
+      expect((await store.get(COUNTER))?.tiddler.text, "the boot's write saves to the store").toBe("booted");
+      expect(wiki.getTiddler(RUNS)?.fields["text"], "the action ran once: the shore never re-runs a boot-pass action").toBe("1");
+    } finally { await adaptor.stop(); engine.dispose(); await repo.shutdown(); }
+  }, 240_000);
+
   test("THE BOOT'S GAP: a preloaded record that leaves every layer while the engine boots leaves the wiki too", async () => {
     const repo = new Repo({ network: [] });
     const working = repo.import<LarDoc>(saved.working) as DocHandle<LarDoc>;
