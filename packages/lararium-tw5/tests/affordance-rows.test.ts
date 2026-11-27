@@ -227,9 +227,9 @@ describe("routes read the live stack (`routesOf`)", () => {
   });
 
   test("RED 2: a working-layer `skin` row moves a route: a bare-root carrier above the seat answers, and canon's spelling routes no more", () => {
-    const r = routed({ ...skinned(SEAT, "lares oracle cast"), ...skinned(BARE, "lares oracle throw", "oracle_throw") });
-    expect(r.routes.cli).toEqual({ "oracle throw": BARE });
-    expect(r.routes.mcp).toEqual({ oracle_throw: BARE });
+    const r = routed({ ...skinned(SEAT, "lares oracle cast"), ...skinned(BARE, "lares lantern lit", "lantern_lit") });
+    expect(r.routes.cli).toEqual({ "lantern lit": BARE });
+    expect(r.routes.mcp).toEqual({ lantern_lit: BARE });
     expect(r.carriers[BARE]).toBe(BARE);
     // The seat re-shaped in a working layer (the topmost layer's text answers the seat title) moves the route alike.
     const atSeat = routed(skinned(SEAT, "lares oracle consult"));
@@ -258,8 +258,9 @@ describe("routes read the live stack (`routesOf`)", () => {
     expect(r.own[BARE]).toBe("oracle cast");
     expect(r.part).toEqual(["oracle cast"]);
     expect(r.routes.cli["oracle cast"]).toBe(BARE);
-    expect(r.routes.cli["oracle throw"]).toBe("lar:///oracle.calendar.dates");
-    expect(r.twice).toEqual([{ surface: "cli", spelling: "oracle throw", addresses: ["lar:///oracle.calendar.dates", BARE] }]);
+    // First claim wins in sorted-address order: `library.oracle.speaks` sorts before `oracle.calendar.dates`.
+    expect(r.routes.cli["oracle throw"]).toBe(BARE);
+    expect(r.twice).toEqual([{ surface: "cli", spelling: "oracle throw", addresses: [BARE, "lar:///oracle.calendar.dates"] }]);
   });
 });
 

@@ -26,7 +26,7 @@ import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
 import { type DocHandle } from "@lararium/mesh/automerge";
 import { type FaceActorDoor } from "@lararium/mesh/automerge-doc-store";
 import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
-import { TW5Engine, crossFaceViewSource, preloadsFromCasBlob, type CrossFaceViewSource, type FaceEngineSource, type RecipeReadyBinding } from "@lararium/tw5";
+import { TW5Engine, crossFaceViewSource, preloadsFromCasBlob, type CrossFaceViewSource, type FaceBoot, type FaceEngineSource, type RecipeReadyBinding } from "@lararium/tw5";
 import type { LitFace, LitFaceDocs } from "./lit-face-target.js";
 import type { BindingKind } from "./resolve-binding.js";
 
@@ -50,9 +50,9 @@ export interface SiblingEngineDeps {
 
 const KINDS = ["working", "draft", "personal"] as const;
 
-/** Boot a fresh engine from the island's own boot set, every blob re-hashed against the CID that names it. */
-export function bootFromSet(bootSet: SiblingEngineDeps["bootSet"], resolveByCid: SiblingEngineDeps["resolveByCid"]): () => Promise<TW5Engine> {
-  return async () => {
+/** Boot a fresh engine from the island's own boot set, every blob re-hashed against the CID that names it, over wave zero. */
+export function bootFromSet(bootSet: SiblingEngineDeps["bootSet"], resolveByCid: SiblingEngineDeps["resolveByCid"]): FaceBoot {
+  return async (seedFor) => {
     if (!bootSet || !resolveByCid) throw new Error("face-engine-unbootable: this island holds no boot set and CAS to boot a face's own engine from");
     const blob = async (cid: string, what: string): Promise<Uint8Array> => {
       const bytes = await resolveByCid(cid);
@@ -65,7 +65,9 @@ export function bootFromSet(bootSet: SiblingEngineDeps["bootSet"], resolveByCid:
     for (const cid of bootSet.pluginCids) preloads.push(...preloadsFromCasBlob(await blob(cid, "plugin blob")));
     const engine = new TW5Engine();
     // Each blob re-hashed against its CID above: the core boots on that pin and every module the blobs pack on theirs.
-    await engine.boot({ bytes: core, sha256: bootSet.engineCid }, preloads, undefined, { grantedDigests: new Set(bootSet.pluginCids) });
+    // WAVE ZERO rides the boot store after the boot set and joins no grant (`TW5BootOptions.seedTiddlers`).
+    const seedTiddlers = await seedFor(preloads);
+    await engine.boot({ bytes: core, sha256: bootSet.engineCid }, preloads, undefined, { grantedDigests: new Set(bootSet.pluginCids), seedTiddlers });
     return engine;
   };
 }
