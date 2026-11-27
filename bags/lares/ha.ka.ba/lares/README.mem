@@ -92,6 +92,7 @@ bags/lares/ha.ka.ba/lares/
     research/           research reports and scouts
     art-sigils/         worked art-sigil examples and practice
     mu/ · graph/        the docs sisters of api/mu and the graph law
+  spirit/               seat spirits' shrines: Iris-Sprite (Messenger), the machina's voice
   cli/                  the command surface
   ref/                  outside standards the law cites (the RFCs)
   library/              shelf indexes; the acquired bodies rest outside every
@@ -139,6 +140,6 @@ file, a browser agent takes the carrier pasted in.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Os58HhbJ9QatEMVzUMUwtgxE2AmIXxVtOudhFMBaF68`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mVgmB-Cexi3tS5CnUW-mkp1KEt4kdv6psAZyYxa3k9E`>>
 
 <<^ code=`&#x0004;` to=`?`>>
