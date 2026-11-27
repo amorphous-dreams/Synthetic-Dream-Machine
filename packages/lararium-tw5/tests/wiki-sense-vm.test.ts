@@ -25,7 +25,7 @@ import { LARES_LARARIUM_PLUGIN, LARES_MEMETIC_WIKITEXT_PLUGIN } from "../src/plu
 import { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } from "../src/generated-tw5-version.js";
 import { buildFixtureIsland, GLUE_SEEDS, type FixtureTiddler } from "../src/wiki-store-adapter.js";
 import { createWikiSensorium } from "../src/wiki-sensorium-cap.js";
-import { houseSkins, skinPins, vendoredCore } from "./test-wiki.js";
+import { houseSkins, vendoredCore } from "./test-wiki.js";
 import { summarizeCoherence, type WikiCoherenceSummary } from "../src/wiki-sense-fold.js";
 
 const CORE_PATH = path.join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
@@ -63,7 +63,7 @@ describe.skipIf(coreBlobSkip)(
   beforeAll(async () => {
     engine = new TW5Engine();
     const coreBlob = vendoredCore();
-    await engine.boot(coreBlob, houseSkins(), undefined, { modulePins: skinPins() });
+    await engine.boot(coreBlob, houseSkins());
     for (const s of GLUE_SEEDS) engine.setTiddler({ title: s.title, text: s.text });
   }, 60_000);
 

@@ -62,7 +62,7 @@ GUARDS shore-standoff path packages/lararium-tw5/tests/wiki-shore*.test.ts
 SEAM island-vessel-boot trunk
 MOVES island-vessel-boot n open-node-vessel* open-daemon-vm* node-wiki-island* node-daemon-island* island-* vessel-island-pool* worker-handle* vessel-life* vessel-raise* vessel-paths* main boot-* lares-config*
 MOVES island-vessel-boot m island-protocol* island-repo* open-vessel-core* lar-vessel* lararium-vessel* boot-resolver*
-MOVES island-vessel-boot t island-* daemon-vm-* tw5-vm* verb-vm* sovereign-kernel* vessel-steps*
+MOVES island-vessel-boot t island-* daemon-vm-* tw5-vm* verb-vm* sovereign-kernel* vessel-steps* boot-census* nalu-form*
 MOVES island-vessel-boot c commands/vessel* commands/stand* standup* spawn* env house-config*
 GUARDS island-vessel-boot e2e smoke vessel-reboot boot-holds-the-store daemon-island-reopen face-lit-stays-bootable sealed-wiki-restart
 GUARDS island-vessel-boot tool two-phase-boot
@@ -237,7 +237,7 @@ MOVES sensorium-capture-recall m transfer-entropy* gaussian-cmi* fisher-rao*
 GUARDS sensorium-capture-recall e2e mcp-seat-binds-the-hearth watcher-cut-c
 
 SEAM glass-record-port
-MOVES glass-record-port t glass* record-port* recording-* tw5-browser-surface* tw5-camera* outbound-bridge*
+MOVES glass-record-port t glass* record-port* recording-* tw5-browser-surface* tw5-camera* outbound-bridge* boot-census* nalu-form*
 GUARDS glass-record-port e2e outbound-bridge.e2e
 GUARDS glass-record-port path packages/lararium-tw5/tests/outbound-bridge*.test.ts
 
@@ -333,7 +333,7 @@ MOVES tiddler-meme-doors c commands/kapae*
 
 MOVES verb-dispatch m conformance-verb-breathing*
 MOVES verb-dispatch n lar-event-bus-impl*
-MOVES verb-dispatch t modules/nalu-engine* modules/reaction-router*
+MOVES verb-dispatch t modules/nalu-engine* modules/reaction-router* nalu-form*
 MOVES verb-dispatch c commands/events* commands/receipt-cmd*
 
 MOVES recipe-wiki-bag m compose-follow* library-tier* shell-leaving-record* mint-census*

@@ -23,10 +23,22 @@ import {
   prepareHostBootInstance,
 } from "./tw5-host-bridge.js";
 import { bootTrustedModules } from "./tw5-module-gate.js";
-import { armModulePinGate, MODULE_UNPINNED, modulePinsOf } from "./module-pins.js";
 import type { TW5CoreBootInput } from "./tw5-host-bridge.js";
 
 export type { TW5CoreBootBlob } from "./tw5-host-bridge.js";
+
+/** What a boot carries beside the core and the boot set's preloads. */
+export interface TW5BootOptions {
+  onInstance?: (instance: TW5Instance) => void;
+  /** The canonical digests of the preloads the caller verified by CID: the trusted-module walk promotes a granted library from them. */
+  grantedDigests?: ReadonlySet<string>;
+  /**
+   * WAVE ZERO (`island-seed.ts`): a wiki's own records in the nalu form, laid into the boot store after the boot set. TW5 adds them
+   * before its change queue wakes, so they raise no `change` dispatch, and it unpacks their plugins, defines their modules and runs
+   * their startup actions as it does any store's. They join no grant: the trusted-module walk reads the boot set alone.
+   */
+  seedTiddlers?: readonly Record<string, unknown>[];
+}
 
 // ---------------------------------------------------------------------------
 // TW5Engine — clean isomorphic TW5 VM
@@ -36,13 +48,9 @@ export class TW5Engine {
   private _tw: TW5Instance | null = null;
   private _bootPromise: Promise<void> | null = null;
   private _release: (() => void) | null = null;
-  private readonly _refusedModules: { title: string; digest: string }[] = [];
 
   /** Give back the page globals a glass boot lent; a worker or Node engine holds none. */
   releaseGlass(): void { const release = this._release; this._release = null; release?.(); }
-
-  /** Every module the pin gate refused, by title and the SHA-256 of the text no pin named (`ModuleUnpinned`). */
-  get refusedModules(): readonly { title: string; digest: string }[] { return this._refusedModules; }
 
   /**
    * Boot the TW5 wiki. Idempotent — multiple calls return the same promise.
@@ -51,32 +59,15 @@ export class TW5Engine {
    * Node:    evaluates the same tiddlywikicore blob with a CommonJS-shaped
    *          wrapper; no node_modules tiddlywiki runtime fallback is allowed.
    *
-   * Every blob carries its pin: the core evaluates only once its bytes hash to `coreBlob.sha256`, and a module defines only once its
-   * text hashes to a pin, either one the pinned core packs or one in `modulePins` (the modules of the blobs the caller verified by
-   * CID). An unpinned module refuses by name (`ModuleUnpinned`) and never enters the module table.
+   * The core evaluates only once its bytes hash to `coreBlob.sha256`. Past that, TiddlyWiki boots natively: it unpacks every
+   * preloaded plugin and defines every module the preloads carry, as it does with a store a server hands it.
    */
-  boot(coreBlob?: TW5CoreBootInput, preloadedTiddlers?: Array<Record<string, unknown>>, mirrorToken?: symbol, options?: { onInstance?: (instance: TW5Instance) => void; grantedDigests?: ReadonlySet<string>; modulePins?: ReadonlySet<string> }): Promise<void> {
+  boot(coreBlob?: TW5CoreBootInput, preloadedTiddlers?: Array<Record<string, unknown>>, mirrorToken?: symbol, options?: TW5BootOptions): Promise<void> {
     if (this._bootPromise) return this._bootPromise;
     this._bootPromise = (async () => {
-      // The bridge's one evaluation door (`loadTiddlyWikiFromBlob`) verifies the pin before a byte runs.
+      // The bridge's one evaluation door (`loadTiddlyWikiFromBlob`) verifies the core's pin before a byte runs.
       const { instance, isBrowser, release } = await prepareHostBootInstance(normalizeCoreBootBlob(coreBlob), mirrorToken);
       this._tw = instance;
-      // The core's own modules ride its preloads; read their pins before any caller's preload joins them, so a pin here names
-      // only bytes the core pin covered.
-      const pins = new Set<string>([...modulePinsOf(instance.preloadTiddlers ?? []), ...(options?.modulePins ?? [])]);
-      let booted = false;
-      const raiseRefusal = (title: string, digest: string): void => {
-        const tw = instance as unknown as { wiki?: { addTiddler?: (t: unknown) => void }; Tiddler?: new (f: Record<string, unknown>) => unknown };
-        if (typeof tw.wiki?.addTiddler === "function" && typeof tw.Tiddler === "function") {
-          tw.wiki.addTiddler(new tw.Tiddler({ title: `$:/temp/lares/alert/refused/module-unpinned/${title}`, tags: ["$:/tags/Alert"],
-            text: `${MODULE_UNPINNED}: ${title} (sha256:${digest}) carries no pin the house holds; the island never evaluated it` }));
-        }
-      };
-      armModulePinGate(instance as unknown as Parameters<typeof armModulePinGate>[0], pins, (title, digest) => {
-        this._refusedModules.push({ title, digest });
-        console.warn(`[module-pin] ${MODULE_UNPINNED}: ${title} sha256=${digest}`);
-        if (booted) raiseRefusal(title, digest);
-      });
       options?.onInstance?.(instance);
 
       const allPreloads = preloadedTiddlers ?? [];
@@ -108,6 +99,9 @@ export class TW5Engine {
 
       instance.preloadTiddlers = instance.preloadTiddlers ?? [];
       for (const t of allPreloads) instance.preloadTiddlers.push(t as Record<string, unknown>);
+      // WAVE ZERO rides last: it joins the boot store after the boot set, and never the trusted-module walk's preloaded titles or
+      // granted records, so no seed record reads as granted bytes; TiddlyWiki defines its modules natively.
+      for (const t of options?.seedTiddlers ?? []) instance.preloadTiddlers.push(t as Record<string, unknown>);
 
       // The glass keeps its page lends while the engine lives: TW5 executes a module on its first use,
       // long after boot returns, and that module reads the lent names. `releaseGlass` gives them back.
@@ -115,9 +109,7 @@ export class TW5Engine {
       try {
         await bootWithHostBridge(instance, isBrowser, async () => {
           this._tw = instance;
-          booted = true;
-          for (const refusal of this._refusedModules) raiseRefusal(refusal.title, refusal.digest);
-          await bootTrustedModules(instance, preloadedTitles, grantedRecords, pins);
+          await bootTrustedModules(instance, preloadedTitles, grantedRecords);
         });
       } catch (error) { this.releaseGlass(); throw error; }
     })();

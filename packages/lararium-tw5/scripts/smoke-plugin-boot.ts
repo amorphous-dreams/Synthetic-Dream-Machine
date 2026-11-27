@@ -24,7 +24,7 @@ import { TW5Engine } from "../src/tw5-vm.js";
 import { LARES_LARARIUM_PLUGIN, LARES_MEMETIC_WIKITEXT_PLUGIN } from "../src/plugin-tiddler.generated.js";
 import { exportMemeText } from "../src/meme-write.js";
 import { TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR, TW5_CORE_SHA256 } from "../src/generated-tw5-version.js";
-import { casBlobPreloads, modulePinsOf } from "../src/module-pins.js";
+import { casBlobPreloads } from "../src/module-pins.js";
 import { witnessStaticTiddlers } from "../plugin-build/source-manifest.js";
 import { PLUGIN_SKINS } from "../plugin-build/skins.js";
 
@@ -33,18 +33,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 async function main(): Promise<void> {
   const corePath = path.join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
   const coreBlob = { bytes: new Uint8Array(readFileSync(corePath)), sha256: TW5_CORE_SHA256 };
-  // Each skin's module pins: the tracked plugin blob, read only once it hashes to its bake attestation's pin.
+  // Each skin's tracked plugin blob still hashes to its bake attestation's pin (casBlobPreloads throws BlobPinMismatch otherwise).
   const plugins = path.join(__dirname, "..", "plugins");
-  const modulePins = new Set<string>();
   for (const skin of PLUGIN_SKINS) {
     const attestation = JSON.parse(readFileSync(path.join(plugins, "standalone", `${skin.stem}.attestation.json`), "utf8")) as { pluginJsonSha256: string };
-    for (const pin of modulePinsOf(casBlobPreloads(new Uint8Array(readFileSync(path.join(plugins, `${skin.stem}.json`))), attestation.pluginJsonSha256))) modulePins.add(pin);
+    casBlobPreloads(new Uint8Array(readFileSync(path.join(plugins, `${skin.stem}.json`))), attestation.pluginJsonSha256);
   }
   const engine = new TW5Engine();
   await engine.boot(coreBlob, [
     LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>,
     LARES_LARARIUM_PLUGIN as unknown as Record<string, unknown>,
-  ], undefined, { modulePins });
+  ]);
 
   const failures: string[] = [];
   const wiki = engine.wiki;

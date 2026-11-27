@@ -6,9 +6,10 @@
  * module table never names it, and nothing it says runs. The island's code comes from the floor-admitted preloads alone
  * (a granted `library` module defines, the CONTROL).
  *
- * W2: a `$:/tags/StartupAction` record the wiki's document lands never runs on the island, whatever the wiki's slug; it
- * runs in the tab alone, as native TW5 runs a store's startup actions. A StartupAction a floor-admitted plugin carries
- * still runs, once, at the engine's own boot pass (the CONTROL).
+ * W2: a `$:/tags/StartupAction` record the wiki's document lands RUNS on the island, once, whatever the wiki's slug, as native
+ * TW5 runs a store's startup actions (alpha admits every startup action; the guard's re-entry key rests in
+ * lar:///ha.ka.ba/kahua/memory/wave/pono-guards-return). A StartupAction a floor-admitted plugin carries runs, once, at the
+ * engine's own boot pass (the CONTROL).
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
@@ -21,7 +22,7 @@ import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { createHash } from "node:crypto";
 import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
 import { TW5Engine } from "../src/tw5-vm.js";
-import { bootTestWiki, houseSkins, skinPins, skipNote, vendoredCore, wikiSkip } from "./test-wiki.js";
+import { bootTestWiki, houseSkins, skipNote, vendoredCore, wikiSkip } from "./test-wiki.js";
 
 function handleOver(records: readonly LarTiddlerRecord[]): DocHandle<LarDoc> {
   const doc = emptyLarDoc();
@@ -61,7 +62,7 @@ describe.skipIf(wikiSkip)(`the island holds a document's code as data${skipNote}
       "source-sha256": `sha256:${createHash("sha256").update(body, "utf8").digest("hex")}`, text: body };
     engine = new TW5Engine();
     await engine.boot(vendoredCore(), [...houseSkins(), granted],
-      undefined, { grantedDigests: new Set([sha256HexBytesSync(canonicalJsonBytes(granted))]), modulePins: skinPins() });
+      undefined, { grantedDigests: new Set([sha256HexBytesSync(canonicalJsonBytes(granted))]) });
     await seedInto(engine, "doc-code", records);
     const $tw = engine.$tw as unknown as { wiki: TW5Engine["wiki"]; modules: { titles: Record<string, unknown>; execute(t: string): Record<string, unknown> } };
     expect($tw.modules.execute("lar:///t/doc/granted")["granted"], "CONTROL: the granted preload defines").toBe(42);
@@ -79,19 +80,19 @@ describe.skipIf(wikiSkip)(`the island holds a document's code as data${skipNote}
   }, 120_000);
 
   for (const slug of ["startup-user", "daemon"]) {
-    test(`W2: a document StartupAction never runs on the ${slug} island; CONTROL a floor-admitted plugin's StartupAction runs once`, async () => {
+    test(`W2: a document StartupAction runs once on the ${slug} island; CONTROL a floor-admitted plugin's StartupAction runs once`, async () => {
       const DOC = "$:/temp/doc-startup", FLOOR = "$:/temp/floor-startup";
       const plugin = { title: "$:/plugins/lararium/test-floor-startup", "plugin-type": "plugin", type: "application/json",
         text: JSON.stringify({ tiddlers: { "$:/plugins/lararium/test-floor-startup/act": { title: "$:/plugins/lararium/test-floor-startup/act", tags: "$:/tags/StartupAction", text: count(FLOOR) } } }) };
       const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
       try {
         engine = await bootTestWiki({ extraPlugins: [plugin] });
-        await seedInto(engine, slug, [{ tiddler: { title: "lar:///t/doc/startup", tags: ["$:/tags/StartupAction"], text: `<$action-setfield $tiddler="${DOC}" text="ran"/>` } }]);
+        await seedInto(engine, slug, [{ tiddler: { title: "lar:///t/doc/startup", tags: ["$:/tags/StartupAction"], text: count(DOC) } }]);
       } finally { warn.mockRestore(); }
       const wiki = engine.$tw.wiki;
       expect(wiki.getTiddler(FLOOR)?.fields["text"], "CONTROL: the floor plugin's StartupAction ran once, at boot").toBe("1");
-      expect(wiki.getTiddler("lar:///t/doc/startup"), "the document's StartupAction landed as data").toBeDefined();
-      expect(wiki.getTiddler(DOC), "and never ran on the island").toBeUndefined();
+      expect(wiki.getTiddler("lar:///t/doc/startup"), "the document's StartupAction landed").toBeDefined();
+      expect(wiki.getTiddler(DOC)?.fields["text"], "and ran on the island, once").toBe("1");
     }, 120_000);
   }
 });

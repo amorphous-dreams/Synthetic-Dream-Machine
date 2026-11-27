@@ -83,7 +83,7 @@ One word carries five unlike acts. Only the select sense assumes one lit daemon:
 | ''select'' | fixes ONE choice where several could stand | the floor pin, the boot pointer, the mounted face, the dialed hearth | ''accept'' (#/floor-accept) |
 | ''keep'' | exempts a thing from cooling or sweep | the `pinned` flag (#/pin-flag), the face-held wiki keeps, the CAS pin | a face's ''keep list'' |
 | ''trust'' | anchors which key answers for a name | gate-bundle pins, place floor pin claims, the persona-KEL prefix | `pin` |
-| ''verify'' | binds bytes to a digest | module pins, `pinnedDoc`, the vendored automerge pin | `pin` |
+| ''verify'' | binds bytes to a digest | the core blob's pin and each CAS blob's CID, `pinnedDoc`, the vendored automerge pin | `pin` |
 | ''share'' | carries one human route's share of a slot key | the keyslot passphrase and paper pins | `pin` |
 
 ''The narrowed word'' (`lar:///ha.ka.ba/kahua/memory/ruling/2026-11-25-the-leans-collapse`, a ruling the memory stage holds, Pin Q4). `pin` keeps key and byte anchors: trust, verify and share. Select takes the word ''accept''. Keep takes ''a face's keep list'': a record the face writes in its own daemon wiki, bound to its lit life, over one vessel cap that refuses by name when full and never drops one face's hold to seat another's. Order stays with ''law pins'', a face's own record that orders canon law and adds none.
@@ -182,6 +182,6 @@ through #third-tier-gate, and only after the research that meme charges.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;FJ6ydowebjLXpHw-GUlChnBrE7fXW8Id8Jx7sjJ-fM4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hRFlKheeHGhO3SBuc1hsB05YYZV_X5wKS-fn2ZQkQsg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

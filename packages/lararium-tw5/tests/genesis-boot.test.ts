@@ -11,7 +11,6 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { bootGenesisWiki, genesisCoreBlob, genesisNote, genesisSkip } from "./genesis-boot.harness.js";
 import { LENT_WINDOW_NAMES } from "../src/tw5-host-bridge.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
-import { modulePinsOf } from "../src/module-pins.js";
 
 interface LooseTw {
   version?: string;
@@ -78,7 +77,7 @@ describe.skipIf(genesisSkip)(`the genesis boot${genesisNote}`, () => {
     for (const path of ["browser-worker", "node"] as const) {
       const reported: string[] = [];
       const logged = vi.spyOn(console, "error").mockImplementation((...args: unknown[]) => { reported.push(args.map(String).join(" ")); });
-      const engine = await bootGenesisWiki({ path, tiddlers: [] , preloads: [broken, sound], modulePins: modulePinsOf([broken, sound]) });
+      const engine = await bootGenesisWiki({ path, tiddlers: [] , preloads: [broken, sound] });
       engines.push(engine);
       logged.mockRestore();
       const tw = engine.$tw as unknown as { wiki: { getTiddler(t: string): unknown }; modules: { execute(t: string): unknown } };

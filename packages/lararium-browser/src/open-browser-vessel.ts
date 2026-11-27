@@ -1,8 +1,4 @@
 import { browserPromoteStores, browserPromoteCas } from "./browser-promoted-store.js";
-import { mirrorInputsAt } from "./mirror-rest-verdict.js";
-import { admitStartupRecords, execLeiPortOver, tabStartupOwn } from "@lararium/mesh/exec-lei";
-import { docSwarmWiki } from "@lararium/mesh/doc-swarm-wiki";
-import { type ExecLeiPort } from "@lararium/mesh/seat-startup-offer";
 import { browserWardBindRoute, BrowserWardRefused, browserWardSigner, type WardAskKind } from "./browser-ward.js";
 import type { WardRoute } from "./ward-core.js";
 import { holdDaemonVm, DaemonRestarting, KAPAE_EMERGENCY_REASON, type DaemonVmHolder } from "@lararium/tw5";
@@ -610,13 +606,7 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
   sendControlEvent: (surface: string, ev: LarMsg_ControlEvent) => ReturnLegVerdict;
   ports: { place(surface: string, binding: string, msg: unknown): PortPlacement; close(binding: string): void };
   /** The core hash and plugin CIDs a mounted wiki surface boots from, for the page's mirror; null for the daemon, an unmounted surface, or inputs the vessel cannot name. */
-  mirrorInputs: (surface: string) => Promise<{ coreCid: string; pluginCids: readonly string[]; skinCids?: Readonly<Record<string, string>>; sealedRest?: true } | null>;
-  /**
-   * THE TAB HALF OF THE EXEC LEI: which of a wiki's startup records the page's mirror runs (`admitStartupRecords`). A wiki the
-   * wearing face alone writes runs them all; the house canon's run only where this vessel spends a return of a standing exec lei
-   * (its port over the control home, the worn face's trust and this device's atom). Answers the admitted titles.
-   */
-  startupAdmit: (surface: string, records: readonly { readonly title: string; readonly fields: Readonly<Record<string, string>> }[]) => Promise<readonly string[]>;
+  mirrorInputs: (surface: string) => Promise<{ coreCid: string; pluginCids: readonly string[] } | null>;
   /** Ask a surface's island to paint whole under a fresh mount epoch (`lar:resend`). */
   resend: (surface: string) => ReturnLegVerdict;
   /** The surface id the projection gate shows now: the daemon's, or a wiki's slug. */
@@ -1580,8 +1570,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   let wardAnswerHandler: ((args: Record<string, unknown>) => Promise<Record<string, unknown>>) | null = null;
   let pushPromoteSnapshot: (() => Promise<void>) | null = null;
   let promoteWiringRef: ReturnType<typeof promoteWiring> | null = null;
-  // The worn face's exec-lei port (the control home's swarm wiki, the face's trust, this device's atom): set once the face proves.
-  let execLeiPortRef: ExecLeiPort | null = null;
   const restartWikiIsland = async (wiki: string) => {
     if (wiki === "daemon") {
       await daemonHolder.restart(KAPAE_EMERGENCY_REASON);
@@ -2015,12 +2003,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
               lineage: () => { const lineage = readFace(liveKelChain())?.lineage; if (!lineage) throw new Error("[lararium-browser] the worn face's KEL folds no lineage"); return lineage; },
               fleet: () => fleetShadows });
           };
-          execLeiPortRef = execLeiPortOver({
-            wiki: docSwarmWiki(async () => { if (!watchedControl) throw new Error("[lararium-browser] no control home stands for the exec lei"); return watchedControl; }),
-            group: wornGroup, spender: { key: wornAtom.key, sign: (bytes: Uint8Array) => wornAtom.sign(bytes) },
-            // An exec spend runs its scope check, so the hand and the vessel alone sign here.
-            trust: { hand: (key: string) => promoteFace.read()?.grant(key) ?? false, vessel: (key: string) => key === wornAtom.key.toLowerCase(), lead: () => false },
-          });
           promoteWiringRef = provenPromoteUrl ? promoteWiring({
             repo, group: wornGroup, boardUrl: provenPromoteUrl, stageUrl: provenKahuaUrl,
             foldFace: () => { const f = promoteFace.read(); return { group: wornGroup, grant: f ? f.grant : () => false }; },
@@ -2897,11 +2879,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         ? { ok: false, reason: "surface-unknown" } : vmManager.placePort(surface, binding, msg),
       close: (binding) => vmManager.closePortBinding(binding),
     },
-    // The mirror's sealed-rest word passes the floor's guard: a veil floor's mirror runs no person-authored code. No sealed-rest
-    // reading is wired yet, so every answer carries none; the first wiring passes its reading here (`mirror-rest-verdict`).
+    // The mirror boots natively from these names: the core and plugin CIDs its island booted from.
     mirrorInputs: (surface) => surface === DAEMON_SURFACE_ID || !vmManager.has(surface) ? Promise.resolve(null)
-      : vmManager.mountInputsOf(surface).then((inputs) => mirrorInputsAt(inputs, { face: sealedCells.face(), restsSealed: false })),
-    startupAdmit: async (surface, records) => [...(await admitStartupRecords(records, { wiki: surface, own: tabStartupOwn(surface), port: execLeiPortRef ?? undefined })).admitted],
+      : vmManager.mountInputsOf(surface),
     resend: (surface: string) => returnLeg.resend(surface),
     activeSurface: () => activeSurfaceId,
     // The uniform surface-selector: flip the live gate synchronously (mount-then-flip — daemon + the home wiki

@@ -23,7 +23,6 @@ import { LARES_LARARIUM_PLUGIN_URI, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@l
 import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { type GenesisSeed } from "@lararium/mesh/genesis-doc";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
-import { modulePinsOf } from "../../lararium-tw5/src/module-pins.js";
 import type { LaresMemeFace } from "../../lararium-tw5/src/types/lares-globals.js";
 
 // The repo's OWN tracked genesis, read off this file's path: a scratch `LAR_ROOT` never redirects it.
@@ -54,7 +53,7 @@ describe.skipIf(absent)(`the wiki booted from genesis bytes${absent ? ` [SKIPPED
       .map((id) => JSON.parse(new TextDecoder().decode(genesisBlob(seed, id))) as Record<string, unknown>);
     engine = new TW5Engine();
     // Each blob read only once it hashed to the seed's name for it: the core boots on that pin, each skin's modules on theirs.
-    await engine.boot({ bytes: core, sha256: (seed.blobs as Record<string, { sha256: string }>)[ENGINE_BLOB_ID]!.sha256 }, skins, undefined, { modulePins: modulePinsOf(skins) });
+    await engine.boot({ bytes: core, sha256: (seed.blobs as Record<string, { sha256: string }>)[ENGINE_BLOB_ID]!.sha256 }, skins);
     face = (engine.$tw as unknown as { lares: { meme: LaresMemeFace } }).lares.meme;
   }, 120_000);
 

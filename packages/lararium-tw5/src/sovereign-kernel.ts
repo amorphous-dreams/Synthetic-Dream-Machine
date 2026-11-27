@@ -15,7 +15,8 @@
  *   Manifest carries `recipe: WikiRecipe + grants: IslandGrants`. Structural
  *   slots arrive as typed grants; bag document pointers resolve through the
  *   vessel catalog, while the oracle supplies the read-only seed floor.
- *   `buildIslandRecipe()` lays the stack:
+ *   `layIslandComposition()` lays the stack before the engine boots (wave zero reads the seed off it, `island-seed.ts`), and
+ *   `mountIslandShore()` mounts the shore on the booted engine:
  *
  *     temp        (MemoryTiddlerStore, volatile)
  *     draft       (CRDT, high-churn drafts)
@@ -75,10 +76,11 @@ import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { IslandKernel } from "./island-kernel.js";
 import { waitForSlotDocument } from "./slot-wait.js";
 import { storeLiveness, type StoreLiveness } from "./store-liveness.js";
-import { buildIslandRecipe, seedDrained, type RecipeReadyBinding } from "./island-recipe.js";
+import { layIslandComposition, mountIslandShore, seedDrained, type RecipeReadyBinding } from "./island-recipe.js";
+import { readIslandSeed } from "./island-seed.js";
 import { isTw5DocsLibraryBag, tw5LibraryStackStore } from "./tw5-docs-library.js";
 import { openIslandStory } from "./island-story.js";
-import { casBlobPreloads, modulePinsOf } from "./module-pins.js";
+import { casBlobPreloads } from "./module-pins.js";
 import { makeCatalogAccessor, libraryDocUrl } from "./catalog-accessor.js";
 import { librarySlotUrl, liveKahuaFace } from "./kahua-layer.js";
 import { installLazyResolver } from "./lazy-resolver.js";
@@ -565,15 +567,47 @@ export function runSovereignKernel(
     } else {
       console.info(`[floor] the genesis seed names no floor; the ${PLANE_LABELS.oracle} reads the seed rows alone`);
     }
+    // THE KAHUA LAYER READS UNDER THE FACE THIS MANIFEST WEARS: its group names the stage, its verified KEL roster the grant
+    // every lift's signer must hold. A manifest wearing no face reads an empty stage. The lineage reads LIVE off the
+    // island's replica of the KEL board the manifest names, so a rotation merged after boot re-folds the layer.
+    const auth = msg.daemonAuth;
+    const kel = auth?.personaKel;
+    const liveFace = auth?.personaGroupId && kel ? liveKahuaFace({
+      group: auth.personaGroupId, prefix: kel.prefix, bootChain: kel.chain, anchor: auth.faceAnchor ?? null,
+      board: kel.board ? _repo!.find<LarDoc>(kel.board as never) : null,
+    }) : null;
+    const kahuaFace = (): KahuaStageFace | null => liveFace?.read() ?? null;
+    const kahuaFaceWatch = (fn: () => void): (() => void) => liveFace?.watch(fn) ?? (() => {});
+    // WAVE ZERO. The composition lays before the engine boots (`layIslandComposition`: temp + every resolved CRDT slot, the floor
+    // beneath), and every record it resolves joins the boot store through the nalu form (`readIslandSeed`): TW5 adds them before
+    // its change queue wakes, so the seed raises no dispatch, and defines their modules, unpacks their plugins and runs their
+    // startup actions natively. The shore mounts inside the startup marker and its replay finds each preloaded title standing.
+    tick("seed");
+    const laid = layIslandComposition({
+      composite: _composite!,
+      recipe: msg.recipe,
+      ready,
+      floorRecords,
+      ...(msg.grants.writeSlot ? { writeSlot: msg.grants.writeSlot } : {}),
+      kahuaFace,
+      kahuaFaceWatch,
+      // Each slot's store writes a worn face's change through the island Repo's seated actor door.
+      ...(wearOf(_repo).wear ? { wear: wearOf(_repo).wear! } : {}),
+    });
+    const seed = await readIslandSeed(_composite!, pluginTiddlers).catch((err: unknown) => {
+      _post(mkFault(msg.wikiUri, `island cannot read its seed before boot: ${err instanceof Error ? err.message : String(err)}`));
+      return null;
+    });
+    if (!seed) return;
     tick("tw5-boot");
     let bootInstance: Record<string, unknown> | undefined;
     let used = false;
     try {
-      // Every blob carries its pin into the engine: the core its manifest coreHash, each plugin module the CID its blob just
-      // verified against, so the engine evaluates exactly the code the manifest named.
+      // The core boots under its manifest coreHash and each plugin blob already rehashed to its CID; TiddlyWiki then unpacks the
+      // plugins and defines their modules natively.
       await handler.bootTw5(msg.wikiUri, { bytes: coreBytes, sha256: msg.coreHash }, pluginTiddlers, {
         grantedDigests: new Set(msg.pluginCids ?? []),
-        modulePins: modulePinsOf(pluginTiddlers),
+        seedTiddlers: seed.preloads,
         onInstance(instance) {
           bootInstance = instance as unknown as Record<string, unknown>;
           Object.defineProperty(instance, "larariumWritableStand", {
@@ -584,33 +618,11 @@ export function runSovereignKernel(
               used = true;
               return guardWritableStand(async () => {
               const tw5 = handler.tw5()!;
-              // One recipe model — buildIslandRecipe walks expandRecipe(msg.recipe),
-              // wires temp + every resolved CRDT slot, registers the adaptor, and ARMS
-              // the seed replay on the shore's quota-bounded host-task queue.
+              // One recipe model — the composition laid before boot (wave zero); the shore mounts here: it registers the
+              // adaptor, ARMS the seed replay on the shore's quota-bounded host-task queue, and lands afresh whatever the
+              // composition told while the engine booted.
               tick("recipe");
-              // THE KAHUA LAYER READS UNDER THE FACE THIS MANIFEST WEARS: its group names the stage, its verified KEL roster the grant
-              // every lift's signer must hold. A manifest wearing no face reads an empty stage. The lineage reads LIVE off the
-              // island's replica of the KEL board the manifest names, so a rotation merged after boot re-folds the layer.
-              const auth = msg.daemonAuth;
-              const kel = auth?.personaKel;
-              const liveFace = auth?.personaGroupId && kel ? liveKahuaFace({
-                group: auth.personaGroupId, prefix: kel.prefix, bootChain: kel.chain, anchor: auth.faceAnchor ?? null,
-                board: kel.board ? _repo!.find<LarDoc>(kel.board as never) : null,
-              }) : null;
-              const kahuaFace = (): KahuaStageFace | null => liveFace?.read() ?? null;
-              const kahuaFaceWatch = (fn: () => void): (() => void) => liveFace?.watch(fn) ?? (() => {});
-              const { adaptor } = buildIslandRecipe({
-                tw5,
-                composite: _composite!,
-                recipe: msg.recipe,
-                ready,
-                floorRecords,
-                ...(msg.grants.writeSlot ? { writeSlot: msg.grants.writeSlot } : {}),
-                kahuaFace,
-                kahuaFaceWatch,
-                // Each slot's store writes a worn face's change through the island Repo's seated actor door.
-                ...(wearOf(_repo).wear ? { wear: wearOf(_repo).wear! } : {}),
-              });
+              const { adaptor } = mountIslandShore(tw5, laid, seed);
               _adaptor = adaptor;
               // THE RECEIPT CAPABILITY, for a host whose vessel declares it. A save act's result waits for the vessel to hold and flush
               // what the act wrote; a session island keeps no store and settles through its view at teardown instead.
@@ -663,6 +675,7 @@ export function runSovereignKernel(
         },
       });
     } catch (err) {
+      seed.release();
       const stack = err instanceof Error ? (err.stack ?? String(err)) : String(err);
       _post(mkFault(msg.wikiUri, `bootTw5 threw: ${stack}`));
       return;

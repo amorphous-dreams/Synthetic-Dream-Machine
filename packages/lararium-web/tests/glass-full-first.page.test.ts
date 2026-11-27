@@ -37,33 +37,29 @@ test("a name the island never answered floors by name", async () => {
     expect(result).toEqual({ kind: "floor", width: "none", why: `mirror-boot-member-missing:${missing}` });
   } finally { r.host.remove(); }
 });
-test("a person's plugin among the wiki's records boots with the engine when it evaluates nothing, and waits on the seal when it carries a module", async () => {
+test("a person's plugin among the wiki's records boots with the engine, a scripted one too: its shadows unpack and its module defines, with no seal asked", async () => {
   const packed = (shadows: object) => JSON.stringify({ tiddlers: shadows });
   const r = await rig({ records: [
     { title: "$:/plugins/person/words", fields: { "plugin-type": "plugin", type: "application/json", text: packed({ "$:/person/word": { title: "$:/person/word", text: "unpacked at boot" } }) } },
-    { title: "$:/plugins/person/code", fields: { "plugin-type": "plugin", type: "application/json", text: packed({ "$:/person/code.js": { title: "$:/person/code.js", type: "application/javascript", "module-type": "library", text: "globalThis.__personCodeRan = true;" } }) } },
+    { title: "$:/plugins/person/code", fields: { "plugin-type": "plugin", type: "application/json", text: packed({ "$:/person/code.js": { title: "$:/person/code.js", type: "application/javascript", "module-type": "library", text: "exports.personCode = 3;" } }) } },
   ] });
   try {
     const result = await standMirror(r.options, r.seams) as any;
     expect(result.tw.wiki.getTiddlerText("$:/person/word")).toBe("unpacked at boot");       // a shadow of a plugin TW5 registered at boot
-    expect(result.tw.wiki.tiddlerExists("$:/plugins/person/code")).toBe(true);              // the held plugin stands as a record
-    expect(result.tw.wiki.isShadowTiddler("$:/person/code.js")).toBe(false);                // and unpacked nothing
-    expect(result.tw.modules.titles["$:/person/code.js"]).toBeUndefined();
-    expect((globalThis as any).__personCodeRan).toBeUndefined();
-    expect(result.tw.wiki.tiddlerExists("$:/temp/lares/alert/refused/plugin-gate/$:/plugins/person/code")).toBe(true);
+    expect(result.tw.wiki.isShadowTiddler("$:/person/code.js")).toBe(true);                 // the scripted plugin unpacked too
+    expect(result.tw.modules.execute("$:/person/code.js").personCode).toBe(3);              // and its module defined
+    expect(r.host.hasAttribute("data-lar-refused-plugins")).toBe(false);
     expect(r.messages.filter(m => m.type === "port:write")).toEqual([]);
     result.unmount();
   } finally { r.host.remove(); }
 });
-test("a canon record carrying a module-type of its own waits with no alert and no evaluation: no alert covers the page", async () => {
-  const r = await rig({ records: [{ title: "lar:///canon/a-module-record", fields: { "module-type": "library", type: "application/javascript", text: "globalThis.__looseRan = true;" } }] });
+test("a canon record carrying a module-type of its own boots as a module and defines; no alert covers the page", async () => {
+  const r = await rig({ records: [{ title: "lar:///canon/a-module-record", fields: { "module-type": "library", type: "application/javascript", text: "exports.loose = 9;" } }] });
   try {
     const result = await standMirror(r.options, r.seams) as any;
     expect(r.host.hasAttribute("data-lar-refused-plugins")).toBe(false);
     expect(r.host.shadowRoot!.querySelectorAll(".tc-alerts .tc-alert").length).toBe(0);
-    expect(result.tw.modules.titles["lar:///canon/a-module-record"]).toBeUndefined();
-    expect((globalThis as any).__looseRan).toBeUndefined();
-    expect(result.tw.wiki.tiddlerExists("lar:///canon/a-module-record")).toBe(true);
+    expect(result.tw.modules.execute("lar:///canon/a-module-record").loose).toBe(9);
     result.unmount();
   } finally { r.host.remove(); }
 });

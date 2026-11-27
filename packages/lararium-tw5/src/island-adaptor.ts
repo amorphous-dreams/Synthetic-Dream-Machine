@@ -75,6 +75,7 @@ import type { LaresTw5Extension } from "./types/lares-globals.js";
 import { splitBodyTiddler, quoteblockFence } from "./deserializer.js";
 import { familyRefsOf, retitleSlotsInWiki, wikiFamilyView, type FamilyRenameWiki } from "./place-meme.js";
 import { LandedLedger, same, sameWithStamp } from "./landed-ledger.js";
+import { naluFieldsOf, naluLands } from "./nalu-form.js";
 import { WaveLanding } from "./wave-landing.js";
 import { Drain, macrotask, type DrainOutcome, type DrainSettling } from "./drain.js";
 import {
@@ -159,6 +160,13 @@ interface PreparedLanding {
   readonly shadow: KahuaShadow | null | undefined;
   readonly sentHas: boolean;
   readonly sentValue: unknown;
+}
+
+/** The engine's crest door bound to its engine, or a bare run where the engine's applier carries none. */
+function crestDoorOf(lares: LaresTw5Extension["lares"]): <T>(run: () => T) => T {
+  const door = lares?.applyNaluCrest;
+  // `bind` keeps the door's generic signature (`call` would widen its return to unknown).
+  return typeof door === "function" ? door.bind(lares) : (run) => run();
 }
 
 /** How an apply ended: landed (or nothing to land), a standing hand leaves first, or an own write moved since the prepare. */
@@ -323,6 +331,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
         if (this.tw5.$tw.wiki.getTiddler(alert)) this.tw5.$tw.wiki.deleteTiddler(alert);
       },
       (landed) => { for (const hear of [...this.sliceHearers]) hear(landed); },
+      // THE ENGINE'S CREST DOOR: each slice's applies land as one crest the engine names (`applyNaluCrest`). An engine whose
+      // applier carries no door (a fake engine) lands the same run bare, in the same one tick.
+      crestDoorOf(lares),
     );
     this.landing = landing;
     this.engineApply = apply;
@@ -605,14 +616,12 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       bag = entry?.bag;
       if (heads === undefined) heads = entry?.heads;
     }
-    const live = record !== null && !record?.meta?.deleted;
+    const live = naluLands({ title, record });
     // The draft-base fields live in the store record; the wiki's draft never holds them.
     const applied = live ? { ...record!, tiddler: withoutDraftBase(record!.tiddler as Record<string, unknown>) } as LarTiddlerRecord : record;
-    const incoming = live ? new this.tw5.$tw.Tiddler({
-      ...applied!.tiddler,
-      title,
-      ...(bag !== undefined ? { "$origin-bag": bag } : {}),
-    }) : null;
+    // THE NALU FORM the applier writes (`naluFieldsOf`): the value this landing would leave, compared with what stands. Wave zero
+    // preloaded the seed through the same form, so a seeded title reads as the same here and writes nothing.
+    const incoming = live ? new this.tw5.$tw.Tiddler(naluFieldsOf({ title, record, ...(bag !== undefined ? { bag } : {}) })) : null;
     const standing = wiki.getTiddler(title) ?? null;
     const known = entry ? entry.tiddler : null;
     if (this.landing?.isStopped()) return "landed";

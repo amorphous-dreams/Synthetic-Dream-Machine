@@ -7,7 +7,6 @@
  */
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { modulePinsOf } from "../src/module-pins.js";
 import { SwarmRefused } from "@lararium/mesh/swarm-tiddlers";
 import { sha256HexBytesSync, sha256HexSync } from "@lararium/mesh/crypto";
 import { CompositeStore } from "@lararium/mesh/composite-store";
@@ -50,7 +49,7 @@ const ctx = (cap: Cap = writer): VerbContext => ({ daemon: {} as CompositeStore,
 const RELINK_PLUGIN = JSON.parse(readFileSync(new URL("../offerings/relink/relink-plugin.json", import.meta.url), "utf8")) as Record<string, unknown>;
 
 async function rig(more: { personal?: boolean; relink?: boolean } = {}) {
-  const engine = await bootTestWiki({ ...(more.relink ? { extraPlugins: [RELINK_PLUGIN], modulePins: modulePinsOf([RELINK_PLUGIN]) } : {}), tiddlers: [
+  const engine = await bootTestWiki({ ...(more.relink ? { extraPlugins: [RELINK_PLUGIN] } : {}), tiddlers: [
     { title: WORKING_POINTER, text: DAEMON },
     ...Array.from({ length: 12 }, (_, i) => ({
       title: `Note ${String(i + 1).padStart(2, "0")}`, type: "text/vnd.tiddlywiki", tags: "memory", priority: i % 2 ? "low" : "high",
@@ -308,13 +307,13 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
 
   test("RED: an alert the house raises (`$:/temp/lares/alert/…`) reads through the one door, a get, a filter and a render alike, and takes no write; CONTROL: every other temp title still stays home", async () => {
     const r = await rig();
-    const ALERT = "$:/temp/lares/alert/refused/module-unpinned/$:/plugins/x/evil.js";
-    r.engine.wiki.addTiddler({ title: ALERT, tags: "$:/tags/Alert", text: "Module refused: its SHA-256 matches no pin" });
+    const ALERT = "$:/temp/lares/alert/refused/plugin-syncadaptor/$:/plugins/x/evil";
+    r.engine.wiki.addTiddler({ title: ALERT, tags: "$:/tags/Alert", text: "Plugin refused: it would stand a syncer" });
     const got = await makeTiddlerGetReactor(r.opts)({ ...A, title: ALERT }, ctx());
-    expect((got["tiddler"] as { fields: Record<string, string> }).fields).toMatchObject({ title: ALERT, text: "Module refused: its SHA-256 matches no pin" });
+    expect((got["tiddler"] as { fields: Record<string, string> }).fields).toMatchObject({ title: ALERT, text: "Plugin refused: it would stand a syncer" });
     const listed = await makeWikiFilterReactor(r.opts)({ ...A, filter: "[prefix[$:/temp/lares/alert/]]" }, ctx());
     expect(listed).toMatchObject({ titles: [ALERT], total: 1 });
-    expect(String((await makeWikiRenderReactor(r.opts)({ ...A, title: ALERT }, ctx()))["text"] ?? "")).toContain("matches no pin");
+    expect(String((await makeWikiRenderReactor(r.opts)({ ...A, title: ALERT }, ctx()))["text"] ?? "")).toContain("would stand a syncer");
     // The alert reads and never writes: the house raises and clears it, never a door.
     await expect(makeTiddlerPutReactor(r.opts)({ ...A, title: ALERT, text: "cleared" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
     await expect(makeTiddlerDeleteReactor(r.opts)({ ...A, title: ALERT }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
@@ -345,10 +344,10 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     const fault = ((await makeTiddlerGetReactor(r.opts)({ ...A, title: FAULT }, ctx()))["tiddler"] as { fields: Record<string, unknown> }).fields;
     expect(fault["component"]).toBe("island-boot");
     expect(JSON.stringify(fault)).not.toContain("a private note");
-    // A refused module's digest leaves named by its scheme, so the strict hex rule keeps the one value a person compares.
+    // A refused plugin's digest leaves named by its scheme, so the strict hex rule keeps the one value a person compares.
     const DIGEST = "ef".repeat(32);
-    const REFUSED = "$:/temp/lares/alert/refused/module-unpinned/$:/plugins/x/m.js";
-    r.engine.wiki.addTiddler({ title: REFUSED, tags: "$:/tags/Alert", text: `module-unpinned: $:/plugins/x/m.js (sha256:${DIGEST}) carries no pin` });
+    const REFUSED = "$:/temp/lares/alert/refused/plugin-syncadaptor/$:/plugins/x/m";
+    r.engine.wiki.addTiddler({ title: REFUSED, tags: "$:/tags/Alert", text: `plugin-syncadaptor: $:/plugins/x/m (sha256:${DIGEST}) would stand a syncer` });
     expect(JSON.stringify(await makeTiddlerGetReactor(r.opts)({ ...A, title: REFUSED }, ctx()))).toContain(`sha256:${DIGEST}`);
   });
 

@@ -72,7 +72,7 @@ const { fencedSpans, inMask } = await import(FRAME);
 const { sigilOpenEnd } = await import(join(DIST, "wikirules/lar-sigil-shared.js"));
 const { TW5Engine }           = await import(join(DIST, "tw5-vm.js"));
 const { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_SHA256 } = await import(join(DIST, "generated-tw5-version.js"));
-const { casBlobPreloads, modulePinsOf } = await import(join(DIST, "module-pins.js"));
+const { casBlobPreloads } = await import(join(DIST, "module-pins.js"));
 
 const CORE   = join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
 const PLUGIN = join(TW5, "plugins/lares-memetic-wikitext.json");
@@ -84,7 +84,7 @@ const engine = new TW5Engine();
 // Every blob carries its pin: the core the bake's, the grammar the tracked attestation's.
 const ATTESTATION = JSON.parse(readFileSync(join(TW5, "plugins/standalone/lares-memetic-wikitext.attestation.json"), "utf8"));
 const grammar = casBlobPreloads(new Uint8Array(readFileSync(PLUGIN)), ATTESTATION.pluginJsonSha256);
-await engine.boot({ bytes: new Uint8Array(readFileSync(CORE)), sha256: TW5_CORE_SHA256 }, grammar, undefined, { modulePins: modulePinsOf(grammar) });
+await engine.boot({ bytes: new Uint8Array(readFileSync(CORE)), sha256: TW5_CORE_SHA256 }, grammar);
 const wiki = engine.wiki ?? engine._tw?.wiki;
 
 // THE ONE DOOR. A wiki holding the grammar answers which heads it declares; nothing here re-derives it.

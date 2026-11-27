@@ -3,15 +3,14 @@
  *
  * `execLeiPortOver` binds the swarm wiki, the face's trust and the vessel's own signer over `spendExecLei`; a node and a browser
  * vessel each compose it from their own control document (`docSwarmWiki`) and their own atom. A refusal crosses the island's
- * delegation as its message, and `swarmRefusedFromMessage` reads its code back, so a door offers by the lei's own reading. The
- * tab names a wiki its wearing face alone writes as `own` (`tabStartupOwn`): every wiki but the house canon. Every red pairs with
- * a CONTROL.
+ * delegation as its message, and `swarmRefusedFromMessage` reads its code back, so a door offers by the lei's own reading.
+ * Every red pairs with a CONTROL.
  */
 import { describe, expect, test } from "vitest";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
 import { swarmCommand, type SwarmDoorDeps } from "../src/swarm-door.js";
 import { SwarmRefused, type SwarmWikiPort } from "../src/swarm-tiddlers.js";
-import { EXEC_LEI_SPEND_VERB, execLeiBranch, execLeiPortOver, swarmRefusedFromMessage, tabStartupOwn } from "../src/exec-lei.js";
+import { EXEC_LEI_SPEND_VERB, execLeiBranch, execLeiPortOver, swarmRefusedFromMessage } from "../src/exec-lei.js";
 import { soloCosign } from "./ward-cosign-table.js";
 
 const GROUP = "face-group", WIKI = "notes";
@@ -43,12 +42,5 @@ describe("exec-lei-port — one composition for every vessel", () => {
     expect(back.code).toBe("swarm-lei-absent");
     expect(swarmRefusedFromMessage("no handler registered for \"exec-lei-spend\"").code).toBe("swarm-lei-port-unanswered");
     expect(EXEC_LEI_SPEND_VERB).toBe("exec-lei-spend");
-  });
-
-  test("RED: the tab reads a user wiki as the wearing face's own and the house canon as another writer's; CONTROL: the daemon wiki reads own", () => {
-    expect(tabStartupOwn("notes")).toBe(true);
-    expect(tabStartupOwn("daemon")).toBe(true);
-    expect(tabStartupOwn("lares")).toBe(false);
-    expect(tabStartupOwn("lararium")).toBe(false);
   });
 });
