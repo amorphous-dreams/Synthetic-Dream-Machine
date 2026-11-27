@@ -711,10 +711,18 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // own write answers, and a newer hand marked meanwhile goes first again.
     for (let pass = 0; pass < 8; pass++) {
       const outcome = await this._drainTitle(title);
-      // NO WAVE WAITS ON A REFUSED HAND. Every field syncs through the CRDT and a person's edit lives in its draft, a separate
-      // tiddler; a write the store refused never reached the store, so the store's change lands over it, and the refusal's alert
-      // tells the person. The hand stays owed, and its next request reads the wiki as the wave left it.
-      if (outcome.kind === "failed") { if (this.drain.owes(title)) return this._landOne(change, true); throw outcome.error; }
+      // NO WAVE WAITS ON A REFUSED HAND, AND NO HAND VANISHES UNDER A WAVE. Every field syncs through the CRDT, and a conflict
+      // surfaces as parallel drafts (the house's one conflict shape): a value the person wrote that the store refused stands as a
+      // parallel draft of the title before the store's change lands over the page, so the person's words live on as a draft.
+      if (outcome.kind === "failed") {
+        if (!this.drain.owes(title)) throw outcome.error;
+        const standing = wiki.getTiddler(title) ?? null;
+        const source = change.bag ?? this.handBase.get(title)?.bag ?? this.ledger.landedOf(title)?.bag;
+        if (standing !== null && source !== undefined && !same(standing, this._knownOf(title))) {
+          await this._surfaceHand(title, extractFields(this.tw5, standing), source);
+        }
+        return this._landOne(change, true);
+      }
       const wrote = this.lastFlushWrote.get(title) === true;
       const latest = wiki.getTiddler(title) ?? null;
       const currentEntry = this.ledger.landedOf(title);
