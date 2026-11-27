@@ -1,8 +1,9 @@
 /**
  * W1 · EVERY DOOR NAMES ONE ADDRESS, EVERY SKIN NAMES A LIVE DOOR (lar:///ha.ka.ba/kahua/memory/plan/cap-memes-lantern).
  *
- * Inputs: the baked pack's routes against the live tables: `COMMANDS` and each door's verb table (cli), the `@mcp.tool`
- * functions of the seat (mcp), the widget modules (tw5). A skin naming a door no table holds reads red; a flipped door whose
+ * Inputs: the baked pack's routes against the live tables: `COMMANDS` and each door's verb table, or the call door's `act`
+ * head with the address it names (cli), the `@mcp.tool` functions of the seat, `act` with the address it names (mcp), the
+ * widget modules (tw5). A skin naming a door no table holds reads red; a flipped door whose
  * verbs some carrier leaves unrouted reads red (a door flips whole; a `door/part` skin gathers no door entry, so its door keeps
  * its own table and counts legacy until every verb holds a carrier). Two carriers claiming one spelling refuse at the bake
  * (`affordance-door-claimed-twice`), before this law reads. Seed: `oracle cast` routes to lar:///library.oracle.speaks.
@@ -16,6 +17,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
 import type { AffordancePack } from "@lararium/tw5/affordance-pack";
 import { COMMANDS } from "../../src/bin/lares.js";
+import { isCallHead } from "../../src/commands/call.js";
 import { flattenVerbs } from "../../src/verb-table.js";
 import { REBAKE, SEED_ADDRESS, cliRoutes, pack, partDoors } from "./affordance-harness.js";
 
@@ -28,13 +30,20 @@ function orphans(p: AffordancePack): string[] {
   const out: string[] = [];
   for (const r of cliRoutes(p)) {
     const cmd = COMMANDS.find((c) => c.name === r.door);
+    // THE ONE ACT (landing 9): `lares act lar:///<address>` rides the call door's `act` head, which no command row carries.
+    if (!cmd && isCallHead(r.door, r.path) && r.path.join(" ") === r.address) continue;
     if (!cmd) { out.push(`cli \`lares ${r.spelling}\`: no door "${r.door}"`); continue; }
     if (r.path.length === 0) continue;
     const tables = cmd.verbs === null ? [] : flattenVerbs(cmd.name, cmd.verbs);
     const at = tables.find((t) => t.door === [r.door, ...r.path.slice(0, -1)].join(" "));
     if (!at || !at.verbs.includes(r.path[r.path.length - 1]!)) out.push(`cli \`lares ${r.spelling}\`: the door's verb table holds no such verb`);
   }
-  for (const tool of Object.keys(p.routes["mcp"] ?? {})) if (!SEAT_TOOLS.has(tool)) out.push(`mcp \`${tool}\`: the seat holds no such tool`);
+  // An mcp spelling names a seat tool (`put`), or the one act and the address it reaches (`act lar:///<address>`).
+  for (const [spelling, address] of Object.entries(p.routes["mcp"] ?? {})) {
+    const [head, ...rest] = spelling.split(/\s+/);
+    if (!SEAT_TOOLS.has(head!)) out.push(`mcp \`${spelling}\`: the seat holds no such tool`);
+    else if (head === "act" && rest.join(" ") !== address) out.push(`mcp \`${spelling}\`: the act names another address than ${address}`);
+  }
   for (const widget of Object.keys(p.routes["tw5"] ?? {})) {
     if (!existsSync(join(REPO, "packages/lararium-tw5/src/widgets", `${widget}.ts`))) out.push(`tw5 \`${widget}\`: no widget module`);
   }
@@ -52,14 +61,16 @@ describe("W1 · every door names one address; every skin names a live door", () 
     expect(routes["cli"]?.["law index"], REBAKE).toBe("lar:///engine.law.indexes");
     expect(routes["cli"]?.["law pin"], REBAKE).toBe("lar:///engine.law.pins");
     expect(routes["cli"]?.["law unpin"], REBAKE).toBe("lar:///engine.law.unpins");
-    expect(routes["mcp"], REBAKE).toMatchObject({ ddate: "lar:///oracle.calendar.dates", law_index: "lar:///engine.law.indexes", law_pin: "lar:///engine.law.pins", law_unpin: "lar:///engine.law.unpins" });
+    for (const address of ["lar:///oracle.calendar.dates", "lar:///engine.law.indexes", "lar:///engine.law.pins", "lar:///engine.law.unpins"]) {
+      expect(routes["mcp"]?.[`act ${address}`], REBAKE).toBe(address);
+    }
   });
 
   test("SEED: wave 2's doors route each verb, an alias beside its twin, to a carrier", () => {
     const cli = pack().routes["cli"] ?? {};
-    expect(cli["act ADD"], REBAKE).toBe("lar:///carriage.record.adds");
-    expect(cli["act MOVE"], REBAKE).toBe("lar:///carriage.bag.moves");
-    expect(cli["act"], REBAKE).toBe("lar:///carriage.draft.pulls");
+    expect(cli["act lar:///carriage.record.adds"], REBAKE).toBe("lar:///carriage.record.adds");
+    expect(cli["act lar:///carriage.bag.moves"], REBAKE).toBe("lar:///carriage.bag.moves");
+    expect(cli["act lar:///carriage.draft.pulls"], REBAKE).toBe("lar:///carriage.draft.pulls");
     expect(cli["ingest"], REBAKE).toBe("lar:///carriage.capture.ingests");
     expect(cli["export"], REBAKE).toBe("lar:///carriage.bundle.exports");
     expect(cli["import"], REBAKE).toBe("lar:///carriage.bundle.imports");
@@ -71,7 +82,9 @@ describe("W1 · every door names one address; every skin names a live door", () 
     expect(cli["bag compact"], REBAKE).toBe("lar:///carriage.bag.compacts");
     expect(cli["bag share"], REBAKE).toBe("lar:///realm.bag.shares");
     expect(cli["flow"], REBAKE).toBe("lar:///sense.record.flows");
-    expect(pack().routes["mcp"], REBAKE).toMatchObject({ shore: "lar:///carriage.disk.reads", shore_flush: "lar:///carriage.disk.flushes", flow: "lar:///sense.record.flows" });
+    for (const address of ["lar:///carriage.disk.reads", "lar:///carriage.disk.flushes", "lar:///sense.record.flows"]) {
+      expect(pack().routes["mcp"]?.[`act ${address}`], REBAKE).toBe(address);
+    }
   });
 
   test("SEED: wave 3a's doors route each verb to a carrier, the two lifts apart", () => {
@@ -92,10 +105,10 @@ describe("W1 · every door names one address; every skin names a live door", () 
     expect(cli["hooks pause"], REBAKE).toBe("lar:///sense.capture.pauses");
     expect(cli["hooks status"], REBAKE).toBe("lar:///sense.capture.reads");
     expect(cli["mcp aho"], REBAKE).toBe("lar:///engine.seat.holds");
-    expect(pack().routes["mcp"], REBAKE).toMatchObject({
-      kahua_propose: "lar:///face.draft.proposes", kahua_stage: "lar:///face.draft.stages", kahua_get: "lar:///face.draft.reads",
-      kapae: "lar:///sense.kapae.mutes", un_kapae: "lar:///sense.kapae.restores",
-    });
+    for (const address of ["lar:///face.draft.proposes", "lar:///face.draft.stages", "lar:///face.draft.reads",
+      "lar:///sense.kapae.mutes", "lar:///sense.kapae.restores"]) {
+      expect(pack().routes["mcp"]?.[`act ${address}`], REBAKE).toBe(address);
+    }
   });
 
   test("SEED: the call verbs route to their carriers on both skins; `get` chooses by param and the burned spellings route nowhere", () => {
@@ -107,9 +120,10 @@ describe("W1 · every door names one address; every skin names a live door", () 
     expect(routes["cli"]?.["get"], REBAKE).toBeUndefined();
     for (const burned of ["tiddler get", "tiddler put", "tiddler delete", "tiddler rename", "wiki filter"]) expect(routes["cli"]?.[burned], `${burned}; ${REBAKE}`).toBeUndefined();
     expect(routes["mcp"], REBAKE).toMatchObject({
-      tiddler_get: "lar:///engine.record.reads", tiddler_put: "lar:///engine.record.puts", tiddler_delete: "lar:///engine.record.removes",
-      wiki_filter: "lar:///engine.filter.pages",
+      put: "lar:///engine.record.puts", delete: "lar:///engine.record.removes", rename: "lar:///engine.record.renames",
     });
+    // The seat's `get` skins both read carriers by the same `by/` choice the terminal's does, so it claims no route either.
+    expect(routes["mcp"]?.["get"], REBAKE).toBeUndefined();
     expect(pack().doors["tiddler"], REBAKE).toBeUndefined();
     expect(pack().doors["wiki"], "the wiki door keeps its own table").toBeUndefined();
     expect(partDoors(), "no `door/part` skin stands once `wiki filter` burned").toEqual([]);
@@ -129,7 +143,7 @@ describe("W1 · every door names one address; every skin names a live door", () 
   });
 
   test("CONTROL: a planted orphan skin on each surface reads red", () => {
-    const planted: AffordancePack = { ...pack(), routes: { cli: { "zz-no-such-name cast": SEED_ADDRESS, "oracle zz-no-such-name": SEED_ADDRESS }, mcp: { zz_no_such_name: SEED_ADDRESS }, tw5: { "zz-no-such-name": SEED_ADDRESS } } };
-    expect(orphans(planted)).toHaveLength(4);
+    const planted: AffordancePack = { ...pack(), routes: { cli: { "zz-no-such-name cast": SEED_ADDRESS, "oracle zz-no-such-name": SEED_ADDRESS }, mcp: { zz_no_such_name: SEED_ADDRESS, "act lar:///zz.no.such": SEED_ADDRESS }, tw5: { "zz-no-such-name": SEED_ADDRESS } } };
+    expect(orphans(planted)).toHaveLength(5);
   });
 });

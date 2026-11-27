@@ -92,10 +92,9 @@ from plane_query import (crossplane_hit as _crossplane_hit, open_plane_store, pl
                          structure_entry_for_cid as _structure_entry_for_cid)
 from sensorium import sensorium_paths, read_stream_manifest, sensorium_dir, derived_views
 
-# The lifecycle-floor verbs the MCP surface mirrors from the `lares` CLI. Each name reads identically on
-# both surfaces (the isomorphism contract); a parity test asserts the two sets agree. `pour` carries the bulk
-# pass (`bulk`, the sweep spine) and `analyze` carries every read instrument as a lens (ANALYZE_LENSES).
-LIFECYCLE_VERBS = ("pour", "recall", "status", "worldline", "kapae", "un_kapae", "analyze", "flow")
+# The sensorium lifecycle acts the seat runs by address (`seat_acts` in `build_mcp`): pour, recall, status, worldline,
+# kapae, un_kapae, analyze and flow, each the handler a carrier's `handler/seat` row names. `pour` carries the bulk pass
+# (`bulk`, the sweep spine) and `analyze` carries every read instrument as a lens (ANALYZE_LENSES).
 
 # THE LENSES `analyze` READS THROUGH — the CLI's `lares sense analyze --lens <lens>`, one door for every read
 # instrument: five read the poured sensorium, and lead · forecast · mismatch read the `rows` matrix a caller hands in. The lens CHOOSES which instrument runs; nothing merges their computations:
@@ -128,108 +127,82 @@ ANALYZE_LENS_READS = {
     "mismatch": ("signal", "names"),
 }
 
-# The per-plane QUERY DOOR verb — read-only cross-plane interrogation of a 3-plane test-bed sensorium
+# The cross-plane witness (lar:///sense.plane.reads) — read-only cross-plane interrogation of a 3-plane test-bed sensorium
 # (content · structure · form, one cid keying all three planes; corpus_testbed/plane_fanout land it).
 # The per-plane READS (structure · form) fold onto `recall --lens <plane>` — the plane rides as a
-# parameter, so only the cross-plane WITNESS keeps its own verb here.
-# THE PARITY SHORE: this rides the MCP surface AHEAD of its CLI spelling — the CLI form + the cli-verbs
-# fixture grow with the projector arc, so the parity test carries it as a NAMED allowance
-# (mcp_tools − PLANE_VERBS mirrors the fixture) until the CLI catches up.
-PLANE_VERBS = ("plane_record",)
+# parameter, so only the cross-plane WITNESS keeps its own handler (`plane_record`).
 
-# The wiki-SWITCHER namespace — ONE flat `wiki` MCP tool (a `verb` arg: switch/hold/release/active)
-# mirrors the `lares wiki <verb>` CLI namespace, honest to its subcommand shape (never 4 flat tools that
-# would flatten the namespace). A PROPER CLI mirror — the host `wiki` is a real top-level command — so it
-# rides `mirrored`/`cli_forms` in the fixture, not an ahead-of-CLI allowance. All four sub-verbs are
-# uniformly low-trust · reversible · LOCAL residency ops.
-WIKI_VERBS = ("wiki",)
+# The wiki SWITCHER (lar:///engine.wiki.switches · keeps · unkeeps) — one `wiki` handler takes `switch`, `keep` or `unkeep`
+# by `slug`, mirroring the `lares wiki <verb>` CLI namespace. Each is a low-trust · reversible · LOCAL residency op.
 
-# The MEME namespace — the MCP skin of the meme family's DAEMON-seated verbs. A family writes through the plain tiddler
-# tools: `tiddler_put(title=<root>, text=<carrier>)` lands a meme's text at a `lar:` uri through the island's Confluence gate
-# inside the put, `tiddler_put(title="<root>#/x", text=…)` one slot, `tiddler_delete(title=<root>, family=True)` the whole
-# group (a stale `base` reads `conflict` and moves nothing); title-less `tiddler_get(meme=True)` names every ROOT a seat
-# holds with its canonical hash (`tree` nests the slot tree); `meme_project` renders the meme the island holds to a target (`md` · `html` · `tid` · `json`) — the TARGET rides as a parameter, never a suffix on the verb. A
-# meme READS through the one door, `tiddler_get(meme=True)` (whole within a page, its has-stack past it, the whole
-# paged on slot boundaries), which carries the text and the canonical hash a write hands back as `base`.
-# Each mirrors `lares put|get|delete name=value…` and `lares meme project` (the host `meme` stands as a real top-level command, so `mirrored`/
-# `cli_forms` carry it). A VERB DECLARES ITS SEAT: the CLI's `meme normalize` and `meme check` run LOCAL
-# over a file with no daemon, so they hold NO MCP tool — the MCP mirrors the daemon-seated verbs only, and
-# the fixture names that allowance as `local_seat`. THE CONTAINER LAW: exactly one of `recipe`/`bag` names
-# where the record lands; neither, or both, refuses as `no-container` before the wire. `recipe: "default"`
-# names the host's ANCHOR (@daemon's own wiki; never "the active wiki"); `recipe: <slug>` = an edit AS that wiki (its writable bag, or the face's
+# The MEME render (lar:///engine.meme.projects) — a family writes through the plain record tools: `put(title=<root>,
+# text=<carrier>)` lands a meme's text at a `lar:` uri through the island's Confluence gate inside the put,
+# `put(title="<root>#/x", text=…)` one slot, `delete(title=<root>, family=True)` the whole group (a stale `base` reads
+# `conflict` and moves nothing); a meme READS through the one door, `get(title=<root>, mu="assert")`, which carries the text
+# and the canonical hash a write hands back as `base`. `meme_project` renders the meme the island holds to a target (`md` ·
+# `html` · `tid` · `json`) — the TARGET rides as a parameter, never a suffix on the verb. A VERB DECLARES ITS SEAT: the CLI's
+# `meme normalize` and `meme check` run LOCAL over a file with no daemon, so the seat holds no handler for them, and the
+# fixture names that allowance as `local_seat`. THE CONTAINER LAW: exactly one of `recipe`/`bag` names where a seat act reads
+# or lands; neither, or both, refuses as `no-container` before the wire. `recipe: "default"` names the host's ANCHOR
+# (@daemon's own wiki; never "the active wiki"); `recipe: <slug>` = an edit AS that wiki (its writable bag, or the face's
 # `personal` layer of it without a writer's seat); `bag: <slug>` = a residency placement (fails loud if the island cannot
 # write it; a house canon bag from this seat refuses `seat-canon-reach`). Slugs ride BARE (`sdm`, `lares`), carried
-# as written. All three ride `lares_uds.call` to the @daemon — never a store (the single-writer law).
-MEME_VERBS = ("meme_project",)
+# as written. Every act rides `lares_uds.call` to the @daemon — never a store (the single-writer law).
 
-# THE TIDDLER DOOR (wiki-surface-scout #/a-lean, lane 1) — the MCP skin of the daemon's `tiddler-*` and `wiki-*` verbs:
-# every TiddlyWiki act over ONE record with its fields (`tiddler_get` · `tiddler_put` · `tiddler_delete`) or over a wiki's
-# own engine (`wiki_filter` · `wiki_render` · `wiki_status`). Base operations stop wearing `meme_*`: a tiddler verb reads
-# and patches any record, whatever its type; a meme family's text lands through the same put, the gate inside it. Each mirrors
-# `lares get|put|delete name=value…` (a filter: `lares get filter=…`) and `lares wiki render|status`, puts the same `{verb, args}` on the wire and
-# hands back the same answer body (`fixtures/tiddler-door-answers.json` welds both skins to one table). THE CONTAINER
-# LAW holds; `recipe="default"` names the worn face's daemon wiki and `recipe=<slug>` any wiki that face reaches (one it
-# hosts, or one shared to it), each answered in that wiki's own engine; a wiki the face reaches none of refuses
-# `wiki-unreached`, and a bag (one bag, no wiki) refuses `wiki-not-anchored`. The `wiki` tool runs only named admitted actions; no caller action string or `tm-*` message crosses it, and
-# the switcher keeps its one `wiki` tool until that phase renames it.
-TIDDLER_VERBS = ("tiddler_get", "tiddler_put", "tiddler_delete", "wiki_filter", "wiki_render", "wiki_status")
+# THE ENGINE READS (lar:///engine.wiki.renders, lar:///engine.layer.reads) — `wiki_render` wikifies a title or a span in a
+# wiki's own engine and `wiki_status` names each layer the wiki composes and whether this face reads and writes it; each
+# mirrors `lares wiki render|status`. The record verbs themselves (`get` · `put` · `delete` · `rename`) ride the seat's own
+# tools straight to the vessel's `call` (`fixtures/tiddler-door-answers.json` welds both skins to one table).
+# `recipe="default"` names the worn face's daemon wiki and `recipe=<slug>` any wiki that face reaches (one it hosts, or one
+# shared to it), each answered in that wiki's own engine; a wiki the face reaches none of refuses `wiki-unreached`.
 
-# THE DISCORDIAN CALENDAR — one tool, `ddate`, the MCP skin of the `ddate` verb every vessel answers (the house's own isomorphic
-# calendar core; no host `ddate` binary stands behind it). It mirrors `lares ddate [+FORMAT] [day month year]`, a host verb the CLI
-# runs with no vessel. THE CLOCK SEAM rides this seat: a call that names no date carries `today`, the seat's own local day, and the
-# verb reads no clock. Rides the @daemon wire like every routed read.
-DDATE_VERBS = ("ddate",)
+# THE DISCORDIAN CALENDAR (lar:///oracle.calendar.dates) — `ddate`, the seat's act for the `ddate` verb every vessel answers
+# (the house's own isomorphic calendar core; no host `ddate` binary stands behind it). THE CLOCK SEAM rides this seat: a call
+# that names no date carries `today`, the seat's own local day, and the verb reads no clock.
 
-# THE ORACLE CAST — one tool, `oracle_cast`, the MCP skin of the `oracle-cast` verb every vessel answers: one I Ching cast
-# by three coins a line, written by the vessel as one tiddler under `casts/`. It mirrors `lares oracle cast`. The draw
-# lives in the vessel, never in the prompt: the seat that asks never picks the figure. THE CLOCK SEAM rides this seat:
-# the call carries `at`, the seat's own time, and the verb reads no clock. The throw stands and the reading stays open.
-ORACLE_VERBS = ("oracle_cast",)
+# THE ORACLE CAST (lar:///library.oracle.speaks) — `oracle_cast`, the seat's act for the `oracle-cast` verb every vessel
+# answers: one I Ching cast by three coins a line, written by the vessel as one tiddler under `casts/`. The draw lives in
+# the vessel, never in the prompt: the seat that asks never picks the figure. THE CLOCK SEAM rides this seat: the call
+# carries `at`, the seat's own time, and the verb reads no clock. The throw stands and the reading stays open.
 
-# The OFFERING door (offering#/the-canon-offer) — an AI seat offers its face's working records toward a house-canon bag
-# and reads the Nexus's offer table. `meme_offer` mirrors `lares meme offer <uri…> --bag <slug>`; `meme_offer_show` mirrors `lares meme offer show [<cid>]`. An offer GRANTS NOTHING: canon moves only
-# under the Kahu steward's promotion, and `lares meme offer promote` stays the steward's hand, holding no MCP tool (the kahua
-# lift's shape).
-OFFER_VERBS = ("meme_offer", "meme_offer_show")
+# The OFFERING door (lar:///realm.offer.signs, lar:///realm.offer.shows; offering#/the-canon-offer) — an AI seat offers its
+# face's working records toward a house-canon bag and reads the Nexus's offer table. An offer GRANTS NOTHING: canon moves
+# only under the Kahu steward's promotion, and the promotion stays the steward's hand, which no seat act carries.
 
-# The KAHUA namespace — an AI seat's reach onto its face's kahua stage, the fleet's working-memory stage. `kahua_propose`
-# posts ONE batch of proposals on the face's intents plane (titles, daemon revisions, body digests, taint; a proposal
-# grants nothing); `kahua_stage` writes ONE row into the face's local canon `bags/daemon-<F>` (local, unsigned: the row a
-# lift later names); `kahua_get` reads the stage's VERIFIED items (the fold, never a raw tiddler). Each
-# mirrors `lares kahua propose|stage|list|get` and rides a local SESSION under the `seat` hand (`lares_uds.session_act`),
-# whose profile the vessel refuses every kahua pin, lift, withdraw and carry. THE SEAT PROPOSES AND STAGES; THE OPERATOR'S
-# HAND LIFTS: no MCP tool lifts, withdraws, carries or mints (`lares kahua lift|withdraw|carry|mint` stay the operator's).
-KAHUA_VERBS = ("kahua_propose", "kahua_stage", "kahua_get")
+# The KAHUA stage (lar:///face.draft.proposes · stages · reads) — an AI seat's reach onto its face's kahua stage, the
+# fleet's working-memory stage. `kahua_propose` posts ONE batch of proposals on the face's intents plane (titles, daemon
+# revisions, body digests, taint; a proposal grants nothing); `kahua_stage` writes ONE row into the face's local canon
+# `bags/daemon-<F>` (local, unsigned: the row a lift later names); `kahua_get` reads the stage's VERIFIED items (the fold,
+# never a raw tiddler). Each rides a local SESSION under the `seat` hand (`lares_uds.session_act`), whose profile the vessel
+# refuses every kahua pin, lift, withdraw and carry. THE SEAT PROPOSES AND STAGES; THE OPERATOR'S HAND LIFTS.
 
-# THE LAW INDEX — the house's law offered where an agent wakes: `law_index` reads the pinned law first (the boot seed, then
-# the Mu family), then every root meme under a bag's `api/` tree, each with its one line (description, else role);
-# `law_pin` / `law_unpin` order the pins. Each mirrors `lares law index|pin|unpin`. The filters are `@lararium/tw5`'s
+# THE LAW INDEX (lar:///engine.law.indexes · pins · unpins) — the house's law offered where an agent wakes: `law_index`
+# reads the pinned law first (the boot seed, then the Mu family), then every root meme under a bag's `api/` tree, each with
+# its one line (description, else role); `law_pin` / `law_unpin` order the pins. The filters are `@lararium/tw5`'s
 # `daemon-law-tiddlers`: the law by address (every root meme under a bag's `api/` tree), the pin set the worn face's daemon
 # wiki holds (`$:/config/lares/law/pins`), and a canon guard that keeps every row to a record a canon layer answers (the
 # oracle floor, the system canon bags) under a title that reads as one `lar:` address, so nothing a face writes prints as
 # law. Every read runs the tiddler door's `wiki-filter`, and a pin lands through `tiddler-put` in the face's working layer,
 # never in house canon (the seat's canon fence holds); a pin orders canon law and adds none.
-LAW_VERBS = ("law_index", "law_pin", "law_unpin")
 LAW_PINS_TITLE = "$:/config/lares/law/pins"
 LAW_PINS_FILTER = "[lares.law.pins[]]"
 LAW_INDEX_FILTER = "[lares.law[]]"
 LAW_ROW_FIELDS = ("description", "role")
 
-# THE HEARTH ROSTER — who is home, offered beside the law: `vessel_roster` reads the worn face and who holds that slot, the
-# seats in two grains (here by presence on the vessel's socket, far by last signed act on the face intent plane), the lanes a
-# seat claims and the vota still waiting. It mirrors `lares vessel roster --json`: both ride the one `hearth-roster` verb the
-# vessel's channel answers itself (`@lararium/node`'s `hearth-roster-read`), so the body this seat returns stands byte for
-# byte the body the CLI's `data` carries. A read: it places nothing and writes no fact.
-HEARTH_VERBS = ("vessel_roster",)
+# THE HEARTH ROSTER (lar:///face.roster.reads) — who is home, offered beside the law: `vessel_roster` reads the worn face and
+# who holds that slot, the seats in two grains (here by presence on the vessel's socket, far by last signed act on the face
+# intent plane), the lanes a seat claims and the vota still waiting. It mirrors `lares vessel roster --json`: both ride the one
+# `hearth-roster` verb the vessel's channel answers itself (`@lararium/node`'s `hearth-roster-read`), so the body this seat
+# returns stands byte for byte the body the CLI's `data` carries. A read: it places nothing and writes no fact.
 HEARTH_ROSTER_VERB = "hearth-roster"
 
-# THE DISK SHORE — `shore` reads what stands for a hand at the disk shore (each standoff with its key, each pending removal),
-# both islands as one shore, every page of each, through the same two lines `lares shore` rides: `wiki-act` carrying the `shore`
-# verb into the active wiki's island, and the `shore` verb into the daemon island. `face` names a lit sibling's shore, which its
-# own projector holds in the daemon island. `shore_flush` asks the vessel's whole-island flush (the custody door's `shore-flush`
-# frame, the one `lares shore flush` sends): every island that mounts a disk shore writes what it holds to its mirrors. The
-# answers (`take-records`, `take-disk`, `restore`, `remove`) stay a person's hand at `lares shore`, and hold no tool here.
-SHORE_VERBS = ("shore", "shore_flush")
+# THE DISK SHORE (lar:///carriage.disk.reads, lar:///carriage.disk.flushes) — `shore` reads what stands for a hand at the disk
+# shore (each standoff with its key, each pending removal), both islands as one shore, every page of each, through the same
+# two lines `lares shore` rides: `wiki-act` carrying the `shore` verb into the active wiki's island, and the `shore` verb into
+# the daemon island. `face` names a lit sibling's shore, which its own projector holds in the daemon island. `shore_flush` asks
+# the vessel's whole-island flush (the custody door's `shore-flush` frame, the one `lares shore flush` sends): every island
+# that mounts a disk shore writes what it holds to its mirrors. The answers (`take-records`, `take-disk`, `restore`, `remove`)
+# stay a person's hand at `lares shore`, and the seat holds no handler for them.
 SHORE_VERB = "shore"
 SHORE_ISLANDS = ("wiki", "daemon")
 
@@ -302,12 +275,11 @@ def read_affordance_pack(path=None):
 # `get(title=<uri>, mu="assert")`.
 PROJECT_TARGETS = ("md", "html", "tid", "json")
 
-# The DURABLE sensorium LIFECYCLE sub-verbs a seat runs — roster (bare: every sensorium; `name`: one's facets) · build ·
-# reconcile. Each mirrors
-# `lares sense <verb>` (CLI-direct over manifest.json): an @mcp.tool routes over the @daemon wire to the
-# house-consistent routed executor in open-node-vessel.ts (the ki/li/couple_r pattern — pure manifest.json
-# reducers, no store holder), and the CLI form rides the one `sense` door.
-SENSE_LIFECYCLE_VERBS = ("roster", "build", "reconcile")
+# The DURABLE sensorium LIFECYCLE acts a seat runs (lar:///sense.roster.reads · pioneer.builds · source.reconciles) —
+# roster (bare: every sensorium; `name`: one's facets) · build · reconcile. Each mirrors `lares sense <verb>` (CLI-direct
+# over manifest.json): the seat act routes over the @daemon wire to the house-consistent routed executor in
+# open-node-vessel.ts (the ki/li/couple_r pattern — pure manifest.json reducers, no store holder), and the CLI form rides
+# the one `sense` door.
 
 # THE HAND VERBS hold no tool here (hitl-reads-a-hand): `sense harden`, `retire`, `un-retire`, `purge` and
 # `teardown` run on a person's hand at a real terminal alone. The CLI reads its own branch for that hand and the
@@ -710,7 +682,7 @@ class LaresCoordinator:
         raise SeatVerbOwed("flow: the composed-flow runner is TS-orchestrated (it routes cap-steps across "
                            "both hulls) — reach it via the @daemon (`lares flow <petname>`), not standalone")
 
-    # ── the per-plane QUERY DOOR (read-only; PLANE_VERBS) ────────────────────────────────────
+    # ── the per-plane QUERY DOOR (read-only; lar:///sense.plane.reads) ────────────────────────────────────
 
     def _plane_store(self, plane: str):
         """Open the named plane palace (<palace>/structure | <palace>/form) lazily and cache the

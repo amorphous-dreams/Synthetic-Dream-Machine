@@ -20,7 +20,7 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 
 python3 - <<'PY'
-import json, pathlib, re, subprocess, sys
+import pathlib, re, subprocess, sys
 
 MCP = pathlib.Path("packages/lararium-sensorium/scripts/lares_mcp.py")
 CLI = pathlib.Path("packages/lares-cli/dist/src/bin/lares.js")
@@ -41,7 +41,7 @@ tools = [t.replace("_", "-") for t in
          re.findall(r'@mcp\.tool\([^\n]*\)\s*\n\s*(?:async )?def (\w+)', MCP.read_text())]
 
 # A FLOOR ON THE SUBJECT'S SIZE. The decorator pattern binds `@mcp.tool(...)` with its arguments on ONE line
-# (the tiddler door's tools state their annotations there: `@mcp.tool(annotations=_READS)`), so a decorator
+# (the seat's tools state their annotations there: `@mcp.tool(annotations=reads)`), so a decorator
 # broken across lines would drop its tool from this reading — and a reading that drops every tool leaves
 # `missing` empty and the run green. The set the whole witness walks must be asserted before anything is
 # asserted about its members, and the count below welds the reading to the seat's own tool list.
@@ -101,27 +101,29 @@ for f in CMDS.glob("*.ts"):
     # one did.
 subverbs = {s.replace("_", "-") for s in subverbs}
 
-# THE CALL SHAPE (comms-ux-enacts landing 8): a CLI word takes `name=value` params and reaches the carrier its skin names, so an
-# MCP tool whose carrier a CLI word skins answers at that word (`tiddler_get` at `lares get`), with no sub-verb in any module's
-# dispatch. Read off the baked pack the CLI itself reads: the tool's mcp route names its address, and a cli route or a door's
-# gathered addresses (`get` gathers both its choices) name the word that reaches it.
-PACK = pathlib.Path("packages/lararium-tw5/affordance-pack.json")
-pack = json.loads(PACK.read_text()) if PACK.exists() else {}
-pack_routes = pack.get("routes", {})
-mcp_address = pack_routes.get("mcp", {})
-cli_reaches = set(pack_routes.get("cli", {}).values()) | {a for door in pack.get("doors", {}).values() for a in door.get("addresses", [])}
-
-def call_word(tool: str) -> bool:
-    address = mcp_address.get(tool.replace("-", "_"))
-    return address is not None and address in cli_reaches
+# THE CALL SHAPE (comms-ux-enacts landings 8 and 11): the seat's tools are call words (`get`, `put`, `delete`, `rename`) and
+# the one `act`, each sending `{verb, params}` to the vessel's `call`; the CLI's call door reads the same heads, `act` among them
+# though no command-table row carries it (`lares act lar:///<address> …`). So a tool the top-level listing leaves out still
+# answers where the built CLI itself answers `<tool> --help` (a help read, never an act), and every affordance `act` reaches by
+# address the terminal reaches by the same address.
+def call_head(tool: str) -> bool:
+    probe = subprocess.run(["node", str(CLI), tool, "--help"], capture_output=True, text=True)
+    return probe.returncode == 0 and bool(probe.stdout.strip())
 
 def has_door(tool: str) -> str | None:
     if tool in doors:    return "top-level"
-    if call_word(tool):  return "call word"
     if tool in subverbs: return "sub-verb"
+    if tool in tools and call_head(tool):  return "call head"   # a probe for a seat tool alone, never a registry verb
     base = tool.split("-")[0]
     if base in doors:    return f"sub-verb of `{base}`"
     return None
+
+# has_door probes the CLI for a call head; read each tool's door once.
+_doors_read: dict[str, str | None] = {}
+def door_of(tool: str) -> str | None:
+    if tool not in _doors_read:
+        _doors_read[tool] = has_door(tool)
+    return _doors_read[tool]
 
 # AN EXEMPTION MUST STATE WHY, AND IT PRINTS EVERY RUN. A silent allow-list decays into a surface nobody
 # audits; a permanently-red witness trains a reader to skip it. Both failures end the same way, so an
@@ -166,7 +168,7 @@ def daemon_verbs_cli(name: str) -> set:
 # than by running both and comparing stores.
 SLICING: dict[str, str] = {
     "pour": ("CLI `pour --all` walks the whole tending movement, `pour --bulk` runs its drawers leg "
-             "alone and `pour --writeback` its bearing leg. The MCP tool captures one pointer's "
+             "alone and `pour --writeback` its bearing leg. The seat's pour act captures one pointer's "
              "DRAWERS, and its `bulk` rides the same sweep spine `pour --bulk` reaches. Both fill a "
              "sensorium; they enter at different legs."),
 }
@@ -192,8 +194,8 @@ if drift:
     print("      Either route them to one daemon verb, or state the slicing in SLICING with what each writes.")
     sys.exit(1)
 
-missing = [t for t in tools if not has_door(t) and t not in EXEMPT]
-exempt  = [t for t in tools if not has_door(t) and t in EXEMPT]
+missing = [t for t in tools if not door_of(t) and t not in EXEMPT]
+exempt  = [t for t in tools if not door_of(t) and t in EXEMPT]
 
 # ── THE PORT, WHICH BOTH SURFACES ACTUALLY SPEAK THROUGH ────────────────────────────────────────────────
 # The two lists above are the THIN surfaces. Under them stands the daemon verb registry — the port a CLI
@@ -222,10 +224,10 @@ if not registered:
     print("      reads as absent, and 'unreached daemon capability' then has no set to be counted in.")
     sys.exit(1)
 
-both      = sorted(v for v in registered if v in tools and has_door(v))
-cli_only  = sorted(v for v in registered if v not in tools and has_door(v))
-mcp_only  = sorted(v for v in registered if v in tools and not has_door(v))
-orphan    = sorted(v for v in registered if v not in tools and not has_door(v))
+both      = sorted(v for v in registered if v in tools and door_of(v))
+cli_only  = sorted(v for v in registered if v not in tools and door_of(v))
+mcp_only  = sorted(v for v in registered if v in tools and not door_of(v))
+orphan    = sorted(v for v in registered if v not in tools and not door_of(v))
 
 print(f"[surface-parity] MCP tools: {len(tools)}   CLI doors reachable: {len(tools) - len(missing) - len(exempt)}")
 print(f"[surface-parity] daemon registry: {len(registered)} verbs  "

@@ -12,7 +12,7 @@ energy organ the H1 gate keys:
        verb spends (the empowerment term); REVERSIBILITY derives as sign(optionLoss),
        never a declared boolean grid;
   B-3  selection: efe_select argmin, ranked ascending, top-two margin, the tau review
-       shore (never the py VERB_SEATS HITL gate).
+       shore (never the hand gate, which the vessel keeps at its own registry).
 
 THE KEYSTONE GATE (BxC): efe_gate reads H1 FIRST (sensorium_fusion), then forks —
 H1 = 0 -> efe_select (a global EFE stands well-posed) · H1 != 0 -> surface_disagreement

@@ -20,7 +20,7 @@
  *        `<root>/bags/kahua` holds no file, `kahua get` answers null, `get mu=assert` misses.
  *   S5 — the OPERATOR'S HAND lifts: `lares kahua stage` then `lares kahua lift <title> --proposal <id> --digest <d>` binds the staged body by digest; the item
  *        projects at `<root>/bags/kahua/<title path>.tid`; `lares kahua get`, `lares get recipe=default mu=assert` and the
- *        seat's read (the door the MCP seat's `kahua_get` rides: a `seat`-hand session's `kahua-read`) read the same body.
+ *        seat's read (the door the MCP seat's act at lar:///face.draft.reads rides: a `seat`-hand session's `kahua-read`) read the same body.
  *   S6 — the stage reaches the page: the joined page re-edits the draft and the `kahua-shadow` mark casts (a mark needs
  *        the kahua twin beneath the draft); a second propose + lift over the new body clears it (bodies equal).
  *   S7 — CONTROL: a faceless device on the same hearth renders no such title; the hearth's projection carries no
@@ -194,7 +194,7 @@ const shadowed = (page: Page): Promise<boolean> => paneHas(page, "span.walk-shad
 /** What the shadow span says (the filter's own answer: the title, or an operator's error naming itself). */
 const shadowText = (page: Page) => page.evaluate(() => document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.querySelector("span.walk-shadow")?.textContent ?? "");
 
-// ── the seat's read, through the door the MCP seat's `kahua_get` rides: a local session under the `seat` hand ─────────
+// ── the seat's read, through the door the MCP seat's act at lar:///face.draft.reads rides: a local session under the `seat` hand ─────────
 // The python seat (`lares_mcp.py`) speaks `session:open` then `session:act kahua-read` over the vessel's UDS; the walk speaks
 // the same two frames from node, so the read stands on the house's own door and no host interpreter.
 async function seatRead(title: string): Promise<Record<string, unknown>> {

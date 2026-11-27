@@ -11,7 +11,7 @@ import pathlib, sys
 repo, target, nonce = sys.argv[1:]
 source = pathlib.Path(repo) / 'packages/lararium-sensorium/scripts/lares_mcp.py'
 text = source.read_text()
-needle = 'SEAT_INSTRUCTIONS = (\n'
+needle = 'SEAT_LEAD = (\n'
 assert text.count(needle) == 1
 text = text.replace(needle, needle + f'    "\\nNONCE {nonce}\\n"\n', 1)
 pathlib.Path(target).write_text(text)
@@ -27,7 +27,8 @@ repo, house = sys.argv[1:]
 scripts = str(pathlib.Path(repo) / 'packages/lararium-sensorium/scripts')
 seat = str(pathlib.Path(house) / 'seat/lares_mcp.py')
 config = {'mcpServers': {'lares': {'command': sys.executable, 'args': [seat],
-          'env': {'LAR_ROOT': house, 'PYTHONPATH': scripts}}}}
+          'env': {'LAR_ROOT': house, 'PYTHONPATH': scripts,
+                  'LARES_AFFORDANCE_PACK': str(pathlib.Path(repo) / 'packages/lararium-tw5/affordance-pack.json')}}}}
 print('LAR_ROOT=' + shlex.quote(house) + ' claude --strict-mcp-config --mcp-config ' + shlex.quote(json.dumps(config)))
 PYCOMMAND
 printf '%s\n' 'Ask the main session exactly: quote the line that starts NONCE'

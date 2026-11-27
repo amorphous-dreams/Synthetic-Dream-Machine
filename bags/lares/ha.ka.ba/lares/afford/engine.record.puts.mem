@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.record.puts"
 
 ! engine.record.puts ~ the one write path: text, a span, an append, fields and tags, under a base
 
-A put patches one record: it sets and unsets fields, adds and removes tags, and moves the text only where `text`, `file`, `append` or `replace` names it. Every field the patch leaves unnamed stays as it stood, so a field or tag patch never touches the text and a text put keeps the fields. The write lands in the wiki's working layer (`wiki status` names it), or this face's personal layer of a wiki where it holds no writer's seat, and the receipt's `layer` names that placement; `bag` lands in that one bag through its store, under the gates its own writes keep. A seat's write aimed at a house canon bag refuses `seat-canon-reach`: a seat reaches canon through a recipe's copy-up and `meme_offer`. The address stays a candidate until the operator reads the landing's list.
+A put patches one record: it sets and unsets fields, adds and removes tags, and moves the text only where `text`, `file`, `append` or `replace` names it. Every field the patch leaves unnamed stays as it stood, so a field or tag patch never touches the text and a text put keeps the fields. The write lands in the wiki's working layer (`wiki status` names it), or this face's personal layer of a wiki where it holds no writer's seat, and the receipt's `layer` names that placement; `bag` lands in that one bag through its store, under the gates its own writes keep. A seat's write aimed at a house canon bag refuses `seat-canon-reach`: a seat reaches canon through a recipe's copy-up and `act(address="lar:///realm.offer.signs")`. The address stays a candidate until the operator reads the landing's list.
 
 `base` carries the hash last read (a record's `hash`, a root's carrier `canonicalHash`; a slot read's partial base `partial:#/x:…` patches within its span and refuses `base-outside-span` beyond it): a record that moved past it answers `conflict`, naming the live hash, and nothing lands. A base guards honest reuse, never a lock. `create` lands only where no record stands, a family's root included; one standing answers `exists`.
 
@@ -111,7 +111,7 @@ Testimony: the door checks; this slot grants nothing.
 <<has entity=`refusal` name=`stage-path-shape` params=`~ a title under the memory stage reads one or two lowercase, hyphen-joined path segments`>>
 <<has entity=`refusal` name=`tiddler-withheld` params=`~ the title stays home: temp, state, a control or secret home, cap/**`>>
 <<has entity=`refusal` name=`rendered-derives` params=`~ only the renderer writes a rendered tiddler; edit its source records`>>
-<<has entity=`refusal` name=`seat-canon-reach` params=`~ a seat reaches house canon through a recipe's copy-up and meme_offer, never a canon bag`>>
+<<has entity=`refusal` name=`seat-canon-reach` params=`~ a seat reaches house canon through a recipe's copy-up and an offer (lar:///realm.offer.signs), never a canon bag`>>
 <<has entity=`refusal` name=`cross-face-write-refused` params=`~ a put writes the face it wears; target names a face to read`>>
 ```
 
@@ -178,6 +178,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;RvEyK_SAJMqrWWoVi1jTZqSYWh-n7DVQiFHyFEHDmGQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;43GaP7ZjZEWprdxn8dWD_hwUSA7DClA9S7XHAkVhRiw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

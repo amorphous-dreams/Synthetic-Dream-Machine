@@ -359,18 +359,18 @@ export const STEPS = Object.freeze([
     run: cli(["wiki", "share", "lares", "--write", FACES.engineer, "--read", FACES.referee, "--no-json"], ["workbench: wiki lares rides realm", "(2 member face(s))"]) },
 
   // Memory, the lift, another face.
-  { id: "memory", prose: "''Memory.''", via: "seat-stdio", needs: ["wear-steward"], expect: "tiddler_put lands a stage meme; tiddler_get(meme) reads it back",
+  { id: "memory", prose: "''Memory.''", via: "seat-stdio", needs: ["wear-steward"], expect: "put lands a stage meme; get(mu=assert) reads it back",
     run: async (ctx) => {
       const text = memeText(MEMORY, MEMORY_LINE);
       const seat = await ctx.seat([
-        { name: "tiddler_put", arguments: { title: MEMORY, text, recipe: "default" } },
-        { name: "tiddler_get", arguments: { title: MEMORY, recipe: "default", meme: true, grain: "whole" } },
+        { name: "put", arguments: { title: MEMORY, text, recipe: "default" } },
+        { name: "get", arguments: { title: MEMORY, recipe: "default", mu: "assert" } },
       ]);
       if (seat.unreached) return seat;
       // The one door answers its whole envelope; the read-back reads the carrier's own field (`meme.text`), never the has line or a slot row.
       const answered = seat.results[1];
       const back = typeof answered?.meme?.text === "string" ? answered.meme.text : "";
-      return { ok: back.includes(MEMORY_LINE), answer: `tiddler_put → ${JSON.stringify(seat.results[0])}` };
+      return { ok: back.includes(MEMORY_LINE), answer: `put → ${JSON.stringify(seat.results[0])}` };
     } },
   { id: "lift", prose: "''The lift.''", via: SC, needs: ["unlock-all"], expect: "the stage answers the row digest; the lift signs under the face's root",
     run: async (ctx) => {

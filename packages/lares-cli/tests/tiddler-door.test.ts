@@ -118,13 +118,15 @@ afterEach(() => { h.calls.length = 0; h.refuse = ""; h.replyFor = null; h.reply 
 
 describe("verb-table-parity — the CLI half of the tiddler door's one table", () => {
   test("the table names all its tools, and every door it names stands in the command table", () => {
-    expect(new Set(TABLE.rows.map((r) => r.tool))).toEqual(new Set(["wiki", "wiki_filter", "tiddler_get", "wiki_render", "tiddler_put", "tiddler_delete", "wiki_status", "kahua_get", "meme_offer_show"]));
+    expect(new Set(TABLE.rows.map((r) => r.tool))).toEqual(new Set(["act", "get", "put", "delete", "wiki_render", "wiki_status", "kahua_get", "meme_offer_show"]));
     const names = new Set(COMMANDS.map((c) => c.name));
-    for (const row of TABLE.rows) expect(names.has(row.cli.command), row.cli.command).toBe(true);
+    for (const row of TABLE.rows) expect(names.has(row.cli.command) || isCallHead(row.cli.command, row.cli.positional), row.cli.command).toBe(true);
   });
 
-  test("every record and filter row speaks the call shape: its line is params alone, and it names the call it sends", () => {
-    for (const row of TABLE.rows.filter((r) => r.tool.startsWith("tiddler_") || r.tool === "wiki_filter")) {
+  test("every record, filter and act row speaks the call shape: its line is params alone, and it names the call it sends", () => {
+    const calls = TABLE.rows.filter((r) => ["get", "put", "delete", "rename", "act"].includes(r.tool));
+    expect(calls.length).toBeGreaterThan(10);
+    for (const row of calls) {
       expect(row.call, row.tool).toBeDefined();
       expect(isCallHead(row.cli.command, row.cli.positional), row.tool).toBe(true);
       expect(row.cli.options, row.tool).toEqual({});
@@ -145,7 +147,7 @@ describe("verb-table-parity — the CLI half of the tiddler door's one table", (
     });
 
     test(`${row.tool}: every option and flag the row spells stands in its command's accepts row`, () => {
-      const accepts = new Set(COMMANDS.find((c) => c.name === row.cli.command)!.accepts);
+      const accepts = new Set(COMMANDS.find((c) => c.name === row.cli.command)?.accepts ?? []);
       for (const name of [...Object.keys(row.cli.options), ...Object.keys(row.cli.flags)]) expect(accepts.has(name), `${row.cli.command} accepts --${name}`).toBe(true);
     });
   }
