@@ -40,7 +40,7 @@ import { CompositeStore } from "@lararium/mesh/composite-store";
 import { type ChangeOrigin } from "@lararium/mesh/tiddler-store";
 import { type DocHandle } from "@lararium/mesh/automerge";
 import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge } from "@lararium/keyhive";
-import { layIslandComposition, kahuaShadowOf, librarySlotUrl, type TW5Engine } from "@lararium/tw5";
+import { layIslandComposition, kahuaShadowOf, librarySlotUrl } from "@lararium/tw5";
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "../../lararium-keyhive/tests/admit-acts.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
@@ -50,13 +50,6 @@ const newRepo = () => makeIslandRepo({ syncPort: new MessageChannel().port1 });
 const origin: ChangeOrigin = { kind: "canon-hydrate", receipt: "system" };
 const rec = (title: string, text: string) => ({ tiddler: { title, text } });
 const TOP = wikiSlotUri("daemon", "working");
-
-function fakeTw5(): TW5Engine {
-  class FakeTiddler { constructor(readonly fields: Record<string, unknown>) {} getFieldStrings() { return {}; } isEqual() { return false; } }
-  return { $tw: { Tiddler: FakeTiddler, rootWidget: { invokeActionsByTag: () => {} },
-    wiki: { getTiddlerText: () => "", getTiddler: () => undefined, addTiddler: () => {}, deleteTiddler: () => {}, filterTiddlers: () => [], addEventListener: () => {}, removeEventListener: () => {}, transact: (fn: () => void) => fn() },
-    lares: { applyNalu: () => {}, isApplyingNalu: () => false } } } as unknown as TW5Engine;
-}
 
 /** A founder pins (or not) a stage, admits the joinee, and the joinee's page boots its daemon recipe under `catalogRow`. */
 async function joinedPage(opts: { readonly pin: boolean; readonly catalogRow?: (stageUrl: string) => string }) {
