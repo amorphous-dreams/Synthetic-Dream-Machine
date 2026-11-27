@@ -43,6 +43,9 @@ describe.skipIf(wikiSkip)(`a wiki's hand meets a retired bag${skipNote}`, () => 
     expect(storeText(r, workingBag, KEPT), "setup: the title landed before DROP").toBe("kept");
 
     await retire(r);
+    // DROP's record lands first: this vector reads refusals with no store change on its way.
+    await turns(24);
+    await r.adaptor.landingIdle();
     r.wiki.addTiddler(new r.Tiddler({ title: SAVED, text: "a save after DROP" }));
     r.wiki.deleteTiddler(KEPT);
     await hand(r, boundary);
