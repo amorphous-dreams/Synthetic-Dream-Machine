@@ -1,6 +1,6 @@
 /**
  * `lares oracle cast --recipe <slug> [--by <kind>] [--uncertain <words>] [--observe <pointers>] [--asking <the fork>] [--coins <six values>]`
- * — the CLI skin of the `oracle-cast` verb (`lar:///oracle.library.consults`): one consult of the oracle whose corpus rests on
+ * — the CLI skin of the `oracle-cast` verb (`lar:///library.oracle.speaks`): one consult of the oracle whose corpus rests on
  * the library shelf `--by` names (`library/oracles/<kind>/`, default `e-jing`), landed by the vessel once as an OODA-HA meme
  * under `casts/`. The shelf's index declares its method (e-jing and doa: `three-coins`, the I Ching by three coins a line);
  * the door keeps the spelling `oracle cast` as its skin. `--observe` names the arm's context pointers and `--uncertain` the gathered

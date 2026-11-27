@@ -58,16 +58,16 @@ describe("the skins derive spellings by rule", () => {
   });
 
   test("RED 5: one neutral call renders runnable on every surface", () => {
-    const call = neutralCallOf("oracle.library.consults recipe/default asking/<words>", "lar:///x.y.z");
-    expect(call.address).toBe("lar:///oracle.library.consults");
+    const call = neutralCallOf("library.oracle.speaks recipe/default asking/<words>", "lar:///x.y.z");
+    expect(call.address).toBe("lar:///library.oracle.speaks");
     expect(renderCall("cli", "lares oracle cast", call)).toBe("lares oracle cast --recipe default --asking <words>");
     expect(renderCall("mcp", "oracle_cast", call)).toBe(`oracle_cast(recipe="default", asking="<words>")`);
     expect(renderCall("tw5", "action-oracle-cast", call)).toBe(`<$action-oracle-cast recipe="default" asking="<words>"/>`);
-    expect(renderCall("console", "", call)).toBe(`$tw.lares.call("oracle.library.consults", {"recipe": "default", "asking": "<words>"})`);
+    expect(renderCall("console", "", call)).toBe(`$tw.lares.call("library.oracle.speaks", {"recipe": "default", "asking": "<words>"})`);
     // A carrier that skins a console spelling (a verb word) renders the call by that word.
     expect(renderCall("console", "get", { address: "lar:///engine.record.reads", args: [["title", "Room 4"]] })).toBe(`$tw.lares.call("get", {"title": "Room 4"})`);
     const example = parseHasRows("<<has entity=`example` name=`e` params=`recipe/default asking/[[which road first?]] fresh then/oracle.read.casts ~ x`>>")[0]!;
-    expect(renderCall("cli", "lares oracle cast", exampleCall(example, "lar:///oracle.library.consults"))).toBe("lares oracle cast --recipe default --asking 'which road first?' --fresh");
+    expect(renderCall("cli", "lares oracle cast", exampleCall(example, "lar:///library.oracle.speaks"))).toBe("lares oracle cast --recipe default --asking 'which road first?' --fresh");
   });
 
   test("RED 6: the usage spine groups a one-of choice and brackets every optional arg", () => {
@@ -77,46 +77,46 @@ describe("the skins derive spellings by rule", () => {
   });
 
   test("RED 7: the unfold read speaks the read door's own words on each surface", () => {
-    expect(unfoldRead("cli", "lar:///oracle.library.consults", "#/refuses")).toBe("lares tiddler get lar:///oracle.library.consults#/refuses --recipe lares --meme");
-    expect(unfoldRead("mcp", "lar:///oracle.library.consults", "#/refuses")).toContain(`grain="slot", slot="#/refuses"`);
+    expect(unfoldRead("cli", "lar:///library.oracle.speaks", "#/refuses")).toBe("lares tiddler get lar:///library.oracle.speaks#/refuses --recipe lares --meme");
+    expect(unfoldRead("mcp", "lar:///library.oracle.speaks", "#/refuses")).toContain(`grain="slot", slot="#/refuses"`);
   });
 });
 
 describe("addresses and wildcards (DAM law 2)", () => {
   test("RED 8: t2/t3 wildcards match; a t1 wildcard refuses by name", () => {
-    expect(addressMatcher("oracle.*")("lar:///oracle.library.consults")).toBe(true);
-    expect(addressMatcher("oracle.library.*")("oracle.library.consults")).toBe(true);
-    expect(addressMatcher("custody.hand.*")("oracle.library.consults")).toBe(false);
-    expect(() => addressMatcher("*.cast.throws")).toThrow(/afford-wildcard-heading/);
+    expect(addressMatcher("library.*")("lar:///library.oracle.speaks")).toBe(true);
+    expect(addressMatcher("library.oracle.*")("library.oracle.speaks")).toBe(true);
+    expect(addressMatcher("custody.hand.*")("library.oracle.speaks")).toBe(false);
+    expect(() => addressMatcher("*.oracle.speaks")).toThrow(/afford-wildcard-heading/);
   });
 
   test("RED 9: the reader answers views over records, and an unknown view throws rather than reading empty", () => {
     const records: Record<string, string> = {
-      "lar:///oracle.library.consults#/takes": TAKES,
-      "lar:///oracle.library.consults#/skins/cli": "<<has entity=`skin` name=`cli` params=`spells/[[lares oracle cast]]`>>",
-      "lar:///oracle.library.consults#/head": "! oracle.library.consults ~ cast the coins\n\nA line sums three coins.",
+      "lar:///library.oracle.speaks#/takes": TAKES,
+      "lar:///library.oracle.speaks#/skins/cli": "<<has entity=`skin` name=`cli` params=`spells/[[lares oracle cast]]`>>",
+      "lar:///library.oracle.speaks#/head": "! library.oracle.speaks ~ cast the coins\n\nA line sums three coins.",
     };
     const textOf = (t: string): string | undefined => records[t];
-    expect(affordView(textOf, "lar:///oracle.library.consults", "spells", "cli", "")).toEqual(["lares oracle cast"]);
-    expect(affordView(textOf, "lar:///oracle.library.consults", "spells", "mcp", "")).toEqual([]);
-    expect(JSON.parse(affordView(textOf, "lar:///oracle.library.consults", "rows", "cli", "#/takes")[2]!)).toMatchObject({ name: "asking", spell: "--asking", value: "words" });
-    expect(affordView(textOf, "lar:///oracle.library.consults", "prose", "mcp", "#/head")).toEqual(["cast the coins", "A line sums three coins."]);
-    expect(affordView(textOf, "lar:///oracle.library.consults", "body", "mcp", "#/head")).toEqual(["A line sums three coins."]);
-    expect(() => affordView(textOf, "lar:///oracle.library.consults", "nope", "cli", "")).toThrow(/afford-view-unknown/);
+    expect(affordView(textOf, "lar:///library.oracle.speaks", "spells", "cli", "")).toEqual(["lares oracle cast"]);
+    expect(affordView(textOf, "lar:///library.oracle.speaks", "spells", "mcp", "")).toEqual([]);
+    expect(JSON.parse(affordView(textOf, "lar:///library.oracle.speaks", "rows", "cli", "#/takes")[2]!)).toMatchObject({ name: "asking", spell: "--asking", value: "words" });
+    expect(affordView(textOf, "lar:///library.oracle.speaks", "prose", "mcp", "#/head")).toEqual(["cast the coins", "A line sums three coins."]);
+    expect(affordView(textOf, "lar:///library.oracle.speaks", "body", "mcp", "#/head")).toEqual(["A line sums three coins."]);
+    expect(() => affordView(textOf, "lar:///library.oracle.speaks", "nope", "cli", "")).toThrow(/afford-view-unknown/);
   });
 });
 
 describe("the canon seat (weaver#1: canon seats no bare root)", () => {
   test("RED 10: a carrier's title carries its address, at the bare root or at the stable afford seat", () => {
-    expect(addressOfTitle("lar:///oracle.library.consults")).toBe("lar:///oracle.library.consults");
-    expect(addressOfTitle("lar:///ha.ka.ba/lares/afford/oracle.library.consults")).toBe("lar:///oracle.library.consults");
+    expect(addressOfTitle("lar:///library.oracle.speaks")).toBe("lar:///library.oracle.speaks");
+    expect(addressOfTitle("lar:///ha.ka.ba/lares/afford/library.oracle.speaks")).toBe("lar:///library.oracle.speaks");
     expect(addressOfTitle("lar:///ha.ka.ba/lares/api/pono/affordance")).toBeNull();
   });
 
   test("RED 11: the canon kahea spelling resolves; `fresh/true` reads as a switch", () => {
     expect(kaheaTitles("<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container`>>"))
       .toEqual(["lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container"]);
-    const call = neutralCallOf("oracle.library.consults fresh/true", "lar:///x.y.z");
+    const call = neutralCallOf("library.oracle.speaks fresh/true", "lar:///x.y.z");
     expect(renderCall("cli", "lares oracle cast", call)).toBe("lares oracle cast --fresh");
   });
 });
@@ -154,12 +154,12 @@ describe("a positional arg (`seat/N`)", () => {
 });
 
 describe("a bare root resolves, and the stack decides (`carrierOf`)", () => {
-  const SEAT = "lar:///ha.ka.ba/lares/afford/oracle.library.consults";
-  const BARE = "lar:///oracle.library.consults";
+  const SEAT = "lar:///ha.ka.ba/lares/afford/library.oracle.speaks";
+  const BARE = "lar:///library.oracle.speaks";
   const carrier = (title: string, role: string): Record<string, string> => ({
     [title]: "",
     [`${title}#/skins/cli`]: "<<has entity=`skin` name=`cli` params=`spells/[[lares oracle cast]]`>>",
-    [`${title}#/head`]: `! oracle.library.consults ~ ${role}\n\nA line sums three coins.`,
+    [`${title}#/head`]: `! library.oracle.speaks ~ ${role}\n\nA line sums three coins.`,
   });
   const viewOf = (records: Record<string, string>) => {
     const textOf = (t: string): string | undefined => records[t];
@@ -169,7 +169,7 @@ describe("a bare root resolves, and the stack decides (`carrierOf`)", () => {
   test("RED 1: the stable seat answers a bare root no record titles; every spelling of the address names the same carrier", () => {
     const { carriers } = viewOf(carrier(SEAT, "canon line"));
     expect(carrierOf(carriers, BARE)).toBe(SEAT);
-    expect(carrierOf(carriers, "oracle.library.consults")).toBe(SEAT);
+    expect(carrierOf(carriers, "library.oracle.speaks")).toBe(SEAT);
     expect(carrierOf(carriers, SEAT)).toBe(SEAT);
     expect(seatTitleOf(BARE)).toBe(SEAT);
   });
@@ -181,9 +181,9 @@ describe("a bare root resolves, and the stack decides (`carrierOf`)", () => {
   });
 
   test("RED 3: a mesh seat answers where the house seat stands empty; a tagged carrier answers past both; nothing answers null", () => {
-    const mesh = "lar:///ha.ka.ba/lararium/afford/oracle.library.consults";
+    const mesh = "lar:///ha.ka.ba/lararium/afford/library.oracle.speaks";
     expect(carrierOf(viewOf(carrier(mesh, "mesh line")).carriers, BARE)).toBe(mesh);
-    const other = "lar:///ha.ka.ba/elsewhere/afford/oracle.library.consults";
+    const other = "lar:///ha.ka.ba/elsewhere/afford/library.oracle.speaks";
     const tagged = { has: (t: string) => t === other, tagged: (a: string) => (a === BARE ? [other] : []) };
     expect(carrierOf(tagged, BARE)).toBe(other);
     expect(carrierOf(viewOf({}).carriers, BARE)).toBeNull();
@@ -201,15 +201,15 @@ describe("a bare root resolves, and the stack decides (`carrierOf`)", () => {
 
   test("RED 5: `match` answers the carrier that answers, so the seat and the bare root above it name one address once", () => {
     const stacked = viewOf({ ...carrier(SEAT, "canon line"), ...carrier(BARE, "working line") });
-    expect(affordView(stacked.textOf, SEAT, "match", "cli", "oracle.*")).toEqual([BARE]);
-    expect(affordView(stacked.textOf, BARE, "match", "cli", "oracle.*")).toEqual([BARE]);
+    expect(affordView(stacked.textOf, SEAT, "match", "cli", "library.*")).toEqual([BARE]);
+    expect(affordView(stacked.textOf, BARE, "match", "cli", "library.*")).toEqual([BARE]);
     expect(affordView(viewOf(carrier(SEAT, "canon line")).textOf, SEAT, "match", "cli", "")).toEqual([SEAT]);
   });
 });
 
 describe("routes read the live stack (`routesOf`)", () => {
-  const SEAT = "lar:///ha.ka.ba/lares/afford/oracle.library.consults";
-  const BARE = "lar:///oracle.library.consults";
+  const SEAT = "lar:///ha.ka.ba/lares/afford/library.oracle.speaks";
+  const BARE = "lar:///library.oracle.speaks";
   const skinned = (title: string, cli: string, mcp = "oracle_cast"): Record<string, string> => ({
     [title]: "",
     [`${title}#/skins/cli`]: `<<has entity=\`skin\` name=\`cli\` params=\`spells/[[${cli}]]\`>>`,
@@ -221,7 +221,7 @@ describe("routes read the live stack (`routesOf`)", () => {
     const r = routed(skinned(SEAT, "lares oracle cast"));
     expect(r.routes.cli).toEqual({ "oracle cast": BARE });
     expect(r.routes.mcp).toEqual({ oracle_cast: BARE });
-    expect(r.routes.console).toEqual({ "oracle.library.consults": BARE });
+    expect(r.routes.console).toEqual({ "library.oracle.speaks": BARE });
     expect(r.carriers).toEqual({ [BARE]: SEAT });
     expect(r.twice).toEqual([]);
   });
@@ -242,7 +242,7 @@ describe("routes read the live stack (`routesOf`)", () => {
     const skin = "<<has entity=`skin` name=`cli` params=`spells/[[lares wick trim]]`>>";
     const r = routesOf((t) => (t === `${spirit}#/skins/cli` ? skin : undefined), [`${spirit}#/skins/cli`], { has: (t) => t === spirit });
     expect(r.routes.cli).toEqual({ "wick trim": spirit });
-    const alias = routed({ "lar:///ha.ka.ba/lares/afford/oracle.cast.throws": "forwards" });
+    const alias = routed({ "lar:///ha.ka.ba/lares/afford/lantern.wick.lit": "forwards" });
     expect(alias.routes.console).toEqual({});
   });
 
@@ -309,10 +309,10 @@ describe.skipIf(wikiSkip)(`the call sigil: rendered by renderCall, read back by 
 
   test("RED: one neutral call renders as a call sigil in the house's value grammar, a switch as a bare word, an address bare", () => {
     expect(renderCall("sigil", "get", { address: "lar:///engine.record.reads", args: [["title", "Room 4"]] })).toBe("<<~ get title=`Room 4`>>");
-    const call = neutralCallOf("oracle.library.consults recipe/default asking/<words> fresh", "lar:///x.y.z");
-    expect(renderCall("sigil", "", call)).toBe("<<~ oracle.library.consults recipe=`default` asking=`<words>` fresh>>");
+    const call = neutralCallOf("library.oracle.speaks recipe/default asking/<words> fresh", "lar:///x.y.z");
+    expect(renderCall("sigil", "", call)).toBe("<<~ library.oracle.speaks recipe=`default` asking=`<words>` fresh>>");
     // A word the parser would split (an address with its scheme, a spelling with a space) rides a string literal.
-    expect(renderCall("sigil", "lar:///oracle.library.consults", { address: "", args: [] })).toBe(`<<~ "lar:///oracle.library.consults">>`);
+    expect(renderCall("sigil", "lar:///library.oracle.speaks", { address: "", args: [] })).toBe(`<<~ "lar:///library.oracle.speaks">>`);
     expect(renderCall("sigil", "oracle cast", { address: "", args: [] })).toBe(`<<~ "oracle cast">>`);
   });
 
@@ -334,8 +334,8 @@ describe.skipIf(wikiSkip)(`the call sigil: rendered by renderCall, read back by 
       expect(callOfSigil(sigil, parse), sigil).toEqual(asRead("get", call));
     }
     // A cure's word may name an address: the string literal keeps its scheme, and so does the bare scheme the parser splits.
-    expect(callOfSigil(renderCall("sigil", "lar:///oracle.library.consults", { address: "", args: [["asking", "which road?"]] }), parse)).toEqual({ word: "lar:///oracle.library.consults", params: { asking: "which road?" } });
-    expect(callOfSigil("<<~ lar:///oracle.library.consults asking=`x`>>", parse)).toEqual({ word: "lar:///oracle.library.consults", params: { asking: "x" } });
+    expect(callOfSigil(renderCall("sigil", "lar:///library.oracle.speaks", { address: "", args: [["asking", "which road?"]] }), parse)).toEqual({ word: "lar:///library.oracle.speaks", params: { asking: "which road?" } });
+    expect(callOfSigil("<<~ lar:///library.oracle.speaks asking=`x`>>", parse)).toEqual({ word: "lar:///library.oracle.speaks", params: { asking: "x" } });
     expect(callOfSigil("<<~get title=```it's `odd` ok```>>", parse)).toEqual({ word: "get", params: { title: "it's `odd` ok" } });
   });
 

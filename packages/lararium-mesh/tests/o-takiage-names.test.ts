@@ -43,9 +43,9 @@ const TOKENS: Record<string, string> = Object.fromEntries([
   // The I Ching cast: its core, its verb, its widget and its CLI door each name the divination sense.
   ...["ORACLE_THROW_STANDS", "OracleCast", "OracleAsking", "makeOracleCastReactor", "ActionOracleCast", "ActionOracleCastWidget", "oracleCastFor",
     "cmdOracle", "oraclePlan", "oracleCast",
-    // The consult as an OODA-HA act record (`oracle.library.consults`, re-keyed from `oracle.cast.throws`): its affordance
-    // address, its carrier, the old address its alias record forwards from, and the bake test's fixture of that carrier.
-    "ORACLE_AFFORDANCE", "ORACLE_CARRIER", "ORACLE_ALIASED", "oracleFixtureCarrier",
+    // The consult as an OODA-HA act record (`library.oracle.speaks`): its affordance address, its carrier, and the bake
+    // test's fixture of that carrier.
+    "ORACLE_AFFORDANCE", "ORACLE_CARRIER", "oracleFixtureCarrier",
     // The library shelves the consult names by kind: the shelf prefix, the default kind, a shelf's index title, the verb's options.
     "ORACLE_SHELF_PREFIX", "DEFAULT_ORACLE_KIND", "oracleShelfTitle", "OracleConsultOptions",
     // The cast's MCP tool spelling, which the affordance bake and row tests render.

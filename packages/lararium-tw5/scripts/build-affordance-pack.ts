@@ -18,7 +18,7 @@
  * bare root or the stable seat canon gives it (`lar:///ha.ka.ba/lares/afford/<address>`, tagging the bare address). The pack
  * keys every carrier by its ADDRESS and keeps its title beside it.
  * `--carrier <file>` (repeatable) adds a file outside the canon source (a test's fixture). Beside the carriers it reads every
- * library shelf's index (`library/oracles/<kind>/index.mem`), whose `method` field the consult reads (`oracle.library.consults`).
+ * library shelf's index (`library/oracles/<kind>/index.mem`), whose `method` field the consult reads (`library.oracle.speaks`).
  *
  * WHAT IT WRITES (`affordance-pack.json`, beside this package's `package.json`):
  *   carriers    per address: its frame check (`bcc`), `role`, and every render, surface × depth (line · whole · each slot),
@@ -88,7 +88,7 @@ const lines = (text: string): string[] => {
 };
 
 export interface AffordancePackCarrier {
-  /** The carrier's own title: the stable seat canon gives it (`lar:///ha.ka.ba/lares/afford/oracle.library.consults`). */
+  /** The carrier's own title: the stable seat canon gives it (`lar:///ha.ka.ba/lares/afford/library.oracle.speaks`). */
   readonly title: string;
   readonly bcc: string | null;
   readonly role: string;

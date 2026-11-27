@@ -6,14 +6,14 @@ module-type: filteroperator
 /**
  * afford — an affordance carrier's slots, read for one skin inside the wiki that holds the carrier.
  *
- *   [[lar:///oracle.library.consults]afford:cli[rows],[#/takes]]     one JSON row per `has` line, with what the cli spells
- *   [[lar:///oracle.library.consults]afford:mcp[usage]]              the usage spine on the mcp surface
- *   [[lar:///oracle.library.consults]afford:tw5[spells]]           the skin's spelling (absent where the carrier skins none)
- *   [[lar:///oracle.library.consults]afford[prose],[#/head]]         the slot's prose, one paragraph per title
- *   [[lar:///oracle.library.consults]afford[body],[#/head]]          the prose without the head's tagline (the role restated)
- *   [[lar:///oracle.library.consults]afford[digest],[#/takes]]       the slot's digest line
- *   [[lar:///oracle.library.consults]afford:cli[read],[#/refuses]]   the read that opens the next depth
- *   [[lar:///oracle.library.consults]afford[surfaces]]               the surfaces the carrier skins
+ *   [[lar:///library.oracle.speaks]afford:cli[rows],[#/takes]]     one JSON row per `has` line, with what the cli spells
+ *   [[lar:///library.oracle.speaks]afford:mcp[usage]]              the usage spine on the mcp surface
+ *   [[lar:///library.oracle.speaks]afford:tw5[spells]]           the skin's spelling (absent where the carrier skins none)
+ *   [[lar:///library.oracle.speaks]afford[prose],[#/head]]         the slot's prose, one paragraph per title
+ *   [[lar:///library.oracle.speaks]afford[body],[#/head]]          the prose without the head's tagline (the role restated)
+ *   [[lar:///library.oracle.speaks]afford[digest],[#/takes]]       the slot's digest line
+ *   [[lar:///library.oracle.speaks]afford:cli[read],[#/refuses]]   the read that opens the next depth
+ *   [[lar:///library.oracle.speaks]afford[surfaces]]               the surfaces the carrier skins
  *   [all[shadows+tiddlers]tag[…/affordance]afford[match],[oracle.*]]   the carriers a t2/t3 wildcard names
  *
  * Each input title resolves through `carrierOf` first: a bare root reads the carrier the bag stack seats (a bare-root record

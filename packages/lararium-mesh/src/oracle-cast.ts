@@ -40,7 +40,7 @@ export const ORACLE_THROW_STANDS = "a blind throw to collide uncertainty with: t
 export const CAST_TITLE_PREFIX = "lar:///ha.ka.ba/lares/oracle/casts/";
 
 /**
- * THE LIBRARY SHELVES (`oracle.library.consults`): every oracle's corpus rests on a shelf `library/oracles/<kind>/`, and the
+ * THE LIBRARY SHELVES (`library.oracle.speaks`): every oracle's corpus rests on a shelf `library/oracles/<kind>/`, and the
  * shelf's index record declares its own `method` (e-jing and doa: `three-coins`). The kind rides as data: a new oracle joins
  * as a shelf, never a new address or a new verb.
  */

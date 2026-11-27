@@ -1680,11 +1680,11 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
   test("a bare root resolves, and the stack decides: a get of an affordance address reads the canon seat, a working-layer carrier at the seat (and one at the bare root) answers over canon naming its layer, and a reveal returns canon", async () => {
     const r = await rig();
     const o = { kind: "lares-verb", requestId: "seed" } as const;
-    const BARE = "lar:///oracle.library.consults";
-    const SEAT = "lar:///ha.ka.ba/lares/afford/oracle.library.consults";
+    const BARE = "lar:///library.oracle.speaks";
+    const SEAT = "lar:///ha.ka.ba/lares/afford/library.oracle.speaks";
     const TYPE = "lar:///ha.ka.ba/lares/api/pono/affordance";
     const seat = (bag: string, title: string, role: string) =>
-      r.composite.storeForBag(bag)!.put({ tiddler: { title, role, tags: [TYPE, BARE], text: `! oracle.library.consults ~ ${role}` }, meta: {} }, o);
+      r.composite.storeForBag(bag)!.put({ tiddler: { title, role, tags: [TYPE, BARE], text: `! library.oracle.speaks ~ ${role}` }, meta: {} }, o);
     await seat(CANON, SEAT, "canon line");
     await r.landed();
     const get = makeTiddlerGetReactor(r.opts);
