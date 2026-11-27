@@ -13,60 +13,44 @@ const kinds = (census: ReturnType<typeof censusRecords>) => Object.fromEntries(c
 const titles = (records: readonly { title: string }[]) => records.map(r => r.title);
 
 describe("the record census ~ which of the wiki's own records the mirror's engine boots with", () => {
-  test("an ordinary record and a plugin that evaluates nothing boot with the engine; a code plugin waits on the seal and a loose module waits whatever the seal", () => {
-    const census = censusRecords([record("Note", { text: "n" }), palette, code, loose], boot, false);
-    expect(titles(census.preloaded)).toEqual(["Note", "$:/plugins/person/palette"]);
-    expect(titles(census.held)).toEqual(["$:/plugins/person/code", "$:/person/macro.js"]);
-    expect(kinds(census)).toEqual({ "$:/plugins/person/code": "plugin-gate" });   // the loose module waits with no alert: the island runs none either
-  });
-  test("CONTROL: on a vessel whose store rests sealed, the code plugin boots with the engine; a loose module still waits, as it does in the island", () => {
-    const census = censusRecords([code, loose], boot, true);
-    expect(titles(census.preloaded)).toEqual(["$:/plugins/person/code"]);
-    expect(titles(census.held)).toEqual(["$:/person/macro.js"]);
+  test("an ordinary record, a plugin that evaluates nothing, a person's code plugin and a loose module all boot with the engine", () => {
+    const census = censusRecords([record("Note", { text: "n" }), palette, code, loose], boot);
+    expect(titles(census.preloaded)).toEqual(["Note", "$:/plugins/person/palette", "$:/plugins/person/code", "$:/person/macro.js"]);
+    expect(census.held).toEqual([]);
     expect(census.refused).toEqual([]);
   });
-  test("a syncadaptor or a saver never boots, sealed or not", () => {
-    const census = censusRecords([sync, saver], boot, true);
+  test("a syncadaptor or a saver never boots", () => {
+    const census = censusRecords([sync, saver], boot);
     expect(census.preloaded).toEqual([]);
     expect(kinds(census)).toEqual({ "$:/plugins/person/sync": "plugin-syncadaptor", "$:/person/saver.js": "module-syncadaptor" });
   });
-  test("a record never replaces a tiddler of the verified boot set, sealed or not", () => {
-    const census = censusRecords([record("$:/core", { "plugin-type": "plugin", text: packed({}) }), record("$:/themes/tiddlywiki/vanilla", { text: "x" }), record("$:/boot/boot.js", { text: "x" })], boot, true);
+  test("a record never replaces a tiddler of the verified boot set", () => {
+    const census = censusRecords([record("$:/core", { "plugin-type": "plugin", text: packed({}) }), record("$:/themes/tiddlywiki/vanilla", { text: "x" }), record("$:/boot/boot.js", { text: "x" })], boot);
     expect(census.preloaded).toEqual([]);
     expect(new Set(Object.values(kinds(census)))).toEqual(new Set(["boot-set-shadow"]));
   });
-  test("a plugin whose body the port left out, or whose packed text will not parse, waits: nothing can read what it would evaluate", () => {
-    const census = censusRecords([record("$:/plugins/skinny", { "plugin-type": "plugin" }, ["text"]), record("$:/plugins/bent", { "plugin-type": "plugin", text: "{" })], boot, true);
+  test("a plugin whose body the port left out, or whose packed text will not parse, waits: no engine boots bytes it never received", () => {
+    const census = censusRecords([record("$:/plugins/skinny", { "plugin-type": "plugin" }, ["text"]), record("$:/plugins/bent", { "plugin-type": "plugin", text: "{" })], boot);
     expect(census.preloaded).toEqual([]);
     expect(titles(census.held)).toEqual(["$:/plugins/skinny", "$:/plugins/bent"]);
   });
   test("the glass's own titles and a tombstone enter neither list", () => {
-    const census = censusRecords([record("$:/StoryList", { list: "A" }), record("$:/state/x", { text: "1" }), { title: "Gone", fields: {}, deleted: true as const }], boot, false);
+    const census = censusRecords([record("$:/StoryList", { list: "A" }), record("$:/state/x", { text: "1" }), { title: "Gone", fields: {}, deleted: true as const }], boot);
     expect(census.preloaded).toEqual([]); expect(census.held).toEqual([]);
   });
-  test("a record's StartupAction waits out the boot with no alert; CONTROL a record that only mentions the tag in its text boots", () => {
+  test("a startup record boots with the engine and runs at TW5's startup pass, whatever tag beneath StartupAction it wears", () => {
     const census = censusRecords([record("$:/on-start", { tags: "$:/tags/StartupAction", text: "x" }), record("$:/on-browser", { tags: "Other [[$:/tags/StartupAction/Browser]]", text: "x" }),
-      record("$:/note", { tags: "Notes", text: "$:/tags/StartupAction" }), record("$:/near", { tags: "$:/tags/StartupActionX", text: "x" })], boot, true);
-    expect(titles(census.held)).toEqual(["$:/on-start", "$:/on-browser"]);
-    expect(titles(census.preloaded)).toEqual(["$:/note", "$:/near"]);
+      record("$:/note", { tags: "Notes", text: "$:/tags/StartupAction" })], boot);
+    expect(titles(census.preloaded)).toEqual(["$:/on-start", "$:/on-browser", "$:/note"]);
+    expect(census.held).toEqual([]);
     expect(census.refused).toEqual([]);
-  });
-  test("RED: the tab half — a startup record the vessel admits (the wearing face's own, or one a standing exec lei spent a return for) boots with the engine; one it does not admit waits and raises a notice (`startup-offer`); CONTROL: with no admission asked every startup record waits with no alert, as before", () => {
-    const records = [record("$:/on-start", { tags: "$:/tags/StartupAction", text: "x" }), record("$:/on-browser", { tags: "Other [[$:/tags/StartupAction/Browser]]", text: "x" }), record("$:/note", { text: "n" })];
-    const admitted = censusRecords(records, boot, true, [], new Set(), new Set(["$:/on-start"]));
-    expect(titles(admitted.preloaded)).toEqual(["$:/on-start", "$:/note"]);
-    expect(titles(admitted.held)).toEqual(["$:/on-browser"]);
-    expect(kinds(admitted)).toEqual({ "$:/on-browser": "startup-offer" });
-    const blind = censusRecords(records, boot, true);
-    expect(titles(blind.held)).toEqual(["$:/on-start", "$:/on-browser"]);
-    expect(blind.refused).toEqual([]);
   });
   test("a record sharing its title with a module the boot set packs waits out the boot with no alert, so the engine's module stays defined; CONTROL a record over a plain shadow boots", () => {
     const house = { title: "house", "plugin-type": "plugin", text: packed({ "lar:///modules/deserializer": { "module-type": "library", type: "application/javascript", text: "" }, "$:/config/x": { text: "shadow" } }) };
     const modules = bootSetModuleTitles([house, { title: "$:/loose.js", "module-type": "utils", text: "" }]);
     expect([...modules].sort()).toEqual(["$:/loose.js", "lar:///modules/deserializer"]);
     const census = censusRecords([record("lar:///modules/deserializer", { text: "the carrier canon keeps under the module's own name" }), record("$:/config/x", { text: "a person's override" }),
-      record("$:/core/modules/widgets/list.js", { text: "x" })], bootSetTitles([house]), true, [], modules);
+      record("$:/core/modules/widgets/list.js", { text: "x" })], bootSetTitles([house]), [], modules);
     expect(titles(census.held)).toEqual(["lar:///modules/deserializer", "$:/core/modules/widgets/list.js"]);
     expect(titles(census.preloaded)).toEqual(["$:/config/x"]);
     expect(census.refused).toEqual([]);

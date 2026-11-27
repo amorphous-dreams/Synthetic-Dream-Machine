@@ -55,6 +55,8 @@ export interface LaresMemeFace {
 
 export interface LaresNaluAPI {
   applyNalu(change: LarTiddlerChange): void;
+  /** The crest door: `run`'s applies land as one crest, one wiki dispatch (`nalu-engine.ts`). */
+  applyNaluCrest?<T>(run: () => T): T;
   enqueueNalu?: (change: LarTiddlerChange) => void;
   isApplyingNalu(): boolean;
   /** The in-VM meme face (meme-face startup) — every meme law, under one name. */

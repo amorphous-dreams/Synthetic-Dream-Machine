@@ -26,7 +26,7 @@ import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
 import { type DocHandle } from "@lararium/mesh/automerge";
 import { type FaceActorDoor } from "@lararium/mesh/automerge-doc-store";
 import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
-import { TW5Engine, crossFaceViewSource, modulePinsOf, preloadsFromCasBlob, type CrossFaceViewSource, type FaceEngineSource, type RecipeReadyBinding } from "@lararium/tw5";
+import { TW5Engine, crossFaceViewSource, preloadsFromCasBlob, type CrossFaceViewSource, type FaceEngineSource, type RecipeReadyBinding } from "@lararium/tw5";
 import type { LitFace, LitFaceDocs } from "./lit-face-target.js";
 import type { BindingKind } from "./resolve-binding.js";
 
@@ -65,7 +65,7 @@ export function bootFromSet(bootSet: SiblingEngineDeps["bootSet"], resolveByCid:
     for (const cid of bootSet.pluginCids) preloads.push(...preloadsFromCasBlob(await blob(cid, "plugin blob")));
     const engine = new TW5Engine();
     // Each blob re-hashed against its CID above: the core boots on that pin and every module the blobs pack on theirs.
-    await engine.boot({ bytes: core, sha256: bootSet.engineCid }, preloads, undefined, { grantedDigests: new Set(bootSet.pluginCids), modulePins: modulePinsOf(preloads) });
+    await engine.boot({ bytes: core, sha256: bootSet.engineCid }, preloads, undefined, { grantedDigests: new Set(bootSet.pluginCids) });
     return engine;
   };
 }

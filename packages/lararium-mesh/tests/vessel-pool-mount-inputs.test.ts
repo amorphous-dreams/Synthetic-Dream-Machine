@@ -30,13 +30,6 @@ describe("a mounted wiki names the engine inputs its mirror reads", () => {
     expect(await (pool as any).mountInputsOf("other")).toBeNull();
     await pool.disposeAll();
   });
-  test("the inputs name the house skins by the CIDs the founding record's blob rows hold; CONTROL: no founding record names none", async () => {
-    const GRAMMAR = "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext";
-    const pool = rig(async () => ({ ok: true, pluginCids: [PLUGIN] }), () => ({ blobs: { g: { id: GRAMMAR, sha256: PLUGIN }, p: { id: "$:/plugins/x", sha256: "d".repeat(64) } } }));
-    await pool.mountWiki("wiki", spec);
-    expect(await (pool as any).mountInputsOf("wiki")).toEqual({ coreCid: CORE, pluginCids: [PLUGIN], skinCids: { [GRAMMAR]: PLUGIN } });
-    await pool.disposeAll();
-  });
   test("a wiki with no core hash, or a recipe whose plugins refuse, reads null and never a guess", async () => {
     const refusing = rig(async () => ({ ok: false, error: "plugin-collision" }));
     await refusing.mountWiki("wiki", spec).catch(() => undefined);

@@ -1,7 +1,7 @@
 /**
- * glass-census — the mirror's plugin gate reads capability, never a name: a theme that evaluates no code passes the closed gate
- * (the stock vanilla and snowwhite themes the boot set carries), a theme that carries a module waits on the seal like any
- * plugin, and a saver or syncadaptor refuses whatever the plugin's type.
+ * glass-census — the mirror boots its boot set as TiddlyWiki boots any store: every plugin unpacks and every module it packs
+ * defines, a theme's or a person's, scripted or not. One kind refuses: a plugin carrying a saver or a syncadaptor, whatever its
+ * type, since the mirror takes its truth from the port alone.
  */
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -13,26 +13,20 @@ const stock = (name: string) => JSON.parse(readFileSync(path.join(PLUGINS, name)
 const packed = (title: string, type: string, shadows: Record<string, Record<string, string>>) =>
   ({ title, "plugin-type": type, type: "application/json", text: JSON.stringify({ tiddlers: shadows }) });
 
-test("the stock themes pass the closed gate; RED: a theme carrying a module waits on the seal; CONTROL: the seal opens it", () => {
+test("the stock themes, a theme carrying a module, both house skins and a person's code plugin all boot", () => {
   const vanilla = stock("tiddlywiki-vanilla.json"), snowwhite = stock("tiddlywiki-snowwhite.json");
-  const scripted = packed("$:/themes/someone/scripted", "theme", { "$:/themes/someone/scripted/run.js": { title: "$:/themes/someone/scripted/run.js", type: "application/javascript", "module-type": "startup", text: "" } });
-  const closed = censusPreloads([vanilla, snowwhite, scripted], false);
-  expect(closed.accepted.map(p => p.title)).toEqual(["$:/themes/tiddlywiki/vanilla", "$:/themes/tiddlywiki/snowwhite"]);
-  expect(closed.refused).toEqual([{ title: "$:/themes/someone/scripted", kind: "plugin-gate" }]);
-  expect(censusPreloads([scripted], true).refused).toEqual([]);
-});
-
-test("RED: a theme carrying a saver refuses even under the seal; CONTROL: a person's plugin still waits on the closed gate", () => {
-  const saver = packed("$:/themes/someone/saving", "theme", { "$:/themes/someone/saving/saver.js": { title: "$:/themes/someone/saving/saver.js", type: "application/javascript", "module-type": "saver", text: "" } });
-  expect(censusPreloads([saver], true).refused).toEqual([{ title: "$:/themes/someone/saving", kind: "plugin-syncadaptor" }]);
-  const plain = packed("$:/plugins/someone/plain", "plugin", { "$:/plugins/someone/plain/readme": { title: "$:/plugins/someone/plain/readme", text: "hi" } });
-  expect(censusPreloads([plain], false).refused).toEqual([{ title: "$:/plugins/someone/plain", kind: "plugin-gate" }]);
-});
-
-test("RED: both ATTESTED house skins pass the closed gate (a veil floor or an unlit face still boots the grammar and the house); CONTROL: a person's code plugin beside them still waits", () => {
   const grammar = stock("lares-memetic-wikitext.json"), house = stock("lares-lararium.json");
+  const scripted = packed("$:/themes/someone/scripted", "theme", { "$:/themes/someone/scripted/run.js": { title: "$:/themes/someone/scripted/run.js", type: "application/javascript", "module-type": "startup", text: "" } });
   const person = packed("$:/plugins/someone/code", "plugin", { "$:/plugins/someone/code/run.js": { title: "$:/plugins/someone/code/run.js", type: "application/javascript", "module-type": "startup", text: "" } });
-  const closed = censusPreloads([grammar, house, person], false, new WeakSet<object>([grammar, house]));
-  expect(closed.accepted.map(p => p.title)).toEqual(["lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext", "lar:///ha.ka.ba/lararium/plugins/lares/lararium"]);
-  expect(closed.refused).toEqual([{ title: "$:/plugins/someone/code", kind: "plugin-gate" }]);
+  const census = censusPreloads([vanilla, snowwhite, grammar, house, scripted, person]);
+  expect(census.accepted).toEqual([vanilla, snowwhite, grammar, house, scripted, person]);
+  expect(census.refused).toEqual([]);
+});
+
+test("RED: a theme carrying a saver refuses; CONTROL: a plain plugin beside it boots", () => {
+  const saver = packed("$:/themes/someone/saving", "theme", { "$:/themes/someone/saving/saver.js": { title: "$:/themes/someone/saving/saver.js", type: "application/javascript", "module-type": "saver", text: "" } });
+  const plain = packed("$:/plugins/someone/plain", "plugin", { "$:/plugins/someone/plain/readme": { title: "$:/plugins/someone/plain/readme", text: "hi" } });
+  const census = censusPreloads([saver, plain]);
+  expect(census.refused).toEqual([{ title: "$:/themes/someone/saving", kind: "plugin-syncadaptor" }]);
+  expect(census.accepted).toEqual([plain]);
 });

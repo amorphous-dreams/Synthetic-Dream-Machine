@@ -63,7 +63,6 @@ const browserNode = {
       "tests/in-page-island-teardown.test.ts",
       "tests/intent-agent-verify.test.ts",
       "tests/kahua-joined-mount.test.ts",
-      "tests/mirror-rest-verdict.test.ts",
       "tests/nexus-board-climb-at-leaf.test.ts",
       "tests/page-port-grant.test.ts",
       "tests/place-claim-storm.test.ts",

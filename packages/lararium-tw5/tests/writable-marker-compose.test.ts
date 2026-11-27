@@ -3,8 +3,7 @@
 import { describe, test, expect, vi } from "vitest";
 import * as kernel from "../src/sovereign-kernel.js";
 import { TW5Engine } from "../src/tw5-vm.js";
-import { houseSkins, skinPins, vendoredCore } from "./test-wiki.js";
-import { modulePinsOf } from "../src/module-pins.js";
+import { houseSkins, vendoredCore } from "./test-wiki.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import { IslandAdaptor } from "../src/island-adaptor.js";
 import { asIslandStore } from "./island-store-double.js";
@@ -52,7 +51,6 @@ async function bootWith(opts: { stand?: (engine: TW5Engine) => Promise<void>; mo
     ...houseSkins(),
     probe,
   ], undefined, {
-    modulePins: new Set([...skinPins(), ...modulePinsOf([probe])]),
     onInstance(instance) {
       const tw = instance as unknown as { larariumWritableStand?: () => Promise<unknown>; __seen?: Record<string, unknown> };
       tw.__seen = seen;
@@ -132,7 +130,7 @@ describe.skipIf(wikiSkip)(`writable marker — the scheduler holds a dependent u
     await engine.boot(vendoredCore(), [
       ...houseSkins(),
       probe,
-    ], undefined, { modulePins: new Set([...skinPins(), ...modulePinsOf([probe])]), onInstance(instance) {
+    ], undefined, { onInstance(instance) {
       const tw = instance as unknown as Record<string, unknown>;
       tw.__earlyCheck = (door: unknown) => { earlyUnchanged = tw.larariumWritableStand === door && calls === 0 && !adaptor.value; };
       Object.defineProperty(instance, "larariumWritableStand", { configurable: true, value: async () => {
@@ -155,7 +153,7 @@ describe.skipIf(wikiSkip)(`writable marker — the scheduler holds a dependent u
     await engine.boot(vendoredCore(), [
       ...houseSkins(),
       probe,
-    ], undefined, { modulePins: new Set([...skinPins(), ...modulePinsOf([probe])]), onInstance(instance) { Object.defineProperty(instance, "larariumWritableStand", { configurable: true, enumerable: false, value: async () => { await stoodShore(store, adaptor)(engine); return { state: "standing" }; } }); } });
+    ], undefined, { onInstance(instance) { Object.defineProperty(instance, "larariumWritableStand", { configurable: true, enumerable: false, value: async () => { await stoodShore(store, adaptor)(engine); return { state: "standing" }; } }); } });
     await adaptor.value!.handsRested();
     await new Promise((r) => setTimeout(r, 30));
     spy.mockRestore();

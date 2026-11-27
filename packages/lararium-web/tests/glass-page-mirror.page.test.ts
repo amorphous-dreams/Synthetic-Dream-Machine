@@ -88,29 +88,20 @@ test("a mirror the tab's evidence holds at skinny names why on the host; CONTROL
   } finally { held.host.remove(); }
 });
 
-test("RED: the tab half — a startup record the vessel admits (`startupAdmit`, asked with the wiki's startup records) runs in the tab at boot, and one it holds lands after boot unrun; CONTROL: with no admission wired, none runs", async () => {
+test("a wiki's startup records run in the tab at boot, as TiddlyWiki runs any store's, and each lands as a record", async () => {
   const records = [
     { title: "Own start", fields: { tags: "$:/tags/StartupAction", text: `<$action-setfield $tiddler="$:/temp/ran-own" text="yes"/>` } },
-    { title: "Held start", fields: { tags: "$:/tags/StartupAction", text: `<$action-setfield $tiddler="$:/temp/ran-held" text="yes"/>` } },
+    { title: "Other start", fields: { tags: "$:/tags/StartupAction", text: `<$action-setfield $tiddler="$:/temp/ran-other" text="yes"/>` } },
   ];
-  for (const wired of [true, false]) {
-    const r = await rig({ records });
-    const asked: Array<{ surface: string; titles: string[] }> = [];
-    try {
-      const result = await standPageMirror({ port: r.port, host: r.host, actor: "a", surface: () => "notes",
-        mirrorInputs: async () => ({ coreCid: "0".repeat(64), pluginCids: [] }),
-        ...(wired ? { startupAdmit: async (surface: string, offered: readonly { title: string }[]) => { asked.push({ surface, titles: offered.map(o => o.title) }); return ["Own start"]; } } : {}) }, r.seams) as any;
-      await result.settled;
-      const text = (title: string) => result.tw.wiki.getTiddlerText(title) ?? null;
-      if (wired) {
-        expect(asked).toEqual([{ surface: "notes", titles: ["Own start", "Held start"] }]);
-        expect(text("$:/temp/ran-own")).toBe("yes");
-        expect(text("$:/temp/ran-held")).toBeNull();
-      } else {
-        expect(text("$:/temp/ran-own")).toBeNull();
-      }
-      expect(result.tw.wiki.tiddlerExists("Held start")).toBe(true);
-      result.unmount();
-    } finally { r.host.remove(); }
-  }
+  const r = await rig({ records });
+  try {
+    const result = await standPageMirror({ port: r.port, host: r.host, actor: "a", surface: () => "notes",
+      mirrorInputs: async () => ({ coreCid: "0".repeat(64), pluginCids: [] }) }, r.seams) as any;
+    await result.settled;
+    const text = (title: string) => result.tw.wiki.getTiddlerText(title) ?? null;
+    expect(text("$:/temp/ran-own")).toBe("yes");
+    expect(text("$:/temp/ran-other")).toBe("yes");
+    expect(result.tw.wiki.tiddlerExists("Other start")).toBe(true);
+    result.unmount();
+  } finally { r.host.remove(); }
 });

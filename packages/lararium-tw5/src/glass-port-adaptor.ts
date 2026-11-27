@@ -1,4 +1,5 @@
 import type { PortIslandToVesselMsg, PortWireRecord, PortWidthName } from "@lararium/mesh/record-port";
+import { naluFieldsOf } from "./nalu-form.js";
 
 export interface GlassWiki {
   addEventListener(type: "change", listener: (changes: Record<string, unknown>) => void): void;
@@ -138,7 +139,9 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
       // reads it back after rewriting tags, lists and dates (TW5 notifies later and matches that one).
       const wire = imageOf(fields);
       tag(title, wire);
-      wiki.addTiddler(new Tiddler({ title, ...fields }));
+      // THE NALU FORM below, as the mirror's boot store took it above (`glass-mirror.ts`). The merge with the prior landing and the
+      // width's omitted fields stay here: a port record carries a field set cut to the port's width, which no CRDT envelope does.
+      wiki.addTiddler(new Tiddler(naluFieldsOf({ title, record: { tiddler: fields! } })));
       const readBack = imageOf(ownFields(wiki, title));
       if (readBack !== wire) tag(title, readBack);
       landed.set(title, { ...record, fields: { ...fields! }, omitted: [...missing] });

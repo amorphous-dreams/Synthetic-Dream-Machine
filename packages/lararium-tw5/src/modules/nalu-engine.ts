@@ -11,8 +11,12 @@ module-type: startup
  * wave with an unsent hand. This module owns HOW one lands, and nothing else:
  *
  *   applyNalu(change)   a tombstone or an absent record deletes the title; anything else adds the
- *                       tiddler `toWikiFields` builds from the envelope. No queue, no timer, no frame.
- *   isApplyingNalu()    true while an `applyNalu` call runs, restored in a `finally`.
+ *                       tiddler the NALU FORM builds from the envelope (`naluFieldsOf`, `../nalu-form.ts`).
+ *                       No queue, no timer, no frame.
+ *   applyNaluCrest(run) THE CREST DOOR: one synchronous run of applies (the shore's slice) lands as ONE crest, so the wiki
+ *                       gathers every title it touches into one `change` dispatch. The engine names the law; the shore keeps
+ *                       its per-change ledger and hand bookkeeping inside `run`.
+ *   isApplyingNalu()    true while an `applyNalu` call or a crest runs, restored in a `finally`.
  *
  * The shore installs its own queue door at `$tw.lares.enqueueNalu` and removes it at teardown; this
  * module never holds one.
@@ -37,6 +41,9 @@ import type { TW5Instance, TW5Wiki } from "../types/tiddlywiki.js";
 // by inlining. Reach for the module that holds what you need.
 import type { LarTiddlerChange, TW5TiddlerInputFieldsWithTitle } from "@lararium/mesh/tiddler-store";
 import type { LaresTw5Extension } from "../types/lares-globals.js";
+// THE NALU FORM, ONE FORM ABOVE AND BELOW: wave zero preloads the seed through it before TiddlyWiki starts, and every later
+// wave lands through it here. A leaf module, bundled in by its relative path.
+import { naluFieldsOf, naluLands } from "../nalu-form.js";
 
 // ---------------------------------------------------------------------------
 // TW5 startup lifecycle
@@ -63,20 +70,12 @@ export class NaluWikiUnavailableError extends Error {
 }
 
 /**
- * The wiki fields an inbound change lands as. CRDT records store the title as the doc key, not nested
- * in `tiddler` — restore it from `change.title` so the wiki tiddler carries its identity.
- *
- * Residency Model — every inbound write annotates `$origin-bag` from the ENVELOPE so the operator
- * can answer "which bag does this come from?" at every read (Anti-pattern #4 defense). `bag` is
- * user space: an author's own field rides through untouched, as TiddlyWeb's stamp would ride under
- * theirs — the host's provenance wears a name no author collides with.
+ * The wiki fields an inbound change lands as: the nalu form (`naluFieldsOf`), the one builder wave zero's preloads share.
+ * The title comes back from `change.title`, the draft-base fields stay on the store record, and `$origin-bag` annotates the
+ * ENVELOPE's bag (Anti-pattern #4 defense); `bag` stays user space and rides through untouched.
  */
 export function toWikiFields(change: LarTiddlerChange): TW5TiddlerInputFieldsWithTitle {
-  return {
-    ...change.record!.tiddler,
-    title: change.title,
-    ...(change.bag !== undefined ? { "$origin-bag": change.bag } : {}),
-  };
+  return naluFieldsOf(change) as TW5TiddlerInputFieldsWithTitle;
 }
 
 // ---------------------------------------------------------------------------
@@ -92,14 +91,31 @@ export function applyNalu(change: LarTiddlerChange): void {
   const outer = _applying;
   _applying = true;
   try {
-    if (change.record === null || change.record.meta?.deleted) _wiki.deleteTiddler(change.title);
+    if (!naluLands(change)) _wiki.deleteTiddler(change.title);
     else _wiki.addTiddler(new Tiddler(toWikiFields(change)));
   } finally {
     _applying = outer;
   }
 }
 
-/** True while an `applyNalu` call runs. */
+/**
+ * Land one crest: `run` applies its changes (each through `applyNalu`) in one synchronous stretch, and the apply flag stays
+ * raised across the whole crest. TiddlyWiki gathers every title the crest touches until its own `nextTick`, so the crest
+ * reaches the wiki's observers as ONE dispatch: the nalu delivers a batch, never a tiddler at a time. `run` must not await;
+ * a promise it returns ends the crest at once, and the applies after its first await would scatter across dispatches.
+ */
+export function applyNaluCrest<T>(run: () => T): T {
+  if (!_wiki) throw new NaluWikiUnavailableError("(a crest)");
+  const outer = _applying;
+  _applying = true;
+  try {
+    return run();
+  } finally {
+    _applying = outer;
+  }
+}
+
+/** True while an `applyNalu` call or a crest runs. */
 export function isApplyingNalu(): boolean {
   return _applying;
 }
@@ -115,6 +131,7 @@ export function startup(): void {
 
   const lares = ($tw!.lares ?? {}) as Record<string, unknown>;
   lares["applyNalu"]      = applyNalu;
+  lares["applyNaluCrest"] = applyNaluCrest;
   lares["isApplyingNalu"] = isApplyingNalu;
   ($tw as { lares?: Record<string, unknown> }).lares = lares;
 }

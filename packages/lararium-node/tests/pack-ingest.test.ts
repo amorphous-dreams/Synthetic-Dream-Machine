@@ -8,7 +8,7 @@
  * foreign-titled members — the map is their only prior record).
  */
 
-import { houseSkins, skinPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
+import { houseSkins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { describe, test, expect, beforeAll } from "vitest";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
@@ -84,7 +84,7 @@ describe.skipIf(coreBlobSkip)(
   let engine: TW5Engine;
   beforeAll(async () => {
     engine = new TW5Engine();
-    await engine.boot(vendoredCore(), houseSkins(), undefined, { modulePins: skinPins() });
+    await engine.boot(vendoredCore(), houseSkins());
   }, 60_000);
 
   test("a 3-tiddler bundle lands all three + maps each to the pack file", async () => {

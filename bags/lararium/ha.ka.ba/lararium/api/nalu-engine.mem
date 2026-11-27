@@ -8,7 +8,7 @@ cacheable      = true
 docs           = "lar:///ha.ka.ba/lares/api/pono/nalu"
 implementation = "packages/lararium-tw5/src/modules/nalu-engine.ts"
 namespace      = "&#x0950; &#x0901;"
-role           = "TW5 startup module — the in-wiki applier of the nalu wave: applyNalu lands ONE inbound change synchronously and isApplyingNalu reads true while it does; the wiki shore owns the queue, its door and the pacing"
+role           = "TW5 startup module — the in-wiki applier of the nalu wave: it owns the nalu form wave zero and every wave share, applyNalu lands ONE inbound change synchronously, applyNaluCrest lands a crest in one dispatch, and isApplyingNalu reads true while either runs; the wiki shore owns the queue, its door and the pacing"
 tags           = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title          = "lar:///ha.ka.ba/lararium/api/nalu-engine"
 type           = "text/memetic-wikitext+tiddlywiki"
@@ -31,21 +31,38 @@ WHEN (`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`).
 
 | Method | Caller | Role |
 |---|---|---|
-| `applyNalu(change)` | the wiki shore (`IslandAdaptor`), once per landed change | Land ONE change synchronously: a tombstone or an absent record deletes the title; any other record adds the tiddler `toWikiFields` builds from the envelope |
-| `isApplyingNalu()` | a synchronous caller | True while an `applyNalu` call runs |
+| `applyNalu(change)` | the wiki shore (`IslandAdaptor`), once per landed change | Land ONE change synchronously: a tombstone or an absent record deletes the title; any other record adds the tiddler the nalu form builds from the envelope |
+| `applyNaluCrest(run)` | the wiki shore (`WaveLanding`), once per slice | Land ONE crest: every apply `run` makes lands in one synchronous stretch, the apply flag raised across the whole crest, so the wiki tells its observers once |
+| `isApplyingNalu()` | a synchronous caller | True while an `applyNalu` call or a crest runs |
 
 `$tw.lares.enqueueNalu` belongs to the wiki shore. The shore installs its queue door there and removes
 it at teardown; this module never holds one.
+
+!! The nalu form ~ one form above and below
+
+`naluFieldsOf(change)` (`packages/lararium-tw5/src/nalu-form.ts`, a leaf the packed module bundles by
+its relative path) names the one shape a change takes as a wiki tiddler: the record's fields, `title`
+restored from the envelope, the draft-base fields left on the store record, and `$origin-bag` stamped
+from the envelope's bag. Below, every wave lands through it (`applyNalu`, `toWikiFields`). Above, wave
+zero hands the seed to `$tw.preloadTiddlers` through it before TiddlyWiki starts, and the glass mirror
+boots its store through it. The shore's landing compares the same form with what stands
+(`sameWithStamp`), so a preloaded title and the record a later landing of the same change would write
+carry the same fields byte for byte, and the landing writes nothing. The sameness holds by
+construction, one function above and below: a pattern integrity of the nalu
+(<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu#/the-wave-shape`>>).
 
 !! Position in the stack
 
 ```
 TS shore (irreducible — Automerge, network, crypto, storage)
   AutomergeDocStore → MemeProvider → projection bus → IslandAdaptor.onUriChanged
-  the landing queue (WaveLanding) → IslandAdaptor lands one change
-                              → $tw.lares.applyNalu(change)
+  the landing queue (WaveLanding) → prepares a slice, then opens one crest
+                              → $tw.lares.applyNaluCrest(run)
+                                  → $tw.lares.applyNalu(change) × N
+  wave zero (island-seed) → naluFieldsOf(change) × N → $tw.preloadTiddlers
 ───────────────────────────────────────────────────────────────────────
 TW5 startup module (this spec)
+  applyNaluCrest(run)                     ← one synchronous stretch, the flag raised throughout
   applyNalu(change)                       ← wiki.addTiddler / wiki.deleteTiddler
   _applying flag                          ← read through isApplyingNalu()
 ```
@@ -57,47 +74,58 @@ The module holds one wiki and one `_applying` flag at module level. Every inboun
 shore's queue, whatever its origin kind; the shore calls `applyNalu` when the value it resolved
 differs from the value the wiki holds, and every such write passes through this one applier.
 
-''N-2 One change, one synchronous stretch.''
-`applyNalu` lands exactly one change and returns. The engine holds no queue, no timer and no frame,
+''N-2 One change, one synchronous stretch; one crest, one dispatch.''
+`applyNalu` lands exactly one change and returns. `applyNaluCrest(run)` lands a crest: `run` makes its
+applies in one synchronous stretch and returns. The engine holds no queue, no timer and no frame,
 and it wraps nothing in a transaction: TW5 gathers changed titles until its own scheduled
-`nextTick` dispatch, and that dispatch delivers the nalu to the widgets. The dispatch boundary
-follows TW5's scheduling, never the shore's slices.
+`nextTick` dispatch, so a crest reaches the widgets as ONE dispatch. The engine names that law; the
+shore keeps its per-change ledger and hand bookkeeping inside `run`. A `run` that awaits ends the
+crest at its first await, and the applies after it scatter across dispatches.
 
 ''N-3 The queue belongs to the shore, one shore per engine.''
 The wiki shore owns the ordered queue, its slices, the host-task pacing between them and the seed
 checkpoint. It installs its door only where `applyNalu` already stands (else
 `LandingDoorUnavailableError`), and a second shore on an engine whose door stands occupied refuses by
-`LandingDoorOccupiedError`.
+`LandingDoorOccupiedError`. An engine whose applier carries no crest door lands the shore's slice
+bare, in the same single tick.
 
-''N-4 The apply flag covers the call, never the dispatch.''
-`_applying` reads `true` for the length of one `applyNalu` call and returns to the value it found in a
-`finally`, so an apply that begins inside another leaves the outer one raised. TW5 dispatches `change`
-on `nextTick`, after the flag lowered, so a `change` listener never reads it raised. The wiki shore
-therefore tells a wave from a hand by WHAT STANDS: its landed ledger holds the value each wave left
-under each title, and a notification that repeats that value reads as foam
+''N-4 The apply flag covers the call or the crest, never the dispatch.''
+`_applying` reads `true` for the length of one `applyNalu` call or one crest and returns to the value
+it found in a `finally`, so an apply that begins inside another leaves the outer one raised. TW5
+dispatches `change` on `nextTick`, after the flag lowered, so a `change` listener never reads it
+raised. The wiki shore therefore tells a wave from a hand by WHAT STANDS: its landed ledger holds the
+value each wave left under each title, and a notification that repeats that value reads as foam
 ([[outbound-bridge|lar:///ha.ka.ba/lares/docs/pono/outbound-bridge]] #/the-shore-law).
 
-''N-5 Tiddler fields = record.tiddler + title + `$origin-bag`.''
-For a non-tombstone change, the engine builds the wiki fields from `{ ...change.record.tiddler }`,
-restores `title` from `change.title`, and stamps `$origin-bag` from `change.bag` when the envelope
-names one. `bag` stays the author's own field and rides through untouched.
-For a tombstone (`record === null` or `record.meta?.deleted === true`), the engine
+''N-5 Tiddler fields = the nalu form.''
+For a non-tombstone change, the engine builds the wiki fields through `naluFieldsOf`: the record's
+fields with the draft base left home, `title` restored from `change.title`, and `$origin-bag` stamped
+from `change.bag` when the envelope names one. `bag` stays the author's own field and rides through
+untouched. For a tombstone (`record === null` or `record.meta?.deleted === true`), the engine
 calls `wiki.deleteTiddler(change.title)`.
 
 ''N-6 No wiki, no apply.''
-An `applyNalu` call with no wiki under it throws `NaluWikiUnavailableError`, which names the title.
+An `applyNalu` call or a crest with no wiki under it throws `NaluWikiUnavailableError`, which names
+the title.
 
 ''N-7 Idempotent startup.''
-`startup()` reads `$tw.lares ?? {}`, installs the two functions, writes back. Safe to
+`startup()` reads `$tw.lares ?? {}`, installs the three functions, writes back. Safe to
 run more than once in tests; subsequent invocations overwrite with identical refs.
 
-!! The seed
+!! The seed ~ wave zero
 
-The recipe (`buildIslandRecipe`) installs the shore's landing queue, then drives
-`emitInitialReplay()` per bag: every existing record enters that queue as an ordinary change. The
-shore's seed checkpoint resolves once its queue and its tracked work settle (a seed landing that
-fails twice rejects it), and the kernel awaits it before it arms the
-island's behavior. Seed and live changes share one road; the engine sees no difference between them.
+The seed lands as the first nalu, delivered before TiddlyWiki starts. The kernel lays the composition
+before the engine boots (`layIslandComposition`), reads it once (`readIslandSeed`: one `resolveLayered`
+per title, topmost wins, a tombstone included, the boot set's own titles left out), and hands each
+record in the nalu form to the engine as a preload. TiddlyWiki adds the preloads while its change queue
+still sleeps, so wave zero raises no `change` dispatch, and it defines their modules, unpacks their
+plugins and runs their startup actions as it does any store's. The shore then mounts
+(`mountIslandShore`) and drives `emitInitialReplay()` per bag as before: each preloaded title compares
+the same form with what stands and writes nothing, while the ledger, the landed heads, the draft book
+and the kahua shadow stamps fill through the one road. Every change the composition told while the
+engine booted lands afresh, so a record that left every layer during the boot leaves the wiki too.
+The shore's seed checkpoint resolves once its queue and its tracked work settle, and the kernel awaits
+it before it arms the island's behavior. Later waves carry what changed after the seed.
 
 <<~ ahu slot=`#/gate-families-shore`>>
 
@@ -108,7 +136,7 @@ ONE shore queue holds the changes of every bag (N-3). Upstream,
 ''per bag''. Both stand; they sit at OPPOSITE ENDS of the one shape `SOURCE → gate → SINK`, never
 the same layer.
 
-<<~ scale name=`shore` ranks=`UPSTREAM/provider-coalesce-per-key -> DOWNSTREAM/shore-landing-queue-per-slice -> ENGINE/apply-one`>>
+<<~ scale name=`shore` ranks=`UPSTREAM/provider-coalesce-per-key -> DOWNSTREAM/shore-landing-queue-per-slice -> ENGINE/apply-crest`>>
 
 * ''UPSTREAM — the provider gates (physics).'' `MemeProvider` (the TS-side, before the
   wiki shore) draws the coalesce gates: a per-URI debounce collapses the replay patches a fresh
@@ -127,7 +155,7 @@ So "one queue, all bags" governs the DELIVERY runtime — the shore refuses to r
 bag. The per-key coalesce gates do not contradict it, because they live UPSTREAM, shaping the stream
 BEFORE it reaches the queue. ''The shore and the engine carry the runtime; the gate-families carry the''
 ''physics it enacts'' (`role = capability ≠ platform`). The three compose end-to-end:
-coalesce-per-key (drop intermediates) → one queue (preserve order) → apply one (land). WITNESSED: the
+coalesce-per-key (drop intermediates) → one queue (preserve order) → one crest per slice (land, one dispatch). WITNESSED: the
 applier (`modules/nalu-engine.ts`) + the queue (`wave-landing.ts`, `island-adaptor.ts`) + the provider
 gates (`mesh/meme-provider.ts`, `mesh/projection-nalu.ts`).
 
@@ -147,6 +175,6 @@ gates (`mesh/meme-provider.ts`, `mesh/projection-nalu.ts`).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;LnVgDJvbOgyuqm8mvVfklf1eoTpmGtX3PdS3TNKpJCQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;V7DOoMZscpzOHrAeihWt7JZH9GcVazwqzccO4ngEjsA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

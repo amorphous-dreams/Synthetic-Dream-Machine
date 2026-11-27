@@ -10,7 +10,7 @@
  * projector's own idle handshake.
  */
 
-import { houseSkins, skinPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
+import { houseSkins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -107,7 +107,7 @@ export class ShoreRig {
   /** A rig over `count` tracked carriers, its wiki booted with the grammar plugin. */
   static async stand(count = 3): Promise<ShoreRig> {
     const engine = new TW5Engine();
-    await engine.boot(vendoredCore(), houseSkins(), undefined, { modulePins: skinPins() });
+    await engine.boot(vendoredCore(), houseSkins());
     return new ShoreRig(engine, count);
   }
 

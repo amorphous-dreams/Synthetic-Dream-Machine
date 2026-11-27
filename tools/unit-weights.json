@@ -28,7 +28,6 @@
   "tests/in-page-island-teardown.test.ts": 0.1,
   "tests/intent-agent-verify.test.ts": 0.2,
   "tests/kahua-joined-mount.test.ts": 1.7,
-  "tests/mirror-rest-verdict.test.ts": 0,
   "tests/nexus-board-climb-at-leaf.test.ts": 0.2,
   "tests/page-port-grant.test.ts": 0,
   "tests/place-claim-storm.test.ts": 4.6,

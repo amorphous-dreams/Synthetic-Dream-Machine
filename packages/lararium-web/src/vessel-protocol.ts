@@ -22,7 +22,6 @@
  *   setActiveSurface                  page → vessel  `set-surface`
  *   ports.place / ports.close         page → vessel  `port:place` / `port:close` (the mirror's port road)
  *   mirrorInputs / readFloor          page → vessel  `read:mirror-inputs` / `read:floor`, answered by `reply`
- *   startupAdmit                      page → vessel  `read:startup-admit`: which of a wiki's startup records the tab runs
  *   identity, wiki, connectionState   vessel → page  `status{vessel, connection}`
  *   the fleet-join door               page → vessel  `join:offer{text}` / `join:answer{text}`, answered by `reply`
  *   the holder's SharedWorker         vessel → page  `spawn{role}`; page → vessel `spawned{port}` (transferred, never read)
@@ -130,7 +129,6 @@ export type PageToVessel =
   | { readonly t: "port:close"; readonly binding: string }
   | { readonly t: "page:life"; readonly life: PageLife }
   | { readonly t: "read:mirror-inputs"; readonly callId: string; readonly surface: string }
-  | { readonly t: "read:startup-admit"; readonly callId: string; readonly surface: string; readonly records: readonly { readonly title: string; readonly fields: Readonly<Record<string, string>> }[] }
   | { readonly t: "read:floor"; readonly callId: string; readonly baseUrl: string }
   | { readonly t: "join:offer"; readonly callId: string; readonly text: string; readonly abandonPending: boolean }
   | { readonly t: "join:answer"; readonly callId: string; readonly text: string }

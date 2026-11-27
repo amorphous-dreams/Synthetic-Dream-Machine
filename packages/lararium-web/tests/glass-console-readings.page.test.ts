@@ -6,8 +6,6 @@ import { afterEach, beforeEach, expect, test } from "vitest";
 import { standPageMirror } from "../src/page-mirror.js";
 import { createReadings, PHASES_TITLE, READINGS_TITLE } from "../src/console-readings.js";
 import { forgetEvidence, rig } from "./glass-rig.js";
-import housePlugin from "../../lararium-tw5/plugins/lares-memetic-wikitext.json";
-import larariumPlugin from "../../lararium-tw5/plugins/lares-lararium.json";
 import { carrierRecords } from "@lararium/tw5/carrier-canonical";
 import viewCarrier from "../../../bags/lararium/ha.ka.ba/lararium/tw5/ui/vessel-console.mem?raw";
 
@@ -65,32 +63,17 @@ test("RED: a fresh mirror after an unmount (the reload path) replays every readi
 });
 
 const REFUSED = "$:/temp/lares/alert/refused/";
-const tagsOf = (tw: any, title: string): string[] => [...(tw.wiki.getTiddler(title)?.fields.tags ?? [])];
 
-test("RED: a held startup offer stands as a refusal with no $:/tags/Alert, so a visitor's first screen carries no house notice; the host still counts it", async () => {
-  const r = await rig({ records: [{ title: "Held start", fields: { tags: "$:/tags/StartupAction", text: `<$action-setfield $tiddler="$:/temp/ran-held" text="yes"/>` } }] });
+test("RED: a startup action the store carries runs in the mirror at boot, as native TW5 runs it, and nothing stands held back for it", async () => {
+  // Alpha admits every startup action (wave/pono-guards-return holds the guard's re-entry key): the mirror boots the store as
+  // wave zero, so TiddlyWiki's own startup pass runs the action.
+  const r = await rig({ records: [{ title: "Store start", fields: { tags: "$:/tags/StartupAction", text: `<$action-setfield $tiddler="$:/temp/ran-store" text="yes"/>` } }] });
   try {
-    const result = await standPageMirror({ port: r.port, host: r.host, actor: "a", surface: () => "notes", mirrorInputs: inputs,
-      startupAdmit: async () => [] }, r.seams) as any;
+    const result = await standPageMirror({ port: r.port, host: r.host, actor: "a", surface: () => "notes", mirrorInputs: inputs }, r.seams) as any;
     await result.settled;
-    const title = `${REFUSED}startup-offer/Held start`;
-    expect(result.tw.wiki.tiddlerExists(title)).toBe(true);
-    expect(tagsOf(result.tw, title)).not.toContain("$:/tags/Alert");
-    expect(r.host.getAttribute("data-lar-refused-plugins")).toBe("1");
+    expect(result.tw.wiki.getTiddlerText("$:/temp/ran-store")).toBe("yes");
+    expect(result.tw.wiki.filterTiddlers(`[all[tiddlers]prefix[${REFUSED}]]`)).toEqual([]);
     expect(r.host.shadowRoot!.querySelectorAll(".tc-alerts .tc-alert").length).toBe(0);
-    result.unmount();
-  } finally { r.host.remove(); }
-});
-
-test("CONTROL: an unattested skin keeps its loud alert", async () => {
-  // A copy wears the house skin's title with bytes the vessel never attested.
-  const r = await rig({ preloads: [housePlugin as Record<string, unknown>, { ...(larariumPlugin as Record<string, unknown>) }] });
-  try {
-    const result = await standPageMirror({ port: r.port, host: r.host, actor: "a", surface: () => "lares", mirrorInputs: inputs }, r.seams) as any;
-    await result.settled;
-    const title = `${REFUSED}skin-unattested/${String((larariumPlugin as Record<string, unknown>)["title"])}`;
-    expect(result.tw.wiki.tiddlerExists(title)).toBe(true);
-    expect(tagsOf(result.tw, title)).toContain("$:/tags/Alert");
     result.unmount();
   } finally { r.host.remove(); }
 });
@@ -104,10 +87,9 @@ test("RED: the vessel console view lists each reading, the phases and what the g
   expect(records.map(r => r.title)).toContain(VIEW);
   const readings = createReadings(() => 42);
   readings.set("status", "live — sovereign local island", "ok"); readings.set("relay", "<<danger>> {{$:/SiteTitle}} [[Link]]"); readings.phase("tw5-booted");
-  const r = await rig({ records: [...records, { title: "Held start", fields: { tags: "$:/tags/StartupAction", text: "" } }] });
+  const r = await rig({ records });
   try {
-    const result = await standPageMirror({ port: r.port, host: r.host, actor: "a", surface: () => "notes", mirrorInputs: inputs, readings,
-      startupAdmit: async () => [] }, r.seams) as any;
+    const result = await standPageMirror({ port: r.port, host: r.host, actor: "a", surface: () => "notes", mirrorInputs: inputs, readings }, r.seams) as any;
     await result.settled;
     const view = result.tw.wiki.getTiddler(VIEW);
     expect([...view.fields.tags]).toContain("$:/tags/MoreSideBar");
@@ -119,9 +101,7 @@ test("RED: the vessel console view lists each reading, the phases and what the g
     expect(text).toContain("<<danger>> {{$:/SiteTitle}} [[Link]]");      // the value stays text: no macro call, no transclusion, no link
     expect(text).toContain("tw5-booted");
     expect(text).toContain("42 ms");
-    expect(text).toContain("startup-offer");
-    expect(text).toContain("Held start");
-    expect(text).toContain("Startup action offered, not run");
+    expect(text).toContain("Nothing held back.");
     const html = result.tw.wiki.renderTiddler("text/html", VIEW) as string;
     expect(html).toContain("lar-tone-ok");
     expect(html).not.toContain("<a ");                                   // the [[Link]] in a value draws no link

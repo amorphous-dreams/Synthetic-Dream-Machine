@@ -60,7 +60,6 @@ import type { ResidencyTemperature } from "./bag-residency.js";
 import { SessionDocumentView } from "./session-document-view.js";
 import type { LarDoc } from "./base-doc.js";
 import { genesisFloorCidOf } from "./floor-pin.js";
-import { floorSkinCids } from "./floor-offering.js";
 import {
   floorShadowExplained, floorShadowExplainedLine, floorShadowLine, floorShadowReadingLine, foldFloorShadowTally, readFloorShadow, readFloorShadowTally,
   type FloorShadowStore, type FloorShadowTally,
@@ -421,7 +420,7 @@ export class VesselIslandPoolCore {
   // grain identity outlives its physical activation). `ensureWiki` reads this.
   private readonly _mountSpecs = new Map<string, { spec: WikiMountSpec; pinned: boolean }>();
   /** The core hash and resolved plugin CIDs each wiki island last booted with. */
-  private readonly _bootInputs = new Map<string, { coreCid: string; pluginCids: readonly string[]; skinCids?: Readonly<Record<string, string>> }>();
+  private readonly _bootInputs = new Map<string, { coreCid: string; pluginCids: readonly string[] }>();
   private readonly _host:           VesselIslandHost;
   private readonly _mainRepo:       Repo | null;
   /** The sync peer each wiki island's channel carries, so a receipt request reads a closed channel as a fact. */
@@ -808,12 +807,7 @@ export class VesselIslandPoolCore {
     // own); every other island reads the vessel's accepted pin afresh, so the mount after an accept stands on that floor.
     const floorCid = plan.surface ? (plan.surface.mount.recipe.floorCids[0] ?? null) : ((await this._floorCid?.()) ?? null);
     // The mirror of a wiki island reads the plugin list the island booted with, never a second resolution that an offering change could move.
-    // It names the house skins by the CIDs the attested founding record holds (`floorSkinCids`), so the mirror admits a skin by its bytes.
-    if (!plan.surface && plan.coreHash) {
-      let skinCids: Record<string, string> = {};
-      try { skinCids = floorSkinCids(this._foundingRecord?.()?.blobs); } catch { /* an unreadable record names no skin, and the mirror refuses each by name */ }
-      this._bootInputs.set(wikiId, { coreCid: plan.coreHash, pluginCids, ...(Object.keys(skinCids).length > 0 ? { skinCids } : {}) });
-    }
+    if (!plan.surface && plan.coreHash) this._bootInputs.set(wikiId, { coreCid: plan.coreHash, pluginCids });
     // THE FLOOR SHADOW READ (backlog-awakens 3a): the floor this wiki stands on, beside the founding record it serves. It
     // only reads and records; the manifest below still carries the same floor and the island serves as before. NEVER ON THE
     // BOOT PATH: serving never waits on its answer, so a content reader or tally store that hangs stalls no mount.
@@ -1137,7 +1131,7 @@ export class VesselIslandPoolCore {
    * The engine inputs a mounted wiki's mirror reads: the core hash and plugin CIDs its island last booted with, the same two its manifest carried. Null when the wiki has no retained mount, no core
    * hash (pre-CAS), or a recipe whose plugins refuse: the mirror never guesses an input.
    */
-  async mountInputsOf(wikiId: string): Promise<{ readonly coreCid: string; readonly pluginCids: readonly string[]; readonly skinCids?: Readonly<Record<string, string>> } | null> {
+  async mountInputsOf(wikiId: string): Promise<{ readonly coreCid: string; readonly pluginCids: readonly string[] } | null> {
     return this._bootInputs.get(wikiId) ?? null;
   }
 

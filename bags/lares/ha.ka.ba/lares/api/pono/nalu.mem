@@ -53,8 +53,15 @@ Lararium wiki shore (the landing queue) + nalu engine (the in-wiki applier):
   CRDT merge patches arrive           ← scattered writes (from peers, from CRDT ops)
   AutomergeDocStore → MemeProvider → IslandAdaptor.onChangeset → the landing queue, one family per grain
   host-task yield                     ← pacing boundary: one queue across ALL bags, whole families up to 200 landings between yields
-  $tw.lares.applyNalu(change) × N     ← each change lands in the wiki, synchronously
-  refresh(changedTiddlers)            ← WAVE ARRIVES: TW5's own nextTick dispatch carries what landed
+  prepare the slice                   ← every await (the composition, heads, the kahua shadow) runs before the crest
+  $tw.lares.applyNaluCrest(run)       ← ONE CREST: the slice's applies run in one synchronous stretch
+    $tw.lares.applyNalu(change) × N   ← each change lands in the wiki through the nalu form
+  refresh(changedTiddlers)            ← WAVE ARRIVES: TW5's own nextTick dispatch carries the whole crest
+
+Wave zero (the seed, before TiddlyWiki starts):
+  layIslandComposition → readIslandSeed ← one resolveLayered per title, topmost wins, a tombstone included
+  naluFieldsOf(change) × N            ← the SAME nalu form the applier writes
+  $tw.preloadTiddlers                 ← TW5 boots with them: zero change dispatches
 ```
 
 ''Unified-nalu law:'' ONE landing queue per wiki collects the changes of every CRDT bag in
@@ -63,15 +70,30 @@ changes, yielding to the host between slices. ''The grain = one store change per
 change carries a carrier's root, its children and its orphans' tombstones together, the provider hands
 a shore the union of whole change events as one array, and the queue never cuts inside it (a family
 larger than 200 lands whole in a slice of its own), so the wiki dispatches a root and its children
-together and the disk projector never renders half a carrier; the nalu engine lands each change synchronously
-(`$tw.lares.applyNalu`) and holds no queue, no timer and no frame. TW5 gathers changed titles
-until its own scheduled `nextTick` dispatch, so the batch boundary belongs to the wiki and follows
-no slice of the shore; the TiddlyWiki core ships no `wiki.transact()` and nothing on this surface calls one. Prior art
+together and the disk projector never renders half a carrier. The shore prepares each slice, every await first, then
+lands the whole slice as ONE crest through the engine's crest door (`$tw.lares.applyNaluCrest`), each change applied
+through the nalu form (`$tw.lares.applyNalu`) in one synchronous run; the engine holds no queue, no timer and no frame.
+TW5 gathers changed titles until its own scheduled `nextTick` dispatch, so a crest reaches every observer as one
+dispatch, and the engine names that law; the TiddlyWiki core ships no `wiki.transact()` and nothing on this surface calls one. Prior art
 (Vue 3 scheduler, MobX `transaction`, Yjs `transact`, Solid `batch`, React 18 automatic
 batching, S.js tick, the DREAM glitch-freedom paper) all converge on this shape: one
 boundary per tick across heterogeneous sources beats N boundaries with the cascade-refresh
 + FRP-glitch anti-pattern. Our widget filter is O(1) hash-lookup, so the cost scales with
 //changed// hashes, not bag count — no fan-out objection applies.
+
+''Wave zero ~ the seed lands as the first nalu.'' The seed does not bypass the nalu; it arrives as its first wave,
+delivered before TiddlyWiki starts. The kernel lays the composition before the engine boots, reads it once (one
+`resolveLayered` per title, topmost wins, a tombstone keeping its title out, the boot set's own titles left out), and
+hands every record to `$tw.preloadTiddlers` through the nalu form. TiddlyWiki adds the preloads while its change queue
+still sleeps, so wave zero raises no `change` dispatch, and defines, unpacks and runs what they carry as it does any
+store's. The replay that follows finds each preloaded title standing in the same form and writes nothing; later waves
+carry only what changed after the seed's heads.
+
+''One nalu form above and below (a pattern integrity).'' `naluFieldsOf` builds the fields of every landing and of every
+preload alike: the wave below (`applyNalu`), wave zero above (the island seed), and the glass mirror's boot store, which
+runs the same boot shape (census -> nalu form -> `$tw.preloadTiddlers`). The internal mirror holds by construction: the
+shore compares the form a landing would write with what stands, and a preload of the same change carries the same fields
+byte for byte, so the comparison reads "same" because one function made both.
 
 ''A second nalu instance — local capture'': the same collect-then-flush
 shape drives forward-facing capture, in a SEPARATE local ''non-federated'' worker-VM.
@@ -171,7 +193,9 @@ The TS layer forms the minimal shore around it — only what TW5 cannot do from 
 * `nalu-engine` — the applier: `$tw.lares.applyNalu(change)` lands ONE change synchronously (a
   tombstone or an absent record deletes the title; anything else adds the tiddler, stamped
   `$origin-bag` from the envelope), and `$tw.lares.isApplyingNalu()` reads true for the length of
-  that call. It holds no queue: the wiki shore installs its own door at `$tw.lares.enqueueNalu`
+  that call. `$tw.lares.applyNaluCrest(run)` lands a crest: `run`'s applies in one synchronous stretch, one
+  dispatch, the flag raised throughout. One builder, `naluFieldsOf`, gives every landing its fields, wave zero's
+  preloads included. It holds no queue: the wiki shore installs its own door at `$tw.lares.enqueueNalu`
 * `reaction-router` — `wiki.addEventListener("change")` listener that fires `tm-verse-event`
   for `lar:` tiddlers whose papalohe bindings name a listenable
 
@@ -225,7 +249,7 @@ CRDT (the sea)
     → IslandAdaptor.onUriChanged (every envelope joins the landing queue)
       → the landing queue (the swell builds across bags)
         → a host-task slice (the crest forms; the composition resolves each title)
-          → $tw.lares.applyNalu(change) (the wave arrives on shore)
+          → $tw.lares.applyNaluCrest(run) (the wave arrives on shore, one dispatch)
 ```
 
 The widget tree receives the wave. One wiki shore stands per engine: every bag's changes enter it, and TW5 notifies the widgets when a landing changes what the wiki holds.
@@ -293,7 +317,7 @@ home; every other carrier on the surface points back here.
 | the law | this carrier | the wave as changeset delivery, below the grammar; one graph, one shore per engine |
 | the governor | `lar:///ha.ka.ba/lares/api/pono/servo` | a bound that tunes itself from an observed signal |
 | the gate families | `lar:///ha.ka.ba/lararium/api/projection-nalu` | accumulate and coalesce, their guards, the level-triggered reconcile queue |
-| the engine | `lar:///ha.ka.ba/lararium/api/nalu-engine` | the in-wiki applier: one change, landed synchronously |
+| the engine | `lar:///ha.ka.ba/lararium/api/nalu-engine` | the in-wiki applier: the nalu form, one change or one crest, landed synchronously |
 | the Automerge shore | `lar:///ha.ka.ba/lararium/docs/meme-provider` | the fan-out between a document and its projections |
 | the wiki shore, its law | `lar:///ha.ka.ba/lares/docs/pono/outbound-bridge` | a tiddler replaces a tiddler; the landed ledger, the base, the drain, the discrete acts |
 | the wiki shore, its adaptor | `lar:///ha.ka.ba/lararium/api/island-adaptor` · `lar:///ha.ka.ba/lararium/api/save-path` · `lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor` | the adaptor's invariants, the outbound save path, the file's own account |
@@ -344,6 +368,6 @@ lands and what refuses follow from state alone (`lar:///ha.ka.ba/lares/docs/pono
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_bfl95B9BEWY9Zd4HxyRRBrevjG-bC7BE6v70JjbmO0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QIjXzPgaX5x6yY8OBzRBQQPgZLrC8MeEyuPLGlQsPEg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

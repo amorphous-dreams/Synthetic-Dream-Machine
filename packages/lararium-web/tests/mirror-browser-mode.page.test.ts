@@ -4,10 +4,10 @@ import { forgetEvidence, rig } from "./glass-rig.js";
 beforeEach(forgetEvidence); afterEach(forgetEvidence);
 const names = ["Buffer", "global", "process", "setImmediate", "clearImmediate"];
 const descriptors = () => Object.fromEntries(names.map(name => [name, Object.getOwnPropertyDescriptor(window, name)]));
-/** A mounted mirror; a fixture plugin rides as a preload, and `sealedRest` is the vessel's word that lets a person's plugin evaluate. */
-async function mounted(plugin?: Record<string, unknown>, sealedRest = false) {
+/** A mounted mirror; a fixture plugin rides as a preload and evaluates as TiddlyWiki evaluates any plugin. */
+async function mounted(plugin?: Record<string, unknown>) {
  const r = await rig(); const inputs = await r.seams.readInputs();
- const mirror = await standMirror(r.options, { ...r.seams, readInputs: async () => ({ ...inputs, preloadedTiddlers: plugin ? [...inputs.preloadedTiddlers, plugin] : inputs.preloadedTiddlers, sealedRest }) });
+ const mirror = await standMirror(r.options, { ...r.seams, readInputs: async () => ({ ...inputs, preloadedTiddlers: plugin ? [...inputs.preloadedTiddlers, plugin] : inputs.preloadedTiddlers }) });
  if (mirror.kind !== "mirror") { r.host.remove(); throw new Error(`mirror did not stand: ${mirror.why}`); }
  await mirror.settled; return { r, mirror, close: () => { mirror.unmount(); r.host.remove(); } };
 }
@@ -23,5 +23,5 @@ test("mirror-disabled-set CONTROL: the modules the mirror keeps are not in the s
 const claims = () => ({ onerror: window.onerror, onbeforeunload: window.onbeforeunload, sjcl: "sjcl" in window, children: document.body.childElementCount, store: document.querySelector("#storeArea") });
 test("mirror-window-claims-dispositioned", async () => { const before = claims(); const m = await mounted(); try { expect({ ...claims(), children: claims().children - 1 }).toEqual(before); } finally { m.close(); } });
 // The window-claims witness reads green under the worker forge today and stands as the guard the browser-mode boot must keep: F5 names each claim (onerror, onbeforeunload, sjcl, storeArea) stock TW5 makes.
-test("mirror-fault-reaches-alert-rail", async () => { const m = await mounted(plugin(true), true); try { expect(m.mirror.tw.wiki.allTitles().some((t: string) => t.startsWith("$:/temp/lares/alert/boot-fault/"))).toBe(true); expect(document.body.querySelector(".tc-error-form")).toBeNull(); } finally { m.close(); } });
-test("mirror-fault CONTROL: clean startup runs without alert", async () => { delete (window as any).__fixtureClean; const m = await mounted(plugin(false), true); try { expect((window as any).__fixtureClean).toBe(true); expect(m.mirror.tw.wiki.allTitles().some((t: string) => t.startsWith("$:/temp/lares/alert/boot-fault/"))).toBe(false); } finally { m.close(); delete (window as any).__fixtureClean; } });
+test("mirror-fault-reaches-alert-rail", async () => { const m = await mounted(plugin(true)); try { expect(m.mirror.tw.wiki.allTitles().some((t: string) => t.startsWith("$:/temp/lares/alert/boot-fault/"))).toBe(true); expect(document.body.querySelector(".tc-error-form")).toBeNull(); } finally { m.close(); } });
+test("mirror-fault CONTROL: clean startup runs without alert", async () => { delete (window as any).__fixtureClean; const m = await mounted(plugin(false)); try { expect((window as any).__fixtureClean).toBe(true); expect(m.mirror.tw.wiki.allTitles().some((t: string) => t.startsWith("$:/temp/lares/alert/boot-fault/"))).toBe(false); } finally { m.close(); delete (window as any).__fixtureClean; } });
