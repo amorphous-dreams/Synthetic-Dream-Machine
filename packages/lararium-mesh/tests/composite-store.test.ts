@@ -16,7 +16,7 @@
 
 import { describe, test, expect, beforeEach } from "vitest";
 import { CompositeStore, corpusBagId } from "../src/composite-store.js";
-import { BAG_IDS, LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI } from "../src/lar-uris.js";
+import { BAG_IDS } from "../src/lar-uris.js";
 import { wikiBagUri } from "../src/wiki-recipe.js";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { AtomicMemoryStore } from "../../lararium-tw5/tests/atomic-memory-store.js";
@@ -236,7 +236,7 @@ describe("CompositeStore — write routing", () => {
     const draft = new MemoryTiddlerStore();
     const store = new CompositeStore();
     store.addLayer({ bagId: TEST_WIKI_URI,    store: wiki,  writable: true });
-    store.addLayer({ bagId: BAG_IDS.draft, store: draft, writable: true });
+    store.addLayer({ bagId: TEST_DRAFT_URI, store: draft, writable: true });
 
     await store.put(record("lar:///edit", "draft"), draftOrigin());
     expect((await draft.get("lar:///edit"))?.tiddler.text).toBe("draft");
