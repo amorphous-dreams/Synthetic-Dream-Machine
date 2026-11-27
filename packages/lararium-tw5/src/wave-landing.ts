@@ -99,6 +99,12 @@ export class WaveLanding {
 
   pending(): number { return this.queue.reduce((count, family) => count + family.length, 0); }
 
+  /** True while a wave of `bag` stays owed (its landing failed twice): the wiki has not taken that bag's change. */
+  owesBag(bag: string): boolean {
+    for (const change of this.owed.values()) if (change.bag === bag) return true;
+    return false;
+  }
+
   /** Resolves at every quiescent edge; each call observes the queue and current drain afresh. */
   idle(): Promise<void> {
     if (!this.draining && this.queue.length === 0 && this.external.size === 0) return Promise.resolve();

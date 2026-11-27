@@ -32,9 +32,6 @@
  * until the shore mounts (`release`), and hands back every change it heard, a title that arrived during the boot included; the
  * shore lands those afresh, so a record that left every layer during boot leaves the wiki too, and one that arrived lands.
  *
- * A BOOTED ENGINE (`booted`): an engine that stood before its composition laid preloads nothing, so every record the composition
- * resolves rides `waves` and lands through the shore's queue: wave zero arriving as a wave, one envelope per title.
- *
  * Meme: lar:///ha.ka.ba/lares/api/pono/nalu#/the-wave-shape
  */
 import type { CompositeStore } from "@lararium/mesh/composite-store";
@@ -59,7 +56,7 @@ export interface IslandSeed {
   readonly titles: ReadonlySet<string>;
   /** Per title the boot store took (or a tombstone kept out of it): the composition's answer, for the shore's books. */
   readonly stands: ReadonlyMap<string, SeedStand>;
-  /** The records that land after boot through the shore's queue: boot-set ground, or every record where the engine booted first. */
+  /** The records that land after boot through the shore's queue: boot-set ground. */
   readonly waves: readonly LarTiddlerChange[];
   /** Each layer's heads, read before the enumeration: what the shore holds as landed per bag once its books stand. */
   readonly layerHeads: ReadonlyMap<string, readonly string[]>;
@@ -74,10 +71,10 @@ function stampFieldsOf(title: string, shadow: KahuaShadow): { title: string } & 
 
 /**
  * Read wave zero off a laid composition. `bootPreloads` names the boot set the engine boots with (the census keeps every record
- * off ground it owns). `booted` reads for an engine that already stands: nothing preloads, every record rides `waves`. The read
+ * off ground it owns). The read
  * awaits per title where a layer reads only through `get` (the kahua stage); a pre-boot await costs the engine no tick.
  */
-export async function readIslandSeed(composite: CompositeStore, bootPreloads: readonly Record<string, unknown>[], opts: { booted?: boolean } = {}): Promise<IslandSeed> {
+export async function readIslandSeed(composite: CompositeStore, bootPreloads: readonly Record<string, unknown>[]): Promise<IslandSeed> {
   const heard = new Map<string, LarTiddlerChange>();
   const off = composite.subscribe((change) => { heard.set(change.title, change); });
   const census = bootCensusOf(bootPreloads);
@@ -98,7 +95,7 @@ export async function readIslandSeed(composite: CompositeStore, bootPreloads: re
       if (!top) continue;
       const origin: ChangeOrigin = { kind: "canon-hydrate", receipt: top.bagId };
       const change: LarTiddlerChange = { title, record: top.record, origin, bag: top.bagId, ...(top.heads !== undefined ? { heads: top.heads } : {}) };
-      if (opts.booted || !islandSeedPreloadable(title, census)) { waves.push(change); continue; }
+      if (!islandSeedPreloadable(title, census)) { waves.push(change); continue; }
       stands.set(title, { bag: top.bagId, record: top.record, ...(top.heads !== undefined ? { heads: top.heads } : {}) });
       if (naluLands(change)) {
         preloads.push(naluFieldsOf(change));

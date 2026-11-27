@@ -1,45 +1,15 @@
 import { describe, expect, test } from "vitest";
-import { buildIslandRecipe } from "../src/island-recipe.js";
+import { layIslandComposition } from "../src/island-recipe.js";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { ORACLE_BAG, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { type DocHandle } from "@lararium/mesh/automerge";
 import { type LarDoc } from "@lararium/mesh/base-doc";
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
-import type { TW5Engine } from "../src/tw5-vm.js";
 
 const title = "lar:///ha.ka.ba/lares/api/floor-carrier";
 const floorRecords: Readonly<Record<string, LarTiddlerRecord>> = {
   [title]: { tiddler: { title, text: "floor carrier" } },
 };
-
-function fakeTw5(): TW5Engine {
-  return {
-    $tw: {
-      Tiddler: class {
-        constructor(readonly fields: Record<string, unknown>) {}
-        getFieldStrings(): Record<string, string> {
-          return Object.fromEntries(Object.entries(this.fields).map(([key, value]) => [key, String(value)]));
-        }
-        isEqual(other: unknown, exclude: string[] = []): boolean {
-          const fields = (other as { fields?: Record<string, unknown> } | null)?.fields;
-          if (!fields) return false;
-          const keys = new Set([...Object.keys(this.fields), ...Object.keys(fields)]);
-          return [...keys].filter((key) => !exclude.includes(key)).every((key) => this.fields[key] === fields[key]);
-        }
-      },
-      rootWidget: { invokeActionsByTag: () => {} },
-      wiki: {
-        getTiddlerText: () => "",
-        getTiddler: () => undefined,
-        filterTiddlers: () => [],
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        transact: (fn: () => void) => fn(),
-      },
-      lares: { applyNalu: () => {}, isApplyingNalu: () => false },
-    },
-  } as unknown as TW5Engine;
-}
 
 function fakeHandle(): DocHandle<LarDoc> {
   const doc = { tiddlers: {} } as unknown as LarDoc;
@@ -53,13 +23,13 @@ function fakeHandle(): DocHandle<LarDoc> {
   } as unknown as DocHandle<LarDoc>;
 }
 
-describe("buildIslandRecipe mounts the floor under a user wiki", () => {
+describe("layIslandComposition mounts the floor under a user wiki", () => {
   test("@oracle reads a carrier and rejects writes while an edit copies into working", async () => {
     const slug = "floor-mount";
     const workingSlot = wikiSlotUri(slug, "working");
     const composite = new CompositeStore();
-    const { stores } = buildIslandRecipe({
-      tw5: fakeTw5(), composite, recipe: { wikiSlug: slug },
+    const { stores } = layIslandComposition({
+      composite, recipe: { wikiSlug: slug },
       ready: [
         { slot: ORACLE_BAG, handle: fakeHandle() },
         { slot: workingSlot, handle: fakeHandle() },
@@ -85,8 +55,8 @@ describe("buildIslandRecipe mounts the floor under a user wiki", () => {
 
   test("without floor rows, @oracle cannot read the carrier", async () => {
     const composite = new CompositeStore();
-    buildIslandRecipe({
-      tw5: fakeTw5(), composite, recipe: { wikiSlug: "floor-control" },
+    layIslandComposition({
+      composite, recipe: { wikiSlug: "floor-control" },
       ready: [{ slot: ORACLE_BAG, handle: fakeHandle() }],
     });
     expect(await composite.get(title)).toBeNull();

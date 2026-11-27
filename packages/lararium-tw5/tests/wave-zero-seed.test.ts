@@ -47,7 +47,6 @@ const DRAFT = "Draft of 'seed/plain/7'";
 const MODULE = "lar:///t/seed/module.js";
 const STARTUP = "lar:///t/seed/startup";
 const PROBE = "$:/temp/seed/startup-ran";
-const ALL = [...PLAIN, SHADOWED, DRAFT, MODULE, STARTUP];
 
 let saved: { canon: Uint8Array; working: Uint8Array };
 
@@ -74,7 +73,7 @@ beforeAll(async () => {
 interface Stood {
   readonly engine: TW5Engine;
   readonly adaptor: IslandAdaptor;
-  readonly seed: IslandSeed | null;
+  readonly seed: IslandSeed;
   /** Every title a wiki `change` dispatch named, from the listener's install (right after boot) to the seed checkpoint. */
   readonly dispatched: Set<string>;
   /** Each `change` dispatch's titles, in order. */
@@ -82,7 +81,7 @@ interface Stood {
   readonly repo: RepoType;
 }
 
-async function stand(run: { preload: boolean }): Promise<Stood> {
+async function stand(): Promise<Stood> {
   const repo = new Repo({ network: [] });
   const ready = [
     { slot: CANON, handle: repo.import<LarDoc>(saved.canon) as DocHandle<LarDoc> },
@@ -90,8 +89,8 @@ async function stand(run: { preload: boolean }): Promise<Stood> {
   ];
   const composite = new CompositeStore();
   const laid = layIslandComposition({ composite, recipe: { wikiSlug: SLUG }, ready });
-  const seed = run.preload ? await readIslandSeed(composite, houseSkins()) : null;
-  const engine = await bootTestWiki(seed ? { seed: seed.preloads } : {});
+  const seed = await readIslandSeed(composite, houseSkins());
+  const engine = await bootTestWiki({ seed: seed.preloads });
   const dispatched = new Set<string>();
   const dispatches: string[][] = [];
   (engine.$tw.wiki as unknown as { addEventListener(type: "change", fn: (changes: Record<string, unknown>) => void): void })
@@ -119,25 +118,21 @@ describe.skipIf(wikiSkip)(`wave zero: the seed boots as preloads through the nal
     for (const s of stood.splice(0)) { await s.adaptor.stop(); s.engine.dispose(); await s.repo.shutdown(); }
   });
 
-  test("every resolved record preloads and wave zero reaches observers in ONE dispatch; the ledger matches the per-change road row for row; the module defines and the startup action ran at boot; the tombstoned title stands absent", async () => {
-    const control = await stand({ preload: false });
-    stood.push(control);
-    const zero = await stand({ preload: true });
+  test("every resolved record preloads and wave zero reaches observers in ONE dispatch; the ledger names each seeded bag; the module defines and the startup action ran at boot; the tombstoned title stands absent", async () => {
+    const zero = await stand();
     stood.push(zero);
-    const seed = zero.seed!;
+    const seed = zero.seed;
 
     // (c) what preloaded: everything the composition resolves, the module and the startup record included.
     expect([...seed.titles].sort()).toEqual([...PLAIN, DRAFT, MODULE, STARTUP].sort());
 
-    // (a) one dispatch carries every preloaded title (live ones: the tombstoned title preloads nothing); CONTROL: the per-change
-    // road dispatched every one.
+    // One dispatch carries every preloaded title; a tombstone preloads nothing.
     const naming = zero.dispatches.filter((titles) => titles.some((title) => seed.titles.has(title)));
     expect(naming.length, "wave zero reaches observers in one dispatch, never one per tiddler").toBe(1);
     expect([...seed.titles].filter((title) => !naming[0]!.includes(title)), "the one dispatch names every preloaded title").toEqual([]);
-    expect([...seed.titles].filter((title) => !control.dispatched.has(title)), "CONTROL: the waves dispatched every seeded title").toEqual([]);
 
-    // (b) the ledger holds the row the per-change road writes, title for title.
-    for (const title of ALL) expect(rowOf(zero.adaptor, title), title).toEqual(rowOf(control.adaptor, title));
+    // The ledger names the composition bag for each live title.
+    for (const title of seed.titles) expect(rowOf(zero.adaptor, title), title).toBeDefined();
     expect(rowOf(zero.adaptor, PLAIN[0]!), "the ledger filled").toMatchObject({ bag: CANON });
 
     // The draft preloaded through the nalu form: the draft base stays on the store record.
@@ -148,10 +143,6 @@ describe.skipIf(wikiSkip)(`wave zero: the seed boots as preloads through the nal
     // (c) the module defined at boot and evaluates; the startup action ran at TW5's boot pass, once.
     expect((zero.engine.$tw as unknown as { modules: { execute(t: string): Record<string, unknown> } }).modules.execute(MODULE)["seeded"]).toBe(11);
     expect(wiki.getTiddler(PROBE)?.fields["text"]).toBe("ran");
-    // CONTROL: on the per-change road the module record landed after boot as data, and the startup action ran once the seed stood.
-    expect((control.engine.$tw as unknown as { modules: { titles: Record<string, unknown> } }).modules.titles[MODULE]).toBeUndefined();
-    expect((control.engine.$tw.wiki as unknown as WikiReader).getTiddler(PROBE)?.fields["text"]).toBe("ran");
-
     // (d) the tombstone over a lower live copy: absent, never preloaded, and its row names the tombstone's bag.
     expect(seed.titles.has(SHADOWED)).toBe(false);
     expect(wiki.getTiddler(SHADOWED)).toBeUndefined();

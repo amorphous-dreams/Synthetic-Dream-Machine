@@ -107,8 +107,8 @@ export type {
 } from "./types/tiddlywiki.d.ts";
 
 export { IslandAdaptor } from "./island-adaptor.js";
-export { buildIslandRecipe, wikiLandedCovers, bindRecoveryAtRest } from "./island-recipe.js";
-export type { BuildIslandRecipeInput, RecipeReadyBinding } from "./island-recipe.js";
+export { layIslandComposition, mountIslandShore, wikiLandedCovers, bindRecoveryAtRest } from "./island-recipe.js";
+export type { LayIslandCompositionInput, RecipeReadyBinding } from "./island-recipe.js";
 export { composeCrossFaceView, composeFaceEngine, crossFaceViewSource, enginePool, faceEngines } from "./face-engine.js";
 export { composeWikiEngine, composeWikiEngineSource, wikiEngines } from "./wiki-engine.js";
 export type { WikiEngine, WikiEngineDeps, WikiEngineSource, WikiEngines } from "./wiki-engine.js";

@@ -80,7 +80,7 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
   // minters and `recipeFromRecord` read too) — everything else in the cascade counts as a library
   // bag for membership reconcile. The four instance slots are per-(PersonaGroup×fingerprint) GRANT
   // slots threaded through the manifest, never named in a recipe's bag-stack — exempt, else this
-  // reconcile evicts the live write layer buildIslandRecipe just mounted (the OCI
+  // reconcile evicts the live write layer the shore just mounted (the OCI
   // writable-upper-layer law: keep the scratch layer out of the membership diff). The wiki's OWN
   // canon and the oracle floor are structural too. The lares bag is a LIBRARY like the lararium
   // bag: a record that names it mounts it, one that does not, does not.
@@ -167,7 +167,7 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
     // THE SLOTS THIS PASS LEFT UNMOUNTED STAND UNREAD: a library the catalog cannot resolve yet, or a slot an oracle move
     // dropped when its new document would not open, may hold any title, so a delete above it raises a kāpae, never a plain
     // retract (recipe-layer-model#/the-delete). The order reads the live record's libraries over the island's own recipe, by
-    // the one rule `buildIslandRecipe` names at boot: an unbound instance slot holds no record yet, and temp lives here alone.
+    // the one rule the lay → seed → boot → mount order names: an unbound instance slot holds no record yet, and temp lives here alone.
     const order = expandRecipe({ ...ctx.recipe, libraryBags: recipeFromRecord(rec, slug).libraryBags ?? [] });
     ctx.composite.markUnreached(order, order.filter((slot) => slot !== tempBag && !ctx.composite.hasBag(slot) && wikiSlotKindOf(slug, slot) === null));
 

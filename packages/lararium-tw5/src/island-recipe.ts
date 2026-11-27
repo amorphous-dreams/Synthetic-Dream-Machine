@@ -41,7 +41,7 @@ import { IslandAdaptor } from "./island-adaptor.js";
 import { kahuaLayerStore } from "./kahua-layer.js";
 import { MemoryTiddlerStore } from "./memory-store.js";
 import type { TW5Engine } from "./tw5-vm.js";
-import { readIslandSeed, type IslandSeed } from "./island-seed.js";
+import { type IslandSeed } from "./island-seed.js";
 
 /**
  * One slot's binding: a CRDT handle the recipe wraps in its own store, or a store already standing over that slot's document
@@ -52,8 +52,7 @@ export type RecipeReadyBinding =
   | { /** Slot URI from the expanded recipe. */ slot: SlotUri; handle: DocHandle<LarDoc> }
   | { /** Slot URI from the expanded recipe. */ slot: SlotUri; store: LarTiddlerStore };
 
-export interface BuildIslandRecipeInput {
-  tw5: TW5Engine;
+export interface LayIslandCompositionInput {
   composite: CompositeStore;
   recipe: WikiRecipe;
   /** Resolved CRDT handles (or stores) keyed by slot URI. temp has no entry. */
@@ -93,9 +92,6 @@ function readOnlyStore(store: LarTiddlerStore, slot: string): LarTiddlerStore {
   });
 }
 
-/** The input a composition lays from: everything `buildIslandRecipe` reads except the engine. */
-export type LayIslandCompositionInput = Omit<BuildIslandRecipeInput, "tw5">;
-
 /**
  * A composition laid and not yet mounted on an engine: the layers stand in the composite, and each one's store waits for the
  * shore that will mount over it (`mountIslandShore`).
@@ -107,20 +103,6 @@ export interface LaidComposition {
   readonly tempStore: MemoryTiddlerStore | null;
   /** The slot the wiki's unrouted saves land in, "" where the composer handed no binding for it. */
   readonly writeLayer: string;
-}
-
-/**
- * Build the sovereign island recipe and return the adaptor: lay the composition, then mount the shore on the engine at once.
- * The engine stood before the composition laid, so the shore reads its seed as a booted engine's and lands it as wave zero's
- * waves. A caller that boots its engine over wave zero lays first (`layIslandComposition`), reads the seed off the laid
- * composition (`readIslandSeed`), boots, then mounts (`mountIslandShore`).
- */
-export function buildIslandRecipe(input: BuildIslandRecipeInput): {
-  adaptor: IslandAdaptor;
-  stores: Array<{ slot: SlotUri; store: LarTiddlerStore }>;
-} {
-  const { tw5, ...lay } = input;
-  return mountIslandShore(tw5, layIslandComposition(lay));
 }
 
 /**
@@ -185,10 +167,9 @@ export function layIslandComposition(input: LayIslandCompositionInput): LaidComp
  * Mount the shore on a booted engine over a laid composition: the adaptor registers and stands one row per synced title, each
  * seed title's naming its bag (`standFromSeed`, then `start`: TW5's `Syncer.readTiddlerInfo`), the slot pointers seed, the records that wait for boot land through the
  * shore's queue, and the seed checkpoint arms. `seed`, where the engine booted over wave zero, carries what the boot store
- * took; the changes the composition told during the boot (`IslandSeed.release`) land afresh. With no seed the engine booted
- * bare, so the shore reads one off the composition (`readIslandSeed`, booted) and lands every record it resolves as a wave.
+ * took; the changes the composition told during the boot (`IslandSeed.release`) land afresh.
  */
-export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: Pick<IslandSeed, "release" | "titles" | "stands" | "waves" | "layerHeads"> | null): {
+export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed: Pick<IslandSeed, "release" | "titles" | "stands" | "waves" | "layerHeads">): {
   adaptor: IslandAdaptor;
   stores: Array<{ slot: SlotUri; store: LarTiddlerStore }>;
 } {
@@ -204,12 +185,10 @@ export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: P
   // The books stand before the shore hears anything: a change heard after this lands over the rows, never under them. The seed
   // names its titles' bags; `start` stands every other synced title the boot pass left as landed with no bag, so a boot write
   // to a title no layer holds reads as foam when TW5 tells it, and no hold waits on any checkpoint.
-  if (seed) adaptor.standFromSeed(seed);
+  adaptor.standFromSeed(seed);
   adaptor.start();
   // THE BOOT'S GAP closes here: the seed stops hearing as the shore starts, and hands back what the composition told meanwhile.
-  const gap = seed ? seed.release() : [];
-  // A booted engine's seed starts hearing after the shore does, so the shore hears every change past the read itself.
-  const booted = seed ? null : readIslandSeed(composite, [], { booted: true });
+  const gap = seed.release();
 
   // Per-wiki cascade reference — the default `lar:///ha.ka.ba/lararium/config/bag-paths`
   // reads this value via `{lar:///ha.ka.ba/lararium/config/current-wiki-bag}` to
@@ -249,11 +228,10 @@ export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: P
 
   // THE RECORDS THAT WAIT FOR BOOT land as waves: boot-set ground the boot store never took, and THE BOOT'S GAP, every change the
   // composition told while the engine booted over wave zero (a record that left every layer leaves the wiki; one that arrived
-  // lands). A booted engine lands its whole seed this way, once its read answers.
+  // lands).
   const landWaves = (waves: readonly LarTiddlerChange[]): void => { for (const change of waves) adaptor.onUriChanged(change); };
-  const standing: Promise<void> = booted
-    ? booted.then((read) => { read.release(); adaptor.standFromSeed(read); landWaves(read.waves); })
-    : Promise.resolve(landWaves([...seed!.waves, ...gap]));
+  landWaves([...seed.waves, ...gap]);
+  const standing = Promise.resolve();
 
   // STARTUP ACTIONS RUN, as TiddlyWiki runs them. TW5's own startup pass ran `$:/tags/StartupAction` over the preloads at boot; a
   // startup record that reached the wiki after boot (landed by the seed's waves, or a floor plugin's shadow laid after boot) runs
@@ -266,7 +244,7 @@ export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: P
   // a hand.
   const checkpoint = standing.then(() => adaptor.armSeedCheckpoint()).then(() => {
     const tw = tw5.$tw as unknown as { wiki: { filterTiddlers(f: string): string[]; getTiddlerText(t: string): string | undefined; tiddlerExists(t: string): boolean; enqueueTiddlerEvent(title: string, isDeleted?: boolean): void }; rootWidget: { invokeActionString(actions: string, triggeringWidget: unknown, event: unknown, variables: Record<string, string>): void } };
-    for (const title of seed?.titles ?? []) if (tw.wiki.tiddlerExists(title)) tw.wiki.enqueueTiddlerEvent(title, false);
+    for (const title of seed.titles) if (tw.wiki.tiddlerExists(title)) tw.wiki.enqueueTiddlerEvent(title, false);
     for (const title of tw.wiki.filterTiddlers(STARTUP_ACTIONS)) {
       if (ranAtBoot.has(title)) continue;
       tw.rootWidget.invokeActionString(tw.wiki.getTiddlerText(title) ?? "", tw.rootWidget, undefined, {});
@@ -279,7 +257,7 @@ export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: P
 }
 
 /**
- * THE HYDRATION CHECKPOINT. Resolves once the seed wave `buildIslandRecipe` armed stands in the wiki —
+ * THE HYDRATION CHECKPOINT. Resolves once the seed wave the shore armed stands in the wiki —
  * the corpus and the slot pointers both. The kernel awaits it between the recipe and `behavior.onEa`, so
  * behavior arms over a wiki the seed reached and its first write finds every slot named. It orders the kernel alone: the
  * shore takes hands from its start. An engine no recipe was
@@ -290,7 +268,7 @@ export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: P
  */
 export function seedDrained(tw5: TW5Engine, breathe?: () => void): Promise<void> {
   const checkpoint = seedCheckpoints.get(tw5);
-  if (!checkpoint) throw new Error("island-recipe: no seed checkpoint stands for this engine — build its recipe (`buildIslandRecipe`) before awaiting `seedDrained`");
+  if (!checkpoint) throw new Error("island-recipe: no seed checkpoint stands for this engine — lay, seed, boot and mount before awaiting `seedDrained`");
   if (!breathe) return checkpoint;
   // THE DRAIN BREATHES AS IT WORKS: each slice the shore lands tells `breathe` until the checkpoint settles either way.
   const stop = adaptors.get(tw5)?.onSliceLanded(() => breathe()) ?? (() => {});

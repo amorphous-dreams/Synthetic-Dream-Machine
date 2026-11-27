@@ -5,7 +5,7 @@
  * makeWikiPrimaryBehavior: disk projection (from manifest.diskMirrors) +
  * inline wiki:place-verb dispatch (sync-wiki, residency ACTION verbs).
  *
- * Recipe expansion (top wins; assembled by buildIslandRecipe) — per-wiki live
+ * Recipe expansion (top wins; laid, seeded, booted, then mounted) — per-wiki live
  * layers above, canon + libraries + floor below:
  *   wikis/{slug}/temp     (volatile per-island)
  *   wikis/{slug}/draft    (CRDT, drafts)

@@ -195,7 +195,7 @@ describe.skipIf(wikiSkip)(`a lit face receives visits: its cross-face view${skip
     const { docs } = visited(repo);
     const asked: string[] = [];
     const source = await crossFaceViewSource({
-      boot: () => bootTestWiki(), recipe: { wikiSlug: "daemon", canonBag: daemonFaceCanonBag(R1) },
+      boot: async (seedFor) => bootTestWiki({ seed: await seedFor([]) }), recipe: { wikiSlug: "daemon", canonBag: daemonFaceCanonBag(R1) },
       bind: async (slot) => { asked.push(slot); const handle = docs.get(slot); return handle ? { slot, handle } : null; },
     });
     expect(asked, "the view never asks for a private slot or a draft").not.toContain(PERSONAL);
@@ -217,12 +217,12 @@ describe.skipIf(wikiSkip)(`a lit face receives visits: its cross-face view${skip
     const repo = new Repo({ network: [] }); downs.push(() => repo.shutdown());
     const { h1, personal, docs } = visited(repo);
     let booted = 0;
-    const leaking = { boot: () => { booted++; return bootTestWiki(); }, recipe: { wikiSlug: "daemon", canonBag: daemonFaceCanonBag(R1) },
+    const leaking = { boot: async (seedFor: Parameters<FaceEngineSource["boot"]>[0]) => { booted++; return bootTestWiki({ seed: await seedFor([]) }); }, recipe: { wikiSlug: "daemon", canonBag: daemonFaceCanonBag(R1) },
       ready: [{ slot: WORKING, handle: h1.working }, { slot: PERSONAL, handle: personal }] };
     await expect(composeCrossFaceView(leaking, { privateDocs: new Set() })).rejects.toMatchObject({ reason: "cross-face-private" });
     expect(booted, "nothing boots over a private layer").toBe(0);
     const view = await composeCrossFaceView(await crossFaceViewSource({
-      boot: () => bootTestWiki(), recipe: { wikiSlug: "daemon", canonBag: daemonFaceCanonBag(R1) },
+      boot: async (seedFor) => bootTestWiki({ seed: await seedFor([]) }), recipe: { wikiSlug: "daemon", canonBag: daemonFaceCanonBag(R1) },
       bind: async (slot) => { const handle = docs.get(slot); return handle ? { slot, handle } : null; },
     }), { privateDocs: new Set([personal.documentId]) });
     downs.push(() => view.close());
@@ -240,7 +240,7 @@ describe.skipIf(wikiSkip)(`a lit face receives visits: its cross-face view${skip
     const repo = new Repo({ network: [] }); downs.push(() => repo.shutdown());
     const { h1, personal } = visited(repo);
     let booted = 0;
-    const boot = () => { booted++; return bootTestWiki(); };
+    const boot: FaceEngineSource["boot"] = async (seedFor) => { booted++; return bootTestWiki({ seed: await seedFor([]) }); };
     const LIB = "lar:///ha.ka.ba/bags/shared-lib";
     const recipe = { wikiSlug: "daemon", canonBag: daemonFaceCanonBag(R1), libraryBags: [LIB] };
     const guard = { privateDocs: new Set([personal.documentId]) };
@@ -260,7 +260,7 @@ describe.skipIf(wikiSkip)(`a lit face receives visits: its cross-face view${skip
     const repo = new Repo({ network: [] }); downs.push(() => repo.shutdown());
     const { h1, docs } = visited(repo);
     const view = await composeCrossFaceView(await crossFaceViewSource({
-      boot: () => bootTestWiki(), recipe: { wikiSlug: "daemon", canonBag: daemonFaceCanonBag(R1) },
+      boot: async (seedFor) => bootTestWiki({ seed: await seedFor([]) }), recipe: { wikiSlug: "daemon", canonBag: daemonFaceCanonBag(R1) },
       bind: async (slot) => { const handle = docs.get(slot); return handle ? { slot, handle } : null; },
     }), { privateDocs: new Set() });
     downs.push(() => view.close());
@@ -276,7 +276,7 @@ describe.skipIf(wikiSkip)(`a lit face receives visits: its cross-face view${skip
     const repo = new Repo({ network: [] }); downs.push(() => repo.shutdown());
     const { h1 } = visited(repo);
     let booted = 0;
-    const source = { boot: () => { booted++; return bootTestWiki(); }, recipe: { wikiSlug: "daemon", canonBag: daemonFaceCanonBag(R1) }, ready: [{ slot: WORKING, handle: h1.working }] };
+    const source = { boot: async (seedFor: Parameters<FaceEngineSource["boot"]>[0]) => { booted++; return bootTestWiki({ seed: await seedFor([]) }); }, recipe: { wikiSlug: "daemon", canonBag: daemonFaceCanonBag(R1) }, ready: [{ slot: WORKING, handle: h1.working }] };
     await expect(composeCrossFaceView(source, { privateDocs: new Set(), unread: ["b/torn names no document"] }))
       .rejects.toMatchObject({ reason: "cross-face-private-unread" });
     expect(booted, "nothing boots over a deny set that could not read whole").toBe(0);
