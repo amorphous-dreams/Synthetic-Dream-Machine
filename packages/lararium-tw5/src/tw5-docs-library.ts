@@ -87,7 +87,7 @@ export function tw5DocsRecords(bag: string = TW5_DOCS_BAG): Promise<Pack> {
 
 /** A library's one layer, whole: a read-only face over the edition, presented as the library's bag. */
 export async function tw5DocsStore(bag: string = TW5_DOCS_BAG): Promise<LarTiddlerStore> {
-  return floorReadFace({ rows: [await tw5DocsRecords(bag)], bagId: bag });
+  return floorReadFace({ rows: [await tw5DocsRecords(bag)] });
 }
 
 /** A system title (`$:/…`): an edition's own configuration, which the stacked layer withholds. */
@@ -102,5 +102,5 @@ export async function tw5LibraryStackStore(bag: string): Promise<LarTiddlerStore
   const whole = await tw5DocsRecords(bag);
   const docs: Record<string, LarTiddlerRecord> = Object.create(null) as Record<string, LarTiddlerRecord>;
   for (const [title, record] of Object.entries(whole)) if (!SYSTEM_TITLE(title)) docs[title] = record;
-  return floorReadFace({ rows: [Object.freeze(docs)], bagId: bag });
+  return floorReadFace({ rows: [Object.freeze(docs)] });
 }

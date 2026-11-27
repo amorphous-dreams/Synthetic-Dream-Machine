@@ -78,24 +78,21 @@ const stoodShore = (store: RecordingStore, adaptor: { value?: IslandAdaptor }, b
 };
 
 describe.skipIf(wikiSkip)(`writable marker — the scheduler holds a dependent until the backing stands${skipNote}`, () => {
-  test("T1/T2: a module ordered after the marker starts with the shore resident and its write reaches the store; no pre-resident warning", async () => {
+  test("T1/T2: a module ordered after the marker runs once the shore stands and its write reaches the store; nothing warns of it", async () => {
     const warns: string[] = [];
     const spy = vi.spyOn(console, "warn").mockImplementation((...a: unknown[]) => { warns.push(a.join(" ")); });
     const store = new RecordingStore();
     const adaptor: { value?: IslandAdaptor } = {};
-    const resident: boolean[] = [];
-    const { engine } = await bootWith({
+    const { engine, seen } = await bootWith({
       stand: stoodShore(store, adaptor),
-      module: `$tw.__seen.resident=true;$tw.wiki.addTiddler({title:"probe/after-writable",text:"ran"});`,
+      module: `$tw.__seen.ran=true;$tw.wiki.addTiddler({title:"probe/after-writable",text:"ran"});`,
     });
-    // the module's own view of the shore: read after boot, the shore was resident when it ran
-    resident.push(adaptor.value!.isResident());
     await adaptor.value!.handsRested();
     await new Promise((r) => setTimeout(r, 30));
     spy.mockRestore();
-    expect(resident).toEqual([true]);
+    expect(seen["ran"], "the dependent module ran").toBe(true);
     expect(store.puts.some((p) => p.title === "probe/after-writable" && p.bag === SLOTS.working), "the dependent's write reached the working bag").toBe(true);
-    expect(warns.filter((w) => w.includes("before the shore stood resident") && w.includes("probe/after-writable")), "the dependent was named as lost").toEqual([]);
+    expect(warns.filter((w) => w.includes("probe/after-writable")), "nothing warned of the dependent's write").toEqual([]);
     expect(engine.wiki.getTiddler("$:/temp/lares/writable")).toBeDefined();
   }, 120_000);
 
@@ -140,10 +137,10 @@ describe.skipIf(wikiSkip)(`writable marker — the scheduler holds a dependent u
     } });
     expect(earlyUnchanged).toBe(true);
     expect(calls).toBe(1);
-    expect(adaptor.value!.isResident()).toBe(true);
+    expect(adaptor.value, "the one stand stood the shore").toBeDefined();
   }, 120_000);
 
-  test("CONTROL: a module with no `after` still meets the refuse-by-name floor", async () => {
+  test("CONTROL: a module with no `after` writes before the shore stands: its title stands synced at the shore's start, so it stays in the engine, unsaved, and nothing warns (native TW5 reads boot state as synced)", async () => {
     const warns: string[] = [];
     const spy = vi.spyOn(console, "warn").mockImplementation((...a: unknown[]) => { warns.push(a.join(" ")); });
     const store = new RecordingStore();
@@ -157,8 +154,10 @@ describe.skipIf(wikiSkip)(`writable marker — the scheduler holds a dependent u
     await adaptor.value!.handsRested();
     await new Promise((r) => setTimeout(r, 30));
     spy.mockRestore();
-    expect(store.puts.some((p) => p.title === "probe/early")).toBe(false);
-    expect(warns.some((w) => w.includes("before the shore stood resident") && w.includes("probe/early"))).toBe(true);
+    expect(engine.wiki.getTiddler("probe/early")?.fields.text, "the early write stands in the engine").toBe("ran");
+    expect(store.puts.some((p) => p.title === "probe/early"), "a boot write never saves").toBe(false);
+    expect(adaptor.value!.holdsHand("probe/early"), "and holds no hand").toBe(false);
+    expect(warns.filter((w) => w.includes("probe/early")), "nothing warns of it").toEqual([]);
   }, 120_000);
 
   test("T6: a module that calls the stand itself changes nothing (the door is gone once the marker takes it)", async () => {

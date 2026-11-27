@@ -113,7 +113,6 @@ export async function guardWritableStand<T>(run: () => Promise<T>, detach: () =>
 }
 
 export async function detachFaultedWritable(adaptor: import("./island-adaptor.js").IslandAdaptor | null, unsub: (() => void) | null): Promise<void> {
-  adaptor?.dropResidency();
   unsub?.();
   await adaptor?.stop();
 }
@@ -581,7 +580,7 @@ export function runSovereignKernel(
     // WAVE ZERO. The composition lays before the engine boots (`layIslandComposition`: temp + every resolved CRDT slot, the floor
     // beneath), and every record it resolves joins the boot store through the nalu form (`readIslandSeed`): TW5 adds them before
     // its change queue wakes, so the seed raises no dispatch, and defines their modules, unpacks their plugins and runs their
-    // startup actions natively. The shore mounts inside the startup marker and its replay finds each preloaded title standing.
+    // startup actions natively. The shore mounts inside the startup marker and stands its books from the same seed (no replay).
     tick("seed");
     const laid = layIslandComposition({
       composite: _composite!,
@@ -619,8 +618,8 @@ export function runSovereignKernel(
               return guardWritableStand(async () => {
               const tw5 = handler.tw5()!;
               // One recipe model — the composition laid before boot (wave zero); the shore mounts here: it registers the
-              // adaptor, ARMS the seed replay on the shore's quota-bounded host-task queue, and lands afresh whatever the
-              // composition told while the engine booted.
+              // adaptor, stands its books from the seed, and lands afresh, on the shore's quota-bounded host-task queue, the
+              // boot-set ground the boot store never took and whatever the composition told while the engine booted.
               tick("recipe");
               const { adaptor } = mountIslandShore(tw5, laid, seed);
               _adaptor = adaptor;
@@ -636,7 +635,7 @@ export function runSovereignKernel(
               adaptor.receiptRequired = opts?.caps?.receipt === true && view === null;
               // The bridge compares wiki notifications with the landed ledger and sends hands through the gate.
               _bridgeUnsub = bridgeWikiToAdaptor(tw5, adaptor);
-              // Await the shore's seed checkpoint before arming behavior: onEa observes a fully resident seed,
+              // Await the shore's seed checkpoint before arming behavior: onEa observes the seed fully drained,
               // landed by the shore's queue in host-task slices. Each landed slice ticks the breath's progress, so the
               // vessel's stall watchdog reads a long seed as moving; a drain that lands no slice ticks nothing.
               tick("seed-drain");
@@ -729,9 +728,10 @@ export function runSovereignKernel(
     }
     if (composite.hasBag(slot)) return;
     const store = new AutomergeDocStore(out.handle, slot, wearOf(repo));
-    composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, msg.recipe.wikiSlug) }, recipeLayerIndex(composite, msg.recipe, slot));
+    // The canon's visible delta lands as one wave: a title a working or kahua record already covers moves nothing.
+    const joined = composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, msg.recipe.wikiSlug) }, recipeLayerIndex(composite, msg.recipe, slot));
     _handles.set(slot, out.handle);
-    store.emitInitialReplay();
+    await joined;
     store.markSyncComplete();
   }
 

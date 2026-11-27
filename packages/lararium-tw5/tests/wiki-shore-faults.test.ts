@@ -8,6 +8,7 @@ import { type Repo as RepoType } from "@lararium/mesh/automerge";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { IslandAdaptor } from "../src/island-adaptor.js";
 import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
+import { landWhole } from "./wiki-shore-rig.js";
 import { bootTestWiki } from "./test-wiki.js";
 
 const remote = { kind: "crdt-remote", edgeIsland: "shore-fault-peer" } as const;
@@ -46,7 +47,7 @@ describe("wiki shore fault vectors", () => {
     const survivorRecord: LarTiddlerRecord = { tiddler: { title: survivorTitle, text: "survivor value" } };
     await r.working.put(rejectedRecord, remote);
     await r.working.put(survivorRecord, remote);
-    r.working.emitInitialReplay();
+    landWhole(r.adaptor, r.working);
     const errors = vi.spyOn(console, "error").mockImplementation(() => {});
     // The composition read fails once for the rejected title; the landing retries it and lands what resolves.
     const resolveLayered = r.composite.resolveLayered.bind(r.composite);
@@ -66,7 +67,6 @@ describe("wiki shore fault vectors", () => {
     expect((r.wiki.getTiddler(rejectedTitle) as { fields: Record<string, unknown> }).fields.text).toBe("survives the resolver fault");
     expect((r.wiki.getTiddler(survivorTitle) as { fields: Record<string, unknown> }).fields).toMatchObject({ title: survivorTitle, text: "survivor value", "$origin-bag": r.workingBag });
     expect(r.adaptor.ledger.landedOf(survivorTitle)?.bag).toBe(r.workingBag);
-    expect(r.adaptor.isResident()).toBe(true);
     await r.adaptor.stop();
     errors.mockRestore();
     await r.repo.shutdown();

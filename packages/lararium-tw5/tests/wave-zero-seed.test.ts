@@ -4,8 +4,8 @@
  * One seed of ~300 records over two layers (the wiki's canon beneath its working layer), carrying a tombstone over a lower live copy,
  * a draft with its draft base, a module record and a StartupAction record, stands two ways off the same saved documents:
  *
- *   CONTROL     the composition laid, no seed read: the engine boots bare and every record lands as a wave after boot (the road the
- *               seed took before wave zero).
+ *   CONTROL     the composition laid, no seed read before boot: the engine boots bare, and the shore reads a booted engine's seed and
+ *               lands every record as a wave after boot (the road the seed took before wave zero).
  *   WAVE ZERO   the seed read off the laid composition and booted as preloads: everything the composition resolves preloads, the
  *               module defines and evaluates, the startup action runs at TW5's boot pass.
  *
@@ -13,9 +13,11 @@
  * as ONE `change` dispatch naming every preloaded title, once the seed stands (the nalu law: one wave, all observers, one
  * dispatch), never one per tiddler (CONTROL: the per-change road dispatches every seeded title too); (b) the landed ledger
  * holds, title for title, the row the per-change road writes (bag, heads, fields); (c) the module and the startup record preloaded
- * and ran; (d) the tombstoned title stands absent and preloads nothing.
+ * and ran; (d) the tombstoned title stands absent and preloads nothing. (e) THE SEED ALONE TEACHES THE SHORE: no layer replays at
+ * mount, and the books stand from the seed read (`standFromSeed`). (f) ONE ROW PER SYNCED TITLE: a startup action's creation of
+ * a title no layer holds stands synced at the shore's start, so the bridge sends nothing and nothing warns.
  */
-import { afterEach, beforeAll, describe, expect, test } from "vitest";
+import { afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 import { createRequire } from "node:module";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { CompositeStore } from "@lararium/mesh/composite-store";
@@ -24,6 +26,7 @@ import { type DocHandle, type Repo as RepoType } from "@lararium/mesh/automerge"
 import { wikiCanonOf, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { layIslandComposition, mountIslandShore, seedDrained } from "../src/island-recipe.js";
 import { readIslandSeed, type IslandSeed } from "../src/island-seed.js";
+import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { DRAFT_BASE_BAG, DRAFT_BASE_HEADS } from "../src/draft-book.js";
 import { bootTestWiki, houseSkins, skipNote, wikiSkip } from "./test-wiki.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
@@ -155,6 +158,38 @@ describe.skipIf(wikiSkip)(`wave zero: the seed boots as preloads through the nal
     expect(rowOf(zero.adaptor, SHADOWED)).toMatchObject({ bag: WORKING, fields: null });
   }, 240_000);
 
+  test("(e) THE SEED ALONE TEACHES THE SHORE: the mount replays no layer and lands no seed title as a row, yet the ledger reads every seed title as landed, so the checkpoint's one dispatch raises no hand", async () => {
+    const repo = new Repo({ network: [] });
+    const ready = [
+      { slot: CANON, handle: repo.import<LarDoc>(saved.canon) as DocHandle<LarDoc> },
+      { slot: WORKING, handle: repo.import<LarDoc>(saved.working) as DocHandle<LarDoc> },
+    ];
+    const composite = new CompositeStore();
+    const laid = layIslandComposition({ composite, recipe: { wikiSlug: SLUG }, ready });
+    const seed = await readIslandSeed(composite, houseSkins());
+    const engine = await bootTestWiki({ seed: seed.preloads });
+    const { adaptor } = mountIslandShore(engine, laid, seed);
+    let rows = 0;
+    adaptor.onSliceLanded((landed) => { rows += landed; });
+    const unbridge = bridgeWikiToAdaptor(engine, adaptor);
+    try {
+      await seedDrained(engine);
+      await adaptor.awaitWikiDispatch();
+      await adaptor.landingIdle();
+      // The temp layer's four slot pointers alone land as rows; CONTROL: the seed carries hundreds of titles.
+      expect(seed.titles.size).toBeGreaterThan(300);
+      expect(rows, "the mount lands the slot pointers alone, never a seed title").toBeLessThanOrEqual(4);
+      const wiki = engine.$tw.wiki as unknown as { getTiddler(title: string): unknown };
+      for (const title of seed.titles) {
+        expect(adaptor.isFoam(title, wiki.getTiddler(title) ?? null), `${title} reads as landed`).toBe(true);
+        expect(adaptor.ledger.landedOf(title)?.bag, `${title} names its layer`).toBe(seed.stands.get(title)!.bag);
+      }
+      // The checkpoint enqueued one change event naming every seed title; the bridge read each as foam, never a hand.
+      expect(adaptor.pendingTitles(), "an unchanged wiki raises no hand").toEqual([]);
+      expect([...seed.titles].filter((title) => adaptor.holdsHand(title))).toEqual([]);
+    } finally { unbridge(); await adaptor.stop(); engine.dispose(); await repo.shutdown(); }
+  }, 240_000);
+
   test("a seed title the boot set already carries stays out of the seed: the boot set's own bytes stand", async () => {
     const repo = new Repo({ network: [] });
     const handle = repo.create<LarDoc>(emptyLarDoc());
@@ -197,6 +232,39 @@ describe.skipIf(wikiSkip)(`wave zero: the seed boots as preloads through the nal
       expect((await store.get(COUNTER))?.tiddler.text, "the store keeps its own value: a boot-pass write never saves").toBe("seeded");
       expect(wiki.getTiddler(RUNS)?.fields["text"], "the action ran once: the shore never re-runs a boot-pass action").toBe("1");
     } finally { await adaptor.stop(); engine.dispose(); await repo.shutdown(); }
+  }, 240_000);
+
+  test("(f) ONE ROW PER SYNCED TITLE: a startup action that CREATES a persisted title no layer holds keeps it in the wiki, the store never holds it, the bridge sends nothing, and nothing warns that a write reached no bag", async () => {
+    const BORN = "seed/born-at-boot", ACT = "lar:///t/seed/startup-creates";
+    const repo = new Repo({ network: [] });
+    const handle = repo.create<LarDoc>(emptyLarDoc());
+    await new AutomergeDocStore(handle, WORKING).put({ tiddler: { title: ACT, tags: ["$:/tags/StartupAction"], text: `<$action-setfield $tiddler="${BORN}" text="born"/>` } }, origin);
+    const composite = new CompositeStore();
+    const laid = layIslandComposition({ composite, recipe: { wikiSlug: SLUG }, ready: [{ slot: WORKING, handle: handle as DocHandle<LarDoc> }] });
+    const seed = await readIslandSeed(composite, houseSkins());
+    const engine = await bootTestWiki({ seed: seed.preloads });
+    const wiki = engine.$tw.wiki as unknown as WikiReader & { enqueueTiddlerEvent(title: string, isDeleted?: boolean): void };
+    expect(wiki.getTiddler(BORN)?.fields["text"], "the boot pass created the title").toBe("born");
+    const warns: string[] = [];
+    const spy = vi.spyOn(console, "warn").mockImplementation((...a: unknown[]) => { warns.push(a.join(" ")); });
+    const { adaptor } = mountIslandShore(engine, laid, seed);
+    const unbridge = bridgeWikiToAdaptor(engine, adaptor);
+    try {
+      // TW5 tells the boot pass's creation after the bridge stands, while the mount's waves still drain.
+      wiki.enqueueTiddlerEvent(BORN, false);
+      await adaptor.awaitWikiDispatch();
+      await seedDrained(engine);
+      await adaptor.handsRested();
+      await adaptor.landingIdle();
+      expect(wiki.getTiddler(BORN)?.fields["text"], "the wiki keeps the creation").toBe("born");
+      expect(await composite.get(BORN), "no store holds it").toBeNull();
+      expect(adaptor.ledger.landedOf(BORN), "no layer landed it: the landed ledger keeps no row, the start baseline reads it synced").toBeUndefined();
+      expect(adaptor.isFoam(BORN, wiki.getTiddler(BORN) ?? null), "the boot's value reads as synced").toBe(true);
+      expect(await composite.storeForBag(WORKING)!.get(BORN), "the working layer never took a write of it").toBeNull();
+      expect(adaptor.holdsHand(BORN), "the bridge raised no hand").toBe(false);
+      expect(adaptor.pendingTitles(), "the bridge sent nothing and owes nothing").toEqual([]);
+      expect(warns.filter((w) => w.includes("reach no bag") || w.includes(BORN)), "nothing warns").toEqual([]);
+    } finally { spy.mockRestore(); unbridge(); await adaptor.stop(); engine.dispose(); await repo.shutdown(); }
   }, 240_000);
 
   test("THE BOOT'S GAP: a preloaded record that leaves every layer while the engine boots leaves the wiki too", async () => {

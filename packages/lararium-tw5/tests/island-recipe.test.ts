@@ -40,7 +40,7 @@ function fakeTw5(): TW5Engine {
   return {
     $tw: {
       Tiddler: FakeTiddler,
-      // The seed checkpoint re-invokes the wiki's startup actions over the resident seed; a fake engine holds
+      // The seed checkpoint re-invokes the wiki's startup actions over the drained seed; a fake engine holds
       // a root widget with none.
       rootWidget: { invokeActionsByTag: () => {} },
       wiki: {
@@ -188,17 +188,22 @@ describe.skipIf(wikiSkip)(`buildIslandRecipe — the slot pointers reach the wik
 });
 
 /**
- * NOTHING LEAVES BEFORE THE SEED IS RESIDENT. Between the engine's boot and the shore's seed checkpoint the
- * wiki holds the engine's own startup state: TiddlyWiki writes a default `$:/StoryList` and `$:/HistoryList`
- * there. Those are no hand's edits. Carried out, the default story would land over the person's stored one
- * before the seed brings it in; routed before the pointers arrive, it would refuse for want of a bag.
+ * A BOOT WRITE STANDS SYNCED. Before the shore starts, the wiki holds the engine's own startup state: TiddlyWiki
+ * writes a default `$:/StoryList` and `$:/HistoryList` there. Those are no hand's edits. The shore stands a row for
+ * each when it starts (TW5's `Syncer.readTiddlerInfo`), so the change TW5 tells after the bridge stands reads as foam:
+ * the default story never lands over the person's stored one, and never refuses for want of a bag.
  */
-describe.skipIf(wikiSkip)(`the outbound bridge holds until the seed stands${skipNote}`, () => {
-  test("a change raised before the checkpoint leaves nothing and raises no refusal; the same title edited after it lands", async () => {
+describe.skipIf(wikiSkip)(`a boot write stands synced when the shore starts${skipNote}`, () => {
+  test("the engine's own startup write, made before the shore starts, leaves nothing and raises no refusal; the same title edited after the checkpoint lands", async () => {
     const engine = await bootTestWiki();
-    const slug = "resident";
+    const slug = "boot-synced";
     const personalSlot = wikiSlotUri(slug, "personal");
     const personal = fakeHandle();
+    const wiki = engine.$tw.wiki as never as CascadeWiki & { addTiddler(t: unknown): void; filterTiddlers(f: string): string[] };
+    const Tiddler = (engine.$tw as never as { Tiddler: new (f: unknown) => unknown }).Tiddler;
+    const held = (h: DocHandle<LarDoc>): Record<string, { tiddler?: { list?: unknown } }> => (h.doc() as unknown as { tiddlers: Record<string, { tiddler?: { list?: unknown } }> }).tiddlers;
+    // The engine's own startup write, standing in the wiki before the shore starts (TW5 tells it on a later tick).
+    wiki.addTiddler(new Tiddler({ title: "$:/StoryList", list: "GettingStarted" }));
     const { adaptor } = buildIslandRecipe({
       tw5: engine,
       composite: new CompositeStore(),
@@ -206,16 +211,11 @@ describe.skipIf(wikiSkip)(`the outbound bridge holds until the seed stands${skip
       ready: [{ slot: wikiBagUri(slug), handle: fakeHandle() }, { slot: personalSlot, handle: personal }],
     });
     const stop = bridgeWikiToAdaptor(engine, adaptor);
-    const wiki = engine.$tw.wiki as never as CascadeWiki & { addTiddler(t: unknown): void; filterTiddlers(f: string): string[] };
-    const Tiddler = (engine.$tw as never as { Tiddler: new (f: unknown) => unknown }).Tiddler;
-    const held = (h: DocHandle<LarDoc>): Record<string, { tiddler?: { list?: unknown } }> => (h.doc() as unknown as { tiddlers: Record<string, { tiddler?: { list?: unknown } }> }).tiddlers;
-    // The engine's own startup write, standing in the wiki ahead of the paced seed.
-    wiki.addTiddler(new Tiddler({ title: "$:/StoryList", list: "GettingStarted" }));
     await seedDrained(engine);
     await adaptor.handsRested();
     expect(Object.keys(held(personal)), "the engine's startup story left for the personal layer").toEqual([]);
     expect(wiki.filterTiddlers("[all[tiddlers]tag[$:/tags/Alert]field:alert-kind[unrouted-save]]"), "a startup write raised a refusal").toEqual([]);
-    // CONTROL — the wiki stands resident; a person opening a tiddler moves the story, and that leaves.
+    // CONTROL — once the pointers stand, a person opening a tiddler moves the story, and that leaves.
     wiki.addTiddler(new Tiddler({ title: "$:/StoryList", list: "GettingStarted [[Lady Aki]]" }));
     await adaptor.handsRested();
     expect(Object.keys(held(personal))).toEqual(["$:/StoryList"]);
@@ -224,7 +224,7 @@ describe.skipIf(wikiSkip)(`the outbound bridge holds until the seed stands${skip
 });
 
 /**
- * THE HYDRATION CHECKPOINT — behavior arms over a RESIDENT seed. The seed wave drains on the paced rail,
+ * THE HYDRATION CHECKPOINT — behavior arms over a DRAINED seed. The seed wave drains on the paced rail,
  * so the kernel awaits `seedDrained(tw5)` between the recipe and `behavior.onEa`. A behavior that ran
  * ahead of the drain would write into a wiki whose slot pointers had not arrived, and each such write
  * would refuse for want of a bag.

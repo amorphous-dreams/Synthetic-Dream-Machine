@@ -8,9 +8,9 @@
  * Read paths (get, listVisible) fan out across all layers; highest priority wins.
  * Subscribe fans out to all layers; callers must check origin to avoid echo loops.
  *
- * Layers may be added dynamically after construction — corpus islands arrive async.
- * Callers should subscribe BEFORE addLayer to ensure no change events are missed,
- * or trigger a refresh after addLayer returns.
+ * Layers may be added dynamically after construction — corpus islands arrive async. A layer that joins a composition
+ * someone already observes lands its VISIBLE DELTA (`addLayer`): one change per title whose topmost record the join
+ * moved, to every subscriber and projection, and nothing for a title a higher layer already covers.
  */
 
 import type {
@@ -175,9 +175,18 @@ export class CompositeStore implements LarTiddlerStore {
     return false;
   }
 
-  /** `at` splices the layer into the cascade at that priority index (live
-   *  recipe reconcile); omitted = push to top (boot-time bottom-up order). */
-  addLayer(layer: CompositeLayer, at?: number): void {
+  /**
+   * Lay `layer` into the cascade: `at` splices it in at that priority index (live recipe reconcile); omitted, it lands on
+   * top (boot-time bottom-up order).
+   *
+   * THE ONE ROAD A LAYER JOINS BY. Where someone already observes the composition (a subscriber or a projection), the join
+   * lands its VISIBLE DELTA as one wave (lar:///ha.ka.ba/lares/api/pono/nalu: one wave, all observers, one dispatch): every
+   * title the joining layer holds, a tombstone included, whose topmost record (`resolveLayered`) the joining layer now
+   * answers, reaches every subscriber and projection through the composite's own fan-out, one change per moved title. A
+   * title a higher layer already covers moves nothing and nobody hears it. The promise resolves once the wave has left;
+   * a composition no one observes yet (a recipe laid before its engine boots) resolves at once and reads nothing.
+   */
+  addLayer(layer: CompositeLayer, at?: number): Promise<void> {
     if (this.hasBag(layer.bagId)) throw new Error(`CompositeStore: bag "${layer.bagId}" already registered`);
     if (this.unreached?.slots.delete(layer.bagId) && this.unreached.slots.size === 0) this.unreached = null;
     if (at !== undefined && at >= 0 && at < this.layers.length) this.layers.splice(at, 0, layer);
@@ -201,19 +210,32 @@ export class CompositeStore implements LarTiddlerStore {
       unsubs.push(layerUnsub);
     }
 
-    // Emit synthetic "put" events for tiddlers already in the arriving layer
-    // so projections (IslandAdaptor) see existing content.
-    if (this.listeners.size > 0) {
-      layer.store.listVisible().then((titles) => {
-        for (const title of titles) {
-          this._readWithHeads(layer.store, title).then(({ record: rec, heads }) => {
-            if (!rec) return;
-            const change: LarTiddlerChange = { title, record: rec, origin: { kind: "canon-hydrate", receipt: layer.bagId }, bag: layer.bagId, ...(heads !== undefined ? { heads } : {}) };
-            this._tell(change);
-          });
-        }
-      });
+    if (this.listeners.size === 0 && this.projections.size === 0) return Promise.resolve();
+    return this._landJoin(layer);
+  }
+
+  /**
+   * The joining layer's visible delta, read and then told in one stretch. The reads start together, so where every layer
+   * reads synchronously (`readNow`) they answer one state of the composition; the fan-out then runs with no await between
+   * changes, so the whole delta enters every observer's queue as one wave.
+   */
+  private async _landJoin(layer: CompositeLayer): Promise<void> {
+    const tombstoned = (layer.store as LarTiddlerStore & { listTombstoned?: () => readonly string[] }).listTombstoned?.() ?? [];
+    const titles = [...new Set([...await layer.store.listVisible(), ...tombstoned])];
+    const tops = await Promise.all(titles.map((title) => this._resolveLayerRecord(title)));
+    const origin: ChangeOrigin = { kind: "canon-hydrate", receipt: layer.bagId };
+    const moved: LarTiddlerChange[] = [];
+    for (const [i, top] of tops.entries()) {
+      if (!top || top.layer !== layer) continue;
+      moved.push({ title: titles[i]!, record: top.record, origin, bag: layer.bagId, ...(top.heads !== undefined ? { heads: top.heads } : {}) });
     }
+    for (const change of moved) this._fanOut(change);
+  }
+
+  /** One composite-born change (a layer joining or leaving) reaches every subscriber and every projection. */
+  private _fanOut(change: LarTiddlerChange): void {
+    this._tell(change);
+    for (const projection of this.projections.keys()) projection.onUriChanged(change);
   }
 
   removeLayer(bagId: string): void {
@@ -245,9 +267,7 @@ export class CompositeStore implements LarTiddlerStore {
       const remaining = resolved?.record ?? null;
       const answeredBy = resolved?.layer ?? layer;
       const heads = resolved?.heads;
-      const change: LarTiddlerChange = { title, record: remaining, origin, bag: answeredBy.bagId, ...(heads !== undefined ? { heads } : {}) };
-      this._tell(change);
-      for (const projection of this.projections.keys()) projection.onUriChanged(change);
+      this._fanOut({ title, record: remaining, origin, bag: answeredBy.bagId, ...(heads !== undefined ? { heads } : {}) });
     }
   }
 

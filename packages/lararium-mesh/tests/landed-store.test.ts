@@ -50,7 +50,7 @@ describe("landed store laws", () => {
     expect(fanout).toBe(2);
   });
 
-  test("direct, replay, tombstone, and remove envelopes carry the matching bag heads and record", async () => {
+  test("direct, tombstone, and remove envelopes carry the matching bag heads and record", async () => {
     const { store } = newStore("bag-envelopes");
     const seen: any[] = [];
     store.subscribe((change) => seen.push(change));
@@ -62,14 +62,6 @@ describe("landed store laws", () => {
     expect(seen[1].record.meta.deleted).toBe(true);
     expect(seen[2].record).toBeNull();
     expect(seen.every((change) => change.bag === "bag-envelopes" && change.heads?.length)).toBe(true);
-    seen.length = 0;
-    await store.put(record({ title: `${TITLE}/replay`, text: "replay" }), origin);
-    seen.length = 0;
-    store.emitInitialReplay();
-    expect(seen).toHaveLength(1);
-    expect(seen[0].record.tiddler.text).toBe("replay");
-    expect(seen[0].bag).toBe("bag-envelopes");
-    expect(seen[0].heads).toEqual(store.headsNow());
   });
 
   test("N-store: TW5 field strings with long dates and spaced list values round-trip byte exact and noop", async () => {

@@ -159,7 +159,7 @@ export function memeVerbOptions(
   return {
     composite: ctx.composite,
     tw5: ctx.tw5,
-    ...(ctx.floorCanon ? { floorCanon: (bag: string) => { const rows = ctx.floorCanon!(bag); return rows ? floorReadFace({ rows: [rows], bagId: bag }) : null; } } : {}),
+    ...(ctx.floorCanon ? { floorCanon: (bag: string) => { const rows = ctx.floorCanon!(bag); return rows ? floorReadFace({ rows: [rows] }) : null; } } : {}),
     slotStore: async (slug, kind, bag, opts) => {
       const url = await slotDocUrl(slug, kind, opts);
       if (!url) return null;

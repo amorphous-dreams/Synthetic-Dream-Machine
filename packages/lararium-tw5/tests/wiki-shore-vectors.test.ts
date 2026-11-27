@@ -25,6 +25,7 @@ import { armBackstop } from "../src/modules/meme-backstop.js";
 import { placeMeme, type MemeSink } from "../src/place-meme.js";
 import { installLazyResolver } from "../src/lazy-resolver.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
+import { landWhole } from "./wiki-shore-rig.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 
@@ -82,7 +83,7 @@ async function rig(boundary?: ManualBoundary, yieldHost?: () => Promise<void>) {
   adaptor.start();
   const save = vi.spyOn(adaptor, "saveTiddler");
   const unbridge = bridgeWikiToAdaptor(engine, adaptor);
-  await turns(); // settle the manual pointer setup while the adaptor is not resident
+  await turns(); // settle the manual pointer setup: the shore stood its rows over the pointers at start, so they read as foam
   /** Resolves once the shore has heard every title since `mark` (`arrivals.length` taken before the write). The store's own event ends the wait. */
   const hearSince = (mark: number, titles: readonly string[]): Promise<void> => new Promise<void>((resolve) => {
     const check = (): void => { const seen = new Set(arrivals.slice(mark)); if (titles.every((title) => seen.has(title))) { hearers.delete(check); resolve(); } };
@@ -104,7 +105,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     r.canonHandle.change((doc) => { Object.assign((doc as LarDoc).tiddlers, seed); });
     const canonHeads = r.canonHandle.heads();
     const workingHeads = r.workingHandle.heads();
-    r.canon.emitInitialReplay();
+    landWhole(r.adaptor, r.canon);
     await r.adaptor.armSeedCheckpoint();
     expect(r.save).toHaveBeenCalledTimes(0);
     expect(r.workingHandle.heads()).toEqual(workingHeads);
@@ -129,7 +130,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     const record: LarTiddlerRecord = { tiddler: { title, text: "round trip", created: "20261012010203004", modified: "20261012010203005", tags: "[[two words]] other", list: "[[two words]]" }, meta: { changeId: "n-change" } };
     await r.working.put(record, remote);
     const heads = r.workingHandle.heads();
-    r.working.emitInitialReplay();
+    landWhole(r.adaptor, r.working);
     await r.adaptor.armSeedCheckpoint();
     const landed = r.wiki.getTiddler(title) as { getFieldStrings(): Record<string, string> };
     const rebuilt = new r.Tiddler(landed.getFieldStrings());
@@ -702,7 +703,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     await repo.shutdown();
   }, 120_000);
 
-  // The kernel-facing checkpoint observes the shore queue's resident seed.
+  // The kernel-facing checkpoint observes the shore queue's drained seed.
   test("hydration + control: seedDrained follows the last seed landing and arms the first hand", async () => {
     const engine = await bootTestWiki();
     const wiki = engine.$tw.wiki as unknown as { getTiddler(title: string): unknown; addTiddler(t: unknown): void };
@@ -963,7 +964,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     const r = await rig();
     const title = "lar:///t/shore/retry-moved";
     await r.working.put({ tiddler: { title, text: "base" } }, remote);
-    r.working.emitInitialReplay();
+    landWhole(r.adaptor, r.working);
     await r.adaptor.armSeedCheckpoint();
     r.unbridge();
     const original = r.composite.writeFamily.bind(r.composite);

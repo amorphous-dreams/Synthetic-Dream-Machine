@@ -83,16 +83,13 @@ describe("verify on read", () => {
     expect(await kahuaStageStore({ handle: stage, face: () => face }).listVisible()).toEqual(["t"]);
   });
 
-  test("RED: a later lift tells subscribers its item and a poison write tells nothing; CONTROL: an initial replay names the standing items alone", async () => {
+  test("RED: a later lift tells subscribers its item and a poison write tells nothing; CONTROL: an item standing before the subscribe is never told again", async () => {
     const { face, lift, device } = await fixture();
     const { stage } = await device();
     land(stage, await lift("first", "1", null));
     const store = kahuaStageStore({ handle: stage, face: () => face });
     const heard: LarTiddlerChange[] = [];
     store.subscribe((c) => heard.push(c));
-    store.emitInitialReplay();
-    expect(heard.map((c) => c.title)).toEqual(["first"]);
-    heard.length = 0;
     plain(stage, "poison", { text: "p" });
     land(stage, await lift("second", "2", null));
     expect(heard.map((c) => c.title)).toEqual(["second"]);

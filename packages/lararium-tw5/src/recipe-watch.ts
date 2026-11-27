@@ -8,11 +8,11 @@
  * the diff to its own composite:
  *
  *   - bag added to the recipe   → resolve via the catalog oracle, insert the
- *     layer above the lares bag (library position), replay its content into the wiki.
+ *     layer above the lares bag (library position); the join lands its visible delta in the wiki.
  *   - bag removed               → removeLayerLive: departed titles tombstone,
  *     unshadowed lower records resurface (no reboot).
  *   - oracle URL moved (epoch)  → swap the layer's store in place at the same
- *     cascade position, replay from the new doc.
+ *     cascade position; the new doc's visible delta lands.
  *
  * Pono: the daemon never reaches in — it writes the catalog and each island
  * reconciles itself. After a successful reconcile the island clears its own
@@ -108,11 +108,12 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
     // The kahua stage stands read-only on the seam's store; every other library on its document store.
     const kahua = bagId === KAHUA_BAG;
     const store = kahua ? kahuaLayerStore(handle, ctx.kahuaFace ?? (() => null), ctx.kahuaFaceWatch) : new AutomergeDocStore(handle, bagId, wearOf(ctx.repo));
-    ctx.composite.addLayer({ bagId, store, writable: !kahua, defaultWritable: false }, at);
+    // The join lands its visible delta: each title whose topmost record the library now answers reaches the wiki once.
+    const joined = ctx.composite.addLayer({ bagId, store, writable: !kahua, defaultWritable: false }, at);
     ctx.handles.set(bagId, handle);
-    const replays = store as Partial<Pick<AutomergeDocStore, "emitInitialReplay" | "markSyncComplete">>;
-    replays.emitInitialReplay?.();
-    replays.markSyncComplete?.();
+    await joined;
+    // A document store flushes its debounced changes and announces its sync; the kahua stage owes neither.
+    (store as Partial<Pick<AutomergeDocStore, "markSyncComplete">>).markSyncComplete?.();
     return true;
   };
 
