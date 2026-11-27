@@ -18,7 +18,9 @@
  *
  * A DOOR FLIPS TO ITS CARRIERS. Where every affordance a door skins holds an affordance carrier, `helpLines` reads the baked
  * affordance pack (`@lararium/tw5/affordance-pack`) and the door's entry here burns in the same commit: one home, never two.
- * `oracle` flipped first (lar:///oracle.library.consults).
+ * `oracle` flipped first (lar:///oracle.library.consults); `tiddler` flipped with the core verbs' carriers
+ * (lar:///engine.record.reads · puts · removes · renames, candidate addresses), and `wiki filter` reads its carrier
+ * (lar:///engine.filter.pages) while the rest of the wiki door keeps its own table.
  *
  * PURE DATA, SO ANY VESSEL CAN HOLD IT. This module reads no `node:fs` and no environment; the pack rides as data.
  * The `meme` field NAMES the wiki record behind a verb door (`lar:` names; it never fetches); the `--meme`
@@ -26,7 +28,7 @@
  * Every URI here comes HARVESTED from the owning module's own `Meme:` header — never invented at this seat.
  */
 import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
-import { packDoor, packRender, packRoute } from "@lararium/tw5/affordance-pack";
+import { affordancePack, packDoor, packRender, packRoute } from "@lararium/tw5/affordance-pack";
 
 export interface CommandHelp {
   /** the spine an operator greps for: `usage: lares <door> <a | b | c>`. */
@@ -719,125 +721,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: ["--face N   face index"],
   },
 
-  tiddler: {
-    usage: "usage: lares tiddler <get | put | delete | rename> <title> [<new title>] (--recipe <slug> | --bag <slug>)   (rename takes --recipe alone)",
-    synopsis:
-      "THE TIDDLER DOOR — one record with its fields, whatever its type: a plain note, a data tiddler, a meme's root " +
-      "or one of its slots. Every verb runs in the wiki's own TiddlyWiki engine through the daemon, but `--bag <slug>`, which reads or writes one bag's record through its store with no engine (a rename names a recipe alone): `--recipe default` " +
-      "names the worn face's daemon wiki, and `--recipe <slug>` any wiki this face reaches (one it hosts, or one shared " +
-      "to it), composed over that wiki's canon, its shared working layer and this face's own layers; a wiki the face " +
-      "reaches none of refuses `wiki-unreached`. `get` answers ON A GRADIENT and leads with a `<<~ has …>>` line " +
-      "(provenance, the record's tags, its measures, `base/`): a record within one page answers fat (fields, then the " +
-      "text), a longer one skinny; `--meme` recomposes a meme's root and slots into one sealed carrier, whole within a " +
-      "page, its has-stack past it. `--skinny` reads the card; `--all` the whole at the lens's grain: a record fat, a " +
-      "pointer resolved from the local CAS by CID (a web2 `_canonical_uri` stays named, never fetched), a meme's carrier " +
-      "paged on slot boundaries; `--slot` one slot. `--text` answers the TEXT ALONE: its bytes on stdout and nothing else, a " +
-      "terminal or a pipe alike (the has line and base on stderr), so a pipe into an editor, a diff or a sweep needs no parse " +
-      "step: a record's text whole (a pointer's body resolved), with `--meme` the recomposed carrier whole (its pages joined), " +
-      "with `--slot` that slot's span; an answer that carries no text (an unread pointer body) refuses `text-unread` and names " +
-      "the read that cures it, and `--json` keeps the envelope. On `get` the flag takes no value; on `put`, `--text <words>` " +
-      "names the words written. `put` PATCHES: it sets and unsets " +
-      "fields, adds and removes tags, and moves the text only where `--text` or `--file` names it; `--replace <span> --with <words>` " +
-      "changes one exact span of the standing text in place, the rest of the text never crossing the wire: the span must occur " +
-      "exactly once (`replace-absent` and `replace-ambiguous` name the count and the read that cures it), and the result lands as " +
-      "a text put does, under the same `--base` guard and, on a slot, as that slot's text with the family resealed. A meme family moves by the same put: " +
-      "a whole carrier as the root's text lands the family through the Confluence gate (a slot it omits stays standing, `kept`; `--cut-slot '#/x'` " +
-      "names a slot that leaves), and `--slot '#/x'` folds into the title `<root>#/x`, so a slot's text lands with no base (a partial base " +
-      "`partial:#/x:…` patches within its span) and an append honours the slot's standing postamble (`--append` lands words at " +
-      "the end with no base, read and written in one step on the live wiki, so two appends through this door at once both land; " +
-      "a writer that reaches the store directly merges per field, last writer winning), landing in the " +
-      "wiki's working layer (this face's own personal layer of a wiki where it holds no writer's seat); `delete` removes a plain tiddler plainly: the record leaves its layer and no tombstone " +
-      "rises; a meme root answers the consequence the delete would land and refuses by name " +
-      "(`tiddler-delete-in-a-family`) unless `--family` names the family act, which lands the root and its slots as " +
-      "one change; a slot title (`<root>#/x`) leaves as the cut on its parent. Only a lower layer makes a delete a choice: where one holds the title too, a delete with no mode " +
-      "refuses `delete-mode-needed` and names both meanings: `--mode kapae` raises a tombstone that keeps the " +
-      "records beneath hidden (they stay in their bags); `--mode reveal` retracts the topmost record and the one " +
-      "beneath surfaces. A delete of a title the wiki reads absent retracts a kāpae that hides nothing (its " +
-      "`.kapae` shadow leaves the disk); `--mode reveal` retracts one that hides a lower record. `rename <old> <new>` moves " +
-      "the record (a meme root takes its slots along) over TiddlyWiki's own relink: every reference the engine's " +
-      "relinkers rewrite follows (the core relinks tags and list fields; wikitext links follow only where a relink " +
-      "plugin mounts), and the old title stays as a forwarder, a pointer tiddler (`forward-to`) whose text transcludes " +
-      "the new one, so old roads keep answering. The move lands in the working layer alone: a record resting in another " +
-      "layer (or one the shore still carries, with no layer named yet) refuses `rename-source-layer`, referrers outside it " +
-      "refuse `rename-referrers-unreachable` (a count, never titles), a standing target refuses `rename-target-stands` and " +
-      "names the delete that clears it, a slot refuses `slot-without-root` and names its root, and a `lar:` title another " +
-      "layer holds too takes a hand alone. A `$:/` title on either side refuses `rename-system-title` (a forwarder would " +
-      "answer as the setting; `put` the new title, then `delete` the standing one). An answer names only records this face " +
-      "reads and counts the rest (`withheld`); a referrer that stays home keeps its fields (`skipped`). `--base` carries the hash last " +
-      "read (a record's `hash`, or on a root the carrier's `canonicalHash`): a record that moved past it answers `conflict` and nothing lands. The engine verbs stand beside this " +
-      "door: `lares wiki filter | render | status --recipe <slug>`; bare status surveys the vessel.",
-    examples: [
-      "lares tiddler get \"Room 4\" --recipe default                         # the record as a .tid on stdout, the base on stderr",
-      "lares tiddler get \"Room 4\" --recipe default --skinny                 # every field, the text left home",
-      "lares tiddler get \"Room 4\" --bag lares                              # that one bag's record, its base and the bag that answered",
-      "lares tiddler get lar:///ha.ka.ba/kahua/memory/feedback/x --recipe default --slot '#/why'   # one slot of a meme",
-      "lares tiddler get lar:///ha.ka.ba/lares/api/corpus --recipe lares --meme    # the carrier on stdout (a pipe too); past a page, its has-stack",
-      "lares tiddler get lar:///ha.ka.ba/lares/docs/x --recipe lares --meme --all > x.mem   # the whole carrier, paged on slot boundaries",
-      "lares tiddler get \"Room 4\" --recipe default --text | diff - room4.txt   # the text alone on stdout; the has line and base on stderr",
-      "lares tiddler get lar:///ha.ka.ba/kahua/memory/x --recipe default --meme --slot '#/why' --text   # one slot's span alone",
-      "lares tiddler put \"Room 4\" --recipe default --fields '{\"todo\":\"done\"}' --tag-add reviewed --base <hash>   # a field and tag patch; the text stays",
-      "lares tiddler put \"New Note\" --recipe default --create --text \"first words\" --fields '{\"tags\":\"memory\"}'",
-      "date +'%F a dated note' | lares tiddler put \"Ledger\" --recipe default --append -   # lands at the end; two seats appending through the door at once both land",
-      "lares tiddler put lar:///ha.ka.ba/kahua/memory/x --recipe default --slot '#/log' --append note.txt   # a slot append, no base; the family reseals",
-      "lares tiddler put \"Room 4\" --recipe default --replace 'by the window' --with 'by the door' --base <hash>   # one exact span changes; 0 or 2+ occurrences refuse",
-      "lares tiddler put lar:///ha.ka.ba/kahua/memory/x --recipe default --slot '#/why' --replace 'it is' --with 'it reads'   # a slot's span; the family reseals",
-      "lares tiddler put lar:///ha.ka.ba/lares/docs/x --recipe lares --file x.mem   # a whole carrier lands the family; an omitted slot stays (kept)",
-      "lares tiddler put lar:///ha.ka.ba/lares/docs/x --bag lares --slot '#/why' --file why.txt   # one slot's text in one bag, no base",
-      "lares tiddler delete \"Old Note\" --recipe default --if-match <hash>   # a stale base moves nothing",
-      "lares tiddler rename \"Room 4\" \"Room Four\" --recipe default      # references follow; \"Room 4\" stays as a forwarder",
-      "lares tiddler delete lar:///t/x --recipe default --family              # a meme root and its slots, one change",
-      "lares tiddler delete \"Room 4\" --recipe default --mode reveal          # drop my copy; the layer beneath surfaces",
-      "lares tiddler delete \"Room 4\" --recipe default --mode kapae           # hide the title; the layers beneath keep theirs",
-      "lares wiki filter '[tag[memory]sort[title]]' --recipe default --limit 5   # one page; --after <cursor> continues, --all walks it",
-      "lares wiki filter '[[Room 4]backlinks[]]' --recipe default               # the link graph rides filters",
-      "lares wiki filter '[prefix[lar:///ha.ka.ba/kahua/memory/road/]]' --recipe default --collapse   # each meme row skinny: bytes and its slots; unfold one with `tiddler get <uri> --meme --slot <name>`",
-      "lares wiki filter '[prefix[lar:///ha.ka.ba/kahua/memory/]search:text:regexp[\\b(is|are|was|were)\\b]]' --recipe default --match '/\\b(is|are|was|were)\\b/' --context 1 --all   # an L-Prime sweep in one call: each title with its matching lines",
-      "lares wiki render Handover --recipe default --form html                  # transclusions resolved by the engine",
-      "lares wiki render '[tag[export]]' --recipe notes --output workbench",
-      "lares wiki status --recipe default                                       # which layer takes a write for this face",
-      "lares wiki act sidebar-layout --recipe default --expected fixed-fluid --resulting fluid-fixed",
-      "lares wiki filter '[tag[road]sort[title]]' --recipe kahu                 # a shared wiki, in its own engine",
-      "lares tiddler put \"Road note\" --recipe kahu --create --text \"first words\"   # lands in that wiki's working layer",
-      "lares tiddler get \"Sibling note\" --recipe default --target h1          # read a lit sibling's daemon wiki, still wearing your own face",
-      "lares wiki filter '[tag[memory]]' --recipe default --target <pet name>  # a visit names its face by pet name too",
-    ],
-    flags: [
-      "--recipe <slug>      the wiki read or written: default (the worn face's daemon wiki) or any wiki this face reaches",
-      "--bag <slug>         (get | put | delete) that one bag's record through its store, with no wiki and no engine; rename and `lares wiki filter | render | status` refuse a bag",
-      "--realm <id>         (beside --bag) the realm whose registration the bag resolves through",
-      "--face N             act as face N on a session of it (the worn face where absent; a shut face refuses face-not-open; a lit sibling answers from its own daemon wiki, --recipe default)",
-      "--target <h1|name>   (get, and `wiki filter | render | status`; on put or delete it refuses) READ another lit face's daemon wiki while keeping the face worn: its canon and working layer, never its personal or draft layer (either bag refuses cross-face-private); a shut face refuses face-not-open; a write naming another face refuses cross-face-write-refused",
-      "--slot <#/name>      (get) one slot of the meme the title names   ·   (put) folds into the title (`<root>#/name`); refuses a malformed path (slot-malformed) or a title already naming a slot (slot-beside-fragment)",
-      "--fields <a,b>       (get) the named fields alone   ·   (put) a JSON object of field names to string values",
-      "--meme               (get) the carrier lens; with no title, the family listing",
-      "--tree               (title-less get --meme) nest slots under each listed root",
-      "--append <path | -> (put) words from a host file or stdin land at the end of the standing text, no base needed (an append overwrites nothing): a text that does not end on a newline takes one before them; a missing title refuses unless --create; --tag-add, --tag-remove and --create ride beside it; refuses beside --text, --file, --base, --fields, --unset   ·   on a slot (`--slot`, or a `<root>#/x` title) the words land before a standing postamble, the family resealed whole",
-      "--replace <span>     (put, beside --with) one exact span of the standing text, taken as written (never trimmed; it may open on `--`): it must occur exactly once, else replace-absent (0) or replace-ambiguous (N, overlaps counted) and nothing moves; --base, --fields (not text), --unset, --tag-add and --tag-remove ride beside it; refuses beside --text, --file, --append, --cut-slot, --create   ·   on a slot (`--slot`, or a `<root>#/x` title) the span counts within that slot's text, and the family reseals",
-      "--with <words>       (put, beside --replace) the words the span turns into; --with '' removes the span",
-      "--skinny             (get) every field, the text left home (the card)",
-      "--all                (get) the whole at the lens's grain: a record fat, a pointer resolved, a meme's carrier paged to the end",
-      "--after <cursor>     (get) one page of the whole carrier: hand back the cursor `next` named",
-      "--unset <a,b>        (put) fields to remove",
-      "--tag-add <list>     (put) tags to add, as TiddlyWiki writes a list: one [[two words]]; a repeated --tag-add (or --tag-remove) joins its list to the earlier ones",
-      "--tag-remove <list>  (put) tags to remove",
-      "--cut-slot <#/slot>  (put, on a meme root or slot) the slots that leave, by rooted path; repeatable. Absence never deletes: a slot the new text omits stays standing by reference (the answer names it under `kept`), and only a cut tombstones one",
-      "--text <words>       (put) the new text (on a root, the whole carrier; on a slot, its body)   ·   --file <host path | ->  the new text from a host file or stdin",
-      "--text               (get, a bare flag: it takes no value there, `--text=x` refuses) the text alone on stdout, no field line and no added newline: a record whole (a pointer resolved), with --meme the whole carrier, with --slot one slot's span; refuses beside --skinny, --fields, --max-bytes; an answer carrying no text refuses text-unread, naming the read that cures it",
-      "--base <hash>        (put) the hash last read (the record's, or a root's carrier hash; a slot read's partial base patches within its span); stale → conflict, nothing lands (a base guards honest reuse, never a lock)",
-      "--create             (put) land only where no tiddler stands, a family's root included; an existing one answers `exists` and nothing moves",
-      "--if-match <hash>    (delete | rename) the hash last read; stale → conflict, nothing moves",
-      "--family             (delete) name the family act: a meme root leaves with its slots, as one change, in a recipe or a bag",
-      "--mode <kapae|reveal> (delete) over a lower layer's record: kapae hides it   ·   reveal surfaces it (none: a plain delete)",
-      "--max-bytes <N>      (get) the byte cap on the answer; the largest fields leave first and get named",
-      "--collapse           (wiki filter) each row answers its bytes, and a meme root its slots (`{slot, bytes, first}`), the skinny form of `tiddler get --meme --skinny`; --max-bytes and --limit count the collapsed rows",
-      "--match <words>      (wiki filter) each row carries its record's matching lines (`lines: [{n, text}]`, `matches` counting them all), so a sweep takes no read per title; plain words match byte for byte, a `/source/flags` spelling reads as a regexp; taken as written (it may open on `--`); a record holding no text (a pointer) carries no lines; at most 64 lines a row and 512 bytes a line (`cut: true`), and a page past --max-bytes sheds a row's tail lines by name",
-      "--context <N>        (wiki filter, beside --match) N lines (0..8) around each matching line; touching windows merge; alone it refuses filter-context-alone",
-      "--output workbench   (wiki render) write under rendered/ in that wiki's workbench; --overwrite replaces files",
-    ],
-    next: ["lares wiki filter '[tag[memory]]' --recipe default", "lares tiddler get <uri> --recipe default --meme   # a family's whole text"],
-    meme: "lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout",
-  },
-
   meme: {
     usage: "usage: lares meme <normalize | check | sitting | project | promote | offer> (store verbs require (--recipe <slug> | --bag <slug>))",
     synopsis:
@@ -1378,6 +1261,15 @@ export function memeForDoor(door: string): string | undefined {
  *  and its usage refusal (both drawn from `helpLines`) print it alike. The top-level list prints the brief. */
 const ABOUT = new Map<string, string>();
 export function seatAbout(door: string, about: string): void { ABOUT.set(door, about); }
+
+/**
+ * A carried verb's one line, its carrier's role, for a door that keeps its own sub-verb table beside it (`wiki filter` in
+ * `lares wiki --help`): the table prints the carrier's words and holds none of its own. Empty where the pack routes no carrier.
+ */
+export function verbRole(spelling: string): string {
+  const address = packRoute("cli", spelling);
+  return address === undefined ? "" : affordancePack().carriers[address]?.role ?? "";
+}
 
 /**
  * One door's help as LINES — the single home both the `--help` render and a module's usage REFUSAL draw

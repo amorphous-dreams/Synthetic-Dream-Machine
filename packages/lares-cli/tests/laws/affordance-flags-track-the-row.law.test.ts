@@ -12,14 +12,23 @@
  */
 import { describe, expect, test } from "vitest";
 import { COMMANDS } from "../../src/bin/lares.js";
-import { REBAKE, SEED_ADDRESS, cliRoutes, pack } from "./affordance-harness.js";
+import { REBAKE, SEED_ADDRESS, cliRoutes, pack, partDoors } from "./affordance-harness.js";
 
-/** A door's carrier flags (the union over every route the door skins) and its row's accepts, both bare and sorted. */
+/**
+ * A door's carrier flags (the union over every route the door skins) and its row's accepts, both bare and sorted. A part door
+ * (`wiki`, whose `filter` holds a carrier beside the door's own table) reads each routed verb's own path (`pathAccepts`), since
+ * its row's `accepts` also names the flags of the verbs no carrier skins yet.
+ */
 function sides(door: string, takesOf: (address: string) => readonly string[] = (a) => pack().carriers[a]?.takes["cli"] ?? []): { carrier: string[]; row: string[] } {
-  const flags = cliRoutes().filter((r) => r.door === door).flatMap((r) => takesOf(r.address));
+  const routes = cliRoutes().filter((r) => r.door === door);
+  const flags = routes.flatMap((r) => takesOf(r.address));
+  const cmd = COMMANDS.find((c) => c.name === door);
+  const row = partDoors().includes(door)
+    ? routes.flatMap((r) => cmd?.pathAccepts?.({ command: door, positional: r.path, options: {}, flags: {} }) ?? cmd?.accepts ?? [])
+    : cmd?.accepts ?? [];
   return {
     carrier: [...new Set(flags.map((f) => f.replace(/^--/, "")))].sort(),
-    row: [...(COMMANDS.find((c) => c.name === door)?.accepts ?? [])].sort(),
+    row: [...new Set(row)].sort(),
   };
 }
 
@@ -30,6 +39,11 @@ describe("W2 · a door's carrier flags equal its row's accepts", () => {
     expect(pack().carriers[SEED_ADDRESS]?.takes["cli"]?.length ?? 0, `the pack holds no cli takes for the oracle cast; ${REBAKE}`).toBeGreaterThan(0);
     expect(sides("law").carrier, `the pack holds no law carriers; ${REBAKE}`).toEqual(["after", "all", "face", "limit"]);
     expect(sides("ddate").carrier).toEqual([]);   // the format and the date ride positionals, no flag
+  });
+
+  test("SEED: the tiddler door's four carriers name the row's flags whole; the wiki filter's carrier names its own path's", () => {
+    expect(sides("tiddler").carrier, `the pack holds no tiddler carriers; ${REBAKE}`).toEqual(sides("tiddler").row);
+    expect(sides("wiki").row).toEqual(["after", "all", "bag", "collapse", "context", "face", "fields", "limit", "match", "max-bytes", "recipe", "target"]);
   });
 
   test.each(DOORS.map((d) => [d] as const))("`lares %s`", (door) => {

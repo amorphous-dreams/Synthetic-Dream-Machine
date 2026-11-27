@@ -1,0 +1,146 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.filter.pages`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "run a TiddlyWiki filter in the wiki's own engine, one bounded page"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.filter.pages", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.filter.pages"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.filter.pages"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.filter.pages ~ a filter over the reader's view, its answer one bounded page
+
+The filter language reads as TiddlyWiki's own: `[tag[memory]sort[title]]`, `[search[cursor]]`, `[prefix[lar:///ha.ka.ba/kahua/memory/]]`, `[has[status]!status[done]]`, and the link graph rides it too: `backlinks[]`, `links[]`, `transcludes[]`, `backtranscludes[]`. The filter computes over a reader's view of the wiki that holds only what this face may read, so no operator and no transclusion reads past the fence; `withheld` counts the matches that stay home (temp, state, custody titles) or rest in a bag this face holds no read on. The address stays a candidate until the operator reads the landing's list.
+
+The answer reads {recipe, filter, titles, total, next, asOf}; name `fields` and each row carries them, {…, rows: [{title, fields}]} in place of `titles`. `collapse` reads the upcoming work skinny: each row carries `bytes`, and a meme root its `slots: [{slot, bytes, first}]`, the has-stack a skinny meme read answers, built by the same code, so one filter surveys many memes; unfold the one you need with a slot read.
+
+`match` sweeps lines in one call: each row carries its record's matching lines, `lines: [{n, text}]` (a line past 512 bytes rides cut, `cut: true`), and `matches` counting every matching line, so a sweep (an L-Prime pass, a stale word) reads its matches with no read per title. Plain words match byte for byte; a `/source/flags` spelling reads as a regexp. `context` (0..8) carries that many lines around each match, touching windows merged; at most 64 lines a row, and a page past its byte cap sheds a row's tail lines and names `omitted: ["lines"]`. A record holding no text (a pointer) carries no lines. `context` without `match` refuses `filter-context-alone`. The filter narrows and the lens shows the lines: a search filter beside `match` hears one voice across every body of an entity.
+
+The answer pages: at most 32 rows and `max-bytes` (65536 by default) per call; `total` counts every match and `next` names the cursor of the page behind: hand it back as `after` until `next` reads null (a terminal's `all` walks every page). A wiki that moved between pages refuses `filter-cursor-stale`; read again from the first page. A filter the engine cannot parse refuses `filter-malformed` with the engine's words.
+
+A rendered tiddler's slice: where one read of the whole render (the record carrying `rendered-from`) answers more than you need, filter its sources for the slice, `[tag[road/rank]sort[order]]` with `fields` naming `text`. `recipe` names the wiki, and the filter runs in that wiki's own engine: `default` names the worn face's daemon wiki, a slug any wiki this face reaches; a wiki it reaches none of refuses `wiki-unreached`. A bag names no wiki and takes no filter (`wiki-not-anchored`): read a bag's record through the record read. `target` names another lit face this read visits, through its canon and working layer alone. A filter result carries the named wiki's words; turn it through the five tools.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ one-page · the-link-graph · the-work-skinny · hear-one-voice · a-visit
+
+```memetic-wikitext
+<<has entity=`example` name=`one-page` params=`filter/[tag[memory]sort[title]] recipe/default limit/5 ~ one page; after continues it, all walks it`>>
+<<has entity=`example` name=`the-link-graph` params=`filter/[[[[Room 4]backlinks[]]]] recipe/default ~ every record that links to Room 4`>>
+<<has entity=`example` name=`the-work-skinny` params=`filter/[prefix[lar:///ha.ka.ba/kahua/memory/road/]] recipe/default collapse/true ~ each meme row skinny: its bytes and its slots`>>
+<<has entity=`example` name=`hear-one-voice` params=`filter/[[[all[tiddlers]search:text:literal[Lares (Stranger)]]]] match/[[Lares (Stranger)]] recipe/default ~ one persona heard across every body: the filter narrows, the lens shows the lines`>>
+<<has entity=`example` name=`a-visit` params=`filter/[tag[memory]] recipe/default target/h1 ~ a lit sibling's daemon wiki, read while you keep your own face`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ filter · recipe · bag · fields · collapse · match · context · limit · max-bytes · after · all · target · face
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`filter` params=`takes/filter needs/required seat/1 as/<filter> ~ a TiddlyWiki filter, run by the wiki's own engine`>>
+<<has entity=`arg` name=`recipe` params=`takes/slug needs/required ~ the wiki whose engine runs the filter; default names the worn face's daemon wiki`>>
+<<has entity=`arg` name=`bag` params=`takes/slug skins/cli ~ a bag names no wiki and takes no filter; it refuses wiki-not-anchored by name`>>
+<<has entity=`arg` name=`fields` params=`takes/names ~ each row carries these fields`>>
+<<has entity=`arg` name=`collapse` params=`~ each row answers its bytes, and a meme root its slots`>>
+<<has entity=`arg` name=`match` params=`takes/words ~ each row carries its matching lines; a /source/flags spelling reads as a regexp`>>
+<<has entity=`arg` name=`context` params=`takes/count ~ lines, 0 to 8, around each match, beside match`>>
+<<has entity=`arg` name=`limit` params=`takes/count ~ rows per page; the ceiling of 32 holds`>>
+<<has entity=`arg` name=`max-bytes` params=`takes/count ~ the byte cap on one page, 65536 by default`>>
+<<has entity=`arg` name=`after` params=`takes/cursor ~ the page behind the cursor a prior answer named in next`>>
+<<has entity=`arg` name=`all` params=`skins/cli ~ follow every cursor to the end`>>
+<<has entity=`arg` name=`target` params=`takes/face ~ another lit face this read visits, by handle index or pet name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ read
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`read` params=`who/seat-or-hand ~ the filter computes over the reader's view, so the gate stands inside the engine; it writes nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ filter-malformed · filter-cursor-stale · filter-context-alone · wiki-unreached · wiki-not-anchored · cross-face-private · face-not-open
+
+```memetic-wikitext
+<<has entity=`refusal` name=`filter-malformed` params=`cure/[[engine.filter.pages filter/<filter> recipe/default]] ~ the engine cannot parse the filter; its words ride the refusal`>>
+<<has entity=`refusal` name=`filter-cursor-stale` params=`cure/[[engine.filter.pages filter/<filter> recipe/default]] ~ the wiki moved between pages; read again from the first page`>>
+<<has entity=`refusal` name=`filter-context-alone` params=`cure/[[engine.filter.pages filter/<filter> recipe/default match/<words> context/1]] ~ context shapes the lines match finds; name match beside it`>>
+<<has entity=`refusal` name=`wiki-unreached` params=`cure/[[engine.filter.pages filter/<filter> recipe/default]] ~ no wiki this face hosts or holds a share of answers the slug`>>
+<<has entity=`refusal` name=`wiki-not-anchored` params=`cure/[[engine.filter.pages filter/<filter> recipe/default]] ~ a filter runs in a wiki's engine; a bag names no wiki`>>
+<<has entity=`refusal` name=`cross-face-private` params=`~ a visit reads another face's canon and working layer alone`>>
+<<has entity=`refusal` name=`face-not-open` params=`~ the face named stands shut; a visit reads a lit face alone`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ page · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`page` params=`exit/0 fields/[[recipe filter titles rows total next asOf withheld]] ~ one bounded page; next names the cursor of the page behind, null at the end`>>
+<<has entity=`band` name=`refused` params=`exit/4 ~ the engine or the door refused by name; nothing ran past it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares wiki filter
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares wiki filter]] door/part ~ the terminal; one verb of a door whose other verbs keep the door's own table`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! wiki_filter
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`spells/wiki_filter omits/face ~ the seat; answers the page`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · wiki-surface-scout · filters
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/filters`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nVJcczfUD8JOSgeHo7rujf_IQiL1-u9a9ue_krO0x5c`>>
+
+<<^ code=`&#x0004;` to=`?`>>

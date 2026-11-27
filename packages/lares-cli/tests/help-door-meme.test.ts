@@ -18,7 +18,7 @@ import { describe, test, expect, vi, afterEach } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { COMMAND_HELP, memeForDoor, helpLines, renderCommandHelp } from "../src/command-help.js";
+import { COMMAND_HELP, memeForDoor, helpLines, renderCommandHelp, verbRole } from "../src/command-help.js";
 import { COMMAND_NAMES, COMMANDS } from "../src/bin/lares.js";
 
 const CLI = join(repoRoot, "packages", "lares-cli", "src");
@@ -138,6 +138,44 @@ describe("★ ONE HOME for a verb door's words ★", () => {
     expect(orphans).toEqual([]);
   });
 
+});
+
+describe("★ the core verbs' help reads their carriers, one home ★", () => {
+  async function helpOf(argv: string[]): Promise<string[]> {
+    const { dispatch } = await import("../src/bin/lares.js");
+    const out: string[] = [];
+    vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { out.push(a.map(String).join(" ")); });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(await dispatch([...argv, "--help"])).toBe(0);
+    return out;
+  }
+
+  test("the registry holds no tiddler entry: the door flipped to its carriers", () => {
+    expect(COMMAND_HELP).not.toHaveProperty("tiddler");
+    expect(Object.keys(COMMAND_HELP).filter((k) => k.startsWith("tiddler "))).toEqual([]);
+  });
+
+  test("`lares tiddler --help` lists the four carriers and names the unfold", async () => {
+    const text = (await helpOf(["tiddler"])).join("\n");
+    for (const verb of ["get", "put", "delete", "rename"]) expect(text).toContain(`lares tiddler ${verb}  `);
+    expect(text).toContain("Read one: lares tiddler <verb> --help");
+  });
+
+  test("`lares wiki filter --help` prints the filter's carrier whole, never the wiki door's table", async () => {
+    const out = await helpOf(["wiki", "filter"]);
+    expect(out[0]).toMatch(/^usage: lares wiki filter <filter> --recipe <slug> /);
+    expect(out.join("\n")).toContain("filter-context-alone");
+    expect(out.join("\n")).toContain("lar:///ha.ka.ba/lares/afford/engine.filter.pages");
+  });
+
+  test("`lares wiki --help` keeps the door's own table, its filter line read from the carrier's role", async () => {
+    const text = (await helpOf(["wiki"])).join("\n");
+    const role = verbRole("wiki filter");
+    expect(role).toBe("run a TiddlyWiki filter in the wiki's own engine, one bounded page");
+    expect(text).toMatch(new RegExp(`^  filter +${role.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "m"));
+    expect(text).toContain("switch");
+    expect(text).not.toContain("Run a TiddlyWiki filter in the wiki's own engine (`--recipe default`");
+  });
 });
 
 describe("★ `--help --meme` reaches the wiki through the meme rail ★", () => {

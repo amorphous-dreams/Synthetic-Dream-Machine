@@ -32,12 +32,26 @@ export const WAVE_3A = [
 /** Wave 3a's seat-only carriers: the sensorium branch mute and its restore render no cli line. */
 export const WAVE_3A_SEAT = ["sense.kapae.mutes", "sense.kapae.restores"] as const;
 
-/** Every address a canon carrier holds today, by hand: a pack that lacks one reads red, never vacuous. Wave 1a added the calendar and the law; wave 2 the seven unhelped doors; wave 3a the kahua, trust, kapae, events, hooks and mcp doors. */
+/**
+ * The core verbs' carriers (lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts, landing 1; candidate addresses): the tiddler door
+ * whole, and `wiki filter` as one part of the wiki door, whose other verbs keep the door's own table.
+ */
+export const CORE_VERBS = ["engine.record.reads", "engine.record.puts", "engine.record.removes", "engine.record.renames", "engine.filter.pages"] as const;
+
+/** Every address a canon carrier holds today, by hand: a pack that lacks one reads red, never vacuous. Wave 1a added the calendar and the law; wave 2 the seven unhelped doors; wave 3a the kahua, trust, kapae, events, hooks and mcp doors; the comms course's landing 1 the core verbs. */
 export const SEED_ADDRESSES = [
   SEED_ADDRESS, "lar:///oracle.calendar.dates", "lar:///engine.law.indexes", "lar:///engine.law.pins", "lar:///engine.law.unpins",
   ...WAVE_2.map((a) => `lar:///${a}`),
   ...WAVE_3A.map((a) => `lar:///${a}`),
+  ...CORE_VERBS.map((a) => `lar:///${a}`),
 ] as const;
+
+/**
+ * The doors a cli route names that the pack gathers no door entry for: each holds `door/part` skins, verbs a carrier skins beside
+ * a table the door keeps itself (`wiki`, whose `filter` holds a carrier). Such a door counts legacy until every verb holds one.
+ */
+export const partDoors = (p: AffordancePack = pack()): string[] =>
+  [...new Set(cliRoutes(p).map((r) => r.door))].filter((d) => !Object.prototype.hasOwnProperty.call(p.doors, d)).sort();
 
 /** The cure every pack-shaped red names. */
 export const REBAKE = "re-bake: pnpm --filter @lararium/tw5 build, then commit packages/lararium-tw5/affordance-pack.json";

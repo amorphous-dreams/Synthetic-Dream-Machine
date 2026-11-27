@@ -875,3 +875,27 @@ def test_registered_tools_carry_seat_annotations_and_plain_first_lines():
     planted.annotations.destructive_hint = True
     with pytest.raises(AssertionError):
         check(planted)
+
+
+def test_the_four_record_tools_dress_from_their_carriers():
+    # THE CORE VERBS' WORDS LIVE IN THEIR CARRIERS (course comms-ux-enacts, landing 1; candidate addresses): the pack routes
+    # each tool to its carrier, the seat hands the tool that carrier's mcp whole and each parameter's words, and the
+    # functions keep behaviour alone, holding no docstring.
+    import inspect
+    from lares_mcp import DaemonCoordinator, build_mcp, pack_tool_skin, read_affordance_pack
+
+    pack = read_affordance_pack()
+    carriers = {"tiddler_get": "lar:///engine.record.reads", "tiddler_put": "lar:///engine.record.puts",
+                "tiddler_delete": "lar:///engine.record.removes", "wiki_filter": "lar:///engine.filter.pages"}
+    mcp = build_mcp(DaemonCoordinator(wing="w"))
+    listed = {t.name: t for t in asyncio.run(mcp.list_tools())}
+    for tool, address in carriers.items():
+        assert ((pack.get("routes") or {}).get("mcp") or {}).get(tool) == address, \
+            f"affordance-pack-stale: the pack routes no {tool}; re-bake: pnpm --filter @lararium/tw5 build"
+        description, params = pack_tool_skin(tool, pack)
+        assert listed[tool].description == description, tool
+        for name, words in params.items():
+            assert listed[tool].inputSchema["properties"][name]["description"] == words, (tool, name)
+        assert inspect.getdoc(mcp._tool_manager.get_tool(tool).fn) is None, tool  # noqa: SLF001
+    # CONTROL: rename skins the terminal alone, so no seat tool rides its carrier.
+    assert "tiddler_rename" not in ((pack.get("routes") or {}).get("mcp") or {})

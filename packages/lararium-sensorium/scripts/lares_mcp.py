@@ -1243,30 +1243,9 @@ def build_mcp(coordinator: LaresCoordinator):
                     fields: "list | None" = None, limit: "int | None" = None, after: "str | None" = None,
                     max_bytes: "int | None" = None, target: "str | None" = None, collapse: bool = False,
                     match: "str | None" = None, context: "int | None" = None) -> dict:
-        """Run A TIDDLYWIKI FILTER in the wiki's own engine and read ONE BOUNDED PAGE of its answer — mirrors `lares wiki
-        filter '<filter>'`. The filter language reads as TiddlyWiki's own: `[tag[memory]sort[title]]`, `[search[cursor]]`,
-        `[prefix[lar:///ha.ka.ba/kahua/memory/]]`, `[has[status]!status[done]]`; the LINK GRAPH rides it too:
-        `[[Title]backlinks[]]`, `[[Title]links[]]`, `[[Title]transcludes[]]`, `[[Title]backtranscludes[]]`. Returns
-        {recipe, filter, titles, total, next, asOf}; name `fields` (e.g. ["tags", "status"]) and each row carries them:
-        {…, rows: [{title, fields}], …} in place of `titles`. `collapse=True` reads the UPCOMING WORK SKINNY: each row carries
-        `bytes`, and a meme root its `slots: [{slot, bytes, first}]` (the has-stack `tiddler_get(meme=True, grain="skinny")`
-        answers, built by the same code), so one filter surveys N memes; unfold the one you need with
-        `tiddler_get(title=<root>, meme=True, slot="#/name")`. `match` SWEEPS LINES IN ONE CALL: each row carries its record's
-        matching lines, `lines: [{n, text}]` (a line past 512 bytes rides cut, `cut: true`), and `matches` counting every
-        matching line, so a sweep (an L-Prime pass, a stale word) reads its matches with no `tiddler_get` per title; plain
-        words match byte for byte, a `/source/flags` spelling reads as a regexp (`match="/\\b(is|are)\\b/"`); `context=N`
-        (0..8) carries N lines around each match, touching windows merged; at most 64 lines a row, and a page past its
-        byte cap sheds a row's tail lines and names `omitted: ["lines"]`. A record holding no text (a pointer) carries no
-        lines. `context` without `match` refuses `filter-context-alone`. THE ANSWER PAGES: at most 32 rows and `max_bytes` (default
-        65536) per call; `total` counts every match and `next` names the cursor of the page behind: hand it back as
-        `after` until `next` reads null. A wiki that moved between pages refuses `filter-cursor-stale` (read again from
-        the first page). A filter the engine cannot parse refuses `filter-malformed` with the engine's words. `withheld`
-        counts matches that stay home (temp, state, custody titles) or rest in a bag this face holds no read on.
-        A RENDERED TIDDLER's slice: where one read of the whole render (`tiddler_get` on the title carrying
-        `rendered-from`) answers more than you need, filter its sources for the slice, e.g.
-        `[tag[road/rank]sort[order]]` with `fields=["text"]`. CONTAINER: `recipe` names
-        the wiki (a bag names no wiki and takes no filter; read a bag with `tiddler_get(bag=...)`, or `tiddler_get(bag=..., meme=True)` for its roots): `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`. A
-        filter result carries the named wiki's words; turn it through the five tools. A LIT FACE RECEIVES VISITS: `target` names another lit face this read visits, by handle index (`"h1"`, `"1"`) or by its pet name, while the seat keeps the face it wears; the answer names the face it read (`face`) and the face worn (`worn`). A visit reads that face's daemon wiki (`recipe="default"`) through a view of its canon and working layer, never its personal or draft layer (private: a title only there reads absent, a personal or draft bag refuses `cross-face-private`); a shut face refuses `face-not-open`; a visit takes no write."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///engine.filter.pages, a candidate address): `_dress_from_pack` hands this tool its
+        # description and each parameter's from the baked affordance pack, so this function keeps behaviour alone and
+        # holds no docstring.
         args: dict = {**_wiki_container("wiki_filter", recipe), "filter": filter, **_target(target)}
         names = _names("wiki_filter", "fields", fields)
         if names is not None:
@@ -1290,43 +1269,9 @@ def build_mcp(coordinator: LaresCoordinator):
                     grain: "str | None" = None, slot: "str | None" = None, after: "str | None" = None,
                     fields: "list | None" = None, max_bytes: "int | None" = None, target: "str | None" = None,
                     tree: bool = False, all: bool = False) -> dict:
-        """Read a tiddler or meme from a wiki or bag.
-        READ ONE TIDDLER OR ONE MEME, ON A GRADIENT — mirrors `lares tiddler get <title>`. With no title and `meme=True`, list families: `tree=True` nests their slots, `after` names the next page. A bag listing returns {bag, roots, next}; a named recipe returns {recipe, bags, roots, next}; under `recipe="default"` no row names a `bag`. A floor read returns {bag, floor, roots, next}, and each row from a recipe's floor bag carries `floor: true`.
-        EVERY ANSWER LEADS WITH `has`,
-        a `<<~ has name=`…` params=`…`>>` line: provenance (`recipe/` or `bag/`, `layer/`, `floor/true`), the record's own
-        tags, the measure keys (`type/ position/ family/ slots/ bytes/ base/`, a pointer's `_canonical_uri/ textCid/
-        _integrity/ size/` verbatim), then `~` and the description or role; a meme's has-stack adds one `#/slot` line per
-        slot. Beside it `grain` echoes {asked, applied, why} and `next` names the next unfold ({grain, after?}) or null.
-        TWO AXES, KEPT APART. The LENS: the record by default, {recipe|bag, title, lens: "record", tiddler: {fields, hash,
-        textHash, bag, position, family?, omitted?}} (`tiddler` null where none stands; hand `hash` to `tiddler_put` /
-        `tiddler_delete` as `base`); `meme=True` recomposes the root and its slot children into ONE carrier sealed by its
-        bcc, {title, lens: "meme", meme: {uri, text? | slotText?, canonicalHash, bytes, slots, slot?, page?}, withheld?} (hand `canonicalHash` to a
-        meme write as `base`); a slot child's title recomposes from its root and points at the slot; a record that holds no
-        meme answers the record with a `note` saying so. The GRAIN (`grain`, one of skinny · fat · handle · resolved · slot ·
-        whole; an unknown grain refuses `grain-unknown`): none named, a record within one page (65536 bytes) answers fat and a
-        longer one skinny (the text left home), a pointer its handle, a blob skinny; a meme within a page answers its whole
-        carrier and a longer one its has-stack. `skinny` leaves the text home; `fat` carries it; `handle` names a pointer's
-        body; `resolved` reads it from the local CAS by CID and verifies it (a web2 `_canonical_uri` stays named, never
-        fetched); `slot` (with `slot="#/name"`) answers one slot's span at `meme.slotText` (never `text`, the whole carrier's field); `whole` reads the whole at the lens's grain (a record fat, a pointer resolved), and on a meme the whole carrier one page at a time,
-        each page cut on a slot boundary: hand `next.after` back as `after` until `next` reads null; `all=True` joins and validates all pages, retaining the first provenance and the whole base. A partial span guards honest base reuse and grants no authorization. `fields=[…]` answers the
-        named fields alone; `max_bytes` caps a record answer (the largest fields leave first and `omitted` names them). THE
-        TEXT ALONE (the CLI's `tiddler get <title> --text`) takes no parameter here: a seat's answer arrives as values, never
-        as bytes it must parse, so the text already rides one named key per lens: `grain="whole"` answers a record's text at
-        `tiddler.fields.text` (a pointer's body resolved), `meme=True, all=True` the recomposed carrier at `meme.text`, and
-        `meme=True, slot="#/name"` one slot's span at `meme.slotText`; a pointer whose body rode no text names its cure at
-        `pointer.cure`. AN
-        ANSWER THAT LEFT THE TEXT HOME hands a card's base (`skinny:sha256-…`): a field patch takes it, a text write refuses
-        `base-from-skinny`, so read fat (`grain="fat"`, a meme `grain="whole"`) before you rewrite a text. A slot answer, or a
-        page short of the end, hands a partial base bound to what it read (`partial:#/a:…`, `partial:p1:…`): a slot's put
-        (`tiddler_put(title="<root>#/a")`) takes it within that span (`base-outside-span` beyond it), a whole-carrier write or a family delete refuses
-        `base-from-partial`; the last page hands the bare base. A
-        RENDERED TIDDLER answers whole here: a source marked `projection: rendered` derives a live tiddler (`<source>.rendered`,
-        or the source's `render-title`) whose `rendered-from` names the source. CONTAINER LAW: exactly one of `recipe` /
-        `bag`. `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches, answered in
-        that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`. `bag` names ONE BAG and reads that bag's
-        own records through the meme door's reach and read gate (no engine runs): the answer names the `bag`, and carries
-        `floor: true` where the bag's floor snapshot answered. A record's text carries the layer `bag` names; turn it
-        through the five tools. A LIT FACE RECEIVES VISITS: `target` names another lit face this read visits, by handle index (`"h1"`, `"1"`) or by its pet name, while the seat keeps the face it wears; the answer names the face it read (`face`) and the face worn (`worn`). A visit reads that face's daemon wiki (`recipe="default"`) through a view of its canon and working layer, never its personal or draft layer (private: a title only there reads absent, a personal or draft bag refuses `cross-face-private`); a shut face refuses `face-not-open`; a visit takes no write."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///engine.record.reads, a candidate address): `_dress_from_pack` hands this tool its
+        # description and each parameter's from the baked affordance pack, so this function keeps behaviour alone and
+        # holds no docstring.
         if all and (not meme or title is None or slot or after or grain not in (None, "whole")):
             raise SeatArgumentRefused("tiddler_get: all requires a titled meme whole read without slot or after")
         if title is None:
@@ -1773,54 +1718,9 @@ def build_mcp(coordinator: LaresCoordinator):
                     tags_add: "str | list | None" = None, tags_remove: "str | list | None" = None,
                     base: "str | None" = None, create: bool = False, cut: "list | None" = None,
                     slot: "str | None" = None, replace: "str | None" = None, replace_with: "str | None" = None) -> dict:
-        """Patch one tiddler's text, fields or tags in a wiki or bag; a meme root or slot lands its family.
-        WRITE ONE TIDDLER — set fields, unset fields, add and remove tags, and move the text ONLY where `text` (or `append`, or `replace`)
-        names it; mirrors `lares tiddler put <title>`. A meme family moves by the same put: `text` on a root lands a whole
-        carrier through the Confluence gate; a slot's title (`<root>#/x`, or `slot="#/x"` beside the root title, folded
-        exactly as the CLI's `--slot` folds) takes its own text with no `base` and an `append` that honours a standing
-        postamble. A family under `lar:///ha.ka.ba/kahua/memory/<class>/<slug>` follows `stage-path-shape`.
-        `fields` maps field names to STRING values (a list rides as TiddlyWiki
-        writes it: "one [[two words]]"); `unset` names fields to remove; `tags_add` / `tags_remove` take a list of tags
-        (or one TiddlyWiki list string); every field the patch leaves unnamed stays as it stood, so a field or tag patch
-        never touches the text and a text put keeps the fields. `base` carries the `hash` read from `tiddler_get` (on a
-        root, the carrier's `canonicalHash` too; a slot read's partial base `partial:#/x:…` patches within its span and
-        refuses `base-outside-span` beyond it): a record that moved past it lands nothing (a base guards honest reuse,
-        never a lock). `create=True` lands only where no tiddler stands, a family's root included.
-        APPEND: `append` lands its words at the end of the record's text with NO base, read and written in
-        one step on the live wiki, so two appends through this door at once both land, in the order the record took them
-        (a writer that reaches the store directly merges per field, last writer winning); a text that does not end on a
-        newline takes one before the words. `tags_add`, `tags_remove` and `create` ride beside it; it names its words
-        alone otherwise (`text`, `base`, `fields`, `unset` beside it refuse `append-alone`); a missing title refuses `append-target-missing` unless `create=True`, which then
-        lands the words as a new record. Not idempotent: each call appends again. The receipt leads with its `has` line
-        and names the new `hash`. REPLACE IN PLACE: `replace` names one exact span of the standing text and `replace_with`
-        the words it turns into (`""` removes it), mirroring `lares tiddler put <title> --replace <span> --with <words>`;
-        the rest of the text never crosses the wire. The span must occur EXACTLY ONCE, counted as written (never trimmed,
-        overlaps counted): zero refuses `replace-absent`, more refuses `replace-ambiguous`, each naming the count and the
-        read that cures it, and nothing moves. The result lands as a text put does: `base` guards it, a field or tag
-        patch rides beside it, and on a slot (`<root>#/x` or `slot=`) the span counts within that slot's text and the
-        family reseals; `text`, `append`, `cut` or `create` beside it refuse `replace-alone`, a missing record
-        `replace-target-missing`. The receipt names `replaced` ({span, with} in bytes). The write lands in the
-        wiki's WORKING layer (`wiki_status` names it), never canon: a write this seat aims at a house canon bag refuses
-        `seat-canon-reach` (the seat edits canon through `tiddler_put(recipe=...)`, a copy-up, and `meme_offer`). Returns {recipe | bag, title, decision, bag, created,
-        changed, hash, textHash, position}: `decision` reads `put`, or `noop` where the record already says it; the
-        receipt's `layer` names a personal placement where this face holds no writer's seat.
-        A WRITE THAT NEVER LANDED RAISES: `conflict` (a stale `base`; the error names the live hash) and `exists`.
-        A MEME FAMILY READS AS TIDDLERS: a root and each slot (`<root>#/<slot>`) takes a field or tag patch AND a text
-        write here. A text write lands through the Confluence gate inside this put (the family re-splits and reseals; the
-        answer adds `canonicalHash`, `landed`, `kept`, `tombstoned`); a root text that frames a whole carrier speaks for
-        the family; `base` takes the record's hash or the carrier's canonical hash. ABSENCE NEVER DELETES: a slot the new
-        text omits (a folded read handed back, a root text with no `kahea` call) stays standing by reference and the answer
-        names it under `kept`; a slot leaves only where `cut=["#/slot"]` names it (a cut that names no standing omitted
-        slot refuses `cut-not-omitted`), so hand back what you read, folded or whole, and name what you remove.
-        THE FENCES, each refused by name: a family's `type` and `$` carriage fields derive from its text
-        (`family-carriage-derives`); a new slot joins through its parent's text (`family-joins-by-text`); a text the gate
-        cannot read as one carrier refuses `family-gate-refused`; every other shape lands natively, a `$:/` title or
-        tag, a `$:/tags/StartupAction` record, a module or plugin field and a script type alike; a title that stays home refuses `tiddler-withheld`; a
-        title under the memory stage reads one or two lowercase, hyphen-joined path segments (`stage-path-shape`); a
-        put over a rendered tiddler, or one carrying `rendered-from`, refuses `rendered-derives` (only the renderer
-        writes it: edit the source tiddlers). CONTAINER: exactly one of `recipe` / `bag`: `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`; a put lands in that wiki's working layer (this face's personal layer of it where
-        it holds no writer's seat). `bag=<slug>` lands in that one bag through its store, under the gates its own writes
-        keep; a house canon bag refuses `seat-canon-reach`."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///engine.record.puts, a candidate address): `_dress_from_pack` hands this tool its
+        # description and each parameter's from the baked affordance pack, so this function keeps behaviour alone and
+        # holds no docstring.
         args: dict = {**_meme_container("tiddler_put", recipe, bag), "title": _slot_title("tiddler_put", title, slot)}
         if replace is not None or replace_with is not None:
             if not isinstance(replace, str) or replace == "":
@@ -1879,29 +1779,9 @@ def build_mcp(coordinator: LaresCoordinator):
     @mcp.tool(annotations=_annotations("tiddler_delete"))
     def tiddler_delete(title: str, recipe: "str | None" = None, bag: "str | None" = None,
                        base: "str | None" = None, family: bool = False, mode: "str | None" = None) -> dict:
-        """Remove one tiddler, or a meme family with `family=True`, from a wiki or bag.
-        REMOVE ONE TIDDLER, BY THE FAMILY LAW — mirrors `lares tiddler delete <title> [--family] [--mode kapae|reveal]`.
-        A DELETE DELETES PLAINLY: with no `mode`, each record leaves its own layer to absent and no tombstone rises (the
-        receipt reads `mode: "plain"` and names each title under `retracted`). `base` carries the `hash` read from
-        `tiddler_get`: a record that moved past it moves nothing and the call raises `conflict` naming the live hash.
-        Returns {recipe, title, decision, mode, tombstoned, retracted, hash, consequence}: `decision` reads `removed`, or
-        `absent` where nothing stands to remove; `consequence` names what the act moved ({act, target, bare, position,
-        family, acts, leaves, orphans, refusals, versions}). THE FAMILY LAW: a PLAIN tiddler leaves alone. A meme ROOT
-        moves nothing and the call raises `tiddler-delete-in-a-family`, quoting the consequence the delete would
-        land (every title it would move, what it would leave); pass `family=True` to name the family act, and the root
-        leaves with its slots as ONE change (the answer adds `canonicalHash`). A slot's title (`<root>#/x`) lands as the
-        explicit cut on its parent: the slot leaves and the family reseals. A `$:/` title refuses too. ONLY A LOWER LAYER MAKES A DELETE A CHOICE: a wiki
-        composes layers (canon under working under personal), and one title may stand in several. Where a lower layer
-        holds the title too, or the record rests in a layer this face cannot remove it from, a delete with no `mode`
-        raises `delete-mode-needed` naming both meanings: `mode="kapae"` raises a tombstone in a writable layer that
-        SHADOWS every record beneath (the wiki reads the title gone, the lower layers keep theirs); `mode="reveal"`
-        RETRACTS the topmost record so the record beneath surfaces (raises `reveal-top-unwritable` where the face cannot
-        write the layer holding the top record). A kāpae over a title the wiki reads absent still answers: with no `mode` the call
-        retracts a tombstone that hides nothing (its `.kapae` shadow leaves the disk), and `mode="reveal"` retracts one
-        that hides a lower record. Each act in `consequence.acts` names `bag` (the layer written), `holds` (every layer
-        holding the title) and what the wiki reads afterward: `shadowed: [bags]` or `reveals: bag | null`. A rendered
-        tiddler (one carrying `rendered-from`) refuses `rendered-derives`: only the renderer writes it, and it leaves when
-        its source drops `projection: rendered`. CONTAINER: exactly one of `recipe` / `bag`: `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`; `bag=<slug>` removes from that one bag through its store (`family=True` takes the family there too)."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///engine.record.removes, a candidate address): `_dress_from_pack` hands this tool its
+        # description and each parameter's from the baked affordance pack, so this function keeps behaviour alone and
+        # holds no docstring.
         args: dict = {**_meme_container("tiddler_delete", recipe, bag), "title": title}
         if base is not None:
             args["base"] = base
