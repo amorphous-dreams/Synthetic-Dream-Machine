@@ -10,9 +10,9 @@
  *                                                                         → { has, recipe, title, lens, tiddler?: { fields, hash, textHash, bag, position, family?, orphan?, omitted? } | null,
  *                                                                             meme?: { uri, text?, canonicalHash, bytes, slots, slot?, page? }, grain, next, note? }
  *   wiki-render    { recipe, title | text, type?, form?, after?, maxBytes? } → { recipe, title, form, text, bytes, truncated, next }
- *   tiddler-put    { recipe | bag [realm], title, text?, append?, fields?, unset?, tagsAdd?, tagsRemove?, cut?, base?, create? }
+ *   tiddler-put    { recipe | bag [realm], title, text?, append?, replace?, with?, fields?, unset?, tagsAdd?, tagsRemove?, cut?, base?, create? }
  *                                                                         → { recipe?, title, decision: put|noop|conflict|exists, bag, layer?, created, changed, hash, textHash, position, family?,
- *                                                                             appended?, appendedTo?, canonicalHash?, landed?, kept?, tombstoned?, warnings? }
+ *                                                                             appended?, appendedTo?, replaced?, canonicalHash?, landed?, kept?, tombstoned?, warnings? }
  *   tiddler-delete { recipe | bag [realm], title, base?, family?, mode? } → { recipe? | bag, title, decision: removed|absent|conflict|refused, mode: plain|kapae|reveal|cut, tombstoned, retracted, hash?,
  *                                                                             parent?, canonicalHash?, landed?, kept?, refusal?, why?, consequence? }
  *   tiddler-rename { recipe, title, to, base? }                          → { recipe, title, to, decision: renamed|absent|conflict|refused, forwarder?, relinked?, moved?, skipped?, unreachable?, withheld?, hash?, refusal?, why?, consequence? }
@@ -65,6 +65,8 @@
  * beyond it; a put that speaks for the whole carrier refuses it (`base-from-partial`). A slot's text put needs no base and
  * moves the slot's own record alone: its standing `$preamble` / `$postamble` carriage stays. AN APPEND ON A SLOT joins the
  * end of the slot's body: its postamble where one stands with text, the slot's own text otherwise, one blank line between.
+ * A REPLACE IN PLACE (`replace` + `with`) changes one exact span of the standing text and lands as a text put of the result:
+ * the same seat, base guard, swap and family split; the span must occur exactly once (`replace-absent`, `replace-ambiguous`).
  *
  * A DELETE DELETES PLAINLY; ONLY A LOWER LAYER MAKES IT A CHOICE (lar:///ha.ka.ba/lares/api/pono/kapae #/core-cut). With
  * no `mode` named, each record leaves its own layer to absent (`mode: "plain"` in the answer): no tombstone rises and no
@@ -1118,6 +1120,27 @@ export function appendedText(standing: string, words: string): string {
   return standing === "" || standing.endsWith("\n") ? standing + words : `${standing}\n${words}`;
 }
 
+/** How many times `span` occurs in `text`, overlaps counted: `aa` occurs twice in `aaa`, so a replace never guesses which. */
+export function spanCount(text: string, span: string): number {
+  if (span === "") return 0;
+  let count = 0;
+  for (let at = text.indexOf(span); at !== -1; at = text.indexOf(span, at + 1)) count++;
+  return count;
+}
+
+/**
+ * THE REPLACE IN PLACE: the standing text with its one occurrence of `span` turned to `words`. A span that occurs zero times
+ * or more than once refuses by name, naming the count and the read that shows the text, and nothing moves.
+ */
+export function replacedText(standing: string, span: string, words: string, title: string, where: string): string {
+  const count = spanCount(standing, span);
+  const read = `\`lares tiddler get "${title}" ${where}\` shows the text as it stands`;
+  if (count === 0) throw new VerbRefusal("replace-absent", `replace-absent: the span occurs 0 times in the text of "${title}"; copy the span byte for byte from the text as it stands (${read}) and replace again. Nothing moved.`);
+  if (count > 1) throw new VerbRefusal("replace-ambiguous", `replace-ambiguous: the span occurs ${count} times in the text of "${title}", and a replace changes exactly one; widen \`--replace\` with the words around the one you mean until it occurs once (${read}), or send the whole text with \`--text\` / \`--file\` and \`--base\`. Nothing moved.`);
+  const at = standing.indexOf(span);
+  return standing.slice(0, at) + words + standing.slice(at + span.length);
+}
+
 /** How many times one put re-reads a record that moved under its admission before it answers `conflict`. */
 const PUT_SETTLE_ROUNDS = 16;
 
@@ -1287,6 +1310,21 @@ async function putThrough(opts: TiddlerVerbOptions, seat: PutSeat, title: string
   // TiddlyWiki's own list reading, engine-free (`carrier-form`), so a bag's seat composes no engine to parse a tag list.
   const listOf = (raw: unknown): string[] => Array.isArray(raw) ? raw.map(String) : typeof raw === "string" ? [...(parseTitleList(raw) ?? [])] : [];
   const append = typeof args["append"] === "string" ? args["append"] : null;
+  // A REPLACE NAMES ONE SPAN AND ITS NEW WORDS (`with` may read empty: the span leaves). It rides as a text put of the
+  // result, so a base, a field patch beside the text and a tag patch ride with it; another text source does not.
+  const spanRaw = args["replace"] !== undefined && args["replace"] !== null ? args["replace"] : null;
+  const withRaw = args["with"] !== undefined && args["with"] !== null ? args["with"] : null;
+  if (spanRaw !== null || withRaw !== null) {
+    if (typeof spanRaw !== "string" || spanRaw === "") throw new VerbRefusal("replace-span-missing", "replace-span-missing: a replace names the one span it changes (`replace`, `--replace '<old span>'`), copied from the standing text. Nothing moved.");
+    if (typeof withRaw !== "string") throw new VerbRefusal("replace-with-missing", `replace-with-missing: a replace names the words the span turns into (\`with\`, \`--with '<new span>'\`; \`--with ''\` removes the span). Nothing moved.`);
+    const crossed = ["text", "append", "cut"].filter((name) => args[name] !== undefined && args[name] !== null);
+    if (flagOn(args["create"])) crossed.push("create");
+    if (Object.prototype.hasOwnProperty.call(patchArg(args["fields"]), "text")) crossed.push("fields.text");
+    if ((namesArg(args["unset"]) ?? []).includes("text")) crossed.push("unset text");
+    if (crossed.length > 0) throw new VerbRefusal("replace-alone", `replace-alone: a replace changes one span of the standing text and carries no ${crossed.map((n) => `\`${n}\``).join(", ")}; send the whole text as its own put (\`lares tiddler put "${title}" ${seat.where} --file <path> --base <hash>\`), or the replace alone. Nothing moved.`);
+  }
+  const replace = typeof spanRaw === "string" ? spanRaw : null;
+  const replaceWith = typeof withRaw === "string" ? withRaw : "";
   if (append !== null) {
     // AN APPEND NAMES ONLY ITS WORDS: it overwrites nothing, so it carries no base, no whole text and no field patch.
     const crossed = ["text", "base", "fields", "unset"].filter((name) => args[name] !== undefined && args[name] !== null);
@@ -1299,6 +1337,8 @@ async function putThrough(opts: TiddlerVerbOptions, seat: PutSeat, title: string
   const offPath = cut.filter((slot) => !/^#\/[^$\s]/.test(slot));
   if (offPath.length > 0) throw new VerbRefusal("cut-malformed", `cut-malformed: a cut names a slot by its rooted path (\`#/name\`, \`#/name/child\`); got ${offPath.map((slot) => `"${slot}"`).join(", ")}. Nothing moved.`);
 
+  // The receipt a replace carries: the bytes the span held and the bytes that took its place.
+  const replaced = replace !== null ? { span: bytesOf(replace), with: bytesOf(replaceWith) } : null;
   let admitted: string | null = null;
   for (let round = 0; ; round++) {
     const before = await seat.read(title);
@@ -1314,9 +1354,11 @@ async function putThrough(opts: TiddlerVerbOptions, seat: PutSeat, title: string
     // title refuses unless `create` names it; with `create`, an append lands a new record or joins the standing one.
     if (append !== null) {
       if (!standing && !flagOn(args["create"])) throw new VerbRefusal("append-target-missing", `append-target-missing: no record "${title}" stands to append to; name \`create\` (\`--create\`) to land the words as a new record. Nothing moved.`);
+    } else if (replace !== null) {
+      if (!standing) throw new VerbRefusal("replace-target-missing", `replace-target-missing: no record "${title}" stands to replace a span in; \`lares tiddler get "${title}" ${seat.where}\` reads what stands, and \`lares tiddler put "${title}" ${seat.where} --text …\` lands a new record. Nothing moved.`);
     } else if (flagOn(args["create"]) && (await seat.exists(title))) return answer("exists", unmoved);
     // A TEXT WRITE BY ANY PATH: `text`, a field patch naming `text`, or an unset of it. A card's base takes none of them.
-    const writesText = cut.length > 0 || append !== null || typeof args["text"] === "string" || Object.prototype.hasOwnProperty.call(patchArg(args["fields"]), "text") || (namesArg(args["unset"]) ?? []).includes("text");
+    const writesText = cut.length > 0 || append !== null || replace !== null || typeof args["text"] === "string" || Object.prototype.hasOwnProperty.call(patchArg(args["fields"]), "text") || (namesArg(args["unset"]) ?? []).includes("text");
     const base = await putBaseOf(optionalStringArg(args, "base"), title, writesText, seat);
     // TWO BASES, ONE DOOR: a record's hash (`sha256-…`, the record lens) guards the record; a carrier's canonical hash
     // (`sha256:…`, the meme lens) guards the family, and the Confluence gate reads it below where the put moves a family's text.
@@ -1336,6 +1378,9 @@ async function putThrough(opts: TiddlerVerbOptions, seat: PutSeat, title: string
     if (patch["title"] !== undefined && patch["title"] !== title) throw new VerbRefusal("fields-malformed", "fields-malformed: a put never re-titles; `fields.title` must match args.title or stay absent.");
     const next: Record<string, string> = { ...(before ?? {}), ...patch, title };
     if (typeof args["text"] === "string") next["text"] = args["text"];
+    // THE SPAN TURNS OVER THE TEXT THIS ROUND READ: a record that moved before the swap sends the round back, and the count
+    // reads again over the newer text.
+    if (replace !== null) next["text"] = replacedText(before?.["text"] ?? "", replace, replaceWith, title, seat.where);
     if (append !== null) {
       if (joined === null) next["text"] = appendedText(before?.["text"] ?? "", append);
       else if (joined.title === title) next["text"] = String(joined.fields.text);
@@ -1442,7 +1487,7 @@ async function putThrough(opts: TiddlerVerbOptions, seat: PutSeat, title: string
         return {
           ...(append !== null ? { has: hasLine(title, [seat.provenance, param("decision", "put"), param("hash", hash ?? "")]) } : {}),
           ...seat.answered, title, decision: "put", ...seat.landing, created: !standing, changed, hash, textHash: landed ? textHashOf(landed) : null,
-          ...(append !== null ? { appended: bytesOf(append), ...(joined !== null ? { appendedTo: joined.title } : {}) } : {}), ...family, ...placeFields(await seat.place(title)),
+          ...(append !== null ? { appended: bytesOf(append), ...(joined !== null ? { appendedTo: joined.title } : {}) } : {}), ...(replaced ? { replaced } : {}), ...family, ...placeFields(await seat.place(title)),
         };
       }
       // A slot's append that named the postamble found no carrier to recompose: the words join the slot's own record.
@@ -1462,7 +1507,7 @@ async function putThrough(opts: TiddlerVerbOptions, seat: PutSeat, title: string
     const hash = hashOf(landed);
     return {
       ...(append !== null ? { has: hasLine(title, [seat.provenance, param("decision", "put"), param("hash", hash)]) } : {}),
-      ...answer("put", { created: !standing, changed: Object.keys({ ...(before ?? {}), ...next }).filter(moved), hash, textHash: textHashOf(landed), ...(append !== null ? { appended: bytesOf(append) } : {}), ...(pointer ? { pointer } : {}) }),
+      ...answer("put", { created: !standing, changed: Object.keys({ ...(before ?? {}), ...next }).filter(moved), hash, textHash: textHashOf(landed), ...(append !== null ? { appended: bytesOf(append) } : {}), ...(replaced ? { replaced } : {}), ...(pointer ? { pointer } : {}) }),
     };
   }
 }

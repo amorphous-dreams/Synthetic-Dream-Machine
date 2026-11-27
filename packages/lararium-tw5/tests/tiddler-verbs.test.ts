@@ -768,6 +768,54 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(r.engine.wiki.getTiddlerText("Ledger")).toBe("one\ntwo\nthree");
   });
 
+  // S4, REPLACE IN PLACE (lar:///ha.ka.ba/kahua/memory/course/ai-surface-gestures #/stories): one exact span changes, the
+  // rest of the text never crosses the wire, and the write rides the one put law (base, swap, family split).
+  test("a replace changes one exact span: it refuses a span that occurs 0 or 2+ times by name with the count and the read that cures it, rides the base guard, and lands nothing on a refusal", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    const get = makeTiddlerGetReactor(r.opts);
+    await expect(put({ ...A, title: "Errata", replace: "cat", with: "dog" }, ctx())).rejects.toMatchObject({ reason: "replace-target-missing" });
+    await put({ ...A, title: "Errata", create: true, text: "the cat sat on the mat; the cat ran" }, ctx());
+    const ambiguous = put({ ...A, title: "Errata", replace: "the cat", with: "a dog" }, ctx());
+    await expect(ambiguous).rejects.toMatchObject({ reason: "replace-ambiguous" });
+    await expect(ambiguous).rejects.toThrow(/occurs 2 times.*lares tiddler get "Errata" --recipe default/);
+    // Overlaps count: `aa` in `aaa` reads twice, so the door never guesses which.
+    await put({ ...A, title: "Overlap", create: true, text: "aaa" }, ctx());
+    await expect(put({ ...A, title: "Overlap", replace: "aa", with: "b" }, ctx())).rejects.toMatchObject({ reason: "replace-ambiguous" });
+    const absent = put({ ...A, title: "Errata", replace: "a bird", with: "a dog" }, ctx());
+    await expect(absent).rejects.toMatchObject({ reason: "replace-absent" });
+    await expect(absent).rejects.toThrow(/occurs 0 times/);
+    expect(r.engine.wiki.getTiddlerText("Errata")).toBe("the cat sat on the mat; the cat ran");
+    // A stale base answers conflict and lands nothing; the live base lands the one span, a tag patch beside it.
+    const live = ((await get({ ...A, title: "Errata" }, ctx()))["tiddler"] as { hash: string }).hash;
+    expect(await put({ ...A, title: "Errata", replace: "sat on the mat", with: "slept", base: "sha256-" + "0".repeat(64) }, ctx())).toMatchObject({ decision: "conflict", hash: live });
+    expect(r.engine.wiki.getTiddlerText("Errata")).toBe("the cat sat on the mat; the cat ran");
+    const landed = await put({ ...A, title: "Errata", replace: "sat on the mat", with: "slept", base: live, tagsAdd: "trued" }, ctx());
+    expect(landed).toMatchObject({ decision: "put", created: false, replaced: { span: 14, with: 5 } });
+    expect([...(landed["changed"] as string[])].sort()).toEqual(["tags", "text"]);
+    expect(r.engine.wiki.getTiddlerText("Errata")).toBe("the cat slept; the cat ran");
+    // An empty `with` removes the span; a whitespace span counts as it rides, never trimmed.
+    await put({ ...A, title: "Errata", replace: "; the cat ran", with: "" }, ctx());
+    expect(r.engine.wiki.getTiddlerText("Errata")).toBe("the cat slept");
+    await expect(put({ ...A, title: "Errata", replace: " ", with: "_" }, ctx())).rejects.toMatchObject({ reason: "replace-ambiguous" });
+  });
+
+  test("a replace names its span and its words alone: another text source, a cut or create beside it refuses `replace-alone`; a missing span or `with` refuses by name", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    await put({ ...A, title: "Errata", create: true, text: "one two" }, ctx());
+    for (const crossed of [{ text: "x" }, { append: "x" }, { create: true }, { cut: ["#/a"] }, { fields: { text: "x" } }, { unset: ["text"] }]) {
+      await expect(put({ ...A, title: "Errata", replace: "one", with: "1", ...crossed }, ctx())).rejects.toMatchObject({ reason: "replace-alone" });
+    }
+    await expect(put({ ...A, title: "Errata", replace: "one" }, ctx())).rejects.toMatchObject({ reason: "replace-with-missing" });
+    await expect(put({ ...A, title: "Errata", with: "1" }, ctx())).rejects.toMatchObject({ reason: "replace-span-missing" });
+    await expect(put({ ...A, title: "Errata", replace: "", with: "1" }, ctx())).rejects.toMatchObject({ reason: "replace-span-missing" });
+    expect(r.engine.wiki.getTiddlerText("Errata")).toBe("one two");
+    // CONTROL: a field patch beside the replace rides, as beside any text put.
+    expect(await put({ ...A, title: "Errata", replace: "one", with: "1", fields: { status: "trued" } }, ctx())).toMatchObject({ decision: "put" });
+    expect(r.engine.wiki.getTiddler("Errata")!.fields).toMatchObject({ text: "1 two", status: "trued" });
+  });
+
   test("concurrent appends retain both texts and a stale whole-text put refuses", async () => {
     const r = await rig();
     const put = makeTiddlerPutReactor(r.opts);
@@ -1961,6 +2009,26 @@ describe.skipIf(wikiSkip)(`a family's slot moves by the plain put${skipNote}`, (
     expect(dropped).toMatchObject({ decision: "put", kept: expect.arrayContaining([`${MEME}#/a/z`]) });
     const whole = (await readMeme(MEME, sink))!.text;
     for (const words of ["a body with no call", "body of z", "a tail after the child", "body of b"]) expect(whole, words).toContain(words);
+  });
+
+  test("a replace on a slot lands as that slot's text: the span counts within the slot alone, the family recomposes and reseals, and its sibling slots stand", async () => {
+    const r = await rig();
+    const sink = wikiMemeSink(r.engine.wiki);
+    await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, sink);
+    const sealed = (await readMeme(MEME, sink))!.canonicalHash;
+    const put = makeTiddlerPutReactor(r.opts);
+    // `body of` reads twice in the carrier and once in `#/b`: the slot's own text answers the count.
+    const trued = await put({ ...A, title: `${MEME}#/b`, replace: "body of b", with: "a trued body" }, ctx());
+    expect(trued).toMatchObject({ decision: "put", position: "slot", family: MEME, replaced: { span: 9, with: 12 } });
+    expect(r.engine.wiki.getTiddlerText(`${MEME}#/b`)).toContain("a trued body");
+    const whole = (await readMeme(MEME, sink))!;
+    expect(whole.text).toContain("a trued body");
+    expect(whole.text).toContain("body of a");
+    expect(whole.text).not.toContain("body of b");
+    expect(whole.canonicalHash).not.toBe(sealed);
+    expect(trued["canonicalHash"]).toBe(whole.canonicalHash);
+    await expect(put({ ...A, title: `${MEME}#/a`, replace: "a", with: "z" }, ctx())).rejects.toMatchObject({ reason: "replace-ambiguous" });
+    expect((await readMeme(MEME, sink))!.canonicalHash).toBe(whole.canonicalHash);
   });
 
   test("a put on a slot the family does not hold refuses `family-joins-by-text` and lands nothing; CONTROL: a fragment title under no meme root lands as a plain tiddler", async () => {

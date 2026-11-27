@@ -122,6 +122,12 @@ export function tiddlerPlan(sub: Sub, args: ParsedArgs): DoorPlan {
   // THE SLOTS THAT LEAVE, by name: absence never cuts, so a put names each slot it removes (`--cut-slot '#/a'`, repeatable).
   const cut = wordOf(args.options["cut-slot"]);
   if (cut) out["cut"] = cut;
+  // A REPLACE IN PLACE: the span and its new words ride exactly as written, never trimmed (a span's edge spaces count), and
+  // `--with ''` removes the span. The door counts the span and refuses unless it occurs exactly once.
+  const span = args.options["replace"];
+  if (typeof span === "string") out["replace"] = span;
+  const turned = args.options["with"];
+  if (typeof turned === "string") out["with"] = turned;
   const base = wordOf(args.options["base"]);
   if (base) out["base"] = base;
   if (args.flags["create"] === true) out["create"] = true;
@@ -182,7 +188,8 @@ function filePointer(raw: Buffer, source: string, declared: string | null): File
 
 /**
  * A put's words, only where the caller names a source: `--text <words>`, `--file <path>` (or `-` for stdin) for the whole text,
- * `--append <path>` (or `-`) for words that land at the end of the standing text. A field patch reads none.
+ * `--append <path>` (or `-`) for words that land at the end of the standing text. A field patch reads none, and neither does a
+ * replace (`--replace <span> --with <words>`), whose span and words ride the plan itself.
  */
 async function putText(args: ParsedArgs, declaredType: string | null = null): Promise<{ readonly text: string } | { readonly append: string } | { readonly pointer: FilePointer } | null> {
   const inline = args.options["text"];
@@ -340,6 +347,8 @@ async function tiddlerPut(args: ParsedArgs): Promise<number> {
       if (typeof receipt["has"] === "string") console.log(receipt["has"]);
       console.log(`${decision}: ${plan.args["title"]}`);
       if (decision === "put") console.log(`  ${receipt["created"] === true ? "created" : "changed"} ${changed.join(", ")}`);
+      const replaced = receipt["replaced"] as { span?: number; with?: number } | undefined;
+      if (decision === "put" && replaced) console.log(`  replaced one span (${replaced.span ?? 0} bytes) with ${replaced.with ?? 0} bytes`);
       // A FAMILY'S ANSWER COUNTS ITS MEMBERS: the records the recompose landed, the slots absence kept, the slots a cut tombstoned.
       const counted = (key: string): number | null => Array.isArray(receipt[key]) ? (receipt[key] as unknown[]).length : null;
       const landed = counted("landed"), kept = counted("kept"), tombstoned = counted("tombstoned");

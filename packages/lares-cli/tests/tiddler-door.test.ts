@@ -187,6 +187,21 @@ describe("the argument law, no daemon", () => {
     }
     expect(unknownFlags(door, argv("tiddler", ["put", "T"], { recipe: "default", text: "x", base: "sha256:1" }))).toEqual([]);
   });
+  // S4 REPLACE IN PLACE (course/ai-surface-gestures): the span and its words ride as written, never trimmed.
+  test("a replace rides --replace and --with untrimmed as args.replace and args.with beside a base; the row refuses --text, --file, --append, --cut-slot and --create beside it by name", async () => {
+    const door = COMMANDS.find((row) => row.name === "tiddler")!;
+    expect(unknownFlags(door, argv("tiddler", ["put", "T"], { recipe: "default", replace: "a", with: "b", base: "sha256-1", fields: "{\"k\":\"v\"}", "tag-add": "x" }))).toEqual([]);
+    for (const flag of ["text", "file", "append", "cut-slot"]) {
+      expect(unknownFlags(door, argv("tiddler", ["put", "T"], { recipe: "default", replace: "a", with: "b", [flag]: "x" })).map((x) => x.name)).toEqual([flag]);
+    }
+    expect(unknownFlags(door, argv("tiddler", ["put", "T"], { recipe: "default", replace: "a", with: "b" }, { create: true })).map((x) => x.name)).toEqual(["create"]);
+    expect(tiddlerPlan("put", argv("tiddler", ["put", "Errata"], { recipe: "default", replace: " the cat ", with: "", base: "sha256-1" })))
+      .toEqual({ verb: "tiddler-put", args: { recipe: "default", title: "Errata", replace: " the cat ", with: "", base: "sha256-1" } });
+    h.reply = { recipe: "default", title: "lar:///t/x#/why", decision: "put", created: false, changed: ["text"], hash: "sha256-2", replaced: { span: 5, with: 8 }, landed: [], kept: [], tombstoned: [], warnings: [] };
+    const landed = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", slot: "#/why", replace: "it is", with: "it reads" }));
+    expect(landed).toMatchObject({ exit: 0, printed: { data: { decision: "put", replaced: { span: 5, with: 8 } } } });
+    expect(h.calls.at(-1)).toEqual({ verb: "tiddler-put", args: { recipe: "default", title: "lar:///t/x#/why", replace: "it is", with: "it reads" } });
+  });
   test("a plain append carries the host file's bytes as args.append with no base, and prints the has line and the new hash", async () => {
     const dir = mkdtempSync(join(tmpdir(), "append-door-"));
     try {

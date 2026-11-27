@@ -1749,9 +1749,9 @@ def build_mcp(coordinator: LaresCoordinator):
                     text: "str | None" = None, append: "str | None" = None, unset: "list | None" = None,
                     tags_add: "str | list | None" = None, tags_remove: "str | list | None" = None,
                     base: "str | None" = None, create: bool = False, cut: "list | None" = None,
-                    slot: "str | None" = None) -> dict:
+                    slot: "str | None" = None, replace: "str | None" = None, replace_with: "str | None" = None) -> dict:
         """Patch one tiddler's text, fields or tags in a wiki or bag; a meme root or slot lands its family.
-        WRITE ONE TIDDLER — set fields, unset fields, add and remove tags, and move the text ONLY where `text` (or `append`)
+        WRITE ONE TIDDLER — set fields, unset fields, add and remove tags, and move the text ONLY where `text` (or `append`, or `replace`)
         names it; mirrors `lares tiddler put <title>`. A meme family moves by the same put: `text` on a root lands a whole
         carrier through the Confluence gate; a slot's title (`<root>#/x`, or `slot="#/x"` beside the root title, folded
         exactly as the CLI's `--slot` folds) takes its own text with no `base` and an `append` that honours a standing
@@ -1769,7 +1769,14 @@ def build_mcp(coordinator: LaresCoordinator):
         newline takes one before the words. `tags_add`, `tags_remove` and `create` ride beside it; it names its words
         alone otherwise (`text`, `base`, `fields`, `unset` beside it refuse `append-alone`); a missing title refuses `append-target-missing` unless `create=True`, which then
         lands the words as a new record. Not idempotent: each call appends again. The receipt leads with its `has` line
-        and names the new `hash`. The write lands in the
+        and names the new `hash`. REPLACE IN PLACE: `replace` names one exact span of the standing text and `replace_with`
+        the words it turns into (`""` removes it), mirroring `lares tiddler put <title> --replace <span> --with <words>`;
+        the rest of the text never crosses the wire. The span must occur EXACTLY ONCE, counted as written (never trimmed,
+        overlaps counted): zero refuses `replace-absent`, more refuses `replace-ambiguous`, each naming the count and the
+        read that cures it, and nothing moves. The result lands as a text put does: `base` guards it, a field or tag
+        patch rides beside it, and on a slot (`<root>#/x` or `slot=`) the span counts within that slot's text and the
+        family reseals; `text`, `append`, `cut` or `create` beside it refuse `replace-alone`, a missing record
+        `replace-target-missing`. The receipt names `replaced` ({span, with} in bytes). The write lands in the
         wiki's WORKING layer (`wiki_status` names it), never canon: a write this seat aims at a house canon bag refuses
         `seat-canon-reach` (the seat edits canon through `tiddler_put(recipe=...)`, a copy-up, and `meme_offer`). Returns {recipe | bag, title, decision, bag, created,
         changed, hash, textHash, position}: `decision` reads `put`, or `noop` where the record already says it; the
@@ -1794,6 +1801,18 @@ def build_mcp(coordinator: LaresCoordinator):
         it holds no writer's seat). `bag=<slug>` lands in that one bag through its store, under the gates its own writes
         keep; a house canon bag refuses `seat-canon-reach`."""
         args: dict = {**_meme_container("tiddler_put", recipe, bag), "title": _slot_title("tiddler_put", title, slot)}
+        if replace is not None or replace_with is not None:
+            if not isinstance(replace, str) or replace == "":
+                raise SeatArgumentRefused("tiddler_put: a replace names the one span it changes (`replace`), copied from the standing text")
+            if not isinstance(replace_with, str):
+                raise SeatArgumentRefused("tiddler_put: a replace names the words its span turns into (`replace_with`; \"\" removes the span)")
+            crossed = [name for name, value in (("text", text), ("append", append), ("cut", cut)) if value is not None]
+            if create:
+                crossed.append("create")
+            if crossed:
+                raise SeatArgumentRefused(f"tiddler_put: a replace changes one span of the standing text; {', '.join(crossed)} rides as its own put")
+            args["replace"] = replace
+            args["with"] = replace_with
         if append is not None:
             crossed = [name for name, value in (("text", text), ("base", base), ("fields", fields), ("unset", unset)) if value is not None]
             if crossed:
