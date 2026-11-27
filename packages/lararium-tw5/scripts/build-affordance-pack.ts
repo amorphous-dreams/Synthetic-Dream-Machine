@@ -37,6 +37,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { bccOf, headUriOf } from "@lararium/memetic-frame";
 import { bootTestWiki } from "../tests/test-wiki.js";
+import { TW5_CORE_SCRIPT_FILENAME } from "../src/generated-tw5-version.js";
 import { AFFORDANCE_TAG, AFFORD_SLOTS, AFFORD_SURFACES, addressOfTitle, bareAddressOf, type AffordSurface } from "../src/affordance-rows.js";
 import { rowsOf, skinRows, type TextOf } from "../src/affordance-read.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
@@ -269,6 +270,13 @@ async function main(argv: readonly string[]): Promise<number> {
   const flag = (name: string): string[] => argv.flatMap((a, i) => (a === name && argv[i + 1] ? [argv[i + 1]!] : []));
   const bags = flag("--bags")[0] ?? path.join(REPO, "bags");
   const out = flag("--out")[0] ?? PACK_PATH;
+  // THE TRACKED PACK SERVES A TREE WITH NO VENDORED CORE: the bake boots a TW5 test wiki, and a build that carries no
+  // tw5-core (the image's build, which never runs build:tw5-vendor) keeps the committed pack the floor's bake wrote.
+  const core = path.join(PACKAGE, "tw5-core", TW5_CORE_SCRIPT_FILENAME);
+  if (!existsSync(core) && existsSync(out) && !argv.includes("--check")) {
+    console.log(`build-affordance-pack: no vendored TW5 core here (${path.relative(REPO, core)}); the tracked ${path.relative(REPO, out)} stands`);
+    return 0;
+  }
   const pack = await bakeAffordancePack(canonTexts(bags, flag("--carrier")));
   const bytes = canonicalJson(pack);
   if (argv.includes("--check")) {
