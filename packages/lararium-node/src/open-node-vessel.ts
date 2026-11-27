@@ -431,7 +431,7 @@ import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
 import { cosignPortWitness, WARD_WITNESS_CLOSED } from "@lararium/mesh/ward-cosign-gate";
 import { placeCarriedNexuses, unionReadings }      from "./vessel-raise.js";
 import { landEveryHostingAct }                    from "./commands/host.js";
-import { loadNodeWardCosignPort, loadFaceFold }    from "./commands/intent.js";
+import { loadNodeWardCosignPort }                  from "./commands/intent.js";
 import { listWalkRecords }        from "./node-walk-store.js";
 import { storeDoorReactors, awaitOnRolled }       from "./store-door-verbs.js";
 import { controlSwarmWiki }                       from "./swarm-wiki.js";

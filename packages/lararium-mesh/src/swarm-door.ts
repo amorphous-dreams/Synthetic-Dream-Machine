@@ -165,7 +165,7 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
     if (body.act !== "lei") throw new SwarmRefused("swarm-hand-record-unverified", "the hand record names no lei and no unstring; nothing landed");
     const terms = body.reach === "wide" ? { reach: "wide" as const, returns: body.returns } : { reach: "head" as const, head: body.head };
     // The hand wrote the count into the record it signed, so a large one stands confirmed by that signature (the hand door asks it).
-    return { ...await swarmCommand({ action: "lei-kui", rite: body.rite, branch: body.branch, after: body.after, ...terms, ...(body.scope !== undefined ? { scope: body.scope } : {}), confirm: true }, landing), landed: cid };
+    return { ...await swarmCommand({ action: "lei-kui", rite: body.rite, branch: body.branch, after: body.after, ...terms, confirm: true }, landing), landed: cid };
   }
   if (!deps.face.grant(deps.signer.key.toLowerCase())) throw new SwarmRefused("swarm-signer-not-grant", "the signer holds no grant of this face");
   if (req.action === "lei-unstring") {
