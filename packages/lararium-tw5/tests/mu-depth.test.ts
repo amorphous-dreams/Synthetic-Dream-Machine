@@ -5,7 +5,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { parseHasRows } from "../src/affordance-rows.js";
-import { canonicalCarry, filterDepthArgs, isMuFault, lookupMu, muCellsOf, muWordsOf, readDepthArgs, readMu, type MuCarry } from "../src/modules/mu.js";
+import { canonicalCarry, dryDepthOf, filterDepthArgs, isDryCarry, isMuFault, lookupMu, muCellsOf, muWordsOf, readDepthArgs, readMu, type MuCarry } from "../src/modules/mu.js";
 
 const carry = (raw: string): MuCarry => {
   const read = readMu(raw);
@@ -15,7 +15,7 @@ const carry = (raw: string): MuCarry => {
 const cells = (text: string) => muCellsOf(parseHasRows(text));
 const READS = cells("<<has entity=`cell` name=`?` params=`mu/relate ~ the card`>>\n<<has entity=`cell` name=`!` params=`mu/assert ~ the whole`>>");
 const PAGES = cells("<<has entity=`cell` name=`*` params=`mu/many implied/true ~ titles`>>\n<<has entity=`cell` name=`*?` params=`mu/many-relate ~ has lines`>>\n<<has entity=`cell` name=`*!` params=`mu/many-assert ~ lines`>>");
-const PUTS = cells("<<has entity=`cell` name=`_?` params=`mu/dry-relate owed/[[landing 7]] ~ summary`>>");
+const PUTS = cells("<<has entity=`cell` name=`_?` params=`mu/dry-relate owed/[[a later landing]] ~ summary`>>");
 
 describe("mu reads glyphs and words, and sets read depth", () => {
   test("glyphs, words and both mixed read one carry; the word rides wherever the glyph does", () => {
@@ -51,7 +51,7 @@ describe("mu reads glyphs and words, and sets read depth", () => {
   test("a carry outside the table refuses mu-cell-empty: the nearest cell sharing a tool, else the plain call; an owed cell refuses", () => {
     expect(lookupMu("dry", carry("dry"), READS)).toMatchObject({ reason: "mu-cell-empty", cure: null });
     expect(lookupMu("*!", carry("*!"), READS)).toMatchObject({ reason: "mu-cell-empty", cure: "assert" });
-    expect(lookupMu("dry-relate", carry("dry-relate"), PUTS)).toMatchObject({ reason: "mu-cell-empty", cure: null, message: expect.stringContaining("landing 7") });
+    expect(lookupMu("dry-relate", carry("dry-relate"), PUTS)).toMatchObject({ reason: "mu-cell-empty", cure: null, message: expect.stringContaining("a later landing") });
     expect(lookupMu("many", carry("many"), [])).toMatchObject({ reason: "mu-cell-empty" });
   });
 
@@ -63,5 +63,14 @@ describe("mu reads glyphs and words, and sets read depth", () => {
     expect(filterDepthArgs("*?")).toEqual({ depth: "card" });
     expect(filterDepthArgs("*!")).toEqual({ depth: "whole" });
     expect(filterDepthArgs("*")).toEqual({});
+  });
+
+  test("the write doors' depth: dry and dry-relate the summary, dry-assert the diff; any other carry names no dry depth", () => {
+    expect(dryDepthOf("_")).toBe("summary");
+    expect(dryDepthOf("_?")).toBe("summary");
+    expect(dryDepthOf("_!")).toBe("diff");
+    for (const carry of ["?", "!", "*", "*?", "0"]) expect(dryDepthOf(carry), carry).toBeNull();
+    expect(isDryCarry(canonicalCarry(carry("relate-dry").tools)), "a carry holding _ reads dry in any order").toBe(true);
+    expect(isDryCarry("*?")).toBe(false);
   });
 });
