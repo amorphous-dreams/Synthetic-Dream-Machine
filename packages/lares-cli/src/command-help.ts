@@ -90,7 +90,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--lei <cid>   (unstring) the lei to revoke", "--face N   face index", "--all   (kui, push or kukulu) one lei for every open face, under one route"],
   },
   rite: {
-    usage: "usage: lares rite hoala | kukulu [--branch <name>] [--face N] [--rollback [<rev>]] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] [--image <digest>] | offer --branch <name> --head <commit> --image <digest> [--keeper-to <key> --keeper-next <closure>] [--base <offerBase>] | land --tessera <id> [--head <commit>] [--image <digest>] | land --abandon --tessera <id> [--face N] | receipts [--rite kukulu [--branch <name>]]",
+    usage: "usage: lares rite hoala | kukulu [--branch <name>] [--face N] [--rollback [<rev>]] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] [--image <digest>] [--supersedes <tessera>,…] | offer --branch <name> --head <commit> --image <digest> [--keeper-to <key> --keeper-next <closure>] [--base <offerBase>] | land --tessera <id> [--head <commit>] [--image <digest>] | land --abandon --tessera <id> [--face N] | receipts [--rite kukulu [--branch <name>]]",
     synopsis:
       "hoʻāla (`lares rite hoala`, to waken; through the host shim) wakes the house that stands built and never builds: it reads the keeper, the image and the vessel, and walks only what each asks. " +
       "A dark keeper lights by a hoʻāla lei where one holds a return (no route, no terminal; a keeper whose code moved included, with the prior closure kept as the rollback), else it reads your route ONCE on a terminal; an image the keeper never admitted gets admitted under a standing lei (one return), else the tag steps back to the admitted image kept here, or nothing starts and the line names the admit; " +
@@ -114,7 +114,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "spent, no new tessera, the resting offer reused where its vouches match), and any other (another head or image, a face " +
       "shut or rehived since) refuses by name with the line that clears it: each half a lent face holds, set down by the hand " +
       "(`lares rite land --abandon --tessera <id>`: a hand act an AI seat cannot run; it spends nothing, records no par over an image " +
-      "the vessel never ran, frees the face to begin fresh, and conferre reads the half abandoned). " +
+      "the vessel never ran, frees the face to begin fresh, and conferre reads the half abandoned). A begin at an older head whose " +
+      "landing never started (the standing vessel still runs the prior image: its revision label and digest name neither the head " +
+      "nor the image the begin bound) needs no hand: the rite supersedes it, setting each half down in its own begin and naming the " +
+      "superseded tesserae in its log; a begin whose landing started (the vessel runs its image), or whose evidence reads nowhere, " +
+      "refuses as above. " +
       "The offer binds its vouch to the lei: the face's live lei and the " +
       "begun half its return paid for name the head and image, and an overwrite of a resting offer names its base (conflict otherwise). " +
       "keep lays the house's authored memory, cut as a cleartext house bundle a new house imports, into a workspace the operator " +
@@ -145,6 +149,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--if-due             (keep) keep only where the house moved since the pushed bundle; reads LARES_KEEP_WORKSPACE with no --workspace",
       "--image <digest>   (offer, begin, land) the digest of the image the host built",
       "--abandon   (land) set the begun half down instead of landing it: a hand act, naming --tessera and no head",
+      "--supersedes <tessera>,…   (begin) the stale kūkulu halves the rite sets down before it begins: begun at an older head, their landing never started (the kūkulu names them itself)",
       "--keeper-to <key> --keeper-next <closure>   (offer) the keeper move the vouches name: the successor's one-handoff key (64 hex) and the committed closure (sha256:<64 hex>), together or neither",
       "--tessera <id>   (land) the tessera a begin answered", "--face N   face index (a kūkulu naming none acts as the worn face; a keep naming none acts as the keep's face and says so; the floor refuses by name)"],
   },

@@ -307,4 +307,23 @@ describe("a-begun-rite-sets-down", () => {
     await f.land(landed.tessera, HEAD2);
     await expect(abandonRite(f.wiki, { tessera: landed.tessera }, f.trust, GROUP, f.vessel)).rejects.toMatchObject({ code: "rite-already-landed" });
   });
+
+  // kukulu-supersedes-a-stale-begin: a kūkulu over a newer head sets down a begun half whose landing never started, with no hand.
+  test("RED: a kūkulu supersedes a stale half: the mark names `by: kukulu` and the head that supersedes it, verifies as the vessel's, the debt passes it, conferre reads it abandoned, and a landing after refuses `rite-abandoned`; CONTROL: a landed half still refuses `rite-already-landed`, and a kukulu mark naming no head reads as no record", async () => {
+    const f = await fixture();
+    await f.kui("kukulu", { reach: "wide", returns: 3 });
+    const stale = await f.begin(), landed = await f.begin(HEAD2);
+    await f.land(landed.tessera, HEAD2);
+    const down = await abandonRite(f.wiki, { tessera: stale.tessera }, f.trust, GROUP, f.vessel, { kukulu: HEAD2 });
+    expect(down).toMatchObject({ tessera: stale.tessera, begun: stale.begun, by: "kukulu", supersededBy: HEAD2 });
+    const mark = await readSwarmRecord(f.wiki, swarmTesseraTitle(stale.tessera, "abandoned"), f.trust, GROUP);
+    expect(mark).toMatchObject({ ok: true, cid: down.abandoned, act: { body: { act: "rite-abandoned", tessera: stale.tessera, begun: stale.begun, by: "kukulu", supersededBy: HEAD2 } } });
+    expect(await pendingBegins(f.wiki, "kukulu", BRANCH)).toEqual([]);
+    expect((await conferre(f.wiki, f.trust, GROUP)).abandoned.map((r) => r.tessera)).toEqual([stale.tessera]);
+    await expect(f.land(stale.tessera)).rejects.toMatchObject({ code: "rite-abandoned" });
+    await expect(abandonRite(f.wiki, { tessera: landed.tessera }, f.trust, GROUP, f.vessel, { kukulu: HEAD })).rejects.toMatchObject({ code: "rite-already-landed" });
+    const bare = { act: "rite-abandoned", group: GROUP, rite: "kukulu", branch: BRANCH, tessera: stale.tessera, begun: stale.begun };
+    await expect(signSwarmAct({ ...bare, by: "kukulu" } as unknown as SwarmBodyParts, f.vessel)).rejects.toMatchObject({ code: "swarm-shape" });
+    await expect(signSwarmAct({ ...bare, by: "hand", supersededBy: HEAD2 } as unknown as SwarmBodyParts, f.vessel)).rejects.toMatchObject({ code: "swarm-shape" });
+  });
 });

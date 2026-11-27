@@ -87,7 +87,9 @@ export function ritePlan(args: ParsedArgs): RitePlan {
     const rite = word(args.options["rite"]), branch = word(args.options["branch"]);
     if (rite === undefined || branch === undefined || head === undefined) throw new RiteUsage("begin names its rite, its branch and its head: --rite kukulu --branch <name> --head <commit> (a keep adds --staging <path>, the bundle it staged inside its workspace)");
     const staged = word(args.options["staging"]);
-    return { verb: "rite-begin", args: { rite, branch, head, ...(staged === undefined ? {} : { staged }), ...image, ...face } };
+    // THE HALVES A KŪKULU SUPERSEDES (comma-joined tesserae): the vessel sets each down as its own face before it begins.
+    const supersedes = word(args.options["supersedes"]);
+    return { verb: "rite-begin", args: { rite, branch, head, ...(staged === undefined ? {} : { staged }), ...image, ...face, ...(supersedes === undefined ? {} : { supersedes }) } };
   }
   if (act === "offer") {
     const branch = word(args.options["branch"]), image = word(args.options["image"]);

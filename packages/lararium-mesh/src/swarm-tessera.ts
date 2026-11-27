@@ -126,9 +126,12 @@ async function markOf(wiki: SwarmWikiPort, tessera: string, begun: string, vesse
  * the hand, once the one hand gate admitted the act upstream. It spends no return and rests no host half. A tessera with no
  * begun half refuses `rite-begun-absent`, a landed one `rite-already-landed` (a host row that verifies as no landing `rite-host-refused`), one already set down `rite-already-abandoned`, and
  * a key the face holds as no vessel `rite-abandon-role`. A row resting there that verifies as no mark yields to the hand's.
+ * `superseded` names a KŪKULU'S set-down instead (kukulu-supersedes-a-stale-begin): a restand over a newer head read the half's
+ * landing as never started (the vessel stood on the image the begin left), so the mark names `by: "kukulu"` and the head whose
+ * fresh begin supersedes it; it spends, rests and refuses exactly as the hand's.
  */
-export async function abandonRite(wiki: SwarmWikiPort, at: { readonly tessera: string }, trust: SwarmTrust, group: string, vessel: SwarmSignerPort):
-  Promise<{ tessera: string; rite: SwarmLeiRite; branch: string; head: string; image?: string; begun: string; abandoned: string; by: "hand" }> {
+export async function abandonRite(wiki: SwarmWikiPort, at: { readonly tessera: string }, trust: SwarmTrust, group: string, vessel: SwarmSignerPort, superseded?: { readonly kukulu: string }):
+  Promise<{ tessera: string; rite: SwarmLeiRite; branch: string; head: string; image?: string; begun: string; abandoned: string; by: "hand" | "kukulu"; supersededBy?: string }> {
   const guestTitle = swarmTesseraTitle(at.tessera, "guest");
   const guest = verifySwarmRecord(await wiki.read(guestTitle), guestTitle, trust, group);
   if (!guest.ok || guest.act.body.act !== "rite-begun") throw new SwarmRefused("rite-begun-absent", `no begun half stands for tessera ${at.tessera}${guest.ok ? "" : ` (${guest.refusal})`}`);
@@ -145,11 +148,12 @@ export async function abandonRite(wiki: SwarmWikiPort, at: { readonly tessera: s
   const title = swarmTesseraTitle(at.tessera, "abandoned");
   if (await markOf(wiki, at.tessera, guest.cid, (key) => trust.vessel(key), group) !== null) throw new SwarmRefused("rite-already-abandoned", `the hand already set tessera ${at.tessera} down`);
   const begun = guest.act.body;
-  const body: SwarmRiteAbandonedBody = { act: "rite-abandoned", group, rite: begun.rite, branch: begun.branch, tessera: at.tessera, begun: guest.cid, by: "hand" };
+  const by = superseded === undefined ? { by: "hand" as const } : { by: "kukulu" as const, supersededBy: superseded.kukulu };
+  const body: SwarmRiteAbandonedBody = { act: "rite-abandoned", group, rite: begun.rite, branch: begun.branch, tessera: at.tessera, begun: guest.cid, ...by };
   const act: SignedSwarmAct = await signSwarmAct(body, vessel);
   // A ROW THAT VERIFIES AS NO MARK (a forged one) holds no slot: the hand's own mark takes it.
   if (!(await wiki.writeNew(title, JSON.stringify(act)))) await wiki.write(title, JSON.stringify(act));
-  return { tessera: at.tessera, rite: begun.rite, branch: begun.branch, head: begun.head, ...(begun.image === undefined ? {} : { image: begun.image }), begun: guest.cid, abandoned: swarmActCid(act), by: "hand" };
+  return { tessera: at.tessera, rite: begun.rite, branch: begun.branch, head: begun.head, ...(begun.image === undefined ? {} : { image: begun.image }), begun: guest.cid, abandoned: swarmActCid(act), ...by };
 }
 
 /**
