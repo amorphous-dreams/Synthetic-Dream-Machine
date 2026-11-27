@@ -12845,7 +12845,7 @@
       "title": "lar:///ha.ka.ba/lares/afford/oracle.calendar.dates"
     },
     "lar:///oracle.library.consults": {
-      "bcc": "ni:///sha-256;8I_TYkdlDo3y_EK7K7D5VMTBGRBMOBIFtoIE74VsYx4",
+      "bcc": "ni:///sha-256;1LDCTE5YIu9Ar2PJD7pZc7Oa4Ppa5IixtFblwvLbFvk",
       "calls": {
         "cli": [
           "lares oracle cast --recipe default --asking 'which lane lands first' --uncertain 'two lanes both ready; the floor runs one at a time'",
@@ -12985,12 +12985,12 @@
             "  --face <handle>  the lit face this call wears, by handle or pet name"
           ],
           "line": [
-            "lares oracle cast — consult an oracle from its library shelf at your own fork; the cast lands as an OODA-HA meme"
+            "lares oracle cast — consult an oracle shelf at your own fork; the cast lands an OODA-HA meme"
           ],
           "whole": [
             "usage: lares oracle cast [--by <kind>] [--asking <words>] [--uncertain <words>] [--observe <pointers>] [--caster <name>] [--coins <six-values>] [--fresh] [--seed <words>] (--recipe <slug> | --bag <slug>) [--realm <id>] [--face <handle>]",
             "",
-            "lares oracle cast — consult an oracle from its library shelf at your own fork; the cast lands as an OODA-HA meme",
+            "lares oracle cast — consult an oracle shelf at your own fork; the cast lands an OODA-HA meme",
             "",
             "  a blind throw to collide uncertainty with",
             "  The house consults an oracle whose corpus rests on a library shelf (`lar:///ha.ka.ba/lares/library/oracles/<kind>/`). The kind rides as data: `by` names the shelf (the E-Jing by default), and the shelf's index record declares its own `method`, its corpus and its credits. The e-jing and doa shelves declare `three-coins`: the I Ching by three coins a line (heads three, tails two: 6 old yin and 9 old yang change, 7 and 8 hold). A new oracle joins as a shelf, never a new address or a new verb; a shelf whose method the verb runs not yet refuses by name.",
@@ -13143,12 +13143,12 @@
             "  face <handle>  the lit face this call wears, by handle or pet name"
           ],
           "line": [
-            "oracle-cast — consult an oracle from its library shelf at your own fork; the cast lands as an OODA-HA meme"
+            "oracle-cast — consult an oracle shelf at your own fork; the cast lands an OODA-HA meme"
           ],
           "whole": [
             "oracle-cast(at=<time>, [by=<kind>], [asking=<words>], [uncertain=<words>], [observe=<pointers>], [caster=<name>], [coins=<six-values>], [fresh], [seed=<words>], [nonce=<hex>], (recipe=<slug> | bag=<slug>), [realm=<id>], [face=<handle>])",
             "",
-            "oracle-cast — consult an oracle from its library shelf at your own fork; the cast lands as an OODA-HA meme",
+            "oracle-cast — consult an oracle shelf at your own fork; the cast lands an OODA-HA meme",
             "",
             "  a blind throw to collide uncertainty with",
             "  The house consults an oracle whose corpus rests on a library shelf (`lar:///ha.ka.ba/lares/library/oracles/<kind>/`). The kind rides as data: `by` names the shelf (the E-Jing by default), and the shelf's index record declares its own `method`, its corpus and its credits. The e-jing and doa shelves declare `three-coins`: the I Ching by three coins a line (heads three, tails two: 6 old yin and 9 old yang change, 7 and 8 hold). A new oracle joins as a shelf, never a new address or a new verb; a shelf whose method the verb runs not yet refuses by name.",
@@ -13229,10 +13229,10 @@
         },
         "mcp": {
           "line": [
-            "Consult an oracle from its library shelf at your own fork; the cast lands as an OODA-HA meme"
+            "Consult an oracle shelf at your own fork; the cast lands an OODA-HA meme"
           ],
           "whole": [
-            "Consult an oracle from its library shelf at your own fork; the cast lands as an OODA-HA meme",
+            "Consult an oracle shelf at your own fork; the cast lands an OODA-HA meme",
             "a blind throw to collide uncertainty with",
             "The house consults an oracle whose corpus rests on a library shelf (`lar:///ha.ka.ba/lares/library/oracles/<kind>/`). The kind rides as data: `by` names the shelf (the E-Jing by default), and the shelf's index record declares its own `method`, its corpus and its credits. The e-jing and doa shelves declare `three-coins`: the I Ching by three coins a line (heads three, tails two: 6 old yin and 9 old yang change, 7 and 8 hold). A new oracle joins as a shelf, never a new address or a new verb; a shelf whose method the verb runs not yet refuses by name.",
             "Every consult lands once, as a meme under `lar:///ha.ka.ba/lares/oracle/casts/`, whose five slots run OODA-HA (`#/loop`), whatever the kind. The ask fills `#/observe` with its context pointers and `#/orient` with its gathered uncertainty and its query; the house fills `#/decide` with the throw and every reading the wiki holds, each source credited; the seat appends its reading, its move and its aftermath by slot append. The verb reads the loop's shape from the house canon wherever the cast lands: the target wiki, then the canon wiki, then the affordance pack its binary baked. One asking, one throw: the same query by the same booked asker answers the standing cast and names the uncertainty it kept. The coins draw through the platform's entropy door, or a person types the six values thrown with real coins. The verb reads no clock: the caller names the time as testimony. A weak seed reads back: the record names a seed by a 16-hex digest anyone can test a guess against, so a person choosing one chooses a strong one.",
@@ -13318,12 +13318,12 @@
             "  face <handle>  the lit face this call wears, by handle or pet name"
           ],
           "line": [
-            "action-oracle-cast — consult an oracle from its library shelf at your own fork; the cast lands as an OODA-HA meme"
+            "action-oracle-cast — consult an oracle shelf at your own fork; the cast lands an OODA-HA meme"
           ],
           "whole": [
             "action-oracle-cast(at=<time>, [asking=<words>], [uncertain=<words>], [observe=<pointers>], [caster=<name>], [coins=<six-values>], [fresh], [seed=<words>], [nonce=<hex>], (recipe=<slug> | bag=<slug>), [realm=<id>], [face=<handle>])",
             "",
-            "action-oracle-cast — consult an oracle from its library shelf at your own fork; the cast lands as an OODA-HA meme",
+            "action-oracle-cast — consult an oracle shelf at your own fork; the cast lands an OODA-HA meme",
             "",
             "  a blind throw to collide uncertainty with",
             "  The house consults an oracle whose corpus rests on a library shelf (`lar:///ha.ka.ba/lares/library/oracles/<kind>/`). The kind rides as data: `by` names the shelf (the E-Jing by default), and the shelf's index record declares its own `method`, its corpus and its credits. The e-jing and doa shelves declare `three-coins`: the I Ching by three coins a line (heads three, tails two: 6 old yin and 9 old yang change, 7 and 8 hold). A new oracle joins as a shelf, never a new address or a new verb; a shelf whose method the verb runs not yet refuses by name.",
@@ -13399,7 +13399,7 @@
           ]
         }
       },
-      "role": "consult an oracle from its library shelf at your own fork; the cast lands as an OODA-HA meme",
+      "role": "consult an oracle shelf at your own fork; the cast lands an OODA-HA meme",
       "takes": {
         "cli": [
           "--by",
@@ -18003,11 +18003,11 @@
       "addresses": [
         "lar:///oracle.library.consults"
       ],
-      "brief": "consult an oracle from its library shelf at your own fork; the cast lands as an OODA-HA meme",
+      "brief": "consult an oracle shelf at your own fork; the cast lands an OODA-HA meme",
       "help": [
         "usage: lares oracle cast [--by <kind>] [--asking <words>] [--uncertain <words>] [--observe <pointers>] [--caster <name>] [--coins <six-values>] [--fresh] [--seed <words>] (--recipe <slug> | --bag <slug>) [--realm <id>] [--face <handle>]",
         "",
-        "lares oracle cast — consult an oracle from its library shelf at your own fork; the cast lands as an OODA-HA meme",
+        "lares oracle cast — consult an oracle shelf at your own fork; the cast lands an OODA-HA meme",
         "",
         "  a blind throw to collide uncertainty with",
         "  The house consults an oracle whose corpus rests on a library shelf (`lar:///ha.ka.ba/lares/library/oracles/<kind>/`). The kind rides as data: `by` names the shelf (the E-Jing by default), and the shelf's index record declares its own `method`, its corpus and its credits. The e-jing and doa shelves declare `three-coins`: the I Ching by three coins a line (heads three, tails two: 6 old yin and 9 old yang change, 7 and 8 hold). A new oracle joins as a shelf, never a new address or a new verb; a shelf whose method the verb runs not yet refuses by name.",
@@ -18138,7 +18138,7 @@
       ]
     }
   },
-  "hash": "sha256-690981974eadd4eac1e64d26045d5ecbee0d422e439758b3645cd1f0a6b7eafe",
+  "hash": "sha256-079c8f385096ebfd4e2b29d65e29955d54443935b68506e48c5665902366ab5a",
   "index": {
     "cli": [
       "  lares act CLEAR  empty a bag but keep its identity; the effect log stays",
@@ -18184,7 +18184,7 @@
       "  lares kahua withdraw  withdraw one lifted item by its revision cid, signed by the hand",
       "  lares kahua mint  adopt the pin a face's founding act signed and register its stage",
       "  lares ddate  read the Discordian date from the house's own calendar; no vessel",
-      "  lares oracle cast  consult an oracle from its library shelf at your own fork; the cast lands as an OODA-HA meme",
+      "  lares oracle cast  consult an oracle shelf at your own fork; the cast lands an OODA-HA meme",
       "  lares bag share  name who reads and writes a bag, by face pet name",
       "  lares kapae flag  flag a promoted item for the hand to raise the brake on",
       "  lares kapae lower  lower a wiki's promotion brake on one digest, by the hand",
