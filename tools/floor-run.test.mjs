@@ -181,18 +181,21 @@ test('RED: --ref budgets the bench beside the run: 4G plus the measured 2G bench
   assert.equal(parseArgs(['--ref', 'x', '--budget-gb', '9', '--', 'y']).budgetGb, 9);
 });
 
-test('RED: a bench run adds a worktree at the ref, provisions it by the ref\'s own tool, runs inside it, and leaves nothing standing', async () => {
+test('RED: a bench run adds a worktree at the ref, provisions it by the floor\'s own tool, runs inside it, and leaves nothing standing', async () => {
   const d = mkdtempSync(join(tmpdir(), 'floor-bench-'));
   const repo = join(d, 'repo'); mkdirSync(join(repo, 'tools'), { recursive: true });
   const git = (...a) => { const r = spawnSync('git', ['-C', repo, ...a], { encoding: 'utf8' }); assert.equal(r.status, 0, r.stderr); return r.stdout.trim(); };
   git('init', '-q');
-  // The ref's own provisioner, a stub that marks the tree it provisions: the bench runs the ref's tool, never the floor's.
+  // A provisioner stub that marks the tree it provisions; the ref also carries a refusing one, which the bench never runs.
   writeFileSync(join(repo, 'tools', 'provision-worktree.mjs'), "import { writeFileSync } from 'node:fs'; import { join } from 'node:path'; if (process.argv[2] !== '--existing') process.exit(9); writeFileSync(join(process.argv[3], 'provisioned'), 'yes\\n');\n");
+  const floorTool = join(d, 'floor-provision.mjs'); writeFileSync(floorTool, readFileSync(join(repo, 'tools', 'provision-worktree.mjs'), 'utf8'));
+  // The ref's own provisioner refuses, as an older floor's guard does; the bench never runs it.
+  writeFileSync(join(repo, 'tools', 'provision-worktree.mjs'), 'process.exit(64);');
   git('add', '.'); git('-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'stub');
   const head = git('rev-parse', 'HEAD');
   const bench = join(d, 'floor', 'bench-1');
   const out = join(d, 'out');
-  const r = await meteredRun(benchCommand(repo, bench, head, ['bash', '-c', `cat provisioned > ${out}; git rev-parse HEAD >> ${out}`]), { budgetBytes: 4 * G, floorBytes: 0, readFree: () => null, say: () => {} });
+  const r = await meteredRun(benchCommand(repo, bench, head, ['bash', '-c', `cat provisioned > ${out}; git rev-parse HEAD >> ${out}`], floorTool), { budgetBytes: 4 * G, floorBytes: 0, readFree: () => null, say: () => {} });
   assert.equal(r.code, 0);
   assert.deepEqual(readFileSync(out, 'utf8').trim().split('\n'), ['yes', head]);
   removeBench(repo, bench);
