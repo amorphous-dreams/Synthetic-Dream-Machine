@@ -57,7 +57,7 @@ The crew lines that bind a running lane stand at <<~ loulou uri=`lar:///ha.ka.ba
 ** One writer per worktree; no claims ledger.
 ** The controller arms ONE watcher per seat (`until [ -f <seat>/final.md ]`, in the harness's background mode); a lead hands back once its seat launches and the controller's watcher wakes it. Leads and seats arm none. The lead keeps `resume.md` current at each commit and before each launch, and the controller sweeps a landed lane's watchers by pid.
 ** A lead hands back ONCE, short: one `<<~ status "…">>` line, the head (full sha), the CI and held-out readings on it, the story and the walk that proved it, the rulings taken from canon each with its source, and the true operator asks each with a lean. A failed or discarded seat gets a leg line (directory, model, effort, mode, attempts, outcome). Spend numbers come from the controller's `spend.py`, never a seat's word.
-** Spend reads from what each tool writes: Claude subagent transcripts, Codex rollouts' `token_count` totals (never a seat's printed "tokens used" line, which understates the draw; cached input counts against the pool), the Copilot run log's `Requests N Premium` line. A Copilot log with no such line reads UNMETERED, never zero; the Codex pool holds a weekly floor read from the newest rollout carrying a readable `rate_limits` record (20% for a build or research seat, 0% for a read seat, the operator letting readers spend the pool to its end for now). `spend.py` serves the controller alone and binds no lane.
+** Spend reads from what each tool writes: Claude subagent transcripts, Codex rollouts' `token_count` totals (never a seat's printed "tokens used" line, which understates the draw; cached input counts against the pool), the Copilot run log's `Requests N Premium` line. A Copilot log with no such line reads UNMETERED, never zero; the Codex pool holds a weekly floor read from the newest rollout carrying a readable `rate_limits` record (10% for a build or research seat, 0% for a read seat, the operator letting readers spend the pool to its end for now). `spend.py` serves the controller alone and binds no lane.
 * ''Observe pair.'' Before a phase designs anything, one seat cold-reads the as-built with `file:line`, and a second, woken apart and handed the framing alone, reads the field. Their handbacks collide in orient.
 * ''The Chao of a review'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/chao`>>). Two reads over one question wear the Chao's two faces, and the review resolves to three:
 ** ''Hodge'' carries Yang and Ha, the Aneristic face: what holds its shape. It reads what the work states as standing (each claim, name and contract) against the source, and finds the line that does not hold.
@@ -71,7 +71,7 @@ The crew lines that bind a running lane stand at <<~ loulou uri=`lar:///ha.ka.ba
 <<~ ahu slot=`#/the-seat-law`>>
 !! The seat law ~ the brief section every Codex seat carries
 
-`tools/launch-codex.mjs` preflights each Codex seat and appends the bullets below to its brief, once, reading them from this section. It refuses a model missing from Codex's models cache, `gpt-6-sol`, a pool at or under its weekly floor (20% for a build or research seat, 0% for a read seat, the operator letting readers spend the pool to its end for now), a pool line unreadable twice (never read as zero), a seat directory outside `~/.lares-scratch/<lane>/`, a build seat on the main checkout, and a build seat over a stale dist. It logs each attempt.
+`tools/launch-codex.mjs` preflights each Codex seat and appends the bullets below to its brief, once, reading them from this section. It refuses a model missing from Codex's models cache, `gpt-6-sol`, a pool at or under its weekly floor (10% for a build or research seat, 0% for a read seat, the operator letting readers spend the pool to its end for now), a pool line unreadable twice (never read as zero), a seat directory outside `~/.lares-scratch/<lane>/`, a build seat on the main checkout, and a build seat over a stale dist. It logs each attempt.
 
 * A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
 * Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
@@ -276,6 +276,7 @@ A lane closes with an o-takiage pass before its branch hands back, and the contr
 # 2026-11-06, spend balance (operator's words, the Codex pool reset in full that night): "Update the mixed-model-swarm working contract to reduce Claude spends and go with balanced Claude:Codex Spends (leaning on Codex say 70/30). Re-launch a Terra scout to finish that research." (#/the-tiers)
 # 2026-11-06, the spend balance raised (operator's words): "Let's go 80/20 Codex/Claude spends on tasked spirits, please." (#/the-tiers)
 # 2026-11-07, the pool line (operator's words): "Set the codex pool limit down to 20% (its really a soft limit)." Lead, build and research seats launch until 20% of the weekly pool remains; read seats keep their 0% floor (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>> #/the-spend-guard).
+# 2026-11-27, the pool line moves (operator's words): "Set pool lower limit to a 'fuzzy' 10%." Lead, build and research seats launch until 10% of the weekly pool remains (90% used), still soft; read seats keep their 0% floor (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>> #/the-spend-guard).
 <<~/ahu>>
 
 <<~ ahu slot=`#/owed`>>
@@ -308,6 +309,6 @@ Ruled by the operator, 2026-11-05: "Does it apply to all tasked spirits... all l
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;x4Y4ijh_NJeICw6sLz3nXkecfsNZTYl4XTfxKyCe-LA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oEoi3rwafntLW5A43-GC4RfL8sCbqzf-qG1o2HdcqoE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

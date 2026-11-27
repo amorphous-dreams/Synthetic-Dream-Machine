@@ -153,21 +153,21 @@ test("the pool: a pure read of the recorded line; at the floor refuses; CONTROL 
   const p = readPool([rate(60)]);
   assert.equal(p.used, 60); assert.equal(p.winDays, 7); assert.equal(p.reset, 1793791489);
   assert.equal(p.above, true);
-  assert.equal(readPool([rate(80)]).above, false, "exactly 20% left reads AT the floor");
-  assert.equal(readPool([rate(79.9)]).above, true);
+  assert.equal(readPool([rate(90)]).above, false, "exactly 10% left reads AT the floor");
+  assert.equal(readPool([rate(89.9)]).above, true);
   assert.equal(readPool(["not json", "{}"]), null);
   assert.equal(readPool([]), null);
   assert.equal(readPool(null), null);
   const w = world();
-  refuses(w, {}, /at or below its floor/, { ...w.readers, rolloutLines: () => [rate(80)] });
+  refuses(w, {}, /at or below its floor/, { ...w.readers, rolloutLines: () => [rate(90)] });
   refuses(w, {}, /at or below its floor/, { ...w.readers, rolloutLines: () => [rate(97)] });
-  assert.ok(preflight(ask(w, { mode: "read" }), { ...w.readers, rolloutLines: () => [rate(79.9)] }));
+  assert.ok(preflight(ask(w, { mode: "read" }), { ...w.readers, rolloutLines: () => [rate(89.9)] }));
 });
 
 test("lead preflight floor", () => {
   const w = world();
-  const at = { ...w.readers, rolloutLines: () => [rate(80)] };
-  const fifteen = { ...w.readers, rolloutLines: () => [rate(85)] };
+  const at = { ...w.readers, rolloutLines: () => [rate(90)] };
+  const fifteen = { ...w.readers, rolloutLines: () => [rate(95)] };
   refuses(w, { mode: "lead" }, /at or below its floor/, at);
   refuses(w, { mode: "lead" }, /at or below its floor/, fifteen);
   assert.ok(preflight(ask(w, { mode: "read" }), fifteen));
@@ -379,29 +379,29 @@ test("RED: the seat law heading is exact: LAWFUL is no law, two blocks collapse 
   assert.ok(twice.includes(law));
 });
 
-test("the floors by mode: a READ seat launches down to its own floor (0% while the operator lets readers spend the last of the pool); a build or research seat keeps the 20% house floor", () => {
+test("the floors by mode: a READ seat launches down to its own floor (0% while the operator lets readers spend the last of the pool); a build or research seat keeps the 10% house floor", () => {
   const w = world();
-  const fifteen = { ...w.readers, rolloutLines: () => [rate(85)] }; // 15% left
+  const fifteen = { ...w.readers, rolloutLines: () => [rate(95)] }; // 5% left
   assert.match(preflight(ask(w, { mode: "read" }), fifteen).pool, /floor 0%.*ABOVE FLOOR/);
-  refuses(w, {}, /at or below its floor/, fifteen); // CONTROL: a builder at 15% still refuses
+  refuses(w, {}, /at or below its floor/, fifteen); // CONTROL: a builder at 5% still refuses
   refuses(w, { mode: "research", worktree: undefined }, /at or below its floor/, fifteen);
   assert.match(preflight(ask(w, { mode: "read" }), { ...w.readers, rolloutLines: () => [rate(95)] }).pool, /ABOVE FLOOR/); // 5% left reads above a 0% floor
   refuses(w, { mode: "read" }, /at or below its floor/, { ...w.readers, rolloutLines: () => [rate(100)] }); // an empty pool still refuses
-  assert.equal(readPool([rate(85)], "read").above, true);
-  assert.equal(readPool([rate(85)], "build").above, false);
+  assert.equal(readPool([rate(95)], "read").above, true);
+  assert.equal(readPool([rate(95)], "build").above, false);
 });
 
 // ---- row 2: the pool-used ceilings by mode ----
-test("row 2: lead, build and research seats run until 20% of the pool remains (a soft line at 80% used), a read seat to its own floor; just past the line refuses by name; CONTROL just inside the line passes", () => {
+test("row 2: lead, build and research seats run until 10% of the pool remains (a soft line at 90% used), a read seat to its own floor; just past the line refuses by name; CONTROL just inside the line passes", () => {
   const w = world();
   const at = (u) => ({ ...w.readers, rolloutLines: () => [rate(u)] });
   assert.ok(preflight(ask(w, { mode: "lead" }), at(55))); // a lead seat launches at 55% used
   assert.ok(preflight(ask(w, { mode: "build" }), at(65))); // a build seat launches at 65% used
-  for (const mode of ["lead", "build"]) assert.ok(preflight(ask(w, { mode }), at(79.9)), `${mode} CONTROL inside the line`);
-  assert.ok(preflight(ask(w, { mode: "research", worktree: undefined }), at(79.9)), "research CONTROL inside the line");
-  for (const u of [80, 80.1, 81]) {
-    for (const mode of ["lead", "build"]) refuses(w, { mode }, /at or below its floor.*floor 20%/s, at(u));
-    refuses(w, { mode: "research", worktree: undefined }, /at or below its floor.*floor 20%/s, at(u));
+  for (const mode of ["lead", "build"]) assert.ok(preflight(ask(w, { mode }), at(89.9)), `${mode} CONTROL inside the line`);
+  assert.ok(preflight(ask(w, { mode: "research", worktree: undefined }), at(89.9)), "research CONTROL inside the line");
+  for (const u of [90, 90.1, 91]) {
+    for (const mode of ["lead", "build"]) refuses(w, { mode }, /at or below its floor.*floor 10%/s, at(u));
+    refuses(w, { mode: "research", worktree: undefined }, /at or below its floor.*floor 10%/s, at(u));
   }
   assert.ok(preflight(ask(w, { mode: "read" }), at(95))); // a read seat spends to its own 0% floor
 });
@@ -1349,7 +1349,7 @@ test("RULED 2 the same row for another window, or pending, applies nothing: the 
   for (const win of [WINDOW + 1, "pending"]) {
     const { w, readers } = tableWorld(`ruling 2026-11-05 window=${win} max-used=100 floor=0`);
     refuses(w, {}, /(at or below its floor|used ceiling)/, { ...readers, rolloutLines: () => [rate(95)] });
-    refuses(w, { mode: "lead" }, /at or below its floor/, { ...readers, rolloutLines: () => [rate(85)] });
+    refuses(w, { mode: "lead" }, /at or below its floor/, { ...readers, rolloutLines: () => [rate(95)] });
     assert.doesNotMatch(preflight(ask(w), { ...readers, rolloutLines: () => [rate(40)] }).pool, /RULED/);
   }
 });
@@ -1359,10 +1359,10 @@ test("RULED 3 a malformed or unreadable table refuses by name", () => {
   const doc = readFileSync(SPEND, "utf8");
   const cases = [
     doc.replace(/^```spend-limits[\s\S]*?^```$/m, ""),
-    doc.replace("default build max-used=80 floor=20\n", ""),
-    doc.replace("default build max-used=80 floor=20\n", "default build max-used=80 floor=20\ndefault build max-used=80 floor=20\n"),
-    doc.replace("default lead max-used=80", "default lead max-used=150"),
-    doc.replace("default lead max-used=80", "default lead max-used=80 extra=1"),
+    doc.replace("default build max-used=90 floor=10\n", ""),
+    doc.replace("default build max-used=90 floor=10\n", "default build max-used=90 floor=10\ndefault build max-used=90 floor=10\n"),
+    doc.replace("default lead max-used=90", "default lead max-used=150"),
+    doc.replace("default lead max-used=90", "default lead max-used=90 extra=1"),
     doc.replace(/^ruling .*$/m, "ruling 2026-11-05 window=9 max-used=100 floor=0\nruling 2026-11-06 window=9 max-used=100 floor=0"),
     doc.replace(/^ruling .*$/m, "ruling not-a-date window=9 max-used=100 floor=0"),
     doc.replace(/^ruling .*$/m, "ruling 2026-11-05 window=0 max-used=100 floor=0"),
@@ -1381,14 +1381,14 @@ test("RULED 4 an unreadable pool and gpt-6-sol still refuse under a ruling row",
 test("RULED 5 CONTROL no ruling row: the defaults stand, and the shipped table equals today's limits", () => {
   const { w, readers } = tableWorld("");
   for (const mode of ["build", "lead", "research"]) {
-    refuses(w, { mode }, /at or below its floor/, { ...readers, rolloutLines: () => [rate(80)] });
-    assert.ok(preflight(ask(w, { mode }), { ...readers, rolloutLines: () => [rate(79.9)] }));
+    refuses(w, { mode }, /at or below its floor/, { ...readers, rolloutLines: () => [rate(90)] });
+    assert.ok(preflight(ask(w, { mode }), { ...readers, rolloutLines: () => [rate(89.9)] }));
   }
   assert.ok(preflight(ask(w, { mode: "read" }), { ...readers, rolloutLines: () => [rate(95)] }));
-  const lowered = { ...readers, spendCarrier: () => withRows("").replace("default build max-used=80", "default build max-used=60") };
+  const lowered = { ...readers, spendCarrier: () => withRows("").replace("default build max-used=90", "default build max-used=60") };
   refuses(w, {}, /above the build seat's 60% used ceiling/, { ...lowered, rolloutLines: () => [rate(65)] });
   const t = parseSpendTable(readFileSync(SPEND, "utf8"));
-  assert.deepEqual(t.defaults, { lead: { maxUsed: 80, floor: 20 }, build: { maxUsed: 80, floor: 20 }, research: { maxUsed: 80, floor: 20 }, read: { maxUsed: 100, floor: 0 } });
+  assert.deepEqual(t.defaults, { lead: { maxUsed: 90, floor: 10 }, build: { maxUsed: 90, floor: 10 }, research: { maxUsed: 90, floor: 10 }, read: { maxUsed: 100, floor: 0 } });
   assert.deepEqual(t.rulings.map((r) => [r.date, r.window]), [["2026-11-05", null]]);
   assert.equal(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "launch-codex.mjs"), "utf8").includes("LARES_CODEX_BURN"), false);
 });

@@ -19,10 +19,10 @@
  * of the sandbox; no mode carries `--ephemeral`, so each seat keeps the rollout the spend tally counts.
  * PREFLIGHT refuses (exit 2, `SEAT-REFUSED: …`): a seat dir outside `<scratch>/<lane>/`, a missing brief, a model absent
  * from Codex's models cache, `gpt-6-sol`, a Codex pool line unreadable twice (never read as zero), a pool at or under
- * its floor (20% for build, lead or research, 0% for read), a build or lead seat on the main checkout, a lead worktree
+ * its floor (10% for build, lead or research, 0% for read), a build or lead seat on the main checkout, a lead worktree
  * outside scratch, or a build seat over a stale dist.
- * Pool-used lines (seat-harness#/the-spend-guard): lead, build and research seats run until 20% of the pool remains (80% used,
- * a soft line the operator set 2026-11-07, so the 20% floor speaks first); a read seat spends to its own floor. A detached
+ * Pool-used lines (seat-harness#/the-spend-guard): lead, build and research seats run until 10% of the pool remains (90% used,
+ * a soft line the operator set 2026-11-27, so the 10% floor speaks first); a read seat spends to its own floor. A detached
  * supervisor (`--supervise`, the seat's parent: it spawns codex itself) tails the seat's rollout and stops it at its token ceiling (`--ceiling N`;
  * lead 15M, others 8M), writing `ceiling.md`.
  * `--lead-step --lane-root <dir> --model --effort --worktree` launches ONE fresh lead step over `<lane-root>/state.json`
@@ -49,7 +49,7 @@ import { globalStampPath, packageStampPath, sourceDigest, workspacePackageDirs }
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CANON = "bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem";
-const FLOOR = 20;
+const FLOOR = 10;
 /** A read seat's own floor: the operator lets readers spend the pool to its end for now (2026-10-31: "temp bump that limit to 0%"; it stood at 5); builders and research keep FLOOR. */
 const READ_FLOOR = 0;
 /** The seat-harness carrier that holds the spend limits as a machine-readable table (#/the-spend-guard). */
@@ -57,9 +57,8 @@ const SPEND_CANON = "bags/lares/ha.ka.ba/lares/docs/pono/seat-harness.mem";
 const MODES = ["build", "lead", "read", "research"];
 export const COMPACT_LIMIT = 120000;
 export const TOOL_OUTPUT_LIMIT = 8000;
-/** The pool's used-percent ceiling by mode (seat-harness#/owed row 2), 80% since 2026-11-07 (the operator: "Set the codex pool limit
- * down to 20% (its really a soft limit)"): it meets FLOOR, which refuses first; a read seat spends to its own floor. */
-const MAX_USED = { lead: 80, build: 80, research: 80 };
+/** The pool's used-percent ceiling by mode (seat-harness#/owed row 2), 90% since 2026-11-27 (the operator: "Set pool lower limit to a 'fuzzy' 10%"; 80% from 2026-11-07): it meets FLOOR, which refuses first; a read seat spends to its own floor. */
+const MAX_USED = { lead: 90, build: 90, research: 90 };
 /** The per-seat token ceiling by mode (row 1): total_token_usage.total_tokens, cached input counted. */
 const CEILINGS = { lead: 15_000_000, build: 8_000_000, read: 8_000_000, research: 8_000_000 };
 
