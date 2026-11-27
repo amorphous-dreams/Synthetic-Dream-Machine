@@ -390,7 +390,7 @@ The Mu sort drives all four: class (a) operations live at a tiddler door, class 
 !!! Shape A ~ enumerated verbs over the daemon (the road `L17` wrote)
 
 * ''Verbs.'' Daemon `tiddler-get`, `tiddler-put`, `tiddler-delete`, `wiki-filter`, `wiki-render`, `wiki-act`, `wiki-shadows`, `wiki-plugins`, each a reactor beside `meme-*`, reaching a named wiki through the `wiki-act` road (`vmManager.placeWikiVerb`).
-* ''Doors.'' MCP `tiddler_get(title, recipe|bag, fields?)`, `tiddler_put(title, fields, recipe|bag, base?)`, `wiki_filter(filter, recipe, after?)`, `wiki_render(title|text, recipe, form)`, `wiki_act(actions, recipe, …)`; CLI `lares get|put|delete`, `lares wiki render|act|shadows|plugins`; console `lares("wiki", "filter", …)`; page: unchanged (its port).
+* ''Doors.'' MCP `tiddler_get(title, recipe|bag, fields?)`, `tiddler_put(title, fields, recipe|bag, base?)`, `wiki_filter(filter, recipe, after?)`, `wiki_render(title|text, recipe, form)`, `wiki_act(actions, recipe, …)`; CLI `lares get`, `lares put`, `lares delete`, `lares wiki render|act|shadows|plugins`; console `lares("wiki", "filter", …)`; page: unchanged (its port).
 * ''Wards see.'' The daemon's verb caps and `VERB_SEATS`; the act ward on daemon and kahua wikis; the island sees a `wiki:place-verb` envelope with `requestedBy`.
 * ''Consequence before commit.'' A `dryRun` flag per verb, each reactor computing its own family reading; three group laws (`#/meme-aware-actions`) risk three readings.
 * ''Costs.'' A second road into the island beside the port, with its own authority story (the routed envelope still answers `worker-trust` on the wiki island, tw5-vm-gaps #16) [measured in the scout, unverified since]; no cursor, no render cursor, no snapshot; the page and the AI see the wiki through two different contracts, which breaks isomorphic by intent.
@@ -415,7 +415,7 @@ The Mu sort drives all four: class (a) operations live at a tiddler door, class 
 
 * ''The waist.'' The record port stays the ONE contract into an island: snapshot and changes at a width, `write` transactions with `txId` and basis, asks `filter`, `load`, `render`, `invoke`, `verb`, `cas`. Two asks join it: `act` (an action string or a single `tm-*` message, answered as a recorded diff, with `apply` taking that diff's digest) and `catalog` (shadows, plugins, field names).
 * ''The relay.'' The daemon opens a port on the aimed wiki's island for a CLI or MCP call, under a lease the pool mints from the SESSION's face and grant (the same `port:lease` a page receives), activates a cold wiki on reference, and answers in the port's shapes. The console door rides the page's own port; the page keeps its mirrors.
-* ''The tiddler door (class a).'' MCP `tiddler_get`, `tiddler_put`, `tiddler_delete`, `wiki_filter`, `wiki_render`, `wiki_act`, `wiki_catalog`; CLI `lares get|put|delete` and `lares wiki render|act|catalog` beside the switcher; console `lares("tiddler", "get", …)`, `lares("wiki", "filter", …)`; page: the port asks it already makes. Each row maps to one port message: get to `load`, put and delete to `write`, filter to `filter`, render to `render`, act to `act` then `write`, catalog to `catalog`.
+* ''The tiddler door (class a).'' MCP `tiddler_get`, `tiddler_put`, `tiddler_delete`, `wiki_filter`, `wiki_render`, `wiki_act`, `wiki_catalog`; CLI `lares get`, `lares put`, `lares delete` and `lares wiki render|act|catalog` beside the switcher; console `lares("tiddler", "get", …)`, `lares("wiki", "filter", …)`; page: the port asks it already makes. Each row maps to one port message: get to `load`, put and delete to `write`, filter to `filter`, render to `render`, act to `act` then `write`, catalog to `catalog`.
 * ''The meme door (class b, and the meme part of c).'' `meme put|get|delete` (the family: split, recompose, family hash, group sweep), `meme list` (roots and slot trees), `meme project` (house templates), `normalize`, `check`, `sitting` (local), `promote` (sealed families). Each composes the tiddler door: a meme put lands its records as one port `write` under one `txId`.
 * ''Elsewhere, unchanged.'' (w) `lares wiki` container verbs and the switcher; (a)+(w) `lares act` residency verbs; (v) the console's vessel verbs; `offer` and `kahua` verbs keep their doors, since they already take titles and fields.
 * ''Wards see.'' The lease grant (`faceId`, `bags`, `edits`, `admin`, `casTier`, `kahu`); the invoke gate's authority check run at fire time; `verbCap` on every bag grant; the act ward's diff judgment on daemon and kahua wikis (`codeClassOf`, control families, custody verbs, the `tm-*` allowlist), and on a user's wiki the same diff as a preview the caller may skip only by naming `apply` on a digest it holds; the stage meme law and canon floors in the write path, unchanged.
@@ -424,7 +424,7 @@ The Mu sort drives all four: class (a) operations live at a tiddler door, class 
 
 !!! The naming proposal
 
-Base operations stop wearing `meme_*`. ''`tiddler_*`'' names acts on one record (get, put, delete). ''`wiki_*`'' names acts on a wiki's engine (filter, render, act, catalog) and keeps the switcher's `wiki` tool as `wiki_switch`, `wiki_hold`, `wiki_release`, `wiki_active` (one namespace, never top-level twins, as the switcher's own docstring asks). ''`meme_*`'' keeps only family verbs. The CLI mirrors it: `lares get|put|delete|rename …`, `lares wiki render|act|catalog …`, `lares meme …`. A `meme act` never lands; `wiki act` names the action-string verb, and the residency verbs keep `lares act` (the collision noted in `#/anti-patterns` stays open in `#/open`). A deprecation leaves `meme_get` answering a plain tiddler for one release with a warning that names `tiddler_get` (the retirement law: deprecate, never redefine).
+Base operations stop wearing `meme_*`. ''`tiddler_*`'' names acts on one record (get, put, delete). ''`wiki_*`'' names acts on a wiki's engine (filter, render, act, catalog) and keeps the switcher's `wiki` tool as `wiki_switch`, `wiki_hold`, `wiki_release`, `wiki_active` (one namespace, never top-level twins, as the switcher's own docstring asks). ''`meme_*`'' keeps only family verbs. The CLI mirrors it: `lares get …`, `lares put …`, `lares delete …`, `lares rename …`, `lares wiki render|act|catalog …`, `lares meme …`. A `meme act` never lands; `wiki act` names the action-string verb, and the residency verbs keep `lares act` (the collision noted in `#/anti-patterns` stays open in `#/open`). A deprecation leaves `meme_get` answering a plain tiddler for one release with a warning that names `tiddler_get` (the retirement law: deprecate, never redefine).
 
 <<~/ahu>>
 
@@ -610,6 +610,6 @@ Each phase names what it unlocks for a dogfooding session, its reds (by name fro
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iI_QbgSOWMptIoVkmZXbtFqf2zJpCAFehKfue5TpaBQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;X--L_RSWafrzNa_qcpR70oWKFI_WLwcXCErA8BEqQEc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

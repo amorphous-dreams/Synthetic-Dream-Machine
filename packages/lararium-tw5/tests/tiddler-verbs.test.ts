@@ -2454,8 +2454,11 @@ describe.skipIf(wikiSkip)(`a terminal's call: words turn by their row's kind, an
     expect(r.engine.wiki.getTiddler("Note 04")?.fields["a"]).toBeUndefined();
     expect(r.engine.wiki.getTiddler("Note 04")?.fields["b"]).toBeUndefined();
     expect(await r.cli("put", { title: "Fresh by terminal", text: "first", create: "true" })).toMatchObject({ decision: "put", created: true });
-    // A count reads as a number: a byte cap of ten leaves the text home.
-    expect(await r.cli("get", { title: "Note 04", "max-bytes": "10" })).toMatchObject({ tiddler: { omitted: expect.arrayContaining(["text"]) } });
+    // A count reads as a number: a byte cap at the reactor's floor (256 bytes; a smaller cap reads as the floor) sends the largest
+    // field home, named under omitted.
+    expect(await r.cli("put", { title: "Note 04", fields: JSON.stringify({ pad: "p".repeat(400) }) })).toMatchObject({ decision: "put" });
+    await r.landed();
+    expect(await r.cli("get", { title: "Note 04", "max-bytes": "256" })).toMatchObject({ tiddler: { omitted: expect.arrayContaining(["pad"]) } });
     // CONTROL: the console surface takes the same param as a value, untouched.
     expect(await r.call("put", { title: "Note 05", fields: { c: "3" } })).toMatchObject({ decision: "put" });
   });

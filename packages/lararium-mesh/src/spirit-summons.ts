@@ -386,6 +386,8 @@ export function edgeRead(uri: string, fields: Readonly<Record<string, string>>):
 
 /** The call's own face param: `face=N` rides a call as any other param. */
 const faceParam = (face: number | null): string => (face === null ? "" : ` face=${face}`);
+/** A door's face flag: `lares spirit <verb>` keeps its flag table, so `--face N` rides it. */
+const faceFlag = (face: number | null): string => (face === null ? "" : ` --face ${face}`);
 
 /**
  * WHAT A WAKE UNDER A MANDATE HANDS THE INSTANCE AHEAD OF ITS CARD (om → ah → hum): the mandate by ref, the seed's read, each
@@ -406,7 +408,7 @@ export function mandateWakeLines(mandate: SpiritMandate, cut = 2400): string {
     ...(mandate.paths.length === 0 ? [] : [`paths: ${mandate.paths.join(" ")}`]),
     ...(mandate.caps.length === 0 ? [] : [`caps: ${mandate.caps.join(" ")}`]),
     ...(mandate.grants.length === 0 ? [] : [`grants: ${mandate.grants.join(" ")}${mandate.grants.includes(SUMMONS_GRANT) ? ` · ${mandate.lanes} arm lane(s)` : ""}`]),
-    `hand back${mandate.handbackShape === "" ? "" : ` (${mandate.handbackShape})`}: land the record, then free the lane: lares spirit handback ${shq(mandate.tag)} --record <uri>${face}`,
+    `hand back${mandate.handbackShape === "" ? "" : ` (${mandate.handbackShape})`}: land the record, then free the lane: lares spirit handback ${shq(mandate.tag)} --record <uri>${faceFlag(mandate.face)}`,
     "",
     words,
   ].join("\n");

@@ -147,7 +147,7 @@ const CORE_ROUTES: ReadonlyArray<readonly [string, string, boolean, string | nul
 const CORE_FILES = ["engine.record.reads", "engine.record.puts", "engine.record.removes", "engine.record.renames", "engine.filter.pages"];
 
 describe.skipIf(wikiSkip)(`the core verbs bake from canon${skipNote}`, () => {
-  test("RED 10: the five canon carriers bake in the call shape: put, delete and rename route their own word, get chooses by its param and claims none; no door/part row remains, and no tiddler or wiki door gathers them", async () => {
+  test("RED 10: the five canon carriers bake in the call shape: put, delete and rename route their own word, get chooses by its param and claims none, its door gathering both; no door/part row remains, and no tiddler or wiki door gathers them", async () => {
     const pack = await bakeAffordancePack(canonTexts(path.join(REPO, "bags")));
     for (const [address, cli, chosen, mcp] of CORE_ROUTES) {
       expect(pack.carriers[address], address).toBeDefined();
@@ -161,7 +161,11 @@ describe.skipIf(wikiSkip)(`the core verbs bake from canon${skipNote}`, () => {
     for (const [address, cli, chosen] of CORE_ROUTES) if (!chosen) expect(pack.doors[cli]!.addresses, cli).toEqual([address]);
     expect(pack.doors["tiddler"]).toBeUndefined();
     expect(pack.doors["wiki"]).toBeUndefined();
-    expect(pack.doors["get"]).toBeUndefined();
+    // `get` claims no route, yet its door gathers both choices: the default (by title) first, its help the spine each choice reads,
+    // then each carrier's whole.
+    expect(pack.doors["get"]!.addresses).toEqual(["lar:///engine.record.reads", "lar:///engine.filter.pages"]);
+    expect(pack.doors["get"]!.help[0]).toMatch(/^usage: lares get title=<title> .*lares get filter=<filter> /);
+    expect(pack.doors["get"]!.help).toEqual(expect.arrayContaining([...pack.carriers["lar:///engine.record.reads"]!.renders["cli"]!["whole"]!, ...pack.carriers["lar:///engine.filter.pages"]!.renders["cli"]!["whole"]!]));
     for (const file of CORE_FILES) expect(readFileSync(path.join(REPO, "bags/lares/ha.ka.ba/lares/afford", `${file}.mem`), "utf8"), file).not.toContain("door/part");
     // The persona hearing rides the filter's examples: a literal search beside the line lens, each param a shell word.
     expect(pack.carriers["lar:///engine.filter.pages"]!.calls["cli"]).toContain("lares get 'filter=[all[tiddlers]search:text:literal[Lares (Stranger)]]' 'match=Lares (Stranger)' recipe=default");

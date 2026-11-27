@@ -1285,7 +1285,7 @@ describe("om and hum answer the spirit as a folded carrier the wiki renders", ()
     const text = String(data(om)["text"]);
     expect(text).toContain("* a loop");
     expect(text).toContain("The wiki's render door refused the fold (cap-denied: read on lar:///ha.ka.ba/wikis/daemon/working required)");
-    expect(text).toContain(`lares get title='${URI}' mu=assert`);
+    expect(text).toContain(`lares get title='${URI}' recipe=default mu=assert`);
     expect(data(om)).toMatchObject({ folded: false, unfolded: "refused" });
     const hum = await run(argv(["hum", "lares-alpha"]));
     expect(hum.exit).toBe(0);
@@ -1389,7 +1389,7 @@ describe.skipIf(wikiSkip)(`the fold renders through the real wiki-render verb${s
   const SLOT_NAMES = SHRINE_SLOTS.map(([slot]) => slot);
   /** Canonical as `lares meme check` reads it: the normalize law moves nothing and names no fault. */
   const canonical = (text: string): boolean => { const read = normalizeMemeSource(text); return read.faults.length === 0 && read.text === text; };
-  const slotCommands = (text: string): string[] => [...text.matchAll(/^`lares get title=\S+ face=1 mu=assert slot='([^']+)'`$/gm)].map((m) => m[1]!);
+  const slotCommands = (text: string): string[] => [...text.matchAll(/^`lares get title=\S+ recipe=default face=1 slot='([^']+)' mu=assert`$/gm)].map((m) => m[1]!);
 
   async function realRender() {
     const DAEMON = bagUri("daemon");

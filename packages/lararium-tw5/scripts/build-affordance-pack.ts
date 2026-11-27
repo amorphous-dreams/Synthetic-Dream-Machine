@@ -30,7 +30,7 @@
  *   doors       per CLI door (the spelling's first word): its addresses, the brief the top-level index prints, the lines
  *               `lares <door> --help` and its usage refusal print; a `door/part` skin (one verb of a door that keeps its
  *               own table) routes and gathers no door entry; a word several carriers share by a `by/` choice (`get`: `by/title`,
- *               `by/filter`) claims no route of its own
+ *               `by/filter`) claims no route of its own, and its door gathers every choice, the spine each reads first
  *   index       the `lares --help` lines of every carrier, through the index template
  *   shelves     per oracle kind: the shelf index's title and the `method` it declares (`three-coins`)
  *   hash        sha256 over the pack's canonical bytes with the hash field absent
@@ -242,6 +242,23 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
         `Read one: lares ${door} <verb> --help`,
       ];
     }
+  }
+  // A WORD SEVERAL CARRIERS SHARE BY A `by/` CHOICE (`get`: `by/title`, `by/filter`) claims no route, yet it stands one door whose
+  // every affordance holds a carrier: the door gathers each choice, its help leading with the spine each choice reads (the
+  // default's first), then each carrier's whole, so `lares get --help` reads its carriers and holds no registry entry.
+  for (const [spelling, choices] of Object.entries(derived.chosen.cli).sort(([a], [b]) => a.localeCompare(b))) {
+    const door = spelling.split(/\s+/)[0]!;
+    if (spelling !== door || doors[door] !== undefined) continue;
+    const present = [...choices]
+      .filter((c) => carriers[c.address] !== undefined)
+      .sort((a, b) => Number(b.default === true) - Number(a.default === true) || a.address.localeCompare(b.address));
+    if (present.length === 0) continue;
+    const spines = present.map((c) => `${door} ${c.by}=<${c.by}>`);
+    doors[door] = {
+      addresses: present.map((c) => c.address),
+      brief: briefOf(door, present.map((c) => carriers[c.address]!.role), spines),
+      help: [`usage: ${spines.map((s) => `lares ${s} [name=value…]`).join("  ·  ")}`, ...present.flatMap((c) => ["", ...carriers[c.address]!.renders["cli"]!["whole"]!])],
+    };
   }
   const index = { cli: lines(engine.wiki.renderTiddler("text/plain", INDEX, { variables: { surface: "cli", pattern: "" } })) };
 

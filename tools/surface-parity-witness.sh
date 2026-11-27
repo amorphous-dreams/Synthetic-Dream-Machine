@@ -20,7 +20,7 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 
 python3 - <<'PY'
-import pathlib, re, subprocess, sys
+import json, pathlib, re, subprocess, sys
 
 MCP = pathlib.Path("packages/lararium-sensorium/scripts/lares_mcp.py")
 CLI = pathlib.Path("packages/lares-cli/dist/src/bin/lares.js")
@@ -101,8 +101,23 @@ for f in CMDS.glob("*.ts"):
     # one did.
 subverbs = {s.replace("_", "-") for s in subverbs}
 
+# THE CALL SHAPE (comms-ux-enacts landing 8): a CLI word takes `name=value` params and reaches the carrier its skin names, so an
+# MCP tool whose carrier a CLI word skins answers at that word (`tiddler_get` at `lares get`), with no sub-verb in any module's
+# dispatch. Read off the baked pack the CLI itself reads: the tool's mcp route names its address, and a cli route or a door's
+# gathered addresses (`get` gathers both its choices) name the word that reaches it.
+PACK = pathlib.Path("packages/lararium-tw5/affordance-pack.json")
+pack = json.loads(PACK.read_text()) if PACK.exists() else {}
+pack_routes = pack.get("routes", {})
+mcp_address = pack_routes.get("mcp", {})
+cli_reaches = set(pack_routes.get("cli", {}).values()) | {a for door in pack.get("doors", {}).values() for a in door.get("addresses", [])}
+
+def call_word(tool: str) -> bool:
+    address = mcp_address.get(tool.replace("-", "_"))
+    return address is not None and address in cli_reaches
+
 def has_door(tool: str) -> str | None:
     if tool in doors:    return "top-level"
+    if call_word(tool):  return "call word"
     if tool in subverbs: return "sub-verb"
     base = tool.split("-")[0]
     if base in doors:    return f"sub-verb of `{base}`"

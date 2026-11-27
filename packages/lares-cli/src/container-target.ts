@@ -5,12 +5,26 @@ class ContainerTargetRefusal extends Error {
 }
 
 /**
+ * A CONTAINER FLAG NAMED WITH NO VALUE NAMES NOTHING: `--recipe` or `--bag` standing bare refuses, so the default reaches a call
+ * that names neither, never one that named a flag and dropped its slug.
+ */
+function refuseBare(args: ParsedArgs, verb: string, names: readonly string[]): void {
+  for (const name of names) {
+    const value = args.options[name];
+    if (args.flags[name] === true || (value !== undefined && String(value).trim() === "")) {
+      throw new ContainerTargetRefusal(`lares ${verb}: no-container — --${name} takes a slug (\`--${name} <slug>\`); name one, or name none and the worn face's daemon wiki answers.`);
+    }
+  }
+}
+
+/**
  * Name the one store container a CLI verb reads or writes. `--realm <id>` rides beside `--bag` alone: it names
  * the REALM whose registration that bag resolves through (a cabal realm's id, or the charter-derived realm's),
  * and with none named the bag resolves as the vessel's default routing gives it. A realm beside `--recipe`
  * refuses: a wiki lives in no realm.
  */
 export function containerArgs(args: ParsedArgs, verb: string, _direction: "read" | "write" = "read"): Record<string, string> {
+  refuseBare(args, verb, ["recipe", "bag", "realm"]);
   const recipe = typeof args.options["recipe"] === "string" ? args.options["recipe"].trim() : "";
   const bag = typeof args.options["bag"] === "string" ? args.options["bag"].trim() : "";
   if (recipe && bag) {
@@ -32,6 +46,7 @@ export function containerArgs(args: ParsedArgs, verb: string, _direction: "read"
  * rides `lares put title=… bag=<slug>` and `lares delete title=… bag=<slug>`, which take one bag through its store.
  */
 export function engineContainerArgs(args: ParsedArgs, verb: string, direction: "read" | "write" = "read"): Record<string, string> {
+  refuseBare(args, verb, ["recipe", "bag", "realm"]);
   const recipe = typeof args.options["recipe"] === "string" ? args.options["recipe"].trim() : "";
   const bag = typeof args.options["bag"] === "string" ? args.options["bag"].trim() : "";
   if (bag) {
