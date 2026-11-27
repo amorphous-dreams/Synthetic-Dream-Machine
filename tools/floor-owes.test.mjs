@@ -74,19 +74,18 @@ test("CONTROL: prose owes nothing past the fixed floor; one leaf source owes its
   assert.ok(plan({ touched: [], owed: leaf }).some((s) => s.name === "e2e-root" && s.args.includes("e2e/tiddler-door.test.ts")));
 });
 
-test("RED R4: a touched source path in no seam refuses the ticket by name and stops the gate before the build", () => {
+test("RED R4: a touched source path in no seam names itself and runs the WHOLE gate (develop's table cannot seat a wave's new file first)", () => {
   const planted = "packages/lararium-node/src/zz-planted-in-no-seam.ts";
   const owed = owedFor([planted, "packages/lararium-node/src/shore-verb.ts"]);
   assert.deepEqual(owed.refuse.map((r) => r.path), [planted]);
   assert.equal(owed.refuse[0].why, `floor-owes: ${planted} stands in no seam; add a MOVES row to the seam table, then ask again`);
   const said = [];
-  assert.equal(checkOwes(owed, (l) => said.push(l)), 1);
-  assert.match(said.join("\n"), new RegExp(`REFUSE ${planted.replace(/[.]/g, "\\.")}`));
-  assert.match(said.at(-1), /^pono: seat each refused path/);
-  const ran = [];
-  const r = runGate(plan({ touched: [], owed }).filter((s) => !s.check || s.check === "owes"), (s) => { ran.push(s.name); return s.check === "owes" ? checkOwes(owed, () => {}) : 0; }, () => {});
-  assert.deepEqual(ran, ["floor-owes"], "a refused ticket builds nothing");
-  assert.match(r.line, /^BENCH GATE REFUSES: floor-owes \(exit 1\)/);
+  assert.equal(checkOwes(owed, (l) => said.push(l)), 0, "an unseated path widens; it never stops the gate");
+  assert.ok(said.some((l) => l.startsWith(`REFUSE ${planted}`)));
+  assert.match(said.at(-1), /stand in no seam on develop's table, so the gate runs whole/);
+  const whole = plan({ touched: ["packages/lararium-node"], owed }).map((s) => s.name);
+  assert.ok(whole.includes("heavy-lararium-node"), "the whole gate owes the touched package's heavy tier");
+  assert.ok(!whole.some((n) => n.startsWith("owed-")), "the whole gate rides the heavy tiers, never the narrow owed steps");
   // CONTROL: the same lane without the planted path passes the step.
   assert.equal(checkOwes(owedFor(["packages/lararium-node/src/shore-verb.ts"]), () => {}), 0);
 });

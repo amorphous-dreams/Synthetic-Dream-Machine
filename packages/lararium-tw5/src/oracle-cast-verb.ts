@@ -10,8 +10,8 @@
  * carrier's `#/loop` (`@lararium/mesh/oracle-loop` ORACLE_CARRIER) calls the procedure's own `#/loop`, whose rows name each
  * slot, its order, its writer, what the house fills and what the seat owes. The ask's `observe` pointers and `uncertain`
  * words fill the first slots, the throw and every reading (each source credited) fill the next, and every slot the seat
- * still owes names its ask. The meme lands once through the meme door's own gate (`meme-put`, `create`); the seat's later
- * writes ride the slot append (`lares tiddler put <cast> --meme --slot '<the slot you owe>' --append '<words>'`). No slot name and no
+ * still owes names its ask. The carrier lands once through the tiddler door's put (`create`), which splits a family's text into its slots; the seat's later
+ * writes ride the slot append (`lares tiddler put '<cast>#/<the slot you owe>' --append '<words>'`). No slot name and no
  * ask lives in this file; a wiki answering no loop rows refuses `oracle-loop-unread`. A replay answers the uncertainty and
  * the pointers the record kept at the first throw, and never rewrites them.
  *
@@ -55,8 +55,7 @@ import {
   LOOP_SLOT, ORACLE_CARRIER, castMemeBody, castMeta, fillLoop, kaheaTarget, loopSlots, parseHasRows, type LoopReading, type LoopSlot,
 } from "@lararium/mesh/oracle-loop";
 import { frameCarrier } from "@lararium/memetic-frame";
-import { makeTiddlerGetReactor, type TiddlerVerbOptions } from "./tiddler-verbs.js";
-import { makeMemePutReactor } from "./meme-verbs.js";
+import { makeTiddlerGetReactor, makeTiddlerPutReactor, type TiddlerVerbOptions } from "./tiddler-verbs.js";
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 
 /** The caster a call names none for: the seat that placed it. */
@@ -144,7 +143,7 @@ async function readLoop(get: VerbReactor, container: Record<string, unknown>, ct
 }
 
 export function makeOracleCastReactor(opts: TiddlerVerbOptions): VerbReactor {
-  const memePut = makeMemePutReactor({ ...opts });
+  const put = makeTiddlerPutReactor(opts);
   const get = makeTiddlerGetReactor(opts);
   return async (args, ctx) => {
     const at = wordArg(args["at"]);
@@ -220,14 +219,14 @@ export function makeOracleCastReactor(opts: TiddlerVerbOptions): VerbReactor {
       const filled = fillLoop(slots, { observe: observeAsked, uncertain: uncertainAsked, asking, cast: drawn, readings: readings as unknown as LoopReading[] });
       const meta = castMeta(drawn, { title, intent, ...(asking !== "" ? { asking } : {}), ...(uncertainAsked !== "" ? { uncertain: uncertainAsked } : {}), observe: observeAsked });
       const text = frameCarrier({ head: { uri: title }, body: castMemeBody({ title, meta, cast: drawn, slots: filled }) });
-      const placed = await memePut({ ...container, uri: title, text, create: true }, ctx) as Record<string, unknown>;
+      // ALL TIDDLERS: the carrier lands through the one tiddler door, whose put splits a family's text into its slots.
+      const placed = await put({ ...container, title, text, create: true }, ctx) as Record<string, unknown>;
       const decision = String(placed["decision"] ?? "");
-      if (decision === "refuse" || decision === "conflict") {
-        const why = [placed["reason"], ...((placed["warnings"] as unknown[] | undefined) ?? [])].filter((w) => typeof w === "string" && w !== "").join("; ");
-        throw new VerbRefusal("oracle-cast-unlanded", `oracle-cast-unlanded: the meme door answered ${decision} for ${title}${why ? ` (${why})` : ""}; nothing moved, and the same asking casts again`);
+      if (decision === "conflict") {
+        throw new VerbRefusal("oracle-cast-unlanded", `oracle-cast-unlanded: the tiddler door answered conflict for ${title}; nothing moved, and the same asking casts again`);
       }
-      const created = decision === "ingest";
-      receipt = { decision: created ? "put" : decision, created, ...(placed["bag"] !== undefined ? { bag: placed["bag"] } : {}), ...(placed["canonicalHash"] !== undefined ? { hash: placed["canonicalHash"] } : {}) };
+      const created = decision === "put" && placed["created"] === true;
+      receipt = { decision, created, ...(placed["bag"] !== undefined ? { bag: placed["bag"] } : {}), ...(placed["hash"] !== undefined ? { hash: placed["hash"] } : {}) };
       if (created) {
         kept = { uncertain: uncertainAsked, observe: observeAsked };
         landed = filled.map(({ slot, phase, writer, owed }) => ({ slot, phase, writer, owed }));
