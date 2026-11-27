@@ -42,7 +42,9 @@ const TOKENS: Record<string, string> = Object.fromEntries([
   ...["OracleReading", "oracleSigil"].map((t) => [t, OTHER] as const),
   // The I Ching cast: its core, its verb, its widget and its CLI door each name the divination sense.
   ...["ORACLE_THROW_STANDS", "OracleCast", "OracleAsking", "makeOracleCastReactor", "ActionOracleCast", "ActionOracleCastWidget", "oracleCastFor",
-    "cmdOracle", "oraclePlan", "oracleCast"].map((t) => [t, DIVINATION] as const),
+    "cmdOracle", "oraclePlan", "oracleCast",
+    // The cast as an OODA-HA act record: its affordance address, its carrier, and the bake test's fixture of that carrier.
+    "ORACLE_AFFORDANCE", "ORACLE_CARRIER", "oracleFixtureCarrier"].map((t) => [t, DIVINATION] as const),
 ]);
 
 const FILES: Record<string, string> = {
@@ -57,6 +59,8 @@ const FILES: Record<string, string> = {
   "packages/lararium-tw5/tests/oracle-cast-verb.test.ts": DIVINATION,
   "packages/lares-cli/src/commands/oracle-cmd.ts": DIVINATION,
   "packages/lares-cli/tests/oracle-cmd.test.ts": DIVINATION,
+  "packages/lararium-mesh/src/oracle-loop.ts": DIVINATION,
+  "packages/lararium-mesh/tests/oracle-loop.test.ts": DIVINATION,
 };
 
 function walk(dir: string, out: string[] = []): string[] {
