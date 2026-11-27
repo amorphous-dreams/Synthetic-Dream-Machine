@@ -267,7 +267,7 @@ It never reaches a copy of the house alone, a vessel (it mounts neither half), o
 
 !!! The down asks only over what a stop would drop
 
-The same boot shape exposed the stop: a vessel locked since it booted wrote nothing, and its `down` asked for `accept-loss` all the same. The custody door now names whether its key ever stood open in this life (`everOpened`) and counts held saves with no key (documents and counts, never a value). A vessel that never opened and holds no save reads clean, and the down stops with one line naming why; held saves list by document and count of saves, and the stop asks over exactly those; a key that opened and shut again, a vessel too old to say, and a census that cannot answer each read UNREAD and ask, never assumed lost or clean. The keep before a down skips a vessel it read locked, by name.
+A vessel locked since it booted wrote nothing: the custody door names whether its key ever stood open in this life (`everOpened`) and counts held saves with no key (documents and counts, never a value). A vessel that never opened and holds no save reads clean, and the down stops with one line naming why. A save at rest under the vessel's key (sealed-pending under its face, or an unsolicited peer push the vessel's inbox took on arrival) reads `kept`, and the down stops over it, naming it. Saves held in memory alone list by document and count of saves, and the down refuses over exactly those, naming the act that lands them; a key that opened and shut again, a vessel too old to say, and a census that cannot answer each read UNREAD and refuse, never assumed lost or clean. No typed word stops a vessel over what its census names. The keep before a down skips a vessel it read locked, by name.
 
 <<~/ahu>>
 
@@ -310,6 +310,6 @@ Three different things answer to the word "row" in the design's talk-out; this c
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;mYAE8W-3gtLIfRoBQ_yO57w4mN8HhyRNkFFVOfd29i8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WNd5VitqdDlYG0rj2_Kr6HsHvRSwxoXT9I5GbRKVQwY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -1272,15 +1272,26 @@ for (const [name, shim] of shims) {
     assert.doesNotMatch(r.stderr, /keeping first/);
   });
 
-  test(`${name}: a census naming items refuses with no terminal, listing each, and stops nothing`, async () => {
+  test(`${name}: a census naming items refuses, listing each and the way that lands them, and stops nothing; no word is offered`, async () => {
     const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_RC: "3" } });
     assert.equal(r.status, 2);
     assert.match(r.stderr, /held-save {2}save-unbooked {2}doc doc-heron/);
     assert.match(r.stderr, /carrier {2}pending {2}lar:\/\/\/ha\.ka\.ba\/notes\/pond/);
     assert.match(r.stderr, /vault unlock/);
-    assert.match(r.stderr, /accept-loss/);
-    assert.match(r.stderr, /no terminal/);
+    assert.match(r.stderr, /the vessel stands until what the census names lands/);
+    assert.doesNotMatch(r.stderr + r.stdout, /accept-loss|Type /);
     assert.equal(stopped(r.calls), false, r.calls);
+  });
+
+  // THE MEASURED CASE: a restand stopped on an unsolicited peer push held unnamed. The push now rests in the vessel's inbox at
+  // receipt, so the census reads clean and names it kept; the stop proceeds, naming the row, and drops nothing.
+  const KEPT = "census: kept  save-unnamed  doc 2ieLtAdTzp8jRAwUFaEDx8h3brkj  2 save(s)  bag (none mapped): at rest under the vessel's key, so a stop keeps them and the next boot carries them back";
+  test(`${name}: RED down-stops-over-a-kept-push: a census clean beside a kept row stops the vessel and names the row`, async () => {
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CENSUS_ERR: KEPT } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.ok(r.stderr.includes(KEPT), r.stderr);
+    assert.doesNotMatch(r.stderr, /refuses/);
+    assert.ok(stopped(r.calls), r.calls);
   });
 
   // THE WAY TO SETTLE READS THE VESSEL'S STATE: faces open and none worn wear one; a key not held unlocks; a worn face waits.
@@ -1304,8 +1315,10 @@ for (const [name, shim] of shims) {
     const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_RC: "1", FAKE_CENSUS_ERR: "container wedged" } });
     assert.equal(r.status, 2);
     assert.match(r.stderr, /could not answer/);
-    assert.match(r.stderr, /check .*lares-container.* logs/i);
+    assert.match(r.stderr, /lares-container\.(sh|ps1) logs, then tools\/lares-container\.(sh|ps1) down again/);
+    assert.match(r.stderr, /docker stop <its container> \(what its memory held reads unknown\)/);
     assert.doesNotMatch(r.stderr, /container wedged/);
+    assert.doesNotMatch(r.stderr, /accept-loss/);
     assert.equal(stopped(r.calls), false, r.calls);
     // An exit of zero that names no clean verdict never reads clean.
     const mute = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_RC: "0" } });
@@ -1335,7 +1348,7 @@ for (const [name, shim] of shims) {
   test(`${name}: up-on-a-moved-image-refuses-a-silent-stop: a census naming items stops nothing and stands nothing`, async () => {
     const r = await run(shim, ["up"], { env: { ...MOVED, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_RC: "3" } });
     assert.equal(r.status, 2);
-    assert.match(r.stderr, /accept-loss/);
+    assert.match(r.stderr, /the vessel stands until what the census names lands/);
     assert.equal(stopped(r.calls), false, r.calls);
     assert.doesNotMatch(r.calls, /up -d --wait lares/);
   });
@@ -1358,7 +1371,7 @@ for (const [name, shim] of shims) {
     assert.match(r.stderr, /the vessel did not become ready — check tools\/lares-container\.sh logs; if it already runs, run up again/);
   });
 
-  test(`${name}: a ps that fails refuses the stop with no terminal`, async () => {
+  test(`${name}: a ps that fails refuses the stop`, async () => {
     const r = await run(shim, ["down"], { env: { ...MOUNTS, FAKE_PS_RC: "1" } });
     assert.equal(r.status, 2);
     assert.match(r.stderr, /reads unknown/);
@@ -1372,24 +1385,13 @@ for (const [name, shim] of shims) {
     assert.ok(stopped(r.calls));
   });
 
-  test(`${name}: on a terminal, accept-loss typed stops; another word refuses`, { skip: !haveScript }, async () => {
-    const items = { ...STANDING, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_RC: "3" };
-    const accepted = await run(shim, ["down"], { env: items, tty: "accept-loss\n" });
-    assert.equal(accepted.status, 0, accepted.stdout);
-    assert.match(accepted.stdout, /doc doc-heron/);
-    assert.match(accepted.stdout, /Type accept-loss/);
-    assert.ok(stopped(accepted.calls), accepted.calls);
-    const wrong = await run(shim, ["down"], { env: items, tty: "yes\n" });
-    assert.notEqual(wrong.status, 0, wrong.stdout);
-    assert.match(wrong.stdout, /did not read accept-loss/);
-    assert.equal(stopped(wrong.calls), false, wrong.calls);
-  });
-
-  test(`${name}: on a terminal, a census that cannot answer offers accept-loss`, { skip: !haveScript }, async () => {
-    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_RC: "1" }, tty: "accept-loss\n" });
-    assert.equal(r.status, 0, r.stdout);
-    assert.match(r.stdout, /could not answer/);
-    assert.ok(stopped(r.calls), r.calls);
+  test(`${name}: on a terminal too, no typed word stops over items or an unanswered census`, { skip: !haveScript }, async () => {
+    for (const env of [{ ...STANDING, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_RC: "3" }, { ...STANDING, FAKE_CENSUS_RC: "1" }]) {
+      const r = await run(shim, ["down"], { env, tty: "accept-loss\n" });
+      assert.notEqual(r.status, 0, r.stdout);
+      assert.doesNotMatch(r.stdout, /Type accept-loss/);
+      assert.equal(stopped(r.calls), false, r.calls);
+    }
   });
 
   test(`${name}: --capture binds read-only under /capture/<n>; a home directory whole refuses`, async () => {
@@ -1689,12 +1691,12 @@ for (const [name, shim] of shims) {
     assert.equal(r.calls.split("\n").filter((l) => /HOSTCLI rite keep/.test(l)).length, 1, r.calls);
     assert.match(r.stderr, /keep: deferred: the census after the raise still names what rests nowhere yet; `lares rite keep` keeps once it reads clean/);
   });
-  test(`${name}: down-names-a-held-saves-only-census-plainly: before the accept-loss offer, a census of held saves alone says so (how many, that no carrier or untracked file waits, that accept-loss drops exactly these); CONTROL: a census with a carrier says nothing of the kind`, async () => {
+  test(`${name}: down-names-a-held-saves-only-census-plainly: before the refusal, a census of held saves alone says so (how many, that no carrier or untracked file waits, that the way on lands them); CONTROL: a census with a carrier says nothing of the kind`, async () => {
     const held = "held-save  save-unbooked  doc doc-heron  2 save(s) in memory  bag notes\nheld-save  save-unmapped  doc doc-wren  1 save(s) in memory  bag (none mapped)";
     const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: held, FAKE_CENSUS_RC: "3" } });
     assert.equal(r.status, 2);
-    assert.match(r.stderr, /the census names held saves alone \(2 documents\): each a save the sealed rest keeps in memory until a session books it in this vessel; no carrier and no untracked file waits, so accept-loss drops exactly these/);
-    assert.ok(r.stderr.indexOf("held saves alone") < r.stderr.indexOf("Two ways on"), r.stderr);
+    assert.match(r.stderr, /the census names held saves alone \(2 documents\): each a save the sealed rest keeps in memory alone until a session books it in this vessel; no carrier and no untracked file waits; the way on below lands them/);
+    assert.ok(r.stderr.indexOf("held saves alone") < r.stderr.indexOf("The way on:"), r.stderr);
     const mixed = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_RC: "3" } });
     assert.doesNotMatch(mixed.stderr, /held saves alone/);
   });
@@ -2163,18 +2165,19 @@ test(`${name}: unlock-face-tells-the-pulama: under a pūlama, a vault unlock --f
   assert.doesNotMatch(refused.calls, / wear \d+(?: --yes)?$/m);
   assert.equal(refused.worn, "1");
 });
-// THE SHIM'S `--yes` SPEAKS FOR THE SHORE ALONE. A face whose light refused may hold saves no seat has sealed, and the wear
-// that composes again would drop them: the vessel refuses `saves-held` whatever `--yes` says, and only a person's own
-// `--accept-loss` turns. The shim never carries that word, and it names the refusal truly, with the vessel's own lines.
-const SAVES_HELD = "lares wear: wearing h2 composes the vessel again, which would drop them, so nothing moved. face h1 holds 1 save(s) in memory that no seat has sealed (its light refused); recard it at your own terminal, keeping its identity: tools/lares-container.sh pulama recard 1 (the face's own passphrase), then lares vault recard --face 1, and its own seat seals them. Or drop them knowingly: wear again with --accept-loss (`lares wear 2 --accept-loss`)";
-test(`${name}: RED shim-wear-never-drops-held-saves: the rebuild's wear carries --yes and no --accept-loss, and a saves-held refusal reads as itself, naming the held face's cure`, { skip }, async () => {
+// THE SHIM'S `--yes` SPEAKS FOR THE SHORE ALONE. A face whose light refused may hold saves in memory alone, and the wear that
+// composes again would drop them: the vessel refuses `saves-held` whatever `--yes` says, and no word turns it. The shim names
+// the refusal truly, with the vessel's own lines and the act that lights the held face.
+const SAVES_HELD = "lares wear: wearing h2 composes the vessel again, which would drop them, so nothing moved. face h1 holds 1 save(s) in memory that no seat has sealed (its light refused); recard it at your own terminal, keeping its identity: tools/lares-container.sh pulama recard 1 (the face's own passphrase), then lares vault recard --face 1, and its own seat seals them";
+test(`${name}: RED shim-wear-never-drops-held-saves: the rebuild's wear carries --yes alone, and a saves-held refusal reads as itself, naming the held face's cure`, { skip }, async () => {
   const r = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 2, env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":false}}}', FAKE_WEAR_OUT: SAVES_HELD, FAKE_WEAR_RC: "1" } });
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.calls, /-T lares node \S+ wear 2 --yes$/m);
   assert.doesNotMatch(r.calls, /accept-loss/);
   assert.match(r.stderr, /h2 did not turn: a face whose light refused holds saves no seat has sealed/);
   assert.match(r.stderr, /lares vault recard --face 1/);
-  assert.match(r.stderr, /wear 2 --accept-loss/);
+  assert.match(r.stderr, /wear h2 after that/);
+  assert.doesNotMatch(r.stderr, /accept-loss/);
   assert.doesNotMatch(r.stderr, /outside the lent set or locked/);
   assert.doesNotMatch(r.stderr, /the shore's flush left records unwritten/);
 });
@@ -3229,13 +3232,13 @@ test("the hand verbs the shims send to the pūlama stay the names it dispatches 
       const r = await run(shim, ["down"], { env: { ...VESSEL, FAKE_CENSUS_OUTPUT: SINCE_BOOT, FAKE_CUSTODY_OUTPUT: LOCKED, LARES_KEEP_WORKSPACE: "house-backup", LARES_HOST_CLI: cli } });
       assert.equal(r.status, 0, r.stderr);
       assert.equal(stopped(r.calls), true, r.calls);
-      assert.doesNotMatch(r.stderr, /accept-loss|refuses a silent stop/);
+      assert.doesNotMatch(r.stderr, /accept-loss|down refuses/);
       assert.match(r.stderr, /down asks nothing: the vessel stood locked since it booted, so no act wrote and nothing waits in memory to drop/);
       assert.match(r.stderr, /the keep skips a locked vessel/);
       await assert.rejects(stat(ran), "the keep never ran over a vessel read locked");
     } finally { await rm(cliDir, { recursive: true, force: true }); }
   });
-  test("sh: RED down-with-held-saves-lists-them: a census naming held saves refuses a silent stop, lists each item with its count of saves, and stops only on the typed word", { skip: !haveScript }, async () => {
+  test("sh: RED down-with-held-saves-lists-them: a census naming held saves refuses, lists each item with its count of saves, and no typed word stops it", { skip: !haveScript }, async () => {
     const ITEMS = "held-save  save-unbooked  doc aaaa1111  3 save(s) in memory  bag (none mapped)\nheld-save  save-unsealed  doc bbbb2222  1 save(s) in memory  bag wiki:sdm";
     const env = { ...VESSEL, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_ERR: "census: 2 item(s) rest nowhere yet; a stop now drops them", FAKE_CENSUS_RC: "3", FAKE_CUSTODY_OUTPUT: LOCKED };
     const r = await run(shim, ["down"], { env });
@@ -3244,14 +3247,15 @@ test("the hand verbs the shims send to the pūlama stay the names it dispatches 
     assert.match(r.stderr, /the census names content that rests nowhere yet, and a stop now drops it:\n {2}held-save {2}save-unbooked {2}doc aaaa1111 {2}3 save\(s\) in memory[\s\S]*\n {2}held-save {2}save-unsealed {2}doc bbbb2222 {2}1 save\(s\) in memory/);
     assert.match(r.stderr, /the census names held saves alone \(2 documents\)/);
     const typed = await run(shim, ["down"], { env, tty: "accept-loss\n" });
-    assert.equal(stopped(typed.calls), true, typed.calls);
+    assert.equal(stopped(typed.calls), false, typed.calls);
   });
-  test("sh: RED down-over-an-unread-census-asks: a locked vessel whose key opened in this life, and a census that cannot answer, each read UNREAD and ask; neither assumes a loss or a clean stop", async () => {
+  test("sh: RED down-over-an-unread-census-refuses: a locked vessel whose key opened in this life, and a census that cannot answer, each read UNREAD and refuse, naming the way on; neither assumes a loss or a clean stop", async () => {
     const opened = await run(shim, ["down"], { env: { ...VESSEL, FAKE_CENSUS_RC: "2", FAKE_CENSUS_ERR: "census: vessel locked: run `lares vault unlock`, then down", FAKE_CUSTODY_OUTPUT: LOCKED } });
     assert.equal(opened.status, 2);
     assert.equal(stopped(opened.calls), false, opened.calls);
-    assert.match(opened.stderr, /what the locked vessel holds reads unread \(its key opened in this life, or its image predates the locked census\), so the stop asks/);
-    assert.match(opened.stderr, /type accept-loss below/);
+    assert.match(opened.stderr, /what the locked vessel holds reads unread \(its key opened in this life, or its image predates the locked census\)/);
+    assert.match(opened.stderr, /down refuses: vessel locked: run tools\/lares-container\.sh vault unlock, then down/);
+    assert.doesNotMatch(opened.stderr, /accept-loss/);
     const silent = await run(shim, ["down"], { env: { ...VESSEL, FAKE_CENSUS_RC: "1" } });
     assert.equal(silent.status, 2);
     assert.equal(stopped(silent.calls), false, silent.calls);

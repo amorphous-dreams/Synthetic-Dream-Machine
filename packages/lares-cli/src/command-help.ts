@@ -107,7 +107,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "in a checkout and the owner holds the terminal, it previews the workbench lay (each title a workbench the worn face mounts " +
       "would take) and lays it (`lares vessel lay --workbench --apply`) only on an explicit yes; a workbench that does not mount is " +
       "named and left, a no or a Ctrl+C leaves every layer as it stood, and a seat with no terminal, an AI launcher or a source in no " +
-      "checkout names the lag and lays nothing. A Ctrl+C at any prompt (accept-loss, the light, the admit) leaves the house where the " +
+      "checkout names the lag and lays nothing. A Ctrl+C at any prompt (the light, the admit) leaves the house where the " +
       "next run reads it: a begin standing unlanded at this head and over this image, every half landable, is resumed (no lei " +
       "spent, no new tessera, the resting offer reused where its vouches match), and any other (another head or image, a face " +
       "shut or rehived since) refuses by name with the line that clears it: each half a lent face holds, set down by the hand " +
@@ -1040,7 +1040,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vault unlock                     # hand the standing vessel a TTY credential: it opens its key and composes with what the key opens",
       "                                       # where LARES_KEEP_WORKSPACE (or the one LARES_WORKSPACES pair) names a keep workspace and no keep lei stands, it asks once to string one under the same passphrase, as the face --face names, else the daemon mount",
       "lares vault unlock --face N            # open face N under its own route; the vessel wears it",
-      "lares vault unlock --face N --accept-loss   # where that wear turns the face and a refused face holds unsealed saves: a person types accept-loss to drop them (see `lares wear`)",
       "lares vault unlock --all [--face N]    # try the route on every face; --face N wears N, and refuses by name where N stays shut under it",
       "lares vault lock [--face N]            # the standing vessel drops its key and stands at the floor; --face N drops that face alone",
       "lares vault bind [--face N] [--passphrase|--paper]   # unlock, then bind a second human route (a paper pin reads back); --face N binds into that face's own tree",
@@ -1081,8 +1080,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "grant carried for the face now worn lift into its catalog (the face already worn among them), and the wear names what still waits on a shut face. " +
       "A wear that turns the face flushes every shore first, inside the vessel (the whole-island flush its teardown runs), and prints what each island wrote; " +
       "where a record stays unwritten, or an island gives no answer, it refuses `shore-unwritten` and names each one: a terminal asks whether to turn anyway, and `--yes` turns anyway. " +
-      "Where a face whose light refused holds saves no seat has sealed, the wear refuses `saves-held`, since composing again would drop them, and names the act that lights that face so its own seat seals them; " +
-      "`--accept-loss` alone turns anyway: it asks a person to type `accept-loss` at their terminal, an AI seat or a pipe refuses `accept-loss-needs-hand`, and `--yes` never speaks for it.",
+      "Where a face whose light refused holds saves in memory alone (none at rest under the vessel's key), the wear refuses `saves-held`, since composing again would drop them, and names the act that lights that face so its own seat seals them; `--yes` never speaks for them.",
     examples: [
       "lares wear 1                           # move the mount to face h1, a face already standing open",
       "lares wear --face 0                    # the same move, the face named by flag",
@@ -1090,7 +1088,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: [
       "--face <N>         the face to wear, read where no positional names one",
       "--yes              turn the face even where the shore's flush left records unwritten (they rest in the store; their mirrors wait)",
-      "--accept-loss      turn the face even where a face whose light refused holds unsealed saves: they drop, unwritten (asks a person to type accept-loss at a terminal; `--yes` never carries it)",
       "--json             the door's answer as one object, the form a caller parses; a pipe reads the one prose line",
     ],
     next: ["lares vault status", "lares vault unlock   # a vessel holding no key opens here first"],

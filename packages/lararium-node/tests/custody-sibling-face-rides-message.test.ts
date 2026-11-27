@@ -262,7 +262,7 @@ test("R9 THE DOOR AND THE CENSUS SAY ONE LINE: the session door's dark line for 
 // A refused face's saves wait in this composition's memory as plain bytes, and no seat has sealed them: a lock would drop the
 // key over them and the next composition would throw them away. Every act that ends the composition refuses first, by name.
 const HELD = [{ ordinal: 2, cause: "FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret", saves: 1 }];
-test("P1 A WHOLE LOCK NEVER LANDS OVER A REFUSED FACE'S HELD SAVES: it refuses by name with both cures (light the face so its seat seals them, or drop them knowingly), before any face closes, and the key stays open", async () => {
+test("P1 A WHOLE LOCK NEVER LANDS OVER A REFUSED FACE'S HELD SAVES: it refuses by name with the cure that lands them (light the face so its seat seals them), before any face closes, and the key stays open", async () => {
   setMountedFace(0); const h = harness({ heldSaves: HELD });
   const answer = await h.send({ op: "lock" });
   expect(answer).toMatchObject({ status: "error", refusal: { reason: "saves-held" } });
@@ -272,7 +272,7 @@ test("P1 A WHOLE LOCK NEVER LANDS OVER A REFUSED FACE'S HELD SAVES: it refuses b
   expect(words).toContain("h2");
   expect(words).toContain("1 save(s)");
   expect(words).toContain("lares vault recard --face 2");
-  expect(words).toContain("accept-loss");
+  expect(words, "no word drops them").not.toContain("accept-loss");
   expect(h.lock).not.toHaveBeenCalled();
   expect(h.recompose).not.toHaveBeenCalled();
   // No close ran, so no hold stands for anything to lift.
@@ -301,41 +301,31 @@ test("F1 AN UNLOCK THAT WOULD COMPOSE AGAIN REFUSES BEFORE ANYTHING MOVES: no fa
   expect(h.lightFace).toHaveBeenCalledExactlyOnceWith(1);
   expect(h.recompose).not.toHaveBeenCalled();
 });
-test("F4 THE LOSS IS A PERSON'S WORD: a wear frame carrying acceptLoss from an AI seat refuses accept-loss-needs-hand, and nothing composes", async () => {
+test("F4 NO WORD DROPS A HELD SAVE: a wear frame carrying any loss word refuses bad-custody-frame from every seat, and nothing composes", async () => {
   setMountedFace(0); const h = harness({ heldSaves: HELD }); h.open.add("1");
-  expect(await h.send({ op: "wear", face: 1, acceptLoss: true, seat: "ai" })).toMatchObject({ op: "wear", status: "error", refusal: { reason: "accept-loss-needs-hand" } });
+  for (const frame of [{ op: "wear", face: 1, acceptLoss: true }, { op: "wear", face: 1, acceptLoss: true, seat: "ai" }]) {
+    expect(await h.send(frame)).toMatchObject({ op: "wear", status: "error", refusal: { reason: "bad-custody-frame" } });
+  }
+  // A frame that claims a terminal's seat lifts nothing either: the only seat word a wear carries is `ai`.
+  expect(await h.send({ op: "wear", face: 1, seat: "cli" })).toMatchObject({ op: "wear", status: "error", refusal: { reason: "bad-custody-frame" } });
   expect(h.recompose).not.toHaveBeenCalled();
 });
-for (const peer of ["ai", "unknown"] as const) {
-  test(`F5 THE FRAME'S SEAT WORD ONLY NARROWS: an unmarked wear carrying acceptLoss whose peer reads ${peer} refuses accept-loss-needs-hand, and nothing composes`, async () => {
-    setMountedFace(0); const h = harness({ peer, heldSaves: HELD }); h.open.add("1");
-    const answer = await h.send({ op: "wear", face: 1, acceptLoss: true });
-    expect(answer).toMatchObject({ op: "wear", status: "error", refusal: { reason: "accept-loss-needs-hand", reading: peer === "ai" ? "hand-act-only" : "hand-unattested" } });
-    expect(String(answer["errorMessage"])).toContain("lares wear 1 --accept-loss");
-    // A frame that claims a terminal's seat lifts nothing either: the only seat word a wear carries is `ai`.
-    expect(await h.send({ op: "wear", face: 1, acceptLoss: true, seat: "cli" })).toMatchObject({ op: "wear", status: "error", refusal: { reason: "bad-custody-frame" } });
-    expect(h.recompose).not.toHaveBeenCalled();
-  });
-}
 
-test("F5 CONTROL: a wear WITHOUT acceptLoss moves the mount whatever the peer reads (a seat wears on the operator's word)", async () => {
+test("F5 CONTROL: a wear moves the mount whatever the peer reads (a seat wears on the operator's word)", async () => {
   setMountedFace(0); const h = harness({ peer: "ai" }); h.open.add("1");
   expect(await h.send({ op: "wear", face: 1 })).toMatchObject({ op: "wear", face: 1 });
 });
 
-test("P1 A WEAR THAT WOULD COMPOSE AGAIN REFUSES OVER HELD SAVES, naming the cures; `yes` speaks for the shore's flush alone and still refuses; only the frame's own `acceptLoss` turns anyway", async () => {
+test("P1 A WEAR THAT WOULD COMPOSE AGAIN REFUSES OVER HELD SAVES, naming the cure that lands them; `yes` speaks for the shore's flush alone and still refuses", async () => {
   setMountedFace(0); const h = harness({ heldSaves: HELD }); h.open.add("1");
   const answer = await h.send({ op: "wear", face: 1 });
   expect(answer).toMatchObject({ op: "wear", status: "error", refusal: { reason: "saves-held" } });
   expect(String(answer["errorMessage"])).toContain("lares vault recard --face 2");
-  expect(String(answer["errorMessage"])).toContain("lares wear 1 --accept-loss");
+  expect(String(answer["errorMessage"])).not.toContain("accept-loss");
   expect(String(answer["errorMessage"])).not.toContain("--yes");
   // THE SHIM'S WORD: `yes` turns over records the shore's flush left unwritten, and never drops a held save.
   expect(await h.send({ op: "wear", face: 1, yes: true })).toMatchObject({ status: "error", refusal: { reason: "saves-held" } });
   expect(h.recompose).not.toHaveBeenCalled();
-  expect(await h.send({ op: "wear", face: 1, acceptLoss: true })).toMatchObject({ op: "wear", face: 1 });
-  expect(h.recompose).toHaveBeenCalledOnce();
-  expect(await h.send({ op: "wear", face: 1, acceptLoss: "yes" }), "the word reads true or stays off the frame").toMatchObject({ status: "error", refusal: { reason: "bad-custody-frame" } });
 });
 test("NO HELD SAVE DROPS UNNAMED: a composition that ends over a refused face's held saves names the face and the count; with none held it says nothing", () => {
   const lines = heldSavesLossLines([...HELD, { ordinal: 3, cause: "x", saves: 0 }]);

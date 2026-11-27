@@ -60,7 +60,7 @@ export const FORWARDED_ENV: readonly string[] = ["NO_COLOR", "TERM", "COLORTERM"
  */
 const SHIM_VERB_HELP: Readonly<Record<string, { readonly usage: string; readonly about: readonly string[] }>> = {
   up:    { usage: "lares up [--capture <dir>]... [--workspace <name>=<dir>]...", about: ["Stand the vessel's container (detached) and wait until it answers healthy; then `vault unlock` on this terminal.", "A vessel stands holding no key: every start returns it to the floor until a person unlocks it."] },
-  down:  { usage: "lares down [compose-down args]", about: ["Stop the vessel and remove its container; the house stays in LARES_HOUSE.", "It asks the standing vessel first what a stop would drop (`vessel census`) and refuses on any item until it settles or a person types `accept-loss`."] },
+  down:  { usage: "lares down [compose-down args]", about: ["Stop the vessel and remove its container; the house stays in LARES_HOUSE.", "It asks the standing vessel first what a stop would drop (`vessel census`) and refuses on any item, naming the act that lands it; a save at rest under the vessel's key reads kept and stops with the house."] },
   reset: { usage: "lares reset", about: ["Clear a stopped vessel's hearth (LARES_HOUSE/hearth alone) after confirmation at a terminal.", "Sensoriums, projections, library and config stay."] },
   found: { usage: "lares found [vessel-found args]", about: ["The founding act, at a terminal: it gathers the human route (a passphrase and/or a paper pin); `--hearth` prints the seed card and reads it back.", "Run it before `up`: the act holds the store. `lares vessel found --help` names its flags."] },
   logs:  { usage: "lares logs [compose-logs args]", about: ["Read the vessel's log (`-f` follows it)."] },

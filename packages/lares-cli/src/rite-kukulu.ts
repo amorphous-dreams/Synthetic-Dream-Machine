@@ -859,7 +859,7 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
   if (restandStops(r)) ports.say(STOP_FLUSHES_LINE);
   const raised = await ports.raise(head, keeperMove ? { to: keeperMove.to } : undefined);
   if (raised !== 0) {
-    // A CTRL+C at a prompt the restand asks (accept-loss, the light, the admit) ends the shim by the signal: the begun halves and
+    // A CTRL+C at a prompt the restand asks (the light, the admit) ends the shim by the signal: the begun halves and
     // the offer rest where they stood, and the next run reads them and resumes.
     if (raised === INTERRUPTED) {
       ports.say(`kūkulu: interrupted during the restand; ${begun ? `the begun halves rest${offered ? " and the offer stands" : ""}, so \`${HAND_ACT}\` resumes them and spends no lei` : `\`${HAND_ACT}\` picks up from where the house stands`}.`);

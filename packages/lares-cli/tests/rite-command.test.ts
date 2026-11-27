@@ -840,8 +840,8 @@ describe("the kūkulu's seed port reads the genesis dir the image carries (the h
 });
 
 /**
- * KŪKULU SURVIVES A CTRL+C (gate 2, beta-release-zero, operator ruling 2026-11-20). The live red: a Ctrl+C at the census's
- * accept-loss prompt, then a re-run, began AGAIN (a second lei return spent, new tesserae minted, the offer written again). The
+ * KŪKULU SURVIVES A CTRL+C (gate 2, beta-release-zero, operator ruling 2026-11-20). The live red: a Ctrl+C at a restand's
+ * prompt, then a re-run, began AGAIN (a second lei return spent, new tesserae minted, the offer written again). The
  * rite now reads the debt that stands before it begins: every kūkulu half resting unlanded on the line (by its raw rows, so a
  * face shut or rehived since still counts), beside the halves a lent face can land and the offer's vouches. A debt that
  * matches this run (its head, the image the host made, every half landable) RESUMES: no return, no tessera, the offer reused
@@ -992,7 +992,7 @@ describe("kukulu-survives-a-ctrl-c", () => {
   });
 
   /** A fake house that holds its state across runs: the stage reads it, each row and the raise move it. */
-  function house(interruptAt: "accept-loss" | "light" | "admit") {
+  function house(interruptAt: "light" | "admit") {
     const st = { vessel: "standing" as "standing" | "down", current: false, locked: false, offer: false, guests: [] as string[], landed: new Set<string>(), begins: 0, offers: 0, raises: 0, keeps: 0 };
     const said: string[] = [];
     const ports: RitePorts = {
@@ -1006,8 +1006,8 @@ describe("kukulu-survives-a-ctrl-c", () => {
       raise: async () => {
         st.raises++;
         if (st.raises === 1) {
-          // THE INTERRUPT: accept-loss stops before the down (the vessel stands); the light after it (the vessel down); the admit after
-          // the up (the new image standing locked at the floor).
+          // THE INTERRUPT: the light after the down (the vessel down); the admit after the up (the new image standing locked at
+          // the floor).
           if (interruptAt === "light") st.vessel = "down";
           if (interruptAt === "admit") { st.current = true; st.locked = true; }
           return 130;
@@ -1027,7 +1027,7 @@ describe("kukulu-survives-a-ctrl-c", () => {
     return { st, ports, said };
   }
 
-  for (const at of ["accept-loss", "light", "admit"] as const) {
+  for (const at of ["light", "admit"] as const) {
     it(`RED: a Ctrl+C at the ${at} prompt, then a re-run, lands par: one begin across both runs, one offer, no second return, the keep after the landing`, async () => {
       const h = house(at);
       expect(await riteKukulu(h.ports, {})).toMatchObject({ code: 1, data: { stopped: "raise", interrupted: true } });
