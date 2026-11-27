@@ -309,7 +309,7 @@ export async function runPlan(table: VerbTable, plan: CallPlan, ctx: VerbContext
 /** Where the daemon `call` reads: the reader view of the recipe a call's params name, and the engine's own macro-call parser. */
 export interface CallSource {
   readerOf(ctx: VerbContext, params: Readonly<Record<string, unknown>>): CallReader | Promise<CallReader>;
-  readonly parse?: MacroCallParse;
+  readonly parse?: MacroCallParse | undefined;
 }
 
 /** The host's seat of the registry inside a wiki VM (`$tw.lares.callDoor`): each plan runs under one context. */
