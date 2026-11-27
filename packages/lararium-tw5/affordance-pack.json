@@ -10190,7 +10190,7 @@
       "title": "lar:///ha.ka.ba/lares/afford/engine.law.unpins"
     },
     "lar:///engine.record.puts": {
-      "bcc": "ni:///sha-256;q0ZJ6GhA_mm9DnaqprLvxxx2MyE0pAtzC7psiSyulpQ",
+      "bcc": "ni:///sha-256;8khAqZ7zDZdKaTeD65XmDZX4ZwuPHq87uXDOXm4n1Xg",
       "calls": {
         "cli": [
           "lares tiddler put 'Room 4' --recipe default --fields '{\"todo\":\"done\"}' --tag-add reviewed --base <hash>",
@@ -10249,6 +10249,7 @@
             "  noop (exit 0)  the record already says it; nothing moved",
             "  family (exit 0)  a family text landed through the Confluence gate and resealed",
             "  conflict (exit 4)  the base read stale; the live hash rides the answer and nothing landed",
+            "  dry (exit 0)  a dry put: the answer the real put would give, the base it needs and the carrier's seat hints; nothing landed",
             "  exists (exit 4)  create met a standing record; nothing landed"
           ],
           "#/edges": [
@@ -10414,6 +10415,7 @@
             "  noop (exit 0)  the record already says it; nothing moved",
             "  family (exit 0)  a family text landed through the Confluence gate and resealed",
             "  conflict (exit 4)  the base read stale; the live hash rides the answer and nothing landed",
+            "  dry (exit 0)  a dry put: the answer the real put would give, the base it needs and the carrier's seat hints; nothing landed",
             "  exists (exit 4)  create met a standing record; nothing landed",
             "",
             "Skins (one affordance, every door):",
@@ -10436,6 +10438,7 @@
             "  noop (exit 0)  the record already says it; nothing moved",
             "  family (exit 0)  a family text landed through the Confluence gate and resealed",
             "  conflict (exit 4)  the base read stale; the live hash rides the answer and nothing landed",
+            "  dry (exit 0)  a dry put: the answer the real put would give, the base it needs and the carrier's seat hints; nothing landed",
             "  exists (exit 4)  create met a standing record; nothing landed"
           ],
           "#/edges": [
@@ -10498,8 +10501,9 @@
             "  console: put"
           ],
           "#/takes": [
-            "  mu=dry-relate  the dry summary: what the put would land, the base it needs, landing nothing",
-            "  mu=dry-assert  the dry diff: the summary and the full diff of text and fields, landing nothing",
+            "  mu=dry  a dry run: the put walks its law to the last step and answers the summary, landing nothing",
+            "  mu=dry-relate  the dry summary: what the put would land, the bag and layer, the base it needs, landing nothing",
+            "  mu=dry-assert  the dry diff: the summary and each record it would move, fields before and after and text line by line, landing nothing",
             "  title <title>  the record written, any right-intent string; a slot title <root>#/x names one slot",
             "  text <words>  the new text: on a root the whole carrier, on a slot its body",
             "  append <words>  words that land at the end of the standing text, no base; a terminal reads them from a host path or - for stdin",
@@ -10543,8 +10547,9 @@
             "  $tw.lares.call(\"put\", {\"title\": \"lar:///ha.ka.ba/kahua/memory/x\", \"recipe\": \"default\", \"slot\": \"#/why\", \"text\": \"the reason, rewritten\"})    # one slot's text, no base; the family reseals",
             "",
             "Arguments:",
-            "  mu=dry-relate  the dry summary: what the put would land, the base it needs, landing nothing",
-            "  mu=dry-assert  the dry diff: the summary and the full diff of text and fields, landing nothing",
+            "  mu=dry  a dry run: the put walks its law to the last step and answers the summary, landing nothing",
+            "  mu=dry-relate  the dry summary: what the put would land, the bag and layer, the base it needs, landing nothing",
+            "  mu=dry-assert  the dry diff: the summary and each record it would move, fields before and after and text line by line, landing nothing",
             "  title <title>  the record written, any right-intent string; a slot title <root>#/x names one slot",
             "  text <words>  the new text: on a root the whole carrier, on a slot its body",
             "  append <words>  words that land at the end of the standing text, no base; a terminal reads them from a host path or - for stdin",
@@ -10601,6 +10606,7 @@
             "  noop (exit 0)  the record already says it; nothing moved",
             "  family (exit 0)  a family text landed through the Confluence gate and resealed",
             "  conflict (exit 4)  the base read stale; the live hash rides the answer and nothing landed",
+            "  dry (exit 0)  a dry put: the answer the real put would give, the base it needs and the carrier's seat hints; nothing landed",
             "  exists (exit 4)  create met a standing record; nothing landed",
             "",
             "Skins (one affordance, every door):",
@@ -10631,7 +10637,7 @@
             "The fences refuse by name: a family's `type` and carriage fields derive from its text (`family-carriage-derives`); a new slot joins through its parent's text (`family-joins-by-text`); a text the gate cannot read as one carrier refuses `family-gate-refused`; a title that stays home refuses `tiddler-withheld`; a put over a rendered tiddler, or one carrying `rendered-from`, refuses `rendered-derives`, since only the renderer writes it: edit the source records. Every other shape lands natively, a `$:/` title or tag, a module or plugin field and a script type alike. A put writes the face it wears and never another (`cross-face-write-refused`).",
             "Gate (the carrier's testimony; the door checks): write: the Kahu predicate, then the face's write cap on the bag the cascade lands in, wikis first: the working layer.",
             "Refuses: wiki-unreached · conflict · exists · replace-absent · replace-ambiguous · base-from-skinny · base-from-partial · base-outside-span · cut-not-omitted · slot-malformed · slot-beside-fragment · family-carriage-derives · family-joins-by-text · family-gate-refused · stage-path-shape · tiddler-withheld · rendered-derives · seat-canon-reach · cross-face-write-refused.",
-            "Answers band: put · noop · family · conflict · exists.",
+            "Answers band: put · noop · family · conflict · dry · exists.",
             "Mirrors: lares tiddler put (affordance engine.record.puts).",
             "Examples, cures, every band: tiddler_get(title=\"lar:///ha.ka.ba/lares/afford/engine.record.puts\", recipe=\"lares\", meme=True, grain=\"slot\", slot=\"#/shows\")"
           ]
@@ -10642,6 +10648,7 @@
             "  noop (exit 0)  the record already says it; nothing moved",
             "  family (exit 0)  a family text landed through the Confluence gate and resealed",
             "  conflict (exit 4)  the base read stale; the live hash rides the answer and nothing landed",
+            "  dry (exit 0)  a dry put: the answer the real put would give, the base it needs and the carrier's seat hints; nothing landed",
             "  exists (exit 4)  create met a standing record; nothing landed"
           ],
           "#/edges": [
@@ -10801,6 +10808,7 @@
             "  noop (exit 0)  the record already says it; nothing moved",
             "  family (exit 0)  a family text landed through the Confluence gate and resealed",
             "  conflict (exit 4)  the base read stale; the live hash rides the answer and nothing landed",
+            "  dry (exit 0)  a dry put: the answer the real put would give, the base it needs and the carrier's seat hints; nothing landed",
             "  exists (exit 4)  create met a standing record; nothing landed",
             "",
             "Skins (one affordance, every door):",
@@ -11454,7 +11462,7 @@
       "title": "lar:///ha.ka.ba/lares/afford/engine.record.reads"
     },
     "lar:///engine.record.removes": {
-      "bcc": "ni:///sha-256;0bx2h4IamG2LrUV8IcFQZKfT5dIGS-mEs3oPUrVCJYk",
+      "bcc": "ni:///sha-256;ZyI27p13YNRALud3MmHuCpra9w_ZZld53UQtG_365NY",
       "calls": {
         "cli": [
           "lares tiddler delete 'Old Note' --recipe default --base <hash>",
@@ -11504,7 +11512,8 @@
             "  removed (exit 0)  the act landed; mode reads plain, kapae, reveal or cut",
             "  absent (exit 3)  nothing stood to remove",
             "  refused (exit 4)  the family law or a lower layer refused; the consequence rides the answer and nothing moved",
-            "  conflict (exit 4)  the base read stale; nothing moved"
+            "  conflict (exit 4)  the base read stale; nothing moved",
+            "  dry (exit 0)  a dry delete: the answer the real delete would give, the base it needs and the carrier's seat hints; nothing landed"
           ],
           "#/edges": [
             "  lar:///ha.ka.ba/lares/api/pono/affordance",
@@ -11611,6 +11620,7 @@
             "  absent (exit 3)  nothing stood to remove",
             "  refused (exit 4)  the family law or a lower layer refused; the consequence rides the answer and nothing moved",
             "  conflict (exit 4)  the base read stale; nothing moved",
+            "  dry (exit 0)  a dry delete: the answer the real delete would give, the base it needs and the carrier's seat hints; nothing landed",
             "",
             "Skins (one affordance, every door):",
             "  cli: lares tiddler delete",
@@ -11631,7 +11641,8 @@
             "  removed (exit 0)  the act landed; mode reads plain, kapae, reveal or cut",
             "  absent (exit 3)  nothing stood to remove",
             "  refused (exit 4)  the family law or a lower layer refused; the consequence rides the answer and nothing moved",
-            "  conflict (exit 4)  the base read stale; nothing moved"
+            "  conflict (exit 4)  the base read stale; nothing moved",
+            "  dry (exit 0)  a dry delete: the answer the real delete would give, the base it needs and the carrier's seat hints; nothing landed"
           ],
           "#/edges": [
             "  lar:///ha.ka.ba/lares/api/pono/affordance",
@@ -11676,8 +11687,9 @@
             "  console: delete"
           ],
           "#/takes": [
-            "  mu=dry-relate  the dry summary: what the delete would land, the base it needs, landing nothing",
-            "  mu=dry-assert  the dry diff: the summary and the full diff of text and fields, landing nothing",
+            "  mu=dry  a dry run: the delete walks its law to the last step and answers the summary, landing nothing",
+            "  mu=dry-relate  the dry summary: what the delete would land, the bag and layer, the base it needs, landing nothing",
+            "  mu=dry-assert  the dry diff: the summary and each record it would move, fields before and after and text line by line, landing nothing",
             "  title <title>  the record removed; a slot title <root>#/x leaves as the cut on its parent",
             "  base <hash>  the hash last read; a stale one answers conflict and nothing moves",
             "  family  name the family act: a meme root leaves with its slots, one change",
@@ -11710,8 +11722,9 @@
             "  $tw.lares.call(\"delete\", {\"title\": \"Old Note\", \"bag\": \"notes\"})    # that one bag's record leaves through its store",
             "",
             "Arguments:",
-            "  mu=dry-relate  the dry summary: what the delete would land, the base it needs, landing nothing",
-            "  mu=dry-assert  the dry diff: the summary and the full diff of text and fields, landing nothing",
+            "  mu=dry  a dry run: the delete walks its law to the last step and answers the summary, landing nothing",
+            "  mu=dry-relate  the dry summary: what the delete would land, the bag and layer, the base it needs, landing nothing",
+            "  mu=dry-assert  the dry diff: the summary and each record it would move, fields before and after and text line by line, landing nothing",
             "  title <title>  the record removed; a slot title <root>#/x leaves as the cut on its parent",
             "  base <hash>  the hash last read; a stale one answers conflict and nothing moves",
             "  family  name the family act: a meme root leaves with its slots, one change",
@@ -11744,6 +11757,7 @@
             "  absent (exit 3)  nothing stood to remove",
             "  refused (exit 4)  the family law or a lower layer refused; the consequence rides the answer and nothing moved",
             "  conflict (exit 4)  the base read stale; nothing moved",
+            "  dry (exit 0)  a dry delete: the answer the real delete would give, the base it needs and the carrier's seat hints; nothing landed",
             "",
             "Skins (one affordance, every door):",
             "  cli: lares tiddler delete",
@@ -11771,7 +11785,7 @@
             "A rendered tiddler (one carrying `rendered-from`) refuses `rendered-derives`: only the renderer writes it, and it leaves when its source drops `projection: rendered`. A `$:/` title refuses too. `recipe` removes through that wiki's engine; `bag` removes from that one bag through its store, `family` taking the family there too. A delete writes the face it wears and never another (`cross-face-write-refused`).",
             "Gate (the carrier's testimony; the door checks): write: the Kahu predicate, then the face's write cap on each layer the consequence writes.",
             "Refuses: wiki-unreached · conflict · tiddler-delete-in-a-family · delete-mode-needed · reveal-top-unwritable · rendered-derives · cross-face-write-refused.",
-            "Answers band: removed · absent · refused · conflict.",
+            "Answers band: removed · absent · refused · conflict · dry.",
             "Mirrors: lares tiddler delete (affordance engine.record.removes).",
             "Examples, cures, every band: tiddler_get(title=\"lar:///ha.ka.ba/lares/afford/engine.record.removes\", recipe=\"lares\", meme=True, grain=\"slot\", slot=\"#/shows\")"
           ]
@@ -11781,7 +11795,8 @@
             "  removed (exit 0)  the act landed; mode reads plain, kapae, reveal or cut",
             "  absent (exit 3)  nothing stood to remove",
             "  refused (exit 4)  the family law or a lower layer refused; the consequence rides the answer and nothing moved",
-            "  conflict (exit 4)  the base read stale; nothing moved"
+            "  conflict (exit 4)  the base read stale; nothing moved",
+            "  dry (exit 0)  a dry delete: the answer the real delete would give, the base it needs and the carrier's seat hints; nothing landed"
           ],
           "#/edges": [
             "  lar:///ha.ka.ba/lares/api/pono/affordance",
@@ -11888,6 +11903,7 @@
             "  absent (exit 3)  nothing stood to remove",
             "  refused (exit 4)  the family law or a lower layer refused; the consequence rides the answer and nothing moved",
             "  conflict (exit 4)  the base read stale; nothing moved",
+            "  dry (exit 0)  a dry delete: the answer the real delete would give, the base it needs and the carrier's seat hints; nothing landed",
             "",
             "Skins (one affordance, every door):",
             "  cli: lares tiddler delete",
@@ -11938,7 +11954,7 @@
       "title": "lar:///ha.ka.ba/lares/afford/engine.record.removes"
     },
     "lar:///engine.record.renames": {
-      "bcc": "ni:///sha-256;uJq6bV0eUWzaEOkWtKeKeWw_zW_58iJvPj4CqCbdHPA",
+      "bcc": "ni:///sha-256;0EmQhh8ISHIrvxs86jvdz3ZZNbgRZNcDCBSmcsGWKk4",
       "calls": {
         "cli": [
           "lares tiddler rename 'Room 4' 'Room Four' --recipe default",
@@ -11966,7 +11982,8 @@
             "  renamed (exit 0)  the record moved, its referrers relinked and the forwarder stands",
             "  absent (exit 3)  no record stands at the old title",
             "  refused (exit 4)  a fence refused by name; nothing moved",
-            "  conflict (exit 4)  the base read stale; nothing moved"
+            "  conflict (exit 4)  the base read stale; nothing moved",
+            "  dry (exit 0)  a dry rename: the answer the real rename would give, the base it needs and the carrier's seat hints; nothing landed"
           ],
           "#/edges": [
             "  lar:///ha.ka.ba/lares/api/pono/affordance",
@@ -12063,6 +12080,7 @@
             "  absent (exit 3)  no record stands at the old title",
             "  refused (exit 4)  a fence refused by name; nothing moved",
             "  conflict (exit 4)  the base read stale; nothing moved",
+            "  dry (exit 0)  a dry rename: the answer the real rename would give, the base it needs and the carrier's seat hints; nothing landed",
             "",
             "Skins (one affordance, every door):",
             "  cli: lares tiddler rename",
@@ -12081,7 +12099,8 @@
             "  renamed (exit 0)  the record moved, its referrers relinked and the forwarder stands",
             "  absent (exit 3)  no record stands at the old title",
             "  refused (exit 4)  a fence refused by name; nothing moved",
-            "  conflict (exit 4)  the base read stale; nothing moved"
+            "  conflict (exit 4)  the base read stale; nothing moved",
+            "  dry (exit 0)  a dry rename: the answer the real rename would give, the base it needs and the carrier's seat hints; nothing landed"
           ],
           "#/edges": [
             "  lar:///ha.ka.ba/lares/api/pono/affordance",
@@ -12123,8 +12142,9 @@
             "  console: rename"
           ],
           "#/takes": [
-            "  mu=dry-relate  the dry summary: what the rename would land, the base it needs, landing nothing",
-            "  mu=dry-assert  the dry diff: the summary and the full diff of text and fields, landing nothing",
+            "  mu=dry  a dry run: the rename walks its law to the last step and answers the summary, landing nothing",
+            "  mu=dry-relate  the dry summary: what the rename would land, the bag and layer, the base it needs, landing nothing",
+            "  mu=dry-assert  the dry diff: the summary and each record it would move, fields before and after and text line by line, landing nothing",
             "  title <title>  the record moved, a meme root with its slots",
             "  to <title>  the title it moves to",
             "  recipe <slug>  the wiki whose engine relinks; default names the worn face's daemon wiki",
@@ -12150,8 +12170,9 @@
             "  $tw.lares.call(\"rename\", {\"title\": \"Room 4\", \"to\": \"Room Four\", \"recipe\": \"default\", \"base\": \"<hash>\"})    # a stale base moves nothing",
             "",
             "Arguments:",
-            "  mu=dry-relate  the dry summary: what the rename would land, the base it needs, landing nothing",
-            "  mu=dry-assert  the dry diff: the summary and the full diff of text and fields, landing nothing",
+            "  mu=dry  a dry run: the rename walks its law to the last step and answers the summary, landing nothing",
+            "  mu=dry-relate  the dry summary: what the rename would land, the bag and layer, the base it needs, landing nothing",
+            "  mu=dry-assert  the dry diff: the summary and each record it would move, fields before and after and text line by line, landing nothing",
             "  title <title>  the record moved, a meme root with its slots",
             "  to <title>  the title it moves to",
             "  recipe <slug>  the wiki whose engine relinks; default names the worn face's daemon wiki",
@@ -12184,6 +12205,7 @@
             "  absent (exit 3)  no record stands at the old title",
             "  refused (exit 4)  a fence refused by name; nothing moved",
             "  conflict (exit 4)  the base read stale; nothing moved",
+            "  dry (exit 0)  a dry rename: the answer the real rename would give, the base it needs and the carrier's seat hints; nothing landed",
             "",
             "Skins (one affordance, every door):",
             "  cli: lares tiddler rename",
@@ -12208,7 +12230,7 @@
             "An answer names only records this face reads and counts the rest (`withheld`); a referrer that stays home keeps its fields (`skipped`). `base` carries the hash last read: a record that moved past it answers `conflict` and nothing moves.",
             "Gate (the carrier's testimony; the door checks): write: the move, its forwarder and every relinked referrer land in the working layer through the put law.",
             "Refuses: wiki-not-anchored · rename-same-title · rename-source-layer · rename-referrers-unreachable · rename-target-stands · rename-relink-impossible · tiddler-rename-in-a-family · slot-without-root · rename-system-title · conflict.",
-            "Answers band: renamed · absent · refused · conflict.",
+            "Answers band: renamed · absent · refused · conflict · dry.",
             "Mirrors: lares tiddler rename (affordance engine.record.renames).",
             "Examples, cures, every band: tiddler_get(title=\"lar:///ha.ka.ba/lares/afford/engine.record.renames\", recipe=\"lares\", meme=True, grain=\"slot\", slot=\"#/shows\")"
           ]
@@ -12218,7 +12240,8 @@
             "  renamed (exit 0)  the record moved, its referrers relinked and the forwarder stands",
             "  absent (exit 3)  no record stands at the old title",
             "  refused (exit 4)  a fence refused by name; nothing moved",
-            "  conflict (exit 4)  the base read stale; nothing moved"
+            "  conflict (exit 4)  the base read stale; nothing moved",
+            "  dry (exit 0)  a dry rename: the answer the real rename would give, the base it needs and the carrier's seat hints; nothing landed"
           ],
           "#/edges": [
             "  lar:///ha.ka.ba/lares/api/pono/affordance",
@@ -12315,6 +12338,7 @@
             "  absent (exit 3)  no record stands at the old title",
             "  refused (exit 4)  a fence refused by name; nothing moved",
             "  conflict (exit 4)  the base read stale; nothing moved",
+            "  dry (exit 0)  a dry rename: the answer the real rename would give, the base it needs and the carrier's seat hints; nothing landed",
             "",
             "Skins (one affordance, every door):",
             "  cli: lares tiddler rename",
@@ -20785,7 +20809,7 @@
       ]
     }
   },
-  "hash": "sha256-a3202e0dcf71173dd87ba7397beacde821152fac78020eaa6687bf1198313ce3",
+  "hash": "sha256-4ea7e5a71946aaad2aafd2235cc9ad080616c5ed7c988be01bbfd11f3337021c",
   "index": {
     "cli": [
       "  lares act CLEAR  empty a bag but keep its identity; the effect log stays",
