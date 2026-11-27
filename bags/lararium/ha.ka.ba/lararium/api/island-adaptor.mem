@@ -75,8 +75,8 @@ title lands absent. Only an unbagged change lands its own record. (the shadow-vs
 
 ''I-3 Single forwarding path for all origins.''
 Every inbound change — `crdt-remote`, `canon-hydrate`, `lares-verb`, `tw-local` — flows through
-the one landing queue. No origin gets special-cased to bypass it. Seed replay and live changes share
-the queue and its slices.
+the one landing queue. No origin gets special-cased to bypass it. The waves wave zero leaves for boot (boot-set ground, the boot's
+gap, a bare boot's whole seed) and live changes share the queue and its slices.
 
 ''I-4 Outbound save.''
 `saveTiddler` refuses a title that never persists (`neverPersists`: the volatile VM plane and the
@@ -110,7 +110,7 @@ queue as ONE family (`enqueueFamily`), and the queue lands it inside one slice.
 ''I-8 A stopped shore holds no account of the wiki.''
 `stop()` awaits acts in flight, stops the queue, flushes every marked hand, removes the door it
 installed, and clears the ledger, the sent values, the hand bases, the last-write bags and the
-unlanded marks. A restart seeds afresh and turns resident at its own seed checkpoint.
+unlanded marks. A restart stands its start baseline afresh from the wiki, as TW5's Syncer reads `readTiddlerInfo` at birth.
 
 ''I-9 A slice lands in one wiki tick.''
 The adaptor hands the queue a split lander (`SliceLander`): `_prepareLanding` does every read that awaits
@@ -125,11 +125,20 @@ slice order.
 
 !! The seed
 
-The recipe (`buildIslandRecipe`) installs the landing queue and starts the adaptor, then drives
-`AutomergeDocStore.emitInitialReplay()` per bag. Each existing record flows through
-the provider → `adaptor.onUriChanged` → the landing queue.
-The recipe then arms the seed checkpoint (`armSeedCheckpoint`), which resolves once the queue and
-its tracked work settle and turns the shore resident (a seed landing that fails twice rejects it); the kernel awaits it before `behavior.onEa` runs.
+The shore learns what already stands the way TW5's syncer does (`Syncer.readTiddlerInfo`): at birth, never by
+hearing the corpus again. `mountIslandShore` hands the adaptor the island seed (`standFromSeed`): one landed row per
+preloaded title (the wiki's value, with the seed's bag and heads), each layer's heads, and the draft bases. `start()`
+then stands a START BASELINE for every other persisting title the wiki holds (a startup action's creation): the hand
+decision and the bridge's foam test read it as synced, so a boot-pass write stands in the VM and never saves, as in
+native TW5 and in the glass. A title leaves the baseline the first time it moves. The kahua shadow stamps ride the
+seed's preloads as ordinary tiddlers. No layer re-emits its records at mount.
+
+A flush settles only where a landed row or the start baseline covers its title; anywhere else the state leaves
+and the store decides. The seed checkpoint (`armSeedCheckpoint`) resolves once the mount's own waves drain; the
+kernel awaits it before `behavior.onEa` runs, as an ordering, never as a gate on hands.
+
+A layer that joins later (`CompositeStore.addLayer`) lands its VISIBLE DELTA as one wave: one change per title
+whose topmost record the join moves, nothing for a title a higher layer already covers.
 
 <<~ ahu slot=`#/edges`>>
 
@@ -146,6 +155,6 @@ its tracked work settle and turns the shore resident (a seed landing that fails 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ocbUsq4gKzi3FKyA0NswQ-7uw8VPOn_RohCirwY18Kw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mOHmqcLWSct5Pmpa5fM1ZZ1UTR-lBRqiRO5GnLmTaQw`>>
 
 <<^ code=`&#x0004;` to=`?`>>
