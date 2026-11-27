@@ -109,7 +109,7 @@ async function serve(): Promise<void> {
   const server = servePulama({
     holder, derives: PULAMA_SESSION_DERIVES, onLog: log,
     // THE HAND'S KEY reads off the face's own roster row, through this pūlama's seated holder. An offer whose every vouched half
-    // reads gone (its face no longer stands here) reads as no offer: the vessel enters by its image.
+    // reads gone (its face stands here nowhere) reads as no offer: the vessel enters by its image.
     gate: kukuluGate({ holder, hand: handKey, rite, image: () => image.raised(), admissions, halfRests: halfRestsAtPulama({ holder, records }) }),
   });
   // THE LIVE RITE A VEST RIDES reads the same rite port the gate does, so the vest's begin and the next vessel's hello share one turn.

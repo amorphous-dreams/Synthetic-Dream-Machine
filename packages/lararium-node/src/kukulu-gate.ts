@@ -23,7 +23,7 @@
  * tesserae name no tessera per face refuses `admission-tesserae-mismatch`.
  *
  * AN ORPHAN OFFER READS AS NO OFFER (Kubernetes ownerReferences): each vouch binds one begun half (its face's group, the line,
- * the head and the image). Where every vouch verifies and every half it names no longer rests (abandoned, landed, or absent,
+ * the head and the image). Where every vouch verifies and every half it names rests nowhere (abandoned, landed, or absent,
  * however it went: `halfRests` answers false for each), the offer owns nothing, and the vessel enters by its image as above;
  * no lei reads and no return spends. One half that rests, or reads unknown, keeps the offer whole.
  *
@@ -273,7 +273,7 @@ export function kukuluGate(a: {
 }
 
 /**
- * THE HALF A VOUCH NAMES, as the pūlama itself can read it: a face whose group stands at this pūlama no longer (rehived, or
+ * THE HALF A VOUCH NAMES, as the pūlama itself can read it: a face whose group stands at this pūlama nowhere now (rehived, or
  * never founded here) holds no half anywhere a vessel lends from, so its half reads absent, false; a guest half the pūlama's
  * own records rest unlanded for that face, line, head and image reads true; anything else reads null (the vessel's own halves
  * rest in a document the pūlama never opens), and the offer serves as it rides.
