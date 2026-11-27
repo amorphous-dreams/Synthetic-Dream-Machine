@@ -62,7 +62,7 @@ The fences refuse by name: a family's `type` and carriage fields derive from its
 <<has entity=`arg` name=`title` params=`takes/title needs/required seat/1 as/<title> ~ the record written, any right-intent string; a slot title <root>#/x names one slot`>>
 <<has entity=`arg` name=`text` params=`takes/words ~ the new text: on a root the whole carrier, on a slot its body`>>
 <<has entity=`arg` name=`file` params=`takes/host-path skins/cli ~ the new text from a host file, or - for stdin; a pointer kind stages its bytes and lands as a pointer`>>
-<<has entity=`arg` name=`append` params=`takes/words ~ words that land at the end of the standing text, no base; a terminal reads them from a host path or - for stdin`>>
+<<has entity=`arg` name=`append` params=`takes/words ~ words that land at the end of the standing text, no base; a terminal's append=- reads them from stdin`>>
 <<has entity=`arg` name=`replace` params=`takes/span needs/all-of:replace,with ~ one exact span of the standing text, taken as written`>>
 <<has entity=`arg` name=`with` params=`takes/words needs/all-of:replace,with ~ the words the span turns into; empty removes the span`>>
 <<has entity=`arg` name=`fields` params=`takes/json ~ field names to string values; a list rides as TiddlyWiki writes it`>>
@@ -138,10 +138,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/cli`>>
 
-!!! lares tiddler put
+!!! lares put
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`spells/[[lares tiddler put]] ~ the terminal; file and append read a host path, or - for stdin`>>
+<<has entity=`skin` name=`cli` params=`spells/[[lares put]] grammar/call ~ the terminal; file=<path> reads the text from a host file, and file=- or append=- from stdin`>>
 ```
 
 <<~/ahu>>
@@ -178,6 +178,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8khAqZ7zDZdKaTeD65XmDZX4ZwuPHq87uXDOXm4n1Xg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;b1eLGhfEAK1l2kLGtNCcd9tu1z1HTHeW0bFPnXy25tQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

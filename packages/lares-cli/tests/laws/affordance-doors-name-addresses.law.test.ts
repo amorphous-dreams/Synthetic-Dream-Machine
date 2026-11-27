@@ -98,19 +98,21 @@ describe("W1 · every door names one address; every skin names a live door", () 
     });
   });
 
-  test("SEED: the core verbs route to their carriers on both skins; `wiki filter` rides as one part of the wiki door", () => {
+  test("SEED: the call verbs route to their carriers on both skins; `get` chooses by param and the burned spellings route nowhere", () => {
     const routes = pack().routes;
     expect(routes["cli"], REBAKE).toMatchObject({
-      "tiddler get": "lar:///engine.record.reads", "tiddler put": "lar:///engine.record.puts", "tiddler delete": "lar:///engine.record.removes",
-      "tiddler rename": "lar:///engine.record.renames", "wiki filter": "lar:///engine.filter.pages",
+      put: "lar:///engine.record.puts", delete: "lar:///engine.record.removes", rename: "lar:///engine.record.renames",
     });
+    // `get` skins two carriers (`by/title`, the default, and `by/filter`): a shared word claims no route of its own.
+    expect(routes["cli"]?.["get"], REBAKE).toBeUndefined();
+    for (const burned of ["tiddler get", "tiddler put", "tiddler delete", "tiddler rename", "wiki filter"]) expect(routes["cli"]?.[burned], `${burned}; ${REBAKE}`).toBeUndefined();
     expect(routes["mcp"], REBAKE).toMatchObject({
       tiddler_get: "lar:///engine.record.reads", tiddler_put: "lar:///engine.record.puts", tiddler_delete: "lar:///engine.record.removes",
       wiki_filter: "lar:///engine.filter.pages",
     });
-    expect(pack().doors["tiddler"]?.addresses.length, REBAKE).toBe(4);
-    expect(pack().doors["wiki"], "a `door/part` skin gathers no door entry: the wiki door keeps its own table").toBeUndefined();
-    expect(partDoors()).toEqual(["wiki"]);
+    expect(pack().doors["tiddler"], REBAKE).toBeUndefined();
+    expect(pack().doors["wiki"], "the wiki door keeps its own table").toBeUndefined();
+    expect(partDoors(), "no `door/part` skin stands once `wiki filter` burned").toEqual([]);
   });
 
   test("★ every skin in the pack names a door a live table holds ★", () => {

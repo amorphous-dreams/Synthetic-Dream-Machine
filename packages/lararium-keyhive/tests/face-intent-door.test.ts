@@ -569,7 +569,9 @@ describe("what ran stays ran for the process, and a detached door publishes noth
       await holding;
       if (detach) stop();
       open(); await settle();
-      if (!detach) stop();
+      // The attached control waits out the door's own pass (its signing and receipt write run on crypto that a loaded floor
+      // stretches past any fixed count of ticks), then detaches; the detached run above dropped its attach before the gate opened.
+      if (!detach) { await door.heed(); stop(); }
       const outcomes = intentEntryRecordsOfGroup(shared.doc, f.group).filter((r) => (r as { body: { entry: string } }).body.entry === "outcome").length;
       // The run stays settled either way: a second door over this plane never runs it again.
       const other = vi.fn(async () => ({ recordCid: "two" }));

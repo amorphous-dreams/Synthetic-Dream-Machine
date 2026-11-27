@@ -4,7 +4,7 @@
  * ticket and by green sha, the ticket block, the byte rows) runs in the wiki VM, in the `floor-queue` filter operator
  * (`packages/lararium-tw5/src/floor-ledger.ts`); this tool only APPENDS lines and ASKS views, through the doors:
  *
- *   append  `lares tiddler put <ledger> --recipe default --append - --create`   (two appends at once both land)
+ *   append  `lares put title=<ledger> append=- create=true`   (two appends at once both land)
  *   ask     `lares wiki render --recipe default --form text --text '<$text text={{{ [[<ledger>]floor-queue[<view>],[<arg>]…] }}}/>'`
  *
  * While the doors stand dark (a locked vessel, no hearth), an append lands in the flat mirror `<lock dir>/.floor/queue.log`
@@ -135,7 +135,7 @@ export function mirrorPath(env = process.env) {
 }
 
 /** Append lines through the door; while it stands dark, to the mirror. Answers where they landed. */
-export function append(lines, { env = process.env, door = (text) => lares(['tiddler', 'put', LEDGER, '--recipe', 'default', '--append', '-', '--create'], { env, input: text }) } = {}) {
+export function append(lines, { env = process.env, door = (text) => lares(['put', `title=${LEDGER}`, 'append=-', 'create=true'], { env, input: text }) } = {}) {
   const text = `${lines.join('\n')}\n`;
   const r = door(text);
   if (r.ok) return { via: 'door' };

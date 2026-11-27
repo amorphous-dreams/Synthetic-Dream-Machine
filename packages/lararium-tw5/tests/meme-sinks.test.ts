@@ -83,7 +83,7 @@ describe("compositeMemeSink — a bag the island mounts writable", () => {
     expect(() => compositeMemeSink(composite, bagUri("nope"), ORIGIN)).toThrow(bagUri("nope"));
   });
 
-  test("★ an unread layer beneath the bag (a skipped recipe slot, a stand-in blank) reads as beneath: the tiddler delete --family raises a kāpae; CONTROL: none, it retracts ★", async () => {
+  test("★ an unread layer beneath the bag (a skipped recipe slot, a stand-in blank) reads as beneath: the delete family=true raises a kāpae; CONTROL: none, it retracts ★", async () => {
     for (const unread of ["unreached", "stand-in", "none"] as const) {
       const composite = new CompositeStore();
       const sdm = new MemoryTiddlerStore(bagUri("sdm"));

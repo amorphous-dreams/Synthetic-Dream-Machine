@@ -18,8 +18,8 @@
  *   UNREAD <what>                  a read that refused (diff, tree, edges, weights): the fold owes MORE for it, never less
  *
  * ── THE ASK ──────────────────────────────────────────────────────────────────────────────────────────────────────────
- * Through the filter door first: `lares wiki filter '[[<seam table>]floor-owes[runs],[<facts, percent-encoded>]]' --recipe
- * default --all`. The answer's header row (`OWES facts=<n> table=<sha256> …`) must carry the count of fact lines
+ * Through the filter door first: `lares get filter='[[<seam table>]floor-owes[runs],[<facts, percent-encoded>]]'
+ * all=true`. The answer's header row (`OWES facts=<n> table=<sha256> …`) must carry the count of fact lines
  * sent; a door that answers nothing, another leading row or another count reads as a dark door (a wiki holding no such
  * operator answers an empty list, never an error). THE TABLE CHECKSUM: the header's `table=` must equal the digest of
  * DEVELOP'S OWN seam table (`git show origin/develop:<the table>`); a door folding another table (a vessel standing on
@@ -211,7 +211,7 @@ export const askFilter = (view, facts) => `[[${SEAMS}]floor-owes[${view}],[${enc
 
 function filterDoor(filter, { env = process.env } = {}) {
   const [cmd, lead] = laresCommand(env);
-  const r = spawnSync(cmd, [...lead, "wiki", "filter", filter, "--recipe", "default", "--all"], { encoding: "utf8", env, stdio: ["ignore", "pipe", "pipe"], timeout: 120_000, maxBuffer: 1 << 28 });
+  const r = spawnSync(cmd, [...lead, "get", `filter=${filter}`, "all=true"], { encoding: "utf8", env, stdio: ["ignore", "pipe", "pipe"], timeout: 120_000, maxBuffer: 1 << 28 });
   return { ok: r.status === 0 && !r.error, stdout: r.stdout ?? "", why: oneLine((r.error?.message || r.stderr || `exit ${r.status}`).trim().split("\n")[0]) };
 }
 

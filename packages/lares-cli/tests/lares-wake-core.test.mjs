@@ -30,7 +30,7 @@ test("the wake carries the memory index beside the frame and the homes line", as
   assert.match(context, /read a row: tiddler_get\(title=<title>, recipe="default", meme=true\)/);
   assert.doesNotMatch(context, /after=/);
   // The read rides the vessel's own door: the daemon wiki, the index tag, title and description, a row limit, a byte cap.
-  assert.deepEqual(calls.index, ["wiki", "filter", "[tag[stage/index]] -[lares.stage[state]]", "--recipe", "default", "--fields", "title,description", "--limit", "32", "--max-bytes", String(INDEX_BYTES), "--json"]);
+  assert.deepEqual(calls.index, ["get", "filter=[tag[stage/index]] -[lares.stage[state]]", "fields=title,description", "limit=32", `max-bytes=${INDEX_BYTES}`, "--json"]);
   assert.deepEqual(calls.index, indexArgv());
   assert.deepEqual(calls.observe, ["vessel", "stand", "--observe", "--json"]);
 });
@@ -139,7 +139,7 @@ test("one budget bounds all three reads, and each read left open reports itself"
 test("wake-index-lists-the-rest: the index leaves the state rows to their own block", () => {
   const { INDEX_FILTER } = core;
   assert.equal(INDEX_FILTER, "[tag[stage/index]] -[lares.stage[state]]");
-  assert.equal(indexArgv()[2], INDEX_FILTER);
+  assert.equal(indexArgv()[1], `filter=${INDEX_FILTER}`);
   // The render keeps the door's order: the wake never re-sorts.
   const block = renderIndex(JSON.parse(page([row("project/first", "F."), row("feedback/second", "S.")])));
   assert.ok(block.indexOf("project/first") < block.indexOf("feedback/second"));
@@ -175,7 +175,7 @@ test("wake-leads-with-rows-in-play: every wake prints the state rows before the 
     // The read derives the rows by their address prefix, slot titles (`…#/entry`) left out: no list of addresses rides the wake.
     // No sort by `modified`: the stage memes carry no such field, so the door's title order stands.
     assert.deepEqual(calls.state, stateArgv());
-    assert.equal(calls.state[2], "[lares.stage[state]!regexp[#]]");
+    assert.equal(calls.state[1], "filter=[lares.stage[state]!regexp[#]]");
   }
   // CONTROL: no handoff row leaves the door's order as it stands.
   const bare = await wake({ run: runner({ observe: answered(UP), homes: answered("h"), index: answered(page([])), state: answered(statePage(STATE.filter((r) => !r.title.endsWith("/handoff")))) }) });
@@ -410,9 +410,9 @@ test("wake-offers-the-law: the pins lead, marked, then the first law rows they l
   assert.doesNotMatch(context, /law-08/);
   // Both reads ride the vessel's own filter door over the daemon wiki.
   assert.deepEqual(calls.law, lawArgv());
-  assert.deepEqual(calls.law.slice(0, 7), ["wiki", "filter", LAW_INDEX_FILTER, "--recipe", "default", "--fields", "title,description,role"]);
+  assert.deepEqual(calls.law.slice(0, 3), ["get", `filter=${LAW_INDEX_FILTER}`, "fields=title,description,role"]);
   assert.deepEqual(calls.lawPins, lawPinsArgv());
-  assert.deepEqual(calls.lawPins.slice(0, 5), ["wiki", "filter", LAW_PINS_FILTER, "--recipe", "default"]);
+  assert.deepEqual(calls.lawPins.slice(0, 2), ["get", `filter=${LAW_PINS_FILTER}`]);
 });
 
 test("the law block: an unread pins read marks none; an empty answer names the config; a fault names its cause", async () => {

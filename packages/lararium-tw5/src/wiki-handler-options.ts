@@ -60,7 +60,7 @@ export interface WikiMintHandlerOptions {
    * THE ONE DRAFT RESOLVER (`resolveSlotDoc`, seated in the keyhive-holding daemon): the wiki's draft
    * doc — the PersonaGroup × fingerprint binding when the vessel holds a seat, else the device floor
    * keyed by the vessel DID — and which of the two it reached. Every site that names the draft doc
-   * (wiki init, prune-stale, tiddler put --bag <a wiki slot>, the mounts) reads through it; none keys its own.
+   * (wiki init, prune-stale, lares put bag=<a wiki slot>, the mounts) reads through it; none keys its own.
    */
   readonly resolveDraftDoc: (slug: string) => Promise<{ readonly url: string; readonly reach: SlotReach }>;
 }

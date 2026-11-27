@@ -201,7 +201,7 @@ export function mandateRead(uri: string, fields: Readonly<Record<string, string>
   const stored = fields["mandate-hash"];
   const seed = fields[MANDATE_SEED];
   if (stored === undefined && seed === undefined) {
-    throw new SpiritRefusal("mandate-unknown", `mandate-unknown: no mandate stands at ${uri} under the face that answered; nothing started. List the mandates this face holds: \`lares wiki filter '[tag[${MANDATE_TAG}]]' --recipe default\``, 4);
+    throw new SpiritRefusal("mandate-unknown", `mandate-unknown: no mandate stands at ${uri} under the face that answered; nothing started. List the mandates this face holds: \`lares get filter='[tag[${MANDATE_TAG}]]'\``, 4);
   }
   const again = `Its offerer lands the mandate again and names the ref that answer prints: \`lares spirit mandate ${fields["pet"] ?? "<pet>"}#${fields["instance"] ?? "<n>"} --file <carrier>\``;
   let hash: string;
@@ -322,7 +322,7 @@ export function lanesHold(coordinator: SpiritMandate, open: readonly string[], o
   if (held.length < coordinator.lanes) return null;
   const cure = coordinator.lanes === 0
     ? `${coordinator.tag}'s mandate names no lanes, which reads as zero. A hand lands it a mandate naming a ceiling: \`lares spirit mandate ${shq(coordinator.tag)} --file <carrier> --grants ${SUMMONS_GRANT} --lanes <n>\``
-    : `Wait for a hand-back, which frees its lane: \`lares wiki filter '${openLanesFilter(coordinator.tag)}' --recipe default\` lists the arms still out, and each hands back by \`lares spirit handback <pet>#<n> --record <uri>\``;
+    : `Wait for a hand-back, which frees its lane: \`lares get filter='${openLanesFilter(coordinator.tag)}'\` lists the arms still out, and each hands back by \`lares spirit handback <pet>#<n> --record <uri>\``;
   return new SpiritRefusal("coordinator-lanes-full", `coordinator-lanes-full: ${coordinator.tag} holds ${held.length} of ${coordinator.lanes} arm lane(s) open; nothing started. ${cure}`, 4);
 }
 
@@ -384,6 +384,9 @@ export function edgeRead(uri: string, fields: Readonly<Record<string, string>>):
   return { uri, mandateHash: fields["mandate-hash"], offerer: fields["offerer"] ?? "", instance: fields["instance"] ?? "", launched: fields["launched"] || null, handback: fields["handback"] || null };
 }
 
+/** The call's own face param: `face=N` rides a call as any other param. */
+const faceParam = (face: number | null): string => (face === null ? "" : ` face=${face}`);
+/** A door's face flag: `lares spirit <verb>` keeps its flag table, so `--face N` rides it. */
 const faceFlag = (face: number | null): string => (face === null ? "" : ` --face ${face}`);
 
 /**
@@ -392,20 +395,20 @@ const faceFlag = (face: number | null): string => (face === null ? "" : ` --face
  * paths and caps it holds, the hand-back it owes, then the mandate's own words.
  */
 export function mandateWakeLines(mandate: SpiritMandate, cut = 2400): string {
-  const face = faceFlag(mandate.face);
-  const words = mandate.text.length <= cut ? mandate.text : `${mandate.text.slice(0, cut)}\n… cut at ${cut} chars; the whole mandate: lares tiddler get ${shq(mandate.uri)} --recipe default${face}${mandate.family ? " --meme --all" : ""}`;
+  const face = faceParam(mandate.face);
+  const words = mandate.text.length <= cut ? mandate.text : `${mandate.text.slice(0, cut)}\n… cut at ${cut} chars; the whole mandate: lares get title=${shq(mandate.uri)} recipe=default${face}${mandate.family ? " mu=assert" : ""}`;
   return [
     `mandate: ${refLine(mandate.uri, mandate.hash)} · you wake as ${mandate.tag}, offered by ${mandate.offerer || "hand"}${mandate.face === null ? "" : ` · face h${mandate.face}`}${mandate.model === null ? "" : ` · model ${mandate.model}`}`,
-    `om (the seed, then the card below): lares tiddler get 'lar:///ha.ka.ba/lares/api/noosphere-boot' --recipe default${face} --meme --all`,
-    ...mandate.reads.map((f) => `reads: lares wiki filter ${shq(f)} --recipe default${face} --collapse --fields title,description`),
-    ...mandate.links.map((l) => `link: lares tiddler get ${shq(l)} --recipe default${face} --meme --skinny`),
+    `om (the seed, then the card below): lares get title=lar:///ha.ka.ba/lares/api/noosphere-boot recipe=default${face} mu=assert`,
+    ...mandate.reads.map((f) => `reads: lares get filter=${shq(f)} recipe=default${face} mu=many-relate fields=title,description`),
+    ...mandate.links.map((l) => `link: lares get title=${shq(l)} recipe=default${face} mu=relate`),
     `reach: ${launchReach(mandate).split(",").join(" ")}`,
     ...(mandate.workdir === null ? [] : [`workdir: ${mandate.workdir}`]),
     ...(mandate.log === null ? [] : [`log: ${mandate.log}`]),
     ...(mandate.paths.length === 0 ? [] : [`paths: ${mandate.paths.join(" ")}`]),
     ...(mandate.caps.length === 0 ? [] : [`caps: ${mandate.caps.join(" ")}`]),
     ...(mandate.grants.length === 0 ? [] : [`grants: ${mandate.grants.join(" ")}${mandate.grants.includes(SUMMONS_GRANT) ? ` · ${mandate.lanes} arm lane(s)` : ""}`]),
-    `hand back${mandate.handbackShape === "" ? "" : ` (${mandate.handbackShape})`}: land the record, then free the lane: lares spirit handback ${shq(mandate.tag)} --record <uri>${face}`,
+    `hand back${mandate.handbackShape === "" ? "" : ` (${mandate.handbackShape})`}: land the record, then free the lane: lares spirit handback ${shq(mandate.tag)} --record <uri>${faceFlag(mandate.face)}`,
     "",
     words,
   ].join("\n");

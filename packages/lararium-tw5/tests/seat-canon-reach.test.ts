@@ -1,6 +1,6 @@
 /**
  * seat-canon-reach.test — the AI seat never writes house canon live (reach-mu decision T4-2). The daemon mount holds the Kahu
- * chair and every seat call acts as the mount, so the Kahu predicate alone lets a seat-asked `tiddler put --bag lares` land. The
+ * chair and every seat call acts as the mount, so the Kahu predicate alone lets a seat-asked `lares put bag=lares` land. The
  * asker's hand rides the verb context (`ctx.asker`, set by the vessel's door, never read off args), and a seat asker on a house
  * canon bag refuses `seat-canon-reach` before the Kahu read, naming the copy-up and offer road.
  *
@@ -69,7 +69,7 @@ const reasonOf = async (go: () => Promise<unknown>): Promise<string | null> => {
 };
 
 describe("seat-canon-reach — the AI seat never writes house canon live", () => {
-  test("RED: a seat-asked put --bag lares under the mount's Kahu chair refuses seat-canon-reach and moves no byte", async () => {
+  test("RED: a seat-asked put bag=lares under the mount's Kahu chair refuses seat-canon-reach and moves no byte", async () => {
     const r = await rig();
     try {
       const before = r.heads();

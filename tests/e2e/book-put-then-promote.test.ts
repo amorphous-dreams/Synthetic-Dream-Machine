@@ -3,7 +3,7 @@
  *
  * The walk `tools/mesh-scenarios.sh meme` rides on its first hearth, on one staged vessel:
  *
- *   wiki init <book>  →  tiddler put <uri> --recipe <book>  →  act MOVE <uri> --from <book working> --to <book canon>
+ *   wiki init <book>  →  put title=<uri> recipe=<book>  →  act MOVE <uri> --from <book working> --to <book canon>
  *
  *   B1 RED      the put's own answer names the layer it rested in, and a MOVE from THAT layer carries the family.
  *   B2 CONTROL  the canon read answers the put's bytes (the hash the put answered).
@@ -39,7 +39,7 @@ describe.skipIf(!stagedTarget)("a minted book takes a put and promotes it", () =
 
     const file = join(lar.root, "npc.mem");
     writeFileSync(file, MEME);
-    const put = await lar.cli(["tiddler", "put", URI, "--recipe", BOOK, "--file", file, "--json"]);
+    const put = await lar.cli(["put", `title=${URI}`, `recipe=${BOOK}`, `file=${file}`, "--json"]);
     expect(put.json?.["ok"], `put refused: ${JSON.stringify(put.json)}`).toBe(true);
     const putData = put.json?.["data"] as { bag?: string; canonicalHash?: string } | undefined;
     expect(putData?.bag, `the put names its layer: ${JSON.stringify(put.json)}`).toBe(WORKING);
@@ -48,7 +48,7 @@ describe.skipIf(!stagedTarget)("a minted book takes a put and promotes it", () =
     expect(moved.json?.["ok"], `MOVE refused: ${JSON.stringify(moved.json)}`).toBe(true);
     expect(Number((moved.json?.["data"] as { moved?: unknown } | undefined)?.moved ?? 0)).toBeGreaterThan(0);
 
-    const got = await lar.cli(["tiddler", "get", URI, "--bag", BOOK, "--meme", "--all", "--json"]);
+    const got = await lar.cli(["get", `title=${URI}`, `bag=${BOOK}`, "mu=assert", "--json"]);
     expect(got.json?.["ok"], `canon read refused: ${JSON.stringify(got.json)}`).toBe(true);
     expect((got.json?.["data"] as { meme?: { canonicalHash?: string } } | undefined)?.meme?.canonicalHash).toBe(putData?.canonicalHash);
   }, 300_000);

@@ -143,7 +143,7 @@ describe.skipIf(wikiSkip)(`outbound bridge — a live wiki change reaches the ad
     expect(seen.every((v) => v === false), "the guard read raised inside `change` — the trap closed; retire this measurement").toBe(true);
   });
 
-  test("(6) SEAM anchor→store: `$tw.lares.meme.place` (the anchor `tiddler put`, no target) → its records reach the working store, not `$tw.wiki` alone", async () => {
+  test("(6) SEAM anchor→store: `$tw.lares.meme.place` (the anchor put, no target) → its records reach the working store, not `$tw.wiki` alone", async () => {
     const receipt = await lares.meme.place(URI, meme(["/a", "/b"]));
     expect(receipt.decision).toBe("ingest");
     expect(wiki.getTiddler(`${URI}#/a`), "the placement never reached the wiki").toBeTruthy();

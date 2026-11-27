@@ -25,7 +25,7 @@ describe("frozen filter conformance suite", () => {
       const { id, got, want } = reading(engine, test);
       expect(got, id).toEqual(want);
     }
-  });
+  }, 60_000);   // a whole wiki boots and runs every section case: a loaded floor slot runs it past the 5 s default
 
   it("a host-bound case pins what the frozen world owns and never the engine's own store", async () => {
     // An engine whose store holds a title the frozen world never named stands in for a rebuilt house plugin.

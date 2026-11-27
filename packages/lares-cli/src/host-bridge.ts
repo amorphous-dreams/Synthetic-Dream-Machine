@@ -152,12 +152,14 @@ export function decideRoute(input: RouteInput): Route {
   if ((env["LAR_ROOT"] ?? "").trim() !== "") return "local";
   if ((env[IN_CONTAINER_ENV] ?? "").trim() !== "") return "local";
   const head = argv[0];
-  if (head === undefined || head.startsWith("-") || asksHelp(argv)) return "local";
+  // A CALL BY ADDRESS OR BY SIGIL answers in the vessel (comms-ux-enacts landing 8): `lares lar:///…` and `lares -` forward.
+  const called = head === "-" || (head ?? "").startsWith("lar:///");
+  if (head === undefined || (head.startsWith("-") && !called) || asksHelp(argv)) return "local";
   let args: ParsedArgs;
   try { args = parseArgs(argv); }
   catch (err) { if (err instanceof ArgsError) return "local"; throw err; }
   const name = args.command as string;
-  if (!SHIM_VERBS.has(name)) {
+  if (!SHIM_VERBS.has(name) && !called) {
     if (!input.commands.includes(name)) return "local";
     if (HOST_COMMANDS.has(name)) return "local";
     if (name === "meme" && memeLocal(args)) return "local";

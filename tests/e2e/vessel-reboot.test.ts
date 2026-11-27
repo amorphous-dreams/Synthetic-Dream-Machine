@@ -66,7 +66,7 @@ async function readBack(uris: readonly string[]): Promise<Map<string, string>> {
   const reader = async (): Promise<void> => {
     while (next < uris.length) {
       const uri = uris[next++]!;
-      const r = await lar.cli(["tiddler", "get", uri, "--recipe", "lares", "--meme", "--all", "--json"]);
+      const r = await lar.cli(["get", `title=${uri}`, "recipe=lares", "mu=assert", "--json"]);
       const text = (r.json?.["data"] as { meme?: { text?: unknown } } | undefined)?.meme?.text;
       out.set(uri, r.json?.["ok"] === true && typeof text === "string" ? text : `MISSING ${JSON.stringify(r.json?.["error"] ?? r.stderr.slice(-200))}`);
     }

@@ -3,7 +3,7 @@ tools: the MCP skin of THE TIDDLER DOOR (lar:///ha.ka.ba/lares/docs/pono/wiki-su
 
 VERB-TABLE PARITY. One table (`fixtures/tiddler-door-answers.json`) drives this skin and the CLI's
 (`lares-cli/tests/tiddler-door.test.ts`): for each row the tool must put the row's `{verb, args}` on the daemon's
-socket and hand the row's `output` back verbatim, the same wire and the same body `lares tiddler|wiki … --json`
+socket and hand the row's `output` back verbatim, the same wire and the same body `lares get|put|delete … --json`
 answers as `data`. Beside it: every tool states its annotations explicitly (the schema's defaults read worst-case),
 the container law refuses before the wire, a write that never landed raises by name, and a house refusal crosses the
 seat in its own words.
@@ -304,7 +304,7 @@ def test_a_line_sweep_rides_match_and_context_on_the_one_filter_door(daemon):
     assert daemon.wire() == {"verb": "wiki-filter", "args": {"recipe": "default", "filter": "[tag[x]]", "match": " is ", "context": 0}}
     t["wiki_filter"](filter="[tag[x]]", recipe="default", match="/\\bare\\b/i")
     assert daemon.wire() == {"verb": "wiki-filter", "args": {"recipe": "default", "filter": "[tag[x]]", "match": "/\\bare\\b/i"}}
-    refusal = "filter-context-alone: `context` shapes the lines `match` finds; name `--match <words>` beside it, or drop `--context`."
+    refusal = "filter-context-alone: `context` shapes the lines `match` finds; name `match=<words>` beside it, or drop `context`."
     daemon.error = {"errorMessage": refusal, "refusal": {"reason": "filter-context-alone"}}
     is_error, said = _call(_mcp(), "wiki_filter", {"filter": "[tag[x]]", "recipe": "default", "context": 1})
     assert is_error and "filter-context-alone" in said
@@ -324,12 +324,12 @@ def test_the_cards_name_the_rendered_read(daemon):
 
 
 def test_the_text_alone_rides_a_named_key_and_takes_no_parameter(daemon):
-    """S3 TEXT ALONE (course/ai-surface-gestures): the CLI's `tiddler get <title> --text` writes the text's bytes alone;
+    """S3 TEXT ALONE (course/ai-surface-gestures): the CLI's `lares get title=<title> form=text` writes the text's bytes alone;
     the MCP seat reads values, so its card names the key each lens carries the text at, and `tiddler_get` takes no
     `text` parameter (on `tiddler_put`, `text` names the words written). The record lens reads it at `grain="whole"`."""
     tools = {t.name: t for t in asyncio.run(_mcp().list_tools())}
     card = tools["tiddler_get"].description
-    assert "--text" in card and "tiddler.fields.text" in card and "meme.text" in card and "meme.slotText" in card, card
+    assert "form=text" in card and "tiddler.fields.text" in card and "meme.text" in card and "meme.slotText" in card, card
     import inspect
     assert "text" not in inspect.signature(_tools()["tiddler_get"]).parameters
     daemon.output = {"recipe": "default", "title": "Note", "lens": "record", "tiddler": {"fields": {"title": "Note", "text": "words"}, "hash": "sha256:1"}}

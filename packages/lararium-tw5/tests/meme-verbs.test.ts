@@ -2,7 +2,7 @@
  * MEME VERBS — `meme-get` / `meme-list` / `meme-project`, the daemon's read skins of the meme laws, and the bag reach
  * they lend the tiddler door (`tiddler-put` / `tiddler-delete` over one bag's own store).
  *
- * The contract: exactly one of `recipe` / `bag` (neither, or both, refuses as `no-container`); `recipe: "default"` names the host's ANCHOR,
+ * The contract: at most one of `recipe` / `bag` (both refuse as `no-container`; neither reads `recipe: "default"`); `recipe: "default"` names the host's ANCHOR,
  * the daemon's own wiki, read through its live `$tw.wiki`. A named recipe reads AS THAT WIKI: the whole stack, top-down,
  * the first bag that holds a record answering. A named bag names that one bag's own store: a put lands a family there
  * through the Confluence gate, a delete removes it there, and a bag the island cannot write fails loud, naming the bag.
@@ -319,10 +319,13 @@ describe("the container law", () => {
     await expect(makeTiddlerPutReactor(r.opts)({ recipe: "sdm", bag: "sdm", title: URI, text: meme(["a"]) }, ctx()))
       .rejects.toMatchObject({ name: "VerbRefusal", reason: "no-container" });
   });
-  test("no container at all refuses the same way", async () => {
+  test("no container at all reads the daemon wiki: the read answers what recipe default answers; a realm alone still refuses", async () => {
+    const settle = (p: Promise<Record<string, unknown>>): Promise<unknown> => p.then((v) => v, (e: Error & { reason?: unknown }) => ({ refused: e.reason ?? e.message }));
     const r = rig();
-    await expect(makeMemeGetReactor(r.opts)({ uri: URI }, ctx())).rejects.toMatchObject({ reason: "no-container" });
-    await expect(makeTiddlerPutReactor(r.opts)({ title: URI, text: meme(["a"]) }, ctx())).rejects.toMatchObject({ reason: "no-container" });
+    const neither = await settle(makeMemeGetReactor(r.opts)({ uri: URI }, ctx()));
+    expect(neither).not.toMatchObject({ refused: "no-container" });
+    expect(neither).toEqual(await settle(makeMemeGetReactor(r.opts)({ uri: URI, recipe: "default" }, ctx())));
+    await expect(makeMemeGetReactor(r.opts)({ uri: URI, realm: "a".repeat(64) }, ctx())).rejects.toMatchObject({ reason: "no-container" });
   });
   test("a read needs its uri, and a bag put its title", async () => {
     const r = rig();
@@ -700,7 +703,7 @@ describe("a family delete — a bag's family leaves through its own store", () =
 
 /**
  * A NAMED WIKI'S LAYER BY `--bag`. `--bag lar:///ha.ka.ba/wikis/<slug>/working` names the doc THE ONE resolver
- * mints for that wiki's working layer — the same doc `--recipe <slug>` walks. The bag reach answers it through
+ * mints for that wiki's working layer — the same doc `recipe=<slug>` walks. The bag reach answers it through
  * the slot resolver, beside the composite and the planes, so a wiki's own working layer reads and takes a put
  * under its bag address, and the put's answer names the layer.
  */

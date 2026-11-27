@@ -45,7 +45,7 @@ const HANDLER_FILE: Readonly<Record<string, string>> = {
   vessel: "commands/vessel", herm: "commands/herm", host: "commands/host-cmd", walk: "commands/walk-cmd",
   act: "commands/act", ingest: "commands/ingest", export: "commands/export", import: "commands/import", shore: "commands/shore", surface: "commands/surface", realm: "commands/realm",
   events: "commands/events", meme: "commands/meme", bag: "commands/bag",
-  wiki: "commands/wiki", tiddler: "commands/tiddler", repo: "commands/tunnel-door", home: "commands/tunnel-door", sense: "commands/sense", flow: "commands/flow-run",
+  wiki: "commands/wiki", get: "commands/call", put: "commands/call", delete: "commands/call", rename: "commands/call", repo: "commands/tunnel-door", home: "commands/tunnel-door", sense: "commands/sense", flow: "commands/flow-run",
   ddate: "commands/ddate-cmd", oracle: "commands/oracle-cmd", law: "commands/law", mempalace: "commands/mempalace", hooks: "commands/hooks", spirit: "commands/spirit", mcp: "commands/mcp", lei: "commands/lei", rite: "commands/rite",
   sensorium: "commands/sensorium", vault: "commands/vault", wear: "commands/wear",
   library: "commands/library", persona: "commands/persona", circle: "commands/circle", cabal: "commands/cabal",
@@ -148,6 +148,12 @@ function computedSites(files: readonly string[]): Map<string, number> {
 const BUILT_INSIDE: Readonly<Record<string, readonly string[]>> = {
   vessel: ["from", "out", "title", "plane", "source", "to", "source-uri", "draft", "watch", "debounce"],   // seed builds its act/ingest lines; both doors now carry a fold
   sense:  ["help-mempalace"],                  // the guest comparator's help rides `lares mempalace`
+  // THE CALL SHAPE: a call verb reads no flag off the line. `face=N` rides as a param, and cmdCall seats it on the options it
+  // hands the door's face reader; the shared door helpers (meme-shared's target reader) answer other doors' flags.
+  get:    ["face", "target"],
+  put:    ["face", "target"],
+  delete: ["face", "target"],
+  rename: ["face", "target"],
 };
 
 /**

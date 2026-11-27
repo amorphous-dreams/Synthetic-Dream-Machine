@@ -62,7 +62,7 @@ if (process.argv[2] === "mcp") {
     "#!/bin/sh",
     'case "$1 $2" in',
     `"vessel stand") printf '%s\\n' '{"data":{"node":{"up":true,"port":4321,"cap":"observe"}}}' ;;`,
-    `"wiki filter") case "$3" in "[lares.stage"*) printf '%s\\n' '${stateAnswer}' ;; "[lares.law.pins"*) printf '%s\\n' '${lawPinsAnswer}' ;; "[lares.law"*) printf '%s\\n' '${lawAnswer}' ;; *) printf '%s\\n' '${indexAnswer}' ;; esac ;;`,
+    `"get filter="*) case "$2" in "filter=[lares.stage"*) printf '%s\\n' '${stateAnswer}' ;; "filter=[lares.law.pins"*) printf '%s\\n' '${lawPinsAnswer}' ;; "filter=[lares.law"*) printf '%s\\n' '${lawAnswer}' ;; *) printf '%s\\n' '${indexAnswer}' ;; esac ;;`,
     "*) exit 2 ;;",
     "esac",
     "",

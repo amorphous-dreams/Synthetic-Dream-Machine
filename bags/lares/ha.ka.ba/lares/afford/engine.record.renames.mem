@@ -106,10 +106,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/cli`>>
 
-!!! lares tiddler rename
+!!! lares rename
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`spells/[[lares tiddler rename]] ~ the terminal; the old and new titles ride as <old> <new>`>>
+<<has entity=`skin` name=`cli` params=`spells/[[lares rename]] grammar/call ~ the terminal; title=<old> to=<new>`>>
 ```
 
 <<~/ahu>>
@@ -135,6 +135,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0EmQhh8ISHIrvxs86jvdz3ZZNbgRZNcDCBSmcsGWKk4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yS7CchAzVDtWGKxnLuqP5iPXO_g9NPZduouIS2Ir5Jo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

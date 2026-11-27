@@ -50,12 +50,12 @@ export function lineLensOf(match: unknown, context: unknown): LineLens | null {
   const words = typeof match === "string" ? match : match === undefined || match === null ? null : String(match);
   const hasContext = context !== undefined && context !== null && context !== "";
   if (words === null || words === "") {
-    if (words === "") throw new VerbRefusal("filter-match-empty", "filter-match-empty: `match` names the words a line must hold; name them (`--match ' is '`, or `--match '/\\bis\\b/'` for a regexp), or drop `match`.");
-    if (hasContext) throw new VerbRefusal("filter-context-alone", "filter-context-alone: `context` shapes the lines `match` finds; name `--match <words>` beside it, or drop `--context`.");
+    if (words === "") throw new VerbRefusal("filter-match-empty", "filter-match-empty: `match` names the words a line must hold; name them (`match=' is '`, or `match='/\\bis\\b/'` for a regexp), or drop `match`.");
+    if (hasContext) throw new VerbRefusal("filter-context-alone", "filter-context-alone: `context` shapes the lines `match` finds; name `match=<words>` beside it, or drop `context`.");
     return null;
   }
   const n = !hasContext ? 0 : typeof context === "number" ? context : typeof context === "string" && /^[0-9]+$/.test(context.trim()) ? Number(context.trim()) : NaN;
-  if (!Number.isInteger(n) || n < 0 || n > FILTER_CONTEXT_MAX) throw new VerbRefusal("filter-context-range", `filter-context-range: \`context\` reads a whole number of lines from 0 to ${FILTER_CONTEXT_MAX} (got ${JSON.stringify(context)}); name one in range, e.g. \`--context 2\`.`);
+  if (!Number.isInteger(n) || n < 0 || n > FILTER_CONTEXT_MAX) throw new VerbRefusal("filter-context-range", `filter-context-range: \`context\` reads a whole number of lines from 0 to ${FILTER_CONTEXT_MAX} (got ${JSON.stringify(context)}); name one in range, e.g. \`context=2\`.`);
   const spelled = /^\/(.+)\/([a-z]*)$/s.exec(words);
   if (spelled) {
     let re: RegExp;
@@ -112,7 +112,7 @@ export interface FilterRow {
   title: string; fields: Record<string, string>; omitted?: string[];
   /** The depth (`mu=many-relate` or `many-assert`): the record's has line, as a get's card names it. */
   has?: string;
-  /** The collapse lens: the bytes the record (a meme root: its whole carrier) holds, and a meme root's slots, unfolded by `tiddler get --meme --slot`. */
+  /** The collapse lens: the bytes the record (a meme root: its whole carrier) holds, and a meme root's slots, unfolded by `lares get title=… slot=#/<name> mu=assert`. */
   bytes?: number; slots?: Array<{ slot: string; bytes: number; first: string | null }>;
   /** Slot records of a collapsed meme root that rest in a layer this face may not read, left out of its slots. */
   withheld?: number;
@@ -174,7 +174,7 @@ export function pageFilterAnswer(all: readonly string[], query: FilterPageQuery 
           while (shed.lines.length > 0 && 2 + bytesOf(shed) > maxBytes) shed.lines.pop();
           shed.omitted!.push("lines");
         }
-        // A collapsed row's slots shed last, by name: the meme unfolds by `tiddler get --meme --skinny`.
+        // A collapsed row's slots shed last, by name: the meme unfolds by `lares get title=… mu=relate`.
         if (2 + bytesOf(shed) > maxBytes && shed.slots) { delete shed.slots; shed.omitted!.push("slots"); }
         if (2 + bytesOf(shed) > maxBytes && shed.bytes !== undefined) { delete shed.bytes; shed.omitted!.push("bytes"); }
         row = shed;

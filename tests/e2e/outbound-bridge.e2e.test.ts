@@ -3,10 +3,10 @@
  * e2e/outbound-bridge — the two seams between the daemon's live wiki and its disk, typed through the
  * daemon's own door.
  *
- *   B1  the OUTBOUND BRIDGE: `lares tiddler put <uri> --recipe default` lands in the daemon's `$tw.wiki`
+ *   B1  the OUTBOUND BRIDGE: `lares put title=<uri> recipe=default` lands in the daemon's `$tw.wiki`
  *       (the anchor). Nothing carries that wiki change to `IslandAdaptor.saveTiddler`, so the daemon's
- *       working store never receives it — `tiddler get --bag wikis/daemon/working --meme` answers not-found.
- *   B2  the DAEMON MIRROR: a record put DIRECTLY into `wikis/daemon/working` (`--bag`, the composite
+ *       working store never receives it — `get bag=wikis/daemon/working mu=assert` answers not-found.
+ *   B2  the DAEMON MIRROR: a record put DIRECTLY into `wikis/daemon/working` (`bag=`, the composite
  *       sink — no bridge needed) reaches the daemon's wiki, but the daemon island mounts no disk
  *       projector and its manifest carries no `diskMirrors`, so `<projections>/faces/<pet name>/wikis/daemon/…` never appears.
  *
@@ -72,10 +72,10 @@ describe.skipIf(gaps.length > 0)("★ the outbound bridge and the daemon mirror,
     else process.env["HOME"] = priorHome;
   });
 
-  test("CONTROL: explicit `--recipe default` lands in the daemon wiki and reads it back", async () => {
-    const put = await lar.cli(["tiddler", "put", uriOf(PATH_A), "--recipe", "default", "--file", join(scratch, "anchor.mem"), "--json"]);
+  test("CONTROL: explicit `recipe=default` lands in the daemon wiki and reads it back", async () => {
+    const put = await lar.cli(["put", `title=${uriOf(PATH_A)}`, "recipe=default", `file=${join(scratch, "anchor.mem")}`, "--json"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
-    const got = await lar.cli(["tiddler", "get", uriOf(PATH_A), "--recipe", "default", "--meme", "--all", "--json"]);
+    const got = await lar.cli(["get", `title=${uriOf(PATH_A)}`, "recipe=default", "mu=assert", "--json"]);
     expect(got.json?.["ok"], said(got)).toBe(true);
   });
 
@@ -85,7 +85,7 @@ describe.skipIf(gaps.length > 0)("★ the outbound bridge and the daemon mirror,
       const data = event.data as Record<string, unknown>;
       return data["bagId"] === DAEMON_WORKING && data["path"] === daemonWikiDir(lar.root);
     } }, { budgetMs: 60_000 });
-    const got = await lar.cli(["tiddler", "get", uriOf(PATH_A), "--bag", DAEMON_WORKING, "--meme", "--all", "--json"]);
+    const got = await lar.cli(["get", `title=${uriOf(PATH_A)}`, `bag=${DAEMON_WORKING}`, "mu=assert", "--json"]);
     expect(got.json?.["ok"], `the anchor placement stands in $tw.wiki alone — ${said(got)}`).toBe(true);
     expect(String(((got.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>)["text"])).toContain(`uri-path = "${PATH_A}"`);
     const at = join(daemonWikiDir(lar.root), REL(PATH_A));

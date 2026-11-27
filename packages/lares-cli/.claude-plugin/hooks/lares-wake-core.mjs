@@ -12,7 +12,7 @@
  * keep tessera in conferre's reading names its cure. A runner that answers none of them leaves the wake as it stood.
  *
  * THE LAW BEFORE THE ACT. Two more reads ride the shim beside the memory: the law index (`lawArgv`) and the pins that head it
- * (`lawPinsArgv`), both the tiddler door's `wiki filter` over the worn face's daemon wiki, so the session reads the house's
+ * (`lawPinsArgv`), both the call door's `get filter=…` over the worn face's daemon wiki, so the session reads the house's
  * law the way it reads its working memory. The filters (`@lararium/tw5`'s `daemon-law-tiddlers`) read the pin set the wiki
  * holds (`$:/config/lares/law/pins`) and the law by address, and their canon guard keeps every row to a record a canon layer
  * answers. The block reads into every session's context, so it also prints each title only as one `lar:` address within a
@@ -146,22 +146,22 @@ export const keepArgv = (workspace) => ["lei", "show", "--rite", "keep", "--bran
 export const observeArgv = () => ["vessel", "stand", "--observe", "--json"];
 /** The shim's argv for one page of the memory index, read in the worn face's daemon wiki. */
 export const indexArgv = (after) => [
-  "wiki", "filter", INDEX_FILTER, "--recipe", "default", "--fields", "title,description",
-  "--limit", String(INDEX_ROWS), "--max-bytes", String(INDEX_BYTES), "--json", ...(after ? ["--after", after] : []),
+  "get", `filter=${INDEX_FILTER}`, "fields=title,description",
+  `limit=${INDEX_ROWS}`, `max-bytes=${INDEX_BYTES}`, "--json", ...(after ? [`after=${after}`] : []),
 ];
-export const attractorsArgv = () => ["wiki", "filter", "[lares.attractors[]]", "--recipe", "default", "--limit", "32", "--json"];
+export const attractorsArgv = () => ["get", "filter=[lares.attractors[]]", "limit=32", "--json"];
 /** The shim's argv for the rows in play, read in the worn face's daemon wiki. */
 export const stateArgv = () => [
-  "wiki", "filter", STATE_FILTER, "--recipe", "default", "--fields", "title,description",
-  "--limit", String(STATE_ROWS), "--max-bytes", String(INDEX_BYTES), "--json",
+  "get", `filter=${STATE_FILTER}`, "fields=title,description",
+  `limit=${STATE_ROWS}`, `max-bytes=${INDEX_BYTES}`, "--json",
 ];
 /** The shim's argv for one page of the law index, read in the worn face's daemon wiki: title, description and role. */
 export const lawArgv = () => [
-  "wiki", "filter", LAW_INDEX_FILTER, "--recipe", "default", "--fields", "title,description,role",
-  "--limit", String(INDEX_ROWS), "--max-bytes", String(LAW_PAGE_BYTES), "--json",
+  "get", `filter=${LAW_INDEX_FILTER}`, "fields=title,description,role",
+  `limit=${INDEX_ROWS}`, `max-bytes=${LAW_PAGE_BYTES}`, "--json",
 ];
 /** The shim's argv for the pins that stand, titles alone. */
-export const lawPinsArgv = () => ["wiki", "filter", LAW_PINS_FILTER, "--recipe", "default", "--limit", String(INDEX_ROWS), "--json"];
+export const lawPinsArgv = () => ["get", `filter=${LAW_PINS_FILTER}`, `limit=${INDEX_ROWS}`, "--json"];
 /** The host CLI's argv for the homes line. */
 export const homesArgv = () => ["home", "read", "--brief"];
 

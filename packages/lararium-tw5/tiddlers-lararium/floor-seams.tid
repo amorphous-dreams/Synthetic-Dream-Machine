@@ -139,7 +139,7 @@ GUARDS verb-dispatch node-e2e composer-mounts-working-first seat-settle-before-m
 
 SEAM tiddler-meme-doors
 MOVES tiddler-meme-doors t routes/** meme-write* meme-project* delete-gate* read-gradient* modules/meme-* filters/meme-pin* house-filters*
-MOVES tiddler-meme-doors c commands/tiddler* commands/meme* commands/read* commands/export*
+MOVES tiddler-meme-doors c commands/call* commands/meme* commands/read* commands/export*
 MOVES tiddler-meme-doors m meme-provider*
 GUARDS tiddler-meme-doors e2e tiddler-door mcp-seat-binds-the-hearth meme-live-contact recipe-parity meme-realm-bag meme-two-vessel-bag book-put-then-promote
 

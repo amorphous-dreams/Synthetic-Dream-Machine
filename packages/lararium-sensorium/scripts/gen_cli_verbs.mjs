@@ -56,13 +56,14 @@ const CLI_FORMS = {
   // so it mirrors as `<host> <sub>`, the shape kapae/un_kapae ride under `sense worldline`. The family's LOCAL seats
   // ride LOCAL_SEAT below.
   meme_project: "meme project",
-  // THE TIDDLER DOOR (wiki-surface-scout #/a-lean) — every TiddlyWiki act over one record or one wiki's engine. The record
-  // verbs ride their own host (`lares tiddler get|put|delete`); the engine verbs join the `wiki` host beside the switcher
-  // (`lares wiki filter|render|status`). One table welds both skins' wire and answer: fixtures/tiddler-door-answers.json.
-  tiddler_get:    "tiddler get",
-  tiddler_put:    "tiddler put",
-  tiddler_delete: "tiddler delete",
-  wiki_filter:    "wiki filter",
+  // THE CALL DOOR (comms-ux-enacts landing 8) — every TiddlyWiki act over one record or one wiki's engine. The record
+  // verbs ride their own top-level words (`lares get|put|delete name=value…`), a filter rides `get` by its `filter=` param, and
+  // the other engine verbs join the `wiki` host beside the switcher (`lares wiki render|status`). One table welds both skins'
+  // wire and answer: fixtures/tiddler-door-answers.json.
+  tiddler_get:    "get",
+  tiddler_put:    "put",
+  tiddler_delete: "delete",
+  wiki_filter:    "get",
   wiki_render:    "wiki render",
   wiki_status:    "wiki status",
   // The DISCORDIAN CALENDAR — the MCP `ddate` tool mirrors the host verb `lares ddate`, a real top-level CLI command that runs

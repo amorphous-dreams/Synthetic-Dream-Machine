@@ -3,7 +3,7 @@
  * canonical bytes and the same `canonicalHash`.
  *
  *   server:  PUT /recipes/default/memes/… · GET /recipes/default/memes/…   (a live fork `--listen`)
- *   island:  lares tiddler put --recipe lares · lares tiddler get --recipe lares --meme --all (a staged vessel)
+ *   island:  lares put recipe=lares · lares get recipe=lares mu=assert (a staged vessel)
  *
  * On the server the wiki IS the stack; on the island the recipe is a stack of bags and the verb
  * pair writes its designated bag and reads it back (routes/get-meme.ts states the law). The bytes a
@@ -79,10 +79,10 @@ describe.skipIf(gaps.length > 0)("★ RECIPE PARITY — one meme, two doors, one
     expect(serverHash).toMatch(/^sha256:/);
   });
 
-  test("the island: tiddler put --recipe then tiddler get --recipe --meme hands back the canonical carrier under its hash", async () => {
-    const put = await lar.cli(["tiddler", "put", URI, "--recipe", "lares", "--file", join(scratch, "ab.mem"), "--json"]);
+  test("the island: put recipe= then get recipe= mu=assert hands back the canonical carrier under its hash", async () => {
+    const put = await lar.cli(["put", `title=${URI}`, "recipe=lares", `file=${join(scratch, "ab.mem")}`, "--json"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
-    const get = await lar.cli(["tiddler", "get", URI, "--recipe", "lares", "--meme", "--all", "--json"]);
+    const get = await lar.cli(["get", `title=${URI}`, "recipe=lares", "mu=assert", "--json"]);
     expect(get.json?.["ok"], said(get)).toBe(true);
     const d = (get.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>;
     islandText = String(d["text"]);

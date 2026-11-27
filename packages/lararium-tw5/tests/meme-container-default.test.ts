@@ -57,15 +57,22 @@ async function refusalsOf(container: Record<string, unknown>): Promise<{ refusal
   return { refusals, caps, fields: r.fields.size - before };
 }
 
-describe("a content verb names its container at the daemon door", () => {
-  test("every content verb refuses a missing container as no-container, before any cap ask, read or write", async () => {
-    const { refusals, caps, fields } = await refusalsOf({});
+describe("the container law at the daemon door: naming neither reads the daemon wiki", () => {
+  test("a content verb naming neither recipe nor bag answers what the explicit recipe default answers: the same caps, the same outcome, never no-container", async () => {
+    const neither = await refusalsOf({});
+    const explicit = await refusalsOf({ recipe: "default" });
+    expect(neither.refusals.map((r) => r.reason)).not.toContain("no-container");
+    expect(neither.refusals).toEqual(explicit.refusals);
+    expect(neither.caps).toEqual(explicit.caps);
+    expect(neither.fields).toBe(explicit.fields);
+  });
+
+  test("a realm named alone refuses no-container under every content verb, before any cap ask, read or write", async () => {
+    const { refusals, caps, fields } = await refusalsOf({ realm: "a".repeat(64) });
     expect(refusals.map((r) => r.reason)).toEqual(["no-container", "no-container", "no-container", "no-container", "no-container"]);
     for (const r of refusals) {
       expect(r.name).toBe("VerbRefusal");
-      expect(r.message).toMatch(/^no-container: (tiddler-(put|delete)|meme-(get|list|project))/);
-      expect(r.message).toContain("recipe");
-      expect(r.message).toContain("bag");
+      expect(r.message).toMatch(/^no-container: (tiddler-(put|delete)|meme-(get|list|project)) realm= names a bag's realm/);
     }
     expect(caps, "no cap gets asked").toEqual([]);
     expect(fields, "the wiki takes no write").toBe(0);

@@ -469,14 +469,21 @@ function VesselRead([string[]]$rest) {
 # vessel names the standing verdict as it leaves, and the shim lifts the vessel when the verdict asks for it.
 function RouteCli([string[]]$argv, [bool]$followUp) {
   $script:HostInputFile = $null
-  $isPut = $argv.Count -ge 3 -and (($argv[0] -ceq 'tiddler' -and $argv[1] -ceq 'put') -or ($argv[0] -ceq 'spirit' -and $argv[1] -cin @('ah', 'hooili', 'residue', 'handback')))
+  # A put's one host file rides the call shape's `file=` param (`lares put title=… file=<path>`); the spirit verbs keep `--file`.
+  $isCallPut = $argv.Count -ge 2 -and $argv[0] -ceq 'put'
+  $isPut = $isCallPut -or ($argv.Count -ge 3 -and $argv[0] -ceq 'spirit' -and $argv[1] -cin @('ah', 'hooili', 'residue', 'handback'))
   if ($argv.Count -gt 0) {
-    $alwaysValued = @('--fields', '--match', '--note', '--reason', '--replace', '--text', '--with')
-    $boolean = @('abandon', 'accept-omissions', 'added', 'all', 'all-strata', 'apply', 'approve', 'brief', 'bulk', 'cancel', 'cards', 'collapse', 'commit', 'cosign', 'confirm', 'create', 'cut', 'drain', 'deny', 'docs', 'draft', 'drop', 'dry-run', 'edge', 'ephemeral', 'every', 'executable', 'family', 'force', 'foreground', 'fresh', 'from-persona', 'held', 'help', 'help-mempalace', 'history', 'hearth', 'hold', 'if-due', 'in-wiki', 'init', 'join', 'json', 'keep', 'keep-hooks', 'keyhive-trace', 'lag', 'launch', 'list', 'meme', 'memory', 'new', 'offer', 'orphans', 'over-fresher', 'page', 'pair', 'palaces', 'paper', 'partial', 'passphrase', 'pending', 'probe', 'quorum', 'overwrite', 'remove', 'repour', 'restart', 'revert', 'rotate', 'seat', 'sessions', 'shadow', 'skinny', 'skip-build', 'spectral', 'split-root', 'staged', 'sweep', 'tag-blobs', 'terms', 'tree', 'verbose', 'wait', 'watch', 'with-web', 'witness', 'workbench', 'writeback', 'yes')
+    $alwaysValued = @('--fields', '--note', '--reason', '--text')
+    $boolean = @('abandon', 'accept-omissions', 'added', 'all', 'all-strata', 'apply', 'approve', 'brief', 'bulk', 'cancel', 'cards', 'commit', 'cosign', 'confirm', 'cut', 'drain', 'deny', 'docs', 'draft', 'drop', 'dry-run', 'edge', 'ephemeral', 'every', 'executable', 'force', 'foreground', 'fresh', 'from-persona', 'held', 'help', 'help-mempalace', 'history', 'hearth', 'hold', 'if-due', 'in-wiki', 'init', 'join', 'json', 'keep', 'keep-hooks', 'keyhive-trace', 'lag', 'launch', 'list', 'meme', 'memory', 'new', 'offer', 'orphans', 'over-fresher', 'page', 'pair', 'palaces', 'paper', 'partial', 'passphrase', 'pending', 'probe', 'quorum', 'overwrite', 'remove', 'repour', 'restart', 'revert', 'rotate', 'seat', 'sessions', 'shadow', 'skip-build', 'spectral', 'split-root', 'staged', 'sweep', 'tag-blobs', 'terms', 'tree', 'verbose', 'wait', 'watch', 'with-web', 'witness', 'workbench', 'writeback', 'yes')
     $sources = @()
     for ($i = 0; $i -lt $argv.Count; $i++) {
       $word = $argv[$i]
-      if ($word -ceq '--') { break }
+      if ($word -ceq '--' -and -not $isCallPut) { break }
+      if ($isCallPut -and $word -cmatch '(?s)^file=(.*)$') {
+        $sources += ,@($i, $Matches[1], 'file=')
+        continue
+      }
+      if ($isCallPut) { continue }
       if ($word -cmatch '(?s)^--(file|append)=(.*)$') {
         $sources += ,@($i, $Matches[2], "--$($Matches[1])")
         continue
@@ -491,12 +498,12 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
     foreach ($source in $sources) {
       if ($source[1] -cne '-' -and $source[1].StartsWith('-')) { Die 'name a host file whose path starts with ./ when it begins with -' }
     }
-    if ($isPut -and $sources.Count -gt 1) { Die 'name one text source: --file or --append, once' }
+    if ($isPut -and $sources.Count -gt 1) { Die $(if ($isCallPut) { 'name one host file: file=, once' } else { 'name one text source: --file or --append, once' }) }
     if ($isPut -and $sources.Count -eq 1 -and $sources[0][1] -cne '-' -and $argv[$sources[0][0]] -cmatch '^--(file|append)=') {
       Die "SeparateSourceToken: use $($sources[0][2]) <path> as separate tokens"
     }
     if ($isPut -and $sources.Count -eq 1 -and $sources[0][1] -eq '') { Die "$($sources[0][2]) names no host file (an empty value)" }
-    # Every put streams its one named source: `--file` (the whole text) and `--append` (words at the end, on a record or a slot).
+    # Every put streams its one named source: a call's `file=` (the whole text), a spirit verb's `--file` or `--append`.
     if ($isPut -and $sources.Count -eq 1) {
       $source = $sources[0]
       if ($source[1] -ne '-') {
@@ -513,7 +520,8 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
         catch { Die "cannot read host file $($source[1])" }
         $script:HostInputFile = $hostPath
         $argv = @($argv)
-        if ($argv[$source[0]] -cmatch '^--(file|append)=') { $argv[$source[0]] = "$($source[2])=-" }
+        if ($argv[$source[0]] -cmatch '^file=') { $argv[$source[0]] = 'file=-' }
+        elseif ($argv[$source[0]] -cmatch '^--(file|append)=') { $argv[$source[0]] = "$($source[2])=-" }
         else { $argv[$source[0]] = '-' }
       }
     }

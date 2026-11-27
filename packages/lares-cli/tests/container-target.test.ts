@@ -1,153 +1,67 @@
 import { describe, expect, test } from "vitest";
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
-import { repoRoot } from "@lararium/mesh/node";
-import { containerArgs } from "../src/container-target.js";
+import { containerArgs, engineContainerArgs } from "../src/container-target.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 const args = (options: Record<string, string> = {}): ParsedArgs => ({
   command: "meme", positional: [], options, flags: {},
 }) as unknown as ParsedArgs;
 
+/** The refusal a container read throws, caught whole. */
+function refusal(run: () => unknown): Error & { code?: string } {
+  try { run(); } catch (err) { return err as Error & { code?: string }; }
+  throw new Error("expected a container refusal");
+}
+
 describe("containerArgs", () => {
-  test("requires one explicit container and names both ways to supply it", () => {
-    try {
-      containerArgs(args(), "tiddler get");
-      throw new Error("expected no-container refusal");
-    } catch (err) {
-      expect(err).toMatchObject({ code: "no-container" });
-      expect((err as Error).message).toBe(
-        "lares tiddler get: no-container — name where to read: --recipe <slug> (as that wiki, e.g. --recipe lares) or --bag <slug> (that one bag). No default wiki exists.",
-      );
-    }
+  test("★ naming no container reads the worn face's daemon wiki: the recipe default reaches every call, a read or a write ★", () => {
+    expect(containerArgs(args(), "meme project")).toEqual({ recipe: "default" });
+    expect(containerArgs(args(), "meme project", "write")).toEqual({ recipe: "default" });
+    expect(containerArgs(args({ recipe: "  ", bag: " " }), "meme project")).toEqual({ recipe: "default" });
   });
 
   test("returns exactly the named container", () => {
-    expect(containerArgs(args({ recipe: " lares " }), "tiddler get")).toEqual({ recipe: "lares" });
-    expect(containerArgs(args({ bag: " sd m " }), "tiddler put", "write")).toEqual({ bag: "sd m" });
+    expect(containerArgs(args({ recipe: " lares " }), "meme project")).toEqual({ recipe: "lares" });
+    expect(containerArgs(args({ bag: " sd m " }), "meme project", "write")).toEqual({ bag: "sd m" });
   });
 
   test("a realm rides beside a bag and names that bag's realm; control: with none named the bag stands alone", () => {
     const realm = "C1AB".repeat(16);
-    expect(containerArgs(args({ bag: "lares", realm: ` ${realm} ` }), "tiddler get")).toEqual({ bag: "lares", realm: realm.toLowerCase() });
-    expect(containerArgs(args({ bag: "lares" }), "tiddler get")).toEqual({ bag: "lares" });
-    expect(containerArgs(args({ bag: "lares", realm: "  " }), "tiddler get")).toEqual({ bag: "lares" });
+    expect(containerArgs(args({ bag: "lares", realm: ` ${realm} ` }), "meme project")).toEqual({ bag: "lares", realm: realm.toLowerCase() });
+    expect(containerArgs(args({ bag: "lares" }), "meme project")).toEqual({ bag: "lares" });
+    expect(containerArgs(args({ bag: "lares", realm: "  " }), "meme project")).toEqual({ bag: "lares" });
   });
 
-  test("a realm beside a recipe refuses by name: a wiki lives in no realm", () => {
-    try {
-      containerArgs(args({ recipe: "lares", realm: "a".repeat(64) }), "tiddler get");
-      throw new Error("expected no-container refusal");
-    } catch (err) {
+  test("a realm beside a recipe, or a realm alone, refuses by name: a wiki lives in no realm", () => {
+    for (const options of [{ recipe: "lares", realm: "a".repeat(64) }, { realm: "a".repeat(64) }]) {
+      const err = refusal(() => containerArgs(args(options), "meme project"));
       expect(err).toMatchObject({ code: "no-container" });
-      expect((err as Error).message).toContain("--realm names a BAG's realm");
+      expect(err.message).toContain("--realm names a BAG's realm");
     }
   });
 
   test("the same named refusal rejects two containers", () => {
-    try {
-      containerArgs(args({ recipe: "lares", bag: "sdm" }), "tiddler get");
-      throw new Error("expected no-container refusal");
-    } catch (err) {
-      expect(err).toMatchObject({ code: "no-container" });
-      expect((err as Error).message).toBe("lares tiddler get: no-container — name one of --recipe <slug> or --bag <slug>, never both.");
-    }
+    const err = refusal(() => containerArgs(args({ recipe: "lares", bag: "sdm" }), "meme project"));
+    expect(err).toMatchObject({ code: "no-container" });
+    expect(err.message).toBe("lares meme project: no-container — name one of --recipe <slug> or --bag <slug>, never both.");
   });
 });
 
-type BareCall = { file: string; line: number; command: string };
-const VERB = "(?:project)";
-/** The doors a content caller names a container on: the meme door's render, and the one read door's meme lens (`tiddler get … --meme`). */
-const DOOR = `(?:meme\\s+${VERB}|tiddler\\s+get)`;
-
-function scanBareCalls(file: string, source: string): BareCall[] {
-  const lines = source.split(/\r?\n/);
-  const out: BareCall[] = [];
-  const recipes = new Set<string>();
-  for (const m of source.matchAll(/(?:const|let)\s+(\w+)\s*=\s*\[[^\]]*--(?:recipe|bag)[^\]]*\]/gs)) recipes.add(m[1]!);
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]!;
-    if (/intentional-bare-refusal/.test(line)) continue;
-    if (/^\s*(?:\/\/|#|\*)/.test(line)) continue;
-    if (/\b(?:test|describe)\s*\(/.test(line)) continue;
-    const code = line.replace(/\s+\/\/.*$/, "").replace(/(^|\s)#.*$/, "$1");
-    const shell = new RegExp(`\\b(?:lares|\\$LARES|\\$\\{LARES\\})\\s+${DOOR}(?=\\s|$)`).exec(code);
-    const node = new RegExp(`\\bnode\\s+[^\\s;&|]*lares\\.(?:mjs|js)\\s+${DOOR}(?=\\s|$)`).exec(code);
-    const jsonVerb = new RegExp(`\\bjson_verb\\s+${DOOR}(?=\\s|$)`).exec(code);
-    const invocation = shell ?? node ?? jsonVerb;
-    if (invocation) {
-      const tail = code.slice(invocation.index);
-      const command = tail.split(/[;|]/, 1)[0] ?? tail;
-      const group = [command];
-      while (/\\\s*$/.test(group[group.length - 1]!) && i + 1 < lines.length) group.push(lines[++i]!);
-      const full = group.join(" ");
-      const tiddlerRead = /tiddler\s+get\b/.test(full);
-      if ((!tiddlerRead || /--meme\b/.test(full)) && !/--(?:recipe|bag)\b/.test(full) && !/\$@/.test(full) && !(/meme\s+project\b/.test(full) && /--to\s+md\b/.test(full))) {
-        out.push({ file, line: i + 1, command: full.trim() });
-      }
-    }
-
-    const array = /["']meme["']\s*,\s*["'](project)["']|["']tiddler["']\s*,\s*["']get["'](?=[^\]]*["']--meme["'])/.exec(code);
-    if (!array) continue;
-    const start = code.lastIndexOf("[", array.index);
-    const close = code.indexOf("]", array.index);
-    const chunk = (start >= 0 && close >= 0 ? code.slice(start, close + 1) : code.slice(array.index));
-    const spreadHasTarget = [...chunk.matchAll(/\.\.\.(\w+)/g)].some((m) =>
-      recipes.has(m[1]!) || (m[1] === "seat" && /seat:\s*readonly string\[\]/.test(source)));
-    const localMd = /["']project["'][\s\S]*?["']--to["']\s*,\s*["']md["']/.test(chunk);
-    if (!/--(?:recipe|bag)/.test(chunk) && !spreadHasTarget && !localMd) {
-      out.push({ file, line: i + 1, command: chunk.trim() });
-    }
-  }
-  return out;
-}
-
-function sourceFiles(root: string): string[] {
-  const files: string[] = [];
-  const addTree = (dir: string): void => {
-    if (!existsSync(dir)) return;
-    for (const name of readdirSync(dir)) {
-      // An installed dependency tree holds no caller of this house's CLI, and its links may loop.
-      if (name === "node_modules") continue;
-      const path = join(dir, name);
-      if (statSync(path).isDirectory()) addTree(path);
-      else files.push(path);
-    }
-  };
-  for (const dir of ["tools", "tests", ".github/workflows", "deploy", "packages/lares-cli/src"]) addTree(join(root, dir));
-  for (const name of readdirSync(root)) if (/^docker-compose.*\.ya?ml$/.test(name)) files.push(join(root, name));
-  for (const name of ["Makefile"]) if (existsSync(join(root, name))) files.push(join(root, name));
-  for (const name of readdirSync(join(root, "packages"))) {
-    const tests = join(root, "packages", name, "tests");
-    addTree(tests);
-  }
-  return files;
-}
-
-describe("repository content-container law", () => {
-  test("all literal meme CLI callers name a target, except explicit refusal vectors", () => {
-    const root = repoRoot;
-    const bare = sourceFiles(root).filter((file) => !file.endsWith("packages/lares-cli/tests/container-target.test.ts")).flatMap((file) =>
-      scanBareCalls(relative(root, file), readFileSync(file, "utf8")));
-    expect(bare, bare.map((b) => `${b.file}:${b.line}: ${b.command}`).join("\n")).toEqual([]);
+describe("engineContainerArgs", () => {
+  test("★ naming no wiki runs in the worn face's daemon wiki (recipe default); a named recipe rides as named ★", () => {
+    expect(engineContainerArgs(args(), "wiki render")).toEqual({ recipe: "default" });
+    expect(engineContainerArgs(args({ recipe: "lares" }), "wiki render")).toEqual({ recipe: "lares" });
   });
 
-  test("CONTROL: the law scanner catches a planted bare call", () => {
-    expect(scanBareCalls("planted.test.ts", 'const bad = ["meme", "project", uri, "--to", "html", "--json"];')).toEqual([
-      { file: "planted.test.ts", line: 1, command: '["meme", "project", uri, "--to", "html", "--json"]' },
-    ]);
+  test("a bag refuses wiki-not-anchored and names the calls that read and write one bag", () => {
+    const read = refusal(() => engineContainerArgs(args({ bag: "lares" }), "wiki render"));
+    expect(read).toMatchObject({ code: "wiki-not-anchored" });
+    expect(read.message).toContain("`lares get title=<title> bag=<slug>`");
+    expect(read.message).toContain("`lares get meme=true bag=<slug>`");
+    const write = refusal(() => engineContainerArgs(args({ bag: "lares" }), "wiki render", "write"));
+    expect(write.message).toContain("`lares put title=<title> bag=<slug>` · `lares delete title=<title> bag=<slug>`");
   });
 
-  test("CONTROL: each supported call spelling is detected when bare", () => {
-    const planted = [
-      ["shell.sh", "lares tiddler get lar:///t/x --meme"],
-      ["node.sh", "node ./packages/lares-cli/bin/lares.mjs meme project lar:///t/x --to html"],
-      ["function.sh", "function pull() { lares tiddler get lar:///t/x --meme; }"],
-      ["json.sh", "json_verb tiddler get lar:///t/x --meme"],
-      ["array.ts", 'const args = ["tiddler", "get", "lar:///t/x", "--meme"];'],
-    ] as const;
-    expect(planted.map(([file, source]) => [file, scanBareCalls(file, source).length]))
-      .toEqual(planted.map(([file]) => [file, 1]));
+  test("a realm beside a recipe refuses by name", () => {
+    expect(refusal(() => engineContainerArgs(args({ recipe: "lares", realm: "x" }), "wiki render"))).toMatchObject({ code: "no-container" });
   });
 });

@@ -42,24 +42,24 @@ function input(argv: string[], over: Partial<RouteInput> = {}, files: string[] =
 
 describe("decideRoute — every branch", () => {
   it("LAR_ROOT named: always local, even for a vessel verb and a shim verb", () => {
-    expect(decideRoute(input(["tiddler", "get", "x", "--bag", "b"], { env: { HOME, LAR_ROOT: "/h" } }))).toBe("local");
+    expect(decideRoute(input(["get", "title=x", "bag=b"], { env: { HOME, LAR_ROOT: "/h" } }))).toBe("local");
     expect(decideRoute(input(["up"], { env: { HOME, LAR_ROOT: "/h" } }))).toBe("local");
   });
 
   it("a blank LAR_ROOT reads as unset", () => {
-    expect(decideRoute(input(["tiddler", "get", "x", "--bag", "b"], { env: { HOME, LAR_ROOT: "  " } }))).toBe("forward");
+    expect(decideRoute(input(["get", "title=x", "bag=b"], { env: { HOME, LAR_ROOT: "  " } }))).toBe("forward");
   });
 
   it("inside the vessel (the image's marker) never forwards, so a missing LAR_ROOT cannot loop", () => {
-    expect(decideRoute(input(["tiddler", "get", "x", "--bag", "b"], { env: { HOME, LARES_IN_CONTAINER: "1" } }))).toBe("local");
+    expect(decideRoute(input(["get", "title=x", "bag=b"], { env: { HOME, LARES_IN_CONTAINER: "1" } }))).toBe("local");
   });
 
   it("a host that itself runs in a container (a CI job, a devcontainer: /.dockerenv stands) still forwards", () => {
-    expect(decideRoute(input(["tiddler", "get", "x", "--bag", "b"], {}, [ENV_FILE, SHIM, "/.dockerenv"]))).toBe("forward");
+    expect(decideRoute(input(["get", "title=x", "bag=b"], {}, [ENV_FILE, SHIM, "/.dockerenv"]))).toBe("forward");
   });
 
   it("a vessel verb with the container house standing forwards", () => {
-    for (const argv of [["tiddler", "get", "x", "--bag", "b"], ["vault", "status"], ["vessel", "read"], ["vessel", "stand"], ["persona", "list"]]) {
+    for (const argv of [["get", "title=x", "bag=b"], ["vault", "status"], ["vessel", "read"], ["vessel", "stand"], ["persona", "list"]]) {
       expect(decideRoute(input(argv)), argv.join(" ")).toBe("forward");
     }
   });
@@ -82,8 +82,24 @@ describe("decideRoute — every branch", () => {
     }
   });
 
+  it("a call by address or by stdin sigil forwards with the container house standing, and stays local under LAR_ROOT", () => {
+    for (const argv of [["lar:///engine.record.reads", "title=x"], ["-"], ["-", "recipe=lares"], ["act", "lar:///engine.record.reads", "title=x"]]) {
+      expect(decideRoute(input(argv)), argv.join(" ")).toBe("forward");
+      expect(decideRoute(input(argv, { env: { HOME, LAR_ROOT: "/h" } })), argv.join(" ")).toBe("local");
+    }
+    // A dash-led word that names no call (`-h`, `--version`) still answers here.
+    for (const argv of [["-h"], ["--version"]]) expect(decideRoute(input(argv, {}, [])), argv.join(" ")).toBe("local");
+  });
+
+  it("each call verb word forwards: get, put, delete, rename", () => {
+    for (const argv of [["get", "title=x"], ["put", "title=x", "text=y"], ["delete", "title=x"], ["rename", "title=x", "to=y"]]) {
+      expect(decideRoute(input(argv)), argv.join(" ")).toBe("forward");
+    }
+    expect(decideRoute(input(["tiddler", "get", "x"], {}, []))).toBe("local");
+  });
+
   it("a `--help` after `--` reads as a positional and the verb forwards", () => {
-    expect(decideRoute(input(["tiddler", "get", "x", "--bag", "b", "--", "--help"]))).toBe("forward");
+    expect(decideRoute(input(["get", "title=x", "bag=b", "--", "--help"]))).toBe("forward");
   });
 
   it("meme's local seats stay local; its store seats forward", () => {
@@ -100,7 +116,7 @@ describe("decideRoute — every branch", () => {
   });
 
   it("argv the grammar refuses stays local, where the dispatcher names the refusal", () => {
-    expect(decideRoute(input(["tiddler", "get", "x", "--bag", "b", "--=v"], {}, []))).toBe("local");
+    expect(decideRoute(input(["get", "title=x", "bag=b", "--=v"], {}, []))).toBe("local");
   });
 
   it("no env file: a vessel verb refuses with the distinct house-absent code, naming LAR_ROOT and the shim", () => {
@@ -117,18 +133,18 @@ describe("decideRoute — every branch", () => {
   });
 
   it("no HOME: the env file cannot be named, so it reads as absent", () => {
-    const r = decideRoute(input(["tiddler", "get", "x", "--bag", "b"], { env: {} }));
+    const r = decideRoute(input(["get", "title=x", "bag=b"], { env: {} }));
     expect(typeof r === "object" && r.error.code).toBe(HOUSE_ABSENT_EXIT);
   });
 
   it("the env file stands and the shim does not: the distinct shim-absent code", () => {
-    const r = decideRoute(input(["tiddler", "get", "x", "--bag", "b"], {}, [ENV_FILE]));
+    const r = decideRoute(input(["get", "title=x", "bag=b"], {}, [ENV_FILE]));
     expect(typeof r === "object" && r.error.code).toBe(SHIM_ABSENT_EXIT);
     expect(typeof r === "object" && r.error.lines.join("\n")).toContain(SHIM);
   });
 
   it("no shim located at all (an installed CLI outside a checkout): shim-absent", () => {
-    const r = decideRoute(input(["tiddler", "get", "x", "--bag", "b"], { shim: null }));
+    const r = decideRoute(input(["get", "title=x", "bag=b"], { shim: null }));
     expect(typeof r === "object" && r.error.code).toBe(SHIM_ABSENT_EXIT);
   });
 
@@ -210,7 +226,7 @@ describe("translatePaths — a host path in a forwarded argv reads as the vessel
 
   it("an argument that only looks like a path stays untouched", () => {
     expect(ok(["act", "REPACK", "--source", `${W}/b.tid`, "--from", "some/bag/like"])).toEqual(["act", "REPACK", "--source", "/workspace/b.tid", "--from", "some/bag/like"]);
-    expect(ok(["tiddler", "get", "lar:///a/b", "--bag", "./not/a/path"])).toEqual(["tiddler", "get", "lar:///a/b", "--bag", "./not/a/path"]);
+    expect(ok(["get", "title=lar:///a/b", "bag=./not/a/path"])).toEqual(["get", "title=lar:///a/b", "bag=./not/a/path"]);
     expect(ok(["meme", "project", "lar:///x/y", "--to", "html", "--bag", "b"])).toEqual(["meme", "project", "lar:///x/y", "--to", "html", "--bag", "b"]);
     expect(ok(["persona", "new", "0", "--name", "/etc/passwd"])).toEqual(["persona", "new", "0", "--name", "/etc/passwd"]);
   });
@@ -312,7 +328,7 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
   it("a vessel verb forwards: argv faithful (quotes, spaces, empty, --), stdout untouched, -T off a TTY", () => {
     const b = bench();
     try {
-      const argv = ["tiddler", "get", "lar:///a b", "--bag", "", "it's", "--", "--json"];
+      const argv = ["get", "title=lar:///a b", "bag=", "it's", "--", "--json"];
       const r = spawnSync(process.execPath, [BIN, ...argv], { env: b.env, encoding: "utf8" });
       expect(r.status, r.stderr).toBe(0);
       expect(r.stdout).toBe("stdout-from-the-vessel\n");
@@ -363,7 +379,7 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
   it("the vessel's exit code returns unchanged", () => {
     const b = bench();
     try {
-      const r = spawnSync(process.execPath, [BIN, "tiddler", "get", "x", "--bag", "b"], { env: { ...b.env, FAKE_EXEC_RC: "4" }, encoding: "utf8" });
+      const r = spawnSync(process.execPath, [BIN, "get", "title=x", "bag=b"], { env: { ...b.env, FAKE_EXEC_RC: "4" }, encoding: "utf8" });
       expect(r.status).toBe(4);
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
@@ -371,7 +387,7 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
   it("display and debug env ride by NAME alone; nothing else crosses", () => {
     const b = bench();
     try {
-      spawnSync(process.execPath, [BIN, "tiddler", "get", "x", "--bag", "b"], {
+      spawnSync(process.execPath, [BIN, "get", "title=x", "bag=b"], {
         env: { ...b.env, NO_COLOR: "1", TERM: "xterm-256color", LARES_DEBUG: "1", SOME_TOKEN: "s3cret" }, encoding: "utf8",
       });
       const exec = execCall(b)!;
@@ -460,7 +476,7 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
   it("Ctrl+C ends the host process with the child: no orphan", async () => {
     const b = bench();
     try {
-      const child = spawn(process.execPath, [BIN, "tiddler", "get", "x", "--bag", "b"], { env: { ...b.env, FAKE_SLEEP: "1" }, stdio: "ignore", detached: true });
+      const child = spawn(process.execPath, [BIN, "get", "title=x", "bag=b"], { env: { ...b.env, FAKE_SLEEP: "1" }, stdio: "ignore", detached: true });
       const pidFile = `${b.log}.pid`;
       for (let i = 0; i < 100 && !existsSync(pidFile); i++) await new Promise((r) => setTimeout(r, 50));
       expect(existsSync(pidFile)).toBe(true);

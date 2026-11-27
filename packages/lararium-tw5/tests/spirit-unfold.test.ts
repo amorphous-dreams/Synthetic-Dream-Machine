@@ -39,7 +39,7 @@ function canonical(text: string): void {
   expect(read.faults, "normalize names a fault").toEqual([]);
   expect(read.text === text, `normalize moves the text: ${read.notes.join(" · ")}`).toBe(true);
 }
-const commandsIn = (text: string): string[] => [...text.matchAll(/^`(lares tiddler get \S+ --recipe default(?: --face \S+)? --meme --slot '[^']+')`$/gm)].map((m) => m[1]!);
+const commandsIn = (text: string): string[] => [...text.matchAll(/^`(lares get title=\S+ recipe=default(?: face=\S+)? slot='[^']+' mu=assert)`$/gm)].map((m) => m[1]!);
 
 describe.skipIf(wikiSkip)(`a spirit folds as a carrier by aperture${skipNote}`, () => {
   let e: TW5Engine;
@@ -198,14 +198,14 @@ describe("the fold's pure core", () => {
 
   test("every printed command quotes a word a shell would split or expand", () => {
     expect(shellWord("lar:///ha.ka.ba/kahua/memory/spirit/verb-wright")).toBe("lar:///ha.ka.ba/kahua/memory/spirit/verb-wright");
-    expect(slotCommand("lar:///a.b.c/x", "#/open")).toBe("lares tiddler get lar:///a.b.c/x --recipe default --meme --slot '#/open'");
+    expect(slotCommand("lar:///a.b.c/x", "#/open")).toBe("lares get title=lar:///a.b.c/x recipe=default slot='#/open' mu=assert");
     const wild = "A title; rm -rf $HOME `id` it's";
     const quoted = `'A title; rm -rf $HOME \`id\` it'\\''s'`;
     expect(shellWord(wild)).toBe(quoted);
     expect([recordCommand(wild), wholeCommand(wild, "1"), slotCommand(wild, "#/x"), cardRenderCommand(wild)]).toEqual([
-      `lares tiddler get ${quoted} --recipe default`,
-      `lares tiddler get ${quoted} --recipe default --face 1 --meme --all`,
-      `lares tiddler get ${quoted} --recipe default --meme --slot '#/x'`,
+      `lares get title=${quoted} recipe=default`,
+      `lares get title=${quoted} recipe=default face=1 mu=assert`,
+      `lares get title=${quoted} recipe=default slot='#/x' mu=assert`,
       `lares wiki render ${quoted} --recipe default --form text`,
     ]);
   });
@@ -222,11 +222,11 @@ describe("the fold's pure core", () => {
 });
 
 describe("faceBound: a wake's handed commands keep naming the face that answered (plan/companion-context S3)", () => {
-  test("--face joins each spirit command after its pet and each recipe-default read naming none; a bound command stays as it stands", () => {
+  test("the face joins each spirit command after its pet (--face), each call's recipe=default naming none (face=N) and each door's --recipe default; a bound command stays as it stands", () => {
     const text = "Echo it: lares spirit ah lares-alpha --echo ab --instance s-1\n"
-      + `${slotCommand("lar:///x", "#/open", "1")} · lares tiddler get lar:///y --recipe default --meme --all · \`lares spirit hum lares-alpha\`, lares spirit om lares-alpha --face 1`;
+      + `${slotCommand("lar:///x", "#/open", "1")} · lares get title=lar:///y recipe=default mu=assert · lares wiki render lar:///z --recipe default --form text · \`lares spirit hum lares-alpha\`, lares spirit om lares-alpha --face 1`;
     expect(faceBound(text, 1)).toBe("Echo it: lares spirit ah lares-alpha --face 1 --echo ab --instance s-1\n"
-      + `${slotCommand("lar:///x", "#/open", "1")} · lares tiddler get lar:///y --recipe default --face 1 --meme --all · \`lares spirit hum lares-alpha --face 1\`, lares spirit om lares-alpha --face 1`);
+      + `${slotCommand("lar:///x", "#/open", "1")} · lares get title=lar:///y recipe=default face=1 mu=assert · lares wiki render lar:///z --recipe default --face 1 --form text · \`lares spirit hum lares-alpha --face 1\`, lares spirit om lares-alpha --face 1`);
     expect(faceBound(text, null)).toBe(text);
   });
 });

@@ -199,9 +199,10 @@ export interface AffordRoutes {
   /**
    * Per surface: the spellings several addresses share, each skin row naming the param that selects it (`by/title`,
    * `by/filter`: one verb word, `get`, skinning `engine.record.reads` and `engine.filter.pages`). The selection rests in
-   * carrier rows, so a layer above may move it; `routeOfCall` picks the address whose `by` param a call names.
+   * carrier rows, so a layer above may move it; `routeOfCall` picks the address whose `by` param a call names, and where the
+   * call names none, the one row reading `default/true` (a bare `get meme=true` lists the families through the read).
    */
-  readonly chosen: Record<AffordSurface, Record<string, ReadonlyArray<{ readonly address: string; readonly by: string }>>>;
+  readonly chosen: Record<AffordSurface, Record<string, ReadonlyArray<{ readonly address: string; readonly by: string; readonly default?: true }>>>;
 }
 
 /**
@@ -235,7 +236,8 @@ export function routesOf(textOf: TextOf, titles: Iterable<string>, carriers: Car
   const own: Record<string, string> = {};
   const part: string[] = [];
   const twice: RouteClaim[] = [];
-  const chosen = Object.fromEntries(AFFORD_SURFACES.map((s) => [s, {} as Record<string, Array<{ address: string; by: string }>>])) as Record<AffordSurface, Record<string, Array<{ address: string; by: string }>>>;
+  type Choice = { address: string; by: string; default?: true };
+  const chosen = Object.fromEntries(AFFORD_SURFACES.map((s) => [s, {} as Record<string, Choice[]>])) as Record<AffordSurface, Record<string, Choice[]>>;
   const claim = (surface: AffordSurface, spelling: string, address: string): void => {
     const held = routes[surface][spelling];
     if (held !== undefined && held !== address) { twice.push({ surface, spelling, addresses: [held, address] }); return; }
@@ -256,7 +258,7 @@ export function routesOf(textOf: TextOf, titles: Iterable<string>, carriers: Car
       const spelling = surface === "cli" ? spells.replace(/^lares\s+/, "") : spells;
       // A SPELLING CHOSEN BY A PARAM (`by/title`) joins the shared word's choices and claims no route of its own.
       const by = row.params["by"]?.trim();
-      if (by) { (chosen[surface][spelling] ??= []).push({ address, by }); continue; }
+      if (by) { (chosen[surface][spelling] ??= []).push({ address, by, ...(row.params["default"] === "true" ? { default: true as const } : {}) }); continue; }
       claim(surface, spelling, address);
       if (surface === "cli") {
         own[address] = spelling;
@@ -273,7 +275,7 @@ export function routesOf(textOf: TextOf, titles: Iterable<string>, carriers: Car
 /** What a call's leading word reaches: the address, or the choices a shared word offers where no param of the call selects one. */
 export type CallRoute =
   | { readonly address: string }
-  | { readonly address: null; readonly choices: ReadonlyArray<{ readonly address: string; readonly by: string }> };
+  | { readonly address: null; readonly choices: ReadonlyArray<{ readonly address: string; readonly by: string; readonly default?: true }> };
 
 /**
  * THE ADDRESS A CALL'S LEADING WORD REACHES (comms-ux-enacts landing 4): an address in either spelling (`lar:///engine.record.reads`,
@@ -290,7 +292,10 @@ export function routeOfCall(routes: AffordRoutes, word: string, params: Readonly
     const choices = routes.chosen[surface][spelled];
     if (choices === undefined) continue;
     const named = choices.filter((c) => params[c.by] !== undefined);
-    return named.length === 1 ? { address: named[0]!.address } : { address: null, choices };
+    if (named.length === 1) return { address: named[0]!.address };
+    // A CALL NAMING NO CHOICE takes the one row that reads `default/true`; several, or none, leave the word ambiguous.
+    const fallback = choices.filter((c) => c.default === true);
+    return named.length === 0 && fallback.length === 1 ? { address: fallback[0]!.address } : { address: null, choices };
   }
   return null;
 }

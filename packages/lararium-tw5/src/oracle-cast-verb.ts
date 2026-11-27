@@ -22,7 +22,7 @@
  * The ask's `observe` pointers and `uncertain`
  * words fill the first slots, the throw and every reading (each source credited) fill the next, and every slot the seat
  * still owes names its ask. The carrier lands once through the tiddler door's put (`create`), which splits a family's text into its slots; the seat's later
- * writes ride the slot append (`lares tiddler put '<cast>#/<the slot you owe>' --append '<words>'`). No slot name and no
+ * writes ride the slot append (`lares put title=<cast> slot='#/<the slot you owe>' append='<words>'`). No slot name and no
  * ask lives in this file; where the stack and the pack both answer no loop rows, the cast refuses `oracle-loop-unread`. A replay answers the uncertainty and
  * the pointers the record kept at the first throw, and never rewrites them.
  *
@@ -139,6 +139,11 @@ function containerFlag(args: Readonly<Record<string, unknown>>): string {
   return typeof args["bag"] === "string" ? `--bag ${args["bag"]}` : `--recipe ${typeof args["recipe"] === "string" ? args["recipe"] : "default"}`;
 }
 
+/** The container param a call repeats (`bag=<slug>` or `recipe=<slug>`): the one the caller named. */
+function containerParam(args: Readonly<Record<string, unknown>>): string {
+  return typeof args["bag"] === "string" ? `bag=${args["bag"]}` : `recipe=${typeof args["recipe"] === "string" ? args["recipe"] : "default"}`;
+}
+
 /**
  * What the baked affordance pack carries for the consult: the carrier's resolved loop rows, each shelf's method, and the
  * floor's names (the canon carrier's title and the pack's hash) its receipt hands back.
@@ -206,8 +211,8 @@ async function readLoop(get: VerbReactor, container: Record<string, unknown>, ct
   if (floor) rungs.push({ text: floor.loop.join("\n"), receipt: { carrier: `${floor.carrier ?? ORACLE_CARRIER}${LOOP_SLOT}`, bag: "pack", base: floor.hash ?? "" } });
   const read = loopOfRungs(rungs);
   if (read) return read;
-  const where = containerFlag(container);
-  throw new VerbRefusal("oracle-loop-unread", `oracle-loop-unread: neither the stack of ${where.replace(/^--/, "")} nor the baked affordance pack answers loop rows for ${ORACLE_AFFORDANCE}${LOOP_SLOT}${called ? ` (its carrier calls ${called.uri}${called.slot ?? LOOP_SLOT})` : ""}, so no act record lands; read it with \`lares tiddler get ${ORACLE_AFFORDANCE} ${where} --meme --slot '${LOOP_SLOT}'\`, then seat a carrier whose #/loop names act slots (or ingest the lares canon), or re-bake the pack (\`pnpm --filter @lararium/tw5 build\`)`);
+  const where = containerParam(container);
+  throw new VerbRefusal("oracle-loop-unread", `oracle-loop-unread: neither the stack of ${where.replace("=", " ")} nor the baked affordance pack answers loop rows for ${ORACLE_AFFORDANCE}${LOOP_SLOT}${called ? ` (its carrier calls ${called.uri}${called.slot ?? LOOP_SLOT})` : ""}, so no act record lands; read it with \`lares get title=${ORACLE_AFFORDANCE} ${where} slot='${LOOP_SLOT}' mu=assert\`, then seat a carrier whose #/loop names act slots (or ingest the lares canon), or re-bake the pack (\`pnpm --filter @lararium/tw5 build\`)`);
 }
 
 /**
@@ -220,7 +225,7 @@ async function readShelf(kind: string, get: VerbReactor, container: Record<strin
   const kinds = Object.keys(shelves).sort();
   const standing = kinds.length > 0
     ? `the shelves that stand: ${kinds.map((k) => `${k} (${shelves[k]!.method})`).join(" · ")}`
-    : `list the shelves with \`lares wiki filter '[prefix[lar:///ha.ka.ba/lares/library/oracles/]suffix[/index]]' ${containerFlag(container)}\``;
+    : `list the shelves with \`lares get filter='[prefix[lar:///ha.ka.ba/lares/library/oracles/]suffix[/index]]' ${containerParam(container)}\``;
   const cure = `consult a shelf that stands (\`lares oracle cast --by ${DEFAULT_ORACLE_KIND}\`); ${standing}`;
   if (!KIND_RE.test(kind)) throw new VerbRefusal("oracle-shelf-unknown", `oracle-shelf-unknown: \`by\` names a shelf in lower-case words joined by hyphens; got "${kind}"; ${cure}`);
   const title = oracleShelfTitle(kind);
@@ -342,13 +347,13 @@ export function makeOracleCastReactor(opts: TiddlerVerbOptions, consult: OracleC
         cast = await readStanding();
         readings = null;
       }
-      if (cast === null) throw new VerbRefusal("oracle-cast-record-torn", `oracle-cast-record-torn: ${title} stands but reads as no cast; read it with \`lares tiddler get ${title} --recipe default\``);
+      if (cast === null) throw new VerbRefusal("oracle-cast-record-torn", `oracle-cast-record-torn: ${title} stands but reads as no cast; read it with \`lares get title=${title}\``);
     }
     const replayed = receipt["created"] !== true;
     if (readings === null) readings = await readingsOf(cast);
 
     const band: DoorBand = "answered";
-    const where = containerFlag(args);
+    const where = containerParam(args);
     // EVERY ANSWER NAMES THE CARRIER THAT ANSWERED (fork 4): the has line carries `carrier/<title> bag/<bag> base/<hash>`.
     const carrierParams = shaped ? [param("carrier", shaped.carrier), param("bag", shaped.bag), param("base", shaped.base)] : [];
     return {
@@ -364,8 +369,8 @@ export function makeOracleCastReactor(opts: TiddlerVerbOptions, consult: OracleC
       uncertain: kept.uncertain, observe: kept.observe,
       ...(landed.length > 0 ? { slots: landed } : {}),
       next: {
-        read: `lares tiddler get ${title} ${where} --meme`,
-        append: `lares tiddler put ${title} ${where} --meme --slot '<the slot you owe>' --append '<your words>'`,
+        read: `lares get title=${title} ${where} mu=assert`,
+        append: `lares put title=${title} ${where} slot='#/<the slot you owe>' append='<your words>'`,
       },
       note: ORACLE_THROW_STANDS,
     };

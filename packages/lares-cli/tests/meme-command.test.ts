@@ -3,8 +3,8 @@
  *
  * A VERB DECLARES ITS SEAT. `normalize` · `check` · `project --to md` run LOCAL over a file with no daemon
  * in reach — the offline re-stamp of a stale block check keeps working with no socket. `project --to html|tid|json`,
- * and `project` over a `lar:` uri, ride the daemon verb. A family moves through the plain tiddler door (`tiddler put`
- * lands a carrier or one slot, `tiddler delete --family` removes it, title-less `tiddler get --meme` lists). Proven
+ * and `project` over a `lar:` uri, ride the daemon verb. A family moves through the call door (`lares put title=…`
+ * lands a carrier or one slot, `lares delete title=… family=true` removes it, `lares get meme=true` lists). Proven
  * here: the argument law (both targets refuse; a bare `lares meme` prints usage and returns 2), the verb args the
  * daemon receives, the exit classes a receipt maps to (a CONFLICT exits as `conflict`, an absent family as
  * `not-found`), that the local seats put NOTHING on the wire, and that `project --to md` over a file writes the pair
@@ -44,15 +44,23 @@ vi.mock("../src/env.js", async (orig) => ({
 }));
 
 import { cmdMeme, projectPlan, bagsResolver } from "../src/commands/meme.js";
-import { cmdFamily, listPlan } from "../src/commands/family.js";
-import { cmdTiddler, tiddlerPlan } from "../src/commands/tiddler.js";
+import { cmdCall, callPlan, type CallSources } from "../src/commands/call.js";
 import { repoRoot } from "@lararium/mesh/node";
-import type { ParsedArgs } from "../src/parse-args.js";
+import { parseArgs, type ParsedArgs } from "../src/parse-args.js";
 
 const memeArgs = (positional: string[], options: Record<string, string> = {}, flags: Record<string, boolean> = {}): ParsedArgs =>
   ({ command: "meme", positional, options, flags: { json: true, ...flags } } as unknown as ParsedArgs);
-const tiddlerArgs = (positional: string[], options: Record<string, string> = {}, flags: Record<string, boolean> = {}): ParsedArgs =>
-  ({ command: "tiddler", positional, options, flags: { json: true, ...flags } } as unknown as ParsedArgs);
+/** A call line as a terminal types it (`lares put title=… file=…`), `--json` asked unless the line names `--no-json`. */
+const callArgs = (...tokens: string[]): ParsedArgs => {
+  const parsed = parseArgs(tokens);
+  return parsed.flags["json"] === undefined ? { ...parsed, flags: { ...parsed.flags, json: true } } : parsed;
+};
+/** The call a line sends the vessel: its verb word, its params as they crossed, the surface `cli`. */
+const sent = (verb: string, params: Record<string, string>) => ({ verb: "call", args: { verb, params, surface: "cli" } });
+/** The carrier stamp a call's answer carries, so the door prints it by the carrier that shaped it. */
+const by = (address: string): Record<string, unknown> => ({ carrier: { carrier: `lar:///ha.ka.ba/lares/afford/${address}`, hash: "sha256:c" } });
+/** No host crossing reached. */
+const NO_SOURCES: CallSources = { read: () => { throw new Error("no file read"); }, stdin: async () => { throw new Error("no stdin read"); } };
 
 /** Run a door and hand back its exit, the one JSON line `--json` printed (if any), and every human line. */
 async function said(run: () => Promise<number>): Promise<{ code: number; json: Record<string, unknown> | null; lines: string[]; errors: string[] }> {
@@ -81,7 +89,7 @@ const tmpFile = (text: string): string => {
 };
 
 describe("the meme door's argument law, no daemon", () => {
-  test("the meme door names no family write: put, patch, list and delete read as any unknown sub-verb (the tiddler door holds them)", async () => {
+  test("the meme door names no family write: put, patch, list and delete read as any unknown sub-verb (the call door holds them)", async () => {
     const stderr = vi.spyOn(console, "error").mockImplementation(() => {});
     for (const sub of ["put", "patch", "list", "delete"]) {
       expect(await cmdMeme(memeArgs([sub, "lar:///t/x"], { recipe: "default" }))).toBe(2);
@@ -89,104 +97,100 @@ describe("the meme door's argument law, no daemon", () => {
     stderr.mockRestore();
     expect(h.calls).toEqual([]);
   });
-  test("ONE DOOR READS: `lares tiddler get --meme` reads a meme; the meme door names no get", async () => {
+  test("ONE DOOR READS: `lares get title=<uri> mu=assert` reads a meme; the meme door names no get", async () => {
     const stderr = vi.spyOn(console, "error").mockImplementation(() => {});
     expect(await cmdMeme(memeArgs(["get", "lar:///t/x"], { recipe: "default" }, { json: false }))).toBe(2);
     expect(stderr.mock.calls.flat().join(" ")).toMatch(/unknown sub-verb "get"/);
     stderr.mockRestore();
     expect(h.calls).toEqual([]);
   });
-  test("CONTROL: every store planner forwards exactly either explicit target", () => {
-    for (const sub of ["put", "delete"] as const) {
-      expect(tiddlerPlan(sub, tiddlerArgs([sub, "lar:///t/x"], { recipe: "r" })).args["recipe"]).toBe("r");
-      expect(tiddlerPlan(sub, tiddlerArgs([sub, "lar:///t/x"], { bag: "b" })).args["bag"]).toBe("b");
+  test("CONTROL: every store planner forwards exactly either explicit target", async () => {
+    for (const verb of ["put", "delete"] as const) {
+      expect((await callPlan(parseArgs([verb, "title=lar:///t/x", "recipe=r"]), NO_SOURCES)).plan).toEqual(sent(verb, { title: "lar:///t/x", recipe: "r" }));
+      expect((await callPlan(parseArgs([verb, "title=lar:///t/x", "bag=b"]), NO_SOURCES)).plan).toEqual(sent(verb, { title: "lar:///t/x", bag: "b" }));
     }
-    expect(listPlan(memeArgs(["list"], { recipe: "r" })).args).toEqual({ recipe: "r" });
-    expect(listPlan(memeArgs(["list"], { bag: "b" })).args).toEqual({ bag: "b" });
     expect(projectPlan(memeArgs(["project", "lar:///t/x"], { to: "md", recipe: "r" })).container).toEqual({ recipe: "r" });
     expect(projectPlan(memeArgs(["project", "lar:///t/x"], { to: "md", bag: "b" })).container).toEqual({ bag: "b" });
   });
-  test("EACH HAT REACHED BY NAME: the listing naming `--face N` plans for face N; with no `--face` it plans for the worn face", () => {
-    expect(listPlan(memeArgs(["list"], { recipe: "default", face: "2" })).face).toBe(2);
-    expect(listPlan(memeArgs(["list"], { recipe: "default" }))).toEqual({ verb: "meme-list", args: { recipe: "default" } });
+  test("the family listing rides the call door: `lares get meme=true` sends its container and tree= as params", async () => {
+    expect((await callPlan(parseArgs(["get", "meme=true", "bag=sdm"]), NO_SOURCES)).plan).toEqual(sent("get", { meme: "true", bag: "sdm" }));
+    expect((await callPlan(parseArgs(["get", "meme=true", "recipe=lares", "tree=true", "face=2"]), NO_SOURCES))).toEqual({ plan: sent("get", { meme: "true", recipe: "lares", tree: "true" }), face: "2" });
   });
-  test("★ --recipe AND --bag together refuse; a bag beside --realm names that bag's realm ★", () => {
-    expect(() => tiddlerPlan("delete", tiddlerArgs(["delete", "lar:///t/x"], { recipe: "sdm", bag: "sdm" }))).toThrow(/one of/);
+  test("a bag beside realm= names that bag's realm: both ride the call as written, for the VM to bind", async () => {
     const realm = "c1ab".repeat(16);
-    expect(tiddlerPlan("put", tiddlerArgs(["put", "lar:///t/x"], { bag: "sdm", realm })).args).toEqual({ bag: "sdm", realm, title: "lar:///t/x" });
+    expect((await callPlan(parseArgs(["put", "title=lar:///t/x", "bag=sdm", `realm=${realm}`]), NO_SOURCES)).plan).toEqual(sent("put", { title: "lar:///t/x", bag: "sdm", realm }));
   });
 });
 
-describe("lares tiddler put — a family's carrier and its slots ride the plain put", () => {
-  const landed = { recipe: "default", title: "lar:///t/x", decision: "put", created: false, changed: ["text"], hash: "sha256-record", position: "root", canonicalHash: "sha256:1", landed: ["lar:///t/x"], kept: [], tombstoned: [], warnings: [] };
+describe("lares put — a family's carrier and its slots ride the plain put", () => {
+  const landed = { recipe: "default", title: "lar:///t/x", decision: "put", created: false, changed: ["text"], hash: "sha256-record", position: "root", canonicalHash: "sha256:1", landed: ["lar:///t/x"], kept: [], tombstoned: [], warnings: [], ...by("engine.record.puts") };
 
-  test("★ a whole carrier off --file plans one root text put: title · text · bag · base ★", async () => {
+  test("★ a whole carrier off file= sends one put: title · text · bag · base ★", async () => {
     h.reply = landed;
     const file = tmpFile("<<^ code=`&#x0001;`>> hello");
-    const { code } = await said(() => cmdTiddler(tiddlerArgs(["put", "lar:///t/x"], { file, bag: "sdm", base: "sha256:0" })));
+    const { code } = await said(() => cmdCall(callArgs("put", "title=lar:///t/x", `file=${file}`, "bag=sdm", "base=sha256:0")));
     expect(code).toBe(0);
-    expect(h.calls).toEqual([{ verb: "tiddler-put", args: { title: "lar:///t/x", text: "<<^ code=`&#x0001;`>> hello", bag: "sdm", base: "sha256:0" } }]);
+    expect(h.calls).toEqual([sent("put", { title: "lar:///t/x", text: "<<^ code=`&#x0001;`>> hello", bag: "sdm", base: "sha256:0" })]);
   });
 
-  test("EACH HAT REACHED BY NAME: `--face 1` rides a session of face h1 (never the one-shot), and the answer names the face it landed in", async () => {
+  test("EACH HAT REACHED BY NAME: `face=1` rides a session of face h1 (never the one-shot), and the answer names the face it landed in", async () => {
     h.reply = landed;
-    const { code, json } = await said(() => cmdTiddler(tiddlerArgs(["put", "lar:///t/x"], { file: tmpFile("hello"), bag: "lar:///ha.ka.ba/bags/daemon-r1", face: "1" })));
+    const { code, json } = await said(() => cmdCall(callArgs("put", "title=lar:///t/x", `file=${tmpFile("hello")}`, "bag=lar:///ha.ka.ba/bags/daemon-r1", "face=1")));
     expect(code).toBe(0);
-    expect(h.calls).toEqual([{ verb: "tiddler-put", args: { title: "lar:///t/x", text: "hello", bag: "lar:///ha.ka.ba/bags/daemon-r1" }, face: 1 }]);
+    expect(h.calls).toEqual([{ ...sent("put", { title: "lar:///t/x", text: "hello", bag: "lar:///ha.ka.ba/bags/daemon-r1" }), face: 1 }]);
     expect(json).toMatchObject({ ok: true, data: { face: 1 } });
   });
 
-  test("a SHUT face refuses `face-not-open` by name; a malformed `--face` refuses before any door opens", async () => {
+  test("a SHUT face refuses `face-not-open` by name; a malformed `face=` refuses before any door opens", async () => {
     h.refuse = "face-not-open: face h3 stands shut on this vessel (face-locked)";
-    const shut = await said(() => cmdTiddler(tiddlerArgs(["put", "lar:///t/x"], { file: tmpFile("x"), recipe: "default", face: "3" })));
+    const shut = await said(() => cmdCall(callArgs("put", "title=lar:///t/x", `file=${tmpFile("x")}`, "face=3")));
     expect(shut.code).not.toBe(0);
     expect(shut.json).toMatchObject({ ok: false, error: { code: "face-not-open" } });
     h.refuse = ""; h.calls.length = 0;
-    const malformed = await said(() => cmdTiddler(tiddlerArgs(["put", "lar:///t/x"], { file: tmpFile("x"), recipe: "default", face: "one" })));
+    const malformed = await said(() => cmdCall(callArgs("put", "title=lar:///t/x", `file=${tmpFile("x")}`, "face=one")));
     expect(malformed.code).toBe(2);
     expect(JSON.stringify(malformed.json)).toMatch(/face-malformed/);
     expect(h.calls).toEqual([]);
   });
 
-  test("a CONFLICT answer exits as the conflict class; so does `exists` under --create", async () => {
+  test("a CONFLICT answer exits as the conflict class; so does `exists` under create=true", async () => {
     h.reply = { ...landed, decision: "conflict", landed: [], hash: "sha256-moved" };
-    expect((await said(() => cmdTiddler(tiddlerArgs(["put", "lar:///t/x"], { file: tmpFile("x"), recipe: "default" })))).code).toBe(4);
+    expect((await said(() => cmdCall(callArgs("put", "title=lar:///t/x", `file=${tmpFile("x")}`)))).code).toBe(4);
     h.reply = { ...landed, decision: "exists", landed: [] };
-    const exists = await said(() => cmdTiddler(tiddlerArgs(["put", "lar:///t/x"], { file: tmpFile("x"), recipe: "default" }, { create: true })));
+    const exists = await said(() => cmdCall(callArgs("put", "title=lar:///t/x", `file=${tmpFile("x")}`, "create=true")));
     expect(exists.code).toBe(4);
-    expect(h.calls.at(-1)!.args["create"]).toBe(true);
+    expect((h.calls.at(-1)!.args["params"] as Record<string, unknown>)["create"]).toBe("true");
   });
 
   test("a gate refusal crosses by its own code, never as a landing", async () => {
     h.refuse = "family-gate-refused: the text reads as no one carrier";
-    const out = await said(() => cmdTiddler(tiddlerArgs(["put", "lar:///t/x"], { file: tmpFile("x"), recipe: "default" })));
+    const out = await said(() => cmdCall(callArgs("put", "title=lar:///t/x", `file=${tmpFile("x")}`)));
     expect(out.code).toBe(4);
     expect(out.json).toMatchObject({ ok: false, error: { hint: "refusal: family-gate-refused" } });
   });
 
-  test("a bare put refuses before reading --file or dispatching", async () => {
-    const out = await said(() => cmdTiddler(tiddlerArgs(["put", "lar:///t/x"], { file: "/path/that/must/not/be/read" }, { json: false })));
-    expect(out.code).toBe(2);
-    expect(h.calls).toEqual([]);
-    expect(out.errors.join(" ")).toMatch(/no-container.*--recipe.*--bag/s);
+  test("a put naming no container sends none: the carrier's #/takes binds recipe=default in the VM", async () => {
+    h.reply = landed;
+    expect((await said(() => cmdCall(callArgs("put", "title=lar:///t/x", "text=x")))).code).toBe(0);
+    expect(h.calls).toEqual([sent("put", { title: "lar:///t/x", text: "x" })]);
   });
 });
 
-describe("lares tiddler put --slot — the slot folds into the title; a slot's text needs no base", () => {
-  const slotLanded = { recipe: "default", title: "lar:///t/x#/a", decision: "put", created: false, changed: ["text"], hash: "sha256-slot", position: "slot", canonicalHash: "sha256:2", landed: ["lar:///t/x#/a"], kept: ["lar:///t/x#/b"], tombstoned: [], warnings: [] };
+describe("lares put slot= — a slot's text needs no base", () => {
+  const slotLanded = { recipe: "default", title: "lar:///t/x#/a", decision: "put", created: false, changed: ["text"], hash: "sha256-slot", position: "slot", canonicalHash: "sha256:2", landed: ["lar:///t/x#/a"], kept: ["lar:///t/x#/b"], tombstoned: [], warnings: [], ...by("engine.record.puts") };
 
-  test("★ --append on a slot reads its file and plans tiddler-put on `<root>#/a` with append · container ★", async () => {
+  test("★ append=- on a slot reads stdin and sends the slot beside the title, the append its words ★", async () => {
     h.reply = slotLanded;
-    const file = tmpFile("* a new bullet\n");
-    expect((await said(() => cmdTiddler(tiddlerArgs(["put", "lar:///t/x"], { slot: "#/a", append: file, recipe: "default" })))).code).toBe(0);
-    expect(h.calls).toEqual([{ verb: "tiddler-put", args: { recipe: "default", title: "lar:///t/x#/a", append: "* a new bullet\n" } }]);
+    const stdin: CallSources = { read: () => { throw new Error("no file read"); }, stdin: async () => Buffer.from("* a new bullet\n") };
+    expect((await said(() => cmdCall(callArgs("put", "title=lar:///t/x", "slot=#/a", "append=-"), stdin))).code).toBe(0);
+    expect(h.calls).toEqual([sent("put", { title: "lar:///t/x", slot: "#/a", append: "* a new bullet\n" })]);
   });
 
-  test("★ a slot's --file with no --base plans cleanly; the human answer names the counts and both bases, each by its use ★", async () => {
+  test("★ a slot's file= with no base= sends cleanly; the human answer names the counts and both bases, each by its use ★", async () => {
     h.reply = slotLanded;
-    const out = await said(() => cmdTiddler(tiddlerArgs(["put", "lar:///t/x"], { slot: "#/a", file: tmpFile("new body"), bag: "sdm" }, { json: false })));
+    const out = await said(() => cmdCall(callArgs("put", "title=lar:///t/x", "slot=#/a", `file=${tmpFile("new body")}`, "bag=sdm", "--no-json")));
     expect(out.code).toBe(0);
-    expect(h.calls).toEqual([{ verb: "tiddler-put", args: { bag: "sdm", title: "lar:///t/x#/a", text: "new body" } }]);
+    expect(h.calls).toEqual([sent("put", { title: "lar:///t/x", slot: "#/a", text: "new body", bag: "sdm" })]);
     expect(out.lines).toContain("  landed 1 · kept 1 · tombstoned 0");
     expect(out.lines.some((l) => l.startsWith("  base: sha256-slot (record"))).toBe(true);
     expect(out.lines.some((l) => l.startsWith("  base: sha256:2 (carrier"))).toBe(true);
@@ -194,129 +198,36 @@ describe("lares tiddler put --slot — the slot folds into the title; a slot's t
 
   test("a partial base a slot read handed back rides the put as written", async () => {
     h.reply = slotLanded;
-    await said(() => cmdTiddler(tiddlerArgs(["put", "lar:///t/x#/a"], { text: "new body", base: "partial:#/a:sha256:1", recipe: "default" })));
-    expect(h.calls).toEqual([{ verb: "tiddler-put", args: { recipe: "default", title: "lar:///t/x#/a", text: "new body", base: "partial:#/a:sha256:1" } }]);
-  });
-
-  test("the slot path refuses by name before the wire: a malformed path, a slot beside a title that already names one", async () => {
-    for (const [title, slot, named] of [["lar:///t/x", "a", "slot-malformed"], ["lar:///t/x", "#/", "slot-malformed"], ["lar:///t/x", "#/a b", "slot-malformed"], ["lar:///t/x#/a", "#/b", "slot-beside-fragment"]] as const) {
-      const out = await said(() => cmdTiddler(tiddlerArgs(["put", title], { slot, text: "x", recipe: "default" })));
-      expect(out.code, `${title} ${slot}`).toBe(2);
-      expect(JSON.stringify(out.json)).toContain(named);
-    }
-    expect(h.calls).toEqual([]);
+    await said(() => cmdCall(callArgs("put", "title=lar:///t/x#/a", "text=new body", "base=partial:#/a:sha256:1")));
+    expect(h.calls).toEqual([sent("put", { title: "lar:///t/x#/a", text: "new body", base: "partial:#/a:sha256:1" })]);
   });
 });
 
-describe("lares tiddler get --meme — roots by default, --tree nests the slots", () => {
-  test("★ dispatches meme-list with the container alone; --tree rides as `tree: true` ★", async () => {
-    h.reply = { bag: "lar:///ha.ka.ba/bags/sdm", roots: [{ uri: "lar:///t/x", canonicalHash: "sha256:1" }] };
-    expect(await cmdFamily(memeArgs(["list"], { bag: "sdm" }))).toBe(0);
-    expect(h.calls).toEqual([{ verb: "meme-list", args: { bag: "sdm" } }]);
-    h.calls.length = 0;
-    expect(await cmdFamily(memeArgs(["list"], { recipe: "lares" }, { tree: true }))).toBe(0);
-    expect(h.calls).toEqual([{ verb: "meme-list", args: { recipe: "lares", tree: true } }]);
-    h.calls.length = 0;
-    expect(await cmdFamily(memeArgs(["list"], {}, { tree: true }))).toBe(2);
-    expect(h.calls).toEqual([]);
+describe("lares delete family=true — the removal, in a recipe or a bag", () => {
+  test("★ sends title · container · base · family ★", async () => {
+    h.reply = { recipe: "sdm", title: "lar:///t/x", decision: "removed", tombstoned: [], retracted: ["lar:///t/x", "lar:///t/x#/a"], canonicalHash: "sha256:1", ...by("engine.record.removes") };
+    expect((await said(() => cmdCall(callArgs("delete", "title=lar:///t/x", "recipe=sdm", "base=sha256:1", "family=true")))).code).toBe(0);
+    expect(h.calls).toEqual([sent("delete", { title: "lar:///t/x", recipe: "sdm", base: "sha256:1", family: "true" })]);
   });
-  /** Capture the one JSON line `emit` prints under `--json`. */
-  const captured = async (run: () => Promise<number>): Promise<{ code: number; json: Record<string, unknown> }> => {
-    const lines: string[] = [];
-    const spy = vi.spyOn(process.stdout, "write").mockImplementation((m: unknown) => { lines.push(String(m)); return true; });
-    const code = await run().finally(() => spy.mockRestore());
-    return { code, json: JSON.parse(lines.join("")) as Record<string, unknown> };
-  };
-
-  test("★ a listing that arrives in pages gets read to its end: each cursor rides back as `after` ★", async () => {
-    const pages: Record<string, Record<string, unknown>> = {
-      "": { bag: "b", roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1" }, { uri: "lar:///t/b", canonicalHash: "sha256:2" }], next: "lar:///t/b" },
-      "lar:///t/b": { bag: "b", roots: [{ uri: "lar:///t/c", canonicalHash: "sha256:3" }], next: null },
-    };
-    h.replyFor = (args) => pages[String(args["after"] ?? "")]!;
-    const out = await captured(() => cmdFamily(memeArgs(["list"], { bag: "sdm" })));
+  test("★ family=true bag= takes the family out of one bag ★", async () => {
+    h.reply = { bag: "sdm", title: "lar:///t/x", decision: "removed", tombstoned: [], retracted: ["lar:///t/x"], ...by("engine.record.removes") };
+    const out = await said(() => cmdCall(callArgs("delete", "title=lar:///t/x", "bag=sdm", "family=true", "--no-json")));
     expect(out.code).toBe(0);
-    expect(h.calls).toEqual([{ verb: "meme-list", args: { bag: "sdm" } }, { verb: "meme-list", args: { bag: "sdm", after: "lar:///t/b" } }]);
-    expect((out.json["data"] as { bag: string; roots: { uri: string }[] })).toEqual({
-      bag: "b", roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1" }, { uri: "lar:///t/b", canonicalHash: "sha256:2" }, { uri: "lar:///t/c", canonicalHash: "sha256:3" }],
-    });
-  });
-
-  test("★ a count where the roots belong refuses by name; it never prints an empty listing ★", async () => {
-    h.reply = { bag: "b", roots: { boundedArrayCount: 401, tallies: {}, sha256: "x", sample: [], held: [], heldMore: 0 } };
-    const out = await captured(() => cmdFamily(memeArgs(["list"], { bag: "lares" })));
-    expect(out.code).not.toBe(0);
-    expect(out.json["ok"]).toBe(false);
-    expect(JSON.stringify(out.json["error"])).toMatch(/401 roots/);
-  });
-
-  test("a cursor that stands still refuses; the door never loops", async () => {
-    h.replyFor = () => ({ bag: "b", roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1" }], next: "lar:///t/a" });
-    const out = await captured(() => cmdFamily(memeArgs(["list"], { bag: "sdm" })));
-    expect(out.code).not.toBe(0);
-    expect(h.calls.length).toBe(2);
-    expect(JSON.stringify(out.json["error"])).toMatch(/cursor stood still/);
-  });
-
-  test("a recipe's listing carries the seat the verb named: the recipe, its bags, and any bag unreached", async () => {
-    h.reply = { recipe: "lares", bags: ["w", "c"], unreached: ["lar:///ha.ka.ba/bags/far"], roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1", bag: "c" }], next: null };
-    const out = await captured(() => cmdFamily(memeArgs(["list"], { recipe: "lares" })));
-    expect(out.code).toBe(0);
-    expect(out.json["data"]).toEqual({ recipe: "lares", bags: ["w", "c"], unreached: ["lar:///ha.ka.ba/bags/far"], roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1", bag: "c" }] });
-  });
-
-  test("a read the floor answered says so: the listing carries `floor: true` where the verb named the floor", async () => {
-    h.reply = { bag: "lar:///ha.ka.ba/bags/lararium", floor: true, roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1" }], next: null };
-    const listed = await captured(() => cmdFamily(memeArgs(["list"], { bag: "lararium" })));
-    expect(listed.json["data"]).toEqual({ bag: "lar:///ha.ka.ba/bags/lararium", floor: true, roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1" }] });
-  });
-
-  test("★ --recipe AND --bag together refuse; nothing reaches the wire ★", async () => {
-    expect(await cmdFamily(memeArgs(["list"], { recipe: "sdm", bag: "sdm" }))).toBe(2);
-    expect(h.calls).toEqual([]);
-  });
-  test("the human form prints one line per root: hash then uri, slots indented under --tree", async () => {
-    h.reply = { bag: "b", roots: [{ uri: "lar:///t/x", canonicalHash: "sha256:1", slots: [{ slot: "#/a", uri: "lar:///t/x#/a", slots: [{ slot: "#/b", uri: "lar:///t/x#/a/b", slots: [] }] }] }] };
-    const lines: string[] = [];
-    const spy = vi.spyOn(console, "log").mockImplementation((m: unknown) => { lines.push(String(m)); });
-    await cmdFamily(memeArgs(["list"], { recipe: "default" }, { json: false, tree: true }));
-    spy.mockRestore();
-    expect(lines).toEqual(["sha256:1  lar:///t/x", "  #/a", "    #/b"]);
-  });
-});
-
-describe("lares tiddler delete --family — the removal, in a recipe or a bag", () => {
-  test("★ plans tiddler-delete with title · container · family · --base ★", async () => {
-    h.reply = { recipe: "sdm", title: "lar:///t/x", decision: "removed", tombstoned: [], retracted: ["lar:///t/x", "lar:///t/x#/a"], canonicalHash: "sha256:1" };
-    expect((await said(() => cmdTiddler(tiddlerArgs(["delete", "lar:///t/x"], { recipe: "sdm", base: "sha256:1" }, { family: true })))).code).toBe(0);
-    expect(h.calls).toEqual([{ verb: "tiddler-delete", args: { title: "lar:///t/x", recipe: "sdm", base: "sha256:1", family: true } }]);
-  });
-  test("★ --family --bag takes the family out of one bag ★", async () => {
-    h.reply = { bag: "sdm", title: "lar:///t/x", decision: "removed", tombstoned: [], retracted: ["lar:///t/x"] };
-    const out = await said(() => cmdTiddler(tiddlerArgs(["delete", "lar:///t/x"], { bag: "sdm" }, { family: true, json: false })));
-    expect(out.code).toBe(0);
-    expect(h.calls).toEqual([{ verb: "tiddler-delete", args: { title: "lar:///t/x", bag: "sdm", family: true } }]);
+    expect(h.calls).toEqual([sent("delete", { title: "lar:///t/x", bag: "sdm", family: "true" })]);
     expect(out.lines).toContain("  tombstoned 0 · retracted 1");
   });
   test("a slot's title deletes plainly: the door lands it as the cut on its parent", async () => {
-    h.reply = { recipe: "default", title: "lar:///t/x#/a", decision: "removed", tombstoned: [], retracted: ["lar:///t/x#/a"] };
-    expect((await said(() => cmdTiddler(tiddlerArgs(["delete", "lar:///t/x#/a"], { recipe: "default" })))).code).toBe(0);
-    expect(h.calls).toEqual([{ verb: "tiddler-delete", args: { title: "lar:///t/x#/a", recipe: "default" } }]);
+    h.reply = { recipe: "default", title: "lar:///t/x#/a", decision: "removed", tombstoned: [], retracted: ["lar:///t/x#/a"], ...by("engine.record.removes") };
+    expect((await said(() => cmdCall(callArgs("delete", "title=lar:///t/x#/a")))).code).toBe(0);
+    expect(h.calls).toEqual([sent("delete", { title: "lar:///t/x#/a" })]);
   });
-  test("★ CONTROL: a stale --base answers conflict — exit class conflict, nothing moved ★", async () => {
-    h.reply = { recipe: "default", title: "lar:///t/x", decision: "conflict", tombstoned: [], hash: "sha256:2" };
-    expect((await said(() => cmdTiddler(tiddlerArgs(["delete", "lar:///t/x"], { base: "sha256:1", recipe: "default" }, { family: true })))).code).toBe(4);
+  test("★ CONTROL: a stale base= answers conflict — exit class conflict, nothing moved ★", async () => {
+    h.reply = { recipe: "default", title: "lar:///t/x", decision: "conflict", tombstoned: [], hash: "sha256:2", ...by("engine.record.removes") };
+    expect((await said(() => cmdCall(callArgs("delete", "title=lar:///t/x", "base=sha256:1", "family=true")))).code).toBe(4);
   });
-  test("an absent root exits not-found; a missing title refuses as usage", async () => {
-    h.reply = { bag: "sdm", title: "lar:///t/x", decision: "absent", tombstoned: [] };
-    expect((await said(() => cmdTiddler(tiddlerArgs(["delete", "lar:///t/x"], { bag: "sdm" }, { family: true })))).code).toBe(3);
-    expect((await said(() => cmdTiddler(tiddlerArgs(["delete"], { bag: "sdm" })))).code).toBe(2);
-  });
-  test("a bare delete names the missing store target and sends nothing", async () => {
-    const out = await said(() => cmdTiddler(tiddlerArgs(["delete", "lar:///t/x"], {}, { family: true, json: false })));
-    expect(out.code).toBe(2);
-    expect(h.calls).toEqual([]);
-    expect(out.errors.join(" ")).toMatch(/no-container.*--recipe.*--bag/s);
+  test("an absent root exits not-found", async () => {
+    h.reply = { bag: "sdm", title: "lar:///t/x", decision: "absent", tombstoned: [], ...by("engine.record.removes") };
+    expect((await said(() => cmdCall(callArgs("delete", "title=lar:///t/x", "bag=sdm", "family=true")))).code).toBe(3);
   });
 });
 
@@ -447,7 +358,7 @@ describe("lares meme normalize — the write seat, local, no daemon", () => {
 describe("projectPlan — the seat law, no daemon", () => {
   test("a target off the list refuses; a missing --to refuses; --recipe with --bag refuses", () => {
     expect(() => projectPlan(memeArgs(["project", "x.mem"], { to: "pdf" }))).toThrow(/--to/);
-    // The carrier itself reads through the one door (`lares tiddler get <uri> --meme --all`): `mem` left the targets.
+    // The carrier itself reads through the one door (`lares get title=<uri> mu=assert`): `mem` left the targets.
     expect(() => projectPlan(memeArgs(["project", "lar:///t/x"], { to: "mem", recipe: "default" }))).toThrow(/--to names the target, one of md · html · tid · json/);
     expect(() => projectPlan(memeArgs(["project", "x.mem"]))).toThrow(/--to/);
     expect(() => projectPlan(memeArgs(["project", "lar:///t/x"], { to: "html", recipe: "sdm", bag: "sdm" }))).toThrow(/no-container/);
@@ -560,21 +471,11 @@ describe("lares meme project --to md over a file — local, byte for byte", () =
 });
 
 describe("lares meme project store targets", () => {
-  test("bare URI project refuses as JSON before dispatch", async () => {
-    const write = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-    expect(await cmdMeme(memeArgs(["project", "lar:///t/x"], { to: "html" }, { json: true }))).toBe(2);
-    expect(h.calls).toEqual([]);
-    const emitted = write.mock.calls.map(([s]) => String(s)).join("").trim();
-    const result = JSON.parse(emitted) as { error?: { code?: string } };
-    expect(result.error?.code).toBe("no-container");
-    write.mockRestore();
-  });
-  test("a bare file project that needs the store refuses before reading the file", async () => {
-    const stderr = vi.spyOn(console, "error").mockImplementation(() => {});
-    expect(await cmdMeme(memeArgs(["project", "/path/that/must/not/be/read"], { to: "html" }, { json: false }))).toBe(2);
-    expect(h.calls).toEqual([]);
-    expect(stderr.mock.calls.flat().join(" ")).toMatch(/no-container.*--recipe.*--bag/s);
-    stderr.mockRestore();
+  test("a store project naming no container reads the worn face's daemon wiki (recipe default), a uri or a file alike", () => {
+    expect(projectPlan(memeArgs(["project", "lar:///t/x"], { to: "html" })).container).toEqual({ recipe: "default" });
+    expect(projectPlan(memeArgs(["project", "/path/that/must/not/be/read"], { to: "html" })).container).toEqual({ recipe: "default" });
+    // CONTROL: a local md projection over a file names no container at all.
+    expect(projectPlan(memeArgs(["project", "/path/that/must/not/be/read"], { to: "md" })).container).toEqual({});
   });
 });
 
@@ -964,13 +865,17 @@ describe("lares meme sitting — the fire is CALLED, and this call burns nothing
   });
 });
 
-describe("a lit face receives visits: --target reads, and a write naming one refuses at the CLI (Sol M1)", () => {
-  const a = (positional: string[], options: Record<string, string>) => ({ command: "meme", positional, options, flags: {} } as unknown as ParsedArgs);
-  test("the listing carries the target; a put (a slot's too) and a delete refuse it by name before any door opens (a meme read visits through `tiddler get --target`)", () => {
-    expect(listPlan(a(["list"], { recipe: "default", target: "h1" })).args).toEqual({ recipe: "default", target: "h1" });
-    const t = (positional: string[], options: Record<string, string>) => ({ command: "tiddler", positional, options, flags: {} } as unknown as ParsedArgs);
-    for (const sub of ["put", "delete"] as const) expect(() => tiddlerPlan(sub, t([sub, "lar:///t/x"], { recipe: "default", target: "h1" })), sub).toThrow(/cross-face-write-refused/);
-    expect(() => tiddlerPlan("put", t(["put", "lar:///t/x"], { recipe: "default", target: "h1", slot: "#/a", append: "n.txt" }))).toThrow(/cross-face-write-refused/);
+describe("a lit face receives visits: target= reads, and a write naming one rides to the carrier that refuses it (Sol M1)", () => {
+  test("a read carries target=; a put (a slot's too) and a delete carry it as written, and the write carrier refuses it in the VM", async () => {
+    expect((await callPlan(parseArgs(["get", "meme=true", "target=h1"]), NO_SOURCES)).plan).toEqual(sent("get", { meme: "true", target: "h1" }));
+    for (const verb of ["put", "delete"] as const) {
+      expect((await callPlan(parseArgs([verb, "title=lar:///t/x", "target=h1"]), NO_SOURCES)).plan, verb).toEqual(sent(verb, { title: "lar:///t/x", target: "h1" }));
+    }
+    expect((await callPlan(parseArgs(["put", "title=lar:///t/x", "target=h1", "slot=#/a", "append=n"]), NO_SOURCES)).plan).toEqual(sent("put", { title: "lar:///t/x", target: "h1", slot: "#/a", append: "n" }));
+    // The refusal the VM answers crosses back by its own code.
+    h.refuse = "param-unknown: the put carrier takes no target";
+    const out = await said(() => cmdCall(callArgs("put", "title=lar:///t/x", "target=h1", "text=x")));
+    expect(out.json).toMatchObject({ ok: false, error: { hint: "refusal: param-unknown" } });
   });
 });
 

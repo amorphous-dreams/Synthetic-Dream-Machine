@@ -6,7 +6,8 @@
  * Three matrices, each read from a live declaration:
  *   - `act`: every ACTION verb (mesh's ACTION_VERBS) x every destination shape -> daemon verb or wiki-act
  *   - `meme project`: every PROJECT_TARGETS entry x source shape -> local or daemon seat (projectPlan)
- *   - `tiddler put|delete` and the family listing: every sub -> its declared daemon verb, container riding along
+ *   - `put|delete|get|rename` (the call door): every verb word -> the one daemon verb `call`, its params riding whole (the VM
+ *     routes each to its carrier; the family listing rides `get meme=true`), container riding along
  *
  * `act` mocks only the wire (`runVerb`) and records which verb the command submits: the destination
  * the routing decision chose, with the routing code itself running real. Every routed act also
@@ -33,9 +34,8 @@ vi.mock("../../src/env.js", async (orig) => ({
 import { ACTION_VERBS } from "@lararium/mesh/residency-actions";
 import { cmdAct } from "../../src/commands/act.js";
 import { projectPlan, PROJECT_TARGETS } from "../../src/commands/meme.js";
-import { listPlan } from "../../src/commands/family.js";
-import { tiddlerPlan } from "../../src/commands/tiddler.js";
-import type { ParsedArgs } from "../../src/parse-args.js";
+import { callPlan, type CallSources } from "../../src/commands/call.js";
+import { parseArgs, type ParsedArgs } from "../../src/parse-args.js";
 
 const ROOT = "lar:///ha.ka.ba";
 const CANON = `${ROOT}/bags/witness`;
@@ -197,34 +197,37 @@ describe("L8 · meme project: the target and source shape decide the seat", () =
   });
 });
 
-describe("L8 · tiddler put|delete and the family listing: each sub reaches its declared daemon verb with the container (a recipe or a bag)", () => {
-  const args = (positional: string[], options: Record<string, string>, flags: Record<string, boolean> = {}): ParsedArgs =>
-    ({ command: "tiddler", positional, options, flags: { json: true, ...flags } }) as unknown as ParsedArgs;
-  const VERB_OF = { put: "tiddler-put", delete: "tiddler-delete" } as const;
+describe("L8 · the call door: each verb word reaches the one daemon verb `call` with its container (a recipe or a bag)", () => {
+  const NO_SOURCES: CallSources = { read: () => { throw new Error("no file read"); }, stdin: async () => { throw new Error("no stdin read"); } };
+  const plan = async (...tokens: string[]) => (await callPlan(parseArgs(tokens), NO_SOURCES)).plan;
 
-  for (const sub of ["put", "delete"] as const) {
+  for (const verb of ["get", "put", "delete", "rename"] as const) {
     for (const container of [{ recipe: "sdm" }, { bag: "lares" }]) {
-      test(`${sub} ${Object.keys(container)[0]} -> ${VERB_OF[sub]}`, () => {
-        const plan = tiddlerPlan(sub, args([sub, "lar:///t/x"], container));
-        expect(plan.verb).toBe(VERB_OF[sub]);
-        expect(plan.args).toEqual({ title: "lar:///t/x", ...container });
+      const [name, value] = Object.entries(container)[0]!;
+      test(`${verb} ${name} -> call`, async () => {
+        const sent = await plan(verb, "title=lar:///t/x", `${name}=${value}`);
+        expect(sent.verb).toBe("call");
+        expect(sent.args).toEqual({ verb, params: { title: "lar:///t/x", ...container }, surface: "cli" });
       });
     }
-    test(`${sub} names no container: refuses before any route`, () => {
-      expect(() => tiddlerPlan(sub, args([sub, "lar:///t/x"], {}))).toThrow(/no-container/);
+    test(`${verb} names no container: the call carries none, and the VM's #/takes binds recipe=default`, async () => {
+      expect((await plan(verb, "title=lar:///t/x")).args).toEqual({ verb, params: { title: "lar:///t/x" }, surface: "cli" });
     });
   }
-  test("the listing addresses the seat, never one meme", () => {
-    expect(listPlan(args(["list"], { bag: "lares" })).verb).toBe("meme-list");
-    expect(listPlan(args(["list"], { recipe: "sdm" }, { tree: true })).args).toEqual({ recipe: "sdm", tree: true });
+  test("an address names its carrier as the verb, past every skin spelling", async () => {
+    expect((await plan("lar:///engine.record.removes", "title=lar:///t/x", "bag=lares")).args).toEqual({ verb: "lar:///engine.record.removes", params: { title: "lar:///t/x", bag: "lares" }, surface: "cli" });
   });
-  test("seed: the delete base rides as `base` from --base; put reads --base", () => {
-    expect(tiddlerPlan("delete", args(["delete", "lar:///t/x"], { bag: "b", base: " h " })).args["base"]).toBe("h");
-    expect(tiddlerPlan("put", args(["put", "lar:///t/x"], { bag: "b", base: "h" })).args["base"]).toBe("h");
+  test("the listing addresses the seat, never one meme: `get meme=true` names no title", async () => {
+    expect((await plan("get", "meme=true", "recipe=sdm", "tree=true")).args).toEqual({ verb: "get", params: { meme: "true", recipe: "sdm", tree: "true" }, surface: "cli" });
   });
-  test("CONTROL: two subs reach two different verbs", () => {
-    const a = tiddlerPlan("delete", args(["delete", "lar:///t/x"], { bag: "b" })).verb;
-    const b = tiddlerPlan("put", args(["put", "lar:///t/x"], { bag: "b" })).verb;
-    expect(a).not.toBe(b);
+  test("seed: base= rides as written on a delete and a put (the VM trims and binds it)", async () => {
+    expect(((await plan("delete", "title=lar:///t/x", "bag=b", "base= h ")).args["params"] as Record<string, string>)["base"]).toBe(" h ");
+    expect(((await plan("put", "title=lar:///t/x", "bag=b", "base=h")).args["params"] as Record<string, string>)["base"]).toBe("h");
+  });
+  test("CONTROL: two verb words ride one daemon verb and name two different carriers' verbs", async () => {
+    const a = await plan("delete", "title=lar:///t/x", "bag=b");
+    const b = await plan("put", "title=lar:///t/x", "bag=b");
+    expect(a.verb).toBe(b.verb);
+    expect(a.args["verb"]).not.toBe(b.args["verb"]);
   });
 });

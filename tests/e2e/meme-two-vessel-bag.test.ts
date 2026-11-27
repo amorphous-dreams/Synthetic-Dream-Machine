@@ -11,7 +11,7 @@
  *   ② B founds a place under its OWN root                 `vessel found` on B's own marked scratch root
  *   ③ A offers its face's fleet; B requests over it       `fleet join offer` · `fleet join request`
  *   ④ A answers, naming A's dial; B lands the answer      `fleet join answer --sync-url …` · `fleet join land`
- *   ⑤ A stands; the meme lands on A's wiki                `tiddler put --recipe lares`
+ *   ⑤ A stands; the meme lands on A's wiki                `put recipe=lares`
  *   ⑥ B stands dialing A                                  the pin `fleet join land` wrote (sync url · gate pin)
  *   ⑦ A promotes in its own lares book; B measures no live record from A (W24/W27 BOOK crossing)
  *   ⑧ B promotes in its own lares book (OWED: a sibling device's reach follows the face's counted admission, `test.fails` until then); A keeps A’s record
@@ -24,11 +24,11 @@
  *   mint reads `faceSeated` false and stays on B's own key (`resolve-binding.ts`), and B boots. B's key
  *   mints under B's root when B founds as a place, before its fleet-join request names it.
  *
- *   THE SYSTEM-BAG WRITE DOOR. `--recipe lares` writes the recipe's designated bag — the wiki's WORKING
+ *   THE SYSTEM-BAG WRITE DOOR. `recipe=lares` writes the recipe's designated bag — the wiki's WORKING
  *   layer (`wikis/lares/working`, `wiki which` says so below), the doc the running wiki island mounts as
  *   its default writable, so the placement SURFACES in that wiki (its working layer projects to
- *   `wikis/lares/` on disk); `--recipe lares` READS the whole stack top-down (working shadows canon, canon
- *   answers when working holds nothing). `--bag lares` refuses a put (the daemon mounts `lares`
+ *   `wikis/lares/` on disk); `recipe=lares` READS the whole stack top-down (working shadows canon, canon
+ *   answers when working holds nothing). `bag=lares` refuses a put (the daemon mounts `lares`
  *   read-only). The residency ACTION verbs reach `lares` by access, so a promotion into
  *   `lar:///ha.ka.ba/bags/lares` is the door — on each side, each direction.
  *
@@ -51,10 +51,10 @@ const INVENTORY = "backpack: rope, lantern";
 /** A `w.w.w/` loci root — the disk projection sites only carriers whose URI carries one. */
 const PATH = "t.witness.npc/inventory";
 const URI  = `lar:///${PATH}`;
-const WIKI = ["--recipe", "lares"] as const;
+const WIKI = ["recipe=lares"] as const;
 const LARES_BAG = "lar:///ha.ka.ba/bags/lares";
 const WORKING_LARES = "lar:///ha.ka.ba/wikis/lares/working";
-const BAG  = ["--bag", "lares"] as const;
+const BAG  = ["bag=lares"] as const;
 /** The author's line as the canonical carrier aligns it — the VALUE is what must read back byte-whole. */
 const BAG_LINE = new RegExp(`^bag\\s+= "${INVENTORY}"$`, "m");
 
@@ -93,7 +93,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     pair = await openStagedJoinee({ tag: "bag", beforeB: async (a) => {
       const f = join(a.root, "npc.mem");
       writeFileSync(f, meme(["a"]));
-      const put = await a.cli(["tiddler", "put", URI, ...WIKI, "--file", f, "--json"]);
+      const put = await a.cli(["put", `title=${URI}`, ...WIKI, `file=${f}`, "--json"]);
       if (put.json?.["ok"] !== true) throw new Error(`A: put refused\n${said(put)}`);
     } });
     A = pair.A; B = pair.B; rootB = pair.rootB; admitted = pair.admitted; joinGate = pair.joinGate ?? "";
@@ -109,7 +109,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
   });
 
   test("⑤ on A: `get` hands the author's `bag` line back byte-whole", async () => {
-    const r = await A!.cli(["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--json"]);
+    const r = await A!.cli(["get", `title=${URI}`, ...WIKI, "mu=assert", "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     const text = String(((r.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>)["text"]);
     expect(text).toMatch(BAG_LINE);
@@ -143,17 +143,17 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     // resolves through the same resolver under the same binding law, late-attached above the daemon
     // bag as the default writable, and the cascade's `current-wiki-bag` re-seeds to it.
     expect(A!.bootLog()).toContain("[daemon] working layer attached: lar:///ha.ka.ba/wikis/daemon/working");
-    // MEASURED: the explicit `--recipe default` places through the live `$tw.wiki`, and the same
+    // MEASURED: the explicit `recipe=default` places through the live `$tw.wiki`, and the same
     // `change` listener every other wiki edit rides (`outbound-bridge.ts`, wired in `sovereign-kernel.ts`)
     // carries it OUT to `IslandAdaptor.saveTiddler`. `wiki which` below reads where it landed.
     const anchorUri = "lar:///t.witness.npc/anchor";
     const f = join(A!.root, "anchor.mem");
     writeFileSync(f, meme(["a"]).replaceAll(URI, anchorUri).replace(`uri-path = "${PATH}"`, `uri-path = "t.witness.npc/anchor"`));
-    const put = await A!.cli(["tiddler", "put", anchorUri, "--recipe", "default", "--file", f, "--json"]);
+    const put = await A!.cli(["put", `title=${anchorUri}`, "recipe=default", `file=${f}`, "--json"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
     await new Promise((r) => setTimeout(r, 1500));
     const which = await A!.cli(["wiki", "which", anchorUri, "--no-json"]);
-    console.error(`meme-two-vessel-bag MEASURE A: anchor tiddler put → wiki which ${anchorUri}\n${which.stdout.trim()}`);
+    console.error(`meme-two-vessel-bag MEASURE A: anchor put → wiki which ${anchorUri}\n${which.stdout.trim()}`);
   });
 
   test("⑥ B stands, dialing A — the founder's persona doc resolved over the crossing", () => {
@@ -173,8 +173,8 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     }
     // CONTROL for the projection witness below: nothing sits on B's disk before the promotion.
     expect(existsSync(join(B!.root, "projections/bags/lares", `${PATH}.mem`))).toBe(false);
-    const refused = await A!.cli(["tiddler", "put", URI, "--bag", "lares", "--file", join(A!.root, "npc.mem"), "--json"]);
-    console.error(`meme-two-vessel-bag MEASURE A: tiddler put --bag lares → ${said(refused).trim().slice(0, 300)}`);
+    const refused = await A!.cli(["put", `title=${URI}`, ...BAG, `file=${join(A!.root, "npc.mem")}`, "--json"]);
+    console.error(`meme-two-vessel-bag MEASURE A: put bag=lares →${said(refused).trim().slice(0, 300)}`);
     expect(refused.json?.["ok"]).toBe(false);
   });
 
@@ -192,15 +192,15 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     const which = await A!.cli(["wiki", "which", URI, "--no-json"]);
     expect(which.stdout).toContain(`  ${LARES_BAG}`);
     // A's own working layer still shadows the recipe read; the bag read names the promoted copy.
-    const r = await A!.cli(["tiddler", "get", URI, ...BAG, "--meme", "--all", "--json"]);
+    const r = await A!.cli(["get", `title=${URI}`, ...BAG, "mu=assert", "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     expect(String(((r.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>)["text"])).toMatch(BAG_LINE);
   });
 
   test("★ ⑦ MEASURE on B: A's live lares record stays in A's own book ★", async () => {
     // W24/W27 owns the same-face BOOK crossing. B's lares book does not carry A's live system record.
-    const bag = await B!.cli(["tiddler", "get", URI, ...BAG, "--meme", "--all", "--json"]);
-    const wiki = await B!.cli(["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--json"]);
+    const bag = await B!.cli(["get", `title=${URI}`, ...BAG, "mu=assert", "--json"]);
+    const wiki = await B!.cli(["get", `title=${URI}`, ...WIKI, "mu=assert", "--json"]);
     const which = await B!.cli(["wiki", "which", URI, "--no-json"]);
     console.error(`meme-two-vessel-bag MEASURE B: bag → ${said(bag).trim().slice(0, 240)}; wiki → ${said(wiki).trim().slice(0, 240)}`);
     expect(String((((bag.json?.["data"] as Record<string, unknown> | undefined)?.["meme"]) as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("<<~ ahu slot=`#/a`>>");
@@ -218,7 +218,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     const root = titles.find((t) => !titles.some((c) => c !== t && (t.startsWith(`${c}#`) || t.startsWith(`${c}/`)))) ?? titles[0]!;
     const mv = await B!.cli(["act", "MOVE", "--title", root, "--from", WORKING_LARES, "--to", LARES_BAG, "--yes", "--json"]);
     expect(JSON.stringify(mv.json), "a missing source refuses closed, by name").toContain("kahu-reach");
-    const a = await A!.cli(["tiddler", "get", URI, ...BAG, "--meme", "--all", "--json"]);
+    const a = await A!.cli(["get", `title=${URI}`, ...BAG, "mu=assert", "--json"]);
     const aText = String((((a.json?.["data"] as Record<string, unknown> | undefined)?.["meme"]) as Record<string, unknown> | undefined)?.["text"] ?? "");
     expect(aText).toContain("<<~ ahu slot=`#/a`>>");
     expect(aText).not.toContain("<<~ ahu slot=`#/b`>>");
@@ -235,12 +235,12 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     const ld = await B!.cli(["act", "LOAD", "--source-uri", f, "--to", WORKING_LARES, "--yes", "--json"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
     await promoteLoadedTitles(B!, ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
-    const local = await B!.cli(["tiddler", "get", URI, ...BAG, "--meme", "--all", "--json"]);
+    const local = await B!.cli(["get", `title=${URI}`, ...BAG, "mu=assert", "--json"]);
     const localText = String((((local.json?.["data"] as Record<string, unknown> | undefined)?.["meme"]) as Record<string, unknown> | undefined)?.["text"] ?? "");
     expect(localText).toContain("<<~ ahu slot=`#/b`>>");
     expect(localText).toMatch(BAG_LINE);
     expect(localText).not.toContain("$origin-bag");
-    const a = await A!.cli(["tiddler", "get", URI, ...BAG, "--meme", "--all", "--json"]);
+    const a = await A!.cli(["get", `title=${URI}`, ...BAG, "mu=assert", "--json"]);
     const aText = String((((a.json?.["data"] as Record<string, unknown> | undefined)?.["meme"]) as Record<string, unknown> | undefined)?.["text"] ?? "");
     expect(aText).toContain("<<~ ahu slot=`#/a`>>");
     expect(aText).not.toContain("<<~ ahu slot=`#/b`>>");
@@ -248,7 +248,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
 
   // THE LATER GRANT (basket-one #/the-later-grant, ruled 2026-09-11). A's door answers B's `face-join` intent and seats B in the group
   // AND writes the grant as a SIGNED RECORD on the PersonaGroup plane (the doc both sync by membership).
-  // B's own kit, on its next present (a `tiddler put --recipe lares` resolves the binding → `faceSeated`),
+  // B's own kit, on its next present (a `put recipe=lares` resolves the binding → `faceSeated`),
   // reads the record, verifies it offline against the persona root it pinned at admit and A's root-signed
   // edge, ingests the cap events by its own act, and the face reads SEATED; `regrantOnSeat` then rewrites
   // B's `vessel-only` binding to `face`. Reading alone re-cuts nothing (the keyhive control witnesses a
@@ -278,8 +278,8 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     const deadline = Date.now() + 90_000;
     let taken = false;
     while (Date.now() < deadline) {
-      const put = await B!.cli(["tiddler", "put", URI, ...WIKI, "--file", f, "--json"]);
-      console.error(`meme-two-vessel-bag MEASURE B: tiddler put --recipe lares (after the grant) → ${said(put).trim().slice(0, 200)}`);
+      const put = await B!.cli(["put", `title=${URI}`, ...WIKI, `file=${f}`, "--json"]);
+      console.error(`meme-two-vessel-bag MEASURE B: put recipe=lares (after the grant) → ${said(put).trim().slice(0, 200)}`);
       if (/grant record taken .* SEATED/.test(B!.bootLog())) { taken = true; break; }
       await new Promise((res) => setTimeout(res, 3000));
     }

@@ -218,7 +218,7 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     // across a re-found), the verified founding relation the bags; no daemon mount projects no private layer.
     ...(projectionRoot ? { diskMirrors: daemonDiskMirrors({ projectionRoot, canonBags: daemonBagsDir(), face: faceRelation && faceSegment ? { relation: faceRelation, segment: faceSegment } : null, canon: canonBag !== undefined, temp: tempMirror }) } : {}),
     // THE VESSEL'S FLOOR PIN, off the control document that just stood: the daemon island mounts the accepted floor, so every
-    // face's `tiddler get --meme` and `meme list` over `--bag <house canon>` answers the released canon from its next composition on. A control document
+    // face's `lares get title=… meme=true` and `meme list` over `bag=<house canon>` answers the released canon from its next composition on. A control document
     // that reads nothing (a locked floor) names no pin, and the island reads its genesis seed's floor.
     floorCid: () => {
       let doc: LarDoc | undefined;

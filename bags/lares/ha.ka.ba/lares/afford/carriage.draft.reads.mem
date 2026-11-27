@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.draft.reads"
 
 ! carriage.draft.reads ~ the drafts a standoff brought inside
 
-`drafts <uri>` names the drafts the carrier's standoffs loaded into the worn face's draft layer, by title, so a person sees what `keep-both` would keep. `lares tiddler get` reads each draft. The verb writes nothing and asks no confirmation.
+`drafts <uri>` names the drafts the carrier's standoffs loaded into the worn face's draft layer, by title, so a person sees what `keep-both` would keep. `lares get` reads each draft. The verb writes nothing and asks no confirmation.
 
 <<~/ahu>>
 
@@ -97,6 +97,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qY2P_fgJjwHjifUsjjyp88y6OjPqhHqR1UmDcdSQp0w`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HFD-xOyqEMbGc3Spox9UUNQO6o9DPxYDm8tbcnmcwWo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -169,8 +169,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       // THE VESSEL'S LIVE LOG (its tmpfs /lar/run/vessel-live.log): one JSON line per event change, as the sink writes them.
       `case " $* " in *" exec "*"/lar/run/vessel-live.log"*) [ -z "\${FAKE_VESSEL_LIVE:-}" ] || printf '%s\\n' "\${FAKE_VESSEL_LIVE}"; exit "\${FAKE_LIVE_RC:-0}";; esac\n` +
       `case " $* " in *" up -d --wait lares "*) [ "\${FAKE_UP_RC:-0}" = 0 ] || printf '%s\\n' 'compose readiness failed' >&2; exit "\${FAKE_UP_RC:-0}";; esac\n` +
-      (refuseInput ? `case " $* " in *" tiddler put "*) printf "lares tiddler put: usage refusal\\n" >&2; exit 2;; esac\n` : "") +
-      `case " $* " in *" tiddler put "*" --file - "*|*" tiddler put "*" --file=- "*|*" tiddler put "*" --append - "*|*" tiddler put "*" --append=- "*|*" spirit "*" --file - "*) cat > "$CALL_LOG.stdin";; esac\n` +
+      (refuseInput ? `case " $* " in *" put "*) printf "lares put: usage refusal\\n" >&2; exit 2;; esac\n` : "") +
+      `case " $* " in *" put "*" file=- "*|*" spirit "*" --file - "*|*" spirit "*" --file=- "*|*" spirit "*" --append - "*|*" spirit "*" --append=- "*) cat > "$CALL_LOG.stdin";; esac\n` +
       // A WEAR the vessel answers as a test scripts (its prose and its exit); unscripted, it answers as any exec does.
       `case " $* " in *" wear "*) if [ -n "\${FAKE_WEAR_OUT:-}" ]; then printf '%s\\n' "\${FAKE_WEAR_OUT}" >&2; exit "\${FAKE_WEAR_RC:-0}"; fi;; esac\n` +
       // THE VERB'S OWN PROCESS REPORTS THE STANDING, asked by nothing (`standing-report.ts`): a tagged exec (`-e LARES_EXEC_TAG`) whose
@@ -299,20 +299,41 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
 const haveScript = spawnSync("script", ["--version"]).status === 0;
 
 for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
-  test(`${name}: a named family file crosses as exact stdin bytes and an absent file refuses before exec`, { skip }, async () => {
-    const bytes = Buffer.from("first\n\nlast\n", "utf8");
-    const landed = await run(shim, ["tiddler", "put", "lar:///t/x", "--recipe", "default", "--file", "@HOST_FILE@"],
-      { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" }, hostInput: bytes });
+  const standing = { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" };
+  const wire = ["put", "title=lar:///t/x", "base=sha256:1"];
+  test(`${name}: a put's file=<path> crosses as exact stdin bytes and the token reads file=-`, { skip }, async () => {
+    const bytes = Buffer.from("first\r\n\nlast\n", "utf8");
+    const landed = await run(shim, [...wire, "file=@HOST_FILE@"], { env: standing, hostInput: bytes });
     assert.equal(landed.status, 0, landed.stderr);
     assert.deepEqual(landed.received, bytes);
-    assert.match(landed.calls, /--file -/);
-    const piped = await run(shim, ["tiddler", "put", "lar:///t/x", "--recipe", "default", "--file", "-"],
-      { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" }, input: bytes });
+    assert.match(landed.calls, / node \S+ put title=lar:\/\/\/t\/x base=sha256:1 file=-$/m);
+  });
+  test(`${name}: a put's file=- passes through and carries the shim's own stdin`, { skip }, async () => {
+    const bytes = Buffer.from("piped words\n", "utf8");
+    const piped = await run(shim, [...wire, "file=-"], { env: standing, input: bytes });
+    assert.equal(piped.status, 0, piped.stderr);
     assert.deepEqual(piped.received, bytes);
-    const absent = await run(shim, ["tiddler", "put", "lar:///t/x", "--recipe", "default", "--file", "@HOST_FILE@"],
-      { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" } });
-    assert.notEqual(absent.status, 0);
-    assert.doesNotMatch(absent.calls, / node .* tiddler put /);
+    assert.match(piped.calls, / put title=lar:\/\/\/t\/x base=sha256:1 file=-$/m);
+  });
+  test(`${name}: a put's missing host file, an empty file= and a repeated file= refuse before exec`, { skip }, async () => {
+    const missing = await run(shim, [...wire, "file=@HOST_FILE@"], { env: standing });
+    assert.notEqual(missing.status, 0);
+    assert.match(missing.stderr, /cannot read host file/);
+    assert.doesNotMatch(missing.calls, / node .* put /);
+    const empty = await run(shim, [...wire, "file="], { env: standing });
+    assert.notEqual(empty.status, 0);
+    assert.match(empty.stderr, /file= names no host file \(an empty value\)/);
+    assert.doesNotMatch(empty.calls, / node .* put /);
+    const twice = await run(shim, [...wire, "file=@HOST_FILE@", "file=-"], { env: standing, hostInput: "x" });
+    assert.notEqual(twice.status, 0);
+    assert.match(twice.stderr, /name one host file: file=, once/);
+    assert.doesNotMatch(twice.calls, / node .* put /);
+  });
+  test(`${name}: a put line with no file= streams nothing and rides every token untouched`, { skip }, async () => {
+    const plain = await run(shim, ["put", "title=Ledger", "append=-", "text=--file", "with=--x"], { env: standing });
+    assert.equal(plain.status, 0, plain.stderr);
+    assert.equal(plain.received, null);
+    assert.match(plain.calls, / put title=Ledger append=- text=--file with=--x$/m);
   });
 }
 for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
@@ -331,49 +352,6 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
     assert.notEqual(absent.status, 0);
     const read = await run(shim, ["spirit", "hum", "lares-alpha", "--fold", "#/open"], { env });
     assert.equal(read.received, null);
-  });
-}
-for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
-  const standing = { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" };
-  const crlf = Buffer.from("one\r\ntwo\r\n\r\n", "utf8");
-  test(`${name}: a slot write streams a named host file whole, by --file, --file= or --append`, { skip }, async () => {
-    const wire = ["tiddler", "put", "lar:///t/x", "--recipe", "default", "--slot", "#/a", "--base", "sha256:1"];
-    for (const [flag, sink] of [[["--file", "@HOST_FILE@"], /--file -/], ...(name === "sh" ? [[["--file=@HOST_FILE@"], /--file=-/]] : []), [["--append", "@HOST_FILE@"], /--append -/]]) {
-      const r = await run(shim, [...wire, ...flag], { env: standing, hostInput: crlf });
-      assert.equal(r.status, 0, `${flag.join(" ")}: ${r.stderr}`);
-      assert.deepEqual(r.received, crlf, flag.join(" "));
-      assert.match(r.calls, sink);
-    }
-  });
-  test(`${name}: a plain put streams a named --append host file whole, passes --append - through, and refuses a missing one before exec`, { skip }, async () => {
-    const wire = ["tiddler", "put", "Ledger", "--recipe", "default"];
-    const landed = await run(shim, [...wire, "--append", "@HOST_FILE@"], { env: standing, hostInput: crlf });
-    assert.equal(landed.status, 0, landed.stderr);
-    assert.deepEqual(landed.received, crlf);
-    assert.match(landed.calls, /--append -/);
-    const piped = await run(shim, [...wire, "--append", "-"], { env: standing, input: crlf });
-    assert.equal(piped.status, 0, piped.stderr);
-    assert.deepEqual(piped.received, crlf);
-    const missing = await run(shim, [...wire, "--append", "@HOST_FILE@"], { env: standing });
-    assert.notEqual(missing.status, 0);
-    assert.doesNotMatch(missing.calls, / node .* tiddler put /);
-  });
-  test(`${name}: a missing --append file, an empty source, a repeated source and a flag-shaped value refuse or pass as the CLI would`, { skip }, async () => {
-    const wire = ["tiddler", "put", "lar:///t/x", "--recipe", "default", "--slot", "#/a", "--base", "sha256:1"];
-    const missing = await run(shim, [...wire, "--append", "@HOST_FILE@"], { env: standing });
-    assert.notEqual(missing.status, 0);
-    assert.doesNotMatch(missing.calls, / node .* tiddler put /);
-    const empty = await run(shim, [...wire, "--file="], { env: standing });
-    assert.notEqual(empty.status, 0);
-    assert.doesNotMatch(empty.calls, / node .* tiddler put /);
-    const twice = await run(shim, [...wire, "--file", "@HOST_FILE@", "--append", "@HOST_FILE@"], { env: standing, hostInput: crlf });
-    assert.notEqual(twice.status, 0);
-    assert.doesNotMatch(twice.calls, / node .* tiddler put /);
-    // `--text --file` carries the words "--file" as a value: no source, nothing streamed.
-    const value = await run(shim, [...wire, "--text", "--file"], { env: standing });
-    assert.equal(value.status, 0, value.stderr);
-    assert.equal(value.received, null);
-    assert.match(value.calls, /--text --file/);
   });
 }
 test("sh: RED reset under an AI seat refuses hand-act-only by name before the terminal and the typed word, and the hearth keeps every entry", { skip: !haveScript }, async () => {
@@ -834,11 +812,11 @@ for (const [name, shim] of shims) {
   // ONE CLI PER CALL, AND NOTHING ASKS: the verb's own exec carries its argv alone, and the image's CLI REPORTS the standing as it
   // leaves (config/standing-report.<tag>); the shim reads the report, removes it, and the exit stays the verb's own.
   test(`${name}: RED a verb on a new image runs one CLI: its exec carries no standing word, the report reads attach, no observe follows, and no report outlives the call`, async () => {
-    const r = await run(shim, ["tiddler", "get", "lar:///x", "--recipe", "default"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    const r = await run(shim, ["get", "title=lar:///x"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(r.status, 0, r.stderr);
-    const execs = r.calls.split("\n").filter((line) => / lares node \S+ tiddler get /.test(line));
+    const execs = r.calls.split("\n").filter((line) => / lares node \S+ get title=/.test(line));
     assert.equal(execs.length, 1, r.calls);
-    assert.match(execs[0], /exec -e LARES_EXEC_TAG (?:-e \S+ )*-T lares node \S+ tiddler get lar:\/\/\/x --recipe default$/);
+    assert.match(execs[0], /exec -e LARES_EXEC_TAG (?:-e \S+ )*-T lares node \S+ get title=lar:\/\/\/x$/);
     assert.doesNotMatch(r.calls, /--standing-report|LARES_STANDING_REPORT/);
     assert.match(r.calls, /^REPORT attach$/m);
     assert.doesNotMatch(r.calls, /--observe/);
@@ -850,7 +828,7 @@ for (const [name, shim] of shims) {
   // HOST/IMAGE SKEW BREAKS NO CALL: an image older than the report runs the same exec (no word it could refuse), writes nothing,
   // and the shim takes one observe reading; its absence IS the capability signal.
   test(`${name}: RED an old image (no report) still serves the call: the exec carries no word it could refuse, one observe reading follows, and a restand there still lifts`, async () => {
-    const steady = await run(shim, ["tiddler", "get", "lar:///x", "--recipe", "default"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OLD_IMAGE: "1" } });
+    const steady = await run(shim, ["get", "title=lar:///x"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OLD_IMAGE: "1" } });
     assert.equal(steady.status, 0, steady.stderr);
     assert.doesNotMatch(steady.calls, /--standing-report|^REPORT /m);
     assert.equal((steady.calls.match(/vessel stand --observe --json/g) ?? []).length, 1, steady.calls);
@@ -897,9 +875,9 @@ for (const [name, shim] of shims) {
   });
 
   test(`${name}: a caller's ask budget rides the call's own argv to the vessel as its last word, and no environment name carries one`, async () => {
-    const r = await run(shim, ["tiddler", "get", "lar:///x", "--recipe", "default", "--ask-budget-ms=3500"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", LARES_ASK_BUDGET_MS: "9" } });
+    const r = await run(shim, ["get", "title=lar:///x", "--ask-budget-ms=3500"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", LARES_ASK_BUDGET_MS: "9" } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /-T lares node \S+ tiddler get lar:\/\/\/x --recipe default --ask-budget-ms=3500$/m);
+    assert.match(r.calls, /-T lares node \S+ get title=lar:\/\/\/x --ask-budget-ms=3500$/m);
     assert.doesNotMatch(r.calls, /LARES_ASK_BUDGET_MS/);
   });
 
@@ -960,7 +938,7 @@ for (const [name, shim] of shims) {
   });
 
   test(`${name}: a verb the CLI refuses keeps its exit status, and no standing check follows`, async () => {
-    const r = await run(shim, ["tiddler", "get", "lar:///x", "--recipe", "default", "--meme"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "7" } });
+    const r = await run(shim, ["get", "title=lar:///x", "mu=assert"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "7" } });
     assert.equal(r.status, 7);
     assert.doesNotMatch(r.calls, /--observe/);
   });
@@ -2841,76 +2819,78 @@ test("pulama-closure: comments, an unreached module of a reached package, an unr
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
 
+// THE VALUE-FLAG WALKER rides the spirit verbs' `--file`/`--append` (the call shape's put names its host file as `file=`, above).
 for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
   const env = { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" };
-  const wire = ["tiddler", "put", "T", "--recipe", "default"];
+  const wire = ["spirit", "residue", "om-wright"];
   const bytes = Buffer.from("one\r\ntwo\r\n\r\n");
   for (const [flag, expected] of [[["--file", "@HOST_FILE@"], /--file -/], ...(name === "sh" ? [[["--file=@HOST_FILE@"], /--file=-/]] : [])]) {
-    test(`${name}: plain put carries ${flag[0]} host bytes`, { skip }, async () => {
+    test(`${name}: a spirit verb carries ${flag[0]} host bytes`, { skip }, async () => {
       const r = await run(shim, [...wire, ...flag], { env, hostInput: bytes });
       assert.equal(r.status, 0, r.stderr); assert.deepEqual(r.received, bytes); assert.match(r.calls, expected);
     });
   }
   for (const [label, flags, hostInput] of [["missing file", ["--file", "@HOST_FILE@"]], ["empty file", ["--file="]], ["two files", ["--file", "@HOST_FILE@", "--file", "@HOST_FILE@"], bytes]]) {
-    test(`${name}: plain put refuses ${label} before docker`, { skip }, async () => {
+    test(`${name}: a spirit verb refuses ${label} before docker`, { skip }, async () => {
       const r = await run(shim, [...wire, ...flags], { env, hostInput });
       assert.notEqual(r.status, 0); assert.equal(r.calls, "");
     });
   }
-  test(`${name}: plain put passes stdin and leaves a flag-shaped value alone`, { skip }, async () => {
+  test(`${name}: a spirit verb passes stdin and leaves a flag-shaped value alone; a get streams nothing`, { skip }, async () => {
     const piped = await run(shim, [...wire, "--file", "-"], { env, input: bytes });
     // A run that never reached its exec (a refusal, a spawn timeout under load) names itself here, never as a bare null below.
     assert.equal(piped.status, 0, `${piped.stderr}${piped.error ? ` (${piped.error.message})` : ""}${piped.signal ? ` (signal ${piped.signal})` : ""}`);
     assert.deepEqual(piped.received, bytes);
-    const value = await run(shim, [...wire, "--text", "--file", "--text", "--create"], { env });
+    const value = await run(shim, [...wire, "--text", "--file", "--text", "--note"], { env });
     assert.equal(value.status, 0, value.stderr); assert.equal(value.received, null);
-    // `--text --create` carries "--create" as a value, never as a flag, and the slot append beside it streams the host file.
-    const flagValue = await run(shim, [...wire, "--text", "--create", "--slot", "#/a", "--append", "@HOST_FILE@"], { env, hostInput: bytes });
+    // `--text --note` carries "--note" as a value, never as a flag, and the append beside it streams the host file.
+    const flagValue = await run(shim, ["spirit", "ah", "lares-alpha", "--text", "--note", "--slot", "#/a", "--append", "@HOST_FILE@"], { env, hostInput: bytes });
     assert.equal(flagValue.status, 0, flagValue.stderr); assert.deepEqual(flagValue.received, bytes);
     assert.match(flagValue.calls, /--append -/);
-    const get = await run(shim, ["tiddler", "get", "T", "--file", "@HOST_FILE@"], { env, hostInput: bytes });
+    const get = await run(shim, ["get", "title=T", "file=@HOST_FILE@"], { env, hostInput: bytes });
     assert.equal(get.status, 0, get.stderr); assert.equal(get.received, null);
-    assert.match(get.calls, /--file .*host\.mem/);
+    assert.match(get.calls, /file=.*host\.mem/);
   });
 }
 
 
 for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
   const env = { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" };
-  const wire = ["tiddler", "put", "T"];
+  const wire = ["put", "title=T"];
   test(`${name}: a vessel refusal survives an unread host stream`, { skip }, async () => {
     for (const size of [10, 1024 * 1024]) {
-      const r = await run(shim, [...wire, "--file", "@HOST_FILE@"], { env, hostInput: Buffer.alloc(size), refuseInput: true });
+      const r = await run(shim, [...wire, "file=@HOST_FILE@"], { env, hostInput: Buffer.alloc(size), refuseInput: true });
       assert.equal(r.status, 2, r.stderr); assert.match(r.stderr, /usage refusal/); assert.doesNotMatch(r.calls, / stop INT /);
     }
   });
   test(`${name}: non-regular host sources refuse before docker`, { skip }, async () => {
     for (const [path, fifo] of [["@HOST_FILE@", true], ["/dev/zero", false], ["/proc/self/stat", false]]) {
-      const r = await run(shim, [...wire, "--file", path], { env, fifo });
+      const r = await run(shim, [...wire, `file=${path}`], { env, fifo });
       assert.equal(r.status, 2, r.stderr); assert.match(r.stderr, /cannot read host file/); assert.equal(r.calls, "");
     }
   });
-  test(`${name}: option and command spelling keep case`, { skip }, async () => {
-    for (const args of [[...wire, "--FILE", "@HOST_FILE@"], ["TIDDLER", "PUT", "T", "--file", "@HOST_FILE@"]]) {
+  test(`${name}: param and verb spelling keep case`, { skip }, async () => {
+    for (const args of [[...wire, "FILE=@HOST_FILE@"], ["PUT", "title=T", "file=@HOST_FILE@"]]) {
       const r = await run(shim, args, { env, hostInput: "host" });
       assert.equal(r.status, 0, r.stderr); assert.equal(r.received, null); assert.match(r.calls, /host\.mem/);
     }
   });
-  test(`${name}: an equals source carries a newline in its path`, { skip: skip || name === "ps1" }, async () => {
-    const r = await run(shim, [...wire, "--file=@HOST_FILE@"], { env, hostName: "a\nb", hostInput: "host" });
+  test(`${name}: a file= source carries a newline in its path`, { skip: skip || name === "ps1" }, async () => {
+    const r = await run(shim, [...wire, "file=@HOST_FILE@"], { env, hostName: "a\nb", hostInput: "host" });
     assert.equal(r.status, 0, r.stderr); assert.deepEqual(r.received, Buffer.from("host"));
   });
-  test(`${name}: end of options leaves later sources untouched`, { skip }, async () => {
-    const r = await run(shim, [...wire, "--", "--file", "@HOST_FILE@"], { env, hostInput: "host" });
+  test(`${name}: end of options leaves a spirit verb's later sources untouched`, { skip }, async () => {
+    const r = await run(shim, ["spirit", "residue", "om-wright", "--", "--file", "@HOST_FILE@"], { env, hostInput: "host" });
     assert.equal(r.status, 0, r.stderr); assert.equal(r.received, null); assert.match(r.calls, /-- --file .*host\.mem/);
   });
   test(`${name}: valued options follow the CLI peek rule`, { skip }, async () => {
+    const spirit = ["spirit", "ah", "lares-alpha"];
     for (const flag of ["--recipe", "--tag-add", "--slot", "--file"]) {
-      const r = await run(shim, [...wire, flag, "--file", "@HOST_FILE@"], { env, hostInput: "host" });
+      const r = await run(shim, [...spirit, flag, "--file", "@HOST_FILE@"], { env, hostInput: "host" });
       assert.equal(r.status, 0, `${flag}: ${r.stderr}`); assert.deepEqual(r.received, Buffer.from("host"), flag);
     }
-    for (const flag of ["--fields", "--match", "--note", "--reason", "--text"]) {
-      const r = await run(shim, [...wire, flag, "--file", "@HOST_FILE@"], { env, hostInput: "host" });
+    for (const flag of ["--fields", "--note", "--reason", "--text"]) {
+      const r = await run(shim, [...spirit, flag, "--file", "@HOST_FILE@"], { env, hostInput: "host" });
       assert.equal(r.status, 0, r.stderr); assert.equal(r.received, null, flag);
     }
   });
@@ -2927,17 +2907,21 @@ test("shim flag sets track the built CLI parser", async () => {
   assert.equal(shBoolean.length, 2); assert.equal(shValue.length, 2);
   for (const flags of [...shBoolean, psList("boolean")]) assert.deepEqual(sorted(flags), sorted(BOOLEAN_FLAGS));
   for (const flags of [...shValue, psList("alwaysValued")]) assert.deepEqual(sorted(flags), sorted(VALUE_FLAGS));
+  // The call shape's put reads params, never these flags: the burned names left both shims' lists with the parser's.
+  for (const flags of [...shBoolean, ...shValue, psList("boolean"), psList("alwaysValued")]) {
+    for (const burned of ["collapse", "create", "family", "skinny", "match", "replace", "with"]) assert.equal(flags.includes(burned), false, burned);
+  }
 });
 
 for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
   test(`${name}: a colon followed by dashes stays in the named file path`, { skip }, async () => {
-    const r = await run(shim, ["tiddler", "put", "T", "--file", "@HOST_FILE@"], { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" }, hostName: "x:--y", hostInput: "named" });
+    const r = await run(shim, ["put", "title=T", "file=@HOST_FILE@"], { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" }, hostName: "x:--y", hostInput: "named" });
     assert.equal(r.status, 0, r.stderr); assert.deepEqual(r.received, Buffer.from("named"));
   });
 }
-test("ps1: equals sources refuse before a colon can select a different host file", { skip: !havePwsh }, async () => {
+test("ps1: a spirit verb's equals sources refuse before a colon can select a different host file", { skip: !havePwsh }, async () => {
   for (const flag of ["--file", "--append"]) {
-    const r = await run(PS1, ["tiddler", "put", "T", "--slot", "#/a", `${flag}=@HOST_FILE@`], { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" }, hostName: "a:b", hostInput: "named", hostSibling: "wrong" });
+    const r = await run(PS1, ["spirit", "ah", "lares-alpha", "--slot", "#/a", `${flag}=@HOST_FILE@`], { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" }, hostName: "a:b", hostInput: "named", hostSibling: "wrong" });
     assert.notEqual(r.status, 0); assert.match(r.stderr, /SeparateSourceToken/); assert.equal(r.received, null); assert.equal(r.calls, "");
   }
 });
@@ -2945,20 +2929,19 @@ test("ps1: equals sources refuse before a colon can select a different host file
 for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
   const env = { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" };
   test(`${name}: dash-prefixed source paths preserve the host file or refuse before docker`, { skip }, async () => {
-    for (const flag of ["--file", "--append"]) {
-      for (const slot of [[], ["--slot", "#/a"]]) {
-        const r = await run(shim, ["tiddler", "put", "T", ...slot, flag, "-x:y"], { env, hostCwd: true, hostName: "-x:y", hostInput: "right", hostSibling: "wrong" });
-        if (name === "ps1") {
-          assert.notEqual(r.status, 0); assert.match(r.stderr, /path starts with \.\//); assert.equal(r.calls, "");
-        } else {
-          assert.equal(r.status, 0, r.stderr); assert.deepEqual(r.received, Buffer.from("right"));
-        }
+    const lines = [["spirit", "residue", "om-wright", "--file", "-x:y"], ["spirit", "ah", "lares-alpha", "--slot", "#/a", "--append", "-x:y"], ["put", "title=T", "file=-x:y"]];
+    for (const line of lines) {
+      const r = await run(shim, line, { env, hostCwd: true, hostName: "-x:y", hostInput: "right", hostSibling: "wrong" });
+      if (name === "ps1") {
+        assert.notEqual(r.status, 0, line.join(" ")); assert.match(r.stderr, /path starts with \.\//); assert.equal(r.calls, "");
+      } else {
+        assert.equal(r.status, 0, r.stderr); assert.deepEqual(r.received, Buffer.from("right"), line.join(" "));
       }
     }
   });
-  test(`${name}: equals stdin sources pass through`, { skip }, async () => {
+  test(`${name}: a spirit verb's equals stdin sources pass through`, { skip }, async () => {
     for (const flag of ["--file", "--append"]) {
-      const r = await run(shim, ["tiddler", "put", "T", "--slot", "#/a", `${flag}=-`], { env, input: "stdin bytes" });
+      const r = await run(shim, ["spirit", "ah", "lares-alpha", "--slot", "#/a", `${flag}=-`], { env, input: "stdin bytes" });
       assert.equal(r.status, 0, r.stderr); assert.deepEqual(r.received, Buffer.from("stdin bytes"));
     }
   });

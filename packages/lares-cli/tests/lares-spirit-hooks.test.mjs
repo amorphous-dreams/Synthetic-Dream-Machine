@@ -287,7 +287,7 @@ test("the hooks, spawned whole", async (t) => {
       // The offer's session never falls back to the seated familiar: the true-up, precompact and postcompact skip it.
       writeFileSync(join(counters, "stop-s-aw.json"), JSON.stringify({ ...counter("s-aw"), turns: 24 }));
       reset();
-      plant({ "vessel stand": UP, "spirit om": om("the card"), "wiki filter": JSON.stringify({ ok: true, data: { rows: [], total: 0, next: null } }), [`spirit ${COMPACTION_WORD}`]: "{}" });
+      plant({ "vessel stand": UP, "spirit om": om("the card"), "get filter=": JSON.stringify({ ok: true, data: { rows: [], total: 0, next: null } }), [`spirit ${COMPACTION_WORD}`]: "{}" });
       assert.equal(spawn("lares-true-up-hook.mjs", ["lares-alpha"], at({ session_id: "s-aw" })), "");
       spawn("lares-compact-hook.mjs", ["lares-alpha"], at({ session_id: "s-aw" }));
       spawn("lares-postcompact-hook.mjs", ["lares-alpha"], at({ session_id: "s-aw", compact_summary: "s" }));
@@ -346,7 +346,7 @@ test("the hooks, spawned whole", async (t) => {
     await t.test("compact: the precompact claim's epoch lands in the counter; the true-up never carries it to the door", () => {
       reset();
       writeFileSync(join(counters, "stop-s-ep.json"), JSON.stringify({ turns: 0, pet: "lares-alpha", unfiled: "file it" }));
-      plant({ "vessel stand": UP, "spirit om lares-alpha --source precompact": om("the card", { epoch: 7 }), "wiki filter": JSON.stringify({ ok: true, data: { rows: [], total: 0, next: null } }) });
+      plant({ "vessel stand": UP, "spirit om lares-alpha --source precompact": om("the card", { epoch: 7 }), "get filter=": JSON.stringify({ ok: true, data: { rows: [], total: 0, next: null } }) });
       spawn("lares-compact-hook.mjs", [], at({ session_id: "s-ep" }));
       assert.equal(counter("s-ep").epoch, 7);
       assert.equal(counter("s-ep").unfiled, "file it");
@@ -381,7 +381,7 @@ test("the hooks, spawned whole", async (t) => {
     await t.test("compact: the card reads first, the fixed-slot ask follows naming the inherited hash and the record's carry-shape, a manual /compact's instructions echo, the crossing marks", () => {
       reset();
       writeFileSync(join(counters, "stop-s-c.json"), JSON.stringify({ turns: 0, pet: "lares-awakens" }));
-      plant({ "vessel stand": UP, "spirit om lares-awakens --source precompact": om("the card read out", { carryShape: "keep what only this instance knew", inherits: "0123456789ab" }), "wiki filter": JSON.stringify({ ok: true, data: { rows: [], total: 0, next: null } }) });
+      plant({ "vessel stand": UP, "spirit om lares-awakens --source precompact": om("the card read out", { carryShape: "keep what only this instance knew", inherits: "0123456789ab" }), "get filter=": JSON.stringify({ ok: true, data: { rows: [], total: 0, next: null } }) });
       const text = spawn("lares-compact-hook.mjs", ["lares-alpha"], at({ hook_event_name: "PreCompact", trigger: "manual", session_id: "s-c", custom_instructions: "focus on the tests" }));
       assert.ok(text.startsWith("The card, read to the outgoing instance before it folds (the record outranks this summary):\nthe card read out"));
       assert.ok(text.includes(`End the summary with a section headed "${COMPACTION_DISPLAY} (lares-awakens)", in these fixed slots`));

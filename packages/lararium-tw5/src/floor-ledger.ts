@@ -3,7 +3,7 @@
  * CAN live in the wiki VM MUST). The pure core the `floor-queue` filter operator reads through; it touches no engine.
  *
  * The ledger stands as one record, `lar:///ha.ka.ba/kahua/memory/state/test-floor`, its text an append log. Host tools append
- * lines through the tiddler door (`lares tiddler put … --append -`, two appends at once both land) or, while the doors stand
+ * lines through the tiddler door (`lares put title=… append=-`, two appends at once both land) or, while the doors stand
  * dark, to the flat mirror `<passwd home>/.lares-scratch/.floor/queue.log` that the familiar folds back in. A line the grammar
  * does not read (the older CLAIM habit, a note) stays in the log and folds to nothing.
  *

@@ -49,14 +49,14 @@ describe("a write into the daemon's own wiki without a working layer", () => {
     return { daemon, daemonBag, tw5, options };
   }
 
-  test("the put reactor refuses by name, carries the --recipe remedy, and writes no content", async () => {
+  test("the put reactor refuses by name, carries the recipe= remedy, and writes no content", async () => {
     const { daemon, daemonBag, options } = stand();
     const reactor = makeTiddlerPutReactor(options);
     const invocation = { verb: "tiddler-put", args: { recipe: "default", title: "lar:///t/no-working", text: "content" }, requestedBy: "did:key:test", requestId: "meme-no-working" };
     const refused = await reactor(invocation.args, { daemon, invocation } as unknown as VerbContext).then(() => null, (err: unknown) => err);
     expect(refused, "the write went through with no working layer").toBeInstanceOf(NoWorkingLayerRefusal);
     expect(String((refused as Error).message)).toContain("no default writable layer");
-    expect(String((refused as Error).message), "the refusal named no remedy").toContain("--recipe");
+    expect(String((refused as Error).message), "the refusal named no remedy").toContain("recipe=");
     expect(await daemonBag.get("lar:///t/no-working")).toBeNull();
     expect(await daemon.defaultWritableBagId()).toBeNull();
   });

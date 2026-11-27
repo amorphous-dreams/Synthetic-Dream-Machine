@@ -5,7 +5,7 @@
 // and neither the exporting house nor the new house's own founding does).
 //
 // WHERE IT READS FROM: THE HOUSE'S OWN READ DOORS. Every meme, index row, plain record and kahua head comes back through the
-// `lares` CLI (`persona list`, `kahua get`, `wiki status`, `meme list`, `wiki filter`, and `tiddler get` for a record too large
+// `lares` CLI (`persona list`, `kahua get`, `wiki status`, `meme list`, `get filter=…`, and `get title=…` for a record too large
 // for one filter page), the doors a person reads
 // with. So it reads the store through the gate every face reads through, and never parses a store format (the house
 // promises its doors, never its layout). Two classes stand behind no read door, and those it reads from the house's own files, through the house's
@@ -18,7 +18,7 @@
 //           `canonicalHash`; a bag the listing names unreached reads as its own row, so an asymmetry in reach reads red;
 //   index   the `stage/index` rows of the daemon wiki: title -> description;
 //   plain   each non-system record of the daemon wiki carrying no `uri-path`, outside the house plumbing (`PLAIN_FILTER`):
-//           `default <title>` -> sha256(text) (`wiki filter` answers the daemon recipe alone in this phase);
+//           `default <title>` -> sha256(text) (`get filter=…` answers the daemon recipe alone in this phase);
 //   kahua   the face's kahua heads: title -> sha256(text) (the cid is recorded, never compared);
 //   kapae   each kāpae shadow under the projections: `<layer> <title>`, the face relation in the layer named by pet-name;
 // and house-wide:
@@ -274,7 +274,7 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
       // A wiki whose listing refuses reads as a row of its own (`unread`), never as an empty listing: the door's code
       // compares across the houses, and the receipt names every wiki that stood unread on either side.
       let listing;
-      try { listing = read(lares, ["tiddler", "get", "--meme", "--recipe", recipe, "--json"]); }
+      try { listing = read(lares, ["get", "meme=true", `recipe=${recipe}`, "--json"]); }
       catch (e) {
         if (!(e instanceof DoorRefused) || recipe === "default") throw e;
         classes.unread[recipe] = /\[([a-z-]+)\]|\b([a-z]+(?:-[a-z]+)+):/.exec(e.message)?.slice(1).find(Boolean) ?? "refused";
@@ -284,18 +284,18 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
       for (const root of listing.roots ?? []) classes.memes[`${recipe} ${root.uri}`] = root.canonicalHash;
       for (const bag of listing.unreached ?? []) classes.memes[`${recipe} !unreached ${bag}`] = "unreached";
     }
-    // PLAIN RECORDS READ OVER THE DAEMON WIKI ALONE: the drill reads recipe `default` only. A named wiki answers `wiki filter`
+    // PLAIN RECORDS READ OVER THE DAEMON WIKI ALONE: the drill reads recipe `default` only. A named wiki answers `get filter=…`
     // through its own engine since #390 (an unreachable recipe refuses `wiki-unreached`; `wiki-not-anchored` stays for a bag), see wiki-surface-scout #/phases.
     {
       const recipe = "default";
       // The text rides the filter's own rows; a row too large for one page sheds it (`omitted`), and that one record reads
-      // whole through `tiddler get --all` (the fat grain: past a page the door's default leaves the text home, and an empty text
+      // whole through `get title=… mu=assert` (the fat grain: past a page the door's default leaves the text home, and an empty text
       // would hash two differing records alike).
-      const plain = readFilter(lares, ["wiki", "filter", PLAIN_FILTER, "--recipe", recipe, "--all", "--fields", "text", "--max-bytes", "262144", "--json"]);
+      const plain = readFilter(lares, ["get", `filter=${PLAIN_FILTER}`, `recipe=${recipe}`, "all=true", "fields=text", "max-bytes=262144", "--json"]);
       for (const row of plain.rows ?? []) {
         let hash = `sha256:${sha256(String(row.fields?.text ?? ""))}`;
         if ((row.omitted ?? []).includes("text")) {
-          const got = read(lares, ["tiddler", "get", row.title, "--recipe", recipe, "--all", "--json"]);
+          const got = read(lares, ["get", `title=${row.title}`, `recipe=${recipe}`, "mu=assert", "--json"]);
           // A TRUE POINTER answers its handle at every tiddler grain: the census hashes the handle's identity (its CID, else its
           // canonical address), never "". Any other record that answers no text at the fat grain refuses.
           const fields = got.tiddler?.fields ?? {};
@@ -307,7 +307,7 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
         classes.plain[`${recipe} ${row.title}`] = hash;
       }
     }
-    for (const row of readFilter(lares, ["wiki", "filter", "[tag[stage/index]sort[]]", "--recipe", "default", "--all", "--fields", "description", "--json"]).rows ?? []) {
+    for (const row of readFilter(lares, ["get", "filter=[tag[stage/index]sort[]]", "all=true", "fields=description", "--json"]).rows ?? []) {
       classes.index[row.title] = String(row.fields?.description ?? "");
     }
     for (const item of mounted.items) {

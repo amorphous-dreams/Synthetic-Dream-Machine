@@ -1,6 +1,6 @@
 /**
- * door-call — the flag-blind half the tiddler door's two CLI hosts share (`lares tiddler …`, `lares wiki filter |
- * render | status`): the planned call, the option readers that take a VALUE (each host reads its own flags by name, so
+ * door-call — the flag-blind half the call door and the wiki engine verbs share (`lares get · put · delete · rename`,
+ * `lares wiki render | status`): the planned call, the option readers that take a VALUE (each host reads its own flags by name, so
  * the accepts law walks them), the one runner that hands back the daemon verb's own answer, and the shared fault guard.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout

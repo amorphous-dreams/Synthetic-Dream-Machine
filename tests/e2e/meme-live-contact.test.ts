@@ -1,19 +1,20 @@
 /**
- * e2e/meme-live-contact — a meme family through the tiddler door over ONE vessel's own rendezvous, every seat of the family.
+ * e2e/meme-live-contact — a meme family through the call door over ONE vessel's own rendezvous, every seat of the family.
  *
  * `bag-is-user-space` and `place-meme` read the placement law in one process over a memory store. This
  * witness reads the same law where an operator's hands reach it: a fresh root founded by the CLI, its
  * daemon bound to a socket derived from that root, and the built `lares` binary driven against it.
  *
- *   get (absent)         → not-found, nothing lands (`--recipe lares`)
- *   put --bag lares      → refuses: a placement never shadows up (CONTROL)
+ *   get (no container)   → reads the daemon wiki (`recipe=default`): not-found, never a `no-container` refusal
+ *   get (absent)         → not-found, nothing lands (`recipe=lares`)
+ *   put bag=lares        → refuses: a placement never shadows up (CONTROL)
  *   put (framed)         → put; the root and `#/a` landed (a root text put founds the family)
- *   tiddler get --meme   → the same bytes back, with the canonical hash as `base` (`--recipe lares`)
- *   put --base (fresh)   → put; the slot the text omits stays (`kept`) until `--cut-slot` names it (`tombstoned`)
- *   put --base (stale)   → conflict; nothing moves  (the CONTROL — a door only shown saying yes is no door)
- *   delete --family      → the family leaves; a slot's own delete lands as the cut of its parent
+ *   get mu=assert        → the same bytes back, with the canonical hash as `base` (`recipe=lares`)
+ *   put base= (fresh)    → put; the slot the text omits stays (`kept`) until `cut-slot` names it (`tombstoned`)
+ *   put base= (stale)    → conflict; nothing moves  (the CONTROL — a door only shown saying yes is no door)
+ *   delete family=true   → the family leaves; a slot's own delete lands as the cut of its parent
  *   project --to md      → the submission pair beside `--out`
- *   project --to mem     → refuses (the carrier reads through `tiddler get --meme --all`, the CONTROL)
+ *   project --to mem     → refuses (the carrier reads through `get mu=assert`, the CONTROL)
  *   project --to html    → a document, rendered from the explicit daemon wiki recipe
  *
  * THE SHARED TREE STAYS STILL. A staged boot bakes its genesis INTO ITS ROOT from the plugin that
@@ -38,12 +39,14 @@ const NODE_MAIN = join(REPO_ROOT, "packages/lararium-node/dist/src/main.js");
 /**
  * THE CONTAINER EVERY CALL NAMES: an edit AS the hearth's own wiki, in that wiki's own engine, landing in the
  * face's write layer of it. Measured on a fresh vessel:
- *   · `--recipe lares`  reaches the placement law (this seat)
- *   · `--bag daemon`    reaches it too — the daemon bag is a mounted writable layer
- *   · `--bag lares`     refuses — the bag holds no writable layer here and a placement never shadows up
- *   · `--recipe default` names the daemon wiki's anchor route; no omitted target is accepted.
+ *   · `recipe=lares`    reaches the placement law (this seat)
+ *   · `bag=daemon`      reaches it too — the daemon bag is a mounted writable layer
+ *   · `bag=lares`       refuses — the bag holds no writable layer here and a placement never shadows up
+ *   · `recipe=default`  names the daemon wiki's anchor route, and a call naming no container reads it too.
  */
-const WIKI = ["--recipe", "lares"] as const;
+const WIKI = ["recipe=lares"] as const;
+/** The same wiki as `lares meme project` names it: that verb keeps its flags. */
+const MEME_WIKI = ["--recipe", "lares"] as const;
 const DAEMON_WORKING = "lar:///ha.ka.ba/wikis/daemon/working";
 const CROSSROADS_URI = "lar:///ha.ka.ba/bags/crossroads";
 
@@ -89,7 +92,7 @@ let lar: LarInstance;
 let scratch = "";
 const treeBefore = gaps.length > 0 ? "" : sharedTree();
 
-describe.skipIf(gaps.length > 0)("★ a meme family through the tiddler door over a live rendezvous ★", () => {
+describe.skipIf(gaps.length > 0)("★ a meme family through the call door over a live rendezvous ★", () => {
   beforeAll(async () => {
     lar = await targetInstance();
     scratch = join(lar.root, "witness");
@@ -103,28 +106,30 @@ describe.skipIf(gaps.length > 0)("★ a meme family through the tiddler door ove
 
   let base = "";
 
-  test("★ a bare store read refuses by name before daemon dispatch ★", async () => {
-    const r = await lar.cli(["tiddler", "get", URI, "--meme", "--all", "--json"]); // intentional-bare-refusal
-    expect((r.json?.["error"] as Record<string, unknown>)?.["code"], said(r)).toBe("no-container");
-    expect(r.code).toBe(2);
+  test("★ a call naming no container reads the daemon wiki (recipe=default) — not-found there, never a no-container refusal ★", async () => {
+    const r = await lar.cli(["get", `title=${URI}`, "mu=assert", "--json"]);
+    const err = r.json?.["error"] as Record<string, unknown> | undefined;
+    expect(err?.["code"], said(r)).not.toBe("no-container");
+    expect(err?.["code"], said(r)).toBe("not-found");
+    expect(r.code).toBe(3);
   });
 
-  test("CONTROL: `--bag lares` refuses a put — the bag holds no writable layer and a placement never shadows up", async () => {
-    const r = await lar.cli(["tiddler", "put", URI, "--bag", "lares", "--file", join(scratch, "ab.mem"), "--json"]);
+  test("CONTROL: `bag=lares` refuses a put — the bag holds no writable layer and a placement never shadows up", async () => {
+    const r = await lar.cli(["put", `title=${URI}`, "bag=lares", `file=${join(scratch, "ab.mem")}`, "--json"]);
     expect(r.json?.["ok"]).toBe(false);
     expect((r.json?.["error"] as Record<string, unknown>)?.["message"], said(r)).toMatch(/holds no writable layer/);
     expect(r.code).toBe(4);
   });
 
   test("get of an absent meme → not-found", async () => {
-    const r = await lar.cli(["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--json"]);
+    const r = await lar.cli(["get", `title=${URI}`, ...WIKI, "mu=assert", "--json"]);
     expect(r.json?.["ok"]).toBe(false);
     expect((r.json?.["error"] as Record<string, unknown>)?.["code"], said(r)).toBe("not-found");
     expect(r.code).toBe(3);
   });
 
   test("put of a framed meme → put; the root and `#/a` landed", async () => {
-    const r = await lar.cli(["tiddler", "put", URI, ...WIKI, "--file", join(scratch, "ab.mem"), "--json"]);
+    const r = await lar.cli(["put", `title=${URI}`, ...WIKI, `file=${join(scratch, "ab.mem")}`, "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     const d = r.json?.["data"] as Record<string, unknown>;
     expect(d["decision"]).toBe("put");
@@ -135,7 +140,7 @@ describe.skipIf(gaps.length > 0)("★ a meme family through the tiddler door ove
   });
 
   test("get → the same bytes back, with the canonical hash", async () => {
-    const r = await lar.cli(["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--json"]);
+    const r = await lar.cli(["get", `title=${URI}`, ...WIKI, "mu=assert", "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     const d = (r.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>;
     const text = String(d["text"]);
@@ -147,15 +152,15 @@ describe.skipIf(gaps.length > 0)("★ a meme family through the tiddler door ove
     base = String(d["canonicalHash"]);
     // The base IS the digest of the bytes handed back — collided here, never assumed.
     expect(base).toBe(`sha256:${createHash("sha256").update(text).digest("hex")}`);
-    // The prose seat writes the text alone to stdout, so `lares tiddler get <uri> --meme --all > file` carries the meme;
-    // a pipe implies `--json`, so the prose seat is asked for by name.
-    const human = await lar.cli(["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--no-json"]);
+    // The prose seat writes the text alone to stdout, so `lares get title=<uri> mu=assert > file` carries the meme;
+    // the prose seat is asked for by name.
+    const human = await lar.cli(["get", `title=${URI}`, ...WIKI, "mu=assert", "--no-json"]);
     expect(human.stdout).toBe(text);
     expect(human.stderr).toContain(`base: ${base}`);
   });
 
-  test("put --base (fresh) with a changed slot and a cut → put; `#/b` tombstoned by name, `#/c` born", async () => {
-    const r = await lar.cli(["tiddler", "put", URI, ...WIKI, "--base", base, "--cut-slot", "#/b", "--file", join(scratch, "ac.mem"), "--json"]);
+  test("put base= (fresh) with a changed slot and a cut → put; `#/b` tombstoned by name, `#/c` born", async () => {
+    const r = await lar.cli(["put", `title=${URI}`, ...WIKI, `base=${base}`, "cut-slot=#/b", `file=${join(scratch, "ac.mem")}`, "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     const d = r.json?.["data"] as Record<string, unknown>;
     expect(d["decision"]).toBe("put");
@@ -165,13 +170,13 @@ describe.skipIf(gaps.length > 0)("★ a meme family through the tiddler door ove
     expect(d["canonicalHash"]).not.toBe(base);
   });
 
-  test("CONTROL: put --base (stale) → conflict; nothing moves", async () => {
-    const before = await lar.cli(["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--json"]);
-    const r = await lar.cli(["tiddler", "put", URI, ...WIKI, "--base", base, "--file", join(scratch, "ab.mem"), "--json"]);
+  test("CONTROL: put base= (stale) → conflict; nothing moves", async () => {
+    const before = await lar.cli(["get", `title=${URI}`, ...WIKI, "mu=assert", "--json"]);
+    const r = await lar.cli(["put", `title=${URI}`, ...WIKI, `base=${base}`, `file=${join(scratch, "ab.mem")}`, "--json"]);
     expect(r.json?.["ok"]).toBe(false);
     expect((r.json?.["error"] as Record<string, unknown>)?.["code"]).toBe("conflict");
     expect(r.code).toBe(4);
-    const after = await lar.cli(["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--json"]);
+    const after = await lar.cli(["get", `title=${URI}`, ...WIKI, "mu=assert", "--json"]);
     const afterText = String(((after.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>)["text"]);
     expect(afterText).toBe(String(((before.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>)["text"]));
     expect(afterText).toContain("<<~ ahu slot=`#/c`>>");
@@ -180,7 +185,7 @@ describe.skipIf(gaps.length > 0)("★ a meme family through the tiddler door ove
 
   test("project --to md → text + a `.meta` beside --out", async () => {
     const out = join(scratch, "npc.md");
-    const r = await lar.cli(["meme", "project", URI, ...WIKI, "--to", "md", "--out", out, "--json"]);
+    const r = await lar.cli(["meme", "project", URI, ...MEME_WIKI, "--to", "md", "--out", out, "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     expect(existsSync(out)).toBe(true);
     expect(existsSync(`${out}.meta`)).toBe(true);
@@ -192,16 +197,16 @@ describe.skipIf(gaps.length > 0)("★ a meme family through the tiddler door ove
   });
 
   test("CONTROL: project --to mem left the verb — the carrier itself reads through the one door, and the usage names the targets", async () => {
-    const r = await lar.cli(["meme", "project", URI, ...WIKI, "--to", "mem", "--no-json"]);
+    const r = await lar.cli(["meme", "project", URI, ...MEME_WIKI, "--to", "mem", "--no-json"]);
     expect(r.code, said(r)).toBe(2);
     expect(r.stderr).toMatch(/md · html · tid · json/);
-    const got = await lar.cli(["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--no-json"]);
+    const got = await lar.cli(["get", `title=${URI}`, ...WIKI, "mu=assert", "--no-json"]);
     expect(got.code, said(got)).toBe(0);
     expect(got.stdout).toContain(`uri-path = "${PATH}"`);
   });
 
-  test("list → the root stands with its canonical hash; --tree nests its slots (the daemon registers meme-list)", async () => {
-    const r = await lar.cli(["tiddler", "get", "--meme", ...WIKI, "--tree", "--json"]);
+  test("list → the root stands with its canonical hash; tree=true nests its slots (the daemon registers meme-list)", async () => {
+    const r = await lar.cli(["get", "meme=true", ...WIKI, "tree=true", "--json"]);
     expect(r.code, said(r)).toBe(0);
     const roots = (r.json?.["data"] as { roots: { uri: string; canonicalHash: string; slots?: { slot: string }[] }[] }).roots;
     const mine = roots.find((x) => x.uri === URI);
@@ -210,23 +215,23 @@ describe.skipIf(gaps.length > 0)("★ a meme family through the tiddler door ove
     expect(mine!.slots?.map((x) => x.slot)).toContain("#/a");
   });
 
-  test("a slot's own delete lands as the cut of its parent; delete --family → 0 and the group leaves; get answers not-found", async () => {
-    const cut = await lar.cli(["tiddler", "delete", `${URI}#/c`, ...WIKI, "--json"]);
+  test("a slot's own delete lands as the cut of its parent; delete family=true → 0 and the group leaves; get answers not-found", async () => {
+    const cut = await lar.cli(["delete", `title=${URI}#/c`, ...WIKI, "--json"]);
     expect(cut.code, said(cut)).toBe(0);
     expect(cut.json?.["data"]).toMatchObject({ decision: "removed", mode: "cut", tombstoned: [`${URI}#/c`], parent: URI });
-    const r = await lar.cli(["tiddler", "delete", URI, ...WIKI, "--family", "--json"]);
+    const r = await lar.cli(["delete", `title=${URI}`, ...WIKI, "family=true", "--json"]);
     expect(r.code, said(r)).toBe(0);
-    const got = await lar.cli(["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--json"]);
+    const got = await lar.cli(["get", `title=${URI}`, ...WIKI, "mu=assert", "--json"]);
     const err = got.json?.["error"] as Record<string, unknown> | undefined;
     expect(err?.["code"] ?? got.json?.["code"], said(got)).toBe("not-found");
     // CONTROL: a delete of what no longer stands answers not-found, never a second removal.
-    const again = await lar.cli(["tiddler", "delete", URI, ...WIKI, "--family", "--json"]);
+    const again = await lar.cli(["delete", `title=${URI}`, ...WIKI, "family=true", "--json"]);
     expect(again.code, said(again)).not.toBe(0);
   });
 
   test("project --to html from the anchor → a document through the house template, inside the island", async () => {
     // html renders from the daemon wiki when explicitly targeted, so the meme lands there first.
-    const put = await lar.cli(["tiddler", "put", URI, "--recipe", "default", "--file", join(scratch, "ab.mem"), "--json"]);
+    const put = await lar.cli(["put", `title=${URI}`, "recipe=default", `file=${join(scratch, "ab.mem")}`, "--json"]);
     expect(put.code, said(put)).toBe(0);
     const r = await lar.cli(["meme", "project", URI, "--recipe", "default", "--to", "html", "--no-json"]);
     expect(r.code, said(r)).toBe(0);
@@ -245,13 +250,13 @@ describe.skipIf(gaps.length > 0)("★ a meme family through the tiddler door ove
     const MOVE_PATH = "ha.ka.ba/t/witness/move";
     const MOVE_URI  = `lar:///${MOVE_PATH}`;
     writeFileSync(join(scratch, "move.mem"), meme(["a"]).replaceAll(URI, MOVE_URI).replaceAll(PATH, MOVE_PATH));
-    const put = await lar.cli(["tiddler", "put", MOVE_URI, "--bag", DAEMON_WORKING, "--file", join(scratch, "move.mem"), "--json"]);
+    const put = await lar.cli(["put", `title=${MOVE_URI}`, `bag=${DAEMON_WORKING}`, `file=${join(scratch, "move.mem")}`, "--json"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
     const r = await lar.cli(["act", "MOVE", "--title", MOVE_URI, "--from", DAEMON_WORKING, "--to", CROSSROADS_URI, "--yes", "--json"]);
     expect(r.json?.["ok"], `the MOVE out of the daemon wiki refused — ${said(r)}`).toBe(true);
-    const gone = await lar.cli(["tiddler", "get", MOVE_URI, "--bag", DAEMON_WORKING, "--meme", "--all", "--json"]);
+    const gone = await lar.cli(["get", `title=${MOVE_URI}`, `bag=${DAEMON_WORKING}`, "mu=assert", "--json"]);
     expect((gone.json?.["error"] as Record<string, unknown>)?.["code"], `the carrier still stands in the daemon's working layer — ${said(gone)}`).toBe("not-found");
-    const there = await lar.cli(["tiddler", "get", MOVE_URI, "--bag", CROSSROADS_URI, "--meme", "--all", "--json"]);
+    const there = await lar.cli(["get", `title=${MOVE_URI}`, `bag=${CROSSROADS_URI}`, "mu=assert", "--json"]);
     expect(there.json?.["ok"], `the carrier never reached crossroads — ${said(there)}`).toBe(true);
   });
 

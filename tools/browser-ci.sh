@@ -20,8 +20,8 @@
 #   browser-ci.sh recipe add <bag-uri>      ensure the catalog recipe exists, then add the bag to the wiki the browser mounts
 #   browser-ci.sh recipe remove <bag-uri>   `wiki remove-bag` — the swarm's negative control
 #   browser-ci.sh get <meme-uri> [--bag <slug> | --recipe <slug>]
-#                                           `lares tiddler get --meme --all`, JSON on stdout (the text rides in data.meme.text). Default reads
-#                                           AS the mounted wiki (`--recipe <slug>`)
+#                                           `lares get title=<meme-uri> mu=assert`, JSON on stdout (the text rides in data.meme.text). Default reads
+#                                           AS the mounted wiki (`--recipe <slug>`, crossing as recipe=<slug>)
 #   browser-ci.sh info                      one JSON object for the host QA driver: origin (qa and host views), relay URL,
 #                                           gate public key (the node's `[lararium] gate key:` boot line), the founding
 #                                           face h0 the unlock mounts (`face`), the wiki slug, the wiki document the mount resolves (`wikiDoc`) and
@@ -243,7 +243,7 @@ case "$verb" in
       --bag|--recipe) [ "$#" -eq 2 ] || die "get takes one --bag or --recipe slug" ;;
       *) die "get takes --bag <slug> or --recipe <slug>" ;;
     esac
-    json_verb tiddler get "$uri" "$@" --meme --all --json ;;
+    json_verb get "title=$uri" "${1#--}=$2" mu=assert --json ;;
   info)
     slug=$(wiki_slug)
     # The runner shares the node's network namespace, so its origin names the node by localhost.

@@ -1,7 +1,7 @@
 /**
  * tw5-docs-library — THE TW5 DOCS LIBRARIES: TiddlyWiki5's own native docs, two vendored wiki folders read whole as bags — the
  * tw5.com edition (`tw5-docs`) and the dev edition (`tw5-dev`) — each one read-only wiki every face reads by its recipe slug,
- * through the doors that already read a named wiki (`tiddler get`, `wiki filter`, `wiki render`, `wiki status`). A seat unsure
+ * through the doors that already read a named wiki (`lares get title=…`, `lares get filter=…`, `wiki render`, `wiki status`). A seat unsure
  * how a filter operator, a widget or the engine's internals behave reads the upstream page itself.
  *
  *   · THE HEARTH STACKS THEM. THE CANON FLOOR BY PLACE (`@lararium/mesh/wiki-recipe` `CANON_FLOOR`) stacks both bags in the

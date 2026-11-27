@@ -2,9 +2,9 @@
  * meme-realm-grant.test — a bag the REALM carries answers by the realm's grant, never by this vessel's own registry.
  *
  * A member reads a book another operator keeps through the realm that registers it; the member's Keyhive never
- * registered that book, since the book is nobody's local layer here. So `meme get --bag <book> --realm <id>` reads
+ * registered that book, since the book is nobody's local layer here. So `lares get title=<uri> bag=<book> realm=<id> meme=true` reads
  * the registration's doc on the realm's grant (its counted, steward-signed registration at the read tier), and a
- * steward's `tiddler put --bag <book> --realm <id>` writes on the steward check alone. A bag reached any other way
+ * steward's `lares put title=<uri> bag=<book> realm=<id>` writes on the steward check alone. A bag reached any other way
  * still asks this vessel's own cap.
  */
 import { describe, test, expect } from "vitest";

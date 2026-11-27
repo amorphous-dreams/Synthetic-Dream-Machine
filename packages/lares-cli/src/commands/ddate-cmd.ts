@@ -23,7 +23,7 @@ function localToday(): { year: number; month: number; day: number } {
 }
 
 export async function cmdDdate(given: ParsedArgs): Promise<number> {
-  // THE DATE ANSWERS A PIPE IN PROSE (render.ts `proseFirst`, the way `tiddler get --meme` answers a carrier): the bare line, like ddate(1); only `--json` asks for the envelope.
+  // THE DATE ANSWERS A PIPE IN PROSE (render.ts `proseFirst`, the way `lares get title=… mu=assert` answers a carrier): the bare line, like ddate(1); only `--json` asks for the envelope.
   const args = proseFirst(given);
   const reading = readDdate(args.positional, localToday(), PLATFORM_ENTROPY);
   if (reading.kind === "usage") {

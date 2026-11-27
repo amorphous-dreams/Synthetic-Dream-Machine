@@ -135,7 +135,7 @@ async function lawIndex(args: ParsedArgs): Promise<number> {
       console.log(`Lares law (pinned first): ${pins.titles.length} pinned · ${total} rows${rows.length < total ? ` (${rows.length} shown)` : ""}`);
       for (const row of rows) console.log(`${row.pinned ? "📌" : "  "} ${row.title}${row.description ? ` — ${row.description}` : ""}`);
       if (next) console.log(`read further: lares law index --after ${next}  (or --all)`);
-      console.log(`the filter: lares wiki filter '${LAW_INDEX_FILTER}' --recipe default`);
+      console.log(`the filter: lares get filter='${LAW_INDEX_FILTER}'`);
       console.log(`pin or unpin: lares law pin <uri> · lares law unpin <uri> (the pin set: ${LAW_PINS_TITLE})`);
     },
   });

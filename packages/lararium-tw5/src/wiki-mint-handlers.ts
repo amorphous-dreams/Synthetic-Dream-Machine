@@ -100,7 +100,7 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
     }
 
     // The draft doc resolves through THE ONE resolver — a face binding when the vessel holds a seat,
-    // the device floor when not — the same doc the mounts and `tiddler put --bag <a wiki slot>` reach.
+    // the device floor when not — the same doc the mounts and `lares put bag=<a wiki slot>` reach.
     const draft = await opts.resolveDraftDoc(slug);
 
     // Born-with-its-cap: register each freshly-minted wiki bag's Keyhive Document

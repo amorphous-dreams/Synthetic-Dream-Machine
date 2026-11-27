@@ -1,5 +1,5 @@
 /**
- * meme-realm-write.test — THE STEWARD WRITE PATH: `tiddler put --bag <x>` for a bag the REALM carries.
+ * meme-realm-write.test — THE STEWARD WRITE PATH: `lares put title=<uri> bag=<x>` for a bag the REALM carries.
  *
  * The ruling (realm-bag-brief #/what-a-relation-bag-needs, item 5): the read cap is CONTRACT — the whole
  * contracted cabal — and the write cap is the NAMED STEWARDS' SET. The daemon island mounts no layer for a
@@ -69,7 +69,7 @@ const refusalOf = async (opts: MemeVerbOptions, bag = "lares"): Promise<string> 
   catch (e) { return e instanceof Error ? e.message : String(e); }
 };
 
-describe("a put --bag — a bag the realm carries", () => {
+describe("a put naming bag= — a bag the realm carries", () => {
   test("a STEWARD's put lands on the REALM doc — B writes the ford's one book", async () => {
     const r = rig(["nym-a", "nym-b"], "nym-b");
     const receipt = await makeTiddlerPutReactor(r.opts)({ title: URI, bag: "lares", text: meme("/b") }, ctx());

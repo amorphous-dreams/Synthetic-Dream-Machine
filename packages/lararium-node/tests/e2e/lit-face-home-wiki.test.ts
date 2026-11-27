@@ -90,7 +90,7 @@ async function composeLit(at: Staged, wikiId: string): Promise<{ vessel: NodeVes
   return { vessel, down };
 }
 
-/** The face writes its home preference into its own daemon wiki's working layer, as `lares tiddler put … --recipe default` does. */
+/** The face writes its home preference into its own daemon wiki's working layer, as `lares put title=… recipe=default` does. */
 async function putHome(at: Staged, vessel: NodeVesselResult, slug: string): Promise<void> {
   await withLarRoot(at.root, () => vessel.daemon.composite.put({ tiddler: { title: HOME_WIKI_TITLE, text: homeWikiFilter(slug) } },
     { kind: "lares-verb", requestId: "lit-face-home-put" } as never, { bag: DAEMON_WORKING }));
@@ -135,7 +135,7 @@ async function mintWiki(at: Staged, vessel: NodeVesselResult, slug: string): Pro
   expect(minted["status"], `the face mints its wiki: ${JSON.stringify(minted)}`).toBe("done");
 }
 
-/** The face writes its keep list into its own daemon wiki's working layer, as `lares tiddler put … --recipe default` does. */
+/** The face writes its keep list into its own daemon wiki's working layer, as `lares put title=… recipe=default` does. */
 async function putKeepList(at: Staged, vessel: NodeVesselResult, slugs: readonly string[]): Promise<void> {
   await withLarRoot(at.root, () => vessel.daemon.composite.put({ tiddler: { title: KEEP_LIST_TITLE, text: keepListFilter(slugs) } },
     { kind: "lares-verb", requestId: "lit-face-keep-put" } as never, { bag: DAEMON_WORKING }));
