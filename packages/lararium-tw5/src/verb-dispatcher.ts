@@ -62,7 +62,7 @@ import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
 import { runLocalVerb, gateRoutedVerb, refuseSeatCanonRouted, RoutedCapDenied, makeCapVerify, routedAddressesWiki, routedWikiSlug } from "./verb-local-dispatch.js";
-import { callOfSigil, hostAnswer, isCallSigil, planCall, reactorArgs, stampAnswer, unhandled, type CallPlan, type CallReader, type CallSeat, type MacroCallParse } from "./modules/call.js";
+import { callOfSigil, hostAnswer, isCallSigil, muAnswer, planCall, reactorArgs, seatVerbOf, stampAnswer, unhandled, type CallPlan, type CallReader, type CallSeat, type MacroCallParse } from "./modules/call.js";
 import { surfaceOf } from "./affordance-read.js";
 
 export interface VerbContext {
@@ -301,9 +301,12 @@ export class VerbTable {
  */
 export async function runPlan(table: VerbTable, plan: CallPlan, ctx: VerbContext): Promise<Record<string, unknown>> {
   const seat = table.seatOf(plan.address);
-  const reactor = seat === undefined ? undefined : table.get(seat.verb);
-  if (seat === undefined || reactor === undefined) throw unhandled(plan);
-  return reactor(reactorArgs(plan.params, seat), ctx);
+  if (seat === undefined) throw unhandled(plan);
+  // A SEAT MAY CHOOSE ITS VERB BY THE CALL'S ARGS (landing 6): a get with `meme` and no title lists the families.
+  const args = reactorArgs(plan.params, seat);
+  const reactor = table.get(seatVerbOf(seat, args));
+  if (reactor === undefined) throw unhandled(plan);
+  return reactor(args, ctx);
 }
 
 /** Where the daemon `call` reads: the reader view of the recipe a call's params name, and the engine's own macro-call parser. */
@@ -345,7 +348,7 @@ export function makeCallReactor(table: VerbTable, source: CallSource): VerbReact
     const plan = planCall(reader, verb, params, surface);
     const receipt = reader.receiptOf(plan.carrier);
     if (plan.host) return hostAnswer(plan, receipt);
-    return stampAnswer(await runPlan(table, plan, ctx), plan.address, receipt);
+    return muAnswer(stampAnswer(await runPlan(table, plan, ctx), plan.address, receipt), plan);
   };
 }
 

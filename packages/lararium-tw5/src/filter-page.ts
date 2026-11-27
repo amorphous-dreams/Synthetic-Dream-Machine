@@ -110,6 +110,8 @@ export interface FilterPageQuery {
 }
 export interface FilterRow {
   title: string; fields: Record<string, string>; omitted?: string[];
+  /** The depth (`mu=many-relate` or `many-assert`): the record's has line, as a get's card names it. */
+  has?: string;
   /** The collapse lens: the bytes the record (a meme root: its whole carrier) holds, and a meme root's slots, unfolded by `tiddler get --meme --slot`. */
   bytes?: number; slots?: Array<{ slot: string; bytes: number; first: string | null }>;
   /** Slot records of a collapsed meme root that rest in a layer this face may not read, left out of its slots. */

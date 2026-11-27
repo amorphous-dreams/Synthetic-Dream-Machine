@@ -5,8 +5,9 @@
  *
  * The contract every skin (this, the CLI's `lares tiddler|wiki`, the MCP seat's `tiddler_*|wiki_*`) carries verbatim:
  *
- *   wiki-filter    { recipe, filter, fields?, collapse?, match?, context?, after?, limit?, maxBytes? } → { recipe, filter, titles | rows, total, next, asOf, withheld? }
- *                                                                         (`match` adds each row's `lines: [{n, text, cut?}]` and `matches`)
+ *   wiki-filter    { recipe, filter, fields?, collapse?, match?, context?, depth?, after?, limit?, maxBytes? } → { recipe, filter, titles | rows, total, next, asOf, withheld? }
+ *                                                                         (`match` adds each row's `lines: [{n, text, cut?}]` and `matches`; `depth: "card"` each row's
+ *                                                                          `has` line, `depth: "whole"` the has line and the text, or its matching lines beside `match`)
  *   tiddler-get    { recipe, title, meme?, grain?, slot?, after?, fields?, maxBytes? }
  *                                                                         → { has, recipe, address?, title, lens, tiddler?: { fields, hash, textHash, bag, position, family?, orphan?, omitted? } | null,
  *                                                                             meme?: { uri, text?, canonicalHash, bytes, slots, slot?, page? }, grain, next, note? }
@@ -122,7 +123,8 @@ import { pageFilterAnswer, filterCursor, checkFilter, lineLensOf, matchingLines,
 import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { wornOrigin } from "./verb-dispatcher.js";
-import { callReaderOf, type CallSeat, type MacroCallParse } from "./modules/call.js";
+import { CallRefusal, callReaderOf, cureCall, type CallSeat, type MacroCallParse } from "./modules/call.js";
+import { filterDepthArgs, readDepthArgs } from "./modules/mu.js";
 import { wikiWearsNext } from "./island-recipe.js";
 import { isTw5DocsBag, refuseTw5DocsWrite } from "./tw5-docs-library.js";
 import type { CallSource, VerbContext, VerbReactor } from "./verb-dispatcher.js";
@@ -559,6 +561,13 @@ async function collapseOf(
   return { bytes: byteLength(fields["text"] ?? "") };
 }
 
+/** A filter's depth (`depth`, the seat's reading of `mu`): `card` or `whole`, null where none rides; any other word refuses by name. */
+function filterDepthOf(raw: unknown): "card" | "whole" | null {
+  if (raw === undefined || raw === null || raw === "") return null;
+  if (raw === "card" || raw === "whole") return raw;
+  throw new VerbRefusal("filter-depth-unknown", `filter-depth-unknown: a filter's depth reads card or whole (got ${JSON.stringify(raw)}); a call names it as \`mu=many-relate\` or \`mu=many-assert\`.`);
+}
+
 export const makeWikiFilterReactor = everyWiki("wiki-filter", false, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
     const anchor = anchorOf(opts, args, "wiki-filter");
@@ -579,6 +588,7 @@ export const makeWikiFilterReactor = everyWiki("wiki-filter", false, (opts: Tidd
     }
     const names = namesArg(args["fields"]);
     const collapse = flagOn(args["collapse"]);
+    const depth = filterDepthOf(args["depth"]);
     const limit = countArg(args["limit"], WIKI_FILTER_ROWS, 1, WIKI_FILTER_ROWS);
     const after = optionalStringArg(args, "after");
     // THE COLLAPSE LENS: each row of the page's window carries its bytes, and a meme root its slots, read through the one skinny
@@ -603,13 +613,20 @@ export const makeWikiFilterReactor = everyWiki("wiki-filter", false, (opts: Tidd
     // THE LINES LENS (S5): `match` names the words (or a `/regexp/`) a line must hold and `context` the lines around each; every
     // row then carries its record's matching lines, read off the same view the filter ran on, so a sweep takes no read per title.
     // A record that holds no text (a pointer) carries no lines; a withheld title never reaches a row.
-    const rowOf = names === null && !collapse && lens === null ? undefined : (title: string): FilterRow => {
+    // THE DEPTH (`mu`, landing 6): `card` hands each row its has line (`*?`, a page of has lines); `whole` adds the record's text,
+    // or beside `match` its matching lines (`*!`, a page whose rows carry their lines). Both read the same view the filter ran on.
+    const rowOf = names === null && !collapse && lens === null && depth === null ? undefined : (title: string): FilterRow => {
       const tiddler = view.getTiddler(title);
-      const held = tiddler ? readRecord(tiddler).fields : {};
+      const record = tiddler ? readRecord(tiddler) : null;
+      const held = record?.fields ?? {};
       const fields: Record<string, string> = {};
       for (const name of names ?? []) if (typeof held[name] === "string") fields[name] = held[name]!;
+      if (depth === "whole" && lens === null && typeof held["text"] === "string") fields["text"] = held["text"];
       const lines = lens !== null && typeof held["text"] === "string" ? matchingLines(held["text"], lens) : {};
-      return { title, fields, ...collapsed.get(title), ...lines };
+      const has = depth !== null && record !== null
+        ? { has: recordHas(title, held, { layer: record.bag }, placeOf(anchor, view, title), cardBase(hashOf(held), depth === "card" || typeof fields["text"] !== "string")) }
+        : {};
+      return { title, ...has, fields, ...collapsed.get(title), ...lines };
     };
     const page = pageFilterAnswer(titles, {
       after,
@@ -2167,17 +2184,41 @@ export const makeWikiStatusReactor = everyWiki("wiki-status", false, (opts: Tidd
 export const TIDDLER_CALL_SEATS: Readonly<Record<string, CallSeat>> = Object.freeze({
   "lar:///engine.record.reads": {
     verb: "tiddler-get",
-    fold: ({ all, ...args }) => (all === true || all === "true" ? { ...args, grain: args["grain"] ?? "whole" } : args),
+    // THE DEPTH (landing 6): the plan's `mu` carry turns into the read's lens and grain (`readDepthArgs`); none keeps the gradient.
+    fold: ({ all, mu, ...args }) => {
+      const titled = typeof args["title"] === "string" && args["title"] !== "";
+      const slotted = (typeof args["slot"] === "string" && args["slot"] !== "") || (titled && String(args["title"]).includes("#/"));
+      const read = typeof mu === "string" && titled ? { ...args, ...readDepthArgs(mu, slotted) } : args;
+      return all === true || all === "true" ? { ...read, grain: read["grain"] ?? "whole" } : read;
+    },
+    // THE FAMILY LISTING (handed forward by landing 4): a get with `meme` and no title lists the families this view holds.
+    verbOf: (args) => (!(typeof args["title"] === "string" && args["title"] !== "") && flagOn(args["meme"]) ? "meme-list" : "tiddler-get"),
   },
-  "lar:///engine.filter.pages": { verb: "wiki-filter" },
+  "lar:///engine.filter.pages": { verb: "wiki-filter", fold: ({ mu, ...args }) => (typeof mu === "string" ? { ...args, ...filterDepthArgs(mu) } : args) },
   "lar:///engine.record.puts": {
     verb: "tiddler-put",
     args: { "tag-add": "tagsAdd", "tag-remove": "tagsRemove", "cut-slot": "cut" },
-    fold: ({ slot, ...args }) => (typeof slot === "string" && slot !== "" && typeof args["title"] === "string" ? { ...args, title: `${args["title"]}${slot}` } : args),
+    fold: (raw) => {
+      const { slot, ...args } = noDryYet(raw, "put");
+      return typeof slot === "string" && slot !== "" && typeof args["title"] === "string" ? { ...args, title: `${args["title"]}${slot}` } : args;
+    },
   },
-  "lar:///engine.record.removes": { verb: "tiddler-delete" },
-  "lar:///engine.record.renames": { verb: "tiddler-rename" },
+  "lar:///engine.record.removes": { verb: "tiddler-delete", fold: (args) => noDryYet(args, "delete") },
+  "lar:///engine.record.renames": { verb: "tiddler-rename", fold: (args) => noDryYet(args, "rename") },
 });
+
+/**
+ * A DRY CALL NEVER LANDS (landing 6 tables the write doors' `_` cells owed; landing 7 builds their previews). Until a write door
+ * walks its dry path, a `mu` that reaches it (a layer above re-tabling a cell) refuses `mu-cell-empty` and names the plain call,
+ * so a preview never lands as a write. The `mu` leaves the args a reactor reads.
+ */
+function noDryYet(args: Record<string, unknown>, word: string): Record<string, unknown> {
+  const { mu, ...rest } = args;
+  if (typeof mu !== "string") return rest;
+  // The fold reads reactor spellings; the cure names the title alone, the plain call a reader completes.
+  const title = typeof rest["title"] === "string" ? { title: rest["title"] } : {};
+  throw new CallRefusal("mu-cell-empty", `the ${word} door walks no ${mu} path yet (its dry previews land in comms-ux-enacts landing 7), so it lands nothing`, cureCall(word, title));
+}
 
 /**
  * Where the daemon `call` reads (landing 5): THE NAMED RECIPE'S READER VIEW. Each call resolves and binds over the stack of the

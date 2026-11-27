@@ -2435,3 +2435,143 @@ describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the 
     expect(Object.keys(seats).filter((a) => !held.has(a))).toEqual([]);
   });
 });
+
+// ── mu, the depth of every call (comms-ux-enacts landing 6) ──────────────────────────────────────────
+
+describe.skipIf(wikiSkip)(`mu sets the depth: glyphs and words meet the carrier's cells${skipNote}`, () => {
+  /** The call rig with the standing meme fixture placed: a root and two slots. */
+  async function muRig() {
+    const r = await callRig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    return r;
+  }
+  const hasLines = (out: Record<string, unknown>): number => (String(out["has"]).match(/<<~ has name=/g) ?? []).length;
+
+  test("RED: each cell of get on the meme fixture: none keeps the gradient, ? (relate) the card, ! (assert) the whole, assert beside slot one span", async () => {
+    const r = await muRig();
+    const none = await r.call("get", { title: MEME });
+    expect(none).toMatchObject({ lens: "record", tiddler: { position: "root" } });
+    expect(none["mu"], "no mu names no depth").toBeUndefined();
+    for (const mu of ["?", "relate"]) {
+      const card = await r.call("get", { title: MEME, mu });
+      expect(card, mu).toMatchObject({ lens: "meme", grain: { applied: "skinny" }, mu: { asked: mu, carry: "?", words: "relate", axis: "single" } });
+      expect((card["meme"] as { text?: string }).text, `${mu}: the card leaves the text home`).toBeUndefined();
+      expect(hasLines(card), `${mu}: the root's line and one per slot`).toBe(3);
+    }
+    for (const mu of ["!", "assert"]) {
+      const whole = await r.call("get", { title: MEME, mu });
+      expect(whole, mu).toMatchObject({ lens: "meme", grain: { applied: "whole" }, mu: { carry: "!", words: "assert" } });
+      const text = String((whole["meme"] as { text?: string }).text);
+      expect(text, mu).toContain("body of a");
+      expect(text, mu).toContain("body of b");
+    }
+    const span = await r.call("get", { title: MEME, mu: "assert", slot: "#/b" });
+    expect(span).toMatchObject({ grain: { applied: "slot" }, meme: { slot: "#/b" } });
+    expect(String((span["meme"] as { slotText?: string }).slotText)).toContain("body of b");
+    expect(String((span["meme"] as { slotText?: string }).slotText)).not.toContain("body of a");
+  });
+
+  test("RED: a filter call reads as many already: ? reads *? (a page of has lines), *! a page whose rows carry their text, and beside match their lines", async () => {
+    const r = await muRig();
+    const filter = `[[${MEME}]] [[Note 04]]`;
+    for (const mu of ["*?", "many-relate", "?", "relate"]) {
+      const page = await r.call("get", { filter, mu });
+      expect(page, mu).toMatchObject({ mu: { carry: "*?", words: "many-relate" } });
+      const rows = page["rows"] as Array<{ title: string; has?: string; fields: Record<string, string> }>;
+      expect(rows.map((x) => x.title), mu).toEqual([MEME, "Note 04"]);
+      for (const row of rows) {
+        expect(String(row.has).startsWith(`<<~ has name=\`${row.title}\``), `${mu}: ${row.title}`).toBe(true);
+        expect(row.fields["text"], `${mu}: a card row carries no text`).toBeUndefined();
+      }
+    }
+    const detail = await r.call("get", { filter: "[[Note 04]]", mu: "many-assert" });
+    const [row] = detail["rows"] as Array<{ has?: string; fields: Record<string, string> }>;
+    expect(String(row!.has).startsWith("<<~ has name=`Note 04`")).toBe(true);
+    expect(row!.fields["text"]).toBe(r.engine.wiki.getTiddler("Note 04")!.fields["text"]);
+    const heard = await r.call("get", { filter: "[[Note 04]]", mu: "*!", match: "Note 01" });
+    const [lined] = heard["rows"] as Array<{ has?: string; fields: Record<string, string>; lines?: Array<{ text: string }>; matches?: number }>;
+    expect(lined!.fields["text"], "beside match the lines ride, never the whole text").toBeUndefined();
+    expect(lined).toMatchObject({ matches: 1, lines: [{ n: 1, text: "see [[Note 01]] and note 4" }] });
+    expect(String(lined!.has).startsWith("<<~ has name=`Note 04`")).toBe(true);
+    // CONTROL: many alone reads the page of titles, as the plain filter does.
+    expect(await r.call("get", { filter, mu: "many" })).toMatchObject({ titles: [MEME, "Note 04"], mu: { carry: "*" } });
+  });
+
+  test("RED: a conflict carry answers its first tool and names the second as the next call; feeding that call back answers the second", async () => {
+    const r = await muRig();
+    for (const mu of ["?!", "relate-assert"]) {
+      const out = await r.call("get", { title: MEME, mu });
+      expect(out, mu).toMatchObject({ grain: { applied: "skinny" }, mu: { carry: "?", axis: "conflict" } });
+      const next = String((out["mu"] as { next?: string }).next);
+      expect(next.startsWith("<<~ get title=`lar:///t/x`"), next).toBe(true);
+      expect(next, mu).toContain("mu=`assert`");
+      expect(await r.sigil(next), mu).toMatchObject({ grain: { applied: "whole" }, mu: { carry: "!", axis: "single" } });
+    }
+    // The other order answers the whole first and names the card.
+    const flipped = await r.call("get", { title: MEME, mu: "!?" });
+    expect(flipped).toMatchObject({ grain: { applied: "whole" }, mu: { carry: "!", axis: "conflict", next: expect.stringContaining("mu=`relate`") } });
+  });
+
+  test("RED: a depth outside the table refuses mu-cell-empty with a cure sigil: dry on get names the plain call, and the cure lands", async () => {
+    const r = await muRig();
+    for (const mu of ["dry", "_", "unask"]) {
+      const cure = await cureOf(r.call("get", { title: MEME, mu }));
+      expect(cure, mu).not.toContain("mu=");
+      expect(cure.startsWith("<<~ get title=`lar:///t/x`"), cure).toBe(true);
+      expect(await r.sigil(cure), mu).toMatchObject({ lens: "record", title: MEME });
+    }
+    await expect(r.call("get", { title: MEME, mu: "dry" })).rejects.toMatchObject({ reason: "mu-cell-empty" });
+    await expect(r.call("get", { title: MEME, mu: "deep" })).rejects.toMatchObject({ reason: "mu-malformed" });
+    await expect(r.call("get", { title: MEME, mu: "*?!" })).rejects.toMatchObject({ reason: "mu-malformed" });
+  });
+
+  test("RED: the write doors table their dry cells owed: a dry put refuses and lands nothing; a layer that re-tables the cell still lands no write", async () => {
+    const r = await muRig();
+    for (const mu of ["dry", "dry-relate", "_!"]) {
+      await expect(r.call("put", { title: "Dry one", text: "x", create: true, mu }), mu).rejects.toMatchObject({ reason: "mu-cell-empty" });
+    }
+    await expect(r.call("delete", { title: "Note 04", mu: "dry-assert" })).rejects.toMatchObject({ reason: "mu-cell-empty" });
+    await r.landed();
+    expect(r.engine.wiki.getTiddler("Dry one"), "a dry call lands nothing").toBeUndefined();
+    expect(r.engine.wiki.getTiddler("Note 04")).toBeDefined();
+    // MUTABILITY AT THE ROOT: a working layer re-tables the put's `_?` cell as answered; the door still walks no dry path, so it refuses.
+    const takes = r.engine.wiki.getTiddler(`${PUTS_SEAT}#/takes`)!.getFieldStrings();
+    const moved = takes["text"]!.replace(/(name=`_\?` params=`mu\/dry-relate) owed\/\[\[[^\]]*\]\]/, "$1");
+    expect(moved).not.toBe(takes["text"]);
+    r.engine.wiki.addTiddler({ ...takes, text: moved, "$origin-bag": DAEMON });
+    await expect(r.call("put", { title: "Dry one", text: "x", create: true, mu: "dry-relate" })).rejects.toMatchObject({ reason: "mu-cell-empty" });
+    await r.landed();
+    expect(r.engine.wiki.getTiddler("Dry one")).toBeUndefined();
+  });
+
+  test("RED: the cells rest in carrier rows: a working layer that drops the get's relate cell refuses relate, and assert still answers", async () => {
+    const r = await muRig();
+    const takes = r.engine.wiki.getTiddler(`${READS_SEAT}#/takes`)!.getFieldStrings();
+    const moved = takes["text"]!.replace(/<<has entity=`cell` name=`\?`[^\n]*\n/, "");
+    expect(moved).not.toBe(takes["text"]);
+    r.engine.wiki.addTiddler({ ...takes, text: moved, "$origin-bag": DAEMON });
+    await expect(r.call("get", { title: MEME, mu: "relate" })).rejects.toMatchObject({ reason: "mu-cell-empty" });
+    expect(await r.call("get", { title: MEME, mu: "assert" })).toMatchObject({ grain: { applied: "whole" } });
+  });
+
+  test("RED: a seat chooses its verb by params: a get with meme and no title reaches the family listing", async () => {
+    const r = await muRig();
+    let listed: Record<string, unknown> | null = null;
+    r.table.register("meme-list", async (args) => { listed = args; return { roots: [], next: null }; });
+    expect(await r.call("tiddler_get", { meme: true, tree: true })).toMatchObject({ roots: [], carrier: { carrier: READS_SEAT } });
+    expect(listed).toMatchObject({ meme: true, tree: true, recipe: "default" });
+    // CONTROL: a title beside meme still reads the record door.
+    expect(await r.call("tiddler_get", { title: MEME, meme: true })).toMatchObject({ lens: "meme", title: MEME });
+  });
+
+  test("REACH: $tw.lares.call(\"get\", {title, mu: \"relate\"}) answers one has line; the same with assert answers every slot", async () => {
+    const r = await muRig();
+    const call = callFaceOf(r.engine.wiki as never, () => callDoorOf(r.table, ctx()));
+    const card = await call("get", { title: "Note 04", mu: "relate" });
+    expect(hasLines(card)).toBe(1);
+    expect((card["tiddler"] as { fields: Record<string, string> }).fields["text"]).toBeUndefined();
+    const whole = await call("get", { title: MEME, mu: "assert" });
+    expect((whole["meme"] as { slots: Array<{ slot: string }> }).slots.map((s) => s.slot)).toEqual(["#/a", "#/b"]);
+    expect(String((whole["meme"] as { text?: string }).text)).toContain("body of b");
+  });
+});

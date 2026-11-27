@@ -83,13 +83,14 @@ The slot set stays closed and runs in loop order, so a paged whole-read, cut on 
 
 <<~ ahu slot=`#/rows`>>
 
-!! rows ~ arg · band · refusal · example · gate · skin
+!! rows ~ arg · cell · band · refusal · example · gate · skin
 
 Rows ride the `has` grammar and its `key/value` params; `[[…]]` brackets a value holding spaces; the tagline after `~` carries the row's one line.
 
 ```memetic-wikitext
 <<has entity=`arg` name=`asking` params=`takes/words needs/seat ~ the query, named before the throw`>>
 <<has entity=`arg` name=`fresh` params=`gate/hand ~ throw anew for the same words`>>
+<<has entity=`cell` name=`?` params=`mu/relate ~ the card: the has line, its size and its base`>>
 <<has entity=`band` name=`asks` params=`exit/5 ~ a seat asked what a hand alone gives; the line a person runs rides the answer`>>
 <<has entity=`refusal` name=`oracle-cast-untimed` params=`cure/[[oracle.library.consults at/<time>]] ~ the verb reads no clock`>>
 <<has entity=`example` name=`first-cast` params=`recipe/default asking/[[which lane lands first]] ~ a seat's cast at its own open fork`>>
@@ -103,6 +104,7 @@ Rows ride the `has` grammar and its `key/value` params; `[[…]]` brackets a val
 * ''An example and a cure ride as neutral calls'' (an address and bound args), so every skin renders its own runnable line from one row. A call binding an arg a skin never takes (`skins/`, `omits/`) runs on no door of that skin, so that skin renders no line for it: the example drops there, and the refusal keeps its words without a cure. A lesson that lives in shell composition rides a literal fenced line inside `#/skins/cli`.
 * ''A skin row may name more than its spelling.'' `also/` names further spellings the one door answers, comma-joined (`also/[[lares shore keep-records]]`), each routed to the same address. `door/part` marks a cli skin as one verb of a door whose other verbs keep the door's own table (`wiki filter` beside the rest of `wiki`): the spelling routes to its carrier and its own `--help` reads the carrier whole, while the door gathers no pack entry until every verb it answers holds a carrier and the door flips whole.
 * ''A skin row names how a call reaches its door.'' `by/<param>` marks a spelling several carriers share (the verb word `get` skins `engine.record.reads` `by/title` and `engine.filter.pages` `by/filter`): the call picks the carrier whose `by` param it names, so the choice rests in rows a layer above may move. `handler/host` marks a door the host runs (the terminal or the seat), outside the call's registry: a call answers its bound params for the host to run. A carrier with neither a registered reactor nor `handler/host` refuses `affordance-unhandled`.
+* ''A `cell` row tables one depth the door answers'' (`#/takes`, beside the args): its name holds the carry in the seed's glyphs (`?`, `*!`), `mu/` the words a shell writes (`relate`, `many-assert`), and the tagline what that depth reads. `implied/true` on a one-tool cell joins that tool to every carry that lacks its axis (a filter call reads as `*` already, so `?` there reads `*?`); `owed/<why>` tables a depth whose door answers it in a later landing, and it refuses as an empty cell. The `mu` arg itself stands once, in `#/takes/mu`.
 * ''A call binds against `#/takes` as the stack resolves it.'' `default/` fills a param the call leaves out (a `needs/one-of` member's default only where no member rides), so the container defaults to `recipe/default` through this law's own `#/takes/container` row, and a layer above re-shapes the default by seating a row. A param no row names refuses `param-unknown` and names the nearest; naming two members of a `one-of` refuses `one-of-doubled`.
 * The surface words read `cli` · `mcp` · `tw5` · `console`. `mcp` names the protocol every seat speaks.
 
@@ -110,7 +112,7 @@ Rows ride the `has` grammar and its `key/value` params; `[[…]]` brackets a val
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ container · face · json
+!! takes ~ container · face · json · mu
 
 ''Shared args stand once, here.'' A carrier calls one by reference, never by copy: ``<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container`>>``.
 
@@ -146,6 +148,20 @@ Rows ride the `has` grammar and its `key/value` params; `[[…]]` brackets a val
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/takes/mu`>>
+
+!!! mu ~ the depth of the answer
+
+`mu` takes the seed's five pattern-match operators, each beside the word a shell carries (a nomatch shell refuses a bare `?`): `?` relate · `!` assert · `*` many · `_` dry · `0` unask. Two tools across the axes carry together (`*?` a page of has lines, `*!` a page whose rows carry their lines, `_?` a dry summary, `_!` a dry diff), written in glyphs or in words joined by a dash (`many-relate`). Two on one axis (`*_`, `?!`) answer the first tool's depth and name the second as the next call, under `mu.next`. `0` beside a tool reads as the empty hand. With no `mu`, the door's own default stands (a read's gradient). Mu names depth alone and never repeats a param: `filter` already means many, `match` already adds lines.
+
+Each carrier tables the depths it answers as `cell` rows in its own `#/takes`; a carry outside its table refuses `mu-cell-empty` and names the nearest cell as a call, or the plain call with no `mu`.
+
+```memetic-wikitext
+<<has entity=`arg` name=`mu` params=`takes/depth skins/console ~ the depth: relate ?, assert !, many *, dry _, unask 0; the carrier's cell rows table what each reads`>>
+```
+
+<<~/ahu>>
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/loop`>>
@@ -171,6 +187,6 @@ A verb that lands an act record MUST read its slot names, their order and their 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0zahgWuYnHY0QYUqIF9muZU_6tkoqsKwKg38_wleyTk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;idCt5HAWJBpRiU15EDDjixhWMTfkvb40Usms9fNPsmw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

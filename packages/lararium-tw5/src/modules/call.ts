@@ -28,6 +28,11 @@ module-type: startup
  * macro-call parser in the VM (`callOfSigil`), and every cure renders as a call sigil a reader runs as written (`cureCall`), the
  * triple quote carrying any value that holds a substitution mark (`sigilQuote` in `affordance-rows`).
  *
+ * MU SETS THE DEPTH (landing 6, `modules/mu.ts`): a `mu` param (a glyph or its word) reads to a carry, meets the cells the
+ * carrier's `#/takes` tables, and rides the plan as its canonical carry for the seat to turn into its reactor's args; no `mu`
+ * keeps the read gradient. A conflict carry answers its first tool and names the second as the next call (`mu.then`); a carry
+ * outside the table refuses `mu-cell-empty` with the nearest cell as a cure sigil.
+ *
  * In the VM the call dispatches through `$tw.lares.callDoor`, the host's seat of the registry; where no host seats one, the
  * call answers its plan (`handler/host`, the bound params), so a reader sees what would run.
  *
@@ -40,6 +45,7 @@ import type { TW5Instance } from "../types/tiddlywiki.js";
 import { AFFORDANCE_TAG, AFFORD_SURFACES, type AffordSurface, type HasRow, bareAddressOf, renderCall, skinOmits, skinRow } from "../affordance-rows.js";
 import { argOnSurface, carrierOf, routeOfCall, routesOf, skinRows, takesRows, type AffordRoutes, type CarrierView, type TextOf } from "../affordance-read.js";
 import { param } from "../has-line.js";
+import { isMuFault, lookupMu, muCellsOf, muWordsOf, readMu, type MuFault, type MuReading } from "./mu.js";
 
 export const name        = "lararium-call";
 export const after       = ["startup"];
@@ -68,7 +74,12 @@ export interface CallPlan {
   readonly params: Readonly<Record<string, unknown>>;
   /** True where a skin row names `handler/host`: the host (the CLI or the seat) runs the door, never the registry. */
   readonly host: boolean;
+  /** The depth a `mu` param asked and the cell that answers it (landing 6); absent where the call names no `mu`. */
+  readonly mu?: MuCall | undefined;
 }
+
+/** A plan's depth: the cell's reading, and the next call a conflict names, rendered as a call sigil. */
+export interface MuCall extends MuReading { readonly next: string | null }
 
 /** A refusal the call itself answers (before any reactor): its code leads the message, and `cure` renders a runnable call. */
 export class CallRefusal extends VerbRefusal {
@@ -274,10 +285,42 @@ export function hostHandled(reader: CallReader, carrier: string): boolean {
   return skinRows(reader.textOf, carrier).some((r) => r.params["handler"] === "host");
 }
 
-/** RESOLVE AND BIND: the whole plan, read over the live stack. */
+/**
+ * THE DEPTH A CALL ASKS (landing 6): the bound `mu` read to a carry and looked up against the cells the carrier's `#/takes`
+ * tables (`cell` rows, the shared slots it calls by `kahea` read in place). A fault refuses with its cure as a call sigil: the
+ * nearest cell's words in `mu`, or the plain call with no `mu` (the read gradient).
+ */
+export function muOfCall(reader: CallReader, carrier: string, word: string, bound: Readonly<Record<string, unknown>>): MuCall {
+  const refuse = (fault: MuFault): never => {
+    const { mu: _drop, ...plain } = bound;
+    throw new CallRefusal(fault.reason, fault.message, cureCall(word, fault.cure === null ? plain : { ...plain, mu: fault.cure }));
+  };
+  const asked = String(bound["mu"]);
+  const read = readMu(bound["mu"]);
+  if (isMuFault(read)) return refuse(read);
+  const reading = lookupMu(asked, read, muCellsOf(takesCells(reader, carrier)));
+  if (isMuFault(reading)) return refuse(reading);
+  return { ...reading, next: reading.then === null ? null : cureCall(word, { ...bound, mu: muWordsOf(reading.then) }) };
+}
+
+/** The `cell` rows of a carrier's `#/takes`, the shared slots it calls by `kahea` read in place. */
+function takesCells(reader: CallReader, carrier: string): HasRow[] {
+  return takesRows(reader.textOf, carrier, "cell");
+}
+
+/** RESOLVE AND BIND: the whole plan, read over the live stack; a `mu` param meets the carrier's cells. */
 export function planCall(reader: CallReader, word: string, params: Readonly<Record<string, unknown>> = {}, surface: AffordSurface = "console"): CallPlan {
   const { address, carrier } = resolveCall(reader, word, params);
-  return { address, carrier, surface, params: bindCall(reader, address, carrier, word, params, surface), host: hostHandled(reader, carrier) };
+  const bound = bindCall(reader, address, carrier, word, params, surface);
+  const mu = bound["mu"] === undefined ? undefined : muOfCall(reader, carrier, word, bound);
+  return { address, carrier, surface, params: mu === undefined ? bound : { ...bound, mu: mu.carry }, host: hostHandled(reader, carrier), ...(mu !== undefined ? { mu } : {}) };
+}
+
+/** An answer beside the depth that shaped it: `mu: {asked, carry, axis, next?}`, a conflict's second tool named as the next call. */
+export function muAnswer(answer: Record<string, unknown>, plan: CallPlan): Record<string, unknown> {
+  if (plan.mu === undefined) return answer;
+  const { asked, carry, axis, next } = plan.mu;
+  return { ...answer, mu: { asked, carry, words: muWordsOf(carry), axis, ...(next !== null ? { next } : {}) } };
 }
 
 /** The camelCase a reactor reads for a neutral param (`max-bytes` → `maxBytes`). */
@@ -291,7 +334,12 @@ export interface CallSeat {
   readonly verb: string;
   readonly args?: Readonly<Record<string, string>>;
   readonly fold?: (args: Record<string, unknown>) => Record<string, unknown>;
+  /** A seat that chooses its verb by the call's args (a get with `meme` and no title lists the families, `meme-list`). */
+  readonly verbOf?: (args: Readonly<Record<string, unknown>>) => string;
 }
+
+/** The daemon verb a seat answers with for one call's reactor args: its `verbOf` choice, else its one verb. */
+export const seatVerbOf = (seat: CallSeat, args: Readonly<Record<string, unknown>>): string => seat.verbOf?.(args) ?? seat.verb;
 
 /** The reactor's args for a bound plan, by its seat's spellings. */
 export function reactorArgs(params: Readonly<Record<string, unknown>>, seat: CallSeat): Record<string, unknown> {
@@ -323,7 +371,7 @@ export function stampAnswer(answer: Record<string, unknown>, address: string, re
 
 /** The answer a host-run door gives: the plan itself, so the host runs the door with the bound params. */
 export function hostAnswer(plan: CallPlan, receipt: CallReceipt): Record<string, unknown> {
-  return stampAnswer({ handler: "host", address: plan.address, params: plan.params }, plan.address, receipt);
+  return muAnswer(stampAnswer({ handler: "host", address: plan.address, params: plan.params }, plan.address, receipt), plan);
 }
 
 /** The refusal an address with no reactor and no host door answers. */
@@ -384,7 +432,7 @@ export function callFaceOf(wiki: ReaderWiki, door: () => LaresCallDoor | undefin
     if (plan.host) return hostAnswer(plan, receipt);
     const seated = door();
     if (seated === undefined) return { ...hostAnswer(plan, receipt), note: "no host seats $tw.lares.callDoor in this wiki; the plan answers, bound" };
-    return stampAnswer(await seated(plan), plan.address, receipt);
+    return muAnswer(stampAnswer(await seated(plan), plan.address, receipt), plan);
   };
 }
 

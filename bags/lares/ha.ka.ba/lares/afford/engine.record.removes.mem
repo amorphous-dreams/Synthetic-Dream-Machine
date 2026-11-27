@@ -43,12 +43,15 @@ A rendered tiddler (one carrying `rendered-from`) refuses `rendered-derives`: on
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ title · container · face · base · family · mode
+!! takes ~ title · container · face · base · family · mode · mu
 
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container`>>
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
 
 ```memetic-wikitext
+<<has entity=`cell` name=`_?` params=`mu/dry-relate owed/[[comms-ux-enacts landing 7 builds the dry previews]] ~ the dry summary: what the delete would land, the base it needs, landing nothing`>>
+<<has entity=`cell` name=`_!` params=`mu/dry-assert owed/[[comms-ux-enacts landing 7 builds the dry previews]] ~ the dry diff: the summary and the full diff of text and fields, landing nothing`>>
 <<has entity=`arg` name=`title` params=`takes/title needs/required seat/1 as/<title> ~ the record removed; a slot title <root>#/x leaves as the cut on its parent`>>
 <<has entity=`arg` name=`base` params=`takes/hash ~ the hash last read; a stale one answers conflict and nothing moves`>>
 <<has entity=`arg` name=`family` params=`~ name the family act: a meme root leaves with its slots, one change`>>
@@ -144,6 +147,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WrE8vJMzVQD9mN4mTobp0Q980scwcTrWrxPnHxD5b3o`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0bx2h4IamG2LrUV8IcFQZKfT5dIGS-mEs3oPUrVCJYk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

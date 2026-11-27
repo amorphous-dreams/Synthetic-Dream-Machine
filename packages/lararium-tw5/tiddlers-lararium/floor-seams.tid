@@ -132,7 +132,7 @@ GUARDS cli-door-table e2e tiddler-door realm-select mcp-seat-binds-the-hearth
 GUARDS cli-door-table witness law-mutants-witness
 
 SEAM verb-dispatch
-MOVES verb-dispatch t verb-dispatcher* verb-local-dispatch* verb-summons* action-handler* handler-args* tiddler-verbs* meme-verbs* receipt* modules/call*
+MOVES verb-dispatch t verb-dispatcher* verb-local-dispatch* verb-summons* action-handler* handler-args* tiddler-verbs* meme-verbs* receipt* modules/call* modules/mu*
 MOVES verb-dispatch m verb-tiddler* verb-refusal* effect-record* lar-event-bus*
 GUARDS verb-dispatch e2e tiddler-door working-loop promotion-publish-diff
 GUARDS verb-dispatch node-e2e composer-mounts-working-first seat-settle-before-mount

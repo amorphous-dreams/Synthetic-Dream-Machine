@@ -38,11 +38,14 @@ An answer names only records this face reads and counts the rest (`withheld`); a
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ title · to · recipe · face · base
+!! takes ~ title · to · recipe · face · base · mu
 
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
 
 ```memetic-wikitext
+<<has entity=`cell` name=`_?` params=`mu/dry-relate owed/[[comms-ux-enacts landing 7 builds the dry previews]] ~ the dry summary: what the rename would land, the base it needs, landing nothing`>>
+<<has entity=`cell` name=`_!` params=`mu/dry-assert owed/[[comms-ux-enacts landing 7 builds the dry previews]] ~ the dry diff: the summary and the full diff of text and fields, landing nothing`>>
 <<has entity=`arg` name=`title` params=`takes/title needs/required seat/1 as/<old> ~ the record moved, a meme root with its slots`>>
 <<has entity=`arg` name=`to` params=`takes/title needs/required seat/2 as/<new> ~ the title it moves to`>>
 <<has entity=`arg` name=`recipe` params=`takes/slug needs/required default/default ~ the wiki whose engine relinks; default names the worn face's daemon wiki`>>
@@ -130,6 +133,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;I-sMQmf7nK9eVdvInS8AzcqzyYlZ_jUfWW0xokx0IjQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uJq6bV0eUWzaEOkWtKeKeWw_zW_58iJvPj4CqCbdHPA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

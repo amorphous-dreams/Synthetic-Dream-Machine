@@ -31,12 +31,13 @@ A rendered tiddler's slice: where one read of the whole render (the record carry
 
 <<~ ahu slot=`#/shows`>>
 
-!! shows ~ one-page · the-link-graph · the-work-skinny · hear-one-voice · a-visit
+!! shows ~ one-page · the-link-graph · the-work-skinny · a-page-of-cards · hear-one-voice · a-visit
 
 ```memetic-wikitext
 <<has entity=`example` name=`one-page` params=`filter/[tag[memory]sort[title]] recipe/default limit/5 ~ one page; after continues it, all walks it`>>
 <<has entity=`example` name=`the-link-graph` params=`filter/[[[[Room 4]backlinks[]]]] recipe/default ~ every record that links to Room 4`>>
 <<has entity=`example` name=`the-work-skinny` params=`filter/[prefix[lar:///ha.ka.ba/kahua/memory/road/]] recipe/default collapse/true ~ each meme row skinny: its bytes and its slots`>>
+<<has entity=`example` name=`a-page-of-cards` params=`filter/[tag[memory]sort[title]] recipe/default mu/relate ~ a page of has lines: the lone relate joins the many a filter already reads`>>
 <<has entity=`example` name=`hear-one-voice` params=`filter/[[[all[tiddlers]search:text:literal[Lares (Stranger)]]]] match/[[Lares (Stranger)]] recipe/default ~ one persona heard across every body: the filter narrows, the lens shows the lines`>>
 <<has entity=`example` name=`a-visit` params=`filter/[tag[memory]] recipe/default target/h1 ~ a lit sibling's daemon wiki, read while you keep your own face`>>
 ```
@@ -45,11 +46,15 @@ A rendered tiddler's slice: where one read of the whole render (the record carry
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ filter · recipe · bag · fields · collapse · match · context · limit · max-bytes · after · all · target · face
+!! takes ~ filter · recipe · bag · fields · collapse · match · context · limit · max-bytes · after · all · target · face · mu
 
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
 
 ```memetic-wikitext
+<<has entity=`cell` name=`*` params=`mu/many implied/true ~ a filter call reads as many already: the page of titles, and every lone depth joins it`>>
+<<has entity=`cell` name=`*?` params=`mu/many-relate ~ a page of has lines, one per row, each the card a get answers`>>
+<<has entity=`cell` name=`*!` params=`mu/many-assert ~ a page whose rows carry their has line and their text; beside match, their matching lines`>>
 <<has entity=`arg` name=`filter` params=`takes/filter needs/required seat/1 as/<filter> ~ a TiddlyWiki filter, run by the wiki's own engine`>>
 <<has entity=`arg` name=`recipe` params=`takes/slug needs/required default/default ~ the wiki whose engine runs the filter; default names the worn face's daemon wiki`>>
 <<has entity=`arg` name=`bag` params=`takes/slug skins/cli ~ a bag names no wiki and takes no filter; it refuses wiki-not-anchored by name`>>
@@ -151,6 +156,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yb4Sbx_UYneUj_3ITyxajvWTugFjwLO6LthL9v08xbI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cII_kK46FMIKhKexWbT67aQydLlGxS1DE5MVl_6p2Gw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

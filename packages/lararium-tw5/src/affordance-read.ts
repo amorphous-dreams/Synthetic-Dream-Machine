@@ -77,9 +77,12 @@ function slotText(textOf: TextOf, address: string, slot: string): string {
   return [own, ...called].join("\n");
 }
 
-/** The arg rows of a carrier's `#/takes`, the shared slots it calls by `kahea` read in place: what a call binds against. */
-export function takesRows(textOf: TextOf, address: string): HasRow[] {
-  return parseHasRows(slotText(textOf, address, "#/takes")).filter((r) => r.entity === "arg");
+/**
+ * The arg rows of a carrier's `#/takes`, the shared slots it calls by `kahea` read in place: what a call binds against. `entity`
+ * names another row kind the slot tables (`cell`: the depths a `mu` param reaches, landing 6).
+ */
+export function takesRows(textOf: TextOf, address: string, entity: "arg" | "cell" = "arg"): HasRow[] {
+  return parseHasRows(slotText(textOf, address, "#/takes")).filter((r) => r.entity === entity);
 }
 
 /** Every skin row the carrier holds: `#/skins` itself and each nested `#/skins/<surface>` slot. */
@@ -117,8 +120,11 @@ export function rowsOf(textOf: TextOf, address: string, slot: string, surface: A
   const offSurface = new Set(parseHasRows(slotText(textOf, address, "#/takes"))
     .filter((r) => r.entity === "arg" && !argOnSurface(r, surface, omitted)).map((r) => r.name));
   const runsHere = (call: NeutralCall): boolean => call.args.every(([k]) => !offSurface.has(k));
+  // A DEPTH CELL (landing 6) rides where its surface takes `mu`: a skin that binds no `mu` renders no depth line.
+  const takesMu = parseHasRows(slotText(textOf, address, "#/takes")).some((r) => r.entity === "arg" && r.name === "mu" && argOnSurface(r, surface, omitted));
   const rows = (slot === "#/skins" ? skinRows(textOf, address) : parseHasRows(slotText(textOf, address, slot)))
     .filter((row) => !(row.entity === "arg" && !argOnSurface(row, surface, omitted)))
+    .filter((row) => !(row.entity === "cell" && !takesMu))
     .filter((row) => !(row.entity === "example" && !runsHere(exampleCall(row, own))));
   // A call naming another affordance (a cure that reads `tiddler.get.reads`) renders under that address, marked foreign: this
   // carrier knows no spelling of another door, and witness W4 parses only the calls that name this one.
@@ -152,6 +158,8 @@ export function rowsOf(textOf: TextOf, address: string, slot: string, surface: A
       out["sigil"] = sigilOf(neutralCallOf(row.params["cure"], own));
       if (foreign) out["foreign"] = true;
     }
+    // A cell spells the depth it answers as its surface writes the `mu` param, in words (a shell's nomatch refuses a bare `?`).
+    if (row.entity === "cell") out["spell"] = `${spellArg(surface, "mu", skin)}=${row.params["mu"] ?? row.name}`;
     if (row.entity === "band" && row.params["exit"]) out["exit"] = row.params["exit"];
     if (row.entity === "skin") out["spells"] = row.params["spells"] ?? row.name;
     return out;

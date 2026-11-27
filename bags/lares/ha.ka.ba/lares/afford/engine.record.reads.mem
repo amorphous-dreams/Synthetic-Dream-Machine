@@ -35,10 +35,12 @@ A rendered tiddler answers whole here: a source marked `projection: rendered` de
 
 <<~ ahu slot=`#/shows`>>
 
-!! shows ~ a-record · the-card · one-bag · one-slot · the-whole-carrier · the-text-alone · the-whole-text · the-families · a-visit
+!! shows ~ a-record · the-depth-card · the-depth-whole · the-card · one-bag · one-slot · the-whole-carrier · the-text-alone · the-whole-text · the-families · a-visit
 
 ```memetic-wikitext
 <<has entity=`example` name=`a-record` params=`title/[[Room 4]] recipe/default ~ the record on its gradient, fat within a page; the base rides beside it`>>
+<<has entity=`example` name=`the-depth-card` params=`title/lar:///ha.ka.ba/lares/api/pono/affordance recipe/lares mu/relate ~ the card at mu relate: the has-stack, one line per slot`>>
+<<has entity=`example` name=`the-depth-whole` params=`title/lar:///ha.ka.ba/lares/api/pono/affordance recipe/lares mu/assert slot/#/takes ~ the whole at mu assert, slot narrowing it to one span`>>
 <<has entity=`example` name=`the-card` params=`title/[[Room 4]] recipe/default skinny/true ~ every field, the text left home`>>
 <<has entity=`example` name=`one-bag` params=`title/[[Room 4]] bag/lares ~ that one bag's record, its base and the bag that answered`>>
 <<has entity=`example` name=`one-slot` params=`title/lar:///ha.ka.ba/lares/api/pono/affordance recipe/lares meme/true slot/#/takes ~ one slot of a meme, its partial base beside it`>>
@@ -53,12 +55,15 @@ A rendered tiddler answers whole here: a source marked `projection: rendered` de
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ title · container · face · meme · grain · skinny · all · slot · text · fields · max-bytes · after · target · tree
+!! takes ~ title · container · face · mu · meme · grain · skinny · all · slot · text · fields · max-bytes · after · target · tree
 
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container`>>
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
 
 ```memetic-wikitext
+<<has entity=`cell` name=`?` params=`mu/relate ~ the card: a meme's has-stack, a record's has line with its text left home; beside a slot, that slot's own card`>>
+<<has entity=`cell` name=`!` params=`mu/assert ~ the whole: a meme's carrier at the whole grain, paged on slot boundaries; beside a slot, that one span`>>
 <<has entity=`arg` name=`title` params=`takes/title seat/1 as/<title> ~ the record, any right-intent string, a lar: title whole; absent beside meme, the family listing`>>
 <<has entity=`arg` name=`meme` params=`~ the carrier lens: a meme's root and slots recomposed into one sealed carrier; with no title, the family listing`>>
 <<has entity=`arg` name=`grain` params=`takes/grain skins/mcp,console ~ skinny, fat, handle, resolved, slot or whole; none named, the door picks by size`>>
@@ -161,6 +166,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ms1JKn8ofJQ5SM1rgrW1oK4Y3qLYeisRSxOF3vv-uVQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;CD0ym4C5h7p2z35foQ1nT00Pp4obAQVyyeZNxxq1LnA`>>
 
 <<^ code=`&#x0004;` to=`?`>>
