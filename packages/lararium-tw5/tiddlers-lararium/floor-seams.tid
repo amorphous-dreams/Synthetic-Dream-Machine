@@ -174,7 +174,7 @@ GUARDS nexus-cabal-realm e2e nexus-two-root realm-select meme-realm-bag nexus-of
 GUARDS nexus-cabal-realm node-e2e carried-nexus-posture nexus-rekey-full-boot
 
 SEAM gate-sync-wire
-MOVES gate-sync-wire m gate-* gated-sync-leg* noise-ik* ws-dial-socket* carriage-* sibling-* membership-channel* cas-transit* itc* dyad*
+MOVES gate-sync-wire m pointer-address* gate-* gated-sync-leg* noise-ik* ws-dial-socket* carriage-* sibling-* membership-channel* cas-transit* itc* dyad*
 MOVES gate-sync-wire n gate-* wire-legs* carriage-* node-dial-socket* lan-* intent-relay* cas-wire* cas-reshare*
 GUARDS gate-sync-wire e2e fleet-join leaf-sibling-sync blob-follows-pointer hosted-walk vessel-sealed
 GUARDS gate-sync-wire node-e2e two-vessel-mesh fleet-join-dial
