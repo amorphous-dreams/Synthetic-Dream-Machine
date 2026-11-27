@@ -23,7 +23,7 @@ import {
   type SwarmWikiPort,
 } from "@lararium/mesh/swarm-tiddlers";
 import type { CustodyHolder } from "../src/custody-holder.js";
-import { KUKULU_COLD_READS, kukuluGate, pulamaSignerOf, vouchSignerOf } from "../src/kukulu-gate.js";
+import { KUKULU_COLD_READS, halfRestsAtPulama, kukuluGate, pulamaSignerOf, vouchSignerOf, type KukuluHalfAt } from "../src/kukulu-gate.js";
 import { kukuluRiteOver } from "../src/kukulu-lei-seat.js";
 import { generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey } from "../src/node-vessel-identity.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
@@ -47,7 +47,7 @@ let fx: PulamaFixture | null = null;
 const dirs: string[] = [];
 afterEach(async () => { await fx?.drop(); fx = null; for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true }); });
 
-async function stand() {
+async function stand(more: { halfRests?: (records: SwarmWikiPort, kept: CustodyHolder) => (half: KukuluHalfAt) => Promise<boolean | null> } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "lar-kukulu-records-"));
   dirs.push(dir);
   const records: SwarmWikiPort = pulamaRecords(dir);
@@ -55,6 +55,7 @@ async function stand() {
   fx = await standPulama("kukulu-gate", (kept: CustodyHolder) => kukuluGate({
     // The product's own reading of the hand: the face's root key, off its roster row, through the seated holder.
     holder: kept, hand: (ordinal) => loadPersonaGroupRootVerifyingKey(ordinal), rite: kukuluRiteOver(records), image: () => raised,
+    ...(more.halfRests ? { halfRests: more.halfRests(records, kept) } : {}),
   }));
   const face = await fx.kept.foundFace({ group: personaGroupDigest(GROUP), ordinal: 0, slots: fixtureSlots });
   // The vessel's own holder opens the face and founds its root under the ward, as a founding does.
@@ -137,6 +138,37 @@ describe("RED pulama-serves-a-strung-vouched-kukulu", () => {
     const other = await s.string({ reach: "head", head: "c".repeat(40) }, { after: swarmActCid(lei) });
     expect(await s.hello({ lei: [lei, other], vouch: [await s.vouch()] })).toBe("swarm-lei-head-mismatch");
     expect(await s.returns(other)).toBe(0);
+  });
+});
+
+describe("RED the orphan offer reads as no offer (Kubernetes ownerReferences)", () => {
+  test("an offer whose every vouch names a half that no longer rests (abandoned, landed or absent, however it went) enters by the image: no lei reads, no return spends, no half rests; CONTROL: one half that rests, or reads unknown, keeps the offer whole", async () => {
+    const asked: KukuluHalfAt[] = [];
+    let answer: boolean | null = false;
+    const s = await stand({ halfRests: () => async (half) => { asked.push(half); return answer; } });
+    const lei = await s.string({ reach: "wide", returns: 3 });
+    const v = await s.vouch();
+    // No admission stands, so the NO OFFER path names its own refusal: the gate never reached the lei.
+    expect(await s.hello({ lei: [lei], vouch: [v] })).toBe("pulama-image-unadmitted");
+    expect(asked).toEqual([{ group: GROUP, branch: BRANCH, head: HEAD, image: IMAGE }]);
+    expect(await s.returns(lei)).toBe(0);
+    expect(await s.records.list(swarmTesseraPrefix())).toEqual([]);
+    // A forged vouch still refuses by its own reading before any half reads.
+    expect(await s.hello({ lei: [lei], vouch: [{ ...v, body: { ...v.body, head: "c".repeat(40) } }] })).toBe("kukulu-vouch-signature");
+    for (const rests of [true, null]) {
+      answer = rests;
+      expect(await s.helloLanded({ lei: [lei], vouch: [v] }), String(rests)).toBe("opens");
+    }
+    expect(await s.returns(lei)).toBe(2);
+  });
+
+  test("the pūlama's own reading: a vouch whose face no longer stands at this pūlama names a half gone, so an offer of only such vouches reads as no offer; CONTROL: a face that stands keeps the offer, which serves", async () => {
+    const s = await stand({ halfRests: (records, kept) => halfRestsAtPulama({ holder: kept, records }) });
+    const lei = await s.string({ reach: "wide", returns: 2 });
+    expect(await s.hello({ lei: [lei], vouch: [await s.vouch({ group: "group-gone" })] })).toBe("pulama-image-unadmitted");
+    expect(await s.returns(lei)).toBe(0);
+    expect(await s.helloLanded({ lei: [lei], vouch: [await s.vouch()] })).toBe("opens");
+    expect(await s.returns(lei)).toBe(1);
   });
 });
 

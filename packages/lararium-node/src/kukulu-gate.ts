@@ -22,6 +22,11 @@
  * faces read no lent set refuses by the set's own reading (`lent-faces-empty`, `lent-faces-malformed`), and one whose
  * tesserae name no tessera per face refuses `admission-tesserae-mismatch`.
  *
+ * AN ORPHAN OFFER READS AS NO OFFER (Kubernetes ownerReferences): each vouch binds one begun half (its face's group, the line,
+ * the head and the image). Where every vouch verifies and every half it names no longer rests (abandoned, landed, or absent,
+ * however it went: `halfRests` answers false for each), the offer owns nothing, and the vessel enters by its image as above;
+ * no lei reads and no return spends. One half that rests, or reads unknown, keeps the offer whole.
+ *
  * AN IMAGE STANDS ADMITTED ONCE ITS KŪKULU LANDS PAR. The scope's `land` rests each face's host half; where every pair reads
  * par, the image the vouches walked joins the admitted set on every lent face's own rite tessera. A kūkulu that never
  * composed admits nothing.
@@ -63,6 +68,8 @@ import { FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO, KUKULU_VOUCH_DOMAIN, PULAMA_TESS
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 import { lentFacesOf, lentFacesWire, renderLentFaces, type LentFaces } from "@lararium/mesh/lent-faces";
 import { verifyKukuluVouch } from "@lararium/mesh/kukulu-vouch";
+import { pendingBegins } from "@lararium/mesh/swarm-tessera";
+import type { SwarmWikiPort } from "@lararium/mesh/swarm-tiddlers";
 import type { CustodyHolder } from "./custody-holder.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 import type { AdmittedFace, PulamaAdmissions } from "./pulama-admit.js";
@@ -70,6 +77,9 @@ import type { PulamaGate, PulamaScope } from "./pulama-server.js";
 
 /** A signing seat: a verifying key (64 lower hex) and its signature over bytes. */
 export interface KukuluSigner { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> }
+
+/** The begun half a vouch names: the face's group, the line, the head and the image. */
+export interface KukuluHalfAt { readonly group: string; readonly branch: string; readonly head: string; readonly image: string }
 
 /** What a kūkulu's rite names: the face's group, the branch, and the head and tree the vouch walked. */
 export interface KukuluRiteAt {
@@ -149,6 +159,11 @@ export function kukuluGate(a: {
   readonly coldReads?: readonly string[];
   /** The admitted set (`pulama-admit`). Absent, no image stands admitted and every hello needs its offer. */
   readonly admissions?: PulamaAdmissions;
+  /**
+   * Whether the begun half a vouch names still rests: false where it went (abandoned, landed, or absent), true where it rests,
+   * null where nothing reads. Absent, every half reads unknown and every offer serves as it rides.
+   */
+  readonly halfRests?: (half: KukuluHalfAt) => Promise<boolean | null>;
 }): PulamaGate {
   const { holder } = a;
   const refuse = (reading: string, why?: string) => ({ ok: false as const, reading, ...(why ? { why } : {}) });
@@ -169,9 +184,8 @@ export function kukuluGate(a: {
       if (o.lei !== undefined && !Array.isArray(o.lei)) return refuse("kukulu-lei-shape", "a kūkulu's lei reads as an array of strung rows");
       if (o.unstrung !== undefined && !Array.isArray(o.unstrung)) return refuse("kukulu-unstrung-shape", "a kūkulu's unstrung rows read as an array");
       const lei: readonly unknown[] = o.lei ?? [], unstrung: readonly unknown[] = o.unstrung ?? [];
-      if (o.vouch === undefined) {
-        if (lei.length > 0) return refuse("kukulu-unvouched", "a kūkulu wears its lei beside a vouch; this hello carries none");
-        // NO OFFER: the vessel enters by the image the host reports, where that image stands admitted.
+      /** NO OFFER: the vessel enters by the image the host reports, where that image stands admitted. */
+      const enterByImage = async (): Promise<Awaited<ReturnType<PulamaGate["admit"]>>> => {
         const reported = await a.image();
         const witness = await pulamaSignerOf(holder);
         const admission = reported !== null && a.admissions ? await a.admissions.admitted(reported, witness) : null;
@@ -188,6 +202,10 @@ export function kukuluGate(a: {
         // THE RE-SERVICE ROW RESTS FIRST: no lei spends, and the count of such wakes reads off the records.
         await a.admissions.reserved(reported, admittedWire(lent), witness);
         return { ok: true, scope: { faces: lent, coldReads: a.coldReads ?? KUKULU_COLD_READS } };
+      };
+      if (o.vouch === undefined) {
+        if (lei.length > 0) return refuse("kukulu-unvouched", "a kūkulu wears its lei beside a vouch; this hello carries none");
+        return enterByImage();
       }
       // ONE VOUCH PER LENT FACE: the offer's vouch rides an array; each names its own face's group, and the house's vouch
       // key signed each one.
@@ -201,6 +219,15 @@ export function kukuluGate(a: {
       }
       if (vouches.length === 0) return refuse("kukulu-vouch-shape", "a kūkulu's vouch names at least one face");
       if (new Set(vouches.map((v) => v.vouch.body.group)).size !== vouches.length) return refuse("kukulu-vouch-duplicate", "the offer vouches for one face twice");
+      // THE ORPHAN OFFER: every half its vouches name went, so it owns nothing and the vessel enters by its image.
+      if (a.halfRests) {
+        let orphan = true;
+        for (const { vouch } of vouches) {
+          const { group, branch, head, image } = vouch.body;
+          if ((await a.halfRests({ group, branch, head, image }).catch(() => null)) !== false) { orphan = false; break; }
+        }
+        if (orphan) return enterByImage();
+      }
       const raised = await a.image();
       if (raised === null) return refuse("kukulu-image-unreported", "the host reported no image digest at the pūlama's hand door");
       if (vouches.some((v) => v.vouch.body.image !== raised)) return refuse("kukulu-image-mismatch", "a vouch walked another image than the one the host raises");
@@ -242,6 +269,20 @@ export function kukuluGate(a: {
       };
       return { ok: true, scope };
     },
+  };
+}
+
+/**
+ * THE HALF A VOUCH NAMES, as the pūlama itself can read it: a face whose group stands at this pūlama no longer (rehived, or
+ * never founded here) holds no half anywhere a vessel lends from, so its half reads absent, false; a guest half the pūlama's
+ * own records rest unlanded for that face, line, head and image reads true; anything else reads null (the vessel's own halves
+ * rest in a document the pūlama never opens), and the offer serves as it rides.
+ */
+export function halfRestsAtPulama(a: { readonly holder: Pick<CustodyHolder, "faceStanding">; readonly records: SwarmWikiPort }): (half: KukuluHalfAt) => Promise<boolean | null> {
+  return async (half) => {
+    if ((await a.holder.faceStanding({ group: personaGroupDigest(half.group) })) === null) return false;
+    const pending = await pendingBegins(a.records, "kukulu", half.branch);
+    return pending.some((p) => p.group === half.group && p.head === half.head && p.image === half.image) ? true : null;
   };
 }
 
