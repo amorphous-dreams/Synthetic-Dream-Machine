@@ -10,8 +10,8 @@
  * Controls: a store with no history names none; a bag the shore landed nothing of covers nothing; heads of a
  * write the shore has not landed yet cover nothing.
  *
- * LC1/LC2 (a later landing never covers a wave that never reached the wiki): a wave held behind a refused hand, and a
- * wave whose landing failed twice, keep their bag's coverage false while a later title's landing moves the bag's heads.
+ * LC1: no wave waits on a refused hand; the store's change lands over the refused write. LC2: a wave whose landing failed
+ * twice keeps its bag's coverage false while a later title's landing moves the bag's heads.
  */
 import { describe, expect, test, vi } from "vitest";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
@@ -140,27 +140,27 @@ describe("the shore answers whether it landed the named heads", () => {
   });
 });
 
-describe("a later landing never covers a wave the wiki never took", () => {
-  test("LC1: a wave held behind a refused hand keeps its bag's coverage false while a later title lands", async () => {
+describe("coverage follows what the wiki took", () => {
+  test("LC1: a refused hand never holds a wave: the store's change lands over the refused write, and its bag reads covered", async () => {
     const r = await shoreRig();
     try {
-      const held = "lar:///t.ingest.heads/held", after = "lar:///t.ingest.heads/after";
-      await r.working.put({ tiddler: { title: held, text: "base" } }, remote);
+      const title = "lar:///t.ingest.heads/refused", after = "lar:///t.ingest.heads/after";
+      await r.working.put({ tiddler: { title, text: "base" } }, remote);
       await turns(24);
       await r.adaptor.landingIdle();
-      // The store refuses the person's write: the hand stays owed, and the wave of the title waits behind it.
-      r.failures.family = new Error("the store refuses the hand");
-      r.wiki.addTiddler(new r.Tiddler({ title: held, text: "the person's edit" }));
+      // The store refuses the write: it never reached the store, so nothing in the CRDT holds it.
+      r.failures.family = new Error("the store refuses the write");
+      r.wiki.addTiddler(new r.Tiddler({ title, text: "a refused write" }));
       await turns(24);
-      await r.working.put({ tiddler: { title: held, text: "the store moves the title" } }, remote);
-      const heldAt = [...r.working.headsNow()!];
+      await r.working.put({ tiddler: { title, text: "the store moves the title" } }, remote);
+      const movedAt = [...r.working.headsNow()!];
       await turns(24);
       await r.working.put({ tiddler: { title: after, text: "a later title lands" } }, remote);
       await turns(24);
       await r.adaptor.landingIdle();
+      expect(r.wiki.getTiddler(title)?.fields["text"], "the store's change landed over the refused write").toBe("the store moves the title");
       expect(r.wiki.getTiddler(after)?.fields["text"], "the later title landed").toBe("a later title lands");
-      expect(r.wiki.getTiddler(held)?.fields["text"], "the refused hand still shows").toBe("the person's edit");
-      expect(r.adaptor.landedCovers(workingBag, heldAt), "the held wave never reached the wiki").toBe(false);
+      expect(r.adaptor.landedCovers(workingBag, movedAt), "the store's change reached the wiki").toBe(true);
     } finally { await r.stop(); }
   });
 
