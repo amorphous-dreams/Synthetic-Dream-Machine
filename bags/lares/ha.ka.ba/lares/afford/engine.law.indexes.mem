@@ -84,7 +84,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares law index
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`spells/[[lares law index]] ~ the terminal; prints plainly, --json carries the body`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares law index]] ~ the terminal; prints plainly, --json carries the body`>>
 ```
 
 <<~/ahu>>
@@ -110,6 +110,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;FipQq34wcK29zE66zh4_7vZgqfHKlKvcdnvUcA3u4BE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GWCoYmw3dbhSvN9GS0auKQvSdI1RzeRFWNAPT5Y_oQ8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

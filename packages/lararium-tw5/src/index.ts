@@ -157,7 +157,9 @@ export { composeIsland } from "./island-caps.js";
 export type { IslandCap, CapTeardown } from "./island-caps.js";
 export { hasCapture, TELEMETRY_FRAME } from "./capture/has-capture.js";
 export type { CaptureCapOptions } from "./capture/has-capture.js";
-export { VerbDispatcher, VerbTable, VERB_SURFACE, projectOntoSurface } from "./verb-dispatcher.js";
+export { VerbDispatcher, VerbTable, VERB_SURFACE, projectOntoSurface, makeCallReactor, runPlan, callDoorOf } from "./verb-dispatcher.js";
+// The one call (comms-ux-enacts landing 4): a verb and named params, resolved, bound and dispatched by one rule.
+export { planCall, resolveCall, bindCall, stampAnswer, callReaderOf, CallRefusal, type CallPlan, type CallReader, type CallReceipt, type CallSeat } from "./modules/call.js";
 export type { VerbContext, VerbReactor, VerbDispatcherOptions, VerbSpec, VerbFence, SurfaceDeclared, SessionWorn } from "./verb-dispatcher.js";
 export { heedSummons } from "./verb-summons.js";
 export type { SummonsRequest, SummonsRelayOptions } from "./verb-summons.js";
@@ -220,10 +222,11 @@ export type { MemeVerbOptions } from "./meme-verbs.js";
 // The tiddler door: every TiddlyWiki act over one record or one wiki's engine, on the anchor (wiki-surface-scout, lane 1).
 export {
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor, makeWikiStatusReactor, makeWikiActionReactor, SHORE_COLLAPSE_CONFIG_PREFIX,
+  TIDDLER_CALL_SEATS, tiddlerCallReader,
 } from "./tiddler-verbs.js";
 export type { NamedWikiEngine, TiddlerVerbOptions } from "./tiddler-verbs.js";
 // The oracle cast: one I Ching cast written as one tiddler through the tiddler door's own put.
-export { makeOracleCastReactor } from "./oracle-cast-verb.js";
+export { makeOracleCastReactor, ORACLE_CALL_SEATS } from "./oracle-cast-verb.js";
 export { ddateVerb } from "./ddate-verb.js";
 // The projection law behind `--render`, the Export dropdown, `$tw.lares.meme.project` and `meme-project`.
 export { projectMeme, projectCarrierText, projectTargetOf, recomposeMeme, wikiResolver, PROJECT_TARGETS, MEME_TEMPLATE } from "./meme-project.js";

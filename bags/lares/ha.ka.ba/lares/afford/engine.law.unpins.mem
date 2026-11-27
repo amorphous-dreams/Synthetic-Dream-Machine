@@ -88,7 +88,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares law unpin
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`spells/[[lares law unpin]] ~ the terminal; the law meme rides as <uri>`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares law unpin]] ~ the terminal; the law meme rides as <uri>`>>
 ```
 
 <<~/ahu>>
@@ -114,6 +114,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JkHQXHtxK-fMyrG6YZ1UgsaPKwdpg4hu-SfcpgdwTuk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;O3nx2FBoCglPN_OOu3ERqCKD3kwOTxnsO60JPpII42Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -89,7 +89,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares law pin
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`spells/[[lares law pin]] ~ the terminal; the law meme rides as <uri>`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares law pin]] ~ the terminal; the law meme rides as <uri>`>>
 ```
 
 <<~/ahu>>
@@ -115,6 +115,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;p4_nqKZROMXJ6oKeCsNnXi5cmGMB6hCHxMOJ_JkpCzQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gebcyqoWQXeD4RE_DemMAUBVA02Z0w_4d_DR_bPXmKo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

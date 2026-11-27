@@ -88,7 +88,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares shore keep-both
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`spells/[[lares shore keep-both]] ~ the terminal; settling stays a hand act`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares shore keep-both]] ~ the terminal; settling stays a hand act`>>
 ```
 
 <<~/ahu>>
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;26wmq6Pk8gGmFQE4WtD3vsnq4fuwKTDUn1rAC_NhULQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XLZgC92Ppl1jApQTWz1FG1nFWsWe8iKRh2pjdwnBPXA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

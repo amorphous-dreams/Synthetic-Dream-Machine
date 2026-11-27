@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.record.reads"
 
 ! engine.record.reads ~ one record or one meme, read on a gradient
 
-Every record reads through this door, whatever its type: a plain note, a data tiddler, a meme's root or one of its slots. `recipe` names the wiki, and the read runs in that wiki's own TiddlyWiki engine: `default` names the worn face's daemon wiki, a slug any wiki this face reaches (one it hosts or one shared to it), and a wiki it reaches none of refuses `wiki-unreached`. `bag` names one bag and reads that bag's own record through its store, with no engine: the answer names the `bag`, and carries `floor: true` where the bag's floor snapshot answered. Exactly one of the two rides. The address stays a candidate until the operator reads the landing's list.
+Every record reads through this door, whatever its type: a plain note, a data tiddler, a meme's root or one of its slots. `recipe` names the wiki, and the read runs in that wiki's own TiddlyWiki engine: `default` names the worn face's daemon wiki, a slug any wiki this face reaches (one it hosts or one shared to it), and a wiki it reaches none of refuses `wiki-unreached`. `bag` names one bag and reads that bag's own record through its store, with no engine: the answer names the `bag`, and carries `floor: true` where the bag's floor snapshot answered. Exactly one of the two rides; a call that names neither reads `recipe/default`, the default the container row carries. The address stays a candidate until the operator reads the landing's list.
 
 Every answer leads with a `has` line: provenance (`recipe/` or `bag/`, `layer/`, `floor/true`), the record's own tags, its measures (`type/ position/ family/ slots/ bytes/ base/`, a pointer's `_canonical_uri/ textCid/ _integrity/ size/` verbatim), then the description or role; a meme's has-stack adds one line per slot. Beside it `grain` echoes {asked, applied, why} and `next` names the next unfold, or null.
 
@@ -89,10 +89,9 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/refuses`>>
 
-!! refuses ~ no-container · wiki-unreached · grain-unknown · text-unread · read-page-mismatch · cross-face-private · face-not-open
+!! refuses ~ wiki-unreached · grain-unknown · text-unread · read-page-mismatch · cross-face-private · face-not-open
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`no-container` params=`cure/[[engine.record.reads title/<title> recipe/default]] ~ name exactly one of recipe or bag`>>
 <<has entity=`refusal` name=`wiki-unreached` params=`cure/[[engine.record.reads title/<title> recipe/default]] ~ no wiki this face hosts or holds a share of answers the slug`>>
 <<has entity=`refusal` name=`grain-unknown` params=`cure/[[engine.record.reads title/<title> recipe/default grain/whole]] ~ a grain reads skinny, fat, handle, resolved, slot or whole`>>
 <<has entity=`refusal` name=`text-unread` params=`cure/[[engine.record.reads title/<title> recipe/default all/true]] ~ the answer carries no text, an unread pointer body or a card; the whole read carries it`>>
@@ -118,7 +117,7 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ cli · mcp
+!! skins ~ cli · mcp · console
 
 <<~ ahu slot=`#/skins/cli`>>
 
@@ -140,6 +139,16 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/skins/console`>>
+
+!!! get
+
+```memetic-wikitext
+<<has entity=`skin` name=`console` params=`spells/get by/title ~ the one call; get by title reads one record or meme on its gradient`>>
+```
+
+<<~/ahu>>
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/edges`>>
@@ -152,6 +161,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yMvQNJpb4Y9vMPyTul2UqQww6Ja0nXW3ApXNRdnWpAw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ms1JKn8ofJQ5SM1rgrW1oK4Y3qLYeisRSxOF3vv-uVQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

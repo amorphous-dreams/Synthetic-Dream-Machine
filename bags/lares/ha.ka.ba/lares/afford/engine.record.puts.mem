@@ -87,10 +87,9 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/refuses`>>
 
-!! refuses ~ no-container · wiki-unreached · conflict · exists · replace-absent · replace-ambiguous · base-from-skinny · base-from-partial · base-outside-span · cut-not-omitted · slot-malformed · slot-beside-fragment · family-carriage-derives · family-joins-by-text · family-gate-refused · stage-path-shape · tiddler-withheld · rendered-derives · seat-canon-reach · cross-face-write-refused
+!! refuses ~ wiki-unreached · conflict · exists · replace-absent · replace-ambiguous · base-from-skinny · base-from-partial · base-outside-span · cut-not-omitted · slot-malformed · slot-beside-fragment · family-carriage-derives · family-joins-by-text · family-gate-refused · stage-path-shape · tiddler-withheld · rendered-derives · seat-canon-reach · cross-face-write-refused
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`no-container` params=`cure/[[engine.record.puts title/<title> recipe/default text/<words>]] ~ name exactly one of recipe or bag`>>
 <<has entity=`refusal` name=`wiki-unreached` params=`cure/[[engine.record.puts title/<title> recipe/default text/<words>]] ~ no wiki this face hosts or holds a share of answers the slug`>>
 <<has entity=`refusal` name=`conflict` params=`cure/[[engine.record.reads title/<title> recipe/default]] ~ the record moved past the base; read again, merge, put with the live base`>>
 <<has entity=`refusal` name=`exists` params=`cure/[[engine.record.puts title/<title> recipe/default text/<words>]] ~ a record already stands there; drop create to patch it`>>
@@ -130,7 +129,7 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ cli · mcp
+!! skins ~ cli · mcp · console
 
 <<~ ahu slot=`#/skins/cli`>>
 
@@ -152,6 +151,16 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/skins/console`>>
+
+!!! put
+
+```memetic-wikitext
+<<has entity=`skin` name=`console` params=`spells/put ~ the one call; put patches one record and answers the receipt`>>
+```
+
+<<~/ahu>>
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/edges`>>
@@ -164,6 +173,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ok1GLlHOAzXjm9tq174nlDgsZOpjLCjX4wulg3r2ClU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VJJsjhXALEGhWWy0uXSBgFrlx1lOVyhUaMicxekm--c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

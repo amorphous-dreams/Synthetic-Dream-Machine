@@ -89,7 +89,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares act
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`spells/[[lares act]] ~ the terminal; no verb word stands, the --draft flag names the pull`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares act]] ~ the terminal; no verb word stands, the --draft flag names the pull`>>
 ```
 
 <<~/ahu>>
@@ -105,6 +105,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;icnel7pknQDZEmJxD58N_e6F7YrcveWLRkNzAgmoNw0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fg5NkGdl3comFa1fyfmcP6HZJcVcyG7B2YDAbylrd9Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

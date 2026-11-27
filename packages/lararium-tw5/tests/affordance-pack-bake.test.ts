@@ -84,13 +84,16 @@ describe.skipIf(wikiSkip)(`the affordance bake over the fixture carrier${skipNot
   test("RED 6: the console face renders the bytes the bake baked, from the same templates", async () => {
     const engine = await bootTestWiki();
     engine.ingestCarrier(FIXTURE_TITLE, oracleFixtureCarrier());
-    const face = affordFaceOf(engine.wiki as never, { print: false, invoke: () => {} });
+    const face = affordFaceOf(engine.wiki as never, { print: false });
     const pack = await bakeAffordancePack([oracleFixtureCarrier()]);
     expect(face.whole("oracle.library.consults")).toEqual(pack.carriers[FIXTURE_ADDRESS]!.renders["console"]!["whole"]);
     expect(face.slot("oracle.library.consults", "refuses")).toEqual(pack.carriers[FIXTURE_ADDRESS]!.renders["console"]!["#/refuses"]);
     expect(face.list("oracle.*")).toEqual(["oracle.library.consults"]);
     expect(() => face.list("*.cast.throws")).toThrow(/afford-wildcard-heading/);
-    expect(face.run("oracle.library.consults", { recipe: "default" })).toEqual({ invoked: `<$action-oracle-cast recipe="default"/>` });
+    // The face reads the live stack's routes (landing 4 burned `run`: a call rides `$tw.lares.call`).
+    expect(face.routes().routes["console"]["oracle.library.consults"]).toBe(FIXTURE_ADDRESS);
+    expect(face.routes().routes["tw5"]["action-oracle-cast"]).toBe(FIXTURE_ADDRESS);
+    expect("run" in face).toBe(false);
   });
 
   test("RED 7: the tw5 view folds each slot and names the gate as testimony", async () => {

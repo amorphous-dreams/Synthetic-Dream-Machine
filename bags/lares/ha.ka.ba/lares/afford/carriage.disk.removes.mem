@@ -95,7 +95,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares shore remove
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`spells/[[lares shore remove]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares shore remove]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -110,6 +110,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;MXy66C0xeWv8LFh111aIjxm4PjWY7Dezog1QqpwZU1Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NpSpb6KMu_xfz40Z_1EyqLoxPyJ50qQbEccdtmp9P_g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

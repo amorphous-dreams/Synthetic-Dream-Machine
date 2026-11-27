@@ -24,7 +24,12 @@ import {
   makeWikiStatusReactor, makeWikiActionReactor, pageFilterAnswer, WIKI_FILTER_ROWS, SHORE_COLLAPSE_CONFIG_PREFIX, type FilterPage, type TiddlerVerbOptions,
 } from "../src/tiddler-verbs.js";
 import { AUDIT_ARRAY_CAP, boundOutcomeOutput, placeVerb, removeVerb } from "../src/verb-vm.js";
-import type { VerbContext } from "../src/verb-dispatcher.js";
+import { VerbTable, callDoorOf, makeCallReactor, type VerbContext } from "../src/verb-dispatcher.js";
+import { TIDDLER_CALL_SEATS, tiddlerCallReader } from "../src/tiddler-verbs.js";
+import { ORACLE_CALL_SEATS } from "../src/oracle-cast-verb.js";
+import { callFaceOf, callReaderOf, hostHandled } from "../src/modules/call.js";
+import { skinRows } from "../src/affordance-read.js";
+import { AFFORDANCE_TAG, addressOfTitle } from "../src/affordance-rows.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
 
 const DAEMON = bagUri("daemon");
@@ -2232,5 +2237,131 @@ describe.skipIf(wikiSkip)(`a bag takes the plain put and the delete through its 
     expect([...(gone["tombstoned"] as string[]), ...(gone["retracted"] as string[])].sort()).toEqual([MEME, `${MEME}#/a`]);
     expect(await live(MEME)).toBe(false);
     expect(await del({ ...BAG, title: MEME, family: true }, ctx())).toMatchObject({ decision: "absent" });
+  });
+});
+
+// ── the one call (comms-ux-enacts landing 4) ─────────────────────────────────────────────────────────
+
+/** One canon file, read off the checkout itself: the rig stands canon's words, never a copy. */
+const canonFile = (rel: string): string => readFileSync(new URL(`../../../bags/lares/ha.ka.ba/lares/${rel}`, import.meta.url), "utf8");
+const headTitleOf = (text: string): string => /^title\s*=\s*"([^"]+)"/m.exec(text)![1]!;
+const READS_SEAT = "lar:///ha.ka.ba/lares/afford/engine.record.reads";
+const PUTS_SEAT = "lar:///ha.ka.ba/lares/afford/engine.record.puts";
+const CALL_CANON = ["api/pono/affordance.mem", "afford/engine.record.reads.mem", "afford/engine.record.puts.mem", "afford/engine.record.removes.mem", "afford/engine.record.renames.mem", "afford/engine.filter.pages.mem"];
+
+/** The anchor rig with the core verbs' canon carriers (and the affordance law their container row rides) standing in canon. */
+async function callRig() {
+  const r = await rig();
+  for (const rel of CALL_CANON) { const text = canonFile(rel); r.engine.ingestCarrier(headTitleOf(text), text, { "$origin-bag": CANON }); }
+  const table = new VerbTable();
+  table.register("tiddler-get", makeTiddlerGetReactor(r.opts));
+  table.register("tiddler-put", makeTiddlerPutReactor(r.opts));
+  table.register("tiddler-delete", makeTiddlerDeleteReactor(r.opts));
+  table.register("tiddler-rename", makeTiddlerRenameReactor(r.opts));
+  table.register("wiki-filter", makeWikiFilterReactor(r.opts));
+  for (const [address, seat] of Object.entries(TIDDLER_CALL_SEATS)) table.answer(address, seat);
+  const reactor = makeCallReactor(table, () => tiddlerCallReader(r.opts));
+  const call = (verb: string, params: Record<string, unknown> = {}, c: VerbContext = ctx()) => reactor({ verb, params }, c);
+  return { ...r, table, call };
+}
+
+describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the live stack${skipNote}`, () => {
+  test("RED: call(\"get\", {title}) answers what tiddler-get answers on the same fixture, the container defaulting through the canon row, and the has line names the carrier", async () => {
+    const r = await callRig();
+    const direct = await makeTiddlerGetReactor(r.opts)({ ...A, title: "Note 04" }, ctx());
+    const called = await r.call("get", { title: "Note 04" });
+    const { has: directHas, ...plain } = direct;
+    expect(called).toMatchObject(plain);
+    // The stamp joins the has line's params, before its tagline: the line still leads with every param the door wrote.
+    expect(String(called["has"]).startsWith(String(directHas).split(" ~ ")[0]!.replace(/`{1,3}>>$/, ""))).toBe(true);
+    // EVERY ANSWER NAMES THE CARRIER THAT SHAPED IT: `carrier/ bag/ base/`, the base the carrier record's own hash.
+    const seat = (await makeTiddlerGetReactor(r.opts)({ ...A, title: READS_SEAT }, ctx()))["tiddler"] as { hash: string };
+    expect(called["carrier"]).toEqual({ carrier: READS_SEAT, bag: CANON, base: seat.hash });
+    expect(String(called["has"])).toContain(`carrier/${READS_SEAT} bag/${CANON} base/${seat.hash}`);
+    // The address and any skin's spelling reach the same door.
+    expect(await r.call("lar:///engine.record.reads", { title: "Note 04" })).toMatchObject(plain);
+    expect(await r.call("tiddler_get", { title: "Note 04" })).toMatchObject(plain);
+    // `get` with a filter chooses the other carrier by its `by/filter` row.
+    expect(await r.call("get", { filter: "[tag[memory]limit[2]]" })).toMatchObject({ recipe: "default", titles: ["Note 01", "Note 02"] });
+  });
+
+  test("RED: call(\"put\", …) under a stale base answers conflict and lands nothing; CONTROL: the live base lands", async () => {
+    const r = await callRig();
+    const live = ((await makeTiddlerGetReactor(r.opts)({ ...A, title: "Note 04" }, ctx()))["tiddler"] as { hash: string }).hash;
+    const stale = await r.call("put", { title: "Note 04", fields: { status: "done" }, base: "sha256-" + "0".repeat(64) });
+    expect(stale).toMatchObject({ decision: "conflict", hash: live, carrier: { carrier: PUTS_SEAT, bag: CANON } });
+    expect(r.engine.wiki.getTiddler("Note 04")?.fields["status"]).toBeUndefined();
+    expect(await r.call("put", { title: "Note 04", fields: { status: "done" }, base: live })).toMatchObject({ decision: "put" });
+    expect(r.engine.wiki.getTiddler("Note 04")?.fields["status"]).toBe("done");
+  });
+
+  test("RED: a working-layer #/takes default changes what a call with no such param lands (mutability at the root)", async () => {
+    const r = await callRig();
+    expect(await r.call("put", { title: "Fresh one", text: "first", create: true })).toMatchObject({ decision: "put", created: true });
+    await r.landed();
+    expect(r.engine.wiki.getTiddler("Fresh one")?.fields["tags"] ?? []).toEqual([]);
+    // A layer above canon re-seats the put carrier's #/takes with a default on tag-add: the next call that names none lands it.
+    const takes = r.engine.wiki.getTiddler(`${PUTS_SEAT}#/takes`)!.getFieldStrings();
+    const moved = takes["text"]!.replace("name=`tag-add` params=`takes/list ~", "name=`tag-add` params=`takes/list default/stamped ~");
+    expect(moved).not.toBe(takes["text"]);
+    r.engine.wiki.addTiddler({ ...takes, text: moved, "$origin-bag": DAEMON });
+    expect(await r.call("put", { title: "Fresh two", text: "second", create: true })).toMatchObject({ decision: "put", created: true });
+    await r.landed();
+    expect(r.engine.wiki.getTiddler("Fresh two")?.fields["tags"]).toEqual(["stamped"]);
+  });
+
+  test("RED: the binding refuses by name with a cure: an unknown param names the nearest, both containers double, a shared word naming neither param names both", async () => {
+    const r = await callRig();
+    await expect(r.call("get", { titel: "Note 04" })).rejects.toMatchObject({ reason: "call-ambiguous" });
+    await expect(r.call("get", { title: "Note 04", titel: "x" })).rejects.toMatchObject({ reason: "param-unknown" });
+    await expect(r.call("get", { title: "Note 04", titel: "x" })).rejects.toThrow(/the nearest: title.*cure: \$tw\.lares\.call\("get"/);
+    await expect(r.call("get", { title: "Note 04", recipe: "default", bag: "lares" })).rejects.toMatchObject({ reason: "one-of-doubled" });
+    await expect(r.call("put", { text: "no title" })).rejects.toMatchObject({ reason: "param-needed" });
+    await expect(r.call("fetch", { title: "Note 04" })).rejects.toMatchObject({ reason: "call-unrouted" });
+  });
+
+  test("RED: a carrier whose door the host runs answers its bound plan; an address no reactor answers refuses affordance-unhandled", async () => {
+    const r = await callRig();
+    const spirit = "lar:///lantern.wick.trims";
+    r.engine.wiki.addTiddler({ title: spirit, text: "! lantern.wick.trims ~ a spirit's door", tags: `[[${AFFORDANCE_TAG}]]` });
+    r.engine.wiki.addTiddler({ title: `${spirit}#/takes`, text: "<<has entity=`arg` name=`wick` params=`takes/words needs/required ~ the wick`>>" });
+    r.engine.wiki.addTiddler({ title: `${spirit}#/skins/console`, text: "<<has entity=`skin` name=`console` params=`spells/trim ~ trim`>>" });
+    await expect(r.call("trim", { wick: "long" })).rejects.toMatchObject({ reason: "affordance-unhandled" });
+    r.engine.wiki.addTiddler({ title: `${spirit}#/skins/console`, text: "<<has entity=`skin` name=`console` params=`spells/trim handler/host ~ trim`>>" });
+    expect(await r.call("trim", { wick: "long" })).toMatchObject({ handler: "host", address: spirit, params: { wick: "long" }, carrier: { carrier: spirit } });
+  });
+
+  test("REACH: the engine fixture's console, $tw.lares.call(\"get\", {title}), answers the has line and the record through the host's door", async () => {
+    const r = await callRig();
+    const call = callFaceOf(r.engine.wiki as never, () => callDoorOf(r.table, ctx()));
+    const out = await call("get", { title: "Note 04" });
+    expect(String(out["has"])).toMatch(/^<<~ has name=`Note 04`/);
+    expect(out).toMatchObject({ recipe: "default", title: "Note 04", tiddler: { fields: { title: "Note 04" } }, carrier: { carrier: READS_SEAT } });
+    // CONTROL: no door seated, the call answers its bound plan.
+    const planned = await callFaceOf(r.engine.wiki as never, () => undefined)("get", { title: "Note 04" });
+    expect(planned).toMatchObject({ handler: "host", params: { title: "Note 04", recipe: "default" } });
+  });
+
+  test("WELD: every canon carrier finds a registered reactor, an acts/ row or handler/host; every seat names a carrier canon holds", async () => {
+    const engine = await bootTestWiki();
+    const dir = new URL("../../../bags/lares/ha.ka.ba/lares/afford/", import.meta.url);
+    const { readdirSync } = await import("node:fs");
+    for (const file of readdirSync(dir).filter((f) => f.endsWith(".mem"))) {
+      const text = readFileSync(new URL(file, dir), "utf8");
+      engine.ingestCarrier(headTitleOf(text), text);
+    }
+    const reader = callReaderOf(engine.wiki as never);
+    const seats = { ...TIDDLER_CALL_SEATS, ...ORACLE_CALL_SEATS };
+    const carriers = engine.wiki.filterTiddlers(`[all[tiddlers]tag[${AFFORDANCE_TAG}]!regexp[#/]]`);
+    expect(carriers.length).toBeGreaterThan(50);
+    const orphans = carriers.filter((title) => {
+      const address = addressOfTitle(title);
+      if (address !== null && seats[address] !== undefined) return false;
+      if (hostHandled(reader, title)) return false;
+      return !skinRows(reader.textOf, title).some((row) => row.name === "tw5" && row.params["acts"] !== undefined);
+    });
+    expect(orphans).toEqual([]);
+    const held = new Set(carriers.map((t) => addressOfTitle(t)));
+    expect(Object.keys(seats).filter((a) => !held.has(a))).toEqual([]);
   });
 });

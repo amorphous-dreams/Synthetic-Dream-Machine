@@ -12,6 +12,8 @@ import type { CarrierEdge } from "../carrier-edges.js";
 import type { MemeProjection } from "../meme-project.js";
 import type { GrammarRules, ParseMemeResult } from "../meme-ast/index.js";
 import type { MemeDiagnostic } from "../meme-ast/diagnostics.js";
+import type { AffordRoutes } from "../affordance-read.js";
+import type { CallPlan } from "../modules/call.js";
 
 /**
  * What `check(text)` reads off a carrier: its shape, the block-check verdict, the computed check, its
@@ -55,7 +57,8 @@ export interface LaresMemeFace {
 
 /**
  * `$tw.lares.afford` — the console skin of every affordance carrier the wiki holds (afford-face startup). The read verbs render
- * the skin templates and print through `console.groupCollapsed`; `run` fires the carrier's glass skin. Nothing on it admits.
+ * the skin templates and print through `console.groupCollapsed`; `routes` reads the live stack's routes. Nothing on it admits;
+ * a call runs through `$tw.lares.call`.
  */
 export interface LaresAffordFace {
   /** The carriers' bare addresses, a t2/t3 wildcard narrowing them (`oracle.*`); a t1 wildcard throws by name. */
@@ -66,9 +69,19 @@ export interface LaresAffordFace {
   slot(address: string, slot: string): string[];
   /** Every slot, in loop order. */
   whole(address: string): string[];
-  /** Fire the carrier's glass skin with the args bound; answers the action string it invoked. */
-  run(address: string, args?: Record<string, string | number | boolean>): { invoked: string };
+  /** The routes the live stack spells (`routesOf`): per surface, spelling to address; the carrier each address reads from. */
+  routes(): AffordRoutes;
 }
+
+/**
+ * `$tw.lares.call` — THE ONE CALL (call startup): a verb word, a skin spelling or an address, and named params, resolved
+ * through the live routes, bound against the live `#/takes`, dispatched through `callDoor`, and answered with the carrier
+ * receipt on the has line.
+ */
+export type LaresCall = (verb: string, params?: Record<string, unknown>) => Promise<Record<string, unknown>>;
+
+/** `$tw.lares.callDoor` — the host's seat of the address-to-reactor registry: it runs one bound plan and answers the reactor's answer. */
+export type LaresCallDoor = (plan: CallPlan) => Promise<Record<string, unknown>>;
 
 export interface LaresNaluAPI {
   applyNalu(change: LarTiddlerChange): void;
@@ -80,6 +93,10 @@ export interface LaresNaluAPI {
   meme: LaresMemeFace;
   /** The in-VM affordance face (afford-face startup) — the console skin of every affordance carrier. */
   afford: LaresAffordFace;
+  /** The one call (call startup) — every verb, every address, one shape. */
+  call: LaresCall;
+  /** The host's seat of the reactor registry the call dispatches through; absent, a call answers its bound plan. */
+  callDoor: LaresCallDoor;
   /** The host-door ask a mounted camera installs (tw5-projection) for the root-services startup. */
   serviceDoor: LaresServiceDoor;
 }

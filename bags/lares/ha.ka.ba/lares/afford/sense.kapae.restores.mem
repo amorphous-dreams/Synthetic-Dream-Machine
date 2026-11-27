@@ -77,7 +77,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! un_kapae
 
 ```memetic-wikitext
-<<has entity=`skin` name=`mcp` params=`spells/un_kapae ~ the seat`>>
+<<has entity=`skin` name=`mcp` params=`handler/host spells/un_kapae ~ the seat`>>
 ```
 
 <<~/ahu>>
@@ -93,6 +93,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;cf1JRYHJLkKE4t4F5XCUPbc5OMegNDj_RVuAUl9sI_w`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZQ1usZQCG2Gsc4uyx2p_7lOLFkaPgW3py7ZqM6rNXnY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

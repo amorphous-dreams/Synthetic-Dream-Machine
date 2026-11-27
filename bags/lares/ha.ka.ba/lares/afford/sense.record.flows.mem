@@ -93,7 +93,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares flow
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`spells/[[lares flow]] ~ the terminal; the signal rides as an NDJSON file`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares flow]] ~ the terminal; the signal rides as an NDJSON file`>>
 ```
 
 <<~/ahu>>
@@ -118,6 +118,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1m5Rzt2Mi-rdxpNQGjk0VYITo9qPZ9zb6w4x3QCCKxI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;f8X8oL_lXX4e8F8w2yoQMRya3fXT_goK8p4xH-6Ob8I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

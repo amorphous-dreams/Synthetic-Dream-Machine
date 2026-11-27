@@ -77,6 +77,11 @@ function slotText(textOf: TextOf, address: string, slot: string): string {
   return [own, ...called].join("\n");
 }
 
+/** The arg rows of a carrier's `#/takes`, the shared slots it calls by `kahea` read in place: what a call binds against. */
+export function takesRows(textOf: TextOf, address: string): HasRow[] {
+  return parseHasRows(slotText(textOf, address, "#/takes")).filter((r) => r.entity === "arg");
+}
+
 /** Every skin row the carrier holds: `#/skins` itself and each nested `#/skins/<surface>` slot. */
 export function skinRows(textOf: TextOf, address: string): HasRow[] {
   const texts = [textOf(`${address}#/skins`) ?? "", ...AFFORD_SURFACES.map((s) => textOf(`${address}#/skins/${s}`) ?? "")];
@@ -165,6 +170,12 @@ export interface AffordRoutes {
   readonly part: readonly string[];
   /** Every spelling two addresses claim; the first claim keeps the route, and the bake refuses on any. */
   readonly twice: readonly RouteClaim[];
+  /**
+   * Per surface: the spellings several addresses share, each skin row naming the param that selects it (`by/title`,
+   * `by/filter`: one verb word, `get`, skinning `engine.record.reads` and `engine.filter.pages`). The selection rests in
+   * carrier rows, so a layer above may move it; `routeOfCall` picks the address whose `by` param a call names.
+   */
+  readonly chosen: Record<AffordSurface, Record<string, ReadonlyArray<{ readonly address: string; readonly by: string }>>>;
 }
 
 /**
@@ -198,6 +209,7 @@ export function routesOf(textOf: TextOf, titles: Iterable<string>, carriers: Car
   const own: Record<string, string> = {};
   const part: string[] = [];
   const twice: RouteClaim[] = [];
+  const chosen = Object.fromEntries(AFFORD_SURFACES.map((s) => [s, {} as Record<string, Array<{ address: string; by: string }>>])) as Record<AffordSurface, Record<string, Array<{ address: string; by: string }>>>;
   const claim = (surface: AffordSurface, spelling: string, address: string): void => {
     const held = routes[surface][spelling];
     if (held !== undefined && held !== address) { twice.push({ surface, spelling, addresses: [held, address] }); return; }
@@ -216,6 +228,9 @@ export function routesOf(textOf: TextOf, titles: Iterable<string>, carriers: Car
       if (!(AFFORD_SURFACES as readonly string[]).includes(surface)) continue;
       const spells = (row.params["spells"] ?? row.name).trim();
       const spelling = surface === "cli" ? spells.replace(/^lares\s+/, "") : spells;
+      // A SPELLING CHOSEN BY A PARAM (`by/title`) joins the shared word's choices and claims no route of its own.
+      const by = row.params["by"]?.trim();
+      if (by) { (chosen[surface][spelling] ??= []).push({ address, by }); continue; }
       claim(surface, spelling, address);
       if (surface === "cli") {
         own[address] = spelling;
@@ -226,7 +241,32 @@ export function routesOf(textOf: TextOf, titles: Iterable<string>, carriers: Car
     }
     claim("console", bareAddressOf(address)!, address);
   }
-  return { routes, carriers: answered, own, part: part.sort(), twice };
+  return { routes, carriers: answered, own, part: part.sort(), twice, chosen };
+}
+
+/** What a call's leading word reaches: the address, or the choices a shared word offers where no param of the call selects one. */
+export type CallRoute =
+  | { readonly address: string }
+  | { readonly address: null; readonly choices: ReadonlyArray<{ readonly address: string; readonly by: string }> };
+
+/**
+ * THE ADDRESS A CALL'S LEADING WORD REACHES (comms-ux-enacts landing 4): an address in either spelling (`lar:///engine.record.reads`,
+ * `engine.record.reads`) stands for itself; else a verb word or a skin spelling routes on the first surface that spells it
+ * (console, cli, mcp, tw5), a shared word choosing by the `by/` param the call names. Null where nothing spells the word.
+ */
+export function routeOfCall(routes: AffordRoutes, word: string, params: Readonly<Record<string, unknown>>): CallRoute | null {
+  const address = addressOfTitle(word) ?? addressOfTitle(`lar:///${word.replace(/^lar:\/\/\//, "")}`);
+  if (address !== null) return { address };
+  const spelled = word.trim().replace(/^lares\s+/, "");
+  for (const surface of ["console", "cli", "mcp", "tw5"] as const) {
+    const routed = routes.routes[surface][spelled];
+    if (routed !== undefined) return { address: routed };
+    const choices = routes.chosen[surface][spelled];
+    if (choices === undefined) continue;
+    const named = choices.filter((c) => params[c.by] !== undefined);
+    return named.length === 1 ? { address: named[0]!.address } : { address: null, choices };
+  }
+  return null;
 }
 
 /** The usage spine on one surface, from `#/takes` and its shared slots. */

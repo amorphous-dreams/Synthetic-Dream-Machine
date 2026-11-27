@@ -101,7 +101,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares act MOVE
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`spells/[[lares act MOVE]] ~ the terminal; the verb rides as the first word, ALL-CAPS`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares act MOVE]] ~ the terminal; the verb rides as the first word, ALL-CAPS`>>
 ```
 
 <<~/ahu>>
@@ -117,6 +117,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4cUvgcRTbm5JTbxteSGnaZbRCzUw55V6U0fbPcH4eM4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;C6ZWV35-Bu1U7EyjA3_XpqHlf_PbzWsnKDL4xKy0qLQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

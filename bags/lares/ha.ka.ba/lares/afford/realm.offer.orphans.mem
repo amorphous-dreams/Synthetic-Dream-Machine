@@ -91,7 +91,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares trust orphan
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`spells/[[lares trust orphan]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares trust orphan]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;X6_XM7rPKGjvgemphbFx7gNk6HV5S6uwlRiSK5P5hM0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XLa_fBw4pKQbiBek_5AUZKUlyFEvBvl2tYdZTE_FZPI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

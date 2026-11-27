@@ -286,9 +286,9 @@ describe("lares tiddler get --meme — roots by default, --tree nests the slots"
 });
 
 describe("lares tiddler delete --family — the removal, in a recipe or a bag", () => {
-  test("★ plans tiddler-delete with title · container · family · --if-match as `base` ★", async () => {
+  test("★ plans tiddler-delete with title · container · family · --base ★", async () => {
     h.reply = { recipe: "sdm", title: "lar:///t/x", decision: "removed", tombstoned: [], retracted: ["lar:///t/x", "lar:///t/x#/a"], canonicalHash: "sha256:1" };
-    expect((await said(() => cmdTiddler(tiddlerArgs(["delete", "lar:///t/x"], { recipe: "sdm", "if-match": "sha256:1" }, { family: true })))).code).toBe(0);
+    expect((await said(() => cmdTiddler(tiddlerArgs(["delete", "lar:///t/x"], { recipe: "sdm", base: "sha256:1" }, { family: true })))).code).toBe(0);
     expect(h.calls).toEqual([{ verb: "tiddler-delete", args: { title: "lar:///t/x", recipe: "sdm", base: "sha256:1", family: true } }]);
   });
   test("★ --family --bag takes the family out of one bag ★", async () => {
@@ -303,9 +303,9 @@ describe("lares tiddler delete --family — the removal, in a recipe or a bag", 
     expect((await said(() => cmdTiddler(tiddlerArgs(["delete", "lar:///t/x#/a"], { recipe: "default" })))).code).toBe(0);
     expect(h.calls).toEqual([{ verb: "tiddler-delete", args: { title: "lar:///t/x#/a", recipe: "default" } }]);
   });
-  test("★ CONTROL: a stale --if-match answers conflict — exit class conflict, nothing moved ★", async () => {
+  test("★ CONTROL: a stale --base answers conflict — exit class conflict, nothing moved ★", async () => {
     h.reply = { recipe: "default", title: "lar:///t/x", decision: "conflict", tombstoned: [], hash: "sha256:2" };
-    expect((await said(() => cmdTiddler(tiddlerArgs(["delete", "lar:///t/x"], { "if-match": "sha256:1", recipe: "default" }, { family: true })))).code).toBe(4);
+    expect((await said(() => cmdTiddler(tiddlerArgs(["delete", "lar:///t/x"], { base: "sha256:1", recipe: "default" }, { family: true })))).code).toBe(4);
   });
   test("an absent root exits not-found; a missing title refuses as usage", async () => {
     h.reply = { bag: "sdm", title: "lar:///t/x", decision: "absent", tombstoned: [] };

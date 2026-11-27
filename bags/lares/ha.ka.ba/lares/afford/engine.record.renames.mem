@@ -38,16 +38,15 @@ An answer names only records this face reads and counts the rest (`withheld`); a
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ title · to · recipe · face · base · if-match
+!! takes ~ title · to · recipe · face · base
 
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
 
 ```memetic-wikitext
 <<has entity=`arg` name=`title` params=`takes/title needs/required seat/1 as/<old> ~ the record moved, a meme root with its slots`>>
 <<has entity=`arg` name=`to` params=`takes/title needs/required seat/2 as/<new> ~ the title it moves to`>>
-<<has entity=`arg` name=`recipe` params=`takes/slug needs/required ~ the wiki whose engine relinks; default names the worn face's daemon wiki`>>
+<<has entity=`arg` name=`recipe` params=`takes/slug needs/required default/default ~ the wiki whose engine relinks; default names the worn face's daemon wiki`>>
 <<has entity=`arg` name=`base` params=`takes/hash ~ the hash last read; a stale one answers conflict and nothing moves`>>
-<<has entity=`arg` name=`if-match` params=`takes/hash skins/cli ~ the base under its older terminal spelling`>>
 ```
 
 <<~/ahu>>
@@ -98,7 +97,7 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ cli
+!! skins ~ cli · console
 
 <<~ ahu slot=`#/skins/cli`>>
 
@@ -106,6 +105,16 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`skin` name=`cli` params=`spells/[[lares tiddler rename]] ~ the terminal; the old and new titles ride as <old> <new>`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins/console`>>
+
+!!! rename
+
+```memetic-wikitext
+<<has entity=`skin` name=`console` params=`spells/rename ~ the one call; rename moves one record and relinks its referrers`>>
 ```
 
 <<~/ahu>>
@@ -121,6 +130,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WQumB75JN6ehltMI9ntnKTXVGNmZIAgGb1N6ZWEycsM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;I-sMQmf7nK9eVdvInS8AzcqzyYlZ_jUfWW0xokx0IjQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

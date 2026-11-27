@@ -65,7 +65,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares hooks resume
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`spells/[[lares hooks resume]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares hooks resume]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -80,6 +80,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ia5AUcHW0mf1QdI1mM_2CoL1BrMusuUWU5bxBTsmvTc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fbKWFmo3vcDqJaeYmuFo9AYrQeSX2GKf78n1nw-EuRw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

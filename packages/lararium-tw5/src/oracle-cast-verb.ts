@@ -70,6 +70,7 @@ import { makeTiddlerGetReactor, makeTiddlerPutReactor, type TiddlerVerbOptions }
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 import type { AffordancePack } from "./affordance-pack.js";
 import { hasLine, param } from "./has-line.js";
+import type { CallSeat } from "./modules/call.js";
 
 /** The caster a call names none for: the seat that placed it. */
 const DEFAULT_CASTER = "lares";
@@ -138,9 +139,6 @@ function containerFlag(args: Readonly<Record<string, unknown>>): string {
   return typeof args["bag"] === "string" ? `--bag ${args["bag"]}` : `--recipe ${typeof args["recipe"] === "string" ? args["recipe"] : "default"}`;
 }
 
-/** The canon wiki: the house canon a shelf's method reads from where the target wiki declares none. */
-const CANON_RECIPE = "lares";
-
 /**
  * What the baked affordance pack carries for the consult: the carrier's resolved loop rows, each shelf's method, and the
  * floor's names (the canon carrier's title and the pack's hash) its receipt hands back.
@@ -182,12 +180,6 @@ async function quietly<T>(read: () => Promise<T>, none: T): Promise<T> {
   }
 }
 
-/** The containers a shelf's method reads from, in order: the target the call names, then the canon wiki where the target differs. */
-function canonContainers(container: Record<string, unknown>): Array<Record<string, unknown>> {
-  const targetIsCanon = container["recipe"] === CANON_RECIPE && container["bag"] === undefined && container["realm"] === undefined;
-  return targetIsCanon ? [container] : [container, { recipe: CANON_RECIPE }];
-}
-
 /**
  * The act slots, read from the carrier the caller's stack seats for the consult: the get of the bare address reads the carrier
  * that answers over the target's view (`carrierOf`: a bare-root record in any layer, else the stable seat, the topmost layer
@@ -219,8 +211,8 @@ async function readLoop(get: VerbReactor, container: Record<string, unknown>, ct
 }
 
 /**
- * The shelf a consult names, and the method its index record declares: the target wiki, the canon wiki, then the baked
- * pack, the first that declares a method answering. A kind no source declares refuses `oracle-shelf-unknown`, a method the
+ * The shelf a consult names, and the method its index record declares: the target's stack (every layer it composes, canon
+ * among them, the topmost answering), then the baked pack, the floor, the first that declares a method answering. A kind no source declares refuses `oracle-shelf-unknown`, a method the
  * verb runs not yet `oracle-method-unrun`, each naming the shelves that stand.
  */
 async function readShelf(kind: string, get: VerbReactor, container: Record<string, unknown>, ctx: VerbContext, packed: () => Promise<PackedConsult | null>): Promise<{ kind: string; title: string; method: string }> {
@@ -228,25 +220,26 @@ async function readShelf(kind: string, get: VerbReactor, container: Record<strin
   const kinds = Object.keys(shelves).sort();
   const standing = kinds.length > 0
     ? `the shelves that stand: ${kinds.map((k) => `${k} (${shelves[k]!.method})`).join(" · ")}`
-    : `list the shelves with \`lares wiki filter '[prefix[lar:///ha.ka.ba/lares/library/oracles/]suffix[/index]]' --recipe ${CANON_RECIPE}\``;
+    : `list the shelves with \`lares wiki filter '[prefix[lar:///ha.ka.ba/lares/library/oracles/]suffix[/index]]' ${containerFlag(container)}\``;
   const cure = `consult a shelf that stands (\`lares oracle cast --by ${DEFAULT_ORACLE_KIND}\`); ${standing}`;
   if (!KIND_RE.test(kind)) throw new VerbRefusal("oracle-shelf-unknown", `oracle-shelf-unknown: \`by\` names a shelf in lower-case words joined by hyphens; got "${kind}"; ${cure}`);
   const title = oracleShelfTitle(kind);
-  let method = "";
-  for (const where of canonContainers(container)) {
-    method = await quietly(async () => {
-      const held = (await get({ ...where, title, fields: ["method"] }, ctx))["tiddler"] as { fields: Record<string, string> } | null;
-      return String(held?.fields["method"] ?? "").trim();
-    }, "");
-    if (method !== "") break;
-  }
+  // THE STACK, THEN THE FLOOR (comms-ux-enacts landing 3's fork, folded in landing 4): no canon-recipe rung; the target's stack
+  // already composes canon beneath its working layers, and the pack answers where the stack holds no shelf.
+  let method = await quietly(async () => {
+    const held = (await get({ ...container, title, fields: ["method"] }, ctx))["tiddler"] as { fields: Record<string, string> } | null;
+    return String(held?.fields["method"] ?? "").trim();
+  }, "");
   if (method === "") method = String(shelves[kind]?.method ?? "").trim();
-  if (method === "") throw new VerbRefusal("oracle-shelf-unknown", `oracle-shelf-unknown: no shelf ${title} declares its method, in this wiki, the canon wiki or the baked pack; ${cure}`);
+  if (method === "") throw new VerbRefusal("oracle-shelf-unknown", `oracle-shelf-unknown: no shelf ${title} declares its method, in this wiki's stack or the baked pack; ${cure}`);
   if (!RUN_METHODS.includes(method)) {
     throw new VerbRefusal("oracle-method-unrun", `oracle-method-unrun: the ${kind} shelf declares method \`${method}\`, which this verb runs not yet (it runs ${RUN_METHODS.join(", ")}); ${cure}`);
   }
   return { kind, title, method };
 }
+
+/** The consult's seat in the call registry (comms-ux-enacts landing 4): its address answers through `oracle-cast`. */
+export const ORACLE_CALL_SEATS: Readonly<Record<string, CallSeat>> = Object.freeze({ [ORACLE_AFFORDANCE]: { verb: "oracle-cast" } });
 
 export function makeOracleCastReactor(opts: TiddlerVerbOptions, consult: OracleConsultOptions = {}): VerbReactor {
   const put = makeTiddlerPutReactor(opts);

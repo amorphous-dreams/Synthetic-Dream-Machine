@@ -26,8 +26,13 @@
  * layers), which the island's door (`wikis`) composes on the first ask and closes when cold; a write lands in that engine's
  * write layer (`working`, or the face's `personal` where it holds no writer's seat). A wiki the door reaches no engine for
  * (no recipe names it, none of its layers stands for the face, or the island holds no door) refuses `wiki-unreached` by
- * name; `recipe: "daemon"` refuses the same way, since the daemon wiki answers to `default` alone. The container law
- * holds (exactly one of `recipe` / `bag`, else `no-container`).
+ * name; `recipe: "daemon"` refuses the same way, since the daemon wiki answers to `default` alone. A reactor reads exactly one
+ * of `recipe` / `bag`; the one call (`modules/call.ts`) fills the container from the live `#/takes/container` row's `default/`
+ * param before it dispatches here, so a call never meets a missing container, and naming both refuses `one-of-doubled` there.
+ *
+ * REACTORS REGISTER BY ADDRESS (`TIDDLER_CALL_SEATS`): each verb here answers one affordance address through the registry
+ * `call` dispatches through (`VerbTable.answer`), so `call("get", {title})` lands on `tiddler-get` and its answer carries the
+ * carrier receipt.
  *
  * A BAG TAKES ONE RECORD THROUGH ITS OWN STORE. `bag: <slug>` names one bag and no wiki, so no engine runs: a get reads the
  * record from that bag (`bagGet`), a put lands it there and a delete removes it there (`bagSeat`), under the reach and the
@@ -117,6 +122,7 @@ import { pageFilterAnswer, filterCursor, checkFilter, lineLensOf, matchingLines,
 import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { wornOrigin } from "./verb-dispatcher.js";
+import { callReaderOf, type CallReader, type CallSeat } from "./modules/call.js";
 import { wikiWearsNext } from "./island-recipe.js";
 import { isTw5DocsBag, refuseTw5DocsWrite } from "./tw5-docs-library.js";
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
@@ -2149,3 +2155,31 @@ export const makeWikiStatusReactor = everyWiki("wiki-status", false, (opts: Tidd
     return { recipe, working, layers };
   };
 });
+
+// ── the call's seats ──────────────────────────────────────────────────────────────────────────────────
+
+/**
+ * THE TIDDLER DOOR'S SEATS IN THE CALL REGISTRY (comms-ux-enacts landing 4): each core-verb carrier's address and the daemon
+ * verb that answers it. A param's neutral name reads as its camelCase arg (`max-bytes` → `maxBytes`); a seat names the
+ * exceptions (`tag-add` → `tagsAdd`, `cut-slot` → `cut`) and folds a param that names another's value (a get's `all` reads the
+ * whole grain; a put's `slot` folds into its title, `<root>#/x`).
+ */
+export const TIDDLER_CALL_SEATS: Readonly<Record<string, CallSeat>> = Object.freeze({
+  "lar:///engine.record.reads": {
+    verb: "tiddler-get",
+    fold: ({ all, ...args }) => (all === true || all === "true" ? { ...args, grain: args["grain"] ?? "whole" } : args),
+  },
+  "lar:///engine.filter.pages": { verb: "wiki-filter" },
+  "lar:///engine.record.puts": {
+    verb: "tiddler-put",
+    args: { "tag-add": "tagsAdd", "tag-remove": "tagsRemove", "cut-slot": "cut" },
+    fold: ({ slot, ...args }) => (typeof slot === "string" && slot !== "" && typeof args["title"] === "string" ? { ...args, title: `${args["title"]}${slot}` } : args),
+  },
+  "lar:///engine.record.removes": { verb: "tiddler-delete" },
+  "lar:///engine.record.renames": { verb: "tiddler-rename" },
+});
+
+/** The reader a call resolves and binds over: the daemon wiki's live stack, the topmost layer answering each carrier title. */
+export function tiddlerCallReader(opts: Pick<TiddlerVerbOptions, "tw5">): CallReader {
+  return callReaderOf(engineOf(opts as TiddlerVerbOptions).wiki as never);
+}

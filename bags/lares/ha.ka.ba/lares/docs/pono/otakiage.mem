@@ -464,7 +464,7 @@ A single-stage call may start from a fresh read and stop for review:
 
 The operator ruled on 2026-11-22 that holders choose the plane. Where one human holds a wiki, through one face or many, that human may delete their own tiddlers when needed; git's history holds what the delete removed wherever the layer carries a mirror; a delete in a layer with no mirror stays final. This includes a face's memory stage and a domain wiki held only by that human's faces. Where another human holds the wiki, removal asks the holders and they answer by name through the tombstone rite. An AI or tasked spirit burns only on the holder's (the operator, for a face they wear) call, through the stages, with the gratitude line and two commits; the rite never gates the human's own delete in a wiki they alone hold (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/otakiage#/the-fire`>>). The fire touches one path or tiddler and reaches no copy on another human's vessel.
 
-A whole meme or an ahu slot carries its full title. A family put reads `lares tiddler put <title> --recipe <r> --meme --base <base> --file -`, with the carrier on stdin; a family delete reads `lares tiddler delete <title> --recipe <r> --meme --if-match <hash>`. A slot leaves through a family put. `removeMeme` in `place-meme.ts`, `tombstoneInBag` and `removeInBag`, `pairRenames`, and `lares shore remove` in `commands/shore.ts` witness removal mechanics; the law names the rite and reach.
+A whole meme or an ahu slot carries its full title. A family put reads `lares tiddler put <title> --recipe <r> --meme --base <base> --file -`, with the carrier on stdin; a family delete reads `lares tiddler delete <title> --recipe <r> --meme --base <hash>`. A slot leaves through a family put. `removeMeme` in `place-meme.ts`, `tombstoneInBag` and `removeInBag`, `pairRenames`, and `lares shore remove` in `commands/shore.ts` witness removal mechanics; the law names the rite and reach.
 
 ''Attractor stores.'' Each face's memory stage wiki holds three attractor stores: catmas, pattern integrities, and practices (the face's operational practices, each with its why and the operator's quoted warrant). The house controller's ruling of 2026-11-22 names the engineer face's instance of the title convention: `lar:///ha.ka.ba/kahua/memory/reference/discordian-catmas`, `lar:///ha.ka.ba/kahua/memory/reference/pattern-integrities`, and `lar:///ha.ka.ba/kahua/memory/reference/practices`, without importing the stores' contents. The harvest reading holds each rule against those stores. A core that predicts the rule carries it; a fresh tell or place it lives sharpens the core; a rule no core predicts becomes a candidate. A new core or a changed reason waits for the operator's word. The stores undergo the same reading: the author's account meets a reader from another context before findings merge (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/pattern-integrity#/recursive-reading`>>).
 
@@ -513,6 +513,6 @@ A whole meme or an ahu slot carries its full title. A family put reads `lares ti
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;62QsYF1buSeOPX4sHOE3lFQmQDNs4fhrn6-sx1e8-DE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;znZFjnlnH9TU1b3DHvN9cB0txo2LQ31wkLLjmcFCBiA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

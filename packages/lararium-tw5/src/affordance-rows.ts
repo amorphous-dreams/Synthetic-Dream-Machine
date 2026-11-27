@@ -260,7 +260,9 @@ export function renderCall(surface: AffordSurface, spells: string, call: Neutral
     }
     case "console": {
       const named = call.args.map(([k, v]) => [spellArg(surface, k, skin), v] as const);
-      return `$tw.lares.afford.run(${JSON.stringify(call.address.replace(/^lar:\/\/\//, ""))}, {${named.map(([k, v]) => `${JSON.stringify(k)}: ${v === true ? "true" : literal(v)}`).join(", ")}})`;
+      // THE ONE CALL (landing 4): the console spelling where the carrier skins one (a verb word, `get`), the bare address otherwise.
+      const word = spells.trim() || call.address.replace(/^lar:\/\/\//, "");
+      return `$tw.lares.call(${JSON.stringify(word)}, {${named.map(([k, v]) => `${JSON.stringify(k)}: ${v === true ? "true" : literal(v)}`).join(", ")}})`;
     }
   }
 }

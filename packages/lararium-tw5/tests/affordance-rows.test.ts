@@ -7,7 +7,7 @@ import {
   addressMatcher, addressOfTitle, bodyOf, digestOf, edgesOf, exampleCall, kaheaTitles, neutralCallOf, parseHasRows, parseParams, proseOf, renderCall,
   seatsOf, spellArg, tokenize, usageOf, unfoldRead, type HasRow,
 } from "../src/affordance-rows.js";
-import { affordView, carrierOf, carrierRootsIn, carrierViewOfText, routesOf, seatTitleOf } from "../src/affordance-read.js";
+import { affordView, carrierOf, carrierRootsIn, carrierViewOfText, routeOfCall, routesOf, seatTitleOf } from "../src/affordance-read.js";
 
 const TAKES = [
   "!! takes ~ recipe · bag · asking · fresh",
@@ -60,7 +60,9 @@ describe("the skins derive spellings by rule", () => {
     expect(renderCall("cli", "lares oracle cast", call)).toBe("lares oracle cast --recipe default --asking <words>");
     expect(renderCall("mcp", "oracle_cast", call)).toBe(`oracle_cast(recipe="default", asking="<words>")`);
     expect(renderCall("tw5", "action-oracle-cast", call)).toBe(`<$action-oracle-cast recipe="default" asking="<words>"/>`);
-    expect(renderCall("console", "", call)).toBe(`$tw.lares.afford.run("oracle.library.consults", {"recipe": "default", "asking": "<words>"})`);
+    expect(renderCall("console", "", call)).toBe(`$tw.lares.call("oracle.library.consults", {"recipe": "default", "asking": "<words>"})`);
+    // A carrier that skins a console spelling (a verb word) renders the call by that word.
+    expect(renderCall("console", "get", { address: "lar:///engine.record.reads", args: [["title", "Room 4"]] })).toBe(`$tw.lares.call("get", {"title": "Room 4"})`);
     const example = parseHasRows("<<has entity=`example` name=`e` params=`recipe/default asking/[[which road first?]] fresh then/oracle.read.casts ~ x`>>")[0]!;
     expect(renderCall("cli", "lares oracle cast", exampleCall(example, "lar:///oracle.library.consults"))).toBe("lares oracle cast --recipe default --asking 'which road first?' --fresh");
   });
@@ -255,5 +257,36 @@ describe("routes read the live stack (`routesOf`)", () => {
     expect(r.routes.cli["oracle cast"]).toBe(BARE);
     expect(r.routes.cli["oracle throw"]).toBe("lar:///oracle.calendar.dates");
     expect(r.twice).toEqual([{ surface: "cli", spelling: "oracle throw", addresses: ["lar:///oracle.calendar.dates", BARE] }]);
+  });
+});
+
+describe("one verb word, two addresses: a `by/` skin row chooses (comms-ux-enacts fork 2, landing 4)", () => {
+  const READS = "lar:///ha.ka.ba/lares/afford/engine.record.reads";
+  const PAGES = "lar:///ha.ka.ba/lares/afford/engine.filter.pages";
+  const records: Record<string, string> = {
+    [READS]: "",
+    [`${READS}#/skins/console`]: "<<has entity=`skin` name=`console` params=`spells/get by/title`>>",
+    [`${READS}#/skins/cli`]: "<<has entity=`skin` name=`cli` params=`spells/[[lares tiddler get]]`>>",
+    [PAGES]: "",
+    [`${PAGES}#/skins/console`]: "<<has entity=`skin` name=`console` params=`spells/get by/filter`>>",
+  };
+  const r = routesOf((t) => records[t], Object.keys(records));
+
+  test("RED: the shared word claims no route and lands in no twice; each carrier joins the word's choices by its param", () => {
+    expect(r.routes.console["get"]).toBeUndefined();
+    expect(r.twice).toEqual([]);
+    expect(r.chosen.console["get"]).toEqual([{ address: "lar:///engine.filter.pages", by: "filter" }, { address: "lar:///engine.record.reads", by: "title" }]);
+  });
+
+  test("RED: a call's leading word routes by the param it names; an address stands for itself; a skin spelling routes too", () => {
+    expect(routeOfCall(r, "get", { title: "Room 4" })).toEqual({ address: "lar:///engine.record.reads" });
+    expect(routeOfCall(r, "get", { filter: "[tag[x]]" })).toEqual({ address: "lar:///engine.filter.pages" });
+    expect(routeOfCall(r, "lar:///engine.filter.pages", {})).toEqual({ address: "lar:///engine.filter.pages" });
+    expect(routeOfCall(r, "engine.record.reads", {})).toEqual({ address: "lar:///engine.record.reads" });
+    expect(routeOfCall(r, "tiddler get", { title: "x" })).toEqual({ address: "lar:///engine.record.reads" });
+    // CONTROL: a word nothing spells reaches nothing; a shared word naming neither param (or both) hands back the choices.
+    expect(routeOfCall(r, "fetch", {})).toBeNull();
+    expect(routeOfCall(r, "get", {})).toMatchObject({ address: null });
+    expect(routeOfCall(r, "get", { title: "a", filter: "b" })).toMatchObject({ address: null });
   });
 });

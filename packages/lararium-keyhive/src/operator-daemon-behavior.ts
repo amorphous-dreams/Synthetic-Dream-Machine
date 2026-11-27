@@ -22,7 +22,7 @@ import {
   makeInitWikiReactor, makeRetireWikiReactor, makeDraftReactor, makePruneStaleReactor,
   makeMemeGetReactor, makeMemeListReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor, makeWikiStatusReactor, makeWikiActionReactor,
-  makeOracleCastReactor,
+  makeOracleCastReactor, ORACLE_CALL_SEATS, makeCallReactor, TIDDLER_CALL_SEATS, tiddlerCallReader,
   ddateVerb,
   makeWardAlertReactor, fileWardRefusal, makeIngestAlertRail,
   makeAddBagReactor, makeRemoveBagReactor, makeTrueFloorReactor, makeCompactBagReactor, makeRotateRecipeReactor, makeRestampBagTierReactor,
@@ -1416,6 +1416,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         surfaces: [],
       });
       registry.register("oracle-cast", engineVerb("oracle-cast", makeOracleCastReactor), { summary: "Consult an oracle from its library shelf at a named fork (`lar:///oracle.library.consults`): `by` names the shelf (`library/oracles/<kind>/`, default `e-jing`) whose index declares its method (e-jing and doa: the I Ching by three coins a line), and an unknown kind or an unrun method refuses by name (`oracle-shelf-unknown`, `oracle-method-unrun`); the cast lands once as an OODA-HA meme under `lar:///ha.ka.ba/lares/oracle/casts/` whose slots read from the carrier the caller's stack seats (its #/loop, which calls api/pono/oracle-loop#/loop): `observe` (context pointers) and `uncertain` (the gathered uncertainty) fill #/observe and #/orient, the throw and every reading with its credit fill #/decide, and the seat's owed slots name their asks; later writes ride the slot append. `at` (the time; the verb reads no clock) required; `asking` names the query, and the same asking answers the standing cast (`replayed`) with the uncertainty it kept. `coins`, `fresh`, `seed` and a seat's own `nonce` ride a person's hand: a seat that sends one reads `asks`. The loop reads from the stack, the baked pack the floor; where neither answers loop rows the cast refuses `oracle-loop-unread`. Answers {has, band, intent, replayed, decision, created, title, carrier, cast, text, readings, asOf, uncertain, observe, slots, next, note}. A blind throw to collide uncertainty with: the throw stands, the reading stays open.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      // THE ONE CALL (comms-ux-enacts landing 4): each core verb and the consult register by address, and the `call` verb resolves a
+      // verb word, a skin spelling or an address through the live stack's routes, binds the params against the live `#/takes`,
+      // and runs the registered verb under the caller's own context; every answer names the carrier that shaped it.
+      for (const [address, seat] of Object.entries({ ...TIDDLER_CALL_SEATS, ...ORACLE_CALL_SEATS })) registry.answer(address, seat);
+      registry.register("call", makeCallReactor(registry, () => tiddlerCallReader(engineOpts)), { summary: "One call shape: `verb` names a verb word (`get`, `put`, `delete`, `rename`), any skin spelling or an affordance address, and `params` its named params. The verb resolves through the routes the live stack's carriers spell, the params bind against the carrier's live `#/takes` (defaults filled, the container defaulting through `#/takes/container`; an unknown param refuses `param-unknown` naming the nearest), and the registered verb answers under the caller's own context; a carrier whose door the host runs answers `handler/host` with its bound params, and an address no reactor answers refuses `affordance-unhandled`. Every answer's has line names `carrier/ bag/ base/`.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
 
       // switcher-state — the daemon UX widget's IN path: main pushes the live
       // activation state and this writes the LOCAL, volatile $:/temp/lares/switcher

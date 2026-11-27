@@ -90,7 +90,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares kahua withdraw
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`spells/[[lares kahua withdraw]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares kahua withdraw]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6fQTin6ZauKqTdiEqbC13S-Mc-eyl8AuCj6m83KePO8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3gvmylmZ4AEGGruhUCZh_rJxPBBDcnm24TIw439peko`>>
 
 <<^ code=`&#x0004;` to=`?`>>

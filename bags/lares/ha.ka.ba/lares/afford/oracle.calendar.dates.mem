@@ -98,7 +98,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares ddate
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`spells/[[lares ddate]] ~ the terminal; reads the local day once; the format rides as +FORMAT and the date as day month year`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares ddate]] ~ the terminal; reads the local day once; the format rides as +FORMAT and the date as day month year`>>
 ```
 
 <<~/ahu>>
@@ -126,6 +126,6 @@ The calendar core stands at `@lararium/mesh/ddate` and its chance at `@lararium/
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nTR4CPI4Pg_cFnczqxjx0VjEp2truBFgqdQ0MjFdFAU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3iUeYrPcmZeef07rJf-2MC_o5voqtd35E53M49T21gI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

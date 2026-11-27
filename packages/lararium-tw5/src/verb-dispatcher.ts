@@ -62,6 +62,8 @@ import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
 import { runLocalVerb, gateRoutedVerb, refuseSeatCanonRouted, RoutedCapDenied, makeCapVerify, routedAddressesWiki, routedWikiSlug } from "./verb-local-dispatch.js";
+import { hostAnswer, planCall, reactorArgs, stampAnswer, unhandled, type CallPlan, type CallReader, type CallSeat } from "./modules/call.js";
+import { surfaceOf } from "./affordance-read.js";
 
 export interface VerbContext {
   readonly daemon: CompositeStore;
@@ -179,6 +181,7 @@ export interface VerbFence {
 export class VerbTable {
   private readonly handlers = new Map<string, VerbReactor>();
   private readonly specs    = new Map<string, VerbSpec>();
+  private readonly seats    = new Map<string, CallSeat>();
   private fenceOf: VerbFence | null = null;
   private handCodes: Readonly<Record<string, string>> | null = null;
 
@@ -247,6 +250,22 @@ export class VerbTable {
     };
   }
   has(verbName: string): boolean { return this.handlers.has(verbName); }
+
+  /**
+   * REGISTER BY ADDRESS (comms-ux-enacts landing 4): the one address-to-reactor registry `call` dispatches through. A seat
+   * names the daemon verb that answers the affordance address (`lar:///engine.record.reads` → `tiddler-get`), the params whose
+   * reactor spelling breaks the camelCase rule, and any fold. One address takes one seat; the verb may register before or after.
+   */
+  answer(address: string, seat: CallSeat | string): void {
+    if (this.seats.has(address)) throw new Error(`[verb-dispatcher] duplicate seat for "${address}"`);
+    this.seats.set(address, typeof seat === "string" ? { verb: seat } : seat);
+  }
+
+  /** The seat registered for an address, or undefined. */
+  seatOf(address: string): CallSeat | undefined { return this.seats.get(address); }
+
+  /** Every address the registry seats, sorted. */
+  addresses(): readonly string[] { return [...this.seats.keys()].sort(); }
   list(): readonly string[] { return [...this.handlers.keys()].sort(); }
 
   /** What a verb declared, or undefined when it declared nothing. */
@@ -274,6 +293,41 @@ export class VerbTable {
   projectExecutable(surface: string): readonly { readonly verb: string; readonly spec: VerbSpec }[] {
     return this.project(surface, true);
   }
+}
+
+/**
+ * RUN ONE BOUND PLAN through the registry: the seat's verb, wrapped by its own fence and hand (`VerbTable.get`), answers with the
+ * plan's params in the reactor's spellings. An address no seat answers refuses `affordance-unhandled` with a cure.
+ */
+export async function runPlan(table: VerbTable, plan: CallPlan, ctx: VerbContext): Promise<Record<string, unknown>> {
+  const seat = table.seatOf(plan.address);
+  const reactor = seat === undefined ? undefined : table.get(seat.verb);
+  if (seat === undefined || reactor === undefined) throw unhandled(plan);
+  return reactor(reactorArgs(plan.params, seat), ctx);
+}
+
+/** The host's seat of the registry inside a wiki VM (`$tw.lares.callDoor`): each plan runs under one context. */
+export const callDoorOf = (table: VerbTable, ctx: VerbContext) => (plan: CallPlan): Promise<Record<string, unknown>> => runPlan(table, plan, ctx);
+
+/**
+ * THE DAEMON VERB `call` (comms-ux-enacts landing 4): `{verb, params, surface?}`. The verb word, skin spelling or address
+ * resolves through the live routes the reader's stack spells, the params bind against the live `#/takes` (`planCall`), and
+ * the plan runs through the registry (`runPlan`); a carrier whose door the host runs answers `handler/host` with its bound
+ * params. Every answer names the carrier that shaped it (`carrier/ bag/ base/` on the has line).
+ */
+export function makeCallReactor(table: VerbTable, readerOf: (ctx: VerbContext) => CallReader): VerbReactor {
+  return async (args, ctx) => {
+    const verb = typeof args["verb"] === "string" ? args["verb"].trim() : "";
+    if (verb === "") throw new Error("call: name args.verb (a verb word, a skin spelling or an affordance address)");
+    const raw = args["params"];
+    const params = typeof raw === "object" && raw !== null && !Array.isArray(raw) ? raw as Record<string, unknown> : {};
+    const surface = surfaceOf(typeof args["surface"] === "string" ? args["surface"] : "console");
+    const reader = readerOf(ctx);
+    const plan = planCall(reader, verb, params, surface);
+    const receipt = reader.receiptOf(plan.carrier);
+    if (plan.host) return hostAnswer(plan, receipt);
+    return stampAnswer(await runPlan(table, plan, ctx), plan.address, receipt);
+  };
 }
 
 export interface VerbDispatcherOptions {

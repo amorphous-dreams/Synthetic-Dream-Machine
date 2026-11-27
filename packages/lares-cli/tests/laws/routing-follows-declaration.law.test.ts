@@ -218,8 +218,8 @@ describe("L8 · tiddler put|delete and the family listing: each sub reaches its 
     expect(listPlan(args(["list"], { bag: "lares" })).verb).toBe("meme-list");
     expect(listPlan(args(["list"], { recipe: "sdm" }, { tree: true })).args).toEqual({ recipe: "sdm", tree: true });
   });
-  test("seed: the delete base rides as `base` from --if-match; put reads --base", () => {
-    expect(tiddlerPlan("delete", args(["delete", "lar:///t/x"], { bag: "b", "if-match": " h " })).args["base"]).toBe("h");
+  test("seed: the delete base rides as `base` from --base; put reads --base", () => {
+    expect(tiddlerPlan("delete", args(["delete", "lar:///t/x"], { bag: "b", base: " h " })).args["base"]).toBe("h");
     expect(tiddlerPlan("put", args(["put", "lar:///t/x"], { bag: "b", base: "h" })).args["base"]).toBe("h");
   });
   test("CONTROL: two subs reach two different verbs", () => {

@@ -90,7 +90,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares bag show
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`spells/[[lares bag show]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares bag show]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wQHlXAetsqJwe7JnYUyBbxyOUXFNT42JNltjeU994II`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9IUTu884ybz7Wl5JR3Ia8HqOjcxIIQ1Wgoqp5Am4QRI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

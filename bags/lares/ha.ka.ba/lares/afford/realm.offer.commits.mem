@@ -88,7 +88,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares trust commit
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`spells/[[lares trust commit]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares trust commit]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -104,6 +104,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jccj7rB26R3fBR3Kje48I67x_zpticckr_yjPum2NGU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BeGHX6Tzh2p6-nuGm2_SYMxiBHN_aO8LbrFx0u7OrKI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

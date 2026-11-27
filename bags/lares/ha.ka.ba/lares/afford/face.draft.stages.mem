@@ -95,7 +95,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares kahua stage
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`spells/[[lares kahua stage]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares kahua stage]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -121,6 +121,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;w6poyb-pca0UOKzrYhK1Blf0GxxHblLa9weGmr3zKOw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EUoBX5msxBaJoreSQJssilQOMUGbEmPVB1lmVXArDLo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

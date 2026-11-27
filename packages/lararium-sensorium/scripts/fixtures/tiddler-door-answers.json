@@ -647,7 +647,7 @@
         ],
         "options": {
           "recipe": "default",
-          "if-match": "sha256-ff"
+          "base": "sha256-ff"
         },
         "flags": {}
       },
@@ -1376,7 +1376,7 @@
         ],
         "options": {
           "bag": "working",
-          "if-match": "sha256:live"
+          "base": "sha256:live"
         },
         "flags": {
           "family": true

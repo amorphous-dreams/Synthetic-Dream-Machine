@@ -43,7 +43,7 @@ A rendered tiddler (one carrying `rendered-from`) refuses `rendered-derives`: on
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ title · container · face · base · if-match · family · mode
+!! takes ~ title · container · face · base · family · mode
 
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container`>>
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
@@ -51,7 +51,6 @@ A rendered tiddler (one carrying `rendered-from`) refuses `rendered-derives`: on
 ```memetic-wikitext
 <<has entity=`arg` name=`title` params=`takes/title needs/required seat/1 as/<title> ~ the record removed; a slot title <root>#/x leaves as the cut on its parent`>>
 <<has entity=`arg` name=`base` params=`takes/hash ~ the hash last read; a stale one answers conflict and nothing moves`>>
-<<has entity=`arg` name=`if-match` params=`takes/hash skins/cli ~ the base under its older terminal spelling`>>
 <<has entity=`arg` name=`family` params=`~ name the family act: a meme root leaves with its slots, one change`>>
 <<has entity=`arg` name=`mode` params=`takes/kapae-or-reveal ~ over a lower layer's record: kapae hides it, reveal surfaces it; none, a plain delete`>>
 ```
@@ -72,10 +71,9 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/refuses`>>
 
-!! refuses ~ no-container · wiki-unreached · conflict · tiddler-delete-in-a-family · delete-mode-needed · reveal-top-unwritable · rendered-derives · cross-face-write-refused
+!! refuses ~ wiki-unreached · conflict · tiddler-delete-in-a-family · delete-mode-needed · reveal-top-unwritable · rendered-derives · cross-face-write-refused
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`no-container` params=`cure/[[engine.record.removes title/<title> recipe/default]] ~ name exactly one of recipe or bag`>>
 <<has entity=`refusal` name=`wiki-unreached` params=`cure/[[engine.record.removes title/<title> recipe/default]] ~ no wiki this face hosts or holds a share of answers the slug`>>
 <<has entity=`refusal` name=`conflict` params=`cure/[[engine.record.reads title/<title> recipe/default]] ~ the record moved past the base; read again, then delete with the live base`>>
 <<has entity=`refusal` name=`tiddler-delete-in-a-family` params=`cure/[[engine.record.removes title/<title> recipe/default family/true]] ~ the title stands in a meme family; the answer quotes the consequence, and family names the act`>>
@@ -102,7 +100,7 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ cli · mcp
+!! skins ~ cli · mcp · console
 
 <<~ ahu slot=`#/skins/cli`>>
 
@@ -124,6 +122,16 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/skins/console`>>
+
+!!! delete
+
+```memetic-wikitext
+<<has entity=`skin` name=`console` params=`spells/delete ~ the one call; delete removes one record by the family law`>>
+```
+
+<<~/ahu>>
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/edges`>>
@@ -136,6 +144,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;O2kCZZsd1Yw5dV0gnaW3JiM2WzqSF9nddqLP_qJt4gM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WrE8vJMzVQD9mN4mTobp0Q980scwcTrWrxPnHxD5b3o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

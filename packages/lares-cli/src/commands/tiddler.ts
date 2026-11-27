@@ -101,13 +101,13 @@ export function tiddlerPlan(sub: Sub, args: ParsedArgs): DoorPlan {
     const to = args.positional[2];
     if (!to) throw new DoorUsage(`the new title is required (e.g. \`lares tiddler rename "${title}" "New Title" --recipe default\`)`);
     out["to"] = to;
-    const base = wordOf(args.options["if-match"]) ?? wordOf(args.options["base"]);
+    const base = wordOf(args.options["base"]);
     if (base) out["base"] = base;
     return { verb: "tiddler-rename", args: out };
   }
   if (sub === "delete") {
-    // The route spells the base as `If-Match`; the verb reads it as `base`: one hash, two spellings.
-    const base = wordOf(args.options["if-match"]) ?? wordOf(args.options["base"]);
+    // `base` stands as the one guard name: the hash last read.
+    const base = wordOf(args.options["base"]);
     if (base) out["base"] = base;
     if (args.flags["family"] === true) out["family"] = true;
     const mode = wordOf(args.options["mode"]);

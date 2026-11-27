@@ -51,7 +51,7 @@ A rendered tiddler's slice: where one read of the whole render (the record carry
 
 ```memetic-wikitext
 <<has entity=`arg` name=`filter` params=`takes/filter needs/required seat/1 as/<filter> ~ a TiddlyWiki filter, run by the wiki's own engine`>>
-<<has entity=`arg` name=`recipe` params=`takes/slug needs/required ~ the wiki whose engine runs the filter; default names the worn face's daemon wiki`>>
+<<has entity=`arg` name=`recipe` params=`takes/slug needs/required default/default ~ the wiki whose engine runs the filter; default names the worn face's daemon wiki`>>
 <<has entity=`arg` name=`bag` params=`takes/slug skins/cli ~ a bag names no wiki and takes no filter; it refuses wiki-not-anchored by name`>>
 <<has entity=`arg` name=`fields` params=`takes/names ~ each row carries these fields`>>
 <<has entity=`arg` name=`collapse` params=`~ each row answers its bytes, and a meme root its slots`>>
@@ -107,7 +107,7 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ cli · mcp
+!! skins ~ cli · mcp · console
 
 <<~ ahu slot=`#/skins/cli`>>
 
@@ -129,6 +129,16 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/skins/console`>>
+
+!!! get
+
+```memetic-wikitext
+<<has entity=`skin` name=`console` params=`spells/get by/filter ~ the one call; get by filter pages the titles a filter answers`>>
+```
+
+<<~/ahu>>
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/edges`>>
@@ -141,6 +151,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nVJcczfUD8JOSgeHo7rujf_IQiL1-u9a9ue_krO0x5c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yb4Sbx_UYneUj_3ITyxajvWTugFjwLO6LthL9v08xbI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -75,7 +75,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares hooks pause
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`spells/[[lares hooks pause]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares hooks pause]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -90,6 +90,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;CRTYSLf7IF9Gqf-APPw-L6DZ2DEPbUgmo__HmZ7qFI8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;il2GyJ8KeKp6UR8Ksua79kle-KpY0J_C7IVHGXyhjBU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -102,6 +102,8 @@ Rows ride the `has` grammar and its `key/value` params; `[[…]]` brackets a val
 * ''Skins derive argument spellings by rule'': `cli` writes `--kebab-case`, `mcp` writes `snake_case`, `tw5` an attribute, `console` an object key. A skin row names only an exception (`maps/asking:query`).
 * ''An example and a cure ride as neutral calls'' (an address and bound args), so every skin renders its own runnable line from one row. A call binding an arg a skin never takes (`skins/`, `omits/`) runs on no door of that skin, so that skin renders no line for it: the example drops there, and the refusal keeps its words without a cure. A lesson that lives in shell composition rides a literal fenced line inside `#/skins/cli`.
 * ''A skin row may name more than its spelling.'' `also/` names further spellings the one door answers, comma-joined (`also/[[lares shore keep-records]]`), each routed to the same address. `door/part` marks a cli skin as one verb of a door whose other verbs keep the door's own table (`wiki filter` beside the rest of `wiki`): the spelling routes to its carrier and its own `--help` reads the carrier whole, while the door gathers no pack entry until every verb it answers holds a carrier and the door flips whole.
+* ''A skin row names how a call reaches its door.'' `by/<param>` marks a spelling several carriers share (the verb word `get` skins `engine.record.reads` `by/title` and `engine.filter.pages` `by/filter`): the call picks the carrier whose `by` param it names, so the choice rests in rows a layer above may move. `handler/host` marks a door the host runs (the terminal or the seat), outside the call's registry: a call answers its bound params for the host to run. A carrier with neither a registered reactor nor `handler/host` refuses `affordance-unhandled`.
+* ''A call binds against `#/takes` as the stack resolves it.'' `default/` fills a param the call leaves out (a `needs/one-of` member's default only where no member rides), so the container defaults to `recipe/default` through this law's own `#/takes/container` row, and a layer above re-shapes the default by seating a row. A param no row names refuses `param-unknown` and names the nearest; naming two members of a `one-of` refuses `one-of-doubled`.
 * The surface words read `cli` · `mcp` · `tw5` · `console`. `mcp` names the protocol every seat speaks.
 
 <<~/ahu>>
@@ -117,7 +119,7 @@ Rows ride the `has` grammar and its `key/value` params; `[[…]]` brackets a val
 !!! container ~ recipe · bag · realm
 
 ```memetic-wikitext
-<<has entity=`arg` name=`recipe` params=`takes/slug needs/one-of:recipe,bag ~ the wiki the act reads and writes; default names the worn face's daemon wiki`>>
+<<has entity=`arg` name=`recipe` params=`takes/slug needs/one-of:recipe,bag default/default ~ the wiki the act reads and writes; default names the worn face's daemon wiki`>>
 <<has entity=`arg` name=`bag` params=`takes/slug needs/one-of:recipe,bag ~ one bag, placed into directly; refused where this island cannot write it`>>
 <<has entity=`arg` name=`realm` params=`takes/id ~ beside bag, the realm whose registration resolves it`>>
 ```
@@ -169,6 +171,6 @@ A verb that lands an act record MUST read its slot names, their order and their 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SmA_iXuopSSEUc93ScBFqHSdenR423yIW9qo2KqNTJ4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0zahgWuYnHY0QYUqIF9muZU_6tkoqsKwKg38_wleyTk`>>
 
 <<^ code=`&#x0004;` to=`?`>>
