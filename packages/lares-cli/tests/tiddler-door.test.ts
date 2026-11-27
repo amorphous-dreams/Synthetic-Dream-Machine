@@ -673,3 +673,108 @@ describe("tiddler get --meme answers the carrier through a pipe (the carrier-fir
     expect(r.err.join(" ")).toMatch(/no tiddler at lar:\/\/\/t\/x/);
   });
 });
+
+/**
+ * S3 TEXT ALONE (lar:///ha.ka.ba/kahua/memory/course/ai-surface-gestures #/stories): `lares tiddler get <title> --text` answers the
+ * text's own bytes on stdout and nothing else, a terminal or a pipe alike, the has line and base on stderr; `--meme` keeps its
+ * carrier contract (the whole carrier, its pages joined), a slot answers its span, and an answer carrying no text refuses by name.
+ */
+describe("tiddler get --text answers the text alone (S3)", () => {
+  const NOTE_LINE = "<<~ has name=`Note` params=`recipe/default position/plain bytes/5 base/sha256-aa`>>";
+  const record = { has: NOTE_LINE, recipe: "default", title: "Note", lens: "record",
+    tiddler: { fields: { title: "Note", tags: "memory", text: "words" }, hash: "sha256-aa", textHash: "sha256-bb", bag: "lar:///ha.ka.ba/wikis/daemon/working", position: "plain" },
+    grain: { asked: "whole", applied: "fat", why: "asked: the record with its text" }, next: null };
+  const pipe = async (title: string, options: Record<string, string>, flags: Record<string, boolean>): Promise<{ code: number; out: string; err: string[] }> => {
+    const out: string[] = []; const err: string[] = [];
+    const w = vi.spyOn(process.stdout, "write").mockImplementation((m: unknown) => { out.push(String(m)); return true; });
+    const e = vi.spyOn(console, "error").mockImplementation((m: unknown) => { err.push(String(m)); });
+    const tty = process.stdout.isTTY;
+    Object.defineProperty(process.stdout, "isTTY", { value: false, configurable: true });
+    try {
+      const code = await cmdTiddler({ command: "tiddler", positional: ["get", title], options: { recipe: "default", ...options }, flags: { text: true, ...flags } } as unknown as ParsedArgs);
+      return { code, out: out.join(""), err };
+    } finally {
+      Object.defineProperty(process.stdout, "isTTY", { value: tty, configurable: true });
+      w.mockRestore(); e.mockRestore();
+    }
+  };
+
+  test("RED: the plan asks the whole at the lens's grain: a record whole, a carrier whole; a slot its span and a cursor its page ask no grain", () => {
+    expect(tiddlerPlan("get", argv("tiddler", ["get", "Note"], { recipe: "default" }, { text: true })).args).toEqual({ recipe: "default", title: "Note", grain: "whole" });
+    expect(tiddlerPlan("get", argv("tiddler", ["get", "Note"], { recipe: "default", slot: "#/a" }, { text: true })).args).toEqual({ recipe: "default", title: "Note", slot: "#/a", grain: "whole" });
+    expect(tiddlerPlan("get", argv("tiddler", ["get", "lar:///t/x"], { recipe: "default" }, { meme: true, text: true })).args).toEqual({ recipe: "default", title: "lar:///t/x", meme: true, grain: "whole" });
+    expect(tiddlerPlan("get", argv("tiddler", ["get", "lar:///t/x"], { recipe: "default", slot: "#/a" }, { meme: true, text: true })).args).toEqual({ recipe: "default", title: "lar:///t/x", slot: "#/a", meme: true });
+    expect(tiddlerPlan("get", argv("tiddler", ["get", "lar:///t/x#/a"], { recipe: "default" }, { meme: true, text: true })).args).toEqual({ recipe: "default", title: "lar:///t/x#/a", meme: true });
+    expect(tiddlerPlan("get", argv("tiddler", ["get", "lar:///t/x"], { recipe: "default", after: "1.0123456789abcdef" }, { meme: true, text: true })).args).toEqual({ recipe: "default", title: "lar:///t/x", meme: true, after: "1.0123456789abcdef" });
+  });
+
+  test("RED: --text refuses beside --skinny, --fields and --max-bytes before the wire, each naming the read that cures it", () => {
+    for (const [options, flags, word] of [[{}, { skinny: true }, "--skinny"], [{ fields: "title" }, {}, "--fields"], [{ "max-bytes": "512" }, {}, "--max-bytes"]] as const) {
+      expect(() => tiddlerPlan("get", argv("tiddler", ["get", "Note"], { recipe: "default", ...options }, { text: true, ...flags })), word)
+        .toThrow(new RegExp(`text-unread: .*${word}.*\`lares tiddler get Note --recipe default --text\``));
+    }
+    expect(h.calls).toEqual([]);
+  });
+
+  test("the row reads --text on get beside the lens and the grain flags, and the dispatcher lets it pass", () => {
+    const door = COMMANDS.find((row) => row.name === "tiddler")!;
+    expect(unknownFlags(door, argv("tiddler", ["get", "Note"], { recipe: "default" }, { text: true }))).toEqual([]);
+    expect(unknownFlags(door, argv("tiddler", ["get", "lar:///t/x"], { recipe: "default", slot: "#/a" }, { meme: true, text: true }))).toEqual([]);
+  });
+
+  test("★ RED: through a pipe, a record's text alone rides stdout, byte for byte with no added newline; the has line and base ride stderr ★", async () => {
+    h.reply = record;
+    const r = await pipe("Note", {}, {});
+    expect(r.code).toBe(0);
+    expect(r.out).toBe("words");
+    expect(r.err.slice(0, 2)).toEqual([NOTE_LINE, "base: sha256-aa"]);
+    expect(h.calls.at(-1)).toEqual({ verb: "tiddler-get", args: { recipe: "default", title: "Note", grain: "whole" } });
+  });
+
+  test("RED: --meme --text writes the recomposed carrier whole, its pages followed and joined; a slot writes its span", async () => {
+    const pages = (args: Record<string, unknown>): Record<string, unknown> => {
+      const second = args["after"] === "1.0123456789abcdef";
+      if (args["slot"] === "#/a") return { has: "<<~ has name=`lar:///t/x#/a` params=`base/partial:#/a:sha256:9`>>", recipe: "default", title: "lar:///t/x", lens: "meme",
+        meme: { uri: "lar:///t/x", slotText: "the a span\n", canonicalHash: "sha256:9", bytes: 10, slots: [], slot: "#/a" }, grain: { asked: null, applied: "slot", why: "one slot" }, next: null };
+      return { has: "<<~ has name=`lar:///t/x` params=`base/sha256:9`>>", recipe: "default", title: "lar:///t/x", lens: "meme",
+        meme: { uri: "lar:///t/x", text: second ? "BBBBBB" : "AAAA", canonicalHash: "sha256:9", bytes: 10, slots: [], page: { page: second ? 2 : 1, pages: 2 } },
+        grain: { asked: "whole", applied: "whole", why: "the whole carrier, cut on slot boundaries" }, next: second ? null : { grain: "whole", after: "1.0123456789abcdef" } };
+    };
+    h.replyFor = pages;
+    const whole = await pipe("lar:///t/x", {}, { meme: true });
+    expect(whole.out).toBe("AAAABBBBBB");
+    expect(h.calls.map((c) => [c.args["grain"], c.args["after"]])).toEqual([["whole", undefined], ["whole", "1.0123456789abcdef"]]);
+    h.calls.length = 0;
+    const slot = await pipe("lar:///t/x", { slot: "#/a" }, { meme: true });
+    expect(slot.out).toBe("the a span\n");
+    expect(slot.err[0]).toBe("<<~ has name=`lar:///t/x#/a` params=`base/partial:#/a:sha256:9`>>");
+  });
+
+  test("RED: a pointer whose body rode no text refuses text-unread (exit 2) and leaves stdout empty, naming the pointer's cure", async () => {
+    h.reply = { has: "<<~ has name=`Pic` params=`recipe/default _canonical_uri/https://x.example/p.txt`>>", recipe: "default", title: "Pic", lens: "record",
+      tiddler: { fields: { title: "Pic", _canonical_uri: "https://x.example/p.txt" }, hash: "sha256-cc", textHash: null, bag: null, position: "plain" },
+      grain: { asked: "whole", applied: "handle", why: "a web2 `_canonical_uri` names the body and the door never fetches it (web3 only)" }, next: null,
+      pointer: { uri: "https://x.example/p.txt", body: "owed", owes: "a web2 address names the body and the door never fetches it", cure: "fetch the bytes by hand, stage them into the content tier" } };
+    const r = await pipe("Pic", {}, {});
+    expect(r.code).toBe(2);
+    expect(r.out).toBe("");
+    expect(r.err.join(" ")).toMatch(/text-unread: Pic answered no text alone: the pointer's body rode no text \(a web2 address names the body.*\); fetch the bytes by hand/);
+  });
+
+  test("RED: the meme lens answering a pointer root names the record lens, which resolves it, as the cure", async () => {
+    h.reply = { has: "<<~ has name=`lar:///t/p` params=`recipe/default textCid/bafy`>>", recipe: "default", title: "lar:///t/p", lens: "record",
+      tiddler: { fields: { title: "lar:///t/p", textCid: "bafy" }, hash: "sha256-dd", textHash: null, bag: null, position: "plain" },
+      grain: { asked: "whole", applied: "handle", why: "a pointer: the handle names its body by CID" }, next: { grain: "resolved" },
+      pointer: { cid: "bafy", body: "owed", owes: "unread: the handle names the body and this answer carries none of it", cure: "read the body" } };
+    const r = await pipe("lar:///t/p", {}, { meme: true });
+    expect(r.code).toBe(2);
+    expect(r.out).toBe("");
+    expect(r.err.join(" ")).toMatch(/or read the record lens, which resolves it: `lares tiddler get lar:\/\/\/t\/p --recipe default --text`/);
+  });
+
+  test("CONTROL: `--json` beside --text keeps the envelope, the daemon's answer verbatim", async () => {
+    h.reply = record;
+    const r = await pipe("Note", {}, { json: true });
+    expect(JSON.parse(r.out)["data"]).toEqual(record);
+  });
+});

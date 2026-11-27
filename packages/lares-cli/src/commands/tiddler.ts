@@ -83,6 +83,17 @@ export function tiddlerPlan(sub: Sub, args: ParsedArgs): DoorPlan {
     if (after) out["after"] = after;
     const maxBytes = countOf(args.options["max-bytes"], "max-bytes");
     if (maxBytes !== null) out["maxBytes"] = maxBytes;
+    // TEXT ALONE (`--text`, a bare flag on get; on put it carries the words written): the text rides stdout and nothing else, so
+    // the read asks for the whole text at the lens's grain. The record lens reads `whole` (a record fat, a pointer resolved from
+    // the local CAS); the meme lens reads the whole carrier (its pages followed and joined), a slot its span, a cursor its page.
+    if (args.flags["text"] === true) {
+      const where = whereOf(out);
+      if (args.flags["skinny"] === true) throw new DoorUsage(`text-unread: --skinny reads the card, which leaves the text home; drop --skinny (\`lares tiddler get ${title} ${where} --text\`)`);
+      if (fields) throw new DoorUsage(`text-unread: --text answers the text alone and no field list; drop --fields for the text (\`lares tiddler get ${title} ${where} --text\`), or drop --text for the named fields`);
+      if (maxBytes !== null) throw new DoorUsage(`text-unread: --text answers the whole text, which no byte cap narrows; drop --max-bytes (\`lares tiddler get ${title} ${where} --text\`)`);
+      const slotted = slot !== null || (title.includes("#/") && args.flags["meme"] === true);
+      if (out["grain"] === undefined && !after && !(args.flags["meme"] === true && slotted)) out["grain"] = "whole";
+    }
     return { verb: "tiddler-get", args: out };
   }
   if (sub === "rename") {
@@ -215,11 +226,18 @@ interface GotNext { grain: string; after?: string }
  * `name: value` line per field, a blank line, the text). `--meme` answers the carrier on stdout, a terminal or a pipe alike (the
  * carrier-first law `proseFirst` holds), so `lares tiddler get <uri> --recipe <slug> --meme --all > file` carries the whole meme:
  * within a page the carrier whole, past it the has-stack, and `--all` follows the pages (each cut on a slot boundary) to the end.
+ * `--text` answers the TEXT ALONE on stdout, a terminal or a pipe alike, so a pipe into an editor or a diff takes no parse step:
+ * a record's text whole (a pointer's body resolved), a meme's recomposed carrier whole (its pages followed), a slot's span; the
+ * has line and base ride stderr, and an explicit `--json` keeps the envelope. An answer that carries no text refuses `text-unread`.
  */
 async function tiddlerGet(given: ParsedArgs): Promise<number> {
   const lens = given.flags["meme"] === true;
-  const args = lens ? proseFirst(given) : given;
+  const alone = given.flags["text"] === true;
+  // A carrier and the text alone answer a pipe in prose (the carrier-first law); only an explicit `--json` asks the envelope.
+  const args = lens || alone ? proseFirst(given) : given;
   const plan = tiddlerPlan("get", args);
+  // The meme lens follows the pages of the whole carrier where the plan asked the whole (`--all`, or `--text`).
+  const paged = lens && plan.args["grain"] === "whole";
   const parts: string[] = [];
   let ran = await runDoor(args, "tiddler get", plan);
   if (!ran.ok) return ran.exit;
@@ -230,7 +248,7 @@ async function tiddlerGet(given: ParsedArgs): Promise<number> {
     if (typeof meme?.text === "string") parts.push(meme.text);
     else if (typeof meme?.slotText === "string") parts.push(meme.slotText);
     const after = (ran.output["next"] as GotNext | null | undefined)?.after ?? null;
-    if (!lens || args.flags["all"] !== true || !after) break;
+    if (!paged || !after) break;
     const step = await runDoor(args, "tiddler get", { verb: plan.verb, args: { ...plan.args, grain: "whole", after } });
     if (!step.ok) return step.exit;
     if ((step.output["next"] as GotNext | null | undefined)?.after === after) {
@@ -250,7 +268,7 @@ async function tiddlerGet(given: ParsedArgs): Promise<number> {
   }
   const has = String(output["has"] ?? "");
   const grain = output["grain"] as GotGrain | undefined;
-  const followed = lens && args.flags["all"] === true && parts.length > 1;
+  const followed = paged && parts.length > 1;
   const note = typeof output["note"] === "string" ? output["note"] : null;
   // `--all` followed: the envelope carries the whole carrier the pages joined to, the first page's has line, and no next.
   // A JOINED READ ECHOES THE JOIN, never the first page's `page 1 of N`.
@@ -270,6 +288,25 @@ async function tiddlerGet(given: ParsedArgs): Promise<number> {
   const shape = joined ? { check: joined.marks.check, faults: joined.faults } : (output["shape"] as { check: string; faults: string[] } | undefined) ?? null;
   const faulted = shape !== null && shape.faults.length > 0;
   const data = joined && faulted ? { ...data0, shape } : data0;
+  // TEXT ALONE NAMES WHAT LEFT IT HOME: a pointer whose body went unread or unverified, a card, a has-stack. The read refuses by
+  // name with the read that cures it, and writes no byte to stdout (a pipe never takes a has-stack or a handle for the text).
+  const recordText: string | undefined = tiddler?.fields["text"];
+  const meant = meme && (typeof meme.text === "string" || typeof meme.slotText === "string") ? parts.join("")
+    : !meme && typeof recordText === "string" ? recordText : null;
+  if (alone && meant === null) {
+    const pointer = output["pointer"] as { owes?: string; cure?: string } | undefined;
+    const again = `\`lares tiddler get ${title} ${whereOf(plan.args)} --text\``;
+    const why = pointer?.owes
+      ? `the pointer's body rode no text (${pointer.owes}); ${pointer.cure ?? "`lares bag cas` surveys the content tier the body resolves from"}${lens ? `, or read the record lens, which resolves it: ${again}` : ""}`
+      : meme
+        ? `the carrier answered its has-stack; ${again.replace(" --text`", " --meme --text`")} reads the whole carrier, its pages joined`
+        : lens
+          ? `the meme lens answered the record (${grain?.why ?? "the text left home"}); the record lens reads it whole: ${again}`
+          : `the answer left the text home (${grain?.why ?? "no text field"}); ${again} asks the whole`;
+    const message = `text-unread: ${title} answered no text alone: ${why}`;
+    emit(args, { ok: false, requestId: ran.requestId, data, error: { code: "text-unread", message }, human: () => console.error(`lares tiddler get: ${message}`) });
+    return exitFor("text-unread");
+  }
   emit(args, {
     ok: true, requestId: ran.requestId, data,
     human: () => {
@@ -298,8 +335,12 @@ async function tiddlerGet(given: ParsedArgs): Promise<number> {
       }
       const record = tiddler!;
       const { text, ...rest } = record.fields;
-      for (const [name, value] of Object.entries(rest)) stdout.write(`${name}: ${value}\n`);
-      if (typeof text === "string") stdout.write(`\n${text}${text.endsWith("\n") ? "" : "\n"}`);
+      // TEXT ALONE: the text's own bytes and nothing else (no field line, no added newline); the has line and base ride stderr.
+      if (alone) stdout.write(meant!);
+      else {
+        for (const [name, value] of Object.entries(rest)) stdout.write(`${name}: ${value}\n`);
+        if (typeof text === "string") stdout.write(`\n${text}${text.endsWith("\n") ? "" : "\n"}`);
+      }
       if (has) console.error(has);
       console.error(`base: ${record.hash}`);
       if (record.bag) console.error(`bag: ${record.bag}`);

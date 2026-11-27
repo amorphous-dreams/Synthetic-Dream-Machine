@@ -468,6 +468,57 @@
       }
     },
     {
+      "tool": "tiddler_get",
+      "cli": {
+        "command": "tiddler",
+        "positional": [
+          "get",
+          "Note 03"
+        ],
+        "options": {
+          "recipe": "default"
+        },
+        "flags": {
+          "text": true
+        }
+      },
+      "mcp": {
+        "title": "Note 03",
+        "recipe": "default",
+        "grain": "whole"
+      },
+      "wire": {
+        "verb": "tiddler-get",
+        "args": {
+          "recipe": "default",
+          "title": "Note 03",
+          "grain": "whole"
+        }
+      },
+      "output": {
+        "has": "<<~ has name=`Note 03` params=`recipe/default layer/lar:///ha.ka.ba/wikis/daemon/working position/plain bytes/15 base/sha256-n3`>>",
+        "recipe": "default",
+        "title": "Note 03",
+        "lens": "record",
+        "tiddler": {
+          "fields": {
+            "title": "Note 03",
+            "text": "the text alone\n"
+          },
+          "hash": "sha256-n3",
+          "textHash": "sha256-n3text",
+          "bag": "lar:///ha.ka.ba/wikis/daemon/working",
+          "position": "plain"
+        },
+        "grain": {
+          "asked": "whole",
+          "applied": "fat",
+          "why": "asked: the record with its text"
+        },
+        "next": null
+      }
+    },
+    {
       "tool": "tiddler_put",
       "cli": {
         "command": "tiddler",
