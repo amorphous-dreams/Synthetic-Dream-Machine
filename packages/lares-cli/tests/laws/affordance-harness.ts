@@ -59,7 +59,8 @@ export const REBAKE = "re-bake: pnpm --filter @lararium/tw5 build, then commit p
 
 /** Every cli route: its spelling under `lares` (`oracle cast`), its door and verb path, and its address. */
 export const cliRoutes = (p: AffordancePack = pack()): Array<{ spelling: string; door: string; path: string[]; address: string }> =>
-  Object.entries(p.routes["cli"] ?? {}).map(([spelling, address]) => {
+  // THE BARE DOOR (the keyword head) spells `lares` alone: the dispatcher answers it before any door, so it routes no door here.
+  Object.entries(p.routes["cli"] ?? {}).filter(([spelling]) => spelling.trim() !== "lares" && spelling.trim() !== "").map(([spelling, address]) => {
     const [door, ...path] = spelling.split(/\s+/);
     return { spelling, door: door!, path, address };
   });

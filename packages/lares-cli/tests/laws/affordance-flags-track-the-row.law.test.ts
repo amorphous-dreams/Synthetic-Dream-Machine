@@ -49,7 +49,7 @@ describe("W2 · a door's carrier flags equal its row's accepts", () => {
   });
 
   test("★ a call-shape door's row accepts no flag, and its carriers' cli takes spell params, never flags ★", () => {
-    expect(CALL_DOORS).toEqual(["delete", "get", "put", "rename"]);
+    expect(CALL_DOORS).toEqual(["delete", "get", "msg", "put", "rename", "watch"]);
     for (const door of CALL_DOORS) {
       expect(COMMANDS.find((c) => c.name === door)!.accepts, door).toEqual([]);
       const takes = cliRoutes().filter((r) => r.door === door).flatMap((r) => pack().carriers[r.address]?.takes["cli"] ?? []);
@@ -65,7 +65,10 @@ describe("W2 · a door's carrier flags equal its row's accepts", () => {
 
   test.each(DOORS.map((d) => [d] as const))("`lares %s`", (door) => {
     const { carrier, row } = sides(door);
-    expect(carrier).toEqual(row);
+    // A PART DOOR (meme, sense, wiki: landings 10 + 23) still reads the verbs no carrier skins yet off its own table, so its row
+    // names their flags too: every carried flag sits in the row, and the two read equal once the door flips whole.
+    if (partDoors().includes(door)) expect(carrier.filter((f) => !row.includes(f)), door).toEqual([]);
+    else expect(carrier).toEqual(row);
   });
 
   test("CONTROL: a carrier missing one flag disagrees with its row", () => {

@@ -39,7 +39,8 @@ function workingFields(r: Rig, title: string): Record<string, string> | null {
 
 describe.skipIf(wikiSkip)(`receipts where an act or a votum moves a record${skipNote}`, () => {
   test("RED: a burst of 500 hand saves and state flickers stamps zero receipts and computes no receipt digest; CONTROL: they all land", async () => {
-    const r = await shoreRig();
+    // The temp layer stands (`upperSlots`): `$:/state/` and `$:/temp/` route to the wiki's temp slot, as a recipe composes it.
+    const r = await shoreRig({ upperSlots: true });
     try {
       r.adaptor.wornFace = FACE;
       const handsAsked = r.adaptor.collectReceipts(HAND_ACT);

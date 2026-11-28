@@ -1,10 +1,10 @@
 /**
  * fewer-front-doors — the UX collapse's second fold (lar:///ha.ka.ba/kahua/memory/road/leap-ux-collapse).
  *
- * Seven top-level verbs left the operator's front door and ride the door that already owns their island:
+ * Six top-level verbs left the operator's front door and ride the door that already owns their island (a seventh, `watch`,
+ * folded into `ingest --watch` and stands again since landing 16 as a call verb, a filter subscription):
  *
  *   receipt · cancel   -> vessel request <id> [--cancel]
- *   watch              -> ingest --watch
  *   draft              -> act lar:///carriage.draft.pulls uri=<uri>
  *   raise sign         -> persona raise-sign <challenge-json>
  *   wing-of · test-quine -> out of the front door (tools/wing-of.mjs; `pnpm --filter @lararium/node test:quine`)
@@ -28,7 +28,6 @@ afterEach(() => vi.restoreAllMocks());
 const FOLDED: ReadonlyArray<readonly [argv: readonly string[], cure: string]> = [
   [["receipt"], "lares vessel request <id>"],
   [["cancel"], "lares vessel request <id> --cancel"],
-  [["watch"], "lares ingest --watch"],
   [["draft"], "lares act lar:///carriage.draft.pulls uri=<uri>"],
   [["raise", "sign"], "lares persona raise-sign <challenge-json-text>"],
   [["wing-of"], "node tools/wing-of.mjs"],

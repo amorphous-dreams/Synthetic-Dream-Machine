@@ -33,6 +33,8 @@ module-type: startup
  *
  * Meme: lar:///ha.ka.ba/lares/afford/engine.filter.watches
  */
+// THE LEND COMES FIRST: this module's imports hash at load, before `modules/host-globals` runs its startup lend.
+import "../host-globals-now.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { VerbRefusal } from "@lararium/mesh/verb-refusal";
 import { answerDigestOf } from "../filter-page.js";

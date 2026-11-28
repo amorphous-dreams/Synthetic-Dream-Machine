@@ -439,7 +439,9 @@ export function planCall(reader: CallReader, word: string, params: Readonly<Reco
   const ownRest = mu !== undefined && mu.carry === "00" && params["mu"] !== undefined && muCellsOf(takesCells(reader, carrier)).some((c) => c.carry === "00");
   if (mu !== undefined && (mu.carry !== "00" || ownRest)) shaped["mu"] = mu.carry;
   else delete shaped["mu"];
-  if (aperture !== undefined) shaped["aperture"] = aperture.rank;
+  // THE RANGE RIDES AS ASKED: a caller who named its number keeps it (`16/arc`, the seed's N/rank: a msg's panel lands it whole);
+  // a lone rank word rides as the rank. A door that reads a band takes the rank after the slash.
+  if (aperture !== undefined) shaped["aperture"] = /\d/.test(aperture.asked) ? `${aperture.n}/${aperture.rank}` : aperture.rank;
   return {
     address, carrier, surface, params: shaped,
     host: handler !== null, seat: handler === "seat", dryWalks: handler !== null && walksDry(reader, carrier, surface),

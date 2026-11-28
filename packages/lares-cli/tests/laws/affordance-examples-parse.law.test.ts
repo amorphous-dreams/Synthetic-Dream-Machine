@@ -21,6 +21,8 @@ import { REBAKE, SEED_ADDRESS, SEED_ADDRESSES, pack, shellWords } from "./afford
 export function misparse(line: string): string | null {
   const words = shellWords(line);
   if (words[0] !== "lares") return `does not open on \`lares\``;
+  // THE BARE DOOR (the keyword head, lar:///lares.lararium.status): `lares` alone, or with its dials as keywords, names no door.
+  if (words.slice(1).every((w) => /^[a-z][a-z0-9-]*=/.test(w))) return null;
   const args = parseArgs(words.slice(1));
   const cmd = COMMANDS.find((c) => c.name === args.command);
   // THE ONE ACT RIDES THE CALL DOOR (landing 9): `lares act lar:///<address> name=value…` names an address and takes params alone.

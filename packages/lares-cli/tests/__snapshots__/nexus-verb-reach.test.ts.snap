@@ -16,85 +16,33 @@ usage: lares nexus kahuli <engine | grammar>
 
 exports[`lares nexus — every verb reaches its door > the three usage surfaces read byte-for-byte as they stand > nexus usage 1`] = `
 "lares nexus: unknown verb "definitely-not-a-verb"
-usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | carry-take | posture | kahuli | publish | realm-bag | realm-bags | offering | approve | cabal | release>
+  lares nexus carry-take  take a carry bundle onto this place's own board replica
+  lares nexus carry-for  mint a place's carrier seal and floor pin for the kahu
+  lares nexus admit-take  verify and keep an admit bundle offline against the held charter
+  lares nexus accept-carriage  mint the accepts-carriage token a joining operator hands the kahu
+  lares nexus un_kapae  mint a quorum-signed lift answering the ban heads it read
+  lares nexus kapae  raise a quorum-signed kāpae ban on a nym, or fold the board
+  lares nexus approve check  check an approval's verdict over a file's bytes
+  lares nexus approve  name the approve verbs that carry seat approval between vaults
+  lares nexus approve open  sign an approval of one file's exact bytes with the seats here
+  lares nexus approve sign  add this vault's seats to an approval once its digest reads
+  lares nexus kahuli  advance one ratchet tier of the Nexus genesis composition
+  lares nexus cabal  admit, remove or cosign a PersonaGroup in the Kahu cabal
+  lares nexus contract  admit a joining operator's per-Nexus leaf and emit the admit bundle
+  lares nexus members  fold one Nexus's members board as this replica last synced it
+  lares nexus revoke  revoke an operator's admit from the carriage board
+  lares nexus rite  run a pet-named procedure over the nexus primitives
+  lares nexus offering  read one exact local offering by its CID
+  lares nexus carry  carry a place by its vessel key's carrier seal and emit the bundle
+  lares nexus uncarry  take a carried place back off the carriage board
+  lares nexus publish  publish this operator's own plugin collection as an offering
+  lares nexus posture  read or flip the Nexus federation posture, private or open
+  lares nexus release  publish the Nexus floor release with the seats' approval
+  lares nexus seal  seat, rotate, read and carry the Nexus seal's charter chain
+  lares nexus realm-bags  list the realm bags and their stewards as last synced
+  lares nexus realm-bag  seal a realm bag's steward record by join, cosign or steward
 
-lares nexus — the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.
-
-  seal <seat | rotate | show | export | import | grow | cold | cofound | roll | anchor>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony; cold rehearse = read a card back; cofound = found a Nexus with a second operator (open | join | seal); roll = roll a joint Nexus across its vaults (open | join | sign | file | abandon); anchor = carry the roll's anchor across them (--out | --from)
-  kapae <nym> [--reason <text>] [--nexus <aid>]   raise a quorum-signed ban on a presenter nym
-  kapae <nym> [--nexus <aid>] --out <partial>   sign the seats held here, write a PARTIAL (two-vault Nexus)
-  kapae --from <partial> [--out <file>]     judge a partial, cosign it, land the ban once the quorum counts
-  kapae --list [--nexus <aid>]              read the currently-Kapae'd set (the fold)
-  un_kapae <nym> [--nexus <aid>]            mint a quorum-signed causal lift (--out / --from carry it across two vaults)
-  contract <operator-pubkey> [--sig <hex>] [--sync-url <url>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in);
-                                            --json emits the admit BUNDLE the joinee takes by hand
-  contract <operator-pubkey> --sync-url <url>   name the url the joinee dials this hearth at; the bundle carries it (admit only)
-  revoke <operator-pubkey>                  revoke a member (quorum-only)
-  contract|revoke <nym> --nexus <aid> --out <partial>   a Nexus whose seats rest in two vaults: sign with the
-                                            seats held here and write the act as a PARTIAL file; nothing lands
-  contract --from <partial> [--out <file>]  judge a partial against this vessel's own charter head and board;
-                                            ready → this vessel's seats cosign; complete → it lands here
-  carry <place-vessel-key> --carrier <hex>  contract a faceless PLACE (a Herm) as a CARRIER — quorum + its own
-                                            VESSEL-key seal. It NEVER enters the member set; its whole grant is
-                                            the realm's PUBLIC-declared books, by hash (heraldry#/the-herm-card)
-        --floor-pin <file>                  the place's signed floor pin CLAIM with its KEL rows (\`carry-for --out\`); REQUIRED:
-                                            it lands atomically beside the counted act, and the carry emits the CARRY BUNDLE
-                                            the place takes. With \`--out <partial>\` a Nexus whose seats rest in two vaults
-                                            carries it as a PARTIAL (\`carry --from <partial>\` on the other vault)
-  uncarry <place-vessel-key>                end a carrier contract (quorum-only)
-  members --list [--nexus <aid>]            read a Nexus's members board — a public RECORD of admits, never
-                                            authority (default: the primary charter's Nexus)
-  accept-carriage [--index N] [--nexus <aid>]  (joining operator) mint + keep the 'accepts carriage' contract-in
-                                            for one Nexus (default: the primary charter's)
-  admit-take <bundle-file>                  (joining operator) verify the admit bundle a founding kahu handed over
-                                            against the charter held for its Nexus, keep it, and re-present a
-                                            running vessel's dial to the hearth that wrote it
-  carry-for [--nexus <aid>] [--out <file>]  (joining PLACE, on itself) mint the carrier seal with its OWN vessel
-                                            key — reads no persona, because a crossroads holds none — and sign
-                                            its floor pin at this Nexus (default the primary charter's; --nexus
-                                            names a carried one) at the head of its own place KEL. --out writes the
-                                            claim with the KEL rows: the file the kahu's \`carry --floor-pin\` reads
-  carry-take <bundle-file>                  (carried PLACE, on itself) verify the carry bundle and write it onto
-                                            its own board replica: its floor gate stands at that Nexus, only there
-  posture [private | open]                  read / flip the cross-Nexus federation posture of this hearth's charter (a herm
-                                            answers the knock by class, operator ruling: it reads OPEN and refuses the flip)
-  rite <petname>                            the pet-named procedures — \`cabal\` seats the founding quorum, \`kahuli\` overturns a ratchet tier
-  kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition
-  realm-bag <bag-uri>                       register a bag this steward keeps on the realm's shared CRDT (read at CONTRACT);
-                                            the acting face's key for this Nexus seals it (--face N, else the one face standing open)
-            [--realm <id>]                  the realm the act lands in: a cabal realm (64 hex) or the charter-derived realm (the default)
-            [--join]                        ASK to keep a bag another hand keeps — the record waits on each standing steward
-            [--cosign [--with <key>]]       consent as a named steward to a record that waits on this hand;
-                                            \`--with\` names the asker where several records wait
-            [--steward <key>[,<key>]]       also NAME those stewards, each a key that already sealed a record of this realm
-            [--tier contract|public]        the DECLARED read — public names a book the Herm carries by hash
-            [--expiry <rolls>]              lease the registration against the realm's own pace
-            [--charter <nym>=<realm-id>]    the charter a named hand holds (a book spanning two charters)
-  publish <plugins>                         THE OFFERING DOOR — what THIS operator publishes for others to take;
-                                            held apart from \`kahuli\`, which overturns what the MESH shares
-  offering inspect <offering-cid>           inspect one exact local gift; read-only, no fetch or install
-  realm-bags [--realm <id>]                 the bags a realm carries, and who keeps each; a listing never enters a realm
-  approve open <file> --purpose <p> --surface <s> [--class ordinary|high-impact] [--nexus <aid>] --out <approval>
-                                            sign the exact bytes of a promotion with the seats held here
-  approve sign <approval> --confirm-statement <digest> [--nexus <aid>] --out <file>   add this vault's seats to it
-  approve check <approval> <file> [--nexus <aid>]   the verdict over the file's bytes (exit 0 only on ok)
-  cabal <admit | remove> <group> [--nexus <aid>] [--out <partial>]
-                                            the seat quorum admits a PersonaGroup into the Kahu cabal, or removes it
-  cabal cosign <partial> --act <cid> [--nexus <aid>] [--out <file>]   add this vault's seats; lands once it counts
-  cabal standing <group> [--nexus <aid>]    where one group stands in the cabal, as of this vessel's last sync
-  release <manifest-file> --approval <file> [--nexus <aid>]   publish the Nexus's FLOOR RELEASE: a held seat seals the porch body naming the
-                                            manifest, the seats' approval of its exact bytes (\`approve open --surface floor-release\`) rides
-                                            attached, and it lands on the Nexus's publication board once it counts
-  release <manifest-file> --cut [--nexus <aid>]   cut that manifest from LIVE house canon (a promoted offer rides it),
-                                            stage the floor in this hearth's CAS; it lands nothing (offering#/the-canon-offer);
-                                            a bag whose live rows count under half its prior snapshot's refuses floor-cut-thin,
-                                            unless --thin <slug[,slug]> names it as shrunk on purpose
-
-Examples:
-  lares nexus rite quorum
-  lares nexus contract <operator-pubkey> --json
-  lares nexus admit-take ./admit-bundle.json
-  lares nexus offering inspect sha256:<offering-cid>"
+Read one: lares nexus <verb> --help"
 `;
 
 exports[`lares nexus — every verb reaches its door > the three usage surfaces read byte-for-byte as they stand > seal usage 1`] = `

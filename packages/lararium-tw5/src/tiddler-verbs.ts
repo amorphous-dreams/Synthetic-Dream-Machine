@@ -2914,7 +2914,9 @@ function dryArgs(args: Record<string, unknown>, word: string): Record<string, un
 
 /** The aperture rank a plan carried (the call seats the rank word), or null where none rides. */
 function rankArg(raw: unknown): ApertureRank | null {
-  return typeof raw === "string" && (APERTURE_RANKS as readonly string[]).includes(raw) ? raw as ApertureRank : null;
+  // The plan hands `N/rank` where the caller named its number, else the rank alone: the band rides after the slash.
+  const rank = typeof raw === "string" ? raw.slice(raw.indexOf("/") + 1) : null;
+  return rank !== null && (APERTURE_RANKS as readonly string[]).includes(rank) ? rank as ApertureRank : null;
 }
 
 /**

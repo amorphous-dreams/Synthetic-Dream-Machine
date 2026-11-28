@@ -225,7 +225,7 @@ describe("the call door plans one call: {verb, params, surface: cli}", () => {
       expect(h.calls).toEqual([call("lar:///engine.record.reads", { title: "x" })]);
       h.calls.length = 0;
       expect(await dispatch(["lar:///engine.record.reads", "title=x", "--meme"])).toBe(2);
-      expect(err.mock.calls.flat().join(" ")).toContain("unknown flag --meme for a call; a call takes name=value params (meme=…)");
+      expect(err.mock.calls.flat().join(" ")).toContain("--meme burned into the dials: it reads as aperture=measure on a call");
       expect(h.calls).toEqual([]);
     } finally { out.mockRestore(); err.mockRestore(); }
   });

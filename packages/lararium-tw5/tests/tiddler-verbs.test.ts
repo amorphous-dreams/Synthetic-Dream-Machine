@@ -2658,7 +2658,7 @@ describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the 
       engine.ingestCarrier(headTitleOf(text), text);
     }
     const reader = callReaderOf(engine.wiki as never);
-    const seats = { ...TIDDLER_CALL_SEATS, ...ORACLE_CALL_SEATS };
+    const seats = { ...TIDDLER_CALL_SEATS, ...ORACLE_CALL_SEATS, ...MSG_CALL_SEATS };
     const carriers = engine.wiki.filterTiddlers(`[all[tiddlers]tag[${AFFORDANCE_TAG}]!regexp[#/]]`);
     expect(carriers.length).toBeGreaterThan(50);
     const orphans = carriers.filter((title) => {

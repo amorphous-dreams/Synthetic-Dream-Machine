@@ -118,10 +118,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/mcp`>>
 
-!!! watch
+!!! act lar:///engine.filter.watches
 
 ```memetic-wikitext
-<<has entity=`skin` name=`mcp` params=`spells/watch omits/face ~ the seat answers at the first change, or unchanged when the hold runs out, with the cursor to continue`>>
+<<has entity=`skin` name=`mcp` params=`spells/[[act lar:///engine.filter.watches]] omits/face ~ the seat holds it on a session of its face, its wait above the hold; the vessel answers at the first change, or unchanged when the hold runs out, with the cursor to continue`>>
 ```
 
 <<~/ahu>>
@@ -148,6 +148,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YNxC914i1bdPJpVjD0wCvXshE9EmmRm1eNoJuAqP7kc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4XHHrOwa_7MFSuedbKnb6PqOzbQFhm7QO8NWIcW5dzE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

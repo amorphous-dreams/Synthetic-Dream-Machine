@@ -159,7 +159,8 @@ describe("★ the core verbs' help reads their carriers, one home ★", () => {
   test("★ each call verb's help prints its carrier whole, its call-shaped usage spine first ★", async () => {
     for (const [verb, carrier] of [["get", "engine.record.reads"], ["put", "engine.record.puts"], ["delete", "engine.record.removes"], ["rename", "engine.record.renames"]] as const) {
       const out = await helpOf([verb]);
-      expect(out[0], verb).toMatch(new RegExp(`^usage: lares ${verb} [a-z][a-z0-9-]*=`));
+      // The spine leads with name=value params; an optional dial (`[mu=<carry>]`) may ride first.
+      expect(out[0], verb).toMatch(new RegExp(`^usage: lares ${verb} (\\[[a-z][a-z0-9-]*=<[^>]+>\\] )*\\[?[a-z][a-z0-9-]*=`));
       expect(out.join("\n"), verb).toContain(`lar:///ha.ka.ba/lares/afford/${carrier}`);
       vi.restoreAllMocks();
     }

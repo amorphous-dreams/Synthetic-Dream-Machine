@@ -122,7 +122,7 @@ describe.skipIf(wikiSkip)(`a watch stands as a tiddler the wiki's change event m
   test("RED: the unask carry folds into the watch's reactor args", () => {
     const seat = TIDDLER_CALL_SEATS["lar:///engine.filter.watches"]!;
     expect(seat.verb).toBe("filter-watch");
-    expect(seat.fold!({ id: "abc", mu: "0" })).toEqual({ id: "abc", unask: true });
+    expect(seat.fold!({ id: "abc", mu: "00" })).toEqual({ id: "abc", unask: true });
     expect(seat.fold!({ filter: "[tag[x]]", asOf: "d" })).toEqual({ filter: "[tag[x]]", asOf: "d" });
   });
 
@@ -235,6 +235,9 @@ describe.skipIf(wikiSkip)(`the house's faces share one book${skipNote}`, () => {
     const slow = (): Promise<void> => { weighs++; return new Promise((resolve) => { release = resolve; }); };
     r.book.bind({ ...stub("fold", "did:f"), reweigh: slow });
     await settle();
+    // THE BOOT'S OWN LATE WRITES SETTLE FIRST: a record the engine lands after the bind may start a weigh of its own; let each
+    // such weigh finish before the burst, so the count reads the burst alone.
+    for (let quiet = 0; quiet < 8 && release !== undefined; quiet++) { const done = release; release = undefined; done(); await settle(); }
     weighs = 0;
     for (let i = 0; i < 5; i++) { r.wiki.addTiddler({ title: `Burst ${i}`, text: String(i) }); await settle(2); }
     expect(weighs).toBe(1);

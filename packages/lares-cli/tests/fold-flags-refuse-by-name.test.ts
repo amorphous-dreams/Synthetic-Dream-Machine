@@ -89,7 +89,8 @@ describe("a folded sub-path refuses the flags it does not read", () => {
     for (const flag of [["--draft"], ["--dry-run"], ["--bag", "b"], ["--from", "b"], ["--change-id", "c"], ["--debounce", "5"]]) {
       const r = await run(["act", "lar:///carriage.record.adds", ...flag, "--no-json"]);
       expect(r.code, flag.join(" ")).toBe(2);
-      expect(r.err).toContain(`unknown flag ${flag[0]} for a call; a call takes name=value params`);
+      // A flag the keyword head burned into a dial names the dial it reads as (`--dry-run` reads mu=_0); any other names its param.
+      expect(r.err).toContain(flag[0] === "--dry-run" ? "--dry-run burned into the dials: it reads as mu=_0 on a call" : `unknown flag ${flag[0]} for a call; a call takes name=value params`);
     }
   });
 

@@ -46,7 +46,7 @@ const HANDLER_FILE: Readonly<Record<string, string>> = {
   vessel: "commands/vessel", herm: "commands/herm", host: "commands/host-cmd", walk: "commands/walk-cmd",
   ingest: "commands/ingest", export: "commands/export", import: "commands/import", shore: "commands/shore", surface: "commands/surface", realm: "commands/realm",
   events: "commands/events", meme: "commands/meme", bag: "commands/bag",
-  wiki: "commands/wiki", get: "commands/call", put: "commands/call", delete: "commands/call", rename: "commands/call", repo: "commands/tunnel-door", home: "commands/tunnel-door", sense: "commands/sense", flow: "commands/flow-run",
+  wiki: "commands/wiki", get: "commands/call", put: "commands/call", delete: "commands/call", rename: "commands/call", msg: "commands/call", watch: "commands/call", repo: "commands/tunnel-door", home: "commands/tunnel-door", sense: "commands/sense", flow: "commands/flow-run",
   ddate: "commands/ddate-cmd", oracle: "commands/oracle-cmd", law: "commands/law", mempalace: "commands/mempalace", hooks: "commands/hooks", spirit: "commands/spirit", mcp: "commands/mcp", lei: "commands/lei", rite: "commands/rite",
   sensorium: "commands/sensorium", vault: "commands/vault", wear: "commands/wear",
   library: "commands/library", persona: "commands/persona", circle: "commands/circle", cabal: "commands/cabal",
@@ -160,6 +160,8 @@ const BUILT_INSIDE: Readonly<Record<string, readonly string[]>> = {
   put:    ["face", "target", ...ACT_BUILT],
   delete: ["face", "target", ...ACT_BUILT],
   rename: ["face", "target", ...ACT_BUILT],
+  msg:    ["face", "target", ...ACT_BUILT],
+  watch:  ["face", "target", ...ACT_BUILT],
 };
 
 /**
