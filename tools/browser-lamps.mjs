@@ -62,7 +62,7 @@ export const BROWSER_LAMPS_LIT = Object.freeze([
   {
     pkg: "@lararium/web", dir: "packages/lararium-web", project: "lamp-ceremony-e2e", from: "ceremony-e2e",
     holds: "a founding, an unlock and one ward act through the ceremony document",
-    files: [red("tests/e2e/ceremony.e2e.test.ts", "floor run 2026-11-27 (#00001, adc8802dd + develop): K3 waits 90 s for the page's load event and times out; the page never loads, likely behind the vessel's ~3-minute boot (the control and daemon slot loads, seal-manifest-diet)")],
+    files: [lit("tests/e2e/ceremony.e2e.test.ts", "floor-lamps-trued3 2026-11-28 (#00001, 3c07ec7ce, the fresh-base house): lamp-ceremony-e2e 7/7; the 90 s K3 wait holds once the control loads in seconds")],
   },
   {
     pkg: "@lararium/web", dir: "packages/lararium-web", project: "lamp-hearth-e2e", from: "golden-whole-road-e2e",
@@ -102,7 +102,7 @@ export const BROWSER_LAMPS_LIT = Object.freeze([
       unproven("tests/glass-theme.page.test.ts"),
       unproven("tests/glass-console-readings.page.test.ts"),
       unproven("tests/glass-boot.page.test.ts"),
-      red("tests/glass-doors.page.test.ts", "floor run 2026-11-28 (#00001, 07ad9e9a1 + develop): red on chromium and firefox; the first floor read of this page since the Luna static read classed it lighting as it stands"),
+      lit("tests/glass-doors.page.test.ts", "floor-lamps-trued3 2026-11-28 (#00001, 3c07ec7ce): lamp-web-browser 22/22 on chromium and firefox, the StartupAction under the new law"),
       unproven("tests/glass-walk.page.test.ts"),
       unproven("tests/interaction-goldens.page.test.ts"),
       unproven("tests/interaction-goldens-offers.page.test.ts"),
