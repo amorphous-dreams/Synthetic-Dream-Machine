@@ -18,7 +18,6 @@ describe.skipIf(wikiSkip)(`draft content comparison ignores envelope fields${ski
 
     const draft = openDraft(r, title, text);
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     await r.adaptor.landingIdle();
 

@@ -3,7 +3,6 @@ import { playwright } from "@vitest/browser-playwright";
 import { webkit } from "playwright";
 import wasm from "vite-plugin-wasm";
 import { refusalIsHostDependency } from "./engine-refusal.js";
-import { LAMPS_ENV, lampsOf } from "../../tools/browser-lamps.mjs";
 
 // Web-surface tests run in real Chromium, Firefox and WebKit because this shore owns the DOM adapter and the engines
 // differ on exactly the seams it owns (editing stacks, focus, the accessibility tree). Pure phone-seat tests remain
@@ -35,17 +34,10 @@ async function engines(): Promise<Array<{ browser: "chromium" | "firefox" | "web
 }
 
 /**
- * THE BROWSER LAMPS STAND DIM (operator, 2026-11-20: "disable all browser tests for now, while we move quickly to settle the
- * road"; the browser side gets a deep Mu from scratch later, lar:///ha.ka.ba/kahua/memory/project/browser-mu-from-scratch).
- * The default run is `web-node` alone: the files below stand pure of the DOM and run in Node. Every other test file here stays
- * in the tree, untouched, and goes unrun until the browser Mu relights it. The account of what went dark and how to relight
- * stands in tools/ci-cells.mjs (BROWSER_LAMPS_DIM).
- *
- * THE LAMPS (the Pono Browser, lar:///ha.ka.ba/kahua/memory/wave/pono-browser): a thin set relit against the standing hull,
- * named file by file with its proof in tools/browser-lamps.mjs (BROWSER_LAMPS_LIT). `LAR_BROWSER_LAMPS=1` joins the lamp
- * projects to the run; each takes the settings of the dark project its files rode before.
- *
- * TO RELIGHT THE WHOLE PACKAGE: `projects: [webNode, ...(await browserProjects())]` below.
+ * THE BROWSER RUN STANDS BEHIND ONE FLAG. The default run is `web-node` alone: the files below stand pure of the DOM and run
+ * in Node. `LAR_BROWSER=1` joins every browser project below (the three-engine `web-browser` and the launched walks) to the
+ * run, whole; the familiar's floor runs them by `--project`, and CI runs none until its engines return (tools/ci-cells.mjs
+ * BROWSER_DIM). A red file reads as a finding in the run itself, never in a registry beside it.
  */
 const webNode = {
   plugins: [wasm()],
@@ -158,21 +150,9 @@ const launched: NamedProject[] = [
 /** The browser-run projects (real Chromium, Firefox, WebKit; the Playwright e2e walks), dark by default. */
 export const browserProjects = async (): Promise<TestProjectConfiguration[]> => [await webBrowser(), ...launched];
 
-/** Each lamp of this package as a project of its own: the dark project's settings over the lamp's own files. */
-export const lampProjects = async (): Promise<TestProjectConfiguration[]> => {
-  const lamps = lampsOf("packages/lararium-web") as readonly { project: string; from: string; files: readonly { file: string }[] }[];
-  // The three-engine project probes WebKit to build, so it stands only when a lamp takes its settings from it.
-  const dark: NamedProject[] = lamps.some((lamp) => lamp.from === "web-browser") ? [await webBrowser(), ...launched] : launched;
-  return lamps.map((lamp) => {
-  const from = dark.find((project) => project.test.name === lamp.from);
-  if (!from) throw new Error(`tools/browser-lamps.mjs: lamp ${lamp.project} takes its settings from "${lamp.from}", which this config lacks`);
-  return { ...from, test: { ...from.test, name: lamp.project, include: lamp.files.map((f) => f.file) } };
-  });
-};
-
 export default defineConfig(async () => ({
   test: {
     globalSetup: ["../../tools/vitest-dist-guard.mjs"],
-    projects: [webNode, ...(process.env[LAMPS_ENV] === "1" ? await lampProjects() : [])],
+    projects: [webNode, ...(process.env.LAR_BROWSER === "1" ? await browserProjects() : [])],
   },
 }));

@@ -1,6 +1,6 @@
 name: CI
 
-# The pinned Playwright image supplies Node 26 for the browser cells (dim for now: tools/ci-cells.mjs BROWSER_LAMPS_DIM); the other jobs pin Node 24.
+# The pinned Playwright image supplies Node 26 for the browser cells (dim for now: tools/ci-cells.mjs BROWSER_DIM); the other jobs pin Node 24.
 # The browser import boundary must keep product code compatible with Node 24.
 
 # Golden-principle gates for the Lararium monorepo, mapped to the project's
@@ -278,10 +278,10 @@ jobs:
         if: ${{ !cancelled() && steps.wasm.outcome == 'success' }}
         working-directory: packages/tree-sitter-memetic-wikitext
         run: pnpm run gate:fold-ts
-      # ── the browser lamps stand dim (operator, 2026-11-20) ──
+      # ── the browser cells stand dim (operator, 2026-11-20) ──
       # "disable all browser tests for now, while we move quickly to settle the road": the Chromium pull and the browser floor
       # crossing (W23: `packages/lararium-web/vitest.crossing.config.ts`, files kept in the tree) rode here and ride no more.
-      # The whole account stands in tools/ci-cells.mjs (BROWSER_LAMPS_DIM) with how to relight.
+      # The whole account stands in tools/ci-cells.mjs (BROWSER_DIM) with how to relight.
       # ── pristine upstream (the plugin drops into a PUBLISHED tiddlywiki) ──
       # THE INSTRUMENT AND ITS INVOKER. `meme-routes.e2e` takes `LARES_TW5_JS` and runs the whole contact against any
       # `tiddlywiki.js`; the package suites run it against the FORK. THE SUITE SKIPS LOUDLY WHEN ITS ENGINE IS MISSING, AND A
@@ -377,7 +377,7 @@ jobs:
             engines: ''
           - cell: node-b
             engines: ''
-          # THE BROWSER LAMPS STAND DIM (operator, 2026-11-20; tools/ci-cells.mjs BROWSER_LAMPS_DIM): no cell names engines or the
+          # THE BROWSER CELLS STAND DIM (operator, 2026-11-20; tools/ci-cells.mjs BROWSER_DIM): no cell names engines or the
           # Playwright container now. To relight, restore `engines: chromium firefox webkit` on web-tw5 and `engines: chromium firefox`
           # on cli-mesh, each with `container: { image: "${{ needs.scope.outputs.playwright }}", options: "--ipc=host --init --user 1001" }`.
           - cell: web-tw5

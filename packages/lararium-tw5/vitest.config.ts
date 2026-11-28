@@ -17,7 +17,7 @@ export default defineConfig({
     // never inside `tests/`, so each offering's directory is self-contained end to end.
     include: ["tests/**/*.test.ts", "offerings/**/*.test.ts"],
     // THE BROWSER LAMPS STAND DIM (operator, 2026-11-20: "disable all browser tests for now, while we move quickly to settle the
-    // road"; account and relight in tools/ci-cells.mjs, BROWSER_LAMPS_DIM). These three suites drive a real Chromium throughout; they
+    // road"; account and relight in tools/ci-cells.mjs, BROWSER_DIM). These three suites drive a real Chromium throughout; they
     // stay in the tree, untouched, for the browser Mu. meme-routes.e2e stays: its node contact runs, and its one Chromium describe
     // skips loudly when no engine launches. TO RELIGHT: delete this `exclude`.
     exclude: [

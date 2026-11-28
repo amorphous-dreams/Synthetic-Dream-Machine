@@ -37,7 +37,6 @@ describe.skipIf(wikiSkip)(`wiki shore field grain${skipNote}`, () => {
       const d = openDraft(r, x, "t");
       typeInto(r, d, "t", { "draft.title": y });
       await afterDispatch();
-      boundary.fire();
       await boundary.settle();
       if (raced !== "none") {
         hold = true;
