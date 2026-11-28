@@ -12,13 +12,14 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/control-home
  */
+import * as A from "@automerge/automerge";
 import { Repo, parseAutomergeUrl, type AutomergeUrl, type DocHandle, type DocumentId } from "@automerge/automerge-repo";
 import { SecretHomeUnavailable, heldHomeSeed, mintVesselDocumentId, secretHomeRestOf } from "./secret-home.js";
 import { CONTROL_HOME_ID, SECRET_HOME_ID } from "./lar-uris.js";
 import { FLOOR_REGISTRY_ROOT } from "./device-daemon-docs.js";
 import { emptyLarDoc, tiddlerText, type LarDoc } from "./base-doc.js";
-import { ownEntry } from "./stored-value.js";
-import { storedLarRecord } from "./stored-record.js";
+import { ownEntry, plainEntries } from "./stored-value.js";
+import { storedLarRecord, storedRecord } from "./stored-record.js";
 import { CompositeStore } from "./composite-store.js";
 import { AutomergeDocStore } from "./automerge-doc-store.js";
 import type { ChangeOrigin, LarTiddlerChange, LarTiddlerRecord, LarTiddlerStore } from "./tiddler-store.js";
@@ -379,7 +380,93 @@ export async function standControlHome(repo: Repo, daemonHandle: DocHandle<LarDo
   if (filed === SECRET_HOME_ID) throw new ControlHomeUnavailable("the daemon document names the vessel's secret home as its control document; the secret home never files as control");
   if (filed !== null && filed !== CONTROL_HOME_ID) throw new ControlHomeUnavailable(`the document named as control stands filed under ${filed}`);
   if (!rest.enrollBeside(documentId, CONTROL_HOME_ID)) return standIn(repo, documentId, documentId, vesselLockedRefusal);
+  await freshBaseOnce(repo, documentId);
   return repo.find<LarDoc>(`automerge:${documentId}` as AutomergeUrl);
+}
+
+// ── The fresh base: the control document sheds its history at its stand ──────────────────────────
+
+/** Past this many changes in its history, the control document fresh-bases at its stand. A count decides, never a clock. */
+export const CONTROL_FRESH_BASE_AT_CHANGES = 1024;
+
+/** What one fresh base carried: the history it shed and the records it kept. */
+export interface ControlFreshBase {
+  readonly documentId: string;
+  readonly changesBefore: number;
+  readonly changesAfter: number;
+  readonly tiddlers: number;
+  readonly tombstones: number;
+}
+
+const freshBaseTried = new WeakMap<Repo, Set<string>>();
+
+/** Fresh-base the control document at most once per Repo; a fault keeps the history whole and says why. */
+async function freshBaseOnce(repo: Repo, documentId: string): Promise<void> {
+  const tried = freshBaseTried.get(repo) ?? new Set<string>();
+  freshBaseTried.set(repo, tried);
+  if (tried.has(documentId)) return;
+  tried.add(documentId);
+  try {
+    const based = await freshBaseControlDoc(repo, documentId);
+    if (based) console.log(`[control-home] fresh base of ${documentId.slice(0, 8)}…: ${based.changesBefore} changes -> ${based.changesAfter}, ${based.tiddlers} record(s), ${based.tombstones} tombstone(s)`);
+  } catch (e) {
+    console.warn(`[control-home] the control document keeps its history: its fresh base faulted (${e instanceof Error ? e.message : String(e)})`);
+  }
+}
+
+/**
+ * FRESH-BASE THE CONTROL DOCUMENT: where its stored history holds `atChanges` changes or more, rest in its place one document of
+ * its present state alone, and let the history go.
+ *
+ * THE SAME ID, SO NO READER FOLLOWS ANYWHERE. The custody row, the daemon document's pointer, the daemon island's control grant
+ * and every slot and manifest that names the control document name it by its id; the base rests under that id, so each
+ * keeps reading what it named. A fresh document under a new id would ask the custody row (sealed under the S key) and the
+ * daemon document to re-point, and break whoever held the old url.
+ *
+ * THE FOUNDING SEED BEGINS IT. The base opens on the control document's own deterministic seed (`heldHomeSeed`), the change
+ * its founding began with, then ONE change writes every record and tombstone (`storedRecord`, as a catalog bag's compaction
+ * copies them) and every blob. A copy of the old history that merged back would meet the base on shared root maps, and only
+ * record against record. No such copy rests: the control document never leaves this vessel, and the base replaces its rest.
+ *
+ * BEFORE ANY READER HOLDS IT. The base runs through the Repo's own storage, ahead of the Repo's first find: a document this
+ * Repo already holds keeps its history (its live handle would merge the old history back on its next save). The storage
+ * saves the base as one snapshot and then removes every chunk it loaded, so a stop between the two leaves both readable.
+ *
+ * Answers what the base carried, or null where it rested nothing (no storage, a held handle, no stored document, a history
+ * under the bound).
+ */
+export async function freshBaseControlDoc(repo: Repo, documentId: string, atChanges: number = CONTROL_FRESH_BASE_AT_CHANGES): Promise<ControlFreshBase | null> {
+  const storage = repo.storageSubsystem;
+  if (storage === undefined) return null;
+  const held = repo.handles[documentId as DocumentId];
+  if (held !== undefined) {
+    if (held.isReady() && A.stats(held.doc()).numChanges >= atChanges) console.warn(`[control-home] the control document stood held before its stand, so it keeps its ${A.stats(held.doc()).numChanges} changes; a stand ahead of any other read fresh-bases it`);
+    return null;
+  }
+  const stored = await storage.loadDocData(documentId as DocumentId);
+  if (stored === null) return null;
+  const old = A.loadIncremental(A.init<LarDoc>(), stored);
+  const changesBefore = A.stats(old).numChanges;
+  if (changesBefore < atChanges) return null;
+  const entries = plainEntries(old.tiddlers);
+  let tombstones = 0;
+  const fresh = A.change(A.load<LarDoc>(heldHomeSeed(documentId)), { message: "control-fresh-base" }, (d) => {
+    for (const [title, record] of entries) {
+      d.tiddlers[title] = storedRecord(record);
+      if (record.meta?.deleted) tombstones++;
+    }
+    // Each blob entry copies field by field: an object read off the old document never assigns into another whole.
+    const blobs = old.blobs;
+    if (blobs !== undefined) {
+      const into = ((d as { blobs?: Record<string, unknown> }).blobs ??= {});
+      for (const [key, entry] of Object.entries(blobs)) {
+        into[key] = Object.fromEntries(Object.entries(entry).map(([field, value]) => [field, value instanceof Uint8Array ? Uint8Array.from(value) : value]));
+      }
+    }
+  });
+  if (plainEntries(fresh.tiddlers).length !== entries.length) throw new Error(`the base holds ${plainEntries(fresh.tiddlers).length} record(s) where the history held ${entries.length}`);
+  await storage.saveDoc(documentId as DocumentId, fresh);
+  return { documentId, changesBefore, changesAfter: A.stats(fresh).numChanges, tiddlers: entries.length - tombstones, tombstones };
 }
 
 /**
