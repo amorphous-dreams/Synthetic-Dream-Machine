@@ -10,7 +10,7 @@ import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { DAEMON_BAG_ID, SECRET_HOME_ID } from "@lararium/mesh/lar-uris";
 import { leaseEpochSlotUri } from "@lararium/mesh/epoch-lease";
-import { controlStoreOf } from "@lararium/mesh/control-home";
+import { vesselStateStoreOf } from "@lararium/mesh/vessel-state";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
 import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
@@ -61,12 +61,12 @@ function island(options: { floor?: boolean; epoch?: number; dyad?: "clear" | "as
   const daemonStore = new AutomergeDocStore(daemonHandle as never, DAEMON_BAG_ID);
   composite.addLayer({ bagId: DAEMON_BAG_ID, store: daemonStore, writable: true });
   daemonStore.markSyncComplete();
-  // The lease slots rest in the vessel's control document (`control-home`), the island's control store.
-  const controlHandle = repo.create<LarDoc>(emptyLarDoc());
-  const control = controlStoreOf(controlHandle as never);
+  // The lease slots rest in the vessel's fixed-title state (`vessel-state`, its secret home), the island's state store.
+  const stateHandle = repo.create<LarDoc>(emptyLarDoc());
+  const vesselState = vesselStateStoreOf(stateHandle as never);
   if (options.epoch !== undefined) {
     const title = leaseEpochSlotUri(ceremony.personaGroupId, verifyingKey);
-    (controlHandle as { change: (fn: (doc: LarDoc) => void) => void }).change((doc) => {
+    (stateHandle as { change: (fn: (doc: LarDoc) => void) => void }).change((doc) => {
       doc.tiddlers[title] = { tiddler: { title, text: signedEpoch(options.epoch!) } } as never;
     });
   }
@@ -77,7 +77,7 @@ function island(options: { floor?: boolean; epoch?: number; dyad?: "clear" | "as
   const post = vi.fn();
   const secretStore = new AutomergeDocStore(secretHandle as never, SECRET_HOME_ID);
   secretStore.markSyncComplete();
-  const ctx = { composite, control, secretStore, secretRest, repo, recipe: { wikiSlug: "daemon" }, handles: new Map(), post };
+  const ctx = { composite, vesselState, secretStore, secretRest, repo, recipe: { wikiSlug: "daemon" }, handles: new Map(), post };
   const daemonAuth = {
     placeVerifyingKey: verifyingKey, registerBags: [DAEMON_BAG_ID], archiveOpens: false,
     ...(options.floor ? {} : {

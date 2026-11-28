@@ -4,9 +4,9 @@
  * Faces do not know each other: no face's hive or catalog names another face. The operator alone shares a bag, by
  * TW5-native rows `$:/config/lares/share/<slug>` whose fields `read` and `write` name faces by PET-NAME (a title list: bare
  * words, `[[a name with spaces]]`, or `*` for every face; empty for none) and whose `note` says why. The rows rest
- * authoritative in the vessel's control document (the vessel's key; no face reads it) and write through to
+ * authoritative in the vessel's fixed-title state (`vessel-state`, its secret home: the vessel's key; no face reads it) and write through to
  * `$LAR_ROOT/config/share.tid`, which survives a re-founding and a person edits by hand; each boot reconciles the file into
- * the control document, and the file wins.
+ * the vessel state, and the file wins.
  *
  * ONE RESOLVER answers "who may read or write this bag" (`resolveShare`), as MultiWikiServer keeps one ACL place: no second
  * policy surface. A house canon bag takes no row: it rests in the Kahu realm, every face reads its floor snapshot, and the Kahu
@@ -32,11 +32,11 @@ import { isFacePrivateSlug, WORKSPACE_NAME_RE } from "./workbench.js";
 
 /** The prefix every share row titles under. */
 export const SHARE_CONFIG_PREFIX = "$:/config/lares/share/";
-/** The prefix of the control document's opaque flags: a grant owed behind a shut owner, naming no face. */
+/** The prefix of the vessel state's opaque flags: a grant owed behind a shut owner, naming no face. */
 export const SHARE_PENDING_PREFIX = "$:/config/lares/share-pending/";
 /**
- * The prefix of the control document's CARRIED rows: a granted bag's catalog row, kept for a lit grantee until that face
- * stands worn and its own catalog half opens (`shareCarryTitle`). The control document rests under the vessel's key and no
+ * The prefix of the vessel state's CARRIED rows: a granted bag's catalog row, kept for a lit grantee until that face
+ * stands worn and its own catalog half opens (`shareCarryTitle`). The vessel state rests under the vessel's key and no
  * face reads it, so the row names its grantee's group and its bag.
  */
 export const SHARE_CARRY_PREFIX = "$:/config/lares/share-carry/";
@@ -66,7 +66,7 @@ export interface ShareEntry {
   readonly workspace?: string;
   /**
    * A wiki row's OWNER, by pet-name: the face whose realm holds the wiki's workbench, written by the share door once the
-   * landing names it. VESSEL-LOCAL, as the whole row stands (`config/share.tid`, the control document): it names a face by its pet name, the human's
+   * landing names it. VESSEL-LOCAL, as the whole row stands (`config/share.tid`, the vessel state): it names a face by its pet name, the human's
    * own label, and rides no document published to another member or vessel. A seed reads it after a re-founding:
    * the wiki re-stands at its owner's wear.
    */
@@ -220,7 +220,7 @@ export function sharePendingTitle(grant: OwedGrant, vesselSalt: string): string 
   return `${SHARE_PENDING_PREFIX}${hex(digest).slice(0, 32)}`;
 }
 
-/** A row as its control-document record's fields. */
+/** A row as its vessel-state record's fields. */
 export function shareEntryFields(row: ShareEntry): Record<string, string> {
   return {
     title: shareEntryTitle(row.slug), kind: row.kind, read: row.read, write: row.write,
@@ -286,14 +286,14 @@ export function parseShareFile(text: string): ShareEntry[] {
 }
 
 /**
- * THE BOOT'S RECONCILE: the file wins. Answers the rows the control document must hold and each title to remove (a row the
- * control document holds that the file does not name). With no file standing, the control document's rows stand.
+ * THE BOOT'S RECONCILE: the file wins. Answers the rows the vessel state must hold and each title to remove (a row the
+ * vessel state holds that the file does not name). With no file standing, the vessel state's rows stand.
  */
-export function reconcileShareEntries(file: readonly ShareEntry[] | null, control: readonly ShareEntry[]): { readonly put: readonly ShareEntry[]; readonly remove: readonly string[] } {
+export function reconcileShareEntries(file: readonly ShareEntry[] | null, held: readonly ShareEntry[]): { readonly put: readonly ShareEntry[]; readonly remove: readonly string[] } {
   if (file === null) return { put: [], remove: [] };
   const named = new Set(file.map((r) => shareEntryTitle(r.slug)));
   const same = (a: ShareEntry, b: ShareEntry): boolean => a.kind === b.kind && a.read === b.read && a.write === b.write && (a.note ?? "") === (b.note ?? "") && (a.workspace ?? "") === (b.workspace ?? "");
-  const put = file.filter((r) => { const held = control.find((c) => c.slug === r.slug); return held === undefined || !same(held, r); });
-  const remove = control.map((c) => shareEntryTitle(c.slug)).filter((t) => !named.has(t));
+  const put = file.filter((r) => { const standing = held.find((c) => c.slug === r.slug); return standing === undefined || !same(standing, r); });
+  const remove = held.map((c) => shareEntryTitle(c.slug)).filter((t) => !named.has(t));
   return { put, remove };
 }

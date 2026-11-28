@@ -379,7 +379,7 @@ import { fallAwareProbeDoors, heldBackReason, heldInFlight, holdBackStorage, rea
 import { ROUTING_ARG_MALFORMED, routingObject, routingString } from "./routing-arg.js";
 import { VerbRefusal } from "@lararium/mesh/verb-refusal";
 import { flushEveryShore, shoreFlushStandDown, type ShoreFlushReading, type ShoreIslandAsk } from "./shore-verb.js";
-import { faceCanonThroughControl } from "./commands/kahua.js";
+import { faceCanonThroughState } from "./commands/kahua.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
 import { readLocalPersonaKelChain }       from "./local-persona-kel.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, fleetRaisesOf, EdgeSeatError, type WornFleet } from "./commands/edge-seats.js";
@@ -3191,13 +3191,13 @@ async function prepareNodeBootOn(
       // a doc nobody wrote: a founding seeds it moments earlier in this same process.
       { tideline: "hearth-private", label: PLANE_LABELS.daemon, settled: () => repo.flush() });
 
-  // The per-device daemon documents the control document names, each filed by its owner (answers whether any moved).
-  const readDeviceDaemonDocs = (controlDoc: LarDoc | undefined): boolean => {
-    const moved = deviceDocs.readControl(controlDoc);
+  // The per-device daemon documents the vessel's fixed-title state names, each filed by its owner (answers whether any moved).
+  const readDeviceDaemonDocs = (stateDoc: LarDoc | undefined): boolean => {
+    const moved = deviceDocs.readState(stateDoc);
     if (moved) { faceBasesKeeper?.refresh(); for (const k of siblingBasesKeepers.values()) k.refresh(); }
     return moved;
   };
-  /** Reconcile `$LAR_ROOT/config/share.tid` into the control document: the file wins; with no file, the rows stand. */
+  /** Reconcile `$LAR_ROOT/config/share.tid` into the vessel's fixed-title state: the file wins; with no file, the rows stand. */
   const reconcileShareConfig = async (control: DocHandle<LarDoc>): Promise<void> => {
     const path = join(larConfigHome(), SHARE_CONFIG_FILE);
     const file = existsSync(path) ? parseShareFile(readFileSync(path, "utf8")) : null;
@@ -3208,7 +3208,7 @@ async function prepareNodeBootOn(
       for (const row of put) { const { title: _t, ...fields } = shareEntryFields(row); const title = shareEntryTitle(row.slug); doc.tiddlers[title] = storedLarRecord(title, fields, "share-config"); }
       for (const title of remove) delete doc.tiddlers[title];
     });
-    console.log(`[share] the share config's file reconciled into the control document: ${put.length} row(s) written, ${remove.length} removed`);
+    console.log(`[share] the share config's file reconciled into the vessel state: ${put.length} row(s) written, ${remove.length} removed`);
   };
   // THE LIT FACE'S BASES SIDECAR (`face-labels`): kept true off the face's own working slots while it stands.
   let faceBasesKeeper: { stop(): void; refresh(): void } | null = null;
@@ -3236,21 +3236,27 @@ async function prepareNodeBootOn(
     daemon.on("change", refresh);
   };
   // THE VESSEL'S FIXED-TITLE STATE (`vessel-state`): its secret home, opened through the vessel's custody each time it is
-  // asked, so a locked custody refuses by name and an unlock answers the home at the next read.
-  const readStateDoc = async (): Promise<DocHandle<LarDoc>> => (await openVesselSecretHome(repo)).handle;
-  // The vessel's control document, named by the daemon document (`control-home`): minted with the face, beside the secret home.
-  const readControlDoc = async (): Promise<DocHandle<LarDoc>> => {
-    const handle = await standControlHome(repo, await readDaemonDoc());
-    if (controlDocId !== handle.documentId) {
+  // asked, so a locked custody refuses by name and an unlock answers the home at the next read. Its first open per document
+  // watches it: the device documents its rows name file by their owners, and the vessel-only deny set reads them.
+  let stateDocId: string | null = null;
+  const readStateDoc = async (): Promise<DocHandle<LarDoc>> => {
+    const handle = (await openVesselSecretHome(repo)).handle;
+    if (stateDocId !== handle.documentId) {
       const refresh = () => {
         vesselOnly.refresh(handle.doc(), handle.url);
-        if (readDeviceDaemonDocs(handle.doc())) { rebookWaiting(standingSaveSession(), "the control document named a device document"); reverdictLater(); }
+        if (readDeviceDaemonDocs(handle.doc())) { rebookWaiting(standingSaveSession(), "the vessel state named a device document"); reverdictLater(); }
       };
       refresh();
       handle.on("change", refresh);
-      controlDocId = handle.documentId;
+      stateDocId = handle.documentId;
       sealedRest.store.mapMoved();
     }
+    return handle;
+  };
+  // The vessel's control document, named by the daemon document (`control-home`): minted with the face, beside the secret home.
+  const readControlDoc = async (): Promise<DocHandle<LarDoc>> => {
+    const handle = await standControlHome(repo, await readDaemonDoc());
+    if (controlDocId !== handle.documentId) { controlDocId = handle.documentId; sealedRest.store.mapMoved(); }
     return handle;
   };
 
@@ -4159,10 +4165,10 @@ async function prepareNodeBootOn(
     // THE ANCHOR THE DAEMON STANDS ON ALREADY CARRIES THE VERIFIED LEASE: this runs before the first open snapshots `standingAnchor`; a re-open snapshots the anchor the vessel holds now, so the
     // daemon's live join and grant reads floor under the anchor this boot raised, never an older copy (read 6, opening row 2).
     // The sealed frontier rises only on a VERIFIED observation (`lease-observation`): a signed advance from a key the KEL
-    // lineage seats. An unsigned slot on the control document raises nothing, so a forged high slot cannot ratchet custody.
+    // lineage seats. An unsigned slot in the vessel's state raises nothing, so a forged high slot cannot ratchet custody.
     if (faceAnchor && personaGroupId && personaKelChain) {
       const prefix = leaseEpochPrefix(personaGroupId);
-      const leaseDoc = (await readControlDoc()).doc();
+      const leaseDoc = (await readStateDoc()).doc();
       const slots = Object.entries(leaseDoc?.tiddlers ?? {}).filter(([t]) => t.startsWith(prefix)).map(([, r]) => tiddlerText(r));
       const raised = raiseAnchorFromSlots(standingAnchor!, slots, personaKelChain);
       if (raised !== standingAnchor) { await keepFaceAnchorOfGroup(raised); standingAnchor = raised; }
@@ -4205,12 +4211,13 @@ async function prepareNodeBootOn(
       faceBasesKeeper = keepFaceBases({ relation, projections, docs: () => deviceDocs.docsOf(DAEMON_WORKING_SLOT, [{ group, relation, face: null }])
         .map((id) => repo.handles[id as keyof typeof repo.handles]).filter((h): h is NonNullable<typeof h> => h !== undefined && h.isReady()) as never });
     }
-    readDeviceDaemonDocs((await readControlDoc()).doc());
+    // A place whose secret home does not open (a locked or faceless floor) names no device document here.
+    readDeviceDaemonDocs((await readStateDoc().catch(() => null))?.doc());
     sealedRest.store.mapMoved();
     // THE SHARE CONFIG'S FILE WINS (sealed-store#/the-share-config): `$LAR_ROOT/config/share.tid` survives a re-founding and a
-    // person edits it by hand, so each boot reconciles it into the control document, the rows' one authority while it stands.
-    await bootWait("share-config", "the control document's read and the share config's reconcile into it", async () => reconcileShareConfig(await readControlDoc())).catch((e: unknown) => console.warn(`[share] the share config stays as the control document holds it: ${e instanceof Error ? e.message : String(e)}`));
-    const daemonCanon = canonBagId && wornRelation ? await bootWait("daemon-canon", "the worn face's daemon canon document (found or minted, mapped sealed before its first byte)", standFaceDaemonCanon({ repo, control: await readControlDoc(), faceRelation: wornRelation,
+    // person edits it by hand, so each boot reconciles it into the vessel's fixed-title state, the rows' one authority while it stands.
+    await bootWait("share-config", "the vessel state's read and the share config's reconcile into it", async () => { const state = await readStateDoc().catch(() => null); if (state) await reconcileShareConfig(state); }).catch((e: unknown) => console.warn(`[share] the share config stays as the vessel state holds it: ${e instanceof Error ? e.message : String(e)}`));
+    const daemonCanon = canonBagId && wornRelation ? await bootWait("daemon-canon", "the worn face's daemon canon document (found or minted, mapped sealed before its first byte)", standFaceDaemonCanon({ repo, state: await readStateDoc(), faceRelation: wornRelation,
       beforeFirstByte: (bagId, documentId) => {
         if (deviceDocs.canonMinted(bagId, documentId, wornRelation)) reverdictLater();
         sealedRest.store.mapMoved();
@@ -4218,9 +4225,9 @@ async function prepareNodeBootOn(
     placeFace = faceLit && !!personaGroupId && wornFaceProved && activeAtom !== null && placeAid !== null
       ? placeProofSubjectRef({ atomKey: activeAtom.key, place: placeAid } as never) : null;
     await bootWait("place-session", "the place session's stand under the worn face", standPlaceSession(placeFace !== null && personaGroupId && activeAtom ? { group: personaGroupId, atomKey: activeAtom.key } : null));
-    // The control document stands before the daemon island opens over it, and the map names it from here on; the floor's
-    // registry files beside it off the daemon document.
-    readDeviceDaemonDocs((await readControlDoc()).doc());
+    // The vessel state opens before the daemon island opens over it, and the map names its device documents from here on;
+    // the floor's registry files beside it off the daemon document.
+    readDeviceDaemonDocs((await readStateDoc().catch(() => null))?.doc());
     await bootWait("floor-registry", "the floor registry's document and its watch", () => watchFloorRegistry());
     sealedRest.store.mapMoved();
     // A sibling's planes need their own face proof before registration; joinedFaceAuth hands each sibling the vessel ground alone.
@@ -4267,9 +4274,9 @@ async function prepareNodeBootOn(
       if (!current() || relation === null) return;
       // Canon, label, and keeper carry the very same generation as the provider and session.
       void (async () => {
-        const control = await readControlDoc();
+        const state = await readStateDoc();
         if (!current()) return;
-        await standFaceDaemonCanon({ repo, control, faceRelation: relation,
+        await standFaceDaemonCanon({ repo, state, faceRelation: relation,
           beforeFirstByte: (bagId, documentId) => {
             if (!current()) return;
             if (deviceDocs.canonMinted(bagId, documentId, relation)) reverdictLater();
@@ -4665,9 +4672,9 @@ async function prepareNodeBootOn(
       if (!seal) {
         console.warn("[sibling] this face holds no PersonaGroup secret sealed to this device — its enrolment delivered none, so no sibling channel stands.");
       } else {
-        // THE LEASE READER: the face reading over the control document's lease slots, read at every licensing act, so a
+        // THE LEASE READER: the face reading over the vessel state's lease slots, read at every licensing act, so a
         // roll that lands after the channel stood refuses an edge bound below it at the next act.
-        const leaseHandle = await readControlDoc();
+        const leaseHandle = await readStateDoc();
         const leasePrefix = leaseEpochPrefix(personaGroupId);
         const leaseSlotsNow = (): Array<string | null> => Object.entries(leaseHandle.doc()?.tiddlers ?? {})
           .filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
@@ -5125,8 +5132,8 @@ async function prepareNodeBootOn(
         mount: mountFace, wornRelation: wornDeviceRelation, lit: (o) => faceLife.state(o).kind === "lit",
         siblings: [...siblingFaces].map(([group, f]) => ({ ordinal: f.ordinal, relation: f.relation, session: siblingSessions.get(group)?.cell.session() != null })),
       }),
-      // A face's local canon `bags/daemon-<F>`, named by the control document: a kahua lift reads its staged row there.
-      faceCanon: faceCanonThroughControl(repo, readControlDoc),
+      // A face's local canon `bags/daemon-<F>`, named by the vessel's fixed-title state: a kahua lift reads its staged row there.
+      faceCanon: faceCanonThroughState(repo, readStateDoc),
       // A face founded on this standing composition lights beside the worn one at its birth.
       ...(sovereign ? { lightFace: async (handleIndex: number) => { await lightFace(handleIndex); } } : {}),
       // A feed asks the island's `realm-feed` as the face, from this thread, over the host channel.
@@ -5163,7 +5170,7 @@ async function prepareNodeBootOn(
         ...(named ? { named } : {}) });
       const held = await selectHeldQuorumSigners(charter.roster, (count, threshold) =>
         new Error(`nexus-rekey: seats-not-held: ${count} of ${threshold} charter seats held`));
-      const r = await rollQuorumLeaseOnBoard(await readControlDoc(), resource,
+      const r = await rollQuorumLeaseOnBoard(await readStateDoc(), resource,
         { lineage: charter.lineage, signers: held.map((s) => ({ key: s.verifyingKey, sign: s.sign })) });
       return { verb: "nexus-rekey", nexus: charter.nexus, ...r };
     });

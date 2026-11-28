@@ -11,9 +11,9 @@
  * RED (the browser's former shape): every daemon device slot filed beside the control document under the vessel's key, so a
  * face's daemon memory never sealed under that face.
  */
+import { VESSEL_STATE_HOME } from "@lararium/mesh/vessel-state";
 import { describe, expect, test } from "vitest";
 import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
 import { SealedDocumentStore } from "@lararium/mesh/sealed-doc-store";
 import {
   bindSecretHomeRest,
@@ -36,7 +36,7 @@ const F1 = "11111111-1111-4111-8111-111111111111";
 const FACE1 = "face-subject-one";
 const LIT: LitDeviceFace = { group: G1, relation: F1, face: FACE1 };
 const UNLIT: LitDeviceFace = { group: null, relation: null, face: null };
-const slot = (group: string) => `${CONTROL_HOME_ID}/daemon-slot/working/${encodeURIComponent(group)}`;
+const slot = (group: string) => `${VESSEL_STATE_HOME}/daemon-slot/working/${encodeURIComponent(group)}`;
 /** This browser's floor key, as `standBrowserFloorKey` derives it from its `floor-rest` seed. */
 const FLOOR_SEED = new Uint8Array(32).fill(3);
 const floorKey = () => floorRestKey(seedFloorDoor(FLOOR_SEED));
@@ -81,7 +81,7 @@ describe("the browser seals its device daemon documents by owner, as the node do
     // A face lands: its secret home mints with a key of its own, and the floor's slot keeps the floor's key.
     const address = { ...mintSecretHomeAddress(), controlId: mintVesselDocumentId() };
     await enrollSecretHome(v.repo, address);
-    v.device.readControl(control({ [slot(G1)]: "group-slot", [`${CONTROL_HOME_ID}/daemon-canon/${F1}`]: "canon" }));
+    v.device.readState(control({ [slot(G1)]: "group-slot", [`${VESSEL_STATE_HOME}/daemon-canon/${F1}`]: "canon" }));
     expect([...(v.bagOf("floor-slot", LIT)?.held ?? [])]).toEqual([...floorKey()]);
     expect([...(v.bagOf("floor-slot", LIT)?.held ?? [])], "the floor key differs from the secret home's key").not.toEqual([...address.key]);
     expect([...(v.homes.bagOf(address.controlId)?.held ?? [])]).toEqual([...address.key]);
@@ -102,7 +102,7 @@ describe("the browser seals its device daemon documents by owner, as the node do
     const first = browserVessel(inner);
     standFloorKeyOn(first.repo, floorKey());
     await enrollSecretHome(first.repo, address);
-    first.device.readControl(doc);
+    first.device.readState(doc);
     first.device.readFloor(daemonDoc);
     const floor = first.repo.import<LarDoc>((await import("@automerge/automerge")).save((await import("@automerge/automerge")).from(emptyLarDoc() as never)), { docId: floorId as never });
     floor.change((d) => { d.tiddlers["memory"] = storedLarRecord("memory", { text: "the floor remembers" }, "test"); });
@@ -118,7 +118,7 @@ describe("the browser seals its device daemon documents by owner, as the node do
     expect(JSON.stringify(reread.doc())).toContain("the floor remembers");
     expect([...inner.bytes].some(([key, data]) => key.startsWith(floorId) && new TextDecoder().decode(data).includes("the floor remembers")), "the floor's slot rests sealed, never clear").toBe(false);
     await openSecretHome(again.repo, address);
-    again.device.readControl(doc);
+    again.device.readState(doc);
     expect({ floor: again.bagOf(floorId, LIT)?.bagId, group: again.bagOf("group-slot", LIT) }).toEqual(before);
     await again.repo.shutdown();
   });
@@ -145,7 +145,7 @@ function memoryAdapter(): StorageAdapterInterface & { readonly bytes: Map<string
 describe("the browser's lit set holds one face", () => {
   test("LS-B1 — a set of one files its own face's slot under that face and a sibling's slot held, as the node's table does", () => {
     const vessel = browserVessel(memoryAdapter());
-    vessel.device.readControl(control({ [slot(G1)]: "g1-doc", [slot("group-two")]: "g2-doc" }));
+    vessel.device.readState(control({ [slot(G1)]: "g1-doc", [slot("group-two")]: "g2-doc" }));
     expect(vessel.bagOf("g1-doc", LIT)).toEqual({ bagId: WORKING, face: FACE1 });
     expect(vessel.bagOf("g2-doc", LIT)).toEqual({ bagId: WORKING, face: null });
   });

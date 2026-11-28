@@ -137,6 +137,12 @@ export interface IslandContext {
   secretStore?: SecretHomeStore;
   /** The vessel's rest answering whether it holds the secret home sealed; asked before each secret act. */
   secretRest?: SecretRestAnswer;
+  /**
+   * THE VESSEL'S FIXED-TITLE STATE (`vessel-state`: the secret home as a store): the lease slots, the device daemon pointers and
+   * the share rows, on the daemon island alone. Never a recipe layer and never mirrored; absent on every wiki island and on a
+   * daemon whose vessel opened no secret home (a locked or faceless floor).
+   */
+  vesselState?: CompositeStore;
 }
 
 /**
@@ -165,6 +171,13 @@ export interface IslandBehavior {
   onEa(ctx: IslandContext): void | Promise<void>;
   onSignal(type: string, raw: unknown, ctx: IslandContext): boolean;
   onHooAnu(ctx: IslandContext): void | Promise<void>;
+}
+
+/** The daemon island's fixed-title state, or a refusal by name: a daemon island whose vessel opened no secret home (a locked or
+ *  faceless floor) reads and writes no lease slot, device pointer or share row. */
+export function vesselStateOf(ctx: Pick<IslandContext, "vesselState">): CompositeStore {
+  if (!ctx.vesselState) throw new Error("secret-home-unavailable: the daemon island carries no vessel state; the vessel opens its secret home with its face, and a locked or faceless floor holds none");
+  return ctx.vesselState;
 }
 
 /** The daemon island's control store, or a refusal by name: a daemon island granted no control document writes no control family. */

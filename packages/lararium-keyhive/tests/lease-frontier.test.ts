@@ -8,7 +8,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { VESSEL_STATE_HOME } from "@lararium/mesh/vessel-state";
 import { leaseEpochSlotUri } from "@lararium/mesh/epoch-lease";
 import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore } from "@lararium/tw5";
@@ -20,8 +20,8 @@ const origin = { kind: "test" } as never;
 
 async function daemonComposite(slots: Array<[group: string, writer: string, value: string]> = []) {
   const composite = new CompositeStore();
-  const store = new MemoryTiddlerStore(CONTROL_HOME_ID);
-  composite.addLayer({ bagId: CONTROL_HOME_ID, store, writable: true });
+  const store = new MemoryTiddlerStore(VESSEL_STATE_HOME);
+  composite.addLayer({ bagId: VESSEL_STATE_HOME, store, writable: true });
   for (const [group, writer, value] of slots) {
     const title = leaseEpochSlotUri(group, writer);
     await store.put({ tiddler: { title, text: value }, meta: { authority: "test" } } as never, origin);

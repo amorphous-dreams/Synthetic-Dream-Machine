@@ -5,19 +5,19 @@
  * target bag: its daemon canon by h<N>'s relation (`daemon-canon/<relation>`), and the daemon wiki's device slots: the worn
  * face's mounted layer, or the document a sibling's own wear named. EACH FACE SEALS UNDER ITS OWN CHAIN (face-seat-table): a lit
  * sibling's session books its own face key, and its saves seal through its own content-key holder. A SIBLING'S DAEMON SLOT
- * OPENS ONLY WHERE ITS OWN WEAR NAMED IT: the control document names the document that face's wear minted under its own group
+ * OPENS ONLY WHERE ITS OWN WEAR NAMED IT: the vessel state names the document that face's wear minted under its own group
  * (`daemon-slot/<kind>/<group>`), so the slot opens as that face's own. This island never mints a sibling's slot: a slot
  * document minted ahead of the face's wear would have to stand in the vessel's map and in that wear's attach as the same
  * document, and no vector proves that crossing, so a kind the face's wear never named resolves nothing. The wave refuses
  * `face-unresolved` there, and the seed names the face as waiting for its own wear. The answer carries the document's OWNER as
- * the control document names it, so the action handler lands the wave only where that owner is h<N>, and never on the worn
+ * the vessel state names it, so the action handler lands the wave only where that owner is h<N>, and never on the worn
  * face. A face outside the lit set resolves nothing. The store door's per-face lane (`face-lane`) and each sibling's own
  * engine (`face-engine`, over `makeLitFaceDocs`) reach a lit sibling's daemon canon and named slots through this same
  * resolution.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { daemonCanonTitle, daemonSlotTitle } from "@lararium/mesh/device-daemon-docs";
 import { documentIdOfUrl } from "@lararium/mesh/sealed-rest";
 import { tiddlerText } from "@lararium/mesh/base-doc";
 import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
@@ -35,8 +35,8 @@ export interface LitFaceTargetDeps {
   readonly worn: () => LitFace | null;
   /** Every sibling face lit beside it. */
   readonly siblings: () => Iterable<LitFace>;
-  /** The control document's reader. */
-  readonly control: () => { get(title: string): Promise<unknown> } | null;
+  /** The vessel state's reader. */
+  readonly state: () => { get(title: string): Promise<unknown> } | null;
   /** The worn face's mounted store for a bag (the composite's layer), or null. */
   readonly wornStore: (bag: string) => LarTiddlerStore | null;
   /** A store over a document url, as `bag`. */
@@ -45,8 +45,8 @@ export interface LitFaceTargetDeps {
 
 const SLOT = /^lar:\/\/\/ha\.ka\.ba\/wikis\/daemon\/(working|draft|personal)$/;
 const CANON = /^lar:\/\/\/ha\.ka\.ba\/bags\/daemon-([^/]+)$/;
-const slotTitle = (kind: string, group: string): string => `${CONTROL_HOME_ID}/daemon-slot/${kind}/${encodeURIComponent(group)}`;
-const canonTitle = (relation: string): string => `${CONTROL_HOME_ID}/daemon-canon/${encodeURIComponent(relation)}`;
+const slotTitle = daemonSlotTitle;
+const canonTitle = daemonCanonTitle;
 
 /** The document id a store stands on, or null. */
 const docIdOf = (store: unknown): string | null => {
@@ -54,21 +54,21 @@ const docIdOf = (store: unknown): string | null => {
   return typeof id === "string" && id.length > 0 ? id : null;
 };
 
-/** A lit face's own document for a daemon bag, as the control document names it: its url and the face that owns it. */
+/** A lit face's own document for a daemon bag, as the vessel state names it: its url and the face that owns it. */
 export type LitFaceDocs = (face: number | null, bag: string) => Promise<{ readonly url: string; readonly owner: number | null } | null>;
 
 /**
- * THE LIT FACE'S OWN DOCUMENTS off the control document, read alone (nothing mints): a face's daemon canon by its own
+ * THE LIT FACE'S OWN DOCUMENTS off the vessel state, read alone (nothing mints): a face's daemon canon by its own
  * relation, and a SIBLING's daemon slot where its own wear named one. The worn face's slots answer through its mounted layer
  * (`makeLitFaceTarget`), never here.
  */
-export function makeLitFaceDocs(deps: Pick<LitFaceTargetDeps, "worn" | "siblings" | "control">): LitFaceDocs & { ownerOf(bag: string, documentId: string | null): Promise<number | null> } {
+export function makeLitFaceDocs(deps: Pick<LitFaceTargetDeps, "worn" | "siblings" | "state">): LitFaceDocs & { ownerOf(bag: string, documentId: string | null): Promise<number | null> } {
   const lit = (): LitFace[] => [...(deps.worn() ? [deps.worn()!] : []), ...deps.siblings()];
   const named = async (title: string): Promise<string | null> => {
-    const control = deps.control();
-    return control ? documentIdOfUrl(tiddlerText((await control.get(title)) as never)) : null;
+    const state = deps.state();
+    return state ? documentIdOfUrl(tiddlerText((await state.get(title)) as never)) : null;
   };
-  /** The face of the lit set the control document names as `documentId`'s owner for `bag`, or null. */
+  /** The face of the lit set the vessel state names as `documentId`'s owner for `bag`, or null. */
   const ownerOf = async (bag: string, documentId: string | null): Promise<number | null> => {
     if (documentId === null) return null;
     const slot = SLOT.exec(bag);
@@ -86,7 +86,7 @@ export function makeLitFaceDocs(deps: Pick<LitFaceTargetDeps, "worn" | "siblings
     if (target === null) return null;
     let id: string | null = null;
     if (canon && target.relation !== null && decodeURIComponent(canon[1]!) === target.relation) id = await named(canonTitle(target.relation));
-    // A SIBLING'S DAEMON SLOT ITS OWN WEAR NAMED: the control document already names that face's document (minted at its own
+    // A SIBLING'S DAEMON SLOT ITS OWN WEAR NAMED: the vessel state already names that face's document (minted at its own
     // wear, under its own group), so it opens as that face's own. A kind its wear never named stays unresolved: nothing mints.
     if (slot && (worn === null || target.handleIndex !== worn.handleIndex)) id = await named(slotTitle(slot[1]!, target.group));
     return id ? { url: `automerge:${id}`, owner: await ownerOf(bag, id) } : null;

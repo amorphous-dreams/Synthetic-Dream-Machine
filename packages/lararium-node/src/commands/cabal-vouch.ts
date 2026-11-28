@@ -31,7 +31,6 @@ import { vouchDagFromInvites } from "@lararium/mesh/vouch-dag";
 import { realmVouchBoardDocUrl, realmEdgeBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
 import { prepareHolderFrontier, registerHandFrontierInto } from "@lararium/mesh/realm-frontier";
 import { realmAdmitBundle, type RealmAdmitBundle } from "@lararium/mesh/realm-admit-bundle";
-import { readControlHome } from "@lararium/mesh/control-home";
 import { loadFaceAtomKey } from "../face-atom-store.js";
 import { daemonDocUrlFromBootstrap, cabalAdmissionEpoch } from "./cabal-join.js";
 import { actingRealmNexus, noteVesselRealm } from "../edge-board.js";
@@ -40,6 +39,7 @@ import { registerRealmFrontier } from "../realm-frontier-door.js";
 import type { HandLineage } from "@lararium/mesh/hand-lineage";
 import { nodeStewardVault, faceStewardSigner, StewardRefused, type StewardVault } from "../realm-steward.js";
 import { faceNexusLeaf } from "../nexus-leaf.js";
+import { openVesselSecretHome } from "../secret-home-store.js";
 import { verifyEd25519 } from "@lararium/mesh/ed25519-door";
 
 /** A nym reads valid only at the exact ed25519 verifying-key shape — a stray value never becomes an edge. */
@@ -110,9 +110,8 @@ async function resolveBoundEpoch(realm: string, repo: Repo, lineage: HandLineage
     );
   }
   try {
-    const dh = await materializeSharedLarDoc(repo, daemonUrl as never, "daemon");
-    // The lease slots rest in the control document, read through the vessel's own stand; an unnamed or unread one refuses.
-    return cabalAdmissionEpoch((await readControlHome(repo, dh)).doc(), realm, lineage);
+    // The lease slots rest in the vessel's fixed-title state, read through the vessel's own custody; a state that will not open refuses.
+    return cabalAdmissionEpoch((await openVesselSecretHome(repo)).handle.doc(), realm, lineage);
   } catch (err) {
     throw new CabalVouchError(
       `the realm's lease epoch could not be read off the daemon doc — refusing to mint at a guessed epoch ` +

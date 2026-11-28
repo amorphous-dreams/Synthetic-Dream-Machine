@@ -18,15 +18,12 @@
  * Meme: lar:///ha.ka.ba/lararium/node/persona-lease
  */
 import type { WardCredential } from "../ward-credential.js";
-import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
+import type { Repo } from "@automerge/automerge-repo";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 import { raiseFaceFrontier } from "@lararium/mesh/face-anchor";
 import { personaBagIdFor } from "@lararium/mesh/persona-scope";
-import { type LarDoc } from "@lararium/mesh/base-doc";
 import { type FaceReading } from "@lararium/mesh/face-reading";
 import { ownEntry } from "@lararium/mesh/stored-value";
-import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
-import { standControlHome } from "@lararium/mesh/control-home";
 import { readFileSync } from "node:fs";
 import { loadIdentityAnchors } from "../identity-anchors.js";
 import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "../face-anchor-store.js";
@@ -37,6 +34,7 @@ import { larBootstrapPath } from "../vessel-paths.js";
 import { readFacePersonaRecords } from "../persona-act-store.js";
 
 import { resolveFace } from "../face-selector.js";
+import { openVesselSecretHome } from "../secret-home-store.js";
 export class PersonaLeaseError extends Error {}
 
 /** The roll would leave seated device edges stale at their next boot, and nothing renews them at the roll yet. */
@@ -89,12 +87,6 @@ function bootstrapTiddlers(): BootEntries {
   return (JSON.parse(plugin.text ?? "{}") as { tiddlers?: Record<string, { text?: string }> }).tiddlers ?? {};
 }
 
-function daemonUrlOf(tiddlers: BootEntries): string {
-  const url = ownEntry(tiddlers, DAEMON_BAG_ID)?.text;
-  if (!url) throw new PersonaLeaseError("the bootstrap names no daemon doc");
-  return url;
-}
-
 export async function runPersonaLease(opts: PersonaLeaseOptions): Promise<PersonaLeaseResult> {
   const handleIndex = await resolveFace(opts.handleIndex);
   const anchors = await loadIdentityAnchors(handleIndex);
@@ -110,8 +102,8 @@ export async function runPersonaLease(opts: PersonaLeaseOptions): Promise<Person
   const seated = face.currentSigner;
   if (!seated(key)) throw new PersonaLeaseError("this root holds no seat in the face's KEL lineage");
   const tiddlers = bootstrapTiddlers();
-  // The lease slots rest in the vessel's control document, which the daemon document names (`control-home`).
-  const control = await standControlHome(opts.repo, await opts.repo.find<LarDoc>(daemonUrlOf(tiddlers) as AutomergeUrl));
+  // The lease slots rest in the vessel's fixed-title state (`vessel-state`, its secret home), opened through the vessel's custody.
+  const control = (await openVesselSecretHome(opts.repo)).handle;
   const personaUrl = ownEntry(tiddlers, personaBagIdFor(anchors.personaGroupId))?.text;
   const ownEdge = anchors.deviceEdge;
   const ownKey = ownEdge?.deviceVerifyingKey.toLowerCase();

@@ -6,6 +6,7 @@
  * in-process face change wait held, never under the new face's key. A slot the island announces before the control
  * document names it waits held until the control document names its owner. A later entry never re-files a document.
  */
+import { VESSEL_STATE_HOME } from "../src/vessel-state.js";
 import { describe, expect, test } from "vitest";
 import { CONTROL_HOME_ID, DAEMON_BAG_ID, daemonFaceCanonBag, deviceDaemonDocs, floorDaemonSlotTitle, floorOnlyDocIds, isFloorRegistryTitle, makeVesselOnlyDocs, floorSlotOf, floorSlotTitle, emptyLarDoc, storedLarRecord, wikiSlotUri, type LarDoc, type LitDeviceFace, type LitDeviceFaces } from "../src/index.js";
 
@@ -23,7 +24,7 @@ function control(entries: Record<string, string>): LarDoc {
   for (const [title, id] of Object.entries(entries)) doc.tiddlers[title] = storedLarRecord(title, { text: `automerge:${id}` }, "test");
   return doc as LarDoc;
 }
-const slot = (group: string, kind = "working") => `${CONTROL_HOME_ID}/daemon-slot/${kind}/${encodeURIComponent(group)}`;
+const slot = (group: string, kind = "working") => `${VESSEL_STATE_HOME}/daemon-slot/${kind}/${encodeURIComponent(group)}`;
 /** The place's daemon document, carrying floor rows. */
 const daemon = control;
 
@@ -40,7 +41,7 @@ describe("a device daemon document seals by its owner's group, whatever the lit 
     // Announced, not yet named: it waits held (no face), never under the lit face's key.
     expect(docs.bagOf("floor-doc", now)).toEqual({ bagId: WORKING, face: null });
     // The control document names no floor: a `floor` group row there files nothing (the registry rests in the daemon document).
-    expect(docs.readControl(control({ [slot("floor")]: "floor-doc" }))).toBe(false);
+    expect(docs.readState(control({ [slot("floor")]: "floor-doc" }))).toBe(false);
     expect(floor).toEqual([]);
     expect(docs.readFloor(daemon({ [floorDaemonSlotTitle("working")]: "floor-doc" }))).toBe(true);
     expect(floor).toEqual([["floor-doc", WORKING]]);
@@ -52,7 +53,7 @@ describe("a device daemon document seals by its owner's group, whatever the lit 
   test("RED: a group's slot announced while no face stands lit never files beside the vessel's key; it seals under its group once lit", () => {
     const { docs, floor } = table();
     docs.announced(WORKING, "g1-doc");
-    docs.readControl(control({ [slot(G1)]: "g1-doc" }));
+    docs.readState(control({ [slot(G1)]: "g1-doc" }));
     expect(floor).toEqual([]);
     expect(docs.bagOf("g1-doc", UNLIT)).toEqual({ bagId: WORKING, face: null });
     expect(docs.bagOf("g1-doc", lit(G1, F1, FACE1))).toEqual({ bagId: WORKING, face: FACE1 });
@@ -60,10 +61,10 @@ describe("a device daemon document seals by its owner's group, whatever the lit 
 
   test("RED: after an in-process face change, the earlier face's documents wait held, never under the new face's key", () => {
     const { docs } = table();
-    docs.readControl(control({ [slot(G1)]: "g1-doc", [`${CONTROL_HOME_ID}/daemon-canon/${F1}`]: "canon-1" }));
+    docs.readState(control({ [slot(G1)]: "g1-doc", [`${VESSEL_STATE_HOME}/daemon-canon/${F1}`]: "canon-1" }));
     expect(docs.bagOf("g1-doc", lit(G1, F1, FACE1))).toEqual({ bagId: WORKING, face: FACE1 });
     expect(docs.bagOf("canon-1", lit(G1, F1, FACE1))).toEqual({ bagId: daemonFaceCanonBag(F1), face: FACE1 });
-    docs.readControl(control({ [slot(G1)]: "g1-doc", [slot(G2)]: "g2-doc" }));
+    docs.readState(control({ [slot(G1)]: "g1-doc", [slot(G2)]: "g2-doc" }));
     const second = lit(G2, null, FACE2);
     expect(docs.bagOf("g1-doc", second)).toEqual({ bagId: WORKING, face: null });
     expect(docs.bagOf("canon-1", second)).toEqual({ bagId: daemonFaceCanonBag(F1), face: null });
@@ -74,8 +75,8 @@ describe("a device daemon document seals by its owner's group, whatever the lit 
 
   test("a document keeps its first owner: a later entry naming it under another group moves nothing", () => {
     const { docs, floor } = table();
-    docs.readControl(control({ [slot(G1)]: "g1-doc" }));
-    expect(docs.readControl(control({ [slot(G2, "draft")]: "g1-doc" }))).toBe(false);
+    docs.readState(control({ [slot(G1)]: "g1-doc" }));
+    expect(docs.readState(control({ [slot(G2, "draft")]: "g1-doc" }))).toBe(false);
     expect(docs.readFloor(daemon({ [floorDaemonSlotTitle("working")]: "g1-doc" }))).toBe(false);
     expect(floor).toEqual([]);
     expect(docs.bagOf("g1-doc", lit(G2, null, FACE2))).toEqual({ bagId: WORKING, face: null });
@@ -97,7 +98,7 @@ describe("the lit set: each open face's device documents file under their own fa
   const F2 = "22222222-2222-4222-8222-222222222222";
   test("LS1 — lit {h0,h1}: h1's slot and canon file under h1's face, h0's under h0's; neither under the other", () => {
     const { docs } = table();
-    docs.readControl(control({ [slot(G1)]: "g1-doc", [slot(G2)]: "g2-doc", [`${CONTROL_HOME_ID}/daemon-canon/${F1}`]: "canon-1", [`${CONTROL_HOME_ID}/daemon-canon/${F2}`]: "canon-2" }));
+    docs.readState(control({ [slot(G1)]: "g1-doc", [slot(G2)]: "g2-doc", [`${VESSEL_STATE_HOME}/daemon-canon/${F1}`]: "canon-1", [`${VESSEL_STATE_HOME}/daemon-canon/${F2}`]: "canon-2" }));
     const set: LitDeviceFaces = [one(G1, F1, FACE1), one(G2, F2, FACE2)];
     expect(docs.bagOf("g1-doc", set)).toEqual({ bagId: WORKING, face: FACE1 });
     expect(docs.bagOf("g2-doc", set)).toEqual({ bagId: WORKING, face: FACE2 });
@@ -108,7 +109,7 @@ describe("the lit set: each open face's device documents file under their own fa
 
   test("LS2 — lit {h0}: h1's documents wait held (null face), never under h0's key; they file under h1 once it lights", () => {
     const { docs } = table();
-    docs.readControl(control({ [slot(G1)]: "g1-doc", [slot(G2)]: "g2-doc" }));
+    docs.readState(control({ [slot(G1)]: "g1-doc", [slot(G2)]: "g2-doc" }));
     const h0Only: LitDeviceFaces = [one(G1, F1, FACE1)];
     expect(docs.bagOf("g2-doc", h0Only)).toEqual({ bagId: WORKING, face: null });
     expect(docs.docsOf(WORKING, h0Only)).toEqual(["g1-doc"]);
@@ -118,7 +119,7 @@ describe("the lit set: each open face's device documents file under their own fa
 
   test("LS3 — lock --face 1 drops h1 from the set: its documents wait held again, h0's keep their face", () => {
     const { docs } = table();
-    docs.readControl(control({ [slot(G1)]: "g1-doc", [slot(G2)]: "g2-doc" }));
+    docs.readState(control({ [slot(G1)]: "g1-doc", [slot(G2)]: "g2-doc" }));
     const afterLock: LitDeviceFaces = [one(G1, F1, FACE1)];
     expect(docs.bagOf("g1-doc", afterLock)?.face).toBe(FACE1);
     expect(docs.bagOf("g2-doc", afterLock)?.face).toBeNull();
@@ -134,7 +135,7 @@ describe("the veil floor's wiki slot seals under the vessel's key (the-veil-ladd
     // Announced and unnamed: held (no face), never clear, with or without a lit face.
     expect(docs.bagOf("garden-floor", UNLIT)).toEqual({ bagId: GARDEN, face: null });
     expect(docs.bagOf("garden-floor", lit(G1, F1, FACE1))).toEqual({ bagId: GARDEN, face: null });
-    expect(docs.readControl(control({ [floorSlotTitle("garden", "working")]: "garden-floor" })), "a control document files no floor row").toBe(false);
+    expect(docs.readState(control({ [floorSlotTitle("garden", "working")]: "garden-floor" })), "a control document files no floor row").toBe(false);
     expect(docs.readFloor(daemon({ [floorSlotTitle("garden", "working")]: "garden-floor" }))).toBe(true);
     expect(floor).toEqual([["garden-floor", GARDEN]]);
     // The held homes answer it (the vessel's key); no face of the lit set ever seals it.
@@ -159,7 +160,7 @@ describe("a veil floor's wiki slot reaches the house's wiki islands; a daemon de
     docs.announced(GARDEN, "garden-floor");
     expect(docs.floorWiki("garden-floor"), "announced, not yet named").toBe(true);
     docs.readFloor(daemon({ [floorSlotTitle("garden", "working")]: "garden-floor", [floorDaemonSlotTitle("working")]: "daemon-floor" }));
-    docs.readControl(control({ [slot(G1)]: "group-doc" }));
+    docs.readState(control({ [slot(G1)]: "group-doc" }));
     expect(docs.floorWiki("garden-floor")).toBe(true);
     expect(docs.floorWiki("daemon-floor"), "the daemon wiki's floor slot stays with the daemon island").toBe(false);
     expect(docs.floorWiki("group-doc")).toBe(false);

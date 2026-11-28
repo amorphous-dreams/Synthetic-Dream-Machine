@@ -13,13 +13,12 @@ import { afterEach, describe, expect } from "vitest";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
-import { standControlHome, nameControlHome } from "@lararium/mesh/control-home";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 import { leaseEpochSlotUri } from "@lararium/mesh/epoch-lease";
 import { seedDaemonDoc } from "@lararium/mesh/social-seed";
 import { signLeaseAdvance, signedLeaseEpoch } from "@lararium/mesh/lease-advance";
 import { raiseFaceFrontier, faceRootCommitment, edgeBodyDigest } from "@lararium/mesh/face-anchor";
-import { tiddlerText, type LarDoc, emptyLarDoc } from "@lararium/mesh/base-doc";
+import { tiddlerText, emptyLarDoc } from "@lararium/mesh/base-doc";
 import { signFoundingLog, signPersonaAct, writePersonaAct } from "@lararium/mesh/persona-act-board";
 import { actCid } from "@lararium/mesh/signed-act";
 import { personaBagIdFor } from "@lararium/mesh/persona-scope";
@@ -30,7 +29,7 @@ import { loadIdentityAnchors } from "../src/identity-anchors.js";
 import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "../src/face-anchor-store.js";
 import { larBootstrapPath, larDataDir, larSealHome } from "../src/vessel-paths.js";
 import { ownedStore } from "../src/owned-store.js";
-import { standVesselSecretHome } from "../src/secret-home-store.js";
+import { openVesselSecretHome, standVesselSecretHome } from "../src/secret-home-store.js";
 import { storeDoorDirect } from "../src/store-door-verbs.js";
 import { seedFaceAtom } from "./atom-fixture.js";
 import { seedFleet } from "./fleet-seed-fixture.js";
@@ -52,9 +51,8 @@ async function setup(withFleet: boolean, plane: "bare" | "none" = "bare") {
   await ownedStore(larDataDir(), async (repo) => {
     const handle = seedDaemonDoc(repo);
     daemonUrl = handle.url;
-    // As the founding does: the secret home and the control document beside it, the daemon document naming the control.
-    const secret = await standVesselSecretHome(repo);
-    nameControlHome(handle, secret.controlUrl!);
+    // As the founding does: the secret home, where the vessel's fixed-title state (the lease slots among it) rests.
+    await standVesselSecretHome(repo);
     await repo.flush();
     mkdirSync(dirname(larBootstrapPath()), { recursive: true });
     const packed: Record<string, { title: string; text: string; kind?: string }> = { [DAEMON_BAG_ID]: { title: DAEMON_BAG_ID, text: handle.url, kind: "oracle" } };
@@ -98,8 +96,8 @@ async function standFaceLog(): Promise<void> {
 
 const roll = () => storeDoorDirect("persona-lease", { handleIndex: 0 }, { sealHome: larSealHome() });
 const slotsOf = async (group: string): Promise<string[]> => ownedStore(larDataDir(), async (repo) => {
-  // The lease slots rest in the vessel's control document, which the daemon doc names (`control-home`).
-  const doc = (await standControlHome(repo, await repo.find<LarDoc>(daemonUrl as never))).doc();
+  // The lease slots rest in the vessel's fixed-title state (`vessel-state`, its secret home).
+  const doc = (await openVesselSecretHome(repo)).handle.doc();
   return Object.entries(doc?.tiddlers ?? {}).filter(([t]) => t.includes("/lease-epoch/")).map(([, r]) => tiddlerText(r) ?? "").filter((x) => x.length > 0 || group === "");
 });
 
@@ -137,7 +135,7 @@ describe("lares persona lease", () => {
     const anchors = (await loadIdentityAnchors(0))!;
     const group = anchors.personaGroupId;
     await ownedStore(larDataDir(), async (repo) => {
-      const daemon = await standControlHome(repo, await repo.find<LarDoc>(daemonUrl as never));
+      const daemon = (await openVesselSecretHome(repo)).handle;
       const stranger = await signLeaseAdvance({ resource: group, epoch: 40 }, { key: "ab".repeat(32), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(8)) });
       daemon.change((d) => {
         for (const [writer, text] of [["unsigned", "50"], ["stranger", stranger]] as const) {

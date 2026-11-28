@@ -10,7 +10,7 @@
  *   lares bag share --list        every row, and the one resolver's answer per bag: who reads, who writes, who waits
  *   lares bag share --list --json each row AS WRITTEN (its read and write title lists, `*` kept, its note, workspace and
  *                                 owner), beside the resolver's answer (`resolved`): a re-grant reads the row's own policy here
- *   lares bag share <bag> --remove · lares wiki share <wiki> --remove   unshare: the row leaves the file and the control document
+ *   lares bag share <bag> --remove · lares wiki share <wiki> --remove   unshare: the row leaves the file and the vessel state
  *
  * ONE ROW PER SLUG: a share of the other kind over a standing row refuses `share-kind-standing` and writes nothing; unshare
  * that row first through its own kind's door (`--remove`).
@@ -18,7 +18,7 @@
  * Names are face PET-NAMES as a title list (`a b [[c d]]`), `*` for every face, or empty; `hN` (and `--face N`, which adds
  * face N to the readers) resolve to that face's pet-name, so a row always names faces by pet-name. The row writes through
  * to `$LAR_ROOT/config/share.tid` (it survives a re-founding; a person edits it by hand, and the next boot reconciles it in,
- * the file winning) and, with a vessel standing, into the control document (`share-set`); then the operator's hand lands it
+ * the file winning) and, with a vessel standing, into the vessel's fixed-title state (`share-set`); then the operator's hand lands it
  * (`share-apply`): each lit grantee takes the bag's row by reference and a delegation from the owner's hive, and a grant whose
  * face stands shut waits behind an opaque flag until it lights.
  *
@@ -133,7 +133,7 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
     const slug = args.positional[0];
     if (!slug) { doors.err(`lares ${kind} share: name the ${kind} (\`lares ${kind} share <${kind}> --read <names> [--write <names>]\`), or --list`); return 2; }
     // A SHARE IS A PERSON'S ACT (sealed-store#/the-share-config): the gate reads the hand behind this run off its own branch, so
-    // an AI seat and a chain nothing attests alike write no row, in the file or the control document. A mark alone decides nothing.
+    // an AI seat and a chain nothing attests alike write no row, in the file or the vessel state. A mark alone decides nothing.
     const hand = (doors.hand ?? (() => readOwnHand({ proveRoute: false })))();
     if ("refusal" in hand) {
       const refused = handRefusalOf(hand.refusal, { act: "a share", reads: "branch", line: `lares ${kind} share ${slug} …` });
@@ -144,14 +144,14 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
     if (args.flags["remove"] === true) {
       if (!standing) { doors.err(`lares ${kind} share: no row stands for ${slug}; nothing to unshare`); return 2; }
       if (standing.kind !== kind) { doors.err(`lares ${kind} share: ${slug} stands shared as a ${standing.kind} row; unshare it through its door (\`lares ${standing.kind} share ${slug} --remove\`)`); return 2; }
-      // THE UNSHARE TAKES THE LANDED GRANTS BACK, with the row still standing in the control document (the landing reads it
+      // THE UNSHARE TAKES THE LANDED GRANTS BACK, with the row still standing in the vessel state (the landing reads it
       // there): the owner's hive revokes each reader the row delegated to. A grant it cannot revoke here (an owner or grantee
       // face stands shut) still reads, so the door refuses to answer "unshared", names the slug, and leaves the row where it stands.
       const taken = await doors.verb("share-apply", { faces: faces.map((f) => ({ handleIndex: f.handleIndex, petname: f.petname })), unshare: [slug] });
       const stillReads = Array.isArray(taken?.["standing"]) ? taken["standing"] as string[] : [];
       if (stillReads.includes(slug)) {
         doors.err(`lares ${kind} share: ${slug} stays shared. A grant its row landed still reads, and this vessel cannot revoke it while the owner's face or a grantee's face stands shut here.`);
-        doors.err(`  The row stays in config/${SHARE_CONFIG_FILE} and the control document. Light the faces (\`lares vault unlock --face N\`), then run \`lares ${kind} share ${slug} --remove\` again.`);
+        doors.err(`  The row stays in config/${SHARE_CONFIG_FILE} and the vessel state. Light the faces (\`lares vault unlock --face N\`), then run \`lares ${kind} share ${slug} --remove\` again.`);
         return 1;
       }
       const rest = rows.filter((r) => r.slug !== slug);
@@ -159,7 +159,7 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
       doors.out(`share: ${kind} ${slug} unshared; its row leaves config/${SHARE_CONFIG_FILE}`);
       if (taken !== null) doors.out(`  revoked: ${Number(taken["revoked"] ?? 0)} grant(s) the row had landed`);
       const removed = await doors.verb("share-set", { slug, remove: true });
-      if (removed === null) doors.out("  no vessel stands: the next boot reconciles the file into the control document, the file winning");
+      if (removed === null) doors.out("  no vessel stands: the next boot reconciles the file into the vessel state, the file winning");
       return 0;
     }
     try { assertShareKindFree(slug, kind, standing?.kind); } catch (e) { doors.err(`lares ${kind} share: ${e instanceof Error ? e.message : String(e)}`); return 2; }
@@ -196,7 +196,7 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
     if (retract.length === 0) doors.out(echo);
     if (set === null) {
       if (retract.length > 0) doors.out(echo);
-      doors.out("  no vessel stands: the next boot reconciles the file into the control document, the file winning");
+      doors.out("  no vessel stands: the next boot reconciles the file into the vessel state, the file winning");
       if (retract.length > 0) doors.err(`  a grant a taken-out name had landed stays until a landing revokes it: run this line again with the vessel standing`);
       return 0;
     }
@@ -206,14 +206,14 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
       const still = (Array.isArray(applied["stillGranted"]) ? applied["stillGranted"] as Array<{ slug?: unknown; grantee?: unknown }> : [])
         .filter((g) => g.slug === slug && typeof g.grantee === "number").map((g) => g.grantee as number);
       if (still.length > 0) {
-        // THE ROW STANDS AS IT STOOD: the file and the control document take the standing row back, its grants land again, and
+        // THE ROW STANDS AS IT STOOD: the file and the vessel state take the standing row back, its grants land again, and
         // the same line retries once the faces stand lit.
         if (text !== null) doors.file.write(text);
         await doors.verb("share-set", shareSetArgs(prior!));
         await landShares(doors, faces);
         const label = (i: number): string => { const f = faces.find((x) => x.handleIndex === i); return f?.petname ? `${f.petname} (h${i})` : `h${i}`; };
         for (const i of still) doors.err(`lares ${kind} share: ${label(i)} still reads ${slug}: the grant its row landed stands, and this vessel cannot revoke it while the owner's face or that face stands shut here.`);
-        doors.err(`  The row stands as it stood in config/${SHARE_CONFIG_FILE} and the control document. Light the faces (\`lares vault unlock --face N\`), then run the same line again.`);
+        doors.err(`  The row stands as it stood in config/${SHARE_CONFIG_FILE} and the vessel state. Light the faces (\`lares vault unlock --face N\`), then run the same line again.`);
         return 1;
       }
       doors.out(echo);
@@ -248,7 +248,7 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
         }
       }
       // THE ROW KEEPS ITS OWNER, by pet-name, in the vessel-local file: after a re-founding the seed re-stands the wiki at
-      // that face's wear. The name is the human's own label, so it rests here and in the control document.
+      // that face's wear. The name is the human's own label, so it rests here and in the vessel state.
       const landedOwners = new Map<string, string>();
       for (const w of Array.isArray(applied["workbenches"]) ? applied["workbenches"] as Array<Record<string, unknown>> : []) {
         const pet = faces.find((f) => f.handleIndex === w["owner"])?.petname;
@@ -257,7 +257,7 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
       const owned = next.map((r) => (r.kind === "wiki" && landedOwners.has(r.slug) && r.owner !== landedOwners.get(r.slug) ? { ...r, owner: landedOwners.get(r.slug)! } : r));
       if (owned.some((r, i) => r !== next[i])) {
         doors.file.write(serializeShareFile(owned));
-        // ...AND IN THE CONTROL DOCUMENT, which share-apply reads: the file reaches it only at the vessel's next boot.
+        // ...AND IN THE VESSEL STATE, which share-apply reads: the file reaches it only at the vessel's next boot.
         for (const r of owned.filter((r, i) => r !== next[i])) await doors.verb("share-set", shareSetArgs(r));
       }
       for (const w of Array.isArray(applied["waiting"]) ? applied["waiting"] as string[] : []) doors.out(`  waits: "${w}" names no face here`);

@@ -10,12 +10,12 @@
  *   K5  the label and the sidecar name their shape by what they hold (`lar-face-label`, `lar-face-bases`); a sidecar
  *       whose bytes stand as the keeper would write them takes no write
  */
+import { VESSEL_STATE_HOME } from "@lararium/mesh/vessel-state";
 import { describe, expect, test, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deviceDaemonDocs } from "@lararium/mesh/device-daemon-docs";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { writeFaceLabel, readFaceLabel, keepFaceBases, readFaceBases, writeFaceBases, faceBasesPath, faceLabelPath, type KeptDoc, type KeptDocState } from "../src/face-labels.js";
@@ -73,9 +73,9 @@ describe("the vessel keeps each face's label and bases", () => {
     const table = deviceDaemonDocs({ enrollFloor: () => {} });
     const control: LarDoc = emptyLarDoc();
     const G1 = "group-one", G3 = "group-three";
-    control.tiddlers[`${CONTROL_HOME_ID}/daemon-slot/working/${G1}`] = storedLarRecord(`${CONTROL_HOME_ID}/daemon-slot/working/${G1}`, { text: "automerge:2DrjgbFdhNzMs7KwYv3jcFpqxH3L" }, "t") as never;
-    control.tiddlers[`${CONTROL_HOME_ID}/daemon-slot/working/${G3}`] = storedLarRecord(`${CONTROL_HOME_ID}/daemon-slot/working/${G3}`, { text: "automerge:3TzPkAHbW2dVcYgnJ1ofoaJv7mNS" }, "t") as never;
-    table.readControl(control);
+    control.tiddlers[`${VESSEL_STATE_HOME}/daemon-slot/working/${G1}`] = storedLarRecord(`${VESSEL_STATE_HOME}/daemon-slot/working/${G1}`, { text: "automerge:2DrjgbFdhNzMs7KwYv3jcFpqxH3L" }, "t") as never;
+    control.tiddlers[`${VESSEL_STATE_HOME}/daemon-slot/working/${G3}`] = storedLarRecord(`${VESSEL_STATE_HOME}/daemon-slot/working/${G3}`, { text: "automerge:3TzPkAHbW2dVcYgnJ1ofoaJv7mNS" }, "t") as never;
+    table.readState(control);
     const docs: Record<string, Doc> = {
       "2DrjgbFdhNzMs7KwYv3jcFpqxH3L": new Doc({ tiddlers: { pond: { meta: { overrideBase: B1 } } } }),
       "3TzPkAHbW2dVcYgnJ1ofoaJv7mNS": new Doc({ tiddlers: { pond: { meta: { overrideBase: B3 } } } }),

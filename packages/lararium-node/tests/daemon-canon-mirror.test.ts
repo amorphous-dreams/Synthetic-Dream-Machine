@@ -3,6 +3,7 @@
  * `<projections>/faces/<pet name>/wikis/daemon`, its canon `bags/daemon-<F>` to `<projections>/faces/<pet name>/bags/daemon`. The daemon document
  * (`bags/daemon`) and the control document (`bags/control`) carry no mirror, so no control family reaches disk by placement.
  */
+import { VESSEL_STATE_HOME } from "@lararium/mesh/vessel-state";
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import { CONTROL_HOME_ID, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
@@ -51,10 +52,10 @@ describe("the daemon wiki's canon per face", () => {
   test("RED: the face's first stand mints its daemon canon and names it in the vessel control document; CONTROL: a second stand returns that same document", async () => {
     const repo = new Repo({});
     const catalog = repo.create<LarDoc>(emptyLarDoc());
-    const first = await standFaceDaemonCanon({ repo, control: catalog, faceRelation: F });
+    const first = await standFaceDaemonCanon({ repo, state: catalog, faceRelation: F });
     expect(first.bagId).toBe(daemonFaceCanonBag(F));
-    expect(tiddlerText(ownEntry(catalog.doc()?.tiddlers, `${CONTROL_HOME_ID}/daemon-canon/${encodeURIComponent(F)}`))).toBe(first.url);
-    const second = await standFaceDaemonCanon({ repo, control: catalog, faceRelation: F });
+    expect(tiddlerText(ownEntry(catalog.doc()?.tiddlers, `${VESSEL_STATE_HOME}/daemon-canon/${encodeURIComponent(F)}`))).toBe(first.url);
+    const second = await standFaceDaemonCanon({ repo, state: catalog, faceRelation: F });
     expect(second.documentId).toBe(first.documentId);
   });
 
@@ -68,10 +69,10 @@ describe("the daemon wiki's canon per face", () => {
     const control = deviceRepo.create<LarDoc>(emptyLarDoc());
     const otherControl = otherRepo.create<LarDoc>(emptyLarDoc());
     const faceRelation = "123e4567-e89b-42d3-a456-426614174000";
-    const first = await standFaceDaemonCanon({ repo: deviceRepo, control, faceRelation });
-    const again = await standFaceDaemonCanon({ repo: deviceRepo, control, faceRelation });
-    const other = await standFaceDaemonCanon({ repo: otherRepo, control: otherControl, faceRelation });
-    const title = `lar:///ha.ka.ba/bags/control/daemon-canon/${encodeURIComponent(faceRelation)}`;
+    const first = await standFaceDaemonCanon({ repo: deviceRepo, state: control, faceRelation });
+    const again = await standFaceDaemonCanon({ repo: deviceRepo, state: control, faceRelation });
+    const other = await standFaceDaemonCanon({ repo: otherRepo, state: otherControl, faceRelation });
+    const title = `lar:///ha.ka.ba/bags/secret/daemon-canon/${encodeURIComponent(faceRelation)}`;
     expect(tiddlerText(ownEntry(control.doc()?.tiddlers, title))).toBe(first.url);
     expect(catalog.doc()?.tiddlers[title]).toBeUndefined();
     expect(catalog.doc()?.tiddlers[first.bagId]).toBeUndefined();

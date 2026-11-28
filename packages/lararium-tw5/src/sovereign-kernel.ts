@@ -70,7 +70,8 @@ import { islandSecretHome } from "@lararium/mesh/secret-home";
 import { type KahuaStageFace } from "@lararium/mesh/kahua-stage-store";
 import { type Repo, type DocHandle, type AutomergeUrl, type StorageAdapterInterface } from "@lararium/mesh/automerge";
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { CONTROL_HOME_ID, SECRET_HOME_ID } from "@lararium/mesh/lar-uris";
+import { vesselStateStoreOf } from "@lararium/mesh/vessel-state";
 import { controlStoreOf, floorAnswerStore, answerRingOf, ControlHomeUnavailable } from "@lararium/mesh/control-home";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { IslandKernel } from "./island-kernel.js";
@@ -175,6 +176,7 @@ export function runSovereignKernel(
   let _composite: CompositeStore | null = null;
   /** The daemon island's control store (`grants.controlUrl`); null on every wiki island. */
   let _control: CompositeStore | null = null;
+  let _vesselState: CompositeStore | null = null;
   let _ctx:       IslandContext | null  = null;
   let _lazyUnsub: (() => void) | null   = null;
   let _bridgeUnsub: (() => void) | null = null;   // the outbound bridge (Road B) — one listener, cancelled at teardown
@@ -468,6 +470,13 @@ export function runSovereignKernel(
       _handles.set(CONTROL_HOME_ID, controlHandle);
       _control = controlStoreOf(controlHandle);
     }
+    // THE VESSEL'S FIXED-TITLE STATE rides the secret home's grant (`daemonAuth.secretUrl`), the daemon island's alone: resolved
+    // here and held as its own store, never laid into the recipe's composite. A floor whose vessel opened no secret home holds none.
+    _vesselState = null;
+    if (msg.daemonAuth?.secretUrl && host.restsAtVessel) {
+      const stateHandle = await _resolveSlot(_repo, msg.daemonAuth.secretUrl, SECRET_HOME_ID, msg.wikiUri);
+      if (stateHandle) _vesselState = vesselStateStoreOf(stateHandle);
+    }
     // EVERY WHOLE ANSWER CROSSES TO THE VESSEL'S ANSWER RING, floor or not: the island's ring holds each outcome its verbs
     // conclude (`writeOutcome`), and hands it to the vessel's own ring over this message, where the verb door's caller
     // waits. The control document rests the verdict row alone; the body rides here and rests nowhere.
@@ -660,7 +669,7 @@ export function runSovereignKernel(
               // reconciling the SAME path boot just walked.
               // The CID plane the kernel already pulls engine/plugin bytes from, lifted to
               // behaviors: a residency handler resolves a carrier body a verb rode by reference.
-              _ctx = { wikiUri: msg.wikiUri, composite: _composite!, ...(_control ? { control: _control } : {}), ...(msg.grants.floorKey ? { floorKey: msg.grants.floorKey } : {}), ...(floorCanon ? { floorCanon } : {}), tw5, handles: _handles, post: _post, requestDrain: () => _adaptor?.requestDrain(), saveBagOf: (title: string) => _adaptor?.saveBagOf(title) ?? null, repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, hearthWorkingUrl: msg.grants.hearthWorkingUrl ?? null, kahuaFace, kahuaFaceWatch, ...(_receipt ? { receipt: _receipt } : {}), catalogUrl, faceCatalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, ...(msg.coreHash ? { bootSet: { engineCid: msg.coreHash, pluginCids: [...(msg.pluginCids ?? [])] } } : {}), diskMirrors: msg.diskMirrors ?? [], ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}), ...secretHomeOf(msg) };
+              _ctx = { wikiUri: msg.wikiUri, composite: _composite!, ...(_control ? { control: _control } : {}), ...(_vesselState ? { vesselState: _vesselState } : {}), ...(msg.grants.floorKey ? { floorKey: msg.grants.floorKey } : {}), ...(floorCanon ? { floorCanon } : {}), tw5, handles: _handles, post: _post, requestDrain: () => _adaptor?.requestDrain(), saveBagOf: (title: string) => _adaptor?.saveBagOf(title) ?? null, repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, hearthWorkingUrl: msg.grants.hearthWorkingUrl ?? null, kahuaFace, kahuaFaceWatch, ...(_receipt ? { receipt: _receipt } : {}), catalogUrl, faceCatalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, ...(msg.coreHash ? { bootSet: { engineCid: msg.coreHash, pluginCids: [...(msg.pluginCids ?? [])] } } : {}), diskMirrors: msg.diskMirrors ?? [], ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}), ...secretHomeOf(msg) };
               // Read-side skinny-handle rehydration: answer TW5's own `lazyLoad` event (fired when
               // `getTiddlerText` meets a bodyless `_is_skinny` tiddler) by pulling the body from the corpus
               // CAS through the SAME resolveByCid shore the kernel already rides for engine/plugin blobs. The

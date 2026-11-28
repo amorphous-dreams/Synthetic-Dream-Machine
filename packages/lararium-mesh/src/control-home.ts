@@ -16,7 +16,6 @@ import * as A from "@automerge/automerge";
 import { Repo, parseAutomergeUrl, type AutomergeUrl, type DocHandle, type DocumentId } from "@automerge/automerge-repo";
 import { SecretHomeUnavailable, heldHomeSeed, mintVesselDocumentId, secretHomeRestOf } from "./secret-home.js";
 import { CONTROL_HOME_ID, SECRET_HOME_ID } from "./lar-uris.js";
-import { FLOOR_REGISTRY_ROOT } from "./device-daemon-docs.js";
 import { emptyLarDoc, tiddlerText, type LarDoc } from "./base-doc.js";
 import { ownEntry, plainEntries } from "./stored-value.js";
 import { storedLarRecord, storedRecord } from "./stored-record.js";
@@ -27,66 +26,6 @@ import { EFFECT_URI_PREFIX, OUTCOME_URI_PREFIX } from "./verb-tiddler.js";
 import { RETIRED_EVENT_ID, effectRecordUri } from "./effect-record.js";
 import { pointMint } from "./mint-census.js";
 import { canonicalJsonBytes } from "./crypto.js";
-
-/** The documents the place's daemon document names as the FLOOR's own (`FLOOR_REGISTRY_ROOT`): each stays on this vessel. */
-export function floorOnlyDocIds(daemonDoc: LarDoc | null | undefined): Set<string> {
-  const ids = new Set<string>();
-  for (const [title, record] of Object.entries(daemonDoc?.tiddlers ?? {})) {
-    if (!title.startsWith(FLOOR_REGISTRY_ROOT)) continue;
-    const url = tiddlerText(record);
-    if (url?.startsWith("automerge:") && url.length > 10) ids.add(url.slice(10));
-  }
-  return ids;
-}
-
-export function vesselOnlyDocIds(controlDoc: LarDoc | null | undefined, controlUrl: string | null): Set<string> {
-  const ids = new Set<string>();
-  const addUrl = (url: string | null) => { if (url?.startsWith("automerge:") && url.length > 10) ids.add(url.slice(10)); };
-  addUrl(controlUrl);
-  for (const [title, record] of Object.entries(controlDoc?.tiddlers ?? {})) {
-    if (title.startsWith(`${CONTROL_HOME_ID}/daemon-slot/`) || title.startsWith(`${CONTROL_HOME_ID}/daemon-canon/`)) addUrl(tiddlerText(record));
-  }
-  return ids;
-}
-
-/**
- * THE VESSEL-ONLY DENY SET a share verdict reads: the control document and every device document it names (`refresh`), and
- * each document a caller adds by hand. automerge-repo resolves a document's ACCESS verdict once per peer and asks again only
- * on `shareConfigChanged`, so a set that GROWS calls `onGrow`: the vessel wires it to that re-ask, and a peer whose verdict
- * was asked before the growth meets the new answer.
- */
-export function makeVesselOnlyDocs(opts: { readonly onGrow?: () => void } = {}) {
-  let named = new Set<string>();
-  let floor = new Set<string>();
-  const added = new Set<string>();
-  const has = (documentId: string) => named.has(documentId) || floor.has(documentId) || added.has(documentId);
-  return {
-    has,
-    /** Read the control document's names afresh; answers whether the set grew (and told `onGrow`). */
-    refresh: (controlDoc: LarDoc | null | undefined, controlUrl: string | null): boolean => {
-      const next = vesselOnlyDocIds(controlDoc, controlUrl);
-      const grew = [...next].some((id) => !has(id));
-      named = next;
-      if (grew) opts.onGrow?.();
-      return grew;
-    },
-    /** Read the floor registry's names afresh off the place's daemon document; answers whether the set grew (and told `onGrow`). */
-    refreshFloor: (daemonDoc: LarDoc | null | undefined): boolean => {
-      const next = floorOnlyDocIds(daemonDoc);
-      const grew = [...next].some((id) => !has(id));
-      floor = next;
-      if (grew) opts.onGrow?.();
-      return grew;
-    },
-    /** A document that stays on this vessel whatever the control document names (answers whether the set grew). */
-    add: (documentId: string): boolean => {
-      if (has(documentId)) { added.add(documentId); return false; }
-      added.add(documentId);
-      opts.onGrow?.();
-      return true;
-    },
-  };
-}
 
 /** The control document's url, as the daemon document names it; null where it names none. */
 export function controlHomeUrlOf(daemonDoc: LarDoc | null | undefined): string | null {

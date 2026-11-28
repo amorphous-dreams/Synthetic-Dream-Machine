@@ -9,7 +9,7 @@ import { describe, expect, test } from "vitest";
 import { CONTROL_HOME_ID, SECRET_HOME_ID } from "@lararium/mesh/lar-uris";
 import { daemonFaceCanonBag, wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
-import { makeVesselOnlyDocs } from "@lararium/mesh/control-home";
+import { makeVesselOnlyDocs } from "@lararium/mesh/vessel-only-book";
 import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { deviceDaemonDocs } from "@lararium/mesh/device-daemon-docs";
 import { isDevicePrivateBag, vesselOnlyClass, vesselOnlyShareVerdict } from "../src/vessel-only-share.js";

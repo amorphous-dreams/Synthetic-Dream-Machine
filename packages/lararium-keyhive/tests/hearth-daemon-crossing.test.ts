@@ -9,7 +9,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { VESSEL_STATE_HOME } from "@lararium/mesh/vessel-state";
 import { didFromVerifyingKey } from "@lararium/mesh/lar-did";
 import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { MemoryTiddlerStore } from "@lararium/tw5";
@@ -18,19 +18,19 @@ import { makeSlotDocResolver } from "../src/slot-doc-resolver.js";
 const VERIFYING_KEY = "ab".repeat(32);
 const DID = didFromVerifyingKey(VERIFYING_KEY);
 const HEARTH = "automerge:2ARFJdpz2HKbLsTDVVSnPkKjTpWD";
-const row = (kind: string) => `${CONTROL_HOME_ID}/daemon-slot/${kind}/face`;
+const row = (kind: string) => `${VESSEL_STATE_HOME}/daemon-slot/${kind}/face`;
 
 function rig(hearthWorking?: () => string | null) {
   const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
   const control = new CompositeStore();
-  control.addLayer({ bagId: CONTROL_HOME_ID, store: new MemoryTiddlerStore(CONTROL_HOME_ID), writable: true, defaultWritable: true });
+  control.addLayer({ bagId: VESSEL_STATE_HOME, store: new MemoryTiddlerStore(VESSEL_STATE_HOME), writable: true, defaultWritable: true });
   const events: string[] = [];
   const minter = {
     create: (v: never) => { events.push("create"); return repo.create(v); },
     import: (bytes: Uint8Array, args: { docId: never }) => { events.push("import"); return repo.import(bytes, args as never); },
     flush: (ids?: string[]) => repo.flush(ids as never),
   };
-  const resolver = makeSlotDocResolver({ repo: minter as never, daemonStore: control, control, catalog: null, vesselDid: () => DID, mintedByHex: () => VERIFYING_KEY,
+  const resolver = makeSlotDocResolver({ repo: minter as never, daemonStore: control, state: control, catalog: null, vesselDid: () => DID, mintedByHex: () => VERIFYING_KEY,
     personaGroupId: "face", faceSeated: async () => true, faceDoor: { mint: async () => {} } as never, deviceScoped: (slug) => slug === "daemon",
     announceDevice: (kind, documentId) => { events.push(`announce:${kind}:${documentId}`); },
     ...(hearthWorking ? { hearthWorking } : {}) });

@@ -153,15 +153,20 @@ vi.mock("@lararium/mesh/face-reading", async (real) => {
     }),
   };
 });
+// THE LEASE FENCE READS THE VESSEL'S FIXED-TITLE STATE (its secret home), opened through the vessel's custody.
+const stateSeam = vi.hoisted(() => ({ locked: false }));
+vi.mock("../src/secret-home-store.js", async (real) => ({
+  ...(await real<Record<string, unknown>>()),
+  openVesselSecretHome: async () => { if (stateSeam.locked) throw new Error("secret-home-unavailable: the custody stays locked"); return { handle: { doc: () => ({ tiddlers: {} }) } }; },
+}));
 vi.mock("../src/persona-act-store.js", () => ({ readFacePersonaRecords: async () => seam.records, appendPersonaActs: (_handle: unknown, acts: unknown[]) => { seam.appended.push(...acts); } }));
 
 import { DeviceAdmitTagRefused, runDeviceAdmit } from "../src/commands/device-admit.js";
 import { actCid } from "@lararium/mesh/signed-act";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
 import { testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 // The daemon doc names the vessel's control document, where the lease slots rest (a fence read refuses where it names none).
-const daemonDoc = { tiddlers: { [T.group]: { text: "group-zero" }, [T.kel]: { text: "kel-zero" }, [CONTROL_HOME_ID]: { text: "automerge:control", tiddler: { text: "automerge:control" } } } };
+const daemonDoc = { tiddlers: { [T.group]: { text: "group-zero" }, [T.kel]: { text: "kel-zero" } } };
 const repo = {
   find: async (url: string) => ({ url, doc: () => (url === "automerge:daemon" ? daemonDoc : {}) }),
   flush: async () => {},
@@ -204,13 +209,12 @@ describe("runDeviceAdmit names the face whose root signs", () => {
     expect(seam.edge).toBeNull();
   });
 
-  test("RED (M16): a daemon doc that names no control document refuses the admission before the root signs, never binds at genesis", async () => {
-    const named = daemonDoc.tiddlers[CONTROL_HOME_ID];
-    delete (daemonDoc.tiddlers as Record<string, unknown>)[CONTROL_HOME_ID];
+  test("RED (M16): a vessel state that will not open refuses the admission before the root signs, never binds at genesis", async () => {
+    stateSeam.locked = true;
     try {
-      await expect(admitAt()).rejects.toThrow(/lease fence reads unread: control-home-unavailable/);
+      await expect(admitAt()).rejects.toThrow(/lease fence reads unread: secret-home-unavailable/);
       expect(seam.edge).toBeNull();
-    } finally { (daemonDoc.tiddlers as Record<string, unknown>)[CONTROL_HOME_ID] = named; }
+    } finally { stateSeam.locked = false; }
   });
 
   test("RED: a stale daemon doc never signs the joinee below the issuer's sealed lease frontier, and the log projects from the anchor's accepted seq; CONTROL: an honest fresher advance still binds", async () => {

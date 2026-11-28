@@ -202,7 +202,7 @@ export interface StoreDoorDeps {
    */
   readonly floorAlert?: (remount: Extract<FloorRemount, { act: "alert" }>) => Promise<readonly string[]>;
   /**
-   * A face's local canon `bags/daemon-<F>` by relation, as the standing vessel opens it (`faceCanonThroughControl`): a kahua
+   * A face's local canon `bags/daemon-<F>` by relation, as the standing vessel opens it (`faceCanonThroughState`): a kahua
    * lift reads its staged row there and `kahua-stage` writes one. Absent on a direct act, whose lift refuses
    * `kahua-lift-unstaged`.
    */

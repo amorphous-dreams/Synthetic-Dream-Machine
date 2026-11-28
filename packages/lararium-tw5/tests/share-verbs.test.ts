@@ -4,7 +4,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { VESSEL_STATE_HOME } from "@lararium/mesh/vessel-state";
 import { type Verb } from "@lararium/mesh/verb-tiddler";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeShareListReactor, makeShareSetReactor } from "../src/share-verbs.js";
@@ -15,8 +15,8 @@ const ctx = (composite: CompositeStore): VerbContext => ({ daemon: composite, in
 describe("the share rows in the control document", () => {
   test("set, list, replace and remove one row; a filter operator and a torn slug refuse", async () => {
     const control = new CompositeStore();
-    control.addLayer({ bagId: CONTROL_HOME_ID, store: new MemoryTiddlerStore(CONTROL_HOME_ID), writable: true, defaultWritable: true });
-    const set = makeShareSetReactor({ control: () => control }), list = makeShareListReactor({ control: () => control });
+    control.addLayer({ bagId: VESSEL_STATE_HOME, store: new MemoryTiddlerStore(VESSEL_STATE_HOME), writable: true, defaultWritable: true });
+    const set = makeShareSetReactor({ state: () => control }), list = makeShareListReactor({ state: () => control });
     await set({ slug: "notes", read: "reader [[the referee]]", write: "owner", note: "why" }, ctx(control));
     expect((await control.get("$:/config/lares/share/notes"))?.tiddler["read"]).toBe("reader [[the referee]]");
     expect((await list({}, ctx(control)))["rows"]).toEqual([{ slug: "notes", kind: "bag", read: "reader [[the referee]]", write: "owner", note: "why" }]);
@@ -30,8 +30,8 @@ describe("the share rows in the control document", () => {
 
   test("a row of another kind standing for the slug refuses share-kind-standing and writes nothing; unshared first, the other kind sets", async () => {
     const control = new CompositeStore();
-    control.addLayer({ bagId: CONTROL_HOME_ID, store: new MemoryTiddlerStore(CONTROL_HOME_ID), writable: true, defaultWritable: true });
-    const set = makeShareSetReactor({ control: () => control }), list = makeShareListReactor({ control: () => control });
+    control.addLayer({ bagId: VESSEL_STATE_HOME, store: new MemoryTiddlerStore(VESSEL_STATE_HOME), writable: true, defaultWritable: true });
+    const set = makeShareSetReactor({ state: () => control }), list = makeShareListReactor({ state: () => control });
     await set({ slug: "cold-shelf", kind: "wiki", read: "referee", write: "", owner: "steward" }, ctx(control));
     const refused = set({ slug: "cold-shelf", kind: "bag", read: "engineer referee", write: "" }, ctx(control));
     await expect(refused).rejects.toMatchObject({ reason: "share-kind-standing" });
@@ -44,8 +44,8 @@ describe("the share rows in the control document", () => {
 
   test("a row set with its owner keeps the owner by pet-name, as the file's row does", async () => {
     const control = new CompositeStore();
-    control.addLayer({ bagId: CONTROL_HOME_ID, store: new MemoryTiddlerStore(CONTROL_HOME_ID), writable: true, defaultWritable: true });
-    const set = makeShareSetReactor({ control: () => control }), list = makeShareListReactor({ control: () => control });
+    control.addLayer({ bagId: VESSEL_STATE_HOME, store: new MemoryTiddlerStore(VESSEL_STATE_HOME), writable: true, defaultWritable: true });
+    const set = makeShareSetReactor({ state: () => control }), list = makeShareListReactor({ state: () => control });
     expect(await set({ slug: "notes", kind: "wiki", read: "referee", write: "engineer", owner: " steward " }, ctx(control))).toMatchObject({ row: { owner: "steward" } });
     expect((await list({}, ctx(control)))["rows"]).toEqual([{ slug: "notes", kind: "wiki", read: "referee", write: "engineer", owner: "steward" }]);
     await set({ slug: "notes", kind: "wiki", read: "referee", write: "engineer", owner: "" }, ctx(control));

@@ -73,11 +73,11 @@ describe("the lease-epoch fence's wiring", () => {
     expect(src).toMatch(/if \(!proof\.dyad\) return \{ ok: false, reason: "founder dyad standing proof unavailable", pending: true(, \.\.\.said)? \}/);
   });
 
-  test("★ ONE ROAD: every lease read goes through the island's own control store, never the oracle registry ★", () => {
+  test("★ ONE ROAD: every lease read goes through the island's own vessel state, never the oracle registry ★", () => {
     const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
-    expect(src).toMatch(/readLeaseUnderFace\(control,\s*daemonAuth\.personaGroupId,/);
+    expect(src).toMatch(/readLeaseUnderFace\(state,\s*daemonAuth\.personaGroupId,/);
     expect(src).not.toMatch(/storeOf\(DAEMON_BAG_ID\)/);
-    expect(src).toMatch(/resolveDaemonStore = async \(\) => \{\s*const store = controlLayerOf\(ctx\.control\)/);
+    expect(src).toMatch(/resolveDaemonStore = async \(\) => \{\s*const store = stateLayerOf\(ctx\.vesselState\)/);
   });
 
   test("CONTROL — the assertions are not vacuous: every symbol they grep for is real", () => {

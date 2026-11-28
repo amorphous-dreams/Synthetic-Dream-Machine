@@ -7,13 +7,13 @@
  * working slot belongs to. Controls: an edge that names none folds none; a later edge that names none clears the earlier
  * name; a barred device names none; a draft slot, another group's slot, a canon and a floor slot answer no working group.
  */
+import { VESSEL_STATE_HOME } from "../src/vessel-state.js";
 import { describe, expect, test } from "vitest";
 import { PERSONA_ACT_DOMAIN } from "../src/domains.js";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
 import { makeHandLineage } from "../src/hand-lineage.js";
 import { projectPersonaLog, type PersonaActBody } from "../src/persona-act.js";
 import { actCid, signAct } from "../src/signed-act.js";
-import { CONTROL_HOME_ID } from "../src/lar-uris.js";
 import { wikiSlotUri } from "../src/wiki-recipe.js";
 import { emptyLarDoc, type LarDoc } from "../src/base-doc.js";
 import { storedLarRecord } from "../src/stored-record.js";
@@ -66,7 +66,7 @@ function control(entries: Record<string, string>): LarDoc {
   for (const [title, id] of Object.entries(entries)) doc.tiddlers[title] = storedLarRecord(title, { text: `automerge:${id}` }, "test");
   return doc as LarDoc;
 }
-const slot = (group: string, kind = "working") => `${CONTROL_HOME_ID}/daemon-slot/${kind}/${encodeURIComponent(group)}`;
+const slot = (group: string, kind = "working") => `${VESSEL_STATE_HOME}/daemon-slot/${kind}/${encodeURIComponent(group)}`;
 
 describe("the hearth reads its own working slot off its control document", () => {
   test("RED: the control row of the face's working slot answers its document", () => {
@@ -81,7 +81,7 @@ describe("the hearth reads its own working slot off its control document", () =>
   test("RED: the device table answers the group a working slot belongs to; CONTROL: a draft slot, a canon, a floor slot and an unnamed slot answer none", () => {
     const docs = deviceDaemonDocs({ enrollFloor: () => {} });
     const F1 = "11111111-1111-4111-8111-111111111111";
-    docs.readControl(control({ [slot("g1")]: "w1", [slot("g1", "draft")]: "d1", [`${CONTROL_HOME_ID}/daemon-canon/${F1}`]: "c1" }));
+    docs.readState(control({ [slot("g1")]: "w1", [slot("g1", "draft")]: "d1", [`${VESSEL_STATE_HOME}/daemon-canon/${F1}`]: "c1" }));
     docs.readFloor(control({ [floorDaemonSlotTitle("working")]: "f1" }));
     docs.announced(wikiSlotUri("daemon", "working"), "unnamed");
     expect(docs.workingGroupOf("w1")).toBe("g1");

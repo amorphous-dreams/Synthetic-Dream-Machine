@@ -4,11 +4,11 @@
  * Distinct slots preserve concurrent advances, so the verified max never falls.
  */
 
-import { CONTROL_HOME_ID } from "./lar-uris.js";
+import { VESSEL_STATE_HOME } from "./vessel-state.js";
 
-/** Prefix for a resource's per-writer lease-epoch slots in the vessel's control document (`control-home`) — scan tiddlers under this to read all slots. */
+/** Prefix for a resource's per-writer lease-epoch slots in the vessel's fixed-title state (`vessel-state`, its secret home) — scan tiddlers under this to read all slots. */
 export function leaseEpochPrefix(resourceId: string): string {
-  return `${CONTROL_HOME_ID}/lease-epoch/${encodeURIComponent(resourceId)}/`;
+  return `${VESSEL_STATE_HOME}/lease-epoch/${encodeURIComponent(resourceId)}/`;
 }
 
 /** The slot tiddler URI a single writer owns for a resource's lease epoch (LWW-safe — one owner). */

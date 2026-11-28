@@ -1,17 +1,17 @@
 /**
  * THE PER-DEVICE DAEMON DOCUMENTS SEAL UNDER THE LIT FACE (operator ruling 2026-11-09, sealed map): the daemon wiki's
- * device slots (`bags/control/daemon-slot/<kind>/<group>`) and the face's daemon canon (`bags/control/daemon-canon/<face>`)
- * are the AI's memory on this device. A founded vessel that lights its face mints them through the control document; each
- * rests sealed in the vessel's store (a sealed pointer, never Automerge's clear bytes) and stands there after the vessel
- * stands down, so the next boot finds it. The control document itself rests under the vessel's key beside the secret home.
+ * device slots (`bags/secret/daemon-slot/<kind>/<group>`) and the face's daemon canon (`bags/secret/daemon-canon/<face>`)
+ * are the AI's memory on this device. A founded vessel that lights its face names them in its fixed-title state (the secret
+ * home); each rests sealed in the vessel's store (a sealed pointer, never Automerge's clear bytes) and stands there after the
+ * vessel stands down, so the next boot finds it. The secret home itself rests under the vessel's key.
  */
+import { VESSEL_STATE_HOME } from "@lararium/mesh/vessel-state";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { EventEmitter } from "node:events";
 import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
-import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { tiddlerText } from "@lararium/mesh/base-doc";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { direct } from "./direct-store.js";
 import { TEST_CUSTODY, TEST_SLOT } from "./found-route.js";
@@ -54,19 +54,14 @@ describe("the per-device daemon documents seal under the lit face and survive a 
 
     const named = await withLarRoot(root, () => ownedStore(storageDir, async (repo) => {
       const home = await openVesselSecretHome(repo);
-      const controlUrl = (await import("../dist/src/secret-home-store.js")).readSecretHomeAddress;
-      const address = await controlUrl();
-      expect(address?.controlId, "the custody row names the control document beside the home").toBeTruthy();
-      const control = await repo.find<LarDoc>(`automerge:${address!.controlId}` as never);
-      void home;
-      return Object.entries(control.doc().tiddlers)
-        .filter(([title]) => title.startsWith(`${CONTROL_HOME_ID}/daemon-slot/`) || title.startsWith(`${CONTROL_HOME_ID}/daemon-canon/`))
-        .map(([title, rec]) => ({ title, id: (tiddlerText(rec as never) ?? "").replace(/^automerge:/, ""), controlId: address!.controlId! }));
+      return Object.entries(home.handle.doc()?.tiddlers ?? {})
+        .filter(([title]) => title.startsWith(`${VESSEL_STATE_HOME}/daemon-slot/`) || title.startsWith(`${VESSEL_STATE_HOME}/daemon-canon/`))
+        .map(([title, rec]) => ({ title, id: (tiddlerText(rec as never) ?? "").replace(/^automerge:/, ""), stateId: home.handle.documentId as string }));
     }));
     // The setup took: the lit face's daemon wiki minted its device documents and named them.
-    expect(named.length, "the control document names the face's device daemon documents").toBeGreaterThan(0);
-    // The control document rests sealed under the vessel's key: no clear chunk.
-    for (const f of chunksOf(storageDir, named[0]!.controlId)) expect(MAGIC.every((b, i) => readFileSync(f)[i] === b), f).toBe(false);
+    expect(named.length, "the vessel state names the face's device daemon documents").toBeGreaterThan(0);
+    // The vessel state (the secret home) rests sealed under the vessel's key: no clear chunk.
+    for (const f of chunksOf(storageDir, named[0]!.stateId)) expect(MAGIC.every((b, i) => readFileSync(f)[i] === b), f).toBe(false);
     for (const { title, id } of named) {
       const chunks = chunksOf(storageDir, id).filter((f) => /incremental|snapshot/.test(f));
       expect(chunks.length, `${title} rests in the vessel's store after the stand-down`).toBeGreaterThan(0);

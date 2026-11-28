@@ -61,10 +61,14 @@ const { daemonDiskMirrors } = await import("../packages/lararium-node/dist/src/b
 const families = {
   outcomes: mesh.OUTCOME_URI_PREFIX, effects: mesh.EFFECT_URI_PREFIX,
   receipts: mesh.RECEIPT_FACT_URI_PREFIX,
-  "lease epochs": mesh.leaseEpochPrefix("witness"),
 };
 for (const [family, prefix] of Object.entries(families)) {
   if (typeof prefix !== "string" || !prefix.startsWith(`${mesh.CONTROL_HOME_ID}/`)) throw new Error(`control family ${family} titles outside the control home: ${prefix}`);
+}
+// The fixed-title families (floor pins, lease slots, device pointers) title under the vessel's state, its secret home.
+const stateFamilies = { "floor pins": mesh.FLOOR_PIN_PREFIX, "lease epochs": mesh.leaseEpochPrefix("witness"), "daemon slots": mesh.DAEMON_SLOT_TITLE_ROOT, "daemon canons": mesh.DAEMON_CANON_TITLE_ROOT };
+for (const [family, prefix] of Object.entries(stateFamilies)) {
+  if (typeof prefix !== "string" || !prefix.startsWith(`${mesh.SECRET_HOME_ID}/`)) throw new Error(`state family ${family} titles outside the vessel state: ${prefix}`);
 }
 const PRIVATE_HOMES = new Set([mesh.CONTROL_HOME_ID, mesh.SECRET_HOME_ID, mesh.DAEMON_BAG_ID]);
 const F = "123e4567-e89b-42d3-a456-426614174000";
@@ -91,7 +95,7 @@ const controlWriters = [
   // The swarm's records rest in the vessel's sealed custody row, and the node composition hands the swarm door that row.
   ["packages/lararium-node/src/swarm-wiki.ts", /updateCustodyRecord\("identity", SWARM_RECORDS_FILE/, /DAEMON_BAG_ID|CONTROL_HOME_ID|DocHandle/],
   ["packages/lararium-node/src/open-node-vessel.ts", /swarmWiki: custodySwarmWiki\(\)/, /controlSwarmWiki/],
-  ["packages/lararium-keyhive/src/lease-frontier.ts", /storeForBag\(CONTROL_HOME_ID\)/, /DAEMON_BAG_ID/],
+  ["packages/lararium-keyhive/src/lease-frontier.ts", /storeForBag\(VESSEL_STATE_HOME\)/, /DAEMON_BAG_ID|CONTROL_HOME_ID/],
 ];
 for (const [path, must, mustNot] of controlWriters) {
   const text = read(path);

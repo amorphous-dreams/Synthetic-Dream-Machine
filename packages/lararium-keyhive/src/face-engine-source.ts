@@ -1,7 +1,7 @@
 /**
  * face-engine-source — what a LIT sibling face's own engine composes from on the daemon island (`face-engine`, EACH HAT
  * REACHED BY NAME): the island's daemon recipe with its canon following THIS face's relation; this face's own documents off
- * the control document (`makeLitFaceDocs`: its daemon canon, and the working, draft and personal slots its own wear named,
+ * the vessel state (`makeLitFaceDocs`: its daemon canon, and the working, draft and personal slots its own wear named,
  * each owned by this face, nothing minted); the shared library bags and the oracle the island already holds; and a fresh
  * engine booted from the very bytes the island's engine booted from (`IslandContext.bootSet`, each re-hashed against its CID).
  *
@@ -11,13 +11,14 @@
  * A LIT FACE RECEIVES VISITS (`composeCrossFaceViewSource`): a face's CROSS-FACE VIEW lays its daemon canon and working layer
  * and the shared libraries and floor (`crossFaceViewSlots`), and asks for no other: never its personal layer (PRIVATE), never a
  * draft. The worn face's own layers answer from the documents its island mounted; a sibling's from the documents its own wear
- * named, each only where the control document names that face as the owner. The view takes no actor door: it reads.
+ * named, each only where the vessel state names that face as the owner. The view takes no actor door: it reads.
  * `crossFacePrivateDocs` names every document a private slot names on this island, which the view refuses by identity, so a
  * binding's label never carries a private document past it.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
-import { CONTROL_HOME_ID, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { daemonSlotTitle } from "@lararium/mesh/device-daemon-docs";
 import { KAHUA_BAG, daemonFaceCanonBag, expandRecipe, wikiSlotUri, type WikiRecipe } from "@lararium/mesh/wiki-recipe";
 import { PRIVATE_SLOT_KINDS } from "@lararium/mesh/cross-face-reach";
 import { documentIdOfUrl } from "@lararium/mesh/sealed-rest";
@@ -33,7 +34,7 @@ import type { BindingKind } from "./resolve-binding.js";
 export interface SiblingEngineDeps {
   /** The lit sibling the engine answers for. */
   readonly face: LitFace;
-  /** The lit set's own documents off the control document. */
+  /** The lit set's own documents off the vessel state. */
   readonly docs: LitFaceDocs;
   /** The island's daemon wiki recipe. */
   readonly recipe: WikiRecipe;
@@ -130,8 +131,8 @@ export interface CrossFacePrivateDocsDeps {
   readonly faces: readonly LitFace[];
   /** The worn face's own document for a daemon slot its island mounted, or null. */
   readonly mounted: (slot: string) => Pick<DocHandle<LarDoc>, "documentId"> | null;
-  /** The control document's reader (each face's daemon slots, `daemon-slot/<kind>/<group>`), or null. */
-  readonly control: { get(title: string): Promise<unknown> } | null;
+  /** The vessel state's reader (each face's daemon slots, `daemon-slot/<kind>/<group>`), or null. */
+  readonly state: { get(title: string): Promise<unknown> } | null;
   /** The daemon document's store (each wiki's slot bindings), or null. */
   readonly daemon: Pick<LarTiddlerStore, "listVisible" | "get"> | null;
 }
@@ -146,10 +147,10 @@ export interface CrossFacePrivateDocs {
 
 /**
  * THE DOCUMENTS A VISIT NEVER COMPOSES: every document a PRIVATE slot names here. Each lit face's daemon personal and draft
- * documents (the worn face's as its island mounted them, every face's as the control document names them), and each personal or
+ * documents (the worn face's as its island mounted them, every face's as the vessel state names them), and each personal or
  * draft binding the daemon document records for any wiki: a binding row's `kind`, or a mint row's `binding-kind`, read as the
  * resolver writes them (`BindingKind`: `personal-binding`, `draft-binding`).
- * IT FAILS CLOSED (`unread`): a deny set that cannot read a source (no control reader while faces stand lit, no daemon store), or
+ * IT FAILS CLOSED (`unread`): a deny set that cannot read a source (no state reader while faces stand lit, no daemon store), or
  * that meets a private record naming no document it can read (a slot row or a binding whose url names none), cannot vouch that a
  * binding stands outside every private layer, so the view refuses (`composeCrossFaceView`, `cross-face-private-unread`). A face
  * whose private slot never minted names no row, and holds no private document to guard.
@@ -166,12 +167,12 @@ export async function crossFacePrivateDocs(deps: CrossFacePrivateDocsDeps): Prom
   };
   const kinds = [...PRIVATE_SLOT_KINDS];
   for (const kind of kinds) add(deps.mounted(wikiSlotUri("daemon", kind))?.documentId);
-  if (deps.faces.length > 0 && deps.control === null) unread.push("the control document (each face's daemon slots)");
-  if (deps.control) {
+  if (deps.faces.length > 0 && deps.state === null) unread.push("the vessel state (each face's daemon slots)");
+  if (deps.state) {
     for (const face of deps.faces) {
       for (const kind of kinds) {
-        const title = `${CONTROL_HOME_ID}/daemon-slot/${kind}/${encodeURIComponent(face.group)}`;
-        const record = await deps.control.get(title);
+        const title = daemonSlotTitle(kind, face.group);
+        const record = await deps.state.get(title);
         if (record !== null && record !== undefined) named(title, tiddlerText(record as never));
       }
     }

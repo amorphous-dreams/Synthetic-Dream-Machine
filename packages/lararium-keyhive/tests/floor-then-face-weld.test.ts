@@ -15,8 +15,8 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
 import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { CompositeStore } from "@lararium/mesh/composite-store";
+import { VESSEL_STATE_HOME } from "@lararium/mesh/vessel-state";
 import {
-  CONTROL_HOME_ID,
   DAEMON_BAG_ID,
   HEARTH_TRUE_NAME_TIDDLER,
   MESH_CABAL_SENTINEL_URI,
@@ -104,11 +104,11 @@ describe("the floor stands first and a face lands over it, on every host", () =>
     const daemon = new CompositeStore();
     daemon.addLayer({ bagId: DAEMON_BAG_ID, store: new MemoryTiddlerStore(DAEMON_BAG_ID), writable: true });
     const control = new CompositeStore();
-    control.addLayer({ bagId: CONTROL_HOME_ID, store: new MemoryTiddlerStore(CONTROL_HOME_ID), writable: true, defaultWritable: true });
+    control.addLayer({ bagId: VESSEL_STATE_HOME, store: new MemoryTiddlerStore(VESSEL_STATE_HOME), writable: true, defaultWritable: true });
     const key = "cd".repeat(32);
     const refiled: string[] = [];
     const faced = makeSlotDocResolver({
-      repo, daemonStore: daemon, control, keyhive: kh, deviceScoped: (slug: string) => slug === "daemon", catalog: makeCatalogAccessor(repo, catalogHandle.url),
+      repo, daemonStore: daemon, state: control, keyhive: kh, deviceScoped: (slug: string) => slug === "daemon", catalog: makeCatalogAccessor(repo, catalogHandle.url),
       vesselDid: () => didFromVerifyingKey(key), mintedByHex: () => key, personaGroupId: group.groupId, faceSeated: async () => true,
       faceDoor: makeFaceBagDoor({ face: kh, groupId: group.groupId }) as never,
       announceLifted: (slug: string, documentId: string) => { refiled.push(`${slug}:${documentId}`); },

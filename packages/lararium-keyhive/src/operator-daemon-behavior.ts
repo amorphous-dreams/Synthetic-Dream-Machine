@@ -31,7 +31,7 @@ import {
   makeCircleStateReactor,
   makeCircleReactors,
   makeCabalRealmReactors,
-  makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, controlOf, MemoryTiddlerStore,
+  makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, controlOf, vesselStateOf, MemoryTiddlerStore,
   makeShareSetReactor, makeShareListReactor, readShareEntries,
   registerCanonOfferVerbs, CANON_OFFER_VERBS,
   faceEngines, type FaceEngines, composeCrossFaceView, enginePool, type EnginePool, type FaceEngine,
@@ -213,7 +213,7 @@ import { holdsKahuReach, isHouseCanonBag } from "@lararium/mesh/kahu-canon-reach
 import { realmStandingDocUrl } from "@lararium/mesh/realm-bag";
 import { CROSS_FACE_READ_VERBS, CROSS_FACE_TARGET_VERBS } from "@lararium/mesh/cross-face-reach";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
-import { readLeaseUnderFace, controlLayerOf, type LeaseFrontier } from "./lease-frontier.js";
+import { readLeaseUnderFace, stateLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { readFace } from "@lararium/mesh/face-reading";
 import { answerDocStoreAsks, announceSlotDoc, announceLiftedDoc } from "@lararium/mesh/sealed-rest";
 import { floorSlotTitle } from "@lararium/mesh/device-daemon-docs";
@@ -426,7 +426,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     if (face.recard && (daemonAuth.archiveOpens !== true || !persistVeilArchive || routesVeilArchive?.(face.personaGroupId) === false)) {
       throw new FaceRecardRefused("archive-unrouted", `this vessel rests no Archive for face ${handle} here, so its card would burn a prekey no kept Archive holds; nothing minted. Unlock the vessel's custody (\`lares vault unlock\`), then \`${recardCommand(face.handleIndex)}\` again`);
     }
-    const lease = await readLeaseUnderFace(ctx.control, face.personaGroupId, readFace(face.personaKel.chain, face.faceAnchor));
+    const lease = await readLeaseUnderFace(ctx.vesselState, face.personaGroupId, readFace(face.personaKel.chain, face.faceAnchor));
     const joined = await bootDaemonKeyhive({
       atomSeed: meshHexToBytes(face.atom.seed), faceVerifyingKey: face.atom.key,
       eventStore: secretEvents(ctx, face.personaGroupId),
@@ -741,7 +741,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     const wear = wearOf(ctx.repo).wear;
     return composeSiblingEngineSource({
       face, recipe: ctx.recipe, bootSet: ctx.bootSet, resolveByCid: ctx.resolveByCid,
-      docs: makeLitFaceDocs({ worn: () => asLit(daemonAuth), siblings: litSiblingFaces, control: () => controlOf(ctx) }),
+      docs: makeLitFaceDocs({ worn: () => asLit(daemonAuth), siblings: litSiblingFaces, state: () => ctx.vesselState ?? null }),
       shared: (slot) => ctx.handles.get(slot) ?? null,
       open: async (url, bag) => await findOrThrow(ctx.repo, url, `${bag} (h${handleIndex}'s own layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never,
       ...(wear ? { wear } : {}),
@@ -775,12 +775,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     const guard = await crossFacePrivateDocs({
       faces: [...(worn ? [worn] : []), ...litSiblingFaces()],
       mounted: (slot) => ctx.handles.get(slot) ?? null,
-      control: controlOf(ctx),
+      state: ctx.vesselState ?? null,
       daemon: ctx.composite.hasBag(DAEMON_BAG_ID) ? ctx.composite.storeForBag(DAEMON_BAG_ID) : null,
     });
     return composeCrossFaceView(await composeCrossFaceViewSource({
       face, recipe: ctx.recipe, bootSet: ctx.bootSet, resolveByCid: ctx.resolveByCid,
-      docs: makeLitFaceDocs({ worn: () => asLit(daemonAuth), siblings: litSiblingFaces, control: () => controlOf(ctx) }),
+      docs: makeLitFaceDocs({ worn: () => asLit(daemonAuth), siblings: litSiblingFaces, state: () => ctx.vesselState ?? null }),
       shared: (slot) => ctx.handles.get(slot) ?? null,
       open: async (url, bag) => await findOrThrow(ctx.repo, url, `${bag} (h${handleIndex}'s own layer, visited)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never,
       // Only the worn face's own view reads the documents this island mounted: a sibling's never borrows the mount's.
@@ -812,7 +812,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     return makeLitFaceTarget({
       worn: () => asLit(daemonAuth),
       siblings: litSiblingFaces,
-      control: () => controlOf(ctx),
+      state: () => ctx.vesselState ?? null,
       wornStore: (bag) => ctx.composite.hasBag(bag) ? ctx.composite.storeForBag(bag) : null,
       storeOf: async (url, bag) => new AutomergeDocStore(await findOrThrow(ctx.repo, url, `${bag} (a lit face's own layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never, bag, wearOf(ctx.repo)),
     });
@@ -860,7 +860,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     slotDocs = announcing(makeSlotDocResolver({
       repo: askReceipt ? restingMinter(ctx.repo, (ids) => askReceipt(ids,
         gateCleared ? undefined : gateClear, islandHeadsOf(ctx.repo, ids))) : ctx.repo,
-      deviceScoped: (slug) => slug === DAEMON_WIKI_SLUG, control: controlOf(ctx), floor: floorOf(ctx),
+      deviceScoped: (slug) => slug === DAEMON_WIKI_SLUG, ...(ctx.vesselState ? { state: ctx.vesselState } : {}), floor: floorOf(ctx),
       // The hearth's daemon working document, where the vessel granted one (a leaf at its own hearth, road row `L4f`).
       hearthWorking: () => ctx.hearthWorkingUrl ?? null,
       ...(docStoreDoor ? { announceDevice: wornSlots.device } : {}),
@@ -1001,9 +1001,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // TWO VERDICTS (`lease-frontier.ts`): an empty, readable slot set reads 0, the founding epoch; no group pinned,
   // no daemon layer, or a read fault reads UNAVAILABLE — and a mutation gate names that frontier rather than
   // silently licensing from the signature and wall-clock window alone.
-  const readLeaseEpoch = (control: IslandContext["control"] | null | undefined): Promise<LeaseFrontier> =>
+  const readLeaseEpoch = (state: IslandContext["vesselState"] | null | undefined): Promise<LeaseFrontier> =>
     // THE ONE DOOR: the current roster's signed advances, floored under the sealed anchor this daemon stands on.
-    readLeaseUnderFace(control, daemonAuth.personaGroupId, readFace(daemonAuth.personaKel?.chain, daemonAuth.faceAnchor));
+    readLeaseUnderFace(state, daemonAuth.personaGroupId, readFace(daemonAuth.personaKel?.chain, daemonAuth.faceAnchor));
 
   // One authority and archive stand serves both the writable marker and ea.
   // The memory keys the island's own context: one island asks twice (the marker, then ea) and reads one stand; a second context is a
@@ -1162,7 +1162,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // THE BINDING GATE'S OWN LEASE READ — the same fold, done once here (boot only re-runs the gate at
       // boot, so a single read at this moment is exactly as fresh as the gate itself). An UNAVAILABLE frontier
       // threads no epoch, and the gate refuses a persona-bound boot on it.
-      const bindingGateLease = await readLeaseEpoch(ctx.control);
+      const bindingGateLease = await readLeaseEpoch(ctx.vesselState);
       if (bindingGateLease.kind === "unavailable" && daemonAuth.personaGroupId) {
         console.log(`[daemon] Binding Gate lease read: current lease frontier unavailable (${bindingGateLease.why})`);
       }
@@ -1562,14 +1562,14 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           registry.register("circle-list",    lightAFace("circle-list"));
         }
 
-        // The CABAL-REALM verbs over the control document, where the per-writer lease slots rest. `realm-feed` rolls the
+        // The CABAL-REALM verbs over the vessel's fixed-title state, where the per-writer lease slots rest. `realm-feed` rolls the
         // presenter's own leaf slot, its writer bound through the face→leaf bond — the offering a realm lives by; `realm-clock` reads every slot back and reports
         // who feeds and how deep, VERDICT-FREE (what spread counts as capture stays the operator's
         // calibration, and mechanizing it here would recreate the root a realm exists without).
-        // The slots rest in the vessel's control document — the island's control store holds it on every platform.
+        // The slots rest in the vessel's fixed-title state — the island's state store holds it on every platform.
         const resolveDaemonStore = async () => {
-          const store = controlLayerOf(ctx.control);
-          if (!store) throw new Error("cabal-realm-verb: control home unresolved — the control layer is absent from this island's control store");
+          const store = stateLayerOf(ctx.vesselState);
+          if (!store) throw new Error("cabal-realm-verb: secret-home-unavailable — the vessel opened no secret home, so this island holds no lease slots");
           return store;
         };
         const realmReactors = makeCabalRealmReactors({ resolveStore: resolveDaemonStore });
@@ -1670,7 +1670,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             }
             // The lease read, off the island's own daemon layer: every slot under this group's prefix, folded
             // by max — the SAME read every admission door shares. An unavailable frontier seats nobody.
-            const lease = await readLeaseEpoch(ctx.control);
+            const lease = await readLeaseEpoch(ctx.vesselState);
             if (lease.kind === "unavailable") {
               throw new Error(`[daemon] face-join: current lease frontier unavailable (${lease.why}) — no seat moves`);
             }
@@ -2014,7 +2014,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             face: daemonAuth.personaGroupId!,
             ledger: async () => asLedgerDoc(await workbenchLedgerOf(ctx)),
             faceLedger: () => faceLedger,
-            shares: async (slug) => (await readShareEntries(controlOf(ctx))).filter((r) => r.slug === slug).map((r) => `${r.kind}:${r.slug}`),
+            shares: async (slug) => (await readShareEntries(vesselStateOf(ctx))).filter((r) => r.slug === slug).map((r) => `${r.kind}:${r.slug}`),
             // EVERY LOOKUP FAULT THROWS: only a slot no document stands for reads as no layer (never a zero for a fault). A draft or
             // personal slot reads only where the face's OWN binding row names it (`faceOwnSlot`): the floor's fallback reads none.
             layers: async (slug) => {
@@ -2052,7 +2052,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               store: (bag) => ctx.composite.storeForBag(bag),
               handleUrl: (bag) => ctx.handles.get(bag)?.url,
               controlUrl: async () => {
-                const text = (await controlOf(ctx).get(daemonSlotTitle("working", daemonAuth.personaGroupId!)))?.tiddler?.text;
+                const text = (await vesselStateOf(ctx).get(daemonSlotTitle("working", daemonAuth.personaGroupId!)))?.tiddler?.text;
                 return typeof text === "string" && text.length > 0 ? text : null;
               },
             }),
@@ -2077,8 +2077,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       }
       // THE SHARE CONFIG (sealed-store#/the-share-config): its rows rest in the vessel's control document, which no face reads;
       // the operator's CLI door writes them (and the file beside them), and no agent surface reaches them.
-      registry.register("share-set", makeShareSetReactor({ control: () => controlOf(ctx) }), { summary: "Write or remove one share row ($:/config/lares/share/<slug>): who reads and writes a bag, by face pet-name.", surfaces: [VERB_SURFACE.cli] });
-      registry.register("share-list", makeShareListReactor({ control: () => controlOf(ctx) }), { summary: "List the share rows the control document holds.", surfaces: [VERB_SURFACE.cli] });
+      registry.register("share-set", makeShareSetReactor({ state: () => vesselStateOf(ctx) }), { summary: "Write or remove one share row ($:/config/lares/share/<slug>): who reads and writes a bag, by face pet-name.", surfaces: [VERB_SURFACE.cli] });
+      registry.register("share-list", makeShareListReactor({ state: () => vesselStateOf(ctx) }), { summary: "List the share rows the vessel's fixed-title state holds.", surfaces: [VERB_SURFACE.cli] });
       // SHARING BY DELEGATION, NEVER A COPY: the owner face's hive delegates a bag it holds to a grantee face, both lit in this
       // island; the grantee's hive ingests the delegation's events. An owner or grantee that stands shut refuses by name, and the
       // vessel keeps the grant owed behind an opaque flag until both stand lit.
@@ -2127,10 +2127,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         for (const face of providers.values()) if (face.group === group) return face.provider;
         return null;
       };
-      // THE CARRIED ROWS of a share (`applyShares`): a granted bag's catalog row rests in the control document, under the
+      // THE CARRIED ROWS of a share (`applyShares`): a granted bag's catalog row rests in the vessel's fixed-title state, under the
       // vessel's key, until its grantee stands worn and its own catalog half opens.
       const SHARE_ORIGIN = { kind: "lares-verb", requestId: "share-apply" } as const;
-      const shareCarryOver = (control: ReturnType<typeof controlOf>): NonNullable<Parameters<typeof applyShares>[0]["carry"]> => ({
+      const shareCarryOver = (control: ReturnType<typeof vesselStateOf>): NonNullable<Parameters<typeof applyShares>[0]["carry"]> => ({
         put: async (group, bag, row) => {
           const title = shareCarryTitle(group, bag);
           const text = JSON.stringify(row);
@@ -2152,12 +2152,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       if (daemonAuth.personaGroupId && ctx.faceCatalogUrl) {
         const group = daemonAuth.personaGroupId, catalogUrl = ctx.faceCatalogUrl;
         void (async () => {
-          const carry = shareCarryOver(controlOf(ctx));
+          const carry = shareCarryOver(vesselStateOf(ctx));
           if ((await carry.list(group)).length === 0) return;
           const half = await findOrThrow(ctx.repo, catalogUrl, "the worn face's catalog half", { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never;
           const lifted = await liftCarriedShares({ group, ...(typeof daemonAuth.handleIndex === "number" ? { handleIndex: daemonAuth.handleIndex } : {}), half, carry, log: (line) => console.log(line) });
           if (lifted > 0) console.log(`[share-apply] the wear lifted ${lifted} granted bag(s) into this face's catalog`);
-        })().catch((e: unknown) => console.warn(`[share-apply] the carried rows stay in the control document until the next landing: ${e instanceof Error ? e.message : String(e)}`));
+        })().catch((e: unknown) => console.warn(`[share-apply] the carried rows stay in the vessel state until the next landing: ${e instanceof Error ? e.message : String(e)}`));
       }
       // The operator's hand names each face's handle index and pet-name (the CLI reads them off custody); the island adds what
       // it holds lit: each lit face's group and its own catalog half (the worn face's, and each sibling's by its own secret).
@@ -2165,7 +2165,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const named = Array.isArray(args["faces"]) ? (args["faces"] as Array<Record<string, unknown>>) : [];
         // A FACE'S CATALOG HALF OPENS ONLY WHILE THAT FACE STANDS WORN (it rests sealed under the face's own content key, and
         // this island's holder carries the worn face's): the worn face names its half, a lit sibling names none, and the
-        // landing carries a sibling's row in the control document until that sibling's own wear lifts it (`applyShares`).
+        // landing carries a sibling's row in the vessel state until that sibling's own wear lifts it (`applyShares`).
         const litByIndex = new Map<number, { group: string; catalogUrl: string | null }>();
         if (typeof daemonAuth.handleIndex === "number" && daemonAuth.personaGroupId) litByIndex.set(daemonAuth.handleIndex, { group: daemonAuth.personaGroupId, catalogUrl: ctx.faceCatalogUrl ?? null });
         for (const entry of litSiblings.values()) {
@@ -2180,7 +2180,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             catalog: async () => lit?.catalogUrl ? await findOrThrow(ctx.repo, lit.catalogUrl, `the catalog half of h${handleIndex}`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never : null,
           };
         });
-        const control = controlOf(ctx);
+        const control = vesselStateOf(ctx);
         const unshare = Array.isArray(args["unshare"]) ? (args["unshare"] as unknown[]).filter((s): s is string => typeof s === "string") : [];
         // THE NAMES A SHARE LINE TOOK OUT (`--read-remove`, `--write-remove`): each pair's landed grant revokes.
         const retract = Array.isArray(args["retract"])

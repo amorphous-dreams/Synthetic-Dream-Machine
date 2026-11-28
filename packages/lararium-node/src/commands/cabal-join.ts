@@ -37,13 +37,13 @@ import { readRealmBoardFrontiers, holderHand } from "@lararium/mesh/realm-fronti
 import { readFrontierPins, writeFrontierPin } from "@lararium/mesh/edge-frontier-board";
 import { type AdmissionDials } from "@lararium/mesh/admission-price";
 import { ownEntry } from "@lararium/mesh/stored-value";
-import { readControlHome } from "@lararium/mesh/control-home";
 import { type LarDoc } from "@lararium/mesh/base-doc";
 import { admitOnLineage, type LineageAdmission } from "../realm-admission.js";
 import { larBootstrapPath } from "../vessel-paths.js";
 import { loadFaceAtomKey } from "../face-atom-store.js";
 import { readVesselEdgeBoard, readRealmNexus, vesselEdgeCharter } from "../edge-board.js";
 import { leaseLineageOfNexus } from "../lease-charter.js";
+import { openVesselSecretHome } from "../secret-home-store.js";
 import { verifyEd25519 } from "@lararium/mesh/ed25519-door";
 import { cabalInviteBytes } from "@lararium/mesh/cabal-invite";
 
@@ -282,14 +282,13 @@ export async function runCabalJoin(
     // so this refusal fires only when NEITHER the board nor the caller supplied one.
     const daemonUrl = daemonDocUrlFromBootstrap();
     if (daemonUrl) {
-      const dh = await materializeSharedLarDoc(repo, daemonUrl as never, "daemon");
       const lineage = realmNexus === null ? null : leaseLineageOfNexus(opts.sealHome, realmNexus);
       // A realm whose charter this vessel cannot verify reads no fence: a refusal still narrows, and only an admission waits on it (below).
       epochUnreadable = lineage === null && opts.epoch === undefined;
-      // THE LEASE SLOTS REST IN THE CONTROL DOCUMENT, read through the vessel's own stand (the custody row first, the key
-      // stood before a byte reads). M16 holds there too: a control document unnamed or unread never prices at genesis.
+      // THE LEASE SLOTS REST IN THE VESSEL'S FIXED-TITLE STATE (its secret home), read through the vessel's own custody (the
+      // row first, the key stood before a byte reads). M16 holds there too: a state that will not open never prices at genesis.
       let control: LarDoc | undefined;
-      try { control = (await readControlHome(repo, dh)).doc(); }
+      try { control = (await openVesselSecretHome(repo)).handle.doc(); }
       catch (e) {
         if (opts.epoch === undefined) {
           throw new CabalJoinError(

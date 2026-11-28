@@ -7,24 +7,24 @@ import { describe, expect, test } from "vitest";
 import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import {
   CONTROL_HOME_ID, DAEMON_BAG_ID, OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX, EFFECT_URI_PREFIX,
-  controlHomeUrlOf, controlHomeRefusal, controlStoreOf, emptyLarDoc, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, expandRecipe, leaseEpochPrefix, standControlHome, wornFaceWikiBags, vesselOnlyDocIds, makeVesselOnlyDocs, storedLarRecord, type LarDoc,
+  VESSEL_STATE_HOME, controlHomeUrlOf, controlHomeRefusal, controlStoreOf, emptyLarDoc, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, expandRecipe, leaseEpochPrefix, standControlHome, wornFaceWikiBags, vesselOnlyDocIds, makeVesselOnlyDocs, storedLarRecord, type LarDoc,
   SealedDocumentStore, bindSecretHomeRest, enrollSecretHome, mintSecretHomeAddress, mintVesselDocumentId, nameControlHome, openSecretHome, vesselHeldHomes,
 } from "../src/index.js";
 
 describe("the vessel's control document", () => {
-  test("vessel-only names include control and daemon bindings alone, and refresh preserves additions", () => {
+  test("vessel-only names include the vessel state and its daemon bindings alone (never a bags/control row), and refresh preserves additions", () => {
     const doc = emptyLarDoc();
-    for (const [title, text] of [[`${CONTROL_HOME_ID}/daemon-slot/draft/g`, "automerge:slot"], [`${CONTROL_HOME_ID}/daemon-canon/face`, "automerge:canon"], ["user/wiki", "automerge:user"]]) {
+    for (const [title, text] of [[`${VESSEL_STATE_HOME}/daemon-slot/draft/g`, "automerge:slot"], [`${VESSEL_STATE_HOME}/daemon-canon/face`, "automerge:canon"], [`${CONTROL_HOME_ID}/daemon-slot/draft/old`, "automerge:old"], ["user/wiki", "automerge:user"]]) {
       doc.tiddlers[title] = storedLarRecord(title, { text }, "test");
     }
-    expect(vesselOnlyDocIds(doc, "automerge:control")).toEqual(new Set(["control", "slot", "canon"]));
+    expect(vesselOnlyDocIds(doc, "automerge:state")).toEqual(new Set(["state", "slot", "canon"]));
     const live = makeVesselOnlyDocs();
     live.add("secret");
-    live.refresh(doc, "automerge:control");
+    live.refresh(doc, "automerge:state");
     expect(live.has("secret")).toBe(true);
     expect(live.has("slot")).toBe(true);
     expect(live.has("user")).toBe(false);
-    live.refresh(emptyLarDoc(), "automerge:control");
+    live.refresh(emptyLarDoc(), "automerge:state");
     expect(live.has("slot")).toBe(false);
   });
   test("a storage-less Repo (a suite's) mints one control document in memory and names it; CONTROL: a second stand returns that same document", async () => {

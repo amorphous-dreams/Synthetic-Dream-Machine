@@ -12,7 +12,7 @@
 import { describe, expect, test } from "vitest";
 import { generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl, type DocumentId } from "@automerge/automerge-repo";
 import { crossroadsDocUrl } from "@lararium/mesh/deterministic-doc";
-import { makeVesselOnlyDocs } from "@lararium/mesh/control-home";
+import { makeVesselOnlyDocs } from "@lararium/mesh/vessel-only-book";
 import { oracleGenesisDocUrl } from "@lararium/mesh/genesis-doc";
 import { hearthCrossingOf, provenHearthDaemon } from "../src/hearth-canon.js";
 import { browserShareConfig } from "../src/open-browser-vessel.js";

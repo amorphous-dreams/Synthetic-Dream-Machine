@@ -148,18 +148,23 @@ vi.mock("@lararium/mesh/face-reading", async (real) => {
     }),
   };
 });
+// The lease slots and the device pointers rest in the vessel's fixed-title state (its secret home), opened through custody.
+vi.mock("../src/secret-home-store.js", async (real) => ({
+  ...(await real<Record<string, unknown>>()),
+  openVesselSecretHome: async () => ({ handle: { doc: () => ({ tiddlers: seam.control }) } }),
+}));
 vi.mock("../src/persona-act-store.js", () => ({ readFacePersonaRecords: async () => seam.records, appendPersonaActs: (_handle: unknown, acts: unknown[]) => { seam.appended.push(...acts); } }));
 
 import { runDeviceAdmit } from "../src/commands/device-admit.js";
 import { edgeBodyDigest } from "@lararium/mesh/face-anchor";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { VESSEL_STATE_HOME } from "@lararium/mesh/vessel-state";
 import { MemoryTiddlerStore } from "@lararium/tw5";
 import { testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 // The daemon doc names the vessel's control document, where the lease slots rest (a fence read refuses where it names none).
-const daemonDoc = { tiddlers: { [T.group]: { text: "group-zero" }, [T.kel]: { text: "kel-zero" }, [CONTROL_HOME_ID]: { text: "automerge:control", tiddler: { text: "automerge:control" } } } };
+const daemonDoc = { tiddlers: { [T.group]: { text: "group-zero" }, [T.kel]: { text: "kel-zero" } } };
 const repo = {
-  find: async (url: string) => ({ url, doc: () => (url === "automerge:daemon" ? daemonDoc : url === "automerge:control" ? { tiddlers: seam.control } : {}) }),
+  find: async (url: string) => ({ url, doc: () => (url === "automerge:daemon" ? daemonDoc : {}) }),
   flush: async () => {},
 } as never;
 const JOINEE = "6e7a1cdd29b0b78fd13af4c5598feff4ef2a97166e3ca6f2e4fbfccd80505bf1";
@@ -222,7 +227,7 @@ describe("a replayed answer carries the seated edge, never a re-minted one", () 
 
   // THE HEARTH'S DAEMON WORKING DOCUMENT RIDES THE SIGNED EDGE ACT (road row `L4f`): the door reads the working slot its own
   // control document names for the face, and the root signs it into the joinee's `device-edge` act.
-  const WORKING_ROW = `${CONTROL_HOME_ID}/daemon-slot/working/${encodeURIComponent("group-zero")}`;
+  const WORKING_ROW = `${VESSEL_STATE_HOME}/daemon-slot/working/${encodeURIComponent("group-zero")}`;
   /** A control row in the stored record's own shape (the door reads its text through the mesh's reader). */
   const row = (text: string) => ({ text, tiddler: { text } });
   const edgeActs = (acts: readonly Act[]) => acts.filter((a) => a.body["act"] === "device-edge");
@@ -235,8 +240,8 @@ describe("a replayed answer carries the seated edge, never a re-minted one", () 
 
   test("CONTROL (L4f): a hearth that stands no working slot for the face, only a draft slot or another face's, names none", async () => {
     seam.control = {
-      [`${CONTROL_HOME_ID}/daemon-slot/draft/${encodeURIComponent("group-zero")}`]: row("automerge:draft"),
-      [`${CONTROL_HOME_ID}/daemon-slot/working/${encodeURIComponent("group-two")}`]: row("automerge:other-working"),
+      [`${VESSEL_STATE_HOME}/daemon-slot/draft/${encodeURIComponent("group-zero")}`]: row("automerge:draft"),
+      [`${VESSEL_STATE_HOME}/daemon-slot/working/${encodeURIComponent("group-two")}`]: row("automerge:other-working"),
     };
     const { acts } = await seatFirst();
     expect(edgeActs(acts).map((a) => "hearthDaemon" in a.body)).toEqual([false]);

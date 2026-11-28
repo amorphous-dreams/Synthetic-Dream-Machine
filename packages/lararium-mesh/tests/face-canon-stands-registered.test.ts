@@ -5,9 +5,10 @@
  * unlit registers no daemon bag (`wornFaceWikiBags`), so it stands no canon either: `standingDaemonCanonBag` answers the
  * canon's bag under the one condition the register set reads.
  */
+import { VESSEL_STATE_HOME } from "../src/vessel-state.js";
 import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import { describe, expect, test } from "vitest";
-import { CONTROL_HOME_ID, daemonFaceCanonBag, emptyLarDoc, standFaceDaemonCanon, standingDaemonCanonBag, tiddlerText, wornFaceWikiBags, type LarDoc } from "../src/index.js";
+import { daemonFaceCanonBag, emptyLarDoc, standFaceDaemonCanon, standingDaemonCanonBag, tiddlerText, wornFaceWikiBags, type LarDoc } from "../src/index.js";
 
 const F = "123e4567-e89b-42d3-a456-426614174000";
 
@@ -31,14 +32,14 @@ describe("the face daemon canon follows its registration", () => {
       // THE MAP STANDS BEFORE THE DOCUMENT: at this call no handle for the id stands on the Repo yet.
       mapped.push({ bagId, documentId, held: Object.keys(repo.handles).includes(documentId) });
     };
-    const first = await standFaceDaemonCanon({ repo, control, faceRelation: F, beforeFirstByte });
+    const first = await standFaceDaemonCanon({ repo, state: control, faceRelation: F, beforeFirstByte });
     expect(first.bagId).toBe(registered);
     expect(wornFaceWikiBags({ lit: true, daemonCanon: first.bagId }).sealed).toContain(first.bagId);
     expect(mapped).toEqual([{ bagId: registered, documentId: first.documentId, held: false }]);
-    const named = tiddlerText(control.doc()?.tiddlers?.[`${CONTROL_HOME_ID}/daemon-canon/${encodeURIComponent(F)}`] as never);
+    const named = tiddlerText(control.doc()?.tiddlers?.[`${VESSEL_STATE_HOME}/daemon-canon/${encodeURIComponent(F)}`] as never);
     expect(named).toBe(first.url);
     // A second stand reads the control document's name and stands the same document: one canon per face.
-    const second = await standFaceDaemonCanon({ repo, control, faceRelation: F, beforeFirstByte });
+    const second = await standFaceDaemonCanon({ repo, state: control, faceRelation: F, beforeFirstByte });
     expect(second.url).toBe(first.url);
     expect(mapped[1]).toMatchObject({ bagId: registered, documentId: first.documentId });
   });
@@ -47,7 +48,7 @@ describe("the face daemon canon follows its registration", () => {
     // The canon rests sealed under the face; a restart's load of it waits (`door-unanswered`) for the daemon island, which
     // opens only after this stand returns. A reopen that awaited the document would hold the composition forever.
     const control = new Repo({ network: [] }).create<LarDoc>(emptyLarDoc());
-    const minted = await standFaceDaemonCanon({ repo: new Repo({ network: [] }), control, faceRelation: F });
+    const minted = await standFaceDaemonCanon({ repo: new Repo({ network: [] }), state: control, faceRelation: F });
     const stalled: StorageAdapterInterface = {
       load: (_key: StorageKey) => new Promise<Uint8Array | undefined>(() => {}),
       loadRange: (_prefix: StorageKey) => new Promise<Chunk[]>(() => {}),
@@ -55,7 +56,7 @@ describe("the face daemon canon follows its registration", () => {
     };
     const restarted = new Repo({ network: [], storage: stalled });
     const reopened = await Promise.race([
-      standFaceDaemonCanon({ repo: restarted, control, faceRelation: F }),
+      standFaceDaemonCanon({ repo: restarted, state: control, faceRelation: F }),
       new Promise<"held">((done) => setTimeout(() => done("held"), 2_000)),
     ]);
     expect(reopened, "the reopen waited on the canon's sealed load").not.toBe("held");

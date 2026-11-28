@@ -18,7 +18,8 @@
 import { describe, expect, test } from "vitest";
 import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { CompositeStore } from "@lararium/mesh/composite-store";
-import { CONTROL_HOME_ID, bagUri } from "@lararium/mesh/lar-uris";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { VESSEL_STATE_HOME } from "@lararium/mesh/vessel-state";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { daemonFaceCanonBag, wikiSlotUri, computeRecipeFingerprint } from "@lararium/mesh/wiki-recipe";
 import { emptyLarDoc, mutableLarRecord, type LarDoc } from "@lararium/mesh/base-doc";
@@ -34,9 +35,9 @@ const R0 = "11111111-1111-4111-8111-111111111110", R1 = "11111111-1111-4111-8111
 function stand() {
   const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
   const control = new CompositeStore();
-  control.addLayer({ bagId: CONTROL_HOME_ID, store: new MemoryTiddlerStore(CONTROL_HOME_ID), writable: true, defaultWritable: true });
+  control.addLayer({ bagId: VESSEL_STATE_HOME, store: new MemoryTiddlerStore(VESSEL_STATE_HOME), writable: true, defaultWritable: true });
   const slots = litFaceSlotDocs({
-    repo, daemonStore: control, control, catalog: null,
+    repo, daemonStore: control, state: control, catalog: null,
     deviceScoped: (slug) => slug === "daemon",
   });
   return { repo, control, slots };
@@ -47,9 +48,9 @@ describe("every lit face resolves its own slots", () => {
     // The binding rows rest in the daemon document: this rig lays that bag beside the control home.
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
     const home = new CompositeStore();
-    home.addLayer({ bagId: CONTROL_HOME_ID, store: new MemoryTiddlerStore(CONTROL_HOME_ID), writable: true, defaultWritable: false });
+    home.addLayer({ bagId: VESSEL_STATE_HOME, store: new MemoryTiddlerStore(VESSEL_STATE_HOME), writable: true, defaultWritable: false });
     home.addLayer({ bagId: bagUri("daemon"), store: new MemoryTiddlerStore(bagUri("daemon")), writable: true, defaultWritable: true });
-    const slots = litFaceSlotDocs({ repo, daemonStore: home, control: home, catalog: null, deviceScoped: (slug) => slug === "daemon" });
+    const slots = litFaceSlotDocs({ repo, daemonStore: home, state: home, catalog: null, deviceScoped: (slug) => slug === "daemon" });
     const REALM = "e".repeat(64);
     const door = { mint: async () => ({ docId: `0x${"d".repeat(64)}` }) } as never;
     const writer = slots.of({ group: "group-h0", atomKey: "a0".repeat(32), faceDoor: door, workbenchRealm: async () => REALM, workbenchWrites: async () => true });
@@ -88,8 +89,8 @@ describe("every lit face resolves its own slots", () => {
     const d0 = await worn.slotDoc("daemon", "working");
     const d1 = await sibling.slotDoc("daemon", "working");
     expect(d1?.url).not.toBe(d0?.url);
-    expect((await control.get(`${CONTROL_HOME_ID}/daemon-slot/working/group-h0`))?.tiddler.text).toBe(d0?.url);
-    expect((await control.get(`${CONTROL_HOME_ID}/daemon-slot/working/group-h1`))?.tiddler.text).toBe(d1?.url);
+    expect((await control.get(`${VESSEL_STATE_HOME}/daemon-slot/working/group-h0`))?.tiddler.text).toBe(d0?.url);
+    expect((await control.get(`${VESSEL_STATE_HOME}/daemon-slot/working/group-h1`))?.tiddler.text).toBe(d1?.url);
     // The cache answers one resolver per face; a drop forgets it.
     expect(slots.of({ group: "group-h1", atomKey: "a1".repeat(32) })).toBe(sibling);
     slots.drop("group-h1");
@@ -103,7 +104,7 @@ describe("every lit face resolves its own slots", () => {
     const wornHandle = repo.create<LarDoc>(emptyLarDoc());
     const wornStore = new AutomergeDocStore(wornHandle, WORKING);
     const target = makeLitFaceTarget({
-      worn: () => worn, siblings: () => [sib], control: () => control,
+      worn: () => worn, siblings: () => [sib], state: () => control,
       wornStore: (bag) => (bag === WORKING ? wornStore : null),
       storeOf: async (url, bag) => new AutomergeDocStore(await repo.find<LarDoc>(url as never), bag),
     });
@@ -115,17 +116,17 @@ describe("every lit face resolves its own slots", () => {
   // sibling's own wear refused `WorkingLayerAttachRefusal` (`document-unavailable`).
   test("L2 — a named sibling's daemon slot opens at its own wear alone: under another face's wear it resolves nothing and names no document", async () => {
     const r = targetRig();
-    await r.control.put(mutableLarRecord(`${CONTROL_HOME_ID}/daemon-slot/working/group-h0`, { text: r.wornHandle.url }, "test"), { kind: "lares-verb", requestId: "t" });
+    await r.control.put(mutableLarRecord(`${VESSEL_STATE_HOME}/daemon-slot/working/group-h0`, { text: r.wornHandle.url }, "test"), { kind: "lares-verb", requestId: "t" });
     for (const kind of ["working", "personal", "draft"] as const) {
       expect(await r.target(1, wikiSlotUri("daemon", kind)), `the sibling's ${kind} slot resolves nothing under h0's wear`).toBeNull();
-      expect(await r.control.get(`${CONTROL_HOME_ID}/daemon-slot/${kind}/group-h1`), `no control row names a ${kind} document for the sibling`).toBeNull();
+      expect(await r.control.get(`${VESSEL_STATE_HOME}/daemon-slot/${kind}/group-h1`), `no control row names a ${kind} document for the sibling`).toBeNull();
     }
     expect((await r.target(0, WORKING))!.store, "CONTROL: the worn face's own slot resolves").toBe(r.wornStore);
   });
 
   test("L3 — the worn face, named or not, resolves the composite's layer and reads as its owner", async () => {
     const r = targetRig();
-    await r.control.put(mutableLarRecord(`${CONTROL_HOME_ID}/daemon-slot/working/group-h0`, { text: r.wornHandle.url }, "test"), { kind: "lares-verb", requestId: "t" });
+    await r.control.put(mutableLarRecord(`${VESSEL_STATE_HOME}/daemon-slot/working/group-h0`, { text: r.wornHandle.url }, "test"), { kind: "lares-verb", requestId: "t" });
     for (const face of [null, 0]) {
       const out = await r.target(face, WORKING);
       expect(out!.store).toBe(r.wornStore);
@@ -138,7 +139,7 @@ describe("every lit face resolves its own slots", () => {
     expect(await r.target(2, WORKING)).toBeNull();
     expect(await r.target(1, "lar:///ha.ka.ba/bags/sdm")).toBeNull();
     const canon = r.repo.create<LarDoc>(emptyLarDoc());
-    await r.control.put(mutableLarRecord(`${CONTROL_HOME_ID}/daemon-canon/${R1}`, { text: canon.url }, "test"), { kind: "lares-verb", requestId: "t" });
+    await r.control.put(mutableLarRecord(`${VESSEL_STATE_HOME}/daemon-canon/${R1}`, { text: canon.url }, "test"), { kind: "lares-verb", requestId: "t" });
     const own = await r.target(1, daemonFaceCanonBag(R1));
     expect(own!.owner).toBe(1);
     expect(await r.target(1, daemonFaceCanonBag(R0))).toBeNull();
@@ -153,20 +154,20 @@ describe("every lit face resolves its own slots", () => {
     const worn: LitFace = { handleIndex: 0, group: "group-h0", relation: R0 };
     const sib: LitFace = { handleIndex: 1, group: "group-h1", relation: R1 };
     const target = makeLitFaceTarget({
-      worn: () => worn, siblings: () => [sib], control: () => control,
+      worn: () => worn, siblings: () => [sib], state: () => control,
       wornStore: () => null,
       storeOf: async (url, bag) => new AutomergeDocStore(await repo.find<LarDoc>(url as never), bag),
     });
     // The face-canon wave: the sibling's canon reads its document off the control document, and names no slot.
     const canon = repo.create<LarDoc>(emptyLarDoc());
-    await control.put(mutableLarRecord(`${CONTROL_HOME_ID}/daemon-canon/${R1}`, { text: canon.url }, "test"), { kind: "lares-verb", requestId: "t" });
+    await control.put(mutableLarRecord(`${VESSEL_STATE_HOME}/daemon-canon/${R1}`, { text: canon.url }, "test"), { kind: "lares-verb", requestId: "t" });
     expect((await target(1, daemonFaceCanonBag(R1)))!.owner, "the setup took: the sibling's canon resolves").toBe(1);
     // The face-named working wave opens nothing of the sibling's.
     expect(await target(1, WORKING)).toBeNull();
     expect(notices, "neither wave posts a slot notice").toEqual([]);
     // CONTROL: the worn face's own resolver names its slot unmarked.
     notices.length = 0;
-    const own = await wornNotices.announcing(litFaceSlotDocs({ repo, daemonStore: control, control, catalog: null, deviceScoped: (slug) => slug === "daemon", announceDevice: wornNotices.device })
+    const own = await wornNotices.announcing(litFaceSlotDocs({ repo, daemonStore: control, state: control, catalog: null, deviceScoped: (slug) => slug === "daemon", announceDevice: wornNotices.device })
       .of({ group: "group-h0", atomKey: "a0".repeat(32), faceDoor })).slotDoc("daemon", "working");
     expect(notices.length).toBeGreaterThan(0);
     for (const n of notices) { expect(n.bagId).toBe(WORKING); expect(n.sibling, "the worn face's slot rides unmarked").toBeUndefined(); }
@@ -177,13 +178,13 @@ describe("every lit face resolves its own slots", () => {
     const r = targetRig();
     // The sibling's own wear (earlier) minted its working slot and named it under its group.
     const own = r.repo.create<LarDoc>(emptyLarDoc());
-    await r.control.put(mutableLarRecord(`${CONTROL_HOME_ID}/daemon-slot/working/group-h1`, { text: own.url }, "test"), { kind: "lares-verb", requestId: "t" });
+    await r.control.put(mutableLarRecord(`${VESSEL_STATE_HOME}/daemon-slot/working/group-h1`, { text: own.url }, "test"), { kind: "lares-verb", requestId: "t" });
     const out = await r.target(1, WORKING);
     expect(out, "the sibling's named working slot resolves").not.toBeNull();
     expect((out!.store as unknown as { documentId: string }).documentId).toBe(own.documentId);
     expect(out!.owner, "its owner reads as the sibling").toBe(1);
     expect(await r.target(1, wikiSlotUri("daemon", "draft")), "a kind its wear never named resolves nothing").toBeNull();
-    expect(await r.control.get(`${CONTROL_HOME_ID}/daemon-slot/draft/group-h1`), "and no row mints for it").toBeNull();
+    expect(await r.control.get(`${VESSEL_STATE_HOME}/daemon-slot/draft/group-h1`), "and no row mints for it").toBeNull();
     expect((await r.target(0, WORKING))?.store ?? null, "CONTROL: the worn face's slot still reads the composite alone").toBe(r.wornStore);
   });
 });

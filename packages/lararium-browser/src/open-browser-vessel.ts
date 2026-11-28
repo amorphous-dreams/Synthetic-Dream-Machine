@@ -79,7 +79,6 @@ import {
 } from "@lararium/mesh/sibling-channel";
 import { groupSecretSealTitle, verifyGroupSecretSeal } from "@lararium/mesh/persona-group-secret";
 import { leaseEpochPrefix } from "@lararium/mesh/epoch-lease";
-import { controlHomeUrlOf } from "@lararium/mesh/control-home";
 import { vesselOnlyBook } from "@lararium/mesh/vessel-only-book";
 import { islandPeersOf, wikiIslandPeersOf } from "@lararium/mesh/island-repo-door";
 import { slugFromUri, recipeHostFacets } from "@lararium/mesh/wiki-recipe";
@@ -1006,10 +1005,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // row rests clear before the place tree binds and under the seal after; a sealed keystore with no unlock yet answers
   // `vessel-locked`, and the daemon island's open asks again once the boot's unlock stood.
   const standFloorKey = () => standBrowserFloorKey(idbName, repo);
-  // THE DEVICE DAEMON DOCUMENTS the control document names, filed by their owners (answers whether any filing moved): the
-  // map re-reads, and the lifted session seals what now maps to its face.
-  const classDeviceDaemonDocs = (controlDoc: LarDoc | undefined): void => {
-    if (!deviceDocs.readControl(controlDoc)) return;
+  // THE DEVICE DAEMON DOCUMENTS the vessel's fixed-title state names, filed by their owners (answers whether any filing moved):
+  // the map re-reads, and the lifted session seals what now maps to its face.
+  const classDeviceDaemonDocs = (stateDoc: LarDoc | undefined): void => {
+    if (!deviceDocs.readState(stateDoc)) return;
     sealedRest.store.mapMoved();
     reverdict();
     const session = sealedCells.session;
@@ -1033,20 +1032,20 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     daemon.on("change", refresh);
   };
   // THE VESSEL'S FIXED-TITLE STATE (`vessel-state`): its secret home, opened from the keystore at each asking; the last one that
-  // opened answers the synchronous reads (the floor pin's doors).
+  // opened answers the synchronous reads (the floor pin's doors). Its first open watches it: the device documents its rows name
+  // file by their owners, and the vessel-only deny set reads them.
   let stateHome: DocHandle<LarDoc> | null = null;
-  const readStateDoc = async (): Promise<DocHandle<LarDoc>> => (stateHome = (await openBrowserSecretHome(idbName, repo)).handle);
-  let watchedControl: DocHandle<LarDoc> | null = null;
-  const watchControl = async (daemon: DocHandle<LarDoc>): Promise<DocHandle<LarDoc>> => {
-    const handle = await standControlHome(repo, daemon);
-    if (watchedControl !== handle) {
-      watchedControl = handle;
+  const readStateDoc = async (): Promise<DocHandle<LarDoc>> => {
+    const handle = (await openBrowserSecretHome(idbName, repo)).handle;
+    if (stateHome !== handle) {
+      stateHome = handle;
       const refresh = () => { vesselOnly.refresh(handle.doc(), handle.url); classDeviceDaemonDocs(handle.doc()); };
       refresh();
       handle.on("change", refresh);
     }
     return handle;
   };
+  const watchControl = (daemon: DocHandle<LarDoc>): Promise<DocHandle<LarDoc>> => standControlHome(repo, daemon);
   held.stood.push({ what: "repo", down: () => { sealedRest.store.endHydration(); return repo.shutdown(); } });
   // The first stand reads the keystore, so it runs once the Repo's stand-down stands recorded: a read that faults ends the
   // boot through its own teardown, never around it.
@@ -1906,7 +1905,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           const wornIntentsUrl = foundingFace ? social.intentsUrl : tiddlerText(ownEntry(assembly.catalogHandle.doc()?.tiddlers, wornIntentsBag));
           if (!wornIntentsUrl) throw new Error("[lararium-browser] Face proof: plane intents; the vessel names no intents plane for a face with a sealed anchor; re-found or re-admit the face");
           const planeDoc = heldDocOf(repo, wornPlaneUrl);   // an unsynced plane proves from the admit bundle in the daemon doc
-          const daemonDoc = heldDocOf(repo, social.daemonUrl);
           const proof = proveFaceFromLog({
             // THE CARRIED ACTS rest in the secret home until the plane syncs (an unsynced plane proves from the admit's acts there).
             records: faceRecordsOf([planeDoc, secretHome?.handle.doc()], wornGroup),
@@ -1915,7 +1913,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           });
           if (!proof.ok) throw new Error(`[lararium-browser] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
           wornRelation = faceRelationOf(proof.projection);
-          if (wornRelation) daemonCanon = await standFaceDaemonCanon({ repo, control: await watchControl(await repo.find<LarDoc>(social.daemonUrl as AutomergeUrl)), faceRelation: wornRelation,
+          if (wornRelation) daemonCanon = await standFaceDaemonCanon({ repo, state: await readStateDoc(), faceRelation: wornRelation,
             beforeFirstByte: (bagId, documentId) => { if (deviceDocs.canonMinted(bagId, documentId, wornRelation!)) reverdict(); sealedRest.store.mapMoved(); } });
           const kahua = adoptKahuaPlane(proof.projection, wornGroup, kahuaCatalogRow(assembly.catalogHandle.doc()));
           if (kahua.staleRow) console.warn(`[lararium-browser] kahua stage: the catalog row names ${kahua.staleRow}, a stale hint (the face pins ${"mount" in kahua ? kahua.mount : "none"}); the pin decides`);
@@ -1926,7 +1924,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           // missing or replayed older slot never lowers the epoch this device already accepted.
           const head = proof.projection.head;
           const leasePrefix = leaseEpochPrefix(wornGroup);
-          const controlUrl = controlHomeUrlOf(daemonDoc), leaseDoc = controlUrl ? heldDocOf(repo, controlUrl) : undefined;
+          const leaseDoc = secretHome?.handle.doc();
           const leaseSlots = Object.entries(leaseDoc?.tiddlers ?? {}).filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
           const observedLease = readFace(personaKelChain)?.observedLease(wornGroup, leaseSlots) ?? 0;
           const pinned = raiseFaceFrontier(faceAnchor, { leaseEpoch: observedLease, ...(head ? { actSeq: head.seq, actCid: head.cid } : {}) });
@@ -2353,6 +2351,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         daemonAuth,
       });
       await watchControl(await repo.find<LarDoc>(social.daemonUrl as AutomergeUrl));
+      // The vessel state opens (and its watch stands) before the floor's key: its rows name the device documents the map files.
+      await readStateDoc().catch(() => null);
       // The boot's unlock stood by now where the keystore rests sealed: the floor's key stands, and its registry files.
       floorKeyGrant = await standFloorKey();
       watchFloorRegistry(await repo.find<LarDoc>((bootstrap?.floor?.daemonUrl ?? social.daemonUrl) as AutomergeUrl));
@@ -2427,10 +2427,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         if (!seal) {
           console.warn("[sibling] this face holds no PersonaGroup secret sealed to this device — its enrolment delivered none, so no sibling channel stands.");
         } else {
-          // THE LEASE READER: the face reading over the control document's lease slots, read at every licensing act, so a
+          // THE LEASE READER: the face reading over the vessel state's lease slots, read at every licensing act, so a
           // roll that lands after the channel stood refuses an edge bound below it at the next act.
           const leasePrefix = leaseEpochPrefix(group);
-          const leaseSlotsNow = (): Array<string | null> => Object.entries(daemon.controlHandle.doc()?.tiddlers ?? {})
+          const leaseSlotsNow = (): Array<string | null> => Object.entries(secretHome?.handle.doc()?.tiddlers ?? {})
             .filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
           siblings = await standSiblingChannel({
             // THE CHANNEL SEATS AS THE WIRE LEG OF THIS FACE AT THIS NEXUS: a sibling reads the pair's alias store id.
