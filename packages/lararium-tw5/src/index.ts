@@ -106,9 +106,9 @@ export type {
   TW5TiddlerFields,
 } from "./types/tiddlywiki.d.ts";
 
-export { IslandAdaptor, HAND_ACT, PARALLEL_DRAFT_ACT, SHORE_RECEIPTS_KEPT, shoreRecordHash } from "./island-adaptor.js";
+export { IslandAdaptor, HAND_ACT, PARALLEL_DRAFT_ACT, shoreRecordHash, shoreRecordHashRuns } from "./island-adaptor.js";
 export type { ShoreReceipt, ShoreVotum, ShoreCustody } from "./island-adaptor.js";
-export { layIslandComposition, mountIslandShore, wikiLandedCovers, bindRecoveryAtRest, wikiReceiptsOf, onWikiReceipt, wikiWearsFace, bindShoreCustody, wikiStampsReceipt, seatShore } from "./island-recipe.js";
+export { layIslandComposition, mountIslandShore, wikiLandedCovers, bindRecoveryAtRest, wikiCollectReceipts, wikiCollectsAct, wikiWearsFace, bindShoreCustody, wikiStampsReceipt, seatShore } from "./island-recipe.js";
 export type { LayIslandCompositionInput, RecipeReadyBinding } from "./island-recipe.js";
 export { composeCrossFaceView, composeFaceEngine, crossFaceViewSource, enginePool, faceEngines } from "./face-engine.js";
 export { composeWikiEngine, composeWikiEngineSource, wikiEngines } from "./wiki-engine.js";

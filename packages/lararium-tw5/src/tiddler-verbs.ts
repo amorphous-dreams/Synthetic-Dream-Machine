@@ -61,7 +61,7 @@
  * comes from the floor-admitted preloads alone). A RENDERED TIDDLER (`rendered-from`) takes no put and no delete here:
  * only the renderer writes it, and both refuse `rendered-derives`. No caller's action string rides these doors: an action string
  * runs only as a CARRIER'S OWN ACT (`carrier-act`, landing 13), the `acts/<title>` tiddler a carrier's skin row names, live on
- * the engine under the caller's face, its writes tagged with the act so the island shore's receipt names it, and its writing
+ * the engine under the caller's face, its writes tagged with the act so its answer carries their receipts (the CRDT remembers every hand), and its writing
  * messages (`tm-rename-tiddler`, `tm-relink-tiddler`) through the rename door.
  *
  * THE FAMILY LAW (`@lararium/mesh/family`) DECIDES WHERE A RECORD STANDS AND WHAT A DELETE MOVES. `position` and
@@ -136,7 +136,7 @@ import { wornOrigin } from "./verb-dispatcher.js";
 import { CallRefusal, callReaderOf, cureCall, floorReaderOf, type CallFloor, type CallSeat, type MacroCallParse } from "./modules/call.js";
 import type { AffordancePack } from "./affordance-pack.js";
 import { dryDepthOf, filterDepthArgs, muWordsOf, readDepthArgs } from "./modules/mu.js";
-import { wikiStampsReceipt, wikiWearsNext } from "./island-recipe.js";
+import { wikiCollectReceipts, wikiCollectsAct, wikiStampsReceipt, wikiWearsNext } from "./island-recipe.js";
 import { isTw5DocsBag, refuseTw5DocsWrite } from "./tw5-docs-library.js";
 import type { CallSource, VerbContext, VerbReactor } from "./verb-dispatcher.js";
 
@@ -1313,11 +1313,12 @@ async function bagSeat(opts: TiddlerVerbOptions, container: ReturnType<typeof re
     const held = await bare.read(title);
     return held ? stringsOf(held as Record<string, unknown>) : null;
   };
-  // A BAG'S OWN STORE PASSES BY THE SHORE, AND STILL STAMPS (landing 13): each record this seat lands or removes names its act
-  // and its hashes on the engine's receipts, as the shore stamps every save it makes.
+  // A BAG'S OWN STORE PASSES BY THE SHORE (landing 13): where an act asked for its receipts, each record this seat lands or
+  // removes joins them; any other put reads nothing more and digests nothing (the CRDT names its actor).
+  const act = actOf(ctx);
   const stamp = (kind: "save" | "delete", title: string, before: Record<string, string> | null, after: Record<string, string> | null): void =>
-    wikiStampsReceipt(opts.tw5, { kind, title, face: wornOrigin(ctx.worn).face, before: before ? hashOf(before) : null, after: after ? hashOf(after) : null, bag, act: actOf(ctx) });
-  const sink: MemeSink = {
+    wikiStampsReceipt(opts.tw5, { kind, title, face: wornOrigin(ctx.worn).face, before: before ? hashOf(before) : null, after: after ? hashOf(after) : null, bag, act });
+  const sink: MemeSink = !wikiCollectsAct(opts.tw5, act) ? bare : {
     ...bare,
     land: async (fields) => { const title = String((fields as { title?: unknown }).title ?? ""); const before = await read(title); await bare.land(fields); stamp("save", title, before, stringsOf(fields as Record<string, unknown>)); },
     tombstone: async (gone) => { const before = await read(gone); await bare.tombstone(gone); stamp("delete", gone, before, null); },
@@ -1915,8 +1916,8 @@ export const RENDERING_MESSAGES: ReadonlySet<string> = new Set(["tm-download-fil
  *              door alone): the act runs once over a capture view, every title it would move meets them, and a refusal there
  *              lands nothing. The live run meets them again at each write.
  *
- * Every write crosses into the wiki tagged with the act (`<act>#<request>`), so the shore's receipt names the act that moved
- * it, and custody holds face against face at the shore (a write into another face's layer rides as a votum there).
+ * Every write crosses into the wiki tagged with the act (`<act>#<request>`), so the receipt of each record it moved rides this answer
+ * (receipts where an act or a votum moves a record; the CRDT remembers every hand), and custody holds face against face at the shore (a write into another face's layer rides as a votum there).
  *
  * MESSAGES FLOW THROUGH THEIR DOORS. A writing message (`tm-rename-tiddler`, `tm-relink-tiddler`) runs through the rename door,
  * in the order the act sent it, once the action string returns; each walks that door dry in the capture pass first, so a rename
@@ -2000,7 +2001,9 @@ export const makeCarrierActReactor = everyWiki(CARRIER_ACT_VERB, true, (opts: Ti
       recipe: anchor.recipe, address, act, decision: "dry", dry, writes, messages: sent };
   }
 
-  // LIVE: the reader view's reads, the live wiki's writes, each guarded and tagged with the act as it crosses.
+  // LIVE: the reader view's reads, the live wiki's writes, each guarded and tagged with the act as it crosses. The act asks the shore
+  // for the receipts its writes leave, and they ride this answer (no ring keeps them past it).
+  const collector = wikiCollectReceipts(opts.tw5, crossing);
   const wrote: string[] = [];
   const removed: string[] = [];
   const messages: ActMessage[] = [];
@@ -2054,7 +2057,9 @@ export const makeCarrierActReactor = everyWiki(CARRIER_ACT_VERB, true, (opts: Ti
     }];
   }
   widget.eventListeners = own;
-  widget.invokeActionString(actions, widget, undefined, variables);
+  // A live run that refuses mid-way still lets its collector go: what landed before the refusal drains, and nothing keeps it.
+  try { widget.invokeActionString(actions, widget, undefined, variables); }
+  catch (fault: unknown) { void collector.done().catch(() => {}); throw fault; }
   for (const event of owed) {
     const message = messageOf(event);
     if (message.from === undefined || message.to === undefined) { messages.push({ ...message, refused: "message-malformed" }); continue; }
@@ -2066,7 +2071,7 @@ export const makeCarrierActReactor = everyWiki(CARRIER_ACT_VERB, true, (opts: Ti
     }
   }
   return { has: hasLine(address, [param("recipe", anchor.recipe), param("act", act), param("decision", "acted")]),
-    recipe: anchor.recipe, address, act, decision: "acted", wrote: [...new Set(wrote)], removed: [...new Set(removed)], messages, receipt: crossing };
+    recipe: anchor.recipe, address, act, decision: "acted", wrote: [...new Set(wrote)], removed: [...new Set(removed)], messages, receipt: crossing, receipts: await collector.done() };
 });
 
 /** A message as an act's answer names it: its type, and a rename's `from` and `to` (the navigator's own reading of the event). */
@@ -2554,10 +2559,12 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
       perBag.set(row.bag, group);
     }
     for (const [landing, group] of perBag) {
-      // A LAYER'S ONE CHANGE PASSES BY THE SHORE, AND STILL STAMPS (landing 13): each member names the record it removed.
-      const before = new Map([...group.tombstones, ...group.retracts].map((member) => { const t = wiki.getTiddler(member); return [member, t ? hashOf(readRecord(t).fields) : null] as const; }));
+      // A LAYER'S ONE CHANGE PASSES BY THE SHORE (landing 13): where an act asked for its receipts, each member it removed joins
+      // them; any other delete digests nothing.
+      const collecting = wikiCollectsAct(opts.tw5, actOf(ctx));
+      const before = collecting ? new Map([...group.tombstones, ...group.retracts].map((member) => { const t = wiki.getTiddler(member); return [member, t ? hashOf(readRecord(t).fields) : null] as const; })) : null;
       await opts.composite.writeFamily([], group.tombstones, origin, { bag: landing as never, ...(group.retracts.length > 0 ? { retracts: group.retracts } : {}) });
-      for (const [member, hashBefore] of before) wikiStampsReceipt(opts.tw5, { kind: "delete", title: member, face: wornOrigin(ctx.worn).face, before: hashBefore, after: null, bag: landing, act: actOf(ctx) });
+      if (before) for (const [member, hashBefore] of before) wikiStampsReceipt(opts.tw5, { kind: "delete", title: member, face: wornOrigin(ctx.worn).face, before: hashBefore, after: null, bag: landing, act: actOf(ctx) });
     }
     for (const member of byHand) { wikiWearsNext(opts.tw5, member, wornOrigin(ctx.worn).face, actOf(ctx)); wiki.deleteTiddler(member); }
     return { recipe: anchor.recipe, title, decision: "removed", mode: modeName, tombstoned: tombstones, retracted: retracts, hash, consequence: read };
@@ -2630,7 +2637,7 @@ async function retractBareKapae(
   for (const row of acts) perBag.set(row.bag, [...(perBag.get(row.bag) ?? []), row.title]);
   for (const [landing, retracts] of perBag) {
     await opts.composite.writeFamily([], [], origin, { bag: landing as never, retracts });
-    // A kāpae retracted holds no record before or after; the receipt still names the act that moved it (landing 13).
+    // A kāpae retracted holds no record before or after; where an act asked for its receipts, the retract joins them (landing 13).
     for (const member of retracts) wikiStampsReceipt(opts.tw5, { kind: "delete", title: member, face: wornOrigin(ctx.worn).face, before: null, after: null, bag: landing, act: actOf(ctx) });
   }
   return { recipe: anchor.recipe, title, decision: "removed", mode, tombstoned: [], retracted: acts.map((row) => row.title), consequence };

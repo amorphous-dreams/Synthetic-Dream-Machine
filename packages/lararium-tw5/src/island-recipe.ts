@@ -301,17 +301,20 @@ export function wikiWearsNext(tw5: object, title: string, face: string | null | 
   adaptors.get(tw5 as TW5Engine)?.wearNext(title, face, act);
 }
 
-/** The receipts the shore over this engine stamped, latest last; an engine whose recipe mounted no shore answers none. */
-export function wikiReceiptsOf(tw5: object): readonly ShoreReceipt[] {
-  return adaptors.get(tw5 as TW5Engine)?.receipts() ?? [];
+/**
+ * An act asks the shore over this engine for the receipts its writes leave (`IslandAdaptor.collectReceipts`), for its own answer;
+ * `done()` drains the owed writes and answers them. An engine whose recipe mounted no shore answers none.
+ */
+export function wikiCollectReceipts(tw5: object, act: string): { done(): Promise<ShoreReceipt[]> } {
+  return adaptors.get(tw5 as TW5Engine)?.collectReceipts(act) ?? { done: async () => [] };
 }
 
-/** Hear each receipt the shore over this engine stamps; returns the unsubscribe (a no-op where no shore stands). */
-export function onWikiReceipt(tw5: object, hear: (receipt: ShoreReceipt) => void): () => void {
-  return adaptors.get(tw5 as TW5Engine)?.onReceipt(hear) ?? (() => {});
+/** True where an act asked this engine's shore for its receipts: a door computes a receipt's digests only then. */
+export function wikiCollectsAct(tw5: object, act: string): boolean {
+  return adaptors.get(tw5 as TW5Engine)?.collects(act) ?? false;
 }
 
-/** A door write that passes by the shore (a bag's own store, a layer's one change) stamps its receipt on this engine's shore. */
+/** A write an act moved past the shore (a bag's own store, a layer's one change) joins that act's receipts, where it asked. */
 export function wikiStampsReceipt(tw5: object, receipt: Parameters<IslandAdaptor["stampDoorWrite"]>[0]): void {
   adaptors.get(tw5 as TW5Engine)?.stampDoorWrite(receipt);
 }
