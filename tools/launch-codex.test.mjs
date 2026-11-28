@@ -46,6 +46,11 @@ const codexOf = (spawned) => { const s = sup(spawned); if (!s) return undefined;
 const unwrap = (spawned) => spawned.map((x) => (x.args?.includes?.("--supervise") ? codexOf([x]) : x));
 const ask = (w, o = {}) => ({ mode: "build", model: "gpt-6.1-terra", effort: "high", seatDir: w.seatDir, worktree: w.wt, ...o });
 const refuses = (w, o, re, readers) => assert.throws(() => preflight(ask(w, o), readers ?? w.readers), re);
+/** The preflight passes AND one of its WARNING lines matches `re`: a floor or used line warns, never walls. */
+const warns = (w, o, re, readers) => { const got = preflight(ask(w, o), readers ?? w.readers); assert.ok(got.warnings.some((l) => re.test(l)), `no warning matches ${re}: ${JSON.stringify(got.warnings)}`); return got; };
+/** A rate_limits record carrying both fields as given (each window an object, or absent). */
+const rateRecord = (rate_limits) => JSON.stringify({ type: "event_msg", payload: { type: "token_count", rate_limits: { limit_id: "codex", ...rate_limits } } });
+const both = (fiveHour, weekly) => rateRecord({ primary: { used_percent: fiveHour, window_minutes: 300, resets_at: 1800000300 }, secondary: { used_percent: weekly, window_minutes: 10080, resets_at: 1800604800 } });
 
 test("every mode carries approval never; no mode carries --ephemeral", () => {
   for (const mode of ["build", "read", "research"]) {
@@ -149,28 +154,83 @@ test("refuses a seat dir outside <scratch>/<lane>/, an absent brief, a model abs
   refuses(w, {}, /models cache/, { ...w.readers, modelsCache: () => null });
 });
 
-test("the pool: a pure read of the recorded line; at the floor refuses; CONTROL just above passes", () => {
-  const p = readPool([rate(60)]);
-  assert.equal(p.used, 60); assert.equal(p.winDays, 7); assert.equal(p.reset, 1793791489);
-  assert.equal(p.above, true);
-  assert.equal(readPool([rate(90)]).above, false, "exactly 10% left reads AT the floor");
-  assert.equal(readPool([rate(89.9)]).above, true);
+test("the pool: a pure read of the recorded line; at the floor warns and still passes; CONTROL just above carries no warning", () => {
+  const [p] = readPool([rate(60)]).windows;
+  assert.equal(p.used, 60); assert.equal(p.span, "7d"); assert.equal(p.reset, 1793791489);
+  assert.equal(p.crossed, null);
+  assert.equal(readPool([rate(90)]).windows[0].crossed, "floor", "exactly 10% left reads AT the floor");
+  assert.equal(readPool([rate(89.9)]).windows[0].crossed, null);
   assert.equal(readPool(["not json", "{}"]), null);
   assert.equal(readPool([]), null);
   assert.equal(readPool(null), null);
   const w = world();
-  refuses(w, {}, /at or below its floor/, { ...w.readers, rolloutLines: () => [rate(90)] });
-  refuses(w, {}, /at or below its floor/, { ...w.readers, rolloutLines: () => [rate(97)] });
-  assert.ok(preflight(ask(w, { mode: "read" }), { ...w.readers, rolloutLines: () => [rate(89.9)] }));
+  warns(w, {}, /WARNING: Codex 7d window at or below its 10% floor/, { ...w.readers, rolloutLines: () => [rate(90)] });
+  warns(w, {}, /WARNING: Codex 7d window at or below its 10% floor \(3\.0% left/, { ...w.readers, rolloutLines: () => [rate(97)] });
+  assert.deepEqual(preflight(ask(w, { mode: "read" }), { ...w.readers, rolloutLines: () => [rate(89.9)] }).warnings, []);
 });
 
-test("lead preflight floor", () => {
+test("lead preflight floor warns", () => {
   const w = world();
   const at = { ...w.readers, rolloutLines: () => [rate(90)] };
   const fifteen = { ...w.readers, rolloutLines: () => [rate(95)] };
-  refuses(w, { mode: "lead" }, /at or below its floor/, at);
-  refuses(w, { mode: "lead" }, /at or below its floor/, fifteen);
-  assert.ok(preflight(ask(w, { mode: "read" }), fifteen));
+  warns(w, { mode: "lead" }, /7d window at or below its 10% floor.*lead seat launches anyway/, at);
+  warns(w, { mode: "lead" }, /7d window at or below its 10% floor/, fifteen);
+  assert.deepEqual(preflight(ask(w, { mode: "read" }), fifteen).warnings, []);
+});
+
+test("RED: the pool reads BOTH windows by window_minutes, each with its reset, and the warning names the window that crossed", () => {
+  const p = readPool([both(2, 95)]);
+  assert.deepEqual(p.windows.map(({ span, used }) => [span, used]), [["5h", 2], ["7d", 95]]);
+  assert.match(p.summary, /5h 2\.0% used, resets 2027-01-15T\d\d:\d\dZ; 98\.0% left.*ABOVE FLOOR \| 7d 95\.0% used, resets 2027-01-22T\d\d:\d\dZ; 5\.0% left.*AT OR BELOW FLOOR \(WARNING\)/);
+  assert.doesNotMatch(p.summary, /0-day/);
+  const w = world();
+  const weekly = warns(w, {}, /Codex 7d window at or below its 10% floor \(5\.0% left/, { ...w.readers, rolloutLines: () => [both(2, 95)] });
+  assert.equal(weekly.warnings.length, 1, "the fresh 5h window raises no warning");
+  const hourly = warns(w, {}, /Codex 5h window at or below its 10% floor/, { ...w.readers, rolloutLines: () => [both(95, 2)] });
+  assert.equal(hourly.warnings.length, 1);
+  assert.deepEqual(preflight(ask(w), { ...w.readers, rolloutLines: () => [both(2, 3)] }).warnings, [], "CONTROL: two fresh windows warn nothing");
+});
+
+test("RED: an absent window reads absent, never zero; labels follow window_minutes when the fields swap", () => {
+  const one = readPool([rate(40)]);
+  assert.equal(one.windows.length, 1);
+  assert.match(one.summary, /7d 40\.0% used.*\| 5h absent$/);
+  const swapped = readPool([rateRecord({ primary: { used_percent: 70, window_minutes: 10080, resets_at: 1800604800 }, secondary: { used_percent: 20, window_minutes: 300, resets_at: 1800000300 } })]);
+  assert.deepEqual(swapped.windows.map(({ span }) => span), ["7d", "5h"]);
+  assert.doesNotMatch(swapped.summary, /absent/);
+});
+
+test("RED: a reported reached limit or spend control refuses by its own name; an exhausted window refuses by its span", () => {
+  const w = world();
+  const reached = rateRecord({ primary: { used_percent: 2, window_minutes: 300, resets_at: 1800000300 }, rate_limit_reached_type: "workspace_member_credits_depleted" });
+  refuses(w, {}, /rate_limit_reached_type=workspace_member_credits_depleted/, { ...w.readers, rolloutLines: () => [reached] });
+  const spend = rateRecord({ primary: { used_percent: 2, window_minutes: 300, resets_at: 1800000300 }, spend_control_reached: true });
+  refuses(w, {}, /spend_control_reached=true/, { ...w.readers, rolloutLines: () => [spend] });
+  refuses(w, { mode: "read" }, /Codex 7d window exhausted/, { ...w.readers, rolloutLines: () => [both(10, 100)] });
+  const calm = rateRecord({ primary: { used_percent: 2, window_minutes: 300, resets_at: 1800000300 }, spend_control_reached: false });
+  assert.ok(preflight(ask(w), { ...w.readers, rolloutLines: () => [calm] }), "CONTROL: spend_control_reached false refuses nothing");
+});
+
+test("RED: a window past its floor prints a loud WARNING line and the seat STILL launches", () => {
+  const w = world({ rolloutLines: () => [both(2, 95)] });
+  const spawned = [], errs = [];
+  assert.equal(run(["--mode", "build", "--model", "gpt-6.1-terra", "--effort", "high", "--seat-dir", w.seatDir, "--worktree", w.wt], { readers: w.readers, spawn: (c, a) => { spawned.push(a); return { pid: 4242 }; }, log() {}, err: (l) => errs.push(l) }), 0);
+  assert.equal(spawned.length, 1, "the supervisor spawned");
+  assert.ok(errs.some((l) => /^!!!!! WARNING: Codex 7d window at or below its 10% floor/.test(l)), JSON.stringify(errs));
+  assert.ok(!errs.some((l) => /SEAT-REFUSED/.test(l)));
+});
+
+test("RED: a prompt too large to ride argv refuses by size, limit and cure before any spawn; CONTROL a large prompt under the limit launches", () => {
+  const w = world();
+  writeFileSync(join(w.seatDir, "brief.md"), `# brief\n${"x".repeat(175 * 1024)}\n`);
+  const spawned = [], errs = [];
+  const go = () => run(["--mode", "build", "--model", "gpt-6.1-terra", "--effort", "high", "--seat-dir", w.seatDir, "--worktree", w.wt], { readers: w.readers, spawn: (c, a) => { spawned.push(a); return { pid: 4242 }; }, log() {}, err: (l) => errs.push(l) });
+  assert.equal(go(), 2);
+  assert.equal(spawned.length, 0, "nothing spawned");
+  assert.match(errs.join("\n"), /SEAT-REFUSED: the seat prompt measures 1\d{5} bytes .*past the 120 KiB launch limit.*E2BIG.*move the bulky inputs out of brief\.md into files in the worktree.*name their paths/s);
+  writeFileSync(join(w.seatDir, "brief.md"), `# brief\n${"x".repeat(100 * 1024)}\n`);
+  assert.equal(go(), 0);
+  assert.equal(spawned.length, 1);
 });
 
 test("a pool line unreadable twice names itself and never reads zero; once-unreadable reads again", () => {
@@ -353,9 +413,9 @@ test("CONTROL: the pool skips one newest recordless rollout to read its predeces
   const old = join(dir, "rollout-old.jsonl"), fresh = join(dir, "rollout-new.jsonl");
   writeFileSync(old, rate(60) + "\n"); writeFileSync(fresh, '{"type":"session_meta"}\n');
   utimesSync(old, 1000, 1000); utimesSync(fresh, 2000, 2000);
-  assert.equal(readPool(realReaders(home).rolloutLines()).used, 60, "newest has no record: the older recorded reading answers");
+  assert.equal(readPool(realReaders(home).rolloutLines()).windows[0].used, 60, "newest has no record: the older recorded reading answers");
   writeFileSync(fresh, rate(70) + "\n");
-  assert.equal(readPool(realReaders(home).rolloutLines()).used, 70, "CONTROL: the newest record answers");
+  assert.equal(readPool(realReaders(home).rolloutLines()).windows[0].used, 70, "CONTROL: the newest record answers");
 });
 
 test("RED: a relative --worktree is resolved once; spawn carries the absolute path that preflight checked", () => {
@@ -383,25 +443,25 @@ test("the floors by mode: a READ seat launches down to its own floor (0% while t
   const w = world();
   const fifteen = { ...w.readers, rolloutLines: () => [rate(95)] }; // 5% left
   assert.match(preflight(ask(w, { mode: "read" }), fifteen).pool, /floor 0%.*ABOVE FLOOR/);
-  refuses(w, {}, /at or below its floor/, fifteen); // CONTROL: a builder at 5% still refuses
-  refuses(w, { mode: "research", worktree: undefined }, /at or below its floor/, fifteen);
+  warns(w, {}, /at or below its 10% floor/, fifteen); // CONTROL: a builder at 5% warns (and launches)
+  warns(w, { mode: "research", worktree: undefined }, /at or below its 10% floor/, fifteen);
   assert.match(preflight(ask(w, { mode: "read" }), { ...w.readers, rolloutLines: () => [rate(95)] }).pool, /ABOVE FLOOR/); // 5% left reads above a 0% floor
-  refuses(w, { mode: "read" }, /at or below its floor/, { ...w.readers, rolloutLines: () => [rate(100)] }); // an empty pool still refuses
-  assert.equal(readPool([rate(95)], "read").above, true);
-  assert.equal(readPool([rate(95)], "build").above, false);
+  refuses(w, { mode: "read" }, /window exhausted/, { ...w.readers, rolloutLines: () => [rate(100)] }); // an empty pool still refuses
+  assert.equal(readPool([rate(95)], "read").windows[0].crossed, null);
+  assert.equal(readPool([rate(95)], "build").windows[0].crossed, "floor");
 });
 
 // ---- row 2: the pool-used ceilings by mode ----
-test("row 2: lead, build and research seats run until 10% of the pool remains (a soft line at 90% used), a read seat to its own floor; just past the line refuses by name; CONTROL just inside the line passes", () => {
+test("row 2: lead, build and research seats run until 10% of the pool remains (a soft line at 90% used), a read seat to its own floor; just past the line warns by name and still passes; CONTROL just inside the line warns nothing", () => {
   const w = world();
   const at = (u) => ({ ...w.readers, rolloutLines: () => [rate(u)] });
   assert.ok(preflight(ask(w, { mode: "lead" }), at(55))); // a lead seat launches at 55% used
   assert.ok(preflight(ask(w, { mode: "build" }), at(65))); // a build seat launches at 65% used
-  for (const mode of ["lead", "build"]) assert.ok(preflight(ask(w, { mode }), at(89.9)), `${mode} CONTROL inside the line`);
-  assert.ok(preflight(ask(w, { mode: "research", worktree: undefined }), at(89.9)), "research CONTROL inside the line");
+  for (const mode of ["lead", "build"]) assert.deepEqual(preflight(ask(w, { mode }), at(89.9)).warnings, [], `${mode} CONTROL inside the line`);
+  assert.deepEqual(preflight(ask(w, { mode: "research", worktree: undefined }), at(89.9)).warnings, [], "research CONTROL inside the line");
   for (const u of [90, 90.1, 91]) {
-    for (const mode of ["lead", "build"]) refuses(w, { mode }, /at or below its floor.*floor 10%/s, at(u));
-    refuses(w, { mode: "research", worktree: undefined }, /at or below its floor.*floor 10%/s, at(u));
+    for (const mode of ["lead", "build"]) warns(w, { mode }, /7d window at or below its 10% floor/, at(u));
+    warns(w, { mode: "research", worktree: undefined }, /7d window at or below its 10% floor/, at(u));
   }
   assert.ok(preflight(ask(w, { mode: "read" }), at(95))); // a read seat spends to its own 0% floor
 });
@@ -1309,9 +1369,9 @@ test("RED: the pool refuses two newer recordless rollouts; CONTROL one skip and 
   const readers = realReaders(home);
   assert.throws(() => readers.rolloutLines(), /pool.*more than one.*rollout/i);
   rmSync(join(dir, 'rollout-newest.jsonl'));
-  assert.equal(readPool(readers.rolloutLines()).used, 40);
+  assert.equal(readPool(readers.rolloutLines()).windows[0].used, 40);
   writeFileSync(join(dir, 'rollout-new.jsonl'), rate(85));
-  assert.equal(readPool(readers.rolloutLines()).used, 85, 'a newest below-floor reading never falls back');
+  assert.equal(readPool(readers.rolloutLines()).windows[0].used, 85, 'a newest below-floor reading never falls back');
   rmSync(home, { recursive: true, force: true });
 });
 
@@ -1342,14 +1402,14 @@ test("RULED 1 a ruling row for the current window lifts the limits for every mod
   const { w, readers } = tableWorld(`ruling 2026-11-05 window=${WINDOW} max-used=100 floor=0`);
   const at95 = { ...readers, rolloutLines: () => [rate(95)] };
   for (const mode of ["build", "lead", "research", "read"]) assert.match(preflight(ask(w, { mode }), at95).pool, new RegExp(`RULED \\(2026-11-05, window ${WINDOW}\\): limits max-used=100 floor=0`));
-  refuses(w, {}, /at or below its floor/, { ...readers, rolloutLines: () => [rate(100)] });
+  refuses(w, {}, /window exhausted/, { ...readers, rolloutLines: () => [rate(100)] });
 });
 
 test("RULED 2 the same row for another window, or pending, applies nothing: the defaults hold", () => {
   for (const win of [WINDOW + 1, "pending"]) {
     const { w, readers } = tableWorld(`ruling 2026-11-05 window=${win} max-used=100 floor=0`);
-    refuses(w, {}, /(at or below its floor|used ceiling)/, { ...readers, rolloutLines: () => [rate(95)] });
-    refuses(w, { mode: "lead" }, /at or below its floor/, { ...readers, rolloutLines: () => [rate(95)] });
+    warns(w, {}, /at or below its 10% floor/, { ...readers, rolloutLines: () => [rate(95)] });
+    warns(w, { mode: "lead" }, /at or below its 10% floor/, { ...readers, rolloutLines: () => [rate(95)] });
     assert.doesNotMatch(preflight(ask(w), { ...readers, rolloutLines: () => [rate(40)] }).pool, /RULED/);
   }
 });
@@ -1381,12 +1441,12 @@ test("RULED 4 an unreadable pool and gpt-6-sol still refuse under a ruling row",
 test("RULED 5 CONTROL no ruling row: the defaults stand, and the shipped table equals today's limits", () => {
   const { w, readers } = tableWorld("");
   for (const mode of ["build", "lead", "research"]) {
-    refuses(w, { mode }, /at or below its floor/, { ...readers, rolloutLines: () => [rate(90)] });
-    assert.ok(preflight(ask(w, { mode }), { ...readers, rolloutLines: () => [rate(89.9)] }));
+    warns(w, { mode }, /at or below its 10% floor/, { ...readers, rolloutLines: () => [rate(90)] });
+    assert.deepEqual(preflight(ask(w, { mode }), { ...readers, rolloutLines: () => [rate(89.9)] }).warnings, []);
   }
   assert.ok(preflight(ask(w, { mode: "read" }), { ...readers, rolloutLines: () => [rate(95)] }));
   const lowered = { ...readers, spendCarrier: () => withRows("").replace("default build max-used=90", "default build max-used=60") };
-  refuses(w, {}, /above the build seat's 60% used ceiling/, { ...lowered, rolloutLines: () => [rate(65)] });
+  warns(w, {}, /used 65\.0%, past the build seat's 60% used ceiling; the build seat launches anyway/, { ...lowered, rolloutLines: () => [rate(65)] });
   const t = parseSpendTable(readFileSync(SPEND, "utf8"));
   assert.deepEqual(t.defaults, { lead: { maxUsed: 90, floor: 10 }, build: { maxUsed: 90, floor: 10 }, research: { maxUsed: 90, floor: 10 }, read: { maxUsed: 100, floor: 0 } });
   assert.deepEqual(t.rulings.map((r) => [r.date, r.window]), [["2026-11-05", null]]);

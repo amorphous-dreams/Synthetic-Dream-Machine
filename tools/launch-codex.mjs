@@ -18,11 +18,13 @@
  * EVERY mode carries `-c approval_policy="never"`, so a step past the wall fails by name instead of being reviewed out
  * of the sandbox; no mode carries `--ephemeral`, so each seat keeps the rollout the spend tally counts.
  * PREFLIGHT refuses (exit 2, `SEAT-REFUSED: …`): a seat dir outside `<scratch>/<lane>/`, a missing brief, a model absent
- * from Codex's models cache, `gpt-6-sol`, a Codex pool line unreadable twice (never read as zero), a pool at or under
- * its floor (10% for build, lead or research, 0% for read), a build or lead seat on the main checkout, a lead worktree
- * outside scratch, or a build seat over a stale dist.
- * Pool-used lines (seat-harness#/the-spend-guard): lead, build and research seats run until 10% of the pool remains (90% used,
- * a soft line the operator set 2026-11-27, so the 10% floor speaks first); a read seat spends to its own floor. A detached
+ * from Codex's models cache, `gpt-6-sol`, a Codex pool line unreadable twice (never read as zero), a reported reached
+ * limit (`rate_limit_reached_type`, `spend_control_reached`), an exhausted window, a build or lead seat on the main
+ * checkout, a lead worktree outside scratch, a build seat over a stale dist, or a prompt too large to ride argv.
+ * THE POOL reads every window Codex reports, each named by its length (5h, 7d) with its own reset; an absent window
+ * reads absent. Floors (10% for build, lead or research, 0% for read) and used lines (90%, seat-harness#/the-spend-guard)
+ * WARN, never refuse (operator ruling 2026-11-28): a window at or past either line prints a loud `WARNING:` line naming
+ * the window, and the seat still launches. A detached
  * supervisor (`--supervise`, the seat's parent: it spawns codex itself) tails the seat's rollout and stops it at its token ceiling (`--ceiling N`;
  * lead 15M, others 8M), writing `ceiling.md`.
  * `--lead-step --lane-root <dir> --model --effort --worktree` launches ONE fresh lead step over `<lane-root>/state.json`
@@ -49,6 +51,7 @@ import { globalStampPath, packageStampPath, sourceDigest, workspacePackageDirs }
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CANON = "bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem";
+/** The house floor, in percent left of EACH reported window: crossing it prints a loud WARNING and the seat still launches (operator ruling 2026-11-28: a warning, not a wall). */
 const FLOOR = 10;
 /** A read seat's own floor: the operator lets readers spend the pool to its end for now (2026-10-31: "temp bump that limit to 0%"; it stood at 5); builders and research keep FLOOR. */
 const READ_FLOOR = 0;
@@ -57,7 +60,20 @@ const SPEND_CANON = "bags/lares/ha.ka.ba/lares/docs/pono/seat-harness.mem";
 const MODES = ["build", "lead", "read", "research"];
 export const COMPACT_LIMIT = 120000;
 export const TOOL_OUTPUT_LIMIT = 8000;
-/** The pool's used-percent ceiling by mode (seat-harness#/owed row 2), 90% since 2026-11-27 (the operator: "Set pool lower limit to a 'fuzzy' 10%"; 80% from 2026-11-07): it meets FLOOR, which refuses first; a read seat spends to its own floor. */
+/**
+ * The prompt rides codex's argv as ONE string (superviseSeat passes it last, never on stdin), and Linux caps each argv
+ * string at MAX_ARG_STRLEN (32 pages, 128 KiB, its NUL counted): past it the supervisor's spawn dies as `spawn E2BIG`
+ * after the launcher already reported a launch. The launcher refuses below that cap, with headroom, before any spawn.
+ */
+export const ARGV_PROMPT_LIMIT = 120 * 1024;
+
+/** A refusal naming a prompt too large to ride argv (its size, the limit and the cure), or null when it fits. */
+export function argvPromptRefusal(prompt) {
+  const bytes = Buffer.byteLength(prompt, "utf8") + 1;
+  if (bytes <= ARGV_PROMPT_LIMIT) return null;
+  return refuse(`the seat prompt measures ${bytes} bytes (${(bytes / 1024).toFixed(1)} KiB) as it rides codex's argv, past the ${ARGV_PROMPT_LIMIT / 1024} KiB launch limit (Linux MAX_ARG_STRLEN caps one argv string at 128 KiB; past it the spawn dies as E2BIG): move the bulky inputs out of brief.md into files in the worktree (or the seat dir) and name their paths in the brief`);
+}
+/** The pool's used-percent ceiling by mode (seat-harness#/owed row 2), 90% since 2026-11-27 (the operator: "Set pool lower limit to a 'fuzzy' 10%"; 80% from 2026-11-07): it meets FLOOR, which speaks first; both lines warn and never refuse (operator ruling 2026-11-28); a read seat spends to its own floor. */
 const MAX_USED = { lead: 90, build: 90, research: 90 };
 /** The per-seat token ceiling by mode (row 1): total_token_usage.total_tokens, cached input counted. */
 const CEILINGS = { lead: 15_000_000, build: 8_000_000, read: 8_000_000, research: 8_000_000 };
@@ -310,25 +326,55 @@ export function parseSpendTable(carrierText) {
   return { defaults, rulings };
 }
 
-/** The newest rollout's rate_limits record, from its lines: the pool, or null when no line carries one. `table` is the parsed spend table; its ruling row for this pool's window (resets_at) replaces the mode's defaults, and a pending or other-window row applies nothing. */
+/** The span a window covers, named from its own length (window_minutes), never from its field position. */
+function windowSpan(minutes) {
+  if (!Number.isFinite(minutes) || minutes <= 0) return "unknown-span";
+  if (minutes % 1440 === 0) return `${minutes / 1440}d`;
+  if (minutes % 60 === 0) return `${minutes / 60}h`;
+  return `${minutes}m`;
+}
+/** The spans the Codex pool reports today (a five-hour and a weekly window); a span the newest record omits reads "absent", never zero. Some plans carry no five-hour window. */
+const EXPECTED_SPANS = ["5h", "7d"];
+
+/**
+ * The newest rollout's rate_limits record, from its lines, or null when no line carries one. Codex reports up to two
+ * windows (`primary`, `secondary`); each window names itself by its window_minutes (300 -> 5h, 10080 -> 7d), since the
+ * two fields can swap roles across plans. Every reported window carries its own reset, floor and used ceiling: a ruling
+ * row in `table` (the parsed spend table) binds only to the window whose resets_at equals its key, and a pending or
+ * other-window row applies nothing. The newest record decides alone: an older record never fills a window it omits.
+ * `crossed` names the line a window stands past (`floor`, `ceiling`, or null); `exhausted` marks a window at 100% used.
+ * A reported reached state (`rate_limit_reached_type`, or `spend_control_reached: true`) rides `signal` by its own name.
+ */
 export function readPool(lines, mode = "build", table = null) {
-  let primary = null;
+  let snapshot = null;
   for (const line of lines ?? []) {
     if (!line.includes('"rate_limits"')) continue;
     let d;
     try { d = JSON.parse(line); } catch { continue; }
-    const p = (d?.payload?.rate_limits ?? d?.payload?.info?.rate_limits)?.primary;
-    if (p && typeof p.used_percent === "number" && p.window_minutes && p.resets_at) primary = p;
+    const s = d?.payload?.rate_limits ?? d?.payload?.info?.rate_limits;
+    const reports = (w) => w && typeof w.used_percent === "number";
+    if (s && typeof s === "object" && (reports(s.primary) || reports(s.secondary) || s.rate_limit_reached_type || s.spend_control_reached === true)) snapshot = s;
   }
-  if (!primary) return null;
+  if (!snapshot) return null;
   const base = table ? table.defaults[mode] : { maxUsed: MAX_USED[mode] ?? 100, floor: mode === "read" ? READ_FLOOR : FLOOR };
-  const ruling = table?.rulings.find((r) => r.window !== null && r.window === primary.resets_at) ?? null;
-  const floor = ruling ? ruling.floor : base.floor, maxUsed = ruling ? ruling.maxUsed : base.maxUsed;
-  const left = 100 - primary.used_percent;
-  const above = left > floor;
-  const winDays = Math.floor(primary.window_minutes / 1440);
-  const summary = `codex pool: ${primary.used_percent.toFixed(1)}% used of a ${winDays}-day window, resets ${new Date(primary.resets_at * 1000).toISOString().slice(0, 16)}Z; ${left.toFixed(1)}% left, floor ${floor}% -> ${ruling ? `RULED (${ruling.date}, window ${ruling.window}): limits max-used=${ruling.maxUsed} floor=${ruling.floor}${above ? "" : "; AT OR BELOW FLOOR: launch no new Codex seat"}` : above ? "ABOVE FLOOR" : "AT OR BELOW FLOOR: launch no new Codex seat"}`;
-  return { used: primary.used_percent, winDays, reset: primary.resets_at, left, above, maxUsed, ruled: Boolean(ruling), summary };
+  const windows = [snapshot.primary, snapshot.secondary].filter((w) => w && typeof w.used_percent === "number").map((w) => {
+    const reset = Number.isFinite(w.resets_at) ? w.resets_at : null;
+    const ruling = reset === null ? null : table?.rulings.find((r) => r.window !== null && r.window === reset) ?? null;
+    const floor = ruling ? ruling.floor : base.floor, maxUsed = ruling ? ruling.maxUsed : base.maxUsed;
+    const left = 100 - w.used_percent;
+    const crossed = left <= floor ? "floor" : w.used_percent > maxUsed ? "ceiling" : null;
+    return { span: windowSpan(w.window_minutes), used: w.used_percent, left, reset, floor, maxUsed, ruling, crossed, exhausted: w.used_percent >= 100 };
+  });
+  const signal = snapshot.rate_limit_reached_type ? `rate_limit_reached_type=${snapshot.rate_limit_reached_type}` : snapshot.spend_control_reached === true ? "spend_control_reached=true" : null;
+  const shown = windows.map((w) => {
+    const reset = w.reset === null ? "unknown" : `${new Date(w.reset * 1000).toISOString().slice(0, 16)}Z`;
+    const verdict = w.exhausted ? "EXHAUSTED" : w.crossed === "floor" ? "AT OR BELOW FLOOR (WARNING)" : w.crossed === "ceiling" ? `PAST THE ${w.maxUsed}% USED CEILING (WARNING)` : "ABOVE FLOOR";
+    const ruled = w.ruling ? `RULED (${w.ruling.date}, window ${w.ruling.window}): limits max-used=${w.ruling.maxUsed} floor=${w.ruling.floor}; ` : "";
+    return `${w.span} ${w.used.toFixed(1)}% used, resets ${reset}; ${w.left.toFixed(1)}% left, floor ${w.floor}% -> ${ruled}${verdict}`;
+  });
+  const absent = EXPECTED_SPANS.filter((s) => !windows.some((w) => w.span === s)).map((s) => `${s} absent`);
+  const summary = `codex pool: ${[...shown, ...absent].join(" | ")}${signal ? ` | ${signal}` : ""}`;
+  return { windows, signal, summary };
 }
 
 /** Whether the tree's dists were built from its source: the global stamp, else every built package's own stamp (a `--pkg` build). */
@@ -420,7 +466,7 @@ export function realReaders(home = realHome(), repo = REPO) {
 const refuse = (why) => Object.assign(new Error(why), { refused: true });
 const real = (p) => { try { return realpathSync(p); } catch { return resolve(p); } };
 
-/** Throws a refusal naming why a seat must not start; else returns `{ pool }` (the pool summary line). */
+/** Throws a refusal naming why a seat must not start; else returns `{ pool, warnings }` (the pool summary line, and one WARNING line per window past its floor or used ceiling). */
 export function preflight({ mode, model, seatDir, worktree, briefless }, readers) {
   // The REAL paths decide: a symlinked seat dir that leaves the lane reads as outside it.
   const scratch = real(join(readers.realHome, ".lares-scratch"));
@@ -437,8 +483,16 @@ export function preflight({ mode, model, seatDir, worktree, briefless }, readers
   const table = parseSpendTable(readers.spendCarrier?.());
   const pool = readPool(readers.rolloutLines(), mode, table) ?? readPool(readers.rolloutLines(), mode, table);
   if (!pool) throw refuse("Codex pool line unreadable (no readable rate_limits record within the one-rollout fallback, read twice); read it by hand before launching");
-  if (!pool.above) throw refuse(`Codex pool at or below its floor: ${pool.summary}`);
-  if (pool.used > pool.maxUsed) throw refuse(`Codex pool used ${pool.used.toFixed(1)}%, above the ${mode} seat's ${pool.maxUsed}% used ceiling: ${pool.summary}`);
+  // A reached state and an exhausted window leave the seat nothing to spend: those refuse by their own names.
+  if (pool.signal) throw refuse(`Codex reports a reached limit, ${pool.signal}: ${pool.summary}`);
+  const empty = pool.windows.find((w) => w.exhausted);
+  if (empty) throw refuse(`Codex ${empty.span} window exhausted (${empty.used.toFixed(1)}% used, nothing left to spend): ${pool.summary}`);
+  // THE FLOOR WARNS, IT NEVER WALLS (operator ruling 2026-11-28): a window at or past its floor, or past its used
+  // ceiling, names itself in a loud WARNING line and the seat still launches. Each window reads alone, so a weekly
+  // window near its end warns even while the five-hour window reads fresh.
+  const warnings = pool.windows.filter((w) => w.crossed).map((w) => w.crossed === "floor"
+    ? `WARNING: Codex ${w.span} window at or below its ${w.floor}% floor (${w.left.toFixed(1)}% left, resets ${w.reset === null ? "unknown" : new Date(w.reset * 1000).toISOString().slice(0, 16) + "Z"}); the ${mode} seat launches anyway`
+    : `WARNING: Codex ${w.span} window used ${w.used.toFixed(1)}%, past the ${mode} seat's ${w.maxUsed}% used ceiling; the ${mode} seat launches anyway`);
   if (mode === "build" || mode === "lead") {
     const role = mode === "lead" ? "lead" : "builder";
     if (!worktree) throw refuse(`a ${role} needs its worktree`);
@@ -450,7 +504,7 @@ export function preflight({ mode, model, seatDir, worktree, briefless }, readers
     if (shared) throw refuse(`the ${role} worktree's ${shared}`);
     if (mode === "build" && !readers.distFresh(worktree)) throw refuse(`the worktree's dist is stale (or unreadable): the lead runs 'pnpm build' in ${worktree} before launching a build seat`);
   }
-  return { pool: pool.summary };
+  return { pool: pool.summary, warnings };
 }
 
 function parse(argv) {
@@ -621,7 +675,7 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     const worktree = o.worktree ? real(o.worktree) : undefined;
     const scratchReal = real(join(readers.realHome, ".lares-scratch"));
     if (stepPlan && !stepPlan.laneRoot.startsWith(`${scratchReal}/`)) throw refuse(`the lane root must sit under ${scratchReal}/<lane>: ${o.laneRoot}`);
-    const { pool } = preflight({ ...o, seatDir, worktree, briefless: Boolean(stepPlan) }, readers);
+    const { pool, warnings } = preflight({ ...o, seatDir, worktree, briefless: Boolean(stepPlan) }, readers);
     // THE SEAT RUNS IN A BROKER-OWNED DIRECTORY outside every lane tree: Codex's own writes (-o final.md, TMPDIR, run.log, ceiling.md) land where no lead can write, and reach the lane's seat dir only through the held hand-back copy.
     const laneDir = join(scratchReal, seatDir.slice(scratchReal.length + 1).split("/")[0]);
     // THE BROKER ROOT is fixed: no caller names it. It sits outside ~/.lares-scratch entirely; a dry run only checks what exists.
@@ -632,6 +686,7 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
     const laneRoot = o.mode === "lead" ? (stepPlan?.laneRoot ?? dirname(seatDir)) : undefined;
     guard(() => checkGrantedRoots(scratchReal, [laneRoot]));
     log(pool);
+    for (const line of warnings) err(`!!!!! ${line} !!!!!`);
     if (o.dryRun) { log(`DRY-RUN ${JSON.stringify(["codex", ...seatArgs({ ...o, seatDir: join(root, "seats", "seat-DRYRUN"), worktree, laneRoot, compactLimit: o.canary ? 50_000 : undefined }), "<brief>"])}`); return 0; }
     // A live seat runs inside a PID namespace or does not run: without the wall the launch refuses by name.
     if (!(readers.bwrap ?? HAVE_BWRAP)) throw refuse(`no wall available: refusing to launch the ${o.mode} seat in ${seatDir} uncontained (a descendant that leaves the process group would outlive it)`);
@@ -669,6 +724,8 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
       const env = { ...process.env, HOME: readers.realHome, TMPDIR: join(bsdPath, ".tmp"), TMPPREFIX: join(bsdPath, ".tmp", "zsh") };
       const snapshot = JSON.stringify(listRollouts(readers.realHome));
       const marker = `SEAT-MARKER ${randomUUID()}`;
+      const tooLarge = argvPromptRefusal(`${marker}\n\n${brief}`);
+      if (tooLarge) throw tooLarge;
       for (const h of [held, bsd]) {
         guard(() => writeHeld(h, "rollouts-before.json", snapshot));
         guard(() => writeHeld(h, "marker.txt", `${marker}\n`));

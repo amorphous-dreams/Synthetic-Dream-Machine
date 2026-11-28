@@ -90,8 +90,8 @@ Launch each step with `node tools/launch-codex.mjs --lead-step --lane-root … -
 
 * ''True usage'' reads from each Codex rollout's `token_count` events (`total_token_usage`: input, cached input, output, reasoning) and from each rollout's `rate_limits.primary.used_percent`. A seat's printed "tokens used" line understates the draw by orders of magnitude, so no tally reads it.
 * ''Cached input counts.'' Caching lowers the price of a token, never its weight against a rate limit or a plan pool.
-* ''The floors'': the Codex pool keeps 10% for a build, research or lead seat and 0% for a read seat; the launcher refuses at or under the floor.
-* ''The used-percent lines'': a lead step, a build seat and a research seat each run until 10% of the weekly pool remains, so each line stands at 90% used and meets the 10% floor, which refuses first; a read seat stays at its own floor; each refusal names the reading. The operator set the line 2026-11-07 at 20% ("Set the codex pool limit down to 20% (its really a soft limit)") and moved it 2026-11-27 to 10%: "Set pool lower limit to a 'fuzzy' 10%." The 2026-11-27 words replace the 2026-11-07 ruling. Soft ("fuzzy"): it bounds a fresh launch, never a running seat (the per-seat ceiling below bounds that), and it stands for the operator to move again.
+* ''The floors'': the Codex pool keeps 10% for a build, research or lead seat and 0% for a read seat, read in EACH window Codex reports (named by its `window_minutes`: `5h`, `7d`; an unreported window reads absent, never zero). The floor warns, never walls (operator ruling 2026-11-28): a window at or under its floor prints a loud `WARNING:` line naming that window and the seat still launches. A reported reached state (`rate_limit_reached_type`, `spend_control_reached: true`) or a window at 100% used refuses by its own name.
+* ''The used-percent lines'': a lead step, a build seat and a research seat each run until 10% of the weekly pool remains, so each line stands at 90% used and meets the 10% floor, which speaks first; a read seat stays at its own floor; a window past its line warns by name, as the floor does, and never refuses. The operator set the line 2026-11-07 at 20% ("Set the codex pool limit down to 20% (its really a soft limit)") and moved it 2026-11-27 to 10%: "Set pool lower limit to a 'fuzzy' 10%." The 2026-11-27 words replace the 2026-11-07 ruling. Soft ("fuzzy"): it bounds a fresh launch, never a running seat (the per-seat ceiling below bounds that), and it stands for the operator to move again.
 * ''The spend table'': the launcher reads its used-percent ceilings and floors from the fenced `spend-limits` block below, strictly, on every launch (an unreadable or malformed table refuses by name, never reads as zero). A `default` row gives one mode's `max-used` and `floor`; a `ruling` row carries a dated operator ruling keyed to the Codex pool WINDOW it applies to, and the newest rollout's `resets_at` names that window (no wall clock decides). While `resets_at` equals a ruling row's window, that row's limits replace the defaults for every mode; for any other window the defaults hold, and `window=pending` applies nothing. Every launch under a ruling prints `codex pool: ... RULED (<date>, window <resets_at>): limits max-used=<N> floor=<N>`. The values in the defaults rows stand as today's limits. A read seat carries no used-percent ceiling (100).
 
 ```spend-limits
@@ -252,6 +252,6 @@ This carrier gains its standing sections and rewrites the broker bullets and the
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iBbQGYL9rVsjHPZF-a4l0FLnULH3pVNOdpmUobJ7qzk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TDhvVGeiSoIF8eFvzB1akV2hVcHSuBRAKGOfuYJmsyY`>>
 
 <<^ code=`&#x0004;` to=`?`>>
