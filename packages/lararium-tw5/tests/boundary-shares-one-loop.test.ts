@@ -32,7 +32,7 @@ describe.skipIf(wikiSkip)(`boundaries under a hung receipt share one resting loo
     expect(asks, "one resting loop asks the Drain; every later caller joins it").toBeLessThanOrEqual(2);
     release();
     boundary.fire();
-    await turns(48);
+    await boundary.settle();
     await Promise.all(callers);   // control: the one loop settles every caller
     await save;
     await r.stop();

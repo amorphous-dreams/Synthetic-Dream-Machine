@@ -30,7 +30,7 @@ describe.skipIf(wikiSkip)(`wiki shore cross-bag check${skipNote}`, () => {
       r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(x)!.fields, { text: "hand text" }));
       await afterDispatch();
       boundary.fire();
-      await turns(24);
+      if (moved) await turns(24); else await boundary.settle();
       const writes = r.calls.slice(mark).filter((c) => c.bag === workingBag);
       if (!moved) {
         expect(writes, "exactly one copy-up write in working").toHaveLength(1);
@@ -47,7 +47,8 @@ describe.skipIf(wikiSkip)(`wiki shore cross-bag check${skipNote}`, () => {
         expect(drafts[0]!.tiddler.text).toBe("hand text");
         hold = false;
         release();
-        await turns(24);
+        await boundary.settle();
+        await r.adaptor.landingIdle();
         expect((r.wiki.getTiddler(x)!.fields as Record<string, unknown>).text, "the wiki ends holding canon's moved record").toBe("canon moved");
         expect(r.adaptor.holdsHand(x)).toBe(false);
       }
@@ -66,14 +67,14 @@ describe.skipIf(wikiSkip)(`wiki shore cross-bag check${skipNote}`, () => {
       const d = openDraft(r, x, "draft text");
       await afterDispatch();
       boundary.fire();
-      await turns(24);
+      await boundary.settle();
       if (moved) await peerWrite(r, canonBag, [{ tiddler: { title: x, text: "canon moved" } }]);
       const workingChanges = r.changes(workingBag);
       const mark = r.calls.length;
       saveSequence(r, d);
       await afterDispatch();
+      await boundary.settle();
       const writes = r.calls.slice(mark).filter((c) => c.bag === workingBag && c.puts.includes(x));
-      await turns(24);
       if (!moved) {
         expect(writes).toHaveLength(1);
         expect(writes[0]!.base, "canon heads never ride into working").toBeUndefined();

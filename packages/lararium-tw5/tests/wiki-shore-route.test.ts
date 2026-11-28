@@ -18,7 +18,7 @@ const heads = (r: Rig, bag: string): string => JSON.stringify(r.handles[bag]!.he
 const hand = async (r: Rig, boundary: ManualBoundary): Promise<void> => {
   await afterDispatch();
   boundary.fire();
-  await turns(48);
+  await boundary.settle();
   await r.adaptor.landingIdle();
 };
 
@@ -283,7 +283,7 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
     boundary.fire();
     hold = false;
     release();
-    await turns(48);
+    await boundary.settle();
     await r.adaptor.landingIdle();
     expect(r.calls.slice(mark).filter((c) => c.bag === personalBag), "no write reaches the personal layer").toEqual([]);
     expect(r.doc(personalBag).tiddlers[x], "nothing recreates the retracted record").toBeUndefined();

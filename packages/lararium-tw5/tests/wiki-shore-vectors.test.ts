@@ -54,6 +54,8 @@ class ManualBoundary {
   private adaptor: IslandAdaptor | null = null;
   bind(adaptor: IslandAdaptor): void { this.adaptor = adaptor; }
   fire(): void { if (!this.adaptor) throw new Error("boundary has no adaptor"); void this.adaptor.boundary().catch(() => {}); }
+  /** The boundary, awaited: resolves once the drain it started rests (a refused drain answers, never throws). */
+  settle(): Promise<void> { if (!this.adaptor) throw new Error("boundary has no adaptor"); return this.adaptor.boundary().catch(() => {}); }
 }
 
 async function rig(boundary?: ManualBoundary, yieldHost?: () => Promise<void>) {
@@ -315,14 +317,14 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     r.wiki.addTiddler(new r.Tiddler({ title, text: "hand after landing" }));
     await turns(1);
     boundary.fire();
-    for (let turn = 0; turn < 80 && bases.length < 3; turn++) await turns(1);
+    await boundary.settle();
     expect(bases).toHaveLength(3);
     expect(bases[2]).toEqual(landedHeads);
     const control = "lar:///t/shore/P-control";
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "control changed" }));
     await turns(1);
     boundary.fire();
-    for (let turn = 0; turn < 80 && !writeTitles.includes(control); turn++) await turns(1);
+    await boundary.settle();
     expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("control changed");
     expect(writeTitles.filter((writtenTitle) => writtenTitle === control)).toHaveLength(1);
     r.unbridge();
@@ -357,7 +359,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     r.wiki.addTiddler(new r.Tiddler({ ...remoteFields, text: "hand text" }));
     await turns();
     boundary.fire();
-    await turns();
+    await boundary.settle();
     const saved = plainDoc(r.workingHandle.doc()).tiddlers[title]?.tiddler;
     expect(writes).toHaveLength(1);
     expect(writes[0]).toEqual(landedHeads);
@@ -420,7 +422,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "changed" }));
     await turns(1);
     boundary.fire();
-    await turns();
+    await boundary.settle();
     expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("changed");
     r.unbridge();
     await r.adaptor.stop();

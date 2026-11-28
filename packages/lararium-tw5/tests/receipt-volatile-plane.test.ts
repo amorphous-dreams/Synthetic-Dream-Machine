@@ -33,12 +33,12 @@ describe.skipIf(wikiSkip)(`an act's receipt hold beside the volatile plane${skip
     const draft = openDraft(r, target, "edited");
     await afterDispatch();
     boundary.fire();
-    await turns(16);
+    await boundary.settle();
     saveSequence(r, draft);
     r.wiki.addTiddler(new r.Tiddler({ title: "$:/temp/volatile/beside", text: "a state the act's dispatch marked" }));
     await afterDispatch();
     boundary.fire();
-    for (let turn = 0; turn < 8 && verdicts.length === 0; turn++) await turns(16);
+    await boundary.settle();
     expect(verdicts.length, "control: the act released its hold").toBeGreaterThan(0);
     expect(r.calls.some((c) => c.bag === tempBag && c.puts.includes("$:/temp/volatile/beside")), "control: the temp title went to the memory store").toBe(true);
     expect(named.flatMap((n) => n ?? []).some((bag) => Object.hasOwn(r.handles, bag)), `control: the hold names a bag the island holds (${JSON.stringify(named)})`).toBe(true);

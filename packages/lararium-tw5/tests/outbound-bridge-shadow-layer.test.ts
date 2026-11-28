@@ -8,7 +8,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { wikiSkip, skipNote } from "./test-wiki.js";
-import { afterDispatch, ManualBoundary, shoreRig, storeAbsent, turns, workingBag } from "./wiki-shore-rig.js";
+import { afterDispatch, ManualBoundary, shoreRig, storeAbsent, workingBag } from "./wiki-shore-rig.js";
 
 describe.skipIf(wikiSkip)(`the bridge and the shadow layer${skipNote}`, () => {
   test("a shadow laid after the shore stands writes no record to any bag", async () => {
@@ -20,14 +20,14 @@ describe.skipIf(wikiSkip)(`the bridge and the shadow layer${skipNote}`, () => {
     r.engine.setShadowTiddlers("$:/temp/lares/daemon-seed/probe", [{ title: surface, type: "text/vnd.tiddlywiki", text: "a surface" }]);
     await afterDispatch();
     boundary.fire();
-    await turns(48);
+    await boundary.settle();
     expect(String((r.wiki.getTiddler(surface) as { fields: { text: string } } | undefined)?.fields.text), "CONTROL: the shadow reads in the wiki").toBe("a surface");
     expect(r.calls.slice(mark).filter((c) => c.puts.includes(surface) || c.deletes.includes(surface)), "a shadow reached a store").toEqual([]);
     // Re-laying it (a face's planes arriving) writes nothing either.
     r.engine.setShadowTiddlers("$:/temp/lares/daemon-seed/probe", [{ title: surface, type: "text/vnd.tiddlywiki", text: "a surface, again" }]);
     await afterDispatch();
     boundary.fire();
-    await turns(48);
+    await boundary.settle();
     expect(r.calls.slice(mark).filter((c) => c.puts.includes(surface) || c.deletes.includes(surface)), "a re-laid shadow reached a store").toEqual([]);
     await r.stop();
   }, 120_000);
@@ -40,16 +40,16 @@ describe.skipIf(wikiSkip)(`the bridge and the shadow layer${skipNote}`, () => {
     r.engine.setShadowTiddlers("$:/temp/lares/daemon-seed/override", [{ title: surface, text: "shipped" }]);
     await afterDispatch();
     boundary.fire();
-    await turns(48);
+    await boundary.settle();
     r.wiki.addTiddler(new r.Tiddler({ title: surface, text: "the hand's override" }));
     await afterDispatch();
     boundary.fire();
-    await turns(48);
+    await boundary.settle();
     const mark = r.calls.length;
     r.wiki.deleteTiddler(surface);
     await afterDispatch();
     boundary.fire();
-    await turns(48);
+    await boundary.settle();
     const issued = r.calls.slice(mark);
     expect(issued.filter((c) => c.puts.includes(surface)), "the shadow's content saved over the hand's delete").toEqual([]);
     expect(issued.filter((c) => c.retracts?.includes(surface)).map((c) => c.bag)).toEqual([workingBag]);

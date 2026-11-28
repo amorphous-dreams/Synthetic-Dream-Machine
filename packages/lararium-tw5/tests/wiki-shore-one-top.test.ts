@@ -9,7 +9,7 @@
 import { describe, expect, test } from "vitest";
 import { wikiSkip, skipNote } from "./test-wiki.js";
 import { unroutedSaveAlertTitle } from "../src/island-adaptor.js";
-import { afterDispatch, draftBag, ManualBoundary, openDraft, saveSequence, shoreRig, storeText, turns, typeInto, workingBag } from "./wiki-shore-rig.js";
+import { afterDispatch, draftBag, ManualBoundary, openDraft, saveSequence, shoreRig, storeText, typeInto, workingBag } from "./wiki-shore-rig.js";
 
 const POINTER_DRAFT = "lar:///ha.ka.ba/lararium/config/current-wiki-draft";
 
@@ -20,11 +20,11 @@ async function newTiddlerCycle(r: Awaited<ReturnType<typeof shoreRig>>, boundary
   typeInto(r, d, text, { "draft.title": title });
   await afterDispatch();
   boundary.fire();
-  await turns(16);
+  await boundary.settle();
   saveSequence(r, d);
   await afterDispatch();
   boundary.fire();
-  await turns(24);
+  await boundary.settle();
 }
 
 describe.skipIf(wikiSkip)(`a wiki with one writable top saves a new tiddler${skipNote}`, () => {

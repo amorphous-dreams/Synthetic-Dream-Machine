@@ -177,7 +177,7 @@ describe.skipIf(wikiSkip)(`wiki shore residue${skipNote}`, () => {
     expect([...writes[1]!.base!].sort(), "never on the merged heads").not.toEqual(merged);
     hold = false;
     release();
-    await turns(24);
+    await boundary.settle();
     await r.adaptor.landingIdle();
     const stored = r.doc(workingBag).tiddlers[x]!.tiddler;
     expect({ text: stored.text, note: stored.note }, "both actors' fields stand").toEqual({ text: "hand two", note: "peer" });

@@ -44,7 +44,7 @@ describe.skipIf(wikiSkip)(`an act's receipt hold under a displaced whole-drain t
     expect(dones, "no hold releases while its target is owed (an empty list would release the receipt at once)").toEqual([]);
     release();
     boundary.fire();
-    await turns(96);
+    await boundary.settle();
     expect(dones.map((d) => d.n).sort(), "every hold released once the receipts returned").toEqual([1, 2, 3]);
     for (const d of dones) expect(d.slots, `hold ${d.n} names the bag its act wrote`).not.toEqual([]);
     await r.stop();

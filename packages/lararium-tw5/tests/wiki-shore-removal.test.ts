@@ -39,9 +39,8 @@ describe.skipIf(wikiSkip)(`a hand's removal meets a peer's edit${skipNote}`, () 
     // The peer merges before the hand's change batch reaches its boundary.
     await peerWrite(r, workingBag, [{ tiddler: { title: x, text: "body", caption: "peer caption" } }], () => removeCaption(r, x));
     boundary.fire();
-    await turns(32);
+    await boundary.settle();
     await r.adaptor.landingIdle();
-    await turns(16);
 
     expect(r.doc(workingBag).tiddlers[x]!.tiddler["caption"], "the store keeps the peer's value").toBe("peer caption");
     expect(r.wiki.getTiddler(x)!.fields["caption"], "the wiki shows the merged record").toBe("peer caption");
@@ -58,9 +57,8 @@ describe.skipIf(wikiSkip)(`a hand's removal meets a peer's edit${skipNote}`, () 
     const { r, boundary } = await stage(x);
     await peerWrite(r, workingBag, [{ tiddler: { title: x, text: "peer body", caption: "base caption" } }], () => removeCaption(r, x));
     boundary.fire();
-    await turns(32);
+    await boundary.settle();
     await r.adaptor.landingIdle();
-    await turns(16);
 
     const stored = r.doc(workingBag).tiddlers[x]!.tiddler;
     expect("caption" in stored, "the removal landed").toBe(false);

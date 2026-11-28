@@ -19,7 +19,7 @@ describe.skipIf(wikiSkip)(`draft content comparison ignores envelope fields${ski
     const draft = openDraft(r, title, text);
     await afterDispatch();
     boundary.fire();
-    await turns(24);
+    await boundary.settle();
     await r.adaptor.landingIdle();
 
     const draftFields = r.wiki.getTiddler(draft)!.fields;

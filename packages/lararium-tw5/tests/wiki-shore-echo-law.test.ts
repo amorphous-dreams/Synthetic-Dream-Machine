@@ -18,7 +18,7 @@ import { afterDispatch, ManualBoundary, remote, shoreRig, storeAbsent, storeText
 const barrier = async (r: Rig, boundary: ManualBoundary): Promise<void> => {
   await afterDispatch();
   boundary.fire();
-  await turns(48);
+  await boundary.settle();
   await r.adaptor.landingIdle();
 };
 

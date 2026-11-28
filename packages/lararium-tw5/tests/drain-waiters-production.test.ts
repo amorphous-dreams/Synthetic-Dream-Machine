@@ -39,7 +39,7 @@ describe("drain waiters on the save path", () => {
     expect(live, "every displaced save has settled, so its reactions are released").toBeLessThanOrEqual(2);
     release();
     boundary.fire();
-    await turns(48);
+    await boundary.settle();
     await Promise.all(saves);
     await r.stop();
   }, 120_000);

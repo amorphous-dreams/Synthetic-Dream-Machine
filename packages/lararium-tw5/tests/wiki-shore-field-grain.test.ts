@@ -38,7 +38,7 @@ describe.skipIf(wikiSkip)(`wiki shore field grain${skipNote}`, () => {
       typeInto(r, d, "t", { "draft.title": y });
       await afterDispatch();
       boundary.fire();
-      await turns(16);
+      await boundary.settle();
       if (raced !== "none") {
         hold = true;
         await peerWrite(r, workingBag, [{ tiddler: { title: y, text: "t", a: "1", b: "2", c: "3", [raced]: "remote" } }]);
@@ -53,7 +53,7 @@ describe.skipIf(wikiSkip)(`wiki shore field grain${skipNote}`, () => {
       expect(initial.flatMap((c) => c.puts.concat(c.deletes)), "only Y leaves in the dispatch").toEqual([y]);
       expect(initial[0]!.base, "Y's write carries Y's landed base").toEqual(yBase);
       if (raced !== "none") { hold = false; release(); }
-      await turns(24);
+      await boundary.settle();
       await r.adaptor.landingIdle();
       const act = r.calls.slice(mark).filter((c) => c.bag === workingBag);
       expect(act.flatMap((c) => c.puts.concat(c.deletes)), "Y's write precedes X's tombstone").toEqual([y, x]);

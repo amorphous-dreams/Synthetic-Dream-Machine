@@ -160,7 +160,7 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     expect(() => nav.dispatchEvent({ type: "tm-delete-tiddler", tiddlerTitle: x })).not.toThrow();
     await afterDispatch();
     boundary.fire();
-    await turns(24);
+    await boundary.settle();
     const q = standingQuestion(r);
     expect(q.title.startsWith("$:/temp/confirm/")).toBe(true);
     expect(q.fields["confirm-type"]).toBe("delete");
@@ -172,7 +172,7 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     answer(nav, q.title, "yes");
     await afterDispatch();
     boundary.fire();
-    await turns(24);
+    await boundary.settle();
     expect(r.wiki.getTiddler(x)).toBeUndefined();
     expect(storeAbsent(r, workingBag, x), "the delete retracts plainly; no kāpae rises over nothing").toBe(true);
     expect(questions(r)).toEqual([]);
@@ -188,7 +188,7 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     r.wiki.addTiddler(new r.Tiddler({ title: "$:/temp/lararium-test/ordinary", text: "volatile but routed" }));
     await afterDispatch();
     boundary.fire();
-    await turns(24);
+    await boundary.settle();
     expect(r.calls.slice(markTemp).some((c) => c.bag === tempBag && c.puts.includes("$:/temp/lararium-test/ordinary"))).toBe(true);
     await r.stop();
   }, 120_000);
@@ -210,7 +210,7 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     expect(r.wiki.getTiddler(d)).toBeUndefined();
     await afterDispatch();
     boundary.fire();
-    await turns(24);
+    await boundary.settle();
 
     nav.dispatchEvent({ type: "tm-edit-tiddler", tiddlerTitle: z });
     await afterDispatch();
@@ -232,7 +232,7 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     const stampAtAsk = r.wiki.getTiddler(d)!.fields["$origin-bag"];
     await afterDispatch();
     boundary.fire();
-    await turns(24);
+    await boundary.settle();
     expect(storeText(r, draftBag, d), "the draft landed while the question stood").toBe("typed by a person");
     expect(r.wiki.getTiddler(d)!.fields["$origin-bag"], "the landing re-stamped the envelope field").not.toBe(stampAtAsk);
     expect(r.wiki.getTiddler(d)!.fields["text"]).toBe("typed by a person");
@@ -243,7 +243,7 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     expect(r.wiki.getTiddler(CORE_ALERT)).toBeUndefined();
     await afterDispatch();
     boundary.fire();
-    await turns(24);
+    await boundary.settle();
     expect(storeDeleted(r, draftBag, d)).toBe(true);
     await r.stop();
   }, 120_000);
@@ -299,9 +299,8 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     expect(storeDeleted(r, draftBag, d), "the recovery copy stays while the first save receipt is still pending").toBe(false);
 
     releaseAck();
-    await turns(48);
     boundary.fire();
-    await turns(24);
+    await boundary.settle();
     expect(storeText(r, draftBag, d), "the newer draft edit survives receipt completion").toBe("third typed value");
 
     nav.dispatchEvent({ type: "tm-cancel-tiddler", tiddlerTitle: d });
@@ -312,7 +311,7 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     expect(r.wiki.getTiddler(z)?.fields["text"]).toBe("first save value");
     await afterDispatch();
     boundary.fire();
-    await turns(24);
+    await boundary.settle();
     expect(storeDeleted(r, draftBag, d)).toBe(true);
     expect(storeText(r, workingBag, z)).toBe("first save value");
     await r.stop();
@@ -332,7 +331,7 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     await afterDispatch();
     typeInto(r, d, "renamed text", { "draft.title": y });
     boundary.fire();
-    await turns(24);
+    await boundary.settle();
     nav.dispatchEvent({ type: "tm-save-tiddler", tiddlerTitle: d });
     const q = standingQuestion(r);
     expect(q.fields["confirm-type"]).toBe("overwrite");
@@ -346,7 +345,7 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     answer(nav, q.title, "yes");
     await afterDispatch();
     boundary.fire();
-    await turns(24);
+    await boundary.settle();
     expect(r.wiki.getTiddler(y)?.fields["text"], "the peer's text stands").toBe("a peer wrote this");
     expect(r.wiki.getTiddler(d), "the draft stays open").toBeDefined();
     expect(r.wiki.getTiddler(x)?.fields["text"]).toBe("source");
@@ -362,7 +361,7 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     expect(r.wiki.getTiddler(x)).toBeUndefined();
     await afterDispatch();
     boundary.fire();
-    await turns(24);
+    await boundary.settle();
     await r.stop();
   }, 120_000);
 
