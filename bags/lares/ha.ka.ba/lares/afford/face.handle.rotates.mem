@@ -1,0 +1,103 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.handle.rotates`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "seat a fresh presentation key on a persona's Handle"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.handle.rotates", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.handle.rotates"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.handle.rotates"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.handle.rotates ~ the Handle's presentation key, rotated
+
+`lares handle rotate` seats a fresh key on the persona's Handle by a handle-KEL rotation the persona's owner-binding authorizes, so a lost presentation key recovers through the persona.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ rotate
+
+```memetic-wikitext
+<<has entity=`example` name=`rotate` params=`~ rotate the Handle's key`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ persona
+
+```memetic-wikitext
+<<has entity=`arg` name=`persona` params=`takes/index ~ the persona whose Handle acts; absent, the store door's default`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/seat-or-hand key/handle-head ~ the store door signs on the WHO board under the Handle's key`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ store-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`store-refused` params=`~ the store door refused; the line names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ rotated
+
+```memetic-wikitext
+<<has entity=`band` name=`rotated` params=`exit/0 ~ the card's glamour, nym and act`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares handle rotate
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares handle rotate]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · handle-card
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/handle-card`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TCW6HXxXWzqQenv20dVEv-4V_sFdjiz6dMR2Tat6oUE`>>
+
+<<^ code=`&#x0004;` to=`?`>>
