@@ -27,8 +27,8 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
     r.failures.family = new Error("disk full");
     edit(r, x, "edit one");
     await afterDispatch();
-    boundary.fire();
-    await turns(16);
+    await boundary.settle();
+    await r.adaptor.landingIdle();
     const raised = r.wiki.getTiddler(alert);
     expect(raised, "the alert stands on the rail").toBeDefined();
     expect(String(raised!.fields.tags)).toContain("$:/tags/Alert");
@@ -43,8 +43,8 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
     r.failures.family = null;
     edit(r, x, "edit two");
     await afterDispatch();
-    boundary.fire();
-    await turns(24);
+    await boundary.settle();
+    await r.adaptor.landingIdle();
     expect(storeText(r, workingBag, x)).toBe("edit two");
     expect(r.wiki.getTiddler(alert), "the acknowledged write clears the alert").toBeUndefined();
     expect(r.adaptor.holdsHand(x)).toBe(false);
@@ -52,8 +52,8 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
     const control = "lar:///t/fault/refused-write-control";
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "fine" }));
     await afterDispatch();
-    boundary.fire();
-    await turns(16);
+    await boundary.settle();
+    await r.adaptor.landingIdle();
     expect(storeText(r, workingBag, control)).toBe("fine");
     expect(r.wiki.getTiddler(`$:/temp/lares/alert/unsaved/${control}`)).toBeUndefined();
     await r.stop();
@@ -97,8 +97,8 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
     const mark = r.calls.length;
     r.wiki.deleteTiddler(floor);
     await afterDispatch();
-    boundary.fire();
-    await turns(24);
+    await boundary.settle();
+    await r.adaptor.landingIdle();
     expect(r.calls.slice(mark).map((c) => [c.bag, c.deletes])).toEqual([[workingBag, [floor]]]);
     expect(storeDeleted(r, workingBag, floor)).toBe(true);
     expect(r.wiki.getTiddler(floor)).toBeUndefined();
@@ -106,8 +106,8 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
 
     r.wiki.deleteTiddler(own);
     await afterDispatch();
-    boundary.fire();
-    await turns(24);
+    await boundary.settle();
+    await r.adaptor.landingIdle();
     expect(r.calls.slice(mark).filter((c) => c.retracts?.includes(own)), "a working-layer title with nothing beneath retracts where it lives").toHaveLength(1);
     expect(r.calls.slice(mark).filter((c) => c.deletes.includes(own)), "no tombstone rises over nothing").toEqual([]);
     expect(storeDeleted(r, workingBag, own)).toBe(false);
@@ -146,8 +146,8 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
     edit(r, x, "edited");
     await afterDispatch();
     expect(r.adaptor.holdsHand(x)).toBe(true);
-    boundary.fire();
-    await turns(24);
+    await boundary.settle();
+    await r.adaptor.landingIdle();
     expect(r.adaptor.holdsHand(x), "the own wave's landing settles the account").toBe(false);
     await r.stop();
 
