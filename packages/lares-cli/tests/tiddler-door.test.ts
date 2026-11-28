@@ -235,7 +235,7 @@ describe("the call door plans one call: {verb, params, surface: cli}", () => {
   });
 
   test("each call verb's row reads no flag of its own: params alone, and the global flags", () => {
-    for (const name of ["get", "put", "delete", "rename"]) {
+    for (const name of ["get", "put", "delete", "rename", "watch"]) {
       const row = COMMANDS.find((c) => c.name === name)!;
       expect(row.accepts, name).toEqual([]);
       expect(row.handler, name).toBe(cmdCall);

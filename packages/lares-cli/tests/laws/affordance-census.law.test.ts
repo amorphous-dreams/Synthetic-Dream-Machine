@@ -30,7 +30,7 @@ describe("the census ratchet: flipped + legacy = doors; legacy only falls; one h
   const c = census(Object.keys(pack().doors));
 
   test("SEED: oracle, ddate, law, wave 2's seven, wave 3a's six and the call verbs get, put, delete and rename read flipped; wiki reads legacy", () => {
-    for (const door of ["oracle", "ddate", "law", "act", "ingest", "export", "import", "shore", "bag", "flow", "kahua", "trust", "kapae", "events", "hooks", "mcp", "get", "put", "delete", "rename"]) expect(c.flipped, `the pack flips no ${door} door; ${REBAKE}`).toContain(door);
+    for (const door of ["oracle", "ddate", "law", "act", "ingest", "export", "import", "shore", "bag", "flow", "kahua", "trust", "kapae", "events", "hooks", "mcp", "get", "put", "delete", "rename", "watch"]) expect(c.flipped, `the pack flips no ${door} door; ${REBAKE}`).toContain(door);
     expect(c.legacy).toContain("wiki");
     expect(Object.keys(pack().doors), `the burned tiddler door holds no pack entry; ${REBAKE}`).not.toContain("tiddler");
   });
