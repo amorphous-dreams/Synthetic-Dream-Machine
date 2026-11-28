@@ -1,0 +1,103 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.meme.sits`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "survey who holds each named carrier, and the ones nobody reads"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.meme.sits", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.meme.sits"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.meme.sits"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.meme.sits ~ the sitting survey: inbound readers per carrier
+
+`lares meme sitting <file.mem…>` reads every reference each named carrier makes, in every form the grammar spells one, and reports per carrier who among the named holds it, naming the candidates no reader holds and the rooms they sit in. A carrier naming itself holds nothing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ sitting
+
+```memetic-wikitext
+<<has entity=`example` name=`sitting` params=`files/draft.mem ~ survey the named carriers`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ files
+
+```memetic-wikitext
+<<has entity=`arg` name=`files` params=`takes/host-paths needs/required seat/1 as/<file.mem…> ~ the carriers to read, every word past the verb`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ reads host files with no daemon in reach; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.meme.sits files/draft.mem]] ~ no carrier named, or an unreadable file`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ surveyed
+
+```memetic-wikitext
+<<has entity=`band` name=`surveyed` params=`exit/0 ~ candidates, held and rooms counted`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares meme sitting
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares meme sitting]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · meme
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;E0jK0IbeEZzpKbSlu5wpcXQM3fCJh96s4M88A15PAWY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,111 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.meme.checks`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read the normalize law over named carriers; drift exits 1"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.meme.checks", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.meme.checks"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.meme.checks"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.meme.checks ~ the normalize law read alone, or a sibling reading
+
+`lares meme check <file.mem…>` reads the normalize law over each named carrier and writes nothing; any drift exits 1, the reading CI and the pre-commit hook run. `--format=problems` prints one `path:line:col: severity: code: message` line per diagnostic for a problem matcher. `--gradient`, `--edges` and `--sitting` read a sibling survey in the law's place (a file the flag ate as its value still counts as named), and none rides beside `--format=problems`. `--grammar` reads the grammar clauses too.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ check · problems · gradient
+
+```memetic-wikitext
+<<has entity=`example` name=`check` params=`files/draft.mem ~ read the law over one carrier`>>
+<<has entity=`example` name=`problems` params=`files/draft.mem format/problems ~ one matcher line per diagnostic`>>
+<<has entity=`example` name=`gradient` params=`files/draft.mem gradient/true ~ the gradient survey`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ files · format · gradient · edges · sitting · grammar
+
+```memetic-wikitext
+<<has entity=`arg` name=`files` params=`takes/host-paths needs/required seat/1 as/<file.mem…> ~ the carriers to read, every word past the verb`>>
+<<has entity=`arg` name=`format` params=`takes/word ~ problems, the one format this door reads`>>
+<<has entity=`arg` name=`gradient` params=`~ the gradient survey in the law's place`>>
+<<has entity=`arg` name=`edges` params=`~ the edge survey in the law's place`>>
+<<has entity=`arg` name=`sitting` params=`~ the sitting survey in the law's place`>>
+<<has entity=`arg` name=`grammar` params=`~ read the grammar-authority clauses too`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ reads host files with no daemon in reach; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.meme.checks files/draft.mem]] ~ no carrier named, an unreadable file, a format other than problems, or a survey beside --format=problems`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ canonical · drifted
+
+```memetic-wikitext
+<<has entity=`band` name=`canonical` params=`exit/0 ~ every named carrier stands canonical`>>
+<<has entity=`band` name=`drifted` params=`exit/1 ~ a carrier drifted; each names its clause`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares meme check
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares meme check]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · meme
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XoEx0Co_N9nxV8rSjlz5G-ipLnhcTeHYUwLWKWge0SE`>>
+
+<<^ code=`&#x0004;` to=`?`>>
