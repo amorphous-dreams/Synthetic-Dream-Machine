@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.edge.settles`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "answer the raises this vessel counts on its fleet's edge board"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.edge.settles", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.edge.settles"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.edge.settles"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.edge.settles ~ the key side answers the fleet's raises, idempotent
+
+`lares edge settle [--fleet <root>]` reads the raises this vessel counts on its fleet's edge board, has the daemon island answer them where the face's group keys live, and marks what got answered; running it again changes nothing. A vessel holding no face's root settles nothing and says so.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ settle · fleet
+
+```memetic-wikitext
+<<has entity=`example` name=`settle` params=`~ settle every fleet`>>
+<<has entity=`example` name=`fleet` params=`fleet/<root> ~ settle one fleet`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ fleet
+
+```memetic-wikitext
+<<has entity=`arg` name=`fleet` params=`takes/root ~ the fleet root; absent, every fleet this vessel holds a face root for`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ the daemon island answers where the face's group keys live`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ EdgeSeatError
+
+```memetic-wikitext
+<<has entity=`refusal` name=`EdgeSeatError` params=`~ the seat read or mark refused by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ settled · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`settled` params=`exit/0 ~ each fleet answered and marked, or nothing to settle`>>
+<<has entity=`band` name=`refused` params=`exit/1 ~ refused by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares edge settle
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares edge settle]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · kapae
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5PrMaxMbul2RMGqgLSsv0fjzs_WbKFZRk57ggX-Zpz8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,120 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.edge.raises`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "set one relationship aside under the hand that holds it"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.edge.raises", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.edge.raises"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.edge.raises"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.edge.raises ~ one relationship, set aside; neither party falls
+
+`lares edge kapae` sets one relationship aside: name exactly one of an edge id, `--member <key>` or `--device <key>`, with `--realm <id>` where the relationship rides a realm. The act signs with a persona root (`--as <index>`) or, under `--quorum`, the seats this vessel holds; it asserts no authority, and whichever reader consults the shadow decides whether that hand holds the edge. The marker rides the edge, never a party. Raising wins the fold under partition, so an eviction never quietly reverses. `--quorum --partial` signs with the seats held here and prints a partial for the next seat's vessel instead (`--member`, or `--voucher` with `--joiner`, under `--realm`); `lares edge cosign` lands it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ edge · member · partial
+
+```memetic-wikitext
+<<has entity=`example` name=`edge` params=`edge/<edge-id> ~ raise by edge id`>>
+<<has entity=`example` name=`member` params=`member/<key> realm/<realm-id> quorum/true ~ raise a member's place under the seat quorum`>>
+<<has entity=`example` name=`partial` params=`member/<key> realm/<realm-id> quorum/true partial/true ~ print a partial for the next seat`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ edge · member · device · realm · quorum · partial · voucher · joiner · as · nexus · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`edge` params=`takes/edge-id seat/1 as/<edge-id> ~ the edge id, as a vouch or a join names it`>>
+<<has entity=`arg` name=`member` params=`takes/key ~ a member's place in the realm`>>
+<<has entity=`arg` name=`device` params=`takes/key ~ one device's relationship`>>
+<<has entity=`arg` name=`realm` params=`takes/id ~ the realm the relationship rides`>>
+<<has entity=`arg` name=`quorum` params=`~ sign with the seat quorum this vessel holds`>>
+<<has entity=`arg` name=`partial` params=`~ with --quorum: sign the seats held here and print a partial`>>
+<<has entity=`arg` name=`voucher` params=`takes/key ~ partial: the vouch's voucher`>>
+<<has entity=`arg` name=`joiner` params=`takes/key ~ partial: the vouch's joiner`>>
+<<has entity=`arg` name=`as` params=`takes/index ~ the persona root that signs`>>
+<<has entity=`arg` name=`nexus` params=`takes/aid ~ the Nexus whose charter seats the quorum`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the acting face, by persona index; absent, the one face standing open`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/persona-root-or-seats ~ signs with a persona root or the held seats; the reader decides whether that hand holds the edge`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · as-not-index · EdgeKapaeError · EdgeCosignError
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.edge.raises edge/<edge-id>]] ~ name one relationship (an edge id, --member or --device); --partial needs --quorum and --realm`>>
+<<has entity=`refusal` name=`as-not-index` params=`cure/[[realm.edge.raises edge/<edge-id> as/0]] ~ --as expects a persona-root index`>>
+<<has entity=`refusal` name=`EdgeKapaeError` params=`~ the act refused by name`>>
+<<has entity=`refusal` name=`EdgeCosignError` params=`~ the partial refused by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ recorded · partial · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`recorded` params=`exit/0 ~ edge, act-cid, parents, hand, board and whether the shadow stands under this hand`>>
+<<has entity=`band` name=`partial` params=`exit/0 ~ the seats signed of the threshold, and the partial's line`>>
+<<has entity=`band` name=`refused` params=`exit/1 ~ refused by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares edge kapae
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares edge kapae]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · kapae
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GlHCoQC5uffFrKBtzLzY7RrdboN8wlzPis2OHJRnftI`>>
+
+<<^ code=`&#x0004;` to=`?`>>
