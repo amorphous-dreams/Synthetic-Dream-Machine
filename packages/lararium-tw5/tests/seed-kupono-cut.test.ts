@@ -20,13 +20,13 @@
  * ``<<has entity=`kupono-cut` name=`retired` params=`…`>>``: a name the operator rules pono again leaves that
  * row and this gate follows with no edit. The sigil vocabulary itself stays open (a new sigil enters the
  * grammar as a tagged tiddler), so no law lists the LIVE heads. The old frame sigil reads retired by what it
- * DID, never by its head: a firing (`aim`, `steer`, `yield`) rides `set` alone, and ``<<~ lares action=`…`>>``,
- * the house's own act line, reads pono (operator ruling 2026-11-26).
+ * DID, never by its head: a firing (`aim`, `steer`, `yield`) rides `set` alone, and ``<<~ lares emote=`…`>>``,
+ * the house's own stage direction, reads pono (operator ruling 2026-11-26).
  *
  * ── THE SHELF FOLLOWS THE SAME ROW ────────────────────────────────────────────────────────────────────────
  * The sigil tiddlers under `tiddlers/sigil-*.tid` generate the grammar table, so a retired name that kept its
  * tiddler would keep its sigil. This gate already reads the retired row, so the burn rides here: no retired
- * name stands as `sigil-<name>.tid`, and `sigil-lares.tid` (the act line) stands.
+ * name stands as `sigil-<name>.tid`, and `sigil-lares.tid` (the stage direction) stands.
  */
 
 import { describe, test, expect } from "vitest";
@@ -111,7 +111,7 @@ const firingsOf = (text: string): string[] => [...text.matchAll(/^\\procedure se
  * The turn frame holds one owner: a firing rides `set` alone. No sigil stands under a firing's name
  * (`<<~ yield >>`, `\procedure ~aim(`), and no call on another head carries a firing as a value or a bare word
  * (``<<~ lares fires=`aim` …>>``, `<<~ lares aim "…">>`). The law reads what a call DOES, so a head the old
- * frame once wore stays free for another act: ``<<~ lares action=`…`>>`` reads clean.
+ * frame once wore stays free for another act: ``<<~ lares emote=`…`>>`` reads clean.
  */
 const firingsRideSet = (text: string): string[] => {
   const firings = new Set(firingsOf(text));
@@ -439,12 +439,12 @@ describe("controls: each law names its planted fault", () => {
     expect(row.length).toBeGreaterThan(0);
     expect(row.every((r) => CUT_SLOTS.includes(r.slot) && r.name !== "")).toBe(true);
   });
-  test("★ <<~ lares action=`…`>> reads pono; the old frame on any head reads red ★", () => {
-    const act = FRAME_OWNERS + "\n``<<~ lares action=`refreshes the libation dish, the shrine incense burns`>> ${pet-name} (Lares Spirit)``";
+  test("★ <<~ lares emote=`…`>> reads pono; the old frame on any head reads red ★", () => {
+    const act = FRAME_OWNERS + "\n``<<~ lares emote=`refreshes the libation dish, the shrine incense burns`>> ${pet-name} (Lares Spirit)``";
     for (const name of ["firingsRideSet", "retiredSurface", "unnamedOrQuotedValues", "arrowsBetweenValues"] as const) expect(LAWS[name](act), name).toEqual([]);
     const f = firingsRideSet(FRAME_OWNERS + "\n<<~ lares fires=`aim` from=`a`>>\n<<~ lares aim from=`a`>>\n<<~ yield >>\n\\procedure ~steer(to) x").join("\n");
     for (const want of ["fires=`aim` fires outside set", "a bare «aim» fires outside set", "the firing «yield» stands as a sigil of its own", "\\procedure ~steer stands as a sigil of its own"]) expect(f).toContain(want);
-    expect(firingsRideSet("<<~ lares action=`a`>>").join("\n")).toContain("no \\procedure set-<firing>()");
+    expect(firingsRideSet("<<~ lares emote=`a`>>").join("\n")).toContain("no \\procedure set-<firing>()");
   });
   test("an elision passes where keys would ride; a key bound to an unticked value reads red", () => {
     for (const ok of ["<<~ set lares=`aim` …>>", "<<~ set note=`...` ...>>", "<<~ name …>>", "<<~ oracle throw=`…`>>"]) expect(unnamedOrQuotedValues(ok), ok).toEqual([]);

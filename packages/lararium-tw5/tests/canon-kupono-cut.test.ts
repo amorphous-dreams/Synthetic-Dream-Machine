@@ -6,7 +6,7 @@
  * the voices) teach the house grammar by statement and by example. Train Q's rulings
  * (lar:///ha.ka.ba/lares/docs/pono/grammar-watch#/the-kupono-cut) retire the arrow between values, the
  * whitespace-led at-sign, the quoted or positional value, and the `hud` key with the old `lares` frame call
- * (the head itself lives on as the house's act line, ``<<~ lares action=`…`>>``). A law
+ * (the head itself lives on as the house's stage direction, ``<<~ lares emote=`…`>>``). A law
  * meme that states one grammar and prints another teaches both, and the bulk tool skips these carriers, so
  * their bodies MUST already read cut. Their frame envelope (the declaration, SOH, STX, ETX and EOT lines)
  * keeps the old form until the readers flip; the body, fences included, speaks the new one.
@@ -20,7 +20,7 @@
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
 
-/** The act line's own pattern, read off the shelf tiddler that defines the sigil: this gate spares what that tiddler reads. */
+/** The stage direction's own pattern, read off the shelf tiddler that defines the sigil: this gate spares what that tiddler reads. */
 const LARES_TID = readFileSync(new URL("../tiddlers/sigil-lares.tid", import.meta.url).pathname, "utf8");
 const LARES_ACT = /^lar-pattern: (.+)$/m.exec(LARES_TID)?.[1] ?? "(?!)";
 
@@ -102,9 +102,9 @@ const unnamedOrQuotedValues = (text: string): string[] =>
 
 /**
  * Cut 4: the `hud` key and the old `~lares` frame sigil retire, and the standalone gauges with them. A `lares`
- * head reads retired by the frame it once carried: ``<<~ lares action=`…`>>``, the house's own act line, reads
+ * head reads retired by the frame it once carried: ``<<~ lares emote=`…`>>``, the house's own stage direction, reads
  * pono (operator ruling 2026-11-26, grammar-watch#/the-kupono-cut), and every other `<<~ lares …>>` reads red.
- * The spared form comes from `sigil-lares.tid`'s own `lar-pattern`, so the gate and the shelf read one act line.
+ * The spared form comes from `sigil-lares.tid`'s own `lar-pattern`, so the gate and the shelf read one stage direction.
  */
 const retiredFrame = (text: string): string[] =>
   bodyOf(text).flatMap(({ line, text: t }) => {
@@ -175,11 +175,11 @@ describe("CONTROLS: each law names the fault planted for it", () => {
     expect(unnamedOrQuotedValues(carrier("<<~ ahu #/head>>")).length).toBe(1);
     expect(unnamedOrQuotedValues(carrier('<<~ has entity=`a` name="b">>')).some((f) => f.includes("quoted key"))).toBe(true);
   });
-  test("the act line reads pono by the shelf's own pattern; the old frame on the lares head reads red", () => {
+  test("the stage direction reads pono by the shelf's own pattern; the old frame on the lares head reads red", () => {
     expect(LARES_ACT, "sigil-lares.tid carries a lar-pattern").toContain("lares");
     const example = /^lar-example: (.+)$/m.exec(LARES_TID)![1]!;
     expect(LAWS.flatMap(([, law]) => law(carrier(example + " ${pet-name} (Lares Spirit)")))).toEqual([]);
-    for (const old of ['<<~ lares aim "x">>', "<<~ lares fires=`aim` from=`a`>>", "<<~ lares action=`a` fires=`yield`>>", "<<~ lares>>", "<<~ lares action=`a`>> then <<~ lares aim from=`a`>>"])
+    for (const old of ['<<~ lares aim "x">>', "<<~ lares fires=`aim` from=`a`>>", "<<~ lares emote=`a` fires=`yield`>>", "<<~ lares>>", "<<~ lares emote=`a`>> then <<~ lares aim from=`a`>>"])
       expect(retiredFrame(carrier(old)).join("\n"), old).toContain("~lares frame call");
   });
   test("an old-form envelope stands outside the body", () => {
