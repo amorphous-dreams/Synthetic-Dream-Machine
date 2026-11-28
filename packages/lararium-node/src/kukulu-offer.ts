@@ -183,10 +183,10 @@ export async function writeKukuluOffer(a: {
 
 /**
  * A HALF SET DOWN SPENDS THE OFFER ITS VOUCHES NAME (restand-files-smooth). Each vouch binds one begun half (its face's group,
- * the line, the head and the image the half began with), and the pūlama refuses the whole offer `kukulu-image-mismatch` once
- * the host raises any other image. So where an abandon (the hand's, or a kūkulu's supersede) sets down a half some vouch in the
- * resting offer names, that offer can serve nothing: it goes, and the next vessel enters by the image the host reports where
- * that image stands admitted (the gate's NO OFFER path). An offer whose vouches name another half stays. Answers whether a
+ * the line, the head and the image the half began with), and the pūlama reads the whole offer as none once the host raises any
+ * other image. So where an abandon (the hand's, or a kūkulu's supersede) sets down a half some vouch in the resting offer names,
+ * that offer can serve nothing: it goes, and the next vessel enters by the image the host reports where that image stands
+ * admitted (the gate's NO OFFER path). An offer whose vouches name another half stays. Answers whether a
  * file went; a file that reads as no offer, or will not go, stays.
  */
 export function spendKukuluOffer(path: string, half: { readonly group: string; readonly branch: string; readonly head: string; readonly image?: string }): boolean {

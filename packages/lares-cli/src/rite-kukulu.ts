@@ -23,7 +23,10 @@
  *                   A LIT KEEPER rides the kukulu lei instead: a return left licenses the keeper's successor (no route; the
  *                   lit keeper's own held keys pass sealed to it, and the rite's begin spends the return); returns spent, or
  *                   no lei standing, names the hand's ONE act (`lares lei kui --rite kukulu …`), after which the seat restands
- *                   alone; a lei read that answered nothing twice stops as `kukulu-lei-unread` and asks no hand at all
+ *                   alone; a lei read that answered nothing twice stops as `kukulu-lei-unread` and asks no hand at all, unless a
+ *                   hoʻāla lei holds a return, which then carries the light. A new vessel's image no admission and no offer carries
+ *                   takes the hoʻāla lei's admit BEFORE the raise (`admitByLei`); a refusal stops as `kukulu-admit-refused`, so no
+ *                   raise stands a vessel the keeper would hold locked
  *   5. rite-begin   IN THE VESSEL, where a vessel stands: every lent face's kukulu lei returns once and rests its guest
  *                   half (`rite-begun`). No lei standing on the line runs the restand with no rite. FIRST the vessel reads
  *                   the begin that stands (`standing`: guest halves resting unlanded on the line): one at this head is
@@ -75,6 +78,8 @@ export const RETURNS_SPENT = "swarm-lei-returns-spent";
 /** The refusal `lei show` reads of a lei whose returns all lie spent (the begin's refill prompt owns it). */
 const RETURNS_SPENT_REFUSAL = "returns-spent";
 export const LEI_ABSENT = "swarm-lei-absent";
+/** The refusal a rite stops on, before its raise, where the hoʻāla lei admitted nothing for a new vessel's image. */
+export const ADMIT_REFUSED = "kukulu-admit-refused";
 
 /** The returns per lent face a kūkulu lei strung on the spot carries, where the rite finds none standing. */
 export const KUKULU_LEI_RETURNS = 6;
@@ -171,13 +176,19 @@ export interface RitePorts {
   keeperStand?(): Promise<{ readonly to: string; readonly closure: string } | null>;
   /**
    * THE COMMIT THE KUKULU LEI LICENSES (no route; operator ruling 2026-11-24: the keeper lei keeps no count of its own): the shim's
-   * internal step (`pulama name-successor --lei <rev> <branch>`, no hand verb) checks the revision reachable from origin, the image's closure label equal to its D′
-   * and a green LOCAL bench verdict over that very tree (the host runs `node tools/bench-gate.mjs --verdict`; CI rides beside it as
-   * annotation and never blocks, ruling 2026-11-25-web2-annotates), and the keeper rests a commit naming D′, the verdict's hash and the license. The rite's own begin spends the lei's
+   * internal step (`pulama name-successor --lei <rev> <branch>`, no hand verb) checks the revision reachable from origin and the image's closure label equal to its D′;
+   * the LOCAL bench verdict resting over that very tree and the CI run ride beside it as annotation and never block (the rite runs no
+   * suite; ruling 2026-11-25-web2-annotates), and the keeper rests a commit naming D′, the verdict's reading and the license. The rite's own begin spends the lei's
    * return (the same return it spends for the lent face), and the vest names it. True where the commit rests (the stand then reads
    * `vests`); false where any guard refused (its lines name why). Absent, nothing licenses a commit.
    */
   keeperLeiSpend?(revision: string, branch: string): Promise<boolean>;
+  /**
+   * THE PRE-RAISE ADMIT (the shim's `pulama admit` with no terminal): the keeper hears the image the tag holds and admits it under the
+   * hoʻāla lei, one return, no route. True where the image stands admitted; false where no standing lei covered it (its lines name
+   * why). Absent, the raise's own admit runs after the down, as before.
+   */
+  admitByLei?(): Promise<boolean>;
   /** A terminal on both ends, where a route can be typed; absent, the rite reads one. */
   tty?(): boolean;
   /** One store row, answered by the vessel that stands. */
@@ -581,13 +592,17 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
   if (leiPath && leiRead === null && r.vessel === "standing" && ports.leiStands) {
     ports.say(`kūkulu: the kukulu lei on ${branch} answered no reading before the image step; the rite reads it once more here, where its return licenses the successor`);
     leiRead = await ports.leiStands(branch, opts.face).catch(() => null);
-    if (leiRead === null) {
+    // A HOʻĀLA LEI CARRIES THE LIGHT where the kukulu lei reads nowhere (the vessel that reads it stands locked, the very day the
+    // rite heals it): the rite licenses no successor and wakes the keeper by the hoʻāla lei instead.
+    if (leiRead === null && r.hoala === true) ports.say(`kūkulu: the kukulu lei on ${branch} answered no reading twice (the vessel held the read, or stands locked); a hoʻāla lei holds a return, so the rite licenses no successor and the keeper wakes by the hoʻāla lei`);
+    else if (leiRead === null) {
       ports.say(`kūkulu: the kukulu lei on ${branch} answered no reading twice (the vessel held the read behind another act, or its door refused), so the rite licenses no successor and asks no route; the house stands as it stood, the image waits built, and nothing spent; read it with \`lares lei show --rite kukulu --branch ${branch}\`, then run \`${HAND_ACT}\` again from this seat`);
       return { code: 1, data: { ...base, begun: false, stopped: "lei", refusal: LEI_UNREAD_REFUSAL } };
+    } else {
+      leiLicenses = leiRead === true;
+      leiGone = leiRead === false || (typeof leiRead === "string" && leiRead !== RETURNS_SPENT_REFUSAL);
+      if (leiLicenses) ports.say(`kūkulu: the kukulu lei on ${branch} stands with a return left`);
     }
-    leiLicenses = leiRead === true;
-    leiGone = leiRead === false || (typeof leiRead === "string" && leiRead !== RETURNS_SPENT_REFUSAL);
-    if (leiLicenses) ports.say(`kūkulu: the kukulu lei on ${branch} stands with a return left`);
   }
   let leiRefused = false;
   if (leiPath && leiLicenses) {
@@ -905,6 +920,17 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
   // A HOʻĀLA LEI WITH A RETURN LEFT LICENSES THE ADMIT TOO: the raise admits the image under it, and no hand gets asked.
   if (pulama && !light && raisesNew && !begun && r.admitted !== true && !r.offer && !tty && r.hoala !== true) {
     return awaitsHand(`the pūlama has not admitted the image of ${short}, no kukulu lei carries it, and its admit reads your route on a terminal (or string a lei first: lares lei kui --rite kukulu --branch ${branch} --returns <n> --all)`, spent);
+  }
+  // THE ADMIT RIDES BEFORE THE RAISE, never after it: a new vessel on an image no admission and no offer carries, under a lit keeper
+  // whose hoʻāla lei holds a return, takes that lei's admit here (one return, no route). A refusal stops the rite before the down, so
+  // no raise stands a vessel the keeper would hold locked.
+  if (pulama && !light && raisesNew && !begun && r.admitted !== true && !r.offer && !tty && r.hoala === true && ports.admitByLei) {
+    const admitted = await ports.admitByLei().catch(() => false);
+    if (!admitted) {
+      ports.say(`kūkulu: the hoʻāla lei admitted nothing for the image of ${short} (the lines above name why), and a raise would stand the vessel locked; the house stands as it stood, the image waits built, and no kukulu lei spent; string a hoʻāla lei (lares lei kui --rite hoala --returns <n>) or admit the image by hand on a terminal (lares pulama admit), then run \`${HAND_ACT}\` again`);
+      return { code: 1, data: { ...base, ...spent, begun: false, stopped: "admit", refusal: ADMIT_REFUSED } };
+    }
+    ports.say(`kūkulu: the hoʻāla lei admitted the image of ${short} before the raise; the new vessel enters by it`);
   }
   const landCall = landCallOf(begunFaces);
   let offered = false;

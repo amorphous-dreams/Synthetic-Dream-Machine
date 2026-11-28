@@ -19,7 +19,7 @@ import { hostSeedOfferPort } from "../src/seed-offered.js";
 import { parseArgs } from "../src/parse-args.js";
 import { RiteUsage, abandonHandRefusal, hostRefill, leiReading, hostRowLine, ritePlan, rollbackOf, standingOf, standingRowLine, syncCheckout } from "../src/commands/rite.js";
 import { storeVerbRidesWorn } from "../src/store-door.js";
-import { KUKULU_LEI_RETURNS, LEI_UNREAD_REFUSAL, kukuluHand, kukuluSeedLine, priorImageRef, riteKukulu, syncPlan, type HandFacts, type RitePorts, type RiteVerbAnswer, type StandReading } from "../src/rite-kukulu.js";
+import { ADMIT_REFUSED, KUKULU_LEI_RETURNS, LEI_UNREAD_REFUSAL, kukuluHand, kukuluSeedLine, priorImageRef, riteKukulu, syncPlan, type HandFacts, type RitePorts, type RiteVerbAnswer, type StandReading } from "../src/rite-kukulu.js";
 import { decideRoute } from "../src/host-bridge.js";
 import { COMMAND_NAMES, COMMANDS, unknownFlags } from "../src/bin/lares.js";
 
@@ -31,7 +31,7 @@ const READING: StandReading = { revision: HEAD, image: IMAGE, how: "built", vess
 const LIT: Partial<StandReading> = { pulama: "closure-level", lit: true, admitted: false };
 
 /** Ports that record every call in order and answer from a script. */
-function fakes(over: { begin?: RiteVerbAnswer; land?: RiteVerbAnswer; reading?: Partial<StandReading>; stage?: number; raise?: number; tty?: boolean; keeper?: { to: string; closure: string } | null; leiStands?: boolean | string | null | ReadonlyArray<boolean | string | null>; leiSpend?: boolean } = {}) {
+function fakes(over: { begin?: RiteVerbAnswer; land?: RiteVerbAnswer; reading?: Partial<StandReading>; stage?: number; raise?: number; tty?: boolean; keeper?: { to: string; closure: string } | null; leiStands?: boolean | string | null | ReadonlyArray<boolean | string | null>; leiSpend?: boolean; admitByLei?: boolean } = {}) {
   const calls: string[] = [], said: string[] = [], leiReads: string[] = [];
   const ports: RitePorts = {
     checkout: async () => { calls.push("checkout"); return { head: HEAD, branch: "main" }; },
@@ -44,6 +44,7 @@ function fakes(over: { begin?: RiteVerbAnswer; land?: RiteVerbAnswer; reading?: 
       return async (branch: string) => { leiReads.push(branch); return answers === null ? over.leiStands as boolean | string | null : answers.length > 1 ? answers.shift()! : answers[0]!; };
     })() }),
     ...(over.leiSpend === undefined ? {} : { keeperLeiSpend: async (rev: string, branch: string) => { calls.push(`keeper-lei-spend ${rev} ${branch}`); return over.leiSpend as boolean; } }),
+    ...(over.admitByLei === undefined ? {} : { admitByLei: async () => { calls.push("admit-by-lei"); return over.admitByLei as boolean; } }),
     ...(over.tty === undefined ? {} : { tty: () => over.tty as boolean }),
     row: async (verb, args) => {
       calls.push(`${verb} ${JSON.stringify(args)}`);
@@ -206,6 +207,35 @@ describe("kukulu-asks-a-route-only-where-the-day-owes-one", () => {
     const unported = fakes(keeperLei);
     expect(await riteKukulu(unported.ports, {})).toMatchObject({ code: 0, data: { begun: false, awaits: "hand", hand: "lares rite kukulu" } });
     expect(unported.said.join("\n")).toMatch(/its light reads your route on a terminal/);
+  });
+
+  it("RED (custody-cure): a kukulu lei that answers no reading twice under a hoʻāla lei holding a return raises by the hoʻāla lei: no successor licensed, no stop, no hand", async () => {
+    const to = "c".repeat(64), closure = "sha256:" + "9".repeat(64);
+    const f = fakes({ tty: false, reading: { pulama: "moved", lit: true, keeper: "lei", hoala: true }, keeper: { to, closure }, leiSpend: true, leiStands: null });
+    const out = await riteKukulu(f.ports, {});
+    expect(out.code, f.said.join("\n")).toBe(0);
+    expect(f.leiReads).toEqual(["main", "main"]);
+    expect(f.calls).toContain(`raise ${HEAD}`);
+    expect(f.calls.some((c) => c.startsWith("keeper-lei-spend"))).toBe(false);
+    expect(f.said.join("\n")).toMatch(/answered no reading twice[\s\S]*a hoʻāla lei holds a return, so the rite licenses no successor and the keeper wakes by the hoʻāla lei/);
+    expect(out.data).not.toHaveProperty("refusal");
+  });
+
+  it("RED (custody-cure): a stop then a rite with no terminal (no vessel standing, a lit keeper, the new image unadmitted and no offer carrying it) admits by the hoʻāla lei BEFORE the raise; a refused admit stops before the raise; CONTROL: an admitted image or a carrying offer asks no admit", async () => {
+    const STOPPED = { ...LIT, vessel: "down" as const, hoala: true };
+    const f = fakes({ tty: false, reading: STOPPED, admitByLei: true });
+    expect(await riteKukulu(f.ports, {})).toMatchObject({ code: 0, data: { begun: false, raised: true } });
+    expect(f.calls).toEqual(["checkout", STAGE, "admit-by-lei", `raise ${HEAD}`]);
+    expect(f.said.join("\n")).toMatch(/the hoʻāla lei admitted the image of aaaaaaaaaaaa before the raise/);
+    const no = fakes({ tty: false, reading: STOPPED, admitByLei: false });
+    expect(await riteKukulu(no.ports, {})).toMatchObject({ code: 1, data: { begun: false, stopped: "admit", refusal: ADMIT_REFUSED } });
+    expect(no.calls).toEqual(["checkout", STAGE, "admit-by-lei"]);
+    expect(no.said.join("\n")).toMatch(/a raise would stand the vessel locked[\s\S]*lares pulama admit/);
+    for (const reading of [{ ...STOPPED, admitted: true }, { ...STOPPED, offer: true }]) {
+      const g = fakes({ tty: false, reading, admitByLei: true });
+      expect(await riteKukulu(g.ports, {})).toMatchObject({ code: 0, data: { begun: false, raised: true } });
+      expect(g.calls).not.toContain("admit-by-lei");
+    }
   });
 
   it("RED (lei-wright): returns spent stops the rite naming the re-string as the hand's one act, and nothing lights; an unstrung lei refuses the next rite the same way (revoke wins: a read after the unstring licenses nothing); CONTROL: a seat no lei ever served keeps the terminal ask beside the string", async () => {
