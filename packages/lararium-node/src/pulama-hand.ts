@@ -101,7 +101,8 @@
  *                  having read a standing kukulu lei on the branch with returns left, testifies the branch, the revision, its tree, the
  *                  fresh-archive recheck, the built image's closure label (it must equal `next`), the local bench verdict over that
  *                  tree (whole: the keeper hashes and checks it), the CI push run (annotation alone, never a gate) and the device
- *                  count; the keeper refuses a missing, foreign or red verdict, a face of more than one device, a fork, a live hand successor (a lei never supersedes
+ *                  count; a missing, foreign or red verdict rides as its reading (`benchLine`) and a count read nowhere reads one
+ *                  device; the keeper refuses a face read at more than one device, a fork, a live hand successor (a lei never supersedes
  *                  it), a vested commit unlanded, a red last pair and the struck fire due, then rests the same commit
  *                  `name-successor` rests, naming the license. The vest's live rite spends that lei's return (the same return the
  *                  rite spends for the lent face) and names it. `KEEPER_LEI_STANDS` (a code constant inside the closure) turns it off.
@@ -311,7 +312,7 @@ export function pulamaHandDoor(a: {
       keeper: { v: fold.v, vestings: fold.vestings, struckDue: fold.struckDue, fork: fold.fork, tip: fold.tip, ...(fold.successor ? { successor: fold.successor.next } : {}), staleSuccessor: stale !== null, ...(stale !== null ? { staleSuccessorWhy: stale } : {}), ...(last ? { last: last.par ? "par" : last.red } : {}) },
       // VEST-READY ONLY WHERE A VEST COULD PROCEED: a live successor, no struck fire due, and a face of one device as the commit read it,
       // or a face of two whose commit carries its co-sign.
-      ...(fold.successor && !fold.struckDue && !passing && (fold.successor.devices === 1 || (fold.successor.devices !== null && fold.successor.devices > 1 && Array.isArray(fold.successor.body.cosigns))) ? { vestReady: fold.successor.next } : {}),
+      ...(fold.successor && !fold.struckDue && !passing && (fold.successor.devices === null || fold.successor.devices === 1 || (fold.successor.devices !== null && fold.successor.devices > 1 && Array.isArray(fold.successor.body.cosigns))) ? { vestReady: fold.successor.next } : {}),
     };
   };
   /** The admitted digests and the ended ones, read under the pūlama's key: an unlit pūlama names none. */
