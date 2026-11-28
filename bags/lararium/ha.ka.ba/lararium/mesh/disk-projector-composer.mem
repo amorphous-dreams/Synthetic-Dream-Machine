@@ -9,7 +9,7 @@ heleuma       = "ha"
 module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-composer"
 role          = "code-meme: composes the disk projector's modules over the state it holds"
 source-file   = "packages/lararium-node/src/disk-projector.ts"
-source-sha256 = "sha256:f54b5d08524fdd69c59b132c289a8147f726d9fa2c64aa2dd3d44757726f60b3"
+source-sha256 = "sha256:4c4a9d31799dd2d38b442da2ea6a62f1eb13a9207abc1a32246321e5681bcc12"
 title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-composer"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-composer"
@@ -29,6 +29,6 @@ The `LarDiskProjector` class holds every field the projector's modules share and
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9LER-CIhElrOg3eT8y9jChgSI1b9zUevFv13Xexd5PA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;F2xzaJG9UWEY9A1QY0Bfp3FcwO3WkY36ytJWsHSP4ow`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -114,6 +114,7 @@ import * as watches from "./disk-projector/watches.js";
 import * as untracked from "./disk-projector/untracked.js";
 import * as writes from "./disk-projector/write.js";
 import * as flushing from "./disk-projector/flush.js";
+import * as dropped from "./disk-projector/dropped.js";
 
 export type { LarDiskProjectorOptions } from "./disk-projector/options.js";
 export type { StandoffSides, StandingStandoff } from "./disk-projector/entries.js";
@@ -352,6 +353,11 @@ export class LarDiskProjector {
   /** The per-root reconcile (`reconcile.ts`). An instance method, so every internal call reaches an instance's own. */
   protected reconcile(rootUri: string): Promise<void> {
     return reconciling.reconcile(core(this), rootUri);
+  }
+
+  /** Unlink a carrier the records dropped from each mirror whose bag holds it no more (`dropped.ts`). */
+  protected _scheduleUnlinkByTitle(title: string, onlyBag?: string, spare?: ReadonlySet<string>): Promise<void> {
+    return dropped._scheduleUnlinkByTitle(core(this), title, onlyBag, spare);
   }
 
   /** Every carrier that stands pending right now: its bag, its address and the path its file left. */

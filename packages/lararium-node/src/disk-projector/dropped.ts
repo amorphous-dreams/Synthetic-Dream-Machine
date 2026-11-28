@@ -1,5 +1,5 @@
 /**
- * A CARRIER THE RECORDS DROPPED: each mirror whose bag no longer holds it settles the homes its bases and siting name,
+ * A CARRIER THE RECORDS DROPPED: each mirror whose bag holds it no more settles the homes its bases and siting name,
  * and the kāpae shadow follows the layer (`settleShadow`, `lowerShadowAt`).
  * Heleuma ha: see lararium/mesh/disk-projector-dropped.
  */
