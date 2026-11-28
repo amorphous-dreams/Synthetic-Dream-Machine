@@ -145,10 +145,11 @@ describe("RED kukulu-offer-reaches-the-new-vessel", () => {
     const two = await s.offer("sha256:" + "cd".repeat(32));
     expect(two.vouch).not.toEqual(one.vouch);
     expect((JSON.parse(readFileSync(s.path, "utf8")) as KukuluOffer).vouch[0]!.body.image).toBe("sha256:" + "cd".repeat(32));
-    // The host raises another image than the newest offer names: the pūlama refuses, and the file stays.
+    // The host raises another image than the newest offer names: the offer reads as none, the unadmitted image refuses, and the
+    // file stays.
     const vessel = s.fx.vessel(readKukuluOffer(s.path));
     const by = pulamaStandBy({ holder: vessel, recompose: async () => ({ standing: "floor" }), onLog: () => {}, consumeOffer: () => consumeKukuluOffer(s.path) });
-    expect(await by.dial()).toEqual({ session: false, waits: "kukulu-image-mismatch" });
+    expect(await by.dial()).toEqual({ session: false, waits: "pulama-image-unadmitted" });
     expect(existsSync(s.path)).toBe(true);
     // The host's report moves to the image the offer names: the SAME vessel dials again with the same file and stands.
     s.raise("sha256:" + "cd".repeat(32));
@@ -310,12 +311,12 @@ describe("RED rite-offer-keeps-the-honest-paths", () => {
 });
 
 /**
- * RESTAND-FILES-SMOOTH (1) A STALE OFFER HOLDS THE DOOR: a set-down half left the offer resting with vouches over an image
- * that never ran, so the next vessel offered it and the pūlama refused `kukulu-image-mismatch`, though its NO OFFER path
- * would have opened by the admitted image. Setting the half down spends the offer its vouch names.
+ * RESTAND-FILES-SMOOTH (1) A STALE OFFER NEVER HOLDS THE DOOR: a set-down half leaves the offer resting with vouches over an
+ * image that never ran; the next vessel offers it, and the pūlama reads an offer for another image as no offer, opening by the
+ * admitted image. Setting the half down still spends the offer its vouch names.
  */
 describe("RED a half set down spends the offer its vouches name", () => {
-  test("RED begin → offer rests → abandon → a vessel on an admitted image opens with no hand; CONTROL: before the set-down the stale offer refuses kukulu-image-mismatch, and a half no vouch names leaves the offer", async () => {
+  test("RED begin → offer rests → a vessel on an admitted image opens with no hand, stale offer and all; abandon spends the offer; a half no vouch names leaves it", async () => {
     const s = await stand({ admissions: true });
     await s.string({ reach: "wide", returns: 3 });
     // THE STALE BEGIN: a kūkulu at HEAD2 over IMAGE2, an image no vessel ever ran; its offer rests.
@@ -324,8 +325,8 @@ describe("RED a half set down spends the offer its vouches name", () => {
     // THE HOST RAISES THE ADMITTED IMAGE: the vessel the hand admitted earlier.
     await s.admit(IMAGE);
     s.raise(IMAGE);
-    // CONTROL: while the stale offer rests, the next vessel offers it and the pūlama refuses it.
-    expect(await s.hello(readKukuluOffer(s.path))).toBe("kukulu-image-mismatch");
+    // THE STALE OFFER owns nothing for the raised image: the next vessel offers it, and the pūlama opens by the admitted image.
+    expect(await s.hello(readKukuluOffer(s.path))).toBe("opens");
     // CONTROL: a half no vouch names (another head, another group) spends nothing.
     expect(spendKukuluOffer(s.path, { group: GROUP, branch: BRANCH, head: HEAD, image: IMAGE2 })).toBe(false);
     expect(spendKukuluOffer(s.path, { group: "group-other", branch: BRANCH, head: HEAD2, image: IMAGE2 })).toBe(false);

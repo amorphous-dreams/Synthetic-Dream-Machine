@@ -27,6 +27,10 @@
  * however it went: `halfRests` answers false for each), the offer owns nothing, and the vessel enters by its image as above;
  * no lei reads and no return spends. One half that rests, or reads unknown, keeps the offer whole.
  *
+ * AN OFFER FOR ANOTHER IMAGE READS AS NO OFFER too: a vouch that walked an image the host does not raise owns nothing for this
+ * vessel (a stale offer outlived its raise, or a stop raised a new image with no rite begun), so the vessel enters by the image
+ * it runs, and that image's own admission decides.
+ *
  * AN IMAGE STANDS ADMITTED ONCE ITS KŪKULU LANDS PAR. The scope's `land` rests each face's host half; where every pair reads
  * par, the image the vouches walked joins the admitted set on every lent face's own rite tessera. A kūkulu that never
  * composed admits nothing.
@@ -38,7 +42,7 @@
  *   `kukulu-vouch-<reading>`    a vouch reads no vouch, or another key than the custody root's vouch child signed it
  *   `kukulu-vouch-duplicate`    the offer vouches for one face twice
  *   `kukulu-image-unreported`   the host reported no image digest
- *   `kukulu-image-mismatch`     a vouch walked another image than the one the host raises
+ *   (a vouch that walked another image than the one the host raises reads as no offer, above)
  *   per face, waiting where another face begins:
  *   `kukulu-face-absent` · `kukulu-face-locked`   the vouch's group names no face standing open at this pūlama
  *   `kukulu-hand-absent`        the pūlama's own custody names no hand's key for that face, so no lei reads
@@ -230,7 +234,9 @@ export function kukuluGate(a: {
       }
       const raised = await a.image();
       if (raised === null) return refuse("kukulu-image-unreported", "the host reported no image digest at the pūlama's hand door");
-      if (vouches.some((v) => v.vouch.body.image !== raised)) return refuse("kukulu-image-mismatch", "a vouch walked another image than the one the host raises");
+      // THE OFFER FOR ANOTHER IMAGE owns nothing for this vessel: a vouch walked an image the host does not raise, so the vessel
+      // enters by the image it runs, which still stands or falls on its own admission (`pulama-image-unadmitted`).
+      if (vouches.some((v) => v.vouch.body.image !== raised)) return enterByImage();
       const by = await pulamaSignerOf(holder);
       // Each face reads its own standing, its own hand and its own lei; a face whose reading misses waits by name.
       const readings: Array<{ readonly ordinal: number; readonly reading: string }> = [];

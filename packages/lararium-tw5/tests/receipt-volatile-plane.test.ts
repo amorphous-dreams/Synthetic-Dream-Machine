@@ -32,12 +32,10 @@ describe.skipIf(wikiSkip)(`an act's receipt hold beside the volatile plane${skip
     r.adaptor.caps = { receipt };
     const draft = openDraft(r, target, "edited");
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     saveSequence(r, draft);
     r.wiki.addTiddler(new r.Tiddler({ title: "$:/temp/volatile/beside", text: "a state the act's dispatch marked" }));
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     expect(verdicts.length, "control: the act released its hold").toBeGreaterThan(0);
     expect(r.calls.some((c) => c.bag === tempBag && c.puts.includes("$:/temp/volatile/beside")), "control: the temp title went to the memory store").toBe(true);

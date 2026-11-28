@@ -38,7 +38,6 @@ describe.skipIf(wikiSkip)(`a hand's removal meets a peer's edit${skipNote}`, () 
     const { r, boundary } = await stage(x);
     // The peer merges before the hand's change batch reaches its boundary.
     await peerWrite(r, workingBag, [{ tiddler: { title: x, text: "body", caption: "peer caption" } }], () => removeCaption(r, x));
-    boundary.fire();
     await boundary.settle();
     await r.adaptor.landingIdle();
 
@@ -56,7 +55,6 @@ describe.skipIf(wikiSkip)(`a hand's removal meets a peer's edit${skipNote}`, () 
     const x = "lar:///t/removal/clean";
     const { r, boundary } = await stage(x);
     await peerWrite(r, workingBag, [{ tiddler: { title: x, text: "peer body", caption: "base caption" } }], () => removeCaption(r, x));
-    boundary.fire();
     await boundary.settle();
     await r.adaptor.landingIdle();
 

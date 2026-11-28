@@ -17,7 +17,6 @@ const WORKING_POINTER = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 const heads = (r: Rig, bag: string): string => JSON.stringify(r.handles[bag]!.heads());
 const hand = async (r: Rig, boundary: ManualBoundary): Promise<void> => {
   await afterDispatch();
-  boundary.fire();
   await boundary.settle();
   await r.adaptor.landingIdle();
 };

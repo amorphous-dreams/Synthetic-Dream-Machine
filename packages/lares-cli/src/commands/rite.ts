@@ -594,6 +594,8 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
     },
     // THE COMMIT THE KUKULU LEI LICENSES: the shim's guards, then the keeper rests it; its lines name any refusal.
     keeperLeiSpend: async (revision, branch) => (await runShim(shim, ["pulama", "name-successor", "--lei", revision, branch])) === 0,
+    // THE PRE-RAISE ADMIT: with no terminal the shim's `pulama admit` admits the tag's image under the hoʻāla lei.
+    admitByLei: async () => (await runShim(shim, ["pulama", "admit"])) === 0,
     tty: () => process.stdin.isTTY === true && process.stdout.isTTY === true,
     row: (verb, rowArgs) => cliVerb(hostRowLine(verb, rowArgs)),
     standing: async (branch, face) => {

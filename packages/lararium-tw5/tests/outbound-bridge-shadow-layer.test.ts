@@ -19,14 +19,12 @@ describe.skipIf(wikiSkip)(`the bridge and the shadow layer${skipNote}`, () => {
     const surface = "$:/lares/ui/shadow-layer-probe";
     r.engine.setShadowTiddlers("$:/temp/lares/daemon-seed/probe", [{ title: surface, type: "text/vnd.tiddlywiki", text: "a surface" }]);
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     expect(String((r.wiki.getTiddler(surface) as { fields: { text: string } } | undefined)?.fields.text), "CONTROL: the shadow reads in the wiki").toBe("a surface");
     expect(r.calls.slice(mark).filter((c) => c.puts.includes(surface) || c.deletes.includes(surface)), "a shadow reached a store").toEqual([]);
     // Re-laying it (a face's planes arriving) writes nothing either.
     r.engine.setShadowTiddlers("$:/temp/lares/daemon-seed/probe", [{ title: surface, type: "text/vnd.tiddlywiki", text: "a surface, again" }]);
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     expect(r.calls.slice(mark).filter((c) => c.puts.includes(surface) || c.deletes.includes(surface)), "a re-laid shadow reached a store").toEqual([]);
     await r.stop();
@@ -39,16 +37,13 @@ describe.skipIf(wikiSkip)(`the bridge and the shadow layer${skipNote}`, () => {
     const surface = "lar:///t/shadow-layer/override";
     r.engine.setShadowTiddlers("$:/temp/lares/daemon-seed/override", [{ title: surface, text: "shipped" }]);
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     r.wiki.addTiddler(new r.Tiddler({ title: surface, text: "the hand's override" }));
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     const mark = r.calls.length;
     r.wiki.deleteTiddler(surface);
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     const issued = r.calls.slice(mark);
     expect(issued.filter((c) => c.puts.includes(surface)), "the shadow's content saved over the hand's delete").toEqual([]);
