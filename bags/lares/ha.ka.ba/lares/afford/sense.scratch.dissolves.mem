@@ -1,0 +1,107 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.scratch.dissolves`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "dissolve one scratch sensorium, every one, or the orphans"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.scratch.dissolves", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.scratch.dissolves"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.scratch.dissolves"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.scratch.dissolves ~ idempotent removal: already gone reads ok
+
+`lares sensorium dissolve <id>` removes one scratch sensorium; `--all` every live one; `--orphans` reaps the orphans alone. An instance already gone answers ok.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ one · all · orphans
+
+```memetic-wikitext
+<<has entity=`example` name=`one` params=`id/s-1 ~ dissolve one sensorium`>>
+<<has entity=`example` name=`all` params=`all/true ~ dissolve every live sensorium`>>
+<<has entity=`example` name=`orphans` params=`orphans/true ~ reap the orphans`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ id · all · orphans
+
+```memetic-wikitext
+<<has entity=`arg` name=`id` params=`takes/id needs/one-of:id,all,orphans seat/1 as/<id> ~ the sensorium to dissolve`>>
+<<has entity=`arg` name=`all` params=`needs/one-of:id,all,orphans ~ dissolve every live sensorium`>>
+<<has entity=`arg` name=`orphans` params=`needs/one-of:id,all,orphans ~ reap the orphans alone`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ works this host's scratch sensoria under the cache; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[sense.scratch.dissolves id/s-1]] ~ name an id, --all or --orphans`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ dissolved
+
+```memetic-wikitext
+<<has entity=`band` name=`dissolved` params=`exit/0 fields/[[mode scope]] ~ what left; already gone reads ok`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sensorium dissolve
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sensorium dissolve]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · sensorium-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dqwN2fVpyOxI2FDbkZFVaJijWS6xX1WF0CL8DzRQcWM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

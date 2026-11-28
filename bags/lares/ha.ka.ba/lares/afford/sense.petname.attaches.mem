@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.petname.attaches`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "attach a pet name to a subject in a named sensorium"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.petname.attaches", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.petname.attaches"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.petname.attaches"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.petname.attaches ~ a subject takes a pet name
+
+`lares sensorium name <sensorium> <subject> <label…>` attaches a pet name to one subject in a named sensorium standing on this house.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ name
+
+```memetic-wikitext
+<<has entity=`example` name=`name` params=`sensorium/memory subject/e-12 label/[[the harbor]] ~ name a subject`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ sensorium · subject · label
+
+```memetic-wikitext
+<<has entity=`arg` name=`sensorium` params=`takes/name needs/required seat/1 as/<sensorium> ~ a named sensorium standing on this house`>>
+<<has entity=`arg` name=`subject` params=`takes/id needs/required seat/2 as/<subject> ~ the subject named`>>
+<<has entity=`arg` name=`label` params=`takes/words needs/required seat/3 as/<label…> ~ the pet name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ works this host's scratch sensoria under the cache; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[sense.petname.attaches sensorium/memory subject/e-12 label/harbor]] ~ name a standing sensorium, a subject and a label`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ named
+
+```memetic-wikitext
+<<has entity=`band` name=`named` params=`exit/0 ~ the entry attached`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sensorium name
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sensorium name]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · sensorium-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;moXAKpToCfW0Y5h4Hr2bcKwi1xRnSnMVL5hvtf05rqI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

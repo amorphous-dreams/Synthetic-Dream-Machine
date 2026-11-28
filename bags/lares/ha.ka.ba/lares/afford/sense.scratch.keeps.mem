@@ -1,0 +1,104 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.scratch.keeps`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "retain one live scratch sensorium past its run"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.scratch.keeps", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.scratch.keeps"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.scratch.keeps"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.scratch.keeps ~ a scratch sensorium kept
+
+`lares sensorium keep <id>` retains one live scratch sensorium, so no exit dissolves it. An id that stands nowhere answers exit 3.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ keep
+
+```memetic-wikitext
+<<has entity=`example` name=`keep` params=`id/s-1 ~ retain a live sensorium`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ id
+
+```memetic-wikitext
+<<has entity=`arg` name=`id` params=`takes/id needs/required seat/1 as/<id> ~ the live sensorium's id`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ works this host's scratch sensoria under the cache; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[sense.scratch.keeps id/s-1]] ~ name the id`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ kept · absent
+
+```memetic-wikitext
+<<has entity=`band` name=`kept` params=`exit/0 fields/[[existed]] ~ the sensorium stands kept`>>
+<<has entity=`band` name=`absent` params=`exit/3 ~ no sensorium stood under that id`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sensorium keep
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sensorium keep]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · sensorium-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;M-F08GVQhecV8KpNYd0T265ymls3EEzaGXMbJNc6QrY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

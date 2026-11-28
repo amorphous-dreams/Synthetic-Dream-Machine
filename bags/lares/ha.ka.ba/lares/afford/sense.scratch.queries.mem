@@ -1,0 +1,106 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.scratch.queries`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "search one live scratch sensorium by keywords"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.scratch.queries", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.scratch.queries"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.scratch.queries"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.scratch.queries ~ keywords against one live sensorium
+
+`lares sensorium query <id> <keywords…>` searches one live scratch sensorium and prints a preview of each hit. An id no live sensorium holds answers not-found, exit 3.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ query
+
+```memetic-wikitext
+<<has entity=`example` name=`query` params=`id/s-1 keywords/[[harbor lights]] ~ search a live sensorium`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ id · keywords
+
+```memetic-wikitext
+<<has entity=`arg` name=`id` params=`takes/id needs/required seat/1 as/<id> ~ the live sensorium's id`>>
+<<has entity=`arg` name=`keywords` params=`takes/words needs/required seat/2 as/<keywords…> ~ the words to search`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ works this host's scratch sensoria under the cache; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · not-found
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[sense.scratch.queries id/s-1 keywords/harbor]] ~ name the id and the keywords`>>
+<<has entity=`refusal` name=`not-found` params=`cure/[[sense.scratch.lists]] ~ no live sensorium holds that id; list them`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ found · not-found
+
+```memetic-wikitext
+<<has entity=`band` name=`found` params=`exit/0 fields/[[mode found hits]] ~ the hits`>>
+<<has entity=`band` name=`not-found` params=`exit/3 ~ no live sensorium of that id`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sensorium query
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sensorium query]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · sensorium-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BwjxtkF3be6YSZGn_vJ_M8NKAJqx0m4jIp44_e6Dhfo`>>
+
+<<^ code=`&#x0004;` to=`?`>>
