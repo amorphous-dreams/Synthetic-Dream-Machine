@@ -9,7 +9,7 @@ heleuma       = "ha"
 module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-entries"
 role          = "code-meme: holds the projector's shared shapes, keys and path readers"
 source-file   = "packages/lararium-node/src/disk-projector/entries.ts"
-source-sha256 = "sha256:c4dcea9ff07c934223a26dde5780ab8aea791999d6ca81afd80888d2a5657fa2"
+source-sha256 = "sha256:9f3feddad674954d70a5afde938fb5878f7119ce3f76dc9da1bee630b9d88a78"
 title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-entries"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-entries"
@@ -17,7 +17,7 @@ uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-entries"
 
 <<~ ahu slot=`#/purpose`>>
 
-The module holds the standoff entry, the settle inbox and reconcile watch, the orphan pass's slice of the wiki, the siting key, the untracked-carrier alert title, the projected file mode, and the small path readers every module calls. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+The module holds the moved file the gate hands to capture and the capture's outcome, the settle inbox and reconcile watch, the orphan pass's slice of the wiki, the siting key, the untracked-carrier alert title, the projected file mode, and the small path readers every module calls. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
 
 <<~/ahu>>
 
@@ -29,6 +29,6 @@ The module holds the standoff entry, the settle inbox and reconcile watch, the o
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iALFLpnZK0WviExaoI4a4aX8M7knj4QvdZ67vQc6pUs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dvVmUAT1Gk-d6Himgh7HaUHVOHJrAUOyTkaEGVIyMpo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

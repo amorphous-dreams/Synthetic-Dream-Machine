@@ -40,7 +40,7 @@ unlink the file stays.
 there, a working edit SHADOWING its canon copy, keeps its file. Without that callback every other
 mirror's files get weighed by path, so its absence widens the sweep. Every file weighed, at every
 unlink, then meets one judge (`judgeHome`, under `settleHomes`): it leaves only where its bytes stand
-agreed, and a file that holds a hand's words stays while the carrier stands off (the law:
+agreed, and a file that holds a hand's words stays and goes to the capture door first (the law:
 `lar:///ha.ka.ba/lararium/api/disk-projection#/projection-law`, an unlink reads the file first).
 # ''A base names a home only where its mirror may write.'' The base's `path` remembers an earlier
 home across a restart, and the ingest gesture pins a base at whatever source it read, in an entry of its own beside the mirror's. `basedHomes`
@@ -81,6 +81,6 @@ This section, anchored `#/the-servo`, holds the disk shore's level-triggered rec
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/projection-nalu#/guards`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/servo`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Q-xE608ioFOj8Jqupp-XC9ka3nN_Q9T60FIk6bg10qE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;srY5AK1YFCZyGw5nfcqsM9WRmc8p0OKqHgahimvwcF8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-capture`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-capture"
+role          = "code-meme: hashes before the write and hands a moved file to capture"
+source-file   = "packages/lararium-node/src/disk-projector/capture.ts"
+source-sha256 = "sha256:c6ddf84df140e4b09384ddf895dcd1de5fc5bbdf92fa835a7f11e241b79f14be"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-capture"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-capture"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`projectingLeg` weighs the records' render, the base at the file's path and the disk through `decideProjection`, then pends a vanished file, pins a congruent agreement, or hands a file a hand moved to the island's capture door (`captureMoved`). A captured file's base moves to its bytes and the carrier marks for one more reading; a refused capture writes nothing over the file and rides `onRefusal`. Nothing holds between readings. It answers whether the flush writes. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/capture.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-capture"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bDNNQMTXtf5-ij6PawPwoMvImqeXNwvqdK33D5SDKWk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

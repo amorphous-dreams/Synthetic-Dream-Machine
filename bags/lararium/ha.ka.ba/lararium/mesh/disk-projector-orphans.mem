@@ -9,7 +9,7 @@ heleuma       = "ha"
 module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-orphans"
 role          = "code-meme: projects orphan slot records into the orphan folder"
 source-file   = "packages/lararium-node/src/disk-projector/orphans.ts"
-source-sha256 = "sha256:ac7d8b9a14dc8fd3fb81756f974ba3bd43332dbc78dcf319015b8b00bafdc2b0"
+source-sha256 = "sha256:80adb17c6d890f128f73e2770c4f3791b83e2e77effadf8bc31a96f78b4a2d5c"
 title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-orphans"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-orphans"
@@ -29,6 +29,6 @@ uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-orphans"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;a3DEdcK9-wLZpgiMQGK-iQ4HIWAwdT3hxnmI7x1HmnE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3mzswIfAA2RCEZZ7ljrVZyhauURy6H4SPQUjaAAX9jc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

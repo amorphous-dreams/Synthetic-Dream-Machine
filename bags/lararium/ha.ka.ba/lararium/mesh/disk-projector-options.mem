@@ -9,7 +9,7 @@ heleuma       = "ha"
 module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-options"
 role          = "code-meme: names every port the island hands the projector"
 source-file   = "packages/lararium-node/src/disk-projector/options.ts"
-source-sha256 = "sha256:6a051541c7f763441b603036a13ebb8b1dd40eacd25e5d65116c84b375a54d32"
+source-sha256 = "sha256:c1ec124d2063ef9fdbeee9905c2a06e920ece70509d8d2eb42264a783f14704f"
 title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-options"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-options"
@@ -17,7 +17,7 @@ uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-options"
 
 <<~ ahu slot=`#/purpose`>>
 
-`LarDiskProjectorOptions` names each construction port: the mirrors, the render shore, the bag stores, the composition readers, the alert rails, the congruence doors, the Synced tree and the journal. Types alone; the composer re-exports the name. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+`LarDiskProjectorOptions` names each construction port: the mirrors, the render shore, the bag stores, the composition readers, the alert rails, the capture door, the congruence doors, the Synced tree and the journal. Types alone; the composer re-exports the name. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
 
 <<~/ahu>>
 
@@ -29,6 +29,6 @@ uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-options"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ImJqfYQUEWL29koNnW88oTlfaVapvfjxgYXoiezADtQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TVy3lXmlckaw7BwhgzhpWQ8At4SIMNSRaWYMGw-WM30`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -9,7 +9,7 @@ heleuma       = "ha"
 module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-homes"
 role          = "code-meme: judges every unlink before a file leaves"
 source-file   = "packages/lararium-node/src/disk-projector/homes.ts"
-source-sha256 = "sha256:b92a3292c896e5cca9c6664f1b507af64536834bb506963cf8f9398a14e73c02"
+source-sha256 = "sha256:f1494eb7084d4ff59cac770e76e1e6ef27a8b7b979960f478363ef99ea6171e1"
 title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-homes"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-homes"
@@ -17,7 +17,7 @@ uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-homes"
 
 <<~ ahu slot=`#/purpose`>>
 
-`judgeHome` reads a file against its base and the records' render; `settleHomes` unlinks each agreed home and stands the carrier off where a home holds a hand's bytes; `unlinkHome` removes a file the judge agreed to. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+`judgeHome` reads a file against its base and the records' render; `settleHomes` unlinks each agreed home and hands a home that holds a hand's bytes to the capture door first; `unlinkHome` removes a file the judge agreed to. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
 
 <<~/ahu>>
 
@@ -29,6 +29,6 @@ uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-homes"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;MXLq7f3GqCAU68Np3TbH7vYycQ971H-5XhBHL2MN3e8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6I1br1-eUhz-KoUR0PJZlZcD8PoLacJY7fsACtfLX3c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

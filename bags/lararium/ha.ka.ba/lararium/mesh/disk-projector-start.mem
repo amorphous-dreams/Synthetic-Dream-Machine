@@ -9,7 +9,7 @@ heleuma       = "ha"
 module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-start"
 role          = "code-meme: wires the projector to the wiki and stops it"
 source-file   = "packages/lararium-node/src/disk-projector/start.ts"
-source-sha256 = "sha256:1bc45535f90243e495b3a58490826f50f23259bae87cb20976dc7baae7a1a610"
+source-sha256 = "sha256:f9ab1e32aecd2b77674630c9961cf955a354105b9872fcd82f90721051deb58a"
 title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-start"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-start"
@@ -29,6 +29,6 @@ uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-start"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nYY7CIkuJHmsrpFLkAOChqdB9s8xKV5N1Fe4AP78AKc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;92G3WlA9K5cFhBZtat3BzZqZKNoDO5PgaxhAH7wAXyg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

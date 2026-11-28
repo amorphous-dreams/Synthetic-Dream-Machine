@@ -9,7 +9,7 @@ heleuma       = "ha"
 module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-flush"
 role          = "code-meme: renders, sites and writes one carrier into one mirror"
 source-file   = "packages/lararium-node/src/disk-projector/flush.ts"
-source-sha256 = "sha256:22ec64c9a8679030d7e5d0f617e9b6bf7102906aa67b691a329f0951e3788c99"
+source-sha256 = "sha256:639ea6c1c5ae74fc14d86f783c537d30ac4229755f8b89a38f8fbd88892beb4e"
 title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-flush"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-flush"
@@ -29,6 +29,6 @@ uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-flush"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rVD8dFx_bmmZxCiXyMZNpud5NEe1uKxAfashYSc2ARo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aIZeY-6R4BYW_F2daCZoiA3QNIc5aFgOH7B69n453nQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

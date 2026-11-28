@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-agreement`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-agreement"
+role          = "code-meme: pins agreements the island reads itself"
+source-file   = "packages/lararium-node/src/disk-projector/agreement.ts"
+source-sha256 = "sha256:a8cc80c786643c9411778d827dfe201fb20dc9fc852ecbcdaf35412d0f3b2469"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-agreement"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-agreement"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`pinAgreement` pins a base only where this island's own render and the file agree, byte for byte or through the congruence; `recordsRenderOf` folds the render it reads, chosen as reconcile chooses. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/agreement.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-agreement"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yyql7I-x59Tf_JI_zRG1oOjpzNVx9Jlc7RT9KHAuXAA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

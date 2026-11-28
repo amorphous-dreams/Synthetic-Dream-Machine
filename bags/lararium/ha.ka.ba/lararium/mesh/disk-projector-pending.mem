@@ -9,7 +9,7 @@ heleuma       = "ha"
 module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-pending"
 role          = "code-meme: holds pending removals and looks at the disk on demand"
 source-file   = "packages/lararium-node/src/disk-projector/pending.ts"
-source-sha256 = "sha256:105d6361b116df770da4f89a0f25e4d09732af69f659748ccd52ef3f43a250f7"
+source-sha256 = "sha256:7588488667d42c0e5f55a6885c6e0ce056196ec03e9eeb5c2e585b531dc980d6"
 title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-pending"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-pending"
@@ -29,6 +29,6 @@ A carrier whose file vanished from the path its base names stands pending; each 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;LMexLmyyuH5f8RWYimZ0VTXvuGWfoYrZJOSB1oXBeBI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mJpC0_vUijiXA_02SVESFv7j87_emcoTGOhSwQNrxYM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

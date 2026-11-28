@@ -9,7 +9,7 @@ heleuma       = "ha"
 module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-dropped"
 role          = "code-meme: unlinks a dropped carrier and keeps its kāpae shadow"
 source-file   = "packages/lararium-node/src/disk-projector/dropped.ts"
-source-sha256 = "sha256:e16f973543d69984586710e47707dac5d3be62597e5570408ccac2cb21c0195c"
+source-sha256 = "sha256:178157bfdcb4dd7e5469621e5d8b20d29d9e5ab23213180a3e95bf531a98e15c"
 title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-dropped"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-dropped"
@@ -29,6 +29,6 @@ uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-dropped"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WLiFaAUVLhiL7BTT0QwZHBoqwmJkCYqNeg2d1lmXlIY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZaUYf6NoYjMuR42oi8Yqfsjg8bSEBJcEAaF5AVh1dfA`>>
 
 <<^ code=`&#x0004;` to=`?`>>
