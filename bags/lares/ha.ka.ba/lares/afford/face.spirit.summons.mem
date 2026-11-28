@@ -19,6 +19,9 @@ uri-path  = "ha.ka.ba/lares/afford/face.spirit.summons"
 
 `lares spirit summon <pet>#<n> --mandate <uri>@<hash>` reads and verifies the mandate, checks it names this instance and the answering face, reads custody (a hand, or the coordinator's own mandate granting it) and claims a lane on the coordinator's ledger, then lands the summons edge ahead of the launch, so no process stands that the house holds no record of. The host launch cap (`tools/summon-launch.mjs`) starts the process detached; the edge records what it launched holding. A retry that finds the edge naming its launch starts nothing. A launch that started nothing frees its lane; one whose receipt never came keeps it.
 
+
+THE SUMMONS FORKS A STREAM: ahead of the launch the instance's stream (`<pet>#<n>`) takes its first entry through the msg door (lar:///engine.msg.lands), its `re` naming the summoner's head (`--stream <pet>#<n>`, else the summoning process's own `LARES_SUMMONED`, else the coordinator the mandate names) and its `about` the mandate at its hash; the edge records `stream`, `summoner-stream` and `forked`, so a retry forks nothing twice, and the launched process carries `LARES_SUMMONED`, the `stream=` default its `lares msg` reads. A hand-back that closes an edge lands one msg on the SUMMONER's stream, `to` the summoner, its `re` the mandate and the instance's last entry, its `about` the hand-back record (`joined` on the edge); a stream write the msg door refuses stops neither act, and the answer names why.
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/shows`>>
@@ -40,6 +43,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.spirit.summons"
 ```memetic-wikitext
 <<has entity=`arg` name=`pet` params=`takes/instance-tag needs/required seat/1 as/<pet> ~ the instance tag, <pet>#<n>`>>
 <<has entity=`arg` name=`mandate` params=`takes/ref needs/required ~ the landed mandate, <uri>@<hash>`>>
+<<has entity=`arg` name=`stream` params=`takes/stream ~ the summoner's stream, <pet>#<n>, whose head the instance's first entry names in re; absent, LARES_SUMMONED, else the coordinator the mandate names`>>
 ```
 
 <<~/ahu>>
@@ -113,6 +117,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;45-iMXhIWn0L6OfZVI6Fk0VlfwaQD0AVMAVzoHrWAIw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zo_VSKf6-6ZRjMTt9e2Z7g4SZzO86YRqhbSmsDrkJeg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

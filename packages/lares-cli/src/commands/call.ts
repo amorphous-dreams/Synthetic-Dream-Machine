@@ -31,8 +31,12 @@ import { niUriSha256FromHex } from "@lararium/mesh/crypto";
 import { stageBodyToCas } from "../cas-stage.js";
 import { landedFace } from "./meme-shared.js";
 import { actHostDoor } from "./act.js";
+import { summonedStream } from "../summoned-stream.js";
 import { ArgsError, splitCall, type CallLine, type ParsedArgs } from "../parse-args.js";
 import { cmdWatchLine } from "./watch-line.js";
+
+/** The heads that name the msg door: its verb word and its address. */
+const MSG_HEADS: ReadonlySet<string> = new Set(["msg", "lar:///engine.msg.lands"]);
 
 /** The verb words the CLI answers as commands of their own; an address (`lar:///…`) and `-` answer beside them. */
 export const CALL_VERBS = ["get", "put", "delete", "rename", "msg", "watch"] as const;
@@ -57,9 +61,12 @@ export function callLineOf(args: ParsedArgs): CallLine {
 export interface CallSources {
   readonly read: (path: string) => Buffer;
   readonly stdin: () => Promise<Buffer>;
+  /** The stream a summons started this process under (`LARES_SUMMONED`); absent or null: none. A test seats its own. */
+  readonly summoned?: () => string | null;
 }
 
 const LIVE_SOURCES: CallSources = {
+  summoned: () => summonedStream(process.env),
   read: (path) => readFileSync(path),
   stdin: async () => {
     const chunks: Buffer[] = [];
@@ -131,7 +138,10 @@ export async function callPlan(args: ParsedArgs, sources: CallSources = LIVE_SOU
   }
   const verb = line.words.join(" ").trim();
   if (verb === "") throw new DoorUsage("name a verb word, a skin spelling or an address before the params (e.g. `lares get title='Room 4'`)");
-  return { plan: { verb: "call", args: { verb, params: await crossHost(given, sources), surface: "cli" } }, face: face ?? null };
+  // THE STREAM DEFAULTS FROM THE SUMMONS (comms-ux-enacts landing 17): a msg naming no stream, from a process a summons started,
+  // writes as the summoned instance; a session no summons started meets the door's `stream-unnamed` with its cure.
+  const summoned = MSG_HEADS.has(verb) && given["stream"] === undefined ? sources.summoned?.() ?? null : null;
+  return { plan: { verb: "call", args: { verb, params: await crossHost(summoned === null ? given : { ...given, stream: summoned }, sources), surface: "cli" } }, face: face ?? null };
 }
 
 /** The params a plan sent, by name. */

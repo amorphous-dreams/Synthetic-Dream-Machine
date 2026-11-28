@@ -36,7 +36,7 @@ export const BOOLEAN_FLAGS: ReadonlySet<string> = new Set([
   "deny", "docs", "draft", "drop", "dry-run", "edge", "ephemeral", "every", "executable", "force", "fresh", "foreground", "from-persona", "held", "help", "help-mempalace", "history",
   "hearth", "hold", "if-due", "in-wiki", "init", "join", "json", "keep", "keep-hooks", "keyhive-trace", "lag", "launch", "list", "meme", "memory", "new", "offer", "orphans", "over-fresher",
   "page", "pair", "palaces", "paper", "partial", "passphrase", "pending", "probe", "quorum", "overwrite", "remove", "repour", "restart", "revert", "rotate", "seat", "sessions", "shadow", "skip-build", "spectral", "split-root",
-  "staged", "sweep", "tag-blobs", "terms", "tree", "verbose", "wait", "watch", "with-web", "witness", "workbench", "writeback", "yes",
+  "staged", "streams", "sweep", "tag-blobs", "terms", "tree", "verbose", "wait", "watch", "with-web", "witness", "workbench", "writeback", "yes",
 ]);
 
 /**

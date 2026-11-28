@@ -566,6 +566,17 @@ for (const [name, shim] of shims) {
     assert.match(r.calls, /compose .*exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel read --json/);
   });
 
+  test(`${name}: RED a summoned process's stream name (LARES_SUMMONED) crosses into the vessel by name alone, so its msg defaults to it`, async () => {
+    const r = await run(shim, ["msg", "note=built"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", LARES_SUMMONED: "braid#1" } });
+    assert.equal(r.status, 0, r.stderr);
+    const exec = r.calls.split("\n").find((l) => / exec /.test(l) && / msg note=built$/.test(l));
+    assert.ok(exec, r.calls);
+    assert.match(exec, /(^| )-e LARES_SUMMONED( |$)/);
+    assert.doesNotMatch(r.calls, /braid#1/, "the value never rides argv");
+    const bare = await run(shim, ["msg", "note=built"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.doesNotMatch(bare.calls, /-e LARES_SUMMONED/);
+  });
+
   test(`${name}: display and debug names cross into the vessel by name alone; no value and no other name`, async () => {
     const shown = { NO_COLOR: "1", TERM: "xterm-256color", COLORTERM: "truecolor", LARES_DEBUG: "1", SOME_TOKEN: "s3cret" };
     const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", ...shown } });

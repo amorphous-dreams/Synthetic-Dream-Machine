@@ -189,6 +189,15 @@ describe("the call door plans one call: {verb, params, surface: cli}", () => {
     await expect(callPlan(parseArgs(["-", "extra"]), stdin(sigil))).rejects.toThrow(DoorUsage);
   });
 
+  test("RED: a msg naming no stream writes as the instance a summons started (LARES_SUMMONED); a named stream wins; other verbs never take one", async () => {
+    const summoned: CallSources = { ...NO_SOURCES, summoned: () => "braid#1" };
+    expect((await callPlan(parseArgs(["msg", "note=built"]), summoned)).plan).toEqual(call("msg", { note: "built", stream: "braid#1" }));
+    expect((await callPlan(parseArgs(["lar:///engine.msg.lands", "mu=?0"]), summoned)).plan).toEqual(call("lar:///engine.msg.lands", { mu: "?0", stream: "braid#1" }));
+    expect((await callPlan(parseArgs(["msg", "stream=tern#2", "note=built"]), summoned)).plan).toEqual(call("msg", { stream: "tern#2", note: "built" }));
+    expect((await callPlan(parseArgs(["get", "title=T"]), summoned)).plan).toEqual(call("get", { title: "T" }));
+    expect((await callPlan(parseArgs(["msg", "note=built"]), NO_SOURCES)).plan).toEqual(call("msg", { note: "built" }));
+  });
+
   test("`face=N` names the session the call rides and leaves the params", async () => {
     const { plan, face } = await callPlan(parseArgs(["get", "title=T", "face=1"]), NO_SOURCES);
     expect(plan).toEqual(call("get", { title: "T" }));

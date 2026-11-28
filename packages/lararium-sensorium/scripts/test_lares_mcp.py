@@ -969,3 +969,21 @@ def test_a_hand_address_refuses_with_its_cure_and_a_host_act_names_the_terminal(
     is_error, said = _call_tool(mcp, "act", {"address": host, "args": {"title": "T"}})
     assert is_error and "host-door" in said and f"lares act {host}" in said, said
     assert [verb for verb, _ in calls] == ["call"]
+
+
+def test_msg_stream_defaults_from_the_summons(monkeypatch):
+    # comms-ux-enacts landing 17, riding `act` (comms-ux-one): a summoned instance's process carries LARES_SUMMONED (the host
+    # launch cap sets it), so the seat's msg lands on that stream with none named; a named stream wins, and a session no
+    # summons started names none.
+    calls = []
+    monkeypatch.setattr("lares_mcp.uds.call", lambda verb, args, **_kw: (calls.append((verb, args)), {"results": {"summary": {"ok": True, "output": {}}}})[1])
+    act = build_mcp(DaemonCoordinator(wing="w"))._tool_manager.get_tool("act").fn  # noqa: SLF001 — the registered skin
+    address = "lar:///engine.msg.lands"
+    monkeypatch.setenv("LARES_SUMMONED", "braid#1")
+    act(address=address, args={"note": "built"})
+    assert calls[-1] == ("call", {"verb": address, "params": {"stream": "braid#1", "note": "built"}, "surface": "mcp"})
+    act(address=address, args={"stream": "tern#2", "note": "built"})
+    assert calls[-1][1]["params"]["stream"] == "tern#2"
+    monkeypatch.delenv("LARES_SUMMONED")
+    act(address=address, args={"note": "built"})
+    assert "stream" not in calls[-1][1]["params"]

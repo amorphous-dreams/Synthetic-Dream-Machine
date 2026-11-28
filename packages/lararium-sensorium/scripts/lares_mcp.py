@@ -165,6 +165,8 @@ ANALYZE_LENS_READS = {
 # it names the face that bound it, so it rides a session of the seat's face and its wait rises above the hold, for that
 # address alone. A seat that hangs up withdraws the hold.
 WATCH_ADDRESS = "lar:///engine.filter.watches"
+# THE MSG DOOR (lar:///engine.msg.lands, landings 14, 15 and 17) rides `act` too; a summoned process names its stream by default.
+MSG_ADDRESS = "lar:///engine.msg.lands"
 # The hold a watch call keeps when it names none (the VM's own default, milliseconds), and the slack each wait adds beyond it.
 WATCH_HOLD_MS = 25_000
 WATCH_WAIT_SLACK_S = 15.0
@@ -1808,6 +1810,13 @@ def build_mcp(coordinator: LaresCoordinator):
             raise SeatArgumentRefused("act: name an affordance `address`, e.g. lar:///engine.law.indexes")
         address = address.strip()
         params = _params({}, args)
+        # THE STREAM DEFAULTS FROM THE SUMMONS (comms-ux-enacts landing 17): a summoned instance's process carries its own name
+        # (`LARES_SUMMONED`, which the host launch cap sets), so its msgs land on its own stream with none named; a session no
+        # summons started names `stream` or meets the door's `stream-unnamed` with its cure.
+        if address == MSG_ADDRESS and not params.get("stream"):
+            summoned = (os.environ.get("LARES_SUMMONED") or "").strip()
+            if summoned:
+                params = {"stream": summoned, **params}
         if address == WATCH_ADDRESS:
             raw = params.get("hold")
             held = int(raw) if isinstance(raw, (int, float, str)) and str(raw).strip().isdigit() else WATCH_HOLD_MS
