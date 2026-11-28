@@ -177,6 +177,8 @@ export const READ_VERBS: ReadonlySet<string> = new Set([
   "tiddler-get", "wiki-filter", "wiki-render", "wiki-status", "meme-get", "meme-list", "list-wikis", "where", "ddate",
   "events", "offer-list", "offer-show", "persona-state", "promote-state", "switcher-state", "share-list", "circle-list",
   "circle-state", "intent-view", "unbound-docs", "sealed-reading",
+  // A watch writes one record into its engine (`$:/state/lares/watch/<id>`), which never persists: no document moves.
+  "filter-watch",
 ]);
 
 /** Does an answer of `verb` that carried `reported` (a change report, even empty) read untracked? */

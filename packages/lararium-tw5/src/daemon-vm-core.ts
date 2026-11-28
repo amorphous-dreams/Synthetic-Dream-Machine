@@ -37,6 +37,7 @@ import { awaitIslandMsg, type VesselWorkerHandle } from "@lararium/mesh/vessel-h
 import {
   mkManifest,
   mkDaemonPlaceVerb,
+  mkDaemonWithdrawVerb,
   mkDaemonFaceLit,
   mkDaemonFaceBags,
   mkDaemonShoreLog,
@@ -271,6 +272,10 @@ export interface DaemonVmCore {
   placeVerb:      (opts: VesselPlaceVerbRequest) => void;
   /** The ask under this id concluded (its outcome landed, or its caller left): a booking for it lends nothing more. */
   retireAsk:      (requestId: string) => void;
+  /** The caller of the HELD ask under this id left (its socket closed while the ask held, or its face cancelled it): the island
+   *  withdraws the ask's invocation, so the held handler (a watch's hold) stops. The seat sends it for held asks alone; a finished
+   *  ask moves nothing. */
+  withdrawAsk:    (requestId: string) => void;
   /**
    * RUN ONE FACE ROW AS A SESSION'S FACE, its answer returned here alone (K20): the keyholder island clears the row as it
    * clears a routed verb from the presenter the session door verified (`daemon:gate-verb-request`), then main's handler
@@ -918,6 +923,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     dropFace: (atomKey) => askFace(atomKey, "dropped", mkDaemonFaceDrop(atomKey)),
     registerFaceBags: (atomKey, bags) => askFace(atomKey, "bags", mkDaemonFaceBags(atomKey, bags)),
     retireAsk: (requestId: string) => { sessionAsks.delete(requestId); lineAsks.delete(requestId); },
+    withdrawAsk: (requestId: string) => { worker.post(mkDaemonWithdrawVerb(requestId)); },
     runAsFace: async ({ verb, args, worn }) => {
       const registry = _registry;
       if (!registry) throw new Error(`[openDaemonVm] a face row ran before mountMainVerbs — verb="${verb}"`);

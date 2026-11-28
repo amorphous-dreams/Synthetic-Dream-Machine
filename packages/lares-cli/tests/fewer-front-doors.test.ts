@@ -61,13 +61,15 @@ describe("fewer front doors", () => {
   // `spirit` (a spirit's record by its pet name: om · ah · hum · hoʻoili · residue · otakiage). Its acts ride the `tiddler`
   // door's daemon verbs beneath, yet it carries a lifecycle that door never reads (the card's lease and epoch, slot budgets,
   // the ash ledger), and `sense`/`sensorium` read captured conversation, not a spirit's card; so it stands its own row. 48 with the
-  // call shape (comms-ux-enacts landing 8): `tiddler` burned and the four call verbs `get` · `put` · `delete` · `rename` stand.
-  test("the front door holds 48 top-level verbs: `spirit` named past the fold, the four call verbs in `tiddler`'s place", () => {
+  // call shape (comms-ux-enacts landing 8): `tiddler` burned and the four call verbs `get` · `put` · `delete` · `rename` stand. 47 when
+  // landing 9 folds the `act` door into the one call; 48 with `msg` (landing 14): one entry lands in its stream; 49 with `watch`
+  // (landing 16): a call verb whose line holds its calls in a loop, one has line per change.
+  test("the front door holds 49 top-level verbs: `spirit` named past the fold, the call verbs in `tiddler`'s place", () => {
     const names = COMMANDS.map((c) => c.name);
     expect(names).toContain("spirit");
-    expect(names).toEqual(expect.arrayContaining(["get", "put", "delete", "rename"]));
+    expect(names).toEqual(expect.arrayContaining(["get", "put", "delete", "rename", "msg", "watch"]));
     expect(names).not.toContain("tiddler");
-    expect(COMMANDS.length).toBe(47);
+    expect(COMMANDS.length).toBe(49);
   });
 
   test("★ the signing seats stay: vessel and persona sign, and ingest keeps its own seat ★", () => {

@@ -433,8 +433,11 @@ export function planCall(reader: CallReader, word: string, params: Readonly<Reco
   const handler = handlerOf(reader, carrier, surface);
   const act = carrierActOf(reader, carrier);
   const shaped: Record<string, unknown> = { ...bound };
-  // REST IS THE GROUND: a `00` carry leaves the bound params, so no seat or host door ever reads a lens it never asked.
-  if (mu !== undefined && mu.carry !== "00") shaped["mu"] = mu.carry;
+  // REST IS THE GROUND: a `00` carry leaves the bound params, so no seat or host door ever reads a lens it never asked. A door
+  // that tables its own `00` cell (the msg door's retract, the watch's unask: the seed's Arcana, unask-the-question) answers an
+  // asked Rest itself, so there the carry rides on.
+  const ownRest = mu !== undefined && mu.carry === "00" && params["mu"] !== undefined && muCellsOf(takesCells(reader, carrier)).some((c) => c.carry === "00");
+  if (mu !== undefined && (mu.carry !== "00" || ownRest)) shaped["mu"] = mu.carry;
   else delete shaped["mu"];
   if (aperture !== undefined) shaped["aperture"] = aperture.rank;
   return {

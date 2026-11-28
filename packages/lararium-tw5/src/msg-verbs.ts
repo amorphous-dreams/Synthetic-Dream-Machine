@@ -255,8 +255,8 @@ export const MSG_CALL_SEATS: Readonly<Record<string, CallSeat>> = Object.freeze(
       if (typeof mu !== "string") return rest;
       const depth = dryDepthOf(mu);
       if (depth !== null) return { ...rest, dry: depth };
-      if (mu === "?") return { ...rest, read: "inbox" };
-      if (mu === "0") return { ...rest, retract: true };
+      if (mu === "?0") return { ...rest, read: "inbox" };
+      if (mu === "00") return { ...rest, retract: true };
       const stream = typeof rest["stream"] === "string" ? { stream: rest["stream"] } : {};
       throw new CallRefusal("mu-cell-empty", `the msg door answers ?0 (the inbox), 00 (a retract) and the dry depths, and ${mu} (${muWordsOf(mu)}) names none, so it lands nothing`, cureCall("msg", stream));
     },

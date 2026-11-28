@@ -130,6 +130,16 @@ export interface FilterPage {
   readonly asOf: string;
 }
 
+/**
+ * THE ANSWER'S DIGEST (lar:///engine.filter.watches): the answering titles in order, each beside its record's hash over the
+ * caller's reader view, digested to 16 hex. An edit to an answering record moves it; a title joining or leaving moves it; the
+ * shore's echo, which moves only a record's residency stamp, moves nothing, since each hash leaves the stamp out. The page
+ * law's `asOf` digests the titles alone, so a cursor survives an edit; a watch reads this one, which an edit moves.
+ */
+export function answerDigestOf(rows: ReadonlyArray<readonly [title: string, hash: string | null]>): string {
+  return digestOf(rows.map(([title, hash]) => [title, hash ?? ""])).slice(0, 16);
+}
+
 /** The answer a cursor continues and the offset it names: a cursor from another answer refuses `filter-cursor-stale`, a misshapen one `filter-cursor-malformed`. */
 export function filterCursor(all: readonly string[], after?: string | null): { asOf: string; offset: number } {
   const asOf = digestOf(all).slice(0, 16);

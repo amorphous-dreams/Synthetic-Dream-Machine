@@ -53,11 +53,11 @@ Every write rides the put law: the root and the entry land through `engine.recor
 
 ```memetic-wikitext
 <<has entity=`arg` name=`mu` params=`takes/depth ~ the depth: ?0 the inbox, 00 a retract, _ a dry landing; none lands the entry`>>
-<<has entity=`cell` name=`?` params=`mu/relate ~ the inbox: entries addressed to the stream that no entry of it names in re, as has lines`>>
-<<has entity=`cell` name=`0` params=`mu/unask ~ a retract: the caller's own entry leaves while no record names it in re`>>
-<<has entity=`cell` name=`_` params=`mu/dry ~ a dry landing: the entry's put walks its law to the last step and answers the summary, landing nothing`>>
-<<has entity=`cell` name=`_?` params=`mu/dry-relate ~ the dry summary: the title, the prev it takes, the bag and layer, landing nothing`>>
-<<has entity=`cell` name=`_!` params=`mu/dry-assert ~ the dry diff: the summary and the entry's fields as they would land, landing nothing`>>
+<<has entity=`cell` name=`?0` params=`mu/cup ~ the inbox: entries addressed to the stream that no entry of it names in re, as has lines`>>
+<<has entity=`cell` name=`00` params=`mu/rest ~ a retract: the caller's own entry leaves while no record names it in re`>>
+<<has entity=`cell` name=`_0` params=`mu/pentacle ~ a dry landing: the entry's put walks its law to the last step and answers the summary, landing nothing`>>
+<<has entity=`cell` name=`_?` params=`mu/overview ~ the dry summary: the title, the prev it takes, the bag and layer, landing nothing`>>
+<<has entity=`cell` name=`_!` params=`mu/precision ~ the dry diff: the summary and the entry's fields as they would land, landing nothing`>>
 <<has entity=`arg` name=`stream` params=`takes/stream needs/required ~ the stream the msg writes as, <pet>#<n>: the summoned instance's name`>>
 <<has entity=`arg` name=`note` params=`takes/words ~ one line, 72 characters or fewer; a landing needs it`>>
 <<has entity=`arg` name=`to` params=`takes/address ~ an entity or one instance; none lands a thought on the caller's own stream`>>
@@ -177,6 +177,6 @@ The intent door's `prev` keeps its own meaning, a chain head for a co-sign; this
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;D8111h_5FQgL9f3iakIe4f1SF1lRHSMDvWyOy6Rt9Ww`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vbqP09saxxmx-BuuricMUExx2W0vTr0-N3nQNEpmopU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -226,8 +226,10 @@ export type { MemeVerbOptions } from "./meme-verbs.js";
 // The tiddler door: every TiddlyWiki act over one record or one wiki's engine, on the anchor (wiki-surface-scout, lane 1).
 export {
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor, makeWikiStatusReactor, makeWikiActionReactor, makeCarrierActReactor, CARRIER_ACT_VERB, WRITING_MESSAGES, HAND_MESSAGES, RENDERING_MESSAGES, SHORE_COLLAPSE_CONFIG_PREFIX,
+  makeFilterWatchReactor, WATCH_HOLD_MS, WATCH_HOLD_MAX_MS,
   TIDDLER_CALL_SEATS, tiddlerCallSource,
 } from "./tiddler-verbs.js";
+export { WatchBook, watchBookOf, WATCH_PREFIX } from "./modules/watch.js";
 export type { NamedWikiEngine, TiddlerVerbOptions } from "./tiddler-verbs.js";
 // The msg door: one entry lands in its stream; the inbox reads and a retract withdraws (comms-ux-enacts landings 14 and 15).
 export { makeMsgReactor, MSG_CALL_SEATS, MSG_ADDRESS } from "./msg-verbs.js";

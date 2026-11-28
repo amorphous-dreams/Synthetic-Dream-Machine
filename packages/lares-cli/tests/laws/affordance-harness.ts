@@ -34,9 +34,10 @@ export const WAVE_3A_SEAT = ["sense.kapae.mutes", "sense.kapae.restores"] as con
 
 /**
  * The core verbs' carriers (lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts, landing 1; candidate addresses), skinned on the
- * terminal as the call shape since landing 8: `lares get` (by title or by filter), `lares put`, `lares delete`, `lares rename`.
+ * terminal as the call shape since landing 8: `lares get` (by title or by filter), `lares put`, `lares delete`, `lares rename`, and
+ * landing 16's `lares watch`.
  */
-export const CORE_VERBS = ["engine.record.reads", "engine.record.puts", "engine.record.removes", "engine.record.renames", "engine.filter.pages"] as const;
+export const CORE_VERBS = ["engine.record.reads", "engine.record.puts", "engine.record.removes", "engine.record.renames", "engine.filter.pages", "engine.filter.watches"] as const;
 
 /** Every address a canon carrier holds today, by hand: a pack that lacks one reads red, never vacuous. Wave 1a added the calendar and the law; wave 2 the seven unhelped doors; wave 3a the kahua, trust, kapae, events, hooks and mcp doors; the comms course's landing 1 the core verbs. */
 export const SEED_ADDRESSES = [

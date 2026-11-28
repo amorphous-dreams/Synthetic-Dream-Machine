@@ -907,11 +907,41 @@ def test_act_runs_a_seat_act_with_no_new_tool_and_returns_a_plain_answer_unchang
     assert {t.name for t in asyncio.run(mcp.list_tools())} == SEAT_TOOLS
 
 
+def test_act_holds_a_watch_on_a_session_above_its_hold_and_every_other_address_rides_the_one_shot_line(monkeypatch):
+    # RED before comms-ux-one: `act` sent every address down the one-shot line under the default wait, so a watch (which holds
+    # until its filter moves and names the face that bound it) answered `watch-faceless` or timed out before its hold ran out.
+    # GREEN: lar:///engine.filter.watches rides a session of the seat's face, its wait above the hold it names (else the
+    # default hold); a msg, like every other address, keeps the one-shot line.
+    from lares_mcp import WATCH_HOLD_MS, WATCH_WAIT_SLACK_S
+    lines = []
+
+    def session(verb, args=None, **kw):
+        lines.append(("session", verb, args, kw))
+        return {"results": {"summary": {"ok": True, "output": {"band": "unchanged", "id": "w1"}}}}
+
+    def one_shot(verb, args=None, **kw):
+        lines.append(("call", verb, args, kw))
+        return {"results": {"summary": {"ok": True, "output": {"has": "<<~ has>>"}}}}
+
+    monkeypatch.setattr("lares_mcp.uds.session_call", session)
+    monkeypatch.setattr("lares_mcp.uds.call", one_shot)
+    act = build_mcp(DaemonCoordinator(wing="w"))._tool_manager.get_tool("act").fn  # noqa: SLF001 — the registered skin
+    watch = "lar:///engine.filter.watches"
+    assert act(address=watch, args={"filter": "[tag[x]]", "hold": 4000}) == {"band": "unchanged", "id": "w1"}
+    kind, verb, args, kw = lines[-1]
+    assert (kind, verb) == ("session", "call") and args == {"verb": watch, "params": {"filter": "[tag[x]]", "hold": 4000}, "surface": "mcp"}
+    assert kw["timeout"] == 4.0 + WATCH_WAIT_SLACK_S and kw["vessel_wait_ms"] > 4000
+    act(address=watch, args={"id": "w1", "mu": "00"})
+    assert lines[-1][0] == "session" and lines[-1][3]["timeout"] == WATCH_HOLD_MS / 1000.0 + WATCH_WAIT_SLACK_S
+    act(address="lar:///engine.msg.lands", args={"stream": "lares-alpha#00003", "note": "hi"})
+    assert lines[-1][0] == "call" and lines[-1][3] == {}
+
+
 def test_act_refuses_a_seat_answer_it_holds_no_handler_for_and_an_unnamed_address(monkeypatch):
     from lares_mcp import SeatArgumentRefused, SeatVerbOwed
     calls = _wired(monkeypatch, lambda verb, args: {"handler": "seat", "address": "lar:///kahu.notes.reads", "params": {}})
     act = build_mcp(DaemonCoordinator(wing="w"))._tool_manager.get_tool("act").fn  # noqa: SLF001
-    with pytest.raises(SeatVerbOwed, match=r"seat-act-unheld.*lar:///kahu\.notes\.reads.*mu=\"relate\""):
+    with pytest.raises(SeatVerbOwed, match=r"seat-act-unheld.*lar:///kahu\.notes\.reads.*aperture=\"measure\""):
         act(address="lar:///kahu.notes.reads")
     assert len(calls) == 1
     with pytest.raises(SeatArgumentRefused, match="name an affordance `address`"):

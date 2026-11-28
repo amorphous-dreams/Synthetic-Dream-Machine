@@ -86,8 +86,20 @@ export const isHouseAlert = (title: string): boolean => alertRest(title) !== nul
 /** True for an alert whose kind the read door opens (`ALERT_READS`). */
 export const isOpenAlert = (title: string): boolean => { const k = alertKind(title); return k !== null && Object.hasOwn(ALERT_READS, k.kind); };
 
-/** True for a title no READ answers: what stays home, the open alert kinds aside. Writes still read `staysHome` whole. */
-export const withheldFromReads = (title: string): boolean => staysHome(title) && !isOpenAlert(title);
+/**
+ * A WATCH STANDS AS A TIDDLER (lar:///engine.filter.watches): `$:/state/lares/watch/<id>` holds its filter, its caller's view
+ * (face, recipe) and its last digest, written by the watch book alone (`modules/watch.ts`). The read door opens the prefix, so
+ * `[prefix[$:/state/lares/watch/]]` lists every live watch to every face of the house; every write still stays home, and a watch dies
+ * by its own call (`lares watch id=<id> mu=unask`), never by a put or a delete.
+ */
+export const WATCH_RECORD_PREFIX = "$:/state/lares/watch/";
+
+/** True for a watch's own record: one id segment under the prefix, its path standing resolved. */
+export const isWatchRecord = (title: string): boolean =>
+  title.startsWith(WATCH_RECORD_PREFIX) && /^[a-z0-9][a-z0-9-]{0,63}$/.test(title.slice(WATCH_RECORD_PREFIX.length));
+
+/** True for a title no READ answers: what stays home, the open alert kinds and the watch records aside. Writes still read `staysHome` whole. */
+export const withheldFromReads = (title: string): boolean => staysHome(title) && !isOpenAlert(title) && !isWatchRecord(title);
 
 /** The record titles an open alert names: its reader must read the bag of each, or the alert reads absent. */
 export function alertNamedTitles(title: string, fields: Readonly<Record<string, unknown>>): string[] {

@@ -160,6 +160,15 @@ ANALYZE_LENS_READS = {
 # (the house's own isomorphic calendar core; no host `ddate` binary stands behind it). THE CLOCK SEAM rides this seat: a call
 # that names no date carries `today`, the seat's own local day, and the verb reads no clock.
 
+# THE WATCH (lar:///engine.filter.watches, comms-ux-enacts landing 16) rides `act` by its address like every affordance, with
+# one difference of wire: a watch call holds until the filter moves (`band: changed`) or its `hold` runs out (`unchanged`), and
+# it names the face that bound it, so it rides a session of the seat's face and its wait rises above the hold, for that
+# address alone. A seat that hangs up withdraws the hold.
+WATCH_ADDRESS = "lar:///engine.filter.watches"
+# The hold a watch call keeps when it names none (the VM's own default, milliseconds), and the slack each wait adds beyond it.
+WATCH_HOLD_MS = 25_000
+WATCH_WAIT_SLACK_S = 15.0
+
 # THE ORACLE CAST (lar:///library.oracle.speaks) — `oracle_cast`, the seat's act for the `oracle-cast` verb every vessel
 # answers: one I Ching cast by three coins a line, written by the vessel as one tiddler under `casts/`. The draw lives in
 # the vessel, never in the prompt: the seat that asks never picks the figure. THE CLOCK SEAM rides this seat: the call
@@ -1147,10 +1156,11 @@ def build_mcp(coordinator: LaresCoordinator):
             raise SeatArgumentRefused(f"{verb}: `recipe` names no slug — pass one (`sdm`, `lares`)")
         return {"recipe": recipe}
 
-    def _meme_wire(verb: str, args: dict):
-        """Ride `lares_uds.call` and peel the receipt to the verb's own payload — a `null` output stays
-        `None` (an absent meme reads null, never the receipt envelope `uds.output` would hand back)."""
-        out = uds.call(verb, args)
+    def _meme_wire(verb: str, args: dict, *, session: bool = False, **wire):
+        """Ride `lares_uds.call` (or, for a verb that answers to its session's face, `lares_uds.session_call`) and peel the
+        receipt to the verb's own payload — a `null` output stays `None` (an absent meme reads null, never the receipt envelope
+        `uds.output` would hand back)."""
+        out = uds.session_call(verb, args, **wire) if session else uds.call(verb, args, **wire)
         summary = ((out.get("results") or {}).get("summary")) or {}
         if summary.get("ok") is False:
             raise uds.LaresVerbError(str(summary.get("error") or f"verb {verb!r} failed"))
@@ -1709,13 +1719,13 @@ def build_mcp(coordinator: LaresCoordinator):
         kwargs = {k.replace("-", "_"): v for k, v in (bound or {}).items()}
         return handler(**{k: v for k, v in kwargs.items() if k in names})
 
-    def _door(word: str, params: dict, tool: "str | None" = None):
+    def _door(word: str, params: dict, tool: "str | None" = None, **wire):
         """THE ONE CALL (landing 11): every tool sends `{verb, params}` to the vessel's `call`; the vessel resolves the address
         through the caller's stack, binds the params against the carrier's live #/takes, checks the hand, and answers.
         A record tool sends its own address and takes an answer from that class alone (`tool-class-crossed`), and a record write
         the vessel answers without landing raises by name. A `handler/seat` answer runs here, a `_` carry only where the seat
         act walks a dry path in code (`SEAT_DRY`); a `handler/host` answer names the terminal's command."""
-        out = _meme_wire("call", {"verb": word, "params": params, "surface": "mcp"})
+        out = _meme_wire("call", {"verb": word, "params": params, "surface": "mcp"}, **wire)
         answered = answered_address(out)
         if tool is not None and answered is not None and answered not in RECORD_ADDRESSES[tool]:
             raise SeatArgumentRefused(f"tool-class-crossed: `{tool}` answers from {' or '.join(RECORD_ADDRESSES[tool])} alone, and the "
@@ -1796,7 +1806,14 @@ def build_mcp(coordinator: LaresCoordinator):
     def act(address: str, args: "dict | None" = None) -> dict:
         if not isinstance(address, str) or not address.strip():
             raise SeatArgumentRefused("act: name an affordance `address`, e.g. lar:///engine.law.indexes")
-        return _door(address.strip(), _params({}, args))
+        address = address.strip()
+        params = _params({}, args)
+        if address == WATCH_ADDRESS:
+            raw = params.get("hold")
+            held = int(raw) if isinstance(raw, (int, float, str)) and str(raw).strip().isdigit() else WATCH_HOLD_MS
+            return _door(address, params, session=True, timeout=held / 1000.0 + WATCH_WAIT_SLACK_S,
+                         vessel_wait_ms=held + int(WATCH_WAIT_SLACK_S * 500))
+        return _door(address, params)
 
     # THE WORDS LIVE IN THE CARRIERS: each tool's description renders from the pack (the carriers' mcp wholes), the act's from
     # every carrier the seat reaches.

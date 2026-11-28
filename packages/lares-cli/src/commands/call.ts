@@ -1,5 +1,5 @@
 /**
- * `lares get · put · delete · rename · msg name=value…`, `lares lar:///<address> name=value…`, `lares act lar:///<address> …` and
+ * `lares get · put · delete · rename · msg · watch name=value…`, `lares lar:///<address> name=value…`, `lares act lar:///<address> …` and
  * `lares -` — THE CLI SPEAKS THE CALL SHAPE (lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts landing 8).
  *
  * ONE SPLIT, AND EVERYTHING ELSE IN THE VM. The line splits by one token rule (`splitCall`: a token matching
@@ -32,9 +32,10 @@ import { stageBodyToCas } from "../cas-stage.js";
 import { landedFace } from "./meme-shared.js";
 import { actHostDoor } from "./act.js";
 import { ArgsError, splitCall, type CallLine, type ParsedArgs } from "../parse-args.js";
+import { cmdWatchLine } from "./watch-line.js";
 
 /** The verb words the CLI answers as commands of their own; an address (`lar:///…`) and `-` answer beside them. */
-export const CALL_VERBS = ["get", "put", "delete", "rename", "msg"] as const;
+export const CALL_VERBS = ["get", "put", "delete", "rename", "msg", "watch"] as const;
 
 /**
  * True where a command line's head names the call door: a verb word, an address, the stdin sigil, or `act` (the one act, fork 9:
@@ -171,6 +172,8 @@ export async function cmdCall(given: ParsedArgs, sources: CallSources = LIVE_SOU
     const { plan, face } = await callPlan(given, sources);
     // THE SESSION A CALL RIDES: `face=N` reaches the door's face reader as the session's face.
     const args: ParsedArgs = face === null ? given : { ...given, options: { ...given.options, face } };
+    // THE LONG LINE (landing 16): a watch holds its calls in a loop, one has line per change (`commands/watch-line.ts`).
+    if (plan.args["verb"] === "watch") return await cmdWatchLine(args, plan);
     const params = paramsOf(plan);
     // A record's text and a carrier answer a pipe in prose (the carrier-first law): the text alone, or a range reaching the whole
     // (`aperture=arc`, `theme`). THE SWORD ALONE ASKS THE MACHINE ANSWER (the flag zoo burned `--json` into `mu=!0`): the
