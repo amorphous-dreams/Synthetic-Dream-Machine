@@ -198,7 +198,9 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     if (wornFace !== undefined) { await mkdir(join(house, "config"), { recursive: true }); await writeFile(join(house, "config", "last-worn-face"), `${wornFace}\n`); }
     // `keepSeat` plants a keep seat already resting (`config/keep-seat.json`), as an earlier seating left it.
     // `houseFiles` plants files under the house root by relative path (a pūlama's state rows, a pending rebuild).
-    for (const [rel, text] of Object.entries(houseFiles)) { await mkdir(join(house, rel, ".."), { recursive: true }); await writeFile(join(house, rel), text); }
+    // A key or text naming `@HEAD@` / `@TREE@` waits for the scratch checkout (planted below, once its revision reads).
+    const afterCheckout = (rel, text) => rel.includes("@HEAD@") || rel.includes("@TREE@") || text.includes("@HEAD@") || text.includes("@TREE@");
+    for (const [rel, text] of Object.entries(houseFiles)) { if (afterCheckout(rel, text)) continue; await mkdir(join(house, rel, ".."), { recursive: true }); await writeFile(join(house, rel), text); }
     if (keepSeat !== undefined) { await mkdir(join(house, "config"), { recursive: true }); await writeFile(join(house, "config", "keep-seat.json"), JSON.stringify(keepSeat) + "\n", { mode: 0o600 }); }
     const fill = (v) => typeof v === "string" ? v.replaceAll("@HOUSE@", house) : v;
     const home = env.HOME ? fill(env.HOME) : join(dir, "home");
@@ -267,6 +269,12 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     const base = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: home, LARES_COMPOSE_FILE: compose, FAKE_OBSERVE_OUTPUT: steady, LARES_BATTERY_LOCK: join(dir, "floor.lock"), ...gitEnv };
     // `@HEAD@` (and `@HEAD12@`, its first twelve) in an env value names the scratch checkout's own HEAD.
     const head = checkout && checkout !== "none" ? spawnSync("git", ["-C", join(dir, "repo"), "rev-parse", "HEAD"], { encoding: "utf8" }).stdout.trim() : "";
+    const tree = head ? spawnSync("git", ["-C", join(dir, "repo"), "rev-parse", "HEAD^{tree}"], { encoding: "utf8" }).stdout.trim() : "";
+    for (const [rel, text] of Object.entries(houseFiles)) {
+      if (!afterCheckout(rel, text)) continue;
+      const at = (t) => t.replaceAll("@HEAD@", head).replaceAll("@TREE@", tree);
+      await mkdir(join(house, at(rel), ".."), { recursive: true }); await writeFile(join(house, at(rel)), at(text));
+    }
     const filled = Object.fromEntries(Object.entries(env).map(([k, v]) => [k, typeof v === "string" ? fill(v).replaceAll("@HEAD12@", head.slice(0, 12)).replaceAll("@HEAD@", head) : v]));
     // A run that is no seat case reads as a hand where a harness stands above the suite: the shim runs as pid 1 of a fresh pid
     // namespace, so its own host chain reaches pid 0 with no harness in it (the seat gate of the restand verbs reads that chain).
@@ -1700,6 +1708,16 @@ for (const [name, shim] of shims) {
   });
   // THE SECOND READ (gate 2): an offer carries an image only by its vouch's own `image` field, never a digest that merely
   // begins another; the keep a down left owed persists across invocations; and under the rite the keep waits for the landing.
+  test(`${name}: RED offer-outlives-no-image: an offer resting over another image than the tag holds goes at the stage, named; CONTROL: one over the tag's image stays`, async () => {
+    const stale = await run(shim, ["rebuild", "--image"], { checkout: "clean", readFiles: ["config/kukulu-offer.json"], houseFiles: { "config/kukulu-offer.json": '{"vouch":[{"body":{"image":"sha256:old"}}]}\n' }, env: { ...STANDING, FAKE_IMAGE_ID: "sha256:new", FAKE_VESSEL_IMAGE: "sha256:old" } });
+    assert.equal(stale.status, 0, stale.stderr);
+    assert.equal(stale.read["config/kukulu-offer.json"], undefined, "the stale offer went");
+    assert.match(stale.stderr, /the kūkulu offer that rested vouches for another image than \S+ holds \(sha256:new\); it owned nothing for the next vessel, and it goes/);
+    assert.equal(JSON.parse(stale.stdout.trim().split("\n").at(-1)).offer, false);
+    const kept = await run(shim, ["rebuild", "--image"], { checkout: "clean", readFiles: ["config/kukulu-offer.json"], houseFiles: { "config/kukulu-offer.json": '{"vouch":[{"body":{"image":"sha256:new"}}]}\n' }, env: { ...STANDING, FAKE_IMAGE_ID: "sha256:new", FAKE_VESSEL_IMAGE: "sha256:old" } });
+    assert.equal(kept.status, 0, kept.stderr);
+    assert.match(kept.read["config/kukulu-offer.json"], /sha256:new/);
+  });
   test(`${name}: offer-carries-the-image-by-its-field: an offer naming a longer digest that begins with the image's carries none of it`, async () => {
     const r = await run(shim, ["rebuild", "--image"], { checkout: "clean", houseFiles: { "config/kukulu-offer.json": '{"vouch":[{"body":{"image":"sha256:newer"}}]}\n' }, env: { ...STANDING, FAKE_IMAGE_ID: "sha256:new", FAKE_VESSEL_IMAGE: "sha256:old" } });
     assert.equal(r.status, 0, r.stderr);
@@ -2251,10 +2269,20 @@ test(`${name}: CONTROL with no pūlama, a stand on a terminal still attaches the
   const unlock = r.calls.split("\n").find((l) => / vault unlock all=true/.test(l));
   assert.ok(unlock && !/ -T /.test(unlock), `the unlock should attach:\n${r.calls}`);
 });
-test(`${name}: pulama-admit-reaches-the-hand-door: admit forwards to the pūlama's own verb, as light does`, { skip }, async () => {
-  const admit = await run(shim, ["pulama", "admit"], { envFile: PULAMA_ENV });
-  assert.equal(admit.status, 0, admit.stderr);
-  assert.match(admit.calls, /--profile pulama exec (-T )?pulama node packages\/lararium-node\/dist\/src\/pulama-main\.js admit/);
+test(`${name}: pulama-admit-reaches-the-hand-door: admit forwards to the pūlama's own verb, as light does; with no terminal the sh shim admits by the hoʻāla lei (the rite's pre-raise admit)`, { skip }, async () => {
+  if (shim === SH) {
+    const lei = await run(shim, ["pulama", "admit"], { envFile: PULAMA_ENV, env: { FAKE_HOALA_ADMIT: '{"op":"hoala-admit","reading":"admitted","admitted":"sha256:feedface","n":1,"of":3,"left":2}' } });
+    assert.equal(lei.status, 0, lei.stderr);
+    assert.match(lei.calls, /pulama-main\.js image [\s\S]*exec -T pulama node \S+pulama-main\.js hoala-admit$/m);
+    assert.doesNotMatch(lei.calls, /pulama-main\.js admit$/m);
+    const none = await run(shim, ["pulama", "admit"], { envFile: PULAMA_ENV });
+    assert.notEqual(none.status, 0);
+    assert.match(none.stderr, /pulama admit: no hoʻāla lei stands, so the image \S+ stands unadmitted; admit it by hand on a terminal \(`lares pulama admit`\)/);
+  } else {
+    const admit = await run(shim, ["pulama", "admit"], { envFile: PULAMA_ENV });
+    assert.equal(admit.status, 0, admit.stderr);
+    assert.match(admit.calls, /--profile pulama exec (-T )?pulama node packages\/lararium-node\/dist\/src\/pulama-main\.js admit/);
+  }
   const face = await run(shim, ["pulama", "admit", "2"], { envFile: PULAMA_ENV });
   assert.equal(face.status, 0, face.stderr);
   assert.match(face.calls, /pulama-main\.js admit 2/);
@@ -2479,10 +2507,11 @@ test(`${name}: pulama-name-successor-reads-a-terminal: with no terminal the succ
   assert.equal(land.status, 0, land.stderr);
   assert.match(land.calls, /exec -T pulama node \S+ keeper-land/);
 });
-test(`${name}: RED name-successor-lei-guards-the-spend: with no terminal and no route, a revision unreachable from origin/develop, an image label that differs from D′, a face of two devices, and a missing or red LOCAL bench verdict each refuse by name and send nothing to the pūlama; a green one sends one name-successor-lei frame naming D′, the branch, the revision, the verdict the host ran over that tree, the CI run as annotation and one device`, { skip: skip || shim !== SH }, async () => {
+test(`${name}: RED name-successor-lei-guards-the-spend: with no terminal and no route, a revision unreachable from origin/develop, an image label that differs from D′, and a face of two devices each refuse by name and send nothing to the pūlama; the bench verdict READS and never runs: a green one resting over the tree rides whole, a red or missing one rides as annotation, and each sends one name-successor-lei frame naming D′, the branch, the revision, the CI run as annotation and one device; a device count read nowhere reads one`, { skip: skip || shim !== SH }, async () => {
   const LEI = { ...REBUILT, FAKE_INTENT_SHOW: '{"devices":1}', FAKE_GH_RUN: "77:completed:success" };
-  const spend = (env, origin = true) => run(shim, ["pulama", "name-successor", "--lei", "HEAD", "develop"], { envFile: PULAMA_ENV, checkout: "pulama", origin, env: { ...LEI, ...env } });
+  const spend = (env, origin = true, houseFiles = {}) => run(shim, ["pulama", "name-successor", "--lei", "HEAD", "develop"], { envFile: PULAMA_ENV, checkout: "pulama", origin, houseFiles, env: { ...LEI, ...env } });
   const quiet = (r) => assert.doesNotMatch(r.calls, /name-successor-lei/);
+  const frameOf = (r) => JSON.parse(r.calls.match(/exec -T pulama node \S+ name-successor-lei (\{.*\})/)?.[1] ?? "null");
   const far = await spend({ FAKE_IMAGE_CLOSURE: CL("b") }, false);
   assert.notEqual(far.status, 0);
   assert.match(far.stderr, /\(keeper-lei-unreachable\)[\s\S]*lares pulama name-successor/);
@@ -2492,31 +2521,37 @@ test(`${name}: RED name-successor-lei-guards-the-spend: with no terminal and no 
   const d = label.stderr.match(/reads (sha256:[0-9a-f]{64}) \(keeper-lei-image-differs\)/)?.[1];
   assert.ok(d, label.stderr);
   quiet(label);
-  // THE CHEAP GUARDS RUN FIRST: a face of two devices refuses before the bench gate runs at all.
   const two = await spend({ FAKE_IMAGE_CLOSURE: d, FAKE_INTENT_SHOW: '{"devices":2}' });
   assert.notEqual(two.status, 0);
   assert.match(two.stderr, /\(keeper-lei-cosign-owed\)[\s\S]*lares pulama name-successor/);
-  assert.doesNotMatch(two.calls, /^BENCH /m);
   quiet(two);
-  // THE LOCAL WITNESS DECIDES: a red verdict over the very tree refuses by name, quoting its line and the cure.
-  const red = await spend({ FAKE_IMAGE_CLOSURE: d, FAKE_BENCH: "red" });
-  assert.notEqual(red.status, 0);
-  assert.match(red.calls, /^BENCH --verdict \S+\/cache\/bench\/[0-9a-f]{40}\.json$/m);
-  assert.match(red.stderr.replace(/\s+/g, " "), /BENCH GATE REFUSES: build \(exit 1\)[\s\S]*\(keeper-lei-bench-red\)[\s\S]*lares rite kukulu again/);
-  quiet(red);
-  const none = await spend({ FAKE_IMAGE_CLOSURE: d, FAKE_BENCH: "none" });
-  assert.notEqual(none.status, 0);
-  assert.match(none.stderr.replace(/\s+/g, " "), /\(keeper-lei-bench-unread\)[\s\S]*node tools\/bench-gate\.mjs --verdict/);
-  quiet(none);
-  const green = await spend({ FAKE_IMAGE_CLOSURE: d });
+  // THE RITE RUNS NO SUITE: a missing verdict annotates and the frame goes, and the planted gate never runs.
+  const none = await spend({ FAKE_IMAGE_CLOSURE: d });
+  assert.equal(none.status, 0, none.stderr);
+  assert.doesNotMatch(none.calls, /^BENCH /m);
+  assert.match(none.stderr.replace(/\s+/g, " "), /\(keeper-lei-bench-unread\); an annotation, never a gate/);
+  assert.equal(frameOf(none)?.bench, null);
+  const RED = { "cache/bench/@HEAD@.json": JSON.stringify({ kind: "lares-bench-verdict", v: 1, rev: "@HEAD@", tree: "@TREE@", code: 1, line: "BENCH GATE REFUSES: build (exit 1) · 4 s", steps: [{ name: "build", code: 1, secs: 4 }], secs: 4 }) };
+  const red = await spend({ FAKE_IMAGE_CLOSURE: d }, true, RED);
+  assert.equal(red.status, 0, red.stderr);
+  assert.doesNotMatch(red.calls, /^BENCH /m);
+  assert.match(red.stderr.replace(/\s+/g, " "), /BENCH GATE REFUSES: build \(exit 1\)[\s\S]*\(keeper-lei-bench-red\); an annotation, never a gate/);
+  assert.equal(frameOf(red)?.bench?.code, 1);
+  const GREEN = { "cache/bench/@HEAD@.json": JSON.stringify({ kind: "lares-bench-verdict", v: 1, rev: "@HEAD@", tree: "@TREE@", code: 0, line: "BENCH GATE GREEN at x · 4 steps · 4 s", steps: [{ name: "build", code: 0, secs: 4 }], secs: 4 }) };
+  const green = await spend({ FAKE_IMAGE_CLOSURE: d }, true, GREEN);
   assert.equal(green.status, 0, green.stderr);
-  const frame = green.calls.match(/exec -T pulama node \S+ name-successor-lei (\{.*\})/)?.[1];
-  assert.ok(frame, green.calls);
-  const f = JSON.parse(frame);
+  assert.doesNotMatch(green.calls, /^BENCH /m);
+  const f = frameOf(green);
+  assert.ok(f, green.calls);
   assert.deepEqual({ ...f, rev: "r", tree: "t", bench: "v" }, { next: d, branch: "develop", rev: "r", tree: "t", recheck: "same", image: d, bench: "v", ci: "77:completed:success", devices: 1 });
   assert.match(f.rev, /^[0-9a-f]{40}$/);
   assert.deepEqual({ kind: f.bench.kind, rev: f.bench.rev, tree: f.bench.tree, code: f.bench.code }, { kind: "lares-bench-verdict", rev: f.rev, tree: f.tree, code: 0 });
   assert.match(green.stderr, /bench verdict sha256:[0-9a-f]{64} green/);
+  // A DEVICE COUNT READ NOWHERE (the vessel locked or down) reads one device, annotated, and the frame goes.
+  const unread = await spend({ FAKE_IMAGE_CLOSURE: d, FAKE_INTENT_SHOW: "" });
+  assert.equal(unread.status, 0, unread.stderr);
+  assert.match(unread.stderr, /read no device count for every lit face; the commit reads one device \(unknown, annotated here\)/);
+  assert.equal(frameOf(unread)?.devices, 1);
 });
 test(`${name}: RED web2-annotates-never-decides (ruling 2026-11-25): a red CI run prints loudly and still sends the frame, an unreachable gh reads unread and blocks nothing, and no gh on the PATH blocks nothing; the local verdict alone decides`, { skip: skip || shim !== SH }, async () => {
   const LEI = { ...REBUILT, FAKE_INTENT_SHOW: '{"devices":1}' };
@@ -3033,7 +3068,7 @@ test("the hand verbs the shims send to the pūlama stay the names it dispatches 
     assert.equal(verdict(r), "lares-container: hoala: found the house standing awake; did nothing; now the keeper lit, the vessel unlocked, faces open: h0, h2, wearing h2");
   });
 
-  test("sh: RED hoala-a-fresh-boot-once: a vessel that stays shut under a lit keeper restarts once and dials again; a seat with no lei return stops and names the hand", { skip: handless }, async () => {
+  test("sh: RED hoala-a-fresh-boot-once: a vessel that stays shut under a lit keeper restarts once and dials again; a seat with no lei return does the same (a locked vessel bears no data), and the house never waits on a hand to wake", { skip: handless }, async () => {
     const SHUT = { FAKE_RUNNING_ID: "cid", FAKE_PULAMA_ID: "pid", FAKE_PULAMA_STATUS: litAdmitting("sha256:feedface"), FAKE_CUSTODY_OUTPUT: LOCKED, FAKE_UNLOCK_RC: "1" };
     const r = await run(shim, ["rite", "hoala"], { envFile: PULAMA_ENV, env: SHUT });
     assert.equal(r.status, 1, r.stderr);
@@ -3042,8 +3077,9 @@ test("the hand verbs the shims send to the pūlama stay the names it dispatches 
     assert.match(verdict(r), /found the vessel locked; did nothing; now the keeper stands lit and the vessel stays at the locked floor after a fresh boot/);
     const seat = await run(shim, ["rite", "hoala"], { envFile: PULAMA_ENV, rawSeat: true, env: { ...SHUT, CLAUDECODE: "1" } });
     assert.equal(seat.status, 1, seat.stderr);
-    assert.doesNotMatch(seat.calls, / restart lares$/m);
-    assert.match(verdict(seat), /the house waits on a hand: an AI seat's hoʻāla lights and admits by the hoʻāla lei and dials, and it may restart the vessel only in a run where that lei spent a return; a hand runs `lares rite hoala` on a terminal/);
+    assert.equal(seat.calls.split("\n").filter((l) => / restart lares$/.test(l)).length, 1, seat.calls);
+    assert.doesNotMatch(verdict(seat), /the house waits on a hand/);
+    assert.match(verdict(seat), /now the keeper stands lit and the vessel stays at the locked floor after a fresh boot/);
   });
 
   // THE IMAGE LAYER: a tag left on a build no gate passed.
@@ -3116,18 +3152,18 @@ test("the hand verbs the shims send to the pūlama stay the names it dispatches 
     assert.equal(seat.status, 1);
     assert.doesNotMatch(seat.calls, /pulama-main\.js admit|up -d --wait lares/);
   });
-  test("sh: RED kukulu-gate-refusal-leaves-the-tag-on-the-admitted-image: a red bench verdict steps the tag back to the admitted image before the refusal speaks", { skip: handless }, async () => {
+  test("sh: RED a red bench verdict annotates, never steps the tag back: the frame goes to the keeper and the tag stays on the build the rite raised", { skip: handless }, async () => {
     const LEI = { ...REBUILT, FAKE_INTENT_SHOW: '{"devices":1}', FAKE_GH_RUN: "77:completed:success" };
-    const spend = (env) => run(shim, ["pulama", "name-successor", "--lei", "HEAD", "develop"], { envFile: PULAMA_ENV, checkout: "pulama", origin: true, env: { ...LEI, ...env } });
+    const spend = (env, houseFiles = {}) => run(shim, ["pulama", "name-successor", "--lei", "HEAD", "develop"], { envFile: PULAMA_ENV, checkout: "pulama", origin: true, houseFiles, env: { ...LEI, ...env } });
     const label = await spend({ FAKE_IMAGE_CLOSURE: CL("b") });
     const d = label.stderr.match(/reads (sha256:[0-9a-f]{64}) \(keeper-lei-image-differs\)/)?.[1];
     assert.ok(d, label.stderr);
-    const red = await spend({ FAKE_IMAGE_CLOSURE: d, FAKE_BENCH: "red", FAKE_KEPT_ID: "sha256:admitted0", FAKE_IMAGE_TAGS: "local\nrev-0123456789ab", FAKE_PULAMA_STATUS: litAdmitting("sha256:admitted0") });
-    assert.notEqual(red.status, 0);
-    assert.match(red.calls, /^tag lares-surface:rev-0123456789ab lares-surface:local$/m);
-    assert.match(red.stderr.replace(/\s+/g, " "), /the tag steps back to the admitted image lares-surface:rev-0123456789ab[\s\S]*\(keeper-lei-bench-red\)/);
-    assert.doesNotMatch(red.calls, /name-successor-lei/);
-    assert.doesNotMatch(red.calls, /hoala-admit/, "a build whose gate just refused never admits under a lei: it steps back alone");
+    const RED = { "cache/bench/@HEAD@.json": JSON.stringify({ kind: "lares-bench-verdict", v: 1, rev: "@HEAD@", tree: "@TREE@", code: 1, line: "BENCH GATE REFUSES: build (exit 1) · 4 s", steps: [{ name: "build", code: 1, secs: 4 }], secs: 4 }) };
+    const red = await spend({ FAKE_IMAGE_CLOSURE: d, FAKE_KEPT_ID: "sha256:admitted0", FAKE_IMAGE_TAGS: "local\nrev-0123456789ab", FAKE_PULAMA_STATUS: litAdmitting("sha256:admitted0") }, RED);
+    assert.equal(red.status, 0, red.stderr);
+    assert.doesNotMatch(red.calls, /^tag lares-surface:rev-0123456789ab lares-surface:local$/m);
+    assert.match(red.calls, /name-successor-lei/);
+    assert.doesNotMatch(red.calls, /hoala-admit/);
   });
 
   // THE UNLOCK NEVER SPENDS A TRY ON A SILENT KEEPER.

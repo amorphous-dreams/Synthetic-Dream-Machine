@@ -17,7 +17,6 @@ import { afterDispatch, ManualBoundary, remote, shoreRig, storeAbsent, storeText
 /** The dispatch, the gate's fire, the landing queue's idle: the barrier a zero reads behind. */
 const barrier = async (r: Rig, boundary: ManualBoundary): Promise<void> => {
   await afterDispatch();
-  boundary.fire();
   await boundary.settle();
   await r.adaptor.landingIdle();
 };

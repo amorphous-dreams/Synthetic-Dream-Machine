@@ -87,7 +87,7 @@ export function literalPorts(text) {
 export function gatedVesselSubs() {
   const vessel = readFileSync(join(ROOT, "packages/lares-cli/src/commands/vessel.ts"), "utf8");
   const table = /const SUBS\b[^=]*=\s*\{([\s\S]*?)\n\};/.exec(vessel)?.[1] ?? "";
-  const subs = [...table.matchAll(/^\s{2}(\w+):\s*\{\s*summary/gm)].map((m) => m[1]);
+  const subs = [...table.matchAll(/^\s{2}(\w+):\s*\{\s*run\b/gm)].map((m) => m[1]);
   const gate = readFileSync(join(ROOT, "packages/lares-cli/src/build-freshness.ts"), "utf8");
   const never = new Set([...(/NEVER_STALE[^=]*=\s*new Set\(\[([^\]]*)\]/.exec(gate)?.[1] ?? "").matchAll(/"(\w+)"/g)].map((m) => m[1]));
   return subs.filter((s) => !never.has(s));

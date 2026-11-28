@@ -103,7 +103,8 @@ export interface KeeperLicense {
    *  and the CI push run on the revision as the host read it: annotation alone (`<run id>:<status>:<conclusion>`, or `unread`). */
   readonly rev: string; readonly tree: string; readonly recheck: "same"; readonly image: string; readonly ci: string;
   /** THE LOCAL WITNESS (ruling 2026-11-25-web2-annotates): the bench verdict over `tree`, named by the sha256 the keeper took of the
-   *  bytes the host handed, and its verdict line. Absent on a commit licensed before the witness moved inside. */
+   *  bytes the host handed where it read green, and its verdict line; a missing, foreign or red verdict names no hash and its
+   *  reading rides as the line (an annotation, never a gate). */
   readonly bench?: string; readonly benchLine?: string;
 }
 /** The vest's spend mark: the lit keeper sealed the house's end of the bond to ONE successor key, once per commit. No key rests in it. */

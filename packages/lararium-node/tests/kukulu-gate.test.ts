@@ -201,11 +201,12 @@ describe("RED pulama-refuses-an-unvouched-kukulu", () => {
     expect(await s.hello({ lei: [await s.string({ reach: "wide", returns: 3 }, { branch: "main" })], vouch: [v] })).toBe("swarm-lei-absent");
     expect(await s.hello({ lei: [await signSwarmAct({ act: "lei", group: GROUP, rite: "push", branch: BRANCH, after: null, reach: "wide", returns: 3 }, s.hand)], vouch: [v] })).toBe("swarm-lei-absent");
     expect(await s.hello({ lei: [{ body: "junk" }], vouch: [v] })).toBe("swarm-lei-absent");
-    // THE HOST REPORTS THE IMAGE: none reported, or another than the vouch walked, refuses before the lei reads.
+    // THE HOST REPORTS THE IMAGE: none reported refuses before the lei reads; another than the vouch walked reads as no offer,
+    // so the vessel enters by its image, which no admission names here.
     s.raise(null);
     expect(await s.hello({ lei: [lei], vouch: [v] })).toBe("kukulu-image-unreported");
     s.raise("sha256:" + "ee".repeat(32));
-    expect(await s.hello({ lei: [lei], vouch: [v] })).toBe("kukulu-image-mismatch");
+    expect(await s.hello({ lei: [lei], vouch: [v] })).toBe("pulama-image-unadmitted");
     // A locked face and an unlit pūlama refuse too.
     s.raise(IMAGE);
     await s.fx.kept.lockFace(s.face.fcid);
@@ -386,6 +387,27 @@ describe("RED the admitted image lends its set (L4)", () => {
     await partial.lock();
     await s.fx.kept.lockFace(s.faces[0]!.fcid);
     expect(await s.hello({})).toBe("kukulu-face-locked");
+  });
+
+  test("RED a stale offer for image A, with the host raising an admitted image B, enters by B: no lei reads, no return spends, no half rests; CONTROL: B unadmitted refuses pulama-image-unadmitted", async () => {
+    let lent: Array<{ fcid: string; ordinal: number }> = [];
+    const { admissions, reserved } = admittedSet(() => lent);
+    const s = await standLend(admissions);
+    lent = [{ fcid: s.faces[0]!.fcid, ordinal: 0 }];
+    const lei = await s.string(0);
+    // THE STALE OFFER: a vouch over image A, which the host never raised (a stop raised B with no rite begun).
+    const stale = await signKukuluVouch({ group: GROUPS[0]!, branch: BRANCH, head: HEAD, tree: TREE, image: "sha256:" + "a0".repeat(32) }, await vouchSignerOf(s.fx.local));
+    const vessel = s.fx.vessel({ lei: [lei], vouch: [stale] });
+    expect((await vessel.unlock([])).reading).toBe("opens");
+    expect(vessel.lends()).toEqual([0]);
+    expect(reserved).toHaveLength(1);
+    expect(await s.returns(lei)).toBe(0);
+    expect(await s.records.list(swarmTesseraPrefix())).toEqual([]);
+    await vessel.lock();
+    await s.fx.drop(); fx = null;
+    // CONTROL: the gate with no admitted set still refuses the image itself.
+    const bare = await standLend();
+    expect(await bare.hello({ lei: [await bare.string(0)], vouch: [await signKukuluVouch({ group: GROUPS[0]!, branch: BRANCH, head: HEAD, tree: TREE, image: "sha256:" + "a0".repeat(32) }, await vouchSignerOf(bare.fx.local))] })).toBe("pulama-image-unadmitted");
   });
 
   test("an admission row whose faces read no lent set refuses the hello by the set's own reading and rests no re-service", async () => {
