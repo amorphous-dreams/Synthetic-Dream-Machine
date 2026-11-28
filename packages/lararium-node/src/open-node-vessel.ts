@@ -193,7 +193,7 @@ import { protectedDocGuard } from "@lararium/mesh/protected-doc-guard";
 import { islandPeersOf, wikiIslandPeersOf } from "@lararium/mesh/island-repo-door";
 import { peerArrivals } from "@lararium/mesh/peer-arrivals";
 import { admitGatePinDigest } from "@lararium/mesh/admit-gate-pin";
-import { ownEntry, plainField, plainValue } from "@lararium/mesh/stored-value";
+import { ownEntry, plainField } from "@lararium/mesh/stored-value";
 import { CATALOG_ENTRY_TIER_FIELD } from "@lararium/mesh/catalog-view";
 import {
   SHARE_CONFIG_FILE,
