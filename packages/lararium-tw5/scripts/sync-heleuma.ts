@@ -56,6 +56,7 @@ const pkgsRoot = resolve(root, "packages");
 // the marker retirement made that visible without causing it.
 const tw5MemesRoot = resolve(root, "bags", "lararium", "ha.ka.ba", "lararium", "tw5");
 const meshWaveAnchor = resolve(root, "bags/lararium/ha.ka.ba/lararium/mesh/wave-crest.mem");
+const meshMemesRoot = resolve(root, "bags", "lararium", "ha.ka.ba", "lararium", "mesh");
 
 const args             = process.argv.slice(2);
 const COMMIT           = args.includes("--commit");
@@ -468,6 +469,48 @@ function runSyncModules(): { drift: number; missing: number; patched: number } {
 }
 
 // ---------------------------------------------------------------------------
+// NODE-PACKAGE CODE-MEMES: a mesh anchor whose `source-file` names a module in a node package (the disk projector's
+//   modules, beside the wave crest). The wave crest rides its own source tiddler (checked at the foot); every other one
+//   carries `source-sha256` over its file's bytes, and this check reads that digest against the file. Drift warns and
+//   never blocks: the heleuma law keeps staleness visible, and `--commit` stamps the digest afresh.
+// ---------------------------------------------------------------------------
+
+function nodeSourceAnchors(): string[] {
+  return walkExt(meshMemesRoot, ".mem").filter((path) =>
+    resolve(path) !== resolve(meshWaveAnchor) && asStr(rootMetaFields(readFileSync(path, "utf8"))["source-file"]) !== "");
+}
+
+function runNodeSourceSync(commit: boolean): { drift: number; missing: number; patched: number } {
+  let drift = 0, missing = 0, patched = 0;
+  for (const anchorPath of nodeSourceAnchors()) {
+    const content = readFileSync(anchorPath, "utf8");
+    const meta = rootMetaFields(content);
+    const sourceFile = asStr(meta["source-file"]);
+    const uri = headUriOf(content) ?? anchorPath;
+    const sourcePath = resolve(root, sourceFile);
+    if (!existsSync(sourcePath)) {
+      console.warn(`[sync-modules] MISSING source file ${sourceFile}  ${uri}`);
+      missing++;
+      continue;
+    }
+    const source = readFileSync(sourcePath, "utf8");
+    if (digestsEqual(formatDigest("sha256", sha256HexSync(source)), asStr(meta["source-sha256"]))) {
+      console.log(`[sync-modules] ok   ${uri}`);
+      continue;
+    }
+    if (commit) {
+      writeFileSync(anchorPath, stampSourceAnchor(content, source), "utf8");
+      console.log(`[sync-modules] patched  ${uri}  source-sha256`);
+      patched++;
+      continue;
+    }
+    console.warn(`[sync-modules] DRIFT  ${uri}: source-sha256 names other bytes than ${sourceFile}`);
+    drift++;
+  }
+  return { drift, missing, patched };
+}
+
+// ---------------------------------------------------------------------------
 // SKIN CODE-MEMES: a code-meme resting INSIDE a plugin skin, beside the module tiddler it windows.
 //   A skin's source island holds the meme as a `.tid` whose type names the carrier and whose body holds it; the pack
 //   ships meme and module together, so a wiki that loads the skin reads both. Its `module-ref` names a module the SAME
@@ -746,6 +789,7 @@ if (SYNC_MODULES) {
   console.log("[sync-modules] checking anchor source-sha256 against module tiddler bodies\n");
   const bags = runSyncModules();
   const skins = runSkinCodeMemeSync(COMMIT);
+  runNodeSourceSync(COMMIT);
   const drift = bags.drift + skins.drift, missing = bags.missing + skins.missing, patched = bags.patched + skins.patched;
   if (COMMIT) {
     console.log(`\n[sync-modules] patched ${patched}, missing ${missing}`);
@@ -774,6 +818,7 @@ if (COMMIT) {
     writeFileSync(meshWaveAnchor, stampSourceAnchor(waveContent, waveSource), "utf8");
     console.log("[heleuma] patched mesh wave-crest source-sha256 and carrier check");
   }
+  runNodeSourceSync(true);
   console.log("\n[heleuma] --commit: checking #source windows (reference integrity — the code-file tiddler holds the source)\n");
 } else {
   console.log("[heleuma] dry-run (pass --commit to patch, --scan to find candidates, --scan-promote to find corpus candidates)\n");
@@ -785,7 +830,7 @@ let totalMissing = 0;
 let totalPatched = 0;
 
 const windowed: Array<{ mdPath: string; content: string }> = [
-  ...[...walkExt(tw5MemesRoot, ".mem"), meshWaveAnchor].map((mdPath) => ({ mdPath, content: readFileSync(mdPath, "utf8") })),
+  ...[...walkExt(tw5MemesRoot, ".mem"), meshWaveAnchor, ...nodeSourceAnchors()].map((mdPath) => ({ mdPath, content: readFileSync(mdPath, "utf8") })),
   ...skinCodeMemes().map((meme) => ({ mdPath: meme.path, content: meme.body })),
 ];
 for (const { mdPath, content } of windowed) {
@@ -857,6 +902,8 @@ if (!COMMIT) {
   }
   const skinResult = runSkinCodeMemeSync(false);
   if (skinResult.drift > 0 || skinResult.missing > 0) process.exitCode = 1;
+  const nodeResult = runNodeSourceSync(false);
+  if (nodeResult.drift > 0 || nodeResult.missing > 0) console.warn("[sync-modules] run build:heleuma:commit to restamp the node-package code-memes");
 }
 
 // This Node source travels as a text tiddler, never as a TW5 module. Keep the

@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-orphans`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-orphans"
+role          = "code-meme: projects orphan slot records into the orphan folder"
+source-file   = "packages/lararium-node/src/disk-projector/orphans.ts"
+source-sha256 = "sha256:ac7d8b9a14dc8fd3fb81756f974ba3bd43332dbc78dcf319015b8b00bafdc2b0"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-orphans"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-orphans"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`reconcileOrphans` writes each orphan slot record as a plain record file under `<root-stem>.orphans/`, raises the root's orphan flag, and gives the folder back once the root returns. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/orphans.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-orphans"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;a3DEdcK9-wLZpgiMQGK-iQ4HIWAwdT3hxnmI7x1HmnE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

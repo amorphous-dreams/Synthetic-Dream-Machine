@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-settle-word`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-settle-word"
+role          = "code-meme: waits until the projection a gesture caused has run"
+source-file   = "packages/lararium-node/src/disk-projector/settle-word.ts"
+source-sha256 = "sha256:27864e076c19c6604ff47cfa8a056ff55bf9c6d23734826f1dfc3d1c7117d4a6"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-settle-word"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-settle-word"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`settled` follows the named records or heads into the view, marks each carrier's reconcile and waits for it, by handshake with the change events and the queue's drain. It holds no clock. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/settle-word.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-settle-word"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cMidDONO-jDNcQajpYh9JBaSOqoxTuQRSYKYLL3kTTg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

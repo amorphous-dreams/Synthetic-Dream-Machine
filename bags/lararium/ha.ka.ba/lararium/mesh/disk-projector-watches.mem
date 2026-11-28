@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-watches`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-watches"
+role          = "code-meme: arms settle wakes and watches each carrier's next reconcile"
+source-file   = "packages/lararium-node/src/disk-projector/watches.ts"
+source-sha256 = "sha256:ba42ccce3822d68f7c5105f549efea2e5448a1d276314699621aeb7ca703e976"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-watches"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-watches"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`nextWake` and `wakeWaiters` carry the settle waits' handshake; `watchReconcile` and `reconcileWatched` tell each watch how the next reconcile ended; `unsettled` lists what the queue still owes. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/watches.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-watches"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;a6yflJ4G-WiRe8wBvxKX6YZkxdnBH8dFV2k9YF2fCtY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

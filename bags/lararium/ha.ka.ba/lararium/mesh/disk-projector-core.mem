@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-core`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-core"
+role          = "code-meme: names the state the projector's modules share"
+source-file   = "packages/lararium-node/src/disk-projector/core.ts"
+source-sha256 = "sha256:3a0f3e3ab0f6c3e5def1bcb63fff393882ab1ea5efc25be91412958d6c7d1cdd"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-core"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-core"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`ProjectorCore` names each field the composer holds and the instance methods the modules call back through the instance. Each module function takes this one shape, so every module moves the very state the instance holds. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/core.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-core"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lfp_mfmZR6A0Z3klB20jS3gBpLF7NO98eZJ3SVcchuc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

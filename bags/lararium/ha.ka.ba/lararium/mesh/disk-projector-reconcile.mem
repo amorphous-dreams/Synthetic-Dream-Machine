@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-reconcile`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-reconcile"
+role          = "code-meme: reconciles one carrier root against the settled view"
+source-file   = "packages/lararium-node/src/disk-projector/reconcile.ts"
+source-sha256 = "sha256:8dde83fda124e9731ab8175d1fb4d1d5a2e1c486fd26b36ad9aa105065158d24"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-reconcile"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-reconcile"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+The per-root reconcile routes a live carrier to its owner's flush, a dropped one to each mirror's unlink, and every root to the orphan pass. The residency bar (`neverOnDisk`) and the pack-member suppress decide what never reaches disk. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/reconcile.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-reconcile"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zri5ZoqNzHh08hNUj2x7ppIpWx6xGShXONxAIe1b2To`>>
+
+<<^ code=`&#x0004;` to=`?`>>

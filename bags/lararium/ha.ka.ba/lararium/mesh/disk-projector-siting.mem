@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-siting`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-siting"
+role          = "code-meme: sites a carrier's file in one mirror"
+source-file   = "packages/lararium-node/src/disk-projector/siting.ts"
+source-sha256 = "sha256:bc04db9a8fbbb80d62d90935b572c4660924488753d4425eea6dafa381249911"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-siting"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-siting"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`siteBase` reads a `$:/config/FileSystemPaths` rule, then the loci law, then TW5's flattened default through the free-or-mine uniquifier. `mirrorCarrierFiles` and `mirrorCarrierFilesAt` list the files a siting already holds. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/siting.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-siting"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uD1XNFI__mYF2diSuPmCIPDkYxKBI3lM52ULQSnZ-Jg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

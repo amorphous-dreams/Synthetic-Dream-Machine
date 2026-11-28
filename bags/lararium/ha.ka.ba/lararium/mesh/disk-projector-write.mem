@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-write`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-write"
+role          = "code-meme: writes atomically and reads the disk in the carrier's text form"
+source-file   = "packages/lararium-node/src/disk-projector/write.ts"
+source-sha256 = "sha256:7946f71242183265201191edb5a877b777d161564ab8999e74507f5959d5f4e2"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-write"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-write"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`atomicWrite` lands each projected file through a same-directory temp, fsync and rename, counting the first write after a change. `diskCarrierText` reads what stands on disk; `renderedOutput` resolves a pointer's bytes and names the text a render stands as. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/write.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-write"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cOSYymHWM4mLB_M-Lir3xzUvZCW5-HzP4_MWEAi8UMo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

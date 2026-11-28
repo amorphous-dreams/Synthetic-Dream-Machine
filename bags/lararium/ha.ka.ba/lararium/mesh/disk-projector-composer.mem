@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-composer`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-composer"
+role          = "code-meme: composes the disk projector's modules over the state it holds"
+source-file   = "packages/lararium-node/src/disk-projector.ts"
+source-sha256 = "sha256:4c4a9d31799dd2d38b442da2ea6a62f1eb13a9207abc1a32246321e5681bcc12"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-composer"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-composer"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+The `LarDiskProjector` class holds every field the projector's modules share and hands that state to each module through `core`. Its public surface and its exported names carry every caller unchanged; `flush`, `reconcile` and `atomicWrite` stay instance methods, so an instance override still answers each internal call. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-composer"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;F2xzaJG9UWEY9A1QY0Bfp3FcwO3WkY36ytJWsHSP4ow`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-homes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-homes"
+role          = "code-meme: judges every unlink before a file leaves"
+source-file   = "packages/lararium-node/src/disk-projector/homes.ts"
+source-sha256 = "sha256:b92a3292c896e5cca9c6664f1b507af64536834bb506963cf8f9398a14e73c02"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-homes"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-homes"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`judgeHome` reads a file against its base and the records' render; `settleHomes` unlinks each agreed home and stands the carrier off where a home holds a hand's bytes; `unlinkHome` removes a file the judge agreed to. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/homes.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-homes"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MXLq7f3GqCAU68Np3TbH7vYycQ971H-5XhBHL2MN3e8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

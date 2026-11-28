@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-untracked`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-untracked"
+role          = "code-meme: keeps files a checkout never tracked"
+source-file   = "packages/lararium-node/src/disk-projector/untracked.ts"
+source-sha256 = "sha256:1afdaafe96bbc38855142d856799af6211291a4f26637163e950743a76adefa7"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-untracked"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-untracked"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`keepUntracked` keeps a dropped carrier's untracked file and raises one alert per path; `untrackedCarriers` lists every untracked file under each mirror root for the census. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/untracked.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-untracked"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7komTwOWA2pXpInJwVwSylA5Uhu7As5vh9j84OItKME`>>
+
+<<^ code=`&#x0004;` to=`?`>>

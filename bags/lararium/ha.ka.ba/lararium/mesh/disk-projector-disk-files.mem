@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-disk-files`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-disk-files"
+role          = "code-meme: finds carrier files and reads ownership titles from disk"
+source-file   = "packages/lararium-node/src/disk-projector/disk-files.ts"
+source-sha256 = "sha256:c14da4533e064e09989d73bc055031aec962b19d561d7664585af00ad74a4267"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-disk-files"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-disk-files"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+The module finds carrier files and reads ownership titles from disk. `disk-projector.ts` calls its exports and re-exports them for existing callers. Node filesystem and projector dependencies keep this compiled module outside the meme graph; its source window names the code-file seat. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/disk-files.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-disk-files"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;R70oMAumegAoBPwSGlZ9eDMtUThpt-CpU_K6AKi0Pv8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

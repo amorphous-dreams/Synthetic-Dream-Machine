@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-removals`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-removals"
+role          = "code-meme: carries a person's remove or restore answer"
+source-file   = "packages/lararium-node/src/disk-projector/removals.ts"
+source-sha256 = "sha256:0b66366f3e0ddea1d0f28019364f977ee6eed49f8cad844f02c792aec576bd5b"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-removals"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-removals"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`answerRemovals` checks the count the person read, then restores each file from the records or removes each carrier through the delete door, raising a kāpae only over a lower copy, and reads the removal back from the view. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/removals.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-removals"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;W12XwXjXkMOG8lA3_9D2nNf8S-PAwIpYjpHttFXb_VY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

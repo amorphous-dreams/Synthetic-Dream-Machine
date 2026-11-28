@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-flush`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-flush"
+role          = "code-meme: renders, sites and writes one carrier into one mirror"
+source-file   = "packages/lararium-node/src/disk-projector/flush.ts"
+source-sha256 = "sha256:22ec64c9a8679030d7e5d0f617e9b6bf7102906aa67b691a329f0951e3788c99"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-flush"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-flush"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`flush` renders through the one render shore, sites the file, settles the homes a siting move left, skips a byte-identical write, meets the projecting leg's gate and writes body then sidecar. `sweepLeftMirrors` reads each mirror the carrier left before anything unlinks there. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/flush.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-flush"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rVD8dFx_bmmZxCiXyMZNpud5NEe1uKxAfashYSc2ARo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

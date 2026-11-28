@@ -36,7 +36,7 @@ DARK packages/lararium-tw5/tests/filter-cts-chromium.e2e.test.ts packages/larari
 
 # ── the seams ───────────────────────────────────────────────────────────────────────────────────────────────────────
 SEAM projector-base-pin trunk
-MOVES projector-base-pin n disk-projector* heads-rest* synced-tree* projection-gate* carrier-render* native-landing* partial-landing* temp-layer*
+MOVES projector-base-pin n disk-projector* disk-projector/* heads-rest* synced-tree* projection-gate* carrier-render* native-landing* partial-landing* temp-layer*
 MOVES projector-base-pin m projection-* mirror-paths* pinned-doc* override-base*
 MOVES projector-base-pin t tw5-projection* landed-ledger* wave-landing* override-bases*
 MOVES projector-base-pin c seed-mirrors* commands/refresh*

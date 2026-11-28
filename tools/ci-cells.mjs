@@ -50,7 +50,7 @@ const dealt = (name, dir, part, parts) => pkg(name, dir, null, { deal: "node-uni
  * cli 296 · mesh 256 · tw5 172 · browser 99 · keyhive 46 · tiddlywiki jasmine ~27.
  */
 /**
- * THE BROWSER LAMPS STAND DIM (operator, 2026-11-20: "disable all browser tests for now, while we move quickly to settle
+ * THE BROWSER CELLS STAND DIM IN CI (operator, 2026-11-20: "disable all browser tests for now, while we move quickly to settle
  * the road"). The whole browser side gets a deep Mu from scratch later (lar:///ha.ka.ba/kahua/memory/project/browser-mu-from-scratch),
  * and its CI reds had been flaking. No cell below launches a browser: the `web-tw5` and `cli-mesh` matrix rows in ci.yml name
  * no engines and no Playwright container, and the browser vitest projects stand out of the package configs. The test FILES
@@ -62,13 +62,20 @@ const dealt = (name, dir, part, parts) => pkg(name, dir, null, { deal: "node-uni
  *   - `@lararium/tw5`      `packages/lararium-tw5/vitest.config.ts`: every node suite; meme-routes.e2e keeps its node contact (its one
  *                          Chromium describe skips loudly without an engine).
  *
- * THE ACCOUNT STANDS AS DATA in tools/browser-lamps.mjs and reads here under the names every pointer cites:
- * `BROWSER_LAMPS_DIM` (what went dark, project by project, and how each part relights) and `BROWSER_LAMPS_LIT` (the thin lamp
- * set the Pono Browser relit against the standing hull, each file with its proof). `node tools/browser-lamps.mjs` counts lit,
- * lamp and dim off the tree, so no count rests in a comment to go stale; tools/browser-lamps.test.mjs holds the account to
- * the tree and the configs. The lamps run on the familiar's floor under `LAR_BROWSER_LAMPS=1`; no cell below runs one.
+ * On the familiar's floor the browser projects run whole under `LAR_BROWSER=1` (each package config joins its browser projects
+ * to the run); a red file reads as a finding in that run. BROWSER_DIM below names what CI still keeps dark and how it relights.
  */
-export { BROWSER_LAMPS_DIM, BROWSER_LAMPS_LIT } from "./browser-lamps.mjs";
+export const BROWSER_DIM = Object.freeze({
+  ruling: "operator, 2026-11-20: \"disable all browser tests for now, while we move quickly to settle the road\"",
+  floor: "LAR_BROWSER=1 pnpm exec vitest run --project <name>, in packages/lararium-browser (chromium, firefox) and packages/lararium-web (web-browser and its launched walks)",
+  alsoDark: Object.freeze([
+    "packages/lararium-web/vitest.crossing.config.ts (the floor crossing: its three e2e files and its ci.yml step)",
+    "@lararium/tw5: the filter-cts-chromium, standalone-single-file and syncer-back-parity e2e files",
+    ".github/workflows/ci.yml: the Chromium pull, and the `engines` and `container` of the web-tw5 and cli-mesh matrix rows",
+    "tools/held-out-cells.mjs: the browser-weld driver",
+  ]),
+  relightCi: "restore the `engines` and `container` of the two matrix rows and the dropped quick-job steps in ci.yml, and the browser-weld driver in held-out-cells.mjs",
+});
 export const TEST_CELLS = Object.freeze([
   { cell: "node-a", packages: [dealt("@lararium/node", "packages/lararium-node", 1, 2)] },
   { cell: "node-b", packages: [dealt("@lararium/node", "packages/lararium-node", 2, 2)] },
