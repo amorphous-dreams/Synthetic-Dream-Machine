@@ -1,0 +1,104 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.cabal.clocks`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read who feeds a realm and how deep, drawing no verdict"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.cabal.clocks", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.cabal.clocks"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.cabal.clocks"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.cabal.clocks ~ the capture-clock: who feeds, how deep, no verdict
+
+`lares cabal clock --realm <id>` reads the maintainers this replica has synced, each slot's epoch, the spread and the leading edge, and sets the realm's standing beside it (one face a visit, several many-faces). It draws no capture verdict; a realm nobody here has synced reads the same as an unfed one.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ clock
+
+```memetic-wikitext
+<<has entity=`example` name=`clock` params=`realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef ~ read who feeds the realm`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ realm
+
+```memetic-wikitext
+<<has entity=`arg` name=`realm` params=`takes/doc-id needs/required ~ the cabal-realm doc id, 64 hex`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ read
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`read` params=`who/seat-or-hand ~ reads this replica's realm doc; writes nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · store-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.cabal.clocks realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef]] ~ --realm expects a 64-hex cabal-realm doc id`>>
+<<has entity=`refusal` name=`store-refused` params=`~ the store door refused, or no vessel answers; the line names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ clock
+
+```memetic-wikitext
+<<has entity=`band` name=`clock` params=`exit/0 fields/[[maintainers maintainerCount effectiveEpoch spread leadingCount trailingEpoch standing]] ~ the local sighting, numbers alone`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares cabal clock
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares cabal clock]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cabal-realm
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;m5cXWLx9jcKBaMFmzQ0qpTC8xsmyGwDivkViG0nSMug`>>
+
+<<^ code=`&#x0004;` to=`?`>>

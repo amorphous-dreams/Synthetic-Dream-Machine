@@ -1,0 +1,108 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.cabal.vouches`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "stake the acting face's own standing on one joiner"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.cabal.vouches", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.cabal.vouches"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.cabal.vouches"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.cabal.vouches ~ one hand's own standing, staked on one joiner
+
+`lares cabal vouch <joiner-nym> --realm <id>` writes the acting face's vouch for one joiner onto the realm's vouch board: one hand, its own standing, no steward asked. It admits nobody; the voucher's score splits across everyone it vouches for, and the answer names the out-degree this replica sees as a floor. A repeat re-mints the one edge.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ vouch
+
+```memetic-wikitext
+<<has entity=`example` name=`vouch` params=`joiner/<joiner-nym> realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef ~ vouch for one joiner`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ joiner · realm · nexus · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`joiner` params=`takes/nym needs/required seat/1 as/<joiner-nym> ~ the joiner's key, as lares cabal face prints it`>>
+<<has entity=`arg` name=`realm` params=`takes/doc-id needs/required ~ the cabal-realm doc id, 64 hex`>>
+<<has entity=`arg` name=`nexus` params=`takes/aid ~ the Nexus at this vessel's first act in the realm; the ledger keeps it after`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the acting face, by persona index; absent, the one face standing open`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand key/face-at-nexus ~ the store door acts as the face, its key at the realm's Nexus`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · CabalVouchError
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.cabal.vouches joiner/<joiner-nym> realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef]] ~ vouch wants the joiner nym and --realm`>>
+<<has entity=`refusal` name=`CabalVouchError` params=`~ the vouch refused by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ vouched · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`vouched` params=`exit/0 fields/[[voucherDid joiner realm boundEpoch boardUrl edgeId outDegreeFloor reMinted bundle]] ~ the vouch stands on the board`>>
+<<has entity=`band` name=`refused` params=`exit/1 ~ refused by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares cabal vouch
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares cabal vouch]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cabal-realm
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;agB6cWFx6ML-b2k-hkL0JSIP1knWttXfNKhH1Rtm-EU`>>
+
+<<^ code=`&#x0004;` to=`?`>>
