@@ -20,24 +20,19 @@ async function run(argv: string[]): Promise<{ code: number; err: string }> {
 afterEach(() => vi.restoreAllMocks());
 
 describe("a folded sub-path refuses the flags it does not read", () => {
-  test("wiki keep paths refuse sibling flags and moved doors name their destination", async () => {
+  test("wiki keep paths refuse sibling flags, and a verb no door table holds meets the door's unknown-verb refusal", async () => {
     for (const argv of [["wiki", "switch", "x", "rotate=true"], ["wiki", "switch", "x", "release=true"], ["wiki", "keep", "x", "release=true"], ["wiki", "unkeep", "x", "bag=true"], ["wiki", "keep", "x", "reason=why"]]) {
-      const r = await run([...argv, "--no-json"]);
+      const r = await run([...argv, "json=false"]);
       expect(r.code).toBe(2);
       expect(r.err).toContain("unknown param");
     }
-    for (const argv of [["bag", "stats", "rotate=true"]]) {
-      const r = await run([...argv, "--no-json"]);
-      expect(r.err).toContain("moved to");
-    }
-    for (const [door, verb, destination] of [["wiki", "list", "wiki status"], ["wiki", "active", "wiki status"], ["bag", "stats", "wiki status"]] as const) {
-      const r = await run([door, verb, "x", "face=1", "--no-json"]);
+    for (const [door, verb] of [["wiki", "list"], ["wiki", "active"], ["bag", "stats"], ["bag", "list"]] as const) {
+      const r = await run([door, verb, "x", "json=false"]);
       expect(r.code).toBe(2);
-      expect(r.err).toContain(destination);
-      expect(r.err).not.toContain("unknown param");
+      expect(r.err).toContain(`lares ${door}: unknown verb "${verb}"`);
     }
     for (const argv of [["wiki", "pin", "x"], ["wiki", "hold", "x"], ["wiki", "release", "x"], ["wiki", "unpin", "x"], ["bag", "pin", "x"], ["bag", "unpin", "x"]]) {
-      const r = await run([...argv, "--no-json"]);
+      const r = await run([...argv, "json=false"]);
       expect(r.code).toBe(2);
       expect(r.err).not.toContain("moved to");
     }
@@ -49,54 +44,49 @@ describe("a folded sub-path refuses the flags it does not read", () => {
       [["bag", "show", "book", "approve=true"], "approve", "bag"],
       [["meme", "offer", "show", "a".repeat(64), "over-fresher=true"], "over-fresher", "meme"],
     ] as const) {
-      const r = await run([...argv, "--no-json"]);
+      const r = await run([...argv, "json=false"]);
       expect(r.code).toBe(2);
       expect(r.err).toContain(`unknown param ${flag}= for \`lares ${door}\``);
     }
   });
-  test("retired list spellings answer their moved pointer, never an unknown flag", async () => {
-    const k = await run(["kahua", "list", "face=1", "--no-json"]);
+  test("kahua's retired list spelling answers its door's moved pointer, never an unknown flag", async () => {
+    const k = await run(["kahua", "list", "face=1", "json=false"]);
     expect(k.code).not.toBe(0);
     expect(k.err).toContain("moved to `kahua get");
     expect(k.err).not.toContain("unknown param");
-    const b = await run(["bag", "list", "dir=X", "--no-json"]);
-    expect(b.code).toBe(2);
-    expect(b.err).toContain("moved to `lares bag show");
-    expect(b.err).not.toContain("unknown param");
   });
-  test("★ persona raise-sign refuses --face and every sibling flag; --as stays ★", async () => {
-    const r = await run(["persona", "raise-sign", "{}", "face=2", "--no-json"]);
+  test("★ persona raise-sign refuses face= and every sibling param; as= stays ★", async () => {
+    const r = await run(["persona", "raise-sign", "{}", "face=2", "json=false"]);
     expect(r.code).toBe(2);
     expect(r.err).toContain("unknown param face= for `lares persona`");
-    // CONTROL: --as is read; a sibling sub-verb refuses it.
-    const s = await run(["persona", "list", "as=1", "--no-json"]);
+    // CONTROL: as= is read; a sibling sub-verb refuses it.
+    const s = await run(["persona", "list", "as=1", "json=false"]);
     expect(s.code).toBe(2);
     expect(s.err).toContain("unknown param as=");
   });
 
-  test("★ vessel request refuses --dry-run beside --cancel, and a sibling refuses --cancel ★", async () => {
-    const r = await run(["vessel", "request", "req-1", "cancel=true", "dry-run=true", "--no-json"]);
+  test("★ vessel request refuses dry-run= beside cancel=, and a sibling refuses cancel= ★", async () => {
+    const r = await run(["vessel", "request", "req-1", "cancel=true", "dry-run=true", "json=false"]);
     expect(r.code).toBe(2);
     expect(r.err).toContain("unknown param dry-run=");
-    const s = await run(["vessel", "read", "cancel=true", "--no-json"]);
+    const s = await run(["vessel", "read", "cancel=true", "json=false"]);
     expect(s.code).toBe(2);
     expect(s.err).toContain("unknown param cancel=");
   });
 
-  test("★ act rides the call door: every flag beside it refuses by name before any dispatch, naming its param spelling ★", async () => {
-    for (const [flag, reading] of [[["--draft"], "draft=true"], [["--dry-run"], "mu=_0"], [["--bag", "b"], "bag=b"], [["--from", "b"], "from=b"], [["--change-id", "c"], "change-id=c"], [["--debounce", "5"], "debounce=5"]] as const) {
-      const r = await run(["act", "lar:///carriage.record.adds", ...flag, "--no-json"]);
+  test("★ an address rides the call door: every dash flag beside it refuses before any dispatch, naming the address's help ★", async () => {
+    for (const flag of [["--draft"], ["--dry-run"], ["--bag", "b"], ["--from", "b"], ["--change-id", "c"], ["--debounce", "5"]] as const) {
+      const r = await run(["lar:///carriage.record.adds", ...flag, "json=false"]);
       expect(r.code, flag.join(" ")).toBe(2);
-      // A flag the keyword head burned into a dial names the dial it reads as (`--dry-run` reads mu=_0); any other names its param.
-      expect(r.err).toContain(`dash-flag-burned: ${flag[0]} reads as ${reading} (a call takes name=value params`);
+      expect(r.err).toContain("dash-flag-burned: dash flags burned; params ride as name=value (lares help lar:///carriage.record.adds)");
     }
   });
 
-  test("★ ingest --watch refuses the one-shot flags at the door, and plain ingest refuses --watch's own ★", async () => {
-    const a = await run(["ingest", "watch=true", "tag-blobs=true", "source=x", "to=y", "--no-json"]);
+  test("★ ingest watch=true refuses the one-shot params at the door, and plain ingest refuses watch's own ★", async () => {
+    const a = await run(["ingest", "watch=true", "tag-blobs=true", "source=x", "to=y", "json=false"]);
     expect(a.code).toBe(2);
     expect(a.err).toContain("tag-blobs= ride the one-shot ingest alone");
-    const b = await run(["ingest", "debounce=5", "source=x", "to=y", "--no-json"]);
+    const b = await run(["ingest", "debounce=5", "source=x", "to=y", "json=false"]);
     expect(b.code).toBe(2);
     expect(b.err).toContain("debounce= sets the watcher's quiet window and rides `watch=true` alone");
   });
@@ -108,17 +98,17 @@ describe("a folded sub-path refuses the flags it does not read", () => {
     expect(needsFreshBuild(parseArgs(["vessel", "found"]))).toBe(true);
   });
 
-  test("★ a call verb folds no flag on this side: every dash spelling refuses by name, naming its param (the carrier's #/takes binds params in the VM) ★", async () => {
-    for (const [argv, reading] of [
-      [["get", "title=lar:///x", "--fields", "text"], "--fields reads as fields=text"],
-      [["get", "title=lar:///x", "--max-bytes", "4096"], "--max-bytes reads as max-bytes=4096"],
-      [["get", "title=Note", "--after", "1.0123456789abcdef"], "--after reads as after=1.0123456789abcdef"],
-      [["get", "title=lar:///x", "--slot", "#/a"], "--slot reads as slot=#/a"],
-      [["get", "title=lar:///x", "--all"], "--all reads as aperture=arc"],
+  test("★ a call verb folds no flag on this side: every dash spelling refuses `dash-flag-burned`, naming the door's help (the carrier's #/takes binds params in the VM) ★", async () => {
+    for (const argv of [
+      ["get", "title=lar:///x", "--fields", "text"],
+      ["get", "title=lar:///x", "--max-bytes", "4096"],
+      ["get", "title=Note", "--after", "1.0123456789abcdef"],
+      ["get", "title=lar:///x", "--slot", "#/a"],
+      ["get", "title=lar:///x", "--all"],
     ] as const) {
-      const r = await run([...argv, "--no-json"]);
+      const r = await run([...argv, "json=false"]);
       expect(r.code, argv.join(" ")).toBe(2);
-      expect(r.err).toContain(`dash-flag-burned: ${reading}`);
+      expect(r.err).toContain("dash-flag-burned: dash flags burned; params ride as name=value (lares help get)");
     }
   });
 });

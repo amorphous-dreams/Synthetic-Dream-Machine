@@ -9,7 +9,7 @@
  *   kui        `swarm-lei-kui`       strings a lei: wide by default (`returns=<n>`), or `reach=head head=<h>` to pin one head;
  *                                    with no `after=` it follows the line's own tip (the first on an empty line);
  *                                    a named `after=` that is no tip refuses as forked, before any route or signature; more than
- *                                    twelve returns asks `--yes`. `all=true` (push, kukulu) strings one lei for EVERY open face under
+ *                                    twelve returns asks `yes=true`. `all=true` (push, kukulu) strings one lei for EVERY open face under
  *                                    ONE route: each face's own record by its own hand, at its own line's tip; `data.faces` names
  *                                    each face's cid (`lei`). A lei stays one face's record; only the act gathers them
  *   unstring   `swarm-lei-unstring`  revokes a lei that still holds returns (`lei=<cid>`): a signed record, nothing deleted
@@ -143,7 +143,7 @@ export function leiPlan(args: ParsedArgs): LeiPlan {
       if (sub === "restring") { if (after !== undefined) throw new LeiUsage("a restring follows the line's tip; it names no after="); }
       else if (all) out["all"] = true;
       else out["after"] = after ?? null;
-      // A count above twelve strings only with the hand's explicit confirm (`--yes`).
+      // A count above twelve strings only with the hand's explicit confirm (`yes=true`).
       if (args.flags["yes"] === true) out["confirm"] = true;
     }
   }
@@ -279,7 +279,7 @@ const TERMS_PORTS: LeiTermsPorts = {
 /**
  * THE TERMS LINE RIDES BARE: the host shim captures stdout through a pipe, where every other door answers its JSON
  * envelope, so the terms print as the one line the pūlama takes, and a refusal prints on stderr alone (nothing on stdout,
- * a non-zero exit). Only an explicit `--json` asks the envelope.
+ * a non-zero exit). Only an explicit `json=true` asks the envelope.
  */
 async function cmdLeiTerms(line: ParsedArgs): Promise<number> {
   const args: ParsedArgs = { ...line, flags: { ...line.flags, json: line.flags["json"] === true } };

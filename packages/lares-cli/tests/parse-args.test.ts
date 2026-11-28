@@ -1,18 +1,18 @@
 /**
- * THE PARSER KEEPS ONE TOKEN RULE: a door line's params ride `name=value`, a dash flag outside the global ones refuses by name
- * with its param spelling, and a param the line's carrier takes nowhere refuses by name before the handler runs.
+ * THE PARSER KEEPS ONE TOKEN RULE: a line's params ride `name=value`, every dash flag refuses `dash-flag-burned` naming the
+ * door's help, and a param the line's carrier takes nowhere refuses by name before the handler runs.
  *
  * Course: lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts#/burn (24 · the parser's flag tables leave).
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
-import { parseArgs, splitCall, ArgsError, GLOBAL_FLAGS, PARAM_TOKEN } from "../src/parse-args.js";
+import { parseArgs, splitCall, ArgsError, GLOBAL_PARAMS, PARAM_TOKEN } from "../src/parse-args.js";
 import { dispatch, doorTakes, unknownParams, COMMANDS } from "../src/bin/lares.js";
 
 afterEach(() => vi.restoreAllMocks());
 
 describe("parseArgs: a door line's params", () => {
   test("★ `name=value` lands in options, `name=true` and `name=false` in flags ★", () => {
-    const a = parseArgs(["vessel", "found", "--skip-build", "root=/state", "genesis=/app/genesis", "force=true", "hearth=false"]);
+    const a = parseArgs(["vessel", "found", "skip-build=true", "root=/state", "genesis=/app/genesis", "force=true", "hearth=false"]);
     expect(a.positional).toEqual(["found"]);
     expect(a.options).toEqual({ root: "/state", genesis: "/app/genesis" });
     expect(a.flags).toEqual({ "skip-build": true, force: true, hearth: false });
@@ -30,34 +30,41 @@ describe("parseArgs: a door line's params", () => {
   test("★ a value spelled like a flag rides as a value ★", () => {
     expect(parseArgs(["x", "text=--note"]).options).toEqual({ text: "--note" });
   });
-  test("a token after `--` stays positional, a dash flag and a param alike", () => {
+  test("a token after `--` stays positional, a dash spelling and a param alike", () => {
     const a = parseArgs(["mcp", "serve", "--", "--root=/y", "k=v"]);
     expect(a.positional).toEqual(["serve", "--root=/y", "k=v"]);
     expect(a.options).toEqual({});
   });
-  test("★ each global flag reads as a dash spelling, taking no value; `--no-json` reads false ★", () => {
-    for (const name of GLOBAL_FLAGS) expect(parseArgs(["x", `--${name}`]).flags[name], name).toBe(true);
-    expect(parseArgs(["x", "--no-json"]).flags).toEqual({ json: false });
-    expect(() => parseArgs(["x", "--json=1"])).toThrow(ArgsError);
+  test("★ each global param reads as a flag: `name=true`, and `json=false` forces prose ★", () => {
+    for (const name of GLOBAL_PARAMS) expect(parseArgs(["x", `${name}=true`]).flags[name], name).toBe(true);
+    expect(parseArgs(["x", "json=false"]).flags).toEqual({ json: false });
   });
 });
 
-describe("parseArgs: every other dash spelling burned into params", () => {
-  test("★ a dash flag refuses by name, naming its param reading and the whole line spelled in params ★", () => {
-    expect(() => parseArgs(["rite", "kukulu", "--dry-run"])).toThrow(/--dry-run reads as dry-run=true .*; run: lares rite kukulu dry-run=true$/);
-    expect(() => parseArgs(["wiki", "status", "--face", "1"])).toThrow(/--face reads as face=1 .*; run: lares wiki status face=1$/);
-    expect(() => parseArgs(["wiki", "status", "--face=1"])).toThrow(/run: lares wiki status face=1$/);
-    expect(() => parseArgs(["rite", "keep", "--no-sessions"])).toThrow(/--no-sessions reads as sessions=false/);
+describe("parseArgs: every dash spelling refuses, one generic refusal", () => {
+  test("★ a dash flag refuses `dash-flag-burned`, naming the door's help, with no per-flag reading ★", () => {
+    for (const tok of ["--dry-run", "--json", "--yes", "--help", "--face=1", "--no-json"]) {
+      expect(() => parseArgs(["wiki", "status", tok]), tok).toThrow(ArgsError);
+      expect(() => parseArgs(["wiki", "status", tok]), tok).toThrow("dash-flag-burned: dash flags burned; params ride as name=value (lares help wiki)");
+    }
   });
-  test("★ on a call line a flag that burned into the dials names its dial ★", () => {
-    expect(() => parseArgs(["act", "lar:///carriage.record.adds", "--dry-run"])).toThrow(/--dry-run reads as mu=_0/);
-    expect(() => parseArgs(["get", "title=x", "--draft"])).toThrow(/--draft reads as draft=true \(a call takes name=value params/);
+  test("★ a leading dash flag names the bare help ★", () => {
+    expect(() => parseArgs(["--help"])).toThrow("dash-flag-burned: dash flags burned; params ride as name=value (lares help)");
   });
-  test("★ a call line keeps its params positional, a value spelled `--x` included ★", () => {
-    const a = parseArgs(["get", "title=--x", "--json"]);
+  test("★ a call line refuses a dash flag the same way ★", () => {
+    expect(() => parseArgs(["lar:///carriage.record.adds", "--dry-run"])).toThrow("(lares help lar:///carriage.record.adds)");
+    expect(() => parseArgs(["get", "title=x", "--json"])).toThrow(/^dash-flag-burned: /);
+  });
+  test("★ a call line keeps its params positional, a value spelled `--x` included; its terminal params lift into flags ★", () => {
+    const a = parseArgs(["get", "title=--x", "json=true"]);
     expect(a.positional).toEqual(["title=--x"]);
     expect(a.options).toEqual({});
     expect(a.flags).toEqual({ json: true });
+  });
+  test("★ `yes=true` on a call line rides to the carrier, positional ★", () => {
+    const a = parseArgs(["lar:///carriage.record.adds", "title=x", "yes=true"]);
+    expect(a.positional).toEqual(["title=x", "yes=true"]);
+    expect(a.flags).toEqual({});
   });
 });
 
@@ -108,10 +115,10 @@ describe("dispatch: a param the carrier takes nowhere refuses by name, before th
     expect(await dispatch(["circle", "add", "n", "petnam=x"])).toBe(2);
     expect(err.mock.calls.map((c) => String(c[0])).join("\n")).toContain("did you mean petname=");
   });
-  test("★ a dash flag exits 2 from dispatch, naming its param, never a stack ★", async () => {
+  test("★ a dash flag exits 2 from dispatch, naming the door's help, never a stack ★", async () => {
     const { err } = quiet();
     expect(await dispatch(["vessel", "stand", "--foreground"])).toBe(2);
-    expect(err.mock.calls.map((c) => String(c[0])).join("\n")).toContain("run: lares vessel stand foreground=true");
+    expect(err.mock.calls.map((c) => String(c[0])).join("\n")).toContain("lares: dash-flag-burned: dash flags burned; params ride as name=value (lares help vessel)");
   });
   test("★ the door's params come from its carriers' #/takes ★", () => {
     expect(doorTakes("sense")).toContain("limit");
@@ -119,11 +126,15 @@ describe("dispatch: a param the carrier takes nowhere refuses by name, before th
     const sense = COMMANDS.find((c) => c.name === "sense")!;
     expect(unknownParams(sense, parseArgs(["sense", "recall", "kw", "limit=1"]))).toEqual([]);
   });
-  test("CONTROL: a command's own params and the global flags read", () => {
+  test("CONTROL: a command's own params and the global params read", () => {
     const circle = COMMANDS.find((c) => c.name === "circle")!;
-    expect(unknownParams(circle, parseArgs(["circle", "add", "n", "to=c", "petname=p", "--json", "--yes"]))).toEqual([]);
+    expect(unknownParams(circle, parseArgs(["circle", "add", "n", "to=c", "petname=p", "json=true", "yes=true"]))).toEqual([]);
     const vessel = COMMANDS.find((c) => c.name === "vessel")!;
-    expect(unknownParams(vessel, parseArgs(["vessel", "found", "--skip-build", "root=/state", "genesis=/app/genesis"]))).toEqual([]);
+    expect(unknownParams(vessel, parseArgs(["vessel", "found", "skip-build=true", "root=/state", "genesis=/app/genesis"]))).toEqual([]);
+  });
+  test("★ `help=true` on a door line names no param a door takes: help rides `lares help <door>` ★", () => {
+    const circle = COMMANDS.find((c) => c.name === "circle")!;
+    expect(unknownParams(circle, parseArgs(["circle", "add", "n", "help=true"])).map((u) => u.name)).toEqual(["help"]);
   });
   test("mempalace hands an unwrapped verb to the vendored parser untouched", () => {
     const mp = COMMANDS.find((c) => c.name === "mempalace")!;

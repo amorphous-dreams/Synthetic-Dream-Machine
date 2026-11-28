@@ -11,7 +11,7 @@
 #
 # So the reading is derived rather than trusted:
 #   · every FIRST word must appear in the live `lares help` projection
-#   · every SUB-DOOR must appear in its door's verb table, as `lares help --json` projects the rows
+#   · every SUB-DOOR must appear in its door's verb table, as `lares help json=true` projects the rows
 #
 # It reads the BUILT binary, never the source — the same discipline the surface-parity witness keeps,
 # because a typecheck agrees with itself while a stale sibling dist ships a door that cannot load.
@@ -53,7 +53,7 @@ cmds = {m.group(1) for m in re.finditer(
 
 # THE HOST `lares` ANSWERS THE SHIM'S OWN VERBS. With the container house standing, the host's `lares <verb>` hands
 # a vessel verb to the shim with the same argv (`packages/lares-cli/src/host-bridge.ts`), and the bridge names the
-# verbs the shim alone answers (`SHIM_VERB_HELP`: `lares up --help` reads its row there). So a bare `lares up` in
+# verbs the shim alone answers (`SHIM_VERB_HELP`: `lares help up` reads its row there). So a bare `lares up` in
 # a rite claims the shim's door, as a shim line does. The set DERIVES from the bridge's own table, each name held
 # against a `<verb>)` case in the shim, so a verb either side drops reads red here by name.
 _bridge = pathlib.Path("packages/lares-cli/src/host-bridge.ts").read_text()
@@ -112,17 +112,17 @@ cmds = sorted(cmds)
 
 # ── THE DOOR TABLES COME FROM THE CLI'S OWN ROWS ────────────────────────────────────────────────
 # Each command row carries the sub-verbs its dispatcher reads (`verbs`, packages/lares-cli/src/verb-table.ts),
-# and `lares help --json` projects them. The witness reads that projection off the BUILT binary, so it keeps no
+# and `lares help json=true` projects them. The witness reads that projection off the BUILT binary, so it keeps no
 # derivation of its own: the same tables every CLI law reads (tests/laws/harness.ts#verbTables). A table is a
 # flat list or a tree (`meme offer promote`); a door with no table takes arguments, never sub-verbs.
 # A CENSUS THAT CRASHED READS NO SURFACE, never a surface of zero doors.
-doors_json = subprocess.run(["node", BIN, "help", "--json"], capture_output=True, text=True)
+doors_json = subprocess.run(["node", BIN, "help", "json=true"], capture_output=True, text=True)
 try:
     doors = json.loads(doors_json.stdout)["data"]["entries"] if doors_json.returncode == 0 else []
 except (ValueError, KeyError, TypeError):
     doors = []
 if not doors:
-    print(f"[rite-commands] the built binary's `help --json` did not answer a door census (exit {doors_json.returncode}) — "
+    print(f"[rite-commands] the built binary's `help json=true` did not answer a door census (exit {doors_json.returncode}) — "
           "the door tables and the surface figure are underivable.")
     sys.exit(1)
 
@@ -139,7 +139,7 @@ TABLES = {}
 for d in doors:
     flatten(d["name"], d.get("verbs"), TABLES)
 if not TABLES:
-    print("[rite-commands] the door census carries NO verb table — `help --json` entries name no `verbs`; nothing could check a sub-door.")
+    print("[rite-commands] the door census carries NO verb table — `help json=true` entries name no `verbs`; nothing could check a sub-door.")
     sys.exit(1)
 
 fail, subs_checked = list(shim_fail), 0

@@ -18,7 +18,7 @@ pathlib.Path(target).write_text(text)
 PY
 printf 'Scratch LAR_ROOT: %s\nScratch seat: %s/seat/lares_mcp.py\n' "$house" "$house"
 printf '%s\n' 'Stand the scratch vessel first:'
-printf 'node %q %q && node %q %q && LAR_ROOT=%q node %q vessel found --hearth --name seat-delivery --skip-build && LAR_ROOT=%q node %q vessel stand --init --skip-build\n' \
+printf 'node %q %q && node %q %q && LAR_ROOT=%q node %q vessel found hearth=true name=seat-delivery skip-build=true && LAR_ROOT=%q node %q vessel stand init=true skip-build=true\n' \
   "$repo/tools/test-scratch-marker.mjs" "$house" "$repo/tools/seed-test-custody.mjs" "$house" "$house" "$repo/packages/lares-cli/bin/lares.mjs" "$house" "$repo/packages/lares-cli/bin/lares.mjs"
 printf '%s\n' 'Then launch a fresh session with:'
 python3 - "$repo" "$house" <<'PYCOMMAND'

@@ -38,8 +38,8 @@ if [ "${1:-}" = "--control" ]; then
   exit 1
 fi
 
-# `--root` names this checkout: a borrowed CLI (`LARES_BIN`) keeps its own checkout unless told which one to read.
-out="$(node "$LARES" repo read --root "$PWD" --json)"; code=$?
+# `root=` names this checkout: a borrowed CLI (`LARES_BIN`) keeps its own checkout unless told which one to read.
+out="$(node "$LARES" repo read root="$PWD" json=true)"; code=$?
 if [ "$code" -eq 0 ]; then echo "repo-tunnel-witness: $PWD holds its reality tunnel"; exit 0; fi
 printf '%s\n' "$out" | node -e 'let s="";process.stdin.on("data",c=>s+=c).on("end",()=>{try{for(const r of JSON.parse(s).data.rows)if(r.state!=="aligned"&&r.state!=="absent")console.error(`  ${r.state} ${r.id}: ${r.detail} (${r.path})`)}catch{console.error(s)}})'
 echo "repo-tunnel-witness: $PWD stands off the tunnel (exit $code) — lares repo tend root=\"$PWD\"" >&2

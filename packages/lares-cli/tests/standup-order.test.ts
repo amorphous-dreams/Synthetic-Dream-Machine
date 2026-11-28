@@ -84,7 +84,7 @@ describe("lares mempalace install — the sidecar's own door links its bins", ()
   it("installs, then links the console scripts, reporting the link as a step", async () => {
     vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     const { cmdMempalaceInstall } = await import("../src/commands/mempalace.js");
-    expect(cmdMempalaceInstall(parseArgs(["mempalace", "install", "--json"]))).toBe(0);
+    expect(cmdMempalaceInstall(parseArgs(["mempalace", "install", "json=true"]))).toBe(0);
     expect(log).toEqual(["installMempalaceIntegration", "linkMempalaceBins"]);
   });
 
@@ -92,7 +92,7 @@ describe("lares mempalace install — the sidecar's own door links its bins", ()
     installSteps = [{ step: "pip", ran: true, ok: false, detail: "boom" }];
     vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     const { cmdMempalaceInstall } = await import("../src/commands/mempalace.js");
-    expect(cmdMempalaceInstall(parseArgs(["mempalace", "install", "--json"]))).toBe(1);
+    expect(cmdMempalaceInstall(parseArgs(["mempalace", "install", "json=true"]))).toBe(1);
     expect(log).toEqual(["installMempalaceIntegration"]);
   });
 });

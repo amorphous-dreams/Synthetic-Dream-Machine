@@ -80,9 +80,9 @@ describe.skipIf(gaps.length > 0)("★ RECIPE PARITY — one meme, two doors, one
   });
 
   test("the island: put recipe= then get recipe= mu=assert hands back the canonical carrier under its hash", async () => {
-    const put = await lar.cli(["put", `title=${URI}`, "recipe=lares", `file=${join(scratch, "ab.mem")}`, "--json"]);
+    const put = await lar.cli(["put", `title=${URI}`, "recipe=lares", `file=${join(scratch, "ab.mem")}`, "json=true"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
-    const get = await lar.cli(["get", `title=${URI}`, "recipe=lares", "mu=assert", "--json"]);
+    const get = await lar.cli(["get", `title=${URI}`, "recipe=lares", "mu=assert", "json=true"]);
     expect(get.json?.["ok"], said(get)).toBe(true);
     const d = (get.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>;
     islandText = String(d["text"]);

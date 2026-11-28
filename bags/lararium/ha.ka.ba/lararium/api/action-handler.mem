@@ -28,7 +28,7 @@ The operator-facing residency gesture surface. Six ACTION verbs dispatch through
 Source of truth: `packages/lararium-tw5/src/action-handler.ts`. Handlers run
 ''wiki-scope inside the TW5 VM'' (not `@lararium/node`) — registered via
 `@lararium/node`'s `island-behaviors.ts`, invoked through the dispatch shore,
-operated from the CLI by `lares act lar:///<address>`.
+operated from the CLI by `lares lar:///<address>`.
 
 <<~/ahu>>
 
@@ -72,7 +72,7 @@ ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''neve
    ''The id names a title's lineage; the gesture's id names the act.'' The handler reads the source
    record's own `meta.changeId` and lands it on the destination (`lineageOf`,
    `packages/lararium-tw5/src/action-handler.ts`): ADD and COPY on the landed record, a live-source
-   MOVE on the root and on each child of the group. The `change-id` argument (`lares act lar:///<address>` mints a
+   MOVE on the root and on each child of the group. The `change-id` argument (`lares lar:///<address>` mints a
    fresh one where the caller passes none) rides the receipt and the effect record, and lands on a
    record only where the source carries none. Derived text never keys on this id: it survives an
    edit (`wiki-corpus-reader.ts` memos on the body). <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model#/anti-patterns`>>
@@ -109,7 +109,7 @@ ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''neve
 !! Dispatch Shore
 
 ```
-lares act lar:///<carrier> …          ← @lares/cli/src/commands/act.ts (operator surface)
+lares lar:///<carrier> …          ← @lares/cli/src/commands/act.ts (operator surface)
   → verb-tiddler placed in the admin VM
     → VerbDispatcher tick → runLocalVerb(invocation, { admin, registry, verifier })
       → registry.get(invocation.verb)            (registerActionReactors filled it)
@@ -134,6 +134,6 @@ is shared, not duplicated (Sprint 6 parity).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NHOHlIIPwn5Y9i9rsqqJ8Ldf4I5ndtw5CcuaUsM_NHo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;57pQT7bYfjesfFAZ1ZpwLRrwfBDTK600AzJ3WkZIoFo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

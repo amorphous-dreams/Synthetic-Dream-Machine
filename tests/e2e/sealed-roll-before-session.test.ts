@@ -30,7 +30,7 @@ beforeAll(async () => {
   if (!pair.B) throw new Error(`B never stood: ${pair.joinGate ?? ""}`);
   const request = JSON.parse(readFileSync(pair.fleet.request, "utf8")) as { atomKey?: string };
   if (!request.atomKey) throw new Error("the fleet-join request names no atom key");
-  kapae = await pair.A.cli(["edge", "kapae", `device=${request.atomKey}`, "face=0", "--json"]);
+  kapae = await pair.A.cli(["edge", "kapae", `device=${request.atomKey}`, "face=0", "json=true"]);
 }, 600_000);
 
 afterAll(async () => { await pair?.stop(); });

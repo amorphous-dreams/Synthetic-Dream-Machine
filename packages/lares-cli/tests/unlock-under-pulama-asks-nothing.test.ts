@@ -61,7 +61,7 @@ const surfaceEnvFile = (text: string): void => {
 };
 
 const custody = (pulama?: { session: boolean; waits: string | null }) => ({ op: "custody", unlocked: pulama?.session === true, slot: null, attemptsLeft: 0, standing: "herm", ...(pulama ? { pulama } : {}) });
-const run = (...argv: string[]): Promise<number> => cmdVault(parseArgs(["vault", ...argv, "--json"]));
+const run = (...argv: string[]): Promise<number> => cmdVault(parseArgs(["vault", ...argv, "json=true"]));
 const answer = (): { ok: boolean; data?: Record<string, unknown>; error?: { code: string; message: string } } => JSON.parse(out.join("").trim().split("\n").at(-1) ?? "{}");
 
 describe("RED unlock-under-pulama-asks-nothing (the command)", () => {

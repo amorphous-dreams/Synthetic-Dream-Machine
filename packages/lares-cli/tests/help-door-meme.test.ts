@@ -40,7 +40,7 @@ function wellFormed(uri: string): boolean {
 }
 
 describe("★ a door's help names the meme behind it, in its carriers' law lines ★", () => {
-  test("store verbs name their container on the carrier: `meme project --help` reads recipe= and bag=", () => {
+  test("store verbs name their container on the carrier: `lares help meme project` reads recipe= and bag=", () => {
     const text = helpLines("meme project").join("\n");
     expect(text).toMatch(/\[recipe=<word>\]/);
     expect(text).toMatch(/\[bag=<word>\]/);
@@ -126,7 +126,7 @@ describe("★ the core verbs' help reads their carriers, one home ★", () => {
     const out: string[] = [];
     vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { out.push(a.map(String).join(" ")); });
     vi.spyOn(console, "error").mockImplementation(() => {});
-    expect(await dispatch([...argv, "--help"])).toBe(0);
+    expect(await dispatch(["help", ...argv])).toBe(0);
     return out;
   }
 
@@ -141,12 +141,12 @@ describe("★ the core verbs' help reads their carriers, one home ★", () => {
     }
   });
 
-  test("the burned spellings answer no help: `lares tiddler --help` refuses as an unknown command, and the wiki door's table names no filter", async () => {
+  test("the burned spellings answer no help: `lares help tiddler` refuses as an unknown command, and the wiki door's table names no filter", async () => {
     const { dispatch } = await import("../src/bin/lares.js");
     const err: string[] = [];
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { err.push(a.map(String).join(" ")); });
-    expect(await dispatch(["tiddler", "--help"])).toBe(2);
+    expect(await dispatch(["help", "tiddler"])).toBe(2);
     expect(err.join("\n")).toContain('unknown command "tiddler"');
     vi.restoreAllMocks();
     const text = (await helpOf(["wiki"])).join("\n");
@@ -155,24 +155,24 @@ describe("★ the core verbs' help reads their carriers, one home ★", () => {
   });
 });
 
-describe("★ `--help` reads the door's carriers, each naming its law ★", () => {
-  test("`vessel --help` lists the door's verbs off the pack, `request` and `roster` among them", async () => {
+describe("★ `lares help <door>` reads the door's carriers, each naming its law ★", () => {
+  test("`lares help vessel` lists the door's verbs off the pack, `request` and `roster` among them", async () => {
     const { dispatch } = await import("../src/bin/lares.js");
     const out: string[] = [];
     vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { out.push(a.map(String).join(" ")); });
     vi.spyOn(console, "error").mockImplementation(() => {});
-    expect(await dispatch(["vessel", "--help"])).toBe(0);
+    expect(await dispatch(["help", "vessel"])).toBe(0);
     const text = out.join("\n");
     expect(text).toContain("lares vessel request");
     expect(text).toContain("lares vessel roster");
   });
 
-  test("a SUB-DOOR carries its own entry — `vessel rite --help` renders the rite door, not the vessel one", async () => {
+  test("a SUB-DOOR carries its own entry — `lares help vessel rite` renders the rite door, not the vessel one", async () => {
     const { dispatch } = await import("../src/bin/lares.js");
     const out: string[] = [];
     vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { out.push(a.map(String).join(" ")); });
     vi.spyOn(console, "error").mockImplementation(() => {});
-    expect(await dispatch(["vessel", "rite", "--help"])).toBe(0);
+    expect(await dispatch(["help", "vessel", "rite"])).toBe(0);
     const text = out.join("\n");
     expect(text).toMatch(/^usage: lares vessel rite/m);
     expect(text, "the sub-door's own petnames reach the reader").toContain("refresh");

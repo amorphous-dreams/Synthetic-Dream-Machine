@@ -1,7 +1,7 @@
 /**
  * wiki-list.test.ts — `lares wiki list` surfaces what the daemon's `list-wikis` answers: each row's
  * `composition` and `defaultDiffers`, so a vessel that composed its system wiki and stopped following
- * a re-baked default reads that from the CLI. `--json` emits the answer verbatim as `data`.
+ * a re-baked default reads that from the CLI. `json=true` emits the answer verbatim as `data`.
  */
 import { afterEach, describe, test, expect, vi } from "vitest";
 
@@ -45,7 +45,7 @@ function capture(): { out: () => string } {
 describe("lares wiki list", () => {
   test("prints each wiki's composition and whether the own stack differs from the default", async () => {
     const c = capture();
-    expect(await cmdWikiList(parseArgs(["wiki", "--no-json"]))).toBe(0);
+    expect(await cmdWikiList(parseArgs(["wiki", "json=false"]))).toBe(0);
     const text = c.out();
     expect(text).toMatch(/lares[^\n]*composition: own[^\n]*default differs/);
     expect(text).toMatch(/plain[^\n]*composition: default/);
@@ -55,7 +55,7 @@ describe("lares wiki list", () => {
 
   test("a system wiki whose canon reads through the floor says so plainly, never `(no doc)`; CONTROL: a user row with no document still reads `(no doc)`", async () => {
     const c = capture();
-    expect(await cmdWikiList(parseArgs(["wiki", "--no-json"]))).toBe(0);
+    expect(await cmdWikiList(parseArgs(["wiki", "json=false"]))).toBe(0);
     const lines = c.out().split("\n");
     const under = (slug: string): string => lines[lines.findIndex((l) => l.includes(`wikis/${slug}`)) + 1] ?? "";
     expect(under("plain")).toMatch(/canon read through the floor/);
@@ -63,9 +63,9 @@ describe("lares wiki list", () => {
     expect(under("bare")).toMatch(/\(no doc\)/);
   });
 
-  test("`--json` emits the daemon's answer verbatim as `data`", async () => {
+  test("`json=true` emits the daemon's answer verbatim as `data`", async () => {
     const c = capture();
-    expect(await cmdWikiList(parseArgs(["wiki", "--json"]))).toBe(0);
+    expect(await cmdWikiList(parseArgs(["wiki", "json=true"]))).toBe(0);
     const payload = JSON.parse(c.out().trim()) as { ok: boolean; data: unknown };
     expect(payload.ok).toBe(true);
     expect(payload.data).toEqual(ANSWER);
@@ -73,17 +73,17 @@ describe("lares wiki list", () => {
 
   test("EACH HAT REACHED BY NAME: `--face 1` lists through a session of face h1 (never the one-shot) and names the face; a shut face refuses `face-not-open`", async () => {
     const c = capture();
-    expect(await cmdWikiList(parseArgs(["wiki", "face=1", "--json"]))).toBe(0);
+    expect(await cmdWikiList(parseArgs(["wiki", "face=1", "json=true"]))).toBe(0);
     expect(asFace).toEqual([{ name: "list-wikis", face: 1 }]);
     expect(JSON.parse(c.out().trim().split("\n").pop()!)).toMatchObject({ ok: true, data: { ...ANSWER, face: 1 } });
-    expect(await cmdWikiList(parseArgs(["wiki", "face=3", "--json"]))).not.toBe(0);
+    expect(await cmdWikiList(parseArgs(["wiki", "face=3", "json=true"]))).not.toBe(0);
     expect(JSON.parse(c.out().trim().split("\n").pop()!)).toMatchObject({ ok: false, error: { code: "face-not-open" } });
   });
 
   test("CONTROL: a row with composition `own` and defaultDiffers false does not read as differing", async () => {
     ANSWER.wikis[0]!.defaultDiffers = false as unknown as true;
     const c = capture();
-    await cmdWikiList(parseArgs(["wiki", "--no-json"]));
+    await cmdWikiList(parseArgs(["wiki", "json=false"]));
     expect(c.out()).not.toMatch(/default differs/);
     ANSWER.wikis[0]!.defaultDiffers = true;
   });

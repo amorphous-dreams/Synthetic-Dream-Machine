@@ -3,9 +3,9 @@
  *
  * `render.ts` states the invariant: "ONE CHOKE POINT, ONE NARROW CORRECTION. Every error surfaces through
  * `emit`." Every hand-rolled `usage()` bypassed it — printing prose to stderr and returning a bare code —
- * so under `--json`, the mode that exists "for agents/pipes", an agent invoking a bad sub-verb received
+ * so under `json=true`, the mode that exists "for agents/pipes", an agent invoking a bad sub-verb received
  * ZERO parseable bytes and an exit code. Measured on the built binary before this test existed:
- * `lares library bogus-verb --json` wrote nothing at all to stdout.
+ * `lares library bogus-verb json=true` wrote nothing at all to stdout.
  *
  * The exit code was never the gap: `EXIT_FOR.usage` is 2 and the refusals returned it. The PAYLOAD was.
  */
@@ -30,9 +30,9 @@ const DOORS = ["library", "circle", "persona", "vault"] as const;
 
 describe("★ a usage refusal reaches the agent surface ★", () => {
   for (const door of DOORS) {
-    test(`${door}: an unknown sub-verb emits a parseable refusal under --json`, async () => {
+    test(`${door}: an unknown sub-verb emits a parseable refusal under json=true`, async () => {
       const cap = captureJson();
-      const code = await dispatch([door, "zzz-not-a-sub-verb", "--json"]);
+      const code = await dispatch([door, "zzz-not-a-sub-verb", "json=true"]);
       expect(code, "the exit vocabulary was never the gap").toBe(2);
 
       const payload = cap.lines.join("");
@@ -45,13 +45,13 @@ describe("★ a usage refusal reaches the agent surface ★", () => {
   }
 
   test("CONTROL — at a TTY the refusal prints prose and emits NO machine payload", async () => {
-    // `emit` renders JSON under `--json` OR off-TTY (a pipe IS an agent), so a prose control must actually
+    // `emit` renders JSON under `json=true` OR off-TTY (a pipe IS an agent), so a prose control must actually
     // stand at a terminal. Without this the control passes for the wrong reason — vitest is never a TTY.
     const wasTty = process.stdout.isTTY;
     Object.defineProperty(process.stdout, "isTTY", { value: true, configurable: true });
     try {
       const cap = captureJson();
-      const code = await dispatch(["library", "zzz-not-a-sub-verb"]);   // no --json, and a terminal
+      const code = await dispatch(["library", "zzz-not-a-sub-verb"]);   // no json=true, and a terminal
       expect(code).toBe(2);
       expect(cap.lines.join(""), "a human's channel carries no machine payload").toBe("");
     } finally {

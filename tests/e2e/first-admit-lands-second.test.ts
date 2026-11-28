@@ -33,7 +33,7 @@ beforeAll(async () => {
     // A's second face, so B can ask to join both.
     riteA: async (cli) => {
       cliA = cli;
-      const second = await cli(["persona", "new", "1", "name=second-face", "--json"]);
+      const second = await cli(["persona", "new", "1", "name=second-face", "json=true"]);
       if (second.code !== 0) throw new Error(`A: persona new 1 failed (${second.code})\n${second.stderr.slice(-800)}`);
     },
     // B already asked to join face 0 (its h0 stands reserved and pending). It asks for face 1 too (h1), A answers that ask,
@@ -77,7 +77,7 @@ describe("e2e/first-admit-lands-second", () => {
     // THE OPERATOR'S OWN LOCK, through the CLI: it composes the vessel again, down to the floor, and where its line closes with the
     // sovereign composition it leaves, it confirms by a fresh census and exits 0 (`lock-receipt`).
     const cliB = cliFor({ LAR_ROOT: joinee.rootB, LAR_PORT: String(joinee.portB) });
-    const locked = await cliB(["vault", "lock", "face=1", "--json"]);
+    const locked = await cliB(["vault", "lock", "face=1", "json=true"]);
     expect(locked.code, `${locked.stdout.slice(-800)}\n${locked.stderr.slice(-800)}`).toBe(0);
     expect(JSON.stringify(locked.json)).toContain('"locked":true');
     expect(B!.bootLog()).toContain("no open face holding anchors takes h1's mount; the vessel stands at the floor");

@@ -65,7 +65,7 @@ describe("lares lei terms prints the pūlama's terms, one line", () => {
     expect(seam.calls).toEqual([["mount", {}], ["swarm-show", { rite: "push", branch: "feature/x", face: 2 }]]);
     // A named `after` that IS the line's tip passes; a named face asks no mount.
     seam.lines[1] = lineAt(CID); seam.calls = [];
-    expect(JSON.stringify(await terms("kui", "rite=push", "branch=feature/x", "returns=40", "--yes", `after=${CID}`, "face=1")))
+    expect(JSON.stringify(await terms("kui", "rite=push", "branch=feature/x", "returns=40", "yes=true", `after=${CID}`, "face=1")))
       .toBe(`{"face":1,"rite":"push","branch":"feature/x","returns":40,"after":"${CID}","confirm":true}`);
     expect(seam.calls).toEqual([["swarm-show", { rite: "push", branch: "feature/x", face: 1 }]]);
   });
@@ -107,14 +107,14 @@ describe("lares lei terms prints the pūlama's terms, one line", () => {
   it("RED: `lares lei kui` with no pūlama strings after the line's own tip, and a named non-tip refuses before any route or row", async () => {
     vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     seam.lines[0] = { standing: false, refusal: "swarm-lei-returns-spent", after: TIP };
-    expect(await cmdLei(parseArgs(["lei", "kui", "rite=keep", "branch=house-backup", "returns=6", "face=0", "--json"]))).toBe(0);
+    expect(await cmdLei(parseArgs(["lei", "kui", "rite=keep", "branch=house-backup", "returns=6", "face=0", "json=true"]))).toBe(0);
     expect(seam.calls.filter(([v]) => v === "swarm-lei-kui")).toEqual([["swarm-lei-kui", { rite: "keep", branch: "house-backup", returns: 6, after: TIP, face: 0 }]]);
     seam.calls = [];
-    expect(await cmdLei(parseArgs(["lei", "kui", "rite=keep", "branch=house-backup", "returns=6", "face=0", `after=${CID}`, "--json"]))).not.toBe(0);
+    expect(await cmdLei(parseArgs(["lei", "kui", "rite=keep", "branch=house-backup", "returns=6", "face=0", `after=${CID}`, "json=true"]))).not.toBe(0);
     expect(seam.calls.filter(([v]) => v === "swarm-lei-kui" || v === "route")).toEqual([]);
   });
 
-  it("RED: ONE ANSWER SHAPE: a terminal and a pipe both read the one-line envelope on stdout (a terminal adds one line of prose on stderr); --no-json asks the prose", async () => {
+  it("RED: ONE ANSWER SHAPE: a terminal and a pipe both read the one-line envelope on stdout (a terminal adds one line of prose on stderr); json=false asks the prose", async () => {
     const was = process.stdout.isTTY;
     try {
       for (const tty of [true, false]) {
@@ -177,7 +177,7 @@ describe("lares lei terms prints the pūlama's terms, one line", () => {
       ["kui", "rite=push", "branch=b", "returns=0"], ["kui", "rite=push", "branch=b", "face=x"],
       ["kui", "rite=push", "branch=b", `lei=${CID}`], ["restring", "rite=push", "branch=b", `after=${CID}`],
       ["restring", "rite=push", "branch=b", `lei=${CID}`], ["unstring", "rite=push", "branch=b", `lei=${CID}`, "returns=2"],
-      ["unstring", "rite=push", "branch=b", `lei=${CID}`, "--yes"], ["unstring", "rite=push", "branch=b", `lei=${CID}`, `head=${HEAD}`]]) {
+      ["unstring", "rite=push", "branch=b", `lei=${CID}`, "yes=true"], ["unstring", "rite=push", "branch=b", `lei=${CID}`, `head=${HEAD}`]]) {
       expect(await refusal(terms(...line)), line.join(" ")).toBe("usage");
     }
     // Nothing read for a usage refusal.
@@ -200,11 +200,11 @@ describe("lares lei terms prints the pūlama's terms, one line", () => {
     out.length = 0; seam.lines = {};
     expect(await cmdLei(parseArgs(["lei", "terms", "restring", "rite=push", "branch=b", "returns=1", "face=0"]))).not.toBe(0);
     expect(out).toEqual([]);
-    // CONTROL: an explicit --json asks the envelope.
+    // CONTROL: an explicit json=true asks the envelope.
     seam.lines = { 0: lineAt(TIP) };
     const written: string[] = [];
     vi.spyOn(process.stdout, "write").mockImplementation((chunk: string | Uint8Array) => { written.push(String(chunk)); return true; });
-    expect(await cmdLei(parseArgs(["lei", "terms", "restring", "rite=push", "branch=b", "returns=1", "face=0", "--json"]))).toBe(0);
+    expect(await cmdLei(parseArgs(["lei", "terms", "restring", "rite=push", "branch=b", "returns=1", "face=0", "json=true"]))).toBe(0);
     expect(JSON.parse(written.join(""))).toEqual({ ok: true, data: { face: 0, rite: "push", branch: "b", returns: 1, after: TIP } });
   });
 
@@ -231,7 +231,7 @@ describe("lares lei terms prints the pūlama's terms, one line", () => {
     const out: string[] = [];
     vi.spyOn(process.stdout, "write").mockImplementation((chunk: string | Uint8Array) => { out.push(String(chunk)); return true; });
     seam.open = [0, 1]; seam.lines[1] = lineAt(TIP);
-    expect(await cmdLei(parseArgs(["lei", "kui", "rite=kukulu", "branch=main", "returns=2", "all=true", "--json"]))).toBe(0);
+    expect(await cmdLei(parseArgs(["lei", "kui", "rite=kukulu", "branch=main", "returns=2", "all=true", "json=true"]))).toBe(0);
     const route = [{ kind: "passphrase", passphrase: "the-route" }];
     expect(seam.calls.filter(([v]) => v === "route")).toHaveLength(1);
     expect(seam.calls.filter(([v]) => v === "swarm-lei-kui")).toEqual([
@@ -245,14 +245,14 @@ describe("lares lei terms prints the pūlama's terms, one line", () => {
     const out: string[] = [];
     vi.spyOn(process.stdout, "write").mockImplementation((chunk: string | Uint8Array) => { out.push(String(chunk)); return true; });
     seam.open = [1, 0]; seam.lines[1] = lineAt(TIP);
-    expect(await cmdLei(parseArgs(["lei", "show", "rite=kukulu", "branch=main", "--json"]))).toBe(0);
+    expect(await cmdLei(parseArgs(["lei", "show", "rite=kukulu", "branch=main", "json=true"]))).toBe(0);
     expect(JSON.parse(out.join("")).data).toEqual({ rite: "kukulu", branch: "main", faces: [
       { face: 0, lei: { standing: false, refusal: "absent", after: null } }, { face: 1, lei: lineAt(TIP) }] });
     out.length = 0; seam.open = [0]; seam.calls = [];
-    expect(await cmdLei(parseArgs(["lei", "show", "rite=kukulu", "branch=main", "--json"]))).toBe(0);
+    expect(await cmdLei(parseArgs(["lei", "show", "rite=kukulu", "branch=main", "json=true"]))).toBe(0);
     expect(seam.calls.filter(([v]) => v === "swarm-show")).toEqual([["swarm-show", { rite: "kukulu", branch: "main" }]]);
     out.length = 0; seam.open = [0, 1]; seam.calls = [];
-    expect(await cmdLei(parseArgs(["lei", "show", "rite=kukulu", "branch=main", "face=1", "--json"]))).toBe(0);
+    expect(await cmdLei(parseArgs(["lei", "show", "rite=kukulu", "branch=main", "face=1", "json=true"]))).toBe(0);
     expect(seam.calls).toEqual([["swarm-show", { rite: "kukulu", branch: "main", face: 1 }]]);
   });
 

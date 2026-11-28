@@ -73,9 +73,9 @@ describe.skipIf(gaps.length > 0)("★ the outbound bridge and the daemon mirror,
   });
 
   test("CONTROL: explicit `recipe=default` lands in the daemon wiki and reads it back", async () => {
-    const put = await lar.cli(["put", `title=${uriOf(PATH_A)}`, "recipe=default", `file=${join(scratch, "anchor.mem")}`, "--json"]);
+    const put = await lar.cli(["put", `title=${uriOf(PATH_A)}`, "recipe=default", `file=${join(scratch, "anchor.mem")}`, "json=true"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
-    const got = await lar.cli(["get", `title=${uriOf(PATH_A)}`, "recipe=default", "mu=assert", "--json"]);
+    const got = await lar.cli(["get", `title=${uriOf(PATH_A)}`, "recipe=default", "mu=assert", "json=true"]);
     expect(got.json?.["ok"], said(got)).toBe(true);
   });
 
@@ -85,7 +85,7 @@ describe.skipIf(gaps.length > 0)("★ the outbound bridge and the daemon mirror,
       const data = event.data as Record<string, unknown>;
       return data["bagId"] === DAEMON_WORKING && data["path"] === daemonWikiDir(lar.root);
     } }, { budgetMs: 60_000 });
-    const got = await lar.cli(["get", `title=${uriOf(PATH_A)}`, `bag=${DAEMON_WORKING}`, "mu=assert", "--json"]);
+    const got = await lar.cli(["get", `title=${uriOf(PATH_A)}`, `bag=${DAEMON_WORKING}`, "mu=assert", "json=true"]);
     expect(got.json?.["ok"], `the anchor placement stands in $tw.wiki alone — ${said(got)}`).toBe(true);
     expect(String(((got.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>)["text"])).toContain(`uri-path = "${PATH_A}"`);
     const at = join(daemonWikiDir(lar.root), REL(PATH_A));

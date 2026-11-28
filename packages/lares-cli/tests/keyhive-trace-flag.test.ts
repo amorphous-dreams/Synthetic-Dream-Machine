@@ -1,14 +1,14 @@
 /**
- * keyhive-trace-flag — `--keyhive-trace` asks for Keyhive's tracing by name, and nothing else does.
+ * keyhive-trace-flag — `keyhive-trace=true` asks for Keyhive's tracing by name, and nothing else does.
  *
  * Keyhive's trace prints every step of its own work around an act's one answer, so it stays off unless a
- * person asks: this flag, or `LAR_KEYHIVE_TRACE=1` in the environment. The flag sets that environment
+ * person asks: this param, or `LAR_KEYHIVE_TRACE=1` in the environment. The param sets that environment
  * toggle in the CLI's own process before any command runs; the provider reads it when it stands
  * (`packages/lararium-keyhive/tests/keyhive-trace-stays-off.test.ts` holds the provider's half).
  */
 import { describe, test, expect, afterEach, vi } from "vitest";
 import { readFileSync } from "node:fs";
-import { GLOBAL_FLAGS, KEYHIVE_TRACE_ENV, askKeyhiveTrace, dispatch } from "../src/bin/lares.js";
+import { GLOBAL_PARAMS, KEYHIVE_TRACE_ENV, askKeyhiveTrace, dispatch } from "../src/bin/lares.js";
 
 describe("the flag asks by name", () => {
   const prior = process.env[KEYHIVE_TRACE_ENV];
@@ -28,8 +28,8 @@ describe("the flag asks by name", () => {
     }
   });
 
-  test("every command reads the flag: it stands among the global flags", () => {
-    expect(GLOBAL_FLAGS).toContain("keyhive-trace");
+  test("every command reads the param: it stands among the global params", () => {
+    expect(GLOBAL_PARAMS).toContain("keyhive-trace");
   });
 
   test("the name the CLI sets equals the name the provider reads", () => {
@@ -44,7 +44,7 @@ describe("the flag asks by name", () => {
     vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { said.push(a.map(String).join(" ")); });
     expect(await dispatch(["help"])).toBe(0);
     const help = said.join("\n");
-    expect(help).toContain("--keyhive-trace");
+    expect(help).toContain("keyhive-trace=true");
     expect(help).toContain(`${KEYHIVE_TRACE_ENV}=1`);
     expect(process.env[KEYHIVE_TRACE_ENV]).toBeUndefined();
   });
@@ -52,7 +52,7 @@ describe("the flag asks by name", () => {
   test("a run with the flag sets the toggle in this process before the command answers", async () => {
     delete process.env[KEYHIVE_TRACE_ENV];
     vi.spyOn(console, "log").mockImplementation(() => {});
-    expect(await dispatch(["help", "--keyhive-trace"])).toBe(0);
+    expect(await dispatch(["help", "keyhive-trace=true"])).toBe(0);
     expect(process.env[KEYHIVE_TRACE_ENV]).toBe("1");
   });
 });

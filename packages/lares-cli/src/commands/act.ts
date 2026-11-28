@@ -1,7 +1,6 @@
 /**
- * The residency acts' HOST DOOR — the terminal runs it once the vessel's `call` binds the act by its address
- * (comms-ux-enacts landing 9: the three acts fold into one `act`). `lares act lar:///carriage.record.adds title=… from=… to=…`
- * (and `lares lar:///carriage.record.adds …`) rides the call door; the vessel resolves the address through the caller's stack,
+ * The residency acts' HOST DOOR — the terminal runs it once the vessel's `call` binds the act by its address.
+ * `lares lar:///carriage.record.adds title=… from=… to=…` rides the call door; the vessel resolves the address through the caller's stack,
  * binds the params against the carrier's live `#/takes`, and answers `handler/host` with the bound params, which this door runs:
  * it reads host files (a LOAD's carriers), asks y/N at a terminal (`yes=true` names the intent off one), and submits the act.
  * A `mu=pentacle` call reaches it because each residency carrier's cli row names `dry/walks`; the island previews and commits nothing.
@@ -32,8 +31,8 @@
  *     to=<bag>        destination bag URI
  *     change-id=<id>  (optional) explicit change-id; defaults to newChangeId()
  *
- * Common flags:
- *   --yes             skip confirmation prompt
+ * Common params:
+ *   yes=true        skip confirmation prompt
  *
  * Each invocation submits a verb-tiddler to the daemon vessel; the wiki island's
  * action-handler family executes the residency mutation wrapped in
@@ -64,7 +63,6 @@ import { verbFailure, refusalCode, refusalHint } from "../verb-call.js";
 import { emit, wantsJson, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { cmdDraft } from "./draft.js";
-import { helpLines } from "../command-help.js";
 
 /**
  * A receipt's `done`/`error` reads exactly like `runVerb`'s own resolved result — build that shape
@@ -125,6 +123,9 @@ export const RESIDENCY_ACTS: Readonly<Record<string, string>> = Object.freeze({
   "lar:///carriage.bundle.repacks": "REPACK",
 });
 
+/** The line a residency act's words lead with: `lares` and the act's address (the verb itself where no address names it). */
+const said = (verb: string): string => `lares ${Object.keys(RESIDENCY_ACTS).find((a) => RESIDENCY_ACTS[a] === verb) ?? verb}`;
+
 /** The draft pull's address: the door pulls a lower-bag tiddler into a writable draft. */
 export const DRAFT_PULL = "lar:///carriage.draft.pulls";
 
@@ -178,9 +179,10 @@ export function actHostDoor(address: string): HostDoor | null {
   return null;
 }
 
-/** A refusal that names no usage of its own ends with the act's call shape, drawn from the carriers. */
+/** A refusal that names no usage of its own ends with the residency acts' call shape: each rides by its address. */
 function printUsage(): void {
-  for (const line of helpLines("act")) console.error(line);
+  console.error("usage: lares <address> name=value…  (lares help <address> reads one)");
+  for (const address of Object.keys(RESIDENCY_ACTS)) console.error(`  lares ${address}`);
 }
 
 /**
@@ -206,7 +208,7 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   if (!source || !fromBag) { printUsage(); return 2; }
   // REPACK WRITES THE BUNDLE: it walks no dry path, so a preview asked of it refuses before anything reads or writes.
   if (args.flags["dry-run"] === true) {
-    emit(args, { ok: false, error: { code: "mu-cell-empty", message: "lar:///carriage.bundle.repacks walks no dry path; the plain call writes the bundle" }, human: () => console.error("lares act lar:///carriage.bundle.repacks: walks no dry path; the plain call writes the bundle") });
+    emit(args, { ok: false, error: { code: "mu-cell-empty", message: "lar:///carriage.bundle.repacks walks no dry path; the plain call writes the bundle" }, human: () => console.error("lares lar:///carriage.bundle.repacks: walks no dry path; the plain call writes the bundle") });
     return exitFor("usage");
   }
   const out = args.options["out"] ?? source;
@@ -217,7 +219,7 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   const sited = fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir(), ...projectionsDirs() })(root, source);
   const uri = typeof sited === "string" ? sited : null;
   if (!uri || !uri.startsWith("lar:///")) {
-    emit(args, { ok: false, error: { code: "usage", message: `no address derivation for "${source}" (outside bags//wikis/, or rootless)` }, human: () => console.error(`lares act REPACK: no address derivation for "${source}"`) });
+    emit(args, { ok: false, error: { code: "usage", message: `no address derivation for "${source}" (outside bags//wikis/, or rootless)` }, human: () => console.error(`${said("REPACK")}: no address derivation for "${source}"`) });
     return exitFor("usage");
   }
   const packPath = uri.slice("lar:///".length) + extname(source);
@@ -225,7 +227,7 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   let did: string;
   try { did = await vesselDid(); } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`lares act REPACK: ${msg}`) });
+    emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`${said("REPACK")}: ${msg}`) });
     return exitFor("not-found");
   }
 
@@ -258,23 +260,23 @@ async function actRepack(args: ParsedArgs): Promise<number> {
       } else {
         if (receipt?.state === "abandoned") {
           const hint = refusalHint("request-abandoned", undefined)!;
-          emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-abandoned", message: msg, hint }, human: () => { console.error(`lares act REPACK: request abandoned. Read it back: \`lares vessel request ${repackRequestId}\`.`); console.error(`  ${hint}`); } });
+          emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-abandoned", message: msg, hint }, human: () => { console.error(`${said("REPACK")}: request abandoned. Read it back: \`lares vessel request ${repackRequestId}\`.`); console.error(`  ${hint}`); } });
           return exitFor("request-abandoned");
         }
         if (receipt?.state === "interrupted") {
           const hint = refusalHint("request-interrupted", undefined)!;
-          emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-interrupted", message: msg, hint }, human: () => { console.error(`lares act REPACK: request interrupted. Read it back: \`lares vessel request ${repackRequestId}\`.`); console.error(`  ${hint}`); } });
+          emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-interrupted", message: msg, hint }, human: () => { console.error(`${said("REPACK")}: request interrupted. Read it back: \`lares vessel request ${repackRequestId}\`.`); console.error(`  ${hint}`); } });
           return exitFor("request-interrupted");
         }
         const hint = `this process stopped waiting after the daemon answered; a short read found no receipt yet for THIS attempt's own request id (${repackRequestId}) — check it with \`lares vessel request ${repackRequestId}\`. REPACK reads and carries no effect key — re-running it is always safe, since there is nothing it could re-land twice.`;
-        emit(args, { ok: false, requestId: repackRequestId, error: { code: "outcome-unknown", message: msg, hint }, human: () => { console.error(`lares act REPACK: outcome unknown. Read it back: \`lares vessel request ${repackRequestId}\`.`); console.error(`  ${hint}`); } });
+        emit(args, { ok: false, requestId: repackRequestId, error: { code: "outcome-unknown", message: msg, hint }, human: () => { console.error(`${said("REPACK")}: outcome unknown. Read it back: \`lares vessel request ${repackRequestId}\`.`); console.error(`  ${hint}`); } });
         return exitFor("outcome-unknown");
       }
     } else {
       // M3′: told apart by the error's own TYPE — a genuinely absent daemon is the ONE fault this
       // standing hint cures; anything else (a transport-level verb-error) keeps its own words.
       const f = verbFailure(err);
-      emit(args, { ok: false, error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) }, human: () => { console.error(`lares act REPACK: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); } });
+      emit(args, { ok: false, error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) }, human: () => { console.error(`${said("REPACK")}: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); } });
       return exitFor(f.code);
     }
   }
@@ -319,12 +321,12 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
   if (!verbRaw) { printUsage(); return 2; }
   if (verbRaw === "REPACK") return await actRepack(args);
   if (!isActionVerb(verbRaw)) {
-    console.error(`lares act: "${verbRaw}" names no ACTION verb`);
+    console.error(`lares: "${verbRaw}" names no residency act`);
     printUsage();
     return 2;
   }
   if (verbRaw === "INGEST") {
-    console.error("lares act INGEST: the ingest gesture carries hashes the act surface does not — use `lares ingest source=<dir> to=<bag>`");
+    console.error("lares: INGEST carries hashes no residency act carries — use `lares ingest source=<dir> to=<bag>`");
     return 2;
   }
   const verb = verbRaw;
@@ -352,15 +354,15 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
     // A MOVE naming from= and to= and no title= promotes the WHOLE source layer (every live title) in one act.
     const layerMove = verb === "MOVE" && !title && !!fromBag && !!toBag;
     if (!layerMove && (!title || !fromBag || (verb !== "MOVE" && !toBag))) {
-      console.error(verb === "MOVE" ? "lares act lar:///carriage.bag.moves: title=, from= and to= (or from= and to= alone to move the whole layer) required" : `lares act ${verb}: title=, from= and to= all required`);
+      console.error(verb === "MOVE" ? "lares lar:///carriage.bag.moves: title=, from= and to= (or from= and to= alone to move the whole layer) required" : `${said(verb)}: title=, from= and to= all required`);
       return 2;
     }
     if (layerMove && args.flags["shadow"]) {
-      console.error("lares act lar:///carriage.bag.moves: shadow=true names one tombstoned title; a layer move names none");
+      console.error("lares lar:///carriage.bag.moves: shadow=true names one tombstoned title; a layer move names none");
       return 2;
     }
     if (verb !== "MOVE" && args.flags["shadow"]) {
-      console.error(`lares act ${verb}: shadow=true rides a MOVE of a tombstone alone (lar:///carriage.bag.moves)`);
+      console.error(`${said(verb)}: shadow=true rides a MOVE of a tombstone alone (lar:///carriage.bag.moves)`);
       return 2;
     }
     if (verb === "MOVE" && !toBag && title) {
@@ -369,14 +371,14 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         const where = await runVerb("where", { tiddler: title }, did);
         const holders = ((summaryOutput(where)?.["bags"] ?? []) as string[]);
         if (holders.includes(fromBag)) {
-          console.error("lares act lar:///carriage.bag.moves: title=, from= and to= all required");
+          console.error("lares lar:///carriage.bag.moves: title=, from= and to= all required");
           return 2;
         }
         console.log("bags holding the title:");
         for (const bag of holders.filter((candidate) => candidate !== fromBag)) console.log(bag);
         console.log("name the bag where the delete takes place with to=<bag>");
       } catch (err) {
-        console.error(`lares act MOVE: could not read the bags holding ${title}: ${err instanceof Error ? err.message : String(err)}`);
+        console.error(`${said("MOVE")}: could not read the bags holding ${title}: ${err instanceof Error ? err.message : String(err)}`);
         return 4;
       }
       return 2;
@@ -389,7 +391,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
   } else if (isBagVerb(verb)) {
     const bag = args.options["bag"];
     if (!bag) {
-      console.error(`lares act ${verb}: bag= required`);
+      console.error(`${said(verb)}: bag= required`);
       return 2;
     }
     changeId = args.options["change-id"] ?? newChangeId();
@@ -398,7 +400,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
   } else if (verb === "CREATE") {
     const bag = args.options["bag"];
     if (!bag) {
-      console.error(`lares act lar:///carriage.bag.creates: bag= required`);
+      console.error(`lares lar:///carriage.bag.creates: bag= required`);
       return 2;
     }
     // `plane=<catalog|oracle>` names the target oracle plane: catalog = the private user/household
@@ -407,7 +409,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
     // An unrecognized value errors rather than silently coercing to catalog (a typo would mis-place the bag).
     const planeOpt = args.options["plane"];
     if (planeOpt !== undefined && planeOpt !== "catalog" && planeOpt !== "oracle") {
-      console.error(`lares act lar:///carriage.bag.creates: plane= takes "catalog" or "oracle" (got "${planeOpt}")`);
+      console.error(`lares lar:///carriage.bag.creates: plane= takes "catalog" or "oracle" (got "${planeOpt}")`);
       return 2;
     }
     const plane = planeOpt === "oracle" ? "oracle" : "catalog";
@@ -424,7 +426,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
     const toBag     = args.options["to"];
     changeId = args.options["change-id"] ?? newChangeId();
     if (!sourceUri || !toBag) {
-      console.error(`lares act lar:///carriage.bag.loads: source-uri= and to= required`);
+      console.error(`lares lar:///carriage.bag.loads: source-uri= and to= required`);
       return 2;
     }
     actionArgs["source-uri"] = sourceUri;
@@ -462,7 +464,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         .map((f) => { const r = readCarrierText(f); return { f, text: r.text, binary: r.binary }; })
         .filter(({ f, text }) => {
           if (text.trim().length === 0) {
-            console.error(`lares act LOAD: skipping empty file "${f}" — no content to land`);
+            console.error(`${said("LOAD")}: skipping empty file "${f}" — no content to land`);
             return false;
           }
           return true;
@@ -493,7 +495,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
     } catch {
       // Honesty at the gesture: a non-resolving local path probably means a
       // typo — the island will refuse a carrier-less LOAD loudly either way.
-      console.error(`lares act LOAD: "${sourceUri}" does not resolve locally — sending provenance-only LOAD (no carriers)`);
+      console.error(`${said("LOAD")}: "${sourceUri}" does not resolve locally — sending provenance-only LOAD (no carriers)`);
     }
   }
 
@@ -508,12 +510,12 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
     did = await vesselDid();
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`lares act: ${msg}`) });
+    emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`${said(verb)}: ${msg}`) });
     return exitFor("not-found");
   }
 
-  // ── Confirm (HUMAN/TTY path only; agents carry --yes) ─────────────────
-  // An agent (JSON / off-TTY) cannot answer y/N — it MUST carry intent via --yes;
+  // ── Confirm (HUMAN/TTY path only; agents carry yes=true) ─────────────────
+  // An agent (JSON / off-TTY) cannot answer y/N — it MUST carry intent via yes=true;
   // refusing the prompt keeps the surface non-interactive for unattended actors.
   if (!args.flags["yes"] && !args.flags["dry-run"]) {
     if (wantsJson(args)) {
@@ -608,7 +610,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         const hint = refusalHint("request-abandoned", changeId)!;
         emit(args, {
           ok: false, requestId, error: { code: "request-abandoned", message: msg, hint },
-          human: () => { console.error(`lares act: request abandoned. Read it back: \`lares vessel request ${requestId}\`.`); console.error(`  ${hint}`); },
+          human: () => { console.error(`${said(verb)}: request abandoned. Read it back: \`lares vessel request ${requestId}\`.`); console.error(`  ${hint}`); },
           data: { changeId },
         });
         return exitFor("request-abandoned");
@@ -616,7 +618,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         const hint = refusalHint("request-interrupted", changeId)!;
         emit(args, {
           ok: false, requestId, error: { code: "request-interrupted", message: msg, hint },
-          human: () => { console.error(`lares act: request interrupted. Read it back: \`lares vessel request ${requestId}\`.`); console.error(`  ${hint}`); },
+          human: () => { console.error(`${said(verb)}: request interrupted. Read it back: \`lares vessel request ${requestId}\`.`); console.error(`  ${hint}`); },
           data: { changeId },
         });
         return exitFor("request-interrupted");
@@ -627,7 +629,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         const hint = refusalHint("retention-gap", changeId)!;
         emit(args, {
           ok: false, requestId, error: { code: "retention-gap", message: msg, hint },
-          human: () => { console.error(`lares act: retention gap. Read it back: \`lares vessel request ${requestId}\`.`); console.error(`  ${hint}`); },
+          human: () => { console.error(`${said(verb)}: retention gap. Read it back: \`lares vessel request ${requestId}\`.`); console.error(`  ${hint}`); },
           data: { changeId },
         });
         return exitFor("retention-gap");
@@ -641,7 +643,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         const hint = `this process stopped waiting after ${timeoutMs}ms (budgeted for ${carrierCount} carrier(s)${verb === "LOAD" ? " — a LOAD budgets 10s + 400ms per carrier" : ""}) and a ${READBACK_MS}ms read found no receipt yet for THIS attempt's own request id (${requestId}) — check it with \`lares vessel request ${requestId}\`. Re-run with \`change-id=${changeId}\`: if this attempt landed, the effect index answers it without running twice; a re-run WITHOUT it is a NEW change. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
         emit(args, {
           ok: false, requestId, error: { code: "outcome-unknown", message: msg, hint },
-          human: () => { console.error(`lares act: outcome unknown. Read it back: \`lares vessel request ${requestId}\`.`); console.error(`  ${hint}`); },
+          human: () => { console.error(`${said(verb)}: outcome unknown. Read it back: \`lares vessel request ${requestId}\`.`); console.error(`  ${hint}`); },
           data: { changeId },
         });
         return exitFor("outcome-unknown");
@@ -652,7 +654,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
       const f = verbFailure(err);
       emit(args, {
         ok: false, error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
-        human: () => { console.error(`lares act: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); },
+        human: () => { console.error(`${said(verb)}: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); },
         data: { changeId },
       });
       return exitFor(f.code);

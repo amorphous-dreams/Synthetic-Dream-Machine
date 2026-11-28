@@ -40,7 +40,7 @@ test("a herm's probe rides a floor query across the socket; a hearth's rides wik
   const relay = probe("herm-relay-2");
   assert.match(relay.calls, /vessel unbound/);
   const hearth = probe("lararium-a");
-  assert.match(hearth.calls, /^exec -T lararium-a node packages\/lares-cli\/dist\/src\/bin\/lares\.js wiki status --json\n$/);
+  assert.match(hearth.calls, /^exec -T lararium-a node packages\/lares-cli\/dist\/src\/bin\/lares\.js wiki status json=true\n$/);
 });
 
 test("the herm's verb stands on the floor, and `vessel unbound` names that verb", () => {

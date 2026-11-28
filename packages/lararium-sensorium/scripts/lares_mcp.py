@@ -202,7 +202,7 @@ LAW_ROW_FIELDS = ("description", "role")
 
 # THE HEARTH ROSTER (lar:///face.roster.reads) — who is home, offered beside the law: `vessel_roster` reads the worn face and
 # who holds that slot, the seats in two grains (here by presence on the vessel's socket, far by last signed act on the face
-# intent plane), the lanes a seat claims and the vota still waiting. It mirrors `lares vessel roster --json`: both ride the one
+# intent plane), the lanes a seat claims and the vota still waiting. It mirrors `lares vessel roster json=true`: both ride the one
 # `hearth-roster` verb the vessel's channel answers itself (`@lararium/node`'s `hearth-roster-read`), so the body this seat
 # returns stands byte for byte the body the CLI's `data` carries. A read: it places nothing and writes no fact.
 HEARTH_ROSTER_VERB = "hearth-roster"
@@ -1450,7 +1450,7 @@ def build_mcp(coordinator: LaresCoordinator):
     # ── THE HEARTH ROSTER — who is home, the vessel's own reading ──
 
     def vessel_roster() -> dict:
-        """Read WHO IS HOME — mirrors `lares vessel roster --json`. The vessel answers from what it holds now and places
+        """Read WHO IS HOME — mirrors `lares vessel roster json=true`. The vessel answers from what it holds now and places
         nothing. Returns {grain, rotation, seats, asker, lanes, lanesGap, vota, unread, counts, more}: `rotation` names the face
         this vessel wears, the session seats holding that slot (`holders`) and any seat acting under another face
         (`underOther`); `seats` carries one row shape in two grains: `local` (a session bound on the vessel's socket, standing
@@ -1749,7 +1749,7 @@ def build_mcp(coordinator: LaresCoordinator):
         if isinstance(out, dict) and out.get("handler") == "host":
             address = str(out.get("address") or word)
             raise SeatArgumentRefused(f"host-door: {address} runs at a terminal's own door (it reads host files or asks y/N); "
-                                      f"ask the operator to run `lares act {address} ...` on their own terminal")
+                                      f"ask the operator to run `lares {address} ...` on their own terminal")
         return out
 
     def aperture_reaches_whole(raw) -> bool:

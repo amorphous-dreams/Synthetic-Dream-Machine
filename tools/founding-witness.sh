@@ -25,7 +25,7 @@ set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
 REPO=$PWD
 
-# DIST-FRESHNESS PREFLIGHT. A WITNESS BUILDS NOTHING: `vessel found` rides `--skip-build`, so the CLI's
+# DIST-FRESHNESS PREFLIGHT. A WITNESS BUILDS NOTHING: `vessel found` rides `skip-build=true`, so the CLI's
 # fresh-build gate never rewrites the shared dist beneath a concurrent run. The witness therefore asks
 # freshness itself, of the CLI it drives and of the mesh dist its two inline `node --input-type=module -e`
 # blocks import BY PATH, and a stale build refuses here naming its cure.
@@ -41,7 +41,7 @@ git ls-files -z genesis/ | xargs -0 -I{} cp --parents "{}" "$TB/" 2>/dev/null
 echo "founding-witness: founding under $TB"
 # The founding seals custody from birth; the scripted witness names its test route explicitly.
 node "$REPO/tools/test-scratch-marker.mjs" "$TB" && node "$REPO/tools/seed-test-custody.mjs" "$TB" || { echo "  could not seed the test custody route"; exit 1; }
-if ! LAR_ROOT="$TB" node "$REPO/packages/lares-cli/bin/lares.mjs" vessel found --skip-build >"$TB/init.log" 2>&1; then
+if ! LAR_ROOT="$TB" node "$REPO/packages/lares-cli/bin/lares.mjs" vessel found skip-build=true >"$TB/init.log" 2>&1; then
   echo "  FOUNDING FAILED — tail of the log:"; tail -15 "$TB/init.log" | sed 's/^/    /'; exit 1
 fi
 
@@ -74,7 +74,7 @@ grep -q "no seed charter stands here" "$TB/refused.log" || { echo "  MISMATCH: t
 echo "  ok (place) — persona zero refuses by name until the hearth founds"
 
 echo "founding-witness: the Stable founding act lifts the place to a hearth"
-if ! LAR_ROOT="$TB" node "$REPO/packages/lares-cli/bin/lares.mjs" vessel found --hearth --name founding-witness --skip-build >"$TB/face.log" 2>&1; then
+if ! LAR_ROOT="$TB" node "$REPO/packages/lares-cli/bin/lares.mjs" vessel found hearth=true name=founding-witness skip-build=true >"$TB/face.log" 2>&1; then
   echo "  FACE FAILED — tail of the log:"; tail -15 "$TB/face.log" | sed 's/^/    /'; exit 1
 fi
 

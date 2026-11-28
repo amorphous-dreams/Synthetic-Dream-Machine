@@ -40,14 +40,14 @@ async function awaitProjection(timeoutMs = 60_000): Promise<void> {
 }
 
 function ingest(args: string[]): ReturnType<LarInstance["cli"]> {
-  return lar.cli(["ingest", `source=${join(lar.root, "projections/bags/lares")}`, `to=${LARES_URI}`, ...args, "--json"]);
+  return lar.cli(["ingest", `source=${join(lar.root, "projections/bags/lares")}`, `to=${LARES_URI}`, ...args, "json=true"]);
 }
 
 beforeAll(async () => {
   lar = await targetInstance();
   if (!stagedTarget) return;
   projected = join(lar.root, BOOT_PROJ);
-  const r = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, "to=lar:///ha.ka.ba/wikis/lares/working", "yes=true", "--json"]);
+  const r = await lar.cli(["lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, "to=lar:///ha.ka.ba/wikis/lares/working", "yes=true", "json=true"]);
   if (r.json?.["ok"] !== true) throw new Error(`seed LOAD failed: ${JSON.stringify(r.json)}`);
   await promoteLoadedTitles(lar, ((r.json["data"] as { titles?: string[] }).titles ?? []), "lares");
   await awaitProjection();
@@ -75,7 +75,7 @@ describe.skipIf(!stagedTarget)("ingest quiescence — the composed loop holds st
     expect(edited).not.toBe(before); // guard: a carrier with no heading fails loud, never a no-op edit
     writeFileSync(projected, edited);
 
-    const r = await ingest(["apply=true", "--yes"]);
+    const r = await ingest(["apply=true", "yes=true"]);
     const d = r.json?.["data"] as Record<string, unknown>;
     const carriers = d["carriers"] as Array<Record<string, unknown>>;
     expect(carriers?.[0]?.["decision"]).toBe("ingest");

@@ -87,7 +87,7 @@ async function awaitWhich(v: LarInstance, timeoutMs: number): Promise<string> {
   const deadline = Date.now() + timeoutMs;
   let last = "";
   for (;;) {
-    const r = await v.cli(["wiki", "which", TITLE, "--no-json"]);
+    const r = await v.cli(["wiki", "which", TITLE, "json=false"]);
     last = r.stdout;
     if (last.includes(`  ${LARES_BAG}`)) return last;
     if (Date.now() > deadline) return last;
@@ -124,8 +124,8 @@ describe.skipIf(gaps.length > 0)("★ A’s live pointer stays local while B mea
         mkdirSync(earlyDir, { recursive: true });
         writeFileSync(join(earlyDir, "photo.png"), PNG_BYTES);
         writeFileSync(join(earlyDir, "photo.png.meta"), "type: image/png\n");
-        const early = await a.cli(["act", "lar:///carriage.bag.loads", `source-uri=${earlyDir}`, `to=${WORKING_LARES}`, "yes=true", "--json"]);
-        const earlyWhich = await a.cli(["wiki", "which", `lar:///${LOCI_EARLY}/photo`, "--no-json"]);
+        const early = await a.cli(["lar:///carriage.bag.loads", `source-uri=${earlyDir}`, `to=${WORKING_LARES}`, "yes=true", "json=true"]);
+        const earlyWhich = await a.cli(["wiki", "which", `lar:///${LOCI_EARLY}/photo`, "json=false"]);
         console.error(`blob-follows-pointer MEASURE A (before B stands): LOAD ${early.json?.["ok"]} → wiki which: ${/primary:\s+(\S+)/.exec(earlyWhich.stdout)?.[1]}`);
       },
     });
@@ -147,13 +147,13 @@ describe.skipIf(gaps.length > 0)("★ A’s live pointer stays local while B mea
     mkdirSync(srcDir, { recursive: true });
     writeFileSync(join(srcDir, "photo.png"), PNG_BYTES);
     writeFileSync(join(srcDir, "photo.png.meta"), "type: image/png\n");
-    const ld = await A!.cli(["act", "lar:///carriage.bag.loads", `source-uri=${srcDir}`, `to=${WORKING_LARES}`, "yes=true", "--json"]);
+    const ld = await A!.cli(["lar:///carriage.bag.loads", `source-uri=${srcDir}`, `to=${WORKING_LARES}`, "yes=true", "json=true"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
     await promoteLoadedTitles(A!, ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
     const casA = listCas(A!);
     cid = casA.includes(CID_RAW) ? CID_RAW : casA.includes(CID_BASE64) ? CID_BASE64 : "";
     console.error(`blob-follows-pointer MEASURE A: LOAD → ${said(ld).trim().slice(0, 600)}\n  A cid/ (${casDirOf(A!)}): ${casA.length} blobs; raw-cid ${casA.includes(CID_RAW)} · base64-cid ${casA.includes(CID_BASE64)}`);
-    const earlyWhich = await A!.cli(["wiki", "which", `lar:///${LOCI_EARLY}/photo`, "--no-json"]);
+    const earlyWhich = await A!.cli(["wiki", "which", `lar:///${LOCI_EARLY}/photo`, "json=false"]);
     console.error(`blob-follows-pointer MEASURE A (after B stood): the early pointer → wiki which: ${/primary:\s+(\S+)/.exec(earlyWhich.stdout)?.[1]}`);
     expect(cid, `A's cid/ holds neither sha256(raw) ${CID_RAW.slice(0, 12)} nor sha256(base64) ${CID_BASE64.slice(0, 12)}; it holds ${listCas(A!).map((c) => c.slice(0, 12)).join(",")}`).not.toBe("");
     // The CRDT read first: the bag holds the title.
@@ -182,7 +182,7 @@ describe.skipIf(gaps.length > 0)("★ A’s live pointer stays local while B mea
 
   test("★ ⑦ MEASURE on B: A's live system pointer stays outside B's own lares book ★", async () => {
     // W24/W27 owns the same-face BOOK crossing. B holds its own system doc and no record from A's live lares doc.
-    const which = await B!.cli(["wiki", "which", TITLE, "--no-json"]);
+    const which = await B!.cli(["wiki", "which", TITLE, "json=false"]);
     const pointer = projectedPointer(B!.root);
     console.error(`blob-follows-pointer MEASURE B: wiki which ${TITLE}\n${which.stdout.trim()}\n  pointer file: ${pointer?.file ?? "(none projected)"}`);
     expect(which.stdout).not.toContain(`  ${LARES_BAG}`);
@@ -196,13 +196,13 @@ describe.skipIf(gaps.length > 0)("★ A’s live pointer stays local while B mea
     const bytesOnB = existsSync(join(casDirOf(B!), cid));
     const pngOnB = existsSync(join(B!.root, "bags/lares", LOCI, "photo.png"));
     const casLines = B!.bootLog().split("\n").filter((l) => /cas|cid|lazy|blob/i.test(l) && !/genesis|mirror/i.test(l)).slice(-8);
-    const cas = await B!.cli(["bag", "cas", "all=true", "--json"]);
+    const cas = await B!.cli(["bag", "cas", "all=true", "json=true"]);
     console.error([
       `blob-follows-pointer MEASURE B: cid/ = ${casDirOf(B!)}`,
       `  blobs on B: ${casB.length} (genesis + staged); holds ${cid.slice(0, 16)}…: ${bytesOnB}`,
       `  photo.png beside the .meta on B's disk: ${pngOnB}`,
       `  B boot-log lines naming cas/cid/lazy/blob (last 8):\n    ${casLines.join("\n    ") || "(none)"}`,
-      `  B \`bag cas --all --json\`: ${said(cas).trim().slice(0, 600)}`,
+      `  B \`bag cas all=true json=true\`: ${said(cas).trim().slice(0, 600)}`,
     ].join("\n"));
     // A CONTROL for the vector below: A still holds the blob the pointer names.
     expect(existsSync(join(casDirOf(A!), cid))).toBe(true);
@@ -216,7 +216,7 @@ describe.skipIf(gaps.length > 0)("★ A’s live pointer stays local while B mea
   test("★ the BYTES stay behind the SHUT carriage: a READ on B answers held:false at the local-only door ★", async () => {
     const beforeRead = existsSync(join(casDirOf(B!), cid));
     console.error(`blob-follows-pointer MEASURE B: bytes on B before the CLI read (the island's own read fired?): ${beforeRead}`);
-    const r = await B!.cli(["bag", "cas", `fetch=${cid}`, "--json"]);
+    const r = await B!.cli(["bag", "cas", `fetch=${cid}`, "json=true"]);
     console.error(`blob-follows-pointer MEASURE B: bag cas --fetch → ${said(r).trim().slice(0, 400)}`);
     const carriageLines = (v: LarInstance): string => v.bootLog().split("\n").filter((l) => /\[carriage\]|fetch door|admit|delegation|cross-operator|same-operator|auth/.test(l)).slice(-14).join("\n    ");
     console.error(`blob-follows-pointer MEASURE A carriage:\n    ${carriageLines(A!)}\nblob-follows-pointer MEASURE B carriage:\n    ${carriageLines(B!)}`);
@@ -234,7 +234,7 @@ describe.skipIf(gaps.length > 0)("★ A’s live pointer stays local while B mea
 
   test("CONTROL: a cid no fleet holder carries stays PENDING — `held:false`, no fault, nothing written", async () => {
     const ghost = createHash("sha256").update("a likeness nobody ever staged").digest("hex");
-    const r = await B!.cli(["bag", "cas", `fetch=${ghost}`, "--json"]);
+    const r = await B!.cli(["bag", "cas", `fetch=${ghost}`, "json=true"]);
     console.error(`blob-follows-pointer MEASURE B: bag cas --fetch (ghost) → ${said(r).trim().slice(0, 300)}`);
     expect(r.json?.["ok"]).toBe(true);
     expect((r.json?.["data"] as Record<string, unknown> | undefined)?.["held"]).toBe(false);

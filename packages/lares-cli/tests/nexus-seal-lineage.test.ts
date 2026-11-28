@@ -219,7 +219,7 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     let code: number;
     try { code = await cmdNexus(args(["seal", "seat"])); } finally { write.mockRestore(); }
     expect(code).not.toBe(0);
-    expect(chunks.join("")).toMatch(/prints each chair's cold-key card on the terminal and asks it back there; run it without --json/);
+    expect(chunks.join("")).toMatch(/prints each chair's cold-key card on the terminal and asks it back there; run it without json=true/);
     expect(chunks.join("")).not.toMatch(/[0-9a-f]{4}(-[0-9a-f]{4}){17}/);       // no card code rode any chunk
     expect(readNexusDoc(larSealHome())).toBeNull();
     expect(listSeatKeys()).toEqual([]);                                             // the keys the arming minted retired

@@ -90,7 +90,7 @@ async function publishPlugins(args: ParsedArgs): Promise<number> {
   const modes = [args.flags["apply"] === true, args.flags["terms"] === true, typeof land === "string"].filter(Boolean).length;
   if (modes > 1) return refuseUsage(args, "nexus publish", PUBLISH_USAGE, "name one of apply=true, terms=true or land=");
 
-  // THE TERMS LINE (under a pūlama): exactly one stdout line, the terms `pulama-main.js publish` takes, unless `--json` asks the envelope.
+  // THE TERMS LINE (under a pūlama): exactly one stdout line, the terms `pulama-main.js publish` takes, unless `json=true` asks the envelope.
   if (args.flags["terms"] === true) {
     const line: ParsedArgs = { ...args, flags: { ...args.flags, json: args.flags["json"] === true } };
     try {
@@ -160,7 +160,7 @@ async function publishPlugins(args: ParsedArgs): Promise<number> {
   // fresh — the SAME fold `apply=true` would sign, so a read never drifts from what applying would do.
   const pluginsCid = typeof parsed.sig === "string" && typeof parsed.pluginsCid === "string" ? parsed.pluginsCid : computePluginsCid(blobs);
 
-  // L-d: this read routes through the ONE choke point every other door answers through, so `--json`
+  // L-d: this read routes through the ONE choke point every other door answers through, so `json=true`
   // (or any non-TTY caller) reads structured data, never the human prose.
   emit(args, {
     ok: true,

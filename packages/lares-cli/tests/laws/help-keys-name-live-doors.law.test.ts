@@ -26,8 +26,8 @@ async function said(argv: string[]): Promise<{ code: number; out: string; err: s
 }
 
 describe("the per-command help, read off the pack", () => {
-  test("★ every pack door names a command that answers, or the one act's head ★", () => {
-    const live = new Set([...COMMAND_NAMES, "act"]);
+  test("★ every pack door names a command that answers ★", () => {
+    const live = new Set(COMMAND_NAMES);
     const orphans = Object.keys(affordancePack().doors).filter((k) => !live.has(k));
     expect(orphans).toEqual([]);
   });
@@ -37,38 +37,38 @@ describe("the per-command help, read off the pack", () => {
   });
 
   test("meme help names the store target its project takes", async () => {
-    const r = await said(["meme", "project", "--help"]);
+    const r = await said(["help", "meme", "project"]);
     expect(r.code).toBe(0);
     expect(r.out).toMatch(/\[recipe=<word>\]/);
     expect(r.out).toMatch(/\[bag=<word>\]/);
   });
 
-  test("every verb the host shim answers holds a help row: `lares <shim verb> --help` reads it, never `unknown command`", async () => {
+  test("every verb the host shim answers holds a help row: `lares help <shim verb>` reads it, never `unknown command`", async () => {
     expect([...SHIM_VERBS].sort()).toEqual(["build", "down", "found", "logs", "pulama", "rebuild", "reset", "up"]);
     for (const verb of SHIM_VERBS) {
-      const r = await said([verb, "--help"]);
+      const r = await said(["help", verb]);
       expect({ verb, code: r.code, err: r.err }).toEqual({ verb, code: 0, err: "" });
       expect(r.out).toContain(`lares ${verb}`);
       expect(r.out).toContain("tools/lares-container.sh");
     }
     // CONTROL: a name neither table holds still refuses as unknown.
-    const r = await said(["upp", "--help"]);
+    const r = await said(["help", "upp"]);
     expect(r.code).toBe(2);
     expect(r.err).toMatch(/unknown command "upp"/);
   });
 
-  test("the wiki door reads its carriers: `wiki --help` reads as `wiki help` reads, every verb in its index", async () => {
-    const flag = await said(["wiki", "--help"]), word = await said(["wiki", "help"]);
+  test("the wiki door reads its carriers: `lares help wiki` reads as `wiki help` reads, every verb in its index", async () => {
+    const flag = await said(["help", "wiki"]), word = await said(["wiki", "help"]);
     expect(flag.out).toBe(word.out);
     expect(flag.out).toBe(packDoor("wiki")!.help.join("\n"));
     for (const verb of ["init", "share", "switch", "keep", "unkeep", "status", "render", "compact"]) expect(flag.out).toMatch(new RegExp(`lares wiki ${verb}\\b`));
     expect(flag.code).toBe(0);
   });
 
-  // The herm door flipped to its carriers (comms landings 10 + 23): `herm --help` reads the door's index of the stand and the
+  // The herm door flipped to its carriers (comms landings 10 + 23): `lares help herm` reads the door's index of the stand and the
   // rotation; the stand's carrier takes the ports.
-  test("herm --help reads its carriers: the stand, the relay gate's rotation, and the ports", async () => {
-    const r = await said(["herm", "--help"]);
+  test("`lares help herm` reads its carriers: the stand, the relay gate's rotation, and the ports", async () => {
+    const r = await said(["help", "herm"]);
     expect(r.out).not.toMatch(/no detailed help yet/);
     expect(r.out).toMatch(/relay-rotate/);
     expect(affordancePack().carriers[packRoute("cli", "herm")!]!.takes["cli"]).toEqual(expect.arrayContaining(["port", "relay-port"]));

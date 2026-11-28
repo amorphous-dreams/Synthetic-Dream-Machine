@@ -66,7 +66,7 @@ async function readBack(uris: readonly string[]): Promise<Map<string, string>> {
   const reader = async (): Promise<void> => {
     while (next < uris.length) {
       const uri = uris[next++]!;
-      const r = await lar.cli(["get", `title=${uri}`, "recipe=lares", "mu=assert", "--json"]);
+      const r = await lar.cli(["get", `title=${uri}`, "recipe=lares", "mu=assert", "json=true"]);
       const text = (r.json?.["data"] as { meme?: { text?: unknown } } | undefined)?.meme?.text;
       out.set(uri, r.json?.["ok"] === true && typeof text === "string" ? text : `MISSING ${JSON.stringify(r.json?.["error"] ?? r.stderr.slice(-200))}`);
     }
@@ -78,7 +78,7 @@ async function readBack(uris: readonly string[]): Promise<Map<string, string>> {
 describe.skipIf(!stagedTarget)("vessel reboot — a hearth survives restarting on its own fed store", () => {
   test("boot → feed → stop at once → REBOOT reaches live → every LOADed carrier reads back", async () => {
 
-    const fed = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${CORPUS}`, `to=${LARES_URI}`, "yes=true", "--json"]);
+    const fed = await lar.cli(["lar:///carriage.bag.loads", `source-uri=${CORPUS}`, `to=${LARES_URI}`, "yes=true", "json=true"]);
     expect(fed.json?.["ok"]).toBe(true);
 
     // THE STOP IS THE FLUSH. SIGTERM flushes the main replica before any island teardown, the budget bounds only

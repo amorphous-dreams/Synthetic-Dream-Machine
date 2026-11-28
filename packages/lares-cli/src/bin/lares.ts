@@ -16,7 +16,7 @@
  *   - One surface, two actors (operator-peer #actor-parity): the same commands
  *     serve a HUMAN at a TTY and an AI AGENT acting programmatically. Output
  *     renders by audience — prose on a TTY, a deterministic structured payload
- *     under `--json` / off-TTY (see ../render.ts). Authority rides WITH the
+ *     under `json=true` / off-TTY (see ../render.ts). Authority rides WITH the
  *     intent (capability-bearing verb-summons), never a session or login.
  */
 
@@ -24,7 +24,7 @@ import { seatTtyWardGatherer } from "../ward-door.js";
 import { fileURLToPath } from "node:url";
 import { realpathSync }  from "node:fs";
 import { stdout }         from "node:process";
-import { parseArgs, ArgsError, GLOBAL_FLAGS, type ParsedArgs } from "../parse-args.js";
+import { parseArgs, ArgsError, GLOBAL_PARAMS, isCallWord, type ParsedArgs } from "../parse-args.js";
 import { CustodyLocked, CustodyRecordUnavailable, SealedActRefused } from "@lararium/node";
 import { bridge, commandScope, shimHelpLines, HOUSE_ABSENT_EXIT } from "../host-bridge.js";
 import { armAskBudget } from "../local-connector.js";
@@ -39,8 +39,8 @@ import { cmdMeme }                    from "../commands/meme.js";
 import { cmdBag }                                   from "../commands/bag.js";
 import { cmdEvents }                  from "../commands/events.js";
 import { cmdWiki }                                from "../commands/wiki.js";
-import { cmdCall, isCallHead, CALL_VERBS as CALL_WORDS } from "../commands/call.js";
-import { BURNED_FLAGS, KeywordUsage, isKeywordLine, positionalCure, readKeywords, type KeywordLine } from "../keywords.js";
+import { cmdCall } from "../commands/call.js";
+import { KeywordUsage, isKeywordLine, readKeywords, type KeywordLine } from "../keywords.js";
 import { BARE_ADDRESS, cmdBare, liveReaders } from "../commands/bare.js";
 import { cmdIngest }                  from "../commands/ingest.js";
 import { cmdExport }                  from "../commands/export.js";
@@ -51,7 +51,7 @@ import { cmdRealm } from "../commands/realm.js";
 import { cmdDdate }                   from "../commands/ddate-cmd.js";
 import { cmdOracle }                  from "../commands/oracle-cmd.js";
 import { cmdLaw }                     from "../commands/law.js";
-import { cmdSense, retiredSensePromote } from "../commands/sense.js";
+import { cmdSense } from "../commands/sense.js";
 import { cmdFlowRun }                 from "../commands/flow-run.js";
 import { cmdMempalace, MEMPALACE_OWN_VERBS } from "../commands/mempalace.js";
 import { cmdHooks }                   from "../commands/hooks.js";
@@ -62,7 +62,7 @@ import { cmdRite }                    from "../commands/rite.js";
 import { cmdSensorium }               from "../commands/sensorium.js";
 import { cmdHome, cmdRepo }           from "../commands/tunnel-door.js";
 import type { VerbTable } from "../verb-table.js";
-import { renderCommandHelp, helpDoor, helpLines } from "../command-help.js";
+import { renderCommandHelp, helpDoor } from "../command-help.js";
 import { affordancePack, packDoor, packRoute } from "@lararium/tw5/affordance-pack";
 import { emit, exitFor } from "../render.js";
 import { storeFailure } from "../store-door.js";
@@ -123,7 +123,7 @@ type Handler = (args: ParsedArgs) => Promise<number>;
 export interface Command {
   readonly name:        string;
   /** The one-line spelling the top-level list prints (aim <= 72 chars); absent, the summary stands there. The long
-   *  `summary` rides the verb's own `--help`, so no fact leaves the CLI when the list shortens. */
+   *  `summary` rides the verb's own help (`lares help <door>`), so no fact leaves the CLI when the list shortens. */
   readonly brief?:      string | undefined;
   readonly summary:     string;
   readonly handler:     Handler;
@@ -173,8 +173,8 @@ export interface Command {
   readonly signsOnly?:  readonly string[];
 }
 
-/** The dash spellings every line still reads (`../parse-args.ts`), each a flag that takes no value. */
-export { GLOBAL_FLAGS };
+/** The params every door line reads beside its carriers' own (`../parse-args.ts`), each a flag. */
+export { GLOBAL_PARAMS };
 
 /**
  * The environment name that asks for Keyhive's trace (`@lararium/keyhive`, `KEYHIVE_TRACE_ENV`; the CLI
@@ -185,7 +185,7 @@ export const KEYHIVE_TRACE_ENV = "LAR_KEYHIVE_TRACE";
 /**
  * KEYHIVE'S TRACE STAYS OFF UNLESS A PERSON ASKS BY NAME. Keyhive's tracing prints every step of its own
  * work (document ids, digests) and buries the answer a person asked for, so no process turns it on by
- * default. `--keyhive-trace` asks: it sets the toggle in THIS process's environment before any command
+ * default. `keyhive-trace=true` asks: it sets the toggle in THIS process's environment before any command
  * runs, so an act in this process traces, and a vessel this command stands inherits the ask. The
  * environment toggle alone asks the same, for a daemon a person starts another way.
  */
@@ -211,7 +211,7 @@ function distance(a: string, b: string): number {
 }
 
 /** A `#/takes` spelling as the bare param name it takes (`face=` · `face=…` · `face=<n>` read `face`). */
-const takeName = (spelling: string): string => spelling.replace(/^--/, "").split(/[=\s]/)[0] ?? "";
+const takeName = (spelling: string): string => spelling.split(/[=\s]/)[0] ?? "";
 
 /** The params one carrier takes on the terminal, bare. */
 function carrierTakes(address: string): string[] {
@@ -244,8 +244,7 @@ export function lineTakes(cmd: Command, args: ParsedArgs): readonly string[] {
  */
 export function unknownParams(cmd: Command, args: ParsedArgs): { name: string; nearest: string | null }[] {
   if (cmd.passesThrough?.(args) === true) return [];
-  // `--meme` reads globally beside `--help` alone (help runs first), so past it a door's own takes decide the word.
-  const known = [...new Set([...lineTakes(cmd, args), ...GLOBAL_FLAGS.filter((n) => n !== "meme")])];
+  const known = [...new Set([...lineTakes(cmd, args), ...GLOBAL_PARAMS])];
   const names = [...new Set([...Object.keys(args.options), ...Object.keys(args.flags)])];
   return names.filter((n) => !known.includes(n)).map((name) => {
     const best = known.map((k) => ({ k, d: distance(name, k) })).sort((x, y) => x.d - y.d)[0];
@@ -345,13 +344,6 @@ export const COMMANDS: readonly Command[] = [
   { name: "handle",        brief: packedBrief("handle"), summary: packedAccount("handle"), handler: cmdHandle, verbs: HANDLE_VERBS, signs: true /* mints + signs a HandleCard */ },
 ];
 
-/** THE RELEASE LEFT THE READ: `vessel read vessel release*=…` names its new door, and reads nothing. */
-function movedRelease(args: ParsedArgs): boolean {
-  if (args.command !== "vessel" || args.positional[0] !== "read") return false;
-  return ["release", "release-keep", "release-fresh"].some((n) => n in args.options || n in args.flags);
-}
-
-
 /**
  * Every top-level `lares` command name — the source the isomorphism fixture (cli-verbs.json) mirrors
  * and YIN's three-way parity test reads (CLI command-table ↔ MCP tool-set ↔ VERB_SEATS). Kept in sync
@@ -363,7 +355,7 @@ export const COMMAND_NAMES: readonly string[] = COMMANDS.map((c) => c.name);
  * The global help IS the surface projection — a face reading the one table, never a second catalogue.
  *
  * `lares help surface=<name>` reads another face's projection; `executable=true` drops the key-holding acts
- * an agent surface may compose and must never run; `--json` emits the shape another face consumes. Folding
+ * an agent surface may compose and must never run; `json=true` emits the shape another face consumes. Folding
  * these here rather than into a verb of their own keeps the CLI from spending a command on describing
  * commands.
  */
@@ -382,9 +374,9 @@ function printHelp(surface: string = VERB_SURFACE.cli, executableOnly = false): 
     return `${text} (✍ ${only.join(", ")} alone)`;
   };
   // THE FIRST RUNG OF PROGRESSIVE DISPLAY: one line per door, its carrier's one line beside it; depth unfolds per door
-  // (`lares <door> --help`, a slot, the whole), so the list caps no terminal width (the role law caps each line at its carrier).
+  // (`lares help <door>`, a slot, the whole), so the list caps no terminal width (the role law caps each line at its carrier).
   console.log("lares — operator CLI for the Lares lararium stack");
-  console.log("Usage:  lares <command> [args...]    (lares <command> --help: examples, then the full account)\n");
+  console.log("Usage:  lares <command> [args...] [name=value...]    (lares help <command>: examples, then the full account)\n");
   if (surface !== VERB_SURFACE.cli || executableOnly) {
     console.log(`Surface: ${surface}${executableOnly ? " (executable — key-holding acts withheld)" : ""}`);
   }
@@ -405,57 +397,12 @@ function printHelp(surface: string = VERB_SURFACE.cli, executableOnly = false): 
   if (shown.some((c) => c.signs)) {
     console.log("  ✍ = holds a key. An agent surface may compose these and MUST NOT execute them.");
   }
-  // The usage line already names `lares <command> --help`; the TTY rule rides the flags' own header, one line spared.
-  console.log("Global flags (prose on a TTY, JSON off-TTY or under --json); every other param rides as name=value:");
-  console.log(`  ${"--json".padEnd(14)} Emit a deterministic JSON result (ok|error + requestId); status reads need it.`);
-  console.log(`  ${"--no-json".padEnd(14)} Force human prose even when stdout is not a TTY.`);
-  console.log(`  ${"--yes".padEnd(14)} Skip confirmation prompts (required for non-interactive runs).`);
-  console.log(`  ${"--keyhive-trace".padEnd(15)} Print Keyhive's DEBUG/TRACE lines (${KEYHIVE_TRACE_ENV}=1 too).`);
-}
-
-/** `-h` spells `--help` (clig.dev), and a leading help flag names the `help` command, so `lares --help` prints what
- *  `lares help` prints. Tokens after a bare `--` ride untouched. */
-function spellHelp(argv: readonly string[]): readonly string[] {
-  const end = argv.indexOf("--");
-  const head = (end === -1 ? argv : argv.slice(0, end)).map((t) => (t === "-h" ? "--help" : t));
-  const out = [...head, ...(end === -1 ? [] : argv.slice(end))];
-  if (out[0] !== "--help") return out;
-  const rest = out.slice(1);
-  return rest[0] === undefined || rest[0].startsWith("--") ? ["help", ...rest] : out;
-}
-
-/**
- * MOVED maps a spelling outside the front door to the line that answers for it. The spelling runs nothing, and it never
- * answers `unknown command` either: an operator who types it meets the seat that answers, by name.
- * A row matches when its words lead the command line. `tools/door-names-witness.sh` reads every `lares …`
- * cure here against the live registry, so a seat that moves again cannot leave a row pointing at nothing.
- */
-export const MOVED: ReadonlyArray<{ readonly argv: readonly string[]; readonly to: string }> = [
-  { argv: ["promote"], to: "lares trust" },
-  { argv: ["nexus", "promote"], to: "lares nexus approve" },
-  // Verbs that ride the door owning their island (fewer-front-doors).
-  { argv: ["receipt"], to: "lares vessel request <id>" },
-  { argv: ["cancel"], to: "lares vessel request <id> cancel=true" },
-  // `watch` left this table at landing 16: the word stands again as a call verb (a filter subscription), and the ingest watch
-  // still rides `lares ingest watch=true`.
-  { argv: ["draft"], to: "lares act lar:///carriage.draft.pulls uri=<uri>" },
-  { argv: ["raise"], to: "lares persona raise-sign <challenge-json-text>" },
-  { argv: ["wing-of"], to: "node tools/wing-of.mjs" },
-  // Residency rides `wiki status`; the wiki's pointer rides `wiki switch` and the face's keep list rides `wiki keep`.
-  { argv: ["bag", "stats"], to: "lares wiki status" },
-  { argv: ["bag", "list"], to: "lares bag show [<slug>]" },
-  { argv: ["wiki", "list"], to: "lares wiki status" },
-  { argv: ["wiki", "active"], to: "lares wiki status" },
-  { argv: ["test-quine"], to: "pnpm --filter @lararium/node test:quine" },
-];
-
-/** The line MOVED maps this command line to, or null where no MOVED row leads it. */
-function movedTo(args: ParsedArgs): string | null {
-  const line = [args.command, ...args.positional];
-  const row = MOVED.find((m) => m.argv.every((w, i) => line[i] === w));
-  if (row) return row.to;
-  if (movedRelease(args)) return "lares vessel release <documentId> [keep=true|fresh=true]";
-  return args.command === "sense" && retiredSensePromote(args) ? "lares sense harden" : null;
+  // The usage line already names `lares help <command>`; the TTY rule rides the params' own header, one line spared.
+  console.log("Global params (prose on a TTY, JSON off-TTY or under json=true); every param rides as name=value:");
+  console.log(`  ${"json=true".padEnd(19)} Emit a deterministic JSON result (ok|error + requestId); status reads need it.`);
+  console.log(`  ${"json=false".padEnd(19)} Force human prose even when stdout is not a TTY.`);
+  console.log(`  ${"yes=true".padEnd(19)} Skip confirmation prompts (required for non-interactive runs).`);
+  console.log(`  ${"keyhive-trace=true".padEnd(19)} Print Keyhive's DEBUG/TRACE lines (${KEYHIVE_TRACE_ENV}=1 too).`);
 }
 
 /** The door table as the keyword reader takes it: each door's name and the params its carriers take. */
@@ -494,6 +441,23 @@ function echoSet(line: KeywordLine): void {
   if (line.kind === "door") for (const note of line.notes) console.error(`lares: ${note}`);
 }
 
+/**
+ * `lares help <door> [<verb>…]`: the door's carriers (the baked pack). A verb a carrier skins answers for itself
+ * (`lares help vessel rite`), so a sub-verb's params reach the reader instead of its parent's; an address reads its carrier
+ * whole (`lares help lar:///carriage.bag.moves`); a shim verb (`up|down|reset|found|logs|build|rebuild`) reads its row on this
+ * machine. The carrier's `Law:` lines name the memes behind it, which `lares get title=<uri> aperture=arc` reads.
+ */
+function helpFor(words: readonly string[]): number {
+  const [door, ...rest] = words as [string, ...string[]];
+  const cmd = COMMANDS.find((c) => c.name === door);
+  if (cmd) { renderCommandHelp(helpDoor(cmd.name, rest), cmd.summary); return 0; }
+  if (door.startsWith("lar:///")) { renderCommandHelp(door); return 0; }
+  const shim = shimHelpLines(door);
+  if (shim !== null) { for (const line of shim) console.log(line); return 0; }
+  console.error(`lares: unknown command "${door}".  Run \`lares help\` for the list.`);
+  return 2;
+}
+
 export async function dispatch(rawArgv: readonly string[]): Promise<number> {
   const keyed = keywordArgv(rawArgv);
   if (keyed !== null) {
@@ -501,7 +465,7 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
     echoSet(keyed.line);
     return await dispatch(keyed.argv);
   }
-  const argv = spellHelp(rawArgv);
+  const argv = rawArgv;
   let args: ParsedArgs;
   try { args = parseArgs(argv); }
   catch (err) {
@@ -511,15 +475,8 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
   }
   // Keyhive's trace, asked by name: set before any command stands a provider or a vessel.
   askKeyhiveTrace(args.flags);
-  // Global help: `lares help`, or `lares --help` with no command (bare `lares` speaks the house, above).
-  //
-  // A NAME THAT DOES NOT ANSWER MUST NOT ANSWER SOFTLY. Routing an unknown command to the global menu
-  // returns 0 and prints a full page, which reads exactly like a door that opened — so a caller probing
-  // `lares <name> --help` cannot tell a live verb from a name no door answers, and the collapse's own law
-  // (one spelling per door) stops being checkable from outside. The unknown-command refusal
-  // below therefore owns EVERY unknown name, flags included.
-  // BARE `lares` SPEAKS THE HOUSE (the keyword head): the status line, the layered pins, the keys; the full door list moved behind
-  // `lares help`. A bare line that names a flag (`lares --json`, `surface=`) still asks the menu's machine shape.
+  // BARE `lares` SPEAKS THE HOUSE (the keyword head): the status line, the layered pins, the keys; the full door list stands
+  // behind `lares help`.
   const bareFlags = [...Object.keys(args.options), ...Object.keys(args.flags)];
   if (args.command === null && bareFlags.length === 0) return await bareDoor({});
   // The bare door's address, as the bridge forwards a bare line or a keyword line naming no act keyword into the vessel's host.
@@ -528,7 +485,10 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
     for (const token of args.positional) { const eq = token.indexOf("="); if (eq > 0) params[token.slice(0, eq)] = token.slice(eq + 1); }
     return await bareDoor(params);
   }
-  if (args.command === null || args.command === "help") {
+  // ONE HELP SPELLING: `lares help` lists every door (`surface=`, `executable=true`, `json=true` shape the list), and
+  // `lares help <door> [<verb>…]` reads that door's carriers, never running the handler.
+  const asked = args.command === "help" ? args.positional.find((t) => !t.includes("=")) : undefined;
+  if (args.command === null || (args.command === "help" && asked === undefined)) {
     const surface = args.options["surface"] ?? VERB_SURFACE.cli;
     const execOnly = args.flags["executable"] === true;
     if (args.flags["json"] === true) {
@@ -540,44 +500,14 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
     printHelp(surface, execOnly);
     return args.command === null ? 1 : 0;
   }
-  const moved = movedTo(args);
-  if (moved) { console.error(`usage: this command moved to \`${moved}\``); return 2; }
-  // A CALL WORD'S POSITIONAL SPELLING BURNED (the keyword head): `lares get Room4` reads as `lares get=Room4`; run that.
-  const cure = args.flags["help"] === true ? null : positionalCure(args.command, args.positional);
-  if (cure !== null) {
-    console.error(`lares: keyword-positional: \`lares ${[args.command, ...args.positional].join(" ")}\` reads as \`${cure}\`; run that`);
-    return 2;
-  }
-  // AN ADDRESS NAMES ITS OWN VERB (comms-ux-enacts landing 8): `lares lar:///<address> name=value…`, `lares act lar:///<address> …`
-  // and `lares -` (one call sigil on stdin) ride the call door, which takes params alone. The parser refuses every dash flag
-  // outside GLOBAL_FLAGS on a call line; `--meme` reads beside `--help` alone, and past it names the dial it burned into.
-  if (isCallHead(args.command, args.positional) && !(CALL_WORDS as readonly string[]).includes(args.command ?? "")) {
-    if (args.flags["meme"] !== undefined && args.flags["help"] !== true) {
-      console.error(`lares: dash-flag-burned: --meme burned into the dials: it reads as ${BURNED_FLAGS["meme"]} on a call; run: lares ${[args.command, ...args.positional].join(" ")} ${BURNED_FLAGS["meme"]}`);
-      return 2;
-    }
-    // THE ONE ACT'S HELP (landing 9): `lares act --help` with no address prints the act carriers' call shapes, drawn from the pack.
-    if (args.command === "act" && args.positional.length === 0 && args.flags["help"] === true) {
-      for (const line of helpLines("act")) console.log(line);
-      return 0;
-    }
-    return await cmdCall(args);
-  }
+  if (args.command === "help") return helpFor(args.positional.filter((t) => !t.includes("=")));
+  // AN ADDRESS NAMES ITS OWN VERB (comms-ux-enacts landing 8): `lares lar:///<address> name=value…` and `lares -` (one call
+  // sigil on stdin) ride the call door, which takes params alone; the verb words (`get`, `put`, …) ride it through their rows.
+  if (isCallWord(args.command) && !COMMAND_NAMES.includes(args.command ?? "")) return await cmdCall(args);
   const cmd = COMMANDS.find((c) => c.name === args.command);
   if (!cmd) {
-    // A SHIM VERB'S HELP: the host shim answers `up|down|reset|found|logs|build|rebuild`, and a help ask stays on this machine,
-    // so the row reads here (`shimHelpLines`) instead of refusing a name the shim owns.
-    const shim = args.flags["help"] ? shimHelpLines(args.command) : null;
-    if (shim !== null) { for (const line of shim) console.log(line); return 0; }
     console.error(`lares: unknown command "${args.command}".  Run \`lares help\` for the list.`);
     return 2;
-  }
-  // Per-command help: `lares <command> --help` renders the door's carriers (the baked pack) and returns, never running the
-  // handler. A verb a carrier skins answers for itself (`lares vessel rite --help`), so a sub-verb's flags reach the reader
-  // instead of its parent's; the carrier's `Law:` lines name the memes behind it, which `lares get title=<uri> aperture=arc` reads.
-  if (args.flags["help"]) {
-    renderCommandHelp(helpDoor(cmd.name, args.positional), cmd.summary);
-    return 0;
   }
   // A param the line's carrier takes nowhere refuses BY NAME, before anything runs — never after the act, which would report a
   // refusal for work already done.
@@ -586,7 +516,7 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
     for (const { name, nearest } of stray) {
       console.error(`lares: unknown param ${name}= for \`lares ${cmd.name}\`${nearest === null ? "" : ` (did you mean ${nearest}=?)`}`);
     }
-    console.error(`Run \`lares ${[cmd.name, ...args.positional.slice(0, 1)].join(" ")} --help\` for the params it takes.`);
+    console.error(`Run \`lares help ${[cmd.name, ...args.positional.slice(0, 1)].join(" ")}\` for the params it takes.`);
     return 2;
   }
   // Fresh-Build Invariant — a daemon-lifecycle verb (found/boot/mutate-identity) never runs
@@ -640,7 +570,7 @@ const invokedAsScript = (() => {
  * Entry for the committed bin shim (bin/lares.mjs) — same path as direct invocation.
  *
  * SET THE CODE, NEVER CALL EXIT. `process.stdout` is asynchronous on a PIPE and synchronous on a
- * file, so `process.exit()` discards whatever has not drained — and `--json` exists "for
+ * file, so `process.exit()` discards whatever has not drained — and `json=true` exists "for
  * agents/pipes", which is exactly the sink that loses bytes. Measured: a 165,256-byte result
  * arrived whole in a file and truncated to 146,176 through a pipe, mid-string, exit code 0.
  * Setting `exitCode` lets the loop drain and exit on its own with the same status.

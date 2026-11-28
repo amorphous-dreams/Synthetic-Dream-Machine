@@ -32,13 +32,13 @@ beforeEach(() => {
 afterEach(() => { vi.restoreAllMocks(); });
 
 test("a freshly minted wiki is held within the budget", async () => {
-  expect(await cmdWikiInit(parseArgs(["wiki", "fresh", "--no-json"]))).toBe(0);
+  expect(await cmdWikiInit(parseArgs(["wiki", "fresh", "json=false"]))).toBe(0);
   expect(sent).toContain("wiki-keep");
 });
 
 test("a full budget holds nothing, names the budget and the verb that frees a hold", async () => {
   held = ["a", "b", "c"];
-  expect(await cmdWikiInit(parseArgs(["wiki", "fresh", "--no-json"]))).toBe(0);
+  expect(await cmdWikiInit(parseArgs(["wiki", "fresh", "json=false"]))).toBe(0);
   expect(sent).not.toContain("wiki-keep");
   expect(text).toMatch(/3\/3/);
   expect(text).toContain("lares wiki unkeep <slug>");
@@ -47,14 +47,14 @@ test("a full budget holds nothing, names the budget and the verb that frees a ho
 
 test("control: a wiki that already stood is not held by a re-init", async () => {
   minted = "already-exists";
-  expect(await cmdWikiInit(parseArgs(["wiki", "fresh", "--no-json"]))).toBe(0);
+  expect(await cmdWikiInit(parseArgs(["wiki", "fresh", "json=false"]))).toBe(0);
   expect(sent).not.toContain("wiki-keep");
 });
 
 test("RED (referee walk #1/#6) an init that completed a partial says plainly what it stood, and holds the wiki", async () => {
   minted = "completed";
   extra = { canonReused: "floor", bagsRegistered: ["lar:///ha.ka.ba/bags/fresh", "lar:///ha.ka.ba/wikis/fresh/working"], workbench: { realmId: "f".repeat(64), founded: true } };
-  expect(await cmdWikiInit(parseArgs(["wiki", "fresh", "--no-json"]))).toBe(0);
+  expect(await cmdWikiInit(parseArgs(["wiki", "fresh", "json=false"]))).toBe(0);
   expect(sent).toContain("wiki-keep");
   expect(text).not.toMatch(/completed-partial/);
   expect(text).toMatch(/completed: canon reused from the floor; bags registered: lar:\/\/\/ha\.ka\.ba\/bags\/fresh, lar:\/\/\/ha\.ka\.ba\/wikis\/fresh\/working; workbench founded \(realm ffffffffffff…\)/);
@@ -63,13 +63,13 @@ test("RED (referee walk #1/#6) an init that completed a partial says plainly wha
 test("RED (referee walk #1) a workbench this face cannot stand reads as a named line, never a silent nothing", async () => {
   minted = "already-exists";
   extra = { bagsRegistered: [], workbench: { realmId: null, founded: false } };
-  expect(await cmdWikiInit(parseArgs(["wiki", "fresh", "--no-json"]))).toBe(0);
+  expect(await cmdWikiInit(parseArgs(["wiki", "fresh", "json=false"]))).toBe(0);
   expect(text).toMatch(/workbench: none stands for this face/);
 });
 
 test("a keep the vessel refuses names its cause and its detail, and the mint still stands", async () => {
   holdOut = { held: false, cause: "keep-full", detail: "the keep budget stands full (3/3); this face keeps b", holds: [], budget };
-  expect(await cmdWikiInit(parseArgs(["wiki", "fresh", "--no-json"]))).toBe(0);
+  expect(await cmdWikiInit(parseArgs(["wiki", "fresh", "json=false"]))).toBe(0);
   expect(sent).toContain("wiki-keep");
   expect(text).toContain("keep-full");
   expect(text).toContain("this face keeps b");

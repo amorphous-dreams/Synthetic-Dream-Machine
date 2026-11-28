@@ -58,7 +58,7 @@ async function awaitPublishDiff(gainPath: string, losePath: string, timeoutMs = 
 beforeAll(async () => {
   lar = await targetInstance();
   if (!stagedTarget) return;   // mutating — staged only
-  const r = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, `to=${WORKING_LARES}`, "yes=true", "--json"]);
+  const r = await lar.cli(["lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, `to=${WORKING_LARES}`, "yes=true", "json=true"]);
   if (r.json?.["ok"] !== true) throw new Error(`seed LOAD failed: ${JSON.stringify(r.json)}`);
   await promoteLoadedTitles(lar, ((r.json["data"] as { titles?: string[] }).titles ?? []), "lares");
   if (!(await awaitFileState(join(lar.root, "projections/bags/lares", REL), true)))
@@ -68,7 +68,7 @@ afterAll(async () => { await lar.stop(); });
 
 describe.skipIf(!stagedTarget)("promotion publish-diff — the cap-gated carrier MOVE across a canon shore", () => {
   test("P1 — the cap-gated carrier MOVE succeeds for the owner, with an audit record", async () => {
-    const r = await lar.cli(["act", "lar:///carriage.bag.moves", `title=${BOOT_URI}`, `from=${LARES_URI}`, `to=${LARARIUM_URI}`, "yes=true", "--json"]);
+    const r = await lar.cli(["lar:///carriage.bag.moves", `title=${BOOT_URI}`, `from=${LARES_URI}`, `to=${LARARIUM_URI}`, "yes=true", "json=true"]);
     expect(r.json?.["ok"]).toBe(true);
     const data = r.json?.["data"] as Record<string, unknown>;
     // THE AUDIT NAMES THE OUTCOME BY THE BUILT PREFIX: `OUTCOME_URI_PREFIX = `${CONTROL_HOME_ID}/outcomes/`` (the outcome

@@ -129,7 +129,7 @@ Vessel config sets both bounds (`receipts.ring`: `ratePerMin`, `horizonDays`, `b
 The CLI and the vessel share a machine and meet at the vessel's owner-only socket. One line asks, one line answers.
 
 | A person runs | The line | The vessel answers |
-| `lares act …` and every verb command | the verb, its arguments, the requester, a request id the CLI minted | the outcome, a named refusal, or `unknown` where the vessel's own wait ended |
+| `lares lar:///<address> …` and every verb command | the verb, its arguments, the requester, a request id the CLI minted | the outcome, a named refusal, or `unknown` where the vessel's own wait ended |
 | `lares vessel request <id>` | `{op:"receipt"}` | the ledger's reading of the id |
 | `lares vessel request <id> cancel=true` | `{op:"cancel"}` | what a receipt read answers after the cancel took its turn: `abandoned` where the cancel stands, else what the vessel holds for the id |
 
@@ -191,6 +191,6 @@ A herm carries sealed frames between keys it proved, reads none of them, and hol
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3WcWEnSTFe3BUvW_fgJ9IYuPAk0AfR38gVw8qEpEbmQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y6zJ4d0pLQtMPFJEMsFsC2d_40U-r_iK5VSBvIhie_o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

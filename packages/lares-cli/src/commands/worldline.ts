@@ -43,7 +43,7 @@
  * read-path (stamp serialization at capture). Until that lands, `diff` refuses honestly
  * rather than inventing causality from timestamps.
  *
- * One surface, two actors: prose on a TTY, deterministic JSON under --json (../render.ts).
+ * One surface, two actors: prose on a TTY, deterministic JSON under json=true (../render.ts).
  *
  * Meme: lar:///ha.ka.ba/lararium/api/agent-worldline#/attribution
  */

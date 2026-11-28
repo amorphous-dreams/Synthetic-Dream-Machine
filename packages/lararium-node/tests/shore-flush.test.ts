@@ -120,7 +120,7 @@ describe("the shore's flush", () => {
     const here = dirname(fileURLToPath(import.meta.url));
     const fixture = JSON.parse(readFileSync(join(here, "../../lararium-sensorium/scripts/fixtures/cli-verbs.json"), "utf8")) as { mirrored: string[]; cli_forms: Record<string, string> };
     expect(fixture.mirrored).toContain("act");
-    expect(fixture.cli_forms["act"]).toBe("act");
+    expect(fixture.cli_forms["act"]).toBe("lar:///<address>");
     // Each shore carrier renders its seat words, so `act(address=…)` reaches it with no tool of its own.
     const pack = JSON.parse(readFileSync(join(here, "../../lararium-tw5/affordance-pack.json"), "utf8")) as { carriers: Record<string, { renders?: Record<string, unknown> }> };
     for (const address of ["lar:///carriage.disk.reads", "lar:///carriage.disk.flushes"]) expect(pack.carriers[address]?.renders?.["mcp"], address).toBeDefined();

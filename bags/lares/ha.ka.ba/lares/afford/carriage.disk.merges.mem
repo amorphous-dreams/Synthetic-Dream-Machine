@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.disk.merges"
 
 ! carriage.disk.merges ~ a person keeps the file's words as parallel drafts and the records' render on disk
 
-`keep-both <uri> --key <key>` writes the records' render over the file and keeps the file's words as parallel drafts in the worn face's draft layer. It appears in the standoff alert where drafts stand; `drafts <uri>` names them by title, and `lares get` reads each. SETTLING STAYS A HAND ACT: an AI harness on its branch refuses `hand-act-only`, an unreadable branch `hand-unattested`, and `--yes` approves nothing by itself.
+`keep-both <uri> --key <key>` writes the records' render over the file and keeps the file's words as parallel drafts in the worn face's draft layer. It appears in the standoff alert where drafts stand; `drafts <uri>` names them by title, and `lares get` reads each. SETTLING STAYS A HAND ACT: an AI harness on its branch refuses `hand-act-only`, an unreadable branch `hand-unattested`, and `yes=true` approves nothing by itself.
 
 <<~/ahu>>
 
@@ -51,7 +51,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.disk.merges"
 Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
-<<has entity=`gate` name=`hand-act` params=`who/hand ~ a settling act reads the hand behind this command before anything else; an AI harness on its branch refuses hand-act-only, an unreadable branch hand-unattested, each naming the command the operator runs, and --yes approves nothing by itself`>>
+<<has entity=`gate` name=`hand-act` params=`who/hand ~ a settling act reads the hand behind this command before anything else; an AI harness on its branch refuses hand-act-only, an unreadable branch hand-unattested, each naming the command the operator runs, and yes=true approves nothing by itself`>>
 ```
 
 <<~/ahu>>
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;735Oh0bHEyKYVpr86lqCnWSbv0pjh-qjqt6gGu71gMk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MrzrvU3YFJCLoN820ez4CiLFqf-7Th5TI761LyEytGo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

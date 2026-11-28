@@ -1,11 +1,11 @@
 /**
- * `lares act lar:///carriage.draft.pulls uri=<uri> [to=<bag>] [yes=true]` (the host door the call answers `handler/host` for)
+ * `lares lar:///carriage.draft.pulls uri=<uri> [to=<bag>] [yes=true]` (the host door the call answers `handler/host` for)
  *
  * Pull-into-draft ceremony — copies a tiddler currently resolving from a
  * lower bag into a writable draft bag (default: the active wiki draft /
  * composite default writable). The source bag stays intact; the new copy
  * overlays via composite priority. Operator can then edit the draft and
- * land it into another bag through a residency ACTION verb (`lares act lar:///carriage.record.adds …` and its siblings).
+ * land it into another bag through a residency ACTION verb (`lares lar:///carriage.record.adds …` and its siblings).
  *
  * Flags:
  *   to=<bag>       target draft bag (default: active wiki draft)
@@ -27,7 +27,7 @@ export async function cmdDraft(args: ParsedArgs): Promise<number> {
   const toBag   = args.options["to"];
 
   if (!tiddler) {
-    console.error("usage: lares act lar:///carriage.draft.pulls uri=<uri> [to=<bag>] [yes=true]");
+    console.error("usage: lares lar:///carriage.draft.pulls uri=<uri> [to=<bag>] [yes=true]");
     return 2;
   }
 
@@ -36,7 +36,7 @@ export async function cmdDraft(args: ParsedArgs): Promise<number> {
     did = await vesselDid();
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    emit(args, { ok: false, error: msg, human: () => console.error(`lares act lar:///carriage.draft.pulls: ${msg}`) });
+    emit(args, { ok: false, error: msg, human: () => console.error(`lares lar:///carriage.draft.pulls: ${msg}`) });
     return 3;
   }
 
@@ -50,7 +50,7 @@ export async function cmdDraft(args: ParsedArgs): Promise<number> {
     emit(args, {
       ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
       error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
-      human: () => { console.error(`lares act lar:///carriage.draft.pulls: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); },
+      human: () => { console.error(`lares lar:///carriage.draft.pulls: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); },
     });
     return exitFor(f.code);
   }
@@ -109,7 +109,7 @@ export async function cmdDraft(args: ParsedArgs): Promise<number> {
     emit(args, {
       ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
       error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
-      human: () => { console.error(`lares act lar:///carriage.draft.pulls: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); },
+      human: () => { console.error(`lares lar:///carriage.draft.pulls: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); },
     });
     return exitFor(f.code);
   }

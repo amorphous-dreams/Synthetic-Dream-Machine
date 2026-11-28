@@ -1,8 +1,8 @@
 /**
  * W1 · EVERY DOOR NAMES ONE ADDRESS, EVERY SKIN NAMES A LIVE DOOR (lar:///ha.ka.ba/kahua/memory/plan/cap-memes-lantern).
  *
- * Inputs: the baked pack's routes against the live tables: `COMMANDS` and each door's verb table, or the call door's `act`
- * head with the address it names (cli), the `@mcp.tool` functions of the seat, `act` with the address it names (mcp), the
+ * Inputs: the baked pack's routes against the live tables: `COMMANDS` and each door's verb table, or an address spelling
+ * that names its own call (cli), the `@mcp.tool` functions of the seat, `act` with the address it names (mcp), the
  * widget modules (tw5). A skin naming a door no table holds reads red; a flipped door whose
  * verbs some carrier leaves unrouted reads red (a door flips whole; a `door/part` skin would gather no door entry, so its door
  * would keep its own table and count legacy until every verb held a carrier; none stands). Two carriers claiming one spelling refuse at the bake
@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
 import type { AffordancePack } from "@lararium/tw5/affordance-pack";
 import { COMMANDS } from "../../src/bin/lares.js";
-import { isCallHead } from "../../src/commands/call.js";
+import { isCallWord } from "../../src/parse-args.js";
 import { flattenVerbs } from "../../src/verb-table.js";
 import { REBAKE, SEED_ADDRESS, cliRoutes, pack, partDoors } from "./affordance-harness.js";
 
@@ -30,8 +30,8 @@ function orphans(p: AffordancePack): string[] {
   const out: string[] = [];
   for (const r of cliRoutes(p)) {
     const cmd = COMMANDS.find((c) => c.name === r.door);
-    // THE ONE ACT (landing 9): `lares act lar:///<address>` rides the call door's `act` head, which no command row carries.
-    if (!cmd && isCallHead(r.door, r.path) && r.path.join(" ") === r.address) continue;
+    // AN ADDRESS NAMES ITS OWN CALL: `lares lar:///<address>` rides the call door, which no command row carries.
+    if (!cmd && isCallWord(r.door) && r.path.length === 0 && r.door === r.address) continue;
     if (!cmd) { out.push(`cli \`lares ${r.spelling}\`: no door "${r.door}"`); continue; }
     if (r.path.length === 0) continue;
     const tables = cmd.verbs === null ? [] : flattenVerbs(cmd.name, cmd.verbs);
@@ -68,9 +68,9 @@ describe("W1 · every door names one address; every skin names a live door", () 
 
   test("SEED: wave 2's doors route each verb, an alias beside its twin, to a carrier", () => {
     const cli = pack().routes["cli"] ?? {};
-    expect(cli["act lar:///carriage.record.adds"], REBAKE).toBe("lar:///carriage.record.adds");
-    expect(cli["act lar:///carriage.bag.moves"], REBAKE).toBe("lar:///carriage.bag.moves");
-    expect(cli["act lar:///carriage.draft.pulls"], REBAKE).toBe("lar:///carriage.draft.pulls");
+    expect(cli["lar:///carriage.record.adds"], REBAKE).toBe("lar:///carriage.record.adds");
+    expect(cli["lar:///carriage.bag.moves"], REBAKE).toBe("lar:///carriage.bag.moves");
+    expect(cli["lar:///carriage.draft.pulls"], REBAKE).toBe("lar:///carriage.draft.pulls");
     expect(cli["ingest"], REBAKE).toBe("lar:///carriage.capture.ingests");
     expect(cli["export"], REBAKE).toBe("lar:///carriage.bundle.exports");
     expect(cli["import"], REBAKE).toBe("lar:///carriage.bundle.imports");

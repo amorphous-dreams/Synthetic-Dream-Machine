@@ -39,7 +39,7 @@ if [ ! -f "$LARES" ]; then
 fi
 # `root=` hands the CLI the committing repository: the CLI may live in another checkout (`LARES_BIN`), and absent a root it
 # keeps the checkout it lives in. The refusal names the tree the CLI read, so a wrong tree shows itself.
-if ! out="$(node "$LARES" repo read staged=true root="$REPO" --json)"; then
+if ! out="$(node "$LARES" repo read staged=true root="$REPO" json=true)"; then
   echo "[repo-tunnel-staged] REFUSED — the staged checkout stands off its declared reality tunnel:" >&2
   printf '%s\n' "$out" | REPO="$REPO" node -e 'let s="";process.stdin.on("data",c=>s+=c).on("end",()=>{try{const d=JSON.parse(s).data;for(const r of d.rows)if(r.state!=="aligned"&&r.state!=="absent")console.error(`  ${r.state} ${r.id}: ${r.detail}`);console.error(`  read the staged seat of ${d.root ?? `${process.env.REPO} (the CLI named no root)`}`)}catch{console.error(s)}})'
   echo "  run lares repo tend root=\"$REPO\", stage what it wrote, and commit again." >&2

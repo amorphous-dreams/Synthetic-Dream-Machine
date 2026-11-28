@@ -106,8 +106,8 @@ describe("L9 · a named outcome keeps its cause and its exit class", () => {
     const CURES: ReadonlyArray<readonly [cause: string, cure: () => string | undefined, names: string]> = [
       ["request-interrupted, with a change id", () => refusalHint("request-interrupted", "cid-9"), "change-id=cid-9"],
       ["request-abandoned, with a change id", () => refusalHint("request-abandoned", "cid-9"), "change-id=cid-9"],
-      ["bag-retired", () => refusalHint("bag-retired", undefined), "lares act lar:///carriage.bag.creates bag="],
-      ["bag-retired through the store door", () => storeFailure(new RoutedVerbRefused("m", "bag-retired")).hint, "lares act lar:///carriage.bag.creates bag="],
+      ["bag-retired", () => refusalHint("bag-retired", undefined), "lares lar:///carriage.bag.creates bag="],
+      ["bag-retired through the store door", () => storeFailure(new RoutedVerbRefused("m", "bag-retired")).hint, "lares lar:///carriage.bag.creates bag="],
       ["daemon-unreachable", () => verbFailure(new DaemonUnreachable("/x")).hint, "lares vessel stand"],
       ["outcome-unknown", () => verbFailure(new LocalWaitExpired("v", 1, "req-7")).hint, "lares vessel request req-7"],
     ];
@@ -221,15 +221,15 @@ describe("L9 · a named outcome keeps its cause and its exit class", () => {
   });
 
   describe("at the door: a usage refusal keeps code `usage` and exit 2 on both channels", () => {
-    test("`library <unknown verb> --json` writes error.code usage and exits 2", async () => {
-      const r = await door(["library", UNKNOWN, "--json"]);
+    test("`library <unknown verb> json=true` writes error.code usage and exits 2", async () => {
+      const r = await door(["library", UNKNOWN, "json=true"]);
       expect(r.code).toBe(exitFor("usage"));
       const line = r.out.split("\n").find((l) => l.trim().startsWith("{"));
       expect(line).toBeDefined();
       expect(JSON.parse(line!).error.code).toBe("usage");
     });
-    test("CONTROL: a live door under --help exits 0, not a usage class", async () => {
-      expect((await door(["vessel", "--help"])).code).toBe(exitFor("ok"));
+    test("CONTROL: a live door's help exits 0, not a usage class", async () => {
+      expect((await door(["help", "vessel"])).code).toBe(exitFor("ok"));
     });
   });
 });

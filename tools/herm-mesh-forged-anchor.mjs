@@ -14,7 +14,7 @@ import { readPins } from "./mesh-pins.mjs";
 
 const [bundlePath, fromArg] = process.argv.slice(2);
 if (!bundlePath || !process.env.LAR_ROOT) throw new Error("the probe needs an opening bundle and its founded reader root");
-// The file holds A's `nexus carry --json` answer; the bundle rides it as `data.carryBundle`, as carry-take reads it.
+// The file holds A's `nexus carry json=true` answer; the bundle rides it as `data.carryBundle`, as carry-take reads it.
 const answer = JSON.parse(readFileSync(bundlePath, "utf8"));
 const bundle = answer?.data?.carryBundle ?? answer?.carryBundle ?? answer;
 if (bundle?.kind === undefined || !bundle.contract) throw new Error("the opening file carries no carry bundle");

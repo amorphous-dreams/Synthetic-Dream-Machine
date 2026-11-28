@@ -69,10 +69,10 @@ describe.skipIf(!existsSync(CLI))("a face lit leaves the vessel bootable", () =>
   test("founding the PLACE names a daemon document", () => {
     // VACUITY GATE. Every claim below compares against this id; if founding names none, the comparisons
     // would pass by having nothing to disagree with.
-    // A test builds nothing: every gated vessel door rides `--skip-build`, so the run measures the dist that
+    // A test builds nothing: every gated vessel door rides `skip-build=true`, so the run measures the dist that
     // stands and never rewrites it beneath a concurrent run.
     seedTestCustody(root, "ignore");   // the harness names the founding route
-    lares(["vessel", "found", "--skip-build"]);
+    lares(["vessel", "found", "skip-build=true"]);
     expect(daemonUrlFromBootstrap()).toMatch(/^automerge:/);
   });
 
@@ -81,7 +81,7 @@ describe.skipIf(!existsSync(CLI))("a face lit leaves the vessel bootable", () =>
     // act over the standing place writes the PersonaGroup id INTO this bootstrap — it must not re-seed the place
     // underneath itself.
     const before = daemonUrlFromBootstrap();
-    lares(["vessel", "found", "hearth=true", "name=alpha", "--skip-build"], { LAR_PEERS: "" });
+    lares(["vessel", "found", "hearth=true", "name=alpha", "skip-build=true"], { LAR_PEERS: "" });
     expect(daemonUrlFromBootstrap()).toBe(before);
   });
 
@@ -94,7 +94,7 @@ describe.skipIf(!existsSync(CLI))("a face lit leaves the vessel bootable", () =>
   test("★ the vessel then BOOTS — it does not answer `hearth-private doc unavailable` ★", () => {
     // THE CLAIM. A place that lit a face must still stand. The mesh's hearth failed exactly here, on a
     // stable document id, through three restarts.
-    const out = lares(["vessel", "stand", "--skip-build"]);
+    const out = lares(["vessel", "stand", "skip-build=true"]);
     expect(out).not.toMatch(/hearth-private doc unavailable/);
     expect(out).not.toMatch(/local corruption/);
     unlockStaged(root);
@@ -110,7 +110,7 @@ describe.skipIf(!existsSync(CLI))("a face lit leaves the vessel bootable", () =>
     // answered names nothing about whether THIS island's own daemon doc stands, and a boot that reported
     // "local corruption (no peer carries it)" would be reading an absence somewhere else as damage here.
     lares(["vessel", "stop"]);
-    const out = lares(["vessel", "stand", "--skip-build"], { LAR_PEERS: `http://127.0.0.1:9/never-stands#${"ab".repeat(32)}` });
+    const out = lares(["vessel", "stand", "skip-build=true"], { LAR_PEERS: `http://127.0.0.1:9/never-stands#${"ab".repeat(32)}` });
     unlockStaged(root);
     expect(out).not.toMatch(/hearth-private doc unavailable/);
     expect(out).not.toMatch(/local corruption/);

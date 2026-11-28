@@ -41,7 +41,7 @@ test('the collector reads backtick spans (escaped or plain, doc comments too) an
 });
 
 test('CONTROL: a message prefix and a verb written without the `lares ` prefix name no command', () => {
-  assert.deepEqual(namedCommands('`lares act: request abandoned`'), []);
+  assert.deepEqual(namedCommands('`lares wiki: request abandoned`'), []);
   assert.deepEqual(namedCommands('a `kairos` verb, not yet a door'), []);
 });
 
@@ -64,28 +64,32 @@ test('the handler map reads the CLI table\'s own imports, aliases included', () 
 });
 
 test('a keyword line answers where a keyword names a door, an act keyword, or the bare door alone; a line naming no act keyword reads red', () => {
-  for (const line of ['lares vessel=request mu=!0', 'lares get=<title> aperture=arc', 'lares mu=_0 aperture=beat', 'lares act=lar:///engine.law.indexes', 'lares aperture=measure meme=check']) {
+  for (const line of ['lares vessel=request mu=!0', 'lares get=<title> aperture=arc', 'lares mu=_0 aperture=beat', 'lares aperture=measure meme=check']) {
     assert.equal(deadDoor(line), null, line);
   }
   assert.match(deadDoor('lares title=x mu=00'), /no act keyword/);
 });
 
-test('the one act: `act` and a bare address ride the call door by a carrier address; a verb word or a flag after `act` reads red', () => {
-  for (const line of ['lares act lar:///carriage.bag.moves title=<uri> from=<bag> to=<bag>', 'lares lar:///carriage.draft.pulls uri=<uri>',
-    'lares act --help', 'lares act REPACK: request abandoned', 'lares act ${verb}: bag= required', 'lares act lar:///<address> … yes=true']) {
+test('an address rides the call door by itself; the `act` word names no door', () => {
+  for (const line of ['lares lar:///carriage.bag.moves title=<uri> from=<bag> to=<bag>', 'lares lar:///carriage.draft.pulls uri=<uri>', 'lares lar:///<address> … yes=true']) {
     assert.equal(deadDoor(line), null, line);
   }
-  for (const line of ['lares act MOVE title=x from=a to=b', 'lares act', 'lares act … --yes']) {
-    assert.match(deadDoor(line) ?? '', /takes a carrier address/, line);
+  for (const line of ['lares act lar:///carriage.bag.moves', 'lares act MOVE title=x from=a to=b', 'lares act']) {
+    assert.match(deadDoor(line) ?? '', /no door "act"/, line);
   }
-  assert.match(deadDoor('lares act --in-wiki') ?? '', /--in-wiki burned into params/);
 });
 
-test('a dash spelling outside the global flags reads red on every door line, naming its param; the shim keeps its own', () => {
-  for (const line of ['lares vessel request <id> --cancel', 'lares wear 2 --face 1', 'lares mu=_0 --all', 'lares sense pour [--all]']) {
-    assert.match(deadDoor(line) ?? '', /burned into params: spell it [a-z-]+=…/, line);
+test('the help door reads the door words it names', () => {
+  for (const line of ['lares help', 'lares help json=true', 'lares help vessel request', 'lares help <door>', 'lares help lar:///carriage.bag.moves']) assert.equal(deadDoor(line), null, line);
+  assert.match(deadDoor('lares help vessel zz-no-such-name') ?? '', /declares no verb/);
+  assert.match(deadDoor('lares help zz-no-such-name') ?? '', /no door/);
+});
+
+test('every dash spelling reads red on every door line; the shim keeps its own, and a token past `--` rides whole', () => {
+  for (const line of ['lares vessel request <id> --cancel', 'lares wear 2 --face 1', 'lares mu=_0 --all', 'lares sense pour [--all]', 'lares vessel request <id> --json', 'lares wear 2 --yes', 'lares help --json']) {
+    assert.match(deadDoor(line) ?? '', /dash flags burned; params ride as name=value/, line);
   }
-  for (const line of ['lares vessel request <id> cancel=true --json', 'lares wear 2 --yes', 'lares mempalace setup -- --raw', 'lares up --capture <dir>']) {
+  for (const line of ['lares vessel request <id> cancel=true json=true', 'lares wear 2 yes=true', 'lares mempalace setup -- --raw', 'lares up --capture <dir>']) {
     assert.equal(deadDoor(line), null, line);
   }
 });

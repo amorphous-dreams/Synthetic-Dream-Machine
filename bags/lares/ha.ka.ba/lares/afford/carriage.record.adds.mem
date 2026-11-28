@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.record.adds"
 
 The residency model derives its verbs from SPARQL Update over (title × bag). `ADD` grants one tiddler residency in the destination bag while the source bag retains its copy: the tiddler's Work-level identity travels, so downstream tooling reads the landing as the same change in a second bag, never a new record. The verb takes the title, the source bag, the destination bag and a change-id (named, or minted when absent), submits one verb-tiddler to the vessel, and the wiki island's action-handler family runs it wrapped in an effect record that writes the archival audit tiddlers (an `accession` row on the destination).
 
-A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent for a call off a terminal, `mu=pentacle` previews the effect and commits nothing, and `in-wiki=true` runs the act in the active wiki's island. The act rides by its address: `lares act lar:///carriage.record.adds name=value…` (or `lares lar:///carriage.record.adds …`).
+A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent for a call off a terminal, `mu=pentacle` previews the effect and commits nothing, and `in-wiki=true` runs the act in the active wiki's island. The act rides by its address: `lares lar:///carriage.record.adds name=value…`.
 
 <<~/ahu>>
 
@@ -93,10 +93,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/cli`>>
 
-!!! lares act lar:///carriage.record.adds
+!!! lares lar:///carriage.record.adds
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host dry/walks grammar/call spells/[[lares act lar:///carriage.record.adds]] ~ the terminal; the act rides by its address through the call door, and the terminal runs the bound act (host files, y/N)`>>
+<<has entity=`skin` name=`cli` params=`handler/host dry/walks grammar/call spells/[[lares lar:///carriage.record.adds]] ~ the terminal; the act rides by its address through the call door, and the terminal runs the bound act (host files, y/N)`>>
 ```
 
 <<~/ahu>>
@@ -112,6 +112,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4QqZ1-HsSmKL_P-ARhcyQNhSXKnj-Zabpr3_xEl0eUg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yPIjas1Rzwe6iVF65txDI5TAkZhSyGc0eYkOvAN_Be4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

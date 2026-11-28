@@ -19,7 +19,7 @@
 #        pins the earlier wave founded; a bare `compose up` stands peers that knock with no pin and never dial)
 #        export LAR_ROOT=$(mktemp -d) && node tools/test-scratch-marker.mjs "$LAR_ROOT" && node tools/seed-test-custody.mjs "$LAR_ROOT" \
 #          && git ls-files -z genesis/ | xargs -0 -I{} cp --parents "{}" "$LAR_ROOT"/ \
-#          && node packages/lares-cli/bin/lares.mjs vessel found --skip-build
+#          && node packages/lares-cli/bin/lares.mjs vessel found skip-build=true
 #        ./tools/herm-mesh-witness.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -54,34 +54,34 @@ join() {
   local label="$1"; shift
   local out cf nym sig
   # A's charter epoch moves with every carry it signs, so each join reads the charter A stands on now.
-  CHARTER=$($COMPOSE exec -T lararium-a $LARES nexus seal export --no-json 2>/dev/null) || refused "$label" "A's nexus seal export" "$CHARTER"
+  CHARTER=$($COMPOSE exec -T lararium-a $LARES nexus seal export json=false 2>/dev/null) || refused "$label" "A's nexus seal export" "$CHARTER"
   printf '%s' "$CHARTER" > "$WORK/a-charter.mem"
   if [ "$label" != "host-reader" ]; then
     printf '%s' "$CHARTER" | $COMPOSE exec -T "$label" sh -c 'cat > /tmp/a-charter.mem' || refused "$label" "the charter copy" ""
-    out=$("$@" nexus seal import /tmp/a-charter.mem --json 2>&1) || refused "$label" "nexus seal import" "$out"
+    out=$("$@" nexus seal import /tmp/a-charter.mem json=true 2>&1) || refused "$label" "nexus seal import" "$out"
   elif [ "${HERM_MESH_ROLL:-0}" = 1 ]; then
     # The reader joins twice across the roll. A's charter is a partner's to it, so it lands beside the
     # reader's primary, where the second import moves forward along its seal lineage.
-    out=$("$@" nexus seal import carry="$WORK/a-charter.mem" --json 2>&1) || refused "$label" "nexus seal import carry=" "$out"
+    out=$("$@" nexus seal import carry="$WORK/a-charter.mem" json=true 2>&1) || refused "$label" "nexus seal import carry=" "$out"
     carried=$(printf '%s' "$out" | grep -oE '"aid":"[^"]+"' | head -1 | cut -d'"' -f4)
     [ -n "$carried" ] || refused "$label" "nexus seal import carry= (no aid)" "$out"
   else
-    out=$("$@" nexus seal import "$WORK/a-charter.mem" --json 2>&1) || refused "$label" "nexus seal import" "$out"
+    out=$("$@" nexus seal import "$WORK/a-charter.mem" json=true 2>&1) || refused "$label" "nexus seal import" "$out"
   fi
   local at=()
   if [ "$label" = "host-reader" ] && [ -n "${carried:-}" ]; then at=("nexus=$carried"); fi
-  # A --json answer is the door's stdout alone; its log lines ride stderr and stay out of the files A and the place read.
-  cf=$("$@" nexus carry-for "${at[@]}" --json 2>"$WORK/carry-for-$label.err") || refused "$label" "nexus carry-for" "$cf$(cat "$WORK/carry-for-$label.err")"
+  # A json=true answer is the door's stdout alone; its log lines ride stderr and stay out of the files A and the place read.
+  cf=$("$@" nexus carry-for "${at[@]}" json=true 2>"$WORK/carry-for-$label.err") || refused "$label" "nexus carry-for" "$cf$(cat "$WORK/carry-for-$label.err")"
   nym=$(printf '%s' "$cf" | grep -oE '"nym":"[a-f0-9]{64}"' | head -1 | cut -d'"' -f4 || true)
   sig=$(printf '%s' "$cf" | grep -oE '"carrierSig":"[a-f0-9]+"' | head -1 | cut -d'"' -f4 || true)
   [ -n "$nym" ] && [ -n "$sig" ] || refused "$label" "nexus carry-for (no nym and carrier seal)" "$cf"
   printf '%s' "$cf" | $COMPOSE exec -T lararium-a sh -c "cat > /tmp/carry-for-$label.json" || refused "$label" "the carry-for copy to A" ""
-  $COMPOSE exec -T lararium-a $LARES nexus carry "$nym" carrier="$sig" floor-pin="/tmp/carry-for-$label.json" --json > "$WORK/bundle-$label.json" 2>"$WORK/bundle-$label.err" \
+  $COMPOSE exec -T lararium-a $LARES nexus carry "$nym" carrier="$sig" floor-pin="/tmp/carry-for-$label.json" json=true > "$WORK/bundle-$label.json" 2>"$WORK/bundle-$label.err" \
     || refused "$label" "A's nexus carry" "$(cat "$WORK/bundle-$label.json" "$WORK/bundle-$label.err")"
-  if [ "$label" = "host-reader" ]; then out=$("$@" nexus carry-take "$WORK/bundle-$label.json" --json 2>&1) || refused "$label" "nexus carry-take" "$out"
+  if [ "$label" = "host-reader" ]; then out=$("$@" nexus carry-take "$WORK/bundle-$label.json" json=true 2>&1) || refused "$label" "nexus carry-take" "$out"
   else
     $COMPOSE exec -T "$label" sh -c 'cat > /tmp/carry-bundle.json' < "$WORK/bundle-$label.json" || refused "$label" "the bundle copy" ""
-    out=$("$@" nexus carry-take /tmp/carry-bundle.json --json 2>&1) || refused "$label" "nexus carry-take" "$out"
+    out=$("$@" nexus carry-take /tmp/carry-bundle.json json=true 2>&1) || refused "$label" "nexus carry-take" "$out"
   fi
   echo "  joined A's Nexus: $label (${nym:0:16}…)"
 }
@@ -92,12 +92,12 @@ if [ "${HERM_MESH_ROLL:-0}" = 1 ]; then
   # Keep this reader's opening-epoch arm for the forged control; join it again at the opened head below.
   join host-reader $LARES
   cp "$WORK/bundle-host-reader.json" "$WORK/opening-reader-bundle.json"
-  before=$($COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>/dev/null \
+  before=$($COMPOSE exec -T lararium-a $LARES nexus seal show json=true 2>/dev/null \
     | grep -oE '"sealEpochCid":"(nexus|epoch)-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
   card=$($COMPOSE logs --no-color lararium-a 2>&1 | grep -oE 'staged seed card: [0-9a-f-]+' | tail -1 | cut -d' ' -f4)
   [ -n "$before" ] && [ -n "$card" ] || refused "lararium-a" "opening head and staged seed card" "$before"
   # The card enters the staged test root's own rite. Its code never prints in the witness log.
-  out=$($COMPOSE exec -T lararium-a sh tools/test-container-route.sh $LARES nexus seal rotate cold-key="$card" threshold=1 --json 2>&1) \
+  out=$($COMPOSE exec -T lararium-a sh tools/test-container-route.sh $LARES nexus seal rotate cold-key="$card" threshold=1 json=true 2>&1) \
     || refused "lararium-a" "nexus seal rotate" "$out"
   unset card
   after=$(printf '%s' "$out" | grep -oE '"sealEpochCid":"(nexus|epoch)-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
@@ -110,7 +110,7 @@ join host-reader $LARES
 if [ "${HERM_MESH_ROLL:-0}" = 1 ]; then
   # Each herm names the head its own charter took: the relay joined before the roll, relay-2 after it.
   head_of() {
-    $COMPOSE exec -T "$1" $LARES nexus seal show --json 2>/dev/null \
+    $COMPOSE exec -T "$1" $LARES nexus seal show json=true 2>/dev/null \
       | grep -oE '"sealEpochCid":"(nexus|epoch)-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4
   }
   relay_head=$(head_of herm-relay); relay2_head=$(head_of herm-relay-2)

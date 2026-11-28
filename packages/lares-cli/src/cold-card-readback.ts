@@ -91,7 +91,7 @@ export async function readBack(args: ParsedArgs, cards: readonly ColdCard[], gen
     // A LIVE CARD PRINTS ON THE TERMINAL ALONE: never into a JSON answer, a redirected stream or a log.
     if (!standIn && (json || !canPromptSecret())) {
       throw new CardReadBackRefused(json
-        ? "the rite prints each chair's cold-key card on the terminal and asks it back there; run it without --json. Nothing was written."
+        ? "the rite prints each chair's cold-key card on the terminal and asks it back there; run it without json=true. Nothing was written."
         : "the rite prints each chair's cold-key card and asks it back on a terminal; run it on one. Nothing was written.");
     }
     const say = (line: string): void => { process.stdout.write(`${line}\n`); };

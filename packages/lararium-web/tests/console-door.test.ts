@@ -2,7 +2,7 @@
  * console-door — THE `lares` DOOR ON THE PAGE (lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-console-door).
  *
  * A person at the browser's console calls `lares("vessel", "read")`: the CLI's own argv, one string per word. The door answers
- * a Promise of the CLI's `--json` shape (`{ok, data}` or `{ok: false, error: {code, message}}`) and never rejects. It holds no
+ * a Promise of the CLI's `json=true` shape (`{ok, data}` or `{ok: false, error: {code, message}}`) and never rejects. It holds no
  * list of its own: the rows come from the page's table and from the vessel worker's own `help` over the page's port.
  *
  *   D1 RED   a verb the vessel holds resolves `{ok: true, data}` with the vessel's answer; a refusal the vessel names
@@ -16,7 +16,7 @@
  *   D4 RED   NO SECRET RIDES THE CONSOLE: a word past a held verb's path refuses `usage`, never crosses the port, and never
  *            reads back in the refusal's own message.
  *   D5 RED   ONE CALL FORM: argv strings. A single spaced string and a non-string refuse `usage` and name the form.
- *            CONTROL: `--json` names what the door always answers and changes nothing.
+ *            CONTROL: `json=true` names what the door always answers and changes nothing.
  *   D6       the door seats on its target as `lares`, and a later write does not replace it.
  *   D7       a tab no vessel worker greets still answers: its `help` lists the page's own rows and says why the vessel's
  *            are absent.
@@ -112,7 +112,7 @@ test("D4 RED no secret rides the console: a word past a held verb's path refuses
   expect(vessel.crossed.some((argv) => argv.length > 2)).toBe(false);
 });
 
-test("D5 RED one call form: argv strings; a spaced string and a non-string refuse usage; CONTROL: --json changes nothing", async () => {
+test("D5 RED one call form: argv strings; a spaced string and a non-string refuse usage; CONTROL: json=true changes nothing", async () => {
   const lares = doorOver(vesselOf(true));
   const spaced = await lares("vessel read");
   expect(spaced).toMatchObject({ ok: false, error: { code: "usage" } });
@@ -120,7 +120,7 @@ test("D5 RED one call form: argv strings; a spaced string and a non-string refus
   expect(await lares(["vessel", "read"] as never)).toMatchObject({ ok: false, error: { code: "usage" } });
   expect(await lares("vessel", 7 as never)).toMatchObject({ ok: false, error: { code: "usage" } });
   // CONTROL
-  expect(await lares("vessel", "read", "--json")).toEqual(await lares("vessel", "read"));
+  expect(await lares("vessel", "read", "json=true")).toEqual(await lares("vessel", "read"));
 });
 
 test("D6 the door seats on its target as `lares`, and a later write does not replace it", () => {

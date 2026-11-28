@@ -13,7 +13,7 @@
 //   · restore — relay-1 comes back up, the full mesh returns.
 //
 // Run:  node tools/mesh-pins.mjs --up herm-source herm-relay herm-relay-2
-//       export LAR_ROOT=$(mktemp -d) && node packages/lares-cli/bin/lares.mjs vessel found --skip-build
+//       export LAR_ROOT=$(mktemp -d) && node packages/lares-cli/bin/lares.mjs vessel found skip-build=true
 //       node tools/herm-mesh-partition.mjs        (LAR_ROOT names the founded READER vessel; peers prove first)
 
 import { execFile } from "node:child_process";

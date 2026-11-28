@@ -3,7 +3,7 @@
  * digests, ratchet by ratchet (D1).
  *
  * An image carries its genesis at `/app/genesis` (LAR_GENESIS), copied from the clean checkout it built from, so a genesis
- * dir names what an image offers. `lares vessel floor seed` prints this read (`--json` carries the line the shim hands the
+ * dir names what an image offers. `lares vessel floor seed` prints this read (`json=true` carries the line the shim hands the
  * pūlama as `image '{"digest":…,"seed":…}'`), and the kūkulu's `seedOffer` port reads through the same one
  * (`hostSeedOfferPort`). It reads and moves nothing: the founding record keeps serving, and lay moves canon, never the
  * founding record.

@@ -18,7 +18,7 @@
  * answers. The block reads into every session's context, so it also prints each title only as one `lar:` address within a
  * byte cap, caps the pins it shows, and says that its rows read as data.
  *
- * WHO IS HOME. Beside the law rides the hearth roster (`rosterArgv`, the shim's `vessel roster --json`): the worn face and who
+ * WHO IS HOME. Beside the law rides the hearth roster (`rosterArgv`, the shim's `vessel roster json=true`): the worn face and who
  * holds it, the seats here by presence and far by last signed act, the lanes and the open vota, framed by provenance and weight
  * (`ROSTER_WEIGHT_LINE`) and capped; a vessel that answers no "up" skips it with the other memory reads.
  *
@@ -137,31 +137,31 @@ const bytes = (text) => Buffer.byteLength(text, "utf8");
 export const LEI_RITES = ["push", "kukulu"];
 export const gitArgv = () => ["rev-parse", "HEAD", "--abbrev-ref", "HEAD"];
 /** The shim's argv for one rite's lei at a branch and head: the lei door's `show`. */
-export const leiArgv = (rite, branch, head) => ["lei", "show", `rite=${rite}`, `branch=${branch}`, `head=${head}`, "--json"];
+export const leiArgv = (rite, branch, head) => ["lei", "show", `rite=${rite}`, `branch=${branch}`, `head=${head}`, "json=true"];
 /** The shim's argv for the tessera receipts the rite writes. */
-export const halvesArgv = () => ["rite", "receipts", "--json"];
+export const halvesArgv = () => ["rite", "receipts", "json=true"];
 /** The shim's argv for the keep line at one workspace: a keep lei names its workspace as its branch, and no head. */
-export const keepArgv = (workspace) => ["lei", "show", "rite=keep", `branch=${workspace}`, "--json"];
+export const keepArgv = (workspace) => ["lei", "show", "rite=keep", `branch=${workspace}`, "json=true"];
 /** The shim's argv for the vessel observation. */
-export const observeArgv = () => ["vessel", "stand", "observe=true", "--json"];
+export const observeArgv = () => ["vessel", "stand", "observe=true", "json=true"];
 /** The shim's argv for one page of the memory index, read in the worn face's daemon wiki. */
 export const indexArgv = (after) => [
   "get", `filter=${INDEX_FILTER}`, "fields=title,description",
-  `limit=${INDEX_ROWS}`, `max-bytes=${INDEX_BYTES}`, "--json", ...(after ? [`after=${after}`] : []),
+  `limit=${INDEX_ROWS}`, `max-bytes=${INDEX_BYTES}`, "json=true", ...(after ? [`after=${after}`] : []),
 ];
-export const attractorsArgv = () => ["get", "filter=[lares.attractors[]]", "limit=32", "--json"];
+export const attractorsArgv = () => ["get", "filter=[lares.attractors[]]", "limit=32", "json=true"];
 /** The shim's argv for the rows in play, read in the worn face's daemon wiki. */
 export const stateArgv = () => [
   "get", `filter=${STATE_FILTER}`, "fields=title,description",
-  `limit=${STATE_ROWS}`, `max-bytes=${INDEX_BYTES}`, "--json",
+  `limit=${STATE_ROWS}`, `max-bytes=${INDEX_BYTES}`, "json=true",
 ];
 /** The shim's argv for one page of the law index, read in the worn face's daemon wiki: title, description and role. */
 export const lawArgv = () => [
   "get", `filter=${LAW_INDEX_FILTER}`, "fields=title,description,role",
-  `limit=${INDEX_ROWS}`, `max-bytes=${LAW_PAGE_BYTES}`, "--json",
+  `limit=${INDEX_ROWS}`, `max-bytes=${LAW_PAGE_BYTES}`, "json=true",
 ];
 /** The shim's argv for the pins that stand, titles alone. */
-export const lawPinsArgv = () => ["get", `filter=${LAW_PINS_FILTER}`, `limit=${INDEX_ROWS}`, "--json"];
+export const lawPinsArgv = () => ["get", `filter=${LAW_PINS_FILTER}`, `limit=${INDEX_ROWS}`, "json=true"];
 /** The host CLI's argv for the homes line. */
 export const homesArgv = () => ["home", "read", "brief=true"];
 
@@ -212,7 +212,7 @@ export function libraryLine(frame) {
 }
 
 /** The shim's argv for the TW5 docs library's read: its status, which composes it where the vessel answers it. */
-export const docsArgv = () => ["wiki", "status", "recipe=tw5-docs", "--json"];
+export const docsArgv = () => ["wiki", "status", "recipe=tw5-docs", "json=true"];
 
 /**
  * The TW5 docs library's line, read off the vessel's own answer: where `wiki status recipe=tw5-docs` answers, the library
@@ -237,7 +237,7 @@ export const RETRY_MS = 1_500;
  * line says the answer is owed and names the read to take, never that no vessel stands and never to stand one.
  */
 export function observation(result) {
-  const owed = (why) => ({ up: false, owed: true, line: `the hearth did not answer the wake in time (${why}); its reads are owed, not dark: take them by hand with \`${OWED_READ}\`, or read the observation with tools/lares-container.sh vessel stand observe=true --json` });
+  const owed = (why) => ({ up: false, owed: true, line: `the hearth did not answer the wake in time (${why}); its reads are owed, not dark: take them by hand with \`${OWED_READ}\`, or read the observation with tools/lares-container.sh vessel stand observe=true json=true` });
   if (result === BUDGET) return owed(CLOSED);
   const fault = readFault(result, "shim");
   if (fault) return owed(fault);
@@ -391,13 +391,13 @@ export function lawLines(result, pinsResult = null) {
 }
 
 /**
- * THE HEARTH ROSTER (lar:///ha.ka.ba/lararium/mesh/hearth-roster): who is home, read through the shim's `vessel roster --json`,
+ * THE HEARTH ROSTER (lar:///ha.ka.ba/lararium/mesh/hearth-roster): who is home, read through the shim's `vessel roster json=true`,
  * which the vessel's verb channel answers itself. The block reads the rotation first (the operator reads it first), then the
  * seats in their two grains, the lanes and the open vota, within a byte cap; a vessel that answers no "up" skips it quietly.
  */
 export const ROSTER_BYTES = 2048;
 export const ROSTER_ROWS = 8;
-export const rosterArgv = () => ["vessel", "roster", "--json"];
+export const rosterArgv = () => ["vessel", "roster", "json=true"];
 const ROSTER_FURTHER = "read it whole: act(address=\"lar:///face.roster.reads\") or lares vessel roster";
 /** The line that frames the rows by provenance and weight: the vessel's own live reading, turned through the five tools. */
 export const ROSTER_WEIGHT_LINE =
@@ -566,7 +566,7 @@ function keepRedLine(t) {
   const at = `tessera ${String(t.tessera).slice(0, 12)} (workspace "${t.branch ?? "?"}", bundle ${String(t.head ?? "?").slice(0, 16)})`;
   return t.red === "landed-absent"
     ? `Lares keep red: ${at} reads landed-absent: cut and never landed; cure: lares rite keep workspace=${t.branch ?? "<workspace>"} (it pushes what waits and lands it)`
-    : `Lares keep red: ${at} reads ${t.red ?? "red"}; read it with lares rite receipts --json before any keep lands it`;
+    : `Lares keep red: ${at} reads ${t.red ?? "red"}; read it with lares rite receipts json=true before any keep lands it`;
 }
 
 /**

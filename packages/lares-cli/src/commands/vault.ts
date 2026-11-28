@@ -349,10 +349,10 @@ async function vaultUnlockByPulama(args: ParsedArgs): Promise<number> {
   return 1;
 }
 
-/** Where a keep seat line goes: the terminal, never a `--json` answer's stdout. */
+/** Where a keep seat line goes: the terminal, never a `json=true` answer's stdout. */
 const keepSay = (args: ParsedArgs) => (line: string): void => { if (wantsJson(args)) console.error(line); else console.log(line); };
 
-/** The keep offer's live ports: this terminal (never under `--json`), and the store door, the ward taking the unlock's route. */
+/** The keep offer's live ports: this terminal (never under `json=true`), and the store door, the ward taking the unlock's route. */
 function keepOfferPorts(args: ParsedArgs): KeepOfferPorts {
   return {
     canAsk: () => !wantsJson(args) && canPromptSecret(),

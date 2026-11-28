@@ -582,7 +582,7 @@ describe("malformed args", () => {
 // This block exercises the real dispatch shore the daemon VM (open-daemon-vm.ts)
 // and browser worker use: registry lookup by `invocation.action` + the
 // CapabilityVerifier→cap() adaptation (makeCapVerify) + handler run. A full CLI
-// binary spawn + TW5 boot roundtrip stays covered by the live `lares act`
+// binary spawn + TW5 boot roundtrip stays covered by the live `lares lar:///carriage.*`
 // command + `verb-tiddler-dispatch.test.ts` full-boot harness; this closes the
 // dispatch-wiring gap the unit blocks skip.
 // ---------------------------------------------------------------------------

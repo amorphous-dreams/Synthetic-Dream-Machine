@@ -7,7 +7,7 @@
  *
  * THE CLOCK SEAM lives here: with no date on the line, the command reads the local calendar day once and hands it to the
  * core; the core reads no clock. `%.` draws one exclamation through the platform's entropy door
- * (`crypto.getRandomValues`). The default answer is the bare line (render.ts `proseFirst`); `--json` answers the envelope and names that source in `data.entropy` when a draw happened.
+ * (`crypto.getRandomValues`). The default answer is the bare line (render.ts `proseFirst`); `json=true` answers the envelope and names that source in `data.entropy` when a draw happened.
  */
 
 import { readDdate, ddateRecord, DDATE_INVALID, DDATE_USAGE } from "@lararium/mesh/ddate";
@@ -23,7 +23,7 @@ function localToday(): { year: number; month: number; day: number } {
 }
 
 export async function cmdDdate(given: ParsedArgs): Promise<number> {
-  // THE DATE ANSWERS A PIPE IN PROSE (render.ts `proseFirst`, the way `lares get title=… aperture=arc` answers a carrier): the bare line, like ddate(1); only `--json` asks for the envelope.
+  // THE DATE ANSWERS A PIPE IN PROSE (render.ts `proseFirst`, the way `lares get title=… aperture=arc` answers a carrier): the bare line, like ddate(1); only `json=true` asks for the envelope.
   const args = proseFirst(given);
   const reading = readDdate(args.positional, localToday(), PLATFORM_ENTROPY);
   if (reading.kind === "usage") {

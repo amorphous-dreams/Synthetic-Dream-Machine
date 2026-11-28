@@ -87,7 +87,7 @@ export interface KeepHostPorts {
    */
   readonly sessions?: SessionSources | null;
   /**
-   * The keep line as `lares lei show rite=keep branch=<name> [face=N] --json` reads it (one `{ lei }`, or `{ faces }`),
+   * The keep line as `lares lei show rite=keep branch=<name> [face=N] json=true` reads it (one `{ lei }`, or `{ faces }`),
    * asked FIRST, so a spent lei refuses in seconds, before the mirror, the scan or the flush. Absent, the vessel half decides alone.
    */
   leiShow?(branch: string, face?: number): Promise<RiteVerbAnswer>;

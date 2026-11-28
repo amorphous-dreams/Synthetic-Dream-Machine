@@ -1,14 +1,14 @@
 /**
  * A LOCAL WAIT ENDING IS NOT A VERDICT ON THE ACT, AND NEVER AN ABSENT DAEMON.
  *
- * `lares act` derives its ACK budget from the gesture — `10s + carriers × 400ms`, because a
+ * the residency act door (`lares lar:///carriage.*`) derives its ACK budget from the gesture — `10s + carriers × 400ms`, because a
  * directory-batch LOAD chews one island frame per carrier and a flat budget would time out the ACK while
  * the verb itself ran on. Good shape. But every failure out of `runVerb` then landed as
  * `daemon-unreachable`, hinted "Start the daemon with `lares vessel stand foreground=true` and try again".
  *
  * A budget overrun answers NOTHING like an absent daemon. The socket connected, the daemon took the verb,
  * and the caller stopped waiting — so the hint sends an operator to start something already running, and
- * an agent reading `--json` routes on a code naming the wrong fault entirely. Measured on the corpus e2e:
+ * an agent reading `json=true` routes on a code naming the wrong fault entirely. Measured on the corpus e2e:
  * `{"code":"daemon-unreachable","message":"local verb \\"LOAD\\" timed out after 162400ms"}` while the
  * daemon stood and served, on a machine carrying other work.
  *
@@ -32,7 +32,7 @@ const SRC = (f: string): string => readFileSync(join(import.meta.dirname, "..", 
 
 afterEach(() => { vi.restoreAllMocks(); });
 
-describe("what `lares act` says when its own local wait ends", () => {
+describe("what the residency act door says when its own local wait ends", () => {
   test("★ an outcome-unknown wait carries its own code — never `daemon-unreachable` ★", () => {
     const src = SRC("commands/act.ts");
     // BOTH runVerb catches must branch — `act` holds two (the derived-budget LOAD and REPACK). Each

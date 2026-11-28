@@ -78,7 +78,7 @@ if (process.argv[2] === "mcp") {
   try {
     await t.test("reports the vessel's port and cap", () => {
       // The hook's budget rides the observation's last word (\`--ask-budget-ms=<N>\`); the call before it reads exact.
-      writeFileSync(shim, '#!/bin/sh\ncase "$*" in "vessel stand observe=true --json --ask-budget-ms="*) ;; *) exit 2 ;; esac\nprintf \'%s\\n\' \'{"data":{"node":{"up":true,"port":4321,"cap":"observe"}}}\'\n', { mode: 0o755 });
+      writeFileSync(shim, '#!/bin/sh\ncase "$*" in "vessel stand observe=true json=true --ask-budget-ms="*) ;; *) exit 2 ;; esac\nprintf \'%s\\n\' \'{"data":{"node":{"up":true,"port":4321,"cap":"observe"}}}\'\n', { mode: 0o755 });
       const context = run();
       assert.match(context, /"up":true/);
       assert.match(context, /"port":4321/);

@@ -1,8 +1,7 @@
 /**
  * keywords.test.ts — ONE DOOR, KEYWORD PARAMS (lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts, its "One door"
  * section, as the operator meant it; the keyword head): `lares` plus key=value keywords in any order, exactly one act keyword, the
- * shaping keywords sharing the `set` panel's params, the flag zoo burned into the two dials, and a positional spelling
- * answering a teaching refusal that names the keyword line.
+ * shaping keywords sharing the `set` panel's params, and a dash flag refusing `dash-flag-burned`.
  *
  * The keyword line reads in `src/keywords.ts` (pure); `bin/lares.ts` runs the line it reads. The call door half rides the same
  * vessel mock as `tiddler-door.test.ts`, so a keyword call and its call-shape spelling send one plan.
@@ -27,7 +26,7 @@ vi.mock("../src/env.js", async (orig) => ({
   vesselDid: async () => "0x" + "ab".repeat(32),
 }));
 
-import { BURNED_FLAGS, KeywordUsage, isKeywordLine, positionalCure, readKeywords, type KeywordLine } from "../src/keywords.js";
+import { KeywordUsage, isKeywordLine, readKeywords, type KeywordLine } from "../src/keywords.js";
 import { COMMANDS, dispatch, keywordArgv, doorTakes } from "../src/bin/lares.js";
 import { MU_CARRY_ORDER, MU_CARRIES, APERTURE_RANKS } from "@lararium/tw5";
 
@@ -49,13 +48,14 @@ describe("one door, keyword params: key=value keywords in any order, exactly one
     expect(isKeywordLine([])).toBe(false);
   });
 
-  test("RED: the call door's act keywords route as the call shape: get= put= delete= rename= filter= act=, in any order beside their shaping keywords", () => {
+  test("RED: the call door's act keywords route as the call shape: get= put= delete= rename= filter=, in any order beside their shaping keywords", () => {
     expect(read("get=Room 4", "aperture=arc")).toEqual({ kind: "call", verb: "get", params: { title: "Room 4", aperture: "arc" }, set: {} });
     expect(read("aperture=measure", "mu=?0", "get=lar:///t/x")).toEqual({ kind: "call", verb: "get", params: { aperture: "measure", mu: "?0", title: "lar:///t/x" }, set: {} });
     expect(read("put=T", "text=new words", "mu=_!")).toMatchObject({ kind: "call", verb: "put", params: { title: "T", text: "new words", mu: "_!" } });
     expect(read("rename=Old", "to=New")).toMatchObject({ kind: "call", verb: "rename", params: { title: "Old", to: "New" } });
     expect(read("filter=[tag[x]]", "aperture=measure")).toMatchObject({ kind: "call", verb: "get", params: { filter: "[tag[x]]", aperture: "measure" } });
-    expect(read("act=lar:///engine.law.indexes")).toMatchObject({ kind: "call", verb: "lar:///engine.law.indexes", params: {} });
+    // An address rides its own line (`lares lar:///…`), so `act=` names no act keyword.
+    expect(refusal("act=lar:///engine.law.indexes").code).toBe("act-keyword-unnamed");
     // A container word beside an act keyword reads as the container, never a second act.
     expect(read("get=Room 4", "bag=lares", "realm=r1")).toMatchObject({ kind: "call", params: { title: "Room 4", bag: "lares", realm: "r1" } });
   });
@@ -94,7 +94,7 @@ describe("one door, keyword params: key=value keywords in any order, exactly one
     expect(refusal("bag=show", "mu=relate")).toMatchObject({ code: "mu-malformed", cure: "lares bag=show mu=cup" });
   });
 
-  test("RED: a door folds aperture where it reads a range (arc and theme ask --verbose), and names it testimony where it reads none", () => {
+  test("RED: a door folds aperture where it reads a range (arc and theme ask verbose=true), and names it testimony where it reads none", () => {
     expect(read("vessel=read", "aperture=arc")).toMatchObject({ argv: ["vessel", "read", "verbose=true"], notes: [] });
     const rite = read("rite=kukulu", "aperture=arc");
     expect(rite).toMatchObject({ argv: ["rite", "kukulu"] });
@@ -118,43 +118,19 @@ describe("one door, keyword params: key=value keywords in any order, exactly one
   });
 });
 
-describe("the flag zoo burns into the dials", () => {
-  test("RED: each burned flag answers a teaching refusal naming the keyword line with its dial", () => {
-    for (const [flag, dial] of Object.entries(BURNED_FLAGS)) {
-      const said = refusal("get=T", `--${flag}`);
-      expect(said.code, flag).toBe("keyword-flag");
-      expect(said.cure, flag).toBe(`lares get=T ${dial}`);
+describe("a keyword line carries no dash flag", () => {
+  test("RED: a dash flag refuses `dash-flag-burned`, naming the help, with no per-flag reading", () => {
+    for (const flag of ["--dry-run", "--json", "--meme", "--grain=skinny", "--rollback"]) {
+      const said = refusal("get=T", flag);
+      expect(said.code, flag).toBe("dash-flag-burned");
+      expect(said.message, flag).toBe("dash-flag-burned: dash flags burned; params ride as name=value (lares help)");
     }
-    expect(BURNED_FLAGS).toEqual({ "dry-run": "mu=_0", json: "mu=!0", quiet: "mu=!0", meme: "aperture=measure", skinny: "aperture=measure", all: "aperture=arc", grain: "aperture=arc" });
-    expect(refusal("get=T", "--grain=skinny").cure).toBe("lares get=T aperture=measure");
-    expect(refusal("rite=kukulu", "--rollback").cure).toBe("lares rite=kukulu rollback=true");
   });
 
   test("RED: a bare word on a keyword line refuses, naming the act keyword whose value carries it", () => {
     const said = refusal("rite=kukulu", "now");
     expect(said.code).toBe("keyword-positional");
     expect(said.cure).toBe("lares rite='kukulu now'");
-  });
-});
-
-describe("a positional spelling teaches the keyword line", () => {
-  test("RED: a call word's bare title reads as its act keyword; the call shape and a help ask stand", () => {
-    expect(positionalCure("get", ["Room4"])).toBe("lares get=Room4");
-    expect(positionalCure("get", ["Room 4", "recipe=kahu"])).toBe("lares get='Room 4' recipe=kahu");
-    expect(positionalCure("rename", ["Old", "New"])).toBe("lares rename=Old to=New");
-    expect(positionalCure("get", ["title=Room4"])).toBeNull();
-    expect(positionalCure("get", [])).toBeNull();
-    expect(positionalCure("act", ["lar:///engine.law.indexes"])).toBeNull();
-    expect(positionalCure("rite", ["kukulu"])).toBeNull();
-  });
-
-  test("RED: dispatch refuses `lares get Room4` with exit 2, naming `lares get=Room4`, and sends nothing", async () => {
-    const err = vi.spyOn(console, "error").mockImplementation(() => {});
-    try {
-      expect(await dispatch(["get", "Room4"])).toBe(2);
-      expect(err.mock.calls.flat().join(" ")).toContain("`lares get=Room4`");
-      expect(h.calls).toEqual([]);
-    } finally { err.mockRestore(); }
   });
 });
 
@@ -178,7 +154,7 @@ describe("the keyword line runs the line it reads", () => {
     try {
       expect(await dispatch(["get=x", "rite=kukulu"])).toBe(2);
       expect(await dispatch(["get=x", "--json"])).toBe(2);
-      expect(err.mock.calls.flat().join(" ")).toContain("mu=!0");
+      expect(err.mock.calls.flat().join(" ")).toContain("dash-flag-burned");
       expect(h.calls).toEqual([]);
     } finally { err.mockRestore(); }
   });

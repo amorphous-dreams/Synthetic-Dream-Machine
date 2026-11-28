@@ -9,7 +9,7 @@
  *
  * LIFT WITH EYES. A lift reads the staged row back first (`kahua-read` `staged`) and prints its preview (title, digest,
  * fields, body); it lifts only on that digest typed back at a terminal, or `digest=<hex>` naming the digest the preview
- * printed. A bare `--yes` names no digest and lifts nothing. The door re-reads the row and refuses `kahua-lift-unstaged` or
+ * printed. A bare `yes=true` names no digest and lifts nothing. The door re-reads the row and refuses `kahua-lift-unstaged` or
  * `kahua-lift-digest-moved`, so the signed lift carries exactly the row the person read. A lift names its taint list
  * (`taint=none` when every input came from inside the face); the row reads the lōkahi cap off the vessel's island and
  * the operator's grant out of sealed custody, and refuses by name. After a root rotation the earlier items read in
@@ -119,14 +119,14 @@ export const LIFT_WARD_NOTE = "a lift always asks the face's passphrase at a ter
 
 /**
  * THE CONFIRM: the digest a lift names. `digest=` must name the preview's digest; else a terminal asks for the digest's
- * first eight hex typed back; else nothing confirms, and the lift refuses `kahua-lift-unconfirmed` (a bare --yes too).
+ * first eight hex typed back; else nothing confirms, and the lift refuses `kahua-lift-unconfirmed` (a bare yes=true too).
  */
 export async function confirmedDigest(preview: KahuaStagedPreview, named: string | undefined, ask: ((prompt: string) => Promise<string>) | null): Promise<string> {
   if (named !== undefined) {
     if (named !== preview.digest) throw new Error(`kahua-lift-digest-moved: the staged row reads digest ${preview.digest}, not the ${named} named; read its preview again`);
     return named;
   }
-  if (ask === null) throw new Error("kahua-lift-unconfirmed: a lift needs eyes: read the preview and name digest=<hex> (the row digest as it printed), or type it back at a terminal (a bare --yes lifts nothing). digest= spares the typed-back digest alone: a lift always asks the face's passphrase at a terminal");
+  if (ask === null) throw new Error("kahua-lift-unconfirmed: a lift needs eyes: read the preview and name digest=<hex> (the row digest as it printed), or type it back at a terminal (a bare yes=true lifts nothing). digest= spares the typed-back digest alone: a lift always asks the face's passphrase at a terminal");
   const typed = (await ask(`type the first 8 hex of the digest (${preview.digest.slice(0, 8)}…) to lift "${preview.title}", anything else lifts nothing: `)).trim().toLowerCase();
   if (typed.length < 8 || !preview.digest.startsWith(typed)) throw new Error("kahua-lift-unconfirmed: the typed digest did not match; nothing lifted");
   return preview.digest;

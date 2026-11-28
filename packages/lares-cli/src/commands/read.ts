@@ -135,7 +135,7 @@ export async function cmdStop(args: ParsedArgs): Promise<number> {
  * `lares vessel read vessel` — the DEEP health lens (the `git fsck` role, reached through the one
  * read door rather than a verb of its own): probes every Automerge doc in the vessel store through a
  * disposable child-process boundary and charts MOUNTED vs CONDEMNED (a torn doc that would
- * abort the WASM runtime on load). Read-only; a condemned doc can be laid again from its disk holding with `lares vessel lay apply=true --yes`.
+ * abort the WASM runtime on load). Read-only; a condemned doc can be laid again from its disk holding with `lares vessel lay apply=true yes=true`.
  * Exits non-zero on a tear, so a boot/CI gate reads health off the exit code.
  *
  * THE HELD IDS. The lens also names each id the store holds in quarantine: its bytes rest aside, and every boot mounts its
@@ -174,7 +174,7 @@ async function cmdReadVessel(args: ParsedArgs): Promise<number> {
 
 export async function cmdRead(given: ParsedArgs): Promise<number> {
   // EVERY LENS ANSWERS A PIPE IN PROSE (render.ts `proseFirst`): the deep probe's JSON names every document in the store, so a
-  // piped read prints the terminal's lines and only `--json` answers the envelope.
+  // piped read prints the terminal's lines and only `json=true` answers the envelope.
   const args = proseFirst(given);
   // An explicit root= moves the whole reading, as it does for `vessel found` (never a default).
   if (args.options["root"]) process.env["LAR_ROOT"] = args.options["root"];

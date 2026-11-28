@@ -50,7 +50,7 @@ import { parseArgs, type ParsedArgs } from "../src/parse-args.js";
 
 const memeArgs = (positional: string[], options: Record<string, string> = {}, flags: Record<string, boolean> = {}): ParsedArgs =>
   ({ command: "meme", positional, options, flags: { json: true, ...flags } } as unknown as ParsedArgs);
-/** A call line as a terminal types it (`lares put title=… file=…`), `--json` asked unless the line names `--no-json`. */
+/** A call line as a terminal types it (`lares put title=… file=…`), `json=true` asked unless the line names `json=false`. */
 const callArgs = (...tokens: string[]): ParsedArgs => {
   const parsed = parseArgs(tokens);
   return parsed.flags["json"] === undefined ? { ...parsed, flags: { ...parsed.flags, json: true } } : parsed;
@@ -62,7 +62,7 @@ const by = (address: string): Record<string, unknown> => ({ carrier: { carrier: 
 /** No host crossing reached. */
 const NO_SOURCES: CallSources = { read: () => { throw new Error("no file read"); }, stdin: async () => { throw new Error("no stdin read"); } };
 
-/** Run a door and hand back its exit, the one JSON line `--json` printed (if any), and every human line. */
+/** Run a door and hand back its exit, the one JSON line `json=true` printed (if any), and every human line. */
 async function said(run: () => Promise<number>): Promise<{ code: number; json: Record<string, unknown> | null; lines: string[]; errors: string[] }> {
   const out: string[] = [];
   const lines: string[] = [];
@@ -188,7 +188,7 @@ describe("lares put slot= — a slot's text needs no base", () => {
 
   test("★ a slot's file= with no base= sends cleanly; the human answer names the counts and both bases, each by its use ★", async () => {
     h.reply = slotLanded;
-    const out = await said(() => cmdCall(callArgs("put", "title=lar:///t/x", "slot=#/a", `file=${tmpFile("new body")}`, "bag=sdm", "--no-json")));
+    const out = await said(() => cmdCall(callArgs("put", "title=lar:///t/x", "slot=#/a", `file=${tmpFile("new body")}`, "bag=sdm", "json=false")));
     expect(out.code).toBe(0);
     expect(h.calls).toEqual([sent("put", { title: "lar:///t/x", slot: "#/a", text: "new body", bag: "sdm" })]);
     expect(out.lines).toContain("  landed 1 · kept 1 · tombstoned 0");
@@ -211,7 +211,7 @@ describe("lares delete family=true — the removal, in a recipe or a bag", () =>
   });
   test("★ family=true bag= takes the family out of one bag ★", async () => {
     h.reply = { bag: "sdm", title: "lar:///t/x", decision: "removed", tombstoned: [], retracted: ["lar:///t/x"], ...by("engine.record.removes") };
-    const out = await said(() => cmdCall(callArgs("delete", "title=lar:///t/x", "bag=sdm", "family=true", "--no-json")));
+    const out = await said(() => cmdCall(callArgs("delete", "title=lar:///t/x", "bag=sdm", "family=true", "json=false")));
     expect(out.code).toBe(0);
     expect(h.calls).toEqual([sent("delete", { title: "lar:///t/x", bag: "sdm", family: "true" })]);
     expect(out.lines).toContain("  tombstoned 0 · retracted 1");
@@ -732,7 +732,7 @@ describe("lares meme project — the daemon seat rides meme-project", () => {
 
 /**
  * THE SIDECAR RIDES THE JSON REPLY. The daemon's `meme-project` answers `{ text, meta }` for md — a carrier in
- * two files — and the CLI's `--json` reply carried `text` alone unless `--out` wrote the `.meta` to disk, so a
+ * two files — and the CLI's `json=true` reply carried `text` alone unless `--out` wrote the `.meta` to disk, so a
  * JSON consumer (the MCP twin, the docker check, an AI at the QA lab) read half the pair. Measured on the docker
  * meme scenario: "B projects it to md — the check wants a `meta` key the projection never answers".
  */

@@ -12,7 +12,7 @@
  *       lifts signed by the new face, the face root stands where it stood; a second lay and a second import land nothing
  *   M2  the same with NO export: reset -> found -> lay recovers the daemon memory by pet-name, from disk alone
  *   M3  an ambiguous pet-name refuses that root and lands nothing of it, and the lay goes on; so does an unmatched one
- *   M4  a kahua mirror file: the preview lists it; no confirm -> pending; a wrong count refuses; --yes alone lifts nothing;
+ *   M4  a kahua mirror file: the preview lists it; no confirm -> pending; a wrong count refuses; yes=true alone lifts nothing;
  *       a file that differs from the standing head reads `differs` and supersedes it on the confirmed count
  *   M5  ashes never read back into a layer and never travel in a bundle
  *   M6  an import's bag row and the seeded canon for one title meet at the gate: divergence stands off, never overwrites
@@ -406,7 +406,7 @@ describe("the lay lays every mirror back into its one layer", () => {
     nothingOfF1(stranger);
   });
 
-  test("M4 — kahua: the preview lists it; no confirm stands it pending; a wrong count refuses; --yes alone lifts nothing; a differing file supersedes on the count", async () => {
+  test("M4 — kahua: the preview lists it; no confirm stands it pending; a wrong count refuses; yes=true alone lifts nothing; a differing file supersedes on the count", async () => {
     // One face wearing F1, its stage empty: the stage file stands on disk alone.
     const v = new FakeHouse([{ handleIndex: 0, petname: "hearth-one", relation: F1 }], "grant", F1);
     v.held.add("garden");
@@ -428,7 +428,7 @@ describe("the lay lays every mirror back into its one layer", () => {
     await expect(seedMirrors({ apply: true, doors: v.mirrorDoors(), liftKahua: 2 })).rejects.toThrow(/seed-kahua-count/);
     expect(v.lifts).toEqual([]);
 
-    // `--yes` names no count: the leg runs with apply and yes, and nothing lifts.
+    // `yes=true` names no count: the leg runs with apply and yes, and nothing lifts.
     const said: string[] = [];
     const [log, err] = [console.log, console.error];
     console.log = (...a: unknown[]) => { said.push(a.join(" ")); };

@@ -92,7 +92,7 @@ function show(rows: readonly Row[], brief: boolean, door: Door = "home"): void {
 async function consent(writes: readonly Row[], args: ParsedArgs): Promise<boolean> {
   if (args.flags["yes"] === true) return true;
   if (!process.stdin.isTTY) {
-    console.error("lares home tend: writes the operator's homes; pass --yes to proceed without a terminal");
+    console.error("lares home tend: writes the operator's homes; pass yes=true to proceed without a terminal");
     return false;
   }
   console.log("lares home tend will write:");
@@ -107,7 +107,7 @@ async function consent(writes: readonly Row[], args: ParsedArgs): Promise<boolea
  * THE HOME UNDO'S CONSENT. An undo puts back the bytes a tend replaced in the operator's homes, a settings file that lacks the
  * doors' deny list among them, so it takes `tend`'s consent and one gate more: the house hand gate reads the command's branch
  * before it reads any home or ledger (an AI seat refuses `hand-act-only`, an unread chain `hand-unattested`), a terminal asks,
- * and no terminal needs `--yes`.
+ * and no terminal needs `yes=true`.
  */
 async function undoConsent(args: ParsedArgs, hand: () => HandReading): Promise<boolean> {
   const read = hand();
@@ -118,7 +118,7 @@ async function undoConsent(args: ParsedArgs, hand: () => HandReading): Promise<b
   }
   if (args.flags["yes"] === true) return true;
   if (!process.stdin.isTTY) {
-    console.error("lares home undo: restores the operator's homes; pass --yes to proceed without a terminal");
+    console.error("lares home undo: restores the operator's homes; pass yes=true to proceed without a terminal");
     return false;
   }
   const rl = createInterface({ input: process.stdin, output: process.stdout });
@@ -147,8 +147,8 @@ const ownHand = (): HandReading => readOwnHand({ proveRoute: false });
 
 export async function cmdTunnelDoor(door: Door, args: ParsedArgs, hand: () => HandReading = ownHand): Promise<number> {
   const verb = args.positional[0];
-  if (args.flags["help"] === true || verb === undefined || !(TUNNEL_VERBS as readonly string[]).includes(verb)) {
-    return refuseUsage(args, door, helpLines(door), args.flags["help"] === true ? undefined : verb === undefined ? "name a sub-verb" : `unknown sub-verb "${verb}"`);
+  if (verb === undefined || !(TUNNEL_VERBS as readonly string[]).includes(verb)) {
+    return refuseUsage(args, door, helpLines(door), verb === undefined ? "name a sub-verb" : `unknown sub-verb "${verb}"`);
   }
   if (args.flags["staged"] === true && !(door === "repo" && verb === "read")) {
     console.error(`lares ${door} ${verb}: staged=true reads the index, and only \`lares repo read\` reads it`);

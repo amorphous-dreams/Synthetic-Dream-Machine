@@ -67,7 +67,7 @@ function preparedWeb(): Record<string, string> {
 
 /** The place rite alone — no `persona new`, so the vessel stands at its waking floor. */
 async function foundPlaceOnly(cli: (args: readonly string[]) => Promise<CliResult>, root: string): Promise<void> {
-  const found = await cli(["vessel", "found", `root=${root}`, "--skip-build"]);
+  const found = await cli(["vessel", "found", `root=${root}`, "skip-build=true"]);
   if (found.code !== 0) throw new Error(`place founding failed (${found.code}):\n${found.stderr.slice(-800)}`);
 }
 

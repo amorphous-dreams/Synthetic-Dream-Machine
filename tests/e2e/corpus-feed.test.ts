@@ -152,7 +152,7 @@ beforeAll(async () => {
   lar = await targetInstance();
   if (!stagedTarget) return;   // mutating, corpus-scale — staged only
   const at = Date.now();
-  const r = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${CORPUS}`, "to=lar:///ha.ka.ba/wikis/lares/working", "yes=true", "--json"]);
+  const r = await lar.cli(["lar:///carriage.bag.loads", `source-uri=${CORPUS}`, "to=lar:///ha.ka.ba/wikis/lares/working", "yes=true", "json=true"]);
   loadOk = r.json?.["ok"] === true;
   loadCount = Number((r.json?.["data"] as { count?: number } | undefined)?.count ?? 0);
   // NAME WHAT IT SAID. A bare count reads as "the corpus grew past the budget" whichever way the door
@@ -209,14 +209,14 @@ describe.skipIf(!stagedTarget)("corpus feed — the whole hearth in one gesture 
   test("F4 — pipeline idempotence: re-feeding a projection leaves it byte-stable", async () => {
     const projected = join(wikiWorkbenchDir(lar.root, "lares"), BOOT_PROJ);
     const before = readFileSync(projected, "utf8");
-    const r = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${projected}`, "to=lar:///ha.ka.ba/wikis/lares/working", "yes=true", "--json"]);
+    const r = await lar.cli(["lar:///carriage.bag.loads", `source-uri=${projected}`, "to=lar:///ha.ka.ba/wikis/lares/working", "yes=true", "json=true"]);
     let late = "";
     if (r.json?.["ok"] !== true) {
       // A verb that answered `outcome-unknown` may still be running: read its receipt once more after a
       // pause, so a slow landing and a never-landing read apart.
       const rid = String(r.json?.["requestId"] ?? "");
       await new Promise((res) => setTimeout(res, 30_000));
-      const rr = await lar.cli(["vessel", "request", rid, "--json"]);
+      const rr = await lar.cli(["vessel", "request", rid, "json=true"]);
       late = ` · LATE receipt code ${rr.code} ${`${rr.stdout}\n${rr.stderr}`.trim().slice(-700)} · DAEMON LOG TAIL ${lar.bootLog().slice(-3000)}`;
     }
     // NAME WHAT IT SAID: the CI report keeps no stdout, so the answer rides in the assertion message.

@@ -46,7 +46,7 @@ describe("seal anchor --from a carriage partial", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
   afterEach(() => { vi.restoreAllMocks(); rmSync(dir, { recursive: true, force: true }); });
-  const run = () => cmdSealAnchor(parseArgs(["nexus", "seal", "anchor", `from=${from}`, "face=2", "--json"]));
+  const run = () => cmdSealAnchor(parseArgs(["nexus", "seal", "anchor", `from=${from}`, "face=2", "json=true"]));
   const answer = () => JSON.parse(out.join("").trim()) as Record<string, unknown>;
 
   it("RED: a named face whose session cannot open refuses by the vessel's name, and the carriage never lands", async () => {

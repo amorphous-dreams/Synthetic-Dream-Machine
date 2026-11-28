@@ -73,7 +73,7 @@ describe("the signing hand stays the human's", () => {
       expect(signing.has(name)).toBe(true);
     }
     // and a read-only verb never claims to hold one
-    for (const name of ["act", "bag", "wiki"]) {
+    for (const name of ["bag", "wiki"]) {
       expect(signing.has(name)).toBe(false);
     }
   });

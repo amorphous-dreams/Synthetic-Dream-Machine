@@ -168,7 +168,7 @@ describe("kukulu reads the lag on every raise and lays the workbench with no que
   it("RED: a Ctrl+C during the workbench lay (exit 130) reads as interrupted, never failed", async () => {
     const f = fakes({ lay: 130 });
     const out = await riteKukulu(f.ports, {});
-    // The --json answer names it by its own code (`refusal` feeds the error code), never `rite-stopped-at-landing` nor the failed lay's.
+    // The json=true answer names it by its own code (`refusal` feeds the error code), never `rite-stopped-at-landing` nor the failed lay's.
     expect(out).toMatchObject({ code: 1, data: { workbench: { laid: false, interrupted: true }, refusal: "kukulu-workbench-lay-interrupted" } });
     expect(f.said.join("\n")).toMatch(/something interrupted the workbench lay; the house stands, and the lay reads diff-gated, so lares vessel lay workbench=true apply=true picks it up/);
   });
@@ -256,7 +256,7 @@ describe("the vessel half: `vessel lay --lag` and `vessel lay --workbench`", () 
     expect(await readHouseLag(await doors({ writeSlot: "working", bound: true }))).toMatchObject({ checkout: false });
   });
 
-  it("RED: `vessel lay --lag --json` answers the reading as one JSON line and writes nothing", async () => {
+  it("RED: `vessel lay --lag json=true` answers the reading as one JSON line and writes nothing", async () => {
     const { cmdLay } = await import("../src/commands/lay.js");
     corpus(true);
     const waves: MirrorWave[] = [];
@@ -272,7 +272,7 @@ describe("the vessel half: `vessel lay --lag` and `vessel lay --workbench`", () 
     expect(cmdIngest).not.toHaveBeenCalled();
   });
 
-  it("RED: `vessel lay --lag --json` names the floor's drift as its own field, never folded into lag; CONTROL: an unread drift reads null, not zero", async () => {
+  it("RED: `vessel lay --lag json=true` names the floor's drift as its own field, never folded into lag; CONTROL: an unread drift reads null, not zero", async () => {
     const { cmdLay } = await import("../src/commands/lay.js");
     corpus(true);
     const CREST = "lar:///ha.ka.ba/lararium/mesh/wave-crest";

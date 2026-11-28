@@ -62,7 +62,7 @@ async function standHouse(tag, name) {
   const env = { ...process.env, LAR_ROOT: root, LAR_PORT: String(port), LAR_SAME_ORIGIN: "true", CLAUDE_HOME: claudeHome, CLAUDE_JSON: join(root, "claude.json"), XDG_CONFIG_HOME: join(root, "xdg-config"), LARES_MACHINE_ID_FILE: join(root, "machine-id") };
   delete env.LARES_KEEP_SESSIONS;
   const lares = (args) => spawnSync(process.execPath, [cli, ...args], { cwd: repo, encoding: "utf8", env });
-  const found = lares(["vessel", "found", "hearth=true", `name=${name}`, `root=${root}`, "--skip-build"]);
+  const found = lares(["vessel", "found", "hearth=true", `name=${name}`, `root=${root}`, "skip-build=true"]);
   assert.equal(found.status, 0, `found ${tag}: ${found.stdout}${found.stderr}`);
   const child = spawn(process.execPath, [nodeMain, "--root", root, "--port", String(port)], { cwd: join(repo, "packages/lararium-node"), env });
   let log = "";
@@ -82,7 +82,7 @@ async function standHouse(tag, name) {
     child.kill("SIGTERM");
   });
   const must = (args) => { const r = lares(args); assert.equal(r.status, 0, `${tag}: lares ${args.join(" ")}\n${r.stdout}\n${r.stderr}`); return r; };
-  /** The last JSON line a `--json` call printed. */
+  /** The last JSON line a `json=true` call printed. */
   const answer = (r) => { try { return JSON.parse(r.stdout.trim().split("\n").pop()); } catch { assert.fail(`no JSON answer:\n${r.stdout}\n${r.stderr}`); } };
   return { root, port, lares, must, answer, stop, claudeHome, log: () => log };
 }
@@ -120,9 +120,9 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     for (const [uri, body, meta] of [[HERON, "remember the heron", `tags = "stage/index"\ndescription = "the heron"\n`], [POND, "the pond at dusk", ""], [KITE, "fly the kite low", ""]]) {
       const file = join(scratch, `${uri.split("/").pop()}.mem`);
       writeFileSync(file, memeText(uri, body, meta));
-      old.must(["put", `title=${uri}`, `file=${file}`, "--json"]);
+      old.must(["put", `title=${uri}`, `file=${file}`, "json=true"]);
     }
-    old.must(["put", `title=${FREE}`, "text=a free-titled note", "--json"]);
+    old.must(["put", `title=${FREE}`, "text=a free-titled note", "json=true"]);
 
     // ── THE WORKSPACE: a clone of the operator's repo (here a bare scratch remote), bound under the house's workspaces ──
     const remote = join(scratch, "remote.git");
@@ -134,18 +134,18 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     const held = () => readdirSync(workspace).sort();
 
     // ── H1: no lei, no keep ─────────────────────────────────────────────────────────────────────────────────────
-    const bare = old.lares(["rite", "keep-cut", "workspace=backup", "--json"]);
+    const bare = old.lares(["rite", "keep-cut", "workspace=backup", "json=true"]);
     assert.notEqual(bare.status, 0, bare.stdout);
     assert.equal(old.answer(bare).error?.code, "swarm-lei-absent", bare.stdout);
     assert.deepEqual(held(), [".git"], "a refused keep leaves the workspace as it stood");
-    const line = (rite) => old.answer(old.must(["lei", "show", `rite=${rite}`, "branch=backup", "--json"])).data.lei;
+    const line = (rite) => old.answer(old.must(["lei", "show", `rite=${rite}`, "branch=backup", "json=true"])).data.lei;
 
     // ── H2: the hand strings the lei; the keep spends one return ────────────────────────────────────────────────
-    const strung = old.lares(["lei", "kui", "rite=keep", "branch=backup", "returns=2", "--json"]);
+    const strung = old.lares(["lei", "kui", "rite=keep", "branch=backup", "returns=2", "json=true"]);
     assert.equal(strung.status, 0, `lei kui: ${strung.stdout}${strung.stderr}`);
     assert.deepEqual({ standing: line("keep").standing, returnsLeft: line("keep").returnsLeft }, { standing: true, returnsLeft: 2 });
     assert.equal(line("push").standing, false, "the keep lei stands for no push");
-    const kept = old.answer(old.must(["rite", "keep-cut", "workspace=backup", "--json"])).data;
+    const kept = old.answer(old.must(["rite", "keep-cut", "workspace=backup", "json=true"])).data;
     assert.equal(kept.kept, true, JSON.stringify(kept));
     assert.equal(kept.dest, join(workspace, "house"));
     assert.deepEqual(kept.faces, ["steward"]);
@@ -155,17 +155,17 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     assert.equal(manifest.schema, "lar-house-bundle");
     assert.ok(manifest.files.some((f) => f.path.endsWith("heron.mem") || f.path.endsWith("heron.tid")), "the bundle carries the memory as a plain file a person reads");
     assert.equal(line("keep").returnsLeft, 1, "one return spent");
-    const red = old.answer(old.must(["rite", "receipts", "--json"])).data.conferre;
+    const red = old.answer(old.must(["rite", "receipts", "json=true"])).data.conferre;
     assert.deepEqual(red.red.map((t) => `${t.rite} ${t.tessera} ${t.red}`), [`keep ${kept.tessera} landed-absent`], "cut and not yet pushed reads red by name");
     // Unchanged memory: the standing bundle answers, and nothing spends.
-    const again = old.answer(old.must(["rite", "keep-cut", "workspace=backup", "--json"])).data;
+    const again = old.answer(old.must(["rite", "keep-cut", "workspace=backup", "json=true"])).data;
     assert.deepEqual({ kept: again.kept, standing: again.standing, bundleId: again.bundleId }, { kept: false, standing: true, bundleId: kept.bundleId });
     assert.equal(line("keep").returnsLeft, 1, "an unchanged keep spends nothing");
 
     // ── H3: the host half: guard, commit, push, land ────────────────────────────────────────────────────────────
-    const keep = () => old.lares(["rite", "keep", "workspace=backup", "--json"]);
+    const keep = () => old.lares(["rite", "keep", "workspace=backup", "json=true"]);
     const refusalOf = (r) => { assert.notEqual(r.status, 0, r.stdout); return old.answer(r).error?.code; };
-    const redNow = () => old.answer(old.must(["rite", "receipts", "--json"])).data.conferre.red.map((t) => `${t.rite} ${t.tessera} ${t.red}`);
+    const redNow = () => old.answer(old.must(["rite", "receipts", "json=true"])).data.conferre.red.map((t) => `${t.rite} ${t.tessera} ${t.red}`);
     assert.equal(refusalOf(keep()), "keep-text-guard-absent", "a workspace whose bundle could take a line-ending rewrite refuses");
     writeFileSync(join(workspace, ".gitattributes"), "* -text\n");
     git(workspace, "add", ".gitattributes");
@@ -181,7 +181,7 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     assert.equal(git(workspace, "log", "-1", "--format=%s"), `keep ${kept.bundleId}`, "the commit waits in the workspace");
     assert.deepEqual(redNow(), [`keep ${kept.tessera} landed-absent`], "a failed push lands nothing");
     git(workspace, "remote", "set-url", "origin", remote);
-    const cured = old.answer(old.must(["rite", "keep", "workspace=backup", "--json"])).data;
+    const cured = old.answer(old.must(["rite", "keep", "workspace=backup", "json=true"])).data;
     assert.deepEqual({ kept: cured.kept, pushed: cured.pushed, par: cured.par, landed: cured.landed }, { kept: false, pushed: true, par: true, landed: [{ tessera: kept.tessera, par: true }] }, JSON.stringify(cured));
     assert.equal(JSON.parse(git(remote, "show", "main:house/manifest.json")).bundleId, kept.bundleId);
     // ONE COMMIT carries the house and this device's sessions, and the account's identity never leaves the device.
@@ -191,26 +191,26 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     for (const path of ["house/manifest.json", `${device}/DEVICE.json`, `${device}/config/CLAUDE.md`, `${device}/config/claude.json`, `${device}/projects/-scratch-proj/memory/MEMORY.md`]) assert.ok(carried.includes(path), `${path} rides the keep commit: ${carried.join(" ")}`);
     assert.equal(git(remote, "rev-list", "--count", "main"), "2", "the guard commit and one keep commit");
     assert.doesNotMatch(git(remote, "show", `main:${device}/config/claude.json`), /u-scratch/);
-    const after = old.answer(old.must(["rite", "receipts", "--json"])).data.conferre;
+    const after = old.answer(old.must(["rite", "receipts", "json=true"])).data.conferre;
     assert.deepEqual(after.red, []);
     assert.ok(after.par.some((t) => t.tessera === kept.tessera && t.rite === "keep"), JSON.stringify(after));
     const commits = git(workspace, "rev-list", "--count", "HEAD");
-    const still = old.answer(old.must(["rite", "keep", "workspace=backup", "--json"])).data;
+    const still = old.answer(old.must(["rite", "keep", "workspace=backup", "json=true"])).data;
     assert.deepEqual({ committed: still.committed, pushed: still.pushed, landed: still.landed }, { committed: false, pushed: false, landed: [] });
     assert.equal(git(workspace, "rev-list", "--count", "HEAD"), commits, "an unchanged keep commits nothing");
     assert.equal(line("keep").returnsLeft, 1, "and spends nothing");
     // `down`'s one call: an unmoved house keeps nothing and asks no remote.
-    const idle = old.answer(old.must(["rite", "keep", "if-due=true", "workspace=backup", "--json"])).data;
+    const idle = old.answer(old.must(["rite", "keep", "if-due=true", "workspace=backup", "json=true"])).data;
     assert.deepEqual({ due: idle.due, committed: idle.committed, pushed: idle.pushed, landed: idle.landed }, { due: false, committed: false, pushed: false, landed: [] }, JSON.stringify(idle));
     assert.equal(line("keep").returnsLeft, 1, "an unmoved --if-due spends nothing");
     // THE SESSIONS MOVE over the unmoved house: the vessel returns the lei over the standing bundle, and the push rides that return.
     writeFileSync(join(old.claudeHome, "projects", "-scratch-proj", "memory", "kite.md"), "fly the kite low\n");
-    const moved = old.answer(old.must(["rite", "keep", "if-due=true", "workspace=backup", "--json"])).data;
+    const moved = old.answer(old.must(["rite", "keep", "if-due=true", "workspace=backup", "json=true"])).data;
     assert.deepEqual({ kept: moved.kept, due: moved.due, committed: moved.committed, pushed: moved.pushed, par: moved.par, spent: moved.sessions?.spent }, { kept: false, due: true, committed: true, pushed: true, par: true, spent: true }, JSON.stringify(moved));
     assert.equal(line("keep").returnsLeft ?? 0, 0, "the sessions' push spent the second return");
     assert.equal(line("keep").standing, false, "a lei with no return left stands no more");
     assert.equal(git(remote, "show", `main:${device}/projects/-scratch-proj/memory/kite.md`), "fly the kite low");
-    assert.deepEqual(old.answer(old.must(["rite", "receipts", "--json"])).data.conferre.red, [], "the sessions' tessera landed");
+    assert.deepEqual(old.answer(old.must(["rite", "receipts", "json=true"])).data.conferre.red, [], "the sessions' tessera landed");
     // No return left: sessions that move again mirror, and nothing commits or pushes.
     writeFileSync(join(old.claudeHome, "projects", "-scratch-proj", "memory", "pond.md"), "the pond at dusk\n");
     const dry = keep();
@@ -220,7 +220,7 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     // THE SPENT LEI REFUSES FIRST: the keep reads its lei before the mirror, so a refused keep mirrors nothing (the sessions that
     // moved wait at their source for the keep a refilled lei licenses), and a --no-sessions keep refuses on the empty lei alone.
     assert.doesNotMatch(git(workspace, "status", "--porcelain", "--untracked-files=all"), /devices\/.*pond\.md/, "a keep refused on its spent lei mirrors nothing");
-    const noSessions = old.lares(["rite", "keep", "workspace=backup", "sessions=false", "--json"]);
+    const noSessions = old.lares(["rite", "keep", "workspace=backup", "sessions=false", "json=true"]);
     assert.notEqual(noSessions.status, 0, noSessions.stdout);
     assert.equal(old.answer(noSessions).error?.code, "swarm-lei-returns-spent", noSessions.stdout);
     rmSync(join(old.claudeHome, "projects", "-scratch-proj", "memory", "pond.md"));
@@ -244,11 +244,11 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     git(scratch, "clone", "-q", "--branch", "main", remote, damaged);
     const victim = join(damaged, "house", manifest.files.find((f) => f.path.includes("heron")).path);
     writeFileSync(victim, readFileSync(victim, "utf8").replace("remember the heron", "remember the herons"));
-    const refused = fresh.lares(["import", join(damaged, "house"), "apply=true", "--json"]);
+    const refused = fresh.lares(["import", join(damaged, "house"), "apply=true", "json=true"]);
     assert.notEqual(refused.status, 0, refused.stdout);
     assert.equal(fresh.answer(refused).error?.code, "carry-bundle-refused", refused.stdout);
     assert.match(fresh.answer(refused).error?.message ?? "", /bundle-hash-mismatch/);
-    const imported = fresh.lares(["import", join(restore, "house"), "apply=true", "--json"]);
+    const imported = fresh.lares(["import", join(restore, "house"), "apply=true", "json=true"]);
     assert.equal(fresh.answer(imported).data?.applied, true, `import: ${imported.stdout}\n${imported.stderr}`);
     assert.equal(fresh.answer(imported).data?.bundleId, kept.bundleId, "the clone holds the very bundle the keep cut");
     const r = spawnSync(process.execPath, [tool, "--old", snapshot, "--new", fresh.root, "--new-port", String(fresh.port), "--json"], { cwd: repo, encoding: "utf8", env: process.env, maxBuffer: 256 * 1024 * 1024 });

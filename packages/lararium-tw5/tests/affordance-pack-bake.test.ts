@@ -123,7 +123,7 @@ describe.skipIf(wikiSkip)(`the affordance bake over the fixture carrier${skipNot
     const roles = ["x".repeat(40), "y".repeat(40)];
     expect(briefOf("shore", roles, ["shore flush", "shore list", "shore log"])).toBe("flush · list · log");   // the joined roles overrun the list's line: the door names its verbs
     // Progressive display retires the screen budget: the joined roles hold the carrier's width law (a role, 72 or fewer), and
-    // past it the door's one line names every verb whole, never cut to a terminal's columns; `lares shore --help` unfolds the rest.
+    // past it the door's one line names every verb whole, never cut to a terminal's columns; `lares help shore` unfolds the rest.
     expect(briefOf("oracle", ["x".repeat(35), "y".repeat(34)], ["oracle cast", "oracle read"])).toBe(`${"x".repeat(35)} · ${"y".repeat(34)}`);
     expect(briefOf("oracle", ["x".repeat(35), "y".repeat(35)], ["oracle cast", "oracle read"])).toBe("cast · read");
     const many = Array.from({ length: 30 }, (_, i) => `shore verb-${i}`);

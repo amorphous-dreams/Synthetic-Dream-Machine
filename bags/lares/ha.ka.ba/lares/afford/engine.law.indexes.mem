@@ -21,7 +21,7 @@ The index derives from canon by filter and no list stands in code. The pin set (
 
 Read it before you act, the way you read your working memory. A law row comes from canon's settled ground; turn it through the five tools.
 
-One page holds at most 32 rows, and `next` names the cursor of the page behind (hand it back as `after`; `all` follows every cursor to the end). Both doors answer one shape: {filter, pinsTitle, pins, rows: [{title, description, pinned}], total, next}. A terminal prints it plainly (the pinned titles marked 📌, then the law they leave out) and `--json` carries the body the seat returns.
+One page holds at most 32 rows, and `next` names the cursor of the page behind (hand it back as `after`; `all` follows every cursor to the end). Both doors answer one shape: {filter, pinsTitle, pins, rows: [{title, description, pinned}], total, next}. A terminal prints it plainly (the pinned titles marked 📌, then the law they leave out) and `json=true` carries the body the seat returns.
 
 Read one law whole through the read door: `lares get title=<title> aperture=arc` on a terminal, `get(title=<title>, aperture="arc")` on the seat. Order the pins with `engine.law.pins` and `engine.law.unpins`.
 
@@ -33,7 +33,7 @@ Read one law whole through the read door: `lares get title=<title> aperture=arc`
 
 ```memetic-wikitext
 <<has entity=`example` name=`first-page` params=`~ the first page: pins, then law by title`>>
-<<has entity=`example` name=`every-row` params=`all/true ~ every row, page after page (--json answers {filter, pinsTitle, pins, rows, total, next})`>>
+<<has entity=`example` name=`every-row` params=`all/true ~ every row, page after page (json=true answers {filter, pinsTitle, pins, rows, total, next})`>>
 <<has entity=`example` name=`a-page-behind` params=`limit/10 after/<cursor> ~ ten rows behind the cursor a prior answer named in next`>>
 ```
 
@@ -84,7 +84,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares law index
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares law index]] ~ the terminal; prints plainly, --json carries the body`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares law index]] ~ the terminal; prints plainly, json=true carries the body`>>
 ```
 
 <<~/ahu>>
@@ -110,6 +110,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Uh0kUpqzSNBdNTr2c4VplnDwt78PJ-K-buVqeEgkvv0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KmAQqaNEQchbotZboanKXLvtnuazb7ZlwnaRaY-NHsY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

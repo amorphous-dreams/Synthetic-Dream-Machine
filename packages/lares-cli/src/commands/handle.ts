@@ -54,7 +54,7 @@ function personaOf(args: ParsedArgs): { handleIndex?: number } {
   return args.options["persona"] === undefined ? {} : { handleIndex: Number(args.options["persona"]) };
 }
 
-/** Refuse through the ONE choke point, so an agent under `--json` reads a verdict and never bare prose. */
+/** Refuse through the ONE choke point, so an agent under `json=true` reads a verdict and never bare prose. */
 function refuse(args: ParsedArgs, detail: string): number {
   return refuseUsage(args, "handle", helpLines("handle"), detail);
 }

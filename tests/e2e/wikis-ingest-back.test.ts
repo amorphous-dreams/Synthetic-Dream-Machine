@@ -50,7 +50,7 @@ async function awaitWikisCarrier(timeoutMs = 60_000): Promise<string> {
 }
 
 function ingest(extra: string[]): ReturnType<LarInstance["cli"]> {
-  return lar.cli(["ingest", `source=${wikisDir}`, `to=${WORKING}`, "in-wiki=true", ...extra, "--json"]);
+  return lar.cli(["ingest", `source=${wikisDir}`, `to=${WORKING}`, "in-wiki=true", ...extra, "json=true"]);
 }
 
 beforeAll(async () => {
@@ -59,7 +59,7 @@ beforeAll(async () => {
   // Each wiki projects its own tree under `wikis/<slug>/` (the daemon's own rides `faces/<pet name>/wiki/`, in the face's root), so the
   // scan back into `wikis/lares/working` reads `wikis/lares/` alone — a sibling wiki's tree is never its source.
   wikisDir = wikiWorkbenchDir(lar.root, "lares");
-  const r = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, `to=${WORKING}`, "in-wiki=true", "yes=true", "--json"]);
+  const r = await lar.cli(["lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, `to=${WORKING}`, "in-wiki=true", "yes=true", "json=true"]);
   if (r.json?.["ok"] !== true) throw new Error(`seed LOAD --to working failed: ${JSON.stringify(r.json)}`);
   projected = await awaitWikisCarrier();
   // The file stands; the island looks at the disk and drains its queue before any scan reads it.
@@ -87,7 +87,7 @@ describe.skipIf(!stagedTarget)("wikis ingest-back — the working write-layer ro
     expect(edited).not.toBe(before);  // guard: a carrier with no heading at all fails loud, never a no-op
     writeFileSync(projected, edited);
 
-    const r = await ingest(["apply=true", "--yes"]);
+    const r = await ingest(["apply=true", "yes=true"]);
     const d = r.json?.["data"] as Record<string, unknown>;
     const carriers = d["carriers"] as Array<Record<string, unknown>>;
     expect(carriers?.[0]?.["decision"]).toBe("ingest");

@@ -22,7 +22,7 @@ export const RELEASE_USAGE = "lares vessel release <documentId> [keep=true|fresh
 
 /** `args` with the sub-door name already consumed: `positional[0]` names the id. */
 export async function cmdRelease(given: ParsedArgs): Promise<number> {
-  // A hand act answers a pipe in prose (render.ts `proseFirst`); `--json` answers the envelope.
+  // A hand act answers a pipe in prose (render.ts `proseFirst`); `json=true` answers the envelope.
   const args = proseFirst(given);
   if (args.options["root"]) process.env["LAR_ROOT"] = args.options["root"];
   const documentId = args.positional[0];

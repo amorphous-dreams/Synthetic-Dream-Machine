@@ -241,7 +241,7 @@ const git = (argv: readonly string[]): Promise<string> => new Promise((resolve, 
 
 /** One line of this CLI again, answered as a row: the bridge forwards it into the vessel where a container house stands. */
 const cliVerb = (line: readonly string[]): Promise<RiteVerbAnswer> => new Promise<RiteVerbAnswer>((resolve) => {
-  const child = spawn(process.execPath, [BIN, ...line, "--json"], { stdio: ["inherit", "pipe", "inherit"] });
+  const child = spawn(process.execPath, [BIN, ...line, "json=true"], { stdio: ["inherit", "pipe", "inherit"] });
   let text = "";
   child.stdout.setEncoding("utf8").on("data", (chunk: string) => { text += chunk; });
   child.once("error", (err) => resolve({ ok: false, code: "rite-row-unreached", message: err.message }));
@@ -254,11 +254,11 @@ const cliVerb = (line: readonly string[]): Promise<RiteVerbAnswer> => new Promis
 });
 
 /**
- * The shore's flush through the existing hand door (`lares shore flush --json`, forwarded into the vessel by the bridge): its
+ * The shore's flush through the existing hand door (`lares shore flush json=true`, forwarded into the vessel by the bridge): its
  * reading rides the envelope's `data` whether every island wrote (exit 0) or one fell short (3, 4); null where no reading came.
  */
 const shoreFlushRow = (): Promise<ShoreFlushReading | null> => new Promise((resolve) => {
-  const child = spawn(process.execPath, [BIN, "shore", "flush", "--json"], { stdio: ["ignore", "pipe", "inherit"] });
+  const child = spawn(process.execPath, [BIN, "shore", "flush", "json=true"], { stdio: ["ignore", "pipe", "inherit"] });
   let text = "";
   child.stdout.setEncoding("utf8").on("data", (chunk: string) => { text += chunk; });
   child.once("error", () => resolve(null));

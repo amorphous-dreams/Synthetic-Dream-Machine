@@ -19,7 +19,7 @@
  *   - Composable          — install = build + found + stand + wire, each step re-runnable.
  *
  * An invocation `needsFreshBuild` accepts routes through `freshBuildGate` before its handler.
- * The `--skip-build` sentinel marks the re-exec'd child (build already done) so it runs
+ * The `skip-build=true` sentinel marks the re-exec'd child (build already done) so it runs
  * its handler directly — ending the recursion.
  */
 
@@ -143,7 +143,7 @@ async function stampBuild(): Promise<void> {
 }
 
 /**
- * The gate. Returns `null` when the workspace is already fresh (the `--skip-build`
+ * The gate. Returns `null` when the workspace is already fresh (the `skip-build=true`
  * child) — the caller then runs the command handler directly. Otherwise builds the
  * workspace (idempotent) and re-execs the SAME command in a fresh process, returning
  * that process's exit code for the caller to propagate. A build failure aborts and
@@ -175,7 +175,7 @@ const REAL_DEPS: FreshBuildDeps = {
     return build.status ?? 1;
   },
   reexec: (argv) => {
-    const child = spawnSync(process.execPath, [BUILT_LARES_BIN, ...argv, "--skip-build"], {
+    const child = spawnSync(process.execPath, [BUILT_LARES_BIN, ...argv, "skip-build=true"], {
       stdio: "inherit",
       env:   process.env,
     });
@@ -236,7 +236,7 @@ export async function freshBuildGate(argv: readonly string[], args: ParsedArgs, 
   await stampBuild();   // only a SUCCEEDING build earns a stamp — a failed one leaves the tree reading stale
 
   // Re-exec the SAME invocation against the just-built bin, in a fresh process. The
-  // `--skip-build` sentinel (appended last) ends the recursion and tells the child to
+  // `skip-build=true` sentinel (appended last) ends the recursion and tells the child to
   // run its handler directly.
   return deps.reexec(argv);
 }

@@ -1,7 +1,7 @@
 /**
  * `lares oracle cast` — the CLI skin of the `oracle-cast` verb: one cast, written by the vessel as one tiddler. The line
  * plans the verb's args (the container, the operator's coins, the caster, the time the CLI reads once at its edge),
- * prints the reading plainly by default and the verb's own answer under `--json`, and its help says the oracle widens
+ * prints the reading plainly by default and the verb's own answer under `json=true`, and its help says the oracle widens
  * attention and never decides.
  */
 import { afterEach, describe, test, expect, vi } from "vitest";
@@ -168,7 +168,7 @@ describe("lares oracle cast", () => {
     expect(r.out).toContain(ORACLE_THROW_STANDS);
   });
 
-  test("--json carries the verb's answer verbatim as data", async () => {
+  test("json=true carries the verb's answer verbatim as data", async () => {
     h.reply = { decision: "put", created: true, title: "t", note: ORACLE_THROW_STANDS };
     const r = await run(argv(["cast"], { recipe: "default" }, { json: true }));
     expect(JSON.parse(r.out)).toMatchObject({ ok: true, data: h.reply });

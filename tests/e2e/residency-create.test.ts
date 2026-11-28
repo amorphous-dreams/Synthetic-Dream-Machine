@@ -29,7 +29,7 @@ afterAll(async () => { await lar.stop(); });
 
 describe.skipIf(!stagedTarget)("residency CREATE — mint + register + plane-aware gate (staged witness)", () => {
   test("C1 — CREATE a catalog bag mints + registers (catalog/read gate)", async () => {
-    const r = await lar.cli(["act", "lar:///carriage.bag.creates", `bag=${CAT_BAG}`, "yes=true", "--json"]);
+    const r = await lar.cli(["lar:///carriage.bag.creates", `bag=${CAT_BAG}`, "yes=true", "json=true"]);
     expect(r.json?.["ok"], `CREATE on the catalog plane failed: ${JSON.stringify(r.json)}`).toBe(true);
     const data = r.json?.["data"] as Record<string, unknown> | undefined;
     expect(data?.["verb"]).toBe("CREATE");
@@ -39,7 +39,7 @@ describe.skipIf(!stagedTarget)("residency CREATE — mint + register + plane-awa
   }, 90_000);
 
   test("C2 — re-CREATE the same bag is idempotent: SAME doc, never a double-mint", async () => {
-    const r = await lar.cli(["act", "lar:///carriage.bag.creates", `bag=${CAT_BAG}`, "yes=true", "--json"]);
+    const r = await lar.cli(["lar:///carriage.bag.creates", `bag=${CAT_BAG}`, "yes=true", "json=true"]);
     // Behavior witnessed: a re-CREATE of the same bag does NOT mint a second doc.
     // (Idempotency-key replay returns the first outcome; ok:true, same docUrl.)
     // NB: the build's intended "conflict/exit-4" does NOT fire for identical args —
@@ -51,7 +51,7 @@ describe.skipIf(!stagedTarget)("residency CREATE — mint + register + plane-awa
   }, 60_000);
 
   test("C3 — CREATE an oracle-plane bag mints (oracle/admin gate)", async () => {
-    const r = await lar.cli(["act", "lar:///carriage.bag.creates", `bag=${ORC_BAG}`, "plane=oracle", "yes=true", "--json"]);
+    const r = await lar.cli(["lar:///carriage.bag.creates", `bag=${ORC_BAG}`, "plane=oracle", "yes=true", "json=true"]);
     expect(r.json?.["ok"], `CREATE on the oracle plane failed: ${JSON.stringify(r.json)}`).toBe(true);
     expect((r.json?.["data"] as Record<string, unknown> | undefined)?.["verb"]).toBe("CREATE");
   }, 90_000);
@@ -60,8 +60,8 @@ describe.skipIf(!stagedTarget)("residency CREATE — mint + register + plane-awa
   const DRY_BAG = "lar:///ha.ka.ba/bags/witness-dry";
 
   test("D1 — CREATE mu=dry reports the projected effect (and needs no yes=true)", async () => {
-    // No --yes: a dry-run is read-only, so it bypasses the confirmation gate.
-    const r = await lar.cli(["act", "lar:///carriage.bag.creates", `bag=${DRY_BAG}`, "mu=dry", "--json"]);
+    // No yes=true: a dry-run is read-only, so it bypasses the confirmation gate.
+    const r = await lar.cli(["lar:///carriage.bag.creates", `bag=${DRY_BAG}`, "mu=dry", "json=true"]);
     expect(r.json?.["ok"], `dry-run CREATE failed: ${JSON.stringify(r.json)}`).toBe(true);
     const data = r.json?.["data"] as Record<string, unknown> | undefined;
     expect(data?.["dryRun"], "result not flagged dryRun").toBe(true);
@@ -72,7 +72,7 @@ describe.skipIf(!stagedTarget)("residency CREATE — mint + register + plane-awa
   test("D2 — the dry-run committed NOTHING: a real CREATE of the same bag still mints fresh", async () => {
     // If D1 had registered @witness-dry, this real CREATE would conflict (the
     // executeCREATE conflict-check). It MINTS instead → the dry-run wrote nothing.
-    const r = await lar.cli(["act", "lar:///carriage.bag.creates", `bag=${DRY_BAG}`, "yes=true", "--json"]);
+    const r = await lar.cli(["lar:///carriage.bag.creates", `bag=${DRY_BAG}`, "yes=true", "json=true"]);
     expect(r.json?.["ok"], `real CREATE after dry-run failed (dry-run leaked a write?): ${JSON.stringify(r.json)}`).toBe(true);
     const data = r.json?.["data"] as Record<string, unknown> | undefined;
     expect(String(data?.["docUrl"] ?? ""), "real CREATE did not mint a fresh doc").toMatch(/^automerge:/);

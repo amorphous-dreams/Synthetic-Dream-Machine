@@ -698,7 +698,7 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
 }
 
 /**
- * THE CONSOLE DOOR (`console-door.ts`): `lares("vessel", "read")` from the browser's console answers what the CLI's `--json`
+ * THE CONSOLE DOOR (`console-door.ts`): `lares("vessel", "read")` from the browser's console answers what the CLI's `json=true`
  * prints. It seats before the boot, so it answers a vessel that stands locked, half-founded or not at all; the vessel's own
  * rows cross this tab's one port, and a tab whose vessel worker has not greeted it says so by name.
  */

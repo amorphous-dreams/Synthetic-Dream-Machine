@@ -1,6 +1,6 @@
 /**
- * `-h` AND `--help` BOTH ASK FOR HELP (clig.dev): bare `lares --help` / `lares -h` print what `lares help` prints
- * and exit 0; `lares <verb> --help|-h` print that verb's own help; an unknown name still refuses by name.
+ * ONE HELP SPELLING: `lares help` lists every door and exits 0; `lares help <door>` prints that door's own help; a dash
+ * spelling (`--help`) refuses `dash-flag-burned`, naming `lares help`; an unknown name still refuses by name.
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { dispatch, COMMANDS } from "../src/bin/lares.js";
@@ -16,26 +16,25 @@ async function run(argv: string[]): Promise<{ code: number; out: string; err: st
 afterEach(() => vi.restoreAllMocks());
 
 describe("help flags", () => {
-  test("★ --help and -h print the same text as `help`, exit 0 ★", async () => {
+  test("★ `help` prints the door list and exits 0; a dash spelling refuses, naming `lares help` ★", async () => {
     const base = await run(["help"]);
     expect(base.code).toBe(0);
-    for (const flag of ["--help", "-h"]) {
-      const r = await run([flag]);
-      expect(r.code, r.err).toBe(0);
-      expect(r.out).toBe(base.out);
-      expect(r.err).toBe("");
-    }
+    expect(base.err).toBe("");
+    const dash = await run(["--help"]);
+    expect(dash.code).toBe(2);
+    expect(dash.out).toBe("");
+    expect(dash.err).toContain("dash-flag-burned: dash flags burned; params ride as name=value (lares help)");
   });
-  test("a verb's --help and -h print its own help", async () => {
-    const long = await run(["bag", "--help"]);
-    const short = await run(["bag", "-h"]);
-    expect(long.code).toBe(0);
-    expect(short.code).toBe(0);
-    expect(short.out).toBe(long.out);
-    expect(long.out).not.toContain("Commands:");
+  test("`lares help <door>` prints its own help; `lares <door> --help` refuses, naming it", async () => {
+    const own = await run(["help", "bag"]);
+    expect(own.code).toBe(0);
+    expect(own.out).not.toContain("Commands:");
+    const dash = await run(["bag", "--help"]);
+    expect(dash.code).toBe(2);
+    expect(dash.err).toContain("(lares help bag)");
   });
-  test("CONTROL: an unknown command still refuses by name", async () => {
-    for (const argv of [["nope"], ["nope", "--help"], ["nope", "-h"]]) {
+  test("CONTROL: an unknown command still refuses by name, through the help door too", async () => {
+    for (const argv of [["nope"], ["help", "nope"]]) {
       const r = await run(argv);
       expect(r.code).toBe(2);
       expect(r.err).toContain('unknown command "nope"');
@@ -44,7 +43,7 @@ describe("help flags", () => {
 
   test("★ the top-level list reads as the first rung of progressive display: one line per door, every verb named once ★", async () => {
     // The width law lives at the carrier (a role holds 72 characters or fewer, api/pono/affordance), and depth unfolds per door
-    // (`lares <door> --help`, then a slot, then the whole), so the list names each door on one line and caps no terminal width.
+    // (`lares help <door>`, then a slot, then the whole), so the list names each door on one line and caps no terminal width.
     const r = await run(["help"]);
     for (const c of COMMANDS) {
       const rows = r.out.split("\n").filter((l) => new RegExp(`^\\s+(✍ )?${c.name}\\s`).test(l));
@@ -60,12 +59,10 @@ describe("help flags", () => {
     }
   });
 
-  test("★ the footer promise holds: every verb's --help and -h exit 0 and carry its long account ★", async () => {
+  test("★ the footer promise holds: every door's `lares help <door>` exits 0 and carries its long account ★", async () => {
     for (const c of COMMANDS) {
-      const long = await run([c.name, "--help"]);
-      const short = await run([c.name, "-h"]);
+      const long = await run(["help", c.name]);
       expect(long.code, `${c.name}: ${long.err}`).toBe(0);
-      expect(short.out).toBe(long.out);
       expect(long.out.replace(/\s+/g, " "), c.name).toContain(c.summary.replace(/\s+/g, " "));
     }
   });

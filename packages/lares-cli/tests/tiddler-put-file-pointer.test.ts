@@ -42,12 +42,12 @@ import { cmdCall, crossHost, type CallSources } from "../src/commands/call.js";
 import { DoorUsage } from "../src/commands/door-call.js";
 import { parseArgs } from "../src/parse-args.js";
 
-/** One put line as a terminal types it, `--json` asked. */
+/** One put line as a terminal types it, `json=true` asked. */
 async function run(...tokens: string[]): Promise<number> {
   const spy = vi.spyOn(process.stdout, "write").mockImplementation((() => true) as never);
   const log = vi.spyOn(console, "log").mockImplementation(() => {});
   const err = vi.spyOn(console, "error").mockImplementation(() => {});
-  try { return await cmdCall(parseArgs(["put", ...tokens, "--json"])); } finally { spy.mockRestore(); log.mockRestore(); err.mockRestore(); }
+  try { return await cmdCall(parseArgs(["put", ...tokens, "json=true"])); } finally { spy.mockRestore(); log.mockRestore(); err.mockRestore(); }
 }
 
 /** The call a put sends: the params as they crossed, the surface `cli`. */

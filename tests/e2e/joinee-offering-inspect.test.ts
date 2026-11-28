@@ -35,7 +35,7 @@ beforeAll(async () => {
     daemonEnv: { LAR_SAME_ORIGIN: "true" },
     riteA: async (source, rootA) => {
       await growStagedQuorum(source, rootA, ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]);
-      const pub = await source(["nexus", "publish", "plugins", `source=${HIGHLIGHT_SOURCE}`, "apply=true", "face=0", "--json"]);
+      const pub = await source(["nexus", "publish", "plugins", `source=${HIGHLIGHT_SOURCE}`, "apply=true", "face=0", "json=true"]);
       const d = pub.json?.["data"] as { offeringCid?: string; boardUrl?: string; blobCount?: number } | undefined;
       offeringCid = d?.offeringCid ?? "";
       boardUrl = d?.boardUrl ?? "";
@@ -58,7 +58,7 @@ afterAll(async () => { await fleet?.stop(); });
  */
 async function storeDoorRead(v: LarInstance): Promise<{ via: string | undefined; ms: number }> {
   const t0 = performance.now();
-  const r = await v.cli(["nexus", "kapae", "list=true", "--json"]);
+  const r = await v.cli(["nexus", "kapae", "list=true", "json=true"]);
   return { via: (r.json?.["data"] as { via?: string } | undefined)?.via, ms: performance.now() - t0 };
 }
 
@@ -67,7 +67,7 @@ describe("a joinee's door serves `nexus offering inspect`", () => {
     const before = await storeDoorRead(B);
     expect(before.via).toBe("daemon");
 
-    const inspected = await B.cli(["nexus", "offering", "inspect", offeringCid, "--json"]);
+    const inspected = await B.cli(["nexus", "offering", "inspect", offeringCid, "json=true"]);
     const error = inspected.json?.["error"] as { code?: string; message?: string } | undefined;
     process.stderr.write(`joinee-offering-inspect: code=${inspected.code} ${JSON.stringify(inspected.json).slice(0, 400)}\n`);
     if (inspected.code === 0) {

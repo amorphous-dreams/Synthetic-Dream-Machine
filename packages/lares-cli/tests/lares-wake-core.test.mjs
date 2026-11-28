@@ -30,9 +30,9 @@ test("the wake carries the memory index beside the frame and the homes line", as
   assert.match(context, /read a row: get\(title=<title>, recipe="default", aperture="arc"\)/);
   assert.doesNotMatch(context, /after=/);
   // The read rides the vessel's own door: the daemon wiki, the index tag, title and description, a row limit, a byte cap.
-  assert.deepEqual(calls.index, ["get", "filter=[tag[stage/index]] -[lares.stage[state]]", "fields=title,description", "limit=32", `max-bytes=${INDEX_BYTES}`, "--json"]);
+  assert.deepEqual(calls.index, ["get", "filter=[tag[stage/index]] -[lares.stage[state]]", "fields=title,description", "limit=32", `max-bytes=${INDEX_BYTES}`, "json=true"]);
   assert.deepEqual(calls.index, indexArgv());
-  assert.deepEqual(calls.observe, ["vessel", "stand", "observe=true", "--json"]);
+  assert.deepEqual(calls.observe, ["vessel", "stand", "observe=true", "json=true"]);
 });
 
 test("a page with a cursor names the call that reads further", async () => {
@@ -296,7 +296,7 @@ test("wake-names-the-keep-line: the wake reads the keep lei at the configured ke
   const context = await wake({ run, keepWorkspace: "backup" });
   assert.match(context, /Lares keep: a keep lei stands for workspace "backup" with 11 returns left; `lares rite keep workspace=backup` spends one/);
   assert.deepEqual(calls.find(([n]) => n === "keep")[1], keepArgv("backup"));
-  assert.deepEqual(keepArgv("backup"), ["lei", "show", "rite=keep", "branch=backup", "--json"]);
+  assert.deepEqual(keepArgv("backup"), ["lei", "show", "rite=keep", "branch=backup", "json=true"]);
   const none = await wake({ run: runner({ ...base, keep: lei({ lei: { standing: false, refusal: "absent", after: null } }) }), keepWorkspace: "backup" });
   assert.match(none, /Lares keep: no keep lei stands for workspace "backup" \(absent\); `lares vault unlock` offers one, or by hand: lares lei kui rite=keep branch=backup returns=<n>/);
   const broken = await wake({ run: runner({ ...base, keep: answered("", 127) }), keepWorkspace: "backup" });
@@ -495,7 +495,7 @@ test("wake-knows-who-is-home: the roster follows the law, rotation first, framed
   assert.doesNotMatch(ROSTER_WEIGHT_LINE, /never instructions|data, never/);
   assert.match(ROSTER_WEIGHT_LINE, /five tools/);
   assert.deepEqual(calls.roster, rosterArgv());
-  assert.deepEqual(rosterArgv(), ["vessel", "roster", "--json"]);
+  assert.deepEqual(rosterArgv(), ["vessel", "roster", "json=true"]);
 });
 
 test("the roster block: a far row's free text never prints, the rows stop at their cap, a fault names its cause", async () => {
@@ -583,7 +583,7 @@ test("wake-names-the-docs-library: the line names the library only where the ves
   const base = { observe: answered(UP), homes: answered("h"), index: answered(page([])) };
   const read = await wake({ run: runner({ ...base, docs: answered(status) }, calls) });
   assert.match(read, /^Library: tw5-docs \(TiddlyWiki docs, read-only\)/m);
-  assert.deepEqual(calls.docs, ["wiki", "status", "recipe=tw5-docs", "--json"]);
+  assert.deepEqual(calls.docs, ["wiki", "status", "recipe=tw5-docs", "json=true"]);
   assert.deepEqual(calls.docs, core.docsArgv());
   const older = JSON.stringify({ ok: false, error: { code: "wiki-unreached", message: "wiki-unreached: wiki-status — no wiki \"tw5-docs\" this face reaches" } });
   const unreached = await wake({ run: runner({ ...base, docs: answered(older, 4) }) });

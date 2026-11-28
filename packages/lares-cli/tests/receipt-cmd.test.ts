@@ -57,7 +57,7 @@ async function standStub(answer: unknown): Promise<string> {
 }
 
 function jsonArgs(positional: string[]): ReturnType<typeof parseArgs> {
-  return parseArgs(["receipt", ...positional, "--json"]);
+  return parseArgs(["receipt", ...positional, "json=true"]);
 }
 
 function captured(): { lines: string[]; restore: () => void } {
@@ -118,7 +118,7 @@ describe("lares vessel request <requestId> (M14)", () => {
 
     const out: string[] = [];
     vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { out.push(a.join(" ")); });
-    await cmdReceipt(parseArgs(["receipt", "req-int-hint", "--no-json"]));
+    await cmdReceipt(parseArgs(["receipt", "req-int-hint", "json=false"]));
     expect(out.join("\n")).toMatch(/change-id/);
   });
 
@@ -172,7 +172,7 @@ describe("lares vessel request <requestId> cancel=true (M14 + M8 — the OPERATO
   async function cancelAgainst(answer: Record<string, unknown>): Promise<{ payload: { ok: boolean; data: Record<string, unknown>; error?: { code: string; message: string; hint?: string } }; code: number }> {
     await standStub(answer);
     const cap = captured();
-    const code = await cmdCancel(parseArgs(["cancel", String(answer["requestId"]), "--json"]));
+    const code = await cmdCancel(parseArgs(["cancel", String(answer["requestId"]), "json=true"]));
     cap.restore();
     return { payload: JSON.parse(cap.lines.join("")), code };
   }
@@ -254,7 +254,7 @@ describe("lares vessel request <requestId> cancel=true (M14 + M8 — the OPERATO
   });
 
   test("usage: no requestId given → exit 2", async () => {
-    const code = await cmdCancel(parseArgs(["cancel", "--json"]));
+    const code = await cmdCancel(parseArgs(["cancel", "json=true"]));
     expect(code).toBe(2);
   });
 });
@@ -263,7 +263,7 @@ describe("lares vessel request <requestId> [cancel=true] — one door, the withd
   test("★ without --cancel the door READS: nothing is withdrawn ★", async () => {
     await standStub({ requestId: "req-r1", state: "committed" });
     const cap = captured();
-    const code = await cmdRequest(parseArgs(["request", "req-r1", "--json"]));
+    const code = await cmdRequest(parseArgs(["request", "req-r1", "json=true"]));
     cap.restore();
     const payload = JSON.parse(cap.lines.join("")) as { ok: boolean; data: Record<string, unknown> };
     expect(payload.ok).toBe(true);
@@ -274,14 +274,14 @@ describe("lares vessel request <requestId> [cancel=true] — one door, the withd
   test("★ with --cancel the door withdraws, and reports the two receipts apart ★", async () => {
     await standStub({ requestId: "req-r2", state: "abandoned" });
     const cap = captured();
-    const code = await cmdRequest(parseArgs(["request", "req-r2", "cancel=true", "--json"]));
+    const code = await cmdRequest(parseArgs(["request", "req-r2", "cancel=true", "json=true"]));
     cap.restore();
     expect(JSON.parse(cap.lines.join(""))).toEqual({ ok: true, requestId: "req-r2", data: { state: "abandoned", withdrawn: true } });
     expect(code).toBe(0);
   });
 
   test("a missing id refuses with usage (exit 2) on either spelling", async () => {
-    for (const argv of [["request", "--json"], ["request", "cancel=true", "--json"]]) {
+    for (const argv of [["request", "json=true"], ["request", "cancel=true", "json=true"]]) {
       expect(await cmdRequest(parseArgs(argv))).toBe(2);
     }
   });

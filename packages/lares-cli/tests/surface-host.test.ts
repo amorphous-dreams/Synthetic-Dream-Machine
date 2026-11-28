@@ -93,14 +93,14 @@ describe("the face, as the host reads it", () => {
     writeFaceLabel({ relation: OWL, petname: "Owl Ember", handleIndex: 1 }, join(house, "projections"));
     const doors = hostDoors(ask({ code: 0, out: `${JSON.stringify({ ok: true, data: { face: 1, petname: "Owl Ember" } })}\n` }));
     expect(await doors.face(surfaceArgs(["open"]))).toEqual({ index: 1, petname: "Owl Ember" });
-    expect(asked).toEqual([["surface", "face", "--json"]]);
+    expect(asked).toEqual([["surface", "face", "json=true"]]);
     expect(await doors.face(surfaceArgs(["open"], { face: "1" }))).toEqual({ index: 1, petname: "Owl Ember" });
     expect(asked).toHaveLength(1);
   });
 
   test("a face no label names, with the vessel down: refuses by name", async () => {
     expect(await cmdSurface(surfaceArgs(["open"], { face: "2" }), hostDoors())).toBe(1);
-    expect(asked).toEqual([["surface", "face", "--json", "face=2"]]);
+    expect(asked).toEqual([["surface", "face", "json=true", "face=2"]]);
     expect(rig.said()).toMatch(/surface-face-unanswered/);
   });
 });
@@ -157,7 +157,7 @@ describe.skipIf(!built)("the pre-commit hook on the host", () => {
     const hostEnv: Record<string, string> = { HOME: home, PATH: `${bin}:/usr/bin:/bin`, GIT_CONFIG_GLOBAL: "/dev/null", GIT_CONFIG_NOSYSTEM: "1" };
     const run = (cmd: string, args: string[]) => spawnSync(cmd, args, { cwd: root, env: hostEnv, encoding: "utf8" });
 
-    const direct = run("lares", ["surface", "check", "--no-json"]);
+    const direct = run("lares", ["surface", "check", "json=false"]);
     expect(direct.status, direct.stderr).toBe(0);
     expect(direct.stdout).toContain(resolve(root));
 

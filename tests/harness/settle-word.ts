@@ -49,7 +49,7 @@ export interface ShoreDrained {
 
 /** Ask the island to look at the disk and answer once its reconcile queue drained. */
 export async function projectionDrained(lar: LarInstance): Promise<ShoreDrained> {
-  const r = await lar.cli(["shore", "list", "--json"]);
+  const r = await lar.cli(["shore", "list", "json=true"]);
   const data = r.json?.["data"] as Record<string, unknown> | undefined;
   expect(r.json?.["ok"], `the shore answered: ${JSON.stringify(r.json ?? r.stderr)}`).toBe(true);
   return { standoffs: Number(data?.["standoffCount"] ?? NaN), pending: Number(data?.["pendingCount"] ?? NaN) };

@@ -20,7 +20,7 @@
 
 import { openMemorySensorium, makeLaresQuery, runTrialServing, trialContentDir, verifyTrialModel, sensoriumLenses, sensoriumNames, sensoriumDir, memorySensoriumDir } from "@lararium/node";
 import { emit, exitFor } from "../render.js";
-import { GLOBAL_FLAGS, type ParsedArgs } from "../parse-args.js";
+import { GLOBAL_PARAMS, type ParsedArgs } from "../parse-args.js";
 import { cmdPour, cmdCapture } from "./capture/harvest.js";
 import { cmdWorldline } from "./worldline.js";
 import { cmdTelemetry } from "./telemetry.js";
@@ -123,11 +123,6 @@ const LIFECYCLE: Readonly<Record<string, (a: ParsedArgs) => Promise<number> | nu
 /** Every verb the sense door answers: the four plane reads and the lifecycle verbs. */
 export const SENSE_VERBS: readonly string[] = [...VERBS, ...Object.keys(LIFECYCLE)];
 
-export function retiredSensePromote(args: ParsedArgs): boolean {
-  const [first, second] = args.positional;
-  return first === "promote" || (second === "promote" && first !== undefined && LIFECYCLE[first] === undefined && !VERBS.includes(first as Verb));
-}
-
 /**
  * A FOLD READS ONLY ITS OWN PARAMS. The verb's carrier takes the union over its folds, so a fold beneath it names the narrower
  * list it reads and the door refuses any other param by name before the fold runs: each `analyze lens=<lens>` its lens's
@@ -138,7 +133,6 @@ export function retiredSensePromote(args: ParsedArgs): boolean {
 export function senseFoldTakes(args: ParsedArgs): readonly string[] | null {
   const [first, second] = args.positional;
   const verb = first !== undefined && (LIFECYCLE[first] !== undefined || VERBS.includes(first as Verb)) ? first : second;
-  if (retiredSensePromote(args)) return null;
   if (verb === "harden") return ["approve", "store-swap"];
   if (verb === "analyze") {
     const lens = resolveLens(args.options["lens"] ?? "");
@@ -153,9 +147,9 @@ export function senseFoldTakes(args: ParsedArgs): readonly string[] | null {
 
 export async function cmdSense(args: ParsedArgs): Promise<number> {
   const fold = senseFoldTakes(args);
-  const stray = fold === null ? [] : [...Object.keys(args.options), ...Object.keys(args.flags)].filter((n) => !fold.includes(n) && !GLOBAL_FLAGS.includes(n));
+  const stray = fold === null ? [] : [...Object.keys(args.options), ...Object.keys(args.flags)].filter((n) => !fold.includes(n) && !GLOBAL_PARAMS.includes(n));
   if (stray.length > 0) {
-    const message = `unknown param ${stray.map((n) => `${n}=`).join(" ")} for \`lares sense\`: this fold takes ${fold!.length === 0 ? "no param" : fold!.map((n) => `${n}=`).join(" ")}; run: lares sense ${args.positional.join(" ")} --help`;
+    const message = `unknown param ${stray.map((n) => `${n}=`).join(" ")} for \`lares sense\`: this fold takes ${fold!.length === 0 ? "no param" : fold!.map((n) => `${n}=`).join(" ")}; run: lares help sense ${args.positional.join(" ")}`;
     emit(args, { ok: false, error: { code: "usage", message }, human: () => console.error(`lares: ${message}`) });
     return exitFor("usage");
   }

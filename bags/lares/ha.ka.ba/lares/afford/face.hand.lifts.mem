@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.hand.lifts"
 
 ! face.hand.lifts ~ the hand reads the preview, names the row digest, and the lift signs
 
-`kahua lift <title>` carries one staged row to every device the face wears: the second crossing of memory. It reads the staged row back first and prints its PREVIEW (title, row digest, fields, body, and whether a head already carries it), then lifts only on that row digest typed back at a terminal (its first eight hex), or on `--digest <hex>` naming the digest the preview printed. A bare `--yes` names no digest and lifts nothing. A lift signs under the face's root, so a lift always asks the face's passphrase at a terminal; `--digest` spares the typed-back digest alone.
+`kahua lift <title>` carries one staged row to every device the face wears: the second crossing of memory. It reads the staged row back first and prints its PREVIEW (title, row digest, fields, body, and whether a head already carries it), then lifts only on that row digest typed back at a terminal (its first eight hex), or on `--digest <hex>` naming the digest the preview printed. A bare `yes=true` names no digest and lifts nothing. A lift signs under the face's root, so a lift always asks the face's passphrase at a terminal; `--digest` spares the typed-back digest alone.
 
 The lift names its taint list: `--taint none` when every input came from inside the face, else `--taint a,b`. A lift carries the staged row's own body and fields, so stage them first (`face.draft.stages`); a lift naming `--text`, `--file` or `--fields` refuses `kahua-lift-unstaged`. `--parent <cid>` names the revision it supersedes (`none` for a first lift), `--sources` further daemon sources the item distils (the staged row always rides), and `--proposal <id>` the proposal it answers: the proposal's body digest must equal the staged body's. Two digests share one word: the ROW digest (what `kahua stage` answers and a lift names) covers the row's body and fields, while a proposal's `digest` names the BODY digest, the body bytes alone.
 
@@ -64,7 +64,7 @@ Under a pūlama the root signs at the pūlama's hand door, since the vessel ther
 Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
-<<has entity=`gate` name=`hand` params=`who/hand key/face-root ~ signs under the face's root out of sealed custody and always asks the face's passphrase at a terminal; a person runs it, an AI seat proposes and stages and names the command, and a bare --yes lifts nothing`>>
+<<has entity=`gate` name=`hand` params=`who/hand key/face-root ~ signs under the face's root out of sealed custody and always asks the face's passphrase at a terminal; a person runs it, an AI seat proposes and stages and names the command, and a bare yes=true lifts nothing`>>
 ```
 
 <<~/ahu>>
@@ -122,6 +122,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;QH5JnlB-41QWkb-vMbp-ThFTHYkQ-X1DqRaE-wQsgUc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2vvQlmzjCTDg2_JTT9F9W2JHDv23dNkYDPmMPAY8WTI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

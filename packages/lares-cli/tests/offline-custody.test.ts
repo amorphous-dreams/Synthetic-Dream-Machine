@@ -147,7 +147,7 @@ describe("a command's own key session", () => {
     const lines: string[] = [];
     vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { lines.push(a.map(String).join(" ")); });
     vi.spyOn(console, "log").mockImplementation(() => {});
-    const code = await dispatch(["vessel", "found", `root=${root}`, "--skip-build", "--json"]);
+    const code = await dispatch(["vessel", "found", `root=${root}`, "skip-build=true", "json=true"]);
     expect(code).toBe(1);
     const said = lines.filter((l) => l.includes("sealed under the vessel key"));
     expect(said.length, lines.join("\n")).toBe(1);

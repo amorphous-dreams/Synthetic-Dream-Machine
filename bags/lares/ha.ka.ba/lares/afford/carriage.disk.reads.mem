@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.disk.reads"
 
 The vessel looks at the disk first, so the list stands true to the bytes at that instant, then names every row the shore holds: each STANDOFF (the disk and the records say different things and nothing writes) with its key, and each PENDING REMOVAL (a file vanished where a base stands; nothing writes back and nothing tombstones). Both islands read as one shore, every page of each, each row naming its island (`wiki`, the active wiki's mirrors; `daemon`, the daemon wiki's and the crossroads). A bare `lares shore` lists.
 
-`--face N` names a LIT SIBLING's shore by handle index: its own projector answers in the daemon island with no wear, and a face that stands no projection refuses `face-unprojected`. `--bag` narrows to one bag. The list refuses to state a shore nobody measured: rows with no count, a page with no mark, a cursor that stands still, or rows short of the counts refuse `shore-list-unpaged`, and a mark that moves mid-read refuses `shore-list-moved`. Where a commit took a pending removal's file from its checkout, the row names that commit beside it (short sha, subject, PR, and the ashes git keeps) as `retiredBy`.
+`face=N` names a LIT SIBLING's shore by handle index: its own projector answers in the daemon island with no wear, and a face that stands no projection refuses `face-unprojected`. `--bag` narrows to one bag. The list refuses to state a shore nobody measured: rows with no count, a page with no mark, a cursor that stands still, or rows short of the counts refuse `shore-list-unpaged`, and a mark that moves mid-read refuses `shore-list-moved`. Where a commit took a pending removal's file from its checkout, the row names that commit beside it (short sha, subject, PR, and the ashes git keeps) as `retiredBy`.
 
 A seat reads the shore through `shore`; the answers that settle a row stay a person's hand at a terminal, so a seat names the command for the operator.
 
@@ -117,6 +117,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3YA1g0MN8xw9N_A4il42jWvriOD4p3o-3DQyx3vYN2s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hw1wiFtKeUOFWVAoHDJP1oTL17fAUp-0Mt40TmUmW2s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

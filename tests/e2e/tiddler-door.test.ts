@@ -119,7 +119,7 @@ const dataOf = (r: CliResult): Record<string, unknown> => ((r.json?.["data"] ?? 
  *  reads into every answer, while a seat act answers its reactor verb's own body; the bodies compare beneath the stamp. */
 const unstamped = (d: Record<string, unknown>): Record<string, unknown> => { const { carrier: _carrier, has: _has, ...rest } = d; return rest; };
 const seatUnstamped = (p: ReturnType<typeof payload> | undefined): ReturnType<typeof payload> | undefined => (p?.ok ? { ok: true, data: unstamped(p.data) } : p);
-const D = ["recipe=default", "--json"] as const;
+const D = ["recipe=default", "json=true"] as const;
 /** The wiki the walk founds to reach a named wiki's own engine. */
 const WALK_WIKI = "walkwiki";
 
@@ -141,7 +141,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     // and a second face of the same operator, which the last leg wears.
     lar = await openStaged({ root, tag: "tiddler-door", found: async (cli, staged) => {
       await foundStagedHearth(cli, staged, "first-face");
-      const second = await cli(["persona", "new", "1", "name=second-face", "--json"]);
+      const second = await cli(["persona", "new", "1", "name=second-face", "json=true"]);
       if (second.code !== 0) throw new Error(`the second face failed (${second.code})\n${second.stdout.slice(-400)}\n${second.stderr.slice(-800)}`);
       say("persona new 1 (the second face, before the daemon stands)", { handleIndex: (second.json?.["data"] as Record<string, unknown> | undefined)?.["handleIndex"], petname: (second.json?.["data"] as Record<string, unknown> | undefined)?.["petname"] });
     } });
@@ -173,7 +173,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     for (let n = 1; n <= NOTES; n++) {
       const file = join(scratch, `note-${n}.mem`);
       writeFileSync(file, memory(n));
-      const put = await lar.cli(["put", `title=${uriOf(n)}`, "recipe=default", `file=${file}`, "--json"]);
+      const put = await lar.cli(["put", `title=${uriOf(n)}`, "recipe=default", `file=${file}`, "json=true"]);
       expect(put.code, `${put.stdout}\n${put.stderr}`).toBe(0);
       if (n === 1) say("seed CLI put (note 01)", dataOf(put));
     }
@@ -202,7 +202,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     expect(Number(dataOf(lawCall)["total"])).toBeGreaterThan(10);
     const pinsCall = await lar.cli(["get", "filter=[lares.law.pins[]]", ...D]);
     expect((dataOf(pinsCall)["titles"] as string[])[0]).toBe("lar:///ha.ka.ba/lares/api/noosphere-boot");
-    const listCall = await lar.cli(["law", "index", "--json"]);
+    const listCall = await lar.cli(["law", "index", "json=true"]);
     expect(listCall.code, `${listCall.stdout}\n${listCall.stderr}`).toBe(0);
     expect(Number(dataOf(listCall)["total"])).toBe(Number(dataOf(lawCall)["total"]));
   }, 120_000);
@@ -402,7 +402,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     const extra = NOTES + 1;
     const file = join(scratch, `note-${extra}.mem`);
     writeFileSync(file, memory(extra));
-    expect((await lar.cli(["put", `title=${uriOf(extra)}`, "recipe=default", `file=${file}`, "--json"])).code).toBe(0);
+    expect((await lar.cli(["put", `title=${uriOf(extra)}`, "recipe=default", `file=${file}`, "json=true"])).code).toBe(0);
     const family = [uriOf(extra), `${uriOf(extra)}#/rule`, `${uriOf(extra)}#/why`];
     // WITHOUT THE FLAG: nothing moves, and the answer names every record the delete would move.
     const refused = await lar.cli(["delete", `title=${uriOf(extra)}`, ...D]);
@@ -437,14 +437,14 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     say("CLI get filter= over the family's address after the delete", left);
     expect(left).toEqual([]);
     expect((await lar.cli(["get", `title=${uriOf(extra)}`, ...D])).code).toBe(3);
-    expect((await lar.cli(["get", `title=${uriOf(extra)}`, "recipe=default", "mu=assert", "--json"])).code).not.toBe(0);
+    expect((await lar.cli(["get", `title=${uriOf(extra)}`, "recipe=default", "mu=assert", "json=true"])).code).not.toBe(0);
   }, 300_000);
 
   test("EVERY WIKI ITS ENGINE: a wiki the face founds answers the tiddler door in its own engine, on both skins; the daemon wiki reads none of it", async () => {
-    const init = await lar.cli(["wiki", "init", WALK_WIKI, "--json"]);
+    const init = await lar.cli(["wiki", "init", WALK_WIKI, "json=true"]);
     say(`CLI wiki init ${WALK_WIKI}`, dataOf(init));
     expect(init.code, `${init.stdout}\n${init.stderr}`).toBe(0);
-    const W = [`recipe=${WALK_WIKI}`, "--json"] as const;
+    const W = [`recipe=${WALK_WIKI}`, "json=true"] as const;
     const put = await lar.cli(["put", "title=Walk wiki note", ...W, "create=true", "text=a note in the named wiki", "fields={\"tags\":\"walk\"}"]);
     say(`CLI put recipe=${WALK_WIKI}`, dataOf(put));
     expect(put.code, `${put.stdout}\n${put.stderr}`).toBe(0);
@@ -465,7 +465,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     const layoutTitle = "$:/themes/tiddlywiki/vanilla/options/sidebarlayout";
     const layoutSeed = await lar.cli(["put", `title=${layoutTitle}`, ...W, "create=true", "text=fixed-fluid"]);
     expect(layoutSeed.code, layoutSeed.stderr).toBe(0);
-    const changedLayout = await lar.cli(["act", "lar:///render.sidebar.lays", `recipe=${WALK_WIKI}`, "expected=fixed-fluid", "resulting=fluid-fixed", "--json"]);
+    const changedLayout = await lar.cli(["lar:///render.sidebar.lays", `recipe=${WALK_WIKI}`, "expected=fixed-fluid", "resulting=fluid-fixed", "json=true"]);
     expect(changedLayout.code, changedLayout.stderr).toBe(0);
     expect(dataOf(changedLayout)).toMatchObject({ decision: "put", title: layoutTitle, resulting: "fluid-fixed" });
     const layoutRead = await lar.cli(["get", `title=${layoutTitle}`, ...W]);
@@ -498,7 +498,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
   }, 300_000);
 
   test("THE FIRST LOOK AFTER A COLD BOOT: a named wiki's working document rests in the vessel's own store, and the very first filter after a fresh boot answers", async () => {
-    const W = [`recipe=${WALK_WIKI}`, "--json"] as const;
+    const W = [`recipe=${WALK_WIKI}`, "json=true"] as const;
     const put = await lar.cli(["put", "title=Cold boot note", ...W, "create=true", "text=rests in the store", "fields={\"tags\":\"coldboot\"}"]);
     expect(put.code, `${put.stdout}\n${put.stderr}`).toBe(0);
     // The daemon stands down and a second stands over the same root: the working document now loads from the store alone.

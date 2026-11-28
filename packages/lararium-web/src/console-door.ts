@@ -4,8 +4,8 @@
  *
  * ONE CALL FORM: the CLI's own argv, one word per string: `lares("vessel", "read")`, `lares("help")`. The page holds no
  * shell, so no quoting law stands here to parse a single string by; a spaced string refuses `usage` and names the form. The
- * door answers a Promise of the CLI's `--json` shape and never rejects, so a console prints the refusal as it prints the
- * answer. `--json` names what the door always answers and changes nothing.
+ * door answers a Promise of the CLI's `json=true` shape and never rejects, so a console prints the refusal as it prints the
+ * answer. `json=true` names what the door always answers and changes nothing.
  *
  * THE DOOR HOLDS NO LIST. Its rows come from two tables read at the call (`console-verbs.ts`): the page's own and the vessel
  * worker's, asked over the page's one port (`verb`, answered by `reply`). `help` prints both. A verb neither table holds
@@ -79,7 +79,7 @@ export function standConsoleDoor(env: ConsoleDoorEnv): ConsoleDoor {
       if (!argv.every((word): word is string => typeof word === "string" && /^\S+$/.test(word))) {
         return refuse("usage", `the door takes the CLI's own argv, one word per string: ${FORM}`);
       }
-      const words = argv.filter((word) => word !== "--json");
+      const words = argv.filter((word) => word !== "json=true");
       const verb = words.join(" ");
       const held = await vesselRows();
       const page = await env.page.help();

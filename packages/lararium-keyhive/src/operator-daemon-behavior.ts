@@ -1279,7 +1279,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       registry.register("resolve",    makeResolveReactor(ctx.composite));
       registry.register("unbound-docs", async () => ({ verb: "unbound-docs", unbound: await unboundMints(ctx.composite) }));
       // Residency ACTION verbs (ADD/COPY/MOVE/CLEAR/DROP/LOAD) — verify-then-delegate
-      // gated, the `lares act` front door. The daemon reaches a deep target bag by
+      // gated, the `lares lar:///carriage.*` front door. The daemon reaches a deep target bag by
       // ACCESS (ephemeral mount, released after — no standing system-bag mount; the
       // edit/action split, wiki-layer-ontology#write-law).
       // A new bag is born WITH its cap: register its Keyhive Document + hand the

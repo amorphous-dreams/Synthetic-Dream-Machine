@@ -14,7 +14,7 @@
 //       A's explicit join before the read: a reader carried nowhere holds no floor pin and knocks nowhere)
 //        export LAR_ROOT=$(mktemp -d) && node tools/test-scratch-marker.mjs "$LAR_ROOT" && node tools/seed-test-custody.mjs "$LAR_ROOT" \
 //          && git ls-files -z genesis/ | xargs -0 -I{} cp --parents "{}" "$LAR_ROOT"/ \\
-//          && node packages/lares-cli/bin/lares.mjs vessel found --skip-build
+//          && node packages/lares-cli/bin/lares.mjs vessel found skip-build=true
 //       node tools/herm-mesh-witness.mjs
 // Env:  LAR_ROOT names the founded READER vessel (peers prove first); HOP_SOURCE / HOP_RELAY1 / HOP_RELAY2
 //       override the hop URLs (`<url>#<publisher key>`); NEEDLE overrides the carried bearing. By default each hop
@@ -28,7 +28,7 @@ import { readPins } from "./mesh-pins.mjs";
 
 // The reader must stand founded: its social bootstrap is the founding's invariant artifact.
 if (!process.env.LAR_ROOT || !existsSync(join(process.env.LAR_ROOT, "hearth", "vessel", "social-bootstrap.json"))) {
-  console.error("ReaderNotFounded: LAR_ROOT holds no vessel identity — stage it (test-scratch-marker, seed-test-custody) and run `vessel found --skip-build` first");
+  console.error("ReaderNotFounded: LAR_ROOT holds no vessel identity — stage it (test-scratch-marker, seed-test-custody) and run `vessel found skip-build=true` first");
   process.exit(2);
 }
 

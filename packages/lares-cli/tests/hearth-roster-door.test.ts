@@ -1,7 +1,7 @@
 /**
  * hearth-roster-door — `lares vessel roster`, who is home, at the CLI. The daemon wire stands mocked (law-door's shape): the
  * vessel's channel answers `hearth-roster` with a roster `@lararium/mesh` composed; here the CLI's half: the one verb it puts
- * on the wire, the prose it prints through a pipe, and the JSON body `--json` carries whole (the body the MCP seat's roster act, lar:///face.roster.reads, answers).
+ * on the wire, the prose it prints through a pipe, and the JSON body `json=true` carries whole (the body the MCP seat's roster act, lar:///face.roster.reads, answers).
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { readFileSync } from "node:fs";
@@ -65,7 +65,7 @@ describe("lares vessel roster", () => {
     expect(r.out).toContain("h1 face-join (intent dddddddddddd, from bbbbbbbbbbbb, audience pinned): waits on an outcome, owed by bbbbbbbbbbbb (claimed)");
   });
 
-  test("RED: --json carries the roster whole; CONTROL: a refusal crosses by its own code", async () => {
+  test("RED: json=true carries the roster whole; CONTROL: a refusal crosses by its own code", async () => {
     const r = await run(argv({ json: true }));
     const body = JSON.parse(r.out) as { ok: boolean; data: HearthRoster };
     expect(body.ok).toBe(true);
@@ -77,7 +77,7 @@ describe("lares vessel roster", () => {
     expect(refused.out).toContain("vessel-locked");
   });
 
-  test("RED: the shared fixture's roster is the one mesh composes, and the CLI's --json data carries it whole (the MCP seat's body, test_hearth_tools.py); CONTROL: its prose is the CLI's", async () => {
+  test("RED: the shared fixture's roster is the one mesh composes, and the CLI's json=true data carries it whole (the MCP seat's body, test_hearth_tools.py); CONTROL: its prose is the CLI's", async () => {
     const fixture = JSON.parse(readFileSync(resolve(__dirname, "../../lararium-sensorium/scripts/fixtures/hearth-roster.json"), "utf8")) as { input: Parameters<typeof composeHearthRoster>[0]; roster: HearthRoster; prose: string[] };
     expect(JSON.parse(JSON.stringify(composeHearthRoster(fixture.input)))).toEqual(fixture.roster);
     h.roster = fixture.roster;

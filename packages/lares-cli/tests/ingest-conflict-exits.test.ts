@@ -48,7 +48,7 @@ afterEach(() => {
   h.decide = (uri) => ({ uri, decision: "ingest", grade: "clean", landed: 1 });
 });
 
-/** One scratch vessel root holding one carrier file, and the command run over it with `--apply --yes --json`. */
+/** One scratch vessel root holding one carrier file, and the command run over it with `--apply yes=true json=true`. */
 async function ingestOne(): Promise<{ rc: number; json: Record<string, unknown> }> {
   tmp = mkdtempSync(join(tmpdir(), "ingest-conflict-"));
   const dir = join(tmp, "bags", "x", "ha.ka.ba", "x");

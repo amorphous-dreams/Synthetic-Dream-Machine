@@ -12,7 +12,7 @@
  * A WEAR THAT TURNS THE FACE FLUSHES EVERY SHORE FIRST, inside the vessel (the composition's whole-island flush, the one its
  * teardown runs), while the face it leaves still stands mounted, and its answer carries the reading (`shore`), printed here one
  * line per island. Where the flush leaves a record unwritten, or an island gives no answer, the vessel refuses
- * `shore-unwritten` and names each one; a person at a terminal is asked whether to turn anyway, and an agent carries `--yes`
+ * `shore-unwritten` and names each one; a person at a terminal is asked whether to turn anyway, and an agent carries `yes=true`
  * (the frame's `yes: true`), as every confirm in this CLI reads.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house
@@ -69,7 +69,7 @@ function wearLine(a: CustodyDoorAnswer): string {
 
 export async function cmdWear(given: ParsedArgs): Promise<number> {
   // A WEAR ANSWERS A PIPE IN PROSE (render.ts `proseFirst`): the shim's `up` chain runs it detached, and one sentence reads
-  // where the frame read; `--json` answers the envelope.
+  // where the frame read; `json=true` answers the envelope.
   const args = proseFirst(given);
   const face = faceNamed(args);
   if (face === null) {
@@ -100,7 +100,7 @@ export async function wearOpenFace(args: ParsedArgs, face: number, verb: string)
   const seatAi = "refusal" in hand && hand.refusal === "hand-act-only";
   const send = (yes: boolean): Promise<CustodyDoorAnswer | null> => sendCustodyFrame({ op: "wear", face, ...(seatAi ? { seat: "ai" as const } : {}), ...(yes ? { yes: true as const } : {}) });
   let a = await send(args.flags["yes"] === true);
-  // THE SHORE'S FLUSH LEFT RECORDS UNWRITTEN: a person at a terminal answers whether to turn anyway; an agent carries --yes.
+  // THE SHORE'S FLUSH LEFT RECORDS UNWRITTEN: a person at a terminal answers whether to turn anyway; an agent carries yes=true.
   if (a !== null && a["status"] === "error" && (a["refusal"] as { reason?: unknown } | undefined)?.reason === "shore-unwritten") {
     const named = shoreLines((a["refusal"] as { shore?: unknown }).shore).join("\n  ");
     if (!wantsJson(args) && process.stdin.isTTY === true && process.stdout.isTTY === true) {
@@ -111,7 +111,7 @@ export async function wearOpenFace(args: ParsedArgs, face: number, verb: string)
       if (!/^y(es)?$/i.test(word.trim())) { console.log("aborted; the face worn stays worn"); return 1; }
       a = await send(true);
     } else {
-      return refuse("shore-unwritten", `the shore's flush left records unwritten on the face this wear turns away from; they rest in the store, and their mirrors stay behind until a hand wears that face again:\n  ${named}\nturn anyway: lares wear ${face} --yes`, a);
+      return refuse("shore-unwritten", `the shore's flush left records unwritten on the face this wear turns away from; they rest in the store, and their mirrors stay behind until a hand wears that face again:\n  ${named}\nturn anyway: lares wear ${face} yes=true`, a);
     }
   }
   if (a === null) return refuse("daemon-unreachable", "the vessel stopped answering before the wear landed — check `lares vault status`, then wear again");

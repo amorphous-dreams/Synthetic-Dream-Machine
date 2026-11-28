@@ -451,13 +451,13 @@ export const MEMPALACE_OWN_VERBS: readonly string[] = ["install", "setup", "harv
 
 export async function cmdMempalace(args: ParsedArgs): Promise<number> {
   const verb = args.positional[0];
-  // `--help-mempalace` (or `help mempalace`) surfaces the vendored CLI's OWN top-level help through our door.
+  // `help-mempalace=true` (or `help mempalace`) surfaces the vendored CLI's OWN top-level help through our door.
   if (args.flags["help-mempalace"] === true || (verb === "help" && args.positional[1] === "mempalace")) {
     const mp = resolveMempalaceExe();
     try { execFileSync(mp, ["--palace", guestPalace(), "--help"], { stdio: "inherit" }); return 0; }
     catch (e) { const c = (e as { status?: number }).status; return typeof c === "number" ? c : 1; }
   }
-  if (!verb || verb === "help" || (args.flags["help"] && !verb)) {
+  if (!verb || verb === "help") {
     printHelp();
     return verb ? 0 : 2;
   }

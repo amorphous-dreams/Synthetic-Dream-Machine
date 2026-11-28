@@ -8,7 +8,7 @@
 //
 // COLLECTED MECHANICALLY, never listed: every backtick-quoted `lares …` span (the house spells a command that way, in a
 // message, a comment, a shell script or a meme) under ROOTS, every string constant whose whole value reads as a `lares …`
-// line (`HAND_ACT`, `WORKBENCH_LAY_LINE`), and every `lares …` cure in the dispatcher's MOVED table.
+// line (`HAND_ACT`, `WORKBENCH_LAY_LINE`).
 //
 // CHECKED AGAINST THE REGISTRY, read off the BUILT CLI (`packages/lares-cli/dist`), never a list here: the first word against
 // the command rows and the host shim's verbs; each word after it against the door's own verb table (the row's `verbs`), as
@@ -20,10 +20,10 @@
 // row that says neither). The other side reads the source: an argument door whose module compares its first positional to a
 // word, or switches on it, answers a sub-verb its row hides from every law, and reads red here.
 //
-// THE DASH SPELLINGS BURNED. A door line takes its params as name=value (packages/lares-cli/src/parse-args.ts), and the parser
-// refuses every `--name` outside its global flags, so a named line spelling one (`lares rite kukulu --dry-run`) teaches a line
-// that refuses, and reads red here with its param spelling. The host shim's own verbs keep their own grammar, and a token past a
-// bare `--` rides to another program whole.
+// THE DASH SPELLINGS BURNED. Every line takes its params as name=value (packages/lares-cli/src/parse-args.ts), and the parser
+// refuses every `--name`, so a named line spelling one (`lares rite kukulu --dry-run`, `lares wiki status --json`) teaches a
+// line that refuses, and reads red here. The host shim's own verbs keep their own grammar, and a token past a bare `--` rides to
+// another program whole. `lares help <door> …` reads its door words as the line they name.
 //
 // Exit 0 = every named command answers and every argument door branches on no word. The pure readers below carry their own
 // self-test (tools/door-names.test.mjs), planted reds and lawful controls on text in memory.
@@ -45,7 +45,7 @@ export function namedCommands(text) {
   const plain = text.replace(/\\`/g, '`');
   const spans = [...plain.matchAll(/`(lares [a-z][^`\n]*)`/g)].map((m) => m[1]);
   const consts = [...text.matchAll(/=\s*"(lares [a-z][^"\n]*)"\s*;/g)].map((m) => m[1]);
-  // A span whose first word ends in `:` opens a message (`lares act: …`), never a command line.
+  // A span whose first word ends in `:` opens a message (`lares wiki: …`), never a command line.
   return [...spans, ...consts].filter((s) => !/^lares [^\s]*:/.test(s));
 }
 
@@ -61,18 +61,15 @@ export function flatten(path, table, out = new Map()) {
 const isWord = (w) => w !== undefined && /^[a-z][a-z0-9_-]*$/.test(w);
 
 /** The call door's act keywords and the keywords the bare door reads (the keyword head: packages/lares-cli/src/keywords.ts). */
-export const ACT_KEYWORDS = new Set(['get', 'put', 'delete', 'rename', 'filter', 'act']);
+export const ACT_KEYWORDS = new Set(['get', 'put', 'delete', 'rename', 'filter']);
 export const BARE_KEYWORDS = new Set(['mu', 'aperture', 'face', 'mandate', 'stance', 'mode', 'mood', 'note']);
 
-/** The dash spellings every line still reads (packages/lares-cli/src/parse-args.ts GLOBAL_FLAGS, and `--no-json`). */
-export const GLOBAL_DASHES = new Set(['help', 'json', 'no-json', 'meme', 'yes', 'skip-build', 'keyhive-trace']);
-
-/** The first burned dash spelling among a line's words (a `--name` outside GLOBAL_DASHES, before any bare `--`), or null. */
+/** The first dash spelling among a line's words (a `--name` before any bare `--`), or null. */
 export function burnedDash(words) {
   for (const word of words) {
     if (word === '--') return null;
     const m = /^[[(]*--([a-z][a-z0-9-]*)/.exec(word);
-    if (m && !GLOBAL_DASHES.has(m[1])) return m[1];
+    if (m) return m[1];
   }
   return null;
 }
@@ -88,15 +85,17 @@ export function deadDoorOver({ rows, shim }) {
   for (const r of rows) flatten(r.name, r.verbs, tables);
   const passes = new Set(rows.filter((r) => r.passes).map((r) => r.name));
   const leads = new Set(rows.filter((r) => r.leads).map((r) => r.name));
-  return (line) => {
+  const read = (line) => {
     const words = line.split(/\s+/).slice(1).map((w) => w.split('${')[0]);
     const door = words[0];
     if (door === '') return null;
-    // A DASH SPELLING BURNED INTO PARAMS: any line but a shim verb's reads red on one, naming its param spelling.
+    // A DASH SPELLING: any line but a shim verb's reads red on one; params ride as name=value.
     if (!shim.includes(door)) {
       const dash = burnedDash(words.slice(1));
-      if (dash !== null) return `--${dash} burned into params: spell it ${dash}=…`;
+      if (dash !== null) return `--${dash}: dash flags burned; params ride as name=value`;
     }
+    // THE HELP DOOR reads the door words it names (`lares help vessel found`).
+    if (door === 'help' && words.length > 1 && words[1] !== '' && !words[1].includes('=')) return /^<[^>]+>$/.test(words[1]) ? null : read(`lares ${words.slice(1).join(' ')}`);
     // A KEYWORD LINE (`lares rite=kukulu mu=_0`, `lares get=<title>`, `lares mu=*0`): each word names a keyword; the line
     // answers where some keyword names a door, an act keyword of the call door, or the bare door's own shaping
     // (packages/lares-cli/src/keywords.ts).
@@ -105,18 +104,9 @@ export function deadDoorOver({ rows, shim }) {
       if (keys.some((k) => doors.has(k) || ACT_KEYWORDS.has(k))) return null;
       return keys.every((k) => BARE_KEYWORDS.has(k)) ? null : `no act keyword on the keyword line (keywords: ${keys.join(' ')})`;
     }
-    // THE ONE ACT (comms-ux-enacts landing 9): `lares act lar:///<address> …` and `lares lar:///<address> …` ride the call
-    // door, which takes the address and params alone (packages/lares-cli/src/commands/call.ts isCallHead); a verb word or a
-    // flag after `act` names a spelling the call door refuses.
+    // AN ADDRESS NAMES ITS OWN VERB: `lares lar:///<address> …` rides the call door, which takes the address and params alone
+    // (packages/lares-cli/src/parse-args.ts isCallWord).
     if (door.startsWith('lar:///')) return null;
-    if (door === 'act' && !doors.has('act')) {
-      // A word past `act` that ends in `:` opens the act's own message (`lares act REPACK: …`); an interpolated word reads as
-      // unchecked; `--help` prints the act carriers' call shapes.
-      const next = words[1];
-      if (next === '' || next === '--help' || next?.endsWith(':')) return null;
-      if (next === '…' && words.slice(2).every((w) => !w.startsWith('-'))) return null;
-      return next?.startsWith('lar:///') || /^<[^>]+>$/.test(next ?? '') ? null : `\`act\` takes a carrier address (\`lares act lar:///<address> …\`), never "${next ?? '(nothing)'}"`;
-    }
     if (!doors.has(door)) return `no door "${door}"`;
     if (passes.has(door)) return null;
     let path = door;
@@ -131,6 +121,7 @@ export function deadDoorOver({ rows, shim }) {
     }
     return null;
   };
+  return read;
 }
 
 /** The command module each handler comes from, read off the CLI table's own imports. */
@@ -183,16 +174,14 @@ async function main() {
   // THE REGISTRY READS LIVE: a control that flips means the reader, not the house, moved.
   const controls = [
     ['lares vessel request <id>', true], ['lares meme offer promote <cid>', true], ['lares sense memory pour all=true', true],
-    ['lares sense memory pour --all', false], ['lares up --capture <dir>', true],
+    ['lares sense memory pour --all', false], ['lares vessel request <id> --json', false], ['lares up --capture <dir>', true],
+    ['lares help vessel request', true], ['lares help vessel zz-no-such-name', false], ['lares act lar:///carriage.bag.moves', false],
     ['lares vessel zz-no-such-name', false], ['lares zz-no-such-name', false], ['lares meme offer zz-no-such-name', false],
   ];
   const flipped = controls.filter(([line, live]) => (deadDoor(line) === null) !== live);
 
-  const named = [
-    ...ROOTS.flatMap(({ dir, ext }) => sources(join(repo, dir), ext))
-      .flatMap((file) => namedCommands(readFileSync(file, 'utf8')).map((line) => ({ file: relative(repo, file), line }))),
-    ...cli.MOVED.filter((m) => m.to.startsWith('lares ')).map((m) => ({ file: 'packages/lares-cli/src/bin/lares.ts#MOVED', line: m.to })),
-  ];
+  const named = ROOTS.flatMap(({ dir, ext }) => sources(join(repo, dir), ext))
+    .flatMap((file) => namedCommands(readFileSync(file, 'utf8')).map((line) => ({ file: relative(repo, file), line })));
   const silent = ROOTS.filter(({ dir }) => !named.some((n) => n.file.startsWith(`${dir}/`))).map(({ dir }) => dir);
   const dead = named.map((n) => ({ ...n, why: deadDoor(n.line) })).filter((n) => n.why !== null);
 

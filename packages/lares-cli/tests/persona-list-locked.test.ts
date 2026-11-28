@@ -30,7 +30,7 @@ describe("a locked persona list", () => {
   });
 
 
-  test("★ an open face's row names its PersonaGroup, so a rite reads the group off `persona list --json` ★", async () => {
+  test("★ an open face's row names its PersonaGroup, so a rite reads the group off `persona list json=true` ★", async () => {
     const said: string[] = [];
     vi.spyOn(process.stdout, "write").mockImplementation((c) => { said.push(String(c)); return true; });
     vi.mocked(console.log).mockImplementation((...a: unknown[]) => { said.push(a.join(" ")); });

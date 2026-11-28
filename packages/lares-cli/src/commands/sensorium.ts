@@ -196,7 +196,7 @@ export const SENSORIUM_VERBS = ["help", "run", "open", "query", "ls", "keep", "d
 
 export async function cmdSensorium(args: ParsedArgs): Promise<number> {
   const sub = args.positional[0];
-  if (!sub || sub === "help" || args.flags["help"]) { renderCommandHelp("sensorium"); return sub ? 0 : 1; }
+  if (!sub || sub === "help") { renderCommandHelp("sensorium"); return sub ? 0 : 1; }
   const v = sub as (typeof SENSORIUM_VERBS)[number];
   switch (v) {
     case "help":     renderCommandHelp("sensorium"); return 0;

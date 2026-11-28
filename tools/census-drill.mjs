@@ -249,12 +249,12 @@ async function shareRows(root) {
 /** One census of the standing house: its faces, the worn face's classes, the house-wide rows. */
 export async function census({ root, port, lares: laresCmd, label = "" }) {
   const lares = laresFor({ root, port, lares: laresCmd });
-  const personas = read(lares, ["persona", "list", "--json"]).personas ?? [];
+  const personas = read(lares, ["persona", "list", "json=true"]).personas ?? [];
   const faces = [];
   const relations = {}, kahuaCids = {};
   let mounted = null;
   for (const p of personas) {
-    const r = lares(["kahua", "get", "--face", String(p.handleIndex)]);
+    const r = lares(["kahua", "get", `face=${p.handleIndex}`]);
     let answer = null;
     try { answer = JSON.parse(r.stdout.trim().split("\n").pop() ?? ""); } catch { /* the face stands shut */ }
     const face = { petname: p.petname, handleIndex: p.handleIndex, mounted: answer?.mounted === true, relation: answer?.relation ?? null, ...(answer ? {} : { unread: (r.stderr || r.stdout).trim().slice(0, 300) }) };
@@ -264,7 +264,7 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
   }
   const relationToPetname = Object.fromEntries(Object.entries(relations).map(([pet, rel]) => [rel, pet]));
   const reading = { schema: CENSUS_SCHEMA, label, faces, face: {}, house: {}, allowed: { relations, kahuaCids } };
-  const wikis = read(lares, ["wiki", "status", "--json"]).catalog?.wikis ?? [];
+  const wikis = read(lares, ["wiki", "status", "json=true"]).catalog?.wikis ?? [];
   if (mounted) {
     const pet = mounted.face.petname ?? `h${mounted.face.handleIndex}`;
     const classes = { memes: {}, unread: {}, index: {}, plain: {}, kahua: {}, kapae: {} };
@@ -274,7 +274,7 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
       // A wiki whose listing refuses reads as a row of its own (`unread`), never as an empty listing: the door's code
       // compares across the houses, and the receipt names every wiki that stood unread on either side.
       let listing;
-      try { listing = read(lares, ["get", "meme=true", `recipe=${recipe}`, "--json"]); }
+      try { listing = read(lares, ["get", "meme=true", `recipe=${recipe}`, "json=true"]); }
       catch (e) {
         if (!(e instanceof DoorRefused) || recipe === "default") throw e;
         classes.unread[recipe] = /\[([a-z-]+)\]|\b([a-z]+(?:-[a-z]+)+):/.exec(e.message)?.slice(1).find(Boolean) ?? "refused";
@@ -291,11 +291,11 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
       // The text rides the filter's own rows; a row too large for one page sheds it (`omitted`), and that one record reads
       // whole through `get title=… aperture=arc` (the fat grain: past a page the door's default leaves the text home, and an empty text
       // would hash two differing records alike).
-      const plain = readFilter(lares, ["get", `filter=${PLAIN_FILTER}`, `recipe=${recipe}`, "all=true", "fields=text", "max-bytes=262144", "--json"]);
+      const plain = readFilter(lares, ["get", `filter=${PLAIN_FILTER}`, `recipe=${recipe}`, "all=true", "fields=text", "max-bytes=262144", "json=true"]);
       for (const row of plain.rows ?? []) {
         let hash = `sha256:${sha256(String(row.fields?.text ?? ""))}`;
         if ((row.omitted ?? []).includes("text")) {
-          const got = read(lares, ["get", `title=${row.title}`, `recipe=${recipe}`, "aperture=arc", "--json"]);
+          const got = read(lares, ["get", `title=${row.title}`, `recipe=${recipe}`, "aperture=arc", "json=true"]);
           // A TRUE POINTER answers its handle at every tiddler grain: the census hashes the handle's identity (its CID, else its
           // canonical address), never "". Any other record that answers no text at the fat grain refuses.
           const fields = got.tiddler?.fields ?? {};
@@ -307,7 +307,7 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
         classes.plain[`${recipe} ${row.title}`] = hash;
       }
     }
-    for (const row of readFilter(lares, ["get", "filter=[tag[stage/index]sort[]]", "all=true", "fields=description", "--json"]).rows ?? []) {
+    for (const row of readFilter(lares, ["get", "filter=[tag[stage/index]sort[]]", "all=true", "fields=description", "json=true"]).rows ?? []) {
       classes.index[row.title] = String(row.fields?.description ?? "");
     }
     for (const item of mounted.items) {

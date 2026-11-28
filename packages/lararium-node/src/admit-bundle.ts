@@ -178,7 +178,7 @@ export async function takeAdmitBundle(opts: {
 }): Promise<AdmitTakeResult> {
   let parsed: unknown;
   try { parsed = JSON.parse(opts.raw); } catch {
-    throw new AdmitBundleError("the bundle does not parse as JSON — take the file `lares nexus contract --json` wrote, whole.");
+    throw new AdmitBundleError("the bundle does not parse as JSON — take the file `lares nexus contract json=true` wrote, whole.");
   }
   if (!isAdmitBundle(parsed)) {
     throw new AdmitBundleError("the bundle is malformed — it needs an `aid`, the issuing hearth's 64-hex `gatePubKey`, an admit entry and its lineage.");

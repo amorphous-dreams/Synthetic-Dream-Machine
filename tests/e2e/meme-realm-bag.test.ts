@@ -24,7 +24,7 @@
  * on any socket, because its one vessel key would link that root to the leaf it presents to the same Nexus.
  * A's Nexus stays PRIVATE throughout: B is a stranger, and a private gate answers a stranger with silence, so
  * no board of A's crosses to B while she is one. A's quorum
- * admits B's per-Nexus LEAF, and `nexus contract --json` emits the CARRIED admit bundle (the admit, its
+ * admits B's per-Nexus LEAF, and `nexus contract json=true` emits the CARRIED admit bundle (the admit, its
  * lineage, the Nexus, A's gate key); it travels to B BY FILE, as the charter and the contract token travel,
  * and B's `nexus admit-take` verifies it against the charter she holds, keeps it, and drives her running
  * vessel's refresh. B RE-DIALS and presents the leaf admit, its lineage and the leaf's proof over A's
@@ -100,7 +100,7 @@ let B: LarInstance | null = null;
 let C: LarInstance | null = null;
 let rootB = "";
 let rootC = "";
-/** Each operator's persona ROOT, read off its own founding door (`persona new 0 --json`). */
+/** Each operator's persona ROOT, read off its own founding door (`persona new 0 json=true`). */
 const rootNymOf = new Map<string, string>();
 /** The relation's doors, as they answered — the gate on the vector. */
 let contracted = false;
@@ -182,7 +182,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const wireLog = { LAR_WIRE_LOG: "1" };
     A = await openStaged({ tag: "A", port: portA, daemonEnv: wireLog, found: async (cliA, rootA) => {
       await foundStagedHearth(cliA, rootA, "spider-steward");
-      const face = await cliA(["persona", "new", "0", "name=spider-steward", "--json"]);
+      const face = await cliA(["persona", "new", "0", "name=spider-steward", "json=true"]);
       if (face.code !== 0) throw new Error(`A: face failed (${face.code})\n${face.stderr.slice(-800)}`);
       const treeKeyA = ((face.json?.["data"] ?? {}) as Record<string, unknown>)["verifyingKey"];
       if (typeof treeKeyA === "string") rootNymOf.set("A", treeKeyA.toLowerCase());
@@ -195,7 +195,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     // never contracts.
     const foundOperator = (tag: string, name: string) => async (cli: (a: readonly string[]) => Promise<{ code: number; stderr: string; json: Record<string, unknown> | null }>, root: string) => {
       await foundStagedHearth(cli as never, root, name);
-      const face = await cli(["persona", "new", "0", `name=${name}`, "--json"]);
+      const face = await cli(["persona", "new", "0", `name=${name}`, "json=true"]);
       if (face.code !== 0) throw new Error(`${tag}: face failed (${face.code})\n${face.stderr.slice(-800)}`);
       const treeKey = ((face.json?.["data"] ?? {}) as Record<string, unknown>)["verifyingKey"];
       if (typeof treeKey === "string") rootNymOf.set(tag, treeKey.toLowerCase());
@@ -210,9 +210,9 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
 
     // THE RELATION'S FOUR DOORS — each answer kept, the gate below reads them.
     const lines: string[] = [];
-    const show = await A.cli(["nexus", "seal", "show", "--json"]);
+    const show = await A.cli(["nexus", "seal", "show", "json=true"]);
     lines.push(`A nexus seal show → ${show.code}: ${said(show).trim().slice(0, 240)}`);
-    const exp = await A.cli(["nexus", "seal", "export", "--no-json"]);
+    const exp = await A.cli(["nexus", "seal", "export", "json=false"]);
     lines.push(`A nexus seal export → ${exp.code}: ${exp.stdout.length} chars`);
     let acc: { nym?: string; contractSig?: string } = {};
     if (exp.code === 0 && exp.stdout.trim()) {
@@ -220,10 +220,10 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       writeFileSync(charter, exp.stdout);
       // B STANDS ON HER OWN SEED CHARTER: A's Nexus reaches her as a CARRIED charter, beside her own, and her
       // consent names it by its AID.
-      const imp = await B.cli(["nexus", "seal", "import", `carry=${charter}`, "--json"]);
+      const imp = await B.cli(["nexus", "seal", "import", `carry=${charter}`, "json=true"]);
       lines.push(`B nexus seal import --carry → ${imp.code}: ${said(imp).trim().slice(0, 240)}`);
       aidA = String(((imp.json?.["data"] ?? {}) as Record<string, unknown>)["aid"] ?? "");
-      const accept = await B.cli(["nexus", "accept-carriage", `nexus=${aidA}`, "--json"]);
+      const accept = await B.cli(["nexus", "accept-carriage", `nexus=${aidA}`, "json=true"]);
       lines.push(`B nexus accept-carriage → ${accept.code}: ${said(accept).trim().slice(0, 240)}`);
       const data = (accept.json?.["data"] ?? accept.json ?? {}) as Record<string, unknown>;
       // L3 (the gp1 drift-ward this iteration closes): `accept-carriage` writes beside the seal home,
@@ -237,8 +237,8 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       if (acc.nym && acc.contractSig) {
         contractNym = acc.nym;
         // A's Nexus stays PRIVATE: no board of A's crosses to B while she is a stranger. Her admit reaches her
-        // as the charter and the token reach her — by FILE: the bundle `nexus contract --json` emits.
-        const contract = await A.cli(["nexus", "contract", acc.nym, `sig=${acc.contractSig}`, `sync-url=ws://127.0.0.1:${portA}/ws`, "--json"]);
+        // as the charter and the token reach her — by FILE: the bundle `nexus contract json=true` emits.
+        const contract = await A.cli(["nexus", "contract", acc.nym, `sig=${acc.contractSig}`, `sync-url=ws://127.0.0.1:${portA}/ws`, "json=true"]);
         lines.push(`A nexus contract → ${contract.code}: ${said(contract).trim().slice(0, 240)}`);
         const bundle = ((contract.json?.["data"] ?? {}) as Record<string, unknown>)["bundle"];
         if (contract.code === 0 && bundle) {
@@ -251,7 +251,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
           // (that call ran as a door row against A's standing vessel, not a direct, unwitnessed act).
           // B TAKES the bundle: verified against the charter she holds, kept beside her consent, and her running
           // vessel's `admit-take` row re-presents the dial live (it also stands the realm the imported charter names).
-          const take = await B.cli(["nexus", "admit-take", bundleFile, "--json"]);
+          const take = await B.cli(["nexus", "admit-take", bundleFile, "json=true"]);
           lines.push(`B nexus admit-take → ${take.code}: ${said(take).trim().slice(0, 240)}`);
           contracted = take.code === 0 && ((take.json?.["data"] ?? {}) as Record<string, unknown>)["represented"] === true;
         }
@@ -259,7 +259,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     }
     // A's realm, named on every realm-scoped call B and C make: each operator stands on her own seed, so the
     // realm a verb reads by default is her own, and A's arrives by name.
-    const realmList = await A.cli(["nexus", "realm-bags", "--json"]);
+    const realmList = await A.cli(["nexus", "realm-bags", "json=true"]);
     realmA = String(((realmList.json?.["data"] ?? {}) as Record<string, unknown>)["realm"] ?? "");
     lines.push(`A nexus realm-bags → realm ${realmA || "(none)"}`);
     doors = lines.join("\n  ");
@@ -281,12 +281,12 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   });
 
   test("② A mints the ford bag and puts the ledger into it — the steward's own write", async () => {
-    const mint = await A!.cli(["act", "lar:///carriage.bag.creates", `bag=${LARES_BAG}`, "yes=true", "--json"]);
+    const mint = await A!.cli(["lar:///carriage.bag.creates", `bag=${LARES_BAG}`, "yes=true", "json=true"]);
     expect(mint.json?.["ok"], said(mint)).toBe(true);
     const file = join(A!.root, "ford-stage-ledger.mem");
     writeFileSync(file, meme());
     await seedUserBag(A!, file, LARES_BAG);
-    const got = await A!.cli(["get", `title=${URI}`, "bag=ford", "mu=assert", "--json"]);
+    const got = await A!.cli(["get", `title=${URI}`, "bag=ford", "mu=assert", "json=true"]);
     expect(got.json?.["ok"], said(got)).toBe(true);
   });
 
@@ -305,7 +305,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     // refusal of the bag, it is a disconnection. So the measure waits for B's own word that A's gate opened a crossing.
     const dialed = await awaitLog(B!, /\[lar-leaf\] verdict OK — crossing open, syncing/, 90_000);
     expect(dialed, `B never dialed A's gate:\n${B!.bootLog().split("\n").filter((l) => /nexus-join|lar-leaf|lar-gate/.test(l)).slice(-8).join("\n")}`).toBe(true);
-    const r = await B!.cli(["get", `title=${URI}`, "bag=ford", `realm=${realmA}`, "mu=assert", "--json"]);
+    const r = await B!.cli(["get", `title=${URI}`, "bag=ford", `realm=${realmA}`, "mu=assert", "json=true"]);
     beforeB = said(r).trim();
     console.error(`meme-realm-bag MEASURE B before registration: ${beforeB.slice(0, 200)}`);
     expect(r.json?.["ok"]).toBe(false);
@@ -314,7 +314,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   }, 60_000);
 
   test("⑤ A registers her bag on the realm's shared CRDT — steward-signed, read at CONTRACT", async () => {
-    const reg = await A!.cli(["nexus", "realm-bag", "ford", "face=0", "--json"]);
+    const reg = await A!.cli(["nexus", "realm-bag", "ford", "face=0", "json=true"]);
     console.error(`meme-realm-bag MEASURE A realm-bag: ${said(reg).trim().slice(0, 300)}`);
     expect(reg.json?.["ok"], said(reg)).toBe(true);
     const data = (reg.json?.["data"] ?? {}) as Record<string, unknown>;
@@ -326,25 +326,25 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     expect(rootA, "A's persona root, read off her founding door").toMatch(/^[0-9a-f]{64}$/);
     expect((data["keptBy"] as string[]).map((n) => n.toLowerCase())).not.toContain(rootA);
     expect((data["signedBy"] as string[]).map((n) => n.toLowerCase())).not.toContain(rootA);
-    const list = await A!.cli(["nexus", "realm-bags", "--json"]);
+    const list = await A!.cli(["nexus", "realm-bags", "json=true"]);
     const bags = ((list.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>;
     expect(bags.map((b) => b["bag"])).toContain(LARES_BAG);
   }, 60_000);
 
   test("⑥ CONTROL: @crossroads carries that the bag exists and who keeps it — never its content", async () => {
     // The crossroads plane holds no record of the ledger's meme: the count never rides the herm.
-    const r = await A!.cli(["get", `title=${URI}`, "bag=crossroads", "mu=assert", "--json"]);
+    const r = await A!.cli(["get", `title=${URI}`, "bag=crossroads", "mu=assert", "json=true"]);
     expect(r.json?.["ok"], said(r)).toBe(false);
     expect(said(r)).toContain("not-found");
   }, 60_000);
 
   /** Poll B's `get bag=ford mu=assert` until it answers ok, bounded — the docs cross by WS-sync, never faked. */
   const pollB = async (ms: number) => {
-    let r = await B!.cli(["get", `title=${URI}`, "bag=ford", `realm=${realmA}`, "mu=assert", "--json"]);
+    let r = await B!.cli(["get", `title=${URI}`, "bag=ford", `realm=${realmA}`, "mu=assert", "json=true"]);
     const until = Date.now() + ms;
     while (r.json?.["ok"] !== true && Date.now() < until) {
       await new Promise((res) => setTimeout(res, 3_000));
-      r = await B!.cli(["get", `title=${URI}`, "bag=ford", `realm=${realmA}`, "mu=assert", "--json"]);
+      r = await B!.cli(["get", `title=${URI}`, "bag=ford", `realm=${realmA}`, "mu=assert", "json=true"]);
     }
     return r;
   };
@@ -353,11 +353,11 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
    *  find nothing yet. `join=true` reads A's standing registration on B; `cosign=true` reads B's ask on A. */
   const pollSteward = async (who: LarInstance, flag: "join=true" | "cosign=true", ms: number) => {
     const realm = who === A ? [] : [`realm=${realmA}`];
-    let r = await who.cli(["nexus", "realm-bag", "ford", "face=0", flag, ...realm, "--json"]);
+    let r = await who.cli(["nexus", "realm-bag", "ford", "face=0", flag, ...realm, "json=true"]);
     const until = Date.now() + ms;
     while (r.json?.["ok"] !== true && Date.now() < until) {
       await new Promise((res) => setTimeout(res, 4_000));
-      r = await who.cli(["nexus", "realm-bag", "ford", "face=0", flag, ...realm, "--json"]);
+      r = await who.cli(["nexus", "realm-bag", "ford", "face=0", flag, ...realm, "json=true"]);
     }
     return r;
   };
@@ -372,7 +372,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     if (r.json?.["ok"] !== true) {
       // WHERE THE CROSSING STOPPED — the realm doc on B (did the registration arrive?), the nym B contracted
       // under against the key B presents at A's wire, and each side's realm lines.
-      const bags = await B!.cli(["nexus", "realm-bags", `realm=${realmA}`, "--json"]);
+      const bags = await B!.cli(["nexus", "realm-bags", `realm=${realmA}`, "json=true"]);
       console.error(`meme-realm-bag MEASURE B realm-bags: ${said(bags).trim().slice(0, 400)}`);
       console.error(`meme-realm-bag MEASURE B gate key (presented at A): ${ownGateKey(B!.bootLog()) ?? "?"} · contract nym: ${contractNym}`);
       for (const [tag, v] of [["A", A!], ["B", B!]] as const) {
@@ -445,20 +445,20 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       dial.disconnect();
       await cRepo.shutdown();
     }
-    const r = await C!.cli(["get", `title=${URI}`, "bag=ford", `realm=${realmA}`, "mu=assert", "--json"]);
+    const r = await C!.cli(["get", `title=${URI}`, "bag=ford", `realm=${realmA}`, "mu=assert", "json=true"]);
     console.error(`meme-realm-bag MEASURE C: ${said(r).trim().slice(0, 200)}`);
     expect(r.json?.["ok"]).toBe(false);
     // Byte-identical past the per-call requestId — the error object itself.
     expect(errorOf(said(r))).toBe(errorOf(beforeB));
     // C carries no charter of A's: A's realm lists no bag of A's on C.
-    const list = await C!.cli(["nexus", "realm-bags", `realm=${realmA}`, "--json"]);
+    const list = await C!.cli(["nexus", "realm-bags", `realm=${realmA}`, "json=true"]);
     expect(bagsOf(list)).not.toContain(LARES_BAG);
   }, 60_000);
 
   test("⑧ CONTROL: a member at the read tier cannot `put bag=ford` — the stewards alone write", async () => {
     const file = join(rootB, "b-edit.mem");
     writeFileSync(file, meme());
-    const r = await B!.cli(["put", `title=${URI}`, "bag=ford", `realm=${realmA}`, `file=${file}`, "--json"]);
+    const r = await B!.cli(["put", `title=${URI}`, "bag=ford", `realm=${realmA}`, `file=${file}`, "json=true"]);
     expect(r.json?.["ok"], said(r)).toBe(false);
     expect(said(r)).toMatch(/no writable layer|cannot write|refus|holds no steward's write in realm/i);
     refusalB = said(r);
@@ -473,11 +473,11 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   test("⑨a CONTROL: A naming a key that sealed nothing in the realm refuses — no hand but its own writes a name", async () => {
     const stewardB = contractNym.toLowerCase();
     expect(stewardB, "B's per-Nexus key, read off her contract-in").toMatch(/^[0-9a-f]{64}$/);
-    const reg = await A!.cli(["nexus", "realm-bag", "ford", "face=0", `steward=${stewardB}`, "--json"]);
+    const reg = await A!.cli(["nexus", "realm-bag", "ford", "face=0", `steward=${stewardB}`, "json=true"]);
     expect(reg.json?.["ok"], said(reg)).toBe(false);
     expect(said(reg)).toContain("steward-name-unproven");
     // A's own registration stands untouched by the refusal.
-    const list = await A!.cli(["nexus", "realm-bags", "--json"]);
+    const list = await A!.cli(["nexus", "realm-bags", "json=true"]);
     const bags = ((list.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>;
     expect(bags.map((b) => b["bag"])).toContain(LARES_BAG);
   }, 60_000);
@@ -507,11 +507,11 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   test("⑩ CONTROL: while the ask waits, B's put still draws the SAME refusal and A's registration stands", async (ctx) => {
     if (!named) ctx.skip();
     const file = join(rootB, "b-edit.mem");
-    const r = await B!.cli(["put", `title=${URI}`, "bag=ford", `realm=${realmA}`, `file=${file}`, "--json"]);
+    const r = await B!.cli(["put", `title=${URI}`, "bag=ford", `realm=${realmA}`, `file=${file}`, "json=true"]);
     expect(r.json?.["ok"], said(r)).toBe(false);
     expect(errorOf(said(r))).toBe(errorOf(refusalB));
     // The ask rests under its own key: A's counted registration keeps standing, kept by A alone.
-    const list = await A!.cli(["nexus", "realm-bags", "--json"]);
+    const list = await A!.cli(["nexus", "realm-bags", "json=true"]);
     const bags = ((list.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>;
     const lares = bags.find((b) => b["bag"] === LARES_BAG);
     expect(lares, said(list)).toBeDefined();
@@ -537,8 +537,8 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const file = join(rootB, "b-slot.mem");
     writeFileSync(file, memeWithSlot());
     while (Date.now() < until) {
-      const base = String((((await B!.cli(["get", `title=${URI}`, "bag=ford", `realm=${realmA}`, "mu=assert", "--json"])).json?.["data"] as Record<string, unknown> | undefined)?.["meme"] as Record<string, unknown> | undefined)?.["canonicalHash"] ?? "");
-      put = await B!.cli(["put", `title=${URI}`, "bag=ford", `realm=${realmA}`, `base=${base}`, `file=${file}`, "--json"]);
+      const base = String((((await B!.cli(["get", `title=${URI}`, "bag=ford", `realm=${realmA}`, "mu=assert", "json=true"])).json?.["data"] as Record<string, unknown> | undefined)?.["meme"] as Record<string, unknown> | undefined)?.["canonicalHash"] ?? "");
+      put = await B!.cli(["put", `title=${URI}`, "bag=ford", `realm=${realmA}`, `base=${base}`, `file=${file}`, "json=true"]);
       if (put.json?.["ok"] === true) break;
       await new Promise((res) => setTimeout(res, 4_000));
     }
@@ -559,13 +559,13 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const until = Date.now() + 90_000;
     let text = "";
     while (Date.now() < until) {
-      const r = await A!.cli(["get", `title=${URI}`, "bag=ford", "mu=assert", "--json"]);
+      const r = await A!.cli(["get", `title=${URI}`, "bag=ford", "mu=assert", "json=true"]);
       text = String((((r.json?.["data"] as Record<string, unknown> | undefined)?.["meme"]) as Record<string, unknown> | undefined)?.["text"] ?? "");
       if (text.includes("#/b")) break;
       await new Promise((res) => setTimeout(res, 3_000));
     }
     // B holds her own write whatever A reads — the placement landed, the lane did not open.
-    const bGet = await B!.cli(["get", `title=${URI}`, "bag=ford", `realm=${realmA}`, "mu=assert", "--json"]);
+    const bGet = await B!.cli(["get", `title=${URI}`, "bag=ford", `realm=${realmA}`, "mu=assert", "json=true"]);
     expect(String((((bGet.json?.["data"] as Record<string, unknown> | undefined)?.["meme"]) as Record<string, unknown> | undefined)?.["text"] ?? ""), said(bGet)).toContain("#/b");
     expect(text, `A never read B's slot`).toContain("#/b");
   }, 150_000);
@@ -574,15 +574,15 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     if (!bPut) ctx.skip();
     const file = join(rootC, "c-edit.mem");
     writeFileSync(file, meme());
-    const c = await C!.cli(["put", `title=${URI}`, "bag=ford", `realm=${realmA}`, `file=${file}`, "--json"]);
+    const c = await C!.cli(["put", `title=${URI}`, "bag=ford", `realm=${realmA}`, `file=${file}`, "json=true"]);
     expect(c.json?.["ok"], said(c)).toBe(false);
 
     const stale = join(rootB, "b-stale.mem");
     writeFileSync(stale, memeWithSlot("/stale"));
-    const r = await B!.cli(["put", `title=${URI}`, "bag=ford", `realm=${realmA}`, `base=${"0".repeat(64)}`, `file=${stale}`, "--json"]);
+    const r = await B!.cli(["put", `title=${URI}`, "bag=ford", `realm=${realmA}`, `base=${"0".repeat(64)}`, `file=${stale}`, "json=true"]);
     const decision = String(((r.json?.["data"] ?? {}) as Record<string, unknown>)["decision"] ?? said(r));
     expect(decision, said(r)).toMatch(/conflict/i);
-    const after = await A!.cli(["get", `title=${URI}`, "bag=ford", "mu=assert", "--json"]);
+    const after = await A!.cli(["get", `title=${URI}`, "bag=ford", "mu=assert", "json=true"]);
     expect(String((((after.json?.["data"] as Record<string, unknown> | undefined)?.["meme"]) as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("#/stale");
   }, 150_000);
   // ⑭ THE KAHU CANON CROSSES ONLY TO KAHU HANDS (road P26; stable-founding-road #/rulings 2026-10-16 and 2026-10-18: the
@@ -598,29 +598,29 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     expect(contracted, "the relation's doors stood (③): ⑭ walks only on a contracted member").toBe(true);
     const docOf = (r: { json: Record<string, unknown> | null }, bag: string): string =>
       String((((r.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>).find((b) => b["bag"] === bag)?.["doc"] ?? "");
-    const aBags = await A!.cli(["nexus", "realm-bags", "--json"]);
+    const aBags = await A!.cli(["nexus", "realm-bags", "json=true"]);
     kahuDocs.lares = docOf(aBags, "lar:///ha.ka.ba/bags/lares");
     kahuDocs.lararium = docOf(aBags, "lar:///ha.ka.ba/bags/lararium");
     expect(kahuDocs.lares, `A's realm names her live @lares: ${said(aBags)}`).toMatch(/^automerge:/);
     expect(kahuDocs.lararium, `A's realm names her live @lararium: ${said(aBags)}`).toMatch(/^automerge:/);
-    const bBags = await B!.cli(["nexus", "realm-bags", `realm=${realmA}`, "--json"]);
+    const bBags = await B!.cli(["nexus", "realm-bags", `realm=${realmA}`, "json=true"]);
     expect(docOf(bBags, "lar:///ha.ka.ba/bags/lares"), "B's realm view names the same @lares document").toBe(kahuDocs.lares);
     expect(docOf(bBags, "lar:///ha.ka.ba/bags/lararium"), "B's realm view names the same @lararium document").toBe(kahuDocs.lararium);
 
     const dir = join(A!.root, "bags", "lares", "p26.kahu.walk");
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, "ledger.mem"), kahuMeme());
-    const ing = await A!.cli(["ingest", `source=${dir}`, "to=lar:///ha.ka.ba/bags/lares", "apply=true", "--yes", "--json"]);
+    const ing = await A!.cli(["ingest", `source=${dir}`, "to=lar:///ha.ka.ba/bags/lares", "apply=true", "yes=true", "json=true"]);
     expect(ing.json?.["ok"], said(ing)).toBe(true);
-    const own = await A!.cli(["get", `title=${KAHU_URI}`, "bag=lares", "mu=assert", "--json"]);
+    const own = await A!.cli(["get", `title=${KAHU_URI}`, "bag=lares", "mu=assert", "json=true"]);
     expect(own.json?.["ok"], `A's own canon reads its record: ${said(own)}`).toBe(true);
 
     const ford = await pollB(60_000);
     expect(ford.json?.["ok"], `CONTROL — B still reads A's ford through the realm: ${said(ford)}`).toBe(true);
-    let r = await B!.cli(["get", `title=${KAHU_URI}`, "bag=lares", `realm=${realmA}`, "mu=assert", "--json"]);
+    let r = await B!.cli(["get", `title=${KAHU_URI}`, "bag=lares", `realm=${realmA}`, "mu=assert", "json=true"]);
     for (const until = Date.now() + 30_000; r.json?.["ok"] !== true && Date.now() < until; ) {
       await new Promise((res) => setTimeout(res, 3_000));
-      r = await B!.cli(["get", `title=${KAHU_URI}`, "bag=lares", `realm=${realmA}`, "mu=assert", "--json"]);
+      r = await B!.cli(["get", `title=${KAHU_URI}`, "bag=lares", `realm=${realmA}`, "mu=assert", "json=true"]);
     }
     console.error(`meme-realm-bag ⑭ MEASURE B: get bag=lares mu=assert →${said(r).trim().slice(0, 300)}`);
     expect(r.json?.["ok"], said(r)).not.toBe(true);
@@ -631,7 +631,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const file = join(B!.root, "kahu-walk-put.mem");
     writeFileSync(file, kahuMeme());
     for (const bag of ["lares", "lararium"]) {
-      const put = await B!.cli(["put", `title=${KAHU_URI}`, `bag=${bag}`, `realm=${realmA}`, `file=${file}`, "--json"]);
+      const put = await B!.cli(["put", `title=${KAHU_URI}`, `bag=${bag}`, `realm=${realmA}`, `file=${file}`, "json=true"]);
       console.error(`meme-realm-bag ⑭ MEASURE B: put bag=${bag} →${said(put).trim().slice(0, 200)}`);
       expect(put.json?.["ok"], `B writes no ${bag}: ${said(put)}`).not.toBe(true);
     }
@@ -648,15 +648,15 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     privateDocsA.catalog = bootDocUrl(A!, "catalog") ?? "";
     expect(privateDocsA.daemon && privateDocsA.catalog, "A's boot names her daemon document and catalog").toBeTruthy();
     for (const bag of ["lar:///ha.ka.ba/bags/catalog", "lar:///ha.ka.ba/bags/daemon"]) {
-      const reg = await A!.cli(["nexus", "realm-bag", bag, "face=0", "--json"]);
+      const reg = await A!.cli(["nexus", "realm-bag", bag, "face=0", "json=true"]);
       console.error(`meme-realm-bag ⑮ MEASURE A realm-bag ${bag} → ${said(reg).trim().slice(0, 300)}`);
       expect(reg.json?.["ok"], `A's ${bag} never registers: ${said(reg)}`).not.toBe(true);
     }
-    const aBags = await A!.cli(["nexus", "realm-bags", "--json"]);
+    const aBags = await A!.cli(["nexus", "realm-bags", "json=true"]);
     const docs = (((aBags.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>).map((b) => String(b["doc"]));
     expect(docs, "A's realm seats neither private document").not.toContain(privateDocsA.daemon);
     expect(docs).not.toContain(privateDocsA.catalog);
-    const bBags = await B!.cli(["nexus", "realm-bags", `realm=${realmA}`, "--json"]);
+    const bBags = await B!.cli(["nexus", "realm-bags", `realm=${realmA}`, "json=true"]);
     const bDocs = (((bBags.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>).map((b) => String(b["doc"]));
     expect(bDocs, "B's realm view names neither").not.toContain(privateDocsA.daemon);
     expect(bDocs).not.toContain(privateDocsA.catalog);
@@ -717,14 +717,14 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const back = await pollB(90_000);
     expect(back.json?.["ok"], `B crosses to A again before the ask: ${said(back)}`).toBe(true);
     // B registers the alias on A's realm by her own seal, then asks for it through the realm.
-    const reg = await B.cli(["nexus", "realm-bag", ALIAS, "face=0", `realm=${realmA}`, "--json"]);
+    const reg = await B.cli(["nexus", "realm-bag", ALIAS, "face=0", `realm=${realmA}`, "json=true"]);
     console.error(`meme-realm-bag ⑮b MEASURE B realm-bag ${ALIAS} → ${said(reg).trim().slice(0, 300)}`);
     for (let i = 0; i < 3; i++) {
-      const ask = await B.cli(["get", `title=${URI}`, `bag=${ALIAS}`, `realm=${realmA}`, "mu=assert", "--json"]);
+      const ask = await B.cli(["get", `title=${URI}`, `bag=${ALIAS}`, `realm=${realmA}`, "mu=assert", "json=true"]);
       console.error(`meme-realm-bag ⑮b MEASURE B get mu=assert bag=${ALIAS} →${said(ask).trim().slice(0, 200)}`);
       await new Promise((r) => setTimeout(r, 5_000));
     }
-    const aBags = await A!.cli(["nexus", "realm-bags", "--json"]);
+    const aBags = await A!.cli(["nexus", "realm-bags", "json=true"]);
     console.error(`meme-realm-bag ⑮b MEASURE A's realm counts the alias: ${bagsOf(aBags).includes(ALIAS)}`);
     const lines = A!.bootLog().split("\n").map((l) => l.trim()).filter((l) => l.startsWith("[wire] verdict") && l.includes(ledgerIdA));
     console.error(`meme-realm-bag ⑮b MEASURE A's verdicts for her ledger ${ledgerIdA}:\n  ${lines.join("\n  ") || "(none)"}`);
@@ -763,11 +763,11 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const lines: string[] = [];
 
     // (iii-a) the two doc names, side by side.
-    const bags = await A!.cli(["nexus", "realm-bags", "--json"]);
+    const bags = await A!.cli(["nexus", "realm-bags", "json=true"]);
     const regs = ((bags.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>;
     const registered = String(regs.find((r) => r["bag"] === LARES_BAG)?.["doc"] ?? "");
     const realmDoc = String((bags.json?.["data"] as Record<string, unknown> | undefined)?.["realmDoc"] ?? "");
-    const bBags = await B!.cli(["nexus", "realm-bags", `realm=${realmA}`, "--json"]);
+    const bBags = await B!.cli(["nexus", "realm-bags", `realm=${realmA}`, "json=true"]);
     const bRegs = ((bBags.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>;
     const bRegistered = String(bRegs.find((r) => r["bag"] === LARES_BAG)?.["doc"] ?? "");
     lines.push(`(iii) registration doc — A says ${registered || "(none)"} · B says ${bRegistered || "(none)"} · same book: ${registered !== "" && registered === bRegistered}`);
@@ -785,13 +785,13 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
 
     // (ii) A WRITES A MARKER AND READS IT BACK. The put walks the realm first; the get walks the
     // composite first. A read that misses A's OWN write names the read door, not the wire.
-    const before = await A!.cli(["get", `title=${URI}`, "bag=ford", "mu=assert", "--json"]);
+    const before = await A!.cli(["get", `title=${URI}`, "bag=ford", "mu=assert", "json=true"]);
     const beforeText = String((((before.json?.["data"] as Record<string, unknown> | undefined)?.["meme"]) as Record<string, unknown> | undefined)?.["text"] ?? "");
     const baseA = String((((before.json?.["data"] as Record<string, unknown> | undefined)?.["meme"]) as Record<string, unknown> | undefined)?.["canonicalHash"] ?? "");
     const markerFile = join(A!.root, "a-marker.mem");
     writeFileSync(markerFile, memeWithSlot("/a-marker"));
-    const aPut = await A!.cli(["put", `title=${URI}`, "bag=ford", `base=${baseA}`, `file=${markerFile}`, "--json"]);
-    const after = await A!.cli(["get", `title=${URI}`, "bag=ford", "mu=assert", "--json"]);
+    const aPut = await A!.cli(["put", `title=${URI}`, "bag=ford", `base=${baseA}`, `file=${markerFile}`, "json=true"]);
+    const after = await A!.cli(["get", `title=${URI}`, "bag=ford", "mu=assert", "json=true"]);
     const afterText = String((((after.json?.["data"] as Record<string, unknown> | undefined)?.["meme"]) as Record<string, unknown> | undefined)?.["text"] ?? "");
     const readsOwnWrite = afterText.includes("#/a-marker");
     lines.push(`(ii) A's get carried B's slot before the marker: ${beforeText.includes("#/b")}`);
@@ -829,7 +829,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     // (iv) B'S SIDE OF THE SAME BOOK. A replica that never received the change and a WRITE that never
     // landed on this book read identically from A alone, so B answers for its own copy: what B's read
     // door says, and what B's own storage holds under the very same doc id.
-    const bGet = await B!.cli(["get", `title=${URI}`, "bag=ford", `realm=${realmA}`, "mu=assert", "--json"]);
+    const bGet = await B!.cli(["get", `title=${URI}`, "bag=ford", `realm=${realmA}`, "mu=assert", "json=true"]);
     const bText = String((((bGet.json?.["data"] as Record<string, unknown> | undefined)?.["meme"]) as Record<string, unknown> | undefined)?.["text"] ?? "");
     lines.push(`(iv) B's read door carries her own #/b: ${bText.includes("#/b")} · carries A's marker: ${bText.includes("#/a-marker")}`);
     await B!.stopDaemonOnly();

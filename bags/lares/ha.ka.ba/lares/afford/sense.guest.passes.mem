@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.guest.passes"
 
 ! sense.guest.passes ~ the superset: an unwrapped verb reaches the vendored CLI
 
-`lares mempalace <verb> [<words…>]` passes any verb this door does not wrap through to the vendored mempalace CLI against the guest palace (`search`, `compress`, `sweep`, `hallways`, `<verb> --help`), whose own parser reads and refuses its words. `--help-mempalace` (or `help mempalace`) prints the vendored CLI's own command list. Bare, the door prints its own help and exits 2. The lane law: `lares mempalace` touches only the guest `~/.mempalace` comparator; `lares sense` touches only the sovereign sensorium.
+`lares mempalace <verb> [<words…>]` passes any verb this door does not wrap through to the vendored mempalace CLI against the guest palace (`search`, `compress`, `sweep`, `hallways`, `<verb> --help`), whose own parser reads and refuses its words. `help-mempalace=true` (or `help mempalace`) prints the vendored CLI's own command list. Bare, the door prints its own help and exits 2. The lane law: `lares mempalace` touches only the guest `~/.mempalace` comparator; `lares sense` touches only the sovereign sensorium.
 
 <<~/ahu>>
 
@@ -80,6 +80,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lKUy3N7P5XvE0J2mGw_YL53k37mpIu4Ve-p4PIW7JrI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JKf2mNLzgv00ZCMNes81u-O3r9NXen765TUPIhmgV7g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.custody.reads"
 
 ! face.custody.reads ~ one reading of the vessel key's custody
 
-`lares vault status` reads every standing file the carrier table names and names every private file it does not, then reads the standing vessel's custody door: whether the vessel holds its key (and by which slot), or how many unlock tries stay this boot, or what a pūlama waits on. It opens nothing. Relation carriers print beside a reminder that rotation never repairs a lost relation secret. A pipe reads prose; `--json` reads the envelope; `--verbose` prints each row whole.
+`lares vault status` reads every standing file the carrier table names and names every private file it does not, then reads the standing vessel's custody door: whether the vessel holds its key (and by which slot), or how many unlock tries stay this boot, or what a pūlama waits on. It opens nothing. Relation carriers print beside a reminder that rotation never repairs a lost relation secret. A pipe reads prose; `json=true` reads the envelope; `--verbose` prints each row whole.
 
 <<~/ahu>>
 
@@ -99,6 +99,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_LPoURwPYcBF-u31JlVM1YlAKURXzW7oFsdtGhcA1mU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hZpfEcbPhVuXsBUgr0BkjjpUlDNSI22PyBExZNvLJc8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

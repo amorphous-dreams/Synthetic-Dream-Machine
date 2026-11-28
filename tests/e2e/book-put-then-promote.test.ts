@@ -34,21 +34,21 @@ afterAll(async () => {
 
 describe.skipIf(!stagedTarget)("a minted book takes a put and promotes it", () => {
   test("B1 RED the put rests in the book's working layer and a MOVE from there carries the family; B2 CONTROL canon answers the put's hash", async () => {
-    const minted = await lar.cli(["wiki", "init", BOOK, "--json"]);
+    const minted = await lar.cli(["wiki", "init", BOOK, "json=true"]);
     expect(minted.json?.["ok"], `mint refused: ${JSON.stringify(minted.json)}`).toBe(true);
 
     const file = join(lar.root, "npc.mem");
     writeFileSync(file, MEME);
-    const put = await lar.cli(["put", `title=${URI}`, `recipe=${BOOK}`, `file=${file}`, "--json"]);
+    const put = await lar.cli(["put", `title=${URI}`, `recipe=${BOOK}`, `file=${file}`, "json=true"]);
     expect(put.json?.["ok"], `put refused: ${JSON.stringify(put.json)}`).toBe(true);
     const putData = put.json?.["data"] as { bag?: string; canonicalHash?: string } | undefined;
     expect(putData?.bag, `the put names its layer: ${JSON.stringify(put.json)}`).toBe(WORKING);
 
-    const moved = await lar.cli(["act", "lar:///carriage.bag.moves", `title=${URI}`, `from=${WORKING}`, `to=${CANON}`, "yes=true", "--json"]);
+    const moved = await lar.cli(["lar:///carriage.bag.moves", `title=${URI}`, `from=${WORKING}`, `to=${CANON}`, "yes=true", "json=true"]);
     expect(moved.json?.["ok"], `MOVE refused: ${JSON.stringify(moved.json)}`).toBe(true);
     expect(Number((moved.json?.["data"] as { moved?: unknown } | undefined)?.moved ?? 0)).toBeGreaterThan(0);
 
-    const got = await lar.cli(["get", `title=${URI}`, `bag=${BOOK}`, "mu=assert", "--json"]);
+    const got = await lar.cli(["get", `title=${URI}`, `bag=${BOOK}`, "mu=assert", "json=true"]);
     expect(got.json?.["ok"], `canon read refused: ${JSON.stringify(got.json)}`).toBe(true);
     expect((got.json?.["data"] as { meme?: { canonicalHash?: string } } | undefined)?.meme?.canonicalHash).toBe(putData?.canonicalHash);
   }, 300_000);

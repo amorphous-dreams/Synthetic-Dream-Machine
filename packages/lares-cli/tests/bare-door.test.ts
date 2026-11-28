@@ -164,6 +164,6 @@ describe("bare `lares` reads mu=00 aperture=beat", () => {
   });
 
   test("the keys line names the call door's act keywords, then every door word, and points at lares help", () => {
-    expect(keysLine(["rite", "get", "bag"])).toBe("keys: get= put= delete= rename= filter= act= rite= bag=  (lares help: every door · lares help mu=?0)");
+    expect(keysLine(["rite", "get", "bag"])).toBe("keys: get= put= delete= rename= filter= rite= bag=  (lares help: every door · lares help mu=?0)");
   });
 });

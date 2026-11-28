@@ -494,14 +494,14 @@ describe("ResidencyAction discriminated union", () => {
 });
 
 // ---------------------------------------------------------------------------
-// V1 — content-addressed idempotency for residency changes (the `lares act`
+// V1 — content-addressed idempotency for residency changes (the `lares lar:///carriage.*`
 // placer contract). The placer computes taskContentId({subject: target bag,
 // command: verb, args, nonce:""}); the change-id in args IS the idempotency key.
 // Re-issuing the SAME logical change collapses to one id (→ dispatcher
 // outcome-dedup → exactly-once EFFECT); a distinct change runs.
 // ---------------------------------------------------------------------------
 
-describe("V1 — content-addressed residency identity (lares act placer contract)", () => {
+describe("V1 — content-addressed residency identity (lares lar:///carriage.* placer contract)", () => {
   function residencyId(verb: string, args: Record<string, string>): Promise<string> {
     const subject = args["to-bag"] ?? args["bag"] ?? "";
     return taskContentId({ subject, command: verb, args, nonce: "" });

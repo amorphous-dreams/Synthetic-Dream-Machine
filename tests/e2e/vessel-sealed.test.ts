@@ -104,7 +104,7 @@ async function custodyReading(): Promise<Record<string, unknown>> {
 }
 
 /** A recipe read of the witness carrier, as the vessel answers it right now. */
-const readCarrier = (): Promise<CliResult> => cli(PLAIN, ["get", `title=${URI}`, ...WIKI, "mu=assert", "--json"]);
+const readCarrier = (): Promise<CliResult> => cli(PLAIN, ["get", `title=${URI}`, ...WIKI, "mu=assert", "json=true"]);
 
 /**
  * This suite's rite: the Stable founding act, then persona zero's root split, so a device share rests beside the sealed rows
@@ -130,7 +130,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
   afterAll(async () => {
     if (!lar) return;
     // Whatever stood last was spawned DETACHED by `vessel stand`; the port is the handle to it.
-    await cli(PLAIN, ["vessel", "stop", "--skip-build"]);
+    await cli(PLAIN, ["vessel", "stop", "skip-build=true"]);
     await lar.stop();
   });
 
@@ -159,7 +159,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
 
     const f = join(lar!.root, "seal-carrier.mem");
     writeFileSync(f, meme());
-    const put = await cli(PLAIN, ["put", `title=${URI}`, ...WIKI, `file=${f}`, "--json"]);
+    const put = await cli(PLAIN, ["put", `title=${URI}`, ...WIKI, `file=${f}`, "json=true"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
     carrierHash = String(dataOf(put)["canonicalHash"]);
     const got = await readCarrier();
@@ -174,7 +174,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
   test("③ lock: the vessel drops the key and stands at the floor; the sealed rows keep their bytes", async () => {
     // The rows as the hearth holds them, read after its own verbs answered and before the lock.
     afterUnlock = rowsAtRest();
-    const locked = await cli(PLAIN, ["vault", "lock", "--json"]);
+    const locked = await cli(PLAIN, ["vault", "lock", "json=true"]);
     expect(locked.json?.["ok"], said(locked)).toBe(true);
     expect(dataOf(locked)).toMatchObject({ locked: true, was: "unlocked", standing: "herm" });
     expect((await custodyReading())["unlocked"]).toBe(false);
@@ -187,9 +187,9 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
 
   test("④ stop, then stand: a restart rests at the floor and writes no identity", async () => {
     await lar!.stopDaemonOnly();
-    const stop = await cli(PLAIN, ["vessel", "stop", "--skip-build", "--json"]);
+    const stop = await cli(PLAIN, ["vessel", "stop", "skip-build=true", "json=true"]);
     expect(stop.code, said(stop)).toBe(0);
-    const stand = await cli(PLAIN, ["vessel", "stand", "--skip-build", "--json"]);
+    const stand = await cli(PLAIN, ["vessel", "stand", "skip-build=true", "json=true"]);
     console.error(`vessel-sealed MEASURE ④ stand → exit ${stand.code} node=${JSON.stringify(dataOf(stand)["node"])}`);
     const reading = await custodyReading();
     expect(reading["unlocked"]).toBe(false);
@@ -216,7 +216,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
   }, 300_000);
 
   test("⑥ `vault status` gives one reading of each file: no row at fault, nothing outside the carrier table", async () => {
-    const status = await cli(PLAIN, ["vault", "status", "--json"]);
+    const status = await cli(PLAIN, ["vault", "status", "json=true"]);
     expect(status.json?.["ok"], said(status)).toBe(true);
     const custody = dataOf(status)["custody"] as {
       rows: { row: string; home: string; file: string; custody: string; reading: string; bare: string | null; fault: boolean }[];
@@ -241,7 +241,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
   test("⑦ a word outside the vault door's seven verbs answers as no door, and the share keeps its bytes", async () => {
     const share = readFileSync(SHARE());
     for (const word of ["seal", "rotate", "repair", "passphrase", "export"]) {
-      const r = await cli(PLAIN, ["vault", word, "--json"]);
+      const r = await cli(PLAIN, ["vault", word, "json=true"]);
       expect(r.code, word).not.toBe(0);
       expect(said(r), word).toContain(`unknown sub-verb "${word}"`);
     }

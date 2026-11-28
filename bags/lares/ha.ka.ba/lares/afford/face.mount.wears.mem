@@ -17,9 +17,9 @@ uri-path  = "ha.ka.ba/lares/afford/face.mount.wears"
 
 ! face.mount.wears ~ unlock opens custody; wear chooses the face
 
-`lares wear N` moves the vessel's mount to face hN, a face already standing open (under a pūlama, one the pūlama lends), and the vessel composes again on it. The door reads the custody door first: a vessel holding no key takes no wear and names the one act that opens it (`lares vault unlock`). A wear asks no route and carries none, so nothing here reaches for a prompt; the face rides the positional, or `--face N`.
+`lares wear N` moves the vessel's mount to face hN, a face already standing open (under a pūlama, one the pūlama lends), and the vessel composes again on it. The door reads the custody door first: a vessel holding no key takes no wear and names the one act that opens it (`lares vault unlock`). A wear asks no route and carries none, so nothing here reaches for a prompt; the face rides the positional, or `face=N`.
 
-A wear that turns the face flushes every shore first, inside the vessel, while the face it leaves still stands mounted, and its answer names one line per island. Where the flush leaves a record unwritten, a person at a terminal answers whether to turn anyway; an agent carries `--yes`. A wear that lands replays the share landing, as an unlock does, and names what moved and what still waits on a shut face. A pipe reads one sentence of prose; `--json` reads the envelope.
+A wear that turns the face flushes every shore first, inside the vessel, while the face it leaves still stands mounted, and its answer names one line per island. Where the flush leaves a record unwritten, a person at a terminal answers whether to turn anyway; an agent carries `yes=true`. A wear that lands replays the share landing, as an unlock does, and names what moved and what still waits on a shut face. A pipe reads one sentence of prose; `json=true` reads the envelope.
 
 <<~/ahu>>
 
@@ -108,6 +108,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;q0PC2wrQx2lwv1hNIirdjoYEHGycrxDeMBaR2UWh_nU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;O8dVFKUAXPGVZW9KWevQPOFAyrs-GrMch8g-lb5u_Vg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

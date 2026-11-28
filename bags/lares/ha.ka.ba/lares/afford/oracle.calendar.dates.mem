@@ -23,7 +23,7 @@ With no date the verb reads today's local day: the command and the seat each rea
 
 Format codes follow ddate(1), with `%E` added: `%A %a` weekday, long and short · `%B %b` season, long and short · `%d` day of the season · `%e` the ordinal (1st, 11th, 21st, 22nd, 23rd) · `%E` the ordinal by its last digit alone (11st, 12nd, 13rd), the first ddate's reading, an easter egg · `%H` the day's holyday, if any · `%N` stop here unless the day holds a holyday · `%Y` the YOLD · `%X` days until X-Day (negative once it passed) · `%n %t` newline, tab · `%.` an exclamation from the platform's entropy door (crypto.getRandomValues) · `%{ %}` the span between them reads "St. Tib's Day" on February 29 and prints plain on every other day.
 
-A bare call answers the default line ("Today is Prickle-Prickle, the 32nd day of The Aftermath in the YOLD 3192"). On a terminal that line prints plain, like ddate(1), and `--json` answers the envelope the seat always returns: {text, entropy, gregorian, yold, tibs, season, dayOfSeason, weekday, holyday}, where `entropy` names the source a `%.` drew from, else null. The verb runs on the host and needs no vessel; the MCP tool rides the @daemon wire.
+A bare call answers the default line ("Today is Prickle-Prickle, the 32nd day of The Aftermath in the YOLD 3192"). On a terminal that line prints plain, like ddate(1), and `json=true` answers the envelope the seat always returns: {text, entropy, gregorian, yold, tibs, season, dayOfSeason, weekday, holyday}, where `entropy` names the source a `%.` drew from, else null. The verb runs on the host and needs no vessel; the MCP tool rides the @daemon wire.
 
 <<~/ahu>>
 
@@ -84,7 +84,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`band` name=`line` params=`exit/0 ~ the bare line, prose first like ddate(1): the default answer on a terminal or a pipe`>>
-<<has entity=`band` name=`envelope` params=`exit/0 fields/[[text entropy gregorian yold tibs season dayOfSeason weekday holyday]] ~ the body the seat returns and --json prints; entropy names the door a %. drew from, else null`>>
+<<has entity=`band` name=`envelope` params=`exit/0 fields/[[text entropy gregorian yold tibs season dayOfSeason weekday holyday]] ~ the body the seat returns and json=true prints; entropy names the door a %. drew from, else null`>>
 ```
 
 <<~/ahu>>
@@ -126,6 +126,6 @@ The calendar core stands at `@lararium/mesh/ddate` and its chance at `@lararium/
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;pyRpAcPMrDnvl3lVMvDPvVIrnszcE7CdC4qSwaubPDA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LAy81cYIHGu7Bj3dzM2LmA16tIsP7zdWWWyr413Fr0U`>>
 
 <<^ code=`&#x0004;` to=`?`>>

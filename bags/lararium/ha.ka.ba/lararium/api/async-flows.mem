@@ -82,7 +82,7 @@ One progress event stream; the existing renderer splits it:
 
 * ''TTY (human):'' a redrawing bar / spinner / elapsed-heartbeat on ''stderr''
   (`\r` rewrite, animation only when isatty) — stdout stays clean.
-* ''off-TTY / `--json` (agent):'' ''NDJSON progress lines'' (Terraform `apply_progress`
+* ''off-TTY / `json=true` (agent):'' ''NDJSON progress lines'' (Terraform `apply_progress`
   + BuildKit `rawjson` shape), result alone on stdout:
 
 ```text
@@ -91,8 +91,8 @@ One progress event stream; the existing renderer splits it:
 {"type":"result","requestId":"…","status":"completed","ok":true, …}      # stdout
 ```
 
-`render.ts`'s prose/JSON shore carries the RESULT half of this split (prose on a TTY or under `--no-json`, one structured
-payload on stdout off-TTY or under `--json`); the progress stream reads UNBUILT.
+`render.ts`'s prose/JSON shore carries the RESULT half of this split (prose on a TTY or under `json=false`, one structured
+payload on stdout off-TTY or under `json=true`); the progress stream reads UNBUILT.
 
 <<~/ahu>>
 
@@ -137,7 +137,7 @@ payload on stdout off-TTY or under `--json`); the progress stream reads UNBUILT.
   and polls; it never holds a blocking call across its context.
 * `wait --timeout` returns ''"PROCESSING: job <id> still running (original ask: …)"''
   — carrying the context so the agent needn't hold it.
-* ''`--yes` / `--force`'' (an agent cannot type `y`; a prompt-hang kills its workflow).
+* ''`yes=true` / `--force`'' (an agent cannot type `y`; a prompt-hang kills its workflow).
 * ''Parseable error CODES, not prose'' (`not-found`, not "Error occurred").
 
 <<~/ahu>>
@@ -173,6 +173,6 @@ write toward; it describes no current emission.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;e_MXBoLC2RmSmK3qAVXChIRZqrwQLEgAZs5SuLSfJn0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;w7cC-e12gO7Sdd976IGO0SZwSvCVZf1WTfGv3-Y-LSc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -170,7 +170,7 @@ moved.
   argues it out.
 # ''THE FOUNDING RUNBOOK.'' It instructs substrate verbs directly, and as the operator-instruction source a
   stale command there fails at the worst moment a command can fail. `tools/rite-commands-witness.sh` reads
-  each instructed command against its door's verb table, as the built binary's `help --json` projects the rows.
+  each instructed command against its door's verb table, as the built binary's `help json=true` projects the rows.
 # ''THE REHEARSAL HARNESS.'' `tools/rehearse-founding.sh` walks the rite by name; its preflight, its founding
   step and its lay step all name the door.
 # ''THE CONTAINER BOOT + THE WITNESS SCRIPTS.'' They found and stand vessels by verb name.
@@ -204,7 +204,7 @@ face's fixed prefix (`--as <N>` names the index; `--memory` lands the bundle's c
 (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-restore`>>). Both verbs live on `vault` because they move
 nothing of the vessel's substrate: they ask the custody door, as `unlock` and `lock` do.
 
-''ONE FLAG ASKS FOR KEYHIVE'S OWN TRACE, BY NAME.'' `--keyhive-trace` on any command sets `LAR_KEYHIVE_TRACE=1`
+''ONE PARAM ASKS FOR KEYHIVE'S OWN TRACE, BY NAME.'' `keyhive-trace=true` on any command sets `LAR_KEYHIVE_TRACE=1`
 for that command's process, and the same variable set in a daemon's environment asks it of the daemon. Keyhive's
 tracing installs a global dispatcher, so it stands off unless this name asks for it
 (`packages/lararium-keyhive/src/keyhive-provider.ts` `KEYHIVE_TRACE_ENV`).
@@ -237,7 +237,7 @@ because a verification an operator has to remember to run is a verification that
   that: the three-way guard asserts the fixture's own internal coherence (which staleness satisfies), and
   the projection test compares live to live. ''Nothing else welds the fixture to the table.''
 # ''An unknown name refuses.'' Every name no door carries MUST fail as an unknown command, ''with or without
-  `--help`'' (`packages/lares-cli/tests/help-flags.test.ts`). An alias names the failure mode this door exists
+  `lares help`'' (`packages/lares-cli/tests/help-flags.test.ts`). An alias names the failure mode this door exists
   to prevent, and it hides perfectly behind a passing suite.
 # ''The surface gets measured at the VERB, never at the door.'' A door count reports a collapse the
   operator cannot feel: the fan-out lives one level below the number, so a surface that reads halved by
@@ -275,6 +275,6 @@ because a verification an operator has to remember to run is a verification that
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8hgDJJWfpzbkDCE46mOzqxTY6Zh_li-8Xb8j-cHJezc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RpTSAxFRH0KjnGG3VuLlKvHc407MUpRJcSiJpGdcwkU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

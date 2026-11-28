@@ -145,7 +145,7 @@ export function refusalHint(code: string, changeId: string | undefined): string 
     case "receipt-fact-torn":
       return "this request's own ledger record is unreadable (a torn tiddler) — mint a fresh request (a flagless re-run does it).";
     case "bag-retired":
-      return "the bag was DROPped and takes no writes; `lares act lar:///carriage.bag.creates bag=<bag>` stands a fresh one.";
+      return "the bag was DROPped and takes no writes; `lares lar:///carriage.bag.creates bag=<bag>` stands a fresh one.";
     default:
       return undefined;
   }

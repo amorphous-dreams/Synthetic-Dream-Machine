@@ -135,7 +135,7 @@ describe("lares realm", () => {
     vi.spyOn(console, "log").mockImplementation((...a) => { out.push(a.map(String).join(" ")); });
     vi.spyOn(console, "error").mockImplementation(() => {});
     expect(await dispatch(["help"])).toBe(0);
-    // Progressive display retires the screen budget: the list's rung names the door on one line, and `lares realm --help` unfolds it.
+    // Progressive display retires the screen budget: the list's rung names the door on one line, and `lares help realm` unfolds it.
     expect(out.join("\n").split("\n").filter((l) => /^\s+(✍ )?realm\s/.test(l))).toHaveLength(1);
   });
 });

@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.relay.opens"
 
 ! realm.relay.opens ~ enable ~ the face answers on the relay
 
-`lares intent-relay enable` mints the relay key where none stands, enables the relay for the face's persona group and answers the face's knock path and gate pin beside the relay's public admission key. `--json` prints the answer as data.
+`lares intent-relay enable` mints the relay key where none stands, enables the relay for the face's persona group and answers the face's knock path and gate pin beside the relay's public admission key. `json=true` prints the answer as data.
 
 <<~/ahu>>
 
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BFclMz7gi0q5nkvv3gdLRlPUqY3ImiK898wW7vnv3G0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5k76URlyAQbpridDHRxq5P5Rqt7YoVtkdGrE1RI5VqE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

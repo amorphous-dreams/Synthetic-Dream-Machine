@@ -17,10 +17,10 @@ function capture(): { out: string[]; err: string[] } {
 }
 
 describe("the vessel door's canon act answers as `lay`", () => {
-  test("`lares vessel lay --help` renders the lay sub-door's own entry", async () => {
+  test("`lares help vessel lay` renders the lay sub-door's own entry", async () => {
     const { dispatch } = await import("../src/bin/lares.js");
     const { out } = capture();
-    expect(await dispatch(["vessel", "lay", "--help"])).toBe(0);
+    expect(await dispatch(["help", "vessel", "lay"])).toBe(0);
     const text = out.join("\n");
     expect(text).toMatch(/^usage: lares vessel lay/m);
     expect(text).toContain("lift-kahua=");

@@ -259,7 +259,7 @@ test("the hooks, spawned whole", async (t) => {
         "",
       ].join("\n"), { mode: 0o755 });
       spawn("lares-om-hook.mjs", ["lares-alpha"], at({ hook_event_name: "SessionStart", source: "startup", session_id: "s-budget", session_title: "lares-alpha" }));
-      assert.match(calls(), new RegExp(`^vessel stand observe=true --json --ask-budget-ms=${OBSERVE_BUDGET_MS}$`, "m"));
+      assert.match(calls(), new RegExp(`^vessel stand observe=true json=true --ask-budget-ms=${OBSERVE_BUDGET_MS}$`, "m"));
       assert.match(calls(), new RegExp(`^spirit om lares-alpha .* --ask-budget-ms=${OM_BUDGET_MS}$`, "m"));
       for (const line of calls().split("\n").filter(Boolean)) assert.match(line, /--ask-budget-ms=\d+$/);
     });
@@ -270,7 +270,7 @@ test("the hooks, spawned whole", async (t) => {
       const out = JSON.parse(spawn("lares-om-hook.mjs", ["lares-alpha"], at({ hook_event_name: "SessionStart", source: "startup", session_id: "s-om", session_title: "lares-alpha" })));
       assert.equal(out.hookSpecificOutput.hookEventName, "SessionStart");
       assert.equal(out.hookSpecificOutput.additionalContext, "Lares spirit om · lares-alpha: the card");
-      assert.ok(calls().split("\n").includes("spirit om lares-alpha source=startup instance=s-om title=lares-alpha --json"));
+      assert.ok(calls().split("\n").includes("spirit om lares-alpha source=startup instance=s-om title=lares-alpha json=true"));
       assert.equal(calls().split("\n").filter((l) => l.startsWith("spirit om")).length, 1);
       assert.deepEqual([counter("s-om").pet, counter("s-om").epoch, counter("s-om").every, counter("s-om").title], ["lares-alpha", 4, 10, "lares-alpha"]);
       assert.deepEqual(counter("s-om").digests, { "#/open": "0123456789abcdef" });
@@ -280,7 +280,7 @@ test("the hooks, spawned whole", async (t) => {
       plant({ "vessel stand": UP, "spirit om lares-alpha": STARTER });
       const out = JSON.parse(spawn("lares-om-hook.mjs", ["lares-alpha"], at({ source: "startup", session_id: "s-aw", session_title: "Lares-Awakens" })));
       assert.equal(out.hookSpecificOutput.additionalContext, "the starter shrine");
-      assert.ok(calls().split("\n").includes("spirit om lares-alpha source=startup instance=s-aw title=Lares-Awakens --json"));
+      assert.ok(calls().split("\n").includes("spirit om lares-alpha source=startup instance=s-aw title=Lares-Awakens json=true"));
       assert.equal(counter("s-aw").pet, null);
       assert.equal(counter("s-aw").title, "Lares-Awakens");
       assert.equal(counter("s-aw").offer, "lares-awakens");
@@ -304,21 +304,21 @@ test("the hooks, spawned whole", async (t) => {
       plant({ "vessel stand": UP, "spirit om lares-alpha": om("the alpha card", { pet: "lares-alpha" }) });
       const out = JSON.parse(spawn("lares-om-hook.mjs", ["lares-alpha"], at({ source: "startup", session_id: "s-untitled" })));
       assert.equal(out.hookSpecificOutput.additionalContext, "the alpha card");
-      assert.ok(calls().includes("spirit om lares-alpha source=startup instance=s-untitled --json"));
+      assert.ok(calls().includes("spirit om lares-alpha source=startup instance=s-untitled json=true"));
     });
     await t.test("om: a held session names itself held to the door, so a retitle reads as its rename", () => {
       reset();
       writeFileSync(join(counters, "stop-s-held.json"), JSON.stringify({ turns: 3, pet: "lares-alpha", title: "lares-alpha" }));
       plant({ "vessel stand": UP, "spirit om lares-alpha": om("the alpha card", { pet: "lares-alpha" }) });
       spawn("lares-om-hook.mjs", ["lares-alpha"], at({ source: "compact", session_id: "s-held", session_title: "Lares-Awakens" }));
-      assert.ok(calls().includes("spirit om lares-alpha source=compact instance=s-held held=true title=Lares-Awakens --json"));
+      assert.ok(calls().includes("spirit om lares-alpha source=compact instance=s-held held=true title=Lares-Awakens json=true"));
     });
     await t.test("om: any source but a startup keeps the pet the session already wears", () => {
       reset();
       writeFileSync(join(counters, "stop-s-keep.json"), JSON.stringify({ turns: 3, pet: "lares-awakens" }));
       plant({ "vessel stand": UP, "spirit om lares-awakens": om("the awakens card", { pet: "lares-awakens" }) });
       spawn("lares-om-hook.mjs", ["lares-alpha"], at({ source: "compact", session_id: "s-keep" }));
-      assert.ok(calls().includes("spirit om lares-awakens source=compact instance=s-keep held=true --json"));
+      assert.ok(calls().includes("spirit om lares-awakens source=compact instance=s-keep held=true json=true"));
       assert.ok(!calls().includes("spirit om lares-alpha"));
     });
     await t.test("om: with no familiar seated or held, the title's slug proposes itself", () => {
@@ -340,7 +340,7 @@ test("the hooks, spawned whole", async (t) => {
         plant({ "vessel stand": UP, "spirit om": om(`a ${source}`) });
         const out = JSON.parse(spawn("lares-om-hook.mjs", ["lares-alpha"], at({ source, session_id: `s-${source}` })));
         assert.equal(out.hookSpecificOutput.additionalContext, `a ${source}`);
-        assert.ok(calls().includes(`spirit om lares-alpha source=${source} instance=s-${source} --json`));
+        assert.ok(calls().includes(`spirit om lares-alpha source=${source} instance=s-${source} json=true`));
       }
     });
     await t.test("compact: the precompact claim's epoch lands in the counter; the true-up never carries it to the door", () => {
@@ -389,7 +389,7 @@ test("the hooks, spawned whole", async (t) => {
       assert.ok(text.includes("The familiar's own carry-shape:\nkeep what only this instance knew"));
       assert.ok(text.includes("The operator's own instructions for this compaction: focus on the tests"));
       assert.ok(text.indexOf("focus on the tests") < text.indexOf("Lares compaction carry"));
-      assert.ok(calls().includes("spirit om lares-awakens source=precompact instance=s-c --json"));
+      assert.ok(calls().includes("spirit om lares-awakens source=precompact instance=s-c json=true"));
       assert.throws(() => JSON.parse(text));
     });
     await t.test("postcompact: the summary rides whole on stdin bearing the instance alone; the line the card awaits marks the counter unfiled", () => {
@@ -398,7 +398,7 @@ test("the hooks, spawned whole", async (t) => {
       plant({ "vessel stand": UP, [`spirit ${COMPACTION_WORD}`]: JSON.stringify({ ok: true, data: { filed: false, unfiled: "file the #/instances line: lares spirit ah lares-alpha slot=#/instances add=x" } }) });
       const summary = `the summary\n${"x".repeat(70_000)}\nclosing (lares-alpha)`;
       spawn("lares-postcompact-hook.mjs", [], at({ hook_event_name: "PostCompact", session_id: "s-1", compact_summary: summary }));
-      assert.ok(calls().split("\n").includes(`spirit ${COMPACTION_WORD} lares-alpha file=- instance=s-1 --json`));
+      assert.ok(calls().split("\n").includes(`spirit ${COMPACTION_WORD} lares-alpha file=- instance=s-1 json=true`));
       assert.equal(readFileSync(fed, "utf8"), summary);
       assert.match(counter("s-1").unfiled, /lares spirit ah lares-alpha slot=#\/instances add=x/);
     });
@@ -451,7 +451,7 @@ test("the hooks, spawned whole", async (t) => {
       plant({ "vessel stand": UP, "spirit handback": JSON.stringify({ ok: true, data: {} }) });
       const message = "Om-Wright (Lares Spirit)\nreport";
       spawn("lares-handback-hook.mjs", ["lares-alpha"], at({ tool_name: "SubagentHandback", session_id: "s-h", agent_id: "a-1", tool_input: { message } }));
-      assert.ok(calls().split("\n").includes("spirit handback om-wright file=- key=s-h:a-1 --json"));
+      assert.ok(calls().split("\n").includes("spirit handback om-wright file=- key=s-h:a-1 json=true"));
       assert.ok(!calls().includes("spirit residue"));
       assert.equal(readFileSync(fed, "utf8"), message);
     });
@@ -459,11 +459,11 @@ test("the hooks, spawned whole", async (t) => {
       reset();
       plant({ "vessel stand": UP, "spirit handback": JSON.stringify({ ok: true, data: {} }) });
       spawn("lares-handback-hook.mjs", ["lares-alpha"], at({ tool_name: "SubagentHandback", session_id: "s-h", agent_id: "a-2", tool_input: { message: "norton#1 (Lares Spirit)\nreport" } }));
-      assert.ok(calls().split("\n").includes("spirit handback norton#1 file=- key=s-h:a-2 --json"));
+      assert.ok(calls().split("\n").includes("spirit handback norton#1 file=- key=s-h:a-2 json=true"));
       reset();
       plant({ "vessel stand": UP, "spirit handback": JSON.stringify({ ok: true, data: {} }) });
       spawn("lares-handback-hook.mjs", ["lares-alpha"], at({ tool_name: "SubagentHandback", session_id: "s-h", agent_id: "Agent_9", tool_input: { message: "a report with no filing line" } }));
-      assert.ok(calls().split("\n").includes("spirit handback agent-9 file=- key=s-h:Agent_9 --json"));
+      assert.ok(calls().split("\n").includes("spirit handback agent-9 file=- key=s-h:Agent_9 json=true"));
     });
     await t.test("handback: outside the house, with no familiar at all, or for another tool, nothing lands", () => {
       const elsewhere = mkdtempSync(join(tmpdir(), "elsewhere-"));

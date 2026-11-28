@@ -16,7 +16,7 @@ export class ConsoleRefused extends Error {
   constructor(readonly refusal: string, reason: string) { super(`${refusal}: ${reason}`); }
 }
 
-/** The CLI's `--json` shape: what `lares <verb> --json` prints, as a value. */
+/** The CLI's `json=true` shape: what `lares <verb> json=true` prints, as a value. */
 export type ConsoleResult =
   | { readonly ok: true; readonly data: unknown }
   | { readonly ok: false; readonly error: { readonly code: string; readonly message: string } };

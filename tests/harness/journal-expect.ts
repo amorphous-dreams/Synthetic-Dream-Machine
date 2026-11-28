@@ -27,7 +27,7 @@ function entriesOf(json: Record<string, unknown> | null | undefined): readonly J
 const cursorArg = (c: JournalCursor): string => `${c.epoch}:${c.writer}:${c.seq}`;
 
 async function journalTail(vessel: LarInstance): Promise<string> {
-  const tail = await vessel.cli(["events", "--json"]);
+  const tail = await vessel.cli(["events", "json=true"]);
   return tail.stdout.trim().slice(-4000);
 }
 
@@ -46,7 +46,7 @@ export async function expectEntry(
       if (abortRead.signal.aborted) {
         throw new Error(`expectEntry: read loop cancelled for ${awaited}`);
       }
-      const args = ["events", "wait=true", "--json", ...(kind ? [`kind=${kind}`] : []), ...(cursor ? [`since=${cursorArg(cursor)}`] : [])];
+      const args = ["events", "wait=true", "json=true", ...(kind ? [`kind=${kind}`] : []), ...(cursor ? [`since=${cursorArg(cursor)}`] : [])];
       const result = await vessel.cli(args);
       const entries = entriesOf(result.json);
       if (entries === null) {

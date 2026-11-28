@@ -8,8 +8,8 @@
  * runs the offline door when none stands. No socket crosses the container wall; the daemon's UDS stays in the
  * vessel's own /tmp.
  *
- * HOST VERBS STAY HOME. `home` and `repo` edit this machine's homes and checkout; `help` and every `--help` render
- * from the table; `mempalace` tends the guest comparator in this home;
+ * HOST VERBS STAY HOME. `home` and `repo` edit this machine's homes and checkout; `help` (and every `lares help <door>`)
+ * renders from the table; `mempalace` tends the guest comparator in this home;
  * `meme normalize|check` and `meme project <file> to=md` run over a file with no daemon; `surface` keeps the face pools,
  * which rest on this disk, and asks the vessel only for the face no label settles. They never forward.
  *
@@ -20,7 +20,7 @@
  *
  * THE BRIDGE ADDS TWO CODES AND NO OTHER: {@link HOUSE_ABSENT_EXIT} (no root, no container house) and
  * {@link SHIM_ABSENT_EXIT} (the container house stands, its shim does not). Everything else returns the shim's own
- * code, and stdout passes through untouched, so `lares … --json | jq` reads the vessel's bytes. A credential verb with
+ * code, and stdout passes through untouched, so `lares … json=true | jq` reads the vessel's bytes. A credential verb with
  * no terminal refuses by name before docker runs ({@link CREDENTIAL_TTY_EXIT}, the usage code the CLI's own refusal
  * reads): the forwarder never runs it detached from a TTY.
  *
@@ -54,15 +54,15 @@ export const FORWARDED_ENV: readonly string[] = ["NO_COLOR", "TERM", "COLORTERM"
 
 
 /**
- * THE SHIM'S OWN VERBS, each with the row `lares <verb> --help` reads: no CLI command answers them, and the shim does
- * (`tools/lares-container.sh`, whose header keeps the long account). A help ask stays on this machine (`asksHelp`), so the
- * dispatcher reads these rows where its own table holds none.
+ * THE SHIM'S OWN VERBS, each with the row `lares help <verb>` reads: no CLI command answers them, and the shim does
+ * (`tools/lares-container.sh`, whose header keeps the long account). A help ask stays on this machine (`help` stands a host
+ * command), so the dispatcher reads these rows where its own table holds none.
  */
 const SHIM_VERB_HELP: Readonly<Record<string, { readonly usage: string; readonly about: readonly string[] }>> = {
   up:    { usage: "lares up [--capture <dir>]... [--workspace <name>=<dir>]...", about: ["Stand the vessel's container (detached) and wait until it answers healthy; then `vault unlock` on this terminal.", "A vessel stands holding no key: every start returns it to the floor until a person unlocks it."] },
   down:  { usage: "lares down [compose-down args]", about: ["Stop the vessel and remove its container; the house stays in LARES_HOUSE.", "It asks the standing vessel first what a stop would drop (`vessel census`) and refuses on any item, naming the act that lands it; a save at rest under the vessel's key reads kept and stops with the house."] },
   reset: { usage: "lares reset", about: ["Clear a stopped vessel's hearth (LARES_HOUSE/hearth alone) after confirmation at a terminal.", "Sensoriums, projections, library and config stay."] },
-  found: { usage: "lares found [vessel-found args]", about: ["The founding act, at a terminal: it gathers the human route (a passphrase and/or a paper pin); `hearth=true` prints the seed card and reads it back.", "Run it before `up`: the act holds the store. `lares vessel found --help` names its flags."] },
+  found: { usage: "lares found [vessel-found args]", about: ["The founding act, at a terminal: it gathers the human route (a passphrase and/or a paper pin); `hearth=true` prints the seed card and reads it back.", "Run it before `up`: the act holds the store. `lares help vessel found` names its params."] },
   logs:  { usage: "lares logs [compose-logs args]", about: ["Read the vessel's log (`-f` follows it)."] },
   build: { usage: "lares build [compose-build args]", about: ["Rebuild the vessel image from the committed checkout and stamp HEAD as its revision label.", "A dirty checkout, or none, refuses: the label must name a real commit."] },
   pulama: { usage: "lares pulama light [--admit] | name-successor [<rev>] | keeper-land | status | lock | admit [face…] | …", about: ["The pūlama's hand verbs, on this terminal (the shim reads no route; the pūlama does). `light --admit` lights and admits the reported image under one route (the struck fire).", "`name-successor [<rev>]` names the keeper's successor (PANI, the one who fills a place): it prints the successor closure D′ and the source tree, offers the clean-tree re-check (tools/pulama-closure.mjs on a fresh archive), then the pūlama proves your route; the next `lares rite kukulu` then hands the living fire to it unattended.", "A standing kukulu lei with returns left on the line licenses that successor itself: a no-terminal `lares rite kukulu` rests it with no route, over a revision reachable from origin, green in CI, built into an image whose closure label matches, and the rite's own return spends on it; every face the vessel holds of one device.", "`status` closes on the kūkulu reading, one line read off the checkout's closure against the running pūlama's, the pūlama's own status and the kukulu lei on the checkout's branch: `runs alone`, `keeper vests under …`, or `needs your hand: <why>`, through the gates a no-terminal `lares rite kukulu` walks."] },
@@ -89,7 +89,7 @@ const MIXED_COMMANDS: ReadonlySet<string> = new Set(["meme", "rite"]);
 
 export type CommandScope = "host" | "vessel" | "mixed";
 
-/** Where a command answers, as `lares --help` marks it. */
+/** Where a command answers, as `lares help` marks it. */
 export function commandScope(name: string): CommandScope {
   if (HOST_COMMANDS.has(name)) return "host";
   if (MIXED_COMMANDS.has(name)) return "mixed";
@@ -113,15 +113,6 @@ export interface RouteInput {
 export interface RouteError { readonly code: number; readonly lines: readonly string[] }
 export type Route = "local" | "forward" | { readonly error: RouteError };
 
-
-/** True when the argv asks for help or the version, in any spelling the CLI reads before `--`. */
-function asksHelp(argv: readonly string[]): boolean {
-  for (const tok of argv) {
-    if (tok === "--") return false;
-    if (tok === "--help" || tok === "-h" || tok === "--version") return true;
-  }
-  return false;
-}
 
 /** `meme`'s local seats: the file laws, and `project` over a file to md. */
 function memeLocal(args: ParsedArgs): boolean {
@@ -152,10 +143,9 @@ export function decideRoute(input: RouteInput): Route {
   if ((env["LAR_ROOT"] ?? "").trim() !== "") return "local";
   if ((env[IN_CONTAINER_ENV] ?? "").trim() !== "") return "local";
   const head = argv[0];
-  // A CALL BY ADDRESS OR BY SIGIL answers in the vessel (comms-ux-enacts landing 8): `lares lar:///…`, `lares -` and the one act
-  // (`lares act lar:///…`, landing 9, a call head with no COMMANDS row) forward.
-  const called = head === "-" || head === "act" || (head ?? "").startsWith("lar:///");
-  if (head === undefined || (head.startsWith("-") && !called) || asksHelp(argv)) return "local";
+  // A CALL BY ADDRESS OR BY SIGIL answers in the vessel (comms-ux-enacts landing 8): `lares lar:///…` and `lares -` forward.
+  const called = head === "-" || (head ?? "").startsWith("lar:///");
+  if (head === undefined || (head.startsWith("-") && !called)) return "local";
   // A SHIM VERB CARRIES THE SHIM'S OWN ARGV (`rebuild --at <rev>`, `up --workspace <name>=<dir>`, compose's args): the CLI's
   // token rule never reads it, so its dashes forward whole instead of refusing here.
   let args: ParsedArgs;
@@ -220,11 +210,14 @@ const PATH_OPTIONS: Readonly<Record<string, readonly string[]>> = {
   flow:    ["sensorium-root"],
 };
 /**
- * THE CALL PARAMS THAT NAME PATHS (landing 9), per call head: `lares act lar:///carriage.bundle.repacks source=<bundle> out=<file>`
- * and `lares act lar:///carriage.bag.loads source-uri=<dir>` hand the terminal's door host files, so each such `name=value` token
+ * THE CALL PARAMS THAT NAME PATHS, per call head: `lares lar:///carriage.bundle.repacks source=<bundle> out=<file>` and
+ * `lares lar:///carriage.bag.loads source-uri=<dir>` hand the terminal's door host files, so each such `name=value` token
  * translates as a path option does. A bag, a title or an address never moves.
  */
-const PATH_PARAMS: Readonly<Record<string, readonly string[]>> = { act: ["source", "out", "source-uri"] };
+const PATH_PARAMS: Readonly<Record<string, readonly string[]>> = {
+  "lar:///carriage.bundle.repacks": ["source", "out"],
+  "lar:///carriage.bag.loads": ["source-uri"],
+};
 
 /** A URL's scheme (`https:`, `lar:`): a value that carries one names no host path. */
 const URL_SCHEME = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//;

@@ -61,7 +61,7 @@ lares() { LARES_COMPOSE_FILE="${OVERLAY:-$FILE}" "$ROOT/tools/lares-container.sh
 found_staged() {
   compose --profile offline run --rm -T -v "$ROOT/tools:/app/tools:ro" \
     -e NODE_OPTIONS=--import=file:///app/tools/test-ward-route.mjs \
-    offline vessel found --skip-build --root /lar --genesis /app/genesis "$@"
+    offline vessel found skip-build=true root=/lar genesis=/app/genesis "$@"
 }
 
 drop_scratch() {
@@ -139,7 +139,7 @@ floor=$(boot_log)
 # A locked list may disclose public floor indices. Founding needs the key and
 # refuses before asking a face route, so it supplies the sovereign control.
 refused_rc=0
-refused=$(lares persona new 1 name=locked-probe --json 2>&1) || refused_rc=$?
+refused=$(lares persona new 1 name=locked-probe json=true 2>&1) || refused_rc=$?
 result 'leg 1: the boot rests at the floor holding no key'      contains "$floor" 'stands holding no vessel key'
 result 'leg 1: the floor composes no Lararium'                  not_contains "$floor" 'live — wiki:'
 result 'control: a sovereign verb at the floor names the unlock' refusal_names "$refused_rc" "$refused" 'lares vault unlock'
@@ -147,7 +147,7 @@ result 'control: a sovereign verb at the floor names the unlock' refusal_names "
 before=$(started_at)
 opened=$(unlock_staged 2>&1 || :)
 result 'leg 1: the unlock opens the key onto a hearth'          contains "$opened" '"standing":"hearth"'
-personas=$(lares persona list --json)
+personas=$(lares persona list json=true)
 log=$(boot_log)
 result 'leg 1: the unlock opens face zero'                      contains "$personas" '"handleIndex":0'
 result 'leg 1: the unlocked boot stands as a Lararium'          contains "$log" 'live — wiki:'
@@ -161,14 +161,14 @@ sed -e 's#ha.ka.ba/lares/docs/federation#ha.ka.ba/lares/docs/harbor-walk-probe#g
   "$ROOT/bags/lares/ha.ka.ba/lares/docs/federation.mem" > "$SCRATCH_WORKSPACE/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem"
 lares meme normalize /workspace/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem >/dev/null
 # Keep the settle answer visible: a record can land with no granted mirror.
-lares ingest source=/workspace/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem to=lar:///ha.ka.ba/bags/crossroads apply=true --yes
+lares ingest source=/workspace/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem to=lar:///ha.ka.ba/bags/crossroads apply=true yes=true
 projected="$SCRATCH_WORKSPACE/bags/crossroads/ha.ka.ba/lares/docs/harbor-walk-probe.mem"
 tries=0
 while [ ! -f "$projected" ] && [ "$tries" -lt 30 ]; do sleep 1; tries=$((tries + 1)); done   # the bound only bounds the wait
 result 'leg 1: a sourced canon bag projects back under /workspace/bags' test -f "$projected"
 result 'leg 1: the house writes no private plane under /workspace' test -z "$(find "$SCRATCH_WORKSPACE" -mindepth 1 \( -path "$SCRATCH_WORKSPACE/bags" -o -path "$SCRATCH_WORKSPACE/wikis" \) -prune -o -print -quit)$(find "$SCRATCH_WORKSPACE/bags" "$SCRATCH_WORKSPACE/wikis" -maxdepth 1 \( -name daemon -o -name kahua \) -print -quit)"
 # The daemon recipe explicitly includes the public crossroads library.
-got=$(lares get title=lar:///ha.ka.ba/lares/docs/harbor-walk-probe aperture=arc --json 2>&1 || :)
+got=$(lares get title=lar:///ha.ka.ba/lares/docs/harbor-walk-probe aperture=arc json=true 2>&1 || :)
 result "leg 1: the wiki's recipe resolves the carrier"          contains "$got" '"ok":true'
 drop_scratch
 
@@ -197,10 +197,10 @@ result 'leg 2: the lifted boot stands as a Lararium'            contains "$log" 
 # through the daemon wiki lands in the working layer, never in the daemon's canon bag.
 result 'leg 2: the working layer attaches after the lift'       contains "$log" 'working layer attached'
 result 'leg 2: no working-layer attach refusal'              not_contains "$log" 'WorkingLayerAttachRefusal'
-anchor=$(lares get meme=true --json 2>&1 || :)
+anchor=$(lares get meme=true json=true 2>&1 || :)
 result 'leg 2: the daemon wiki writes into its working layer'   contains "$anchor" 'wikis/daemon/working'
 before=$(started_at)
-lares persona list --json >/dev/null
+lares persona list json=true >/dev/null
 result 'control: a reading verb restarts nothing'               test "$before" = "$(started_at)"
 drop_scratch
 

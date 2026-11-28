@@ -93,7 +93,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     pair = await openStagedJoinee({ tag: "bag", beforeB: async (a) => {
       const f = join(a.root, "npc.mem");
       writeFileSync(f, meme(["a"]));
-      const put = await a.cli(["put", `title=${URI}`, ...WIKI, `file=${f}`, "--json"]);
+      const put = await a.cli(["put", `title=${URI}`, ...WIKI, `file=${f}`, "json=true"]);
       if (put.json?.["ok"] !== true) throw new Error(`A: put refused\n${said(put)}`);
     } });
     A = pair.A; B = pair.B; rootB = pair.rootB; admitted = pair.admitted; joinGate = pair.joinGate ?? "";
@@ -109,7 +109,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
   });
 
   test("⑤ on A: `get` hands the author's `bag` line back byte-whole", async () => {
-    const r = await A!.cli(["get", `title=${URI}`, ...WIKI, "mu=assert", "--json"]);
+    const r = await A!.cli(["get", `title=${URI}`, ...WIKI, "mu=assert", "json=true"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     const text = String(((r.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>)["text"]);
     expect(text).toMatch(BAG_LINE);
@@ -117,7 +117,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
   });
 
   test("⑤ on A: the recipe seat lands the meme in the wiki's WORKING layer — the live write layer its island mounts", async () => {
-    const r = await A!.cli(["wiki", "which", URI, "--no-json"]);
+    const r = await A!.cli(["wiki", "which", URI, "json=false"]);
     expect(r.code, said(r)).toBe(0);
     draftA = /primary:\s+(\S+)/.exec(r.stdout)?.[1] ?? "";
     expect(draftA).toBe(WORKING_LARES);
@@ -149,10 +149,10 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     const anchorUri = "lar:///t.witness.npc/anchor";
     const f = join(A!.root, "anchor.mem");
     writeFileSync(f, meme(["a"]).replaceAll(URI, anchorUri).replace(`uri-path = "${PATH}"`, `uri-path = "t.witness.npc/anchor"`));
-    const put = await A!.cli(["put", `title=${anchorUri}`, "recipe=default", `file=${f}`, "--json"]);
+    const put = await A!.cli(["put", `title=${anchorUri}`, "recipe=default", `file=${f}`, "json=true"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
     await new Promise((r) => setTimeout(r, 1500));
-    const which = await A!.cli(["wiki", "which", anchorUri, "--no-json"]);
+    const which = await A!.cli(["wiki", "which", anchorUri, "json=false"]);
     console.error(`meme-two-vessel-bag MEASURE A: anchor put → wiki which ${anchorUri}\n${which.stdout.trim()}`);
   });
 
@@ -167,13 +167,13 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     // (genesis-doc.ts `systemRecipe`); `wiki which` reads the working doc the ONE resolver names; the
     // daemon's `bag stats` names what each vessel holds resident.
     for (const [tag, v] of [["A", A!], ["B", B!]] as const) {
-      const stats = await v.cli(["wiki", "status", "--no-json"]);
-      const which = await v.cli(["wiki", "which", URI, "--no-json"]);
+      const stats = await v.cli(["wiki", "status", "json=false"]);
+      const which = await v.cli(["wiki", "which", URI, "json=false"]);
       console.error(`meme-two-vessel-bag MEASURE ${tag}: bag stats\n${stats.stdout.trim()}\nwiki which ${URI}\n${which.stdout.trim()}`);
     }
     // CONTROL for the projection witness below: nothing sits on B's disk before the promotion.
     expect(existsSync(join(B!.root, "projections/bags/lares", `${PATH}.mem`))).toBe(false);
-    const refused = await A!.cli(["put", `title=${URI}`, ...BAG, `file=${join(A!.root, "npc.mem")}`, "--json"]);
+    const refused = await A!.cli(["put", `title=${URI}`, ...BAG, `file=${join(A!.root, "npc.mem")}`, "json=true"]);
     console.error(`meme-two-vessel-bag MEASURE A: put bag=lares →${said(refused).trim().slice(0, 300)}`);
     expect(refused.json?.["ok"]).toBe(false);
   });
@@ -181,27 +181,27 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
   test("⑦ MEASURE: `act MOVE` out of the working layer — the promotion door, laid flat", async () => {
     // Dry-run: the MOVE's verdict is measured, never taken here — ⑦ below promotes through `act LOAD`
     // so the working copy still shadows the recipe read on A.
-    const mv = await A!.cli(["act", "lar:///carriage.bag.moves", `title=${URI}`, `from=${draftA}`, `to=${LARES_BAG}`, "mu=dry", "--json"]);
-    console.error(`meme-two-vessel-bag MEASURE A: act lar:///carriage.bag.moves mu=dry ${draftA} → lares → ${said(mv).trim().slice(0, 400)}`);
+    const mv = await A!.cli(["lar:///carriage.bag.moves", `title=${URI}`, `from=${draftA}`, `to=${LARES_BAG}`, "mu=dry", "json=true"]);
+    console.error(`meme-two-vessel-bag MEASURE A: lar:///carriage.bag.moves mu=dry ${draftA} → lares → ${said(mv).trim().slice(0, 400)}`);
   });
 
   test("⑦ A promotes through the one door: `act LOAD` the carrier into lar:///ha.ka.ba/bags/lares", async () => {
-    const ld = await A!.cli(["act", "lar:///carriage.bag.loads", `source-uri=${join(A!.root, "npc.mem")}`, `to=${WORKING_LARES}`, "yes=true", "--json"]);
+    const ld = await A!.cli(["lar:///carriage.bag.loads", `source-uri=${join(A!.root, "npc.mem")}`, `to=${WORKING_LARES}`, "yes=true", "json=true"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
     await promoteLoadedTitles(A!, ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
-    const which = await A!.cli(["wiki", "which", URI, "--no-json"]);
+    const which = await A!.cli(["wiki", "which", URI, "json=false"]);
     expect(which.stdout).toContain(`  ${LARES_BAG}`);
     // A's own working layer still shadows the recipe read; the bag read names the promoted copy.
-    const r = await A!.cli(["get", `title=${URI}`, ...BAG, "mu=assert", "--json"]);
+    const r = await A!.cli(["get", `title=${URI}`, ...BAG, "mu=assert", "json=true"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     expect(String(((r.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>)["text"])).toMatch(BAG_LINE);
   });
 
   test("★ ⑦ MEASURE on B: A's live lares record stays in A's own book ★", async () => {
     // W24/W27 owns the same-face BOOK crossing. B's lares book does not carry A's live system record.
-    const bag = await B!.cli(["get", `title=${URI}`, ...BAG, "mu=assert", "--json"]);
-    const wiki = await B!.cli(["get", `title=${URI}`, ...WIKI, "mu=assert", "--json"]);
-    const which = await B!.cli(["wiki", "which", URI, "--no-json"]);
+    const bag = await B!.cli(["get", `title=${URI}`, ...BAG, "mu=assert", "json=true"]);
+    const wiki = await B!.cli(["get", `title=${URI}`, ...WIKI, "mu=assert", "json=true"]);
+    const which = await B!.cli(["wiki", "which", URI, "json=false"]);
     console.error(`meme-two-vessel-bag MEASURE B: bag → ${said(bag).trim().slice(0, 240)}; wiki → ${said(wiki).trim().slice(0, 240)}`);
     expect(String((((bag.json?.["data"] as Record<string, unknown> | undefined)?.["meme"]) as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("<<~ ahu slot=`#/a`>>");
     expect(String((((wiki.json?.["data"] as Record<string, unknown> | undefined)?.["meme"]) as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("<<~ ahu slot=`#/a`>>");
@@ -212,13 +212,13 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
   test("⑧ A's lares record stays whole while B, holding no board source yet, draws kahu-reach on lares", async () => {
     const f = join(B!.root, "npc-b-gate.mem");
     writeFileSync(f, meme(["a", "b"]));
-    const ld = await B!.cli(["act", "lar:///carriage.bag.loads", `source-uri=${f}`, `to=${WORKING_LARES}`, "yes=true", "--json"]);
+    const ld = await B!.cli(["lar:///carriage.bag.loads", `source-uri=${f}`, `to=${WORKING_LARES}`, "yes=true", "json=true"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
     const titles = ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []);
     const root = titles.find((t) => !titles.some((c) => c !== t && (t.startsWith(`${c}#`) || t.startsWith(`${c}/`)))) ?? titles[0]!;
-    const mv = await B!.cli(["act", "lar:///carriage.bag.moves", `title=${root}`, `from=${WORKING_LARES}`, `to=${LARES_BAG}`, "yes=true", "--json"]);
+    const mv = await B!.cli(["lar:///carriage.bag.moves", `title=${root}`, `from=${WORKING_LARES}`, `to=${LARES_BAG}`, "yes=true", "json=true"]);
     expect(JSON.stringify(mv.json), "a missing source refuses closed, by name").toContain("kahu-reach");
-    const a = await A!.cli(["get", `title=${URI}`, ...BAG, "mu=assert", "--json"]);
+    const a = await A!.cli(["get", `title=${URI}`, ...BAG, "mu=assert", "json=true"]);
     const aText = String((((a.json?.["data"] as Record<string, unknown> | undefined)?.["meme"]) as Record<string, unknown> | undefined)?.["text"] ?? "");
     expect(aText).toContain("<<~ ahu slot=`#/a`>>");
     expect(aText).not.toContain("<<~ ahu slot=`#/b`>>");
@@ -232,15 +232,15 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     // W24/W27 owns the same-face BOOK crossing. A and B each promote within their own live system document.
     const f = join(B!.root, "npc-b.mem");
     writeFileSync(f, meme(["a", "b"]));
-    const ld = await B!.cli(["act", "lar:///carriage.bag.loads", `source-uri=${f}`, `to=${WORKING_LARES}`, "yes=true", "--json"]);
+    const ld = await B!.cli(["lar:///carriage.bag.loads", `source-uri=${f}`, `to=${WORKING_LARES}`, "yes=true", "json=true"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
     await promoteLoadedTitles(B!, ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
-    const local = await B!.cli(["get", `title=${URI}`, ...BAG, "mu=assert", "--json"]);
+    const local = await B!.cli(["get", `title=${URI}`, ...BAG, "mu=assert", "json=true"]);
     const localText = String((((local.json?.["data"] as Record<string, unknown> | undefined)?.["meme"]) as Record<string, unknown> | undefined)?.["text"] ?? "");
     expect(localText).toContain("<<~ ahu slot=`#/b`>>");
     expect(localText).toMatch(BAG_LINE);
     expect(localText).not.toContain("$origin-bag");
-    const a = await A!.cli(["get", `title=${URI}`, ...BAG, "mu=assert", "--json"]);
+    const a = await A!.cli(["get", `title=${URI}`, ...BAG, "mu=assert", "json=true"]);
     const aText = String((((a.json?.["data"] as Record<string, unknown> | undefined)?.["meme"]) as Record<string, unknown> | undefined)?.["text"] ?? "");
     expect(aText).toContain("<<~ ahu slot=`#/a`>>");
     expect(aText).not.toContain("<<~ ahu slot=`#/b`>>");
@@ -278,7 +278,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     const deadline = Date.now() + 90_000;
     let taken = false;
     while (Date.now() < deadline) {
-      const put = await B!.cli(["put", `title=${URI}`, ...WIKI, `file=${f}`, "--json"]);
+      const put = await B!.cli(["put", `title=${URI}`, ...WIKI, `file=${f}`, "json=true"]);
       console.error(`meme-two-vessel-bag MEASURE B: put recipe=lares (after the grant) → ${said(put).trim().slice(0, 200)}`);
       if (/grant record taken .* SEATED/.test(B!.bootLog())) { taken = true; break; }
       await new Promise((res) => setTimeout(res, 3000));

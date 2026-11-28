@@ -9,7 +9,7 @@
  *   pack.json                  two foreign-titled tiddlers
  *
  *   ENTER   server: the wiki folder's `tiddlers/` (`$tw.loadTiddlersFromPath` reads them at boot)
- *           island: `lares ingest source=<dir> to=lar:///ha.ka.ba/bags/lares apply=true --yes`, from a
+ *           island: `lares ingest source=<dir> to=lar:///ha.ka.ba/bags/lares apply=true yes=true`, from a
  *                   holding directory BESIDE the bag's mirror (`<root>/bags/parity-in/…`)
  *   LEAVE   server: `tiddlywiki --savewikifolder` — the same `generateTiddlerFileInfo` +
  *                   `saveTiddlerToFileSync` law the filesystem adaptor writes through, under a
@@ -130,7 +130,7 @@ describe.skipIf(gaps.length > 0)("★ NON-MEME PARITY — one file, two doors, o
     islandDir = join(lar.root, "projections/bags/lares", REL_DIR);
     islandIn = join(lar.root, "projections/bags/parity-in", REL_DIR);
     laySource(islandIn);
-    const r = await lar.cli(["ingest", `source=${islandIn}`, `to=${BAG_URI}`, "apply=true", "--yes", "--json"]);
+    const r = await lar.cli(["ingest", `source=${islandIn}`, `to=${BAG_URI}`, "apply=true", "yes=true", "json=true"]);
     if (r.json?.["ok"] !== true) throw new Error(`ingest failed: ${said(r)}`);
     // Settle: the projector lays the sidecar under the mirror in TW5's sorted field order once the record lands.
     const deadline = Date.now() + 90_000;
@@ -141,7 +141,7 @@ describe.skipIf(gaps.length > 0)("★ NON-MEME PARITY — one file, two doors, o
       await sleep(500);
     }
     await sleep(3_000);
-    const repack = await lar.cli(["act", "lar:///carriage.bundle.repacks", `source=${join(islandIn, "pack.json")}`, `from=${BAG_URI}`, `out=${join(lar.root, "repack.json")}`, "--json"]);
+    const repack = await lar.cli(["lar:///carriage.bundle.repacks", `source=${join(islandIn, "pack.json")}`, `from=${BAG_URI}`, `out=${join(lar.root, "repack.json")}`, "json=true"]);
     if (repack.json?.["ok"] === true) {
       islandRepack = { count: Number((repack.json["data"] as Record<string, unknown>)["count"]), text: readFileSync(join(lar.root, "repack.json"), "utf8") };
     } else {

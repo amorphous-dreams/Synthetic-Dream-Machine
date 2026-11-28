@@ -31,7 +31,7 @@ try {
     else {
       writeSync(log, `keep hook: session end${reason ? ` (${reason})` : ""}; lares rite keep if-due=true\n`);
       // Its own session, its output on the log: the keep outlives this hook and the terminal that closes behind it.
-      spawn(process.execPath, [laresBin, "rite", "keep", "if-due=true", "--no-json"], { detached: true, stdio: ["ignore", log, log] }).unref();
+      spawn(process.execPath, [laresBin, "rite", "keep", "if-due=true", "json=false"], { detached: true, stdio: ["ignore", log, log] }).unref();
     }
   } finally { closeSync(log); }
 } catch { /* No log, no keep: `lares rite keep` keeps by hand, and the wake names what the lei holds. */ }

@@ -93,7 +93,7 @@ describe("sense search trial receipt membership", () => {
       hit("cid-receipted", "source-current", "rev-current"),
     ];
 
-    expect(await run("search", "query", "trial-root=/tmp/trial-op", "model-home=/tmp/model-home", "k=1", "--json"), seam.errors.join("\n")).toBe(0);
+    expect(await run("search", "query", "trial-root=/tmp/trial-op", "model-home=/tmp/model-home", "k=1", "json=true"), seam.errors.join("\n")).toBe(0);
 
     const result = readOutput().data.result;
     expect(seam.searchArgs[0]?.k).toBe(32);
@@ -109,7 +109,7 @@ describe("sense search trial receipt membership", () => {
   ])("the caller's %s filter alone rejects an otherwise receipted row", async (_which, filter) => {
     seam.candidates = [hit("cid-receipted", "source-current", "rev-current")];
 
-    expect(await run("search", "query", "trial-root=/tmp/trial-op", "model-home=/tmp/model-home", ...filter, "--json"), seam.errors.join("\n")).toBe(0);
+    expect(await run("search", "query", "trial-root=/tmp/trial-op", "model-home=/tmp/model-home", ...filter, "json=true"), seam.errors.join("\n")).toBe(0);
 
     const result = readOutput().data.result;
     expect(result.results).toEqual([]);
@@ -119,7 +119,7 @@ describe("sense search trial receipt membership", () => {
   test("a malformed cap response fails closed instead of returning unfiltered data", async () => {
     seam.searchResult = { total: 1 };
 
-    expect(await run("search", "query", "trial-root=/tmp/trial-op", "model-home=/tmp/model-home", "--json")).toBe(4);
+    expect(await run("search", "query", "trial-root=/tmp/trial-op", "model-home=/tmp/model-home", "json=true")).toBe(4);
     expect(readOutput().ok).toBe(false);
     expect(readOutput().error.message).toMatch(/no hit array/);
   });

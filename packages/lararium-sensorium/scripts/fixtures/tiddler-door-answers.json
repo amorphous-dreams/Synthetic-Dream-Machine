@@ -1,9 +1,9 @@
 {
-  "_doc": "THE TIDDLER DOOR'S VERB TABLE — one row per verb, read by BOTH skins' tests (`lares-cli/tests/tiddler-door.test.ts` and `scripts/test_tiddler_tools.py`). `cli` spells the `lares` command line (parsed), `call` (on a call-shape row) the `{verb, params}` the CLI's call door sends the vessel's `call` verb (the VM binds them to the same wire), `mcp` the MCP tool's kwargs, `wire` the one `{verb, args}` both must put on the daemon's socket, and `output` a daemon answer both must hand back verbatim (the CLI as `--json` `data`, the MCP seat as the tool's result). A skin that renames an arg, drops one, or reshapes the answer reds its own half; a row missing a skin reds both (wiki-surface-scout #/a-lean, red `verb-table-parity`).",
+  "_doc": "THE TIDDLER DOOR'S VERB TABLE — one row per verb, read by BOTH skins' tests (`lares-cli/tests/tiddler-door.test.ts` and `scripts/test_tiddler_tools.py`). `cli` spells the `lares` command line (parsed), `call` (on a call-shape row) the `{verb, params}` the CLI's call door sends the vessel's `call` verb (the VM binds them to the same wire), `mcp` the MCP tool's kwargs, `wire` the one `{verb, args}` both must put on the daemon's socket, and `output` a daemon answer both must hand back verbatim (the CLI as `json=true` `data`, the MCP seat as the tool's result). A skin that renames an arg, drops one, or reshapes the answer reds its own half; a row missing a skin reds both (wiki-surface-scout #/a-lean, red `verb-table-parity`).",
   "rows": [
     {
       "tool": "act",
-      "cli": { "command": "act", "positional": ["lar:///render.sidebar.lays", "recipe=kahu", "expected=fixed-fluid", "resulting=fluid-fixed"], "options": {}, "flags": {} },
+      "cli": { "command": "lar:///render.sidebar.lays", "positional": ["recipe=kahu", "expected=fixed-fluid", "resulting=fluid-fixed"], "options": {}, "flags": {} },
       "call": { "verb": "lar:///render.sidebar.lays", "params": { "recipe": "kahu", "expected": "fixed-fluid", "resulting": "fluid-fixed" } },
       "mcp": { "address": "lar:///render.sidebar.lays", "args": { "recipe": "kahu", "expected": "fixed-fluid", "resulting": "fluid-fixed" } },
       "wire": { "verb": "wiki-action", "args": { "recipe": "kahu", "name": "sidebar-layout", "expected": "fixed-fluid", "resulting": "fluid-fixed" } },

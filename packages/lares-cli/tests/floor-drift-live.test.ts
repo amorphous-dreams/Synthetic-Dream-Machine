@@ -9,7 +9,7 @@
  *   · a standing vessel's reading passes through whole;
  *   · a vessel whose build carries no drift reading answers no `floorDrift` field: null, named as such, never 0;
  *   · a vessel that reads the drift null hands its own reason on; a refused or throwing read names its fault;
- *   · `vessel lay --lag --json` with the default reader carries the door's reading beside `lag`, lag untouched.
+ *   · `vessel lay --lag json=true` with the default reader carries the door's reading beside `lag`, lag untouched.
  *
  * The house root is a scratch LAR_ROOT per test (LAR_BAGS set per test, never globally).
  * Meme: lar:///ha.ka.ba/lararium/node/genesis-island#/the-floor-rides-releases
@@ -70,7 +70,7 @@ describe("the lay's live floor-drift door", () => {
     expect(await liveFloorDrift()).toEqual({ drift: null, why: "the floor read refused: this place holds no bootstrap" });
   });
 
-  it("RED: `vessel lay --lag --json` with the default reader carries the door's reading beside lag; a throwing door names its fault", async () => {
+  it("RED: `vessel lay --lag json=true` with the default reader carries the door's reading beside lag; a throwing door names its fault", async () => {
     const { cmdLay } = await import("../src/commands/lay.js");
     const bags = join(root, "corpus", "bags");
     mkdirSync(join(bags, "notes", "ha.ka.ba", "notes"), { recursive: true });

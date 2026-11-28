@@ -29,7 +29,7 @@ export * from "../../lararium-mesh/tests/charter-fixture.js";
 
 /**
  * What one rite answered: its exit code, every chunk it wrote to stdout in order, and the first JSON payload
- * among them (empty where it printed none), which reads as the verb's own answer under `--json`.
+ * among them (empty where it printed none), which reads as the verb's own answer under `json=true`.
  */
 export interface RiteResult {
   readonly code:    number;

@@ -63,7 +63,7 @@
     "put": "put",
     "delete": "delete",
     "rename": "rename",
-    "act": "act"
+    "act": "lar:///<address>"
   },
   "mirror_hosts": [
     "delete",
@@ -72,7 +72,7 @@
     "rename"
   ],
   "call_heads": [
-    "act"
+    "lar:///<address>"
   ],
   "not_yet_mirrored": [
     "intent",

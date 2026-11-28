@@ -102,12 +102,13 @@ for f in CMDS.glob("*.ts"):
 subverbs = {s.replace("_", "-") for s in subverbs}
 
 # THE CALL SHAPE (comms-ux-enacts landings 8 and 11): the seat's tools are call words (`get`, `put`, `delete`, `rename`) and
-# the one `act`, each sending `{verb, params}` to the vessel's `call`; the CLI's call door reads the same heads, `act` among them
-# though no command-table row carries it (`lares act lar:///<address> …`). So a tool the top-level listing leaves out still
-# answers where the built CLI itself answers `<tool> --help` (a help read, never an act), and every affordance `act` reaches by
-# address the terminal reaches by the same address.
+# the one `act`, each sending `{verb, params}` to the vessel's `call`. The CLI's call door reads the call words, and an address
+# heads its own line (`lares lar:///<address> …`), so the seat's `act` reaches the terminal by the address it names. A tool the
+# top-level listing leaves out still answers where the built CLI answers `lares help <head>` (a help read, never an act).
+CLI_HEAD = {"act": "lar:///engine.law.indexes"}
+
 def call_head(tool: str) -> bool:
-    probe = subprocess.run(["node", str(CLI), tool, "--help"], capture_output=True, text=True)
+    probe = subprocess.run(["node", str(CLI), "help", CLI_HEAD.get(tool, tool)], capture_output=True, text=True)
     return probe.returncode == 0 and bool(probe.stdout.strip())
 
 def has_door(tool: str) -> str | None:

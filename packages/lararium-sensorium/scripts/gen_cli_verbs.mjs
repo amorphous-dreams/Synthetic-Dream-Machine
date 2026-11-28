@@ -8,7 +8,7 @@
  *
  * The isomorphism (operator ruling): `lares`-CLI ↔ `lares`-MCP across the whole call shape. The seat holds the record
  * tools (`get`, `put`, `delete`, `rename`) and the one `act`; each sends `{verb, params}` to the vessel's `call`, and the
- * CLI's call door reads the same heads (`lares get title=…`, `lares act lar:///<address> …`). `cli_forms` maps each tool
+ * CLI's call door reads the same heads (`lares get title=…`, `lares lar:///<address> …`). `cli_forms` maps each tool
  * to its CLI spelling. Every other affordance reaches both surfaces by its `lar:` address through `act`, so no other
  * command needs a tool of its own.
  *
@@ -29,14 +29,14 @@ const LENS_DIST = resolve(HERE, "../../lares-cli/dist/src/commands/sense-analyze
 const OUT = join(HERE, "fixtures", "cli-verbs.json");
 
 // THE SEAT'S TOOLS → their CLI spelling (comms-ux-enacts landing 11). The record tools ride their own top-level words
-// (`lares get|put|delete|rename name=value…`); `act` rides the call door's `act` head (`lares act lar:///<address> …`), which
-// the CLI reads outside its command table. One table welds both skins' call and answer: fixtures/tiddler-door-answers.json.
+// (`lares get|put|delete|rename name=value…`); `act` rides the call door by the address itself (`lares lar:///<address> …`), a
+// head the CLI reads outside its command table. One table welds both skins' call and answer: fixtures/tiddler-door-answers.json.
 const CLI_FORMS = {
   get:    "get",
   put:    "put",
   delete: "delete",
   rename: "rename",
-  act:    "act",
+  act:    "lar:///<address>",
 };
 // A VERB DECLARES ITS SEAT. These CLI sub-verbs run LOCAL over a file with no daemon in reach (the
 // offline re-stamp of a stale block check must keep working with no socket), so they hold NO seat by
@@ -67,7 +67,7 @@ async function loadCommandNames() {
 function buildFixture(verbs, { lenses, aliases, reads }) {
   const mirrored = Object.keys(CLI_FORMS); // the seat's tool names (the anchor)
   // A head the command table carries hosts a mirror (the coverage partition); one it carries none of is a call head the
-  // CLI's call door reads on its own (`act`).
+  // CLI's call door reads on its own (`lar:///<address>`).
   const mirrorHosts = HEADS.filter((h) => verbs.includes(h)).sort();
   const callHeads = HEADS.filter((h) => !verbs.includes(h)).sort();
   const notYet = verbs.filter((v) => !mirrorHosts.includes(v));

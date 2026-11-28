@@ -605,7 +605,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
         const strands = shoreFlushLines(shore).filter((_, i) => { const part = shore.islands[i]!; return !part.answered || part.unwrittenCount > 0; });
         const stuck = shoreStuckFaces(shore, before ?? null);
         const where = stuck.length > 0 ? `on ${stuck.map((f) => `h${f}`).join(", ")}` : "on an island that did not answer";
-        return refuse("shore-unwritten", `the shore's flush left records unwritten ${where} (${strands.join(" · ")}); they rest in the store, and their mirrors stay behind until a flush writes them (\`lares shore flush\`): wear again with --yes to turn anyway`, { shore });
+        return refuse("shore-unwritten", `the shore's flush left records unwritten ${where} (${strands.join(" · ")}); they rest in the store, and their mirrors stay behind until a flush writes them (\`lares shore flush\`): wear again with yes=true to turn anyway`, { shore });
       }
     }
     const priorMount = daemonMountState();

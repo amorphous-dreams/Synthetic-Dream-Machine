@@ -1,19 +1,19 @@
 /**
  * fewer-front-doors — the UX collapse's second fold (lar:///ha.ka.ba/kahua/memory/road/leap-ux-collapse).
  *
- * Six top-level verbs left the operator's front door and ride the door that already owns their island (a seventh, `watch`,
- * folded into `ingest --watch` and stands again since landing 16 as a call verb, a filter subscription):
+ * The operator's front door holds no row for these spellings; the door that owns each island answers instead (`watch` stands as
+ * a call verb, a filter subscription):
  *
- *   receipt · cancel   -> vessel request <id> [--cancel]
- *   draft              -> act lar:///carriage.draft.pulls uri=<uri>
+ *   receipt · cancel   -> vessel request <id> [cancel=true]
+ *   draft              -> lares lar:///carriage.draft.pulls uri=<uri>
  *   raise sign         -> persona raise-sign <challenge-json>
  *   wing-of · test-quine -> out of the front door (tools/wing-of.mjs; `pnpm --filter @lararium/node test:quine`)
  *
- * Alpha line: the old spellings retire outright, no bridge. Each fold holds its old seat: `--cancel` stays an explicit
- * flag, `persona raise-sign` signs under the persona door's own `signs` seat.
+ * An old spelling meets the plain unknown-command refusal, which names `lares help`. Each seat holds: `cancel=true` stays an
+ * explicit param, `persona raise-sign` signs under the persona door's own `signs` seat.
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
-import { dispatch, COMMANDS, MOVED, doorTakes } from "../src/bin/lares.js";
+import { dispatch, COMMANDS, doorTakes } from "../src/bin/lares.js";
 
 async function run(argv: string[]): Promise<{ code: number; out: string; err: string }> {
   const out: string[] = []; const err: string[] = [];
@@ -24,35 +24,17 @@ async function run(argv: string[]): Promise<{ code: number; out: string; err: st
 }
 afterEach(() => vi.restoreAllMocks());
 
-/** Each folded spelling and the door its refusal points at (an old name answers with its new seat, never a bare unknown). */
-const FOLDED: ReadonlyArray<readonly [argv: readonly string[], cure: string]> = [
-  [["receipt"], "lares vessel request <id>"],
-  [["cancel"], "lares vessel request <id> cancel=true"],
-  [["draft"], "lares act lar:///carriage.draft.pulls uri=<uri>"],
-  [["raise", "sign"], "lares persona raise-sign <challenge-json-text>"],
-  [["wing-of"], "node tools/wing-of.mjs"],
-  [["test-quine"], "pnpm --filter @lararium/node test:quine"],
-];
+/** The spellings outside the front door: each meets the plain unknown-command refusal. */
+const FOLDED: readonly string[] = ["receipt", "cancel", "draft", "raise", "wing-of", "test-quine", "act", "promote"];
 
 describe("fewer front doors", () => {
-  test("★ the folded spellings leave the table and refuse by name, pointing at their new seat ★", async () => {
+  test("★ a spelling outside the front door meets the plain unknown-command refusal, naming `lares help` ★", async () => {
     const names = COMMANDS.map((c) => c.name);
-    for (const [argv, cure] of FOLDED) {
-      const old = argv[0]!;
+    for (const old of FOLDED) {
       expect(names, old).not.toContain(old);
-      const r = await run([...argv]);
+      const r = await run([old]);
       expect(r.code, old).toBe(2);
-      expect(r.err, old).not.toContain("unknown command");
-      expect(r.err, old).toContain(`\`${cure}\``);
-    }
-  });
-
-  test("★ every row of the one MOVED table answers at its cure, the door-local folds (`bag stats`, `wiki list`) among them ★", async () => {
-    expect(MOVED.map((m) => m.argv.join(" "))).toEqual(expect.arrayContaining(["bag stats", "bag list", "wiki list"]));
-    for (const { argv, to } of MOVED) {
-      const r = await run([...argv]);
-      expect(r.code, argv.join(" ")).toBe(2);
-      expect(r.err, argv.join(" ")).toContain(`\`${to}\``);
+      expect(r.err, old).toContain(`lares: unknown command "${old}".  Run \`lares help\` for the list.`);
     }
   });
 
@@ -78,7 +60,7 @@ describe("fewer front doors", () => {
     expect(row("ingest").signs).not.toBe(true);
   });
 
-  test("each new spelling is accepted by the door's row, and `--cancel` rides vessel alone", () => {
+  test("each new spelling is accepted by the door's row, and `cancel=` rides vessel alone", () => {
     const row = (n: string) => COMMANDS.find((c) => c.name === n)!;
     expect(doorTakes("ingest")).toEqual(expect.arrayContaining(["watch", "debounce"]));
     expect(doorTakes("persona")).toContain("as");
@@ -87,16 +69,16 @@ describe("fewer front doors", () => {
   });
 
   test("vessel request names its usage and exits 2 with no id", async () => {
-    const r = await run(["vessel", "request", "--no-json"]);
+    const r = await run(["vessel", "request", "json=false"]);
     expect(r.code).toBe(2);
     expect(r.err).toContain("usage: lares vessel request <requestId>");
-    const c = await run(["vessel", "request", "cancel=true", "--no-json"]);
+    const c = await run(["vessel", "request", "cancel=true", "json=false"]);
     expect(c.code).toBe(2);
     expect(c.err).toContain("usage: lares vessel request <requestId> cancel=true");
   });
 
-  test("ingest --watch refuses the one-shot flags by name, and --debounce refuses without --watch", async () => {
-    const a = await run(["ingest", "watch=true", "--yes", "source=x", "to=lar:///ha.ka.ba/bags/x"]);
+  test("ingest watch=true refuses the one-shot params by name, and debounce= refuses without watch=true", async () => {
+    const a = await run(["ingest", "watch=true", "yes=true", "source=x", "to=lar:///ha.ka.ba/bags/x"]);
     expect(a.code).toBe(2);
     expect(a.err).toContain("yes= ride the one-shot ingest alone");
     const b = await run(["ingest", "debounce=100", "source=x", "to=lar:///ha.ka.ba/bags/x"]);
@@ -108,26 +90,27 @@ describe("fewer front doors", () => {
     expect(c.out).toContain("[watch=<true>] [debounce=<ms>]");
   });
 
-  test("act rides the call door: a flag beside it refuses by name, naming the param spelling", async () => {
-    const r = await run(["act", "--draft", "--no-json"]);
+  test("an address rides the call door: a dash flag beside it refuses `dash-flag-burned`, naming the address's help", async () => {
+    const r = await run(["lar:///carriage.draft.pulls", "--draft"]);
     expect(r.code).toBe(2);
-    expect(r.err).toContain("dash-flag-burned: --draft reads as draft=true (a call takes name=value params");
+    expect(r.err).toContain("dash-flag-burned: dash flags burned; params ride as name=value (lares help lar:///carriage.draft.pulls)");
   });
 
   test("persona raise-sign with no challenge refuses with its own menu", async () => {
-    const r = await run(["persona", "raise-sign", "--no-json"]);
+    const r = await run(["persona", "raise-sign", "json=false"]);
     expect(r.code).toBe(2);
     expect(r.err).toContain("usage: lares persona raise-sign <challenge-json-text>");
   });
 
   test("the folded spellings leave every help line, and the folded doors name their new motion", async () => {
     const h = await run(["help"]);
-    for (const [[old]] of FOLDED) expect(h.out, old).not.toMatch(new RegExp(`^\\s+(✍ )?${old}\\s`, "m"));
-    const vessel = await run(["vessel", "--help"]);
+    for (const old of FOLDED) expect(h.out, old).not.toMatch(new RegExp(`^\\s+(✍ )?${old}\\s`, "m"));
+    const vessel = await run(["help", "vessel"]);
     expect(vessel.out).toContain("request");
-    const ingest = await run(["ingest", "--help"]);
+    const ingest = await run(["help", "ingest"]);
     expect(ingest.out).toContain("watch=");
-    const act = await run(["act", "--help"]);
-    expect(act.out).toContain("lares act lar:///carriage.draft.pulls");
+    const draft = await run(["help", "lar:///carriage.draft.pulls"]);
+    expect(draft.code).toBe(0);
+    expect(draft.out).toContain("lar:///carriage.draft.pulls");
   });
 });

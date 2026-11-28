@@ -6,9 +6,9 @@
  *
  *   ACT KEYWORDS      name the act, EXACTLY ONE per line. Each house door word stands as a keyword whose value names its
  *                     sub-act or target: `get=<title>` · `put=<title>` · `delete=<title>` · `rename=<title> to=<title>` ·
- *                     `filter=<expr>` (a get by filter) · `act=lar:///t1.t2.t3` (any affordance by address) · `rite=kukulu` ·
- *                     `bag=show` · `spirit=om` · every door the command table holds. Two act keywords refuse, naming both
- *                     lines. None: the house reads (the bare door).
+ *                     `filter=<expr>` (a get by filter) · `rite=kukulu` · `bag=show` · `spirit=om` · every door the
+ *                     command table holds; an affordance by address rides its own line (`lares lar:///t1.t2.t3 …`).
+ *                     Two act keywords refuse, naming both lines. None: the house reads (the bare door).
  *   SHAPING KEYWORDS  shape the act: the set panel's own keywords (`mu` the lens, `aperture` the range, `stance`, `mode`,
  *                     `mood`, `note`), then `recipe` · `face` · `slot` · `by` · `base` · `file` · `append` · `replace` ·
  *                     `with`, and any param the act's carrier takes (`text`, `fields`, `to`, …), which the VM binds against
@@ -21,21 +21,17 @@
  * any other carry refuses `mu-cell-empty` until the door takes a carrier ([10 + 23]). `with=` carries a door's own positional
  * words through whole (`with='<id> <path>'`).
  *
- * THE FLAG ZOO BURNS INTO THE DIALS: a keyword line carries no `--flag`. `--dry-run` reads `mu=_0` · `--json` and `--quiet`
- * read `mu=!0` · `--meme` and `--skinny` read `aperture=measure` · `--all` and `--grain` read `aperture=arc`; any other flag
- * reads as its own keyword. Each answers a teaching refusal naming the keyword line to run.
+ * A keyword line carries no `--flag`: a dash refuses `dash-flag-burned`, and the dials (`mu`, `aperture`) shape the act.
  *
  * A LEAF: pure over the tokens and the door table; `bin/lares.ts` runs the line it reads.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/affordance
  */
 import { isMuFault, muWordsOf, readMu, readAperture, isApertureFault, reachesWhole } from "@lararium/tw5";
-import { BURNED_FLAGS, PARAM_TOKEN } from "./parse-args.js";
+import { PARAM_TOKEN } from "./parse-args.js";
 
-export { BURNED_FLAGS };
-
-/** The call door's act keywords, each to the param its value fills (`act` names the address itself). */
-export const CALL_KEYS: Readonly<Record<string, string | null>> = Object.freeze({ get: "title", put: "title", delete: "title", rename: "title", filter: "filter", act: null });
+/** The call door's act keywords, each to the param its value fills. */
+export const CALL_KEYS: Readonly<Record<string, string>> = Object.freeze({ get: "title", put: "title", delete: "title", rename: "title", filter: "filter" });
 
 /** The set panel's keywords a keyword line shares (beside the two dials): testimony that shapes the call, echoed on stderr. */
 export const SET_KEYS: readonly string[] = ["stance", "mode", "mood", "note"];
@@ -81,30 +77,11 @@ export const keyWord = (key: string, value: string): string => `${key}=${shellWo
 /** A keyword line spelled back: `lares` then each `k=v`. */
 export const keywordLine = (pairs: ReadonlyArray<readonly [string, string]>): string => ["lares", ...pairs.map(([k, v]) => keyWord(k, v))].join(" ");
 
-/** The flag a token names (`--dry-run`, `--grain=whole`), or null. */
-function flagOf(token: string): { readonly name: string; readonly value: string | null } | null {
-  if (!token.startsWith("--") || token === "--") return null;
-  const body = token.slice(2);
-  const eq = body.indexOf("=");
-  return eq === -1 ? { name: body, value: null } : { name: body.slice(0, eq), value: body.slice(eq + 1) };
-}
-
-/** The key=value a burned flag reads as (`--grain=skinny` reads the card, `--grain whole` the arc). */
-export function flagReading(name: string, value: string | null): string {
-  if (name === "grain" && value !== null && value !== "whole") return value === "skinny" ? "aperture=measure" : `aperture=${value}`;
-  return BURNED_FLAGS[name] ?? (value === null ? `${name}=true` : keyWord(name, value));
-}
-
 /** A keyword line's tokens split: the pairs in the order written, a repeated keyword joining its values with a space. */
 function pairsOf(tokens: readonly string[]): Array<[string, string]> {
   const pairs: Array<[string, string]> = [];
   for (const token of tokens) {
-    const flag = flagOf(token);
-    if (flag !== null) {
-      const reading = flagReading(flag.name, flag.value);
-      const others = tokens.filter((t) => t !== token && PARAM_TOKEN.test(t));
-      throw new KeywordUsage("keyword-flag", `a keyword line carries no flag: --${flag.name}${flag.value === null ? "" : `=${flag.value}`} reads as ${reading}`, ["lares", ...others, reading].join(" "));
-    }
+    if (token.startsWith("--")) throw new KeywordUsage("dash-flag-burned", "dash flags burned; params ride as name=value (lares help)");
     if (!PARAM_TOKEN.test(token)) {
       const lead = pairs[0];
       const hint = lead === undefined ? `lares ${token}=…` : `lares ${keyWord(lead[0], `${lead[1]} ${token}`.trim())}`;
@@ -156,7 +133,7 @@ export function readKeywords(tokens: readonly string[], doors: KeywordDoors): Ke
       if (SET_KEYS.includes(k)) set[k] = v;
       else if (DIAL_KEYS.includes(k) || k === "face" || k === "mandate") params[k] = v;
       else {
-        throw new KeywordUsage("act-keyword-unnamed", `"${k}" names no act keyword and shapes no house read; an act keyword names the act (get= put= delete= rename= filter= act= rite= bag= …)`, `lares help mu=?0`);
+        throw new KeywordUsage("act-keyword-unnamed", `"${k}" names no act keyword and shapes no house read; an act keyword names the act (get= put= delete= rename= filter= rite= bag= …)`, `lares help mu=?0`);
       }
     }
     return { kind: "bare", params, set };
@@ -164,15 +141,9 @@ export function readKeywords(tokens: readonly string[], doors: KeywordDoors): Ke
   const value = pairs.find(([k]) => k === act)![1];
   if (act in CALL_KEYS) {
     const params: Record<string, string> = {};
-    let verb: string;
-    if (act === "act") {
-      if (!value.startsWith("lar:///")) throw new KeywordUsage("act-address", `act= names an affordance by its lar: address (lar:///t1.t2.t3), and "${value}" names none`, "lares act=lar:///engine.law.indexes");
-      verb = value;
-    } else {
-      if (value === "") throw new KeywordUsage("act-keyword-empty", `${act}= names its ${CALL_KEYS[act]} as its value`, `lares ${act}=<${CALL_KEYS[act]}>`);
-      verb = act === "filter" ? "get" : act;
-      params[CALL_KEYS[act]!] = value;
-    }
+    if (value === "") throw new KeywordUsage("act-keyword-empty", `${act}= names its ${CALL_KEYS[act]} as its value`, `lares ${act}=<${CALL_KEYS[act]}>`);
+    const verb = act === "filter" ? "get" : act;
+    params[CALL_KEYS[act]!] = value;
     for (const [k, v] of pairs) {
       if (k === act) continue;
       // The set panel's keywords stay shared on every call, a delete's included: its own choice rides `way=kapae|reveal`.
@@ -216,18 +187,4 @@ function doorLine(door: string, value: string, pairs: ReadonlyArray<readonly [st
     argv.push(`${k}=${v}`);
   }
   return { kind: "door", door, argv, set, notes };
-}
-
-/**
- * THE POSITIONAL SPELLING A CALL WORD BURNED (`lares get Room4`, `lares rename a b`): the keyword line that reads it, or null
- * where the line already speaks params (`lares get title=…`, the call shape) or names no call word.
- */
-export function positionalCure(command: string | null, positional: readonly string[]): string | null {
-  if (command === null || !(command in CALL_KEYS) || command === "act" || command === "filter") return null;
-  const words = positional.filter((t) => !PARAM_TOKEN.test(t) && !t.startsWith("--"));
-  if (words.length === 0 || PARAM_TOKEN.test(positional[0] ?? "")) return null;
-  const rest = positional.filter((t) => PARAM_TOKEN.test(t)).map((t) => { const eq = t.indexOf("="); return [t.slice(0, eq), t.slice(eq + 1)] as const; });
-  const pairs: Array<readonly [string, string]> = [[command, words[0]!]];
-  if (command === "rename" && words[1] !== undefined) pairs.push(["to", words[1]]);
-  return keywordLine([...pairs, ...rest]);
 }

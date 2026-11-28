@@ -50,7 +50,7 @@
  * KAHUA LIFTS BY THE OPERATOR'S HAND, WITH EYES. The lay previews every kahua item it would lift per face (title, body
  * digest, face; a file that differs from a standing head reads `differs`), then lifts them under the target face's grant,
  * keyed by title and body digest, signed by that face, ONLY on a typed confirmation naming the count (a TTY) or
- * `lift-kahua=<N>` with N equal to the previewed count. A bare `--yes` lifts nothing in kahua; a wrong count refuses
+ * `lift-kahua=<N>` with N equal to the previewed count. A bare `yes=true` lifts nothing in kahua; a wrong count refuses
  * before anything writes. Unconfirmed items stand pending (`kahua-pending.json` under the config home), listed by
  * `lares shore` and liftable later with the same count rule (`lares shore lift-kahua count=<N>`).
  *
@@ -654,7 +654,7 @@ export function mirrorLines(r: MirrorSeedResult): { out: string[]; err: string[]
   for (const l of r.kahua.lifted) out.push(`  kahua: lifted ${l.title} under h${l.handleIndex} (${l.cid.slice(0, 16)})`);
   if (r.kahua.pending.length > 0) {
     const n = r.kahua.pending.length;
-    out.push(`  kahua: ${n} item(s) stand pending; nothing lifts on --yes alone: lift with \`lares vessel lay apply=true lift-kahua=${n}\` or \`lares shore lift-kahua count=${n}\``);
+    out.push(`  kahua: ${n} item(s) stand pending; nothing lifts on yes=true alone: lift with \`lares vessel lay apply=true lift-kahua=${n}\` or \`lares shore lift-kahua count=${n}\``);
   }
   for (const s of r.kahua.refused) err.push(`    kahua refused: ${s}`);
   return { out, err };

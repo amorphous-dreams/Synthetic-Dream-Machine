@@ -63,7 +63,7 @@ function codeFor(verb: "receipt" | "cancel", answer: ReceiptAnswer): string {
 }
 
 /**
- * The cure beside a refusal code, the same words `lares act lar:///<address>` carries. The receipt door knows no
+ * The cure beside a refusal code, the same words `lares lar:///<address>` carries. The receipt door knows no
  * change id and no verb, so an `interrupted` id cannot claim a re-run is safe: it names the
  * effect index that answers what landed.
  */

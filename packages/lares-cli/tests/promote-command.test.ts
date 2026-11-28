@@ -88,16 +88,12 @@ test("the staged-code door exposes trust in place of promote", async () => {
   expect(COMMAND_NAMES).not.toContain("promote");
 });
 
-test("each moved door names its replacement whatever flags ride the call", async () => {
+test("an old spelling meets the plain refusal, which names lares help", async () => {
   const { dispatch } = await import("../src/bin/lares.js");
   const err = vi.spyOn(console, "error").mockImplementation(() => {});
-  for (const [args, replacement] of [
-    [["promote", "list", "unexpected=true"], "lares trust"],
-    [["nexus", "promote", "open", "unexpected=true"], "lares nexus approve"],
-    [["sense", "promote", "memory", "unexpected=true"], "lares sense harden"],
-  ] as const) {
+  for (const args of [["promote", "list", "unexpected=true"], ["nexus", "promote", "open", "unexpected=true"], ["sense", "promote", "memory", "unexpected=true"]]) {
     expect(await dispatch(args)).toBe(2);
-    expect(err.mock.calls.at(-1)?.join(" ")).toContain(replacement);
+    expect(err.mock.calls.at(-1)?.join(" ")).toContain("lares help");
   }
   err.mockRestore();
 });

@@ -1,5 +1,5 @@
 /**
- * `lares act MOVE` carrying a tombstone: the shadow ask reaches the wire as `shadow: true`, a MOVE that
+ * `lares lar:///carriage.bag.moves` carrying a tombstone: the shadow ask reaches the wire as `shadow: true`, a MOVE that
  * names no `--to` prints the bags holding the title as candidates and summons no MOVE, and `wiki resolve`
  * names the bag that hides a title.
  */
@@ -35,11 +35,11 @@ const T = "lar:///t/move/hidden";
 const WORKING = "lar:///ha.ka.ba/wikis/w/working";
 const CANON = "lar:///ha.ka.ba/bags/w";
 
-describe("lares act MOVE carrying a tombstone", () => {
-  test("--shadow parses as a flag in any position and reaches the wire as shadow: true", async () => {
-    // `act` heads a call line: its params ride as written, in any order, and the call door binds them for the runner.
-    const parsed = parseArgs(["act", "MOVE", "shadow=true", `title=${T}`, `from=${WORKING}`, `to=${CANON}`]);
-    expect(parsed.positional).toEqual(["MOVE", "shadow=true", `title=${T}`, `from=${WORKING}`, `to=${CANON}`]);
+describe("lares lar:///carriage.bag.moves carrying a tombstone", () => {
+  test("shadow=true rides in any position and reaches the wire as shadow: true", async () => {
+    // An address heads a call line: its params ride as written, in any order, and the call door binds them for the runner.
+    const parsed = parseArgs(["lar:///carriage.bag.moves", "shadow=true", `title=${T}`, `from=${WORKING}`, `to=${CANON}`]);
+    expect(parsed.positional).toEqual(["shadow=true", `title=${T}`, `from=${WORKING}`, `to=${CANON}`]);
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     await cmdAct(actArgs(["MOVE"], { title: T, from: WORKING, to: CANON }, { shadow: true }));

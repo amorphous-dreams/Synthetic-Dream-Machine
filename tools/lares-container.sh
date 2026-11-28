@@ -39,10 +39,10 @@
 #   lares-container.sh vault lock                the standing vessel drops its key and stands at the floor
 #   lares-container.sh rite hoala             THE WAKING (`lares rite hoala`, hoʻāla): read where the house stands and walk only
 #                                                what that asks, keeper first (below); it builds no image and moves no checkout
-#   lares-container.sh lei kui rite=hoala returns=<n> [--yes]
+#   lares-container.sh lei kui rite=hoala returns=<n> [yes=true]
 #                                                string a HOʻĀLA LEI on this terminal (the pūlama reads the route): each host
 #                                                restart then relights the keeper with no route, one counted return each;
-#                                                `lei unstring --rite hoala` ends it at once, `lei show --rite hoala` reads it
+#                                                `lei unstring rite=hoala` ends it at once, `lei show rite=hoala` reads it
 #   lares-container.sh <anything else>           run the lares CLI: inside the standing vessel, or through the offline
 #                                                door when no vessel stands (vault status|bind|unbind read their
 #                                                credential on that TTY)
@@ -92,7 +92,7 @@
 # CLI process per call), and the shim restarts the vessel itself when the report reads `restand` (a face lit after boot). The
 # exit code stays the verb's own. Each island owns its own contract: the image owns what its CLI reports, and this shim owns
 # only reading it, so an image that reports nothing (one older than the report) gets one reading after the verb
-# (`vessel stand observe=true --json`) and a skew between shim and image breaks no call. `vessel stop` stops the container.
+# (`vessel stand observe=true json=true`) and a skew between shim and image breaks no call. `vessel stop` stops the container.
 # One lararium per HUMAN: nothing here names a face.
 #
 # A STOP NEVER DROPS CONTENT. A stopped container holds no memory to count, so `down` asks the standing vessel first
@@ -195,12 +195,12 @@ keep_run() {
     umask "$kr_umask"
     ( umask 077; exec tee -- "$kr_log" < "$kr_fifo" >&2 ) &
     kr_tee=$!
-    "$@" rite keep if-due=true --json 2>"$kr_fifo"; kr_rc=$?
+    "$@" rite keep if-due=true json=true 2>"$kr_fifo"; kr_rc=$?
     wait "$kr_tee" 2>/dev/null; rm -f -- "$kr_fifo"
     return "$kr_rc"
   fi
   umask "$kr_umask"
-  "$@" rite keep if-due=true --json
+  "$@" rite keep if-due=true json=true
 }
 keep_before_down() {
   KEEP_SAID="no keep workspace named"
@@ -284,7 +284,7 @@ running_vessel() {
 # The CLI's own reading of the standing vessel against its state on disk. It runs without a TTY: the answer is JSON
 # for this script, never a prompt.
 observe_output=""
-observe_standing() { observe_output=$(compose exec -T lares node "$CLI" vessel stand observe=true --json); }
+observe_standing() { observe_output=$(compose exec -T lares node "$CLI" vessel stand observe=true json=true); }
 # An answer counts only when it names a verdict this shim knows; an empty or unreadable answer names none.
 verdict_known() {
   printf '%s\n' "$observe_output" | grep -Eq '"standing"[[:space:]]*:[[:space:]]*\{[^}]*"act"[[:space:]]*:[[:space:]]*"(attach|restand)"'
@@ -293,15 +293,15 @@ verdict_restand() {
   printf '%s\n' "$observe_output" | grep -Eq '"standing"[[:space:]]*:[[:space:]]*\{[^}]*"act"[[:space:]]*:[[:space:]]*"restand"'
 }
 
-# Does the standing vessel hold its key? The custody door answers on `vault status --json`; anything but a plain
+# Does the standing vessel hold its key? The custody door answers on `vault status json=true`; anything but a plain
 # `"unlocked":true` reads as not held.
 key_held() {
-  compose exec -T lares node "$CLI" vault status --json 2>/dev/null | grep -q '"unlocked"[[:space:]]*:[[:space:]]*true'
+  compose exec -T lares node "$CLI" vault status json=true 2>/dev/null | grep -q '"unlocked"[[:space:]]*:[[:space:]]*true'
 }
 # Does the standing vessel read its key SHUT? Only a plain `"unlocked":false` answers yes: a status that reads nothing decides
 # nothing here (the keep before a down skips a vessel it read locked, and runs as ever over one it could not read).
 key_shut() {
-  compose exec -T lares node "$CLI" vault status --json 2>/dev/null | grep -q '"unlocked"[[:space:]]*:[[:space:]]*false'
+  compose exec -T lares node "$CLI" vault status json=true 2>/dev/null | grep -q '"unlocked"[[:space:]]*:[[:space:]]*false'
 }
 
 # THE FACE TO WEAR AGAIN. The mount is the composition's own state and never survives a restart, so the shim keeps the
@@ -320,19 +320,19 @@ last_worn_face() {
 NO_FACE_REMEMBERED='no face rests remembered (config/last-worn-face reads empty), so the shim wears none and the vessel'"'"'s own mount stands; another face: wear N'
 # THE SHIM'S OWN WEAR TURNS OVER THE SHORE'S FLUSH. A wear that turns the face flushes every shore first, and refuses
 # `shore-unwritten` where records stay unwritten. The shim wears only a face just opened, which no hand has touched since, so it
-# carries `--yes`; the wear's own lines (the flush's reading among them) ride stderr. A refusal reads as itself: a
-# `shore-unwritten` that ever surfaces names the flush, never a lend or a lock. `--yes` speaks for the shore alone: where a face
+# carries `yes=true`; the wear's own lines (the flush's reading among them) ride stderr. A refusal reads as itself: a
+# `shore-unwritten` that ever surfaces names the flush, never a lend or a lock. `yes=true` speaks for the shore alone: where a face
 # whose light refused holds saves in memory alone, the vessel refuses `saves-held` all the same, and the shim names the refusal
 # and the act that lights that face. $1 = the face; sets SW_WHY on a refusal.
 shim_wear() {
   SW_WHY=""
   # shellcheck disable=SC2046
-  if sw_out=$(waited_exec $(pass_env) -T lares node "$CLI" wear "$1" --yes </dev/null 2>&1); then sw_rc=0; else sw_rc=$?; fi
+  if sw_out=$(waited_exec $(pass_env) -T lares node "$CLI" wear "$1" yes=true </dev/null 2>&1); then sw_rc=0; else sw_rc=$?; fi
   [ -z "$sw_out" ] || printf '%s\n' "$sw_out" >&2
   [ "$sw_rc" -eq 0 ] && return 0
   case "$sw_out" in
     *saves-held*|*"save(s) in memory that no seat has sealed"*) SW_WHY="h$1 did not turn: a face whose light refused holds saves no seat has sealed (the lines above name it and the act that lights it, so its own seat seals them); wear h$1 after that" ;;
-    *shore-unwritten*|*"the shore's flush left records unwritten"*) SW_WHY="h$1 did not turn: the shore's flush left records unwritten (the lines above name each; they rest in the store); wear it with \`lares-container.sh wear $1 --yes\`, or read them with \`lares-container.sh shore\`" ;;
+    *shore-unwritten*|*"the shore's flush left records unwritten"*) SW_WHY="h$1 did not turn: the shore's flush left records unwritten (the lines above name each; they rest in the store); wear it with \`lares-container.sh wear $1 yes=true\`, or read them with \`lares-container.sh shore\`" ;;
     *) SW_WHY="h$1 stands outside the lent set or locked; wear another face with \`lares-container.sh wear N\`" ;;
   esac
   return "$sw_rc"
@@ -354,10 +354,10 @@ remember_worn_face() { # the argv of a `vault unlock` that landed
   mkdir -p -- "$HOUSE/config" && printf '%s\n' "$face" > "$WORN_FACE_FILE" || printf '%s\n' 'lares-container: the worn face could not be remembered; the next stand wears the face remembered before, or none' >&2
 }
 
-# THE MOUNT, read: the census frame (`vessel census --json`, bounded as down's census is) names `worn` beside the lit
+# THE MOUNT, read: the census frame (`vessel census json=true`, bounded as down's census is) names `worn` beside the lit
 # set, null where faces stand lent and none worn. Any other answer, or none, reads as no need to wear.
 none_worn() {
-  run_census --json >/dev/null 2>&1 || true
+  run_census json=true >/dev/null 2>&1 || true
   printf '%s\n' "$census_out" | grep -q '"worn"[[:space:]]*:[[:space:]]*null'
 }
 wear_last_face() {
@@ -462,7 +462,7 @@ lift_vessel() {
 
 # Any CLI verb: inside the standing vessel, else through the offline door. A verb that succeeds inside a standing
 # vessel names the standing verdict as it leaves, and the shim lifts the vessel when the verdict asks for it. A caller
-# that asked for the reading itself (`--observe`) gets that reading alone.
+# that asked for the reading itself (`observe=true`) gets that reading alone.
 follow_up=yes
 route_cli() {
   # A named host file crosses the container boundary as raw stdin (a put's `file=<path>`, and the spirit verbs that take `--file`: ah, the
@@ -631,8 +631,8 @@ vessel_read() {
 # per island page), and this bound stands over the whole exec, so a wedged vessel never hangs `down`.
 CENSUS_WAIT_SECONDS=60
 census_out=""; census_err=""; census_timed_out=""
-run_census() { # $1 = --no-json (the default: the lines down prints) or --json (the frame a mount read greps)
-  census_fmt=${1:---no-json}
+run_census() { # $1 = json=false (the default: the lines down prints) or json=true (the frame a mount read greps)
+  census_fmt=${1:-json=false}
   census_dir=$(mktemp -d) || return 125
   (
     if [ -n "$ENV_ARGS" ]; then exec docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE_PATH" exec -T lares node "$CLI" vessel census "$census_fmt"
@@ -748,7 +748,7 @@ HAVE_TTY=""
 if [ -t 0 ] && [ -t 1 ]; then HAVE_TTY=yes; fi
 tty_flag() { if [ -z "$HAVE_TTY" ]; then printf -- '-T'; fi; }
 # THE ATTACH READS BOTH ENDS. Piped stdin never attaches; and a piped stdout never attaches either, since a pseudo-
-# terminal would fold stderr into stdout and turn every newline into CRLF, so `lares … --json | jq` would read noise.
+# terminal would fold stderr into stdout and turn every newline into CRLF, so `lares … json=true | jq` would read noise.
 
 # DISPLAY, DEBUG AND THE SEAT MARK RIDE BY NAME. Each of these the caller's environment sets crosses into the vessel as
 # `-e NAME` (compose reads the value from this environment), so no value rides argv; no other name crosses, and no
@@ -1413,7 +1413,7 @@ pulama_restand() {
 # It never switches a branch, never moves the checkout, and never reads or types a route.
 IN_REBUILD=""
 worn_now() { # the face the census frame names worn, or nothing
-  run_census --json >/dev/null 2>&1 || true
+  run_census json=true >/dev/null 2>&1 || true
   printf '%s\n' "$census_out" | sed -n 's/.*"worn"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p' | head -n 1
 }
 label_of() { # $1 = an image reference; the revision its label names, or nothing
@@ -1539,7 +1539,7 @@ print_reading() {
 # THE KUKULU LEI on a branch, read in the standing vessel as the rite's leiStands reads it, printed as one word: `yes` (a return
 # left), `returns-spent`, or the cause it stands not (`absent`, ...); nothing where the vessel answers no reading.
 kukulu_lei_word() { # $1 = the branch
-  compose exec -T lares node "$CLI" lei show rite=kukulu branch="$1" --json </dev/null 2>/dev/null | node -e '
+  compose exec -T lares node "$CLI" lei show rite=kukulu branch="$1" json=true </dev/null 2>/dev/null | node -e '
       let s = ""; process.stdin.on("data", (d) => { s += d; }).on("end", () => {
         let o; try { o = JSON.parse(s.trim().split("\n").at(-1) ?? "").data; } catch { return; }
         if (!o || typeof o !== "object") return;
@@ -1774,11 +1774,11 @@ keeper_commit_lei() { # $1 = the revision, $2 = the branch whose kukulu lei lice
   [ "$kl_label" = "$kl_d" ] || die "pulama name-successor --lei: the built image's closure label reads ${kl_label:-nothing}, and the archive of $kl_rev reads $kl_d (keeper-lei-image-differs); no successor named: rebuild the image from that revision with lares rite kukulu, $kl_cure"
   # ONE DEVICE PER LIT FACE: the standing vessel reads each lit face's signed admission fold, as the routed commit's count does.
   kl_most=""; kl_unread=""
-  if run_census --json >/dev/null 2>&1; then
+  if run_census json=true >/dev/null 2>&1; then
     kl_lit=$(printf '%s\n' "$census_out" | tr -d ' \t\r\n' | sed -n 's/.*"facesLit":\[\([0-9,]*\)\].*/\1/p' | tr ',' ' ')
     [ -n "$kl_lit" ] || kl_unread=yes
     for kl_face in $kl_lit; do
-      kl_n=$(compose exec -T lares node "$CLI" intent show face="$kl_face" --json </dev/null 2>/dev/null | tr -d ' \t\r\n' | sed -n 's/.*"devices":\([0-9][0-9]*\).*/\1/p')
+      kl_n=$(compose exec -T lares node "$CLI" intent show face="$kl_face" json=true </dev/null 2>/dev/null | tr -d ' \t\r\n' | sed -n 's/.*"devices":\([0-9][0-9]*\).*/\1/p')
       if [ -z "$kl_n" ]; then kl_unread=yes; elif [ -z "$kl_most" ] || [ "$kl_n" -gt "$kl_most" ]; then kl_most=$kl_n; fi
     done
   else kl_unread=yes; fi
@@ -2109,7 +2109,7 @@ rs_note_did() { rs_did="${rs_did:+$rs_did, }$1"; }
 hoala_verdict() { # $1 = what stands now where the rite stopped short, or nothing to read it
   rv_now=${1:-}
   if [ -z "$rv_now" ]; then
-    run_census --json >/dev/null 2>&1 || true
+    run_census json=true >/dev/null 2>&1 || true
     rv_flat=$(printf '%s' "$census_out" | tr -d ' \t\r\n')
     rv_lit=$(printf '%s' "$rv_flat" | sed -n 's/.*"facesLit":\[\([0-9,]*\)\].*/\1/p')
     rv_worn=$(printf '%s' "$rv_flat" | sed -n 's/.*"worn":\([0-9][0-9]*\).*/\1/p')
@@ -2209,7 +2209,7 @@ hoala_verb() {
     else
       # NO PŪLAMA: the vessel holds its own custody and its own try budget. Tries spent this boot -> a fresh boot resets the count
       # (a restart resets it by design); then its own unlock reads the hand's route on this terminal.
-      if compose exec -T lares node "$CLI" vault status --json 2>/dev/null | grep -q '"attemptsLeft"[[:space:]]*:[[:space:]]*0[^0-9]'; then
+      if compose exec -T lares node "$CLI" vault status json=true 2>/dev/null | grep -q '"attemptsLeft"[[:space:]]*:[[:space:]]*0[^0-9]'; then
         rs_note_found "its unlock tries spent this boot"
         hoala_seat_gate "restart the vessel"
         compose restart lares >&2 && up_with_workspaces >&2 || hoala_stop "the vessel did not answer healthy after its restart: read \`lares-container.sh logs\`"
@@ -2370,7 +2370,7 @@ keep_owed_verb() {
   # face last worn, else face 0, the keep's face.
   ko_face=$(last_worn_face); [ -n "$ko_face" ] || ko_face=0
   ko_read=ok
-  if ko_raw=$(compose exec -T lares node "$CLI" rite receipts rite=kukulu face="$ko_face" --json </dev/null 2>/dev/null); then ko_debt=$(printf '%s' "$ko_raw" | tr -d ' \t\r\n'); else ko_debt=""; ko_read=refused; fi
+  if ko_raw=$(compose exec -T lares node "$CLI" rite receipts rite=kukulu face="$ko_face" json=true </dev/null 2>/dev/null); then ko_debt=$(printf '%s' "$ko_raw" | tr -d ' \t\r\n'); else ko_debt=""; ko_read=refused; fi
   case "$ko_debt" in
     *'"pending":[]'*) ;;
     *)
@@ -2458,11 +2458,11 @@ case "$verb" in
         # admission fold (`lares intent show face=N`), and the most any face holds goes in. A vessel down, or a face unread, sends
         # none, and the vest then refuses until a commit carries a count.
         kc_most=""; kc_unread=""
-        if run_census --json >/dev/null 2>&1; then
+        if run_census json=true >/dev/null 2>&1; then
           kc_lit=$(printf '%s\n' "$census_out" | tr -d ' \t\r\n' | sed -n 's/.*"facesLit":\[\([0-9,]*\)\].*/\1/p' | tr ',' ' ')
           [ -n "$kc_lit" ] || kc_unread=yes
           for kc_face in $kc_lit; do
-            kc_n=$(compose exec -T lares node "$CLI" intent show face="$kc_face" --json </dev/null 2>/dev/null | tr -d ' \t\r\n' | sed -n 's/.*"devices":\([0-9][0-9]*\).*/\1/p')
+            kc_n=$(compose exec -T lares node "$CLI" intent show face="$kc_face" json=true </dev/null 2>/dev/null | tr -d ' \t\r\n' | sed -n 's/.*"devices":\([0-9][0-9]*\).*/\1/p')
             if [ -z "$kc_n" ]; then kc_unread=yes; elif [ -z "$kc_most" ] || [ "$kc_n" -gt "$kc_most" ]; then kc_most=$kc_n; fi
           done
         else kc_unread=yes; fi
@@ -2638,7 +2638,7 @@ case "$verb" in
   found)
     ensure_house
     # shellcheck disable=SC2046
-    waited_run $(pass_env) $(tty_flag) offline vessel found --skip-build root=/lar genesis=/app/genesis "$@" ;;
+    waited_run $(pass_env) $(tty_flag) offline vessel found skip-build=true root=/lar genesis=/app/genesis "$@" ;;
   vessel)
     observing=""
     for arg in "$@"; do if [ "$arg" = observe=true ]; then observing=yes; fi; done
@@ -2690,7 +2690,7 @@ case "$verb" in
     # strings, unstrings and reads none); `show` reads counts through the keeper's status, never a key.
     lei_rite=""; lei_returns=""; lei_yes=""
     for lei_arg in "$@"; do
-      case "$lei_arg" in rite=*) lei_rite=${lei_arg#rite=} ;; returns=*) lei_returns=${lei_arg#returns=} ;; --yes|yes=true) lei_yes=--yes ;; esac
+      case "$lei_arg" in rite=*) lei_rite=${lei_arg#rite=} ;; returns=*) lei_returns=${lei_arg#returns=} ;; yes=true) lei_yes=--yes ;; esac
     done
     if [ "$lei_rite" = hoala ]; then
       [ -n "$PULAMA_MODE" ] || die "a hoʻāla lei wakes a pūlama, and this house holds its own custody (LARES_PULAMA unset): its vessel unlocks by your route at each waking (\`lares rite hoala\` on a terminal); nothing strung"

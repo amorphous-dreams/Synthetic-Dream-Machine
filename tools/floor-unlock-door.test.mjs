@@ -45,16 +45,16 @@ test("the floor stands over the face's home wiki and lives; the unlock mounts it
   const ok = (...args) => { const r = lares(...args); assert.equal(r.status, 0, `lares ${args.join(" ")}:\n${r.out}`); return r.out; };
   /** `lares vessel stand`: the daemon stands detached, and the report reads it up (a boot fault reads down). */
   const json = (out) => JSON.parse(out.slice(out.indexOf("{")));
-  const stand = () => { const out = ok("vessel", "stand", `port=${String(port)}`, "--skip-build", "--json"); assert.equal(json(out).data?.node?.up, true, `the daemon stands:\n${out}`); };
+  const stand = () => { const out = ok("vessel", "stand", `port=${String(port)}`, "skip-build=true", "json=true"); assert.equal(json(out).data?.node?.up, true, `the daemon stands:\n${out}`); };
   /** What the standing vessel's custody door reads, through `lares vault status`. */
-  const door = () => json(ok("vault", "status", "--json")).data?.door ?? null;
+  const door = () => json(ok("vault", "status", "json=true")).data?.door ?? null;
   try {
     for (const script of ["test-scratch-marker.mjs", "seed-test-custody.mjs"]) {
       const r = spawnSync(process.execPath, [join(repo, "tools", script), root], { encoding: "utf8", env });
       assert.equal(r.status, 0, `${script}: ${r.stderr}`);
     }
     cpSync(join(repo, "genesis"), join(root, "genesis"), { recursive: true });
-    ok("vessel", "found", "hearth=true", "name=floor witness", `root=${root}`, "--skip-build");
+    ok("vessel", "found", "hearth=true", "name=floor witness", `root=${root}`, "skip-build=true");
 
     // F0: the unlocked vessel writes the face's home preference, and it names the user wiki at the next light.
     stand();

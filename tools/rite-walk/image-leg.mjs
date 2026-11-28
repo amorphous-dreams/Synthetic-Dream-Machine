@@ -448,7 +448,7 @@ export const stageCustody = async (h) => {
 export const found = async (h) => {
   const r = await h.compose(["--profile", "offline", "run", "--rm", "-T", "-v", `${join(h.checkout, "tools")}:/app/tools:ro`,
     "-v", `${join(h.scope.house, ".lar-test-scratch")}:/lar/.lar-test-scratch:ro`, "-e", `NODE_OPTIONS=${TEST_ROUTE}`,
-    "offline", "vessel", "found", "--skip-build", "root=/lar", "genesis=/app/genesis", "hearth=true", `name=${STEWARD}`, "chair=dreamnet-kahu-0", "--no-json"], { timeout: 300_000 });
+    "offline", "vessel", "found", "skip-build=true", "root=/lar", "genesis=/app/genesis", "hearth=true", `name=${STEWARD}`, "chair=dreamnet-kahu-0", "json=false"], { timeout: 300_000 });
   const text = h.said(r);
   return { ok: r.code === 0 && text.includes("the hearth stands"), answer: r.code === 0 ? lineOf(text, "the hearth stands") : refusal(r), measures: { seconds: Math.round(r.ms / 1000) } };
 };
@@ -517,7 +517,7 @@ export const tail = (text) => quote(text.replace(/\r/g, "").split("\n").map((l) 
 /** `up` on a terminal, as the operator runs it: the shim stands the vessel, then runs the unlock attached. */
 const upOnTerminal = (h) => h.pty(h.shimLine(["up"]), { says: UNLOCK_SAYS, route: TEST_PASSPHRASE, timeout: 420_000 });
 const unlockOnTerminal = (h) => h.pty(h.shimLine(["vault", "unlock", "all=true", "face=0"]), { says: UNLOCK_SAYS, route: TEST_PASSPHRASE, timeout: 120_000 });
-const vaultUnlocked = async (h) => unlockedOf((await h.shim(["vault", "status", "--json"])).stdout).unlocked;
+const vaultUnlocked = async (h) => unlockedOf((await h.shim(["vault", "status", "json=true"])).stdout).unlocked;
 
 export const upOwn = async (h) => {
   const r = await upOnTerminal(h);
@@ -585,8 +585,8 @@ export const unlockUnderPulama = async (h) => {
 };
 
 const observe = async (h) => {
-  const seen = await h.shim(["vessel", "stand", "observe=true", "--json"]);
-  const vault = await h.shim(["vault", "status", "--json"]);
+  const seen = await h.shim(["vessel", "stand", "observe=true", "json=true"]);
+  const vault = await h.shim(["vault", "status", "json=true"]);
   const standing = json(seen.stdout.trim())?.data?.standing ?? json(seen.stdout.trim())?.standing ?? null;
   const custody = unlockedOf(vault.stdout);
   const lines = pulamaLines(await vesselLog(h));
@@ -704,12 +704,12 @@ export const WARD_SAYS = [{ prompt: "passphrase for this one act: ", answer: TES
 
 const leiKui = async (h) => {
   const branch = branchOf();
-  const line = ["lei", "kui", "rite=kukulu", `branch=${branch}`, "returns=2", "--json"];
+  const line = ["lei", "kui", "rite=kukulu", `branch=${branch}`, "returns=2", "json=true"];
   // With no terminal the ward refuses by name; on one, the hand types the face's route for this act alone.
   const plain = await h.shim(line, { timeout: 120_000 });
   const r = await h.pty(h.shimLine(line), { says: WARD_SAYS, route: TEST_PASSPHRASE, timeout: 120_000 });
   const answer = lastJson(r.stdout.replace(/\r/g, ""));
-  const show = await h.shim(["lei", "show", "rite=kukulu", `branch=${branch}`, "--json"]);
+  const show = await h.shim(["lei", "show", "rite=kukulu", `branch=${branch}`, "json=true"]);
   const standing = json(show.stdout.trim())?.data?.lei ?? null;
   return { ok: r.code === 0 && answer?.ok === true && standing?.standing === true, answer: `exit ${r.code}; the ward asked on the terminal: ${r.typed}; ${JSON.stringify(answer?.data ?? null)} · the line reads ${JSON.stringify(standing)}`,
     measures: { branch, exit: r.code, wardPrompted: r.typed, withNoTerminal: quote(refusal(plain)).slice(0, 200), standing } };
@@ -717,9 +717,9 @@ const leiKui = async (h) => {
 
 const riteKukulu = async (h) => {
   const before = await h.cid("lares");
-  const r = await h.hostCli(["rite", "kukulu", "--no-json"], { timeout: 45 * 60_000 });
+  const r = await h.hostCli(["rite", "kukulu", "json=false"], { timeout: 45 * 60_000 });
   const after = await h.cid("lares");
-  const vault = await h.shim(["vault", "status", "--json"]);
+  const vault = await h.shim(["vault", "status", "json=true"]);
   const custody = unlockedOf(vault.stdout);
   const rose = after !== "" && after !== before;
   const ok = r.code === 0 && rose && custody?.unlocked === true;
@@ -727,7 +727,7 @@ const riteKukulu = async (h) => {
 };
 
 const riteReceipts = async (h) => {
-  const r = await h.shim(["rite", "receipts", "--json"], { timeout: 120_000 });
+  const r = await h.shim(["rite", "receipts", "json=true"], { timeout: 120_000 });
   const answer = json(r.stdout.trim());
   const conferre = answer?.data?.conferre ?? null;
   const par = conferre?.par ?? null, red = conferre?.red ?? null;
@@ -775,7 +775,7 @@ export const IMAGE_STEPS = Object.freeze([
   { id: "pulama-light", command: "lares-container.sh pulama light", via: "pty", needs: ["pulama-up"], expect: "lit: true", run: pulamaLight },
   { id: "rite-kukulu", command: "lares rite kukulu", needs: ["lei-kui", "pulama-light"], expect: "a new vessel rises served by the pūlama with no unlock", run: riteKukulu },
   { id: "up-by-pulama", command: "lares-container.sh up", via: "pty", needs: ["pulama-light"], expect: "the vessel seats its holder over the pūlama's socket", run: upPulama },
-  { id: "vessel-observe", command: "lares-container.sh vessel stand observe=true --json", needs: ["up-by-pulama"], expect: "a verdict; the vessel's own line names what the pūlama answered", run: observe },
+  { id: "vessel-observe", command: "lares-container.sh vessel stand observe=true json=true", needs: ["up-by-pulama"], expect: "a verdict; the vessel's own line names what the pūlama answered", run: observe },
   { id: "pulama-admit", command: "lares-container.sh pulama admit (the operator's hand: its route typed, here the published test route)", via: "pty", needs: ["up-by-pulama"], expect: "the pūlama admits the image the host reported at up", run: pulamaAdmit },
   { id: "unlock-by-pulama", command: "lares-container.sh vault unlock all=true face=0", via: "pty", needs: ["pulama-admit"], expect: "the vessel stands unlocked", run: unlockUnderPulama },
   { id: "rite-receipts", command: "lares rite receipts", needs: ["rite-kukulu"], expect: "conferre reads par", run: riteReceipts },

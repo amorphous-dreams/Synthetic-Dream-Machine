@@ -4,8 +4,8 @@
  * Inputs: every cli example and every cure the baked pack renders for a carrier (a foreign cure, one naming another address,
  * rides no door this carrier skins and stays out). Each line runs through the real arg law: `parseArgs`, the door's verb table,
  * and `unknownParams` with the handler never called. A renamed flag reds every example still spelling the old one. Seed: the
- * oracle cast. Control: a planted example with an unknown flag, and one with an unknown verb, both read red. The one act (`lares act
- * lar:///<address> name=value…`) rides the call door: its line names an address and takes params alone, never a flag.
+ * oracle cast. Control: a planted example with an unknown flag, and one with an unknown verb, both read red. An address line
+ * (`lares lar:///<address> name=value…`) rides the call door: it takes params alone, never a flag.
  *
  * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-laws
  */
@@ -13,8 +13,8 @@ import { describe, expect, test } from "vitest";
 import { COMMANDS, unknownParams } from "../../src/bin/lares.js";
 import { ArgsError, parseArgs, type ParsedArgs } from "../../src/parse-args.js";
 import { flattenVerbs } from "../../src/verb-table.js";
-import { isCallHead } from "../../src/commands/call.js";
-import { GLOBAL_FLAGS } from "../../src/bin/lares.js";
+import { isCallWord } from "../../src/parse-args.js";
+import { GLOBAL_PARAMS } from "../../src/bin/lares.js";
 import { REBAKE, SEED_ADDRESS, SEED_ADDRESSES, pack, shellWords } from "./affordance-harness.js";
 
 /** Why one runnable line fails its door, or null where it parses clean. */
@@ -23,17 +23,17 @@ export function misparse(line: string): string | null {
   if (words[0] !== "lares") return `does not open on \`lares\``;
   // THE BARE DOOR (the keyword head, lar:///lares.lararium.status): `lares` alone, or with its dials as keywords, names no door.
   if (words.slice(1).every((w) => /^[a-z][a-z0-9-]*=/.test(w))) return null;
-  // A DASH SPELLING OUTSIDE THE GLOBAL FLAGS refuses at the grammar (`dash-flag-burned`), so it reads as this line's failure.
+  // A DASH SPELLING refuses at the grammar (`dash-flag-burned`), so it reads as this line's failure.
   let args: ParsedArgs;
   try { args = parseArgs(words.slice(1)); }
   catch (err) { if (err instanceof ArgsError) return err.message; throw err; }
   const cmd = COMMANDS.find((c) => c.name === args.command);
-  // THE ONE ACT RIDES THE CALL DOOR (landing 9): `lares act lar:///<address> name=value…` names an address and takes params alone.
-  if (!cmd && isCallHead(args.command, args.positional)) {
-    if (!(args.positional[0] ?? "").startsWith("lar:///")) return `the call names no address`;
-    const flags = [...Object.keys(args.options), ...Object.keys(args.flags)].filter((n) => !GLOBAL_FLAGS.includes(n));
+  // AN ADDRESS RIDES THE CALL DOOR: `lares lar:///<address> name=value…` names its own call and takes params alone.
+  if (!cmd && isCallWord(args.command)) {
+    if (!(args.command ?? "").startsWith("lar:///")) return `the call names no address`;
+    const flags = [...Object.keys(args.options), ...Object.keys(args.flags)].filter((n) => !GLOBAL_PARAMS.includes(n));
     if (flags.length > 0) return `unknown param(s): ${flags.map((n) => `${n}=`).join(", ")}`;
-    const stray = args.positional.slice(1).filter((w) => !/^[a-z][a-z0-9-]*=/.test(w));
+    const stray = args.positional.filter((w) => !/^[a-z][a-z0-9-]*=/.test(w));
     return stray.length > 0 ? `a word past the address names no param: ${stray.join(" ")}` : null;
   }
   if (!cmd) return `no door "${args.command}"`;
@@ -67,17 +67,17 @@ describe("W4 · every example and cure parses at its own door", () => {
     expect(misparse(line)).toBeNull();
   });
 
-  test("a keep spelling and the draft pull parse where their doors read them; CONTROL: a flag or a bare word beside the act reads red", () => {
+  test("a keep spelling and the draft pull parse where their doors read them; CONTROL: a flag, a bare word beside the address, or the `act` word reads red", () => {
     expect(misparse("lares shore keep-records 'lar:///ha.ka.ba/lares/docs/pono/example' key=k")).toBeNull();
-    expect(misparse("lares act lar:///carriage.draft.pulls uri=lar:///ha.ka.ba/lares/docs/pono/example")).toBeNull();
-    expect(misparse("lares act lar:///carriage.draft.pulls uri=lar:///ha.ka.ba/lares/docs/pono/example --draft")).toMatch(/dash-flag-burned: --draft reads as draft=true/);
-    expect(misparse("lares act lar:///carriage.draft.pulls lar:///ha.ka.ba/lares/docs/pono/example")).toMatch(/names no param/);
-    expect(misparse("lares act ADD title=x")).toMatch(/names no address/);
+    expect(misparse("lares lar:///carriage.draft.pulls uri=lar:///ha.ka.ba/lares/docs/pono/example")).toBeNull();
+    expect(misparse("lares lar:///carriage.draft.pulls uri=lar:///ha.ka.ba/lares/docs/pono/example --draft")).toMatch(/^dash-flag-burned: dash flags burned/);
+    expect(misparse("lares lar:///carriage.draft.pulls lar:///ha.ka.ba/lares/docs/pono/example")).toMatch(/names no param/);
+    expect(misparse("lares act lar:///carriage.draft.pulls uri=x")).toMatch(/no door "act"/);
   });
 
   test("CONTROL: an unknown flag and an unknown verb each read red", () => {
     expect(misparse("lares oracle cast recipe=default zz-no-such-name=x")).toMatch(/unknown param/);
-    expect(misparse("lares oracle cast --recipe default")).toMatch(/dash-flag-burned: --recipe reads as recipe=default/);
+    expect(misparse("lares oracle cast --recipe default")).toMatch(/^dash-flag-burned: dash flags burned; params ride as name=value \(lares help oracle\)$/);
     expect(misparse("lares oracle zz-no-such-name recipe=default")).toMatch(/no verb/);
     expect(misparse("lares oracle cast recipe=default asking='which road first?'")).toBeNull();
   });

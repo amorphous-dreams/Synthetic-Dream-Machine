@@ -62,7 +62,7 @@ export interface CliResult {
   readonly code:   number;
   readonly stdout: string;
   readonly stderr: string;
-  /** Last JSON object on stdout when --json was passed (null when none parsed). */
+  /** Last JSON object on stdout when json=true was passed (null when none parsed). */
   readonly json:   Record<string, unknown> | null;
 }
 
@@ -359,7 +359,7 @@ export function kahuaStageDir(root: string): string {
  * face that binds its AID, in one CLI act. Answers the card's code (the stand-in printed it into the JSON answer).
  */
 export async function foundStagedHearth(cli: (args: readonly string[]) => Promise<CliResult>, root: string, name: string): Promise<string> {
-  const found = await cli(["vessel", "found", "hearth=true", `name=${name}`, `root=${root}`, "--skip-build", "--json"]);
+  const found = await cli(["vessel", "found", "hearth=true", `name=${name}`, `root=${root}`, "skip-build=true", "json=true"]);
   if (found.code !== 0) throw new Error(`staged hearth founding failed (${found.code}):\n${found.stdout.slice(-400)}\n${found.stderr.slice(-800)}`);
   const data = (found.json?.["data"] ?? {}) as { cards?: Array<{ code?: string }> };
   const code = data.cards?.[0]?.code ?? "";
@@ -387,7 +387,7 @@ export async function growStagedQuorum(cli: (args: readonly string[]) => Promise
   const chairs = handles.length + 1;
   // The founding face (persona zero, the seed chair's holder) acts the roll: several faces stand open now, and a command
   // acts as the face it names.
-  const roll = await cli(["nexus", "seal", "rotate", "face=0", `cold-key=${code}`, `threshold=${String}`(Math.floor(chairs / 2) + 1), "--json"]);
+  const roll = await cli(["nexus", "seal", "rotate", "face=0", `cold-key=${code}`, `threshold=${String}`(Math.floor(chairs / 2) + 1), "json=true"]);
   if (roll.code !== 0) throw new Error(`seal rotate failed (${roll.code})\n${roll.stdout.slice(-400)}\n${roll.stderr.slice(-800)}`);
   const next = ((roll.json?.["data"] ?? {}) as { cards?: Array<{ code?: string }> }).cards?.map((c) => c.code ?? "").filter((c) => c.length > 0) ?? [];
   hearthCards.set(root, next.join(","));
@@ -395,7 +395,7 @@ export async function growStagedQuorum(cli: (args: readonly string[]) => Promise
   // under the new roster. The chairs stand on this vessel: they re-admit the group, as any rolled quorum must.
   const group = hearthGroups.get(root);
   if (group) {
-    const admit = await cli(["nexus", "cabal", "admit", group.replace(/^0x/, ""), "--json"]);
+    const admit = await cli(["nexus", "cabal", "admit", group.replace(/^0x/, ""), "json=true"]);
     if (admit.code !== 0) throw new Error(`the rolled quorum could not re-admit persona zero's group (${admit.code})\n${admit.stdout.slice(-400)}\n${admit.stderr.slice(-600)}`);
   }
 }
@@ -652,7 +652,7 @@ export async function openStagedFleet(opts: { readonly bookSlug: string; readonl
   };
   const hermEnv = { LAR_RECIPE: "herm", LAR_HERM_RELAY_PORT: String(portRelay) };
   const hermFound = async (cli: (a: readonly string[]) => Promise<CliResult>, root: string): Promise<void> => {
-    const found = await cli(["vessel", "found", `root=${root}`, "--skip-build"]);
+    const found = await cli(["vessel", "found", `root=${root}`, "skip-build=true"]);
     if (found.code !== 0) throw new Error(`herm: founding failed (${found.code})\n${found.stderr.slice(-800)}`);
   };
   const crossing: string[] = [];
@@ -678,15 +678,15 @@ export async function openStagedFleet(opts: { readonly bookSlug: string; readonl
       // and A's quorum seats that seal with the place's floor pin claim (`nexus carry <key> --carrier <hex> --floor-pin <file>`). The Herm dials no hearth;
       // A mints a user book and registers it at PUBLIC, the tier the carrier leg reads.
       beforeB: async (A) => {
-        const exp = await A.cli(["nexus", "seal", "export", "--no-json"]);
+        const exp = await A.cli(["nexus", "seal", "export", "json=false"]);
         crossing.push(`A nexus seal export → ${exp.code} (${exp.stdout.length} chars)`);
         if (exp.code !== 0 || !exp.stdout.trim()) throw new Error(`fleet: A exported no charter (${exp.code})\n${exp.stderr.slice(-600)}`);
         const charter = join(herm.root, "a-charter.mem");
         writeFileSync(charter, exp.stdout, "utf8");
-        const imp = await herm.cli(["nexus", "seal", "import", charter, "--json"]);
+        const imp = await herm.cli(["nexus", "seal", "import", charter, "json=true"]);
         crossing.push(`herm nexus seal import → ${imp.code}: ${imp.stdout.trim().slice(0, 160)}`);
         if (imp.code !== 0) throw new Error(`fleet: the Herm refused the charter (${imp.code})\n${imp.stderr.slice(-600)}`);
-        const carryFor = await herm.cli(["nexus", "carry-for", "--json"]);
+        const carryFor = await herm.cli(["nexus", "carry-for", "json=true"]);
         crossing.push(`herm nexus carry-for → ${carryFor.code}: ${carryFor.stdout.trim().slice(0, 160)}`);
         const cf = (carryFor.json?.["data"] ?? carryFor.json ?? {}) as Record<string, unknown>;
         const nym = typeof cf["nym"] === "string" ? cf["nym"] : "";
@@ -695,7 +695,7 @@ export async function openStagedFleet(opts: { readonly bookSlug: string; readonl
         // The carry lands WITH the place's floor pin claim and the KEL rows that fold to its head (W14): the file `carry-for` printed.
         const claimFile = join(herm.root, "floor-pin.json");
         writeFileSync(claimFile, JSON.stringify({ floorPin: cf["floorPin"], placeKel: cf["placeKel"] }), "utf8");
-        const carry = await A.cli(["nexus", "carry", nym, `carrier=${sig}`, `floor-pin=${claimFile}`, "--json"]);
+        const carry = await A.cli(["nexus", "carry", nym, `carrier=${sig}`, `floor-pin=${claimFile}`, "json=true"]);
         crossing.push(`A nexus carry ${nym.slice(0, 12)}… → ${carry.code}: ${carry.stdout.trim().slice(0, 160)}`);
         if (carry.code !== 0) throw new Error(`fleet: A refused the carrier seal (${carry.code})\n${carry.stderr.slice(-600)}`);
         // `nexus carry` runs as a `nexus-contract` door row against A's standing vessel, which fires the SAME
@@ -705,11 +705,11 @@ export async function openStagedFleet(opts: { readonly bookSlug: string; readonl
         // log, and the legs that need the herm to reach A assert that it does not.
         crossing.push(`herm dial: ${herm.bootLog().includes("a herm dials no hearth") ? "a herm dials no hearth (said)" : "NO herm dial line"}`);
 
-        const minted = await A.cli(["wiki", "init", bookSlug, "--json"]);
+        const minted = await A.cli(["wiki", "init", bookSlug, "json=true"]);
         crossing.push(`A wiki init ${bookSlug} → ${minted.code}: ${minted.stdout.trim().slice(0, 200)}`);
         if (minted.code !== 0) throw new Error(`fleet: A minted no user book ${bookSlug} (${minted.code})\n${minted.stderr.slice(-600)}`);
         // The book registers at PUBLIC — the tier the carrier leg reads, and the only one it reads.
-        const reg = await A.cli(["nexus", "realm-bag", bookSlug, "face=0", "tier=public", "--json"]);
+        const reg = await A.cli(["nexus", "realm-bag", bookSlug, "face=0", "tier=public", "json=true"]);
         crossing.push(`A nexus realm-bag ${bookSlug} --tier public → ${reg.code}: ${reg.stdout.trim().slice(0, 200)}`);
         if (reg.code !== 0) throw new Error(`fleet: A registered no public book ${bookSlug} (${reg.code})\n${reg.stderr.slice(-600)}`);
       },
@@ -881,7 +881,7 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
         // THE FLEET-JOIN DOOR: B stands as a place first, so its own custody holds the keys it mints for the face;
         // then the three files cross by hand (`offer` on A, `request` on B, `answer` on A) and B lands the answer.
         const files = { offer: join(rootB, "fleet-offer.json"), request: join(rootB, "fleet-request.json"), answer: join(rootB, "fleet-answer.json") };
-        const place = await cliB(["vessel", "found", "--skip-build"]);
+        const place = await cliB(["vessel", "found", "skip-build=true"]);
         if (place.code !== 0) throw new Error(`B: vessel found (a place) failed (${place.code})\n${place.stderr.slice(-2500)}`);
         const offer = await cliA(["fleet", "join", "offer", "face=0", `out=${files.offer}`]);
         if (offer.code !== 0) throw new Error(`A: fleet join offer failed (${offer.code})\n${offer.stderr.slice(-2500)}`);

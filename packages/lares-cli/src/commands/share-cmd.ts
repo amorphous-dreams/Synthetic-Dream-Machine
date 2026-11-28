@@ -8,7 +8,7 @@
  * names out, and what the line leaves unnamed (the other list, the note, the workspace, the owner) stands. The same line run
  * twice writes the same row; the echo prints the resolved row.
  *   lares bag share list=true        every row, and the one resolver's answer per bag: who reads, who writes, who waits
- *   lares bag share list=true --json each row AS WRITTEN (its read and write title lists, `*` kept, its note, workspace and
+ *   lares bag share list=true json=true each row AS WRITTEN (its read and write title lists, `*` kept, its note, workspace and
  *                                 owner), beside the resolver's answer (`resolved`): a re-grant reads the row's own policy here
  *   lares bag share <bag> remove=true · lares wiki share <wiki> remove=true   unshare: the row leaves the file and the control document
  *
@@ -75,7 +75,7 @@ export function shareDelta(standing: string, add: string, drop: string): string 
 }
 
 /**
- * What `list=true --json` prints: each row as `config/share.tid` holds it (the policy a re-grant keeps: `*` stays `*`, a pet-name
+ * What `list=true json=true` prints: each row as `config/share.tid` holds it (the policy a re-grant keeps: `*` stays `*`, a pet-name
  * no face carries yet stays named, the note, workspace and owner ride), and beside it the resolver's answer by handle index.
  */
 export function shareListJson(rows: readonly ShareEntry[], faces: readonly ShareFace[]): { rows: Array<ShareEntry & { resolved: { read: number[]; write: number[]; waiting: string[] } }> } {

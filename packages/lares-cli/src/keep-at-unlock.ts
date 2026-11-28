@@ -4,7 +4,7 @@
  * Where the house config names a keep workspace (`./keep-config.ts`) and no keep lei stands for it with a return left, the
  * unlock asks once on its terminal; a yes strings the lei by the lei family's own row (`swarm-lei-kui`, rite `keep`, branch =
  * the workspace, after the line's tip) and its ward, handing the ward the very route the unlock gathered, so nothing asks again.
- * No terminal (a script, `--json`), no route (a pūlama unlock asks none), a lei that stands, or a no: nothing strings, and the
+ * No terminal (a script, `json=true`), no route (a pūlama unlock asks none), a lei that stands, or a no: nothing strings, and the
  * line that strings one by hand gets named.
  *
  * THE FACE: the keep lei stands one per house, as the keep's face (`keepFaceOf`: the face whose keep line already stands, else
@@ -18,7 +18,7 @@ import type { Credential } from "@lararium/mesh/keyslot-door";
 import type { RiteVerbAnswer } from "./rite-kukulu.js";
 import { RITE_KEEP, keepFaceLine, keepFaceOf, lineHeld, type HouseFaces, type KeepFaceBy } from "./rite-keep.js";
 
-/** The returns a keep lei strung at unlock carries: the most a kui takes without its `--yes` confirm. */
+/** The returns a keep lei strung at unlock carries: the most a kui takes without its `yes=true` confirm. */
 export const KEEP_LEI_RETURNS = 12;
 
 export interface KeepOfferPorts {

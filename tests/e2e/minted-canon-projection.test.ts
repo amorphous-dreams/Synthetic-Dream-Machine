@@ -65,9 +65,9 @@ describe.skipIf(!stagedTarget)("minted-canon projection — a user wiki's @{slug
   test("mint → activate → reboot → LOAD into @{slug} canon → projects to bags/{slug}", async () => {
 
     // 1) mint a fresh user wiki + 2) set it active for the next boot
-    const minted = await lar.cli(["wiki", "init", SLUG, "--json"]);
+    const minted = await lar.cli(["wiki", "init", SLUG, "json=true"]);
     expect(minted.json?.["ok"], `mint failed: ${JSON.stringify(minted.json)}`).toBe(true);
-    const opened = await lar.cli(["wiki", "switch", SLUG, "next-boot=true", "--json"]);
+    const opened = await lar.cli(["wiki", "switch", SLUG, "next-boot=true", "json=true"]);
     expect(opened.json?.["ok"] ?? true).not.toBe(false);
 
     // 3) REBOOT — the active-wiki marker only takes on boot (open does not remount)
@@ -111,7 +111,7 @@ describe.skipIf(!stagedTarget)("minted-canon projection — a user wiki's @{slug
     expect(secondLog, "reboot did not activate the minted wiki").toContain(`→ ${SLUG}`);
 
     // 4) LOAD into the minted wiki's working slot, then promote its landed family.
-    const r = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, `to=${WORKING}`, "yes=true", "--json"]);
+    const r = await lar.cli(["lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, `to=${WORKING}`, "yes=true", "json=true"]);
     expect(r.json?.["ok"], `LOAD --to ${WORKING} failed: ${JSON.stringify(r.json)}`).toBe(true);
     await promoteLoadedTitles(lar, r.json, SLUG);
 

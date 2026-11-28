@@ -106,7 +106,7 @@ export function sessionEphemeral(transcript: string): EphemeralVerdict {
 
 /**
  * The LOUD gate helper — partition transcripts into live vs skipped, logging one line per skip
- * (stderr, so it rides through `--json` runs untangled from the data stream).
+ * (stderr, so it rides through `json=true` runs untangled from the data stream).
  */
 export function partitionEphemeral(files: readonly string[], gate: string): { live: string[]; skipped: Array<{ file: string; reason: string }> } {
   const live: string[] = [];

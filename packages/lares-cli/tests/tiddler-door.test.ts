@@ -1,6 +1,6 @@
 /**
  * tiddler-door.test.ts — the CLI skin of the tiddler door: `lares get · put · delete · rename name=value…`, `lares lar:///<address>`,
- * `lares act lar:///<address>`, `lares -` (the call shape, comms-ux-enacts landing 8), and `lares wiki render|status|act`.
+ * `lares -` (the call shape, comms-ux-enacts landing 8), and `lares wiki render|status|act`.
  *
  * ONE SPLIT, AND EVERYTHING ELSE IN THE VM. The call door splits its line by one token rule and sends `{verb, params, surface:
  * "cli"}` to the vessel's `call` verb; the route, the `#/takes` binding and the value conversion run in the VM (census-tests#2
@@ -9,7 +9,7 @@
  *
  * VERB-TABLE PARITY: one table (`lararium-sensorium/scripts/fixtures/tiddler-door-answers.json`) drives this skin and the MCP
  * seat's (`test_tiddler_tools.py`). A call-shape row names the `{verb, params}` the CLI sends (`call`); every other row the
- * daemon wire itself. Either way the row's `output` comes back verbatim as `--json` `data`.
+ * daemon wire itself. Either way the row's `output` comes back verbatim as `json=true` `data`.
  */
 import { afterEach, describe, test, expect, vi } from "vitest";
 import { readFileSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
@@ -46,14 +46,14 @@ vi.mock("../src/env.js", async (orig) => ({
 }));
 
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
-import { cmdCall, callPlan, isCallHead, type CallSources } from "../src/commands/call.js";
+import { cmdCall, callPlan, type CallSources } from "../src/commands/call.js";
 import { actArgsOf } from "../src/commands/act.js";
 import { DoorUsage } from "../src/commands/door-call.js";
 import { cmdWiki, wikiRenderPlan } from "../src/commands/wiki.js";
 import { cmdKahua } from "../src/commands/kahua.js";
 import { cmdMeme } from "../src/commands/meme.js";
 import { COMMANDS, dispatch, unknownParams, doorTakes } from "../src/bin/lares.js";
-import { parseArgs, type ParsedArgs } from "../src/parse-args.js";
+import { parseArgs, isCallWord, type ParsedArgs } from "../src/parse-args.js";
 
 interface Row {
   tool: string;
@@ -68,7 +68,7 @@ const fixture = (value: string): string =>
 
 const argv = (command: string, positional: string[], options: Record<string, string> = {}, flags: Record<string, boolean> = {}): ParsedArgs =>
   ({ command, positional, options, flags: { json: true, ...flags } } as unknown as ParsedArgs);
-/** A call line as a terminal types it, parsed by the CLI's own parser; `--json` asks the envelope unless the line names `--no-json`. */
+/** A call line as a terminal types it, parsed by the CLI's own parser; `json=true` asks the envelope unless the line names `json=false`. */
 const line = (...tokens: string[]): ParsedArgs => {
   const parsed = parseArgs(tokens);
   return parsed.flags["json"] === undefined ? { ...parsed, flags: { ...parsed.flags, json: true } } : parsed;
@@ -92,7 +92,7 @@ async function run(args: ParsedArgs): Promise<{ exit: number; printed: Record<st
   } finally { spy.mockRestore(); log.mockRestore(); err.mockRestore(); }
 }
 
-/** Run a call in prose (no `--json`) and read stdout, stderr and the exit apart; `pipe` reads stdout as no terminal. */
+/** Run a call in prose (no `json=true`) and read stdout, stderr and the exit apart; `pipe` reads stdout as no terminal. */
 async function prose(args: ParsedArgs, pipe = false): Promise<{ exit: number; out: string; err: string[] }> {
   const out: string[] = []; const err: string[] = [];
   const w = vi.spyOn(process.stdout, "write").mockImplementation(((chunk: unknown) => { out.push(String(chunk)); return true; }) as never);
@@ -108,8 +108,8 @@ async function prose(args: ParsedArgs, pipe = false): Promise<{ exit: number; ou
     w.mockRestore(); l.mockRestore(); e.mockRestore();
   }
 }
-/** A prose call line: the tokens parsed, `--json` left unasked (`--no-json` where a terminal is not assumed). */
-const said = (...tokens: string[]): ParsedArgs => parseArgs([...tokens, "--no-json"]);
+/** A prose call line: the tokens parsed, `json=true` left unasked (`json=false` where a terminal is not assumed). */
+const said = (...tokens: string[]): ParsedArgs => parseArgs([...tokens, "json=false"]);
 const piped = (...tokens: string[]): ParsedArgs => parseArgs(tokens);
 
 /** The plan a call line sends, every param it names, the surface `cli`. */
@@ -121,7 +121,7 @@ describe("verb-table-parity — the CLI half of the tiddler door's one table", (
   test("the table names all its tools, and every door it names stands in the command table", () => {
     expect(new Set(TABLE.rows.map((r) => r.tool))).toEqual(new Set(["act", "get", "put", "delete", "wiki_render", "wiki_status", "kahua_get", "meme_offer_show"]));
     const names = new Set(COMMANDS.map((c) => c.name));
-    for (const row of TABLE.rows) expect(names.has(row.cli.command) || isCallHead(row.cli.command, row.cli.positional), row.cli.command).toBe(true);
+    for (const row of TABLE.rows) expect(names.has(row.cli.command) || isCallWord(row.cli.command), row.cli.command).toBe(true);
   });
 
   test("every record, filter and act row speaks the call shape: its line is params alone, and it names the call it sends", () => {
@@ -129,7 +129,7 @@ describe("verb-table-parity — the CLI half of the tiddler door's one table", (
     expect(calls.length).toBeGreaterThan(10);
     for (const row of calls) {
       expect(row.call, row.tool).toBeDefined();
-      expect(isCallHead(row.cli.command, row.cli.positional), row.tool).toBe(true);
+      expect(isCallWord(row.cli.command), row.tool).toBe(true);
       expect(row.cli.options, row.tool).toEqual({});
       expect(row.cli.flags, row.tool).toEqual({});
     }
@@ -170,14 +170,12 @@ describe("the call door plans one call: {verb, params, surface: cli}", () => {
     for (const [tokens, plan] of plans) expect((await callPlan(parseArgs(tokens), NO_SOURCES)).plan, tokens.join(" ")).toEqual(plan);
   });
 
-  test("★ an address names its own verb: `lares lar:///engine.record.reads title=x` and `lares act lar:///…` send the same call ★", async () => {
+  test("★ an address names its own verb: `lares lar:///engine.record.reads title=x` sends the call; `act` heads no call ★", async () => {
     const plan = call("lar:///engine.record.reads", { title: "x" });
     expect((await callPlan(parseArgs(["lar:///engine.record.reads", "title=x"]), NO_SOURCES)).plan).toEqual(plan);
-    expect((await callPlan(parseArgs(["act", "lar:///engine.record.reads", "title=x"]), NO_SOURCES)).plan).toEqual(plan);
-    expect(isCallHead("lar:///engine.record.reads")).toBe(true);
-    expect(isCallHead("act", ["lar:///engine.record.reads"])).toBe(true);
-    expect(isCallHead("act", ["sidebar-layout"])).toBe(true);   // the one act: every word past `act` rides the call door, and the VM routes it
-    expect(isCallHead("tiddler", ["get"])).toBe(false);
+    expect(isCallWord("lar:///engine.record.reads")).toBe(true);
+    expect(isCallWord("act")).toBe(false);
+    expect(isCallWord("tiddler")).toBe(false);
   });
 
   test("★ `lares -` reads one call sigil from stdin and sends it whole; params beside the `-` ride as params ★", async () => {
@@ -207,25 +205,23 @@ describe("the call door plans one call: {verb, params, surface: cli}", () => {
 
   test("a word after a param refuses as usage before anything rides the wire; so does a line naming no verb", async () => {
     await expect(callPlan(parseArgs(["get", "title=x", "stray"]), NO_SOURCES)).rejects.toThrow(DoorUsage);
-    await expect(callPlan(parseArgs(["act", "title=x"]), NO_SOURCES)).rejects.toThrow(/name a verb word, a skin spelling or an address/);
     const r = await run(line("get", "title=x", "stray"));
     expect(r).toMatchObject({ exit: 2, printed: { ok: false, error: { code: "usage", message: expect.stringContaining("\"stray\" stands after a param") } } });
     expect(h.calls).toEqual([]);
   });
 
-  test("★ the dispatcher rides an address straight to the call door; a flag beside it refuses by name ★", async () => {
+  test("★ the dispatcher rides an address straight to the call door; a dash flag beside it refuses, and `act` answers unknown command ★", async () => {
     h.reply = { has: "<<~ has name=`x`>>", title: "x" };
     const out = vi.spyOn(console, "log").mockImplementation(() => {});
     const err = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
-      expect(await dispatch(["lar:///engine.record.reads", "title=x", "--json"])).toBe(0);
+      expect(await dispatch(["lar:///engine.record.reads", "title=x", "json=true"])).toBe(0);
       expect(h.calls).toEqual([call("lar:///engine.record.reads", { title: "x" })]);
       h.calls.length = 0;
-      expect(await dispatch(["act", "lar:///engine.record.reads", "title=x", "--json"])).toBe(0);
-      expect(h.calls).toEqual([call("lar:///engine.record.reads", { title: "x" })]);
-      h.calls.length = 0;
+      expect(await dispatch(["act", "lar:///engine.record.reads", "title=x", "json=true"])).toBe(2);
+      expect(err.mock.calls.flat().join(" ")).toContain('unknown command "act"');
       expect(await dispatch(["lar:///engine.record.reads", "title=x", "--meme"])).toBe(2);
-      expect(err.mock.calls.flat().join(" ")).toContain("--meme burned into the dials: it reads as aperture=measure on a call");
+      expect(err.mock.calls.flat().join(" ")).toContain("dash-flag-burned: dash flags burned; params ride as name=value (lares help lar:///engine.record.reads)");
       expect(h.calls).toEqual([]);
     } finally { out.mockRestore(); err.mockRestore(); }
   });
@@ -239,18 +235,17 @@ describe("the call door plans one call: {verb, params, surface: cli}", () => {
     const out = vi.spyOn(console, "log").mockImplementation(() => {});
     const err = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
-      expect(await dispatch(["act", ADDS, "title=T", "from=lar:///a", "to=lar:///b", "yes=true", "--json"])).toBe(0);
+      expect(await dispatch([ADDS, "title=T", "from=lar:///a", "to=lar:///b", "yes=true", "json=true"])).toBe(0);
       expect(h.calls[0]).toEqual(call(ADDS, { title: "T", from: "lar:///a", to: "lar:///b", yes: "true" }));
       expect(h.calls[1]).toMatchObject({ verb: "ADD", args: { title: "T", "from-bag": "lar:///a", "to-bag": "lar:///b" } });
       expect(h.calls[1]!.args["dry-run"]).toBeUndefined();
       h.calls.length = 0;
-      expect(await dispatch(["act", ADDS, "title=T", "from=lar:///a", "to=lar:///b", "mu=pentacle", "--json"])).toBe(0);
+      expect(await dispatch([ADDS, "title=T", "from=lar:///a", "to=lar:///b", "mu=pentacle", "json=true"])).toBe(0);
       expect(h.calls[1]).toMatchObject({ verb: "ADD", args: { title: "T", "dry-run": true } });
       h.calls.length = 0;
-      // CONTROL: the burned spelling reaches the call door as a word, and the VM routes it (here, the reply stands for its refusal).
-      h.refuse = "call-unrouted: no carrier on this stack spells \"ADD\"";
-      expect(await dispatch(["act", "ADD", "title=T", "--json"])).not.toBe(0);
-      expect(h.calls).toEqual([call("ADD", { title: "T" })]);
+      // CONTROL: a verb word no door answers meets the unknown-command refusal and sends nothing.
+      expect(await dispatch(["ADD", "title=T", "json=true"])).toBe(2);
+      expect(h.calls).toEqual([]);
     } finally { h.refuse = ""; h.replyFor = null; out.mockRestore(); err.mockRestore(); }
   });
 
@@ -261,7 +256,7 @@ describe("the call door plans one call: {verb, params, surface: cli}", () => {
       for (const [address, params] of [["lar:///carriage.bundle.repacks", { source: "x.json", from: "lar:///b" }], ["lar:///carriage.draft.pulls", { uri: "lar:///t" }]] as const) {
         h.calls.length = 0;
         h.replyFor = () => ({ has: "<<~ has name=`" + address + "`>>", handler: "host", address, params, mu: { asked: "pentacle", carry: "_0" } });
-        const exit = await dispatch(["act", address, ...Object.entries(params).map(([k, v]) => `${k}=${v}`), "mu=pentacle", "--json"]);
+        const exit = await dispatch([address, ...Object.entries(params).map(([k, v]) => `${k}=${v}`), "mu=pentacle", "json=true"]);
         expect(exit, address).not.toBe(0);
         expect(h.calls, address).toHaveLength(1);   // the vessel's call alone: no REPACK, no where, no draft ever rides
         expect(out.mock.calls.flat().join(" "), address).toContain("mu-cell-empty");
@@ -277,14 +272,13 @@ describe("the call door plans one call: {verb, params, surface: cli}", () => {
     expect(actArgsOf(line, "ADD", { title: "T" }, "_0").flags["dry-run"]).toBe(true);
   });
 
-  test("★ an old flag on a call verb refuses by name before anything runs; the burned `tiddler` door answers unknown command ★", async () => {
+  test("★ a dash flag on a call verb refuses `dash-flag-burned` before anything runs; the `tiddler` word answers unknown command ★", async () => {
     const err = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
-      for (const [tokens, reading] of [[["get", "title=T", "--skinny"], "--skinny reads as aperture=measure"], [["put", "title=T", "--text", "w"], "--text reads as text=w"],
-        [["delete", "title=T", "--family"], "--family reads as family=true"], [["get", "title=T", "--recipe", "default"], "--recipe reads as recipe=default"], [["put", "title=T", "--create"], "--create reads as create=true"]] as const) {
+      for (const tokens of [["get", "title=T", "--skinny"], ["put", "title=T", "--text", "w"], ["delete", "title=T", "--family"], ["put", "title=T", "--create"]] as const) {
         err.mockClear();
         expect(await dispatch([...tokens]), tokens.join(" ")).toBe(2);
-        expect(err.mock.calls.flat().join(" "), tokens.join(" ")).toContain(`dash-flag-burned: ${reading}`);
+        expect(err.mock.calls.flat().join(" "), tokens.join(" ")).toContain(`dash-flag-burned: dash flags burned; params ride as name=value (lares help ${tokens[0]})`);
       }
       err.mockClear();
       expect(await dispatch(["tiddler", "get", "lar:///t/x", "recipe=default"])).toBe(2);
@@ -293,11 +287,11 @@ describe("the call door plans one call: {verb, params, surface: cli}", () => {
     } finally { err.mockRestore(); }
   });
 
-  test("each call verb's row reads no param of its own: the call door binds them in the VM, beside the global flags", () => {
+  test("each call verb's row reads no param of its own: the call door binds them in the VM, beside the global params", () => {
     for (const name of ["get", "put", "delete", "rename", "watch"]) {
       const row = COMMANDS.find((c) => c.name === name)!;
       expect(row.handler, name).toBe(cmdCall);
-      expect(unknownParams(row, line(name, "title=T", "--yes"))).toEqual([]);
+      expect(unknownParams(row, line(name, "title=T", "yes=true"))).toEqual([]);
       // A call head keeps its params as written: this side folds none, so none refuses here; the carrier's #/takes binds them.
       const parsed = parseArgs([name, "title=T", "face=1"]);
       expect(parsed.positional, name).toEqual(["title=T", "face=1"]);
@@ -579,7 +573,7 @@ describe("a get by title answers on a gradient", () => {
     expect(r.err).toEqual(["base: sha256:9", "size: 10 bytes", "grain: skinny (runs past one page)", expect.stringMatching(/aperture=arc reads the whole carrier/)]);
   });
 
-  test("RED: aperture=arc follows the pages and writes the whole carrier on stdout, the root's has line on stderr; --json carries it joined", async () => {
+  test("RED: aperture=arc follows the pages and writes the whole carrier on stdout, the root's has line on stderr; json=true carries it joined", async () => {
     h.replyFor = answer;
     const r = await prose(said("get", "title=lar:///t/x", "aperture=arc"));
     expect(r.out).toBe("AAAABBBBBB");
@@ -664,7 +658,7 @@ describe("a get aperture=arc reads the composition it carries", () => {
     expect(r.code).not.toBe(0);
   });
 
-  test("the fault rides the --json channel too: `ok` names the act, the exit names the reading", async () => {
+  test("the fault rides the json=true channel too: `ok` names the act, the exit names the reading", async () => {
     h.replyFor = paged([FIRST, SECOND]);
     const env = await run(line("get", "title=lar:///t/two-heads", "aperture=arc"));
     const data = env.printed["data"] as { meme: { text: string }; shape?: { faults: string[] } };
@@ -722,9 +716,9 @@ describe("a get aperture=arc answers the carrier through a pipe (the carrier-fir
     expect(r.err.slice(0, 2)).toEqual(["<<~ has name=`lar:///t/x` params=`recipe/default base/sha256:9`>>", "base: sha256:9"]);
   });
 
-  test("CONTROL: `--json` asks for the envelope, the daemon's answer verbatim; a get with no mu answers a pipe in the envelope", async () => {
+  test("CONTROL: `json=true` asks for the envelope, the daemon's answer verbatim; a get with no mu answers a pipe in the envelope", async () => {
     h.reply = reply;
-    expect(JSON.parse((await prose(piped("get", "title=lar:///t/x", "aperture=arc", "--json"), true)).out)["data"]).toEqual(reply);
+    expect(JSON.parse((await prose(piped("get", "title=lar:///t/x", "aperture=arc", "json=true"), true)).out)["data"]).toEqual(reply);
     expect(JSON.parse((await prose(piped("get", "title=lar:///t/x"), true)).out)["data"]).toEqual(reply);
   });
 
@@ -798,9 +792,9 @@ describe("a get form=text answers the text alone", () => {
     expect(r.err.join(" ")).toContain("`lares get title=lar:///t/x recipe=kahu aperture=arc form=text` reads the whole carrier");
   });
 
-  test("CONTROL: `--json` beside form=text keeps the envelope, the daemon's answer verbatim", async () => {
+  test("CONTROL: `json=true` beside form=text keeps the envelope, the daemon's answer verbatim", async () => {
     h.reply = record;
-    const r = await prose(piped("get", "title=Note", "form=text", "--json"), true);
+    const r = await prose(piped("get", "title=Note", "form=text", "json=true"), true);
     expect(JSON.parse(r.out)["data"]).toEqual(record);
   });
 });

@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.home.tends"
 
 ! engine.home.tends ~ the the operator's homes tunnel converges, each write a ledger generation
 
-`lares home tend` reads first, then writes only the items that drift (and, with `--force`, the foreign ones, the ledger keeping the bytes it replaced), under the host lock and the radius lock; each tend that writes records one ledger generation `undo` restores. A home tend writes the operator's homes, so it asks at a terminal and takes `--yes` with none; withheld consent exits 2. `--familiar <pet>` names the familiar whose hooks it seats.
+`lares home tend` reads first, then writes only the items that drift (and, with `--force`, the foreign ones, the ledger keeping the bytes it replaced), under the host lock and the radius lock; each tend that writes records one ledger generation `undo` restores. A home tend writes the operator's homes, so it asks at a terminal and takes `yes=true` with none; withheld consent exits 2. `--familiar <pet>` names the familiar whose hooks it seats.
 
 <<~/ahu>>
 
@@ -63,7 +63,7 @@ Testimony: the door checks; this slot grants nothing.
 <<has entity=`refusal` name=`usage` params=`~ name one of read, tend, verify, undo`>>
 <<has entity=`refusal` name=`root-repo-only` params=`~ --root names a checkout, and only lares repo keeps one`>>
 <<has entity=`refusal` name=`staged-repo-read-only` params=`~ --staged reads the index, and only lares repo read reads it`>>
-<<has entity=`refusal` name=`consent-withheld` params=`cure/[[engine.home.tends]] ~ the home tend writes the operator's homes; answer y at the terminal, or pass --yes`>>
+<<has entity=`refusal` name=`consent-withheld` params=`cure/[[engine.home.tends]] ~ the home tend writes the operator's homes; answer y at the terminal, or pass yes=true`>>
 ```
 
 <<~/ahu>>
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;o82y6DCPmIGAYOodyxgAOxgN7_Ec7BBijhej6rNiXzc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;giJGAhfjWC-gigGLqH1fH8DI_yh21ijQdUb5xShjCps`>>
 
 <<^ code=`&#x0004;` to=`?`>>

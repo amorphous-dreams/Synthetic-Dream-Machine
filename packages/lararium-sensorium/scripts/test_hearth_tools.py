@@ -1,7 +1,7 @@
 """Witness — the seat's roster act (lar:///face.roster.reads): who is home, offered beside the law.
 
 The daemon socket stands faked: the vessel's `call` answers `handler/seat`, and the one `hearth-roster` verb answers the
-roster body `fixtures/hearth-roster.json` holds, the body `@lararium/mesh` composes and `lares vessel roster --json` carries
+roster body `fixtures/hearth-roster.json` holds, the body `@lararium/mesh` composes and `lares vessel roster json=true` carries
 as `data` (lares-cli's hearth-roster-door suite welds those two). This witness holds the seat's half: the one verb it puts on
 the wire, the body it returns unchanged, the act that reaches it by address, and a refusal by name.
 

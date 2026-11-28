@@ -227,7 +227,7 @@ def test_recall_act_args_are_isomorphic_with_the_recall_api(tmp_path):
 def test_parity_inventory_three_way(tmp_path):
     """THREE-WAY isomorphism guard against the CLI-verb INVENTORY (fixtures/cli-verbs.json). The seat's tools are the
     mirrored anchor and the `cli_forms` keys; each tool's CLI spelling lands on a real command, or on a call head the CLI
-    reads outside its command table (`act`); every CLI command hosts a mirror XOR awaits one. Mutating any side (add an
+    reads outside its command table (`lar:///<address>`); every CLI command hosts a mirror XOR awaits one. Mutating any side (add an
     orphan tool, drop a mirrored word, split the inventory) fails this loud."""
     with open(_CLI_VERBS, encoding="utf-8") as f:
         inv = json.load(f)
@@ -967,7 +967,7 @@ def test_a_hand_address_refuses_with_its_cure_and_a_host_act_names_the_terminal(
     host = "lar:///carriage.record.adds"
     calls = _wired(monkeypatch, lambda verb, args: {"handler": "host", "address": host, "params": {"title": "T"}})
     is_error, said = _call_tool(mcp, "act", {"address": host, "args": {"title": "T"}})
-    assert is_error and "host-door" in said and f"lares act {host}" in said, said
+    assert is_error and "host-door" in said and f"lares {host} " in said, said
     assert [verb for verb, _ in calls] == ["call"]
 
 

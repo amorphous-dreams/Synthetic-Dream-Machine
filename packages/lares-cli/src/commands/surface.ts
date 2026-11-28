@@ -183,7 +183,7 @@ export function labelledFace(projections: string, index?: number): SurfaceFace |
   return seen.size === 1 ? [...seen.values()][0]! : null;
 }
 
-/** One answer of the vessel's `surface face --json`, as it rests on stdout's last line. */
+/** One answer of the vessel's `surface face json=true`, as it rests on stdout's last line. */
 interface FaceAnswer { readonly ok?: boolean; readonly data?: { readonly face?: unknown; readonly petname?: unknown }; readonly error?: { readonly code?: unknown; readonly message?: unknown } }
 
 /**
@@ -213,7 +213,7 @@ export function hostSurfaceDoors(house: string, ask: VesselAsk = SHIM_ASK, env: 
       const named = faceOption(args).face;
       const settled = labelledFace(projections, named);
       if (settled !== null) return settled;
-      const line = ["surface", "face", "--json", ...(named !== undefined ? [`face=${named}`] : [])];
+      const line = ["surface", "face", "json=true", ...(named !== undefined ? [`face=${named}`] : [])];
       const r = ask(line);
       let answer: FaceAnswer | null = null;
       try { answer = JSON.parse(r.out.trim().split("\n").pop() ?? "") as FaceAnswer; } catch { answer = null; }

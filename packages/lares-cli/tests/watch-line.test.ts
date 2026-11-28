@@ -5,7 +5,7 @@
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { watchLine, type WatchAsk } from "../src/commands/watch-line.js";
-import { isCallHead } from "../src/commands/call.js";
+import { isCallWord } from "../src/parse-args.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import type { SubmitResult } from "../src/verb-result.js";
 
@@ -33,7 +33,7 @@ afterEach(() => { vi.restoreAllMocks(); });
 
 describe("lares watch holds its calls in a loop", () => {
   test("RED: watch reads as a call head beside get, put, delete and rename", () => {
-    expect(isCallHead("watch")).toBe(true);
+    expect(isCallWord("watch")).toBe(true);
   });
 
   test("RED: each call carries the last id and as-of; one line prints per change; ended ends the line", async () => {

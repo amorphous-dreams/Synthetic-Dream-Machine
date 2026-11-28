@@ -9,7 +9,7 @@
  * held as a placeholder (operator ruling 2026-10-31, Train Q) until the sensorium arc returns it.
  *
  * One surface, two actors: prose on a TTY, deterministic JSON off-TTY / under
- * --json (../../render.ts #actor-parity).
+ * json=true (../../render.ts #actor-parity).
  */
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, appendFileSync, statSync } from "node:fs";

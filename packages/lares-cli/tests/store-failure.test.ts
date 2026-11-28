@@ -77,7 +77,7 @@ describe("storeFailure names a failure by its own type", () => {
 });
 
 describe("a command's JSON carries the name", () => {
-  const list = () => cmdKapae(parseArgs(["nexus", "kapae", "list=true", "--json"]));
+  const list = () => cmdKapae(parseArgs(["nexus", "kapae", "list=true", "json=true"]));
 
   it("★ `lares nexus kapae list=true` at a floor reads `waking-floor` and exits 2, never `error` ★", async () => {
     vi.mocked(invokeLocal).mockResolvedValue({ status: "error", requestId: "r", errorMessage: "the vessel holds no face", refusal: { reason: "waking-floor" } });
@@ -105,7 +105,7 @@ describe("a command's JSON carries the name", () => {
     // A face row rides `session:act`; the vessel's refusal answers with the refusal's own name as its reason.
     const refused = { status: "error", errorMessage: "the vessel holds no face", reason: "waking-floor" };
     vi.mocked(openLocalSession).mockResolvedValue({ faceRef: "proof", act: async () => ({ requestId: "r", answer: refused }), close: async () => {} } as never);
-    const { code, payload } = await jsonOf(() => dispatch(["handle", "rotate", "--json"]));
+    const { code, payload } = await jsonOf(() => dispatch(["handle", "rotate", "json=true"]));
     expect(payload.error?.code).toBe("waking-floor");
     expect(code).toBe(2);
   });

@@ -5,7 +5,7 @@
  *   SH1 — a row writes to the file (hN and --face resolve to pet-names), then share-set and share-apply ride in that order
  *   SH2 — no vessel standing: the file alone takes the row, and the line says the next boot reconciles it
  *   SH3 — `--list` prints each row's resolved readers and writers, and names a pet-name no face carries
- *   SH3b — `--list --json` prints each row as written (`*`, an unheld pet-name, workspace, owner, note kept) beside the resolver
+ *   SH3b — `--list json=true` prints each row as written (`*`, an unheld pet-name, workspace, owner, note kept) beside the resolver
  *   SH4 — a filter operator refuses by name and writes nothing
  *   SH6 — a row of the other kind standing for the slug refuses `share-kind-standing`, writes nothing and rides no verb;
  *         `--remove` unshares the row (file and control document), and the other kind then shares
@@ -105,7 +105,7 @@ describe("the share door", () => {
     expect(g.verbs).toEqual([]);
   });
 
-  test("SH3b — --list --json keeps each row's own policy beside the resolver's answer", async () => {
+  test("SH3b — --list json=true keeps each row's own policy beside the resolver's answer", async () => {
     const rows = [
       { slug: "garden", kind: "wiki" as const, read: "*", write: "[[the referee]] nobody-here", workspace: "garden-bench", owner: "joshua-fontany", note: "for the walk" },
       { slug: "notes", kind: "bag" as const, read: "joshua-fontany-engineer", write: "" },

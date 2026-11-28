@@ -40,7 +40,7 @@ test('a staged mesh founding refuses without the seat; the same founding succeed
       const seeded = spawnSync(process.execPath, [`tools/${tool}`, root], { env, encoding: 'utf8', timeout: 30_000 });
       assert.equal(seeded.status, 0, seeded.stderr);
     }
-    const args = ['packages/lares-cli/dist/src/bin/lares.js', 'vessel', 'found', '--skip-build', '--json'];
+    const args = ['packages/lares-cli/dist/src/bin/lares.js', 'vessel', 'found', 'skip-build=true', 'json=true'];
     const refused = spawnSync(process.execPath, args, { env, encoding: 'utf8', timeout: 30_000 });
     assert.notEqual(refused.status, 0);
     assert.match(refused.stdout + refused.stderr, /CardReadBackRefused/);

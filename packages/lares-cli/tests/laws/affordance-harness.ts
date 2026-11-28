@@ -49,10 +49,11 @@ export const SEED_ADDRESSES = [
 
 /**
  * The doors a cli route names that the pack gathers no door entry for: each holds `door/part` skins, verbs a carrier skins beside
- * a table the door keeps itself. Such a door counts legacy until every verb holds one.
+ * a table the door keeps itself. Such a door counts legacy until every verb holds one. An address spelling names its own call and
+ * gathers no door, so it stands outside this list.
  */
 export const partDoors = (p: AffordancePack = pack()): string[] =>
-  [...new Set(cliRoutes(p).map((r) => r.door))].filter((d) => !Object.prototype.hasOwnProperty.call(p.doors, d)).sort();
+  [...new Set(cliRoutes(p).map((r) => r.door))].filter((d) => !d.startsWith("lar:///") && !Object.prototype.hasOwnProperty.call(p.doors, d)).sort();
 
 /** The cure every pack-shaped red names. */
 export const REBAKE = "re-bake: pnpm --filter @lararium/tw5 build, then commit packages/lararium-tw5/affordance-pack.json";

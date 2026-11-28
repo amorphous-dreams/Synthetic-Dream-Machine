@@ -1,4 +1,4 @@
-// custody-census — read a root's custody the way a person does (`lares vault status --json`, the built CLI) and
+// custody-census — read a root's custody the way a person does (`lares vault status json=true`, the built CLI) and
 // name what it holds against the carrier table's law (lar:///ha.ka.ba/lararium/mesh/custody#/the-table).
 //
 // `custodyReading` answers the command's own `custody` object: one reading of each standing file the table names,
@@ -16,9 +16,9 @@ import { fileURLToPath } from "node:url";
 const repo = fileURLToPath(new URL("../", import.meta.url));
 const cli = join(repo, "packages/lares-cli/dist/src/bin/lares.js");
 
-/** The `custody` object `lares vault status --json` answers for `root`. `env` adds a standing vessel's own settings. */
+/** The `custody` object `lares vault status json=true` answers for `root`. `env` adds a standing vessel's own settings. */
 export function custodyReading(root, env = {}) {
-  const r = spawnSync(process.execPath, [cli, "vault", "status", "--json"], { cwd: repo, encoding: "utf8", env: { ...process.env, LAR_ROOT: root, ...env } });
+  const r = spawnSync(process.execPath, [cli, "vault", "status", "json=true"], { cwd: repo, encoding: "utf8", env: { ...process.env, LAR_ROOT: root, ...env } });
   if (r.status !== 0) throw new Error(`lares vault status exited ${r.status}: ${r.stdout}${r.stderr}`);
   const answer = JSON.parse(r.stdout.trim().split("\n").pop());
   const custody = answer?.data?.custody;

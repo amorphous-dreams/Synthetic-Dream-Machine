@@ -1,5 +1,5 @@
 /**
- * act-repack.test.ts — `lares act REPACK`, the collect-the-residency export on the ACTION rail.
+ * act-repack.test.ts — `lares lar:///carriage.bundle.repacks` (REPACK), the collect-the-residency export on the ACTION rail.
  *
  * REPACK asks the island to collect a pack's members from the aside map (`$:/config/OriginalTiddlerPaths`)
  * and re-render the bundle through TW5's own serializer: a residency ACTION, seated with the rail. Proven
@@ -66,7 +66,7 @@ const bundleUnderBags = (): { root: string; bundle: string } => {
   return { root, bundle };
 };
 
-describe("lares act REPACK", () => {
+describe("lares lar:///carriage.bundle.repacks", () => {
   test("★ dispatches REPACK with bag + pack-path and writes the bundle back to the source ★", async () => {
     const { bundle } = bundleUnderBags();
     h.reply = { text: "[{\"title\":\"x\"}]", count: 1 };
@@ -102,7 +102,7 @@ describe("lares act REPACK", () => {
   });
 });
 
-describe("lares act REPACK — every refusal carries its hint and the request id", () => {
+describe("lares lar:///carriage.bundle.repacks — every refusal carries its hint and the request id", () => {
   const run = async (): Promise<{ code: number; payload: { requestId?: string; error: { code: string; hint?: string } } }> => {
     const { bundle } = bundleUnderBags();
     const out: string[] = [];

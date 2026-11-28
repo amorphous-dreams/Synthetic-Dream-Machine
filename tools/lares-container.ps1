@@ -228,7 +228,7 @@ function HasRunningVessel {
 # for this script, never a prompt.
 $script:ObserveFailed = $false
 function ObserveStanding {
-  $out = & docker compose @Base exec -T lares node $Cli vessel stand observe=true --json
+  $out = & docker compose @Base exec -T lares node $Cli vessel stand observe=true json=true
   $script:ObserveFailed = ($LASTEXITCODE -ne 0)
   return ,@($out)
 }
@@ -243,10 +243,10 @@ function VerdictAct([string[]]$output) {
 }
 function VerdictRestand([string[]]$output) { return (VerdictAct $output) -eq 'restand' }
 
-# Does the standing vessel hold its key? The custody door answers on `vault status --json`; anything but a plain
+# Does the standing vessel hold its key? The custody door answers on `vault status json=true`; anything but a plain
 # `"unlocked":true` reads as not held.
 function KeyHeld {
-  $out = & docker compose @Base exec -T lares node $Cli vault status --json 2>$null
+  $out = & docker compose @Base exec -T lares node $Cli vault status json=true 2>$null
   return (($out -join "`n") -match '"unlocked"\s*:\s*true')
 }
 
@@ -332,13 +332,13 @@ function DetachedWear([string]$face) {
 }
 # THE SHIM'S OWN WEAR TURNS OVER THE SHORE'S FLUSH. A wear that turns the face flushes every shore first, and refuses
 # `shore-unwritten` where records stay unwritten. The shim wears only a face just opened, which no hand has touched since, so it
-# carries `--yes`; the wear's own lines (the flush's reading among them) ride stderr. A refusal reads as itself: a
-# `shore-unwritten` that ever surfaces names the flush, never a lend or a lock. `--yes` speaks for the shore alone: where a face
+# carries `yes=true`; the wear's own lines (the flush's reading among them) ride stderr. A refusal reads as itself: a
+# `shore-unwritten` that ever surfaces names the flush, never a lend or a lock. `yes=true` speaks for the shore alone: where a face
 # whose light refused holds saves in memory alone, the vessel refuses `saves-held` all the same, and the shim names the refusal
 # and the act that lights that face. Sets $script:ShimWearWhy on a refusal.
 function ShimWear([string]$face) {
   $script:ShimWearWhy = ''
-  $out = @($null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli wear $face --yes 2>&1)
+  $out = @($null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli wear $face yes=true 2>&1)
   $rc = $LASTEXITCODE; DropReport
   foreach ($line in $out) { [Console]::Error.WriteLine("$line") }
   if ($rc -eq 0) { return 0 }
@@ -346,7 +346,7 @@ function ShimWear([string]$face) {
   if ($said -match "saves-held|save\(s\) in memory that no seat has sealed") {
     $script:ShimWearWhy = "h$face did not turn: a face whose light refused holds saves no seat has sealed (the lines above name it and the act that lights it, so its own seat seals them); wear h$face after that"
   } elseif ($said -match "shore-unwritten|the shore's flush left records unwritten") {
-    $script:ShimWearWhy = "h$face did not turn: the shore's flush left records unwritten (the lines above name each; they rest in the store); wear it with ``lares-container.ps1 wear $face --yes``, or read them with ``lares-container.ps1 shore``"
+    $script:ShimWearWhy = "h$face did not turn: the shore's flush left records unwritten (the lines above name each; they rest in the store); wear it with ``lares-container.ps1 wear $face yes=true``, or read them with ``lares-container.ps1 shore``"
   } else {
     $script:ShimWearWhy = "h$face stands outside the lent set or locked; wear another face with ``lares-container.ps1 wear N``"
   }
@@ -610,7 +610,7 @@ function KeepBeforeDown {
   New-Item -ItemType Directory -Force -Path (Join-Path $House 'run') -ErrorAction SilentlyContinue | Out-Null
   # No world-read: on a POSIX pwsh the log is created empty at 0600 before the keep writes it.
   if (-not $IsWindows -and (Get-Command chmod -ErrorAction SilentlyContinue)) { New-Item -ItemType File -Force -Path $kbLog -ErrorAction SilentlyContinue | Out-Null; & chmod 600 $kbLog 2>$null }
-  $kbLines = @(& $cmd @pre rite keep if-due=true --json 2> $kbLog)
+  $kbLines = @(& $cmd @pre rite keep if-due=true json=true 2> $kbLog)
   $kbRc = $LASTEXITCODE
   if (Test-Path -LiteralPath $kbLog) { $kbSaid = Get-Content -LiteralPath $kbLog -Raw; if ($kbSaid) { [Console]::Error.Write($kbSaid) } }
   # THE MARK CLEARS ON A REAL KEEP alone: a successful envelope (`"ok":true`) naming its workspace (`data.workspace`, non-empty),
@@ -646,8 +646,8 @@ function KeepBeforeDown {
   }
   else { $script:KeepSaid = 'kept (rite keep if-due=true)'; Remove-Item -LiteralPath (KeepOwedMark) -Force -ErrorAction SilentlyContinue }
 }
-# The census exec, bounded: `--no-json` gives the lines down prints, `--json` the frame a mount read greps.
-function RunCensus([string]$fmt = '--no-json') {
+# The census exec, bounded: `json=false` gives the lines down prints, `json=true` the frame a mount read greps.
+function RunCensus([string]$fmt = 'json=false') {
   $psi = [System.Diagnostics.ProcessStartInfo]::new('docker')
   foreach ($a in (@('compose') + $Base + @('exec', '-T', 'lares', 'node', $Cli, 'vessel', 'census', $fmt))) { $psi.ArgumentList.Add([string]$a) }
   $psi.UseShellExecute = $false
@@ -666,7 +666,7 @@ function RunCensus([string]$fmt = '--no-json') {
 }
 # THE MOUNT, read: the census frame names `worn` beside the lit set, null where faces stand lent and none worn. Any
 # other answer, or none, reads as no need to wear.
-function NoneWorn { return ((RunCensus '--json').Out -match '"worn"\s*:\s*null') }
+function NoneWorn { return ((RunCensus 'json=true').Out -match '"worn"\s*:\s*null') }
 $script:Wore = ''
 function WearLastFace {
   $wear = LastWornFace
@@ -690,7 +690,7 @@ function HeldOnlyLine([string]$out) {
   [Console]::Error.WriteLine("lares-container: the census names held saves alone ($docs): each a save the sealed rest keeps in memory alone until a session books it in this vessel; no carrier and no untracked file waits; the way on below lands them$more")
 }
 function CensusBeforeStop {
-  $c = RunCensus '--no-json'
+  $c = RunCensus 'json=false'
   $out = $c.Out; $err = $c.Err; $rc = $c.Rc; $timedOut = $c.TimedOut
   if ($rc -eq 0 -and ($out -split "`r?`n" | Where-Object { $_ -like 'census: clean*' })) {
     # AN UNASKED ROW (an unnamed document's sync states alone, no content) leaves with the stop: each line names it, never silent.
@@ -1267,7 +1267,7 @@ function PulamaRestand {
 # It never switches a branch, never moves the checkout, and never reads or types a route.
 $script:InRebuild = $false
 function WornNow {
-  $m = [regex]::Match((RunCensus '--json').Out, '"worn"\s*:\s*([0-9]+)')
+  $m = [regex]::Match((RunCensus 'json=true').Out, '"worn"\s*:\s*([0-9]+)')
   if ($m.Success) { return $m.Groups[1].Value } else { return '' }
 }
 function LabelOf([string]$ref) {
@@ -1408,7 +1408,7 @@ $HandLine = 'your hand: lares rite kukulu on a terminal'
 $script:KeepLater = $false
 function KeepAfterRaise {
   if (-not (Test-Path -LiteralPath (KeepOwedMark))) { return }
-  $c = RunCensus '--no-json'
+  $c = RunCensus 'json=false'
   if ($c.Rc -eq 0 -and ($c.Out -split "`r?`n" | Where-Object { $_ -like 'census: clean*' })) {
     [Console]::Error.WriteLine("lares-container: the keep before the down did not complete; the new vessel's census reads clean, so the keep runs now")
     KeepBeforeDown
@@ -1642,7 +1642,7 @@ function KeepOwedVerb([string[]]$kargs) {
   # The read names a face, so a house with several faces open never refuses it for no face named: the
   # face last worn, else face 0, the keep's face.
   $koFace = LastWornFace; if ($koFace -eq '') { $koFace = '0' }
-  $debt = (($null | & docker compose @Base exec -T lares node $Cli rite receipts rite=kukulu "face=$koFace" --json 2>$null) -join '') -replace '\s', ''
+  $debt = (($null | & docker compose @Base exec -T lares node $Cli rite receipts rite=kukulu "face=$koFace" json=true 2>$null) -join '') -replace '\s', ''
   $koRc = $LASTEXITCODE
   if ($koRc -ne 0 -or -not $debt.Contains('"pending":[]')) {
     $why = ''
@@ -1739,11 +1739,11 @@ switch ($verb) {
         # THE DEVICE COUNT rides the commit's own body (the co-sign fails closed): the standing vessel reads each lit face's signed
         # admission fold (`lares intent show face=N`), and the most any face holds goes in; none read sends none.
         $most = 0; $unread = $false
-        $census = RunCensus '--json'
+        $census = RunCensus 'json=true'
         $lit = ([regex]::Match((($census.Out) -replace '\s', ''), '"facesLit":\[([0-9,]*)\]')).Groups[1].Value
         if ($census.Rc -ne 0 -or -not $lit) { $unread = $true }
         foreach ($face in ($lit -split ',' | Where-Object { $_ })) {
-          $shown = $null | & docker compose @Base exec -T lares node $Cli intent show "face=$face" --json 2>$null
+          $shown = $null | & docker compose @Base exec -T lares node $Cli intent show "face=$face" json=true 2>$null
           $m = [regex]::Match((($shown -join '') -replace '\s', ''), '"devices":([0-9]+)')
           if (-not $m.Success) { $unread = $true } elseif ([int]$m.Groups[1].Value -gt $most) { $most = [int]$m.Groups[1].Value }
         }
@@ -1877,7 +1877,7 @@ switch ($verb) {
   }
   'found' {
     EnsureHouse
-    Act 'run' (@('--profile', 'offline', 'run', '--rm', '--name', $RunName) + $PassEnv + $NoTty + @('offline', 'vessel', 'found', '--skip-build', 'root=/lar', 'genesis=/app/genesis') + $rest)
+    Act 'run' (@('--profile', 'offline', 'run', '--rm', '--name', $RunName) + $PassEnv + $NoTty + @('offline', 'vessel', 'found', 'skip-build=true', 'root=/lar', 'genesis=/app/genesis') + $rest)
   }
   'vessel' {
     $observing = $rest -contains 'observe=true'

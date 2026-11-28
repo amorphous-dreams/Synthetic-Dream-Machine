@@ -8,7 +8,7 @@
  * The same command serves a HUMAN at a terminal and an AI AGENT acting
  * programmatically. Output renders by audience, never by forking the command:
  *   - TTY (human)            → prose, via the caller's `human()` thunk.
- *   - `--json` or off-TTY    → a deterministic structured payload on stdout:
+ *   - `json=true` or off-TTY    → a deterministic structured payload on stdout:
  *                              an `ok | error` union carrying the correlatable
  *                              `requestId` (the content-addressed task handle)
  *                              and a `data` map. Errors travel as DATA (one
@@ -24,7 +24,7 @@ import { floorCure, faceStandsOnDisk } from "./floor-cure.js";
 import { larBootstrapPath } from "./env.js";
 
 /**
- * Does the actor want machine output? Explicit `--json` wins; `--no-json` forces
+ * Does the actor want machine output? Explicit `json=true` wins; `json=false` forces
  * prose even off-TTY; otherwise a non-TTY stdout (a pipe / an agent) implies JSON.
  */
 export function wantsJson(args: ParsedArgs): boolean {
@@ -36,9 +36,9 @@ export function wantsJson(args: ParsedArgs): boolean {
 /**
  * A STATUS READ ANSWERS A PIPE IN PROSE (the operator, 2026-11-19: the re-stand's output read "spammy"). A read whose whole
  * reading runs long (every sealed row, every document the store holds) prints the same summary on a terminal and through a
- * pipe, so `| head` cuts it and a shim that pipes the CLI floods nothing; only an explicit `--json` asks for the envelope,
- * and `--no-json` stays a working alias of the default. `get aperture=arc`'s carrier-first ruling (commands/call.ts) runs the same
- * law. A caller that parses one of these reads names `--json`.
+ * pipe, so `| head` cuts it and a shim that pipes the CLI floods nothing; only an explicit `json=true` asks for the envelope,
+ * and `json=false` stays a working alias of the default. `get aperture=arc`'s carrier-first ruling (commands/call.ts) runs the same
+ * law. A caller that parses one of these reads names `json=true`.
  */
 export function proseFirst(args: ParsedArgs): ParsedArgs {
   return { ...args, flags: { ...args.flags, json: args.flags["json"] === true } };
@@ -46,7 +46,7 @@ export function proseFirst(args: ParsedArgs): ParsedArgs {
 
 /**
  * The reads that answer a pipe in prose (`proseFirst`), as `<command> <sub>` the way an operator types them. A caller that
- * parses one of them names `--json`; `tests/quiet-pipe-parse-sites.test.ts` holds every parse site in the tree to it.
+ * parses one of them names `json=true`; `tests/quiet-pipe-parse-sites.test.ts` holds every parse site in the tree to it.
  */
 export const PROSE_FIRST_READS: readonly string[] = ["vault status", "vault unlock", "vessel read", "wear", "ddate", "law index", "vessel roster"];
 
@@ -148,7 +148,7 @@ export function exitFor(code: string): number {
 /**
  * REFUSE with a usage reading — through the choke point, like every other refusal.
  *
- * A hand-rolled `usage()` prints prose to stderr and returns a bare code, so under `--json` — the mode
+ * A hand-rolled `usage()` prints prose to stderr and returns a bare code, so under `json=true` — the mode
  * that exists for agents and pipes — its caller receives ZERO parseable bytes and an exit status, while
  * every ORDINARY error on the same door emits `{ok:false,error:{…}}`. This carries the PAYLOAD beside
  * the exit code (`EXIT_FOR.usage`, 2).
@@ -224,7 +224,7 @@ export function emit(args: ParsedArgs, e0: Emission): void {
 /**
  * ONE ANSWER SHAPE for the hand verbs (`lei show|kui|unstring|restring|land`, `rite keep|kukulu`): the one-line JSON envelope
  * rides stdout on a terminal and on a pipe alike, and a terminal also reads one line of prose on stderr (`say`: the verdict in
- * words, the refusal by its message). Only an explicit `--no-json` asks the prose route (`e.human`) in place of the envelope.
+ * words, the refusal by its message). Only an explicit `json=false` asks the prose route (`e.human`) in place of the envelope.
  */
 export function emitAnswer(args: ParsedArgs, e: Emission, say: string): void {
   const asked = { ...args, flags: { ...args.flags, json: args.flags["json"] !== false } };

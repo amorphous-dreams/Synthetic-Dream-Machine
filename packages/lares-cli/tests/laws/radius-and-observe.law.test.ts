@@ -166,7 +166,7 @@ describe("L4 · an observing verb leaves every tree it can reach unchanged", () 
     process.env["LAR_ROOT"] = root;
     try {
       const before = snapshot(root);
-      const r = await door(["vessel", "read", `root=${root}`, "--json", "--skip-build"]);
+      const r = await door(["vessel", "read", `root=${root}`, "json=true", "skip-build=true"]);
       expect(r.code).toBe(0);
       expect(changed(before, snapshot(root))).toEqual([]);
     } finally {

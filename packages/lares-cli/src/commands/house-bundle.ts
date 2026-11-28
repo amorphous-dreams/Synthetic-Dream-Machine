@@ -326,7 +326,7 @@ export const LIVE_BUNDLE_DOORS: BundleDoors = {
     return wikis.filter((w) => w.kind === "user").map((w) => String(w.slug)).sort();
   },
   mintBag: async (bagUri) => {
-    // The CREATE road `lares act lar:///carriage.bag.creates bag=…` walks (`act.ts`): the catalog plane, a fresh change nonce in the effect key.
+    // The CREATE road `lares lar:///carriage.bag.creates bag=…` walks (`act.ts`): the catalog plane, a fresh change nonce in the effect key.
     const actionArgs = { bag: bagUri, plane: "catalog" };
     const effectKey = await taskContentId({ subject: bagUri, command: "CREATE", args: actionArgs, nonce: newChangeId() });
     const r = await runVerb("CREATE", actionArgs, await vesselDid(), { requestId: newRequestId(), effectKey });

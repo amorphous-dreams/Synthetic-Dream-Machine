@@ -1,6 +1,6 @@
 /**
  * act-load-effect-split.test.ts — D1, P2.5 iter 4 commit 4/4 (LOAD-only), WIDENED by E1 commit 4′
- * (P2.5 iter 5) to EVERY action verb: `lares act`'s split request-id / effect-key, closing H4's
+ * (P2.5 iter 5) to EVERY action verb: the residency act door's split request-id / effect-key, closing H4's
  * livelock live over the REAL rendezvous socket (never a mock of `runVerb`/`invokeLocal` — the
  * same stub-listener discipline `receipt-cmd.test.ts` already uses for this package's wire shape,
  * so the whole path — `taskContentId`, `newRequestId`, the JSON line `local-connector.ts` writes,
@@ -141,7 +141,7 @@ describe("directory LOAD respects catalog ownership", () => {
   });
 });
 
-describe("lares act — the split requestId/effectKey, every action verb (H4, widened E1 commit 4′)", () => {
+describe("the residency act door — the split requestId/effectKey, every action verb (H4, widened E1 commit 4′)", () => {
   test("★ every LOAD mints a FRESH requestId per attempt, but the SAME effectKey across identical args ★", async () => {
     const { received } = await standScripted([doneReply(1), doneReply(1)]);
     const codeA = await cmdAct(loadArgs());

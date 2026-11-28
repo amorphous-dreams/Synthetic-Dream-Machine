@@ -1,5 +1,5 @@
 /**
- * L7 · a retry keeps attempt identity apart from effect identity: each attempt of `lares act` mints a
+ * L7 · a retry keeps attempt identity apart from effect identity: each attempt of a residency act (`lares lar:///carriage.*`) mints a
  * fresh request id while the effect key stays stable for the same effect, so a retried act never
  * doubles its effect and two different effects never share a key. The per-verb table names the
  * fields that count toward an effect; the live verb tables (ACTION_VERBS, isTransferVerb, isBagVerb)

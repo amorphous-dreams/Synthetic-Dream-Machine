@@ -1,7 +1,7 @@
 /**
  * lares ingest — the disk→records gesture.
  *
- *   lares ingest source=<dir|file> to=<bagUri> [apply=true] [--yes]
+ *   lares ingest source=<dir|file> to=<bagUri> [apply=true] [yes=true]
  *   lares ingest watch=true source=<dir> to=<bagUri> [apply=true] [debounce=ms]   (the same gesture, fired per settle: ./watch.ts)
  *
  * The gesture holds the disk grant and the Synced tree (the island holds
@@ -30,7 +30,7 @@ import { askShore, askSettle, type SettleReading } from "../shore-core.js";
 import { cmdWatch } from "./watch.js";
 import { helpLines } from "../command-help.js";
 
-/** The gesture's usage answers with the door's lines, drawn from the carrier (`lares ingest --help` prints the same). */
+/** The gesture's usage answers with the door's lines, drawn from the carrier (`lares help ingest` prints the same). */
 function printUsage(): void {
   for (const line of helpLines("ingest")) console.log(line);
 }
@@ -201,10 +201,10 @@ export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<nu
     return 0;
   }
 
-  // ── confirm (HUMAN path; agents carry --yes) ───────────────────────────
+  // ── confirm (HUMAN path; agents carry yes=true) ───────────────────────────
   if (!args.flags["yes"]) {
     if (wantsJson(args)) {
-      emit(args, { ok: false, error: { code: "usage", message: "confirmation required", hint: "pass --yes for non-interactive (agent) invocation" }, human: () => { /* unreachable */ } });
+      emit(args, { ok: false, error: { code: "usage", message: "confirmation required", hint: "pass yes=true for non-interactive (agent) invocation" }, human: () => { /* unreachable */ } });
       return exitFor("usage");
     }
     for (const r of candidates) console.log(`  ${r.status.toUpperCase().padEnd(8)} ${r.uri}`);

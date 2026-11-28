@@ -6,7 +6,7 @@
  * still call these "wikis" while the architectural noun stays "wiki"
  * (Kowloon wiki=Group mapping).
  *
- * Verbs (full E-arc surface ships; the residency acts ride `lares act lar:///carriage.*`):
+ * Verbs (full E-arc surface ships; the residency acts ride `lares lar:///carriage.*`):
  *   list / which / resolve   — read & inspect: enumerate, presence-query, coordinate-resolve
  *   init / open / sync       — lifecycle: mint, set-active, ingest memes
  *   retire                   — the owner face's unmint of a shell it minted by mistake (canon untouched)
@@ -94,7 +94,7 @@ export async function cmdWikiList(args: ParsedArgs): Promise<number> {
     /** `floor`: a system row with no document, its canon read through the floor snapshot (no Kahu reach on this face). */
     canon?: string;
   }>;
-  // `--json` answers the daemon's reply verbatim; the prose view adds `composition` (a system wiki's
+  // `json=true` answers the daemon's reply verbatim; the prose view adds `composition` (a system wiki's
   // own stack or the default) and whether an own stack differs from the default.
   emit(args, {
     ok: true, requestId: r.requestId, data: result,
@@ -645,7 +645,7 @@ export async function cmdWikiPruneStale(args: ParsedArgs): Promise<number> {
       console.log(`    ${s.title}  (${idleStr})`);
     }
     console.log("");
-    console.log("  Decide each through a residency ACTION verb (lares act lar:///carriage.record.adds, carriage.bag.copies, carriage.bag.moves, carriage.bag.clears, carriage.bag.drops, carriage.bag.loads).");
+    console.log("  Decide each through a residency ACTION verb (lares lar:///carriage.record.adds, carriage.bag.copies, carriage.bag.moves, carriage.bag.clears, carriage.bag.drops, carriage.bag.loads).");
   }
   console.log("");
   return 0;
@@ -877,7 +877,7 @@ export function wikiStatusLines(out: Record<string, unknown>, consented: readonl
   return lines;
 }
 
-/** The wiki door's verbs, each to its handler; each verb's words ride its carrier (`lares wiki <verb> --help`). */
+/** The wiki door's verbs, each to its handler; each verb's words ride its carrier (`lares help wiki <verb>`). */
 const SUBCOMMANDS: Readonly<Record<string, WikiSubcommand>> = {
   "init":         (a) => cmdWikiInit(a),
   "retire":       (a) => cmdWikiRetire(a),
@@ -903,11 +903,10 @@ export const WIKI_VERBS: readonly string[] = ["help", ...Object.keys(SUBCOMMANDS
 
 export async function cmdWiki(args: ParsedArgs): Promise<number> {
   const verb = args.positional[0];
-  if (!verb || verb === "help" || args.flags["help"]) {
+  if (!verb || verb === "help") {
     for (const line of helpLines("wiki")) console.log(line);
     return verb ? 0 : 2;
   }
-  // The dispatcher's one MOVED table answers `wiki list` and kin before this door runs.
   const entry = SUBCOMMANDS[verb];
   if (!entry) {
     console.error(`lares wiki: unknown verb "${verb}"`);

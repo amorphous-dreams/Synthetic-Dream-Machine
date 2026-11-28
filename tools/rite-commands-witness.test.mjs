@@ -8,13 +8,13 @@ import { fileURLToPath } from 'node:url';
 
 const tools = dirname(fileURLToPath(import.meta.url));
 
-// A stand-in built CLI: `help` lists the top verbs, `help --json` lists the doors with each row's own verb table
+// A stand-in built CLI: `help` lists the top verbs, `help json=true` lists the doors with each row's own verb table
 // (or crashes, on JSON_CRASH). VERBS_JSON swaps the tables, so a case can plant a sub-door its row's table does not name.
 const TABLES = { nexus: ["admit"], seal: { open: ["now"] }, ghost: null };
 const BIN = `const a = process.argv.slice(2);
 const tables = process.env.VERBS_JSON ? JSON.parse(process.env.VERBS_JSON) : ${JSON.stringify(TABLES)};
 const verbs = Object.keys(tables);
-if (a[0] === "help" && a[1] === "--json") {
+if (a[0] === "help" && a[1] === "json=true") {
   if (process.env.JSON_CRASH) { console.error("TypeError: cannot read entries"); process.exit(1); }
   console.log(JSON.stringify({ ok: true, data: { entries: verbs.map(name => ({ name, verbs: tables[name] })) } }));
 } else if (a[0] === "help") {
@@ -111,5 +111,5 @@ test('rites that instruct no command refuse: an empty census checks nothing', ()
 test('a door census that crashes refuses rather than reading zero doors', () => {
   const r = run({ env: { JSON_CRASH: '1' } });
   assert.equal(r.status, 1, r.stdout + r.stderr);
-  assert.match(r.stdout, /`help --json` did not answer/);
+  assert.match(r.stdout, /`help json=true` did not answer/);
 });

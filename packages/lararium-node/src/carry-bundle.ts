@@ -145,7 +145,7 @@ export async function takeCarryBundle(opts: {
 }): Promise<CarryTakeResult> {
   let parsed: unknown;
   try { parsed = JSON.parse(opts.raw); } catch {
-    throw new CarryBundleError("the carry bundle does not parse as JSON — take the file `lares nexus carry --json` wrote, whole.");
+    throw new CarryBundleError("the carry bundle does not parse as JSON — take the file `lares nexus carry json=true` wrote, whole.");
   }
   const b = (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed) ? parsed : {}) as Record<string, unknown>;
   const aid = typeof b["aid"] === "string" ? b["aid"] : "";

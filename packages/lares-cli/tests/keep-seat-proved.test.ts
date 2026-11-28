@@ -71,7 +71,7 @@ describe("the keep pair seats under the proved route alone", () => {
     const homes = vesselCustodyHomes();
     await foundCustody({ io: new FsCustodyIo(homes), homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: PW }] }] });
     answers.push("p", TYPO, "y", "p", PW, "n");
-    expect(await cmdVault(parseArgs(["vault", "unlock", "--json"])), "CONTROL: the unlock opened").toBe(0);
+    expect(await cmdVault(parseArgs(["vault", "unlock", "json=true"])), "CONTROL: the unlock opened").toBe(0);
     expect(seats.readKeepSeat(), "the proved unlock seated the keep pair").not.toBeNull();
     expect(await opens([{ kind: "passphrase", passphrase: PW }])).toBe("opens");
     expect(await opens([{ kind: "passphrase", passphrase: TYPO }]), "the typo the unlock read seats nothing").toBe("no-slot-opens");
@@ -115,10 +115,10 @@ describe("the keep pair seats under the proved route alone", () => {
     await seats.seatKeepAtUnlock({ reading: "opens", opener: [0] }, [{ kind: "passphrase", passphrase: PW }], () => {});
     const before = Buffer.from(seats.readKeepSeat()!.publicKey).toString("hex");
     answers.push("p", TYPO, "n");
-    expect(await cmdVault(parseArgs(["vault", "reseat", "--json"])), "a wrong route refuses").toBe(1);
+    expect(await cmdVault(parseArgs(["vault", "reseat", "json=true"])), "a wrong route refuses").toBe(1);
     expect(Buffer.from(seats.readKeepSeat()!.publicKey).toString("hex")).toBe(before);
     answers.push("p", PW, "n");
-    expect(await cmdVault(parseArgs(["vault", "reseat", "--json"]))).toBe(0);
+    expect(await cmdVault(parseArgs(["vault", "reseat", "json=true"]))).toBe(0);
     expect(Buffer.from(seats.readKeepSeat()!.publicKey).toString("hex"), "a fresh pair").not.toBe(before);
     expect(await opens([{ kind: "passphrase", passphrase: PW }])).toBe("opens");
   });
@@ -132,7 +132,7 @@ describe("the keep pair seats under the proved route alone", () => {
     const s = await custodyStatus({ io: new FsCustodyIo(homes), homes });
     const first = s.tree.reading === "readable" ? s.tree.slots[0]!.id : "";
     answers.push("p", PW2, "n");
-    expect(await cmdVault(parseArgs(["vault", "unbind", first, "--json"]))).toBe(0);
+    expect(await cmdVault(parseArgs(["vault", "unbind", first, "json=true"]))).toBe(0);
     expect(await opens([{ kind: "passphrase", passphrase: PW2 }]), "the staying route opens the re-seated keep").toBe("opens");
     expect(await opens([{ kind: "passphrase", passphrase: PW }]), "the removed passphrase opens the new keep no more").toBe("no-slot-opens");
   });
@@ -149,7 +149,7 @@ describe("the keep pair seats under the proved route alone", () => {
     const errs: string[] = [];
     (console.error as unknown as { mockImplementation(f: (...a: unknown[]) => void): void }).mockImplementation((...a: unknown[]) => { errs.push(a.join(" ")); });
     answers.push("p", PW, "n");
-    expect(await cmdVault(parseArgs(["vault", "unbind", first, "--json"]))).toBe(0);
+    expect(await cmdVault(parseArgs(["vault", "unbind", first, "json=true"]))).toBe(0);
     expect(Buffer.from(seats.readKeepSeat()!.publicKey).toString("hex"), "no fresh pair seated under the removed passphrase").toBe(before);
     expect(await opens([{ kind: "passphrase", passphrase: PW }]), "the removed passphrase opens no keep").toBe("no-slot-opens");
     expect(errs.join("\n")).toMatch(/lares vault reseat/);

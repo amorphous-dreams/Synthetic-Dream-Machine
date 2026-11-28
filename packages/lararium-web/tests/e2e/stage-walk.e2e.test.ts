@@ -174,13 +174,13 @@ const PROPOSE_BODY = [
 ].join("\n\n");
 
 /**
- * Distinct proposal intent ids read from the face's intents plane: `lares intent show --json` answers the plane's
+ * Distinct proposal intent ids read from the face's intents plane: `lares intent show json=true` answers the plane's
  * pane rows (`{ rows: [{ id, verb, status, … }] }`). The page's `kahua-propose` verb writes each proposal as an intent of
  * the canon's own verb, `KAHUA_PROPOSE_VERB` (`kahua-lift`), the one `lares kahua lift --proposal` binds. A bare `lares intent` names no act and refuses its usage, so a read
  * that refuses throws with the CLI's own words rather than reading as "no proposal yet".
  */
 const proposalIds = async (hearth: Hearth): Promise<string[]> => {
-  const read = await hearth.cli(["intent", "show", "--json"]);
+  const read = await hearth.cli(["intent", "show", "json=true"]);
   if (read.code !== 0) throw new Error(`lares intent show refused (exit ${read.code}):\n${read.stdout.slice(-400)}\n${read.stderr.slice(-400)}`);
   const rows = (JSON.parse(read.stdout.trim().split("\n").pop() ?? "{}") as { rows?: Array<{ id?: string; verb?: string }> }).rows ?? [];
   return [...new Set(rows.filter((row) => row.verb === KAHUA_PROPOSE_VERB && typeof row.id === "string").map((row) => row.id!))];
@@ -274,14 +274,14 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     const file = join(scratch, "cli.txt");
     writeFileSync(file, "hello from the CLI\n");
     const repoBefore = filesUnder(join(REPO, "wikis")).length;
-    const put = await hearth!.cli(["put", `title=${uri}`, "recipe=default", `file=${file}`, "--json"]);
+    const put = await hearth!.cli(["put", `title=${uri}`, "recipe=default", `file=${file}`, "json=true"]);
     expect(put.code, `${put.stdout.slice(-400)}\n${put.stderr.slice(-400)}`).toBe(0);
     const carrier = draftPath("t.stage.walk/cli-put", ".txt");
     const deadline = performance.now() + 30_000;
     while (!existsSync(carrier) && performance.now() < deadline) await new Promise((r) => setTimeout(r, 250));
     expect(existsSync(carrier), filesUnder(join(hearth!.root, "projections", "wikis")).join("\n")).toBe(true);
     expect(readFileSync(carrier, "utf8")).toBe("hello from the CLI\n");
-    const got = await hearth!.cli(["get", `title=${uri}`, "recipe=default", "aperture=arc", "--json"]);
+    const got = await hearth!.cli(["get", `title=${uri}`, "recipe=default", "aperture=arc", "json=true"]);
     expect(got.code, got.stderr).toBe(0);
     expect(textOf(got.stdout)).toBe("hello from the CLI\n");
     expect(filesUnder(join(REPO, "wikis")).length).toBe(repoBefore);
@@ -342,7 +342,7 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     expect(moved, "a page save moved files under the hearth's projection").toEqual([]);
     const holding = [...after.keys()].filter((f) => { try { return readFileSync(f, "utf8").includes(body); } catch { return false; } });
     expect(holding).toEqual([]);
-    for (const args of [["get", `title=${title}`, "bag=lares", "aperture=arc", "--json"], ["get", `title=${title}`, "recipe=default", "aperture=arc", "--json"]] as const) {
+    for (const args of [["get", `title=${title}`, "bag=lares", "aperture=arc", "json=true"], ["get", `title=${title}`, "recipe=default", "aperture=arc", "json=true"]] as const) {
       const r = await hearth!.cli(args);
       expect(r.code, `${args.join(" ")}: ${r.stdout.slice(0, 300)}`).toBe(3);
       expect(r.stdout).toMatch(/not-found/);
@@ -368,7 +368,7 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     const got = await hearth!.cli(["kahua", "get", DRAFT.title]);
     expect(got.code, got.stderr).toBe(0);
     expect((JSON.parse(got.stdout) as { item: unknown }).item).toBeNull();
-    const meme = await hearth!.cli(["get", `title=${DRAFT.title}`, "recipe=default", "aperture=arc", "--json"]);
+    const meme = await hearth!.cli(["get", `title=${DRAFT.title}`, "recipe=default", "aperture=arc", "json=true"]);
     expect(meme.stdout, meme.stdout.slice(0, 300)).toMatch(/not-found/);
   });
 
@@ -392,7 +392,7 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     expect(got.code, got.stderr).toBe(0);
     // One standing head: the lift's revision carries the body and the proposal it bound (a fork reads `siblings`).
     expect((JSON.parse(got.stdout) as { item: unknown }).item).toMatchObject({ title: DRAFT.title, status: "standing", heads: [{ text: DRAFT.body, proposal }] });
-    const meme = await hearth!.cli(["get", `title=${DRAFT.title}`, "recipe=default", "aperture=arc", "--json"]);
+    const meme = await hearth!.cli(["get", `title=${DRAFT.title}`, "recipe=default", "aperture=arc", "json=true"]);
     expect(meme.code, `${meme.stdout.slice(0, 400)}\n${meme.stderr.slice(0, 400)}`).toBe(0);
     expect(textOf(meme.stdout)).toBe(DRAFT.body);
     const said = await seatRead(DRAFT.title);

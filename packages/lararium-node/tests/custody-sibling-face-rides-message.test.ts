@@ -322,7 +322,7 @@ test("P1 A WEAR THAT WOULD COMPOSE AGAIN REFUSES OVER HELD SAVES, naming the cur
   expect(answer).toMatchObject({ op: "wear", status: "error", refusal: { reason: "saves-held" } });
   expect(String(answer["errorMessage"])).toContain("lares vault recard face=2");
   expect(String(answer["errorMessage"])).not.toContain("accept-loss");
-  expect(String(answer["errorMessage"])).not.toContain("--yes");
+  expect(String(answer["errorMessage"])).not.toContain("yes=true");
   // THE SHIM'S WORD: `yes` turns over records the shore's flush left unwritten, and never drops a held save.
   expect(await h.send({ op: "wear", face: 1, yes: true })).toMatchObject({ status: "error", refusal: { reason: "saves-held" } });
   expect(h.recompose).not.toHaveBeenCalled();

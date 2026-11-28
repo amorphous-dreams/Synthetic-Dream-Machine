@@ -66,7 +66,7 @@ describe("lares nexus kahuli — the tier-parameterized overturn", () => {
   test("no tier / an unknown tier refuses — through the emit choke point, not past it", async () => {
     // The refusal is an EMISSION now. Off-TTY (every pipe, and every test runner) `emit` renders the
     // machine payload, so the usage prose reaches a HUMAN and the verdict reaches an AGENT — the reading
-    // this door used to withhold under --json.
+    // this door used to withhold under json=true.
     const out: string[] = [];
     const w = vi.spyOn(process.stdout, "write").mockImplementation((c: unknown) => { out.push(String(c)); return true; });
     expect(await cmdNexus(args(["kahuli"]))).toBe(2);

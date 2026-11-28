@@ -67,14 +67,14 @@ const said = (r: CliResult): string => `rc ${r.code}\n${r.stdout.slice(-600)}\n$
 
 /** Run one CLI act on one hearth and require it to land. */
 async function ok(h: Hearth, args: readonly string[]): Promise<CliResult> {
-  const r = await h.lar.cli([...args, "--json"]);
+  const r = await h.lar.cli([...args, "json=true"]);
   expect(r.code, `${args.join(" ")}: ${said(r)}`).toBe(0);
   return r;
 }
 
 /** Run one CLI act on one hearth and require it to refuse. */
 async function refused(h: Hearth, args: readonly string[]): Promise<CliResult> {
-  const r = await h.lar.cli([...args, "--json"]);
+  const r = await h.lar.cli([...args, "json=true"]);
   expect(r.code, `${args.join(" ")} should refuse: ${said(r)}`).not.toBe(0);
   return r;
 }

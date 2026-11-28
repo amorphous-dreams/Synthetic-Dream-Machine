@@ -6,11 +6,11 @@
  * immediately and drops whatever has not drained, so a large result survives `> file` and truncates
  * through `| pipe` — silently, mid-string, with exit code 0.
  *
- * Measured on a real 2,718-record `--json` result: 165,256 bytes into a file, 146,176 through a pipe,
+ * Measured on a real 2,718-record `json=true` result: 165,256 bytes into a file, 146,176 through a pipe,
  * `SyntaxError: Unterminated string`. The isolated shape truncates at exactly one pipe buffer: 400,021
  * bytes to a file, 65,536 through a pipe.
  *
- * `--json` exists, in this CLI's own help, "for agents/pipes" — the one sink that loses bytes. Every
+ * `json=true` exists, in this CLI's own help, "for agents/pipes" — the one sink that loses bytes. Every
  * agent reading this CLI through a pipe was reading a possibly-truncated answer.
  *
  * ── WHY A SOURCE GUARD RATHER THAN A LIVE PIPE ──────────────────────────────────────────────────

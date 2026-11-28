@@ -60,7 +60,7 @@ describe("vessel surfaces", () => {
     const stdoutWrite = process.stdout.write;
     process.stdout.write = ((chunk: unknown) => { output += String(chunk); return true; }) as typeof process.stdout.write;
     try {
-      expect(await dispatch(["vessel", "read", `root=${root}`, "--json", "--skip-build"])).toBe(0);
+      expect(await dispatch(["vessel", "read", `root=${root}`, "json=true", "skip-build=true"])).toBe(0);
     } finally {
       process.stdout.write = stdoutWrite;
     }

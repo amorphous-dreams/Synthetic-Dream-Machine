@@ -7,7 +7,7 @@
 //      boot fault. A port comes from the OS (`freePort()`, or a `listen(0)` in a witness). A literal below 1024
 //      stays lawful: an unprivileged run can never bind it, so it names an address that never answers (the
 //      `:9` discard peer) and never a seat the run holds.
-//   2. A GATED VESSEL DOOR WITHOUT `--skip-build`. Every `vessel` sub-door outside the gate's stated exceptions
+//   2. A GATED VESSEL DOOR WITHOUT `skip-build=true`. Every `vessel` sub-door outside the gate's stated exceptions
 //      rebuilds the whole workspace when source moved since the last stamp, rewriting the `dist/` every other
 //      run executes. A test or witness measures the dist that stands, and builds nothing. The gated set is
 //      DERIVED from the CLI's own table (`SUBS` less `NEVER_STALE`), so a sub-door added later is gated here
@@ -87,7 +87,7 @@ export function literalPorts(text) {
 export function gatedVesselSubs() {
   const vessel = readFileSync(join(ROOT, "packages/lares-cli/src/commands/vessel.ts"), "utf8");
   const table = /const SUBS\b[^=]*=\s*\{([\s\S]*?)\n\};/.exec(vessel)?.[1] ?? "";
-  const subs = [...table.matchAll(/^\s{2}(\w+):\s*\{\s*summary/gm)].map((m) => m[1]);
+  const subs = [...table.matchAll(/^\s{2}(\w+):\s*\{\s*run\b/gm)].map((m) => m[1]);
   const gate = readFileSync(join(ROOT, "packages/lares-cli/src/build-freshness.ts"), "utf8");
   const never = new Set([...(/NEVER_STALE[^=]*=\s*new Set\(\[([^\]]*)\]/.exec(gate)?.[1] ?? "").matchAll(/"(\w+)"/g)].map((m) => m[1]));
   return subs.filter((s) => !never.has(s));
@@ -117,7 +117,7 @@ function gatedTsVarBindings(text, gated) {
   return map;
 }
 
-/** Every gated vessel door a TypeScript file invokes as an argv array without `--skip-build`. */
+/** Every gated vessel door a TypeScript file invokes as an argv array without `skip-build=true`. */
 export function ungatedTs(text, gated) {
   const hits = [];
   const push = (index, snippet) =>
@@ -127,7 +127,7 @@ export function ungatedTs(text, gated) {
   const door = new RegExp(`["'\`]vessel["'\`]\\s*,\\s*["'\`](${gated.join("|")})["'\`]`, "g");
   for (const m of text.matchAll(door)) {
     const argv = enclosingArray(text, m.index);
-    if (!/["'`]--skip-build["'`]/.test(argv)) push(m.index, argv);
+    if (!/["'`]skip-build=true["'`]/.test(argv)) push(m.index, argv);
   }
 
   // a var bound to a literal gated name, substituted for the literal: `const sub = "found"; […, sub]`
@@ -137,7 +137,7 @@ export function ungatedTs(text, gated) {
     for (const m of text.matchAll(varDoor)) {
       if (!bindings.has(m[1])) continue;
       const argv = enclosingArray(text, m.index);
-      if (!/["'`]--skip-build["'`]/.test(argv)) push(m.index, argv);
+      if (!/["'`]skip-build=true["'`]/.test(argv)) push(m.index, argv);
     }
   }
 
@@ -147,7 +147,7 @@ export function ungatedTs(text, gated) {
     const lineStart = text.lastIndexOf("\n", m.index) + 1;
     const lineEndAt = text.indexOf("\n", m.index);
     const line = text.slice(lineStart, lineEndAt < 0 ? text.length : lineEndAt);
-    if (!/--skip-build/.test(line)) push(m.index, line);
+    if (!/skip-build=true/.test(line)) push(m.index, line);
   }
 
   return hits;
@@ -162,7 +162,7 @@ function gatedShVarBindings(text, gated) {
 }
 
 /** The raw line up to (but not including) a `#` that stands outside any quote — a trailing comment
- *  carries no bytes a shell ever runs, so a `--skip-build` written only there satisfies nothing. */
+ *  carries no bytes a shell ever runs, so a `skip-build=true` written only there satisfies nothing. */
 function stripTrailingComment(line) {
   let inSingle = false, inDouble = false;
   for (let i = 0; i < line.length; i++) {
@@ -174,7 +174,7 @@ function stripTrailingComment(line) {
   return line;
 }
 
-/** Every gated vessel door a shell line runs without `--skip-build`. Comments and quoted prose carry no
+/** Every gated vessel door a shell line runs without `skip-build=true`. Comments and quoted prose carry no
  *  door; a `-c "…"` / `eval "…"` command string, and a `$VAR` substituted for a bound literal, both do. */
 export function ungatedSh(text, gated) {
   const hits = [];
@@ -193,9 +193,9 @@ export function ungatedSh(text, gated) {
     const bare = rawNoComment.replace(/"(?:[^"\\]|\\.)*"/g, '""').replace(/'[^']*'/g, "''");
 
     const matched =
-      (door.test(bare) && !/--skip-build\b/.test(bare)) ||
-      (varDoor !== null && varDoor.test(rawNoComment) && !/--skip-build\b/.test(rawNoComment)) ||
-      quotedCmds.some((c) => door.test(c) && !/--skip-build\b/.test(c));
+      (door.test(bare) && !/\bskip-build=true\b/.test(bare)) ||
+      (varDoor !== null && varDoor.test(rawNoComment) && !/\bskip-build=true\b/.test(rawNoComment)) ||
+      quotedCmds.some((c) => door.test(c) && !/\bskip-build=true\b/.test(c));
     if (matched) hits.push({ line: i + 1, text: line.trim() });
   });
   return hits;
@@ -241,9 +241,9 @@ test("CONTROL: the door scanners read each planted bare door, and pass a gated o
   const gated = gatedVesselSubs();
   const ts = [
     `lares(["vessel", "found"]);`,                                           // 1
-    `await cliB(["vessel", "found", "--genesis", genesis]);`,                // 2
-    `spawn(process.execPath, [CLI, "vessel", "stand",\n  "--json"])`,        // 3-4
-    `cli(["vessel", "found", "--root", root, "--skip-build"]);`,  // 5
+    `await cliB(["vessel", "found", "genesis=/g"]);`,                // 2
+    `spawn(process.execPath, [CLI, "vessel", "stand",\n  "json=true"])`,        // 3-4
+    `cli(["vessel", "found", "root=/r", "skip-build=true"]);`,  // 5
     `lares(["vessel", "stop"]);`,                                            // 6
     `const sub = "found";`,                                                  // 7
     `cli(["vessel", sub]);`,                                                 // 8 — a var standing in for the literal
@@ -251,17 +251,17 @@ test("CONTROL: the door scanners read each planted bare door, and pass a gated o
   ].join("\n");
   assert.deepEqual(ungatedTs(ts, gated).map((h) => h.line), [1, 2, 3, 8, 9]);
   const sh = [
-    `run_a "A founds"   vessel stand --init`,                  // 1
+    `run_a "A founds"   vessel stand init=true`,                  // 1
     `if ! LAR_ROOT="$TB" node "$REPO/bin/lares.mjs" vessel found >"$TB/init.log" 2>&1; then`, // 2
-    `run_b "B founds"   vessel stand --init --skip-build`,     // 3
+    `run_b "B founds"   vessel stand init=true skip-build=true`,     // 3
     `# lares vessel found resolves the true-name`,                // 4
     `say "① vessel stand — the Nexus founds"`,                    // 5
     `as_a vessel stop`,                                           // 6
     `bash -c "vessel found"`,                                     // 7 — a door inside a quoted bash -c
-    `eval "vessel stand --init"`,                              // 8 — a door inside a quoted eval
+    `eval "vessel stand init=true"`,                              // 8 — a door inside a quoted eval
     `SUB=found`,                                                   // 9 — a binding, not itself a door
     `vessel "$SUB"`,                                               // 10 — the bound var standing in for the literal
-    `lares vessel found # --skip-build`,                          // 11 — a --skip-build a comment alone carries
+    `lares vessel found # skip-build=true`,                          // 11 — a skip-build=true a comment alone carries
   ].join("\n");
   assert.deepEqual(ungatedSh(sh, gated).map((h) => h.line), [1, 2, 7, 8, 10, 11]);
 });
@@ -275,14 +275,14 @@ test("no e2e file, harness module or witness script binds a literal port", () =>
   assert.deepEqual(found, [], `a literal port refuses a second copy of its own run — ask the OS (freePort / listen(0)):\n${found.join("\n")}`);
 });
 
-test("no e2e file, harness module or witness script opens a gated vessel door without --skip-build", () => {
+test("no e2e file, harness module or witness script opens a gated vessel door without skip-build=true", () => {
   const gated = gatedVesselSubs();
   const { ts, sh } = surfaces();
   const found = [
     ...ts.flatMap((f) => ungatedTs(readFileSync(f, "utf8"), gated).map((h) => `${rel(f)}:${h.line}  ${h.text}`)),
     ...sh.flatMap((f) => ungatedSh(readFileSync(f, "utf8"), gated).map((h) => `${rel(f)}:${h.line}  ${h.text}`)),
   ];
-  assert.deepEqual(found, [], `a gated door rebuilds the shared dist mid-run — pass --skip-build:\n${found.join("\n")}`);
+  assert.deepEqual(found, [], `a gated door rebuilds the shared dist mid-run — pass skip-build=true:\n${found.join("\n")}`);
 });
 
 // ── 3. SCRATCH PROBES ───────────────────────────────────────────────────────────────────────────────────────

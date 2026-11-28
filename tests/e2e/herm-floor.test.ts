@@ -162,7 +162,7 @@ async function standHerm(r: string): Promise<{ live: boolean; log: string }> {
   // answers instantly for a vessel that never came back up — the lift vector then reports a hearth that
   // stood when nothing did, and reaches for a socket no process holds.
   rmSync(standLog, { force: true });
-  const child = spawn(process.execPath, [CLI, "vessel", "stand", "--skip-build"], {
+  const child = spawn(process.execPath, [CLI, "vessel", "stand", "skip-build=true"], {
     env: { ...process.env, LAR_ROOT: r, LAR_PORT: String(PORT) }, cwd: REPO,
   });
   let launcher = "";
@@ -269,7 +269,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
   test("R1 — a herm reaches live: found, stood, and NO face ever lit", async () => {
     root = standHermRoot();
     seedTestCustody(root, "ignore");   // the harness names the founding route
-    execFileSync(process.execPath, [CLI, "vessel", "found", "--skip-build"], {
+    execFileSync(process.execPath, [CLI, "vessel", "found", "skip-build=true"], {
       env: { ...process.env, LAR_ROOT: root }, cwd: REPO, stdio: "ignore",
     });
     const { live, log } = await standHerm(root);
@@ -290,7 +290,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
     expect(rowsNamed(root, /persona-group-root|^anchors-h\d+\.json$/), "a face stands on the floor rig — every vector below measures a hearth, not a floor").toEqual([]);
     // And the locked floor says so when asked: a sealed read beside it refuses and names the unlock, where it
     // once opened a second key session of its own.
-    const asked = spawnSync(process.execPath, [CLI, "persona", "list", "--json"], {
+    const asked = spawnSync(process.execPath, [CLI, "persona", "list", "json=true"], {
       env: { ...process.env, LAR_ROOT: root }, cwd: REPO, encoding: "utf8",
     });
     expect(asked.status, `a locked floor answered a sealed read:\n${asked.stdout.slice(0, 400)}`).not.toBe(0);
@@ -311,11 +311,11 @@ describe("the herm — the floor of the lararium cap stack", () => {
     // THE HEARTH whose quorum will carry this herm: the Stable founding act seats its one-seat seed charter, so its one
     // chair counts a carry alone. The charter travels to the herm by its own doors (`seal export` → `seal import`).
     hearth = await openStaged({ tag: "herm-floor-hearth" });
-    const exported = await hearth.cli(["nexus", "seal", "export", "--no-json"]);
+    const exported = await hearth.cli(["nexus", "seal", "export", "json=false"]);
     expect(exported.code, `the hearth exported no charter:\n${exported.stderr.slice(-400)}`).toBe(0);
     const courier = mkdtempSync(join(stageDir(), "herm-floor-courier-"));
     writeFileSync(join(courier, "hearth-charter.mem"), exported.stdout);
-    const imported = run(["nexus", "seal", "import", join(courier, "hearth-charter.mem"), "--json"]);
+    const imported = run(["nexus", "seal", "import", join(courier, "hearth-charter.mem"), "json=true"]);
     expect(imported.code, `the herm refused the hearth's charter:\n${imported.said}`).toBe(0);
 
     // RED — NO GATE BEFORE THE JOIN (the shut-routes house ruling, stable-founding-road #/rulings: an explicit Nexus opens the herm relay). The herm
@@ -332,17 +332,17 @@ describe("the herm — the floor of the lararium cap stack", () => {
     // THE JOIN, BY HAND, through the three doors a person runs (lar:///ha.ka.ba/lararium/node/carry-bundle): the herm signs
     // its carrier seal and its floor pin with its own vessel key, the hearth's quorum counts the carry with the pin beside
     // it, and the herm takes the bundle onto its own replica. The running herm refolds, and its floor gate stands there.
-    const signed = run(["nexus", "carry-for", "--json"]);
+    const signed = run(["nexus", "carry-for", "json=true"]);
     expect(signed.code, `the herm signed no carrier seal:\n${signed.said}`).toBe(0);
     const seal = (signed.json?.["data"] ?? {}) as { nym?: string; carrierSig?: string; floorPin?: unknown; placeKel?: unknown };
     expect(seal.floorPin, "carry-for signed no floor pin at the hearth's Nexus").toBeTruthy();
     writeFileSync(join(courier, "floor-pin.json"), JSON.stringify({ floorPin: seal.floorPin, placeKel: seal.placeKel }));
-    const carried = await hearth.cli(["nexus", "carry", seal.nym!, `carrier=${seal.carrierSig!}`, `floor-pin=${join(courier, "floor-pin.json")}`, "--json"]);
+    const carried = await hearth.cli(["nexus", "carry", seal.nym!, `carrier=${seal.carrierSig!}`, `floor-pin=${join(courier, "floor-pin.json")}`, "json=true"]);
     expect(carried.code, `the hearth's quorum refused the carry:\n${carried.stdout.slice(-400)}\n${carried.stderr.slice(-400)}`).toBe(0);
     const bundle = (carried.json?.["data"] as { carryBundle?: unknown } | undefined)?.carryBundle;
     expect(bundle, "the carry emitted no carry bundle").toBeTruthy();
     writeFileSync(join(courier, "carry-bundle.json"), JSON.stringify(bundle));
-    const taken = run(["nexus", "carry-take", join(courier, "carry-bundle.json"), "--json"]);
+    const taken = run(["nexus", "carry-take", join(courier, "carry-bundle.json"), "json=true"]);
     expect(taken.code, `the herm refused its carry bundle:\n${taken.said}`).toBe(0);
     expect((taken.json?.["data"] as { refolded?: boolean } | undefined)?.refolded, "the standing herm did not refold on the take").toBe(true);
 
@@ -393,7 +393,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
     expect(unseeded.said).toMatch(/no seed charter stands here/);
     // The lift: the Stable founding act over the standing place, with no vessel holding the store.
     await stopVessel();
-    const lit = run(["vessel", "found", "hearth=true", "name=the lift", "--skip-build"]);
+    const lit = run(["vessel", "found", "hearth=true", "name=the lift", "skip-build=true"]);
     expect(lit.code, `the Stable founding act refused the lift:\n${lit.said}`).toBe(0);
     const { live, log } = await standHerm(root);
     // CARRY THE BOOT INTO THE FAILURE. A bare `expected false to be true` names a vessel that did not

@@ -110,7 +110,7 @@ describe("lares law index", () => {
     expect(index).toEqual({ verb: "wiki-filter", args: { recipe: "default", filter: LAW_INDEX_FILTER, fields: ["description", "role"] } });
   });
 
-  test("the index prints plainly through a pipe unless --json asks; CONTROL: --limit and --after ride the wire", async () => {
+  test("the index prints plainly through a pipe unless json=true asks; CONTROL: --limit and --after ride the wire", async () => {
     const r = await run(argv(["index"], {}, { limit: "3", after: "3.abc" }));
     expect(r.out).toMatch(/^Lares law \(pinned first\): 4 pinned · 6 rows\n📌 lar:\/\/\/ha\.ka\.ba\/lares\/api\/noosphere-boot\n/);
     expect(r.out).toContain(`   ${LAW[0]} — the role of drift-ward\n`);

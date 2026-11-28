@@ -17,7 +17,7 @@
  *   · one bound to a head the chain has since ROTATED PAST refuses as STALE,
  *   · one whose chain is BURNED refuses — a buried name claims nothing,
  *   · a Handle the reader never met refuses NOT-FOUND rather than guessing a chain,
- *   · every refusal rides `emit`, so an agent under `--json` reads a verdict and never bare prose.
+ *   · every refusal rides `emit`, so an agent under `json=true` reads a verdict and never bare prose.
  */
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
@@ -106,7 +106,7 @@ describe("★ lares handle verify-attestation — the READER-LOCAL chain-verify 
     const { cardPath, statementArg } = scratch(inception.prefix, [inception], stmt);
 
     const cap = captureJson();
-    const code = await dispatch(["handle", "verify-attestation", statementArg, `card=${cardPath}`, "--json"]);
+    const code = await dispatch(["handle", "verify-attestation", statementArg, `card=${cardPath}`, "json=true"]);
     expect(code, "a holding attestation exits clean").toBe(0);
     const out = parse(cap.lines);
     expect(out.ok).toBe(true);
@@ -131,7 +131,7 @@ describe("★ lares handle verify-attestation — the READER-LOCAL chain-verify 
     const { cardPath, statementArg } = scratch(inception.prefix, [inception, rot.event], stmt);
 
     const cap = captureJson();
-    const code = await dispatch(["handle", "verify-attestation", statementArg, `card=${cardPath}`, "--json"]);
+    const code = await dispatch(["handle", "verify-attestation", statementArg, `card=${cardPath}`, "json=true"]);
     expect(code, "a refused verdict exits non-zero so a script branches").toBe(4);
     const out = parse(cap.lines);
     expect(out.ok).toBe(false);
@@ -148,7 +148,7 @@ describe("★ lares handle verify-attestation — the READER-LOCAL chain-verify 
     const { cardPath, statementArg } = scratch(inception.prefix, [inception, burn.event], stmt);
 
     const cap = captureJson();
-    const code = await dispatch(["handle", "verify-attestation", statementArg, `card=${cardPath}`, "--json"]);
+    const code = await dispatch(["handle", "verify-attestation", statementArg, `card=${cardPath}`, "json=true"]);
     expect(code).toBe(4);
     const out = parse(cap.lines);
     expect(out.ok).toBe(false);
@@ -162,7 +162,7 @@ describe("★ lares handle verify-attestation — the READER-LOCAL chain-verify 
     const { cardPath, statementArg } = scratch(inception.prefix, [inception], bent);
 
     const cap = captureJson();
-    expect(await dispatch(["handle", "verify-attestation", statementArg, `card=${cardPath}`, "--json"])).toBe(4);
+    expect(await dispatch(["handle", "verify-attestation", statementArg, `card=${cardPath}`, "json=true"])).toBe(4);
     expect(parse(cap.lines).ok).toBe(false);
   });
 
@@ -171,7 +171,7 @@ describe("★ lares handle verify-attestation — the READER-LOCAL chain-verify 
     const stmt = await attestUnderHead([inception], DNS_CLAIM, signA);
 
     const cap = captureJson();
-    const code = await dispatch(["handle", "verify-attestation", JSON.stringify(stmt), "--json"]);
+    const code = await dispatch(["handle", "verify-attestation", JSON.stringify(stmt), "json=true"]);
     expect(code, "an unmet Handle is not-found, never a false verdict").toBe(3);
     const out = parse(cap.lines);
     expect(out.ok).toBe(false);
@@ -180,7 +180,7 @@ describe("★ lares handle verify-attestation — the READER-LOCAL chain-verify 
 
   test("a MALFORMED statement refuses as usage, through the emit choke point", async () => {
     const cap = captureJson();
-    const code = await dispatch(["handle", "verify-attestation", "{not json", "--json"]);
+    const code = await dispatch(["handle", "verify-attestation", "{not json", "json=true"]);
     expect(code).toBe(2);
     const out = parse(cap.lines);
     expect(out.ok).toBe(false);
@@ -188,7 +188,7 @@ describe("★ lares handle verify-attestation — the READER-LOCAL chain-verify 
   });
 
   test("CONTROL — at a TTY the door prints prose and emits NO machine payload", async () => {
-    // `emit` renders JSON under `--json` OR off-TTY, and vitest is NEVER a TTY: without this the control
+    // `emit` renders JSON under `json=true` OR off-TTY, and vitest is NEVER a TTY: without this the control
     // would pass for the wrong reason.
     const { inception, signA } = await foundFace();
     const stmt = await attestUnderHead([inception], DNS_CLAIM, signA);
@@ -215,7 +215,7 @@ describe("★ `lares handle attest` takes a STRUCTURED edge, and prose mints not
 
   test("PROSE REFUSES — the positional claim the door once took mints nothing now", async () => {
     const cap = captureJson();
-    const code = await dispatch(["handle", "attest", "controls example.net", "--json"]);
+    const code = await dispatch(["handle", "attest", "controls example.net", "json=true"]);
     expect(code, "a prose claim refuses as usage").toBe(2);
     const out = parse(cap.lines);
     expect(out.ok).toBe(false);
@@ -225,7 +225,7 @@ describe("★ `lares handle attest` takes a STRUCTURED edge, and prose mints not
 
   test("an UNKNOWN surface refuses and NAMES the adapter family's rows", async () => {
     const cap = captureJson();
-    const code = await dispatch(["handle", "attest", "surface=carrier-pigeon", "subject=somewhere", "--json"]);
+    const code = await dispatch(["handle", "attest", "surface=carrier-pigeon", "subject=somewhere", "json=true"]);
     expect(code).toBe(2);
     const out = parse(cap.lines);
     expect(String(out.error?.message)).toMatch(/dns-control/);
@@ -234,7 +234,7 @@ describe("★ `lares handle attest` takes a STRUCTURED edge, and prose mints not
 
   test("a surface with NO subject refuses — an edge with no far end reaches nothing", async () => {
     const cap = captureJson();
-    expect(await dispatch(["handle", "attest", "surface=dns-control", "--json"])).toBe(2);
+    expect(await dispatch(["handle", "attest", "surface=dns-control", "json=true"])).toBe(2);
     expect(parse(cap.lines).error?.code).toBe("usage");
   });
 
@@ -256,7 +256,7 @@ describe("★ the verify door refuses a statement whose claim is not a structure
     const prose = { ...stmt, claim: "controls example.net" as unknown as HandleClaim };
     const { cardPath, statementArg } = scratch(inception.prefix, [inception], prose);
     const cap = captureJson();
-    const code = await dispatch(["handle", "verify-attestation", statementArg, `card=${cardPath}`, "--json"]);
+    const code = await dispatch(["handle", "verify-attestation", statementArg, `card=${cardPath}`, "json=true"]);
     expect(code, "a prose claim never reads as a verified edge").toBe(2);
     expect(parse(cap.lines).ok).toBe(false);
   });

@@ -57,7 +57,7 @@ async function inspectUntil(
   const started = Date.now();
   let last: CliResult | undefined;
   while (Date.now() - started < timeoutMs) {
-    last = await vessel.cli(["nexus", "offering", "inspect", offeringCid, "--json"]);
+    last = await vessel.cli(["nexus", "offering", "inspect", offeringCid, "json=true"]);
     const data = last.json?.["data"] as { inspection?: { byteStatus?: string } } | undefined;
     if (last.json?.["ok"] === true && data?.inspection?.byteStatus === byteStatus) return last;
     await sleep(500);
@@ -84,7 +84,7 @@ beforeAll(async () => {
       // The publish door opens the source's store directly, so it runs here, while NO daemon holds that
       // store (the single-owner law): a write beside a live holder lands on disk the holder never reads,
       // and the source's daemon would carry a board without the gift.
-      const published = await source(["nexus", "publish", "plugins", `source=${HIGHLIGHT_SOURCE}`, "apply=true", "face=0", "--json"]);
+      const published = await source(["nexus", "publish", "plugins", `source=${HIGHLIGHT_SOURCE}`, "apply=true", "face=0", "json=true"]);
       if (published.code !== 0 || published.json?.["ok"] !== true) {
         throw new Error(`source offering publish failed: ${published.stdout}\n${published.stderr}`);
       }
@@ -94,7 +94,7 @@ beforeAll(async () => {
       if (!offeringCid || !boardUrl) throw new Error(`source publish returned no offering coordinates: ${published.stdout}`);
       if (!data?.blobCount || data.blobCount < 1) throw new Error(`source publish announced an EMPTY gift: ${published.stdout}`);
       // The signed record names the one plugin byte; the source's CAS materializes it only once its daemon boots.
-      const inspect = await source(["nexus", "offering", "inspect", offeringCid, "--json"]);
+      const inspect = await source(["nexus", "offering", "inspect", offeringCid, "json=true"]);
       const inspection = inspect.json?.["data"] as { bytes?: { held?: string[]; missing?: string[] } } | undefined;
       pluginCid = inspection?.bytes?.held?.[0] ?? inspection?.bytes?.missing?.[0] ?? "";
       if (!pluginCid) throw new Error(`source offering did not name its plugin CID: ${inspect.stdout}`);
@@ -142,7 +142,7 @@ describe("source offering → receiver Crossroads evidence", () => {
 
   test("refuses an unknown record", async () => {
     const wrongCid = `sha256:${"f".repeat(64)}`;
-    const unknown = await receiver.cli(["nexus", "offering", "inspect", wrongCid, "--json"]);
+    const unknown = await receiver.cli(["nexus", "offering", "inspect", wrongCid, "json=true"]);
     expect(unknown.code).not.toBe(0);
     expect(unknown.json?.["ok"]).toBe(false);
     expect(String((unknown.json?.["error"] as { message?: string } | undefined)?.message)).toMatch(/not present|offering/i);
@@ -161,7 +161,7 @@ describe("source offering → receiver Crossroads evidence", () => {
 
     // The inspect runs through the direct holder: it claims the store for its act, and its adapter closes before
     // the claim releases.
-    const inspected = await receiver.cli(["nexus", "offering", "inspect", offeringCid, "--json"]);
+    const inspected = await receiver.cli(["nexus", "offering", "inspect", offeringCid, "json=true"]);
     expect(inspected.json?.["ok"], inspected.stdout + inspected.stderr).toBe(true);
     expect((inspected.json?.["data"] as { via?: string } | undefined)?.via, "no daemon stands: the act held the store itself").toBe("direct");
     expect((inspected.json?.["data"] as { bytes?: { invalid?: string[] } }).bytes?.invalid, "the same reading the live inspect gave last").toEqual([pluginCid]);

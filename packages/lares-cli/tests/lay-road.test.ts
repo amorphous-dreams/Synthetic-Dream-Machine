@@ -114,7 +114,7 @@ describe("the lay feeds every disk-sourced holding through CREATE then INGEST", 
     expect(calls[0]!.flags["apply"]).toBeUndefined();
   });
 
-  test("S5b — an apply with no --yes and no terminal refuses out loud, naming the cure, and sends nothing", async () => {
+  test("S5b — an apply with no yes=true and no terminal refuses out loud, naming the cure, and sends nothing", async () => {
     const ttys = [process.stdin.isTTY, process.stdout.isTTY];
     process.stdin.isTTY = false; process.stdout.isTTY = false;
     const errors: string[] = [], error = console.error;
@@ -123,7 +123,7 @@ describe("the lay feeds every disk-sourced holding through CREATE then INGEST", 
       for (const flags of [{ apply: true }, { apply: true, workbench: true }]) {
         calls.length = 0; errors.length = 0;
         expect(await cmdLay({ command: "vessel", positional: ["lay"], options: {}, flags } as ParsedArgs)).toBe(2);
-        expect(errors.join("\n")).toContain(`lares vessel lay ${"workbench" in flags ? "workbench=true " : ""}apply=true --yes`);
+        expect(errors.join("\n")).toContain(`lares vessel lay ${"workbench" in flags ? "workbench=true " : ""}apply=true yes=true`);
         expect(calls).toEqual([]);
       }
     } finally { console.error = error; process.stdin.isTTY = ttys[0] as boolean; process.stdout.isTTY = ttys[1] as boolean; }

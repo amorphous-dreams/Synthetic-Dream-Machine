@@ -23,8 +23,8 @@
  * IDEMPOTENT (causal-island law): each run converges from whatever state it finds — a virgin Synced tree reads
  * everything NEW; a converged tree no-ops per holding.
  *
- *   lares vessel lay [apply=true] [--yes] [lift-kahua=<N>]   — preview per holding by default (the ingest posture);
- *                                          a bare --yes lifts nothing in kahua: a typed count on a TTY, or lift-kahua=N
+ *   lares vessel lay [apply=true] [yes=true] [lift-kahua=<N>]   — preview per holding by default (the ingest posture);
+ *                                          a bare yes=true lifts nothing in kahua: a typed count on a TTY, or lift-kahua=N
  *   lares vessel lay workbench=true [apply=true]                  — the checkout's workbench folders alone (`<source>/../wikis/<slug>`)
  *                                          into each wiki's working layer the worn face mounts; never canon, never a face root
  *   lares vessel lay lag=true                                  — the house's lag; writes nothing
@@ -122,7 +122,7 @@ export async function layHolding(
     // writes nothing (the steward alone writes canon live) and the lay names the state, clean.
     if (created.readsFloor) return { ...h, gesture: "floor", exitCode: 0, reason: HOUSE_CANON_FLOOR_REASON };
   }
-  // New content SURFACES for the operator to grade: without `--yes` the ingest gate asks; `--yes` (the operator's
+  // New content SURFACES for the operator to grade: without `yes=true` the ingest gate asks; `yes=true` (the operator's
   // relayed approval) passes through.
   const sink: IngestSink = {};
   const exitCode = await withIngestTicks(h.holding, () => cmdIngest({
@@ -236,7 +236,7 @@ async function foldCreateOutput(args: ParsedArgs, run: () => Promise<number>): P
   } finally { console.log = log; process.stdout.write = write; }
 }
 
-/** Run the mirror leg off the lay's own flags: `apply=true`, `lift-kahua=<N>`, `--json`. */
+/** Run the mirror leg off the lay's own flags: `apply=true`, `lift-kahua=<N>`, `json=true`. */
 export function runMirrorLeg(args: ParsedArgs, doors: MirrorDoors, opts: { kahuaOnly?: boolean } = {}): Promise<number> {
   return runMirrors({ apply: args.flags["apply"] === true, liftKahua: args.options["lift-kahua"], json: args.flags["json"] === true, ...(opts.kahuaOnly ? { kahuaOnly: true } : {}) }, doors);
 }
@@ -313,13 +313,13 @@ export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_M
     });
     return 0;
   }
-  // AN APPLY THAT NO HAND CONFIRMS REFUSES OUT LOUD: without `--yes` the lay asks at a terminal, and with none (a pipe, a seat, a
+  // AN APPLY THAT NO HAND CONFIRMS REFUSES OUT LOUD: without `yes=true` the lay asks at a terminal, and with none (a pipe, a seat, a
   // harness) no one can answer, so it names the cure instead of standing silent.
   if (args.flags["apply"] === true && args.flags["yes"] !== true && !(process.stdin.isTTY && process.stdout.isTTY)) {
-    const cure = `lares vessel lay ${args.flags["workbench"] ? "workbench=true " : ""}apply=true --yes`;
+    const cure = `lares vessel lay ${args.flags["workbench"] ? "workbench=true " : ""}apply=true yes=true`;
     emit(args, {
       ok: false,
-      error: { code: "usage", message: "confirmation required", hint: `no terminal answers the lay's confirmation; pass --yes (the operator's relayed approval): ${cure}` },
+      error: { code: "usage", message: "confirmation required", hint: `no terminal answers the lay's confirmation; pass yes=true (the operator's relayed approval): ${cure}` },
       human: () => { /* the line below speaks for the prose route and rides stderr beside a JSON envelope too */ },
     });
     console.error(`lares vessel lay: apply=true needs a confirmation and no terminal stands to give it; run \`${cure}\` to confirm (add lift-kahua=<N> to lift kahua items).`);

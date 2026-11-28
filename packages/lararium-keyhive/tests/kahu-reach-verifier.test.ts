@@ -1,6 +1,6 @@
 /**
  * kahu-reach-verifier — the verify-then-delegate gate carries the Kahu predicate. A verb routed into a wiki island
- * (`lares act --in-wiki`) clears its cap at the keyholder island before main delegates it, and the wiki island then
+ * (`lares lar:///carriage.* in-wiki=true`) clears its cap at the keyholder island before main delegates it, and the wiki island then
  * answers by worker trust, so the daemon's verifier is the one place that door can ask the cabal.
  *
  * Proven: an `admin` ask on a system canon bag draws `kahu-reach` from a stranger and from a vessel that composed no

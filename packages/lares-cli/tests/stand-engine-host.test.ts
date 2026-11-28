@@ -69,7 +69,7 @@ describe("vessel stand and the host-held engine", () => {
   it("observe carries the standing verdict without acting", async () => {
     vi.stubEnv("LAR_ENGINE", "host");
     const { cmdStand } = await import("../src/commands/stand.js");
-    expect(await cmdStand(parseArgs(["vessel", "stand", "observe=true", "--json"])) ).toBe(0);
+    expect(await cmdStand(parseArgs(["vessel", "stand", "observe=true", "json=true"])) ).toBe(0);
     expect(emitted.at(-1)?.data).toMatchObject({ standing: { act: "restand", reason: "face lit after boot" } });
     // CONTROL: an observing stand refuses nothing, so `ok` answers for the vessel alone.
     expect(emitted.at(-1)).toMatchObject({ ok: true });
@@ -81,7 +81,7 @@ describe("vessel stand and the host-held engine", () => {
   it("host engine refuses restand by name and neither stops nor spawns", async () => {
     vi.stubEnv("LAR_ENGINE", "host");
     const { cmdStand } = await import("../src/commands/stand.js");
-    expect(await cmdStand(parseArgs(["vessel", "stand", "--json"])) ).toBe(3);
+    expect(await cmdStand(parseArgs(["vessel", "stand", "json=true"])) ).toBe(3);
     // The act the caller asked for did not happen: the host must perform the re-stand, so `ok` reads false
     // beside the named refusal. The standing verdict still rides the payload for the host's shim.
     expect(emitted.at(-1)).toMatchObject({
@@ -100,7 +100,7 @@ describe("vessel stand and the host-held engine", () => {
       readVesselStanding: () => ({ state: "rising", message: "starting" }), conditionOk: () => false,
     }));
     const { cmdStand } = await import("../src/commands/stand.js");
-    await cmdStand(parseArgs(["vessel", "stand", "--json"]));
+    await cmdStand(parseArgs(["vessel", "stand", "json=true"]));
     const node = (emitted.at(-1)?.data as { node: { up: boolean; note: string } }).node;
     expect(node.up).toBe(false);
     expect(node.note).toMatch(/exited.*before.*ready/i);
@@ -112,7 +112,7 @@ describe("vessel stand and the host-held engine", () => {
   it("CONTROL without LAR_ENGINE retains the in-container stop and spawn path", async () => {
     vi.stubEnv("LAR_ENGINE", "");
     const { cmdStand } = await import("../src/commands/stand.js");
-    expect(await cmdStand(parseArgs(["vessel", "stand", "--json"])) ).toBe(0);
+    expect(await cmdStand(parseArgs(["vessel", "stand", "json=true"])) ).toBe(0);
     expect(stopIncumbent).toHaveBeenCalledOnce();
     expect(spawn).toHaveBeenCalledOnce();
   });
@@ -155,7 +155,7 @@ describe("a verb's own process REPORTS the standing to the host shim, and never 
     expect(takeEntryAsks(["get", "title=lar:///x", "--ask-budget-ms=3500"])).toEqual({ argv: ["get", "title=lar:///x"], budgetMs: 3500 });
     expect(takeEntryAsks(["--ask-budget-ms", "40", "vessel", "read"])).toEqual({ argv: ["vessel", "read"], budgetMs: 40 });
     expect(takeEntryAsks(["vessel", "read", "--ask-budget-ms=soon"])).toEqual({ argv: ["vessel", "read"], budgetMs: null });
-    expect(takeEntryAsks(["vessel", "read", "--json"])).toEqual({ argv: ["vessel", "read", "--json"], budgetMs: null });
+    expect(takeEntryAsks(["vessel", "read", "json=true"])).toEqual({ argv: ["vessel", "read", "json=true"], budgetMs: null });
     // HOST/IMAGE SKEW BREAKS NO CALL: a shim from before the report still appends the word; the verb never meets it, and the
     // exit stays the verb's own (that shim then reads a bare 0 and takes its own observe reading).
     expect(takeEntryAsks(["vessel", "read", "--standing-report"])).toEqual({ argv: ["vessel", "read"], budgetMs: null, retiredAsk: true });

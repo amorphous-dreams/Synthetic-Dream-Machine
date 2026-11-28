@@ -20,7 +20,7 @@ const args = (flags: Record<string, boolean>, positional: string[] = []): Parsed
 describe("★ the observe cap never triggers a rebuild ★", () => {
   test("an observing wake passes the gate untouched, however stale the tree", async () => {
     // null = "run the handler in-process": no build, no re-exec, nothing on disk disturbed.
-    expect(await freshBuildGate(["vessel", "stand", "--json"], args({ observe: true }, ["stand"]))).toBeNull();
+    expect(await freshBuildGate(["vessel", "stand", "json=true"], args({ observe: true }, ["stand"]))).toBeNull();
   });
 
   test("the re-exec sentinel still ends the recursion", async () => {

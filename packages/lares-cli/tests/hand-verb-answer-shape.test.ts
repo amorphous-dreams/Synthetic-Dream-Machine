@@ -1,6 +1,6 @@
 /**
  * hand-verb-answer-shape — every hand-verb answer (`lei show|kui|unstring|restring|land`, `rite keep|kukulu`) reads ONE shape on a
- * terminal or a pipe: the one-line envelope on stdout; a terminal adds one line of prose on stderr; `--no-json` asks the prose.
+ * terminal or a pipe: the one-line envelope on stdout; a terminal adds one line of prose on stderr; `json=false` asks the prose.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -30,12 +30,12 @@ describe("hand-verb answers read one shape", () => {
     expect(tty.log.concat(pipe.log)).toEqual([]);
   });
 
-  it("RED: a refusal reads the same envelope shape on both, and --no-json asks the prose route", async () => {
+  it("RED: a refusal reads the same envelope shape on both, and json=false asks the prose route", async () => {
     const e = { ok: false, error: { code: "swarm-lei-forked", message: "name the tip" }, human: () => console.error("prose") };
     const tty = await withTty(true, () => emitAnswer(parseArgs(["lei", "kui"]), e, "lares lei: name the tip"));
     expect(tty.out).toEqual([`{"ok":false,"error":{"code":"swarm-lei-forked","message":"name the tip"}}\n`]);
     expect(tty.err).toEqual(["lares lei: name the tip"]);
-    const prose = await withTty(true, () => emitAnswer(parseArgs(["lei", "kui", "--no-json"]), e, "unused"));
+    const prose = await withTty(true, () => emitAnswer(parseArgs(["lei", "kui", "json=false"]), e, "unused"));
     expect(prose.out).toEqual([]);
     expect(prose.err).toEqual(["prose"]);
   });

@@ -100,18 +100,17 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: BagSubcommand }>> = {
 /** Every verb the bag door answers (`help` prints this table). */
 export const BAG_VERBS: readonly string[] = ["help", ...Object.keys(SUBCOMMANDS)];
 
-/** The door's lines, drawn from the carriers `lares bag --help` prints; `lares bag help` and a refusal print the same. */
+/** The door's lines, drawn from the carriers `lares help bag` prints; `lares bag help` and a refusal print the same. */
 function printBagHelp(out: (line: string) => void): void {
   for (const line of helpLines("bag")) out(line);
 }
 
 export async function cmdBag(args: ParsedArgs): Promise<number> {
   const verb = args.positional[0];
-  if (!verb || verb === "help" || args.flags["help"]) {
+  if (!verb || verb === "help") {
     printBagHelp((line) => console.log(line));
     return verb ? 0 : 2;
   }
-  // The dispatcher's one MOVED table answers `bag pin`, `bag list` and kin before this door runs.
   const entry = SUBCOMMANDS[verb];
   if (!entry) {
     console.error(`lares bag: unknown verb "${verb}"`);

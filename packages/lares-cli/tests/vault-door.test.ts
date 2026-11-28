@@ -65,7 +65,7 @@ async function slots(): Promise<{ id: string }[]> {
   return s.tree.reading === "readable" ? [...s.tree.slots] : [];
 }
 
-const run = (...argv: string[]): Promise<number> => cmdVault(parseArgs(["vault", ...argv, "--json"]));
+const run = (...argv: string[]): Promise<number> => cmdVault(parseArgs(["vault", ...argv, "json=true"]));
 
 /** The pūlama's signals: this suite stands no pūlama, so none of them may leak in from the operator's own house. */
 const PULAMA_KEYS = ["HOME", "LARES_PULAMA", "LAR_PULAMA_SOCKET"] as const;
@@ -133,7 +133,7 @@ describe("vault door — one face's own tree", () => {
   it("★ status prints a face as one counted line with digests, never its rows by name ★", async () => {
     await foundOneFace();
     out.length = 0;
-    expect(await cmdVault(parseArgs(["vault", "status", "--no-json"]))).toBe(0);
+    expect(await cmdVault(parseArgs(["vault", "status", "json=false"]))).toBe(0);
     const text = out.join("\n");
     expect(text).toMatch(/face h0 +[0-9a-f]{12}…  \d+ row\(s\): \d+ sealed under its key, 0 at fault +group 111111111111…/);
     expect(text).not.toMatch(/face-owner/);
@@ -253,7 +253,7 @@ describe("vault door — status, unlock, bind, unbind", () => {
   });
 
   it("★ CONTROL: a clean custody home reads no fault and nothing outside the table ★", async () => {
-    expect(await cmdVault(parseArgs(["vault", "status", "--no-json"]))).toBe(0);
+    expect(await cmdVault(parseArgs(["vault", "status", "json=false"]))).toBe(0);
     const text = out.join("\n");
     expect(text).not.toMatch(/FAULT|OUTSIDE THE TABLE/);
     expect(text).toMatch(/outside the table\s+nothing/);
@@ -397,25 +397,25 @@ describe("vault status answers a pipe in prose (quiet-pipe)", () => {
     expect(text).not.toContain("gate-root.bin");
   });
 
-  it("★ `--verbose` prints one reading of every standing file; `--json` still answers the whole custody object ★", async () => {
+  it("★ `--verbose` prints one reading of every standing file; `json=true` still answers the whole custody object ★", async () => {
     piped();
     expect(await cmdVault(parseArgs(["vault", "status", "verbose=true"]))).toBe(0);
     expect(out.join("\n")).toMatch(/gate-root\.bin/);
     out.length = 0;
-    expect(await cmdVault(parseArgs(["vault", "status", "--json"]))).toBe(0);
+    expect(await cmdVault(parseArgs(["vault", "status", "json=true"]))).toBe(0);
     const j = JSON.parse(out.join("").trim().split("\n").pop()!);
     expect(j.ok).toBe(true);
     expect(j.data.custody.rows.some((r: { row: string }) => r.row === "gate-root")).toBe(true);
   });
 
-  it("★ a piped `vault unlock` answers in prose: its refusal names itself on stderr and stdout carries no JSON; `--json` keeps the envelope ★", async () => {
+  it("★ a piped `vault unlock` answers in prose: its refusal names itself on stderr and stdout carries no JSON; `json=true` keeps the envelope ★", async () => {
     piped();
     tty = false;
     expect(await cmdVault(parseArgs(["vault", "unlock", "all=true"]))).toBe(1);
     expect(out.join("")).toBe("");
     expect(err.join("\n")).toMatch(/lares vault unlock: CredentialTtyRefusal/);
     err.length = 0;
-    expect(await cmdVault(parseArgs(["vault", "unlock", "all=true", "--json"]))).toBe(1);
+    expect(await cmdVault(parseArgs(["vault", "unlock", "all=true", "json=true"]))).toBe(1);
     expect(JSON.parse(out.join("").trim()).error.code).toBe("CredentialTtyRefusal");
   });
 });

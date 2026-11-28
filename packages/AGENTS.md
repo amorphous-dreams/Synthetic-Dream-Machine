@@ -143,7 +143,7 @@ TW5 child edit
   -> projection fan-out + ReactionGraph dispatch
 ```
 
-Residency transitions travel through the ACTION verb surface (`ADD`, `COPY`, `MOVE`, `CLEAR`, `DROP`, `LOAD`) governed by the [Residency Model Epic](.shelf/EPIC-RESIDENCY-MODEL.md). The `lares act` CLI carries the operator surface; no `promote` shim exists. Do not let live wiki edits write `bags/` directly — operators land bag content through ACTION verbs.
+Residency transitions travel through the ACTION verb surface (`ADD`, `COPY`, `MOVE`, `CLEAR`, `DROP`, `LOAD`) governed by the [Residency Model Epic](.shelf/EPIC-RESIDENCY-MODEL.md). Each residency act rides the CLI by its address (`lares lar:///carriage.bag.moves …`); no `promote` shim exists. Do not let live wiki edits write `bags/` directly — operators land bag content through ACTION verbs.
 
 <<~/ahu>>
 

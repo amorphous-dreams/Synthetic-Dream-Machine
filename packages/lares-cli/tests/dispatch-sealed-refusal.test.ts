@@ -24,13 +24,13 @@ async function run(argv: string[]): Promise<{ code: number; err: string[]; out: 
 
 describe("a refused sealed act through the dispatcher", () => {
   test("★ `lares surface face` prints one plain line and exits non-zero ★", async () => {
-    const r = await run(["surface", "face", "--no-json"]);
+    const r = await run(["surface", "face", "json=false"]);
     expect(r.code).not.toBe(0);
     expect(r.err).toEqual(["lares surface: this vessel stands faces h0, h1 open and wears none of them"]);
   });
 
-  test("under --json the refusal travels as one object under its reason", async () => {
-    const r = await run(["surface", "face", "--json"]);
+  test("under json=true the refusal travels as one object under its reason", async () => {
+    const r = await run(["surface", "face", "json=true"]);
     expect(r.code).not.toBe(0);
     const answer = JSON.parse(r.out.at(-1)!) as { ok: boolean; error: { code: string } };
     expect(answer).toMatchObject({ ok: false, error: { code: "act-refused" } });

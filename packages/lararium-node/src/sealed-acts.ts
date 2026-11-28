@@ -437,7 +437,7 @@ export const SEALED_ACTS = Object.freeze({
   "persona.roots": act({}, async () => {
     const lines = await listPersonaRosterLines();
     // EACH ROOT NAMES ITS PERSONAGROUP where its face stands open (its anchors row reads); a shut face names none, so a rite
-    // reads a group off `persona list --json` and never off a projection.
+    // reads a group off `persona list json=true` and never off a projection.
     const groupOf = async (handleIndex: number): Promise<string | null> =>
       (await loadIdentityAnchors(handleIndex).catch(() => null))?.personaGroupId ?? null;
     return {

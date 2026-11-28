@@ -21,7 +21,7 @@ The gesture holds the disk grant and the Synced tree (the island holds neither; 
 
 `--tag-blobs` stamps the CAS opt-in flag (a `.meta` sidecar, or a meme's ahu meta) on the large un-flagged carriers that would fault during LOAD or INGEST; it writes no records, and the preview names the count. `--watch` fires the same gesture per settled wave instead of once: one wave per quiet window (`--debounce` ms), preview by default, `--apply` submits. A file that vanished tombstones nothing: the watcher hands it to the vessel's shore, where it stands pending until a person answers with `lares shore remove` or `lares shore restore`. A file that holds no base never lands over records that say something else, and a file that moved while the records moved never lands: each stands off at the vessel's shore (`lares shore`), and every wave says no person stands behind it (`unattended`). `--in-wiki` runs the INGEST in the active wiki's island, the path for the working write-layer ingest-back (a `wikis/` source derives its URIs off that layer).
 
-The one-shot flags (`--yes`, `--tag-blobs`, `--in-wiki`, `--change-id`) ride the one-shot ingest and refuse beside `--watch`; `--debounce` rides `--watch` alone. A scan that skipped every carrier answers usage and names the mirror directories it derived against, since the source must sit under the bags dir (LAR_BAGS) or wikis dir (LAR_WIKIS) as `<holding>/<w.w.w>/…/<name>.<ext>`.
+The one-shot flags (`yes=true`, `--tag-blobs`, `--in-wiki`, `--change-id`) ride the one-shot ingest and refuse beside `--watch`; `--debounce` rides `--watch` alone. A scan that skipped every carrier answers usage and names the mirror directories it derived against, since the source must sit under the bags dir (LAR_BAGS) or wikis dir (LAR_WIKIS) as `<holding>/<w.w.w>/…/<name>.<ext>`.
 
 <<~/ahu>>
 
@@ -75,7 +75,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`usage` params=`cure/[[carriage.capture.ingests source/<dir> to/<bag>]] ~ --source and --to both stand required; a source that resolves to no carrier names the mirror directories it derived against`>>
-<<has entity=`refusal` name=`watch-one-shot` params=`cure/[[carriage.capture.ingests source/<dir> to/<bag> watch/true]] ~ --yes, --tag-blobs, --in-wiki and --change-id ride the one-shot ingest alone`>>
+<<has entity=`refusal` name=`watch-one-shot` params=`cure/[[carriage.capture.ingests source/<dir> to/<bag> watch/true]] ~ yes=true, --tag-blobs, --in-wiki and --change-id ride the one-shot ingest alone`>>
 <<has entity=`refusal` name=`debounce-alone` params=`cure/[[carriage.capture.ingests source/<dir> to/<bag> watch/true debounce/500]] ~ --debounce rides --watch alone`>>
 ```
 
@@ -119,6 +119,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xUnKDxSrJvAHEwGOhKY1bZtNu5u8dDi1jo-_OPVFN4E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fMKkprUjKRNKxFVgo8LumtNbQ2xfT-Q_fO-VLa9R9EM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

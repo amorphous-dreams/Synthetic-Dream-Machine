@@ -12,7 +12,7 @@
  * title stands selected before and after, and land the text with `tiddler-put` against the base it read. House canon takes
  * no byte: the pin set lives apart from every law meme, so the AI seat may pin as the operator may.
  *
- * The index prints plainly on a terminal and through a pipe; `--json` carries `{ filter, pins, rows, total, next }`, the body
+ * The index prints plainly on a terminal and through a pipe; `json=true` carries `{ filter, pins, rows, total, next }`, the body
  * the MCP seat's `act(address="lar:///engine.law.indexes")` answers.
  *
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-law-tiddlers

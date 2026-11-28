@@ -86,17 +86,17 @@ describe("vessel stand --init — a refused founding ends the stand non-zero", (
     const found = vi.fn(async () => [{ step: "init", action: "failed", detail: "init exited 1" }]);
     vi.doMock("../src/standup.js", () => ({ foundIfAbsent: found }));
     const { cmdStand } = await import("../src/commands/stand.js");
-    expect(await cmdStand(parseArgs(["vessel", "stand", "init=true", "--no-json"]))).toBe(1);
+    expect(await cmdStand(parseArgs(["vessel", "stand", "init=true", "json=false"]))).toBe(1);
     expect(found).toHaveBeenCalledTimes(1);
     expect(err.join("\n")).toMatch(/lares vessel stand: FoundingRefused: init exited 1/);
 
     const json: string[] = [];
     vi.spyOn(process.stdout, "write").mockImplementation((c) => { json.push(String(c)); return true; });
-    expect(await cmdStand(parseArgs(["vessel", "stand", "init=true", "--json"]))).toBe(1);
+    expect(await cmdStand(parseArgs(["vessel", "stand", "init=true", "json=true"]))).toBe(1);
     expect(JSON.parse(json.join("").trim().split("\n").pop()!).error.code).toBe("FoundingRefused");
 
     found.mockClear();
-    expect(await cmdStand(parseArgs(["vessel", "stand", "observe=true", "--no-json"]))).toBe(0);
+    expect(await cmdStand(parseArgs(["vessel", "stand", "observe=true", "json=false"]))).toBe(0);
     expect(found).not.toHaveBeenCalled();
     vi.doUnmock("../src/standup.js");
   }, 60_000);

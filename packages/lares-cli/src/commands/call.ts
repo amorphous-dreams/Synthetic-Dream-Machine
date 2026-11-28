@@ -1,6 +1,6 @@
 /**
- * `lares get · put · delete · rename · msg · watch name=value…`, `lares lar:///<address> name=value…`, `lares act lar:///<address> …` and
- * `lares -` — THE CLI SPEAKS THE CALL SHAPE (lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts landing 8).
+ * `lares get · put · delete · rename · msg · watch name=value…`, `lares lar:///<address> name=value…` and `lares -` — THE CLI
+ * SPEAKS THE CALL SHAPE (lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts landing 8).
  *
  * ONE SPLIT, AND EVERYTHING ELSE IN THE VM. The line splits by one token rule (`splitCall`: a token matching
  * `^[a-z][a-z0-9-]*=` names a param; the leading run of other tokens names the verb, a skin spelling or an address), and the
@@ -32,7 +32,7 @@ import { stageBodyToCas } from "../cas-stage.js";
 import { landedFace } from "./meme-shared.js";
 import { actHostDoor } from "./act.js";
 import { summonedStream } from "../summoned-stream.js";
-import { ArgsError, CALL_VERBS, isCallWord, splitCall, type CallLine, type ParsedArgs } from "../parse-args.js";
+import { ArgsError, CALL_VERBS, splitCall, type CallLine, type ParsedArgs } from "../parse-args.js";
 import { cmdWatchLine } from "./watch-line.js";
 
 /** The heads that name the msg door: its verb word and its address. */
@@ -40,18 +40,9 @@ const MSG_HEADS: ReadonlySet<string> = new Set(["msg", "lar:///engine.msg.lands"
 
 export { CALL_VERBS };
 
-/**
- * True where a command line's head names the call door: a verb word, an address, the stdin sigil, or `act` (the one act, fork 9:
- * `lares act lar:///<address> …` and `lares lar:///<address> …` read the same, and every residency act rides by its address).
- */
-export function isCallHead(command: string | null, _positional: readonly string[] = []): boolean {
-  return isCallWord(command);
-}
-
-/** The line a parsed command names as a call: `act` drops, since `lares act lar:///x` and `lares lar:///x` read the same. */
+/** The line a parsed command names as a call: its head and every later token, split by the call shape's token rule. */
 export function callLineOf(args: ParsedArgs): CallLine {
-  const tokens = args.command === "act" ? [...args.positional] : [args.command ?? "", ...args.positional];
-  try { return splitCall(tokens); }
+  try { return splitCall([args.command ?? "", ...args.positional]); }
   catch (error) { if (error instanceof ArgsError) throw new DoorUsage(error.message); throw error; }
 }
 
@@ -184,7 +175,7 @@ export async function cmdCall(given: ParsedArgs, sources: CallSources = LIVE_SOU
     if (plan.args["verb"] === "watch") return await cmdWatchLine(args, plan);
     const params = paramsOf(plan);
     // A record's text and a carrier answer a pipe in prose (the carrier-first law): the text alone, or a range reaching the whole
-    // (`aperture=arc`, `theme`). THE SWORD ALONE ASKS THE MACHINE ANSWER (the flag zoo burned `--json` into `mu=!0`): the
+    // (`aperture=arc`, `theme`). THE SWORD ALONE ASKS THE MACHINE ANSWER (`mu=!0` reads as `json=true`): the
     // envelope verbatim, on a terminal or a pipe.
     const prose = swordAlone(params) ? { ...args, flags: { ...args.flags, json: true } }
       : params["form"] === "text" || reachesWholeRange(params) ? proseFirst(args) : args;
@@ -202,7 +193,7 @@ export async function cmdCall(given: ParsedArgs, sources: CallSources = LIVE_SOU
       const carry = typeof mu?.carry === "string" ? mu.carry : null;
       if (door !== null && carry !== null && carry.includes("_") && !door.dry) {
         const message = `${address} walks no dry path at the terminal, so a ${carry} call lands nothing; the plain call (no mu) lands the act`;
-        emit(args, { ok: false, requestId: ran.requestId, error: { code: "mu-cell-empty", message }, human: () => console.error(`lares act: mu-cell-empty: ${message}`) });
+        emit(args, { ok: false, requestId: ran.requestId, error: { code: "mu-cell-empty", message }, human: () => console.error(`lares ${address}: mu-cell-empty: ${message}`) });
         return exitFor("usage");
       }
       if (door !== null) return await door.run(args, (ran.output["params"] as Record<string, unknown> | undefined) ?? {}, carry);
@@ -222,7 +213,7 @@ type Ran = { readonly requestId: string; readonly output: Record<string, unknown
 
 /**
  * Any other answer: its human line first (Iris-Sprite's answer template rendered it in the VM; the has line where no template
- * rendered), then its data, one key per line, with no speaker header; `--json` carries it verbatim.
+ * rendered), then its data, one key per line, with no speaker header; `json=true` carries it verbatim.
  */
 function printAnswer(args: ParsedArgs, ran: Ran): number {
   emit(args, {

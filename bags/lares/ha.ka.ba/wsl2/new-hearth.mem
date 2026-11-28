@@ -186,7 +186,7 @@ The act asks the custody route: `[p]assphrase`, `[s]heet (paper pin)` or `[b]oth
 ```sh
 tools/lares-container.sh persona new 0 --name '<your-pet-name>' --handle '<Your Handle>'   # skip for a face with no public Handle
 tools/lares-container.sh up                        # unlocks on this terminal, seating the keep pair under that passphrase; answer yes to the keep lei it offers for house-backup
-tools/lares-container.sh vessel lay --apply --yes
+tools/lares-container.sh vessel lay apply=true yes=true
 tools/lares-container.sh vessel read
 tools/lares-container.sh persona list
 tools/lares-container.sh nexus seal show           # SEED, one seat
@@ -263,6 +263,6 @@ In the session, `/mcp` lists `lares` connected, and the session opens on the boo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1iRxWJ1Nljbag7f_jhrpvDsAbpFjpuapxonad6RymX4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;djJk3zudoQdJ1fl_Wl9PVEB4OvsxjGs-FNCC8TfUXwc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

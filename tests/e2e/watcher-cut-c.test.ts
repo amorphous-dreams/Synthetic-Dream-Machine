@@ -156,7 +156,7 @@ beforeAll(async () => {
 
   // Write all test carriers, then land them in ONE ingest wave.
   for (const slug of SLUGS) writeCarrier(slug);
-  const r = await cli(["ingest", `source=${SRC}`, `to=${LARES_URI}`, "apply=true", "--yes", "--json"]);
+  const r = await cli(["ingest", `source=${SRC}`, `to=${LARES_URI}`, "apply=true", "yes=true", "json=true"]);
   const d = r.json?.["data"] as Record<string, unknown> | undefined;
   if (!d) throw new Error(`setup ingest produced no data: ${JSON.stringify(r.json)}\n${r.stderr.slice(-600)}`);
   const carriers = (d["carriers"] as Array<Record<string, unknown>>) ?? [];
@@ -169,7 +169,7 @@ beforeAll(async () => {
   // base stands pinned (the file in the framing the hand laid, beside the records' render) — the
   // watcher's baseline for "unchanged". No nap: the vessel says the moment.
   expect(d["settle"], `the apply names its settle word: ${JSON.stringify(d["settle"])}`).toMatchObject({ settled: true, mirrored: true, settledCount: landed.length });
-  const r2 = await cli(["ingest", `source=${SRC}`, `to=${LARES_URI}`, "--json"]);
+  const r2 = await cli(["ingest", `source=${SRC}`, `to=${LARES_URI}`, "json=true"]);
   const d2 = r2.json?.["data"] as Record<string, unknown>;
   expect(d2["changed"], "the mirror must be settled before the watcher cases").toBe(0);
 }, 180_000);
@@ -206,9 +206,9 @@ describe.skipIf(!stagedTarget || seatLaunched)("watcher Cut C — the disk peer 
     }
   }, 60_000);
 
-  /** What the vessel's shore holds pending, as `lares shore --json` answers it (the list looks at the disk first). */
+  /** What the vessel's shore holds pending, as `lares shore json=true` answers it (the list looks at the disk first). */
   async function pendingUris(): Promise<string[]> {
-    const r = await cli(["shore", "list", "--json"]);
+    const r = await cli(["shore", "list", "json=true"]);
     const data = r.json?.["data"] as Record<string, unknown> | undefined;
     if (!data) throw new Error(`lares shore answered no data: ${JSON.stringify(r.json)}\n${r.stderr.slice(-600)}`);
     return ((data["pending"] as Array<Record<string, unknown>>) ?? []).map((p) => String(p["uri"]));
@@ -274,12 +274,12 @@ describe.skipIf(!stagedTarget || seatLaunched)("watcher Cut C — the disk peer 
       expect(w.log()).not.toMatch(/TOMBSTONE\s+\S*cutc-brake/);
 
       // An answer over many names the count that stands. One short refuses and changes nothing.
-      const short = await cli(["shore", "restore", "all=true", `count=${String(pending.length + 1)}`, "--yes", "--json"]);
+      const short = await cli(["shore", "restore", "all=true", `count=${String(pending.length + 1)}`, "yes=true", "json=true"]);
       expect(short.json?.["ok"]).toBe(false);
       expect((short.json?.["error"] as Record<string, unknown>)["code"]).toBe("pending-count-moved");
       for (const slug of slugs) expect(existsSync(carrierPath(slug))).toBe(false);
 
-      const restored = await cli(["shore", "restore", "all=true", `count=${String(pending.length)}`, "--yes", "--json"]);
+      const restored = await cli(["shore", "restore", "all=true", `count=${String(pending.length)}`, "yes=true", "json=true"]);
       expect(restored.json?.["ok"], JSON.stringify(restored.json)).toBe(true);
       // `restore` writes the RECORDS' RENDER back. A hand-laid carrier stands in its own framing while it
       // says what the records say (an unchanged carrier takes no write), so the render differs from the
@@ -307,7 +307,7 @@ describe.skipIf(!stagedTarget || seatLaunched)("watcher Cut C — the disk peer 
       expect(existsSync(path), "nothing writes the file back while it pends").toBe(false);
       expect(w.log()).not.toMatch(/TOMBSTONE\s+\S*cutc-del/);
 
-      const removed = await cli(["shore", "remove", carrierUri("cutc-del"), "--yes", "--json"]);
+      const removed = await cli(["shore", "remove", carrierUri("cutc-del"), "yes=true", "json=true"]);
       expect(removed.json?.["ok"], JSON.stringify(removed.json)).toBe(true);
       expect((removed.json?.["data"] as Record<string, unknown>)["done"]).toEqual([carrierUri("cutc-del")]);
       expect(existsSync(path), "a removed carrier stays gone from disk").toBe(false);

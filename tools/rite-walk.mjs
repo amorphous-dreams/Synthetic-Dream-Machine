@@ -114,7 +114,7 @@ async function hands(root, state, boxHome) {
     },
     async down() {
       if (!vessel) return "no vessel stood";
-      const census = await vessel.cli(["vessel", "census", "--no-json"]);
+      const census = await vessel.cli(["vessel", "census", "json=false"]);
       await vessel.stopDaemonOnly();
       vessel = null; state.up = false;
       return `census exit ${census.code}: ${`${census.stdout}\n${census.stderr}`.trim().split("\n").at(-1) ?? ""}; the daemon exited`;

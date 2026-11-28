@@ -57,7 +57,7 @@ describe.skipIf(gaps.length > 0)("★ a landed grant reaches its face: a house c
     lar = await openStaged({ root, tag: "grant-reaches", found: async (cli, staged) => {
       await foundStagedHearth(cli, staged, "steward");
       for (const [n, name] of [[1, "engineer"], [2, "referee"]] as const) {
-        const p = await cli(["persona", "new", String(n), `name=${name}`, "--json"]);
+        const p = await cli(["persona", "new", String(n), `name=${name}`, "json=true"]);
         if (p.code !== 0) throw new Error(`persona ${n} failed (${p.code})\n${p.stdout.slice(-400)}\n${p.stderr.slice(-800)}`);
       }
     } });
@@ -72,11 +72,11 @@ describe.skipIf(gaps.length > 0)("★ a landed grant reaches its face: a house c
 
   test("CONTROL: the steward stands the wiki; before any share the referee reaches no such wiki", async () => {
     await wear(0);
-    const init = await lar.cli(["wiki", "init", SLUG, "--no-json"]);
+    const init = await lar.cli(["wiki", "init", SLUG, "json=false"]);
     say("h0 wiki init", init);
     expect(init.code, said(init)).toBe(0);
     await wear(2);
-    const status = await lar.cli(["wiki", "status", `recipe=${SLUG}`, "--no-json"]);
+    const status = await lar.cli(["wiki", "status", `recipe=${SLUG}`, "json=false"]);
     say("h2 wiki status before the share", status);
     expect(status.code).not.toBe(0);
     expect(said(status)).toMatch(/wiki-unreached/);
@@ -84,17 +84,17 @@ describe.skipIf(gaps.length > 0)("★ a landed grant reaches its face: a house c
 
   test("RED: the steward shares the house canon wiki with write to the referee; the referee, worn, reaches it and its write lands in the wiki's working layer", async () => {
     await wear(0);
-    const share = await lar.cli(["wiki", "share", SLUG, "read=h0 h2", "write=h2", "--no-json"]);
+    const share = await lar.cli(["wiki", "share", SLUG, "read=h0 h2", "write=h2", "json=false"]);
     say("h0 wiki share", share);
     expect(share.code, said(share)).toBe(0);
     expect(said(share), "the house canon wiki's hand-over counts as a landed grant that carries to the referee's next wear").toMatch(/landed: 1 grant\(s\); 1 of them reach the grantee's catalog/);
     await wear(2);
-    const status = await lar.cli(["wiki", "status", `recipe=${SLUG}`, "--no-json"]);
+    const status = await lar.cli(["wiki", "status", `recipe=${SLUG}`, "json=false"]);
     say("h2 wiki status after the share", status);
     expect(status.code, said(status)).toBe(0);
     expect(said(status)).toMatch(new RegExp(`read-only\\s+lar:///ha\\.ka\\.ba/bags/${SLUG}`));
     expect(said(status)).toMatch(new RegExp(`read \\+ write lar:///ha\\.ka\\.ba/wikis/${SLUG}/working\\s+<- a write lands here`));
-    const put = await lar.cli(["put", "title=Referee smoke", `recipe=${SLUG}`, "create=true", "text=the referee writes here", "--no-json"]);
+    const put = await lar.cli(["put", "title=Referee smoke", `recipe=${SLUG}`, "create=true", "text=the referee writes here", "json=false"]);
     say("h2 put", put);
     expect(put.code, said(put)).toBe(0);
     expect(said(put)).toMatch(new RegExp(`in lar:///ha\\.ka\\.ba/wikis/${SLUG}/working`));
@@ -102,12 +102,12 @@ describe.skipIf(gaps.length > 0)("★ a landed grant reaches its face: a house c
 
   test("RED: a wear onto the face already worn replays the landing and moves nothing more; the referee still reaches the wiki", async () => {
     await wear(2);
-    const again = await lar.cli(["wear", "2", "--no-json"]);
+    const again = await lar.cli(["wear", "2", "json=false"]);
     say("h2 lares wear 2 (worn already)", again);
     expect(again.code, said(again)).toBe(0);
     expect(said(again)).toMatch(/stands worn already/);
     expect(said(again), "a replay over a landed share names no move").not.toMatch(/shares: /);
-    const get = await lar.cli(["get", "title=Referee smoke", `recipe=${SLUG}`, "--no-json"]);
+    const get = await lar.cli(["get", "title=Referee smoke", `recipe=${SLUG}`, "json=false"]);
     say("h2 get", get);
     expect(get.code, said(get)).toBe(0);
     expect(said(get)).toMatch(/the referee writes here/);
@@ -117,26 +117,26 @@ describe.skipIf(gaps.length > 0)("★ a landed grant reaches its face: a house c
   // touches the shared working layer and lands in its own personal layer instead. The walk reads that the working layer refuses it.
   test("RED: a READ-ONLY grantee reaches the wiki and reads its working layer read-only; its put never lands there (its own personal layer takes it)", async () => {
     await wear(0);
-    const share = await lar.cli(["wiki", "share", SLUG, "read=h1", "--no-json"]);
+    const share = await lar.cli(["wiki", "share", SLUG, "read=h1", "json=false"]);
     say("h0 wiki share --read h1", share);
     expect(share.code, said(share)).toBe(0);
     await wear(1);
-    const status = await lar.cli(["wiki", "status", `recipe=${SLUG}`, "--no-json"]);
+    const status = await lar.cli(["wiki", "status", `recipe=${SLUG}`, "json=false"]);
     say("h1 wiki status (a reader)", status);
     expect(status.code, said(status)).toBe(0);
     expect(said(status)).toMatch(new RegExp(`read-only\\s+lar:///ha\\.ka\\.ba/wikis/${SLUG}/working`));
-    const get = await lar.cli(["get", "title=Referee smoke", `recipe=${SLUG}`, "--no-json"]);
+    const get = await lar.cli(["get", "title=Referee smoke", `recipe=${SLUG}`, "json=false"]);
     say("h1 get (a reader)", get);
     expect(get.code, said(get)).toBe(0);
     expect(said(get)).toMatch(/the referee writes here/);
-    const put = await lar.cli(["put", "title=Engineer smoke", `recipe=${SLUG}`, "create=true", "text=a reader tries to write", "--no-json"]);
+    const put = await lar.cli(["put", "title=Engineer smoke", `recipe=${SLUG}`, "create=true", "text=a reader tries to write", "json=false"]);
     say("h1 put (a reader)", put);
     expect(said(status), "no shared layer takes the reader's write").toMatch(/working layer: \(none attached; no layer takes a write\)/);
     expect(said(put)).not.toMatch(new RegExp(`in lar:///ha\\.ka\\.ba/wikis/${SLUG}/working`));
     expect(said(put)).toMatch(new RegExp(`in lar:///ha\\.ka\\.ba/wikis/${SLUG}/personal`));
     // The writer reads the shared working layer and finds no record of the reader's there.
     await wear(2);
-    const theirs = await lar.cli(["get", "title=Engineer smoke", `recipe=${SLUG}`, "--no-json"]);
+    const theirs = await lar.cli(["get", "title=Engineer smoke", `recipe=${SLUG}`, "json=false"]);
     say("h2 get of the reader's title", theirs);
     expect(said(theirs)).not.toMatch(new RegExp(`bag: lar:///ha\\.ka\\.ba/wikis/${SLUG}/working`));
   }, 240_000);

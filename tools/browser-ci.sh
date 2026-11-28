@@ -1,7 +1,7 @@
 #!/bin/sh
 # browser-ci — the HOST driver for docker-compose.browser-ci.yml (a node plus a disposable Playwright runner).
 #
-#   browser-ci.sh up                        build, found a hearth through the test door (`vessel found --hearth`: the place,
+#   browser-ci.sh up                        build, found a hearth through the test door (`vessel found hearth=true`: the place,
 #                                           its seed charter, one synthetic face), stand the node, open its key through the
 #                                           test door, name the face (`persona new 0`), restart so the vessel stands as a
 #                                           Lararium, wait healthy, open its key again (the test door's unlock names h0,
@@ -12,10 +12,10 @@
 #                                           against the standing hearth); prints the offer JSON alone
 #   browser-ci.sh join answer <request>     pipe a host-side request file into the node and `lares fleet join answer` it;
 #                                           prints the answer JSON alone. BROWSER_CI_SYNC_URL, when set, rides as --sync-url
-#   browser-ci.sh bag <name>                stand a writable scratch bag (`lares act lar:///carriage.bag.creates bag=… yes=true`); prints its URI.
+#   browser-ci.sh bag <name>                stand a writable scratch bag (`lares lar:///carriage.bag.creates bag=… yes=true`); prints its URI.
 #                                           A bare name becomes lar:///ha.ka.ba/bags/<name>; a lar: URI passes through
 #   browser-ci.sh ingest <path>             copy a repo carrier (bags/<bag>/<w.w.w>/…) into the scratch workspace volume and
-#                                           `lares ingest source=… to=<bag uri> apply=true --yes`
+#                                           `lares ingest source=… to=<bag uri> apply=true yes=true`
 #                                           (default bag lar:///ha.ka.ba/bags/lares; BROWSER_CI_BAG overrides)
 #   browser-ci.sh recipe add <bag-uri>      ensure the catalog recipe exists, then add the bag to the wiki the browser mounts
 #   browser-ci.sh recipe remove <bag-uri>   `wiki remove-bag` — the swarm's negative control
@@ -105,14 +105,14 @@ json_verb() {
 # slugs it runs; a freshly founded vessel runs exactly one).
 wiki_slug() {
   if [ -n "${BROWSER_CI_WIKI:-}" ]; then printf '%s\n' "$BROWSER_CI_WIKI"; return; fi
-  slug=$(lares wiki status --json | node -e 'let s=""; process.stdin.on("data", c => s+=c); process.stdin.on("end", () => { const a=JSON.parse(s).data?.activation?.active ?? []; console.log(typeof a[0] === "string" ? a[0] : a[0]?.slug ?? ""); });')
+  slug=$(lares wiki status json=true | node -e 'let s=""; process.stdin.on("data", c => s+=c); process.stdin.on("end", () => { const a=JSON.parse(s).data?.activation?.active ?? []; console.log(typeof a[0] === "string" ? a[0] : a[0]?.slug ?? ""); });')
   [ -n "$slug" ] || die "the node runs no wiki; run up first"
   printf '%s\n' "$slug"
 }
 
 walk_document_preflight() {
   slug=$(wiki_slug)
-  wikis=$(lares wiki status --json) || die "WIKI_DOC_MISSING: cannot read the registered document for $slug; run wiki init for that wiki before starting the walk"
+  wikis=$(lares wiki status json=true) || die "WIKI_DOC_MISSING: cannot read the registered document for $slug; run wiki init for that wiki before starting the walk"
   INFO_SLUG=$slug INFO_WIKIS=$wikis node -e '
     const e = process.env;
     const wikis = JSON.parse(e.INFO_WIKIS).data?.catalog?.wikis ?? [];
@@ -191,7 +191,7 @@ case "$verb" in
   bag)
     [ "$#" -eq 1 ] || die "bag wants one name"
     uri=$(bag_uri "$1")
-    out=$(lares act lar:///carriage.bag.creates bag="$uri" yes=true)
+    out=$(lares lar:///carriage.bag.creates bag="$uri" yes=true)
     ok_or_die "$out"
     printf '%s\n' "$out" >&2
     printf '%s\n' "$uri" ;;
@@ -206,7 +206,7 @@ case "$verb" in
     # `docker cp` into the named workspace volume's mount: the node reads /workspace/<path>.
     docker exec "$cid" mkdir -p "/workspace/$(dirname -- "$1")"
     docker cp "$ROOT/$1" "$cid:/workspace/$1"
-    lares ingest source="/workspace/$1" to="$BAG" apply=true --yes ;;
+    lares ingest source="/workspace/$1" to="$BAG" apply=true yes=true ;;
   recipe)
     [ "$#" -eq 2 ] || die "recipe wants add|remove and one bag URI"
     act=$1; uri=$(bag_uri "$2")
@@ -214,11 +214,11 @@ case "$verb" in
     case "$act" in
       add)
         # The catalog recipe exists before composition changes are applied.
-        json_verb wiki init "$slug" --json >/dev/null
+        json_verb wiki init "$slug" json=true >/dev/null
         # WHERE THIS LANDS: `wiki add-bag` writes the NODE's own composition (its catalog recipe), which shadows a
         # system wiki's default (oracle) recipe for the node's mount, its live watch and `get --recipe` alike. A
         # catalog never crosses, so an admitted leaf still mounts the default recipe.
-        wikis=$(lares wiki status --json)
+        wikis=$(lares wiki status json=true)
         if printf '%s' "$wikis" | node -e '
           let input = "";
           process.stdin.setEncoding("utf8");
@@ -230,7 +230,7 @@ case "$verb" in
           });' "$slug"; then
           printf '%s\n' "browser-ci: note: $slug is a [system] wiki; this verb writes the node's own recipe (its catalog), which the node's mount and \`get --recipe\` read, and which no leaf receives. An admitted leaf mounts the default recipe (oracle lararium lares): ingest into a bag that recipe stacks (the default lar:///ha.ka.ba/bags/lares) to reach a leaf (see info: recipe.leafReadsDefaultRecipe)" >&2
         fi
-        json_verb wiki add-bag "$slug" "$uri" --json ;;
+        json_verb wiki add-bag "$slug" "$uri" json=true ;;
       # remove-bag answers in prose; its exit status carries the verdict.
       remove) lares wiki remove-bag "$slug" "$uri" ;;
       *) die "recipe wants add|remove" ;;
@@ -243,12 +243,12 @@ case "$verb" in
       --bag|--recipe) [ "$#" -eq 2 ] || die "get takes one --bag or --recipe slug" ;;
       *) die "get takes --bag <slug> or --recipe <slug>" ;;
     esac
-    json_verb get "title=$uri" "${1#--}=$2" aperture=arc --json ;;
+    json_verb get "title=$uri" "${1#--}=$2" aperture=arc json=true ;;
   info)
     slug=$(wiki_slug)
     # The runner shares the node's network namespace, so its origin names the node by localhost.
     origin="http://localhost:$(compose exec -T lares printenv LAR_PORT)"
-    faces=$(lares persona list --json)
+    faces=$(lares persona list json=true)
     ok_or_die "$faces"
     # `persona new 0` is idempotent on a lit face and answers its verifying key.
     key=$(lares persona new 0 name="$FACE" 2>/dev/null | sed -n 's/.*"verifyingKey":"\([0-9a-f]*\)".*/\1/p' | tail -n 1)
@@ -257,11 +257,11 @@ case "$verb" in
     # crossroads prints a `[herm]   gate key:` line too; the read names the hearth's line alone, and the last boot.
     gate=$(compose logs --no-color lares 2>/dev/null | sed -n 's/^.*\[lararium\] gate key: \([0-9a-f]\{64\}\)[[:space:]]*$/\1/p' | tail -n 1)
     [ -n "$gate" ] || die "the node's log names no [lararium] gate key; run up first"
-    bags=$(lares wiki status --json | node -e 'let s=""; process.stdin.on("data",c=>s+=c); process.stdin.on("end",()=>{const r=JSON.parse(s).data?.residency ?? {}; console.log([...(r.pinned ?? []), ...(r.wela ?? []).map(x=>x.url)].join("\n"));});')
+    bags=$(lares wiki status json=true | node -e 'let s=""; process.stdin.on("data",c=>s+=c); process.stdin.on("end",()=>{const r=JSON.parse(s).data?.residency ?? {}; console.log([...(r.pinned ?? []), ...(r.wela ?? []).map(x=>x.url)].join("\n"));});')
     # Every document the catalog and oracle plane register is data in the JSON wiki status.
-    wikis=$(lares wiki status --json)
+    wikis=$(lares wiki status json=true)
     # The recipe's bag stack, in the layer order `wiki status --recipe` answers. A wiki without a catalog recipe yet answers no stack.
-    stack=$(lares wiki status recipe="$slug" --json 2>/dev/null | node -e 'let s=""; process.stdin.on("data",c=>s+=c); process.stdin.on("end",()=>{try{console.log((JSON.parse(s).data?.layers ?? []).map(l=>l.bag).join("\n"));}catch{}});' || true)
+    stack=$(lares wiki status recipe="$slug" json=true 2>/dev/null | node -e 'let s=""; process.stdin.on("data",c=>s+=c); process.stdin.on("end",()=>{try{console.log((JSON.parse(s).data?.layers ?? []).map(l=>l.bag).join("\n"));}catch{}});' || true)
     INFO_ORIGIN_QA=$origin INFO_PORT=$PORT INFO_SLUG=$slug INFO_FACES=$faces INFO_GATE=$gate INFO_BAGS=$bags \
     INFO_KEY=$key INFO_WIKIS=$wikis INFO_STACK=$stack \
     node -e '

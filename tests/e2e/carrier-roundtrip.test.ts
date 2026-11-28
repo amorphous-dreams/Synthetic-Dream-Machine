@@ -63,7 +63,7 @@ async function awaitMirrorFiles(root: string, timeoutMs = 30_000): Promise<strin
 beforeAll(async () => {
   lar = await targetInstance();
   if (!stagedTarget) return;   // mutating vectors — staged only
-  const r = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, "to=lar:///ha.ka.ba/wikis/lares/working", "yes=true", "--json"]);
+  const r = await lar.cli(["lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, "to=lar:///ha.ka.ba/wikis/lares/working", "yes=true", "json=true"]);
   loadOk = r.json?.["ok"] === true;
   if (loadOk) await promoteLoadedTitles(lar, ((r.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
 });

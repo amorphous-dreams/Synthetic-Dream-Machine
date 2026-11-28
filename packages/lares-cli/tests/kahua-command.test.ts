@@ -5,7 +5,7 @@
  * Each act reaches the store door's matching row (`kahua-mint`, `kahua-propose`, `kahua-stage`, `kahua-lift`,
  * `kahua-withdraw`, `kahua-read`) with the arguments the row reads, and prints the row's answer as JSON. A malformed ask
  * refuses before the door. A LIFT HAS EYES: it reads the staged row's preview first and lifts only on its digest, typed
- * back at a terminal or named by `--digest`; a bare `--yes` lifts nothing. Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
+ * back at a terminal or named by `--digest`; a bare `yes=true` lifts nothing. Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
@@ -47,9 +47,9 @@ describe("lares kahua", () => {
     expect(JSON.parse(lines.join("\n"))).toEqual({ cid: CID, parent: null });
   });
 
-  test("RED: lift with eyes: no digest named and no terminal lifts nothing, a bare --yes lifts nothing, and a digest other than the preview's refuses moved; CONTROL: the preview's digest lifts", async () => {
+  test("RED: lift with eyes: no digest named and no terminal lifts nothing, a bare yes=true lifts nothing, and a digest other than the preview's refuses moved; CONTROL: the preview's digest lifts", async () => {
     expect(await run("lift", "T", "taint=none")).toBe(1);
-    expect(await run("lift", "T", "taint=none", "--yes")).toBe(1);
+    expect(await run("lift", "T", "taint=none", "yes=true")).toBe(1);
     expect(await run("lift", "T", "taint=none", `digest=${"f".repeat(64)}`)).toBe(1);
     expect(seam.calls).toEqual([STAGED_READ, STAGED_READ, STAGED_READ]);
     expect(await run("lift", "T", "taint=none", `digest=${DIGEST}`)).toBe(0);

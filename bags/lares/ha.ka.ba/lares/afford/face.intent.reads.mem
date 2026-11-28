@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.intent.reads"
 
 ! face.intent.reads ~ show ~ the intent pane
 
-`lares intent show [<id>]` reads the face's intent plane: each intent's status, winner, duplicates, void-after-act and outcome count, then the standing, stray answers and refusals, and each delegation. An id narrows the rows to one. `--json` prints the fold as data.
+`lares intent show [<id>]` reads the face's intent plane: each intent's status, winner, duplicates, void-after-act and outcome count, then the standing, stray answers and refusals, and each delegation. An id narrows the rows to one. `json=true` prints the fold as data.
 
 <<~/ahu>>
 
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WMZTGmPFQJZJ_88h89LrFi3zlcZLWbUjJUFub0pjp6w`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TgwXbu9U2kTUlkg2XIDUeGQe0e9L0vaUZUbd0kMiL0M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

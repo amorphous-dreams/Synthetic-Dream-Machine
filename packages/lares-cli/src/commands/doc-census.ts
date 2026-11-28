@@ -9,7 +9,7 @@
  * (no live name reaches it), `last-version` (a shape the current house does not read) or `sealed-unread` (sealed, and the vessel
  * could not open it: never guessed an orphan). The host never reads the hearth itself.
  *
- * Prose by default (`proseFirst`): a summary per class, then the unnamed list. `--json` answers the full rows. It removes
+ * Prose by default (`proseFirst`): a summary per class, then the unnamed list. `json=true` answers the full rows. It removes
  * nothing; a sweep stays a later door.
  *
  * Exit: 0 the census read · 2 the census could not answer (no vessel, a silent door, a refusal).

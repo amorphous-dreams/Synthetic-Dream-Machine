@@ -6,7 +6,7 @@
  * The vessel's verb channel answers `hearth-roster` itself (`@lararium/node`'s `hearth-roster-read`): it reads the sessions
  * its socket holds and the worn faces' intent planes, and places nothing. The verb sits under `vessel` because it reads the
  * vessel's own house, and the top-level list holds its one screen. It names no face: the roster reads every face the vessel
- * wears. The read prints plainly on a terminal and through a pipe; `--json` carries the roster whole, the body the MCP
+ * wears. The read prints plainly on a terminal and through a pipe; `json=true` carries the roster whole, the body the MCP
  * seat's `vessel_roster` answers.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/hearth-roster

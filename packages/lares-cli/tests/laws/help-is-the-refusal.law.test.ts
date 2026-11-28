@@ -1,8 +1,8 @@
 /**
- * L3 · HELP AND REFUSAL RENDER FROM ONE SOURCE: `--help` prints exactly the lines a refusal prints.
+ * L3 · HELP AND REFUSAL RENDER FROM ONE SOURCE: `lares help <door>` prints exactly the lines a refusal prints.
  *
  * Both halves run through the real dispatcher. Inputs: every door the baked pack gathers an entry for,
- * for `--help`; and for the refusal, every door whose source refuses
+ * for `lares help <door>`; and for the refusal, every door whose source refuses
  * through `refuseUsage(…, helpLines(door))`, read from the command sources, plus the tunnel doors.
  * Each door runs under a scratch LAR_ROOT and HOME, so a door that reads an unknown word as an
  * argument reaches nothing of the operator's. Control: two doors render different bytes, and a
@@ -70,8 +70,8 @@ afterAll(() => {
 });
 
 describe("L3 · help and refusal render the same bytes", () => {
-  test.each(helpKeys().map((k) => [k]))("`%s --help` at the door prints exactly the pack's lines", async (key) => {
-    const r = await door([...key.split(" "), "--help"]);
+  test.each(helpKeys().map((k) => [k]))("`lares help %s` prints exactly the pack's lines", async (key) => {
+    const r = await door(["help", ...key.split(" ")]);
     expect(r.code).toBe(0);
     expect(r.out.trimEnd()).toBe(helpLines(key).join("\n").trimEnd());
   });
@@ -80,7 +80,7 @@ describe("L3 · help and refusal render the same bytes", () => {
   // unknown name to miss: its refusal rides a missing argument, which `tests/fewer-front-doors.test.ts` walks.
   const TAKES_A_POSITIONAL = new Set(["persona raise-sign"]);
   test.each(refusingDoors().filter((k) => !TAKES_A_POSITIONAL.has(k)).map((k) => [k]))("`%s` refuses an unknown verb with the same lines, exit 2", async (key) => {
-    const r = await door([...key.split(" "), UNKNOWN, "--no-json"]);
+    const r = await door([...key.split(" "), UNKNOWN, "json=false"]);
     expect(refusalCarries(r, key)).toBe(true);
   });
 
@@ -114,7 +114,7 @@ describe("L3 · help and refusal render the same bytes", () => {
 
   test("CONTROL: two doors render different bytes; a refusal that drops its menu, or exits clean, reads red", async () => {
     const [a, b] = helpKeys();
-    expect((await door([a!, "--help"])).out).not.toBe((await door([b!, "--help"])).out);
+    expect((await door(["help", a!])).out).not.toBe((await door(["help", b!])).out);
     const lines = helpLines("library").join("\n");
     expect(refusalCarries({ code: 2, err: `lares library: unknown sub-verb "x"\n${lines}` }, "library")).toBe(true);
     expect(refusalCarries({ code: 2, err: 'lares library: unknown sub-verb "x"' }, "library")).toBe(false);

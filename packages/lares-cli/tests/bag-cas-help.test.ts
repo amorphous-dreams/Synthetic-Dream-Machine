@@ -1,5 +1,5 @@
 /**
- * `lares bag cas --help` NAMES EVERY DOOR THE VERB OPENS.
+ * `lares help bag cas` NAMES EVERY DOOR THE VERB OPENS.
  *
  * The `cas` sub-verb carries flags (`--all` · `--fetch <cid>` · `--pin <cid>` · `--release <cid>` · `--sweep [--dry-run]`) and the
  * help line is the one place an operator reads them without opening the source. A flag the handler answers and the help omits is
@@ -22,7 +22,7 @@ async function bagHelp(): Promise<string> {
   return lines.join("\n");
 }
 
-describe("lares bag cas --help", () => {
+describe("lares help bag cas", () => {
   test("★ the cas usage names sweep= · dry-run= · pin=<cid> · release=<cid> · fetch=<cid> · all= ★", () => {
     const help = casHelp();
     const usage = help.split("\n").find((l) => l.startsWith("usage:")) ?? "";
@@ -30,10 +30,10 @@ describe("lares bag cas --help", () => {
     for (const word of ["sweep=<true>", "dry-run=<true>", "pin=<cid>", "release=<cid>", "fetch=<cid>", "all=<true>"]) expect(usage).toContain(word);
   });
 
-  test("`lares bag help` lists the door's verbs, one carrier each, and points at `--help` per verb", async () => {
+  test("`lares bag help` lists the door's verbs, one carrier each, and points at `lares help bag <verb>` per verb", async () => {
     const help = await bagHelp();
     expect(help).toMatch(/lares bag cas\s{2,}/);
-    expect(help).toContain("Read one: lares bag <verb> --help");
+    expect(help).toContain("Read one: lares help bag <verb>");
   });
 
   test("CONTROL: a flag the verb never carried stays off the line", () => {

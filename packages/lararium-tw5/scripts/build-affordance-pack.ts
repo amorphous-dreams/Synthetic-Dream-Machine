@@ -28,10 +28,10 @@
  *               console the bare address), each derived from the carrier's `#/skins` by `routesOf`, the rule the live stack
  *               reads by, no hand table
  *   doors       per CLI door (the spelling's first word): its addresses, the brief the top-level index prints, the lines
- *               `lares <door> --help` and its usage refusal print; a `door/part` skin (one verb of a door that keeps its
+ *               `lares help <door>` and its usage refusal print; a `door/part` skin (one verb of a door that keeps its
  *               own table) routes and gathers no door entry; a word several carriers share by a `by/` choice (`get`: `by/title`,
  *               `by/filter`) claims no route of its own, and its door gathers every choice, the spine each reads first
- *   index       the `lares --help` lines of every carrier, through the index template
+ *   index       the `lares help` lines of every carrier, through the index template
  *   shelves     per oracle kind: the shelf index's title and the `method` it declares (`three-coins`)
  *   records     per title: the text of every record a call reads off a baked carrier (its root, each `#/slot` child, and
  *               every shared slot those call by `kahea`), the floor rung a vessel's `call` reads where its live stack holds
@@ -235,11 +235,13 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
   }
 
   // A CLI door gathers every address whose cli skin spells beneath it: one address renders its whole, several an index. A
-  // spelling whose skin row reads `door/part` routes to its carrier (its own `--help` reads the carrier's whole) and gathers no
-  // door entry: the door's other verbs keep the door's own table, and the door flips whole once every verb holds a carrier.
+  // spelling whose skin row reads `door/part` routes to its carrier (its own help reads the carrier's whole) and gathers no
+  // door entry: the door's other verbs keep the door's own table, and the door flips whole once every verb holds a carrier. An
+  // address spelling (`lares lar:///carriage.bag.moves`) names its own call and gathers no door: `lares help <address>` reads
+  // the carrier whole through its route.
   const doors: Record<string, { addresses: string[]; brief: string; help: string[] }> = {};
   for (const [spelling, address] of Object.entries(routes["cli"]!).sort(([a], [b]) => a.localeCompare(b))) {
-    if (partCli.has(spelling)) continue;
+    if (partCli.has(spelling) || spelling.startsWith("lar:///")) continue;
     const door = spelling.split(/\s+/)[0]!;
     const entry = (doors[door] ??= { addresses: [], brief: "", help: [] });
     if (!entry.addresses.includes(address)) entry.addresses.push(address);
@@ -261,13 +263,13 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
         ...lines(engine.wiki.renderTiddler("text/plain", INDEX, { variables: { surface: "cli", pattern: sharedPattern(entry.addresses) } })),
         ...(also.length > 0 ? ["", "Also spelled:", ...also] : []),
         "",
-        `Read one: lares ${door} <verb> --help`,
+        `Read one: lares help ${door} <verb>`,
       ];
     }
   }
   // A WORD SEVERAL CARRIERS SHARE BY A `by/` CHOICE (`get`: `by/title`, `by/filter`) claims no route, yet it stands one door whose
   // every affordance holds a carrier: the door gathers each choice, its help leading with the spine each choice reads (the
-  // default's first), then each carrier's whole, so `lares get --help` reads its carriers and holds no registry entry.
+  // default's first), then each carrier's whole, so `lares help get` reads its carriers and holds no registry entry.
   for (const [spelling, choices] of Object.entries(derived.chosen.cli).sort(([a], [b]) => a.localeCompare(b))) {
     const door = spelling.split(/\s+/)[0]!;
     if (spelling !== door || doors[door] !== undefined) continue;
@@ -306,7 +308,7 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
 /**
  * What a door's index lists: the wildcard its addresses share (their common leading terms, then `*`: `engine.law.*`,
  * `oracle.*`) where they share both t1 and t2; otherwise the addresses themselves, named one by one, so a door whose verbs
- * reach several facets (`act`: `carriage.record.*`, `carriage.bag.*`) never lists a carrier another door will own.
+ * reach several facets (`carriage.record.*`, `carriage.bag.*`) never lists a carrier another door will own.
  */
 function sharedPattern(addresses: readonly string[]): string {
   const terms = addresses.map((a) => bareAddressOf(a)!.split("."));
@@ -330,7 +332,7 @@ const ROLE_WIDTH = 72;
 /**
  * A door's brief, the list's one line for the door (progressive display: one line per door, depth per unfold, no screen
  * budget): its carriers' roles joined where the join holds the role's width law, else every verb the door answers (the
- * spellings' tails, sorted), named whole; `lares <door> --help` unfolds the rest.
+ * spellings' tails, sorted), named whole; `lares help <door>` unfolds the rest.
  */
 export function briefOf(door: string, roles: readonly string[], spellings: readonly string[]): string {
   const joined = roles.join(" · ");

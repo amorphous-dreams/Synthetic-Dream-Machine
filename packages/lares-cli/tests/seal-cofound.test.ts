@@ -7,7 +7,7 @@
  *       B files the inception. Both answer one AID, both carried charters read it, both seeds stand byte-identical.
  *   C2  RED: the verbs refuse before anything moves: no release manifest, no `--out`, no fingerprint typed off a
  *       terminal, a misheard fingerprint, a file of the wrong kind; CONTROL: C1.
- *   C3  THE TERMINAL ROAD (W8): without `--json` on a staged root (the read-back stands in), `open` prints its
+ *   C3  THE TERMINAL ROAD (W8): without `json=true` on a staged root (the read-back stands in), `open` prints its
  *       cold-key card and writes the offer. A fresh joint Nexus holds no charter at `open`, so the card names the
  *       three fields the chair holds (purpose, chair, generation) and no charter line (`cold-key-card.ts`: a caller
  *       holding no charter fingerprint names the three it holds). CONTROL: `join` prints its card the same way;

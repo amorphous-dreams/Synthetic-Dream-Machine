@@ -42,7 +42,7 @@ exports[`lares nexus — every verb reaches its door > the three usage surfaces 
   lares nexus realm-bags  list the realm bags and their stewards as last synced
   lares nexus realm-bag  seal a realm bag's steward record by join, cosign or steward
 
-Read one: lares nexus <verb> --help"
+Read one: lares help nexus <verb>"
 `;
 
 exports[`lares nexus — every verb reaches its door > the three usage surfaces read byte-for-byte as they stand > seal usage 1`] = `

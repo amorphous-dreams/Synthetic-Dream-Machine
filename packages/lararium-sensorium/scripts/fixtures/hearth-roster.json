@@ -1,5 +1,5 @@
 {
-  "_doc": "The hearth roster body one vessel answers (`hearth-roster`), welded across its three readers: `@lararium/mesh`'s composeHearthRoster builds it from `input` (lares-cli hearth-roster-door test), `lares vessel roster --json` carries it as `data`, and the MCP seat's roster act (lar:///face.roster.reads) returns it unchanged (test_hearth_tools.py).",
+  "_doc": "The hearth roster body one vessel answers (`hearth-roster`), welded across its three readers: `@lararium/mesh`'s composeHearthRoster builds it from `input` (lares-cli hearth-roster-door test), `lares vessel roster json=true` carries it as `data`, and the MCP seat's roster act (lar:///face.roster.reads) returns it unchanged (test_hearth_tools.py).",
   "input": {
     "worn": 1,
     "lit": [

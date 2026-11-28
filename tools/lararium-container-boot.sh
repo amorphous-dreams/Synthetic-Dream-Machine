@@ -34,7 +34,7 @@ if [ -f "$_bootstrap" ] && [ -n "${LAR_STAND_FACE:-}" ] && ! grep -q 'persona-gr
 
 if [ ! -f "$_bootstrap" ] || [ -n "$_resume" ]; then
   echo "[boot] founding this container's own Lararium (own vessel identity)…"
-  # --skip-build uses the CLI and daemon already compiled into the product image.
+  # skip-build=true uses the CLI and daemon already compiled into the product image.
   #
   # THE HUMAN ROUTE. A founding seals custody from birth and gathers its route (a passphrase or a paper pin) from a
   # TTY ALONE: no flag and no env var carries one. Two shapes reach this line.
@@ -57,16 +57,16 @@ if [ ! -f "$_bootstrap" ] || [ -n "$_resume" ]; then
     echo "[boot] founding the hearth '${LAR_STAND_FACE}' by the Stable founding act…"
     if [ -n "${LAR_STAGE_DIR:-}" ]; then
       # A staged root: the read-back stands in, and the JSON answer carries the card's code for the roll below.
-      _out="$(LAR_PEERS= test_container_route node packages/lares-cli/dist/src/bin/lares.js vessel found hearth=true name="$LAR_STAND_FACE" --skip-build --json)" \
+      _out="$(LAR_PEERS= test_container_route node packages/lares-cli/dist/src/bin/lares.js vessel found hearth=true name="$LAR_STAND_FACE" skip-build=true json=true)" \
         || { echo "$_out"; echo "[boot] the hearth did NOT found (see above) — serving as a place, at the waking floor"; }
       _card="$(printf '%s\n' "$_out" | _json_line | _card_of)"
     else
       # A live root: the card prints on this terminal and reads back there, and no answer carries its code.
-      LAR_PEERS= test_container_route node packages/lares-cli/dist/src/bin/lares.js vessel found hearth=true name="$LAR_STAND_FACE" --skip-build \
+      LAR_PEERS= test_container_route node packages/lares-cli/dist/src/bin/lares.js vessel found hearth=true name="$LAR_STAND_FACE" skip-build=true \
         || echo "[boot] the hearth did NOT found (see above) — serving as a place, at the waking floor"
     fi
   else
-    test_container_route node packages/lares-cli/dist/src/bin/lares.js vessel found --skip-build
+    test_container_route node packages/lares-cli/dist/src/bin/lares.js vessel found skip-build=true
   fi
 
   # A HEARTH THAT CARRIES IS NOT YET A HEARTH THAT TENDS. `LAR_STAND_KAHU` names the chairs' Handles,

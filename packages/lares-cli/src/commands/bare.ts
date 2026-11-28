@@ -132,7 +132,7 @@ function textOf(output: Record<string, unknown> | null, field = "text"): string 
 
 /** The act keywords a call may name: the call door's, then every door word. */
 export function keysLine(doors: readonly string[]): string {
-  const calls = ["get", "put", "delete", "rename", "filter", "act"];
+  const calls = ["get", "put", "delete", "rename", "filter"];
   return `keys: ${[...calls, ...doors.filter((d) => !calls.includes(d))].map((k) => `${k}=`).join(" ")}  (lares help: every door · lares help mu=?0)`;
 }
 

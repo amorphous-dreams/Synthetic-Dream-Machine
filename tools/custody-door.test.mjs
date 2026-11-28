@@ -50,7 +50,7 @@ function stageFounded(tag) {
     assert.equal(r.status, 0, `${script}: ${r.stderr}`);
   }
   cpSync(join(repo, "genesis"), join(root, "genesis"), { recursive: true });
-  for (const args of [["vessel", "found", "hearth=true", "name=door", `root=${root}`, "--skip-build"]]) {
+  for (const args of [["vessel", "found", "hearth=true", "name=door", `root=${root}`, "skip-build=true"]]) {
     const r = spawnSync(process.execPath, [cli, ...args], { cwd: repo, encoding: "utf8", env: { ...process.env, LAR_ROOT: root } });
     assert.equal(r.status, 0, `lares ${args.join(" ")}: ${r.stderr}`);
   }
@@ -154,7 +154,7 @@ test("the custody door opens the vessel key and leaves no trace of the credentia
     assert.equal(vessel.lives(), livesBefore + 1, "an unlock over a held key stands nothing new");
 
     // An ordinary verb after the unlock: the known positive for K1's search.
-    const put = vessel.verb(["get", "meme=true", "bag=lar:///ha.ka.ba/bags/lares", "--json"]);
+    const put = vessel.verb(["get", "meme=true", "bag=lar:///ha.ka.ba/bags/lares", "json=true"]);
     assert.equal(put.status, 0, `a verb answers after the unlock: ${put.stderr}${put.stdout}`);
     const KNOWN = JSON.parse(put.stdout.trim().split("\n").pop()).requestId;
     assert.equal(typeof KNOWN, "string", "the verb's answer names its request id");
@@ -230,7 +230,7 @@ test("the custody door opens the vessel key and leaves no trace of the credentia
     try {
       const plantPath = "t/custody-door/planted";
       writeFileSync(join(plantDir, "planted.mem"), `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///${plantPath}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${plantPath}"\n\`\`\`\n\n${PLANTED}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`);
-      const plant = vessel.verb(["put", `title=lar:///${plantPath}`, "recipe=lares", `file=${join(plantDir, "planted.mem")}`, "--json"]);
+      const plant = vessel.verb(["put", `title=lar:///${plantPath}`, "recipe=lares", `file=${join(plantDir, "planted.mem")}`, "json=true"]);
       assert.equal(plant.status, 0, `the plant lands through an ordinary verb: ${plant.stderr}${plant.stdout}`);
     } finally { rmSync(plantDir, { recursive: true, force: true }); }
     await vessel.stop();

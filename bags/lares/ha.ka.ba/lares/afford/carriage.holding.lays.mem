@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.holding.lays"
 
 ! carriage.holding.lays ~ each bags/* holding, laid back into its doc by kind
 
-`lares vessel lay` walks every holding under the canon source and lays it into its doc, kind-routed and diff-gated, by the act CREATE and the ingest it runs (so it passes `--change-id`, `--dry-run`, `--in-wiki`, `--shadow` and `--tag-blobs` through to them). Bare it previews; `--apply` lands, asking at a terminal, `--yes` with none (an apply with neither refuses `usage`). `--lag` reads how far canon lags the source and the floor's drift, writing nothing; `--workbench` walks the workbench folders alone; `--lift-kahua <N>` lifts kahua items; `--verbose` prints each line.
+`lares vessel lay` walks every holding under the canon source and lays it into its doc, kind-routed and diff-gated, by the act CREATE and the ingest it runs (so it passes `--change-id`, `--dry-run`, `--in-wiki`, `--shadow` and `--tag-blobs` through to them). Bare it previews; `apply=true` lands, asking at a terminal, `yes=true` with none (an apply with neither refuses `usage`). `--lag` reads how far canon lags the source and the floor's drift, writing nothing; `--workbench` walks the workbench folders alone; `--lift-kahua <N>` lifts kahua items; `--verbose` prints each line.
 
 <<~/ahu>>
 
@@ -69,7 +69,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · house-canon-unseated
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[carriage.holding.lays apply/true]] ~ an apply with no terminal needs the operator's relayed approval: --yes`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.holding.lays apply/true]] ~ an apply with no terminal needs the operator's relayed approval: yes=true`>>
 <<has entity=`refusal` name=`house-canon-unseated` params=`~ the holding landed after the vessel booted; re-stand to seat it`>>
 ```
 
@@ -111,6 +111,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZLwB5p7KYDDXDdqi-IlPDCuQNhPJ9TsTh3H1yMs1DTI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wMP0gLUTaAtQum09n9dno5PeVUjOO05NKxKVifVsOAE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

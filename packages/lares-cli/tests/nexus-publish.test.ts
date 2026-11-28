@@ -86,7 +86,7 @@ describe("lares nexus publish — the operator's own collection, apart from the 
     expect(said).toMatch(/local offering source/i);
   });
 
-  test("L-d: `publish plugins --source <dir> --json` in READ mode emits STRUCTURED JSON, never human prose", async () => {
+  test("L-d: `publish plugins --source <dir> json=true` in READ mode emits STRUCTURED JSON, never human prose", async () => {
     const source = offeringSourceDir(root);
     const out: string[] = [];
     const write = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { out.push(String(chunk)); return true; });
@@ -138,7 +138,7 @@ describe("lares nexus publish — the operator's own collection, apart from the 
     expect(await verifyPluginOffering(offering)).toEqual({ ok: true });
   });
 
-  test("★ `--apply --json` emits the structured success boundary, without human-only prose ★", async () => {
+  test("★ `--apply json=true` emits the structured success boundary, without human-only prose ★", async () => {
     // Founding itself needs the genesis seed (the engine CID etc.) regardless of this door's own
     // source — that dependency is `vessel found`'s, not `nexus publish`'s (H3: publish reads a local
     // `--source`, never genesis, but SOMETHING must still found the vessel this test applies into).

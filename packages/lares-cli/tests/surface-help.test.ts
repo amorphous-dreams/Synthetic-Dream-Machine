@@ -38,13 +38,13 @@ describe("lares surface help", () => {
     expect(calls.every((e) => e.startsWith("lares surface"))).toBe(true);
   });
 
-  test("`lares surface commit --help` reads the verb's own carrier", async () => {
-    const r = await run(["surface", "commit", "--help"]);
+  test("`lares help surface commit` reads the verb's own carrier", async () => {
+    const r = await run(["help", "surface", "commit"]);
     expect(r.code).toBe(0);
     expect(r.out).toContain("lar:///surface.keeps.the-sitting/");
   });
 
-  test("★ the top-level list names `surface` on one line; its depth unfolds at `lares surface --help` ★", async () => {
+  test("★ the top-level list names `surface` on one line; its depth unfolds at `lares help surface` ★", async () => {
     const r = await run(["help"]);
     expect(r.out.split("\n").filter((l) => /^\s+(✍ )?surface\s/.test(l))).toHaveLength(1);
   });

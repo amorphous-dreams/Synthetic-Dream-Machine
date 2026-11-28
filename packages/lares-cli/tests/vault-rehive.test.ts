@@ -26,7 +26,7 @@ describe("the rehive's answer", () => {
     expect(kahu).toBeGreaterThan(share);
     expect(text).toContain("lares kahua get face=1");
     expect(text).toContain("lares kahua carry all=true face=1");
-    expect(text).toContain("lares bag share list=true --json > shares-before.json");
+    expect(text).toContain("lares bag share list=true json=true > shares-before.json");
     expect(text).toContain("[note='<its note>']");
     expect(text).toContain("with * kept, its note, workspace and owner");
     expect(text).toMatch(/owner back into config\/share\.tid by hand/);

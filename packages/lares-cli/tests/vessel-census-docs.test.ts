@@ -4,7 +4,7 @@
  *   C1  prose by default: a summary per class, then the unnamed list (each orphan by id, store, bytes and why); exit 0.
  *   C2  a sealed document left unread says an orphan may be named inside it, so no orphan reads proven.
  *   C2b the unread footer names documents and copies apart, and its `sealed-unread` share reads the class line's count.
- *   C3  `--json` answers the full rows.
+ *   C3  `json=true` answers the full rows.
  *   C4  no vessel, a silent door, or a refusal exits 2 by name and never reads as an empty house.
  *   C5  the vessel door routes `census --docs` here and `census` alone to the stop census.
  */
@@ -80,7 +80,7 @@ describe("the document census", () => {
     expect(text).toMatch(/3 sealed document\(s\) stand unread in 4 cop\(ies\) across the stores: 2 sealed-unread · 1 current · 1 duplicate/);
   });
 
-  test("C3 — --json answers the full rows", async () => {
+  test("C3 — json=true answers the full rows", async () => {
     const c = capture();
     const code = await cmdDocCensus(args(true), async () => ({ op: "doc-census", census: reading(), standing: "hearth" }));
     expect(code).toBe(0);

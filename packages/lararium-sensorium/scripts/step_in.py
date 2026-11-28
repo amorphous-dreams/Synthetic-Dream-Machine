@@ -74,7 +74,7 @@ def _quarantined(data_dir: str) -> list:
 
 
 def reading(data_dir: str) -> dict:
-    """`{engineFalls, held}` — the same two fields `lares vessel read --json` answers."""
+    """`{engineFalls, held}` — the same two fields `lares vessel read json=true` answers."""
     falls = _falls(data_dir)
     in_flight = list(dict.fromkeys(f["inFlight"] for f in falls if isinstance(f.get("inFlight"), str)))
     held = [{"documentId": d, "why": "in-flight"} for d in in_flight] + \

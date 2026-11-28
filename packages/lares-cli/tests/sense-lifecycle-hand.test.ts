@@ -21,12 +21,12 @@ const AI: HandRead = () => readOwnHand({ proveRoute: false }, "ai");
 const UNREAD: HandRead = () => readOwnHand({ proveRoute: false }, "unknown");
 const HAND: HandRead = () => readOwnHand({ proveRoute: false }, "hand");
 
-/** Run one sense sub-verb under `--json`, answering its exit code and the envelope it wrote. */
+/** Run one sense sub-verb under `json=true`, answering its exit code and the envelope it wrote. */
 function run(fn: (a: ReturnType<typeof parseArgs>, h?: HandRead) => number, hand: HandRead, ...argv: string[]): { code: number; out: Record<string, unknown> } {
   const lines: string[] = [];
   const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { lines.push(String(chunk)); return true; });
   try {
-    const code = fn(parseArgs([...argv, "--json"]), hand);
+    const code = fn(parseArgs([...argv, "json=true"]), hand);
     return { code, out: JSON.parse(lines.join("").trim().split("\n").at(-1) ?? "{}") as Record<string, unknown> };
   } finally { spy.mockRestore(); }
 }
@@ -90,7 +90,7 @@ describe("the teardown's --confirm reads the hand behind the command", () => {
     const lines: string[] = [];
     const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { lines.push(String(chunk)); return true; });
     try {
-      const code = await cmdPalaceTeardown(parseArgs([...argv, "--json"]), hand);
+      const code = await cmdPalaceTeardown(parseArgs([...argv, "json=true"]), hand);
       return { code, out: JSON.parse(lines.join("").trim().split("\n").at(-1) ?? "{}") as Record<string, unknown> };
     } finally { spy.mockRestore(); }
   }

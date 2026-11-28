@@ -47,7 +47,7 @@ describe("settling a stand-off stays a hand act at the command", () => {
     for (const act of ["list", "drafts", "flush", "settle"] as const) expect(shoreHandRefusal(act, { uri: URI }, () => ({ refusal: "hand-act-only" }))).toBeNull();
   });
 
-  test("--yes approves nothing: a seat's keep-both refuses before any verb runs", async () => {
+  test("yes=true approves nothing: a seat's keep-both refuses before any verb runs", async () => {
     const said: string[] = [];
     const out = vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { said.push(a.map(String).join(" ")); });
     const err = vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { said.push(a.map(String).join(" ")); });

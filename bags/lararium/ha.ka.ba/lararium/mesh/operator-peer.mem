@@ -131,7 +131,7 @@ before side effects. No round-trip to a server gates local intent.
 
 ''OP-CR5 — One surface renders for human AND machine.''
 The command surface emits to whoever reads it. On a TTY it renders prose; off a TTY
-(or under `--json`) it emits a deterministic structured payload — the same
+(or under `json=true`) it emits a deterministic structured payload — the same
 command/receipt record shaped as data, carrying its correlatable `requestId` and an
 `ok | error` status. One core, two projections; the command surface never forks by
 audience. (The MCP tool projection exposes the same verbs as schema-typed Tools over
@@ -250,6 +250,6 @@ carrier's verdict.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BST199gcsY2wfdakB-qvQ60pf1AyNU0Nf8eJFIZoILk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;i9sYmssi3izr7WKAx0SeDWTD6gv03tEqhdfcuyXPdhQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.bag.shares"
 
 ! realm.bag.shares ~ a bag's share row: names beside names, by reference and never by copy
 
-A share row says who reads and who writes a bag, by face PET-NAME as a title list (`a b [[c d]]`), `*` for every face, or empty; `hN` and `--face N` resolve to that face's pet-name (`--face` adds face N to the readers), so a row always names faces by pet-name. A line names its DELTA: `--read` and `--write` add names beside the standing ones and never replace a list, `--read-remove` and `--write-remove` take names out (each taken-out face's landed grant revokes; a face standing shut keeps the row as it stood, named), and what the line leaves unnamed (the other list, the note, the owner) stands, so the same line twice changes nothing. `--list` shows every row and the one resolver's answer per bag (with `--json`, each row AS WRITTEN beside the resolver's answer); `--remove` unshares the row.
+A share row says who reads and who writes a bag, by face PET-NAME as a title list (`a b [[c d]]`), `*` for every face, or empty; `hN` and `face=N` resolve to that face's pet-name (`--face` adds face N to the readers), so a row always names faces by pet-name. A line names its DELTA: `--read` and `--write` add names beside the standing ones and never replace a list, `--read-remove` and `--write-remove` take names out (each taken-out face's landed grant revokes; a face standing shut keeps the row as it stood, named), and what the line leaves unnamed (the other list, the note, the owner) stands, so the same line twice changes nothing. `--list` shows every row and the one resolver's answer per bag (with `json=true`, each row AS WRITTEN beside the resolver's answer); `--remove` unshares the row.
 
 The row writes through to `$LAR_ROOT/config/share.tid` (it survives a re-founding; a person edits it by hand, and the next boot reconciles it in, the file winning) and, with a vessel standing, into the control document (`share-set`); then the operator's hand lands it (`share-apply`): each lit grantee takes the bag's row by reference and a delegation from the owner's hive, and a grant whose face stands shut waits behind an opaque flag until it lights. ONE ROW PER SLUG: a wiki row standing for the slug refuses `share-kind-standing`, and nothing writes. Sharing rides by reference and delegation, never a copy.
 
@@ -115,6 +115,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;eG19nuQ5TcIkkhhGkdCC6pSdKBXpuxq_5xn0fucxzP0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3QeOsutzEQ3PZodoTqNSlUDDFCd7Q1n_1vWW9lCsD40`>>
 
 <<^ code=`&#x0004;` to=`?`>>

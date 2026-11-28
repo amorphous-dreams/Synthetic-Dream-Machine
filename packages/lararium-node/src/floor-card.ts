@@ -82,7 +82,7 @@ export const CANON_NEXT = "lares nexus release floor-release.json cut=true";
 export const SEED_NEXT = "lares vessel floor seed";
 export const SHADOW_NEXT = "lares vessel read";
 export const LAG_NEXT = "lares vessel lay lag=true";
-/** The preview first: `lay apply=true --yes` relays the operator's approval, so a seat or an AI reads the card and runs only the preview. */
+/** The preview first: `lay apply=true yes=true` relays the operator's approval, so a seat or an AI reads the card and runs only the preview. */
 export const LAG_PREVIEW = "lares vessel lay";
 export const WORKBENCH_PREVIEW = "lares vessel lay workbench=true";
 export const WORKING_NEXT = "lares vessel floor status grain=lag";

@@ -44,7 +44,7 @@ The operator ruled on 2026-10-26 to close open work before the founding bake. Th
 * `browser-walk.test.ts`: the control that the `boot-invite-burned`, `hosting-walk` and `nexus-keys` stores stand absent (road `W20`).
 * `vessel-wipe-surfaces.test.ts`, now `vessel-surfaces.test.ts`: the `vessel clear`, `rite rebirth` and `--clear` refusals and the negative help checks; the live `read`, refresh and surface-table assertions stay.
 * `nexus-verb-reach.test.ts`: `nexus refresh` reads as an unknown verb.
-* `vault-door.test.ts`: the former vault verbs (`seal`, `rotate`, `repair`, `passphrase`, `export`), `--yes`, `--check` and the passphrase environment route; the exact seven-verb help assertion and a nonsense-verb refusal stay.
+* `vault-door.test.ts`: the former vault verbs (`seal`, `rotate`, `repair`, `passphrase`, `export`), `yes=true`, `--check` and the passphrase environment route; the exact seven-verb help assertion and a nonsense-verb refusal stay.
 * `cabal-realm-ceremony.test.ts`: the absent-export list for the former eviction and closing API; the exact live export assertion stays.
 
 <<~/ahu>>
@@ -140,6 +140,6 @@ Operator, 2026-10-28: the old shapes and shape gates are design-time crud that t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TDKrTLu-vgbc_TJHxyDO9-W92atAIhWjNewkAUdU8Fc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IDBwFzWTNxlA5SPPPhO5xTYZ3O3B21ZG6ymY9vh_SB4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

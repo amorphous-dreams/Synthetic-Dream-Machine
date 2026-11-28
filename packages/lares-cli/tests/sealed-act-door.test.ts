@@ -406,7 +406,7 @@ describe("a command beside a standing vessel", () => {
       if (act === "seal.incept") { const { seat, image } = args as { seat: string; image: string }; return { signer: seat, sig: seatSign(seat, image) }; }
       return {};
     } });
-    const r = await run(["nexus", "seal", "seat", "--json"]);
+    const r = await run(["nexus", "seal", "seat", "json=true"]);
     expect(r.code).toBe(0);
     expect(seatedCustody()?.isUnlocked() ?? false, "the command's own seat stays locked").toBe(false);
     const frames = vessel.frames as Array<{ act: string; args: Record<string, unknown> }>;
@@ -434,9 +434,9 @@ describe("a command beside a standing vessel", () => {
       if (act === "walk.invite") return { gatePubKey: KEY, invite: HANDED, left: 0 };
       return {};
     } });
-    const state = await run(["walk", "--json"]);
-    const take = await run(["walk", "take", CARRIED, "--json"]);
-    const invite = await run(["walk", "invite", "--json"]);
+    const state = await run(["walk", "json=true"]);
+    const take = await run(["walk", "take", CARRIED, "json=true"]);
+    const invite = await run(["walk", "invite", "json=true"]);
     for (const r of [state, take, invite]) expect(r.code, r.out + r.err).toBe(0);
     const frames = actFrames(vessel.frames);
     for (const frame of frames) expect(Object.keys(frame).sort()).toEqual(["act", "args", "op"]);   // no verb, requester or request id
@@ -451,7 +451,7 @@ describe("a command beside a standing vessel", () => {
 
     // A vessel's refusal of a take crosses as the walk door's own refusal.
     const refusing = await standVessel({ unlocked: true, table: () => { throw new SealedActRefused("act-refused", "this vessel wears no face — a walker walks as a person"); } });
-    const refused = await run(["walk", "take", CARRIED, "--json"]);
+    const refused = await run(["walk", "take", CARRIED, "json=true"]);
     expect(refused.code).not.toBe(0);
     expect(refused.out + refused.err).toContain("wears no face");
     expect(JSON.parse((refused.out + "\n" + refused.err).trim().split("\n").filter((l) => l.startsWith("{")).at(-1)!)).toMatchObject({ ok: false, error: { code: "refused" } });
@@ -468,9 +468,9 @@ describe("a command beside a standing vessel", () => {
       if (act === "host.invite") return { nexusAid: AID, epoch: "f".repeat(64), invite: MINTED };
       return {};
     } });
-    const state = await run(["host", "--json"]);
-    const roll = await run(["host", "roll", `nexus=${AID}`, "cap=5", "--json"]);
-    const invite = await run(["host", "invite", "relay=ws://a-synthetic-hearth/ws", "--json"]);
+    const state = await run(["host", "json=true"]);
+    const roll = await run(["host", "roll", `nexus=${AID}`, "cap=5", "json=true"]);
+    const invite = await run(["host", "invite", "relay=ws://a-synthetic-hearth/ws", "json=true"]);
     for (const r of [state, roll, invite]) expect(r.code, r.out + r.err).toBe(0);
     const frames = actFrames(vessel.frames);
     for (const frame of frames) expect(Object.keys(frame).sort()).toEqual(["act", "args", "op"]);   // no verb, requester or request id
@@ -492,7 +492,7 @@ describe("a command beside a standing vessel", () => {
 
     // A vessel's refusal of a roll crosses as the hosting door's own refusal.
     const refusing = await standVessel({ unlocked: true, table: () => { throw new SealedActRefused("act-refused", "this vessel wears no face — a hearth hosts as the face it wears") ; } });
-    const refused = await run(["host", "roll", "--json"]);
+    const refused = await run(["host", "roll", "json=true"]);
     expect(refused.code).not.toBe(0);
     expect(refused.out + refused.err).toContain("wears no face");
     expect(JSON.parse((refused.out + "\n" + refused.err).trim().split("\n").filter((l) => l.startsWith("{")).at(-1)!)).toMatchObject({ ok: false, error: { code: "refused" } });

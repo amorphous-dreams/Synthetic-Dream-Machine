@@ -75,7 +75,7 @@ sweepable. Three holds bind it:
 sweep takes `.corpus/*`. Ephemeral state never leaks past both.
 
 ''The help that teaches.'' The door's words live in the per-command help registry (examples first), and
-`packages/lares-cli/tests/help-door-meme.test.ts` welds a door's refusal menu to its `--help` bytes. The
+`packages/lares-cli/tests/help-door-meme.test.ts` welds a door's refusal menu to its help bytes (`lares help <door>`). The
 design of the organ registry and the setup ladder: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/corpus-design#/the-cli`>>.
 
 <<~/ahu>>
@@ -226,6 +226,6 @@ global-now it cannot ground. The reconciliation cost `R*_sem = log₂ dim H¹` g
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;XMZTLxJyk6QSBcAfM5fXSyI5XHzBYmpt4jIoTyUITf0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yHUdcSPEPdu9YhjUZwGa3cDPL8XNnlYaTye5RCgGDE4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -27,7 +27,7 @@ export async function faceJoinOutcome(lar: LarInstance, id: string, boundMs = 90
   const deadline = Date.now() + boundMs;
   let last = "no read yet";
   while (Date.now() < deadline) {
-    const shown = await lar.cli(["intent", "show", "--json"]);
+    const shown = await lar.cli(["intent", "show", "json=true"]);
     if (shown.code === 0) {
       const body = lastJson(shown.stdout);
       const won = (body["outcomes"] as Array<{ cause: string; winner: boolean; result: Record<string, unknown> }> | undefined)?.find((o) => o.cause === id && o.winner);

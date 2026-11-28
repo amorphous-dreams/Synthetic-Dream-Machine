@@ -53,7 +53,7 @@ describe("dogfood memory survives a content-keyed re-stand", () => {
     const path = pathFor(uri);
     const source = join(originalRoot, "memory.mem");
     writeFileSync(source, carrier(uri));
-    const put = await original!.cli(["put", `title=${uri}`, "recipe=default", `file=${source}`, "--json"]);
+    const put = await original!.cli(["put", `title=${uri}`, "recipe=default", `file=${source}`, "json=true"]);
     expect(put.json?.["ok"], `${put.stdout}\n${put.stderr}`).toBe(true);
     await expectEntry(original!, {
       kind: "bag-projected",
@@ -80,9 +80,9 @@ describe("dogfood memory survives a content-keyed re-stand", () => {
     expect(field(priorWiki, "uri-path")).toBe(path);
     const sourceAgain = join(freshRoot, "re-pour.mem");
     writeFileSync(sourceAgain, priorWiki);
-    const poured = await restored!.cli(["put", `title=${uri}`, "recipe=default", `file=${sourceAgain}`, "--json"]);
+    const poured = await restored!.cli(["put", `title=${uri}`, "recipe=default", `file=${sourceAgain}`, "json=true"]);
     expect(poured.json?.["ok"], `${poured.stdout}\n${poured.stderr}`).toBe(true);
-    const fetched = await restored!.cli(["get", `title=${uri}`, "recipe=default", "mu=assert", "--json"]);
+    const fetched = await restored!.cli(["get", `title=${uri}`, "recipe=default", "mu=assert", "json=true"]);
     expect(fetched.json?.["ok"], `${fetched.stdout}\n${fetched.stderr}`).toBe(true);
     const data = (fetched.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>;
     expect(data["uri"]).toBe(uri);
@@ -106,9 +106,9 @@ describe("dogfood memory survives a content-keyed re-stand", () => {
     expect(changedUri).not.toBe(titleFor(ROW.stagePath));
     const source = join(freshRoot, "changed-row.mem");
     writeFileSync(source, carrier(changedUri));
-    const put = await restored!.cli(["put", `title=${changedUri}`, "recipe=default", `file=${source}`, "--json"]);
+    const put = await restored!.cli(["put", `title=${changedUri}`, "recipe=default", `file=${source}`, "json=true"]);
     expect(put.json?.["ok"], `${put.stdout}\n${put.stderr}`).toBe(true);
-    const fetched = await restored!.cli(["get", `title=${changedUri}`, "recipe=default", "mu=assert", "--json"]);
+    const fetched = await restored!.cli(["get", `title=${changedUri}`, "recipe=default", "mu=assert", "json=true"]);
     expect(fetched.json?.["ok"], `${fetched.stdout}\n${fetched.stderr}`).toBe(true);
     const text = String(((fetched.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>)["text"]);
     expect([field(text, "uri-path"), field(text, "title")]).toEqual([pathFor(changedUri), changedUri]);
@@ -117,10 +117,10 @@ describe("dogfood memory survives a content-keyed re-stand", () => {
     const malformedUri = titleFor("Dogfood-Memory");
     const malformed = join(freshRoot, "malformed-row.mem");
     writeFileSync(malformed, carrier(malformedUri));
-    const refused = await restored!.cli(["put", `title=${malformedUri}`, "recipe=default", `file=${malformed}`, "--json"]);
+    const refused = await restored!.cli(["put", `title=${malformedUri}`, "recipe=default", `file=${malformed}`, "json=true"]);
     expect(refused.json?.["ok"], `${refused.stdout}\n${refused.stderr}`).toBe(false);
     expect(JSON.stringify(refused.json?.["error"])).toContain("stage-path-shape");
-    const kept = await restored!.cli(["get", `title=${titleFor(ROW.stagePath)}`, "recipe=default", "mu=assert", "--json"]);
+    const kept = await restored!.cli(["get", `title=${titleFor(ROW.stagePath)}`, "recipe=default", "mu=assert", "json=true"]);
     expect(field(String(((kept.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>)["text"]), "uri-path")).toBe(pathFor(titleFor(ROW.stagePath)));
   });
 });

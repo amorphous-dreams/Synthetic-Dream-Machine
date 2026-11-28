@@ -6,14 +6,14 @@
  * command holding the store refuses it by name, naming the stop that frees it.
  *
  *   R1  a release with no id refuses with its usage.
- *   R2  --keep and --fresh together refuse: one act at a time.
+ *   R2  keep=true and fresh=true together refuse: one act at a time.
  *   R3  an id no hold names refuses by name.
  *   R4  a held store (a standing vessel, a command mid-act) refuses, naming `lares vessel stop`, and moves nothing.
  *   R5  a release lands: the bytes return under the id, the manifest reads released, and the store claim lets go.
  *   R7  a fallen vessel that let its claim go (a fall during boot frees the store's name) still holds the store: a resting
  *       fall whose process lives refuses the release by name, naming that pid and `lares vessel stop`. CONTROL: a fall whose
  *       process has ended lets the release land.
- *   R6  `vessel read vessel --release*` answers the moved pointer to `lares vessel release`, exit 2, and reads nothing.
+ *   R6  `vessel read vessel release*=true` meets the plain unknown-param refusal, exit 2, and reads nothing.
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -63,21 +63,21 @@ describe("lares vessel release <documentId> [keep=true|fresh=true]", () => {
   test("R1 — a release with no id refuses with its usage", async () => {
     const { root } = house();
     const s = said();
-    expect(await dispatch(["vessel", "release", `root=${root}`, "--skip-build"])).toBe(2);
+    expect(await dispatch(["vessel", "release", `root=${root}`, "skip-build=true"])).toBe(2);
     expect(s.err.join("\n")).toMatch(/lares vessel release <documentId> \[keep=true\|fresh=true\]/);
   });
 
   test("R2 — --keep and --fresh together refuse: one act at a time", async () => {
     const { root } = house();
     const s = said();
-    expect(await dispatch(["vessel", "release", DOC, "keep=true", "fresh=true", `root=${root}`, "--skip-build"])).toBe(2);
+    expect(await dispatch(["vessel", "release", DOC, "keep=true", "fresh=true", `root=${root}`, "skip-build=true"])).toBe(2);
     expect(s.err.join("\n")).toMatch(/one act/);
   });
 
   test("R3 — an id no hold names refuses by name", async () => {
     const { root } = house();
     const s = said();
-    expect(await dispatch(["vessel", "release", DOC, "keep=true", `root=${root}`, "--skip-build"])).toBe(2);
+    expect(await dispatch(["vessel", "release", DOC, "keep=true", `root=${root}`, "skip-build=true"])).toBe(2);
     expect(s.err.join("\n")).toMatch(/no quarantine hold names this id/);
   });
 
@@ -87,7 +87,7 @@ describe("lares vessel release <documentId> [keep=true|fresh=true]", () => {
     const claim = await claimStore(storageDir);
     try {
       const s = said();
-      expect(await dispatch(["vessel", "release", DOC, `root=${root}`, "--skip-build"])).toBe(2);
+      expect(await dispatch(["vessel", "release", DOC, `root=${root}`, "skip-build=true"])).toBe(2);
       expect(s.err.join("\n")).toMatch(/`lares vessel stop`/);
       expect(quarantineHolds(storageDir).map((h) => h.manifest.documentId)).toEqual([DOC]);
     } finally { await claim.release(); }
@@ -97,7 +97,7 @@ describe("lares vessel release <documentId> [keep=true|fresh=true]", () => {
     const { root, storageDir } = house();
     held(storageDir);
     const s = said();
-    expect(await dispatch(["vessel", "release", DOC, `root=${root}`, "--skip-build"])).toBe(0);
+    expect(await dispatch(["vessel", "release", DOC, `root=${root}`, "skip-build=true"])).toBe(0);
     expect(s.out.join("\n")).toMatch(/released 4NMNnkMhL8jXrdJ9jamS2rUEaQDq/);
     expect(existsSync(join(storageDir, DOC.slice(0, 2), DOC.slice(2), "snapshot", "chunk"))).toBe(true);
     expect(quarantineHolds(storageDir)).toEqual([]);
@@ -107,12 +107,12 @@ describe("lares vessel release <documentId> [keep=true|fresh=true]", () => {
   });
 
   for (const flag of ["release=true", "release-keep=true", "release-fresh=true"]) {
-    test(`R6 — \`vessel read vessel ${flag}\` answers the moved pointer to \`lares vessel release\`, exit 2, and reads nothing`, async () => {
+    test(`R6 — \`vessel read vessel ${flag}\` meets the unknown-param refusal, exit 2, and reads nothing`, async () => {
       const { root, storageDir } = house();
       held(storageDir);
       const s = said();
-      expect(await dispatch(["vessel", "read", "vessel", `root=${root}`, "--skip-build", flag, DOC])).toBe(2);
-      expect(s.err.join("\n")).toMatch(/moved to `lares vessel release <documentId> \[keep=true\|fresh=true\]`/);
+      expect(await dispatch(["vessel", "read", "vessel", `root=${root}`, "skip-build=true", flag, DOC])).toBe(2);
+      expect(s.err.join("\n")).toContain(`unknown param ${flag.slice(0, flag.indexOf("="))}= for \`lares vessel\``);
       expect(quarantineHolds(storageDir).map((h) => h.manifest.documentId)).toEqual([DOC]);
     });
   }
@@ -124,7 +124,7 @@ describe("lares vessel release <documentId> [keep=true|fresh=true]", () => {
     try {
       restEngineFall(storageDir, { cause: "wasm-unreachable", path: "repo", detail: "x", since: "2026-11-23T01:00:00.000Z", lastSettled: null, inFlight: null }, "a".repeat(32), husk.pid!);
       const s = said();
-      expect(await dispatch(["vessel", "release", DOC, `root=${root}`, "--skip-build"])).toBe(2);
+      expect(await dispatch(["vessel", "release", DOC, `root=${root}`, "skip-build=true"])).toBe(2);
       const err = s.err.join("\n");
       expect(err).toContain(`pid ${husk.pid}`);
       expect(err).toMatch(/`lares vessel stop`/);
@@ -139,7 +139,7 @@ describe("lares vessel release <documentId> [keep=true|fresh=true]", () => {
     await new Promise((r) => gone.once("exit", r));
     restEngineFall(storageDir, { cause: "wasm-unreachable", path: "repo", detail: "x", since: "2026-11-23T01:00:00.000Z", lastSettled: null, inFlight: null }, "a".repeat(32), gone.pid!);
     said();
-    expect(await dispatch(["vessel", "release", DOC, `root=${root}`, "--skip-build"])).toBe(0);
+    expect(await dispatch(["vessel", "release", DOC, `root=${root}`, "skip-build=true"])).toBe(0);
     expect(quarantineHolds(storageDir)).toEqual([]);
   });
 });

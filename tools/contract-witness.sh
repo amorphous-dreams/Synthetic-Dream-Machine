@@ -47,7 +47,7 @@
 # Each chair holds a SEAT key of its own, minted sealed on A apart from every persona root. The Stable founding act
 # seats persona zero's chair alone and prints its NEXT key as a cold-key card; the first roll reveals it and seats
 # the three chairs, printing each chair's next card; on this staged root every read-back stands in and the answer
-# carries each card's code. `seal rotate --cold-key` takes the cards back, each revealed key becomes its chair's
+# carries each card's code. `seal rotate cold-key=` takes the cards back, each revealed key becomes its chair's
 # seat key, the seated hands SIGN the roll, and the closing keys retire once the charter moved — the lineage
 # verifies whole.
 #
@@ -123,7 +123,7 @@ echo "  A (the Nexus):  $A_ROOT"
 echo "  B (the joiner): $B_ROOT"
 
 say "⓪ preflight"
-# A WITNESS BUILDS NOTHING. Every gated vessel door below rides `--skip-build`, so the witness measures the
+# A WITNESS BUILDS NOTHING. Every gated vessel door below rides `skip-build=true`, so the witness measures the
 # dist that stands and never rewrites it beneath a concurrent run; a dist built from older source refuses
 # here, naming its cure, rather than running superseded logic.
 step "the CLI dist was built from the source it stands beside"
@@ -168,12 +168,12 @@ stage_custody "$A_ROOT" A
 step "A founds its hearth (the Stable founding act)"
 SEEDCARD=""
 A_AID=""
-if FOUND=$(as_a vessel found --hearth --name adc-0 --skip-build --json 2>&1) && printf '%s' "$FOUND" | grep -q '"ok":true'; then
+if FOUND=$(as_a vessel found hearth=true name=adc-0 skip-build=true json=true 2>&1) && printf '%s' "$FOUND" | grep -q '"ok":true'; then
   SEEDCARD=$(printf '%s' "$FOUND" | grep -oE '"code":"[0-9a-f-]+"' | head -1 | cut -d'"' -f4)
   A_AID=$(printf '%s' "$FOUND" | grep -oE '"nexusAid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
   if [ -n "$SEEDCARD" ]; then ok; else bad "the founding printed no seed card on a staged root"; fi
 else bad "$(printf '%s' "$FOUND" | tail -3 | tr '\n' ' ')"; fi
-run_a "A stands"                        vessel stand --init --skip-build
+run_a "A stands"                        vessel stand init=true skip-build=true
 unlock_root "$A_ROOT" A || exit 1
 assert_founded "$A_ROOT" A
 # A FAILED FOUNDING ENDS THE RUN. Many verbs below answer off disk, so a broken founding fills the report
@@ -186,18 +186,18 @@ KAHU_KEYS=""
 for spec in "0:adc-0:Kahu Alpha" "1:adc-1:Kahu Beta" "2:adc-2:Kahu Gamma"; do
   IFS=: read -r idx name handle <<<"$spec"
   step "A mints kahu $idx"
-  if MINT=$(as_a persona new "$idx" --name "$name" --handle "$handle" --seat --json 2>&1); then
+  if MINT=$(as_a persona new "$idx" name="$name" handle="$handle" seat=true json=true 2>&1); then
     ok; KAHU_KEYS="$KAHU_KEYS${KAHU_KEYS:+,}$(printf '%s' "$MINT" | grep -oE '"verifyingKey":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)"
   else bad "$?"; printf '%s\n' "$MINT" | tail -4 | sed 's/^/      /'; fi
 done
 step "A rolls its seed charter to the three chairs (the seed card reveals; the roll prints each chair's card)"
 CARDS=""
-if SEAT=$(as_a nexus seal rotate --face 0 --cold-key "$SEEDCARD" --threshold 2 --json 2>&1) && printf '%s' "$SEAT" | grep -q '"ok":true'; then
+if SEAT=$(as_a nexus seal rotate face=0 cold-key="$SEEDCARD" threshold=2 json=true 2>&1) && printf '%s' "$SEAT" | grep -q '"ok":true'; then
   CARDS=$(printf '%s' "$SEAT" | grep -oE '"code":"[0-9a-f-]+"' | cut -d'"' -f4 | paste -sd, -)
   if [ -n "$CARDS" ]; then ok; else bad "the roll printed no card on a staged root"; fi
 else bad "$(printf '%s' "$SEAT" | grep -oE '"message":"[^"]+"' | head -1)"; fi
 step "A's quorum STANDS"
-if as_a nexus seal show --json 2>/dev/null | grep -q '"quorumSeated":true'; then ok; else bad "quorum not seated"; fi
+if as_a nexus seal show json=true 2>/dev/null | grep -q '"quorumSeated":true'; then ok; else bad "quorum not seated"; fi
 
 # ── ② VESSEL B — found independently ─────────────────────────────────────────────────────────────
 say "② vessel B — an INDEPENDENT operator founds their own hearth"
@@ -209,14 +209,14 @@ BEFORE=$FAILED
 # "joiner" matched "zero-width joiner" inside vendored engine text and read A's root as leaking B's
 # key. A probe that can appear by accident measures the corpus, never the boundary.
 B_PROBE="bjoiner-$$-xqz"
-run_b "B founds its own hearth (own device key, own vault, own seed charter)"  vessel found --hearth --name "$B_PROBE" --skip-build
+run_b "B founds its own hearth (own device key, own vault, own seed charter)"  vessel found hearth=true name="$B_PROBE" skip-build=true
 # Persona zero declares its Handle and reads its key back BEFORE B stands, with no vessel holding the store: the
 # label lands on B's sealed rows alone, as it did when the face founded in this same step.
 step "B names its own persona"
-if B_MINT=$(as_b persona new 0 --name "$B_PROBE" --handle 'Independent Operator' --json 2>&1); then
+if B_MINT=$(as_b persona new 0 name="$B_PROBE" handle='Independent Operator' json=true 2>&1); then
   ok; B_PERSONA_KEY=$(printf '%s' "$B_MINT" | grep -oE '"verifyingKey":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
 else bad "$?"; printf '%s\n' "$B_MINT" | tail -4 | sed 's/^/      /'; B_PERSONA_KEY=""; fi
-run_b "B stands"                              vessel stand --init --skip-build
+run_b "B stands"                              vessel stand init=true skip-build=true
 unlock_root "$B_ROOT" B || exit 1
 if [ "$FAILED" -ne "$BEFORE" ]; then
   say "ABANDONED — B's founding failed; the handshake has no second vessel to cross to."
@@ -237,7 +237,7 @@ step "★ B's key is FOREIGN to A — no shared seed on disk ★"
 # UNMEASURED HERE: whether a sealed copy of B's seed rests under A's root. Nothing in this run carries one there,
 # and no reading of A's sealed rows by this harness could tell B's seed from A's own.
 vessel_key_of() { cat "$1"/hearth/identity/.vessel-key.json 2>/dev/null | grep -oE '"verifyingKey": *"[0-9a-f]{64}"' | head -1 | grep -oE '[0-9a-f]{64}'; }
-A_LIST=$(as_a persona list --json 2>/dev/null); B_LIST=$(as_b persona list --json 2>/dev/null)
+A_LIST=$(as_a persona list json=true 2>/dev/null); B_LIST=$(as_b persona list json=true 2>/dev/null)
 A_VESSEL=$(vessel_key_of "$A_ROOT"); B_VESSEL=$(vessel_key_of "$B_ROOT")
 if ! printf '%s' "$B_LIST" | grep -qs '"ok":true'; then bad "B's persona list gave no answer"
 elif ! printf '%s' "$B_LIST" | grep -qs "$B_PROBE"; then bad "the probe names nothing under B — the absence below would measure the grep"
@@ -257,29 +257,29 @@ else bad "B's material reachable from A's root"; fi
 say "③ the prerequisite the one-vessel run hid"
 note "B stands on its own seed charter; A's Nexus reaches B as a CARRIED charter, beside B's own."
 note "B cannot consent to a charter epoch it has never seen — so A's charter must travel FIRST."
-B_AID_BEFORE=$(as_b nexus seal show --json 2>/dev/null | grep -oE '"sealEpochCid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+B_AID_BEFORE=$(as_b nexus seal show json=true 2>/dev/null | grep -oE '"sealEpochCid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
 step "B refuses to consent to A's Nexus with A's charter not in hand"
 if [ -z "$A_AID" ]; then bad "A's founding named no AID"
-elif as_b nexus accept-carriage --index 0 --nexus "$A_AID" --json >/dev/null 2>&1; then
+elif as_b nexus accept-carriage index=0 nexus="$A_AID" json=true >/dev/null 2>&1; then
   bad "B signed a contract-in for a Nexus whose charter it never held — fail-closed did not hold"
 else ok; fi
 
 step "carry A's charter → B, beside B's own seed charter (public material)"
 A_CHARTER="$XFER/a-charter.mem"
-if as_a nexus seal export --no-json > "$A_CHARTER" 2>/dev/null && [ -s "$A_CHARTER" ] \
-   && as_b nexus seal import --carry "$A_CHARTER" --json 2>&1 | grep -q '"ok":true'; then ok
+if as_a nexus seal export json=false > "$A_CHARTER" 2>/dev/null && [ -s "$A_CHARTER" ] \
+   && as_b nexus seal import carry="$A_CHARTER" json=true 2>&1 | grep -q '"ok":true'; then ok
 else bad "A's charter did not carry to B"; fi
 
 step "★ the carried charter grants B no QUORUM — B's own seed charter stands as it stood ★"
 # B now holds A's charter beside its own. If carrying it moved B's primary, A's public charter would BE B's quorum.
-B_AID_AFTER=$(as_b nexus seal show --json 2>/dev/null | grep -oE '"sealEpochCid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+B_AID_AFTER=$(as_b nexus seal show json=true 2>/dev/null | grep -oE '"sealEpochCid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
 if [ -n "$B_AID_BEFORE" ] && [ "$B_AID_BEFORE" = "$B_AID_AFTER" ] && [ "$B_AID_AFTER" != "$A_AID" ]; then ok
 else bad "B's primary charter moved (${B_AID_BEFORE:-none} → ${B_AID_AFTER:-none})"; fi
 
 # ── ④ THE HANDSHAKE ──────────────────────────────────────────────────────────────────────────────
 say "④ the handshake — B consents, A's quorum admits"
 step "B signs its contract-in (the joiner's half)"
-if CARRIAGE=$(as_b nexus accept-carriage --index 0 --nexus "$A_AID" --json 2>&1); then
+if CARRIAGE=$(as_b nexus accept-carriage index=0 nexus="$A_AID" json=true 2>&1); then
   ok
   B_NYM=$(printf '%s' "$CARRIAGE" | grep -oE '"nym":"[0-9a-fx]+"' | head -1 | cut -d'"' -f4)
   B_SIG=$(printf '%s' "$CARRIAGE" | grep -oE '"contractSig":"[0-9a-f]+"' | head -1 | cut -d'"' -f4)
@@ -288,15 +288,15 @@ if CARRIAGE=$(as_b nexus accept-carriage --index 0 --nexus "$A_AID" --json 2>&1)
 else bad "$?"; printf '%s\n' "$CARRIAGE" | tail -4 | sed 's/^/      /'; B_NYM=""; B_SIG=""; fi
 
 step "★ A has never held this key ★"
-if [ -n "$B_NYM" ] && ! as_a persona list --json 2>/dev/null | grep -q "${B_NYM#0x}"; then ok
+if [ -n "$B_NYM" ] && ! as_a persona list json=true 2>/dev/null | grep -q "${B_NYM#0x}"; then ok
 elif [ -z "$B_NYM" ]; then bad "no nym to check"
 else bad "B's nym appears among A's own personas"; fi
 
 if [ -n "$B_NYM" ] && [ -n "$B_SIG" ]; then
   run_sh_a "★ A's quorum ADMITS a foreign key ★" \
-    "node '$LARES' nexus contract '$B_NYM' --sig '$B_SIG' --json | grep -q '\"memberHeld\":true'"
+    "node '$LARES' nexus contract '$B_NYM' sig='$B_SIG' json=true | grep -q '\"memberHeld\":true'"
   step "A's members board folds B IN"
-  if as_a nexus members --list --json 2>/dev/null | grep -q "${B_NYM#0x}"; then ok; else bad "B absent from the fold"; fi
+  if as_a nexus members list=true json=true 2>/dev/null | grep -q "${B_NYM#0x}"; then ok; else bad "B absent from the fold"; fi
 else
   step "A's quorum admits a foreign key"; bad "no token captured"
 fi
@@ -562,13 +562,13 @@ else bad "alone=$GATE_HONEST beside-edge=$GATE_EDGE"; fi
 # ── ⑥ THE REFUSALS ───────────────────────────────────────────────────────────────────────────────
 say "⑥ the refusals — a gate only shown saying yes is no gate"
 step "a foreign nym with NO contract-in refuses"
-if as_a nexus contract 1111111111111111111111111111111111111111111111111111111111111111 --json 2>&1 | grep -q '"ok":true'; then
+if as_a nexus contract 1111111111111111111111111111111111111111111111111111111111111111 json=true 2>&1 | grep -q '"ok":true'; then
   bad "admitted without consent"; else ok; fi
 
 step "a FORGED signature refuses"
 if [ -n "$B_NYM" ]; then
   FORGED=$(printf '%0128d' 0 | tr '0' 'a')
-  if as_a nexus contract "$B_NYM" --sig "$FORGED" --json 2>&1 | grep -q '"ok":true'; then
+  if as_a nexus contract "$B_NYM" sig="$FORGED" json=true 2>&1 | grep -q '"ok":true'; then
     bad "a forged contract-in verified"; else ok; fi
 else bad "no nym"; fi
 
@@ -576,10 +576,10 @@ else bad "no nym"; fi
 say "⑦ the raise door — a leaf raises through its presented admit"
 note "A's kahu-0 consents as its own LEAF and A's quorum admits it, so A's replica holds a leaf admit to sign with"
 step "A's kahu-0 leaf is admitted on A's board"
-if SELF=$(as_a nexus accept-carriage --index 0 --json 2>&1); then
+if SELF=$(as_a nexus accept-carriage index=0 json=true 2>&1); then
   A_LEAF=$(printf '%s' "$SELF" | grep -oE '"nym":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
   A_LEAF_SIG=$(printf '%s' "$SELF" | grep -oE '"contractSig":"[0-9a-f]+"' | head -1 | cut -d'"' -f4)
-  if as_a nexus contract "$A_LEAF" --sig "$A_LEAF_SIG" --json 2>&1 | grep -q '"memberHeld":true'; then ok
+  if as_a nexus contract "$A_LEAF" sig="$A_LEAF_SIG" json=true 2>&1 | grep -q '"memberHeld":true'; then ok
   else bad "the leaf admit did not land"; fi
 else bad "$?"; A_LEAF=""; fi
 
@@ -589,7 +589,7 @@ if s6_a challenge > "$CHALLENGE" 2>&1 && grep -q '"nexus"' "$CHALLENGE"; then ok
 
 step "lares persona raise-sign signs as the LEAF, carrying its admit"
 # stdout alone is the JSON: a runtime warning on stderr (node:sqlite's experimental notice) must not corrupt it.
-if as_a persona raise-sign "$(cat "$CHALLENGE")" --as 0 --json > "$XFER/raise-sign.out" 2> "$XFER/raise-sign.err" \
+if as_a persona raise-sign "$(cat "$CHALLENGE")" as=0 json=true > "$XFER/raise-sign.out" 2> "$XFER/raise-sign.err" \
    && node -e 'const o=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")); if(!o.ok) process.exit(1); require("fs").writeFileSync(process.argv[2], JSON.stringify(o.data));' "$XFER/raise-sign.out" "$GRANT" \
    && grep -q "\"byNym\":\"$A_LEAF\"" "$GRANT"; then ok
 else bad "$(tail -c 300 "$XFER/raise-sign.out") $(tail -c 300 "$XFER/raise-sign.err")"; fi
@@ -608,7 +608,7 @@ else bad "no stranger grant"; fi
 say "⑧ closing — non-renewal, never deletion"
 if [ -n "$B_NYM" ]; then
   run_sh_a "A revokes — the board SUPERSEDES" \
-    "node '$LARES' nexus revoke '$B_NYM' --json | grep -q '\"memberHeld\":false'"
+    "node '$LARES' nexus revoke '$B_NYM' json=true | grep -q '\"memberHeld\":false'"
 else step "A revokes"; bad "no nym"; fi
 
 step "★ (3) a revoke descending from the admit reads DENIED ★"
@@ -619,7 +619,7 @@ if [ "$VD" = "denied" ]; then ok; else bad "$VD"; fi
 say "⑨ the epoch roll — consent to one epoch is not consent to the next"
 # THE CONTROL FIRST: before the roll, B's same token re-admits, so the refusal after the roll is the roll's.
 step "CONTROL: before the roll, B's token re-admits"
-if [ -n "$B_NYM" ] && [ -n "$B_SIG" ] && as_a nexus contract "$B_NYM" --sig "$B_SIG" --json 2>&1 | grep -q '"memberHeld":true'; then ok
+if [ -n "$B_NYM" ] && [ -n "$B_SIG" ] && as_a nexus contract "$B_NYM" sig="$B_SIG" json=true 2>&1 | grep -q '"memberHeld":true'; then ok
 else bad "the token did not re-admit before the roll"; fi
 
 # THE CLOSING KEYS SIGN ONE ADMIT NOW, at the epoch the roll closes, and it lands on no board: after the roll it
@@ -630,7 +630,7 @@ if [ -n "$B_NYM" ] && [ -n "$B_SIG" ] && SC=$(s6_a sign-closing "$B_NYM" "$B_SIG
 else bad "${SC:-no token}"; fi
 
 step "A rotates the charter (the committed reveal)"
-if ROT=$(as_a nexus seal rotate --face 0 --cold-key "$CARDS" --json 2>&1) && printf '%s' "$ROT" | grep -q '"ok":true'; then ok
+if ROT=$(as_a nexus seal rotate face=0 cold-key="$CARDS" json=true 2>&1) && printf '%s' "$ROT" | grep -q '"ok":true'; then ok
 else bad "$(printf '%s' "$ROT" | grep -oE '"message":"[^"]+"' | head -1)"; fi
 
 step "the rotate landed a ROLL ANCHOR on A's board"
@@ -645,7 +645,7 @@ step "★ a REPLAY across an epoch roll refuses ★"
 # The sharpest property: a contract-in binds to the epoch it consented under. Roll A's charter and the
 # old token must stop verifying — consent to one epoch is not consent to the next.
 if [ -n "$B_NYM" ] && [ -n "$B_SIG" ]; then
-  if as_a nexus contract "$B_NYM" --sig "$B_SIG" --json 2>&1 | grep -q '"ok":true'; then
+  if as_a nexus contract "$B_NYM" sig="$B_SIG" json=true 2>&1 | grep -q '"ok":true'; then
     bad "a contract-in signed under the PRIOR epoch still verified"
   else ok; fi
 else bad "no token"; fi

@@ -1197,7 +1197,7 @@ describe("the repo door keeps the checkout --root names", () => {
     const root = second();
     const out: string[] = [];
     vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { out.push(String(chunk)); return true; });
-    try { await cmdTunnelDoor("repo", parseArgs(["repo", "read", "staged=true", `root=${root}`, "--json"])); }
+    try { await cmdTunnelDoor("repo", parseArgs(["repo", "read", "staged=true", `root=${root}`, "json=true"])); }
     finally { vi.restoreAllMocks(); }
     const answer = JSON.parse(out.join("")) as { data: { root: string; rows: Row[] } };
     expect(answer.data.root).toBe(resolve(root));

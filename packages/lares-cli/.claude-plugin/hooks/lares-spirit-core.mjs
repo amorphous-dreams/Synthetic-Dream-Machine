@@ -55,7 +55,7 @@ export function petOf(argv) {
 }
 
 /** The door's argv for one spirit verb, answering JSON. */
-export const spiritArgv = (verb, pet, ...rest) => ["spirit", verb, pet, ...rest, "--json"];
+export const spiritArgv = (verb, pet, ...rest) => ["spirit", verb, pet, ...rest, "json=true"];
 
 /** The checkout this hook stands in (its `tools/lares-container.sh` reaches the vessel). */
 export const checkoutOf = (hookUrl) => join(dirname(fileURLToPath(hookUrl)), "..", "..", "..", "..");

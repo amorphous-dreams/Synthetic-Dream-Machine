@@ -44,7 +44,7 @@ const retireDoors: RetireDoors = {
 };
 const retired = (realmId: string | null): typeof answer => ({ status: "done", output: { slug: SLUG, status: "retired", catalogRows: ["a", "b"], ledgerRows: ["x"], realmId, keyhiveBindings: ["w"], slotBindings: [], records: { working: 0, draft: 0, personal: 0 }, forced: false, kept: { canonBag: "lar:///ha.ka.ba/bags/s" } } });
 const folder = (): string => join(projections, "realms", SLUG, "wikis", SLUG);
-const run = (...extra: string[]) => cmdWikiRetire(parseArgs(["wiki", SLUG, "--no-json", ...extra]), realmDoors(), retireDoors);
+const run = (...extra: string[]) => cmdWikiRetire(parseArgs(["wiki", SLUG, "json=false", ...extra]), realmDoors(), retireDoors);
 
 beforeEach(() => {
   sent.length = 0; calls.length = 0; text = ""; bound = []; answer = retired(ID);

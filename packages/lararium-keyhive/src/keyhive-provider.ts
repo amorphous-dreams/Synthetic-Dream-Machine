@@ -46,7 +46,7 @@ import type {
  * own work to the console: document ids, digests, signature bytes. Around an act a person asked for,
  * those lines bury the one answer. The package offers no way to take the translator without the
  * dispatcher, so the hook installs only where this name asks for it: `LAR_KEYHIVE_TRACE=1` (or `true`)
- * in the environment of the process that stands the provider. The CLI's `--keyhive-trace` flag sets it
+ * in the environment of the process that stands the provider. The CLI's `keyhive-trace=true` param sets it
  * for its own process and for a vessel it stands.
  *
  * With the hook unset a Rust panic still surfaces as a thrown wasm error; it names no Rust source line.

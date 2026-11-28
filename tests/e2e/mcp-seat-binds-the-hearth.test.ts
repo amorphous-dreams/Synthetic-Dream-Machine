@@ -145,7 +145,7 @@ describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harnes
   });
 
   test("control: before the put, the CLI answers not-found", async () => {
-    const r = await lar.cli(["get", `title=${URI}`, "recipe=default", "mu=assert", "--json"]);
+    const r = await lar.cli(["get", `title=${URI}`, "recipe=default", "mu=assert", "json=true"]);
     expect(r.code).not.toBe(0);
     expect(`${r.stdout}${r.stderr}`).toMatch(/not-found/);
   });
@@ -163,7 +163,7 @@ describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harnes
     const seatGet = payload(said.results[1])["meme"] as Record<string, unknown>;
     expect(put["decision"], JSON.stringify(put)).not.toBe("conflict");
 
-    const r = await lar.cli(["get", `title=${URI}`, "recipe=default", "mu=assert", "--json"]);
+    const r = await lar.cli(["get", `title=${URI}`, "recipe=default", "mu=assert", "json=true"]);
     expect(r.code, r.stderr).toBe(0);
     const cli = (JSON.parse(r.stdout) as { data: { meme: { text: string; canonicalHash: string } } }).data.meme;
     expect(cli.text).toBe(seatGet["text"]);

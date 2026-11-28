@@ -38,7 +38,7 @@ async function standHouse(tag, name) {
   const port = await freePort();
   const env = { ...process.env, LAR_ROOT: root, LAR_PORT: String(port), LAR_SAME_ORIGIN: "true" };
   const lares = (args) => spawnSync(process.execPath, [cli, ...args], { cwd: repo, encoding: "utf8", env });
-  const found = lares(["vessel", "found", "hearth=true", `name=${name}`, `root=${root}`, "--skip-build"]);
+  const found = lares(["vessel", "found", "hearth=true", `name=${name}`, `root=${root}`, "skip-build=true"]);
   assert.equal(found.status, 0, `found ${tag}: ${found.stdout}${found.stderr}`);
   // The daemon stands, then the custody opens; a restart walks both again (kept wikis live in the daemon alone).
   let child;
@@ -71,17 +71,17 @@ test("W1 the keep wakes each cold wiki before it cuts, so a page put into a cold
     // A mint holds the wiki it mints within the keep budget (three on node), so alpha, bravo and charlie stand held and
     // `delta` names the full budget. The face's keep list rests in its daemon wiki, so a restart keeps the first three at light
     // and `delta` stands cold as the keep meets it in a house that ran a while.
-    const minted = SLUGS.map((slug) => h.answer(h.must(["wiki", "init", slug, "--json"])).data);
+    const minted = SLUGS.map((slug) => h.answer(h.must(["wiki", "init", slug, "json=true"])).data);
     assert.deepEqual(minted.map((m) => m.held), [true, true, true, false], JSON.stringify(minted));
     await h.restart();
     await keptStand(h, ["alpha", "bravo", "charlie"]);
     for (const slug of SLUGS) {
       const file = join(scratch, `${slug}.mem`);
       writeFileSync(file, memeText(pageUri(slug), `a page in ${slug}`));
-      h.must(["put", `title=${pageUri(slug)}`, `recipe=${slug}`, `file=${file}`, "--json"]);
+      h.must(["put", `title=${pageUri(slug)}`, `recipe=${slug}`, `file=${file}`, "json=true"]);
     }
     /** The wikis the face keeps, as `wiki status` marks them. */
-    const held = () => (h.answer(h.must(["wiki", "status", "--json"])).data.activation.held ?? []).slice().sort();
+    const held = () => (h.answer(h.must(["wiki", "status", "json=true"])).data.activation.held ?? []).slice().sort();
     // A minted wiki stands in its own realm under its slug, the realm's default pet name, so its workbench mirror rests at
     // `projections/realms/<slug>/wikis/<slug>`.
     const mirrored = (slug) => existsSync(join(h.root, "projections", "realms", slug, "wikis", slug, "ha.ka.ba", "notes", "page", `${slug}-one.mem`));
@@ -90,8 +90,8 @@ test("W1 the keep wakes each cold wiki before it cuts, so a page put into a cold
     assert.deepEqual(held(), ["alpha", "bravo", "charlie"]);
 
     mkdirSync(join(h.root, "workspaces", "backup", ".git"), { recursive: true });
-    h.must(["lei", "kui", "rite=keep", "branch=backup", "returns=2", "--json"]);
-    const kept = h.answer(h.must(["rite", "keep-cut", "workspace=backup", "--json"])).data;
+    h.must(["lei", "kui", "rite=keep", "branch=backup", "returns=2", "json=true"]);
+    const kept = h.answer(h.must(["rite", "keep-cut", "workspace=backup", "json=true"])).data;
     assert.equal(kept.kept, true, JSON.stringify(kept));
     const manifest = JSON.parse(readFileSync(join(kept.dest, "manifest.json"), "utf8"));
     const carried = (slug) => manifest.rows.filter((r) => r.layer === "wiki-working" && r.title === pageUri(slug)).map((r) => r.path);
@@ -111,13 +111,13 @@ test("W1 the keep wakes each cold wiki before it cuts, so a page put into a cold
 
 /** Wait until the lit face's keep list stands live: it reads at light, after the vessel answers. */
 const keptStand = async (h, slugs) => {
-  const up = () => (h.answer(h.must(["wiki", "status", "--json"])).data.activation.active ?? []).map((w) => typeof w === "string" ? w : w.slug);
+  const up = () => (h.answer(h.must(["wiki", "status", "json=true"])).data.activation.active ?? []).map((w) => typeof w === "string" ? w : w.slug);
   for (let i = 0; i < 150 && !slugs.every((s) => up().includes(s)); i++) await new Promise((r) => setTimeout(r, 200));
   assert.ok(slugs.every((s) => up().includes(s)), `the keep list stands live: ${up().join(", ")}`);
 };
 /** The wikis `wiki status` lists as live (the daemon stands outside the list). */
 const liveWikis = (h) => {
-  return (h.answer(h.must(["wiki", "status", "--json"])).data.activation.active ?? []).map((w) => typeof w === "string" ? w : w.slug).filter((w) => w !== "daemon").sort();
+  return (h.answer(h.must(["wiki", "status", "json=true"])).data.activation.active ?? []).map((w) => typeof w === "string" ? w : w.slug).filter((w) => w !== "daemon").sort();
 };
 /** Wait until each wiki's workbench watch has finished its catch-up and stands live (the log names its folder). */
 const watchesStand = async (h, slugs) => {
@@ -130,7 +130,7 @@ test("W2 a restart over wikis that hold workbench folders wakes none of them; an
   const scratch = mkdtempSync(join(tmpdir(), "lares-keep-cold-files-"));
   const h = await standHouse("w2", "steward");
   try {
-    for (const slug of SLUGS) h.must(["wiki", "init", slug, "--json"]);
+    for (const slug of SLUGS) h.must(["wiki", "init", slug, "json=true"]);
     await h.restart();
     await keptStand(h, ["alpha", "bravo", "charlie"]);
     // What a restart holds live with no folder in the way (the home wiki, the face's kept wikis): the baseline no cold wiki joins.
@@ -139,12 +139,12 @@ test("W2 a restart over wikis that hold workbench folders wakes none of them; an
     for (const slug of SLUGS) {
       const file = join(scratch, `${slug}.mem`);
       writeFileSync(file, memeText(pageUri(slug), `a page in ${slug}`));
-      h.must(["put", `title=${pageUri(slug)}`, `recipe=${slug}`, `file=${file}`, "--json"]);
+      h.must(["put", `title=${pageUri(slug)}`, `recipe=${slug}`, `file=${file}`, "json=true"]);
     }
     // The keep wakes each cold wiki, and a woken wiki projects its workbench: every wiki now holds a folder on disk.
     mkdirSync(join(h.root, "workspaces", "backup", ".git"), { recursive: true });
-    h.must(["lei", "kui", "rite=keep", "branch=backup", "returns=2", "--json"]);
-    assert.equal(h.answer(h.must(["rite", "keep-cut", "workspace=backup", "--json"])).data.kept, true);
+    h.must(["lei", "kui", "rite=keep", "branch=backup", "returns=2", "json=true"]);
+    assert.equal(h.answer(h.must(["rite", "keep-cut", "workspace=backup", "json=true"])).data.kept, true);
     const folder = (slug) => join(h.root, "projections", "realms", slug, "wikis", slug);
     const pageFile = (slug) => join(folder(slug), "ha.ka.ba", "notes", "page", `${slug}-one.mem`);
     for (const slug of SLUGS) assert.ok(existsSync(pageFile(slug)), `${slug} holds a workbench folder`);
@@ -161,7 +161,7 @@ test("W2 a restart over wikis that hold workbench folders wakes none of them; an
     await h.start();
     await watchesStand(h, SLUGS);
     assert.deepEqual(joined(), ["delta"], "the edited wiki wakes alone");
-    const got = h.must(["get", `title=${pageUri("delta")}`, "recipe=delta", "aperture=arc", "--no-json"]).stdout;
+    const got = h.must(["get", `title=${pageUri("delta")}`, "recipe=delta", "aperture=arc", "json=false"]).stdout;
     assert.match(got, /edited while down/, "the edit ingests");
   } finally {
     await h.stop();

@@ -159,25 +159,25 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     mkdirSync(srcDir, { recursive: true });
     writeFileSync(join(srcDir, "photo.png"), PNG_BYTES);
     writeFileSync(join(srcDir, "photo.png.meta"), "type: image/png\n");
-    const ld = await A.cli(["act", "lar:///carriage.bag.loads", `source-uri=${srcDir}`, `to=${BOOK_WORKING}`, "yes=true", "--json"]);
+    const ld = await A.cli(["lar:///carriage.bag.loads", `source-uri=${srcDir}`, `to=${BOOK_WORKING}`, "yes=true", "json=true"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
-    const moved = await A.cli(["act", "lar:///carriage.bag.moves", `title=${`lar:///${LOCI}/photo`}`, `from=${BOOK_WORKING}`, `to=${BOOK_BAG}`, "yes=true", "--json"]);
+    const moved = await A.cli(["lar:///carriage.bag.moves", `title=${`lar:///${LOCI}/photo`}`, `from=${BOOK_WORKING}`, `to=${BOOK_BAG}`, "yes=true", "json=true"]);
     expect(moved.json?.["ok"], said(moved)).toBe(true);
     await expectEntry(A, { kind: "bag-projected", match: (entry) => (entry.data as Record<string, unknown>)["bagId"] === BOOK_BAG }, { budgetMs: 90_000 });
     const casA = listCas(A);
     cid = casA.includes(CID_RAW) ? CID_RAW : casA.includes(CID_BASE64) ? CID_BASE64 : "";
     expect(cid, `A's cid/ holds neither sha256(raw) nor sha256(base64); it holds ${casA.map((c) => c.slice(0, 12)).join(",")}`).not.toBe("");
-    const decl = await A.cli(["bag", "declare", BOOK_SLUG, "tier=public", "--json"]);
+    const decl = await A.cli(["bag", "declare", BOOK_SLUG, "tier=public", "json=true"]);
     expect(decl.json?.["ok"], said(decl)).toBe(true);
   }, 120_000);
 
   test("④ C lists its face's public book and A's canon through its stood realms", async () => {
-    const aBags = await fleet!.A.cli(["nexus", "realm-bags", "--json"]);
+    const aBags = await fleet!.A.cli(["nexus", "realm-bags", "json=true"]);
     const aRows = (aBags.json?.["data"] as { bags?: Array<Record<string, unknown>> } | undefined)?.bags ?? [];
     const aBook = aRows.find((row) => row["bag"] === BOOK_BAG && row["readTier"] === "public");
     expect(typeof aBook?.["doc"] === "string" && aBook["doc"].length > 0, said(aBags)).toBe(true);
     await vi.waitFor(async () => {
-      const bags = await fleet!.C.cli(["nexus", "realm-bags", "--json"]);
+      const bags = await fleet!.C.cli(["nexus", "realm-bags", "json=true"]);
       expect(bags.json?.["ok"], said(bags)).toBe(true);
       const data = bags.json?.["data"] as { realms?: string[]; bags?: Array<Record<string, unknown>> } | undefined;
       expect(data?.realms?.length, said(bags)).toBeGreaterThan(0);
@@ -191,8 +191,8 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     await new Promise((r) => setTimeout(r, 3000));
     const res = await fetch(`${fleet!.hermShore}/cas/${cid}`);
     const hermCas = listCas(fleet!.herm);
-    const hermBags = await fleet!.herm.cli(["nexus", "realm-bags", "--json"]);
-    const aBags    = await fleet!.A.cli(["nexus", "realm-bags", "--json"]);
+    const hermBags = await fleet!.herm.cli(["nexus", "realm-bags", "json=true"]);
+    const aBags    = await fleet!.A.cli(["nexus", "realm-bags", "json=true"]);
     console.error([
       `herm-reshares MEASURE herm: GET /cas/${cid.slice(0, 12)}… → ${res.status} (A up) · herm cid/ holds the cid: ${hermCas.includes(cid)} (${hermCas.length} blobs)`,
       `  A   nexus realm-bags → ${said(aBags).trim().slice(0, 300)}`,
@@ -244,7 +244,7 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     if (existsSync(held)) rmSync(held, { force: true });
     const direct = await fetch(`${hermShore}/cas/${cid}`);
     const planted = existsSync(join(casDirOf(herm), cid));
-    const r = await C.cli(["bag", "cas", `fetch=${cid}`, "--json"]);
+    const r = await C.cli(["bag", "cas", `fetch=${cid}`, "json=true"]);
     console.error([
       `herm-reshares MEASURE the shut (A dark): GET ${hermShore}/cas/${cid.slice(0, 12)}… → ${direct.status} · Herm cid/ holds it by ⑤b's plant: ${planted}`,
       `  bag cas --fetch → ${said(r).trim().slice(0, 300)}`,
@@ -276,7 +276,7 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
   }, 30_000);
 
   test("CONTROL: C's fetch of a ghost reads held:false with A dark — no fault, nothing written", async () => {
-    const r = await fleet!.C.cli(["bag", "cas", `fetch=${GHOST}`, "--json"]);
+    const r = await fleet!.C.cli(["bag", "cas", `fetch=${GHOST}`, "json=true"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     expect((r.json?.["data"] as Record<string, unknown> | undefined)?.["held"]).toBe(false);
     expect(existsSync(join(casDirOf(fleet!.C), GHOST))).toBe(false);

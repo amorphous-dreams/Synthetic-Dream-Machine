@@ -317,8 +317,8 @@ function homeItem(
       // A familiar's hook carries the pet name as its argument (no env var): the tend's `familiar=`, else the one a tend seated.
       const wants = s["familiar"] === "required" || s["familiar"] === "optional";
       const pet = wants ? familiarFor(ctx, path, d.hooks) : null;
-      if (pet !== null && !PET_NAME.test(pet)) return base({ unreachable: `the familiar "${pet}" reads as no pet name (lower-case letters, digits and hyphens); run \`lares home tend familiar=<pet-name> --yes\`` });
-      if (s["familiar"] === "required" && pet === null) return base({ absent: "no familiar named in this home; `lares home tend familiar=<pet-name> --yes` seats its hooks" });
+      if (pet !== null && !PET_NAME.test(pet)) return base({ unreachable: `the familiar "${pet}" reads as no pet name (lower-case letters, digits and hyphens); run \`lares home tend familiar=<pet-name> yes=true\`` });
+      if (s["familiar"] === "required" && pet === null) return base({ absent: "no familiar named in this home; `lares home tend familiar=<pet-name> yes=true` seats its hooks" });
       const tail = pet === null ? [] : [pet];
       // `async` lets an event run on without waiting (the hook bounds itself); `status` names the wait the harness shows.
       const extra = { ...(s["async"] === true ? { async: true } : {}), ...(typeof s["status"] === "string" ? { statusMessage: s["status"] } : {}) };

@@ -73,7 +73,7 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
   afterAll(async () => { if (A) await A.stop(); });
 
   test("① the vessel stands its charter-derived realm alone, and holds a meme in its own user bag", async () => {
-    const list = await A!.cli(["nexus", "realm-bags", "--json"]);
+    const list = await A!.cli(["nexus", "realm-bags", "json=true"]);
     expect(list.json?.["ok"], said(list)).toBe(true);
     charterRealm = String(dataOf(list)["realm"] ?? "");
     expect(charterRealm.length).toBeGreaterThan(0);
@@ -81,7 +81,7 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
     // The live system canon rests in the Kahu realm, which IS the charter-derived realm: it lists `lares` and `lararium`
     // beside any user bag. The relation here keeps a user bag.
     expect(bagsOf(list)).toEqual(expect.arrayContaining(["lar:///ha.ka.ba/bags/lares", "lar:///ha.ka.ba/bags/lararium"]));
-    const mint = await A!.cli(["act", "lar:///carriage.bag.creates", `bag=${LARES_BAG}`, "yes=true", "--json"]);
+    const mint = await A!.cli(["lar:///carriage.bag.creates", `bag=${LARES_BAG}`, "yes=true", "json=true"]);
     expect(mint.json?.["ok"], said(mint)).toBe(true);
     const file = join(A!.root, "realms-stage-minutes.mem");
     writeFileSync(file, meme());
@@ -89,76 +89,76 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
   }, 120_000);
 
   test("② CONTROL (before): the realm nobody entered reads empty, and the read enters nothing", async () => {
-    const list = await A!.cli(["nexus", "realm-bags", `realm=${REALM_R}`, "--json"]);
+    const list = await A!.cli(["nexus", "realm-bags", `realm=${REALM_R}`, "json=true"]);
     expect(list.json?.["ok"], said(list)).toBe(true);
     expect(bagsOf(list)).toEqual([]);
     expect(dataOf(list)["realmDoc"]).toBeNull();
     expect(dataOf(list)["realms"]).toEqual([charterRealm]);
-    const got = await A!.cli(["get", `title=${URI}`, "bag=ford", `realm=${REALM_R}`, "mu=assert", "--json"]);
+    const got = await A!.cli(["get", `title=${URI}`, "bag=ford", `realm=${REALM_R}`, "mu=assert", "json=true"]);
     expect(got.json?.["ok"], said(got)).toBe(false);
   }, 60_000);
 
   test("★ a bag registered in realm R lists in R and in no other realm ★", async () => {
-    const reg = await A!.cli(["nexus", "realm-bag", "ford", "face=0", `realm=${REALM_R}`, "--json"]);
+    const reg = await A!.cli(["nexus", "realm-bag", "ford", "face=0", `realm=${REALM_R}`, "json=true"]);
     console.error(`realm-select MEASURE register in R: ${said(reg).trim().slice(0, 300)}`);
     expect(reg.json?.["ok"], said(reg)).toBe(true);
     expect(dataOf(reg)["realm"]).toBe(REALM_R);
     expect(dataOf(reg)["counts"]).toBe(true);
-    const inR = await A!.cli(["nexus", "realm-bags", `realm=${REALM_R}`, "--json"]);
+    const inR = await A!.cli(["nexus", "realm-bags", `realm=${REALM_R}`, "json=true"]);
     expect(bagsOf(inR)).toEqual([LARES_BAG]);
     expect(dataOf(inR)["realm"]).toBe(REALM_R);
     expect((dataOf(inR)["realms"] as string[]).sort()).toEqual([charterRealm, REALM_R].sort());
     // THE RED: the charter-derived realm's plane holds nothing of it.
-    const inDefault = await A!.cli(["nexus", "realm-bags", `realm=${charterRealm}`, "--json"]);
+    const inDefault = await A!.cli(["nexus", "realm-bags", `realm=${charterRealm}`, "json=true"]);
     expect(dataOf(inDefault)["realm"]).toBe(charterRealm);
     expect(userBagsOf(inDefault)).toEqual([]);
-    const elsewhere = await A!.cli(["nexus", "realm-bags", `realm=${REALM_NEVER}`, "--json"]);
+    const elsewhere = await A!.cli(["nexus", "realm-bags", `realm=${REALM_NEVER}`, "json=true"]);
     expect(bagsOf(elsewhere)).toEqual([]);
     expect((dataOf(elsewhere)["realms"] as string[])).not.toContain(REALM_NEVER);      // a read never enters
   }, 120_000);
 
   test("★ `get mu=assert bag=lares realm=R` answers through R's registration, and no other realm's ★", async () => {
     const until = Date.now() + 60_000;
-    let got = await A!.cli(["get", `title=${URI}`, "bag=ford", `realm=${REALM_R}`, "mu=assert", "--json"]);
+    let got = await A!.cli(["get", `title=${URI}`, "bag=ford", `realm=${REALM_R}`, "mu=assert", "json=true"]);
     while (got.json?.["ok"] !== true && Date.now() < until) {
       await new Promise((res) => setTimeout(res, 3_000));
-      got = await A!.cli(["get", `title=${URI}`, "bag=ford", `realm=${REALM_R}`, "mu=assert", "--json"]);
+      got = await A!.cli(["get", `title=${URI}`, "bag=ford", `realm=${REALM_R}`, "mu=assert", "json=true"]);
     }
     expect(got.json?.["ok"], said(got)).toBe(true);
     expect(String((dataOf(got)["meme"] as Record<string, unknown> | undefined)?.["text"] ?? "")).toContain("#/minutes");
-    const never = await A!.cli(["get", `title=${URI}`, "bag=ford", `realm=${REALM_NEVER}`, "mu=assert", "--json"]);
+    const never = await A!.cli(["get", `title=${URI}`, "bag=ford", `realm=${REALM_NEVER}`, "mu=assert", "json=true"]);
     expect(never.json?.["ok"], said(never)).toBe(false);
     // `realm=` names a bag's realm, never a wiki's: naming both containers refuses.
-    const both = await A!.cli(["get", `title=${URI}`, "recipe=lares", `realm=${REALM_R}`, "mu=assert", "--json"]);
+    const both = await A!.cli(["get", `title=${URI}`, "recipe=lares", `realm=${REALM_R}`, "mu=assert", "json=true"]);
     expect(both.json?.["ok"], said(both)).toBe(false);
     expect(said(both)).toContain("no-container");
   }, 120_000);
 
   test("③ CONTROL: with no realm named, a verb routes to the charter-derived realm, and each realm keeps its own record", async () => {
-    const reg = await A!.cli(["nexus", "realm-bag", "ford", "face=0", "--json"]);
+    const reg = await A!.cli(["nexus", "realm-bag", "ford", "face=0", "json=true"]);
     expect(reg.json?.["ok"], said(reg)).toBe(true);
     expect(dataOf(reg)["realm"]).toBe(charterRealm);
-    expect(userBagsOf(await A!.cli(["nexus", "realm-bags", `realm=${charterRealm}`, "--json"]))).toEqual([LARES_BAG]);
-    expect(bagsOf(await A!.cli(["nexus", "realm-bags", `realm=${REALM_R}`, "--json"]))).toEqual([LARES_BAG]);
-    const unscoped = await A!.cli(["nexus", "realm-bags", "--json"]);
+    expect(userBagsOf(await A!.cli(["nexus", "realm-bags", `realm=${charterRealm}`, "json=true"]))).toEqual([LARES_BAG]);
+    expect(bagsOf(await A!.cli(["nexus", "realm-bags", `realm=${REALM_R}`, "json=true"]))).toEqual([LARES_BAG]);
+    const unscoped = await A!.cli(["nexus", "realm-bags", "json=true"]);
     const rows = rowsOf(unscoped).filter((row) => row["bag"] === LARES_BAG);
     expect(rows.map((row) => row["realm"]).sort()).toEqual([charterRealm, REALM_R].sort());
     expect(rows.every((row) => typeof row["realm"] === "string")).toBe(true);
     expect(rows.map((row) => row["bag"])).toEqual([LARES_BAG, LARES_BAG]);
     // A name that reads as no realm refuses by name.
-    const bad = await A!.cli(["nexus", "realm-bag", "ford", "face=0", "realm=not-a-realm", "--json"]);
+    const bad = await A!.cli(["nexus", "realm-bag", "ford", "face=0", "realm=not-a-realm", "json=true"]);
     expect(bad.json?.["ok"], said(bad)).toBe(false);
     expect(said(bad)).toContain("realm-unreadable");
   }, 120_000);
 
   test("★ K20: a face row's answer rides the socket alone — no daemon outcome pairs the face with its key at the Nexus ★", async () => {
     // The face stands in the cabal realm R and the door prints its key at R's Nexus: a per-Nexus leaf.
-    const stood = await A!.cli(["cabal", "face", `realm=${REALM_R}`, "face=0", "--json"]);
+    const stood = await A!.cli(["cabal", "face", `realm=${REALM_R}`, "face=0", "json=true"]);
     expect(stood.json?.["ok"], said(stood)).toBe(true);
     const leaf = String(dataOf(stood)["face"] ?? "");
     expect(leaf).toMatch(/^[0-9a-f]{64}$/);
     // The feed rides a session of the face too, and its island verb writes the leaf's slot.
-    const fed = await A!.cli(["cabal", "feed", `realm=${REALM_R}`, "face=0", "--json"]);
+    const fed = await A!.cli(["cabal", "feed", `realm=${REALM_R}`, "face=0", "json=true"]);
     console.error(`realm-select MEASURE feed: ${said(fed).trim().slice(0, 300)}`);
     expect(fed.json?.["ok"], said(fed)).toBe(true);
     // The store rests once the vessel stops. The census reads EVERY document the store rests: the verb outcome ledger

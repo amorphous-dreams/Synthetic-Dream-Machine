@@ -1,7 +1,7 @@
 /**
  * card-print-standing — THE CARD-PRINT STANDING CHECK (walk ledger W9, ruled a standing check by Lares 2026-10-29).
  *
- * Every cold-key card verb runs once WITHOUT `--json` on a staged root, where the read-back stands in, so the road a
+ * Every cold-key card verb runs once WITHOUT `json=true` on a staged root, where the read-back stands in, so the road a
  * person walks on a terminal (the card printing before the act moves) is seen by the harness at all. Before this file
  * the card roads ran by hand alone, and `cofound open` broke on a terminal for every walk while every JSON test read
  * green (`seal-cofound` C3 holds that verb's terminal road now; this file cites it and runs the rest).

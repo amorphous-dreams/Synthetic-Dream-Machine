@@ -9,7 +9,7 @@
  *
  *   <<has entity=`arg` name=`asking` params=`takes/words needs/seat ~ the query, named before the throw`>>
  *
- * This module reads those rows and derives what every skin spells by RULE (Loom #/slots): cli `--kebab-case`, mcp `snake_case`,
+ * This module reads those rows and derives what every skin spells by RULE (Loom #/slots): cli `kebab-case=value`, mcp `snake_case`,
  * tw5 a widget attribute, console an object key. A skin row names only the exceptions (`maps/asking:query`). An example and a
  * cure ride as NEUTRAL CALLS (an address and bound args) and each skin renders its own runnable line from one row.
  *

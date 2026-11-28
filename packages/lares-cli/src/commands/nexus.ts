@@ -306,11 +306,11 @@ async function cmdContract(args: ParsedArgs, action: "admit" | "revoke" | "carry
         }
         if (r.bundle) {
           console.log(`  bundle:      the admit, its lineage (${r.bundle.lineage.length}), the Nexus and this hearth's gate key —`);
-          console.log(`               \`--json\` emits it as \`data.bundle\`; the joinee runs \`lares nexus admit-take <file>\``);
+          console.log(`               \`json=true\` emits it as \`data.bundle\`; the joinee runs \`lares nexus admit-take <file>\``);
         }
         if (r.carryBundle) {
           console.log(`  carry bundle: the carry, its lineage (${r.carryBundle.lineage.length}) and ${r.carryBundle.floorPins.length} place floor pin(s) —`);
-          console.log(`               \`--json\` emits it as \`data.carryBundle\`; the place runs \`lares nexus carry-take <file>\``);
+          console.log(`               \`json=true\` emits it as \`data.carryBundle\`; the place runs \`lares nexus carry-take <file>\``);
         }
       },
     });
@@ -510,7 +510,7 @@ async function cmdAcceptCarriage(args: ParsedArgs): Promise<number> {
 
 /**
  * `lares nexus admit-take <bundle-file>` — run by the JOINING operator on her OWN vessel: take the admit bundle a
- * founding kahu handed over (`nexus contract --json` → `data.bundle`, or the bundle object alone). The take
+ * founding kahu handed over (`nexus contract json=true` → `data.bundle`, or the bundle object alone). The take
  * verifies it OFFLINE against the charter this vessel holds for its Nexus, refuses a leaf this vessel does not
  * hold, and keeps it under the seal home beside the consent. Routed through the store's door (row
  * `nexus-admit-take`): a standing vessel takes it against its own live Repo and re-presents its dial to the
@@ -545,7 +545,7 @@ async function cmdAdmitTake(args: ParsedArgs): Promise<number> {
     try { raw = readFileSync(file, "utf8"); } catch (err) {
       throw new AdmitBundleError(`cannot read ${file}: ${(err as NodeJS.ErrnoException).code ?? String(err)}`);
     }
-    // Accept the contract's whole `--json` envelope as handed over, or the bundle alone.
+    // Accept the contract's whole `json=true` envelope as handed over, or the bundle alone.
     let text = raw;
     try {
       const parsed = JSON.parse(raw) as Record<string, unknown>;
@@ -582,7 +582,7 @@ async function cmdAdmitTake(args: ParsedArgs): Promise<number> {
 
 /**
  * A `floor-pin=` value: the file `carry-for out=` wrote (`{ "floorPin": <claim>, "placeKel": [<event>…] }`), inline (`{…}`) or as a
- * file, or `carry-for --json`'s whole envelope (`data.floorPin` and `data.placeKel`). The claim and the KEL rows that fold to its
+ * file, or `carry-for json=true`'s whole envelope (`data.floorPin` and `data.placeKel`). The claim and the KEL rows that fold to its
  * head travel together.
  */
 function readFloorPinArg(value: string): string {
@@ -602,7 +602,7 @@ function readFloorPinArg(value: string): string {
 
 /**
  * `lares nexus carry-take <bundle-file>` — run by the carried PLACE on its OWN vessel (a herm's explicit join): take the
- * carry bundle a founding kahu handed over (`nexus carry --json` → `data.carryBundle`, or the bundle alone). It verifies
+ * carry bundle a founding kahu handed over (`nexus carry json=true` → `data.carryBundle`, or the bundle alone). It verifies
  * every act against the charter held for its Nexus, refuses a carry naming another key, and writes the acts and the floor
  * pins that read onto this vessel's own replica of that Nexus's carriage board (row `nexus-carry-take`). The herm's floor
  * gate stands there, and only there, at the next refold.
@@ -674,10 +674,10 @@ async function cmdCarryFor(args: ParsedArgs): Promise<number> {
         console.log(`  carrier-sig:  ${r.carrierSig}`);
         console.log(`  hand this to a founding kahu:  lares nexus carry ${r.nym} carrier=${r.carrierSig}${r.floorPin ? " floor-pin=<file>" : ""}`);
         if (r.floorPin) {
-          console.log("  floor pin:    signed for this Nexus's floor gate — `--json` emits it as `data.floorPin`; it rides as floor-pin= (the claim, with `data.placeKel`)");
+          console.log("  floor pin:    signed for this Nexus's floor gate — `json=true` emits it as `data.floorPin`; it rides as floor-pin= (the claim, with `data.placeKel`)");
           if (written?.path) console.log(`  floor-pin file: ${written.path}  (hand it to the kahu beside the seal: floor-pin=${written.path})`);
-          else if (written?.error) console.error(`  ${written.error}  — run again with --json and save \`data.floorPin\` as the floor-pin= file`);
-          else console.log("  to make the floor-pin= file: `lares nexus carry-for out=<file>`, or save `data` from `--json`");
+          else if (written?.error) console.error(`  ${written.error}  — run again with json=true and save \`data.floorPin\` as the floor-pin= file`);
+          else console.log("  to make the floor-pin= file: `lares nexus carry-for out=<file>`, or save `data` from `json=true`");
         } else if (out !== undefined) console.error("  out= wrote nothing: this charter names no Nexus to sign a floor pin at");
       },
     });

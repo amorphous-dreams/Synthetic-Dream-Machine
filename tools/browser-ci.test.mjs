@@ -26,13 +26,13 @@ case "$*" in
   *"ps -q"*) echo cid123 ;;
   *"unlock-test-custody.mjs"*) echo '{"op":"unlock","reading":"opens","held":true}'; exit "\${DOOR_RC:-0}" ;;
   *"printenv LAR_PORT"*) echo 4321 ;;
-  *"persona list --json"*) echo '{"ok":true,"data":{"personas":[]}}' ;;
+  *"persona list json=true"*) echo '{"ok":true,"data":{"personas":[]}}' ;;
   *"persona new 0"*) echo '{"verifyingKey":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}' ;;
   *"logs --no-color lares"*) printf 'lares-1  | [herm]   gate key: %s\nlares-1  | [lararium] gate key: %s\n' "$(printf 'c%.0s' $(seq 64))" "$(printf 'b%.0s' $(seq 64))" ;;
   *"fleet join offer"*) printf '{\n  "kind": "fleet-join-offer",\n  "nonce": "n1"\n}\n[lares fleet join] carry the offer to the joining vessel\n' ;;
   *"fleet join answer"*) printf '{\n  "kind": "fleet-join-answer",\n  "request": %s\n}\n[lares fleet join] carry the answer to the joining vessel\n' "$(cat)" ;;
-  *"wiki status --json"*) node -e 'const x=JSON.parse(process.env.INFO_WIKIS || "{}"); console.log(JSON.stringify({ok:true,data:{catalog:x.data ?? {},activation:{active:["lares"]},residency:{pinned:[],wela:[]}}}));'  ;;
-  *" --json"*) echo '{"ok":true}' ;;
+  *"wiki status json=true"*) node -e 'const x=JSON.parse(process.env.INFO_WIKIS || "{}"); console.log(JSON.stringify({ok:true,data:{catalog:x.data ?? {},activation:{active:["lares"]},residency:{pinned:[],wela:[]}}}));'  ;;
+  *" json=true"*) echo '{"ok":true}' ;;
 
 esac
 `);
@@ -86,7 +86,7 @@ test("ingest copies the carrier in and applies it", async () => {
   const r = await run(["ingest", "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/lady-aki.mem"]);
   assert.equal(r.status, 0);
   assert.match(r.calls, /cp .*lady-aki\.mem cid123:\/workspace\/bags\/elyncia\//);
-  assert.match(r.calls, /ingest --source \/workspace\/bags\/elyncia\/.*lady-aki\.mem --to lar:\/\/\/ha\.ka\.ba\/bags\/lares --apply --yes/);
+  assert.match(r.calls, /ingest source=\/workspace\/bags\/elyncia\/.*lady-aki\.mem to=lar:\/\/\/ha\.ka\.ba\/bags\/lares apply=true yes=true/);
 });
 
 test("qa runs the command in the disposable runner; no argv carries the Docker socket", async () => {
@@ -216,10 +216,10 @@ test("a door that answers no open key stops the driver by name", async () => {
   assert.match(r.stderr, /did not open its vessel key through the test door/);
 });
 
-test("bag creates a bag through act CREATE and prints its URI", async () => {
+test("bag creates a bag through lar:///carriage.bag.creates and prints its URI", async () => {
   const r = await run(["bag", "aki-fixture"]);
   assert.equal(r.status, 4, "the fake answers no ok:true, so the driver names the refusal");
-  assert.match(r.calls, /act lar:\/\/\/carriage\.bag\.creates bag=lar:\/\/\/ha\.ka\.ba\/bags\/aki-fixture yes=true/);
+  assert.match(r.calls, / lar:\/\/\/carriage\.bag\.creates bag=lar:\/\/\/ha\.ka\.ba\/bags\/aki-fixture yes=true/);
   assert.equal((await run(["bag", "Bad Name"])).status, 2);
 });
 
@@ -230,9 +230,9 @@ test("recipe add inits the mounted wiki, then adds; remove only removes", async 
       { slug: "lares", kind: "system", uri: "lar:///ha.ka.ba/bags/lares", automergeUrl: "automerge:doc" },
     ] } }),
   });
-  assert.match(add.calls, /wiki status --json/);
-  assert.match(add.calls, /wiki init lares --json/);
-  assert.match(add.calls, /wiki status --json/);
+  assert.match(add.calls, /wiki status json=true/);
+  assert.match(add.calls, /wiki init lares json=true/);
+  assert.match(add.calls, /wiki status json=true/);
   assert.match(add.stderr, /note: lares is a \[system\] wiki/);
   const rm = await run(["recipe", "remove", bag]);
   assert.equal(rm.status, 0);
@@ -244,13 +244,13 @@ test("recipe add inits the mounted wiki, then adds; remove only removes", async 
 test("BROWSER_CI_WIKI names the wiki without asking the node", async () => {
   const r = await run(["recipe", "remove", "lar:///ha.ka.ba/bags/x"], { BROWSER_CI_WIKI: "other" });
   assert.match(r.calls, /wiki remove-bag other /);
-  assert.doesNotMatch(r.calls, /wiki status --json/);
+  assert.doesNotMatch(r.calls, /wiki status json=true/);
 });
 
 test("get reads AS the mounted wiki by default, and takes an explicit --bag or --recipe", async () => {
   const u = "lar:///ha.ka.ba/x/y";
-  assert.match((await run(["get", u])).calls, / get title=lar:\/\/\/ha\.ka\.ba\/x\/y recipe=lares aperture=arc --json/);
-  assert.match((await run(["get", u, "bag=aki-fixture"])).calls, / get title=\S+ bag=aki-fixture aperture=arc --json/);
+  assert.match((await run(["get", u])).calls, / get title=lar:\/\/\/ha\.ka\.ba\/x\/y recipe=lares aperture=arc json=true/);
+  assert.match((await run(["get", u, "bag=aki-fixture"])).calls, / get title=\S+ bag=aki-fixture aperture=arc json=true/);
   assert.equal((await run(["get", u, "tag=z"])).status, 2);
 });
 
@@ -293,7 +293,7 @@ async function runJoin(runnerIds, env = {}, command = ["node", "x.mjs"]) {
     await writeFile(join(dir, "docker"), `#!/bin/sh
 printf '%s\\n' "$*" >> "$CALL_LOG"
 case "$*" in
-  *"wiki status --json"*) node -e 'const x=JSON.parse(process.env.INFO_WIKIS || "{}"); console.log(JSON.stringify({ok:true,data:{catalog:x.data ?? {},activation:{active:["lares"]},residency:{pinned:[],wela:[]}}}));' ; exit 0 ;;
+  *"wiki status json=true"*) node -e 'const x=JSON.parse(process.env.INFO_WIKIS || "{}"); console.log(JSON.stringify({ok:true,data:{catalog:x.data ?? {},activation:{active:["lares"]},residency:{pinned:[],wela:[]}}}));' ; exit 0 ;;
 esac
 await_file() { i=0; while [ ! -f "$1" ] && [ ! -f "$2" ] && [ "$i" -lt 100 ]; do i=$((i+1)); sleep 0.05; done; }
 got() { for f in "$@"; do [ -f "$f" ] && echo "GOT $(basename "$f"): $(cat "$f" | tr '\\n' ' ')"; done; return 0; }
@@ -388,7 +388,7 @@ test("CONTROL: info reads the mounted wiki document from a registered JSON syste
   assert.match(r.calls, /logs --no-color lares/);
   assert.doesNotMatch(r.calls, /device-admit|fleet join/);
   assert.equal(info.recipe.leafReadsDefaultRecipe, true);
-  assert.match(r.calls, /wiki status --json/);
+  assert.match(r.calls, /wiki status json=true/);
 });
 
 test("info refuses a walk start by name when the wiki has no document", async () => {
@@ -435,7 +435,7 @@ test("CONTROL: qa-join starts a live walk when the registered document is an Aut
     ] } }),
   }, ["node", "packages/lararium-web/tests/live-wiki.mjs", "crossing"]);
   assert.equal(r.status, 0, r.stderr);
-  assert.match(r.calls, /wiki status --json/);
+  assert.match(r.calls, /wiki status json=true/);
   assert.match(r.calls, / run .*qa /);
 });
 

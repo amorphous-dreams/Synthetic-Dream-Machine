@@ -148,12 +148,12 @@ describe("a positional arg (`seat/N`)", () => {
 
   test("RED 1: the cli rides it bare in its seat, the lead glued on; the code surfaces ride it by name, a whole number bare", () => {
     const call = exampleCall(parseHasRows("<<has entity=`example` name=`x` params=`json day/5 format/[[%X]] month/1 ~ a day`>>")[0]!, "lar:///oracle.calendar.dates");
-    expect(renderCall("cli", "lares ddate", call, undefined, seatsOf(rows))).toBe("lares ddate '+%X' 5 1 --json");
+    expect(renderCall("cli", "lares ddate", call, undefined, seatsOf(rows))).toBe("lares ddate '+%X' 5 1 json=true");
     expect(renderCall("mcp", "ddate", call)).toBe(`ddate(day=5, format="%X", month=1, json=True)`);
   });
 
   test("RED 2: the cli usage spine leads with the positionals in seat order, then the flags", () => {
-    expect(usageOf("cli", "lares ddate", rows)).toBe("usage: lares ddate [+FORMAT] [<day> <month> <year>] [--json]");
+    expect(usageOf("cli", "lares ddate", rows)).toBe("usage: lares ddate [+FORMAT] [<day> <month> <year>] [json=<true>]");
     expect(usageOf("mcp", "ddate", rows)).toBe("ddate([format=<words>], [day=<number>, month=<number>, year=<number>], [json])");
   });
 

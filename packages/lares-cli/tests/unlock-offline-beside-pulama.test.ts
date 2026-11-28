@@ -46,7 +46,7 @@ afterEach(() => {
   rmSync(root, { recursive: true, force: true });
 });
 
-const run = (...argv: string[]): Promise<number> => cmdVault(parseArgs(["vault", "unlock", ...argv, "--json"]));
+const run = (...argv: string[]): Promise<number> => cmdVault(parseArgs(["vault", "unlock", ...argv, "json=true"]));
 const answer = (): { ok: boolean; error?: { code: string; message: string } } => JSON.parse(out.join("").trim().split("\n").at(-1) ?? "{}");
 
 describe("RED unlock-offline-beside-a-pulama-refuses-by-name", () => {

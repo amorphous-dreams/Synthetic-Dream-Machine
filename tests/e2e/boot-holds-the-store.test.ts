@@ -49,7 +49,7 @@ afterAll(async () => {
 });
 
 /** The store-door read each act sends. */
-const PROBE = ["nexus", "kapae", "list=true", "--json"] as const;
+const PROBE = ["nexus", "kapae", "list=true", "json=true"] as const;
 
 /** Where one store-door read ran: `daemon`, `direct`, or the refusal it met. */
 function via(r: { json?: Record<string, unknown> | null; stderr: string }): string {
@@ -64,7 +64,7 @@ describe("a booting vessel holds its store", () => {
     const port = await freePort();
     const env = { LAR_ROOT: root, LAR_PORT: String(port) };
     const cli = cliFor(env);
-    expect((await cli(["vessel", "found", "hearth=true", "name=staged", `root=${root}`, "--skip-build"])).code).toBe(0);
+    expect((await cli(["vessel", "found", "hearth=true", "name=staged", `root=${root}`, "skip-build=true"])).code).toBe(0);
 
     // CONTROL: no vessel stands, so the command holds the store itself for its act.
     const alone = await cli(PROBE);

@@ -2,14 +2,14 @@
  * lares shore — a person's answers at the disk shore.
  *
  *   lares shore [list] [face=N]                         what stands for a hand (a lit sibling's shore by its face)
- *   lares shore take-records <uri> key=<key> [bag=<bagUri>] [--yes]
- *   lares shore take-disk    <uri> key=<key> [bag=<bagUri>] [--yes]
- *   lares shore keep-disk    <uri> key=<key> [bag=<bagUri>] [--yes]
- *   lares shore keep-records <uri> key=<key> [bag=<bagUri>] [--yes]
- *   lares shore keep-both    <uri> key=<key> [bag=<bagUri>] [--yes]
+ *   lares shore take-records <uri> key=<key> [bag=<bagUri>] [yes=true]
+ *   lares shore take-disk    <uri> key=<key> [bag=<bagUri>] [yes=true]
+ *   lares shore keep-disk    <uri> key=<key> [bag=<bagUri>] [yes=true]
+ *   lares shore keep-records <uri> key=<key> [bag=<bagUri>] [yes=true]
+ *   lares shore keep-both    <uri> key=<key> [bag=<bagUri>] [yes=true]
  *   lares shore drafts       <uri>
- *   lares shore restore (<uri>… | all=true count=<n>) [bag=<bagUri>] [--yes]
- *   lares shore remove  (<uri>… | all=true count=<n>) [bag=<bagUri>] [--yes]
+ *   lares shore restore (<uri>… | all=true count=<n>) [bag=<bagUri>] [yes=true]
+ *   lares shore remove  (<uri>… | all=true count=<n>) [bag=<bagUri>] [yes=true]
  *   lares shore settle  bag=<bagUri|slug> pending=true
  *   lares shore lift-kahua count=<n>
  *   lares shore flush
@@ -30,12 +30,12 @@
  *     parallel drafts, and `drafts` names the drafts by title (`lares get title=…` reads each).
  *   · SETTLING STAYS A HAND ACT: `take-records`, `take-disk` and the keep acts read the hand behind this command
  *     (`readOwnHand`) before anything else; an AI harness on its branch refuses `hand-act-only`, an unreadable branch
- *     `hand-unattested`, each naming the command the operator runs, and `--yes` approves nothing by itself.
+ *     `hand-unattested`, each naming the command the operator runs, and `yes=true` approves nothing by itself.
  *   · A PENDING REMOVAL: a file vanished from the path its base names. Nothing writes it back and nothing
  *     tombstones its records. `restore` writes the file back from the records; `remove` takes the carrier out
  *     of its own bag's layer and retracts it to absent. Only where a lower layer holds the title too does the
  *     removal raise a kāpae: the confirmation line names that layer, the person's y approves it (`kapae: true`),
- *     and `--yes` alone leaves the island refusing `remove-raises-kapae` by name.
+ *     and `yes=true` alone leaves the island refusing `remove-raises-kapae` by name.
  *
  * THE SHORE NAMES WHAT IT LETS GO. Where a commit took a pending removal's file from its checkout, `list`, the `remove`
  * answer and the lay's closing lines name that commit beside the row: short sha, subject, PR, and the ashes git keeps
@@ -93,7 +93,7 @@ export type ShoreAct = (typeof SHORE_ACTS)[number];
 /** The acts a lit sibling's shore answers by its face (`face=N`); the rest read the worn face, or no face at all. */
 const FACE_ACTS: ReadonlySet<ShoreAct> = new Set(["list", "take-records", "restore", "remove"]);
 
-/** A refusal ends with the door's lines, drawn from the carriers (`lares shore --help` prints the same). */
+/** A refusal ends with the door's lines, drawn from the carriers (`lares help shore` prints the same). */
 function printUsage(): void {
   for (const line of helpLines("shore")) console.error(line);
 }
@@ -203,7 +203,7 @@ const SETTLING: ReadonlySet<ShoreAct> = new Set(["take-records", "take-disk", "k
 /**
  * SETTLING A STAND-OFF STAYS A HAND ACT (operator ruling, 2026-11-23): the command reads its own branch first (the house hand
  * gate), since take-disk's write rides the ingest leg the vessel's per-op shore gate never sees; an AI harness on it refuses
- * `hand-act-only`, an unread branch `hand-unattested`, and `--yes` approves nothing by itself. Each refusal names the command
+ * `hand-act-only`, an unread branch `hand-unattested`, and `yes=true` approves nothing by itself. Each refusal names the command
  * the operator runs at their own terminal. `take-records`, `keep-both`, `restore` and `remove` meet the same law at the
  * vessel's socket (`shoreHandCode`). Null where the act settles nothing or a hand stands.
  */
@@ -232,17 +232,17 @@ export async function cmdShore(args: ParsedArgs, hand: ShoreHandRead = ownHand):
     return runMirrors({ apply: true, liftKahua: String(shaped.args["count"]), json: wantsJson(args) }, LIVE_MIRROR_DOORS);
   }
 
-  // A SETTLING ACT READS THE HAND FIRST, before any confirmation: `--yes` names the intent and approves nothing.
+  // A SETTLING ACT READS THE HAND FIRST, before any confirmation: `yes=true` names the intent and approves nothing.
   const handRefused = shoreHandRefusal(act, { ...shaped.args, uri: args.positional[1], key: args.options["key"] }, hand);
   if (handRefused !== null) {
     emit(args, { ok: false, error: { code: handRefused.code, message: handRefused.message }, human: () => console.error(`lares shore ${act}: ${handRefused.message}`) });
     return 1;
   }
 
-  // An act that writes asks first (a person at a TTY), or carries `--yes`.
+  // An act that writes asks first (a person at a TTY), or carries `yes=true`.
   if (act !== "list" && act !== "settle" && act !== "flush" && act !== "drafts" && !args.flags["yes"]) {
     if (wantsJson(args)) {
-      emit(args, { ok: false, error: { code: "usage", message: "confirmation required", hint: "pass --yes for non-interactive (agent) invocation" }, human: () => { /* unreachable */ } });
+      emit(args, { ok: false, error: { code: "usage", message: "confirmation required", hint: "pass yes=true for non-interactive (agent) invocation" }, human: () => { /* unreachable */ } });
       return exitFor("usage");
     }
     // A REMOVE READS ITS ROWS FIRST, so the line names each kāpae a lower layer makes it raise; the person's y approves
@@ -371,7 +371,7 @@ export async function cmdShore(args: ParsedArgs, hand: ShoreHandRead = ownHand):
       data: { op: "list", standoffs, standoffCount: standoffs.length, pending: withRetiredBy(pending, receipts), pendingCount: pending.length, kahuaPending: kahua, kahuaPendingCount: kahua.length },
       human: () => {
         if (kahua.length > 0) {
-          console.log(`${kahua.length} kahua item(s) wait for a hand: a lay previewed them and nothing lifted on --yes alone`);
+          console.log(`${kahua.length} kahua item(s) wait for a hand: a lay previewed them and nothing lifted on yes=true alone`);
           for (const k of kahua) console.log(`  h${k.handleIndex}${k.petname ? ` ("${k.petname}")` : ""}  ${k.title}  sha256:${k.digest.slice(0, 16)}  ${k.state === "differs" ? "differs from the standing head" : "new"}`);
           // A lift rides its own face's wear: the count names what the daemon MOUNT's items come to, face by face.
           for (const handleIndex of [...new Set(kahua.map((k) => k.handleIndex))].sort((a, b) => a - b)) {

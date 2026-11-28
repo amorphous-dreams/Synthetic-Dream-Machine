@@ -23,7 +23,7 @@ describe("lares lei plans one store row per sub-verb", () => {
 
   it("kui: wide by default with its returns, and `after` null for the first on the line; the head reach pins the head it names", () => {
     expect(plan("kui", "rite=push", "branch=feature/x", "returns=3")).toEqual({ verb: "swarm-lei-kui", args: { rite: "push", branch: "feature/x", returns: 3, after: null } });
-    expect(plan("kui", "rite=push", "branch=feature/x", "returns=40", "--yes")).toEqual({ verb: "swarm-lei-kui", args: { rite: "push", branch: "feature/x", returns: 40, after: null, confirm: true } });
+    expect(plan("kui", "rite=push", "branch=feature/x", "returns=40", "yes=true")).toEqual({ verb: "swarm-lei-kui", args: { rite: "push", branch: "feature/x", returns: 40, after: null, confirm: true } });
     expect(plan("kui", "rite=push", "branch=feature/x", "reach=head", `head=${HEAD}`, `after=${CID}`))
       .toEqual({ verb: "swarm-lei-kui", args: { rite: "push", branch: "feature/x", reach: "head", head: HEAD, after: CID } });
   });

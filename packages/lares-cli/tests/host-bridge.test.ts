@@ -76,18 +76,18 @@ describe("decideRoute — every branch", () => {
     }
   });
 
-  it("global and per-command help stays local, and so does bare `lares` and --version", () => {
-    for (const argv of [[], ["--help"], ["-h"], ["--version"], ["meme", "--help"], ["vault", "unlock", "-h"]]) {
+  it("global and per-command help stays local, and so does bare `lares`; a dash-led line stays local, where the CLI refuses it", () => {
+    for (const argv of [[], ["help"], ["help", "meme"], ["help", "vault", "unlock"], ["--help"], ["-h"], ["--version"], ["meme", "--help"]]) {
       expect(decideRoute(input(argv, {}, [])), argv.join(" ")).toBe("local");
     }
   });
 
   it("a call by address or by stdin sigil forwards with the container house standing, and stays local under LAR_ROOT", () => {
-    for (const argv of [["lar:///engine.record.reads", "title=x"], ["-"], ["-", "recipe=lares"], ["act", "lar:///engine.record.reads", "title=x"]]) {
+    for (const argv of [["lar:///engine.record.reads", "title=x"], ["-"], ["-", "recipe=lares"]]) {
       expect(decideRoute(input(argv)), argv.join(" ")).toBe("forward");
       expect(decideRoute(input(argv, { env: { HOME, LAR_ROOT: "/h" } })), argv.join(" ")).toBe("local");
     }
-    // A dash-led word that names no call (`-h`, `--version`) still answers here.
+    // A dash-led word that names no call (`-h`, `--version`) answers here, where the CLI refuses it.
     for (const argv of [["-h"], ["--version"]]) expect(decideRoute(input(argv, {}, [])), argv.join(" ")).toBe("local");
   });
 
@@ -222,15 +222,15 @@ describe("translatePaths — a host path in a forwarded argv reads as the vessel
     expect("error" in r && r.error.code).toBe(PATH_OUTSIDE_EXIT);
     expect(ok(["vessel", "found", "genesis=/lar/config/genesis"])).toEqual(["vessel", "found", "genesis=/lar/config/genesis"]);
     // A vessel spelling climbs out of its root no further: `/lar/../app/x` normalizes to /app/x and reads as a host path.
-    const climbed = tr(["act", "lar:///carriage.bundle.repacks", "source=/lar/config/b.json", "out=/lar/../app/x.json", "from=b"]);
+    const climbed = tr(["lar:///carriage.bundle.repacks", "source=/lar/config/b.json", "out=/lar/../app/x.json", "from=b"]);
     expect("error" in climbed && climbed.error.code).toBe(PATH_OUTSIDE_EXIT);
     expect("error" in tr(["export", "/larx/b1"])).toBe(true);           // a prefix that only shares letters with /lar
   });
 
   it("an argument that only looks like a path stays untouched", () => {
-    expect(ok(["act", "lar:///carriage.bundle.repacks", `source=${W}/b.tid`, "from=some/bag/like"])).toEqual(["act", "lar:///carriage.bundle.repacks", "source=/workspace/b.tid", "from=some/bag/like"]);
+    expect(ok(["lar:///carriage.bundle.repacks", `source=${W}/b.tid`, "from=some/bag/like"])).toEqual(["lar:///carriage.bundle.repacks", "source=/workspace/b.tid", "from=some/bag/like"]);
     // A LOAD by URL names no host file: the URL rides as written.
-    expect(ok(["act", "lar:///carriage.bag.loads", "source-uri=https://example.org/notes", "to=lar:///b"])).toEqual(["act", "lar:///carriage.bag.loads", "source-uri=https://example.org/notes", "to=lar:///b"]);
+    expect(ok(["lar:///carriage.bag.loads", "source-uri=https://example.org/notes", "to=lar:///b"])).toEqual(["lar:///carriage.bag.loads", "source-uri=https://example.org/notes", "to=lar:///b"]);
     expect(ok(["get", "title=lar:///a/b", "bag=./not/a/path"])).toEqual(["get", "title=lar:///a/b", "bag=./not/a/path"]);
     expect(ok(["meme", "project", "lar:///x/y", "to=html", "bag=b"])).toEqual(["meme", "project", "lar:///x/y", "to=html", "bag=b"]);
     expect(ok(["persona", "new", "0", "name=/etc/passwd"])).toEqual(["persona", "new", "0", "name=/etc/passwd"]);
@@ -294,7 +294,7 @@ function bench(opts: { envFile?: boolean; running?: boolean } = {}): Bench {
     "#!/bin/sh",
     `{ printf 'CALL\\n'; for a in "$@"; do printf '[%s]\\n' "$a"; done; } >> "$CALL_LOG"`,
     `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit 0;; esac`,
-    `case " $* " in *" observe=true --json "*) printf '%s\\n' '{"data":{"standing":{"act":"attach","reason":"steady"}}}'; exit 0;; esac`,
+    `case " $* " in *" observe=true json=true "*) printf '%s\\n' '{"data":{"standing":{"act":"attach","reason":"steady"}}}'; exit 0;; esac`,
     `case " $* " in *" sh -c "*|*" stop "*|*" rm -f "*) exit 0;; esac`,
     `case " $* " in *" exec "*|*" run "*) [ -n "\${FAKE_SLEEP:-}" ] && { echo $$ > "$CALL_LOG.pid"; exec sleep 30; }; printf 'stdout-from-the-vessel\\n'; printf 'stderr-from-the-vessel\\n' >&2; exit "\${FAKE_EXEC_RC:-0}";; esac`,
     "exit 0",
@@ -439,7 +439,7 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
   it("a host verb stays local: no docker call", () => {
     const b = bench();
     try {
-      spawnSync(process.execPath, [BIN, "home", "--help"], { env: b.env, encoding: "utf8" });
+      spawnSync(process.execPath, [BIN, "help", "home"], { env: b.env, encoding: "utf8" });
       expect(calls(b)).toEqual([]);
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });

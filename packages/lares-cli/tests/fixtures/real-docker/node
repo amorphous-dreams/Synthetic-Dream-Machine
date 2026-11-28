@@ -3,8 +3,8 @@
 # each argument, the display and debug names the shim may forward (and one it must not), and whether stdin reads a
 # TTY. An argument `sleep` sleeps (the signal walks); `exit:<n>` exits with <n>.
 shift
-case " $* " in *" --observe --json "*) echo '{"data":{"standing":{"act":"attach","reason":"steady"}}}'; exit 0;; esac
-case " $* " in *" vault status --json "*) echo '{"unlocked":true}'; exit 0;; esac
+case " $* " in *" observe=true json=true "*) echo '{"data":{"standing":{"act":"attach","reason":"steady"}}}'; exit 0;; esac
+case " $* " in *" vault status json=true "*) echo '{"unlocked":true}'; exit 0;; esac
 for a in "$@"; do printf 'ARG[%s]\n' "$a"; done
 for n in NO_COLOR TERM COLORTERM LARES_DEBUG SOME_TOKEN; do
   eval "isset=\${$n+x}"

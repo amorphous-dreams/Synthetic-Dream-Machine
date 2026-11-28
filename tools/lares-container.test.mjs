@@ -143,7 +143,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *"pulama-main.js admit"*) : > "$CALL_LOG.admitted"; exit "\${FAKE_EXEC_RC:-0}";; esac\n` +
       `case " $* " in *"pulama-main.js status"*) if [ -e "$CALL_LOG.admitted" ] && [ -n "\${FAKE_PULAMA_STATUS_ADMITTED:-}" ]; then printf '%s\\n' "\${FAKE_PULAMA_STATUS_ADMITTED}"; exit 0; fi;; esac\n` +
       `case " $* " in *"pulama-main.js status"*) lit='{"op":"status","lit":true}'; if [ -e "$CALL_LOG.lit" ] && [ -n "\${FAKE_PULAMA_STATUS_AFTER:-}" ]; then printf '%s\\n' "\${FAKE_PULAMA_STATUS_AFTER}"; else printf '%s\\n' "\${FAKE_PULAMA_STATUS-$lit}"; fi; exit 0;; esac\n` +
-      // THE KUKULU LEI on a branch, as the standing vessel's `lei show --json` answers it (the kūkulu reading reads it).
+      // THE KUKULU LEI on a branch, as the standing vessel's `lei show json=true` answers it (the kūkulu reading reads it).
       `case " $* " in *" lei show rite=kukulu "*) printf '%s\\n' "\${FAKE_LEI_SHOW:-}"; exit 0;; esac\n` +
       `case " $* " in *" nexus publish plugins "*" terms=true "*) printf '%s\\n' "\${FAKE_PUBLISH_TERMS:-}"; exit "\${FAKE_TERMS_RC:-0}";; esac\n` +
       `case " $* " in *"pulama-main.js publish "*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '[pulama] an offering reads its route from a real terminal alone'; exit 1;; esac; printf '%s\\r\\n' 'pūlama route, to sign the plugin offering: '; [ -z "\${FAKE_PUBLISH_ANSWER:-}" ] || printf '%s\\n' "\${FAKE_PUBLISH_ANSWER}" | node -e 'let s="";process.stdin.on("data",(d)=>s+=d).on("end",()=>process.stdout.write(JSON.stringify(JSON.parse(s),null,2).split("\\n").join("\\r\\n")+"\\r\\n"))'; exit "\${FAKE_PUBLISH_RC:-0}";; esac\n` +
@@ -154,12 +154,12 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" rite receipts "*) printf '%s\\n' "\${FAKE_RECEIPTS:-}"; exit "\${FAKE_RECEIPTS_RC:-0}";; esac\n` +
       `case " $* " in *"pulama-main.js lei "*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '[pulama] a lei reads its route from a real terminal alone'; exit 1;; esac; printf '%s\\r\\n' 'pūlama route, to kui a push lei: '; [ -z "\${FAKE_LEI_ANSWER:-}" ] || printf '%s\\n' "\${FAKE_LEI_ANSWER}" | node -e 'let s="";process.stdin.on("data",(d)=>s+=d).on("end",()=>process.stdout.write(JSON.stringify(JSON.parse(s),null,2).split("\\n").join("\\r\\n")+"\\r\\n"))'; exit "\${FAKE_LEI_RC:-0}";; esac\n` +
       `case " $* " in *" vessel floor seed "*) [ -z "\${FAKE_SEED_FRAME:-}" ] || printf '%s\\n' "\${FAKE_SEED_FRAME}"; printf '%s\\n' 'rebuild chatter' >&2; exit "\${FAKE_SEED_RC:-0}";; esac\n` +
-      `case " $* " in *" observe=true --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
+      `case " $* " in *" observe=true json=true "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
       `case " $* " in *" intent show "*) printf '%s\\n' "\${FAKE_INTENT_SHOW:-}"; exit 0;; esac\n` +
-      `case " $* " in *" vessel census --json "*) printf '%s\\n' "\${FAKE_CENSUS_JSON:-}"; exit 0;; esac\n` +
+      `case " $* " in *" vessel census json=true "*) printf '%s\\n' "\${FAKE_CENSUS_JSON:-}"; exit 0;; esac\n` +
       // After a stop (a down marks the run), the census answers FAKE_CENSUS_AFTER where a test names one: the new vessel's census.
       `case " $* " in *" vessel census "*) if [ -e "$CALL_LOG.down" ] && [ -n "\${FAKE_CENSUS_AFTER:-}" ]; then printf '%s\\n' "\${FAKE_CENSUS_AFTER}"; exit "\${FAKE_CENSUS_AFTER_RC:-0}"; fi; [ -z "\${FAKE_CENSUS_OUTPUT:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_OUTPUT}"; [ -z "\${FAKE_CENSUS_ERR:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_ERR}" >&2; exit "\${FAKE_CENSUS_RC:-0}";; esac\n` +
-      `case " $* " in *" vault status --json "*) if [ -e "$CALL_LOG.unlocked" ] && [ -n "\${FAKE_CUSTODY_AFTER:-}" ]; then printf '%s\\n' "\${FAKE_CUSTODY_AFTER}"; else printf '%s\\n' "\${FAKE_CUSTODY_OUTPUT:-}"; fi; exit 0;; esac\n` +
+      `case " $* " in *" vault status json=true "*) if [ -e "$CALL_LOG.unlocked" ] && [ -n "\${FAKE_CUSTODY_AFTER:-}" ]; then printf '%s\\n' "\${FAKE_CUSTODY_AFTER}"; else printf '%s\\n' "\${FAKE_CUSTODY_OUTPUT:-}"; fi; exit 0;; esac\n` +
       `case " $* " in *" ps -q lares "*) printf '%s' "\${FAKE_STOOD_ID:-\${FAKE_RUNNING_ID:-}}"; exit 0;; esac\n` +
       `case " $* " in *"inspect --format"*) printf '%s\\n' "\${FAKE_IMAGE_REV:-}"; exit 0;; esac\n` +
       // A build lists its context (the folder the override names), so a test reads what rode into the image.
@@ -412,7 +412,7 @@ test("sh: RED reset under an AI seat refuses hand-act-only by name before the te
   test("sh: ai-restand-spends-the-lei: one standing lei among the vessel's faces licenses an AI seat's vessel stop; the lei is read on the checkout's branch", async () => {
     const r = await run(SH, ["vessel", "stop"], { checkout: "clean", env: { ...AI, FAKE_RUNNING_ID: "cid", FAKE_LEI_SHOW: leiOf({ standing: false, refusal: "absent" }, standingLei) }, rawSeat: true });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, / lei show rite=kukulu branch=\S+ --json/);
+    assert.match(r.calls, / lei show rite=kukulu branch=\S+ json=true/);
     assert.match(r.calls, / stop lares/);
   });
   test("sh: ai-restand-spends-the-lei: a standing lei lets an AI seat's down, vessel stand and build through their own paths", async () => {
@@ -425,7 +425,7 @@ test("sh: RED reset under an AI seat refuses hand-act-only by name before the te
     assert.doesNotMatch(build.stderr, /refused to an AI seat/);
   });
   test("sh: ai-restand-spends-the-lei: a read verb stays open to an AI seat (vessel stand --observe asks no lei)", async () => {
-    const r = await run(SH, ["vessel", "stand", "observe=true", "--json"], { checkout: "clean", env: { ...AI, FAKE_RUNNING_ID: "cid" }, rawSeat: true });
+    const r = await run(SH, ["vessel", "stand", "observe=true", "json=true"], { checkout: "clean", env: { ...AI, FAKE_RUNNING_ID: "cid" }, rawSeat: true });
     assert.doesNotMatch(r.stderr, /refused to an AI seat/);
   });
   test("sh: CONTROL a hand (a chain that reads a person) passes up, down, vessel stop and build with no lei", { skip: SUITE_SEAT }, async () => {
@@ -517,7 +517,7 @@ test("sh: found under a TTY runs attached, with no -T", { skip: !haveScript }, a
     });
     // A harness above this suite sends the seat mark on every act (SUITE_SEAT); folded out here as `run` folds it.
     const calls = (await readFile(log, "utf8")).replaceAll(SUITE_SEAT ? " -e CLAUDECODE" : "\u0000", "");
-    assert.match(calls, /--profile offline run --rm (?:--name lares-offline-[0-9a-f]+ )?offline vessel found --skip-build root=\/lar genesis=\/app\/genesis\s*$/m);
+    assert.match(calls, /--profile offline run --rm (?:--name lares-offline-[0-9a-f]+ )?offline vessel found skip-build=true root=\/lar genesis=\/app\/genesis\s*$/m);
     assert.doesNotMatch(calls, /(^|\s)-T(\s|$)/);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
@@ -561,9 +561,9 @@ for (const [name, shim] of shims) {
   });
 
   test(`${name}: any other argv with a running vessel runs the CLI by exec`, async () => {
-    const r = await run(shim, ["vessel", "read", "--json"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    const r = await run(shim, ["vessel", "read", "json=true"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /compose .*exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel read --json/);
+    assert.match(r.calls, /compose .*exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel read json=true/);
   });
 
   test(`${name}: RED a summoned process's stream name (LARES_SUMMONED) crosses into the vessel by name alone, so its msg defaults to it`, async () => {
@@ -646,8 +646,8 @@ for (const [name, shim] of shims) {
   });
 
   test(`${name}: found uses the offline CLI door`, async () => {
-    const r = await run(shim, ["found", "--json"], { env: MOUNTS });
-    assert.match(r.calls, /--profile offline run --rm (?:--name lares-offline-[0-9a-f]+ )?-T offline vessel found --skip-build root=\/lar genesis=\/app\/genesis --json\s*$/m);
+    const r = await run(shim, ["found", "json=true"], { env: MOUNTS });
+    assert.match(r.calls, /--profile offline run --rm (?:--name lares-offline-[0-9a-f]+ )?-T offline vessel found skip-build=true root=\/lar genesis=\/app\/genesis json=true\s*$/m);
   });
 
   test(`${name}: a successful exec with a restand verdict restarts and waits healthy`, async () => {
@@ -673,7 +673,7 @@ for (const [name, shim] of shims) {
   test(`${name}: up names vault unlock when the vessel holds no key`, async () => {
     const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"ok":true,"data":{"door":{"op":"custody","unlocked":false}}}' } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /up -d --wait lares[\s\S]*exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vault status --json/);
+    assert.match(r.calls, /up -d --wait lares[\s\S]*exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vault status json=true/);
     assert.match(r.stderr, NAMES_UNLOCK);
     assert.doesNotMatch(r.calls, /vault unlock/, "no TTY: the shim sends no unlock, it only names it");
   });
@@ -687,7 +687,7 @@ for (const [name, shim] of shims) {
     const attached = await run(shim, ["up"], { wornFace: "", tty: "", env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: LOCKED } });
     assert.equal(attached.status, 0, attached.stdout);
     assert.match(attached.calls, /lares node \S+ vault unlock all=true/);
-    assert.doesNotMatch(attached.calls, / wear \d+(?: --yes)?$/m);
+    assert.doesNotMatch(attached.calls, / wear \d+(?: yes=true)?$/m);
     assert.match(attached.stdout, /no face rests remembered \(config\/last-worn-face reads empty\), so the shim wears none and the vessel's own mount stands/);
   });
 
@@ -802,7 +802,7 @@ for (const [name, shim] of shims) {
       env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
     });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /restart lares[\s\S]*up -d --wait lares[\s\S]*vault status --json/);
+    assert.match(r.calls, /restart lares[\s\S]*up -d --wait lares[\s\S]*vault status json=true/);
     assert.match(r.stderr, NAMES_UNLOCK);
   });
 
@@ -842,14 +842,14 @@ for (const [name, shim] of shims) {
     const steady = await run(shim, ["get", "title=lar:///x"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OLD_IMAGE: "1" } });
     assert.equal(steady.status, 0, steady.stderr);
     assert.doesNotMatch(steady.calls, /--standing-report|^REPORT /m);
-    assert.equal((steady.calls.match(/vessel stand observe=true --json/g) ?? []).length, 1, steady.calls);
+    assert.equal((steady.calls.match(/vessel stand observe=true json=true/g) ?? []).length, 1, steady.calls);
     assert.doesNotMatch(steady.calls, /restart lares/);
     const lifted = await run(shim, ["persona", "new", "0", "name=ci-face"], {
       env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OLD_IMAGE: "1", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
     });
     assert.equal(lifted.status, 0, lifted.stderr);
-    assert.equal((lifted.calls.match(/vessel stand observe=true --json/g) ?? []).length, 1);
-    assert.match(lifted.calls, /vessel stand observe=true --json[\s\S]*restart lares[\s\S]*up -d --wait lares/);
+    assert.equal((lifted.calls.match(/vessel stand observe=true json=true/g) ?? []).length, 1);
+    assert.match(lifted.calls, /vessel stand observe=true json=true[\s\S]*restart lares[\s\S]*up -d --wait lares/);
     assert.match(lifted.stderr, /lares-container: face lit; restarting the vessel/);
   });
 
@@ -879,7 +879,7 @@ for (const [name, shim] of shims) {
     assert.equal(read.status, 0, read.stderr);
     assert.doesNotMatch(read.calls, /--standing-report/);
     assert.deepEqual(read.reportsLeft, []);
-    const observe = await run(shim, ["vessel", "stand", "observe=true", "--json"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    const observe = await run(shim, ["vessel", "stand", "observe=true", "json=true"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(observe.status, 0, observe.stderr);
     assert.doesNotMatch(observe.calls, /--standing-report/);
     assert.deepEqual(observe.reportsLeft, []);
@@ -899,7 +899,7 @@ for (const [name, shim] of shims) {
     // The one exec a fresh stand makes: the custody door's read, after which the shim names the unlock.
     const execs = r.calls.split("\n").filter((line) => /compose .*exec /.test(line) || /^compose exec |(^| )exec /.test(line));
     assert.equal(execs.length, 1, r.calls);
-    assert.match(execs[0], /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vault status --json/);
+    assert.match(execs[0], /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vault status json=true/);
     assert.match(r.stderr, NAMES_UNLOCK);
   });
 
@@ -908,7 +908,7 @@ for (const [name, shim] of shims) {
       env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
     });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vessel stand observe=true --json[\s\S]*restart lares[\s\S]*up -d --wait lares/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vessel stand observe=true json=true[\s\S]*restart lares[\s\S]*up -d --wait lares/);
     // The acting stand never runs inside the container: the one exec carries --observe.
     assert.doesNotMatch(r.calls, /vessel stand\s*$/m);
   });
@@ -923,21 +923,21 @@ for (const [name, shim] of shims) {
   });
 
   test(`${name}: --observe anywhere in a vessel stand argv keeps it a reading`, async () => {
-    const r = await run(shim, ["vessel", "stand", "--json", "observe=true"], {
+    const r = await run(shim, ["vessel", "stand", "json=true", "observe=true"], {
       env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
     });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vessel stand --json observe=true/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vessel stand json=true observe=true/);
     assert.doesNotMatch(r.calls, /restart lares/);
   });
 
   test(`${name}: vessel stand --observe passes through as a reading`, async () => {
-    const r = await run(shim, ["vessel", "stand", "observe=true", "--json"], {
+    const r = await run(shim, ["vessel", "stand", "observe=true", "json=true"], {
       env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"attach","reason":"steady"}}}' },
     });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand observe=true --json/);
-    assert.equal((r.calls.match(/observe=true --json/g) ?? []).length, 1);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand observe=true json=true/);
+    assert.equal((r.calls.match(/observe=true json=true/g) ?? []).length, 1);
     assert.doesNotMatch(r.calls, /restart lares/);
   });
 
@@ -1122,7 +1122,7 @@ for (const [name, shim] of shims) {
   test(`${name}: down over a standing vessel asks the census first, and a clean answer stops it`, async () => {
     const r = await run(shim, ["down", "--timeout", "5"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel census --no-json/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel census json=false/);
     assert.ok(r.calls.indexOf("vessel census") < r.calls.indexOf("down --remove-orphans"), r.calls);
     // down's own flags still pass through.
     assert.match(r.calls, /down --remove-orphans --timeout 5/);
@@ -1233,7 +1233,7 @@ for (const [name, shim] of shims) {
     const cli = await fakeHostCli(0);
     const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, LARES_KEEP_WORKSPACE: "house-backup", LARES_HOST_CLI: cli } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /HOSTCLI rite keep if-due=true --json/);
+    assert.match(r.calls, /HOSTCLI rite keep if-due=true json=true/);
     assert.ok(r.calls.indexOf("HOSTCLI rite keep") < r.calls.indexOf("vessel census"), r.calls);
     assert.match(r.stderr, /keeping first \(rite keep if-due=true\)/, "down says up front why it takes the time a keep takes");
   });
@@ -1352,7 +1352,7 @@ for (const [name, shim] of shims) {
   test(`${name}: CONTROL up over a vessel on the image that stands asks no census`, async () => {
     const r = await run(shim, ["up"], { env: { ...STANDING, FAKE_VESSEL_IMAGE: "sha256:same", FAKE_IMAGE_ID: "sha256:same", FAKE_CUSTODY_OUTPUT: HELD } });
     assert.equal(r.status, 0, r.stderr);
-    assert.doesNotMatch(r.calls, /vessel census --no-json/, "no stop census: the one census read names the mount");
+    assert.doesNotMatch(r.calls, /vessel census json=false/, "no stop census: the one census read names the mount");
     assert.equal(stopped(r.calls), false);
   });
 
@@ -1632,7 +1632,7 @@ for (const [name, shim] of shims) {
     const cli = await fakeHostCli(0);
     const r = await run(shim, ["rebuild"], { checkout: "clean", wornFace: 2, env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, FAKE_CENSUS_JSON: '{"ok":true,"data":{"facesLit":[0,2],"worn":2}}', FAKE_IMAGE_REV_LABEL: "0123456789abcdef0123456789abcdef01234567", LARES_KEEP_WORKSPACE: "house-backup", LARES_HOST_CLI: cli } });
     assert.equal(r.status, 0, r.stderr);
-    const keep = r.calls.indexOf("HOSTCLI rite keep if-due=true"), census = r.calls.indexOf("vessel census --no-json"), down = r.calls.indexOf("down --remove-orphans"), build = r.calls.indexOf(" build "), up = r.calls.indexOf("up -d --wait lares");
+    const keep = r.calls.indexOf("HOSTCLI rite keep if-due=true"), census = r.calls.indexOf("vessel census json=false"), down = r.calls.indexOf("down --remove-orphans"), build = r.calls.indexOf(" build "), up = r.calls.indexOf("up -d --wait lares");
     assert.ok(build >= 0 && keep > build && census > keep && down > census && up > down, `order build, keep, census, down, up:\n${r.calls}`);
     assert.match(r.stderr, /the house stands on revision 0123456789ab, wearing h2; keep: kept \(rite keep if-due=true\)/);
     // THE HOST BUILDS FROM THE SAME REVISION: the checkout stands at the commit the image built, so its CLI builds after
@@ -1654,7 +1654,7 @@ for (const [name, shim] of shims) {
   const keepTwice = async (first, second) => {
     const d = await mkdtemp(join(tmpdir(), "lares-keep-cli-"));
     const f = join(d, "lares");
-    // A keep that kept answers the CLI's envelope naming its workspace, as `rite keep if-due=true --json` does.
+    // A keep that kept answers the CLI's envelope naming its workspace, as `rite keep if-due=true json=true` does.
     await writeFile(f, `#!/bin/sh\nprintf 'HOSTCLI %s\\n' "$*" >> "$CALL_LOG"\nif [ -e "$CALL_LOG.kept1" ]; then rc=${second}; else : > "$CALL_LOG.kept1"; rc=${first}; fi\n[ "$rc" -ne 0 ] || printf '%s\\n' '${KEPT_ENVELOPE}'\nexit $rc\n`);
     await chmod(f, 0o755);
     return f;
@@ -1668,7 +1668,7 @@ for (const [name, shim] of shims) {
     const up = lines.findIndex((l) => /up -d --wait lares/.test(l));
     assert.equal(keeps.length, 2, r.calls);
     assert.ok(keeps[0] < up && keeps[1] > up, `the second keep follows the up:\n${r.calls}`);
-    assert.ok(lines.findLastIndex((l) => /vessel census --no-json/.test(l)) > up, `the census after the up asks before the keep:\n${r.calls}`);
+    assert.ok(lines.findLastIndex((l) => /vessel census json=false/.test(l)) > up, `the census after the up asks before the keep:\n${r.calls}`);
     assert.match(r.stderr, /the keep before the down did not complete; the new vessel's census reads clean, so the keep runs now/);
     assert.match(r.stderr, /keep: kept after the raise \(rite keep if-due=true\)/);
     const once = await run(shim, ["rebuild"], { checkout: "clean", env: { ...env, LARES_HOST_CLI: await keepTwice(0, 0) } });
@@ -1762,9 +1762,9 @@ for (const [name, shim] of shims) {
   test(`${name}: keep-owed-names-a-face: the debt read names the face last worn (face 0, the keep's face, where none rests remembered), so a house with several faces open answers; a read that refuses names "wear a face"`, async () => {
     const env = { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, LARES_KEEP_WORKSPACE: "house-backup", FAKE_RECEIPTS: '{"ok":true,"data":{"pending":[]}}' };
     const none = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, LARES_HOST_CLI: await keepTwice(0, 0) } });
-    assert.match(none.calls, /rite receipts rite=kukulu face=0 --json/);
+    assert.match(none.calls, /rite receipts rite=kukulu face=0 json=true/);
     const worn = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "", "config/last-worn-face": "2\n" }, env: { ...env, LARES_HOST_CLI: await keepTwice(0, 0) } });
-    assert.match(worn.calls, /rite receipts rite=kukulu face=2 --json/);
+    assert.match(worn.calls, /rite receipts rite=kukulu face=2 json=true/);
     const refused = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, FAKE_RECEIPTS: "", FAKE_RECEIPTS_RC: "2", LARES_HOST_CLI: await keepTwice(0, 0) } });
     assert.match(refused.stderr, /the debt read refused \(with several faces open and none worn, wear a face: `lares wear N`\)/);
     assert.equal(refused.keepOwed, true);
@@ -1847,14 +1847,14 @@ for (const [name, shim] of shims) {
   test(`${name}: rebuild-reads-the-house: the image at HEAD builds nothing, and a vessel on it stays standing; CONTROL: a vessel on another image takes the down path and up`, async () => {
     const quiet = await run(shim, ["rebuild"], { checkout: "clean", wornFace: 2, env: { ...STANDING, FAKE_IMAGE_REV_LABEL: "@HEAD@", FAKE_IMAGE_ID: "sha256:new", FAKE_VESSEL_IMAGE: "sha256:new", FAKE_CUSTODY_OUTPUT: HELD, FAKE_CENSUS_JSON: '{"ok":true,"data":{"facesLit":[0,2],"worn":2}}' } });
     assert.equal(quiet.status, 0, quiet.stderr);
-    assert.doesNotMatch(quiet.calls, / build |vessel census --no-json|down --remove-orphans|up -d --wait lares/);
+    assert.doesNotMatch(quiet.calls, / build |vessel census json=false|down --remove-orphans|up -d --wait lares/);
     assert.match(quiet.stderr, /holds the image of \w{12} already; no build/);
     assert.match(quiet.stderr, /the vessel runs sha256:new already and stays standing/);
     assert.match(quiet.stderr, /the house stands on revision \w{12}, wearing h2; keep: the vessel stayed standing, so no keep ran/);
     const moved = await run(shim, ["rebuild"], { checkout: "clean", env: { ...STANDING, FAKE_IMAGE_REV_LABEL: "@HEAD@", FAKE_IMAGE_ID: "sha256:new", FAKE_VESSEL_IMAGE: "sha256:old", FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD } });
     assert.equal(moved.status, 0, moved.stderr);
     assert.doesNotMatch(moved.calls, / build /);
-    assert.match(moved.calls, /vessel census --no-json[\s\S]*down --remove-orphans[\s\S]*up -d --wait lares/);
+    assert.match(moved.calls, /vessel census json=false[\s\S]*down --remove-orphans[\s\S]*up -d --wait lares/);
   });
   // A KEPT IMAGE STANDS AGAIN WITH NO BUILD: a revision whose `rev-<12 hex>` tag still stands takes the tag back (the outgoing
   // image keeps its own tag first), and `--prior` names the newest kept image the tag does not hold now.
@@ -1882,7 +1882,7 @@ for (const [name, shim] of shims) {
     const r = await run(shim, ["rebuild", "--image"], { checkout: "clean", env: { ...STANDING, FAKE_IMAGE_ID: "sha256:new", FAKE_VESSEL_IMAGE: "sha256:old" } });
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.calls, / build /);
-    assert.doesNotMatch(r.calls, /vessel census --no-json|down --remove-orphans|up -d --wait lares/);
+    assert.doesNotMatch(r.calls, /vessel census json=false|down --remove-orphans|up -d --wait lares/);
     const out = r.stdout.trim().split("\n");
     assert.equal(out.length, 1, r.stdout);
     const reading = JSON.parse(out[0]);
@@ -2111,17 +2111,17 @@ const KEY_HELD = '{"ok":true,"data":{"door":{"op":"custody","unlocked":true}}}';
 test(`${name}: rewear-after-up: under a pūlama, a held key with faces lent and none worn wears the face last worn; a worn face draws no wear`, { skip }, async () => {
   const r = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 2, env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: KEY_HELD, FAKE_CENSUS_JSON: NONE_WORN_JSON } });
   assert.equal(r.status, 0, r.stderr);
-  assert.match(r.calls, /exec (?:-e \S+ )*-T lares node \S+ vessel census --json/);
-  assert.match(r.calls, /exec (?:-e \S+ )*-T lares node \S+ wear 2 --yes$/m);
+  assert.match(r.calls, /exec (?:-e \S+ )*-T lares node \S+ vessel census json=true/);
+  assert.match(r.calls, /exec (?:-e \S+ )*-T lares node \S+ wear 2 yes=true$/m);
   assert.match(r.stderr, /faces stand lent and none worn; wearing h2, the face last worn/);
   const worn = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 2, env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: KEY_HELD, FAKE_CENSUS_JSON: WORN_JSON } });
   assert.equal(worn.status, 0, worn.stderr);
-  assert.doesNotMatch(worn.calls, / wear 2(?: --yes)?$/m);
+  assert.doesNotMatch(worn.calls, / wear 2(?: yes=true)?$/m);
 });
 test(`${name}: rewear-after-vault-unlock: under a pūlama, an unlock that names no face and leaves none worn wears the face last worn`, { skip }, async () => {
   const r = await run(shim, ["vault", "unlock", "all=true"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_RUNNING_ID: "cid", FAKE_CENSUS_JSON: NONE_WORN_JSON } });
   assert.equal(r.status, 0, r.stderr);
-  assert.match(r.calls, /vault unlock all=true[\s\S]*vessel census --json[\s\S]*-T lares node \S+ wear 1 --yes$/m);
+  assert.match(r.calls, /vault unlock all=true[\s\S]*vessel census json=true[\s\S]*-T lares node \S+ wear 1 yes=true$/m);
 });
 // AN EMPTY MEMORY TELLS THE PŪLAMA NOTHING. A `wear` writes the pūlama's `face.worn`, which it wears again after every
 // restart: a house whose config/last-worn-face reads empty sends no `wear 0` (a face it never saw worn), so the vessel's
@@ -2129,17 +2129,17 @@ test(`${name}: rewear-after-vault-unlock: under a pūlama, an unlock that names 
 test(`${name}: empty-worn-face-tells-the-pulama-nothing: a held key over none worn, and an unlock under a pūlama, send no wear when no face rests remembered`, { skip }, async () => {
   const held = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: "", env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: KEY_HELD, FAKE_CENSUS_JSON: NONE_WORN_JSON } });
   assert.equal(held.status, 0, held.stderr);
-  assert.match(held.calls, /vessel census --json/);
-  assert.doesNotMatch(held.calls, / wear \d+(?: --yes)?$/m);
+  assert.match(held.calls, /vessel census json=true/);
+  assert.doesNotMatch(held.calls, / wear \d+(?: yes=true)?$/m);
   assert.match(held.stderr, /faces stand lent and none worn, and no face rests remembered \(config\/last-worn-face reads empty\); the shim wears none/);
   const shut = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: "", env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":false}}}' } });
   assert.equal(shut.status, 0, shut.stderr);
   assert.match(shut.calls, /-T lares node \S+ vault unlock all=true/);
-  assert.doesNotMatch(shut.calls, / wear \d+(?: --yes)?$/m);
+  assert.doesNotMatch(shut.calls, / wear \d+(?: yes=true)?$/m);
   assert.match(shut.stderr, /no face rests remembered \(config\/last-worn-face reads empty\), so the shim wears none and the vessel's own mount stands/);
   const bare = await run(shim, ["vault", "unlock", "all=true"], { envFile: PULAMA_ENV, env: { FAKE_RUNNING_ID: "cid", FAKE_CENSUS_JSON: NONE_WORN_JSON } });
   assert.equal(bare.status, 0, bare.stderr);
-  assert.doesNotMatch(bare.calls, / wear \d+(?: --yes)?$/m);
+  assert.doesNotMatch(bare.calls, / wear \d+(?: yes=true)?$/m);
 });
 // THE UNLOCK'S FACE REACHES THE PŪLAMA. The pūlama keeps the face worn in its memory (`standing.worn`) and re-wears it
 // after a restart, and only `wear` writes it, never the unlock: an unlock naming --face N that landed draws `wear N`,
@@ -2153,17 +2153,17 @@ test(`${name}: unlock-face-tells-the-pulama: under a pūlama, a vault unlock fac
   }
   const refused = await run(shim, ["vault", "unlock", "face=2"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "1" } });
   assert.notEqual(refused.status, 0);
-  assert.doesNotMatch(refused.calls, / wear \d+(?: --yes)?$/m);
+  assert.doesNotMatch(refused.calls, / wear \d+(?: yes=true)?$/m);
   assert.equal(refused.worn, "1");
 });
-// THE SHIM'S `--yes` SPEAKS FOR THE SHORE ALONE. A face whose light refused may hold saves in memory alone, and the wear that
-// composes again would drop them: the vessel refuses `saves-held` whatever `--yes` says, and no word turns it. The shim names
+// THE SHIM'S `yes=true` SPEAKS FOR THE SHORE ALONE. A face whose light refused may hold saves in memory alone, and the wear that
+// composes again would drop them: the vessel refuses `saves-held` whatever `yes=true` says, and no word turns it. The shim names
 // the refusal truly, with the vessel's own lines and the act that lights the held face.
 const SAVES_HELD = "lares wear: wearing h2 composes the vessel again, which would drop them, so nothing moved. face h1 holds 1 save(s) in memory that no seat has sealed (its light refused); recard it at your own terminal, keeping its identity: tools/lares-container.sh pulama recard 1 (the face's own passphrase), then lares vault recard face=1, and its own seat seals them";
-test(`${name}: RED shim-wear-never-drops-held-saves: the rebuild's wear carries --yes alone, and a saves-held refusal reads as itself, naming the held face's cure`, { skip }, async () => {
+test(`${name}: RED shim-wear-never-drops-held-saves: the rebuild's wear carries yes=true alone, and a saves-held refusal reads as itself, naming the held face's cure`, { skip }, async () => {
   const r = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 2, env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":false}}}', FAKE_WEAR_OUT: SAVES_HELD, FAKE_WEAR_RC: "1" } });
   assert.equal(r.status, 0, r.stderr);
-  assert.match(r.calls, /-T lares node \S+ wear 2 --yes$/m);
+  assert.match(r.calls, /-T lares node \S+ wear 2 yes=true$/m);
   assert.doesNotMatch(r.calls, /accept-loss/);
   assert.match(r.stderr, /h2 did not turn: a face whose light refused holds saves no seat has sealed/);
   assert.match(r.stderr, /lares vault recard face=1/);
@@ -2174,13 +2174,13 @@ test(`${name}: RED shim-wear-never-drops-held-saves: the rebuild's wear carries 
 });
 // THE SHIM'S OWN WEARS TURN OVER THE SHORE'S FLUSH. A wear that turns the face flushes every shore first and refuses
 // `shore-unwritten` where records stay unwritten; the shim's post-unlock wears turn a face that was just opened (no hand
-// edited it), so they carry `--yes`. Should the refusal ever surface, the shim names it truly with the flush's reading,
+// edited it), so they carry `yes=true`. Should the refusal ever surface, the shim names it truly with the flush's reading,
 // never "outside the lent set or locked".
-const SHORE_UNWRITTEN = "lares wear: the shore's flush left records unwritten on the face this wear turns away from; they rest in the store, and their mirrors stay behind until a hand wears that face again:\n  shore: wiki:sdm wrote 0 owed carrier(s); 1 left unwritten: failed lar:///a.b.c/stuck (its reconcile threw)\nturn anyway: lares wear 2 --yes";
-test(`${name}: RED shim-wears-turn-over-the-shore: the post-unlock wears carry --yes, and a shore-unwritten refusal reads as itself with the flush's reading`, { skip }, async () => {
+const SHORE_UNWRITTEN = "lares wear: the shore's flush left records unwritten on the face this wear turns away from; they rest in the store, and their mirrors stay behind until a hand wears that face again:\n  shore: wiki:sdm wrote 0 owed carrier(s); 1 left unwritten: failed lar:///a.b.c/stuck (its reconcile threw)\nturn anyway: lares wear 2 yes=true";
+test(`${name}: RED shim-wears-turn-over-the-shore: the post-unlock wears carry yes=true, and a shore-unwritten refusal reads as itself with the flush's reading`, { skip }, async () => {
   const shut = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 2, env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":false}}}' } });
   assert.equal(shut.status, 0, shut.stderr);
-  assert.match(shut.calls, /-T lares node \S+ vault unlock all=true[\s\S]*-T lares node \S+ wear 2 --yes$/m);
+  assert.match(shut.calls, /-T lares node \S+ vault unlock all=true[\s\S]*-T lares node \S+ wear 2 yes=true$/m);
   for (const env of [
     { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: KEY_HELD, FAKE_CENSUS_JSON: NONE_WORN_JSON },
     { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":false}}}' },
@@ -2224,7 +2224,7 @@ test(`${name}: kukulu-offer-path: pulama mode hands the vessel the offer file's 
     assert.doesNotMatch(r.calls, /LAR_WORN_FACE/);
     const worn = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: KEY_HELD, FAKE_CENSUS_JSON: WORN_JSON } });
     assert.equal(worn.status, 0, worn.stderr);
-    assert.doesNotMatch(worn.calls, / wear \d+(?: --yes)?$/m);
+    assert.doesNotMatch(worn.calls, / wear \d+(?: yes=true)?$/m);
   });
   test(`${name}: down-leaves-pulama-standing: with a pūlama running, down stops and removes the vessel alone`, { skip }, async () => {
   const r = await run(shim, ["down"], { envFile: PULAMA_ENV, env: { FAKE_PULAMA_ID: "p1" } });
@@ -2370,7 +2370,7 @@ test(`${name}: rebuild-lights-a-moved-closure-in-the-same-run: on a terminal, bu
   assert.equal(r.status, 0, r.stdout);
   const lines = r.calls.split("\n");
   const at = (re) => lines.findIndex((l) => re.test(l));
-  const build = at(/ build /), stop = at(/ stop lares$|down --remove-orphans/), lock = at(/pulama-main\.js lock$/), recreate = at(/up -d --force-recreate pulama/), light = at(/pulama-main\.js light --admit$/), up = at(/up -d --wait lares/), unlock = at(/ vault unlock all=true$/), wear = at(/ wear 2 --yes$/);
+  const build = at(/ build /), stop = at(/ stop lares$|down --remove-orphans/), lock = at(/pulama-main\.js lock$/), recreate = at(/up -d --force-recreate pulama/), light = at(/pulama-main\.js light --admit$/), up = at(/up -d --wait lares/), unlock = at(/ vault unlock all=true$/), wear = at(/ wear 2 yes=true$/);
   assert.ok(build >= 0 && stop > build && lock > stop && recreate > lock && light > recreate && up > light && unlock > up && wear > unlock, `order build, down, lock, recreate, light --admit, up, unlock, wear:\n${r.calls}`);
   assert.doesNotMatch(lines[light], / -T /, "the light reads the route on this terminal");
   // THE STRUCK FIRE ASKS THE PASSPHRASE ONCE: the light admitted the image, so no second admit reads a route.
@@ -2607,7 +2607,7 @@ test(`${name}: rebuild-keeps-a-lit-pulama-on-a-vessel-only-build: no restand, no
   const up = lines.findIndex((l) => /up -d --wait lares/.test(l));
   const admit = lines.findIndex((l) => /pulama-main\.js admit$/.test(l));
   const unlock = lines.findIndex((l) => / vault unlock all=true$/.test(l));
-  const wear = lines.findIndex((l) => / wear 2 --yes$/.test(l));
+  const wear = lines.findIndex((l) => / wear 2 yes=true$/.test(l));
   assert.ok(up >= 0 && admit > up && unlock > admit && wear > unlock, `order up, admit, unlock, wear:\n${r.calls}`);
   assert.doesNotMatch(lines[admit], / -T /, "the admit reads the route on this terminal");
   assert.match(lines[unlock], / -T /, "the vessel's unlock reads nothing");
@@ -2765,7 +2765,7 @@ test("sh: pulama-status-names-the-kukulu-reading: each row of the shared table r
       assert.equal(said[2], undefined, row.name);
       assert.doesNotMatch(r.calls, /lei show/, `${row.name}: a sync that stops reads no lei (a detached head names no branch)`);
     } else assert.equal(said[2], mine.slice(0, 19), `${row.name}: the line names the checkout's closure`);
-    if (f.lei !== null && f.vessel === "standing" && !stops) assert.match(r.calls, /exec -T lares node \S+ lei show rite=kukulu branch=\S+ --json/, row.name);
+    if (f.lei !== null && f.vessel === "standing" && !stops) assert.match(r.calls, /exec -T lares node \S+ lei show rite=kukulu branch=\S+ json=true/, row.name);
   }
   // No closure reads (a checkout with no pūlama entry): the line says so, and the status still answers.
   const bare = await run(SH, ["pulama", "status"], { envFile: PULAMA_ENV, checkout: "clean", env: { FAKE_PULAMA_ID: "p1" } });

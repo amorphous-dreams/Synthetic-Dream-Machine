@@ -68,7 +68,7 @@ export function confirmedRenames(deletions: Record<string, unknown> | undefined)
   return renamedSources(deletions);
 }
 
-/** The watcher's usage answers with the ingest door's lines, drawn from its carrier (`lares ingest --help` prints the same). */
+/** The watcher's usage answers with the ingest door's lines, drawn from its carrier (`lares help ingest` prints the same). */
 function printUsage(): void {
   for (const line of helpLines("ingest")) console.log(line);
 }

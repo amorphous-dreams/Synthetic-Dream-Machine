@@ -106,7 +106,7 @@ describe.skipIf(!stagedTarget)("smoke — the vessel stands", () => {
 describe.skipIf(!stagedTarget)("smoke — residency canon through the real CLI", () => {
   test("LOAD feeds the hearth carrier-borne: boot meme → parent + every ahu child", async () => {
     const working = "lar:///ha.ka.ba/wikis/lares/working";
-    const r = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, `to=${working}`, "yes=true", "--json"]);
+    const r = await lar.cli(["lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, `to=${working}`, "yes=true", "json=true"]);
     expect(r.json?.["ok"]).toBe(true);
     const data = r.json?.["data"] as { count: number; titles: string[] };
     // DERIVE FROM THE DESERIALIZER, never from a formula over the source. `1 + ahuCount` encoded a
@@ -120,7 +120,7 @@ describe.skipIf(!stagedTarget)("smoke — residency canon through the real CLI",
   });
 
   test("LOAD refuses a carrier-less gesture loudly (islands never fetch)", async () => {
-    const r = await lar.cli(["act", "lar:///carriage.bag.loads", "source-uri=https://example.org/nope", "to=lar:///ha.ka.ba/wikis/lares/working", "yes=true", "--json"]);
+    const r = await lar.cli(["lar:///carriage.bag.loads", "source-uri=https://example.org/nope", "to=lar:///ha.ka.ba/wikis/lares/working", "yes=true", "json=true"]);
     expect(r.json?.["ok"]).toBe(false);
     // The CLI's error rides a STRUCTURED envelope — `{ code, message, hint? }`. Stringifying the whole
     // object yields "[object Object]", which matches no assertion and names no cause.
@@ -129,7 +129,7 @@ describe.skipIf(!stagedTarget)("smoke — residency canon through the real CLI",
   });
 
   test("LOAD into canon names the working slot and its promotion MOVE", async () => {
-    const r = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, `to=${LARES_URI}`, "yes=true", "--json"]);
+    const r = await lar.cli(["lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, `to=${LARES_URI}`, "yes=true", "json=true"]);
     expect(r.json?.["ok"]).toBe(false);
     const err = r.json?.["error"] as { message?: string } | undefined;
     expect(err?.message).toMatch(/load-into-canon/);
@@ -138,13 +138,13 @@ describe.skipIf(!stagedTarget)("smoke — residency canon through the real CLI",
   });
 
   test("wiki init + add-bag compose the user registry", async () => {
-    const g = await lar.cli(["wiki", "init", "garden", "--json"]);
+    const g = await lar.cli(["wiki", "init", "garden", "json=true"]);
     expect(g.json?.["ok"]).toBe(true);
     expect((g.json?.["data"] as { recipeUri?: string })?.recipeUri).toMatch(/recipes\/garden/);
-    const v = await lar.cli(["wiki", "init", "grove", "--json"]);
+    const v = await lar.cli(["wiki", "init", "grove", "json=true"]);
     expect(v.json?.["ok"]).toBe(true);
 
-    const a = await lar.cli(["wiki", "add-bag", "garden", "lar:///ha.ka.ba/bags/grove", "--json"]);
+    const a = await lar.cli(["wiki", "add-bag", "garden", "lar:///ha.ka.ba/bags/grove", "json=true"]);
     expect(a.json?.["ok"]).toBe(true);
     const data = a.json?.["data"] as { status?: string; stack?: string[] };
     expect(data?.status).toBe("added");
@@ -160,7 +160,7 @@ describe.skipIf(!stagedTarget)("smoke — residency canon through the real CLI",
 
 describe("smoke — any target (live-safe reads)", () => {
   test("lares vessel read answers from the targeted instance", async () => {
-    const r = await lar.cli(["vessel", "read", "--json"]);
+    const r = await lar.cli(["vessel", "read", "json=true"]);
     // A read of local instance health; ok on both modes, and the gesture
     // mutates nothing — the one assertion a LIVE hearth always tolerates.
     expect(r.code).toBe(0);
