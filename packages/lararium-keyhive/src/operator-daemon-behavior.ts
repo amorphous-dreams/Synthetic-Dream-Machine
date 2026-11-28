@@ -343,7 +343,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     for (const r of floor.refusals) {
       console.warn(`[daemon] ${who}${r.carrier} archive export REFUSED: ${r.message}`);
       try {
-        await fileWardRefusal(ctx.composite, controlOf(ctx), ctx.post, {
+        await fileWardRefusal(ctx.composite, ctx.post, {
           bagId:    DAEMON_BAG_ID,
           uri:      `lar:///ha.ka.ba/identity/${r.carrier}-archive`,
           reason:   face ? `${who}${r.message}` : r.message,
@@ -1729,7 +1729,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
 
       // Disk-ward refusals (wiki-island projector → worker.event bridge) — audit
       // in the daemon bag + $:/tags/Alert into the operator's pinned VM.
-      registry.register("ward-alert", makeWardAlertReactor(ctx.composite, controlOf(ctx), ctx.post));
+      registry.register("ward-alert", makeWardAlertReactor(ctx.composite, ctx.post));
 
       // ── THE SEALED STORE'S VERBS (sealed-store#/the-store) ───────────────────────────────────────────────
       // The content-key holder lives in this island, so every act that needs a content key runs here. No verb

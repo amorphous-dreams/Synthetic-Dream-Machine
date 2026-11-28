@@ -107,14 +107,14 @@ describe("seal refusals reach the face-wiki alert", () => {
     expect(loop, `the refusal-surfacing loop stands (anchor: ${ANCHOR})`).not.toBeNull();
     // NOT ONLY A WARN. stdout may stay — an operator at a terminal should see it — but the refusal
     // must ALSO reach the ward alert rail.
-    expect(loop!, "the refusal rides Rail A, not stdout alone").toMatch(/fileWardRefusal\(ctx\.composite, controlOf\(ctx\), ctx\.post,/);
+    expect(loop!, "the refusal rides Rail A, not stdout alone").toMatch(/fileWardRefusal\(ctx\.composite, ctx\.post,/);
     expect(loop!, "and it names the seal, not the disk ward").toMatch(/wardKind:\s*"archive-seal"/);
     // AND THE CALL IS THE LOOP'S OWN, not a dead sibling the old window reached: exactly one such
     // call stands in the whole file, so it cannot be both inside the loop and duplicated outside it.
-    expect([...src.matchAll(/fileWardRefusal\(ctx\.composite, controlOf\(ctx\), ctx\.post,[\s\S]{0,300}?wardKind:\s*"archive-seal"/g)].length,
+    expect([...src.matchAll(/fileWardRefusal\(ctx\.composite, ctx\.post,[\s\S]{0,300}?wardKind:\s*"archive-seal"/g)].length,
       "exactly one archive-seal refusal call stands — a second would let one of them go dead unnoticed").toBe(1);
     // ONE BODY, TWO DOORS — the same act the registered "ward-alert" verb performs, never a second rail.
-    expect(src).toMatch(/registry\.register\("ward-alert", makeWardAlertReactor\(ctx\.composite, controlOf\(ctx\), ctx\.post\)\)/);
+    expect(src).toMatch(/registry\.register\("ward-alert", makeWardAlertReactor\(ctx\.composite, ctx\.post\)\)/);
   });
 });
 
@@ -123,7 +123,7 @@ async function react(
   composite: CompositeStore,
   post: (m: DaemonMsg_WikiAlert) => void,
 ): Promise<Record<string, unknown>> {
-  const reactor = makeWardAlertReactor(composite, controlFor(composite), post);
+  const reactor = makeWardAlertReactor(composite, post);
   return (await reactor({
     bagId:    DAEMON_BAG_ID,
     uri:      "lar:///ha.ka.ba/identity/keyhive-archive.bin",

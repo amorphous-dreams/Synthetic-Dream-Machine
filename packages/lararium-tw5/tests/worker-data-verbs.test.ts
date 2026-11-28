@@ -82,7 +82,7 @@ describe("disk ward alert route", () => {
   test("a refusal with no home wiki names the missing audience and writes no control row", async () => {
     const composite = new CompositeStore();
     const control = memoryControlStore();
-    const result = await fileWardRefusal(composite, control, () => {}, { bagId: CANON, uri: "lar:///ward/test", reason: "test" });
+    const result = await fileWardRefusal(composite, () => {}, { bagId: CANON, uri: "lar:///ward/test", reason: "test" });
     expect(result).toEqual({ alerted: "none", bagId: CANON, uri: "lar:///ward/test" });
     expect(await control.listVisible()).toEqual([]);
   });

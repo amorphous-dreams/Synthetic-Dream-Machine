@@ -236,10 +236,9 @@ const activeWardStandoffs = new WeakMap<CompositeStore, Set<string>>();
 /** Register as "ward-alert". `post` = ctx.post (DaemonMsg_WikiAlert rides it). */
 export function makeWardAlertReactor(
   composite: CompositeStore,
-  control: CompositeStore,
   post: (msg: DaemonMsg_WikiAlert) => void,
 ): VerbReactor {
-  return async (args) => fileWardRefusal(composite, control, post, args);
+  return async (args) => fileWardRefusal(composite, post, args);
 }
 
 /**
@@ -252,8 +251,6 @@ export function makeWardAlertReactor(
  */
 export async function fileWardRefusal(
   composite: CompositeStore,
-  /** The control store remains in the call signature for callers sharing this rail. */
-  _control: CompositeStore,
   post: (msg: DaemonMsg_WikiAlert) => void,
   args: Readonly<Record<string, unknown>>,
 ): Promise<Record<string, unknown>> {

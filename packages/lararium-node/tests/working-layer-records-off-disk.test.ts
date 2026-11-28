@@ -43,7 +43,7 @@ describe("daemon control records never reach the working layer's disk mirror", (
     control.addLayer({ bagId: CONTROL_HOME_ID, store: controlBag, writable: true, defaultWritable: true });
     const origin = { kind: "test" } as const;
     await control.put(buildReceiptFact({ requestId: "r1", state: "committed", seq: 0, inputDigest: "d" }), origin);
-    await fileWardRefusal(composite, control, () => {}, { bagId: "mirror", uri: "lar:///ward/x", reason: "refused" });
+    await fileWardRefusal(composite, () => {}, { bagId: "mirror", uri: "lar:///ward/x", reason: "refused" });
     await composite.put({ tiddler: { title: "lar:///ha.ka.ba/t/daemon/ordinary", text: "an ordinary note" } }, origin);
 
     const controlTitles = await controlBag.listVisible();

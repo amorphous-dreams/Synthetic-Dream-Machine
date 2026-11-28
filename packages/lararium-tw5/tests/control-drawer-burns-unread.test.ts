@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
-import { CONTROL_HOME_ID, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { VESSEL_STATE_HOME } from "@lararium/mesh/vessel-state";
 import { faceAtomPublicKey, signAsFaceAtom } from "@lararium/mesh/face-atom";
 import { realmFeedAskImage, signFaceLeafBond } from "@lararium/mesh/face-leaf-bond";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
@@ -9,14 +10,13 @@ import { makeRealmFeedReactor } from "../src/cabal-realm-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 
 test("standoffs and realm feeds leave no unread ledger titles", async () => {
-  const store = new MemoryTiddlerStore(CONTROL_HOME_ID);
-  const control = new CompositeStore();
-  control.addLayer({ bagId: CONTROL_HOME_ID, store, writable: true, defaultWritable: true });
+  // The realm feed's slots rest in the vessel's fixed-title state; the ward takes no store of its own.
+  const store = new MemoryTiddlerStore(VESSEL_STATE_HOME);
   const daemon = new CompositeStore();
   daemon.addLayer({ bagId: DAEMON_BAG_ID, store: new MemoryTiddlerStore(DAEMON_BAG_ID), writable: true });
   await daemon.put({ tiddler: { title: HOME_WIKI_TITLE, text: "[[home]]" } }, { kind: "lares-verb", requestId: "home" });
   const alerts: unknown[] = [];
-  const ward = makeWardAlertReactor(daemon, control, (msg) => alerts.push(msg));
+  const ward = makeWardAlertReactor(daemon, (msg) => alerts.push(msg));
   const refusal = { bagId: "mirror", uri: "lar:///probe", reason: "conflict", standoff: "aaaa1111aaaa1111" };
   await ward(refusal);
   await ward(refusal);

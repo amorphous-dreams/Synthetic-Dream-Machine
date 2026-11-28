@@ -25,7 +25,7 @@ describe("the ward rail keys a standoff", () => {
     const composite = await daemon();
     const control = memoryControlStore();
     const posted: DaemonMsg_WikiAlert[] = [];
-    const react = makeWardAlertReactor(composite, control, (m) => posted.push(m));
+    const react = makeWardAlertReactor(composite, (m) => posted.push(m));
     for (let i = 0; i < 10; i++) await react(conflict("aaaa1111aaaa1111"));
     expect(await rows(control)).toEqual([]);
     expect(posted).toHaveLength(1);
@@ -42,7 +42,7 @@ describe("the ward rail keys a standoff", () => {
     const composite = await daemon();
     const control = memoryControlStore();
     const posted: DaemonMsg_WikiAlert[] = [];
-    const react = makeWardAlertReactor(composite, control, (m) => posted.push(m));
+    const react = makeWardAlertReactor(composite, (m) => posted.push(m));
     await react(conflict("cccc3333cccc3333"));
     const before = await rows(control);
     await react({ ...conflict("cccc3333cccc3333"), resolved: true });
@@ -57,7 +57,7 @@ describe("the ward rail keys a standoff", () => {
     const composite = await daemon();
     const control = memoryControlStore();
     const posted: Array<Record<string, unknown>> = [];
-    await fileWardRefusal(composite, control, (m) => posted.push(m as unknown as Record<string, unknown>), { ...conflict("dddd4444dddd4444"), wardKind: "standoff-collapsed", auditOnly: true, rule: "slot-disjoint", reason: "slot-disjoint collapsed the stand-off" });
+    await fileWardRefusal(composite, (m) => posted.push(m as unknown as Record<string, unknown>), { ...conflict("dddd4444dddd4444"), wardKind: "standoff-collapsed", auditOnly: true, rule: "slot-disjoint", reason: "slot-disjoint collapsed the stand-off" });
     expect(posted, "nothing awaits anyone").toEqual([]);
     expect(await rows(control)).toEqual([]);
   });
@@ -66,7 +66,7 @@ describe("the ward rail keys a standoff", () => {
     const composite = await daemon();
     const control = memoryControlStore();
     const posted: DaemonMsg_WikiAlert[] = [];
-    const react = makeWardAlertReactor(composite, control, (m) => posted.push(m));
+    const react = makeWardAlertReactor(composite, (m) => posted.push(m));
     for (let i = 0; i < 3; i++) await react({ bagId: "lares", uri: "lar:///x", reason: "escapes the mirror root" });
     expect(await rows(control)).toEqual([]);
     expect(posted).toHaveLength(3);
