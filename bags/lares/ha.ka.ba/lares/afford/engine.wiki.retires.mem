@@ -1,0 +1,125 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.wiki.retires`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "unmint a wiki shell the worn face minted, a person's hand alone"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.wiki.retires", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.wiki.retires"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.wiki.retires"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.wiki.retires ~ the owner face's unmint; the record of leaving stays
+
+`lares wiki retire <slug>` rides a session of the worn face (or `--face N`) opened by the cli hand, so a seat session refuses. The shell's catalog rows, its workbench's ledger rows and its slot and Keyhive bindings leave; its workbench folder steps aside by rename; the slug's realm label forgets the realm id; the canon bag and its files stay. Its effect records travel verbatim into one retirement record in the face's daemon wiki working layer before anything erases. `--dry-run` reads the counts and writes nothing; a shell holding authored records refuses `wiki-not-empty` unless `--force --count <records>` names that very count. A run that died midway finishes on a second run.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ dry · force
+
+```memetic-wikitext
+<<has entity=`example` name=`dry` params=`slug/works dry-run/true ~ read what would leave`>>
+<<has entity=`example` name=`force` params=`slug/works force/true count/12 ~ retire a shell holding twelve authored records`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ slug · face · dry-run · force · count
+
+```memetic-wikitext
+<<has entity=`arg` name=`slug` params=`takes/slug needs/required seat/1 as/<slug> ~ the wiki slug`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ the owner face, by persona index; absent, the worn face`>>
+<<has entity=`arg` name=`dry-run` params=`~ read the counts and write nothing`>>
+<<has entity=`arg` name=`force` params=`needs/all-of:force,count ~ retire a shell holding authored records`>>
+<<has entity=`arg` name=`count` params=`takes/count needs/all-of:force,count ~ the authored record count the dry run read`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand ~ a session of the owner face the cli hand opens; a seat session refuses at the socket`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · face-malformed · retire-needs-hand · no-face · system-bag · wiki-face-private · no-such-wiki · not-the-owner · wiki-shared · wiki-not-empty · retire-count-missing · retire-count-moved · retire-carry-unlanded · waking-floor · content-mounted-only · face-not-open · workbench-slug-bound
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.wiki.retires slug/works dry-run/true]] ~ name the slug`>>
+<<has entity=`refusal` name=`face-malformed` params=`~ --face names a persona index`>>
+<<has entity=`refusal` name=`retire-needs-hand` params=`~ a seat session reached the retire; a person runs it`>>
+<<has entity=`refusal` name=`no-face` params=`~ no face stands worn`>>
+<<has entity=`refusal` name=`system-bag` params=`~ the slug names a house system bag`>>
+<<has entity=`refusal` name=`wiki-face-private` params=`~ the daemon wiki never retires`>>
+<<has entity=`refusal` name=`no-such-wiki` params=`~ the vessel binds no wiki to the slug; the local half still runs`>>
+<<has entity=`refusal` name=`not-the-owner` params=`~ another face owns the shell`>>
+<<has entity=`refusal` name=`wiki-shared` params=`~ the wiki stands shared; remove the shares first`>>
+<<has entity=`refusal` name=`wiki-not-empty` params=`cure/[[engine.wiki.retires slug/works dry-run/true]] ~ the shell holds authored records; read the count, then --force --count`>>
+<<has entity=`refusal` name=`retire-count-missing` params=`~ --force rode with no --count`>>
+<<has entity=`refusal` name=`retire-count-moved` params=`cure/[[engine.wiki.retires slug/works dry-run/true]] ~ the count moved since the dry run`>>
+<<has entity=`refusal` name=`retire-carry-unlanded` params=`~ the retirement record could not land; nothing erased`>>
+<<has entity=`refusal` name=`waking-floor` params=`~ the vessel still wakes`>>
+<<has entity=`refusal` name=`content-mounted-only` params=`~ the shell stands mounted for content alone`>>
+<<has entity=`refusal` name=`face-not-open` params=`~ the owner face stands shut`>>
+<<has entity=`refusal` name=`workbench-slug-bound` params=`~ another workbench binds the slug`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ retired · dry
+
+```memetic-wikitext
+<<has entity=`band` name=`retired` params=`exit/0 ~ the shell left; the answer names where the retirement record landed`>>
+<<has entity=`band` name=`dry` params=`exit/0 ~ the counts, nothing written`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares wiki retire
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares wiki retire]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cabal-realm
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;39Q3OqQHraxVSm9B48ohTfwOMQH5NagpFCPJyN7Dzqw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

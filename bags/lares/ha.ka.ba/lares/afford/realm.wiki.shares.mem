@@ -1,0 +1,117 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.wiki.shares`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "share a wiki with sibling faces through a private cabal"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.wiki.shares", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.wiki.shares"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.wiki.shares"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.wiki.shares ~ one shared workbench every member face syncs
+
+`lares wiki share <wiki>` writes the slug's share row: its canon by reference and its working layer as one shared workbench every member face syncs, through a private cabal realm the landing founds once. A line names its delta: `--read` and `--write` add names, `--read-remove` and `--write-remove` take names out (revoking each taken-out face's landed grant), and what the line leaves unnamed stands. `--workspace <name>` rests the workbench's mirror in an operator-configured directory; `--list` shows the resolved answer; `--remove` unshares. The row writes through to `config/share.tid` and, with a vessel standing, the control document; the daemon wiki never shares.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ share · list · unshare
+
+```memetic-wikitext
+<<has entity=`example` name=`share` params=`wiki/works read/[[ana bo]] note/[[the garden crew]] ~ two faces read the wiki`>>
+<<has entity=`example` name=`list` params=`list/true ~ every row and its resolved answer`>>
+<<has entity=`example` name=`unshare` params=`wiki/works remove/true ~ the row leaves`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ wiki · read · write · read-remove · write-remove · note · face · workspace · list · remove
+
+```memetic-wikitext
+<<has entity=`arg` name=`wiki` params=`takes/slug seat/1 as/<wiki> ~ the wiki the row names`>>
+<<has entity=`arg` name=`read` params=`takes/names ~ face pet-names added to the readers`>>
+<<has entity=`arg` name=`write` params=`takes/names ~ face pet-names added to the writers`>>
+<<has entity=`arg` name=`read-remove` params=`takes/names ~ face pet-names taken out of the readers`>>
+<<has entity=`arg` name=`write-remove` params=`takes/names ~ face pet-names taken out of the writers`>>
+<<has entity=`arg` name=`note` params=`takes/words ~ why the row stands`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ add face N to the readers, by its handle index`>>
+<<has entity=`arg` name=`workspace` params=`takes/name ~ the operator-configured directory the workbench mirror rests in`>>
+<<has entity=`arg` name=`list` params=`~ show every row and the resolver's answer`>>
+<<has entity=`arg` name=`remove` params=`~ unshare: the row leaves the file and the control document`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand ~ a share lands a grant from the owner's hive; a person runs the landing at their own terminal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ share-kind-standing · share-face-private · share-filter-unsupported
+
+```memetic-wikitext
+<<has entity=`refusal` name=`share-kind-standing` params=`~ a bag row stands for the slug; unshare it through lares bag share first`>>
+<<has entity=`refusal` name=`share-face-private` params=`~ the daemon wiki never shares`>>
+<<has entity=`refusal` name=`share-filter-unsupported` params=`~ an hN token names no face carrying a pet-name here`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ shared
+
+```memetic-wikitext
+<<has entity=`band` name=`shared` params=`exit/0 ~ the resolved row echoes`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares wiki share
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares wiki share]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cabal-realm · sealed-store
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zDSiz9wJ7je9wiRbXpfZGvNxQibbYhmowCJ_A1-Tj0k`>>
+
+<<^ code=`&#x0004;` to=`?`>>

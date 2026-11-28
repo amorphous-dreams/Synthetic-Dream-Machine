@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.recipe.drops`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "remove a bag from a wiki's recipe, a soft remove"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.recipe.drops", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.recipe.drops"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.recipe.drops"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.recipe.drops ~ a layer leaves the recipe
+
+`lares wiki remove-bag <slug> <bag-uri>` asks the daemon to remove the bag from the wiki's recipe (a soft remove; the bag itself stays) and names the stack after.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ remove
+
+```memetic-wikitext
+<<has entity=`example` name=`remove` params=`slug/works bag-uri/lar:///ha.ka.ba/bags/notes ~ remove a bag from the recipe`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ slug · bag-uri
+
+```memetic-wikitext
+<<has entity=`arg` name=`slug` params=`takes/slug needs/required seat/1 as/<slug> ~ the wiki slug`>>
+<<has entity=`arg` name=`bag-uri` params=`takes/uri needs/required seat/2 as/<bag-uri> ~ the bag's uri`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ vessel
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`vessel` params=`who/seat-or-hand ~ the daemon verb runs under the vessel's own did; this handler checks no ocap of its own`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · daemon-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.recipe.drops slug/works bag-uri/lar:///ha.ka.ba/bags/notes]] ~ name the slug and the bag`>>
+<<has entity=`refusal` name=`daemon-refused` params=`~ the daemon's remove-bag verb refused; its message rides the line, exit 4`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ removed
+
+```memetic-wikitext
+<<has entity=`band` name=`removed` params=`exit/0 fields/[[stack]] ~ the recipe's stack after the remove`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares wiki remove-bag
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares wiki remove-bag]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cabal-realm
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oxqmBA_Hax7IVaSgMx3t7j0nWO6uI2mRU_RBgX2CyKw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

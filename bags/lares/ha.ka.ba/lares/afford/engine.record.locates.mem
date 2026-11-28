@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.record.locates`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "list the bags holding one tiddler and the primary among them"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.record.locates", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.record.locates"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.record.locates"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.record.locates ~ recipe presence: which bags hold a title
+
+`lares wiki which <tiddler-uri>` asks the daemon's where verb which bags hold the tiddler and which one stands primary. A title no bag holds exits 5. Needs a standing vessel.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ which
+
+```memetic-wikitext
+<<has entity=`example` name=`which` params=`tiddler-uri/lar:///ha.ka.ba/lares/api/pono/affordance ~ the bags holding a title`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ tiddler-uri
+
+```memetic-wikitext
+<<has entity=`arg` name=`tiddler-uri` params=`takes/title needs/required seat/1 as/<tiddler-uri> ~ the tiddler's title`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ vessel
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`vessel` params=`who/seat-or-hand ~ the daemon verb runs under the vessel's own did; this handler checks no ocap of its own`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · daemon-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.record.locates tiddler-uri/lar:///ha.ka.ba/lares/api/pono/affordance]] ~ name the tiddler`>>
+<<has entity=`refusal` name=`daemon-refused` params=`~ the daemon's where verb refused; its message rides the line, exit 4`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ found · absent
+
+```memetic-wikitext
+<<has entity=`band` name=`found` params=`exit/0 fields/[[bags primaryBag]] ~ the bags and the primary`>>
+<<has entity=`band` name=`absent` params=`exit/5 ~ no bag holds the title`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares wiki which
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares wiki which]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cabal-realm
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kzk1WQV4d0F7Z9fFl9s19b7RaJjMI-sQOKw4Nxf-s48`>>
+
+<<^ code=`&#x0004;` to=`?`>>
