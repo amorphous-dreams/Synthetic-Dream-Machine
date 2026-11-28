@@ -1,0 +1,103 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/library.collection.shows`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "show one collection's bodies with their anchors and origins"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///library.collection.shows", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/library.collection.shows"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/library.collection.shows"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! library.collection.shows ~ one collection, body by body
+
+`lares library show <collection>` names each body of one collection: its real filename, size, media type, integrity anchor and recorded origin (an unrecorded origin says so out loud). The collection name reads lowercased; a name the shelf holds no directory for refuses.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ one-collection
+
+```memetic-wikitext
+<<has entity=`example` name=`one-collection` params=`collection/mark-twain ~ the bodies of one collection`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ collection
+
+```memetic-wikitext
+<<has entity=`arg` name=`collection` params=`takes/name needs/required seat/1 as/<collection> ~ the collection, lowercased`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ reads this host's own library home; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[library.shelf.lists]] ~ no collection named, or none of that name on this shelf; list the shelf`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ shown
+
+```memetic-wikitext
+<<has entity=`band` name=`shown` params=`exit/0 fields/[[collection ref dir entries]] ~ the collection's bodies and the directory that holds them`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares library show
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares library show]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · content-resolution
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9kVzY6Tq_iZqmU89ZbkFw4w7K8wIdemLuzqBvRnDLWQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

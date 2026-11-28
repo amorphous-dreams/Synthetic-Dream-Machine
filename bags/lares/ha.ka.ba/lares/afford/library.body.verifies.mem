@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/library.body.verifies`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "re-digest each body's bytes against the directory naming it"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///library.body.verifies", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/library.body.verifies"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/library.body.verifies"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! library.body.verifies ~ each body's bytes against the digest its directory names
+
+`lares library verify [<collection>]` re-digests every body (one collection, or the whole shelf) and compares it with the cid its directory names. Any body that fails answers exit 1 with each failure named.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ whole-shelf · one-collection
+
+```memetic-wikitext
+<<has entity=`example` name=`whole-shelf` params=`~ verify every collection`>>
+<<has entity=`example` name=`one-collection` params=`collection/mark-twain ~ verify one collection`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ collection
+
+```memetic-wikitext
+<<has entity=`arg` name=`collection` params=`takes/name seat/1 as/<collection> ~ one collection; absent, the whole shelf`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ reads this host's own library home; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`error` params=`cure/[[library.body.verifies]] ~ a body's bytes digest otherwise than its directory names; each failure rides the answer`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ verified · failed
+
+```memetic-wikitext
+<<has entity=`band` name=`verified` params=`exit/0 fields/[[checked failed verdicts]] ~ every body digests to the directory that holds it`>>
+<<has entity=`band` name=`failed` params=`exit/1 fields/[[checked failed verdicts]] ~ one or more bodies failed; verdicts names each`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares library verify
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares library verify]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · content-resolution
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gm8Grzijakeg-koKrXDsMmfsTSFpEPzbiD_tYOmFNFI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

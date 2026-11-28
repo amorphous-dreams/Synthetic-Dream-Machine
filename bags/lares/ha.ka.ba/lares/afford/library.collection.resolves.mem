@@ -1,0 +1,103 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/library.collection.resolves`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "resolve a library reference to the directory that holds it"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///library.collection.resolves", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/library.collection.resolves"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/library.collection.resolves"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! library.collection.resolves ~ a reference names; this verb paths it for a caller
+
+`lares library path <collection>` resolves `library:<collection>` to its directory under the library home, for a caller that needs a path. A reference names, it never paths: `library:mark-twain` travels, a directory does not.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ path
+
+```memetic-wikitext
+<<has entity=`example` name=`path` params=`collection/mark-twain ~ print the directory of one collection`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ collection
+
+```memetic-wikitext
+<<has entity=`arg` name=`collection` params=`takes/name needs/required seat/1 as/<collection> ~ the collection`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ reads this host's own library home; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[library.collection.resolves collection/mark-twain]] ~ no collection named`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ resolved
+
+```memetic-wikitext
+<<has entity=`band` name=`resolved` params=`exit/0 fields/[[ref dir]] ~ the reference and its directory`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares library path
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares library path]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · content-resolution
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bC-u4ur1rhSRB2sUyJkiG3beJx5k-2fkPLJI36KIBN8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,111 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/library.body.acquires`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "take a body onto the shelf, moving it by default, --keep to copy"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///library.body.acquires", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/library.body.acquires"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/library.body.acquires"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! library.body.acquires ~ a body a human did not author comes onto the shelf
+
+`lares library acquire <file> --to <collection>` digests the file and lands it at `<library>/<collection>/<cid>/<the real filename>`, recording its entry in the collection's index slot. It moves the source by default, since moving keeps the body off every tracked tree; `--keep` copies. `--origin`, `--licence` (or `--license`) and `--note` ride the entry. The same bytes already on the shelf answer held.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ acquire · keep
+
+```memetic-wikitext
+<<has entity=`example` name=`acquire` params=`file/book.epub to/mark-twain origin/https://example.org/book licence/public-domain ~ move a body onto the shelf with its provenance`>>
+<<has entity=`example` name=`keep` params=`file/book.epub to/mark-twain keep/true ~ copy, and leave the source where it stood`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ file · to · origin · licence · license · note · keep
+
+```memetic-wikitext
+<<has entity=`arg` name=`file` params=`takes/host-path needs/required seat/1 as/<file> ~ the file to acquire`>>
+<<has entity=`arg` name=`to` params=`takes/name needs/required ~ the collection it joins`>>
+<<has entity=`arg` name=`origin` params=`takes/words ~ where the body came from`>>
+<<has entity=`arg` name=`licence` params=`takes/words ~ the licence it travels under`>>
+<<has entity=`arg` name=`license` params=`takes/words ~ the same licence, the other spelling`>>
+<<has entity=`arg` name=`note` params=`takes/words ~ a note on the entry`>>
+<<has entity=`arg` name=`keep` params=`~ copy the body and leave the source standing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/hand ~ moves a host file into this host's own library home; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[library.body.acquires file/book.epub to/mark-twain]] ~ no file, no --to, or no such file on the host`>>
+<<has entity=`refusal` name=`error` params=`~ the shelf could not take the body; the message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ acquired
+
+```memetic-wikitext
+<<has entity=`band` name=`acquired` params=`exit/0 fields/[[held moved path meta]] ~ the body stands on the shelf; held where the same bytes already stood`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares library acquire
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares library acquire]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · content-resolution
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8cFobgqIH87mpjIhaRt7Se5FHoCgCGILgGj8sCyA0cU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,104 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/library.index.writes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "write a collection's tracked index, the part that travels"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///library.index.writes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/library.index.writes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/library.index.writes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! library.index.writes ~ the index travels; the bodies stay off every tracked tree
+
+`lares library index <collection> --out <path>` writes the collection's index (one `#/<cid>` slot per entry, origin and licence beside it) to a path the operator tracks. The bodies never move.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ index
+
+```memetic-wikitext
+<<has entity=`example` name=`index` params=`collection/mark-twain out/library/mark-twain.mem ~ write the tracked index of one collection`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ collection · out
+
+```memetic-wikitext
+<<has entity=`arg` name=`collection` params=`takes/name needs/required seat/1 as/<collection> ~ the collection`>>
+<<has entity=`arg` name=`out` params=`takes/host-path needs/required ~ where the index lands`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/hand ~ writes a host path; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[library.index.writes collection/mark-twain out/library/mark-twain.mem]] ~ no collection named, or no --out`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ written
+
+```memetic-wikitext
+<<has entity=`band` name=`written` params=`exit/0 fields/[[collection path entries]] ~ the index landed at path`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares library index
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares library index]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · content-resolution
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Fkt82TsEDiD-IJ_P97IYJaornHeGS2c-e2iXycV585I`>>
+
+<<^ code=`&#x0004;` to=`?`>>
