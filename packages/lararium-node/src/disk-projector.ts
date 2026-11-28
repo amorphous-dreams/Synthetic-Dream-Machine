@@ -1172,6 +1172,11 @@ export class LarDiskProjector {
     // marks it stale-on-disk, and only a deliberate REPACK re-renders it. The guard
     // rides FIRST so it also holds the gone-branch (a vanished member never owns a
     // file to unlink — its home is the pack).
+    // THE RECOVERY PASS OWNS ITS OWN STANDOFFS: a recovery mirror that flushed its bag's record here weighed the file against
+    // that record, so the resolved view's pass below spares it. Left to that pass, a carrier the view projects nowhere (a draft
+    // whose bag only a recovery mirror holds) would step aside every standoff the recovery flush just entered, mark the carrier
+    // for another reading, and the next reading would re-seat and step it aside again: a reconcile loop the gate never rests from.
+    const recovered = new Set<string>();
     for (const mirror of this.mirrors) {
       if (mirror.mirrorClass !== "recovery") continue;
       // A recovery-class mirror reads its bag's own store, ahead of the view's volatile bar below: the namespace bar
@@ -1183,11 +1188,13 @@ export class LarDiskProjector {
         const record = await store.get(rootUri);
         if (record && !record.meta?.deleted) {
           await this.flush(mirror.bagId, rootUri, record.tiddler);
+          recovered.add(mirror.bagId);
         } else {
           await this._scheduleUnlinkByTitle(rootUri, mirror.bagId);
         }
       } else if (!this.recoveryStore && (await this.bagsHolding?.(rootUri))?.includes(mirror.bagId)) {
         await this.flush(mirror.bagId, rootUri);
+        recovered.add(mirror.bagId);
       }
     }
     if (this.isPackMember(rootUri)) return;
@@ -1200,7 +1207,7 @@ export class LarDiskProjector {
     // THE SHADOWED OWN RECORDS: each ordinary mirror whose bag holds a live record of this root the view does not show
     // from that bag projects that record, rendered off its own fields.
     const shadowed = await this.shadowedOwnRecords(rootUri, winner);
-    const keep = new Set<string>(shadowed);
+    const keep = new Set<string>([...shadowed, ...recovered]);
     if (winner !== undefined) keep.add(winner);
     if (!tiddler) {
       // The resolved view holds no such carrier: nothing stands to write back, so no removal stays pending.
