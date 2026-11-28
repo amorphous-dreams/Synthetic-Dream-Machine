@@ -41,7 +41,7 @@ describe.skipIf(coreBlobSkip)("a vanished file stands as a pending removal", () 
     expect(pendingNow()).toEqual([{ bagId: RIG_BAG, uri }]);
     expect(rig.pendings).toHaveLength(1);
     expect(rig.pendings[0]).toMatchObject({ bagId: RIG_BAG, count: 1, uris: [uri] });
-    expect(rig.conflicts).toEqual([]);
+    expect(rig.captures).toEqual([]);
     // The base stays: the agreement the file left still names what it held.
     expect(rig.tree.base(syncedTreeKey(RIG_BAG, uri))).not.toBeNull();
   });

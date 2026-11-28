@@ -1868,24 +1868,21 @@ run_wikis() {
   clear_all
 }
 
-# ── ⑤ CONFLICT SURFACING IN BOTH LEGS ───────────────────────────────────────────────────────────
-# BOTH GATES ARE BUILT. `ingest-gate.ts` decides the disk→records leg — "a conflict SURFACES rather
-# than one stream drowning another (Unison's law: surface, never overwrite)" — and `projection-gate.ts`
-# mirrors it for records→disk, its own header naming the ruling: "BOTH legs of the round trip now
-# reconcile, neither overwrites".
+# ── ⑤ BOTH HANDS MOVE ONE CARRIER: THE FILE GOES TO CAPTURE ─────────────────────────────────────
+# `ingest-gate.ts` decides the disk→records leg; `projection-gate.ts` asks the records→disk leg one
+# question before a write: did a hand move the file since the projector last wrote it or last saw it
+# captured? Where it did, the projector writes nothing over it and hands it to the island's capture
+# door (`disk-capture.ts`). Where the records moved too, the file's words stand as parallel drafts
+# (`Draft of '<title>' by disk/<hash>`) beside the records, the base moves to the file's bytes, and the
+# next reading renders what the records say. The CRDT merges; no wave waits for a hand.
 #
-# ⚠ WHAT IS UNWALKED IS THE RAIL, NOT THE GATE. The verdict is one thing; an operator SEEING it is
-# another, and the rail crosses three hops no unit test spans — `onRefusal` posts an `IslandMsg_Event`,
-# the admin VM's `makeWardAlertReactor` writes a durable audit to the daemon working layer and posts a
-# `$:/tags/Alert` tiddler. The record title starts `lar:///ha.ka.ba/bags/daemon/ledger/ward/`;
-# its title does not choose its storage layer. That is the
-# red: a conflict that decides correctly and tells nobody is the failure this scenario exists to catch.
+# What this scenario walks: the capture fires, the disk hand's words reach the house as a draft before
+# any render writes over them, and a cold boot captures nothing across the hand-authored carriers.
 #
-# THE GREPPABLE HANDLES: `[disk-ward] write refused` · `projection conflict —` · `disk-ward:refused`
-# · `$:/temp/lares/alert/disk-ward` · the ledger prefix above.
+# THE GREPPABLE HANDLES: `[capture] <uri>` · `parallel draft(s): Draft of '<uri>' by disk/`.
 # COVERS: private/seed/unfed
 run_conflict() {
-  say "CONFLICT — both hands move one carrier, nothing is overwritten, and the operator is told"
+  say "CAPTURE — both hands move one carrier, and the disk hand's words reach the house as a draft before any render writes"
   clear_all
   local LARES="node packages/lares-cli/dist/src/bin/lares.js"
   local URI="lar:///t.conflict.witness/one"
@@ -1895,17 +1892,17 @@ run_conflict() {
      && up_and_answering lararium-a; then ok
   else bad "no lararium answering"; dump_boot_failure lararium-a; clear_all; return; fi
 
-  # NEGATIVE ⑤d — NO CONFLICT AT FIRST BOOT. The tree carries 701 hand-authored `.mem` carriers under
+  # NEGATIVE ⑤d — NO CAPTURE AT FIRST BOOT. The tree carries 701 hand-authored `.mem` carriers under
   # `bags/` (measured: `find bags -name "*.mem" | wc -l` → 701; 600 of them under the three literally
-  # granted bags). A projector that fired a conflict on any of them at a cold boot would bury the one
-  # real standoff in noise, and an operator trained to ignore the rail is the same as no rail.
-  step "NEG d — a cold boot surfaces NO conflict across the hand-authored carriers"
+  # granted bags). A projector that read any of them as moved at a cold boot would mint drafts no hand
+  # wrote and bury the one real capture in noise.
+  step "NEG d — a cold boot captures NOTHING across the hand-authored carriers"
   local FIRST
-  FIRST=$($COMPOSE logs lararium-a 2>&1 | grep -cF "[disk-ward] write refused")
+  FIRST=$($COMPOSE logs lararium-a 2>&1 | grep -cF "[capture]")
   if [ "${FIRST:-0}" -eq 0 ]; then ok
   else
-    bad "${FIRST} conflict(s) fired at first boot — the rail is noisy before any hand moved"
-    $COMPOSE logs lararium-a 2>&1 | grep -F "[disk-ward] write refused" | head -3 | cut -c1-200 | sed 's/^/      /'
+    bad "${FIRST} capture line(s) at first boot — the projector read files as moved before any hand moved"
+    $COMPOSE logs lararium-a 2>&1 | grep -F "[capture]" | head -3 | cut -c1-200 | sed 's/^/      /'
   fi
 
   step "a carrier is placed, and projects once"
@@ -1932,8 +1929,9 @@ run_conflict() {
   fi
 
   # ★ THE READING. BOTH hands move: the file on disk AND the records in the doc, since the last
-  # projection. The gate must answer `conflict / both-moved`, write nothing, and surface.
-  step "★ both hands move one carrier — a CONFLICT surfaces and nothing is overwritten ★"
+  # projection. The gate answers `capture / both-moved`, writes nothing over the file, and the capture
+  # door stands the file's words as a parallel draft beside the records.
+  step "★ both hands move one carrier — the file goes to capture and its words stand as a parallel draft ★"
   if [ -z "$F" ]; then
     gap "unwalkable — no projected file stands to move by hand"
   else
@@ -1941,38 +1939,21 @@ run_conflict() {
     $COMPOSE exec -T lararium-a sh -c "printf 'the RECORD hand moved this\n' > /tmp/conf2.mem" 2>/dev/null
     $COMPOSE exec -T lararium-a $LARES put "title=$URI" recipe=lares file=/tmp/conf2.mem >/dev/null 2>&1
     local d=$((SECONDS + 60))
-    while ! logs_have "[disk-ward] write refused" lararium-a && [ "$SECONDS" -lt "$d" ]; do sleep 5; done
-    if logs_have "projection conflict" lararium-a; then ok
+    while ! logs_have "[capture] $URI" lararium-a && [ "$SECONDS" -lt "$d" ]; do sleep 5; done
+    if logs_have "parallel draft(s): Draft of '$URI' by disk/" lararium-a; then ok
     else
-      bad "no conflict surfaced — one stream drowned the other, or the gate never ran"
-      $COMPOSE logs --since 3m lararium-a 2>&1 | grep -iE "disk-ward|project" | tail -4 | cut -c1-200 | sed 's/^/      /'
+      bad "no capture draft stood — the projector wrote over the file, or the capture door never ran"
+      $COMPOSE logs --since 3m lararium-a 2>&1 | grep -iE "capture|project" | tail -4 | cut -c1-200 | sed 's/^/      /'
     fi
 
-    # NEGATIVE ⑤c — NO AUTO-MERGE, NO LAST-WRITER-WINS. Assert the ABSENCE: the operator's disk text
-    # must still stand, unmerged, after the refusal. A gate that surfaced AND overwrote would pass the
-    # step above.
-    step "NEG c — the disk hand's bytes STILL STAND, unmerged"
-    if $COMPOSE exec -T lararium-a sh -c "grep -qF 'the DISK hand moved this' '$F'" 2>/dev/null; then ok
-    else bad "the disk edit was overwritten — the refusal did not refuse"; fi
-  fi
-
-  # THE RAIL. A verdict the operator never sees is the failure this scenario exists to catch.
-  step "the operator is TOLD — a durable daemon working-layer audit under the ward ledger"
-  if logs_have "disk-ward" lararium-a; then
-    local AUD AUDIT_OUTPUT
-    if ! AUDIT_OUTPUT=$($COMPOSE exec -T lararium-a $LARES get meme=true bag=lar:///ha.ka.ba/wikis/daemon/working --json 2>&1); then
-      bad "the ward-ledger read failed: $(printf '%s' "$AUDIT_OUTPUT" | tail -1 | cut -c1-200)"
-    else
-      AUD=$(printf '%s\n' "$AUDIT_OUTPUT" | grep -cF "ledger/ward/" || true)
-      if [ "${AUD:-0}" -gt 0 ]; then ok
-      else
-        gap "the refusal logged but no ward-ledger record stands — the rail stops at the console"
-        printf '      worker-data-verbs.ts writes the ward title into the composite default writable: wikis/daemon/working\n'
-        printf '      wakes when the admin VM reactor runs against a container boot\n'
-      fi
-    fi
-  else
-    gap "no refusal fired, so the rail carried nothing to measure"
+    # NEGATIVE ⑤c — NO LAST-WRITER-WINS. The disk hand's words must reach the house BEFORE any render
+    # writes over the file: the draft names them, and the records keep the record hand's words. A
+    # projector that rendered over the file before the capture landed would lose the disk hand's line.
+    step "NEG c — the disk hand's words stand in the house as a draft, and the records keep the record hand's"
+    local DRAFT_OUTPUT
+    DRAFT_OUTPUT=$($COMPOSE exec -T lararium-a $LARES get "title=$URI" recipe=lares --json 2>&1 || true)
+    if logs_have "Draft of '$URI' by disk/" lararium-a && printf '%s' "$DRAFT_OUTPUT" | grep -qF 'the RECORD hand moved this'; then ok
+    else bad "the disk hand's words reached no draft, or the records lost the record hand's words"; fi
   fi
 
   # NEGATIVE ⑤a — A CLEAN PROJECT STILL PROJECTS. Without this the family could be "cured" by refusing

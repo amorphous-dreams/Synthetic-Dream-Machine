@@ -62,8 +62,8 @@ describe("R2 — personal layers, drafts and temp of a shared wiki rest in the w
   const grant = (segment: string | null): DiskMirrorGrant => [
     { bagId: "working",  mirrorRoot: `${P}/wikis`, scope: "working",  wikiSlot: "working" },
     { bagId: "personal", mirrorRoot: `${P}/${FACES_PROJECTION_DIR}`, scope: "personal", wikiSlot: "personal", faceFolder: () => segment },
-    { bagId: "draft",    mirrorRoot: `${P}/${FACES_PROJECTION_DIR}`, scope: "draft", wikiSlot: "draft", mirrorClass: "recovery", faceFolder: () => segment },
-    { bagId: "temp",     mirrorRoot: `${P}/${FACES_PROJECTION_DIR}`, scope: "temp", wikiSlot: "temp", mirrorClass: "recovery", consentSlugs: ["notes"], faceFolder: () => segment },
+    { bagId: "draft",    mirrorRoot: `${P}/${FACES_PROJECTION_DIR}`, scope: "draft", wikiSlot: "draft", faceFolder: () => segment },
+    { bagId: "temp",     mirrorRoot: `${P}/${FACES_PROJECTION_DIR}`, scope: "temp", wikiSlot: "temp", consentSlugs: ["notes"], faceFolder: () => segment },
   ];
   const designation = ["working", "personal", "draft", "temp"].map((k) => wikiSlotUri("notes", k as "working"));
 

@@ -4,14 +4,14 @@
  * A person keeps a copy of a mirrored carrier in a holding directory beside the mirror, changes a line there
  * and ingests that file. The gesture pins a base at the holding file; the projector's base at the mirror
  * file stands beside it, since a carrier holds one row per path. The mirror file stood unmoved since its
- * own base and only the records moved, so the projector writes the records' render there and nothing
- * stands off. The holding file keeps its bytes and its own row, so its next scan reads `unchanged`.
+ * own base and only the records moved, so the projector writes the records' render there and hands
+ * nothing to capture. The holding file keeps its bytes and its own row, so its next scan reads `unchanged`.
  *
  * The gesture and the projector each hold their own tree instance over one directory, as a CLI process
  * and an island do.
  *
  * Control: where a hand ALSO edited the mirror file, both sides moved past the mirror's base, and the
- * carrier stands off as `both-moved`; the hand's bytes stay.
+ * file goes to the capture door as both-moved; the rig's door refuses, so the hand's bytes stay.
  */
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -42,12 +42,12 @@ describe.skipIf(coreBlobSkip)("an ingest from a holding directory beside the mir
   }, 300_000);
   afterAll(async () => { await rig?.close(); });
 
-  test("CONTROL: the seed pinned a base at each mirror file and raised nothing", () => {
-    expect(rig.conflicts).toEqual([]);
+  test("CONTROL: the seed pinned a base at each mirror file and handed nothing to capture", () => {
+    expect(rig.captures).toEqual([]);
     for (const uri of rig.uris) expect(projectorTree.baseAt(syncedTreeKey(RIG_BAG, uri), rig.fileOf(uri))).not.toBeNull();
   });
 
-  test("the mirror takes the change, nothing stands off, and the holding file keeps its bytes and its own row", async () => {
+  test("the mirror takes the change, nothing goes to capture, and the holding file keeps its bytes and its own row", async () => {
     const [uri] = rig.uris;
     const key = syncedTreeKey(RIG_BAG, uri!);
     const holding = holdingOf(uri!);
@@ -59,7 +59,7 @@ describe.skipIf(coreBlobSkip)("an ingest from a holding directory beside the mir
     const settled = await gesture(holding);
     expect(settled.scanned.map((r) => [r.uri, r.status])).toEqual([[uri, "new"]]);
 
-    expect(rig.conflicts).toEqual([]);
+    expect(rig.captures).toEqual([]);
     expect(rig.read(uri!)).toContain(HOLDING_LINE);              // the projector wrote the records' render
     expect(readFileSync(holding, "utf8")).toBe(held);            // the source stays as the hand left it
     const fresh = new SyncedTree(path.join(rig.scratch, "state", "synced-tree-1.json"));
@@ -69,7 +69,7 @@ describe.skipIf(coreBlobSkip)("an ingest from a holding directory beside the mir
     // The holding file's next scan reads its own row; the mirror's next scan reads the mirror's.
     expect(scanSource(rig.scratch, holding, RIG_BAG, fresh)!.rows.map((r) => r.status)).toEqual(["unchanged"]);
     expect(scanSource(rig.scratch, rig.fileOf(uri!), RIG_BAG, fresh)!.rows.map((r) => r.status)).toEqual(["unchanged"]);
-    expect(rig.conflicts).toEqual([]);
+    expect(rig.captures).toEqual([]);
   });
 
   test("a base leaves with its own file: the wiki drops the carrier, the mirror's file and base leave, and the holding copy keeps its base", async () => {
@@ -111,7 +111,7 @@ describe.skipIf(coreBlobSkip)("an ingest from a holding directory beside the mir
     expect(new SyncedTree(path.join(rig.scratch, "state", "synced-tree-1.json")).bases(key)).toEqual([]);
   });
 
-  test("CONTROL: a hand's edit in the mirror plus a holding ingest stands off as both-moved, and the hand's bytes stay", async () => {
+  test("CONTROL: a hand's edit in the mirror plus a holding ingest goes to capture as both-moved, and the hand's bytes stay", async () => {
     const uri = rig.uris[1]!;
     const holding = holdingOf(uri);
     const before = rig.read(uri);
@@ -123,7 +123,12 @@ describe.skipIf(coreBlobSkip)("an ingest from a holding directory beside the mir
     await gesture(holding);
 
     expect(rig.read(uri)).toBe(hand);
-    expect(rig.conflicts.map((c) => c.uri)).toEqual([uri]);
-    expect(rig.conflicts[0]!.reason).toMatch(/both-moved/);
+    expect(rig.captures.map((c) => c.uri)).toEqual([uri]);
+    // Both sides moved past the mirror's base: the disk off its disk side, the records off its records side.
+    const [moved] = rig.captures;
+    expect(moved!.base).not.toBeNull();
+    expect(moved!.disk).not.toBe(moved!.base!.disk);
+    expect(moved!.records).not.toBe(moved!.base!.records);
+    expect(rig.refusals.some((r) => r.startsWith(`${uri}:`))).toBe(true);
   });
 });

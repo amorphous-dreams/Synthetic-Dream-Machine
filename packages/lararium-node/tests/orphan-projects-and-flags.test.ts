@@ -29,7 +29,7 @@ const CARRIER = "text/memetic-wikitext+tiddlywiki";
 const peer = { kind: "crdt-remote", edgeIsland: "peer" } as const;
 
 let dir = "";
-/** Every standoff or ward refusal the projector raised: a clean walk raises none. */
+/** Every refusal the projector raised (a moved file meets no capture door here, so it refuses too): a clean walk raises none. */
 const surfaced: string[] = [];
 afterEach(() => { surfaced.length = 0; });
 afterEach(() => { if (dir) { rmSync(dir, { recursive: true, force: true }); dir = ""; } });
@@ -47,7 +47,6 @@ function stand(r: Rig): { readonly projector: LarDiskProjector; readonly stop: (
   const projector = new LarDiskProjector({
     mirrors: [{ bagId: workingBag, mirrorRoot: dir }],
     carrierFileFn: (uri) => { try { return Promise.resolve(exportCarrierFile(r.engine, uri)); } catch { return Promise.resolve(null); } },
-    onConflict: (info) => { surfaced.push(`conflict ${info.uri}: ${info.reason}`); },
     onRefusal: (info) => { surfaced.push(`refusal ${info.uri}: ${info.reason}`); },
   });
   return { projector, stop: projector.start(r.engine as never) };
@@ -131,7 +130,7 @@ describe.skipIf(wikiSkip)(`orphan-projects-and-flags${skipNote}`, () => {
     await peerChange(r, (store) => store.put(records[0]!, peer), [root]);
     await p.projector.idle();
     expect(r.wiki.getTiddler(root), "the root stands again").toBeDefined();
-    expect(surfaced, "the projector raised no standoff").toEqual([]);
+    expect(surfaced, "the projector found no moved file and refused nothing").toEqual([]);
     expect(tree(dir)).toEqual([`${stem}.mem`]);
     expect(r.wiki.getTiddler(flag), "the flag clears").toBeUndefined();
     await p.stop();

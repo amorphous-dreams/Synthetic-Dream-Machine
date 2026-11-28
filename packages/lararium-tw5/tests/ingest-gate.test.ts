@@ -84,7 +84,7 @@ describe("ingest-gate — the Confluence triangle decides", () => {
 
   /**
    * NO BASE, AND THE RECORDS SAY SOMETHING ELSE. A person's gesture names the adoption (the vector above).
-   * A wave no person stands behind never adopts: it stands off by name, as the projecting leg does.
+   * A wave no person stands behind never adopts: the gate answers `conflict` `no-base`, and the file stays as it stands.
    */
   test("★ an unattended wave never adopts a file that holds no base over records that say something else ★", () => {
     const d = decideIngest({
@@ -103,7 +103,7 @@ describe("ingest-gate — the Confluence triangle decides", () => {
     expect(d.kind).toBe("ingest");
   });
 
-  test("CONTROL: an unattended wave over a file that says what the records say reads noop, never a standoff", () => {
+  test("CONTROL: an unattended wave over a file that says what the records say reads noop, never a conflict", () => {
     const d = decideIngest({
       uri: URI, diskText: source, diskHash: sha(source),
       syncedHash: null, currentRenderHash: sha(canonical), hash: sha, unattended: true,

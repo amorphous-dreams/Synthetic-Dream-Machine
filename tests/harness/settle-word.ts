@@ -43,7 +43,6 @@ export function settleWordOver(result: CliResult, expected: { readonly settledCo
 
 /** What `lares shore` listed once the island's queue drained. */
 export interface ShoreDrained {
-  readonly standoffs: number;
   readonly pending: number;
 }
 
@@ -52,5 +51,5 @@ export async function projectionDrained(lar: LarInstance): Promise<ShoreDrained>
   const r = await lar.cli(["shore", "list", "--json"]);
   const data = r.json?.["data"] as Record<string, unknown> | undefined;
   expect(r.json?.["ok"], `the shore answered: ${JSON.stringify(r.json ?? r.stderr)}`).toBe(true);
-  return { standoffs: Number(data?.["standoffCount"] ?? NaN), pending: Number(data?.["pendingCount"] ?? NaN) };
+  return { pending: Number(data?.["pendingCount"] ?? NaN) };
 }

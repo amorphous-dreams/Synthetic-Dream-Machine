@@ -2,14 +2,15 @@
  * BASE FROM GIT (face-pools A5) — after a re-found the synced tree names no base, and the pool's HEAD stands in for one.
  *
  * The synced tree rests in `hearth/checkpoints/projection`, which a re-found clears; a face pool under
- * `projections/faces/<pet name>/` outlives it with its git history. Read with no base, every edited file meets a `no-base`
- * stand-off. Read with the pool's HEAD as the base, each state resolves:
+ * `projections/faces/<pet name>/` outlives it with its git history. Read with no base, every edited file reaches the
+ * capture door naming no base. Read with the pool's HEAD as the base, each state resolves:
  *
  *   G1 disk equals HEAD, records equal HEAD    → the base pins (both legs)
  *   G2 records moved, disk equals HEAD         → the records project
- *   G3 records equal HEAD, disk moved          → the disk ingests
- *   G4 both moved                              → a `both-moved` stand-off over HEAD (never `no-base`); HEAD's blob holds the
- *                                                base the key folded, so `lares shore take-disk` merges over it
+ *   G3 records equal HEAD, disk moved          → the projector hands the file to capture over HEAD (disk moved); the ingest
+ *                                                leg lands the disk's words
+ *   G4 both moved                              → the projector hands the file to capture over HEAD (both moved, never
+ *                                                without a base); the ingest gate answers `conflict` `both-moved`
  *   G5 a file whose record the house does not hold → no base pins from HEAD: the projector pins nothing, and the wave lands
  *                                                the file (records absent) rather than echoing HEAD into a pinned base
  *   G6 a file outside any pool, or a pool with no `.git`, reads no HEAD and spawns no git
@@ -20,6 +21,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { carrierHash } from "@lararium/mesh/crypto";
+import { digestsEqual } from "@lararium/mesh/agile-digest";
 import { ShoreRig, RIG_BAG, coreBlobSkip } from "./shore-rig.js";
 import { syncedTreeKey } from "../src/synced-tree.js";
 import { candidatesOf, fileToUriForSource, listSourceFiles, scanFiles, settleIngest } from "../src/ingest-scan.js";
@@ -84,22 +86,28 @@ describe.skipIf(coreBlobSkip)("after a re-found, the pool's HEAD stands in for t
   }, 300_000);
   afterAll(async () => { await rig?.close(); });
 
-  test("the projecting leg: G1 pins, G2 projects, G3 stands down for the ingest leg, G4 stands off both-moved, G5 pins nothing", async () => {
+  test("the projecting leg: G1 pins, G2 projects, G3 and G4 go to capture over HEAD, G5 pins nothing", async () => {
     await rig.boot({ extra: { baseFromGit: poolHeads(rig.bagDir) } });
-    // G4 alone stands off, and over HEAD: both moved, never `no-base`.
-    expect(rig.conflicts.map((c) => c.uri)).toEqual([D]);
-    expect(rig.conflicts[0]!.reason).toMatch(/both moved/);
-    expect(rig.conflicts[0]!.reason).not.toMatch(/no-base/);
-    // The base the standoff folded is HEAD's blob, which the shore's merge reads back by its hash.
-    const stood = rig.projector.standing().find((s) => s.uri === D)!;
-    const head = poolHeadOf(rig.fileOf(D))!;
-    expect(stood.base?.disk).toBe(carrierHash(head.body));
-    expect(head.body).not.toContain(DISK_EDIT);
+    // G3 and G4 alone reach the capture door, and each names HEAD's blob as its base: never a file without one.
+    expect(rig.captures.map((c) => c.uri).sort()).toEqual([C, D].sort());
+    for (const uri of [C, D]) {
+      const head = poolHeadOf(rig.fileOf(uri))!;
+      const moved = rig.captures.find((c) => c.uri === uri)!;
+      expect(moved.base?.disk).toBe(carrierHash(head.body));
+      expect(head.body).not.toContain(DISK_EDIT);
+    }
+    // G3 moved the disk alone (the records still render what HEAD says); G4 moved both sides.
+    const c3 = rig.captures.find((c) => c.uri === C)!;
+    const c4 = rig.captures.find((c) => c.uri === D)!;
+    expect(digestsEqual(c3.records!, c3.base!.records)).toBe(true);
+    expect(digestsEqual(c4.records!, c4.base!.records)).toBe(false);
+    // The rig's door refuses: both files keep the hand's words.
+    expect(rig.read(D)).toContain(DISK_EDIT);
     // G1: the untouched carrier pins its base.
     expect(rig.tree.base(syncedTreeKey(RIG_BAG, A))).not.toBeNull();
     // G2: the records' edit reached the file.
     expect(rig.read(B)).toContain(RECORDS_EDIT);
-    // G3: the hand's edit stays on disk, and no base pins over it.
+    // G3: the hand's edit stays on disk, and no base pins over a refused capture.
     expect(rig.read(C)).toContain(DISK_EDIT);
     expect(rig.tree.base(syncedTreeKey(RIG_BAG, C))).toBeNull();
     // G5: no record, no base.
@@ -107,7 +115,7 @@ describe.skipIf(coreBlobSkip)("after a re-found, the pool's HEAD stands in for t
     await rig.rest();
   });
 
-  test("the ingest leg after a second re-found: G1 pins from HEAD, G3 ingests, G4 stands off both-moved, G5 lands rather than pins", async () => {
+  test("the ingest leg after a second re-found: G1 pins from HEAD, G3 ingests, G4 answers conflict both-moved, G5 lands rather than pins", async () => {
     rig.newTree();
     const { scan, settled } = await poolWave();
     const row = (uri: string) => scan.rows.find((r) => r.uri === uri)!;
@@ -122,7 +130,7 @@ describe.skipIf(coreBlobSkip)("after a re-found, the pool's HEAD stands in for t
     // G3: the records stand at HEAD and the disk moved: the hand's words land.
     expect(settled.named.get(C)?.["decision"]).toBe("ingest");
     expect(wikiSays(C, DISK_EDIT)).toBe(true);
-    // G4: both moved past HEAD: a stand-off, never `no-base`, and nothing lands.
+    // G4: both moved past HEAD: the ingest gate answers conflict, never `no-base`, and nothing lands.
     expect(settled.conflicts.map((c) => c.uri)).toEqual([D]);
     expect(settled.named.get(D)?.["reason"]).toBe("both-moved");
     expect(wikiSays(D, DISK_EDIT)).toBe(false);

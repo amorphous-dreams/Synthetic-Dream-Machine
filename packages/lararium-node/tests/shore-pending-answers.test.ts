@@ -31,7 +31,7 @@ const RENDER = (uri: string): string => `title: ${uri}\n\nWHAT THE RECORDS SAY\n
 
 interface Stand {
   projector: LarDiskProjector; tree: SyncedTree; live: Map<string, string>; removed: string[];
-  pendings: Array<{ bagId: string; key: string; count: number }>; cleared: string[]; conflicts: string[];
+  pendings: Array<{ bagId: string; key: string; count: number }>; cleared: string[]; captures: string[];
   file: (uri: string, bag?: string) => string; files: Map<string, CarrierFile>;
 }
 
@@ -43,12 +43,13 @@ function stand(uris: readonly string[], bagOf: (uri: string) => string = () => B
   const removed: string[] = [];
   const pendings: Stand["pendings"] = [];
   const cleared: string[] = [];
-  const conflicts: string[] = [];
+  const captures: string[] = [];
   const projector = new LarDiskProjector({
     mirrors: [{ bagId: BAG, mirrorRoot: join(root, BAG) }, { bagId: OTHER, mirrorRoot: join(root, OTHER) }],
     carrierFileFn: async (uri) => files.get(uri) ?? { ext: MEME_EXT, body: RENDER(uri), encoding: "utf8" },
     syncedTree: tree,
-    onConflict: (info) => { conflicts.push(info.uri); },
+    // The capture door records each moved file and refuses it, so the hand's bytes stay where they stand.
+    capture: async (moved) => { captures.push(moved.uri); return { kind: "refused", why: "the test stands no capture answer" }; },
     onPendingRemoval: (info) => { pendings.push({ bagId: info.bagId, key: info.key, count: info.count }); },
     onPendingRemovalResolved: (info) => { cleared.push(info.key); },
     removeCarrier: (uri) => { removed.push(uri); live.delete(uri); },
@@ -60,7 +61,7 @@ function stand(uris: readonly string[], bagOf: (uri: string) => string = () => B
   } } } as unknown as TW5Engine;
   projector.start(engine);
   const file = (uri: string, bag = bagOf(uri)): string => join(root, bag, `${uri.slice("lar:///".length)}${MEME_EXT}`);
-  return { projector, tree, live, removed, pendings, cleared, conflicts, file, files };
+  return { projector, tree, live, removed, pendings, cleared, captures, file, files };
 }
 
 describe("a content file whose sidecar left never reads as a vanished carrier", () => {
@@ -196,7 +197,7 @@ describe("a sidecar standing alone", () => {
   const META = "title: lar:///ha.ka.ba/probe/pointer\ntype: image/png\n";
   const pointer = (meta = META): CarrierFile => ({ ext: ".png", body: "", metaBody: meta, encoding: "base64", pointerCid: "ab".repeat(32) });
 
-  test("a pending pointer's sidecar that a hand edited stands off: no write replaces it unread", async () => {
+  test("a pending pointer's sidecar that a hand edited goes to capture: no write replaces it unread", async () => {
     const s = stand([URI]);
     s.files.set(URI, pointer());
     await s.projector.idle();
@@ -208,14 +209,14 @@ describe("a sidecar standing alone", () => {
     s.files.set(URI, pointer(`${META}caption: from the records\n`));
     await s.projector.sense([URI]);
     expect(readFileSync(sidecar, "utf-8")).toContain("caption: from the records");
-    expect(s.conflicts).toEqual([]);
+    expect(s.captures).toEqual([]);
 
-    // A hand edits the sidecar, and the records move again: both moved, so nothing writes.
+    // A hand edits the sidecar, and the records move again: both moved, so the file goes to capture and nothing writes.
     writeFileSync(sidecar, `${META}caption: A HAND'S OWN CAPTION\n`, "utf-8");
     s.files.set(URI, pointer(`${META}caption: the records, later\n`));
     await s.projector.sense([URI]);
     expect(readFileSync(sidecar, "utf-8")).toContain("A HAND'S OWN CAPTION");
-    expect(s.conflicts).toEqual([URI]);
+    expect(s.captures).toEqual([URI]);
   });
 
   test("a resolved pointer whose body a hand deleted stays deleted while its bytes fail to resolve, and pends once they return", async () => {

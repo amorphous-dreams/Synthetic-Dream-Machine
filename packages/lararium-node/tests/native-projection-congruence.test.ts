@@ -3,16 +3,17 @@
  * (the operator's 2026-09-18 ruling, dimension 2). `LarDiskProjector.flush` gated
  * its `≈` clause on `file.ext === MEME_EXT` alone — a native carrier's
  * `diskCanonicalHash` was ALWAYS null, so a native both-move that merely
- * REFRAMED (reordered JSON keys) read `conflict` exactly like a genuine
+ * REFRAMED (reordered JSON keys) read as moved exactly like a genuine
  * divergence. This wires `canonicalizeNativeFn` (mirroring the ingest leg's
  * proven `nativeRender`) into the SAME `decideProjection` gate `.mem` carriers
  * already read through, and measures the wiring — not just the pure function —
  * against the real `LarDiskProjector.flush`.
  *
  * RED-FIRST: every "reads canonical-equivalent" test here fails on the
- * pre-existing wiring (would read `conflict`) and passes once
+ * pre-existing wiring (the file would go to capture) and passes once
  * `canonicalizeNativeFn` is threaded through `flush`. The CONTROL proves a
- * genuine divergence still conflicts with the wiring live.
+ * genuine divergence still goes to capture with the wiring live. These rigs
+ * stand no capture door, so a moved file stays and its refusal rides `onRefusal`.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/native-projection-congruence
  */
@@ -61,7 +62,7 @@ function jsonDeserializer(): Tw5Deserializer {
 /** A projector wired exactly as `island-behaviors.ts` wires the live one — a
  *  `canonicalizeNativeFn` closing over the real `canonicalizeNativeCarrierText`
  *  door, the SAME function the memetic clause reads through `canonicalizeFn`. */
-function rig(recordsFields: Record<string, unknown>, syncedHash: string | null): { projector: LarDiskProjector; root: string; syncedTree: SyncedTree } {
+function rig(recordsFields: Record<string, unknown>, syncedHash: string | null): { projector: LarDiskProjector; root: string; syncedTree: SyncedTree; refusals: string[] } {
   root = mkdtempSync(join(tmpdir(), "lar-native-congruence-"));
   const uri = String(recordsFields["title"]);
   const deserializer = jsonDeserializer();
@@ -69,13 +70,15 @@ function rig(recordsFields: Record<string, unknown>, syncedHash: string | null):
   const syncedTree = new SyncedTree(join(root, "synced-tree"));
   if (syncedHash !== null) syncedTree.set(syncedTreeKey("wiki", uri), join(root, `${uri.replace(/[:/]/g, "_")}.json`), syncedHash);
   const file: CarrierFile = { ext: ".json", body: recordsRendered.body, defaultRelPath: `${uri.replace(/[:/]/g, "_")}.json` };
+  const refusals: string[] = [];
   const projector = new LarDiskProjector({
     mirrors: [{ bagId: "wiki", mirrorRoot: root }],
     carrierFileFn: async () => file,
     syncedTree,
     canonicalizeNativeFn: (u, ext, diskBody, diskMeta) => canonicalizeNativeCarrierText(deserializer, u, ext, diskBody, diskMeta),
+    onRefusal: (i) => { refusals.push(i.reason); },
   });
-  return { projector, root, syncedTree };
+  return { projector, root, syncedTree, refusals };
 }
 
 describe("the projecting leg's native congruence, wired into LarDiskProjector.flush", () => {
@@ -84,22 +87,20 @@ describe("the projecting leg's native congruence, wired into LarDiskProjector.fl
   // `native-canonical.test.ts` and `foreign-title-projection.test.ts` already.
   const URI = "My JSON Doc";
 
-  test("★ RED-FIRST: a native both-move that only REFRAMED (reordered JSON keys) reads canonical-equivalent — NOT conflict ★", async () => {
+  test("★ RED-FIRST: a native both-move that only REFRAMED (reordered JSON keys) reads canonical-equivalent, never a moved file ★", async () => {
     // The records' render (sorted, 2-space) — what the projector WOULD write.
     const records = { title: URI, type: "application/json", a: "1", b: "2" };
     const anchor = carrierHash(jsonDeserializer().renderCarrier(URI, { title: URI, type: "application/json", a: "0", b: "0" }).body, undefined);
-    const { projector, root, syncedTree } = rig(records, anchor);
+    const { projector, root, syncedTree, refusals } = rig(records, anchor);
     // The disk holds the SAME meaning, reordered + differently whitespaced —
     // NOT the anchor's bytes (so it reads as "moved" on the byte hashes alone).
     const diskPath = join(root, `${URI.replace(/[:/]/g, "_")}.json`);
     mkdirSync(dirname(diskPath), { recursive: true });
     writeFileSync(diskPath, `{"b":"2","type":"application/json","a":"1","title":"${URI}"}`, "utf-8");
-    const conflicts: string[] = [];
-    (projector as unknown as { onConflict: (i: { reason: string }) => void }).onConflict = (i) => conflicts.push(i.reason);
     await projector.flush("wiki", URI);
-    // GREEN once wired: the disk and the records say the same thing, so no conflict fires, no byte
+    // GREEN once wired: the disk and the records say the same thing, so nothing goes to capture, no byte
     // moves, and the base pins at the agreement with the disk's bytes on one side.
-    expect(conflicts).toEqual([]);
+    expect(refusals).toEqual([]);
     const reframed = `{"b":"2","type":"application/json","a":"1","title":"${URI}"}`;
     expect(readFileSync(diskPath, "utf-8")).toBe(reframed);
     expect(syncedTree.base(syncedTreeKey("wiki", URI))).toEqual({
@@ -109,24 +110,22 @@ describe("the projecting leg's native congruence, wired into LarDiskProjector.fl
     });
   });
 
-  test("CONTROL — a genuine native both-move (real divergence, not reframing) STILL conflicts", async () => {
+  test("CONTROL — a genuine native both-move (real divergence, not reframing) STILL goes to capture", async () => {
     const records = { title: URI, type: "application/json", a: "1", b: "2" };
     const anchor = carrierHash(jsonDeserializer().renderCarrier(URI, { title: URI, type: "application/json", a: "0", b: "0" }).body, undefined);
-    const { projector, root } = rig(records, anchor);
+    const { projector, root, refusals } = rig(records, anchor);
     const diskPath = join(root, `${URI.replace(/[:/]/g, "_")}.json`);
     mkdirSync(dirname(diskPath), { recursive: true });
     // A REAL semantic divergence: the disk says `a: "99"`, the records say `a: "1"`.
     writeFileSync(diskPath, JSON.stringify({ title: URI, type: "application/json", a: "99", b: "2" }), "utf-8");
-    const conflicts: string[] = [];
     const before = readFileSync(diskPath, "utf-8");
-    (projector as unknown as { onConflict: (i: { reason: string }) => void }).onConflict = (i) => conflicts.push(i.reason);
     await projector.flush("wiki", URI);
-    expect(conflicts.length).toBe(1);
-    // Surfaced, never overwritten — the operator's disk bytes survive untouched.
+    expect(refusals.length).toBe(1);
+    // Handed to capture (refused here: no door stands), never overwritten — the operator's disk bytes survive untouched.
     expect(readFileSync(diskPath, "utf-8")).toBe(before);
   });
 
-  test("CONTROL — with NO canonicalizeNativeFn injected, the same reframing-only both-move conflicts (fail-closed baseline)", async () => {
+  test("CONTROL — with NO canonicalizeNativeFn injected, the same reframing-only both-move goes to capture (fail-closed baseline)", async () => {
     root = mkdtempSync(join(tmpdir(), "lar-native-congruence-"));
     const uri = URI;
     const deserializer = jsonDeserializer();
@@ -134,18 +133,18 @@ describe("the projecting leg's native congruence, wired into LarDiskProjector.fl
     const syncedTree = new SyncedTree(join(root, "synced-tree"));
     syncedTree.set(syncedTreeKey("wiki", uri), join(root, `${uri.replace(/[:/]/g, "_")}.json`), anchor);
     const recordsRendered = deserializer.renderCarrier(uri, { title: uri, type: "application/json", a: "1", b: "2" });
+    const refusals: string[] = [];
     const file: CarrierFile = { ext: ".json", body: recordsRendered.body, defaultRelPath: `${uri.replace(/[:/]/g, "_")}.json` };
     const projector = new LarDiskProjector({
       mirrors: [{ bagId: "wiki", mirrorRoot: root }],
       carrierFileFn: async () => file,
       syncedTree,
       // NO canonicalizeNativeFn — the pre-existing wiring.
+      onRefusal: (i) => { refusals.push(i.reason); },
     });
     const diskPath = join(root, `${uri.replace(/[:/]/g, "_")}.json`);
     writeFileSync(diskPath, `{"b":"2","type":"application/json","a":"1","title":"${uri}"}`, "utf-8");
-    const conflicts: string[] = [];
-    (projector as unknown as { onConflict: (i: { reason: string }) => void }).onConflict = (i) => conflicts.push(i.reason);
     await projector.flush("wiki", uri);
-    expect(conflicts.length).toBe(1);   // the gap this whole file exists to close
+    expect(refusals.length).toBe(1);   // the gap this whole file exists to close
   });
 });

@@ -134,8 +134,8 @@ describe("resolveDiskMirrors — one folder answers a workbench, and nothing fac
   const grant = (face: string | null, workspaces: Record<string, string> = {}): DiskMirrorGrant => [
     { bagId: "working", mirrorRoot: "/state/wikis", scope: "working", wikiSlot: "working", sourcedRoots: { lares: "/checkout/wikis" }, workspaceRoots: workspaces },
     { bagId: "personal", mirrorRoot: "/state/faces", scope: "personal", wikiSlot: "personal", faceFolder: () => face },
-    { bagId: "draft", mirrorRoot: "/state/faces", scope: "draft", wikiSlot: "draft", mirrorClass: "recovery", faceFolder: () => face },
-    { bagId: "temp", mirrorRoot: "/state/faces", scope: "temp", wikiSlot: "temp", mirrorClass: "recovery", consentSlugs: ["lares", "notes"], faceFolder: () => face },
+    { bagId: "draft", mirrorRoot: "/state/faces", scope: "draft", wikiSlot: "draft", faceFolder: () => face },
+    { bagId: "temp", mirrorRoot: "/state/faces", scope: "temp", wikiSlot: "temp", consentSlugs: ["lares", "notes"], faceFolder: () => face },
   ];
   const slots = (slug: string): string[] => (["working", "personal", "draft", "temp"] as const).map((k) => wikiSlotUri(slug, k));
   const rootOf = (g: DiskMirrorGrant, slug: string, kind: "working" | "personal" | "draft" | "temp" = "working"): string | undefined =>
@@ -201,15 +201,15 @@ describe("resolveDiskMirrors — a realm's pet name roots its wikis and bags", (
   });
 });
 
-test("a recovery grant sites designated drafts separately from working", () => {
+test("a draft grant sites designated drafts in the wiki's recovery folder, apart from working", () => {
   const draft = wikiSlotUri("garden", "draft");
   const working = wikiSlotUri("garden", "working");
-  const recoveryGrant = [
+  const draftGrant = [
     { bagId: "working", mirrorRoot: "/state/wikis", scope: "working", wikiSlot: "working" as const },
-    { bagId: "draft", mirrorRoot: "/state/wikis", scope: "draft", wikiSlot: "draft" as const, mirrorClass: "recovery" as const },
+    { bagId: "draft", mirrorRoot: "/state/wikis", scope: "draft", wikiSlot: "draft" as const },
   ];
-  const mirrors = resolveDiskMirrors(recoveryGrant, [draft, working], "garden");
+  const mirrors = resolveDiskMirrors(draftGrant, [draft, working], "garden");
   expect(mirrors.find((m) => m.bagId === draft)?.mirrorRoot).toBe("/state/wikis/garden/recovery");
   expect(mirrors.find((m) => m.bagId === working)?.mirrorRoot).toBe("/state/wikis/garden");
-  expect(resolveDiskMirrors(recoveryGrant.slice(0, 1), [draft], "garden")).toEqual([]);
+  expect(resolveDiskMirrors(draftGrant.slice(0, 1), [draft], "garden")).toEqual([]);
 });

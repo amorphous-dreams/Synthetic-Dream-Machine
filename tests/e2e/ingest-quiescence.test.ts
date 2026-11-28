@@ -97,9 +97,9 @@ describe.skipIf(!stagedTarget)("ingest quiescence — the composed loop holds st
     // Q2's settle word ended round N: the file stands as the projection left it.
     const settled = readFileSync(projected, "utf8");
     // barrier: the island looked at the disk and drained its reconcile queue (`lares shore`), so a write an echo
-    // would cause has landed by the time it answers. No standoff stands: disk and records say the same.
+    // would cause has landed by the time it answers. No removal pends, and the file stays as the projection left it.
     const shore = await projectionDrained(lar);
-    expect(shore).toEqual({ standoffs: 0, pending: 0 });
+    expect(shore).toEqual({ pending: 0 });
     expect(readFileSync(projected, "utf8")).toBe(settled);
   }, 60_000);
 

@@ -6,6 +6,9 @@
  * island wires (`mountDiskProjection`). A vessel "rests" when its projector stops and "boots" when a fresh
  * projector starts over the same records; a boot may open a fresh Synced tree, which names no base.
  *
+ * The rig's capture door records every file the projector hands it (`captures`) and answers through `captureAnswer`;
+ * unset, it refuses, so a moved file stays as the hand left it and the refusal rides `refusals`, as with no door at all.
+ *
  * Every path the rig writes sits under its own scratch directory. No clock paces it: each step awaits the
  * projector's own idle handshake.
  */
@@ -33,6 +36,7 @@ import { candidatesOf, scanSource, settleIngest, type IngestSettlement, type Sca
 import type { SubmitResult } from "../../lares-cli/src/verb-result.js";
 import { boundOutcomeOutput } from "../../lararium-tw5/src/verb-vm.js";
 import { LarDiskProjector, type LarDiskProjectorOptions } from "../src/disk-projector.js";
+import type { CaptureOutcome, MovedFile } from "../src/disk-projector/entries.js";
 import { SyncedTree } from "../src/synced-tree.js";
 import { layersBeneathOf, removeInOwnLayer } from "../src/shore-remove-door.js";
 
@@ -65,16 +69,16 @@ type WikiShape = {
   };
 };
 
-export interface Surfaced { bagId: string; uri: string; reason: string; standoff: string }
-
 export class ShoreRig {
   readonly scratch: string;
   readonly bagDir: string;
   readonly store = new MemoryTiddlerStore(RIG_BAG);
   readonly composite = new CompositeStore();
   readonly table = new VerbTable();
-  readonly conflicts: Surfaced[] = [];
-  readonly resolved: Array<{ bagId: string; uri: string; standoff: string }> = [];
+  /** Every moved file the projector handed the capture door, in order. */
+  readonly captures: MovedFile[] = [];
+  /** What the capture door answers; null refuses, so the file stays and its refusal rides `refusals`. */
+  captureAnswer: ((moved: MovedFile) => Promise<CaptureOutcome>) | null = null;
   readonly refusals: string[] = [];
   readonly pendings: Array<Record<string, unknown>> = [];
   readonly pendingsResolved: Array<Record<string, unknown>> = [];
@@ -243,8 +247,10 @@ export class ShoreRig {
       canonicalizeFn: canonicalizeCarrierText,
       canonicalizeNativeFn: (uri, ext, body, meta) => canonicalizeNativeCarrierText(deserializer, uri, ext, body, meta),
       syncedTree: this.tree,
-      onConflict: (info) => { this.conflicts.push(info as Surfaced); },
-      onConflictResolved: (info) => { this.resolved.push(info); },
+      capture: (moved) => {
+        this.captures.push(moved);
+        return this.captureAnswer !== null ? this.captureAnswer(moved) : Promise.resolve({ kind: "refused", why: "the rig stands no capture answer" });
+      },
       onRefusal: (info) => { this.refusals.push(`${info.uri}: ${info.reason}`); },
       ...({
         onPendingRemoval: (info: Record<string, unknown>) => { this.pendings.push(info); },
