@@ -97,6 +97,11 @@ export function start(core: ProjectorCore, tw5: TW5Engine): () => Promise<void> 
     if (typeof store?.listTombstoned !== "function") continue;
     for (const title of store.listTombstoned()) if (!isEffectRecordUri(title)) gate.mark(rootOf(title));
   }
+  // EVERY AGREEMENT A MIRROR'S BASE NAMES MARKS ITS ROOT AT START. `listVisible` hides a record tombstoned while the
+  // projector rested, and the view may answer that title from a bag no mirror holds, so no other scan reaches it: the
+  // persisted bases name the files such a record left, and their roots settle where they stand.
+  core.syncedTree.reread();
+  for (const { bagId, uri } of core.syncedTree.rows()) if (core.mirrors.some((m) => m.bagId === bagId)) gate.mark(rootOf(uri));
   core.ownScan = Promise.all(scans).then(() => {});
   // The scan follows subscription in this synchronous turn. The gate starts in a microtask and
   // yields between roots, so a mounted seed receives a complete, paced projection pass.
