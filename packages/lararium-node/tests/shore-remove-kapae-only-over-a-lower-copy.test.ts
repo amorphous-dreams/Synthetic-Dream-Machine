@@ -64,7 +64,7 @@ async function stand(lower: boolean) {
     mirrors: [{ bagId: LOW, mirrorRoot: dirs.low }, { bagId: OWN, mirrorRoot: dirs.own }, { bagId: WORKING, mirrorRoot: dirs.working }],
     carrierFileFn: async (uri) => (view.has(uri) ? { ext: MEME_EXT, body: `title: ${uri}\n\nTHE RECORDS\n`, encoding: "utf8" } : null),
     syncedTree: new SyncedTree(join(root, ".projection", "synced-tree")),
-    recoveryStore: (bagId) => composite.storeForBag(bagId),
+    bagStore: (bagId) => composite.storeForBag(bagId),
     bagsHolding: (uri) => composite.listBagsHolding(uri),
     topRecordFn: (uri) => composite.get(uri),
     layersBeneath: layersBeneathOf(composite),

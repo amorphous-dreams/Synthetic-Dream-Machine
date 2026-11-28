@@ -38,7 +38,7 @@ function projectorOver(view: Record<string, unknown> | null, work: MemoryTiddler
     ...(top ? { topRecordFn: async (uri: string) => (await top.get(uri)) ?? (await work.get(uri)) } : {}),
     mirrors: [{ bagId: WORK, mirrorRoot, ...(allowBagsRootFiles !== undefined ? { allowBagsRootFiles } : {}) }],
     carrierFileFn: async (uri) => { const f = (engine(view) as { $tw: { wiki: { getTiddler(t: string): { fields: Record<string, unknown> } | undefined } } }).$tw.wiki.getTiddler(uri)?.fields; return f ? mem(String(f["text"])) : null; },
-    recoveryStore: (bag) => bag === WORK ? work : null,
+    bagStore: (bag) => bag === WORK ? work : null,
     recordFileFn: async (bag, uri) => {
       if (bag !== WORK) return null;
       const record = await work.get(uri);

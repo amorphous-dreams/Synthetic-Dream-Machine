@@ -28,7 +28,7 @@ async function rig() {
   const projector = new LarDiskProjector({
     mirrors: [daemonWorkingMirror(root, { relation: tag, segment: "Heron" })],
     carrierFileFn: async () => ({ ext: ".mem", body: "live", defaultRelPath: "ha.ka.ba/t/daemon/shadow-test.mem" }),
-    recoveryStore: () => store,
+    bagStore: () => store,
     bagsHolding: async () => { const record = await store.get(title); return record && !record.meta?.deleted ? [bag] : []; },
     syncedTree: new SyncedTree(treeDir),
   });
@@ -126,7 +126,7 @@ test("★ a kāpae raised before the face root stood projects its shadow into th
   const projector = new LarDiskProjector({
     mirrors: [daemonWorkingMirror(root, { relation: tag, segment: "Heron" })],
     carrierFileFn: async () => ({ ext: ".mem", body: "live", defaultRelPath: "ha.ka.ba/t/daemon/shadow-test.mem" }),
-    recoveryStore: () => store,
+    bagStore: () => store,
     bagsHolding: async () => [],
   });
   const stop = projector.start(engine);
