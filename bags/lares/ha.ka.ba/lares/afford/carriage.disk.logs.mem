@@ -28,7 +28,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.disk.logs"
 ```memetic-wikitext
 <<has entity=`example` name=`the-log` params=`~ the counts by kind, then each record`>>
 <<has entity=`example` name=`the-held` params=`held/true ~ the records no person acknowledged`>>
-<<has entity=`example` name=`one-kind` params=`kind/standoff ~ the records of one kind`>>
+<<has entity=`example` name=`one-kind` params=`kind/capture ~ the records of one kind`>>
 ```
 
 <<~/ahu>>
@@ -91,6 +91,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;I4n3fnuVpN-SwB4_N2uMSbV7xKAIbzgTjciWIrXkHKI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IRvnFtzB_bZ65Xlge4wzFldH70MUqdInRw6VeBINiNU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

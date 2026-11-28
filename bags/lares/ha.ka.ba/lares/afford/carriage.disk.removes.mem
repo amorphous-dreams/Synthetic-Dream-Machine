@@ -70,7 +70,7 @@ Testimony: the door checks; this slot grants nothing.
 <<has entity=`refusal` name=`remove-raises-kapae` params=`cure/[[carriage.disk.removes uri/<uri>]] ~ a lower layer holds the title too; answer y at a terminal to raise the kāpae`>>
 <<has entity=`refusal` name=`usage` params=`cure/[[carriage.disk.removes uri/<uri>]] ~ name a carrier, or --all with --count; --all beside carriers refuses`>>
 <<has entity=`refusal` name=`count-missing` params=`cure/[[carriage.disk.removes all/true count/3]] ~ an answer over more than one carrier names the count that stands pending`>>
-<<has entity=`refusal` name=`a-state-that-moved` params=`~ an answer names the state its giver read (a standoff's key, or the count that stands pending); where that state moved, the island refuses by name and nothing changes`>>
+<<has entity=`refusal` name=`a-state-that-moved` params=`~ an answer names the state its giver read (the count that stands pending); where that state moved, the island refuses by name and nothing changes`>>
 ```
 
 <<~/ahu>>
@@ -110,6 +110,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NpSpb6KMu_xfz40Z_1EyqLoxPyJ50qQbEccdtmp9P_g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cdTLDwGIclC3_xBX78B0sExkP5IeHPsi7y55wcx9_PY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

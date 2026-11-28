@@ -88,10 +88,10 @@ Drop this into the workspace's `.vscode/tasks.json` and run the task over the op
 
 * ''A wider sweep'' keeps the same matcher and names more files: `lares meme check --format=problems $(git ls-files '*.mem')` reads every tracked carrier.
 * ''The regexp stands welded'': `packages/lares-cli/tests/meme-check-problems-matcher.test.ts` reads this fence, holds its regexp equal to the door's own (`packages/lares-cli/src/problems.ts`), and parses every golden line through it, so the shape, the door and this sample move together or red.
-* ''Later doors share the shape.'' A `surface log --follow` (not yet a door) and the stand-off and skip readings of the watch core speak the same line when they land, under the same matcher.
+* ''Later doors share the shape.'' A `surface log --follow` (not yet a door) and the conflict and skip readings of the watch core speak the same line when they land, under the same matcher.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gMiihhdanu6llW2CueL52Me5eKCFlp-QRd8oPSFziNI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4vaqNywyAs1hyc5-Ao-Kgc70ra9aCYP16_70Zx8lGzU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

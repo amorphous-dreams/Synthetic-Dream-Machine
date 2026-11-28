@@ -85,7 +85,7 @@ Every door answers on one of five bands (`packages/lararium-mesh/src/door-band.t
 * ''answered'' ~ the outcome comes back inline; the calls offer the next depth.
 * ''admitted'' ~ the door took the act and its outcome follows; the call reads it back by the act's id.
 * ''owed'' ~ the act stands and its outcome has not reached the caller. A retry sends the same id and answers from the record, never acting twice. ''No clock decides a band'': a wait that ends with no outcome answers `owed`, never "timed out".
-* ''asks'' ~ a person's hand answers (a hand act, a route, a stand-off); the line names what answers it and who may, and the call names the command for a real terminal, since no value a seat fills approves a hand act.
+* ''asks'' ~ a person's hand answers (a hand act, a route, a pending removal); the line names what answers it and who may, and the call names the command for a real terminal, since no value a seat fills approves a hand act.
 * ''void'' ~ a named refusal with its runnable cure (#/refusal).
 
 <<~/ahu>>
@@ -157,6 +157,6 @@ Her name appears in two places alone:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;kLcoUZ4qQBGj4NhWbOyNp6_h1Ero3Gpue9G7ZanzMqM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ObyUOKjmP885EjshaZfnqJcLmfPazPmme0Y2T0B0VR4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

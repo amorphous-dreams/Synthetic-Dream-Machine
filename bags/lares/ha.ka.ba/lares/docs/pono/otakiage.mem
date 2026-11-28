@@ -140,7 +140,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 !!! Pending removal and sweep ~ the holds the house carries
 
 |! mechanism |! source |! what it holds back |
-| pending removal | `commands/watch.ts` `standingAfterWave`; `disk-projector.ts` `LarDiskProjector`; <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/projection-law`>> | a vanished carrier tombstones nothing; the shore holds it pending until a person answers `lares shore remove` or `restore`. A standing instruction a person signs may settle only its named bag, path pattern and per-wave count ceiling through that same removal door; a standoff or a wave past the ceiling stays pending |
+| pending removal | `commands/watch.ts` `standingAfterWave`; `disk-projector.ts` `LarDiskProjector`; <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/projection-law`>> | a vanished carrier tombstones nothing; the shore holds it pending until a person answers `lares shore remove` or `restore`. A standing instruction a person signs may settle only its named bag, path pattern and per-wave count ceiling through that same removal door; a wave past the ceiling stays pending, and a file a hand moved never pends: the projector hands it to the capture door |
 | counted answer | `commands/shore.ts` `--all --count`; `shore-core.ts` `askShore` | a person answering more than one pending removal names the observed count; a moved count refuses the answer before anything changes |
 | ambiguity declines | `delete-gate.ts` `pairRenames` | a hash shared by more than one vanished address or more than one arrival re-links none of them; unmatched addresses remain pending |
 | grace per cap-tier | `cas-caps.ts` `GRACE_RATIO_BY_TIER`, `graceForTier` — `veil: 8 · personagroup: 4 · contract: 2 · public: 1` rolls | private tiers hold longest, because "Private tiers (one holder-set, no re-fetch road) hold longest" — a VEIL blob has no second copy to re-fetch |
@@ -513,6 +513,6 @@ A whole meme or an ahu slot carries its full title. A family put reads `lares pu
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2ZA882LZr7pS8Keh1t-PcIMVn3Us_C8tlz81TUq0Jec`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RGrH8ts9rTH0_GX95-1H7Luw5JQHwRdaxCN9G8cUjCE`>>
 
 <<^ code=`&#x0004;` to=`?`>>
