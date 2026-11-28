@@ -21,7 +21,7 @@ import {
   makeCatalogAccessor, findOrThrow,
   makeInitWikiReactor, makeRetireWikiReactor, makeDraftReactor, makePruneStaleReactor,
   makeMemeGetReactor, makeMemeListReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
-  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor, makeWikiStatusReactor, makeWikiActionReactor,
+  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor, makeWikiStatusReactor, makeWikiActionReactor, makeCarrierActReactor,
   makeOracleCastReactor, ORACLE_CALL_SEATS, makeCallReactor, TIDDLER_CALL_SEATS, tiddlerCallSource,
   ddateVerb,
   makeWardAlertReactor, fileWardRefusal, makeIngestAlertRail,
@@ -36,6 +36,7 @@ import {
   registerCanonOfferVerbs, CANON_OFFER_VERBS,
   faceEngines, type FaceEngines, composeCrossFaceView, enginePool, type EnginePool, type FaceEngine,
   composeWikiEngineSource, wikiEngines, type WikiEngines, type MemeVerbOptions, type TiddlerVerbOptions,
+  bindShoreCustody, wikiWearsFace,
 } from "@lararium/tw5";
 import { applyShares, liftCarriedShares } from "./share-apply.js";
 import { grantShare } from "./share-grant.js";
@@ -227,7 +228,8 @@ import { announceSeatRoll } from "./seat-duty-executor.js";
 import { verifyFaceGrantRecord } from "./face-grant-record.js";
 import { makeFaceSeat, makeGroupDocListener, watchFaceSeatFleet, type GroupDocHandle } from "./face-seat.js";
 import { runFaceJoinOperation } from "./face-join-operation.js";
-import { makeFaceIntentDoor } from "./face-intent-door.js";
+import { admitShoreVotum, faceShoreVow, makeFaceIntentDoor, type FaceVowSeat } from "./face-intent-door.js";
+import { SHORE_VOTUM_VERBS } from "@lararium/mesh/shore-votum";
 import { faceDoors } from "./face-doors.js";
 import { readSiblingFacePlanes, recheckSiblingPlanes } from "@lararium/mesh/sibling-plane-mount";
 import { intentPlaneSelf } from "@lararium/mesh/intent-entry";
@@ -575,6 +577,31 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
    */
   const intentDoors = faceDoors((line) => console.log(`[daemon] ${line}`));
   /**
+   * CUSTODY FACE AGAINST FACE AT THE SHORE (comms-ux-enacts landing 13): each lit face's intent plane and its atom on this vessel,
+   * by PersonaGroup, kept while its door stands. The daemon engine's shore reads them: a write that routes into a layer another
+   * lit face holds rides as a votum onto THAT face's plane, signed by the vower's own atom, and the holder's door drains it.
+   */
+  const vowSeats = new Map<string, FaceVowSeat>();
+  const seatShoreCustody = (ctx: IslandContext, worn: string): void => {
+    wikiWearsFace(ctx.tw5, worn);
+    bindShoreCustody(ctx.tw5, {
+      // WHAT THE HOUSE KNOWS TODAY: a bag the worn face's own composition mounts writable is its own write; a bag the lit set
+      // resolves as another lit face's own lane (its control document naming that face the owner) belongs to that face. A shared
+      // wiki's workbench steward is named by no record this island reads, so such a bag answers no holder here (the write stands
+      // as the face's own, and its cap decides at the store).
+      holderOf: async (bag, face) => {
+        if (ctx.composite.writableStoreForBag(bag)) return null;
+        for (const sibling of litSiblings.values()) {
+          if (sibling.personaGroupId === face || typeof sibling.handleIndex !== "number") continue;
+          const lane = await litFaceTargetOf(ctx)(sibling.handleIndex, bag).catch(() => null);
+          if (lane && lane.owner === sibling.handleIndex) return sibling.personaGroupId;
+        }
+        return null;
+      },
+      vow: faceShoreVow({ seatOf: (holder) => vowSeats.get(holder) ?? null, vowerOf: (vower) => (vower === null ? null : vowSeats.get(vower)?.atom ?? null), verbs: faceIntentVerbs() }),
+    });
+  };
+  /**
    * ONE DOOR SHAPE FOR EVERY FACE: the door reads live authority (the face's lineage off this island's own replica of the
    * persona-KEL board, and each device's standing off the board fold over the island's OWN replicas of the face's fleet edge
    * board and edge ledger, under a witness over those documents and the KEL board), answers on the face's own turn, and pays a
@@ -605,9 +632,22 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const table = intentRegistry, verifier = intentVerifier;
         if (!table?.get(verb) || !verifier) throw new Error(`intent effect ${verb}: daemon handler or verifier absent`);
         if (!args || typeof args !== "object" || Array.isArray(args)) throw new Error(`intent effect ${verb}: arguments must be a record`);
+        // A SHORE VOTUM PAYS ONLY ON THE VOWER'S WORD (landing 13): its proof verifies, no agent relayed it, and the VOWER holds
+        // the write on the bag it names; the holder's door then lands it in the holder's own layer, the proof left out.
+        const paid = SHORE_VOTUM_VERBS.has(verb)
+          ? await admitShoreVotum(face.group, verb, args as Record<string, unknown>, at.agent,
+            (vowerKey, bag) => verifier.verify({ presenter: vowerKey, bagUrl: bag, access: "admin", channel: "local" }),
+            // THIS PLANE'S FACE MUST HOLD THE BAG: the mounted face's own writable layers, or a lit sibling's own lane by the lit set's owner.
+            async (bag) => {
+              if (face.group === daemonAuth.personaGroupId) return ctx.composite.writableStoreForBag(bag) !== null;
+              if (face.acting === null) return false;
+              const lane = await litFaceTargetOf(ctx)(face.acting, bag).catch(() => null);
+              return lane !== null && lane.owner === face.acting;
+            })
+          : args as Record<string, unknown>;
         const invocation: Verb = {
           requestId: at.intentId, title: `lar:///lararium.local.vm/verbs/intent-${at.intentId}`,
-          action: verb, args: args as Record<string, unknown>, targets: [], batchMode: "atomic", status: "pending",
+          action: verb, args: paid, targets: [], batchMode: "atomic", status: "pending",
           requestedBy: face.atom.key, requestedAt: "",
         };
         const run = runLocalVerb(invocation, { daemon: ctx.composite, registry: table, verifier, presenterOf: () => face.atom.key, localOf: () => true });
@@ -656,6 +696,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         kelPrefix: face.personaKel.prefix, anchor: face.faceAnchor, fleetRoot: face.deviceEdge.personaRootDid, ledger,
         acting: typeof face.handleIndex === "number" ? face.handleIndex : null, hold: (pending) => holding(provider, pending) });
       if (!litSiblings.has(key)) return refuse("it closed while its door stood");
+      // Its plane and atom seat its vows (a write the worn face makes into its lane rides here), until its drop.
+      vowSeats.set(group, { group, plane, atom: { key: atom.key, sign: atom.sign } });
       // THE LIT LIFE BOUNDS WHAT THE DOOR OPENED: at the face's drop both planes leave this island's Repo cache, so nothing of
       // the sibling's plane pair stays decrypted here or keeps replicating while the face stands dark; a repeat light keeps
       // what the new door holds.
@@ -1401,6 +1443,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       registry.register("wiki-render", engineVerb("wiki-render", makeWikiRenderReactor), { summary: "Wikify a title or a wikitext span through the wiki's own engine (the daemon wiki or any wiki this face reaches) to `text` or `html`, under a byte cap with a `next` cursor.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("wiki-render-out-prepare", engineVerb("wiki-render-out-prepare", makeWikiRenderOutReactor), { summary: "Prepare native render bytes under the reader and output grant; node custody publishes them.", surfaces: [] });
       registry.register("wiki-action", engineVerb("wiki-action", makeWikiActionReactor), { summary: "Run one named action from the admitted table in the wiki's own engine (`recipe` names the wiki, `name` the row, `expected` and `resulting` the checked values; no caller action text). It reads the floor shadow unoverridden, runs it on an isolated view against the one target the row may change, and lands that change through the ordinary gated put; the answer leads with its `<<~ has …>>` line and carries the receipt and `change`. A stale `expected` answers `conflict` and writes nothing; an unknown name or parameter, an overridden shadow, a withheld target or a denied write refuses by name.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      // A CARRIER BRINGS ITS OWN ACT (comms-ux-enacts landing 13): `call` on an address whose skin row names `acts/<title>` runs that
+      // action tiddler live in the wiki's own engine under the caller's face; its answer carries the receipts of the records it moved (receipts where an act or a votum moves a record; the CRDT remembers every hand).
+      registry.register("carrier-act", engineVerb("carrier-act", makeCarrierActReactor), { summary: "Run a carrier's own act (the `acts/<title>` action tiddler its skin row names) live in the wiki's own engine under the caller's face: the bound params ride as variables, its answer carries the receipt of each record it moved (receipts where an act or a votum moves a record; the CRDT remembers every hand), a writing message (`tm-rename-tiddler`, `tm-relink-tiddler`) runs through the rename door, and `dry` previews the writes over a capture view, landing nothing.", surfaces: [] });
       registry.register("tiddler-put", engineVerb("tiddler-put", makeTiddlerPutReactor), { summary: "Patch one tiddler: set fields, unset fields, add and remove tags, and move the text only where named (`text` whole, `append` at the end); `base` = the hash last read (stale answers `conflict`), `create` lands only where no tiddler stands. `recipe` lands in that wiki's working layer through its engine; `bag` lands in that one bag through its store. A meme family's text (a root's carrier, a slot `<root>#/<slot>`, a `cut` of named slots) lands through the Confluence gate and reseals: a slot the text omits stays (`kept`), a partial base guards a slot within the span it read, and an append on a slot joins its body's end.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("tiddler-delete", engineVerb("tiddler-delete", makeTiddlerDeleteReactor), { summary: "Remove one tiddler by the family law: with no `mode` a delete deletes plainly (each record leaves its own layer, no tombstone; `mode: plain` in the answer) and retracts a kāpae that hides nothing; a meme root or slot answers its `consequence` and `decision: refused` (`tiddler-delete-in-a-family`) unless `family: true` names the family act, which lands every member as one change; where a lower layer holds the title too, no mode refuses `delete-mode-needed` and the caller names one: `kapae` tombstones in a writable layer and shadows the records beneath, `reveal` retracts the topmost record so the one beneath surfaces; each act names `holds` and `shadowed` or `reveals`; `base` = the hash last read. A slot (`<root>#/<slot>`) leaves by the explicit cut of its parent's text (`mode: cut`), and the answer names what the cut tombstoned; `bag` removes a record, or with `family: true` a family, from that one bag through its store.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("tiddler-rename", engineVerb("tiddler-rename", makeTiddlerRenameReactor), { summary: "Rename one tiddler (or a meme root, its slots following) over TiddlyWiki's own relink: every reference the engine's relinkers rewrite (core: tags and list fields; text links only where a relink plugin mounts) follows to `to`, and the old title stays as a forwarder (a pointer tiddler whose `forward-to` names the new title and whose text transcludes it). The move lands in the working layer alone: a record resting elsewhere refuses `rename-source-layer`, referrers outside it refuse `rename-referrers-unreachable` (a count, never titles), a standing target refuses `rename-target-stands`, a slot refuses `slot-without-root`, a `lar:` title another layer holds takes a hand alone, a `$:/` title on either side refuses `rename-system-title`; an answer names only records the face reads and counts the rest (`withheld`); `base` = the hash last read.", surfaces: [VERB_SURFACE.cli] });
@@ -2308,6 +2353,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             litInputs.delete(key);
             const dropped = litSiblings.get(key);
             litSiblings.delete(key);
+            if (dropped?.personaGroupId) vowSeats.delete(dropped.personaGroupId);
             // Its projection stops first: nothing reads its engine past the drop.
             await litProjections?.drop(key).catch((error: unknown) => console.warn(`[daemon] face ${key.slice(0, 12)}…'s projection stopped with a fault: ${error instanceof Error ? error.message : String(error)}`));
             // Its own engine closes with it: owed saves drain, the bridge detaches, the VM releases.
@@ -2444,6 +2490,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               kelPrefix: kel.prefix, anchor: daemonAuth.faceAnchor ?? null, fleetRoot: edge.personaRootDid, ledger,
               ...(restDyadLedger ? { restLedger: restDyadLedger } : {}), effects: new Map([["face-join", faceJoinVia]]),
               acting: typeof daemonAuth.handleIndex === "number" ? daemonAuth.handleIndex : null });
+            // THE SHORE KNOWS ITS FACE AND ITS CUSTODY (landing 13): the mounted face's plane and atom seat its vows, and the daemon
+            // engine's receipts name it as the worn face.
+            vowSeats.set(group, { group, plane, atom: { key: atom.key, sign: atom.sign } });
+            seatShoreCustody(ctx, group);
             registerIntentView = () => {
               if (intentRegistry && !intentRegistry.has("intent-view"))
                 intentRegistry.register("intent-view", makeIntentViewReactor(ctx.tw5, intentsBag, async () => (await door.describe()).pane));

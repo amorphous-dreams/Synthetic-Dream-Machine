@@ -232,12 +232,14 @@ export function memeVerbOptions(
 /** THE ANCHOR'S HOP CARRIES THE FACE: each member the wiki sink lands or removes names the origin's face on the shore first,
  *  so the shore's write of it lands under that face's actor. An origin that names no face hands the sink back unchanged. */
 function wornWikiSink(sink: MemeSink, tw5: object, origin: ChangeOrigin): MemeSink {
-  if (origin.face === undefined) return sink;
+  // THE ACT CROSSES WITH THE FACE (landing 13): the shore's receipt of each member names the verb's request that moved it.
+  const act = origin.kind === "lares-verb" ? `lares-verb#${origin.requestId}` : undefined;
+  if (origin.face === undefined && act === undefined) return sink;
   const face = origin.face;
   return {
     ...sink,
-    land: (fields) => { wikiWearsNext(tw5, String((fields as { title?: unknown }).title ?? ""), face); return sink.land(fields); },
-    tombstone: (title) => { wikiWearsNext(tw5, title, face); return sink.tombstone(title); },
+    land: (fields) => { wikiWearsNext(tw5, String((fields as { title?: unknown }).title ?? ""), face, act); return sink.land(fields); },
+    tombstone: (title) => { wikiWearsNext(tw5, title, face, act); return sink.tombstone(title); },
   };
 }
 

@@ -21,7 +21,7 @@ import { evaluateMeme, placeMeme, readMeme, wikiMemeSink } from "../src/place-me
 import { stampCarrier, verifyBcc } from "@lararium/memetic-frame";
 import {
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor,
-  makeWikiStatusReactor, makeWikiActionReactor, lineDiff, pageFilterAnswer, WIKI_FILTER_ROWS, SHORE_COLLAPSE_CONFIG_PREFIX, type FilterPage, type TiddlerVerbOptions,
+  makeWikiStatusReactor, makeWikiActionReactor, makeCarrierActReactor, lineDiff, pageFilterAnswer, WIKI_FILTER_ROWS, SHORE_COLLAPSE_CONFIG_PREFIX, type FilterPage, type TiddlerVerbOptions,
 } from "../src/tiddler-verbs.js";
 import { AUDIT_ARRAY_CAP, boundOutcomeOutput, placeVerb, removeVerb } from "../src/verb-vm.js";
 import { VerbTable, callDoorOf, makeCallReactor, type VerbContext } from "../src/verb-dispatcher.js";
@@ -2242,6 +2242,82 @@ describe.skipIf(wikiSkip)(`a bag takes the plain put and the delete through its 
   });
 });
 
+// ── a carrier's own act keeps the door's guards (comms-ux-enacts landing 13) ─────────────────────────
+
+describe.skipIf(wikiSkip)(`a carrier's own act keeps the door's guards${skipNote}`, () => {
+  /** The anchor rig with one act tiddler standing. */
+  async function actRig(text: string) {
+    const r = await rig();
+    r.engine.wiki.addTiddler({ title: "acts/probe", text });
+    return { ...r, act: makeCarrierActReactor(r.opts) };
+  }
+
+  test("RED: a face that reads the wiki but holds no write on its layer refuses cap-denied and lands nothing; CONTROL: the writer lands it", async () => {
+    const r = await actRig("<$action-setfield $tiddler=\"Guarded\" text=\"moved\"/>");
+    await expect(r.act({ ...A, act: "acts/probe" }, ctx(reader))).rejects.toThrow(/cap-denied/);
+    await expect(r.act({ ...A, act: "acts/probe", dry: "summary" }, ctx(reader))).rejects.toThrow(/cap-denied/);
+    expect(r.engine.wiki.getTiddler("Guarded")).toBeUndefined();
+    expect(await r.act({ ...A, act: "acts/probe" }, ctx())).toMatchObject({ decision: "acted", wrote: ["Guarded"] });
+    expect(r.engine.wiki.getTiddler("Guarded")?.fields["text"]).toBe("moved");
+  });
+
+  test("RED: an act writing a shore collapse rule with no hand refuses hand-unattested and lands nothing, its earlier writes included", async () => {
+    const rule = `${SHORE_COLLAPSE_CONFIG_PREFIX}every-title`;
+    const r = await actRig(`<$action-setfield $tiddler="Before the rule" text="x"/><$action-setfield $tiddler="${rule}" text="[all[]]"/>`);
+    await expect(r.act({ ...A, act: "acts/probe" }, ctx())).rejects.toMatchObject({ reason: "hand-unattested" });
+    expect(r.engine.wiki.getTiddler(rule)).toBeUndefined();
+    expect(r.engine.wiki.getTiddler("Before the rule"), "the capture run refused before anything landed").toBeUndefined();
+  });
+
+  test("RED: a dry act transcluding a withheld title answers no withheld text; the live act copies none either", async () => {
+    const r = await actRig("<$action-setfield $tiddler=\"Visible copy\" text={{$:/temp/lares/secret}}/>");
+    const dry = await r.act({ ...A, act: "acts/probe", dry: "summary" }, ctx());
+    expect(JSON.stringify(dry)).not.toContain("device-local");
+    expect(dry).toMatchObject({ decision: "dry", writes: [{ title: "Visible copy" }] });
+    await r.act({ ...A, act: "acts/probe" }, ctx());
+    expect(r.engine.wiki.getTiddler("Visible copy")?.fields["text"] ?? "").not.toContain("device-local");
+  });
+
+  test("RED: an act refuses a meme family's record (act-family-write, cure the put door) and a verb tiddler (tiddler-withheld); nothing lands", async () => {
+    const family = await actRig(`<$action-setfield $tiddler="lar:///t/act-family#/a" text="slot body"/>`);
+    await expect(family.act({ ...A, act: "acts/probe" }, ctx())).rejects.toThrow(/act-family-write: .*cure: <<~ put title=`lar:\/\/\/t\/act-family#\/a`/);
+    expect(family.engine.wiki.getTiddler("lar:///t/act-family#/a")).toBeUndefined();
+    const verb = await actRig(`<$action-setfield $tiddler="lar:///lararium.local.vm/verb/minted" verb="custody-clear" lares-dispatch="1"/>`);
+    await expect(verb.act({ ...A, act: "acts/probe" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    expect(verb.engine.wiki.getTiddler("lar:///lararium.local.vm/verb/minted")).toBeUndefined();
+  });
+
+  test("RED: an act whose later rename the door refuses lands nothing, its earlier write and rename included (act-message-refused); CONTROL: the act with the one good rename lands it", async () => {
+    const r = await actRig([
+      "<$action-setfield $tiddler=\"Written first\" text=\"x\"/>",
+      "<$action-sendmessage $message=\"tm-rename-tiddler\" from=\"Note 02\" to=\"Renamed two\"/>",
+      "<$action-sendmessage $message=\"tm-rename-tiddler\" from=\"Nowhere at all\" to=\"Renamed nothing\"/>",
+    ].join(""));
+    await r.hold(DAEMON, ["Note 02"]);
+    await expect(r.act({ ...A, act: "acts/probe" }, ctx())).rejects.toMatchObject({ reason: "act-message-refused" });
+    await r.landed();
+    expect(r.engine.wiki.getTiddler("Written first")).toBeUndefined();
+    expect(r.engine.wiki.getTiddler("Renamed two")).toBeUndefined();
+    expect(r.engine.wiki.getTiddler("Note 02")?.fields["text"]).toBe("see [[Note 01]] and note 2");
+    r.engine.wiki.addTiddler({ title: "acts/probe", text: "<$action-sendmessage $message=\"tm-rename-tiddler\" from=\"Note 02\" to=\"Renamed two\"/>" });
+    const out = await r.act({ ...A, act: "acts/probe" }, ctx());
+    expect(out["messages"]).toEqual([expect.objectContaining({ type: "tm-rename-tiddler", decision: "renamed" })]);
+  });
+
+  test("RED: messages that reach a hand or a host door meet that door's check: a clear-password with no hand refuses hand-unattested, a download whose template reads a withheld title refuses act-message-withheld", async () => {
+    const r = await actRig([
+      "<$action-sendmessage $message=\"tm-clear-password\" $param=\"vault\"/>",
+      "<$action-sendmessage $message=\"tm-download-file\" $param=\"Leaky template\" filename=\"out.txt\"/>",
+    ].join(""));
+    r.engine.wiki.addTiddler({ title: "Leaky template", text: "{{$:/temp/lares/secret}}" });
+    const out = await r.act({ ...A, act: "acts/probe" }, ctx());
+    expect(out["messages"]).toEqual([
+      expect.objectContaining({ type: "tm-clear-password", refused: "hand-unattested" }),
+      expect.objectContaining({ type: "tm-download-file", refused: "act-message-withheld" }),
+    ]);
+  });
+});
+
 // ── the one call (comms-ux-enacts landing 4) ─────────────────────────────────────────────────────────
 
 /** One canon file, read off the checkout itself: the rig stands canon's words, never a copy. */
@@ -2441,6 +2517,27 @@ describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the 
     await expect(r.call("trim", { wick: "long" })).rejects.toMatchObject({ reason: "affordance-unhandled" });
     r.engine.wiki.addTiddler({ title: `${spirit}#/skins/console`, text: "<<has entity=`skin` name=`console` params=`spells/trim handler/host ~ trim`>>" });
     expect(await r.call("trim", { wick: "long" })).toMatchObject({ handler: "host", address: spirit, params: { wick: "long" }, carrier: { carrier: spirit } });
+  });
+
+  test("RED: a carrier whose skin row names acts/<title> runs that act live through call, its params as variables; a dry carry lands nothing; CONTROL: with no carrier-act seated it refuses affordance-unhandled", async () => {
+    const r = await callRig();
+    const spirit = "lar:///lantern.wick.trims";
+    r.engine.wiki.addTiddler({ title: spirit, text: "! lantern.wick.trims ~ a spirit's door", tags: `[[${AFFORDANCE_TAG}]]` });
+    r.engine.wiki.addTiddler({ title: `${spirit}#/takes`, text: [
+      "<<has entity=`arg` name=`wick` params=`takes/words needs/required ~ the wick`>>",
+      "<<has entity=`arg` name=`mu` params=`takes/words ~ the depth`>>",
+      "<<has entity=`cell` name=`_` params=`mu/dry ~ the act over a capture view, landing nothing`>>",
+    ].join("\n") });
+    r.engine.wiki.addTiddler({ title: `${spirit}#/skins/console`, text: "<<has entity=`skin` name=`console` params=`spells/trim acts/acts/trim ~ trim`>>" });
+    r.engine.wiki.addTiddler({ title: "acts/trim", text: "<$action-setfield $tiddler=\"Lantern\" wick=<<wick>>/>" });
+    await expect(r.call("trim", { wick: "short" })).rejects.toMatchObject({ reason: "affordance-unhandled" });
+    r.table.register("carrier-act", makeCarrierActReactor(r.opts));
+    const dry = await r.call("trim", { wick: "short", mu: "_" });
+    expect(dry).toMatchObject({ decision: "dry", act: "acts/trim", writes: [{ title: "Lantern", fields: expect.objectContaining({ wick: "short" }) }], carrier: { carrier: spirit } });
+    expect(r.engine.wiki.getTiddler("Lantern")).toBeUndefined();
+    const acted = await r.call("trim", { wick: "short" });
+    expect(acted).toMatchObject({ decision: "acted", act: "acts/trim", address: spirit, wrote: ["Lantern"], receipt: "acts/trim#r1", carrier: { carrier: spirit } });
+    expect(r.engine.wiki.getTiddler("Lantern")?.fields["wick"]).toBe("short");
   });
 
   test("REACH: the engine fixture's console, $tw.lares.call(\"get\", {title}), answers the has line and the record through the host's door", async () => {

@@ -59,7 +59,10 @@
  * answers no read and takes no write. Every other record lands natively, as a person's edit in the wiki lands it: a `$:/`
  * title or tag, a module or plugin field and a script type alike (the island holds a document's code as data; its code
  * comes from the floor-admitted preloads alone). A RENDERED TIDDLER (`rendered-from`) takes no put and no delete here:
- * only the renderer writes it, and both refuse `rendered-derives`. No action string and no `tm-*` message rides this door; an act rides `call` by its address.
+ * only the renderer writes it, and both refuse `rendered-derives`. No caller's action string rides these doors: an action string
+ * runs only as a CARRIER'S OWN ACT (`carrier-act`, landing 13), the `acts/<title>` tiddler a carrier's skin row names, live on
+ * the engine under the caller's face, its writes tagged with the act so its answer carries their receipts (the CRDT remembers every hand), and its writing
+ * messages (`tm-rename-tiddler`, `tm-relink-tiddler`) through the rename door.
  *
  * THE FAMILY LAW (`@lararium/mesh/family`) DECIDES WHERE A RECORD STANDS AND WHAT A DELETE MOVES. `position` and
  * `family` read through `familyOf`; a delete reads its `consequence` before anything lands, over the reader's view,
@@ -134,7 +137,7 @@ import { CallRefusal, VOICE_SLOTS, callReaderOf, cureCall, floorReaderOf, type C
 import type { AffordancePack } from "./affordance-pack.js";
 import { dryDepthOf, muWordsOf } from "./modules/mu.js";
 import { APERTURE_RANKS, filterRangeArgs, readRangeArgs, type ApertureRank } from "./modules/aperture.js";
-import { wikiWearsNext } from "./island-recipe.js";
+import { wikiCollectReceipts, wikiCollectsAct, wikiStampsReceipt, wikiWearsNext } from "./island-recipe.js";
 import { isTw5DocsBag, refuseTw5DocsWrite } from "./tw5-docs-library.js";
 import type { CallSource, VerbContext, VerbReactor } from "./verb-dispatcher.js";
 
@@ -232,6 +235,12 @@ function readRecord(tiddler: EngineTiddler): { fields: Record<string, string>; b
 const sha = (value: string): string => `sha256-${value}`;
 /** The base a writer hands back: a digest over every field the record carries (the residency stamp left out). */
 const hashOf = (fields: Record<string, string>): string => sha(digestOf(fields));
+/**
+ * THE ACT A DOOR WRITE CROSSES WITH (landing 13): the invocation's action and its request id, `<action>#<request>`. The shore's
+ * receipt of each record the door lands names it; a carrier's act hands its own `acts/` title as the action, so every write
+ * the act moves (its own action string's and the doors its messages reach) reads as that act.
+ */
+const actOf = (ctx: VerbContext): string => `${ctx.invocation.action || "verb"}#${ctx.invocation.requestId}`;
 const textHashOf = (fields: Record<string, string>): string | null =>
   typeof fields["text"] === "string" ? sha(sha256HexBytesSync(utf8.encode(fields["text"]))) : null;
 
@@ -1255,12 +1264,13 @@ async function wikiSeat(opts: TiddlerVerbOptions, anchor: Anchor, ctx: VerbConte
   const { wiki, Tiddler } = anchor.engine;
   const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
   const face = wornOrigin(ctx.worn).face;
+  const act = actOf(ctx);
   const bare = wikiMemeSink(wiki as unknown as Parameters<typeof wikiMemeSink>[0]);
   // THE FACE CROSSES THE HOP: the shore's write of each title carries the session's worn face on its origin.
   const sink: MemeSink = {
     ...bare,
-    land: (fields) => { wikiWearsNext(opts.tw5, String((fields as { title?: unknown }).title ?? ""), face); return bare.land(fields); },
-    tombstone: (gone) => { wikiWearsNext(opts.tw5, gone, face); return bare.tombstone(gone); },
+    land: (fields) => { wikiWearsNext(opts.tw5, String((fields as { title?: unknown }).title ?? ""), face, act); return bare.land(fields); },
+    tombstone: (gone) => { wikiWearsNext(opts.tw5, gone, face, act); return bare.tombstone(gone); },
   };
   const layer = opts.wiki ? wikiSlotKindOf(anchor.slug, anchor.bag) : null;
   return {
@@ -1284,7 +1294,7 @@ async function wikiSeat(opts: TiddlerVerbOptions, anchor: Anchor, ctx: VerbConte
     swap: (title, liveHash, next) => {
       const now = wiki.getTiddler(title);
       if ((now ? hashOf(readRecord(now).fields) : null) !== liveHash) return false;
-      wikiWearsNext(opts.tw5, title, face);
+      wikiWearsNext(opts.tw5, title, face, act);
       wiki.addTiddler(new Tiddler(next));
       return true;
     },
@@ -1299,10 +1309,25 @@ async function wikiSeat(opts: TiddlerVerbOptions, anchor: Anchor, ctx: VerbConte
  */
 async function bagSeat(opts: TiddlerVerbOptions, container: ReturnType<typeof readContainer>, verb: string, ctx: VerbContext): Promise<PutSeat> {
   const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
-  const { bag, sink, layer } = await writeBagStore(opts as unknown as MemeVerbOptions, { bag: container.bag!, realm: container.realm }, origin, ctx.cap, verb, ctx.asker);
+  const { bag, sink: bare, layer } = await writeBagStore(opts as unknown as MemeVerbOptions, { bag: container.bag!, realm: container.realm }, origin, ctx.cap, verb, ctx.asker);
   const read = async (title: string): Promise<Record<string, string> | null> => {
-    const held = await sink.read(title);
+    const held = await bare.read(title);
     return held ? stringsOf(held as Record<string, unknown>) : null;
+  };
+  // A BAG'S OWN STORE PASSES BY THE SHORE (landing 13): where an act asked for its receipts, each record this seat lands or
+  // removes joins them; any other put reads nothing more and digests nothing (the CRDT names its actor).
+  const act = actOf(ctx);
+  const stamp = (kind: "save" | "delete", title: string, before: Record<string, string> | null, after: Record<string, string> | null): void =>
+    wikiStampsReceipt(opts.tw5, { kind, title, face: wornOrigin(ctx.worn).face, before: before ? hashOf(before) : null, after: after ? hashOf(after) : null, bag, act });
+  const sink: MemeSink = !wikiCollectsAct(opts.tw5, act) ? bare : {
+    ...bare,
+    land: async (fields) => { const title = String((fields as { title?: unknown }).title ?? ""); const before = await read(title); await bare.land(fields); stamp("save", title, before, stringsOf(fields as Record<string, unknown>)); },
+    tombstone: async (gone) => { const before = await read(gone); await bare.tombstone(gone); stamp("delete", gone, before, null); },
+    ...(bare.tombstoneFamily ? { tombstoneFamily: async (titles: readonly string[]) => {
+      const before = await Promise.all(titles.map(read));
+      await bare.tombstoneFamily!(titles);
+      titles.forEach((title, i) => stamp("delete", title, before[i] ?? null, null));
+    } } : {}),
   };
   return {
     answered: {},
@@ -1853,6 +1878,211 @@ export const makeWikiActionReactor = everyWiki("wiki-action", true, (opts: Tiddl
   };
 });
 
+// ── carrier-act (comms-ux-enacts landing 13) ──────────────────────────────────────────────────────────
+
+/** The daemon verb a carrier's own act runs through: `call` reaches it for an address whose skin row names `acts/<title>`. */
+export const CARRIER_ACT_VERB = "carrier-act";
+
+/** The `tm-*` messages that write: each runs through the door's own reactor, so it leaves a receipt as any door write does. */
+export const WRITING_MESSAGES: ReadonlySet<string> = new Set(["tm-rename-tiddler", "tm-relink-tiddler"]);
+
+interface ActEvent { readonly type: string; readonly param?: unknown; readonly paramObject?: Record<string, unknown>; readonly tiddlerTitle?: string }
+interface ActWidget {
+  wiki: EngineWiki;
+  eventListeners: Record<string, Array<(event: ActEvent) => unknown>>;
+  invokeActionString(actions: string, triggeringWidget?: unknown, event?: unknown, variables?: Record<string, string>): unknown;
+}
+
+/** One message an act sent, as its answer names it: a writing message with the door's decision, any other passed on. */
+interface ActMessage { readonly type: string; readonly from?: string; readonly to?: string; readonly decision?: string; readonly refused?: string }
+
+/**
+ * The messages that reach a door of their own past the wiki: a hand's prompt (`tm-clear-password` seeds a custody clear a person
+ * may confirm) and a host's render (`tm-download-file` renders a template and hands the text to the host). Each runs through
+ * that door's own check when an act sends it; every other message passes to the engine's listeners untouched.
+ */
+export const HAND_MESSAGES: ReadonlySet<string> = new Set(["tm-clear-password"]);
+export const RENDERING_MESSAGES: ReadonlySet<string> = new Set(["tm-download-file"]);
+
+/**
+ * A CARRIER BRINGS ITS OWN ACT (fork 11, the operator's trust lens): `{recipe, act, address?, params?, dry?}`. The `acts/` tiddler's
+ * action string runs LIVE on the wiki's engine under the caller's face, as a person's click would, the bound params as its
+ * variables: no sandbox stands around a trusted act, and THE DOOR KEEPS ITS GUARDS, as every write door does:
+ *
+ *   the cap    the Kahu predicate and the face's write cap on the bag the act lands in (`requireWrite`), before anything runs;
+ *   the reach  the act reads through the face's reader view (`viewFor`), live and dry alike, so a record the face may not read
+ *              reaches no write and no answer;
+ *   the title  every title the act would write meets the put door's own refusals first (`tiddler-withheld`, the effect ledger,
+ *              `rendered-derives`, a collapse rule's hand, and a meme family, which moves through the Confluence gate of the put
+ *              door alone): the act runs once over a capture view, every title it would move meets them, and a refusal there
+ *              lands nothing. The live run meets them again at each write.
+ *
+ * Every write crosses into the wiki tagged with the act (`<act>#<request>`), so the receipt of each record it moved rides this answer
+ * (receipts where an act or a votum moves a record; the CRDT remembers every hand), and custody holds face against face at the shore (a write into another face's layer rides as a votum there).
+ *
+ * MESSAGES FLOW THROUGH THEIR DOORS. A writing message (`tm-rename-tiddler`, `tm-relink-tiddler`) runs through the rename door,
+ * in the order the act sent it, once the action string returns; each walks that door dry in the capture pass first, so a rename
+ * the door refuses refuses the act before anything lands (`act-message-refused`). A hand's prompt (`HAND_MESSAGES`) meets the hand gate's reading
+ * of the asker (a seat refuses `hand-act-only`, an unread line `hand-unattested`). A host's render (`RENDERING_MESSAGES`) passes
+ * only where the template renders the same through the face's reader view as through the whole wiki (else `act-message-withheld`).
+ * A verb tiddler an act would mint stays home at the title guard. Every other message passes untouched.
+ *
+ * A PREVIEW LANDS NOTHING (`dry`, the call's `_` carry): the capture run's answer, what the act would write and every message
+ * it would send (listed, never run), read through the reader view.
+ */
+export const makeCarrierActReactor = everyWiki(CARRIER_ACT_VERB, true, (opts: TiddlerVerbOptions): VerbReactor => async (args, ctx) => {
+  const act = stringArg(args, "act");
+  if (!act) throw new Error(`${CARRIER_ACT_VERB}: args.act names the action tiddler the carrier's skin row names (acts/<title>)`);
+  const address = optionalStringArg(args, "address") ?? act;
+  const anchor = anchorOf(opts, args, CARRIER_ACT_VERB, true);
+  await requireWrite(opts, anchor, ctx.cap, "carrier act", ctx.asker);
+  const engine = anchor.engine;
+  const wiki = engine.wiki;
+  type Reading = EngineWiki & { getTiddlerText(title: string, fallback?: string): string | undefined; renderTiddler(outputType: string, title: string, options?: { variables?: Record<string, unknown> }): string };
+  const { view } = await viewFor(opts, anchor, ctx.cap);
+  const reading = view as Reading;
+  const actions = reading.getTiddlerText(act);
+  if (actions === undefined) {
+    throw new CallRefusal("act-missing", `${address} names its act ${act}, and no such tiddler stands in ${anchor.recipe} for this face`, cureCall("get", { title: `${address}#/skins` }));
+  }
+  const raw = args["params"];
+  const named = typeof raw === "object" && raw !== null && !Array.isArray(raw) ? raw as Record<string, unknown> : {};
+  const variables = Object.fromEntries(Object.entries(named).map(([k, v]) => [k, typeof v === "string" ? v : JSON.stringify(v)]));
+  const dry = dryOf(args);
+  const face = wornOrigin(ctx.worn).face;
+  const crossing = `${act}#${ctx.invocation.requestId}`;
+  const actCtx: VerbContext = { ...ctx, invocation: { ...ctx.invocation, action: act } };
+  const titleOf = (t: unknown): string => String((t as { fields?: { title?: unknown }; title?: unknown }).fields?.title ?? (t as { title?: unknown }).title ?? "");
+  const tiddlerOf = (t: unknown): EngineTiddler => ((t as { fields?: unknown }).fields ? t as EngineTiddler : new engine.Tiddler(t as Record<string, unknown>));
+  const root = engine.rootWidget as ActWidget;
+
+  /** THE TITLE GUARD: the put door's own refusals, read against the whole wiki's standing record. */
+  const guard = (title: string, incoming: Record<string, string> | null): void => {
+    refuseWithheld(title, "carrier act");
+    refuseEffectLedgerWrite(title, CARRIER_ACT_VERB);
+    refuseUnhandedCollapseRule(title, "carrier act", ctx.asker);
+    const standing = wiki.getTiddler(title);
+    const before = standing ? readRecord(standing).fields : null;
+    refuseRenderedWrite(title, before, incoming, "carrier act");
+    if (title.includes("#/") || before?.["type"] === CARRIER_TYPE || incoming?.["type"] === CARRIER_TYPE) {
+      throw new CallRefusal("act-family-write", `the act ${act} would move "${title}", a meme family's record, and a family moves through the put door's Confluence gate alone (it re-splits and reseals); nothing landed`, cureCall("put", { title, text: "<the whole carrier>" }));
+    }
+  };
+
+  // THE CAPTURE RUN: the act over a capture view of the reader view, every message stopped and listed.
+  const captured = new Map<string, EngineTiddler | null>();
+  const sent: ActMessage[] = [];
+  const capture = Object.create(view) as EngineWiki;
+  capture.addTiddler = (t) => { const tiddler = tiddlerOf(t); captured.set(titleOf(tiddler), tiddler); };
+  capture.deleteTiddler = (title) => { captured.set(title, null); };
+  capture.getTiddler = (title) => (captured.has(title) ? captured.get(title) ?? undefined : view.getTiddler(title));
+  capture.tiddlerExists = (title) => (captured.has(title) ? captured.get(title) !== null : view.tiddlerExists(title));
+  const preview = Object.create(root) as ActWidget;
+  preview.wiki = capture;
+  preview.eventListeners = new Proxy({}, { get: (_t, type) => (typeof type === "string" ? [(event: ActEvent) => { sent.push(messageOf(event)); return false; }] : undefined) }) as ActWidget["eventListeners"];
+  preview.invokeActionString(actions, preview, undefined, variables);
+  const writes = [...captured].map(([title, t]) => ({ title, fields: t === null ? null : readRecord(t).fields }));
+  for (const { title, fields } of writes) guard(title, fields);
+  // EVERY RENAME THE ACT WOULD SEND WALKS THE RENAME DOOR DRY FIRST: a rename the door refuses refuses the act, so no earlier
+  // write or rename lands before a later one refuses. Each walks the wiki as it stands (a rename that leans on an earlier one in
+  // the same act reads absent here and refuses: send the second from a later act).
+  const rename = makeTiddlerRenameReactor(opts);
+  for (const message of sent) {
+    if (!WRITING_MESSAGES.has(message.type)) continue;
+    if (message.from === undefined || message.to === undefined) {
+      throw new CallRefusal("message-malformed", `the act ${act} sends ${message.type} without both a from and a to; nothing landed`, cureCall("get", { title: act }));
+    }
+    const walked = await rename({ recipe: anchor.recipe, title: message.from, to: message.to, dry: "summary" }, actCtx);
+    if (walked["decision"] !== "renamed") {
+      throw new CallRefusal("act-message-refused", `the act ${act} sends ${message.type} "${message.from}" → "${message.to}", which the rename door answers ${String(walked["decision"])}${walked["refusal"] ? ` (${String(walked["refusal"])})` : ""}; nothing landed`, cureCall("rename", { title: message.from, to: message.to, mu: "_" }));
+    }
+  }
+  if (dry !== null) {
+    return { has: hasLine(address, [param("recipe", anchor.recipe), param("act", act), param("decision", "dry")]),
+      recipe: anchor.recipe, address, act, decision: "dry", dry, writes, messages: sent };
+  }
+
+  // LIVE: the reader view's reads, the live wiki's writes, each guarded and tagged with the act as it crosses. The act asks the shore
+  // for the receipts its writes leave, and they ride this answer (no ring keeps them past it).
+  const collector = wikiCollectReceipts(opts.tw5, crossing);
+  const wrote: string[] = [];
+  const removed: string[] = [];
+  const messages: ActMessage[] = [];
+  const live = Object.create(view) as EngineWiki & Record<string, unknown>;
+  // A write moves the live wiki; the view's caches follow it, so the act's next read sees what it just wrote.
+  const fresh = (): void => { live["filterCache"] = Object.create(null); live["filterCacheCount"] = 0; live["caches"] = Object.create(null); live["globalCache"] = Object.create(null); };
+  live.addTiddler = (t) => {
+    const tiddler = tiddlerOf(t);
+    const title = titleOf(tiddler);
+    guard(title, readRecord(tiddler).fields);
+    wikiWearsNext(opts.tw5, title, face, crossing);
+    wrote.push(title);
+    wiki.addTiddler(tiddler);
+    fresh();
+  };
+  live.deleteTiddler = (title) => {
+    guard(title, null);
+    wikiWearsNext(opts.tw5, title, face, crossing);
+    removed.push(title);
+    wiki.deleteTiddler(title);
+    fresh();
+  };
+  const widget = Object.create(root) as ActWidget;
+  widget.wiki = live;
+  const owed: ActEvent[] = [];
+  const passOn = (event: ActEvent): unknown => {
+    for (const handler of root.eventListeners?.[event.type] ?? []) handler.call(root, event);
+    return false;
+  };
+  const own: Record<string, Array<(event: ActEvent) => unknown>> = { ...(root.eventListeners ?? {}) };
+  for (const type of WRITING_MESSAGES) own[type] = [(event: ActEvent) => { owed.push(event); return false; }];
+  for (const type of HAND_MESSAGES) {
+    own[type] = [(event: ActEvent) => {
+      // THE HAND GATE'S READING OF THE ASKER: a seat or an unread line asks no person's confirmation through an act.
+      const code = askerRefusal(ctx.asker);
+      if (code !== null) { messages.push({ ...messageOf(event), refused: code }); return false; }
+      messages.push({ ...messageOf(event), decision: "passed" });
+      return passOn(event);
+    }];
+  }
+  for (const type of RENDERING_MESSAGES) {
+    own[type] = [(event: ActEvent) => {
+      // THE READER VIEW DECIDES A RENDER: a template that renders otherwise through the whole wiki reads what this face may not.
+      const template = typeof event.param === "string" && event.param !== "" ? event.param : "$:/core/save/all";
+      const options = { variables: event.paramObject ?? {} };
+      let same = false;
+      try { same = reading.renderTiddler("text/plain", template, options) === (wiki as unknown as Reading).renderTiddler("text/plain", template, options); } catch { same = false; }
+      if (!same) { messages.push({ ...messageOf(event), refused: "act-message-withheld" }); return false; }
+      messages.push({ ...messageOf(event), decision: "passed" });
+      return passOn(event);
+    }];
+  }
+  widget.eventListeners = own;
+  // A live run that refuses mid-way still lets its collector go: what landed before the refusal drains, and nothing keeps it.
+  try { widget.invokeActionString(actions, widget, undefined, variables); }
+  catch (fault: unknown) { void collector.done().catch(() => {}); throw fault; }
+  for (const event of owed) {
+    const message = messageOf(event);
+    if (message.from === undefined || message.to === undefined) { messages.push({ ...message, refused: "message-malformed" }); continue; }
+    try {
+      const answer = await rename({ recipe: anchor.recipe, title: message.from, to: message.to }, actCtx);
+      messages.push({ ...message, decision: String(answer["decision"]) });
+    } catch (fault: unknown) {
+      messages.push({ ...message, refused: fault instanceof VerbRefusal ? fault.reason : fault instanceof Error ? fault.message : String(fault) });
+    }
+  }
+  return { has: hasLine(address, [param("recipe", anchor.recipe), param("act", act), param("decision", "acted")]),
+    recipe: anchor.recipe, address, act, decision: "acted", wrote: [...new Set(wrote)], removed: [...new Set(removed)], messages, receipt: crossing, receipts: await collector.done() };
+});
+
+/** A message as an act's answer names it: its type, and a rename's `from` and `to` (the navigator's own reading of the event). */
+function messageOf(event: ActEvent): ActMessage {
+  const params = event.paramObject ?? {};
+  const from = typeof params["from"] === "string" ? params["from"] : event.tiddlerTitle;
+  const to = typeof params["to"] === "string" ? params["to"] : undefined;
+  return { type: event.type, ...(typeof from === "string" ? { from } : {}), ...(to !== undefined ? { to } : {}) };
+}
+
 // ── tiddler-rename ────────────────────────────────────────────────────────────────────────────────────
 
 /** The forwarder's text: a transclusion of the new title, so an old road renders what the new one holds. */
@@ -1932,6 +2162,7 @@ export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts:
     const { view, visible, mayRead } = await viewFor(opts, anchor, ctx.cap);
     const { readable } = await layerReach(opts, anchor, ctx.cap, mayRead, ctx.asker);
     const face = wornOrigin(ctx.worn).face;
+    const act = actOf(ctx);
     const base = readBase(optionalStringArg(args, "base"), "tiddler-rename", false);
     /** A standing record this face reads. */
     const seen = (name: string): boolean => { const held = wiki.getTiddler(name); return held !== undefined && visible(name, held); };
@@ -2075,8 +2306,8 @@ export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts:
         }, dry, { base: hash }, dry === "diff" ? changesOf(rows) : null);
       }
       // THE RELINK FOLLOWS THE MOVE: a member the relinkers rewrite takes its relinked fields in place, and the move carries them.
-      for (const [name, record] of captured) if (family.has(name)) { wikiWearsNext(opts.tw5, name, face); wiki.addTiddler(record); }
-      for (const member of members) { wikiWearsNext(opts.tw5, member, face); wikiWearsNext(opts.tw5, target(member), face); }
+      for (const [name, record] of captured) if (family.has(name)) { wikiWearsNext(opts.tw5, name, face, act); wiki.addTiddler(record); }
+      for (const member of members) { wikiWearsNext(opts.tw5, member, face, act); wikiWearsNext(opts.tw5, target(member), face, act); }
       if (read.position === "root") {
         const moved = renameFamilyInWiki(wiki as never, title, to);
         if (moved.refusals.length > 0) throw new Error(`tiddler-rename-incomplete: the family law refused the move of "${title}" (${moved.refusals[0]!.code}) after this door read it clear. Read it again with \`lares get title="${title}" recipe=${anchor.recipe}\` before another rename.`);
@@ -2086,8 +2317,8 @@ export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts:
         if (typeof source["uri-path"] === "string" && to.startsWith("lar:///")) moved["uri-path"] = to.slice("lar:///".length);
         wiki.addTiddler(new Tiddler(moved));
       }
-      for (const [name, record] of captured) if (!family.has(name)) { wikiWearsNext(opts.tw5, name, face); wiki.addTiddler(record); }
-      wikiWearsNext(opts.tw5, title, face);
+      for (const [name, record] of captured) if (!family.has(name)) { wikiWearsNext(opts.tw5, name, face, act); wiki.addTiddler(record); }
+      wikiWearsNext(opts.tw5, title, face, act);
       wiki.addTiddler(new Tiddler({ title, type: WIKITEXT, text: forwarderText(to), "forward-to": to }));
       // THE FAMILY HOLDS AFTER THE MOVE: every member stands under its new title with its parent edge, else the rename fails loudly.
       const landedSlots: Record<string, string> = {};
@@ -2329,9 +2560,14 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
       perBag.set(row.bag, group);
     }
     for (const [landing, group] of perBag) {
+      // A LAYER'S ONE CHANGE PASSES BY THE SHORE (landing 13): where an act asked for its receipts, each member it removed joins
+      // them; any other delete digests nothing.
+      const collecting = wikiCollectsAct(opts.tw5, actOf(ctx));
+      const before = collecting ? new Map([...group.tombstones, ...group.retracts].map((member) => { const t = wiki.getTiddler(member); return [member, t ? hashOf(readRecord(t).fields) : null] as const; })) : null;
       await opts.composite.writeFamily([], group.tombstones, origin, { bag: landing as never, ...(group.retracts.length > 0 ? { retracts: group.retracts } : {}) });
+      if (before) for (const [member, hashBefore] of before) wikiStampsReceipt(opts.tw5, { kind: "delete", title: member, face: wornOrigin(ctx.worn).face, before: hashBefore, after: null, bag: landing, act: actOf(ctx) });
     }
-    for (const member of byHand) { wikiWearsNext(opts.tw5, member, wornOrigin(ctx.worn).face); wiki.deleteTiddler(member); }
+    for (const member of byHand) { wikiWearsNext(opts.tw5, member, wornOrigin(ctx.worn).face, actOf(ctx)); wiki.deleteTiddler(member); }
     return { recipe: anchor.recipe, title, decision: "removed", mode: modeName, tombstoned: tombstones, retracted: retracts, hash, consequence: read };
   };
 });
@@ -2400,7 +2636,11 @@ async function retractBareKapae(
   const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
   const perBag = new Map<string, string[]>();
   for (const row of acts) perBag.set(row.bag, [...(perBag.get(row.bag) ?? []), row.title]);
-  for (const [landing, retracts] of perBag) await opts.composite.writeFamily([], [], origin, { bag: landing as never, retracts });
+  for (const [landing, retracts] of perBag) {
+    await opts.composite.writeFamily([], [], origin, { bag: landing as never, retracts });
+    // A kāpae retracted holds no record before or after; where an act asked for its receipts, the retract joins them (landing 13).
+    for (const member of retracts) wikiStampsReceipt(opts.tw5, { kind: "delete", title: member, face: wornOrigin(ctx.worn).face, before: null, after: null, bag: landing, act: actOf(ctx) });
+  }
   return { recipe: anchor.recipe, title, decision: "removed", mode, tombstoned: [], retracted: acts.map((row) => row.title), consequence };
 }
 

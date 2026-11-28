@@ -106,8 +106,9 @@ export type {
   TW5TiddlerFields,
 } from "./types/tiddlywiki.d.ts";
 
-export { IslandAdaptor } from "./island-adaptor.js";
-export { layIslandComposition, mountIslandShore, wikiLandedCovers, bindRecoveryAtRest } from "./island-recipe.js";
+export { IslandAdaptor, HAND_ACT, PARALLEL_DRAFT_ACT, shoreRecordHash, shoreRecordHashRuns } from "./island-adaptor.js";
+export type { ShoreReceipt, ShoreVotum, ShoreCustody } from "./island-adaptor.js";
+export { layIslandComposition, mountIslandShore, wikiLandedCovers, bindRecoveryAtRest, wikiCollectReceipts, wikiCollectsAct, wikiWearsFace, bindShoreCustody, wikiStampsReceipt, seatShore } from "./island-recipe.js";
 export type { LayIslandCompositionInput, RecipeReadyBinding } from "./island-recipe.js";
 export { composeCrossFaceView, composeFaceEngine, crossFaceViewSource, enginePool, faceEngines } from "./face-engine.js";
 export { composeWikiEngine, composeWikiEngineSource, wikiEngines } from "./wiki-engine.js";
@@ -224,7 +225,7 @@ export { READ_PAGE_BYTES, READ_GRAINS, grainOf, hasLine, param, pagePlaneRows, t
 export type { MemeVerbOptions } from "./meme-verbs.js";
 // The tiddler door: every TiddlyWiki act over one record or one wiki's engine, on the anchor (wiki-surface-scout, lane 1).
 export {
-  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor, makeWikiStatusReactor, makeWikiActionReactor, SHORE_COLLAPSE_CONFIG_PREFIX,
+  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor, makeWikiStatusReactor, makeWikiActionReactor, makeCarrierActReactor, CARRIER_ACT_VERB, WRITING_MESSAGES, HAND_MESSAGES, RENDERING_MESSAGES, SHORE_COLLAPSE_CONFIG_PREFIX,
   TIDDLER_CALL_SEATS, tiddlerCallSource,
 } from "./tiddler-verbs.js";
 export type { NamedWikiEngine, TiddlerVerbOptions } from "./tiddler-verbs.js";

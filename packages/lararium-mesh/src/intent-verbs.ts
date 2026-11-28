@@ -46,6 +46,12 @@ export function faceIntentVerbs(): IntentVerbRegistry {
   // The calendar's one draw of chance, its `%.` exclamation, bars from a votum (a literal `%%.` bars too: the word stays plain).
   registry.declareIntentVerb("ddate", { class: "idempotent", bars: { format: "%." } });
   registry.declareIntentVerb("oracle-cast", { class: "idempotent", fixes: ["at", "coins"] });
+  // CUSTODY FACE AGAINST FACE (comms-ux-enacts landing 13): a write the island shore routes into a layer another face holds rides
+  // as a votum to that face, and the holder's own actor drains it through its own door verb. Each carries its base, so a second
+  // answer meets the first one's landing and converges (a noop, or a conflict that lands nothing). The drain pays one only on the
+  // VOWER's proof and the vower's own grant on the bag (`shore-votum`); a proofless intent and an agent's relayed one pay nothing.
+  registry.declareIntentVerb("tiddler-put", "idempotent");
+  registry.declareIntentVerb("tiddler-delete", "idempotent");
   return registry;
 }
 /** Test fixtures receive their own registry and never change production declarations. */

@@ -114,6 +114,8 @@ export interface CallPlan {
   readonly aperture?: Aperture | undefined;
   /** True where the `mu` came from a carrier's `default/` row rather than the call. */
   readonly muDefaulted?: boolean | undefined;
+  /** The action tiddler a skin row names (`acts/<title>`, landing 13): the carrier brings its own act. */
+  readonly act?: string | undefined;
 }
 
 /** One seat hint a carrier tables: a `gate` row (who may ask, the ocap the door checks) or a `signs` row. */
@@ -362,6 +364,16 @@ export function bindCall(reader: CallReader, address: string, carrier: string, w
   return bound;
 }
 
+/**
+ * THE ACT A CARRIER BRINGS (landing 13): the action tiddler a skin row of the carrier names (`acts/<title>`), the tw5 row's
+ * first, else any row's; null where none names one. The registry's `carrier-act` runs it live on the engine.
+ */
+export function carrierActOf(reader: CallReader, carrier: string): string | null {
+  const rows = skinRows(reader.textOf, carrier).filter((r) => (r.params["acts"] ?? "").trim() !== "");
+  const row = rows.find((r) => r.name === "tw5") ?? rows[0];
+  return row ? (row.params["acts"] ?? "").trim() : null;
+}
+
 /** True where a skin row of the carrier names `handler/host`: the host runs the door, outside the registry. */
 export function hostHandled(reader: CallReader, carrier: string): boolean {
   return skinRows(reader.textOf, carrier).some((r) => r.params["handler"] === "host");
@@ -419,6 +431,7 @@ export function planCall(reader: CallReader, word: string, params: Readonly<Reco
   const mu = bound["mu"] === undefined ? undefined : muOfCall(reader, carrier, word, bound);
   const aperture = bound["aperture"] === undefined ? undefined : apertureOfCall(word, bound);
   const handler = handlerOf(reader, carrier, surface);
+  const act = carrierActOf(reader, carrier);
   const shaped: Record<string, unknown> = { ...bound };
   // REST IS THE GROUND: a `00` carry leaves the bound params, so no seat or host door ever reads a lens it never asked.
   if (mu !== undefined && mu.carry !== "00") shaped["mu"] = mu.carry;
@@ -429,6 +442,7 @@ export function planCall(reader: CallReader, word: string, params: Readonly<Reco
     host: handler !== null, seat: handler === "seat", dryWalks: handler !== null && walksDry(reader, carrier, surface),
     ...(mu !== undefined ? { mu, muDefaulted: params["mu"] === undefined } : {}),
     ...(aperture !== undefined ? { aperture } : {}),
+    ...(act !== null ? { act } : {}),
   };
 }
 
