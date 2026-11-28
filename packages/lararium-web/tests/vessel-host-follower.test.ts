@@ -26,6 +26,7 @@
 import { describe, expect, test } from "vitest";
 import { bindFirstFaceSlot, lockFaceCustody } from "@lararium/browser";
 import { standVesselHost, type VesselScope } from "../src/workers/vessel-host.js";
+import { VESSEL_PROTOCOL } from "../src/vessel-protocol.js";
 import type { PageToVessel, VesselBoot, VesselToPage } from "../src/vessel-protocol.js";
 import { client, standBroker } from "./fixtures/broker-scope.js";
 
@@ -97,7 +98,7 @@ async function standFloor(followerRoute: string) {
   const owner = ownerTab(ROUTE);
   const oc = host.connect(owner.scope);
   owner.bind(oc.receive);
-  oc.receive({ t: "hello", tabSession: "tab-owner", boot: boot(idbName), face } as PageToVessel);
+  oc.receive({ t: "hello", protocol: VESSEL_PROTOCOL, tabSession: "tab-owner", boot: boot(idbName), face } as PageToVessel);
   await until("the owner admitted", () => owner.heard.some((m) => m.t === "status" && m.status.vessel !== undefined));
 
   const ownerWin = client("lead", "/"), followerWin = client("follow", "/"), ceremonyWin = client("rite", "/ceremony.html");
@@ -137,7 +138,7 @@ async function standFloor(followerRoute: string) {
       };
     })();
   };
-  port.postMessage({ t: "hello", tabSession: "tab-follower", boot: boot(idbName), face });
+  port.postMessage({ t: "hello", protocol: VESSEL_PROTOCOL, tabSession: "tab-follower", boot: boot(idbName), face });
   return { face, owner, oc, downs, follower: { heard, port, asks: () => heard.filter((m): m is Ask => m.t === "ask") }, broker };
 }
 
@@ -189,7 +190,7 @@ describe("a brokered port before its hello", () => {
     const owner = ownerTab(ROUTE);
     const oc = host.connect(owner.scope);
     owner.bind(oc.receive);
-    oc.receive({ t: "hello", tabSession: "tab-owner", boot: boot(idbName), face } as PageToVessel);
+    oc.receive({ t: "hello", protocol: VESSEL_PROTOCOL, tabSession: "tab-owner", boot: boot(idbName), face } as PageToVessel);
     await until("the owner admitted", () => owner.heard.some((m) => m.t === "status" && m.status.vessel !== undefined));
     oc.receive({ t: "port:want", wantId: "w-fence", tabSession: "tab-fenced" } as unknown as PageToVessel);
     await until("port:minted", () => owner.heard.some((m) => (m as { t: string }).t === "port:minted"));

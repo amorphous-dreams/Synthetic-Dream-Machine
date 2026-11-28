@@ -60,7 +60,7 @@ import {
   readBrowserCustody, unlockBrowserCustody, sealBrowserKeystore, BrowserCustodyRefused, overwriteBrowserCustody, browserCustodyKeysHeld,
 } from "./browser-custody.js";
 import { askRoutes, standBrowserCustody, type CustodyAnswer, type CustodyAsk } from "./browser-boot-custody.js";
-import { ambientLocks, type LockHost } from "./vessel-lock.js";
+import { ambientLocks, vesselOwnerLockName, vesselSessionLockName, type LockHost } from "./vessel-lock.js";
 import {
   FaceCustodyRefused, bindFirstFaceSlot, checkFaceName, clearFaceCustody, faceCustodyHeld, faceCustodyKeysHeld, heldFaceKeys,
   lockFaceCustody, overwriteEveryFaceCustody, readFaceCustody, readFaceRecord, unlockFaceCustody, writeFaceRecord, type FaceCustodyClear,
@@ -227,7 +227,7 @@ const digestOf = async (face: string): Promise<string> =>
 export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOptions<V>) {
   const host = opts.locks === undefined ? ambientLocks() : opts.locks;
   if (!host || typeof host.request !== "function") throw new VesselSessionRefused("no-engine-locks");
-  const ownerLock = `lares:vessel-owner:${opts.idbName}`;
+  const ownerLock = vesselOwnerLockName(opts.idbName);
   let endLife: () => void = () => {};
   const life = new Promise<void>((resolve) => { endLife = resolve; });
   let lockSettled: Promise<unknown> = Promise.resolve();
@@ -878,4 +878,4 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
 export type VesselHouse<V extends LitVessel = LitVessel> = Awaited<ReturnType<typeof standVesselHouse<V>>>;
 
 /** The tab's lifetime lock for a session: the page holds it for its life; the house queues on it to hear the tab go. */
-export function sessionLifetimeLock(sessionId: string): string { return `lares:vessel-session:${sessionId}`; }
+export function sessionLifetimeLock(sessionId: string): string { return vesselSessionLockName(sessionId); }

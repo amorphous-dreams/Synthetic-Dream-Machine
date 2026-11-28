@@ -51,6 +51,7 @@ export const BROWSER_LAMPS_LIT = Object.freeze([
       lit("tests/vessel-host-place-card.test.ts", "floor run 2026-11-27 (#00001, adc8802dd + develop): lamp-vessel-host 72 passed / 4 skipped over 12 files"),
       lit("tests/vessel-host-reset-gate.test.ts", "floor run 2026-11-27 (#00001, adc8802dd + develop): lamp-vessel-host 72 passed / 4 skipped over 12 files"),
       lit("tests/vessel-host-surface.test.ts", "floor run 2026-11-27 (#00001, adc8802dd + develop): lamp-vessel-host 72 passed / 4 skipped over 12 files"),
+      lit("tests/vessel-host-protocol.test.ts", "floor run 2026-11-27 (#00001, 103dd6daf + develop): lamp-vessel-host 78 passed / 4 skipped over 14 files"),
     ],
   },
   {
@@ -66,7 +67,7 @@ export const BROWSER_LAMPS_LIT = Object.freeze([
   {
     pkg: "@lararium/web", dir: "packages/lararium-web", project: "lamp-hearth-e2e", from: "golden-whole-road-e2e",
     holds: "two tabs, one house; a mirror boot that asks the network nothing",
-    files: [unproven("tests/e2e/glass-tabs.e2e.test.ts"), unproven("tests/e2e/mirror-boot-makes-no-request.e2e.test.ts")],
+    files: [lit("tests/e2e/glass-tabs.e2e.test.ts", "floor run 2026-11-27 (#00001, 103dd6daf + develop): lamp-hearth-e2e 3/3"), lit("tests/e2e/mirror-boot-makes-no-request.e2e.test.ts", "floor run 2026-11-27 (#00001, 103dd6daf + develop): lamp-hearth-e2e 3/3")],
   },
 ]);
 

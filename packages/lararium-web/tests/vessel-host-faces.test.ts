@@ -20,6 +20,7 @@
 import { describe, expect, test } from "vitest";
 import { bindFirstFaceSlot, faceCustodyHeld, lockFaceCustody } from "@lararium/browser";
 import { standVesselHost, type VesselScope } from "../src/workers/vessel-host.js";
+import { VESSEL_PROTOCOL } from "../src/vessel-protocol.js";
 import type { PageToVessel, VesselBoot, VesselToPage } from "../src/vessel-protocol.js";
 
 const SLOW = 300_000;
@@ -75,7 +76,7 @@ describe("the host reads each session's face from its hello", () => {
     const t = tab(ROUTE);
     const conn = host.connect(t.scope);
     t.bind(conn.receive);
-    conn.receive({ t: "hello", tabSession: "tab-1", boot: boot(idbName), face } as PageToVessel);
+    conn.receive({ t: "hello", protocol: VESSEL_PROTOCOL, tabSession: "tab-1", boot: boot(idbName), face } as PageToVessel);
     await until("an ask", () => t.asks().length > 0);
     expect(t.asks()[0], "the session's first ask names the face its hello named").toMatchObject({ kind: "unlock", face });
     // barrier: the face's provider lit, the far side of the admission
@@ -90,7 +91,7 @@ describe("the host reads each session's face from its hello", () => {
     lockFaceCustody(idb2, face2);
     const c2 = other.connect(wrong.scope);
     wrong.bind(c2.receive);
-    c2.receive({ t: "hello", tabSession: "tab-2", boot: boot(idb2), face: face2 } as PageToVessel);
+    c2.receive({ t: "hello", protocol: VESSEL_PROTOCOL, tabSession: "tab-2", boot: boot(idb2), face: face2 } as PageToVessel);
     // barrier: the host names the session's end
     await until("the wrong route ends", () => wrong.heard.some((m) => m.t === "ended"));
     expect(wrong.asks().every((a) => a.face === face2), "a hint grants nothing: every ask still names the face").toBe(true);
@@ -100,7 +101,7 @@ describe("the host reads each session's face from its hello", () => {
     const third = standVesselHost({ locks: navigator.locks, openVessel: fakeVessel([]) } as never);
     const c3 = third.connect(none.scope);
     none.bind(c3.receive);
-    c3.receive({ t: "hello", tabSession: "tab-3", boot: boot(`host-faces-none-${crypto.randomUUID()}`) } as PageToVessel);
+    c3.receive({ t: "hello", protocol: VESSEL_PROTOCOL, tabSession: "tab-3", boot: boot(`host-faces-none-${crypto.randomUUID()}`) } as PageToVessel);
     // barrier: the greeting answers the hello
     await until("the greeting", () => none.heard.some((m) => m.t === "greeting"));
     await until("the vessel status", () => none.heard.some((m) => m.t === "status" && m.status.vessel !== undefined));
@@ -117,9 +118,9 @@ describe("the host reads each session's face from its hello", () => {
     const a = tab(ROUTE), b = tab(ROUTE);
     const ca = host.connect(a.scope), cb = host.connect(b.scope);
     a.bind(ca.receive); b.bind(cb.receive);
-    ca.receive({ t: "hello", tabSession: "tab-a", boot: boot(idbName), face } as PageToVessel);
+    ca.receive({ t: "hello", protocol: VESSEL_PROTOCOL, tabSession: "tab-a", boot: boot(idbName), face } as PageToVessel);
     await until("A lit", () => log.includes(`lit ${face}`));
-    cb.receive({ t: "hello", tabSession: "tab-b", boot: boot(idbName), face } as PageToVessel);
+    cb.receive({ t: "hello", protocol: VESSEL_PROTOCOL, tabSession: "tab-b", boot: boot(idbName), face } as PageToVessel);
     await until("B admitted", () => b.heard.some((m) => m.t === "status" && m.status.vessel !== undefined));
     expect(log.filter((l) => l.startsWith("lit")), "one provider per face: the second session lights none").toEqual([`lit ${face}`]);
     ca.receive({ t: "page:life", life: "pagehide" });
@@ -147,7 +148,7 @@ describe("a fleet join acts as the session's own face", () => {
     const t = tab(ROUTE);
     const c = host.connect(t.scope);
     t.bind(c.receive);
-    c.receive({ t: "hello", tabSession: "tab-a", boot: boot(idbName), face: a } as PageToVessel);
+    c.receive({ t: "hello", protocol: VESSEL_PROTOCOL, tabSession: "tab-a", boot: boot(idbName), face: a } as PageToVessel);
     await until("A admitted", () => t.heard.some((m) => m.t === "status" && m.status.vessel !== undefined));
     const asksBefore = t.asks().length;
     c.receive({ t: "join:offer", callId: "join-b", text: offerNaming(b), abandonPending: true });
@@ -171,9 +172,9 @@ describe("a fleet join acts as the session's own face", () => {
     const t1 = tab(ROUTE), t2 = tab(ROUTE);
     const c1 = host.connect(t1.scope), c2 = host.connect(t2.scope);
     t1.bind(c1.receive); t2.bind(c2.receive);
-    c1.receive({ t: "hello", tabSession: "tab-1", boot: boot(idbName), face: a } as PageToVessel);
+    c1.receive({ t: "hello", protocol: VESSEL_PROTOCOL, tabSession: "tab-1", boot: boot(idbName), face: a } as PageToVessel);
     await until("1 admitted", () => t1.heard.some((m) => m.t === "status" && m.status.vessel !== undefined));
-    c2.receive({ t: "hello", tabSession: "tab-2", boot: boot(idbName), face: a } as PageToVessel);
+    c2.receive({ t: "hello", protocol: VESSEL_PROTOCOL, tabSession: "tab-2", boot: boot(idbName), face: a } as PageToVessel);
     await until("2 admitted", () => t2.heard.some((m) => m.t === "status" && m.status.vessel !== undefined));
     const n = `pg-host-new-${crypto.randomUUID()}`;
     c1.receive({ t: "join:offer", callId: "join-n", text: offerNaming(n), abandonPending: false });

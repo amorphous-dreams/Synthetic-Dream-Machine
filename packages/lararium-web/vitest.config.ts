@@ -67,6 +67,7 @@ const webNode = {
       "tests/page-life.test.ts",
       "tests/port-transport.test.ts",
       "tests/vessel-port.test.ts",
+      "tests/vessel-protocol-version.test.ts",
     ],
   },
 };

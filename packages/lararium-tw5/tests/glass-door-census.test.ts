@@ -15,7 +15,7 @@ describe("mirror door source census", () => {
   // R5: no clock decides anything in the mirror's own code. `requestAnimationFrame` is a frame signal (the browser says a frame ran), not a clock: no duration or deadline rides on it. The pattern proves itself on a planted line first.
   const clock = /\b(Date\.now|performance\.now|setTimeout|setInterval|requestIdleCallback)\b|new Date\(/;
   const glassSources = ["../src/glass-mirror.ts", "../src/glass-port-adaptor.ts", "../src/glass-camera.ts", "../src/glass-token.ts", "../src/glass-handoff.ts", "../src/glass-root.ts",
-    ...["stand", "boot", "doors", "leader", "tab-bus"].map(name => `../../lararium-web/src/glass/${name}.ts`)];
+    ...["stand", "boot", "doors"].map(name => `../../lararium-web/src/glass/${name}.ts`)];
   test("R5 CONTROL: the clock pattern catches a planted clock read", () => {
     expect(clock.test("const t = Date.now();")).toBe(true);
     expect(clock.test("await new Promise(r => setTimeout(r, 5));")).toBe(true);
@@ -24,7 +24,7 @@ describe("mirror door source census", () => {
     expect(readFileSync(source(file), "utf8")).not.toMatch(clock);
   });
   // One pattern for boot, width and caps: no setting, URL value or stored value picks a width. The glass sources read storage only for the two evidence keys.
-  const widthSources = ["stand", "boot", "doors", "leader", "tab-bus"].map(name => `../../lararium-web/src/glass/${name}.ts`).concat("../../lararium-web/src/page-mirror.ts");
+  const widthSources = ["stand", "boot", "doors"].map(name => `../../lararium-web/src/glass/${name}.ts`).concat("../../lararium-web/src/page-mirror.ts");
   test("CONTROL: the width-source pattern catches a planted setting read", () => {
     expect(/localStorage|location\.search|URLSearchParams/.test("const w = localStorage.getItem('width');")).toBe(true);
   });

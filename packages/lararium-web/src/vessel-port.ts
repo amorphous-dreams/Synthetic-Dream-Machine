@@ -9,6 +9,7 @@ import type { BrowserConnectionListener, BrowserConnectionSnapshot, HearthFloorR
 import type { LarMsg_ControlEvent, LarMsg_ControlResult } from "@lararium/mesh/lar-camera";
 import type { PortTransportDoors } from "./port-transport.js";
 import type { CeremonyAskKind } from "./ceremony-protocol.js";
+import { protocolSkew, VESSEL_PROTOCOL } from "./vessel-protocol.js";
 import type {
   FleetRootFacesReply, FleetRootFileReply, FleetSeatLandReply, WorkbenchReadingReply, JoinAnswerReply, JoinOfferReply, PageToVessel, VesselBoot, VesselError, VesselStatus, VesselToPage,
 } from "./vessel-protocol.js";
@@ -108,6 +109,10 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
         return;
       }
       case "greeting": {
+        // A VESSEL FROM ANOTHER BUILD (its greeting names another message table, or none): the page keeps no session with it,
+        // arms no lock and lets the road go; the refusal's words carry the cure.
+        const skew = protocolSkew(msg.protocol);
+        if (skew) { handlers.onEnded?.(skew.why, "open", skew.refusal); worker.terminate(); return; }
         greeting = { ownerEpoch: msg.ownerEpoch, sessionId: msg.sessionId, lifetimeLock: msg.lifetimeLock, ...(msg.refused ? { refused: msg.refused } : {}) };
         handlers.onGreeting?.(greeting);
         for (const want of wantsAwaitingGreeting.splice(0)) want();
@@ -167,7 +172,7 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
     /** Open this tab's session; `resume` names an earlier greeting, which a respawned vessel refuses by name. */
     hello(boot: VesselBoot, resume?: { readonly ownerEpoch: string; readonly sessionId: string }): void {
       const face = tabFace();
-      post({ t: "hello", tabSession: crypto.randomUUID(), boot, ...(face ? { face } : {}), ...(resume ? { resume } : {}) });
+      post({ t: "hello", protocol: VESSEL_PROTOCOL, tabSession: crypto.randomUUID(), boot, ...(face ? { face } : {}), ...(resume ? { resume } : {}) });
     },
     /** Select the face this tab's next session wears (a landed join's face, before the tab re-enters its boot). */
     selectFace: (face: string): void => selectTabFace(face),
