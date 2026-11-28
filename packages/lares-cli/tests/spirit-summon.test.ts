@@ -18,12 +18,17 @@ const h = vi.hoisted(() => ({
   racer: null as { title: string; move: () => void } | null,
   /** The carrier each family recomposes to, by its root: what the meme lens answers and hashes. */
   carriers: new Map<string, string>(),
+  /** The msg door's entries so far (each title's sequence), and the refusal it answers (null: it lands). */
+  msgs: 0,
+  msgRefuse: null as string | null,
 }));
 vi.mock("../src/verb-call.js", async () => {
   // THE PUT LAW, IN SMALL (the real door's proof stands in `@lararium/tw5` `tests/tiddler-verbs.test.ts`): a text carrying a
   // carrier's head mark founds a family whose root reads its fields off the carrier's own meta, a field beside it refuses, the
   // same carrier put twice answers `noop`, and the meme lens answers the carrier with its canonical hash.
   const { rootMetaFields } = await import("@lararium/tw5/root-meta");
+  const { entryOf, headsOf, streamRootOf } = await import("@lararium/tw5/stream-entries");
+  const { stringifyList } = await import("@lararium/mesh/carrier-form");
   const { createHash } = await import("node:crypto");
   const canonical = (text: string): string => `sha256:${createHash("sha256").update(text).digest("hex")}`;
   const answer = (verb: string, args: Record<string, unknown>): Record<string, unknown> => {
@@ -54,6 +59,27 @@ vi.mock("../src/verb-call.js", async () => {
       h.store.set(title, { fields: { ...held.fields, ...((args["fields"] ?? {}) as Record<string, string>), ...(typeof args["text"] === "string" ? { text: args["text"] } : {}) }, rev: held.rev + 1 });
       return { ...faced, decision: "put" };
     }
+    if (verb === "msg") {
+      // THE MSG DOOR, IN SMALL (its proof stands in `@lararium/tw5` `tests/tiddler-verbs.test.ts`): the entry lands under its
+      // stream's root, `prev` the stream's one head, a refusal named in `h.msgRefuse` answering as the door's own words.
+      if (h.msgRefuse !== null) return { refused: h.msgRefuse };
+      const stream = String(args["stream"]);
+      const graph = [...h.store].map(([t, r]) => entryOf(t, r.fields)).filter((e): e is NonNullable<typeof e> => e !== null);
+      const prev = headsOf(graph.filter((e) => e.stream === stream), graph, stream)[0] ?? null;
+      const re = (args["re"] ?? []) as string[];
+      const entry = `${streamRootOf(stream)}-${String(++h.msgs).padStart(8, "0")}-${String(args["slug"] ?? "msg")}`;
+      const fields: Record<string, string> = { stream, note: String(args["note"]) };
+      if (prev !== null) fields["prev"] = prev;
+      if (re.length > 0) fields["re"] = stringifyList(re);
+      for (const key of ["to", "about"]) if (typeof args[key] === "string") fields[key] = args[key] as string;
+      h.store.set(entry, { fields, rev: 1 });
+      return { ...faced, title: entry, stream, prev, decision: "put" };
+    }
+    if (verb === "wiki-filter" && /^\[lares\.heads\[/.test(String(args["filter"]))) {
+      const stream = /^\[lares\.heads\[([^\]]+)\]\]$/.exec(String(args["filter"]))![1]!;
+      const graph = [...h.store].map(([t, r]) => entryOf(t, r.fields)).filter((e): e is NonNullable<typeof e> => e !== null);
+      return { ...faced, titles: headsOf(graph, graph, stream) };
+    }
     if (verb === "wiki-filter") {
       // The two filters the summons door sends: a tag, one field's value, and (for open lanes) no hand-back.
       const m = /^\[tag\[([^\]]+)\]field:([a-z-]+)\[([^\]]+)\](!has\[handback\])?\]$/.exec(String(args["filter"]));
@@ -66,7 +92,9 @@ vi.mock("../src/verb-call.js", async () => {
   };
   const ran = async (verb: string, args: Record<string, unknown>) => {
     h.calls.push({ verb, args });
-    return { status: "done", requestId: "r", results: { summary: { ok: true, output: answer(verb, args) } } };
+    const output = answer(verb, args);
+    if (typeof output["refused"] === "string") return { status: "error", requestId: "r", errorMessage: output["refused"] };
+    return { status: "done", requestId: "r", results: { summary: { ok: true, output } } };
   };
   return { DaemonUnreachable: class extends Error {}, verbFailure: (err: unknown) => ({ code: "error", message: err instanceof Error ? err.message : String(err) }), runVerb: ran, runVerbAsFace: ran };
 });
@@ -117,7 +145,7 @@ async function run(args: ParsedArgs, seams: Record<string, unknown> = {}): Promi
   const log = vi.spyOn(console, "log").mockImplementation((...p: unknown[]) => { chunks.push(p.join(" ") + "\n"); });
   const err = vi.spyOn(console, "error").mockImplementation(() => {});
   try {
-    const exit = await cmdSpirit(args, { now: NOW, hand: HAND, launch: stub().launch, ...seams });
+    const exit = await cmdSpirit(args, { now: NOW, hand: HAND, launch: stub().launch, summoned: () => null, ...seams });
     return { exit, printed: JSON.parse(chunks.join("").trim().split("\n").at(-1)!) as Record<string, unknown> };
   } finally { out.mockRestore(); log.mockRestore(); err.mockRestore(); }
 }
@@ -127,7 +155,7 @@ const error = (r: { printed: Record<string, unknown> }) => r.printed["error"] as
 const closed = (r: { printed: Record<string, unknown> }) => data(r)["edge"] as Record<string, unknown>;
 const fieldsOf = (title: string) => h.store.get(title)?.fields ?? null;
 
-beforeEach(() => { h.store.clear(); h.carriers.clear(); h.face = null; h.racer = null; });
+beforeEach(() => { h.store.clear(); h.carriers.clear(); h.face = null; h.racer = null; h.msgs = 0; h.msgRefuse = null; });
 afterEach(() => { h.calls.length = 0; });
 
 describe("the command table names the summons verbs", () => {
@@ -621,5 +649,96 @@ describe("a carrier mandate founds its family, and every reader verifies it by t
     expect(put.args).toMatchObject({ title: d.uri, text: WORDS, fields: { pet: "cold-reader", "mandate-hash": d.hash, tags: "mandate" } });
     expect(h.carriers.size).toBe(0);
     expect((await run(argv(["summon", "cold-reader#00002"], { mandate: d.ref }))).exit).toBe(0);
+  });
+});
+
+describe("summon forks a stream; a hand-back joins the summoner's (comms-ux-enacts landing 17)", () => {
+  const S = "lar:///ha.ka.ba/kahua/memory/stream/";
+  const HEAD = `${S}lares-alpha-00001-coordinating`;
+  const msgs = () => h.calls.filter((c) => c.verb === "msg");
+  const head = (title = HEAD, stream = "lares-alpha#00001") => h.store.set(title, { fields: { stream, note: "coordinating" }, rev: 1 });
+
+  test("RED: the summons lands the instance's first entry ahead of the launch, its re the summoner's head, its about the mandate at its hash", async () => {
+    head();
+    const m = arm(coordinator());
+    const seen: { fields: Record<string, string> | null } = { fields: null };
+    const r = await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }), { launch: async () => { seen.fields = { ...fieldsOf(summonsOf(m.hash))! }; return { ok: true, pid: 7 }; } });
+    expect(r.exit).toBe(0);
+    expect(msgs()).toHaveLength(1);
+    expect(msgs()[0]!.args).toMatchObject({ recipe: "default", stream: "cold-reader#00002", re: [HEAD], about: m.ref, mandate: m.ref, model: "claude-fable-5-2" });
+    expect(String(msgs()[0]!.args["note"]).length).toBeLessThanOrEqual(72);
+    const forked = `${S}cold-reader-00002-00000001-summoned`;
+    expect(fieldsOf(forked)).toMatchObject({ stream: "cold-reader#00002", re: HEAD, about: m.ref });
+    // The edge records the fork before the process stands, so the instance wakes into a stream already founded.
+    expect(seen.fields).toMatchObject({ stream: "cold-reader#00002", forked, "summoner-stream": "lares-alpha#00001" });
+    expect(data(r)).toMatchObject({ stream: "cold-reader#00002", summoner: "lares-alpha#00001", fork: { decision: "landed", title: forked, re: [HEAD] } });
+  });
+
+  test("RED: the summoner's stream reads --stream first, then the summoning session's own; a malformed --stream refuses usage", async () => {
+    head(`${S}braid-1-x`, "braid#1");
+    head(`${S}tern-2-y`, "tern#2");
+    const byHand = arm(null, "00004");
+    await run(argv(["summon", "cold-reader#00004"], { mandate: byHand.ref }), { summoned: () => "braid#1" });
+    expect(msgs()[0]!.args["re"]).toEqual([`${S}braid-1-x`]);
+    const other = arm(null, "00005");
+    await run(argv(["summon", "cold-reader#00005"], { mandate: other.ref, stream: "tern#2" }), { summoned: () => "braid#1" });
+    expect(msgs()[1]!.args["re"]).toEqual([`${S}tern-2-y`]);
+    const third = arm(null, "00006");
+    const bad = await run(argv(["summon", "cold-reader#00006"], { mandate: third.ref, stream: "Tern" }));
+    expect(bad.exit).not.toBe(0);
+    expect(msgs()).toHaveLength(2);
+    // A hand naming no stream forks with no re: the fork still founds the instance's stream.
+    const lone = arm(null, "00007");
+    expect(data(await run(argv(["summon", "cold-reader#00007"], { mandate: lone.ref })))["fork"]).toMatchObject({ decision: "landed", re: [] });
+  });
+
+  test("RED: a retry forks nothing twice, and a refused msg stops no summons", async () => {
+    head();
+    const m = arm(coordinator());
+    await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }), { launch: stub({ ok: false, code: "launch-cap-absent", message: "launch-cap-absent: nothing started" }).launch });
+    expect(msgs()).toHaveLength(1);
+    const again = await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }));
+    expect(data(again)).toMatchObject({ decision: "launched", fork: { decision: "standing" } });
+    expect(msgs()).toHaveLength(1);
+    h.msgRefuse = "stream-forked: stream cold-reader#00003 shows 2 heads";
+    const n = arm(coordinator(), "00003");
+    const refused = await run(argv(["summon", "cold-reader#00003"], { mandate: n.ref }));
+    expect(refused.exit).toBe(0);
+    expect(data(refused)).toMatchObject({ decision: "launched", fork: { decision: "refused", title: null } });
+    expect(String((data(refused)["fork"] as Record<string, unknown>)["why"])).toContain("stream-forked");
+    expect(fieldsOf(summonsOf(n.hash))!["forked"]).toBeUndefined();
+  });
+
+  test("RED: a hand-back lands one msg on the SUMMONER's stream, to the summoner, its re the mandate and the instance's last entry", async () => {
+    head();
+    const m = arm(coordinator());
+    await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }));
+    const forked = `${S}cold-reader-00002-00000001-summoned`;
+    const work = `${S}cold-reader-00002-work`;
+    h.store.set(work, { fields: { stream: "cold-reader#00002", prev: forked, note: "built" }, rev: 1 });
+    const record = `${M}residue/back-1`;
+    h.store.set(record, { fields: { text: "three findings" }, rev: 1 });
+    const back = await run(argv(["handback", "cold-reader#00002"], { record }), { hand: SEAT });
+    expect(back.exit).toBe(0);
+    expect(msgs()).toHaveLength(2);
+    expect(msgs()[1]!.args).toMatchObject({ recipe: "default", stream: "lares-alpha#00001", to: "lares-alpha#00001", re: [m.uri, work], about: `${record}@sha256-back-1-1` });
+    const joined = `${S}lares-alpha-00001-00000002-hand-back`;
+    expect(fieldsOf(joined)).toMatchObject({ stream: "lares-alpha#00001", prev: HEAD, to: "lares-alpha#00001" });
+    expect(fieldsOf(summonsOf(m.hash))!["joined"]).toBe(joined);
+    expect(closed(back)["join"]).toMatchObject({ decision: "landed", stream: "lares-alpha#00001", title: joined });
+    // A second hand-back of the same record lands no second entry.
+    const twice = await run(argv(["handback", "cold-reader#00002"], { record }), { hand: SEAT });
+    expect(closed(twice)["join"]).toMatchObject({ decision: "standing", title: joined });
+    expect(msgs()).toHaveLength(2);
+  });
+
+  test("RED: a hand's summons that named no stream joins none; the hand-back stands all the same", async () => {
+    const byHand = arm(null, "00005");
+    await run(argv(["summon", "cold-reader#00005"], { mandate: byHand.ref }));
+    h.store.set(`${M}residue/back-5`, { fields: { text: "done" }, rev: 1 });
+    const back = await run(argv(["handback", "cold-reader#00005"], { record: `${M}residue/back-5` }));
+    expect(back.exit).toBe(0);
+    expect(closed(back)["join"]).toMatchObject({ decision: "skipped", title: null });
+    expect(msgs()).toHaveLength(1);
   });
 });

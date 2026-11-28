@@ -5,7 +5,7 @@
  * Meme: lar:///ha.ka.ba/lares/afford/engine.msg.lands
  */
 import { describe, test, expect } from "vitest";
-import { NOTE_MAX, STREAM_STAGE, addressedTo, entryOf, entryTitleOf, headsOf, inboxOf, isAddress, noteFault, readStream, slugOf, streamRootOf, type StreamEntry } from "../src/stream-entries.js";
+import { ASH_READY, NOTE_MAX, STREAM_STAGE, addressedTo, entryOf, entryTitleOf, headsOf, inboxOf, isAddress, noteFault, readStream, settledOf, slugOf, streamRootOf, type StreamEntry } from "../src/stream-entries.js";
 import { birthHashOf } from "../src/msg-verbs.js";
 
 const entry = (title: string, stream: string, more: Partial<Omit<StreamEntry, "title" | "stream">> = {}): StreamEntry =>
@@ -83,5 +83,39 @@ describe("the log graph", () => {
     // Seen reads direct naming alone, never a walk: a reply to the reply leaves y unseen.
     expect(inboxOf([y, indirect], [y, indirect, reply], "lares-alpha#3")).toEqual(["y"]);
     expect(addressedTo(null, "lares-alpha#3")).toBe(false);
+  });
+});
+
+describe("hum's fold: the settled entries (landing 17)", () => {
+  test("RED: an entry settles once its stream moved past it, its addressee named it in re, and no unseen entry still answers it", () => {
+    // skein#1 wakes forked off the summoner's head (re), works, and hands back on the summoner's stream, to the summoner.
+    const head = entry("h", "lares-alpha#3");
+    const fork = entry("f", "skein#1", { re: ["h"] });
+    const work = entry("w", "skein#1", { prev: "f" });
+    const last = entry("l", "skein#1", { prev: "w" });
+    const back = entry("b", "lares-alpha#3", { prev: "h", to: "lares-alpha#3", re: ["l"] });
+    const all = [head, fork, work, last, back];
+    // The heads (l, b) stay; f and w settle: no `to` asks a reader, and the hand-back that answers l stands apart from them.
+    expect(settledOf(all, all, "skein#1")).toEqual(["f", "w"]);
+    expect(settledOf(all, all, "skein")).toEqual(["f", "w"]);
+    // h answers nothing unseen once the stream moves past it; b still waits on its reader, so a reply settles it.
+    expect(settledOf(all, all, "lares-alpha#3")).toEqual(["h"]);
+    const seen = entry("s", "lares-alpha#3", { prev: "b", re: ["b"] });
+    expect(settledOf([...all, seen], [...all, seen], "lares-alpha#3")).toEqual(["b", "h"]);
+  });
+
+  test("RED: an unseen entry answering one holds it, and an unread msg never settles", () => {
+    const asked = entry("a", "skein#1");
+    const next = entry("n", "skein#1", { prev: "a" });
+    const answer = entry("q", "tern#1", { re: ["a"], to: "skein#1" });
+    expect(settledOf([asked, next, answer], [asked, next, answer], "skein#1")).toEqual([]);
+    const read = entry("r", "skein#1", { prev: "n", re: ["q"] });
+    expect(settledOf([asked, next, answer, read], [asked, next, answer, read], "skein#1")).toEqual(["a", "n"]);
+    // A msg to tern#1 that tern never named in re stays unsettled, though its own stream moved past it.
+    const sent = entry("t", "skein#1", { prev: "r", to: "tern#1" });
+    const after = entry("u", "skein#1", { prev: "t" });
+    const all = [asked, next, answer, read, sent, after];
+    expect(settledOf(all, all, "skein#1")).toEqual(["a", "n", "r"]);
+    expect(ASH_READY).toBe("ash-ready");
   });
 });

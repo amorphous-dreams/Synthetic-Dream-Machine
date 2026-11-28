@@ -20,6 +20,10 @@
       "import": "./dist/meme-normalize.js",
       "types": "./dist/meme-normalize.d.ts"
     },
+    "./stream-entries": {
+      "import": "./dist/stream-entries.js",
+      "types": "./dist/stream-entries.d.ts"
+    },
     "./root-meta": {
       "import": "./dist/root-meta.js",
       "types": "./dist/root-meta.d.ts"

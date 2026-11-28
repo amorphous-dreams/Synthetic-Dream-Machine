@@ -227,7 +227,7 @@ export {
 export type { NamedWikiEngine, TiddlerVerbOptions } from "./tiddler-verbs.js";
 // The msg door: one entry lands in its stream; the inbox reads and a retract withdraws (comms-ux-enacts landings 14 and 15).
 export { makeMsgReactor, MSG_CALL_SEATS, MSG_ADDRESS } from "./msg-verbs.js";
-export { STREAM_STAGE, streamRootOf, entryOf, headsOf, inboxOf } from "./stream-entries.js";
+export { ASH_READY, STREAM_STAGE, streamRootOf, entryOf, headsOf, inboxOf, settledOf } from "./stream-entries.js";
 // The oracle cast: one I Ching cast written as one tiddler through the tiddler door's own put.
 export { makeOracleCastReactor, ORACLE_CALL_SEATS } from "./oracle-cast-verb.js";
 export { ddateVerb } from "./ddate-verb.js";

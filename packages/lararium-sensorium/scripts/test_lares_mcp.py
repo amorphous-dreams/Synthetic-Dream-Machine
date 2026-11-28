@@ -899,3 +899,20 @@ def test_the_four_record_tools_dress_from_their_carriers():
         assert inspect.getdoc(mcp._tool_manager.get_tool(tool).fn) is None, tool  # noqa: SLF001
     # CONTROL: rename skins the terminal alone, so no seat tool rides its carrier.
     assert "tiddler_rename" not in ((pack.get("routes") or {}).get("mcp") or {})
+
+
+def test_msg_stream_defaults_from_the_summons(monkeypatch):
+    # comms-ux-enacts landing 17: a summoned instance's process carries LARES_SUMMONED (the host launch cap sets it), so the
+    # seat's msg lands on that stream with none named; a named stream wins, and a session no summons started names none.
+    calls = []
+    monkeypatch.setattr("lares_mcp.uds.call", lambda verb, args: (calls.append((verb, args)), {"results": {"summary": {"ok": True, "output": {}}}})[1])
+    mcp = build_mcp(DaemonCoordinator(wing="w"))
+    msg = mcp._tool_manager.get_tool("msg").fn  # noqa: SLF001 — the registered skin
+    monkeypatch.setenv("LARES_SUMMONED", "braid#1")
+    msg(note="built")
+    assert calls[-1] == ("call", {"verb": "lar:///engine.msg.lands", "params": {"stream": "braid#1", "note": "built"}, "surface": "mcp"})
+    msg(stream="tern#2", note="built")
+    assert calls[-1][1]["params"]["stream"] == "tern#2"
+    monkeypatch.delenv("LARES_SUMMONED")
+    msg(note="built")
+    assert "stream" not in calls[-1][1]["params"]

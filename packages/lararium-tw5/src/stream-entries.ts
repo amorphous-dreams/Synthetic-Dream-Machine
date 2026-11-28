@@ -140,3 +140,27 @@ export function inboxOf(candidates: readonly StreamEntry[], all: readonly Stream
   for (const entry of all) if (writesAs(entry.stream, me)) for (const title of entry.re) seen.add(title);
   return candidates.filter((entry) => addressedTo(entry.to, me) && !seen.has(entry.title)).map((entry) => entry.title).sort();
 }
+
+/** The tag `hum` leaves on each entry it folds into a shrine: the entry stays, and o-takiage may sweep it (comms-ux-enacts landing 17). */
+export const ASH_READY = "ash-ready";
+
+/** True where some entry a reader of `to` writes names `entry` directly in `re`: an addressed entry read as seen. */
+function seenBy(entry: StreamEntry, all: readonly StreamEntry[]): boolean {
+  if (entry.to === null) return true;
+  return all.some((other) => writesAs(other.stream, entry.to!) && other.re.includes(entry.title));
+}
+
+/**
+ * THE SETTLED ENTRIES (`hum`'s fold, comms-ux-enacts landing 17): each entry of `candidates` that a stream written as `me`
+ * holds, that stands as no head of its stream, that its addressee has seen (an entry with no `to` needs no reader), and that no
+ * unseen entry still answers (names it in `re`). A head stays out: the stream's next entry follows it. Ordered by title. No clock
+ * decides; the same records answer the same set.
+ */
+export function settledOf(candidates: readonly StreamEntry[], all: readonly StreamEntry[], me: string): string[] {
+  const heads = new Set(headsOf(all, all));
+  return candidates
+    .filter((entry) => writesAs(entry.stream, me) && !heads.has(entry.title) && seenBy(entry, all))
+    .filter((entry) => !all.some((other) => other.re.includes(entry.title) && !seenBy(other, all)))
+    .map((entry) => entry.title)
+    .sort();
+}

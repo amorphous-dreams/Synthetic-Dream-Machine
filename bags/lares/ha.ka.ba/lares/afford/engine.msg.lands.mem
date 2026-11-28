@@ -37,7 +37,7 @@ Every write rides the put law: the root and the entry land through `engine.recor
 <<has entity=`example` name=`a-thought` params=`stream/lares-alpha#00003 note/[[the facet law keeps manufacturing exceptions]] ~ no to: the entry lands on the caller's own stream`>>
 <<has entity=`example` name=`a-msg` params=`stream/skein#1 to/lares-alpha#00003 about/<title>@<hash> note/[[landing 14 built; floor ticket inside]] ~ addressed to one instance; its inbox reads it until an entry of that stream names it in re`>>
 <<has entity=`example` name=`a-braid` params=`stream/lares-alpha#00003 re/[[<entry-a> <entry-b>]] note/[[decided: library.oracle.speaks]] ~ re names several entries; a braid needs no verb`>>
-<<has entity=`example` name=`a-hand-back` params=`stream/skein#1 to/lares-alpha re/<mandate> about/<handback>@<hash> note/[[built; floor ticket inside]] ~ a hand-back names its mandate in re`>>
+<<has entity=`example` name=`a-hand-back` params=`stream/lares-alpha#00003 to/lares-alpha#00003 re/[[<mandate> <skein's-last-entry>]] about/<handback>@<hash> note/[[hand-back from skein#1]] ~ the hand-back door lands this on the summoner's stream: re names the mandate and the instance's last entry`>>
 <<has entity=`example` name=`the-inbox` params=`stream/lares-alpha#00003 mu/?0 ~ the inbox as has lines, unseen entries alone`>>
 <<has entity=`example` name=`a-retract` params=`stream/lares-alpha#00003 mu/00 ~ the stream's head leaves while no reply names it`>>
 ```
@@ -58,7 +58,7 @@ Every write rides the put law: the root and the entry land through `engine.recor
 <<has entity=`cell` name=`_` params=`mu/dry ~ a dry landing: the entry's put walks its law to the last step and answers the summary, landing nothing`>>
 <<has entity=`cell` name=`_?` params=`mu/dry-relate ~ the dry summary: the title, the prev it takes, the bag and layer, landing nothing`>>
 <<has entity=`cell` name=`_!` params=`mu/dry-assert ~ the dry diff: the summary and the entry's fields as they would land, landing nothing`>>
-<<has entity=`arg` name=`stream` params=`takes/stream needs/required ~ the stream the msg writes as, <pet>#<n>: the summoned instance's name`>>
+<<has entity=`arg` name=`stream` params=`takes/stream needs/required ~ the stream the msg writes as, <pet>#<n>: the summoned instance's name, which a summoned process's skins fill from its summons (LARES_SUMMONED) where the call names none`>>
 <<has entity=`arg` name=`note` params=`takes/words ~ one line, 72 characters or fewer; a landing needs it`>>
 <<has entity=`arg` name=`to` params=`takes/address ~ an entity or one instance; none lands a thought on the caller's own stream`>>
 <<has entity=`arg` name=`re` params=`takes/list ~ the entries it answers or braids, any stream, as TiddlyWiki writes a list`>>
@@ -177,6 +177,6 @@ The intent door's `prev` keeps its own meaning, a chain head for a co-sign; this
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;UV4-S8VDRt7EELMdazLZf7ZUGJJ9Ff075M4NBkkCQ8w`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DXItavgs1elNGbKGvnjakDrk76lvPNskONFkSLNCCZo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

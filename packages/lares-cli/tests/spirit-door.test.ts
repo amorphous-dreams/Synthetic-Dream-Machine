@@ -2008,3 +2008,54 @@ describe("the instance names a spirit's model stream (ruling 2026-11-25-body-bec
     expect(text).toContain("1 instance wears lares-alpha");
   });
 });
+
+describe("hum --streams folds settled entries into the shrine (comms-ux-enacts landing 17)", () => {
+  const S = "lar:///ha.ka.ba/kahua/memory/stream/";
+  const row = (title: string, fields: Record<string, string>) => ({ title, fields: { title, ...fields } });
+  const humStreams = (options: Record<string, string> = {}): ParsedArgs =>
+    ({ command: "spirit", positional: ["hum", "lares-alpha"], options, flags: { json: true, streams: true } } as unknown as ParsedArgs);
+  // lares-alpha#3: a (folded before), b, c (asks tern#1), d (the head); tern#1 keeps its own entry.
+  const graph = (more: Array<{ title: string; fields: Record<string, string> }> = []) => [
+    row(`${S}lares-alpha-3-a`, { stream: "lares-alpha#3", note: "summoned by hand", tags: "ash-ready" }),
+    row(`${S}lares-alpha-3-b`, { stream: "lares-alpha#3", prev: `${S}lares-alpha-3-a`, note: "built the leaf" }),
+    row(`${S}lares-alpha-3-c`, { stream: "lares-alpha#3", prev: `${S}lares-alpha-3-b`, to: "tern#1", note: "asked tern" }),
+    row(`${S}lares-alpha-3-d`, { stream: "lares-alpha#3", prev: `${S}lares-alpha-3-c`, note: "the head" }),
+    row(`${S}tern-1-t`, { stream: "tern#1", note: "tern's own" }),
+    ...more,
+  ];
+  const marks = () => h.calls.filter((c) => c.verb === "tiddler-put" && String(c.args["title"]).startsWith(S));
+
+  test("RED: the settled entries fold as one line per stream into #/open, then each takes ash-ready and a folded field; none leaves", async () => {
+    stage({ rows: graph() });
+    const r = await run(humStreams());
+    expect(r.exit).toBe(0);
+    // b settles; a stands marked already, c waits on tern#1, d leads its stream, and tern's entry belongs to another entity.
+    expect(data(r)["settled"]).toEqual([`${S}lares-alpha-3-b`]);
+    expect(slotPuts()).toHaveLength(1);
+    expect(slotPuts()[0]!.args["title"]).toBe(`${URI}#/open`);
+    expect(String(slotPuts()[0]!.args["text"])).toContain(`* lares-alpha#3 · 1 settled through [[${S}lares-alpha-3-b]] · built the leaf`);
+    expect(marks().map((c) => c.args)).toEqual([{ recipe: "default", title: `${S}lares-alpha-3-b`, fields: { folded: `${URI}#/open` }, tagsAdd: ["ash-ready"] }]);
+    expect(h.calls.filter((c) => c.verb === "tiddler-delete")).toEqual([]);
+    // The fold lands ahead of the marks: a mark never names a line the slot does not hold.
+    const mark = new Set(marks());
+    expect(h.calls.map((c) => (isSlotPut(c.verb, c.args) ? "slot" : mark.has(c) ? "mark" : null)).filter(Boolean)).toEqual(["slot", "mark"]);
+  });
+
+  test("RED: a reply that names the asked entry settles it; --slot names another slot", async () => {
+    stage({ rows: graph([row(`${S}tern-1-r`, { stream: "tern#1", prev: `${S}tern-1-t`, re: `${S}lares-alpha-3-c`, note: "answered" })]), slotTexts: { "#/kulana": "!! Kulana" } });
+    const r = await run(humStreams({ slot: "#/kulana" }));
+    expect(data(r)["settled"]).toEqual([`${S}lares-alpha-3-b`, `${S}lares-alpha-3-c`]);
+    expect(String(slotPuts()[0]!.args["title"])).toBe(`${URI}#/kulana`);
+    expect(String(slotPuts()[0]!.args["text"])).toContain(`* lares-alpha#3 · 2 settled through [[${S}lares-alpha-3-c]] · asked tern`);
+    expect(marks()).toHaveLength(2);
+  });
+
+  test("RED: nothing settled folds nothing and marks nothing", async () => {
+    stage({ rows: graph().slice(2, 4) });
+    const r = await run(humStreams());
+    expect(r.exit).toBe(0);
+    expect(data(r)["settled"]).toEqual([]);
+    expect(slotPuts()).toEqual([]);
+    expect(marks()).toEqual([]);
+  });
+});

@@ -1810,7 +1810,7 @@ def build_mcp(coordinator: LaresCoordinator):
         return receipt
 
     @mcp.tool(annotations=_annotations("msg"))
-    def msg(stream: str, note: "str | None" = None, to: "str | None" = None, re: "str | list | None" = None,
+    def msg(stream: "str | None" = None, note: "str | None" = None, to: "str | None" = None, re: "str | list | None" = None,
             about: "str | None" = None, slug: "str | None" = None, prev: "str | None" = None, carry: "str | None" = None,
             mode: "str | None" = None, mood: "str | None" = None, stance: "str | None" = None, aperture: "str | None" = None,
             drift_ward: "str | None" = None, seat: "str | None" = None, model: "str | None" = None, mandate: "str | None" = None,
@@ -1819,6 +1819,10 @@ def build_mcp(coordinator: LaresCoordinator):
         # description and each parameter's from the baked affordance pack. The tool rides the one call, so the carrier the
         # stack seats binds the params, `mu` reads its cells (`?0` the inbox, `00` a retract, `_` a dry landing), and the
         # answer names the carrier that shaped it.
+        # THE STREAM DEFAULTS FROM THE SUMMONS (comms-ux-enacts landing 17): a summoned instance's process carries its own
+        # name (`LARES_SUMMONED`, which the host launch cap sets), so its msgs land on its own stream with none named; a
+        # session no summons started names `stream` or meets the door's `stream-unnamed` with its cure.
+        stream = stream or (os.environ.get("LARES_SUMMONED") or "").strip() or None
         given = {"stream": stream, "note": note, "to": to, "re": re, "about": about, "slug": slug, "prev": prev,
                  "carry": carry, "mode": mode, "mood": mood, "stance": stance, "aperture": aperture, "drift-ward": drift_ward,
                  "seat": seat, "model": model, "mandate": mandate, "title": title, "mu": mu, "recipe": recipe}
