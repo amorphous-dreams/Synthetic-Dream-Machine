@@ -92,7 +92,7 @@ export const verdictPath = (house, rev) => join(house, "cache", "bench", `${rev}
 
 /**
  * Re-declares every genesis/unbaked.json row whose source bytes moved: the row's sha256 takes the tree's, byte-for-byte in place
- * (the file's own layout stands). A row naming a source the tree no longer holds reads red (the parity witness owns that cure).
+ * (the file's own layout stands). A row naming a source the tree does not hold reads red (the parity witness owns that cure).
  */
 export function redeclareUnbaked(root, say = console.log, fs = { existsSync, readFileSync, writeFileSync }) {
   const file = join(root, "genesis", "unbaked.json");
