@@ -1,14 +1,13 @@
-"""Witness — the `kahua_propose` / `kahua_stage` / `kahua_get` MCP tools: an AI seat's reach onto its face's kahua stage.
+"""Witness — the seat's kahua acts (lar:///face.draft.proposes · stages · reads): an AI seat's reach onto its face's kahua stage.
 
 THE SEAT PROPOSES, STAGES AND READS; THE OPERATOR'S HAND LIFTS. Each tool opens a local SESSION under the `seat` hand (the vessel
 seats the `seat` profile, which refuses the kahua pin, lift and withdraw rows at the socket), runs ONE `session:act`
-naming the store door's row (`kahua-propose`, `kahua-stage`, `kahua-read`), and closes. No `kahua_lift`, `kahua_withdraw` or
-`kahua_mint` tool exists. The witness stands a FAKE vessel on a temp unix socket that records every frame and answers
+naming the store door's row (`kahua-propose`, `kahua-stage`, `kahua-read`), and closes. No seat act lifts, withdraws or
+mints. The witness stands a FAKE vessel on a temp unix socket that records every frame and answers
 the session protocol, so each assertion reads the exact frames the tool put on the wire.
 
     ~/.venv/bin/python -m pytest packages/lararium-sensorium/scripts/test_kahua_tools.py -q
 """
-import asyncio
 import json
 import os
 import socket
@@ -17,7 +16,12 @@ import threading
 import pytest
 
 import lares_uds as uds
-from lares_mcp import KAHUA_VERBS, OFFER_VERBS, VERB_SEATS, DaemonCoordinator, build_mcp, seat_of
+from lares_mcp import DaemonCoordinator, build_mcp, carrier_words
+
+# Each act by the carrier that seats it.
+KAHUA_ACTS = {"kahua_propose": "lar:///face.draft.proposes", "kahua_stage": "lar:///face.draft.stages",
+              "kahua_get": "lar:///face.draft.reads"}
+OFFER_SHOWS = "lar:///realm.offer.shows"
 
 with open(os.path.join(os.path.dirname(__file__), "fixtures", "tiddler-door-answers.json"), encoding="utf-8") as _f:
     PLANE_ROWS = [r for r in json.load(_f)["rows"] if r["tool"] in {"kahua_get", "meme_offer_show"}]
@@ -106,18 +110,16 @@ def vessel(monkeypatch, tmp_path_factory):
 
 
 def _tools():
-    mcp = build_mcp(DaemonCoordinator(wing="w"))
-    return {name: mcp._tool_manager.get_tool(name).fn for name in KAHUA_VERBS}  # noqa: SLF001 — the registered skins
+    acts = build_mcp(DaemonCoordinator(wing="w")).seat_acts
+    return {name: acts[address] for name, address in KAHUA_ACTS.items()}
 
 
-def test_kahua_tools_register_seat_hotl_and_carry_no_lift():
-    mcp = build_mcp(DaemonCoordinator(wing="w"))
-    names = {t.name for t in asyncio.run(mcp.list_tools())}
-    assert set(KAHUA_VERBS) == {"kahua_propose", "kahua_stage", "kahua_get"} <= names
-    for v in KAHUA_VERBS:
-        assert v in VERB_SEATS and seat_of(v) == "HOTL"
-    # The operator's hand lifts: no MCP tool pins, lifts or withdraws.
-    assert names.isdisjoint({"kahua_lift", "kahua_withdraw", "kahua_mint", "kahua_list", "meme_offer_list", "bag_show"})
+def test_the_kahua_acts_seat_by_address_and_carry_no_lift():
+    acts = build_mcp(DaemonCoordinator(wing="w")).seat_acts
+    for address in (*KAHUA_ACTS.values(), OFFER_SHOWS):
+        assert callable(acts.get(address)), address
+    # The operator's hand lifts: no seat act lifts, withdraws or mints.
+    assert {"lar:///face.hand.lifts", "lar:///face.hand.withdraws", "lar:///face.key.mints", "lar:///realm.offer.commits"}.isdisjoint(acts)
 
 
 def test_offer_show_folds_list_and_item_over_the_existing_wire(monkeypatch):
@@ -127,7 +129,7 @@ def test_offer_show_folds_list_and_item_over_the_existing_wire(monkeypatch):
         return {"results": {"summary": {"ok": True, "output": {"has": "<<~ has name=`offers` params=`count/0`>>", "offers": []}}}}
     monkeypatch.setattr(uds, "call", wire)
     mcp = build_mcp(DaemonCoordinator(wing="w"))
-    show = mcp._tool_manager.get_tool("meme_offer_show").fn
+    show = mcp.seat_acts[OFFER_SHOWS]
     assert show()["offers"] == []
     cid = "a" * 64
     assert show(cid=cid)["offers"] == []
@@ -145,13 +147,15 @@ def test_plane_fixture_parity(row, vessel, monkeypatch):
         assert vessel.acts() == [{"act": row["wire"]["verb"], "args": row["wire"]["args"]}]
     else:
         calls = []
+        bound = {k.replace("_", "-"): v for k, v in row["mcp"].items()}
         def wire(verb, args):
             calls.append({"verb": verb, "args": args})
-            return {"results": {"summary": {"ok": True, "output": row["output"]}}}
+            out = {"handler": "seat", "address": OFFER_SHOWS, "params": bound} if verb == "call" else row["output"]
+            return {"results": {"summary": {"ok": True, "output": out}}}
         monkeypatch.setattr(uds, "call", wire)
         mcp = build_mcp(DaemonCoordinator(wing="w"))
-        result = mcp._tool_manager.get_tool("meme_offer_show").fn(**row["mcp"])
-        assert calls == [row["wire"]]
+        result = mcp._tool_manager.get_tool("act").fn(address=OFFER_SHOWS, args=row["mcp"])  # noqa: SLF001 — the registered skin
+        assert calls == [{"verb": "call", "args": {"verb": OFFER_SHOWS, "params": bound, "surface": "mcp"}}, row["wire"]]
     assert result == row["output"]
 
 
@@ -247,8 +251,9 @@ def test_a_row_refusal_and_a_session_refusal_raise_by_name(vessel):
 
 
 def _described(name: str) -> str:
-    mcp = build_mcp(DaemonCoordinator(wing="w"))
-    return next(t.description for t in asyncio.run(mcp.list_tools()) if t.name == name)
+    said = "\n".join(carrier_words(KAHUA_ACTS[name]))
+    assert said, f"affordance-pack-stale: the pack holds no mcp words for {KAHUA_ACTS[name]}; re-bake: pnpm --filter @lararium/tw5 build"
+    return said
 
 
 def test_kahua_get_text_names_the_relation_and_the_unpinned_stage():

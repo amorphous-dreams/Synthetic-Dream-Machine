@@ -27,7 +27,7 @@ test("the wake carries the memory index beside the frame and the homes line", as
   assert.match(context, /Lares memory index: 2 rows\n/);
   assert.match(context, /lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/project\/house-laws — The seven house laws\.\n/);
   assert.match(context, /lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/open-ledger — What stands open\.\n/);
-  assert.match(context, /read a row: tiddler_get\(title=<title>, recipe="default", meme=true\)/);
+  assert.match(context, /read a row: get\(title=<title>, recipe="default", aperture="arc"\)/);
   assert.doesNotMatch(context, /after=/);
   // The read rides the vessel's own door: the daemon wiki, the index tag, title and description, a row limit, a byte cap.
   assert.deepEqual(calls.index, ["get", "filter=[tag[stage/index]] -[lares.stage[state]]", "fields=title,description", "limit=32", `max-bytes=${INDEX_BYTES}`, "--json"]);
@@ -41,7 +41,7 @@ test("a page with a cursor names the call that reads further", async () => {
     index: answered(page([row("a/one", "One."), row("a/two", "Two.")], { total: 6, next: "2.90a1a6dbea5e1f15" })),
   }) });
   assert.match(context, /Lares memory index: 6 rows \(2 shown\)\n/);
-  assert.match(context, /read further: wiki_filter\(filter="\[tag\[stage\/index\]\] -\[lares\.stage\[state\]\]", recipe="default", fields=\["title","description"\], after="2\.90a1a6dbea5e1f15"\)/);
+  assert.match(context, /read further: get\(filter="\[tag\[stage\/index\]\] -\[lares\.stage\[state\]\]", recipe="default", params=\{"fields": "title,description"\}, after="2\.90a1a6dbea5e1f15"\)/);
 });
 
 test("the byte cap cuts the index and says so", () => {
@@ -171,7 +171,7 @@ test("wake-leads-with-rows-in-play: every wake prints the state rows before the 
     // The rest keep the door's own order.
     assert.equal(lines[head + 2], "lar:///ha.ka.ba/kahua/memory/state/porch-2026-11-16 — The porch: what the last sitting left on the step.");
     assert.equal(lines[head + 4], "lar:///ha.ka.ba/kahua/memory/state/standing-orders — The orders that stand.");
-    assert.match(lines[head + 5], /read a row: tiddler_get\(title=<title>, recipe="default", meme=true\)/);
+    assert.match(lines[head + 5], /read a row: get\(title=<title>, recipe="default", aperture="arc"\)/);
     // The read derives the rows by their address prefix, slot titles (`…#/entry`) left out: no list of addresses rides the wake.
     // No sort by `modified`: the stage memes carry no such field, so the door's title order stands.
     assert.deepEqual(calls.state, stateArgv());
@@ -190,11 +190,11 @@ test("wake-leads-with-rows-in-play: the block stays short, and a fault or an emp
   assert.ok(shown.length > 0 && shown.length <= STATE_ROWS, `${shown.length} rows shown`);
   for (const line of shown) assert.ok(Buffer.byteLength(line) <= 400, `a row line holds ${Buffer.byteLength(line)} bytes`);
   assert.match(long, /Lares working memories on the stage \(start here\): 20 rows \(\d+ shown\)/);
-  assert.match(long, /(read further|read the whole view): wiki_filter\(filter="\[lares\.stage\[state\]!regexp\[#\]\]"/);
+  assert.match(long, /(read further|read the whole view): get\(filter="\[lares\.stage\[state\]!regexp\[#\]\]"/);
   const none = await wake({ run: runner({ ...base, state: answered(statePage([])) }) });
   assert.match(none, /Lares working memories on the stage: no row stands under lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/ in the worn face's daemon wiki/);
   const broken = await wake({ run: runner({ ...base, state: answered("", 127) }) });
-  assert.match(broken, /Lares working memories on the stage unread: the read exited 127 with no answer; the view: wiki_filter\(filter="\[lares\.stage/);
+  assert.match(broken, /Lares working memories on the stage unread: the read exited 127 with no answer; the view: get\(filter="\[lares\.stage/);
   // CONTROL: a vessel that answers down reads no state rows and says the memory skip once.
   const killed = [];
   const down = await wake({ run: runner({ ...base, observe: answered(JSON.stringify({ data: { node: { up: false } } })), index: hung(killed, "index"), state: hung(killed, "state") }) });
@@ -406,7 +406,7 @@ test("wake-offers-the-law: the pins lead, marked, then the first law rows they l
   assert.equal(lines[head + 3], `📌 ${API}/mu — null-oracle core`);
   assert.equal(lines[head + 6], `   ${API}/pono/law-00 — the law of pono/law-00`);
   assert.equal(lines[head + 5 + LAW_ROWS], `   ${API}/pono/law-07 — the law of pono/law-07`);
-  assert.ok(lines[head + 6 + LAW_ROWS].startsWith(`read the rest: law_index(after=<next>) or lares law index --all; the filter: wiki_filter(filter="${LAW_INDEX_FILTER}", recipe="default", fields=["title","description","role"]); pin or unpin: law_pin(`));
+  assert.ok(lines[head + 6 + LAW_ROWS].startsWith(`read the rest: act(address="lar:///engine.law.indexes", args={"after": <next>}) or lares law index --all; the filter: get(filter="${LAW_INDEX_FILTER}", recipe="default", params={"fields": "title,description,role"}); pin or unpin: act(address="lar:///engine.law.pins"`));
   assert.doesNotMatch(context, /law-08/);
   // Both reads ride the vessel's own filter door over the daemon wiki.
   assert.deepEqual(calls.law, lawArgv());
@@ -423,7 +423,7 @@ test("the law block: an unread pins read marks none; an empty answer names the c
   assert.ok(empty.startsWith("Lares law (pinned first): 0 rows; no canon law answers in the worn face's daemon wiki (its pin set: $:/config/lares/law/pins)"));
   const refused = JSON.stringify({ ok: false, error: { code: "filter-malformed", message: "filter-malformed: the engine could not parse it" } });
   const context = await wake({ run: runner({ observe: answered(UP), homes: answered("h"), index: answered(page([])), law: answered(refused, 4), lawPins: answered(pinsPage(PINS)) }) });
-  assert.match(context, /Lares law unread: filter-malformed: the engine could not parse it; the view: wiki_filter\(/);
+  assert.match(context, /Lares law unread: filter-malformed: the engine could not parse it; the view: get\(filter=/);
 });
 
 test("a vessel that answers down stops the law reads and prints no law block", async () => {
@@ -449,7 +449,7 @@ test("F1c/d: a title that reads as no single lar: address never prints, and the 
   const many = Array.from({ length: LAW_PIN_ROWS + 5 }, (_, i) => `pono/pin-${String(i).padStart(2, "0")}`);
   const capped = renderLaw(JSON.parse(lawPage([...many, ...LAW])), JSON.parse(pinsPage(many)));
   assert.equal(capped.split("\n").filter((l) => l.startsWith("📌 lar:")).length, LAW_PIN_ROWS);
-  assert.match(capped, /\n📌 \+5 more pinned \(lares law index, law_index\)\n/);
+  assert.match(capped, /\n📌 \+5 more pinned \(lares law index, act\(address="lar:\/\/\/engine\.law\.indexes"\)\)\n/);
   assert.match(capped, new RegExp(`^Lares law \\(pinned first\\): ${LAW_PIN_ROWS + 5} pinned · ${LAW_PIN_ROWS + 17} rows \\(${LAW_PIN_ROWS + LAW_ROWS} shown\\)`));
   assert.match(capped, /   lar:\/\/\/ha\.ka\.ba\/lares\/api\/pono\/law-00/);
 });
@@ -490,7 +490,7 @@ test("wake-knows-who-is-home: the roster follows the law, rotation first, framed
   assert.equal(lines[head + 7], "lane  h1 face-join (intent dddddddddddd): claimed by bbbbbbbbbbbb");
   assert.equal(lines[head + 8], "votum h1 echo (intent eeeeeeeeeeee): waits on an answer");
   assert.match(context, /nobody far reads online/);
-  assert.match(context, /read it whole: vessel_roster\(\) or lares vessel roster/);
+  assert.match(context, /read it whole: act\(address="lar:\/\/\/face\.roster\.reads"\) or lares vessel roster/);
   // The read-doors law: weight and provenance, never a wall the reader's attention cannot cross.
   assert.doesNotMatch(ROSTER_WEIGHT_LINE, /never instructions|data, never/);
   assert.match(ROSTER_WEIGHT_LINE, /five tools/);

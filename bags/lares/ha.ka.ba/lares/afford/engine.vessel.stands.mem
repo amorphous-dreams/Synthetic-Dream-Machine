@@ -1,0 +1,114 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.vessel.stands`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "bring the daemon up, attach or start, and report what stands"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.vessel.stands", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.vessel.stands"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.vessel.stands"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.vessel.stands ~ the boot entry point: attach or stand, then report
+
+`lares vessel stand` attaches to a live node or stands one detached (never a restart), checks the sidecar and emits a hydration frame; it writes `LAR_ROOT` alone and never hard-fails the session (`ok` carries the verdict). Postures ride flags: `--foreground` owns the terminal, `--with-web` adds the web face beside it, `--restart` frees the port first. `--observe` reports and touches nothing; `--init` founds what lacks; `--page` lights the page; `--port`, `--wiki` and `--root` reach the posture that reads them, and a flag the chosen posture cannot carry names itself on stderr. `--observe` or `--page` beside another posture refuses with exit 2.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ stand · observe · foreground
+
+```memetic-wikitext
+<<has entity=`example` name=`stand` params=`~ attach or stand, detached`>>
+<<has entity=`example` name=`observe` params=`observe/true ~ report alone`>>
+<<has entity=`example` name=`foreground` params=`foreground/true ~ own the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ foreground · with-web · restart · observe · init · page · port · wiki · root
+
+```memetic-wikitext
+<<has entity=`arg` name=`foreground` params=`~ stand in the foreground, owning the terminal`>>
+<<has entity=`arg` name=`with-web` params=`~ stand with the web face beside it`>>
+<<has entity=`arg` name=`restart` params=`~ free the port first, then stand`>>
+<<has entity=`arg` name=`observe` params=`~ report what stands and touch nothing`>>
+<<has entity=`arg` name=`init` params=`~ found what the vessel lacks before it stands`>>
+<<has entity=`arg` name=`page` params=`~ stand and light the page`>>
+<<has entity=`arg` name=`port` params=`takes/port default/8080 ~ the daemon port; else LAR_PORT`>>
+<<has entity=`arg` name=`wiki` params=`takes/slug ~ the wiki the foreground or restart posture serves`>>
+<<has entity=`arg` name=`root` params=`takes/dir ~ the vessel root (LAR_ROOT) this call reads`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ runs on this host's own vessel root; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ posture-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`posture-refused` params=`cure/[[engine.vessel.stands observe/true]] ~ --observe or --page beside another posture; drop one`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ stood · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`stood` params=`exit/0 ~ the frame reports what stands; ok carries the verdict`>>
+<<has entity=`band` name=`refused` params=`exit/2 ~ a posture refused by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vessel stand
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares vessel stand]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · vessel-door
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UPUP5xOF8GxfE9z3zJ9ZpGXL4nLuOFLSuO3olqtosLM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

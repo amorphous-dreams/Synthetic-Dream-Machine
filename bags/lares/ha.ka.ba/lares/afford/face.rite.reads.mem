@@ -1,0 +1,106 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.rite.reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read every rite half that verifies and conferre's read of them"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.rite.reads", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.rite.reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.rite.reads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.rite.reads ~ receipts ~ rite-receipts
+
+`lares rite receipts` runs `rite-receipts`: every half that verifies (`data.receipts`) and conferre's read of them (`data.conferre`). `--rite kukulu` reads every lent face's begun halves resting unlanded and the resting offer's hash (`offerBase`); `--branch` narrows them to its line.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ all · kukulu
+
+```memetic-wikitext
+<<has entity=`example` name=`all` params=`~ every verified half`>>
+<<has entity=`example` name=`kukulu` params=`rite/kukulu ~ the unlanded kūkulu halves and the offer base`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ rite · branch · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`rite` params=`takes/rite ~ read one rite's unlanded halves`>>
+<<has entity=`arg` name=`branch` params=`takes/name ~ narrow to one line`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ one face, a whole persona index from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ a read through the store door`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.rite.reads]] ~ a malformed face`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ receipts
+
+```memetic-wikitext
+<<has entity=`band` name=`receipts` params=`exit/0 fields/[[receipts conferre offerBase]] ~ the verified halves and conferre's read`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares rite receipts
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares rite receipts]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · seat-harness
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6ijD1ljRV3BawC00PjJYeOufN_RCxPDw8aa6lxCKDjQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

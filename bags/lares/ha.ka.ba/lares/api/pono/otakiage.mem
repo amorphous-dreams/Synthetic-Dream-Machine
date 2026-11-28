@@ -176,7 +176,7 @@ Handoff: input <<input>>; output <<output>>. Aftermath: <<aftermath>>. Then <<th
 \end
 ```
 
-A call renders a record; it writes and deletes nothing. `mode=propose` names a burn proposal. `mode=fire` requires the operator's call and a named `caller`; the last check-in commit lands only after that call. #/the-fire governs the deletion doors. A wiki held by more than one human takes removal through the tombstone rite and its named answers. `proof` names completed work; `hash` carries the `base:` hash that `get mu=assert` prints; both family doors take it. `commits` names the separate last check-in and burn commits. The thanks call's four lines (carried, homes, clear, thanks) make the commit body alone; its input, output and aftermath ride the handoff.
+A call renders a record; it writes and deletes nothing. `mode=propose` names a burn proposal. `mode=fire` requires the operator's call and a named `caller`; the last check-in commit lands only after that call. #/the-fire governs the deletion doors. A wiki held by more than one human takes removal through the tombstone rite and its named answers. `proof` names completed work; `hash` carries the `base:` hash that `get aperture=arc` prints; both family doors take it. `commits` names the separate last check-in and burn commits. The thanks call's four lines (carried, homes, clear, thanks) make the commit body alone; its input, output and aftermath ride the handoff.
 
 Worked calls and a single-stage invocation stand in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/examples`>>.
 
@@ -212,6 +212,6 @@ Worked calls and a single-stage invocation stand in <<~ loulou uri=`lar:///ha.ka
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gKggjZDIu0Z1pdq0tT02To1ZQgPvPDdj1FcjdeVD1iE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;885xIXwSGdcyH06TmZ4Kv9TknEkb0tJWkXN0nEPNwQk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

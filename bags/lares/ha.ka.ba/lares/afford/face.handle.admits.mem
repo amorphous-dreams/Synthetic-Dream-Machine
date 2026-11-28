@@ -1,0 +1,106 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.handle.admits`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "admit a carried handle card into the face's handle-book"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.handle.admits", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.handle.admits"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.handle.admits"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.handle.admits ~ a carried card, TOFU-admitted into the recogniser's memory
+
+`lares circle card <carriage>` reads a self-certifying HandleCard from a carriage (a `#card=<base64url>` token, `@file`, or `-` for stdin) and ingests it into the acting face's handle-book, held to its own lineage (anti-rollback, anti-fork). It follows nobody; `circle add` follows next. Nothing reaches the wire.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ token · file
+
+```memetic-wikitext
+<<has entity=`example` name=`token` params=`carriage/[[#card=<base64url>]] ~ admit a card from its token`>>
+<<has entity=`example` name=`file` params=`carriage/@card.txt ~ admit a card from a file`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ carriage · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`carriage` params=`takes/carriage needs/required seat/1 as/<carriage> ~ #card=<base64url>, @file, or - for stdin`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the face whose handle-book and circles act; absent, the one face standing open`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ edits this face's private graph alone; nothing crosses the wire`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.handle.admits carriage/@card.txt]] ~ card needs a carriage that carries a card the book admits; a lineage break names its reject`>>
+<<has entity=`refusal` name=`error` params=`~ the follow store refused; the line names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ admitted
+
+```memetic-wikitext
+<<has entity=`band` name=`admitted` params=`exit/0 fields/[[nym actCid parents glamour petname recognized]] ~ the nym stands known, ready to follow`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares circle card
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares circle card]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hkrKNKzyhN7GJVjlIj3VW4PVBANEh_kjK5IcBrz3MZo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

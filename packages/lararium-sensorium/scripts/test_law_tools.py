@@ -1,6 +1,8 @@
-"""Witness — the `law_index` / `law_pin` / `law_unpin` MCP tools: the house's law offered where an agent wakes.
+"""Witness — the seat's law acts (lar:///engine.law.indexes · pins · unpins): the house's law offered where an agent wakes,
+each reached as `act(address=..., args={...})`.
 
-The daemon socket stands faked: a small pin store answers `tiddler-get` / `tiddler-put`, and a filter reader answers
+The daemon socket stands faked: the vessel's `call` answers `handler/seat` with the args as bound, a small pin store answers
+`tiddler-get` / `tiddler-put`, and a filter reader answers
 `wiki-filter` for the runs a pin set holds (`[[t]]`, `-[[t]]`, a `[prefix[…]]` run naming the Mu members,
 `+[match[t]]`). The engine's own answer to the real filters rides `@lararium/tw5`'s law-index suite; this witness holds
 the seat's half: the filters it puts on the wire (the same strings the CLI and the wake run), the order it answers, the
@@ -8,7 +10,6 @@ one run a pin moves, the round trip back to the seeded text, and the refusals by
 
     ~/.venv/bin/python -m pytest packages/lararium-sensorium/scripts/test_law_tools.py -q
 """
-import asyncio
 import json
 import os
 import re
@@ -18,8 +19,8 @@ import threading
 import pytest
 
 import lares_uds as uds
-from lares_mcp import (LAW_INDEX_FILTER, LAW_PINS_FILTER, LAW_PINS_TITLE, LAW_VERBS, SEAT_INSTRUCTIONS,
-                       DaemonCoordinator, build_mcp, seat_of)
+from lares_mcp import (LAW_INDEX_FILTER, LAW_PINS_FILTER, LAW_PINS_TITLE, DaemonCoordinator, build_mcp,
+                       read_affordance_pack, seat_instructions)
 
 API = "lar:///ha.ka.ba/lares/api"
 BOOT = f"{API}/noosphere-boot"
@@ -28,6 +29,8 @@ MU = [f"{API}/mu/chao", f"{API}/mu/the-four-tools"]
 LAW = [f"{API}/pono/drift-ward", f"{API}/pono/lar-uri"]
 STANDING = {BOOT, MU_ROOT, *MU, *LAW}
 SEEDED = f"[[{BOOT}]] [[{MU_ROOT}]] [prefix[{MU_ROOT}/]!regexp[#]sort[title]]"
+# Each law act by the carrier that seats it.
+LAW_ACTS = {"law_index": "lar:///engine.law.indexes", "law_pin": "lar:///engine.law.pins", "law_unpin": "lar:///engine.law.unpins"}
 
 
 def evaluate(text: str) -> list:
@@ -63,6 +66,9 @@ class _PinDaemon:
         threading.Thread(target=self._serve, daemon=True).start()
 
     def answer(self, verb: str, args: dict) -> dict:
+        # THE VESSEL'S CALL, IN SMALL: every law act's handler rests in the seat, so the call answers handler/seat as bound.
+        if verb == "call":
+            return {"handler": "seat", "address": args["verb"], "params": args["params"]}
         # THE DOOR'S GRADIENT, IN SMALL: an answer that left the text home hands a card's base, which no text put takes.
         if verb == "tiddler-get":
             mark = "" if args.get("grain") == "fat" else "skinny:"
@@ -131,21 +137,28 @@ def _mcp():
 
 
 def _tools():
-    mcp = _mcp()
-    return {name: mcp._tool_manager.get_tool(name).fn for name in LAW_VERBS}  # noqa: SLF001 — the registered skins
+    acts = _mcp().seat_acts
+    return {name: acts[address] for name, address in LAW_ACTS.items()}
 
 
-def test_the_law_tools_register_seat_hotl_and_state_their_annotations(daemon):
-    tools = {t.name: t for t in asyncio.run(_mcp().list_tools())}
-    for name, read_only in (("law_index", True), ("law_pin", False), ("law_unpin", False)):
-        assert name in tools and seat_of(name) == "HOTL"
-        a = tools[name].annotations
-        assert (a.read_only_hint, a.destructive_hint, a.idempotent_hint, a.open_world_hint) == (read_only, False, True, False), name
+def _act():
+    return _mcp()._tool_manager.get_tool("act").fn  # noqa: SLF001 — the registered skin
+
+
+def test_the_law_acts_run_by_address_through_act(daemon):
+    out = _act()(address=LAW_ACTS["law_index"], args={"limit": 10})
+    assert [r["title"] for r in out["rows"]] == [BOOT, MU_ROOT, *MU, *LAW]
+    assert daemon.lines[0]["verb"] == "call"
+    assert daemon.lines[0]["args"] == {"verb": LAW_ACTS["law_index"], "params": {"limit": 10}, "surface": "mcp"}
+    pinned = _act()(address=LAW_ACTS["law_pin"], args={"uri": LAW[1]})
+    assert pinned["decision"] == "put" and pinned["pinned"] is True
+    assert daemon.puts()[-1]["text"] == f"{SEEDED} [[{LAW[1]}]]"
 
 
 def test_the_seat_tells_a_client_to_read_the_law_first():
-    assert _mcp().instructions == SEAT_INSTRUCTIONS
-    assert "law_index" in SEAT_INSTRUCTIONS and "pinned law first" in SEAT_INSTRUCTIONS
+    served = _mcp().instructions
+    assert served == seat_instructions(read_affordance_pack())
+    assert 'act(address="lar:///engine.law.indexes")' in served and "pinned law" in served
 
 
 # The same strings `@lararium/tw5`'s `daemon-law-tiddlers` exports and the wake hook runs (lares-cli's law-door suite welds those two).

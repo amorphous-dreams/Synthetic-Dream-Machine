@@ -281,7 +281,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   });
 
   test("② A mints the ford bag and puts the ledger into it — the steward's own write", async () => {
-    const mint = await A!.cli(["act", "CREATE", "--bag", LARES_BAG, "--yes", "--json"]);
+    const mint = await A!.cli(["act", "lar:///carriage.bag.creates", `bag=${LARES_BAG}`, "yes=true", "--json"]);
     expect(mint.json?.["ok"], said(mint)).toBe(true);
     const file = join(A!.root, "ford-stage-ledger.mem");
     writeFileSync(file, meme());

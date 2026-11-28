@@ -256,10 +256,12 @@ describe("lares lei terms prints the pūlama's terms, one line", () => {
     expect(seam.calls).toEqual([["swarm-show", { rite: "kukulu", branch: "main", face: 1 }]]);
   });
 
-  test("the lei help names land and terms", () => {
+  // The lei door flipped to its carriers (comms landings 10 + 23): the door's index names each verb, each carrier its lines.
+  test("the lei help names land and terms, and kui strings every open face's lei", () => {
     const help = helpLines("lei").join("\n");
     expect(help).toMatch(/lares lei land /);
-    expect(help).toMatch(/lares lei terms kui\|restring\|unstring/);
-    expect(help).toMatch(/lares lei kui --rite kukulu --branch main --returns 3 --all/);
+    expect(help).toMatch(/lares lei terms /);
+    expect(helpLines("lei terms").join("\n")).toMatch(/kui/);
+    expect(helpLines("lei kui").join("\n")).toMatch(/lares lei kui --rite kukulu --branch main .*--all/);
   });
 });

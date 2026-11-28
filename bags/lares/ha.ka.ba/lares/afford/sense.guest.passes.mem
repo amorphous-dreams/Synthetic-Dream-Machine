@@ -1,0 +1,85 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.guest.passes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "pass any other verb through to the guest palace's vendored CLI"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.guest.passes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.guest.passes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.guest.passes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.guest.passes ~ the superset: an unwrapped verb reaches the vendored CLI
+
+`lares mempalace <verb> [<words…>]` passes any verb this door does not wrap through to the vendored mempalace CLI against the guest palace (`search`, `compress`, `sweep`, `hallways`, `<verb> --help`), whose own parser reads and refuses its words. `--help-mempalace` (or `help mempalace`) prints the vendored CLI's own command list. Bare, the door prints its own help and exits 2. The lane law: `lares mempalace` touches only the guest `~/.mempalace` comparator; `lares sense` touches only the sovereign sensorium.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ verb · words · help-mempalace
+
+```memetic-wikitext
+<<has entity=`arg` name=`verb` params=`takes/word seat/1 as/<verb> ~ a vendored subverb`>>
+<<has entity=`arg` name=`words` params=`takes/words seat/2 as/<words…> ~ the words the vendored CLI reads`>>
+<<has entity=`arg` name=`help-mempalace` params=`~ print the vendored CLI's own top-level help`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/hand ~ runs the vendored CLI against the guest palace on this host; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ passed
+
+```memetic-wikitext
+<<has entity=`band` name=`passed` params=`exit/0 ~ the vendored CLI's own output and exit`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares mempalace
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares mempalace]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · sensorium-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lKUy3N7P5XvE0J2mGw_YL53k37mpIu4Ve-p4PIW7JrI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

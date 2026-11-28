@@ -1,0 +1,107 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.invite.takes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "keep a carried invite so this vessel's hearth dial walks in on it"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.invite.takes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.invite.takes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.invite.takes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.invite.takes ~ take ~ keep a carried invite
+
+`lares walk take <lar-invite:…>` keeps a carried invite; this vessel's hearth dial walks in on it as the face named (else the one face standing open), at once where a dial stands, else when the vessel next stands. A take for a second hearth refuses aloud and writes nothing. The walker route ships shut by name: the invite stays kept, and no hearth gate seats the walk until a live grant reader opens the route.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ take
+
+```memetic-wikitext
+<<has entity=`example` name=`take` params=`invite/lar-invite:<carried> ~ keep the carried invite`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face · invite
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`invite` params=`takes/invite needs/required seat/1 as/<invite> ~ the carried lar-invite: string`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ custody
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`custody` params=`who/seat-or-hand ~ one sealed act frame on the custody door under the vessel key; the walk record never rests in the clear`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · refused · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.invite.takes invite/lar-invite:<carried>]] ~ no carried invite named`>>
+<<has entity=`refusal` name=`refused` params=`~ the custody door refused the act; the message names why`>>
+<<has entity=`refusal` name=`error` params=`~ the act failed outside the door's refusals`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ taken
+
+```memetic-wikitext
+<<has entity=`band` name=`taken` params=`exit/0 fields/[[gatePubKey nexusAid relay leaf dialing via]] ~ the hearth, the Nexus, the leaf, and whether the dial walks now`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares walk take
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares walk take]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;o0gVJHhNMhpRIKXzUB_7ixS53ufZ6yLDJPZ3JYHPWOA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

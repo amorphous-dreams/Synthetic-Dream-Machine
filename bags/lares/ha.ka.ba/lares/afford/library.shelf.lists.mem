@@ -1,0 +1,89 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/library.shelf.lists`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "list the acquired shelf's collections and what each holds"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///library.shelf.lists", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/library.shelf.lists"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/library.shelf.lists"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! library.shelf.lists ~ the collections the acquired shelf holds
+
+`lares library list` reads the acquired library home (`<root>/library`, or `LAR_LIBRARY`) and names each collection by its `library:<collection>` reference, its body count and its bytes. Bodies a human did not author rest here, off every tracked tree. An empty shelf says so and names its home.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ list
+
+```memetic-wikitext
+<<has entity=`example` name=`list` params=`~ every collection, its bodies and bytes`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ none
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ reads this host's own library home; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ listed
+
+```memetic-wikitext
+<<has entity=`band` name=`listed` params=`exit/0 fields/[[home collections]] ~ each collection with entries, bytes and ref`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares library list
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares library list]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · content-resolution
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LQwlELWQE5bvxKzeGEYY5DN7BdR4ra-RzwfwpZdH79I`>>
+
+<<^ code=`&#x0004;` to=`?`>>

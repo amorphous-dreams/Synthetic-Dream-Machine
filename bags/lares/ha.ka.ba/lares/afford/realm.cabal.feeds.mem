@@ -1,0 +1,107 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.cabal.feeds`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "roll the acting face's maintenance feed slot in a realm"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.cabal.feeds", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.cabal.feeds"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.cabal.feeds"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.cabal.feeds ~ the offering that keeps a realm alive
+
+`lares cabal feed --realm <id>` rolls the acting face's own maintenance-feed slot in the realm; a face feeds, never a device, and feeding twice rolls twice, so the clock measures how hard each hand feeds. Two members feeding at once never clobber each other or move the admission lease.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ feed
+
+```memetic-wikitext
+<<has entity=`example` name=`feed` params=`realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef ~ make the offering`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ realm · nexus · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`realm` params=`takes/doc-id needs/required ~ the cabal-realm doc id, 64 hex`>>
+<<has entity=`arg` name=`nexus` params=`takes/aid ~ the Nexus at this vessel's first act in the realm; the ledger keeps it after`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the acting face, by persona index; absent, the one face standing open`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand key/face-at-nexus ~ the store door acts as the face, its key at the realm's Nexus`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · CabalFaceError · store-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.cabal.feeds realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef]] ~ --realm expects a 64-hex cabal-realm doc id`>>
+<<has entity=`refusal` name=`CabalFaceError` params=`~ the face holds no key at the realm's Nexus`>>
+<<has entity=`refusal` name=`store-refused` params=`~ the store door refused, or no vessel answers; the line names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ fed
+
+```memetic-wikitext
+<<has entity=`band` name=`fed` params=`exit/0 ~ the slot rolled; the clock reads it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares cabal feed
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares cabal feed]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cabal-realm
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;x7dWtZrvM8lwxDLW4wkSqnelvMfRc7Onp7R5XIWF0Jo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

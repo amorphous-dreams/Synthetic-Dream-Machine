@@ -1,0 +1,78 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.meme.projects`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "render a meme to a target: md, html, tid or json"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.meme.projects"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.meme.projects"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.meme.projects"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.meme.projects ~ render a meme to a target
+
+`uri` names the meme and `to` the target (md, the submission markdown; html; tid; json); the target rides as a param, never a suffix. The carrier text itself reads through `get title=<uri> aperture=arc`. Deterministic and clock-free: currency proves by re-projecting.
+
+The address stands ''candidate'' until the operator reads the landing's list. The MCP seat runs this act in its own process: the vessel's `call` binds the params against this carrier's live `#/takes` and answers `handler/seat` with the bound params, and the seat runs them (`act(address="lar:///engine.meme.projects", args={…})`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ uri · to · recipe · bag
+
+```memetic-wikitext
+<<has entity=`arg` name=`uri` params=`takes/word needs/required ~ the meme's lar: address`>>
+<<has entity=`arg` name=`to` params=`takes/word needs/required ~ the target: md, html, tid or json`>>
+<<has entity=`arg` name=`recipe` params=`takes/word ~ the wiki (default names the worn face's daemon wiki)`>>
+<<has entity=`arg` name=`bag` params=`takes/word ~ one bag`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ the vessel verbs the seat's handler reaches check the face's cap and the asker's hand themselves; a hand act refuses a seat by its own code`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ mcp
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! act lar:///engine.meme.projects
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`handler/seat spells/[[act lar:///engine.meme.projects]] ~ the seat runs it in its own process`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · voices
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/seat-lares`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WT4AeqhgCEsw7xLo0VZuPb80bjwLty93-5RpJJYLzCo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -2,14 +2,15 @@
   "_doc": "THE TIDDLER DOOR'S VERB TABLE — one row per verb, read by BOTH skins' tests (`lares-cli/tests/tiddler-door.test.ts` and `scripts/test_tiddler_tools.py`). `cli` spells the `lares` command line (parsed), `call` (on a call-shape row) the `{verb, params}` the CLI's call door sends the vessel's `call` verb (the VM binds them to the same wire), `mcp` the MCP tool's kwargs, `wire` the one `{verb, args}` both must put on the daemon's socket, and `output` a daemon answer both must hand back verbatim (the CLI as `--json` `data`, the MCP seat as the tool's result). A skin that renames an arg, drops one, or reshapes the answer reds its own half; a row missing a skin reds both (wiki-surface-scout #/a-lean, red `verb-table-parity`).",
   "rows": [
     {
-      "tool": "wiki",
-      "cli": { "command": "wiki", "positional": ["act", "sidebar-layout"], "options": { "recipe": "kahu", "expected": "fixed-fluid", "resulting": "fluid-fixed" }, "flags": {} },
-      "mcp": { "verb": "act", "name": "sidebar-layout", "recipe": "kahu", "expected": "fixed-fluid", "resulting": "fluid-fixed" },
+      "tool": "act",
+      "cli": { "command": "act", "positional": ["lar:///render.sidebar.lays", "recipe=kahu", "expected=fixed-fluid", "resulting=fluid-fixed"], "options": {}, "flags": {} },
+      "call": { "verb": "lar:///render.sidebar.lays", "params": { "recipe": "kahu", "expected": "fixed-fluid", "resulting": "fluid-fixed" } },
+      "mcp": { "address": "lar:///render.sidebar.lays", "args": { "recipe": "kahu", "expected": "fixed-fluid", "resulting": "fluid-fixed" } },
       "wire": { "verb": "wiki-action", "args": { "recipe": "kahu", "name": "sidebar-layout", "expected": "fixed-fluid", "resulting": "fluid-fixed" } },
       "output": { "has": "<<~ has name=`sidebar-layout` params=`recipe/kahu decision/put`>>", "recipe": "kahu", "name": "sidebar-layout", "action": "$:/core/ui/KeyboardShortcuts/change-sidebar-layout", "title": "$:/themes/tiddlywiki/vanilla/options/sidebarlayout", "expected": "fixed-fluid", "resulting": "fluid-fixed", "decision": "put", "receipt": "r1" }
     },
     {
-      "tool": "wiki_filter",
+      "tool": "get",
       "cli": {"command": "get", "positional": ["filter=[tag[memory]sort[title]]", "limit=5", "fields=priority,tags"], "options": {}, "flags": {}},
       "call": {"verb": "get", "params": {"filter": "[tag[memory]sort[title]]", "limit": "5", "fields": "priority,tags"}},
       "mcp": {
@@ -51,9 +52,9 @@
       }
     },
     {
-      "tool": "wiki_filter",
-      "cli": {"command": "get", "positional": ["filter=[prefix[lar:///ha.ka.ba/kahua/memory/road/]sort[title]]", "limit=5", "mu=many-relate"], "options": {}, "flags": {}},
-      "call": {"verb": "get", "params": {"filter": "[prefix[lar:///ha.ka.ba/kahua/memory/road/]sort[title]]", "limit": "5", "mu": "many-relate"}},
+      "tool": "get",
+      "cli": {"command": "get", "positional": ["filter=[prefix[lar:///ha.ka.ba/kahua/memory/road/]sort[title]]", "limit=5", "aperture=measure"], "options": {}, "flags": {}},
+      "call": {"verb": "get", "params": {"filter": "[prefix[lar:///ha.ka.ba/kahua/memory/road/]sort[title]]", "limit": "5", "aperture": "measure"}},
       "mcp": {
         "filter": "[prefix[lar:///ha.ka.ba/kahua/memory/road/]sort[title]]",
         "recipe": "default",
@@ -102,7 +103,7 @@
       }
     },
     {
-      "tool": "wiki_filter",
+      "tool": "get",
       "cli": {"command": "get", "positional": ["filter=[prefix[lar:///ha.ka.ba/kahua/memory/]search:text[ is ]]", "match=/\\b(is|are)\\b/", "context=1"], "options": {}, "flags": {}},
       "call": {"verb": "get", "params": {"filter": "[prefix[lar:///ha.ka.ba/kahua/memory/]search:text[ is ]]", "match": "/\\b(is|are)\\b/", "context": "1"}},
       "mcp": {
@@ -150,9 +151,9 @@
       }
     },
     {
-      "tool": "tiddler_get",
-      "cli": {"command": "get", "positional": ["title=Note 02", "mu=relate"], "options": {}, "flags": {}},
-      "call": {"verb": "get", "params": {"title": "Note 02", "mu": "relate"}},
+      "tool": "get",
+      "cli": {"command": "get", "positional": ["title=Note 02", "aperture=measure"], "options": {}, "flags": {}},
+      "call": {"verb": "get", "params": {"title": "Note 02", "aperture": "measure"}},
       "mcp": {
         "title": "Note 02",
         "recipe": "default",
@@ -196,7 +197,7 @@
       }
     },
     {
-      "tool": "tiddler_get",
+      "tool": "get",
       "cli": {"command": "get", "positional": ["title=lar:///t/x", "slot=#/b", "fields=text"], "options": {}, "flags": {}},
       "call": {"verb": "get", "params": {"title": "lar:///t/x", "slot": "#/b", "fields": "text"}},
       "mcp": {
@@ -235,7 +236,7 @@
       }
     },
     {
-      "tool": "tiddler_get",
+      "tool": "get",
       "cli": {"command": "get", "positional": ["title=Canon Note", "bag=lares"], "options": {}, "flags": {}},
       "call": {"verb": "get", "params": {"title": "Canon Note", "bag": "lares"}},
       "mcp": {
@@ -265,9 +266,9 @@
       }
     },
     {
-      "tool": "tiddler_get",
-      "cli": {"command": "get", "positional": ["title=lar:///t/x", "mu=relate"], "options": {}, "flags": {}},
-      "call": {"verb": "get", "params": {"title": "lar:///t/x", "mu": "relate"}},
+      "tool": "get",
+      "cli": {"command": "get", "positional": ["title=lar:///t/x", "aperture=measure"], "options": {}, "flags": {}},
+      "call": {"verb": "get", "params": {"title": "lar:///t/x", "aperture": "measure"}},
       "mcp": {
         "title": "lar:///t/x",
         "recipe": "default",
@@ -308,9 +309,9 @@
       }
     },
     {
-      "tool": "tiddler_get",
-      "cli": {"command": "get", "positional": ["title=lar:///t/x", "after=1.0123456789abcdef", "mu=assert"], "options": {}, "flags": {}},
-      "call": {"verb": "get", "params": {"title": "lar:///t/x", "after": "1.0123456789abcdef", "mu": "assert"}},
+      "tool": "get",
+      "cli": {"command": "get", "positional": ["title=lar:///t/x", "after=1.0123456789abcdef", "aperture=arc"], "options": {}, "flags": {}},
+      "call": {"verb": "get", "params": {"title": "lar:///t/x", "after": "1.0123456789abcdef", "aperture": "arc"}},
       "mcp": {
         "title": "lar:///t/x",
         "recipe": "default",
@@ -438,7 +439,7 @@
       }
     },
     {
-      "tool": "tiddler_get",
+      "tool": "get",
       "cli": {"command": "get", "positional": ["title=Note 03", "form=text"], "options": {}, "flags": {}},
       "call": {"verb": "get", "params": {"title": "Note 03", "form": "text"}},
       "mcp": {
@@ -478,7 +479,7 @@
       }
     },
     {
-      "tool": "tiddler_put",
+      "tool": "put",
       "cli": {"command": "put", "positional": ["title=Note 03", "fields={\"status\":\"done\"}", "tag-add=reviewed [[two words]]", "unset=priority", "base=sha256-aa"], "options": {}, "flags": {}},
       "call": {"verb": "put", "params": {"title": "Note 03", "fields": "{\"status\":\"done\"}", "tag-add": "reviewed [[two words]]", "unset": "priority", "base": "sha256-aa"}},
       "mcp": {
@@ -525,7 +526,7 @@
       }
     },
     {
-      "tool": "tiddler_delete",
+      "tool": "delete",
       "cli": {"command": "delete", "positional": ["title=Other", "base=sha256-ff"], "options": {}, "flags": {}},
       "call": {"verb": "delete", "params": {"title": "Other", "base": "sha256-ff"}},
       "mcp": {
@@ -578,7 +579,7 @@
       }
     },
     {
-      "tool": "tiddler_delete",
+      "tool": "delete",
       "cli": {"command": "delete", "positional": ["title=lar:///t/x", "family=true"], "options": {}, "flags": {}},
       "call": {"verb": "delete", "params": {"title": "lar:///t/x", "family": "true"}},
       "mcp": {
@@ -639,13 +640,13 @@
       }
     },
     {
-      "tool": "tiddler_delete",
-      "cli": {"command": "delete", "positional": ["title=Room 4", "mode=reveal"], "options": {}, "flags": {}},
-      "call": {"verb": "delete", "params": {"title": "Room 4", "mode": "reveal"}},
+      "tool": "delete",
+      "cli": {"command": "delete", "positional": ["title=Room 4", "way=reveal"], "options": {}, "flags": {}},
+      "call": {"verb": "delete", "params": {"title": "Room 4", "way": "reveal"}},
       "mcp": {
         "title": "Room 4",
         "recipe": "default",
-        "mode": "reveal"
+        "way": "reveal"
       },
       "wire": {
         "verb": "tiddler-delete",
@@ -739,7 +740,7 @@
       }
     },
     {
-      "tool": "wiki_filter",
+      "tool": "get",
       "cli": {"command": "get", "positional": ["filter=[tag[road]sort[title]]", "recipe=kahu"], "options": {}, "flags": {}},
       "call": {"verb": "get", "params": {"filter": "[tag[road]sort[title]]", "recipe": "kahu"}},
       "mcp": {
@@ -766,7 +767,7 @@
       }
     },
     {
-      "tool": "tiddler_put",
+      "tool": "put",
       "cli": {"command": "put", "positional": ["title=Road note", "recipe=kahu", "text=first words", "create=true"], "options": {}, "flags": {}},
       "call": {"verb": "put", "params": {"title": "Road note", "recipe": "kahu", "text": "first words", "create": "true"}},
       "mcp": {
@@ -841,7 +842,7 @@
       }
     },
     {
-      "tool": "wiki_filter",
+      "tool": "get",
       "cli": {"command": "get", "positional": ["filter=[tag[memory]]", "target=h1"], "options": {}, "flags": {}},
       "call": {"verb": "get", "params": {"filter": "[tag[memory]]", "target": "h1"}},
       "mcp": {
@@ -871,7 +872,7 @@
       }
     },
     {
-      "tool": "tiddler_get",
+      "tool": "get",
       "cli": {"command": "get", "positional": ["title=Sibling note", "target=sibling-face"], "options": {}, "flags": {}},
       "call": {"verb": "get", "params": {"title": "Sibling note", "target": "sibling-face"}},
       "mcp": {
@@ -984,7 +985,7 @@
       }
     },
     {
-      "tool": "tiddler_get",
+      "tool": "get",
       "cli": {"command": "get", "positional": ["meme=true", "tree=true"], "options": {}, "flags": {}},
       "call": {"verb": "get", "params": {"meme": "true", "tree": "true"}},
       "mcp": {
@@ -1012,7 +1013,7 @@
       }
     },
     {
-      "tool": "tiddler_put",
+      "tool": "put",
       "cli": {"command": "put", "positional": ["title=lar:///ha.ka.ba/docs/family", "file=@fixture/family-input.mem"], "options": {}, "flags": {}},
       "call": {"verb": "put", "params": {"title": "lar:///ha.ka.ba/docs/family", "text": "family input\n"}},
       "mcp": {
@@ -1051,7 +1052,7 @@
       }
     },
     {
-      "tool": "tiddler_put",
+      "tool": "put",
       "cli": {"command": "put", "positional": ["title=lar:///ha.ka.ba/docs/family", "bag=working", "slot=#/a", "text=a new body"], "options": {}, "flags": {}},
       "call": {"verb": "put", "params": {"title": "lar:///ha.ka.ba/docs/family", "bag": "working", "slot": "#/a", "text": "a new body"}},
       "mcp": {
@@ -1090,7 +1091,7 @@
       }
     },
     {
-      "tool": "tiddler_put",
+      "tool": "put",
       "cli": {"command": "put", "positional": ["title=lar:///ha.ka.ba/docs/family", "slot=#/a", "replace=an old phrase", "with=a trued phrase", "base=sha256-slot"], "options": {}, "flags": {}},
       "call": {"verb": "put", "params": {"title": "lar:///ha.ka.ba/docs/family", "slot": "#/a", "replace": "an old phrase", "with": "a trued phrase", "base": "sha256-slot"}},
       "mcp": {
@@ -1137,7 +1138,7 @@
       }
     },
     {
-      "tool": "tiddler_delete",
+      "tool": "delete",
       "cli": {"command": "delete", "positional": ["title=lar:///ha.ka.ba/docs/family", "bag=working", "base=sha256:live", "family=true"], "options": {}, "flags": {}},
       "call": {"verb": "delete", "params": {"title": "lar:///ha.ka.ba/docs/family", "bag": "working", "base": "sha256:live", "family": "true"}},
       "mcp": {

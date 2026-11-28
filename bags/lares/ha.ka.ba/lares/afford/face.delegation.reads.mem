@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.delegation.reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "list the face's delegations and whether each stands"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.delegation.reads", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.delegation.reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.delegation.reads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.delegation.reads ~ delegations ~ every grant the root signed
+
+`lares intent delegations` lists each delegation the face's root signed: its cid, status, agent, prefix and the revocation that ended it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ list
+
+```memetic-wikitext
+<<has entity=`example` name=`list` params=`~ every delegation`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face
+
+```memetic-wikitext
+<<has entity=`arg` name=`face` params=`takes/index ~ the face whose intent plane this reads or writes, a whole persona index from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand key/face-atom ~ signs under the face's own atom key through the store door`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · face-malformed · face-not-held
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ an unknown sub-verb, or no sub-verb named`>>
+<<has entity=`refusal` name=`face-malformed` params=`~ --face names a whole persona index from 0`>>
+<<has entity=`refusal` name=`face-not-held` params=`~ this vessel holds no such face`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ delegations
+
+```memetic-wikitext
+<<has entity=`band` name=`delegations` params=`exit/0 fields/[[delegations]] ~ one line per grant`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares intent delegations
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares intent delegations]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · face-intent-plane
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;myLW8xr1bxrGAcU5uDA0JnxVtUgWLbJg7zZ1lG1EWZo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -97,7 +97,7 @@ export const LARARIUM_MODULES: readonly string[] = Object.freeze([
   "modules/host-globals", "modules/lar-story", "modules/lararium-writable", "modules/draft-compare",
   "modules/nalu-engine", "modules/reaction-router", "modules/worldline-read-vm",
   "modules/wiki-sense-indexer", "lib/wiki-sense-fold", "filters/wikisense", "filters/kahua-shadow", "filters/meme-fold", "filters/floor-queue", "filters/floor-owes", "filters/security-class",
-  "filters/afford", "modules/afford-face", "modules/call",
+  "filters/afford", "modules/afford-face", "modules/call", "filters/stream", "modules/watch",
   "macros/ddate", "macros/spirit-unfold",
   "widgets/action-oracle-cast", "widgets/action-meme-place",
 ].map((rest) => `${TW5}${rest}`));

@@ -1,6 +1,6 @@
 /**
  * hearth-roster — who is home: the face each vessel wears and who holds that slot, the seats in two grains, the lanes a
- * seat claims and the vota still waiting. One shape serves the CLI (`lares vessel roster`), the MCP seat (`vessel_roster`)
+ * seat claims and the vota still waiting. One shape serves the CLI (`lares vessel roster`), the MCP seat (`act(address="lar:///face.roster.reads")`)
  * and the wake block "Lares hearth (who is home)".
  *
  * TWO GRAINS, ONE SHAPE. A LOCAL seat stands by presence: a session bound on this vessel's socket, which the kernel holds

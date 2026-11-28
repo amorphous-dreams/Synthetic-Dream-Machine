@@ -1,0 +1,104 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.recipe.trues`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "true one recipe to the canon floor its place asks"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.recipe.trues", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.recipe.trues"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.recipe.trues"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.recipe.trues ~ every wiki's floor stacks lares; the herm/hearth wiki's stacks lararium too
+
+`lares wiki true-floor <slug>` trues one recipe to the canon floor by place: every wiki's floor stacks `lares`, the herm/hearth wiki's stacks `lararium` and `lares`. The door drops the libraries the rule withholds and prints the receipt the record keeps (`floor-trued-from`); a recipe already true answers `already-true` and changes nothing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ true
+
+```memetic-wikitext
+<<has entity=`example` name=`true` params=`slug/works ~ true one recipe's floor`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ slug
+
+```memetic-wikitext
+<<has entity=`arg` name=`slug` params=`takes/slug needs/required seat/1 as/<slug> ~ the wiki slug`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ vessel
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`vessel` params=`who/seat-or-hand ~ the daemon verb runs under the vessel's own did; this handler checks no ocap of its own`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · daemon-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.recipe.trues slug/works]] ~ name the slug`>>
+<<has entity=`refusal` name=`daemon-refused` params=`~ the daemon's true-floor verb refused; its message rides the line, exit 4`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ trued
+
+```memetic-wikitext
+<<has entity=`band` name=`trued` params=`exit/0 fields/[[dropped stack]] ~ what dropped and the stack after; already-true moves nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares wiki true-floor
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares wiki true-floor]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cabal-realm
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;o1Xldk1KlWgLCjPTIujkuxsJnRZje_ALNUwHsCEKZwg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

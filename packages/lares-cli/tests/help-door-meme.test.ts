@@ -12,7 +12,7 @@
  *      one home and the refusal path draws from it.
  *
  * The registry stays PURE DATA: no `node:fs`, no imports, so any vessel that can hold the module can read
- * the door. The `--meme` reach rides the one read door (`lares get title=<uri> recipe=lares mu=assert`), never a file read.
+ * the door. The `--meme` reach rides the one read door (`lares get title=<uri> recipe=lares aperture=arc`), never a file read.
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
@@ -159,7 +159,8 @@ describe("★ the core verbs' help reads their carriers, one home ★", () => {
   test("★ each call verb's help prints its carrier whole, its call-shaped usage spine first ★", async () => {
     for (const [verb, carrier] of [["get", "engine.record.reads"], ["put", "engine.record.puts"], ["delete", "engine.record.removes"], ["rename", "engine.record.renames"]] as const) {
       const out = await helpOf([verb]);
-      expect(out[0], verb).toMatch(new RegExp(`^usage: lares ${verb} [a-z][a-z0-9-]*=`));
+      // The spine leads with name=value params; an optional dial (`[mu=<carry>]`) may ride first.
+      expect(out[0], verb).toMatch(new RegExp(`^usage: lares ${verb} (\\[[a-z][a-z0-9-]*=<[^>]+>\\] )*\\[?[a-z][a-z0-9-]*=`));
       expect(out.join("\n"), verb).toContain(`lar:///ha.ka.ba/lares/afford/${carrier}`);
       vi.restoreAllMocks();
     }
@@ -202,7 +203,7 @@ describe("★ `--help --meme` reaches the wiki through the meme rail ★", () =>
     expect(code).toBe(0);
     expect(seen, "the help path never wrote a second meme reader").toHaveLength(1);
     expect(seen[0]!.command).toBe("get");
-    expect(seen[0]!.positional).toEqual(["title=lar:///ha.ka.ba/lares/cli/vessel-door", "recipe=lares", "mu=assert"]);
+    expect(seen[0]!.positional).toEqual(["title=lar:///ha.ka.ba/lares/cli/vessel-door", "recipe=lares", "aperture=arc"]);
     expect(seen[0]!.options).toEqual({});
   });
 

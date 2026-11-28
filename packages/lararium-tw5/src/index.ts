@@ -106,8 +106,9 @@ export type {
   TW5TiddlerFields,
 } from "./types/tiddlywiki.d.ts";
 
-export { IslandAdaptor } from "./island-adaptor.js";
-export { layIslandComposition, mountIslandShore, wikiLandedCovers, bindRecoveryAtRest } from "./island-recipe.js";
+export { IslandAdaptor, HAND_ACT, PARALLEL_DRAFT_ACT, shoreRecordHash, shoreRecordHashRuns } from "./island-adaptor.js";
+export type { ShoreReceipt, ShoreVotum, ShoreCustody } from "./island-adaptor.js";
+export { layIslandComposition, mountIslandShore, wikiLandedCovers, bindRecoveryAtRest, wikiCollectReceipts, wikiCollectsAct, wikiWearsFace, bindShoreCustody, wikiStampsReceipt, seatShore } from "./island-recipe.js";
 export type { LayIslandCompositionInput, RecipeReadyBinding } from "./island-recipe.js";
 export { composeCrossFaceView, composeFaceEngine, crossFaceViewSource, enginePool, faceEngines } from "./face-engine.js";
 export { composeWikiEngine, composeWikiEngineSource, wikiEngines } from "./wiki-engine.js";
@@ -160,6 +161,9 @@ export type { CaptureCapOptions } from "./capture/has-capture.js";
 export { VerbDispatcher, VerbTable, VERB_SURFACE, projectOntoSurface, makeCallReactor, runPlan, callDoorOf, type CallSource } from "./verb-dispatcher.js";
 // The one call (comms-ux-enacts landing 4): a verb and named params, resolved, bound and dispatched by one rule.
 export { planCall, resolveCall, bindCall, stampAnswer, callReaderOf, callOfSigil, cureCall, CallRefusal, type CallPlan, type CallReader, type CallReceipt, type CallSeat, type MacroCallParse } from "./modules/call.js";
+// The two dials (the keyword head): mu names the lens (the seed's tool-carries), aperture the range (N/rank).
+export { readMu, isMuFault, muWordsOf, canonicalCarry, MU_CARRIES, MU_CARRY_ORDER, MU_TOOLS, type MuCarry, type MuFault } from "./modules/mu.js";
+export { readAperture, isApertureFault, apertureWords, reachesWhole, APERTURE_RANKS, APERTURE_BANDS, type Aperture, type ApertureFault, type ApertureRank } from "./modules/aperture.js";
 export type { VerbContext, VerbReactor, VerbDispatcherOptions, VerbSpec, VerbFence, SurfaceDeclared, SessionWorn } from "./verb-dispatcher.js";
 export { heedSummons } from "./verb-summons.js";
 export type { SummonsRequest, SummonsRelayOptions } from "./verb-summons.js";
@@ -221,10 +225,15 @@ export { READ_PAGE_BYTES, READ_GRAINS, grainOf, hasLine, param, pagePlaneRows, t
 export type { MemeVerbOptions } from "./meme-verbs.js";
 // The tiddler door: every TiddlyWiki act over one record or one wiki's engine, on the anchor (wiki-surface-scout, lane 1).
 export {
-  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor, makeWikiStatusReactor, makeWikiActionReactor, SHORE_COLLAPSE_CONFIG_PREFIX,
+  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor, makeWikiStatusReactor, makeWikiActionReactor, makeCarrierActReactor, CARRIER_ACT_VERB, WRITING_MESSAGES, HAND_MESSAGES, RENDERING_MESSAGES, SHORE_COLLAPSE_CONFIG_PREFIX,
+  makeFilterWatchReactor, WATCH_HOLD_MS, WATCH_HOLD_MAX_MS,
   TIDDLER_CALL_SEATS, tiddlerCallSource,
 } from "./tiddler-verbs.js";
+export { WatchBook, watchBookOf, WATCH_PREFIX } from "./modules/watch.js";
 export type { NamedWikiEngine, TiddlerVerbOptions } from "./tiddler-verbs.js";
+// The msg door: one entry lands in its stream; the inbox reads and a retract withdraws (comms-ux-enacts landings 14 and 15).
+export { makeMsgReactor, MSG_CALL_SEATS, MSG_ADDRESS } from "./msg-verbs.js";
+export { ASH_READY, STREAM_STAGE, streamRootOf, entryOf, headsOf, inboxOf, settledOf } from "./stream-entries.js";
 // The oracle cast: one I Ching cast written as one tiddler through the tiddler door's own put.
 export { makeOracleCastReactor, ORACLE_CALL_SEATS } from "./oracle-cast-verb.js";
 export { ddateVerb } from "./ddate-verb.js";
@@ -329,4 +338,4 @@ export { makePromoteStateReactor, seedPromoteUiTiddlers, PROMOTE_PANEL_TITLE, PR
 export { makeShareSetReactor, makeShareListReactor, readShareEntries } from "./share-verbs.js";
 // The ONE spelling of a person's view-state set: the shared workbench's admit filter reads it (cabal-realm#/the-workbench).
 export { isPersonalTitle } from "./filters/lar-kind.js";
-export { HOUSE_FILTERS_FLOOR, HOUSE_FILTERS_TITLE, HOUSE_FUNCTION_STEM, canonFiltersText, functionPragmasOf, houseWidgetOf } from "./house-filters.js";
+export { HOUSE_FILTERS_FLOOR, HOUSE_FILTERS_TITLE, HOUSE_FUNCTION_STEM, HOUSE_OPERATOR_NAMES, filtersText, filtersTextOfWiki, functionPragmasOf, houseNamesOf, houseWidgetOf } from "./house-filters.js";

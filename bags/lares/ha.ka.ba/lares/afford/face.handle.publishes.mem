@@ -1,0 +1,106 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.handle.publishes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "publish a persona's Handle card onto the WHO board"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.handle.publishes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.handle.publishes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.handle.publishes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.handle.publishes ~ a persona's public here-I-am note, announced
+
+`lares handle publish <glamour>` mints the persona's Handle (its self-certifying card on the handle-KEL, anchored to the persona-KEL prefix) under the glamour (display name) and announces it onto the Nexus WHO board. The glamour rides seat 1 or `--glamour`; `--persona <index>` names the persona.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ publish
+
+```memetic-wikitext
+<<has entity=`example` name=`publish` params=`name/Guru-Josh ~ publish a Handle`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ name · glamour · persona
+
+```memetic-wikitext
+<<has entity=`arg` name=`name` params=`takes/glamour seat/1 as/<glamour> ~ the glamour, the display name`>>
+<<has entity=`arg` name=`glamour` params=`takes/glamour ~ the glamour, as a flag`>>
+<<has entity=`arg` name=`persona` params=`takes/index ~ the persona whose Handle acts; absent, the store door's default`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/seat-or-hand key/handle-head ~ the store door signs on the WHO board under the Handle's key`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · store-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.handle.publishes name/Guru-Josh]] ~ publish wants a glamour`>>
+<<has entity=`refusal` name=`store-refused` params=`~ the store door refused; the line names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ published
+
+```memetic-wikitext
+<<has entity=`band` name=`published` params=`exit/0 ~ the card's glamour, nym and act`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares handle publish
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares handle publish]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · handle-card
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/handle-card`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BfxTyezudqJ4n2ALNJFf0wY5Zf7gJmMnIHRn0KftmCQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

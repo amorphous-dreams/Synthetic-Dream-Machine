@@ -1,0 +1,93 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.holder.resumes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "un-pause the sovereign hooks after a quiesce"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.holder.resumes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.holder.resumes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.holder.resumes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.holder.resumes ~ the hooks run again
+
+`lares sense resume` un-pauses the hook legs a quiesce paused; holders re-spawn lazily. A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ resume
+
+```memetic-wikitext
+<<has entity=`example` name=`resume` params=`~ un-pause the hooks`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ sensorium-root
+
+```memetic-wikitext
+<<has entity=`arg` name=`sensorium-root` params=`takes/host-path ~ the sensorium's root; the leading sensorium name threads it, absent the memory sensorium`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ writes this host's hook pause; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ resumed
+
+```memetic-wikitext
+<<has entity=`band` name=`resumed` params=`exit/0 ~ the hooks run`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense resume
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense resume]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · lararium-memory
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aT3f-5qAk6rxFNOA2vY9S-J3uINem1vCPECSKB-6TYk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -6,7 +6,7 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-role      = "--draft: pull a tiddler from a lower bag into a writable draft"
+role      = "pull a tiddler from a lower bag into a writable draft"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.draft.pulls"]
 title     = "lar:///ha.ka.ba/lares/afford/carriage.draft.pulls"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -17,9 +17,9 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.draft.pulls"
 
 ! carriage.draft.pulls ~ the pull-into-draft ceremony: a lower bag's tiddler gains a writable copy above it
 
-`lares act --draft <uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `--to` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act MOVE`, `lares act COPY`).
+`lares act lar:///carriage.draft.pulls uri=<uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `to=` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act lar:///carriage.bag.moves`, `lares act lar:///carriage.bag.copies`).
 
-The verb first asks the vessel which bags hold the tiddler (a title no bag holds answers `not found in any bag` and exits 5), then asks a terminal `Proceed? [y/N]` (a call off a terminal names `--yes`). The draft rides the door with no verb word: the flag names the pull, and an ACTION verb beside it refuses.
+The verb first asks the vessel which bags hold the tiddler (a title no bag holds answers `not found in any bag` and exits 5), then asks a terminal `Proceed? [y/N]` (a call off a terminal names `yes=true`). The draft rides the door with no verb word: the flag names the pull, and an ACTION verb beside it refuses.
 
 <<~/ahu>>
 
@@ -36,12 +36,12 @@ The verb first asks the vessel which bags hold the tiddler (a title no bag holds
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ draft · uri · to
+!! takes ~ uri · to · yes
 
 ```memetic-wikitext
-<<has entity=`arg` name=`draft` params=`needs/required ~ name the pull-into-draft ceremony; the tiddler's address rides beside it`>>
-<<has entity=`arg` name=`uri` params=`takes/lar-address needs/required seat/1 ~ the tiddler to pull, by its lar: address`>>
+<<has entity=`arg` name=`uri` params=`takes/lar-address needs/required ~ the tiddler to pull, by its lar: address`>>
 <<has entity=`arg` name=`to` params=`takes/bag-uri ~ the draft bag the copy lands in; absent, the active wiki's draft`>>
+<<has entity=`arg` name=`yes` params=`~ the intent a call off a terminal names in place of the y/N a terminal asks`>>
 ```
 
 <<~/ahu>>
@@ -53,7 +53,7 @@ The verb first asks the vessel which bags hold the tiddler (a title no bag holds
 Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
-<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ a write into the draft layer; a terminal asks y/N unless --yes rides, and a JSON call off a terminal refuses without it`>>
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ a write into the draft layer; a terminal asks y/N unless yes=true rides, and a JSON call off a terminal refuses without it`>>
 ```
 
 <<~/ahu>>
@@ -63,7 +63,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · not-found
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[carriage.draft.pulls draft/true uri/<uri>]] ~ the tiddler's address stands required beside --draft`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.draft.pulls uri/<uri>]] ~ the tiddler's address stands required`>>
 <<has entity=`refusal` name=`not-found` params=`~ no bag holds the tiddler; the verb exits 5 and names it`>>
 ```
 
@@ -86,10 +86,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/cli`>>
 
-!!! lares act
+!!! lares act lar:///carriage.draft.pulls
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares act]] ~ the terminal; no verb word stands, the --draft flag names the pull`>>
+<<has entity=`skin` name=`cli` params=`handler/host grammar/call spells/[[lares act lar:///carriage.draft.pulls]] ~ the terminal; the pull rides by its address through the call door`>>
 ```
 
 <<~/ahu>>
@@ -105,6 +105,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;fg5NkGdl3comFa1fyfmcP6HZJcVcyG7B2YDAbylrd9Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;s-ZsCnPqodio4DUXr18S0hoWKuVUEhJGmKBos_ekB3k`>>
 
 <<^ code=`&#x0004;` to=`?`>>

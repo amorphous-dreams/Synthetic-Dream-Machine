@@ -13,7 +13,7 @@
  *
  * The reading prints plainly by default (the figure, the change, the source of chance, each reading the wiki holds
  * with its attribution and license, and the cast's title); `--json` carries the verb's own answer verbatim as `data`,
- * the same body the MCP seat's `oracle_cast` hands back. The throw stands and the reading stays open.
+ * the same body the MCP seat's `act(address="lar:///library.oracle.speaks")` hands back. The throw stands and the reading stays open.
  *
  * The container law holds: name `--recipe <slug>` (`--recipe default`, the worn face's daemon wiki) or `--bag <slug>`.
  */

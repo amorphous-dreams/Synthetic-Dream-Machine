@@ -1,0 +1,103 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.persona.syncs`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "carry labels and Handles to the operator's own fleet"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.persona.syncs", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.persona.syncs"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.persona.syncs"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.persona.syncs ~ names travel to the fleet; seat claims stay local
+
+`lares persona sync` carries every face's private label and Handle up to the persona plane of the operator's own fleet; seat claims stay local by construction. The fleet must answer: a standing vessel with an open face.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ sync
+
+```memetic-wikitext
+<<has entity=`example` name=`sync` params=`~ carry the names to the fleet`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ none
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat-or-hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat-or-hand` params=`who/seat-or-hand ~ writes the operator's own persona plane through the standing vessel`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · vessel-composing · vessel-silent · vessel-locked · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ the fleet did not answer; stand the vessel and unlock it`>>
+<<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
+<<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
+<<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
+<<has entity=`refusal` name=`error` params=`~ the store refused; the message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ synced
+
+```memetic-wikitext
+<<has entity=`band` name=`synced` params=`exit/0 ~ what each face's names did on the plane`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares persona sync
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares persona sync]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · persona-policy
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NjL8qsvQBx7yao60es0LcY13JndS64xLNxbNQx0tN14`>>
+
+<<^ code=`&#x0004;` to=`?`>>

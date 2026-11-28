@@ -37,7 +37,7 @@ import { type KahuaStageFace } from "@lararium/mesh/kahua-stage-store";
 import { type LarDoc } from "@lararium/mesh/base-doc";
 import { type DocHandle } from "@lararium/mesh/automerge";
 import { type LarTiddlerChange, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
-import { IslandAdaptor } from "./island-adaptor.js";
+import { IslandAdaptor, type ShoreCustody, type ShoreReceipt } from "./island-adaptor.js";
 import { kahuaLayerStore } from "./kahua-layer.js";
 import { MemoryTiddlerStore } from "./memory-store.js";
 import type { TW5Engine } from "./tw5-vm.js";
@@ -251,7 +251,7 @@ export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed: Pi
     }
   });
   seedCheckpoints.set(tw5, checkpoint);
-  adaptors.set(tw5, adaptor);
+  seatShore(tw5, adaptor);
 
   return { adaptor, stores };
 }
@@ -279,6 +279,11 @@ const seedCheckpoints = new WeakMap<TW5Engine, Promise<void>>();
 /** The shore each engine's recipe mounted, so a behavior the island composes reads what the shore landed. */
 const adaptors = new WeakMap<TW5Engine, IslandAdaptor>();
 
+/** Seat a shore over its engine: the doors that tag a write's face and act, stamp receipts, or seat custody reach it here. */
+export function seatShore(tw5: TW5Engine, adaptor: IslandAdaptor): void {
+  adaptors.set(tw5, adaptor);
+}
+
 /**
  * True where the engine's shore has landed, in the wiki, every change of `bag`'s document up to the heads
  * `named`. An engine whose recipe mounted no shore answers false.
@@ -292,8 +297,38 @@ export function wikiLandedCovers(tw5: TW5Engine, bag: string, named: readonly st
  * door that lands a record through `wiki.addTiddler` calls this first, so the record lands under the face's actor. An
  * engine whose recipe mounted no shore takes nothing.
  */
-export function wikiWearsNext(tw5: object, title: string, face: string | null | undefined): void {
-  adaptors.get(tw5 as TW5Engine)?.wearNext(title, face);
+export function wikiWearsNext(tw5: object, title: string, face: string | null | undefined, act?: string): void {
+  adaptors.get(tw5 as TW5Engine)?.wearNext(title, face, act);
+}
+
+/**
+ * An act asks the shore over this engine for the receipts its writes leave (`IslandAdaptor.collectReceipts`), for its own answer;
+ * `done()` drains the owed writes and answers them. An engine whose recipe mounted no shore answers none.
+ */
+export function wikiCollectReceipts(tw5: object, act: string): { done(): Promise<ShoreReceipt[]> } {
+  return adaptors.get(tw5 as TW5Engine)?.collectReceipts(act) ?? { done: async () => [] };
+}
+
+/** True where an act asked this engine's shore for its receipts: a door computes a receipt's digests only then. */
+export function wikiCollectsAct(tw5: object, act: string): boolean {
+  return adaptors.get(tw5 as TW5Engine)?.collects(act) ?? false;
+}
+
+/** A write an act moved past the shore (a bag's own store, a layer's one change) joins that act's receipts, where it asked. */
+export function wikiStampsReceipt(tw5: object, receipt: Parameters<IslandAdaptor["stampDoorWrite"]>[0]): void {
+  adaptors.get(tw5 as TW5Engine)?.stampDoorWrite(receipt);
+}
+
+/** Name the face the engine wears: each receipt with no door-named face names it. */
+export function wikiWearsFace(tw5: object, face: string | null): void {
+  const adaptor = adaptors.get(tw5 as TW5Engine);
+  if (adaptor) adaptor.wornFace = face;
+}
+
+/** Seat the face-against-face custody at this engine's shore (null takes it down): a write into another face's layer rides as a votum. */
+export function bindShoreCustody(tw5: object, custody: ShoreCustody | null): void {
+  const adaptor = adaptors.get(tw5 as TW5Engine);
+  if (adaptor) adaptor.caps = { ...adaptor.caps, custody };
 }
 
 /** Ask the shore mounted over this engine to take an inbound act boundary. */

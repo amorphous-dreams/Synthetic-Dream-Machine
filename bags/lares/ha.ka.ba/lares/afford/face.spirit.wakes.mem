@@ -1,0 +1,121 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.spirit.wakes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "wake a spirit's record by its pet name and hand back its folded card"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.spirit.wakes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.spirit.wakes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.spirit.wakes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.spirit.wakes ~ om ~ the wake reads the record the pet name answers
+
+`lares spirit om <pet>` wakes the one record the pet name answers (`lar:///ha.ka.ba/lares/spirit/<pet>`, else `familiar/<pet>` or `spirit/<pet>` on the memory stage, else a card), folded in the wiki at `--aperture` (default `measure`) and bound to the face that answered, so every command it hands back names `--face N`. It reads the skinny, `#/open`, the titles `#/attention` names, and the latest carry as testimony. `--source` names the wake's turn: a resume reads one line, a fork wakes framed as a fork, a compaction names the carry it inherits, a precompact marks the crossing and hands back `#/carry-shape`. `--instance` joins the presence on the sibling record, stamps a wake epoch and hands back each slot's digest; `--held` says the session's own counter holds it. `--title` wakes onto another record the shrine names. `--mandate <uri>@<hash>` wakes a summoned instance under its mandate, verified first. A pet with no record reads the starter skeleton.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ wake · instance · resume
+
+```memetic-wikitext
+<<has entity=`example` name=`wake` params=`pet/lares-alpha ~ wake the record at the default grain`>>
+<<has entity=`example` name=`instance` params=`pet/lares-alpha instance/s-01 ~ join the presence and take each slot's digest`>>
+<<has entity=`example` name=`resume` params=`pet/lares-alpha source/resume ~ a resume reads one line`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face · pet · aperture · source · instance · held · title · mandate
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`pet` params=`takes/pet-name needs/required seat/1 as/<pet> ~ the spirit's pet name: lower-case letters, digits and hyphens`>>
+<<has entity=`arg` name=`aperture` params=`takes/rank default/measure ~ the fold's grain: a rank, a level 0..20, or the pair 10/measure`>>
+<<has entity=`arg` name=`source` params=`takes/word default/startup ~ the wake's turn: startup, resume, fork, compaction or precompact`>>
+<<has entity=`arg` name=`instance` params=`takes/session-id ~ the waking instance; joins the presence`>>
+<<has entity=`arg` name=`held` params=`~ the session's own counter holds this instance`>>
+<<has entity=`arg` name=`title` params=`takes/title ~ wake onto another record the shrine names`>>
+<<has entity=`arg` name=`mandate` params=`takes/ref ~ a summoned instance's mandate as <uri>@<hash>`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ocap/read-on-the-daemon-wiki ~ every read rides the tiddler door's own daemon verbs, whose gates stand over each act`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · spirit-pet-malformed · spirit-ambiguous · mandate-unknown · mandate-moved · mandate-names-another · mandate-face-turned
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.spirit.wakes pet/lares-alpha]] ~ a malformed --aperture, --source, --instance, --mandate or a missing pet`>>
+<<has entity=`refusal` name=`spirit-pet-malformed` params=`cure/[[face.spirit.wakes pet/lares-alpha]] ~ the word reads as no pet name`>>
+<<has entity=`refusal` name=`spirit-ambiguous` params=`~ both familiar/<pet> and spirit/<pet> stand; the door names both and guesses neither`>>
+<<has entity=`refusal` name=`mandate-unknown` params=`~ no mandate stands at the uri the line names`>>
+<<has entity=`refusal` name=`mandate-moved` params=`~ the mandate reads another hash than the line names; the wake stops`>>
+<<has entity=`refusal` name=`mandate-names-another` params=`~ the mandate names another pet or instance`>>
+<<has entity=`refusal` name=`mandate-face-turned` params=`~ the mandate echoes another face than the one answering; name it with --face`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ woke · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`woke` params=`exit/0 fields/[[pet uri kind source face text chars]] ~ the folded card, its testimony and the commands it hands back`>>
+<<has entity=`band` name=`refused` params=`exit/2 ~ the door refused by name (exit 2, 4 or 5); the line carries the cure`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares spirit om
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares spirit om]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · familiar-spirit · spirit-circle
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/familiar-spirit`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/spirit-circle`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FGBvOsugRSEDnZtY3qnYZdGnSd8v1aIjnD20fL4CJww`>>
+
+<<^ code=`&#x0004;` to=`?`>>

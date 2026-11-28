@@ -7,7 +7,8 @@
  *   S2  the flush rides the shore verb as its own op, beside census.
  *   S3  every island at once (`flushEveryShore`): each island answers for itself; an island that mounts no projection
  *       drops out; one that refuses, throws or stays silent reads unanswered, by name, and never as written.
- *   S4  the op joins the shore verb under its old name, and the MCP seat mirrors the shore (`shore`, `shore_flush`).
+ *   S4  the op joins the shore verb under its old name, and the MCP seat reaches the shore through its one `act`, by the
+ *       shore carriers' addresses (lar:///carriage.disk.reads, lar:///carriage.disk.flushes).
  *   S5  a lit sibling's shore answers by its face (`answerShoreSeats`): an act naming `face` reaches that face's projector (the
  *       worn one's or a sibling's) and names the face; a face with no projector refuses `face-unprojected`; a flush naming no
  *       face reaches the worn projector and every lit sibling's, each sibling row naming its face.
@@ -112,14 +113,17 @@ describe("the shore's flush", () => {
     expect((await flushEveryShore([{ island: "daemon", ask: async () => answered }])).whole).toBe(true);
   });
 
-  test("RED S4 — the op keeps its verb, and the MCP seat mirrors the shore", () => {
+  test("RED S4 — the op keeps its verb, and the MCP seat reaches the shore through act", () => {
     expect(SHORE_VERB).toBe("shore");
     // `drafts` reads titles alone; `keep-both` settles a stand-off and rides a person's hand like `take-records`.
     expect(SHORE_OPS).toEqual(["list", "sense", "settle", "take-records", "render", "restore", "remove", "census", "flush", "drafts", "keep-both", "base"]);
     const here = dirname(fileURLToPath(import.meta.url));
-    const fixture = JSON.parse(readFileSync(join(here, "../../lararium-sensorium/scripts/fixtures/cli-verbs.json"), "utf8")) as { mirrored: string[]; not_yet_mirrored: string[] };
-    expect(fixture.mirrored).toEqual(expect.arrayContaining(["shore", "shore_flush"]));
-    expect(fixture.not_yet_mirrored).not.toContain("shore");
+    const fixture = JSON.parse(readFileSync(join(here, "../../lararium-sensorium/scripts/fixtures/cli-verbs.json"), "utf8")) as { mirrored: string[]; cli_forms: Record<string, string> };
+    expect(fixture.mirrored).toContain("act");
+    expect(fixture.cli_forms["act"]).toBe("act");
+    // Each shore carrier renders its seat words, so `act(address=…)` reaches it with no tool of its own.
+    const pack = JSON.parse(readFileSync(join(here, "../../lararium-tw5/affordance-pack.json"), "utf8")) as { carriers: Record<string, { renders?: Record<string, unknown> }> };
+    for (const address of ["lar:///carriage.disk.reads", "lar:///carriage.disk.flushes"]) expect(pack.carriers[address]?.renders?.["mcp"], address).toBeDefined();
   });
 
   test("RED S5 — a lit sibling's shore answers by its face; a flush naming no face reaches every face's projector", async () => {

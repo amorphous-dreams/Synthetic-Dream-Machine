@@ -1,0 +1,89 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.handle.grafts`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "declare the Handle graft, not yet wired, and act on nothing"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.handle.grafts", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.handle.grafts"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.handle.grafts"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.handle.grafts ~ the owner-set succession, declared and unwired
+
+`lares handle graft` names the owner-set succession (true k-of-n graft governance) and declines to act: the KEL mint stands in @lararium/mesh (`mintHandleGraft`), and the vessel-side orchestration awaits its pass. It exits 3.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ graft
+
+```memetic-wikitext
+<<has entity=`example` name=`graft` params=`~ read the declaration`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ none
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ none
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`none` params=`who/seat-or-hand ~ acts on nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ declared
+
+```memetic-wikitext
+<<has entity=`band` name=`declared` params=`exit/3 ~ declared, not yet wired`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares handle graft
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares handle graft]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · handle-card
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/handle-card`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;h5JsPgQlzNrPc439SYzfWhkfuwzhkeiQI1B44iVotr0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

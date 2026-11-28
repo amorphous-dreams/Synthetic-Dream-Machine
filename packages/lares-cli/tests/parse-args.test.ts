@@ -106,7 +106,7 @@ describe("parseArgs: a boolean flag takes no value, in every position", () => {
 
 describe("splitCall: the call shape's one token rule", () => {
   test("★ a leading run of words names the verb; every name=value token names a param ★", () => {
-    expect(splitCall(["get", "title=lar:///ha.ka.ba/x", "mu=relate"])).toEqual({ words: ["get"], params: { title: "lar:///ha.ka.ba/x", mu: "relate" } });
+    expect(splitCall(["get", "title=lar:///ha.ka.ba/x", "aperture=measure"])).toEqual({ words: ["get"], params: { title: "lar:///ha.ka.ba/x", aperture: "measure" } });
     expect(splitCall(["oracle", "cast", "query=q"])).toEqual({ words: ["oracle", "cast"], params: { query: "q" } });
   });
   test("★ a leading address names the verb ★", () => {

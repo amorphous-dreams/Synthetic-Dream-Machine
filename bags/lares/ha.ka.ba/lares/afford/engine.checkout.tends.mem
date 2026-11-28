@@ -1,0 +1,110 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.checkout.tends`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "converge the checkout's tunnel, writing only on difference"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.checkout.tends", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.checkout.tends"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.checkout.tends"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.checkout.tends ~ the the checkout tunnel converges, each write a ledger generation
+
+`lares repo tend` reads first, then writes only the items that drift (and, with `--force`, the foreign ones, the ledger keeping the bytes it replaced), under the host lock and the radius lock; each tend that writes records one ledger generation `undo` restores. The repo door writes the checkout alone; the radius never widens to the operator's homes.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ tend · force
+
+```memetic-wikitext
+<<has entity=`example` name=`tend` params=`~ converge the checkout's tunnel`>>
+<<has entity=`example` name=`force` params=`force/true ~ take foreign targets too`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ root · force
+
+```memetic-wikitext
+<<has entity=`arg` name=`root` params=`takes/dir ~ the checkout this door keeps; absent, the checkout the CLI lives in`>>
+<<has entity=`arg` name=`force` params=`~ take a foreign target too; the ledger keeps its bytes`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ writes this host's files under the host and radius locks; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · familiar-home-only · root-no-directory
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ name one of read, tend, verify, undo`>>
+<<has entity=`refusal` name=`familiar-home-only` params=`~ --familiar names a home's familiar; lares home takes it`>>
+<<has entity=`refusal` name=`root-no-directory` params=`~ --root names no directory; name the checkout's top level`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ tended · drift · foreign · unreachable
+
+```memetic-wikitext
+<<has entity=`band` name=`tended` params=`exit/0 fields/[[radius wrote set stores lifted refused generation rows exit]] ~ every item holds after the write; generation names the ledger entry`>>
+<<has entity=`band` name=`drift` params=`exit/1 fields/[[radius rows exit]] ~ an item still drifts`>>
+<<has entity=`band` name=`foreign` params=`exit/3 fields/[[radius refused rows exit]] ~ a foreign target refused; --force takes it`>>
+<<has entity=`band` name=`unreachable` params=`exit/4 fields/[[radius rows exit]] ~ a store write failed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares repo tend
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares repo tend]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · reality-tunnel
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/reality-tunnel`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4a9gcolnDeQy1AwziHbf4QrUcw7SDiOE9RIGqLoVS38`>>
+
+<<^ code=`&#x0004;` to=`?`>>

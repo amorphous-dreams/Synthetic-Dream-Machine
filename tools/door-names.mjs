@@ -55,6 +55,10 @@ export function flatten(path, table, out = new Map()) {
 
 const isWord = (w) => w !== undefined && /^[a-z][a-z0-9_-]*$/.test(w);
 
+/** The call door's act keywords and the keywords the bare door reads (the keyword head: packages/lares-cli/src/keywords.ts). */
+export const ACT_KEYWORDS = new Set(['get', 'put', 'delete', 'rename', 'filter', 'act']);
+export const BARE_KEYWORDS = new Set(['mu', 'aperture', 'face', 'mandate', 'stance', 'mode', 'mood', 'note']);
+
 /**
  * A reader of command lines over one registry: `{ rows: [{name, verbs, passes, leads}], shim: [verb…] }`. It answers why a
  * line names no door, or null where it does. Each word past the door reads against the table at its path until a word reads
@@ -70,6 +74,26 @@ export function deadDoorOver({ rows, shim }) {
     const words = line.split(/\s+/).slice(1).map((w) => w.split('${')[0]);
     const door = words[0];
     if (door === '') return null;
+    // A KEYWORD LINE (`lares rite=kukulu mu=_0`, `lares get=<title>`, `lares mu=*0`): each word names a keyword; the line
+    // answers where some keyword names a door, an act keyword of the call door, or the bare door's own shaping
+    // (packages/lares-cli/src/keywords.ts).
+    if (/^[a-z][a-z0-9-]*=/.test(door)) {
+      const keys = words.filter((w) => /^[a-z][a-z0-9-]*=/.test(w)).map((w) => w.slice(0, w.indexOf('=')));
+      if (keys.some((k) => doors.has(k) || ACT_KEYWORDS.has(k))) return null;
+      return keys.every((k) => BARE_KEYWORDS.has(k)) ? null : `no act keyword on the keyword line (keywords: ${keys.join(' ')})`;
+    }
+    // THE ONE ACT (comms-ux-enacts landing 9): `lares act lar:///<address> …` and `lares lar:///<address> …` ride the call
+    // door, which takes the address and params alone (packages/lares-cli/src/commands/call.ts isCallHead); a verb word or a
+    // flag after `act` names a spelling the call door refuses.
+    if (door.startsWith('lar:///')) return null;
+    if (door === 'act' && !doors.has('act')) {
+      // A word past `act` that ends in `:` opens the act's own message (`lares act REPACK: …`); an interpolated word reads as
+      // unchecked; `--help` prints the act carriers' call shapes.
+      const next = words[1];
+      if (next === '' || next === '--help' || next?.endsWith(':')) return null;
+      if (next === '…' && words.slice(2).every((w) => !w.startsWith('-'))) return null;
+      return next?.startsWith('lar:///') || /^<[^>]+>$/.test(next ?? '') ? null : `\`act\` takes a carrier address (\`lares act lar:///<address> …\`), never "${next ?? '(nothing)'}"`;
+    }
     if (!doors.has(door)) return `no door "${door}"`;
     if (passes.has(door)) return null;
     let path = door;

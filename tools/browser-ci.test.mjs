@@ -1,6 +1,6 @@
 /**
  * tools/browser-ci.sh against a fake `docker` that records argv. Nothing here starts a container: the live proof
- * (up, ingest, get title=… mu=assert, qa smoke, down) runs against the real image. This pins the driver's contract: the verb
+ * (up, ingest, get title=… aperture=arc, qa smoke, down) runs against the real image. This pins the driver's contract: the verb
  * routing, the refusals by name, that `down` removes the volumes, and that no argv ever carries the Docker socket.
  */
 import assert from "node:assert/strict";
@@ -219,7 +219,7 @@ test("a door that answers no open key stops the driver by name", async () => {
 test("bag creates a bag through act CREATE and prints its URI", async () => {
   const r = await run(["bag", "aki-fixture"]);
   assert.equal(r.status, 4, "the fake answers no ok:true, so the driver names the refusal");
-  assert.match(r.calls, /act CREATE --bag lar:\/\/\/ha\.ka\.ba\/bags\/aki-fixture --yes/);
+  assert.match(r.calls, /act lar:\/\/\/carriage\.bag\.creates bag=lar:\/\/\/ha\.ka\.ba\/bags\/aki-fixture yes=true/);
   assert.equal((await run(["bag", "Bad Name"])).status, 2);
 });
 
@@ -249,8 +249,8 @@ test("BROWSER_CI_WIKI names the wiki without asking the node", async () => {
 
 test("get reads AS the mounted wiki by default, and takes an explicit --bag or --recipe", async () => {
   const u = "lar:///ha.ka.ba/x/y";
-  assert.match((await run(["get", u])).calls, / get title=lar:\/\/\/ha\.ka\.ba\/x\/y recipe=lares mu=assert --json/);
-  assert.match((await run(["get", u, "--bag", "aki-fixture"])).calls, / get title=\S+ bag=aki-fixture mu=assert --json/);
+  assert.match((await run(["get", u])).calls, / get title=lar:\/\/\/ha\.ka\.ba\/x\/y recipe=lares aperture=arc --json/);
+  assert.match((await run(["get", u, "--bag", "aki-fixture"])).calls, / get title=\S+ bag=aki-fixture aperture=arc --json/);
   assert.equal((await run(["get", u, "--tag", "z"])).status, 2);
 });
 

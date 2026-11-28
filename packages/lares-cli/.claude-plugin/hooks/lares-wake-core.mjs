@@ -129,7 +129,7 @@ export const LAW_LINE_BYTES = 240;
 const LAW_PAGE_BYTES = 16384;
 
 const CURE = "stand it with tools/lares-container.sh up";
-const viewOf = (filter) => `wiki_filter(filter="${filter}", recipe="default", fields=["title","description"]`;
+const viewOf = (filter) => `get(filter="${filter}", recipe="default", params={"fields": "title,description"}`;
 const VIEW = viewOf(INDEX_FILTER);
 const bytes = (text) => Buffer.byteLength(text, "utf8");
 
@@ -223,7 +223,7 @@ export const docsArgv = () => ["wiki", "status", "--recipe", "tw5-docs", "--json
 export function docsLines(result) {
   const { fault } = filterAnswer(result);
   if (fault) return `Library: tw5-docs unread (${fault})`;
-  return "Library: tw5-docs (TiddlyWiki docs, read-only) · read a page: tiddler_get(title=\"backlinks Operator\", recipe=\"tw5-docs\") · the operators: wiki_filter(filter=\"[tag[Filter Operators]]\", recipe=\"tw5-docs\")";
+  return "Library: tw5-docs (TiddlyWiki docs, read-only) · read a page: get(title=\"backlinks Operator\", recipe=\"tw5-docs\") · the operators: get(filter=\"[tag[Filter Operators]]\", recipe=\"tw5-docs\")";
 }
 
 /** The read a wake owes when the hearth did not answer inside its budget: the arm takes it by hand, never reading the hearth dark. */
@@ -288,7 +288,7 @@ function renderRows(answer, { head: label, filter, cap, lineCap = cap, rows: ord
     ? `cut at the wake's byte cap after ${lines.length} of ${total} rows; read the whole view: ${view})`
     : next
       ? `read further: ${view}, after="${next}")`
-      : `read a row: tiddler_get(title=<title>, recipe="default", meme=true); the same view: ${view})`;
+      : `read a row: get(title=<title>, recipe="default", mu="assert"); the same view: ${view})`;
   return [head, ...lines, further].join("\n");
 }
 
@@ -336,11 +336,11 @@ export function indexLines(result) {
   return fault ? `memory index unread: ${fault}` : renderIndex(answer);
 }
 
-const LAW_VIEW = `${viewOf(LAW_INDEX_FILTER).replace('fields=["title","description"]', 'fields=["title","description","role"]')})`;
-const LAW_FURTHER = `read the rest: law_index(after=<next>) or lares law index --all; the filter: ${LAW_VIEW}; pin or unpin: law_pin(uri=<title>) · law_unpin(uri=<title>) (lares law pin|unpin <uri>)`;
+const LAW_VIEW = `${viewOf(LAW_INDEX_FILTER).replace('"fields": "title,description"', '"fields": "title,description,role"')})`;
+const LAW_FURTHER = `read the rest: act(address="lar:///engine.law.indexes", args={"after": <next>}) or lares law index --all; the filter: ${LAW_VIEW}; pin or unpin: act(address="lar:///engine.law.pins", args={"uri": <title>}) · act(address="lar:///engine.law.unpins", args={"uri": <title>}) (lares law pin|unpin <uri>)`;
 
 /** The line that frames the rows by provenance and weight: canon grounds each one, the five tools turn it, and both hands hold the frame. */
-export const LAW_WEIGHT_LINE = "these rows come from canon, the house's settled ground (🜃); read one whole (tiddler_get(title=<title>, recipe=\"default\", meme=true, grain=\"whole\")) and turn it through the five tools beside the live work; operator and node hold the frame together";
+export const LAW_WEIGHT_LINE = "these rows come from canon, the house's settled ground (🜃); read one whole (get(title=<title>, recipe=\"default\", mu=\"assert\")) and turn it through the five tools beside the live work; operator and node hold the frame together";
 /** A title prints only as one `lar:` address with no whitespace, within its byte cap. */
 const printableTitle = (title) => typeof title === "string" && /^lar:\/\/\/\S+$/.test(title) && bytes(title) <= LAW_TITLE_BYTES;
 
@@ -376,7 +376,7 @@ export function renderLaw(answer, pinsAnswer = null, cap = LAW_BYTES) {
   };
   let printed = 0;
   for (const row of rows.slice(0, shownPins)) { if (!push(lineOf(row, "📌"))) break; printed++; }
-  if (pins > printed) push(`📌 +${pins - printed} more pinned (lares law index, law_index)`);
+  if (pins > printed) push(`📌 +${pins - printed} more pinned (lares law index, act(address="lar:///engine.law.indexes"))`);
   let shown = printed;
   for (const row of rows.slice(pins, pins + LAW_ROWS)) { if (!push(lineOf(row, "  "))) break; shown++; }
   return [`Lares law (pinned first): ${pins} pinned · ${total} rows${shown < total ? ` (${shown} shown)` : ""}`, LAW_WEIGHT_LINE, ...lines, LAW_FURTHER].join("\n");
@@ -398,7 +398,7 @@ export function lawLines(result, pinsResult = null) {
 export const ROSTER_BYTES = 2048;
 export const ROSTER_ROWS = 8;
 export const rosterArgv = () => ["vessel", "roster", "--json"];
-const ROSTER_FURTHER = "read it whole: vessel_roster() or lares vessel roster";
+const ROSTER_FURTHER = "read it whole: act(address=\"lar:///face.roster.reads\") or lares vessel roster";
 /** The line that frames the rows by provenance and weight: the vessel's own live reading, turned through the five tools. */
 export const ROSTER_WEIGHT_LINE =
   "these rows come from this vessel's own live reading: a seat here stands by the kernel's hold on its socket, a far seat by its signature on the face intent plane; " +

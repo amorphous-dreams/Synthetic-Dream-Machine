@@ -181,12 +181,12 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
   test("⑦ MEASURE: `act MOVE` out of the working layer — the promotion door, laid flat", async () => {
     // Dry-run: the MOVE's verdict is measured, never taken here — ⑦ below promotes through `act LOAD`
     // so the working copy still shadows the recipe read on A.
-    const mv = await A!.cli(["act", "MOVE", "--title", URI, "--from", draftA, "--to", LARES_BAG, "--dry-run", "--json"]);
-    console.error(`meme-two-vessel-bag MEASURE A: act MOVE --dry-run ${draftA} → lares → ${said(mv).trim().slice(0, 400)}`);
+    const mv = await A!.cli(["act", "lar:///carriage.bag.moves", `title=${URI}`, `from=${draftA}`, `to=${LARES_BAG}`, "mu=dry", "--json"]);
+    console.error(`meme-two-vessel-bag MEASURE A: act lar:///carriage.bag.moves mu=dry ${draftA} → lares → ${said(mv).trim().slice(0, 400)}`);
   });
 
   test("⑦ A promotes through the one door: `act LOAD` the carrier into lar:///ha.ka.ba/bags/lares", async () => {
-    const ld = await A!.cli(["act", "LOAD", "--source-uri", join(A!.root, "npc.mem"), "--to", WORKING_LARES, "--yes", "--json"]);
+    const ld = await A!.cli(["act", "lar:///carriage.bag.loads", `source-uri=${join(A!.root, "npc.mem")}`, `to=${WORKING_LARES}`, "yes=true", "--json"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
     await promoteLoadedTitles(A!, ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
     const which = await A!.cli(["wiki", "which", URI, "--no-json"]);
@@ -212,11 +212,11 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
   test("⑧ A's lares record stays whole while B, holding no board source yet, draws kahu-reach on lares", async () => {
     const f = join(B!.root, "npc-b-gate.mem");
     writeFileSync(f, meme(["a", "b"]));
-    const ld = await B!.cli(["act", "LOAD", "--source-uri", f, "--to", WORKING_LARES, "--yes", "--json"]);
+    const ld = await B!.cli(["act", "lar:///carriage.bag.loads", `source-uri=${f}`, `to=${WORKING_LARES}`, "yes=true", "--json"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
     const titles = ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []);
     const root = titles.find((t) => !titles.some((c) => c !== t && (t.startsWith(`${c}#`) || t.startsWith(`${c}/`)))) ?? titles[0]!;
-    const mv = await B!.cli(["act", "MOVE", "--title", root, "--from", WORKING_LARES, "--to", LARES_BAG, "--yes", "--json"]);
+    const mv = await B!.cli(["act", "lar:///carriage.bag.moves", `title=${root}`, `from=${WORKING_LARES}`, `to=${LARES_BAG}`, "yes=true", "--json"]);
     expect(JSON.stringify(mv.json), "a missing source refuses closed, by name").toContain("kahu-reach");
     const a = await A!.cli(["get", `title=${URI}`, ...BAG, "mu=assert", "--json"]);
     const aText = String((((a.json?.["data"] as Record<string, unknown> | undefined)?.["meme"]) as Record<string, unknown> | undefined)?.["text"] ?? "");
@@ -232,7 +232,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     // W24/W27 owns the same-face BOOK crossing. A and B each promote within their own live system document.
     const f = join(B!.root, "npc-b.mem");
     writeFileSync(f, meme(["a", "b"]));
-    const ld = await B!.cli(["act", "LOAD", "--source-uri", f, "--to", WORKING_LARES, "--yes", "--json"]);
+    const ld = await B!.cli(["act", "lar:///carriage.bag.loads", `source-uri=${f}`, `to=${WORKING_LARES}`, "yes=true", "--json"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
     await promoteLoadedTitles(B!, ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
     const local = await B!.cli(["get", `title=${URI}`, ...BAG, "mu=assert", "--json"]);

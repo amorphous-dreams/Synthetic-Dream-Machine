@@ -1,0 +1,107 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.handle.attests`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "mint a structured claim signed under the Handle's head key"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.handle.attests", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.handle.attests"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.handle.attests"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.handle.attests ~ a structured edge: this Handle stands in a named relation
+
+`lares handle attest --surface <kind> --subject <name>` mints a signed statement that this Handle stands in a named relation to a named foreign subject (surfaces: dns-control, atproto-account, kowloon-actor, loopback-address) and prints it for the operator to carry. `--return-locator` names where the surface half looks; `--persona` the persona. A closed vocabulary refuses an unknown surface by name.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ dns
+
+```memetic-wikitext
+<<has entity=`example` name=`dns` params=`surface/dns-control subject/example.net ~ claim control of a zone`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ surface · subject · return-locator · persona
+
+```memetic-wikitext
+<<has entity=`arg` name=`surface` params=`takes/kind needs/required ~ the adapter row: dns-control, atproto-account, kowloon-actor or loopback-address`>>
+<<has entity=`arg` name=`subject` params=`takes/name needs/required ~ the foreign name in that surface's grammar`>>
+<<has entity=`arg` name=`return-locator` params=`takes/where ~ where the surface half looks for the leg coming back`>>
+<<has entity=`arg` name=`persona` params=`takes/index ~ the persona whose Handle acts; absent, the store door's default`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/seat-or-hand key/handle-head ~ the store door signs on the WHO board under the Handle's key`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · store-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.handle.attests surface/dns-control subject/example.net]] ~ attest wants --surface and --subject, and an adapter that answers them`>>
+<<has entity=`refusal` name=`store-refused` params=`~ the store door refused; the line names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ statement
+
+```memetic-wikitext
+<<has entity=`band` name=`statement` params=`exit/0 ~ the signed statement as one JSON line`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares handle attest
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares handle attest]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · handle-card
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/handle-card`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XO9z2BQWsrzVs7jwegu2y8ZSiHrUwXeSfRUb7R9Wgk4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

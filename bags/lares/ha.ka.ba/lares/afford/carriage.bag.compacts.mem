@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.bag.compacts"
 
 `compact <bag-url>` takes a snapshot-restart on one bag, the DXOS-style ceremony: history bounds, and what the cut leaves out stays out (lossy by design). The house names it for what it does and for whose word it borrows: `epoch` stays RESERVED for the monotone fencing frontier a grant binds to, and a compaction CUTS history and fences nobody, so it carries the qualifier and leaves the bare word to the fence.
 
-The answer names the old doc, the new doc, the tiddler and tombstone counts, whether the layer swapped in the composite (`not mounted` where it stands unmounted), and a note where one stands. The verb rides the UDS fast path with a WS fallback and a 30 s wait. `wiki compact <slug> <bag-url>` delegates to this same verb with a slug it never reads.
+The answer names the old doc, the new doc, the tiddler and tombstone counts, whether the layer swapped in the composite (`not mounted` where it stands unmounted), and a note where one stands. The verb rides the UDS fast path with a WS fallback and a 30 s wait. `wiki compact <slug> <bag-url>` delegates to this same verb with a slug it never reads. One act, one address: that spelling joins this skin as `also/[[lares wiki compact]]` in the commit that flips the wiki door, since an `also` spelling gathers its door an entry and the wiki door still keeps its own table.
 
 <<~/ahu>>
 
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hBnRrB4vXjPdOiiVu3WG7GADXobjb_mHbC4jdRhiWeA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cjuIeXr7M6_tau3HcV_v9CaphrOiICko_kpcsXiai7M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

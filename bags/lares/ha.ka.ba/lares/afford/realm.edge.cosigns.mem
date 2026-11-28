@@ -1,0 +1,110 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.edge.cosigns`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read an edge partial, and with --act add this vessel's seats"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.edge.cosigns", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.edge.cosigns"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.edge.cosigns"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.edge.cosigns ~ a quorum partial, read and cosigned by the next seat
+
+`lares edge cosign (<partial-json> | --from <file>)` reads ONE partial and prints only what its verified bytes say, signing nothing, so a person reads whom the act sets aside first. `--act <act-cid>` names the act id that read printed; then this vessel's seats sign, and the act lands once it counts. Any other act id refuses.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ read · sign
+
+```memetic-wikitext
+<<has entity=`example` name=`read` params=`from/partial.json ~ read the partial, signing nothing`>>
+<<has entity=`example` name=`sign` params=`from/partial.json act/<act-cid> ~ add this vessel's seats`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ partial · from · act · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`partial` params=`takes/json seat/1 as/<partial-json> ~ the partial, inline`>>
+<<has entity=`arg` name=`from` params=`takes/host-path ~ the partial, from a file`>>
+<<has entity=`arg` name=`act` params=`takes/act-cid ~ the act id the read printed: sign and land`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the acting face, by persona index; absent, the one face standing open`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/seats ~ the seats this vessel holds sign once --act names the act read`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ unreadable · EdgeCosignError
+
+```memetic-wikitext
+<<has entity=`refusal` name=`unreadable` params=`cure/[[realm.edge.cosigns from/partial.json]] ~ the file reads nothing, or the input holds more than ONE JSON partial`>>
+<<has entity=`refusal` name=`EdgeCosignError` params=`~ the partial or the act id refused by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ read · landed · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`read` params=`exit/0 ~ what the partial sets aside; nothing signed`>>
+<<has entity=`band` name=`landed` params=`exit/0 ~ the seats signed; the act counts and landed, or waits on more seats`>>
+<<has entity=`band` name=`refused` params=`exit/1 ~ refused by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares edge cosign
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares edge cosign]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · kapae
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JznoVTA__yblj7KW08sZMDkg9r3M0f-_BhoN2bPgalU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

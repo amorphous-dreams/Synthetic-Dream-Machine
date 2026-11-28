@@ -2,7 +2,7 @@
  * e2e/working-loop — the live working→canon loop, witnessed end-to-end.
  *
  * Residency verbs run IN the active wiki island over ITS composite (where the
- * per-wiki working layer + canon both live), commanded via `lares act --in-wiki`
+ * per-wiki working layer + canon both live), commanded via `lares act lar:///carriage.* in-wiki=true`
  * (→ the `wiki-act` forwarder → placeWikiVerb); the admin never reaches the
  * per-fingerprint working binding.
  *
@@ -54,7 +54,7 @@ afterAll(async () => { await lar.stop(); });
 
 describe.skipIf(!stagedTarget)("working→canon live loop (island-local, --in-wiki)", () => {
   test("W1 — LOAD --to working --in-wiki projects to wikis/ (the live write layer)", async () => {
-    const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", WORKING, "--in-wiki", "--yes", "--json"]);
+    const r = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, `to=${WORKING}`, "in-wiki=true", "yes=true", "--json"]);
     expect(r.json?.["ok"], `LOAD --to working --in-wiki failed: ${JSON.stringify(r.json)}`).toBe(true);
     expect(await awaitCarrier(wikiWorkbenchDir(lar.root, "lares"), true), "carrier did not project into the lares workbench").toBe(true);
     // and NOT into canon yet — promotion is a separate, deliberate act.
@@ -62,7 +62,7 @@ describe.skipIf(!stagedTarget)("working→canon live loop (island-local, --in-wi
   }, 90_000);
 
   test("W2 — MOVE working→lares canon --in-wiki (promotion) publishes to bags/lares + retracts wikis/", async () => {
-    const r = await lar.cli(["act", "MOVE", "--title", BOOT_URI, "--from", WORKING, "--to", LARES, "--in-wiki", "--yes", "--json"]);
+    const r = await lar.cli(["act", "lar:///carriage.bag.moves", `title=${BOOT_URI}`, `from=${WORKING}`, `to=${LARES}`, "in-wiki=true", "yes=true", "--json"]);
     expect(r.json?.["ok"], `MOVE working→lares canon --in-wiki failed: ${JSON.stringify(r.json)}`).toBe(true);
     expect(await awaitCarrier(join(lar.root, "projections/bags/lares"), true), "carrier did not publish to bags/lares (canon)").toBe(true);
     expect(await awaitCarrier(wikiWorkbenchDir(lar.root, "lares"), false), "carrier still sits in the lares workbench after promotion").toBe(true);

@@ -150,12 +150,12 @@ describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harnes
     expect(`${r.stdout}${r.stderr}`).toMatch(/not-found/);
   });
 
-  test("tiddler_put with meme=true through the seat, and `lares get recipe=default mu=assert` read the same bytes", async () => {
+  test("`put` through the seat, and `lares get recipe=default mu=assert` read the same bytes", async () => {
     const projection = join(daemonWikiDir(lar.root), `${PATH}.mem`);
     expect(existsSync(projection), "control: the fresh daemon wiki has no seat tiddler yet").toBe(false);
     const said = await speak(entry, harnessEnv(entry.env), [
-      { name: "tiddler_put", arguments: { title: URI, text: MEME, recipe: "default", meme: true } },
-      { name: "tiddler_get", arguments: { title: URI, recipe: "default", meme: true, grain: "whole" } },
+      { name: "put", arguments: { title: URI, text: MEME, recipe: "default" } },
+      { name: "get", arguments: { title: URI, recipe: "default", mu: "assert" } },
     ]);
     expect(said.results.length, `the seat answered ${said.results.length} of 2 calls; stderr:\n${said.stderr.slice(-1500)}`).toBe(2);
     const put = payload(said.results[0]);
@@ -189,7 +189,7 @@ describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harnes
 
   test("control: the same seat without the entry's LAR_ROOT names no house and reaches no daemon", async () => {
     const said = await speak(entry, harnessEnv({ ...entry.env, LAR_ROOT: "" }), [
-      { name: "tiddler_get", arguments: { title: URI, recipe: "default", meme: true } },
+      { name: "get", arguments: { title: URI, recipe: "default", mu: "assert" } },
     ]);
     // No house root named: the aho resolves its child at each spawn and the resolver names none rather than guess a home,
     // so no child ever stands (`child-unresolved`, never `child-up`) and the call answers `hearth-sleeps`: it never left

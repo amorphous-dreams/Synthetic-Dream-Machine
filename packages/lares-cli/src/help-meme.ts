@@ -3,7 +3,7 @@
  *
  * A verb door's help names the meme standing behind it (`command-help.ts`, `meme:`); this reach READS that
  * meme. It writes no reader of its own: the URI goes straight to `cmdCall`, the same mouth `lares get title=<uri>
- * mu=assert` uses, which rides the daemon `call` verb. So the fetch runs wherever the vessel runs — phone, node,
+ * aperture=arc` uses, which rides the daemon `call` verb. So the fetch runs wherever the vessel runs — phone, node,
  * browser — for any vessel holding the cap, and the help path itself touches no filesystem.
  *
  * A DOOR THAT NAMES NO MEME SAYS SO AND EXITS CLEAN. Naming no record describes the registry, not a fault:
@@ -33,7 +33,7 @@ export async function reachHelpMeme(door: string, args: ParsedArgs, read: MemeRe
   // `--help` on the help call cannot re-enter the meme door's own help.
   const passthrough: ParsedArgs = {
     command:    "get",
-    positional: [`title=${uri}`, "recipe=lares", "mu=assert"],
+    positional: [`title=${uri}`, "recipe=lares", "aperture=arc"],
     options:    {},
     flags:      args.flags["json"] === true ? { json: true } : {},
   };

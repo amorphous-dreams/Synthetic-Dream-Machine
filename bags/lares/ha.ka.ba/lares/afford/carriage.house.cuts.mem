@@ -1,0 +1,113 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.house.cuts`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "cut the house's authored memory as a bundle into a bound workspace"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.house.cuts", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.house.cuts"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.house.cuts"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.house.cuts ~ keep-cut ~ the keep's vessel half
+
+`lares rite keep-cut --workspace <name>` runs in the vessel: it lays the house's authored memory, cut as a cleartext house bundle, into the bound workspace (`--into <path>` inside it), spending a return of the keep lei strung for that workspace and resting the guest half of the tessera. It holds each cold wiki the house lists in turn before the cut, then hands the pins back. A destination that already holds the bundle spends nothing and moves nothing. The bundle rests unencrypted; the host half commits, pushes and lands it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ cut
+
+```memetic-wikitext
+<<has entity=`example` name=`cut` params=`workspace/keep ~ cut the bundle into the workspace`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ workspace · into · accept-omissions · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`workspace` params=`takes/name needs/required ~ the bound workspace the bundle lays into`>>
+<<has entity=`arg` name=`into` params=`takes/path ~ the path inside the workspace`>>
+<<has entity=`arg` name=`accept-omissions` params=`~ cut though some memory stays behind`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the keep's face, a whole persona index from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ spends a return of the keep lei strung for the workspace; any seat holding the line may spend it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · keep-workspace-malformed · keep-workspace-unbound · keep-workspace-refused · keep-into-unsafe · keep-dest-foreign · keep-lei-unseen
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.house.cuts workspace/keep]] ~ no workspace named`>>
+<<has entity=`refusal` name=`keep-workspace-malformed` params=`~ the workspace name reads malformed`>>
+<<has entity=`refusal` name=`keep-workspace-unbound` params=`~ the workspace binds no directory`>>
+<<has entity=`refusal` name=`keep-workspace-refused` params=`~ the workspace refused the lay`>>
+<<has entity=`refusal` name=`keep-into-unsafe` params=`~ --into leaves the workspace`>>
+<<has entity=`refusal` name=`keep-dest-foreign` params=`~ the destination holds a foreign tree`>>
+<<has entity=`refusal` name=`keep-lei-unseen` params=`~ no keep lei stands strung for the workspace`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ cut · standing
+
+```memetic-wikitext
+<<has entity=`band` name=`cut` params=`exit/0 fields/[[kept dest bundleId faces n tessera omissions face]] ~ the bundle rests and a return spent; the land line names the tessera`>>
+<<has entity=`band` name=`standing` params=`exit/0 ~ the destination already holds the bundle; nothing spent`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares rite keep-cut
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares rite keep-cut]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · seat-harness
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Qn41nXlV3sts-7fqHepfduMAlN6KnhfKykMhqJt2OGg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

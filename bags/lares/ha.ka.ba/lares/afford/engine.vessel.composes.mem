@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.vessel.composes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "run a pet-named vessel rite: founding, refresh or rebuild"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.vessel.composes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.vessel.composes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.vessel.composes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.vessel.composes ~ the pet-named compositions over the vessel primitives
+
+`lares vessel rite <petname>` runs one composition: `founding` (found · stand · lay, halting at the first step that refuses, each idempotent), `refresh` (build · stop · stand) or `rebuild` (re-derive · stand). Bare it lists the rites; an unknown name refuses with exit 2.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ list · founding
+
+```memetic-wikitext
+<<has entity=`example` name=`list` params=`~ list the rites`>>
+<<has entity=`example` name=`founding` params=`petname/founding ~ found, stand and lay`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ petname
+
+```memetic-wikitext
+<<has entity=`arg` name=`petname` params=`takes/word seat/1 as/<founding|refresh|rebuild> ~ the rite`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ runs on this host's own vessel root; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ rite-unknown
+
+```memetic-wikitext
+<<has entity=`refusal` name=`rite-unknown` params=`cure/[[engine.vessel.composes petname/founding]] ~ name founding, refresh or rebuild`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ ran · halted
+
+```memetic-wikitext
+<<has entity=`band` name=`ran` params=`exit/0 ~ the rite ran whole`>>
+<<has entity=`band` name=`halted` params=`exit/1 ~ halted at the step that refused, its exit carried`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vessel rite
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares vessel rite]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · vessel-door
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;w6yve0R2kOJvgxONNe3f14-5cIyRykV7OXYPIaJhfOI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

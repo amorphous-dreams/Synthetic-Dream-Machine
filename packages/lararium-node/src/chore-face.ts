@@ -27,6 +27,7 @@ export const CHORE_FREE_VERBS: Readonly<Record<string, string>> = Object.freeze(
   "where": READ, "resolve": READ, "unbound-docs": READ, "fresher-canon": READ,
   "meme-list": READ, "meme-project": "renders a meme root to text and answers it; writes nothing",
   "wiki-filter": READ, "tiddler-get": READ, "wiki-render": READ, "wiki-status": READ, "circle-list": READ,
+  "filter-watch": "holds a filter subscription over the caller's reader view; its one record (`$:/state/lares/watch/<id>`) never persists",
   "list-wikis": READ, "share-list": READ, "workbench-seat": READ, "intent-view": READ, "sealed-reading": READ, "events": READ,
   "realm-clock": READ,
   "realm-feed": "rolls the presenter's own leaf slot, its writer bound to the presenter; spends no mounted face's material",

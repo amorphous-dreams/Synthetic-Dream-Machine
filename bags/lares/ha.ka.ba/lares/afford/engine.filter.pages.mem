@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.filter.pages"
 
 The filter language reads as TiddlyWiki's own: `[tag[memory]sort[title]]`, `[search[cursor]]`, `[prefix[lar:///ha.ka.ba/kahua/memory/]]`, `[has[status]!status[done]]`, and the link graph rides it too: `backlinks[]`, `links[]`, `transcludes[]`, `backtranscludes[]`. The filter computes over a reader's view of the wiki that holds only what this face may read, so no operator and no transclusion reads past the fence; `withheld` counts the matches that stay home (temp, state, custody titles) or rest in a bag this face holds no read on. The address stays a candidate until the operator reads the landing's list.
 
-The answer reads {recipe, filter, titles, total, next, asOf}; name `fields` and each row carries them, {…, rows: [{title, fields}]} in place of `titles`. `mu=many-relate` reads the upcoming work as cards: each row answers its has line, the card a get answers, so one filter surveys many memes; unfold the one you need with a slot read. The seat's own tool names `collapse` until it folds into the call: there each row carries `bytes`, and a meme root its `slots: [{slot, bytes, first}]`.
+The answer reads {recipe, filter, titles, total, next, asOf}; name `fields` and each row carries them, {…, rows: [{title, fields}]} in place of `titles`. `aperture=measure` reads the upcoming work as cards: each row answers its has line, the card a get answers, so one filter surveys many memes; unfold the one you need with a slot read. The seat's own tool names `collapse` until it folds into the call: there each row carries `bytes`, and a meme root its `slots: [{slot, bytes, first}]`.
 
 `match` sweeps lines in one call: each row carries its record's matching lines, `lines: [{n, text}]` (a line past 512 bytes rides cut, `cut: true`), and `matches` counting every matching line, so a sweep (an L-Prime pass, a stale word) reads its matches with no read per title. Plain words match byte for byte; a `/source/flags` spelling reads as a regexp. `context` (0..8) carries that many lines around each match, touching windows merged; at most 64 lines a row, and a page past its byte cap sheds a row's tail lines and names `omitted: ["lines"]`. A record holding no text (a pointer) carries no lines. `context` without `match` refuses `filter-context-alone`. The filter narrows and the lens shows the lines: a search filter beside `match` hears one voice across every body of an entity.
 
@@ -36,8 +36,8 @@ A rendered tiddler's slice: where one read of the whole render (the record carry
 ```memetic-wikitext
 <<has entity=`example` name=`one-page` params=`filter/[tag[memory]sort[title]] recipe/default limit/5 ~ one page; after continues it, all walks it`>>
 <<has entity=`example` name=`the-link-graph` params=`filter/[[[[Room 4]backlinks[]]]] recipe/default ~ every record that links to Room 4`>>
-<<has entity=`example` name=`the-work-skinny` params=`filter/[prefix[lar:///ha.ka.ba/kahua/memory/road/]] recipe/default mu/many-relate ~ each meme row skinny: its bytes and its slots`>>
-<<has entity=`example` name=`a-page-of-cards` params=`filter/[tag[memory]sort[title]] recipe/default mu/relate ~ a page of has lines: the lone relate joins the many a filter already reads`>>
+<<has entity=`example` name=`the-work-skinny` params=`filter/[prefix[lar:///ha.ka.ba/kahua/memory/road/]] recipe/default aperture/measure ~ each meme row skinny: its bytes and its slots`>>
+<<has entity=`example` name=`a-page-of-cards` params=`filter/[tag[memory]sort[title]] recipe/default aperture/measure ~ a page of has lines: the card's range on a filter's page`>>
 <<has entity=`example` name=`hear-one-voice` params=`filter/[[[all[tiddlers]search:text:literal[Lares (Stranger)]]]] match/[[Lares (Stranger)]] recipe/default ~ one persona heard across every body: the filter narrows, the lens shows the lines`>>
 <<has entity=`example` name=`a-visit` params=`filter/[tag[memory]] recipe/default target/h1 ~ a lit sibling's daemon wiki, read while you keep your own face`>>
 ```
@@ -46,15 +46,16 @@ A rendered tiddler's slice: where one read of the whole render (the record carry
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ filter · recipe · bag · fields · collapse · match · context · limit · max-bytes · after · all · target · face · mu
+!! takes ~ filter · recipe · bag · fields · collapse · match · context · limit · max-bytes · after · all · target · face · mu · aperture
 
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/aperture`>>
 
 ```memetic-wikitext
-<<has entity=`cell` name=`*` params=`mu/many implied/true ~ a filter call reads as many already: the page of titles, and every lone depth joins it`>>
-<<has entity=`cell` name=`*?` params=`mu/many-relate ~ a page of has lines, one per row, each the card a get answers`>>
-<<has entity=`cell` name=`*!` params=`mu/many-assert ~ a page whose rows carry their has line and their text; beside match, their matching lines`>>
+<<has entity=`cell` name=`*0` params=`mu/wand implied/true ~ a filter call reads as the wand already: the page of titles, and every lone depth joins it`>>
+<<has entity=`cell` name=`*?` params=`mu/relation ~ a page of has lines, one per row, each the card a get answers`>>
+<<has entity=`cell` name=`*!` params=`mu/detail ~ a page whose rows carry their has line and their text; beside match, their matching lines`>>
 <<has entity=`arg` name=`filter` params=`takes/filter needs/required seat/1 as/<filter> ~ a TiddlyWiki filter, run by the wiki's own engine`>>
 <<has entity=`arg` name=`recipe` params=`takes/slug needs/required default/default ~ the wiki whose engine runs the filter; default names the worn face's daemon wiki`>>
 <<has entity=`arg` name=`bag` params=`takes/slug skins/cli ~ a bag names no wiki and takes no filter; it refuses wiki-not-anchored by name`>>
@@ -126,10 +127,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/mcp`>>
 
-!!! wiki_filter
+!!! get
 
 ```memetic-wikitext
-<<has entity=`skin` name=`mcp` params=`spells/wiki_filter omits/face ~ the seat; answers the page`>>
+<<has entity=`skin` name=`mcp` params=`spells/get by/filter omits/face ~ the seat; get by filter pages the titles a filter answers`>>
 ```
 
 <<~/ahu>>
@@ -156,6 +157,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uE8yM-F9wtf1Ui-b8XpjVGv038BY9IN6gcFowTSk_bw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mXPUkiy9DRGBKuUc2okDVx1kwsswdgEHEaed8uMxujM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -144,9 +144,9 @@ describe("the wake under a mandate", () => {
   test("it leads with the ref, the seed's read, each affordance as its one command under the mandate's face, and the hand-back", () => {
     const text = S.mandateWakeLines(arm);
     expect(text).toContain(`mandate: ${ARM.w.uri}@${ARM.w.hash} · you wake as cold-reader#00002, offered by lares-alpha#00001 · face h1 · model claude-fable-5-2`);
-    expect(text).toContain("lares get title=lar:///ha.ka.ba/lares/api/noosphere-boot recipe=default face=1 mu=assert");
-    expect(text).toContain("reads: lares get filter='[tag[ruling]]' recipe=default face=1 mu=many-relate fields=title,description");
-    expect(text).toContain(`link: lares get title='${M}state/handoff' recipe=default face=1 mu=relate`);
+    expect(text).toContain("lares get title=lar:///ha.ka.ba/lares/api/noosphere-boot recipe=default face=1 aperture=arc");
+    expect(text).toContain("reads: lares get filter='[tag[ruling]]' recipe=default face=1 aperture=measure fields=title,description");
+    expect(text).toContain(`link: lares get title='${M}state/handoff' recipe=default face=1 aperture=measure`);
     expect(text).toContain("paths: packages/lares-cli");
     expect(text).toContain("hand back (three findings, one line each)");
     expect(text).toContain("lares spirit handback 'cold-reader#00002' --record <uri> --face 1");
@@ -350,6 +350,6 @@ describe("a carrier mandate founds its family and reads by the family's canonica
   });
   test("a cut wake names the meme read for a family's whole carrier", () => {
     const m = S.mandateRead(found.uri, root, null, family("x".repeat(40)));
-    expect(S.mandateWakeLines(m, 10)).toContain(`lares get title='${found.uri}' recipe=default face=1 mu=assert`);
+    expect(S.mandateWakeLines(m, 10)).toContain(`lares get title='${found.uri}' recipe=default face=1 aperture=arc`);
   });
 });

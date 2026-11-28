@@ -1,0 +1,109 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.handle.verifies`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "check an attestation's chain half, reader-local, no network"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.handle.verifies", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.handle.verifies"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.handle.verifies"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.handle.verifies ~ the chain half of an attestation: did the Handle say it
+
+`lares handle verify-attestation <statement | @file | ->` checks the chain half of a statement `lares handle attest` printed, reader-locally: the chain comes from a carried card (`--card <file>`) or the acting face's handle-book (`--face N`), and the answer says whether it verifies, stands unburned, matches the prefix and seats the head that signed. A pass says the Handle said it, never that the claim holds in the world: the surface half stays out of scope. An unmet Handle with no card refuses `not-found`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ file · book
+
+```memetic-wikitext
+<<has entity=`example` name=`file` params=`statement/@statement.json card/card.json ~ verify against a carried card`>>
+<<has entity=`example` name=`book` params=`statement/@statement.json ~ verify against the handle-book`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ statement · card · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`statement` params=`takes/statement needs/required seat/1 as/<statement> ~ the statement JSON, @file, or - for stdin`>>
+<<has entity=`arg` name=`card` params=`takes/host-path ~ the Handle's carried card, its chain beside it`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the face whose handle-book answers; absent, the one face standing open`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ read
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`read` params=`who/seat-or-hand ~ reads a card or the handle-book; nothing dials out`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · not-found · verb-error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.handle.verifies statement/@statement.json]] ~ the statement reads as no JSON, lacks prefix, headEventCid or sig, or names no structured claim; a card names another Handle or no chain`>>
+<<has entity=`refusal` name=`not-found` params=`cure/[[face.handle.verifies statement/@statement.json card/card.json]] ~ this vessel never met the Handle; carry its card`>>
+<<has entity=`refusal` name=`verb-error` params=`~ the chain refused the statement; the reason rides the answer`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ holds · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`holds` params=`exit/0 fields/[[verdict prefix claim claimSurface claimSubject headEventCid chainSource chainVerify surfaceVerify]] ~ the Handle said it; surfaceVerify reads out-of-scope`>>
+<<has entity=`band` name=`refused` params=`exit/1 fields/[[verdict reason prefix claim]] ~ the chain refused`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares handle verify-attestation
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares handle verify-attestation]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · handle-card
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/handle-card`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OTWdgV8wgcd6WGd56mw5F1LmJ2BXthZzYTyPsxfIV1o`>>
+
+<<^ code=`&#x0004;` to=`?`>>

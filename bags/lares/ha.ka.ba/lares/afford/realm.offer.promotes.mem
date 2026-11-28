@@ -1,0 +1,109 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.offer.promotes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "land one reviewed offer into canon by its cid, as the steward"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.offer.promotes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.offer.promotes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.offer.promotes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.offer.promotes ~ the steward lands an offer toward canon
+
+`lares meme offer promote <cid>` lands one offer (its 64-hex cid, as `meme offer show` lists it) into the house-canon bag it offered toward, through the daemon, retiring the offer behind it. `--over-fresher` lands it over a fresher record standing there. A retire the charter seats did not seal stays pending and names why.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ promote · over-fresher
+
+```memetic-wikitext
+<<has entity=`example` name=`promote` params=`cid/<cid> ~ land one offer`>>
+<<has entity=`example` name=`over-fresher` params=`cid/<cid> over-fresher/true ~ land it over a fresher record`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ cid · over-fresher
+
+```memetic-wikitext
+<<has entity=`arg` name=`cid` params=`takes/cid needs/required seat/1 as/<cid> ~ the offer's cid, 64 hex`>>
+<<has entity=`arg` name=`over-fresher` params=`~ land over a fresher record standing in canon`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ steward
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`steward` params=`who/seat-or-hand ocap/kahu-reach-on-the-canon-bag ~ the daemon reads the steward's reach on the canon bag the offer names`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · cap-denied · owed · verb-error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.offer.promotes cid/<cid>]] ~ name one offer cid, 64 hex`>>
+<<has entity=`refusal` name=`cap-denied` params=`~ no reach on the canon bag the offer names`>>
+<<has entity=`refusal` name=`owed` params=`~ the act stands owed; the daemon answers it later`>>
+<<has entity=`refusal` name=`verb-error` params=`~ the landing or its retire refused; the reason rides the message`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ promoted
+
+```memetic-wikitext
+<<has entity=`band` name=`promoted` params=`exit/0 fields/[[retire retirePending]] ~ the offer landed; retire names the retirement, pending where it waits`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares meme offer promote
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares meme offer promote]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · meme · canon-boundary
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/canon-boundary`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FaNlPiZMpYbVdpfLC4ur-sZ-nK4jBKgwBHbpkTYquiU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

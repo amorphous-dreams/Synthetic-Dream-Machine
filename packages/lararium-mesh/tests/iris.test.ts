@@ -209,7 +209,7 @@ describe("seat-list-changed-on-new-tools", () => {
     f.down();
     expect(changed(toClient(f.up()))).toEqual([]);
     f.down();
-    expect(changed(toClient(f.up(["status", "recall", "kahua_get"])))).toEqual([{ jsonrpc: "2.0", method: "notifications/tools/list_changed" }]);
+    expect(changed(toClient(f.up(["get", "put", "act"])))).toEqual([{ jsonrpc: "2.0", method: "notifications/tools/list_changed" }]);
     expect((toClient(f.client({ jsonrpc: "2.0", id: 9, method: "tools/list" }))[0]!["result"] as { tools: unknown[] }).tools).toHaveLength(3);
     f.down();
     expect(changed(toClient(f.up()))).toEqual([]);

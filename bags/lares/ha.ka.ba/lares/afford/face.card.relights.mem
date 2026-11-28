@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.card.relights`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "light a face again whose archive fell behind its own cards"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.card.relights", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.card.relights"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.card.relights"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.card.relights ~ a dark face mints its card again before its bags
+
+`lares vault recard --face N` proves the face's own route on a TTY and hands it to the custody door in a `recard` frame (under a pūlama the route proves at the pūlama's hand door first, and this command asks none). The door refuses any face whose last light did not refuse for want of a prekey secret, then arms its next light: the stand mints its card before its bags. The identity stays; content sealed to a lost prekey stays lost.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ recard
+
+```memetic-wikitext
+<<has entity=`example` name=`recard` params=`face/2 ~ recard face h2`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face
+
+```memetic-wikitext
+<<has entity=`arg` name=`face` params=`takes/handle-index needs/required ~ the face, by persona index`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/route ~ a person types the face's route at their own terminal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · daemon-unreachable · recard-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.card.relights face/2]] ~ name the face's handle index`>>
+<<has entity=`refusal` name=`daemon-unreachable` params=`cure/[[face.card.relights face/2]] ~ no vessel answers its custody door`>>
+<<has entity=`refusal` name=`recard-refused` params=`~ the door refused the recard; its reason rides the code`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ recarded
+
+```memetic-wikitext
+<<has entity=`band` name=`recarded` params=`exit/0 ~ the face's next light stands armed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vault recard
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares vault recard]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · custody
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4Xf9xyUVXJh0RNh8pGVJxTHmtzzYVdI5arBbAjnQH5E`>>
+
+<<^ code=`&#x0004;` to=`?`>>

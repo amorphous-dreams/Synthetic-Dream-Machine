@@ -1168,11 +1168,11 @@ run_meme() {
     local s; for s in "$@"; do printf '<<~ ahu slot=`#/%s`>>\n\n! %s\n\n<<~/ahu>>\n\n' "$s" "$s"; done
     printf '<<^ code=`&#x0003;`>>\n\n<<^ code=`&#x0004;` to=`?`>>\n'
   }
-  # One `lares get title=… bag=<book> mu=assert --json` on a hearth — the whole JSON, for the caller to read fields off.
+  # One `lares get title=… bag=<book> aperture=arc --json` on a hearth — the whole JSON, for the caller to read fields off.
   # B stands on her own seed: A's realm reaches her as a carried charter's realm, named on every realm-scoped call.
   meme_read() {
-    if [ "$1" = lararium-b ]; then $COMPOSE exec -T "$1" $LARES get "title=$URI" "bag=$BOOK" "realm=$AID_A" mu=assert --json 2>&1
-    else $COMPOSE exec -T "$1" $LARES get "title=$URI" "bag=$BOOK" mu=assert --json 2>&1; fi
+    if [ "$1" = lararium-b ]; then $COMPOSE exec -T "$1" $LARES get "title=$URI" "bag=$BOOK" "realm=$AID_A" aperture=arc --json 2>&1
+    else $COMPOSE exec -T "$1" $LARES get "title=$URI" "bag=$BOOK" aperture=arc --json 2>&1; fi
   }
   json_text() { printf '%s' "$1" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);process.stdout.write(String(j.data?.meme?.text??""))}catch{}})'; }
   json_hash() { printf '%s' "$1" | grep -oE '"canonicalHash":"[^"]+"' | head -1 | cut -d'"' -f4; }
@@ -1227,7 +1227,7 @@ run_meme() {
 
   step "A promotes the meme from the book's working layer into its canon: act MOVE"
   local LD MV
-  MV=$($COMPOSE exec -T lararium-a $LARES act MOVE --title "$URI" --from "$BOOK_WORKING" --to "$BOOK_BAG" --yes --json 2>&1)
+  MV=$($COMPOSE exec -T lararium-a $LARES act lar:///carriage.bag.moves title="$URI" from="$BOOK_WORKING" to="$BOOK_BAG" yes=true --json 2>&1)
   if printf '%s' "$MV" | grep -q '"ok":true' && printf '%s' "$MV" | grep -qE '"moved":[1-9]'; then ok
   else bad "the promotion MOVE refused"; printf '%s\n' "$MV" | tail -3 | sed 's/^/      /'; clear_all; return; fi
 
@@ -1326,9 +1326,9 @@ run_meme() {
   step "★ a PUBLIC pointer's bytes: the Herm's read-face serves A's staged blob ★"
   local PNG_CID BULB_CODE
   $COMPOSE exec -T lararium-a sh -c 'mkdir -p /tmp/blob/bags/meme-witness-book/t.witness.blob && printf "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" | base64 -d > /tmp/blob/bags/meme-witness-book/t.witness.blob/photo.png && printf "type: image/png\n" > /tmp/blob/bags/meme-witness-book/t.witness.blob/photo.png.meta' 2>/dev/null
-  LD=$($COMPOSE exec -T lararium-a $LARES act LOAD --source-uri /tmp/blob/bags/meme-witness-book/t.witness.blob --to "$BOOK_WORKING" --yes --json 2>&1)
+  LD=$($COMPOSE exec -T lararium-a $LARES act lar:///carriage.bag.loads source-uri=/tmp/blob/bags/meme-witness-book/t.witness.blob to="$BOOK_WORKING" yes=true --json 2>&1)
   if printf '%s' "$LD" | grep -q '"ok":true'; then
-    MV=$($COMPOSE exec -T lararium-a $LARES act MOVE --title "lar:///t.witness.blob/photo" --from "$BOOK_WORKING" --to "$BOOK_BAG" --yes --json 2>&1)
+    MV=$($COMPOSE exec -T lararium-a $LARES act lar:///carriage.bag.moves title="lar:///t.witness.blob/photo" from="$BOOK_WORKING" to="$BOOK_BAG" yes=true --json 2>&1)
     printf '%s' "$MV" | grep -q '"ok":true' || LD="$MV"
   fi
   PNG_CID=$($COMPOSE exec -T lararium-a sh -c 'sha256sum /tmp/blob/bags/meme-witness-book/t.witness.blob/photo.png' 2>/dev/null | cut -c1-64)
@@ -1713,7 +1713,7 @@ run_title() {
   # happened to the record. So each read-back here asks the recipe the put went through.
   step "A — and the record SURVIVES where its author can see it"
   local BACK
-  BACK=$($COMPOSE exec -T lararium-a $LARES get "title=$BAD_URI" recipe=lares mu=assert --json 2>&1)
+  BACK=$($COMPOSE exec -T lararium-a $LARES get "title=$BAD_URI" recipe=lares aperture=arc --json 2>&1)
   if printf '%s' "$PUT" | grep -q '"ok":false' && ! printf '%s' "$BACK" | grep -q '"ok":true'; then
     gap "the write was refused and nothing was stored — the author's copy stands only on their screen"
     printf '      the spec asks a refusal to PRESERVE the record; a bare refusal preserves nothing\n'
@@ -1740,7 +1740,7 @@ run_title() {
     bad "a capture carrying userinfo in its BODY was refused — the check read the text, not the title slot"
     printf '      %s\n' "$(printf '%s' "$CPUT" | tail -1 | cut -c1-240)"
   else
-    CGET=$($COMPOSE exec -T lararium-a $LARES get "title=$BODY_URI" recipe=lares mu=assert --json 2>&1)
+    CGET=$($COMPOSE exec -T lararium-a $LARES get "title=$BODY_URI" recipe=lares aperture=arc --json 2>&1)
     # THREE SPEAKER-AIMS WENT IN; ALL THREE MUST READ BACK. A processor that stripped one and kept two
     # would satisfy any check that only asked whether the record survived.
     local N

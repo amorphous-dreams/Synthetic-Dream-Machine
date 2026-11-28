@@ -1,0 +1,109 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.fleet.offers`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "offer one face's fleet to a new vessel of the same human"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.fleet.offers", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.fleet.offers"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.fleet.offers"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.fleet.offers ~ the root holder's offer: the face, its root key, a nonce, its scopes
+
+`lares fleet join offer` runs on the root holder: it names the face (`--face N`, else the one face standing open, else a refusal listing them), its root key, a nonce and the scopes the face stands at, and writes the offer (`--out`) or prints it. The courier carries it to the joining vessel, which mints first.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ offer · face
+
+```memetic-wikitext
+<<has entity=`example` name=`offer` params=`out/offer.json ~ write the offer for the courier`>>
+<<has entity=`example` name=`face` params=`face/1 out/offer.json ~ offer face 1's fleet`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face · out
+
+```memetic-wikitext
+<<has entity=`arg` name=`face` params=`takes/index ~ which of the root holder's faces the join serves; absent, the one face standing open`>>
+<<has entity=`arg` name=`out` params=`takes/host-path ~ write the file the next vessel reads; absent, print it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/face-root ~ the root holder's act rides the store door under the face's root`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ face-malformed · face-absent · root-absent · refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`face-malformed` params=`cure/[[face.fleet.offers face/1]] ~ --face names a persona index, a whole number from 0`>>
+<<has entity=`refusal` name=`face-absent` params=`~ this vessel holds no face at that index`>>
+<<has entity=`refusal` name=`root-absent` params=`~ this vessel holds no PersonaGroup root`>>
+<<has entity=`refusal` name=`refused` params=`~ the offer refused by name (FleetJoinRefused, a store door refusal, or StoreHeld); the line names the code`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ offered · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`offered` params=`exit/0 ~ the offer, written or printed`>>
+<<has entity=`band` name=`refused` params=`exit/1 ~ refused by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares fleet join offer
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares fleet join offer]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eNITv2k21GXPfUebO6tCq9HWK34SPjBmIoUBXnyl9AA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -95,7 +95,7 @@ if (process.argv[2] === "mcp") {
       assert.match(context, /lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/open-ledger — What stands open\./);
       assert.match(context, /Lares homes: home reading/);
       assert.match(context, /Lares working memories on the stage \(start here\): 2 rows\nlar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/handoff — Start here\.\n/);
-      assert.match(context, /Lares law \(pinned first\): 1 pinned · 2 rows\nthese rows come from canon, the house's settled ground[^\n]*\n📌 lar:\/\/\/ha\.ka\.ba\/lares\/api\/noosphere-boot\n   lar:\/\/\/ha\.ka\.ba\/lares\/api\/pono\/lar-uri — the address law\nread the rest: law_index/);
+      assert.match(context, /Lares law \(pinned first\): 1 pinned · 2 rows\nthese rows come from canon, the house's settled ground[^\n]*\n📌 lar:\/\/\/ha\.ka\.ba\/lares\/api\/noosphere-boot\n   lar:\/\/\/ha\.ka\.ba\/lares\/api\/pono\/lar-uri — the address law\nread the rest: act\(address="lar:\/\/\/engine\.law\.indexes"/);
     });
     await t.test("a wake after a compaction leads with the rows in play too", () => {
       writeFileSync(shim, standingShim, { mode: 0o755 });

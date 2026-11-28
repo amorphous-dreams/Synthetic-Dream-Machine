@@ -4,12 +4,13 @@
  *
  * Derives the verb list from the built `COMMAND_NAMES` export (packages/lares-cli), so the
  * fixture never drifts from the real CLI surface: re-run after adding/renaming a command.
- * YIN's three-way parity test (CLI command-table ↔ MCP tool-set ↔ VERB_SEATS) reads the output.
+ * The seat's three-way parity test (CLI command-table ↔ MCP tool-set ↔ this fixture) reads the output.
  *
- * The isomorphism (operator ruling): `lares`-CLI ↔ `lares`-MCP across the WHOLE verb-set. The six
- * lifecycle tools mirror today; every other verb reads NOT-YET-MIRRORED (the MCP surface grows into
- * it), never permanently CLI-only. `cli_forms` maps each MCP tool name to its CLI spelling — each
- * mirror rides the one `sense` door (`sense pour`, `sense status`, `sense worldline kapae`).
+ * The isomorphism (operator ruling): `lares`-CLI ↔ `lares`-MCP across the whole call shape. The seat holds the record
+ * tools (`get`, `put`, `delete`, `rename`) and the one `act`; each sends `{verb, params}` to the vessel's `call`, and the
+ * CLI's call door reads the same heads (`lares get title=…`, `lares act lar:///<address> …`). `cli_forms` maps each tool
+ * to its CLI spelling. Every other affordance reaches both surfaces by its `lar:` address through `act`, so no other
+ * command needs a tool of its own.
  *
  * Usage:  node scripts/gen_cli_verbs.mjs        (writes fixtures/cli-verbs.json)
  *         node scripts/gen_cli_verbs.mjs --check (fails if the on-disk fixture drifts)
@@ -22,98 +23,28 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CLI_DIST = resolve(HERE, "../../lares-cli/dist/src/bin/lares.js");
-// The `sense analyze` lens table — the CLI's own (sense-analyze.ts), carried here so the MCP seat's `analyze`
-// tool can weld its ANALYZE_LENSES to it (test_lares_mcp.py: one lens table, two skins).
+// The `sense analyze` lens table — the CLI's own (sense-analyze.ts), carried here so the seat's `analyze` act can weld its
+// ANALYZE_LENSES to it (test_lares_mcp.py: one lens table, two skins).
 const LENS_DIST = resolve(HERE, "../../lares-cli/dist/src/commands/sense-analyze.js");
 const OUT = join(HERE, "fixtures", "cli-verbs.json");
 
-// The MCP lifecycle tool names (mirror YIN's py `LIFECYCLE_VERBS`) → their CLI spelling. After the
-// radical two-door collapse EVERY sovereign lifecycle tool mirrors through the one `sense` door — one
-// host, no top-level twins. `pour` names the SOVEREIGN capture on both surfaces, never the guest miner.
+// THE SEAT'S TOOLS → their CLI spelling (comms-ux-enacts landing 11). The record tools ride their own top-level words
+// (`lares get|put|delete|rename name=value…`); `act` rides the call door's `act` head (`lares act lar:///<address> …`), which
+// the CLI reads outside its command table. One table welds both skins' call and answer: fixtures/tiddler-door-answers.json.
 const CLI_FORMS = {
-  // `pour` carries the bulk pass on both surfaces: `bulk` on the tool, `--bulk` on the CLI (the sweep spine).
-  pour:      "sense pour",
-  recall:    "sense recall",
-  status:    "sense status",
-  worldline: "sense worldline",
-  kapae:     "sense worldline kapae",
-  un_kapae:  "sense worldline un-kapae",
-  // EVERY READ INSTRUMENT over a poured sensorium mirrors through ONE tool and ONE verb: `analyze` takes the
-  // lens (`lens` on the tool, `--lens` on the CLI), and `analyze_lenses` below carries the lens table both
-  // skins read. Each lens keeps its own daemon wire verb; nothing merges their computations.
-  analyze:   "sense analyze",
-  // `flow` runs a pet-named COMPOSED cap-stack (crystal · rhythm · couple) against an explicit signal —
-  // the anti-verb-sprawl surface. A REAL top-level CLI command (`lares flow`), so it hosts its OWN mirror
-  // (not a `sense` sub-verb); the daemon routes each cap-step by hull (crystallize/couple TS · phase py).
-  flow:      "flow",
-  // The wiki-SWITCHER: one MCP `wiki` tool mirrors the `lares wiki <verb>` namespace
-  // (switch/hold/release/active) — the host verb is `wiki`, a real top-level CLI command.
-  wiki:      "wiki switch",
-  // The MEME door — the MCP skin of the meme family's DAEMON-seated render. A family writes through the tiddler door below
-  // (`tiddler_put` lands a carrier or one slot, `tiddler_delete(family=True)` removes it) and reads through `tiddler_get(meme=True)`;
-  // `meme_project` renders the meme the island holds to a target (`--to` on the CLI, `to` on the tool — the target
-  // rides as a parameter, never a suffix on the verb). The host `meme` is a real top-level CLI command,
-  // so it mirrors as `<host> <sub>`, the shape kapae/un_kapae ride under `sense worldline`. The family's LOCAL seats
-  // ride LOCAL_SEAT below.
-  meme_project: "meme project",
-  // THE CALL DOOR (comms-ux-enacts landing 8) — every TiddlyWiki act over one record or one wiki's engine. The record
-  // verbs ride their own top-level words (`lares get|put|delete name=value…`), a filter rides `get` by its `filter=` param, and
-  // the other engine verbs join the `wiki` host beside the switcher (`lares wiki render|status`). One table welds both skins'
-  // wire and answer: fixtures/tiddler-door-answers.json.
-  tiddler_get:    "get",
-  tiddler_put:    "put",
-  tiddler_delete: "delete",
-  wiki_filter:    "get",
-  wiki_render:    "wiki render",
-  wiki_status:    "wiki status",
-  // The DISCORDIAN CALENDAR — the MCP `ddate` tool mirrors the host verb `lares ddate`, a real top-level CLI command that runs
-  // with no vessel; the tool rides the daemon verb every vessel answers, so a seat reads the day through the same core.
-  ddate:          "ddate",
-  // THE ORACLE CAST — the MCP `oracle_cast` tool mirrors `lares oracle cast`, a vessel verb: the vessel casts and writes
-  // the cast as one tiddler, so the draw lives in the tool and never in the prompt.
-  oracle_cast:    "oracle cast",
-  // THE LAW INDEX — the pinned law first, then the law canon derives, read in the worn face's daemon wiki; a pin orders it.
-  // Each tool mirrors `lares law <sub>` (the host `law` is a real top-level CLI command), riding the tiddler door's verbs.
-  law_index:      "law index",
-  law_pin:        "law pin",
-  law_unpin:      "law unpin",
-  // THE HEARTH ROSTER — who is home, offered beside the law. The tool mirrors `lares vessel roster` (a `vessel` sub-door: the
-  // top-level list holds its one screen); both ride the one `hearth-roster` verb the vessel's channel answers itself.
-  vessel_roster:  "vessel roster",
-  // THE DISK SHORE — `shore` reads what stands for a hand (both islands, or one lit face's by `face`) and mirrors `lares shore`
-  // (its bare `list`); `shore_flush` asks the vessel's whole-island flush and mirrors `lares shore flush`. The answers that settle a
-  // row (`take-records`, `take-disk`, `restore`, `remove`) stay a person's hand at the CLI and hold no tool.
-  shore:          "shore",
-  shore_flush:    "shore flush",
-  // The OFFERING door (offering#/the-canon-offer) — an AI seat offers toward house canon and reads the offer table; each
-  // mirrors `lares meme offer …` under the one `meme` host. `lares meme offer promote` stays the Kahu steward's hand and
-  // holds no MCP tool, the way `kahua lift` holds none.
-  meme_offer:      "meme offer",
-  meme_offer_show: "meme offer show",
-  // The KAHUA seat verbs — an AI seat proposes, stages and reads its face's kahua stage; each mirrors `lares kahua <sub>`
-  // (the host `kahua` is a real top-level CLI command). `lares kahua lift|withdraw|carry|mint` stay the operator's hand
-  // and hold no MCP tool, the way the LOCAL seats hold none: no tool spells them.
-  kahua_propose: "kahua propose",
-  kahua_stage:   "kahua stage",
-  kahua_get:     "kahua get",
-  // The DURABLE sensorium-lifecycle sub-verbs a seat runs — each mirrors `lares sense <verb>` (the one `sense` door),
-  // routed over the @daemon wire to the pure manifest.json reducer. `sense harden|retire|un-retire|purge|teardown`
-  // stay a person's hand at a real terminal and hold no MCP tool (hitl-reads-a-hand), the way `kahua lift` holds none.
-  // `roster` reads at two grains on both surfaces: bare, every sensorium; with a name, that one's facets.
-  roster:    "sense roster",
-  build:     "sense build",
-  reconcile: "sense reconcile",
+  get:    "get",
+  put:    "put",
+  delete: "delete",
+  rename: "rename",
+  act:    "act",
 };
 // A VERB DECLARES ITS SEAT. These CLI sub-verbs run LOCAL over a file with no daemon in reach (the
-// offline re-stamp of a stale block check must keep working with no socket), so they hold NO MCP tool by
-// law — the MCP mirrors the daemon-seated verbs only. Named here so the parity test reads the allowance
+// offline re-stamp of a stale block check must keep working with no socket), so they hold NO seat by
+// law — the seat runs the daemon-seated acts only. Named here so the parity test reads the allowance
 // as declared, never as a tool that went missing.
 const LOCAL_SEAT = ["meme normalize", "meme check"];
-// The CLI TOP-LEVEL verbs that HOST a mirror — DERIVED from the cli_forms value-heads (single source,
-// never drifts): `sensorium status` → sensorium, `worldline kapae` → worldline, harvest → harvest. The
-// coverage partition rides these CLI-form heads, NOT the MCP tool-names (kapae/un_kapae are worldline
-// sub-verbs, not top-level verbs; status mirrors under `sensorium`, not bare `status` = node-health).
-const MIRROR_HOSTS = new Set(Object.values(CLI_FORMS).map((f) => f.split(" ")[0]));
+// The heads the seat's CLI spellings land on, DERIVED from the cli_forms value-heads (single source, never drifts).
+const HEADS = [...new Set(Object.values(CLI_FORMS).map((f) => f.split(" ")[0]))];
 
 async function loadLenses() {
   const mod = await import(pathToFileURL(LENS_DIST).href);
@@ -134,16 +65,19 @@ async function loadCommandNames() {
 }
 
 function buildFixture(verbs, { lenses, aliases, reads }) {
-  const mirrored = Object.keys(CLI_FORMS); // MCP tool names — set-equal to py LIFECYCLE_VERBS (the MCP anchor)
-  const mirrorHosts = [...MIRROR_HOSTS].sort(); // CLI top-level verbs hosting a mirror (the coverage partition)
-  const notYet = verbs.filter((v) => !MIRROR_HOSTS.has(v));
+  const mirrored = Object.keys(CLI_FORMS); // the seat's tool names (the anchor)
+  // A head the command table carries hosts a mirror (the coverage partition); one it carries none of is a call head the
+  // CLI's call door reads on its own (`act`).
+  const mirrorHosts = HEADS.filter((h) => verbs.includes(h)).sort();
+  const callHeads = HEADS.filter((h) => !verbs.includes(h)).sort();
+  const notYet = verbs.filter((v) => !mirrorHosts.includes(v));
   return {
     _doc: "Isomorphism fixture — the `lares` CLI verb surface for the three-way parity test " +
-      "(CLI command-table ↔ MCP tool-set ↔ VERB_SEATS). `mirrored` = the MCP tool-names that mirror " +
-      "today (set-equal to py LIFECYCLE_VERBS, the MCP anchor); `cli_forms` maps each MCP tool to its " +
-      "CLI spelling (some ride sub-verbs); `mirror_hosts` = the CLI TOP-LEVEL verbs those spellings land " +
-      "on (the coverage partition); `not_yet_mirrored` = verbs − mirror_hosts (the surface grows into " +
-      "them); `local_seat` = CLI sub-verbs that run over a file with no daemon and hold no MCP tool by law; " +
+      "(CLI command-table ↔ MCP tool-set ↔ this table). `mirrored` = the seat's tool names (the anchor); `cli_forms` maps " +
+      "each tool to its CLI spelling; `mirror_hosts` = the CLI TOP-LEVEL commands those spellings land on (the coverage " +
+      "partition); `call_heads` = the heads they land on that the CLI's call door reads outside its command table; " +
+      "`not_yet_mirrored` = verbs − mirror_hosts (each reaches the seat's `act` by its carriers' addresses, never by a tool " +
+      "of its own); `local_seat` = CLI sub-verbs that run over a file with no daemon and hold no seat by law; " +
       "`analyze_lenses` = the `sense analyze` lens table (lens → daemon verb) and `analyze_lens_aliases` the canon " +
       "house names each flowing to a lens, and `analyze_lens_reads` the flags each lens reads (a stray one refuses " +
       "by name on both skins), all read off the CLI. " +
@@ -152,6 +86,7 @@ function buildFixture(verbs, { lenses, aliases, reads }) {
     mirrored,
     cli_forms: CLI_FORMS,
     mirror_hosts: mirrorHosts,
+    call_heads: callHeads,
     not_yet_mirrored: notYet,
     local_seat: LOCAL_SEAT,
     analyze_lenses: lenses,

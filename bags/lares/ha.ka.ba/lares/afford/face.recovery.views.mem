@@ -1,0 +1,107 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.recovery.views`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "sign a recovery contact's own view of a face with its card"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.recovery.views", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.recovery.views"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.recovery.views"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.recovery.views ~ a recovery contact speaks for the head it sees
+
+`lares persona recovery-contact view --prefix persona-<64 hex>` reads the contact's card on a terminal and signs the contact's own view of that face's head, printing the view line a restore confirms by.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ view
+
+```memetic-wikitext
+<<has entity=`example` name=`view` params=`prefix/persona-<hex> ~ sign a contact's view of one face`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ prefix
+
+```memetic-wikitext
+<<has entity=`arg` name=`prefix` params=`takes/prefix needs/required ~ the face it speaks for, persona-<64 hex>`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/face-root ~ the contact types their card at their own terminal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · vessel-composing · vessel-silent · vessel-locked · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.recovery.views prefix/persona-<hex>]] ~ --prefix names no persona-<64 hex>`>>
+<<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
+<<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
+<<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
+<<has entity=`refusal` name=`error` params=`~ the store refused; the message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ viewed
+
+```memetic-wikitext
+<<has entity=`band` name=`viewed` params=`exit/0 fields/[[prefix seq eventCid view]] ~ the view line`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares persona recovery-contact view
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares persona recovery-contact view]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · persona-policy
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nRgAGClP54wv8aHfyqZCq01CLfVi1vjGORIO7POTMHo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

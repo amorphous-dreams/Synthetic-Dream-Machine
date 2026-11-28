@@ -212,7 +212,7 @@ async function readLoop(get: VerbReactor, container: Record<string, unknown>, ct
   const read = loopOfRungs(rungs);
   if (read) return read;
   const where = containerParam(container);
-  throw new VerbRefusal("oracle-loop-unread", `oracle-loop-unread: neither the stack of ${where.replace("=", " ")} nor the baked affordance pack answers loop rows for ${ORACLE_AFFORDANCE}${LOOP_SLOT}${called ? ` (its carrier calls ${called.uri}${called.slot ?? LOOP_SLOT})` : ""}, so no act record lands; read it with \`lares get title=${ORACLE_AFFORDANCE} ${where} slot='${LOOP_SLOT}' mu=assert\`, then seat a carrier whose #/loop names act slots (or ingest the lares canon), or re-bake the pack (\`pnpm --filter @lararium/tw5 build\`)`);
+  throw new VerbRefusal("oracle-loop-unread", `oracle-loop-unread: neither the stack of ${where.replace("=", " ")} nor the baked affordance pack answers loop rows for ${ORACLE_AFFORDANCE}${LOOP_SLOT}${called ? ` (its carrier calls ${called.uri}${called.slot ?? LOOP_SLOT})` : ""}, so no act record lands; read it with \`lares get title=${ORACLE_AFFORDANCE} ${where} slot='${LOOP_SLOT}' aperture=arc\`, then seat a carrier whose #/loop names act slots (or ingest the lares canon), or re-bake the pack (\`pnpm --filter @lararium/tw5 build\`)`);
 }
 
 /**
@@ -369,7 +369,7 @@ export function makeOracleCastReactor(opts: TiddlerVerbOptions, consult: OracleC
       uncertain: kept.uncertain, observe: kept.observe,
       ...(landed.length > 0 ? { slots: landed } : {}),
       next: {
-        read: `lares get title=${title} ${where} mu=assert`,
+        read: `lares get title=${title} ${where} aperture=arc`,
         append: `lares put title=${title} ${where} slot='#/<the slot you owe>' append='<your words>'`,
       },
       note: ORACLE_THROW_STANDS,

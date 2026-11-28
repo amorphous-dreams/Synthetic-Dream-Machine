@@ -63,6 +63,8 @@ export interface AffordancePack {
    * `kahea`), the floor rung the daemon `call` reads where the live stack holds no carrier for a spelling or address.
    */
   readonly records?: Readonly<Record<string, string>>;
+  /** Iris-Sprite's templates by slot (`answer`, `refusal`): the floor a sleeping vessel's answers render through. */
+  readonly voice?: Readonly<Record<string, string>>;
 }
 
 const EMPTY: AffordancePack = Object.freeze({ title: "", hash: "", carriers: {}, routes: {}, doors: {}, index: {} });

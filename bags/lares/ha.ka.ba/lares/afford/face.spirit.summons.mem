@@ -1,0 +1,124 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.spirit.summons`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "start a spirit's instance under its landed mandate"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.spirit.summons", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.spirit.summons"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.spirit.summons"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.spirit.summons ~ summon ~ the house starts its own arm
+
+`lares spirit summon <pet>#<n> --mandate <uri>@<hash>` reads and verifies the mandate, checks it names this instance and the answering face, reads custody (a hand, or the coordinator's own mandate granting it) and claims a lane on the coordinator's ledger, then lands the summons edge ahead of the launch, so no process stands that the house holds no record of. The host launch cap (`tools/summon-launch.mjs`) starts the process detached; the edge records what it launched holding. A retry that finds the edge naming its launch starts nothing. A launch that started nothing frees its lane; one whose receipt never came keeps it.
+
+
+THE GUEST'S REACH: a summoned instance arrives as a guest and holds the guest's reach where its mandate names none (the lares doors, Read, Edit, Write, Grep, Glob, and the shell for git, node and pnpm: one table, `GUEST_REACH` in `@lararium/mesh/spirit-summons`); the mandate's hash-covered `--allowed-tools` shapes it, a bare comma-joined list naming the reach exactly (narrowing for a reader) and a list led by `+` widening the guest's reach (for a builder), `mandate-allowed-tools-malformed` otherwise; the edge records the reach as `launched-reach`.
+
+THE SUMMONS FORKS A STREAM: ahead of the launch the instance's stream (`<pet>#<n>`) takes its first entry through the msg door (lar:///engine.msg.lands), its `re` naming the summoner's head (`--stream <pet>#<n>`, else the summoning process's own `LARES_SUMMONED`, else the coordinator the mandate names) and its `about` the mandate at its hash; the edge records `stream`, `summoner-stream` and `forked`, so a retry forks nothing twice, and the launched process carries `LARES_SUMMONED`, the `stream=` default its `lares msg` reads. A hand-back that closes an edge lands one msg on the SUMMONER's stream, `to` the summoner, its `re` the mandate and the instance's last entry, its `about` the hand-back record (`joined` on the edge); a stream write the msg door refuses stops neither act, and the answer names why.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ summon
+
+```memetic-wikitext
+<<has entity=`example` name=`summon` params=`pet/ferry-read#1 mandate/<uri>@<hash> ~ start the instance under its mandate`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face · pet · mandate
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`pet` params=`takes/instance-tag needs/required seat/1 as/<pet> ~ the instance tag, <pet>#<n>`>>
+<<has entity=`arg` name=`mandate` params=`takes/ref needs/required ~ the landed mandate, <uri>@<hash>`>>
+<<has entity=`arg` name=`stream` params=`takes/stream ~ the summoner's stream, <pet>#<n>, whose head the instance's first entry names in re; absent, LARES_SUMMONED, else the coordinator the mandate names`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ a hand summons; a seat summons only where its coordinator's mandate grants it, and the host launch cap starts the process`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · mandate-unknown · mandate-moved · mandate-names-another · mandate-face-turned · launch-cap-unknown · summons-ungranted · coordinator-lanes-full · lane-claim-unsettled · launch-cap-absent · launch-cap-failed · spirit-write-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.spirit.summons pet/ferry-read#1 mandate/<ref>]] ~ no tag or no mandate ref`>>
+<<has entity=`refusal` name=`mandate-unknown` params=`~ no mandate stands at the uri`>>
+<<has entity=`refusal` name=`mandate-moved` params=`~ the mandate reads another hash`>>
+<<has entity=`refusal` name=`mandate-names-another` params=`~ the mandate names another pet or instance`>>
+<<has entity=`refusal` name=`mandate-face-turned` params=`~ the mandate echoes another face; name it with --face`>>
+<<has entity=`refusal` name=`launch-cap-unknown` params=`~ the launch cap names no cap the house knows`>>
+<<has entity=`refusal` name=`summons-ungranted` params=`~ neither a hand nor the coordinator's mandate grants the summons`>>
+<<has entity=`refusal` name=`coordinator-lanes-full` params=`~ the coordinator's lanes stand full`>>
+<<has entity=`refusal` name=`lane-claim-unsettled` params=`~ the lane ledger kept moving; run the line again`>>
+<<has entity=`refusal` name=`launch-cap-absent` params=`~ this install holds no host launch tool`>>
+<<has entity=`refusal` name=`launch-cap-failed` params=`~ the launch tool answered no receipt; whether a process started stands unknown`>>
+<<has entity=`refusal` name=`spirit-write-refused` params=`~ the tiddler door answered no put for the edge`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ launched · standing
+
+```memetic-wikitext
+<<has entity=`band` name=`launched` params=`exit/0 fields/[[instance mandate hash edge decision launched pid prompt offerer face reach cwd log]] ~ the instance started; the edge names its launch`>>
+<<has entity=`band` name=`standing` params=`exit/0 fields/[[instance mandate hash edge decision launched handback]] ~ the edge already names a launch; nothing started`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares spirit summon
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares spirit summon]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · spirit-circle
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/spirit-circle`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QjHK77hhF7qrwMg5fIB_d3XkOJermMbK3lBvswRxs9Y`>>
+
+<<^ code=`&#x0004;` to=`?`>>

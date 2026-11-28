@@ -1,0 +1,108 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.bundle.backs-up`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "seal one face off the vessel into a bundle file"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.bundle.backs-up", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.bundle.backs-up"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.bundle.backs-up"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.bundle.backs-up ~ one face, carried off the vessel as a sealed bundle
+
+`lares vault backup --face <N> --out <file>` asks the standing vessel to seal face hN's body, binds the bundle's routes and writes it to a file that must not yet stand. Indices print under `lares persona list`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ backup
+
+```memetic-wikitext
+<<has entity=`example` name=`backup` params=`face/2 out/h2.bundle ~ seal face h2 into a bundle file`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face · out
+
+```memetic-wikitext
+<<has entity=`arg` name=`face` params=`takes/handle-index needs/required ~ the face to carry off, by persona index`>>
+<<has entity=`arg` name=`out` params=`takes/host-path needs/required ~ the bundle file, which must not yet stand`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/route ~ a person types the bundle's route at their own terminal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · no-vessel · daemon-unreachable · out-exists · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.bundle.backs-up face/2 out/h2.bundle]] ~ name the face's index and the file`>>
+<<has entity=`refusal` name=`no-vessel` params=`~ no vessel stands on this store`>>
+<<has entity=`refusal` name=`daemon-unreachable` params=`cure/[[face.bundle.backs-up face/2 out/h2.bundle]] ~ the vessel stopped answering`>>
+<<has entity=`refusal` name=`out-exists` params=`~ a file already stands at --out`>>
+<<has entity=`refusal` name=`error` params=`~ the custody door's named refusals lead the line by class (OccupiedStoreRefusal, CustodyRefusal, TreeKeyRefusal, CensusRefusal, CustodyLockRefused, CustodyFoundingRefused, CredentialTtyRefusal, RotationSlotsRefused), exit 1`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ written
+
+```memetic-wikitext
+<<has entity=`band` name=`written` params=`exit/0 ~ the bundle landed; the lines name the file and its routes`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vault backup
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares vault backup]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · custody
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;h0FuU5x-T06WHuA3jWJGaPOfL1LCJqOoBJQxFD2_lyg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

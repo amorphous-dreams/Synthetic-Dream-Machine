@@ -1,7 +1,7 @@
 /**
  * hearth-roster-door — `lares vessel roster`, who is home, at the CLI. The daemon wire stands mocked (law-door's shape): the
  * vessel's channel answers `hearth-roster` with a roster `@lararium/mesh` composed; here the CLI's half: the one verb it puts
- * on the wire, the prose it prints through a pipe, and the JSON body `--json` carries whole (the body `vessel_roster` answers).
+ * on the wire, the prose it prints through a pipe, and the JSON body `--json` carries whole (the body the MCP seat's roster act, lar:///face.roster.reads, answers).
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { readFileSync } from "node:fs";

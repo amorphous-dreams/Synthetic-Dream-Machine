@@ -1,0 +1,89 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.relay.rotates`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "mint a new durable relay gate for the herm and print its pin"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.relay.rotates", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.relay.rotates"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.relay.rotates"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.relay.rotates ~ a fresh relay gate seed, and the pin hearths adopt after restart
+
+`lares herm relay-rotate` replaces the herm's relay gate seed in its own durable identity-home row and prints the new gate key. The standing herm keeps the old gate until it restarts; hand every dialing hearth the new pin, then restart the herm.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ rotate
+
+```memetic-wikitext
+<<has entity=`example` name=`rotate` params=`~ mint the new gate and print its pin`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ none
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/hand ~ rewrites this host's own relay gate row; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ rotated
+
+```memetic-wikitext
+<<has entity=`band` name=`rotated` params=`exit/0 fields/[[gateKey]] ~ the new gate key; restart the herm to stand it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares herm relay-rotate
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares herm relay-rotate]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · blob-carriage
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PR1oVy-qjCB4iFjMl_Bek5XqssUqkJKEtm5IxjUtGHY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,111 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.checkout.undoes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "restore one ledger generation of the checkout's tunnel"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.checkout.undoes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.checkout.undoes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.checkout.undoes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.checkout.undoes ~ a tend generation, put back
+
+`lares repo undo [gen]` restores the bytes the named generation (else the last) replaced and records the restore as a new generation. A path a hand changed after that generation wrote it refuses unless `--force`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ last · named
+
+```memetic-wikitext
+<<has entity=`example` name=`last` params=`~ restore the last generation`>>
+<<has entity=`example` name=`named` params=`gen/3 ~ restore generation 3`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ gen · root · force
+
+```memetic-wikitext
+<<has entity=`arg` name=`gen` params=`takes/generation seat/1 as/<gen> ~ the ledger generation to restore; absent, the last`>>
+<<has entity=`arg` name=`root` params=`takes/dir ~ the checkout this door keeps; absent, the checkout the CLI lives in`>>
+<<has entity=`arg` name=`force` params=`~ restore a path a hand changed after that generation wrote it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ restores this host's files under the radius lock; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · familiar-home-only · root-no-directory · generation-not-whole · undo-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ name one of read, tend, verify, undo`>>
+<<has entity=`refusal` name=`familiar-home-only` params=`~ --familiar names a home's familiar; lares home takes it`>>
+<<has entity=`refusal` name=`root-no-directory` params=`~ --root names no directory; name the checkout's top level`>>
+<<has entity=`refusal` name=`generation-not-whole` params=`cure/[[engine.checkout.undoes gen/3]] ~ a generation reads as a whole number`>>
+<<has entity=`refusal` name=`undo-refused` params=`~ the ledger holds no such generation, or the restore threw; the line names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ restored · foreign
+
+```memetic-wikitext
+<<has entity=`band` name=`restored` params=`exit/0 fields/[[radius generation undoes restored refused]] ~ the generation stands restored, recorded as a new one`>>
+<<has entity=`band` name=`foreign` params=`exit/3 fields/[[radius generation undoes restored refused]] ~ a hand changed a path since; --force restores it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares repo undo
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares repo undo]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · reality-tunnel
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/reality-tunnel`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qhwc4Ug2F3tRVdy5gtTtfm3J29prVAnS0Gpwn8rOyCw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

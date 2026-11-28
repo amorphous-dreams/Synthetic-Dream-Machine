@@ -103,7 +103,7 @@ export function pageOfSlot(text: string, slot: string, pageBytes = READ_PAGE_BYT
 
 /**
  * READ-MODIFY-WRITE STAYS SAFE ON THE GRADIENT. A base a skinny answer handed out names a record whose text the reader never saw,
- * so a write that moves text against it refuses `base-from-skinny` and names the read that carries the text (`mu=assert`); a write
+ * so a write that moves text against it refuses `base-from-skinny` and names the read that carries the text (`aperture=arc`); a write
  * that moves no text (a field patch, a delete) reads the bare hash. Answers the hash to compare, or null where no base rides.
  */
 export function readBase(raw: string | null, verb: string, writesText: boolean, partial: "accept" | "refuse" = writesText ? "refuse" : "accept"): string | null {
@@ -112,14 +112,14 @@ export function readBase(raw: string | null, verb: string, writesText: boolean, 
     // within the span it read (`base-outside-span` beyond it); a write of the whole carrier, or the whole family's removal, refuses
     // it. The last page of a paged read hands the bare base.
     if (partial === "refuse") {
-      throw new VerbRefusal("base-from-partial", `base-from-partial: ${verb} acts on the whole carrier, and this base came from an answer that carried part of it (one slot, or a page short of the end); read it whole (\`lares get title=<uri> mu=assert\`, or MCP grain="whole" to the last page) and act against that base. Nothing moved.`);
+      throw new VerbRefusal("base-from-partial", `base-from-partial: ${verb} acts on the whole carrier, and this base came from an answer that carried part of it (one slot, or a page short of the end); read it whole (\`lares get title=<uri> aperture=arc\`, or MCP grain="whole" to the last page) and act against that base. Nothing moved.`);
     }
     const span = /^partial:(?:#\/[^:]+|p[0-9]+):(.+)$/.exec(raw);
     return span ? span[1]! : raw.slice(PARTIAL_BASE_PREFIX.length);
   }
   if (raw === null || !raw.startsWith(CARD_BASE_PREFIX)) return raw;
   if (writesText) {
-    throw new VerbRefusal("base-from-skinny", `base-from-skinny: ${verb} moves text, and this base came from an answer that left the text home (a skinny card or a has-stack); read the text first (\`lares get title=<title> mu=assert\`, a meme's whole carrier alike; MCP grain="fat" or "whole") and write against that base. Nothing moved.`);
+    throw new VerbRefusal("base-from-skinny", `base-from-skinny: ${verb} moves text, and this base came from an answer that left the text home (a skinny card or a has-stack); read the text first (\`lares get title=<title> aperture=arc\`, a meme's whole carrier alike; MCP grain="fat" or "whole") and write against that base. Nothing moved.`);
   }
   return raw.slice(CARD_BASE_PREFIX.length);
 }

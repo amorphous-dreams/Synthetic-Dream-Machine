@@ -97,7 +97,7 @@ island's source (`kahuReachSourceOf`) and the doors' one predicate (`requireKahu
 
 ''THE LINEAGE RIDES THE RECORD, NEVER THE CARD.'' The release record and the porch answer carry the charter's epoch lineage, so a herm and a browser verify a release holding the Nexus AID alone. A card holds 4096 characters and the lineage self-certifies against the AID, so the card stays small. The carrier changes nothing about trust: the AID that anchors the lineage comes from the card or the genesis CID the reader already pins, never from the same answer, and an answer self-consistent for another AID refuses (`foreign-nexus`).
 
-''THE WIKI ISLAND TRUSTS THE GATE.'' A verb routed into a wiki island (`lares act --in-wiki`, `wiki-act`) carries its real
+''THE WIKI ISLAND TRUSTS THE GATE.'' A verb routed into a wiki island (`act --in-wiki` (a spelling the one act burned), `wiki-act`) carries its real
 destination and source inside `args.args`, where the gate's cap derivation never looked. The keyholder island's
 verify-then-delegate gate asks the Kahu predicate for each house-canon bag the envelope names (`routedInnerBags`,
 `CapabilityVerifier.kahuReach`), before it routes. The wiki island holds no board and no sentinel, so its action reactors
@@ -216,6 +216,6 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;St3b8PVnG4k3EUcQz21Brj2B3-0vrPv1Px8nUGSrhjQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OF6nchzOQkvQVGcxdXQu3L_BwN6noLvS9AjXSGnhWz8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

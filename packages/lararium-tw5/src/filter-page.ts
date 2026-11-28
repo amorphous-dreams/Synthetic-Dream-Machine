@@ -110,9 +110,9 @@ export interface FilterPageQuery {
 }
 export interface FilterRow {
   title: string; fields: Record<string, string>; omitted?: string[];
-  /** The depth (`mu=many-relate` or `many-assert`): the record's has line, as a get's card names it. */
+  /** The depth (`aperture=measure` or `many-assert`): the record's has line, as a get's card names it. */
   has?: string;
-  /** The collapse lens: the bytes the record (a meme root: its whole carrier) holds, and a meme root's slots, unfolded by `lares get title=… slot=#/<name> mu=assert`. */
+  /** The collapse lens: the bytes the record (a meme root: its whole carrier) holds, and a meme root's slots, unfolded by `lares get title=… slot=#/<name> aperture=arc`. */
   bytes?: number; slots?: Array<{ slot: string; bytes: number; first: string | null }>;
   /** Slot records of a collapsed meme root that rest in a layer this face may not read, left out of its slots. */
   withheld?: number;
@@ -128,6 +128,16 @@ export interface FilterPage {
   readonly next: string | null;
   /** The answer this page belongs to: a digest of the whole title list. A cursor continues that answer alone. */
   readonly asOf: string;
+}
+
+/**
+ * THE ANSWER'S DIGEST (lar:///engine.filter.watches): the answering titles in order, each beside its record's hash over the
+ * caller's reader view, digested to 16 hex. An edit to an answering record moves it; a title joining or leaving moves it; the
+ * shore's echo, which moves only a record's residency stamp, moves nothing, since each hash leaves the stamp out. The page
+ * law's `asOf` digests the titles alone, so a cursor survives an edit; a watch reads this one, which an edit moves.
+ */
+export function answerDigestOf(rows: ReadonlyArray<readonly [title: string, hash: string | null]>): string {
+  return digestOf(rows.map(([title, hash]) => [title, hash ?? ""])).slice(0, 16);
 }
 
 /** The answer a cursor continues and the offset it names: a cursor from another answer refuses `filter-cursor-stale`, a misshapen one `filter-cursor-malformed`. */
@@ -174,7 +184,7 @@ export function pageFilterAnswer(all: readonly string[], query: FilterPageQuery 
           while (shed.lines.length > 0 && 2 + bytesOf(shed) > maxBytes) shed.lines.pop();
           shed.omitted!.push("lines");
         }
-        // A collapsed row's slots shed last, by name: the meme unfolds by `lares get title=… mu=relate`.
+        // A collapsed row's slots shed last, by name: the meme unfolds by `lares get title=… aperture=measure`.
         if (2 + bytesOf(shed) > maxBytes && shed.slots) { delete shed.slots; shed.omitted!.push("slots"); }
         if (2 + bytesOf(shed) > maxBytes && shed.bytes !== undefined) { delete shed.bytes; shed.omitted!.push("bytes"); }
         row = shed;

@@ -1,12 +1,13 @@
 /**
- * `lares get · put · delete · rename name=value…`, `lares lar:///<address> name=value…`, `lares act lar:///<address> …` and
+ * `lares get · put · delete · rename · msg · watch name=value…`, `lares lar:///<address> name=value…`, `lares act lar:///<address> …` and
  * `lares -` — THE CLI SPEAKS THE CALL SHAPE (lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts landing 8).
  *
  * ONE SPLIT, AND EVERYTHING ELSE IN THE VM. The line splits by one token rule (`splitCall`: a token matching
  * `^[a-z][a-z0-9-]*=` names a param; the leading run of other tokens names the verb, a skin spelling or an address), and the
  * door sends `{verb, params, surface: "cli"}` to the vessel's daemon verb `call`. The route, the `#/takes` binding (needs,
  * defaults, the container default `recipe=default`), the string conversion a terminal's values need (a `takes/json` param
- * parsed, a `takes/count` counted, a `takes/names` split, a bare flag read as true or false) and the `mu` depth all run there.
+ * parsed, a `takes/count` counted, a `takes/names` split, a bare flag read as true or false) and both dials (`mu` the lens,
+ * `aperture` the range) all run there.
  * `lares -` reads ONE bracketed call sigil from stdin and sends it whole as `sigil`, parsed by TiddlyWiki's own macro-call
  * parser in the VM; params beside the `-` fill what the sigil leaves out.
  *
@@ -24,21 +25,29 @@ import { extname } from "node:path";
 import { stdin, stdout } from "node:process";
 import { emit, exitFor, proseFirst } from "../render.js";
 import { DoorUsage, guardDoor, runDoor, type DoorPlan } from "./door-call.js";
-import { readCarrierShape } from "@lararium/tw5";
+import { isApertureFault, isMuFault, reachesWhole, readAperture, readCarrierShape, readMu } from "@lararium/tw5";
 import { mediaTypeFromExt, ridesAsPointer } from "@lararium/mesh/content-handle";
 import { niUriSha256FromHex } from "@lararium/mesh/crypto";
 import { stageBodyToCas } from "../cas-stage.js";
 import { landedFace } from "./meme-shared.js";
+import { actHostDoor } from "./act.js";
+import { summonedStream } from "../summoned-stream.js";
 import { ArgsError, splitCall, type CallLine, type ParsedArgs } from "../parse-args.js";
+import { cmdWatchLine } from "./watch-line.js";
+
+/** The heads that name the msg door: its verb word and its address. */
+const MSG_HEADS: ReadonlySet<string> = new Set(["msg", "lar:///engine.msg.lands"]);
 
 /** The verb words the CLI answers as commands of their own; an address (`lar:///…`) and `-` answer beside them. */
-export const CALL_VERBS = ["get", "put", "delete", "rename"] as const;
+export const CALL_VERBS = ["get", "put", "delete", "rename", "msg", "watch"] as const;
 
-/** True where a command line's head names the call door: a verb word, an address, the stdin sigil, or `act <address>`. */
-export function isCallHead(command: string | null, positional: readonly string[] = []): boolean {
+/**
+ * True where a command line's head names the call door: a verb word, an address, the stdin sigil, or `act` (the one act, fork 9:
+ * `lares act lar:///<address> …` and `lares lar:///<address> …` read the same, and every residency act rides by its address).
+ */
+export function isCallHead(command: string | null, _positional: readonly string[] = []): boolean {
   if (command === null) return false;
-  return (CALL_VERBS as readonly string[]).includes(command) || command === "-" || command.startsWith("lar:///")
-    || (command === "act" && (positional[0] ?? "").startsWith("lar:///"));
+  return (CALL_VERBS as readonly string[]).includes(command) || command === "-" || command === "act" || command.startsWith("lar:///");
 }
 
 /** The line a parsed command names as a call: `act` drops, since `lares act lar:///x` and `lares lar:///x` read the same. */
@@ -52,9 +61,12 @@ export function callLineOf(args: ParsedArgs): CallLine {
 export interface CallSources {
   readonly read: (path: string) => Buffer;
   readonly stdin: () => Promise<Buffer>;
+  /** The stream a summons started this process under (`LARES_SUMMONED`); absent or null: none. A test seats its own. */
+  readonly summoned?: () => string | null;
 }
 
 const LIVE_SOURCES: CallSources = {
+  summoned: () => summonedStream(process.env),
   read: (path) => readFileSync(path),
   stdin: async () => {
     const chunks: Buffer[] = [];
@@ -126,7 +138,10 @@ export async function callPlan(args: ParsedArgs, sources: CallSources = LIVE_SOU
   }
   const verb = line.words.join(" ").trim();
   if (verb === "") throw new DoorUsage("name a verb word, a skin spelling or an address before the params (e.g. `lares get title='Room 4'`)");
-  return { plan: { verb: "call", args: { verb, params: await crossHost(given, sources), surface: "cli" } }, face: face ?? null };
+  // THE STREAM DEFAULTS FROM THE SUMMONS (comms-ux-enacts landing 17): a msg naming no stream, from a process a summons started,
+  // writes as the summoned instance; a session no summons started meets the door's `stream-unnamed` with its cure.
+  const summoned = MSG_HEADS.has(verb) && given["stream"] === undefined ? sources.summoned?.() ?? null : null;
+  return { plan: { verb: "call", args: { verb, params: await crossHost(summoned === null ? given : { ...given, stream: summoned }, sources), surface: "cli" } }, face: face ?? null };
 }
 
 /** The params a plan sent, by name. */
@@ -145,6 +160,20 @@ const whereOf = (params: Record<string, unknown>): string =>
   typeof params["bag"] === "string" ? ` bag=${params["bag"]}${typeof params["realm"] === "string" ? ` realm=${params["realm"]}` : ""}`
   : typeof params["recipe"] === "string" && params["recipe"] !== "default" ? ` recipe=${params["recipe"]}` : "";
 
+/** True where a call's `mu` reads the Sword alone (`!0`, `!`, `sword`): the terminal prints the machine answer. */
+export function swordAlone(params: Record<string, unknown>): boolean {
+  if (typeof params["mu"] !== "string") return false;
+  const read = readMu(params["mu"]);
+  return !isMuFault(read) && read.carry === "!0";
+}
+
+/** True where a call's `aperture` reaches the whole record or past it (arc, theme): the carrier answers in prose. */
+export function reachesWholeRange(params: Record<string, unknown>): boolean {
+  if (typeof params["aperture"] !== "string") return false;
+  const read = readAperture(params["aperture"]);
+  return !isApertureFault(read) && reachesWhole(read.rank);
+}
+
 /** A title as a call writes it, quoted where it holds a space. */
 const titleWord = (title: string): string => (/[\s'"]/.test(title) ? `title='${title.replace(/'/g, "'\\''")}'` : `title=${title}`);
 
@@ -153,11 +182,33 @@ export async function cmdCall(given: ParsedArgs, sources: CallSources = LIVE_SOU
     const { plan, face } = await callPlan(given, sources);
     // THE SESSION A CALL RIDES: `face=N` reaches the door's face reader as the session's face.
     const args: ParsedArgs = face === null ? given : { ...given, options: { ...given.options, face } };
+    // THE LONG LINE (landing 16): a watch holds its calls in a loop, one has line per change (`commands/watch-line.ts`).
+    if (plan.args["verb"] === "watch") return await cmdWatchLine(args, plan);
     const params = paramsOf(plan);
-    // A record's text and a carrier answer a pipe in prose (the carrier-first law); only an explicit `--json` asks the envelope.
-    const prose = params["form"] === "text" || (typeof params["mu"] === "string" && /assert|!/.test(params["mu"])) ? proseFirst(args) : args;
+    // A record's text and a carrier answer a pipe in prose (the carrier-first law): the text alone, or a range reaching the whole
+    // (`aperture=arc`, `theme`). THE SWORD ALONE ASKS THE MACHINE ANSWER (the flag zoo burned `--json` into `mu=!0`): the
+    // envelope verbatim, on a terminal or a pipe.
+    const prose = swordAlone(params) ? { ...args, flags: { ...args.flags, json: true } }
+      : params["form"] === "text" || reachesWholeRange(params) ? proseFirst(args) : args;
     const ran = await runDoor(prose, typeof plan.args["verb"] === "string" ? plan.args["verb"] : "-", plan);
     if (!ran.ok) return ran.exit;
+    // A DOOR THE TERMINAL RUNS (landing 9): the vessel bound the act by its address and answered `handler/host` with the bound
+    // params; the terminal's own door runs them (a residency act reads host files and asks y/N; the draft pull), a `_` carry
+    // reaching it only where the carrier's row names `dry/walks`.
+    // WHETHER A DOOR PREVIEWS IS A FACT OF ITS CODE: a `_` carry reaches only a door whose code walks a dry path (`HostDoor.dry`),
+    // and refuses `mu-cell-empty` before anything runs at any other, whatever the carrier's row claims.
+    if (ran.output["handler"] === "host") {
+      const address = String(ran.output["address"] ?? "");
+      const door = actHostDoor(address);
+      const mu = ran.output["mu"] as { carry?: unknown } | undefined;
+      const carry = typeof mu?.carry === "string" ? mu.carry : null;
+      if (door !== null && carry !== null && carry.includes("_") && !door.dry) {
+        const message = `${address} walks no dry path at the terminal, so a ${carry} call lands nothing; the plain call (no mu) lands the act`;
+        emit(args, { ok: false, requestId: ran.requestId, error: { code: "mu-cell-empty", message }, human: () => console.error(`lares act: mu-cell-empty: ${message}`) });
+        return exitFor("usage");
+      }
+      if (door !== null) return await door.run(args, (ran.output["params"] as Record<string, unknown> | undefined) ?? {}, carry);
+    }
     switch (answeredBy(ran.output)) {
       case "engine.record.reads": return await printRead(prose, plan, ran);
       case "engine.filter.pages": return await printPage(prose, plan, ran);
@@ -171,13 +222,17 @@ export async function cmdCall(given: ParsedArgs, sources: CallSources = LIVE_SOU
 
 type Ran = { readonly requestId: string; readonly output: Record<string, unknown> };
 
-/** Any other answer: its has line first, then its data, one key per line; `--json` carries it verbatim. */
+/**
+ * Any other answer: its human line first (Iris-Sprite's answer template rendered it in the VM; the has line where no template
+ * rendered), then its data, one key per line, with no speaker header; `--json` carries it verbatim.
+ */
 function printAnswer(args: ParsedArgs, ran: Ran): number {
   emit(args, {
     ok: true, requestId: ran.requestId, data: ran.output,
     human: () => {
-      const { has, ...rest } = ran.output;
-      if (typeof has === "string") console.log(has);
+      const { has, human, ...rest } = ran.output;
+      if (typeof human === "string" && human !== "") console.log(human);
+      else if (typeof has === "string") console.log(has);
       for (const [key, value] of Object.entries(rest)) console.log(`${key}: ${typeof value === "string" ? value : JSON.stringify(value)}`);
     },
   });
@@ -195,8 +250,8 @@ const FLOOR_NOTE = "read from the floor snapshot: this face holds no read on the
 /**
  * A GET BY TITLE ANSWERS ON A GRADIENT. Every answer leads with its `<<~ has …>>` line (stderr, where stdout carries a body;
  * stdout, where the has-stack is the answer) and names the grain it applied and why. The record reaches stdout as a `.tid` reads
- * (one `name: value` line per field, a blank line, the text). A meme read whole (`mu=assert`) follows the carrier's pages (each
- * cut on a slot boundary) to the end and joins them, so `lares get title=<uri> mu=assert > file` carries the whole meme.
+ * (one `name: value` line per field, a blank line, the text). A meme read whole (`aperture=arc`) follows the carrier's pages (each
+ * cut on a slot boundary) to the end and joins them, so `lares get title=<uri> aperture=arc > file` carries the whole meme.
  * `form=text` answers the TEXT ALONE on stdout, a terminal or a pipe alike; the has line and base ride stderr, and an answer
  * that carries no text refuses `text-unread`.
  */
@@ -255,7 +310,7 @@ async function printRead(args: ParsedArgs, plan: DoorPlan, first: Ran): Promise<
     const why = pointer?.owes
       ? `the pointer's body rode no text (${pointer.owes}); ${pointer.cure ?? "`lares bag cas` surveys the content tier the body resolves from"}`
       : meme
-        ? `the carrier answered its has-stack; \`lares get ${titleWord(title)}${whereOf(params)} mu=assert form=text\` reads the whole carrier, its pages joined`
+        ? `the carrier answered its has-stack; \`lares get ${titleWord(title)}${whereOf(params)} aperture=arc form=text\` reads the whole carrier, its pages joined`
         : `the answer left the text home (${grain?.why ?? "no text field"}); ${again} asks the whole`;
     const message = `text-unread: ${title} answered no text alone: ${why}`;
     emit(args, { ok: false, requestId: ran.requestId, data, error: { code: "text-unread", message }, human: () => console.error(`lares get: ${message}`) });
@@ -274,10 +329,10 @@ async function printRead(args: ParsedArgs, plan: DoorPlan, first: Ran): Promise<
         console.error(`base: ${meme.canonicalHash}`);
         console.error(`size: ${meme.bytes} bytes`);
         if (joinedGrain) console.error(`grain: ${joinedGrain.applied} (${joinedGrain.why})`);
-        if (typeof meme.text !== "string" && typeof meme.slotText !== "string") console.error("the carrier runs past one page: stdout carries its has-stack; mu=assert reads the whole carrier, paged on slot boundaries");
+        if (typeof meme.text !== "string" && typeof meme.slotText !== "string") console.error("the carrier runs past one page: stdout carries its has-stack; aperture=arc reads the whole carrier, paged on slot boundaries");
         else if (meme.page && !followed) {
           const after = (output["next"] as GotNext | null | undefined)?.after;
-          if (after) console.error(`page ${meme.page.page} of ${meme.page.pages}: read the next with after=${after} (or mu=assert for the whole carrier)`);
+          if (after) console.error(`page ${meme.page.page} of ${meme.page.pages}: read the next with after=${after} (or aperture=arc for the whole carrier)`);
         }
         if (output["floor"] === true) console.error(FLOOR_NOTE);
         if (faulted) {
@@ -364,7 +419,7 @@ async function printPage(args: ParsedArgs, plan: DoorPlan, first: Ran): Promise<
   return 0;
 }
 
-/** A dry answer (mu=dry and its depths) prints whole: nothing landed, and every key reads beside the real decision. */
+/** A dry answer (the Pentacle's band: mu=_0, _?, _!) prints whole: nothing landed, and every key reads beside the real decision. */
 function printDry(args: ParsedArgs, ran: Ran): number | null {
   if (ran.output["dry"] === undefined || ran.output["dry"] === false) return null;
   return printAnswer(args, ran);
@@ -381,7 +436,7 @@ function printPut(args: ParsedArgs, params: Record<string, unknown>, ran: Ran): 
   const code = ok ? "ok" : decision === "conflict" || decision === "exists" ? "conflict" : "verb-error";
   const message = decision === "conflict" && params["append"] !== undefined ? `conflict: ${title} kept moving under the append; it reads ${receipt["hash"] ?? "absent"} now and nothing landed. Send the append again`
                 : decision === "conflict" ? `conflict: the record moved past ${params["base"] ?? "the base"}; it reads ${receipt["hash"] ?? "absent"} now. Read again and hand back the live hash`
-                : decision === "exists" ? `exists: a tiddler already stands at ${title} (create=true lands only where none does); drop create and pass base=<hash> from \`lares get ${titleWord(title)}${whereOf(params)} mu=relate\` to replace it`
+                : decision === "exists" ? `exists: a tiddler already stands at ${title} (create=true lands only where none does); drop create and pass base=<hash> from \`lares get ${titleWord(title)}${whereOf(params)} aperture=measure\` to replace it`
                 : `${decision}: ${title}`;
   emit(args, {
     ok, requestId: ran.requestId, data: receipt,

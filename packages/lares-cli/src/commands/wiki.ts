@@ -6,7 +6,7 @@
  * still call these "wikis" while the architectural noun stays "wiki"
  * (Kowloon wiki=Group mapping).
  *
- * Verbs (full E-arc surface ships; the `lares act` residency verbs land next):
+ * Verbs (full E-arc surface ships; the residency acts ride `lares act lar:///carriage.*`):
  *   list / which / resolve   — read & inspect: enumerate, presence-query, coordinate-resolve
  *   init / open / sync       — lifecycle: mint, set-active, ingest memes
  *   retire                   — the owner face's unmint of a shell it minted by mistake (canon untouched)
@@ -644,7 +644,7 @@ export async function cmdWikiPruneStale(args: ParsedArgs): Promise<number> {
       console.log(`    ${s.title}  (${idleStr})`);
     }
     console.log("");
-    console.log("  Decide each through a residency ACTION verb (lares act ADD/COPY/MOVE/CLEAR/DROP/LOAD).");
+    console.log("  Decide each through a residency ACTION verb (lares act lar:///carriage.record.adds, carriage.bag.copies, carriage.bag.moves, carriage.bag.clears, carriage.bag.drops, carriage.bag.loads).");
   }
   console.log("");
   return 0;
@@ -793,25 +793,6 @@ function wikiStatusPlan(args: ParsedArgs): DoorPlan {
   return { verb: "wiki-status", args: { ...engineContainerArgs(args, "wiki status"), ...targetOf(args) } };
 }
 
-export function wikiActionPlan(args: ParsedArgs): DoorPlan {
-  const name = args.positional[0];
-  if (!name || args.positional.length !== 1) throw new DoorUsage("name one admitted action: wiki act sidebar-layout --recipe <wiki> --expected <layout> --resulting <layout>");
-  const expected = wordOf(args.options["expected"]);
-  const resulting = wordOf(args.options["resulting"]);
-  if (!expected || !resulting) throw new DoorUsage("--expected and --resulting each need a layout value");
-  return { verb: "wiki-action", args: { ...engineContainerArgs(args, "wiki act"), name, expected, resulting } };
-}
-
-async function cmdWikiAction(args: ParsedArgs): Promise<number> {
-  return guardDoor(args, "wiki act", async () => {
-    const ran = await runDoor(args, "wiki act", wikiActionPlan(args));
-    if (!ran.ok) return ran.exit;
-    emit(args, { ok: true, requestId: ran.requestId, data: ran.output,
-      human: () => { console.log(String(ran.output["has"])); console.log(`${String(ran.output["decision"])} ${String(ran.output["title"])} · receipt ${ran.requestId}`); } });
-    return 0;
-  });
-}
-
 async function cmdWikiRender(args: ParsedArgs): Promise<number> {
   return guardDoor(args, "wiki render", async () => {
     const plan = wikiRenderPlan(args);
@@ -913,7 +894,6 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "resolve":    { handler: cmdWikiResolve,   summary: "Residency Model coordinate-inspection — list all Manifestations of a tiddler across bags; highlight winning bag per recipe priority. Needs `lares vessel stand --foreground`." },
   "render":     { handler: cmdWikiRender,    summary: "Wikify a title or a span through the wiki's own engine (the daemon wiki or any wiki this face reaches): `lares wiki render <title> --recipe default [--form text|html] [--max-bytes N] [--after <cursor>]`, or `--text '<wikitext>' [--type <mime>]`. The read reaches stdout; `--target` visits another lit face's read view. `render '<source-filter>' --recipe <slug> --output workbench [--filename <filter>] [--type <mime>] [--template <title>] [--variables <json>] [--overwrite]` writes under rendered/ in that wiki's bound workbench, then answers a manifest. A writer's seat must hold the workbench; existing files refuse without --overwrite." },
   "status":     { handler: cmdWikiStatus,    summary: "Survey catalog, activation and residency; --recipe names each layer and its write reach: `lares wiki status --recipe default` (or `--recipe <slug>`, any wiki this face reaches). The working layer takes every write (this face's personal layer of a wiki where it holds no writer's seat). A wiki's temp layer reads `temp (opt-in, off)` until `projection.temp.<slug>` consents to it. `--target <h1|pet name>` names another lit face's view, whose layers read `write: false`." },
-  "act":        { handler: cmdWikiAction, summary: "Run one admitted native action: `wiki act sidebar-layout --recipe <wiki> --expected fixed-fluid --resulting fluid-fixed`." },
 };
 
 /** Every verb the wiki door answers (`help` prints this table). */

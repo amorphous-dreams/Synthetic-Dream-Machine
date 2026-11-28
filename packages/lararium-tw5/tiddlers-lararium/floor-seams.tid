@@ -132,7 +132,7 @@ GUARDS cli-door-table e2e tiddler-door realm-select mcp-seat-binds-the-hearth
 GUARDS cli-door-table witness law-mutants-witness
 
 SEAM verb-dispatch
-MOVES verb-dispatch t verb-dispatcher* verb-local-dispatch* verb-summons* action-handler* handler-args* tiddler-verbs* meme-verbs* receipt* modules/call* modules/mu*
+MOVES verb-dispatch t verb-dispatcher* verb-local-dispatch* verb-summons* action-handler* handler-args* tiddler-verbs* meme-verbs* receipt* modules/call* modules/mu* modules/aperture*
 MOVES verb-dispatch m verb-tiddler* verb-refusal* effect-record* lar-event-bus*
 GUARDS verb-dispatch e2e tiddler-door working-loop promotion-publish-diff
 GUARDS verb-dispatch node-e2e composer-mounts-working-first seat-settle-before-mount
@@ -361,3 +361,8 @@ MOVES island-vessel-boot m boot-wait*
 MOVES sealed-store-rest m compacting-storage*
 MOVES shore-standoff n shore-remove-door*
 MOVES cli-door-table c ask-budget* standing-report*
+# the comms-ux doors (comms-ux-enacts landings 9–17): the keyword head, the bare door, the msg and watch carriers, the shore votum
+MOVES cli-door-table c commands/bare* keywords* summoned-stream*
+MOVES verb-dispatch t msg-verbs* stream-entries* modules/watch* filters/stream*
+MOVES island-vessel-boot t host-globals-now*
+MOVES shore-standoff m shore-votum*

@@ -1,0 +1,110 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/render.sidebar.lays`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "lay the wiki's sidebar out, fixed-fluid or fluid-fixed"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///render.sidebar.lays"]
+title     = "lar:///ha.ka.ba/lares/afford/render.sidebar.lays"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/render.sidebar.lays"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! render.sidebar.lays ~ the wiki lays its sidebar out through the engine's own keyboard action
+
+The act runs TiddlyWiki's own sidebar-layout action (`$:/core/ui/KeyboardShortcuts/change-sidebar-layout`, read from its unoverridden floor shadow) in the wiki `recipe` names, on an isolated view whose one writable target names the layout record (`$:/themes/tiddlywiki/vanilla/options/sidebarlayout`), and lands that change through the ordinary gated put with its receipt. `expected` names the layout the caller last read and `resulting` the layout it asks; a stale `expected` answers `conflict` and writes nothing. The call carries values alone, never action text.
+
+Every surface reaches it by its address: `lares lar:///render.sidebar.lays expected=fixed-fluid resulting=fluid-fixed`, `act(address="lar:///render.sidebar.lays", args={…})` on the seat, and the port's `call` ask on the glass. The address stands ''candidate'' until the operator reads the landing's list.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ widen-the-story
+
+```memetic-wikitext
+<<has entity=`example` name=`widen-the-story` params=`recipe/default expected/fixed-fluid resulting/fluid-fixed ~ the story river takes the fluid side; a stale expected answers conflict`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ container · expected · resulting
+
+```memetic-wikitext
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container`>>
+<<has entity=`arg` name=`expected` params=`takes/word needs/required ~ the layout last read: fixed-fluid or fluid-fixed`>>
+<<has entity=`arg` name=`resulting` params=`takes/word needs/required ~ the layout asked: the other of the two`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ the wiki's working layer takes the change through the gated put; the face's write cap decides`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ wiki-action-parameter · wiki-action-origin · wiki-action-scope
+
+```memetic-wikitext
+<<has entity=`refusal` name=`wiki-action-parameter` params=`cure/[[render.sidebar.lays expected/fixed-fluid resulting/fluid-fixed]] ~ expected and resulting each name a layout, and the two differ`>>
+<<has entity=`refusal` name=`wiki-action-origin` params=`~ an overriding tiddler stands over the action's floor shadow; nothing ran`>>
+<<has entity=`refusal` name=`wiki-action-scope` params=`~ the action reached past its one target; nothing landed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ put · conflict
+
+```memetic-wikitext
+<<has entity=`band` name=`put` params=`fields/[[title expected resulting decision receipt change]] ~ the layout landed through the put, its receipt beside it`>>
+<<has entity=`band` name=`conflict` params=`fields/[[title expected observed]] ~ the layout read differs from expected; nothing landed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ mcp
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! act lar:///render.sidebar.lays
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`spells/[[act lar:///render.sidebar.lays]] omits/face ~ the seat; the vessel runs it`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · wiki-surface-scout
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;l2by5rB-WBJlzfYMUThez6gQ0Vg5EMmneZqNs8ldcBw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

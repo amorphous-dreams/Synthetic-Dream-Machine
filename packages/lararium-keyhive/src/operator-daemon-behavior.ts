@@ -21,8 +21,8 @@ import {
   makeCatalogAccessor, findOrThrow,
   makeInitWikiReactor, makeRetireWikiReactor, makeDraftReactor, makePruneStaleReactor,
   makeMemeGetReactor, makeMemeListReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
-  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor, makeWikiStatusReactor, makeWikiActionReactor,
-  makeOracleCastReactor, ORACLE_CALL_SEATS, makeCallReactor, TIDDLER_CALL_SEATS, tiddlerCallSource,
+  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor, makeWikiStatusReactor, makeWikiActionReactor, makeCarrierActReactor, makeFilterWatchReactor,
+  makeOracleCastReactor, ORACLE_CALL_SEATS, makeCallReactor, TIDDLER_CALL_SEATS, tiddlerCallSource, makeMsgReactor, MSG_CALL_SEATS,
   ddateVerb,
   makeWardAlertReactor, fileWardRefusal, makeIngestAlertRail,
   makeAddBagReactor, makeRemoveBagReactor, makeTrueFloorReactor, makeCompactBagReactor, makeRotateRecipeReactor, makeRestampBagTierReactor,
@@ -36,6 +36,7 @@ import {
   registerCanonOfferVerbs, CANON_OFFER_VERBS,
   faceEngines, type FaceEngines, composeCrossFaceView, enginePool, type EnginePool, type FaceEngine,
   composeWikiEngineSource, wikiEngines, type WikiEngines, type MemeVerbOptions, type TiddlerVerbOptions,
+  bindShoreCustody, wikiWearsFace,
 } from "@lararium/tw5";
 import { applyShares, liftCarriedShares } from "./share-apply.js";
 import { grantShare } from "./share-grant.js";
@@ -227,7 +228,8 @@ import { announceSeatRoll } from "./seat-duty-executor.js";
 import { verifyFaceGrantRecord } from "./face-grant-record.js";
 import { makeFaceSeat, makeGroupDocListener, watchFaceSeatFleet, type GroupDocHandle } from "./face-seat.js";
 import { runFaceJoinOperation } from "./face-join-operation.js";
-import { makeFaceIntentDoor } from "./face-intent-door.js";
+import { admitShoreVotum, faceShoreVow, makeFaceIntentDoor, type FaceVowSeat } from "./face-intent-door.js";
+import { SHORE_VOTUM_VERBS } from "@lararium/mesh/shore-votum";
 import { faceDoors } from "./face-doors.js";
 import { readSiblingFacePlanes, recheckSiblingPlanes } from "@lararium/mesh/sibling-plane-mount";
 import { intentPlaneSelf } from "@lararium/mesh/intent-entry";
@@ -575,6 +577,31 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
    */
   const intentDoors = faceDoors((line) => console.log(`[daemon] ${line}`));
   /**
+   * CUSTODY FACE AGAINST FACE AT THE SHORE (comms-ux-enacts landing 13): each lit face's intent plane and its atom on this vessel,
+   * by PersonaGroup, kept while its door stands. The daemon engine's shore reads them: a write that routes into a layer another
+   * lit face holds rides as a votum onto THAT face's plane, signed by the vower's own atom, and the holder's door drains it.
+   */
+  const vowSeats = new Map<string, FaceVowSeat>();
+  const seatShoreCustody = (ctx: IslandContext, worn: string): void => {
+    wikiWearsFace(ctx.tw5, worn);
+    bindShoreCustody(ctx.tw5, {
+      // WHAT THE HOUSE KNOWS TODAY: a bag the worn face's own composition mounts writable is its own write; a bag the lit set
+      // resolves as another lit face's own lane (its control document naming that face the owner) belongs to that face. A shared
+      // wiki's workbench steward is named by no record this island reads, so such a bag answers no holder here (the write stands
+      // as the face's own, and its cap decides at the store).
+      holderOf: async (bag, face) => {
+        if (ctx.composite.writableStoreForBag(bag)) return null;
+        for (const sibling of litSiblings.values()) {
+          if (sibling.personaGroupId === face || typeof sibling.handleIndex !== "number") continue;
+          const lane = await litFaceTargetOf(ctx)(sibling.handleIndex, bag).catch(() => null);
+          if (lane && lane.owner === sibling.handleIndex) return sibling.personaGroupId;
+        }
+        return null;
+      },
+      vow: faceShoreVow({ seatOf: (holder) => vowSeats.get(holder) ?? null, vowerOf: (vower) => (vower === null ? null : vowSeats.get(vower)?.atom ?? null), verbs: faceIntentVerbs() }),
+    });
+  };
+  /**
    * ONE DOOR SHAPE FOR EVERY FACE: the door reads live authority (the face's lineage off this island's own replica of the
    * persona-KEL board, and each device's standing off the board fold over the island's OWN replicas of the face's fleet edge
    * board and edge ledger, under a witness over those documents and the KEL board), answers on the face's own turn, and pays a
@@ -605,9 +632,22 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const table = intentRegistry, verifier = intentVerifier;
         if (!table?.get(verb) || !verifier) throw new Error(`intent effect ${verb}: daemon handler or verifier absent`);
         if (!args || typeof args !== "object" || Array.isArray(args)) throw new Error(`intent effect ${verb}: arguments must be a record`);
+        // A SHORE VOTUM PAYS ONLY ON THE VOWER'S WORD (landing 13): its proof verifies, no agent relayed it, and the VOWER holds
+        // the write on the bag it names; the holder's door then lands it in the holder's own layer, the proof left out.
+        const paid = SHORE_VOTUM_VERBS.has(verb)
+          ? await admitShoreVotum(face.group, verb, args as Record<string, unknown>, at.agent,
+            (vowerKey, bag) => verifier.verify({ presenter: vowerKey, bagUrl: bag, access: "admin", channel: "local" }),
+            // THIS PLANE'S FACE MUST HOLD THE BAG: the mounted face's own writable layers, or a lit sibling's own lane by the lit set's owner.
+            async (bag) => {
+              if (face.group === daemonAuth.personaGroupId) return ctx.composite.writableStoreForBag(bag) !== null;
+              if (face.acting === null) return false;
+              const lane = await litFaceTargetOf(ctx)(face.acting, bag).catch(() => null);
+              return lane !== null && lane.owner === face.acting;
+            })
+          : args as Record<string, unknown>;
         const invocation: Verb = {
           requestId: at.intentId, title: `lar:///lararium.local.vm/verbs/intent-${at.intentId}`,
-          action: verb, args: args as Record<string, unknown>, targets: [], batchMode: "atomic", status: "pending",
+          action: verb, args: paid, targets: [], batchMode: "atomic", status: "pending",
           requestedBy: face.atom.key, requestedAt: "",
         };
         const run = runLocalVerb(invocation, { daemon: ctx.composite, registry: table, verifier, presenterOf: () => face.atom.key, localOf: () => true });
@@ -656,6 +696,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         kelPrefix: face.personaKel.prefix, anchor: face.faceAnchor, fleetRoot: face.deviceEdge.personaRootDid, ledger,
         acting: typeof face.handleIndex === "number" ? face.handleIndex : null, hold: (pending) => holding(provider, pending) });
       if (!litSiblings.has(key)) return refuse("it closed while its door stood");
+      // Its plane and atom seat its vows (a write the worn face makes into its lane rides here), until its drop.
+      vowSeats.set(group, { group, plane, atom: { key: atom.key, sign: atom.sign } });
       // THE LIT LIFE BOUNDS WHAT THE DOOR OPENED: at the face's drop both planes leave this island's Repo cache, so nothing of
       // the sibling's plane pair stays decrypted here or keeps replicating while the face stands dark; a repeat light keeps
       // what the new door holds.
@@ -1397,10 +1439,14 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         visited(verb, faceEngineReactor(verb, make(engineOpts), (engine) => make({ ...memeOpts, ...casOpts, tw5: engine.tw5, composite: engine.composite }), enginePorts,
           (faceLane) => make({ ...memeOpts, ...casOpts, faceLane })), make);
       registry.register("wiki-filter", engineVerb("wiki-filter", makeWikiFilterReactor), { summary: "Run a TiddlyWiki filter in the wiki's own engine (`recipe: default` the daemon wiki, `recipe: <slug>` any wiki this face reaches); answers a bounded page of titles (or rows with named fields), `total`, and a `next` cursor to hand back as `after`. A malformed filter refuses `filter-malformed`.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("filter-watch", engineVerb("filter-watch", makeFilterWatchReactor), { summary: "Watch a TiddlyWiki filter over the caller's reader view (`lar:///engine.filter.watches`): the watch stands as a tiddler (`$:/state/lares/watch/<id>`, listed by `[prefix[$:/state/lares/watch/]]`) the wiki's own change event moves, its digest the answering titles plus each record's hash. One call holds: it answers `changed` when the digest moves (at once where `asOf` reads stale), `ended` where `until` answers, `removed` where the watch left, `unchanged` when `hold` (ms) runs out; hand the answer's `id` and `asOf` back to continue. `unask` drops the watch `id` names; a dropped line or a cancel drops it too (`watch-withdrawn`).", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("tiddler-get", engineVerb("tiddler-get", makeTiddlerGetReactor), { summary: "Read one tiddler or one meme on a gradient: every answer leads with a `<<~ has …>>` line and echoes its `grain` and `next`. The record lens (default) answers the fields, `hash` (a writer's base) and `textHash`, whole within one page and skinny past it; `meme: true` recomposes the root and its slots into one sealed carrier, whole within a page, its has-stack past it, `grain: whole` paged on slot boundaries (`after` the cursor). `grain` names skinny · fat · handle · resolved · slot · whole (an unknown grain refuses); `fields` names a subset; `slot` reads one slot.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("wiki-render", engineVerb("wiki-render", makeWikiRenderReactor), { summary: "Wikify a title or a wikitext span through the wiki's own engine (the daemon wiki or any wiki this face reaches) to `text` or `html`, under a byte cap with a `next` cursor.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("wiki-render-out-prepare", engineVerb("wiki-render-out-prepare", makeWikiRenderOutReactor), { summary: "Prepare native render bytes under the reader and output grant; node custody publishes them.", surfaces: [] });
       registry.register("wiki-action", engineVerb("wiki-action", makeWikiActionReactor), { summary: "Run one named action from the admitted table in the wiki's own engine (`recipe` names the wiki, `name` the row, `expected` and `resulting` the checked values; no caller action text). It reads the floor shadow unoverridden, runs it on an isolated view against the one target the row may change, and lands that change through the ordinary gated put; the answer leads with its `<<~ has …>>` line and carries the receipt and `change`. A stale `expected` answers `conflict` and writes nothing; an unknown name or parameter, an overridden shadow, a withheld target or a denied write refuses by name.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      // A CARRIER BRINGS ITS OWN ACT (comms-ux-enacts landing 13): `call` on an address whose skin row names `acts/<title>` runs that
+      // action tiddler live in the wiki's own engine under the caller's face; its answer carries the receipts of the records it moved (receipts where an act or a votum moves a record; the CRDT remembers every hand).
+      registry.register("carrier-act", engineVerb("carrier-act", makeCarrierActReactor), { summary: "Run a carrier's own act (the `acts/<title>` action tiddler its skin row names) live in the wiki's own engine under the caller's face: the bound params ride as variables, its answer carries the receipt of each record it moved (receipts where an act or a votum moves a record; the CRDT remembers every hand), a writing message (`tm-rename-tiddler`, `tm-relink-tiddler`) runs through the rename door, and `dry` previews the writes over a capture view, landing nothing.", surfaces: [] });
       registry.register("tiddler-put", engineVerb("tiddler-put", makeTiddlerPutReactor), { summary: "Patch one tiddler: set fields, unset fields, add and remove tags, and move the text only where named (`text` whole, `append` at the end); `base` = the hash last read (stale answers `conflict`), `create` lands only where no tiddler stands. `recipe` lands in that wiki's working layer through its engine; `bag` lands in that one bag through its store. A meme family's text (a root's carrier, a slot `<root>#/<slot>`, a `cut` of named slots) lands through the Confluence gate and reseals: a slot the text omits stays (`kept`), a partial base guards a slot within the span it read, and an append on a slot joins its body's end.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("tiddler-delete", engineVerb("tiddler-delete", makeTiddlerDeleteReactor), { summary: "Remove one tiddler by the family law: with no `mode` a delete deletes plainly (each record leaves its own layer, no tombstone; `mode: plain` in the answer) and retracts a kāpae that hides nothing; a meme root or slot answers its `consequence` and `decision: refused` (`tiddler-delete-in-a-family`) unless `family: true` names the family act, which lands every member as one change; where a lower layer holds the title too, no mode refuses `delete-mode-needed` and the caller names one: `kapae` tombstones in a writable layer and shadows the records beneath, `reveal` retracts the topmost record so the one beneath surfaces; each act names `holds` and `shadowed` or `reveals`; `base` = the hash last read. A slot (`<root>#/<slot>`) leaves by the explicit cut of its parent's text (`mode: cut`), and the answer names what the cut tombstoned; `bag` removes a record, or with `family: true` a family, from that one bag through its store.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("tiddler-rename", engineVerb("tiddler-rename", makeTiddlerRenameReactor), { summary: "Rename one tiddler (or a meme root, its slots following) over TiddlyWiki's own relink: every reference the engine's relinkers rewrite (core: tags and list fields; text links only where a relink plugin mounts) follows to `to`, and the old title stays as a forwarder (a pointer tiddler whose `forward-to` names the new title and whose text transcludes it). The move lands in the working layer alone: a record resting elsewhere refuses `rename-source-layer`, referrers outside it refuse `rename-referrers-unreachable` (a count, never titles), a standing target refuses `rename-target-stands`, a slot refuses `slot-without-root`, a `lar:` title another layer holds takes a hand alone, a `$:/` title on either side refuses `rename-system-title`; an answer names only records the face reads and counts the rest (`withheld`); `base` = the hash last read.", surfaces: [VERB_SURFACE.cli] });
@@ -1416,10 +1462,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         surfaces: [],
       });
       registry.register("oracle-cast", engineVerb("oracle-cast", makeOracleCastReactor), { summary: "Consult an oracle from its library shelf at a named fork (`lar:///library.oracle.speaks`): `by` names the shelf (`library/oracles/<kind>/`, default `e-jing`) whose index declares its method (e-jing and doa: the I Ching by three coins a line), and an unknown kind or an unrun method refuses by name (`oracle-shelf-unknown`, `oracle-method-unrun`); the cast lands once as an OODA-HA meme under `lar:///ha.ka.ba/lares/oracle/casts/` whose slots read from the carrier the caller's stack seats (its #/loop, which calls api/pono/oracle-loop#/loop): `observe` (context pointers) and `uncertain` (the gathered uncertainty) fill #/observe and #/orient, the throw and every reading with its credit fill #/decide, and the seat's owed slots name their asks; later writes ride the slot append. `at` (the time; the verb reads no clock) required; `asking` names the query, and the same asking answers the standing cast (`replayed`) with the uncertainty it kept. `coins`, `fresh`, `seed` and a seat's own `nonce` ride a person's hand: a seat that sends one reads `asks`. The loop reads from the stack, the baked pack the floor; where neither answers loop rows the cast refuses `oracle-loop-unread`. Answers {has, band, intent, replayed, decision, created, title, carrier, cast, text, readings, asOf, uncertain, observe, slots, next, note}. A blind throw to collide uncertainty with: the throw stands, the reading stays open.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      // THE MSG DOOR (`lar:///engine.msg.lands`, comms-ux-enacts landings 14 and 15): one entry lands in its stream through the put
+      // law, in the engine of the face whose session placed it; `mu=?0` reads the stream's inbox, `mu=00` withdraws an unanswered entry.
+      registry.register("msg", engineVerb("msg", makeMsgReactor), { summary: "Land one entry in a stream (`stream` names it, `<pet>#<n>`): a root record at `lar:///ha.ka.ba/kahua/memory/stream/<pet>-<n>` founds on the first msg, and each entry lands at `<root>-<h8>-<slug>` (h8 the birth hash, never recomputed) with fields `stream`, `prev` (the stream's one head; two heads refuse `stream-forked`), `re` (entries it answers or braids), `to` (an entity or an instance; none lands a thought on the caller's own stream), `about` (a title at its hash), `note` (one line, 72 characters or fewer) and the writer's set panel (`mode`, `mood`, `mu` from `carry`, `stance`, `aperture`, `drift-ward`). `read: \"inbox\"` answers the entries addressed to the stream that no entry of it names in `re`; `retract: true` withdraws the caller's own unanswered entry (`title`, else the stream's head). Every write rides `tiddler-put`; `dry` walks the landing and lands nothing. Reached through `call` (`lares msg`, the seat's `msg`).", surfaces: [] });
       // THE ONE CALL (comms-ux-enacts landing 4): each core verb and the consult register by address, and the `call` verb resolves a
       // verb word, a skin spelling or an address through the live stack's routes, binds the params against the live `#/takes`,
       // and runs the registered verb under the caller's own context; every answer names the carrier that shaped it.
-      for (const [address, seat] of Object.entries({ ...TIDDLER_CALL_SEATS, ...ORACLE_CALL_SEATS })) registry.answer(address, seat);
+      for (const [address, seat] of Object.entries({ ...TIDDLER_CALL_SEATS, ...ORACLE_CALL_SEATS, ...MSG_CALL_SEATS })) registry.answer(address, seat);
       registry.register("call", makeCallReactor(registry, tiddlerCallSource(engineOpts)), { summary: "One call shape: `verb` names a verb word (`get`, `put`, `delete`, `rename`), any skin spelling or an affordance address, and `params` its named params; `sigil` may stand for both, a whole call sigil (``<<~ get title=`Room 4`>>``) read by the engine's own macro-call parser (a malformed one refuses `sigil-malformed`). The carriers read over the reader view of the recipe the params name (`recipe`, else `default`): the verb resolves through the routes that stack's carriers spell, the params bind against the carrier's live `#/takes` (defaults filled, the container defaulting through `#/takes/container`; an unknown param refuses `param-unknown` naming the nearest), and the registered verb answers under the caller's own context; a carrier whose door the host runs answers `handler/host` with its bound params, and an address no reactor answers refuses `affordance-unhandled`. Every cure renders as a call sigil, runnable as written. Every answer's has line names `carrier/ bag/ base/`.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
 
       // switcher-state — the daemon UX widget's IN path: main pushes the live
@@ -2308,6 +2357,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             litInputs.delete(key);
             const dropped = litSiblings.get(key);
             litSiblings.delete(key);
+            if (dropped?.personaGroupId) vowSeats.delete(dropped.personaGroupId);
             // Its projection stops first: nothing reads its engine past the drop.
             await litProjections?.drop(key).catch((error: unknown) => console.warn(`[daemon] face ${key.slice(0, 12)}…'s projection stopped with a fault: ${error instanceof Error ? error.message : String(error)}`));
             // Its own engine closes with it: owed saves drain, the bridge detaches, the VM releases.
@@ -2444,6 +2494,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               kelPrefix: kel.prefix, anchor: daemonAuth.faceAnchor ?? null, fleetRoot: edge.personaRootDid, ledger,
               ...(restDyadLedger ? { restLedger: restDyadLedger } : {}), effects: new Map([["face-join", faceJoinVia]]),
               acting: typeof daemonAuth.handleIndex === "number" ? daemonAuth.handleIndex : null });
+            // THE SHORE KNOWS ITS FACE AND ITS CUSTODY (landing 13): the mounted face's plane and atom seat its vows, and the daemon
+            // engine's receipts name it as the worn face.
+            vowSeats.set(group, { group, plane, atom: { key: atom.key, sign: atom.sign } });
+            seatShoreCustody(ctx, group);
             registerIntentView = () => {
               if (intentRegistry && !intentRegistry.has("intent-view"))
                 intentRegistry.register("intent-view", makeIntentViewReactor(ctx.tw5, intentsBag, async () => (await door.describe()).pane));

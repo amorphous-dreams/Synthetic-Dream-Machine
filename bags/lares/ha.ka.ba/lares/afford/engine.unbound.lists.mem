@@ -1,0 +1,100 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.unbound.lists`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "list minted documents no binding names; remove nothing"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.unbound.lists", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.unbound.lists"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.unbound.lists"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.unbound.lists ~ the documents a mint left unbound, named and kept
+
+`lares vessel unbound` asks the standing vessel's `unbound-docs` verb for every minted document no binding names and prints the list as JSON. It removes nothing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ list
+
+```memetic-wikitext
+<<has entity=`example` name=`list` params=`~ list the unbound documents`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ none
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ runs on this host's own vessel root; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ verb-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`verb-refused` params=`cure/[[engine.unbound.lists]] ~ the daemon refused the read, or no vessel answers; stand it and read again`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ listed · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`listed` params=`exit/0 ~ the unbound documents as a JSON array`>>
+<<has entity=`band` name=`refused` params=`exit/2 ~ the daemon's refusal on stderr`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vessel unbound
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares vessel unbound]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · vessel-door
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GlWHvnCPVHBK_YuCeOvfNmr2E0-hBUrVXVRw7VS-ikg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

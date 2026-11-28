@@ -1,0 +1,106 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.hallway.reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read the entity-pair hallways of one wing"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.hallway.reads", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.hallway.reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.hallway.reads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.hallway.reads ~ the hallways: entity pairs that recur together
+
+`lares sense structure <wing>` reads the entity-pair hallways of one wing on one plane (`--lens`, default content), each pair seen at least `--min-count` times (default 2). A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ structure
+
+```memetic-wikitext
+<<has entity=`example` name=`structure` params=`wing/claude ~ the hallways of one wing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ wing · lens · min-count
+
+```memetic-wikitext
+<<has entity=`arg` name=`wing` params=`takes/name needs/required seat/1 as/<wing> ~ the wing`>>
+<<has entity=`arg` name=`lens` params=`takes/plane default/content ~ the plane: content, structure, form, persistence, a named sensorium's own, or crossplane`>>
+<<has entity=`arg` name=`min-count` params=`takes/count default/2 ~ the fewest co-occurrences a pair needs`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ rides the daemon's composed caps, the single-owner law; this handler checks no ocap of its own`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · verb-error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[sense.hallway.reads wing/claude]] ~ no wing named`>>
+<<has entity=`refusal` name=`verb-error` params=`~ an unknown lens, or the plane holds no hallways`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ read
+
+```memetic-wikitext
+<<has entity=`band` name=`read` params=`exit/0 ~ the hallways`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense structure
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense structure]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · lararium-memory
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;C3ueOsql7RFhUmxjT-cLz-zTllaCbob9_lMY2N-iQ1Y`>>
+
+<<^ code=`&#x0004;` to=`?`>>

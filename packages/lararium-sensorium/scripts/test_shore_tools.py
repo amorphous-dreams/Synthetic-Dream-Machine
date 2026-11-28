@@ -1,13 +1,13 @@
-"""Witness — the `shore` and `shore_flush` MCP tools: the seat reads the disk shore and asks the vessel's whole-island flush.
+"""Witness — the seat's shore acts (lar:///carriage.disk.reads, lar:///carriage.disk.flushes): the seat reads the disk shore
+and asks the vessel's whole-island flush, each reached as `act(address=..., args={...})`.
 
-The daemon socket stands faked. `shore` reads both islands' lists as one shore, through the same two lines `lares shore`
+The daemon socket stands faked; its `call` answers `handler/seat` as bound. `shore` reads both islands' lists as one shore, through the same two lines `lares shore`
 rides (`wiki-act` carrying the `shore` verb into the active wiki, the `shore` verb into the daemon island), every page of
 each; `face` names a lit sibling's shore and reaches the daemon island alone. `shore_flush` sends the custody door's
 `shore-flush` frame, the one `lares shore flush` sends, and returns the vessel's reading of every island.
 
     ~/.venv/bin/python -m pytest packages/lararium-sensorium/scripts/test_shore_tools.py -q
 """
-import asyncio
 import json
 import os
 import socket
@@ -16,7 +16,9 @@ import threading
 import pytest
 
 import lares_uds as uds
-from lares_mcp import SEAT_INSTRUCTIONS, SHORE_VERBS, DaemonCoordinator, build_mcp, seat_of
+from lares_mcp import DaemonCoordinator, build_mcp
+
+SHORE_ACTS = {"shore": "lar:///carriage.disk.reads", "shore_flush": "lar:///carriage.disk.flushes"}
 
 
 def _list(rows_standoff, rows_pending, nxt=None, counts=None, **extra):
@@ -44,7 +46,10 @@ class _ShoreDaemon:
         if line.get("op") == "shore-flush":
             return {"op": "shore-flush", "reading": self.reading, "standing": "hearth"}
         verb, args = line["verb"], line["args"]
-        shore = args["args"] if verb == "wiki-act" else args
+        if verb == "call":
+            seated = {"handler": "seat", "address": args["verb"], "params": args["params"]}
+            return {"status": "done", "requestId": "r1", "results": {"summary": {"ok": True, "output": seated}}}
+        shore =args["args"] if verb == "wiki-act" else args
         if verb == "wiki-act":
             out = (_list([{"uri": "lar:///a.b.c/w", "bagId": "w", "standoff": "k1"}], [], nxt="c1", counts=(2, 0)) if "after" not in shore
                    else _list([{"uri": "lar:///a.b.c/w2", "bagId": "w", "standoff": "k2"}], [], nxt=self.wiki_fault == "still" and "c1" or None, counts=(2, 0)))
@@ -94,17 +99,20 @@ def daemon(monkeypatch, tmp_path_factory):
 
 
 def _fn(name):
-    return build_mcp(DaemonCoordinator(wing="w"))._tool_manager.get_tool(name).fn  # noqa: SLF001 — the registered skin
+    return build_mcp(DaemonCoordinator(wing="w")).seat_acts[SHORE_ACTS[name]]
 
 
-def test_red_the_shore_tools_register_a_hotl_read_and_a_hotl_flush():
-    tools = {t.name: t for t in asyncio.run(build_mcp(DaemonCoordinator(wing="w")).list_tools())}
-    assert SHORE_VERBS == ("shore", "shore_flush")
-    for name in SHORE_VERBS:
-        assert name in tools and seat_of(name) == "HOTL"
-    read, flush = tools["shore"].annotations, tools["shore_flush"].annotations
-    assert (read.read_only_hint, read.destructive_hint, read.idempotent_hint, read.open_world_hint) == (True, False, True, False)
-    assert (flush.read_only_hint, flush.destructive_hint, flush.idempotent_hint) == (False, False, True)
+def _act():
+    return build_mcp(DaemonCoordinator(wing="w"))._tool_manager.get_tool("act").fn  # noqa: SLF001 — the registered skin
+
+
+def test_red_the_shore_acts_run_by_address_through_act(daemon):
+    out = _act()(address=SHORE_ACTS["shore"], args={"face": 2})
+    assert [(ln["verb"], ln["args"]) for ln in daemon.lines] == [
+        ("call", {"verb": SHORE_ACTS["shore"], "params": {"face": 2}, "surface": "mcp"}), ("shore", {"op": "list", "face": 2})]
+    assert out["face"] == 2
+    assert _act()(address=SHORE_ACTS["shore_flush"]) == daemon.reading
+    assert daemon.lines[-1] == {"op": "shore-flush"}
 
 
 def test_red_shore_reads_both_islands_every_page_as_one_shore(daemon):
@@ -128,11 +136,11 @@ def test_red_shore_flush_sends_the_one_frame_and_returns_the_vessels_reading(dae
     assert out == daemon.reading
 
 
-def test_red_the_seat_instructions_name_both_shore_tools_and_the_hand_that_settles():
-    assert "shore()" in SEAT_INSTRUCTIONS and "shore_flush()" in SEAT_INSTRUCTIONS
-    assert "lares shore" in SEAT_INSTRUCTIONS
+def test_red_the_plugin_readme_names_both_shore_acts_and_the_hand_that_settles():
     readme = open(os.path.join(os.path.dirname(__file__), "..", "..", "lares-cli", ".claude-plugin", "README.md"), encoding="utf-8").read()
-    assert "shore_flush()" in readme and "shore(face=N)" in readme
+    assert f'act(address="{SHORE_ACTS["shore_flush"]}")' in readme
+    assert f'act(address="{SHORE_ACTS["shore"]}", args={{"face": N}})' in readme
+    assert "lares shore take-records" in readme
 
 
 @pytest.mark.parametrize("fault, why", [

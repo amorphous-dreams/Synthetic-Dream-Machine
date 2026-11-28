@@ -1,0 +1,108 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.keep.reseats`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "reseat the keep pair from a proved vessel route"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.keep.reseats", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.keep.reseats"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.keep.reseats"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.keep.reseats ~ the keep pair binds again to a route the vessel proves
+
+`lares vault reseat` proves a typed route against the vessel's held key (against the files where no vessel stands) and reseats the keep pair on the human routes it proved (`--passphrase` or `--paper` names which route to gather). Under a pūlama the route rides the pūlama's own hand door and this door refuses. A credential rides a TTY alone: no flag, no environment variable and no pipe carries one, nothing echoes one, and it drops the instant the act returns.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ reseat · paper
+
+```memetic-wikitext
+<<has entity=`example` name=`reseat` params=`~ prove a route and reseat the keep pair`>>
+<<has entity=`example` name=`paper` params=`paper/true ~ prove a paper route`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ passphrase · paper
+
+```memetic-wikitext
+<<has entity=`arg` name=`passphrase` params=`needs/one-of:passphrase,paper ~ gather a passphrase route`>>
+<<has entity=`arg` name=`paper` params=`needs/one-of:passphrase,paper ~ gather a paper route`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/route ~ a person types the route at their own terminal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ keep-seat-at-pulama · daemon-unreachable · keep-seat-unseatable · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`keep-seat-at-pulama` params=`~ a pūlama keeps custody; run its keep-seat at its own hand door`>>
+<<has entity=`refusal` name=`daemon-unreachable` params=`cure/[[face.keep.reseats]] ~ the vessel stopped answering before the proof landed`>>
+<<has entity=`refusal` name=`keep-seat-unseatable` params=`~ the proved route holds no human route the keep binds (a passkey alone); nothing changed`>>
+<<has entity=`refusal` name=`error` params=`~ the custody door's named refusals lead the line by class (OccupiedStoreRefusal, CustodyRefusal, TreeKeyRefusal, CensusRefusal, CustodyLockRefused, CustodyFoundingRefused, CredentialTtyRefusal, RotationSlotsRefused), exit 1`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ reseated
+
+```memetic-wikitext
+<<has entity=`band` name=`reseated` params=`exit/0 fields/[[reseated]] ~ the keep pair stands on the proved routes`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vault reseat
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares vault reseat]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · custody
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qGfZWZcooViZ6LsKp-KOxolpkk5wlylPrDyfc6fD3qM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

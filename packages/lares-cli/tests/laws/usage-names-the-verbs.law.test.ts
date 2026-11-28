@@ -45,9 +45,10 @@ describe("L2 · a door's usage spine names exactly the verbs its table declares"
     expect(verbs.filter((v) => !names(text, v))).toEqual([]);
   });
 
-  test("the spine reader reads every spelling the house writes: bracketed, spaced, bare, and a spelled clause", () => {
-    expect(spineVerbs("lei")).toEqual(expect.arrayContaining(["show", "kui", "unstring", "restring"]));
-    expect(spineVerbs("edge")).toEqual(expect.arrayContaining(["kapae", "un-kapae"]));
+  test("the spine reader reads every spelling the registry still writes: bracketed, spaced, and a spelled clause", () => {
+    // `lei` and `edge` flipped to their carriers (landings 10 + 23); the registry doors left spell the bracketed, the spaced and the clause forms.
+    expect(spineVerbs("vessel")).toEqual(expect.arrayContaining(["unbound", "found", "rite"]));
+    expect(spineVerbs("meme")).toEqual(expect.arrayContaining(["normalize", "check", "offer"]));
     expect(spineVerbs("sense")).toEqual(expect.arrayContaining(["search", "analyze", "harden"]));
   });
 

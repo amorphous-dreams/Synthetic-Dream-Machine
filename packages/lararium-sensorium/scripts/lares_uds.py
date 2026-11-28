@@ -176,8 +176,11 @@ def _seat_mark() -> dict:
 
 
 def call(verb: str, args: "dict | None" = None, *, timeout: float = 30.0,
-         requested_by: "str | None" = None) -> dict:
+         requested_by: "str | None" = None, vessel_wait_ms: "int | None" = None) -> dict:
     """Run one verb through the @daemon and return its `output`.
+
+    `vessel_wait_ms` rides the line as the vessel's own wait for the outcome (`timeoutMs`), for a verb that holds on purpose
+    (a watch); the socket's `timeout` stays this side's own wait, and closing the socket withdraws a held ask.
 
     Raises LaresDaemonUnreachable when no daemon holds the socket, and LaresVerbError when the daemon
     ran the verb and it failed. NEITHER falls back to opening a store: a fallback would put a second
@@ -192,6 +195,7 @@ def call(verb: str, args: "dict | None" = None, *, timeout: float = 30.0,
         "verb": verb,
         "args": args or {},
         "requestedBy": requested_by or operator_did(),
+        **({"timeoutMs": int(vessel_wait_ms)} if vessel_wait_ms is not None else {}),
         **_seat_mark(),
     }) + "\n"
 
@@ -369,6 +373,61 @@ def session_act(act: str, args: "dict | None" = None, *, face: "int | None" = No
     if isinstance(output.get("refused"), str):
         raise LaresVerbError(output["refused"])
     return {k: v for k, v in output.items() if k != "verb"}
+
+
+def session_call(verb: str, args: "dict | None" = None, *, face: "int | None" = None, hand: str = "seat",
+                 timeout: float = 30.0, vessel_wait_ms: "int | None" = None) -> dict:
+    """Run ONE verb on a SESSION of `face` (`h<N>`, else the face the vessel resolves) and return its receipt, as `call` does.
+
+    A verb that names the face its session door verified (a watch, which records the face that bound it) rides here, never on the one-shot line. The session
+    opens under `hand`, the call rides it with the vessel's own wait (`vessel_wait_ms`, as `timeoutMs`), the session closes.
+    Closing the socket mid-call withdraws a held ask. A refusal raises by name, as `call` raises.
+    """
+    path = socket_path()
+    if not os.path.exists(path):
+        raise LaresDaemonUnreachable(f"no lares daemon at {path} — start one with `lares vessel stand --foreground`")
+    face = resolve_face(face)
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    s.settimeout(timeout)
+    try:
+        try:
+            s.connect(path)
+        except (ConnectionRefusedError, FileNotFoundError) as e:
+            raise LaresDaemonUnreachable(f"lares daemon not answering at {path}: {e}") from e
+        lines = _lines(s)
+
+        def ask(frame: dict) -> dict:
+            rid = frame["requestId"]
+            s.sendall((json.dumps(frame) + "\n").encode())
+            for reply in lines:
+                if reply.get("requestId") != rid:
+                    continue
+                if reply.get("kind") == "session:refused":
+                    raise LaresVerbError(f"local session refused: {reply.get('refusal')}")
+                return reply
+            raise LaresDaemonUnreachable("the vessel closed the session without an answer")
+
+        opened = ask({"op": "session:open", "requestId": os.urandom(8).hex(), "faceRef": f"h{face}", "hand": hand, **_seat_mark()})
+        if opened.get("kind") != "session:opened":
+            raise LaresVerbError("malformed session opening from the vessel")
+        envelope = {k: opened[k] for k in ("ownerEpoch", "sessionId", "generation", "faceRef")}
+        try:
+            out = ask({"op": "session:call", "requestId": os.urandom(8).hex(), **envelope, "verb": verb, "args": args or {},
+                       "requestedBy": operator_did(), **({"timeoutMs": int(vessel_wait_ms)} if vessel_wait_ms is not None else {})})
+        finally:
+            try:
+                s.sendall((json.dumps({"op": "session:close", **envelope}) + "\n").encode())
+                s.shutdown(socket.SHUT_WR)
+                for _ in lines:
+                    pass
+            except OSError:
+                pass
+    finally:
+        s.close()
+    out = {k: v for k, v in out.items() if k != "kind"}
+    if out.get("status") == "error":
+        raise refused(out, f"verb {verb!r} failed")
+    return out
 
 
 if __name__ == "__main__":  # a probe: `python lares_uds.py recall '{"query":"x","limit":2}'`

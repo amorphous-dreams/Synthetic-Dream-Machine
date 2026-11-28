@@ -37,8 +37,8 @@ Iris-Sprite holds the MCP seat's Lar (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/
 Every answer on every surface takes one order:
 
 # ''A has line first'' ~ what stands: the name asked, its params (the layer or carrier that answered, its type, its size, its base) and its band (#/bands), the role line after the `~`.
-# ''Text at the asked depth'' ~ the read gradient with no `mu` (a record within one page answers fat, a longer one its has line); `mu=relate` the card; `mu=assert` the whole, paged on slot boundaries, `slot=` narrowing it.
-# ''Calls last'' ~ each next step or cure as a call sigil the reader runs as written; each skin spells the call its own way (`get title=… mu=assert` as the CLI skin would spell it, `get(title=…, mu="assert")` on MCP, a button on the glass).
+# ''Text at the asked depth'' ~ the read gradient with no `mu` (a record within one page answers fat, a longer one its has line); `aperture=measure` the card; `aperture=arc` the whole, paged on slot boundaries, `slot=` narrowing it.
+# ''Calls last'' ~ each next step or cure as a call sigil the reader runs as written; each skin spells the call its own way (`get title=… aperture=arc` as the CLI skin would spell it, `get(title=…, aperture="arc")` on MCP, a button on the glass).
 
 ```memetic-wikitext
 <<~ has name=`<title>` params=`recipe/<slug> layer/<bag> type/<type> bytes/<n> base/sha256:<hex> band/answered ~ <role>`>>
@@ -51,6 +51,18 @@ Every answer on every surface takes one order:
 ''No speaker header.'' The human line opens on the has line, never on a name and a colon. The envelope carries the speaker for any reader that wants the seat: `voice: {name, office, seat, uri}` names the door or seat that answered, and a relay rides the same field as a call trace, one hop per seat the call crossed (`Iris-Sprite (Messenger) → Lares (Hearth) → Pūlama (Vestal)`).
 
 ''The register.'' L-Prime lit (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime#/system-speech`>>), verb-first, one has line per answer, every `lar:` title whole, no mood words, no apology. A count rides a param, never a sentence.
+
+<<~ ahu slot=`#/answer/template`>>
+
+!!! The answer template
+
+Every surface's human line for an answer renders through this template in the VM (`renderText` to `text/plain`), read through the caller's stack like any record, so a layer above canon re-shapes the line by seating this slot. The variable `has` carries the answer's has line whole; the template prints it as text, never as wikitext.
+
+```text/vnd.tiddlywiki template
+<$text text=<<has>>/>
+```
+
+<<~/ahu>>
 
 <<~/ahu>>
 
@@ -95,6 +107,18 @@ A refusal answers on `band/void` in the answer's own order: the has line names t
 * ''Where the door knows no exact fix,'' the cure reads the carrier that refused (`<<~ get title=`<carrier>` mu=`relate`>>`): a read always runs, so a refusal never strands its reader and never fabricates a fix.
 * ''The refusing voice'' rides the envelope (`voice`, its relay trace beside it), never the human line, so the ruling "a refusal speaks in the voice that refused" holds in the field a reader can parse.
 
+<<~ ahu slot=`#/refusal/template`>>
+
+!!! The refusal template
+
+Every call refusal's line renders through this template in the VM, read through the caller's stack, so a layer above canon re-shapes every refusal's line by seating this slot. The variables: `reason` (the code), `detail` (what stands in the way, one line), `cure` (the cure as a call sigil, blank where the door knows none); each prints as text, so a cure's sigil reads as written.
+
+```text/vnd.tiddlywiki template
+<$text text=<<reason>>/>: <$text text=<<detail>>/><$list filter="[<cure>!is[blank]]" variable="_">; cure: <$text text=<<cure>>/></$list>
+```
+
+<<~/ahu>>
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/outbox`>>
@@ -105,7 +129,7 @@ While the vessel sleeps, the seat stays awake for the chat, and the outbox names
 
 * ''A read answers from the floor'' ~ the baked affordance pack and the checkout's canon, the has line naming that floor as the layer that answered.
 * ''A write lands nowhere silently'' ~ the seat holds the call whole in its outbox and answers `band/owed` with the held call's id and the base it names. At the next light the vessel replays each held call through the put law, in the order the seat counted them, never by a clock; a call whose base has moved refuses at replay on `band/void` with its cure, and never overwrites.
-* ''The caller withdraws its own held call'' with `mu=unask` on that id, never another's.
+* ''The caller withdraws its own held call'' with `mu=arcana` (the seed's `00`, unasking the question) on that id, never another's.
 * ''A hand act never waits in the outbox'' ~ it answers `band/asks` and names the terminal command.
 
 ''Owed:'' measured at develop `bfae934ca`, no seat holds an outbox yet; this slot names the shape the seat answers once one lands.
@@ -133,6 +157,6 @@ Her name appears in two places alone:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6VU3gTgKUG5NygxW70D1-xxYrnSmYElD3sRhlMXChFY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kLcoUZ4qQBGj4NhWbOyNp6_h1Ero3Gpue9G7ZanzMqM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,38 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/lararium/pins`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "the house's pinned calls: the first layer the bare lares shows beneath its status line"
+title     = "lar:///ha.ka.ba/lares/lararium/pins"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/lararium/pins"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! pins ~ the house's pinned calls
+
+The bare `lares` (lar:///lares.lararium.status) shows these calls beneath its status line, the first rung of the memetic gradient: each a runnable call sigil, one per line, unfolding by its own range. The house list stands here in canon; the worn face's own list layers above it (its daemon wiki, lar:///ha.ka.ba/kahua/lararium/pins), and a mandate's `pins` field above that. Re-pin by writing this record's `#/pins` slot in your own layer: mutability at the root.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/pins`>>
+
+!! pins ~ handoff · boot-seed · law · carriers
+
+```memetic-wikitext
+<<~ get title=`lar:///ha.ka.ba/kahua/memory/state/handoff` aperture=`measure`>>
+<<~ get title=`lar:///ha.ka.ba/lares/api/noosphere-boot` aperture=`arc`>>
+<<~ lar:///engine.law.indexes>>
+<<~ get filter=`[tag[lar:///ha.ka.ba/lares/api/pono/affordance]]` aperture=`measure`>>
+```
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6LZ6zNM5O_eWpAc4JKf8L-J3HjxX2sTE6gZnUKO-Tt4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

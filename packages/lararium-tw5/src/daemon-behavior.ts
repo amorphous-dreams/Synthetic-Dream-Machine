@@ -45,7 +45,8 @@ import { type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
 import { type CapabilityVerifier } from "@lararium/mesh/capability";
 import { type CaptureEngine, type CapturePost } from "@lararium/mesh/capture/capture-engine";
 import type { Hand } from "@lararium/mesh/session-contract";
-import { placeVerb } from "./verb-vm.js";
+import { placeVerb, removeVerb } from "./verb-vm.js";
+import type { TW5Engine } from "./tw5-vm.js";
 import { composeIsland } from "./island-caps.js";
 import { hasEngineWatch, hasHandBoundary, hasProjection } from "./has-island-watches.js";
 import { hasRenderedTiddlers } from "./rendered-tiddler.js";
@@ -267,8 +268,19 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
             ...(msg.effectKey ? { effectKey:  msg.effectKey             } : {}),
             ...(msg.face      ? { face:       msg.face                  } : {}),
           });
+          // THE WORN FACE RIDES AS CARRIED: a watch names the face that bound it by `worn.presenter` (`watchFaceOf`); on the node only the
+          // vessel's session door sets it. A browser island books a tab's `msg.worn` and `origin` as the holder hands them, so if a
+          // browser island ever hosts sibling faces, the holder must strip or set `worn` and `origin` itself before this booking.
           if (placedAskIsLocal(msg)) localAsks.add({ requestId: placed, action: msg.verb, args: msg.args, requestedBy: msg.requestedBy, origin: msg.origin === "surface" ? "surface" : "channel", ...(msg.asker ? { asker: msg.asker } : {}), ...(msg.chore ? { chore: msg.chore } : {}), ...(msg.worn ? { worn: msg.worn } : {}) });
         }
+        return true;
+      }
+
+      // A CALLER THAT LEFT WITHDRAWS ITS ASK: the volatile invocation leaves where it still stands, and the dispatcher aborts
+      // the handler's signal (its own delete path), so a held handler stops; a finished ask stands nowhere and nothing moves.
+      if (type === "daemon:withdraw-verb") {
+        const requestId = (raw as { requestId?: unknown }).requestId;
+        if (tw5 && typeof requestId === "string") withdrawPlacedAsk(tw5, requestId);
         return true;
       }
 
@@ -463,3 +475,15 @@ export function makeLocalAskBook(bound = 4096): {
 }
 
 export function placedAskIsLocal(msg: Pick<DaemonMsg_PlaceVerb, "origin">): boolean { return msg.origin === "channel" || msg.origin === "surface"; }
+
+/**
+ * WITHDRAW A PLACED ASK (`daemon:withdraw-verb`): the ask's volatile invocation leaves the wiki where it still stands, and the
+ * dispatcher's own delete path aborts the handler's signal. Answers whether an invocation stood; a finished ask stands nowhere.
+ */
+export function withdrawPlacedAsk(tw5: TW5Engine, requestId: string): boolean {
+  if (requestId === "") return false;
+  const title = `${VERB_URI_PREFIX}${requestId}`;
+  if (tw5.$tw.wiki.getTiddler(title) === undefined) return false;
+  removeVerb(tw5, title);
+  return true;
+}

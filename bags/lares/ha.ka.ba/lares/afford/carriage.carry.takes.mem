@@ -1,0 +1,104 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.carry.takes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "take a carry bundle onto this place's own board replica"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.carry.takes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.carry.takes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.carry.takes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.carry.takes ~ the place's half of the carry
+
+`lares nexus carry-take <bundle-file>` verifies every act of a carry bundle against the charter held for its Nexus, refuses a carry naming another key, and writes the acts and floor pins onto this vessel's own replica; the herm's floor gate stands there at the next refold.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ take
+
+```memetic-wikitext
+<<has entity=`example` name=`take` params=`file/carry.json ~ take a carry bundle`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ file
+
+```memetic-wikitext
+<<has entity=`arg` name=`file` params=`takes/host-path needs/required seat/1 as/<bundle-file> ~ the carry bundle`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat-or-hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat-or-hand` params=`who/seat-or-hand ~ writes this vessel's own replica`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.carry.takes file/carry.json]] ~ name the bundle file`>>
+<<has entity=`refusal` name=`error` params=`~ the bundle reads unreadable, names another key, or fails verification`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ taken
+
+```memetic-wikitext
+<<has entity=`band` name=`taken` params=`exit/0 ~ the carry stands on this replica`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares nexus carry-take
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares nexus carry-take]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MV-lQsS1yC3ho1NmFKA6k2L70ts16Y-XOz_axdP4yLc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

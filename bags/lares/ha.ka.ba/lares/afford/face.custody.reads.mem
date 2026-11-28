@@ -1,0 +1,104 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.custody.reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read every custody file the vessel stands on, opening nothing"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.custody.reads", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.custody.reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.custody.reads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.custody.reads ~ one reading of the vessel key's custody
+
+`lares vault status` reads every standing file the carrier table names and names every private file it does not, then reads the standing vessel's custody door: whether the vessel holds its key (and by which slot), or how many unlock tries stay this boot, or what a pūlama waits on. It opens nothing. Relation carriers print beside a reminder that rotation never repairs a lost relation secret. A pipe reads prose; `--json` reads the envelope; `--verbose` prints each row whole.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ status · verbose
+
+```memetic-wikitext
+<<has entity=`example` name=`status` params=`~ the custody reading`>>
+<<has entity=`example` name=`verbose` params=`verbose/true ~ every row whole`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ verbose
+
+```memetic-wikitext
+<<has entity=`arg` name=`verbose` params=`~ print every custody row whole`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ reads this host's custody homes and the vessel's custody door; it opens nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`error` params=`~ the custody door's named refusals lead the line by class (OccupiedStoreRefusal, CustodyRefusal, TreeKeyRefusal, CensusRefusal, CustodyLockRefused, CustodyFoundingRefused, CredentialTtyRefusal, RotationSlotsRefused), exit 1`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ read
+
+```memetic-wikitext
+<<has entity=`band` name=`read` params=`exit/0 fields/[[custody door]] ~ the custody files and the standing vessel's door reading`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vault status
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares vault status]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · custody
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_LPoURwPYcBF-u31JlVM1YlAKURXzW7oFsdtGhcA1mU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

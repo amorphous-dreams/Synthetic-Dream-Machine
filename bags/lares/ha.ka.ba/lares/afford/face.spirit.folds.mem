@@ -1,0 +1,123 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.spirit.folds`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "measure a spirit's slots, or fold one line into the ash ledger"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.spirit.folds", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.spirit.folds"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.spirit.folds"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.spirit.folds ~ hum ~ what remains after the fold
+
+Bare `lares spirit hum <pet>` measures each slot against its budget and prints the carrier the wiki folds at `--aperture` (default `pulse`), a shrine's or a lone card's. `--fold '#/<slot>'` lists the slot's lines with each line's digest; `--line <n> --expect <digest>` moves that line to the month's ash ledger, found by content, so a sibling's write between the listing and the fold folds the line this instance chose or nothing. The fold burns the line only once the patch lands. `--instance` names the folding instance.
+
+
+`hum <pet> --streams` folds the pet's settled stream entries (no stream's head, seen by their addressee, answered by no unseen entry) into one line per stream on `--slot` (default `#/open`), then tags each `ash-ready` beside a `folded` field naming the slot: marked for o-takiage, never deleted.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ measure · list · fold
+
+```memetic-wikitext
+<<has entity=`example` name=`measure` params=`pet/lares-alpha ~ measure each slot`>>
+<<has entity=`example` name=`list` params=`pet/lares-alpha fold/#/open ~ list the slot's lines with their digests`>>
+<<has entity=`example` name=`fold` params=`pet/lares-alpha fold/#/open line/3 expect/<digest> ~ fold one line to the ash ledger`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face · pet · aperture · fold · line · expect · instance
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`pet` params=`takes/pet-name needs/required seat/1 as/<pet> ~ the spirit's pet name`>>
+<<has entity=`arg` name=`aperture` params=`takes/rank default/pulse ~ the fold's grain`>>
+<<has entity=`arg` name=`fold` params=`takes/slot-path ~ the slot whose lines list or fold`>>
+<<has entity=`arg` name=`line` params=`takes/n ~ beside fold, the listed line to move`>>
+<<has entity=`arg` name=`expect` params=`takes/digest ~ beside line, the listed line's digest (16 hex)`>>
+<<has entity=`arg` name=`instance` params=`takes/session-id ~ the folding instance`>>
+<<has entity=`arg` name=`streams` params=`takes/flag ~ fold the pet's settled stream entries, one line per stream on --slot (default #/open), each tagged ash-ready`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ocap/write-on-the-daemon-wiki ~ the ledger append and the slot patch ride the tiddler door`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · spirit-pet-malformed · spirit-unknown · spirit-fold-gone · spirit-ashes-refused · spirit-crossing · spirit-write-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.spirit.folds pet/lares-alpha fold/#/open]] ~ --line without --fold, or without --expect`>>
+<<has entity=`refusal` name=`spirit-pet-malformed` params=`cure/[[face.spirit.folds pet/lares-alpha]] ~ the word reads as no pet name`>>
+<<has entity=`refusal` name=`spirit-unknown` params=`~ no record or card answers the pet`>>
+<<has entity=`refusal` name=`spirit-fold-gone` params=`cure/[[face.spirit.folds pet/lares-alpha fold/#/open]] ~ the line moved or left since the listing`>>
+<<has entity=`refusal` name=`spirit-ashes-refused` params=`~ the ash ledger refused the append`>>
+<<has entity=`refusal` name=`spirit-crossing` params=`~ the instance stands mid-crossing`>>
+<<has entity=`refusal` name=`spirit-write-refused` params=`~ the tiddler door answered no put`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ measured · folded
+
+```memetic-wikitext
+<<has entity=`band` name=`measured` params=`exit/0 fields/[[pet uri kind]] ~ each slot's size and budget, or the folded carrier`>>
+<<has entity=`band` name=`folded` params=`exit/0 ~ the line rests in the ash ledger; what stays reads as the card`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares spirit hum
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares spirit hum]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · familiar-spirit
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/familiar-spirit`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1-NJEDTBtu29E7sryXlrO89cyEDUKcMl2AUpzXKRB6Q`>>
+
+<<^ code=`&#x0004;` to=`?`>>

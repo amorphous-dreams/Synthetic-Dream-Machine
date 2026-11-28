@@ -1,0 +1,109 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.intent.cancels`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "cancel an intent under the face's root"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.intent.cancels", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.intent.cancels"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.intent.cancels"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.intent.cancels ~ cancel ~ a root act
+
+`lares intent cancel <intent-id>` signs a cancel under the face's root at its current epoch.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ cancel
+
+```memetic-wikitext
+<<has entity=`example` name=`cancel` params=`target/<intent-id> ~ cancel the intent`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ target · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`target` params=`takes/id needs/required seat/1 as/<target> ~ the intent's id`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the face whose intent plane this reads or writes, a whole persona index from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ root
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`root` params=`who/seat-or-hand key/face-root ~ a ward act: the face's root seed signs once and zero-fills; a seat without the route asks the root's hearth`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · face-malformed · face-not-held · intent-id-absent · root-absent · root-rotated
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ an unknown sub-verb, or no sub-verb named`>>
+<<has entity=`refusal` name=`face-malformed` params=`~ --face names a whole persona index from 0`>>
+<<has entity=`refusal` name=`face-not-held` params=`~ this vessel holds no such face`>>
+<<has entity=`refusal` name=`intent-id-absent` params=`~ name the intent`>>
+<<has entity=`refusal` name=`root-absent` params=`~ this vessel holds no root; ask the root's hearth`>>
+<<has entity=`refusal` name=`root-rotated` params=`~ the root rotated past this seed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ cid
+
+```memetic-wikitext
+<<has entity=`band` name=`cid` params=`exit/0 ~ the signed entry's cid prints`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares intent cancel
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares intent cancel]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · face-intent-plane
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;paacSSPZTrnGH4ItqAURf2sTaXGeZEL9kQnWZIZxjs0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

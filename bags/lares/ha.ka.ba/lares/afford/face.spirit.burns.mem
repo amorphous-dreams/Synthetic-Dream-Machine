@@ -1,0 +1,108 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.spirit.burns`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "burn the residue a spirit's last distill mark covers, by a person's hand"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.spirit.burns", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.spirit.burns"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.spirit.burns"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.spirit.burns ~ otakiage ~ write the ash lines ahead, then burn
+
+`lares spirit otakiage <pet>` runs on a person's hand alone. It lists the spirit's residue and carries, holds what the last distill mark leaves uncovered, a carry a standing carry names as parent, and anything a link or a mention still reaches, writes the ash lines for the rest to the month's ledger first, then burns them. The card stays. A re-run completes a burn that stopped halfway.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ burn
+
+```memetic-wikitext
+<<has entity=`example` name=`burn` params=`pet/lares-alpha ~ burn what the distill mark covers`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face · pet
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`pet` params=`takes/pet-name needs/required seat/1 as/<pet> ~ the spirit's pet name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand ~ the door reads the process chain; a seat's run refuses`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ spirit-pet-malformed · hand-act-only · hand-unattested · spirit-ashes-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`spirit-pet-malformed` params=`cure/[[face.spirit.burns pet/lares-alpha]] ~ the word reads as no pet name`>>
+<<has entity=`refusal` name=`hand-act-only` params=`~ an AI seat ran a hand's act; a person runs the line`>>
+<<has entity=`refusal` name=`hand-unattested` params=`~ nothing attests the branch as a hand`>>
+<<has entity=`refusal` name=`spirit-ashes-refused` params=`~ the ash ledger refused the append; nothing burned`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ burned
+
+```memetic-wikitext
+<<has entity=`band` name=`burned` params=`exit/0 fields/[[pet uri kept burned held ledger]] ~ what burned, what holds and why, the ledger the lines landed in`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares spirit otakiage
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares spirit otakiage]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · familiar-spirit
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/familiar-spirit`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6zy0wQRKXjNhSw6XSpotcBJvw9NHpeLxofWnrQhVgCM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,89 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.fleet.gathers`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "name the fleet join's five acts; bare, the group refuses"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.fleet.gathers", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.fleet.gathers"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.fleet.gathers"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.fleet.gathers ~ the fleet join group, and the act each line names
+
+`lares fleet join` gathers the five acts by which one face's fleet takes a new vessel of the same human, by carried files: `offer` (the face's vessel offers), `request` (the new vessel asks), `answer` (the face answers), `land` (the new vessel lands what it carried) and `abandon` (either side drops the join). Bare, the group names no act and refuses with this account, exit 2; an unknown act refuses the same way, naming the word.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ none
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ names the acts and refuses; nothing moves`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.fleet.offers]] ~ the group names no act, or an act it does not answer; each of offer · request · answer · land · abandon holds its own carrier`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ refused
+
+```memetic-wikitext
+<<has entity=`band` name=`refused` params=`exit/2 ~ the account of the five acts`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares fleet join
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares fleet join]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Nl5E2CIBAvN7QQLjhWeD-NerCWTyR81gtxAKBh5HSXw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

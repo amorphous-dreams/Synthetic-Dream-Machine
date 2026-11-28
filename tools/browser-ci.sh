@@ -12,7 +12,7 @@
 #                                           against the standing hearth); prints the offer JSON alone
 #   browser-ci.sh join answer <request>     pipe a host-side request file into the node and `lares fleet join answer` it;
 #                                           prints the answer JSON alone. BROWSER_CI_SYNC_URL, when set, rides as --sync-url
-#   browser-ci.sh bag <name>                stand a writable scratch bag (`lares act CREATE --bag … --yes`); prints its URI.
+#   browser-ci.sh bag <name>                stand a writable scratch bag (`lares act lar:///carriage.bag.creates bag=… yes=true`); prints its URI.
 #                                           A bare name becomes lar:///ha.ka.ba/bags/<name>; a lar: URI passes through
 #   browser-ci.sh ingest <path>             copy a repo carrier (bags/<bag>/<w.w.w>/…) into the scratch workspace volume and
 #                                           `lares ingest --source … --to <bag uri> --apply --yes`
@@ -20,7 +20,7 @@
 #   browser-ci.sh recipe add <bag-uri>      ensure the catalog recipe exists, then add the bag to the wiki the browser mounts
 #   browser-ci.sh recipe remove <bag-uri>   `wiki remove-bag` — the swarm's negative control
 #   browser-ci.sh get <meme-uri> [--bag <slug> | --recipe <slug>]
-#                                           `lares get title=<meme-uri> mu=assert`, JSON on stdout (the text rides in data.meme.text). Default reads
+#                                           `lares get title=<meme-uri> aperture=arc`, JSON on stdout (the text rides in data.meme.text). Default reads
 #                                           AS the mounted wiki (`--recipe <slug>`, crossing as recipe=<slug>)
 #   browser-ci.sh info                      one JSON object for the host QA driver: origin (qa and host views), relay URL,
 #                                           gate public key (the node's `[lararium] gate key:` boot line), the founding
@@ -191,7 +191,7 @@ case "$verb" in
   bag)
     [ "$#" -eq 1 ] || die "bag wants one name"
     uri=$(bag_uri "$1")
-    out=$(lares act CREATE --bag "$uri" --yes)
+    out=$(lares act lar:///carriage.bag.creates bag="$uri" yes=true)
     ok_or_die "$out"
     printf '%s\n' "$out" >&2
     printf '%s\n' "$uri" ;;
@@ -243,7 +243,7 @@ case "$verb" in
       --bag|--recipe) [ "$#" -eq 2 ] || die "get takes one --bag or --recipe slug" ;;
       *) die "get takes --bag <slug> or --recipe <slug>" ;;
     esac
-    json_verb get "title=$uri" "${1#--}=$2" mu=assert --json ;;
+    json_verb get "title=$uri" "${1#--}=$2" aperture=arc --json ;;
   info)
     slug=$(wiki_slug)
     # The runner shares the node's network namespace, so its origin names the node by localhost.

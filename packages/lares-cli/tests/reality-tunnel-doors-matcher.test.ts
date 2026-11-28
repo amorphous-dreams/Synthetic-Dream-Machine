@@ -141,7 +141,7 @@ const BASH: ReadonlyArray<readonly [string, Verdict]> = [
   ["lares vessel stand --foreground", "allow"],
   ["lares vessel roster", "allow"],
   ["lares up", "allow"],
-  ["lares get title=lar:///ha.ka.ba/lararium/mesh/founding-runbook mu=assert", "allow"],
+  ["lares get title=lar:///ha.ka.ba/lararium/mesh/founding-runbook aperture=arc", "allow"],
   ["lares meme check bags/lares/ha.ka.ba/lares/cli/reality-tunnel.mem", "allow"],
   // The CLI reads its command from the first word, so a flag there names an unknown command and runs nothing.
   ["lares --json reset", "allow"],
@@ -157,7 +157,7 @@ describe("the doors' permission lists, through a model of Claude's matcher", () 
     expect(ruleMatches("Bash(lares:*)", "Bash", "laresx home")).toBe(false);
     expect(ruleMatches("Bash(lares home *undo*)", "Bash", "lares home undo")).toBe(true);
     expect(ruleMatches("Bash(lares home *undo*)", "Bash", "lares repo undo")).toBe(false);
-    expect(ruleMatches("mcp__lares__*", "mcp__lares__tiddler_get")).toBe(true);
+    expect(ruleMatches("mcp__lares__*", "mcp__lares__get")).toBe(true);
     expect(ruleMatches("mcp__lares__*", "mcp__other__x")).toBe(false);
     const lists = { allow: ["Bash(a:*)"], ask: ["Bash(a b*)"], deny: ["Bash(a b c*)"] };
     expect(verdict(lists, "Bash", "a")).toBe("allow");
@@ -172,8 +172,8 @@ describe("the doors' permission lists, through a model of Claude's matcher", () 
   });
 
   it("the MCP seat rides the allow, and no list reaches another server", () => {
-    expect(verdict(LISTS(), "mcp__lares__tiddler_get")).toBe("allow");
-    expect(verdict(LISTS(), "mcp__lares__tiddler_put")).toBe("allow");
+    expect(verdict(LISTS(), "mcp__lares__get")).toBe("allow");
+    expect(verdict(LISTS(), "mcp__lares__put")).toBe("allow");
     expect(verdict(LISTS(), "mcp__other__anything")).toBe("none");
   });
 

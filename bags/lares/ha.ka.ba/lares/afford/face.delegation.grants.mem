@@ -1,0 +1,115 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.delegation.grants`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "delegate a verb prefix to an agent under the face's root"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.delegation.grants", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.delegation.grants"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.delegation.grants"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.delegation.grants ~ delegate ~ the root grants an agent a prefix
+
+`lares intent delegate --agent <atom> --prefix <verb prefix> --policy <json>` signs a delegation under the face's root, bounded by `--as-of` and `--until` cites, with a fresh `--nonce` unless the line names one.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ delegate
+
+```memetic-wikitext
+<<has entity=`example` name=`delegate` params=`agent/<atom> prefix/wiki. policy/{} ~ grant an agent a prefix`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ agent · prefix · policy · as-of · until · nonce · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`agent` params=`takes/atom needs/required ~ the agent the grant names`>>
+<<has entity=`arg` name=`prefix` params=`takes/prefix needs/required ~ the verb prefix granted`>>
+<<has entity=`arg` name=`policy` params=`takes/json needs/required ~ the delegation policy as JSON`>>
+<<has entity=`arg` name=`as-of` params=`takes/cite ~ the grant stands from this cite`>>
+<<has entity=`arg` name=`until` params=`takes/cite ~ the grant stands until this cite`>>
+<<has entity=`arg` name=`nonce` params=`takes/hex ~ the grant's nonce`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the face whose intent plane this reads or writes, a whole persona index from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ root
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`root` params=`who/seat-or-hand key/face-root ~ a ward act: the face's root seed signs once and zero-fills; a seat without the route asks the root's hearth`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · face-malformed · face-not-held · delegation-shape · delegation-cite-malformed · root-absent · root-rotated
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ an unknown sub-verb, or no sub-verb named`>>
+<<has entity=`refusal` name=`face-malformed` params=`~ --face names a whole persona index from 0`>>
+<<has entity=`refusal` name=`face-not-held` params=`~ this vessel holds no such face`>>
+<<has entity=`refusal` name=`delegation-shape` params=`~ name agent, prefix and a JSON policy`>>
+<<has entity=`refusal` name=`delegation-cite-malformed` params=`~ a cite reads malformed`>>
+<<has entity=`refusal` name=`root-absent` params=`~ this vessel holds no root`>>
+<<has entity=`refusal` name=`root-rotated` params=`~ the root rotated past this seed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ cid
+
+```memetic-wikitext
+<<has entity=`band` name=`cid` params=`exit/0 ~ the signed entry's cid prints`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares intent delegate
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares intent delegate]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · face-intent-plane
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZcCwUfshb_ZIKmYjuBIweAAQJ5pcdqE3EgqZsgAhcBo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

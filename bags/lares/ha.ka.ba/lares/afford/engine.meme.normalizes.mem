@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.meme.normalizes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "re-frame and re-stamp named carriers' block checks in place"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.meme.normalizes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.meme.normalizes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.meme.normalizes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.meme.normalizes ~ the normalize law, sealed to disk
+
+`lares meme normalize <file.mem…>` runs the frame law over each named carrier, re-frames what drifted and re-stamps its block check over the body it follows, writing the result in place. `--grammar` also applies the grammar-authority clauses (authored bytes, such as a call site's `:` against `=`); without it those clauses stand proposed and move no byte. It refuses a glob sweep and takes no `--format`; it names every dirty carrier nobody named and carries on, so one hand never seals another hand's half-finished work unseen. Local, no daemon.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ normalize · grammar
+
+```memetic-wikitext
+<<has entity=`example` name=`normalize` params=`files/draft.mem ~ re-frame and re-stamp one carrier`>>
+<<has entity=`example` name=`grammar` params=`files/draft.mem grammar/true ~ apply the grammar clauses too`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ files · grammar
+
+```memetic-wikitext
+<<has entity=`arg` name=`files` params=`takes/host-paths needs/required seat/1 as/<file.mem…> ~ the carriers to read, every word past the verb`>>
+<<has entity=`arg` name=`grammar` params=`~ apply the grammar-authority clauses, not only propose them`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ writes the named host files; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.meme.normalizes files/draft.mem]] ~ no carrier named, an unreadable file, or --format beside normalize`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ canonical
+
+```memetic-wikitext
+<<has entity=`band` name=`canonical` params=`exit/0 ~ every named carrier stands canonical, the drifted ones re-stamped and named`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares meme normalize
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares meme normalize]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · meme
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Pe3dRMsERMMYcZm8BcerrtfD_oZxGFGQa5Dqzks7_n4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

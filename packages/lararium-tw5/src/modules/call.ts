@@ -28,15 +28,21 @@ module-type: startup
  * macro-call parser in the VM (`callOfSigil`), and every cure renders as a call sigil a reader runs as written (`cureCall`), the
  * triple quote carrying any value that holds a substitution mark (`sigilQuote` in `affordance-rows`).
  *
- * MU SETS THE DEPTH (landing 6, `modules/mu.ts`): a `mu` param (a glyph or its word) reads to a carry, meets the cells the
- * carrier's `#/takes` tables, and rides the plan as its canonical carry for the seat to turn into its reactor's args; no `mu`
- * keeps the read gradient. A conflict carry answers its first tool and names the second as the next call (`mu.then`); a carry
- * outside the table refuses `mu-cell-empty` with the nearest cell as a cure sigil.
+ * TWO DIALS (landing 6, re-cut by the keyword head to the boot seed's own values): `mu` names the LENS (`modules/mu.ts`: a
+ * tool-carry, `?0` `*!` `00`, a lone glyph or the seed's word reading pono), meets the cells the carrier's `#/takes` tables,
+ * and rides the plan as its canonical carry for the seat to turn into its reactor's args; Rest (`00`) needs no cell. A
+ * conflict carry answers its first tool and names the second as the next call (`mu.then`); a carry outside the table refuses
+ * `mu-cell-empty` with the nearest cell as a cure sigil. `aperture` names the RANGE (`modules/aperture.ts`: `N/rank`, the
+ * rank or the number) and rides the plan as its rank: the card at `measure`, the whole at `arc`. A carrier's `default/` rows
+ * seat each dial's default (reads `00`, writes `?0`; the bare door `beat`); every answer echoes the carry and the `N/rank` it
+ * read, a defaulted Rest left silent.
  *
  * DRY PREVIEWS EVERY WRITE AND ACT (landing 7): a carry holding `_` reaches a seat that walks its door's law to the last step
  * and lands nothing (`CallSeat.dry`), and the answer carries the carrier's seat hints (`hints`: its `#/gate` rows and any
- * `signs` row). A seat that walks no dry path, or a door the host runs, refuses the dry carry `mu-cell-empty` and names the
- * plain call (`dryUnwalked`), so a preview never lands as a write, whatever a layer above tables.
+ * `signs` row). A registry seat that walks no dry path refuses the dry carry `mu-cell-empty` and names the plain call
+ * (`dryUnwalked`); a host or seat door takes the carry only where its row names `dry/walks`, and the door's own code decides
+ * past that (the terminal's `HostDoor.dry`, the seat's `SEAT_DRY`), refusing `mu-cell-empty` where it walks none. So a preview
+ * never lands as a write, whatever a layer above tables.
  *
  * THE PACK STANDS AS THE FLOOR RUNG (`floorReaderOf`): where the live stack holds no record for a title the plan reads, the
  * baked affordance pack's record answers in its place, the lowest layer beneath the stack's own cascade, as the oracle's loop
@@ -45,6 +51,19 @@ module-type: startup
  *
  * In the VM the call dispatches through `$tw.lares.callDoor`, the host's seat of the registry; where no host seats one, the
  * call answers its plan (`handler/host`, the bound params), so a reader sees what would run.
+ *
+ * WHO RUNS THE DOOR (landings 9 and 11): a skin row's `handler/` names it per surface. `handler/host` (a terminal's door, which
+ * reads host files or asks y/N) and `handler/seat` (an act whose handler rests in the MCP seat's own process) answer the bound
+ * params for that host or seat to run; a row naming neither reaches the registry. The call's own surface row decides, and a
+ * surface with no row of its own takes `handler/host` where any row names it. A host door that walks a dry path says so on its
+ * row (`dry/walks`), and only then does the plan carry a `_` to it; the row is testimony, never the gate. Whether a host or seat
+ * door previews is a fact of its own code: the terminal's door (`HostDoor.dry`) and the seat (`SEAT_DRY`) refuse a `_` carry
+ * `mu-cell-empty` at any door whose code walks none, as `runPlan` reads `CallSeat.dry` for the registry.
+ *
+ * THE MACHINA'S VOICE (landing 21): every answer's human line and every call refusal render through Iris-Sprite's templates
+ * (`lar:///ha.ka.ba/lares/spirit/iris-sprite`, `#/answer/template` and `#/refusal/template`), read through the caller's stack
+ * like any record, so a layer above canon re-shapes the voice by seating a slot; the baked pack carries canon's templates as the
+ * floor. No answer prints her name.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/affordance
  */
@@ -56,6 +75,7 @@ import { AFFORDANCE_TAG, AFFORD_SURFACES, type AffordSurface, type HasRow, addre
 import { argOnSurface, carrierOf, routeOfCall, routesOf, seatHintRows, skinRows, takesRows, type AffordRoutes, type CarrierView, type TextOf } from "../affordance-read.js";
 import { param } from "../has-line.js";
 import { isDryCarry, isMuFault, lookupMu, muCellsOf, muWordsOf, readMu, type MuFault, type MuReading } from "./mu.js";
+import { apertureWords, isApertureFault, readAperture, type Aperture } from "./aperture.js";
 
 export const name        = "lararium-call";
 export const after       = ["startup"];
@@ -82,10 +102,20 @@ export interface CallPlan {
   readonly carrier: string;
   readonly surface: AffordSurface;
   readonly params: Readonly<Record<string, unknown>>;
-  /** True where a skin row names `handler/host`: the host (the CLI or the seat) runs the door, never the registry. */
+  /** True where a skin row names `handler/host` or `handler/seat`: the host (the CLI) or the seat runs the door, never the registry. */
   readonly host: boolean;
-  /** The depth a `mu` param asked and the cell that answers it (landing 6); absent where the call names no `mu`. */
+  /** True where the call's own surface row names `handler/seat`: the MCP seat's own process runs the act (fork 10). */
+  readonly seat?: boolean | undefined;
+  /** True where the host or seat door names `dry/walks`: a `_` carry reaches it, and it lands nothing. */
+  readonly dryWalks?: boolean | undefined;
+  /** The lens a `mu` param asked and the cell that answers it (landing 6); absent where the call names no `mu`. */
   readonly mu?: MuCall | undefined;
+  /** The range an `aperture` param asked, read to its band (the keyword head); absent where the call names none. */
+  readonly aperture?: Aperture | undefined;
+  /** True where the `mu` came from a carrier's `default/` row rather than the call. */
+  readonly muDefaulted?: boolean | undefined;
+  /** The action tiddler a skin row names (`acts/<title>`, landing 13): the carrier brings its own act. */
+  readonly act?: string | undefined;
 }
 
 /** One seat hint a carrier tables: a `gate` row (who may ask, the ocap the door checks) or a `signs` row. */
@@ -100,8 +130,12 @@ export interface MuCall extends MuReading {
 
 /** A refusal the call itself answers (before any reactor): its code leads the message, and `cure` renders a runnable call. */
 export class CallRefusal extends VerbRefusal {
-  constructor(reason: string, message: string, readonly cure?: string) {
-    super(reason, cure ? `${reason}: ${message}; cure: ${cure}` : `${reason}: ${message}`);
+  /** What stands in the way, one line, apart from the code and the cure. */
+  readonly detail: string;
+  /** `line` stands for the whole message where a voice rendered it (landing 21); absent, the code, the detail and the cure join. */
+  constructor(reason: string, message: string, readonly cure?: string, line?: string) {
+    super(reason, line ?? (cure ? `${reason}: ${message}; cure: ${cure}` : `${reason}: ${message}`));
+    this.detail = message;
   }
 }
 
@@ -330,9 +364,38 @@ export function bindCall(reader: CallReader, address: string, carrier: string, w
   return bound;
 }
 
+/**
+ * THE ACT A CARRIER BRINGS (landing 13): the action tiddler a skin row of the carrier names (`acts/<title>`), the tw5 row's
+ * first, else any row's; null where none names one. The registry's `carrier-act` runs it live on the engine.
+ */
+export function carrierActOf(reader: CallReader, carrier: string): string | null {
+  const rows = skinRows(reader.textOf, carrier).filter((r) => (r.params["acts"] ?? "").trim() !== "");
+  const row = rows.find((r) => r.name === "tw5") ?? rows[0];
+  return row ? (row.params["acts"] ?? "").trim() : null;
+}
+
 /** True where a skin row of the carrier names `handler/host`: the host runs the door, outside the registry. */
 export function hostHandled(reader: CallReader, carrier: string): boolean {
   return skinRows(reader.textOf, carrier).some((r) => r.params["handler"] === "host");
+}
+
+/**
+ * WHO RUNS A CARRIER'S DOOR ON ONE SURFACE: the surface's own skin row names it (`handler/host` or `handler/seat`); a row naming
+ * neither, or no row at all, takes `host` where any row of the carrier names `handler/host`, else the registry (null).
+ */
+export function handlerOf(reader: CallReader, carrier: string, surface: AffordSurface): "host" | "seat" | null {
+  const rows = skinRows(reader.textOf, carrier);
+  const named = rows.find((r) => r.name === surface)?.params["handler"];
+  if (named === "host" || named === "seat") return named;
+  return rows.some((r) => r.params["handler"] === "host") ? "host" : null;
+}
+
+/** True where the door that runs the carrier on this surface says it walks a dry path (`dry/walks` on its skin row). */
+export function walksDry(reader: CallReader, carrier: string, surface: AffordSurface): boolean {
+  const rows = skinRows(reader.textOf, carrier);
+  const own = rows.find((r) => r.name === surface);
+  const door = own?.params["handler"] === "host" || own?.params["handler"] === "seat" ? own : rows.find((r) => r.params["handler"] === "host");
+  return door?.params["dry"] === "walks";
 }
 
 /**
@@ -366,14 +429,51 @@ export function planCall(reader: CallReader, word: string, params: Readonly<Reco
   const { address, carrier } = resolveCall(reader, word, params);
   const bound = bindCall(reader, address, carrier, word, params, surface);
   const mu = bound["mu"] === undefined ? undefined : muOfCall(reader, carrier, word, bound);
-  return { address, carrier, surface, params: mu === undefined ? bound : { ...bound, mu: mu.carry }, host: hostHandled(reader, carrier), ...(mu !== undefined ? { mu } : {}) };
+  const aperture = bound["aperture"] === undefined ? undefined : apertureOfCall(word, bound);
+  const handler = handlerOf(reader, carrier, surface);
+  const act = carrierActOf(reader, carrier);
+  const shaped: Record<string, unknown> = { ...bound };
+  // REST IS THE GROUND: a `00` carry leaves the bound params, so no seat or host door ever reads a lens it never asked. A door
+  // that tables its own `00` cell (the msg door's retract, the watch's unask: the seed's Arcana, unask-the-question) answers an
+  // asked Rest itself, so there the carry rides on.
+  const ownRest = mu !== undefined && mu.carry === "00" && params["mu"] !== undefined && muCellsOf(takesCells(reader, carrier)).some((c) => c.carry === "00");
+  if (mu !== undefined && (mu.carry !== "00" || ownRest)) shaped["mu"] = mu.carry;
+  else delete shaped["mu"];
+  // THE RANGE RIDES AS ASKED: a caller who named its number keeps it (`16/arc`, the seed's N/rank: a msg's panel lands it whole);
+  // a lone rank word rides as the rank. A door that reads a band takes the rank after the slash.
+  if (aperture !== undefined) shaped["aperture"] = /\d/.test(aperture.asked) ? `${aperture.n}/${aperture.rank}` : aperture.rank;
+  return {
+    address, carrier, surface, params: shaped,
+    host: handler !== null, seat: handler === "seat", dryWalks: handler !== null && walksDry(reader, carrier, surface),
+    ...(mu !== undefined ? { mu, muDefaulted: params["mu"] === undefined } : {}),
+    ...(aperture !== undefined ? { aperture } : {}),
+    ...(act !== null ? { act } : {}),
+  };
 }
 
-/** An answer beside the depth that shaped it: `mu: {asked, carry, axis, next?}`, a conflict's second tool named as the next call. */
+/** THE RANGE A CALL ASKS (the keyword head): the bound `aperture` read to its band; a fault refuses with the call's cure. */
+export function apertureOfCall(word: string, bound: Readonly<Record<string, unknown>>): Aperture {
+  const read = readAperture(bound["aperture"]);
+  if (!isApertureFault(read)) return read;
+  const { aperture: _drop, ...plain } = bound;
+  throw new CallRefusal(read.reason, read.message, cureCall(word, read.cure === null ? plain : { ...plain, aperture: read.cure }));
+}
+
+/**
+ * An answer beside the dials that shaped it: `mu: {asked, carry, words, axis, next?}` (a conflict's second tool named as the next
+ * call) and `aperture: {asked, n, rank, words}`. A Rest the carrier's default seated stays silent: the ground needs no echo.
+ */
 export function muAnswer(answer: Record<string, unknown>, plan: CallPlan): Record<string, unknown> {
-  if (plan.mu === undefined) return answer;
-  const { asked, carry, axis, next, hints } = plan.mu;
-  return { ...answer, mu: { asked, carry, words: muWordsOf(carry), axis, ...(next !== null ? { next } : {}) }, ...(hints !== undefined ? { hints } : {}) };
+  let out = answer;
+  if (plan.mu !== undefined && !(plan.muDefaulted === true && plan.mu.carry === "00")) {
+    const { asked, carry, axis, next, hints } = plan.mu;
+    out = { ...out, mu: { asked, carry, words: muWordsOf(carry), axis, ...(next !== null ? { next } : {}) }, ...(hints !== undefined ? { hints } : {}) };
+  }
+  if (plan.aperture !== undefined) {
+    const { asked, n, rank } = plan.aperture;
+    out = { ...out, aperture: { asked, n, rank, words: apertureWords(plan.aperture) } };
+  }
+  return out;
 }
 
 /** The camelCase a reactor reads for a neutral param (`max-bytes` → `maxBytes`). */
@@ -402,7 +502,7 @@ export const isDryPlan = (plan: CallPlan): boolean => plan.mu !== undefined && i
  */
 export function dryUnwalked(plan: CallPlan): CallRefusal {
   const { mu: _drop, ...plain } = plan.params;
-  const carry = plan.mu?.carry ?? "_";
+  const carry = plan.mu?.carry ?? "_0";
   return new CallRefusal("mu-cell-empty", `${bare(plan.address)} walks no dry path, so a ${carry} (${muWordsOf(carry)}) call lands nothing; the plain call lands the act`, cureCall(plan.address, plain));
 }
 
@@ -437,11 +537,66 @@ export function stampAnswer(answer: Record<string, unknown>, address: string, re
   return { ...answer, has: stamped, carrier: receipt };
 }
 
-/** The answer a host-run door gives: the plan itself, so the host runs the door with the bound params. */
+/** The answer a host-run (or seat-run) door gives: the plan itself, so that host runs the door with the bound params. */
 export function hostAnswer(plan: CallPlan, receipt: CallReceipt): Record<string, unknown> {
-  // THE HOST RUNS ITS DOOR WITH THE BOUND PARAMS and walks no dry path: a dry carry refuses here, before the host sees a plan.
-  if (isDryPlan(plan)) throw dryUnwalked(plan);
-  return muAnswer(stampAnswer({ handler: "host", address: plan.address, params: plan.params }, plan.address, receipt), plan);
+  // THE HOST RUNS ITS DOOR WITH THE BOUND PARAMS: a dry carry reaches only a door whose row names `dry/walks`, and refuses here
+  // otherwise, before the host sees a plan.
+  if (isDryPlan(plan) && plan.dryWalks !== true) throw dryUnwalked(plan);
+  return muAnswer(stampAnswer({ handler: plan.seat === true ? "seat" : "host", address: plan.address, params: plan.params }, plan.address, receipt), plan);
+}
+
+/** Iris-Sprite's shrine: the machina's deterministic voice, its templates read through the caller's stack (landing 21). */
+export const IRIS_SHRINE = "lar:///ha.ka.ba/lares/spirit/iris-sprite";
+
+/** The two lines her templates shape: an answer's human line and a call refusal. */
+export type VoiceSlot = "answer" | "refusal";
+export const VOICE_SLOTS: readonly VoiceSlot[] = ["answer", "refusal"];
+
+/** The slot that carries one template. */
+export const voiceTitle = (slot: VoiceSlot): string => `${IRIS_SHRINE}#/${slot}/template`;
+
+/** The template a slot carries: the body of its first fenced block whose info string names `template`, or null. */
+export function templateOf(text: string | undefined): string | null {
+  if (text === undefined) return null;
+  const m = /^(`{3,})[^\n`]*\btemplate\b[^\n]*\n([\s\S]*?)\n\1[ \t]*$/m.exec(text);
+  return m === null ? null : m[2]!;
+}
+
+/** Renders one wikitext template to plain text with its variables (`wiki.renderText("text/plain", …)` in the VM). */
+export type VoiceRender = (template: string, variables: Readonly<Record<string, string>>) => string;
+
+/** Where the voice reads: the engine's renderer, and the floor a sleeping vessel answers from (the pack's baked templates). */
+export interface CallVoice {
+  readonly render: VoiceRender;
+  readonly floor?: (() => Promise<Partial<Record<VoiceSlot, string>>>) | undefined;
+}
+
+/**
+ * ONE LINE IN HER VOICE: the template the caller's stack seats for the slot (else the floor's), rendered with the variables;
+ * null where neither stands or the render throws, so the plain words stand.
+ */
+export async function voiceLine(reader: CallReader, voice: CallVoice | undefined, slot: VoiceSlot, variables: Readonly<Record<string, string>>): Promise<string | null> {
+  if (voice === undefined) return null;
+  let template = templateOf(reader.textOf(voiceTitle(slot)));
+  if (template === null && voice.floor !== undefined) {
+    try { template = (await voice.floor())[slot] ?? null; } catch { template = null; }
+  }
+  if (template === null) return null;
+  try { return voice.render(template, variables).trim(); } catch { return null; }
+}
+
+/** The answer with its human line in her voice (`human`), where her template renders one. */
+export async function voicedAnswer(answer: Record<string, unknown>, reader: CallReader, voice: CallVoice | undefined): Promise<Record<string, unknown>> {
+  const has = typeof answer["has"] === "string" ? answer["has"] : "";
+  const line = await voiceLine(reader, voice, "answer", { has });
+  return line === null || line === "" ? answer : { ...answer, human: line };
+}
+
+/** A call refusal in her voice: the code, what stands in the way, the cure; any other fault passes untouched. */
+export async function voicedRefusal(fault: unknown, reader: CallReader, voice: CallVoice | undefined): Promise<unknown> {
+  if (!(fault instanceof CallRefusal)) return fault;
+  const line = await voiceLine(reader, voice, "refusal", { reason: fault.reason, detail: fault.detail, cure: fault.cure ?? "" });
+  return line === null || line === "" ? fault : new CallRefusal(fault.reason, fault.detail, fault.cure, line);
 }
 
 /** The refusal an address with no reactor and no host door answers. */

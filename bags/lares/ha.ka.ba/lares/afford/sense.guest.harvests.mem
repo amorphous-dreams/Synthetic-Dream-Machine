@@ -1,0 +1,106 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.guest.harvests`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "mine every harness transcript into the guest, vanilla"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.guest.harvests", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.guest.harvests"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.guest.harvests"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.guest.harvests ~ the comparator built through the vendored miner's own path
+
+`lares mempalace harvest` builds the guest comparator from every harness transcript through the plain vendored miner (`mine --mode convos --wing <wing>`), carrying no Lares vocabulary. The discovery and staging live in python; this leg shells the lane and renders its report. `--dry-run` previews; `--wing` and `--project` narrow it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ harvest · preview
+
+```memetic-wikitext
+<<has entity=`example` name=`harvest` params=`~ mine every transcript surface`>>
+<<has entity=`example` name=`preview` params=`dry-run/true wing/claude ~ preview one wing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ dry-run · wing · project
+
+```memetic-wikitext
+<<has entity=`arg` name=`dry-run` params=`~ preview the harvest and write nothing`>>
+<<has entity=`arg` name=`wing` params=`takes/name ~ one wing alone`>>
+<<has entity=`arg` name=`project` params=`takes/name ~ one project alone`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/hand ~ writes the guest palace on this host; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`error` params=`cure/[[sense.guest.harvests dry-run/true]] ~ the python lane failed; check the interpreter and guest_harvest.py`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ harvested
+
+```memetic-wikitext
+<<has entity=`band` name=`harvested` params=`exit/0 ~ the lane's report`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares mempalace harvest
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares mempalace harvest]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · sensorium-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;groZAdWWQB8A-M3OiX1xZEgDMLyAn_UFkN91nUWtxqg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

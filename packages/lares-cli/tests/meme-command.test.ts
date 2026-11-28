@@ -97,7 +97,7 @@ describe("the meme door's argument law, no daemon", () => {
     stderr.mockRestore();
     expect(h.calls).toEqual([]);
   });
-  test("ONE DOOR READS: `lares get title=<uri> mu=assert` reads a meme; the meme door names no get", async () => {
+  test("ONE DOOR READS: `lares get title=<uri> aperture=arc` reads a meme; the meme door names no get", async () => {
     const stderr = vi.spyOn(console, "error").mockImplementation(() => {});
     expect(await cmdMeme(memeArgs(["get", "lar:///t/x"], { recipe: "default" }, { json: false }))).toBe(2);
     expect(stderr.mock.calls.flat().join(" ")).toMatch(/unknown sub-verb "get"/);
@@ -358,7 +358,7 @@ describe("lares meme normalize — the write seat, local, no daemon", () => {
 describe("projectPlan — the seat law, no daemon", () => {
   test("a target off the list refuses; a missing --to refuses; --recipe with --bag refuses", () => {
     expect(() => projectPlan(memeArgs(["project", "x.mem"], { to: "pdf" }))).toThrow(/--to/);
-    // The carrier itself reads through the one door (`lares get title=<uri> mu=assert`): `mem` left the targets.
+    // The carrier itself reads through the one door (`lares get title=<uri> aperture=arc`): `mem` left the targets.
     expect(() => projectPlan(memeArgs(["project", "lar:///t/x"], { to: "mem", recipe: "default" }))).toThrow(/--to names the target, one of md · html · tid · json/);
     expect(() => projectPlan(memeArgs(["project", "x.mem"]))).toThrow(/--to/);
     expect(() => projectPlan(memeArgs(["project", "lar:///t/x"], { to: "html", recipe: "sdm", bag: "sdm" }))).toThrow(/no-container/);

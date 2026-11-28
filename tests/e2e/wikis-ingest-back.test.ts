@@ -59,7 +59,7 @@ beforeAll(async () => {
   // Each wiki projects its own tree under `wikis/<slug>/` (the daemon's own rides `faces/<pet name>/wiki/`, in the face's root), so the
   // scan back into `wikis/lares/working` reads `wikis/lares/` alone — a sibling wiki's tree is never its source.
   wikisDir = wikiWorkbenchDir(lar.root, "lares");
-  const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", WORKING, "--in-wiki", "--yes", "--json"]);
+  const r = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, `to=${WORKING}`, "in-wiki=true", "yes=true", "--json"]);
   if (r.json?.["ok"] !== true) throw new Error(`seed LOAD --to working failed: ${JSON.stringify(r.json)}`);
   projected = await awaitWikisCarrier();
   // The file stands; the island looks at the disk and drains its queue before any scan reads it.

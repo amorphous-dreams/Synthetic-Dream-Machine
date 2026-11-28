@@ -19,7 +19,7 @@ uri-path    = "ha.ka.ba/lararium/mesh/hearth-roster"
 
 A session wakes into a house others already work in. The roster tells it who: the face each vessel wears and who holds that slot, which seats stand here and which spoke last from afar, which work a seat has claimed, and which asks still wait on an answer or an outcome. The operator reads it first; a fresh seat reads it second. The operator's own seat stands on it as an equal row.
 
-It answers at three doors with one body: `lares vessel roster` (`--json` carries the body whole), the MCP seat's `vessel_roster`, and the wake block "Lares hearth (who is home)", which caps it and skips quietly when no vessel answers.
+It answers at three doors with one body: `lares vessel roster` (`--json` carries the body whole), the MCP seat's `act(address="lar:///face.roster.reads")`, and the wake block "Lares hearth (who is home)", which caps it and skips quietly when no vessel answers.
 
 <<~/ahu>>
 
@@ -82,6 +82,6 @@ The roster frames its rows by provenance and weight (<<~ loulou uri=`lar:///ha.k
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_XGziMVlIxDyBrC1M-KyUJlc4nSSVa-ylXhiUURjb6U`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;azDPntH0VVI7IEt3SWIfa8B0Wmk6z689ceUtcq-EDqk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

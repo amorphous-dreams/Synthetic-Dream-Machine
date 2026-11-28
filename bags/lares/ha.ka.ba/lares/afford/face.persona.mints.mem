@@ -1,0 +1,114 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.persona.mints`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "mint or load a persona root at a handle index, with its private label"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.persona.mints", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.persona.mints"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.persona.mints"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.persona.mints ~ a persona root at one handle index
+
+`lares persona new <index> --name '<petname>'` mints a persona root at that handle index, or loads the one standing there, and keeps its private label. `--handle '<Handle>'` declares its outward name apart from the label; `--seat [--chair <label>]` stands it for a Kahu chair on this node, with a private chair label and no Handle needed; `--split-root` opts into the 2-of-3 recovery split. The index reads within the derivation's range and this vessel's slot ceiling (`LAR_PERSONA_SLOTS`); a herm mints no root, and a place with no face yet founds one first.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ new · seat · handle
+
+```memetic-wikitext
+<<has entity=`example` name=`new` params=`index/1 name/garden ~ mint a persona root at h1`>>
+<<has entity=`example` name=`seat` params=`index/1 name/garden seat/true chair/first-chair ~ stand it for a Kahu chair`>>
+<<has entity=`example` name=`handle` params=`index/1 name/garden handle/Gardener split-root/true ~ declare a Handle and split the root`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ index · name · handle · seat · chair · split-root
+
+```memetic-wikitext
+<<has entity=`arg` name=`index` params=`takes/handle-index needs/required seat/1 as/<index> ~ the face's handle index, a whole number from 0`>>
+<<has entity=`arg` name=`name` params=`takes/label needs/required ~ the private pet name`>>
+<<has entity=`arg` name=`handle` params=`takes/name ~ the outward Handle`>>
+<<has entity=`arg` name=`seat` params=`~ stand the face for a Kahu chair on this node`>>
+<<has entity=`arg` name=`chair` params=`takes/label ~ beside --seat, the private chair label`>>
+<<has entity=`arg` name=`split-root` params=`~ opt into the 2-of-3 recovery split`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/face-root ~ mints a root sealed on this vessel; a person runs it at their own terminal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · vessel-composing · vessel-silent · vessel-locked · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.persona.mints index/1 name/garden]] ~ no index, an index out of range or past the slot ceiling, no --name, --chair without --seat, a herm, or no face founded yet`>>
+<<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
+<<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
+<<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
+<<has entity=`refusal` name=`error` params=`~ the store refused; the message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ minted
+
+```memetic-wikitext
+<<has entity=`band` name=`minted` params=`exit/0 ~ the face's index, label, key and any Handle or seat claim`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares persona new
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares persona new]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · persona-policy
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qYnkAyb0DNCnQ3gCl7Few8H1ro6HJOrhW2EbMNz4-jk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

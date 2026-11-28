@@ -24,7 +24,9 @@
  *   ah        (true, Discord ⏿)     replace one slot (`--file <path|->` · `--text <words>`) or add one line (`--add <line>`),
  *                                   base-checked; only the waking slots (#/open, #/attention) hold a cap
  *   hum       (what remains after the fold, Confusion ◇)   measure each slot; `--fold <slot> --line <n>` moves one line to
- *                                   the ash ledger, and what stays reads as the card
+ *                                   the ash ledger, and what stays reads as the card; `--streams [--slot '#/x']` folds the
+ *                                   pet's settled stream entries into one line per stream (default `#/open`) and marks each
+ *                                   `ash-ready` for o-takiage, deleting none (comms-ux-enacts landing 17)
  *   hooili    (the carry, hoʻoili)  land a compaction summary as `hooili/<spirit-id>-<hash12>` with its lineage (`parent`,
  *                                   `record-base`, `depth`, `instance`); it writes nothing to the card and hands back the #/instances
  *                                   line (`<pet>#<instance8>`) the next instance files through `ah`
@@ -94,9 +96,11 @@ import { transcriptHandbacks, unreadWitness, witnessLine, witnessOf, witnessTall
 import { STACK_SLOT, capHolder, capLine, maskCardOf, profilesOf, sealedOf, spiritOf, stackBody, stackLine, stackOf, stackWrite } from "@lararium/mesh/spirit-stack";
 import { FOLD_OPERATOR, UNFOLD_RANKS, faceBound, narrowerRank, spiritCardOf, unfoldCall, unfoldRank, type UnfoldRank } from "@lararium/mesh/spirit-unfold";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
+import { ASH_READY, STREAM_STAGE, entryOf, settledOf, type StreamEntry } from "@lararium/tw5/stream-entries";
+import { parseTitleList } from "@lararium/mesh/carrier-form";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { COMPACTION_DISPLAY, COMPACTION_WORD } from "../spirit-words.js";
-import { closeEdge, hostLaunch, landMandate, mandateWake, summonInstance, type Launch, type SummonCtx } from "./spirit-summon.js";
+import { closeEdge, hostLaunch, landMandate, mandateWake, summonInstance, summonedStream, type Launch, type StreamLanding, type SummonCtx } from "./spirit-summon.js";
 import { emit, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { DoorUsage, guardDoor, runDoor, tryDoor, wordOf } from "./door-call.js";
@@ -268,10 +272,10 @@ const foldData = (f: Fold): Record<string, unknown> => ({
 /** No fold stands: the line names which of the three reasons, and the read that shows or cures it. */
 function unfoldedLine(f: Fold, uri: string): string {
   if (typeof f.unfolded === "object") {
-    return `The wiki's render door refused the fold (${redactedText(f.unfolded.refused).replace(/\s+/g, " ").slice(0, 240)}), so this read stands unfolded. Read the carrier itself: lares get title=${shq(uri)} recipe=${RECIPE} mu=assert`;
+    return `The wiki's render door refused the fold (${redactedText(f.unfolded.refused).replace(/\s+/g, " ").slice(0, 240)}), so this read stands unfolded. Read the carrier itself: lares get title=${shq(uri)} recipe=${RECIPE} aperture=arc`;
   }
   if (f.unfolded === "truncated") {
-    return `The fold ran past the render's ${FOLD_RENDER_BYTES}-byte ceiling even with every slot folded (truncated at the cap), so this read stands unfolded. Read the carrier by page: lares get title=${shq(uri)} recipe=${RECIPE} mu=assert`;
+    return `The fold ran past the render's ${FOLD_RENDER_BYTES}-byte ceiling even with every slot folded (truncated at the cap), so this read stands unfolded. Read the carrier by page: lares get title=${shq(uri)} recipe=${RECIPE} aperture=arc`;
   }
   return `This wiki's lares-lararium skin answered no ${FOLD_OPERATOR} (a house skin adopted before the fold holds none), so this read stands unfolded. Read whether the skin holds it: lares get filter='[[${FOLD_MODULE}]is[shadow]]' recipe=${RECIPE}`;
 }
@@ -303,7 +307,7 @@ async function casFields(args: ParsedArgs, label: string, uri: string, change: (
     });
     const decision = String(receipt["decision"] ?? "");
     if (decision === "put" || decision === "noop") return fields;
-    if (decision !== "conflict") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${uri}'s fields; read it: \`lares get title=${shq(uri)} mu=relate\``, 4);
+    if (decision !== "conflict") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${uri}'s fields; read it: \`lares get title=${shq(uri)} aperture=measure\``, 4);
   }
   throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: ${uri} kept moving under ${CAS_ROUNDS} reads, so its fields took nothing; run the act again once the record settles`, 4);
 }
@@ -491,17 +495,18 @@ async function echo(args: ParsedArgs, ctx: Ctx, pet: string, hash: string): Prom
 // ── the crossing ──────────────────────────────────────────────────────────────────────────────────────────────────────
 
 /** The seams a suite names: the hand reading (the house gate over this command's own branch), the clock, the launch cap and the edge door. */
-export interface SpiritSeams { readonly hand?: HandRead; readonly now?: () => Date; /** The host launch cap; a suite names a stub, so no test starts a model. */ readonly launch?: Launch; /** The door that closes a summons edge (see `EdgeClose`); the summons door's `closeEdge` where a suite names none. */ readonly edge?: EdgeClose }
-interface Ctx { readonly now: () => Date; readonly hand: HandRead; readonly launch: Launch; readonly edge: EdgeClose }
+export interface SpiritSeams { /** The stream a summons started this session under (`LARES_SUMMONED`); a suite names its own. */ readonly summoned?: () => string | null; readonly hand?: HandRead; readonly now?: () => Date; /** The host launch cap; a suite names a stub, so no test starts a model. */ readonly launch?: Launch; /** The door that closes a summons edge (see `EdgeClose`); the summons door's `closeEdge` where a suite names none. */ readonly edge?: EdgeClose }
+interface Ctx { readonly now: () => Date; readonly hand: HandRead; readonly launch: Launch; readonly edge: EdgeClose; readonly summoned: () => string | null }
 /** What the summons door borrows from this one: its door call (the answering face kept), the hand read, the clock, the launch cap. */
 const summonCtx = (args: ParsedArgs, ctx: Ctx): SummonCtx => ({
   door: (label, verb, verbArgs) => door(args, label, verb, verbArgs), face: () => answeredFace, hand: () => handHolds(ctx), now: ctx.now, launch: ctx.launch,
+  soft: (verb, verbArgs) => tryDoor(args, { verb, args: verbArgs }), summoned: ctx.summoned,
 });
 
 /** One hand-back as the edge door reads it: who hands back, the record that stands, and the mandate the line named (null: none). */
 export interface EdgeAsk { readonly pet: string; readonly instance: string; readonly tag: string; readonly record: string; readonly mandate: string | null }
 /** What a closed edge answers: its address, who offered it, whether this call named the record on it, and how its lane settled. */
-export interface EdgeClosed { readonly edge: string; readonly offerer: string; readonly decision: "put" | "standing"; readonly lane: "none" | "freed" | "unsettled"; readonly cure?: string }
+export interface EdgeClosed { readonly edge: string; readonly offerer: string; readonly decision: "put" | "standing"; readonly lane: "none" | "freed" | "unsettled"; readonly cure?: string; /** The hand-back's msg on the summoner's stream (landing 17); absent where the edge door names none. */ readonly join?: StreamLanding }
 /**
  * THE SUMMONS EDGE RIDES OPTIONAL. A hand-back's record stands on its own; an edge adds one more record that names it. The door
  * that keeps summons edges answers here: the edge it closed, or null where none names the instance. It refuses by its own codes.
@@ -828,7 +833,7 @@ async function mergeSlot(args: ParsedArgs, rec: Record_, slot: string, write: Sl
     if (decision === "put" || decision === "noop") return { ...receipt, bytes: bytesOf(body), was: bytesOf(first.body), digest: slotDigest(body), ...(clash ? { conflict: true } : {}) };
     if (decision !== "conflict") {
       const warnings = Array.isArray(receipt["warnings"]) ? (receipt["warnings"] as string[]) : [];
-      throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${rec.uri}${slot}${warnings[0] ? ` (${warnings[0]})` : ""}; read the record (\`lares get title=${rec.uri} mu=assert\`) before you true it again`, 4);
+      throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${rec.uri}${slot}${warnings[0] ? ` (${warnings[0]})` : ""}; read the record (\`lares get title=${rec.uri} aperture=arc\`) before you true it again`, 4);
     }
     const again = await readSlot(args, "ah", rec, slot);
     if (again === null) throw slotMissing(rec, slot);
@@ -847,7 +852,7 @@ async function foldLine(args: ParsedArgs, rec: Record_, slot: string, line: stri
     const receipt = await patchSlot(args, "hum", rec, slot, body, read.base);
     const decision = String(receipt["decision"] ?? "");
     if (decision === "put" || decision === "noop") return { ...receipt, bytes: bytesOf(body), was: bytesOf(read.body), digest: slotDigest(body) };
-    if (decision !== "conflict") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${rec.uri}${slot}; read the record (\`lares get title=${rec.uri} mu=assert\`) before you fold again`, 4);
+    if (decision !== "conflict") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${rec.uri}${slot}; read the record (\`lares get title=${rec.uri} aperture=arc\`) before you fold again`, 4);
   }
   throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: ${rec.uri}${slot} kept moving under ${CAS_ROUNDS} reads, so nothing folded; run the fold again once the record settles`, 4);
 }
@@ -925,8 +930,81 @@ async function burnToAshes(args: ParsedArgs, label: string, lines: readonly stri
   return ledger;
 }
 
+/** The fields a stream entry's listing reads in one filter call per page: the log graph's edges, its note, its tags. */
+const STREAM_FIELDS = ["title", "stream", "prev", "re", "to", "note", "tags"] as const;
+/** The most pages a stream listing walks; a graph past it reads partial, and a partial graph folds nothing. */
+const STREAM_PAGES = 256;
+/** The slot settled entries fold into where `--slot` names none: the shrine's open loops, which they close. */
+const STREAM_FOLD_SLOT = "#/open";
+
+/** Every stream entry the view holds, page by page; a listing that never ends refuses, since a partial graph misreads heads and seen. */
+async function streamRows(args: ParsedArgs): Promise<Row[]> {
+  const out: Row[] = [];
+  let after: string | null = null;
+  for (let page = 0; page < STREAM_PAGES; page++) {
+    const listed = await door(args, "hum", "wiki-filter", { recipe: RECIPE, filter: `[prefix[${STREAM_STAGE}]has[note]]`, fields: [...STREAM_FIELDS], ...(after === null ? {} : { after }) });
+    out.push(...rowsOf(listed));
+    after = typeof listed["next"] === "string" && listed["next"] !== "" ? listed["next"] : null;
+    if (after === null) return out;
+  }
+  throw new SpiritRefusal("spirit-streams-unread", `spirit-streams-unread: the stream stage ran past ${STREAM_PAGES} pages, and a graph read in part misreads its heads and what stands seen, so nothing folded; read it: \`lares get filter='[prefix[${STREAM_STAGE}]has[note]count[]]'\``, 4);
+}
+
+/**
+ * `hum <pet> --streams` — HUM FOLDS SETTLED ENTRIES INTO THE SHRINE (comms-ux-enacts landing 17). The pet's streams' entries
+ * that stand settled (`settledOf`: no stream's head, seen by their addressee, answered by no unseen entry), and not already
+ * marked, fold as one line per stream into `--slot` (default `#/open`) through the slot's own merge, so the waking caps and a
+ * sibling's write stand as for any `ah --add`. Only once the line lands does each entry take the `ash-ready` tag and a
+ * `folded` field naming the slot: marked for o-takiage, never deleted, and a second hum folds none of them again.
+ */
+async function humStreams(args: ParsedArgs, pet: string): Promise<number> {
+  const rec = (await resolveRecord(args, "hum", pet))!;
+  const slot = wordOf(args.options["slot"]) ?? STREAM_FOLD_SLOT;
+  const rows = await streamRows(args);
+  const byTitle = new Map(rows.map((row) => [row.title, row.fields] as const));
+  const entries = rows.map((row) => entryOf(row.title, row.fields)).filter((entry): entry is StreamEntry => entry !== null);
+  const tagsOf = (title: string): string[] => [...(parseTitleList(byTitle.get(title)?.["tags"] ?? "") ?? [])];
+  const settled = settledOf(entries.filter((entry) => !tagsOf(entry.title).includes(ASH_READY)), entries, pet);
+  if (settled.length === 0) {
+    emit(args, {
+      ok: true, data: { pet, uri: rec.uri, slot, settled: [], folded: [], lines: [] },
+      human: () => console.log(`lares spirit hum ${pet} --streams: no settled entry waits to fold (${entries.length} entries read); a stream's head, an unseen msg and an entry an unseen msg answers all stay`),
+    });
+    return 0;
+  }
+  // ONE LINE PER STREAM: its count, and its last settled entry (the one no other settled entry of the stream follows) with its note.
+  const held = new Set(settled);
+  const streams = [...new Set(settled.map((title) => entries.find((entry) => entry.title === title)!.stream))].sort();
+  const lines = streams.map((stream) => {
+    const mine = entries.filter((entry) => entry.stream === stream && held.has(entry.title));
+    const followed = new Set(mine.map((entry) => entry.prev).filter((prev): prev is string => prev !== null));
+    const last = mine.find((entry) => !followed.has(entry.title)) ?? mine[mine.length - 1]!;
+    const note = String(byTitle.get(last.title)?.["note"] ?? "");
+    return `* ${stream} · ${mine.length} settled through [[${last.title}]] · ${note}`;
+  });
+  crossingHolds(rec, wordOf(args.options["instance"]));
+  const receipt = await mergeSlot(args, rec, slot, { add: lines.join("\n") });
+  const folded: string[] = [];
+  const unmarked: string[] = [];
+  for (const title of settled) {
+    // The door's own tag patch adds the mark beside whatever tags the entry holds; the `folded` field names where its pattern went.
+    const marked = await door(args, "hum", "tiddler-put", { recipe: RECIPE, title, fields: { folded: `${rec.uri}${slot}` }, tagsAdd: [ASH_READY] });
+    (["put", "noop"].includes(String(marked["decision"] ?? "")) ? folded : unmarked).push(title);
+  }
+  emit(args, {
+    ok: true, data: { pet, uri: rec.uri, slot, settled, folded, unmarked, lines, ...receipt },
+    human: () => {
+      console.log(`folded ${settled.length} settled entr${settled.length === 1 ? "y" : "ies"} from ${streams.length} stream${streams.length === 1 ? "" : "s"} into ${rec.uri}${slot}`);
+      for (const line of lines) console.log(`  ${line}`);
+      console.log(`  marked ${ASH_READY} for o-takiage: ${folded.length}${unmarked.length === 0 ? "" : `; ${unmarked.length} refused the mark (a re-run marks them): ${unmarked.slice(0, 3).join(", ")}`}`);
+    },
+  });
+  return 0;
+}
+
 async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const pet = petOf(args, "hum");
+  if (args.flags["streams"] === true) return await humStreams(args, pet);
   const ask = foldAsk(args, "pulse");
   const fold = wordOf(args.options["fold"]);
   const lineWord = wordOf(args.options["line"]);
@@ -1227,6 +1305,8 @@ async function handback(args: ParsedArgs, ctx: Ctx): Promise<number> {
       console.log(`${landed === "put" ? "handed back" : landed === "exists" ? "already handed back" : "hand-back stands"}: ${who.tag} → ${record}${cut ? ` (cut at ${RESIDUE_CAP_CHARS} chars)` : ""}`);
       if (closed === null) console.log("  no summons edge names it; the record stands on its own");
       else console.log(`  edge: ${closed.edge} (offered by ${closed.offerer || "hand"}; ${closed.lane === "none" ? "it holds no lane" : closed.lane === "freed" ? "its lane stands free" : `its lane still holds; run the line again: ${closed.cure ?? again}`})`);
+      const join = closed?.join;
+      if (join !== undefined) console.log(join.title === null ? `  no msg joined the summoner's stream: ${join.why ?? "nothing landed"}` : `  msg: ${join.title} on ${join.stream} (${join.decision === "standing" ? "stands" : `re ${join.re.join(", ")}`})`);
     },
   });
   return 0;
@@ -1297,6 +1377,7 @@ export async function cmdSpirit(args: ParsedArgs, seams: SpiritSeams = {}): Prom
     now: seams.now ?? (() => new Date()),
     launch: seams.launch ?? hostLaunch,
     edge: seams.edge ?? ((ask) => closeEdge(summonCtx(args, ctx), ask)),
+    summoned: seams.summoned ?? (() => summonedStream(process.env)),
   };
   answeredFace = null;
   return guardDoor(args, `spirit ${verb}`, async () => {

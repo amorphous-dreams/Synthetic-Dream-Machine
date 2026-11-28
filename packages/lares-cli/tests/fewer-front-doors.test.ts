@@ -1,11 +1,11 @@
 /**
  * fewer-front-doors — the UX collapse's second fold (lar:///ha.ka.ba/kahua/memory/road/leap-ux-collapse).
  *
- * Seven top-level verbs left the operator's front door and ride the door that already owns their island:
+ * Six top-level verbs left the operator's front door and ride the door that already owns their island (a seventh, `watch`,
+ * folded into `ingest --watch` and stands again since landing 16 as a call verb, a filter subscription):
  *
  *   receipt · cancel   -> vessel request <id> [--cancel]
- *   watch              -> ingest --watch
- *   draft              -> act --draft <uri>
+ *   draft              -> act lar:///carriage.draft.pulls uri=<uri>
  *   raise sign         -> persona raise-sign <challenge-json>
  *   wing-of · test-quine -> out of the front door (tools/wing-of.mjs; `pnpm --filter @lararium/node test:quine`)
  *
@@ -28,8 +28,7 @@ afterEach(() => vi.restoreAllMocks());
 const FOLDED: ReadonlyArray<readonly [argv: readonly string[], cure: string]> = [
   [["receipt"], "lares vessel request <id>"],
   [["cancel"], "lares vessel request <id> --cancel"],
-  [["watch"], "lares ingest --watch"],
-  [["draft"], "lares act --draft <uri>"],
+  [["draft"], "lares act lar:///carriage.draft.pulls uri=<uri>"],
   [["raise", "sign"], "lares persona raise-sign <challenge-json-text>"],
   [["wing-of"], "node tools/wing-of.mjs"],
   [["test-quine"], "pnpm --filter @lararium/node test:quine"],
@@ -61,27 +60,27 @@ describe("fewer front doors", () => {
   // `spirit` (a spirit's record by its pet name: om · ah · hum · hoʻoili · residue · otakiage). Its acts ride the `tiddler`
   // door's daemon verbs beneath, yet it carries a lifecycle that door never reads (the card's lease and epoch, slot budgets,
   // the ash ledger), and `sense`/`sensorium` read captured conversation, not a spirit's card; so it stands its own row. 48 with the
-  // call shape (comms-ux-enacts landing 8): `tiddler` burned and the four call verbs `get` · `put` · `delete` · `rename` stand.
-  test("the front door holds 48 top-level verbs: `spirit` named past the fold, the four call verbs in `tiddler`'s place", () => {
+  // call shape (comms-ux-enacts landing 8): `tiddler` burned and the four call verbs `get` · `put` · `delete` · `rename` stand. 47 when
+  // landing 9 folds the `act` door into the one call; 48 with `msg` (landing 14): one entry lands in its stream; 49 with `watch`
+  // (landing 16): a call verb whose line holds its calls in a loop, one has line per change.
+  test("the front door holds 49 top-level verbs: `spirit` named past the fold, the call verbs in `tiddler`'s place", () => {
     const names = COMMANDS.map((c) => c.name);
     expect(names).toContain("spirit");
-    expect(names).toEqual(expect.arrayContaining(["get", "put", "delete", "rename"]));
+    expect(names).toEqual(expect.arrayContaining(["get", "put", "delete", "rename", "msg", "watch"]));
     expect(names).not.toContain("tiddler");
-    expect(COMMANDS.length).toBe(48);
+    expect(COMMANDS.length).toBe(49);
   });
 
-  test("★ the signing seats stay: vessel and persona sign, and ingest/act keep their own seat ★", () => {
+  test("★ the signing seats stay: vessel and persona sign, and ingest keeps its own seat ★", () => {
     const row = (n: string) => COMMANDS.find((c) => c.name === n)!;
     expect(row("vessel").signs).toBe(true);
     expect(row("persona").signs).toBe(true);
     expect(row("ingest").signs).not.toBe(true);
-    expect(row("act").signs).not.toBe(true);
   });
 
   test("each new spelling is accepted by the door's row, and `--cancel` rides vessel alone", () => {
     const row = (n: string) => COMMANDS.find((c) => c.name === n)!;
     expect(row("ingest").accepts).toEqual(expect.arrayContaining(["watch", "debounce"]));
-    expect(row("act").accepts).toContain("draft");
     expect(row("persona").accepts).toContain("as");
     expect(row("vessel").accepts).toContain("cancel");
     for (const n of COMMANDS.map((c) => c.name).filter((x) => x !== "vessel")) expect(row(n).accepts, n).not.toContain("cancel");
@@ -109,10 +108,10 @@ describe("fewer front doors", () => {
     expect(c.out).toContain("[--watch] [--debounce <ms>]");
   });
 
-  test("act --draft with no uri refuses with the new usage", async () => {
+  test("act rides the call door: a flag beside it refuses by name, naming the param spelling", async () => {
     const r = await run(["act", "--draft", "--no-json"]);
     expect(r.code).toBe(2);
-    expect(r.err).toContain("usage: lares act --draft <uri>");
+    expect(r.err).toContain("unknown flag --draft for a call; a call takes name=value params (draft=…)");
   });
 
   test("persona raise-sign with no challenge refuses with its own menu", async () => {
@@ -129,6 +128,6 @@ describe("fewer front doors", () => {
     const ingest = await run(["ingest", "--help"]);
     expect(ingest.out).toContain("--watch");
     const act = await run(["act", "--help"]);
-    expect(act.out).toContain("--draft");
+    expect(act.out).toContain("lares act lar:///carriage.draft.pulls");
   });
 });

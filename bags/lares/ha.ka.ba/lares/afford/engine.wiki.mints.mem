@@ -1,0 +1,109 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.wiki.mints`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "mint a wiki: its canonical bag, its draft bag and its recipe"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.wiki.mints", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.wiki.mints"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.wiki.mints"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.wiki.mints ~ a fresh wiki, idempotent over a partial shell
+
+`lares wiki init <slug>` asks the daemon to mint the wiki's canonical bag, its per-wiki draft bag and its recipe, holds the mint and lays its workbench at `projections/realms/<slug>/wikis/<slug>/` (the realm's default pet name, the slug). `--realm <pet>` places it in an existing realm first (`lares realm list`). Over a shell a partial init left, it stands what is missing and answers `completed` naming each; run again, it answers `already-exists` and changes nothing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ init · in-realm
+
+```memetic-wikitext
+<<has entity=`example` name=`init` params=`slug/works ~ mint a wiki`>>
+<<has entity=`example` name=`in-realm` params=`slug/works realm/Garden ~ mint it into an existing realm`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ slug · realm
+
+```memetic-wikitext
+<<has entity=`arg` name=`slug` params=`takes/slug needs/required seat/1 as/<slug> ~ the wiki slug`>>
+<<has entity=`arg` name=`realm` params=`takes/name ~ an existing realm's pet name to place the wiki in`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ vessel
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`vessel` params=`who/seat-or-hand ~ the daemon verb runs under the vessel's own did; this handler checks no ocap of its own`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · realm-unnamed · realm-slug-malformed · realm-slug-private · daemon-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.wiki.mints slug/works]] ~ name the slug, and a non-empty --realm where one rides`>>
+<<has entity=`refusal` name=`realm-unnamed` params=`cure/[[realm.label.reads]] ~ no realm wears that pet name; read the labels`>>
+<<has entity=`refusal` name=`realm-slug-malformed` params=`~ the slug reads no path-safe name`>>
+<<has entity=`refusal` name=`realm-slug-private` params=`~ the slug falls under the private face projections`>>
+<<has entity=`refusal` name=`daemon-refused` params=`~ the daemon's init-wiki verb refused; its message rides the line, exit 4`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ minted
+
+```memetic-wikitext
+<<has entity=`band` name=`minted` params=`exit/0 fields/[[slug status wikiUri canonBag wikiDocUrl draftBagId draftDocUrl recipeUri held holdNote realm]] ~ status reads minted, completed or already-exists`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares wiki init
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares wiki init]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cabal-realm
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RD8sBxsDsxiODWS9CscDhfbu-vfr_1ceAqFIW2TWNYk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

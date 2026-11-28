@@ -27,7 +27,7 @@
  *   γ  defaults to 1 (the C-only floor). A later ARL₀→β would dial the epistemic/empowerment weight; this
  *      module leaves that shore untouched.
  *   τ  defaults to 1 — a SELECTION-margin shore (a close call between the top two verbs flags for review). It
- *      does NOT gate the py `VERB_SEATS` HITL surface, which stays the house's kept HITL question, distinct
+ *      does NOT gate the hand (the vessel's registry refuses a hand act every seat), which stays the house's kept HITL question, distinct
  *      from selection.
  *
  * PORT-STATUS — this organ stands the CONCEPT-WITNESS + the TS↔py parity oracle; the production EFE
@@ -192,7 +192,7 @@ export interface CVector {
 export interface EfeOptions {
   /** the epistemic/empowerment weight (default 1 — the C-only floor; a later ARL₀→β dials it, NOT wired here). */
   readonly gamma?: number;
-  /** the selection-margin review threshold (default 1 — a close top-two call flags review; NOT the py VERB_SEATS gate). */
+  /** the selection-margin review threshold (default 1 — a close top-two call flags review; NOT the hand gate). */
   readonly tau?: number;
   /** the default preference variance when the C-vector names none (default 1). */
   readonly preferenceVariance?: number;
@@ -267,7 +267,7 @@ export interface EfeSelection {
   readonly ranked: readonly EfeScore[];
   /** the EFE gap between the chosen and the runner-up (Infinity when a single verb stood). */
   readonly margin: number;
-  /** the τ review shore — `margin < τ` flags a close call for review (NOT the py VERB_SEATS HITL gate). */
+  /** the τ review shore — `margin < τ` flags a close call for review (NOT the hand gate). */
   readonly needsReview: boolean;
 }
 

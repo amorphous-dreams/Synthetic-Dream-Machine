@@ -95,13 +95,17 @@ describe("L3 · help and refusal render the same bytes", () => {
     expect(doors.filter((d) => doorKey(d) === null && commands().find((c) => c.name === d.split(" ")[0])?.help === undefined)).toEqual([]);
   });
 
-  test("the root door: bare `lares` refuses with the menu `lares help` prints, exit 1 against 0", async () => {
+  test("the root door: bare `lares` speaks the house (lar:///lares.lararium.status), and the menu moved behind `lares help`", async () => {
     const asked = await door(["help"]);
     const bare = await door([]);
     expect(asked.code).toBe(0);
-    expect(bare.code).toBe(1);
     expect(asked.out.length).toBeGreaterThan(0);
-    expect(bare.out).toBe(asked.out);
+    // A scratch house stands dark: the bare door reports it, exit 0, and names the keys instead of the menu.
+    expect(bare.code).toBe(0);
+    expect(bare.out).toContain("lar:///lares.lararium.status");
+    expect(bare.out).toContain("the house stands dark");
+    expect(bare.out).toContain("keys: get=");
+    expect(bare.out).not.toBe(asked.out);
   });
 
   test("seed: library's lines keep its verbs", () => {

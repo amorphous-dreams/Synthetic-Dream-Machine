@@ -18,10 +18,18 @@
  *             ceiling, `lane-claim-unsettled` where the ledger never held still), lands the edge `summons/<id16>`, then starts
  *             the instance through the host launch cap with the one wake line and the model the mandate names, in the
  *             mandate's workdir, its stream appended to the mandate's log. A launch that started nothing frees its lane. A
- *             summons whose edge already names a launch answers `standing` and starts nothing.
+ *             summons whose edge already names a launch answers `standing` and starts nothing. THE SUMMONS FORKS A STREAM
+ *             (comms-ux-enacts landing 17): ahead of the launch, the instance's stream (`<pet>#<n>`) takes its first entry
+ *             through the msg door, its `re` naming the summoner's head (the summoner's stream: `--stream`, else the summoning
+ *             session's own `LARES_SUMMONED`, else the coordinator the mandate names), its `about` the mandate at its hash; the
+ *             edge records `stream`, `summoner-stream` and `forked`, so a retry forks nothing twice, and the launched process
+ *             carries its stream name (`LARES_SUMMONED`), the default every `lares msg` it runs reads.
  *   handback  the one return door stands in `./spirit.ts` (the record lands or reads first); `closeEdge` here answers its
  *             edge seam: the instance's edge names the record (`--mandate <uri>@<hash>` names which), then the lane it held
- *             frees on the coordinator's ledger. Null where no edge names the instance.
+ *             frees on the coordinator's ledger. Null where no edge names the instance. THE HAND-BACK RIDES AS A MSG: an entry
+ *             lands on the SUMMONER's stream, `to` the summoner, its `re` naming the mandate and the instance's last entry, its
+ *             `about` the hand-back record at its hash; the edge records `joined`, so a second hand-back lands no second entry.
+ *             A stream write the msg door refuses never stops the summons or the hand-back: the answer names why.
  *
  * The pure core (shapes, hashes, refusals) stands in `@lararium/mesh/spirit-summons`; the host process gate stands in
  * `tools/summon-launch.mjs`. This door keeps the door calls, the hand read and the launch seam.
@@ -42,9 +50,11 @@ import {
   type InstanceTag, type MandateCarrier, type MandateField, type SpiritMandate,
 } from "@lararium/mesh/spirit-summons";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
+import { NOTE_MAX, readStream } from "@lararium/tw5/stream-entries";
+import { summonedStream } from "../summoned-stream.js";
 import { rootMetaFields } from "@lararium/tw5/root-meta";
 import { emit } from "../render.js";
-import { DoorUsage, wordOf } from "./door-call.js";
+import { DoorUsage, wordOf, type DoorAnswer } from "./door-call.js";
 import type { ParsedArgs } from "../parse-args.js";
 import type { EdgeAsk, EdgeClosed } from "./spirit.js";
 
@@ -61,6 +71,19 @@ export interface SummonCtx {
   readonly hand: () => boolean;
   readonly now: () => Date;
   readonly launch: Launch;
+  /** One door call whose refusal comes back as an answer, never printed: the stream writes, which stop no summons. */
+  readonly soft: (verb: string, verbArgs: Record<string, unknown>) => Promise<DoorAnswer>;
+  /** The stream this session writes as, where a summons started it (`LARES_SUMMONED`); null otherwise. A suite names its own. */
+  readonly summoned: () => string | null;
+}
+
+/** What a stream write answers: the stream, the entry that landed (null: none), its `re`, and why where nothing landed. */
+export interface StreamLanding {
+  readonly stream: string | null;
+  readonly title: string | null;
+  readonly decision: "landed" | "standing" | "skipped" | "refused";
+  readonly re: readonly string[];
+  readonly why?: string;
 }
 
 const RECIPE = "default";
@@ -250,7 +273,7 @@ async function foundMandate(ctx: SummonCtx, covered: Readonly<Partial<Record<Man
   if (refused !== null) throw refused;
   const receipt = await ctx.door("mandate", "tiddler-put", { recipe: RECIPE, title: found.uri, text: carrier });
   const decision = String(receipt["decision"] ?? "");
-  if (decision !== "put" && decision !== "noop") throw writeRefused(found.uri, decision, " mu=assert");
+  if (decision !== "put" && decision !== "noop") throw writeRefused(found.uri, decision, " aperture=arc");
   const landed = await mandateAt(ctx, "mandate", found.uri, null);
   return { uri: found.uri, hash: landed.hash, stands: decision === "noop" };
 }
@@ -300,6 +323,68 @@ export async function landMandate(args: ParsedArgs, ctx: SummonCtx): Promise<num
   return 0;
 }
 
+// ── the log graph: summon forks a stream, a hand-back joins it (comms-ux-enacts landing 17) ─────────────────────────
+
+/** A note cut to the msg door's one line. */
+const noteOf = (words: string): string => [...words.replace(/\s+/g, " ").trim()].slice(0, NOTE_MAX).join("").trim();
+
+export { summonedStream };
+
+/**
+ * THE SUMMONER'S STREAM: `--stream` (a malformed one refuses), else the summoning session's own (`LARES_SUMMONED`, the stream a
+ * summons started it under), else the coordinator the mandate names (`offerer`, where it reads `<pet>#<n>`). Null for a hand
+ * that names none: the fork lands with no `re`.
+ */
+function summonerOf(args: ParsedArgs, ctx: Pick<SummonCtx, "summoned">, mandate: SpiritMandate): string | null {
+  const named = wordOf(args.options["stream"]);
+  if (named !== null) {
+    if (readStream(named) === null) throw new DoorUsage(`--stream names the summoner's stream as <pet>#<n>, the pet lowercase and hyphen-joined, the instance lowercase letters and digits (got "${named}")`);
+    return named;
+  }
+  for (const word of [ctx.summoned(), mandate.offerer]) if (word !== null && readStream(word) !== null) return word;
+  return null;
+}
+
+/** A stream's heads through the filter door (`[lares.heads[<pet>#<n>]]`, the reader's view), or the refusal's words. */
+async function headsIn(ctx: Pick<SummonCtx, "soft">, stream: string): Promise<string[] | { why: string }> {
+  const answer = await ctx.soft("wiki-filter", { recipe: RECIPE, filter: `[lares.heads[${stream}]]` });
+  return answer.ok ? titlesOf(answer.output) : { why: answer.message };
+}
+
+/** One msg through the door, softly: the entry's title, or why nothing landed. */
+async function landMsg(ctx: Pick<SummonCtx, "soft">, msgArgs: Record<string, unknown>): Promise<{ title: string } | { why: string }> {
+  const answer = await ctx.soft("msg", { recipe: RECIPE, ...msgArgs });
+  if (!answer.ok) return { why: answer.message };
+  const title = answer.output["title"];
+  return typeof title === "string" && title !== "" ? { title } : { why: `the msg door answered no entry (${String(answer.output["decision"] ?? "nothing")})` };
+}
+
+/** The instance's stream's first entry: `re` the summoner's head, `about` the mandate at its hash. Lands once per edge. */
+async function forkStream(ctx: SummonCtx, mandate: SpiritMandate, summoner: string | null, forked: string | null): Promise<StreamLanding> {
+  const stream = mandate.tag;
+  if (readStream(stream) === null) {
+    return { stream: null, title: null, decision: "skipped", re: [], why: `${stream} reads no stream name (<pet>#<n>, the instance lowercase letters and digits), so no stream forks` };
+  }
+  if (forked !== null) return { stream, title: forked, decision: "standing", re: [] };
+  const heads = summoner === null ? [] : await headsIn(ctx, summoner);
+  if (!Array.isArray(heads)) return { stream, title: null, decision: "refused", re: [], why: heads.why };
+  const ref = refLine(mandate.uri, mandate.hash);
+  const landed = await landMsg(ctx, {
+    stream, slug: "summoned", re: heads, about: ref, mandate: ref, seat: mandate.launchCap, ...(mandate.model === null ? {} : { model: mandate.model }),
+    note: noteOf(`summoned by ${summoner ?? (mandate.offerer || "hand")} under ${mandate.hash.slice(0, 12)}`),
+  });
+  return "why" in landed ? { stream, title: null, decision: "refused", re: heads, why: landed.why } : { stream, title: landed.title, decision: "landed", re: heads };
+}
+
+/** A base-checked field patch on the edge; a conflict re-reads once, and a refusal leaves the receipt unwritten (the stream entry stands). */
+async function edgeNotes(ctx: SummonCtx, label: string, uri: string, fields: Record<string, string>): Promise<void> {
+  for (let round = 0; round < LANE_ROUNDS; round++) {
+    const live = await fieldsAt(ctx, label, uri);
+    const receipt = await ctx.door(label, "tiddler-put", { recipe: RECIPE, title: uri, ...(live.hash !== null ? { base: live.hash } : {}), fields });
+    if (String(receipt["decision"] ?? "") !== "conflict") return;
+  }
+}
+
 /** `lares spirit summon <pet>#<n> --mandate <uri>[@<hash>]`: read, verify, hold custody and lanes, land the edge, start the instance. */
 export async function summonInstance(args: ParsedArgs, ctx: SummonCtx): Promise<number> {
   const tag = tagOf(args, "summon");
@@ -309,6 +394,8 @@ export async function summonInstance(args: ParsedArgs, ctx: SummonCtx): Promise<
   const mandate = await mandateAt(ctx, "summon", ref.uri, ref.hash);
   const line = `lares spirit summon ${shq(tag.tag)} --mandate ${refLine(mandate.uri, mandate.hash)}`;
   for (const refused of [mandateNames(mandate, tag.pet, tag.instance), mandateFaceTurned(mandate, ctx.face(), line), launchHolds(mandate)]) if (refused !== null) throw refused;
+  // THE SUMMONER'S STREAM READS BEFORE ANYTHING LANDS, so a malformed `--stream` leaves no edge and claims no lane.
+  const summoner = summonerOf(args, ctx, mandate);
   // CUSTODY, THEN LANES: both read the coordinator's own mandate, verified by the hash the arm's mandate names.
   const hand = ctx.hand();
   const coordinator = mandate.parent === null || mandate.parent.hash === null ? null : await mandateAt(ctx, "summon", mandate.parent.uri, mandate.parent.hash);
@@ -334,6 +421,11 @@ export async function summonInstance(args: ParsedArgs, ctx: SummonCtx): Promise<
     const decision = String(receipt["decision"] ?? "");
     if (decision !== "put" && decision !== "noop") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${edge.uri}, so nothing started; read it: \`lares get title=${shq(edge.uri)}\``, 4);
   }
+  // THE SUMMONS FORKS A STREAM AHEAD OF THE LAUNCH, so the instance wakes into a stream already founded; the edge records it.
+  const fork = await forkStream(ctx, mandate, summoner, stands.fields["forked"] || null);
+  if (fork.decision === "landed") {
+    await edgeNotes(ctx, "summon", edge.uri, { stream: fork.stream!, forked: fork.title!, ...(summoner === null ? {} : { "summoner-stream": summoner }) });
+  }
   const cwd = mandate.workdir ?? process.cwd();
   // THE GUEST'S REACH, or the mandate's shaping of it; the edge records what the instance launched holding (a receipt, never a gate).
   const reach = launchReach(mandate);
@@ -349,14 +441,38 @@ export async function summonInstance(args: ParsedArgs, ctx: SummonCtx): Promise<
     recipe: RECIPE, title: edge.uri, ...(live.hash !== null ? { base: live.hash } : {}),
     fields: { launched, "launched-at": ctx.now().toISOString(), "launched-in": cwd, "launched-reach": reach, ...(mandate.log === null ? {} : { "launched-log": mandate.log }), ...(started.pid === null ? {} : { "launched-pid": String(started.pid) }) },
   });
-  const stream = mandate.log === null
-    ? `its stream lands nowhere (the mandate names no log; a mandate landed with \`--log /absolute/file\` keeps it)`
-    : `its stream: ${mandate.log}`;
+  const log = mandate.log === null
+    ? `its log lands nowhere (the mandate names no log; a mandate landed with \`--log /absolute/file\` keeps it)`
+    : `its log: ${mandate.log}`;
   emit(args, {
-    ok: true, data: { instance: mandate.tag, mandate: mandate.uri, hash: mandate.hash, edge: edge.uri, decision: "launched", launched, pid: started.pid, prompt, offerer: mandate.offerer, face: mandate.face, reach, cwd, log: mandate.log },
-    human: () => console.log(`summoned: ${mandate.tag} under ${refLine(mandate.uri, mandate.hash)}\n  launched: ${launched}${started.pid === null ? "" : ` (pid ${started.pid})`} in ${cwd}\n  reach: ${reach.split(",").join(" ")}\n  ${stream}\n  edge: ${edge.uri}\n  the lane frees at its hand-back: lares spirit handback ${shq(mandate.tag)} --record <uri>`),
+    ok: true, data: { instance: mandate.tag, mandate: mandate.uri, hash: mandate.hash, edge: edge.uri, decision: "launched", launched, pid: started.pid, prompt, offerer: mandate.offerer, face: mandate.face, reach, cwd, log: mandate.log, stream: fork.stream, summoner, fork },
+    human: () => console.log(`summoned: ${mandate.tag} under ${refLine(mandate.uri, mandate.hash)}\n  launched: ${launched}${started.pid === null ? "" : ` (pid ${started.pid})`} in ${cwd}\n  reach: ${reach.split(",").join(" ")}\n  ${log}\n  ${streamLine(fork, summoner)}\n  edge: ${edge.uri}\n  the lane frees at its hand-back: lares spirit handback ${shq(mandate.tag)} --record <uri>`),
   });
   return 0;
+}
+
+/** The fork as one line a person reads. */
+function streamLine(fork: StreamLanding, summoner: string | null): string {
+  if (fork.title === null) return `no stream forked: ${fork.why ?? "nothing landed"}`;
+  const off = fork.re.length === 0 ? (summoner === null ? "no summoner's stream named (--stream <pet>#<n>)" : `${summoner} holds no entry yet`) : `re ${fork.re.join(", ")}`;
+  return `stream: ${fork.stream} ${fork.decision === "standing" ? "stands" : "forks"} at ${fork.title} (${off}); its msgs default to it`;
+}
+
+/**
+ * THE HAND-BACK JOINS THE SUMMONER'S STREAM: one entry on it, `to` the summoner, `re` the mandate and the instance's last entry
+ * (its stream's heads), `about` the hand-back record at its hash. Lands once per edge (`joined`). A hand's summons that named
+ * no stream joins none.
+ */
+async function joinStream(ctx: SummonCtx, edge: Readonly<Record<string, string>>, tag: string, handback: string): Promise<StreamLanding> {
+  const joined = edge["joined"] || null;
+  const summoner = edge["summoner-stream"] || (readStream(edge["offerer"] ?? "") === null ? null : edge["offerer"]!);
+  if (summoner === null) return { stream: null, title: null, decision: "skipped", re: [], why: "the summons named no summoner's stream, so the hand-back joins none" };
+  if (joined !== null) return { stream: summoner, title: joined, decision: "standing", re: [] };
+  const heads = readStream(tag) === null ? [] : await headsIn(ctx, tag);
+  if (!Array.isArray(heads)) return { stream: summoner, title: null, decision: "refused", re: [], why: heads.why };
+  const re = [...(edge["mandate"] ? [edge["mandate"]] : []), ...heads];
+  const landed = await landMsg(ctx, { stream: summoner, to: summoner, re, about: handback, slug: "hand-back", note: noteOf(`hand-back from ${tag}`) });
+  return "why" in landed ? { stream: summoner, title: null, decision: "refused", re, why: landed.why } : { stream: summoner, title: landed.title, decision: "landed", re };
 }
 
 /**
@@ -393,9 +509,12 @@ export async function closeEdge(ctx: SummonCtx, ask: EdgeAsk): Promise<EdgeClose
   // ledger that never held still leaves the hand-back standing with the line that frees the lane.
   const coordinator = instanceTagOf(standing.offerer);
   const freed = coordinator === null ? true : await releaseLane(ctx, "handback", coordinator, uri);
+  // THE HAND-BACK RIDES AS A MSG on the summoner's stream, after the edge names the record; the edge records the entry.
+  const join = await joinStream(ctx, edge.fields, ask.tag, handback);
+  if (join.decision === "landed") await edgeNotes(ctx, "handback", uri, { joined: join.title! });
   return {
     edge: uri, offerer: standing.offerer, decision: standing.handback === handback ? "standing" : "put",
-    lane: coordinator === null ? "none" : freed ? "freed" : "unsettled", ...(freed ? {} : { cure: again }),
+    lane: coordinator === null ? "none" : freed ? "freed" : "unsettled", ...(freed ? {} : { cure: again }), join,
   };
 }
 

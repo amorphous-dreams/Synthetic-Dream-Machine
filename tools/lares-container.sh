@@ -513,7 +513,7 @@ route_cli() {
         --) break ;;
         --file|--append) stream_want=$stream_arg ;;
         --file=*|--append=*) stream_n=$((stream_n + 1)); stream_kind=${stream_arg%%=*}; [ -n "${stream_arg#*=}" ] || stream_empty=yes ;;
-        --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--commit|--cosign|--confirm|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--witness|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
+        --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--commit|--cosign|--confirm|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skip-build|--spectral|--split-root|--staged|--streams|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--witness|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
       esac
     done
     if [ "$stream_n" -gt 1 ]; then printf 'lares-container: name one text source: --file or --append, once\n' >&2; return 2; fi
@@ -540,7 +540,7 @@ route_cli() {
             --file=*|--append=*)
               stream_value=${stream_arg#*=}
               if [ "$stream_value" != - ]; then stream_file=$stream_value; stream_arg="${stream_arg%%=*}=-"; fi ;;
-            --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--commit|--cosign|--confirm|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--witness|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
+            --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--commit|--cosign|--confirm|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skip-build|--spectral|--split-root|--staged|--streams|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--witness|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
           esac
         fi
         set -- "$@" "$stream_arg"
@@ -828,8 +828,10 @@ host_chain_kind() {
 HOST_CHAIN=$(host_chain_kind)
 if [ "$HOST_CHAIN" != hand ]; then CLAUDECODE=1; export CLAUDECODE; fi
 
+# LARES_SUMMONED crosses too (comms-ux-enacts landing 17): the host launch cap names a summoned process's own stream
+# (`<pet>#<n>`) there, so its `lares msg` defaults to that stream and its own summons fork off its head. A name, never a grant.
 pass_env() {
-  for name in NO_COLOR TERM COLORTERM LARES_DEBUG CLAUDECODE CODEX_SANDBOX CODEX_SANDBOX_NETWORK_DISABLED; do
+  for name in NO_COLOR TERM COLORTERM LARES_DEBUG CLAUDECODE CODEX_SANDBOX CODEX_SANDBOX_NETWORK_DISABLED LARES_SUMMONED; do
     eval "isset=\${$name+x}"
     if [ -n "$isset" ]; then printf -- '-e %s ' "$name"; fi
   done

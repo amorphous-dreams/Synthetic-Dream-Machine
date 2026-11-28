@@ -20,9 +20,10 @@ import { RecordingDocument, RecordingNode, cameraContainer, cameraDocument, fire
 import { toBlocks, toLabelHtml, toText, type Block } from "./recording-serialisers.js";
 import { mountCamera } from "./tw5-camera.js";
 import { registerActionReactors, makeTw5Deserializer } from "./action-handler.js";
-import { VerbTable, type VerbContext } from "./verb-dispatcher.js";
+import { VerbTable, makeCallReactor, type VerbContext } from "./verb-dispatcher.js";
+import { callReaderOf, type MacroCallParse } from "./modules/call.js";
 import { checkFilter, pageFilterAnswer, type FilterRow } from "./filter-page.js";
-import { canonFiltersText, houseFilterWikiOf } from "./house-filters.js";
+import { filtersText, houseFilterWikiOf } from "./house-filters.js";
 
 export interface RecordPortOptions {
   authority?: (req: InvokeRequest) => AuthorityResult;
@@ -458,8 +459,8 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         const wiki = $tw.wiki;
         const filter = msg.subject ?? "";
         checkFilter(wiki, filter);
-        // The port's filter ask runs under the house widget too: a house function reads from canon, never the wiki's globals.
-        const house = houseFilterWikiOf(wiki as never as Parameters<typeof houseFilterWikiOf>[0], ($tw as unknown as { fakeDocument: { createElement(tag: string): unknown } }).fakeDocument, await canonFiltersText(ctx.composite, wiki as never, async () => true)) as unknown as typeof wiki;
+        // The port's filter ask runs under the house widget too: a house function reads from the carrier as the stack seats it, never the wiki's globals.
+        const house = houseFilterWikiOf(wiki as never as Parameters<typeof houseFilterWikiOf>[0], ($tw as unknown as { fakeDocument: { createElement(tag: string): unknown } }).fakeDocument, await filtersText(ctx.composite, wiki as never, async () => true)) as unknown as typeof wiki;
         const titles = house.filterTiddlers(filter).filter(title => visible(title, port));
         const names = msg.fields;
         const rowOf = names === undefined ? undefined : (title: string): FilterRow => {
@@ -566,6 +567,40 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         if (isVerbRefusal(error)) {
           refused(error.reason);
         } else refused("verb-unavailable");
+      }
+    } else if (msg.kind === "call") {
+      // THE ONE CALL ON THE PORT (comms-ux-enacts landing 9): `subject` names the verb word, a skin spelling, an address or a whole
+      // call sigil and `args` its named params, so the glass speaks the same door as the CLI and the seat. The call resolves and
+      // binds over this island's own wiki (its live stack) and dispatches through the port's verb table under the same face
+      // gate, lent cap and invocation the `verb` ask rides; a refusal answers its code.
+      const params = (msg as PortMsg_Ask & { args?: Record<string, string> }).args ?? {};
+      const face = opts.faceOf?.(msg.portId);
+      const req: InvokeRequest = { ...(face ? { provenFace: face } : {}), renderCursor: "", affordanceId: "" };
+      try {
+        const gated = gateInvoke(req, { ...(opts.authority ? { authority: opts.authority } : {}),
+          currentRenderCursor: () => "", invokeActions: () => true });
+        if (!gated.invoked) { refused(gated.reason); return; }
+        const subject = msg.subject ?? "";
+        if (subject.trim() === "") { refused("call-unnamed"); return; }
+        const requestedBy = face && "id" in face && typeof face.id === "string" ? face.id : `port:${msg.portId}`;
+        const invocation: Verb = { requestId: msg.askId, title: `lar:///ha.ka.ba/bags/wiki/verbs/${msg.askId}`,
+          action: "call", args: { verb: subject, params }, targets: msg.titles ?? [], batchMode: "best-effort",
+          status: "pending", requestedBy, requestedAt: "" };
+        const lent = opts.verbCap?.(face!, msg.portId) ?? (async () => ({ ok: false, reason: "no-verb-cap" }));
+        const cap: VerbContext["cap"] = async (...args) => {
+          if (!faceHolds(port)) return { ok: false, reason: "face-changed" };
+          const proof = await lent(...args);
+          return faceHolds(port) ? proof : { ok: false, reason: "face-changed" };
+        };
+        const $tw = ctx.tw5.$tw as unknown as { wiki: Parameters<typeof callReaderOf>[0]; utils?: { parseMacroInvocationAsTransclusion?: MacroCallParse } };
+        const reactor = makeCallReactor(verbTable(ctx, msg.portId), {
+          readerOf: () => callReaderOf($tw.wiki),
+          parse: $tw.utils?.parseMacroInvocationAsTransclusion?.bind($tw.utils),
+        });
+        const sigil = subject.trimStart().startsWith("<<");
+        answered(await reactor({ ...(sigil ? { sigil: subject } : { verb: subject }), params, surface: "tw5" }, { daemon: ctx.composite, invocation, cap }));
+      } catch (error) {
+        refused(isVerbRefusal(error) ? error.reason : "call-unavailable");
       }
     } else if (msg.kind === "cas") {
       const cid = msg.subject ?? "";
