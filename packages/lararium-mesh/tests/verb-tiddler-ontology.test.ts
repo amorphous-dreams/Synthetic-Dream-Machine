@@ -176,19 +176,21 @@ describe("receipt facts — single-writer ledger codec (D1)", () => {
     expect(withEffect).not.toBe(a);
   });
 
-  test("RECEIPT_RING_DEFAULT is derived (1/min × 60 × 24 × 30 days + 256 burst = 43,456)", () => {
-    expect(RECEIPT_RING_DEFAULT).toBe(43_456);
-    expect(ratedReceiptRing()).toBe(43_456);
+  test("RECEIPT_RING_DEFAULT is a count (1,024, the answer ring's), and a named rate dial derives one", () => {
+    expect(RECEIPT_RING_DEFAULT).toBe(1_024);
+    expect(ratedReceiptRing()).toBe(1_024);
+    expect(ratedReceiptRing({})).toBe(1_024);
     expect(ratedReceiptRing({ ratePerMin: 2, horizonDays: 1, burst: 0 })).toBe(2 * 60 * 24);
+    expect(ratedReceiptRing({ horizonDays: 1 })).toBe(60 * 24 + 256);   // the unnamed dials read 1/min and a 256 burst
   });
 
-  test("RECEIPT_RING_BYTES_DEFAULT is derived (the ring's count × a 2 KiB mean per kept outcome = 88,997,888)", () => {
-    expect(RECEIPT_RING_BYTES_DEFAULT).toBe(43_456 * 2_048);
-    expect(ratedReceiptRingBytes()).toBe(88_997_888);
+  test("RECEIPT_RING_BYTES_DEFAULT is derived (the ring's count × a 2 KiB mean per kept outcome = 2,097,152)", () => {
+    expect(RECEIPT_RING_BYTES_DEFAULT).toBe(1_024 * 2_048);
+    expect(ratedReceiptRingBytes()).toBe(2_097_152);
     // The byte bound follows the count it rides beside, and takes its own dial.
     expect(ratedReceiptRingBytes({ ratePerMin: 2, horizonDays: 1, burst: 0 })).toBe(2 * 60 * 24 * 2_048);
-    expect(ratedReceiptRingBytes({ bytesPerOutcome: 512 })).toBe(43_456 * 512);
-    expect(ratedReceiptRing({ bytesPerOutcome: 512 } as never)).toBe(43_456);    // CONTROL: the count ignores the byte dial
+    expect(ratedReceiptRingBytes({ bytesPerOutcome: 512 })).toBe(1_024 * 512);
+    expect(ratedReceiptRing({ bytesPerOutcome: 512 } as never)).toBe(1_024);    // CONTROL: the count ignores the byte dial
   });
 });
 
