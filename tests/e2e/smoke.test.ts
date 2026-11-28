@@ -106,7 +106,7 @@ describe.skipIf(!stagedTarget)("smoke — the vessel stands", () => {
 describe.skipIf(!stagedTarget)("smoke — residency canon through the real CLI", () => {
   test("LOAD feeds the hearth carrier-borne: boot meme → parent + every ahu child", async () => {
     const working = "lar:///ha.ka.ba/wikis/lares/working";
-    const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", working, "--yes", "--json"]);
+    const r = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, `to=${working}`, "yes=true", "--json"]);
     expect(r.json?.["ok"]).toBe(true);
     const data = r.json?.["data"] as { count: number; titles: string[] };
     // DERIVE FROM THE DESERIALIZER, never from a formula over the source. `1 + ahuCount` encoded a
@@ -120,7 +120,7 @@ describe.skipIf(!stagedTarget)("smoke — residency canon through the real CLI",
   });
 
   test("LOAD refuses a carrier-less gesture loudly (islands never fetch)", async () => {
-    const r = await lar.cli(["act", "LOAD", "--source-uri", "https://example.org/nope", "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
+    const r = await lar.cli(["act", "lar:///carriage.bag.loads", "source-uri=https://example.org/nope", "to=lar:///ha.ka.ba/wikis/lares/working", "yes=true", "--json"]);
     expect(r.json?.["ok"]).toBe(false);
     // The CLI's error rides a STRUCTURED envelope — `{ code, message, hint? }`. Stringifying the whole
     // object yields "[object Object]", which matches no assertion and names no cause.
@@ -129,7 +129,7 @@ describe.skipIf(!stagedTarget)("smoke — residency canon through the real CLI",
   });
 
   test("LOAD into canon names the working slot and its promotion MOVE", async () => {
-    const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", LARES_URI, "--yes", "--json"]);
+    const r = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, `to=${LARES_URI}`, "yes=true", "--json"]);
     expect(r.json?.["ok"]).toBe(false);
     const err = r.json?.["error"] as { message?: string } | undefined;
     expect(err?.message).toMatch(/load-into-canon/);

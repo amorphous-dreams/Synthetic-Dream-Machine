@@ -85,21 +85,12 @@ describe("a folded sub-path refuses the flags it does not read", () => {
     expect(s.err).toContain("unknown flag --cancel");
   });
 
-  test("★ act --draft refuses the ACTION flags, and an ACTION verb beside --draft ★", async () => {
-    for (const flag of [["--dry-run"], ["--bag", "b"], ["--from", "b"], ["--change-id", "c"]]) {
-      const r = await run(["act", "--draft", "lar:///x", ...flag, "--no-json"]);
+  test("★ act rides the call door: every flag beside it refuses by name before any dispatch, naming its param spelling ★", async () => {
+    for (const flag of [["--draft"], ["--dry-run"], ["--bag", "b"], ["--from", "b"], ["--change-id", "c"], ["--debounce", "5"]]) {
+      const r = await run(["act", "lar:///carriage.record.adds", ...flag, "--no-json"]);
       expect(r.code, flag.join(" ")).toBe(2);
-      expect(r.err).toContain("unknown flag");
+      expect(r.err).toContain(`unknown flag ${flag[0]} for a call; a call takes name=value params`);
     }
-    const m = await run(["act", "MOVE", "--draft", "lar:///x", "--no-json"]);
-    expect(m.code).toBe(2);
-    expect(m.err).toContain("ACTION verb");
-    const s = await run(["act", "ADD", "--draft", "--no-json"]);
-    expect(s.code).toBe(2);
-    // CONTROL: an act without --draft refuses --draft's sibling name nowhere it reads it.
-    const c = await run(["act", "ADD", "--debounce", "5", "--no-json"]);
-    expect(c.code).toBe(2);
-    expect(c.err).toContain("unknown flag --debounce");
   });
 
   test("★ ingest --watch refuses the one-shot flags at the door, and plain ingest refuses --watch's own ★", async () => {

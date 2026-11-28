@@ -1,7 +1,7 @@
 /**
  * LEAD RUNS: this suite stands a staged daemon and speaks MCP over the seat's stdio process.
  * e2e/tiddler-door — THE TIDDLER DOOR walked on a hearth: `lares get|put|delete name=value…` (a filter rides
- * `lares get filter=…`), `lares wiki render|status` and the MCP seat's `tiddler_*` / `wiki_*` tools over ONE staged vessel's daemon wiki
+ * `lares get filter=…`), `lares wiki render|status` and the MCP seat's `get` / `put` / `delete` and `act` over ONE staged vessel's daemon wiki
  * (lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout #/a-lean, lane 1; road `L17`).
  *
  * The walk seeds the worn face's daemon wiki with a dozen memory memes carrying tags and links (through the meme
@@ -115,8 +115,8 @@ function payload(result: unknown): { ok: true; data: Record<string, unknown> } |
 }
 
 const dataOf = (r: CliResult): Record<string, unknown> => ((r.json?.["data"] ?? {}) as Record<string, unknown>);
-/** An answer without the call's receipt: the CLI rides the daemon's `call` verb, which stamps `carrier` and the has line it
- *  reads into every answer, and the seat's tools reach the reactor verbs directly; the bodies compare beneath the stamp. */
+/** An answer without the call's receipt: both skins ride the daemon's `call` verb, which stamps `carrier` and the has line it
+ *  reads into every answer, while a seat act answers its reactor verb's own body; the bodies compare beneath the stamp. */
 const unstamped = (d: Record<string, unknown>): Record<string, unknown> => { const { carrier: _carrier, has: _has, ...rest } = d; return rest; };
 const seatUnstamped = (p: ReturnType<typeof payload> | undefined): ReturnType<typeof payload> | undefined => (p?.ok ? { ok: true, data: unstamped(p.data) } : p);
 const D = ["recipe=default", "--json"] as const;
@@ -186,8 +186,8 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     const status = dataOf(cli) as { working: string; layers: Array<{ bag: string; read: boolean; write: boolean; working?: boolean }> };
     expect(status.working).toBe("lar:///ha.ka.ba/wikis/daemon/working");
     expect(status.layers.find((l) => l.working)).toMatchObject({ bag: status.working, read: true, write: true });
-    const seat = payload((await speak(entry, [{ name: "wiki_status", arguments: { recipe: "default" } }])).results[0]);
-    say("MCP wiki_status", seat);
+    const seat = payload((await speak(entry, [{ name: "act", arguments: { address: "lar:///engine.layer.reads", args: { recipe: "default" } } }])).results[0]);
+    say("MCP act lar:///engine.layer.reads", seat);
     expect(seat).toEqual({ ok: true, data: status });
     // CONTROL: the titles that stay home (the temp and state namespaces) answer no filter, by iteration or by name.
     const home = await lar.cli(["get", "filter=[all[tiddlers+shadows]prefix[$:/temp/]] [all[tiddlers+shadows]prefix[$:/state/]] [[$:/temp/lares/switcher]get[text]]", ...D]);
@@ -226,22 +226,22 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     expect(cliTitles).toEqual(Array.from({ length: NOTES }, (_, i) => uriOf(i + 1)));
     expect(cursors).toHaveLength(2);
     const said = await speak(entry, [
-      { name: "wiki_filter", arguments: { filter, recipe: "default", limit: 5 } },
-      { name: "wiki_filter", arguments: { filter, recipe: "default", limit: 5, after: cursors[0] } },
-      { name: "wiki_filter", arguments: { filter, recipe: "default", limit: 5, after: cursors[1] } },
-      { name: "wiki_filter", arguments: { filter: "[tag[project]sort[title]]", recipe: "default", fields: ["status", "tags"], limit: 2 } },
-      { name: "wiki_filter", arguments: { filter: "[tag[memory", recipe: "default" } },
+      { name: "get", arguments: { filter, recipe: "default", params: { limit: 5 } } },
+      { name: "get", arguments: { filter, recipe: "default", after: cursors[0], params: { limit: 5 } } },
+      { name: "get", arguments: { filter, recipe: "default", after: cursors[1], params: { limit: 5 } } },
+      { name: "get", arguments: { filter: "[tag[project]sort[title]]", recipe: "default", params: { fields: "status,tags", limit: 2 } } },
+      { name: "get", arguments: { filter: "[tag[memory", recipe: "default" } },
     ]);
     const pages = said.results.slice(0, 3).map(payload);
-    say("MCP wiki_filter pages", pages);
+    say("MCP get filter= pages", pages);
     expect(pages.flatMap((p) => (p.ok ? (p.data["titles"] as string[]) : []))).toEqual(cliTitles);
     expect(pages.map((p) => (p.ok ? p.data["next"] : "refused"))).toEqual([cursors[0], cursors[1], null]);
     const rows = payload(said.results[3]);
-    say("MCP wiki_filter rows with named fields", rows);
+    say("MCP get filter= rows with named fields", rows);
     expect(rows.ok && (rows.data["rows"] as Array<{ title: string; fields: Record<string, string> }>)[0]).toEqual({ title: uriOf(2), fields: { status: "open", tags: "memory project" } });
     // CONTROL: a malformed filter refuses by name on both skins.
     const bad = payload(said.results[4]);
-    say("MCP wiki_filter malformed", bad);
+    say("MCP get filter= malformed", bad);
     expect(bad.ok === false && bad.said).toContain("filter-malformed");
     const cliBad = await lar.cli(["get", "filter=[tag[memory", ...D]);
     say("CLI get filter= malformed", cliBad.json);
@@ -251,7 +251,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
 
   test("get fields only and get one slot: the same body from both skins", async () => {
     // The card: `mu=relate` on a meme root reads the meme lens at the skinny grain (its has-stack, every slot's line, no text);
-    // `grain` skins the seat alone, so the seat asks the same card as `meme: true, grain: "skinny"`.
+    // the seat's `get` asks the same card by the same `mu`.
     const cliSkinny = await lar.cli(["get", `title=${uriOf(3)}`, "mu=relate", ...D]);
     say("CLI get mu=relate", dataOf(cliSkinny));
     expect(cliSkinny.code, cliSkinny.stderr).toBe(0);
@@ -266,12 +266,12 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     expect(slot.fields["text"]).not.toContain("Rule 3");
     expect(slot).toMatchObject({ position: "slot", family: uriOf(3) });
     const said = await speak(entry, [
-      { name: "tiddler_get", arguments: { title: uriOf(3), recipe: "default", meme: true, grain: "skinny" } },
-      { name: "tiddler_get", arguments: { title: uriOf(3), recipe: "default", slot: "#/why" } },
+      { name: "get", arguments: { title: uriOf(3), recipe: "default", mu: "relate" } },
+      { name: "get", arguments: { title: uriOf(3), recipe: "default", slot: "#/why" } },
     ]);
     const [seatSkinny, seatSlot] = said.results.map(payload);
-    say("MCP tiddler_get meme grain=skinny", seatSkinny);
-    say("MCP tiddler_get slot", seatSlot);
+    say("MCP get mu=relate", seatSkinny);
+    say("MCP get slot", seatSlot);
     expect(seatUnstamped(seatSkinny)).toEqual({ ok: true, data: unstamped(dataOf(cliSkinny)) });
     expect(seatUnstamped(seatSlot)).toEqual({ ok: true, data: unstamped(dataOf(cliSlot)) });
   }, 180_000);
@@ -287,12 +287,12 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     const links = await lar.cli(["get", `filter=[[${uriOf(2)}#/rule]links[]]`, ...D]);
     say("CLI get filter= links", dataOf(links));
     expect(dataOf(links)["titles"]).toEqual([uriOf(1)]);
-    const seat = payload((await speak(entry, [{ name: "wiki_filter", arguments: { filter, recipe: "default" } }])).results[0]);
-    say("MCP wiki_filter backlinks", seat);
+    const seat = payload((await speak(entry, [{ name: "get", arguments: { filter, recipe: "default" } }])).results[0]);
+    say("MCP get filter= backlinks", seat);
     expect(seatUnstamped(seat)).toEqual({ ok: true, data: unstamped(dataOf(cli)) });
   }, 180_000);
 
-  test("many-relate: a CLI filter answers each row's card; the seat's collapse answers each meme root skinny, bytes and slots the skinny get names; one slot unfolds by its own get", async () => {
+  test("many-relate: a filter answers each row's card on both skins; one slot unfolds by its own get", async () => {
     const filter = `[[${uriOf(3)}]] [[${uriOf(3)}#/why]]`;
     const cli = await lar.cli(["get", `filter=${filter}`, "mu=many-relate", ...D]);
     say("CLI get filter= mu=many-relate", dataOf(cli));
@@ -313,16 +313,12 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     expect(skinny.slots.map((x) => x.slot)).toContain("#/why");
     const unfolded = await lar.cli(["get", `title=${uriOf(3)}`, "slot=#/why", "mu=assert", ...D]);
     expect(String((dataOf(unfolded)["meme"] as { slotText?: string }).slotText)).toContain("Because walk 3 measured it.");
-    // THE SEAT'S COLLAPSE (unchanged until the MCP tools fold into the call): each meme root skinny, the bytes and slots the
-    // skinny get names; a slot row carries its bytes and no slots.
-    const seat = payload((await speak(entry, [{ name: "wiki_filter", arguments: { filter, recipe: "default", collapse: true } }])).results[0]);
-    say("MCP wiki_filter collapse=true", seat);
+    // THE SEAT'S CARD DEPTH: the seat's `get` sends the same `mu` through the same call, so it answers the same rows.
+    const seat = payload((await speak(entry, [{ name: "get", arguments: { filter, recipe: "default", mu: "many-relate" } }])).results[0]);
+    say("MCP get filter= mu=many-relate", seat);
     expect(seat.ok, seat.ok ? "" : seat.said).toBe(true);
-    const seatRows = (seat.ok ? seat.data["rows"] : []) as Array<{ title: string; bytes: number; slots?: Array<{ slot: string; bytes: number; first: string | null }> }>;
-    expect(seatRows.map((r) => r.title)).toEqual([uriOf(3), `${uriOf(3)}#/why`]);
-    expect(seatRows[0]).toMatchObject({ bytes: skinny.bytes, slots: skinny.slots });
-    expect(seatRows[1]!.bytes).toBeGreaterThan(0);
-    expect(seatRows[1]!.slots, "a slot row is no meme root").toBeUndefined();
+    expect(seatUnstamped(seat)).toEqual({ ok: true, data: unstamped(dataOf(cli)) });
+    expect(skinny.bytes).toBeGreaterThan(0);
     const plain = await lar.cli(["get", `filter=${filter}`, ...D]);
     expect(dataOf(plain)["titles"]).toEqual([uriOf(3), `${uriOf(3)}#/why`]);
   }, 180_000);
@@ -338,8 +334,8 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     say("CLI wiki render <slot> --form html", dataOf(title));
     expect(String(dataOf(title)["text"])).toMatch(/<h1[^>]*>Rule 4<\/h1>/);
     expect(String(dataOf(title)["text"])).toContain("Rule 4 builds on");
-    const seat = payload((await speak(entry, [{ name: "wiki_render", arguments: { text: span, recipe: "default" } }])).results[0]);
-    say("MCP wiki_render text", seat);
+    const seat = payload((await speak(entry, [{ name: "act", arguments: { address: "lar:///engine.wiki.renders", args: { text: span, recipe: "default" } } }])).results[0]);
+    say("MCP act lar:///engine.wiki.renders text", seat);
     expect(seat).toEqual({ ok: true, data: dataOf(cli) });
   }, 180_000);
 
@@ -365,25 +361,27 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     expect(stale.code).toBe(4);
     expect(dataOf(stale)).toMatchObject({ decision: "conflict", hash: after.hash });
     const said = await speak(entry, [
-      { name: "tiddler_put", arguments: { title: uriOf(5), recipe: "default", fields: { status: "stale" }, base: before.hash } },
-      { name: "tiddler_put", arguments: { title: uriOf(6), recipe: "default", fields: { status: "done" } } },
-      { name: "tiddler_get", arguments: { title: uriOf(6), recipe: "default", fields: ["status"] } },
-      { name: "tiddler_delete", arguments: { title: uriOf(6), recipe: "default" } },
-      { name: "tiddler_put", arguments: { title: "Walk scratch note", recipe: "default", create: true, text: "a plain note", fields: { tags: "scratch" } } },
-      { name: "tiddler_delete", arguments: { title: "Walk scratch note", recipe: "default" } },
+      { name: "put", arguments: { title: uriOf(5), recipe: "default", fields: { status: "stale" }, base: before.hash } },
+      { name: "put", arguments: { title: uriOf(6), recipe: "default", fields: { status: "done" } } },
+      { name: "get", arguments: { title: uriOf(6), recipe: "default", params: { fields: "status" } } },
+      { name: "delete", arguments: { title: uriOf(6), recipe: "default" } },
+      { name: "put", arguments: { title: "Walk scratch note", recipe: "default", create: true, text: "a plain note", fields: { tags: "scratch" } } },
+      { name: "delete", arguments: { title: "Walk scratch note", recipe: "default" } },
     ]);
     const [seatStale, seatPut, seatGet, seatFamily, seatPlain, seatGone] = said.results.map(payload);
-    say("MCP tiddler_put with the stale base", seatStale);
-    expect(seatStale!.ok === false && seatStale!.said).toContain("tiddler-put conflict");
-    say("MCP tiddler_put (field patch)", seatPut);
-    say("MCP tiddler_get fields=[status]", seatGet);
+    say("MCP put with the stale base", seatStale);
+    // The stale base lands nothing on the seat either: the call answers the conflict, as a refusal or as its decision.
+    expect(JSON.stringify(seatStale)).toContain("conflict");
+    expect(seatStale!.ok && seatStale!.data["decision"] === "put", "a stale base landed through the seat").toBe(false);
+    say("MCP put (field patch)", seatPut);
+    say("MCP get fields=status", seatGet);
     expect(seatPut!.ok && seatPut!.data["decision"]).toBe("put");
     expect(seatGet!.ok && (seatGet!.data["tiddler"] as { fields: Record<string, string> }).fields).toEqual({ title: uriOf(6), status: "done" });
-    // CONTROL: a meme root refuses the tiddler door's delete toward the meme door; a plain tiddler leaves plainly, no tombstone raised.
-    say("MCP tiddler_delete of a meme root", seatFamily);
-    expect(seatFamily!.ok === false && seatFamily!.said).toContain("tiddler-delete-in-a-family");
-    say("MCP tiddler_put create (a plain note)", seatPlain);
-    say("MCP tiddler_delete of the plain note", seatGone);
+    // CONTROL: a meme root refuses the plain delete toward the family flag; a plain tiddler leaves plainly, no tombstone raised.
+    say("MCP delete of a meme root", seatFamily);
+    expect(JSON.stringify(seatFamily)).toContain("tiddler-delete-in-a-family");
+    say("MCP put create (a plain note)", seatPlain);
+    say("MCP delete of the plain note", seatGone);
     expect(seatGone!.ok && seatGone!.data).toMatchObject({ decision: "removed", mode: "plain", tombstoned: [], retracted: ["Walk scratch note"], consequence: { position: "plain" } });
     expect((await lar.cli(["get", "title=Walk scratch note", ...D])).code).toBe(3);
     expect((await lar.cli(["get", `title=${uriOf(6)}`, ...D])).code).toBe(0);
@@ -391,15 +389,16 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
 
   test("every tool states its annotations over the real seat", async () => {
     const listed = (await speak(entry, [{ name: "tools/list", arguments: {} }])).results[0] as { tools: Array<{ name: string; annotations?: Record<string, unknown> }> };
-    const mine = Object.fromEntries(listed.tools.filter((t) => /^(tiddler_|wiki_)/.test(t.name)).map((t) => [t.name, t.annotations]));
+    const mine = Object.fromEntries(listed.tools.map((t) => [t.name, t.annotations]));
     say("MCP tools/list annotations", mine);
-    expect(Object.keys(mine).sort()).toEqual(["tiddler_delete", "tiddler_get", "tiddler_put", "wiki_filter", "wiki_render", "wiki_status"]);
+    expect(Object.keys(mine).sort()).toEqual(["act", "delete", "get", "put", "rename"]);
     for (const a of Object.values(mine)) expect(Object.keys(a ?? {}).sort()).toEqual(["destructiveHint", "idempotentHint", "openWorldHint", "readOnlyHint"]);
-    expect(mine["tiddler_delete"]).toMatchObject({ destructiveHint: true, readOnlyHint: false, openWorldHint: false });
-    expect(mine["wiki_filter"]).toMatchObject({ destructiveHint: false, readOnlyHint: true, idempotentHint: true, openWorldHint: false });
+    expect(mine["delete"]).toMatchObject({ destructiveHint: true, readOnlyHint: false, openWorldHint: false });
+    expect(mine["get"]).toMatchObject({ destructiveHint: false, readOnlyHint: true, idempotentHint: true, openWorldHint: false });
+    expect(mine["act"]).toMatchObject({ readOnlyHint: false, openWorldHint: true });
   }, 60_000);
 
-  test("a family delete through the tiddler door: the consequence and a refusal without the family flag, ONE act with it, on both skins", async () => {
+  test("a family delete through the one delete: the consequence and a refusal without the family flag, ONE act with it, on both skins", async () => {
     const extra = NOTES + 1;
     const file = join(scratch, `note-${extra}.mem`);
     writeFileSync(file, memory(extra));
@@ -416,16 +415,16 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     say("CLI delete of a called slot, family=true", slotRefused.json);
     expect(dataOf(slotRefused)).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family" });
     const said = await speak(entry, [
-      { name: "tiddler_delete", arguments: { title: uriOf(extra), recipe: "default" } },
-      { name: "tiddler_get", arguments: { title: uriOf(extra), recipe: "default", fields: ["status"] } },
-      { name: "tiddler_delete", arguments: { title: uriOf(extra), recipe: "default", family: true } },
+      { name: "delete", arguments: { title: uriOf(extra), recipe: "default" } },
+      { name: "get", arguments: { title: uriOf(extra), recipe: "default", params: { fields: "status" } } },
+      { name: "delete", arguments: { title: uriOf(extra), recipe: "default", family: true } },
     ]);
     const [seatRefused, seatStill, seatRemoved] = said.results.map(payload);
-    say("MCP tiddler_delete of a meme root, no family", seatRefused);
-    expect(seatRefused!.ok === false && seatRefused!.said).toContain("tiddler-delete-in-a-family");
-    expect(seatRefused!.ok === false && seatRefused!.said).toContain(`${uriOf(extra)}#/why`);
+    say("MCP delete of a meme root, no family", seatRefused);
+    expect(JSON.stringify(seatRefused)).toContain("tiddler-delete-in-a-family");
+    expect(JSON.stringify(seatRefused)).toContain(`${uriOf(extra)}#/why`);
     expect(seatStill!.ok && seatStill!.data["tiddler"]).not.toBeNull();
-    say("MCP tiddler_delete family=true", seatRemoved);
+    say("MCP delete family=true", seatRemoved);
     expect(seatRemoved!.ok && seatRemoved!.data).toMatchObject({ decision: "removed", mode: "plain", tombstoned: [], retracted: family, consequence: { position: "root", family: uriOf(extra) } });
     // LIVENESS: the shore lands the store's one change in the wiki; the walk COUNTS looks and never compares a clock.
     let left: unknown = null;
@@ -466,13 +465,13 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     const layoutTitle = "$:/themes/tiddlywiki/vanilla/options/sidebarlayout";
     const layoutSeed = await lar.cli(["put", `title=${layoutTitle}`, ...W, "create=true", "text=fixed-fluid"]);
     expect(layoutSeed.code, layoutSeed.stderr).toBe(0);
-    const changedLayout = await lar.cli(["wiki", "act", "sidebar-layout", ...W, "--expected", "fixed-fluid", "--resulting", "fluid-fixed"]);
+    const changedLayout = await lar.cli(["act", "lar:///render.sidebar.lays", `recipe=${WALK_WIKI}`, "expected=fixed-fluid", "resulting=fluid-fixed", "--json"]);
     expect(changedLayout.code, changedLayout.stderr).toBe(0);
     expect(dataOf(changedLayout)).toMatchObject({ decision: "put", title: layoutTitle, resulting: "fluid-fixed" });
     const layoutRead = await lar.cli(["get", `title=${layoutTitle}`, ...W]);
     expect((dataOf(layoutRead)["tiddler"] as { fields: { text: string } }).fields.text).toBe("fluid-fixed");
-    const actedBySeat = await speak(entry, [{ name: "wiki", arguments: { verb: "act", name: "sidebar-layout", recipe: WALK_WIKI, expected: "fluid-fixed", resulting: "fixed-fluid" } }]);
-    say("MCP wiki act", payload(actedBySeat.results[0]));
+    const actedBySeat = await speak(entry, [{ name: "act", arguments: { address: "lar:///render.sidebar.lays", args: { recipe: WALK_WIKI, expected: "fluid-fixed", resulting: "fixed-fluid" } } }]);
+    say("MCP act lar:///render.sidebar.lays", payload(actedBySeat.results[0]));
     expect(payload(actedBySeat.results[0])).toMatchObject({ ok: true, data: { decision: "put", title: layoutTitle, resulting: "fixed-fluid" } });
     expect((dataOf(await lar.cli(["get", `title=${layoutTitle}`, ...W]))["tiddler"] as { fields: { text: string } }).fields.text).toBe("fixed-fluid");
     const status = await lar.cli(["wiki", "status", ...W]);
@@ -481,15 +480,15 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     const rendered = await lar.cli(["wiki", "render", "--text", "{{Walk wiki note}}", ...W]);
     expect(dataOf(rendered)).toMatchObject({ recipe: WALK_WIKI, text: "a note in the named wiki" });
     const seat = await speak(entry, [
-      { name: "wiki_filter", arguments: { filter, recipe: WALK_WIKI } },
-      { name: "tiddler_get", arguments: { title: "Walk wiki note", recipe: WALK_WIKI, fields: ["tags"] } },
-      { name: "wiki_filter", arguments: { filter: "[all[]]", recipe: "nowhere-at-all" } },
+      { name: "get", arguments: { filter, recipe: WALK_WIKI } },
+      { name: "get", arguments: { title: "Walk wiki note", recipe: WALK_WIKI, params: { fields: "tags" } } },
+      { name: "get", arguments: { filter: "[all[]]", recipe: "nowhere-at-all" } },
     ]);
-    say(`MCP wiki_filter recipe=${WALK_WIKI}`, payload(seat.results[0]));
+    say(`MCP get filter= recipe=${WALK_WIKI}`, payload(seat.results[0]));
     expect(seatUnstamped(payload(seat.results[0]))).toEqual({ ok: true, data: unstamped(dataOf(seen!)) });
     expect(payload(seat.results[1])).toMatchObject({ ok: true, data: { recipe: WALK_WIKI, tiddler: { fields: { title: "Walk wiki note", tags: "walk" } } } });
     const unreached = payload(seat.results[2]);
-    say("MCP wiki_filter on a wiki no recipe names", unreached);
+    say("MCP get filter= on a wiki no recipe names", unreached);
     expect(unreached.ok === false && unreached.said.includes("wiki-unreached")).toBe(true);
     // CONTROL: the daemon wiki answers none of the named wiki's records.
     expect(dataOf(await lar.cli(["get", `filter=${filter}`, ...D]))).toMatchObject({ titles: [], total: 0 });
@@ -553,8 +552,8 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     expect(got.code).toBe(3);
     const status = await lar.cli(["wiki", "status", ...D]);
     say("face h1: CLI wiki status", dataOf(status));
-    const seat = await speak(entry, [{ name: "wiki_filter", arguments: { filter: "[tag[memory]]", recipe: "default" } }]);
-    say("face h1: MCP wiki_filter [tag[memory]]", payload(seat.results[0]));
+    const seat = await speak(entry, [{ name: "get", arguments: { filter: "[tag[memory]]", recipe: "default" } }]);
+    say("face h1: MCP get filter=[tag[memory]]", payload(seat.results[0]));
     expect(payload(seat.results[0])).toMatchObject({ ok: true, data: { titles: [], total: 0 } });
   }, 420_000);
 });

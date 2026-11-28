@@ -111,7 +111,7 @@ describe.skipIf(!stagedTarget)("minted-canon projection — a user wiki's @{slug
     expect(secondLog, "reboot did not activate the minted wiki").toContain(`→ ${SLUG}`);
 
     // 4) LOAD into the minted wiki's working slot, then promote its landed family.
-    const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", WORKING, "--yes", "--json"]);
+    const r = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, `to=${WORKING}`, "yes=true", "--json"]);
     expect(r.json?.["ok"], `LOAD --to ${WORKING} failed: ${JSON.stringify(r.json)}`).toBe(true);
     await promoteLoadedTitles(lar, r.json, SLUG);
 

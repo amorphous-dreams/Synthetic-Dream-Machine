@@ -1,0 +1,76 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.pioneer.builds`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "mint an ephemeral pioneer sensorium"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.pioneer.builds"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.pioneer.builds"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.pioneer.builds"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.pioneer.builds ~ mint an ephemeral pioneer sensorium
+
+`name` names the pioneer and `half-life` its decay. An operator's retire at a terminal undoes it.
+
+The address stands ''candidate'' until the operator reads the landing's list. The MCP seat runs this act in its own process: the vessel's `call` binds the params against this carrier's live `#/takes` and answers `handler/seat` with the bound params, and the seat runs them (`act(address="lar:///sense.pioneer.builds", args={…})`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ name · half-life
+
+```memetic-wikitext
+<<has entity=`arg` name=`name` params=`takes/word needs/required ~ the sensorium by name`>>
+<<has entity=`arg` name=`half-life` params=`takes/count ~ the pioneer's decay`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ the vessel verbs the seat's handler reaches check the face's cap and the asker's hand themselves; a hand act refuses a seat by its own code`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ mcp
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! act lar:///sense.pioneer.builds
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`handler/seat spells/[[act lar:///sense.pioneer.builds]] ~ the seat runs it in its own process`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · voices
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/seat-lares`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ni8eoutb3kOc_8BOCeSdT3a3AMzW6IoNHEkfebkbGlA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

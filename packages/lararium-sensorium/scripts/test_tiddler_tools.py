@@ -1,16 +1,18 @@
-"""Witness — the `tiddler_get` / `tiddler_put` / `tiddler_delete` / `wiki_filter` / `wiki_render` / `wiki_status` MCP
-tools: the MCP skin of THE TIDDLER DOOR (lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout #/a-lean).
+"""Witness — the record tools `get` / `put` / `delete` / `rename` and the engine reads behind `act`: the MCP skin of THE
+TIDDLER DOOR (lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout #/a-lean).
 
-VERB-TABLE PARITY. One table (`fixtures/tiddler-door-answers.json`) drives this skin and the CLI's
-(`lares-cli/tests/tiddler-door.test.ts`): for each row the tool must put the row's `{verb, args}` on the daemon's
-socket and hand the row's `output` back verbatim, the same wire and the same body `lares get|put|delete … --json`
-answers as `data`. Beside it: every tool states its annotations explicitly (the schema's defaults read worst-case),
-the container law refuses before the wire, a write that never landed raises by name, and a house refusal crosses the
-seat in its own words.
+ONE CALL. Each record tool forwards `{verb, params, surface: "mcp"}` to the vessel's `call` verb, the params in their neutral
+names; the vessel binds them against the carrier's live #/takes, so the seat guards no argument of its own. VERB-TABLE
+PARITY: one table (`fixtures/tiddler-door-answers.json`) drives this skin and the CLI's (`lares-cli/tests/tiddler-door.test.ts`):
+a record row's `call` names the `{verb, params}` both skins send, and its `output` comes back verbatim; an engine row rides
+`act` by address, the vessel answers `handler/seat`, and the seat's own act puts the row's `{verb, args}` on the socket.
+Beside it: each tool states its annotations, a write the vessel answers owed raises by name, and a house refusal crosses
+the seat in its own words.
 
     ~/.venv/bin/python -m pytest packages/lararium-sensorium/scripts/test_tiddler_tools.py -q
 """
 import asyncio
+import inspect
 import json
 import os
 import socket
@@ -19,19 +21,26 @@ import threading
 import pytest
 
 import lares_uds as uds
-from lares_mcp import TIDDLER_VERBS, VERB_SEATS, DaemonCoordinator, build_mcp, seat_of
+from lares_mcp import DaemonCoordinator, build_mcp
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
+RECORD_TOOLS = ("get", "put", "delete", "rename")
+# The engine reads a row names by its seat act, each the carrier that seats it.
+ENGINE_ACTS = {"wiki_render": "lar:///engine.wiki.renders", "wiki_status": "lar:///engine.layer.reads"}
 with open(os.path.join(_HERE, "fixtures", "tiddler-door-answers.json"), encoding="utf-8") as _f:
-    _ROWS = [r for r in json.load(_f)["rows"] if r["tool"] in TIDDLER_VERBS or r["tool"] == "wiki"]
+    _TABLE = json.load(_f)["rows"]
+_ROWS = [r for r in _TABLE if r["tool"] in RECORD_TOOLS]
+_ENGINE_ROWS = [r for r in _TABLE if r["tool"] in ENGINE_ACTS]
 
 
 class _FakeDaemon:
-    """A unix-socket listener that records each NDJSON request line and answers ONE canned receipt."""
+    """A unix-socket listener that records each NDJSON request line and answers a canned receipt: the next of `answers`
+    while any wait, else `output` (or `error`)."""
 
     def __init__(self, path: str) -> None:
         self.path = path
         self.lines: "list[dict]" = []
+        self.answers: list = []
         self.output = None
         self.error: "dict | None" = None
         self.rest: "dict | None" = None
@@ -55,10 +64,13 @@ class _FakeDaemon:
                         break
                     buf += chunk
                 self.lines.append(json.loads(buf.split(b"\n", 1)[0].decode()))
-                receipt = ({"status": "error", "requestId": "r1", **self.error} if self.error is not None else
-                           {"status": "ok", "requestId": "r1",
-                            "results": {"summary": {"ok": True, "output": self.output}},
-                            **({"rest": self.rest} if self.rest is not None else {})})
+                if self.answers:
+                    receipt = {"status": "ok", "requestId": "r1", "results": {"summary": {"ok": True, "output": self.answers.pop(0)}}}
+                elif self.error is not None:
+                    receipt = {"status": "error", "requestId": "r1", **self.error}
+                else:
+                    receipt = {"status": "ok", "requestId": "r1", "results": {"summary": {"ok": True, "output": self.output}},
+                               **({"rest": self.rest} if self.rest is not None else {})}
                 conn.sendall((json.dumps(receipt) + "\n").encode())
 
     def close(self) -> None:
@@ -87,95 +99,94 @@ def _mcp():
 
 def _tools():
     mcp = _mcp()
-    return {name: mcp._tool_manager.get_tool(name).fn for name in (*TIDDLER_VERBS, "wiki")}  # noqa: SLF001 — the registered skins
+    return {name: mcp._tool_manager.get_tool(name).fn for name in (*RECORD_TOOLS, "act")}  # noqa: SLF001 — the registered skins
 
 
-def test_tiddler_tools_register_and_seat_hotl(daemon):
-    names = {t.name for t in asyncio.run(_mcp().list_tools())}
-    assert set(TIDDLER_VERBS) == {"tiddler_get", "tiddler_put", "tiddler_delete",
-                                  "wiki_filter", "wiki_render", "wiki_status"} <= names
-    for v in TIDDLER_VERBS:
-        assert v in VERB_SEATS and seat_of(v) == "HOTL"
-    # The switcher keeps its one tool this phase (the `wiki_switch|hold|release|active` rename rides phase 2), and no
-    # action-string tool stands yet (`wiki_act`, phase 2): a tool nobody built never lists.
-    assert "wiki" in names and names.isdisjoint({"wiki_act", "wiki_catalog", "wiki_switch"})
+def seated(address: str, params: dict) -> dict:
+    """The vessel's answer for an act whose handler rests in the seat: the address and the args it bound."""
+    return {"handler": "seat", "address": address, "params": params}
 
 
-def test_every_tiddler_tool_states_its_annotations_explicitly(daemon):
-    # The schema's defaults read worst-case (destructive, open-world, non-idempotent, not read-only), so each tool
-    # states all four. Reads read-only; the put and the delete name what they move (a whole-text put destroys, an append repeats);
-    # no tool reaches the open world.
+#: Each record tool's own address: the tool sends it, never its word, so no spelling a layer seats turns it into another act.
+RECORD_ADDRESS = {"put": "lar:///engine.record.puts", "delete": "lar:///engine.record.removes", "rename": "lar:///engine.record.renames"}
+
+
+def call_line(verb: str, params: dict) -> dict:
+    """The one line a seat tool puts on the socket: the vessel's `call` naming the tool's own address (a `get` by filter
+    the filter pages, else the record read), the params in their neutral names."""
+    if verb == "get":
+        verb = "lar:///engine.filter.pages" if "filter" in params else "lar:///engine.record.reads"
+    return {"verb": "call", "args": {"verb": RECORD_ADDRESS.get(verb, verb), "params": params, "surface": "mcp"}}
+
+
+def by_signature(fn, params: dict) -> dict:
+    """A row's neutral params as a tool takes them: the names its signature declares, then `params` for the rest."""
+    declared = set(inspect.signature(fn).parameters) - {"params"}
+    named = {k: v for k, v in params.items() if k in declared}
+    rest = {k: v for k, v in params.items() if k not in declared}
+    return {**named, **({"params": rest} if rest else {})}
+
+
+def test_the_record_tools_register_and_state_their_annotations(daemon):
+    # The schema's defaults read worst-case (destructive, open-world, non-idempotent, not read-only), so each tool states
+    # all four: `get` reads; `put`, `delete` and `rename` move records (a whole-text put destroys, an append repeats).
     tools = {t.name: t for t in asyncio.run(_mcp().list_tools())}
-    want = {
-        "wiki_filter":    (True, False, True),
-        "tiddler_get":    (True, False, True),
-        "wiki_render":    (True, False, True),
-        "wiki_status":    (True, False, True),
-        "tiddler_put":    (False, True, False),   # `text=` replaces the whole text; an append lands again on each call
-        "tiddler_delete": (False, True, True),
-    }
-    for name, (read_only, destructive, idempotent) in want.items():
+    want = {"get": (True, False, True, False), "put": (False, True, False, False),
+            "delete": (False, True, False, False), "rename": (False, True, False, False)}
+    for name, hints in want.items():
         a = tools[name].annotations
         assert a is not None, f"{name} states no annotations"
-        assert (a.read_only_hint, a.destructive_hint, a.idempotent_hint, a.open_world_hint) == \
-            (read_only, destructive, idempotent, False), name
+        assert (a.read_only_hint, a.destructive_hint, a.idempotent_hint, a.open_world_hint) == hints, name
+    assert set(tools).isdisjoint({"tiddler_get", "tiddler_put", "tiddler_delete", "wiki_filter", "wiki_render", "wiki_status", "wiki"})
 
 
-def test_the_table_names_every_tool():
-    assert {row["tool"] for row in _ROWS} == set(TIDDLER_VERBS) | {"wiki"}
+def test_the_table_names_the_record_tools_and_the_engine_acts():
+    assert {row["tool"] for row in _ROWS} == {"get", "put", "delete"}
+    assert all("call" in row for row in _ROWS)
+    assert {row["tool"] for row in _ENGINE_ROWS} == set(ENGINE_ACTS)
 
 
-@pytest.mark.parametrize("row", _ROWS, ids=[f"{r['tool']}:{r['wire']['args'].get('title') or r['wire']['args'].get('filter') or 'status'}" for r in _ROWS])
-def test_verb_table_parity_the_row_wire_rides_and_the_row_output_returns(daemon, row):
+@pytest.mark.parametrize("row", _ROWS, ids=[f"{r['tool']}:{r['call']['params'].get('title') or r['call']['params'].get('filter') or 'list'}" for r in _ROWS])
+def test_verb_table_parity_a_record_tool_sends_the_rows_call_and_the_row_output_returns(daemon, row):
     daemon.output = row["output"]
-    out = _tools()[row["tool"]](**row["mcp"])
-    assert daemon.wire() == row["wire"]
+    fn = _tools()[row["tool"]]
+    out = fn(**by_signature(fn, row["call"]["params"]))
+    assert [daemon.wire(i) for i in range(len(daemon.lines))] == [call_line(row["call"]["verb"], row["call"]["params"])]
     assert out == row["output"]
 
 
-def test_every_tiddler_tool_refuses_a_missing_container_before_the_wire(daemon):
-    t = _tools()
-    for call in (lambda: t["wiki_filter"](filter="[tag[x]]"), lambda: t["tiddler_get"](title="T"),
-                 lambda: t["wiki_render"](title="T"), lambda: t["tiddler_put"](title="T", fields={"a": "b"}),
-                 lambda: t["tiddler_delete"](title="T"),
-                 lambda: t["tiddler_get"](title="T", recipe="default", bag="lares"),
-                 lambda: t["wiki_filter"](filter="[tag[x]]", recipe=None)):
-        with pytest.raises(ValueError, match="no-container"):
-            call()
-    assert daemon.lines == []
+@pytest.mark.parametrize("row", _ENGINE_ROWS, ids=[f"{r['tool']}:{r['wire']['args'].get('title') or r['wire']['args'].get('recipe')}" for r in _ENGINE_ROWS])
+def test_verb_table_parity_an_engine_act_runs_in_the_seat_and_the_row_wire_rides(daemon, row):
+    address = ENGINE_ACTS[row["tool"]]
+    bound = {k.replace("_", "-"): v for k, v in row["mcp"].items()}
+    daemon.answers = [seated(address, bound)]
+    daemon.output = row["output"]
+    out = _tools()["act"](address=address, args=row["mcp"])
+    assert daemon.wire(0) == call_line(address, bound)
+    assert daemon.wire(1) == row["wire"] and len(daemon.lines) == 2
+    assert out == row["output"]
 
 
-def test_arguments_refuse_before_the_wire(daemon):
-    t = _tools()
+def test_a_record_tool_guards_no_argument_and_the_vessels_refusal_crosses_by_name(daemon):
+    # THE VESSEL BINDS: a call naming no container rides to `call` as written, and the vessel's own refusal comes back in
+    # its words; the seat adds no guard of its own.
+    daemon.error = {"errorMessage": "no-container: name where this verb reads or writes", "refusal": {"reason": "no-container"}}
+    with pytest.raises(uds.LaresVerbError, match="no-container"):
+        _tools()["get"](title="T")
+    assert daemon.wire() == call_line("get", {"title": "T"})
+
+
+def test_the_engine_acts_keep_their_own_guards_before_the_wire(daemon):
+    render = _mcp().seat_acts[ENGINE_ACTS["wiki_render"]]
     with pytest.raises(ValueError, match="one of `title`"):
-        t["wiki_render"](recipe="default")
+        render(recipe="default")
     with pytest.raises(ValueError, match="one of `title`"):
-        t["wiki_render"](recipe="default", title="T", text="span")
+        render(recipe="default", title="T", text="span")
     with pytest.raises(ValueError, match="form"):
-        t["wiki_render"](recipe="default", title="T", form="pdf")
+        render(recipe="default", title="T", form="pdf")
     with pytest.raises(ValueError, match="render-output-substrate-refused"):
-        t["wiki_render"](recipe="default", title="T", output="workbench")
-    with pytest.raises(ValueError, match="string values"):
-        t["tiddler_put"](recipe="default", title="T", fields={"n": 1})
+        render(recipe="default", title="T", output="workbench")
     assert daemon.lines == []
-
-
-def test_tiddler_get_answers_an_absent_tiddler_as_the_verb_does(daemon):
-    daemon.output = {"recipe": "default", "title": "Nowhere", "tiddler": None}
-    assert _tools()["tiddler_get"](title="Nowhere", recipe="default") == {"recipe": "default", "title": "Nowhere", "tiddler": None}
-
-
-def test_tiddler_put_raises_where_nothing_landed(daemon):
-    t = _tools()
-    daemon.output = {"recipe": "default", "title": "T", "decision": "conflict", "hash": "sha256-live", "changed": []}
-    with pytest.raises(uds.LaresVerbError, match=r"tiddler-put conflict.*sha256-live"):
-        t["tiddler_put"](title="T", recipe="default", fields={"a": "b"}, base="sha256-old")
-    daemon.output = {"recipe": "default", "title": "T", "decision": "exists", "hash": "sha256-live", "changed": []}
-    with pytest.raises(uds.LaresVerbError, match=r"tiddler-put exists"):
-        t["tiddler_put"](title="T", recipe="default", text="x", create=True)
-    daemon.output = {"recipe": "default", "title": "T", "decision": "noop", "hash": "sha256-live", "changed": []}
-    assert t["tiddler_put"](title="T", recipe="default", fields={"a": "b"})["decision"] == "noop"
-    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "T", "fields": {"a": "b"}}}
 
 
 _OWED = {"band": "owed", "documents": [{"documentId": "2hUgpNYoRGAkCcCXTgZGecaQBXsp", "refusal": "save-unsealed",
@@ -184,26 +195,26 @@ _OWED = {"band": "owed", "documents": [{"documentId": "2hUgpNYoRGAkCcCXTgZGecaQB
 
 def test_a_write_the_vessel_answers_owed_raises_owed_with_the_band_never_ok(daemon):
     """NO SILENT LOSS (research/signer-refused): the vessel stamps `rest: {band: owed}` on a write whose save waits
-    unsealed; every MCP write rides `_meme_wire`, so each raises `owed` naming the document and the band, never ok."""
+    unsealed; every seat tool rides the one call wire, so each raises `owed` naming the document and the band, never ok."""
     t = _tools()
     daemon.rest = _OWED
     daemon.output = {"recipe": "lares", "title": "T", "decision": "put", "hash": "sha256-new", "changed": ["text"]}
     with pytest.raises(uds.LaresVerbError, match=r"^owed: .*2hUgpNYoRGAk.*save-unsealed") as put:
-        t["tiddler_put"](title="T", recipe="lares", text="x")
+        t["put"](title="T", recipe="lares", text="x")
     assert put.value.refusal == "owed"
     assert '"band":"owed"' in str(put.value) and '"decision":"put"' in str(put.value)
     daemon.output = {"recipe": "lares", "title": "T", "decision": "removed", "tombstoned": ["T"]}
     with pytest.raises(uds.LaresVerbError, match=r"^owed: ") as deleted:
-        t["tiddler_delete"](title="T", recipe="lares")
+        t["delete"](title="T", recipe="lares")
     assert deleted.value.refusal == "owed"
     daemon.rest = None
     daemon.output = {"recipe": "lares", "title": "T", "decision": "put", "hash": "sha256-new", "changed": ["text"]}
-    assert t["tiddler_put"](title="T", recipe="lares", text="x")["decision"] == "put"
+    assert t["put"](title="T", recipe="lares", text="x")["decision"] == "put"
 
 
 def test_an_act_the_vessel_answers_owed_raises_owed_at_the_session_door(monkeypatch, tmp_path_factory):
     """KAHUA-STAGE answers staged: true over a held save; the seat stamps `rest` on the act's answer, and
-    `uds.session_act` (every MCP act rides it) raises `owed` naming the band, never the bare row."""
+    `uds.session_act` (every session act rides it) raises `owed` naming the band, never the bare row."""
     d = tmp_path_factory.mktemp("uds-act")
     path = os.path.join(d, "daemon.sock")
     srv = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -243,33 +254,6 @@ def test_an_act_the_vessel_answers_owed_raises_owed_at_the_session_door(monkeypa
         srv.close()
 
 
-def test_tiddler_delete_raises_on_a_stale_base_and_answers_absent(daemon):
-    t = _tools()
-    daemon.output = {"recipe": "default", "title": "T", "decision": "conflict", "tombstoned": [], "hash": "sha256-live"}
-    with pytest.raises(uds.LaresVerbError, match=r"tiddler-delete conflict.*sha256-live"):
-        t["tiddler_delete"](title="T", recipe="default", base="sha256-old")
-    daemon.output = {"recipe": "default", "title": "T", "decision": "absent", "tombstoned": []}
-    assert t["tiddler_delete"](title="T", recipe="default")["decision"] == "absent"
-
-
-def test_tiddler_delete_of_a_family_raises_with_its_consequence_and_lands_under_the_family_flag(daemon):
-    # THE FAMILY LAW AT THE SEAT: a root without the flag moves nothing and the tool error quotes the consequence the
-    # delete would land; with `family=True` the flag rides the wire and the receipt comes back whole.
-    t = _tools()
-    read = {"act": "delete", "target": "lar:///t/x", "position": "root", "family": "lar:///t/x",
-            "acts": [{"title": "lar:///t/x", "act": "tombstone", "bag": "w"}, {"title": "lar:///t/x#/b", "act": "tombstone", "bag": "w"}],
-            "leaves": [], "orphans": [], "refusals": []}
-    daemon.output = {"recipe": "default", "title": "lar:///t/x", "decision": "refused", "refusal": "tiddler-delete-in-a-family",
-                     "why": "tiddler-delete-in-a-family: \"lar:///t/x\" stands as a meme root of lar:///t/x", "tombstoned": [], "consequence": read}
-    with pytest.raises(uds.LaresVerbError, match=r"tiddler-delete-in-a-family.*nothing moved.*lar:///t/x#/b") as raised:
-        t["tiddler_delete"](title="lar:///t/x", recipe="default")
-    assert raised.value.refusal == "tiddler-delete-in-a-family"
-    assert daemon.wire() == {"verb": "tiddler-delete", "args": {"recipe": "default", "title": "lar:///t/x"}}
-    daemon.output = {"recipe": "default", "title": "lar:///t/x", "decision": "removed", "tombstoned": ["lar:///t/x", "lar:///t/x#/b"], "consequence": read}
-    assert t["tiddler_delete"](title="lar:///t/x", recipe="default", family=True)["tombstoned"] == ["lar:///t/x", "lar:///t/x#/b"]
-    assert daemon.wire() == {"verb": "tiddler-delete", "args": {"recipe": "default", "title": "lar:///t/x", "family": True}}
-
-
 def _call(mcp, name: str, args: dict):
     async def go():
         try:
@@ -284,242 +268,199 @@ def test_house_refusals_cross_the_seat_in_their_own_words(daemon):
     # put, a malformed filter, a face with no reach, each in the house's words and never as a bare crash line.
     mcp = _mcp()
     for refusal, name, args in (
-        ("family-carriage-derives: \"lar:///t/x\" stands as a meme root and this put moves `type`", "tiddler_put", {"title": "lar:///t/x", "recipe": "default", "fields": {"type": "text/plain"}}),
-        ("filter-malformed: Missing ] in filter expression (in \"[tag[x\")", "wiki_filter", {"filter": "[tag[x", "recipe": "default"}),
-        ("cap-denied: read on lar:///ha.ka.ba/wikis/daemon/working required (no-grant)", "wiki_status", {"recipe": "default"}),
-        ("wiki-unreached: wiki-filter — no wiki \"elsewhere\" this face reaches", "wiki_filter", {"filter": "[tag[x]]", "recipe": "elsewhere"}),
+        ("family-carriage-derives: \"lar:///t/x\" stands as a meme root and this put moves `type`", "put", {"title": "lar:///t/x", "recipe": "default", "fields": {"type": "text/plain"}}),
+        ("filter-malformed: Missing ] in filter expression (in \"[tag[x\")", "get", {"filter": "[tag[x", "recipe": "default"}),
+        ("cap-denied: read on lar:///ha.ka.ba/wikis/daemon/working required (no-grant)", "act", {"address": ENGINE_ACTS["wiki_status"], "args": {"recipe": "default"}}),
+        ("wiki-unreached: wiki-filter — no wiki \"elsewhere\" this face reaches", "get", {"filter": "[tag[x]]", "recipe": "elsewhere"}),
     ):
         daemon.error = {"errorMessage": refusal, "refusal": {"reason": refusal.split(":", 1)[0]}}
         is_error, said = _call(mcp, name, args)
         assert is_error and refusal.split(":", 1)[0] in said, (name, said)
 
 
-def test_a_line_sweep_rides_match_and_context_on_the_one_filter_door(daemon):
+def test_a_line_sweep_rides_match_and_context_on_the_one_get(daemon):
     """S5 THE LINES LENS (course/ai-surface-gestures): `match` rides untrimmed and `context` as its count (0 included) on
-    `wiki-filter`, no new tool; the vessel's own refusal (`filter-context-alone`) comes back in its words; the card
+    the one `get`, no new tool; the vessel's own refusal (`filter-context-alone`) comes back in its words; the card
     names the sweep."""
     t = _tools()
     daemon.output = {"recipe": "default", "filter": "[tag[x]]", "rows": [{"title": "T", "fields": {}, "lines": [{"n": 2, "text": "it is"}], "matches": 1}], "total": 1, "next": None, "asOf": "0123456789abcdef"}
-    assert t["wiki_filter"](filter="[tag[x]]", recipe="default", match=" is ", context=0)["rows"][0]["matches"] == 1
-    assert daemon.wire() == {"verb": "wiki-filter", "args": {"recipe": "default", "filter": "[tag[x]]", "match": " is ", "context": 0}}
-    t["wiki_filter"](filter="[tag[x]]", recipe="default", match="/\\bare\\b/i")
-    assert daemon.wire() == {"verb": "wiki-filter", "args": {"recipe": "default", "filter": "[tag[x]]", "match": "/\\bare\\b/i"}}
+    assert t["get"](filter="[tag[x]]", recipe="default", params={"match": " is ", "context": 0})["rows"][0]["matches"] == 1
+    assert daemon.wire() == call_line("get", {"filter": "[tag[x]]", "recipe": "default", "match": " is ", "context": 0})
     refusal = "filter-context-alone: `context` shapes the lines `match` finds; name `match=<words>` beside it, or drop `context`."
     daemon.error = {"errorMessage": refusal, "refusal": {"reason": "filter-context-alone"}}
-    is_error, said = _call(_mcp(), "wiki_filter", {"filter": "[tag[x]]", "recipe": "default", "context": 1})
+    is_error, said = _call(_mcp(), "get", {"filter": "[tag[x]]", "recipe": "default", "params": {"context": 1}})
     assert is_error and "filter-context-alone" in said
-    card = {x.name: x for x in asyncio.run(_mcp().list_tools())}["wiki_filter"].description
+    card = {x.name: x for x in asyncio.run(_mcp().list_tools())}["get"].description
     assert "`match`" in card and "lines: [{n, text}]" in card and "filter-context-alone" in card
 
 
 def test_the_cards_name_the_rendered_read(daemon):
-    # THE RENDERED TIDDLER (backlog-awakens): an agent reads a whole render with ONE `tiddler_get` and any slice with its
-    # own `wiki_filter` over the sources, so the cards say so; the write cards name the wall only the renderer passes.
+    # THE RENDERED TIDDLER (backlog-awakens): an agent reads a whole render with ONE `get` by title and any slice with its
+    # own `get` by filter over the sources, so the card says so; the write cards name the wall only the renderer passes.
     tools = {t.name: t for t in asyncio.run(_mcp().list_tools())}
-    get, filt = tools["tiddler_get"].description, tools["wiki_filter"].description
-    assert "projection: rendered" in get and "rendered-from" in get, get
-    assert "rendered-from" in filt and "slice" in filt, filt
-    for name in ("tiddler_put", "tiddler_delete"):
+    get = tools["get"].description
+    assert "projection: rendered" in get and "rendered-from" in get and "slice" in get, get
+    for name in ("put", "delete"):
         assert "rendered-derives" in tools[name].description, name
 
 
 def test_the_text_alone_rides_a_named_key_and_takes_no_parameter(daemon):
     """S3 TEXT ALONE (course/ai-surface-gestures): the CLI's `lares get title=<title> form=text` writes the text's bytes alone;
-    the MCP seat reads values, so its card names the key each lens carries the text at, and `tiddler_get` takes no
-    `text` parameter (on `tiddler_put`, `text` names the words written). The record lens reads it at `grain="whole"`."""
+    the MCP seat reads values, so its card names the key each lens carries the text at, and `get` takes no `text`
+    parameter (on `put`, `text` names the words written)."""
     tools = {t.name: t for t in asyncio.run(_mcp().list_tools())}
-    card = tools["tiddler_get"].description
+    card = tools["get"].description
     assert "form=text" in card and "tiddler.fields.text" in card and "meme.text" in card and "meme.slotText" in card, card
-    import inspect
-    assert "text" not in inspect.signature(_tools()["tiddler_get"]).parameters
-    daemon.output = {"recipe": "default", "title": "Note", "lens": "record", "tiddler": {"fields": {"title": "Note", "text": "words"}, "hash": "sha256:1"}}
-    assert _tools()["tiddler_get"](title="Note", recipe="default", grain="whole")["tiddler"]["fields"]["text"] == "words"
-    assert daemon.wire() == {"verb": "tiddler-get", "args": {"recipe": "default", "title": "Note", "grain": "whole"}}
+    assert "text" not in inspect.signature(_tools()["get"]).parameters
+    assert "text" in inspect.signature(_tools()["put"]).parameters
 
 
-def test_the_record_tools_reach_one_bag_and_the_engine_verbs_name_a_wiki_alone(daemon):
-    # `tiddler_get`, `tiddler_put` and `tiddler_delete` reach a bag (one record through its store, no engine) and name it on
-    # the wire; every engine verb names `recipe` alone, so a `bag` there never rides (the signature carries no `bag`).
-    import inspect
+def test_the_record_tools_reach_one_bag_and_the_engine_acts_name_a_wiki_alone(daemon):
+    # `get`, `put` and `delete` name a bag (one record through its store, no engine) on the call; every engine act takes
+    # `recipe` alone, so its signature carries no `bag`.
     t = _tools()
     daemon.output = {"bag": "lar:///ha.ka.ba/bags/lares", "title": "T", "tiddler": None}
-    assert t["tiddler_get"](title="T", bag="lares") == daemon.output
-    assert daemon.wire() == {"verb": "tiddler-get", "args": {"bag": "lares", "title": "T"}}
-    for name in ("wiki_filter", "wiki_render", "wiki_status"):
-        assert "bag" not in inspect.signature(t[name]).parameters, name
-    for name in ("tiddler_put", "tiddler_delete"):
+    assert t["get"](title="T", bag="lares") == daemon.output
+    assert daemon.wire() == call_line("get", {"title": "T", "bag": "lares"})
+    for name in ("get", "put", "delete"):
         assert "bag" in inspect.signature(t[name]).parameters, name
-    with pytest.raises(TypeError):
-        t["wiki_filter"](filter="[tag[x]]", bag="lares")
-    overview = t["wiki_status"]()
+    acts = _mcp().seat_acts
+    for address in ENGINE_ACTS.values():
+        assert "bag" not in inspect.signature(acts[address]).parameters, address
+    overview = acts[ENGINE_ACTS["wiki_status"]]()
     assert set(overview) == {"catalog", "activation", "residency"}
     assert [line["verb"] for line in daemon.lines[-3:]] == ["list-wikis", "wiki-active", "residency"]
 
 
-def test_a_retired_parameter_refuses_aloud_before_the_wire(daemon):
-    # `text` retired into `grain` (the lens and the grain kept apart): a caller still naming it hears the refusal and the
-    # word that replaced it, and nothing crosses the wire; the SDK would otherwise drop it and answer a grain never asked.
-    mcp = _mcp()
-    for value in (False, True):
-        is_error, said = _call(mcp, "tiddler_get", {"title": "T", "recipe": "default", "text": value})
-        assert is_error and "param-retired: `text` retired" in said and 'grain="skinny"' in said, said
-    assert daemon.lines == []
-
-
-def test_title_less_family_listing_refuses_the_flags_it_does_not_read(daemon):
-    # The listing reads container, tree and cursor; a slot, grain, fields or max_bytes beside it refuses by name, as the CLI does.
+def test_every_write_shape_rides_as_named_params_on_the_one_put(daemon):
+    # An append, a create, a slot, a replace span and its words, a field patch: each rides the call in its neutral name, as
+    # given, and the vessel binds it against the carrier's #/takes.
     t = _tools()
-    for stray in ({"slot": "#/a"}, {"grain": "fat"}, {"fields": ["text"]}, {"max_bytes": 10}):
-        with pytest.raises(ValueError, match="title-less meme listing"):
-            t["tiddler_get"](meme=True, recipe="default", **stray)
-    assert daemon.lines == []
+    daemon.output = {"recipe": "default", "title": "Ledger", "decision": "put", "hash": "sha256:2"}
+    t["put"](title="Ledger", recipe="default", append="a dated note", create=True)
+    assert daemon.wire() == call_line("put", {"title": "Ledger", "recipe": "default", "append": "a dated note", "create": True})
+    t["put"](title="lar:///t/x", recipe="default", base="sha256:1", params={"slot": "#/a", "replace": " the cat ", "with": " a dog"})
+    assert daemon.wire() == call_line("put", {"title": "lar:///t/x", "recipe": "default", "base": "sha256:1",
+                                              "slot": "#/a", "replace": " the cat ", "with": " a dog"})
+    t["put"](title="Note", recipe="default", fields={"status": "trued"}, params={"tag_add": "reviewed", "unset": ["priority"]})
+    assert daemon.wire() == call_line("put", {"title": "Note", "recipe": "default", "fields": {"status": "trued"},
+                                              "tag-add": "reviewed", "unset": ["priority"]})
+    t["put"](title="Note", recipe="default", text="x", mu="dry")
+    assert daemon.wire() == call_line("put", {"title": "Note", "recipe": "default", "text": "x", "mu": "dry"})
 
 
-def test_an_append_rides_without_a_base_on_a_record_and_a_slot_and_names_its_words_alone(daemon):
-    t = _tools()
-    daemon.output = {"has": "<<~ has name=`Ledger` params=`recipe/default decision/put hash/sha256:2`>>", "recipe": "default", "title": "Ledger", "decision": "put", "hash": "sha256:2"}
-    assert t["tiddler_put"](title="Ledger", recipe="default", append="a dated note")["hash"] == "sha256:2"
-    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "Ledger", "append": "a dated note"}}
-    assert t["tiddler_put"](title="Ledger", recipe="default", append="first", create=True)["decision"] == "put"
-    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "Ledger", "append": "first", "create": True}}
-    before = len(daemon.lines)
-    for crossed in ({"text": "x"}, {"base": "sha256:1"}, {"fields": {"a": "b"}}, {"unset": ["a"]}):
-        with pytest.raises(ValueError, match="append names its words alone"):
-            t["tiddler_put"](title="Ledger", recipe="default", append="y", **crossed)
-    assert len(daemon.lines) == before
-    daemon.output = {"recipe": "default", "title": "Ledger", "decision": "conflict", "hash": "sha256:3"}
-    with pytest.raises(uds.LaresVerbError, match=r"kept moving under the append.*sha256:3"):
-        t["tiddler_put"](title="Ledger", recipe="default", append="y")
-    daemon.output = {"recipe": "default", "title": "lar:///t/x#/a", "decision": "put", "hash": "sha256:4", "landed": [], "kept": [], "tombstoned": [], "warnings": []}
-    assert t["tiddler_put"](title="lar:///t/x", recipe="default", slot="#/a", append="note")["decision"] == "put"
-    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "lar:///t/x#/a", "append": "note"}}
-
-
-def test_a_replace_rides_its_span_and_words_on_the_one_put_and_names_them_alone(daemon):
-    """S4 REPLACE IN PLACE (course/ai-surface-gestures): `replace` + `replace_with` ride the wire as `replace` + `with`,
-    untrimmed, beside a base and a field patch; another text source, a cut or create beside them refuses before the
-    wire; the door's own refusals (`replace-ambiguous`, `replace-absent`) come back as the verb error they are."""
-    t = _tools()
-    daemon.output = {"recipe": "default", "title": "Errata", "decision": "put", "hash": "sha256:2", "replaced": {"span": 9, "with": 6}}
-    assert t["tiddler_put"](title="Errata", recipe="default", replace=" the cat ", replace_with=" a dog", base="sha256:1")["replaced"] == {"span": 9, "with": 6}
-    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "Errata", "replace": " the cat ", "with": " a dog", "base": "sha256:1"}}
-    t["tiddler_put"](title="Errata", recipe="default", replace="gone", replace_with="", fields={"status": "trued"})
-    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "Errata", "replace": "gone", "with": "", "fields": {"status": "trued"}}}
-    t["tiddler_put"](title="lar:///t/x", recipe="default", slot="#/a", replace="old", replace_with="new")
-    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "lar:///t/x#/a", "replace": "old", "with": "new"}}
-    before = len(daemon.lines)
-    for crossed in ({"text": "x"}, {"append": "x"}, {"cut": ["#/a"]}, {"create": True}):
-        with pytest.raises(ValueError, match="a replace changes one span"):
-            t["tiddler_put"](title="Errata", recipe="default", replace="old", replace_with="new", **crossed)
-    with pytest.raises(ValueError, match="replace_with"):
-        t["tiddler_put"](title="Errata", recipe="default", replace="old")
-    for span in (None, ""):
-        with pytest.raises(ValueError, match="names the one span"):
-            t["tiddler_put"](title="Errata", recipe="default", replace=span, replace_with="new")
-    assert len(daemon.lines) == before
-
-
-def test_the_slot_folds_into_the_title_and_a_slot_text_put_names_no_base(daemon):
-    t = _tools()
-    daemon.output = {"recipe": "default", "title": "lar:///t/x#/a", "decision": "put", "hash": "sha256:5"}
-    t["tiddler_put"](title="lar:///t/x", recipe="default", slot="#/a", text="a new body")
-    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "lar:///t/x#/a", "text": "a new body"}}
-    t["tiddler_put"](title="lar:///t/x#/a", recipe="default", text="a new body", base="partial:#/a:sha256:9")
-    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "lar:///t/x#/a", "text": "a new body", "base": "partial:#/a:sha256:9"}}
-    before = len(daemon.lines)
-    for bad in ("a", "#/", "#/a b", "#/a//b"):
-        with pytest.raises(ValueError, match="slot-malformed"):
-            t["tiddler_put"](title="lar:///t/x", recipe="default", slot=bad, text="x")
-    with pytest.raises(ValueError, match="slot-beside-fragment"):
-        t["tiddler_put"](title="lar:///t/x#/a", recipe="default", slot="#/b", text="x")
-    assert len(daemon.lines) == before
-
-
-def test_a_bag_takes_the_plain_put_and_the_family_delete(daemon):
-    t = _tools()
-    daemon.output = {"bag": "working", "title": "lar:///t/x", "decision": "put", "hash": "sha256:6", "canonicalHash": "sha256:c"}
-    t["tiddler_put"](title="lar:///t/x", bag="working", text="a whole carrier")
-    assert daemon.wire() == {"verb": "tiddler-put", "args": {"bag": "working", "title": "lar:///t/x", "text": "a whole carrier"}}
-    daemon.output = {"bag": "working", "title": "lar:///t/x", "decision": "removed", "tombstoned": [], "retracted": ["lar:///t/x"]}
-    t["tiddler_delete"](title="lar:///t/x", bag="working", family=True)
-    assert daemon.wire() == {"verb": "tiddler-delete", "args": {"bag": "working", "title": "lar:///t/x", "family": True}}
-    before = len(daemon.lines)
-    for call, kwargs in (("tiddler_put", {"text": "x"}), ("tiddler_delete", {})):
-        with pytest.raises(ValueError, match="no-container"):
-            t[call](title="lar:///t/x", recipe="default", bag="working", **kwargs)
-    assert len(daemon.lines) == before
+def test_a_rename_rides_its_title_its_target_and_its_base(daemon):
+    daemon.output = {"recipe": "default", "title": "Old", "to": "New", "decision": "renamed"}
+    assert _tools()["rename"](title="Old", to="New", base="sha256:1", recipe="default")["decision"] == "renamed"
+    assert daemon.wire() == call_line("rename", {"title": "Old", "to": "New", "base": "sha256:1", "recipe": "default"})
 
 
 def test_put_and_delete_take_no_meme_argument():
     t = _tools()
-    for call in ("tiddler_put", "tiddler_delete"):
+    for call in ("put", "delete"):
         with pytest.raises(TypeError):
             t[call](title="lar:///t/x", recipe="default", meme=True)
 
 
-def test_meme_all_joins_pages_and_retains_the_first_provenance(daemon):
-    daemon.output = {"has": "<<~ has name=`first`>>", "title": "lar:///t/x", "meme": {"uri": "lar:///t/x", "text": "aloha", "canonicalHash": "hash", "bytes": 5}, "grain": {"applied": "whole"}, "next": None}
-    answer = _tools()["tiddler_get"](title="lar:///t/x", recipe="default", meme=True, all=True)
-    assert answer == daemon.output
-    assert daemon.wire()["args"]["grain"] == "whole"
-
-
-def test_meme_all_joins_utf8_pages_and_refuses_changed_pages(monkeypatch):
-    parts = ['<<^ code=`&#x0001;`>>\n', '<<~ ahu slot=`#/a`>>\né\n<<~/ahu>>\n', '<<~ ahu slot=`#/b`>>\n<<~/ahu>>\n<<^ code=`&#x0004;`>>']
-    size = len(''.join(parts).encode('utf-8'))
-    def page(i):
-        return {"has": f"<<~ has name=`page{i + 1}` params=`layer/home base/partial:p{i + 1}:hash`>>", "title": "lar:///t/x", "recipe": "default", "lens": "meme", "meme": {"uri": "lar:///t/x", "text": parts[i], "canonicalHash": f"partial:p{i + 1}:hash" if i < 2 else "hash", "bytes": size, "page": {"page": i + 1, "pages": 3}}, "grain": {"applied": "whole"}, "next": {"grain": "whole", "after": str(i + 1)} if i < 2 else None}
-    pages = [page(i) for i in range(3)]
-    calls = []
-    def call(verb, args):
-        calls.append(args)
-        return {"results": {"summary": {"ok": True, "output": pages[int(args.get("after", "0"))]}}}
-    monkeypatch.setattr(uds, "call", call)
-    get = _tools()["tiddler_get"]
-    answer = get(title="lar:///t/x", recipe="default", meme=True, all=True)
-    assert answer["meme"]["text"].encode() == ''.join(parts).encode()
-    assert answer["meme"]["canonicalHash"] == "hash"
-    assert answer["has"] == "<<~ has name=`page1` params=`layer/home base/hash`>>"
-    assert answer["next"] is None
-    assert len(calls) == 3
-    pages[1]["meme"]["canonicalHash"] = "partial:p2:other"
-    with pytest.raises(ValueError, match="read-page-mismatch"):
-        get(title="lar:///t/x", recipe="default", meme=True, all=True)
-
-
-@pytest.mark.parametrize("fault", ["cycle", "origin", "page", "missing-text", "short"])
-def test_meme_all_refuses_inconsistent_continuations(monkeypatch, fault):
-    def page(i):
-        return {"has": "<<~ has name=`x`>>", "title": "lar:///t/x", "recipe": "default", "lens": "meme", "meme": {"uri": "lar:///t/x", "text": "x", "canonicalHash": f"partial:p{i}:hash" if i < 3 else "hash", "bytes": 3, "page": {"page": i, "pages": 3}}, "next": {"grain": "whole", "after": str(i)} if i < 3 else None}
-    pages = [page(i) for i in range(1, 4)]
-    if fault == "cycle": pages[1]["next"]["after"] = "1"
-    if fault == "origin": pages[1]["recipe"] = "other"
-    if fault == "page": pages[1]["meme"]["page"]["page"] = 3
-    if fault == "missing-text": del pages[1]["meme"]["text"]
-    if fault == "short": pages[1]["next"] = None
-    def call(verb, args):
-        return {"results": {"summary": {"ok": True, "output": pages[int(args.get("after", "0"))]}}}
-    monkeypatch.setattr(uds, "call", call)
-    with pytest.raises(ValueError, match="read-page-mismatch"):
-        _tools()["tiddler_get"](title="lar:///t/x", recipe="default", meme=True, all=True)
-
-
-def test_meme_all_propagates_a_stale_cursor_without_a_prefix(monkeypatch):
-    def call(verb, args):
-        if "after" in args:
-            raise uds.LaresVerbError("read-cursor-stale")
-        return {"results": {"summary": {"ok": True, "output": {"has": "<<~ has name=`x`>>", "title": "lar:///t/x", "meme": {"text": "prefix", "uri": "lar:///t/x", "canonicalHash": "partial:p1:hash", "bytes": 12, "page": {"page": 1, "pages": 2}}, "next": {"grain": "whole", "after": "1.hash"}}}}}
-    monkeypatch.setattr(uds, "call", call)
-    with pytest.raises(uds.LaresVerbError, match="read-cursor-stale"):
-        _tools()["tiddler_get"](title="lar:///t/x", recipe="default", meme=True, all=True)
-
-
-def test_the_seat_instructions_a_waking_client_receives_name_its_read_write_and_find_doors(daemon):
-    """DELIVERY WITNESS (S7): the instructions the built server serves at first contact name the three doors
-    (read, write, find) and the one read line the affordance carriers unfold through."""
+def test_the_seat_instructions_a_waking_client_receives_name_the_call_shapes_and_the_law_first(daemon):
+    """DELIVERY WITNESS (S7): the instructions the built server serves at first contact name the record tools, the one
+    act by address, the meme's whole read, and the law read first."""
     served = build_mcp(DaemonCoordinator(wing="w")).instructions
-    for door in ("tiddler_get", "tiddler_put", "wiki_filter"):
-        assert f"`{door}" in served, door
-    assert "append" in served
-    assert 'meme=True, grain="whole"' in served
-    assert "Read the house's law before you act" in served
+    for door in ("`get`", "`put`", "`delete`", "`rename`", "act(address="):
+        assert door in served, door
+    assert 'mu="assert"' in served
+    assert 'act(address="lar:///engine.law.indexes")' in served
+    assert "Read the house's law first" in served
+
+
+# ── the seat's own doors hold (ward#1's custody read: F1-F4) ───────────────────────────────────────────────────────
+
+def test_a_record_write_the_vessel_answers_unlanded_raises_by_name(daemon):
+    """F2: the vessel answers a stale base, a standing record or a family delete as a receipt naming its decision, never an
+    error; the seat raises each by name with what the receipt says, and a landed receipt returns whole."""
+    mcp = _mcp()
+    for name, args, receipt in (
+        ("put", {"title": "T", "recipe": "default", "text": "x", "base": "sha256-old"},
+         {"has": "<<~ has name=`T` params=`decision/conflict`>>", "title": "T", "decision": "conflict", "hash": "sha256-live"}),
+        ("put", {"title": "T", "recipe": "default", "text": "x", "create": True},
+         {"has": "<<~ has name=`T` params=`decision/exists`>>", "title": "T", "decision": "exists", "hash": "sha256-live"}),
+        ("delete", {"title": "lar:///t/x#/a", "recipe": "default"},
+         {"has": "<<~ has name=`lar:///t/x#/a` params=`decision/refused`>>", "decision": "refused", "refusal": "tiddler-delete-in-a-family",
+          "consequence": {"family": "lar:///t/x", "members": 3}}),
+        ("rename", {"title": "Old", "to": "New", "recipe": "default", "base": "sha256-old"},
+         {"has": "<<~ has name=`Old` params=`decision/conflict`>>", "decision": "conflict", "hash": "sha256-live"}),
+    ):
+        daemon.output = receipt
+        is_error, said = _call(mcp, name, args)
+        assert is_error and f"{name}-{receipt['decision']}: nothing landed" in said, (name, said)
+        if "refusal" in receipt:
+            assert "tiddler-delete-in-a-family" in said and "members" in said
+        else:
+            assert "sha256-live" in said
+    # CONTROL: a landed receipt returns as the vessel wrote it.
+    daemon.output = {"has": "<<~ has name=`T` params=`decision/put`>>", "title": "T", "decision": "put", "hash": "sha256-new"}
+    assert _tools()["put"](title="T", recipe="default", text="x")["decision"] == "put"
+
+
+def test_a_seat_act_walks_no_dry_path_its_code_never_walks(daemon):
+    """F1: a layer that claims dry/walks for a seat act lets the vessel carry `_` to the seat; whether the seat previews is a
+    fact of its code (`SEAT_DRY`, empty today), so the call refuses mu-cell-empty and the handler never runs."""
+    from lares_mcp import SEAT_DRY
+    assert SEAT_DRY == frozenset()
+    t = _tools()
+    daemon.answers = [{**seated("lar:///face.draft.stages", {"title": "T", "text": "x"}), "mu": {"asked": "dry", "carry": "_"}}]
+    with pytest.raises(Exception, match="mu-cell-empty"):
+        t["act"](address="lar:///face.draft.stages", args={"title": "T", "text": "x", "mu": "dry"})
+    assert len(daemon.lines) == 1   # the vessel's call alone: no session, no stage
+
+
+def test_a_record_tool_takes_an_answer_from_its_own_class_alone(daemon):
+    """F3: each record tool sends its own address, and an answer from any other address (a seat act a layer spelled `get`,
+    or a stamp naming another carrier) refuses tool-class-crossed and runs nothing."""
+    t = _tools()
+    t["get"](title="T", recipe="default")
+    assert daemon.wire(0)["args"]["verb"] == "lar:///engine.record.reads"
+    daemon.answers = [seated("lar:///face.draft.stages", {"title": "T", "text": "x"})]
+    with pytest.raises(Exception, match="tool-class-crossed"):
+        t["get"](title="T", recipe="default", params={"text": "x"})
+    assert len(daemon.lines) == 2
+    daemon.output = {"has": "<<~ has name=`T`>>", "decision": "put", "carrier": {"carrier": "lar:///ha.ka.ba/lares/afford/engine.record.puts", "bag": "b", "base": "x"}}
+    with pytest.raises(Exception, match="tool-class-crossed"):
+        t["get"](title="T", recipe="default")
+    # CONTROL: an answer its own carrier stamps returns whole.
+    daemon.output = {"has": "<<~ has name=`T`>>", "title": "T", "carrier": {"carrier": "lar:///ha.ka.ba/lares/afford/engine.record.reads", "bag": "b", "base": "x"}}
+    assert t["get"](title="T", recipe="default")["title"] == "T"
+
+
+def _page(n: int, pages: int, text: str, total: int, after: "str | None", hashed: str = "h1", uri: str = "lar:///t/x") -> dict:
+    mark = f"partial:p{n}:{hashed}" if after is not None else hashed
+    if after is None and pages > 1:
+        mark = f"partial:p{n}:{hashed}"
+    return {"has": "<<~ has name=`lar:///t/x` params=`layer/lar:///b base/x`>>", "title": uri, "recipe": "default",
+            "meme": {"uri": uri, "text": text, "canonicalHash": mark, "bytes": total, "page": {"page": n, "pages": pages}},
+            "next": {"grain": "whole", "after": after} if after is not None else None}
+
+
+def test_the_one_get_reads_a_whole_carrier_page_by_page_and_refuses_a_mismatch(daemon):
+    """F4: `get(mu="assert")` on a meme that answers past one page follows the cursor to the end and joins the carrier; a page
+    naming another hash refuses read-page-mismatch."""
+    t = _tools()
+    daemon.answers = [_page(1, 2, "ab", 4, "c1"), {**_page(2, 2, "cd", 4, None), "meme": {**_page(2, 2, "cd", 4, None)["meme"], "canonicalHash": "h1"}}]
+    out = t["get"](title="lar:///t/x", recipe="default", mu="assert")
+    assert out["meme"]["text"] == "abcd" and out["meme"]["canonicalHash"] == "h1" and out["next"] is None
+    assert daemon.wire(1)["args"]["params"]["after"] == "c1"
+    daemon.answers = [_page(1, 2, "ab", 4, "c1"), {**_page(2, 2, "cd", 4, None), "meme": {**_page(2, 2, "cd", 4, None)["meme"], "canonicalHash": "h2"}}]
+    with pytest.raises(Exception, match="read-page-mismatch"):
+        t["get"](title="lar:///t/x", recipe="default", mu="assert")
+
+
+def test_an_unlanded_write_raises_by_the_class_that_answered_through_act_too(daemon):
+    """F2 through `act`: a record write asked by its address answers the same receipt, and the seat raises it by the class
+    the answer's carrier names, whichever tool asked."""
+    daemon.output = {"has": "<<~ has name=`T` params=`decision/conflict`>>", "title": "T", "decision": "conflict", "hash": "sha256-live",
+                     "carrier": {"carrier": "lar:///ha.ka.ba/lares/afford/engine.record.puts", "bag": "b", "base": "x"}}
+    is_error, said = _call(_mcp(), "act", {"address": "lar:///engine.record.puts", "args": {"title": "T", "text": "x", "base": "sha256-old", "recipe": "default"}})
+    assert is_error and "put-conflict: nothing landed" in said and "sha256-live" in said
+    # CONTROL: a landed receipt through `act` returns whole.
+    daemon.output = {**daemon.output, "decision": "put", "hash": "sha256-new"}
+    assert _tools()["act"](address="lar:///engine.record.puts", args={"title": "T", "text": "x", "recipe": "default"})["decision"] == "put"

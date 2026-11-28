@@ -47,7 +47,7 @@ beforeAll(async () => {
   lar = await targetInstance();
   if (!stagedTarget) return;
   projected = join(lar.root, BOOT_PROJ);
-  const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
+  const r = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${BOOT_MEME}`, "to=lar:///ha.ka.ba/wikis/lares/working", "yes=true", "--json"]);
   if (r.json?.["ok"] !== true) throw new Error(`seed LOAD failed: ${JSON.stringify(r.json)}`);
   await promoteLoadedTitles(lar, ((r.json["data"] as { titles?: string[] }).titles ?? []), "lares");
   await awaitProjection();

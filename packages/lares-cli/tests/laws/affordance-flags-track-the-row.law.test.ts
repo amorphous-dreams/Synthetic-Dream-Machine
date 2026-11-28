@@ -14,7 +14,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { COMMANDS } from "../../src/bin/lares.js";
-import { cmdCall } from "../../src/commands/call.js";
+import { cmdCall, isCallHead } from "../../src/commands/call.js";
 import { REBAKE, SEED_ADDRESS, cliRoutes, pack, partDoors } from "./affordance-harness.js";
 
 /**
@@ -37,7 +37,9 @@ function sides(door: string, takesOf: (address: string) => readonly string[] = (
 
 /** The doors the call door answers: their lines take params alone. */
 const CALL_DOORS = COMMANDS.filter((c) => c.handler === cmdCall).map((c) => c.name).sort();
-const DOORS = [...new Set(cliRoutes().map((r) => r.door))].filter((d) => !CALL_DOORS.includes(d)).sort();
+/** The call heads with no COMMANDS row of their own (`act`, the one act): their lines take params alone too. */
+const CALL_HEADS = [...new Set(cliRoutes().map((r) => r.door))].filter((d) => !COMMANDS.some((c) => c.name === d) && isCallHead(d)).sort();
+const DOORS = [...new Set(cliRoutes().map((r) => r.door))].filter((d) => !CALL_DOORS.includes(d) && !CALL_HEADS.includes(d)).sort();
 
 describe("W2 · a door's carrier flags equal its row's accepts", () => {
   test("SEED: the oracle cast's carrier names its cli flags, and the law's three verbs name the door's four", () => {
@@ -54,6 +56,11 @@ describe("W2 · a door's carrier flags equal its row's accepts", () => {
       expect(takes.filter((t) => t.startsWith("--")), `${door}: a carrier's cli takes spell a flag; ${REBAKE}`).toEqual([]);
     }
     expect(cliRoutes().map((r) => r.door), `the burned tiddler door routes nowhere; ${REBAKE}`).not.toContain("tiddler");
+    // THE ONE ACT (landing 9): `act` stands no COMMANDS row, and every carrier it heads spells params, never flags.
+    expect(CALL_HEADS, `the pack routes no act line; ${REBAKE}`).toEqual(["act"]);
+    const actTakes = cliRoutes().filter((r) => r.door === "act").flatMap((r) => pack().carriers[r.address]?.takes["cli"] ?? []);
+    expect(actTakes.length, REBAKE).toBeGreaterThan(0);
+    expect(actTakes.filter((t) => t.startsWith("--")), `act: a carrier's cli takes spell a flag; ${REBAKE}`).toEqual([]);
   });
 
   test.each(DOORS.map((d) => [d] as const))("`lares %s`", (door) => {

@@ -68,7 +68,7 @@ describe("storeFailure names a failure by its own type", () => {
     expect(err).toBeInstanceOf(RoutedVerbRefused);
     const failure = storeFailure(err);
     expect(failure.code).toBe("bag-retired");
-    expect(failure.hint).toMatch(/CREATE/);
+    expect(failure.hint).toMatch(/lar:\/\/\/carriage\.bag\.creates/);
     // A name this build has no code for still travels as itself, never as `verb-error`.
     expect(storeFailure(new RoutedVerbRefused("later", "a-later-name")).code).toBe("a-later-name");
   });

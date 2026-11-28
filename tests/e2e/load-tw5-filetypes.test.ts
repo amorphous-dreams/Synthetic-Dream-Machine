@@ -48,7 +48,7 @@ beforeAll(async () => {
   // plain text — text/plain, loci-titled
   writeFileSync(join(src, "notes.txt"), "raw notes, no structure.\n");
 
-  const r = await lar.cli(["act", "LOAD", "--source-uri", src, "--to", LARES_URI, "--yes", "--json"]);
+  const r = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${src}`, `to=${LARES_URI}`, "yes=true", "--json"]);
   loadOk = r.json?.["ok"] === true;
   titles = ((r.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []).map(String);
 }, 180_000);

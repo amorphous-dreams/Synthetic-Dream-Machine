@@ -165,7 +165,7 @@ export type RotateRecipeOptions = EpochHandlerOptions;
  *
  * Draft-drain into new canonical is deferred to F-arc routing rules.
  * Today the draft layer continues unchanged; operator can lift
- * draft → new canonical via residency ACTION verbs (`lares act MOVE`/`ADD`/`COPY`).
+ * draft → new canonical via residency ACTION verbs (`lares act lar:///carriage.bag.moves`, `carriage.record.adds`, `carriage.bag.copies`).
  */
 export function makeRotateRecipeReactor(opts: RotateRecipeOptions): VerbReactor {
   return async (args) => {
@@ -259,7 +259,7 @@ export function makeRotateRecipeReactor(opts: RotateRecipeOptions): VerbReactor 
       previousCanonDocUrl: oldDocUrl,
       stack:              nextStack,
       rebootRequired:     true,
-      note: "oracle + recipe changes sync to islands (reboot — alert seeded); draft-drain into new canonical reserved for F-arc (`lares act MOVE`/`ADD`)",
+      note: "oracle + recipe changes sync to islands (reboot — alert seeded); draft-drain into new canonical reserved for F-arc (`lares act lar:///carriage.bag.moves`, `carriage.record.adds`)",
     };
   };
 }

@@ -29,16 +29,19 @@ import { mediaTypeFromExt, ridesAsPointer } from "@lararium/mesh/content-handle"
 import { niUriSha256FromHex } from "@lararium/mesh/crypto";
 import { stageBodyToCas } from "../cas-stage.js";
 import { landedFace } from "./meme-shared.js";
+import { actHostDoor } from "./act.js";
 import { ArgsError, splitCall, type CallLine, type ParsedArgs } from "../parse-args.js";
 
 /** The verb words the CLI answers as commands of their own; an address (`lar:///…`) and `-` answer beside them. */
 export const CALL_VERBS = ["get", "put", "delete", "rename"] as const;
 
-/** True where a command line's head names the call door: a verb word, an address, the stdin sigil, or `act <address>`. */
-export function isCallHead(command: string | null, positional: readonly string[] = []): boolean {
+/**
+ * True where a command line's head names the call door: a verb word, an address, the stdin sigil, or `act` (the one act, fork 9:
+ * `lares act lar:///<address> …` and `lares lar:///<address> …` read the same, and every residency act rides by its address).
+ */
+export function isCallHead(command: string | null, _positional: readonly string[] = []): boolean {
   if (command === null) return false;
-  return (CALL_VERBS as readonly string[]).includes(command) || command === "-" || command.startsWith("lar:///")
-    || (command === "act" && (positional[0] ?? "").startsWith("lar:///"));
+  return (CALL_VERBS as readonly string[]).includes(command) || command === "-" || command === "act" || command.startsWith("lar:///");
 }
 
 /** The line a parsed command names as a call: `act` drops, since `lares act lar:///x` and `lares lar:///x` read the same. */
@@ -158,6 +161,23 @@ export async function cmdCall(given: ParsedArgs, sources: CallSources = LIVE_SOU
     const prose = params["form"] === "text" || (typeof params["mu"] === "string" && /assert|!/.test(params["mu"])) ? proseFirst(args) : args;
     const ran = await runDoor(prose, typeof plan.args["verb"] === "string" ? plan.args["verb"] : "-", plan);
     if (!ran.ok) return ran.exit;
+    // A DOOR THE TERMINAL RUNS (landing 9): the vessel bound the act by its address and answered `handler/host` with the bound
+    // params; the terminal's own door runs them (a residency act reads host files and asks y/N; the draft pull), a `_` carry
+    // reaching it only where the carrier's row names `dry/walks`.
+    // WHETHER A DOOR PREVIEWS IS A FACT OF ITS CODE: a `_` carry reaches only a door whose code walks a dry path (`HostDoor.dry`),
+    // and refuses `mu-cell-empty` before anything runs at any other, whatever the carrier's row claims.
+    if (ran.output["handler"] === "host") {
+      const address = String(ran.output["address"] ?? "");
+      const door = actHostDoor(address);
+      const mu = ran.output["mu"] as { carry?: unknown } | undefined;
+      const carry = typeof mu?.carry === "string" ? mu.carry : null;
+      if (door !== null && carry !== null && carry.includes("_") && !door.dry) {
+        const message = `${address} walks no dry path at the terminal, so a ${carry} call lands nothing; the plain call (no mu) lands the act`;
+        emit(args, { ok: false, requestId: ran.requestId, error: { code: "mu-cell-empty", message }, human: () => console.error(`lares act: mu-cell-empty: ${message}`) });
+        return exitFor("usage");
+      }
+      if (door !== null) return await door.run(args, (ran.output["params"] as Record<string, unknown> | undefined) ?? {}, carry);
+    }
     switch (answeredBy(ran.output)) {
       case "engine.record.reads": return await printRead(prose, plan, ran);
       case "engine.filter.pages": return await printPage(prose, plan, ran);
@@ -171,13 +191,17 @@ export async function cmdCall(given: ParsedArgs, sources: CallSources = LIVE_SOU
 
 type Ran = { readonly requestId: string; readonly output: Record<string, unknown> };
 
-/** Any other answer: its has line first, then its data, one key per line; `--json` carries it verbatim. */
+/**
+ * Any other answer: its human line first (Iris-Sprite's answer template rendered it in the VM; the has line where no template
+ * rendered), then its data, one key per line, with no speaker header; `--json` carries it verbatim.
+ */
 function printAnswer(args: ParsedArgs, ran: Ran): number {
   emit(args, {
     ok: true, requestId: ran.requestId, data: ran.output,
     human: () => {
-      const { has, ...rest } = ran.output;
-      if (typeof has === "string") console.log(has);
+      const { has, human, ...rest } = ran.output;
+      if (typeof human === "string" && human !== "") console.log(human);
+      else if (typeof has === "string") console.log(has);
       for (const [key, value] of Object.entries(rest)) console.log(`${key}: ${typeof value === "string" ? value : JSON.stringify(value)}`);
     },
   });

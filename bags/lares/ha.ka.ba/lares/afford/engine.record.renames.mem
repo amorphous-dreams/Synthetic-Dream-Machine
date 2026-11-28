@@ -102,7 +102,7 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ cli · console
+!! skins ~ cli · console · mcp
 
 <<~ ahu slot=`#/skins/cli`>>
 
@@ -124,6 +124,16 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! rename
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`spells/rename omits/face ~ the seat; answers the receipt and the referrers it relinked`>>
+```
+
+<<~/ahu>>
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/edges`>>
@@ -135,6 +145,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yS7CchAzVDtWGKxnLuqP5iPXO_g9NPZduouIS2Ir5Jo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6At4kkSJJ9a7Q9abbS59rB2kHEqj4NY-hSdR7C3DaZs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

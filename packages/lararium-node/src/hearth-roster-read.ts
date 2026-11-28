@@ -1,5 +1,5 @@
 /**
- * hearth-roster-read — the vessel's half of the hearth roster (`lares vessel roster`, the MCP seat's `vessel_roster`, the
+ * hearth-roster-read — the vessel's half of the hearth roster (`lares vessel roster`, the MCP seat's roster act (lar:///face.roster.reads), the
  * wake block "Lares hearth (who is home)"): what this vessel reads of who is home, composed into the one roster shape
  * (`@lararium/mesh`'s `hearth-roster`).
  *

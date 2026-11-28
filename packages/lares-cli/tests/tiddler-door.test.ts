@@ -47,6 +47,7 @@ vi.mock("../src/env.js", async (orig) => ({
 
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { cmdCall, callPlan, isCallHead, type CallSources } from "../src/commands/call.js";
+import { actArgsOf } from "../src/commands/act.js";
 import { DoorUsage } from "../src/commands/door-call.js";
 import { cmdWiki, wikiRenderPlan } from "../src/commands/wiki.js";
 import { cmdKahua } from "../src/commands/kahua.js";
@@ -118,13 +119,15 @@ afterEach(() => { h.calls.length = 0; h.refuse = ""; h.replyFor = null; h.reply 
 
 describe("verb-table-parity — the CLI half of the tiddler door's one table", () => {
   test("the table names all its tools, and every door it names stands in the command table", () => {
-    expect(new Set(TABLE.rows.map((r) => r.tool))).toEqual(new Set(["wiki", "wiki_filter", "tiddler_get", "wiki_render", "tiddler_put", "tiddler_delete", "wiki_status", "kahua_get", "meme_offer_show"]));
+    expect(new Set(TABLE.rows.map((r) => r.tool))).toEqual(new Set(["act", "get", "put", "delete", "wiki_render", "wiki_status", "kahua_get", "meme_offer_show"]));
     const names = new Set(COMMANDS.map((c) => c.name));
-    for (const row of TABLE.rows) expect(names.has(row.cli.command), row.cli.command).toBe(true);
+    for (const row of TABLE.rows) expect(names.has(row.cli.command) || isCallHead(row.cli.command, row.cli.positional), row.cli.command).toBe(true);
   });
 
-  test("every record and filter row speaks the call shape: its line is params alone, and it names the call it sends", () => {
-    for (const row of TABLE.rows.filter((r) => r.tool.startsWith("tiddler_") || r.tool === "wiki_filter")) {
+  test("every record, filter and act row speaks the call shape: its line is params alone, and it names the call it sends", () => {
+    const calls = TABLE.rows.filter((r) => ["get", "put", "delete", "rename", "act"].includes(r.tool));
+    expect(calls.length).toBeGreaterThan(10);
+    for (const row of calls) {
       expect(row.call, row.tool).toBeDefined();
       expect(isCallHead(row.cli.command, row.cli.positional), row.tool).toBe(true);
       expect(row.cli.options, row.tool).toEqual({});
@@ -145,7 +148,7 @@ describe("verb-table-parity — the CLI half of the tiddler door's one table", (
     });
 
     test(`${row.tool}: every option and flag the row spells stands in its command's accepts row`, () => {
-      const accepts = new Set(COMMANDS.find((c) => c.name === row.cli.command)!.accepts);
+      const accepts = new Set(COMMANDS.find((c) => c.name === row.cli.command)?.accepts ?? []);
       for (const name of [...Object.keys(row.cli.options), ...Object.keys(row.cli.flags)]) expect(accepts.has(name), `${row.cli.command} accepts --${name}`).toBe(true);
     });
   }
@@ -173,7 +176,7 @@ describe("the call door plans one call: {verb, params, surface: cli}", () => {
     expect((await callPlan(parseArgs(["act", "lar:///engine.record.reads", "title=x"]), NO_SOURCES)).plan).toEqual(plan);
     expect(isCallHead("lar:///engine.record.reads")).toBe(true);
     expect(isCallHead("act", ["lar:///engine.record.reads"])).toBe(true);
-    expect(isCallHead("act", ["sidebar-layout"])).toBe(false);
+    expect(isCallHead("act", ["sidebar-layout"])).toBe(true);   // the one act: every word past `act` rides the call door, and the VM routes it
     expect(isCallHead("tiddler", ["get"])).toBe(false);
   });
 
@@ -216,6 +219,53 @@ describe("the call door plans one call: {verb, params, surface: cli}", () => {
       expect(err.mock.calls.flat().join(" ")).toContain("unknown flag --meme for a call; a call takes name=value params (meme=…)");
       expect(h.calls).toEqual([]);
     } finally { out.mockRestore(); err.mockRestore(); }
+  });
+
+  test("★ the one act: a residency act rides by its address, the vessel binds it and answers handler/host, and the terminal's door submits the bound act; mu=dry reaches it as the island's preview ★", async () => {
+    const ADDS = "lar:///carriage.record.adds";
+    const bound = { title: "T", from: "lar:///a", to: "lar:///b", yes: true };
+    h.replyFor = (args) => (h.calls.length === 1
+      ? { has: "<<~ has name=`" + ADDS + "`>>", handler: "host", address: ADDS, params: bound, ...(String((args["params"] as Record<string, unknown>)["mu"] ?? "") === "dry" ? { mu: { asked: "dry", carry: "_" } } : {}) }
+      : { verb: "ADD" });
+    const out = vi.spyOn(console, "log").mockImplementation(() => {});
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      expect(await dispatch(["act", ADDS, "title=T", "from=lar:///a", "to=lar:///b", "yes=true", "--json"])).toBe(0);
+      expect(h.calls[0]).toEqual(call(ADDS, { title: "T", from: "lar:///a", to: "lar:///b", yes: "true" }));
+      expect(h.calls[1]).toMatchObject({ verb: "ADD", args: { title: "T", "from-bag": "lar:///a", "to-bag": "lar:///b" } });
+      expect(h.calls[1]!.args["dry-run"]).toBeUndefined();
+      h.calls.length = 0;
+      expect(await dispatch(["act", ADDS, "title=T", "from=lar:///a", "to=lar:///b", "mu=dry", "--json"])).toBe(0);
+      expect(h.calls[1]).toMatchObject({ verb: "ADD", args: { title: "T", "dry-run": true } });
+      h.calls.length = 0;
+      // CONTROL: the burned spelling reaches the call door as a word, and the VM routes it (here, the reply stands for its refusal).
+      h.refuse = "call-unrouted: no carrier on this stack spells \"ADD\"";
+      expect(await dispatch(["act", "ADD", "title=T", "--json"])).not.toBe(0);
+      expect(h.calls).toEqual([call("ADD", { title: "T" })]);
+    } finally { h.refuse = ""; h.replyFor = null; out.mockRestore(); err.mockRestore(); }
+  });
+
+  test("★ whether a host door previews is a fact of its code: a layer that claims dry/walks for the repack or the draft pull makes the dry call refuse mu-cell-empty before anything runs ★", async () => {
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const out = vi.spyOn(process.stdout, "write").mockImplementation((() => true) as never);
+    try {
+      for (const [address, params] of [["lar:///carriage.bundle.repacks", { source: "x.json", from: "lar:///b" }], ["lar:///carriage.draft.pulls", { uri: "lar:///t" }]] as const) {
+        h.calls.length = 0;
+        h.replyFor = () => ({ has: "<<~ has name=`" + address + "`>>", handler: "host", address, params, mu: { asked: "dry", carry: "_" } });
+        const exit = await dispatch(["act", address, ...Object.entries(params).map(([k, v]) => `${k}=${v}`), "mu=dry", "--json"]);
+        expect(exit, address).not.toBe(0);
+        expect(h.calls, address).toHaveLength(1);   // the vessel's call alone: no REPACK, no where, no draft ever rides
+        expect(out.mock.calls.flat().join(" "), address).toContain("mu-cell-empty");
+        out.mockClear();
+      }
+    } finally { h.replyFor = null; err.mockRestore(); out.mockRestore(); }
+  });
+
+  test("★ a preview rides the mu carry alone: a bound dry-run param (a row a layer added) never becomes the runner's flag; CONTROL: a _ carry does ★", () => {
+    const line = argv("act", [], {}, {});
+    expect(actArgsOf(line, null, { uri: "lar:///t", "dry-run": true }, null).flags["dry-run"]).toBeUndefined();
+    expect(actArgsOf(line, "ADD", { title: "T", "dry-run": true }, null).flags["dry-run"]).toBeUndefined();
+    expect(actArgsOf(line, "ADD", { title: "T" }, "_").flags["dry-run"]).toBe(true);
   });
 
   test("★ an old flag on a call verb refuses by name before anything runs; the burned `tiddler` door answers unknown command ★", async () => {
@@ -267,7 +317,7 @@ describe("the wiki door keeps its engine verbs; a filter pages through `get filt
     const row = COMMANDS.find((c) => c.name === "wiki")!;
     const output = argv("wiki", ["render", "[tag[export]]"], { recipe: "default", output: "workbench", filename: "[addsuffix[.html]]", type: "text/html" });
     expect(unknownFlags(row, output)).toEqual([]);
-    for (const sub of ["status", "act"]) {
+    for (const sub of ["status"]) {
       expect(unknownFlags(row, argv("wiki", [sub], { output: "workbench" })).map((x) => x.name)).toEqual(["output"]);
     }
   });
@@ -289,16 +339,6 @@ describe("the wiki door keeps its engine verbs; a filter pages through `get filt
     expect(partial).toMatchObject({ exit: 4, printed: { ok: false, data: { outcome: "partial", files: [{ name: "a.html" }] }, error: { code: "render-partial" } } });
     h.calls.length = 0;
     expect((await run(argv("wiki", ["render", "[tag[export]]"], { recipe: "notes", output: "workbench", target: "h1" }))).exit).toBe(2);
-    expect(h.calls).toEqual([]);
-  });
-  test("wiki act narrows its flags before dispatch", () => {
-    const row = COMMANDS.find((c) => c.name === "wiki")!;
-    for (const flag of ["text", "target", "dry-run", "list"]) {
-      const args = argv("wiki", ["act", "sidebar-layout"], { recipe: "default", expected: "fixed-fluid", resulting: "fluid-fixed", [flag]: "stray" });
-      expect(unknownFlags(row, args).map((x) => x.name)).toEqual([flag]);
-    }
-    const withFace = argv("wiki", ["act", "sidebar-layout"], { recipe: "default", expected: "fixed-fluid", resulting: "fluid-fixed", face: "1" });
-    expect(unknownFlags(row, withFace)).toEqual([]);
     expect(h.calls).toEqual([]);
   });
   test("a render names one source", () => {

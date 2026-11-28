@@ -126,10 +126,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/mcp`>>
 
-!!! wiki_filter
+!!! get
 
 ```memetic-wikitext
-<<has entity=`skin` name=`mcp` params=`spells/wiki_filter omits/face ~ the seat; answers the page`>>
+<<has entity=`skin` name=`mcp` params=`spells/get by/filter omits/face ~ the seat; get by filter pages the titles a filter answers`>>
 ```
 
 <<~/ahu>>
@@ -156,6 +156,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uE8yM-F9wtf1Ui-b8XpjVGv038BY9IN6gcFowTSk_bw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;T_OJ1CfwzWnGnuARsDrXgZtr_Jlt_s10l6el5hmH-L4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -27,7 +27,7 @@ import { AUDIT_ARRAY_CAP, boundOutcomeOutput, placeVerb, removeVerb } from "../s
 import { VerbTable, callDoorOf, makeCallReactor, type VerbContext } from "../src/verb-dispatcher.js";
 import { TIDDLER_CALL_SEATS, tiddlerCallSource } from "../src/tiddler-verbs.js";
 import { ORACLE_CALL_SEATS } from "../src/oracle-cast-verb.js";
-import { CallRefusal, callFaceOf, callReaderOf, hostHandled, type CallFloor, type MacroCallParse } from "../src/modules/call.js";
+import { CallRefusal, IRIS_SHRINE, callFaceOf, callReaderOf, hostHandled, type CallFloor, type MacroCallParse } from "../src/modules/call.js";
 import { bakeAffordancePack } from "../scripts/build-affordance-pack.js";
 import { skinRows } from "../src/affordance-read.js";
 import { AFFORDANCE_TAG, addressOfTitle } from "../src/affordance-rows.js";
@@ -2285,6 +2285,96 @@ async function cureOf(refused: Promise<unknown>): Promise<string> {
   return String((err as CallRefusal).cure);
 }
 
+// ── the one act keeps the hand at the door (comms-ux-enacts landings 9 and 11) ─────────────────────────────────────────
+
+const COMMITS_SEAT = "lar:///ha.ka.ba/lares/afford/realm.offer.commits";
+const DIGEST = "a".repeat(64);
+/** Every grant open: the cap the asker holds answers yes for every bag and every access. */
+const everyGrant: Cap = async () => ({ ok: true });
+
+describe.skipIf(wikiSkip)(`the one act keeps the hand at the door${skipNote}`, () => {
+  /** A seat's `act` on the hand-gated promote commit: the canon carrier, every grant open, the hand-only verb seated by address. */
+  async function handRig() {
+    const r = await callRig();
+    const text = canonFile("afford/realm.offer.commits.mem");
+    r.engine.ingestCarrier(headTitleOf(text), text, { "$origin-bag": CANON });
+    const ran: Array<Record<string, unknown>> = [];
+    r.table.handOnly({ "promote-commit": "promote-needs-hand" });
+    r.table.register("promote-commit", async (args) => { ran.push({ ...args }); return { has: "<<~ has name=`promote-commit`>>", committed: true }; });
+    r.table.answer("lar:///realm.offer.commits", { verb: "promote-commit" });
+    const reactor = makeCallReactor(r.table, tiddlerCallSource(r.opts));
+    /** An MCP seat's call: the seat's surface, a channel ask (no hand's path), every grant open; `hand` stands the surface's own path. */
+    const act = (address: string, params: Record<string, unknown>, hand = false) =>
+      reactor({ verb: address, params, surface: "mcp" }, { ...ctx(everyGrant), ...(hand ? { surface: true } : {}) });
+    return { ...r, ran, act };
+  }
+
+  test("RED: a working layer re-seats the hand-gated commit for the seat (no handler/host, an mcp row, a #/gate claiming who/seat), and the seat's act with every grant open refuses promote-needs-hand and runs nothing; CONTROL: a hand's own path runs the same call", async () => {
+    const r = await handRig();
+    // CANON ALONE: the cli row names handler/host, so the seat's call answers the plan for a terminal and runs nothing.
+    expect(await r.act("lar:///realm.offer.commits", { digest: DIGEST })).toMatchObject({ handler: "host", address: "lar:///realm.offer.commits" });
+    expect(r.ran).toEqual([]);
+    // THE LAYER ABOVE: mutability at the root lets a layer move every row a carrier reads; none of it grants a hand.
+    const skins = r.engine.wiki.getTiddler(`${COMMITS_SEAT}#/skins/cli`)!.getFieldStrings();
+    const seatRow = "<<has entity=`skin` name=`mcp` params=`spells/[[act lar:///realm.offer.commits]] ~ the seat`>>\n";
+    r.engine.wiki.addTiddler({ ...skins, "$origin-bag": DAEMON, text: seatRow + skins["text"]!.replace("handler/host ", "") });
+    const gate = r.engine.wiki.getTiddler(`${COMMITS_SEAT}#/gate`)!.getFieldStrings();
+    r.engine.wiki.addTiddler({ ...gate, "$origin-bag": DAEMON, text: gate["text"]!.replace("who/hand", "who/seat") });
+    const refused = await r.act("lar:///realm.offer.commits", { digest: DIGEST }).then(() => null, (e: unknown) => e);
+    expect(refused).toMatchObject({ reason: "promote-needs-hand" });
+    expect(r.ran).toEqual([]);
+    // CONTROL: the same call on a hand's own path (the surface's control-event path) runs, the stack unchanged.
+    expect(await r.act("lar:///realm.offer.commits", { digest: DIGEST }, true)).toMatchObject({ committed: true });
+    expect(r.ran).toEqual([{ digest: DIGEST }]);
+  });
+});
+
+describe.skipIf(wikiSkip)(`who runs the door: handler/host, handler/seat and dry/walks read per surface${skipNote}`, () => {
+  test("RED: a residency act binds by its address and answers handler/host with its bound params, a dry carry reaching it through dry/walks; a seat act answers handler/seat on the seat's surface alone; CONTROL: a layer that drops dry/walks makes the dry call refuse mu-cell-empty", async () => {
+    const r = await callRig();
+    for (const rel of ["afford/carriage.record.adds.mem", "afford/sense.memory.recalls.mem"]) { const text = canonFile(rel); r.engine.ingestCarrier(headTitleOf(text), text, { "$origin-bag": CANON }); }
+    const reactor = makeCallReactor(r.table, tiddlerCallSource(r.opts));
+    const on = (surface: string, verb: string, params: Record<string, unknown>) => reactor({ verb, params, surface }, ctx());
+    const ADDS = "lar:///carriage.record.adds";
+    const bound = { title: "T", from: "lar:///a", to: "lar:///b" };
+    expect(await on("cli", ADDS, bound)).toMatchObject({ handler: "host", address: ADDS, params: bound });
+    expect(await on("cli", ADDS, { ...bound, mu: "dry" })).toMatchObject({ handler: "host", address: ADDS, mu: { carry: "_" } });
+    const RECALLS = "lar:///sense.memory.recalls";
+    expect(await on("mcp", RECALLS, { query: "q" })).toMatchObject({ handler: "seat", address: RECALLS, params: { query: "q" } });
+    await expect(on("console", RECALLS, { query: "q" })).rejects.toMatchObject({ reason: "affordance-unhandled" });
+    const skin = r.engine.wiki.getTiddler("lar:///ha.ka.ba/lares/afford/carriage.record.adds#/skins/cli")!.getFieldStrings();
+    r.engine.wiki.addTiddler({ ...skin, "$origin-bag": DAEMON, text: skin["text"]!.replace("dry/walks ", "") });
+    await expect(on("cli", ADDS, { ...bound, mu: "dry" })).rejects.toMatchObject({ reason: "mu-cell-empty" });
+  });
+});
+
+// ── the machina's voice (comms-ux-enacts landing 21) ─────────────────────────────────────────────────────────────────
+
+describe.skipIf(wikiSkip)(`the machina's voice: answers and refusals render through Iris-Sprite's templates${skipNote}`, () => {
+  test("RED: with her canon shrine standing, an answer's human line reads its has line and a refusal reads code, detail and cure byte for byte; a working-layer edit of #/refusal/template changes the next refusal's line, and no line prints her name", async () => {
+    const r = await callRig();
+    const text = canonFile("spirit/iris-sprite.mem");
+    r.engine.ingestCarrier(headTitleOf(text), text, { "$origin-bag": CANON });
+    const got = await r.call("get", { title: "Note 04" });
+    expect(got["human"]).toBe(got["has"]);
+    const refusalOf = async (): Promise<CallRefusal> => {
+      const err = await r.call("get", { titel: "Note 04" }).then(() => null, (e: unknown) => e);
+      expect(err).toBeInstanceOf(CallRefusal);
+      return err as CallRefusal;
+    };
+    const plain = await refusalOf();
+    expect(plain.reason).toBe("param-unknown");
+    expect(plain.message).toBe(`param-unknown: ${plain.detail}; cure: ${plain.cure}`);
+    // A LAYER ABOVE CANON re-shapes her voice by seating the slot: the next refusal reads the new shape, its code and cure kept.
+    const slot = r.engine.wiki.getTiddler(`${IRIS_SHRINE}#/refusal/template`)!.getFieldStrings();
+    r.engine.wiki.addTiddler({ ...slot, "$origin-bag": DAEMON, text: "```text/vnd.tiddlywiki template\nrefused/<$text text=<<reason>>/> then <$text text=<<cure>>/>\n```" });
+    const moved = await refusalOf();
+    expect(moved.reason).toBe("param-unknown");
+    expect(moved.message).toBe(`refused/param-unknown then ${moved.cure}`);
+    for (const line of [String(got["human"]), plain.message, moved.message]) expect(line).not.toMatch(/Iris|Messenger/);
+  });
+});
+
 describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the live stack${skipNote}`, () => {
   test("RED: call(\"get\", {title}) answers what tiddler-get answers on the same fixture, the container defaulting through the canon row, and the has line names the carrier", async () => {
     const r = await callRig();
@@ -2300,7 +2390,7 @@ describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the 
     expect(String(called["has"])).toContain(`carrier/${READS_SEAT} bag/${CANON} base/${seat.hash}`);
     // The address and any skin's spelling reach the same door.
     expect(await r.call("lar:///engine.record.reads", { title: "Note 04" })).toMatchObject(plain);
-    expect(await r.call("tiddler_get", { title: "Note 04" })).toMatchObject(plain);
+    expect(await r.call("lares get", { title: "Note 04" })).toMatchObject(plain);
     // `get` with a filter chooses the other carrier by its `by/filter` row.
     expect(await r.call("get", { filter: "[tag[memory]limit[2]]" })).toMatchObject({ recipe: "default", titles: ["Note 01", "Note 02"] });
   });
@@ -2367,7 +2457,7 @@ describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the 
   test("RED: a sigil goes in: the call sigil reads through the engine's own macro-call parser and answers what the call answers", async () => {
     const r = await callRig();
     const called = await r.call("get", { title: "Note 04" });
-    for (const sigil of ["<<~ get title=`Note 04`>>", `<<~get title="Note 04">>`, `<<~ tiddler_get title=[[Note 04]] recipe=default>>`, `<<~ "lar:///engine.record.reads" title=\`Note 04\`>>`]) {
+    for (const sigil of ["<<~ get title=`Note 04`>>", `<<~get title="Note 04">>`, `<<~ "lares get" title=[[Note 04]] recipe=default>>`, `<<~ "lar:///engine.record.reads" title=\`Note 04\`>>`]) {
       const read = await r.sigil(sigil);
       expect(read, sigil).toMatchObject({ recipe: "default", title: "Note 04", carrier: called["carrier"] });
       expect(read["tiddler"], sigil).toEqual(called["tiddler"]);
@@ -2460,7 +2550,7 @@ describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the 
     expect(await r.call("get", { filter: "[tag[memory]limit[1]]" })).toMatchObject({ titles: ["Note 01"], carrier: { bag: "pack" } });
   });
 
-  test("WELD: every canon carrier finds a registered reactor, an acts/ row or handler/host; every seat names a carrier canon holds", async () => {
+  test("WELD: every canon carrier finds a registered reactor, an acts/ row, handler/host or handler/seat; every seat names a carrier canon holds", async () => {
     const engine = await bootTestWiki();
     const dir = new URL("../../../bags/lares/ha.ka.ba/lares/afford/", import.meta.url);
     const { readdirSync } = await import("node:fs");
@@ -2476,6 +2566,8 @@ describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the 
       const address = addressOfTitle(title);
       if (address !== null && seats[address] !== undefined) return false;
       if (hostHandled(reader, title)) return false;
+      // AN ACT WHOSE HANDLER RESTS IN THE SEAT (fork 10): the vessel binds it and the MCP seat's own process runs it.
+      if (skinRows(reader.textOf, title).some((row) => row.params["handler"] === "seat")) return false;
       return !skinRows(reader.textOf, title).some((row) => row.name === "tw5" && row.params["acts"] !== undefined);
     });
     expect(orphans).toEqual([]);
@@ -2665,10 +2757,10 @@ describe.skipIf(wikiSkip)(`mu sets the depth: glyphs and words meet the carrier'
     const r = await muRig();
     let listed: Record<string, unknown> | null = null;
     r.table.register("meme-list", async (args) => { listed = args; return { roots: [], next: null }; });
-    expect(await r.call("tiddler_get", { meme: true, tree: true })).toMatchObject({ roots: [], carrier: { carrier: READS_SEAT } });
+    expect(await r.call("lares get", { meme: true, tree: true })).toMatchObject({ roots: [], carrier: { carrier: READS_SEAT } });
     expect(listed).toMatchObject({ meme: true, tree: true, recipe: "default" });
     // CONTROL: a title beside meme still reads the record door.
-    expect(await r.call("tiddler_get", { title: MEME, meme: true })).toMatchObject({ lens: "meme", title: MEME });
+    expect(await r.call("lares get", { title: MEME, meme: true })).toMatchObject({ lens: "meme", title: MEME });
   });
 
   test("REACH: $tw.lares.call(\"get\", {title, mu: \"relate\"}) answers one has line; the same with assert answers every slot", async () => {

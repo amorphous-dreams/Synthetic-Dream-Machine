@@ -1,0 +1,83 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.wiki.renders`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "wikify a title or a span through the wiki's own engine"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.wiki.renders"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.wiki.renders"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.wiki.renders"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.wiki.renders ~ wikify a title or a span through the wiki's own engine
+
+Exactly one of `title` (a tiddler) or `text` (a wikitext span); transclusions, macros, widgets and filters resolve as the wiki resolves them. `form` reads text (the default) or html; `type` names a span's content type. `max-bytes` caps the text, and a truncated answer's `next` rides back as `after`. A render fires no action and dispatches no message. `target` visits another lit face's read view. `output` refuses on the seat: the terminal holds the workbench disk grant.
+
+The address stands ''candidate'' until the operator reads the landing's list. The MCP seat runs this act in its own process: the vessel's `call` binds the params against this carrier's live `#/takes` and answers `handler/seat` with the bound params, and the seat runs them (`act(address="lar:///engine.wiki.renders", args={…})`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ title · text · recipe · form · type · after · max-bytes · target · output
+
+```memetic-wikitext
+<<has entity=`arg` name=`title` params=`takes/word ~ the tiddler to render`>>
+<<has entity=`arg` name=`text` params=`takes/word ~ a wikitext span to render`>>
+<<has entity=`arg` name=`recipe` params=`takes/word default/default ~ the wiki (default names the worn face's daemon wiki)`>>
+<<has entity=`arg` name=`form` params=`takes/word ~ text or html`>>
+<<has entity=`arg` name=`type` params=`takes/word ~ a span's content type`>>
+<<has entity=`arg` name=`after` params=`takes/word ~ the cursor a prior page answered as next`>>
+<<has entity=`arg` name=`max-bytes` params=`takes/count ~ the byte cap on the text`>>
+<<has entity=`arg` name=`target` params=`takes/word ~ another lit face to visit (h1, or a pet name)`>>
+<<has entity=`arg` name=`output` params=`takes/word ~ refused on the seat (the terminal holds the workbench grant)`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ the vessel verbs the seat's handler reaches check the face's cap and the asker's hand themselves; a hand act refuses a seat by its own code`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ mcp
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! act lar:///engine.wiki.renders
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`handler/seat spells/[[act lar:///engine.wiki.renders]] ~ the seat runs it in its own process`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · voices
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/seat-lares`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6iqnPVla9jB9JbtmfLwZGXFzhLo_9qZPIxHm6ekTgVs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

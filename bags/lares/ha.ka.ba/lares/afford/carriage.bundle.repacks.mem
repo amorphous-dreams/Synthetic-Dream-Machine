@@ -36,13 +36,14 @@ The pack path derives from the file's mirror-relative address plus its extension
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ source · from · out · in-wiki
+!! takes ~ source · from · out · in-wiki · yes
 
 ```memetic-wikitext
 <<has entity=`arg` name=`source` params=`takes/file needs/required ~ the disk bundle (.json or .multids) whose pack the island collects`>>
 <<has entity=`arg` name=`from` params=`takes/bag-uri needs/required ~ the bag holding the pack's members, whose aside provenance names them`>>
 <<has entity=`arg` name=`out` params=`takes/file ~ where the re-rendered bundle lands; defaults to the source`>>
 <<has entity=`arg` name=`in-wiki` params=`~ run the act in the active wiki's island`>>
+<<has entity=`arg` name=`yes` params=`~ the intent a call off a terminal names in place of the y/N a terminal asks`>>
 ```
 
 <<~/ahu>>
@@ -87,10 +88,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/cli`>>
 
-!!! lares act REPACK
+!!! lares act lar:///carriage.bundle.repacks
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares act REPACK]] ~ the terminal; the verb rides as the first word, ALL-CAPS`>>
+<<has entity=`skin` name=`cli` params=`handler/host grammar/call spells/[[lares act lar:///carriage.bundle.repacks]] ~ the terminal; the act rides by its address through the call door, and the terminal runs the bound act (host files, y/N)`>>
 ```
 
 <<~/ahu>>
@@ -106,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_zkXBhvoysj58N4Q-KbQO8A6CSnNVk9BPyrLHdStfNs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;95kL5u_xZVvAUM26as-DP9CMnpxTLR1btbEACVWMuPg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

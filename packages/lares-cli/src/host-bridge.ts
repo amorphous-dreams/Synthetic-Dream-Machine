@@ -32,7 +32,7 @@ import { locateShim, SHIM_ABSENT_EXIT } from "./shim-locate.js";
 export { locateShim, SHIM_ABSENT_EXIT };
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, realpathSync } from "node:fs";
-import { basename, dirname, join, resolve } from "node:path";
+import { basename, dirname, join, posix, resolve } from "node:path";
 import { parseArgs, ArgsError, BOOLEAN_FLAGS, type ParsedArgs } from "./parse-args.js";
 import { envValue, IN_CONTAINER_ENV, surfaceEnvPath } from "./surface-env.js";
 import { ownPeerKind } from "@lararium/node";
@@ -152,8 +152,9 @@ export function decideRoute(input: RouteInput): Route {
   if ((env["LAR_ROOT"] ?? "").trim() !== "") return "local";
   if ((env[IN_CONTAINER_ENV] ?? "").trim() !== "") return "local";
   const head = argv[0];
-  // A CALL BY ADDRESS OR BY SIGIL answers in the vessel (comms-ux-enacts landing 8): `lares lar:///…` and `lares -` forward.
-  const called = head === "-" || (head ?? "").startsWith("lar:///");
+  // A CALL BY ADDRESS OR BY SIGIL answers in the vessel (comms-ux-enacts landing 8): `lares lar:///…`, `lares -` and the one act
+  // (`lares act lar:///…`, landing 9, a call head with no COMMANDS row) forward.
+  const called = head === "-" || head === "act" || (head ?? "").startsWith("lar:///");
   if (head === undefined || (head.startsWith("-") && !called) || asksHelp(argv)) return "local";
   let args: ParsedArgs;
   try { args = parseArgs(argv); }
@@ -199,7 +200,6 @@ export function decideRoute(input: RouteInput): Route {
  * slug, a `lar:` address or a petname that happens to hold a slash never moves. Read off each verb's parser.
  */
 const PATH_OPTIONS: Readonly<Record<string, readonly string[]>> = {
-  act:     ["out", "source"],                       // REPACK --source <bundle> [--out <file>]; --from names a bag
   ingest:  ["source"],
   meme:    ["file", "out", "root"],
   bag:     ["dir", "root"],                         // bag repo add --root <path>; --dir <bags dir>
@@ -214,6 +214,16 @@ const PATH_OPTIONS: Readonly<Record<string, readonly string[]>> = {
   sense:   ["sensorium-root", "trial-root", "model-home"],
   flow:    ["sensorium-root"],
 };
+/**
+ * THE CALL PARAMS THAT NAME PATHS (landing 9), per call head: `lares act lar:///carriage.bundle.repacks source=<bundle> out=<file>`
+ * and `lares act lar:///carriage.bag.loads source-uri=<dir>` hand the terminal's door host files, so each such `name=value` token
+ * translates as a path option does. A bag, a title or an address never moves.
+ */
+const PATH_PARAMS: Readonly<Record<string, readonly string[]>> = { act: ["source", "out", "source-uri"] };
+
+/** A URL's scheme (`https:`, `lar:`): a value that carries one names no host path. */
+const URL_SCHEME = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//;
+
 /** Options that take a path OR inline text: a value translates only when a host file stands there. */
 const PATH_OR_TEXT_OPTIONS: Readonly<Record<string, readonly string[]>> = { cabal: ["bundle"] };
 
@@ -303,7 +313,8 @@ export function translatePaths(input: TranslateInput): { argv: string[] } | { er
 
   const toVessel = (value: string): string => {
     if (value === "" || value === "-" || refusal !== null) return value;
-    if (CONTAINER_ROOTS.some((r) => under(value, r))) return value;
+    // A SPELLING INSIDE THE VESSEL passes only once normalized: `/lar/../app/x` names /app/x, outside both roots.
+    if (value.startsWith("/") && CONTAINER_ROOTS.some((r) => under(posix.normalize(value), r))) return posix.normalize(value);
     const expanded = value === "~" ? input.home : value.startsWith("~/") ? join(input.home, value.slice(2)) : value;
     const real = realpathPrefix(resolve(input.cwd, expanded), fs.realpath);
     const mount = byDepth.find((m) => under(real, m.host));
@@ -346,7 +357,10 @@ export function translatePaths(input: TranslateInput): { argv: string[] } | { er
       out.push(tok);
       continue;
     }
-    if (paths.includes(positional)) out.push(toVessel(tok));
+    const param = /^([a-z][a-z0-9-]*)=(.*)$/s.exec(tok);
+    // A VALUE WITH A URL SCHEME (`source-uri=https://…`) names no host file: it rides as written.
+    if (param !== null && (PATH_PARAMS[name] ?? []).includes(param[1]!)) out.push(`${param[1]}=${URL_SCHEME.test(param[2]!) ? param[2]! : toVessel(param[2]!)}`);
+    else if (paths.includes(positional)) out.push(toVessel(tok));
     else if (atFiles.includes(positional) && tok.startsWith("@") && tok !== "@-") out.push(`@${toVessel(tok.slice(1))}`);
     else out.push(tok);
     positional++;

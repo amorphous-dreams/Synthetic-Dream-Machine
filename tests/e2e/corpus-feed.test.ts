@@ -152,7 +152,7 @@ beforeAll(async () => {
   lar = await targetInstance();
   if (!stagedTarget) return;   // mutating, corpus-scale — staged only
   const at = Date.now();
-  const r = await lar.cli(["act", "LOAD", "--source-uri", CORPUS, "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
+  const r = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${CORPUS}`, "to=lar:///ha.ka.ba/wikis/lares/working", "yes=true", "--json"]);
   loadOk = r.json?.["ok"] === true;
   loadCount = Number((r.json?.["data"] as { count?: number } | undefined)?.count ?? 0);
   // NAME WHAT IT SAID. A bare count reads as "the corpus grew past the budget" whichever way the door
@@ -209,7 +209,7 @@ describe.skipIf(!stagedTarget)("corpus feed — the whole hearth in one gesture 
   test("F4 — pipeline idempotence: re-feeding a projection leaves it byte-stable", async () => {
     const projected = join(wikiWorkbenchDir(lar.root, "lares"), BOOT_PROJ);
     const before = readFileSync(projected, "utf8");
-    const r = await lar.cli(["act", "LOAD", "--source-uri", projected, "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
+    const r = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${projected}`, "to=lar:///ha.ka.ba/wikis/lares/working", "yes=true", "--json"]);
     let late = "";
     if (r.json?.["ok"] !== true) {
       // A verb that answered `outcome-unknown` may still be running: read its receipt once more after a

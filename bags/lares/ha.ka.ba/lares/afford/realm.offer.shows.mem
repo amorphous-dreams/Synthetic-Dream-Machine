@@ -1,0 +1,80 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.offer.shows`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "list offers, or read one offer's field diff against canon"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.offer.shows"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.offer.shows"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.offer.shows"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.offer.shows ~ read the offer table
+
+With no `cid`, the read lists the offers; with one, it answers that offer's field diff against canon. `bag` narrows to one bag; `all` lists every offer.
+
+The address stands ''candidate'' until the operator reads the landing's list. The MCP seat runs this act in its own process: the vessel's `call` binds the params against this carrier's live `#/takes` and answers `handler/seat` with the bound params, and the seat runs them (`act(address="lar:///realm.offer.shows", args={…})`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ cid · bag · all · after · limit · nexus
+
+```memetic-wikitext
+<<has entity=`arg` name=`cid` params=`takes/word ~ the record's content id`>>
+<<has entity=`arg` name=`bag` params=`takes/word ~ one bag`>>
+<<has entity=`arg` name=`all` params=`~ every one`>>
+<<has entity=`arg` name=`after` params=`takes/word ~ the cursor a prior page answered as next`>>
+<<has entity=`arg` name=`limit` params=`takes/count ~ cap each surface's transcripts, oldest first`>>
+<<has entity=`arg` name=`nexus` params=`takes/word ~ the Nexus whose offer table takes the row`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ the vessel verbs the seat's handler reaches check the face's cap and the asker's hand themselves; a hand act refuses a seat by its own code`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ mcp
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! act lar:///realm.offer.shows
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`handler/seat spells/[[act lar:///realm.offer.shows]] ~ the seat runs it in its own process`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · voices
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/seat-lares`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MRPkoohxuvmWratcBkuGqSELOGOMXaOd0CRQphURIho`>>
+
+<<^ code=`&#x0004;` to=`?`>>

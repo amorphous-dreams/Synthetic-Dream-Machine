@@ -64,7 +64,7 @@ describe("lares act MOVE carrying a tombstone", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     expect(await cmdAct(actArgs(["MOVE"], { title: T, from: WORKING }))).toBe(2);
     expect(h.calls.map((c) => c.verb)).toEqual(["where"]);
-    expect(lines).toEqual(["bags holding the title:", CANON, "lar:///ha.ka.ba/bags/library", "name the bag where the delete takes place with --to <bag>"]);
+    expect(lines).toEqual(["bags holding the title:", CANON, "lar:///ha.ka.ba/bags/library", "name the bag where the delete takes place with to=<bag>"]);
   });
 
   test("wiki resolve names the bag that hides a title and prints no winner for it", async () => {

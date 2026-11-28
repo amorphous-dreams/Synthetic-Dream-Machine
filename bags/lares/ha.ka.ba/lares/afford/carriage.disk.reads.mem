@@ -99,10 +99,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/mcp`>>
 
-!!! shore
+!!! act lar:///carriage.disk.reads
 
 ```memetic-wikitext
-<<has entity=`skin` name=`mcp` params=`spells/shore ~ the seat; the settling answers hold no tool here`>>
+<<has entity=`skin` name=`mcp` params=`handler/seat spells/[[act lar:///carriage.disk.reads]] ~ the seat; the settling answers hold no tool here`>>
 ```
 
 <<~/ahu>>
@@ -117,6 +117,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lYdpaWTgxAbYSbzYlHinhGjelAh0ONxI-CNkdvzNpXM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3YA1g0MN8xw9N_A4il42jWvriOD4p3o-3DQyx3vYN2s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

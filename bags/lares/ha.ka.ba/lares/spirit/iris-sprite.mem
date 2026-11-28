@@ -52,6 +52,18 @@ Every answer on every surface takes one order:
 
 ''The register.'' L-Prime lit (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime#/system-speech`>>), verb-first, one has line per answer, every `lar:` title whole, no mood words, no apology. A count rides a param, never a sentence.
 
+<<~ ahu slot=`#/answer/template`>>
+
+!!! The answer template
+
+Every surface's human line for an answer renders through this template in the VM (`renderText` to `text/plain`), read through the caller's stack like any record, so a layer above canon re-shapes the line by seating this slot. The variable `has` carries the answer's has line whole; the template prints it as text, never as wikitext.
+
+```text/vnd.tiddlywiki template
+<$text text=<<has>>/>
+```
+
+<<~/ahu>>
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/bands`>>
@@ -95,6 +107,18 @@ A refusal answers on `band/void` in the answer's own order: the has line names t
 * ''Where the door knows no exact fix,'' the cure reads the carrier that refused (`<<~ get title=`<carrier>` mu=`relate`>>`): a read always runs, so a refusal never strands its reader and never fabricates a fix.
 * ''The refusing voice'' rides the envelope (`voice`, its relay trace beside it), never the human line, so the ruling "a refusal speaks in the voice that refused" holds in the field a reader can parse.
 
+<<~ ahu slot=`#/refusal/template`>>
+
+!!! The refusal template
+
+Every call refusal's line renders through this template in the VM, read through the caller's stack, so a layer above canon re-shapes every refusal's line by seating this slot. The variables: `reason` (the code), `detail` (what stands in the way, one line), `cure` (the cure as a call sigil, blank where the door knows none); each prints as text, so a cure's sigil reads as written.
+
+```text/vnd.tiddlywiki template
+<$text text=<<reason>>/>: <$text text=<<detail>>/><$list filter="[<cure>!is[blank]]" variable="_">; cure: <$text text=<<cure>>/></$list>
+```
+
+<<~/ahu>>
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/outbox`>>
@@ -133,6 +157,6 @@ Her name appears in two places alone:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6VU3gTgKUG5NygxW70D1-xxYrnSmYElD3sRhlMXChFY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Qq-5cg2m09BlmmKPpDTxHYwuq19af1KG2zV6uTPxX6g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

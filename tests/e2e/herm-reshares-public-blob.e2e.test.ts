@@ -159,9 +159,9 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     mkdirSync(srcDir, { recursive: true });
     writeFileSync(join(srcDir, "photo.png"), PNG_BYTES);
     writeFileSync(join(srcDir, "photo.png.meta"), "type: image/png\n");
-    const ld = await A.cli(["act", "LOAD", "--source-uri", srcDir, "--to", BOOK_WORKING, "--yes", "--json"]);
+    const ld = await A.cli(["act", "lar:///carriage.bag.loads", `source-uri=${srcDir}`, `to=${BOOK_WORKING}`, "yes=true", "--json"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
-    const moved = await A.cli(["act", "MOVE", "--title", `lar:///${LOCI}/photo`, "--from", BOOK_WORKING, "--to", BOOK_BAG, "--yes", "--json"]);
+    const moved = await A.cli(["act", "lar:///carriage.bag.moves", `title=${`lar:///${LOCI}/photo`}`, `from=${BOOK_WORKING}`, `to=${BOOK_BAG}`, "yes=true", "--json"]);
     expect(moved.json?.["ok"], said(moved)).toBe(true);
     await expectEntry(A, { kind: "bag-projected", match: (entry) => (entry.data as Record<string, unknown>)["bagId"] === BOOK_BAG }, { budgetMs: 90_000 });
     const casA = listCas(A);

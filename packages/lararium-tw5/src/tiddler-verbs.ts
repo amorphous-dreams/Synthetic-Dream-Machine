@@ -59,7 +59,7 @@
  * answers no read and takes no write. Every other record lands natively, as a person's edit in the wiki lands it: a `$:/`
  * title or tag, a module or plugin field and a script type alike (the island holds a document's code as data; its code
  * comes from the floor-admitted preloads alone). A RENDERED TIDDLER (`rendered-from`) takes no put and no delete here:
- * only the renderer writes it, and both refuse `rendered-derives`. No action string and no `tm-*` message rides this door (the `act` ask, phase 2).
+ * only the renderer writes it, and both refuse `rendered-derives`. No action string and no `tm-*` message rides this door; an act rides `call` by its address.
  *
  * THE FAMILY LAW (`@lararium/mesh/family`) DECIDES WHERE A RECORD STANDS AND WHAT A DELETE MOVES. `position` and
  * `family` read through `familyOf`; a delete reads its `consequence` before anything lands, over the reader's view,
@@ -130,7 +130,7 @@ import { pageFilterAnswer, filterCursor, checkFilter, lineLensOf, matchingLines,
 import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { wornOrigin } from "./verb-dispatcher.js";
-import { CallRefusal, callReaderOf, cureCall, floorReaderOf, type CallFloor, type CallSeat, type MacroCallParse } from "./modules/call.js";
+import { CallRefusal, VOICE_SLOTS, callReaderOf, cureCall, floorReaderOf, type CallFloor, type CallSeat, type CallVoice, type MacroCallParse, type VoiceSlot } from "./modules/call.js";
 import type { AffordancePack } from "./affordance-pack.js";
 import { dryDepthOf, filterDepthArgs, muWordsOf, readDepthArgs } from "./modules/mu.js";
 import { wikiWearsNext } from "./island-recipe.js";
@@ -2483,6 +2483,9 @@ export const TIDDLER_CALL_SEATS: Readonly<Record<string, CallSeat>> = Object.fre
   },
   "lar:///engine.record.removes": { verb: "tiddler-delete", dry: true, fold: (args) => dryArgs(args, "delete") },
   "lar:///engine.record.renames": { verb: "tiddler-rename", dry: true, fold: (args) => dryArgs(args, "rename") },
+  // THE SIDEBAR ACT (landing 9): `wiki(verb="act")`'s one admitted action seats as a carrier and rides `call` by its address; the
+  // reactor's own table names the action (`sidebar-layout`), so the call carries values alone, never action text.
+  "lar:///render.sidebar.lays": { verb: "wiki-action", fold: ({ face: _face, ...args }) => ({ ...args, name: "sidebar-layout" }) },
 });
 
 /**
@@ -2525,6 +2528,17 @@ export function tiddlerCallSource(opts: TiddlerVerbOptions, floor: () => CallFlo
       const { view } = await viewFor(wiki, anchorOf(wiki, container, "call"), ctx.cap);
       return floorReaderOf(callReaderOf(view as never), await floor());
     },
+    // THE MACHINA'S VOICE (landing 21): Iris-Sprite's templates render in the anchor's own engine, read at the call; a rig that
+    // boots no engine renders none and the plain words stand. The baked pack carries canon's templates as the floor.
+    get voice(): CallVoice | undefined {
+      const wiki = (opts.tw5?.$tw as unknown as { wiki?: { renderText?: (out: string, type: string, text: string, o?: { variables?: Record<string, string> }) => string } } | undefined)?.wiki;
+      const renderText = wiki?.renderText;
+      if (wiki === undefined || typeof renderText !== "function") return undefined;
+      return {
+        render: (template, variables) => renderText.call(wiki, "text/plain", "text/vnd.tiddlywiki", template, { variables: { ...variables } }),
+        floor: packedVoice,
+      };
+    },
   };
 }
 
@@ -2539,4 +2553,13 @@ async function packFloor(): Promise<CallFloor | null> {
   packModule ??= (import(/* @vite-ignore */ PACK_MODULE) as Promise<{ affordancePack(): AffordancePack }>).catch(() => null);
   const pack = (await packModule)?.affordancePack();
   return pack?.records !== undefined ? { records: pack.records, hash: pack.hash } : null;
+}
+
+/** Iris-Sprite's floor templates, read off the same lazily loaded pack (its `voice`); none where no pack stands. */
+async function packedVoice(): Promise<Partial<Record<VoiceSlot, string>>> {
+  packModule ??= (import(/* @vite-ignore */ PACK_MODULE) as Promise<{ affordancePack(): AffordancePack }>).catch(() => null);
+  const voice = ((await packModule)?.affordancePack() as { voice?: Partial<Record<string, string>> } | undefined)?.voice ?? {};
+  const out: Partial<Record<VoiceSlot, string>> = {};
+  for (const slot of VOICE_SLOTS) { const t = voice[slot]; if (typeof t === "string") out[slot] = t; }
+  return out;
 }

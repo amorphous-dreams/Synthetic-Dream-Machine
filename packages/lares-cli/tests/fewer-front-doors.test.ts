@@ -5,7 +5,7 @@
  *
  *   receipt · cancel   -> vessel request <id> [--cancel]
  *   watch              -> ingest --watch
- *   draft              -> act --draft <uri>
+ *   draft              -> act lar:///carriage.draft.pulls uri=<uri>
  *   raise sign         -> persona raise-sign <challenge-json>
  *   wing-of · test-quine -> out of the front door (tools/wing-of.mjs; `pnpm --filter @lararium/node test:quine`)
  *
@@ -29,7 +29,7 @@ const FOLDED: ReadonlyArray<readonly [argv: readonly string[], cure: string]> = 
   [["receipt"], "lares vessel request <id>"],
   [["cancel"], "lares vessel request <id> --cancel"],
   [["watch"], "lares ingest --watch"],
-  [["draft"], "lares act --draft <uri>"],
+  [["draft"], "lares act lar:///carriage.draft.pulls uri=<uri>"],
   [["raise", "sign"], "lares persona raise-sign <challenge-json-text>"],
   [["wing-of"], "node tools/wing-of.mjs"],
   [["test-quine"], "pnpm --filter @lararium/node test:quine"],
@@ -67,21 +67,19 @@ describe("fewer front doors", () => {
     expect(names).toContain("spirit");
     expect(names).toEqual(expect.arrayContaining(["get", "put", "delete", "rename"]));
     expect(names).not.toContain("tiddler");
-    expect(COMMANDS.length).toBe(48);
+    expect(COMMANDS.length).toBe(47);
   });
 
-  test("★ the signing seats stay: vessel and persona sign, and ingest/act keep their own seat ★", () => {
+  test("★ the signing seats stay: vessel and persona sign, and ingest keeps its own seat ★", () => {
     const row = (n: string) => COMMANDS.find((c) => c.name === n)!;
     expect(row("vessel").signs).toBe(true);
     expect(row("persona").signs).toBe(true);
     expect(row("ingest").signs).not.toBe(true);
-    expect(row("act").signs).not.toBe(true);
   });
 
   test("each new spelling is accepted by the door's row, and `--cancel` rides vessel alone", () => {
     const row = (n: string) => COMMANDS.find((c) => c.name === n)!;
     expect(row("ingest").accepts).toEqual(expect.arrayContaining(["watch", "debounce"]));
-    expect(row("act").accepts).toContain("draft");
     expect(row("persona").accepts).toContain("as");
     expect(row("vessel").accepts).toContain("cancel");
     for (const n of COMMANDS.map((c) => c.name).filter((x) => x !== "vessel")) expect(row(n).accepts, n).not.toContain("cancel");
@@ -109,10 +107,10 @@ describe("fewer front doors", () => {
     expect(c.out).toContain("[--watch] [--debounce <ms>]");
   });
 
-  test("act --draft with no uri refuses with the new usage", async () => {
+  test("act rides the call door: a flag beside it refuses by name, naming the param spelling", async () => {
     const r = await run(["act", "--draft", "--no-json"]);
     expect(r.code).toBe(2);
-    expect(r.err).toContain("usage: lares act --draft <uri>");
+    expect(r.err).toContain("unknown flag --draft for a call; a call takes name=value params (draft=…)");
   });
 
   test("persona raise-sign with no challenge refuses with its own menu", async () => {
@@ -129,6 +127,6 @@ describe("fewer front doors", () => {
     const ingest = await run(["ingest", "--help"]);
     expect(ingest.out).toContain("--watch");
     const act = await run(["act", "--help"]);
-    expect(act.out).toContain("--draft");
+    expect(act.out).toContain("lares act lar:///carriage.draft.pulls");
   });
 });

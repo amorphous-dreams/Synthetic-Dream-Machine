@@ -126,7 +126,7 @@ describe.skipIf(gaps.length > 0)("★ the orphan gradient on a staged hearth ★
     mkdirSync(holding, { recursive: true });
     writeFileSync(join(holding, "stray.tid"),
       `title: ${URI}#/a\ntype: text/memetic-wikitext+tiddlywiki\n$fragment-parent: ${URI}\n$slot: #/a\n\nan orphaned slot body`);
-    const ld = await lar.cli(["act", "LOAD", "--source-uri", holding, "--to", DAEMON_WORKING, "--yes", "--json"]);
+    const ld = await lar.cli(["act", "lar:///carriage.bag.loads", `source-uri=${holding}`, `to=${DAEMON_WORKING}`, "yes=true", "--json"]);
     expect(ld.json?.["ok"], `the LOAD refused — ${said(ld)}`).toBe(true);
     const orphanFile = join(mirror, `${PATH}.orphans/a.tid`);
     expect(await until(() => existsSync(orphanFile)), `no orphan file under ${mirror}: ${JSON.stringify(walkFiles())}`).toBe(true);

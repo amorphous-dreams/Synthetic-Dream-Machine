@@ -87,7 +87,7 @@ describe("seat-canon-reach — the AI seat never writes house canon live", () =>
       try { await makeTiddlerPutReactor(await r.opts())({ title: URI, bag: "lares", text: meme("/a") }, ctxOf(r.composite, "tiddler-put", "seat")); }
       catch (e) { message = e instanceof Error ? e.message : String(e); }
       expect(message).toMatch(/recipe=/);
-      expect(message).toMatch(/meme_offer/);
+      expect(message).toMatch(/lar:\/\/\/realm\.offer\.signs/);
       expect(message).not.toMatch(/vault unlock/);
     } finally { await r.repo.shutdown(); }
   });

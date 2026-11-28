@@ -83,10 +83,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/mcp`>>
 
-!!! shore_flush
+!!! act lar:///carriage.disk.flushes
 
 ```memetic-wikitext
-<<has entity=`skin` name=`mcp` params=`spells/shore_flush ~ the seat`>>
+<<has entity=`skin` name=`mcp` params=`handler/seat spells/[[act lar:///carriage.disk.flushes]] ~ the seat`>>
 ```
 
 <<~/ahu>>
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ilDz-U4MgTONC8VMwsj-V5TKDUHHaWS6BPZGw9GUeG8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JsdKmFnHDMHs42-u-Byj2gYvY7JFvon7PND0dDcH3-w`>>
 
 <<^ code=`&#x0004;` to=`?`>>

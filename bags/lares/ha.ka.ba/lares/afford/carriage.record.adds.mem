@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.record.adds"
 
 The residency model derives its verbs from SPARQL Update over (title × bag). `ADD` grants one tiddler residency in the destination bag while the source bag retains its copy: the tiddler's Work-level identity travels, so downstream tooling reads the landing as the same change in a second bag, never a new record. The verb takes the title, the source bag, the destination bag and a change-id (named, or minted when absent), submits one verb-tiddler to the vessel, and the wiki island's action-handler family runs it wrapped in an effect record that writes the archival audit tiddlers (an `accession` row on the destination).
 
-A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent for a call off a terminal, `--dry-run` previews the effect and commits nothing, and `--in-wiki` runs the act in the active wiki's island. Run `lares act` for the door's index of every residency action.
+A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent for a call off a terminal, `mu=dry` previews the effect and commits nothing, and `in-wiki=true` runs the act in the active wiki's island. The act rides by its address: `lares act lar:///carriage.record.adds name=value…` (or `lares lar:///carriage.record.adds …`).
 
 <<~/ahu>>
 
@@ -29,22 +29,24 @@ A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent for
 
 ```memetic-wikitext
 <<has entity=`example` name=`add-a-title` params=`title/lar:///ha.ka.ba/lares/docs/pono/example from/lar:///ha.ka.ba/bags/lares to/lar:///ha.ka.ba/wikis/lares/working ~ grant the title residency in the working layer; the source bag keeps its copy`>>
-<<has entity=`example` name=`preview-first` params=`title/lar:///ha.ka.ba/lares/docs/pono/example from/lar:///ha.ka.ba/bags/lares to/lar:///ha.ka.ba/wikis/lares/working dry-run/true ~ name the effect and commit nothing`>>
+<<has entity=`example` name=`preview-first` params=`title/lar:///ha.ka.ba/lares/docs/pono/example from/lar:///ha.ka.ba/bags/lares to/lar:///ha.ka.ba/wikis/lares/working mu/dry ~ name the effect and commit nothing`>>
 ```
 
 <<~/ahu>>
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ title · from · to · change-id · dry-run · in-wiki
+!! takes ~ title · from · to · change-id · in-wiki · yes · mu
 
 ```memetic-wikitext
 <<has entity=`arg` name=`title` params=`takes/title needs/required ~ the tiddler's title (its Work-level identity)`>>
 <<has entity=`arg` name=`from` params=`takes/bag-uri needs/required ~ the bag the tiddler leaves or reads from`>>
 <<has entity=`arg` name=`to` params=`takes/bag-uri needs/required ~ the bag the tiddler lands in`>>
 <<has entity=`arg` name=`change-id` params=`takes/id ~ the change's own identity, named once so a re-send reads as the same change; absent, the verb mints one`>>
-<<has entity=`arg` name=`dry-run` params=`~ preview the effect without committing it`>>
 <<has entity=`arg` name=`in-wiki` params=`~ run the act in the active wiki's island`>>
+<<has entity=`arg` name=`yes` params=`~ the intent a call off a terminal names in place of the y/N a terminal asks`>>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
+<<has entity=`cell` name=`_` params=`mu/dry ~ a dry run: the island walks the act through a capturing access and names the effect it would land, committing nothing`>>
 ```
 
 <<~/ahu>>
@@ -56,7 +58,7 @@ A terminal asks `Proceed? [y/N]` before it submits; `--yes` names the intent for
 Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
-<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ the vessel checks the writer's cap on the destination bag; a terminal asks y/N before it submits unless --yes rides, and an agent off a terminal names --yes`>>
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ the vessel checks the writer's cap on the destination bag; a terminal asks y/N before it submits unless yes=true rides, and an agent off a terminal names yes=true`>>
 ```
 
 <<~/ahu>>
@@ -79,7 +81,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`band` name=`done` params=`exit/0 fields/[[verb status requestId receipt]] ~ the vessel ran the action and wrote its effect record; the receipt names the outcome tiddler`>>
-<<has entity=`band` name=`preview` params=`exit/0 ~ with --dry-run the vessel names the effect it would land and commits nothing`>>
+<<has entity=`band` name=`preview` params=`exit/0 ~ with mu=dry the vessel names the effect it would land and commits nothing`>>
 <<has entity=`band` name=`refused` params=`~ the vessel refused by name (cap-denied or a verb-error); the line carries its reason and cure`>>
 ```
 
@@ -91,10 +93,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/cli`>>
 
-!!! lares act ADD
+!!! lares act lar:///carriage.record.adds
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares act ADD]] ~ the terminal; the verb rides as the first word, ALL-CAPS`>>
+<<has entity=`skin` name=`cli` params=`handler/host dry/walks grammar/call spells/[[lares act lar:///carriage.record.adds]] ~ the terminal; the act rides by its address through the call door, and the terminal runs the bound act (host files, y/N)`>>
 ```
 
 <<~/ahu>>
@@ -110,6 +112,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Bf8t2k_Q3g9HrXxheSXqBNxdunx1dnOcki-YVnfYkTI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Tom_vgZ37nhUL3W4ACh7p4Ro3vTuKS0QHQ2k53gFy88`>>
 
 <<^ code=`&#x0004;` to=`?`>>

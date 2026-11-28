@@ -145,12 +145,12 @@ The witness landed at `f144ed242` (14/14 then; the listing added three). Its `pu
 
 One law, four skins. Every row calls the same function in `packages/lararium-tw5/src/place-meme.ts`; a skin supplies a sink and nothing more. `base` on a verb, `--base` on the CLI and `If-Match` on the route spell ONE hash.
 
-| law | route (plain server) | daemon verb | CLI | MCP tool |
+| law | route (plain server) | daemon verb | CLI | MCP seat |
 |---|---|---|---|---|
-| `placeMeme` | `PUT …/memes/<scheme>/<path>` | `tiddler-put {(recipe \| bag), title, text, base?, cut?}` | `lares put title=<uri> (recipe=<slug> \| bag=<slug>) [base=<hash>] [file=<path>]` | `tiddler_put(title, text, (recipe \| bag), base?, cut?)` |
-| `readMeme` (the one read door, on a gradient) | `GET …/memes/<scheme>/<path>` | `tiddler-get {(recipe \| bag), title, meme: true, grain?, after?}` | `lares get title=<uri> (recipe=<slug> \| bag=<slug>) mu=assert` | `tiddler_get(title, (recipe \| bag), meme=True, grain?, after?)` |
-| `listMemes` · `listMemePage` | `GET …/memes.json[?tree=1]` | `meme-list {(recipe \| bag), tree?, after?, limit?}` | `lares get meme=true (recipe=<slug> \| bag=<slug>) [tree=true]` | `tiddler_get(meme=True, (recipe \| bag), tree?, after?)` |
-| `removeMeme` | `DELETE /bags/…/memes/<scheme>/<path>` | `tiddler-delete {(recipe \| bag), title, family: true, base?}` | `lares delete title=<uri> family=true (recipe=<slug> \| bag=<slug>) [base=<hash>]` | `tiddler_delete(title, family=True, (recipe \| bag), base?)` |
+| `placeMeme` | `PUT …/memes/<scheme>/<path>` | `tiddler-put {(recipe \| bag), title, text, base?, cut?}` | `lares put title=<uri> (recipe=<slug> \| bag=<slug>) [base=<hash>] [file=<path>]` | `put(title, text, (recipe \| bag), base?, params={cut?})` |
+| `readMeme` (the one read door, on a gradient) | `GET …/memes/<scheme>/<path>` | `tiddler-get {(recipe \| bag), title, meme: true, grain?, after?}` | `lares get title=<uri> (recipe=<slug> \| bag=<slug>) mu=assert` | `get(title, (recipe \| bag), mu="assert", after?)` |
+| `listMemes` · `listMemePage` | `GET …/memes.json[?tree=1]` | `meme-list {(recipe \| bag), tree?, after?, limit?}` | `lares get meme=true (recipe=<slug> \| bag=<slug>) [tree=true]` | `get((recipe \| bag), after?, params={meme: true, tree?})` |
+| `removeMeme` | `DELETE /bags/…/memes/<scheme>/<path>` | `tiddler-delete {(recipe \| bag), title, family: true, base?}` | `lares delete title=<uri> family=true (recipe=<slug> \| bag=<slug>) [base=<hash>]` | `delete(title, family=True, (recipe \| bag), base?)` |
 | the projection | `tiddlywiki --render` through the house templates | `meme-project {(recipe \| bag), uri, to}` | `lares meme project <uri\|file> --to <md\|html\|tid\|json> (--recipe <slug> \| --bag <slug>)` for a store-backed projection; `lares meme project <file> --to md` runs local | `meme_project(uri, to, (recipe \| bag))` |
 | `normalizeMemeSource` · the check | — (a file law) | — | `lares meme normalize` · `lares meme check [--gradient\|--edges]` | — (LOCAL seat, by law) |
 
@@ -203,7 +203,7 @@ curl -si -X DELETE -H 'x-requested-with: TiddlyWiki' -H 'If-Match: "sha256:…"'
 #   HTTP/1.1 204 · a stale If-Match: 412 and the group stands · /recipes/…: 404
 ```
 
-The CLI walk names its container on each store verb: `lares put title=lar:///t/x file=x.mem` · `lares get title=lar:///t/x mu=assert` · `lares get meme=true tree=true` · `lares delete title=lar:///t/x family=true base=sha256:…`; over MCP, `tiddler_put(…, recipe="default")` · `tiddler_get(…, recipe="default", meme=True)` · `tiddler_get(meme=True, recipe="default", tree=True)` · `tiddler_delete(…, family=True, recipe="default", base=…)`.
+The CLI walk names its container on each store verb: `lares put title=lar:///t/x file=x.mem` · `lares get title=lar:///t/x mu=assert` · `lares get meme=true tree=true` · `lares delete title=lar:///t/x family=true base=sha256:…`; over MCP, `put(…, recipe="default")` · `get(…, recipe="default", mu="assert")` · `get(recipe="default", params={"meme": true, "tree": true})` · `delete(…, family=True, recipe="default", base=…)`.
 
 <<~/ahu>>
 
@@ -224,6 +224,6 @@ The CLI walk names its container on each store verb: `lares put title=lar:///t/x
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;a9wqIIk2h6pmgycJwAM8MWymBDj0mC1DKhq3Eru_XVo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KgkLl9jLEZzdkhfZh9m27Xs0joa-M9NhjrEJXIs0-c4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

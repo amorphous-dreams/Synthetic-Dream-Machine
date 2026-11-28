@@ -134,10 +134,10 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins/mcp`>>
 
-!!! oracle_cast
+!!! act lar:///library.oracle.speaks
 
 ```memetic-wikitext
-<<has entity=`skin` name=`mcp` params=`spells/oracle_cast omits/realm,face,at,fresh,seed,nonce ~ the seat; names the time at the call`>>
+<<has entity=`skin` name=`mcp` params=`handler/seat spells/[[act lar:///library.oracle.speaks]] omits/realm,face,at,fresh,seed,nonce ~ the seat; names the time at the call`>>
 ```
 
 <<~/ahu>>
@@ -176,6 +176,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;kgBI3RhERt-W9bcQ6d6V98yioe26Uc_90AcLXi2Q1bg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BWKKUd37p_V7dQPcQaUeTWRkMoyrTV3H50d97DhXBDg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

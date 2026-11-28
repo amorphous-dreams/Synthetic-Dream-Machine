@@ -1,9 +1,17 @@
 /**
- * `lares act <VERB> [flags...]` — Residency Model ACTION verb operator surface.
+ * The residency acts' HOST DOOR — the terminal runs it once the vessel's `call` binds the act by its address
+ * (comms-ux-enacts landing 9: the three acts fold into one `act`). `lares act lar:///carriage.record.adds title=… from=… to=…`
+ * (and `lares lar:///carriage.record.adds …`) rides the call door; the vessel resolves the address through the caller's stack,
+ * binds the params against the carrier's live `#/takes`, and answers `handler/host` with the bound params, which this door runs:
+ * it reads host files (a LOAD's carriers), asks y/N at a terminal (`yes=true` names the intent off one), and submits the act.
+ * A `mu=dry` call reaches it because each residency carrier's cli row names `dry/walks`; the island previews and commits nothing.
  *
- * VERB ∈ { ADD, COPY, MOVE, CLEAR, DROP, LOAD, CREATE } ∪ { REPACK }
+ *   ADD    lar:///carriage.record.adds      COPY   lar:///carriage.bag.copies     MOVE  lar:///carriage.bag.moves
+ *   CLEAR  lar:///carriage.bag.clears       DROP   lar:///carriage.bag.drops      LOAD  lar:///carriage.bag.loads
+ *   CREATE lar:///carriage.bag.creates      REPACK lar:///carriage.bundle.repacks  draft lar:///carriage.draft.pulls
  *
- * Args per verb (kebab-case CLI flags):
+ * The runner below (`cmdAct`) reads the bound params as the parsed shape every residency suite and the seed's CREATE build
+ * (`positional: [VERB]`, options and flags):
  *
  *   REPACK
  *     --source <file>   the disk bundle (.json / .multids) whose pack the island collects
@@ -105,7 +113,72 @@ function addressTitleForLoad(source: string, file: string, toBag: string): strin
 /** Every ACTION verb the act door answers (INGEST names its own door, `lares ingest`), and REPACK. */
 export const ACT_VERBS: readonly string[] = [...ACTION_VERBS.filter((v) => v !== "INGEST"), "REPACK"];
 
-/** A refusal that names no usage of its own ends with the door's lines, drawn from the carriers (`lares act --help` prints the same). */
+/** Each residency act's address, and the verb its runner submits. */
+export const RESIDENCY_ACTS: Readonly<Record<string, string>> = Object.freeze({
+  "lar:///carriage.record.adds": "ADD",
+  "lar:///carriage.bag.copies": "COPY",
+  "lar:///carriage.bag.moves": "MOVE",
+  "lar:///carriage.bag.clears": "CLEAR",
+  "lar:///carriage.bag.drops": "DROP",
+  "lar:///carriage.bag.loads": "LOAD",
+  "lar:///carriage.bag.creates": "CREATE",
+  "lar:///carriage.bundle.repacks": "REPACK",
+});
+
+/** The draft pull's address: the door pulls a lower-bag tiddler into a writable draft. */
+export const DRAFT_PULL = "lar:///carriage.draft.pulls";
+
+/**
+ * A host door the call answers `handler/host` for: it runs with the parsed line and the bound params, and answers an exit code.
+ * `dry` names whether its code walks a dry path; a door that walks none never sees a `_` carry (the call door refuses it
+ * `mu-cell-empty`), whatever a carrier's row claims.
+ */
+export interface HostDoor {
+  readonly dry: boolean;
+  readonly run: (args: ParsedArgs, params: Readonly<Record<string, unknown>>, carry: string | null) => Promise<number>;
+}
+
+/** The residency acts whose runner previews: the island runs each through a capturing access (REPACK writes the bundle, so none). */
+const DRY_WALKS: ReadonlySet<string> = new Set(["ADD", "COPY", "MOVE", "CLEAR", "DROP", "LOAD", "CREATE"]);
+
+/** The bound params as the runner's parsed shape: a word rides as an option, a switch as a flag; a `_` carry asks the preview. */
+export function actArgsOf(args: ParsedArgs, verb: string | null, params: Readonly<Record<string, unknown>>, carry: string | null): ParsedArgs {
+  const options: Record<string, string> = {};
+  const flags: Record<string, boolean> = {};
+  for (const [key, value] of Object.entries(params)) {
+    // A PREVIEW RIDES THE MU CARRY ALONE, which the call door's gate reads: a bound `dry-run` (a row a layer added) never
+    // becomes the runner's flag.
+    if (key === "mu" || key === "recipe" || key === "dry-run") continue;
+    if (value === true) flags[key] = true;
+    else if (value === false || value === undefined || value === null) continue;
+    else options[key] = String(value);
+  }
+  if (carry !== null && carry.includes("_")) flags["dry-run"] = true;
+  if (args.flags["json"] === true) flags["json"] = true;
+  return { command: "act", positional: verb === null ? [] : [verb], options, flags };
+}
+
+/**
+ * THE HOST DOOR FOR AN ADDRESS, or null where the terminal runs none: each residency act through `cmdAct`, the draft pull
+ * through `cmdDraft` (its `uri` the tiddler pulled).
+ */
+export function actHostDoor(address: string): HostDoor | null {
+  const verb = RESIDENCY_ACTS[address];
+  if (verb !== undefined) return { dry: DRY_WALKS.has(verb), run: async (args, params, carry) => await cmdAct(actArgsOf(args, verb, params, carry)) };
+  if (address === DRAFT_PULL) {
+    return {
+      dry: false,
+      run: async (args, params, carry) => {
+        const { uri, ...rest } = params;
+        const parsed = actArgsOf(args, null, rest, carry);
+        return await cmdDraft({ ...parsed, positional: typeof uri === "string" ? [uri] : [] });
+      },
+    };
+  }
+  return null;
+}
+
+/** A refusal that names no usage of its own ends with the act's call shape, drawn from the carriers. */
 function printUsage(): void {
   for (const line of helpLines("act")) console.error(line);
 }
@@ -131,6 +204,11 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   const source  = args.options["source"];
   const fromBag = args.options["from"];
   if (!source || !fromBag) { printUsage(); return 2; }
+  // REPACK WRITES THE BUNDLE: it walks no dry path, so a preview asked of it refuses before anything reads or writes.
+  if (args.flags["dry-run"] === true) {
+    emit(args, { ok: false, error: { code: "mu-cell-empty", message: "lar:///carriage.bundle.repacks walks no dry path; the plain call writes the bundle" }, human: () => console.error("lares act lar:///carriage.bundle.repacks: walks no dry path; the plain call writes the bundle") });
+    return exitFor("usage");
+  }
   const out = args.options["out"] ?? source;
 
   const root = larRoot();
@@ -237,14 +315,6 @@ async function actRepack(args: ParsedArgs): Promise<number> {
 export interface ActClaims { readonly houseCanon?: boolean }
 
 export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<number> {
-  // `--draft <uri>` pulls a lower-bag tiddler into a writable draft: the pull rides this door, the landing rides an ACTION verb.
-  if (args.flags["draft"] === true) {
-    if (args.positional[0] !== undefined && (isActionVerb(args.positional[0]) || args.positional[0] === "REPACK")) {
-      console.error(`lares act --draft: "${args.positional[0]}" names an ACTION verb; --draft takes the tiddler to pull (lares act --draft <uri>)`);
-      return 2;
-    }
-    return await cmdDraft(args);
-  }
   const verbRaw = args.positional[0];
   if (!verbRaw) { printUsage(); return 2; }
   if (verbRaw === "REPACK") return await actRepack(args);
@@ -282,15 +352,15 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
     // A MOVE naming --from and --to and no --title promotes the WHOLE source layer (every live title) in one act.
     const layerMove = verb === "MOVE" && !title && !!fromBag && !!toBag;
     if (!layerMove && (!title || !fromBag || (verb !== "MOVE" && !toBag))) {
-      console.error(verb === "MOVE" ? "lares act MOVE: --title, --from, --to (or --from and --to alone to move the whole layer) required" : `lares act ${verb}: --title, --from, --to all required`);
+      console.error(verb === "MOVE" ? "lares act lar:///carriage.bag.moves: title=, from= and to= (or from= and to= alone to move the whole layer) required" : `lares act ${verb}: title=, from= and to= all required`);
       return 2;
     }
     if (layerMove && args.flags["shadow"]) {
-      console.error("lares act MOVE: --shadow names one tombstoned title; a layer move names none");
+      console.error("lares act lar:///carriage.bag.moves: shadow=true names one tombstoned title; a layer move names none");
       return 2;
     }
     if (verb !== "MOVE" && args.flags["shadow"]) {
-      console.error(`lares act ${verb}: --shadow rides a MOVE of a tombstone alone`);
+      console.error(`lares act ${verb}: shadow=true rides a MOVE of a tombstone alone (lar:///carriage.bag.moves)`);
       return 2;
     }
     if (verb === "MOVE" && !toBag && title) {
@@ -299,12 +369,12 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         const where = await runVerb("where", { tiddler: title }, did);
         const holders = ((summaryOutput(where)?.["bags"] ?? []) as string[]);
         if (holders.includes(fromBag)) {
-          console.error("lares act MOVE: --title, --from, --to all required");
+          console.error("lares act lar:///carriage.bag.moves: title=, from= and to= all required");
           return 2;
         }
         console.log("bags holding the title:");
         for (const bag of holders.filter((candidate) => candidate !== fromBag)) console.log(bag);
-        console.log("name the bag where the delete takes place with --to <bag>");
+        console.log("name the bag where the delete takes place with to=<bag>");
       } catch (err) {
         console.error(`lares act MOVE: could not read the bags holding ${title}: ${err instanceof Error ? err.message : String(err)}`);
         return 4;
@@ -319,7 +389,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
   } else if (isBagVerb(verb)) {
     const bag = args.options["bag"];
     if (!bag) {
-      console.error(`lares act ${verb}: --bag required`);
+      console.error(`lares act ${verb}: bag= required`);
       return 2;
     }
     changeId = args.options["change-id"] ?? newChangeId();
@@ -328,7 +398,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
   } else if (verb === "CREATE") {
     const bag = args.options["bag"];
     if (!bag) {
-      console.error(`lares act CREATE: --bag required`);
+      console.error(`lares act lar:///carriage.bag.creates: bag= required`);
       return 2;
     }
     // `--plane <catalog|oracle>` names the target oracle plane: catalog = the private user/household
@@ -337,7 +407,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
     // An unrecognized value errors rather than silently coercing to catalog (a typo would mis-place the bag).
     const planeOpt = args.options["plane"];
     if (planeOpt !== undefined && planeOpt !== "catalog" && planeOpt !== "oracle") {
-      console.error(`lares act CREATE: --plane takes "catalog" or "oracle" (got "${planeOpt}")`);
+      console.error(`lares act lar:///carriage.bag.creates: plane= takes "catalog" or "oracle" (got "${planeOpt}")`);
       return 2;
     }
     const plane = planeOpt === "oracle" ? "oracle" : "catalog";
@@ -354,7 +424,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
     const toBag     = args.options["to"];
     changeId = args.options["change-id"] ?? newChangeId();
     if (!sourceUri || !toBag) {
-      console.error(`lares act LOAD: --source-uri and --to required`);
+      console.error(`lares act lar:///carriage.bag.loads: source-uri= and to= required`);
       return 2;
     }
     actionArgs["source-uri"] = sourceUri;
@@ -448,7 +518,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
   if (!args.flags["yes"] && !args.flags["dry-run"]) {
     if (wantsJson(args)) {
       emit(args, {
-        ok: false, error: { code: "usage", message: "confirmation required", hint: "pass --yes for non-interactive (agent) invocation" },
+        ok: false, error: { code: "usage", message: "confirmation required", hint: "name yes=true for a call off a terminal (an agent's call)" },
         human: () => { /* unreachable on the JSON path */ },
       });
       return exitFor("usage");
@@ -568,7 +638,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         // is a FRESH nonce every verb's own attempt alone owns — re-running never reads IT back
         // (a fresh attempt mints its own) — so the hint names the EXACT gesture that keeps this a
         // retry rather than a new change: reuse `--change-id`.
-        const hint = `this process stopped waiting after ${timeoutMs}ms (budgeted for ${carrierCount} carrier(s)${verb === "LOAD" ? " — a LOAD budgets 10s + 400ms per carrier" : ""}) and a ${READBACK_MS}ms read found no receipt yet for THIS attempt's own request id (${requestId}) — check it with \`lares vessel request ${requestId}\`. Re-run with \`--change-id ${changeId}\`: if this attempt landed, the effect index answers it without running twice; a re-run WITHOUT it is a NEW change. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
+        const hint = `this process stopped waiting after ${timeoutMs}ms (budgeted for ${carrierCount} carrier(s)${verb === "LOAD" ? " — a LOAD budgets 10s + 400ms per carrier" : ""}) and a ${READBACK_MS}ms read found no receipt yet for THIS attempt's own request id (${requestId}) — check it with \`lares vessel request ${requestId}\`. Re-run with \`change-id=${changeId}\`: if this attempt landed, the effect index answers it without running twice; a re-run WITHOUT it is a NEW change. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
         emit(args, {
           ok: false, requestId, error: { code: "outcome-unknown", message: msg, hint },
           human: () => { console.error(`lares act: outcome unknown. Read it back: \`lares vessel request ${requestId}\`.`); console.error(`  ${hint}`); },
@@ -627,7 +697,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
       if (summary["dryRun"]) {
         const wl = Array.isArray(summary["wouldLand"]) ? summary["wouldLand"].length : 0;
         const wt = Array.isArray(summary["wouldTombstone"]) ? summary["wouldTombstone"].length : 0;
-        console.log(`${verb} --dry-run: would land ${wl}, tombstone ${wt} — NOTHING committed (req ${result.requestId.slice(0, 8)})`);
+        console.log(`${verb} mu=dry: would land ${wl}, tombstone ${wt} — NOTHING committed (req ${result.requestId.slice(0, 8)})`);
       } else if (effectOf !== undefined) {
         console.log(`${verb} ✓ already landed by request ${effectOf} — not re-run (req ${result.requestId.slice(0, 8)})`);
       } else {

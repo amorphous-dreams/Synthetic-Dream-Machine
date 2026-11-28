@@ -1,6 +1,7 @@
 """Phase-6a witness — lares_mcp: the isomorphic /mcp surface. The LaresCoordinator round-trips the
 lifecycle verbs over a real ephemeral palace (pour->recall->status, kapae->recall-excludes->un_kapae-
-restores), and the MCPServer tool-set MIRRORS the CLI lifecycle verbs exactly (the isomorphism contract).
+restores); the MCPServer lists the five call-shape tools (get, put, delete, rename, act), each forwarding {verb, params}
+to the vessel's `call`, and runs each act whose handler rests in the seat by its address (the isomorphism contract).
 
     PYTHONPATH=mempalace ./.venv/bin/python -m pytest packages/lararium-sensorium/scripts/test_lares_mcp.py -q
 """
@@ -10,10 +11,7 @@ import os
 
 import pytest
 
-from lares_mcp import (LIFECYCLE_VERBS, PLANE_VERBS, WIKI_VERBS, SENSE_LIFECYCLE_VERBS,
-                       MEME_VERBS, KAHUA_VERBS, OFFER_VERBS, TIDDLER_VERBS, DDATE_VERBS, ORACLE_VERBS, LAW_VERBS, HEARTH_VERBS, SHORE_VERBS,
-                       SENSE_HAND_VERBS, VERB_SEATS, DaemonCoordinator,
-                       LaresCoordinator, build_mcp, seat_of)
+from lares_mcp import SENSE_HAND_VERBS, DaemonCoordinator, LaresCoordinator, build_mcp
 from worldline_veil import veiled_root
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -167,44 +165,13 @@ def test_pour_builds_the_worldline_and_kapae_cascades_the_subtree(tmp_path):
     assert {tks[0], tks[1]} <= _live_turn_keys(coord)    # move-not-delete restores the subtree
 
 
-def test_grid_seats_the_verbs_by_reversibility_and_trust():
-    for v in LIFECYCLE_VERBS:
-        assert seat_of(v) == "HOTL"       # every lifecycle verb runs reversible + trusted
-    assert seat_of("attach") == "HITL"    # trust-crossing
-    assert seat_of("release") == "HITL"   # irreversible — drops a guest handle for good
-    assert seat_of("reconcile") == "HOTL" # reversible re-settle against source
+SEAT_TOOLS = {"get", "put", "delete", "rename", "act"}
 
-
-def test_every_seated_tool_runs_hotl_and_no_hitl_verb_holds_a_tool(tmp_path):
-    # THE HAND LAW (hitl-reads-a-hand): a person's hand at a real terminal approves an HITL verb, and no argument a seat
-    # fills stands in for it, so every tool this seat serves seats HOTL and every HITL verb in the grid holds no tool.
-    tools = _mcp_tool_names(tmp_path)
-    for v in tools:
-        assert v in VERB_SEATS and seat_of(v) == "HOTL", f"tool {v!r} seats HITL or rides unseated"
-    for v, _seat in VERB_SEATS.items():
-        if seat_of(v) == "HITL":
-            assert v not in tools, f"HITL verb {v!r} holds a tool"
-
-
-def test_sense_hand_verbs_hold_no_tool_and_no_seat(tmp_path):
-    # RED before the cure: promote, retire and purge rode tools gated by an `approve` boolean the model fills, and
-    # un_retire rode one ungated. The cure retires each: the operator runs `lares sense <verb>` on their own terminal.
-    tools = _mcp_tool_names(tmp_path)
-    assert {"harden", "promote", "sense_harden", "sense_promote", "trust", "nexus_approve", "nexus_promote"}.isdisjoint(tools)
-    for v in SENSE_HAND_VERBS:
-        tool = v.replace("-", "_")
-        assert tool not in tools, f"hand verb {v!r} still rides an MCP tool"
-        assert tool not in VERB_SEATS and v not in VERB_SEATS, f"hand verb {v!r} still holds a seat row"
-    for tool in tools:
-        schema = {t.name: t for t in asyncio.run(build_mcp(_coord(tmp_path)).list_tools())}[tool].input_schema
-        assert "approve" not in schema.get("properties", {}), f"tool {tool!r} takes an approval value a seat fills"
-
-
-def test_sense_lifecycle_verbs_a_seat_runs_carry_their_seats():
-    # the DURABLE sensorium-lifecycle sub-verbs a seat runs — the reads and the pioneer build — seat HOTL.
-    for v in SENSE_LIFECYCLE_VERBS:
-        assert v in VERB_SEATS, f"sense-lifecycle verb {v!r} rides UNSEATED"
-        assert seat_of(v) == "HOTL"
+# The sensorium's own acts, each by the carrier that seats it (the vessel answers `handler/seat` for each).
+SENSE_ACTS = ("lar:///sense.capture.pours", "lar:///sense.memory.recalls", "lar:///sense.taxonomy.counts",
+              "lar:///sense.worldline.reads", "lar:///sense.kapae.mutes", "lar:///sense.kapae.restores",
+              "lar:///sense.rhythm.analyzes", "lar:///sense.record.flows", "lar:///sense.plane.reads",
+              "lar:///sense.roster.reads", "lar:///sense.pioneer.builds", "lar:///sense.source.reconciles")
 
 
 def _mcp_tool_names(tmp_path):
@@ -212,106 +179,105 @@ def _mcp_tool_names(tmp_path):
     return {t.name for t in asyncio.run(mcp.list_tools())}
 
 
-def test_mcp_tools_mirror_the_cli_lifecycle_verbs(tmp_path):
-    # the /mcp tool-set equals the declared lifecycle verb-set PLUS the per-plane query-door verbs, the
-    # DURABLE sensorium-lifecycle sub-verbs, and the meme placement pair — name-for-name (the growth floor).
-    assert _mcp_tool_names(tmp_path) == (set(LIFECYCLE_VERBS) | set(PLANE_VERBS) | set(WIKI_VERBS)
-                                         | set(SENSE_LIFECYCLE_VERBS)
-                                         | set(MEME_VERBS) | set(KAHUA_VERBS) | set(OFFER_VERBS) | set(TIDDLER_VERBS)
-                                         | set(DDATE_VERBS) | set(ORACLE_VERBS) | set(LAW_VERBS) | set(HEARTH_VERBS)
-                                         | set(SHORE_VERBS))
+def test_the_seat_lists_exactly_the_record_tools_and_act(tmp_path):
+    # RED on 421e4a4df^ (the landing-8 head): the seat listed its 32 hand-written tools (tiddler_get … reconcile).
+    # GREEN on 421e4a4df: five tools, each one call shape; every other affordance rides `act` by its address.
+    assert _mcp_tool_names(tmp_path) == SEAT_TOOLS
 
 
-def test_recall_tool_args_are_isomorphic_with_the_recall_api(tmp_path):
-    """ARG-level isomorphism (2 surfaces, 1 API): the /mcp recall TOOL exposes the same filter set as the
-    LaresCoordinator.recall API the CLI also drives. A filter added to the coordinator but not the tool
-    (or vice versa) fails this loud, so the two surfaces can never silently drift. The CLI's
-    --speaker/--channel/--function/--pair mirror the same names."""
+def test_no_hand_verb_holds_a_tool_or_a_seat_act_and_nothing_takes_an_approval_value(tmp_path):
+    # THE HAND LAW (hitl-reads-a-hand): a person's hand at a real terminal approves a hand verb, and no value a seat fills
+    # stands in for it, so no tool and no seat act carries one, and nothing the seat runs takes an `approve` value.
     import inspect
     mcp = build_mcp(_coord(tmp_path))
     tools = {t.name: t for t in asyncio.run(mcp.list_tools())}
-    tool_args = set(tools["recall"].input_schema.get("properties", {}))
+    handlers = {getattr(fn, "__name__", "") for fn in mcp.seat_acts.values()}
+    assert {"harden", "promote", "sense_harden", "sense_promote", "trust", "nexus_approve", "nexus_promote"}.isdisjoint(tools)
+    for v in SENSE_HAND_VERBS:
+        assert v.replace("-", "_") not in tools, f"hand verb {v!r} rides an MCP tool"
+        assert v.replace("-", "_") not in handlers, f"hand verb {v!r} rides a seat act"
+    for name, tool in tools.items():
+        assert "approve" not in (tool.input_schema or {}).get("properties", {}), f"tool {name!r} takes an approval value a seat fills"
+    for address, fn in mcp.seat_acts.items():
+        assert "approve" not in inspect.signature(fn).parameters, f"seat act {address} takes an approval value a seat fills"
+
+
+def test_the_sensorium_acts_seat_by_address(tmp_path):
+    acts = build_mcp(_coord(tmp_path)).seat_acts
+    for address in SENSE_ACTS:
+        assert callable(acts.get(address)), f"no seat act holds {address}"
+
+
+def test_recall_act_args_are_isomorphic_with_the_recall_api(tmp_path):
+    """ARG-level isomorphism (2 surfaces, 1 API): the seat's recall act takes the same filter set as the
+    LaresCoordinator.recall API the CLI also drives. A filter added to the coordinator but not the act
+    (or vice versa) fails this loud, so the two surfaces can never silently drift. The CLI's
+    --speaker/--channel/--function/--pair mirror the same names."""
+    import inspect
+    act = build_mcp(_coord(tmp_path)).seat_acts["lar:///sense.memory.recalls"]
+    act_args = set(inspect.signature(act).parameters)
     api_args = set(inspect.signature(LaresCoordinator.recall).parameters) - {"self"}
     taxonomy = {"speaker", "channel", "function", "pair"}
-    assert taxonomy <= tool_args, "the recall TOOL is missing a taxonomy filter"
+    assert taxonomy <= act_args, "the recall act is missing a taxonomy filter"
     assert taxonomy <= api_args, "the recall API is missing a taxonomy filter"
-    # the tool mirrors the API and adds only `sensorium` (the router's which-sensorium key)
-    assert tool_args <= api_args | {"sensorium"}, "the recall tool grew an arg the API cannot serve"
+    # the act mirrors the API and adds only `sensorium` (the router's which-sensorium key)
+    assert act_args <= api_args | {"sensorium"}, "the recall act grew an arg the API cannot serve"
 
 
 def test_parity_inventory_three_way(tmp_path):
-    """THREE-WAY isomorphism guard against the CLI-verb INVENTORY (fixtures/cli-verbs.json — the
-    surface GROWS into it). Mutating any side (add an orphan MCP tool, seat-drop a mirrored verb,
-    or split the inventory) fails this loud. The `lares` MCP surface mirrors the WHOLE CLI, so the
-    invariant reads MCP ⊆ CLI (no orphan tool), never a permanent cli-only claim."""
+    """THREE-WAY isomorphism guard against the CLI-verb INVENTORY (fixtures/cli-verbs.json). The seat's tools are the
+    mirrored anchor and the `cli_forms` keys; each tool's CLI spelling lands on a real command, or on a call head the CLI
+    reads outside its command table (`act`); every CLI command hosts a mirror XOR awaits one. Mutating any side (add an
+    orphan tool, drop a mirrored word, split the inventory) fails this loud."""
     with open(_CLI_VERBS, encoding="utf-8") as f:
         inv = json.load(f)
     verbs = set(inv["verbs"])                    # all CLI top-level command names
-    mirrored = set(inv["mirrored"])             # the MCP tool-names (the anchor; MCP-form)
-    mirror_hosts = set(inv["mirror_hosts"])     # the CLI top-level verbs those tools land on (coverage-form)
+    mirrored = set(inv["mirrored"])             # the seat's tool names (the anchor)
+    mirror_hosts = set(inv["mirror_hosts"])     # the CLI commands those tools land on (coverage-form)
+    call_heads = set(inv["call_heads"])         # the call heads the CLI reads outside its command table
     not_yet = set(inv["not_yet_mirrored"])
     cli_forms = inv["cli_forms"]
-    # THE AHEAD-OF-CLI ALLOWANCE (the query door): PLANE_VERBS ride the MCP surface AHEAD of their formal
-    # `cli_forms` mappings — the CLI forms + this fixture grow with that arc. Until then the parity
-    # invariants read over the tool-set MINUS the named allowance (never a silent widening: the allowance
-    # stands as a declared tuple, and every allowance verb still seats in VERB_SEATS).
-    mcp_tools = _mcp_tool_names(tmp_path)
-    mirrored_tools = mcp_tools - set(PLANE_VERBS)
+    tools = _mcp_tool_names(tmp_path)
 
-    # (a) the MCP tool-set IS the mirrored anchor IS the cli_forms keys — grow a tool, grow all three.
-    assert mirrored_tools == mirrored
-    assert mirrored_tools == set(cli_forms)
-    # (b) every MCP tool (plane verbs INCLUDED) carries a VERB_SEATS entry — the grid seats the whole surface.
-    for name in mcp_tools:
-        assert name in VERB_SEATS, f"MCP tool {name!r} rides UNSEATED — grow VERB_SEATS"
-    # (c) the name-normalization BRIDGE: each MCP tool's CLI spelling lands on a REAL host verb — so a
-    # sub-verb mirror (kapae → `worldline kapae`, status → `sensorium status`) still resolves to a top-level
-    # verb the CLI actually carries (no orphan tool; MCP ⊆ CLI reads through the spelling, not the raw name).
-    # A NAMESPACE PAIR spells its host + sub-verb: meme_offer/meme_offer_show → `meme offer`/`meme offer show` — ONE host
-    # (`meme`), two tools, the same `<host> <sub>` shape kapae/un_kapae ride under `sense worldline`.
-    for m in mirrored_tools:
+    # (a) the seat's tool-set IS the mirrored anchor IS the cli_forms keys — grow a tool, grow all three.
+    assert tools == mirrored == set(cli_forms)
+    # (b) each tool's CLI spelling lands on a real command or a call head; a call head stands outside the command table.
+    for m in tools:
         head = cli_forms[m].split()[0]
-        assert head in mirror_hosts and head in verbs, f"MCP {m!r} → CLI {cli_forms[m]!r} has no real host"
-    # (d) COVERAGE partition (the surface GROWS): every CLI top-level verb is a mirror-host XOR awaits.
+        assert head in mirror_hosts | call_heads, f"MCP {m!r} → CLI {cli_forms[m]!r} has no real host"
+    assert mirror_hosts <= verbs and call_heads.isdisjoint(verbs)
+    # (c) COVERAGE partition: every CLI top-level verb is a mirror-host XOR awaits.
     assert mirror_hosts | not_yet == verbs
     assert mirror_hosts.isdisjoint(not_yet)
-    # (e) THE LOCAL-SEAT ALLOWANCE: a CLI sub-verb that runs over a file with no daemon holds NO MCP seat
-    # by law — the MCP mirrors the daemon-seated verbs only. The fixture names each one, its head lands on a
-    # real host, and no MCP tool spells it (an `meme_normalize` tool would be a mirror of nothing).
+    # (d) THE LOCAL-SEAT ALLOWANCE: a CLI sub-verb that runs over a file with no daemon holds NO seat by law. The fixture
+    # names each one, its head lands on a real host, and no tool spells it.
     local_seat = set(inv["local_seat"])
     assert local_seat == {"meme normalize", "meme check"}
     for form in local_seat:
         assert form.split()[0] in verbs
         assert form not in cli_forms.values()
-        assert form.replace(" ", "_") not in mcp_tools
+        assert form.replace(" ", "_") not in tools
 
 
-def test_flow_verb_mirrors_end_to_end(tmp_path):
-    """The pet-named composed-flow surface — ONE `flow` verb/tool mirroring across all three sides (the
-    anti-verb-sprawl surface: N flows behind one verb, never a verb per instrument). Guards the whole
-    mirror at once: the MCP tool exists, seats HOTL (read-only routed compute), and lands on the real
-    top-level CLI host `flow` (its own command, not a `sense` sub-verb)."""
-    assert "flow" in LIFECYCLE_VERBS                     # the MCP anchor carries it
-    assert "flow" in VERB_SEATS and seat_of("flow") == "HOTL"   # read-only routed compute → HOTL
-    assert "flow" in _mcp_tool_names(tmp_path)           # the tool registered on the surface
+def test_flow_seats_by_address_beside_its_own_cli_command(tmp_path):
+    """The pet-named composed-flow surface — N flows behind one handler, never a handler per instrument: the seat runs it
+    at lar:///sense.record.flows, and the CLI keeps its own top-level `flow` command."""
+    assert callable(build_mcp(_coord(tmp_path)).seat_acts["lar:///sense.record.flows"])
     with open(_CLI_VERBS, encoding="utf-8") as f:
         inv = json.load(f)
-    assert "flow" in inv["verbs"]                        # a real top-level CLI command
-    assert inv["cli_forms"].get("flow") == "flow"        # hosts its own mirror (top-level, no sub-verb)
+    assert "flow" in inv["verbs"]
 
 
-def test_meme_project_mirrors_meme_project(tmp_path):
-    """The projection verb: `meme_project` ⇄ `meme project` — the TARGET rides as a parameter (`to`), never
-    a suffix on the verb, so ONE tool mirrors every rendered target the island serves. The `carrier`
-    door stands retired: no host, no `project_md`, no allowance."""
+def test_meme_project_seats_by_address_and_the_target_rides_as_a_parameter(tmp_path):
+    """The projection act at lar:///engine.meme.projects — the TARGET rides as a parameter (`to`), never a suffix on the
+    verb, so ONE handler renders every target the island serves; no `carrier` command stands."""
+    import inspect
+    act = build_mcp(_coord(tmp_path)).seat_acts["lar:///engine.meme.projects"]
+    assert "to" in inspect.signature(act).parameters
     with open(_CLI_VERBS, encoding="utf-8") as f:
         inv = json.load(f)
-    assert inv["cli_forms"].get("meme_project") == "meme project"
-    assert "project_md" not in inv["cli_forms"] and "project_md" not in inv["mirrored"]
-    assert "carrier" not in inv["verbs"] and "carrier" not in inv["mirror_hosts"]
-    assert "meme_project" in MEME_VERBS and seat_of("meme_project") == "HOTL"
-    assert "flow" in inv["mirror_hosts"]                 # the coverage partition names it a host
-    assert "flow" not in inv["not_yet_mirrored"]         # mirrored today, not awaiting
+    assert "meme" in inv["verbs"]
+    assert "carrier" not in inv["verbs"] and "project_md" not in inv["cli_forms"]
 
 
 # ── the plane reads: `recall --lens structure/form` (folded) + the plane_record cross-plane witness ──
@@ -436,11 +402,6 @@ def test_cid_gate_carries_the_chunk_suffixed_form():
     assert not _reads_as_cid("a" * 64 + "_x")
     assert not _reads_as_cid("a" * 63)
     assert not _reads_as_cid("what shapes recur across the corpus")
-
-
-def test_plane_verbs_seat_hotl():
-    for v in PLANE_VERBS:
-        assert seat_of(v) == "HOTL"                       # every plane verb reads — reversible, trusted
 
 
 def test_recall_lens_folds_the_plane_reads(tmp_path):
@@ -701,26 +662,18 @@ def test_daemon_rejim_routes_and_repour_rides_refresh(monkeypatch):
 
 
 # ── the SENSE DOOR SHRINKS (road leap-ux-collapse, fold 1): the read instruments answer as lenses on one
-#    `analyze` tool, roster reads at two grains, pour carries the bulk pass. Each lens keeps its own wire verb. ──
+#    `analyze` act, roster reads at two grains, pour carries the bulk pass. Each lens keeps its own wire verb. ──
 
-_RETIRED_TOOLS = {"ki", "li", "jing", "couple_r", "forecast", "mismatch", "rejim", "inspect", "sweep"}
+# The seat acts each lens test drives, by the handler's own name.
+_ACTS = {"analyze": "lar:///sense.rhythm.analyzes", "roster": "lar:///sense.roster.reads", "pour": "lar:///sense.capture.pours"}
 
 
 def _routed_tools(monkeypatch):
     calls = []
     monkeypatch.setattr("lares_mcp.uds.output", lambda verb, args: (calls.append((verb, args)), {"answered": verb})[1])
     mcp = build_mcp(DaemonCoordinator(wing="w"))
-    tool = lambda name: mcp._tool_manager.get_tool(name).fn  # noqa: E731,SLF001 — the registered skin
+    tool = lambda name: mcp.seat_acts[_ACTS[name]]  # noqa: E731 — the seat act by its handler's name
     return mcp, tool, calls
-
-
-def test_the_retired_sense_tools_leave_the_seat(monkeypatch):
-    mcp, _, _ = _routed_tools(monkeypatch)
-    names = {t.name for t in asyncio.run(mcp.list_tools())}
-    assert names.isdisjoint(_RETIRED_TOOLS), sorted(names & _RETIRED_TOOLS)
-    assert {"analyze", "roster", "pour"} <= names
-    for v in _RETIRED_TOOLS:
-        assert v not in VERB_SEATS, f"{v!r} keeps a seat after its tool retired"
 
 
 def test_analyze_lens_routes_each_lens_to_its_own_wire_verb(monkeypatch):
@@ -810,92 +763,179 @@ def test_analyze_lens_reads_weld_to_the_cli_table():
     assert {k: sorted(v) for k, v in ANALYZE_LENS_READS.items()} == {k: sorted(v) for k, v in inv["analyze_lens_reads"].items()}
 
 
-def test_wiki_seat_reach_stays_on_switch_keep_and_act(monkeypatch):
-    _, tool, calls = _routed_tools(monkeypatch)
-    wiki = tool("wiki")
-    monkeypatch.setattr("lares_mcp.uds.call", lambda verb, args: (calls.append((verb, args)), {"results": {"summary": {"ok": True, "output": {}}}})[1])
-    for args, expected in [
-        ({"verb": "switch", "slug": "w"}, ("wiki-switch", {"slug": "w"})),
-        ({"verb": "keep", "slug": "w"}, ("wiki-keep", {"slug": "w"})),
-        ({"verb": "unkeep", "slug": "w"}, ("wiki-unkeep", {"slug": "w"})),
-        ({"verb": "act", "name": "sidebar-layout", "recipe": "default", "expected": "a", "resulting": "b"}, ("wiki-action", {"recipe": "default", "name": "sidebar-layout", "expected": "a", "resulting": "b"})),
-    ]:
-        wiki(**args)
-        assert calls.pop() == expected
-    for args, name in [
-        ({"verb": "pin", "slug": "w"}, "verb"),
-        ({"verb": "hold", "slug": "w"}, "verb"),
-        ({"verb": "keep"}, "slug"),
-        ({"verb": "keep", "slug": "w", "recipe": "default"}, "action"),
-        ({"verb": "unkeep", "slug": "w", "name": "a"}, "action"),
-        ({"verb": "act", "name": "a", "recipe": "default", "expected": "a", "resulting": "b", "slug": "w"}, "slug"),
-    ]:
-        with pytest.raises(Exception, match=name):
-            wiki(**args)
-        assert calls == []
+def test_the_wiki_acts_switch_keep_and_unkeep_by_slug(monkeypatch):
+    from lares_mcp import SeatArgumentRefused
+    mcp, _, calls = _routed_tools(monkeypatch)
+    acts = (("lar:///engine.wiki.switches", "wiki-switch"), ("lar:///engine.wiki.keeps", "wiki-keep"),
+            ("lar:///engine.wiki.unkeeps", "wiki-unkeep"))
+    for address, verb in acts:
+        mcp.seat_acts[address](slug="w")
+        assert calls.pop() == (verb, {"slug": "w"})
+    for address, _ in acts:
+        with pytest.raises(SeatArgumentRefused, match="slug"):
+            mcp.seat_acts[address](slug="")
+    assert calls == []
 
 
+# ── THE ONE CALL (comms-ux-enacts landing 11): five tools, each forwarding {verb, params} to the vessel's `call`; an act
+#    whose handler rests in the seat comes back `handler/seat` with its bound args, and the seat runs it. ──
 
-def test_registered_tools_carry_seat_annotations_and_plain_first_lines():
-    from lares_mcp import VERB_SEATS, TOOL_NATURE, tool_annotation_hints, DaemonCoordinator, build_mcp
+_HINTS = {"get": (True, False, True, False), "put": (False, True, False, False), "delete": (False, True, False, False),
+          "rename": (False, True, False, False), "act": (False, True, False, True)}
 
+
+def test_the_five_tools_state_their_annotations():
+    # The schema's defaults read worst-case, so each tool states all four: `get` reads; the writes move records; `act`
+    # reaches any affordance a carrier names, so it reads open-world.
+    from copy import deepcopy
     tools = asyncio.run(build_mcp(DaemonCoordinator(wing="w")).list_tools())
-    assert next(t for t in tools if t.name == "analyze").annotations.read_only_hint is False
-    assert set(TOOL_NATURE) == {t.name for t in tools}
-    verbs = set("capture recall report render mute restore read run switch wikify survey cast pin unpin patch remove offer show propose stage get roster build reconcile consult".split())
 
     def check(tool):
-        assert tool.name in VERB_SEATS and VERB_SEATS[tool.name] == (True, False)
         a = tool.annotations
         assert a is not None, tool.name
-        assert (a.read_only_hint, a.destructive_hint, a.idempotent_hint, a.open_world_hint) == (
-            *tool_annotation_hints(tool.name),
-        ), tool.name
-        first = tool.description.splitlines()[0]
-        assert len(first) < 120, (tool.name, first)
-        assert first.split()[0] in {v.capitalize() for v in verbs}, (tool.name, first)
+        assert (a.read_only_hint, a.destructive_hint, a.idempotent_hint, a.open_world_hint) == _HINTS[tool.name], tool.name
 
+    assert {t.name for t in tools} == set(_HINTS)
     for tool in tools:
         check(tool)
-    from copy import deepcopy
-    planted = deepcopy(tools[0])
+    planted = deepcopy(next(t for t in tools if t.name == "get"))
     planted.annotations = None
     with pytest.raises(AssertionError):
         check(planted)
-    planted = deepcopy(tools[0])
-    planted.annotations.open_world_hint = True
-    with pytest.raises(AssertionError):
-        check(planted)
-
-    planted = deepcopy(next(t for t in tools if t.name == "analyze"))
+    planted = deepcopy(next(t for t in tools if t.name == "act"))
     planted.annotations.read_only_hint = True
     with pytest.raises(AssertionError):
         check(planted)
-    planted = deepcopy(next(t for t in tools if t.annotations.read_only_hint))
-    planted.annotations.destructive_hint = True
-    with pytest.raises(AssertionError):
-        check(planted)
 
 
-def test_the_four_record_tools_dress_from_their_carriers():
-    # THE CORE VERBS' WORDS LIVE IN THEIR CARRIERS (course comms-ux-enacts, landing 1; candidate addresses): the pack routes
-    # each tool to its carrier, the seat hands the tool that carrier's mcp whole and each parameter's words, and the
-    # functions keep behaviour alone, holding no docstring.
-    import inspect
-    from lares_mcp import DaemonCoordinator, build_mcp, pack_tool_skin, read_affordance_pack
-
+def test_the_tools_take_their_words_from_the_carriers():
+    # THE WORDS LIVE IN THE CARRIERS: each record tool's description renders from its carriers' mcp wholes, the act's from
+    # every carrier by address and role, the instructions from the lead and the carriers the pack routes to this seat.
+    from lares_mcp import act_description, carrier_words, read_affordance_pack, seat_instructions
     pack = read_affordance_pack()
-    carriers = {"tiddler_get": "lar:///engine.record.reads", "tiddler_put": "lar:///engine.record.puts",
-                "tiddler_delete": "lar:///engine.record.removes", "wiki_filter": "lar:///engine.filter.pages"}
+    carriers = {"get": ["lar:///engine.record.reads", "lar:///engine.filter.pages"], "put": ["lar:///engine.record.puts"],
+                "delete": ["lar:///engine.record.removes"], "rename": ["lar:///engine.record.renames"]}
     mcp = build_mcp(DaemonCoordinator(wing="w"))
     listed = {t.name: t for t in asyncio.run(mcp.list_tools())}
-    for tool, address in carriers.items():
-        assert ((pack.get("routes") or {}).get("mcp") or {}).get(tool) == address, \
-            f"affordance-pack-stale: the pack routes no {tool}; re-bake: pnpm --filter @lararium/tw5 build"
-        description, params = pack_tool_skin(tool, pack)
-        assert listed[tool].description == description, tool
-        for name, words in params.items():
-            assert listed[tool].input_schema["properties"][name]["description"] == words, (tool, name)
-        assert inspect.getdoc(mcp._tool_manager.get_tool(tool).fn) is None, tool  # noqa: SLF001
-    # CONTROL: rename skins the terminal alone, so no seat tool rides its carrier.
-    assert "tiddler_rename" not in ((pack.get("routes") or {}).get("mcp") or {})
+    for tool, addresses in carriers.items():
+        for address in addresses:
+            assert carrier_words(address, pack), \
+                f"affordance-pack-stale: the pack holds no mcp words for {address}; re-bake: pnpm --filter @lararium/tw5 build"
+        assert listed[tool].description == "\n".join(line for a in addresses for line in carrier_words(a, pack)), tool
+    assert listed["act"].description == act_description(pack)
+    assert mcp.instructions == seat_instructions(pack)
+
+
+def _wired(monkeypatch, answer):
+    """Stand the vessel's socket: each line the seat sends records as (verb, args), and `answer(verb, args)` speaks back."""
+    calls = []
+
+    def wire(verb, args=None, **_kw):
+        calls.append((verb, args))
+        return {"results": {"summary": {"ok": True, "output": answer(verb, args)}}}
+
+    monkeypatch.setattr("lares_mcp.uds.call", wire)
+    return calls
+
+
+def _call_tool(mcp, name: str, args: dict):
+    async def go():
+        try:
+            return False, str(await mcp.call_tool(name, args))
+        except Exception as e:  # noqa: BLE001 — the seat's own tool error
+            return True, str(e)
+    return asyncio.run(go())
+
+
+def test_act_reaches_the_oracle_cast_wire_the_cast_handler_sends(monkeypatch):
+    # RED on 421e4a4df^ (the landing-8 head): no `act` tool stands; the cast rode its own `oracle_cast` tool.
+    # GREEN on 421e4a4df: the call rides `call` by address, the vessel binds the recipe and answers handler/seat, and the
+    # seat's cast sends `oracle-cast` with its own time stamp and the caster `agent`.
+    address = "lar:///library.oracle.speaks"
+
+    def answer(verb, args):
+        if verb == "call":
+            return {"handler": "seat", "address": address, "params": {**args["params"], "recipe": "default"}}
+        return {"decision": "put", "title": "casts/x"}
+
+    calls = _wired(monkeypatch, answer)
+    mcp = build_mcp(DaemonCoordinator(wing="w"))
+    out = mcp._tool_manager.get_tool("act").fn(address=address, args={"asking": "q"})  # noqa: SLF001 — the registered skin
+    assert out == {"decision": "put", "title": "casts/x"}
+    assert calls[0] == ("call", {"verb": address, "params": {"asking": "q"}, "surface": "mcp"})
+    assert len(calls) == 2 and calls[1][0] == "oracle-cast"
+    sent = calls[1][1]
+    assert sent["recipe"] == "default" and sent["caster"] == "agent" and sent["asking"] == "q"
+    assert isinstance(sent["at"], str) and sent["at"].endswith("Z")
+    # CONTROL: the cast handler, called with the same bound args, sends the same wire (its time stamp aside).
+    calls.clear()
+    mcp.seat_acts[address](recipe="default", asking="q")
+    assert {k: v for k, v in calls[0][1].items() if k != "at"} == {k: v for k, v in sent.items() if k != "at"}
+
+
+def test_act_runs_a_seat_act_with_no_new_tool_and_returns_a_plain_answer_unchanged(monkeypatch):
+    # RED on 421e4a4df^: no `act` tool, and no `seat_acts` map on the server. GREEN on 421e4a4df: the vessel answers
+    # handler/seat for an address the seat holds, and the seat runs it with the handler's own names alone (a kebab name in
+    # its Python spelling; a shared default the handler takes no word for stays at the vessel); an address the vessel
+    # answers itself comes back as spoken, one line on the wire; the tool list stays five.
+    dates, render, follows = "lar:///oracle.calendar.dates", "lar:///engine.wiki.renders", "lar:///engine.status.follows"
+    plain = {"has": f"<<~ has name=`{follows}`>>", "rows": []}
+
+    def answer(verb, args):
+        if verb == "call" and args["verb"] == dates:
+            return {"handler": "seat", "address": dates, "params": {"day": 5, "month": 1, "year": 2024, "zz-shared-default": "x"}}
+        if verb == "call" and args["verb"] == render:
+            return {"handler": "seat", "address": render, "params": {"title": "T", "recipe": "default", "max-bytes": 9}}
+        if verb == "call":
+            return plain
+        return {"text": f"answered {verb}"}
+
+    calls = _wired(monkeypatch, answer)
+    mcp = build_mcp(DaemonCoordinator(wing="w"))
+    act = mcp._tool_manager.get_tool("act").fn  # noqa: SLF001 — the registered skin
+    assert act(address=dates, args={"day": 5, "month": 1, "year": 2024}) == {"text": "answered ddate"}
+    assert [verb for verb, _ in calls] == ["call", "ddate"]
+    assert {k: calls[1][1][k] for k in ("day", "month", "year")} == {"day": 5, "month": 1, "year": 2024}
+    assert "today" in calls[1][1] and "zz_shared_default" not in calls[1][1] and "zz-shared-default" not in calls[1][1]
+    calls.clear()
+    act(address=render, args={"title": "T", "max_bytes": 9})
+    assert calls[0][1]["params"] == {"title": "T", "max-bytes": 9}
+    assert calls[1] == ("wiki-render", {"recipe": "default", "title": "T", "maxBytes": 9})
+    calls.clear()
+    assert act(address=f" {follows} ") == plain
+    assert calls == [("call", {"verb": follows, "params": {}, "surface": "mcp"})]
+    assert {t.name for t in asyncio.run(mcp.list_tools())} == SEAT_TOOLS
+
+
+def test_act_refuses_a_seat_answer_it_holds_no_handler_for_and_an_unnamed_address(monkeypatch):
+    from lares_mcp import SeatArgumentRefused, SeatVerbOwed
+    calls = _wired(monkeypatch, lambda verb, args: {"handler": "seat", "address": "lar:///kahu.notes.reads", "params": {}})
+    act = build_mcp(DaemonCoordinator(wing="w"))._tool_manager.get_tool("act").fn  # noqa: SLF001
+    with pytest.raises(SeatVerbOwed, match=r"seat-act-unheld.*lar:///kahu\.notes\.reads.*mu=\"relate\""):
+        act(address="lar:///kahu.notes.reads")
+    assert len(calls) == 1
+    with pytest.raises(SeatArgumentRefused, match="name an affordance `address`"):
+        act(address="   ")
+    assert len(calls) == 1
+
+
+def test_a_hand_address_refuses_with_its_cure_and_a_host_act_names_the_terminal(monkeypatch):
+    # RED on 421e4a4df^: no `act` tool stands, so the call answers an unknown tool. GREEN on 421e4a4df: the vessel's own
+    # hand check refuses the call, and the tool error carries its words and its cure; an act the terminal's door runs
+    # (`handler/host`) refuses `host-door`, naming the command for the operator's terminal, and runs nothing.
+    import lares_uds as uds
+    cure = ("promote-needs-hand: lar:///realm.offer.commits runs on a person's hand alone. "
+            "Ask the operator to run `lares trust commit <cid>` on their own terminal.")
+
+    def refuse(verb, args=None, **_kw):
+        raise uds.LaresVerbError(cure, "promote-needs-hand")
+
+    monkeypatch.setattr("lares_mcp.uds.call", refuse)
+    mcp = build_mcp(DaemonCoordinator(wing="w"))
+    is_error, said = _call_tool(mcp, "act", {"address": "lar:///realm.offer.commits", "args": {"cid": "a" * 64}})
+    assert is_error and "promote-needs-hand" in said and "Ask the operator to run `lares trust commit" in said, said
+    host = "lar:///carriage.record.adds"
+    calls = _wired(monkeypatch, lambda verb, args: {"handler": "host", "address": host, "params": {"title": "T"}})
+    is_error, said = _call_tool(mcp, "act", {"address": host, "args": {"title": "T"}})
+    assert is_error and "host-door" in said and f"lares act {host}" in said, said
+    assert [verb for verb, _ in calls] == ["call"]
