@@ -1,0 +1,99 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.organ.stands`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "stand the sovereign sensorium organs, idempotently"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.organ.stands", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.organ.stands"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.organ.stands"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.organ.stands ~ the sovereign organs, by their own act
+
+`lares sense setup` stands the sovereign sensorium organs (content, structure, form, persistence, mesh), idempotently. Founding stands none; the py organs import the mempalace library, so a machine wanting them runs `lares mempalace install` first, and a failed organ names that cure.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ setup
+
+```memetic-wikitext
+<<has entity=`example` name=`setup` params=`~ stand the organs`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ none
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ writes this host's sensorium organs; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`error` params=`cure/[[sense.guest.installs]] ~ an organ failed to stand; install the mempalace library first`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ stood
+
+```memetic-wikitext
+<<has entity=`band` name=`stood` params=`exit/0 fields/[[steps]] ~ each organ ran, failed or skipped`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense setup
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense setup]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · lararium-memory
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;H0ZOP74imOOleOOipfah53bj7fgmTseaLqZfFGUkE6g`>>
+
+<<^ code=`&#x0004;` to=`?`>>

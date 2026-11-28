@@ -1,0 +1,103 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.steward.lists`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "list the realm bags and their stewards as last synced"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.steward.lists", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.steward.lists"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.steward.lists"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.steward.lists ~ who keeps which realm bag
+
+`lares nexus realm-bags [--realm <id>]` lists the realm bags and their stewards as of the last sync, in the realm the verb names or the charter-derived realm. A listing never enters a realm.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ list
+
+```memetic-wikitext
+<<has entity=`example` name=`list` params=`~ list the charter-derived realm's bags`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ realm
+
+```memetic-wikitext
+<<has entity=`arg` name=`realm` params=`takes/id ~ a cabal realm; absent, the charter-derived realm`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat-or-hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat-or-hand` params=`who/seat-or-hand ~ reads this replica`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`error` params=`~ the listing failed; the message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ listed
+
+```memetic-wikitext
+<<has entity=`band` name=`listed` params=`exit/0 ~ the bags and stewards`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares nexus realm-bags
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares nexus realm-bags]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jodSoerRpQFsc9Nbyktz0w2LXnzFDseTNg5s9J9YESk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

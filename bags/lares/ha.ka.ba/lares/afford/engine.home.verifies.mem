@@ -1,0 +1,108 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.home.verifies`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read what each host loads from the operator's homes's tunnel"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.home.verifies", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.home.verifies"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.home.verifies"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.home.verifies ~ the the operator's homes tunnel's loads, as each host reports them
+
+`lares home verify` asks what each host reports loading (the seed once per host) and writes nothing. `--probe` runs the hosts' own probe where one stands.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ verify · probe
+
+```memetic-wikitext
+<<has entity=`example` name=`verify` params=`~ read each host's loads`>>
+<<has entity=`example` name=`probe` params=`probe/true ~ run the hosts' own probe`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ familiar · probe
+
+```memetic-wikitext
+<<has entity=`arg` name=`familiar` params=`takes/pet-name ~ the familiar whose hooks a home tend seats; absent, the one already seated stands`>>
+<<has entity=`arg` name=`probe` params=`~ run each host's own load probe`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ reads this host's files; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · root-repo-only · staged-repo-read-only
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ name one of read, tend, verify, undo`>>
+<<has entity=`refusal` name=`root-repo-only` params=`~ --root names a checkout, and only lares repo keeps one`>>
+<<has entity=`refusal` name=`staged-repo-read-only` params=`~ --staged reads the index, and only lares repo read reads it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ loads-once · off
+
+```memetic-wikitext
+<<has entity=`band` name=`loads-once` params=`exit/0 fields/[[radius ok lines]] ~ every host loads the seed once`>>
+<<has entity=`band` name=`off` params=`exit/1 fields/[[radius ok lines]] ~ a host's loads read off the tunnel`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares home verify
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares home verify]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · reality-tunnel
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/reality-tunnel`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yXzM9Nd6PvuXqQUJJdUQXCASZwhj8zEED0WMFXZskj8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

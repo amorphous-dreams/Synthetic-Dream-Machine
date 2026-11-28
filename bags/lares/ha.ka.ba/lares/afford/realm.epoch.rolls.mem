@@ -1,0 +1,109 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.epoch.rolls`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "roll this hearth's hosting epoch as a signed act in the Nexus"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.epoch.rolls", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.epoch.rolls"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.epoch.rolls"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.epoch.rolls ~ roll ~ a new hosting epoch
+
+`lares host roll` lands a new signed hosting act on this hearth's hosting doc in the Nexus (`--nexus <aid>`, else this hearth's own charter); every grant and token two epochs back dies, and rolling twice ends the previous epoch too: the hard roll. `--cap <n>` sets the invites per lineage per epoch. A hearth hosts only as one face: the face that holds its hosting there, else at the first roll `--face N`, else the one face standing open. The walker route ships shut by name, so no gate seats a walker on the epoch until a live grant reader opens it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ roll · capped
+
+```memetic-wikitext
+<<has entity=`example` name=`roll` params=`~ roll the epoch on this hearth's own charter`>>
+<<has entity=`example` name=`capped` params=`nexus/<aid> cap/5 ~ roll in a Nexus with a cap of five`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face · nexus · cap
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`nexus` params=`takes/aid ~ the Nexus to act in; absent, this hearth's own charter`>>
+<<has entity=`arg` name=`cap` params=`takes/n ~ invites per lineage per epoch, at least 1`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ custody
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`custody` params=`who/seat-or-hand ~ one sealed act frame on the custody door under the vessel key; the hosting state never rests in the clear`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · refused · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.epoch.rolls cap/5]] ~ --cap names no whole number of at least 1`>>
+<<has entity=`refusal` name=`refused` params=`~ the custody door refused the act; the message names why`>>
+<<has entity=`refusal` name=`error` params=`~ the act failed outside the door's refusals`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ rolled
+
+```memetic-wikitext
+<<has entity=`band` name=`rolled` params=`exit/0 fields/[[nexusAid epoch previous cap docUrl act via]] ~ the new epoch and the doc it landed on`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares host roll
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares host roll]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;G79Dxx4P0GBFMurmXiaEFQOm0RTnNZAyCb-XkvXnUxM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

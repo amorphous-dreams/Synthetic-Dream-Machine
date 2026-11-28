@@ -1,0 +1,106 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.circle.reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read the private follow-view under the face's own names"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.circle.reads", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.circle.reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.circle.reads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.circle.reads ~ the follow-view: nyms under the recogniser's own names
+
+`lares circle list [--to <circle>]` reads the private follow-view: each nym under the recogniser's own petname and its last-seen glamour. With no `--to` it lists every circle.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ all · one
+
+```memetic-wikitext
+<<has entity=`example` name=`all` params=`~ every circle`>>
+<<has entity=`example` name=`one` params=`to/following ~ the following circle`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ to · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`to` params=`takes/circle ~ one circle; absent, every circle`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the face whose handle-book and circles act; absent, the one face standing open`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ edits this face's private graph alone; nothing crosses the wire`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.circle.reads]] ~ the list takes no further word`>>
+<<has entity=`refusal` name=`error` params=`~ the follow store refused; the line names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ listed
+
+```memetic-wikitext
+<<has entity=`band` name=`listed` params=`exit/0 fields/[[circles]] ~ each circle and its nyms`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares circle list
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares circle list]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2X30y0P404W530a_qDLH9ePoHi7KdAeNsdFkVzJpHRo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

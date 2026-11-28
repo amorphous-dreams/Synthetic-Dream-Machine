@@ -1,0 +1,104 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.wiki.syncs`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "walk a wiki's memes folder and ingest it into its canonical bag"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.wiki.syncs", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.wiki.syncs"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.wiki.syncs"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.wiki.syncs ~ the workbench's memes ingest, idempotent
+
+`lares wiki sync <slug>` asks the daemon to walk `wikis/<slug>/memes/**` and ingest each carrier into the wiki's canonical bag, naming every error. Idempotent.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ sync
+
+```memetic-wikitext
+<<has entity=`example` name=`sync` params=`slug/works ~ ingest the wiki's memes`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ slug
+
+```memetic-wikitext
+<<has entity=`arg` name=`slug` params=`takes/slug needs/required seat/1 as/<slug> ~ the wiki slug`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ vessel
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`vessel` params=`who/seat-or-hand ~ the daemon verb runs under the vessel's own did; this handler checks no ocap of its own`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · daemon-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.wiki.syncs slug/works]] ~ name the slug`>>
+<<has entity=`refusal` name=`daemon-refused` params=`~ the daemon's sync-wiki verb refused; its message rides the line, exit 4`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ synced
+
+```memetic-wikitext
+<<has entity=`band` name=`synced` params=`exit/0 fields/[[errors]] ~ the ingest's counts and any errors`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares wiki sync
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares wiki sync]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cabal-realm
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8AQ0GVJ6n4G80PgAS0bnsRoAnY2zl9TjIAYlF0ejbwk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

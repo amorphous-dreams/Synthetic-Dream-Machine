@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.sensorium.purges`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "purge a sensorium's store, a person's hand alone"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.sensorium.purges", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.sensorium.purges"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.sensorium.purges"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.sensorium.purges ~ a sensorium's store leaves
+
+`lares sense purge <name> --approve` runs on a person's hand at a real terminal and purges the named sensorium's store.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ purge
+
+```memetic-wikitext
+<<has entity=`example` name=`purge` params=`name/pioneer-1 approve/true ~ purge a sensorium`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ name · approve
+
+```memetic-wikitext
+<<has entity=`arg` name=`name` params=`takes/name needs/required seat/1 as/<name> ~ the sensorium named in the manifest`>>
+<<has entity=`arg` name=`approve` params=`~ name the intent`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand ~ runs direct over manifest.json; a person at a real terminal, and the verb names its intent with --approve where it asks one`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ verb-error · hand-act-only
+
+```memetic-wikitext
+<<has entity=`refusal` name=`verb-error` params=`~ no name, no --approve, or the purge refused`>>
+<<has entity=`refusal` name=`hand-act-only` params=`~ a seat reached a hand verb; name the command for the operator`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ purged
+
+```memetic-wikitext
+<<has entity=`band` name=`purged` params=`exit/0 ~ the store left`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense purge
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense purge]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · lararium-memory
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;H_FokQmJ-BB9KyxRlIt6aX_VgM4EbfgzbYS9RpMy-QM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

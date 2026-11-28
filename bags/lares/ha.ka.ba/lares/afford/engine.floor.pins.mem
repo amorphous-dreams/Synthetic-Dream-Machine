@@ -1,0 +1,119 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.floor.pins`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read, accept, seed or adopt the vessel's pin on its floor"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.floor.pins", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.floor.pins"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.floor.pins"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.floor.pins ~ the vessel's floor pin, one per Nexus
+
+`lares vessel floor status|accept [<release>]|seed|adopt` reads and moves the vessel's floor pin. `status` names the pin, the newest release, fast-forward and fork (`--grain canon|seed|shadow|lag|all`); `accept` walks prior from the pin, refusing a non-descendant or an unsettled fork, a hand's act; `seed [--genesis <dir>]` reads the seed a genesis offers (`--image <digest>` prints the pūlama frame); `adopt` previews bare, and `--apply`, `--commit` or `--revert` land or settle a local floor, each the hand's. `--nexus <aid>` names the Nexus, `--porch <origin>` the porch read.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ status · accept · adopt
+
+```memetic-wikitext
+<<has entity=`example` name=`status` params=`act/status ~ read the pin`>>
+<<has entity=`example` name=`accept` params=`act/accept ~ fast-forward to the sole newest`>>
+<<has entity=`example` name=`adopt` params=`act/adopt ~ preview the local floor`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ act · release · grain · genesis · image · nexus · porch · apply · commit · revert
+
+```memetic-wikitext
+<<has entity=`arg` name=`act` params=`takes/word needs/required seat/1 as/<status|accept|seed|adopt> ~ status, accept, seed or adopt`>>
+<<has entity=`arg` name=`release` params=`takes/cid seat/2 as/<release> ~ accept: the release to walk to`>>
+<<has entity=`arg` name=`grain` params=`takes/word ~ status: canon, seed, shadow, lag or all`>>
+<<has entity=`arg` name=`genesis` params=`takes/dir ~ seed and adopt: the genesis dir`>>
+<<has entity=`arg` name=`image` params=`takes/digest ~ seed: print the pūlama frame for this image`>>
+<<has entity=`arg` name=`nexus` params=`takes/aid ~ the Nexus whose floor`>>
+<<has entity=`arg` name=`porch` params=`takes/origin ~ the porch origin read`>>
+<<has entity=`arg` name=`apply` params=`~ adopt: land the local floor`>>
+<<has entity=`arg` name=`commit` params=`~ adopt: commit a staged local floor`>>
+<<has entity=`arg` name=`revert` params=`~ adopt: revert a staged local floor`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/seat-or-hand ~ status, seed and an adopt preview open to a seat; accept and adopt's landings refuse floor-needs-hand`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · floor-not-descendant · floor-fork-unsettled · floor-needs-hand · floor-seed-unread
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.floor.pins act/status]] ~ name status, accept, seed or adopt; adopt takes one of --apply, --commit, --revert`>>
+<<has entity=`refusal` name=`floor-not-descendant` params=`~ the release descends from no pin`>>
+<<has entity=`refusal` name=`floor-fork-unsettled` params=`~ two heads stand; both named`>>
+<<has entity=`refusal` name=`floor-needs-hand` params=`~ a seat reads the floor and never accepts or lands`>>
+<<has entity=`refusal` name=`floor-seed-unread` params=`~ no seed reads in the genesis dir`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ status · accepted
+
+```memetic-wikitext
+<<has entity=`band` name=`status` params=`exit/0 ~ the pin, the founding record, the seed and the drift`>>
+<<has entity=`band` name=`accepted` params=`exit/0 ~ the pin moved; each live wiki raises reboot-pending`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vessel floor
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares vessel floor]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · vessel-door
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wB9fhZE_E5mqMIncnnsDxmI4J9AzZE8hSbOf4NYIcug`>>
+
+<<^ code=`&#x0004;` to=`?`>>

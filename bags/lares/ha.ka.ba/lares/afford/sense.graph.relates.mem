@@ -1,0 +1,107 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.graph.relates`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read one entity's relations in the bitemporal graph"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.graph.relates", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.graph.relates"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.graph.relates"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.graph.relates ~ the bitemporal knowledge graph around one entity
+
+`lares sense relate <entity…>` reads the bitemporal knowledge graph of one plane (`--lens`, default content) around one entity, `--as-of` reading it at a past time. A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ relate · as-of
+
+```memetic-wikitext
+<<has entity=`example` name=`relate` params=`entity/harbor ~ the entity's relations`>>
+<<has entity=`example` name=`as-of` params=`entity/harbor as-of/2026-10-01 ~ its relations as they stood then`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ entity · lens · as-of
+
+```memetic-wikitext
+<<has entity=`arg` name=`entity` params=`takes/words needs/required seat/1 as/<entity…> ~ the entity`>>
+<<has entity=`arg` name=`lens` params=`takes/plane default/content ~ the plane: content, structure, form, persistence, a named sensorium's own, or crossplane`>>
+<<has entity=`arg` name=`as-of` params=`takes/time ~ read the graph as it stood then`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ rides the daemon's composed caps, the single-owner law; this handler checks no ocap of its own`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · verb-error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[sense.graph.relates entity/harbor]] ~ no entity named`>>
+<<has entity=`refusal` name=`verb-error` params=`~ an unknown lens, or the plane holds nothing to relate`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ related
+
+```memetic-wikitext
+<<has entity=`band` name=`related` params=`exit/0 ~ the entity's edges`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense relate
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense relate]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · lararium-memory
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dW0StTRBFZNTsGD7zDm7mc_bAUtHgxOF78zFHv8TbZQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.recipe.adds`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "add a bag to a wiki's recipe at runtime"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.recipe.adds", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.recipe.adds"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.recipe.adds"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.recipe.adds ~ a layer joins the recipe, hot-reloaded
+
+`lares wiki add-bag <slug> <bag-uri>` asks the daemon to add the bag to the wiki's recipe; the composite adds the layer live and the answer names the stack.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ add
+
+```memetic-wikitext
+<<has entity=`example` name=`add` params=`slug/works bag-uri/lar:///ha.ka.ba/bags/notes ~ add a bag to the recipe`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ slug · bag-uri
+
+```memetic-wikitext
+<<has entity=`arg` name=`slug` params=`takes/slug needs/required seat/1 as/<slug> ~ the wiki slug`>>
+<<has entity=`arg` name=`bag-uri` params=`takes/uri needs/required seat/2 as/<bag-uri> ~ the bag's uri`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ vessel
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`vessel` params=`who/seat-or-hand ~ the daemon verb runs under the vessel's own did; this handler checks no ocap of its own`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · daemon-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.recipe.adds slug/works bag-uri/lar:///ha.ka.ba/bags/notes]] ~ name the slug and the bag`>>
+<<has entity=`refusal` name=`daemon-refused` params=`~ the daemon's add-bag verb refused; its message rides the line, exit 4`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ added
+
+```memetic-wikitext
+<<has entity=`band` name=`added` params=`exit/0 fields/[[slug stack]] ~ the recipe's stack after the add`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares wiki add-bag
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares wiki add-bag]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cabal-realm
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fV6q0XITYWJqYd3RKWRDuRxQ2U2ByHh6ISQinKoDTJM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

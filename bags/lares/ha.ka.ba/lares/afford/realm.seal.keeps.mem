@@ -1,0 +1,128 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.seal.keeps`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "seat, rotate, read and carry the Nexus seal's charter chain"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.seal.keeps", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.seal.keeps"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.seal.keeps"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.seal.keeps ~ the founding-kahu roster and its pre-rotated charter-epoch chain
+
+`lares nexus seal <sub>` keeps the Nexus seal, the quorum that governs carriage membership, the antigen and its own succession. `seat` gives each persona that stood for a chair a seat key of its own and establishes the genesis epoch, each chair's next key printed once on a cold-key card the operator types back (`--threshold <k>`); `rotate` takes the cards back and advances the chain, failing closed on a roll the law refuses; `show` reads the roster, chain head and quorum verdict; `export` and `import <file>` carry a charter (`--carry` lands a partner's beside yours); `grow` and `cold rehearse` read cards against the committed digests (`--note` marks a witness); `cofound open|join|seal` founds a fresh two-of-two Nexus with a second operator (`--release`, `--charter-law`, `--heard`, `--heard-threshold`, `--out`, `--face`); `roll open|join|sign|file|abandon` rolls a joint Nexus across vaults (`--added`, `--cold-key` on a staged test root, `--index`); `anchor` signs a two-vault roll's anchor (`--edge`, `--from`, `--out`). A cold-key card rides a terminal alone.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ show · seat · import-carry
+
+```memetic-wikitext
+<<has entity=`example` name=`show` params=`sub/show ~ read the roster and chain head`>>
+<<has entity=`example` name=`seat` params=`sub/seat threshold/2 ~ seat the chairs at two of three`>>
+<<has entity=`example` name=`import-carry` params=`sub/import file/partner-charter.json carry/true ~ land a partner's charter beside yours`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ sub · file · threshold · cold-key · index · note · carry · heard · heard-threshold · charter-law · release · added · nexus · edge · from · out · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`sub` params=`takes/word needs/required seat/1 as/<seat|rotate|show|export|import|grow|cold|cofound|roll|anchor> ~ the seal act`>>
+<<has entity=`arg` name=`file` params=`takes/words seat/2 as/<args…> ~ the act's own words: a file, an offer, a sub-step`>>
+<<has entity=`arg` name=`threshold` params=`takes/count ~ the quorum rule; default, a majority of those that stood`>>
+<<has entity=`arg` name=`cold-key` params=`takes/card ~ stands in for the terminal on a staged test root alone`>>
+<<has entity=`arg` name=`index` params=`takes/handle-index ~ the face whose seat acts`>>
+<<has entity=`arg` name=`note` params=`takes/words ~ a witness mark's note`>>
+<<has entity=`arg` name=`carry` params=`~ import a partner's charter beside yours under its AID`>>
+<<has entity=`arg` name=`heard` params=`takes/list ~ the seat fingerprints as heard`>>
+<<has entity=`arg` name=`heard-threshold` params=`takes/count ~ the rule as heard`>>
+<<has entity=`arg` name=`charter-law` params=`takes/uri ~ the charter law a cofounding names`>>
+<<has entity=`arg` name=`release` params=`takes/uri ~ the release manifest record a cofounding names`>>
+<<has entity=`arg` name=`added` params=`takes/chair ~ a chair a roll adds`>>
+<<has entity=`arg` name=`nexus` params=`takes/aid ~ the Nexus, by AID; absent, the primary charter's`>>
+<<has entity=`arg` name=`edge` params=`~ sign the realm edge anchors of the roll`>>
+<<has entity=`arg` name=`from` params=`takes/host-path ~ judge a carried partial before any signature`>>
+<<has entity=`arg` name=`out` params=`takes/host-path ~ write the offer, join or partial file`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ the face whose seat signs`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ quorum
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`quorum` params=`who/hand key/seat ~ seat keys sealed behind the custody door; cards ride a person's terminal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · refused · rotation-unarmed · not-found · vessel-composing · vessel-silent · vessel-locked · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.seal.keeps sub/show]] ~ an unknown sub-verb, a torn charter, a chain already rotated past genesis, or no card typed`>>
+<<has entity=`refusal` name=`refused` params=`~ the ceremony refused by name; nothing moved`>>
+<<has entity=`refusal` name=`rotation-unarmed` params=`~ the head committed no next key set this vault holds`>>
+<<has entity=`refusal` name=`not-found` params=`~ the named charter or partial stands nowhere`>>
+<<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
+<<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
+<<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
+<<has entity=`refusal` name=`error` params=`~ the store refused; the message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ sealed
+
+```memetic-wikitext
+<<has entity=`band` name=`sealed` params=`exit/0 ~ the act's reading: roster, head, quorum verdict, or the file written`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares nexus seal
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares nexus seal]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · founding-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DRnaH4O7tVxRC_50ySbaTGeQTLpikA0GDGsyfZzZAwI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

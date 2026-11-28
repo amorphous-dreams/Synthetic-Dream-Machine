@@ -1,0 +1,109 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.transcript.captures`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "capture one native transcript or stage dir into a wing"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.transcript.captures", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.transcript.captures"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.transcript.captures"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.transcript.captures ~ one native source, the hook's own verb
+
+`lares sense capture <transcript|stageDir> --wing <wing>` captures one native source into a wing of the sovereign sensorium through the daemon, `--session-id` naming its session. A `--room` other than the default room refuses, since the override has not landed. A failed stream leaves the source durable for a re-run. A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ capture
+
+```memetic-wikitext
+<<has entity=`example` name=`capture` params=`target/session.jsonl wing/claude ~ capture one transcript`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ target · wing · session-id · room · sensorium-root
+
+```memetic-wikitext
+<<has entity=`arg` name=`target` params=`takes/host-path needs/required seat/1 as/<transcript|stageDir> ~ the transcript or stage dir`>>
+<<has entity=`arg` name=`wing` params=`takes/name needs/required ~ the wing it lands in`>>
+<<has entity=`arg` name=`session-id` params=`takes/id ~ the session it belongs to`>>
+<<has entity=`arg` name=`room` params=`takes/name ~ refused unless the default room; the override has not landed`>>
+<<has entity=`arg` name=`sensorium-root` params=`takes/host-path ~ the sensorium's root; the leading sensorium name threads it, absent the memory sensorium`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ rides the daemon's composed caps, the single-owner law; this handler checks no ocap of its own`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · verb-error · capture-failed
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[sense.transcript.captures target/session.jsonl wing/claude]] ~ name the source and --wing`>>
+<<has entity=`refusal` name=`verb-error` params=`~ a --room override; drop it`>>
+<<has entity=`refusal` name=`capture-failed` params=`cure/[[sense.transcript.captures target/session.jsonl wing/claude]] ~ a source stream failed; re-run once the daemon reports healthy`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ captured
+
+```memetic-wikitext
+<<has entity=`band` name=`captured` params=`exit/0 ~ the streams captured`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense capture
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense capture]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · lararium-memory
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GUERyVjRU5pVRDgjNGYKbaINUU0aMomPLkoAjoiUyvI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

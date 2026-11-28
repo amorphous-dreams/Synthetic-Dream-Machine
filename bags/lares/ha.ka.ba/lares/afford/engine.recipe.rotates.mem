@@ -1,0 +1,104 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.recipe.rotates`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "mint a fresh canonical bag, keeping the old one as an underlay"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.recipe.rotates", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.recipe.rotates"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.recipe.rotates"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.recipe.rotates ~ nix-style generations for a wiki's canon
+
+`lares wiki rotate-recipe <slug>` asks the daemon to mint a fresh canonical bag for the wiki and retain the old one as a previous-canon underlay, naming the stack after.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ rotate
+
+```memetic-wikitext
+<<has entity=`example` name=`rotate` params=`slug/works ~ rotate the wiki's canon`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ slug
+
+```memetic-wikitext
+<<has entity=`arg` name=`slug` params=`takes/slug needs/required seat/1 as/<slug> ~ the wiki slug`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ vessel
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`vessel` params=`who/seat-or-hand ~ the daemon verb runs under the vessel's own did; this handler checks no ocap of its own`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · daemon-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.recipe.rotates slug/works]] ~ name the slug`>>
+<<has entity=`refusal` name=`daemon-refused` params=`~ the daemon's rotate-recipe verb refused; its message rides the line, exit 4`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ rotated
+
+```memetic-wikitext
+<<has entity=`band` name=`rotated` params=`exit/0 fields/[[stack]] ~ the stack after the rotation`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares wiki rotate-recipe
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares wiki rotate-recipe]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cabal-realm
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TGl_cfvwTJuJ6mVF5lBegWrSKdo_bVKs2VJHkDunHWc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

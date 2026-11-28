@@ -1,0 +1,110 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.sovereign.tears`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "tear sovereign sensorium groups clean for a re-pave"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.sovereign.tears", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.sovereign.tears"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.sovereign.tears"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.sovereign.tears ~ a clean tear, preview by default
+
+`lares sense teardown [<group…>]` names every target of the named sensorium groups (none named: every group) and the live holders that block it, touching no disk; `--confirm` removes them. A blocking holder refuses unless `--drain` quiesces it first or `--force` tears anyway. Blocking stays scoped to the selection, and the guest `~/.mempalace` stands untouched.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ preview · tear
+
+```memetic-wikitext
+<<has entity=`example` name=`preview` params=`~ name every target`>>
+<<has entity=`example` name=`tear` params=`groups/memory confirm/true drain/true ~ drain and tear the memory group`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ groups · confirm · drain · force
+
+```memetic-wikitext
+<<has entity=`arg` name=`groups` params=`takes/names seat/1 as/<group…> ~ the sensorium groups; none names every group`>>
+<<has entity=`arg` name=`confirm` params=`~ remove instead of previewing`>>
+<<has entity=`arg` name=`drain` params=`~ quiesce the blocking holders first`>>
+<<has entity=`arg` name=`force` params=`~ tear even where a holder blocks`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand ~ removes this host's sensorium trees; a person at a real terminal, and the verb names its intent with --approve where it asks one`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · conflict · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[sense.sovereign.tears]] ~ an unknown group; the preview names every group`>>
+<<has entity=`refusal` name=`conflict` params=`cure/[[sense.holder.reads]] ~ a live holder blocks the tear; read the holders, or --drain`>>
+<<has entity=`refusal` name=`error` params=`~ a target failed to remove; the culprits ride the hint`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ preview · torn
+
+```memetic-wikitext
+<<has entity=`band` name=`preview` params=`exit/0 fields/[[mode groups selected targets totalBytes liveProcesses]] ~ what a confirm would remove`>>
+<<has entity=`band` name=`torn` params=`exit/0 ~ the targets removed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense teardown
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense teardown]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · lararium-memory
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KNdyGjzRhgvEXLXvt7N-wMdCd3x9sWrscbjO6VywXTw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

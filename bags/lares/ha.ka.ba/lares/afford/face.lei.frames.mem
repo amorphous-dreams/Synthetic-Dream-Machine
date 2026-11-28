@@ -1,0 +1,117 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.lei.frames`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "print the terms JSON the pūlama's lei act takes; writes nothing"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.lei.frames", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.lei.frames"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.lei.frames"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.lei.frames ~ terms ~ one stdout line for the pūlama
+
+`lares lei terms <kui|restring|unstring>` prints one stdout line: the terms JSON the pūlama's `lei <act>` takes, in its order, since the pūlama opens no document. `face` comes from `--face`, else for a keep the keep's face (whose keep lei stands, else h0), else the daemon mount; a restring's `after` from the line's tip. `kui --all` prints `{ "faces": [ … ] }`, one terms object per open face at its own tip. Each act takes only its own flags. It writes nothing and asks no route.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ kui
+
+```memetic-wikitext
+<<has entity=`example` name=`kui` params=`act/kui rite/kukulu branch/main returns/3 ~ the terms of a kui`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ act · rite · branch · reach · returns · head · after · lei · all · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`act` params=`takes/act needs/required seat/1 as/<act> ~ the pūlama act: kui, restring or unstring`>>
+<<has entity=`arg` name=`rite` params=`takes/rite needs/required ~ the rite the lei grants: push, kukulu or keep`>>
+<<has entity=`arg` name=`branch` params=`takes/name needs/required ~ the lei's branch`>>
+<<has entity=`arg` name=`reach` params=`takes/reach ~ beside kui or restring`>>
+<<has entity=`arg` name=`returns` params=`takes/n ~ beside kui or restring`>>
+<<has entity=`arg` name=`head` params=`takes/commit ~ beside kui or restring`>>
+<<has entity=`arg` name=`after` params=`takes/cid ~ beside kui`>>
+<<has entity=`arg` name=`lei` params=`takes/cid ~ beside unstring`>>
+<<has entity=`arg` name=`all` params=`~ beside kui: every open face's terms`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the face whose line this reads or strings, a whole count from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ reads the line and writes nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · face-none-open · swarm-lei-forked · swarm-lei-after-moved · swarm-lei-nothing-to-restring · keep-lei-unseen
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ a missing rite, branch or lei, a stray flag, or a malformed count`>>
+<<has entity=`refusal` name=`face-none-open` params=`~ no face stands open`>>
+<<has entity=`refusal` name=`swarm-lei-forked` params=`~ the line forks; name one tip`>>
+<<has entity=`refusal` name=`swarm-lei-after-moved` params=`~ no lei stands on the line to follow`>>
+<<has entity=`refusal` name=`swarm-lei-nothing-to-restring` params=`~ no lei stands to restring`>>
+<<has entity=`refusal` name=`keep-lei-unseen` params=`~ a keep lei may stand on a face shut or unread; open it or name --face`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ terms
+
+```memetic-wikitext
+<<has entity=`band` name=`terms` params=`exit/0 ~ one JSON line the pūlama takes`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares lei terms
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares lei terms]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · seat-harness
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;W-OBxoix194EJ60QzOmsKtRGOKmKYl94xrEJu7eNdq4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

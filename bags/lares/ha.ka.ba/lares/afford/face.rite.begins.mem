@@ -1,0 +1,115 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.rite.begins`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "begin a rite: derive the head's tree, spend its lei, rest the guest half"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.rite.begins", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.rite.begins"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.rite.begins"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.rite.begins ~ begin ~ rite-begin in the vessel
+
+`lares rite begin --rite <rite> --branch <name> --head <commit>` runs `rite-begin` in the vessel: it derives the head's tree, returns the rite's lei (a kūkulu: each lent face's own) and rests the guest half of the tessera. A keep adds `--staging <path>`, the bundle it staged inside its workspace; a kūkulu names `--image`, the image the host made, and `--supersedes` the halves it sets down first (comma-joined tesserae).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ begin
+
+```memetic-wikitext
+<<has entity=`example` name=`begin` params=`rite/kukulu branch/main head/<commit> ~ begin a kūkulu at a head`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ rite · branch · head · staging · image · supersedes · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`rite` params=`takes/rite needs/required ~ the rite: kukulu or keep`>>
+<<has entity=`arg` name=`branch` params=`takes/name needs/required ~ the lei's line`>>
+<<has entity=`arg` name=`head` params=`takes/commit needs/required ~ the head the rite begins at`>>
+<<has entity=`arg` name=`staging` params=`takes/path ~ a keep's staged bundle inside its workspace`>>
+<<has entity=`arg` name=`image` params=`takes/digest ~ the image the host made`>>
+<<has entity=`arg` name=`supersedes` params=`takes/tesserae ~ the begun halves set down first, comma-joined`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ one face, a whole persona index from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ spends the strung lei, which carries the grant`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · rite-malformed · rite-begun-stands · rite-tree-unreadable · lent-faces-empty · swarm-lei-absent · face-log-unreadable
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.rite.begins rite/kukulu branch/main head/<commit>]] ~ the rite, branch or head missing, or a malformed face`>>
+<<has entity=`refusal` name=`rite-malformed` params=`~ the rite names no rite the vessel knows`>>
+<<has entity=`refusal` name=`rite-begun-stands` params=`~ a begun half already stands; land or abandon it`>>
+<<has entity=`refusal` name=`rite-tree-unreadable` params=`~ the head's tree reads nowhere`>>
+<<has entity=`refusal` name=`lent-faces-empty` params=`~ no face lent a line to the rite`>>
+<<has entity=`refusal` name=`swarm-lei-absent` params=`~ no lei stands strung for the line`>>
+<<has entity=`refusal` name=`face-log-unreadable` params=`~ a face's log reads nowhere`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ begun
+
+```memetic-wikitext
+<<has entity=`band` name=`begun` params=`exit/0 ~ the guest half rests; the answer prints as JSON`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares rite begin
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares rite begin]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · seat-harness
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;T6es7wYxLSiBMqc8ZRjHk66XkcRH5UnQ3kJAvLrM9R4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

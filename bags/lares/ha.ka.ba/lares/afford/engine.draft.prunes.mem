@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.draft.prunes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "surface a wiki's stale draft tiddlers for action or prune"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.draft.prunes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.draft.prunes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.draft.prunes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.draft.prunes ~ the drafts no one touched lately
+
+`lares wiki prune-stale <slug>` asks the daemon for the wiki's draft tiddlers idle past a threshold (`--days <N>`), each with its last update and days idle, so the operator acts on residency or prunes. It surfaces; it removes nothing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ prune
+
+```memetic-wikitext
+<<has entity=`example` name=`prune` params=`slug/works days/30 ~ surface drafts idle thirty days`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ slug · days
+
+```memetic-wikitext
+<<has entity=`arg` name=`slug` params=`takes/slug needs/required seat/1 as/<slug> ~ the wiki slug`>>
+<<has entity=`arg` name=`days` params=`takes/count ~ the idle threshold in days`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ vessel
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`vessel` params=`who/seat-or-hand ~ the daemon verb runs under the vessel's own did; this handler checks no ocap of its own`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · daemon-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.draft.prunes slug/works]] ~ name the slug`>>
+<<has entity=`refusal` name=`daemon-refused` params=`~ the daemon's prune-stale verb refused; its message rides the line, exit 4`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ surfaced
+
+```memetic-wikitext
+<<has entity=`band` name=`surfaced` params=`exit/0 fields/[[stale]] ~ each stale title, its last update and days idle`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares wiki prune-stale
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares wiki prune-stale]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cabal-realm
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ps7Gwp0g70f4NED30i_xtIiYfpL03SwOx3F8Fbca2wQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

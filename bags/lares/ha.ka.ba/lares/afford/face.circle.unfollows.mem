@@ -1,0 +1,106 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.circle.unfollows`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "drop a nym from a circle; the handle-book keeps its memory"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.circle.unfollows", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.circle.unfollows"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.circle.unfollows"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.circle.unfollows ~ the unfollow: a nym leaves a circle
+
+`lares circle remove <nym> --to <circle>` drops the nym from the circle. The handle-book's memory of it stays; nothing crosses the wire.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ unfollow
+
+```memetic-wikitext
+<<has entity=`example` name=`unfollow` params=`nym/<nym> ~ drop the nym from following`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ nym · to · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`nym` params=`takes/nym needs/required seat/1 as/<nym> ~ the nym's verifying key, hex`>>
+<<has entity=`arg` name=`to` params=`takes/circle default/following ~ the circle; following, the primary system circle, stands by default`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the face whose handle-book and circles act; absent, the one face standing open`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ edits this face's private graph alone; nothing crosses the wire`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.circle.unfollows nym/<nym>]] ~ remove needs a nym`>>
+<<has entity=`refusal` name=`error` params=`~ the follow store refused; the line names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ unfollowed
+
+```memetic-wikitext
+<<has entity=`band` name=`unfollowed` params=`exit/0 fields/[[nym circle federated]] ~ the nym left the circle`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares circle remove
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares circle remove]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WKqGZWyByxlETTx6GWOd205lmELq8CntWkCjI9A2Hnw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

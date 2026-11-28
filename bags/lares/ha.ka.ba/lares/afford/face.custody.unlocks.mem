@@ -1,0 +1,121 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.custody.unlocks`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "open the vessel key, or a named face's, from a human route on a TTY"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.custody.unlocks", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.custody.unlocks"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.custody.unlocks"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.custody.unlocks ~ unlock opens custody; the route rides a TTY
+
+`lares vault unlock` gathers a route on the terminal and hands it to the standing vessel's custody door, which opens the vessel key (`--face N`: that face's key under its own route; `--all`: every face its routes open). The door reads first: a vessel standing by a pūlama takes no route here and asks the pūlama; a key already held takes no second route and points at `lares wear N`; `--face N` on a held key wears N where it stands open, and refuses a face the vessel holds nowhere. A face that lights lands its shares. A credential rides a TTY alone: no flag, no environment variable and no pipe carries one, nothing echoes one, and it drops the instant the act returns.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ unlock · one-face · every-face
+
+```memetic-wikitext
+<<has entity=`example` name=`unlock` params=`~ open the vessel key`>>
+<<has entity=`example` name=`one-face` params=`face/2 ~ open face h2 under its own route`>>
+<<has entity=`example` name=`every-face` params=`all/true ~ open every face the routes open`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face · all
+
+```memetic-wikitext
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ the face to open under its own route, by persona index`>>
+<<has entity=`arg` name=`all` params=`~ open every face the gathered routes open`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/route ~ a person types the route at their own terminal; an AI seat names the command`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · custody-probe-unread · pulama-waits · face-not-standing · offline-beside-pulama · daemon-unreachable · no-slot-opens · attempts-spent · face-refused · face-not-named · tree-absent · tree-unreadable · root-unopenable · unlock-incomplete · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.custody.unlocks face/2]] ~ --face names a handle index, a whole number from 0`>>
+<<has entity=`refusal` name=`custody-probe-unread` params=`~ the house names a pūlama and its custody probe went unread; nothing was asked`>>
+<<has entity=`refusal` name=`pulama-waits` params=`~ the pūlama keeps custody and waits on its own hand door; the line names its next act`>>
+<<has entity=`refusal` name=`face-not-standing` params=`cure/[[face.custody.unlocks face/2]] ~ the vessel holds no face of that index; nothing was asked`>>
+<<has entity=`refusal` name=`offline-beside-pulama` params=`~ no vessel answers and a pūlama keeps custody; stand the vessel, then unlock through it`>>
+<<has entity=`refusal` name=`daemon-unreachable` params=`cure/[[face.custody.unlocks]] ~ the vessel stopped answering before the unlock landed`>>
+<<has entity=`refusal` name=`no-slot-opens` params=`cure/[[face.custody.unlocks]] ~ the route typed opens no slot; a try spent`>>
+<<has entity=`refusal` name=`attempts-spent` params=`~ this boot's unlock tries ran out; restand the vessel`>>
+<<has entity=`refusal` name=`face-refused` params=`~ the face refused to light under the route`>>
+<<has entity=`refusal` name=`face-not-named` params=`~ no face of that index stands in the floor index`>>
+<<has entity=`refusal` name=`tree-absent` params=`~ no slot tree stands to open`>>
+<<has entity=`refusal` name=`tree-unreadable` params=`~ the slot tree does not read`>>
+<<has entity=`refusal` name=`root-unopenable` params=`~ the face's root does not open`>>
+<<has entity=`refusal` name=`unlock-incomplete` params=`~ the door answered a reading this door does not know`>>
+<<has entity=`refusal` name=`error` params=`~ the custody door's named refusals lead the line by class (OccupiedStoreRefusal, CustodyRefusal, TreeKeyRefusal, CensusRefusal, CustodyLockRefused, CustodyFoundingRefused, CredentialTtyRefusal, RotationSlotsRefused), exit 1`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ opens · already-unlocked
+
+```memetic-wikitext
+<<has entity=`band` name=`opens` params=`exit/0 fields/[[reading slot standing shares]] ~ the key stands held; shares landed for each face now open`>>
+<<has entity=`band` name=`already-unlocked` params=`exit/0 fields/[[reading standing next]] ~ the key stood held; no route asked, and next names lares wear N`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vault unlock
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares vault unlock]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · custody
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TaGxQLd9zGXKFDxhBiLv0OgSb33KnLHoAnHfJrvP73k`>>
+
+<<^ code=`&#x0004;` to=`?`>>

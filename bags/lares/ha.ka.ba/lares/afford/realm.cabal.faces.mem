@@ -1,0 +1,107 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.cabal.faces`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "stand the acting face in a realm and print its key there"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.cabal.faces", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.cabal.faces"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.cabal.faces"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.cabal.faces ~ the acting face's key in a realm: the nym a voucher names
+
+`lares cabal face --realm <id>` stands the acting face (`--face N`, else the one face standing open; several refuse by name) at the Nexus the realm stands under and prints its key there, the joiner nym a voucher names. `--nexus <aid>` names the Nexus at the vessel's first act in the realm.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ face
+
+```memetic-wikitext
+<<has entity=`example` name=`face` params=`realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef ~ print the acting face's key in the realm`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ realm · nexus · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`realm` params=`takes/doc-id needs/required ~ the cabal-realm doc id, 64 hex`>>
+<<has entity=`arg` name=`nexus` params=`takes/aid ~ the Nexus at this vessel's first act in the realm; the ledger keeps it after`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the acting face, by persona index; absent, the one face standing open`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand key/face-at-nexus ~ the store door acts as the face, its key at the realm's Nexus`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · CabalFaceError · store-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.cabal.faces realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef]] ~ --realm expects a 64-hex cabal-realm doc id`>>
+<<has entity=`refusal` name=`CabalFaceError` params=`~ the face holds no key there, or several faces stand open`>>
+<<has entity=`refusal` name=`store-refused` params=`~ the store door refused, or no vessel answers; the line names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ face
+
+```memetic-wikitext
+<<has entity=`band` name=`face` params=`exit/0 fields/[[face realm nexusAid]] ~ the face's key at the realm's Nexus`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares cabal face
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares cabal face]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cabal-realm
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nf9tl_hSSVoNTcLosF_4379BS3GgGp_suEhsuKBsqk0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

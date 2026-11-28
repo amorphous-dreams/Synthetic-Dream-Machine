@@ -1,0 +1,107 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.petname.proposes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "propose a pet name with its projection and evidence"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.petname.proposes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.petname.proposes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.petname.proposes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.petname.proposes ~ a pet name proposed, awaiting acceptance
+
+`lares sensorium propose-name <sensorium> <subject> <label…> --projection <handle> [--evidence ref,ref]` records a proposed pet name with the projection that proposes it and its evidence refs; `accept-name` lands it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ propose
+
+```memetic-wikitext
+<<has entity=`example` name=`propose` params=`sensorium/memory subject/e-12 label/harbor projection/structure evidence/d-1,d-2 ~ propose a pet name with evidence`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ sensorium · subject · label · projection · evidence
+
+```memetic-wikitext
+<<has entity=`arg` name=`sensorium` params=`takes/name needs/required seat/1 as/<sensorium> ~ a named sensorium standing on this house`>>
+<<has entity=`arg` name=`subject` params=`takes/id needs/required seat/2 as/<subject> ~ the subject named`>>
+<<has entity=`arg` name=`label` params=`takes/words needs/required seat/3 as/<label…> ~ the proposed pet name`>>
+<<has entity=`arg` name=`projection` params=`takes/handle needs/required ~ the projection proposing it`>>
+<<has entity=`arg` name=`evidence` params=`takes/list ~ evidence refs, comma-joined`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ works this host's scratch sensoria under the cache; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[sense.petname.proposes sensorium/memory subject/e-12 label/harbor projection/structure]] ~ name a standing sensorium, a subject, a label and --projection`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ proposed
+
+```memetic-wikitext
+<<has entity=`band` name=`proposed` params=`exit/0 ~ the proposal and its id`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sensorium propose-name
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares sensorium propose-name]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · sensorium-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2Wd1-qOatYioEt2OLWAWFwVbWKvve35tq88ZB56Tqu4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

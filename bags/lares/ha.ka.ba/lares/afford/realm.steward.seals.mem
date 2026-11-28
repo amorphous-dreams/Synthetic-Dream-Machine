@@ -1,0 +1,116 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.steward.seals`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "seal a realm bag's steward record by join, cosign or steward"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.steward.seals", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.steward.seals"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.steward.seals"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.steward.seals ~ a name enters a record by its own hand first
+
+`lares nexus realm-bag <bag-uri> [--realm <id>] [--join | --cosign [--with <key>]] [--steward <key>…] [--tier <t>] [--expiry <rolls>] [--charter <key>=<realm-id>…]` seals the record of who keeps a realm bag, riding the key the acting face (`--face N`) presents to the realm's Nexus. `--join` asks to keep a bag another hand keeps; `--cosign` consents to a record naming this vessel's steward. With no `--realm` the act lands in the charter-derived realm.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ join
+
+```memetic-wikitext
+<<has entity=`example` name=`join` params=`bag/<bag-uri> join/true ~ ask to keep a bag`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ bag · realm · join · cosign · with · steward · tier · expiry · charter · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`bag` params=`takes/uri needs/required seat/1 as/<bag-uri> ~ the realm bag`>>
+<<has entity=`arg` name=`realm` params=`takes/id ~ a cabal realm (64 hex); absent, the charter-derived realm`>>
+<<has entity=`arg` name=`join` params=`~ ask to keep a bag another hand keeps`>>
+<<has entity=`arg` name=`cosign` params=`~ consent to a record naming this vessel's steward`>>
+<<has entity=`arg` name=`with` params=`takes/key ~ beside cosign, the key consented with`>>
+<<has entity=`arg` name=`steward` params=`takes/list ~ hands that already sealed a record of this realm`>>
+<<has entity=`arg` name=`tier` params=`takes/word ~ the bag's tier`>>
+<<has entity=`arg` name=`expiry` params=`takes/count ~ rolls before the record lapses`>>
+<<has entity=`arg` name=`charter` params=`takes/list ~ key=realm-id pairs`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ the acting face`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/face ~ the acting face's key seals`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · vessel-composing · vessel-silent · vessel-locked · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.steward.seals bag/<bag-uri> join/true]] ~ no bag named, or a malformed flag`>>
+<<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
+<<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
+<<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
+<<has entity=`refusal` name=`error` params=`~ the store refused; the message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ sealed
+
+```memetic-wikitext
+<<has entity=`band` name=`sealed` params=`exit/0 ~ the record landed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares nexus realm-bag
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares nexus realm-bag]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YqfRdha28D-leTQZXQBDjGuA_AK3A1Rb2PtqMdCLlZc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

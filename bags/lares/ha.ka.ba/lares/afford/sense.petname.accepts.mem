@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.petname.accepts`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "accept one proposed pet name by its proposal id"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.petname.accepts", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.petname.accepts"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.petname.accepts"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.petname.accepts ~ a proposal lands as a pet name
+
+`lares sensorium accept-name <sensorium> <proposal-id>` accepts one proposed pet name. A proposal id that stands nowhere answers exit 3.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ accept
+
+```memetic-wikitext
+<<has entity=`example` name=`accept` params=`sensorium/memory proposal-id/p-3 ~ accept a proposal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ sensorium · proposal-id
+
+```memetic-wikitext
+<<has entity=`arg` name=`sensorium` params=`takes/name needs/required seat/1 as/<sensorium> ~ a named sensorium standing on this house`>>
+<<has entity=`arg` name=`proposal-id` params=`takes/id needs/required seat/2 as/<proposal-id> ~ the proposal accepted`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ works this host's scratch sensoria under the cache; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[sense.petname.accepts sensorium/memory proposal-id/p-3]] ~ name a standing sensorium and a proposal id`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ accepted · absent
+
+```memetic-wikitext
+<<has entity=`band` name=`accepted` params=`exit/0 ~ the pet name landed`>>
+<<has entity=`band` name=`absent` params=`exit/3 ~ no proposal of that id`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sensorium accept-name
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares sensorium accept-name]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · sensorium-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;I0SkYN1lwm6ojW8D9foj8UlaWV_PzjqzDOyHDuy0mGE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

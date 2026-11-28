@@ -1,0 +1,116 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.lei.strings`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "string a lei granting one rite at one branch under one reach"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.lei.strings", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.lei.strings"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.lei.strings"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.lei.strings ~ kui ~ swarm-lei-kui
+
+`lares lei kui --rite <rite> --branch <name>` strings a lei: wide by default (`--returns <n>`), or `--reach head --head <h>` to pin one head. With no `--after` it follows the line's own tip (the first on an empty line); a named `--after` that is no tip refuses as forked, before any route or signature. More than twelve returns asks `--yes`. `--all` (push, kukulu) strings one lei for every open face under one route, each face's own record by its own hand at its own line's tip; a keep lei names one face and never rides `--all`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ wide · pinned · every-face
+
+```memetic-wikitext
+<<has entity=`example` name=`wide` params=`rite/kukulu branch/main returns/3 ~ a wide lei of three returns`>>
+<<has entity=`example` name=`pinned` params=`rite/push branch/main reach/head head/<commit> ~ pin one head`>>
+<<has entity=`example` name=`every-face` params=`rite/kukulu branch/main all/true ~ one lei per open face`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ rite · branch · reach · returns · head · after · all · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`rite` params=`takes/rite needs/required ~ the rite the lei grants: push, kukulu or keep`>>
+<<has entity=`arg` name=`branch` params=`takes/name needs/required ~ the lei's branch`>>
+<<has entity=`arg` name=`reach` params=`takes/reach ~ wide by default, or head to pin one head`>>
+<<has entity=`arg` name=`returns` params=`takes/n ~ the returns the lei holds, from 1`>>
+<<has entity=`arg` name=`head` params=`takes/commit ~ the head a head-reach pins`>>
+<<has entity=`arg` name=`after` params=`takes/cid ~ the tip this lei follows; absent, the line's own tip`>>
+<<has entity=`arg` name=`all` params=`~ string for every open face under one route`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the face whose line this reads or strings, a whole count from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/face-root ~ the row runs in the vessel, where the hand-only gate, the ward and the co-sign stand`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · swarm-lei-forked · face-none-open · hand-act-only
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ a missing rite, branch or lei, a stray flag, or a malformed count`>>
+<<has entity=`refusal` name=`swarm-lei-forked` params=`~ the named --after names no tip; name the chain's tip`>>
+<<has entity=`refusal` name=`face-none-open` params=`~ no face stands open to string for`>>
+<<has entity=`refusal` name=`hand-act-only` params=`~ an AI seat strung a lei; a person runs the line`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ landed · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`landed` params=`exit/0 fields/[[lei faces]] ~ the record's answer`>>
+<<has entity=`band` name=`refused` params=`exit/1 ~ the door or the vessel refused by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares lei kui
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares lei kui]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · seat-harness
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JsDSBFqKlSbC9Fm42R7CeNJAzVucqKzKG5mFYdKMwsM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

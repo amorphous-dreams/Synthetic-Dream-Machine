@@ -1,0 +1,111 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.hold.releases`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "end one quarantine hold with the vessel stopped"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.hold.releases", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.hold.releases"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.hold.releases"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.hold.releases ~ one held document id, released over the stopped store
+
+`lares vessel release <documentId>` ends one quarantine hold while no holder answers for the store: bare the held bytes return; `--keep` keeps what stands under the id; `--fresh` starts a plane no sibling carries empty. A holder or a fallen vessel over the store refuses, naming the stop that frees it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ restore · keep
+
+```memetic-wikitext
+<<has entity=`example` name=`restore` params=`document/<documentId> ~ return the held bytes`>>
+<<has entity=`example` name=`keep` params=`document/<documentId> keep/true ~ keep what stands`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ document · keep · fresh · root
+
+```memetic-wikitext
+<<has entity=`arg` name=`document` params=`takes/id needs/required seat/1 as/<documentId> ~ the held document id, as lares vessel read lists it`>>
+<<has entity=`arg` name=`keep` params=`~ keep what stands under the id`>>
+<<has entity=`arg` name=`fresh` params=`~ start the id empty`>>
+<<has entity=`arg` name=`root` params=`takes/dir ~ the vessel root (LAR_ROOT) this call reads`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand ~ writes the stopped store; a person's act`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · one-act · store-held · refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.hold.releases document/<documentId>]] ~ name one document id`>>
+<<has entity=`refusal` name=`one-act` params=`~ --keep and --fresh name two acts; name one`>>
+<<has entity=`refusal` name=`store-held` params=`~ a holder answers for the store; lares vessel stop first`>>
+<<has entity=`refusal` name=`refused` params=`~ the release refused; the line names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ released · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`released` params=`exit/0 ~ the hold ended`>>
+<<has entity=`band` name=`refused` params=`exit/1 ~ refused by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vessel release
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares vessel release]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · vessel-door
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EnlwsWL1wnRe-WEt9SHkIAdOB4u-LDauJaJ7G2FV9Nk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

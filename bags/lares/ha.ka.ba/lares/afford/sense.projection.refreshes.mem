@@ -1,0 +1,109 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.projection.refreshes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "re-pave the recall projection over the content plane"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.projection.refreshes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.projection.refreshes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.projection.refreshes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.projection.refreshes ~ the derived recall view, re-derived through the seat
+
+`lares sense refresh [<query…>]` re-paves the mempalace projection over the sovereign content plane through the daemon seat, on the serialized capture holder's own pipe, so it queues between capture passes and never races the writer. It reads by volume, skipping the low-volume murmur, unless `--all-strata`; trailing words witness a recall afterward, capped at `--k` hits (default 5). A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ refresh · witness
+
+```memetic-wikitext
+<<has entity=`example` name=`refresh` params=`~ re-pave the projection`>>
+<<has entity=`example` name=`witness` params=`query/harbor k/3 ~ re-pave, then witness a recall`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ query · k · all-strata · sensorium-root
+
+```memetic-wikitext
+<<has entity=`arg` name=`query` params=`takes/words seat/1 as/<query…> ~ a recall to witness after the pave`>>
+<<has entity=`arg` name=`k` params=`takes/count default/5 ~ the witness's hits`>>
+<<has entity=`arg` name=`all-strata` params=`~ index every stratum, the murmur too`>>
+<<has entity=`arg` name=`sensorium-root` params=`takes/host-path ~ the sensorium's root; the leading sensorium name threads it, absent the memory sensorium`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ rides the daemon's composed caps, the single-owner law; this handler checks no ocap of its own`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ not-found · cap-denied · verb-error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`not-found` params=`~ no daemon seat answers; stand the vessel`>>
+<<has entity=`refusal` name=`cap-denied` params=`~ the seat's caps refuse the refresh`>>
+<<has entity=`refusal` name=`verb-error` params=`~ the refresh refused; its message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ refreshed
+
+```memetic-wikitext
+<<has entity=`band` name=`refreshed` params=`exit/0 ~ the pave's counts and any witness hits`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense refresh
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense refresh]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · lararium-memory
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aa1dGHtg2P50hioREBOhRqL1GKwm08VpVWccze7Cjpk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

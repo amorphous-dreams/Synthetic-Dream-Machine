@@ -1,0 +1,112 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.label.renames`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "rename a local realm label and settle its folder at a quiet point"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.label.renames", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.label.renames"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.label.renames"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.label.renames ~ rename a local realm label and settle its folder at a quiet point
+
+A rename changes a local realm pet name; the folder follows immediately when no vessel answers, or at its next lock or re-stand. The address stays a candidate until the operator reads the list.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ rename
+
+```memetic-wikitext
+<<has entity=`example` name=`rename` params=`current/notes to/Garden ~ rename a local realm label and settle its folder at a quiet point`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ current · to
+
+```memetic-wikitext
+<<has entity=`arg` name=`current` params=`takes/name needs/required seat/1 as/<current> ~ the realm pet name or realm id`>>
+<<has entity=`arg` name=`to` params=`takes/name needs/required ~ the destination realm pet name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ the host reads or writes its local projections; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · realm-unnamed · realm-name-empty · realm-name-separator · realm-name-colon · realm-name-nul · realm-name-leading-dot · realm-name-collision · realm-name-face
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.label.renames current/notes to/Garden]] ~ name the required arguments`>>
+<<has entity=`refusal` name=`realm-unnamed` params=`cure/[[realm.label.reads]] ~ read the local labels and choose a standing realm`>>
+<<has entity=`refusal` name=`realm-name-empty` params=`cure/[[realm.label.renames current/notes to/Garden]] ~ name a realm destination`>>
+<<has entity=`refusal` name=`realm-name-separator` params=`cure/[[realm.label.renames current/notes to/Garden]] ~ choose a name without path separators`>>
+<<has entity=`refusal` name=`realm-name-colon` params=`cure/[[realm.label.renames current/notes to/Garden]] ~ choose a name without a colon`>>
+<<has entity=`refusal` name=`realm-name-nul` params=`cure/[[realm.label.renames current/notes to/Garden]] ~ choose a name without a NUL`>>
+<<has entity=`refusal` name=`realm-name-leading-dot` params=`cure/[[realm.label.renames current/notes to/Garden]] ~ choose a name without a leading dot`>>
+<<has entity=`refusal` name=`realm-name-collision` params=`cure/[[realm.label.renames current/notes to/Garden]] ~ choose a name apart from other realm names`>>
+<<has entity=`refusal` name=`realm-name-face` params=`cure/[[realm.label.renames current/notes to/Garden]] ~ choose a name apart from face names`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ rename
+
+```memetic-wikitext
+<<has entity=`band` name=`rename` params=`exit/0 fields/[[petName did from movedNow moves]] ~ the host answers the local realm rename`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares realm rename
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares realm rename]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cabal-realm
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;013mMtag87dSVti27p4M0-cRPmKwTJH4F_8FWCs0-X4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

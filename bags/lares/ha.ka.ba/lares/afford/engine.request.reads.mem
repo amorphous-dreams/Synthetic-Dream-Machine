@@ -1,0 +1,108 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.request.reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read a verb request's receipt, or cancel it before it runs"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.request.reads", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.request.reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.request.reads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.request.reads ~ a request's receipt, read without dispatching
+
+`lares vessel request <requestId>` reads a verb request's receipt and dispatches nothing. `--cancel` withdraws it before it is read: the operator's own withdrawal, marking the id abandoned so a later line under it refuses; no automated path sends it on a timeout.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ read · cancel
+
+```memetic-wikitext
+<<has entity=`example` name=`read` params=`request/<requestId> ~ read the receipt`>>
+<<has entity=`example` name=`cancel` params=`request/<requestId> cancel/true ~ withdraw it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ request · cancel
+
+```memetic-wikitext
+<<has entity=`arg` name=`request` params=`takes/id needs/required seat/1 as/<requestId> ~ the request id`>>
+<<has entity=`arg` name=`cancel` params=`~ withdraw the request before it is read`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand ~ --cancel stays the operator's own withdrawal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · daemon-unreachable · cancel-lost · verb-error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.request.reads request/<requestId>]] ~ name the request id`>>
+<<has entity=`refusal` name=`daemon-unreachable` params=`~ no daemon answers; lares vessel stand --foreground`>>
+<<has entity=`refusal` name=`cancel-lost` params=`~ the request ran before the cancel landed`>>
+<<has entity=`refusal` name=`verb-error` params=`~ the vessel answered a fault`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ ok
+
+```memetic-wikitext
+<<has entity=`band` name=`ok` params=`exit/0 ~ the receipt, or the withdrawal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vessel request
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares vessel request]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · vessel-door
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QkJiqKerpxxDCbW6Zm12_Y-7OPNFw5CFS8bj3mhrmMA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

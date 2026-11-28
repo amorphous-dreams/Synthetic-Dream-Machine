@@ -1,0 +1,114 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.bundle.restores`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "restore a face from a bundle file, or rebuild a root from paper cards"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.bundle.restores", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.bundle.restores"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.bundle.restores"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.bundle.restores ~ a bundle comes back onto the vessel
+
+`lares vault restore <file>` opens a backup bundle on a route the hand types and lands its face at the next free index (`--as <N>`: that index); `--memory` lands the keys on the seat of the face the daemon mount runs under and takes no `--as`. `--cards` rebuilds a root from paper cards read on the terminal, with no bundle file and no memory: `--as <N>` the free index and `--face <key|persona-…>` the root to rebuild.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ restore · as · cards
+
+```memetic-wikitext
+<<has entity=`example` name=`restore` params=`file/h2.bundle ~ restore a bundle at the next free index`>>
+<<has entity=`example` name=`as` params=`file/h2.bundle as/3 ~ restore it at index 3`>>
+<<has entity=`example` name=`cards` params=`cards/true as/3 face/persona-abc ~ rebuild a root from paper cards at index 3`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ file · as · memory · cards · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`file` params=`takes/host-path seat/1 as/<file> ~ the bundle file; absent under --cards`>>
+<<has entity=`arg` name=`as` params=`takes/handle-index ~ the free index the face lands at`>>
+<<has entity=`arg` name=`memory` params=`~ land the keys on the seat of the face the mount runs under`>>
+<<has entity=`arg` name=`cards` params=`~ rebuild a root from paper cards on a terminal`>>
+<<has entity=`arg` name=`face` params=`takes/key-or-prefix ~ under --cards, the root to rebuild by its public key or prefix`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/route ~ a person types the bundle's route, or reads the cards, at their own terminal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · no-vessel · bundle-unreadable · bundle-malformed · no-slot-opens · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.bundle.restores file/h2.bundle]] ~ no file; --as beside --memory; --cards beside a file or --memory; --cards with no --as or --face`>>
+<<has entity=`refusal` name=`no-vessel` params=`~ no vessel stands on this store`>>
+<<has entity=`refusal` name=`bundle-unreadable` params=`cure/[[face.bundle.restores file/h2.bundle]] ~ no bundle reads at the path`>>
+<<has entity=`refusal` name=`bundle-malformed` params=`~ the file reads as no face bundle`>>
+<<has entity=`refusal` name=`no-slot-opens` params=`~ the route typed opens none of the bundle's slots`>>
+<<has entity=`refusal` name=`error` params=`~ the custody door's named refusals lead the line by class (OccupiedStoreRefusal, CustodyRefusal, TreeKeyRefusal, CensusRefusal, CustodyLockRefused, CustodyFoundingRefused, CredentialTtyRefusal, RotationSlotsRefused), exit 1`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ restored
+
+```memetic-wikitext
+<<has entity=`band` name=`restored` params=`exit/0 ~ the face landed; the lines name its index, or the keys imported under --memory`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vault restore
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares vault restore]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · custody
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;abFA_oWMVocQ2AlbYhPFYyNkJ7alUxnccO7VOp4ZpjQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

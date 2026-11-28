@@ -1,0 +1,89 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.guest.stands`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "raise the guest palace standalone with its hooks pinned off"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.guest.stands", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.guest.stands"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.guest.stands"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.guest.stands ~ the guest stands by an operator act, never by the boot
+
+`lares mempalace setup` raises the guest standalone (`mempalace init`) and pins `hooks.auto_save=false`. The guest serves as a comparator baseline, so the vessel's boot never stands it. The lane law: `lares mempalace` touches only the guest `~/.mempalace` comparator; `lares sense` touches only the sovereign sensorium.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ setup
+
+```memetic-wikitext
+<<has entity=`example` name=`setup` params=`~ raise the guest palace`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ none
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/hand ~ writes the guest palace on this host; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ stood
+
+```memetic-wikitext
+<<has entity=`band` name=`stood` params=`exit/0 ~ the guest palace stands`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares mempalace setup
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares mempalace setup]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · sensorium-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zg2So7vBPs1cusYOfFSdBRBAHEeURqVUfshxRhdNwmU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

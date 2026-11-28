@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.guest.repaves`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "tear the guest comparator down and stand it clean"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.guest.repaves", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.guest.repaves"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.guest.repaves"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.guest.repaves ~ the guest rite: quiesce, verify, tear, stand, harvest
+
+`lares mempalace repave` runs five idempotent steps (quiesce the holders, verify nothing holds the store and the worldline KG sits outside it, tear the guest tree, stand it again, harvest vanilla), so a rite that dies halfway re-runs from the top. Preview by default; `--confirm` enacts; `--keep-hooks` leaves the hooks paused afterward. It tears the guest alone.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ preview · enact
+
+```memetic-wikitext
+<<has entity=`example` name=`preview` params=`~ preview the rite`>>
+<<has entity=`example` name=`enact` params=`confirm/true ~ tear and stand the guest clean`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ confirm · keep-hooks
+
+```memetic-wikitext
+<<has entity=`arg` name=`confirm` params=`~ enact the rite instead of previewing`>>
+<<has entity=`arg` name=`keep-hooks` params=`~ leave the hooks paused afterward`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/hand ~ tears and stands the guest palace on this host; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ verb-error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`verb-error` params=`cure/[[sense.guest.quiesces]] ~ a holder still holds the store, or the worldline KG sits inside it; quiesce first`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ repaved
+
+```memetic-wikitext
+<<has entity=`band` name=`repaved` params=`exit/0 ~ the steps ran, or the preview names them`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares mempalace repave
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares mempalace repave]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · sensorium-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-yl10v_9OF3bchWSxSXcqGs2SXpVnQMBjCfg7HLHAoA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

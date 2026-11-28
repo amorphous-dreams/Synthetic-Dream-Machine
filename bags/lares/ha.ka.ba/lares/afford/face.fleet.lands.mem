@@ -1,0 +1,113 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.fleet.lands`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "land a fleet join's answer: the face stands on this vessel"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.fleet.lands", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.fleet.lands"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.fleet.lands"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.fleet.lands ~ the face lands on the joining vessel
+
+`lares fleet join land <answer-file>` runs on the joining place with no vessel standing: it reads the answer under the root key its kept offer named, opens the sealed address secret, founds the face's device edge and lands the face. A record or secret this vessel holds otherwise refuses.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ land
+
+```memetic-wikitext
+<<has entity=`example` name=`land` params=`answer/answer.json ~ land the face`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ answer
+
+```memetic-wikitext
+<<has entity=`arg` name=`answer` params=`takes/host-path needs/required seat/1 as/<answer-file> ~ the answer file the root holder wrote`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/hand ~ runs in this process on the joining vessel, no vessel standing; its keys mint and stay here`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ answer-absent · answer-unread · join-absent · record-other · secret-other · charter-refused · admit-refused · bootstrap-torn · face-joinee · refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`answer-absent` params=`cure/[[face.fleet.lands answer/answer.json]] ~ name the answer file`>>
+<<has entity=`refusal` name=`answer-unread` params=`~ the file reads as no JSON`>>
+<<has entity=`refusal` name=`join-absent` params=`~ no join stands pending; request one first`>>
+<<has entity=`refusal` name=`record-other` params=`~ this vessel holds the face's record under another root key`>>
+<<has entity=`refusal` name=`secret-other` params=`~ this vessel holds another address secret for the face`>>
+<<has entity=`refusal` name=`charter-refused` params=`~ the seed charter refused`>>
+<<has entity=`refusal` name=`admit-refused` params=`~ the admit refused`>>
+<<has entity=`refusal` name=`bootstrap-torn` params=`~ the bootstrap reads torn; nothing written over it`>>
+<<has entity=`refusal` name=`face-joinee` params=`~ the joinee names no face; the face rides the offer, and --face belongs to offer and answer`>>
+<<has entity=`refusal` name=`refused` params=`~ the land refused by name (FleetJoinRefused, a store door refusal, or StoreHeld); the line names the code`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ landed · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`landed` params=`exit/0 ~ the face stands here; lares vessel stand --with-web next`>>
+<<has entity=`band` name=`refused` params=`exit/1 ~ refused by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares fleet join land
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares fleet join land]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NnviFy4jkwPTTu064A00Pn1xZ0O3DuyTnor36JkBsHc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

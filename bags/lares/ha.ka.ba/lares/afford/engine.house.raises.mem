@@ -1,0 +1,113 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.house.raises`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "raise the house again around its hearth on the host: kūkulu"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.house.raises", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.house.raises"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.house.raises"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.house.raises ~ kukulu ~ kūkulu, the one verb that raises the house
+
+`lares rite kukulu` (also spelled kūkulu) runs on the host, with LAR_ROOT unset, where `~/.lares/lares-surface.env` and `tools/lares-container.sh` stand. It fast-forwards the checkout where it stands clean and behind, has the host shim make the image and read where the house stands, spends each face's kukulu lei where one stands (no prompt), then the shim's restand (the pūlama's light and admit on this terminal only where the day owes them), then lands the rite. `--branch` names the lei's line, `--face` one face. `--rollback` stands the image that ran before, `--rollback <rev>` an older revision's, with no checkout move. A rite that stops names where.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ raise · rollback
+
+```memetic-wikitext
+<<has entity=`example` name=`raise` params=`~ raise the house forward`>>
+<<has entity=`example` name=`rollback` params=`rollback/<rev> ~ stand an older revision's image`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ branch · face · rollback
+
+```memetic-wikitext
+<<has entity=`arg` name=`branch` params=`takes/name ~ the lei's line to spend`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ one face, a whole persona index from 0`>>
+<<has entity=`arg` name=`rollback` params=`takes/revision ~ the image that ran before, or a revision's (a commit or a kept image's 12 hex)`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand ~ runs the host shim on this terminal; spends each face's strung kukulu lei, which carries the grant`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · rite-needs-the-container-house · kukulu-checkout-stops · kukulu-ran-image-unread · kukulu-pulama-unread · kukulu-workbench-lay-interrupted · rite-land-differs
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.house.raises]] ~ a malformed --face or --rollback`>>
+<<has entity=`refusal` name=`rite-needs-the-container-house` params=`~ run it on the host with LAR_ROOT unset, where the shim and the surface env stand`>>
+<<has entity=`refusal` name=`kukulu-checkout-stops` params=`~ the checkout stands unclean or diverged`>>
+<<has entity=`refusal` name=`kukulu-ran-image-unread` params=`~ the image that ran before reads nowhere`>>
+<<has entity=`refusal` name=`kukulu-pulama-unread` params=`~ the pūlama's state reads nowhere`>>
+<<has entity=`refusal` name=`kukulu-workbench-lay-interrupted` params=`~ the workbench lay stopped midway`>>
+<<has entity=`refusal` name=`rite-land-differs` params=`~ the landing names another head or image than the begun half`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ stands · stopped
+
+```memetic-wikitext
+<<has entity=`band` name=`stands` params=`exit/0 ~ the house stands; awaits names a hand or an unlock the landing still waits on`>>
+<<has entity=`band` name=`stopped` params=`exit/1 fields/[[stopped refusal]] ~ the rite stopped at checkout, image, lei, offer, pulama, raise or standing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares rite kukulu
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares rite kukulu]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · seat-harness
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yBT5pSKY0qxCJbe-2IFBxbnAGtpff9DhdYuP1zvsjN4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,109 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.circle.follows`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "follow a nym by adding it to a circle, local and private"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.circle.follows", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.circle.follows"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.circle.follows"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.circle.follows ~ the follow: recognise the nym, label it, add it to a circle
+
+`lares circle add <nym> --to <circle>` follows a nym in one gesture over three local stores: the handle-book recognises it (already known, or TOFU-admitted from a carried self-certifying card, `--card <file>`), `--petname <label>` sets its private local label, and the circle takes it. The membership rides the private circles doc, which syncs to the operator's own devices and never federates to a stranger. An unmet nym with no card refuses: carry its card first.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ follow · admit
+
+```memetic-wikitext
+<<has entity=`example` name=`follow` params=`nym/<nym> ~ follow a known nym`>>
+<<has entity=`example` name=`admit` params=`nym/<nym> card/card.json petname/Mara ~ admit an unmet nym from its card and follow it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ nym · to · petname · card · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`nym` params=`takes/nym needs/required seat/1 as/<nym> ~ the nym's verifying key, hex`>>
+<<has entity=`arg` name=`to` params=`takes/circle default/following ~ the circle; following, the primary system circle, stands by default`>>
+<<has entity=`arg` name=`petname` params=`takes/label ~ the nym's private local label`>>
+<<has entity=`arg` name=`card` params=`takes/host-path ~ a carried HandleCard JSON file that TOFU-admits an unmet nym`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the face whose handle-book and circles act; absent, the one face standing open`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ edits this face's private graph alone; nothing crosses the wire`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.circle.follows nym/<nym>]] ~ add needs a nym; an unmet nym with no card refuses (FollowRefused); a card file that reads no JSON refuses`>>
+<<has entity=`refusal` name=`error` params=`~ the follow store refused; the line names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ followed
+
+```memetic-wikitext
+<<has entity=`band` name=`followed` params=`exit/0 fields/[[nym circle recognized petname federated]] ~ the nym stands in the circle; federated reads false`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares circle add
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares circle add]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TCPueR52iePD_XymAn3AQUvGjJ0Y8SLEusoBsg-Y1ac`>>
+
+<<^ code=`&#x0004;` to=`?`>>

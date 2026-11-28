@@ -72,7 +72,7 @@ describe("★ a usage refusal reaches the agent surface ★", () => {
       expect(await dispatch(["library", "zzz-not-a-sub-verb"])).toBe(2);
       const prose = errs.join("\n");
       expect(prose, "the reason the refusal happened").toContain("zzz-not-a-sub-verb");
-      expect(prose, "and the menu of what IS valid").toMatch(/usage: lares library/);
+      expect(prose, "and the menu of what IS valid (the library door's carrier index)").toMatch(/lares library acquire /);
     } finally {
       Object.defineProperty(process.stdout, "isTTY", { value: wasTty, configurable: true });
     }

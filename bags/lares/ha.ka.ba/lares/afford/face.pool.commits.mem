@@ -1,0 +1,112 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.pool.commits`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "commit what the house already agrees with in a pool, never a push"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.pool.commits", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.pool.commits"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.pool.commits"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.pool.commits ~ commit ~ only what the house agrees with, under a lar: subject
+
+`lares surface commit` stages only the changed paths the house already agrees with (each read against its synced base), commits them under a `lar:` subject naming no face (`lar:///surface.keeps.the-sitting/<seam> — N carriers`), and never pushes; a path apart names why. `-m <seam>` or `--message <seam>` names the seam slug, else the hand's. `--realm <realm pet name>` commits each standing tree of the realm, one commit per tree.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ face · realm
+
+```memetic-wikitext
+<<has entity=`example` name=`face` params=`message/sitting-close ~ commit the worn face's pool`>>
+<<has entity=`example` name=`realm` params=`realm/notes ~ one commit per realm tree`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face · message · realm
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`message` params=`takes/seam ~ the seam, one slug (a-z, 0-9, -); also spelled -m`>>
+<<has entity=`arg` name=`realm` params=`takes/pet-name ~ the realm whose trees commit; never beside face`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/hand ~ commits git trees on this host; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · surface-no-pool · surface-seam-malformed · surface-git-status-failed · surface-git-add-failed · surface-commit-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.pool.commits message/sitting-close]] ~ a stray word, a malformed seam or realm`>>
+<<has entity=`refusal` name=`surface-no-pool` params=`cure/[[face.pool.lays]] ~ no pool stands at the root`>>
+<<has entity=`refusal` name=`surface-seam-malformed` params=`~ the seam reads as no slug`>>
+<<has entity=`refusal` name=`surface-git-status-failed` params=`~ git status failed in the pool`>>
+<<has entity=`refusal` name=`surface-git-add-failed` params=`~ git add failed`>>
+<<has entity=`refusal` name=`surface-commit-refused` params=`~ git refused the commit`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ committed
+
+```memetic-wikitext
+<<has entity=`band` name=`committed` params=`exit/0 fields/[[root commit subject staged apart realm pools]] ~ commit reads null where nothing agreed-with changed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares surface commit
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares surface commit]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · disk-projection
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YmU00Go5Alm42t2exrVTZzDf8lN3j6hPebeWvWZJc4I`>>
+
+<<^ code=`&#x0004;` to=`?`>>

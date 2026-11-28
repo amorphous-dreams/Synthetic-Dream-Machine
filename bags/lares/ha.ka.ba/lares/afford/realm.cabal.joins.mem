@@ -1,0 +1,113 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.cabal.joins`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read whether an applicant crosses into a realm, writing nothing"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.cabal.joins", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.cabal.joins"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.cabal.joins"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.cabal.joins ~ the applicant's crossing, priced and read
+
+`lares cabal join --realm <id>` reads whether an applicant (`--applicant <nym>`, else the acting face's key there, read and never minted) crosses into the realm, writing nothing; a refusal bans nobody. `--bundle` hands a vouch bundle (a JSON file or inline), `--cap N` a per-voucher out-degree ceiling. The answer names the voucher, the capped edges and every shadow the crossing met.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ join · applicant
+
+```memetic-wikitext
+<<has entity=`example` name=`join` params=`realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef ~ read the acting face's crossing`>>
+<<has entity=`example` name=`applicant` params=`realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef applicant/<nym> ~ read another face's crossing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ realm · applicant · bundle · cap · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`realm` params=`takes/doc-id needs/required ~ the cabal-realm doc id, 64 hex`>>
+<<has entity=`arg` name=`applicant` params=`takes/nym ~ the applicant's key; absent, the acting face's`>>
+<<has entity=`arg` name=`bundle` params=`takes/json ~ a vouch bundle, a JSON file or inline JSON`>>
+<<has entity=`arg` name=`cap` params=`takes/integer ~ the per-voucher out-degree ceiling`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the acting face, by persona index; absent, the one face standing open`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ read
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`read` params=`who/seat-or-hand ~ reads the realm's boards through the store door; writes nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · cap-not-integer · bundle-unreadable · CabalJoinError · store-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.cabal.joins realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef]] ~ --realm expects a 64-hex cabal-realm doc id`>>
+<<has entity=`refusal` name=`cap-not-integer` params=`cure/[[realm.cabal.joins realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef cap/3]] ~ --cap expects an integer`>>
+<<has entity=`refusal` name=`bundle-unreadable` params=`~ --bundle reads as no JSON`>>
+<<has entity=`refusal` name=`CabalJoinError` params=`~ the join read refused by name`>>
+<<has entity=`refusal` name=`store-refused` params=`~ the store door refused, or no vessel answers; the line names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ admitted · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`admitted` params=`exit/0 fields/[[admitted voucherDid capped setAside memberSetAside frontier missing]] ~ the applicant crosses`>>
+<<has entity=`band` name=`refused` params=`exit/1 fields/[[refusal capped setAside memberSetAside]] ~ the applicant stands where it stood; nothing written`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares cabal join
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares cabal join]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cabal-realm
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iEWw8mAmF2KkyC7g1R9whRHX-q6OgL4KSbMOZlAAtyw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

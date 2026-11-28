@@ -1,0 +1,114 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.wiki.moves`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "move a wiki and its canon bag into a locally named realm"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.wiki.moves", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.wiki.moves"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.wiki.moves"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.wiki.moves ~ move a wiki and its canon bag into a locally named realm
+
+A move places a wiki and its canon bag under a local realm label, minting the destination label when needed and dropping an emptied source label. Its folder follows at a quiet point; its canon realm id stays. The address stays a candidate until the operator reads the list.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ move
+
+```memetic-wikitext
+<<has entity=`example` name=`move` params=`slug/works to/Garden ~ move a wiki and its canon bag into a locally named realm`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ slug · to
+
+```memetic-wikitext
+<<has entity=`arg` name=`slug` params=`takes/name needs/required seat/1 as/<slug> ~ the wiki slug`>>
+<<has entity=`arg` name=`to` params=`takes/name needs/required ~ the destination realm pet name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ the host reads or writes its local projections; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · realm-slug-malformed · realm-slug-private · realm-unnamed · realm-name-empty · realm-name-separator · realm-name-colon · realm-name-nul · realm-name-leading-dot · realm-name-collision · realm-name-face
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.wiki.moves slug/works to/Garden]] ~ name the required arguments`>>
+<<has entity=`refusal` name=`realm-slug-malformed` params=`cure/[[realm.wiki.moves slug/works to/Garden]] ~ name a path-safe wiki slug`>>
+<<has entity=`refusal` name=`realm-slug-private` params=`cure/[[realm.wiki.moves slug/works to/Garden]] ~ choose a wiki outside the private face projections`>>
+<<has entity=`refusal` name=`realm-unnamed` params=`cure/[[realm.label.reads]] ~ read the local labels and choose a standing realm`>>
+<<has entity=`refusal` name=`realm-name-empty` params=`cure/[[realm.wiki.moves slug/works to/Garden]] ~ name a realm destination`>>
+<<has entity=`refusal` name=`realm-name-separator` params=`cure/[[realm.wiki.moves slug/works to/Garden]] ~ choose a name without path separators`>>
+<<has entity=`refusal` name=`realm-name-colon` params=`cure/[[realm.wiki.moves slug/works to/Garden]] ~ choose a name without a colon`>>
+<<has entity=`refusal` name=`realm-name-nul` params=`cure/[[realm.wiki.moves slug/works to/Garden]] ~ choose a name without a NUL`>>
+<<has entity=`refusal` name=`realm-name-leading-dot` params=`cure/[[realm.wiki.moves slug/works to/Garden]] ~ choose a name without a leading dot`>>
+<<has entity=`refusal` name=`realm-name-collision` params=`cure/[[realm.wiki.moves slug/works to/Garden]] ~ choose a name apart from other realm names`>>
+<<has entity=`refusal` name=`realm-name-face` params=`cure/[[realm.wiki.moves slug/works to/Garden]] ~ choose a name apart from face names`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ move
+
+```memetic-wikitext
+<<has entity=`band` name=`move` params=`exit/0 fields/[[slug petName from minted dropped id folder movedNow moves]] ~ the host answers the local realm move`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares realm move
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares realm move]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · cabal-realm
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JBc7Zn9JUS71Uwzc6b-hEYRemEgG3On5mAjghGaIQak`>>
+
+<<^ code=`&#x0004;` to=`?`>>

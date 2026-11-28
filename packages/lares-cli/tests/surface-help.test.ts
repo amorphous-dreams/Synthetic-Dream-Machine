@@ -4,7 +4,8 @@
  */
 import { describe, expect, test, vi, afterEach } from "vitest";
 import { COMMANDS, dispatch } from "../src/bin/lares.js";
-import { COMMAND_HELP } from "../src/command-help.js";
+import { COMMAND_HELP, helpLines } from "../src/command-help.js";
+import { affordancePack, packRoute } from "@lararium/tw5/affordance-pack";
 
 async function run(argv: string[]): Promise<{ code: number; out: string }> {
   const out: string[] = [];
@@ -21,20 +22,24 @@ describe("lares surface help", () => {
     for (const f of ["face", "launch", "message", "realm"]) expect(row!.accepts).toContain(f);
   });
 
-  test.each(["surface", "surface init", "surface check", "surface commit"])("%s names --realm <realm pet name> in its usage and flags", (door) => {
-    const entry = COMMAND_HELP[door]!;
-    expect(entry.usage, door).toContain("--realm <realm pet name>");
-    expect((entry.flags ?? []).some((f) => f.startsWith("--realm")), door).toBe(true);
+  // The surface door flipped to its carriers (comms landings 10 + 23): each verb's carrier holds its words, the registry none.
+  test.each(["surface init", "surface check", "surface commit"])("%s takes --realm on its carrier, and its help names it", (spelling) => {
+    const address = packRoute("cli", spelling);
+    expect(address, spelling).toBeDefined();
+    expect(affordancePack().carriers[address!]!.takes["cli"], spelling).toContain("--realm");
+    expect(helpLines(spelling).join("\n"), spelling).toMatch(/--realm/);
   });
 
-  test.each(["surface", "surface init", "surface check", "surface open", "surface commit", "surface face"])("%s keeps a help entry with examples", (door) => {
-    const entry = COMMAND_HELP[door];
-    expect(entry, door).toBeDefined();
-    expect(entry!.examples.length).toBeGreaterThan(0);
-    expect(entry!.examples.every((e) => e.startsWith("lares surface"))).toBe(true);
+  test.each(["surface init", "surface check", "surface open", "surface commit", "surface face"])("%s holds a carrier whose examples run at the surface door", (spelling) => {
+    const address = packRoute("cli", spelling);
+    expect(address, spelling).toBeDefined();
+    expect(COMMAND_HELP[spelling], `${spelling}: one home, the carrier`).toBeUndefined();
+    const calls = affordancePack().carriers[address!]!.calls["cli"] ?? [];
+    expect(calls.length, spelling).toBeGreaterThan(0);
+    expect(calls.every((e) => e.startsWith("lares surface"))).toBe(true);
   });
 
-  test("`lares surface commit --help` reads the sub-door's own entry", async () => {
+  test("`lares surface commit --help` reads the verb's own carrier", async () => {
     const r = await run(["surface", "commit", "--help"]);
     expect(r.code).toBe(0);
     expect(r.out).toContain("lar:///surface.keeps.the-sitting/");

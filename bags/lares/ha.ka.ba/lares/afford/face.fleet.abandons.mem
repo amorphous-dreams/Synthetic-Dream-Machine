@@ -1,0 +1,102 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.fleet.abandons`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "drop the pending fleet join on this vessel"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.fleet.abandons", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.fleet.abandons"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.fleet.abandons"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.fleet.abandons ~ the pending join leaves the joining place
+
+`lares fleet join abandon` drops the pending join on the joining place; with none pending it says so. Joins pending for several faces refuse `face-not-named`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ abandon
+
+```memetic-wikitext
+<<has entity=`example` name=`abandon` params=`~ drop the pending join`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ none
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/hand ~ runs in this process on the joining vessel, no vessel standing; its keys mint and stay here`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ face-not-named · face-joinee · refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`face-not-named` params=`~ joins stand pending for several faces`>>
+<<has entity=`refusal` name=`face-joinee` params=`~ the joinee names no face; the face rides the offer, and --face belongs to offer and answer`>>
+<<has entity=`refusal` name=`refused` params=`~ the abandon refused by name (FleetJoinRefused, a store door refusal, or StoreHeld); the line names the code`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ abandoned · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`abandoned` params=`exit/0 ~ the pending join left, or none stood`>>
+<<has entity=`band` name=`refused` params=`exit/1 ~ refused by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares fleet join abandon
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares fleet join abandon]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bZa9emNhz-eo6e0MmXerBsr5NeBBnAm9RDQWpiWCbTg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

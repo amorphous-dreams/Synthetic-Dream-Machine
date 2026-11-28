@@ -1,0 +1,103 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.petname.lists`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "list the pet names a named sensorium holds"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.petname.lists", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.petname.lists"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.petname.lists"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.petname.lists ~ the pet names one sensorium holds
+
+`lares sensorium names <sensorium>` lists the attached and proposed pet names of a named sensorium.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ names
+
+```memetic-wikitext
+<<has entity=`example` name=`names` params=`sensorium/memory ~ list the pet names`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ sensorium
+
+```memetic-wikitext
+<<has entity=`arg` name=`sensorium` params=`takes/name needs/required seat/1 as/<sensorium> ~ a named sensorium standing on this house`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ works this host's scratch sensoria under the cache; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[sense.petname.lists sensorium/memory]] ~ name a standing sensorium`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ listed
+
+```memetic-wikitext
+<<has entity=`band` name=`listed` params=`exit/0 ~ the pet name entries`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sensorium names
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares sensorium names]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · sensorium-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oUDSazSRaR4fQDlzSCO6nMk9OfNOqWGXYf_ZAtv_CMI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

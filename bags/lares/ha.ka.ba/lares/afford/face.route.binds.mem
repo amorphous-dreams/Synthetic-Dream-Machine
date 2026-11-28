@@ -1,0 +1,108 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.route.binds`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "bind one more human route that opens the vessel key or a face"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.route.binds", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.route.binds"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.route.binds"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.route.binds ~ a new slot opens the same key
+
+`lares vault bind` opens the vessel key with a route the hand types, then binds a new slot (`--passphrase`, the default, or `--paper`) that opens the same key; `--face N` binds the slot into that face's own tree, leaving the node tree untouched. A paper sheet just read back joins the keep pair too. A credential rides a TTY alone: no flag, no environment variable and no pipe carries one, nothing echoes one, and it drops the instant the act returns.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ passphrase · paper-face
+
+```memetic-wikitext
+<<has entity=`example` name=`passphrase` params=`passphrase/true ~ bind a passphrase slot to the vessel key`>>
+<<has entity=`example` name=`paper-face` params=`face/2 paper/true ~ bind a paper slot into face h2's tree`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face · passphrase · paper
+
+```memetic-wikitext
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ bind into that face's own tree, by persona index`>>
+<<has entity=`arg` name=`passphrase` params=`needs/one-of:passphrase,paper ~ the new slot opens by passphrase (the default)`>>
+<<has entity=`arg` name=`paper` params=`needs/one-of:passphrase,paper ~ the new slot opens by a paper sheet`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/route ~ a person types both routes at their own terminal; an AI seat names the command`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · face-not-named · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.route.binds passphrase/true]] ~ --passphrase and --paper both stood, or --face names no handle index`>>
+<<has entity=`refusal` name=`face-not-named` params=`cure/[[face.route.binds face/2]] ~ no face of that index stands in the floor index`>>
+<<has entity=`refusal` name=`error` params=`~ the custody door's named refusals lead the line by class (OccupiedStoreRefusal, CustodyRefusal, TreeKeyRefusal, CensusRefusal, CustodyLockRefused, CustodyFoundingRefused, CredentialTtyRefusal, RotationSlotsRefused), exit 1`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ bound
+
+```memetic-wikitext
+<<has entity=`band` name=`bound` params=`exit/0 fields/[[slotId slots face]] ~ the new slot opens the key; slots counts those standing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vault bind
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares vault bind]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · custody
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PxUkE5jz9GOr8Ri_2eKNfEz4xfeWTwK9LTpkyFRr6eU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

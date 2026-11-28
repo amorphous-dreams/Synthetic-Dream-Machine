@@ -1,0 +1,110 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.keeper.cosigns`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "co-sign one keeper commit as the face's ward vest"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.keeper.cosigns", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.keeper.cosigns"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.keeper.cosigns"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.keeper.cosigns ~ keeper-cosign ~ the keeper vest's co-sign
+
+`lares intent keeper-cosign <sha256:D> --prev <chain head|none> --nonce <64 hex>` issues (or reads back) the face's ward co-sign over one keeper commit and prints the carried co-sign as JSON; the host shim gathers each lit face's into the successor.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ cosign
+
+```memetic-wikitext
+<<has entity=`example` name=`cosign` params=`next/sha256:<digest> prev/none nonce/<hex> ~ co-sign the founding link`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ next · prev · nonce · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`next` params=`takes/digest needs/required seat/1 as/<next> ~ the successor closure, sha256:<64 hex>`>>
+<<has entity=`arg` name=`prev` params=`takes/hash needs/required ~ the chain head (64 hex), or none at the founding link`>>
+<<has entity=`arg` name=`nonce` params=`takes/hex needs/required ~ the commit's nonce, 64 hex`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the face whose intent plane this reads or writes, a whole persona index from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand key/face-atom ~ signs under the face's own atom key through the store door`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · face-malformed · face-not-held · keeper-cosign-prev-malformed · keeper-cosign-nonce-malformed
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ an unknown sub-verb, or no sub-verb named`>>
+<<has entity=`refusal` name=`face-malformed` params=`~ --face names a whole persona index from 0`>>
+<<has entity=`refusal` name=`face-not-held` params=`~ this vessel holds no such face`>>
+<<has entity=`refusal` name=`keeper-cosign-prev-malformed` params=`~ the chain head reads 64 hex, or none`>>
+<<has entity=`refusal` name=`keeper-cosign-nonce-malformed` params=`~ the nonce reads 64 hex`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ cosign
+
+```memetic-wikitext
+<<has entity=`band` name=`cosign` params=`exit/0 ~ the carried co-sign prints as JSON`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares intent keeper-cosign
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares intent keeper-cosign]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · face-intent-plane
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oE4pP6t3REhTPdYpkdHxAbBqiJwBkvUoHuBjHNeMQSA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

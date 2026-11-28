@@ -1,0 +1,112 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.canon.promotes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "cross one carrier into a canon bag as a recorded residency move"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.canon.promotes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.canon.promotes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.canon.promotes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.canon.promotes ~ the priesthood act, performed as a residency move and recorded
+
+`lares meme promote <…/x.mem>` crosses one carrier into a canon bag: a residency move that changes the envelope's bag and nothing else (no rename, no host, no re-stamp), signed by the selected face (`--face N`, named wherever several faces stand) and recorded as a durable receipt. The cap reading rides a rehearsal that moves nothing first. `--from-bag` and `--dest-bag` name the bags; a crossing into `lar:///ha.ka.ba/bags/crossroads` also needs the seats' approval of these exact bytes (`--approval <approval.json>`, checked against `--nexus <aid>` where named).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ promote · crossroads
+
+```memetic-wikitext
+<<has entity=`example` name=`promote` params=`file/bags/lares/ha.ka.ba/lares/docs/pono/x.mem face/0 ~ the selected face signs the canon crossing`>>
+<<has entity=`example` name=`crossroads` params=`file/x.mem dest-bag/lar:///ha.ka.ba/bags/crossroads approval/a.json ~ publish for the Nexus: the seats approved these bytes`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ file · face · from-bag · dest-bag · approval · nexus
+
+```memetic-wikitext
+<<has entity=`arg` name=`file` params=`takes/host-path needs/required seat/1 as/<…/x.mem> ~ the carrier to cross`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ the signing face, by persona index; named where several stand`>>
+<<has entity=`arg` name=`from-bag` params=`takes/bag ~ the bag it leaves`>>
+<<has entity=`arg` name=`dest-bag` params=`takes/bag ~ the canon bag it crosses into; the cap reads against this name`>>
+<<has entity=`arg` name=`approval` params=`takes/host-path ~ the seats' approval of these bytes, as JSON`>>
+<<has entity=`arg` name=`nexus` params=`takes/aid ~ the Nexus whose seats the approval reads against`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand ocap/admin-on-the-destination key/face ~ the destination bag's admin cap, read by rehearsal, then the face signs the crossing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · verb-error · cap-denied
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.canon.promotes file/x.mem face/0]] ~ no carrier named, a malformed --face, or several faces and none named`>>
+<<has entity=`refusal` name=`verb-error` params=`~ the approval reads malformed, or the crossing refused; the reason rides the message`>>
+<<has entity=`refusal` name=`cap-denied` params=`~ the face holds no admin cap on the destination bag`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ promoted
+
+```memetic-wikitext
+<<has entity=`band` name=`promoted` params=`exit/0 ~ the carrier crossed and the receipt landed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares meme promote
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares meme promote]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · meme · canon-boundary
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/canon-boundary`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;S2HbMQGDTSFyWPdR_CSkrTo1PNFY3Tge76kFNNXZRiQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

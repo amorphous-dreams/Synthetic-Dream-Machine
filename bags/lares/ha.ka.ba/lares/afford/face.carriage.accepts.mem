@@ -1,0 +1,107 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.carriage.accepts`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "mint the accepts-carriage token a joining operator hands the kahu"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.carriage.accepts", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.carriage.accepts"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.carriage.accepts"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.carriage.accepts ~ consent first: track contracts, never identities
+
+`lares nexus accept-carriage [--index N] [--nexus <aid>]` runs on the joining operator's own vessel: it signs the per-Nexus leaf and that charter's head epoch into the token the kahu supply to `nexus contract --sig`, and keeps a copy for that one Nexus.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ accept
+
+```memetic-wikitext
+<<has entity=`example` name=`accept` params=`index/1 ~ mint the token for face h1`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ index · nexus
+
+```memetic-wikitext
+<<has entity=`arg` name=`index` params=`takes/handle-index ~ the face whose leaf signs`>>
+<<has entity=`arg` name=`nexus` params=`takes/aid ~ a charter this vessel holds; absent, the primary`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/persona-leaf ~ signs with your persona leaf on your own vessel`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ vessel-composing · vessel-silent · vessel-locked · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
+<<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
+<<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
+<<has entity=`refusal` name=`error` params=`~ the store refused; the message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ token
+
+```memetic-wikitext
+<<has entity=`band` name=`token` params=`exit/0 ~ the token to hand the kahu`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares nexus accept-carriage
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares nexus accept-carriage]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-TCXIKAjlLHYaoKZSKoti4Q04Gu--X9ysIAQTB2RSVw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

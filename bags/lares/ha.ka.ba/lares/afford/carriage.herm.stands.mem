@@ -1,0 +1,97 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.herm.stands`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "stand the herm crossroads hearths dial to carry sealed bodies"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.herm.stands", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.herm.stands"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.herm.stands"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.herm.stands ~ the wiki-less wayfarer stands the carriage crossroads
+
+Bare `lares herm` stands a herm (Lares Viales): it spawns the same node `main.js` the vessel stand runs, routed to the herm by `--recipe herm`, detached, and waits on the node's own attestation (`vessel-ready`, or a `fatal:` line), each later boot milestone renewing a 30-second silence span. The read face listens on `--port` (else `LAR_PORT`, else 8080) and the carriage relay (Socket B) on `--relay-port` (else `LAR_HERM_RELAY_PORT`, else 8090). On a live stand it echoes the node's own dial URLs and relay gate key, so the operator hands a hearth what to dial.
+
+A stand never hard-fails the session: it exits 0 and `ok` carries the verdict. Where the host holds the engine, where the node dist stands unbuilt, or where no bootstrap stands, nothing spawns and the note names the cure. A word the door does not answer refuses before anything stands, so a typo never raises a herm.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ port · relay-port
+
+```memetic-wikitext
+<<has entity=`arg` name=`port` params=`takes/port default/8080 ~ the read face's http port; else LAR_PORT`>>
+<<has entity=`arg` name=`relay-port` params=`takes/port default/8090 ~ the carriage relay's port (Socket B); else LAR_HERM_RELAY_PORT`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/hand ~ spawns the herm on this host's own root; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ the door answers relay-rotate alone; any other word refuses before a herm stands`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ live · down
+
+```memetic-wikitext
+<<has entity=`band` name=`live` params=`exit/0 fields/[[herm relay root bootstrap timestamp]] ~ the herm attested vessel-ready; relay.gateKey and relay.dial name what a hearth dials`>>
+<<has entity=`band` name=`down` params=`exit/0 fields/[[herm relay root bootstrap timestamp]] ~ nothing stands live; herm.note names the preflight cure, the fault, or the log to read`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares herm
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares herm]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · blob-carriage
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VylTe6m6RIxICCh9FWQ53o8V-1l-u9dYvHbWni4j1Jk`>>
+
+<<^ code=`&#x0004;` to=`?`>>
