@@ -4,7 +4,8 @@
  * the one gate (`projection-gate.decideProjection`). A file that stands as the base left it takes the write. A file a hand
  * moved goes to the capture door instead: its words enter the records (or stand as parallel drafts where the records
  * moved too), the base moves to those bytes, and the carrier marks for one more reading, which projects whatever the
- * records then say. Nothing holds between readings: the base alone carries what the projector knows of a file.
+ * records then say. Nothing holds a carrier between readings: the base carries what the projector knows of a file, and a
+ * refusal remembers only the bytes it named, so it speaks once per state of the file.
  * Heleuma ha: see lararium/mesh/disk-projector-capture.
  */
 
@@ -52,12 +53,17 @@ export async function captureMoved(core: ProjectorCore, moved: MovedFile): Promi
   const outcome = core.capture === undefined
     ? { kind: "refused" as const, why: "this projector stands no capture door" }
     : await core.capture(moved).catch((err: unknown) => ({ kind: "refused" as const, why: err instanceof Error ? err.message : String(err) }));
+  const key = `${bagId}\n${uri}\n${path}`;
   if (outcome.kind === "refused") {
+    // ONCE PER STATE OF THE FILE: the same bytes refuse silently at every later reading, and a new edit speaks again.
+    if (core.refusedAt.get(key) === moved.disk) return false;
+    core.refusedAt.set(key, moved.disk);
     const reason = `the file at ${path} moved since the projector last wrote it, and its words did not enter the records (${outcome.why}); nothing writes over it`;
     console.error(`[capture] ${bagId} <- ${uri}: ${reason}`);
     core.onRefusal?.({ bagId, uri, reason });
     return false;
   }
+  core.refusedAt.delete(key);
   pin(core, bagId, uri, path, moved.disk, moved.records ?? moved.disk);
   if (core.gate !== null && !core.stopping) core.gate.mark(uri);
   return true;

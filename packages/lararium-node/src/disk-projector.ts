@@ -59,8 +59,8 @@
  * THE HASH BEFORE THE WRITE (`projection-gate.decideProjection`, `capture.ts`): every flush the
  * byte-identity skip does not answer reads the file against the base at its path. A file that stands
  * where the base left it takes the write; a file a hand moved goes to capture, its base moves to the
- * captured bytes, and the next reading projects whatever the records then say. NOTHING HOLDS BETWEEN
- * READINGS: no standoff, no key, no person's side-taking. Merge authority routes through the CRDT, and a
+ * captured bytes, and the next reading projects whatever the records then say. NOTHING HOLDS A CARRIER
+ * BETWEEN READINGS: no key, no person's side-taking. Merge authority routes through the CRDT, and a
  * true concurrent change stands as a parallel draft (FIELDS MERGE, DRAFTS STAND APART).
  *
  * AN UNLINK READS THE FILE FIRST (`judgeHome`). The projector removes a file only where its bytes
@@ -185,6 +185,8 @@ export class LarDiskProjector {
   protected readonly journal: ProjectorCore["journal"];
   protected readonly onBagProjected: ProjectorCore["onBagProjected"];
   protected readonly projectedBags = new Set<string>();
+  /** The disk hash each refused capture last named (`capture.ts`): a refusal speaks once per state of the file. */
+  protected readonly refusedAt = new Map<string, string>();
 
   /** Roots whose slot records left, or stand with a broken chain, since their last orphan pass. */
   protected readonly orphanSuspects = new Set<string>();

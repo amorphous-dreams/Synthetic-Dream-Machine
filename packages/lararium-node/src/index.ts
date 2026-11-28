@@ -592,7 +592,7 @@ export type { CustodyFrame, CustodyAnswer, CustodyFrameDeps } from "./custody-fr
 export { nodePromoteStores, nodePromoteCas, promotedFile, kapaeFile, PROMOTED_FILE, KAPAE_FILE } from "./promoted-store.js";
 
 export { seatReadBackStandIn, readBackStandInSeated } from "./seal-ceremony.js";
-export { diskCapture, captureWikiOf, captureDraftTitle, CAPTURE_PATH_FIELD, readCarrierAt, pointerBodyAt, movedFields, type DiskCaptureDeps, type CaptureWiki } from "./disk-capture.js";
+export { diskCapture, captureWikiOf, captureDraftTitle, readCarrierAt, pointerBodyAt, movedFields, type DiskCaptureDeps, type CaptureWiki } from "./disk-capture.js";
 
 export { FLOOR_WORDS, FLOOR_GRAINS, readFloorDrifts, rowInGrain, floorRowLine, floorCardFor, floorCardTitle, type FloorWord, type FloorGrain, type FloorDriftRow, type FloorCard, type FloorLagInput } from "./floor-card.js";
 export { VESSEL_LIVE_LOG, SHORE_ASH_DIR, openVesselLogSink, otakiageLiveLog, tapProcessStreams, mintBootId, type VesselLogSink, type VesselLogSinkOptions } from "./vessel-log-sink.js";

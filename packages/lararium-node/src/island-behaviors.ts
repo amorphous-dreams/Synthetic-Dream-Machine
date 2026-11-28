@@ -14,7 +14,7 @@ import { inCallScope, takeCallTouches } from "@lararium/mesh/call-touches";
 import { islandHeadsAsker } from "./heads-rest.js";
 import { storeIsRetired } from "@lararium/mesh/effect-record";
 import { existsSync, realpathSync } from "node:fs";
-import { basename, dirname, join as joinPath, resolve as resolvePath, sep } from "node:path";
+import { basename, dirname, join as joinPath, relative as relativePath, resolve as resolvePath, sep } from "node:path";
 import { mkWikiVerbResult } from "@lararium/mesh/island-protocol";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import type { IslandMsg_Manifest, WikiMsg_PlaceVerb } from "@lararium/mesh/island-protocol";
@@ -25,7 +25,7 @@ import type { IslandBehavior, IslandContext } from "@lararium/tw5";
 // PURE subpath (no Automerge/wasm) — the same law `ingest-gate` reads `@lararium/mesh/agile-digest` under.
 import { canonicalizeCarrierText, carrierLanding } from "@lararium/tw5/carrier-canonical";
 import { LarDiskProjector } from "./disk-projector.js";
-import { namedBagMirror, FACES_PROJECTION_DIR } from "./bag-paths.js";
+import { confineMirrorWrite, namedBagMirror, FACES_PROJECTION_DIR } from "./bag-paths.js";
 import { SyncedTree, syncedTreeDir, syncedTreeKey } from "./synced-tree.js";
 import { larProjectionCheckpointDir, larProjectionsHome } from "./vessel-paths.js";
 import { facePoolHeads } from "./pool-head.js";
@@ -157,7 +157,7 @@ export function mountDiskProjection(
     });
     if (read.read > 0 || read.refused > 0) console.log(`[temp-layer] ${tempSlug}: ${read.read} carrier(s) read back, ${read.refused} refused`);
   }
-  // The Synced tree (Confluence merge base) sits at the INSTANCE ROOT (the dir
+  // The Synced tree (the merge base) sits at the INSTANCE ROOT (the dir
   // holding bags/) under .lararium-projection/ — observation state,
   // never a meme surface, never inside bags/; the ingest gate reads the
   // same file. mirrorRoot shape under the full-path-inside-bag ruling:
@@ -234,10 +234,8 @@ export function mountDiskProjection(
     // The save bag the adaptor's cascade names (a probe). An island with no adaptor names none, and its captures draft.
     saveBag: (title) => ctx.saveBagOf?.(title) ?? null,
     // The vessel's grant, as this projector's mirrors carry it.
-    grants: (bag, path) => {
-      const at = resolvePath(path);
-      return mirrors.some((m) => m.bagId === bag && (at === resolvePath(m.mirrorRoot) || at.startsWith(resolvePath(m.mirrorRoot) + sep)));
-    },
+    // ONE CONTAINMENT WALL: the same ward every projector write passes (`confineMirrorWrite`, the widened bags-dir grant included).
+    grants: (bag, path) => mirrors.some((m) => m.bagId === bag && confineMirrorWrite(m.mirrorRoot, relativePath(resolvePath(m.mirrorRoot), resolvePath(path)), m.allowBagsRootFiles).ok),
     // THE SAME WALL INGEST KEEPS: a DROPped bag takes no capture (`bag-retired`).
     retired: async (bagId) => { const store = ctx.composite.storeForBag(bagId); return store !== null && await storeIsRetired(store, bagId).catch(() => true); },
     notice: (line) => console.log(line),
@@ -245,8 +243,8 @@ export function mountDiskProjection(
   // A file vanished from the path its base names: the projector wrote nothing back and tombstoned nothing.
   // ONE ALERT PER BAG names the count and rides the same rail under its own ward kind; the set's key names
   // the audit row and the live alert, and the set's end clears it.
-  onPendingRemoval: (info) => ctx.post(hostEvent(ctx.wikiUri, "confluence:pending-removal", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "pending-removal", bagId: info.bagId, uri: info.uris[0] ?? "(none)", reason: info.reason, standoff: info.key })),
-  onPendingRemovalResolved: (info) => ctx.post(hostEvent(ctx.wikiUri, "confluence:pending-removal-resolved", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "pending-removal", bagId: info.bagId, uri: "(none)", reason: "resolved", standoff: info.key, resolved: true })),
+  onPendingRemoval: (info) => ctx.post(hostEvent(ctx.wikiUri, "shore:pending-removal", { verb: "ward-alert", requestedBy: "disk-shore", wardKind: "pending-removal", bagId: info.bagId, uri: info.uris[0] ?? "(none)", reason: info.reason, key: info.key })),
+  onPendingRemovalResolved: (info) => ctx.post(hostEvent(ctx.wikiUri, "shore:pending-removal-resolved", { verb: "ward-alert", requestedBy: "disk-shore", wardKind: "pending-removal", bagId: info.bagId, uri: "(none)", reason: "resolved", key: info.key, resolved: true })),
   // THE `remove` ANSWER'S DOOR: the carrier family leaves the bag whose mirror lost its file, in that bag's own layer
   // (`shore-remove-door.ts`), never in the working layer a browser's save takes: a plain retract where no layer beneath
   // holds the title, a kāpae in that bag where one does, so a shadow file sits in that bag's own mirror. The door returns
@@ -256,8 +254,8 @@ export function mountDiskProjection(
     await viewLeaves(ctx.tw5.$tw.wiki as unknown as Parameters<typeof viewLeaves>[0], uri, bagId);
   },
   layersBeneath: layersBeneathOf(ctx.composite),
-  // WHAT THE DISK BYTES SAY — `render(parse(disk))`, the `≈` seat the projecting leg of
-  // the Confluence has no parse of its own to compute. ONE door, the pure subpath (the
+  // WHAT THE DISK BYTES SAY — `render(parse(disk))`, the `≈` seat the projecting gate
+  // holds no parse of its own to compute. ONE door, the pure subpath (the
   // barrel drags wasm the plugin build cannot bundle, and this is the same congruence the
   // ingest leg reads), so exactly one implementation of `≈` stands in the tree.
   canonicalizeFn: canonicalizeCarrierText,

@@ -29,6 +29,8 @@ export interface ProjectorCore {
   stopping: boolean;
   readonly orphanSuspects: Set<string>;
   readonly projectedBags: Set<string>;
+  /** The disk hash each refused capture last named, by bag, carrier and path: the same bytes refuse silently once named. */
+  readonly refusedAt: Map<string, string>;
 
   // ── ports (construction options) ──
   readonly mirrors: readonly BagMirrorConfig[];
