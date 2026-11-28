@@ -11,7 +11,7 @@ import type {
   ClearAction, DropAction, LoadAction,
 } from "../src/residency-actions.js";
 import {
-  VERB_URI_PREFIX, SUMMONS_URI_PREFIX, taskContentId,
+  VERB_URI_PREFIX, taskContentId,
 } from "../src/verb-tiddler.js";
 import type { Verb } from "../src/verb-tiddler.js";
 
@@ -457,8 +457,8 @@ describe("isResidencyActionUri", () => {
     expect(isResidencyActionUri(`${VERB_URI_PREFIX}abc123`)).toBe(true);
   });
 
-  test("accepts daemon verb signal URI", () => {
-    expect(isResidencyActionUri(`${SUMMONS_URI_PREFIX}abc123`)).toBe(true);
+  test("rejects the burned summons title (no remote summons channel stands)", () => {
+    expect(isResidencyActionUri("lar:///ha.ka.ba/bags/control/summons/abc123")).toBe(false);
   });
 
   test("rejects non-verb-tiddler URIs", () => {

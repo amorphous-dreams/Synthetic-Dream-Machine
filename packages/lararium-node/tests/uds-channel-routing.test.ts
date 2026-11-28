@@ -18,7 +18,7 @@ import { join } from "node:path";
 import { createConnection } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
 import { emptyLarDoc, mutableLarRecord, type LarDoc } from "@lararium/mesh/base-doc";
-import { concludeVerb, SUMMONS_URI_PREFIX, OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { concludeVerb, OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { CompositeStore } from "@lararium/mesh/composite-store";
@@ -117,7 +117,7 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
 
       // daemon's doc carries the outcome/receipt — and NO summons.
       const daemonTitles = Object.keys(daemonHandle.doc().tiddlers);
-      expect(daemonTitles.some((t) => t.startsWith(SUMMONS_URI_PREFIX))).toBe(false);
+      expect(daemonTitles.some((t) => t.includes("/summons/"))).toBe(false);
       expect(daemonTitles.some((t) => t.startsWith(OUTCOME_URI_PREFIX))).toBe(true);
 
       // The whole daemon doc — history included via the live doc — carries ZERO carrier content.

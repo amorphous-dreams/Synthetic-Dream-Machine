@@ -8,7 +8,6 @@
  * No new URI prefix exists for actions — they reuse:
  *
  *   VERB_URI_PREFIX         volatile local invocation (daemon VM scratch)
- *   SUMMONS_URI_PREFIX  Automerge-backed remote vessel signal
  *   OUTCOME_URI_PREFIX Automerge-backed durable outcome
  *
  * Verb semantics (SPARQL Update derivation):
@@ -33,7 +32,7 @@
  */
 
 import {
-  VERB_URI_PREFIX, SUMMONS_URI_PREFIX,
+  VERB_URI_PREFIX,
 } from "./verb-tiddler.js";
 import type { Verb } from "./verb-tiddler.js";
 import { mintRandomId } from "./entropy-door.js";
@@ -609,5 +608,5 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
  * predicate to short-circuit obviously-non-action titles before parse.
  */
 export function isResidencyActionUri(title: string): boolean {
-  return title.startsWith(VERB_URI_PREFIX) || title.startsWith(SUMMONS_URI_PREFIX);
+  return title.startsWith(VERB_URI_PREFIX);
 }

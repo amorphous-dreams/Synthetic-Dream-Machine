@@ -16,10 +16,8 @@
  * Verb invocation paths:
  *   Local (in-process):   placeVerb() → wiki.addTiddler() → TW5 change event
  *                         → dispatcher runs → outcome to bags/control/outcomes/
- *   Remote (CLI/vessels): vessel writes bags/control/summons/<id> to Automerge →
- *                         IslandAdaptor flows it into TW5 wiki →
- *                         dispatcher translates to volatile invocation → processes →
- *                         outcome to bags/control/outcomes/
+ *   The CLI reaches the island through the vessel's door, which places a volatile invocation the same way; no
+ *                         remote summons channel stands (early alpha holds no remote peer).
  *
  * Batch contract:
  *   One invocation tiddler may carry N targets (tiddler URIs, file paths, edge resource
@@ -58,10 +56,6 @@ import type { ChoreReceiptMark } from "./chore-ask.js";
 /** Volatile verb invocation tiddlers — daemon TW5 wiki scratch, never synced. */
 export const VERB_URI_PREFIX = `${VOLATILE_VM_PREFIX}verbs/`;
 
-/** Automerge-backed verb summons, resting in the vessel's control document (`control-home`); the dispatcher translates
- *  each to a volatile invocation and tombstones it after pickup. */
-export const SUMMONS_URI_PREFIX = `${CONTROL_HOME_ID}/summons/`;
-
 /** Durable outcome tiddlers, resting in the vessel's control document (`control-home`), never in a mirrored layer. */
 export const OUTCOME_URI_PREFIX = `${CONTROL_HOME_ID}/outcomes/`;
 
@@ -71,7 +65,7 @@ export const VERB_RESULT_KEY = "summary" as const;
 // ── Task / receipt ontology — content-addressed surface ──────────────────────
 // The pono attractor: a TASK = a content-addressed invocation
 // fact living in a bag; the BAG carries the addressing geometry (its keyhive
-// ring); a RECEIPT keys by the task it answers. The live verb/summons/outcome
+// ring); a RECEIPT keys by the task it answers. The live verb/outcome
 // path migrates onto this surface per packages/EPIC-TASK-ONTOLOGY.md. Until
 // then these compose alongside the running path, not replacing it.
 
@@ -303,7 +297,7 @@ export function outcomeBytesOf(fields: Readonly<Record<string, unknown>>): numbe
  * (digest-on-outcome: stamped onto the outcome tiddler so a later reader can re-check it
  * without re-walking the fact). Distinct from `taskContentId` (the content-addressed task
  * surface, keyed by {subject,command,args,nonce}) — this digest keys the CURRENT running
- * verb/summons/outcome path's request identity, {verb,args,face,effectKey}.
+ * verb/outcome path's request identity, {verb,args,face,effectKey}.
  */
 export async function verbInputDigest(
   parts: { verb: string; args: Readonly<Record<string, unknown>>; face?: string | undefined; effectKey?: string },
@@ -630,49 +624,12 @@ export function buildVerb(opts: {
   };
 }
 
-/** Build an Automerge verb-summons record for remote vessel submission. */
-export function summon(opts: {
-  verb:        string;
-  args:        Record<string, unknown>;
-  requestedBy: string;
-  targets?:    string[];
-  batchMode?:  BatchMode;
-  requestId?:  string;
-  authority?:  string;
-  fromUri?:    string;
-  listenable?: string;
-  aud?:        string;
-  effectKey?:  string;
-}): LarTiddlerRecord {
-  const requestId = opts.requestId ?? newRequestId();
-  const title     = `${SUMMONS_URI_PREFIX}${requestId}`;
-  return {
-    tiddler: {
-      title,
-      tags:            LARES_VERB_TAG,
-      verb:            opts.verb,
-      args:            JSON.stringify(opts.args),
-      targets:         JSON.stringify(opts.targets ?? []),
-      "batch-mode":    opts.batchMode ?? "best-effort",
-      "request-id":    requestId,
-      status:          "pending",
-      "requested-by":  opts.requestedBy,
-      "requested-at":  new Date().toISOString(),
-      ...(opts.fromUri    !== undefined && { "from-uri":   opts.fromUri }),
-      ...(opts.listenable !== undefined && { listenable:   opts.listenable }),
-      ...(opts.aud        !== undefined && { aud:          opts.aud }),
-      ...(opts.effectKey  !== undefined && { "effect-key": opts.effectKey }),
-    },
-    meta: { authority: opts.authority ?? "lares-cli" },
-  };
-}
-
 /** Parse a flat tiddler field bag (from wiki.getTiddler().fields or
  *  record.tiddler) into a Verb. Returns null when the shape doesn't match. */
 export function parseVerb(fields: Record<string, unknown>): Verb | null {
   const title = typeof fields["title"] === "string" ? fields["title"] : null;
   if (!title) return null;
-  if (!title.startsWith(VERB_URI_PREFIX) && !title.startsWith(SUMMONS_URI_PREFIX)) return null;
+  if (!title.startsWith(VERB_URI_PREFIX)) return null;
 
   const tag = fields["tags"];
   const tagsStr = Array.isArray(tag) ? tag.join(" ") : (typeof tag === "string" ? tag : "");

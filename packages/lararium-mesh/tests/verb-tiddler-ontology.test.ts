@@ -10,7 +10,7 @@
 import { describe, test, expect } from "vitest";
 import {
   taskUri, receiptUri, taskContentId, TASK_KIND, RECEIPT_KIND,
-  buildVerb, summon, parseVerb, concludeVerb,
+  buildVerb, parseVerb, concludeVerb,
   buildReceiptFact, parseReceiptFact, verbInputDigest,
   RECEIPT_RING_DEFAULT, ratedReceiptRing, RECEIPT_RING_BYTES_DEFAULT, ratedReceiptRingBytes, outcomeBytesOf, RECEIPT_FACT_URI_PREFIX,
 } from "../src/verb-tiddler.js";
@@ -57,9 +57,7 @@ describe("task/receipt URI ontology (seed)", () => {
     expect(parseVerb(fields)?.aud).toBe("did:key:zVesselA");
   });
 
-  test("aud round-trips through signal; absent stays undefined", () => {
-    const sig = summon({ verb: "where", args: {}, face: "did:key:zOp", aud: "did:key:zVesselB" });
-    expect(parseVerb(sig.tiddler as Record<string, unknown>)?.aud).toBe("did:key:zVesselB");
+  test("an absent aud stays undefined", () => {
     const noAud = buildVerb({ verb: "where", args: {}, face: "did:key:zOp" });
     expect(parseVerb(noAud)?.aud).toBeUndefined();
   });
@@ -69,11 +67,6 @@ describe("task/receipt URI ontology (seed)", () => {
     expect(parseVerb(fields)?.effectKey).toBe("sha256:abc");
     const noEffect = buildVerb({ verb: "load", args: {}, face: "did:key:zOp" });
     expect(parseVerb(noEffect)?.effectKey).toBeUndefined();
-  });
-
-  test("effectKey round-trips through signal build → parse", () => {
-    const sig = summon({ verb: "load", args: {}, face: "did:key:zOp", effectKey: "sha256:def" });
-    expect(parseVerb(sig.tiddler as Record<string, unknown>)?.effectKey).toBe("sha256:def");
   });
 });
 

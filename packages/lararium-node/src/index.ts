@@ -414,8 +414,6 @@ export {
 export type { ReserveTransition, ReserveTransitionCore, TransitionWitness, TransitionSigner, TransitionVerdict } from "./reserve-transition.js";
 export { VerbDispatcher, VerbTable } from "@lararium/tw5";
 export type { VerbReactor, VerbContext, VerbDispatcherOptions } from "@lararium/tw5";
-export { heedSummons } from "@lararium/tw5";
-export type { SummonsRelayOptions, SummonsRequest } from "@lararium/tw5";
 export { runLocalVerb, makeCapVerify } from "@lararium/tw5";
 
 // The where + resolve reactors live in @lararium/tw5 (worker-data-verbs) and run in the daemon worker

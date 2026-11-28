@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
-import { buildReceiptFact, summon } from "@lararium/mesh/verb-tiddler";
+import { buildReceiptFact } from "@lararium/mesh/verb-tiddler";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { LarDiskProjector } from "../src/disk-projector.js";
@@ -44,12 +44,11 @@ describe("daemon control records never reach the working layer's disk mirror", (
     const origin = { kind: "test" } as const;
     await control.put(buildReceiptFact({ requestId: "r1", state: "committed", seq: 0, inputDigest: "d" }), origin);
     await fileWardRefusal(composite, control, () => {}, { bagId: "mirror", uri: "lar:///ward/x", reason: "refused" });
-    await control.put(summon({ verb: "v", args: {}, requestedBy: "did:key:z", requestId: "s1" }), origin);
     await composite.put({ tiddler: { title: "lar:///ha.ka.ba/t/daemon/ordinary", text: "an ordinary note" } }, origin);
 
     const controlTitles = await controlBag.listVisible();
-    const bookkeeping = controlTitles.filter((t) => t.includes("/receipts/") || t.includes("/summons/"));
-    expect(bookkeeping.length, "the records did not land in the control document").toBe(2);
+    const bookkeeping = controlTitles.filter((t) => t.includes("/receipts/"));
+    expect(bookkeeping.length, "the records did not land in the control document").toBe(1);
     const titles = await working.listVisible();
     expect(titles, "a control record reached the working layer").toEqual(["lar:///ha.ka.ba/t/daemon/ordinary"]);
 

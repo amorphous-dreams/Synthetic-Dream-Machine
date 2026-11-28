@@ -165,8 +165,6 @@ export { planCall, resolveCall, bindCall, stampAnswer, callReaderOf, callOfSigil
 export { readMu, isMuFault, muWordsOf, canonicalCarry, MU_CARRIES, MU_CARRY_ORDER, MU_TOOLS, type MuCarry, type MuFault } from "./modules/mu.js";
 export { readAperture, isApertureFault, apertureWords, reachesWhole, APERTURE_RANKS, APERTURE_BANDS, type Aperture, type ApertureFault, type ApertureRank } from "./modules/aperture.js";
 export type { VerbContext, VerbReactor, VerbDispatcherOptions, VerbSpec, VerbFence, SurfaceDeclared, SessionWorn } from "./verb-dispatcher.js";
-export { heedSummons } from "./verb-summons.js";
-export type { SummonsRequest, SummonsRelayOptions } from "./verb-summons.js";
 export { runLocalVerb, makeCapVerify } from "./verb-local-dispatch.js";
 export type { CapVerify, RunLocalVerbOptions } from "./verb-local-dispatch.js";
 export { makeDaemonBehavior } from "./daemon-behavior.js";

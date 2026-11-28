@@ -1,30 +1,17 @@
 /**
  * verb-dispatcher — daemon-VM verb dispatcher for the lararium causal island.
  *
- * Subscription model (dual-path):
+ * Subscription model: in-process callers use placeVerb(wiki, opts) to write a volatile invocation tiddler at
+ *   lararium.local.vm/verbs/<id> directly to the daemon TW5 wiki. The dispatcher watches wiki change events and
+ *   picks these up immediately. No remote summons channel stands: early alpha holds no remote peer, and a verb
+ *   reaches the island through the vessel's door alone.
  *
- *   LOCAL path  — in-process callers use placeVerb(wiki, opts) to write a
- *                 volatile invocation tiddler at lararium.local.vm/verbs/<id>
- *                 directly to the daemon TW5 wiki. The dispatcher watches wiki
- *                 change events and picks these up immediately.
- *
- *   REMOTE path — a verb-summons tiddler at bags/control/summons/<id> lands in the
- *                 vessel's control document (`control-home`). IslandAdaptor flows
- *                 it into the TW5 wiki. The dispatcher's Automerge subscriber
- *                 sees the summons, calls placeVerb() to create the volatile
- *                 invocation, then tombstones the summons tiddler.
- *                 The summons carries edge transport, not durable coordination state.
- *
- * Outcome flow: handler result → concludeVerb → the control store (the vessel's control document, no recipe layer and
- *   no mirror, sealed under the lit face) → bags/control/outcomes/<id> in Automerge.
- *   Durable shared meaning begins at the outcome, not at the summons.
+ * Outcome flow: handler result → concludeVerb → the island's outcome ledger and answer ring.
  *
  * Daemon-only law: ONLY the daemon VM runs a VerbDispatcher. Pinned wiki and
  *   warm/cold wikis are content surfaces — they do not dispatch.
  *
- * Federation model: every lararium vessel runs its own daemon VM + VerbDispatcher.
- *   Invocations are vessel-local scratch. Outcomes sync to all vessels via Automerge.
- *   Vessels coordinate through shared outcome space, not shared invocation queues.
+ * Every lararium vessel runs its own daemon VM + VerbDispatcher; invocations stay vessel-local scratch.
  *
  * Reaction Engine note (UEFN / kumu):
  *   When the Verse-inspired ReactionEngine matures, this dispatcher pattern
@@ -47,20 +34,16 @@ import {
   parseVerb,
   VERB_URI_PREFIX,
   OUTCOME_URI_PREFIX,
-  SUMMONS_URI_PREFIX,
   verbInputDigest,
 } from "@lararium/mesh/verb-tiddler";
 import { type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
 import { type CompositeStore } from "@lararium/mesh/composite-store";
 import { type CapabilityVerifier } from "@lararium/mesh/capability";
-import { type LarTiddlerChange } from "@lararium/mesh/tiddler-store";
 import { wikiSlugOfBag } from "@lararium/mesh/surface-recipe-door";
-import { ControlHomeUnavailable, answerRingOf } from "@lararium/mesh/control-home";
+import { answerRingOf } from "@lararium/mesh/control-home";
 import type { Hand } from "@lararium/mesh/session-contract";
-import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, isVisitResults, EFFECT_URI_PREFIX } from "./verb-vm.js";
+import { dispatchVerb, placeVerb, type VerbPlacement, copyEffectOutcome, writeOutcome, removeVerb, isVisitResults, EFFECT_URI_PREFIX } from "./verb-vm.js";
 import type { TW5Engine } from "./tw5-vm.js";
-import { heedSummons } from "./verb-summons.js";
-import type { SummonsRequest } from "./verb-summons.js";
 import { runLocalVerb, gateRoutedVerb, refuseSeatCanonRouted, RoutedCapDenied, makeCapVerify, routedAddressesWiki, routedWikiSlug } from "./verb-local-dispatch.js";
 import { callOfSigil, dryUnwalked, hostAnswer, isCallSigil, isDryPlan, muAnswer, planCall, reactorArgs, seatVerbOf, stampAnswer, unhandled, voicedAnswer, voicedRefusal, type CallPlan, type CallReader, type CallSeat, type CallVoice, type MacroCallParse } from "./modules/call.js";
 import { dryDepthOf } from "./modules/mu.js";
@@ -72,7 +55,7 @@ export interface VerbContext {
   readonly signal?: AbortSignal;
   /** Who the verb presents as (the capability's presenter); absent where no dispatcher named one. */
   readonly presenter?: string;
-  /** True for a verb the vessel's own presence channel took; absent or false for a synced summons. */
+  /** True for a verb the vessel's own presence channel took; absent or false for any other path. */
   readonly local?: boolean;
   readonly surface?: boolean;
   /**
@@ -83,7 +66,7 @@ export interface VerbContext {
   readonly worn?: SessionWorn;
   /**
    * The asker's hand (`seat`, `cli`, `tab`), as the vessel's own door read it and the island booked it with the act. Absent
-   * for an ask no door read (a synced summons, content). A house canon write door refuses a `seat` asker by name
+   * for an ask no door read (content). A house canon write door refuses a `seat` asker by name
    * (`seat-canon-reach`); never read off args, a payload or a tiddler.
    */
   readonly asker?: Hand;
@@ -389,8 +372,8 @@ export interface VerbDispatcherOptions {
   readonly daemonVm:   TW5Engine;
   readonly daemon:    CompositeStore;
   /**
-   * The vessel's CONTROL document as a store (`controlStoreOf`): the summons this dispatcher heeds, the outcome ledger and
-   * effect index it writes and reads. No recipe composes it and no mirror names it, so no control record reaches a
+   * The vessel's CONTROL document as a store (`controlStoreOf`): the outcome ledger and effect index this dispatcher
+   * writes and reads. No recipe composes it and no mirror names it, so no control record reaches a
    * projected layer by placement.
    */
   readonly control:   CompositeStore;
@@ -413,10 +396,8 @@ export interface VerbDispatcherOptions {
 
 export class VerbDispatcher {
   private unsubWiki:      (() => void) | null = null;
-  private unsubAutomerge: (() => void) | null = null;
   private readonly inFlight = new Set<string>();
   private readonly inFlightAbort = new Map<string, AbortController>();
-  private readonly seenSummons = new Set<string>();
   /**
    * Effect dedup (D1, P2.5 iter 4) — one chained promise per effectKey. A second attempt
    * under a NEW requestId with the SAME effectKey finds this entry and chains onto it
@@ -426,33 +407,6 @@ export class VerbDispatcher {
   private readonly inFlightEffect = new Map<string, Promise<void>>();
 
   constructor(private readonly opts: VerbDispatcherOptions) {}
-
-  /** Settles when the startup scan of persisted summons has heeded every pending record. */
-  startupScan: Promise<void> = Promise.resolve();
-
-  private async scanSummons(): Promise<void> {
-    const titles = (await this.opts.control.listVisible()).filter((title) => title.startsWith(SUMMONS_URI_PREFIX));
-    for (const title of titles) {
-      if (!this.unsubAutomerge) return;
-      const top = await this.opts.control.resolveTopmost(title);
-      if (!top) continue;
-      await this.receiveSummons({
-        title,
-        record: top.record,
-        origin: { kind: "crdt-remote", edgeIsland: "startup-replay" },
-        bag: top.bagId,
-      });
-    }
-  }
-
-  private receiveSummons(change: LarTiddlerChange): Promise<void> {
-    return heedSummons(change, {
-      control: this.opts.control,
-      isInFlight: (requestId) => this.inFlight.has(requestId),
-      seenRequestIds: this.seenSummons,
-      placeVerb: (invocation) => { this.placeVerb(invocation); },
-    });
-  }
 
   /** Run the invocation's handler — local registry first, else the verify-then-delegate
    *  route to main, else a "no handler" refusal. Shared by the plain-dispatch path and
@@ -492,7 +446,7 @@ export class VerbDispatcher {
     const presenter = given?.presenter ?? this.opts.presenterOf?.(invocation) ?? invocation.requestedBy;
     const local = given?.local ?? this.opts.localOf?.(invocation) === true;
     // A wiki-addressing envelope meets the fence by its presenter. Any other routed ask that did not arrive local (a
-    // synced summons, content) names no presenter that can wear a face here, so the fence reads it as naming none.
+    // content ask) names no presenter that can wear a face here, so the fence reads it as naming none.
     this.opts.registry.admitRouted(invocation.action, { daemon: this.opts.daemon, invocation, ...(local ? { presenter } : {}), local, surface: given !== undefined || this.opts.surfaceOf?.(invocation) === true, cap: makeCapVerify(this.opts.verifier, presenter, local) }, routedAddressesWiki(invocation) || !local);
     // A face row (`given`) rides a session the door cleared; a placed ask carries the asker the island booked with it.
     if (given === undefined) refuseSeatCanonRouted(invocation, this.opts.askerOf?.(invocation));
@@ -725,33 +679,14 @@ export class VerbDispatcher {
     wiki.addEventListener("change", onWikiChange);
     this.unsubWiki = () => wiki.removeEventListener("change", onWikiChange);
 
-    this.unsubAutomerge = this.opts.control.subscribe((change) => {
-      this.receiveSummons(change).catch((err) => {
-        console.error("[verb-dispatcher] summons relay crashed:", err);
-      });
-    });
-
-    // Startup scan: persisted pending summons are heeded once. The request-id set shared with live
-    // delivery keeps a record that also arrives as a change from firing twice.
-    this.startupScan = this.scanSummons().catch((err) => {
-      // A FLOOR HOLDS NO SUMMONS: a place with no readable control document (no face landed, or its key stays shut) rests none,
-      // so its scan reads the stand-in's refusal by name and nothing waits. Any other fault of the scan surfaces as itself.
-      if (err instanceof ControlHomeUnavailable) { console.log(`[verb-dispatcher] no summons scan at the floor (${err.refusal})`); return; }
-      console.error("[verb-dispatcher] summons startup scan crashed:", err);
-    });
-
     console.log(`[verb-dispatcher] live — handlers: ${this.opts.registry.list().join(", ") || "(none)"}`);
   }
 
   stop(): void {
     this.unsubWiki?.(); this.unsubWiki = null;
-    this.unsubAutomerge?.(); this.unsubAutomerge = null;
-    // The set outlives a heeded summons on purpose (a replica may re-deliver the pending record after our
-    // tombstone landed), so it is released with the dispatcher.
-    this.seenSummons.clear();
   }
 
-  placeVerb(opts: SummonsRequest): string {
+  placeVerb(opts: VerbPlacement): string {
     return placeVerb(this.opts.daemonVm, opts);
   }
 }
