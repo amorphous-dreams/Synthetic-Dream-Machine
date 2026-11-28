@@ -6,7 +6,7 @@
  */
 
 import { writeFileSync, mkdirSync, existsSync, readFileSync } from "fs";
-import { dirname, extname } from "path";
+import { dirname, extname, resolve as resolvePath } from "path";
 import { carrierHash } from "@lararium/mesh/crypto";
 import { confineMirrorWrite } from "../bag-paths.js";
 import { KAPAE_EXT } from "../kapae-shadow.js";
@@ -176,11 +176,15 @@ export async function sweepLeftMirrors(core: ProjectorCore, bagId: string, tiddl
   // path routes through the ward like every other mirror touch.
   if (core.bagsHolding) core.measure.holdsSinceChange++;
   const holdingBags = core.bagsHolding ? new Set(await core.bagsHolding(tiddlerUri)) : null;
+  // A MIRROR ROOT A HOLDING BAG SHARES STAYS WHOLE: two mirrors over one root resolve one carrier to one file, and the bag
+  // that left proves nothing about a file its neighbour still owns (the same law `_scheduleUnlinkByTitle` reads).
+  const keptRoots = new Set(core.mirrors.filter((m) => holdingBags?.has(m.bagId)).map((m) => resolvePath(m.mirrorRoot)));
   for (const otherMirror of core.mirrors) {
     // This flush's own mirror settled its homes above.
     if (otherMirror.bagId === bagId) continue;
     // The carrier still lives in this bag (shadowed, not moved) → keep its file.
     if (holdingBags?.has(otherMirror.bagId)) continue;
+    if (keptRoots.has(resolvePath(otherMirror.mirrorRoot))) continue;
     const staleFiles = mirrorCarrierFiles(core, otherMirror, tiddlerUri);
     if (staleFiles === null) continue;
     // Never unlink what THIS flush just wrote. Path identity — not bag
