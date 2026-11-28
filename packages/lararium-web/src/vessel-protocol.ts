@@ -218,7 +218,6 @@ export const VESSEL_PROTOCOL_TABLE = {
     "port:close": { binding: 1 },
     "page:life": { life: 1 },
     "read:mirror-inputs": { callId: 1, surface: 1 },
-    "read:startup-admit": { callId: 1, surface: 1, records: 1 },
     "read:floor": { callId: 1, baseUrl: 1 },
     "join:offer": { callId: 1, text: 1, abandonPending: 1 },
     "join:answer": { callId: 1, text: 1 },
@@ -286,7 +285,7 @@ export async function protocolAddressOf(table: unknown): Promise<string> {
  * THIS BUILD'S PROTOCOL: `protocolAddressOf(VESSEL_PROTOCOL_TABLE)`, pinned. A change to the table above moves the hash, the
  * witness (`tests/vessel-protocol-version.test.ts`) goes red and prints the address to pin here.
  */
-export const VESSEL_PROTOCOL = "sha256-509fd71448b1c0d0ff2c1d54c9c1e34091f4660d10364176ab314c306f832024";
+export const VESSEL_PROTOCOL = "sha256-a1e3a584b0b3979f980d74e9d4d9127e7592f93f113bef6f33c795160f7fbcdc";
 
 /** The refusal two builds with differing tables give each other. */
 export const PROTOCOL_SKEW = "protocol-skew";
