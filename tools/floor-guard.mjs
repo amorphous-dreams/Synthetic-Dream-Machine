@@ -34,10 +34,10 @@ const READ_FLAGS = new Set(['--list', '--help', '-h', '--version', '-v', '-V', '
 const PNPM_VALUED = new Set(['--filter', '-F', '-C', '--dir', '--workspace-concurrency', '--reporter', '--loglevel', '--filter-prod']);
 const HEAVY_SCRIPT = /^(build|test|typecheck|vitest|tsc|playwright|e2e)([:._-].*)?$/;
 const HEAVY_BIN = new Set(['vitest', 'tsc', 'playwright', 'vite', 'tsx']);
-const HEAVY_TOOLS_MJS = new Set(['provision-worktree.mjs', 'bench-gate.mjs', 'battery-legs.mjs', 'floor-run.mjs']);
+const HEAVY_TOOLS_MJS = new Set(['provision-worktree.mjs', 'bench-gate.mjs', 'floor-gate.mjs', 'battery-legs.mjs', 'floor-run.mjs']);
 const HEAVY_TOOLS_SH = new Set(['battery.sh', 'witness-all.sh', 'typecheck-witness.sh', 'typecheck-tests-witness.sh', 'tree-clean-witness.sh', 'browser-ci.sh']);
 /** A raw command naming any of these, when the lexer cannot read it, refuses for a sub-agent. */
-const HEAVY_RAW = /\b(pnpm|npm|npx|vitest|tsc|playwright|docker|kukulu|provision-worktree|bench-gate|battery|witness-all|floor-run)\b|node\s+--test/;
+const HEAVY_RAW = /\b(pnpm|npm|npx|vitest|tsc|playwright|docker|kukulu|provision-worktree|bench-gate|floor-gate|battery|witness-all|floor-run)\b|node\s+--test/;
 
 export const REASON_HEAD = 'floor-guard: refused — a tasked spirit never runs builds, tests or image builds; only the familiar holds the floor, each run admitted by measured headroom (operator, 2026-11-25)';
 
@@ -83,7 +83,6 @@ function nodeHeavy(words) {
     const args = words.slice(j + 1);
     if (hasRead(args)) return null;
     if (script === 'provision-worktree.mjs' && args.includes('--source-only')) return null;
-    if (script === 'bench-gate.mjs' && args.includes('--weigh')) return null;
     return `node ${script}`;
   }
   return null;

@@ -1,0 +1,13 @@
+{
+ "_note": "Self-tests that stand real vessels (measured in CI run 45587908073's witness cell: together about 1,100 of 2,096 test-seconds). Every bench leaves them to CI; tools/bench-gate.mjs reads this roster as data, and the floor-owes seam table reads each as vessel-tier.",
+ "vessel": [
+  { "file": "census-drill.test.mjs", "why": "P2 two real houses 272 s, a face born after the stand 54 s" },
+  { "file": "house-keep.test.mjs", "why": "the keep rite 229 s" },
+  { "file": "keep-cold.test.mjs", "why": "W2 170 s, W1 134 s" },
+  { "file": "vault-restore-door.test.mjs", "why": "a face cut restores onto a fresh vessel 153 s" },
+  { "file": "custody-door.test.mjs", "why": "the custody door opens the vessel key 137 s" },
+  { "file": "floor-unlock-door.test.mjs", "why": "the floor stands over the marker's user wiki 82 s" },
+  { "file": "vault-backup-door.test.mjs", "why": "a standing vessel cuts one face's backup bundle 54 s" },
+  { "file": "two-phase-boot.test.mjs", "why": "a composition tears down off its floor 54 s" }
+ ]
+}

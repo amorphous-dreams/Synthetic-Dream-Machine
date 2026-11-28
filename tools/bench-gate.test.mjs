@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { PACKAGES, ROOT, SWIFT_SECONDS, VERDICT_KIND, VESSEL, plan, readWeights, runGate, tiers, touchedPackages, verdictOf, weigh } from "./bench-gate.mjs";
+import { PACKAGES, ROOT, SMALL_PYTEST, SMALL_TOOLS, SWIFT_SECONDS, VERDICT_KIND, VESSEL, plan, readWeights, runGate, tiers, touchedPackages, touchedTests, treeTests, verdictOf } from "./bench-gate.mjs";
 
 test("RED: a red step refuses by name and the later steps still run; CONTROL: all ok reads one green verdict line", () => {
   const ran = [];
@@ -42,14 +42,6 @@ test("touchedPackages reads the diff's package dirs alone (a prefix twin never c
   assert.deepEqual(touchedPackages(["bags/x.mem"], pk), []);
 });
 
-test("weigh: planted reports read to per-package seconds under the shared checkout root, e2e aside", () => {
-  const at = "/runner/work/repo/repo";
-  const t = (name, secs) => ({ name: `${at}/${name}`, startTime: 1000, endTime: 1000 + secs * 1000 });
-  const table = weigh([{ testResults: [t("packages/lararium-node/tests/a.test.ts", 1.23), t("tests/harness/h.test.ts", 0.4)] }, { testResults: [t("tests/e2e/walk.test.ts", 300), t("packages/lararium-node/tests/b.test.ts", 9)] }], "planted");
-  assert.deepEqual(table, { _measured: "planted", "packages/lararium-node": { "tests/a.test.ts": 1.2, "tests/b.test.ts": 9 }, tests: { "harness/h.test.ts": 0.4 } });
-  assert.throws(() => weigh([{ testResults: [] }], "empty"), /no timed file/);
-});
-
 test("the live plan: the fixed steps in order, a swift step per package, the vessel self-tests left to CI", () => {
   const steps = plan({ touched: [] });
   assert.deepEqual(steps.slice(0, 5).map((s) => s.name), ["merge-develop", "build", "witnesses-fast", "carrier-pins", "tool-tests"]);
@@ -63,11 +55,6 @@ test("the live plan: the fixed steps in order, a swift step per package, the ves
   assert.equal(steps.filter((s) => s.name.startsWith("heavy-")).length, 0, "an untouched bench runs no heavy file");
   const touched = plan({ touched: ["packages/lares-cli"] }).filter((s) => s.name.startsWith("heavy-"));
   assert.deepEqual(touched.map((s) => s.name), ["heavy-lares-cli"]);
-});
-
-test("the weights table measures every vitest package the test cells run", () => {
-  const w = readWeights();
-  for (const dir of PACKAGES) assert.ok(w[dir] && Object.keys(w[dir]).length > 0, `tools/unit-weights.json measures nothing of ${dir}`);
 });
 
 test("witnesses-fast carries the typecheck and the tests ratchet, so the gate runs no second typecheck", () => {
@@ -94,4 +81,38 @@ test("RED verdictOf: one document over the revision and its tree, the gate's exi
   assert.deepEqual(green, { kind: VERDICT_KIND, v: 1, rev, tree, code: 0, line: "BENCH GATE GREEN at aaaaaaa over develop - · 2 steps · 3 s", steps: [{ name: "build", code: 0, secs: 1 }], secs: 3 });
   assert.deepEqual(Object.keys(green), ["kind", "v", "rev", "tree", "code", "line", "steps", "secs"], "the key order the keeper hashes stays fixed");
   assert.throws(() => verdictOf({ code: 0, line: "", steps: [], secs: 0 }, { rev: "HEAD", tree }), /40 hex/);
+});
+
+// THE ONE PLAN serves the landing door too (tools/floor-gate.mjs): `door` merges, re-renders and commits; `tier` picks the tests.
+test("RED door plan: merge, build, the re-renders and commit-build each stop the gate, in that order, before witnesses-fast", () => {
+  for (const tier of ["small", "whole"]) {
+    const steps = plan({ tier, door: true, touched: [] });
+    const head = steps.slice(0, 8).map((s) => s.name);
+    assert.deepEqual(head, ["merge-develop", "build", "cli-verbs", "heleuma", "affordance-pack", "redeclare-unbaked", "commit-build", "witnesses-fast"], tier);
+    assert.equal(steps[0].check, "merge", "the door MERGES develop; the bench gate only checks it");
+    assert.ok(steps.slice(0, 7).every((s) => s.stop), `${tier}: a red prefix step must stop the gate`);
+  }
+  assert.throws(() => plan({ tier: "medium" }), /tier reads "medium"/);
+});
+
+test("RED small tier: the lane's touched test files per package, a named package whole, the door tool suites, the pytest pair; no swift sweep", () => {
+  const cli = treeTests("packages/lares-cli").slice(0, 2);
+  assert.ok(cli.length > 0, "CONTROL: the cli package holds test files");
+  const changed = ["tools/bench-gate.test.mjs", `tools/${VESSEL[0]}`, "tools/gone.test.mjs", "packages/lares-cli/src/x.ts", "packages/lares-cli/tests/gone.test.ts", ...cli.map((f) => `packages/lares-cli/${f}`)];
+  assert.deepEqual(touchedTests(changed)["packages/lares-cli"], cli, "a source file and a deleted test file never ride as touched tests");
+  const steps = plan({ tier: "small", door: true, changed, whole: ["tests"], python: "py" });
+  const by = Object.fromEntries(steps.map((s) => [s.name, s]));
+  assert.ok(!steps.some((s) => /^(swift|heavy|carrier)/.test(s.name)), "the small tier sweeps no package");
+  assert.deepEqual(by["touched-lares-cli"].args.slice(-cli.length), cli);
+  assert.ok(by["whole-tests"], "whole=tests runs the harness whole");
+  assert.equal(by["whole-tests"].args.filter((a) => /\.test\./.test(a)).length, 0, "a whole step names no files: the package's own test script runs whole");
+  assert.deepEqual(by["tool-tests"].args, ["--test", ...[...SMALL_TOOLS, "tools/bench-gate.test.mjs"].sort()], "the vessel suite and a deleted file stay out");
+  assert.equal(by.pytest.cmd, "py");
+  assert.deepEqual(by.pytest.args, ["-m", "pytest", "-q", ...SMALL_PYTEST]);
+});
+
+test("whole tier with whole=: the named package's heavy files ride even untouched", () => {
+  const { heavy } = tiers(treeTests("packages/lares-cli"), readWeights()["packages/lares-cli"]);
+  const steps = plan({ tier: "whole", touched: [], whole: ["packages/lares-cli"] });
+  assert.equal(steps.some((s) => s.name === "heavy-lares-cli"), heavy.length > 0);
 });

@@ -3,11 +3,14 @@
  * bench-gate — the cheap, deterministic laws that read the SUM of lanes, run on the lane with develop merged in
  * (ruling/2026-11-25-branches-not-prs). Since mandate/floor-gate-1 only the familiar runs it, on the floor: a tasked spirit
  * hands back a floor ticket naming it, and the familiar runs `node tools/floor-run.mjs --ticket <id> -- node tools/bench-gate.mjs`
- * (outside the floor lock the gate refuses with exit 64; `--list` and `--weigh` read and run anywhere).
+ * (outside the floor lock the gate refuses with exit 64; `--list` reads and runs anywhere).
  *
  *   node tools/bench-gate.mjs [--list] [--base <ref>]
- *   node tools/bench-gate.mjs --weigh <vitest-report-dir> [--run <id>]   (re-measure tools/unit-weights.json)
  *   node tools/bench-gate.mjs --verdict <file>                           (the keeper's local witness; below)
+ *
+ * THE ONE PLAN: `plan()` below serves this gate and the landing door (`tools/floor-gate.mjs`, the small and whole tiers over a
+ * `floor-run --ref` bench). The seconds table and its re-measure live in `tools/unit-weights.mjs`; the vessel roster rides as
+ * data in `tools/vessel-tests.json`.
  *
  * ── THE STEPS (research/test-corpus-mu, "the bench gate") ────────────────────────────────────────
  *   merge-develop   the bench holds `origin/develop` (fetched now): the gate reads the sum, never the lane alone
@@ -45,35 +48,20 @@
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { dirname, join, relative } from "node:path";
+import { homedir, tmpdir } from "node:os";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { TEST_CELLS } from "./ci-cells.mjs";
 import { requireFloor } from "./floor-lock.mjs";
 import { lines as owesLines, owes as floorOwes } from "./floor-owes.mjs";
+import { PACKAGES, SWIFT_SECONDS, isE2e, readWeights } from "./unit-weights.mjs";
 
+export { PACKAGES, SWIFT_SECONDS, readWeights };
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-export const WEIGHTS_FILE = join(ROOT, "tools/unit-weights.json");
-/** A file the table measures under this many seconds rides the swift tier of every bench. */
-export const SWIFT_SECONDS = 5;
 
-/** Self-tests that stand real vessels (measured in CI run 45587908073's witness cell: together about 1,100 of 2,096
- *  test-seconds). The bench leaves them to CI; every other `tools/*.test.mjs` runs here. */
-export const VESSEL = Object.freeze([
-  "census-drill.test.mjs", // P2 two real houses 272 s, a face born after the stand 54 s
-  "house-keep.test.mjs", // the keep rite 229 s
-  "keep-cold.test.mjs", // W2 170 s, W1 134 s
-  "vault-restore-door.test.mjs", // a face cut restores onto a fresh vessel 153 s
-  "custody-door.test.mjs", // the custody door opens the vessel key 137 s
-  "floor-unlock-door.test.mjs", // the floor stands over the marker's user wiki 82 s
-  "vault-backup-door.test.mjs", // a standing vessel cuts one face's backup bundle 54 s
-  "two-phase-boot.test.mjs", // a composition tears down off its floor 54 s
-]);
+/** Self-tests that stand real vessels: the bench leaves them to CI; every other `tools/*.test.mjs` runs here. The roster
+ *  rides as data (`tools/vessel-tests.json`, each file with its measured why). */
+export const VESSEL = Object.freeze(JSON.parse(readFileSync(join(ROOT, "tools/vessel-tests.json"), "utf8")).vessel.map((v) => v.file));
 
-/** The vitest packages: CI's test-cell table, the one roster (a package without vitest writes no weights). */
-export const PACKAGES = Object.freeze([...new Map(TEST_CELLS.flatMap((c) => c.packages).filter((p) => p.vitest !== false).map((p) => [p.dir, p])).values()].map((p) => p.dir).sort());
-
-const isE2e = (f) => /(^|\/)e2e\//.test(f);
 
 /** Every test file a package's tree holds (relative to the package), e2e aside. */
 export function treeTests(dir, root = ROOT) {
@@ -175,38 +163,96 @@ export function owedSteps({ owed, weights = {}, touched = [], root = ROOT, expan
   return steps;
 }
 
+/** The bench tiers: `whole` runs the fixed floor, every package's swift tier and what the ticket rule owes; `small` runs the
+ *  lane's own touched test files, the named packages whole, the two door tool suites and the holder's pytest pair. */
+export const TIERS = Object.freeze(["small", "whole"]);
+/** The tool suites every small bench runs beside the lane's own touched ones: the two doors most landings move. */
+export const SMALL_TOOLS = Object.freeze(["tools/lares-container.test.mjs", "tools/launch-codex.test.mjs"]);
+/** The holder's pytest pair every small bench runs (the venv that holds mempalace, as CI names it, else python3). */
+export const SMALL_PYTEST = Object.freeze(["packages/lararium-sensorium/scripts/test_lares_mcp.py", "packages/lararium-sensorium/scripts/test_affordance_skin.py"]);
+export const pythonOf = (home = homedir()) => (existsSync(join(home, ".venv/bin/python3")) ? join(home, ".venv/bin/python3") : "python3");
 /**
- * The whole plan for a bench: the fixed steps, the swift tier of every package, then what the ticket rule owes (`owed`, as
- * `tools/floor-owes.mjs` answers it). With no `owed` (the keeper's `--verdict`, a caller holding no diff) the heavy files of
- * the touched packages ride.
+ * THE DOOR'S OWN STEPS (`door`, the landing door): the bench MERGES develop (never only checks it), and after the build every
+ * generated carrier re-renders and the build's writes commit, so the tree the tests read stands committed and the verdict
+ * names it. Each stops the gate when red: a later step would read a tree no commit names.
  */
-export function plan({ weights = readWeights(), touched = [], root = ROOT, verdict = false, owed, expand } = {}) {
-  const tools = readdirSync(join(root, "tools")).filter((f) => f.endsWith(".test.mjs") && !VESSEL.includes(f)).sort().map((f) => `tools/${f}`);
+export const REGEN = Object.freeze([
+  { name: "cli-verbs", stop: true, cmd: "node", args: ["packages/lararium-sensorium/scripts/gen_cli_verbs.mjs"], cwd: "." },
+  { name: "heleuma", stop: true, cmd: "pnpm", args: ["--filter", "@lararium/tw5", "build:heleuma", "--sync-modules"], cwd: "." },
+  { name: "affordance-pack", stop: true, cmd: "npx", args: ["tsx", "scripts/build-affordance-pack.ts"], cwd: "packages/lararium-tw5" },
+  { name: "redeclare-unbaked", stop: true, check: "unbaked" },
+  { name: "commit-build", stop: true, check: "commit" },
+]);
+
+/** The test files a diff touches in each package (relative to it; e2e aside, deleted files dropped by the tree walk). */
+export function touchedTests(changed, root = ROOT, packages = PACKAGES) {
+  const out = {};
+  for (const dir of packages) {
+    const mine = changed.filter((p) => p.startsWith(`${dir}/`)).map((p) => p.slice(dir.length + 1));
+    if (mine.length === 0) continue;
+    const tree = new Set(treeTests(dir, root));
+    const files = mine.filter((f) => tree.has(f)).sort();
+    if (files.length) out[dir] = files;
+  }
+  return out;
+}
+
+/**
+ * THE ONE PLAN, every bench's: the bench gate (`door` false: merge-develop only CHECKS develop), the keeper's `--verdict` (no
+ * merge, no fold) and the landing door (`door` true: merge, build, re-render, commit; `tier` small or whole).
+ * whole: the fixed steps, the swift tier of every package, then what the ticket rule owes (`owed`, as `tools/floor-owes.mjs`
+ *   answers it); with no `owed` the heavy files of the touched packages ride. `whole` names packages whose heavy files ride too.
+ * small: the lane's own touched test files per package (`changed`, the diff's paths), each package `whole` names run whole, the
+ *   door tool suites and the lane's touched tool suites (VESSEL aside), the holder's pytest pair.
+ */
+export function plan({ tier = "whole", door = false, weights = readWeights(), touched = [], changed = [], whole = [], root = ROOT, verdict = false, owed, expand, python = pythonOf() } = {}) {
+  if (!TIERS.includes(tier)) throw new Error(`bench-gate: tier reads "${tier}"; name one of ${TIERS.join(", ")}`);
+  const slug = (dir) => dir.split("/").pop();
+  const folds = tier === "whole" && owed && !verdict;
   const steps = [
-    ...(verdict ? [] : [{ name: "merge-develop", stop: true, check: "develop" }]),
-    ...(owed && !verdict ? [{ name: "floor-owes", stop: true, check: "owes" }] : []),
+    ...(door ? [{ name: "merge-develop", stop: true, check: "merge" }] : verdict ? [] : [{ name: "merge-develop", stop: true, check: "develop" }]),
+    ...(folds ? [{ name: "floor-owes", stop: true, check: "owes" }] : []),
     { name: "build", stop: true, cmd: "pnpm", args: ["build"], cwd: "." },
+    ...(door ? REGEN.map((s) => ({ ...s, ...(s.args ? { args: [...s.args] } : {}) })) : []),
     { name: "witnesses-fast", cmd: "bash", args: ["tools/witness-all.sh", "--fast"], cwd: "." },
+  ];
+  if (tier === "small") {
+    const hit = touchedTests(changed, root);
+    for (const dir of PACKAGES) {
+      if (whole.includes(dir)) { const s = vitestStep(`whole-${slug(dir)}`, dir, [], root); if (DIM.includes(dir)) s.args.push("--passWithNoTests"); steps.push(s); continue; }
+      if (!hit[dir]) continue;
+      const s = vitestStep(`touched-${slug(dir)}`, dir, hit[dir], root);
+      if (DIM.includes(dir)) s.args.push("--passWithNoTests");
+      steps.push(s);
+    }
+    const own = changed.filter((p) => /^tools\/[^/]+\.test\.mjs$/.test(p) && !VESSEL.includes(p.slice("tools/".length)) && existsSync(join(root, p)));
+    const tools = [...new Set([...SMALL_TOOLS.filter((t) => existsSync(join(root, t))), ...own])].sort();
+    if (tools.length) steps.push({ name: "tool-tests", cmd: "node", args: ["--test", ...tools], cwd: "." });
+    const py = SMALL_PYTEST.filter((t) => existsSync(join(root, t)));
+    if (py.length) steps.push({ name: "pytest", cmd: python, args: ["-m", "pytest", "-q", ...py], cwd: "." });
+    return steps;
+  }
+  const tools = readdirSync(join(root, "tools")).filter((f) => f.endsWith(".test.mjs") && !VESSEL.includes(f)).sort().map((f) => `tools/${f}`);
+  steps.push(
     { name: "carrier-pins", cmd: "node", args: ["tools/rite-walk.mjs", "--bind"], cwd: "." },
     { name: "tool-tests", cmd: "node", args: ["--test", ...tools], cwd: "." },
-  ];
-  const slug = (dir) => dir.split("/").pop();
+  );
   for (const dir of PACKAGES) {
     const { swift } = tiers(treeTests(dir, root), weights[dir]);
     if (swift.length) steps.push(vitestStep(`swift-${slug(dir)}`, dir, swift, root));
   }
+  const heavyFor = (dirs) => {
+    for (const dir of dirs) {
+      if (steps.some((s) => s.name === `heavy-${slug(dir)}`)) continue;
+      const { heavy } = tiers(treeTests(dir, root), weights[dir]);
+      if (heavy.length) steps.push(vitestStep(`heavy-${slug(dir)}`, dir, heavy, root));
+    }
+  };
   // A PATH IN NO SEAM RUNS THE WHOLE GATE: the fold reads develop's table, so a wave adding files cannot seat them first; it pays the full floor instead of stopping.
-  if (owed && !verdict && owed.refuse.length === 0) return [...steps, ...owedSteps({ owed, weights, touched, root, ...(expand ? { expand } : {}) })];
-  for (const dir of touched) {
-    const { heavy } = tiers(treeTests(dir, root), weights[dir]);
-    if (heavy.length) steps.push(vitestStep(`heavy-${slug(dir)}`, dir, heavy, root));
-  }
+  if (folds && owed.refuse.length === 0) steps.push(...owedSteps({ owed, weights, touched, root, ...(expand ? { expand } : {}) }));
+  else heavyFor(touched);
+  heavyFor(whole);
   return steps;
-}
-
-export function readWeights(file = WEIGHTS_FILE) {
-  const all = JSON.parse(readFileSync(file, "utf8"));
-  return Object.fromEntries(Object.entries(all).filter(([k]) => !k.startsWith("_")));
 }
 
 /** Runs every step through `run(step) -> exit code`; a red `stop` step ends the run. Returns { code, red, line, steps, secs }. */
@@ -255,34 +301,6 @@ function checkDevelop(base) {
   return 1;
 }
 
-/** Re-measures the weights table from a directory of vitest JSON reports (a green CI run's test-cell artifacts). */
-export function weigh(reports, note) {
-  const files = [];
-  for (const r of reports) for (const t of r.testResults ?? []) if (Number.isFinite(t.endTime - t.startTime)) files.push([t.name, (t.endTime - t.startTime) / 1000]);
-  if (files.length === 0) throw new Error("bench-gate: the reports hold no timed file");
-  // The checkout root every report shares: the longest common directory prefix of all the names.
-  let prefix = files[0][0].slice(0, files[0][0].lastIndexOf("/") + 1);
-  for (const [n] of files) while (!n.startsWith(prefix)) prefix = prefix.slice(0, prefix.slice(0, -1).lastIndexOf("/") + 1);
-  const out = { _measured: note };
-  for (const [abs, secs] of files) {
-    const rel = abs.slice(prefix.length);
-    const dir = PACKAGES.filter((d) => rel.startsWith(`${d}/`)).sort((a, b) => b.length - a.length)[0];
-    if (!dir) continue;
-    const f = rel.slice(dir.length + 1);
-    if (isE2e(f)) continue;
-    (out[dir] ??= {})[f] = Math.max(out[dir][f] ?? 0, Math.round(secs * 10) / 10);
-  }
-  for (const dir of PACKAGES) if (out[dir]) out[dir] = Object.fromEntries(Object.entries(out[dir]).sort(([a], [b]) => (a < b ? -1 : 1)));
-  return out;
-}
-
-const reportsIn = (dir) => {
-  const found = [];
-  const walk = (d) => { for (const n of readdirSync(d)) { const p = join(d, n); if (statSync(p).isDirectory()) walk(p); else if (/^report-.*\.json$/.test(n)) found.push(JSON.parse(readFileSync(p, "utf8"))); } };
-  walk(dir);
-  return found;
-};
-
 /** The floor-owes step: the owed set printed, red where a touched path stands in no seam. */
 export function checkOwes(owed, say = console.log) {
   for (const l of owesLines(owed)) say(l);
@@ -295,7 +313,7 @@ export function checkOwes(owed, say = console.log) {
 }
 
 /** A step that stands vessels runs under a scratch LAR_ROOT of its own and no LAR_BAGS (the e2e isolation law), as CI's shards do. */
-function scratchEnv(name) {
+export function scratchEnv(name) {
   const at = mkdtempSync(join(process.env.LAR_STAGE_DIR ?? tmpdir(), `bench-${name}-`));
   const env = { ...process.env, LAR_ROOT: join(at, "lar-root") };
   delete env.LAR_BAGS;
@@ -307,17 +325,11 @@ const exec = (s) => spawnSync(s.cmd, s.args, { cwd: join(ROOT, s.cwd), stdio: "i
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   const flag = (n) => { const i = args.indexOf(n); return i === -1 ? undefined : args[i + 1]; };
-  const known = new Set(["--list", "--base", "--weigh", "--run", "--verdict"]);
-  const valued = new Set(["--base", "--weigh", "--run", "--verdict"]);
+  const known = new Set(["--list", "--base", "--verdict"]);
+  const valued = new Set(["--base", "--verdict"]);
   for (let i = 0; i < args.length; i++) {
     if (!known.has(args[i])) { console.error(`bench-gate: unknown argument ${args[i]}`); process.exit(2); }
     if (valued.has(args[i])) { if (!args[i + 1]) { console.error(`bench-gate: ${args[i]} wants a value`); process.exit(2); } i++; }
-  }
-  if (flag("--weigh")) {
-    const table = weigh(reportsIn(flag("--weigh")), `CI run ${flag("--run") ?? "?"}: seconds per file off the test cells' vitest JSON reports (endTime - startTime); a file under ${SWIFT_SECONDS} s rides every bench's swift tier`);
-    writeFileSync(WEIGHTS_FILE, `${JSON.stringify(table, null, 1)}\n`);
-    console.log(`bench-gate: wrote ${relative(ROOT, WEIGHTS_FILE)} (${PACKAGES.filter((d) => table[d]).map((d) => `${d} ${Object.keys(table[d]).length}`).join(", ")})`);
-    process.exit(0);
   }
   const verdictFile = flag("--verdict");
   if (verdictFile) {

@@ -70,7 +70,7 @@ const inside = (child, parent) => {
 };
 
 /** The value one name carries: the environment first, else the surface env file's last plain KEY=VALUE line. */
-function surfaceValue(name, env = process.env) {
+export function surfaceValue(name, env = process.env) {
   if (env[name]) return env[name];
   const file = join(env.HOME || homedir(), ".lares", "lares-surface.env");
   if (!existsSync(file)) return "";
