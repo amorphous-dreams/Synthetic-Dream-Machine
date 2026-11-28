@@ -114,7 +114,7 @@ function stand(diskBody: string, opts: { canonicalize: boolean; answer?: Capture
 
 describe("the projecting leg's verdict reaches disk and the capture door", () => {
   test("★ BOTH MOVED: the file goes to capture before any write; drafted, the base moves and the next reading writes the render ★", async () => {
-    const { projector, stop, captures, refusals, abs, tree } = stand(DISK_DIVERGED, { canonicalize: true, answer: { kind: "drafted", drafts: [`Draft of '${URI}' by disk/abc`] } });
+    const { projector, stop, captures, refusals, abs, tree } = stand(DISK_DIVERGED, { canonicalize: true, answer: { kind: "drafted", drafts: [`Draft of '${URI}' by disk`] } });
 
     await reconcile(projector, URI);
 

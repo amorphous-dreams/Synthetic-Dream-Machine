@@ -242,7 +242,7 @@ describe("the records dropped a carrier whose file a hand edited", () => {
     await s.projector.sense([URI]);
     expect(read(s.at("a/note.md"))).toBe(HAND);
     // The door takes the words (here as drafts beside the records): the base moves to them, and the next reading unlinks.
-    s.answer = async () => ({ kind: "drafted", drafts: [`Draft of '${URI}' by disk/abc`] });
+    s.answer = async () => ({ kind: "drafted", drafts: [`Draft of '${URI}' by disk`] });
     await s.projector.sense([URI]);
     await s.projector.idle();
     expect(existsSync(s.at("a/note.md"))).toBe(false);
@@ -604,10 +604,10 @@ describe("a base names the history its records side read: records that fell behi
     expect(s.captures).toEqual([]);
   });
 
-  test("a capture that lands the file's words moves the base to them at the records' new heads, and nothing writes over the file", async () => {
+  test("a capture of the file's words (here its draft beside the records) moves the base to them at the records' new heads, and nothing writes over the file", async () => {
     const s = await agreeThenFallBehind();
-    // The door lands the newer words in the records, as the island's capture does for a file whose records fell behind.
-    s.answer = async () => { s.file = { ...s.file, body: NEWER }; s.lineage[BAG] = { heads: ["h3"], holds: ["h1", "h3"] }; return { kind: "landed" }; };
+    // The door stands the newer words inside the house (the island's capture drafts a file whose records fell behind).
+    s.answer = async () => { s.file = { ...s.file, body: NEWER }; s.lineage[BAG] = { heads: ["h3"], holds: ["h1", "h3"] }; return { kind: "drafted", drafts: [`Draft of '${URI}' by disk`] }; };
     await s.reboot();
     await s.projector.idle();
     expect(read(s.at("a/note.md"))).toBe(NEWER);
