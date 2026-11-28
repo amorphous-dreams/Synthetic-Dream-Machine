@@ -240,7 +240,8 @@ describe("★ `lares handle attest` takes a STRUCTURED edge, and prose mints not
 
   test("the help door teaches the structured spelling and the surface vocabulary", async () => {
     const { helpLines } = await import("../src/command-help.js");
-    const text = helpLines("handle").join("\n");
+    // The handle door flipped to its carriers (comms landings 10 + 23): the attest carrier teaches the structured spelling.
+    const text = helpLines("handle attest").join("\n");
     expect(text).toMatch(/--surface/);
     expect(text).toMatch(/--subject/);
     for (const s of HANDLE_CLAIM_SURFACES) expect(text, `${s} stands spoken`).toContain(s);
@@ -265,8 +266,9 @@ describe("★ the door's words name the chain-verify ⊥ surface-verify split �
   test("the help registry holds the handle door, and it names BOTH halves", async () => {
     const { helpLines } = await import("../src/command-help.js");
     const text = helpLines("handle").join("\n");
-    expect(text, "the spine an operator greps for").toMatch(/usage: lares handle/);
-    expect(text).toMatch(/verify-attestation/);
-    expect(text, "a chain-verify must never read as a surface-verify").toMatch(/surface/i);
+    expect(text, "the door's index an operator greps for").toMatch(/lares handle verify-attestation /);
+    const verify = helpLines("handle verify-attestation").join("\n");
+    expect(verify, "the verb's own spine").toMatch(/usage: lares handle verify-attestation/);
+    expect(verify, "a chain-verify must never read as a surface-verify").toMatch(/surface/i);
   });
 });

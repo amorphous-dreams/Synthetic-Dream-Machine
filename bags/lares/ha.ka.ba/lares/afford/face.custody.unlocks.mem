@@ -100,7 +100,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares vault unlock
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares vault unlock]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares vault unlock]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -116,6 +116,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;a_vIVV6VYJV-BYufBVCiQ0UMvp1bSd9qUO46CsJY89c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TaGxQLd9zGXKFDxhBiLv0OgSb33KnLHoAnHfJrvP73k`>>
 
 <<^ code=`&#x0004;` to=`?`>>

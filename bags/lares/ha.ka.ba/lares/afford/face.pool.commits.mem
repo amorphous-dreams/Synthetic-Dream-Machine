@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.pool.commits"
 
 ! face.pool.commits ~ commit ~ only what the house agrees with, under a lar: subject
 
-`lares surface commit` stages only the changed paths the house already agrees with (each read against its synced base), commits them under a `lar:` subject naming no face, and never pushes; a path apart names why. `-m <seam>` or `--message <seam>` names the seam slug, else the hand's. `--realm <realm pet name>` commits each standing tree of the realm, one commit per tree.
+`lares surface commit` stages only the changed paths the house already agrees with (each read against its synced base), commits them under a `lar:` subject naming no face (`lar:///surface.keeps.the-sitting/<seam> — N carriers`), and never pushes; a path apart names why. `-m <seam>` or `--message <seam>` names the seam slug, else the hand's. `--realm <realm pet name>` commits each standing tree of the realm, one commit per tree.
 
 <<~/ahu>>
 
@@ -91,7 +91,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares surface commit
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares surface commit]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares surface commit]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uRC20HCybc6MyyKf8h5JDqEC7waFSVyca4kBWYdYQ6c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YmU00Go5Alm42t2exrVTZzDf8lN3j6hPebeWvWZJc4I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

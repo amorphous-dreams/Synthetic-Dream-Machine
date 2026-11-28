@@ -86,7 +86,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares persona recovery-contact offer
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares persona recovery-contact offer]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares persona recovery-contact offer]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;j6Y9_okVf7EfiXE2W96eIziK8kzM5U7XW0R81eB1UZo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sa9rzbSQNsoB2NUrtlrmxaOlHxXPHIKBSqdVeek0qYU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

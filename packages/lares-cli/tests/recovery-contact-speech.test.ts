@@ -5,7 +5,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { recoveryContactEnrolmentSpeech } from "../src/commands/persona.js";
-import { COMMAND_HELP } from "../src/command-help.js";
+import { helpLines } from "../src/command-help.js";
 
 describe("what recovery-contact enrolment says", () => {
   test("two of these three, together, can restore your Handle, with the Handle glossed", () => {
@@ -15,9 +15,9 @@ describe("what recovery-contact enrolment says", () => {
     expect(spoken.toLowerCase()).not.toContain("guardian");
   });
 
-  test("the persona help names the role recovery contact, glosses your Handle once, and says the rule", () => {
-    const help = COMMAND_HELP["persona"]!;
-    const text = [help.usage, help.synopsis, ...(help.examples ?? []), ...(help.flags ?? [])].join("\n");
+  // The persona door flipped to its carriers (comms landings 10 + 23): the enrol verb's carrier holds these words.
+  test("the enrol carrier names the role recovery contact, glosses your Handle once, and says the rule", () => {
+    const text = helpLines("persona recovery-contact enrol").join("\n");
     expect(text).toContain("recovery-contact enrol");
     expect(text).toContain("your Handle: the public card your face publishes, recognised by its own key");
     expect(text.match(/your Handle: the public card/g)).toHaveLength(1);

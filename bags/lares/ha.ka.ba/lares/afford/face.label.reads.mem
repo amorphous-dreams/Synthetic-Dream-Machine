@@ -82,7 +82,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares surface face
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares surface face]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares surface face]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -98,6 +98,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;T02srAID7ECHuxJdfHrecnxfzt2h_HwHAB15SRrFN_k`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dqO0nh6dNt2ylXQnTd6FHIz3kZEVBVAHgCVy4BcmNeg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -93,7 +93,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares home undo
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares home undo]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares home undo]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -109,6 +109,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;FwObhz1cUGSL7LVYkfKI_NmB_z1ZNF-n1VO1xMh6oDs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;83qoi7k-rEU_rA4fUG5xMEsVh0p0sHFJiiXU3cLlA1Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

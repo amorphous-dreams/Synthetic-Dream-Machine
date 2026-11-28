@@ -83,7 +83,7 @@ describe("lares nexus — every verb reaches its door", () => {
     // The HUMAN channel carries the usage block. It does NOT repeat the reason — `refuseUsage`'s
     // `human()` prints the lines alone, so the prose reader sees WHAT IS VALID, not what they typed.
     // Recorded as the surface that stands, not endorsed; the split must not change it either way.
-    expect(await run(["definitely-not-a-verb"], { json: false })).toMatch(/usage: lares nexus/);
+    expect(await run(["definitely-not-a-verb"], { json: false })).toMatch(/lares nexus seal /);
     expect(await cmdNexus(args(["definitely-not-a-verb"]))).toBe(2);
   });
 
@@ -91,7 +91,7 @@ describe("lares nexus — every verb reaches its door", () => {
   test("no verb at all refuses with the usage, naming no unknown word", async () => {
     const prose = await run([], { json: false });
     expect(prose).not.toMatch(/unknown verb/i);
-    expect(prose).toMatch(/usage: lares nexus/);
+    expect(prose).toMatch(/lares nexus seal /);
     expect(await cmdNexus(args([]))).toBe(2);
   });
 

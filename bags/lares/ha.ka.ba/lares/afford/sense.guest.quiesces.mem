@@ -83,7 +83,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares mempalace quiesce
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares mempalace quiesce]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares mempalace quiesce]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -99,6 +99,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;oc8qC3YxHL63Mw7Koci5o1Ms5ZRMQ_6HZ0tJ-lJRzgY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6TCeD1IT_AcdO0lDNFlM3f9N0VAOyhzkh0mKH_XZT_4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

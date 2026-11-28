@@ -92,7 +92,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares fleet join land
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares fleet join land]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares fleet join land]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -108,6 +108,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;e_eXBswrkvZTRr0bF-tsykuUDgXbCPC83PJ3kBg2VLQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NnviFy4jkwPTTu064A00Pn1xZ0O3DuyTnor36JkBsHc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

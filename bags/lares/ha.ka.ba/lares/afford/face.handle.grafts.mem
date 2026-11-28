@@ -68,7 +68,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares handle graft
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares handle graft]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares handle graft]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -84,6 +84,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JFpX9b-gtV7dUUSLwU8Siykg0YC17HlEa1QQ7lD9Qlc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;h5JsPgQlzNrPc439SYzfWhkfuwzhkeiQI1B44iVotr0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

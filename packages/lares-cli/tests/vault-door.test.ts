@@ -349,11 +349,10 @@ describe("vault door — restore reads the bundle's route on a terminal", () => 
 describe("the vault door answers its live verbs", () => {
   const LIVE_VERBS = ["status", "unlock", "lock", "bind", "unbind", "backup", "restore", "rehive", "recard"];
 
+  // The vault door flipped to its carriers (comms landings 10 + 23): its index names each verb on a line of its own.
   it("★ the help names the nine live verbs ★", () => {
     const text = helpLines("vault").join("\n");
-    const usage = /usage: lares vault <([^>]*(?:<[^>]*>[^>]*)*)> /.exec(text.replace(/<(slot-id|N|file)>/g, "$1"));
-    expect(usage, text).not.toBeNull();
-    expect(usage![1]!.split("|").map((part) => part.trim().split(/\s+/)[0])).toEqual(LIVE_VERBS);
+    for (const verb of LIVE_VERBS) expect(text, verb).toMatch(new RegExp(`^\\s*lares vault ${verb}\\s`, "m"));
   });
 
   it("★ an unknown word answers as no door: a usage refusal that names the word, and no byte moves ★", async () => {

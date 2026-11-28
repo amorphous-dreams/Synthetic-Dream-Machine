@@ -1,0 +1,89 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.recovery.gathers`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "name the recovery-contact verbs; bare, the group refuses"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.recovery.gathers", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.recovery.gathers"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.recovery.gathers"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.recovery.gathers ~ the recovery-contact group, and the verb each line names
+
+`lares persona recovery-contact` gathers the four verbs of a face's recovery contacts: `offer` (a contact mints its fresh key for one face and prints its card and offer line), `show` (a face's prefix and its set), `enrol` (the face enrols its first set at a threshold, by one event its own key signs) and `view` (a contact signs its own view with its card). Bare, the group names no verb and refuses with this account, exit 2; an unknown word refuses the same way, naming it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ none
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ names the verbs and refuses; nothing moves`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.recovery.shows]] ~ the group names no verb, or one it does not answer; each of offer · show · enrol · view holds its own carrier`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ refused
+
+```memetic-wikitext
+<<has entity=`band` name=`refused` params=`exit/2 ~ the account of the four verbs`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares persona recovery-contact
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares persona recovery-contact]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · persona-policy
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;h4VLfYv0XIMmUNTeD_e68ZztQdkxr52eegCrzLKawyY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

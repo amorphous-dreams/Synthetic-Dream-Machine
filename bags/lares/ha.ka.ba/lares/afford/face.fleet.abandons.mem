@@ -81,7 +81,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares fleet join abandon
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares fleet join abandon]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares fleet join abandon]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -97,6 +97,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;QYWxBUFqsPiI9SJw28NUhF9xzgbuwXXqlD3kL0SEit4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bZa9emNhz-eo6e0MmXerBsr5NeBBnAm9RDQWpiWCbTg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

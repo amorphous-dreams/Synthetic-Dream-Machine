@@ -87,7 +87,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares cabal vouch
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares cabal vouch]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares cabal vouch]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;agB6cWFx6ML-b2k-hkL0JSIP1knWttXfNKhH1Rtm-EU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UD_YVLRV7T2Ane_GfuWSHKw0gFgetZ9M7TtKN6imPNQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

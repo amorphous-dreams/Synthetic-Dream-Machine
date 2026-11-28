@@ -15,6 +15,7 @@
  */
 import { describe, test, expect, vi } from "vitest";
 import { COMMAND_HELP } from "../../src/command-help.js";
+import { affordancePack, packRoute } from "@lararium/tw5/affordance-pack";
 import { COMMAND_NAMES, dispatch } from "../../src/bin/lares.js";
 import { SHIM_VERBS } from "../../src/host-bridge.js";
 import { COMMANDS } from "../../src/bin/lares.js";
@@ -75,11 +76,13 @@ describe("the per-command help registry", () => {
     expect(flag.code).toBe(0);
   });
 
-  test("herm --help carries its own row: the stand, the relay gate's rotation, and the ports", async () => {
+  // The herm door flipped to its carriers (comms landings 10 + 23): `herm --help` reads the door's index of the stand and the
+  // rotation; the stand's carrier takes the ports.
+  test("herm --help reads its carriers: the stand, the relay gate's rotation, and the ports", async () => {
     const r = await said(["herm", "--help"]);
     expect(r.out).not.toMatch(/no detailed help yet/);
     expect(r.out).toMatch(/relay-rotate/);
-    expect(r.out).toMatch(/--relay-port/);
+    expect(affordancePack().carriers[packRoute("cli", "herm")!]!.takes["cli"]).toEqual(expect.arrayContaining(["--port", "--relay-port"]));
   });
 
   test("the top-level ✍ mark says which of kahua's sub-verbs hold a key: the hand-only rows the store door names, no others", async () => {

@@ -84,7 +84,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares edge settle
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares edge settle]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares edge settle]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -100,6 +100,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5PrMaxMbul2RMGqgLSsv0fjzs_WbKFZRk57ggX-Zpz8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_ZsZYL3SXBDmAsOkMjTUpkoce86POCCeQRZorTUWwnk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

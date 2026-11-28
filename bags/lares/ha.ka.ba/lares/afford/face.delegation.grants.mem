@@ -94,7 +94,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares intent delegate
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares intent delegate]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares intent delegate]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -110,6 +110,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2F-nWtVSgZ5AzO4oDb_P6sokXxwbyqAb8tlzsaI2-4Y`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZcCwUfshb_ZIKmYjuBIweAAQJ5pcdqE3EgqZsgAhcBo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

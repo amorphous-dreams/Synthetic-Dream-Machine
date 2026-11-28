@@ -4,6 +4,7 @@
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { dispatch, COMMANDS } from "../src/bin/lares.js";
+import { helpLines } from "../src/command-help.js";
 
 async function run(argv: string[]): Promise<{ code: number; out: string; err: string }> {
   const out: string[] = []; const err: string[] = [];
@@ -52,10 +53,10 @@ describe("help flags", () => {
   });
 
   test("the bundle verbs name the roster sealed under the keep key, never a cleartext bundle (bundle-manifest.ts)", () => {
-    for (const name of ["export", "rite"]) {
-      const c = COMMANDS.find((x) => x.name === name)!;
-      expect(c.summary, name).not.toMatch(/cleartext/i);
-      expect(c.summary, name).toMatch(/sealed under the (house's )?keep key/);
+    // `rite` flipped to its carriers (comms landings 10 + 23): the keep verb's carrier carries the words.
+    for (const [name, text] of [["export", COMMANDS.find((x) => x.name === "export")!.summary], ["rite keep", helpLines("rite keep").join(" ")]] as const) {
+      expect(text, name).not.toMatch(/cleartext/i);
+      expect(text, name).toMatch(/sealed under the (house's )?keep key/);
     }
   });
 

@@ -1,0 +1,89 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.approval.gathers`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "name the approve verbs that carry seat approval between vaults"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.approval.gathers", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.approval.gathers"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.approval.gathers"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.approval.gathers ~ the approve group, and the verb each line names
+
+`lares nexus approve` gathers the three verbs that carry a promotion's seat approval of exact bytes between vaults as a file: `open` signs the file's hash with the seats held here, `sign` adds another vault's seats once a person confirms the statement digest, `check` reads the verdict over the bytes. Bare, the group names no verb and refuses with this account, exit 2; an unknown word, or a verb missing what it needs, refuses the same way.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ none
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ names the verbs and refuses; nothing moves`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.approval.checks]] ~ the group names no verb, or one it does not answer; each of open · sign · check holds its own carrier`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ refused
+
+```memetic-wikitext
+<<has entity=`band` name=`refused` params=`exit/2 ~ the account of the three verbs`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares nexus approve
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares nexus approve]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · founding-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gk7KwPcOFzzg_G8KGFZGaqcu3WvPahqAphJVPmyK1cc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

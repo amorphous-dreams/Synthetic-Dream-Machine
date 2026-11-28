@@ -98,7 +98,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares surface init
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares surface init]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares surface init]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -114,6 +114,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;djjJFdgrgPjHlGJ49p5Baq0dDTNPa4VLTTZVm-NKy90`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;b7tBGYQWmZsVsneD1oEqPRg7ldwZLOF8DZ9VPxIsX38`>>
 
 <<^ code=`&#x0004;` to=`?`>>

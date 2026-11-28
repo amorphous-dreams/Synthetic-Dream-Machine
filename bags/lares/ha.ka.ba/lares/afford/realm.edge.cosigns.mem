@@ -89,7 +89,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares edge cosign
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares edge cosign]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares edge cosign]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -105,6 +105,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Xmuhkw5plXaFW7uLIXP3LYDFLhn8TFWvcn6xtZx-GPs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JznoVTA__yblj7KW08sZMDkg9r3M0f-_BhoN2bPgalU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

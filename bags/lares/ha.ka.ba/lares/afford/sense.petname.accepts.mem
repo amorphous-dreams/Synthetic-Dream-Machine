@@ -84,7 +84,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares sensorium accept-name
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sensorium accept-name]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares sensorium accept-name]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -100,6 +100,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lR-23b0HVfbCpr83jtHdN80A1Vg_zWoRFFv4h7jrzoY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;I0SkYN1lwm6ojW8D9foj8UlaWV_PzjqzDOyHDuy0mGE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

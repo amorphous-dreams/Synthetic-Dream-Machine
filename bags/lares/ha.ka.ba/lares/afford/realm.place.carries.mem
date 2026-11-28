@@ -92,7 +92,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares nexus carry
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares nexus carry]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares nexus carry]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -109,6 +109,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;57O0cStN7F5ixZlQwxW6kfmggHgF9R2I_aFzIdF5yac`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_wT3Fa7FoVHoaJb4_gRs4hR-fO85vb5sY4mgrm3mvPA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

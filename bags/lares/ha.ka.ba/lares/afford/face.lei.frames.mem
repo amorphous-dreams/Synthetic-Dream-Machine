@@ -96,7 +96,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares lei terms
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares lei terms]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares lei terms]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -112,6 +112,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AKDgHW6tcrxeZCOUcMlVSlwvdKIYblV-CVaEBpnikUQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;W-OBxoix194EJ60QzOmsKtRGOKmKYl94xrEJu7eNdq4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

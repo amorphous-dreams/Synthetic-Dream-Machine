@@ -82,7 +82,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares handle rotate
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares handle rotate]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares handle rotate]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -98,6 +98,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TCW6HXxXWzqQenv20dVEv-4V_sFdjiz6dMR2Tat6oUE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UlD3MPzOmIOTCje37b8vDObp0nX3ltWImKU5BK5xNFw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

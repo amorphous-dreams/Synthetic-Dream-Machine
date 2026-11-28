@@ -68,7 +68,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares herm relay-rotate
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares herm relay-rotate]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares herm relay-rotate]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -84,6 +84,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;VIa2n680tu-BN848Hp8dpt90KlvJM2H64IU8whyUGcs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PR1oVy-qjCB4iFjMl_Bek5XqssUqkJKEtm5IxjUtGHY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -99,7 +99,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares edge kapae
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares edge kapae]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares edge kapae]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -115,6 +115,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GlHCoQC5uffFrKBtzLzY7RrdboN8wlzPis2OHJRnftI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-2whdu05e6xrScIdRKUBLGVGT4EVjQV5gzXVwCLZ77s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

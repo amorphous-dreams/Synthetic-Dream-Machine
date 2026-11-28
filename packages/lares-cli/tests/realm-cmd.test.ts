@@ -23,6 +23,7 @@ import { ensureRealmLabel, readRealmLabels, writeFaceLabel } from "@lararium/nod
 import { cmdRealm, ensureWikiRealm, placeWikiInRealm, type RealmDoors } from "../src/commands/realm.js";
 import { COMMANDS, dispatch } from "../src/bin/lares.js";
 import { COMMAND_HELP } from "../src/command-help.js";
+import { packDoor, packRoute } from "@lararium/tw5/affordance-pack";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 const ID = "ab".repeat(32);
@@ -125,8 +126,13 @@ describe("lares realm", () => {
     const row = COMMANDS.find((c) => c.name === "realm");
     expect(row).toBeDefined();
     expect(row!.accepts).toEqual(["to"]);
-    for (const door of ["realm", "realm rename", "realm move", "realm list"]) expect(COMMAND_HELP[door], door).toBeDefined();
-    for (const gone of ["realm name", "realm add"]) expect(COMMAND_HELP[gone], gone).toBeUndefined();
+    // The realm door flipped to its carriers (comms landings 10 + 23): the pack holds its words, the registry none.
+    expect(packDoor("realm"), "the realm door reads its carriers").toBeDefined();
+    for (const verb of ["realm rename", "realm move", "realm list"]) {
+      expect(packRoute("cli", verb), verb).toBeDefined();
+      expect(COMMAND_HELP[verb], verb).toBeUndefined();
+    }
+    for (const gone of ["realm name", "realm add"]) expect(packRoute("cli", gone), gone).toBeUndefined();
     const out: string[] = [];
     vi.spyOn(console, "log").mockImplementation((...a) => { out.push(a.map(String).join(" ")); });
     vi.spyOn(console, "error").mockImplementation(() => {});

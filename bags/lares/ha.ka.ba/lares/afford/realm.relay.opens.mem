@@ -87,7 +87,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares intent-relay enable
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares intent-relay enable]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares intent-relay enable]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;zr2-el_hpIugOE5fzVhOhsQhysINr5yVszayCjj0y88`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BFclMz7gi0q5nkvv3gdLRlPUqY3ImiK898wW7vnv3G0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

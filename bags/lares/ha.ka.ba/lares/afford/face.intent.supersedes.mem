@@ -88,7 +88,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares intent supersede
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares intent supersede]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares intent supersede]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -104,6 +104,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;QWnWAGg0sGdvm_i9XMH0O8kZfidtyN4iCxa2RCu8mdU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ox3ijSOVdd5xqI52Dn7j_cHhwdbgg8PND-LrpAY0no0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -91,7 +91,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares realm rename
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares realm rename]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares realm rename]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ECmqlKnVDGtNawD3b_fnZ0hDh2qNGoR_E1cxcc47zNs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;013mMtag87dSVti27p4M0-cRPmKwTJH4F_8FWCs0-X4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -87,7 +87,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares spirit otakiage
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares spirit otakiage]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares spirit otakiage]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;sf-QZdLgoyPNUL1JV6_NqP8_ysHUQtLGpnUGDhT659c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6zy0wQRKXjNhSw6XSpotcBJvw9NHpeLxofWnrQhVgCM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

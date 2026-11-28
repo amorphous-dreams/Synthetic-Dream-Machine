@@ -90,7 +90,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares nexus approve sign
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares nexus approve sign]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares nexus approve sign]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rrMyJMeHP24GiPhKiK3cmiQ8s_bSJZMun7LS-cGeGdc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kaJSZa9La-V-_2SN4I-GdDOcpqC6amQIZEFgNz_itRI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

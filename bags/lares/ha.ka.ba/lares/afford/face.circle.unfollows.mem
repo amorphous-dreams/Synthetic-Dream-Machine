@@ -85,7 +85,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares circle remove
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares circle remove]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares circle remove]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1vc9FRXXdCnfP5u-D_zeI9sSONK94AdcQyaDjmSQeec`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WKqGZWyByxlETTx6GWOd205lmELq8CntWkCjI9A2Hnw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

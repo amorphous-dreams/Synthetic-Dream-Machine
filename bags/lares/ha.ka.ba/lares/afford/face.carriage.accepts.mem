@@ -86,7 +86,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares nexus accept-carriage
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares nexus accept-carriage]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares nexus accept-carriage]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;82voqJbup7hdF6KmccmTkMQb1Bqciv5qRnod_6Bo5Wk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-TCXIKAjlLHYaoKZSKoti4Q04Gu--X9ysIAQTB2RSVw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

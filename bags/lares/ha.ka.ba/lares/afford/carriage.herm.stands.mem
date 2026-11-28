@@ -76,7 +76,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares herm
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares herm]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares herm]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -92,6 +92,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;b-aKIzu9wrs45ZSsyEqKq027rslW48LuE1LKI8dV3P0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VylTe6m6RIxICCh9FWQ53o8V-1l-u9dYvHbWni4j1Jk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

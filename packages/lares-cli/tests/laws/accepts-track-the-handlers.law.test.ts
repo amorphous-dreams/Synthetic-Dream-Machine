@@ -35,6 +35,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { COMMANDS, GLOBAL_FLAGS, unknownFlags } from "../../src/bin/lares.js";
+import { helpLines } from "../../src/command-help.js";
 import { BOOLEAN_FLAGS } from "../../src/parse-args.js";
 import { posturePlan } from "../../src/commands/posture-plan.js";
 
@@ -256,9 +257,11 @@ describe("the accepts rows track the handlers", () => {
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
 
-  test("★ cabal: every flag its summary offers sits in its row ★", () => {
+  // cabal flipped to its carriers (comms landings 10 + 23): its summary is the pack's account, every carrier's whole beside it.
+  test("★ cabal: every flag its account offers sits in its row ★", () => {
     const cabal = COMMANDS.find((c) => c.name === "cabal")!;
-    const offered = [...cabal.summary.matchAll(/--([a-z][a-z-]*)/g)].map((m) => m[1]!);
+    const account = ["face", "vouch", "join", "feed", "clock"].flatMap((v) => helpLines(`cabal ${v}`)).join("\n");
+    const offered = [...account.matchAll(/--([a-z][a-z-]*)/g)].map((m) => m[1]!);
     expect(offered.length, "the summary names no flag, so this check reads nothing").toBeGreaterThan(0);
     const known = new Set([...cabal.accepts, ...GLOBAL_FLAGS]);
     expect(offered.filter((f) => !known.has(f)), "cabal's summary offers a flag its row refuses").toEqual([]);

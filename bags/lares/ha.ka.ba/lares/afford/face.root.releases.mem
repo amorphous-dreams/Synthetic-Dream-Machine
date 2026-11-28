@@ -88,7 +88,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares intent release-root
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares intent release-root]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares intent release-root]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -104,6 +104,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;MQug3j1aA6RRBELhopDghBEROmfB1W5VCcCJW1TulAA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-3qe43L5wjuGK0rJS82OjB6ngzM-KypS2hTKmZaubRE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -86,7 +86,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares intent takeover
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares intent takeover]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares intent takeover]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0FWDdxyqUT7d_frxhE7Or-UG_F5qapnfXZ9KRh3IKY4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WtfajkiiWvtZpE2VDDCCWstMzP5YnFo_Bv7lVKMf9_w`>>
 
 <<^ code=`&#x0004;` to=`?`>>
