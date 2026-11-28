@@ -3,8 +3,7 @@
  *
  * The projecting leg already reads a native carrier's congruence (`canonicalizeNativeCarrierText`, `@lararium/tw5`): TW5's
  * own deserializer over the body, the `.meta` sidecar merged over the result. This hands back that merged record instead
- * of its render, so the stand-off keeper lands a `.tid` or a file with its `.meta` as the hand's `lares shore keep-disk`
- * lands it (`disk-capture.ts`).
+ * of its render, so the capture door lands a `.tid` or a file with its `.meta` as a hand moved it (`disk-capture.ts`).
  *
  * Meme: lar:///ha.ka.ba/lararium/api/disk-projection#/write-ward
  */
@@ -12,8 +11,8 @@
 import type { Tw5Deserializer } from "@lararium/tw5";
 
 /**
- * THE RECORD A NATIVE CARRIER'S DISK BYTES SAY, for a landing that takes the file whole (`lares shore keep-disk`, and the
- * keeper's own keep where the records fell behind their base): the same deserialize and `.meta` merge
+ * THE RECORD A NATIVE CARRIER'S DISK BYTES SAY, for a landing that takes the file whole (the capture door's, where only the
+ * disk moved or the records fell behind their base): the same deserialize and `.meta` merge
  * `canonicalizeNativeCarrierText` reads, handed back as the one record instead of its render. A bundle, a member titled
  * for another carrier, a record that would act (`executableField`, weighed over the `.meta` and over the merged record), or a
  * parse that throws lands nothing and says why.

@@ -252,7 +252,7 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
     } else {
       entry.brief = briefOf(door, entry.addresses.map((a) => carriers[a]!.role), spellingsOf(routes["cli"]!, entry.addresses));
       // AN `also` SPELLING STANDS IN THE DOOR'S ACCOUNT: the index lists each address by its own spelling, so a second word for
-      // one act (`shore keep-records` beside `shore take-records`) names itself here, or the door answers a verb its help never says.
+      // one act (an `also/` alias beside its twin) names itself here, or the door answers a verb its help never says.
       const also = Object.entries(routes["cli"]!)
         .filter(([s, a]) => entry.addresses.includes(a) && ownCli.get(a) !== s)
         .sort(([x], [y]) => x.localeCompare(y))

@@ -1877,7 +1877,8 @@ function folderDiffers(
  * THE VESSEL'S WAVE OVER A NAMED WORKSPACE: a shared wiki's workbench mirror, one disk copy whichever face wears. Each settle's
  * touched files land as ONE unattended INGEST wave in the wiki's working layer (`wikis/<slug>/working`), run in that wiki's own
  * island (`inWiki`), under the worn face's actor; the island's gate decides each carrier as it does over a face pool's plane, and
- * a stand-off goes to that wiki's shore, where `lares shore take-disk` merges it per slot against the workspace's own git base.
+ * a carrier the gate answers `conflict` goes to that wiki's shore, where the projector's capture door lands its words or stands
+ * them as parallel drafts.
  * A file reads its title by the projector's siting run backward over the workspace's parent (the workspace stands as the
  * holding folder, as `wikis/<slug>` does). The workspace's `recovery/` and `temp/` ride no wave.
  */

@@ -1,7 +1,7 @@
 /**
  * THE DAEMON DOCUMENT TAKES NOTHING FROM DISK, at the island, whatever its caller scanned: placement decides.
  *
- * Every disk-to-store road rides one INGEST wave: `lares ingest`, `lares shore take-disk`, a canon mirror's ingest-back,
+ * Every disk-to-store road rides one INGEST wave: `lares ingest`, a canon mirror's ingest-back,
  * `lares import`. The island admits a wave only where the vessel grants a mirror for that destination and the source
  * rests under it. The daemon document (`bags/daemon`) carries no mirror and no canon role, so every wave into it refuses
  * by placement (`disk-wave-placement`); the face's daemon canon (`bags/daemon-<F>`) carries its own mirror and takes any

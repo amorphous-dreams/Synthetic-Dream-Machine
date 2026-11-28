@@ -324,7 +324,7 @@ export function daemonTempMirror(projectionRoot: string, face: FaceSite): BagMir
 
 /**
  * The face's daemon canon mirror: `bags/daemon-<F>` projects as a two-way canon mirror to `<projections>/faces/<pet name>/bags/daemon/`,
- * under the projections root alone (never beside a canon source), with its Confluence agreement, take-disk door and kāpae
+ * under the projections root alone (never beside a canon source), with its agreement, capture door and kāpae
  * like every other canon mirror. A meme promoted into the daemon wiki's canon lands there and survives a re-founding.
  */
 export function daemonCanonMirror(projectionRoot: string, face: FaceSite): BagMirrorConfig {

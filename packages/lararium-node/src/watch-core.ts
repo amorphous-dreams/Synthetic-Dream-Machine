@@ -360,8 +360,7 @@ export function armFacePoolWatch(o: FacePoolWatchOptions): FacePoolWatch {
  * root (`realms/<realm pet name>/`, founded as the mount lays a folder in it and at each re-stand's heal: `ensurePoolTree`,
  * `healPoolTrees`), or a bound workspace's own top (`lares surface init`); the seat reads that tree where it stands, and commits
  * the folder's own paths alone. Where none stands the folder serves as a plain
- * mirror: the waves still land, the seam reads `no-pool-history` by name, and a both-moved stand-off's take-disk names that no base's
- * words stand in clear. Several faces share the copy, so the seam's subject names no face.
+ * mirror: the waves still land, and the seam reads `no-pool-history` by name. Several faces share the copy, so the seam's subject names no face.
  */
 
 /** The top folders a workbench holds that ride no wave and no commit: its recovery drafts, the temp layer. */

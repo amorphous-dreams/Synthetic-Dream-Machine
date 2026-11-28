@@ -264,7 +264,7 @@ export function routesOf(textOf: TextOf, titles: Iterable<string>, carriers: Car
         own[address] = spelling;
         if (row.params["door"] === "part") part.push(spelling);
       }
-      // A skin row may name further spellings the one door answers (`also/[[lares shore keep-records]]`, comma-joined).
+      // A skin row may name further spellings the one door answers (`also/[[lares <door> <alias>]]`, comma-joined).
       for (const alias of (row.params["also"] ?? "").split(",").map((a) => a.trim().replace(/^lares\s+/, "")).filter(Boolean)) claim(surface, alias, address);
     }
     claim("console", bareAddressOf(address)!, address);

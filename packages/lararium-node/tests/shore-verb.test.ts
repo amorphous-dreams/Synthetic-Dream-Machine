@@ -70,7 +70,7 @@ describe("the shore verb answers from the projector", () => {
   test("CONTROL: an op the verb no longer carries refuses shore-op-unknown and writes nothing back", async () => {
     const s = await stand();
     await answerShore(s.projector, { op: "list" });
-    for (const op of ["take-records", "take-disk", "keep-both", "render", "drafts"]) {
+    for (const op of ["take", "keep", "render", "drafts"]) {
       expect(await answerShore(s.projector, { op, uri: URI, key: "k" }, "cli"), op).toMatchObject({ ok: false, refusal: "shore-op-unknown" });
     }
     expect(existsSync(s.file)).toBe(false);

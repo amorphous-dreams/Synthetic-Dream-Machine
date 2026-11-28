@@ -2,7 +2,7 @@
  * ingest-scan — THE DRAIN LIVES IN THE NODE (tideline-surface #/seam point 1; face-pools W1, W2). The scan, the candidates, the
  * deletions, the standing helpers, the settle and the siting call stand in `@lararium/node`, behind a SUBMIT PORT the caller
  * fills: the CLI's `lares ingest`/`lares ingest --watch` fill it with the verb socket, the vessel with its daemon island's INGEST verb.
- * So the vessel's watch over the worn face's pool lands an edit as an UNATTENDED INGEST wave by itself, with no `take-disk`.
+ * So the vessel's watch over the worn face's pool lands an edit as an UNATTENDED INGEST wave by itself, with no hand act.
  *
  *   I1 a vessel-side caller scans a face pool, builds candidates, and submits one unattended INGEST wave per granted plane
  *      through the port: a plain-title edit under `wikis/daemon/` lands in the daemon working bag, a loci `.mem` edit under `bags/daemon/`
@@ -163,7 +163,7 @@ function fakeWatch() {
 }
 
 describe("I5 — the watch core's wave lands a pool edit by itself", () => {
-  test("an edit under wikis/daemon/ reaches the island as an unattended INGEST wave, no take-disk", async () => {
+  test("an edit under wikis/daemon/ reaches the island as an unattended INGEST wave, no hand act", async () => {
     const { waves, submit } = island();
     const { sense } = shore();
     const { watch, fire } = fakeWatch();

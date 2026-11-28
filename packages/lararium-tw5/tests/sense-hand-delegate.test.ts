@@ -97,7 +97,7 @@ for (const [verb, args] of VERBS) {
 }
 
 /**
- * THE ONE-SHOT LINE'S HAND RIDES THE DELEGATE TOO. `lares shore take-records` reaches the vessel on a one-shot line (no session,
+ * THE ONE-SHOT LINE'S HAND RIDES THE DELEGATE TOO. `lares shore remove` reaches the vessel on a one-shot line (no session,
  * no face, no ordinal): the UDS door reads the peer and books `cli`, the daemon island holds no `wiki-act` and delegates it back
  * to main, and main runs it into the active wiki's island, whose shore reads `ctx.asker`. Main reads that asker from its own
  * booking of the ask it placed, as it does a session's; a one-shot ask that booked none lent the island no hand, so a person at a
@@ -146,7 +146,7 @@ test("RED: a one-shot line's wiki-act delegate carries the hand the door read; C
     };
     return { core, delegate };
   })();
-  const take = { verb: "shore", args: { op: "take-records", uri: "$:/StoryList", key: "7512190c6349272585509689" } };
+  const take = { verb: "shore", args: { op: "remove", uris: ["$:/StoryList"] } };
   // The one-shot line: origin channel, a request id, the asker the door read; no face, no ordinal.
   core.placeVerb({ origin: "channel", verb: "wiki-act", args: take, requestedBy: ATOM, requestId: "one-shot-cli", asker: "cli" } as never);
   expect((await delegate("one-shot-cli", take)).result).toEqual({ asker: "cli", worn: null });
@@ -157,5 +157,5 @@ test("RED: a one-shot line's wiki-act delegate carries the hand the door read; C
   expect((await delegate("never-placed", take)).result).toEqual({ asker: null, worn: null });
   // CONTROL: a delegate naming other args under a booked id lends no hand.
   core.placeVerb({ origin: "channel", verb: "wiki-act", args: take, requestedBy: ATOM, requestId: "one-shot-other", asker: "cli" } as never);
-  expect((await delegate("one-shot-other", { ...take, args: { ...take.args, key: "other" } })).result).toEqual({ asker: null, worn: null });
+  expect((await delegate("one-shot-other", { ...take, args: { ...take.args, uris: ["other"] } })).result).toEqual({ asker: null, worn: null });
 });

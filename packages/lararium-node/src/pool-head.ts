@@ -6,16 +6,15 @@
  * `no-base` stand-off. The pool's HEAD names the last sitting's close (`poolCommitSeam`), so where no synced base stands the
  * blob at HEAD hands both gates a base: its bytes the disk side, their canonical render the records side (`baseFromGit` in
  * the projector and the watch core's scan). The four states then resolve as any base resolves them: both at HEAD pins, the
- * records moved alone projects, the disk moved alone ingests, both moved stands off over HEAD and `lares shore take-disk`
- * merges over the same blob.
+ * records moved alone projects, the disk moved alone goes to capture, and both moved stands the file's words as parallel
+ * drafts over HEAD.
  *
  * NO RECORD, NO BASE. HEAD vouches for an agreement only where the house still holds the record. The projector reads HEAD
  * only for records it renders; the scan marks each HEAD base it hands the wave (`headBase`), and the island drops it where
  * the records hold nothing under the carrier, so such a file lands as an arrival and no echo pins a base for it.
  *
  * ONE PLACE, ONE BLOB READ. `poolPlaceOf` names a file's repository and its path inside it; `blobAt` reads one blob at one
- * revision. The shore's base read (`basePoolText`, below; `lares shore take-disk` and the stand-off keeper both read it) walks
- * the history through the same two.
+ * revision. The base read (`basePoolText`, below) walks the history through the same two.
  *
  * Git runs walled (`walledGit`): no caller `GIT_*` crosses, an empty global config, no system config, as `lares surface`
  * runs it. A pool with no `.git` and a file outside every pool spawn no git at all (`poolHeads`).
