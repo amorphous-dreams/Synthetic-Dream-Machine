@@ -41,7 +41,7 @@ export function containerArgs(args: ParsedArgs, verb: string, _direction: "read"
 /**
  * Name the wiki an ENGINE verb runs in (`wiki render | status | act`): `--recipe <slug>` alone. A bag names one store and no
  * wiki, so these verbs refuse `--bag` before the wire and name the door that answers a bag: a read rides
- * `lares get title=… bag=<slug>` (one record; `mu=assert` a meme whole) and `lares get meme=true bag=<slug>` (its roots); a write
+ * `lares get title=… bag=<slug>` (one record; `aperture=arc` a meme whole) and `lares get meme=true bag=<slug>` (its roots); a write
  * rides `lares put title=… bag=<slug>` and `lares delete title=… bag=<slug>`, which take one bag through its store.
  */
 export function engineContainerArgs(args: ParsedArgs, verb: string, direction: "read" | "write" = "read"): Record<string, string> {
@@ -51,7 +51,7 @@ export function engineContainerArgs(args: ParsedArgs, verb: string, direction: "
   if (bag) {
     const door = direction === "write"
       ? "a bag takes a record through the plain put and delete: `lares put title=<title> bag=<slug>` · `lares delete title=<title> bag=<slug>`"
-      : "a bag reads through its own doors: `lares get title=<title> bag=<slug>` (one record; `mu=assert` a meme whole) · `lares get meme=true bag=<slug>` (its roots)";
+      : "a bag reads through its own doors: `lares get title=<title> bag=<slug>` (one record; `aperture=arc` a meme whole) · `lares get meme=true bag=<slug>` (its roots)";
     throw new ContainerTargetRefusal(`lares ${verb}: wiki-not-anchored — ${verb} runs in a wiki's own engine, and --bag names one bag and no wiki; ${door}. To use ${verb}, name the wiki: --recipe <slug> (--recipe default for the daemon wiki).`, "wiki-not-anchored");
   }
   if (!recipe) return { recipe: "default" };

@@ -4,7 +4,7 @@
 
 /**
  * parse-args — minimal arg parser for `lares <command> [args...] [--flag] [--key value] [--key=value]`, and the call shape's
- * one token rule (`splitCall`: `lares get title=… mu=relate`).
+ * one token rule (`splitCall`: `lares get title=… aperture=measure`).
  *
  * Stays dep-free on purpose. The CLI's whole grammar lives in this file plus
  * the per-command handlers; no external parser hides dispatch behavior.

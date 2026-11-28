@@ -37,7 +37,7 @@ export function wantsJson(args: ParsedArgs): boolean {
  * A STATUS READ ANSWERS A PIPE IN PROSE (the operator, 2026-11-19: the re-stand's output read "spammy"). A read whose whole
  * reading runs long (every sealed row, every document the store holds) prints the same summary on a terminal and through a
  * pipe, so `| head` cuts it and a shim that pipes the CLI floods nothing; only an explicit `--json` asks for the envelope,
- * and `--no-json` stays a working alias of the default. `get mu=assert`'s carrier-first ruling (commands/call.ts) runs the same
+ * and `--no-json` stays a working alias of the default. `get aperture=arc`'s carrier-first ruling (commands/call.ts) runs the same
  * law. A caller that parses one of these reads names `--json`.
  */
 export function proseFirst(args: ParsedArgs): ParsedArgs {

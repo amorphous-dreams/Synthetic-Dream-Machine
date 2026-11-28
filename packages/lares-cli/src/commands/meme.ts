@@ -22,7 +22,7 @@
  * effect record. The offline re-stamp of a stale block check keeps working with no socket. `project` over a
  * `lar:` uri or to any rendered target rides the daemon verb (`meme-project`): the island's own renderers, reached
  * from a terminal; the family listing (`lares get meme=true`) rides `meme-list`. A READ rides the one door: `lares get title=<uri>`
- * answers the carrier on a gradient (whole within a page, its has-stack past it), `mu=relate` its card, and `mu=assert` the
+ * answers the carrier on a gradient (whole within a page, its has-stack past it), `aperture=measure` its card, and `aperture=arc` the
  * whole carrier, paged on slot boundaries.
  *
  * THE CONTAINER LAW (every store-backed seat):
@@ -110,7 +110,7 @@ import type { ParsedArgs } from "../parse-args.js";
 import { UsageError } from "./meme-shared.js";
 
 /** The targets `project --to` renders. `md` over a file seats local; every other pairing rides the daemon. */
-/** `mem` left the list: the composed carrier reads through the one door, `lares get title=<uri> recipe=<slug> mu=assert`. */
+/** `mem` left the list: the composed carrier reads through the one door, `lares get title=<uri> recipe=<slug> aperture=arc`. */
 export const PROJECT_TARGETS = ["md", "html", "tid", "json"] as const;
 export type ProjectTarget = typeof PROJECT_TARGETS[number];
 
@@ -669,7 +669,7 @@ async function memeProject(args: ParsedArgs): Promise<number> {
   }
   const text = String(outcome.output["text"] ?? "");
   // A `mem` projection left this verb: the composed carrier reads through the one door (`lares get title=<uri>
-  // mu=assert`), and the composition reading (`readCarrierShape`) rides that read, the one place a human waits on a carrier.
+  // aperture=arc`), and the composition reading (`readCarrierShape`) rides that read, the one place a human waits on a carrier.
   const out = typeof args.options["out"] === "string" ? args.options["out"] : "";
   if (out) writeFileSync(out, text, "utf8");
   // THE SIDECAR PAIR IS A CARRIER IN TWO FILES: an `md` projection rides its `.meta` in the reply, and it

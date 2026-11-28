@@ -24,7 +24,7 @@
  *
  * PURE DATA, SO ANY VESSEL CAN HOLD IT. This module reads no `node:fs` and no environment; the pack rides as data.
  * The `meme` field NAMES the wiki record behind a verb door (`lar:` names; it never fetches); the `--meme`
- * reach rides the one read door `lares get title=<uri> mu=assert` already uses, which any vessel holding the cap can run.
+ * reach rides the one read door `lares get title=<uri> aperture=arc` already uses, which any vessel holding the cap can run.
  * Every URI here comes HARVESTED from the owning module's own `Meme:` header — never invented at this seat.
  */
 import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
@@ -733,12 +733,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "`normalize` · `check` · `sitting` · `project --to md` (over a file) run LOCAL with no daemon in " +
       "reach; `project` to any other target, or from a `lar:` uri, rides the daemon verb. A family lands and patches through " +
       "`lares put`, leaves through `lares delete … family=true`, and lists through `lares get meme=true`. A meme READS through the one door: `lares get title=<uri> recipe=<slug>` (whole within a page, " +
-      "its has-stack past it; `mu=relate` the card, `mu=assert` the whole carrier). Store-backed verbs require `(--recipe <slug> | --bag <slug>)`; `--recipe` edits AS " +
+      "its has-stack past it; `aperture=measure` the card, `aperture=arc` the whole carrier). Store-backed verbs require `(--recipe <slug> | --bag <slug>)`; `--recipe` edits AS " +
       "the named wiki; " +
       "`--bag` places into that bag and REFUSES when this island cannot write it; `--realm <id>` beside " +
       "`--bag` names the realm whose registration that bag resolves through, and reads that realm alone.",
     examples: [
-      "lares get title=lar:///ha.ka.ba/lares/api/corpus recipe=lares mu=assert   # READ a meme: the carrier, base on stderr (the one door)",
+      "lares get title=lar:///ha.ka.ba/lares/api/corpus recipe=lares aperture=arc   # READ a meme: the carrier, base on stderr (the one door)",
       "lares meme normalize draft.mem                         # re-frame + re-stamp the block check",
       "lares meme check bags/**/*.mem                         # CI / pre-commit: drift exits 1",
       "lares meme project note.mem --to md --out ./out        # the submission pair, clock-free",
@@ -763,7 +763,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
         "editor's problem matcher (lar:///ha.ka.ba/lares/cli/problems); a clean file prints nothing, the exit stays",
       "--grammar          (normalize/check) also apply GRAMMAR-authority clauses (authored spelling, " +
         "e.g. a call site's `:` vs `=`) — default reports them as a preference and moves no byte",
-      "--to <md|html|tid|json>   (project) the render target (the carrier itself: `lares get title=<uri> recipe=<slug> mu=assert`)",
+      "--to <md|html|tid|json>   (project) the render target (the carrier itself: `lares get title=<uri> recipe=<slug> aperture=arc`)",
       "--out <path>       (project) the pair's directory (--to md) or the rendered file; stdout otherwise",
       "--check            (project --to md, over a <file.md|dir>) prove currency by re-projection alone; " +
         "writes nothing, exits 1 naming each pair whose source moved or vanished, or whose bytes drifted",

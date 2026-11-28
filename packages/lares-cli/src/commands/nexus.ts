@@ -118,7 +118,7 @@ const NEXUS_RITES: Readonly<Record<string, { readonly composes: string; readonly
  * (realm-bag-brief). The bag's doc is the one this vessel names for the URI; the record
  * rides the seal of the key the acting face (`--face N`, else the one face standing open) presents to the realm's
  * Nexus, never a persona root; crossroads-plane carries only that the bag exists and who keeps it.
- * A contracted member reads it through `lares get title=<uri> bag=<slug> mu=assert`; the stewards alone write.
+ * A contracted member reads it through `lares get title=<uri> bag=<slug> aperture=arc`; the stewards alone write.
  *
  * A name enters a record by its own hand first. `--join` ASKS to keep a bag another hand keeps: this vessel's
  * acting face seals a record that names the standing stewards and itself. `--cosign` CONSENTS to a record that

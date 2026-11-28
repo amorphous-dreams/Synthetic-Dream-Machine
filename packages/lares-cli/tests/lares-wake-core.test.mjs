@@ -27,7 +27,7 @@ test("the wake carries the memory index beside the frame and the homes line", as
   assert.match(context, /Lares memory index: 2 rows\n/);
   assert.match(context, /lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/project\/house-laws — The seven house laws\.\n/);
   assert.match(context, /lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/open-ledger — What stands open\.\n/);
-  assert.match(context, /read a row: get\(title=<title>, recipe="default", mu="assert"\)/);
+  assert.match(context, /read a row: get\(title=<title>, recipe="default", aperture="arc"\)/);
   assert.doesNotMatch(context, /after=/);
   // The read rides the vessel's own door: the daemon wiki, the index tag, title and description, a row limit, a byte cap.
   assert.deepEqual(calls.index, ["get", "filter=[tag[stage/index]] -[lares.stage[state]]", "fields=title,description", "limit=32", `max-bytes=${INDEX_BYTES}`, "--json"]);
@@ -171,7 +171,7 @@ test("wake-leads-with-rows-in-play: every wake prints the state rows before the 
     // The rest keep the door's own order.
     assert.equal(lines[head + 2], "lar:///ha.ka.ba/kahua/memory/state/porch-2026-11-16 — The porch: what the last sitting left on the step.");
     assert.equal(lines[head + 4], "lar:///ha.ka.ba/kahua/memory/state/standing-orders — The orders that stand.");
-    assert.match(lines[head + 5], /read a row: get\(title=<title>, recipe="default", mu="assert"\)/);
+    assert.match(lines[head + 5], /read a row: get\(title=<title>, recipe="default", aperture="arc"\)/);
     // The read derives the rows by their address prefix, slot titles (`…#/entry`) left out: no list of addresses rides the wake.
     // No sort by `modified`: the stage memes carry no such field, so the door's title order stands.
     assert.deepEqual(calls.state, stateArgv());

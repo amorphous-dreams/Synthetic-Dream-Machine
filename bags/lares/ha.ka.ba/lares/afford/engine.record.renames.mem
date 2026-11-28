@@ -44,9 +44,12 @@ An answer names only records this face reads and counts the rest (`withheld`); a
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
 
 ```memetic-wikitext
-<<has entity=`cell` name=`_` params=`mu/dry ~ a dry run: the rename walks its law to the last step and answers the summary, landing nothing`>>
-<<has entity=`cell` name=`_?` params=`mu/dry-relate ~ the dry summary: what the rename would land, the bag and layer, the base it needs, landing nothing`>>
-<<has entity=`cell` name=`_!` params=`mu/dry-assert ~ the dry diff: the summary and each record it would move, fields before and after and text line by line, landing nothing`>>
+<<has entity=`arg` name=`mu` params=`takes/carry skins/console,cli default/?0 ~ the lens; this door's default reads ?0 (cup), the receipt's has line`>>
+<<has entity=`cell` name=`?0` params=`mu/cup ~ the receipt: the rename lands and answers its has line, the default`>>
+<<has entity=`cell` name=`!0` params=`mu/sword ~ the receipt asserted: the rename lands and a terminal prints the machine answer verbatim`>>
+<<has entity=`cell` name=`_0` params=`mu/pentacle ~ a dry run: the rename walks its law to the last step and answers the summary, landing nothing`>>
+<<has entity=`cell` name=`_?` params=`mu/overview ~ the dry summary: what the rename would land, the bag and layer, the base it needs, landing nothing`>>
+<<has entity=`cell` name=`_!` params=`mu/precision ~ the dry diff: the summary and each record it would move, fields before and after and text line by line, landing nothing`>>
 <<has entity=`arg` name=`title` params=`takes/title needs/required seat/1 as/<old> ~ the record moved, a meme root with its slots`>>
 <<has entity=`arg` name=`to` params=`takes/title needs/required seat/2 as/<new> ~ the title it moves to`>>
 <<has entity=`arg` name=`recipe` params=`takes/slug needs/required default/default ~ the wiki whose engine relinks; default names the worn face's daemon wiki`>>
@@ -145,6 +148,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6At4kkSJJ9a7Q9abbS59rB2kHEqj4NY-hSdR7C3DaZs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8soy0MCIAUzGK9KolFwYL8DoDh5b9jjyKH9wjbltSFY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

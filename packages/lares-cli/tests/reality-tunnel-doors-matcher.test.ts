@@ -141,7 +141,7 @@ const BASH: ReadonlyArray<readonly [string, Verdict]> = [
   ["lares vessel stand --foreground", "allow"],
   ["lares vessel roster", "allow"],
   ["lares up", "allow"],
-  ["lares get title=lar:///ha.ka.ba/lararium/mesh/founding-runbook mu=assert", "allow"],
+  ["lares get title=lar:///ha.ka.ba/lararium/mesh/founding-runbook aperture=arc", "allow"],
   ["lares meme check bags/lares/ha.ka.ba/lares/cli/reality-tunnel.mem", "allow"],
   // The CLI reads its command from the first word, so a flag there names an unknown command and runs nothing.
   ["lares --json reset", "allow"],

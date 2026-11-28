@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.bag.copies"
 
 `COPY` overwrites the destination bag's version of one tiddler with the source bag's; both bags keep their history, and the change-id travels with the tiddler so the copy reads as the same change in another bag. It takes the title, the source bag, the destination bag and a change-id (named, or minted when absent), and the vessel runs it as one verb-tiddler wrapped in an effect record.
 
-A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent off a terminal, `mu=dry` previews and commits nothing, `in-wiki=true` runs the act in the active wiki's island. At bag grain the same verb grants every title the source holds in a new or existing destination (one transfer-id family audits the batch), and it carries the wiki-level crossing beside CREATE.
+A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent off a terminal, `mu=pentacle` previews and commits nothing, `in-wiki=true` runs the act in the active wiki's island. At bag grain the same verb grants every title the source holds in a new or existing destination (one transfer-id family audits the batch), and it carries the wiki-level crossing beside CREATE.
 
 <<~/ahu>>
 
@@ -29,7 +29,7 @@ A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent 
 
 ```memetic-wikitext
 <<has entity=`example` name=`copy-a-title` params=`title/lar:///ha.ka.ba/lares/docs/pono/example from/lar:///ha.ka.ba/bags/lares to/lar:///ha.ka.ba/wikis/lares/working ~ the destination's version takes the source's words`>>
-<<has entity=`example` name=`preview-first` params=`title/lar:///ha.ka.ba/lares/docs/pono/example from/lar:///ha.ka.ba/bags/lares to/lar:///ha.ka.ba/wikis/lares/working mu/dry ~ name the effect and commit nothing`>>
+<<has entity=`example` name=`preview-first` params=`title/lar:///ha.ka.ba/lares/docs/pono/example from/lar:///ha.ka.ba/bags/lares to/lar:///ha.ka.ba/wikis/lares/working mu/pentacle ~ name the effect and commit nothing`>>
 ```
 
 <<~/ahu>>
@@ -46,7 +46,7 @@ A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent 
 <<has entity=`arg` name=`in-wiki` params=`~ run the act in the active wiki's island`>>
 <<has entity=`arg` name=`yes` params=`~ the intent a call off a terminal names in place of the y/N a terminal asks`>>
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
-<<has entity=`cell` name=`_` params=`mu/dry ~ a dry run: the island walks the act through a capturing access and names the effect it would land, committing nothing`>>
+<<has entity=`cell` name=`_0` params=`mu/pentacle ~ a dry run: the island walks the act through a capturing access and names the effect it would land, committing nothing`>>
 ```
 
 <<~/ahu>>
@@ -81,7 +81,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`band` name=`done` params=`exit/0 fields/[[verb status requestId receipt]] ~ the vessel ran the action and wrote its effect record; the receipt names the outcome tiddler`>>
-<<has entity=`band` name=`preview` params=`exit/0 ~ with mu=dry the vessel names the effect it would land and commits nothing`>>
+<<has entity=`band` name=`preview` params=`exit/0 ~ with mu=pentacle the vessel names the effect it would land and commits nothing`>>
 <<has entity=`band` name=`refused` params=`~ the vessel refused by name (cap-denied or a verb-error); the line carries its reason and cure`>>
 ```
 
@@ -96,7 +96,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares act lar:///carriage.bag.copies
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host dry/walks grammar/call spells/[[lares act lar:///carriage.bag.copies]] ~ the terminal; the act rides by its address through the call door, and the terminal runs the bound act (host files, y/N)`>>
+<<has entity=`skin` name=`cli` params=`handler/host dry/walks spells/[[lares act lar:///carriage.bag.copies]] ~ the terminal; the act rides by its address through the call door, and the terminal runs the bound act (host files, y/N)`>>
 ```
 
 <<~/ahu>>
@@ -112,6 +112,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AroVVw6lmInju0fmMolryoe3-zUWrfDtkOOTFT14APU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-yjDTRehCX_-_7FFVKxeXfd4zhGVe_KHJOgeHOdHQns`>>
 
 <<^ code=`&#x0004;` to=`?`>>

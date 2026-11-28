@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.bag.loads"
 
 `LOAD` brings external content into a bag from outside the mesh. Islands never fetch (the web3-only law), so this operator gesture holds the disk grant: it reads the source on the host, derives each carrier's title (a file under a `bags/<holding>/` or `wikis/<slug>/` mirror tree keeps its stable `lar:` name; any other file namespaces under the destination bag by its path relative to the source), and sends the content WITH the verb. A source that does not resolve locally sends a provenance-only LOAD with no carriers (the line says so); an empty file skips with a warning that names it.
 
-LOAD mints a fresh change-id unless `change-id=` names one, since external content carries no prior mesh identity. A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent off a terminal, `mu=dry` previews and commits nothing, `in-wiki=true` runs the act in the active wiki's island. Disk memory that already stands in a bag's source tree takes `lares ingest`, whose gate carries the hashes this act does not.
+LOAD mints a fresh change-id unless `change-id=` names one, since external content carries no prior mesh identity. A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent off a terminal, `mu=pentacle` previews and commits nothing, `in-wiki=true` runs the act in the active wiki's island. Disk memory that already stands in a bag's source tree takes `lares ingest`, whose gate carries the hashes this act does not.
 
 <<~/ahu>>
 
@@ -29,7 +29,7 @@ LOAD mints a fresh change-id unless `change-id=` names one, since external conte
 
 ```memetic-wikitext
 <<has entity=`example` name=`load-a-directory` params=`source-uri/./imports/notes to/lar:///ha.ka.ba/wikis/lares/working ~ read a host directory and land each carrier in the working layer`>>
-<<has entity=`example` name=`preview-first` params=`source-uri/./imports/notes to/lar:///ha.ka.ba/wikis/lares/working mu/dry ~ name the effect and commit nothing`>>
+<<has entity=`example` name=`preview-first` params=`source-uri/./imports/notes to/lar:///ha.ka.ba/wikis/lares/working mu/pentacle ~ name the effect and commit nothing`>>
 ```
 
 <<~/ahu>>
@@ -45,7 +45,7 @@ LOAD mints a fresh change-id unless `change-id=` names one, since external conte
 <<has entity=`arg` name=`in-wiki` params=`~ run the act in the active wiki's island`>>
 <<has entity=`arg` name=`yes` params=`~ the intent a call off a terminal names in place of the y/N a terminal asks`>>
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
-<<has entity=`cell` name=`_` params=`mu/dry ~ a dry run: the island walks the act through a capturing access and names the effect it would land, committing nothing`>>
+<<has entity=`cell` name=`_0` params=`mu/pentacle ~ a dry run: the island walks the act through a capturing access and names the effect it would land, committing nothing`>>
 ```
 
 <<~/ahu>>
@@ -80,7 +80,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`band` name=`done` params=`exit/0 fields/[[verb status requestId receipt]] ~ the vessel ran the action and wrote its effect record; the receipt names the outcome tiddler`>>
-<<has entity=`band` name=`preview` params=`exit/0 ~ with mu=dry the vessel names the effect it would land and commits nothing`>>
+<<has entity=`band` name=`preview` params=`exit/0 ~ with mu=pentacle the vessel names the effect it would land and commits nothing`>>
 <<has entity=`band` name=`refused` params=`~ the vessel refused by name (cap-denied or a verb-error); the line carries its reason and cure`>>
 ```
 
@@ -95,7 +95,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares act lar:///carriage.bag.loads
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host dry/walks grammar/call spells/[[lares act lar:///carriage.bag.loads]] ~ the terminal; the act rides by its address through the call door, and the terminal runs the bound act (host files, y/N)`>>
+<<has entity=`skin` name=`cli` params=`handler/host dry/walks spells/[[lares act lar:///carriage.bag.loads]] ~ the terminal; the act rides by its address through the call door, and the terminal runs the bound act (host files, y/N)`>>
 ```
 
 <<~/ahu>>
@@ -111,6 +111,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yaNGQsRn_MAgE25V_KfcbRFzUFPOeF3NCApTqsZEUVU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2mvVaYZOUX-jQMPD-Ae982er7xxxevzLfTGM8j1scu8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

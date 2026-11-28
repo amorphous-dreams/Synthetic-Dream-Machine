@@ -4,7 +4,7 @@
  * (and `lares lar:///carriage.record.adds …`) rides the call door; the vessel resolves the address through the caller's stack,
  * binds the params against the carrier's live `#/takes`, and answers `handler/host` with the bound params, which this door runs:
  * it reads host files (a LOAD's carriers), asks y/N at a terminal (`yes=true` names the intent off one), and submits the act.
- * A `mu=dry` call reaches it because each residency carrier's cli row names `dry/walks`; the island previews and commits nothing.
+ * A `mu=pentacle` call reaches it because each residency carrier's cli row names `dry/walks`; the island previews and commits nothing.
  *
  *   ADD    lar:///carriage.record.adds      COPY   lar:///carriage.bag.copies     MOVE  lar:///carriage.bag.moves
  *   CLEAR  lar:///carriage.bag.clears       DROP   lar:///carriage.bag.drops      LOAD  lar:///carriage.bag.loads
@@ -697,7 +697,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
       if (summary["dryRun"]) {
         const wl = Array.isArray(summary["wouldLand"]) ? summary["wouldLand"].length : 0;
         const wt = Array.isArray(summary["wouldTombstone"]) ? summary["wouldTombstone"].length : 0;
-        console.log(`${verb} mu=dry: would land ${wl}, tombstone ${wt} — NOTHING committed (req ${result.requestId.slice(0, 8)})`);
+        console.log(`${verb} mu=pentacle: would land ${wl}, tombstone ${wt} — NOTHING committed (req ${result.requestId.slice(0, 8)})`);
       } else if (effectOf !== undefined) {
         console.log(`${verb} ✓ already landed by request ${effectOf} — not re-run (req ${result.requestId.slice(0, 8)})`);
       } else {

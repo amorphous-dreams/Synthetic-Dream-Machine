@@ -1,5 +1,5 @@
 """Witness — a meme family through the MCP seat: `put` lands a family's carrier or one slot, `delete(family=True)` removes it,
-`get` reads a meme (whole by `mu="assert"`) or lists its roots, and the seat's own act at lar:///engine.meme.projects renders
+`get` reads a meme (whole by `aperture="arc"`) or lists its roots, and the seat's own act at lar:///engine.meme.projects renders
 it.
 
 Each record tool rides `lares_uds.call("call", {verb, params, surface: "mcp"})` to the @daemon, never a store; the projection
@@ -77,17 +77,17 @@ def test_a_family_put_on_a_locked_vessel_names_the_unlock(daemon):
 
 
 def test_a_meme_reads_whole_through_the_one_get(daemon):
-    # ONE DOOR: the meme rides `get` with `mu="assert"`; the daemon's answer (has line, grain, next) crosses the seat
+    # ONE DOOR: the meme rides `get` with `aperture="arc"`; the daemon's answer (has line, grain, next) crosses the seat
     # untouched, the floor word with it.
     answer = {"has": "<<~ has name=`lar:///ha.ka.ba/lares/api/pono/meme` params=`bag/lar:///ha.ka.ba/bags/lararium floor/true base/sha256-get`>>",
               "bag": "lar:///ha.ka.ba/bags/lararium", "floor": True, "title": _URI, "lens": "meme",
               "meme": {"uri": _URI, "text": "the body", "canonicalHash": "sha256-get", "bytes": 8, "slots": []},
               "grain": {"asked": None, "applied": "whole", "why": "fits one page"}, "next": None}
     daemon.output = answer
-    assert _tools()["get"](title=_URI, bag="lararium", mu="assert") == answer
-    assert daemon.wire() == call_line("get", {"title": _URI, "bag": "lararium", "mu": "assert"})
-    _tools()["get"](title=_URI, recipe="default", mu="assert", after="1.0123456789abcdef")
-    assert daemon.wire() == call_line("get", {"title": _URI, "recipe": "default", "mu": "assert", "after": "1.0123456789abcdef"})
+    assert _tools()["get"](title=_URI, bag="lararium", aperture="arc") == answer
+    assert daemon.wire() == call_line("get", {"title": _URI, "bag": "lararium", "aperture": "arc"})
+    _tools()["get"](title=_URI, recipe="default", aperture="arc", after="1.0123456789abcdef")
+    assert daemon.wire() == call_line("get", {"title": _URI, "recipe": "default", "aperture": "arc", "after": "1.0123456789abcdef"})
 
 
 def test_a_family_listing_rides_the_one_get_and_answers_as_the_vessel_spoke(daemon):
@@ -173,7 +173,7 @@ def test_every_refusal_family_reaches_the_caller_by_name(daemon, monkeypatch):
     # routes, and an absent daemon: each answers isError AND carries its own words.
     daemon.error = {"errorMessage": "control-home-unavailable: vessel-locked: the vessel's key stays shut",
                     "refusal": {"reason": "vessel-locked"}}
-    locked = _seat_call("get", {"title": _URI, "recipe": "default", "mu": "assert"})
+    locked = _seat_call("get", {"title": _URI, "recipe": "default", "aperture": "arc"})
     assert locked.is_error and "vessel-locked" in _said(locked) and "lares vault unlock" in _said(locked)
     daemon.error = None
     daemon.answers = [seated(PROJECTS, {"uri": _URI, "to": "html"})]
@@ -183,7 +183,7 @@ def test_every_refusal_family_reaches_the_caller_by_name(daemon, monkeypatch):
     unshaped = _seat_call("act", {"address": POURS, "args": {"surface": "claude-code", "pointer": "p", "dry_run": True}})
     assert unshaped.is_error and "carries no writeback/preview shaping" in _said(unshaped)
     monkeypatch.setattr(uds, "socket_path", lambda: "/nonexistent/lares.sock")
-    absent = _seat_call("get", {"title": _URI, "recipe": "default", "mu": "assert"})
+    absent = _seat_call("get", {"title": _URI, "recipe": "default", "aperture": "arc"})
     assert absent.is_error and "no lares daemon" in _said(absent)
 
 

@@ -396,12 +396,12 @@ const faceFlag = (face: number | null): string => (face === null ? "" : ` --face
  */
 export function mandateWakeLines(mandate: SpiritMandate, cut = 2400): string {
   const face = faceParam(mandate.face);
-  const words = mandate.text.length <= cut ? mandate.text : `${mandate.text.slice(0, cut)}\n… cut at ${cut} chars; the whole mandate: lares get title=${shq(mandate.uri)} recipe=default${face}${mandate.family ? " mu=assert" : ""}`;
+  const words = mandate.text.length <= cut ? mandate.text : `${mandate.text.slice(0, cut)}\n… cut at ${cut} chars; the whole mandate: lares get title=${shq(mandate.uri)} recipe=default${face}${mandate.family ? " aperture=arc" : ""}`;
   return [
     `mandate: ${refLine(mandate.uri, mandate.hash)} · you wake as ${mandate.tag}, offered by ${mandate.offerer || "hand"}${mandate.face === null ? "" : ` · face h${mandate.face}`}${mandate.model === null ? "" : ` · model ${mandate.model}`}`,
-    `om (the seed, then the card below): lares get title=lar:///ha.ka.ba/lares/api/noosphere-boot recipe=default${face} mu=assert`,
-    ...mandate.reads.map((f) => `reads: lares get filter=${shq(f)} recipe=default${face} mu=many-relate fields=title,description`),
-    ...mandate.links.map((l) => `link: lares get title=${shq(l)} recipe=default${face} mu=relate`),
+    `om (the seed, then the card below): lares get title=lar:///ha.ka.ba/lares/api/noosphere-boot recipe=default${face} aperture=arc`,
+    ...mandate.reads.map((f) => `reads: lares get filter=${shq(f)} recipe=default${face} aperture=measure fields=title,description`),
+    ...mandate.links.map((l) => `link: lares get title=${shq(l)} recipe=default${face} aperture=measure`),
     `reach: ${launchReach(mandate).split(",").join(" ")}`,
     ...(mandate.workdir === null ? [] : [`workdir: ${mandate.workdir}`]),
     ...(mandate.log === null ? [] : [`log: ${mandate.log}`]),

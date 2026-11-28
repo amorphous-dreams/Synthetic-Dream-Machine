@@ -21,9 +21,9 @@ Every record reads through this door, whatever its type: a plain note, a data ti
 
 Every answer leads with a `has` line: provenance (`recipe/` or `bag/`, `layer/`, `floor/true`), the record's own tags, its measures (`type/ position/ family/ slots/ bytes/ base/`, a pointer's `_canonical_uri/ textCid/ _integrity/ size/` verbatim), then the description or role; a meme's has-stack adds one line per slot. Beside it `grain` echoes {asked, applied, why} and `next` names the next unfold, or null.
 
-Two axes ride apart. The lens: the record by default, {recipe or bag, title, lens: "record", tiddler: {fields, hash, textHash, bag, position, family?, omitted?}}, `tiddler` null where none stands; `meme` recomposes the root and its slot children into one carrier sealed by its block check, {title, lens: "meme", meme: {uri, text?, slotText?, canonicalHash, bytes, slots, slot?, page?}, withheld?}, and a record that holds no meme answers the record with a `note` saying so. The grain: none named, a record within one page (65536 bytes) answers fat and a longer one skinny, a pointer its handle; a meme within a page answers its whole carrier and a longer one its has-stack. `skinny` leaves the text home, `fat` carries it, `handle` names a pointer's body, `resolved` reads it from the local CAS by CID and verifies it (a web2 `_canonical_uri` stays named, never fetched), `slot` answers one slot's span at `meme.slotText`, and `whole` reads the whole at the lens's grain, a meme's carrier one page at a time, each page cut on a slot boundary: hand `next.after` back as `after` until `next` reads null; a terminal's `mu=assert` follows every page to the end and joins them. A call names the depth with `mu=relate` (the card) and `mu=assert` (the whole); the seat's own tool names `grain` until it folds into the call.
+Two axes ride apart. The lens: the record by default, {recipe or bag, title, lens: "record", tiddler: {fields, hash, textHash, bag, position, family?, omitted?}}, `tiddler` null where none stands; `meme` recomposes the root and its slot children into one carrier sealed by its block check, {title, lens: "meme", meme: {uri, text?, slotText?, canonicalHash, bytes, slots, slot?, page?}, withheld?}, and a record that holds no meme answers the record with a `note` saying so. The grain: none named, a record within one page (65536 bytes) answers fat and a longer one skinny, a pointer its handle; a meme within a page answers its whole carrier and a longer one its has-stack. `skinny` leaves the text home, `fat` carries it, `handle` names a pointer's body, `resolved` reads it from the local CAS by CID and verifies it (a web2 `_canonical_uri` stays named, never fetched), `slot` answers one slot's span at `meme.slotText`, and `whole` reads the whole at the lens's grain, a meme's carrier one page at a time, each page cut on a slot boundary: hand `next.after` back as `after` until `next` reads null; a terminal's `aperture=arc` follows every page to the end and joins them. A call names the range with `aperture=measure` (the card) and `aperture=arc` (the whole; `theme` reads the whole today, the family owed to a later landing), and the lens with `mu` (`?0` cup, `!0` sword); the seat's own tool names `grain` until it folds into the call.
 
-The text alone: a terminal's `form=text` writes the text's bytes to stdout and nothing else (the has line and the base go to stderr), a record's text whole with a pointer's body resolved, with `meme` the recomposed carrier, with `slot` that slot's span; an answer that carries no text refuses `text-unread` and names the read that cures it. A seat reads values, so the text already rides one named key per lens: `grain="whole"` answers a record's text at `tiddler.fields.text`, `mu=assert` the recomposed carrier at `meme.text`, and `meme` with `slot` one slot's span at `meme.slotText`.
+The text alone: a terminal's `form=text` writes the text's bytes to stdout and nothing else (the has line and the base go to stderr), a record's text whole with a pointer's body resolved, with `meme` the recomposed carrier, with `slot` that slot's span; an answer that carries no text refuses `text-unread` and names the read that cures it. A seat reads values, so the text already rides one named key per lens: `grain="whole"` answers a record's text at `tiddler.fields.text`, `aperture=arc` the recomposed carrier at `meme.text`, and `meme` with `slot` one slot's span at `meme.slotText`.
 
 Hand the answer's base to a write: a record's `hash`, a carrier's `canonicalHash`. An answer that left the text home hands a card's base (`skinny:sha256-…`): a field patch takes it, a text write refuses `base-from-skinny`, so read fat before you rewrite a text. A slot answer, or a page short of the end, hands a partial base bound to what it read (`partial:#/a:…`, `partial:p1:…`): a slot's put takes it within that span, a whole-carrier write or a family delete refuses `base-from-partial`, and the last page hands the bare base. A partial span guards honest base reuse and grants nothing.
 
@@ -39,12 +39,12 @@ A rendered tiddler answers whole here: a source marked `projection: rendered` de
 
 ```memetic-wikitext
 <<has entity=`example` name=`a-record` params=`title/[[Room 4]] recipe/default ~ the record on its gradient, fat within a page; the base rides beside it`>>
-<<has entity=`example` name=`the-depth-card` params=`title/lar:///ha.ka.ba/lares/api/pono/affordance recipe/lares mu/relate ~ the card at mu relate: the has-stack, one line per slot`>>
-<<has entity=`example` name=`the-depth-whole` params=`title/lar:///ha.ka.ba/lares/api/pono/affordance recipe/lares mu/assert slot/#/takes ~ the whole at mu assert, slot narrowing it to one span`>>
-<<has entity=`example` name=`the-card` params=`title/[[Room 4]] mu/relate ~ every field, the text left home`>>
+<<has entity=`example` name=`the-depth-card` params=`title/lar:///ha.ka.ba/lares/api/pono/affordance recipe/lares aperture/measure ~ the card at aperture measure: the has-stack, one line per slot`>>
+<<has entity=`example` name=`the-depth-whole` params=`title/lar:///ha.ka.ba/lares/api/pono/affordance recipe/lares aperture/arc slot/#/takes ~ the whole at aperture arc, slot narrowing it to one span`>>
+<<has entity=`example` name=`the-card` params=`title/[[Room 4]] aperture/measure ~ every field, the text left home`>>
 <<has entity=`example` name=`one-bag` params=`title/[[Room 4]] bag/lares ~ that one bag's record, its base and the bag that answered`>>
 <<has entity=`example` name=`one-slot` params=`title/lar:///ha.ka.ba/lares/api/pono/affordance recipe/lares meme/true slot/#/takes ~ one slot of a meme, its partial base beside it`>>
-<<has entity=`example` name=`the-whole-carrier` params=`title/lar:///ha.ka.ba/lares/api/pono/affordance recipe/lares mu/assert ~ the whole carrier, paged on slot boundaries and joined`>>
+<<has entity=`example` name=`the-whole-carrier` params=`title/lar:///ha.ka.ba/lares/api/pono/affordance recipe/lares aperture/arc ~ the whole carrier, paged on slot boundaries and joined`>>
 <<has entity=`example` name=`the-text-alone` params=`title/[[Room 4]] form/text ~ the text alone on stdout, ready for a pipe; the has line and base on stderr`>>
 <<has entity=`example` name=`the-families` params=`recipe/default meme/true tree/true ~ the family roots this view holds, each with its slots`>>
 <<has entity=`example` name=`a-visit` params=`title/[[Sibling note]] recipe/default target/h1 ~ a lit sibling's daemon wiki, read while you keep your own face`>>
@@ -54,20 +54,21 @@ A rendered tiddler answers whole here: a source marked `projection: rendered` de
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ title · container · face · mu · meme · grain · slot · form · fields · max-bytes · after · target · tree
+!! takes ~ title · container · face · mu · aperture · meme · grain · slot · form · fields · max-bytes · after · target · tree
 
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container`>>
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/aperture`>>
 
 ```memetic-wikitext
-<<has entity=`cell` name=`?` params=`mu/relate ~ the card: a meme's has-stack, a record's has line with its text left home; beside a slot, that slot's own card`>>
-<<has entity=`cell` name=`!` params=`mu/assert ~ the whole: a meme's carrier at the whole grain, paged on slot boundaries; beside a slot, that one span`>>
+<<has entity=`cell` name=`?0` params=`mu/cup ~ the read for relations: the same bytes at the asked range, its has line naming what it reaches (tags, family, base)`>>
+<<has entity=`cell` name=`!0` params=`mu/sword ~ the read asserted: the same bytes at the asked range, a composed carrier's shape checked and a fault exiting 1; a terminal prints the machine answer verbatim`>>
 <<has entity=`arg` name=`title` params=`takes/title seat/1 as/<title> ~ the record, any right-intent string, a lar: title whole; absent beside meme, the family listing`>>
 <<has entity=`arg` name=`meme` params=`~ the carrier lens: a meme's root and slots recomposed into one sealed carrier; with no title, the family listing`>>
 <<has entity=`arg` name=`grain` params=`takes/grain skins/mcp ~ the seat's tool alone, until it folds into the call: skinny, fat, handle, resolved, slot or whole; none named, the door picks by size`>>
 <<has entity=`arg` name=`slot` params=`takes/slot-path ~ one slot of the meme the title names, as #/name`>>
-<<has entity=`arg` name=`form` params=`takes/form skins/cli ~ text: the text alone on stdout, the has line and base on stderr; with no depth named, the whole text`>>
+<<has entity=`arg` name=`form` params=`takes/form skins/cli ~ text: the text alone on stdout, the has line and base on stderr; with no range named, the whole text`>>
 <<has entity=`arg` name=`fields` params=`takes/names ~ the named fields alone`>>
 <<has entity=`arg` name=`max-bytes` params=`takes/count ~ the byte cap on a record answer; the largest fields leave first, named under omitted`>>
 <<has entity=`arg` name=`after` params=`takes/cursor ~ the page behind the cursor a prior answer named in next`>>
@@ -95,9 +96,9 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`wiki-unreached` params=`cure/[[engine.record.reads title/<title> recipe/default]] ~ no wiki this face hosts or holds a share of answers the slug`>>
-<<has entity=`refusal` name=`grain-unknown` params=`cure/[[engine.record.reads title/<title> mu/assert]] ~ a grain reads skinny, fat, handle, resolved, slot or whole`>>
-<<has entity=`refusal` name=`text-unread` params=`cure/[[engine.record.reads title/<title> mu/assert]] ~ the answer carries no text, an unread pointer body or a card; the whole read carries it`>>
-<<has entity=`refusal` name=`read-page-mismatch` params=`cure/[[engine.record.reads title/<title> mu/assert]] ~ the whole carrier's pages failed validation; read again`>>
+<<has entity=`refusal` name=`grain-unknown` params=`cure/[[engine.record.reads title/<title> aperture/arc]] ~ a grain reads skinny, fat, handle, resolved, slot or whole`>>
+<<has entity=`refusal` name=`text-unread` params=`cure/[[engine.record.reads title/<title> aperture/arc]] ~ the answer carries no text, an unread pointer body or a card; the whole read carries it`>>
+<<has entity=`refusal` name=`read-page-mismatch` params=`cure/[[engine.record.reads title/<title> aperture/arc]] ~ the whole carrier's pages failed validation; read again`>>
 <<has entity=`refusal` name=`cross-face-private` params=`~ a visit reads another face's canon and working layer alone; its personal and draft layers stay private`>>
 <<has entity=`refusal` name=`face-not-open` params=`~ the face named stands shut; a visit reads a lit face alone`>>
 ```
@@ -163,6 +164,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;dRekf-CFtpmJzBu-i1jOSJ696klSVdfr1ZLBhM9nK2s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rqPNsDOo94omeghXhctpP2DtlwuLXU0Yez21mFaUP4Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

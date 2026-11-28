@@ -157,7 +157,7 @@ describe("verb-table-parity — the CLI half of the tiddler door's one table", (
 describe("the call door plans one call: {verb, params, surface: cli}", () => {
   test("★ each verb word sends its params as written, past every flag table ★", async () => {
     const plans: Array<[string[], ReturnType<typeof call>]> = [
-      [["get", "title=lar:///t/x", "mu=relate"], call("get", { title: "lar:///t/x", mu: "relate" })],
+      [["get", "title=lar:///t/x", "aperture=measure"], call("get", { title: "lar:///t/x", aperture: "measure" })],
       [["get", "title=Room 4", "recipe=kahu", "form=text"], call("get", { title: "Room 4", recipe: "kahu", form: "text" })],
       [["put", "title=T", "text=new words"], call("put", { title: "T", text: "new words" })],
       [["put", "title=T", "replace= the cat ", "with="], call("put", { title: "T", replace: " the cat ", with: "" })],
@@ -221,11 +221,11 @@ describe("the call door plans one call: {verb, params, surface: cli}", () => {
     } finally { out.mockRestore(); err.mockRestore(); }
   });
 
-  test("★ the one act: a residency act rides by its address, the vessel binds it and answers handler/host, and the terminal's door submits the bound act; mu=dry reaches it as the island's preview ★", async () => {
+  test("★ the one act: a residency act rides by its address, the vessel binds it and answers handler/host, and the terminal's door submits the bound act; mu=pentacle reaches it as the island's preview ★", async () => {
     const ADDS = "lar:///carriage.record.adds";
     const bound = { title: "T", from: "lar:///a", to: "lar:///b", yes: true };
     h.replyFor = (args) => (h.calls.length === 1
-      ? { has: "<<~ has name=`" + ADDS + "`>>", handler: "host", address: ADDS, params: bound, ...(String((args["params"] as Record<string, unknown>)["mu"] ?? "") === "dry" ? { mu: { asked: "dry", carry: "_" } } : {}) }
+      ? { has: "<<~ has name=`" + ADDS + "`>>", handler: "host", address: ADDS, params: bound, ...(String((args["params"] as Record<string, unknown>)["mu"] ?? "") === "pentacle" ? { mu: { asked: "pentacle", carry: "_0" } } : {}) }
       : { verb: "ADD" });
     const out = vi.spyOn(console, "log").mockImplementation(() => {});
     const err = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -235,7 +235,7 @@ describe("the call door plans one call: {verb, params, surface: cli}", () => {
       expect(h.calls[1]).toMatchObject({ verb: "ADD", args: { title: "T", "from-bag": "lar:///a", "to-bag": "lar:///b" } });
       expect(h.calls[1]!.args["dry-run"]).toBeUndefined();
       h.calls.length = 0;
-      expect(await dispatch(["act", ADDS, "title=T", "from=lar:///a", "to=lar:///b", "mu=dry", "--json"])).toBe(0);
+      expect(await dispatch(["act", ADDS, "title=T", "from=lar:///a", "to=lar:///b", "mu=pentacle", "--json"])).toBe(0);
       expect(h.calls[1]).toMatchObject({ verb: "ADD", args: { title: "T", "dry-run": true } });
       h.calls.length = 0;
       // CONTROL: the burned spelling reaches the call door as a word, and the VM routes it (here, the reply stands for its refusal).
@@ -251,8 +251,8 @@ describe("the call door plans one call: {verb, params, surface: cli}", () => {
     try {
       for (const [address, params] of [["lar:///carriage.bundle.repacks", { source: "x.json", from: "lar:///b" }], ["lar:///carriage.draft.pulls", { uri: "lar:///t" }]] as const) {
         h.calls.length = 0;
-        h.replyFor = () => ({ has: "<<~ has name=`" + address + "`>>", handler: "host", address, params, mu: { asked: "dry", carry: "_" } });
-        const exit = await dispatch(["act", address, ...Object.entries(params).map(([k, v]) => `${k}=${v}`), "mu=dry", "--json"]);
+        h.replyFor = () => ({ has: "<<~ has name=`" + address + "`>>", handler: "host", address, params, mu: { asked: "pentacle", carry: "_0" } });
+        const exit = await dispatch(["act", address, ...Object.entries(params).map(([k, v]) => `${k}=${v}`), "mu=pentacle", "--json"]);
         expect(exit, address).not.toBe(0);
         expect(h.calls, address).toHaveLength(1);   // the vessel's call alone: no REPACK, no where, no draft ever rides
         expect(out.mock.calls.flat().join(" "), address).toContain("mu-cell-empty");
@@ -265,7 +265,7 @@ describe("the call door plans one call: {verb, params, surface: cli}", () => {
     const line = argv("act", [], {}, {});
     expect(actArgsOf(line, null, { uri: "lar:///t", "dry-run": true }, null).flags["dry-run"]).toBeUndefined();
     expect(actArgsOf(line, "ADD", { title: "T", "dry-run": true }, null).flags["dry-run"]).toBeUndefined();
-    expect(actArgsOf(line, "ADD", { title: "T" }, "_").flags["dry-run"]).toBe(true);
+    expect(actArgsOf(line, "ADD", { title: "T" }, "_0").flags["dry-run"]).toBe(true);
   });
 
   test("★ an old flag on a call verb refuses by name before anything runs; the burned `tiddler` door answers unknown command ★", async () => {
@@ -352,7 +352,7 @@ describe("a bag names one store and no wiki", () => {
     for (const positional of [["render", "T"], ["status"]]) {
       const r = await run(argv("wiki", [...positional], { bag: "lares" }));
       expect(r.exit).toBe(2);
-      expect(r.printed).toMatchObject({ ok: false, error: { code: "wiki-not-anchored", message: expect.stringMatching(/runs in a wiki's own engine.*lares get title=<title> bag=<slug>.*mu=assert.*lares get meme=true bag=<slug>.*--recipe <slug>/s) } });
+      expect(r.printed).toMatchObject({ ok: false, error: { code: "wiki-not-anchored", message: expect.stringMatching(/runs in a wiki's own engine.*lares get title=<title> bag=<slug>.*aperture=arc.*lares get meme=true bag=<slug>.*--recipe <slug>/s) } });
     }
     expect(h.calls).toEqual([]);
     h.reply = { bag: "lar:///ha.ka.ba/bags/lares", title: "T", tiddler: { fields: { title: "T", text: "words" }, hash: "sha256-x", textHash: "sha256-y", bag: "lar:///ha.ka.ba/bags/lares", position: "plain" }, ...by("engine.record.reads") };
@@ -421,7 +421,7 @@ describe("the answer prints by the carrier that shaped it: a receipt names its e
     expect(conflict).toMatchObject({ exit: 4, printed: { ok: false, error: { code: "conflict", message: expect.stringContaining("moved past sha256-old") }, data: { hash: "sha256-live" } } });
     h.reply = { decision: "exists", hash: "sha256-live", changed: [], ...by("engine.record.puts") };
     const exists = await run(line("put", "title=Room 4", "text=x", "create=true"));
-    expect(exists).toMatchObject({ exit: 4, printed: { error: { code: "conflict", message: expect.stringContaining("`lares get title='Room 4' mu=relate`") } } });
+    expect(exists).toMatchObject({ exit: 4, printed: { error: { code: "conflict", message: expect.stringContaining("`lares get title='Room 4' aperture=measure`") } } });
     h.reply = { title: "Ledger", decision: "conflict", hash: "sha256:3", ...by("engine.record.puts") };
     expect(await run(line("put", "title=Ledger", "append=a dated note"))).toMatchObject({ exit: 4, printed: { error: { message: expect.stringContaining("kept moving under the append") } } });
   });
@@ -454,7 +454,7 @@ describe("the answer prints by the carrier that shaped it: a receipt names its e
 
   test("a dry answer prints whole: nothing landed, every key reads", async () => {
     h.reply = { has: "<<~ has name=`T` params=`dry/true`>>", dry: true, title: "T", decision: "put", bag: "lar:///ha.ka.ba/wikis/daemon/working", ...by("engine.record.puts") };
-    const r = await prose(said("put", "title=T", "text=x", "mu=dry"));
+    const r = await prose(said("put", "title=T", "text=x", "mu=pentacle"));
     expect(r.exit).toBe(0);
     expect(r.out.split("\n")[0]).toBe("<<~ has name=`T` params=`dry/true`>>");
     expect(r.out).toContain("dry: true\n");
@@ -550,7 +550,7 @@ describe("a get by title answers on a gradient", () => {
   const answer = (args: Record<string, unknown>): Record<string, unknown> => {
     const params = paramsOf(args);
     const base = { recipe: "default", title: "lar:///t/x", lens: "meme", ...by("engine.record.reads") };
-    if (params["mu"] !== "assert") {
+    if (params["aperture"] !== "arc") {
       return { has: `${ROOT_LINE}\n<<~ has name=\`#/a\` params=\`bytes/4 ~ a\`>>\n<<~ has name=\`#/b\` params=\`bytes/6 ~ b\`>>`, ...base,
         meme: { uri: "lar:///t/x", canonicalHash: "sha256:9", bytes: 10, slots }, grain: { asked: null, applied: "skinny", why: "runs past one page" }, next: { grain: "whole" } };
     }
@@ -559,23 +559,23 @@ describe("a get by title answers on a gradient", () => {
       grain: { asked: "whole", applied: "whole", why: "the whole carrier, cut on slot boundaries" }, next: second ? null : { grain: "whole", after: "1.0123456789abcdef" } };
   };
 
-  test("RED: past a page, a get with no mu writes the has-stack on stdout (never a cut carrier) and stderr names mu=assert", async () => {
+  test("RED: past a page, a get with no aperture writes the has-stack on stdout (never a cut carrier) and stderr names aperture=arc", async () => {
     h.replyFor = answer;
     const r = await prose(said("get", "title=lar:///t/x"));
     expect(r.exit).toBe(0);
     expect(r.out).toBe(`${ROOT_LINE}\n<<~ has name=\`#/a\` params=\`bytes/4 ~ a\`>>\n<<~ has name=\`#/b\` params=\`bytes/6 ~ b\`>>\n`);
-    expect(r.err).toEqual(["base: sha256:9", "size: 10 bytes", "grain: skinny (runs past one page)", expect.stringMatching(/mu=assert reads the whole carrier/)]);
+    expect(r.err).toEqual(["base: sha256:9", "size: 10 bytes", "grain: skinny (runs past one page)", expect.stringMatching(/aperture=arc reads the whole carrier/)]);
   });
 
-  test("RED: mu=assert follows the pages and writes the whole carrier on stdout, the root's has line on stderr; --json carries it joined", async () => {
+  test("RED: aperture=arc follows the pages and writes the whole carrier on stdout, the root's has line on stderr; --json carries it joined", async () => {
     h.replyFor = answer;
-    const r = await prose(said("get", "title=lar:///t/x", "mu=assert"));
+    const r = await prose(said("get", "title=lar:///t/x", "aperture=arc"));
     expect(r.out).toBe("AAAABBBBBB");
     expect(r.err[0]).toBe(ROOT_LINE);
     expect(h.calls.map((c) => paramsOf(c.args)["after"])).toEqual([undefined, "1.0123456789abcdef"]);
     expect(h.calls.map((c) => c.verb)).toEqual(["call", "call"]);
     h.calls.length = 0;
-    const env = await run(line("get", "title=lar:///t/x", "mu=assert"));
+    const env = await run(line("get", "title=lar:///t/x", "aperture=arc"));
     expect(env.printed["data"]).toMatchObject({ has: ROOT_LINE, lens: "meme", meme: { text: "AAAABBBBBB", canonicalHash: "sha256:9" }, next: null });
     // A joined read echoes the join, never the first page's `page 1 of N`.
     expect((env.printed["data"] as { grain: { why: string } }).grain.why).toMatch(/2 pages joined/);
@@ -604,10 +604,10 @@ describe("a get by title answers on a gradient", () => {
  * `readCarrierShape` reads a fault that exists NOWHERE in the records it composes: a guest pastes a whole framed carrier into an
  * `ahu` section, the child's bytes read as a legal carrier, the root's bytes read as a legal carrier, and `expandRefs` joins them
  * into an illegal one carrying TWO text frames where only the first verifies (`child-grade-decision.mem` #/measured rows 11, 13).
- * The door reads a carrier answered in one page (its `shape`, where it faults), and the CLI reads a carrier `mu=assert` joined
+ * The door reads a carrier answered in one page (its `shape`, where it faults), and the CLI reads a carrier `aperture=arc` joined
  * from pages. IT REPORTS RATHER THAN REFUSES: the bytes still land, and the fault reaches both channels with a non-zero exit.
  */
-describe("a get mu=assert reads the composition it carries", () => {
+describe("a get aperture=arc reads the composition it carries", () => {
   /** A clean carrier at its full floor, minted here and stamped by the house's own normalizer (no canon read). */
   const CLEAN = normalizeMemeSource([
     `<<!DOCTYPE type=\`memetic-wikitext+tiddlywiki\` spec=\`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\`>>`, ``,
@@ -640,11 +640,11 @@ describe("a get mu=assert reads the composition it carries", () => {
     };
   };
   const read = async (): Promise<{ code: number; out: string; err: string }> => {
-    const r = await prose(said("get", "title=lar:///t/two-heads", "mu=assert"));
+    const r = await prose(said("get", "title=lar:///t/two-heads", "aperture=arc"));
     return { code: r.exit, out: r.out, err: r.err.join("\n") };
   };
 
-  test("★ RED — a carrier mu=assert joins from pages carrying TWO text frames reaches the operator's channel, and the bytes still land ★", async () => {
+  test("★ RED — a carrier aperture=arc joins from pages carrying TWO text frames reaches the operator's channel, and the bytes still land ★", async () => {
     h.replyFor = paged([FIRST, SECOND]);
     const r = await read();
     expect(r.err).toMatch(/2 text frames stand where the grammar admits one/);
@@ -654,7 +654,7 @@ describe("a get mu=assert reads the composition it carries", () => {
 
   test("the fault rides the --json channel too: `ok` names the act, the exit names the reading", async () => {
     h.replyFor = paged([FIRST, SECOND]);
-    const env = await run(line("get", "title=lar:///t/two-heads", "mu=assert"));
+    const env = await run(line("get", "title=lar:///t/two-heads", "aperture=arc"));
     const data = env.printed["data"] as { meme: { text: string }; shape?: { faults: string[] } };
     expect(data.shape?.faults.join(" ")).toMatch(/2 text frames stand where the grammar admits one/);
     expect(env.printed["ok"]).toBe(true);
@@ -697,14 +697,14 @@ describe("a get mu=assert reads the composition it carries", () => {
   });
 });
 
-describe("a get mu=assert answers the carrier through a pipe (the carrier-first law)", () => {
+describe("a get aperture=arc answers the carrier through a pipe (the carrier-first law)", () => {
   const reply = { has: "<<~ has name=`lar:///t/x` params=`recipe/default base/sha256:9`>>", recipe: "default", title: "lar:///t/x", lens: "meme",
     meme: { uri: "lar:///t/x", text: "<<^ code=`&#x0001;`>> body\n", canonicalHash: "sha256:9", bytes: 27, slots: [] },
     grain: { asked: null, applied: "whole", why: "fits one page" }, next: null, ...by("engine.record.reads") };
 
-  test("★ through a pipe, a mu=assert get answers the CARRIER on stdout and the has line and base on stderr ★", async () => {
+  test("★ through a pipe, a aperture=arc get answers the CARRIER on stdout and the has line and base on stderr ★", async () => {
     h.reply = reply;
-    const r = await prose(piped("get", "title=lar:///t/x", "mu=assert"), true);
+    const r = await prose(piped("get", "title=lar:///t/x", "aperture=arc"), true);
     expect(r.exit).toBe(0);
     expect(r.out).toBe("<<^ code=`&#x0001;`>> body\n");
     expect(r.err.slice(0, 2)).toEqual(["<<~ has name=`lar:///t/x` params=`recipe/default base/sha256:9`>>", "base: sha256:9"]);
@@ -712,13 +712,13 @@ describe("a get mu=assert answers the carrier through a pipe (the carrier-first 
 
   test("CONTROL: `--json` asks for the envelope, the daemon's answer verbatim; a get with no mu answers a pipe in the envelope", async () => {
     h.reply = reply;
-    expect(JSON.parse((await prose(piped("get", "title=lar:///t/x", "mu=assert", "--json"), true)).out)["data"]).toEqual(reply);
+    expect(JSON.parse((await prose(piped("get", "title=lar:///t/x", "aperture=arc", "--json"), true)).out)["data"]).toEqual(reply);
     expect(JSON.parse((await prose(piped("get", "title=lar:///t/x"), true)).out)["data"]).toEqual(reply);
   });
 
   test("through a pipe, an absent meme refuses in prose on stderr and leaves stdout empty, so a redirect never saves an error as a meme", async () => {
     h.reply = { recipe: "default", title: "lar:///t/x", lens: "meme", tiddler: null, ...by("engine.record.reads") };
-    const r = await prose(piped("get", "title=lar:///t/x", "mu=assert"), true);
+    const r = await prose(piped("get", "title=lar:///t/x", "aperture=arc"), true);
     expect(r.exit).toBe(3);
     expect(r.out).toBe("");
     expect(r.err.join(" ")).toMatch(/no tiddler at lar:\/\/\/t\/x/);
@@ -727,7 +727,7 @@ describe("a get mu=assert answers the carrier through a pipe (the carrier-first 
 
 /**
  * TEXT ALONE (lar:///ha.ka.ba/kahua/memory/course/ai-surface-gestures #/stories): `lares get title=<title> form=text` answers the
- * text's own bytes on stdout and nothing else, a terminal or a pipe alike, the has line and base on stderr; `mu=assert form=text`
+ * text's own bytes on stdout and nothing else, a terminal or a pipe alike, the has line and base on stderr; `aperture=arc form=text`
  * keeps the carrier contract (the whole carrier, its pages joined), a slot answers its span, and an answer carrying no text
  * refuses by name.
  */
@@ -746,7 +746,7 @@ describe("a get form=text answers the text alone", () => {
     expect(h.calls.at(-1)).toEqual(call("get", { title: "Note", form: "text" }));
   });
 
-  test("RED: mu=assert form=text writes the recomposed carrier whole, its pages followed and joined; a slot writes its span", async () => {
+  test("RED: aperture=arc form=text writes the recomposed carrier whole, its pages followed and joined; a slot writes its span", async () => {
     const pages = (args: Record<string, unknown>): Record<string, unknown> => {
       const params = args["params"] as Record<string, unknown>;
       const second = params["after"] === "1.0123456789abcdef";
@@ -757,11 +757,11 @@ describe("a get form=text answers the text alone", () => {
         grain: { asked: "whole", applied: "whole", why: "the whole carrier, cut on slot boundaries" }, next: second ? null : { grain: "whole", after: "1.0123456789abcdef" }, ...by("engine.record.reads") };
     };
     h.replyFor = pages;
-    const whole = await prose(piped("get", "title=lar:///t/x", "mu=assert", "form=text"), true);
+    const whole = await prose(piped("get", "title=lar:///t/x", "aperture=arc", "form=text"), true);
     expect(whole.out).toBe("AAAABBBBBB");
     expect(h.calls.map((c) => (c.args["params"] as Record<string, unknown>)["after"])).toEqual([undefined, "1.0123456789abcdef"]);
     h.calls.length = 0;
-    const slot = await prose(piped("get", "title=lar:///t/x", "slot=#/a", "mu=assert", "form=text"), true);
+    const slot = await prose(piped("get", "title=lar:///t/x", "slot=#/a", "aperture=arc", "form=text"), true);
     expect(slot.out).toBe("the a span\n");
     expect(slot.err[0]).toBe("<<~ has name=`lar:///t/x#/a` params=`base/partial:#/a:sha256:9`>>");
   });
@@ -783,7 +783,7 @@ describe("a get form=text answers the text alone", () => {
     const r = await prose(piped("get", "title=lar:///t/x", "recipe=kahu", "form=text"), true);
     expect(r.exit).toBe(2);
     expect(r.out).toBe("");
-    expect(r.err.join(" ")).toContain("`lares get title=lar:///t/x recipe=kahu mu=assert form=text` reads the whole carrier");
+    expect(r.err.join(" ")).toContain("`lares get title=lar:///t/x recipe=kahu aperture=arc form=text` reads the whole carrier");
   });
 
   test("CONTROL: `--json` beside form=text keeps the envelope, the daemon's answer verbatim", async () => {

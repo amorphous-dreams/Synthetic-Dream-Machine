@@ -33,7 +33,7 @@ describe.skipIf(wikiSkip)(`the affordance bake over the fixture carrier${skipNot
     expect(whole).toContain("  lares oracle cast --recipe default --asking 'which road first?' --fresh    # a person asks the same words anew");
     expect(whole).toContain("    cure: tiddler.get.reads --title <cast>");
     expect(whole).not.toContain("--at");   // `at` skins mcp, tw5 and console alone: the cli reads the time once
-    expect(whole).toContain(`lares get title=${FIXTURE_TITLE} recipe=lares mu=relate`);
+    expect(whole).toContain(`lares get title=${FIXTURE_TITLE} recipe=lares aperture=measure`);
     expect(carrier!.title).toBe(FIXTURE_TITLE);
     expect(carrier!.calls["cli"]).not.toContain("tiddler.get.reads --title <cast>");   // a foreign cure is no call this door parses
   });

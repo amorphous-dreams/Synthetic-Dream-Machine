@@ -345,8 +345,8 @@ def test_every_write_shape_rides_as_named_params_on_the_one_put(daemon):
     t["put"](title="Note", recipe="default", fields={"status": "trued"}, params={"tag_add": "reviewed", "unset": ["priority"]})
     assert daemon.wire() == call_line("put", {"title": "Note", "recipe": "default", "fields": {"status": "trued"},
                                               "tag-add": "reviewed", "unset": ["priority"]})
-    t["put"](title="Note", recipe="default", text="x", mu="dry")
-    assert daemon.wire() == call_line("put", {"title": "Note", "recipe": "default", "text": "x", "mu": "dry"})
+    t["put"](title="Note", recipe="default", text="x", mu="pentacle")
+    assert daemon.wire() == call_line("put", {"title": "Note", "recipe": "default", "text": "x", "mu": "pentacle"})
 
 
 def test_a_rename_rides_its_title_its_target_and_its_base(daemon):
@@ -368,7 +368,7 @@ def test_the_seat_instructions_a_waking_client_receives_name_the_call_shapes_and
     served = build_mcp(DaemonCoordinator(wing="w")).instructions
     for door in ("`get`", "`put`", "`delete`", "`rename`", "act(address="):
         assert door in served, door
-    assert 'mu="assert"' in served
+    assert 'aperture="arc"' in served
     assert 'act(address="lar:///engine.law.indexes")' in served
     assert "Read the house's law first" in served
 
@@ -408,9 +408,9 @@ def test_a_seat_act_walks_no_dry_path_its_code_never_walks(daemon):
     from lares_mcp import SEAT_DRY
     assert SEAT_DRY == frozenset()
     t = _tools()
-    daemon.answers = [{**seated("lar:///face.draft.stages", {"title": "T", "text": "x"}), "mu": {"asked": "dry", "carry": "_"}}]
+    daemon.answers = [{**seated("lar:///face.draft.stages", {"title": "T", "text": "x"}), "mu": {"asked": "pentacle", "carry": "_0"}}]
     with pytest.raises(Exception, match="mu-cell-empty"):
-        t["act"](address="lar:///face.draft.stages", args={"title": "T", "text": "x", "mu": "dry"})
+        t["act"](address="lar:///face.draft.stages", args={"title": "T", "text": "x", "mu": "pentacle"})
     assert len(daemon.lines) == 1   # the vessel's call alone: no session, no stage
 
 
@@ -442,16 +442,16 @@ def _page(n: int, pages: int, text: str, total: int, after: "str | None", hashed
 
 
 def test_the_one_get_reads_a_whole_carrier_page_by_page_and_refuses_a_mismatch(daemon):
-    """F4: `get(mu="assert")` on a meme that answers past one page follows the cursor to the end and joins the carrier; a page
+    """F4: `get(aperture="arc")` on a meme that answers past one page follows the cursor to the end and joins the carrier; a page
     naming another hash refuses read-page-mismatch."""
     t = _tools()
     daemon.answers = [_page(1, 2, "ab", 4, "c1"), {**_page(2, 2, "cd", 4, None), "meme": {**_page(2, 2, "cd", 4, None)["meme"], "canonicalHash": "h1"}}]
-    out = t["get"](title="lar:///t/x", recipe="default", mu="assert")
+    out = t["get"](title="lar:///t/x", recipe="default", aperture="arc")
     assert out["meme"]["text"] == "abcd" and out["meme"]["canonicalHash"] == "h1" and out["next"] is None
     assert daemon.wire(1)["args"]["params"]["after"] == "c1"
     daemon.answers = [_page(1, 2, "ab", 4, "c1"), {**_page(2, 2, "cd", 4, None), "meme": {**_page(2, 2, "cd", 4, None)["meme"], "canonicalHash": "h2"}}]
     with pytest.raises(Exception, match="read-page-mismatch"):
-        t["get"](title="lar:///t/x", recipe="default", mu="assert")
+        t["get"](title="lar:///t/x", recipe="default", aperture="arc")
 
 
 def test_an_unlanded_write_raises_by_the_class_that_answered_through_act_too(daemon):

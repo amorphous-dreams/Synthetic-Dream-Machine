@@ -289,13 +289,13 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
     {
       const recipe = "default";
       // The text rides the filter's own rows; a row too large for one page sheds it (`omitted`), and that one record reads
-      // whole through `get title=… mu=assert` (the fat grain: past a page the door's default leaves the text home, and an empty text
+      // whole through `get title=… aperture=arc` (the fat grain: past a page the door's default leaves the text home, and an empty text
       // would hash two differing records alike).
       const plain = readFilter(lares, ["get", `filter=${PLAIN_FILTER}`, `recipe=${recipe}`, "all=true", "fields=text", "max-bytes=262144", "--json"]);
       for (const row of plain.rows ?? []) {
         let hash = `sha256:${sha256(String(row.fields?.text ?? ""))}`;
         if ((row.omitted ?? []).includes("text")) {
-          const got = read(lares, ["get", `title=${row.title}`, `recipe=${recipe}`, "mu=assert", "--json"]);
+          const got = read(lares, ["get", `title=${row.title}`, `recipe=${recipe}`, "aperture=arc", "--json"]);
           // A TRUE POINTER answers its handle at every tiddler grain: the census hashes the handle's identity (its CID, else its
           // canonical address), never "". Any other record that answers no text at the fat grain refuses.
           const fields = got.tiddler?.fields ?? {};

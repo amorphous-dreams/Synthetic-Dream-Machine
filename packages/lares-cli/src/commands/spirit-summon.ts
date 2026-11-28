@@ -250,7 +250,7 @@ async function foundMandate(ctx: SummonCtx, covered: Readonly<Partial<Record<Man
   if (refused !== null) throw refused;
   const receipt = await ctx.door("mandate", "tiddler-put", { recipe: RECIPE, title: found.uri, text: carrier });
   const decision = String(receipt["decision"] ?? "");
-  if (decision !== "put" && decision !== "noop") throw writeRefused(found.uri, decision, " mu=assert");
+  if (decision !== "put" && decision !== "noop") throw writeRefused(found.uri, decision, " aperture=arc");
   const landed = await mandateAt(ctx, "mandate", found.uri, null);
   return { uri: found.uri, hash: landed.hash, stands: decision === "noop" };
 }

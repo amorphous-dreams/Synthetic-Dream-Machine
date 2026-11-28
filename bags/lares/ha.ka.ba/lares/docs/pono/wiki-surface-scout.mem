@@ -51,7 +51,7 @@ written   = "2026-11-14"
 | daemon verb | CLI | MCP tool | answers |
 |---|---|---|---|
 | `wiki-filter {recipe, filter, fields?, after?, limit?, maxBytes?}` | `lares get filter='<filter>' [fields=a,b] [limit=N] [max-bytes=N] [after=<cursor>] [all=true]` | `wiki_filter` | `{recipe, filter, titles \| rows, total, next, asOf, withheld?}` |
-| `tiddler-get {recipe, title, slot?, fields?, text?, maxBytes?}` | `lares get title=<title> [slot='#/name'] [fields=a,b] [mu=relate]` | `tiddler_get` | `{recipe, title, tiddler: {fields, hash, textHash, bag, position, family?, omitted?} \| null}` |
+| `tiddler-get {recipe, title, slot?, fields?, text?, maxBytes?}` | `lares get title=<title> [slot='#/name'] [fields=a,b] [aperture=measure]` | `tiddler_get` | `{recipe, title, tiddler: {fields, hash, textHash, bag, position, family?, omitted?} \| null}` |
 | `wiki-render {recipe, title \| text, type?, form?, after?, maxBytes?}` | `lares wiki render <title> \| --text '<span>' [--form text\|html]` | `wiki_render` | `{recipe, title, form, text, bytes, truncated, next}` |
 | `tiddler-put {recipe, title, text?, fields?, unset?, tagsAdd?, tagsRemove?, base?, create?}` | `lares put title=<title> [fields='<json>'] [unset=a,b] [tag-add=<list>] [tag-remove=<list>] [text=<words> \| file=<path>] [base <hash>] [--create]` | `tiddler_put` | `{recipe, title, decision: put\|noop\|conflict\|exists, bag, created, changed, hash, textHash, position, family?}` |
 | `tiddler-delete {recipe, title, base?, family?, mode?}` | `lares delete title=<title> [base=<hash>] [family=true] [mode=kapae\|reveal]` | `tiddler_delete` | `{recipe, title, decision: removed\|absent\|conflict\|refused, mode, tombstoned, retracted, hash?, refusal?, why?, consequence?}` |
@@ -100,7 +100,7 @@ The verbs live in `packages/lararium-tw5/src/tiddler-verbs.ts`; one table (`pack
 | verb | class | what the code touches | where it requires meme structure or bends a plain tiddler |
 |---|---|---|---|
 | `put` / `meme_put` / `meme-put` | ''(c)'' | takes TEXT only, never fields; a framed text splits into the family; an unframed text lands as one record with `type: text/plain` and nothing else (`bareRecord`, `ingest-gate.ts:122-126`; graded `bare-data`, `:173-175`) | ''Meme-only part:'' the split, the grade, the family hash. ''Hazard on a plain tiddler'' [inferred from code, unexecuted]: the gate tombstones every title of the family that did not freshly land (`place-meme.ts:376-381`), and the family takes every `<uri>/` title (`:206-208`), so a bare put at `lar:///x` would tombstone a plain `lar:///x/y`. A plain tiddler's own `type`, `tags` and fields cannot ride this door at all. |
-| `get mu=assert` / `tiddler_get(meme=True)` / `tiddler-get {meme: true}` | ''(c)'' | any record's text under the title answers (`heldText`, `place-meme.ts:232-234`); a carrier recomposes its family | ''Meme-only part:'' the recompose and the canonical hash. A plain tiddler answers its `text` alone; its fields never cross. |
+| `get aperture=arc` / `tiddler_get(meme=True)` / `tiddler-get {meme: true}` | ''(c)'' | any record's text under the title answers (`heldText`, `place-meme.ts:232-234`); a carrier recomposes its family | ''Meme-only part:'' the recompose and the canonical hash. A plain tiddler answers its `text` alone; its fields never cross. |
 | `list` / `meme_list` / `meme-list` | ''(b)'' | lists ROOTS only | `isMemeRoot` gates every record (`place-meme.ts:506`, recipe stack `meme-verbs.ts:509`); the docstring says it plainly: //"A plain tiddler never lists"// (`lares_mcp.py:1084`). |
 | `delete` / `meme_delete` / `meme-delete` | ''(c)'' | tombstones the whole family (`removeMeme`, `place-meme.ts:424-434`) | ''Meme-only part:'' the family hash as base and the group sweep. On a plain tiddler the group law still sweeps every `<uri>/` title [inferred from code]. Deleting one plain record has no door of its own. |
 | `project` / `meme_project` / `meme-project` | ''(b)'' today, ''(c)'' by intent | renders through the house templates | refuses where no carrier root stands, at the anchor (`meme-project.ts:159`) and on the store path (`meme-verbs.ts:674`); `html`, `tid`, `json` off the anchor refuse (`:668-670`). Rendering a PLAIN tiddler to HTML stands as a pure tiddler act no door offers. |
@@ -491,7 +491,7 @@ Each red fails on today's code first, each with its control.
 # ''Lane 1, the tiddler door on the anchor'' (`L17` stage slice 3, re-named): `tiddler_get|put|delete`, `wiki_filter`, `wiki_render` on `recipe:"default"` through the daemon's own `$tw`, with the cap and cursor; the CLI and MCP skins; the parity weld.
 # ''Lane 2, the port relay'': the daemon opens a width-`none` port on a named island under a session-minted lease, reusing `wikiActivation`; red 3, 10, 11.
 # ''Lane 3, `act` and `catalog` asks'': the throwaway-copy recorder (stage slice 2's `codeClassOf` first), preview by default, apply by digest, the empty `tm-*` allowlist; reds 7 to 9.
-# ''Lane 4, the meme door re-seated'': `meme put|delete` compose a port write; the group sweep stops at families (red 2); a meme reads through the one door, `get mu=assert` (`tiddler_get(meme=True)`), and a plain tiddler read through that lens answers its record with a note that it holds no meme.
+# ''Lane 4, the meme door re-seated'': `meme put|delete` compose a port write; the group sweep stops at families (red 2); a meme reads through the one door, `get aperture=arc` (`tiddler_get(meme=True)`), and a plain tiddler read through that lens answers its record with a note that it holds no meme.
 # ''Lane 5, the console verbs'': `lares("tiddler", …)` and `lares("wiki", "filter", …)` read off the vessel worker's table over the page's port.
 # ''Lane 6, resources'': the filter and action references as MCP resources.
 
@@ -585,7 +585,7 @@ Each phase names what it unlocks for a dogfooding session, its reds (by name fro
 * ''Read scope for a second face on one island.'' Default: refuse (`port-one-island-one-face`) until the per-bag read lend lands.
 * ''Field names that collide with envelope fields (`bag`, `$origin-bag`).'' Default: the field-collision law as it stands (`bag` reads as user space on a put).
 * ''Where `$tw.lares.meme` stands after lane 4.'' Default: unchanged for wiki-side callers; it already composes the live wiki.
-* ''Deprecation length for the meme read on plain tiddlers.'' Ruled: none; `meme get` and `meme_get` retired into `get mu=assert`, and a plain tiddler read through the meme lens answers its record (alpha line, no bridge).
+* ''Deprecation length for the meme read on plain tiddlers.'' Ruled: none; `meme get` and `meme_get` retired into `get aperture=arc`, and a plain tiddler read through the meme lens answers its record (alpha line, no bridge).
 * ''Which family law wins for `/path` children.'' Default: a `/path` child stands as its own meme (its own root); the prefix law stops sweeping it; `meme delete` names it in `leaves` rather than tombstoning it.
 * ''The orphan folder's name and its ingest.'' Default: `<root-stem>.orphans/<slot>.tid`, read back as plain records; a re-rooted family removes the folder by the projector's own reconcile.
 * ''Orphan flag after a re-found.'' Default: the flag lives in `$:/temp` and re-derives from the view on each boot, so it never needs to survive.
@@ -610,6 +610,6 @@ Each phase names what it unlocks for a dogfooding session, its reds (by name fro
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;X--L_RSWafrzNa_qcpR70oWKFI_WLwcXCErA8BEqQEc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eVW_H0NhFsuixNcjAAPgotoSdqZw7Jr4fkUoMu1FeeM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

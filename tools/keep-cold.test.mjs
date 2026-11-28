@@ -161,7 +161,7 @@ test("W2 a restart over wikis that hold workbench folders wakes none of them; an
     await h.start();
     await watchesStand(h, SLUGS);
     assert.deepEqual(joined(), ["delta"], "the edited wiki wakes alone");
-    const got = h.must(["get", `title=${pageUri("delta")}`, "recipe=delta", "mu=assert", "--no-json"]).stdout;
+    const got = h.must(["get", `title=${pageUri("delta")}`, "recipe=delta", "aperture=arc", "--no-json"]).stdout;
     assert.match(got, /edited while down/, "the edit ingests");
   } finally {
     await h.stop();

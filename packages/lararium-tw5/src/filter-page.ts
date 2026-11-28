@@ -110,9 +110,9 @@ export interface FilterPageQuery {
 }
 export interface FilterRow {
   title: string; fields: Record<string, string>; omitted?: string[];
-  /** The depth (`mu=many-relate` or `many-assert`): the record's has line, as a get's card names it. */
+  /** The depth (`aperture=measure` or `many-assert`): the record's has line, as a get's card names it. */
   has?: string;
-  /** The collapse lens: the bytes the record (a meme root: its whole carrier) holds, and a meme root's slots, unfolded by `lares get title=… slot=#/<name> mu=assert`. */
+  /** The collapse lens: the bytes the record (a meme root: its whole carrier) holds, and a meme root's slots, unfolded by `lares get title=… slot=#/<name> aperture=arc`. */
   bytes?: number; slots?: Array<{ slot: string; bytes: number; first: string | null }>;
   /** Slot records of a collapsed meme root that rest in a layer this face may not read, left out of its slots. */
   withheld?: number;
@@ -174,7 +174,7 @@ export function pageFilterAnswer(all: readonly string[], query: FilterPageQuery 
           while (shed.lines.length > 0 && 2 + bytesOf(shed) > maxBytes) shed.lines.pop();
           shed.omitted!.push("lines");
         }
-        // A collapsed row's slots shed last, by name: the meme unfolds by `lares get title=… mu=relate`.
+        // A collapsed row's slots shed last, by name: the meme unfolds by `lares get title=… aperture=measure`.
         if (2 + bytesOf(shed) > maxBytes && shed.slots) { delete shed.slots; shed.omitted!.push("slots"); }
         if (2 + bytesOf(shed) > maxBytes && shed.bytes !== undefined) { delete shed.bytes; shed.omitted!.push("bytes"); }
         row = shed;

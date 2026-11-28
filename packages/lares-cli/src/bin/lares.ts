@@ -40,6 +40,8 @@ import { cmdBag }                                   from "../commands/bag.js";
 import { cmdEvents }                  from "../commands/events.js";
 import { cmdWiki, wikiHelpLines }                  from "../commands/wiki.js";
 import { cmdCall, isCallHead, CALL_VERBS as CALL_WORDS } from "../commands/call.js";
+import { BURNED_FLAGS, KeywordUsage, isKeywordLine, positionalCure, readKeywords, type KeywordLine } from "../keywords.js";
+import { BARE_ADDRESS, cmdBare, liveReaders } from "../commands/bare.js";
 import { cmdIngest }                  from "../commands/ingest.js";
 import { cmdExport }                  from "../commands/export.js";
 import { cmdImport }                  from "../commands/import.js";
@@ -453,7 +455,49 @@ function movedTo(args: ParsedArgs): string | null {
   return args.command === "sense" && retiredSensePromote(args) ? "lares sense harden" : null;
 }
 
+/** The door table as the keyword reader takes it: each door's name and the flags its handlers read. */
+const KEYWORD_DOORS = { names: COMMANDS.map((c) => c.name), accepts: (door: string): readonly string[] => COMMANDS.find((c) => c.name === door)?.accepts ?? [] };
+
+/**
+ * ONE DOOR, KEYWORD PARAMS (the keyword head, `../keywords.ts`): a keyword line, whose first token names a keyword
+ * (`lares rite=kukulu mu=_0`, `lares get=<title> aperture=arc`), reads to the line it runs: a call through the call door in
+ * the call shape (`get title=…`), or a door the command table runs by position with its dials folded into its own flags. The
+ * set panel's own keywords (stance · mode · mood · note) echo on stderr as the set line the call rode. A keyword line the reader refuses answers its teaching
+ * refusal and exits 2. Null where the line names no keyword.
+ */
+export function keywordArgv(argv: readonly string[]): { readonly line: KeywordLine; readonly argv: readonly string[] } | { readonly refused: string } | null {
+  if (!isKeywordLine(argv)) return null;
+  let line: KeywordLine;
+  try { line = readKeywords(argv, KEYWORD_DOORS); }
+  catch (err) { if (err instanceof KeywordUsage) return { refused: err.message }; throw err; }
+  if (line.kind === "call") return { line, argv: [line.verb, ...Object.entries(line.params).map(([k, v]) => `${k}=${v}`)] };
+  if (line.kind === "door") return { line, argv: line.argv };
+  return { line, argv: [BARE_ADDRESS, ...Object.entries(line.params).map(([k, v]) => `${k}=${v}`)] };
+}
+
+/**
+ * THE BARE DOOR (`commands/bare.ts`): bare `lares` reads `lares mu=00 aperture=beat`, the terminal spelling of
+ * lar:///lares.lararium.status. It runs here, at the terminal, whether or not the house answers: a dark house reads as a
+ * report. Its views run other doors through this dispatcher; `aperture=theme` adds the full door list `lares help` prints.
+ */
+async function bareDoor(params: Readonly<Record<string, string>>): Promise<number> {
+  return await cmdBare(params, liveReaders((argv) => dispatch(argv)), COMMAND_NAMES, async () => { printHelp(); return 0; });
+}
+
+/** The set line a keyword call rode, echoed on stderr where it names any of the panel's own keywords. */
+function echoSet(line: KeywordLine): void {
+  const keys = Object.entries(line.set);
+  if (keys.length > 0) console.error(`<<~ set ${keys.map(([k, v]) => `${k}=\`${v}\``).join(" ")}>>`);
+  if (line.kind === "door") for (const note of line.notes) console.error(`lares: ${note}`);
+}
+
 export async function dispatch(rawArgv: readonly string[]): Promise<number> {
+  const keyed = keywordArgv(rawArgv);
+  if (keyed !== null) {
+    if ("refused" in keyed) { console.error(`lares: ${keyed.refused}`); return 2; }
+    echoSet(keyed.line);
+    return await dispatch(keyed.argv);
+  }
   const argv = spellHelp(rawArgv);
   let args: ParsedArgs;
   try { args = parseArgs(argv); }
@@ -464,13 +508,23 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
   }
   // Keyhive's trace, asked by name: set before any command stands a provider or a vessel.
   askKeyhiveTrace(args.flags);
-  // Global help: bare `lares`, `lares help`, or `lares --help` with no command.
+  // Global help: `lares help`, or `lares --help` with no command (bare `lares` speaks the house, above).
   //
   // A NAME THAT DOES NOT ANSWER MUST NOT ANSWER SOFTLY. Routing an unknown command to the global menu
   // returns 0 and prints a full page, which reads exactly like a door that opened — so a caller probing
   // `lares <name> --help` cannot tell a live verb from a name no door answers, and the collapse's own law
   // (one spelling per door) stops being checkable from outside. The unknown-command refusal
   // below therefore owns EVERY unknown name, flags included.
+  // BARE `lares` SPEAKS THE HOUSE (the keyword head): the status line, the layered pins, the keys; the full door list moved behind
+  // `lares help`. A bare line that names a flag (`lares --json`, `--surface`) still asks the menu's machine shape.
+  const bareFlags = [...Object.keys(args.options), ...Object.keys(args.flags)];
+  if (args.command === null && bareFlags.length === 0) return await bareDoor({});
+  // The bare door's address, as the bridge forwards a bare line or a keyword line naming no act keyword into the vessel's host.
+  if (args.command === BARE_ADDRESS) {
+    const params: Record<string, string> = {};
+    for (const token of args.positional) { const eq = token.indexOf("="); if (eq > 0) params[token.slice(0, eq)] = token.slice(eq + 1); }
+    return await bareDoor(params);
+  }
   if (args.command === null || args.command === "help") {
     const surface = args.options["surface"] ?? VERB_SURFACE.cli;
     const execOnly = args.flags["executable"] === true;
@@ -485,12 +539,22 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
   }
   const moved = movedTo(args);
   if (moved) { console.error(`usage: this command moved to \`${moved}\``); return 2; }
+  // A CALL WORD'S POSITIONAL SPELLING BURNED (the keyword head): `lares get Room4` reads as `lares get=Room4`; run that.
+  const keyed = args.flags["help"] === true ? null : positionalCure(args.command, args.positional);
+  if (keyed !== null) {
+    console.error(`lares: keyword-positional: \`lares ${[args.command, ...args.positional].join(" ")}\` reads as \`${keyed}\`; run that`);
+    return 2;
+  }
   // AN ADDRESS NAMES ITS OWN VERB (comms-ux-enacts landing 8): `lares lar:///<address> name=value…`, `lares act lar:///<address> …`
   // and `lares -` (one call sigil on stdin) ride the call door, which takes params alone, past every door's flag table.
   if (isCallHead(args.command, args.positional) && !(CALL_WORDS as readonly string[]).includes(args.command ?? "")) {
     const flags = [...Object.keys(args.options), ...Object.keys(args.flags)].filter((n) => !GLOBAL_FLAGS.includes(n) || n === "meme");
     if (flags.length > 0) {
-      for (const name of flags) console.error(`lares: unknown flag --${name} for a call; a call takes name=value params (${name}=…)`);
+      for (const name of flags) {
+        // THE FLAG ZOO BURNED INTO THE DIALS (the keyword head): a burned flag names the dial it reads as.
+        const dial = BURNED_FLAGS[name];
+        console.error(dial !== undefined ? `lares: --${name} burned into the dials: it reads as ${dial} on a call` : `lares: unknown flag --${name} for a call; a call takes name=value params (${name}=…)`);
+      }
       return 2;
     }
     // THE ONE ACT'S HELP (landing 9): `lares act --help` with no address prints the act carriers' call shapes, drawn from the pack.
@@ -514,7 +578,7 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
   // A SUB-DOOR answers for itself when the registry holds one (`lares vessel rite --help`), so a
   // sub-verb's flags reach the reader instead of its parent's.
   // `--meme` follows the door's help with the wiki record standing behind it, read through the one door
-  // (`lares get title=<uri> mu=assert`) — the same verb any vessel with the cap can run.
+  // (`lares get title=<uri> aperture=arc`) — the same verb any vessel with the cap can run.
   if (args.flags["help"]) {
     const door = helpDoor(cmd.name, args.positional);
     // A door that keeps its own sub-verb table answers with it where the registry holds no row: one table, two spellings. A
@@ -616,7 +680,13 @@ async function drainStdout(): Promise<void> {
 export function runCli(): void {
   const { argv, budgetMs, retiredAsk } = takeEntryAsks(process.argv.slice(2));
   const disarm = armAskBudget(budgetMs);
-  bridge(forwardedArgv(argv, budgetMs), COMMAND_NAMES).then((forwarded) => forwarded ?? dispatch(argv)).then(
+  // A KEYWORD LINE ROUTES AS THE LINE IT READS: the host reads it once (its set line echoed here), and the line it runs crosses the
+  // bridge, so `lares rite=kukulu` stands where `lares rite kukulu` stands and `lares get=<title>` forwards into the vessel.
+  const keyed = keywordArgv(argv);
+  if (keyed !== null && !("refused" in keyed)) echoSet(keyed.line);
+  // A BARE LINE ROUTES AS THE BARE DOOR'S ADDRESS, so a container house answers it from the vessel's own host.
+  const routed = keyed !== null && !("refused" in keyed) ? [...keyed.argv] : argv.length === 0 ? [BARE_ADDRESS] : argv;
+  bridge(forwardedArgv(routed, budgetMs), COMMAND_NAMES).then((forwarded) => forwarded ?? dispatch(routed)).then(
     async (code) => {
       disarm?.();
       try { await drainStdout(); }

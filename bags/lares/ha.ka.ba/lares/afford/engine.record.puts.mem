@@ -56,9 +56,12 @@ The fences refuse by name: a family's `type` and carriage fields derive from its
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
 
 ```memetic-wikitext
-<<has entity=`cell` name=`_` params=`mu/dry ~ a dry run: the put walks its law to the last step and answers the summary, landing nothing`>>
-<<has entity=`cell` name=`_?` params=`mu/dry-relate ~ the dry summary: what the put would land, the bag and layer, the base it needs, landing nothing`>>
-<<has entity=`cell` name=`_!` params=`mu/dry-assert ~ the dry diff: the summary and each record it would move, fields before and after and text line by line, landing nothing`>>
+<<has entity=`arg` name=`mu` params=`takes/carry skins/console,cli default/?0 ~ the lens; this door's default reads ?0 (cup), the receipt's has line`>>
+<<has entity=`cell` name=`?0` params=`mu/cup ~ the receipt: the put lands and answers its has line, the default`>>
+<<has entity=`cell` name=`!0` params=`mu/sword ~ the receipt asserted: the put lands and a terminal prints the machine answer verbatim`>>
+<<has entity=`cell` name=`_0` params=`mu/pentacle ~ a dry run: the put walks its law to the last step and answers the summary, landing nothing`>>
+<<has entity=`cell` name=`_?` params=`mu/overview ~ the dry summary: what the put would land, the bag and layer, the base it needs, landing nothing`>>
+<<has entity=`cell` name=`_!` params=`mu/precision ~ the dry diff: the summary and each record it would move, fields before and after and text line by line, landing nothing`>>
 <<has entity=`arg` name=`title` params=`takes/title needs/required seat/1 as/<title> ~ the record written, any right-intent string; a slot title <root>#/x names one slot`>>
 <<has entity=`arg` name=`text` params=`takes/words ~ the new text: on a root the whole carrier, on a slot its body`>>
 <<has entity=`arg` name=`file` params=`takes/host-path skins/cli ~ the new text from a host file, or - for stdin; a pointer kind stages its bytes and lands as a pointer`>>
@@ -178,6 +181,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;43GaP7ZjZEWprdxn8dWD_hwUSA7DClA9S7XHAkVhRiw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;G-jos3eIv5E1kasdhOCpKd-tLCpaG19666THbIupEuc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

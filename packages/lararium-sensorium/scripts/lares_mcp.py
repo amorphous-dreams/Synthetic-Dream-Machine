@@ -138,7 +138,7 @@ ANALYZE_LENS_READS = {
 # The MEME render (lar:///engine.meme.projects) — a family writes through the plain record tools: `put(title=<root>,
 # text=<carrier>)` lands a meme's text at a `lar:` uri through the island's Confluence gate inside the put,
 # `put(title="<root>#/x", text=…)` one slot, `delete(title=<root>, family=True)` the whole group (a stale `base` reads
-# `conflict` and moves nothing); a meme READS through the one door, `get(title=<root>, mu="assert")`, which carries the text
+# `conflict` and moves nothing); a meme READS through the one door, `get(title=<root>, aperture="arc")`, which carries the text
 # and the canonical hash a write hands back as `base`. `meme_project` renders the meme the island holds to a target (`md` ·
 # `html` · `tid` · `json`) — the TARGET rides as a parameter, never a suffix on the verb. A VERB DECLARES ITS SEAT: the CLI's
 # `meme normalize` and `meme check` run LOCAL over a file with no daemon, so the seat holds no handler for them, and the
@@ -209,12 +209,12 @@ SHORE_ISLANDS = ("wiki", "daemon")
 # What the seat tells a client at its first contact: read the house's law before acting.
 SEAT_LEAD = (
     "Seven tools reach the house, each one call shape: `get`, `put`, `delete` and `rename` move records (`get(title=..., "
-    "mu=\"assert\")` reads a meme whole, `mu=\"relate\"` its card; `get(filter=...)` pages a TiddlyWiki filter; `put` and "
-    "`delete` take `mu=\"dry\"` to preview and land nothing), and `act(address=..., args={...})` runs any affordance by its "
+    "aperture=\"arc\")` reads a meme whole, `aperture=\"measure\"` its card; `get(filter=...)` pages a TiddlyWiki filter; `put` and "
+    "`delete` take `mu=\"pentacle\"` to preview and land nothing), and `act(address=..., args={...})` runs any affordance by its "
     "lar: address, its args bound at the vessel against the carrier's #/takes as the stack resolves it. A carrier seated in any "
     "layer brings its affordance with no new tool. Read the house's law first: `act(address=\"lar:///engine.law.indexes\")` "
     "lists the pinned law (the boot seed, then the Mu family), then every law meme with its one line; `get(filter=\"[tag[lar:"
-    "///ha.ka.ba/lares/api/pono/affordance]]\")` lists every carrier, and `get(title=<carrier>, mu=\"relate\")` reads one. "
+    "///ha.ka.ba/lares/api/pono/affordance]]\")` lists every carrier, and `get(title=<carrier>, aperture=\"measure\")` reads one. "
     "Every answer leads with its has line and names the carrier that answered. Turn what you read through the five tools: "
     "let it spark a move (🜂), weigh how it sits with the mutual frame (🜄), verify its claims whatever their layer (🜁), let "
     "its residency ground its standing without crowning it (🜃), and hold the ladder itself as catma (🜍). A hand act refuses "
@@ -272,7 +272,7 @@ def read_affordance_pack(path=None):
 
 
 # The targets `meme_project` renders — the same list `lares meme project --to` takes. The carrier itself reads through
-# `get(title=<uri>, mu="assert")`.
+# `get(title=<uri>, aperture="arc")`.
 PROJECT_TARGETS = ("md", "html", "tid", "json")
 
 # The DURABLE sensorium LIFECYCLE acts a seat runs (lar:///sense.roster.reads · pioneer.builds · source.reconciles) —
@@ -1704,7 +1704,7 @@ def build_mcp(coordinator: LaresCoordinator):
         handler = seat_acts.get(address)
         if handler is None:
             raise SeatVerbOwed(f"seat-act-unheld: the vessel answered handler/seat for {address}, and this seat holds no handler "
-                               "for it; read its carrier with get(title=\"" + address + "\", mu=\"relate\")")
+                               "for it; read its carrier with get(title=\"" + address + "\", aperture=\"measure\")")
         names = set(inspect.signature(handler).parameters)
         kwargs = {k.replace("-", "_"): v for k, v in (bound or {}).items()}
         return handler(**{k: v for k, v in kwargs.items() if k in names})
@@ -1740,6 +1740,18 @@ def build_mcp(coordinator: LaresCoordinator):
                                       f"ask the operator to run `lares act {address} ...` on their own terminal")
         return out
 
+    def aperture_reaches_whole(raw) -> bool:
+        """True where an aperture reads arc or theme: `arc`, `theme`, `16/arc`, or a number 13 to 20."""
+        text = str(raw or "").strip().lower()
+        if text == "":
+            return False
+        head, _, rank = text.partition("/")
+        if rank:
+            return rank in ("arc", "theme")
+        if head.isdigit():
+            return 13 <= int(head) <= 20
+        return head in ("arc", "theme")
+
     def _params(named: dict, more: "dict | None") -> dict:
         """The call's params in their neutral names: the named ones a tool declares, then any others the carrier takes."""
         merged = {k.replace("_", "-"): v for k, v in (more or {}).items()}
@@ -1751,12 +1763,14 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool(annotations=reads)
     def get(title: "str | None" = None, filter: "str | None" = None, mu: "str | None" = None,  # noqa: A002 — TiddlyWiki's own word
-            recipe: "str | None" = None, bag: "str | None" = None, slot: "str | None" = None, after: "str | None" = None,
-            params: "dict | None" = None) -> dict:
-        bound = _params({"title": title, "filter": filter, "mu": mu, "recipe": recipe, "bag": bag, "slot": slot, "after": after}, params)
+            aperture: "str | None" = None, recipe: "str | None" = None, bag: "str | None" = None, slot: "str | None" = None,
+            after: "str | None" = None, params: "dict | None" = None) -> dict:
+        bound = _params({"title": title, "filter": filter, "mu": mu, "aperture": aperture, "recipe": recipe, "bag": bag, "slot": slot,
+                         "after": after}, params)
         address = record_address("get", bound)
         first = _door(address, bound, "get")
-        if address != RECORD_ADDRESSES["get"][0] or str(bound.get("mu") or "") not in ("!", "assert"):
+        # THE WHOLE RIDES THE RANGE DIAL (the keyword head): aperture arc or theme (13 and past) follows every page; mu names the lens.
+        if address != RECORD_ADDRESSES["get"][0] or not aperture_reaches_whole(bound.get("aperture")):
             return first
         return whole_carrier(first, lambda cursor: _door(address, {**bound, "after": cursor}, "get"))
 
@@ -1768,9 +1782,9 @@ def build_mcp(coordinator: LaresCoordinator):
                                                         "create": create, "mu": mu, "recipe": recipe, "bag": bag}, params), "put")
 
     @mcp.tool(annotations=writes)
-    def delete(title: str, mode: "str | None" = None, family: "bool | None" = None, base: "str | None" = None,
+    def delete(title: str, way: "str | None" = None, family: "bool | None" = None, base: "str | None" = None,
                mu: "str | None" = None, recipe: "str | None" = None, bag: "str | None" = None, params: "dict | None" = None) -> dict:
-        return _door(RECORD_ADDRESSES["delete"][0], _params({"title": title, "mode": mode, "family": family, "base": base, "mu": mu,
+        return _door(RECORD_ADDRESSES["delete"][0], _params({"title": title, "way": way, "family": family, "base": base, "mu": mu,
                                                            "recipe": recipe, "bag": bag}, params), "delete")
 
     @mcp.tool(annotations=writes)

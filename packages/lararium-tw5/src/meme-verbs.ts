@@ -672,7 +672,7 @@ export function makeMemeProjectReactor(opts: MemeVerbOptions): VerbReactor {
     const to = stringArg(args, "to");
     if (!to) throw new Error("meme-project: args.to is required (md · html · tid · json)");
     // THE CARRIER ITSELF READS THROUGH THE ONE DOOR: `mem` left this verb's targets for `tiddler-get` with `meme: true` and
-    // `grain: "whole"` (`lares get title=<uri> mu=assert`), which pages the composed carrier on slot boundaries.
+    // `grain: "whole"` (`lares get title=<uri> aperture=arc`), which pages the composed carrier on slot boundaries.
     if (!(PROJECT_VERB_TARGETS as readonly string[]).includes(to)) {
       throw new Error(`meme-project: unknown target "${to}"; it renders md · html · tid · json, and the carrier itself reads through tiddler-get (meme: true, grain: "whole")`);
     }

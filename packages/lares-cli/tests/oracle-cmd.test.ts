@@ -93,7 +93,7 @@ describe("lares oracle cast", () => {
     h.reply = {
       band: "answered", replayed: true, decision: "exists", created: false, title: "t", cast: castRecord(cast), text: castText(cast), readings: [],
       uncertain: "the first words", slots: [{ slot: "#/decide", phase: "◇", writer: "house-then-seat", owed: true }],
-      next: { read: "lares get title=t mu=relate", append: "lares put title=t slot='<the slot you owe>' append='<your words>'" },
+      next: { read: "lares get title=t aperture=measure", append: "lares put title=t slot='<the slot you owe>' append='<your words>'" },
       note: ORACLE_THROW_STANDS,
     };
     const r = await run(argv(["cast"], { recipe: "default", asking: "which road?" }, { json: false }));
