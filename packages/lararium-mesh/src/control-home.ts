@@ -440,7 +440,8 @@ export async function freshBaseControlDoc(repo: Repo, documentId: string, atChan
   if (storage === undefined) return null;
   const held = repo.handles[documentId as DocumentId];
   if (held !== undefined) {
-    if (held.isReady() && A.stats(held.doc()).numChanges >= atChanges) console.warn(`[control-home] the control document stood held before its stand, so it keeps its ${A.stats(held.doc()).numChanges} changes; a stand ahead of any other read fresh-bases it`);
+    const heldDoc = held.isReady() ? held.doc() : undefined;
+    if (heldDoc !== undefined && A.stats(heldDoc).numChanges >= atChanges) console.warn(`[control-home] the control document stood held before its stand, so it keeps its ${A.stats(heldDoc).numChanges} changes; a stand ahead of any other read fresh-bases it`);
     return null;
   }
   const stored = await storage.loadDocData(documentId as DocumentId);
