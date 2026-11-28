@@ -400,6 +400,35 @@ export function faceJoinNonce(atomKey: string, audience: { readonly mode: string
   return audience.mode === "pinned" && audience.atom ? `${atom}:${audience.atom.toLowerCase()}` : atom;
 }
 
+/** One face's intent plane as the shore's vow reaches it: its group, its plane, and the atom on this vessel that signs and answers. */
+export interface FaceVowSeat { readonly group: string; readonly plane: DocHandle<LarDoc>; readonly atom: IntentSigner }
+
+/** A write the island shore hands the plane (`ShoreVotum` in @lararium/tw5): the holder, the vower, the door verb and its arguments. */
+export interface ShoreVowInput {
+  readonly holder: string; readonly vower: string | null;
+  readonly verb: "tiddler-put" | "tiddler-delete"; readonly args: Readonly<Record<string, unknown>>; readonly act: string;
+}
+
+/**
+ * CUSTODY FACE AGAINST FACE (comms-ux-enacts landing 13): the shore's vow, written as a votum on the HOLDER's own intent plane,
+ * pinned to the holder's atom on this vessel, so the holder's own door drains it under mayAct and pays it through its declared
+ * door verb (`tiddler-put` / `tiddler-delete`, idempotent: the base each carries makes a second answer converge). The vower and
+ * the act ride the arguments, so the outcome answers who asked and by which act. A holder no seat of this vessel reaches refuses
+ * by name and lands nothing (the shore keeps the write owed on its alert rail).
+ */
+export function faceShoreVow(input: { readonly seatOf: (holder: string) => FaceVowSeat | null; readonly verbs: IntentVerbRegistry }): (votum: ShoreVowInput) => Promise<string> {
+  return async (votum) => {
+    const seat = input.seatOf(votum.holder);
+    if (seat === null) throw new Error(`votum-holder-unreached: no intent plane of face ${votum.holder.slice(0, 12)}… stands on this vessel, so the write into its layer waits owed; \`lares wear\` lights that face, then the write leaves again`);
+    const args = { ...votum.args, vower: votum.vower, act: votum.act };
+    const atom = seat.atom.key.toLowerCase();
+    const entry = await buildIntent({ group: seat.group, signer: seat.atom, verb: votum.verb, args, nonce: "", audience: { mode: "pinned", atom }, verbs: input.verbs });
+    const id = intentId(entry.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string });
+    seat.plane.change((draft) => writeIntentEntry(draft, entry));
+    return id;
+  };
+}
+
 /** The joinee issues one invocation through the shared plane, keyed by its atom and the hearth it pins. */
 export async function requestFaceJoin(input: { readonly group: string; readonly plane: DocHandle<LarDoc>; readonly atom: IntentSigner;
   readonly hearthAtom?: string; readonly projection?: { readonly admissions: readonly { readonly deviceKey: string }[] };

@@ -21,7 +21,7 @@ import { evaluateMeme, placeMeme, readMeme, wikiMemeSink } from "../src/place-me
 import { stampCarrier, verifyBcc } from "@lararium/memetic-frame";
 import {
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor,
-  makeWikiStatusReactor, makeWikiActionReactor, lineDiff, pageFilterAnswer, WIKI_FILTER_ROWS, SHORE_COLLAPSE_CONFIG_PREFIX, type FilterPage, type TiddlerVerbOptions,
+  makeWikiStatusReactor, makeWikiActionReactor, makeCarrierActReactor, lineDiff, pageFilterAnswer, WIKI_FILTER_ROWS, SHORE_COLLAPSE_CONFIG_PREFIX, type FilterPage, type TiddlerVerbOptions,
 } from "../src/tiddler-verbs.js";
 import { AUDIT_ARRAY_CAP, boundOutcomeOutput, placeVerb, removeVerb } from "../src/verb-vm.js";
 import { VerbTable, callDoorOf, makeCallReactor, type VerbContext } from "../src/verb-dispatcher.js";
@@ -2351,6 +2351,27 @@ describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the 
     await expect(r.call("trim", { wick: "long" })).rejects.toMatchObject({ reason: "affordance-unhandled" });
     r.engine.wiki.addTiddler({ title: `${spirit}#/skins/console`, text: "<<has entity=`skin` name=`console` params=`spells/trim handler/host ~ trim`>>" });
     expect(await r.call("trim", { wick: "long" })).toMatchObject({ handler: "host", address: spirit, params: { wick: "long" }, carrier: { carrier: spirit } });
+  });
+
+  test("RED: a carrier whose skin row names acts/<title> runs that act live through call, its params as variables; a dry carry lands nothing; CONTROL: with no carrier-act seated it refuses affordance-unhandled", async () => {
+    const r = await callRig();
+    const spirit = "lar:///lantern.wick.trims";
+    r.engine.wiki.addTiddler({ title: spirit, text: "! lantern.wick.trims ~ a spirit's door", tags: `[[${AFFORDANCE_TAG}]]` });
+    r.engine.wiki.addTiddler({ title: `${spirit}#/takes`, text: [
+      "<<has entity=`arg` name=`wick` params=`takes/words needs/required ~ the wick`>>",
+      "<<has entity=`arg` name=`mu` params=`takes/words ~ the depth`>>",
+      "<<has entity=`cell` name=`_` params=`mu/dry ~ the act over a capture view, landing nothing`>>",
+    ].join("\n") });
+    r.engine.wiki.addTiddler({ title: `${spirit}#/skins/console`, text: "<<has entity=`skin` name=`console` params=`spells/trim acts/acts/trim ~ trim`>>" });
+    r.engine.wiki.addTiddler({ title: "acts/trim", text: "<$action-setfield $tiddler=\"Lantern\" wick=<<wick>>/>" });
+    await expect(r.call("trim", { wick: "short" })).rejects.toMatchObject({ reason: "affordance-unhandled" });
+    r.table.register("carrier-act", makeCarrierActReactor(r.opts));
+    const dry = await r.call("trim", { wick: "short", mu: "_" });
+    expect(dry).toMatchObject({ decision: "dry", act: "acts/trim", writes: [{ title: "Lantern", fields: expect.objectContaining({ wick: "short" }) }], carrier: { carrier: spirit } });
+    expect(r.engine.wiki.getTiddler("Lantern")).toBeUndefined();
+    const acted = await r.call("trim", { wick: "short" });
+    expect(acted).toMatchObject({ decision: "acted", act: "acts/trim", address: spirit, wrote: ["Lantern"], receipt: "acts/trim#r1", carrier: { carrier: spirit } });
+    expect(r.engine.wiki.getTiddler("Lantern")?.fields["wick"]).toBe("short");
   });
 
   test("REACH: the engine fixture's console, $tw.lares.call(\"get\", {title}), answers the has line and the record through the host's door", async () => {

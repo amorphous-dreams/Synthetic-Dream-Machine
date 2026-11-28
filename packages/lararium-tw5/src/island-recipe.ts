@@ -37,7 +37,7 @@ import { type KahuaStageFace } from "@lararium/mesh/kahua-stage-store";
 import { type LarDoc } from "@lararium/mesh/base-doc";
 import { type DocHandle } from "@lararium/mesh/automerge";
 import { type LarTiddlerChange, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
-import { IslandAdaptor } from "./island-adaptor.js";
+import { IslandAdaptor, type ShoreCustody, type ShoreReceipt } from "./island-adaptor.js";
 import { kahuaLayerStore } from "./kahua-layer.js";
 import { MemoryTiddlerStore } from "./memory-store.js";
 import type { TW5Engine } from "./tw5-vm.js";
@@ -292,8 +292,30 @@ export function wikiLandedCovers(tw5: TW5Engine, bag: string, named: readonly st
  * door that lands a record through `wiki.addTiddler` calls this first, so the record lands under the face's actor. An
  * engine whose recipe mounted no shore takes nothing.
  */
-export function wikiWearsNext(tw5: object, title: string, face: string | null | undefined): void {
-  adaptors.get(tw5 as TW5Engine)?.wearNext(title, face);
+export function wikiWearsNext(tw5: object, title: string, face: string | null | undefined, act?: string): void {
+  adaptors.get(tw5 as TW5Engine)?.wearNext(title, face, act);
+}
+
+/** The receipts the shore over this engine stamped, latest last; an engine whose recipe mounted no shore answers none. */
+export function wikiReceiptsOf(tw5: object): readonly ShoreReceipt[] {
+  return adaptors.get(tw5 as TW5Engine)?.receipts() ?? [];
+}
+
+/** Hear each receipt the shore over this engine stamps; returns the unsubscribe (a no-op where no shore stands). */
+export function onWikiReceipt(tw5: object, hear: (receipt: ShoreReceipt) => void): () => void {
+  return adaptors.get(tw5 as TW5Engine)?.onReceipt(hear) ?? (() => {});
+}
+
+/** Name the face the engine wears: each receipt with no door-named face names it. */
+export function wikiWearsFace(tw5: object, face: string | null): void {
+  const adaptor = adaptors.get(tw5 as TW5Engine);
+  if (adaptor) adaptor.wornFace = face;
+}
+
+/** Seat the face-against-face custody at this engine's shore (null takes it down): a write into another face's layer rides as a votum. */
+export function bindShoreCustody(tw5: object, custody: ShoreCustody | null): void {
+  const adaptor = adaptors.get(tw5 as TW5Engine);
+  if (adaptor) adaptor.caps = { ...adaptor.caps, custody };
 }
 
 /** Ask the shore mounted over this engine to take an inbound act boundary. */

@@ -86,6 +86,8 @@ export interface CallPlan {
   readonly host: boolean;
   /** The depth a `mu` param asked and the cell that answers it (landing 6); absent where the call names no `mu`. */
   readonly mu?: MuCall | undefined;
+  /** The action tiddler a skin row names (`acts/<title>`, landing 13): the carrier brings its own act. */
+  readonly act?: string | undefined;
 }
 
 /** One seat hint a carrier tables: a `gate` row (who may ask, the ocap the door checks) or a `signs` row. */
@@ -330,6 +332,16 @@ export function bindCall(reader: CallReader, address: string, carrier: string, w
   return bound;
 }
 
+/**
+ * THE ACT A CARRIER BRINGS (landing 13): the action tiddler a skin row of the carrier names (`acts/<title>`), the tw5 row's
+ * first, else any row's; null where none names one. The registry's `carrier-act` runs it live on the engine.
+ */
+export function carrierActOf(reader: CallReader, carrier: string): string | null {
+  const rows = skinRows(reader.textOf, carrier).filter((r) => (r.params["acts"] ?? "").trim() !== "");
+  const row = rows.find((r) => r.name === "tw5") ?? rows[0];
+  return row ? (row.params["acts"] ?? "").trim() : null;
+}
+
 /** True where a skin row of the carrier names `handler/host`: the host runs the door, outside the registry. */
 export function hostHandled(reader: CallReader, carrier: string): boolean {
   return skinRows(reader.textOf, carrier).some((r) => r.params["handler"] === "host");
@@ -366,7 +378,8 @@ export function planCall(reader: CallReader, word: string, params: Readonly<Reco
   const { address, carrier } = resolveCall(reader, word, params);
   const bound = bindCall(reader, address, carrier, word, params, surface);
   const mu = bound["mu"] === undefined ? undefined : muOfCall(reader, carrier, word, bound);
-  return { address, carrier, surface, params: mu === undefined ? bound : { ...bound, mu: mu.carry }, host: hostHandled(reader, carrier), ...(mu !== undefined ? { mu } : {}) };
+  const act = carrierActOf(reader, carrier);
+  return { address, carrier, surface, params: mu === undefined ? bound : { ...bound, mu: mu.carry }, host: hostHandled(reader, carrier), ...(mu !== undefined ? { mu } : {}), ...(act !== null ? { act } : {}) };
 }
 
 /** An answer beside the depth that shaped it: `mu: {asked, carry, axis, next?}`, a conflict's second tool named as the next call. */

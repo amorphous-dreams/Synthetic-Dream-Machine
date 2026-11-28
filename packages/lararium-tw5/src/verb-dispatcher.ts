@@ -63,6 +63,7 @@ import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
 import { runLocalVerb, gateRoutedVerb, refuseSeatCanonRouted, RoutedCapDenied, makeCapVerify, routedAddressesWiki, routedWikiSlug } from "./verb-local-dispatch.js";
 import { callOfSigil, dryUnwalked, hostAnswer, isCallSigil, isDryPlan, muAnswer, planCall, reactorArgs, seatVerbOf, stampAnswer, unhandled, type CallPlan, type CallReader, type CallSeat, type MacroCallParse } from "./modules/call.js";
+import { dryDepthOf } from "./modules/mu.js";
 import { surfaceOf } from "./affordance-read.js";
 
 export interface VerbContext {
@@ -302,6 +303,7 @@ export class VerbTable {
  */
 export async function runPlan(table: VerbTable, plan: CallPlan, ctx: VerbContext): Promise<Record<string, unknown>> {
   const seat = table.seatOf(plan.address);
+  if (seat === undefined && plan.act !== undefined) return runCarrierAct(table, plan, ctx);
   if (seat === undefined) throw unhandled(plan);
   // A DRY CARRY REACHES ONLY A SEAT THAT WALKS A DRY PATH (landing 7): any other refuses and names the plain call, so a layer
   // that tables a dry cell on a door with no preview still lands no write.
@@ -311,6 +313,20 @@ export async function runPlan(table: VerbTable, plan: CallPlan, ctx: VerbContext
   const reactor = table.get(seatVerbOf(seat, args));
   if (reactor === undefined) throw unhandled(plan);
   return reactor(args, ctx);
+}
+
+/**
+ * A CARRIER'S OWN ACT (comms-ux-enacts landing 13): an address no seat answers, whose skin row names `acts/<title>`, runs that
+ * action tiddler through the registry's `carrier-act` reactor, live on the named recipe's engine under the caller's face; the
+ * bound params ride as its variables (the container and the depth stay the call's own). A dry carry runs it over a capture
+ * view and lands nothing. A registry seating no `carrier-act` answers `affordance-unhandled`, as an address with no act does.
+ */
+async function runCarrierAct(table: VerbTable, plan: CallPlan, ctx: VerbContext): Promise<Record<string, unknown>> {
+  const reactor = table.get("carrier-act");
+  if (reactor === undefined) throw unhandled(plan);
+  const { recipe, bag: _bag, mu: _mu, ...params } = plan.params;
+  const dry = isDryPlan(plan) && plan.mu !== undefined ? dryDepthOf(plan.mu.carry) : null;
+  return reactor({ ...(typeof recipe === "string" && recipe !== "" ? { recipe } : {}), act: plan.act, address: plan.address, params, ...(dry !== null ? { dry } : {}) }, ctx);
 }
 
 /** Where the daemon `call` reads: the reader view of the recipe a call's params name, and the engine's own macro-call parser. */
