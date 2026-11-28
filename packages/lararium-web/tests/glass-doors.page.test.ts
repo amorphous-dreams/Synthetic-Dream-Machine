@@ -124,12 +124,11 @@ test("tm-scroll moves the pane's own scroll box, never the window", async () => 
     expect(window.scrollY).toBe(windowAt);
   } finally { m.done(); }
 });
-test("a wiki's own StartupAction record never runs a second time on the surface; CONTROL the record itself stands", async () => {
+test("a wiki's own StartupAction record runs natively on the surface (the admission walls fell, 75880f4a4); CONTROL the record itself stands", async () => {
   const m = await stood({ records: [{ title: "$:/person/on-start", fields: { tags: "$:/tags/StartupAction", text: `<$action-setfield $tiddler="Ran On The Page" text="yes"/>` } }] });
   try {
-    expect(m.tw.wiki.tiddlerExists("Ran On The Page")).toBe(false);
+    expect(m.tw.wiki.getTiddlerText("Ran On The Page"), "the startup action ran in the glass's own engine, as stock TW5 runs it").toBe("yes");
     expect(m.tw.wiki.tiddlerExists("$:/person/on-start")).toBe(true);
-    expect(m.r.messages.filter(msg => msg.type === "port:write")).toEqual([]);
   } finally { m.done(); }
 });
 
