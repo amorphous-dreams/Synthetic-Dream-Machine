@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/uds-channel-ask-book`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/uds-channel-ask-book"
+role          = "code-meme: holds what the door knows of a request id in memory for its life: running, abandoned, landed, an act's verdict; one synchronous turn decides, one count bounds it"
+source-file   = "packages/lararium-node/src/uds-channel/ask-book.ts"
+source-sha256 = "sha256:ed2c6edfcfdf96f6042c899fac5a1ac52c7fbec17562ec782d41e80b8194584a"
+title         = "lar:///ha.ka.ba/lararium/mesh/uds-channel-ask-book"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/uds-channel-ask-book"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`ask-book.ts` holds what the door knows of a request id in memory for its life: running, abandoned, landed, an act's verdict; one synchronous turn decides, one count bounds it. No receipt rests (lar:///ha.ka.ba/lararium/mesh/receipt-ledger): the book holds memory alone, and a restart empties it. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/uds-channel-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/uds-channel/ask-book.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/uds-channel-ask-book"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tahI-lpNsNZhmEg-0GEGLjk-BGKO2hN0B3eD94q5MBw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

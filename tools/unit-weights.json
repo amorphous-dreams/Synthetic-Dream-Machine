@@ -1699,7 +1699,6 @@
   "tests/test-scratch-root.test.ts": 0,
   "tests/true-name-model.test.ts": 16.3,
   "tests/uds-channel-h1-ledger.test.ts": 15.8,
-  "tests/uds-channel-receipt-ledger.test.ts": 2.6,
   "tests/uds-channel-routing.test.ts": 0.5,
   "tests/uds-control-home-seam.test.ts": 0.1,
   "tests/uds-engine-terminated.test.ts": 0.6,

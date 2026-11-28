@@ -11,9 +11,9 @@ import { describe, test, expect } from "vitest";
 import {
   taskUri, receiptUri, taskContentId, TASK_KIND, RECEIPT_KIND,
   buildVerb, summon, parseVerb, concludeVerb,
-  buildReceiptFact, parseReceiptFact, verbInputDigest,
-  RECEIPT_RING_DEFAULT, ratedReceiptRing, RECEIPT_RING_BYTES_DEFAULT, ratedReceiptRingBytes, outcomeBytesOf, RECEIPT_FACT_URI_PREFIX,
+  verbInputDigest,
 } from "../src/verb-tiddler.js";
+import * as verbTiddler from "../src/verb-tiddler.js";
 import { larRoot, isStableLarUri } from "../src/lar-uris.js";
 import { mkDaemonPlaceVerb, isVesselToIslandMsg } from "../src/island-protocol.js";
 
@@ -77,94 +77,7 @@ describe("task/receipt URI ontology (seed)", () => {
   });
 });
 
-describe("receipt facts — single-writer ledger codec (D1)", () => {
-  test("buildReceiptFact / parseReceiptFact round-trip every field", () => {
-    const fact = { requestId: "r1", inputDigest: "sha256:aa", effectKey: "sha256:bb", state: "done" as const, terminal: "done" as const, seq: 7, outcomeBytes: 412 };
-    const record = buildReceiptFact(fact);
-    expect(record.tiddler.title).toBe(`${RECEIPT_FACT_URI_PREFIX}r1`);
-    expect(record.tiddler["outcome-bytes"]).toBe("412");
-    const parsed = parseReceiptFact(record.tiddler as Record<string, unknown>);
-    expect(parsed).toEqual(fact);
-  });
-
-  test("a minimal fact (no effectKey/terminal) round-trips with those absent", () => {
-    const fact = { requestId: "r2", inputDigest: "sha256:cc", state: "committed" as const, seq: 1, life: "life-four" };
-    const parsed = parseReceiptFact(buildReceiptFact(fact).tiddler as Record<string, unknown>);
-    expect(parsed).toEqual(fact);
-  });
-
-  test("`abandoned` is the ONE state a fact may round-trip with NO inputDigest (no content claim)", () => {
-    const fact = { requestId: "r2b", state: "abandoned" as const, seq: 2 };
-    const record = buildReceiptFact(fact);
-    expect(record.tiddler["input-digest"]).toBeUndefined();
-    const parsed = parseReceiptFact(record.tiddler as Record<string, unknown>);
-    expect(parsed).toEqual(fact);
-  });
-
-  test("EVERGREEN: a fact that claims content with no digest refuses by name — parseReceiptFact returns null, never an optional absence", () => {
-    // CONTROL: the identical field bag with `state: "abandoned"` instead parses fine (proven above),
-    // so this refusal is keyed on the state/digest pairing, not on a malformed bag in general. `evicted`
-    // carries a cancelled id's absence onward (its own block below).
-    for (const state of ["committed", "interrupted", "done", "error"] as const) {
-      expect(parseReceiptFact({ title: `${RECEIPT_FACT_URI_PREFIX}r2c`, "request-id": "r2c", state, seq: 3 })).toBeNull();
-    }
-  });
-
-  test("an in-flight fact (`committed` or `interrupted`) with no life reads as torn; with one it round-trips", () => {
-    for (const state of ["committed", "interrupted"] as const) {
-      const bag = { title: `${RECEIPT_FACT_URI_PREFIX}r5`, "request-id": "r5", "input-digest": "sha256:dd", state, seq: "2" };
-      expect(parseReceiptFact(bag)).toBeNull();
-      const fact = { requestId: "r5", inputDigest: "sha256:dd", state, seq: 2, life: "life-three" };
-      const record = buildReceiptFact(fact);
-      expect(record.tiddler["life"]).toBe("life-three");
-      expect(parseReceiptFact({ ...bag, life: "" }), "an empty life reads torn").toBeNull();
-      expect(parseReceiptFact({ ...bag, life: 3 }), "a counter in the life field reads torn").toBeNull();
-      expect(parseReceiptFact(record.tiddler as Record<string, unknown>)).toEqual(fact);
-    }
-    // CONTROL: a settled fact needs no life.
-    expect(parseReceiptFact({ title: `${RECEIPT_FACT_URI_PREFIX}r6`, "request-id": "r6", "input-digest": "sha256:ee", state: "done", seq: "2", "outcome-bytes": "0" }))
-      .toEqual({ requestId: "r6", inputDigest: "sha256:ee", state: "done", seq: 2, outcomeBytes: 0 });
-  });
-
-  test("★ a landed fact (`done` or `error`) names the bytes of the outcome it keeps; none on the wire reads as torn ★", () => {
-    for (const state of ["done", "error"] as const) {
-      const bag = { title: `${RECEIPT_FACT_URI_PREFIX}r7`, "request-id": "r7", "input-digest": "sha256:ff", state, terminal: state, seq: "4" };
-      expect(parseReceiptFact(bag), state).toBeNull();
-      for (const unreadable of ["", "-1", "1.5", "many", -1, 1.5, null, "9".repeat(400), "9007199254740993", Number.POSITIVE_INFINITY, Number.NaN]) {
-        expect(parseReceiptFact({ ...bag, "outcome-bytes": unreadable }), `${state} ${String(unreadable)}`).toBeNull();
-      }
-      const fact = { requestId: "r7", inputDigest: "sha256:ff", state, terminal: state, seq: 4, outcomeBytes: 9_001 };
-      const record = buildReceiptFact(fact);
-      expect(record.tiddler["outcome-bytes"]).toBe("9001");
-      expect(parseReceiptFact(record.tiddler as Record<string, unknown>)).toEqual(fact);
-    }
-    // CONTROL: the states that keep no outcome carry no measure, and need none.
-    const evicted = { requestId: "r8", inputDigest: "sha256:ab", state: "evicted" as const, terminal: "done" as const, seq: 5 };
-    expect(buildReceiptFact(evicted).tiddler["outcome-bytes"]).toBeUndefined();
-    expect(parseReceiptFact(buildReceiptFact(evicted).tiddler as Record<string, unknown>)).toEqual(evicted);
-    const committed = { requestId: "r9", inputDigest: "sha256:cd", state: "committed" as const, seq: 6, life: "life-one" };
-    expect(buildReceiptFact(committed).tiddler["outcome-bytes"]).toBeUndefined();
-  });
-
-  test("outcomeBytesOf measures an outcome record in UTF-8 bytes of its canonical form: field order moves nothing, a body moves it byte for byte", () => {
-    const small = { title: "t", status: "done", results: "{}" };
-    const base = outcomeBytesOf(small);
-    expect(base).toBeGreaterThan(0);
-    expect(outcomeBytesOf({ results: "{}", status: "done", title: "t" })).toBe(base);
-    expect(outcomeBytesOf({ ...small, results: `{}${"x".repeat(100)}` })).toBe(base + 100);
-    expect(outcomeBytesOf({ ...small, results: "{}é" })).toBe(base + 2);        // a two-byte character counts two
-  });
-
-  test("a torn fact (bad state, non-numeric seq) parses to null, never throws", () => {
-    expect(parseReceiptFact({ title: `${RECEIPT_FACT_URI_PREFIX}r3`, "request-id": "r3", state: "bogus", seq: "1" })).toBeNull();
-    expect(parseReceiptFact({ title: `${RECEIPT_FACT_URI_PREFIX}r3`, "request-id": "r3", "input-digest": "x", state: "done", seq: "nope" })).toBeNull();
-    expect(parseReceiptFact({ title: "lar:///not-a-receipt" })).toBeNull();
-  });
-
-  test("a torn fact missing requestId still parses to null even with an absent digest", () => {
-    expect(parseReceiptFact({ title: `${RECEIPT_FACT_URI_PREFIX}r4`, state: "committed", seq: 1 })).toBeNull();
-  });
-
+describe("no receipt record and no receipt ring: the verb door holds a request id in memory (receipt-ledger)", () => {
   test("verbInputDigest is deterministic over {verb,args,face,effectKey} and sensitive to each", async () => {
     const a = await verbInputDigest({ verb: "load", args: { x: 1 }, face: "did:key:zOp" });
     const b = await verbInputDigest({ verb: "load", args: { x: 1 }, face: "did:key:zOp" });
@@ -176,21 +89,10 @@ describe("receipt facts — single-writer ledger codec (D1)", () => {
     expect(withEffect).not.toBe(a);
   });
 
-  test("RECEIPT_RING_DEFAULT is a count (1,024, the answer ring's), and a named rate dial derives one", () => {
-    expect(RECEIPT_RING_DEFAULT).toBe(1_024);
-    expect(ratedReceiptRing()).toBe(1_024);
-    expect(ratedReceiptRing({})).toBe(1_024);
-    expect(ratedReceiptRing({ ratePerMin: 2, horizonDays: 1, burst: 0 })).toBe(2 * 60 * 24);
-    expect(ratedReceiptRing({ horizonDays: 1 })).toBe(60 * 24 + 256);   // the unnamed dials read 1/min and a 256 burst
-  });
-
-  test("RECEIPT_RING_BYTES_DEFAULT is derived (the ring's count × a 2 KiB mean per kept outcome = 2,097,152)", () => {
-    expect(RECEIPT_RING_BYTES_DEFAULT).toBe(1_024 * 2_048);
-    expect(ratedReceiptRingBytes()).toBe(2_097_152);
-    // The byte bound follows the count it rides beside, and takes its own dial.
-    expect(ratedReceiptRingBytes({ ratePerMin: 2, horizonDays: 1, burst: 0 })).toBe(2 * 60 * 24 * 2_048);
-    expect(ratedReceiptRingBytes({ bytesPerOutcome: 512 })).toBe(1_024 * 512);
-    expect(ratedReceiptRing({ bytesPerOutcome: 512 } as never)).toBe(1_024);    // CONTROL: the count ignores the byte dial
+  test("the module names no receipt-fact codec, title prefix or ring dial", () => {
+    for (const burned of ["RECEIPT_FACT_URI_PREFIX", "buildReceiptFact", "parseReceiptFact", "outcomeBytesOf", "ratedReceiptRing", "ratedReceiptRingBytes", "RECEIPT_RING_DEFAULT", "RECEIPT_RING_BYTES_DEFAULT"]) {
+      expect(Object.keys(verbTiddler), burned).not.toContain(burned);
+    }
   });
 });
 
@@ -216,9 +118,9 @@ describe("concludeVerb — digest-on-outcome + effect index fields (D1)", () => 
 
     const refused = concludeVerb({
       requestId: "r3", verb: "load", status: "error", face: "did:key:zOp", cause: "c", batchMode: "best-effort",
-      refusal: "retention-gap",
+      refusal: "beyond-profile",
     });
-    expect(refused.tiddler["refusal"]).toBe("retention-gap");
+    expect(refused.tiddler["refusal"]).toBe("beyond-profile");
   });
 });
 
@@ -231,28 +133,5 @@ describe("DaemonMsg_PlaceVerb — effectKey rides the wire, whitelist unchanged 
     const noEffect = mkDaemonPlaceVerb({ verb: "load", args: {}, face: "did:key:zOp" });
     expect(noEffect.effectKey).toBeUndefined();
     expect(isVesselToIslandMsg(noEffect)).toBe(true);
-  });
-});
-
-describe("an evicted fact may name no digest, and then names no verdict", () => {
-  const title = `${RECEIPT_FACT_URI_PREFIX}req-evicted-cancel`;
-  const base = { title, "request-id": "req-evicted-cancel", state: "evicted", seq: "4" };
-
-  test("★ a cancelled id the ring let go parses: id, state and place in the order ★", () => {
-    expect(parseReceiptFact(base)).toEqual({ requestId: "req-evicted-cancel", state: "evicted", seq: 4 });
-    // It round-trips through the builder with no digest field minted.
-    expect(buildReceiptFact(parseReceiptFact(base)!).tiddler).not.toHaveProperty("input-digest");
-  });
-
-  test("a digest-less evicted fact that names a verdict reads torn", () => {
-    expect(parseReceiptFact({ ...base, terminal: "done" })).toBeNull();
-    // A field a cancel never mints reads torn too, whatever it holds.
-    expect(parseReceiptFact({ ...base, terminal: "later" })).toBeNull();
-    expect(parseReceiptFact({ ...base, "effect-key": "sha256:e" })).toBeNull();
-  });
-
-  test("CONTROL: an evicted fact with its digest keeps its verdict; a digest-less committed fact reads torn", () => {
-    expect(parseReceiptFact({ ...base, "input-digest": "sha256:d", terminal: "done" })).toMatchObject({ state: "evicted", inputDigest: "sha256:d", terminal: "done" });
-    expect(parseReceiptFact({ ...base, state: "committed", life: "life-one" })).toBeNull();
   });
 });

@@ -480,7 +480,6 @@
     "tests/test-scratch-marker-admission.test.ts": 1,
     "tests/true-name-model.test.ts": 13,
     "tests/uds-channel-h1-ledger.test.ts": 16,
-    "tests/uds-channel-receipt-ledger.test.ts": 1,
     "tests/uds-channel-routing.test.ts": 1,
     "tests/uds-face-verb-socket-only.test.ts": 1,
     "tests/uds-front.test.ts": 1,

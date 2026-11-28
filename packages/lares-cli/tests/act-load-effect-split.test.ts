@@ -218,15 +218,6 @@ describe("lares act — the split requestId/effectKey, every action verb (H4, wi
     expect(received[0]!.effectKey).toBe(received[1]!.effectKey); // the SAME reused --change-id
   });
 
-  test("a live `retention-gap` refusal (the receipt ring evicted this id) reads its own code (exit 6), never `verb-error`", async () => {
-    const retentionGapReply = (inv: Invocation) => ({
-      status: "error", errorMessage: `request ${inv.requestId} retention-gap`, refusal: { reason: "retention-gap" },
-    });
-    await standScripted([retentionGapReply]);
-    const code = await cmdAct(loadArgs());
-    expect(code).toBe(6);
-  });
-
   test("a live `request-id-reused-with-changed-input` refusal reads `request-id-reused` (exit 2)", async () => {
     const reusedReply = (inv: Invocation) => ({
       status: "error", errorMessage: `request ${inv.requestId} reused with changed input`,

@@ -171,7 +171,7 @@ export interface WikiSlotBags {
 
 /**
  * THE DAEMON WIKI'S OWN SLOTS: its working and draft slots, the D half of the daemon bag (sealed-store#/owed, U1). The
- * working slot carries the verb outcome ledger and the receipt facts; each seals under the lit face. The daemon wiki's
+ * working slot carries the daemon wiki's working records; each seals under the lit face. The daemon wiki's
  * canon bag and the daemon document (`DAEMON_BAG_ID`) stand on the floor, clear and signed, and never join this set.
  */
 /** The bag the face's own catalog document answers to (`catalog-view`), sealed under the lit face. */

@@ -60,7 +60,7 @@ const mesh = await import("../packages/lararium-mesh/dist/index.js");
 const { daemonDiskMirrors } = await import("../packages/lararium-node/dist/src/bag-paths.js");
 const families = {
   summons: mesh.SUMMONS_URI_PREFIX, outcomes: mesh.OUTCOME_URI_PREFIX, effects: mesh.EFFECT_URI_PREFIX,
-  receipts: mesh.RECEIPT_FACT_URI_PREFIX, "ward audits": mesh.WARD_AUDIT_URI_PREFIX, mailbox: mesh.MAILBOX_URI_PREFIX,
+  "ward audits": mesh.WARD_AUDIT_URI_PREFIX, mailbox: mesh.MAILBOX_URI_PREFIX,
   "lease epochs": mesh.leaseEpochPrefix("witness"),
 };
 for (const [family, prefix] of Object.entries(families)) {

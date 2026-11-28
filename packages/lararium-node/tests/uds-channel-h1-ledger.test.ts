@@ -1,19 +1,19 @@
 /**
- * uds-channel — the H1 arbitration ledger: one winner per request id, receipts by id, the CLI
+ * uds-channel — H1 arbitration: one winner per request id, receipts by id, the CLI
  * never retells a vessel's own impatience as a verdict on the act.
  *
  * PROVEN LIVE (gp25-episkopos1 §1, H1): a caller that gave up got its invocation dropped (logged,
  * never dispatched) — but nothing recorded the drop, so a LATER connection carrying the SAME
  * request id (a read-back, exactly what `act.ts` issues) met a vessel with no memory of the
- * refusal and dispatched it anyway. One request id, two "winners". This suite proves the ledger
- * this ships with it closes exactly that hole, plus the matched M2/M8 fixes riding beside it:
+ * refusal and dispatched it anyway. One request id, two "winners". This suite proves the door's ask
+ * book (memory alone, for the vessel's life) closes exactly that hole, plus the matched M2/M8 fixes riding beside it:
  *   - an abandoned id refuses a later dispatch attempt under the SAME id, by name, never running;
- *   - `{op:"receipt"}` reads the ledger + durable outcome WITHOUT ever calling `placeVerb`;
+ *   - `{op:"receipt"}` reads the book, the answer ring and a write's verdict row WITHOUT ever calling `placeVerb`;
  *   - a reused id with CHANGED args refuses `request-id-reused-with-changed-input`, never runs
  *     under borrowed trust in the id alone;
  *   - the vessel's own wait-expiry rides back as `{status:"unknown"}`, never `{status:"error"}` (M2);
  *   - `{op:"cancel"}` withdraws an id before it is read, so it cannot be dispatched later (M8);
- *   - a set-back/set-forward `Date.now()` moves none of it — the ledger reads no clock at all.
+ *   - a set-back/set-forward `Date.now()` moves none of it — the book reads no clock at all.
  */
 import { controlStoreOf } from "@lararium/mesh/control-home";
 import { describe, test, expect } from "vitest";
@@ -110,7 +110,7 @@ const doneWorker = (p: Placed, daemonHandle: ReturnType<Repo["create"]>) => {
   daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
 };
 
-describe("uds-channel — H1 arbitration ledger", () => {
+describe("uds-channel — H1 arbitration, one winner per request id", () => {
   test("RED→GREEN: a read-back under an ABANDONED request id never re-dispatches", async () => {
     await withChannel(() => { /* never actually dispatches in this test — see below */ }, async ({ socketPath, placed }) => {
       const inv = { verb: "nexus-kapae", args: { a: 1 }, requestedBy: "did:key:test", requestId: "req-h1-abandon" };
@@ -123,7 +123,7 @@ describe("uds-channel — H1 arbitration ledger", () => {
       const retry = await sendLine(socketPath, inv);
       expect(placed).toHaveLength(0); // still never dispatched — this is the fix
       expect(retry["status"]).toBe("error");
-      expect(String(retry["errorMessage"])).toMatch(/already refused request req-h1-abandon before commit/);
+      expect(String(retry["errorMessage"])).toMatch(/already refused request req-h1-abandon before dispatch/);
     });
   });
 
@@ -140,7 +140,7 @@ describe("uds-channel — H1 arbitration ledger", () => {
     });
   });
 
-  test("a hung-up READ drops with no fact: its receipt reads unknown, and a line under the same id reads", async () => {
+  test("a hung-up READ drops and marks nothing: its receipt reads unknown, and a line under the same id reads", async () => {
     await withChannel(doneWorker, async ({ socketPath, placed }) => {
       // `ddate` stands in the read allow-list (`READ_VERBS`): it writes no document, so a caller gone leaves nothing to arbitrate.
       const inv = { verb: "ddate", args: {}, requestedBy: "did:key:test", requestId: "req-h1-read-hung-up" };
@@ -148,7 +148,7 @@ describe("uds-channel — H1 arbitration ledger", () => {
       await new Promise((r) => setTimeout(r, 100));
       expect(placed).toHaveLength(0); // dropped, never dispatched
 
-      // No fact rests for it: the vessel wrote nothing for a reader already gone.
+      // Nothing marks it: the vessel kept nothing for a reader already gone.
       expect(await sendLine(socketPath, { op: "receipt", requestId: inv.requestId })).toEqual({ requestId: inv.requestId, state: "unknown" });
 
       // The same line from a caller that stays reads: no effect could land twice.
@@ -239,7 +239,7 @@ describe("uds-channel — H1 arbitration ledger", () => {
       const retry = await sendLine(socketPath, { verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId });
       expect(placed).toHaveLength(0);
       expect(retry["status"]).toBe("error");
-      expect(String(retry["errorMessage"])).toMatch(/already refused request req-h1-cancel before commit/);
+      expect(String(retry["errorMessage"])).toMatch(/already refused request req-h1-cancel before dispatch/);
     });
   });
 

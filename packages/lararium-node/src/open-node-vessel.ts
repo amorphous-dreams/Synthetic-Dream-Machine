@@ -345,7 +345,7 @@ import { hostWorkingFollower } from "./host-working-follow.js";
 /** Node advertises a few keep-warm wikis BESIDES the daemon bag (resource-rich vessel).
  *  Every face's keep list rides this one budget; the cap refuses by name past it and drops no keep. */
 const NODE_WIKI_KEEP_BUDGET = 3;
-/** The daemon wiki's working slot: the outcome ledger and the receipt facts rest there (sealed-store#/owed, U1). */
+/** The daemon wiki's working slot (sealed-store#/owed, U1). */
 const DAEMON_WORKING_SLOT = wikiSlotUri("daemon", "working");
 
 import { larSealHome, larStructurePalaceDir, larFormPalaceDir, memorySensoriumDir, meshSensoriumDir, larContentDir, sensoriumDir }  from "./vessel-paths.js";

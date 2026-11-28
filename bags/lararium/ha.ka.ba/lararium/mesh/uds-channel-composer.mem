@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/uds-channel-composer`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/uds-channel-composer"
+role          = "code-meme: names the verb door's surface: every type, helper and seat a caller imports, re-exported from the modules under `uds-channel/`"
+source-file   = "packages/lararium-node/src/uds-channel.ts"
+source-sha256 = "sha256:dfc36588a5e01ce66b146523d4714fc822e8068b169a789be8fa2a0e7a5e0c55"
+title         = "lar:///ha.ka.ba/lararium/mesh/uds-channel-composer"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/uds-channel-composer"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`uds-channel.ts` names the verb door's surface: every type, helper and seat a caller imports, re-exported from the modules under `uds-channel/`. The barrel every caller imports (`main.ts`, `open-node-vessel.ts`, `uds-session-door.ts`, the node package index and the suites). It holds no code of its own. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/uds-channel-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/uds-channel.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/uds-channel-composer"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;o31JCmVaXlnz3ZMsgAx31yYcUEUsU2yh1J6FMO3Zv7Q`>>
+
+<<^ code=`&#x0004;` to=`?`>>

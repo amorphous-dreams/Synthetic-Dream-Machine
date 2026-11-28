@@ -2,15 +2,15 @@
  * sealed-act-leak — NOTHING AN ACT CARRIES OR ANSWERS REACHES THE DAEMON'S DOCUMENT.
  *
  * A store verb's output rests in the daemon's document as an outcome (`bags/daemon/outcomes/<id>`), in the clear,
- * and the digest of its arguments rests in a receipt fact. A sealed row's act rides the custody door instead. This
+ * and the digest of its arguments rests beside it (`input-digest`). A sealed row's act rides the custody door instead. This
  * suite stands a real verb socket (the front, the verb seat, a daemon document and a working layer) with the
  * custody door ahead of the seat, exactly as the vessel's main thread composes them, and reads every tiddler of
  * both documents after the acts ran.
  *
- *   L1  RED: every act the table names, sent as an `act` frame, leaves no outcome, no receipt fact and no byte of
+ *   L1  RED: every act the table names, sent as an `act` frame, leaves no outcome, no receipt title and no byte of
  *       its arguments or its answer in either document.
- *       CONTROL: the SAME name and arguments sent as a verb leave an outcome that holds the answer and a receipt
- *       fact that holds the digest of the arguments, and the search finds both.
+ *       CONTROL: the SAME name and arguments sent as a verb leave an outcome that holds the answer and the digest of
+ *       the arguments, and the search finds both.
  *   L2  RED: a real act over a founded scratch custody (a pet-name set, then read) answers its caller with the
  *       pet-name and leaves it in neither document nor in the door's log.
  *       CONTROL: the row's own reader holds the pet-name, and the same pet-name sent as a verb argument leaves
@@ -44,7 +44,8 @@ import { createConnection, type Socket } from "node:net";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
-import { concludeVerb, verbInputDigest, RECEIPT_FACT_URI_PREFIX, OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { concludeVerb, verbInputDigest, OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { CompositeStore } from "@lararium/mesh/composite-store";
@@ -59,6 +60,9 @@ import type { PlaneRest } from "../src/sealed-acts.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, makeNodePersonaPetnameStore } from "../src/node-vessel-identity.js";
 import { makeUdsSeat, serveUdsFront, type UdsFront } from "../src/uds-channel.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+
+/** Where receipt facts rested before they burned: no title stands under it. */
+const RECEIPT_TITLES = `${CONTROL_HOME_ID}/receipts/`;
 
 vi.setConfig({ testTimeout: 120_000, hookTimeout: 120_000 });
 
@@ -92,14 +96,16 @@ async function stand(door: (parsed: unknown, sock: Socket) => boolean, rest: Pla
   const front: UdsFront = serveUdsFront({ claim, onFrame: door });
   front.attach(makeUdsSeat({
     controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo, timeoutMs: 2_000,
-    // The worker lands a verb's OUTPUT in its outcome, as a store verb's reactor does.
+    // The worker lands a verb's OUTPUT in its outcome, stamped with its input digest, as the dispatcher's `writeOutcome` does.
     placeVerb: (o) => {
       const p = o as Placed;
-      const outcome = concludeVerb({
-        requestId: p.requestId, verb: p.verb, status: "done", cause: "test-worker",
-        batchMode: "best-effort", results: { summary: { echoed: p.args } },
+      void digestOf(p.verb, p.args).then((inputDigest) => {
+        const outcome = concludeVerb({
+          requestId: p.requestId, verb: p.verb, status: "done", cause: "test-worker",
+          batchMode: "best-effort", results: { summary: { echoed: p.args } }, inputDigest,
+        });
+        daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
       });
-      daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
     },
   }));
   for (let i = 0; i < 200 && !existsSync(claim.socketPath); i++) await new Promise((r) => setTimeout(r, 10));
@@ -126,7 +132,7 @@ async function stand(door: (parsed: unknown, sock: Socket) => boolean, rest: Pla
   };
 }
 
-/** The digest a receipt fact keeps for a verb's arguments (the worker's own formula). */
+/** The digest an outcome stamps for a verb's arguments (the worker's own formula). */
 const digestOf = (verb: string, args: Record<string, unknown>): Promise<string> =>
   verbInputDigest({ verb, args });
 
@@ -160,7 +166,7 @@ describe("an act frame and the daemon's document", () => {
     await new Promise((r) => setTimeout(r, 150));                                          // let any late write land
     const afterActs = v.text();
     expect(v.titles().filter((t) => t.startsWith(OUTCOME_URI_PREFIX))).toEqual([]);
-    expect(v.titles().filter((t) => t.startsWith(RECEIPT_FACT_URI_PREFIX))).toEqual([]);
+    expect(v.titles().filter((t) => t.startsWith(RECEIPT_TITLES))).toEqual([]);
     for (const act of SEALED_ACT_NAMES.filter((a) => !SESSION_ACTS.has(a))) {
       expect(afterActs.includes(answers.get(act)!), `the answer of ${act} rests in a document`).toBe(false);
       expect(afterActs.includes(args.get(act)!), `an argument of ${act} rests in a document`).toBe(false);
@@ -178,7 +184,7 @@ describe("an act frame and the daemon's document", () => {
     const afterVerb = v.text();
     expect(v.titles().filter((t) => t.startsWith(OUTCOME_URI_PREFIX))).toEqual([`${OUTCOME_URI_PREFIX}leak-control-1`]);
     expect(afterVerb.includes(args.get(act)!)).toBe(true);                                 // the outcome holds what the verb answered
-    expect(afterVerb.includes(await digestOf(act, verbArgs))).toBe(true);                 // the receipt holds the arguments' digest
+    expect(afterVerb.includes(await digestOf(act, verbArgs))).toBe(true);                 // the outcome holds the arguments' digest
   });
 
   test("L2 — a real act over a founded custody answers its caller and leaves its pet-name in no document and no log", async () => {
@@ -201,7 +207,7 @@ describe("an act frame and the daemon's document", () => {
     expect(read).toEqual({ op: "act", act: "petname.entries", result: { entries: [[0, PETNAME]] } });   // the caller holds the answer
     await new Promise((r) => setTimeout(r, 150));
     expect(v.text().includes(PETNAME)).toBe(false);
-    expect(v.titles().filter((t) => t.startsWith(OUTCOME_URI_PREFIX) || t.startsWith(RECEIPT_FACT_URI_PREFIX))).toEqual([]);
+    expect(v.titles().filter((t) => t.startsWith(OUTCOME_URI_PREFIX) || t.startsWith(RECEIPT_TITLES))).toEqual([]);
     expect(logs).toEqual(["act petname.set: done", "act petname.entries: done"]);
     expect(printed.join("\n").includes(PETNAME)).toBe(false);
     vi.restoreAllMocks();
@@ -250,7 +256,7 @@ describe("an act frame and the daemon's document", () => {
     for (const name of [PETNAME, HANDLE]) expect(docs.includes(name), `"${name}" rests in a document outside its face's plane`).toBe(false);
     expect(docs.includes(await digestOf("persona-label", { handleIndex: 0, petname: PETNAME }))).toBe(false);
     expect(docs.includes(await digestOf("persona-handle", { handleIndex: 0, handle: HANDLE }))).toBe(false);
-    expect(v.titles().filter((t) => t.startsWith(OUTCOME_URI_PREFIX) || t.startsWith(RECEIPT_FACT_URI_PREFIX))).toEqual([]);
+    expect(v.titles().filter((t) => t.startsWith(OUTCOME_URI_PREFIX) || t.startsWith(RECEIPT_TITLES))).toEqual([]);
     expect(logs).toEqual(["act petname.set: done", "act declaration.set: done", "act selves.carry: done", "act selves.carry: done", "act selves.read: done"]);
     expect(printed.join("\n").includes(PETNAME) || printed.join("\n").includes(HANDLE)).toBe(false);
     // CONTROL: the mirror kept its destination. The face's plane holds both names, the seat claim and the chair

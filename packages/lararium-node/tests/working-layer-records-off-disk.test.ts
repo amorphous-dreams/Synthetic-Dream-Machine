@@ -2,7 +2,7 @@
  * working-layer-records-off-disk — the daemon's control records rest in the control document, so the working layer's
  * disk mirror never meets one.
  *
- * Placement decides residency: a receipt fact, a ward audit and a summons rest in the vessel's control document
+ * Placement decides residency: a verdict row, a ward audit and a summons rest in the vessel's control document
  * (`control-home`), which no mirror names. The working layer holds only what its own writers put there, so a mounted
  * mirror projects the ordinary title and nothing else.
  */
@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
-import { buildReceiptFact, summon } from "@lararium/mesh/verb-tiddler";
+import { concludeVerb, summon, verdictRowOf } from "@lararium/mesh/verb-tiddler";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { LarDiskProjector } from "../src/disk-projector.js";
@@ -34,7 +34,7 @@ afterEach(() => { if (diskRoot) { rmSync(diskRoot, { recursive: true, force: tru
 const filesUnder = (dir: string): string[] => readdirSync(dir, { recursive: true, encoding: "utf8" });
 
 describe("daemon control records never reach the working layer's disk mirror", () => {
-  test("a receipt fact, a ward audit and a summons rest in the control document and project no file; an ordinary title projects", async () => {
+  test("a verdict row, a ward audit and a summons rest in the control document and project no file; an ordinary title projects", async () => {
     const working = new MemoryTiddlerStore(WORKING);
     const composite = new CompositeStore();
     composite.addLayer({ bagId: WORKING, store: working, writable: true, defaultWritable: true });
@@ -42,13 +42,13 @@ describe("daemon control records never reach the working layer's disk mirror", (
     const control = new CompositeStore();
     control.addLayer({ bagId: CONTROL_HOME_ID, store: controlBag, writable: true, defaultWritable: true });
     const origin = { kind: "test" } as const;
-    await control.put(buildReceiptFact({ requestId: "r1", state: "committed", seq: 0, inputDigest: "d" }), origin);
+    await control.put(verdictRowOf(concludeVerb({ requestId: "r1", verb: "load", status: "done", cause: "c", batchMode: "best-effort" })), origin);
     await fileWardRefusal(composite, control, () => {}, { bagId: "mirror", uri: "lar:///ward/x", reason: "refused" });
     await control.put(summon({ verb: "v", args: {}, requestedBy: "did:key:z", requestId: "s1" }), origin);
     await composite.put({ tiddler: { title: "lar:///ha.ka.ba/t/daemon/ordinary", text: "an ordinary note" } }, origin);
 
     const controlTitles = await controlBag.listVisible();
-    const bookkeeping = controlTitles.filter((t) => t.includes("/receipts/") || t.includes("/ledger/ward/") || t.includes("/summons/"));
+    const bookkeeping = controlTitles.filter((t) => t.includes("/outcomes/") || t.includes("/ledger/ward/") || t.includes("/summons/"));
     expect(bookkeeping.length, "the records did not land in the control document").toBe(3);
     const titles = await working.listVisible();
     expect(titles, "a control record reached the working layer").toEqual(["lar:///ha.ka.ba/t/daemon/ordinary"]);

@@ -17,12 +17,13 @@ import { createServer } from "node:http";
 import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { OUTCOME_URI_PREFIX, WARD_AUDIT_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 import { VESSEL_LOCKED } from "@lararium/mesh/control-home";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { direct } from "./direct-store.js";
 import { TEST_CUSTODY, TEST_SLOT } from "./found-route.js";
 import { runInit, runFoundTheFace, foundSeedCharter, openNodeHerm, openNodeVessel, seatFaceRoute, seatWardGatherer, seatCustody, seatedCustody } from "../dist/src/index.js";
+
 
 seatFaceRoute(async () => [TEST_SLOT]);
 seatWardGatherer(async () => TEST_SLOT.pins.flatMap((pin) => (pin.kind === "passphrase" ? [{ kind: "passphrase" as const, passphrase: pin.passphrase }] : [])));
@@ -61,9 +62,9 @@ describe("a locked floor reaches for no sealed document", () => {
     expect(Object.keys(herm.repo.handles), "the floor's Repo holds a handle for the sealed control document").not.toContain(controlId);
     expect(said.filter((line) => /SealedDocumentRefusal|session-absent/.test(line))).toEqual([]);
     // The floor's control store answers a verb answer from its memory alone (none waits here) and refuses every control
-    // fact by the stand-in's name: a receipt fact never reads off a locked floor.
+    // record by the stand-in's name: no control record reads off a locked floor.
     expect(await herm.daemon.control.get(`${OUTCOME_URI_PREFIX}floor`)).toBeNull();
-    await expect(herm.daemon.control.get(`${RECEIPT_FACT_URI_PREFIX}floor`)).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
+    await expect(herm.daemon.control.get(`${WARD_AUDIT_URI_PREFIX}floor`)).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
 
     // F2 — THE UNLOCK RECOMPOSES: the floor stands down, the key opens, and the sovereign composition reads its control document.
     await withLarRoot(root, () => herm!.teardown());

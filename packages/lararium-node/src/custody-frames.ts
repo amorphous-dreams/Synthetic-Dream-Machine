@@ -3,8 +3,8 @@
  * `backup`.
  *
  * ── A CREDENTIAL NEVER RIDES A VERB ─────────────────────────────────────────────────────────────
- * A verb's arguments get hashed into a durable receipt fact, handed to the daemon island and recorded with its
- * outcome. A credential on that road leaves a digest any reader of the daemon's document tests guesses against,
+ * A verb's arguments get hashed into an input digest, handed to the daemon island and recorded with its
+ * outcome (a write's verdict row). A credential on that road leaves a digest any reader of the daemon's document tests guesses against,
  * offline. So the custody door stands AHEAD of the verb seat: the socket's front hands each parsed frame here
  * first, and a custody frame never becomes an invocation — no digest, no receipt, no outcome, no worker message
  * carries it. The handler logs the slot id that opened and the name of a refusal, and nothing of what was sent.

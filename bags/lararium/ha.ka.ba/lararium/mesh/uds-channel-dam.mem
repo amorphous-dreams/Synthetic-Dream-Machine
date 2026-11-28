@@ -1,0 +1,48 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/uds-channel-dam`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+role      = "working checklist: the verb door (uds-channel) split into modules once its receipt fact table burned, and what each one showed"
+title     = "lar:///ha.ka.ba/lararium/mesh/uds-channel-dam"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/mesh/uds-channel-dam"
+```
+
+<<~ ahu slot=`#/checklist`>>
+
+!! DAM checklist
+
+The landing burned the receipt fact table (`FactLedger`: a live ring, an evicted ring, a byte ring, torn-record tracking, a seed scan over every control title, `retention-gap`) and moved what remained of `packages/lararium-node/src/uds-channel.ts` (2,449 lines) into modules under `packages/lararium-node/src/uds-channel/`, each wrapped by a heleuma code-meme. The receipt law it serves reads at <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/receipt-ledger`>>. Line counts name the files at this landing. The "pono?" column records what the split SAW; it prescribes no change.
+
+|!module (code-meme) |!lines |!does, holds, carries |!callers |!pono? (seen) |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/uds-channel-composer`>> `uds-channel.ts` | 37 | re-exports the door's surface | main, open-node-vessel, uds-session-door, the node index, 28 node suites | A barrel and nothing else: the path every caller already named stays, so no caller moved. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/uds-channel-shapes`>> `uds-channel/shapes.ts` | 299 | names the options, the session supply and signer, the anchor, the invocation, the gate, the receipt answer | every module | Exception list: ~30 optional ports, each with its own "Absent:" fallback sentence. `ReceiptAnswer` mirrors the CLI's own copy in `lares-cli/src/local-connector.ts` by design (two sides of a socket stay decoupled), so a state added here needs its twin there. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/uds-channel-outcome`>> `uds-channel/outcome.ts` | 144 | tells an outcome; names the receipt, cancel and held-ask queries; the input digest; the wait ending | seat, outcome-reads, receipts, the barrel | `heldAsk` matches four spellings of the watch plus a sigil regex: a name list beside a grammar. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/uds-channel-ask-book`>> `uds-channel/ask-book.ts` | 90 | holds each request id's standing for the vessel's life: running, abandoned, landed, an act's verdict | seat, receipts | New at this landing, replacing the fact table: synchronous, no write, no clock, one count bound (`ANSWER_RING_COUNT`). A landed entry keeps its input digest, so a re-ask with changed input refuses even beside an outcome that names no digest. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/uds-channel-outcome-reads`>> `uds-channel/outcome-reads.ts` | 151 | reads the ring, then the verdict row; waits for an outcome; owes a dispatched id its answer | seat, receipts | Held state: `answerOwed` bridges the beat between a verdict row landing and its answer reaching the ring. Clock: the wait's timer (`verbBudgetMs`) paces this side alone and rejects `VesselWaitExpired`, never a verdict. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/uds-channel-receipts`>> `uds-channel/receipts.ts` | 94 | answers the receipt read, the engine-fall receipt and the session receipt | seat | Three readers of one book, two spellings of a running ask: the receipt reads say `committed`, the session receipt `pending` (its states predate the door's). |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/uds-channel-front`>> `uds-channel/front.ts` | 167 | serves the claim once, parks callers, answers the holder probe, refuses after close | seat (`startUdsChannel`), main, the node index, front suites | Patch seam: `watchAnswers` wraps `sock.write`/`sock.end` to hear request ids leave; a frame split across writes still settles at its newline. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/uds-channel-seat`>> `uds-channel/seat.ts` | 968 | gates lines and session frames, arbitrates in the book, dispatches, answers | front, the barrel | Still the heaviest module: the session frames (open, switch, act, receipt, cancel, close) close over ~20 seat-local values (`table`, `sessionSockets`, `handle`, `owedFor`, the drain counters), so they stayed. The dispatch road now runs one arbitration for reads, writes and the floor (the ring, the row, the book); a read joins its wait by the book instead of a private in-flight map. A ladder of gates (engine fall, roster, locked control, hand and seat walls, wave budget, chore face, target, face actor) leads each one-shot line before the book's turn. |
+
+!!! What burned
+
+* `FactLedger` (~455 lines) and its outcome observer; the seed scan; the live, evicted and byte rings; torn-record tracking; `retention-gap`, `interrupted`, `evicted` and `receipt-fact-torn` as door answers.
+* `packages/lararium-mesh/src/verb-tiddler.ts`: `RECEIPT_FACT_URI_PREFIX`, the `ReceiptFact` types, `buildReceiptFact`, `parseReceiptFact`, `outcomeBytesOf`, `ratedReceiptRing`, `ratedReceiptRingBytes` and both ring defaults (the rate × horizon dial).
+* `main.ts`'s `receipts.ring` config read; the CLI's `retention-gap`, `request-interrupted` and `receipt-fact-torn` codes; the dispatcher's digest-less effect-row refusal (such a row now runs fresh).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/registration`>>
+
+!! Heleuma registration
+
+`packages/lararium-tw5/scripts/sync-heleuma.ts` reads every mesh anchor whose `source-file` names a node-package module (`nodeSourceAnchors`): the window check and a `source-sha256` check against the file's bytes. Drift warns and never blocks; `build:heleuma:commit` restamps. Each window faces `lar:///ha.ka.ba/lararium/mesh/source/uds-channel-…`, a source tiddler no carrier ships yet, as the disk projector's do (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;seKX99Yj3yVVE-I-eLLR0fdufKPlLRUU-j57niv2nII`>>
+
+<<^ code=`&#x0004;` to=`?`>>

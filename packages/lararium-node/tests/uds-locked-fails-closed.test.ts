@@ -3,11 +3,10 @@
  *
  * Gaia boots her node vessel on Tuesday and forgets to unlock it. Her MCP memory write reaches the UDS door while the
  * vessel's key stays shut: the control document stands as a stand-in (`standControlHome`), so the door answers
- * `vessel-locked`, places no verb, writes no receipt fact and claims no durability. She unlocks (the vessel recomposes
+ * `vessel-locked`, places no verb, rests nothing and claims no durability. She unlocks (the vessel recomposes
  * over the opened key) and retries under the same request id: it lands once. A second retry lands nothing new.
  *
  *   L1 — RED (Gaia Tuesday): locked, the invocation and its receipt read both refuse `vessel-locked`; nothing runs or rests
- *   L2 — RED (midnight petitioner): the receipt ledger over a locked control store answers no fact, durable or otherwise
  *   L3 — CONTROL: after unlock the same request id lands once, and a retry answers the outcome with no second placement
  */
 import { describe, expect, test } from "vitest";
@@ -26,7 +25,8 @@ import {
   openSecretHome,
   vesselHeldHomes,
 } from "@lararium/mesh/secret-home";
-import { concludeVerb, OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { concludeVerb, OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
 import {
   controlHomeRefusal,
   controlStoreOf,
@@ -36,8 +36,11 @@ import {
   CONTROL_HOME_UNNAMED,
 } from "@lararium/mesh/control-home";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
-import { FactLedger, startUdsChannel } from "../src/uds-channel.js";
+import { startUdsChannel } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
+
+/** Where receipt facts rested before they burned: no title stands under it. */
+const RECEIPT_TITLES = `${CONTROL_HOME_ID}/receipts/`;
 
 describe("a locked hearth fails closed at the verb door", () => {
   test("L1/L3 — RED (Gaia Tuesday): locked, a memory write refuses `vessel-locked` and nothing runs or rests; after unlock the same id lands once, and a retry lands nothing new", async () => {
@@ -63,7 +66,7 @@ describe("a locked hearth fails closed at the verb door", () => {
     await openSecretHome(v.repo, v.address);
     const opened = await standControlHome(v.repo, v.daemon);
     expect(controlHomeRefusal(opened)).toBeNull();
-    expect(titles(opened, RECEIPT_FACT_URI_PREFIX)).toEqual([]);
+    expect(titles(opened, RECEIPT_TITLES)).toEqual([]);
     const openedStore = controlStoreOf(opened);
     const second = await door(opened, v.repo, (o) => {
       placed += 1;
@@ -76,7 +79,7 @@ describe("a locked hearth fails closed at the verb door", () => {
       expect(retry["status"], JSON.stringify(retry)).toBe("done");
       expect(placed).toBe(1);
       expect(titles(opened, OUTCOME_URI_PREFIX)).toEqual([`${OUTCOME_URI_PREFIX}tuesday-1`]);
-      expect(titles(opened, RECEIPT_FACT_URI_PREFIX)).toEqual([`${RECEIPT_FACT_URI_PREFIX}tuesday-1`]);
+      expect(titles(opened, RECEIPT_TITLES), "no receipt rests: the verdict row answers the retry").toEqual([]);
     } finally { await second.close(); }
     await v.repo.shutdown();
   });
@@ -99,15 +102,6 @@ describe("a locked hearth fails closed at the verb door", () => {
       expect(placed, "no verb placed").toBe(0);
       expect(performance.now() - t0, "one round trip, never the outcome wait's bound").toBeLessThan(2_000);
     } finally { await gate.close(); await repo.shutdown(); }
-  });
-
-  test("L2 — RED (midnight petitioner): the receipt ledger over a locked control store answers no fact, durable or absent; it refuses `vessel-locked`", async () => {
-    const v = await foundedThenLocked();
-    const control = await standControlHome(v.repo, v.daemon);
-    const ledger = new FactLedger(controlStoreOf(control), v.repo, 16, "life-one");
-    await expect(ledger.get("midnight-1")).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
-    await expect(ledger.arbitrate("midnight-1", "digest", undefined, "memory-write")).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
-    await v.repo.shutdown();
   });
 });
 

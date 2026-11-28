@@ -65,7 +65,6 @@ import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 import { faceStands } from "./commands/init.js";
 import { deriveMeshSelf } from "./node-caps.js";
 import { parseMeshPeer } from "@lararium/mesh/carriage-caps";
-import { ratedReceiptRing, ratedReceiptRingBytes } from "@lararium/mesh/verb-tiddler";
 import { makeUdsSeat, serveUdsFront, type UdsChannelOptions, type UdsFront } from "./uds-channel.js";
 import { hearthPlanesOver, readHearthPlane } from "./hearth-roster-read.js";
 import { floorVerbsFor } from "./floor-verbs.js";
@@ -206,13 +205,6 @@ function publishStanding(storageDir: string, standing: string, faceLit: boolean)
   } catch { /* a vessel that cannot publish still stands */ }
 }
 
-/** The `receipts.ring {ratePerMin, horizonDays, burst, bytesPerOutcome}` shape an operator may override in
- *  `<root>/config/config.json` — read loosely here rather than widening `LaresConfig`'s own
- *  interface, so this one pass-through site in `main.ts` carries it to `uds-channel.ts`. The first three dials size the ring's count, and `bytesPerOutcome` the mean
- *  weight a kept outcome may take, so one block sets both bounds. Absent entirely → `startUdsChannel`'s own
- *  defaults (`RECEIPT_RING_DEFAULT`, `RECEIPT_RING_BYTES_DEFAULT`). */
-interface ReceiptsRingConfig { readonly receipts?: { readonly ring?: { readonly ratePerMin?: number; readonly horizonDays?: number; readonly burst?: number; readonly bytesPerOutcome?: number } } }
-
 /**
  * ONE ENGINE PER ISOLATE, ONE WATCH (`engine-watch`): this process's Automerge wasm instance backs every document its Repo
  * holds, so one watch stands for all of them. Health, the verb channel and the Repo's own logger read it; `main` answers its
@@ -274,10 +266,6 @@ async function main(): Promise<void> {
   if (lanDiscoveryMode !== undefined && lanDiscoveryMode !== "announce") {
     throw new Error(`[lararium] LAR_LAN_DISCOVERY refuses value ${JSON.stringify(lanDiscoveryMode)}; supported value: announce`);
   }
-  const receiptsCfg = loadLaresConfig() as unknown as ReceiptsRingConfig;
-  const receiptRing = receiptsCfg.receipts?.ring !== undefined
-    ? { count: ratedReceiptRing(receiptsCfg.receipts.ring), bytes: ratedReceiptRingBytes(receiptsCfg.receipts.ring) }
-    : undefined;
   // ORIGIN CUSTODY STAYS WITH A PRESENT KEEPER. A herm is a waystone: it carries for peers, informs
   // readers, and serves no arrival page, so a Web origin or a Pronaos input handed to it refuses here,
   // before any face listens.
@@ -465,7 +453,7 @@ async function main(): Promise<void> {
   // at the moment it composes: the face lit then, and whether it was handed the sovereign rows.
   const ctx: BootContext = {
     askedStanding, wikiId, storageDir, genesisDir, rootDir, catalogUrl, wss, httpServer, dispatcher, meshSelf,
-    reachFaces, originCompositions, receiptRing, readinessState, readinessFace, pronaos, floor, front,
+    reachFaces, originCompositions, readinessState, readinessFace, pronaos, floor, front,
     lanSocket: () => lanSocket,
     // THE CLEAN GOODBYE rides the stand-by, so the session it ends composes no floor after it.
     // Every teardown of this life notes its answer (`lifeClosed`), so a recomposition that left a face unsealed keeps the goodbye unsent.
@@ -652,7 +640,6 @@ interface BootContext {
   readonly meshSelf: ReturnType<typeof deriveMeshSelf>;
   readonly reachFaces: ReturnType<typeof deriveReachFaces>;
   readonly originCompositions: ReturnType<typeof originCompositionForFace>[] | null;
-  readonly receiptRing: { readonly count: number; readonly bytes: number } | undefined;
   readonly readinessState: ReturnType<typeof createReadinessState>;
   readonly readinessFace: ReturnType<typeof mountReadinessFace>;
   readonly pronaos: ReturnType<typeof composePronaosFromEnv>;
@@ -737,7 +724,7 @@ const processBanner = bannerMemo();
 /** The floor every vessel stands on: the daemon immune core and a served FLOW-map, no wiki, no pool. */
 async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: SovereignReaders | null): Promise<StandingComposition> {
   const { askedStanding, wikiId, storageDir, genesisDir, rootDir, catalogUrl, wss, httpServer, dispatcher, meshSelf,
-          reachFaces, receiptRing, readinessState, readinessFace, pronaos, floor, front, lanSocket, standing, faceLit } = ctx;
+          reachFaces, readinessState, readinessFace, pronaos, floor, front, lanSocket, standing, faceLit } = ctx;
 
   const pullMs = process.env["LAR_PULL_MS"];   // carriage cadence — tuning, kept separate from membership
   const herm = await openNodeHerm({
@@ -862,7 +849,6 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     claim:        floor.storeClaim,
     repo:         herm.repo,
     engine:       engineWatch,
-    ...(receiptRing !== undefined && { ring: receiptRing.count, ringBytes: receiptRing.bytes }),
     onLog: (line) => console.log(`[herm] ${line}`),
   }));
   console.log(`[herm] uds verb-channel on ${floor.storeClaim.socketPath} (perms 0600)`);
@@ -909,7 +895,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
 /** The hearth: the floor's caps with the wiki, the pool and the porch lit over them. */
 async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: SovereignReaders | null, ward?: WardCredential): Promise<StandingComposition> {
   const { wikiId, storageDir, genesisDir, rootDir, catalogUrl, wss, httpServer, dispatcher, meshSelf,
-          reachFaces, originCompositions, receiptRing, readinessState, readinessFace, pronaos, floor, front, lanSocket,
+          reachFaces, originCompositions, readinessState, readinessFace, pronaos, floor, front, lanSocket,
           standing, faceLit, sessionActs, goodbye } = ctx;
 
   // Only an asked lararium lifts to the hearth, and an asked lararium composed its origins before listen.
@@ -993,7 +979,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   // Same rendezvous law as the herm branch above: derived from the resolved substrate dir, sited where a
   // logout cannot reach it (operator ruling — a lararium serves as civic infrastructure).
   // The socket is the vessel's own claim on its store (`claimStore`), bound before its Repo opened; the channel serves it.
-  // The daemon island's working layer stands before the channel serves: receipts land in it. The composer mounted it before
+  // The daemon island's working layer stands before the channel serves. The composer mounted it before
   // `openNodeVessel` returned (slice 5b), so the channel serves on it.
   // A BOOT MILESTONE the supervisor reads (`stand-socket-wait.ts` BOOT_MILESTONES): the daemon island's `ea` stands (the composer
   // awaited it before it returned).
@@ -1055,7 +1041,6 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
         : sessionActs.run(act, args, worn),
       settled: (act, args) => { if (isPromoteAct(act)) result.promoteActs.end(args); },
     },
-    ...(receiptRing !== undefined && { ring: receiptRing.count, ringBytes: receiptRing.bytes }),
     onLog: (line) => console.log(`[lararium] ${line}`),
   }));
   console.log(`[lararium] uds verb-channel on ${floor.storeClaim.socketPath} (perms 0600)`);

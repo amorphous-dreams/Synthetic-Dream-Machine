@@ -9,21 +9,21 @@
  * only a fresh process brings a fresh engine.
  *
  * So the watch reads those three signatures as ONE FALL, from whichever path meets it first (the Repo's inbound-message
- * error, the receipt ledger's write, a storage save), and keeps the FIRST trap: a later error can mask the one that
+ * error, the verb door's control-document read, a storage save), and keeps the FIRST trap: a later error can mask the one that
  * killed the engine. From the fall on, the daemon names it everywhere a caller looks: health answers 503 with the cause
  * (`readiness-face`), every verb refuses `engine-terminated` before any handler runs (`uds-channel`), and a read the dead
  * engine cannot serve says so rather than answering empty.
  *
  * THE LAST SETTLED WAVE (the nalu's glitch-freedom, lar:///ha.ka.ba/lares/api/pono/nalu): the watch remembers the heads
  * and time of the last write that settled durably before the fall. Nothing after a fall reads a half-applied wave: a read
- * answers from what settled (the receipt ledger's cache holds only facts whose flush landed), names those heads, or
+ * answers from what settled (the verb door's memory: its answer ring and ask book), names those heads, or
  * refuses.
  *
  * THE DOCUMENT IN FLIGHT. The Repo handles each inbound message synchronously inside the network subsystem's `message`
  * emit (`tapInboundDocs` wraps it), so a trap met there knows the document that message named: the fall carries it as
  * `inFlight`, and the next boot's probe reads it (`engine-fall`). The Repo's storage source logs a load or save it could
  * not finish under the document's own id ("Error loading document <id> from storage"), so a trap logged there names that
- * document too. A trap met anywhere else (the ledger's write) names none, and says so with null.
+ * document too. A trap met anywhere else (the door's control-document read) names none, and says so with null.
  *
  * NO RESTART LOOP. A restart may re-trap while it loads the same documents (CatColab #1461), so the watch itself never
  * restarts anything. The vessel's entry answers the fall (`engine-fall`): it flushes what it can and exits once, so the
@@ -45,7 +45,7 @@ export const ENGINE_TERMINATED = "engine-terminated";
 
 /** The three signatures of a dead engine. */
 export type EngineFatalCause = "module-terminated" | "wasm-unreachable" | "unsafe-aliasing";
-/** Which path met the fall first: the Repo's own logged error (the network path), or the receipt ledger's write. */
+/** Which path met the fall first: the Repo's own logged error (the network path), or the verb door's control-document read. */
 export type EnginePath = "repo" | "ledger";
 
 /** The last write that settled durably before the fall: its document heads and when it landed. */

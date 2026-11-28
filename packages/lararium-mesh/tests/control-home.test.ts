@@ -6,7 +6,7 @@
 import { describe, expect, test } from "vitest";
 import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import {
-  CONTROL_HOME_ID, DAEMON_BAG_ID, MAILBOX_URI_PREFIX, OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX, SUMMONS_URI_PREFIX, WARD_AUDIT_URI_PREFIX, EFFECT_URI_PREFIX,
+  CONTROL_HOME_ID, DAEMON_BAG_ID, MAILBOX_URI_PREFIX, OUTCOME_URI_PREFIX, SUMMONS_URI_PREFIX, WARD_AUDIT_URI_PREFIX, EFFECT_URI_PREFIX,
   controlHomeUrlOf, controlHomeRefusal, controlStoreOf, emptyLarDoc, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, expandRecipe, leaseEpochPrefix, standControlHome, wornFaceWikiBags, vesselOnlyDocIds, makeVesselOnlyDocs, storedLarRecord, type LarDoc,
   SealedDocumentStore, bindSecretHomeRest, enrollSecretHome, mintSecretHomeAddress, mintVesselDocumentId, nameControlHome, openSecretHome, vesselHeldHomes,
 } from "../src/index.js";
@@ -47,7 +47,7 @@ describe("the vessel's control document", () => {
   });
 
   test("every control family titles under the control home, never the daemon bag", () => {
-    for (const prefix of [SUMMONS_URI_PREFIX, OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX, WARD_AUDIT_URI_PREFIX, MAILBOX_URI_PREFIX, EFFECT_URI_PREFIX, leaseEpochPrefix("group")]) {
+    for (const prefix of [SUMMONS_URI_PREFIX, OUTCOME_URI_PREFIX, WARD_AUDIT_URI_PREFIX, MAILBOX_URI_PREFIX, EFFECT_URI_PREFIX, leaseEpochPrefix("group")]) {
       expect(prefix.startsWith(`${CONTROL_HOME_ID}/`), prefix).toBe(true);
       expect(prefix.startsWith(`${DAEMON_BAG_ID}/`), prefix).toBe(false);
     }
@@ -73,7 +73,7 @@ describe("the vessel's control document", () => {
     expect(controlHomeRefusal(control)?.refusal).toBe(CONTROL_HOME_UNNAMED);
     // The floor answers a verb's answer from memory alone (none waits) and refuses every control fact by the stand-in's name.
     expect(await controlStoreOf(control).get(`${OUTCOME_URI_PREFIX}r1`)).toBeNull();
-    await expect(controlStoreOf(control).get(`${RECEIPT_FACT_URI_PREFIX}r1`)).rejects.toMatchObject({ refusal: CONTROL_HOME_UNNAMED });
+    await expect(controlStoreOf(control).get(`${WARD_AUDIT_URI_PREFIX}r1`)).rejects.toMatchObject({ refusal: CONTROL_HOME_UNNAMED });
     expect(controlHomeUrlOf(daemon.doc())).toBeNull();
     await repo.flush();
     expect(restsAny(inner, control.documentId)).toBe(false);

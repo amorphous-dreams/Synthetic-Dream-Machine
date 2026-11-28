@@ -11,7 +11,7 @@
  * came first, and none needs to, since a life a reader recorded has ended exactly where the id at rest names another.
  * A counter would claim an ordering no two readers share (no global now), and a torn or restored counter would reuse a
  * number and revive an ended life; a random id minted at each claim never reads as an earlier life's. Every reader that
- * fences on a life (a `--held` pin, a committed receipt fact, the pūlama's drop) asks equality and nothing else, and the
+ * fences on a life (a `--held` pin, the pūlama's drop) asks equality and nothing else, and the
  * session contract's `ownerEpoch` reads this same id.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/session-contract#/what-a-session-carries

@@ -170,7 +170,7 @@ outcome. Exactly-once ''effect'' rides the change-hash, never exactly-once deliv
 
 ''OP-AP4 — Eventual work returns a handle, observed by convergence.''
 No verb blocks on a synchronous return. The actor writes intent, receives the
-content-address handle, and observes the receipt fact converge in its own replica.
+content-address handle, and observes the outcome converge in its own replica.
 Polling reads the local replica for merge arrival — convergence-observation, never
 server-state polling. (Mirrors MCP Tasks: `taskId` + receipt fetch, requestor-driven;
 status notifications accelerate but never become load-bearing.)
@@ -250,6 +250,6 @@ carrier's verdict.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BST199gcsY2wfdakB-qvQ60pf1AyNU0Nf8eJFIZoILk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oV6nLLzKuqrWiyflFph9uvdtqGXF1mq6fBHrbyyRm18`>>
 
 <<^ code=`&#x0004;` to=`?`>>

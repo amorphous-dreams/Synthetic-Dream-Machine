@@ -492,7 +492,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     dispatcher.stop();
   });
 
-  test("E1 — an effect row that names no digest of its own (written before rows carried one) whose prior outcome is EVICTED refuses (retention-gap), names its cure, and never runs the handler", async () => {
+  test("E1 — an effect row that names no digest of its own names no claim to compare: the attempt runs fresh and indexes itself", async () => {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
     const { daemon: daemonComposite, control } = makeStores();
     let runCount = 0;
@@ -505,7 +505,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon: daemonComposite, control, registry });
     dispatcher.start();
 
-    // An effect row in the older shape: the key and the prior request id, no digest, and no outcome row behind it.
+    // An effect row that names the key and a prior request id and no digest: no claim stands to compare against.
     await control.put({ tiddler: { title: `${EFFECT_URI_PREFIX}eff-old`, "effect-key": "eff-old", "request-id": "req-old-1" }, meta: { authority: "lares-dispatcher" } } as never, { kind: "lares-verb", requestId: "plant" } as never);
 
     dispatcher.placeVerb({
@@ -514,20 +514,20 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     });
     await settle();
 
-    expect(runCount).toBe(0); // handler did NOT run for the evicted-effect attempt
-    const second = await control.getLive(OUTCOME_URI_PREFIX + "req-old-2");
-    expect(second?.tiddler.status).toBe("error");
-    expect(second?.tiddler.refusal).toBe("retention-gap");
-    expect(String(second?.tiddler["error-message"])).toContain("mint a fresh effect key");
-    // The refused attempt is itself an "error" outcome, which writeOutcome's own law never
-    // indexes — so it did NOT clobber the effect-index row; the index still names the original.
-    const factAfterRefusal = await control.getLive(EFFECT_URI_PREFIX + "eff-old");
-    expect(factAfterRefusal?.tiddler["request-id"]).toBe("req-old-1");
+    expect(runCount).toBe(1); // the handler ran: a digest-less row dedups nothing
+    const second = await outcomeOf(control, "req-old-2");
+    expect(second?.fields.status).toBe("done");
+    expect(second?.fields["effect-of"]).toBeUndefined();
+    expect(second?.fields.refusal).toBeUndefined();
+    // The fresh done outcome indexes itself, with the digest the old row lacked.
+    const row = await control.getLive(EFFECT_URI_PREFIX + "eff-old");
+    expect(row?.tiddler["request-id"]).toBe("req-old-2");
+    expect(typeof row?.tiddler["input-digest"]).toBe("string");
 
     dispatcher.stop();
   });
 
-  test("CONTROL (eviction-guard specificity) — an effect-index hit whose prior outcome is STILL LIVE dedups normally, same effectKey shape as the eviction test above", async () => {
+  test("CONTROL — an effect-index hit whose prior outcome is STILL LIVE dedups normally, same effectKey shape as the test above", async () => {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
     const { daemon: daemonComposite, control } = makeStores();
     let runCount = 0;
@@ -547,9 +547,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     await settle();
     expect(runCount).toBe(1);
 
-    // No eviction this time — the prior outcome is untouched. A same-args retry must still
-    // take the ordinary effect-of dedup path, NOT the retention-gap refusal — proving the
-    // new guard fires only when the prior outcome is actually gone.
+    // The prior outcome is untouched. A same-args retry takes the ordinary effect-of dedup path.
     dispatcher.placeVerb({
       verb: "do-evictable-live", args: { x: 1 }, requestedBy: "did:key:test",
       requestId: "req-live-2", effectKey: "eff-live",

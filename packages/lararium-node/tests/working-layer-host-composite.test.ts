@@ -1,29 +1,28 @@
 /**
  * working-layer-host-composite — the host's composite mounts the SAME working document the worker attached, and the
- * receipt ledger rests in neither.
+ * outcome ledger (a write's verdict row) rests in neither.
  *
  * The worker attaches the daemon wiki's working layer through the real `operatorDaemonOptions` boot; the host
- * composite then mounts the document the worker's own binding resolver names. A receipt fact recorded through a
- * real FactLedger over the host's CONTROL store lands in the control document and in neither that working document,
+ * composite then mounts the document the worker's own binding resolver names. A verdict row written through the
+ * host's CONTROL store lands in the control document and in neither that working document,
  * the daemon bag nor the persona layer, with and without a persona layer on the host.
  */
 import { afterEach, describe, expect, test } from "vitest";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
-import { RECEIPT_FACT_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { mkDaemonResolveBindingResult, mkEa, type IslandMsg_Manifest } from "@lararium/mesh/island-protocol";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { openDaemonVmCore, type DaemonVmHost } from "@lararium/tw5";
 import { standFoundedIsland } from "./stand-founded-island.js";
-import { FactLedger } from "../src/uds-channel.js";
 
 const teardown: Array<() => void> = [];
 afterEach(() => { while (teardown.length) { try { teardown.pop()!(); } catch { /* best-effort */ } } });
 
 describe("daemon VM host composite working binding", () => {
-  test.each([false, true])("a receipt fact recorded on the host's control store lands in the control document, never the worker's working document (persona layer on the host: %s)", async (seated) => {
+  test.each([false, true])("a verdict row written on the host's control store lands in the control document, never the worker's working document (persona layer on the host: %s)", async (seated) => {
     const st = await standFoundedIsland(teardown);
     const opts = operatorDaemonOptions({ daemonAuth: st.daemonAuth } as never, { dyadReading: () => "clear" });
     const kh = await opts.verifierFactory!(st.ctx);
@@ -72,15 +71,14 @@ describe("daemon VM host composite working binding", () => {
     expect(core.composite.defaultWritableBagId()).toBe(working);
     expect(answer.workingUrl, "the host named a different document than the worker attached").toBe(workerHandle.url);
 
-    const ledger = new FactLedger(core.control, st.vesselRepo, 8, "life-one");
-    const requestId = `host-fact-${seated}`;
-    await ledger.arbitrate(requestId, "digest-1");
-    const title = `${RECEIPT_FACT_URI_PREFIX}${requestId}`;
+    const requestId = `host-row-${seated}`;
+    const title = `${OUTCOME_URI_PREFIX}${requestId}`;
+    await core.control.put({ tiddler: { title, "request-id": requestId, verb: "nexus-kapae", status: "done", "input-digest": "digest-1" } }, { kind: "lares-verb", requestId });
     const hostWorking = await st.vesselRepo.find<LarDoc>(answer.workingUrl as AutomergeUrl);
-    expect(core.controlHandle.doc()?.tiddlers[title], "the receipt fact rests in the control document").toBeDefined();
-    expect(hostWorking.doc()?.tiddlers[title], "the receipt fact reached the mirrored working document").toBeUndefined();
+    expect(core.controlHandle.doc()?.tiddlers[title], "the verdict row rests in the control document").toBeDefined();
+    expect(hostWorking.doc()?.tiddlers[title], "the verdict row reached the mirrored working document").toBeUndefined();
     expect(st.daemonHandle.doc()?.tiddlers[title]).toBeUndefined();
     expect(personaHandle?.doc()?.tiddlers[title]).toBeUndefined();
-    expect(await ledger.get(requestId)).toMatchObject({ requestId });
+    expect((await core.control.get(title))?.tiddler).toMatchObject({ "request-id": requestId });
   }, 60_000);
 });

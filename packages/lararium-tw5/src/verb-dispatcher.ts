@@ -57,7 +57,7 @@ import { type LarTiddlerChange } from "@lararium/mesh/tiddler-store";
 import { wikiSlugOfBag } from "@lararium/mesh/surface-recipe-door";
 import { ControlHomeUnavailable, answerRingOf } from "@lararium/mesh/control-home";
 import type { Hand } from "@lararium/mesh/session-contract";
-import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, isVisitResults, EFFECT_URI_PREFIX } from "./verb-vm.js";
+import { dispatchVerb, placeVerb, copyEffectOutcome, removeVerb, isVisitResults, EFFECT_URI_PREFIX } from "./verb-vm.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
@@ -597,52 +597,25 @@ export class VerbDispatcher {
       const field = (fields: Record<string, unknown> | undefined, key: string): string | undefined =>
         typeof fields?.[key] === "string" && (fields[key] as string).length > 0 ? fields[key] as string : undefined;
       const effectRow = priorFact!.tiddler as Record<string, unknown>;
-      // THE EFFECT ROW ANSWERS BY ITSELF where it names its attempt's digest: the decision joins no outcome row, so a
-      // prior verdict the ring let go changes nothing here. A row that names none (written before rows carried one)
-      // reads the prior outcome row for it, as it always did.
-      let priorDigest = field(effectRow, "input-digest");
-      let resultSha256 = field(effectRow, "result-sha256");
-      let resultBytes = field(effectRow, "result-bytes");
-      let priorVisit = false;
-      let restedResults: string | undefined;
-      if (priorDigest === undefined) {
-        const priorOutcome = await this.opts.control.getLive(OUTCOME_URI_PREFIX + priorRequestId);
-        if (!priorOutcome) {
-          // The effect index still names a prior requestId, the row names no digest of its own, and that attempt's
-          // outcome is GONE (evicted by the ring's retention bound): nothing stands to compare against, and a
-          // fresh-run fallthrough would silently re-perform an effect whose prior record a caller cannot check.
-          // Conclude THIS attempt as refused; never run the handler.
-          console.log(`[verb-dispatcher] effect "${effectKey}" indexes prior request "${priorRequestId}" whose outcome is evicted — refusing (retention-gap), handler not run`);
-          await writeOutcome(this.opts.control, {
-            invocation, status: "error",
-            errorMessage: `effect "${effectKey}" indexes a prior outcome ("${priorRequestId}") that is no longer retained; nothing ran. Read what the effect left where it landed, and to land it again mint a fresh effect key`,
-            refusal: "retention-gap",
-            ...this.markOf(invocation),
-          });
-          removeVerb(this.opts.daemonVm, invocation.title);
-          return;
-        }
-        const outcomeRow = priorOutcome.tiddler as Record<string, unknown>;
-        priorDigest = String(outcomeRow["input-digest"] ?? "");
-        resultSha256 = field(outcomeRow, "result-sha256");
-        resultBytes = field(outcomeRow, "result-bytes");
-        priorVisit = outcomeRow["visit"] === "true";
-        restedResults = field(outcomeRow, "results");
-      }
+      // THE EFFECT ROW ANSWERS BY ITSELF: it names its attempt's digest and the measure of the body that attempt left, so
+      // the decision joins no outcome row. A row that names no digest names no claim to compare, and the attempt runs fresh.
+      const priorDigest = field(effectRow, "input-digest");
+      const resultSha256 = field(effectRow, "result-sha256");
+      const resultBytes = field(effectRow, "result-bytes");
+      if (priorDigest === undefined) console.log(`[verb-dispatcher] effect "${effectKey}" names prior request "${priorRequestId}" and no input digest — running fresh, no dedup`);
       if (priorDigest === inputDigest) {
-        // THE BODY, WHERE THIS ISLAND STILL HOLDS IT: the answer ring first, then a row that rests a whole record. A body
+        // THE BODY, WHERE THIS ISLAND STILL HOLDS IT: its answer ring. A body
         // that will not parse matches nothing, and a body that left answers by its measure alone.
         const held = answerRingOf(this.opts.control).get(priorRequestId)?.tiddler as Record<string, unknown> | undefined;
         const heldResults = held?.["status"] === "done" ? field(held, "results") : undefined;
         let priorResults: Record<string, VerbTargetResult> | null = null;
         let torn = false;
-        const stored = heldResults ?? restedResults;
-        if (stored !== undefined) {
-          try { priorResults = JSON.parse(stored) as Record<string, VerbTargetResult>; }
+        if (heldResults !== undefined) {
+          try { priorResults = JSON.parse(heldResults) as Record<string, VerbTargetResult>; }
           catch { torn = true; console.log(`[verb-dispatcher] effect "${effectKey}" indexes prior request "${priorRequestId}" whose results do not parse — no body rides this copy`); }
         }
         // A VISIT NEVER REPLAYS: an index naming a visit's outcome copies nothing, and the reactor runs afresh.
-        const visit = priorVisit || (priorResults !== null && isVisitResults(priorResults));
+        const visit = priorResults !== null && isVisitResults(priorResults);
         // A copy answers a body or the measure of one: a prior that offers neither (a torn body beside no hash) runs fresh.
         const answerable = priorResults !== null || resultSha256 !== undefined;
         if (!visit && answerable && this.replayAdmitted(invocation)) {
@@ -653,7 +626,7 @@ export class VerbDispatcher {
           return;
         }
         if (torn && !answerable) console.log(`[verb-dispatcher] effect "${effectKey}" (request=${invocation.requestId}, prior=${priorRequestId}) names no readable body and no measure — running fresh, no dedup`);
-      } else {
+      } else if (priorDigest !== undefined) {
         console.log(`[verb-dispatcher] effect "${effectKey}" reused with a changed digest (request=${invocation.requestId}, prior=${priorRequestId}) — running fresh, no dedup`);
       }
     }

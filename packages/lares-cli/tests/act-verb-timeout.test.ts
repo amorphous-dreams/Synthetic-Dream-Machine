@@ -63,9 +63,8 @@ describe("what `lares act` says when its own local wait ends", () => {
     const src = SRC("commands/act.ts");
     // The DERIVED-budget arm must name the arithmetic that set it; a reader cannot reach 162400ms from
     // the message alone. Anchor on the `outcome-unknown` EMIT itself and walk BACKWARD to its own
-    // `const hint` — D1's split added an `evicted`/`retention-gap` branch between the abandoned and
-    // outcome-unknown arms, so a fixed forward window from the FIRST `const hint` no longer reaches
-    // this one; anchoring on the code this hint actually feeds stays correct regardless of how many
+    // `const hint` — a fixed forward window from the FIRST `const hint` reaches the abandoned arm
+    // instead; anchoring on the code this hint actually feeds stays correct regardless of how many
     // sibling branches precede it.
     const derived = src.slice(src.indexOf("const timeoutMs = Math.max"));
     const outcomeIdx = derived.indexOf('code: "outcome-unknown"');

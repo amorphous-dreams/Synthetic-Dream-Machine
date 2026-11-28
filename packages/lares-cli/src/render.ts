@@ -97,22 +97,11 @@ export const EXIT_FOR: Readonly<Record<string, number>> = {
   "cancel-lost":       4,
   // THE SAME EXIT FAMILY (6), outcome-unknown's sharper kin: the vessel that committed this request
   // stopped before an outcome landed, so the effect may have landed in part.
-  "request-interrupted": 6,
-  // A caller reused a requestId the vessel already arbitrated, but with CHANGED content (D1,
-  // M3″ — `uds-channel.ts`'s `request-id-reused-with-changed-input`). A fresh code (2, the
+  // A caller reused a requestId the vessel holds, but with CHANGED content (`uds-channel`'s
+  // `request-id-reused-with-changed-input`). A fresh code (2, the
   // USAGE family) rather than `verb-error`'s 4: the cure is "mint a new id", a USAGE correction,
   // never a fault in the act's own handler.
   "request-id-reused": 2,
-  // THE SAME EXIT FAMILY AS outcome-unknown/request-abandoned (6): the receipt ring (D1, M1)
-  // evicted this id's outcome past its retention bound — neither "nothing answered" (3) nor
-  // "the work faulted" (4); the vessel settled this id and then let its result go, which reads
-  // closer to "ask a different way" than to either of those.
-  "retention-gap":     6,
-  // THE SAME EXIT FAMILY (6): the ledger's own fact for this id is UNREADABLE (a torn tiddler the
-  // channel's `parseReceiptFact` refuses — G2, `uds-channel.ts`), told apart from both a genuine
-  // `abandoned` verdict and a retention-evicted one. The cure is a fresh request id, never a retry
-  // under the torn one.
-  "receipt-fact-torn": 6,
   // The USAGE family (2): the bag was DROPped and takes no writes, so the cure is a different
   // request (CREATE a fresh bag), never a fault in the act's own handler.
   "bag-retired":       2,

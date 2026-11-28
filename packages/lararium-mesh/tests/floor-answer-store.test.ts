@@ -5,7 +5,7 @@
 import { describe, expect, test } from "vitest";
 import {
   ControlHomeUnavailable, floorAnswerStore, isIslandToVesselMsg, mkDaemonFloorAnswer, concludeVerb,
-  CONTROL_HOME_UNNAMED, FLOOR_ANSWER_RING, OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX, SUMMONS_URI_PREFIX,
+  CONTROL_HOME_UNNAMED, FLOOR_ANSWER_RING, OUTCOME_URI_PREFIX, WARD_AUDIT_URI_PREFIX, SUMMONS_URI_PREFIX,
   ANSWER_RING_BYTES, ANSWER_RING_COUNT, answerRingOf, makeAnswerRing, ridesAnswerRing, releasedBodyOf, verdictRowOf, READ_VERBS,
 } from "../src/index.js";
 
@@ -22,9 +22,9 @@ describe("the floor's answer store", () => {
     expect((await store.get(`${OUTCOME_URI_PREFIX}a`))?.tiddler["status"]).toBe("done");
     expect(heard).toEqual([`${OUTCOME_URI_PREFIX}a`]);
     expect(seen).toContain(`${OUTCOME_URI_PREFIX}a`);
-    await expect(store.put({ tiddler: { title: `${RECEIPT_FACT_URI_PREFIX}a` } }, { kind: "lares-verb", requestId: "a" })).rejects.toMatchObject({ refusal: CONTROL_HOME_UNNAMED });
+    await expect(store.put({ tiddler: { title: `${WARD_AUDIT_URI_PREFIX}a` } }, { kind: "lares-verb", requestId: "a" })).rejects.toMatchObject({ refusal: CONTROL_HOME_UNNAMED });
     await expect(store.put({ tiddler: { title: `${SUMMONS_URI_PREFIX}a` } }, { kind: "lares-verb", requestId: "a" })).rejects.toMatchObject({ refusal: CONTROL_HOME_UNNAMED });
-    await expect(store.get(`${RECEIPT_FACT_URI_PREFIX}a`)).rejects.toMatchObject({ refusal: CONTROL_HOME_UNNAMED });
+    await expect(store.get(`${WARD_AUDIT_URI_PREFIX}a`)).rejects.toMatchObject({ refusal: CONTROL_HOME_UNNAMED });
     await expect(store.listVisible()).rejects.toMatchObject({ refusal: CONTROL_HOME_UNNAMED });
   });
 
@@ -84,7 +84,7 @@ describe("the answer ring every vessel runs", () => {
     expect(ring.size).toBe(1);
     expect(String(ring.get("a")?.tiddler["results"])).toContain("second");
     // A record under no outcome title never enters: the ring holds answers alone.
-    ring.put({ tiddler: { title: `${RECEIPT_FACT_URI_PREFIX}a` } });
+    ring.put({ tiddler: { title: `${WARD_AUDIT_URI_PREFIX}a` } });
     expect(ring.size).toBe(1);
     stop();
     ring.put(whole("b"));

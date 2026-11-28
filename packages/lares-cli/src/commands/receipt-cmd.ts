@@ -2,19 +2,19 @@
  * `lares vessel request <requestId> [--cancel]` — the one door a verb's outcome names when it tells an
  * operator to check a request (outcome-unknown, `request-abandoned`), and the one that withdraws it.
  *
- *   request <requestId>            — a READ (`queryReceipt`). Never dispatches anything; answers from the
- *                           vessel's own ledger + durable outcome doc exactly as a `runVerb` read-back
- *                           would, without running a second attempt.
+ *   request <requestId>            — a READ (`queryReceipt`). Never dispatches anything; answers from what
+ *                           the vessel holds for the id (its answer ring, a write's verdict row, its ask
+ *                           book) exactly as a `runVerb` read-back would, without running a second attempt.
  *   request <requestId> --cancel  — the OPERATOR's own explicit withdrawal (`cancelRequest`). Marks the id
- *                           abandoned on the vessel's ledger so a LATER line under the same id (a stray
- *                           retry, a re-run) refuses rather than running. No automated path sends it on
+ *                           abandoned in the vessel's ask book so a LATER line under the same id in that
+ *                           vessel life (a stray retry, a re-run) refuses rather than running. No automated path sends it on
  *                           a bare timeout: a caller's own local wait ending withdraws nothing; only this
  *                           operator-typed flag does. The flag
  *                           stays explicit: nothing folds it into the read, and nothing sets it.
  *                           The door reports TWO receipts and keeps them apart
  *                           (lar:///ha.ka.ba/lararium/mesh/receipt-ledger#/three-receipts): the
  *                           caller's abandonment (this command, sent) and the vessel's outcome (the
- *                           state its ledger holds once the cancel took its turn). `withdrawn` reads
+ *                           state the vessel holds once the cancel took its turn). `withdrawn` reads
  *                           true only where that state reads `abandoned`; a cancel that met a commit
  *                           reads `cancel-lost`, and the act it met runs on.
  *
@@ -33,15 +33,12 @@ function printReceiptUsage(verb: "receipt" | "cancel"): void {
 }
 
 /**
- * Map a {@link ReceiptAnswer} to this door's own exit-code vocabulary. A refusal the vessel named (a torn fact)
- * reads under its own code on both doors. On the cancel door a request the vessel already took reads
- * `cancel-lost`: the withdrawal reached the ledger after a fact stood, and changed nothing.
+ * Map a {@link ReceiptAnswer} to this door's own exit-code vocabulary. On the cancel door a request the vessel already took reads
+ * `cancel-lost`: the withdrawal reached the vessel after it dispatched the request, and changed nothing.
  */
 function codeFor(verb: "receipt" | "cancel", answer: ReceiptAnswer): string {
   const state = answer.state;
   const named = answer.refusal?.reason;
-  // A torn fact answers under the state `error` and holds no verdict: its own name leads on both doors.
-  if (named === "receipt-fact-torn") return refusalCode(named);
   if (verb === "cancel") {
     if (state === "abandoned") return "ok";
     if (state === "committed" || state === "done" || state === "error") return "cancel-lost";
@@ -50,8 +47,6 @@ function codeFor(verb: "receipt" | "cancel", answer: ReceiptAnswer): string {
   if (named !== undefined) return refusalCode(named);
   switch (state) {
     case "abandoned":  return "request-abandoned";
-    case "interrupted": return "request-interrupted";
-    case "evicted":    return "retention-gap";
     case "error":      return "verb-error";
     case "unanswered": return "outcome-unknown";
     case "unknown":    return "not-found";
@@ -64,20 +59,16 @@ function codeFor(verb: "receipt" | "cancel", answer: ReceiptAnswer): string {
 
 /**
  * The cure beside a refusal code, the same words `lares act lar:///<address>` carries. The receipt door knows no
- * change id and no verb, so an `interrupted` id cannot claim a re-run is safe: it names the
- * effect index that answers what landed.
+ * change id and no verb.
  */
 function hintFor(code: string, requestId: string, state: ReceiptAnswer["state"]): string | undefined {
   if (code === "cancel-lost") {
     return state === "committed"
-      ? `the vessel committed this request before the cancel reached its ledger, and the act runs on. Read its outcome with \`lares vessel request ${requestId}\`.`
-      : `a fact already stood for this request when the cancel reached the ledger. \`lares vessel request ${requestId}\` reads the same outcome.`;
+      ? `the vessel dispatched this request before the cancel reached it, and the act runs on. Read its outcome with \`lares vessel request ${requestId}\`.`
+      : `this request had already landed when the cancel reached the vessel. \`lares vessel request ${requestId}\` reads the same outcome.`;
   }
   if (code === "outcome-unknown" && state === "unanswered") {
-    return `the vessel gave no answer, so the cancel may or may not have reached its ledger. \`lares vessel request ${requestId}\` reads which.`;
-  }
-  if (code === "request-interrupted") {
-    return "the vessel stopped while this request ran, so its effect may have landed in part. If the original gesture carried a `--change-id`, re-run it with that same id: the effect index answers what landed without running it twice.";
+    return `the vessel gave no answer, so the cancel may or may not have reached it. \`lares vessel request ${requestId}\` reads which.`;
   }
   return refusalHint(code, undefined);
 }
@@ -107,8 +98,8 @@ async function runReadOnlyDoor(
     return exitFor(code);
   }
 
-  // THE VESSEL'S OWN FAULT LINE names no state (`{status:"error", errorMessage, refusal?}`): the ledger or the
-  // outcome read failed under this door. It reads as a fault under its own name, never as a verdict on the id.
+  // THE VESSEL'S OWN FAULT LINE names no state (`{status:"error", errorMessage, refusal?}`): the outcome read
+  // failed under this door. It reads as a fault under its own name, never as a verdict on the id.
   if (typeof (answer as { state?: unknown }).state !== "string") {
     const faultCode = answer.refusal?.reason !== undefined ? refusalCode(answer.refusal.reason) : "verb-error";
     const msg = answer.errorMessage ?? "the vessel answered no state for this request";

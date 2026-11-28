@@ -1,7 +1,7 @@
 /** Placement governs whether a carrier reaches disk; its title and record flags do not. */
 import { describe, expect, test } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
-import { RECEIPT_FACT_URI_PREFIX, buildReceiptFact } from "@lararium/mesh/verb-tiddler";
+import { OUTCOME_URI_PREFIX, concludeVerb } from "@lararium/mesh/verb-tiddler";
 import type { CapabilityAccess, CapabilityVerifyResult } from "@lararium/mesh/capability";
 import type { Verb } from "@lararium/mesh/verb-tiddler";
 import type { VerbContext } from "@lararium/tw5";
@@ -29,9 +29,9 @@ function rig() {
 }
 
 describe("INGEST admits content by selected store, not title", () => {
-  test("a receipt-fact-shaped title lands as ordinary content in the selected bag", async () => {
+  test("an outcome-shaped title lands as ordinary content in the selected bag", async () => {
     const { store, ingest } = rig();
-    const title = `${RECEIPT_FACT_URI_PREFIX}foreign-file`;
+    const title = `${OUTCOME_URI_PREFIX}foreign-file`;
     await ingest(title);
     expect((await store.get(title))?.tiddler.title).toBe(title);
   });
@@ -39,8 +39,8 @@ describe("INGEST admits content by selected store, not title", () => {
   test("a control-family record carries no residency field, and a content title ingests", async () => {
     const { store, ingest } = rig();
     const title = "lar:///ha.ka.ba/lares/docs/no-projection-flag";
-    const receipt = buildReceiptFact({ requestId: "sample", state: "committed", seq: 0, inputDigest: "d" });
-    expect(receipt.tiddler).not.toHaveProperty("disk-projection");
+    const outcome = concludeVerb({ requestId: "sample", verb: "load", status: "done", cause: "c", batchMode: "best-effort" });
+    expect(outcome.tiddler).not.toHaveProperty("disk-projection");
     await ingest(title);
     expect((await store.get(title))?.tiddler.title).toBe(title);
   });

@@ -60,21 +60,14 @@ export interface VerbFailure {
 }
 
 /**
- * Map a channel's own ADDITIVE refusal `reason` (D1, M3″ — `uds-channel.ts`'s `fail(msg, reason)`)
+ * Map a channel's own ADDITIVE refusal `reason` (`uds-channel`'s `fail(msg, reason)`)
  * to this CLI's error-code vocabulary, told apart by the reason's own NAME, never by sniffing
  * `errorMessage` prose (the pattern M3/M3′ already closed for every other refusal class here).
  *
  *   abandoned                              → request-abandoned (6) — this vessel already refused
- *                                             the request before commit; it never ran.
- *   interrupted                            → request-interrupted (6) — the vessel stopped while the
- *                                             request ran; its effect may have landed in part.
+ *                                             the request before dispatch; it never ran.
  *   request-id-reused-with-changed-input   → request-id-reused (2) — a caller reused a requestId
  *                                             with DIFFERENT content; minting a fresh id is the cure.
- *   retention-gap                          → retention-gap (the 6-family) — the receipt ring
- *                                             evicted this id's outcome past its retention bound.
- *   receipt-fact-torn                      → receipt-fact-torn (the 6-family) — the ledger's own
- *                                             fact for this id is unreadable (a torn tiddler the
- *                                             channel refuses to arbitrate over); mint a fresh id.
  *   bag-retired                            → bag-retired (2) — the bag was DROPped and takes no writes;
  *                                             CREATE stands a fresh one.
  *   waking-floor                           → waking-floor (2) — the vessel holds no face; the refusal's
@@ -92,10 +85,7 @@ export interface VerbFailure {
 export function refusalCode(reason: string): string {
   switch (reason) {
     case "abandoned":                            return "request-abandoned";
-    case "interrupted":                          return "request-interrupted";
     case "request-id-reused-with-changed-input":  return "request-id-reused";
-    case "retention-gap":                        return "retention-gap";
-    case "receipt-fact-torn":                    return "receipt-fact-torn";
     case "bag-retired":                          return "bag-retired";
     case "waking-floor":                         return "waking-floor";
     case "no-container":                         return "no-container";
@@ -113,18 +103,9 @@ export function refusalCode(reason: string): string {
  * hint text from one hand, so a change-id'd caller hitting the live door reads the hint too (K2, P2.5
  * iteration 7) — `act.ts`'s two refusal sites both call this and carry no copy of their own.
  *
- *   request-abandoned  — this vessel already refused the request before commit; it never ran.
+ *   request-abandoned  — this vessel already refused the request before dispatch; it never ran.
  *                         Reusing `change-id=` keeps a re-run a RETRY of the same change rather
  *                         than minting a new one.
- *   request-interrupted — the vessel stopped while the request ran, so its effect may have landed
- *                          in part. Re-running with `change-id=` lets the effect index answer
- *                          what landed without running it twice.
- *   retention-gap       — the receipt ring evicted this id's outcome past its retention bound; a
- *                          fresh `change-id=` runs it as a new change (the evicted one is unrecoverable).
- *   receipt-fact-torn   — the ledger's own fact for this id is unreadable; a fresh REQUEST (a
- *                          flagless re-run already mints one) is the only cure — reusing
- *                          `change-id=` names no cure here, since the torn fact is per-request,
- *                          not per-change.
  *
  * Any other code (cap-denied, conflict, verb-error, …) carries no standing cure, so this answers
  * `undefined` — a caller folds that into "no hint" exactly as `VerbFailure.hint` already does.
@@ -134,16 +115,8 @@ export function refusalHint(code: string, changeId: string | undefined): string 
   // a plain re-run, since there is nothing it could land twice.
   switch (code) {
     case "request-abandoned":
-      if (changeId === undefined) return "this vessel already refused this request before commit — it never ran. Re-run to try again.";
-      return `this vessel already refused this request before commit — it never ran. Re-run with \`change-id=${changeId}\`: if this attempt landed, the effect index answers it without running twice; a re-run WITHOUT it is a NEW change.`;
-    case "request-interrupted":
-      if (changeId === undefined) return "the vessel stopped while this request ran. It reads and carries no effect key, so re-running it is safe.";
-      return `the vessel stopped while this request ran, so its effect may have landed in part. Re-run with \`change-id=${changeId}\`: the effect index answers what landed without running it twice.`;
-    case "retention-gap":
-      if (changeId === undefined) return "this request's record was evicted; re-run it as a fresh request.";
-      return "this change's record was evicted; mint a fresh `change-id=` to run it as a new change.";
-    case "receipt-fact-torn":
-      return "this request's own ledger record is unreadable (a torn tiddler) — mint a fresh request (a flagless re-run does it).";
+      if (changeId === undefined) return "this vessel already refused this request before dispatch — it never ran. Re-run to try again.";
+      return `this vessel already refused this request before dispatch — it never ran. Re-run with \`change-id=${changeId}\`: if this attempt landed, the effect index answers it without running twice; a re-run WITHOUT it is a NEW change.`;
     case "bag-retired":
       return "the bag was DROPped and takes no writes; `lares act lar:///carriage.bag.creates bag=<bag>` stands a fresh one.";
     default:

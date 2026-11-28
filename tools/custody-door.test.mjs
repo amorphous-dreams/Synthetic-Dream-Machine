@@ -181,16 +181,16 @@ test("the custody door opens the vessel key and leaves no trace of the credentia
     // CONTROL: the ordinary verb's own request id reads back from the same documents by the same search.
     assert.ok(stored.text.includes(KNOWN), "K1 control: an ordinary verb's request id rests in the daemon's documents");
     console.log(`[K1] the reader opened ${stored.opened} sealed of ${stored.docs} documents; the request id rests ${stored.raw.includes(KNOWN) ? "in a clear byte too" : "in sealed documents alone"}`);
-    // The leak class itself, shown present for a verb: a receipt fact under the verb's id carries a digest of its
+    // The leak class itself, shown present for a verb: the verdict row under the verb's id carries a digest of its
     // input. A credential riding a verb would rest in exactly such a record.
-    const factAt = stored.text.indexOf(`receipts/${KNOWN}`) >= 0 ? stored.text.indexOf(`receipts/${KNOWN}`) : stored.text.indexOf(KNOWN);
-    assert.match(stored.text.slice(factAt, factAt + 4000), /input-digest|inputDigest/, "K1 control: a verb's receipt keeps a digest of its input");
+    const rowAt = stored.text.indexOf(`outcomes/${KNOWN}`) >= 0 ? stored.text.indexOf(`outcomes/${KNOWN}`) : stored.text.indexOf(KNOWN);
+    assert.match(stored.text.slice(rowAt, rowAt + 4000), /input-digest|inputDigest/, "K1 control: a verb's verdict row keeps a digest of its input");
     // And no record of any kind names a custody act: the frames never became invocations.
     for (const word of ['"verb":"unlock"', '"verb":"lock"', '"verb":"custody"', '"credentials"', "vault-unlock"]) {
       assert.equal(stored.text.includes(word), false, `K1: no document records ${word}`);
     }
     const needles = [TEST_PASSPHRASE, WRONG];
-    // The digests a verb carrying the credential would have left in a receipt fact, under every caller a CLI names.
+    // The digests a verb carrying the credential would have left in a verdict row, under every caller a CLI names.
     const callers = new Set(["", ...[...stored.text.matchAll(/did:key:[A-Za-z0-9]+/g)].map((m) => m[0])]);
     for (const secret of [TEST_PASSPHRASE, WRONG]) {
       for (const who of callers) {

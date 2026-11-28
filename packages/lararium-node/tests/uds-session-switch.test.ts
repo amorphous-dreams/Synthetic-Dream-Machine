@@ -9,11 +9,12 @@ import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
-import { RECEIPT_FACT_URI_PREFIX, concludeVerb } from "@lararium/mesh/verb-tiddler";
+import { concludeVerb } from "@lararium/mesh/verb-tiddler";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
 import { type SwitchIntent, type SwitchOutcome } from "@lararium/mesh/session-switch";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { type SessionFace } from "@lararium/mesh/session-contract";
-import { FactLedger, makeUdsSeat, serveUdsFront, type SessionAnchor, type UdsSessionDoor } from "../src/uds-channel.js";
+import { makeUdsSeat, serveUdsFront, type SessionAnchor, type UdsSessionDoor } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
 
 /** The fixture door's mint: a signer the seat can drop, holding no key. */
@@ -76,8 +77,6 @@ async function stand(label: string, opts: {
   anchor?: () => SessionAnchor;
   /** A sealed act runs only once this lets go. */
   actHold?: Promise<void>;
-  /** The ledger's flush waits on this before it runs, as a slow disk would. */
-  flushGate?: Promise<void>;
   /** A sealed act throws once running, as a torn custody row would. */
   actThrows?: boolean;
 } = {}) {
@@ -107,7 +106,7 @@ async function stand(label: string, opts: {
       return { ok: true, signer };
     } } };
   } };
-  const flushing = { flush: async (ids?: Parameters<Repo["flush"]>[0]) => { if (opts.flushGate) await opts.flushGate; if (opts.failFlush?.()) throw new Error("disk full at /secret/path"); return repo.flush(ids); } };
+  const flushing = { flush: async (ids?: Parameters<Repo["flush"]>[0]) => { if (opts.failFlush?.()) throw new Error("disk full at /secret/path"); return repo.flush(ids); } };
   const logged: Array<SwitchIntent | SwitchOutcome> = [];
   const switchActs = { write: async (act: SwitchIntent | SwitchOutcome) => {
     if (opts.failFlush?.()) throw new Error("disk full at /secret/path");
@@ -403,16 +402,17 @@ describe("UDS session switch", () => {
       expect(v.ran).toEqual([{ act: "host.roll", args: { cap: 5, face: 0 } }]);
       const receipt = await a.ask({ op: "session:receipt", ...envA, requestId: "roll" });
       expect(receipt).toMatchObject({ kind: "session:receipt", receipt: { state: "done", face: "proof-a" } });
-      // The receipt fact carries the act and the face, and no argument or answer.
-      const titles = (await v.composite.listVisible()).filter((t) => t.startsWith(RECEIPT_FACT_URI_PREFIX));
-      const facts = (await Promise.all(titles.map((t) => v.composite.get(t)))).filter((r) => r !== null);
-      expect(facts.map((r) => r.tiddler["action"])).toEqual(["act:host.roll"]);
-      const fact = JSON.stringify(facts);
-      expect(fact.includes("cap")).toBe(false);
-      expect(fact.includes("eeee")).toBe(false);
-      // CONTROL: the same search reads red over a fact that carried the argument or the answer.
-      expect(JSON.stringify([{ ...facts[0]!.tiddler, args: { cap: 5 } }]).includes("cap")).toBe(true);
-      expect(JSON.stringify([{ ...facts[0]!.tiddler, answer: { epoch: "e".repeat(64) } }]).includes("eeee")).toBe(true);
+      // No receipt rests: the door's memory holds it, and it carries the act and the face, and no argument or answer.
+      expect((await v.composite.listVisible()).filter((t) => t.startsWith(`${CONTROL_HOME_ID}/receipts/`))).toEqual([]);
+      expect(receipt).toMatchObject({ receipt: { action: "act:host.roll" } });
+      // The durable fence names heads and a document url, random bytes a substring search could meet: the search reads the rest.
+      const { position: _position, ...said } = receipt["receipt"] as Record<string, unknown>;
+      const told = JSON.stringify(said);
+      expect(told.includes("cap")).toBe(false);
+      expect(told.includes("eeee")).toBe(false);
+      // CONTROL: the same search reads red over a receipt that carried the argument or the answer.
+      expect(JSON.stringify({ ...said, args: { cap: 5 } }).includes("cap")).toBe(true);
+      expect(JSON.stringify({ ...said, answer: { epoch: "e".repeat(64) } }).includes("eeee")).toBe(true);
     } finally { await v.done(); }
   });
   test("RED: a retried act reads the receipt of the act that ran under its requestId, whatever arguments it carries, and never runs twice", async () => {
@@ -446,59 +446,6 @@ describe("UDS session switch", () => {
       expect(await a.ask({ op: "session:call", ...envA, requestId: "after", verb: "load", args: {} })).toMatchObject({ kind: "session:result", status: "done" });
     } finally { await v.done(); }
   });
-  test("RED: a ledger that fails to record an act's outcome after it ran answers act-faulted with the receipt, never session-fault, and a retry reads the outcome, never pending", async () => {
-    let ran: unknown[] = [];
-    let tripped = false;
-    // The flush faults once, and only once the act has run: the outcome's record is what fails.
-    const v = await stand("session-act-unrecorded", { failFlush: () => (!tripped && ran.length > 0 ? (tripped = true) : false) });
-    ran = v.ran;
-    try {
-      const a = await v.connect();
-      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
-      const reply = await a.ask({ op: "session:act", ...envA, requestId: "ran", act: "host.roll", args: {} });
-      expect(tripped, "the fault struck after the run").toBe(true);
-      expect(reply).toMatchObject({ kind: "session:act-result", requestId: "ran", answer: { status: "error", reason: "act-faulted" },
-        receipt: { action: "act:host.roll", face: "proof-a", state: "done" } });
-      expect(JSON.stringify(reply).includes("secret/path"), "the fault's text stays off the wire").toBe(false);
-      // The retry under the same id reads the outcome and never runs the act twice.
-      expect(await a.ask({ op: "session:act", ...envA, requestId: "ran", act: "host.roll", args: {} }))
-        .toMatchObject({ kind: "session:receipt", requestId: "ran", receipt: { state: "done" } });
-      expect(await a.ask({ op: "session:receipt", ...envA, requestId: "ran" })).toMatchObject({ receipt: { state: "done" } });
-      expect(v.ran).toHaveLength(1);
-    } finally { await v.done(); }
-  });
-  test("a faulted act receipt survives a failed ledger read", async () => {
-    const v = await stand("session-act-read-fault");
-    const get = FactLedger.prototype.get;
-    const observe = vi.spyOn(FactLedger.prototype, "observeOutcome").mockRejectedValue(new Error("record failed"));
-    const read = vi.spyOn(FactLedger.prototype, "get").mockImplementation(function (this: FactLedger, id) {
-      if (v.ran.length) return Promise.reject(new Error("read failed"));
-      return get.call(this, id);
-    });
-    try {
-      const a = await v.connect();
-      const env = envOf(await a.ask({ op: "session:open", requestId: "open", faceRef: "hint-a", hand: "seat" }));
-      expect(await a.ask({ op: "session:act", ...env, requestId: "ran", act: "host.roll", args: {} }))
-        .toMatchObject({ kind: "session:act-result", answer: { reason: "act-faulted" }, receipt: { state: "done" } });
-      expect(await a.ask({ op: "session:receipt", ...env, requestId: "ran" })).toMatchObject({ receipt: { state: "done" } });
-    } finally { read.mockRestore(); observe.mockRestore(); await v.done(); }
-  });
-  test("CONTROL (it stands on the parent too): a ledger that fails before an act runs answers session-fault and runs nothing", async () => {
-    let failing = false;
-    const v = await stand("session-act-ledger", { failFlush: () => failing });
-    try {
-      const a = await v.connect();
-      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
-      failing = true;
-      expect(await a.ask({ op: "session:act", ...envA, requestId: "unledgered", act: "host.roll", args: {} }))
-        .toEqual({ kind: "session:refused", requestId: "unledgered", refusal: "session-fault" });
-      failing = false;
-      expect(v.ran).toEqual([]);
-      // CONTROL: once the flush stands, the act runs.
-      expect(await a.ask({ op: "session:act", ...envA, requestId: "ledgered", act: "host.roll", args: {} })).toMatchObject({ kind: "session:act-result" });
-      expect(v.ran).toHaveLength(1);
-    } finally { await v.done(); }
-  });
   test("RED: a seat that closes waits out an act still running", async () => {
     let letGo!: () => void;
     const v = await stand("session-act-drain", { actHold: new Promise<void>((resolve) => { letGo = resolve; }) });
@@ -516,30 +463,6 @@ describe("UDS session switch", () => {
       await closing;
       expect(closed).toBe(true);
     } finally { letGo(); await v.done(); }
-  });
-  test("RED: a seat that closes waits out an act behind a slow ledger flush, and the test waits on the act's own start; CONTROL: the held act has not run before the flush lets go", async () => {
-    let letGo!: () => void, flushed!: () => void;
-    const v = await stand("session-act-slow-flush", {
-      actHold: new Promise<void>((resolve) => { letGo = resolve; }),
-      flushGate: new Promise<void>((resolve) => { flushed = resolve; }),
-    });
-    try {
-      const a = await v.connect();
-      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
-      a.sock.write(JSON.stringify({ op: "session:act", ...envA, requestId: "long", act: "host.roll", args: {} }) + "\n");
-      for (let n = 0; n < 200; n++) await new Promise((resolve) => setImmediate(resolve));
-      expect(v.ran).toHaveLength(0);                                         // CONTROL: the slow flush holds the act back
-      flushed();
-      await v.ranFirst;                                                      // the act's own start, not a count of turns
-      expect(v.ran).toHaveLength(1);
-      let closed = false;
-      const closing = v.channel.detach().then(() => { closed = true; });
-      for (let n = 0; n < 20; n++) await new Promise((resolve) => setImmediate(resolve));
-      expect(closed).toBe(false);
-      letGo();
-      await closing;
-      expect(closed).toBe(true);
-    } finally { flushed(); letGo(); await v.done(); }
   });
   test("RED: an act naming its face by handleIndex binds to the session's face: another face refuses face-row-other-face, and the act carries handleIndex alone", async () => {
     const v = await stand("session-act-handle");

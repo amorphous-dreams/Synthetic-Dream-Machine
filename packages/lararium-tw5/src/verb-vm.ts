@@ -183,7 +183,7 @@ export async function writeOutcome(
     status:        "done" | "error";
     result?:       Record<string, unknown>;
     errorMessage?: string;
-    /** Machine-readable refusal reason (e.g. "retention-gap") — additive alongside
+    /** Machine-readable refusal reason (e.g. "beyond-profile") — additive alongside
      *  `errorMessage`; see `concludeVerb`. */
     refusal?:      string;
     /** The chore's receipt mark the island booked with this ask; it rests in the outcome beside the result. */

@@ -69,7 +69,7 @@ GUARDS island-vessel-boot e2e smoke vessel-reboot boot-holds-the-store daemon-is
 GUARDS island-vessel-boot tool two-phase-boot
 
 SEAM uds-seat-gates trunk
-MOVES uds-seat-gates n uds-channel* uds-peer* uds-session-door* socket-claim* socket-sorter* vessel-gates* hand-act-gate* seat-hand* seat-settle* session-sign-door* journal-append-gate* promote-act-gate*
+MOVES uds-seat-gates n uds-channel* uds-channel/* uds-peer* uds-session-door* socket-claim* socket-sorter* vessel-gates* hand-act-gate* seat-hand* seat-settle* session-sign-door* journal-append-gate* promote-act-gate*
 MOVES uds-seat-gates c local-connector* session-connector* sealed-act-door* port-control*
 MOVES uds-seat-gates m session-* signed-act* signer-class* hand-refusal* ed25519-door* wait-handle*
 MOVES uds-seat-gates t native-door-gate* record-port-invoke-gate* tw5-module-gate*

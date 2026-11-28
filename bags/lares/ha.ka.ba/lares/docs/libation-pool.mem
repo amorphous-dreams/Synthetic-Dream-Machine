@@ -124,7 +124,7 @@ The model tier reads as the rank of the spirit called: Haiku as the household wi
 !!! Mechanism by mechanism
 
 # ''Three tiers'' ~ shrine tiers map to PersonaGroup (Household), realm or Nexus board (Crossroads), the DreamNet-scale answer (Temple). MEASURED: `cabal-realm.mem`, road line 126 ("CABAL names the collective, REALM holds shared resources, NEXUS the mesh"). INVENTED: only Household and Crossroads exist for the prototype; Temple needs a civic Nexus that does not stand.
-# ''Caps, not balances'' ~ fits `project_civic_scale_capability_models` (non-custodial by type). A cap carries a ''ceiling'', and spent mana lives in the warden's receipts. Overreach risk: a cap holder cannot learn "50 mana left" without a ledger, so a ledger exists whatever the slogan says. INVENTED: the warden keeps a spend-counter per cap id, one writer (the warden), the same one-owner law as `FactLedger`. The ledger names its registry owner first (`project_floor_one_owner_per_registry`): the Nexus Kahu realm owns the pool ledger, and a face carries only its own receipts.
+# ''Caps, not balances'' ~ fits `project_civic_scale_capability_models` (non-custodial by type). A cap carries a ''ceiling'', and spent mana lives in the warden's receipts. Overreach risk: a cap holder cannot learn "50 mana left" without a ledger, so a ledger exists whatever the slogan says. INVENTED: the warden keeps a spend-counter per cap id, one writer (the warden), the same one-writer law the verb door's ask book keeps (`AskBook`). The ledger names its registry owner first (`project_floor_one_owner_per_registry`): the Nexus Kahu realm owns the pool ledger, and a face carries only its own receipts.
 # ''Delegation and gift'' ~ narrowing a cap onward rides cap-stack composition (`project_cap_stacks_compose_on_persona`). A gift moves a ''claim'' on warden counters, so a gift needs the warden's co-sign or a counter split. INVENTED: a gift splits a counter into two cap ids; the split lands once, nullified by an epoch slot like `veil-vouch.ts`.
 # ''Incense'' ~ INVENTED plug: `lineage-rank` mass, spent by a pour request at a ratio the Kahu charter sets. Standing already splits across vouchees, so a ring of fake vouches dilutes itself. Keep incense a ''price discount'' and never a mint, which matches "no one self-mints it" and the PRF-never-mints ruling (`project_basket_one_rulings_2026_09_11`).
 # ''Who bears the cost'' ~ the operator's own credit, for the prototype. INVENTED: the warden refuses at the ceiling and names the refusal `pool-dry`; it never silently downgrades rank.
@@ -687,6 +687,6 @@ Each stands as a proposal; the operator's mind originates and none binds until r
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/infrastructure-as-myth`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/federation`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;eJuAb7hXaCGhoIebd1Zhw14_1GwIrlF_jfVi_WrEf2c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;r6IYUzub6JS6H20PpREBIWK-QQ79A8qeU7vcjcJEiGo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

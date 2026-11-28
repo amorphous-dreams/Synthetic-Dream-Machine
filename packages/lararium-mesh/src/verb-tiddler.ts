@@ -109,15 +109,9 @@ export async function taskContentId(
   return formatDigest("sha256", await sha256Hex(canonicalJsonBytes(canonical), provider));
 }
 
-// ── Receipt facts — single-writer durable request ledger (D1, P2.5 iter 4) ───
-// The channel (uds-channel.ts) is the SOLE writer of a receipt fact: it writes
-// `committed` at arbitrate, `abandoned` at EOF-drop/cancel, and `done`/`error`
-// when it OBSERVES the outcome land. The worker never writes a fact — only the
-// outcome tiddler, which the channel observes. One writer per field, so no two
-// processes race a `state` transition.
-
-/** Durable per-request fact tiddlers — `<control home>/receipts/<requestId>`, in the vessel's control document. */
-export const RECEIPT_FACT_URI_PREFIX = `${CONTROL_HOME_ID}/receipts/`;
+// ── Control-document prefixes ───────────────────────────────────────────────
+// No receipt fact rests anywhere: a same-id re-ask reads the vessel's answer ring (memory alone), the verdict row a
+// write leaves, or the effect row an effect key names (lar:///ha.ka.ba/lararium/mesh/receipt-ledger).
 
 /** Durable ward audits: `<control home>/ledger/ward/<id>`, in the vessel's control document. */
 export const WARD_AUDIT_URI_PREFIX = `${CONTROL_HOME_ID}/ledger/ward/`;
@@ -128,182 +122,11 @@ export const MAILBOX_URI_PREFIX = `${CONTROL_HOME_ID}/mailbox/`;
 /** The effect index: `<control home>/effects/<effectKey>`, in the vessel's control document. */
 export const EFFECT_URI_PREFIX = `${CONTROL_HOME_ID}/effects/`;
 
-export type ReceiptFactState = "committed" | "interrupted" | "abandoned" | "done" | "error" | "evicted";
-
-interface ReceiptFactCommon {
-  readonly requestId:  string;
-  readonly face?: string;
-  readonly action?: string;
-  readonly effectKey?: string;
-  /** Set once the fact reaches a terminal outcome; survives the `evicted` transition
-   *  (eviction keeps digest, effect key and terminal — only the full outcome drops). */
-  readonly terminal?:  "done" | "error";
-  /** Per-vessel monotonic counter, assigned by the channel at commit/abandon or at
-   *  first observation of a non-UDS-path outcome. Never a time (no-global-now). */
-  readonly seq:        number;
-}
-
-/** `abandoned` may carry no digest — and only via an explicit `{op:"cancel"}` withdrawal,
- *  which compares no content claim at all (an EOF-drop still records the invocation's
- *  own digest before refusing by state). The ring carries that absence into `evicted`.
- *  Every other state names a claim this ledger arbitrated or observed, so its digest is
- *  required, never an optional absence. */
-export interface ReceiptFactAbandoned extends ReceiptFactCommon {
-  readonly state:       "abandoned";
-  readonly inputDigest?: string;
-}
-
-/** A request the vessel committed and has not seen land. `life` names the vessel life that committed it
- *  (the id its store claim minted: a name, never a time and never an order): a later life settles a `committed`
- *  fact of ANOTHER life to `interrupted` when no outcome landed. Both states REQUIRE the life. */
-export interface ReceiptFactInFlight extends ReceiptFactCommon {
-  readonly state:       "committed" | "interrupted";
-  readonly inputDigest: string;
-  readonly life:        string;
-}
-
-/**
- * A request whose outcome landed, and whose outcome record this vessel keeps. `outcomeBytes` measures that
- * record ({@link outcomeBytesOf}); the ring's byte bound sums it across every landed fact. Both landed states
- * REQUIRE the measure. It keeps the life that committed it when known.
- */
-export interface ReceiptFactLanded extends ReceiptFactCommon {
-  readonly state:        "done" | "error";
-  readonly inputDigest:  string;
-  readonly life?:        string;
-  readonly outcomeBytes: number;
-}
-
-/**
- * A request the ring dropped: it keeps its digest, effect key and terminal, and no outcome record to measure.
- * One evicted fact names no digest: the id a person cancelled before any request reached the vessel, which held
- * none while it stood `abandoned`. That fact names no terminal either, since a verdict always names its digest.
- */
-export interface ReceiptFactEvicted extends ReceiptFactCommon {
-  readonly state:        "evicted";
-  readonly inputDigest?: string;
-  readonly life?:        string;
-}
-
-/** A request that reached a verdict. */
-export type ReceiptFactSettled = ReceiptFactLanded | ReceiptFactEvicted;
-
-export type ReceiptFactClaimed = ReceiptFactInFlight | ReceiptFactSettled;
-
-/** One request's durable fact — the channel's read-through arbitration ledger. */
-export type ReceiptFact = ReceiptFactAbandoned | ReceiptFactClaimed;
-
-/** A fact not yet assigned its `seq` — distributed per-branch (never a bare `Omit` over the
- *  union, which would collapse the discriminant and let a `committed`/`done`/`error`/`evicted`
- *  draft through with no digest). */
-export type ReceiptFactDraft = Omit<ReceiptFactAbandoned, "seq"> | Omit<ReceiptFactInFlight, "seq"> | Omit<ReceiptFactLanded, "seq"> | Omit<ReceiptFactEvicted, "seq">;
-
-function isReceiptFactState(v: unknown): v is ReceiptFactState {
-  return v === "committed" || v === "interrupted" || v === "abandoned" || v === "done" || v === "error" || v === "evicted";
-}
-
-/** Build a receipt-fact tiddler record for the channel's single-writer ledger. */
-export function buildReceiptFact(fact: ReceiptFact): LarTiddlerRecord {
-  const title = `${RECEIPT_FACT_URI_PREFIX}${fact.requestId}`;
-  return {
-    tiddler: {
-      title,
-      "request-id":   fact.requestId,
-      state:          fact.state,
-      seq:            String(fact.seq),
-      ...(fact.inputDigest !== undefined && { "input-digest": fact.inputDigest }),
-      ...(fact.effectKey   !== undefined && { "effect-key":   fact.effectKey }),
-      ...(fact.face !== undefined && { face: fact.face }),
-      ...(fact.action !== undefined && { action: fact.action }),
-      ...(fact.terminal    !== undefined && { terminal:       fact.terminal }),
-      ...("life" in fact && fact.life !== undefined && { life: fact.life }),
-      ...("outcomeBytes" in fact && { "outcome-bytes": String(fact.outcomeBytes) }),
-    },
-    meta: { authority: "lares-daemon-channel" },
-  };
-}
-
-/** Parse a receipt-fact tiddler field bag. Returns null when the shape doesn't match
- *  (never throws — a torn fact reads as absent, never as a crash). */
-export function parseReceiptFact(fields: Record<string, unknown>): ReceiptFact | null {
-  const title = typeof fields["title"] === "string" ? fields["title"] : null;
-  if (!title || !title.startsWith(RECEIPT_FACT_URI_PREFIX)) return null;
-
-  const requestId   = typeof fields["request-id"]   === "string" ? fields["request-id"]   : null;
-  const inputDigest = typeof fields["input-digest"] === "string" ? fields["input-digest"] : undefined;
-  const state       = fields["state"];
-  const seqRaw      = fields["seq"];
-  const seq = typeof seqRaw === "string" ? Number.parseInt(seqRaw, 10)
-            : typeof seqRaw === "number" ? seqRaw
-            : NaN;
-
-  if (!requestId || Number.isNaN(seq) || !isReceiptFactState(state)) return null;
-
-  const effectKey = typeof fields["effect-key"] === "string" ? fields["effect-key"] : undefined;
-  if ((fields["face"] !== undefined && (typeof fields["face"] !== "string" || !fields["face"])) ||
-      (fields["action"] !== undefined && (typeof fields["action"] !== "string" || !fields["action"]))) return null;
-  const face = fields["face"] as string | undefined;
-  const action = fields["action"] as string | undefined;
-  const identity = { ...(face !== undefined && { face }), ...(action !== undefined && { action }) };
-  const terminalRaw = fields["terminal"];
-  const terminal = terminalRaw === "done" || terminalRaw === "error" ? terminalRaw : undefined;
-
-  if (state === "abandoned") {
-    return {
-      requestId, state, seq, ...identity,
-      ...(inputDigest !== undefined && { inputDigest }),
-      ...(effectKey   !== undefined && { effectKey }),
-      ...(terminal    !== undefined && { terminal }),
-    };
-  }
-  // A cancelled id the ring let go: it held no digest while it stood abandoned, and it holds none evicted. A
-  // digest-less evicted fact that names a verdict reads as torn, since no verdict lands without its digest.
-  if (state === "evicted" && inputDigest === undefined) {
-    // A cancel names no content: any `terminal` or `effect-key` field beside it, sound or not, reads torn.
-    if (fields["terminal"] !== undefined || fields["effect-key"] !== undefined) return null;
-    return { requestId, state, seq, ...identity };
-  }
-  // Every other state claims a digest — a committed/done/error fact with none on the wire reads as torn,
-  // never as an "unverifiable" absence.
-  if (inputDigest === undefined) return null;
-  const lifeRaw = fields["life"];
-  const life = typeof lifeRaw === "string" && /^\S+$/.test(lifeRaw) ? lifeRaw : undefined;
-  const common: { requestId: string; seq: number; inputDigest: string; face?: string; action?: string; effectKey?: string; terminal?: "done" | "error" } = {
-    requestId, seq, inputDigest, ...identity,
-    ...(effectKey !== undefined && { effectKey }),
-    ...(terminal  !== undefined && { terminal }),
-  };
-  // An in-flight fact names the life that committed it; none on the wire reads as torn.
-  if (state === "committed" || state === "interrupted") {
-    if (life === undefined) return null;
-    return { ...common, state, life };
-  }
-  if (state === "evicted") return { ...common, state, ...(life !== undefined && { life }) };
-  // A landed fact names the measure of the outcome it keeps; none on the wire reads as torn.
-  const bytesRaw = fields["outcome-bytes"];
-  const bytesRead = typeof bytesRaw === "string" && /^\d+$/.test(bytesRaw) ? Number.parseInt(bytesRaw, 10)
-                  : typeof bytesRaw === "number" ? bytesRaw
-                  : NaN;
-  // A measure a sum can hold: a whole count of bytes. A run of digits past that reads as no measure at all.
-  const outcomeBytes = Number.isSafeInteger(bytesRead) && bytesRead >= 0 ? bytesRead : undefined;
-  if (outcomeBytes === undefined) return null;
-  return { ...common, state, outcomeBytes, ...(life !== undefined && { life }) };
-}
-
-/**
- * The measure of one outcome record: the UTF-8 bytes of its fields in canonical form. The receipt ring sums it
- * to bound what the kept outcomes weigh. It reads the fields a store holds, so two readers of one record agree,
- * and it counts no document overhead: a bound on what a vessel keeps, never an accounting of a file's size.
- */
-export function outcomeBytesOf(fields: Readonly<Record<string, unknown>>): number {
-  return canonicalJsonBytes(fields).length;
-}
-
 /**
  * The content digest over a verb's identity tuple — shared by the channel (arbitration:
  * same id + changed digest refuses `request-id-reused-with-changed-input`) and the worker
  * (digest-on-outcome: stamped onto the outcome tiddler so a later reader can re-check it
- * without re-walking the fact). Distinct from `taskContentId` (the content-addressed task
+ * without re-walking the call). Distinct from `taskContentId` (the content-addressed task
  * surface, keyed by {subject,command,args,nonce}) — this digest keys the CURRENT running
  * verb/summons/outcome path's request identity, {verb,args,face,effectKey}.
  */
@@ -317,43 +140,6 @@ export async function verbInputDigest(
   };
   return formatDigest("sha256", await sha256Hex(canonicalJsonBytes(canonical), provider));
 }
-
-/**
- * The default receipt ring: as many ledgered requests as the answer ring holds bodies (`ANSWER_RING_COUNT`, 1,024). A
- * COUNT, never a horizon: the ring once derived 43,456 from a 30-day retention at one verb a minute, and every fact it
- * held (with the facts it evicted, which never left) rode the control document, where each change costs about a
- * microsecond per title the document's map holds, on every replica (`control-document-stays-light.test.ts`). The ledger
- * keeps `ring` live facts and `ring` evicted ones, so the control document's receipts stay near 6,000 titles at most.
- *
- * An operator may still size the ring by rate (`receipts.ring {ratePerMin, horizonDays, burst}` in vessel config, read by
- * `main.ts`): naming any of those dials derives `ratePerMin × 60 × 24 × horizonDays + burst`, the unnamed dials reading
- * 1, 30 and 256. Naming none answers this default.
- */
-export function ratedReceiptRing(opts?: { ratePerMin?: number; horizonDays?: number; burst?: number }): number {
-  if (opts?.ratePerMin === undefined && opts?.horizonDays === undefined && opts?.burst === undefined) return RECEIPT_RING_COUNT;
-  const ratePerMin  = opts?.ratePerMin  ?? 1;
-  const horizonDays = opts?.horizonDays ?? 30;
-  const burst       = opts?.burst       ?? 256;
-  return ratePerMin * 60 * 24 * horizonDays + burst;
-}
-
-/** The receipt ring's default count, matched to the answer ring's (`control-home` `ANSWER_RING_COUNT`). */
-const RECEIPT_RING_COUNT = 1024;
-
-export const RECEIPT_RING_DEFAULT = ratedReceiptRing();
-
-/**
- * The default byte bound of the receipt ring, DERIVED beside the count: the ring's own size times a mean
- * budget per kept outcome. A receipt that carries a summary and its digests runs to a few hundred bytes, so
- * 2 KiB a slot leaves room for five such receipts' worth before the bound bites; a verb that returns a large
- * body spends many slots' budget and pushes older bodies out sooner. `bytesPerOutcome` moves that mean
- * (`receipts.ring.bytesPerOutcome` in vessel config); the other dials move the count this rides beside.
- */
-export function ratedReceiptRingBytes(opts?: { ratePerMin?: number; horizonDays?: number; burst?: number; bytesPerOutcome?: number }): number {
-  return ratedReceiptRing(opts) * (opts?.bytesPerOutcome ?? 2_048);
-}
-
-export const RECEIPT_RING_BYTES_DEFAULT = ratedReceiptRingBytes();
 
 // ── Verb invocation shape ──────────────────────────────────────────────────
 
@@ -459,7 +245,7 @@ export function concludeVerb(opts: {
   /** Present when this outcome is a COPY of a prior attempt's result (effect dedup):
    *  names the prior requestId whose effect this one reused, rather than running. */
   effectOf?:     string;
-  /** Machine-readable refusal reason (e.g. "retention-gap") — additive alongside the
+  /** Machine-readable refusal reason (e.g. "beyond-profile") — additive alongside the
    *  human-readable `errorMessage`. Stamped as the `refusal` field. */
   refusal?:      string;
   /** The chore's receipt mark (the acting face, the asker's hand, its session): house-local, never a key, presenter or

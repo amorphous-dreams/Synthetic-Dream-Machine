@@ -96,30 +96,18 @@ describe("lares vessel request <requestId> (M14)", () => {
     expect(code).not.toBe(0);
   });
 
-  test("★ an `interrupted` receipt reads its OWN code, request-interrupted, in the exit-6 family ★", async () => {
-    await standStub({ requestId: "req-int", state: "interrupted" });
-    const cap = captured();
-    const code = await cmdReceipt(jsonArgs(["req-int"]));
-    cap.restore();
-    const payload = JSON.parse(cap.lines.join("")) as { ok: boolean; error: { code: string } };
-    expect(payload.ok).toBe(false);
-    expect(payload.error.code).toBe("request-interrupted");
-    expect(code).toBe(6);
-  });
-
-  test("★ an `interrupted` receipt carries a hint beside the code, in the JSON error and on the prose path ★", async () => {
-    await standStub({ requestId: "req-int-hint", state: "interrupted" });
-    const cap = captured();
-    await cmdReceipt(jsonArgs(["req-int-hint"]));
-    cap.restore();
-    const payload = JSON.parse(cap.lines.join("")) as { error: { code: string; hint?: string } };
-    expect(payload.error.hint).toMatch(/change-id/);
-    expect(payload.error.hint).toMatch(/may have landed in part/);
-
-    const out: string[] = [];
-    vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { out.push(a.join(" ")); });
-    await cmdReceipt(parseArgs(["receipt", "req-int-hint", "--no-json"]));
-    expect(out.join("\n")).toMatch(/change-id/);
+  test("★ a state the vessel no longer answers (interrupted, evicted: no receipt rests) reads a fault, never ok ★", async () => {
+    for (const state of ["interrupted", "evicted"]) {
+      await standStub({ requestId: `req-${state}`, state });
+      const cap = captured();
+      const code = await cmdReceipt(jsonArgs([`req-${state}`]));
+      cap.restore();
+      const payload = JSON.parse(cap.lines.join("")) as { ok: boolean; error: { code: string } };
+      expect(payload.ok).toBe(false);
+      expect(payload.error.code).toBe("verb-error");
+      expect(code).toBe(4);
+      await new Promise<void>((r) => server!.close(() => r())); server = undefined;
+    }
   });
 
   test("CONTROL: a `done` receipt carries no hint", async () => {
@@ -130,20 +118,7 @@ describe("lares vessel request <requestId> (M14)", () => {
     expect(JSON.parse(cap.lines.join(""))).not.toHaveProperty("error");
   });
 
-  test("★ an `evicted` receipt (M1 — the receipt ring dropped this id past retention) reads its own code, retention-gap ★", async () => {
-    await standStub({ requestId: "req-evicted", state: "evicted" });
-    const cap = captured();
-    const code = await cmdReceipt(jsonArgs(["req-evicted"]));
-    cap.restore();
-    const payload = JSON.parse(cap.lines.join("")) as { ok: boolean; error: { code: string } };
-    expect(payload.ok).toBe(false);
-    expect(payload.error.code).toBe("retention-gap");
-    expect((payload.error as { hint?: string }).hint).toMatch(/fresh request/);
-    expect(code).not.toBe(0);
-    expect(code).toBe(6); // the same exit family as outcome-unknown/request-abandoned
-  });
-
-  test("an `unknown` receipt (this vessel never arbitrated it) reads not-found, never a crash", async () => {
+  test("an `unknown` receipt (nothing the vessel holds names it) reads not-found, never a crash", async () => {
     await standStub({ requestId: "req-3", state: "unknown" });
     const cap = captured();
     const code = await cmdReceipt(jsonArgs(["req-3"]));
@@ -201,31 +176,22 @@ describe("lares vessel request <requestId> --cancel (M14 + M8 — the OPERATOR's
     }
   });
 
-  test("a cancel of an id the vessel no longer answers for reads that state's own code, and never as withdrawn", async () => {
-    for (const [state, errorCode] of [["evicted", "retention-gap"], ["interrupted", "request-interrupted"]] as const) {
-      const { payload, code } = await cancelAgainst({ requestId: "req-12", state });
-      expect(payload.data).toEqual({ state, withdrawn: false });
-      expect(payload.error?.code).toBe(errorCode);
-      expect(code).toBe(6);
-    }
-  });
-
-  test("a torn fact names its own refusal on both doors, never a verb's error", async () => {
-    const torn = { requestId: "req-13", state: "error", errorMessage: "unreadable", refusal: { reason: "receipt-fact-torn" } };
-    const cancelled = await cancelAgainst(torn);
-    expect(cancelled.payload.error?.code).toBe("receipt-fact-torn");
+  test("a landed refusal names its own code on the receipt door, and reads `cancel-lost` on the cancel door", async () => {
+    const refused = { requestId: "req-13", state: "error", errorMessage: "the bag was dropped", refusal: { reason: "bag-retired" } };
+    const cancelled = await cancelAgainst(refused);
+    expect(cancelled.payload.error?.code).toBe("cancel-lost");
     expect(cancelled.payload.data["withdrawn"]).toBe(false);
     await new Promise<void>((r) => server!.close(() => r())); server = undefined;
-    await standStub(torn);
+    await standStub(refused);
     const cap = captured();
     const code = await cmdReceipt(jsonArgs(["req-13"]));
     cap.restore();
-    expect((JSON.parse(cap.lines.join("")) as { error: { code: string } }).error.code).toBe("receipt-fact-torn");
-    expect(code).toBe(6);
+    expect((JSON.parse(cap.lines.join("")) as { error: { code: string } }).error.code).toBe("bag-retired");
+    expect(code).toBe(2);
   });
 
   test("a landed error that carries a refusal of its own still reads `cancel-lost` on the cancel door", async () => {
-    const { payload, code } = await cancelAgainst({ requestId: "req-15", state: "error", errorMessage: "evicted effect", refusal: { reason: "retention-gap" } });
+    const { payload, code } = await cancelAgainst({ requestId: "req-15", state: "error", errorMessage: "the bag was dropped", refusal: { reason: "bag-retired" } });
     expect(payload.error?.code).toBe("cancel-lost");
     expect(code).toBe(4);
   });

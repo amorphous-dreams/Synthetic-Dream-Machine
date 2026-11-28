@@ -7,11 +7,12 @@
  * control document's saved bytes (`A.save`) before and after.
  *
  * Before the diet every call, a read included, wrote two receipt facts and an outcome row that carried its whole result
- * body, so the document grew by every body it ever answered. The bars below hold after it:
+ * body, so the document grew by every body it ever answered. Receipt facts burned since: the door holds what it knows
+ * about a request id in memory (`AskBook`). The bars below hold:
  *
- *   G1 — 800 READS GROW THE DOCUMENT BY ZERO BYTES: a read writes no fact and no row.
+ *   G1 — 800 READS GROW THE DOCUMENT BY ZERO BYTES: a read writes no row.
  *   G2 — 200 WRITES GROW IT BY THE VERDICT ROWS ALONE: each write answers a 8 KiB body that will not compress, and the
- *        document takes less than `ROW_BAR` bytes for it (two fact writes, a verdict row, an effect row).
+ *        document takes less than `ROW_BAR` bytes for it (a verdict row and an effect row, no receipt title).
  *   G3 — NO BODY RESTS: the saved bytes carry no byte of any answered body.
  *
  * The witness prints what it measured, so the floor reads the true per-write weight (the plan's risk R1 holds an
@@ -27,7 +28,8 @@ import { createConnection } from "node:net";
 import * as A from "@automerge/automerge";
 import { Repo } from "@automerge/automerge-repo";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
-import { OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX, type Verb } from "@lararium/mesh/verb-tiddler";
+import { OUTCOME_URI_PREFIX, type Verb } from "@lararium/mesh/verb-tiddler";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
 import { controlStoreOf } from "@lararium/mesh/control-home";
 import { writeOutcome } from "@lararium/tw5";
 import { startUdsChannel } from "../src/uds-channel.js";
@@ -39,6 +41,8 @@ const READ_BODY_BYTES = 2 * 1024;
 const WRITE_BODY_BYTES = 8 * 1024;
 /** What one ledgered write may add to the control document's saved bytes: half its body. */
 const ROW_BAR = WRITE_BODY_BYTES / 2;
+/** Where receipt facts rested before they burned: no title stands under it. */
+const RECEIPT_TITLES = `${CONTROL_HOME_ID}/receipts/`;
 
 /** `bytes` of hex that will not compress, the same for the same seed. */
 function body(seed: string, bytes: number): string {
@@ -100,7 +104,7 @@ describe("the control document stops growing with every door call", () => {
       }
       const afterReads = saved();
       const titles = Object.keys(controlHandle.doc()?.tiddlers ?? {});
-      expect(titles.filter((t) => t.startsWith(RECEIPT_FACT_URI_PREFIX)), "G1: a read writes no receipt fact").toEqual([]);
+      expect(titles.filter((t) => t.startsWith(RECEIPT_TITLES)), "G1: a read writes no receipt title").toEqual([]);
       expect(titles.filter((t) => t.startsWith(OUTCOME_URI_PREFIX)), "G1: a read writes no outcome row").toEqual([]);
       expect(afterReads - before, `G1: ${READS} reads grew the control document by ${afterReads - before} bytes`).toBe(0);
 
@@ -111,13 +115,8 @@ describe("the control document stops growing with every door call", () => {
         if (answer["status"] !== "done") throw new Error(`write ${id} answered ${JSON.stringify(answer).slice(0, 300)}`);
         if (!JSON.stringify(answer["results"]).includes(body(id, 64))) throw new Error(`write ${id} answered without its body`);
       }
-      // The last write's `done` fact lands a beat after its answer: wait for the ledger to settle before the measure.
-      for (let i = 0; i < 300; i++) {
-        const last = controlHandle.doc()?.tiddlers[`${RECEIPT_FACT_URI_PREFIX}write-${WRITES - 1}`];
-        if (JSON.stringify(last ?? null).includes("done")) break;
-        await new Promise((r) => setTimeout(r, 10));
-      }
       const afterWrites = saved();
+      expect(Object.keys(controlHandle.doc()?.tiddlers ?? {}).filter((t) => t.startsWith(RECEIPT_TITLES)), "G2: a write writes no receipt title").toEqual([]);
       const perWrite = (afterWrites - afterReads) / WRITES;
       // The measure, for the floor to read: the plan estimated about 1.3 KB of rows per ledgered write.
       console.log(`[ledger-growth-witness] control document saved bytes: before ${before}, after ${READS} reads ${afterReads} (+${afterReads - before}), after ${WRITES} writes ${afterWrites} (+${afterWrites - afterReads}, ${Math.round(perWrite)} bytes a write against an ${WRITE_BODY_BYTES}-byte body)`);

@@ -2,7 +2,7 @@
  * control-home — the vessel's CONTROL document: where the daemon's control families rest.
  *
  * PLACEMENT DECIDES RESIDENCY. A record reaches plaintext disk only through the layer it rests in and that layer's mirror,
- * never through its title. The control families (verb summons, outcomes and their effect index, the receipt facts, ward
+ * never through its title. The control families (verb summons, outcomes and their effect index, ward
  * audits, the durable mailbox, the swarm's live controls, the lease-epoch slots) therefore rest in ONE vessel-scoped
  * document that no recipe mounts and no mirror names: they never stand in a layer a projector reads.
  *
@@ -157,12 +157,12 @@ export function isFloorAnswerTitle(title: string): boolean {
 /**
  * THE FLOOR'S ANSWER CHANNEL: the control store a stand-in stands as (a herm, a hearth before its face, a locked hearth).
  *
- * A place with no readable control document still answers the acts that write no control fact: a read-only query, a row
+ * A place with no readable control document still answers the acts that write no control record: a read-only query, a row
  * of the place (a herm taking a carry bundle, a lift's founding refused by name). Such an act's ANSWER (its outcome and
  * the effect index beside a done one) is held here in memory alone, for the caller that waits on it, and never rests:
  * no Repo holds it, no document merges it into the control document a later unlock stands, and the oldest leaves once
  * {@link FLOOR_ANSWER_RING} wait. Every other read and write refuses by the stand-in's name, so an act that writes a control
- * fact (a receipt fact, a summons, a mailbox row, a lease slot) refuses `control-home-unnamed` on a faceless place and
+ * record (a verdict row, a summons, a mailbox row, a lease slot) refuses `control-home-unnamed` on a faceless place and
  * `vessel-locked` on a locked hearth, at the write it asked for.
  *
  * `onAnswer` hears each answer this store takes: the daemon island hands its answers to the vessel this way, since the
@@ -207,7 +207,7 @@ export const ANSWER_RING_BYTES = 16 * 1024 * 1024;
 /**
  * THE ANSWER RING: the whole outcomes of the verbs a vessel ran, in memory alone, for the callers that wait on them.
  *
- * The control document rests a VERDICT ROW per ledgered call (`verb-tiddler` `verdictRowOf`) and no body. The body (the
+ * The control document rests a VERDICT ROW per write (`verb-tiddler` `verdictRowOf`) and no body. The body (the
  * `results` map, the `touched` report) rides here: the island puts each whole outcome into its ring, the ring's hand-off
  * carries it to the vessel's ring across the island's own message, and the door answers its caller from it. Nothing in a
  * ring rests: no Repo holds it, no document merges it, and a restart begins with an empty one. Two bounds hold it, and

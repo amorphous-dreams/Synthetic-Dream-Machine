@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/uds-channel-shapes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/uds-channel-shapes"
+role          = "code-meme: names the door's shapes: the seat's options, the session supply and signer, the anchor a session binds, the invocation, the dispatch gate and the receipt answer"
+source-file   = "packages/lararium-node/src/uds-channel/shapes.ts"
+source-sha256 = "sha256:73c0737399e30d500f4b302d0269029f8e04b47ad2b51ae76957972d84152587"
+title         = "lar:///ha.ka.ba/lararium/mesh/uds-channel-shapes"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/uds-channel-shapes"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`shapes.ts` names the door's shapes: the seat's options, the session supply and signer, the anchor a session binds, the invocation, the dispatch gate and the receipt answer. The seat's options and the session shapes stand here so every module names one type for one relation. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/uds-channel-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/uds-channel/shapes.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/uds-channel-shapes"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JmzXW8hvpp2CYoC2doFdRbv2MlqXHHmTJjACwGJVlzg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

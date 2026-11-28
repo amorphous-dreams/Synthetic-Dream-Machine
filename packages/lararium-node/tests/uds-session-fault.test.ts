@@ -152,8 +152,8 @@ const switchTo = (env: Record<string, unknown>, faceRef: string, requestId: stri
 describe("UDS session fault", () => {
   test("RED: a reply whose durable settle throws answers session-fault under the call's requestId, and no fault text reaches the wire", async () => {
     let failing = false;
-    // The ledger and the durable settle each flush the control document by name; the ledger's flush lands before the
-    // verb is placed, so a flush that fails only once the call is placed fails the reply's settle alone.
+    // The durable settle flushes the control document by name, and nothing before the placement flushes: a flush that
+    // fails once the call is placed fails the reply's settle alone.
     let placedBefore = Number.POSITIVE_INFINITY;
     const v = await stand("reply", { failFlush: () => failing && v.placed.length > placedBefore });
     try {
@@ -171,25 +171,6 @@ describe("UDS session fault", () => {
     } finally { await v.done(); }
   });
 
-  test("RED: a call whose fact ledger's whole-Repo flush rejects mid-arbitration answers session-fault under its requestId, and nothing runs", async () => {
-    let failing = false;
-    // The fact ledger flushes the control document before it answers "run"; that flush, the call's first, rejects here.
-    const v = await stand("ledger", { failFlush: () => failing });
-    try {
-      const a = await v.connect();
-      const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
-      const before = v.placed.length;
-      failing = true;
-      const reply = await a.ask(call(envA, "call-unledgered"));
-      failing = false;
-      expect(reply).toEqual({ kind: "session:refused", requestId: "call-unledgered", refusal: "session-fault" });
-      expect(v.placed.length).toBe(before);                                   // nothing dispatched
-      expect(v.lines.some((l) => l.startsWith("receipt-fact ledger failed") && l.includes("/secret/path"))).toBe(true);
-      // CONTROL: the same session answers whole once the flush stands.
-      expect(await a.ask(call(envA, "call-ledgered"))).toMatchObject({ kind: "session:result", requestId: "call-ledgered", status: "done" });
-    } finally { await v.done(); }
-  });
-
   test("RED: a frame whose processing throws answers session-fault under the frame's requestId, and no fault text reaches the wire", async () => {
     let failing = false;
     const v = await stand("frame", { failFlush: (ids) => failing && ids !== undefined });
@@ -197,7 +178,7 @@ describe("UDS session fault", () => {
       const a = await v.connect();
       const envA = envOf(await a.ask({ op: "session:open", requestId: "open-a", faceRef: "hint-a", hand: "seat" }));
       expect(await a.ask(call(envA, "settled"))).toMatchObject({ kind: "session:result", status: "done" });
-      // The fact promotes to done as its outcome lands; the receipt reads terminal from there.
+      // The answer lands in the control document; the receipt reads terminal from there.
       let state: unknown;
       for (let n = 0; n < 50 && state !== "done"; n++) {
         state = ((await a.ask({ op: "session:receipt", ...envA, requestId: "settled" }))["receipt"] as Record<string, unknown>)["state"];

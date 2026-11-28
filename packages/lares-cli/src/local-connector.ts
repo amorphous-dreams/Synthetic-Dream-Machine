@@ -290,25 +290,20 @@ export class LocalInvocationAborted extends Error {}
 export interface ReceiptAnswer {
   readonly requestId: string;
   /**
-   * `evicted` — the vessel's own receipt ring (D1, M1) dropped this id's full durable outcome
-   * past its retention bound; its fact survives (digest, effect key, terminal) but the result
-   * body is gone — `act.ts`/`receipt-cmd.ts` read this as `retention-gap`, never a bare "unknown"
-   * that would invite a silent re-run.
-   *
    * `unanswered` — THIS caller's own patience for the READ itself ended (M13): the socket connected
    * but no line came back within `patienceMs`, so this side destroyed the socket and gave up on
    * HEARING, never on the question. Unlike `unknown` (the vessel answered honestly that it never
    * arbitrated this id), `unanswered` means no answer arrived at all — a frozen or wedged peer. Never
    * read as a verdict on the act.
    */
-  readonly state: "abandoned" | "committed" | "interrupted" | "done" | "error" | "evicted" | "unknown" | "unanswered";
+  readonly state: "abandoned" | "committed" | "done" | "error" | "unknown" | "unanswered";
   readonly results?: Record<string, unknown>;
   readonly errorMessage?: string;
-  /** The vessel's own name for a refusal it answers with (a torn fact reads `receipt-fact-torn`). */
+  /** The vessel's own name for a refusal it answers with (a landed outcome's refusal, or `engine-terminated`). */
   readonly refusal?: { readonly reason: string };
   /** The chore's receipt mark the outcome rests with: the acting face, the asker's hand (`seat`, `cli`, `tab`), its session. */
   readonly chore?: { readonly acting: number; readonly asker: string; readonly session: string | null };
-  /** The engine's fall (`engine-watch` on the vessel), where the receipt came from the settled ledger after the engine stopped. */
+  /** The engine's fall (`engine-watch` on the vessel), where the receipt came from the vessel's memory after the engine stopped. */
   readonly engine?: { readonly status?: string; readonly cause?: string; readonly [k: string]: unknown };
 }
 
@@ -373,8 +368,8 @@ function readOnlyQuery(op: ReadOnlyOp, requestId: string, opts: { dataDir?: stri
  * Read a request id's receipt WITHOUT dispatching anything (H1). A second `invokeLocal` with the
  * same request id as a "read-back" would ride the EXACT SAME dispatch path as the original, so an id
  * this vessel already dropped as abandoned would run a second time, never a read. `queryReceipt` rides a dedicated
- * `{op:"receipt"}` line the vessel's own connection handler answers from its ledger + the durable
- * outcome doc alone.
+ * `{op:"receipt"}` line the vessel's own connection handler answers from its answer ring, a write's
+ * verdict row and its ask book alone.
  *
  * `patienceMs` (M13, default {@link DEFAULT_RECEIPT_PATIENCE_MS}) — see {@link readOnlyQuery}.
  */
@@ -383,10 +378,10 @@ export function queryReceipt(requestId: string, opts: { dataDir?: string | null;
 }
 
 /**
- * Withdraw a request id BEFORE it is read (M8) — `{op:"cancel"}`. Where no fact stands for the id, marks it
- * abandoned on the vessel's own ledger so a later line under the same id (a stray retry) refuses rather than
- * running. Answers the state that ledger holds once the cancel took its turn: `abandoned` where the withdrawal
- * stands, else the fact that already stood.
+ * Withdraw a request id BEFORE it is read (M8) — `{op:"cancel"}`. Where nothing the vessel holds names the id,
+ * its ask book marks it abandoned so a later line under the same id in that vessel life (a stray retry) refuses
+ * rather than running. Answers the state the vessel holds once the cancel took its turn: `abandoned` where the
+ * withdrawal stands, else what already stood.
  *
  * `patienceMs` (M13) — see {@link readOnlyQuery}.
  */

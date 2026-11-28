@@ -123,8 +123,8 @@ export interface LarTombstoneOptions {
   readonly base?: readonly string[];
   /**
    * A BARE tombstone: the record leaves with its fields, and the title and the deleted mark alone stand in its place. A
-   * kāpae hide keeps the fields it held; a ring's eviction (the receipt ledger's count and byte bounds) rides bare, so
-   * a body the ring let go stops weighing on every replica's standing state. A store that keeps no fields under a
+   * kāpae hide keeps the fields it held; a bounded store's eviction rides bare, so a body it let go stops weighing on
+   * every replica's standing state. A store that keeps no fields under a
    * tombstone reads it as any other.
    */
   readonly bare?: boolean;

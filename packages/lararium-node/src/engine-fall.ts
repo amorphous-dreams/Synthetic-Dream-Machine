@@ -6,8 +6,8 @@
  * process brings a fresh engine. So a fallen vessel finishes naming the fall (health answers 503, every verb refuses
  * `engine-terminated`, the log line), asks every island that mounts a disk shore to flush (`flushEveryShore`), and exits
  * `ENGINE_FALL_EXIT`. The compose service's `restart: unless-stopped` raises it; the pūlama still holds the key and the worn
- * face, so the new life re-wears with no re-unlock; the receipt ledger's `life` field settles each fact the fallen life left
- * `committed` as `interrupted`, since the new claim mints a new life (`vessel-life`).
+ * face, so the new life re-wears with no re-unlock. The verb door's ask book begins empty in the new life (`vessel-life`):
+ * a request the fallen life left running reads `unknown`, and an effect key dedups its re-ask at the island's effect row.
  *
  * THE RESTART COUNT, NEVER A CLOCK. The house bounds a restart storm by a COUNT (the island pool's mount-failure count,
  * `vessel-island-pool-core`). A process forgets its memory at exit, so the count rests beside the life id, at

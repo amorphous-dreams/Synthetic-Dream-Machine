@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/uds-channel-front`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/uds-channel-front"
+role          = "code-meme: holds the verb socket for the floor: serves the claim once, parks callers between compositions, answers the holder probe"
+source-file   = "packages/lararium-node/src/uds-channel/front.ts"
+source-sha256 = "sha256:0a1517665da09997f46cf751b31b69c9ec9f30e91c4d8ed2fae1d35634e81e9d"
+title         = "lar:///ha.ka.ba/lararium/mesh/uds-channel-front"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/uds-channel-front"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`front.ts` holds the verb socket for the floor: serves the claim once, parks callers between compositions, answers the holder probe. The front outlives every composition; a seat attaches and detaches beneath it. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/uds-channel-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/uds-channel/front.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/uds-channel-front"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zJldqfbuqOK8u9d3jBUsHZTzhhETzb0CVX76DYvnPxY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

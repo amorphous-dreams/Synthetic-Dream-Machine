@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/uds-channel-outcome-reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/uds-channel-outcome-reads"
+role          = "code-meme: reads the answer ring and a write's verdict row, and waits for an outcome to land on either"
+source-file   = "packages/lararium-node/src/uds-channel/outcome-reads.ts"
+source-sha256 = "sha256:774bc6f1a1526320185de4d2d243b33d59ba53496b4d18c8bd4b744a0b4ce51b"
+title         = "lar:///ha.ka.ba/lararium/mesh/uds-channel-outcome-reads"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/uds-channel-outcome-reads"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`outcome-reads.ts` reads the answer ring and a write's verdict row, and waits for an outcome to land on either. The ring answers first and the row second, so a body answers while the ring holds it and its verdict after it left. A wait's timer paces this side alone and never decides the act. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/uds-channel-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/uds-channel/outcome-reads.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/uds-channel-outcome-reads"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MJT1ULZmumclyouxbp9zVvGMCuBYk2qeTmzNh_pWxIs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

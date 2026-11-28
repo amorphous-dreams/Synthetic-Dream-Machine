@@ -110,8 +110,8 @@ interface StoreClaimShape {
 
 /**
  * A held claim on a store's rendezvous name. A `"vessel"` holder's claim BEGINS A VESSEL LIFE: `life` names it, the fresh
- * id this claim minted (`vessel-life.ts`), which every fence on a life reads from the claim itself (a `--held` pin, a
- * committed receipt fact, the session contract's `ownerEpoch`, the pūlama hello), never re-read off disk. A `"direct"`
+ * id this claim minted (`vessel-life.ts`), which every fence on a life reads from the claim itself (a `--held` pin,
+ * the session contract's `ownerEpoch`, the pūlama hello), never re-read off disk. A `"direct"`
  * one-shot act begins no life, so it carries no `life` at all.
  */
 export type StoreClaim =

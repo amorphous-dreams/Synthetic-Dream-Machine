@@ -248,7 +248,7 @@ async function actRepack(args: ParsedArgs): Promise<number> {
     // told to stand a daemon that already stands loses the trail to the real fault either way.
     if (err instanceof LocalWaitExpired) {
       // THE SAME READ, NEVER A SECOND DISPATCH (H1) — `queryReceipt` rides a dedicated `{op:"receipt"}`
-      // line the vessel answers from its own ledger + durable outcome doc; it cannot re-run the act.
+      // line the vessel answers from its answer ring, its verdict rows and its ask book; it cannot re-run the act.
       let receipt: ReceiptAnswer | undefined;
       try { receipt = await queryReceipt(repackRequestId); }
       catch { /* still unknown */ }
@@ -260,11 +260,6 @@ async function actRepack(args: ParsedArgs): Promise<number> {
           const hint = refusalHint("request-abandoned", undefined)!;
           emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-abandoned", message: msg, hint }, human: () => { console.error(`lares act REPACK: request abandoned. Read it back: \`lares vessel request ${repackRequestId}\`.`); console.error(`  ${hint}`); } });
           return exitFor("request-abandoned");
-        }
-        if (receipt?.state === "interrupted") {
-          const hint = refusalHint("request-interrupted", undefined)!;
-          emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-interrupted", message: msg, hint }, human: () => { console.error(`lares act REPACK: request interrupted. Read it back: \`lares vessel request ${repackRequestId}\`.`); console.error(`  ${hint}`); } });
-          return exitFor("request-interrupted");
         }
         const hint = `this process stopped waiting after the daemon answered; a short read found no receipt yet for THIS attempt's own request id (${repackRequestId}) — check it with \`lares vessel request ${repackRequestId}\`. REPACK reads and carries no effect key — re-running it is always safe, since there is nothing it could re-land twice.`;
         emit(args, { ok: false, requestId: repackRequestId, error: { code: "outcome-unknown", message: msg, hint }, human: () => { console.error(`lares act REPACK: outcome unknown. Read it back: \`lares vessel request ${repackRequestId}\`.`); console.error(`  ${hint}`); } });
@@ -562,7 +557,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
   // THE EFFECT NAMES WHAT RUNNING THIS WOULD DO, content-addressed — always computed, every verb.
   // EVERY action verb now SPLITS its id from it (E1 commit 4′, generalizing H4's LOAD-only fix,
   // D1 P2.5 iter 4 commit 4): `requestId` mints a FRESH nonce per attempt, so a retry after an
-  // abandoned/unknown/evicted outcome actually dispatches again rather than reusing an id this
+  // abandoned/unknown outcome actually dispatches again rather than reusing an id this
   // vessel may have already settled forever (the livelock H4 first named for LOAD applies equally
   // to a reused `--change-id` on ADD/COPY/MOVE, or a reused `--bag` on CLEAR/DROP/CREATE — any
   // content-addressed id, reused across an identical retry a frozen vessel invites, could never
@@ -612,25 +607,6 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
           data: { changeId },
         });
         return exitFor("request-abandoned");
-      } else if (receipt?.state === "interrupted") {
-        const hint = refusalHint("request-interrupted", changeId)!;
-        emit(args, {
-          ok: false, requestId, error: { code: "request-interrupted", message: msg, hint },
-          human: () => { console.error(`lares act: request interrupted. Read it back: \`lares vessel request ${requestId}\`.`); console.error(`  ${hint}`); },
-          data: { changeId },
-        });
-        return exitFor("request-interrupted");
-      } else if (receipt?.state === "evicted") {
-        // M1: the receipt ring dropped this id's outcome past its retention bound — its own code,
-        // never a bare "unknown" that would invite a re-run to re-read a receipt the ring has
-        // dropped. Same shared helper as above.
-        const hint = refusalHint("retention-gap", changeId)!;
-        emit(args, {
-          ok: false, requestId, error: { code: "retention-gap", message: msg, hint },
-          human: () => { console.error(`lares act: retention gap. Read it back: \`lares vessel request ${requestId}\`.`); console.error(`  ${hint}`); },
-          data: { changeId },
-        });
-        return exitFor("retention-gap");
       } else {
         // THE HINT MUST NEVER PROMISE WHAT THE SPLIT ID DOES NOT DO (H4, E1),
         // AND MUST NEVER CALL A FLAGLESS RE-RUN "SAFE" (M10) — a re-run that omits `--change-id`

@@ -3,7 +3,7 @@
  *
  * ── WHY AN ACT NEVER RIDES A STORE VERB ─────────────────────────────────────────────────────────
  * A store verb's output lands in the daemon's document as an outcome, in the clear, and the digest of its
- * arguments lands in a receipt fact. A roster key, a pet-name or a handle-book snapshot on that road would leave
+ * arguments lands in its verdict row. A roster key, a pet-name or a handle-book snapshot on that road would leave
  * its sealed row and rest in an unsealed document. So these acts ride the CUSTODY DOOR (`custody-frames`, the
  * `act` frame): the vessel's main thread runs the act against the holder a person already unlocked, and the
  * answer returns to the one caller on the owner-only socket and nowhere else.

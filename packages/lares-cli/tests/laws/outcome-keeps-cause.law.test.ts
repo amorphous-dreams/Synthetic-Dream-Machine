@@ -27,10 +27,7 @@ import { UNKNOWN, door } from "./harness.js";
 /** The reasons a vessel's refusal channel names, each with the code it travels under (seed table). */
 const REASONS: ReadonlyArray<readonly [reason: string, code: string]> = [
   ["abandoned", "request-abandoned"],
-  ["interrupted", "request-interrupted"],
   ["request-id-reused-with-changed-input", "request-id-reused"],
-  ["retention-gap", "retention-gap"],
-  ["receipt-fact-torn", "receipt-fact-torn"],
   ["bag-retired", "bag-retired"],
   ["waking-floor", "waking-floor"],
   ["no-container", "no-container"],
@@ -45,7 +42,7 @@ const CLASSES: ReadonlyArray<readonly [code: string, exit: number]> = [
   ["not-found", 3], ["daemon-unreachable", 3], ["store-door-timeout", 3],
   ["conflict", 4], ["verb-error", 4], ["cancel-lost", 4], ["store-held", 4],
   ["cap-denied", 5], ["crossing-outward", 5],
-  ["outcome-unknown", 6], ["request-abandoned", 6], ["request-interrupted", 6], ["retention-gap", 6], ["receipt-fact-torn", 6],
+  ["outcome-unknown", 6], ["request-abandoned", 6],
 ];
 
 describe("L9 · a named outcome keeps its cause and its exit class", () => {
@@ -86,14 +83,14 @@ describe("L9 · a named outcome keeps its cause and its exit class", () => {
     });
 
     test("distinct causes in the outcome-unknown family keep distinct codes beside one exit class", () => {
-      // Each cause made by its own producer: a wait that expired, and the four refusals a vessel names.
+      // Each cause made by its own producer: a wait that expired, and the refusal a vessel names before dispatch.
       const family = [
         verbFailure(new LocalWaitExpired("recall", 1, "req-w")).code,
-        ...["abandoned", "interrupted", "retention-gap", "receipt-fact-torn"].map(refusalCode),
-        ...["abandoned", "interrupted", "retention-gap", "receipt-fact-torn"].map((r) => storeFailure(new RoutedVerbRefused("refused", r)).code),
+        ...["abandoned"].map(refusalCode),
+        ...["abandoned"].map((r) => storeFailure(new RoutedVerbRefused("refused", r)).code),
       ];
-      expect(new Set(family.slice(0, 5)).size).toBe(5);
-      expect(family.slice(5)).toEqual(family.slice(1, 5));   // the store door names each refusal as the verb door does
+      expect(new Set(family.slice(0, 2)).size).toBe(2);
+      expect(family.slice(2)).toEqual(family.slice(1, 2));   // the store door names each refusal as the verb door does
       expect(new Set(family.map(exitFor))).toEqual(new Set([6]));
     });
 
@@ -104,7 +101,6 @@ describe("L9 · a named outcome keeps its cause and its exit class", () => {
 
     // A cure keeps its cause too: each names the act that settles its own code, on both doors.
     const CURES: ReadonlyArray<readonly [cause: string, cure: () => string | undefined, names: string]> = [
-      ["request-interrupted, with a change id", () => refusalHint("request-interrupted", "cid-9"), "change-id=cid-9"],
       ["request-abandoned, with a change id", () => refusalHint("request-abandoned", "cid-9"), "change-id=cid-9"],
       ["bag-retired", () => refusalHint("bag-retired", undefined), "lares act lar:///carriage.bag.creates bag="],
       ["bag-retired through the store door", () => storeFailure(new RoutedVerbRefused("m", "bag-retired")).hint, "lares act lar:///carriage.bag.creates bag="],
@@ -129,7 +125,7 @@ describe("L9 · a named outcome keeps its cause and its exit class", () => {
     });
 
     test("CONTROL: a fused map reads red — collapsing two reasons to one code breaks the distinctness check", () => {
-      const fused = REASONS.map(([r]) => (r === "abandoned" ? "request-interrupted" : refusalCode(r)));
+      const fused = REASONS.map(([r]) => (r === "abandoned" ? "request-id-reused" : refusalCode(r)));
       expect(new Set(fused).size).toBeLessThan(REASONS.length);
     });
   });

@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/uds-channel-outcome`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/uds-channel-outcome"
+role          = "code-meme: tells an outcome: the call's change report, the receipt and cancel queries, a visit's withheld body, the vessel's own wait ending, the input digest a re-ask must match, the held ask"
+source-file   = "packages/lararium-node/src/uds-channel/outcome.ts"
+source-sha256 = "sha256:43f93a28f3cf6107cba86e3626bdd1909e56777c278034cb67c7dd5baf5694b2"
+title         = "lar:///ha.ka.ba/lararium/mesh/uds-channel-outcome"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/uds-channel-outcome"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`outcome.ts` tells an outcome: the call's change report, the receipt and cancel queries, a visit's withheld body, the vessel's own wait ending, the input digest a re-ask must match, the held ask. Pure helpers: no store, no socket, no clock. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/uds-channel-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/uds-channel/outcome.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/uds-channel-outcome"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ODSA8FE6yKbtRJUwy3VNMabPxx0bj0BqbxG4uIj9cz8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

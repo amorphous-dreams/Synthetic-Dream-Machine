@@ -1,9 +1,9 @@
 /**
  * K20: A FACE ROW'S ANSWER RIDES THE SOCKET ALONE. A session's face row (`STORE_DOOR_FACE_VERBS`: `cabal-face`,
  * `cabal-vouch`, `edge-partial` and their kin) answers in the `session:act` shape: the door runs it as the face the
- * session wears (its ordinal and the presenter the door verified), the answer returns on this socket, and the one
- * record it leaves names the act and the face, never an argument or the answer. So no synced record pairs the face's
- * atom with the per-Nexus key the row answers. The `session:call` path, whose outcome body rests in the daemon
+ * session wears (its ordinal and the presenter the door verified), the answer returns on this socket, and it leaves
+ * no record: its receipt, held in the door's memory, names the act and the face, never an argument or the answer. So no
+ * synced record pairs the face's atom with the per-Nexus key the row answers. The `session:call` path, whose outcome body rests in the daemon
  * document beside its requester, refuses a face row and places nothing.
  */
 import { controlStoreOf } from "@lararium/mesh/control-home";
@@ -17,11 +17,15 @@ import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
-import { RECEIPT_FACT_URI_PREFIX, concludeVerb } from "@lararium/mesh/verb-tiddler";
+import { concludeVerb } from "@lararium/mesh/verb-tiddler";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { type SessionFace } from "@lararium/mesh/session-contract";
 import { makeUdsSeat, serveUdsFront, type UdsSessionDoor } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
+
+/** Where receipt facts rested before they burned: no title stands under it. */
+const RECEIPT_TITLES = `${CONTROL_HOME_ID}/receipts/`;
 
 const LEAF = "1eaf".repeat(16);                     // the per-Nexus key the row answers
 const REALM = "c1ab".repeat(16);
@@ -99,7 +103,7 @@ async function stand() {
   return { peer, open, placed, ran, synced };
 }
 
-test("RED: a face row on session:act runs as the session's face, its answer rides the socket alone, and its one record names the act and the face; CONTROL: that record stands", async () => {
+test("RED: a face row on session:act runs as the session's face, its answer rides the socket alone, and no record rests; CONTROL: its receipt reads back naming the act and the face", async () => {
   const v = await stand();
   const env = await v.open("hint-b");
   const reply = await v.peer.ask({ op: "session:act", ...env, requestId: "face-1", act: "cabal-face", args: { realm: REALM } });
@@ -109,11 +113,11 @@ test("RED: a face row on session:act runs as the session's face, its answer ride
   expect(v.placed).toEqual([]);
   // No record either layer holds carries the leaf or the realm the row named.
   expect(v.synced().filter((r) => r.includes(LEAF) || r.includes(REALM))).toEqual([]);
-  // CONTROL: the receipt stands, naming the act and the face.
-  const receipts = v.synced().filter((r) => r.startsWith(RECEIPT_FACT_URI_PREFIX));
-  expect(receipts).toHaveLength(1);
-  expect(receipts[0]).toMatch(/act:cabal-face/);
-  expect(receipts[0]).toMatch(/proof-b/);
+  // No receipt title rests in either layer: the door's ask book holds the act's verdict for this life.
+  expect(v.synced().filter((r) => r.startsWith(RECEIPT_TITLES))).toEqual([]);
+  // CONTROL: the receipt reads back on the session, naming the act and the face.
+  expect(await v.peer.ask({ op: "session:receipt", ...env, requestId: "face-1" }))
+    .toMatchObject({ kind: "session:receipt", requestId: "face-1", receipt: { state: "done", action: "act:cabal-face", face: "proof-b" } });
 });
 
 test("RED: a face row on session:call refuses answers-on-the-socket and places nothing; CONTROL: a place verb on session:call still places", async () => {

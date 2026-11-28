@@ -45,9 +45,9 @@ export interface SubmitResult {
   readonly errorMessage?: string;
   readonly requestId:    string;
   /**
-   * The channel's own ADDITIVE refusal reason (D1, M3″) — present only when `status` reads
-   * "error" AND the refusal came from the ledger's own arbitration (abandoned, a changed-input
-   * reuse, a retention-gap eviction), never from the verb's own handler faulting. An older CLI
+   * The channel's own ADDITIVE refusal reason — present only when `status` reads "error" AND the
+   * refusal came from the door's own arbitration (abandoned, a changed-input reuse) or a handler's
+   * named refusal, never from the verb's own handler faulting. An older CLI
    * build that never reads this field still reads the unchanged `errorMessage` prose; this is
    * the machine-readable twin `verb-call.ts`'s `refusalCode` keys exit codes from.
    */

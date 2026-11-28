@@ -7,7 +7,7 @@
  * invocation `control-home-unnamed`: the carry bundle, the `where`, and the lift's own founding refusal never answered.
  *
  *   F1 — RED: a faceless place answers a read-only `where` and a place row (`nexus-carry-take`) on the maintenance frame;
- *        the answer waits in the floor store's memory, claims no durability and rests no receipt fact
+ *        the answer waits in the floor store's memory, claims no durability and rests no receipt
  *   F2 — CONTROL: a verb outside the floor (`memory-write`) refuses `control-home-unnamed` and places nothing
  *   F3 — CONTROL: a locked hearth's place row runs on the floor; its memory write refuses `vessel-locked`
  *   F4 — an id the floor already answered reads back, never runs twice; a receipt the floor never held refuses by name
@@ -27,7 +27,8 @@ import {
   mintVesselDocumentId,
   vesselHeldHomes,
 } from "@lararium/mesh/secret-home";
-import { concludeVerb, verbInputDigest, RECEIPT_FACT_URI_PREFIX, OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { concludeVerb, verbInputDigest, OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
 import {
   controlHomeRefusal,
   controlStoreOf,
@@ -42,6 +43,9 @@ import { startUdsChannel } from "../src/uds-channel.js";
 import { VEIL_FLOOR_VERBS, floorVerbsFor } from "../src/floor-verbs.js";
 import { FLOOR_VERBS } from "../src/floor-verbs.js";
 import { claimStore } from "../src/owned-store.js";
+
+/** Where receipt facts rested before they burned: no title stands under it. */
+const RECEIPT_TITLES = `${CONTROL_HOME_ID}/receipts/`;
 
 describe("a place with no readable control document answers its floor", () => {
   test("F1/F2/F4 — RED (the Saltmere herm): a faceless place answers `where` and a carry take; a memory write refuses `control-home-unnamed`", async () => {
@@ -70,8 +74,8 @@ describe("a place with no readable control document answers its floor", () => {
       expect(held["state"]).toBe("done");
       const never = await send(seat.socketPath, { op: "receipt", requestId: "saltmere-write" });
       expect(never["refusal"]).toEqual({ reason: CONTROL_HOME_UNNAMED });
-      // NOTHING RESTS: the stand-in's document holds no receipt fact and no outcome.
-      expect(titles(control, RECEIPT_FACT_URI_PREFIX)).toEqual([]);
+      // NOTHING RESTS: the stand-in's document holds no receipt and no outcome.
+      expect(titles(control, RECEIPT_TITLES)).toEqual([]);
       expect(titles(control, OUTCOME_URI_PREFIX)).toEqual([]);
     } finally { await seat.close(); }
     await v.repo.shutdown();

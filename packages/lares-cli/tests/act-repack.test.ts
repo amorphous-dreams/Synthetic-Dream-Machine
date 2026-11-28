@@ -113,13 +113,13 @@ describe("lares act REPACK — every refusal carries its hint and the request id
     return { code, payload: JSON.parse(out.join("")) };
   };
 
-  test("★ a synchronous retention-gap refusal carries error.hint and the request id ★", async () => {
-    h.result = { status: "error", requestId: "r-live", errorMessage: "evicted", refusal: { reason: "retention-gap" } };
+  test("★ a synchronous abandoned refusal carries error.hint and the request id ★", async () => {
+    h.result = { status: "error", requestId: "r-live", errorMessage: "abandoned", refusal: { reason: "abandoned" } };
     const { code, payload } = await run();
     expect(code).toBe(6);
     expect(payload.requestId).toBe("r-live");
-    expect(payload.error.code).toBe("retention-gap");
-    expect(payload.error.hint).toContain("evicted");
+    expect(payload.error.code).toBe("request-abandoned");
+    expect(payload.error.hint).toBe(refusalHint("request-abandoned", undefined));
   });
 
   test("★ a lost connection read back `abandoned` carries the shared helper's text ★", async () => {
@@ -132,13 +132,12 @@ describe("lares act REPACK — every refusal carries its hint and the request id
     expect(payload.requestId).toBeDefined();
   });
 
-  test("a lost connection read back `interrupted` names request-interrupted", async () => {
+  test("a lost connection read back `unknown` names outcome-unknown: no receipt rests to say interrupted", async () => {
     h.throwLWE = true;
-    h.receipt = { requestId: "r", state: "interrupted" };
+    h.receipt = { requestId: "r", state: "unknown" };
     const { code, payload } = await run();
     expect(code).toBe(6);
-    expect(payload.error.code).toBe("request-interrupted");
-    expect(payload.error.hint).toBe(refusalHint("request-interrupted", undefined));
+    expect(payload.error.code).toBe("outcome-unknown");
   });
 
   test("CONTROL: a refusal with no standing cure still emits no hint", async () => {

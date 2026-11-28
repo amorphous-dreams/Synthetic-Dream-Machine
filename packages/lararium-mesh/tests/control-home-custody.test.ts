@@ -13,7 +13,7 @@ import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from 
 import {
   CONTROL_HOME_ID, SECRET_HOME_ID, emptyLarDoc, storedLarRecord, type LarDoc,
   SealedDocumentStore, bindSecretHomeRest, enrollSecretHome, mintSecretHomeAddress, mintVesselDocumentId, nameControlHome, openSecretHome,
-  standControlHome, readControlHome, controlStoreOf, controlHomeRefusal, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, RECEIPT_FACT_URI_PREFIX, vesselHeldHomes, decodeSecretHomeAddress, encodeSecretHomeAddress, secretHomeRestOf,
+  standControlHome, readControlHome, controlStoreOf, controlHomeRefusal, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, WARD_AUDIT_URI_PREFIX, vesselHeldHomes, decodeSecretHomeAddress, encodeSecretHomeAddress, secretHomeRestOf,
   CONTROL_FRESH_BASE_AT_CHANGES, plainEntries, storedRecord,
 } from "../src/index.js";
 
@@ -151,7 +151,7 @@ describe("the control home stood while the vessel's key stays shut refuses by na
     const first = heldRepo(inner);
     const address = { ...mintSecretHomeAddress(), controlId: mintVesselDocumentId() };
     const founded = await enrollSecretHome(first.repo, address);
-    const fact = `${RECEIPT_FACT_URI_PREFIX}landed`;
+    const fact = `${WARD_AUDIT_URI_PREFIX}landed`;
     const slot = `${CONTROL_HOME_ID}/daemon-slot/working/floor`;
     founded.control!.change((d) => {
       d.tiddlers[fact] = storedLarRecord(fact, { text: "committed" }, "test");

@@ -161,7 +161,7 @@ export interface DaemonVmCoreOptions {
   /** The mounted plane's bag id, derived from its PersonaGroup's own doc id — one name, everywhere. */
   personaBagId?:    string;
   /** The vessel's CONTROL document (`standControlHome`), resolved by the platform wrapper: granted to the island as
-   *  `controlUrl` and stood here as the host's control store, where the outcome ledger and the receipt facts read. */
+   *  `controlUrl` and stood here as the host's control store, where the outcome ledger (a write's verdict rows) reads. */
   controlHandle:    DocHandle<LarDoc>;
   /** One-recipe model for the daemon island. */
   recipe:          WikiRecipe;

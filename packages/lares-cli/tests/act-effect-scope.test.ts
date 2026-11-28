@@ -22,9 +22,8 @@
  * (G2, `uds-channel.ts`'s `readOutcomeFor`/awaited-outcome answer) — into both the JSON `data`
  * and a distinct human line, *before* G2 lands (fed directly here, since `runVerb` is mocked).
  *
- * `receipt-fact-torn` (G2's own refusal name) maps to exit 6 through `refusalCode` — proven here at
- * the live-dispatch (`result.refusal`) boundary, mirroring how the OTHER refusal names are proven in
- * `act-load-effect-split.test.ts`.
+ * A refusal name `refusalCode` never learned (the retired `interrupted`, `retention-gap`, `receipt-fact-torn`: no
+ * receipt rests on the vessel, so none answers them) falls to `verb-error`, proven at the live-dispatch boundary.
  *
  * The LIVE (synchronous) refusal branch carries the SAME hint text as the
  * read-back branches, for the SAME code — both call the one shared `refusalHint` helper in
@@ -137,7 +136,7 @@ describe("H7 — REPACK carries NO effectKey at all", () => {
   });
 });
 
-describe("M10 — the outcome-unknown/abandoned/retention-gap hints name the exact --change-id gesture", () => {
+describe("M10 — the outcome-unknown/abandoned hints name the exact --change-id gesture", () => {
   test("an abandoned refusal's hint names THIS attempt's own --change-id, never a bare 'safe to re-run'", async () => {
     // The READ-BACK path (`LocalWaitExpired` → `queryReceipt`).
     h.throwLWE = true;
@@ -154,49 +153,7 @@ describe("M10 — the outcome-unknown/abandoned/retention-gap hints name the exa
   });
 });
 
-describe("a read-back that finds the request interrupted names the code and the --change-id cure", () => {
-  test("★ an interrupted read-back exits 6 as request-interrupted with the change id in its hint ★", async () => {
-    h.throwLWE = true;
-    h.receipt = { requestId: "r", state: "interrupted" };
-    const cap: string[] = [];
-    const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
-    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-interrupted"));
-    spy.mockRestore();
-    expect(code).toBe(6);
-    const payload = JSON.parse(cap.join("")) as { error: { code: string; hint: string } };
-    expect(payload.error.code).toBe("request-interrupted");
-    expect(payload.error.hint).toContain("change-id=cid-interrupted");
-  });
-
-  test("a live `interrupted` refusal reads the same code and hint", async () => {
-    h.reply = { status: "error", requestId: "r", errorMessage: "stopped", refusal: { reason: "interrupted" } };
-    const cap: string[] = [];
-    const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
-    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-live-int"));
-    spy.mockRestore();
-    expect(code).toBe(6);
-    const payload = JSON.parse(cap.join("")) as { error: { code: string; hint: string } };
-    expect(payload.error.code).toBe("request-interrupted");
-    expect(payload.error.hint).toContain("cid-live-int");
-  });
-});
-
 describe("the SYNCHRONOUS (live) refusal carries the SAME hint as the read-back", () => {
-  test("★ a live retention-gap refusal carries the hint on both error.hint and the human line ★", async () => {
-    // The connection never drops here — the refusal rides straight back as `result.refusal`,
-    // never through `LocalWaitExpired`/`queryReceipt`. Mirrors probe-h7b.sh's live E2.
-    h.reply = { status: "error", requestId: "r", errorMessage: "evicted", refusal: { reason: "retention-gap" } };
-    const cap: string[] = [];
-    const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
-    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog", "--change-id", "cid-evicted"));
-    spy.mockRestore();
-    expect(code).toBe(6);
-    const payload = JSON.parse(cap.join("")) as { error: { code: string; hint: string } };
-    expect(payload.error.code).toBe("retention-gap");
-    expect(payload.error.hint).toContain("evicted");
-    expect(payload.error.hint).toContain("change-id=");
-  });
-
   test("a live request-abandoned refusal's hint names THIS attempt's own --change-id", async () => {
     h.reply = { status: "error", requestId: "r", errorMessage: "refused", refusal: { reason: "abandoned" } };
     const cap: string[] = [];
@@ -207,18 +164,6 @@ describe("the SYNCHRONOUS (live) refusal carries the SAME hint as the read-back"
     const payload = JSON.parse(cap.join("")) as { error: { code: string; hint: string } };
     expect(payload.error.code).toBe("request-abandoned");
     expect(payload.error.hint).toContain("cid-live-abandon");
-  });
-
-  test("a live receipt-fact-torn refusal carries its own hint (never a bare code with no cure)", async () => {
-    h.reply = { status: "error", requestId: "r", errorMessage: "torn", refusal: { reason: "receipt-fact-torn" } };
-    const cap: string[] = [];
-    const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
-    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog"));
-    spy.mockRestore();
-    expect(code).toBe(6);
-    const payload = JSON.parse(cap.join("")) as { error: { code: string; hint: string } };
-    expect(payload.error.code).toBe("receipt-fact-torn");
-    expect(payload.error.hint).toContain("fresh request");
   });
 
   test("a live bag-retired refusal reads its own code, exit 2 and the CREATE cure", async () => {
@@ -270,16 +215,17 @@ describe("`effectOf` surfaces (fed directly — a stand-in for G2's wire field, 
   });
 });
 
-describe("`receipt-fact-torn` (G2's refusal name) maps to exit 6, never verb-error", () => {
-  test("★ a live refusal naming receipt-fact-torn reads its own code ★", async () => {
-    h.reply = { status: "error", requestId: "r", errorMessage: "torn", refusal: { reason: "receipt-fact-torn" } };
-    const cap: string[] = [];
-    const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
-    const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog"));
-    spy.mockRestore();
-    expect(code).toBe(6);
-    const payload = JSON.parse(cap.join("")) as { error: { code: string } };
-    expect(payload.error.code).toBe("receipt-fact-torn");
+describe("a retired refusal name (no receipt rests on the vessel) falls to verb-error, never a code of its own", () => {
+  test("★ interrupted, retention-gap and receipt-fact-torn each read verb-error, exit 4 ★", async () => {
+    for (const reason of ["interrupted", "retention-gap", "receipt-fact-torn"]) {
+      h.reply = { status: "error", requestId: "r", errorMessage: reason, refusal: { reason } };
+      const cap: string[] = [];
+      const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { cap.push(String(chunk)); return true; });
+      const code = await cmdAct(act("CLEAR", "--bag", "lar:///test/catalog"));
+      spy.mockRestore();
+      expect(code).toBe(4);
+      expect((JSON.parse(cap.join("")) as { error: { code: string } }).error.code).toBe("verb-error");
+    }
   });
 
   test("MUTATION: an unrecognized refusal reason still falls to verb-error (exit 4) — the default never silently widens", async () => {

@@ -9,7 +9,7 @@ import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
-import { concludeVerb, buildReceiptFact } from "@lararium/mesh/verb-tiddler";
+import { concludeVerb } from "@lararium/mesh/verb-tiddler";
 import { faceScopedId } from "@lararium/mesh/face-scoped-id";
 import { validateDurabilityReceipt } from "@lararium/mesh/durability-receipt";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
@@ -164,11 +164,12 @@ describe("face bound session receipts", () => {
       expect((pending.receipt as { position: { durable?: unknown } }).position.durable).toBeUndefined();
       const later = await open("a");
       expect(await ask(later.peer, later.env, "session:receipt", "a-only")).toMatchObject({ receipt: { state: "done" } });
-      await controlStoreOf(daemonHandle).put(buildReceiptFact({ requestId: faceScopedId("proof-a", "unlanded"), state: "committed",
-        inputDigest: "digest", life: claim.life, seq: 1000, face: "proof-a", action: "hold" }),
-        { kind: "lares-verb", requestId: "unlanded" });
-      await repo.flush();
+      // An ask still running when this life ends rests nothing: the next life names no state for it.
+      void later.peer.ask({ op: "session:call", ...later.env, requestId: "unlanded", verb: "hold", args: {} });
+      for (let i = 0; i < 500 && !placed.some((p) => p.requestId === faceScopedId("proof-a", "unlanded")); i++) await new Promise((r) => setTimeout(r, 10));
+      expect(await ask(later.peer, later.env, "session:receipt", "unlanded")).toMatchObject({ receipt: { state: "pending", action: "hold" } });
       const priorLife = claim.life;
+      later.peer.destroy();
       await front.detach();
       front.close();
       await claim.release();
@@ -179,46 +180,13 @@ describe("face bound session receipts", () => {
       expect(await ask(restarted.peer, restarted.env, "session:receipt", "a-only"))
         .toMatchObject({ receipt: { state: "done", position: { durable: { docUrl: daemonHandle.url } } } });
       expect(await ask(restarted.peer, restarted.env, "session:receipt", "unlanded"))
-        .toMatchObject({ receipt: { state: "interrupted", position: { ownerEpoch: priorLife } } });
+        .toMatchObject({ receipt: { state: "unknown", position: { ownerEpoch: claim.life } } });
       expect(claim.life, "the restart begins another life").not.toBe(priorLife);
     } finally {
       for (const peer of peers) peer.destroy();
       front.close();
       await claim.release();
       rmSync(dir, { recursive: true, force: true });
-    }
-  });
-
-  test("a ring eviction keeps the face and the action, so the receipt still names both and reads evicted", async () => {
-    const repo = new Repo({ sharePolicy: async () => true });
-    const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
-    const workingHandle = repo.create<LarDoc>(emptyLarDoc());
-    const composite = new CompositeStore();
-    composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(daemonHandle as never, DAEMON_BAG_ID), writable: true, defaultWritable: false });
-    composite.addLayer({ bagId: wikiSlotUri("daemon", "working"), store: new AutomergeDocStore(workingHandle, wikiSlotUri("daemon", "working")), writable: true });
-    const dir = mkdtempSync(join(tmpdir(), "uds-session-evict-"));
-    const claim = await claimStore(dir, { holder: "vessel" });
-    const door: UdsSessionDoor = { anchorNow: async () => ({ kind: "place" as const, aid: "place-fixture", head: "place-head" }), open: async ({ faceRef }) => ({ ok: true, supply: {
-      face: face(faceRef), ordinal: Math.max(0, "abc".indexOf(faceRef.slice(-1))), profile: "seat", presenter: `verified-${faceRef}`, anchor: { kind: "place" as const, aid: "place-fixture", head: "place-head" }, mint: fixtureMint } }) };
-    const front = serveUdsFront({ claim });
-    front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo, sessions: door, ring: 1,
-      placeVerb: (o) => {
-        const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done",
-          ...(o.face !== undefined && { face: o.face }), cause: "test-worker", batchMode: "best-effort", results: { summary: { ok: true } } });
-        daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
-      } }));
-    const peer = await Peer.connect(claim.socketPath);
-    try {
-      const opened = await peer.ask({ op: "session:open", requestId: "open", faceRef: "a", hand: "seat" });
-      const env = { ownerEpoch: opened.ownerEpoch, sessionId: opened.sessionId, generation: opened.generation, faceRef: opened.faceRef };
-      // A ring of one: the second call evicts the first, and the ledger keeps one evicted fact to answer for it.
-      for (const id of ["old", "newest"]) {
-        expect(await peer.ask({ op: "session:call", ...env, requestId: id, verb: "load", args: {} })).toMatchObject({ status: "done" });
-      }
-      expect(await peer.ask({ op: "session:receipt", ...env, requestId: "old" }))
-        .toMatchObject({ receipt: { state: "evicted", action: "load", face: "proof-a" } });
-    } finally {
-      peer.destroy(); front.close(); await claim.release(); rmSync(dir, { recursive: true, force: true });
     }
   });
 });

@@ -5,8 +5,8 @@
  * Two kinds pass the verb door's stand-in check, and only on the maintenance frame (a one-shot; a session belongs to a
  * face): the READ-ONLY QUERIES below, and every ROW OF THE PLACE the store door names (`STORE_DOOR_VERBS` less the rows
  * that act as a face): a herm taking a carry bundle, a lift's founding answering its own refusal. Each runs unledgered and
- * its answer waits in the floor store's memory alone (`floorAnswerStore`). An act that writes a control fact on the way
- * (a receipt fact, a summons, a mailbox row) refuses at that write by the stand-in's name. Every other verb refuses at the
+ * its answer waits in the floor store's memory alone (`floorAnswerStore`). An act that writes a control record on the way
+ * (a verdict row, a summons, a mailbox row) refuses at that write by the stand-in's name. Every other verb refuses at the
  * door: `control-home-unnamed` on a faceless place, `vessel-locked` on a locked hearth.
  *
  * A VEIL FLOOR ANSWERS MORE (the-veil-ladder#/the-base-model, in-house ruling 7): a faceless place whose floor's rest key

@@ -15,7 +15,11 @@ import { join } from "node:path";
 import { createConnection } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
-import { concludeVerb, OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX, type Verb } from "@lararium/mesh/verb-tiddler";
+import { concludeVerb, OUTCOME_URI_PREFIX, type Verb } from "@lararium/mesh/verb-tiddler";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+
+/** Where receipt facts rested before they burned: no title stands under it. */
+const RECEIPT_TITLES = `${CONTROL_HOME_ID}/receipts/`;
 import { answerRingOf, controlStoreOf } from "@lararium/mesh/control-home";
 import type { CompositeStore } from "@lararium/mesh/composite-store";
 import type { CallTouches } from "@lararium/mesh/call-touches";
@@ -118,10 +122,6 @@ const islandConcludes = (control: CompositeStore, o: Placed, result: Record<stri
   writeOutcome(control, { invocation: invocationOf(o), status: "done", result, touched });
 const titlesUnder = (handle: { doc(): LarDoc | undefined }, prefix: string): string[] =>
   Object.keys(handle.doc()?.tiddlers ?? {}).filter((t) => t.startsWith(prefix));
-const eventually = async (what: () => boolean, label: string): Promise<void> => {
-  for (let i = 0; i < 200; i++) { if (what()) return; await new Promise((r) => setTimeout(r, 10)); }
-  throw new Error(`never: ${label}`);
-};
 
 async function doorOver(s: ReturnType<typeof stand>, control: CompositeStore, island: (o: Placed) => void, dir = mkdtempSync(join(tmpdir(), "uds-ledger-diet-"))) {
   const claim = await claimStore(dir, { holder: "vessel" });
@@ -135,7 +135,7 @@ async function doorOver(s: ReturnType<typeof stand>, control: CompositeStore, is
 }
 
 describe("step 1 — reads leave the ledger alone", () => {
-  test("RED: a read leaves no fact and no outcome row; the same id with the same input answers the held answer and places nothing; a changed input refuses by name", async () => {
+  test("RED: a read leaves no receipt and no outcome row; the same id with the same input answers the held answer and places nothing; a changed input refuses by name", async () => {
     const s = stand();
     let placed = 0;
     const door = await doorOver(s, s.control, (o) => { placed += 1; setTimeout(() => { void islandConcludes(s.control, o, { now: "heron-day" }); }, 20); });
@@ -144,7 +144,7 @@ describe("step 1 — reads leave the ledger alone", () => {
       const first = await send(door.socketPath, read);
       expect(first["status"], JSON.stringify(first)).toBe("done");
       expect(JSON.stringify(first["results"])).toContain("heron-day");
-      expect(titlesUnder(s.controlHandle, RECEIPT_FACT_URI_PREFIX), "no receipt fact").toEqual([]);
+      expect(titlesUnder(s.controlHandle, RECEIPT_TITLES), "no receipt title").toEqual([]);
       expect(titlesUnder(s.controlHandle, OUTCOME_URI_PREFIX), "no outcome row").toEqual([]);
       // SAME ID, SAME DIGEST: the held answer reads back; the island hears nothing.
       const again = await send(door.socketPath, read);
@@ -157,7 +157,7 @@ describe("step 1 — reads leave the ledger alone", () => {
       expect(changed["refusal"]).toEqual({ reason: "request-id-reused-with-changed-input" });
       expect(String(changed["errorMessage"])).toContain("mint a fresh request id");
       expect(placed).toBe(1);
-      expect(titlesUnder(s.controlHandle, RECEIPT_FACT_URI_PREFIX), "the re-asks wrote no fact either").toEqual([]);
+      expect(titlesUnder(s.controlHandle, RECEIPT_TITLES), "the re-asks wrote no receipt either").toEqual([]);
       // A receipt for the read answers from the ring too.
       const receipt = await send(door.socketPath, { op: "receipt", requestId: "read-1" });
       expect(receipt["state"]).toBe("done");
@@ -200,7 +200,7 @@ describe("step 1 — reads leave the ledger alone", () => {
     } finally { await door.close(); }
   });
 
-  test("RED: a read whose change report comes back non-empty lands a verdict row and a done fact after the fact, and the seat says read-verb-wrote; CONTROL: a write keeps its fact and its row", async () => {
+  test("RED: a read whose change report comes back non-empty lands a verdict row after the fact, and the seat says read-verb-wrote; CONTROL: a write keeps its row, and neither rests a receipt", async () => {
     const s = stand();
     const door = await doorOver(s, s.control, (o) => { setTimeout(() => { void islandConcludes(s.control, o, { now: "x" }, o.verb === "ddate" ? { "doc-it-wrote": ["head-1"] } : {}); }, 20); });
     try {
@@ -208,11 +208,10 @@ describe("step 1 — reads leave the ledger alone", () => {
       expect(wrote["status"]).toBe("done");
       expect(titlesUnder(s.controlHandle, OUTCOME_URI_PREFIX)).toEqual([`${OUTCOME_URI_PREFIX}read-wrote`]);
       expect(door.lines.some((line) => line.includes("read-verb-wrote") && line.includes("ddate"))).toBe(true);
-      await eventually(() => titlesUnder(s.controlHandle, RECEIPT_FACT_URI_PREFIX).includes(`${RECEIPT_FACT_URI_PREFIX}read-wrote`), "the done fact minted after the fact");
-      // CONTROL: a verb outside the read set rides the ledger as before.
+      // CONTROL: a verb outside the read set leaves its verdict row as before.
       const write = await send(door.socketPath, { verb: "get", args: {}, requestedBy: "did:key:test-operator", requestId: "write-1" });
       expect(write["status"]).toBe("done");
-      expect(titlesUnder(s.controlHandle, RECEIPT_FACT_URI_PREFIX)).toContain(`${RECEIPT_FACT_URI_PREFIX}write-1`);
+      expect(titlesUnder(s.controlHandle, RECEIPT_TITLES)).toEqual([]);
       expect(titlesUnder(s.controlHandle, OUTCOME_URI_PREFIX)).toContain(`${OUTCOME_URI_PREFIX}write-1`);
     } finally { await door.close(); }
   });
