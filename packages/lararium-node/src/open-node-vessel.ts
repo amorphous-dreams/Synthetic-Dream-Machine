@@ -4226,8 +4226,10 @@ async function prepareNodeBootOn(
       ? placeProofSubjectRef({ atomKey: activeAtom.key, place: placeAid } as never) : null;
     await bootWait("place-session", "the place session's stand under the worn face", standPlaceSession(placeFace !== null && personaGroupId && activeAtom ? { group: personaGroupId, atomKey: activeAtom.key } : null));
     // The vessel state opens before the daemon island opens over it, and the map names its device documents from here on;
-    // the floor's registry files beside it off the daemon document.
+    // the floor's registry files beside it off the daemon document. The control document (the verb's answer families) stands
+    // beside them, as the daemon island's grant names it.
     readDeviceDaemonDocs((await readStateDoc().catch(() => null))?.doc());
+    await readControlDoc();
     await bootWait("floor-registry", "the floor registry's document and its watch", () => watchFloorRegistry());
     sealedRest.store.mapMoved();
     // A sibling's planes need their own face proof before registration; joinedFaceAuth hands each sibling the vessel ground alone.

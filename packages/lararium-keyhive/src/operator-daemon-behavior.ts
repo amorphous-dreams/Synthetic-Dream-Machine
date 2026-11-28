@@ -31,7 +31,7 @@ import {
   makeCircleStateReactor,
   makeCircleReactors,
   makeCabalRealmReactors,
-  makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, controlOf, vesselStateOf, MemoryTiddlerStore,
+  makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, vesselStateOf, MemoryTiddlerStore,
   makeShareSetReactor, makeShareListReactor, readShareEntries,
   registerCanonOfferVerbs, CANON_OFFER_VERBS,
   faceEngines, type FaceEngines, composeCrossFaceView, enginePool, type EnginePool, type FaceEngine,
