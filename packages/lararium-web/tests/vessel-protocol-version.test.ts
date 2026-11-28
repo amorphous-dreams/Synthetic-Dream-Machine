@@ -3,7 +3,7 @@
  *
  * A deploy can leave one tab on one build beside a tab on another. The protocol names itself by the SHA-256 of its declared
  * message table (`VESSEL_PROTOCOL_TABLE`), never by a count, so two builds read each other's name and refuse where the
- * tables differ. No hash orders another: neither side claims the newer build.
+ * tables differ. No hash orders another: neither side ranks its build above the other's.
  *
  *   V1 RED      the pinned `VESSEL_PROTOCOL` reads the table's own address. A moved table goes red here and prints the pin.
  *   V2 RED      THE HASH DERIVES FROM THE DECLARED TABLE ALONE. A table with one field removed (a hello field, a boot input),
