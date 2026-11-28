@@ -29,8 +29,6 @@
 #   lares-container.sh keep-owed                 run the keep a down left owed (`run/keep-owed`) once the census reads
 #                                                clean, or name its deferral; it waits while a kūkulu half rests unlanded
 #   lares-container.sh vessel-image              print the image the running vessel runs, by digest (the rite lands over it)
-#   lares-container.sh vessel-pulse              print the vessel's pulse (container state, health, cgroup CPU work) as one
-#                                                JSON line; the rite waits on it after a stand while a door answers silent
 #   lares-container.sh vessel stand              stand the vessel when none stands; restart it when its standing no
 #                                                longer matches its state on disk; otherwise print the standing.
 #                                                Every stand and restart this shim performs (`up` too) warns when the
@@ -924,59 +922,6 @@ workspace_bind() { # $1 = name=dir; appends one bind to $files
         target: /lar/workspaces/$name"
 }
 
-# THE VESSEL'S OWN READINESS DECIDES THE STAND, never a fixed clock. Compose's `--wait` reads Docker's health verdict, and a
-# fixed clock makes that verdict (the healthcheck's start_period plus retries × interval, about 195 s): a slow boot that still
-# works reads "unhealthy" there (measured 2026-11-27). Where compose's wait refuses on a health verdict, the shim asks the
-# vessel itself: its container's state, and the CPU work its cgroup spent (a counter the vessel's kernel keeps). A vessel that
-# still works keeps the stand waiting until its health answers; one that stopped refuses, naming its status and exit; one that
-# stands running and spent under a quarter second of work since the read before (VESSEL_WORK_USEC) rests idle, and refuses.
-# The pace spaces the reads and decides nothing.
-VESSEL_PACE_SECONDS=${LARES_VESSEL_PACE_SECONDS:-5}
-VESSEL_WORK_USEC=250000
-vessel_pulse() {
-  VP_STATUS=absent; VP_HEALTH=none; VP_EXIT=null; VP_CPU=null
-  vp_id=$(compose ps -q lares 2>/dev/null | head -n 1 | tr -d '\r') || vp_id=""
-  [ -n "$vp_id" ] || return 0
-  vp_state=$(docker inspect --format '{{.State.Status}} {{.State.ExitCode}} {{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$vp_id" 2>/dev/null | tr -d '\r') || vp_state=""
-  # shellcheck disable=SC2086
-  set -- $vp_state
-  VP_STATUS=${1:-unread}; VP_HEALTH=${3:-none}
-  case "${2:-}" in ''|*[!0-9]*) VP_EXIT=null ;; *) VP_EXIT=$2 ;; esac
-  [ "$VP_STATUS" != running ] || VP_EXIT=null
-  if [ "$VP_STATUS" = running ]; then
-    vp_cpu=$(docker exec "$vp_id" cat /sys/fs/cgroup/cpu.stat 2>/dev/null | sed -n 's/^usage_usec \([0-9][0-9]*\).*/\1/p' | head -n 1) || vp_cpu=""
-    [ -z "$vp_cpu" ] || VP_CPU=$vp_cpu
-  fi
-}
-await_vessel_ready() {
-  vessel_pulse
-  # COMPOSE'S OWN REFUSAL STANDS where it gave no health verdict: no vessel running, or one whose health reads neither
-  # starting nor unhealthy (an image that never stood, a port held, a container gone).
-  case "$VP_STATUS:$VP_HEALTH" in
-    running:starting|running:unhealthy) ;;
-    running:healthy) return 0 ;;
-    *) return 1 ;;
-  esac
-  avr_last=""; avr_rounds=0
-  while :; do
-    case "$VP_STATUS" in
-      running) ;;
-      *) printf 'lares-container: the vessel stopped while it booted (its container reads %s%s); `tools/lares-container.sh logs` names why\n' "$VP_STATUS" "$([ "$VP_EXIT" = null ] || printf ', exit %s' "$VP_EXIT")" >&2; return 1 ;;
-    esac
-    if [ "$VP_HEALTH" = healthy ]; then printf '%s\n' 'lares-container: the vessel answers healthy on its own readiness' >&2; return 0; fi
-    if [ "$VP_CPU" = null ]; then
-      printf '%s\n' "lares-container: Docker reads the vessel $VP_HEALTH and its work reads nowhere (no cgroup cpu.stat), so nothing here can say it still boots; \`tools/lares-container.sh logs\` names where it rests" >&2; return 1
-    fi
-    if [ -n "$avr_last" ] && [ $((VP_CPU - avr_last)) -lt "$VESSEL_WORK_USEC" ]; then
-      printf 'lares-container: the vessel stands running, reads %s, and spent %s ms of work since the read before: it rests idle, and no boot carries it on; `tools/lares-container.sh logs` names where it rests\n' "$VP_HEALTH" "$(((VP_CPU - avr_last) / 1000))" >&2; return 1
-    fi
-    [ $((avr_rounds % 6)) -ne 0 ] || printf 'lares-container: Docker reads the vessel %s, and it still works (%s s of CPU spent); the stand waits on its own readiness\n' "$VP_HEALTH" "$((VP_CPU / 1000000))" >&2
-    avr_rounds=$((avr_rounds + 1)); avr_last=$VP_CPU
-    sleep "$VESSEL_PACE_SECONDS"
-    vessel_pulse
-  done
-}
-
 # THE RESTART KEEPS THE WORKSPACES: compose recreates a container whose configuration moved, so a restart's `up` carries every
 # LARES_WORKSPACES bind, as the operator's `up` did. A workspace named by `--workspace` alone rides that one `up`.
 up_with_workspaces() {
@@ -987,11 +932,11 @@ up_with_workspaces() {
     for pair in $configured; do IFS=$old_ifs; [ -z "$pair" ] || workspace_bind "$pair"; IFS=';'; done
     IFS=$old_ifs
   fi
-  if [ -z "$files" ]; then compose up -d --wait lares || await_vessel_ready; return $?; fi
+  if [ -z "$files" ]; then compose up -d --wait lares; return $?; fi
   ws_override=$(mktemp)
   printf 'services:\n  lares:\n    volumes:%s\n' "$files" > "$ws_override"
-  if [ -n "$ENV_ARGS" ]; then docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE_PATH" -f "$ws_override" up -d --wait lares || await_vessel_ready; ws_rc=$?
-  else docker compose --env-file /dev/null -f "$COMPOSE_FILE_PATH" -f "$ws_override" up -d --wait lares || await_vessel_ready; ws_rc=$?; fi
+  if [ -n "$ENV_ARGS" ]; then docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE_PATH" -f "$ws_override" up -d --wait lares; ws_rc=$?
+  else docker compose --env-file /dev/null -f "$COMPOSE_FILE_PATH" -f "$ws_override" up -d --wait lares; ws_rc=$?; fi
   rm -f "$ws_override"
   return "$ws_rc"
 }
@@ -1430,13 +1375,13 @@ up_verb() {
     override=$(mktemp)
     printf 'services:\n  lares:\n    volumes:%s\n' "$files" > "$override"
     if [ -n "$ENV_ARGS" ]; then
-      docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE_PATH" -f "$override" up -d --wait lares || await_vessel_ready
+      docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE_PATH" -f "$override" up -d --wait lares
     else
-      docker compose --env-file /dev/null -f "$COMPOSE_FILE_PATH" -f "$override" up -d --wait lares || await_vessel_ready
+      docker compose --env-file /dev/null -f "$COMPOSE_FILE_PATH" -f "$override" up -d --wait lares
     fi
     up_rc=$?
   else
-    if compose up -d --wait lares || await_vessel_ready; then up_rc=0; else up_rc=$?; fi
+    if compose up -d --wait lares; then up_rc=0; else up_rc=$?; fi
   fi
   if [ "$up_rc" -ne 0 ]; then printf '%s\n' 'lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again' >&2; exit "$up_rc"; fi
   warn_image_revision
@@ -2470,12 +2415,6 @@ case "$verb" in
     [ "$#" -eq 0 ] || die "keeper-stand takes no argument"
     [ -n "$PULAMA_MODE" ] || die "keeper-stand needs LARES_PULAMA=1"
     keeper_stand ;;
-  vessel-pulse)
-    # THE VESSEL'S PULSE, one JSON line: its container's state and exit, Docker's health (annotation), and the cumulative CPU its
-    # cgroup spent in µs (null where none reads). The rite reads it after a stand while a door answers silent: the work decides.
-    [ "$#" -eq 0 ] || die "vessel-pulse takes no argument"
-    vessel_pulse
-    printf '{"status":"%s","health":"%s","exitCode":%s,"cpuUsec":%s}\n' "$VP_STATUS" "$VP_HEALTH" "$VP_EXIT" "$VP_CPU" ;;
   vessel-image)
     # THE IMAGE THE RUNNING VESSEL RUNS, by digest (the rite lands over it, never over a tag that may have moved); none prints nothing.
     [ "$#" -eq 0 ] || die "vessel-image takes no argument"
@@ -2744,7 +2683,7 @@ case "$verb" in
               admitted_image_or_name || die "vessel stand stops before a vessel starts: $IA_WHY (nothing started)"
               [ -z "$IA_STEPPED" ] || stand_pulama
             fi
-            compose up -d --wait lares || await_vessel_ready; warn_image_revision; unlock_or_name
+            compose up -d --wait lares; warn_image_revision; unlock_or_name
           elif ! observe_standing || ! verdict_known; then die "the standing vessel answered no verdict"
           elif verdict_restand; then lift_vessel
           else printf '%s\n' "$observe_output"; fi

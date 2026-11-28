@@ -98,11 +98,6 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" exec -T pulama-b node "*"pulama-main.js status"*) printf '%s\\n' "\${FAKE_PULAMA_B_STATUS:-{\\"op\\":\\"status\\",\\"lit\\":false,\\"fire\\":false}}"; exit 0;; esac\n` +
       `case " $* " in *" up -d --force-recreate pulama-b "*) : > "$CALL_LOG.b"; exit 0;; esac\n` +
       `last=''; for a in "$@"; do last=$a; done\n` +
-      // THE VESSEL'S PULSE (`vessel_pulse`): its container state line and its cgroup's CPU work, each read in turn from a
-      // '|'-separated sequence a test scripts (FAKE_STATE_SEQ, FAKE_CPU_SEQ); past the end, the last value answers again.
-      `seq_next() { n=$(cat "$CALL_LOG.$1-n" 2>/dev/null || echo 0); echo $((n + 1)) > "$CALL_LOG.$1-n"; v=$(printf '%s' "$2" | cut -d'|' -f$((n + 1))); [ -n "$v" ] || v=$(printf '%s' "$2" | awk -F'|' '{print $NF}'); printf '%s\\n' "$v"; }\n` +
-      `case " $* " in *"{{.State.Status}}"*) [ -n "\${FAKE_STATE_SEQ:-}" ] || exit 1; seq_next state "$FAKE_STATE_SEQ"; exit 0;; esac\n` +
-      `case " $* " in *" exec "*"/sys/fs/cgroup/cpu.stat"*) [ -n "\${FAKE_CPU_SEQ:-}" ] || exit 1; printf 'usage_usec %s\\nuser_usec 1\\n' "$(seq_next cpu "$FAKE_CPU_SEQ")"; exit 0;; esac\n` +
       // THE OUTGOING IMAGE (L4): its id and its revision label, one line, before a build moves the tag.
       `case " $* " in *"image inspect --format {{.Id}}|"*) [ -n "\${FAKE_NO_OUTGOING:-}" ] && exit 1; printf '%s|%s\\n' "\${FAKE_IMAGE_ID:-sha256:feedface}" "\${FAKE_OUTGOING_REV:-}"; exit 0;; esac\n` +
       `case " $* " in *"image inspect --format {{.Created}} {{.Id}} "*) printf '%s\\n' "\${FAKE_TAG_INFO:-}" | awk -v t="\${last#*:}" '$1==t{print $2" "$3}'; exit 0;; esac\n` +
@@ -1354,35 +1349,6 @@ for (const [name, shim] of shims) {
     const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_UP_RC: "1" } });
     assert.notEqual(r.status, 0);
     assert.match(r.stderr, /the vessel did not become ready — check tools\/lares-container\.sh logs; if it already runs, run up again/);
-  });
-
-  // THE VESSEL'S OWN READINESS DECIDES THE STAND (measured 2026-11-27: compose's health wait, a fixed ~195 s clock, refused a
-  // slow boot that still worked). Where compose's wait refuses on a health verdict, the shim reads the vessel's pulse.
-  const PULSE = { LARES_VESSEL_PACE_SECONDS: "0", FAKE_UP_RC: "1", FAKE_STOOD_ID: "c1" };
-  test(`${name}: RED up-follows-the-vessels-readiness: a vessel Docker reads unhealthy that still works keeps the stand waiting until its health answers`, async () => {
-    const r = await run(shim, ["up"], { env: { ...MOUNTS, ...PULSE, FAKE_RUNNING_ID: "c1", FAKE_CUSTODY_OUTPUT: '{"ok":true,"data":{"door":{"op":"custody","unlocked":true}}}', FAKE_STATE_SEQ: "running 0 unhealthy|running 0 unhealthy|running 0 healthy", FAKE_CPU_SEQ: "1000000|6000000|11000000" } });
-    assert.equal(r.status, 0, r.stderr);
-    assert.match(r.stderr, /still works/);
-    assert.match(r.stderr, /answers healthy on its own readiness/);
-    assert.doesNotMatch(r.stderr, /did not become ready/);
-  });
-  test(`${name}: RED up-refuses-an-idle-vessel: one that stands running and spends no work between two reads refuses, naming the logs`, async () => {
-    const r = await run(shim, ["up"], { env: { ...MOUNTS, ...PULSE, FAKE_STATE_SEQ: "running 0 unhealthy", FAKE_CPU_SEQ: "5000000|5010000" } });
-    assert.notEqual(r.status, 0);
-    assert.match(r.stderr, /rests idle/);
-    assert.match(r.stderr, /did not become ready/);
-  });
-  test(`${name}: RED up-refuses-a-stopped-vessel: one that stopped while it booted refuses, naming its exit`, async () => {
-    const r = await run(shim, ["up"], { env: { ...MOUNTS, ...PULSE, FAKE_STATE_SEQ: "running 0 starting|exited 137 unhealthy", FAKE_CPU_SEQ: "1000000" } });
-    assert.notEqual(r.status, 0);
-    assert.match(r.stderr, /stopped while it booted \(its container reads exited, exit 137\)/);
-  });
-  test(`${name}: vessel-pulse prints one JSON line: state, health, exit and the cgroup's CPU work`, async () => {
-    const r = await run(shim, ["vessel-pulse"], { env: { ...MOUNTS, FAKE_STOOD_ID: "c1", FAKE_STATE_SEQ: "running 0 starting", FAKE_CPU_SEQ: "4200" } });
-    assert.equal(r.status, 0, r.stderr);
-    assert.deepEqual(JSON.parse(r.stdout.trim().split("\n").at(-1)), { status: "running", health: "starting", exitCode: null, cpuUsec: 4200 });
-    const none = await run(shim, ["vessel-pulse"], { env: MOUNTS });
-    assert.deepEqual(JSON.parse(none.stdout.trim().split("\n").at(-1)), { status: "absent", health: "none", exitCode: null, cpuUsec: null });
   });
 
   test(`${name}: a ps that fails refuses the stop`, async () => {
