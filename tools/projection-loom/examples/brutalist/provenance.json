@@ -1,0 +1,10 @@
+{
+  "schema":"projection-loom/external-reference-poc/v1",
+  "subject":"Modular brutalist architecture: hard-reference intake pilot",
+  "source_candidates":[
+    {"id":"nosycat-CC0-brutalism2","status":"linked-archive-not-ingested","type":"OpenSCAD source + STL geometry","license":"CC0","author":"nosycat","locator":"https://opengameart.org/sites/default/files/brutalism2.zip","description":"CC0 original, must not confuse with our local proxy"},
+    {"id":"self-authored-scad-probe","status":"locally-built-and-testable","type":"OpenSCAD source","locator":"neutral_scad_probe.scad","license":"new test fixture, original","frame":"local model units; not metric","description":"Independent local compiler smoke, NOT original CC0 buildings"}
+  ],
+  "source_limitations":["OpenGameArt's ZIP files not retrievable in this sandbox session","No reliable meter scale for third-party or local OpenSCAD models","STL is evidence only; it does not certify CAD shape validity"],
+  "evidence_state":"synthetic-intake-proxy"
+}

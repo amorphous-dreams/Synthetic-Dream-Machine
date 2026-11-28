@@ -31,6 +31,7 @@ Eight artistic dimensions: worktype, subject, read, imagery, treatment, composit
 * [[Layer Composition|ha.ka.ba/lares/api/art-sigils/layer-composition]] — component assembly
 * [[Provenance and Publication|ha.ka.ba/lares/api/art-sigils/provenance-publication]] — credits and release
 * [[Technical-Art Plate Fieldcraft|ha.ka.ba/lares/api/art-sigils/technical-art]] — isolated transparent plates
+* [[Projection Loom Dialect (Fire interface)|ha.ka.ba/lares/api/art-sigils/loom-dialect]] — Loom extension through backed-source AI Fire
 
 !! Practice, examples, research
 
@@ -46,6 +47,6 @@ Companions remain drafts. Every call rides the sharktooth form `<<~ art ...>>`; 
 The grammar governs expression, not an artwork's subject, medium or style.
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;pi8Cvj7MCA-hKM4Irch2Ph45u-ZjGWEIFAZwJGQ4-2U`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aOWoWOsVSzlCj-FdLPa2b1PoF8KB53IYVnOOufM5unI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,20 @@
+{
+  "schema": "projection-loom/source-seed-entity",
+  "slot": "oblique-seed",
+  "pet_name": "Necrospire's First Glimpse",
+  "location": "necrospire",
+  "reference_view": "oblique",
+  "provenance": "provisional-artwork",
+  "witnesses": {
+    "appearance": {
+      "path": "source_rgba.png",
+      "sha256": "80e1d0ee8ae4bda505c053b42ea1d1f661d71ed4c174f57c15423027872c4f89",
+      "mode": "RGBA"
+    },
+    "silhouette": {
+      "path": "source_alpha_8bit.png",
+      "sha256": "78f8d1f0cf44a98b748054ae8b5c8f2229c1354696a8e1173963a7c98bc4fbe7",
+      "mode": "L"
+    }
+  }
+}

@@ -1,0 +1,42 @@
+name: Projection Loom CAD suite
+
+# The Loom's stdlib gates ride the house CI quick job ("Projection Loom gates (stdlib, CAD-free)").
+# This workflow installs the pinned CAD stack and runs the whole suite on the operator's call.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: projection-loom-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cad-suite:
+    name: Pinned CAD stack, Loom gates and the whole suite
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: tools/projection-loom
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Install the pinned CAD stack
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openscad
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-ci.txt
+          python -m pip install --no-deps -e .
+      - name: Loom gates
+        run: |
+          python -m pip check
+          python -m compileall -q projection_loom scripts
+          python scripts/check_architecture.py
+          python scripts/check_living_docs.py
+      - name: The whole suite
+        run: python -m pytest -q tests

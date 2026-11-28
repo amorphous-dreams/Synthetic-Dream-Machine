@@ -259,6 +259,13 @@ jobs:
       - name: Install py host deps
         if: ${{ !cancelled() }}
         run: pip install tree-sitter==0.26.0 pytest==9.1.1 pygls==2.1.1
+      - name: Projection Loom gates (stdlib, CAD-free)
+        if: ${{ !cancelled() }}
+        working-directory: tools/projection-loom
+        run: |
+          python scripts/check_architecture.py
+          python scripts/check_living_docs.py
+          python -m pytest -q -p no:cacheprovider tests/test_living_docs_gate.py tests/test_architecture_contract.py
       - name: generate-parity — the committed parser.c stays the truth
         if: ${{ !cancelled() }}
         working-directory: packages/tree-sitter-memetic-wikitext

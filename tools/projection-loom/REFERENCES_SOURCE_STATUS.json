@@ -1,0 +1,30 @@
+{
+  "schema": "projection-loom/external-source-status/v1",
+  "as_of": "2026-10-23",
+  "sources": {
+    "brutalism": {
+      "source": "https://opengameart.org/content/brutalist-architecture-models",
+      "license": "CC0-1.0",
+      "verified_contents": false,
+      "pin_status": "unfetched",
+      "reason": "The execution container could not reach the public archive host; the CI/local intake path is implemented and testable with synthetic fixtures."
+    },
+    "brutalism2": {
+      "source": "https://opengameart.org/content/brutalist-architecture-models",
+      "license": "CC0-1.0",
+      "verified_contents": false,
+      "pin_status": "downloaded-unreviewed",
+      "bytes": 113109,
+      "sha256": "8a89504f2abf355f56f4ea93c9a50fbdc60fb3664bdad019c65e6582a91ff9a3",
+      "receipt": "https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/40050555648/artifacts/12542954065",
+      "reason": "Hosted trusted push acquired archive; content, license and file manifest must be reviewed before a reproducible lock is promoted."
+    },
+    "ur-lowpoly": {
+      "source": "https://sketchfab.com/3d-models/ziggurat-f2ffb4bd5200400eac37fbce5c010ef0",
+      "license": "CC-BY-4.0",
+      "verified_contents": false,
+      "pin_status": "auth-required",
+      "reason": "Official Sketchfab downloads require the user's OAuth token or a browser download."
+    }
+  }
+}
