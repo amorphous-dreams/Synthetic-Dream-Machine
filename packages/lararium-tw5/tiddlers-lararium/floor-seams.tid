@@ -36,7 +36,7 @@ DARK packages/lararium-tw5/tests/filter-cts-chromium.e2e.test.ts packages/larari
 
 # ── the seams ───────────────────────────────────────────────────────────────────────────────────────────────────────
 SEAM projector-base-pin trunk
-MOVES projector-base-pin n disk-projector* disk-projector/* heads-rest* synced-tree* projection-gate* carrier-render* native-landing* partial-landing* temp-layer*
+MOVES projector-base-pin n disk-projector* disk-projector/* disk-capture* heads-rest* synced-tree* projection-gate* carrier-render* native-landing* partial-landing* temp-layer*
 MOVES projector-base-pin m projection-* mirror-paths* pinned-doc* override-base*
 MOVES projector-base-pin t tw5-projection* landed-ledger* wave-landing* override-bases*
 MOVES projector-base-pin c seed-mirrors* commands/refresh*
@@ -52,13 +52,13 @@ MOVES ingest-gate k ingest-tolerant*
 GUARDS ingest-gate e2e ingest-quiescence wikis-ingest-back watcher-cut-c corpus-feed carrier-roundtrip smoke load-tw5-filetypes
 GUARDS ingest-gate path packages/lares-cli/tests/ingest-settles-every-row.test.ts
 
-SEAM shore-standoff
-MOVES shore-standoff n shore-verb* standoff-*
-MOVES shore-standoff m shore-log* standoff-watch* sensory-shore* parallel-drafts*
-MOVES shore-standoff c shore-core* shore-merge* shore-retirement* shore-take-disk* commands/shore*
-MOVES shore-standoff t shore-log-island* draft-book* wiki-draft-handlers*
-GUARDS shore-standoff e2e watcher-cut-c ingest-quiescence herm-reshares-public-blob.e2e
-GUARDS shore-standoff path packages/lararium-tw5/tests/wiki-shore*.test.ts
+SEAM disk-shore
+MOVES disk-shore n shore-verb*
+MOVES disk-shore m shore-log* sensory-shore* parallel-drafts*
+MOVES disk-shore c shore-core* shore-retirement* commands/shore*
+MOVES disk-shore t shore-log-island* draft-book* wiki-draft-handlers*
+GUARDS disk-shore e2e watcher-cut-c ingest-quiescence herm-reshares-public-blob.e2e
+GUARDS disk-shore path packages/lararium-tw5/tests/wiki-shore*.test.ts
 
 SEAM island-vessel-boot trunk
 MOVES island-vessel-boot n open-node-vessel* open-daemon-vm* node-wiki-island* node-daemon-island* island-* vessel-island-pool* worker-handle* vessel-life* vessel-raise* vessel-paths* main boot-* lares-config*
@@ -345,8 +345,8 @@ MOVES residency-keep-cap m share-config*
 MOVES residency-keep-cap t bag-tier-restamp* delegation-book*
 MOVES residency-keep-cap c commands/act* commands/share-cmd*
 
-MOVES shore-standoff t drain* modules/draft-compare*
-MOVES shore-standoff c commands/draft*
+MOVES disk-shore t drain* modules/draft-compare*
+MOVES disk-shore c commands/draft*
 
 MOVES projector-base-pin c commands/partial-file* seed-mirror-leg*
 MOVES ingest-gate m executable-class*
@@ -359,10 +359,10 @@ BOTH island-vessel-boot cli-door-table e2e-root
 # ── placed by the census ───────────────────────────────────────────────────────────────────────────────────────────
 MOVES island-vessel-boot m boot-wait*
 MOVES sealed-store-rest m compacting-storage*
-MOVES shore-standoff n shore-remove-door*
+MOVES disk-shore n shore-remove-door*
 MOVES cli-door-table c ask-budget* standing-report*
 # the comms-ux doors (comms-ux-enacts landings 9–17): the keyword head, the bare door, the msg and watch carriers, the shore votum
 MOVES cli-door-table c commands/bare* keywords* summoned-stream*
 MOVES verb-dispatch t msg-verbs* stream-entries* modules/watch* filters/stream*
 MOVES island-vessel-boot t host-globals-now*
-MOVES shore-standoff m shore-votum*
+MOVES disk-shore m shore-votum*

@@ -4,7 +4,7 @@
  *
  * THE REPLAY: the #585 landing (develop merge 31bd0e0c3) ran a narrow ticket and left two files red on develop,
  * `packages/lares-cli/tests/ingest-settles-every-row.test.ts` and `packages/lararium-node/tests/e2e/lit-face-home-wiki.test.ts`.
- * Fed that merge's 21 source paths, the rule owes both, and the gate's plan holds a step that runs each.
+ * Fed that merge's 19 source paths still standing, the rule owes both, and the gate's plan holds a step that runs each.
  * CONTROL rows stand beside each RED, so a rule that owes everything or nothing reads red here.
  */
 import test from "node:test";
@@ -16,15 +16,15 @@ import { dirname, join } from "node:path";
 import { NODE_E2E, ROOT_E2E, VESSEL, checkOwes, owedSteps, plan, runGate, tracked } from "./bench-gate.mjs";
 import { DEVELOP, DOOR_ASK_BYTES, FOLD, ROOT, TABLE, askFilter, census, checkoutJudge, edgesOf, gatherFacts, headerHolds, lines, owes, resolveLiteral, runFold, secsOf, tableDigest, tidText } from "./floor-owes.mjs";
 
-/** The source paths the #585 merge moved (`git diff --name-only 31bd0e0c3^1 31bd0e0c3`, tests and the inventory aside). */
+/** The source paths the #585 merge moved (`git diff --name-only 31bd0e0c3^1 31bd0e0c3`, tests and the inventory aside, and the two files the shore cut burned). */
 const REPLAY_585 = [
   "packages/lararium-mesh/src/capability-record.ts", "packages/lararium-mesh/src/lar-vessel.ts", "packages/lararium-mesh/src/sealed-rest.ts",
   "packages/lararium-node/src/disk-projector.ts", "packages/lararium-node/src/heads-rest.ts", "packages/lararium-node/src/index.ts",
   "packages/lararium-node/src/ingest-scan.ts", "packages/lararium-node/src/island-behaviors.ts", "packages/lararium-node/src/native-landing.ts",
-  "packages/lararium-node/src/open-node-vessel.ts", "packages/lararium-node/src/shore-verb.ts", "packages/lararium-node/src/standoff-drafts.ts",
+  "packages/lararium-node/src/open-node-vessel.ts", "packages/lararium-node/src/shore-verb.ts",
   "packages/lararium-node/src/synced-tree.ts", "packages/lararium-node/src/worker-handle.ts",
   "packages/lares-cli/src/commands/ingest.ts", "packages/lares-cli/src/commands/shore.ts", "packages/lares-cli/src/commands/watch.ts",
-  "packages/lares-cli/src/ingest-core.ts", "packages/lares-cli/src/seed-mirrors.ts", "packages/lares-cli/src/shore-core.ts", "packages/lares-cli/src/shore-take-disk.ts",
+  "packages/lares-cli/src/ingest-core.ts", "packages/lares-cli/src/seed-mirrors.ts", "packages/lares-cli/src/shore-core.ts",
 ];
 const MISSED_CLI = "packages/lares-cli/tests/ingest-settles-every-row.test.ts";
 const MISSED_NODE_E2E = "packages/lararium-node/tests/e2e/lit-face-home-wiki.test.ts";
@@ -38,8 +38,8 @@ const fold = (facts, view = "runs") => { const j = own(); return runFold(j.fold,
 /** The owed set for touched paths, by the checkout's own fold (the doors dark). */
 const owedFor = (paths) => owes({ root: ROOT, paths, door: darkDoor, judge: own });
 
-test("RED replay #585: the merge's 21 source paths owe both files its narrow ticket missed, and the gate's plan runs each", () => {
-  assert.equal(REPLAY_585.length, 21);
+test("RED replay #585: the merge's 19 standing source paths owe both files its narrow ticket missed, and the gate's plan runs each", () => {
+  assert.equal(REPLAY_585.length, 19);
   const owed = owedFor(REPLAY_585);
   assert.equal(owed.via, "develop checkout");
   assert.deepEqual(owed.refuse, [], "every path of the replay stands in a seam");

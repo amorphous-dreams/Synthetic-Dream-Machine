@@ -44,8 +44,8 @@ test('RED: the line builders write the grammar the VM fold reads', () => {
 
 const OWED = {
   via: 'develop 3268bab41', why: '', touched: ['packages/lararium-node/src/shore-verb.ts', 'packages/lares-cli/src/commands/shore.ts'], refuse: [],
-  sets: [{ name: 'e2e-node', why: 'trunk:island-vessel-boot' }], globs: [{ glob: 'packages/lararium-tw5/tests/wiki-shore*.test.ts', why: 'seam:shore-standoff' }],
-  files: [{ tier: 'vessel', path: 'tests/e2e/watcher-cut-c.test.ts', why: 'seam:shore-standoff' }, { tier: 'heavy', path: 'packages/lararium-node/tests/shore-verb.test.ts', why: 'edge' }, { tier: 'heavy', path: 'packages/lares-cli/tests/shore-cmd.test.ts', why: 'edge' }, { tier: 'swift', path: 'packages/lares-cli/tests/shore-core.test.ts', why: 'edge' }],
+  sets: [{ name: 'e2e-node', why: 'trunk:island-vessel-boot' }], globs: [{ glob: 'packages/lararium-tw5/tests/wiki-shore*.test.ts', why: 'seam:disk-shore' }],
+  files: [{ tier: 'vessel', path: 'tests/e2e/watcher-cut-c.test.ts', why: 'seam:disk-shore' }, { tier: 'heavy', path: 'packages/lararium-node/tests/shore-verb.test.ts', why: 'edge' }, { tier: 'heavy', path: 'packages/lares-cli/tests/shore-cmd.test.ts', why: 'edge' }, { tier: 'swift', path: 'packages/lares-cli/tests/shore-core.test.ts', why: 'edge' }],
   digest: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
 };
 const fakeGit = (branch = 'spirit/hoao-x') => (args) => (args.includes('--abbrev-ref') ? branch : SHA);
