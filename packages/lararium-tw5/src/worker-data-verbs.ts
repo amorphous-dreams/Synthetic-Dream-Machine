@@ -280,23 +280,23 @@ export async function fileWardRefusal(
       ? `Disk ward refused a write (${bagId})`
       : `${wardKind} refused a write (${bagId})`;
     const ts     = new Date().toISOString();
-    // A KEYED ALERT CARRIES ITS KEY in the `standoff` field (a bag's pending-removal set names one, folded by the
+    // A KEYED ALERT CARRIES ITS KEY in the `key` field (a bag's pending-removal set names one, folded by the
     // projector). The key names the audit row and the live alert, so one keyed condition files one row however often
     // the rail hears of it, two show two alerts, and a resolution clears exactly its own.
-    const standoff = typeof args["standoff"] === "string" && /^[0-9a-f]{8,64}$/.test(args["standoff"]) ? args["standoff"] : null;
+    const key = typeof args["key"] === "string" && /^[0-9a-f]{8,64}$/.test(args["key"]) ? args["key"] : null;
     const slug   = readHomeWikiSlug(await composite.get(HOME_WIKI_TITLE));
 
-    if (standoff !== null && args["resolved"] === true) {
-      if (slug) post(mkDaemonWikiAlert({ wikiSlug: slug, message: `${headline}: resolved`, cause: "disk-ward", kind: "disk-ward", key: standoff, clear: true }));
-      return { cleared: standoff, alerted: slug ?? "none", bagId, uri };
+    if (key !== null && args["resolved"] === true) {
+      if (slug) post(mkDaemonWikiAlert({ wikiSlug: slug, message: `${headline}: resolved`, cause: "disk-ward", kind: "disk-ward", key, clear: true }));
+      return { cleared: key, alerted: slug ?? "none", bagId, uri };
     }
 
     // (a) Durable audit in the vessel's control document: append-only, never coalesced, never in a mirrored layer.
     // A keyed row carries its key as its title and lands on ENTERING the condition, once.
-    const auditTitle = `${WARD_AUDIT_URI_PREFIX}${standoff ?? crypto.randomUUID()}`;
-    if (standoff === null || (await control.get(auditTitle)) === null) {
+    const auditTitle = `${WARD_AUDIT_URI_PREFIX}${key ?? crypto.randomUUID()}`;
+    if (key === null || (await control.get(auditTitle)) === null) {
       await control.put(
-        { tiddler: { title: auditTitle, "alert-kind": wardKind, bag: bagId, uri, reason, ts, ...(standoff !== null ? { standoff } : {}), ...(typeof args["rule"] === "string" && args["rule"] ? { rule: args["rule"] } : {}) }, meta: { authority: "disk-ward" } },
+        { tiddler: { title: auditTitle, "alert-kind": wardKind, bag: bagId, uri, reason, ts, ...(key !== null ? { key } : {}), ...(typeof args["rule"] === "string" && args["rule"] ? { rule: args["rule"] } : {}) }, meta: { authority: "disk-ward" } },
         { kind: "lares-verb", requestId: `ward-${ts}` },
       );
     }
@@ -310,7 +310,7 @@ export async function fileWardRefusal(
         message:  `${headline}: ${reason}`,
         cause:    "disk-ward",
         kind:     "disk-ward",
-        ...(standoff !== null ? { key: standoff } : {}),
+        ...(key !== null ? { key } : {}),
       }));
     }
     return { audited: auditTitle, alerted: slug ?? "none", bagId, uri };

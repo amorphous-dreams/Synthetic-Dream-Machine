@@ -1,5 +1,5 @@
 /**
- * ward-alert-origin — K19 slice 4, R3 (host half): the disk ward and the projection's Confluence are the island's
+ * ward-alert-origin — K19 slice 4, R3 (host half): the disk ward and the disk shore are the island's
  * own host code, never content, so their `ward-alert` events carry the `channel` stamp the island sets itself
  * (house ruling 2026-10-29: origin comes from what the sender is; the bridge carries content alone otherwise).
  *
@@ -19,7 +19,7 @@ describe("R3: the island's host code stamps its own events channel", () => {
     });
   });
   test("CONTROL: a payload that already names an origin cannot override the host stamp", () => {
-    expect(hostEvent("lar:///w", "confluence:conflict", { verb: "ward-alert", origin: "surface" }).payload).toMatchObject({ origin: "channel" });
+    expect(hostEvent("lar:///w", "shore:pending-removal", { verb: "ward-alert", origin: "surface" }).payload).toMatchObject({ origin: "channel" });
   });
 });
 
