@@ -32,7 +32,7 @@ import { locateShim, SHIM_ABSENT_EXIT } from "./shim-locate.js";
 export { locateShim, SHIM_ABSENT_EXIT };
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, realpathSync } from "node:fs";
-import { basename, dirname, join, resolve } from "node:path";
+import { basename, dirname, join, posix, resolve } from "node:path";
 import { parseArgs, ArgsError, BOOLEAN_FLAGS, type ParsedArgs } from "./parse-args.js";
 import { envValue, IN_CONTAINER_ENV, surfaceEnvPath } from "./surface-env.js";
 import { ownPeerKind } from "@lararium/node";
@@ -221,6 +221,9 @@ const PATH_OPTIONS: Readonly<Record<string, readonly string[]>> = {
  */
 const PATH_PARAMS: Readonly<Record<string, readonly string[]>> = { act: ["source", "out", "source-uri"] };
 
+/** A URL's scheme (`https:`, `lar:`): a value that carries one names no host path. */
+const URL_SCHEME = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//;
+
 /** Options that take a path OR inline text: a value translates only when a host file stands there. */
 const PATH_OR_TEXT_OPTIONS: Readonly<Record<string, readonly string[]>> = { cabal: ["bundle"] };
 
@@ -310,7 +313,8 @@ export function translatePaths(input: TranslateInput): { argv: string[] } | { er
 
   const toVessel = (value: string): string => {
     if (value === "" || value === "-" || refusal !== null) return value;
-    if (CONTAINER_ROOTS.some((r) => under(value, r))) return value;
+    // A SPELLING INSIDE THE VESSEL passes only once normalized: `/lar/../app/x` names /app/x, outside both roots.
+    if (value.startsWith("/") && CONTAINER_ROOTS.some((r) => under(posix.normalize(value), r))) return posix.normalize(value);
     const expanded = value === "~" ? input.home : value.startsWith("~/") ? join(input.home, value.slice(2)) : value;
     const real = realpathPrefix(resolve(input.cwd, expanded), fs.realpath);
     const mount = byDepth.find((m) => under(real, m.host));
@@ -354,7 +358,8 @@ export function translatePaths(input: TranslateInput): { argv: string[] } | { er
       continue;
     }
     const param = /^([a-z][a-z0-9-]*)=(.*)$/s.exec(tok);
-    if (param !== null && (PATH_PARAMS[name] ?? []).includes(param[1]!)) out.push(`${param[1]}=${toVessel(param[2]!)}`);
+    // A VALUE WITH A URL SCHEME (`source-uri=https://…`) names no host file: it rides as written.
+    if (param !== null && (PATH_PARAMS[name] ?? []).includes(param[1]!)) out.push(`${param[1]}=${URL_SCHEME.test(param[2]!) ? param[2]! : toVessel(param[2]!)}`);
     else if (paths.includes(positional)) out.push(toVessel(tok));
     else if (atFiles.includes(positional) && tok.startsWith("@") && tok !== "@-") out.push(`@${toVessel(tok.slice(1))}`);
     else out.push(tok);
