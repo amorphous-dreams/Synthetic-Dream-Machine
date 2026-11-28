@@ -1,27 +1,26 @@
 /**
- * kukulu-reads-the-lag — every raise reads the house's lag aloud, and lays the checkout's workbench projection with no
- * question, never canon (story U4, re-scoped under Mu: operator, 2026-11-22; the y retired, restand-files-smooth 2026-11-27).
+ * kukulu-reads-the-lag — every raise reads the house's lag, and a household's canon follows the head the raise stood (operator
+ * ruling 2026-11-28: the disk stands as one more replica; ingest retires as scaffold).
  *
- * After the restand, `lares rite kukulu` reads two gaps and names each: the canon bag behind the canon source (the
- * carriers in `bags/` the canon layers lack: canon fills through promote and the floor's sealed cut alone, so the raise
- * only names it) and each wiki's workbench behind the checkout's `wikis/<slug>`. Where the release the vessel runs
- * carries a newer seed (the seed offer) than it serves, the line names that by its own word, the floor card's title and the runnable line. Where the canon source stands in a checkout and
- * the owner holds a terminal, the raise previews the workbench lay (each title a mounted workbench would take) and lays
- * it diff-gated with no question, into each wiki's working layer the worn face mounts; a workbench that does not mount is
- * named and left. No lay ever writes the canon bag. A seat (no terminal, or an AI launcher) names the lag and lays nothing.
+ * After the restand, `lares rite kukulu` reads the canon bags behind the canon source. WHERE THE CANON SOURCE STANDS IN A CHECKOUT
+ * (a household), the rite asks the vessel to lay the checkout's holdings into their canon bags at this head (`canonFollow`, the
+ * vessel's `lares vessel lay --canon`), under the license the rite's lei carries, so a seat's rite lays too, and every carrier the
+ * head switch carried off tombstones; the lag line and its promote/cut hint burn for a household. A SHARED TIER (a canon source in no
+ * checkout) keeps the lag line: its canon fills through promote and the floor's sealed cut. Where the release the vessel runs carries
+ * a newer seed than it serves, the line names that by its own word, the floor card's title and the runnable line.
  *
- * The vessel half: `lares vessel lay --lag` reads both gaps off disk and the worn face's seats, writing nothing, and names the
- * floor's drift behind live canon beside them (`floorDrift`, its own field: lag keeps its meaning, an unread drift reads null); and
- * `lares vessel lay --workbench` walks the checkout's workbench waves alone (no holdings leg, no face roots, no kahua).
+ * The vessel half: `lares vessel lay --lag` reads the gaps off disk and the worn face's seats, writing nothing, and names the floor's
+ * drift behind live canon beside them (`floorDrift`, its own field); and `lares vessel lay --canon` lays the holdings leg alone,
+ * applied, then answers every pending removal in a bag it fed with one batch remove (fork 3), refusing a canon source in no checkout.
  *
  * Every rite port answers from a FAKE; the vessel half runs over a scratch LAR_ROOT (LAR_BAGS set per test, never globally).
- * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
+ * Meme: lar:///ha.ka.ba/kahua/memory/wave/kukulu-carries-canon
  */
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { riteKukulu, type HouseLag, type RitePorts, type StandReading } from "../src/rite-kukulu.js";
+import { riteKukulu, type CanonFollowReading, type HouseLag, type RitePorts, type StandReading } from "../src/rite-kukulu.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import type { MirrorDoors, MirrorWave } from "../src/seed-mirrors.js";
 
@@ -31,22 +30,22 @@ vi.mock("../src/commands/ingest.js", async (orig) => ({ ...(await orig<typeof im
 const HEAD = "a".repeat(40), IMAGE = "sha256:" + "ab".repeat(32);
 const READING: StandReading = { revision: HEAD, image: IMAGE, how: "built", vessel: "standing", current: false, pulama: "off", lit: null, admitted: null, offer: false };
 const ABSENT = { ok: false as const, code: "swarm-lei-absent", message: "no lei" };
+const LARES = "lar:///ha.ka.ba/bags/lares";
 
 const LAG: HouseLag = {
   source: "/workspace/bags",
   checkout: true,
-  holdings: [{ holding: "lares", toBag: "lar:///ha.ka.ba/bags/lares", new: ["lar:///ha.ka.ba/lares/api/pono/fresh"], changed: ["lar:///ha.ka.ba/lares/api/pono/otakiage"] }],
+  holdings: [{ holding: "lares", toBag: LARES, new: ["lar:///ha.ka.ba/lares/api/pono/fresh"], changed: ["lar:///ha.ka.ba/lares/api/pono/otakiage"] }],
   lag: 2,
   wikis: "/workspace/wikis",
-  benches: [
-    { slug: "sdm", toBag: "lar:///ha.ka.ba/wikis/sdm/working", planned: ["lar:///ha.ka.ba/sdm/notes/one", "lar:///ha.ka.ba/sdm/notes/two"], mounts: true },
-    { slug: "lares", toBag: "lar:///ha.ka.ba/wikis/lares/working", planned: ["lar:///ha.ka.ba/lares/docs/x"], mounts: false, why: "the worn face holds no writer's seat there" },
-  ],
-  benchLag: 3,
+  benches: [{ slug: "sdm", toBag: "lar:///ha.ka.ba/wikis/sdm/working", planned: ["lar:///ha.ka.ba/sdm/notes/one"], mounts: true }],
+  benchLag: 1,
 };
 
-/** The rite's ports with the lag ports beside them; every call recorded in order. */
-function fakes(over: { lag?: HouseLag | null; tty?: boolean; seat?: boolean; lay?: number; raise?: number; seed?: string } = {}) {
+const FOLLOWED: CanonFollowReading = { holdings: [{ holding: "lares", toBag: LARES, exitCode: 0 }, { holding: "lararium", toBag: "lar:///ha.ka.ba/bags/lararium", exitCode: 0 }], tombstoned: { [LARES]: 3 }, refused: [] };
+
+/** The rite's ports with the lag and canon-follow ports beside them; every call recorded in order. */
+function fakes(over: { lag?: HouseLag | null; tty?: boolean; follow?: CanonFollowReading | null; raise?: number } = {}) {
   const calls: string[] = [], said: string[] = [];
   const ports: RitePorts = {
     checkout: async () => ({ head: HEAD, branch: "main" }),
@@ -55,135 +54,108 @@ function fakes(over: { lag?: HouseLag | null; tty?: boolean; seat?: boolean; lay
     tty: () => over.tty ?? true,
     row: async () => ABSENT,
     say: (line) => { said.push(line); },
-    seat: () => over.seat ?? false,
     houseLag: async () => { calls.push("house-lag"); return over.lag === undefined ? LAG : over.lag; },
-    layWorkbench: async () => { calls.push("lay-workbench"); return over.lay ?? 0; },
+    canonFollow: async () => { calls.push("canon-follow"); return over.follow === undefined ? FOLLOWED : over.follow; },
   };
   return { ports, calls, said };
 }
 
-describe("kukulu reads the lag on every raise and lays the workbench with no question", () => {
-  it("RED: the lag line names both gaps: canon behind the canon source (it fills through promote), and each workbench behind the checkout's wikis/", async () => {
+describe("kukulu: a household's canon follows the head the raise stood (wave/kukulu-carries-canon)", () => {
+  it("RED: a raise over a checkout whose bags/ moved lays the checkout's holdings into canon at this head, and the head switch's vanishes tombstone", async () => {
+    const f = fakes();
+    const out = await riteKukulu(f.ports, {});
+    expect(f.calls).toEqual(["raise", "house-lag", "canon-follow"]);
+    const text = f.said.join("\n");
+    expect(text).toMatch(/canon follows the checkout at this head: 2\/2 holding\(s\) laid from \/workspace\/bags \(1 new, 1 changed before the lay\) · 3 carrier\(s\) the head switch carried off tombstone/);
+    expect(text).toContain(`${LARES}: 3 tombstoned`);
+    expect(out).toMatchObject({ code: 0, data: { raised: true, lag: { canon: 2, checkout: true }, canon: { followed: true, holdings: 2, failed: 0, tombstoned: 3 } } });
+  });
+
+  it("RED: a household burns the lag line and its promote/cut hint, and every workbench line: the checkout watch carries the benches", async () => {
     const f = fakes();
     await riteKukulu(f.ports, {});
     const text = f.said.join("\n");
-    expect(text).toMatch(/canon lags the canon source by 2 carrier\(s\) \(1 new, 1 changed\) in \/workspace\/bags; canon fills through promote and the floor's sealed cut, never from a raise/);
-    // The lag line names the two commands that fill canon, so the cure sits on the line that names the lag.
-    const lagLine = f.said.find((l) => l.includes("canon lags the canon source"))!;
-    expect(lagLine).toContain("`lares meme offer promote <cid>`");
-    expect(lagLine).toContain("`lares nexus release <manifest-file> --cut`");
-    expect(text).toMatch(/the workbenches lag the checkout's \/workspace\/wikis by 3 carrier\(s\): sdm 2, lares 1/);
-    expect(text).toMatch(/workbench lares does not mount under the worn face \(the worn face holds no writer's seat there\); nothing of it lays/);
+    expect(text).not.toMatch(/canon lags the canon source/);
+    expect(text).not.toMatch(/lares meme offer promote|--cut/);
+    expect(text).not.toMatch(/workbench/);
   });
 
-  it("RED (restand-files-smooth): the owner's terminal over a checkout previews the workbench lay (each title a mounted workbench takes, canon untouched), then lays it diff-gated with no question", async () => {
-    const f = fakes();
-    const out = await riteKukulu(f.ports, {});
-    expect(f.calls).toEqual(["raise", "house-lag", "lay-workbench"]);
-    const text = f.said.join("\n");
-    expect(text).toMatch(/the workbench lay carries each file under \/workspace\/wikis\/<slug> into that wiki's working layer; canon stays as it stands:/);
-    expect(text).toMatch(/sdm -> lar:\/\/\/ha\.ka\.ba\/wikis\/sdm\/working: 2/);
-    expect(text).toMatch(/lar:\/\/\/ha\.ka\.ba\/sdm\/notes\/one/);
-    expect(text).not.toMatch(/lar:\/\/\/ha\.ka\.ba\/lares\/docs\/x/);
-    expect(text).not.toMatch(/\[y\/N\]|lay these/);
-    expect(out).toMatchObject({ code: 0, data: { raised: true, lag: { canon: 2, workbench: 3 }, workbench: { offered: 2, laid: true } } });
-  });
-
-  it("RED: no lay ever writes the canon bag: a lag in canon alone lays nothing", async () => {
-    const f = fakes({ lag: { ...LAG, benches: [], benchLag: 0 } });
-    const out = await riteKukulu(f.ports, {});
-    expect(f.calls).toEqual(["raise", "house-lag"]);
-    expect(out.data).not.toHaveProperty("canon");
-    expect(f.said.join("\n")).toMatch(/the checkout's workbenches stand level with \/workspace\/wikis/);
-  });
-
-  it("CONTROL: a rite that carries no lay port names the line that lays it, and lays nothing", async () => {
-    const { layWorkbench: _w, ...bare } = fakes().ports;
-    const out = await riteKukulu(bare, {});
-    expect(out).toMatchObject({ code: 0, data: { workbench: { offered: 2, laid: false } } });
-  });
-
-  it("RED: a seat with no terminal names the lag and never lays", async () => {
+  it("RED: the lei licenses the follow: a seat with no terminal lays canon too", async () => {
     const f = fakes({ tty: false });
     const out = await riteKukulu(f.ports, {});
-    expect(f.calls).toEqual(["raise", "house-lag"]);
-    expect(f.said.join("\n")).toMatch(/this seat holds no terminal, so nothing lays; your hand: lares rite kukulu on a terminal \(or lares vessel lay --workbench --apply\)/);
-    expect(out).toMatchObject({ code: 0, data: { workbench: { laid: false, seat: true } } });
+    expect(f.calls).toEqual(["raise", "house-lag", "canon-follow"]);
+    expect(out).toMatchObject({ code: 0, data: { canon: { followed: true } } });
   });
 
-  it("RED: an AI launcher on a terminal is a seat too", async () => {
-    const f = fakes({ seat: true });
-    await riteKukulu(f.ports, {});
-    expect(f.calls).toEqual(["raise", "house-lag"]);
-    expect(f.said.join("\n")).toMatch(/an AI seat launched this rite, so nothing lays/);
-  });
-
-  it("RED: a canon source in no checkout names the lag and offers nothing", async () => {
+  it("CONTROL: a shared tier (a canon source in no checkout) keeps the lag line with its promote/cut cure, and follows nothing", async () => {
     const f = fakes({ lag: { ...LAG, source: "/elsewhere/bags", checkout: false } });
-    await riteKukulu(f.ports, {});
+    const out = await riteKukulu(f.ports, {});
     expect(f.calls).toEqual(["raise", "house-lag"]);
-    expect(f.said.join("\n")).toMatch(/\/elsewhere\/bags stands in no checkout, so the raise offers no lay/);
+    const lagLine = f.said.find((l) => l.includes("canon lags the canon source"))!;
+    expect(lagLine).toMatch(/by 2 carrier\(s\) \(1 new, 1 changed\) in \/elsewhere\/bags; a shared tier's canon fills through promote and the floor's sealed cut, never from a raise/);
+    expect(lagLine).toContain("`lares meme offer promote <cid>`");
+    expect(lagLine).toContain("`lares nexus release <manifest-file> --cut`");
+    expect(out.data).not.toHaveProperty("canon");
+    const level = fakes({ lag: { ...LAG, checkout: false, holdings: [], lag: 0 } });
+    await riteKukulu(level.ports, {});
+    expect(level.said.join("\n")).toMatch(/canon stands level with \/workspace\/bags/);
+  });
+
+  it("RED: a par landing reads green when a holding's lay refuses: the follow waits, named, with its cure", async () => {
+    const f = fakes({ follow: { holdings: [{ holding: "lares", toBag: LARES, exitCode: 4, reason: "kahu-reach" }], tombstoned: {}, refused: [`${LARES}: 2 pending removal(s) stand (hand-act-only); \`lares shore remove --all --count 2 --bag ${LARES}\` tombstones them`] } });
+    const out = await riteKukulu(f.ports, {});
+    expect(out).toMatchObject({ code: 0, data: { canon: { followed: false, failed: 1 }, warnings: ["canon-follow-waits"] } });
+    expect(out.data).not.toHaveProperty("refusal");
+    const text = f.said.join("\n");
+    expect(text).toMatch(/lares: the lay answered 4 \(kahu-reach\)/);
+    expect(text).toContain("lares shore remove --all --count 2");
+    expect(text).toContain("lares vessel lay --canon runs again safely");
+  });
+
+  it("RED: a follow that answers no reading, and a rite that carries no follow port, each name the line that lays canon at this head", async () => {
+    const silent = fakes({ follow: null });
+    expect(await riteKukulu(silent.ports, {})).toMatchObject({ code: 0, data: { canon: { followed: false }, warnings: ["canon-follow-waits"] } });
+    expect(silent.said.join("\n")).toMatch(/the canon follow answered no reading; .*lares vessel lay --canon lays canon at this head safely/);
+    const { canonFollow: _c, ...bare } = fakes().ports;
+    expect(await riteKukulu(bare, {})).toMatchObject({ code: 0, data: { canon: { followed: false } } });
   });
 
   it("RED: a newer seed's floor names the seed offer by its own word, the card's title and the runnable line; CONTROL: a seed that stands the same names nothing", async () => {
     const CARD = "lar:///ha.ka.ba/lares/floor/0123456789ab";
     const offer = (floor: string) => async () => ({ record: { engine: "e", grammar: "g", lararium: "l", plugins: "p", floor: "f1" }, seed: { cid: "bafyseed", digests: { engine: "e", grammar: "g", lararium: "l", plugins: "p", floor } } });
-    const f = fakes({ lag: { ...LAG, benches: [], benchLag: 0, holdings: [], lag: 0 } });
+    const f = fakes({ lag: { ...LAG, holdings: [], lag: 0 } });
     const out = await riteKukulu({ ...f.ports, seedOffer: offer("f2"), floorCard: async () => ({ title: CARD }) } as RitePorts, {});
     const text = f.said.join("\n");
     expect(text).toContain("the seed offer waits (the seed's floor moved)");
     expect(text).toContain(CARD);
     expect(text).toContain("`lares vessel floor status --grain seed`");
-    expect(text).not.toMatch(/newer sealed floor/);
     expect(out).toMatchObject({ data: { lag: { floor: "moved", card: CARD } } });
-    // A vessel that answers no card still names the runnable line.
-    const bare = fakes({ lag: { ...LAG, benches: [], benchLag: 0, holdings: [], lag: 0 } });
+    const bare = fakes({ lag: { ...LAG, holdings: [], lag: 0 } });
     await riteKukulu({ ...bare.ports, seedOffer: offer("f2"), floorCard: async () => null } as RitePorts, {});
     expect(bare.said.join("\n")).toContain("`lares vessel floor status --grain seed`");
-    const same = fakes({ lag: { ...LAG, benches: [], benchLag: 0, holdings: [], lag: 0 } });
+    const same = fakes({ lag: { ...LAG, holdings: [], lag: 0 } });
     await riteKukulu({ ...same.ports, seedOffer: offer("f1"), floorCard: async () => ({ title: CARD }) } as RitePorts, {});
     expect(same.said.join("\n")).not.toMatch(/seed offer waits/);
   });
 
-  it("RED: level, and unread: each says so and lays nothing", async () => {
-    const level = fakes({ lag: { ...LAG, holdings: [], lag: 0, benches: [], benchLag: 0 } });
-    await riteKukulu(level.ports, {});
-    expect(level.calls).toEqual(["raise", "house-lag"]);
-    expect(level.said.join("\n")).toMatch(/canon stands level with \/workspace\/bags/);
+  it("RED: an unread lag says so and follows nothing", async () => {
     const unread = fakes({ lag: null });
     expect(await riteKukulu(unread.ports, {})).toMatchObject({ code: 0, data: { lag: { read: false } } });
+    expect(unread.calls).toEqual(["raise", "house-lag"]);
     expect(unread.said.join("\n")).toMatch(/the lag reads nowhere/);
-  });
-
-  it("RED: a par landing reads green when the workbench lay answers non-zero: the lay waits, named, with its cure", async () => {
-    const f = fakes({ lay: 1 });
-    const out = await riteKukulu(f.ports, {});
-    // THE BALANCE ALREADY STANDS: the house landed par, so the lay's refusal reads as a warning, never the rite's red.
-    expect(out).toMatchObject({ code: 0, data: { workbench: { laid: false }, warnings: ["workbench-lay-waits"] } });
-    expect(out.data).not.toHaveProperty("refusal");
-    expect(f.said.join("\n")).toMatch(/the workbench lay answered 1/);
-    expect(f.said.join("\n")).toContain("lares vessel lay --workbench --apply runs again safely");
-  });
-
-  it("RED: a Ctrl+C during the workbench lay (exit 130) reads as interrupted, never failed", async () => {
-    const f = fakes({ lay: 130 });
-    const out = await riteKukulu(f.ports, {});
-    // The --json answer names it by its own code (`refusal` feeds the error code), never `rite-stopped-at-landing` nor the failed lay's.
-    expect(out).toMatchObject({ code: 1, data: { workbench: { laid: false, interrupted: true }, refusal: "kukulu-workbench-lay-interrupted" } });
-    expect(f.said.join("\n")).toMatch(/something interrupted the workbench lay; the house stands, and the lay reads diff-gated, so lares vessel lay --workbench --apply picks it up/);
   });
 
   it("CONTROL: a raise that fails reads no lag; ports with no lag read leave the answer as it stood", async () => {
     const f = fakes({ raise: 9 });
     await riteKukulu(f.ports, {});
     expect(f.calls).toEqual(["raise"]);
-    const { houseLag: _l, layWorkbench: _w, ...bare } = fakes().ports;
+    const { houseLag: _l, canonFollow: _c, ...bare } = fakes().ports;
     const out = await riteKukulu(bare, {});
     expect(out.data).not.toHaveProperty("lag");
   });
 });
 
-describe("the vessel half: `vessel lay --lag` and `vessel lay --workbench`", () => {
+describe("the vessel half: `vessel lay --lag` and `vessel lay --canon`", () => {
   let root: string;
   const prior = { root: process.env["LAR_ROOT"], bags: process.env["LAR_BAGS"] };
   beforeEach(() => { root = mkdtempSync(join(tmpdir(), "lares-kukulu-lag-")); });
@@ -221,24 +193,15 @@ describe("the vessel half: `vessel lay --lag` and `vessel lay --workbench`", () 
     };
   }
 
-  it("RED (owner gate): worn face \"me\", sourced notes unbound, a share row naming another owner: the workbench lay waits it by name, and the lag never offers it", async () => {
-    const { cmdLay, readHouseLag } = await import("../src/commands/lay.js");
+  it("RED (owner gate): worn face \"me\", sourced notes unbound, a share row naming another owner: the lag never offers its workbench", async () => {
+    const { readHouseLag } = await import("../src/commands/lay.js");
     corpus(true);
-    const waves: MirrorWave[] = [];
-    const base = await doors({ writeSlot: null, bound: false }, waves);
+    const base = await doors({ writeSlot: null, bound: false });
     const owned: MirrorDoors = {
       ...base,
       faces: async () => [{ handleIndex: 1, petname: "me", relation: "f".repeat(64), handle: null, seat: false, chair: null, kahua: [], mounted: true }],
       shareRows: () => [{ kind: "wiki", slug: "notes", owner: "someone-else" } as never],
     };
-    const out: string[] = [];
-    const log = console.log;
-    console.log = (...a: unknown[]) => { out.push(a.map(String).join(" ")); };
-    try {
-      expect(await cmdLay({ command: "vessel", positional: [], options: {}, flags: { workbench: true, apply: true, yes: true } } as unknown as ParsedArgs, owned)).toBe(0);
-    } finally { console.log = log; }
-    expect(waves).toEqual([]);
-    expect(out.join("\n")).toMatch(/the wiki notes re-stands at its owner's wear: wear someone-else/);
     const lag = await readHouseLag(owned);
     expect(lag.benches[0]).toMatchObject({ slug: "notes", mounts: false, why: expect.stringMatching(/someone-else/) });
   });
@@ -316,20 +279,66 @@ describe("the vessel half: `vessel lay --lag` and `vessel lay --workbench`", () 
     expect(await human(async () => ({ drift: null, why: "no standing vessel answers the floor read" }))).toContain("floor: drift unread (no standing vessel answers the floor read)");
   });
 
-  it("RED: `vessel lay --workbench --apply` lays the checkout's workbench waves alone: no holdings ingest, no face root, no share, no kahua", async () => {
-    const { cmdLay } = await import("../src/commands/lay.js");
+  /** A shore that lists `pending` and records each remove it answers. */
+  function shoreOf(pending: Array<Record<string, unknown>>, removes: Array<Record<string, unknown>>, refuse?: string) {
+    return async () => async (a: Readonly<Record<string, unknown>>) => {
+      if (a["op"] === "list") return { ok: true, output: { standoffs: [], pending, standoffCount: 0, pendingCount: pending.length, mark: "m1" }, refusal: null, why: null };
+      removes.push({ ...a });
+      return refuse === undefined ? { ok: true, output: {}, refusal: null, why: null } : { ok: false, output: {}, refusal: refuse, why: "a hand answers" };
+    };
+  }
+
+  it("RED: `vessel lay --canon` lays the holdings leg alone, applied, then tombstones each pending removal in a bag it fed with one batch remove", async () => {
+    const { cmdLayCanon } = await import("../src/commands/lay.js");
+    const { cmdIngest } = await import("../src/commands/ingest.js");
     const dir = corpus(true);
-    // A face root under the projections root that the full mirror leg would read (and refuse: no face carries its pet name).
-    mkdirSync(join(root, "lar", "projections", "faces", "ghost", "wikis", "daemon"), { recursive: true });
-    writeFileSync(join(root, "lar", "projections", "faces", "ghost", "wikis", "daemon", "x.tid"), "title: x\n\nx\n");
-    const waves: MirrorWave[] = [];
-    const log = console.log;
+    const NOTES = "lar:///ha.ka.ba/bags/notes";
+    const removes: Array<Record<string, unknown>> = [];
+    const pending = [{ bagId: NOTES, uri: "lar:///ha.ka.ba/notes/gone-a" }, { bagId: NOTES, uri: "lar:///ha.ka.ba/notes/gone-b" }, { bagId: "lar:///ha.ka.ba/bags/elsewhere", uri: "lar:///x" }];
+    const written: string[] = [];
+    const write = process.stdout.write, log = console.log;
+    process.stdout.write = ((chunk: unknown) => { written.push(String(chunk)); return true; }) as typeof process.stdout.write;
     console.log = () => {};
     try {
-      expect(await cmdLay({ command: "vessel", positional: [], options: {}, flags: { workbench: true, apply: true, yes: true } } as unknown as ParsedArgs, await doors({ writeSlot: "working", bound: true }, waves))).toBe(0);
-    } finally { console.log = log; }
-    expect(waves.map((w) => [w.source, w.toBag])).toEqual([[join(dir, "wikis", "notes"), "lar:///ha.ka.ba/wikis/notes/working"]]);
+      expect(await cmdLayCanon({ command: "vessel", positional: [], options: {}, flags: { canon: true, json: true } } as unknown as ParsedArgs, join(dir, "bags"), shoreOf(pending, removes))).toBe(0);
+    } finally { process.stdout.write = write; console.log = log; }
+    expect(cmdIngest).toHaveBeenCalledWith(expect.objectContaining({ options: expect.objectContaining({ source: join(dir, "bags", "notes"), to: NOTES }), flags: expect.objectContaining({ apply: true, yes: true }) }), expect.anything());
+    // Only the fed bag's removals tombstone, in one batch naming the count the shore listed.
+    expect(removes).toEqual([{ op: "remove", all: true, count: 2, bag: NOTES }]);
+    const answer = JSON.parse(written.join("").trim().split("\n").at(-1)!) as { ok: boolean; data: CanonFollowReading };
+    expect(answer).toMatchObject({ ok: true, data: { holdings: [{ holding: "notes", toBag: NOTES, exitCode: 0 }], tombstoned: { [NOTES]: 2 }, refused: [] } });
+  });
+
+  it("RED: a shore that refuses the batch remove names the cure and the follow exits 1, the answer still ok so the rite reads its rows", async () => {
+    const { cmdLayCanon } = await import("../src/commands/lay.js");
+    const dir = corpus(true);
+    const NOTES = "lar:///ha.ka.ba/bags/notes";
+    const removes: Array<Record<string, unknown>> = [];
+    const written: string[] = [];
+    const write = process.stdout.write, log = console.log;
+    process.stdout.write = ((chunk: unknown) => { written.push(String(chunk)); return true; }) as typeof process.stdout.write;
+    console.log = () => {};
+    try {
+      expect(await cmdLayCanon({ command: "vessel", positional: [], options: {}, flags: { canon: true, json: true } } as unknown as ParsedArgs, join(dir, "bags"), shoreOf([{ bagId: NOTES, uri: "lar:///ha.ka.ba/notes/gone" }], removes, "hand-act-only"))).toBe(1);
+    } finally { process.stdout.write = write; console.log = log; }
+    const answer = JSON.parse(written.join("").trim().split("\n").at(-1)!) as { ok: boolean; data: CanonFollowReading };
+    expect(answer.ok).toBe(true);
+    expect(answer.data.tombstoned).toEqual({});
+    expect(answer.data.refused[0]).toContain(`lares shore remove --all --count 1 --bag ${NOTES}`);
+  });
+
+  it("CONTROL: a canon source in no checkout keeps a shared tier: `--canon` refuses canon-source-shared and lays nothing", async () => {
+    const { cmdLayCanon } = await import("../src/commands/lay.js");
     const { cmdIngest } = await import("../src/commands/ingest.js");
+    const dir = corpus(false);
+    vi.mocked(cmdIngest).mockClear();
+    const err = console.error;
+    const said: string[] = [];
+    console.error = (...a: unknown[]) => { said.push(a.map(String).join(" ")); };
+    try {
+      expect(await cmdLayCanon({ command: "vessel", positional: [], options: {}, flags: { canon: true } } as unknown as ParsedArgs, join(dir, "bags"), shoreOf([], []))).toBe(2);
+    } finally { console.error = err; }
+    expect(said.join("\n")).toMatch(/canon-source-shared: .* stands in no checkout/);
     expect(cmdIngest).not.toHaveBeenCalled();
   });
 });

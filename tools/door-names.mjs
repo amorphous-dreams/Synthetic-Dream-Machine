@@ -8,7 +8,7 @@
 //
 // COLLECTED MECHANICALLY, never listed: every backtick-quoted `lares …` span (the house spells a command that way, in a
 // message, a comment, a shell script or a meme) under ROOTS, every string constant whose whole value reads as a `lares …`
-// line (`HAND_ACT`, `WORKBENCH_LAY_LINE`), and every `lares …` cure in the dispatcher's MOVED table.
+// line (`HAND_ACT`, `CANON_FOLLOW_LINE`), and every `lares …` cure in the dispatcher's MOVED table.
 //
 // CHECKED AGAINST THE REGISTRY, read off the BUILT CLI (`packages/lares-cli/dist`), never a list here: the first word against
 // the command rows and the host shim's verbs; each word after it against the door's own verb table (the row's `verbs`), as

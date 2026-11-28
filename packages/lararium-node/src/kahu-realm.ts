@@ -47,7 +47,7 @@ import { type LarDoc } from "@lararium/mesh/base-doc";
 import { type ProtectedDocClass } from "@lararium/mesh/protected-doc-guard";
 import { createHmac } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { projectionRoots } from "./bag-paths.js";
 import { daemonBagsDir } from "./lares-config.js";
@@ -67,12 +67,20 @@ import { nexusCharterDocPath, readNexusDoc } from "./nexus-doc.js";
 export function kahuRealmBags(): readonly string[] { return houseCanonBagsSeated(); }
 
 /**
+ * WHETHER A CANON SOURCE STANDS IN A CHECKOUT of this repo (a household's canon): the `pnpm-workspace.yaml` the repo root carries
+ * beside `bags/`. A household's canon follows its checkout (operator ruling 2026-11-28): the kūkulu lands it at the head it raised,
+ * and the vessel's checkout watch lands each disk edit between raises.
+ */
+export const canonSourceStandsInCheckout = (canonBags: string): boolean => existsSync(join(dirname(resolve(canonBags)), "pnpm-workspace.yaml"));
+
+/**
  * SEAT THE HOUSE CANON off this vessel's checkout: every holding whose source dir stands under the canon source the daemon
  * resolves (`projectionRoots(...).sourcedSlugs()`, the same reading the seed's `canonIsDisk` makes), the public board
- * excepted. A scratch house with no checkout seats the system canon alone. Returns the seated slugs.
+ * excepted, and whether that source stands in a checkout (a household). A scratch house with no checkout seats the system canon
+ * alone. Returns the seated slugs.
  */
 export function seatHouseCanonFromCheckout(canonBags: string = daemonBagsDir()): string[] {
-  seatHouseCanon(projectionRoots({ projectionRoot: canonBags, canonBags }).sourcedSlugs());
+  seatHouseCanon(projectionRoots({ projectionRoot: canonBags, canonBags }).sourcedSlugs(), { household: canonSourceStandsInCheckout(canonBags) });
   return houseCanonSlugsSeated();
 }
 

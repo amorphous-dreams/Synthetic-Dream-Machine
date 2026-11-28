@@ -42,14 +42,14 @@
  *                   ({@link STOP_FLUSHES_LINE})
  *   8. rite-land    IN THE NEW VESSEL: each face's host half (`rite-landed`); the rite reads par only where every pair reads par,
  *                   and at par it writes the permanent mark (head, image, branch) the next run's supersede reads
- *   9. lag          after a raise that stood, the lag reads aloud on every raise: the canon bag behind the canon source (the
- *                   carriers in `bags/` the canon layers lack; canon fills through promote and the floor's sealed cut, never
- *                   from a raise, so the line only names it), each wiki's workbench behind the checkout's `wikis/<slug>`, and a
- *                   newer seed offer (the seed's floor) the release carries than the vessel serves, named by its card. Where the canon source stands in a checkout
- *                   and the owner holds this terminal, the workbench lay's preview (each title a workbench the worn face mounts
- *                   would take) prints and the lay (`lares vessel lay --workbench --apply`) runs with no question: it reads
- *                   diff-gated and stands off a both-moved row by name; a workbench that does not mount is named and left. A seat (no terminal, or an AI launcher), a source in no
- *                   checkout, or a vessel waiting on its unlock names the lag and lays nothing
+ *   9. canon        after a raise that stood, the house reads its lag: the canon bags behind the canon source (the carriers in
+ *                   `bags/` the canon layers lack or hold in other bytes), and a newer seed offer (the seed's floor) the release carries
+ *                   than the vessel serves, named by its card. WHERE THE CANON SOURCE STANDS IN A CHECKOUT (a household: operator ruling
+ *                   2026-11-28), canon follows the head the raise stood: the rite asks the vessel to lay the checkout's holdings into
+ *                   their canon bags (`lares vessel lay --canon`, under the license the rite's lei already carries, so a seat's rite
+ *                   lays too), and every carrier the head switch carried off tombstones there. Between raises the vessel's checkout
+ *                   watch lands each disk edit live and raises an in-wiki alert for a vanish. A SHARED TIER (a canon source in no
+ *                   checkout) keeps the lag line: its canon fills through promote and the floor's sealed cut, never from a raise
  *
  * A QUIET DAY spends nothing: a vessel that already runs the image under a lit pūlama begins no rite; the raise only tops
  * up the unlock and the face worn.
@@ -221,16 +221,18 @@ export interface RitePorts {
    */
   seedOffer?(head: string): Promise<SeedOffer | null>;
   /**
-   * THE LAG after the raise (`lares vessel lay --lag` in the vessel that stands): canon behind the canon source, each workbench behind
-   * the checkout's `wikis/<slug>` and whether the worn face mounts it; null where the vessel reads none. Absent, the rite reads no lag.
+   * THE LAG after the raise (`lares vessel lay --lag` in the vessel that stands): canon behind the canon source, and whether that
+   * source stands in a checkout; null where the vessel reads none. Absent, the rite reads no lag.
    */
   houseLag?(): Promise<HouseLag | null>;
   /** The floor card the vessel's status refreshed (title only), or null where no vessel answers one. */
   floorCard?(): Promise<{ readonly title: string } | null>;
-  /** The workbench lay on this terminal (`lares vessel lay --workbench --apply`), diff-gated, asking nothing; its exit code. Absent, nothing lays. */
-  layWorkbench?(): Promise<number>;
-  /** Whether an AI seat launched this rite (the harness's mark, or a host chain that reads no person's hand); absent, false. */
-  seat?(): boolean;
+  /**
+   * CANON FOLLOWS THE HEAD (a household alone): the vessel lays the checkout's holdings into their canon bags at the head the raise
+   * stood and tombstones what the head switch carried off (`lares vessel lay --canon`), diff-gated; null where it answered no
+   * reading. Absent, the rite names the line that does it.
+   */
+  canonFollow?(): Promise<CanonFollowReading | null>;
 }
 
 /** One holding's lag: the titles its canon source holds that its canon bag lacks (`new`) or holds in other bytes (`changed`). */
@@ -250,8 +252,20 @@ export interface HouseLag {
   readonly wikis: string | null; readonly benches: readonly BenchLag[]; readonly benchLag: number;
 }
 
-/** The line that lays the checkout's workbench projection by hand. */
-export const WORKBENCH_LAY_LINE = "lares vessel lay --workbench --apply";
+/** One holding the canon follow laid: its canon bag and the lay's verdict (0: landed, or level already), with why it took no road. */
+export interface CanonFollowHolding { readonly holding: string; readonly toBag: string; readonly exitCode: number; readonly reason?: string }
+/**
+ * What the canon follow did at the head the raise stood: each holding it laid, the carriers it tombstoned per canon bag (the files
+ * the head switch carried off), and each line a step refused with.
+ */
+export interface CanonFollowReading {
+  readonly holdings: readonly CanonFollowHolding[];
+  readonly tombstoned: Readonly<Record<string, number>>;
+  readonly refused: readonly string[];
+}
+
+/** The line that lays a household's canon at the checkout's head by hand (diff-gated, so a re-run lands nothing twice). */
+export const CANON_FOLLOW_LINE = "lares vessel lay --canon";
 
 /** The permanent mark: the head, the image and the branch of the last landing that read par. */
 export interface PermanentMark { readonly head: string; readonly image: string; readonly branch: string }
@@ -420,7 +434,7 @@ function handVerdict(f: HandFacts): string {
  */
 export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number; readonly rollback?: true | string }): Promise<{ code: number; data: Record<string, unknown> }> {
   const out = await raiseHouse(ports, opts);
-  // THE LAG AND THE WORKBENCH LAY ride only a raise that stood: a run that stopped, or one that waits on the hand before any raise, reads no lag.
+  // THE LAG AND THE CANON FOLLOW ride only a raise that stood: a run that stopped, or one that waits on the hand before any raise, reads no lag.
   if (out.code !== 0 || out.data["awaits"] === "hand") return out;
   return lagAfterRaise(ports, out);
 }
@@ -429,14 +443,11 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
 const floorMoved = (words: unknown): boolean => typeof words === "string" && /(?:^|· )floor moved(?: ·|$)/.test(words);
 
 /**
- * AFTER THE RAISE, THE LAG (story U4, re-scoped under Mu, operator 2026-11-22). Every raise names how far the house stands behind
- * what it carries: the canon bag behind the canon source, each workbench behind the checkout's `wikis/<slug>`, and a newer sealed
- * floor the release carries. The raise never writes canon: canon fills through promote and the floor's sealed cut. Where the canon
- * source stands in a checkout and the owner holds this terminal, the rite previews the workbench lay (each title a workbench the
- * worn face mounts would take) and lays it with no question (restand-files-smooth: the operator found the y friction): the lay reads
- * diff-gated, so a row both sides moved stands off by name and `lares vessel lay --workbench --apply` lays it later.
- * A seat (no terminal, or an AI launcher) names the lag and never lays; so does a source in no checkout, and a vessel that waits on
- * its unlock.
+ * AFTER THE RAISE, THE LAG AND THE CANON FOLLOW (operator ruling 2026-11-28: the disk stands as one more replica). Every raise names
+ * a newer sealed floor the release carries, and reads the canon bags against the canon source. A HOUSEHOLD (the canon source stands
+ * in a checkout) lays its canon at the head the raise stood: the vessel's lay of the checkout's holdings, diff-gated, licensed by the
+ * rite's lei (a seat's rite lays too), and each carrier the head switch carried off tombstones. A SHARED TIER keeps the lag line, and
+ * its canon fills through promote and the floor's sealed cut. A vessel that waits on its unlock lays nothing yet and names the line.
  */
 export async function lagAfterRaise(ports: RitePorts, out: { code: number; data: Record<string, unknown> }): Promise<{ code: number; data: Record<string, unknown> }> {
   if (!ports.houseLag) return out;
@@ -449,60 +460,46 @@ export async function lagAfterRaise(ports: RitePorts, out: { code: number; data:
   const floor = floorMoved(seedWords);
   const card = floor && ports.floorCard ? await ports.floorCard().catch(() => null) : null;
   if (floor) ports.say(`kūkulu: the seed offer waits (the seed's floor moved); the raise stands no floor${card ? `; the card ${card.title} names each drift` : ""}: \`lares vessel floor status --grain seed\``);
+  const floorData = floor ? { floor: "moved", ...(card ? { card: card.title } : {}) } : {};
   const read = await ports.houseLag().catch(() => null);
   if (read === null) {
     ports.say("kūkulu: the lag reads nowhere (the vessel answered no reading); `lares vessel lay --lag` reads it");
-    return { ...out, data: { ...out.data, lag: { read: false, ...(floor ? { floor: "moved", ...(card ? { card: card.title } : {}) } : {}) } } };
+    return { ...out, data: { ...out.data, lag: { read: false, ...floorData } } };
   }
   const fresh = read.holdings.reduce((n, h) => n + h.new.length, 0), moved = read.holdings.reduce((n, h) => n + h.changed.length, 0);
-  ports.say(read.lag === 0
-    ? `kūkulu: canon stands level with ${read.source}`
-    : `kūkulu: canon lags the canon source by ${read.lag} carrier(s) (${fresh} new, ${moved} changed) in ${read.source}; canon fills through promote and the floor's sealed cut, never from a raise: \`lares meme offer promote <cid>\`, then \`lares nexus release <manifest-file> --cut\``);
-  const lagging = read.benches.filter((b) => b.planned.length > 0);
-  if (read.wikis !== null) {
-    ports.say(read.benchLag === 0
-      ? `kūkulu: the checkout's workbenches stand level with ${read.wikis}`
-      : `kūkulu: the workbenches lag the checkout's ${read.wikis} by ${read.benchLag} carrier(s): ${lagging.map((b) => `${b.slug} ${b.planned.length}`).join(", ")}`);
+  const lag = { canon: read.lag, checkout: read.checkout, source: read.source, ...floorData };
+  if (!read.checkout) {
+    ports.say(read.lag === 0
+      ? `kūkulu: canon stands level with ${read.source}`
+      : `kūkulu: canon lags the canon source by ${read.lag} carrier(s) (${fresh} new, ${moved} changed) in ${read.source}; a shared tier's canon fills through promote and the floor's sealed cut, never from a raise: \`lares meme offer promote <cid>\`, then \`lares nexus release <manifest-file> --cut\``);
+    return { ...out, data: { ...out.data, lag } };
   }
-  for (const b of lagging) {
-    if (b.mounts === true) continue;
-    ports.say(`kūkulu: workbench ${b.slug} does not mount under the worn face (${b.why ?? (b.mounts === null ? "its seat read nowhere" : "no writer's seat")}); nothing of it lays`);
-  }
-  const lag = { canon: read.lag, workbench: read.benchLag, checkout: read.checkout, source: read.source, ...(floor ? { floor: "moved", ...(card ? { card: card.title } : {}) } : {}) };
-  const mounted = lagging.filter((b) => b.mounts === true);
-  const offered = mounted.reduce((n, b) => n + b.planned.length, 0);
-  if (offered === 0) return { ...out, data: { ...out.data, lag } };
-  const tty = ports.tty ? ports.tty() : true, seat = ports.seat ? ports.seat() : false;
-  const why = !read.checkout ? `${read.source} stands in no checkout, so the raise offers no lay`
-    : out.data["awaits"] === "unlock" ? `the new vessel waits on its unlock, so nothing lays; once it opens: ${WORKBENCH_LAY_LINE}`
-    : seat ? `an AI seat launched this rite, so nothing lays; your hand: ${HAND_ACT} on a terminal (or ${WORKBENCH_LAY_LINE})`
-    : !tty ? `this seat holds no terminal, so nothing lays; your hand: ${HAND_ACT} on a terminal (or ${WORKBENCH_LAY_LINE})`
-    : !ports.layWorkbench ? `this rite carries no lay, so nothing lays; your hand: ${WORKBENCH_LAY_LINE}`
+  const warnings = Array.isArray(out.data["warnings"]) ? (out.data["warnings"] as unknown[]) : [];
+  const why = out.data["awaits"] === "unlock" ? `the new vessel waits on its unlock, so canon follows once it opens: ${CANON_FOLLOW_LINE}`
+    : !ports.canonFollow ? `this rite carries no canon follow; ${CANON_FOLLOW_LINE} lays canon at this head`
     : null;
   if (why !== null) {
     ports.say(`kūkulu: ${why}`);
-    return { ...out, data: { ...out.data, lag, workbench: { offered, laid: false, ...(seat || !tty ? { seat: true } : {}) } } };
+    return { ...out, data: { ...out.data, lag, canon: { followed: false } } };
   }
-  // THE PREVIEW, before the lay: where the files go (each wiki's working layer, canon untouched), then every title.
-  ports.say(`kūkulu: the workbench lay carries each file under ${read.wikis}/<slug> into that wiki's working layer; canon stays as it stands:`);
-  for (const b of mounted) {
-    ports.say(`  ${b.slug} -> ${b.toBag}: ${b.planned.length}`);
-    for (const t of b.planned) ports.say(`    ${t}`);
+  const f = await ports.canonFollow!().catch(() => null);
+  if (f === null) {
+    // A PAR LANDING READS GREEN: the house already stands balanced, so a canon follow that answered nothing rides as a warning.
+    ports.say(`kūkulu: the canon follow answered no reading; the house stands, and the lay reads diff-gated, so ${CANON_FOLLOW_LINE} lays canon at this head safely`);
+    return { ...out, data: { ...out.data, lag, canon: { followed: false }, warnings: [...warnings, "canon-follow-waits"] } };
   }
-  const code = await ports.layWorkbench!();
-  if (code === INTERRUPTED) {
-    ports.say(`kūkulu: something interrupted the workbench lay; the house stands, and the lay reads diff-gated, so ${WORKBENCH_LAY_LINE} picks it up`);
-    return { code: 1, data: { ...out.data, lag, workbench: { offered, laid: false, interrupted: true }, refusal: "kukulu-workbench-lay-interrupted" } };
+  const failed = f.holdings.filter((h) => h.exitCode !== 0);
+  const tombstoned = Object.values(f.tombstoned).reduce((n, c) => n + c, 0);
+  ports.say(`kūkulu: canon follows the checkout at this head: ${f.holdings.length - failed.length}/${f.holdings.length} holding(s) laid from ${read.source}${read.lag > 0 ? ` (${fresh} new, ${moved} changed before the lay)` : ""}${tombstoned > 0 ? ` · ${tombstoned} carrier(s) the head switch carried off tombstone` : ""}`);
+  for (const h of failed) ports.say(`kūkulu:   ${h.holding}: the lay answered ${h.exitCode}${h.reason !== undefined ? ` (${h.reason})` : ""}`);
+  for (const [bag, n] of Object.entries(f.tombstoned).sort(([a], [b]) => (a < b ? -1 : 1))) if (n > 0) ports.say(`kūkulu:   ${bag}: ${n} tombstoned`);
+  for (const line of f.refused) ports.say(`kūkulu:   ${line}`);
+  const canon = { followed: failed.length === 0 && f.refused.length === 0, holdings: f.holdings.length, failed: failed.length, tombstoned };
+  if (!canon.followed) {
+    ports.say(`kūkulu: the house stands, the lines above name what the lay refused, and the lay reads diff-gated, so ${CANON_FOLLOW_LINE} runs again safely`);
+    return { ...out, data: { ...out.data, lag, canon, warnings: [...warnings, "canon-follow-waits"] } };
   }
-  if (code !== 0) {
-    // A PAR LANDING READS GREEN: the house already stands balanced, so the lay's refusal rides as a warning with its cure line,
-    // never the rite's red; `refusal` stays for a rite that truly failed.
-    ports.say(`kūkulu: the workbench lay answered ${code}; the house stands, the lines above name what the lay refused, and the lay reads diff-gated, so ${WORKBENCH_LAY_LINE} runs again safely`);
-    const warnings = [...(Array.isArray(out.data["warnings"]) ? (out.data["warnings"] as unknown[]) : []), "workbench-lay-waits"];
-    return { ...out, data: { ...out.data, lag, workbench: { offered, laid: false }, warnings } };
-  }
-  ports.say(`kūkulu: the workbench laid: ${offered} carrier(s) from ${read.wikis}`);
-  return { ...out, data: { ...out.data, lag, workbench: { offered, laid: true } } };
+  return { ...out, data: { ...out.data, lag, canon } };
 }
 
 async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number; readonly rollback?: true | string }): Promise<{ code: number; data: Record<string, unknown> }> {

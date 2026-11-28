@@ -59,7 +59,8 @@ import { preparePlaceFace } from "@lararium/mesh/session-face";
 import { signAsFaceAtom } from "@lararium/mesh/face-atom";
 import { seatMintCensus, capMintsUnpointed } from "@lararium/mesh/mint-census";
 import { wikiIslandWithholds, vesselDocBags, type WikiIslandMount } from "@lararium/mesh/wiki-island-reach";
-import { refuseTw5DocsWrite } from "@lararium/mesh/tw5-docs-name";
+import { namesTw5Docs, refuseTw5DocsWrite } from "@lararium/mesh/tw5-docs-name";
+import { houseCanonIsHousehold } from "@lararium/mesh/kahu-canon-reach";
 import * as A from "@automerge/automerge";
 import { watchCallTouches, type CallTouches } from "@lararium/mesh/call-touches";
 import { awaitCallHeads, REST_OWED_SYNC_BOUND_MS } from "./call-heads.js";
@@ -80,7 +81,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { publishWikiRender, trackedTreeRoots, type RenderFile } from "./render-output.js";
 import { larBootstrapPath, larCatalogUrlPath, larProjectionsHome, larConfigHome, larWorkspacesHome, larHearthHome } from "./vessel-paths.js";
 import { createAfterRoll } from "./after-roll-chain.js";
-import { basename, dirname, join } from "path";
+import { basename, dirname, join, resolve as resolvePath } from "path";
 import type { Server }                  from "node:http";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 import type { DocHandle, AutomergeUrl, DocumentId, PeerId } from "@automerge/automerge-repo";
@@ -231,7 +232,7 @@ import {
 } from "./genesis-artifact.js";
 import { foundingRecordLine, readFoundingRecordTruths } from "./genesis-truths.js";
 import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.js";
-import { seatHouseCanonFromCheckout, standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, protectedDocsOver, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
+import { canonSourceStandsInCheckout, seatHouseCanonFromCheckout, standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, protectedDocsOver, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { custodyOpens, duringLight, faceNamedCustodyWrite } from "./face-named-custody-write.js";
@@ -243,9 +244,9 @@ import { projectionRoots, workspaceRootsOf, workbenchFolders, litFaceDiskMirrors
 import { ensureRealmLabel, realmPlacement, settleRealmMoves } from "./realm-labels.js";
 import { ledgerWorkbenches, ledgerWorkbenchRealms, workbenchSeats } from "@lararium/mesh/workbench";
 import { wikiSlotOf } from "@lararium/mesh/wiki-island-reach";
-import { armFacePoolWatch, armWorkspaceWatch, tendLitFacePool, type FacePoolWatch } from "./watch-core.js";
+import { armCheckoutWatch, armFacePoolWatch, armWorkspaceWatch, tendLitFacePool, CHECKOUT_SEAM, type FacePoolWatch } from "./watch-core.js";
 import { ensurePoolTree, faceShelvingLine, healPoolTrees, poolTreeLine, shelveFaceRoot } from "./pool-tree.js";
-import { islandBaseDoor, islandIngestSubmit, openSyncedTree, poolIngestPorts, workspaceIngestPorts, type BaseRoad } from "./ingest-scan.js";
+import { checkoutIngestPorts, islandBaseDoor, islandIngestSubmit, openSyncedTree, poolIngestPorts, workspaceIngestPorts, type BaseRoad } from "./ingest-scan.js";
 import { poolHeads } from "./pool-head.js";
 import { newRequestId } from "@lararium/mesh/verb-tiddler";
 import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
@@ -2582,7 +2583,8 @@ async function prepareNodeBootOn(
   // THE HOUSE CANON SEATS HERE, off the checkout's disk-sourced holdings (`seatHouseCanonFromCheckout`), before any island
   // spawns: every island is handed the same slugs.
   // The documents a resting engine fall names in flight ride in too: the daemon island's own store holds them back.
-  const casData: IslandCasData = { cidDir, corpusCasDir, houseCanon: seatHouseCanonFromCheckout(), heldBack };
+  const houseCanon = seatHouseCanonFromCheckout();
+  const casData: IslandCasData = { cidDir, corpusCasDir, houseCanon, household: houseCanonIsHousehold(), heldBack };
   const hermShore = hermCasTransitFromEnv();
   const resolveCid = makeNodeCasResolver({ cidDir, corpusCasDir, shore: hermShore });
   // The floor stack carries `resolveCid` as the record's `cas` (below): a boot that refuses before it composes leaves no `cas` behind.
@@ -5658,6 +5660,32 @@ async function prepareNodeBootOn(
         workspaceWatches.add(wsWatch);
         // The last workbench watch's down marks a quiet point: a rename or regroup the operator made while it held the folder moves now.
         stood.push({ what: `the workbench ${name}'s watch`, phase: "producers", down: async () => { await wsWatch.down("lock"); workspaceWatches.delete(wsWatch); if (workspaceWatches.size === 0) settleRealmFolders(); } });
+      }
+      // THE CHECKOUT WATCH (operator ruling 2026-11-28: the disk stands as one more replica, and a household's canon follows its
+      // checkout). Where the canon source stands in a checkout, the same seat stands over its `bags/`: each settle lands ONE
+      // unattended INGEST wave per holding into that holding's canon bag on the daemon island, `writer: disk`, so an edit a person or
+      // a spirit made in the checkout lands canon live with no lay; a vanish between raises raises the shore's in-wiki alert (remove ·
+      // restore) and tombstones nothing, since the kūkulu alone tombstones what a head switch carried off. Beside it, each sourced
+      // wiki's workbench in the checkout (`wikis/<slug>`, which `workbenchFolders` leaves to the checkout) takes the workbench seat:
+      // its waves land in that wiki's working layer. Neither seam commits: the checkout keeps its own history (`CHECKOUT_SEAM`).
+      const canonSource = daemonBagsDir();
+      if (canonSourceStandsInCheckout(canonSource)) {
+        const checkout = dirname(resolvePath(canonSource));
+        const ckLog = (line: string): void => console.log(`[checkout] ${line}`);
+        const holdings = (): string[] => projectionRoots({ projectionRoot: larProjectionsHome(), canonBags: canonSource }).sourcedSlugs().filter((slug) => !namesTw5Docs(slug));
+        const ckWatch = armCheckoutWatch({ bags: canonSource, ports: checkoutIngestPorts({ bags: canonSource, holdings, submit, sense, base, did: requestedBy, heads: poolHeads(checkout), log: ckLog }), log: ckLog });
+        stood.push({ what: "the checkout's canon watch", phase: "producers", down: async () => { await ckWatch.down("lock"); } });
+        const benches = new Set(readWorkbenches().map((w) => resolvePath(w.dir)));
+        for (const slug of holdings()) {
+          const dir = join(checkout, "wikis", slug);
+          if (!existsSync(dir) || benches.has(resolvePath(dir))) continue;
+          const wsSubmit = islandIngestSubmit((_verb, args) => inWiki(slug, routingString(args, "verb", "wiki-act"), routingObject(args, "args", "wiki-act")));
+          const wsSense = (uris?: readonly string[]): Promise<unknown> => inWiki(slug, "shore", { op: "sense", ...(uris !== undefined ? { uris: [...uris] } : {}) });
+          const wsBase = (synced: ReturnType<typeof openSyncedTree>) => islandBaseDoor((bag) => [(args) => inWiki(slug, "shore", args), daemonRoad, ...wikiRoads(bag, slug)], synced);
+          const ports = { ...workspaceIngestPorts({ workspace: dir, slug, submit: wsSubmit, sense: wsSense, base: wsBase, did: requestedBy, heads: poolHeads(checkout), log: ckLog }), commit: async () => CHECKOUT_SEAM };
+          const benchWatch = armWorkspaceWatch({ workspace: dir, tree: checkout, name: `wikis/${slug}`, ports, log: ckLog });
+          stood.push({ what: `the checkout workbench ${slug}'s watch`, phase: "producers", down: async () => { await benchWatch.down("lock"); } });
+        }
       }
     }
     // A FACE'S HOME WIKI IS ITS OWN PREFERENCE, READ AT LIGHT (research/pin-mu#S2): the record sits in the lit face's own daemon

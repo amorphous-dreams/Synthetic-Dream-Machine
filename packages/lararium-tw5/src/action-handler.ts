@@ -1863,6 +1863,8 @@ async function executeIngest(action: IngestAction, access: BagAccess, opts: Acti
   const fresher = overrides ? await overrides.read() : [];
   return {
     sourceUri: action.sourceUri, toBag: action.toBag, changeId: action.changeId,
+    // THE WRITER'S PROVENANCE: a wave a watch read off disk names `disk`, beside the records it landed.
+    ...(action.writer === "disk" ? { writer: "disk" } : {}),
     carriers: results,
     ...(fresher.length > 0 ? { fresherCanon: fresherSummary(fresher) } : {}),
     ...(deletionSummary ? { deletions: deletionSummary } : {}),

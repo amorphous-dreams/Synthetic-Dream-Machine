@@ -25,15 +25,18 @@
  *
  *   lares vessel lay [--apply] [--yes] [--lift-kahua <N>]   — preview per holding by default (the ingest posture);
  *                                          a bare --yes lifts nothing in kahua: a typed count on a TTY, or --lift-kahua N
- *   lares vessel lay --workbench [--apply]                  — the checkout's workbench folders alone (`<source>/../wikis/<slug>`)
- *                                          into each wiki's working layer the worn face mounts; never canon, never a face root
+ *   lares vessel lay --canon                                — a household's canon follows its checkout: the holdings leg alone,
+ *                                          applied, then every carrier the head switch carried off tombstones (the kūkulu's own lay)
  *   lares vessel lay --lag                                  — the house's lag; writes nothing
  *
- * THE LAG (`readHouseLag`) reads what the kūkulu prints on every raise: each disk-sourced holding's titles its canon lacks (NEW)
+ * THE LAG (`readHouseLag`) reads what the kūkulu weighs on every raise: each disk-sourced holding's titles its canon lacks (NEW)
  * or holds in other bytes (CHANGED), scanned against the Synced tree the INGEST gate keeps; each checkout workbench folder's titles
  * new or moved against its wiki's working layer, with whether the worn face mounts that workbench; and whether the canon source
- * stands in a checkout (an SDM repo: `pnpm-workspace.yaml` beside its `bags/`), the one case where the raise offers the workbench
- * lay after the raise. Canon itself fills through promote and the floor's sealed cut: no raise lays it.
+ * stands in a checkout (an SDM repo: `pnpm-workspace.yaml` beside its `bags/`).
+ *
+ * A HOUSEHOLD'S CANON FOLLOWS ITS CHECKOUT (operator ruling 2026-11-28): where the canon source stands in a checkout, the kūkulu lays
+ * it at the head the raise stood (`--canon`, licensed by the rite's lei), and between raises the vessel's checkout watch lands each
+ * disk edit live (`writer: disk`). A shared tier's canon fills through promote and the floor's sealed cut: no raise lays it.
  */
 
 import { existsSync, readdirSync, statSync } from "node:fs";
@@ -45,8 +48,8 @@ import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor } from "../render.js";
 import { larBagsDir, larProjectionsDirOrNone, larRoot, larWikisDir, vesselDid } from "../env.js";
 import { fileToUriForSource, openSyncedTree, scanSource } from "../ingest-core.js";
-import type { HouseLag, LagHolding } from "../rite-kukulu.js";
-import { askShore, readShoreList } from "../shore-core.js";
+import type { CanonFollowHolding, CanonFollowReading, HouseLag, LagHolding } from "../rite-kukulu.js";
+import { askShore, readShoreList, type ShoreAnswer } from "../shore-core.js";
 import { cmdIngest, type FresherCanonReading, type IngestSink } from "./ingest.js";
 import { cmdAct } from "./act.js";
 import { LIVE_MIRROR_DOORS, readBenchLag, type MirrorDoors } from "../seed-mirrors.js";
@@ -291,6 +294,7 @@ export async function liveFloorDrift(): Promise<FloorDriftReading> {
 
 export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_MIRROR_DOORS, floorDrift: () => Promise<FloorDriftReading> = liveFloorDrift): Promise<number> {
   const bagsDir = larBagsDir();
+  if (args.flags["canon"]) return cmdLayCanon(args, bagsDir);
   if (args.flags["lag"]) {
     const lag = await readHouseLag(mirrorDoors, bagsDir);
     // THE FLOOR'S DRIFT RIDES BESIDE THE LAG, never inside it: lag counts disk against live canon, the drift live canon against
@@ -316,7 +320,7 @@ export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_M
   // AN APPLY THAT NO HAND CONFIRMS REFUSES OUT LOUD: without `--yes` the lay asks at a terminal, and with none (a pipe, a seat, a
   // harness) no one can answer, so it names the cure instead of standing silent.
   if (args.flags["apply"] === true && args.flags["yes"] !== true && !(process.stdin.isTTY && process.stdout.isTTY)) {
-    const cure = `lares vessel lay ${args.flags["workbench"] ? "--workbench " : ""}--apply --yes`;
+    const cure = "lares vessel lay --apply --yes";
     emit(args, {
       ok: false,
       error: { code: "usage", message: "confirmation required", hint: `no terminal answers the lay's confirmation; pass --yes (the operator's relayed approval): ${cure}` },
@@ -325,9 +329,6 @@ export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_M
     console.error(`lares vessel lay: --apply needs a confirmation and no terminal stands to give it; run \`${cure}\` to confirm (add --lift-kahua <N> to lift kahua items).`);
     return exitFor("usage");
   }
-  // `--workbench` walks the checkout's workbench folders alone (the lay a kūkulu runs after its raise): no holdings leg, no
-  // face root, no share, no kahua; each workbench lays only where the worn face holds a writer's seat.
-  if (args.flags["workbench"]) return runMirrors({ apply: args.flags["apply"] === true, json: args.flags["json"] === true, benchesOnly: true }, mirrorDoors);
   const holdings = discoverHoldings(bagsDir);
   if (holdings.length === 0) {
     emit(args, {
@@ -376,4 +377,83 @@ export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_M
   // THE MIRRORS LEG, after canon stands: every mirror under the projections root back into its one layer.
   const mirrors = await runMirrorLeg(args, mirrorDoors);
   return failed.length === 0 && mirrors === 0 ? 0 : 1;
+}
+
+/** The pending removals the shore lists, counted per bag the canon follow fed. */
+export function pendingByBag(pending: ReadonlyArray<Record<string, unknown>>, bags: readonly string[]): Array<[string, number]> {
+  const counts = new Map<string, number>();
+  for (const p of pending) {
+    const bag = String(p["bagId"]);
+    if (bags.includes(bag)) counts.set(bag, (counts.get(bag) ?? 0) + 1);
+  }
+  return [...counts].sort(([a], [b]) => (a < b ? -1 : 1));
+}
+
+/** The shore door the canon follow reads and answers through: the list, and the batch removal per bag. */
+export type CanonShore = (shoreArgs: Readonly<Record<string, unknown>>) => Promise<ShoreAnswer>;
+
+const liveCanonShore = async (): Promise<CanonShore> => { const did = await vesselDid(); return (a) => askShore(a, did); };
+
+/**
+ * A HOUSEHOLD'S CANON FOLLOWS ITS CHECKOUT (`lares vessel lay --canon`; operator ruling 2026-11-28, forks 1 and 3). The kūkulu asks
+ * it of the vessel after a raise, under the license the rite's lei carries: the holdings leg alone, applied (each disk-sourced
+ * holding's CREATE, then its diff-gated INGEST into its canon bag), so canon stands at the head the raise stood; then every carrier
+ * the head switch carried off (each removal the shore lists pending in a bag this lay fed) tombstones, one batch answer per bag. A
+ * canon source in no checkout keeps a shared tier, and the follow refuses by name: that canon fills through promote and the cut.
+ * The answer names each holding's verdict, the tombstones per bag and each refused step; it answers ok whatever a holding said, so
+ * the rite reads the rows.
+ */
+export async function cmdLayCanon(args: ParsedArgs, bagsDir: string = larBagsDir(), shore: () => Promise<CanonShore> = liveCanonShore): Promise<number> {
+  if (!canonSourceIsCheckout(bagsDir)) {
+    const message = `canon-source-shared: ${bagsDir} stands in no checkout, so its canon keeps a shared tier and follows no head; it fills through promote and the floor's sealed cut (\`lares meme offer promote <cid>\`, then \`lares nexus release <manifest-file> --cut\`)`;
+    emit(args, { ok: false, error: { code: "canon-source-shared", message }, human: () => console.error(`lares vessel lay: ${message}`) });
+    return 2;
+  }
+  // THE RITE'S LEI CARRIES THE LICENSE: the follow lays applied and asks no hand at a terminal.
+  const applied: ParsedArgs = { ...args, flags: { ...args.flags, apply: true, yes: true } };
+  const holdings: CanonFollowHolding[] = [];
+  const fed: string[] = [];
+  const started = performance.now();
+  for (const h of discoverHoldings(bagsDir)) {
+    const carriers = countCarriers(h.source);
+    const holdingStarted = performance.now();
+    const row = await layHolding(applied, h);
+    // A holding that takes no road (off disk, the TW5 docs name) follows nothing: canon follows the checkout's own holdings alone.
+    if (row.gesture === "skip") continue;
+    holdings.push({ holding: row.holding, toBag: row.toBag, exitCode: row.exitCode, ...(row.reason !== undefined ? { reason: row.reason } : {}) });
+    if (row.gesture === "floor") { console.log(`· ${row.holding}: ${row.reason}`); continue; }
+    fed.push(row.toBag);
+    console.log(layHoldingLine(row, carriers, elapsedText(performance.now() - holdingStarted)));
+  }
+  // A VANISH THE HEAD SWITCH CARRIED TOMBSTONES AT THE RAISE (fork 3): each removal the shore lists pending in a fed bag.
+  const tombstoned: Record<string, number> = {};
+  const refused: string[] = [];
+  if (fed.length > 0) {
+    try {
+      const ask = await shore();
+      const listed = await readShoreList(ask, { op: "list" });
+      if (!listed.ok) refused.push(`the shore's list refused (${listed.refusal ?? listed.why ?? "unread"}); \`lares shore\` names each pending removal`);
+      else {
+        for (const [bag, n] of pendingByBag(listed.pending, fed)) {
+          const answer = await ask({ op: "remove", all: true, count: n, bag });
+          if (answer.ok) tombstoned[bag] = n;
+          else refused.push(`${bag}: ${n} pending removal(s) stand (${answer.refusal ?? answer.why ?? "the shore refused"}); \`lares shore remove --all --count ${n} --bag ${bag}\` tombstones them`);
+        }
+      }
+    } catch (e) {
+      refused.push(`the shore read faulted (${(e instanceof Error ? e.message : String(e)).replace(/[\r\n]+/g, " ").trim()}); \`lares shore\` names each pending removal`);
+    }
+  }
+  const reading: CanonFollowReading = { holdings, tombstoned, refused };
+  const failed = holdings.filter((h) => h.exitCode !== 0);
+  emit(args, {
+    ok: true,
+    data: { ...reading, source: bagsDir } as unknown as Record<string, unknown>,
+    human: () => {
+      for (const [bag, n] of Object.entries(tombstoned)) console.log(`lay: ${bag}: ${n} carrier(s) the head switch carried off tombstone`);
+      for (const line of refused) console.error(`  ${line}`);
+      console.log(`lay: canon follows ${bagsDir}: ${holdings.length - failed.length}/${holdings.length} holdings · ${elapsedText(performance.now() - started)}`);
+    },
+  });
+  return failed.length === 0 && refused.length === 0 ? 0 : 1;
 }

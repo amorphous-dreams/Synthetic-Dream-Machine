@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.holding.lays"
 
 ! carriage.holding.lays ~ each bags/* holding, laid back into its doc by kind
 
-`lares vessel lay` walks every holding under the canon source and lays it into its doc, kind-routed and diff-gated, by the act CREATE and the ingest it runs (so it passes `--change-id`, `--dry-run`, `--in-wiki`, `--shadow` and `--tag-blobs` through to them). Bare it previews; `--apply` lands, asking at a terminal, `--yes` with none (an apply with neither refuses `usage`). `--lag` reads how far canon lags the source and the floor's drift, writing nothing; `--workbench` walks the workbench folders alone; `--lift-kahua <N>` lifts kahua items; `--verbose` prints each line.
+`lares vessel lay` walks every holding under the canon source and lays it into its doc, kind-routed and diff-gated, by the act CREATE and the ingest it runs (so it passes `--change-id`, `--dry-run`, `--in-wiki`, `--shadow` and `--tag-blobs` through to them). Bare it previews; `--apply` lands, asking at a terminal, `--yes` with none (an apply with neither refuses `usage`). `--lag` reads how far canon lags the source and the floor's drift, writing nothing; `--canon` lays a household's canon at the checkout's head and tombstones what the head switch carried off (the kūkulu's own lay; between raises the vessel's checkout watch lands each disk edit); `--lift-kahua <N>` lifts kahua items; `--verbose` prints each line.
 
 <<~/ahu>>
 
@@ -35,12 +35,12 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.holding.lays"
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ apply · lag · workbench · lift-kahua · verbose · change-id · dry-run · in-wiki · shadow · tag-blobs
+!! takes ~ apply · lag · canon · lift-kahua · verbose · change-id · dry-run · in-wiki · shadow · tag-blobs
 
 ```memetic-wikitext
 <<has entity=`arg` name=`apply` params=`~ land the lay; preview bare`>>
 <<has entity=`arg` name=`lag` params=`~ read canon's lag and the floor drift, writing nothing`>>
-<<has entity=`arg` name=`workbench` params=`~ walk the checkout's workbench folders alone`>>
+<<has entity=`arg` name=`canon` params=`~ lay a household's canon at the checkout's head; tombstone what the head switch carried off`>>
 <<has entity=`arg` name=`lift-kahua` params=`takes/index ~ lift kahua items for this face`>>
 <<has entity=`arg` name=`verbose` params=`~ print every line`>>
 <<has entity=`arg` name=`change-id` params=`takes/id ~ passed to the act and ingest beneath`>>
@@ -111,6 +111,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZLwB5p7KYDDXDdqi-IlPDCuQNhPJ9TsTh3H1yMs1DTI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FV4tOS4uCITAm8g-OlcEXzhWsBwzbepigXX8fT5uSt0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

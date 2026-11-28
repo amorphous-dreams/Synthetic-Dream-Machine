@@ -363,3 +363,82 @@ describe("WP6 — the vessel arms one seat per workbench folder", () => {
     expect(vessel).toMatch(/facePoolStandDown:\s*async\s*\(\)\s*=>\s*\{[^}]*workspaceWatches/);
   });
 });
+
+describe("WP7 — a household's checkout: canon follows it between raises (operator ruling 2026-11-28, the disk as one more replica)", () => {
+  const NOTES = "lar:///ha.ka.ba/bags/notes";
+  const URI = "lar:///ha.ka.ba/notes/one";
+  /** A checkout: `pnpm-workspace.yaml` beside `bags/`, one holding `notes` with one carrier and its own declaration. */
+  const checkout = (): { root: string; bags: string; file: string } => {
+    const root = join(house, "checkout");
+    const bags = join(root, "bags");
+    const file = join(bags, "notes", "ha.ka.ba", "notes", "one.tid");
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(join(root, "pnpm-workspace.yaml"), "packages: []\n");
+    writeFileSync(join(bags, "notes", "meta.mem"), "the bag's own declaration\n");
+    writeFileSync(file, tid(URI, "the checkout's words"));
+    return { root, bags, file };
+  };
+
+  test("RED: a disk edit under bags/<slug> lands canon live: one unattended daemon-side INGEST into that holding's canon bag, writer disk", async () => {
+    const { bags, file } = checkout();
+    agreed(NOTES, URI, file, tid(URI, "the old words"));
+    const { waves, submit } = island();
+    const { looks, sense } = shore();
+    const ports = is.checkoutIngestPorts({ bags, holdings: () => ["notes"], submit, sense, did: "0xwornface", tree: () => tree, log: () => {} });
+    await ports.wave([file, join(bags, "notes", "meta.mem"), join(bags, "stranger", "x.tid")]);
+    expect(waves).toHaveLength(1);
+    const w = waves[0]!;
+    expect(w.toBag).toBe(NOTES);
+    expect(w.inWiki).toBeUndefined();
+    expect(w.unattended).toBe(true);
+    expect(w.writer).toBe("disk");
+    expect(w.source).toBe(join(bags, "notes"));
+    expect(w.candidates.map((c) => [c.uri, c.status])).toEqual([[URI, "changed"]]);
+    expect(is.ingestWaveArgs(w)).toMatchObject({ "to-bag": NOTES, unattended: true, writer: "disk" });
+    expect(looks).toEqual([]);
+  });
+
+  test("RED: a vanish between raises tombstones nothing and raises the shore's whole look (its in-wiki alert names remove and restore)", async () => {
+    const { bags, file } = checkout();
+    agreed(NOTES, URI, file, tid(URI, "the checkout's words"));
+    rmSync(file);
+    const { waves, submit } = island();
+    const { looks, sense } = shore();
+    const ports = is.checkoutIngestPorts({ bags, holdings: () => ["notes"], submit, sense, did: "0xwornface", tree: () => tree, log: () => {} });
+    await ports.wave([file]);
+    expect(waves).toEqual([]);
+    expect(looks).toEqual([undefined]);
+  });
+
+  test("the catch-up reads every holding but its declaration; a slot both sides moved goes to the shore by name", async () => {
+    const { bags, file } = checkout();
+    agreed(NOTES, URI, file, tid(URI, "the old words"));
+    const { waves, submit } = island(() => "conflict");
+    const { looks, sense } = shore();
+    const ports = is.checkoutIngestPorts({ bags, holdings: () => ["notes"], submit, sense, did: "0xwornface", tree: () => tree, log: () => {} });
+    await ports.catchUp();
+    expect(waves.map((w) => w.candidates.map((c) => c.uri))).toEqual([[URI]]);
+    expect(looks).toEqual([undefined]);
+    await ports.wave([file]);
+    expect(looks[1]).toEqual([URI]);
+  });
+
+  test("RED: the checkout's seat commits nothing: the checkout keeps its own history", async () => {
+    const { root, bags, file } = checkout();
+    stubTree(root);
+    expect(gitIn(root, "add", "-A").code).toBe(0);
+    expect(gitIn(root, "commit", "-q", "-m", "the head").code).toBe(0);
+    const head = gitIn(root, "rev-parse", "HEAD").out;
+    const seen: string[][] = [];
+    const { watch, fire } = fakeWatch();
+    const seat = wc.armCheckoutWatch({ bags, watch, cookie: async () => true, settleMs: 5, log: () => {}, ports: { catchUp: async () => {}, wave: async (files) => { seen.push([...files]); } } });
+    expect(await seat.armed).toBe("live");
+    writeFileSync(file, tid(URI, "a spirit's words"));
+    fire("notes/ha.ka.ba/notes/one.tid");
+    fire("meta-at-top.tid");
+    await settle();
+    expect(seen).toEqual([[file]]);
+    expect(await seat.down("lock")).toEqual(wc.CHECKOUT_SEAM);
+    expect(gitIn(root, "rev-parse", "HEAD").out).toBe(head);
+  });
+});

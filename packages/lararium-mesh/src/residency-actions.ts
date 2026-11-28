@@ -324,6 +324,9 @@ export interface IngestAction extends ResidencyActionBase {
    * names another face refuses.
    */
   readonly face?: number;
+  /** WHO WROTE THE WORDS: `disk` where a watch read them off a file (the disk as one more replica); the wave's summary names it,
+   *  so a canon record a disk edit landed carries that provenance. Absent → a gesture a hand named. */
+  readonly writer?: "disk";
 }
 
 export type ResidencyAction =
@@ -410,6 +413,7 @@ export function encodeResidencyArgs(action: ResidencyAction): ResidencyArgs {
         ...(action.kapae ? { kapae: action.kapae } : {}),
         ...(action.unattended === true ? { unattended: true } : {}),
         ...(action.face !== undefined ? { face: action.face } : {}),
+        ...(action.writer === "disk" ? { writer: "disk" } : {}),
       };
     default: {
       // Exhaustiveness guard: a new ResidencyAction variant that lands here without a case
@@ -537,12 +541,16 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
     // A named face reads as a whole handle index; any other spelling refuses rather than land on a face nobody named.
     const face = args["face"];
     if (face !== undefined && (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0)) return null;
+    // The writer reads `disk` or absent: any other spelling refuses rather than name a writer nobody read.
+    const writer = args["writer"];
+    if (writer !== undefined && writer !== "disk") return null;
     return {
       ...base, verb: "INGEST", sourceUri, toBag, changeId, carriers,
       ...(deletions.length > 0 ? { deletions } : {}),
       ...(kapae.length > 0 ? { kapae } : {}),
       ...(unattended === true ? { unattended: true } : {}),
       ...(typeof face === "number" ? { face } : {}),
+      ...(writer === "disk" ? { writer: "disk" as const } : {}),
     };
   }
 

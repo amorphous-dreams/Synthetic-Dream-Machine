@@ -24,6 +24,10 @@
  * (`workspaceCommitSeam`, naming no face) into the one tree of the entity root that holds it (the realm root, or the workspace's own
  * top); with none standing, a plain mirror.
  *
+ * A HOUSEHOLD'S CHECKOUT TAKES THE SAME SEAT (`armCheckoutWatch`): where the canon source stands in a checkout, the seat watches its `bags/`
+ * whole and each settle lands canon live, `writer: disk`; the checkout's own `wikis/<slug>` workbenches take `armWorkspaceWatch`.
+ * Neither commits: the checkout keeps its own history (`CHECKOUT_SEAM`).
+ *
  * Meme: lar:///ha.ka.ba/kahua/memory/project/face-pools
  */
 
@@ -148,7 +152,7 @@ export type SittingClose = "lock" | "down";
 
 export type SeamReading =
   | { readonly committed: true; readonly sha: string }
-  | { readonly committed: false; readonly why: "no-pool-history" | "nothing-moved" }
+  | { readonly committed: false; readonly why: "no-pool-history" | "nothing-moved" | "checkout-history" }
   | { readonly committed: false; readonly why: "commit-refused"; readonly detail: string };
 
 /** One git run in a pool. The hook env (`GIT_DIR`, `GIT_INDEX_FILE`, …) never crosses: a pool reads its own history alone. */
@@ -431,6 +435,41 @@ export function armWorkspaceWatch(o: WorkspaceWatchOptions): FacePoolWatch {
     },
     commit: o.ports.commit ?? ((c: SittingClose) => workspaceCommitSeam(o.workspace, c, git, tree)),
     covers: `the workbench ${o.name}`,
+  });
+}
+
+// ── a household's checkout as a pool ───────────────────────────────────────────────────────────────────────────
+
+/**
+ * THE CHECKOUT KEEPS ITS OWN HISTORY: the vessel never commits into a repository checkout. Its git diff carries each disk edit's
+ * signature, and the person's own commit records it; every checkout seam (the canon source, each `wikis/<slug>`) reads this.
+ */
+export const CHECKOUT_SEAM: SeamReading = { committed: false, why: "checkout-history" };
+
+export interface CheckoutWatchOptions {
+  /** The canon source standing in a checkout: its `bags/`, one holding folder per slug. */
+  readonly bags: string;
+  readonly ports: FacePoolPorts;
+  readonly settleMs?: number;
+  readonly log?: (line: string) => void;
+  readonly watch?: FacePoolWatchOptions["watch"];
+  readonly cookie?: FacePoolWatchOptions["cookie"];
+}
+
+/**
+ * ARM THE WATCH over a household's canon source (operator ruling 2026-11-28: a household's canon follows its checkout), the same
+ * seat a face pool takes. Hands back at once; off the boot path the watch, the cookie and the catch-up run, so an edit made while
+ * no vessel watched lands before the watch reads live. Every file under a holding folder wakes a wave but the house's ignore list
+ * and editor litter. The down runs the final wave, then the checkout seam, which commits nothing (`CHECKOUT_SEAM`).
+ */
+export function armCheckoutWatch(o: CheckoutWatchOptions): FacePoolWatch {
+  return armSeat({
+    root: o.bags, ports: o.ports, ...(o.settleMs !== undefined ? { settleMs: o.settleMs } : {}),
+    log: o.log ?? ((line: string) => console.log(`[checkout] ${line}`)),
+    ...(o.watch ? { watch: o.watch } : {}), ...(o.cookie ? { cookie: o.cookie } : {}),
+    accepts: (rel) => rel.includes("/"),
+    commit: o.ports.commit ?? (async () => CHECKOUT_SEAM),
+    covers: "the checkout's canon source",
   });
 }
 

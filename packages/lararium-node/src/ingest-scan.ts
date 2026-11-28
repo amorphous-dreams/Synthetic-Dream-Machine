@@ -25,6 +25,7 @@ import { digestsEqual } from "@lararium/mesh/agile-digest";
 import { BAG_MANIFEST_FILE } from "@lararium/mesh/bag-manifest";
 import { ridesAsPointer, mediaTypeFromExt, isOversizedBody } from "@lararium/mesh/content-handle";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { bagUri } from "@lararium/mesh/lar-uris";
 import { type WaveLimits, type WaveWeight, takeCrest, scaleLimits, adaptDepth, addWeight, fitsWave } from "@lararium/mesh/wave-crest";
 import { yieldToHost } from "@lararium/mesh/host-task";
 import { INGEST_WAVE_LIMITS, INGEST_WAVE_OVER_BUDGET, RECORD_OBJECTS, ingestCarrierWeight } from "@lararium/mesh/ingest-wave-budget";
@@ -1356,6 +1357,9 @@ export interface SubmitIngestOpts {
   /** THE FACE-NAMED WAVE (the lit set): the handle index of the open face whose own layer takes this wave. The island lands it
    *  only where its device table names that face as the target document's owner; it never falls back to the daemon mount. */
   readonly face?: number;
+  /** WHO WROTE THE WORDS (operator ruling 2026-11-28, the disk as one more replica): `disk` where a watch read them off a file; the
+   *  island carries it into the wave's summary, so a canon record a disk edit landed names its writer. Absent: a gesture a hand named. */
+  readonly writer?: "disk";
 }
 
 // ── the submit port ────────────────────────────────────────────────────────────────────────────────────────────
@@ -1452,6 +1456,7 @@ export function ingestWaveArgs(opts: SubmitIngestOpts, stage: CarrierStage = inl
     ...(opts.kapae !== undefined && opts.kapae.length > 0 ? { kapae: [...opts.kapae] } : {}),
     ...(opts.unattended === true ? { unattended: true } : {}),
     ...(opts.face !== undefined ? { face: opts.face } : {}),
+    ...(opts.writer === "disk" ? { writer: "disk" } : {}),
   };
 }
 
@@ -1725,8 +1730,9 @@ async function folderWave(
   for (const c of all) if (!ridesInline(c)) { log(`${c.file} rides a pointer to its bytes, which the vessel's wave stages none of: the shore weighs it`); sense.push(c.uri); }
   const ride = pairedDeletions(gone, candidates);
   if (candidates.length === 0 && ride.length === 0) return { sense, vanishedNow };
+  // EVERY WATCHED WAVE READ ITS WORDS OFF DISK: the wave names its writer `disk`, so the records it lands carry that provenance.
   const settled = await settleIngest({
-    source: folder.dir, toBag: folder.bag, candidates, did: o.did, deletions: ride, unattended: true,
+    source: folder.dir, toBag: folder.bag, candidates, did: o.did, deletions: ride, unattended: true, writer: "disk",
     ...(folder.wiki !== undefined ? { inWiki: true, wiki: folder.wiki } : {}),
   }, tree, o.submit, {}, o.base?.(tree));
   if (settled.first.status === "error") {
@@ -1905,6 +1911,93 @@ export function workspaceIngestPorts(o: WorkspaceIngestOptions): Pick<FacePoolPo
   };
   return {
     catchUp: () => serial(() => waveOver(mirrorFiles(o.workspace, WORKSPACE_SKIP).filter((rel) => !rel.endsWith(".meta")).map((rel) => join(o.workspace, ...rel.split("/"))), true)),
+    wave: (files) => serial(() => waveOver(files, false)),
+  };
+}
+
+// ── the vessel's ports over a household's canon source ─────────────────────────────────────────────────────────
+
+export interface CheckoutIngestOptions {
+  /** The canon source standing in a checkout: its `bags/`, one holding folder per slug. */
+  readonly bags: string;
+  /** The holdings whose canon follows the checkout, read afresh at each wave (the sourced slugs, the TW5 docs name aside). */
+  readonly holdings: () => readonly string[];
+  /** The submit port: in the vessel, the daemon island's INGEST (`islandIngestSubmit`), where every canon bag lands. */
+  readonly submit: IngestSubmit;
+  /** The daemon island's disk shore look (`shore` op `sense`): a vanish raises its in-wiki alert there (remove · restore), and a
+   *  refused wave, a pointer body and a carrier that stood off go there too. */
+  readonly sense: (uris?: readonly string[]) => Promise<unknown>;
+  readonly did: string;
+  readonly tree?: () => SyncedTree;
+  readonly base?: (tree: SyncedTree) => BaseDoor;
+  /** HEAD's words for a file with no synced base (`poolHeads(<checkout>)` in the vessel): absent, no history stands in. */
+  readonly heads?: BaseFromGit;
+  readonly log?: (line: string) => void;
+}
+
+/**
+ * THE VESSEL'S WAVE OVER A HOUSEHOLD'S CANON SOURCE (operator ruling 2026-11-28: the disk stands as one more replica, and a
+ * household's canon follows its checkout). Each settle's touched files under `bags/<slug>/` land as ONE unattended INGEST wave per
+ * holding into that holding's canon bag (`lar:///ha.ka.ba/bags/<slug>`) on the daemon island, each carrying `writer: disk`: an edit
+ * a person or a spirit made in the checkout lands canon live, and the checkout's git diff carries its signature. A file reads its
+ * title by the projector's siting run backward over the canon source, as the lay's holdings leg reads it.
+ *
+ * The island's gate decides each carrier as it does over a face pool's plane: a moved file lands and pins its base; a slot both
+ * sides moved stands off and goes to the shore. A file that vanished between raises tombstones nothing here: it waits in the
+ * holding's vanished set (a later arrival of its bytes re-links it, paired by content), and the shore's look raises its in-wiki
+ * alert with the remove and restore actions. The kūkulu alone tombstones what a head switch carried off (`lares vessel lay --canon`).
+ *
+ * The catch-up reads every file of each holding through the same wave, then asks the shore's whole look. Waves and catch-ups run one
+ * at a time.
+ */
+export function checkoutIngestPorts(o: CheckoutIngestOptions): Pick<FacePoolPorts, "catchUp" | "wave"> {
+  const log = o.log ?? (() => {});
+  const vanished = new Map<string, Map<string, { syncedHash: string; file: string }>>();
+  const serial = serialChain();
+  const root = resolve(o.bags);
+  const goneOf = (slug: string): Map<string, { syncedHash: string; file: string }> => {
+    let gone = vanished.get(slug);
+    if (gone === undefined) { gone = new Map(); vanished.set(slug, gone); }
+    return gone;
+  };
+  const folderOf = (slug: string): WaveFolder => ({
+    dir: join(root, slug), bag: bagUri(slug), site: (file, tree) => siteMirrorFile(root, file, tree, false), label: `bags/${slug}/`,
+  });
+
+  const waveOver = async (files: readonly string[], whole: boolean): Promise<void> => {
+    const held = new Set(o.holdings());
+    const bySlug = new Map<string, string[]>();
+    for (const file of files) {
+      const rel = relative(root, resolve(file)).split(sep);
+      const slug = rel.length > 1 && rel[0] !== ".." ? rel[0]! : null;
+      // A holding's own declaration (`meta.mem` at its root) stays disk-owned and rides no wave (`listSourceFiles`).
+      if (slug === null || !held.has(slug) || (rel.length === 2 && rel[1] === BAG_MANIFEST_FILE)) continue;
+      const list = bySlug.get(slug) ?? [];
+      list.push(file);
+      bySlug.set(slug, list);
+    }
+    // A holding with a vanished carrier re-stats it at each wave, touched or not.
+    for (const [slug, gone] of vanished) if (gone.size > 0 && held.has(slug) && !bySlug.has(slug)) bySlug.set(slug, []);
+    const shoreTitles = new Set<string>();
+    let look = whole;
+    for (const [slug, list] of bySlug) {
+      const r = await folderWave(folderOf(slug), goneOf(slug), list, { submit: o.submit, did: o.did, ...(o.tree ? { tree: o.tree } : {}), ...(o.base ? { base: o.base } : {}), ...(o.heads ? { heads: o.heads } : {}), log });
+      for (const uri of r.sense) shoreTitles.add(uri);
+      if (r.vanishedNow) look = true;
+    }
+    if (look) await o.sense();
+    else if (shoreTitles.size > 0) await o.sense([...shoreTitles]);
+  };
+
+  return {
+    catchUp: () => serial(() => {
+      const files: string[] = [];
+      for (const slug of o.holdings()) {
+        const dir = join(root, slug);
+        for (const rel of mirrorFiles(dir)) if (!rel.endsWith(".meta") && rel !== BAG_MANIFEST_FILE) files.push(join(dir, ...rel.split("/")));
+      }
+      return waveOver(files, true);
+    }),
     wave: (files) => serial(() => waveOver(files, false)),
   };
 }

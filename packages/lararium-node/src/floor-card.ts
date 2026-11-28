@@ -84,7 +84,6 @@ export const SHADOW_NEXT = "lares vessel read";
 export const LAG_NEXT = "lares vessel lay --lag";
 /** The preview first: `lay --apply --yes` relays the operator's approval, so a seat or an AI reads the card and runs only the preview. */
 export const LAG_PREVIEW = "lares vessel lay";
-export const WORKBENCH_PREVIEW = "lares vessel lay --workbench";
 export const WORKING_NEXT = "lares vessel floor status --grain lag";
 
 /** Read the five drifts into their five rows, in the house's fixed order. */
@@ -99,7 +98,8 @@ export function readFloorDrifts(input: FloorDriftInputs): FloorDriftRow[] {
     const l = input.lag;
     const carriers = [...new Set([...l.holdings.flatMap((h) => [...h.new, ...h.changed]), ...l.benches.flatMap((b) => b.planned)])].sort();
     const count = l.lag + l.benchLag;
-    const next = [l.lag > 0 ? LAG_PREVIEW : null, l.benchLag > 0 ? WORKBENCH_PREVIEW : null].filter((s) => s !== null).join(" · ");
+    // ONE PREVIEW NAMES BOTH: the lay reads canon and the checkout's workbenches together.
+    const next = count > 0 ? LAG_PREVIEW : "";
     rows.push({ word: "disk lag", grain: "lag", state: count > 0 ? "drifts" : "level", count, carriers, heads: ["canon source"],
       detail: count > 0 ? `${l.lag} canon carrier(s) and ${l.benchLag} workbench carrier(s) trail the disk; the preview names them, and the operator's approval lands them` : `canon and workbenches stand level with ${l.source}`,
       next: next === "" ? LAG_NEXT : next, act: count > 0 ? "cure" : "read" });

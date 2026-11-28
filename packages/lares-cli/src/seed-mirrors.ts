@@ -250,11 +250,6 @@ export interface SeedMirrorsOpts {
   readonly confirmKahua?: (count: number, preview: readonly KahuaPreviewItem[]) => Promise<boolean>;
   /** Skip every layer and read kahua alone (`lares shore lift-kahua`). */
   readonly kahuaOnly?: boolean;
-  /**
-   * Lay the checkout's workbench folders alone (`<canon source>/../wikis/<slug>`, the lay a kūkulu runs after its raise): no
-   * face root, no house bag or wiki, no share landing, no kahua. Each workbench still lays only where the worn face holds a writer's seat.
-   */
-  readonly benchesOnly?: boolean;
 }
 
 /**
@@ -273,13 +268,13 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
   const wikiFolders = [...wikiBase.keys()], bagFolders = [...bagBase.keys()].sort();
   // EACH FACE'S ONE ROOT (`faces/<pet name>/`): its daemon working layer, its daemon canon, its kahua stage and its personal layers.
   // Its `recovery/` and `temp/` hold drafts and temp files that place back as files, never through a layer: the lay reads neither.
-  const faceFolders = opts.benchesOnly ? [] : folders(facesDir).filter((seg) => mirrorFiles(join(facesDir, seg), [FACE_PLANES.recovery, FACE_PLANES.temp]).length > 0);
+  const faceFolders = folders(facesDir).filter((seg) => mirrorFiles(join(facesDir, seg), [FACE_PLANES.recovery, FACE_PLANES.temp]).length > 0);
   // A SOURCED WIKI'S ONE WORKBENCH FOLDER rests beside the canon source (`<source>/../wikis/<slug>`).
   const canonWikis = opts.kahuaOnly ? null : doors.canonWikis?.() ?? null;
   const sourcedBenches = canonWikis === null || resolve(canonWikis) === resolve(join(projections, "wikis")) ? []
     : folders(canonWikis).filter((n) => doors.sourced(n) && mirrorFiles(join(canonWikis, n), ["recovery", TEMP_LAYER_DIR]).length > 0);
-  const houseBags = opts.benchesOnly ? [] : bagFolders.filter((n) => !isPrivateProjectionSlug(n) && !doors.sourced(n));
-  const houseWikis = opts.benchesOnly ? [] : wikiFolders.filter((n) => !isPrivateProjectionSlug(n) && !doors.sourced(n));
+  const houseBags = bagFolders.filter((n) => !isPrivateProjectionSlug(n) && !doors.sourced(n));
+  const houseWikis = wikiFolders.filter((n) => !isPrivateProjectionSlug(n) && !doors.sourced(n));
   const empty: MirrorSeedResult = { applied: apply, layers: [], kahua: { preview: [], lifted: [], pending: [], waiting: [], refused: [] }, waiting: [], refusals: [], minted: [], any: false, benchWaiting: [] };
   if (faceFolders.length === 0 && (opts.kahuaOnly || houseBags.length + houseWikis.length + sourcedBenches.length === 0)) return empty;
 
@@ -447,7 +442,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     // A SHARED WIKI MINTS FROM ITS SHARE ROW, at its owner's wear, even where no page of it reached a mirror (a face's put into
     // a wiki it never woke projects nowhere until the wake): the row names the wiki, so the wiki stands again for its faces.
     // A workbench-only lay mints nothing from a share row and lands no share (below): it lays the checkout's workbench folders alone.
-    const sharedWikis = opts.benchesOnly ? [] : shareRows.filter((r) => r.kind === "wiki" && !isPrivateProjectionSlug(r.slug) && !doors.sourced(r.slug)).map((r) => r.slug);
+    const sharedWikis = shareRows.filter((r) => r.kind === "wiki" && !isPrivateProjectionSlug(r.slug) && !doors.sourced(r.slug)).map((r) => r.slug);
     const mintable = [...new Set([...houseBags, ...houseWikis, ...sharedWikis])].sort();
     const held = mintable.length > 0 ? await doors.heldSlugs() : new Set<string>();
     /** The slugs this lay minted (or would mint, in a preview): each stands for the waves after it. */
@@ -496,7 +491,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     // THE SHARES LAND AGAIN, before any face's personal layer lays: each shared wiki's seats come back by pet-name once its
     // owner's wear stood it, and the landing lifts each row carried for the worn face into its own catalog half, so a reader's
     // own wear mounts the wiki its page lays into.
-    if (apply && !opts.benchesOnly && doors.landShares !== undefined && shareRows.length > 0) {
+    if (apply && doors.landShares !== undefined && shareRows.length > 0) {
       const applied = await doors.landShares().catch(() => null);
       if (applied !== null) {
         const benches = Array.isArray(applied["workbenches"]) ? applied["workbenches"] as Array<Record<string, unknown>> : [];
@@ -563,7 +558,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     } else pending = [...kahuaLiftable];
     // The shore keeps what this wear left unlifted and what waits for another face's wear.
     writeKahuaPending([...pending, ...kahuaElsewhere]);
-  } else if (apply && kahuaPreview.length === 0 && !opts.benchesOnly) writeKahuaPending([]);   // a workbench-only lay reads no stage, so it leaves the shore's pending as it stands
+  } else if (apply && kahuaPreview.length === 0) writeKahuaPending([]);
   const stillWaiting = apply ? pending : kahuaLiftable;
 
   return { applied: apply, layers, kahua: { preview: kahuaPreview, lifted, pending: stillWaiting, waiting: kahuaElsewhere, refused: kahuaRefused }, waiting: waitingNow(), refusals, minted, any: true, benchWaiting, ...(shares !== undefined ? { shares } : {}) };

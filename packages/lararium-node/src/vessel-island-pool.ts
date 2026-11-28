@@ -13,7 +13,7 @@
  */
 
 import { VesselIslandPoolCore } from "@lararium/mesh/vessel-island-pool-core-door";
-import { houseCanonSlugsSeated } from "@lararium/mesh/kahu-canon-reach";
+import { houseCanonIsHousehold, houseCanonSlugsSeated } from "@lararium/mesh/kahu-canon-reach";
 import { type Repo } from "@lararium/mesh/automerge";
 import { type IslandMsg_Event, type LarIslandToVesselMsg } from "@lararium/mesh/island-protocol";
 import { type WikiRecipe, type WikiMountSpec } from "@lararium/mesh/wiki-recipe";
@@ -103,7 +103,7 @@ export class VesselIslandPool extends VesselIslandPoolCore {
   constructor(options: VesselIslandPoolOptions) {
     const workerUrl   = options.workerScriptUrl ?? DEFAULT_WORKER_URL;
     const storageRoot = options.storageRoot ?? null;
-    const casData: IslandCasData = { cidDir: options.cidDir ?? null, corpusCasDir: options.corpusCasDir ?? null, houseCanon: houseCanonSlugsSeated() };
+    const casData: IslandCasData = { cidDir: options.cidDir ?? null, corpusCasDir: options.corpusCasDir ?? null, houseCanon: houseCanonSlugsSeated(), household: houseCanonIsHousehold() };
     super({
       host: {
         spawnWorker: (spawn) => (spawn?.session ? nodeSpawnSessionWorker(workerUrl, options.caps) : nodeSpawnWikiWorker(workerUrl, options.caps, casData)),

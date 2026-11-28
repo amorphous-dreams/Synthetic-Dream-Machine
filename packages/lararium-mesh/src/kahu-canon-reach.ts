@@ -71,11 +71,24 @@ const BAG_PREFIX = bagUri("");
  */
 let SEATED: ReadonlySet<string> = new Set(houseCanonSlugs());
 
-/** Seat this process's house canon off its disk-sourced holdings. Idempotent; returns the seated bag URIs. */
-export function seatHouseCanon(sourcedSlugs: Iterable<string>): string[] {
+/**
+ * THE HOUSEHOLD READING (operator ruling 2026-11-28, fork 1): a vessel whose canon source stands in a checkout keeps a household's
+ * canon, which follows that checkout; a vessel seated off no checkout keeps a shared tier. The seat records which it reads.
+ */
+let HOUSEHOLD = false;
+
+/**
+ * Seat this process's house canon off its disk-sourced holdings, and whether those holdings come from a household's checkout.
+ * Idempotent; returns the seated bag URIs.
+ */
+export function seatHouseCanon(sourcedSlugs: Iterable<string>, opts: { readonly household?: boolean } = {}): string[] {
   SEATED = new Set(houseCanonSlugs(sourcedSlugs));
+  HOUSEHOLD = opts.household === true;
   return houseCanonBagsSeated();
 }
+
+/** Whether the seated house canon follows a household's checkout (`seatHouseCanon`'s `household`). */
+export function houseCanonIsHousehold(): boolean { return HOUSEHOLD; }
 
 /** The seated house canon's slugs (sorted). */
 export function houseCanonSlugsSeated(): string[] { return [...SEATED].sort(); }
@@ -144,6 +157,9 @@ export async function holdsKahuReach(source: KahuReachSource | undefined): Promi
  */
 export function refuseSeatCanonReach(bag: string, act: string, asker: Hand | undefined): void {
   if (asker !== "seat" || !isHouseCanonBag(bag)) return;
+  // A HOUSEHOLD'S CANON FOLLOWS ITS CHECKOUT (operator ruling 2026-11-28, fork 1): a disk wave lands there live whoever asks it, a
+  // spirit's included, carrying `writer: disk`, and the checkout's git diff carries the signature. The guard keeps every shared tier.
+  if (act === "INGEST" && HOUSEHOLD) return;
   // The seat offers and never promotes: a promotion's cure names the operator's own hand, every other act's the offer road.
   const cure = act === "offer promote"
     ? "the AI seat offers and never promotes; the promotion rides the operator's own hand: `lares meme offer promote <cid>` from the operator's own terminal."

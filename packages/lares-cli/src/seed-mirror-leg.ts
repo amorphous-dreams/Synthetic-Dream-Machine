@@ -22,8 +22,6 @@ export interface MirrorLegOptions {
   readonly json?: boolean;
   /** Lift the kahua items alone, laying no mirror back. */
   readonly kahuaOnly?: boolean;
-  /** Lay the checkout's workbench folders alone (`seedMirrors`' `benchesOnly`). */
-  readonly benchesOnly?: boolean;
 }
 
 /** `--lift-kahua <N>` read as a whole count, or null where absent; a malformed count refuses by name. */
@@ -49,7 +47,6 @@ export async function runMirrors(opts: MirrorLegOptions, doors: MirrorDoors): Pr
     const result = await seedMirrors({
       apply: opts.apply, doors, liftKahua: liftKahuaCountOf(opts.liftKahua),
       ...(confirmKahua ? { confirmKahua } : {}), ...(opts.kahuaOnly ? { kahuaOnly: true } : {}),
-      ...(opts.benchesOnly ? { benchesOnly: true } : {}),
     });
     const { out, err } = mirrorLines(result);
     for (const l of out) console.log(l);

@@ -58,7 +58,7 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/refuses`>>
 
-!! refuses ~ usage · rite-needs-the-container-house · kukulu-checkout-stops · kukulu-ran-image-unread · kukulu-pulama-unread · kukulu-workbench-lay-interrupted · rite-land-differs
+!! refuses ~ usage · rite-needs-the-container-house · kukulu-checkout-stops · kukulu-ran-image-unread · kukulu-pulama-unread · rite-land-differs
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`usage` params=`cure/[[engine.house.raises]] ~ a malformed --face or --rollback`>>
@@ -66,7 +66,6 @@ Testimony: the door checks; this slot grants nothing.
 <<has entity=`refusal` name=`kukulu-checkout-stops` params=`~ the checkout stands unclean or diverged`>>
 <<has entity=`refusal` name=`kukulu-ran-image-unread` params=`~ the image that ran before reads nowhere`>>
 <<has entity=`refusal` name=`kukulu-pulama-unread` params=`~ the pūlama's state reads nowhere`>>
-<<has entity=`refusal` name=`kukulu-workbench-lay-interrupted` params=`~ the workbench lay stopped midway`>>
 <<has entity=`refusal` name=`rite-land-differs` params=`~ the landing names another head or image than the begun half`>>
 ```
 
@@ -108,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yBT5pSKY0qxCJbe-2IFBxbnAGtpff9DhdYuP1zvsjN4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;caoCKShQsGUrVJ0TbwawXTZnXDVX0A4kZflxN_ZzvgY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

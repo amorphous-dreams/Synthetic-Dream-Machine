@@ -230,7 +230,7 @@ export function runSovereignWorker(
   const handed = (workerData ?? {}) as Partial<IslandCasData>;
   const corpusCasDir: string | null = handed.corpusCasDir ?? null;
   // THE HOUSE CANON the vessel seated rides in with the CAS dirs: this thread's predicate reads the vessel's one set.
-  if (Array.isArray(handed.houseCanon)) seatHouseCanon(handed.houseCanon);
+  if (Array.isArray(handed.houseCanon)) seatHouseCanon(handed.houseCanon, { household: handed.household === true });
   if (handed.cidDir) casDir = handed.cidDir;
 
   const restsAtVessel = vesselRestAsker({

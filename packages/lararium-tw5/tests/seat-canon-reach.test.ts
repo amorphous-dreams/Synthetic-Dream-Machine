@@ -152,3 +152,17 @@ describe("seat-canon-reach — the AI seat never writes house canon live", () =>
     } finally { await r.repo.shutdown(); }
   });
 });
+
+describe("seat-canon-reach guards shared tiers only (operator ruling 2026-11-28, fork 1)", () => {
+  test("RED: a household's canon takes a seat's disk wave (INGEST); its put still refuses; CONTROL: a shared tier refuses the seat's INGEST", async () => {
+    const { refuseSeatCanonReach, seatHouseCanon, houseCanonSlugsSeated } = await import("@lararium/mesh/kahu-canon-reach");
+    const seated = houseCanonSlugsSeated();
+    try {
+      seatHouseCanon(seated, { household: true });
+      expect(() => refuseSeatCanonReach(LARES, "INGEST", "seat")).not.toThrow();
+      expect(() => refuseSeatCanonReach(LARES, "tiddler put", "seat")).toThrow(/seat-canon-reach/);
+      seatHouseCanon(seated);
+      expect(() => refuseSeatCanonReach(LARES, "INGEST", "seat")).toThrow(/seat-canon-reach/);
+    } finally { seatHouseCanon(seated); }
+  });
+});

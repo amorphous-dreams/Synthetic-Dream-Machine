@@ -46,6 +46,8 @@ export interface IslandCasData {
   /** The house canon slugs the vessel seated off its checkout (`seatHouseCanon`): the island seats the same set, since a
    *  worker thread holds its own module state and reads no disk for it. Absent: the island holds the system canon alone. */
   readonly houseCanon?: readonly string[];
+  /** Whether that canon follows a household's checkout (`houseCanonIsHousehold`): the island reads the vessel's one reading. */
+  readonly household?: boolean;
   /** The documents a resting engine fall names in flight (`engine-fall`): the island's own store holds them back from its
    *  engine as the vessel's does. Absent: none held. */
   readonly heldBack?: readonly string[];

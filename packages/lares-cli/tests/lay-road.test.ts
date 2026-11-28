@@ -120,12 +120,10 @@ describe("the lay feeds every disk-sourced holding through CREATE then INGEST", 
     const errors: string[] = [], error = console.error;
     console.error = (...a: unknown[]) => { errors.push(a.join(" ")); };
     try {
-      for (const flags of [{ apply: true }, { apply: true, workbench: true }]) {
-        calls.length = 0; errors.length = 0;
-        expect(await cmdLay({ command: "vessel", positional: ["lay"], options: {}, flags } as ParsedArgs)).toBe(2);
-        expect(errors.join("\n")).toContain(`lares vessel lay ${"workbench" in flags ? "--workbench " : ""}--apply --yes`);
-        expect(calls).toEqual([]);
-      }
+      calls.length = 0; errors.length = 0;
+      expect(await cmdLay({ command: "vessel", positional: ["lay"], options: {}, flags: { apply: true } } as ParsedArgs)).toBe(2);
+      expect(errors.join("\n")).toContain("lares vessel lay --apply --yes");
+      expect(calls).toEqual([]);
     } finally { console.error = error; process.stdin.isTTY = ttys[0] as boolean; process.stdout.isTTY = ttys[1] as boolean; }
   });
 

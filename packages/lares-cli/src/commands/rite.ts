@@ -37,7 +37,7 @@ import { fileURLToPath } from "node:url";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { emitAnswer, exitFor, refuseUsage } from "../render.js";
-import { INTERRUPTED, priorImageRef, riteKukulu, type HouseLag, type PermanentMark, syncPlan, type PriorImage, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer, type OfferVouch, type PendingBegin, type StageTarget, type StandingBegin, type StandReading, type SyncAnswer } from "../rite-kukulu.js";
+import { INTERRUPTED, priorImageRef, riteKukulu, type CanonFollowReading, type HouseLag, type PermanentMark, syncPlan, type PriorImage, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer, type OfferVouch, type PendingBegin, type StageTarget, type StandingBegin, type StandReading, type SyncAnswer } from "../rite-kukulu.js";
 import { foundingRecordFromStatus, hostSeedOfferPort } from "../seed-offered.js";
 import { storeFailure, storeVerb } from "../store-door.js";
 import { KeepRefused, keepWorkspaceDir, keepFaceLine, riteKeep, type KeepPorts } from "../rite-keep.js";
@@ -539,16 +539,21 @@ export function houseLagOf(output: Record<string, unknown>): HouseLag | null {
 }
 
 /**
- * The workbench lay on this terminal, asking nothing (it reads diff-gated): this CLI again (the bridge forwards it into the vessel), the checkout's
- * workbench folders alone. A Ctrl+C reaches the lay, which shares this terminal; this process holds SIGINT until it ends.
+ * THE CANON FOLLOW as the host reads it: the vessel's `vessel lay --canon` answer (each holding laid, the tombstones per bag, each
+ * refused line), null where it answers no reading of that shape.
  */
-const layWorkbenchOnTerminal = (): Promise<number> => new Promise((resolve) => {
-  const hold = (): void => {};
-  process.on("SIGINT", hold);
-  const child = spawn(process.execPath, [BIN, "vessel", "lay", "--workbench", "--apply"], { stdio: "inherit" });
-  child.once("error", () => { process.off("SIGINT", hold); resolve(127); });
-  child.once("close", (code, signal) => { process.off("SIGINT", hold); resolve(signal === "SIGINT" ? INTERRUPTED : code ?? 1); });
-});
+export function canonFollowOf(output: Record<string, unknown>): CanonFollowReading | null {
+  const holdings = output["holdings"], tombstoned = output["tombstoned"], refused = output["refused"];
+  if (!Array.isArray(holdings) || tombstoned === null || typeof tombstoned !== "object" || Array.isArray(tombstoned)) return null;
+  return {
+    holdings: (holdings as Array<Record<string, unknown>>).map((h) => ({
+      holding: String(h["holding"]), toBag: String(h["toBag"]), exitCode: typeof h["exitCode"] === "number" ? h["exitCode"] : 1,
+      ...(typeof h["reason"] === "string" ? { reason: h["reason"] } : {}),
+    })),
+    tombstoned: Object.fromEntries(Object.entries(tombstoned as Record<string, unknown>).filter(([, n]) => typeof n === "number").map(([bag, n]) => [bag, n as number])),
+    refused: Array.isArray(refused) ? refused.map(String) : [],
+  };
+}
 
 /** THE PERMANENT MARK's file: `$LARES_HOUSE/config/kukulu-permanent.json` (the house config bind, /lar/config in the vessel); null where no house names one. */
 export function permanentMarkPath(env: Readonly<Record<string, string | undefined>> = process.env): string | null {
@@ -609,13 +614,10 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
     permanent: async () => readPermanentMark(),
     // THE KEEP AFTER THE LANDING: the raise defers the keep a down left owed (`--keep-after-landing`), and the rite runs it here.
     keepOwed: () => runShim(shim, ["keep-owed"]),
-    // THE LAG AFTER THE RAISE: read in the vessel that stands; the workbench lay runs diff-gated on this terminal, asking nothing, never canon.
+    // THE LAG AFTER THE RAISE: read in the vessel that stands; a household's canon follows the head through the vessel's lay, diff-gated.
     floorCard: async () => { const read = await cliVerb(["vessel", "floor", "status"]); const card = read.ok ? read.output["card"] as { title?: unknown } | undefined : undefined; return typeof card?.title === "string" ? { title: card.title } : null; },
     houseLag: async () => { const read = await cliVerb(["vessel", "lay", "--lag"]); return read.ok ? houseLagOf(read.output) : null; },
-    layWorkbench: layWorkbenchOnTerminal,
-    // An AI launcher seats the rite: the house hand gate reads this command's branch (`readOwnHand`), and any refusal (a harness's
-    // mark or chain, or a chain that reads no person's hand; the bridge marks it the same way) reads as a seat that never lays.
-    seat: () => "refusal" in readOwnHand({ proveRoute: false }),
+    canonFollow: async () => { const read = await cliVerb(["vessel", "lay", "--canon"]); return read.ok ? canonFollowOf(read.output) : null; },
     say,
   };
 }
