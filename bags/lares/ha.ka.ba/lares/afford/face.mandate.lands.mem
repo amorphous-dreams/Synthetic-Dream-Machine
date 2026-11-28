@@ -1,0 +1,129 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.mandate.lands`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "land a summoned instance's mandate keyed by its own hash"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.mandate.lands", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.mandate.lands"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.mandate.lands"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.mandate.lands ~ mandate ~ the carrier the house starts an arm under
+
+`lares spirit mandate <pet>#<n>` lands the mandate words (`--file <path|->` or `--text <words>`) as one record keyed by its own hash, so the same mandate twice finds itself standing; a framed carrier founds its family instead. The launch affordances ride as fields, each where no carrier meta names it: `--model`, `--cap` (the launch cap), `--allowed-tools`, `--workdir`, `--log`, `--reads`, `--links`, `--paths`, `--caps`, `--grants`, `--lanes` (the arm-lane ceiling), `--handback` (the hand-back shape). A coordinator names its own mandate by `--parent <uri>@<hash>`; with none, the offerer reads as the hand. The answer hands back the summon line.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ land
+
+```memetic-wikitext
+<<has entity=`example` name=`land` params=`pet/ferry-read#1 file/mandate.md cap/claude ~ land the mandate and print the summon line`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face · pet · file · text · parent · lanes · model · cap · allowed-tools · workdir · log · reads · links · paths · caps · grants · handback
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`pet` params=`takes/instance-tag needs/required seat/1 as/<pet> ~ the instance tag, <pet>#<n>`>>
+<<has entity=`arg` name=`file` params=`takes/host-path ~ the mandate from a host file, or - for stdin`>>
+<<has entity=`arg` name=`text` params=`takes/words ~ the mandate as words`>>
+<<has entity=`arg` name=`parent` params=`takes/ref ~ the coordinator's mandate, <uri>@<hash>`>>
+<<has entity=`arg` name=`lanes` params=`takes/count ~ the arm-lane ceiling`>>
+<<has entity=`arg` name=`model` params=`takes/model ~ the model the launch names`>>
+<<has entity=`arg` name=`cap` params=`takes/cap ~ the launch cap`>>
+<<has entity=`arg` name=`allowed-tools` params=`takes/list ~ the tools the launch allows`>>
+<<has entity=`arg` name=`workdir` params=`takes/host-path ~ the launch's working directory`>>
+<<has entity=`arg` name=`log` params=`takes/host-path ~ an absolute file the instance's stream lands in`>>
+<<has entity=`arg` name=`reads` params=`takes/list ~ what the instance reads`>>
+<<has entity=`arg` name=`links` params=`takes/list ~ the links it follows`>>
+<<has entity=`arg` name=`paths` params=`takes/list ~ the paths it reaches`>>
+<<has entity=`arg` name=`caps` params=`takes/list ~ the caps it holds`>>
+<<has entity=`arg` name=`grants` params=`takes/list ~ the grants it carries`>>
+<<has entity=`arg` name=`handback` params=`takes/shape ~ the hand-back shape it owes`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ocap/write-on-the-daemon-wiki ~ a seat names its coordinator's mandate; the tiddler door gates the put`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · spirit-secret-shaped · mandate-malformed · mandate-model-malformed · mandate-allowed-tools-malformed · mandate-path-malformed · launch-cap-unknown · mandate-unknown · mandate-moved · spirit-write-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.mandate.lands pet/ferry-read#1 file/mandate.md]] ~ no tag, no words, two sources, a malformed lanes or parent, or a seat with no parent`>>
+<<has entity=`refusal` name=`spirit-secret-shaped` params=`~ the words or an affordance hold secret-shaped strings`>>
+<<has entity=`refusal` name=`mandate-malformed` params=`~ the mandate reads malformed`>>
+<<has entity=`refusal` name=`mandate-model-malformed` params=`~ the model names no model`>>
+<<has entity=`refusal` name=`mandate-allowed-tools-malformed` params=`~ the allowed tools read malformed`>>
+<<has entity=`refusal` name=`mandate-path-malformed` params=`~ a path reads malformed`>>
+<<has entity=`refusal` name=`launch-cap-unknown` params=`~ the launch cap names no cap the house knows`>>
+<<has entity=`refusal` name=`mandate-unknown` params=`~ the parent names no mandate`>>
+<<has entity=`refusal` name=`mandate-moved` params=`~ the parent reads another hash`>>
+<<has entity=`refusal` name=`spirit-write-refused` params=`~ the tiddler door answered no put`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ landed
+
+```memetic-wikitext
+<<has entity=`band` name=`landed` params=`exit/0 fields/[[instance uri hash ref offerer face card decision family summon]] ~ decision reads put or standing; summon names the line that starts the arm`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares spirit mandate
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares spirit mandate]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · spirit-circle
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/spirit-circle`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;95iEQOrvxBZSQK3n71jda65U2kTqxaYyCxqtkGySKo8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

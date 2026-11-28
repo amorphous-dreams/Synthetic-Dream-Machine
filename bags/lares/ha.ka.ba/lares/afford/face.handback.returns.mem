@@ -1,0 +1,118 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.handback.returns`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "hand a report back under the pet's name and close its summons edge"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.handback.returns", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.handback.returns"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.handback.returns"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.handback.returns ~ handback ~ the one return every fire runs
+
+`lares spirit handback <pet>[#<n>]` names exactly one return: `--file <path|->`, `--text <words>`, or `--record <uri>[@<hash>]` (a record already landed, read through the door first). A report lands as residue under the pet's own name, once per key (`--key`, else the instance's tag, else the words alone). The record stands first; then, where a summons edge names the instance, the edge names the record and the coordinator's lane frees (`--mandate <uri>@<hash>` names which edge). A hand-back no edge answers lands all the same; only a line naming its mandate refuses there, and its record stays.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ report · record
+
+```memetic-wikitext
+<<has entity=`example` name=`report` params=`pet/ferry-read#1 file/- ~ the report on stdin lands and the edge closes`>>
+<<has entity=`example` name=`record` params=`pet/ferry-read#1 record/lar:///ha.ka.ba/kahua/memory/x ~ name a record already landed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face · pet · file · text · record · key · mandate
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`pet` params=`takes/pet-or-tag needs/required seat/1 as/<pet> ~ the one who returns: a pet, or <pet>#<n> for one instance`>>
+<<has entity=`arg` name=`file` params=`takes/host-path ~ the report from a host file, or - for stdin`>>
+<<has entity=`arg` name=`text` params=`takes/words ~ the report as words`>>
+<<has entity=`arg` name=`record` params=`takes/ref ~ a landed record as <lar uri>[@<hash>]`>>
+<<has entity=`arg` name=`key` params=`takes/key ~ the idempotency key`>>
+<<has entity=`arg` name=`mandate` params=`takes/ref ~ the mandate whose edge this hand-back answers, <uri>@<hash>`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ocap/write-on-the-daemon-wiki ~ a harness hook and a hand type the same line; the tiddler door gates each write`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · spirit-pet-malformed · handback-unknown · handback-moved · summons-unknown · summons-ambiguous · spirit-secret-shaped · spirit-write-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.handback.returns pet/ferry-read file/-]] ~ no return, two returns, or a malformed record, instance or mandate`>>
+<<has entity=`refusal` name=`spirit-pet-malformed` params=`cure/[[face.handback.returns pet/ferry-read file/-]] ~ the word reads as no pet name`>>
+<<has entity=`refusal` name=`handback-unknown` params=`cure/[[face.handback.returns pet/ferry-read file/-]] ~ no record stands at the uri named`>>
+<<has entity=`refusal` name=`handback-moved` params=`~ the record reads another hash than the line names`>>
+<<has entity=`refusal` name=`summons-unknown` params=`~ no edge answers the instance under the mandate named; the record stays`>>
+<<has entity=`refusal` name=`summons-ambiguous` params=`~ several edges name the instance; name the mandate`>>
+<<has entity=`refusal` name=`spirit-secret-shaped` params=`~ the words hold secret-shaped strings`>>
+<<has entity=`refusal` name=`spirit-write-refused` params=`~ the tiddler door answered no put`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ returned
+
+```memetic-wikitext
+<<has entity=`band` name=`returned` params=`exit/0 fields/[[pet instance record title hash landed cut edge]] ~ the record stands; edge names the summons closed and whether its lane freed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares spirit handback
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares spirit handback]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · spirit-circle
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/spirit-circle`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8hQdOQ953j1YxcEZ6roK5TEclXLpaNEyNzfEi3aVD7c`>>
+
+<<^ code=`&#x0004;` to=`?`>>

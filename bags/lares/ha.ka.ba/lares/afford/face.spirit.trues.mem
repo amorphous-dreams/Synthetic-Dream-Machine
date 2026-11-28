@@ -1,0 +1,139 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.spirit.trues`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "true one slot of a spirit's record, offer a mandate, or echo it"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.spirit.trues", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.spirit.trues"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.spirit.trues"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.spirit.trues ~ ah ~ one slot replaced or one line added, base-checked
+
+`lares spirit ah <pet> --slot '#/<name>'` replaces the slot's whole body from one source (`--file <path|->` or `--text <words>`) or adds one line at its end (`--add <line>`). A whole-slot write from an AI seat names the slot digest it read (`--base`, 16 hex); where the slot moved since, both versions land in a marked conflict stanza for hum to settle, and an `--add` re-reads past a conflict so a sibling's line survives. The stack slot `#/has` takes one cap per `--add`. `--instance` names the writer, joins the presence, and refuses during that instance's crossing.
+
+Three other modes ride the verb. `--new` lands a whole shrine from one source. `--offer` lands an offering (ʻālana) on the spirit's shelf before any instance wakes: the mandate words (else the card's own `lane`), `--lane` its memory pointer, `--grant` the grant's slice; a seat names its own `--instance`. `--echo <hash> --instance <id>` lands an instance's echo of the mandate om handed it. Words pass the strict secret-shape guard first.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ add-line · replace · offer · echo
+
+```memetic-wikitext
+<<has entity=`example` name=`add-line` params=`pet/lares-alpha slot/#/open add/[[the next road]] ~ one line lands at the slot's end`>>
+<<has entity=`example` name=`replace` params=`pet/lares-alpha slot/#/open file/open.txt base/<digest> ~ the slot's whole body, under the digest read`>>
+<<has entity=`example` name=`offer` params=`pet/ferry-read offer/true file/mandate.md ~ an offering lands on the shelf`>>
+<<has entity=`example` name=`echo` params=`pet/ferry-read echo/<hash> instance/s-01 ~ the instance echoes the mandate`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face · pet · slot · file · text · add · base · instance · new · offer · lane · grant · echo
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`pet` params=`takes/pet-name needs/required seat/1 as/<pet> ~ the spirit's pet name`>>
+<<has entity=`arg` name=`slot` params=`takes/slot-path ~ the slot to true, #/<name>`>>
+<<has entity=`arg` name=`file` params=`takes/host-path ~ the slot's whole body, or a mandate, from a host file or - for stdin`>>
+<<has entity=`arg` name=`text` params=`takes/words ~ the slot's whole body, or a mandate, as words`>>
+<<has entity=`arg` name=`add` params=`takes/line ~ one line at the slot's end; a cap line on #/has`>>
+<<has entity=`arg` name=`base` params=`takes/digest ~ the slot digest this instance read (16 hex); an AI seat's whole write needs it`>>
+<<has entity=`arg` name=`instance` params=`takes/session-id ~ the writing instance; joins the presence`>>
+<<has entity=`arg` name=`new` params=`~ land a whole shrine from one source`>>
+<<has entity=`arg` name=`offer` params=`~ land an offering on the spirit's shelf`>>
+<<has entity=`arg` name=`lane` params=`takes/uri ~ beside offer, the lane's memory pointer`>>
+<<has entity=`arg` name=`grant` params=`takes/slice ~ beside offer, the grant's slice`>>
+<<has entity=`arg` name=`echo` params=`takes/hash ~ the mandate hash om handed this instance (64 hex)`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ocap/write-on-the-daemon-wiki ~ every write rides the tiddler door's put under its base; a re-offer over a standing mandate lands only from its offerer or a hand`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · spirit-pet-malformed · spirit-cap-malformed · spirit-cap-held · spirit-base-needed · spirit-slot-held · spirit-slot-over-budget · spirit-crossing · spirit-face-turned · spirit-unoffered · spirit-echo-mismatch · spirit-offer-held · spirit-offering-damaged · spirit-lane-sealed · spirit-exists · spirit-secret-shaped · spirit-write-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.spirit.trues pet/lares-alpha slot/#/open add/<line>]] ~ no source, two sources, a malformed slot, base or instance`>>
+<<has entity=`refusal` name=`spirit-pet-malformed` params=`cure/[[face.spirit.trues pet/lares-alpha slot/#/open add/<line>]] ~ the word reads as no pet name`>>
+<<has entity=`refusal` name=`spirit-cap-malformed` params=`cure/[[face.spirit.trues pet/lares-alpha slot/#/has add/<cap>]] ~ a #/has line names no three-term cap`>>
+<<has entity=`refusal` name=`spirit-cap-held` params=`cure/[[face.spirit.trues pet/lares-alpha offer/true file/<mandate>]] ~ the mandate's cap lands by the door's own act alone`>>
+<<has entity=`refusal` name=`spirit-base-needed` params=`cure/[[face.spirit.trues pet/lares-alpha slot/#/open file/<path> base/<digest>]] ~ an AI seat's whole-slot write names the digest it read`>>
+<<has entity=`refusal` name=`spirit-slot-held` params=`~ a card answers through its fields; the slot names no card field`>>
+<<has entity=`refusal` name=`spirit-slot-over-budget` params=`~ the waking slot would grow past its cap; fold first`>>
+<<has entity=`refusal` name=`spirit-crossing` params=`~ the instance stands between its precompact mark and its next wake`>>
+<<has entity=`refusal` name=`spirit-face-turned` params=`~ the instance echoed under another face; name it with --face`>>
+<<has entity=`refusal` name=`spirit-unoffered` params=`~ an echo names a mandate the shelf never offered`>>
+<<has entity=`refusal` name=`spirit-echo-mismatch` params=`~ the echo names another hash than the standing mandate`>>
+<<has entity=`refusal` name=`spirit-offer-held` params=`~ a re-offer over a standing mandate comes from neither its offerer nor a hand`>>
+<<has entity=`refusal` name=`spirit-offering-damaged` params=`~ the shelf reads damaged`>>
+<<has entity=`refusal` name=`spirit-lane-sealed` params=`cure/[[face.spirit.trues pet/lares-alpha offer/true file/<mandate>]] ~ the card seals its lane, so a bare offer never copies it`>>
+<<has entity=`refusal` name=`spirit-exists` params=`~ --new meets a shrine already standing`>>
+<<has entity=`refusal` name=`spirit-secret-shaped` params=`~ the words hold secret-shaped strings; nothing landed`>>
+<<has entity=`refusal` name=`spirit-write-refused` params=`~ the tiddler door answered no put; read the record`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ put · offered
+
+```memetic-wikitext
+<<has entity=`band` name=`put` params=`exit/0 fields/[[pet uri slot decision bytes canonicalHash unechoed]] ~ the slot landed; base names the digest for the next write`>>
+<<has entity=`band` name=`offered` params=`exit/0 fields/[[pet uri record mandate seq lane grant offeredBy decision wake]] ~ the offering landed; wake names the line an instance runs`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares spirit ah
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares spirit ah]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · familiar-spirit · spirit-circle
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/familiar-spirit`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/spirit-circle`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HezffaKo766xdVszV3HQ7NRX_k4UGMDtEe7M9TGGBbE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

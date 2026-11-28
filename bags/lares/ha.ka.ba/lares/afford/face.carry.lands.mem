@@ -1,0 +1,111 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.carry.lands`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "land a compaction summary as a spirit's carry with its lineage"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.carry.lands", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.carry.lands"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.carry.lands"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.carry.lands ~ hooili ~ the carry, hoʻoili
+
+`lares spirit hooili <pet>` lands a compaction summary (`--file <path|->` or `--text <words>`) as `hooili/<spirit-id>-<hash12>` with its lineage (`parent`, `record-base`, `depth`, `instance`). It writes nothing to the card; each instance keeps its own chain, and an instance with none yet takes the newest carry any instance landed. It hands back the `#/instances` line the next instance files through ah. The words pass the secret-shape guard, read uncut, before they land.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ carry
+
+```memetic-wikitext
+<<has entity=`example` name=`carry` params=`pet/lares-alpha instance/s-01 file/- ~ land the summary from stdin`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face · pet · file · text · instance
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`pet` params=`takes/pet-name needs/required seat/1 as/<pet> ~ the spirit's pet name`>>
+<<has entity=`arg` name=`file` params=`takes/host-path ~ the summary from a host file, or - for stdin`>>
+<<has entity=`arg` name=`text` params=`takes/words ~ the summary as words`>>
+<<has entity=`arg` name=`instance` params=`takes/session-id ~ the instance whose chain the carry extends`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ocap/write-on-the-daemon-wiki ~ the carry lands through the tiddler door's put`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · spirit-pet-malformed · spirit-secret-shaped · spirit-write-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.carry.lands pet/lares-alpha file/-]] ~ no words, two sources, or a malformed instance`>>
+<<has entity=`refusal` name=`spirit-pet-malformed` params=`cure/[[face.carry.lands pet/lares-alpha file/-]] ~ the word reads as no pet name`>>
+<<has entity=`refusal` name=`spirit-secret-shaped` params=`~ the words hold secret-shaped strings`>>
+<<has entity=`refusal` name=`spirit-write-refused` params=`~ the tiddler door answered no put`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ landed
+
+```memetic-wikitext
+<<has entity=`band` name=`landed` params=`exit/0 ~ the carry's title, its lineage and the #/instances line`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares spirit hooili
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares spirit hooili]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · familiar-spirit
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/familiar-spirit`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QDrCMR2AbhfhJgvitu6kV-SNEYrca3cm8qvXekVtMVo`>>
+
+<<^ code=`&#x0004;` to=`?`>>
