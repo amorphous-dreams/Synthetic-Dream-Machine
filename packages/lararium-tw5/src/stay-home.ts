@@ -89,7 +89,7 @@ export const isOpenAlert = (title: string): boolean => { const k = alertKind(tit
 /**
  * A WATCH STANDS AS A TIDDLER (lar:///engine.filter.watches): `$:/state/lares/watch/<id>` holds its filter, its caller's view
  * (face, recipe) and its last digest, written by the watch book alone (`modules/watch.ts`). The read door opens the prefix, so
- * `[prefix[$:/state/lares/watch/]]` lists every live watch as a reader sees it; every write still stays home, and a watch dies
+ * `[prefix[$:/state/lares/watch/]]` lists every live watch to every face of the house; every write still stays home, and a watch dies
  * by its own call (`lares watch id=<id> mu=unask`), never by a put or a delete.
  */
 export const WATCH_RECORD_PREFIX = "$:/state/lares/watch/";

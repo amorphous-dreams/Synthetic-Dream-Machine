@@ -9,7 +9,7 @@
  * the socket, and the vessel withdraws the held ask, which drops the watch and its record.
  *
  * ONE SESSION: a line opens one session of the face `face=N` names (else the face the vessel resolves) and holds every call on
- * it; the watch answers to that face alone. Nothing here polls a filter on a timer: each call holds in the VM until its watch moves
+ * it; the watch records that face as the one that bound it. Nothing here polls a filter on a timer: each call holds in the VM until its watch moves
  * or its `hold` (pacing alone) runs out, and an `unchanged` answer re-arms the next call with the same cursor.
  *
  * Meme: lar:///ha.ka.ba/lares/afford/engine.filter.watches
@@ -30,8 +30,8 @@ const WATCH_WAIT_SLACK_MS = 15_000;
 export type WatchAsk = (args: Record<string, unknown>, timeoutMs: number) => Promise<SubmitResult>;
 
 /**
- * The asker a line rides: ONE session of the face it names, else of the face the vessel resolves (the worn face). A watch answers
- * to the face its session door verified, so a line never rides a one-shot call (the vessel refuses one `watch-faceless`).
+ * The asker a line rides: ONE session of the face it names, else of the face the vessel resolves (the worn face). A watch names
+ * the face its session door verified as the one that bound it, so a line never rides a one-shot call (the vessel refuses one `watch-faceless`).
  */
 export async function watchAsker(args: ParsedArgs): Promise<{ readonly ask: WatchAsk; readonly close: () => Promise<void> }> {
   let face: number;

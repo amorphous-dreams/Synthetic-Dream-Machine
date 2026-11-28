@@ -1,5 +1,5 @@
 """Witness — the `watch` MCP tool: the MCP skin of the daemon's `filter-watch` verb (lar:///engine.filter.watches,
-comms-ux-enacts landing 16). A watch answers to the face its session door verified, so the tool rides a SESSION of the seat's face
+comms-ux-enacts landing 16). A watch names the face that bound it, as its session door verified it, so the tool rides a SESSION of the seat's face
 (`lares_uds.session_call`), never the one-shot line. One call holds and answers at the first change, or `unchanged` when its hold
 runs out; the seat's wait rises above the hold for this tool alone, and the vessel's own wait rides the call as `timeoutMs`.
 

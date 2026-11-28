@@ -268,7 +268,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
             ...(msg.effectKey ? { effectKey:  msg.effectKey             } : {}),
             ...(msg.face      ? { face:       msg.face                  } : {}),
           });
-          // THE WORN FACE RIDES AS CARRIED: a watch names its owner by `worn.presenter` (`watchOwnerOf`), and on the node only the
+          // THE WORN FACE RIDES AS CARRIED: a watch names the face that bound it by `worn.presenter` (`watchFaceOf`); on the node only the
           // vessel's session door sets it. A browser island books a tab's `msg.worn` and `origin` as the holder hands them, so if a
           // browser island ever hosts sibling faces, the holder must strip or set `worn` and `origin` itself before this booking.
           if (placedAskIsLocal(msg)) localAsks.add({ requestId: placed, action: msg.verb, args: msg.args, requestedBy: msg.requestedBy, origin: msg.origin === "surface" ? "surface" : "channel", ...(msg.asker ? { asker: msg.asker } : {}), ...(msg.chore ? { chore: msg.chore } : {}), ...(msg.worn ? { worn: msg.worn } : {}) });

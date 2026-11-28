@@ -379,7 +379,7 @@ def session_call(verb: str, args: "dict | None" = None, *, face: "int | None" = 
                  timeout: float = 30.0, vessel_wait_ms: "int | None" = None) -> dict:
     """Run ONE verb on a SESSION of `face` (`h<N>`, else the face the vessel resolves) and return its receipt, as `call` does.
 
-    A verb that answers to the face its session door verified (a watch) rides here, never on the one-shot line. The session
+    A verb that names the face its session door verified (a watch, which records the face that bound it) rides here, never on the one-shot line. The session
     opens under `hand`, the call rides it with the vessel's own wait (`vessel_wait_ms`, as `timeoutMs`), the session closes.
     Closing the socket mid-call withdraws a held ask. A refusal raises by name, as `call` raises.
     """

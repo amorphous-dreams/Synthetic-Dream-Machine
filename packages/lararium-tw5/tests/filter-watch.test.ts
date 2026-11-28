@@ -139,12 +139,12 @@ describe.skipIf(wikiSkip)(`a watch stands as a tiddler the wiki's change event m
     expect(r.wiki.getTiddler(`${WATCH_PREFIX}${live[0]}`)).toBeUndefined();
   });
 
-  test("RED: a watch another face bound refuses watch-other-face; CONTROL: its own face continues it", async () => {
+  test("RED: another face of the house continues a watch by its id, and the record names the face that bound it last", async () => {
     const r = await rig();
     const first = await r.watch({ ...A, filter: "[tag[memory]]", hold: 1_000 }, ctxOf());
-    const other: VerbContext = { ...ctxOf(), worn: { ordinal: 1, presenter: "did:other" } };
-    await expect(r.watch({ ...A, filter: "[tag[memory]]", id: first["id"], hold: 1_000 }, other)).rejects.toThrow(/watch-other-face/);
-    expect(await r.watch({ ...A, filter: "[tag[memory]]", id: first["id"], hold: 1_000 }, ctxOf())).toMatchObject({ band: "unchanged" });
+    const second: VerbContext = { ...ctxOf(), worn: { ordinal: 1, presenter: "did:second" } };
+    expect(await r.watch({ ...A, filter: "[tag[memory]]", id: first["id"], hold: 1_000 }, second)).toMatchObject({ band: "unchanged", id: first["id"] });
+    expect(r.wiki.getTiddler(`${WATCH_PREFIX}${String(first["id"])}`)?.fields["face"]).toBe("did:second");
   });
 
   test("RED: N watchers re-run only on changes they could see, counted; the shore's echo re-runs none", async () => {
@@ -179,64 +179,53 @@ describe.skipIf(wikiSkip)(`a watch stands as a tiddler the wiki's change event m
   }, 15_000);
 });
 
-/** A spec over a stub view, for the book's own custody: no engine run reads it. */
-const stub = (id: string, owner: string): WatchSpec => ({
-  id, owner, filter: "[tag[memory]]", recipe: "default",
+/** A spec over a stub view, for the book's own housekeeping: no engine run reads it. */
+const stub = (id: string, face: string): WatchSpec => ({
+  id, face, filter: "[tag[memory]]", recipe: "default",
   view: { filterTiddlers: () => [], getTiddler: () => undefined }, visible: () => true,
 });
 const other = (presenter: string, ordinal = 1): VerbContext => ({ ...ctxOf(), worn: { ordinal, presenter } });
 
-describe.skipIf(wikiSkip)(`custody sits face against face${skipNote}`, () => {
-  test("RED: a watch record reads to its owner alone; another face's filter and get find nothing", async () => {
+describe.skipIf(wikiSkip)(`the house's faces share one book${skipNote}`, () => {
+  test("RED: a watch record reads to every face of the house, its face field naming who bound it", async () => {
     const r = await rig();
     const first = await r.watch({ ...A, filter: "[tag[memory]]", hold: 1_000 }, ctxOf());
     const title = `${WATCH_PREFIX}${String(first["id"])}`;
     expect((await makeWikiFilterReactor(r.opts)({ ...A, filter: `[prefix[${WATCH_PREFIX}]]` }, ctxOf()))["titles"]).toEqual([title]);
-    expect((await makeWikiFilterReactor(r.opts)({ ...A, filter: `[prefix[${WATCH_PREFIX}]]` }, other("did:other")))["titles"]).toEqual([]);
-    // Absent to another face: the door answers no record (or refuses the read); either way no field crosses.
-    const got = await makeTiddlerGetReactor(r.opts)({ ...A, title }, other("did:other")).catch(() => ({} as Record<string, unknown>));
-    expect(got["tiddler"] ?? null).toBeNull();
-    // A call that rode no session reads no watch record either.
-    const faceless: VerbContext = { daemon: {} as CompositeStore, invocation: { requestId: "w9" } as VerbContext["invocation"], cap: reader };
-    expect((await makeWikiFilterReactor(r.opts)({ ...A, filter: `[prefix[${WATCH_PREFIX}]]` }, faceless))["titles"]).toEqual([]);
+    expect((await makeWikiFilterReactor(r.opts)({ ...A, filter: `[prefix[${WATCH_PREFIX}]]` }, other("did:second")))["titles"]).toEqual([title]);
+    const got = await makeTiddlerGetReactor(r.opts)({ ...A, title }, other("did:second"));
+    expect((got["tiddler"] as { fields: Record<string, string> }).fields).toMatchObject({ face: "did:witness", filter: "[tag[memory]]" });
   });
 
-  test("RED: a call that rode no session refuses watch-faceless; a free-text presenter names no owner", async () => {
+  test("RED: a call that rode no session refuses watch-faceless; a free-text presenter names no face", async () => {
     const r = await rig();
     const faceless: VerbContext = { daemon: {} as CompositeStore, invocation: { requestId: "w9" } as VerbContext["invocation"], cap: reader, presenter: "h0" };
     await expect(r.watch({ ...A, filter: "[tag[memory]]", hold: 1_000 }, faceless)).rejects.toThrow(/watch-faceless/);
     expect(r.book.ids()).toEqual([]);
   });
 
-  test("RED: the bound counts per owner; a bind past it lets go that owner's own idle watch and never another face's", async () => {
+  test("RED: any face of the house unasks any watch", async () => {
+    const r = await rig();
+    const first = await r.watch({ ...A, filter: "[tag[memory]]", hold: 1_000 }, ctxOf());
+    expect(await r.watch({ ...A, id: first["id"], unask: true }, other("did:second"))).toMatchObject({ band: "removed" });
+    expect(r.book.ids()).toEqual([]);
+  });
+
+  test("RED: the bound counts per binding face, letting go that face's own longest-bound idle watch first", async () => {
     const r = await rig();
     for (let i = 0; i < WATCH_BOOK_MAX; i++) r.book.bind(stub(`a-${i}`, "did:a"));
     for (let i = 0; i < WATCH_BOOK_MAX; i++) r.book.bind(stub(`b-${i}`, "did:b"));
-    expect(r.book.ids().filter((id) => id.startsWith("a-"))).toHaveLength(WATCH_BOOK_MAX);
     r.book.bind(stub("b-past", "did:b"));
     expect(r.book.ids().filter((id) => id.startsWith("a-"))).toHaveLength(WATCH_BOOK_MAX);
-    expect(r.book.entry("b-0"), "the owner's own longest-bound idle watch left").toBeUndefined();
+    expect(r.book.entry("b-0"), "the binding face's own longest-bound idle watch left").toBeUndefined();
     expect(r.book.entry("b-past")).toBeDefined();
   });
 
-  test("RED: a freed id stays its owner's until that owner unasks it; another face's bind refuses watch-other-face", async () => {
+  test("RED: an id the bound let go frees at once, for any face of the house", async () => {
     const r = await rig();
     for (let i = 0; i <= WATCH_BOOK_MAX; i++) r.book.bind(stub(`a-${i}`, "did:a"));
     expect(r.book.entry("a-0")).toBeUndefined();
-    expect(() => r.book.bind(stub("a-0", "did:b"))).toThrow(/watch-other-face/);
-    expect(() => r.book.unask("a-1", "did:b")).toThrow(/watch-other-face/);
-    expect(r.book.unask("a-0", "did:a")).toBe(false);
-    expect(r.book.bind(stub("a-0", "did:b")).owner).toBe("did:b");
-  });
-
-  test("RED: the claims an owner's bound leaves stand at most WATCH_BOOK_MAX; past it the oldest claim leaves and its id frees", async () => {
-    const r = await rig();
-    for (let i = 0; i < WATCH_BOOK_MAX * 3; i++) r.book.bind(stub(`a-${i}`, "did:a"));
-    expect(r.book.freedClaims("did:a")).toBe(WATCH_BOOK_MAX);
-    expect(r.book.ownerOf("a-0"), "the oldest freed claim left").toBeUndefined();
-    expect(r.book.ownerOf(`a-${WATCH_BOOK_MAX}`), "a recent freed claim stands").toBe("did:a");
-    expect(r.book.bind(stub("a-0", "did:b")).owner).toBe("did:b");
-    expect(() => r.book.bind(stub(`a-${WATCH_BOOK_MAX}`, "did:b"))).toThrow(/watch-other-face/);
+    expect(r.book.bind(stub("a-0", "did:b")).face).toBe("did:b");
   });
 
   test("RED: the weigh queue folds: one weigh runs and one waits per watch, however many changes land meanwhile", async () => {
@@ -266,7 +255,7 @@ describe.skipIf(wikiSkip)(`custody sits face against face${skipNote}`, () => {
     expect(r.book.bind(stub("c-0", "did:c")).id).toBe("c-0");
   });
 
-  test("RED: the view weighs again before each re-run: a bag the owner lost leaves the answer, and a lost wiki read drops the watch", async () => {
+  test("RED: the view weighs the caller's reach again before each re-run: a bag it lost leaves the answer, and a lost wiki read drops the watch", async () => {
     const r = await rig();
     let grant: "all" | "no-secret" | "none" = "all";
     const moving: Cap = async (access, bag) => {

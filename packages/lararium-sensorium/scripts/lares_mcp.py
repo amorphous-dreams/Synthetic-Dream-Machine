@@ -1301,7 +1301,7 @@ def build_mcp(coordinator: LaresCoordinator):
             args["asOf"] = as_of
         held = int(hold) if hold is not None else WATCH_HOLD_MS
         args["hold"] = held
-        # A WATCH ANSWERS TO ITS FACE: it rides a session of the seat's face, never the one-shot line (`watch-faceless`).
+        # A WATCH NAMES THE FACE THAT BOUND IT: it rides a session of the seat's face, never the one-shot line (`watch-faceless`).
         return _meme_wire("filter-watch", args, session=True, timeout=held / 1000.0 + WATCH_WAIT_SLACK_S,
                           vessel_wait_ms=held + int(WATCH_WAIT_SLACK_S * 500))
 
