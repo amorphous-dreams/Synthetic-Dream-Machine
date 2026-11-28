@@ -1,0 +1,112 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.lei.restrings`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "supersede the standing lei with a newer one at the line's tip"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.lei.restrings", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.lei.restrings"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.lei.restrings"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.lei.restrings ~ restring ~ swarm-lei-restring
+
+`lares lei restring --rite <rite> --branch <name>` supersedes the standing lei with a newer one; the door fills `after` from the line's tip, so the line names no `--after`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ restring
+
+```memetic-wikitext
+<<has entity=`example` name=`restring` params=`rite/kukulu branch/main returns/3 ~ a fresh lei of three returns over the tip`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ rite · branch · reach · returns · head · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`rite` params=`takes/rite needs/required ~ the rite the lei grants: push, kukulu or keep`>>
+<<has entity=`arg` name=`branch` params=`takes/name needs/required ~ the lei's branch`>>
+<<has entity=`arg` name=`reach` params=`takes/reach ~ wide by default, or head`>>
+<<has entity=`arg` name=`returns` params=`takes/n ~ the returns the lei holds, from 1`>>
+<<has entity=`arg` name=`head` params=`takes/commit ~ the head a head-reach pins`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the face whose line this reads or strings, a whole count from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/face-root ~ the row runs in the vessel, where the hand-only gate, the ward and the co-sign stand`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · swarm-lei-nothing-to-restring · swarm-lei-forked · hand-act-only
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ a missing rite, branch or lei, a stray flag, or a malformed count`>>
+<<has entity=`refusal` name=`swarm-lei-nothing-to-restring` params=`~ no lei stands on the line; a kui strings its first`>>
+<<has entity=`refusal` name=`swarm-lei-forked` params=`~ the line forks; name one tip with a kui --after`>>
+<<has entity=`refusal` name=`hand-act-only` params=`~ an AI seat restrung a lei; a person runs the line`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ landed · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`landed` params=`exit/0 fields/[[lei]] ~ the record's answer`>>
+<<has entity=`band` name=`refused` params=`exit/1 ~ the door or the vessel refused by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares lei restring
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares lei restring]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · seat-harness
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ef_26AIqEmY0-BbdR-_9hx_4yPP1NN_sFL8N8bYn0xE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

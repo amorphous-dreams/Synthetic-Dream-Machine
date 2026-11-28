@@ -1,0 +1,107 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.lei.reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read the lei board, or one rite's standing lei at a branch"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.lei.reads", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.lei.reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.lei.reads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.lei.reads ~ show ~ swarm-show
+
+`lares lei show` reads the board. `--rite <rite> --branch <name>` together read one rite's standing lei (`data.lei`), and `--head` asks after one head. Naming no face with several faces open, it reads every open face's line (`data.faces`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ board · line
+
+```memetic-wikitext
+<<has entity=`example` name=`board` params=`~ read the board`>>
+<<has entity=`example` name=`line` params=`rite/kukulu branch/main ~ read one rite's line`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ rite · branch · head · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`rite` params=`takes/rite needs/all-of:rite,branch ~ the rite whose line to read`>>
+<<has entity=`arg` name=`branch` params=`takes/name needs/all-of:rite,branch ~ the line's branch`>>
+<<has entity=`arg` name=`head` params=`takes/commit ~ ask after one head`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the face whose line this reads or strings, a whole count from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ a read through the store door`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ a missing rite, branch or lei, a stray flag, or a malformed count`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ board
+
+```memetic-wikitext
+<<has entity=`band` name=`board` params=`exit/0 fields/[[lei faces]] ~ the board, a line's standing lei, or every open face's line`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares lei show
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares lei show]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · seat-harness
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fd9Mm9BKZli6ewJEBtdsE7MFItJiEmEcxHPQ24r0OWA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

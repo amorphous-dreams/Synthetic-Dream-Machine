@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.lei.lands`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "land a lei record the hand signed at the pūlama's hand door"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.lei.lands", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.lei.lands"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.lei.lands"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.lei.lands ~ land ~ the pūlama's signed record lands
+
+`lares lei land '<answer>'` lands a record the hand signed at the pūlama's hand door, where a vessel under a pūlama sends its lei acts: the line names the pūlama's printed answer (its record and face) or a bare record with `--face`. A lei rides the kui row, an unstring the unstring row; the vessel verifies the record and asks no route. An answer for every face lands each face's record by its own face and names where the pūlama's signing stopped (`stopped`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ land
+
+```memetic-wikitext
+<<has entity=`example` name=`land` params=`record/<answer-json> ~ land the pūlama's answer`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ record · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`record` params=`takes/json needs/required seat/1 as/<record> ~ the pūlama's answer, or a bare record`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the face whose line this reads or strings, a whole count from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ the hand signed at the pūlama; the vessel verifies the record and asks no route`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ the record reads as no JSON object, names no lei, or its face differs from --face`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ landed · stopped
+
+```memetic-wikitext
+<<has entity=`band` name=`landed` params=`exit/0 fields/[[faces stopped]] ~ each record landed`>>
+<<has entity=`band` name=`stopped` params=`exit/1 ~ the pūlama's signing stopped; the reading names where`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares lei land
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares lei land]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · seat-harness
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Uyzn0PVFuEEsOOA8jHjySZjjhe1KZmsTrao-iENcAs0`>>
+
+<<^ code=`&#x0004;` to=`?`>>
