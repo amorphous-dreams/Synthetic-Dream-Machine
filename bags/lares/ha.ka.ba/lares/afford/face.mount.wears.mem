@@ -1,0 +1,113 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.mount.wears`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "turn the vessel's mount to a face already standing open"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.mount.wears", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.mount.wears"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.mount.wears"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.mount.wears ~ unlock opens custody; wear chooses the face
+
+`lares wear N` moves the vessel's mount to face hN, a face already standing open (under a pūlama, one the pūlama lends), and the vessel composes again on it. The door reads the custody door first: a vessel holding no key takes no wear and names the one act that opens it (`lares vault unlock`). A wear asks no route and carries none, so nothing here reaches for a prompt; the face rides the positional, or `--face N`.
+
+A wear that turns the face flushes every shore first, inside the vessel, while the face it leaves still stands mounted, and its answer names one line per island. Where the flush leaves a record unwritten, a person at a terminal answers whether to turn anyway; an agent carries `--yes`. A wear that lands replays the share landing, as an unlock does, and names what moved and what still waits on a shut face. A pipe reads one sentence of prose; `--json` reads the envelope.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ wear-face · turn-anyway
+
+```memetic-wikitext
+<<has entity=`example` name=`wear-face` params=`index/2 ~ wear face h2, already standing open`>>
+<<has entity=`example` name=`turn-anyway` params=`index/2 yes/true ~ turn even where the shore's flush left records unwritten`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ index · face · yes
+
+```memetic-wikitext
+<<has entity=`arg` name=`index` params=`takes/handle-index needs/one-of:index,face seat/1 as/<N> ~ the face to wear, by persona index (a whole number from 0)`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index needs/one-of:index,face ~ the face to wear, as a flag beside the positional`>>
+<<has entity=`arg` name=`yes` params=`~ turn the face even where the shore's flush left records unwritten; an agent's confirm`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand-or-seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand-or-seat` params=`who/seat-or-hand ~ the vessel reads the line's peer; an AI harness on the branch names seat ai, a word that only narrows what the vessel reads`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · daemon-unreachable · custody-locked · shore-unwritten · wear-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.mount.wears index/2]] ~ name the face to wear by its index`>>
+<<has entity=`refusal` name=`daemon-unreachable` params=`cure/[[face.mount.wears index/2]] ~ no vessel answers its custody door; stand it (lares vessel stand), unlock, then wear`>>
+<<has entity=`refusal` name=`custody-locked` params=`~ the vessel holds no key; lares vault unlock opens it, and a wear opens nothing`>>
+<<has entity=`refusal` name=`shore-unwritten` params=`cure/[[face.mount.wears index/2 yes/true]] ~ the shore's flush left records unwritten on the face this wear leaves; each rides the answer`>>
+<<has entity=`refusal` name=`wear-refused` params=`~ the composition wearing the face did not stand; the answer names the face worn again, or a dropped key`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ worn · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`worn` params=`exit/0 fields/[[face standing already shore shares sharesWait sharesUnhanded]] ~ the vessel stands composed on the face; shore and shares name what the turn flushed and lifted`>>
+<<has entity=`band` name=`refused` params=`exit/1 ~ the vessel refused by name; the vessel's own refusal reason rides as the code`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares wear
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares wear]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · persona-policy
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AUjI8jv3nUp_cQD89zFVgxeqCkZHRIyWhmJ7SUPh5oM`>>
+
+<<^ code=`&#x0004;` to=`?`>>
