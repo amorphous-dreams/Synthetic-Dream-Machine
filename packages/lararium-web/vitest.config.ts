@@ -159,15 +159,20 @@ const launched: NamedProject[] = [
 export const browserProjects = async (): Promise<TestProjectConfiguration[]> => [await webBrowser(), ...launched];
 
 /** Each lamp of this package as a project of its own: the dark project's settings over the lamp's own files. */
-export const lampProjects = (): TestProjectConfiguration[] => lampsOf("packages/lararium-web").map((lamp: { project: string; from: string; files: readonly { file: string }[] }) => {
-  const from = launched.find((project) => project.test.name === lamp.from);
+export const lampProjects = async (): Promise<TestProjectConfiguration[]> => {
+  const lamps = lampsOf("packages/lararium-web") as readonly { project: string; from: string; files: readonly { file: string }[] }[];
+  // The three-engine project probes WebKit to build, so it stands only when a lamp takes its settings from it.
+  const dark: NamedProject[] = lamps.some((lamp) => lamp.from === "web-browser") ? [await webBrowser(), ...launched] : launched;
+  return lamps.map((lamp) => {
+  const from = dark.find((project) => project.test.name === lamp.from);
   if (!from) throw new Error(`tools/browser-lamps.mjs: lamp ${lamp.project} takes its settings from "${lamp.from}", which this config lacks`);
   return { ...from, test: { ...from.test, name: lamp.project, include: lamp.files.map((f) => f.file) } };
-});
+  });
+};
 
-export default defineConfig({
+export default defineConfig(async () => ({
   test: {
     globalSetup: ["../../tools/vitest-dist-guard.mjs"],
-    projects: [webNode, ...(process.env[LAMPS_ENV] === "1" ? lampProjects() : [])],
+    projects: [webNode, ...(process.env[LAMPS_ENV] === "1" ? await lampProjects() : [])],
   },
-});
+}));
