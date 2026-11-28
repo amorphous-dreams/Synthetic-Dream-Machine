@@ -53,6 +53,8 @@ import { cmdDocCensus } from "./doc-census.js";
 import { fresherBagOf, fresherLines, readFresher, type FresherAsk } from "./vessel-fresher.js";
 import { cmdStandForeground, cmdStandWithWeb, cmdRestart, cmdRiteRebuild, cmdRiteRefresh } from "./scripted.js";
 import { vesselDid } from "../env.js";
+import { breathDirFromEnv, readIslandBreath } from "@lararium/node";
+import { emitAnswer } from "../render.js";
 import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
 
@@ -188,6 +190,12 @@ const SUBS: Readonly<Record<string, { readonly summary: string; readonly run: Su
   stand: { summary: "bring the daemon up and report — [--foreground] [--with-web] [--restart]", run: standVessel },
   stop:  { summary: "halt the daemon on the port (graceful → forced); a free port reads as stopped",     run: (a) => cmdStop(under(a)) },
   lay:   { summary: "lay every bags/* holding back into its doc, kind-routed and diff-gated",           run: (a) => cmdLay(under(a)) },
+  breath: { summary: "each mounting island's latest boot breath (state, phase, progress, the process's CPU work), read off the vessel's main thread, so it answers while the vessel holds a long load — [--json]", run: async (a) => {
+    // THE BREATH THE ISLANDS WRITE (`island-breath`): this process reads the records beside the vessel and asks the vessel nothing.
+    const breath = readIslandBreath(breathDirFromEnv());
+    emitAnswer(a, { ok: true, data: { breath }, human: () => console.log(breath === null ? "no island breath stands here (an older image, or no island breathed yet)" : breath.map((r) => `${r.state.padEnd(8)} ${r.phase}#${r.progress} ${r.wikiUri}${r.fault ? ` — ${r.fault}` : ""}`).join("\n") || "no island breathed yet") }, "lares vessel breath: read");
+    return 0;
+  } },
   read:  { summary: "inspect and start nothing — bootstrap, storage, port, resting engine falls and held ids (no verb, so it answers a fallen vessel)", run: (a) => cmdRead(under(a)) },
   release: { summary: "end one quarantine hold, with the vessel stopped: <documentId> returns the bytes · --keep keeps what stands · --fresh starts the id empty", run: (a) => cmdRelease(under(a)) },
   floor: { summary: "the vessel's floor pin, one per Nexus: `status` (pinned, newest seen, fast-forward, fork) · `accept [<release>]` walks prior from the pin · `seed [--genesis <dir>]` the seed a genesis dir offers beside the founding record · `adopt [--apply|--commit|--revert]` the seed's plugins over the pin's base as a local floor (preview bare; the hand applies) — [--grain canon|seed|shadow|lag|all] [--nexus <aid>] [--porch <origin>]", run: (a) => cmdFloor(under(a)) },

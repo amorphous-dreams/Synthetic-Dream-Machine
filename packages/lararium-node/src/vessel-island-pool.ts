@@ -25,6 +25,7 @@ import { floorShadowFileStore } from "./floor-shadow-file.js";
 import type { PortPolicy } from "@lararium/mesh/port-lease";
 import { nodeNewSyncChannel, nodeSpawnSessionWorker, nodeSpawnWikiWorker } from "./worker-handle.js";
 import { readCasBlobFromFs, type IslandCasData } from "./node-cas.js";
+import { breathDirFromEnv } from "./island-breath.js";
 
 /**
  * The vessel's content store, as a session island's scoped view reads it: the vessel's one runtime `cid/` dir
@@ -103,7 +104,7 @@ export class VesselIslandPool extends VesselIslandPoolCore {
   constructor(options: VesselIslandPoolOptions) {
     const workerUrl   = options.workerScriptUrl ?? DEFAULT_WORKER_URL;
     const storageRoot = options.storageRoot ?? null;
-    const casData: IslandCasData = { cidDir: options.cidDir ?? null, corpusCasDir: options.corpusCasDir ?? null, houseCanon: houseCanonSlugsSeated() };
+    const casData: IslandCasData = { cidDir: options.cidDir ?? null, corpusCasDir: options.corpusCasDir ?? null, houseCanon: houseCanonSlugsSeated(), breathDir: breathDirFromEnv() };
     super({
       host: {
         spawnWorker: (spawn) => (spawn?.session ? nodeSpawnSessionWorker(workerUrl, options.caps) : nodeSpawnWikiWorker(workerUrl, options.caps, casData)),

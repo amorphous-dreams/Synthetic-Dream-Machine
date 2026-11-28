@@ -3,46 +3,32 @@
  *
  * A vessel that just stood may answer its doors late: a face daemon island loading a large control document holds the
  * vessel's main thread, and every door reads silent until it lets go (measured 2026-11-28: 83 s, door calls waiting up to
- * 390 s). A door's refusal of that kind (`WAITS_ON_READINESS`) sends the caller to the vessel's PULSE: the container's state
- * and the CPU work its processes spent, a counter the vessel's own kernel keeps.
+ * 390 s). A door's refusal of that kind (`WAITS_ON_READINESS`) sends the caller to the islands' BREATH, which each island's
+ * own thread writes beside the vessel (`@lararium/node` `island-breath`) and `lares vessel breath` reads in a process apart
+ * from the vessel's main thread.
  *
  *   the door answers                    → the answer returns, whatever it says
  *   a refusal readiness cannot explain  → it returns at once (a lock, a lei, a vessel's own named refusal)
- *   the pulse reads nowhere             → the door's refusal stands (nothing here can judge the vessel's work)
- *   the vessel stopped                  → `vessel-fault`, naming its status and exit
- *   the vessel spent < WORK_USEC of CPU
- *     since the read before             → `vessel-stalled`: it stands running and idle, so no boot moves it on
- *   it worked                           → the caller paces once, then asks the door again
+ *   no breath reads                     → the door's refusal stands (an older image, or no island breathed)
+ *   an island's breath names a fault    → `vessel-fault`, naming the island and the fault's words
+ *   the breath stood still since the
+ *     read before (`breathMoved`)       → `vessel-stalled`: no island advanced and the process spent no work
+ *   it moved                            → the caller paces once, then asks the door again
  *
- * NO CLOCK DECIDES: the verdict reads the vessel's CPU counter alone. `pace` spaces the reads and judges nothing, so a
- * slow pace and a fast one reach the same verdict over the same vessel.
+ * NO CLOCK DECIDES: the verdict reads the islands' state, phase and progress and the process's CPU work. `pace` spaces the
+ * reads and judges nothing.
  */
+import { breathMoved, type IslandBreathRecord } from "@lararium/mesh/island-breath-verdict";
 
-/** The vessel's pulse as the host reads it: the container's state and the cumulative CPU its processes spent (µs). */
-export interface VesselPulse {
-  /** The container's state: `running`, `exited`, `restarting`, `dead`, … (`absent` where no vessel container stands). */
-  readonly status: string;
-  /** The container's health as Docker reads it (`healthy`, `starting`, `unhealthy`, `none`); annotation alone. */
-  readonly health: string;
-  readonly exitCode: number | null;
-  /** The cgroup's cumulative CPU usage in µs; null where the host reads none. */
-  readonly cpuUsec: number | null;
-}
-
-/** The door refusals a vessel still booting answers: each waits on the pulse instead of ending the caller. */
+/** The door refusals a vessel still booting answers: each waits on the breath instead of ending the caller. */
 export const WAITS_ON_READINESS: ReadonlySet<string> = new Set(["vessel-silent", "vessel-composing", "daemon-unreachable", "store-door-timeout"]);
-
-/**
- * The least CPU work between two reads that counts as a vessel working: a quarter second. An idle node's timers spend a
- * few milliseconds per read; a load holding the main thread spends nearly the whole span. A work measure, never a time-out.
- */
-export const WORK_USEC = 250_000;
 
 /** Say a progress line on the first waiting read and on every sixth after it (a count of reads, never a clock). */
 const SAY_EVERY = 6;
 
 export interface VesselReadinessWait {
-  readonly pulse: () => Promise<VesselPulse | null>;
+  /** The islands' breath as `lares vessel breath` reads it; null where none reads. */
+  readonly breath: () => Promise<readonly IslandBreathRecord[] | null>;
   /** PACING: space the next read; it decides nothing. */
   readonly pace: () => Promise<void>;
   readonly say: (line: string) => void;
@@ -54,43 +40,46 @@ export interface VesselReadinessWait {
 
 type Refusal = { readonly ok: false; readonly code: string; readonly message: string };
 
+/** One line naming where the islands stand: each mounting island's phase and progress, or that every island stands ready. */
+const standsAt = (records: readonly IslandBreathRecord[]): string => {
+  const mounting = records.filter((r) => r.state === "mounting");
+  const cpu = records.reduce((m, r) => Math.max(m, r.cpuUsec), 0);
+  const where = mounting.length === 0 ? `${records.length} island(s) ready` : mounting.map((r) => `${r.wikiUri} at ${r.phase}#${r.progress}`).join(", ");
+  return `${where}; ${(cpu / 1e6).toFixed(1)} s of CPU spent`;
+};
+
 export async function awaitVesselAnswer<T extends { readonly ok: boolean }>(read: () => Promise<T>, w: VesselReadinessWait): Promise<T | Refusal> {
   const voice = w.voice ?? "kūkulu";
-  let lastCpu: number | null = null;
+  let before: readonly IslandBreathRecord[] | null = null;
   let rounds = 0;
   for (;;) {
     const answer = await read();
     if (answer.ok) return answer;
     const code = (answer as unknown as Refusal).code;
     if (!WAITS_ON_READINESS.has(code)) return answer;
-    const pulse = await w.pulse().catch(() => null);
-    if (pulse === null) return answer;
-    if (pulse.status !== "running") {
-      const message = `${w.what} stopped (its container reads ${pulse.status}${pulse.exitCode === null ? "" : `, exit ${pulse.exitCode}`}) while its door answered ${code}; \`tools/lares-container.sh logs\` names why`;
+    const now = await w.breath().catch(() => null);
+    if (now === null || now.length === 0) return answer;
+    const v = breathMoved(before, now);
+    if (v.verdict === "fault") {
+      const message = `${w.what}'s island ${v.wikiUri} faulted while its door answered ${code}: ${v.fault}; \`lares shore log\` and \`tools/lares-container.sh logs\` name the rest`;
       w.say(`${voice}: ${message}`);
       return { ok: false, code: "vessel-fault", message };
     }
-    if (pulse.cpuUsec === null) return answer;
-    if (lastCpu !== null && pulse.cpuUsec - lastCpu < WORK_USEC) {
-      const message = `${w.what} stands running and spent ${((pulse.cpuUsec - lastCpu) / 1000).toFixed(0)} ms of work since the read before, while its door still answers ${code}: it rests idle, and no boot carries it on; \`tools/lares-container.sh logs\` names where it rests`;
+    if (v.verdict === "still") {
+      const message = `${w.what}'s breath stood still since the read before (${standsAt(now)}) while its door still answers ${code}: no island advanced and the process spent under a quarter second of work, so no boot carries it on; \`tools/lares-container.sh logs\` names where it rests`;
       w.say(`${voice}: ${message}`);
       return { ok: false, code: "vessel-stalled", message };
     }
-    if (rounds++ % SAY_EVERY === 0) {
-      w.say(`${voice}: ${w.what} still works (its door answers ${code}; health ${pulse.health}; ${(pulse.cpuUsec / 1e6).toFixed(1)} s of CPU spent), so the rite waits on its own answer`);
-    }
-    lastCpu = pulse.cpuUsec;
+    if (rounds++ % SAY_EVERY === 0) w.say(`${voice}: ${w.what} still works (its door answers ${code}; ${standsAt(now)}), so the rite waits on its own answer`);
+    before = now;
     await w.pace();
   }
 }
 
-/** Read the shim's `vessel-pulse` line (one JSON object); null where it names no pulse. */
-export function vesselPulseOf(line: string | null): VesselPulse | null {
-  if (line === null) return null;
-  try {
-    const p = JSON.parse(line) as Record<string, unknown> | null;
-    if (p === null || typeof p !== "object" || typeof p["status"] !== "string") return null;
-    const num = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
-    return { status: p["status"], health: typeof p["health"] === "string" ? p["health"] : "none", exitCode: num(p["exitCode"]), cpuUsec: num(p["cpuUsec"]) };
-  } catch { return null; }
+/** Read `lares vessel breath`'s answer (`{ breath }`); null where it names no breath. */
+export function breathOf(output: Record<string, unknown> | null): IslandBreathRecord[] | null {
+  const b = output?.["breath"];
+  if (!Array.isArray(b)) return null;
+  return b.filter((r): r is IslandBreathRecord => typeof r === "object" && r !== null && typeof (r as { wikiUri?: unknown }).wikiUri === "string"
+    && ["mounting", "ready", "fault"].includes(String((r as { state?: unknown }).state)));
 }

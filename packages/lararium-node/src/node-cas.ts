@@ -49,6 +49,9 @@ export interface IslandCasData {
   /** The documents a resting engine fall names in flight (`engine-fall`): the island's own store holds them back from its
    *  engine as the vessel's does. Absent: none held. */
   readonly heldBack?: readonly string[];
+  /** Where the island writes its boot breath off the vessel's main thread (`island-breath`, `<LAR_ROOT>/run/breath`). Absent or
+   *  null: the island writes none, and its breath reaches the vessel alone. */
+  readonly breathDir?: string | null;
 }
 
 /**

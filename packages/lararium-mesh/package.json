@@ -8,6 +8,10 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./island-breath-verdict": {
+      "import": "./dist/island-breath-verdict.js",
+      "types": "./dist/island-breath-verdict.d.ts"
+    },
     "./agile-digest": {
       "import": "./dist/agile-digest.js",
       "types": "./dist/agile-digest.d.ts"

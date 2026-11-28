@@ -64,7 +64,8 @@
  * founding record it reloads, and the line only names what waits.
  */
 import { compareGenesisDigests, ratchetWords, ratchetsDiffer, type GenesisDigests, seedRatchetStances, seedStanceWords } from "@lararium/mesh/genesis-compare";
-import { awaitVesselAnswer, type VesselPulse } from "./vessel-readiness-wait.js";
+import { awaitVesselAnswer } from "./vessel-readiness-wait.js";
+import type { IslandBreathRecord } from "@lararium/mesh/island-breath-verdict";
 
 export type RiteVerbAnswer =
   | { readonly ok: true; readonly output: Record<string, unknown> }
@@ -189,11 +190,12 @@ export interface RitePorts {
    */
   standing?(branch: string, face?: number): Promise<StandingAnswer>;
   /**
-   * THE NEW VESSEL'S PULSE (the shim's `vessel-pulse`): its container's state and the CPU work it spent. After the raise, a door
-   * that answers silent, composing or unreached sends the rite here, and the rite waits while the vessel works
+   * THE NEW VESSEL'S BREATH (`lares vessel breath`, read in a process apart from the vessel's main thread): each mounting island's
+   * latest state, phase and progress and the process's CPU work, as each island's own thread writes it (`island-breath`). After the
+   * raise, a door that answers silent, composing or unreached sends the rite here, and the rite waits while the breath moves
    * (`vessel-readiness-wait`). Absent, a door's first refusal stands as it did.
    */
-  vesselPulse?(): Promise<VesselPulse | null>;
+  breath?(): Promise<readonly IslandBreathRecord[] | null>;
   /** PACING between two post-stand reads; it decides nothing. Absent, the reads follow one another at once. */
   pace?(): Promise<void>;
   /** The keep a down left owed, run after the landing (`keep-owed`); absent, the raise runs it itself. */
@@ -741,11 +743,12 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
   };
   /**
    * AFTER THE STAND, THE VESSEL'S OWN READINESS DECIDES: a door that answers silent, composing or unreached while the new vessel
-   * still works (its pulse) keeps the rite waiting, as long as it works; a vessel that stopped or rests idle refuses by name.
+   * still breathes (its islands advance, or its process works) keeps the rite waiting, as long as it moves; a breath that names a
+   * fault or stands still refuses by name.
    */
   const afterStand = async <T extends { readonly ok: boolean }>(read: () => Promise<T>) => {
-    if (!ports.vesselPulse) return read();
-    return awaitVesselAnswer(read, { pulse: () => ports.vesselPulse!(), pace: () => (ports.pace ? ports.pace() : Promise.resolve()), say: (line) => ports.say(line), what: "the new vessel" });
+    if (!ports.breath) return read();
+    return awaitVesselAnswer(read, { breath: () => ports.breath!(), pace: () => (ports.pace ? ports.pace() : Promise.resolve()), say: (line) => ports.say(line), what: "the new vessel" });
   };
   /** Land each begun face in the vessel that stands now; the rite reads par only where every pair reads par. */
   const landAll = async (faces: readonly StandingBegin[], data: Record<string, unknown>): Promise<{ code: number; data: Record<string, unknown> }> => {

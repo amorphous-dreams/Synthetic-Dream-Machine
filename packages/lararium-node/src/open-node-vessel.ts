@@ -180,6 +180,7 @@ import type { MountManifest } from "@lararium/mesh/open-vessel-core";
 import { readDocCensus, type DocCensusDoor } from "./doc-census-door.js";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
 import { casDirForStorage, casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
+import { breathDirFromEnv } from "./island-breath.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow } from "@lararium/mesh/kahua-adopt";
 import { adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh/promote-board";
 import { workbenchDocIds, workbenchDecider, workbenchSeatHolds } from "@lararium/mesh/workbench";
@@ -2582,7 +2583,8 @@ async function prepareNodeBootOn(
   // THE HOUSE CANON SEATS HERE, off the checkout's disk-sourced holdings (`seatHouseCanonFromCheckout`), before any island
   // spawns: every island is handed the same slugs.
   // The documents a resting engine fall names in flight ride in too: the daemon island's own store holds them back.
-  const casData: IslandCasData = { cidDir, corpusCasDir, houseCanon: seatHouseCanonFromCheckout(), heldBack };
+  // THE BREATH DIR rides in too: each island writes its boot breath there off the main thread (`island-breath`).
+  const casData: IslandCasData = { cidDir, corpusCasDir, houseCanon: seatHouseCanonFromCheckout(), heldBack, breathDir: breathDirFromEnv() };
   const hermShore = hermCasTransitFromEnv();
   const resolveCid = makeNodeCasResolver({ cidDir, corpusCasDir, shore: hermShore });
   // The floor stack carries `resolveCid` as the record's `cas` (below): a boot that refuses before it composes leaves no `cas` behind.

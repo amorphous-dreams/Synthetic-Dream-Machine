@@ -254,8 +254,12 @@ services:
     stop_grace_period: 20s
     ports:
       - "${LARES_BIND:-127.0.0.1}:${LARES_PORT:-4321}:4321"
+    # HEALTH READS THE VESSEL'S OWN READINESS, THEN ITS OWN BREATH (`breath-health`): `/api/health` answering 200 reads healthy, and
+    # so does a boot whose islands' breath moved since the last check (state, phase, progress, or the process's CPU work); a fault
+    # or a still breath reads unhealthy. The interval paces the checks and decides nothing, so a slow boot that still works never
+    # reads unhealthy on the clock's word alone.
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4321/api/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      test: ["CMD", "node", "packages/lararium-node/dist/src/breath-health-main.js"]
       interval: 15s
       timeout: 5s
       retries: 5

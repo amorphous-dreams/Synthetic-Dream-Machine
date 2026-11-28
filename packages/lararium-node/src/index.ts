@@ -198,6 +198,8 @@ export { rehiveLines, type RehiveSeat, type RehiveAnswerReading } from "./face-r
 export type { DaemonVmOptions } from "./open-daemon-vm.js";
 export type { NodeVesselOptions, NodeVesselResult, NodeHermResult, NodeFloor, SovereignReaders, NodeOpenPhase } from "./open-node-vessel.js";
 export { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
+export { BREATH_DIR, BREATH_WORK_USEC, breathDirFromEnv, breathFault, breathMoved, islandBreathTap, readIslandBreath } from "./island-breath.js";
+export type { BreathVerdict, IslandBreathRecord } from "./island-breath.js";
 export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-face.js";
 export { createEngineWatch, engineFatalCauseOf, engineTerminatedRefusal, engineFallBody, tapRepoLogs, tapInboundDocs, islandAskRefusal, ISOLATE_ENGINE, ENGINE_TERMINATED, ENGINE_HAND_ACT } from "./engine-watch.js";
 export { answerEngineFall, armFallKeeper, fallAwareProbeDoors, heldBackReason, heldInFlight, holdBackStorage, keepFallDown, HELD_BACK, HELD_IN_FLIGHT, HELD_HAND_ACT, readEngineFalls, restEngineFall, clearEngineFalls, fallenHolder, engineFallsPath, ENGINE_FALL_EXIT, ENGINE_RESTART_CAP, ENGINE_DOWN_HAND_ACT } from "./engine-fall.js";

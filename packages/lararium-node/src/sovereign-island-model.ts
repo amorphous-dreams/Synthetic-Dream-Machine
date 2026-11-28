@@ -50,6 +50,7 @@ import { type EdgeStanding } from "@lararium/mesh/edge-kapae";
 import type { IslandBehavior } from "@lararium/tw5";
 import { islandSessionDoor, type IslandSessionProof } from "@lararium/keyhive";
 import { casDirFromIslandStorageDir, readCasBlobFromFs, type IslandCasData } from "./node-cas.js";
+import { islandBreathTap } from "./island-breath.js";
 import { holdBackStorage } from "./engine-fall.js";
 
 /**
@@ -238,8 +239,12 @@ export function runSovereignWorker(
     listen: (cb) => { port.on("message", cb); return () => { port.off("message", cb); }; },
   }, { idPrefix: `island-${process.pid}-${Math.random().toString(36).slice(2, 8)}` });
 
+  // THE BREATH, WRITTEN OFF THE MAIN THREAD (`island-breath`): each breath, ea and fault this island posts also lands in its
+  // record under the house's run dir, so a reader outside the vessel sees the mount move while the vessel's main thread holds.
+  const breathTap = islandBreathTap(typeof handed.breathDir === "string" ? handed.breathDir : null);
+
   const host: IslandHostShore = {
-    post:    (msg: IslandToVesselMsg) => port.postMessage(msg),
+    post:    (msg: IslandToVesselMsg) => { breathTap(msg); port.postMessage(msg); },
     listen:  (onMessage) => port.on("message", onMessage),
     storage: (msg) => {
       if (msg.storage?.type === "nodefs" && !handed.cidDir) casDir = casDirFromIslandStorageDir(msg.storage.dir);
