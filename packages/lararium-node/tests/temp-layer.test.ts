@@ -31,7 +31,7 @@ const ORIGIN = { kind: "operator-import" as const, sessionId: "test" };
 let scratch = "";
 afterEach(() => { if (scratch) { rmSync(scratch, { recursive: true, force: true }); scratch = ""; } });
 
-/** The draft recovery render: the field block, a blank line, the text. */
+/** The rig's own-record render: the field block, a blank line, the text. */
 function tidOf(fields: Record<string, unknown>): string {
   const head = Object.keys(fields).filter((k) => k !== "text").sort().map((k) => `${k}: ${String(fields[k])}`).join("\n");
   return `${head}\n\n${typeof fields["text"] === "string" ? fields["text"] : ""}`;
@@ -52,15 +52,18 @@ function rig(store = new MemoryTiddlerStore(BAG)): Rig {
   const mirrorRoot = join(projections, "wikis", SLUG, "temp");
   const tree = new SyncedTree(join(scratch, "synced-tree"));
   const projector = new LarDiskProjector({
-    mirrors: [{ bagId: BAG, mirrorRoot, mirrorClass: "recovery", tempLayer: true }],
+    // The temp layer projects as an ordinary mirror: its own records render through `recordFileFn` off the bag's store.
+    mirrors: [{ bagId: BAG, mirrorRoot, tempLayer: true }],
     carrierFileFn: async () => null,
-    recoveryStore: (bag) => bag === BAG ? store : null,
-    recoveryFileFn: async (fields) => ({ ext: ".tid", body: tidOf(fields), defaultRelPath: `${encodeURIComponent(String(fields["title"]))}.tid` }),
+    bagStore: (bag) => bag === BAG ? store : null,
+    recordFileFn: async (bag, uri) => {
+      const rec = bag === BAG ? await store.get(uri) : null;
+      return rec && !rec.meta?.deleted ? { ext: ".tid", body: tidOf(rec.tiddler as Record<string, unknown>), defaultRelPath: `${encodeURIComponent(uri)}.tid` } : null;
+    },
     syncedTree: tree,
     // The composition's word on which bags hold a carrier: the temp layer, while its record lives.
     bagsHolding: async (uri) => { const rec = await store.get(uri); return rec !== null && !rec.meta?.deleted ? [BAG] : []; },
     onRefusal: (info) => { throw new Error(`refused: ${info.reason}`); },
-    onConflict: (info) => { throw new Error(`conflict: ${info.reason}`); },
   });
   (projector as unknown as { _tw5: unknown })._tw5 = { $tw: { wiki: { getTiddler: () => undefined } } };
   const reconcile = (projector as unknown as { reconcile: (uri: string) => Promise<void> }).reconcile.bind(projector);
@@ -99,12 +102,12 @@ const fileOf = (r: Rig, title: string): string | undefined =>
 
 describe("the consent grant", () => {
   const grant: DiskMirrorGrant = [
-    { bagId: "temp", mirrorRoot: "/p/wikis", scope: "temp", wikiSlot: "temp", mirrorClass: "recovery", consentSlugs: [SLUG] },
+    { bagId: "temp", mirrorRoot: "/p/wikis", scope: "temp", wikiSlot: "temp", consentSlugs: [SLUG] },
   ];
 
   test("a consented slug's recipe-designated temp layer resolves to wikis/<slug>/temp, marked as the temp layer", () => {
     expect(resolveDiskMirrors(grant, [BAG], SLUG)).toEqual([
-      { bagId: BAG, mirrorRoot: `/p/wikis/${SLUG}/temp`, scope: "temp", wikiSlot: "temp", mirrorClass: "recovery", tempLayer: true },
+      { bagId: BAG, mirrorRoot: `/p/wikis/${SLUG}/temp`, scope: "temp", wikiSlot: "temp", tempLayer: true },
     ]);
   });
 
@@ -129,7 +132,8 @@ describe("the consent grant", () => {
     const base = { projectionRoot: "/p", canonBags: "/canon", face: { relation: face, segment: "Heron" } };
     expect(daemonDiskMirrors(base).some((m) => m.bagId === wikiSlotUri("daemon", "temp"))).toBe(false);
     const temp = daemonDiskMirrors({ ...base, temp: true }).find((m) => m.bagId === wikiSlotUri("daemon", "temp"));
-    expect(temp).toMatchObject({ mirrorRoot: "/p/faces/Heron/wikis/daemon/temp", mirrorClass: "recovery", tempLayer: true });
+    expect(temp).toMatchObject({ mirrorRoot: "/p/faces/Heron/wikis/daemon/temp", tempLayer: true });
+    expect(temp).not.toHaveProperty("mirrorClass");
   });
 });
 
@@ -146,12 +150,15 @@ describe("projection", () => {
   test("an unconsented wiki holds no temp mirror, so nothing lands", async () => {
     scratch = mkdtempSync(join(tmpdir(), "lar-temp-layer-"));
     const store = new MemoryTiddlerStore(BAG);
-    const grant: DiskMirrorGrant = [{ bagId: "temp", mirrorRoot: join(scratch, "wikis"), scope: "temp", wikiSlot: "temp", mirrorClass: "recovery", consentSlugs: [] }];
+    const grant: DiskMirrorGrant = [{ bagId: "temp", mirrorRoot: join(scratch, "wikis"), scope: "temp", wikiSlot: "temp", consentSlugs: [] }];
     const mirrors = resolveDiskMirrors(grant, [BAG], SLUG);
     const projector = new LarDiskProjector({
       mirrors, carrierFileFn: async () => null,
-      recoveryStore: (bag) => bag === BAG ? store : null,
-      recoveryFileFn: async (fields) => ({ ext: ".tid", body: tidOf(fields), defaultRelPath: "x.tid" }),
+      bagStore: (bag) => bag === BAG ? store : null,
+      recordFileFn: async (_bag, uri) => {
+        const rec = await store.get(uri);
+        return rec && !rec.meta?.deleted ? { ext: ".tid", body: tidOf(rec.tiddler as Record<string, unknown>), defaultRelPath: "x.tid" } : null;
+      },
     });
     (projector as unknown as { _tw5: unknown })._tw5 = { $tw: { wiki: { getTiddler: () => undefined } } };
     await store.put({ tiddler: { title: "Shopping", text: "eggs" } }, ORIGIN);
@@ -354,7 +361,7 @@ describe("the mount", () => {
     const engine = new TW5Engine();
     await engine.boot(vendoredCore());
     const stop = mountDiskProjection({ recipe: { wikiSlug: SLUG }, diskMirrors: [
-      { bagId: BAG, mirrorRoot, scope: "temp", mirrorClass: "recovery", tempLayer: true },
+      { bagId: BAG, mirrorRoot, scope: "temp", tempLayer: true },
     ] } as never, { tw5: engine, composite, post: () => {}, wikiUri: "test" } as never)!;
     try {
       expect(temp.readNow("Kept note").record?.tiddler["text"], "the carrier read back").toBe("words from before the restart");

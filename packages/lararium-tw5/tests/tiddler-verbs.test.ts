@@ -21,7 +21,7 @@ import { evaluateMeme, placeMeme, readMeme, wikiMemeSink } from "../src/place-me
 import { stampCarrier, verifyBcc } from "@lararium/memetic-frame";
 import {
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor,
-  makeWikiStatusReactor, makeWikiActionReactor, makeCarrierActReactor, lineDiff, pageFilterAnswer, WIKI_FILTER_ROWS, SHORE_COLLAPSE_CONFIG_PREFIX, type FilterPage, type TiddlerVerbOptions,
+  makeWikiStatusReactor, makeWikiActionReactor, makeCarrierActReactor, lineDiff, pageFilterAnswer, WIKI_FILTER_ROWS, type FilterPage, type TiddlerVerbOptions,
 } from "../src/tiddler-verbs.js";
 import { AUDIT_ARRAY_CAP, boundOutcomeOutput, placeVerb, removeVerb } from "../src/verb-vm.js";
 import { VerbTable, callDoorOf, makeCallReactor, type VerbContext } from "../src/verb-dispatcher.js";
@@ -1185,20 +1185,15 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(r.engine.wiki.getTiddler(MEME)!.fields["forward-to"]).toBe(to);
   });
 
-  test("RED (the guards put and delete keep): a rename onto or away from an effect-ledger title or a collapse rule refuses for the asker that may not write it; nothing lands", async () => {
+  test("RED (the guards put and delete keep): a rename onto or away from an effect-ledger title refuses for every asker; nothing lands", async () => {
     const r = await rig();
     const rename = makeTiddlerRenameReactor(r.opts);
     const ledger = effectRecordUri(DAEMON, "real");
-    const RULE = `${SHORE_COLLAPSE_CONFIG_PREFIX}slot-disjoint`;
     for (const asker of [undefined, "seat", "cli"] as const) {
       const as = { ...ctx(), ...(asker ? { asker } : {}) };
       await expect(rename({ ...A, title: "Note 02", to: ledger }, as)).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
       await expect(rename({ ...A, title: ledger, to: "Note Two" }, as)).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
     }
-    await expect(rename({ ...A, title: "Note 02", to: RULE }, { ...ctx(), asker: "seat" })).rejects.toMatchObject({ reason: "hand-act-only" });
-    await expect(rename({ ...A, title: RULE, to: "Note Two" }, { ...ctx(), asker: "seat" })).rejects.toMatchObject({ reason: "hand-act-only" });
-    await expect(rename({ ...A, title: "Note 02", to: RULE }, ctx())).rejects.toMatchObject({ reason: "hand-unattested" });
-    expect(r.engine.wiki.tiddlerExists(RULE)).toBe(false);
     expect(r.engine.wiki.tiddlerExists("Note Two")).toBe(false);
   });
 
@@ -1984,24 +1979,6 @@ describe.skipIf(wikiSkip)(`a bag read through the tiddler door${skipNote}`, () =
   });
 });
 
-describe.skipIf(wikiSkip)(`the person's collapse rules take a hand's write alone${skipNote}`, () => {
-  const RULE = `${SHORE_COLLAPSE_CONFIG_PREFIX}slot-disjoint`;
-
-  test("a seat's put or delete of a collapse rule refuses hand-act-only; a line no door read refuses hand-unattested; nothing lands", async () => {
-    const r = await rig();
-    const put = makeTiddlerPutReactor(r.opts);
-    await expect(put({ ...A, title: RULE, create: true, bags: CANON }, { ...ctx(), asker: "seat" })).rejects.toMatchObject({ reason: "hand-act-only", message: expect.stringContaining(`lares put title="${RULE}"`) });
-    await expect(put({ ...A, title: RULE, create: true, bags: CANON }, ctx())).rejects.toMatchObject({ reason: "hand-unattested" });
-    expect(r.engine.wiki.getTiddler(RULE)).toBeUndefined();
-    await expect(makeTiddlerDeleteReactor(r.opts)({ ...A, title: RULE }, { ...ctx(), asker: "seat" })).rejects.toMatchObject({ reason: "hand-act-only" });
-  });
-
-  test("CONTROL: the operator's own line lands the rule", async () => {
-    const r = await rig();
-    expect(await makeTiddlerPutReactor(r.opts)({ ...A, title: RULE, create: true, text: "", fields: { bags: CANON } }, { ...ctx(), asker: "cli" })).toMatchObject({ decision: "put" });
-  });
-});
-
 /** A carrier whose slot `#/a` nests a child and carries words after the child's close: the slot's `$postamble`. */
 const nestedText = (tail: string): string =>
   `<<^ code=\`&#x0001;\` from=\`?\` to=\`${MEME}\`>>\n` +
@@ -2261,14 +2238,6 @@ describe.skipIf(wikiSkip)(`a carrier's own act keeps the door's guards${skipNote
     expect(r.engine.wiki.getTiddler("Guarded")).toBeUndefined();
     expect(await r.act({ ...A, act: "acts/probe" }, ctx())).toMatchObject({ decision: "acted", wrote: ["Guarded"] });
     expect(r.engine.wiki.getTiddler("Guarded")?.fields["text"]).toBe("moved");
-  });
-
-  test("RED: an act writing a shore collapse rule with no hand refuses hand-unattested and lands nothing, its earlier writes included", async () => {
-    const rule = `${SHORE_COLLAPSE_CONFIG_PREFIX}every-title`;
-    const r = await actRig(`<$action-setfield $tiddler="Before the rule" text="x"/><$action-setfield $tiddler="${rule}" text="[all[]]"/>`);
-    await expect(r.act({ ...A, act: "acts/probe" }, ctx())).rejects.toMatchObject({ reason: "hand-unattested" });
-    expect(r.engine.wiki.getTiddler(rule)).toBeUndefined();
-    expect(r.engine.wiki.getTiddler("Before the rule"), "the capture run refused before anything landed").toBeUndefined();
   });
 
   test("RED: a dry act transcluding a withheld title answers no withheld text; the live act copies none either", async () => {

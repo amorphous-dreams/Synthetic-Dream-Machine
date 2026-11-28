@@ -19,6 +19,9 @@
  *    in the `.meta` sidecar. A format that carries no title (a flattened `.mem`) cannot prove it, and
  *    an OCCUPIED candidate there REFUSES loudly rather than clobber or grow.
  *
+ * ③ DRAFT MIRRORS. A draft bag projects as an ordinary mirror: its own records render through `recordFileFn` off the
+ *    bag's store, a shadow in the view notwithstanding, and a draft that leaves takes its file with it.
+ *
  * Meme: lar:///ha.ka.ba/lararium/api/disk-projection
  */
 
@@ -30,15 +33,9 @@ import { join } from "node:path";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { SyncedTree } from "../src/synced-tree.js";
 import type { CarrierFile } from "@lararium/tw5";
-import { createHash } from "node:crypto";
+import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { afterDispatch, draftBag, openDraft, shoreRig, turns, typeInto } from "../../lararium-tw5/tests/wiki-shore-rig.js";
 import { makeReceiptCapability } from "../../lararium-tw5/src/receipt.js";
-import { attachMessageChannelSync } from "@lararium/mesh/island-repo-door";
-import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
-import { receiptInStore } from "@lararium/mesh/receipt-with-heads";
-import { answerReceipt } from "../src/worker-handle.js";
-import type { CapabilityRecord } from "@lararium/mesh/capability-record";
-import { restingRepo, restEvery } from "./resting-repo.js";
 
 let root = "";
 afterEach(() => { if (root) { rmSync(root, { recursive: true, force: true }); root = ""; } });
@@ -78,75 +75,6 @@ const nativeFile = (title: string, text: string): CarrierFile => ({
   body: tidBody(title, text),
   defaultRelPath: `${title.replace(/\/|\\/g, "_")}.tid`,
 });
-
-test.each([false, true])("recovery drain waits for projection after durable heads (grant=%s)", async (grant) => {
-  root = mkdtempSync(join(tmpdir(), "lar-recovery-drain-"));
-  const r = await shoreRig();
-  await r.adaptor.armSeedCheckpoint();
-  let releaseRender!: () => void;
-  let renderStarted!: () => void;
-  const heldRender = new Promise<void>((resolve) => { releaseRender = resolve; });
-  const rendering = new Promise<void>((resolve) => { renderStarted = resolve; });
-  let first = true;
-  const projector = new LarDiskProjector({
-    mirrors: grant ? [{ bagId: draftBag, mirrorRoot: root, mirrorClass: "recovery" }] : [],
-    carrierFileFn: async () => null,
-    recoveryStore: (bag) => bag === draftBag ? r.draft : null,
-    recoveryFileFn: async (fields) => {
-      if (first) { first = false; renderStarted(); await heldRender; }
-      return nativeFile(String(fields.title), String(fields.text));
-    },
-  });
-  const stopProjector = projector.start(r.engine);
-  r.adaptor.recoveryAtRest = (bag, title, fields) => projector.recoveryAtRest(bag, title, fields);
-  const asks: Array<{ requestId: string; documentIds: string[]; heads: Record<string, string[]> }> = [];
-  let sequence = 0;
-  const capability = makeReceiptCapability({
-    post: (message) => { if (message.type === "receipt:request") asks.push(message); },
-    handles: () => new Map(Object.entries(r.handles)),
-    mintId: () => `recovery-${++sequence}`,
-  });
-  r.adaptor.caps.receipt = capability;
-  const count = () => r.calls.filter((call) => call.bag === draftBag && call.puts.includes(title)).length;
-  let title = "";
-  try {
-    title = openDraft(r, "Note", "first");
-    await afterDispatch();
-    await turns(30);
-    if (grant) await rendering;
-    expect(count()).toBe(1);
-    expect(asks).toHaveLength(1);
-    const ask = asks[0]!;
-    expect(ask.documentIds).toContain(r.draftHandle.documentId);
-    expect(ask.heads[r.draftHandle.documentId]!.length).toBeGreaterThan(0);
-    typeInto(r, title, "latest");
-    await afterDispatch();
-    await turns(20);
-    expect(count(), "held repo acknowledgement prevents the second drain").toBe(1);
-    capability.answer({ type: "receipt:issued", requestId: ask.requestId, issued: true });
-    await turns(30);
-    const beforeProjection = count();
-    releaseRender();
-    await projector.idle();
-    await turns(30);
-    if (asks[1]) capability.answer({ type: "receipt:issued", requestId: asks[1].requestId, issued: true });
-    await turns(20);
-    if (grant) {
-      const bytes = readFileSync(join(root, `${title}.tid`));
-      expect(createHash("sha256").update(bytes).digest("hex")).toBe(createHash("sha256").update(tidBody(title, "latest")).digest("hex"));
-      expect(beforeProjection, "the granted recovery file must land before the next drain").toBe(1);
-    } else {
-      expect(readdirSync(root)).toEqual([]);
-      expect(beforeProjection, "without a recovery grant the drain needs only durable heads").toBe(2);
-    }
-  } finally {
-    releaseRender();
-    capability.close();
-    r.adaptor.caps.receipt = null;
-    await stopProjector();
-    await r.stop();
-  }
-}, 60_000);
 
 test("a held durable receipt plus a production boundary never opens a parallel write", async () => {
   const r = await shoreRig();
@@ -192,157 +120,6 @@ test("a held durable receipt plus a production boundary never opens a parallel w
   }
 }, 60_000);
 
-test("recovery drain retains its obligation when the granted file conflicts", async () => {
-  root = mkdtempSync(join(tmpdir(), "lar-recovery-conflict-"));
-  const r = await shoreRig();
-  await r.adaptor.armSeedCheckpoint();
-  let releaseRender!: () => void;
-  let renderStarted!: () => void;
-  const heldRender = new Promise<void>((resolve) => { releaseRender = resolve; });
-  const rendering = new Promise<void>((resolve) => { renderStarted = resolve; });
-  let first = true;
-  const conflicts: string[] = [];
-  const projector = new LarDiskProjector({
-    mirrors: [{ bagId: draftBag, mirrorRoot: root, mirrorClass: "recovery" }],
-    carrierFileFn: async () => null,
-    onConflict: (entry) => conflicts.push(entry.uri),
-    recoveryStore: (bag) => bag === draftBag ? r.draft : null,
-    recoveryFileFn: async (fields) => {
-      if (first) { first = false; renderStarted(); await heldRender; }
-      return nativeFile(String(fields.title), String(fields.text));
-    },
-  });
-  const stopProjector = projector.start(r.engine);
-  r.adaptor.recoveryAtRest = (bag, title, fields) => projector.recoveryAtRest(bag, title, fields);
-  const asks: Array<{ requestId: string }> = [];
-  const capability = makeReceiptCapability({
-    post: (message) => { if (message.type === "receipt:request") asks.push(message); },
-    handles: () => new Map(Object.entries(r.handles)),
-    mintId: () => `conflict-${asks.length}`,
-  });
-  r.adaptor.caps.receipt = capability;
-  let title = "";
-  try {
-    title = openDraft(r, "Note", "first");
-    await afterDispatch();
-    await rendering;
-    await turns(20);
-    expect(asks).toHaveLength(1);
-    const path = join(root, `${title}.tid`);
-    const disk = tidBody(title, "a separate disk edit");
-    writeFileSync(path, disk);
-    typeInto(r, title, "latest");
-    await afterDispatch();
-    releaseRender();
-    await projector.idle();
-    expect(conflicts).toContain(title);
-    expect(readFileSync(path, "utf8")).toBe(disk);
-    capability.answer({ type: "receipt:issued", requestId: asks[0]!.requestId, issued: true });
-    await turns(30);
-    const writes = r.calls.filter((call) => call.bag === draftBag && call.puts.includes(title));
-    // A landing wave after the refusal also releases the retry (the drain's ruling 2), so a loaded host may show a second write; the claim holds in the title staying owed.
-    expect(writes.length, "the first drain wrote").toBeGreaterThanOrEqual(1);
-    expect(r.adaptor.pendingTitles()).toContain(title);
-  } finally {
-    releaseRender();
-    capability.close();
-    r.adaptor.caps.receipt = null;
-    await stopProjector();
-    await r.stop();
-  }
-}, 60_000);
-
-test.each([false, true])("recovery retry rechecks the file without another edit (conflict=%s)", async (conflict) => {
-  root = mkdtempSync(join(tmpdir(), "lar-recovery-retry-"));
-  const r = await shoreRig();
-  await r.adaptor.armSeedCheckpoint();
-  let releaseRender!: () => void;
-  let renderStarted!: () => void;
-  const heldRender = new Promise<void>((resolve) => { releaseRender = resolve; });
-  const rendering = new Promise<void>((resolve) => { renderStarted = resolve; });
-  let first = true;
-  const projector = new LarDiskProjector({
-    mirrors: [{ bagId: draftBag, mirrorRoot: root, mirrorClass: "recovery" }],
-    carrierFileFn: async () => null,
-    recoveryStore: (bag) => bag === draftBag ? r.draft : null,
-    recoveryFileFn: async (fields) => {
-      if (first) { first = false; renderStarted(); await heldRender; }
-      return nativeFile(String(fields.title), String(fields.text));
-    },
-  });
-  const stopProjector = projector.start(r.engine);
-  let checks = 0;
-  r.adaptor.recoveryAtRest = (bag, title, fields) => {
-    checks++;
-    return projector.recoveryAtRest(bag, title, fields);
-  };
-  const asks: Array<{ requestId: string }> = [];
-  const capability = makeReceiptCapability({
-    post: (message) => { if (message.type === "receipt:request") asks.push(message); },
-    handles: () => new Map(Object.entries(r.handles)),
-    mintId: () => `retry-${asks.length}`,
-  });
-  r.adaptor.caps.receipt = capability;
-  try {
-    const title = openDraft(r, "Note", "first");
-    await afterDispatch();
-    await rendering;
-    await turns(20);
-    expect(asks).toHaveLength(1);
-    const path = join(root, `${title}.tid`);
-    if (conflict) writeFileSync(path, tidBody(title, "separate disk edit"));
-    releaseRender();
-    await projector.idle();
-    capability.answer({ type: "receipt:issued", requestId: asks[0]!.requestId, issued: true });
-    // A HEURISTIC, named as one. No settled signal serves here: measured, `handsRested` never resolves under the standing conflict
-    // (the refused title stays owed), and once a retry stands a fresh receipt ask unanswered the drain is held, so neither
-    // `landingIdle` nor `projector.idle` can signal rest either. A recheck rides real disk I/O that `setImmediate` turns outrun
-    // under load, so the evidence left is that the recheck and ask counts hold still across a stretch of real time (12 rounds
-    // of 5 ms). A host slower than that stretch could still pass or fail this on timing; the stretch replaced a turn count that
-    // failed 2 runs in 50 under load.
-    const quiet = async (): Promise<void> => {
-      let still = 0, mark = "";
-      for (let round = 0; round < 400 && still < 12; round++) {
-        await new Promise<void>((resolve) => setTimeout(resolve, 5));
-        const now = `${checks}/${asks.length}`;
-        still = now === mark ? still + 1 : 0; mark = now;
-      }
-      expect(still, "the recheck loop reached quiet").toBeGreaterThanOrEqual(12);
-    };
-    await quiet();
-    // The first answer draws one recheck. Under a standing conflict the refusal raises its alert, and a landing wave for the
-    // refused title releases ONE retry on its own (the drain's ruling 2), so how soon that second recheck lands rides the
-    // loop's turn order: the claim here reads "at least one", and exactly one where no conflict refuses.
-    if (conflict) expect(checks).toBeGreaterThanOrEqual(1);
-    else expect(checks).toBe(1);
-    if (conflict) {
-      expect(r.adaptor.pendingTitles()).toContain(title);
-      const before = checks;                       // taken BEFORE the request: only the request's own work can raise it past here
-      r.adaptor.requestDrain();
-      await quiet();
-      if (asks[1]) capability.answer({ type: "receipt:issued", requestId: asks[1].requestId, issued: true });
-      await quiet();
-      expect(checks, "the request drew at least one more recheck of the failed projection receipt").toBeGreaterThan(before);
-      // QUIESCENCE without another request: a further quiet stretch draws no further check, and the retries stay bounded.
-      const settled = checks;
-      await quiet();
-      expect(checks, "no request stands, so no further recheck runs").toBe(settled);
-      expect(settled - before, "the request's retries stay bounded").toBeLessThanOrEqual(3);
-      expect.soft(r.adaptor.pendingTitles(), "conflict still prevents acknowledgement").toContain(title);
-      expect(readFileSync(path, "utf8")).toBe(tidBody(title, "separate disk edit"));
-    } else {
-      expect(r.adaptor.pendingTitles()).not.toContain(title);
-      expect(readFileSync(path, "utf8")).toBe(tidBody(title, "first"));
-    }
-    expect(r.calls.filter((call) => call.bag === draftBag && call.puts.includes(title))).toHaveLength(1);
-  } finally {
-    releaseRender();
-    capability.close();
-    r.adaptor.caps.receipt = null;
-    await stopProjector();
-    await r.stop();
-  }
-}, 60_000);
 
 describe("foreign-title projection — the form cut", () => {
   test("★ a tiddler titled `My Notes` projects to disk ★", async () => {
@@ -529,15 +306,28 @@ describe("foreign-title projection — the CONTROLs", () => {
   });
 });
 
-test("a recovery mirror projects a held draft even when the wiki view shadows it; an ungranted bag stays off disk", async () => {
-  root = mkdtempSync(join(tmpdir(), "lar-recovery-projection-"));
+/** A draft bag's own store, holding `titles`, and the record renderer an ordinary mirror reads it through. */
+async function draftLayer(titles: Record<string, string>): Promise<{ store: MemoryTiddlerStore; recordFileFn: (bag: string, uri: string) => Promise<CarrierFile | null> }> {
+  const store = new MemoryTiddlerStore("draft");
+  for (const [title, text] of Object.entries(titles)) await store.put({ tiddler: { title, text } }, { kind: "operator-import", sessionId: "test" });
+  const recordFileFn = async (bag: string, uri: string): Promise<CarrierFile | null> => {
+    const rec = bag === "draft" ? await store.get(uri) : null;
+    return rec && !rec.meta?.deleted ? nativeFile(uri, String(rec.tiddler["text"] ?? "")) : null;
+  };
+  return { store, recordFileFn };
+}
+
+test("a draft mirror projects its own held draft as an ordinary mirror, even when the wiki view shadows it; a bag with no mirror stays off disk", async () => {
+  root = mkdtempSync(join(tmpdir(), "lar-draft-projection-"));
   const title = "Draft of 'Note'";
   const recovery = join(root, "recovery");
-  const bytes = `title: ${title}\ndraft.of: Note\nlar-draft-base-bag: working\nlar-draft-base-heads: abc\n\nunsaved words`;
+  const layer = await draftLayer({ [title]: "unsaved words" });
   const projector = new LarDiskProjector({
-    mirrors: [{ bagId: "draft", mirrorRoot: recovery, mirrorClass: "recovery" }],
+    mirrors: [{ bagId: "draft", mirrorRoot: recovery }],
+    bagStore: (bag) => bag === "draft" ? layer.store : null,
+    recordFileFn: layer.recordFileFn,
     bagsHolding: async (uri) => uri === title ? ["draft", "temp"] : ["temp"],
-    carrierFileFn: async (uri) => ({ ext: ".tid", body: uri === title ? bytes : tidBody(uri, "private"), defaultRelPath: `${uri}.tid` }),
+    carrierFileFn: async (uri) => nativeFile(uri, "private"),
   });
   (projector as unknown as { _tw5: unknown })._tw5 = { $tw: { wiki: { getTiddler: (uri: string) => ({ fields: { title: uri, "$origin-bag": "temp" } }) } } };
   const reconcile = (projector as unknown as { reconcile: (uri: string) => Promise<void> }).reconcile.bind(projector);
@@ -547,17 +337,20 @@ test("a recovery mirror projects a held draft even when the wiki view shadows it
   expect(existsSync(recovery)).toBe(true);
   const files = readdirSync(recovery);
   expect(files).toHaveLength(1);
-  expect(readFileSync(join(recovery, files[0]!), "utf8")).toBe(bytes);
+  expect(readFileSync(join(recovery, files[0]!), "utf8")).toBe(tidBody(title, "unsaved words"));
 });
 
-test("initial scan finds a shadowed recovery draft", async () => {
-  root = mkdtempSync(join(tmpdir(), "lar-recovery-scan-"));
+test("initial scan finds a shadowed draft in the draft bag's own records", async () => {
+  root = mkdtempSync(join(tmpdir(), "lar-draft-scan-"));
   const recovery = join(root, "recovery");
   const title = "Draft of 'Note'";
+  const layer = await draftLayer({ [title]: "draft bytes" });
   const projector = new LarDiskProjector({
-    mirrors: [{ bagId: "draft", mirrorRoot: recovery, mirrorClass: "recovery" }],
+    mirrors: [{ bagId: "draft", mirrorRoot: recovery }],
+    bagStore: (bag) => bag === "draft" ? layer.store : null,
+    recordFileFn: layer.recordFileFn,
     bagsHolding: async (uri) => uri === title ? ["draft", "temp"] : ["temp"],
-    carrierFileFn: async (uri) => nativeFile(uri, uri === title ? "draft bytes" : "private"),
+    carrierFileFn: async (uri) => nativeFile(uri, "private"),
   });
   const wiki = {
     allTitles: () => [title, "temp-only"],
@@ -578,10 +371,13 @@ test("initial scan finds a shadowed recovery draft", async () => {
 });
 
 test("CONTROL — initial scan leaves a title held only by an ungranted bag off disk", async () => {
-  root = mkdtempSync(join(tmpdir(), "lar-recovery-scan-control-"));
+  root = mkdtempSync(join(tmpdir(), "lar-draft-scan-control-"));
   const recovery = join(root, "recovery");
+  const layer = await draftLayer({});
   const projector = new LarDiskProjector({
-    mirrors: [{ bagId: "draft", mirrorRoot: recovery, mirrorClass: "recovery" }],
+    mirrors: [{ bagId: "draft", mirrorRoot: recovery }],
+    bagStore: (bag) => bag === "draft" ? layer.store : null,
+    recordFileFn: layer.recordFileFn,
     bagsHolding: async () => ["temp"],
     carrierFileFn: async (uri) => nativeFile(uri, "private"),
   });
@@ -600,12 +396,12 @@ test("CONTROL — initial scan leaves a title held only by an ungranted bag off 
   }
 });
 
-test("recovery mount reads the draft bag's fields despite a shadow, and keeps other bags isolated", async () => {
+test("the mount projects the draft bag's own fields despite a shadow, and keeps other bags isolated", async () => {
   const { CompositeStore } = await import("@lararium/mesh/composite-store");
   const { MemoryTiddlerStore } = await import("../../lararium-tw5/src/memory-store.js");
   const { TW5Engine } = await import("../../lararium-tw5/src/tw5-vm.js");
   const { mountDiskProjection, mountedDiskProjector } = await import("../src/island-behaviors.js");
-  root = mkdtempSync(join(tmpdir(), "lar-recovery-record-"));
+  root = mkdtempSync(join(tmpdir(), "lar-draft-record-"));
   const recovery = join(root, "recovery");
   const workingRoot = join(root, "working");
   const draft = new MemoryTiddlerStore("draft");
@@ -628,7 +424,7 @@ test("recovery mount reads the draft bag's fields despite a shadow, and keeps ot
   tw.wiki.addTiddler(new tw.Tiddler({ title: "temp-only", text: "private secret", "$origin-bag": "temp" }));
   tw.wiki.addTiddler(new tw.Tiddler({ title: "Working note", text: "ordinary words", "$origin-bag": "working" }));
   const stop = mountDiskProjection({ diskMirrors: [
-    { bagId: "draft", mirrorRoot: recovery, scope: "draft", mirrorClass: "recovery" },
+    { bagId: "draft", mirrorRoot: recovery, scope: "draft" },
     { bagId: "working", mirrorRoot: workingRoot, scope: "working" },
   ] } as never, { tw5: engine, composite, post: () => {}, wikiUri: "test" } as never)!;
   try {
@@ -654,9 +450,9 @@ test("recovery mount reads the draft bag's fields despite a shadow, and keeps ot
   } finally { await stop(); }
 }, 60_000);
 
-test("recovery restart removes a tombstoned draft even when a different bag shadows its title", async () => {
+test("a restart removes a tombstoned draft's file even when a different bag shadows its title", async () => {
   const { MemoryTiddlerStore } = await import("../../lararium-tw5/src/memory-store.js");
-  root = mkdtempSync(join(tmpdir(), "lar-recovery-tombstone-restart-"));
+  root = mkdtempSync(join(tmpdir(), "lar-draft-tombstone-restart-"));
   const recovery = join(root, "recovery");
   const bases = join(root, "bases");
   const draft = new MemoryTiddlerStore("draft");
@@ -671,9 +467,9 @@ test("recovery restart removes a tombstoned draft even when a different bag shad
     addEventListener: () => {}, removeEventListener: () => {},
   };
   const mount = () => new LarDiskProjector({
-    mirrors: [{ bagId: "draft", mirrorRoot: recovery, mirrorClass: "recovery" }],
-    recoveryStore: () => draft,
-    recoveryFileFn: async (fields) => nativeFile(fields.title as string, fields.text as string),
+    mirrors: [{ bagId: "draft", mirrorRoot: recovery }],
+    bagStore: () => draft,
+    recordFileFn: async (_bag, uri) => { const rec = await draft.get(uri); return rec && !rec.meta?.deleted ? nativeFile(uri, String(rec.tiddler["text"] ?? "")) : null; },
     carrierFileFn: async () => null,
     bagsHolding: async (title) => (await draft.get(title))?.meta?.deleted ? ["temp"] : ["draft", "temp"],
     syncedTree: new SyncedTree(bases),
@@ -695,7 +491,7 @@ test("recovery restart removes a tombstoned draft even when a different bag shad
 
 test("multi-bag cleanup preserves co-rooted and live drafts across shadow and absent views", async () => {
   const { MemoryTiddlerStore } = await import("../../lararium-tw5/src/memory-store.js");
-  root = mkdtempSync(join(tmpdir(), "lar-recovery-multi-cleanup-"));
+  root = mkdtempSync(join(tmpdir(), "lar-draft-multi-cleanup-"));
   const shared = join(root, "shared");
   const separate = join(root, "separate");
   const ordinary = join(root, "ordinary");
@@ -717,13 +513,13 @@ test("multi-bag cleanup preserves co-rooted and live drafts across shadow and ab
   };
   const projector = new LarDiskProjector({
     mirrors: [
-      { bagId: "draft-a", mirrorRoot: shared, mirrorClass: "recovery" },
-      { bagId: "draft-b", mirrorRoot: shared, mirrorClass: "recovery" },
-      { bagId: "draft-c", mirrorRoot: separate, mirrorClass: "recovery" },
+      { bagId: "draft-a", mirrorRoot: shared },
+      { bagId: "draft-b", mirrorRoot: shared },
+      { bagId: "draft-c", mirrorRoot: separate },
       { bagId: "working", mirrorRoot: ordinary },
     ],
-    recoveryStore: (bag) => stores.get(bag) ?? null,
-    recoveryFileFn: async (fields) => nativeFile(fields.title as string, fields.text as string),
+    bagStore: (bag) => stores.get(bag) ?? null,
+    recordFileFn: async (bag, uri) => { const rec = await stores.get(bag)?.get(uri); return rec && !rec.meta?.deleted ? nativeFile(uri, String(rec.tiddler["text"] ?? "")) : null; },
     carrierFileFn: async (uri) => nativeFile(uri, "ordinary words"),
     bagsHolding: async (uri) => {
       const held: string[] = [];
@@ -764,237 +560,3 @@ test("multi-bag cleanup preserves co-rooted and live drafts across shadow and ab
     expect(existsSync(ordinaryFile)).toBe(false);
   } finally { await stop(); }
 });
-
-test.each([false, true])("recovery grant gates a drain even without a receipt capability (grant=%s)", async (grant) => {
-  root = mkdtempSync(join(tmpdir(), "lar-recovery-no-receipt-"));
-  const r = await shoreRig();
-  await r.adaptor.armSeedCheckpoint();
-  let release!: () => void;
-  const held = new Promise<void>((resolve) => { release = resolve; });
-  let checks = 0;
-  const projector = new LarDiskProjector({
-    mirrors: grant ? [{ bagId: draftBag, mirrorRoot: root, mirrorClass: "recovery" }] : [],
-    carrierFileFn: async () => null,
-    recoveryStore: (bag) => bag === draftBag ? r.draft : null,
-    recoveryFileFn: async (fields) => nativeFile(String(fields.title), String(fields.text)),
-  });
-  const stop = projector.start(r.engine);
-  r.adaptor.recoveryAtRest = async (bag, title, fields) => {
-    if (grant) { checks++; await held; }
-    await projector.recoveryAtRest(bag, title, fields);
-  };
-  try {
-    const title = openDraft(r, "No door", "first");
-    await afterDispatch(); await turns(30);
-    typeInto(r, title, "second");
-    await afterDispatch(); await turns(30);
-    const writes = () => r.calls.filter((call) => call.bag === draftBag && call.puts.includes(title)).length;
-    expect(writes(), "the granted file receipt holds the next write without a receipt capability").toBe(grant ? 1 : 2);
-    if (grant) expect(checks).toBe(1);
-  } finally {
-    release(); r.adaptor.recoveryAtRest = null;
-    await stop(); await r.stop();
-  }
-}, 60_000);
-
-test("a record superseding the written snapshot before receipt capture cannot acknowledge it", async () => {
-  root = mkdtempSync(join(tmpdir(), "lar-recovery-supersede-"));
-  const r = await shoreRig();
-  await r.adaptor.armSeedCheckpoint();
-  const projector = new LarDiskProjector({
-    mirrors: [{ bagId: draftBag, mirrorRoot: root, mirrorClass: "recovery" }],
-    carrierFileFn: async () => null,
-    recoveryStore: (bag) => bag === draftBag ? r.draft : null,
-    recoveryFileFn: async (fields) => nativeFile(String(fields.title), String(fields.text)),
-  });
-  const stop = projector.start(r.engine);
-  const asks: Array<{ requestId: string }> = [];
-  const capability = makeReceiptCapability({ post: (m) => { if (m.type === "receipt:request") asks.push(m); }, handles: () => new Map(Object.entries(r.handles)), mintId: () => `supersede-${asks.length}` });
-  r.adaptor.caps.receipt = capability;
-  let receiptDone!: () => void;
-  const receipt = new Promise<void>((resolve) => { receiptDone = resolve; });
-  r.adaptor.recoveryAtRest = async (bag, title, fields) => {
-    const written = await r.draft.get(title);
-    if (!written) throw new Error("missing written snapshot");
-    await r.draft.put({ ...written, tiddler: { ...written.tiddler, text: "external successor" } }, { kind: "crdt-remote", edgeIsland: "other" });
-    try { await projector.recoveryAtRest(bag, title, fields); } finally { receiptDone(); }
-  };
-  try {
-    const title = openDraft(r, "Superseded", "written snapshot");
-    await afterDispatch();
-    await expect.poll(() => asks.length).toBe(1);
-    capability.answer({ type: "receipt:issued", requestId: asks[0]!.requestId, issued: true });
-    await receipt; await turns(30); await projector.idle();
-    expect(readFileSync(join(root, `${title}.tid`), "utf8")).toContain("external successor");
-    expect(r.adaptor.pendingTitles(), "the successor cannot prove the earlier write").toContain(title);
-  } finally {
-    capability.close(); r.adaptor.caps.receipt = null; r.adaptor.recoveryAtRest = null;
-    await stop(); await r.stop();
-  }
-}, 60_000);
-
-test("recovery receipt verifies bytes and refuses render faults and teardown", async () => {
-  root = mkdtempSync(join(tmpdir(), "lar-recovery-receipt-"));
-  const r = await shoreRig();
-  await r.adaptor.armSeedCheckpoint();
-  let renderFault = false;
-  const projector = new LarDiskProjector({
-    mirrors: [{ bagId: draftBag, mirrorRoot: root, mirrorClass: "recovery" }],
-    carrierFileFn: async () => null,
-    recoveryStore: (bag) => bag === draftBag ? r.draft : null,
-    recoveryFileFn: async (fields) => {
-      if (renderFault) throw new Error("render fault");
-      return nativeFile(String(fields.title), String(fields.text));
-    },
-  });
-  const stop = projector.start(r.engine);
-  let stopped = false;
-  try {
-    const title = openDraft(r, "Receipt", "written");
-    await afterDispatch(); await turns(30); await projector.idle();
-    const fields = (await r.draft.get(title))!.tiddler;
-    await expect(projector.recoveryAtRest(draftBag, title, fields)).resolves.toBeUndefined();
-    renderFault = true;
-    await expect(projector.recoveryAtRest(draftBag, title, fields)).rejects.toThrow("render fault");
-    renderFault = false;
-    writeFileSync(join(root, `${title}.tid`), tidBody(title, "tampered"));
-    await expect(projector.recoveryAtRest(draftBag, title, fields)).rejects.toThrow(/conflicting|not written/);
-    await stop(); stopped = true;
-    await expect(projector.recoveryAtRest(draftBag, title, fields)).rejects.toThrow(/unavailable|stopped/);
-  } finally {
-    if (!stopped) await stop();
-    await r.stop();
-  }
-}, 60_000);
-
-test("a recovery mirror write fault cannot produce a file receipt", async () => {
-  root = mkdtempSync(join(tmpdir(), "lar-recovery-write-fault-"));
-  const blocked = join(root, "not-a-directory");
-  writeFileSync(blocked, "blocks mkdir");
-  const r = await shoreRig();
-  await r.adaptor.armSeedCheckpoint();
-  const projector = new LarDiskProjector({
-    mirrors: [{ bagId: draftBag, mirrorRoot: blocked, mirrorClass: "recovery" }],
-    carrierFileFn: async () => null,
-    recoveryStore: (bag) => bag === draftBag ? r.draft : null,
-    recoveryFileFn: async (fields) => nativeFile(String(fields.title), String(fields.text)),
-  });
-  const stop = projector.start(r.engine);
-  try {
-    const title = openDraft(r, "Write fault", "written");
-    await afterDispatch(); await turns(30); await projector.idle();
-    await expect(projector.recoveryAtRest(draftBag, title, (await r.draft.get(title))!.tiddler)).rejects.toThrow();
-    expect(readFileSync(blocked, "utf8")).toBe("blocks mkdir");
-  } finally { await stop(); await r.stop(); }
-}, 60_000);
-
-
-test.each(["storage", "projection"] as const)("real storage and recovery file both gate the next drain (hold %s)", async (hold) => {
-  root = mkdtempSync(join(tmpdir(), "recovery-homed-"));
-  const storage = join(root, "store");
-  const mirror = join(root, "mirror");
-  const r = await shoreRig();
-  const vessel = restingRepo(storage, { saveDebounceRate: 60_000 });
-  const channel = new MessageChannel();
-  let ready!: (peer: string) => void;
-  const leg = new Promise<string>((resolve) => { ready = resolve; });
-  attachMessageChannelSync(r.repo as never, channel.port1 as unknown as MessagePort);
-  attachMessageChannelSync(vessel, channel.port2 as unknown as MessagePort, ready);
-  await leg;
-  await r.adaptor.armSeedCheckpoint();
-  let release!: () => void;
-  let started!: () => void;
-  const held = new Promise<void>((resolve) => { release = resolve; });
-  const reached = new Promise<void>((resolve) => { started = resolve; });
-  let firstStorage = true;
-  let firstRender = true;
-  const vesselCaps: CapabilityRecord = {};
-  vesselCaps.receipt = async (ids, heads) => {
-    if (hold === "storage" && firstStorage) { firstStorage = false; started(); await held; }
-    await receiptInStore(vessel, ids, { ready: leg, onClose: () => () => {} }, heads);
-  };
-  const projector = new LarDiskProjector({
-    mirrors: [{ bagId: draftBag, mirrorRoot: mirror, mirrorClass: "recovery" }],
-    carrierFileFn: async () => null,
-    recoveryStore: (bag) => bag === draftBag ? r.draft : null,
-    recoveryFileFn: async (fields) => {
-      if (hold === "projection" && firstRender) { firstRender = false; started(); await held; }
-      return nativeFile(String(fields.title), String(fields.text));
-    },
-  });
-  const stopProjector = projector.start(r.engine);
-  r.adaptor.recoveryAtRest = (bag, title, fields) => projector.recoveryAtRest(bag, title, fields);
-  let storedReplies = 0;
-  const capability = makeReceiptCapability({
-    post: (message) => { if (message.type === "receipt:request") void answerReceipt(vesselCaps, message).then((reply) => { if (reply.issued) storedReplies++; capability.answer(reply); }); },
-    handles: () => new Map(Object.entries(r.handles)),
-  });
-  r.adaptor.caps.receipt = capability;
-  try {
-    const title = openDraft(r, "Homed proof", "first");
-    await afterDispatch();
-    await reached;
-    await turns(40);
-    typeInto(r, title, "latest");
-    await afterDispatch(); await turns(40);
-    const count = () => r.calls.filter((call) => call.bag === draftBag && call.puts.includes(title)).length;
-    expect(count(), "the held receipt prevents the next drain").toBe(1);
-    release();
-    for (let i = 0; i < 200 && count() < 2; i++) await new Promise<void>((resolve) => setTimeout(resolve, 5));
-    expect(count()).toBe(2);
-    await turns(50);
-    r.adaptor.requestDrain(); // A superseded projection receipt waits for the next explicit request.
-    for (let i = 0; i < 200; i++) {
-      await projector.idle();
-      const path = join(mirror, `${title}.tid`);
-      if (existsSync(path) && readFileSync(path, "utf8") === tidBody(title, "latest") && storedReplies >= 2 && !r.adaptor.pendingTitles().includes(title)) break;
-      await new Promise<void>((resolve) => setTimeout(resolve, 5));
-    }
-    expect(readFileSync(join(mirror, `${title}.tid`), "utf8")).toBe(tidBody(title, "latest"));
-    expect(storedReplies, "both generations reached the storage-backed receipt capability").toBeGreaterThanOrEqual(2);
-    expect((await new DurableNodeFSStorageAdapter(storage).loadRange([r.draftHandle.documentId])).length).toBeGreaterThan(0);
-    expect(r.adaptor.pendingTitles()).not.toContain(title);
-  } finally {
-    release(); capability.close(); r.adaptor.caps.receipt = null; r.adaptor.recoveryAtRest = null; delete vesselCaps.receipt;
-    await stopProjector(); await r.stop(); channel.port1.close(); channel.port2.close(); await restEvery();
-  }
-}, 60_000);
-
-test.each([false, true])("deletion waits for the recovery file to clear and retries a conflicting file (conflict=%s)", async (conflict) => {
-  root = mkdtempSync(join(tmpdir(), "recovery-delete-receipt-"));
-  const r = await shoreRig();
-  await r.adaptor.armSeedCheckpoint();
-  const projector = new LarDiskProjector({
-    mirrors: [{ bagId: draftBag, mirrorRoot: root, mirrorClass: "recovery" }],
-    carrierFileFn: async () => null,
-    recoveryStore: (bag) => bag === draftBag ? r.draft : null,
-    recoveryFileFn: async (fields) => nativeFile(String(fields.title), String(fields.text)),
-  });
-  const stopProjector = projector.start(r.engine);
-  let checks = 0;
-  r.adaptor.recoveryAtRest = (bag, title, fields) => { checks++; return projector.recoveryAtRest(bag, title, fields); };
-  try {
-    const title = openDraft(r, "Delete receipt", "first");
-    const path = join(root, `${title}.tid`);
-    await afterDispatch();
-    for (let i = 0; i < 200 && !existsSync(path); i++) await new Promise<void>((resolve) => setTimeout(resolve, 5));
-    await projector.idle(); await turns(40);
-    expect(readFileSync(path, "utf8")).toBe(tidBody(title, "first"));
-    const before = checks;
-    if (conflict) writeFileSync(path, tidBody(title, "independent disk edit"));
-    r.wiki.deleteTiddler(title);
-    await afterDispatch(); await turns(60); await projector.idle(); await turns(30);
-    if (conflict) {
-      expect(readFileSync(path, "utf8")).toBe(tidBody(title, "independent disk edit"));
-      expect.soft(r.adaptor.pendingTitles(), "a retained file keeps the deletion receipt owed").toContain(title);
-      r.adaptor.requestDrain(); await turns(50);
-      expect.soft(checks, "retry rechecks the deletion receipt").toBeGreaterThan(before + 1);
-      expect.soft(r.adaptor.pendingTitles()).toContain(title);
-    } else {
-      expect(existsSync(path), "CONTROL: the agreed file clears").toBe(false);
-      expect(r.adaptor.pendingTitles()).not.toContain(title);
-    }
-  } finally {
-    r.adaptor.recoveryAtRest = null; await stopProjector(); await r.stop();
-  }
-}, 60_000);

@@ -1,6 +1,6 @@
 /**
  * THE SAVE PROBE (`IslandAdaptor.saveBagOf`): where a hand's save of a title would land, asked without raising anything.
- * A writer that lands words on a person's behalf (the stand-off keeper) asks it first and writes only where the save lands
+ * A writer that lands words on a person's behalf (the disk capture door) asks it first and writes only where the save lands
  * in the bag it means.
  *
  *   - A title living in the floor's canon layer saves into the working layer above it, never into canon: a landing meant

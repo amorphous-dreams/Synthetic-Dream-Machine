@@ -7,7 +7,7 @@
  *   I1 a vessel-side caller scans a face pool, builds candidates, and submits one unattended INGEST wave per granted plane
  *      through the port: a plain-title edit under `wikis/daemon/` lands in the daemon working bag, a loci `.mem` edit under `bags/daemon/`
  *      in the face's canon bag; each landed carrier pins its base, so the next wave over the same bytes submits nothing
- *   I2 a carrier that stands off (both moved) submits once and then goes to the shore's sense by name: it stays a stand-off
+ *   I2 a carrier the island answers `conflict` (both moved) submits once and then goes to the shore's sense by name, where the projector reads it
  *   I3 a vanished file tombstones nothing: no deletion rides, and the shore's whole look runs (it stands pending there)
  *   I4 a personal-layer file rides no daemon wave: the shore senses its title, as before
  *   I5 the watch core's wave, armed with the pool's ingest ports, lands a pool edit by itself
@@ -114,7 +114,7 @@ describe("I1 — a vessel-side caller lands pool edits through the submit port",
   });
 });
 
-describe("I2 — a stand-off stays at the shore", () => {
+describe("I2 — a conflicting carrier goes to the shore", () => {
   test("a carrier the island answers `conflict` goes to the shore's sense by name and pins no base", async () => {
     const plain = put("wikis/daemon/My Notes.tid", tid("My Notes", "the disk's words"));
     agreed(WORKING, "My Notes", plain, tid("My Notes", "the old words"));

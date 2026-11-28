@@ -5,11 +5,12 @@
  * equal the disk side of the base that stands at that path, or they say what the records render. This
  * holds at every unlink: the earlier path of a carrier a siting rule moved, a sibling left at an earlier
  * extension, a mirror the carrier left, and the file of a carrier the records dropped. A file that fails
- * the proof stays, and the carrier stands off under one key that names both paths; nothing writes at the
- * new path until the earlier one settles.
+ * the proof stays and goes to the capture door; nothing writes at the new path that reading. Once the
+ * capture lands the file's words (or stands them as drafts), the base moves to the file's bytes, and the
+ * next reading reads the home agreed and unlinks it. A refused capture leaves the file as the hand left it.
  *
  * The walk: a person edits a carrier's file, then a siting rule moves the carrier. The edit stays where
- * the person left it, one alert names both paths, and the person settles it.
+ * the person left it until the house holds its words; then the move completes.
  *
  * A FILE A CHECKOUT NEVER TRACKED STAYS where the records drop its carrier: it holds the only copy, so no proof
  * of agreement lets it leave. One alert per path names it and the cure; a commit lets it leave and clears the
@@ -29,6 +30,7 @@ import { checkoutTracking, type CarrierTracking } from "../src/checkout-carriers
 import { untrackedCarrierAlertTitle } from "../src/disk-projector.js";
 import { carrierHash } from "@lararium/mesh/crypto";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
+import type { CaptureOutcome, MovedFile } from "../src/disk-projector/entries.js";
 
 let root = "";
 afterEach(() => { if (root) { rmSync(root, { recursive: true, force: true }); root = ""; } });
@@ -42,8 +44,10 @@ const HAND = "# A HAND'S OWN WORDS\n";
 
 interface Stand {
   projector: LarDiskProjector;
-  conflicts: Array<{ bagId: string; uri: string; reason: string; standoff: string }>;
-  resolved: string[];
+  /** Every moved file the projector handed the capture door, in order. */
+  captures: MovedFile[];
+  /** What the capture door answers; null refuses, so the file stays as the hand left it. */
+  answer: ((moved: MovedFile) => Promise<CaptureOutcome>) | null;
   /** What the render shore answers for the carrier right now. */
   file: CarrierFile;
   /** The bag the wiki's resolved view names for the carrier, or null where it holds none. */
@@ -65,7 +69,7 @@ function stand(mirrorRoots: Record<string, string> = { [BAG]: BAG, [OTHER]: OTHE
   root = mkdtempSync(join(tmpdir(), "lar-unlink-reads-"));
   const tree = (): SyncedTree => new SyncedTree(join(root, ".projection", "synced-tree"));
   const s = {
-    conflicts: [] as Stand["conflicts"], resolved: [] as string[],
+    captures: [] as MovedFile[], answer: null as Stand["answer"],
     file: { ext: ".md", body: BODY, metaBody: META, relPath: "a/note.md", encoding: "utf8" } as CarrierFile,
     owner: { bag: BAG as string | null }, holding: new Set<string>([BAG]),
     docs: {} as Record<string, string>,
@@ -88,11 +92,13 @@ function stand(mirrorRoots: Record<string, string> = { [BAG]: BAG, [OTHER]: OTHE
       documentOf: (bagId: string) => s.docs[bagId] ?? null,
       lineageOf: (bagId: string) => {
         const held = s.lineage[bagId];
-        return held === undefined ? null : { heads: held.heads, quiet: true, holds: (named: readonly string[]) => named.every((head) => held.holds.includes(head)) };
+        return held === undefined ? null : { heads: held.heads, holds: (named: readonly string[]) => named.every((head) => held.holds.includes(head)) };
       },
       syncedTree: tree(),
-      onConflict: (info) => { s.conflicts.push(info); },
-      onConflictResolved: (info) => { s.resolved.push(info.standoff); },
+      capture: async (moved) => {
+        out.captures.push(moved);
+        return out.answer !== null ? out.answer(moved) : { kind: "refused", why: "the vector's door refuses" };
+      },
       ...(untrackedAt ? { untrackedAt } : {}),
     });
     projector.start(engine);
@@ -109,7 +115,7 @@ function stand(mirrorRoots: Record<string, string> = { [BAG]: BAG, [OTHER]: OTHE
 const read = (p: string): string => readFileSync(p, "utf-8");
 
 describe("a siting rule moves a carrier with a hand edit standing at the earlier path", () => {
-  test("the edit stays, nothing writes at the new path, and one standoff names both paths", async () => {
+  test("the edit stays, nothing writes at the new path, and the earlier file goes to capture", async () => {
     const s = stand();
     await s.projector.idle();
     expect(read(s.at("a/note.md"))).toBe(BODY);
@@ -120,13 +126,13 @@ describe("a siting rule moves a carrier with a hand edit standing at the earlier
     expect(read(s.at("a/note.md"))).toBe(HAND);
     expect(existsSync(s.at("a/note.md.meta"))).toBe(true);
     expect(existsSync(s.at("b/note.md"))).toBe(false);
-    expect(s.conflicts).toHaveLength(1);
-    expect(s.conflicts[0]!.reason).toContain(s.at("a/note.md"));
-    expect(s.conflicts[0]!.reason).toContain(s.at("b/note.md"));
-    // Level-triggered: the same states raise nothing more.
+    expect(s.captures).toHaveLength(1);
+    expect(s.captures[0]).toMatchObject({ bagId: BAG, uri: URI, path: s.at("a/note.md"), disk: carrierHash(HAND, META) });
+    // Nothing holds between readings: the next reading reads the file afresh, hands it again, and still writes nothing.
     await s.projector.sense([URI]);
-    expect(s.conflicts).toHaveLength(1);
+    expect(s.captures.every((c) => c.path === s.at("a/note.md"))).toBe(true);
     expect(read(s.at("a/note.md"))).toBe(HAND);
+    expect(existsSync(s.at("b/note.md"))).toBe(false);
   });
 
   test("CONTROL: with the earlier file untouched, the move unlinks it and writes the new path", async () => {
@@ -137,22 +143,36 @@ describe("a siting rule moves a carrier with a hand edit standing at the earlier
     expect(existsSync(s.at("a/note.md"))).toBe(false);
     expect(existsSync(s.at("a/note.md.meta"))).toBe(false);
     expect(read(s.at("b/note.md"))).toBe(BODY);
-    expect(s.conflicts).toEqual([]);
+    expect(s.captures).toEqual([]);
   });
 
-  test("settled by taking the records' side under the key: the earlier file leaves and the new path takes the render", async () => {
+  test("captured: the base moves to the hand's bytes, and the next reading unlinks the earlier file and writes the new path", async () => {
     const s = stand();
     await s.projector.idle();
     writeFileSync(s.at("a/note.md"), HAND, "utf-8");
     s.file = { ...s.file, relPath: "b/note.md" };
+    // The door lands the file's words in the records, as the island's capture does where only the disk moved.
+    s.answer = async () => { s.file = { ...s.file, body: HAND }; return { kind: "landed" }; };
     await s.projector.sense([URI]);
-    const key = s.conflicts[0]!.standoff;
-    expect((await s.projector.takeRecords(BAG, URI, "0".repeat(24))).took).toBe(false);
-    expect(read(s.at("a/note.md"))).toBe(HAND);
-    expect((await s.projector.takeRecords(BAG, URI, key)).took).toBe(true);
+    await s.projector.idle();
+    expect(s.captures).toHaveLength(1);
     expect(existsSync(s.at("a/note.md"))).toBe(false);
-    expect(read(s.at("b/note.md"))).toBe(BODY);
-    expect(s.resolved).toEqual([key]);
+    expect(existsSync(s.at("a/note.md.meta"))).toBe(false);
+    expect(read(s.at("b/note.md"))).toBe(HAND);
+    expect(s.tree().baseAt(syncedTreeKey(BAG, URI), s.at("a/note.md"))).toBeNull();
+  });
+
+  test("CONTROL: a refused capture moves no base, so the earlier file stays and nothing writes at the new path", async () => {
+    const s = stand();
+    await s.projector.idle();
+    writeFileSync(s.at("a/note.md"), HAND, "utf-8");
+    s.file = { ...s.file, relPath: "b/note.md" };
+    s.answer = async () => ({ kind: "refused", why: "the words fail the ingest grade" });
+    await s.projector.sense([URI]);
+    await s.projector.idle();
+    expect(read(s.at("a/note.md"))).toBe(HAND);
+    expect(existsSync(s.at("b/note.md"))).toBe(false);
+    expect(s.tree().baseAt(syncedTreeKey(BAG, URI), s.at("a/note.md"))?.disk).toBe(carrierHash(BODY, META));
   });
 
   test("settled by the records coming to say what the earlier file says: the move then completes", async () => {
@@ -161,12 +181,12 @@ describe("a siting rule moves a carrier with a hand edit standing at the earlier
     writeFileSync(s.at("a/note.md"), HAND, "utf-8");
     s.file = { ...s.file, relPath: "b/note.md" };
     await s.projector.sense([URI]);
-    expect(s.conflicts).toHaveLength(1);
+    expect(s.captures).toHaveLength(1);
     s.file = { ...s.file, body: HAND };                         // the ingest leg adopted the hand's words
     await s.projector.sense([URI]);
     expect(existsSync(s.at("a/note.md"))).toBe(false);
     expect(read(s.at("b/note.md"))).toBe(HAND);
-    expect(s.resolved).toEqual([s.conflicts[0]!.standoff]);
+    expect(s.captures).toHaveLength(1);                         // the agreed home needed no second capture
   });
 
   test("a vessel that restarted between the edit and the move still reads the earlier path: the base names it", async () => {
@@ -177,12 +197,13 @@ describe("a siting rule moves a carrier with a hand edit standing at the earlier
     await s.reboot();                                           // the projector's siting memory starts empty
     expect(read(s.at("a/note.md"))).toBe(HAND);
     expect(existsSync(s.at("b/note.md"))).toBe(false);
-    expect(s.conflicts).toHaveLength(1);
+    expect(s.captures.length).toBeGreaterThan(0);
+    expect(s.captures.every((c) => c.path === s.at("a/note.md"))).toBe(true);
   });
 });
 
 describe("a filetype change leaves a sibling at the earlier extension", () => {
-  test("a hand-edited sibling stays and the carrier stands off; an untouched one leaves", async () => {
+  test("a hand-edited sibling stays and goes to capture; an untouched one leaves", async () => {
     const edited = stand();
     edited.file = { ext: ".md", body: BODY, metaBody: META, encoding: "utf8" };
     await edited.projector.idle();
@@ -192,7 +213,7 @@ describe("a filetype change leaves a sibling at the earlier extension", () => {
     await edited.projector.sense([URI]);
     expect(read(md)).toBe(HAND);
     expect(existsSync(edited.at("ha.ka.ba/probe/moved.tid"))).toBe(false);
-    expect(edited.conflicts).toHaveLength(1);
+    expect(edited.captures.map((c) => c.path)).toEqual([md]);
     rmSync(root, { recursive: true, force: true });
 
     const clean = stand();
@@ -203,26 +224,30 @@ describe("a filetype change leaves a sibling at the earlier extension", () => {
     expect(existsSync(clean.at("ha.ka.ba/probe/moved.md"))).toBe(false);
     expect(existsSync(clean.at("ha.ka.ba/probe/moved.md.meta"))).toBe(false);
     expect(existsSync(clean.at("ha.ka.ba/probe/moved.tid"))).toBe(true);
-    expect(clean.conflicts).toEqual([]);
+    expect(clean.captures).toEqual([]);
   });
 });
 
 describe("the records dropped a carrier whose file a hand edited", () => {
-  test("the file stays and one standoff names it; taking the records' side removes it", async () => {
+  test("the file stays and goes to capture; once captured, the next reading unlinks it", async () => {
     const s = stand();
     await s.projector.idle();
     writeFileSync(s.at("a/note.md"), HAND, "utf-8");
     s.owner.bag = null; s.holding.clear();                      // the carrier left the records
     await s.projector.sense([URI]);
     expect(read(s.at("a/note.md"))).toBe(HAND);
-    expect(s.conflicts).toHaveLength(1);
-    expect(s.conflicts[0]!.reason).toContain(s.at("a/note.md"));
+    expect(s.captures).toHaveLength(1);
+    expect(s.captures[0]).toMatchObject({ path: s.at("a/note.md"), disk: carrierHash(HAND, META), records: null });
+    // Refused, the file stays reading after reading.
     await s.projector.sense([URI]);
-    expect(s.conflicts).toHaveLength(1);
-    expect((await s.projector.takeRecords(BAG, URI, s.conflicts[0]!.standoff)).took).toBe(true);
+    expect(read(s.at("a/note.md"))).toBe(HAND);
+    // The door takes the words (here as drafts beside the records): the base moves to them, and the next reading unlinks.
+    s.answer = async () => ({ kind: "drafted", drafts: [`Draft of '${URI}' by disk/abc`] });
+    await s.projector.sense([URI]);
+    await s.projector.idle();
     expect(existsSync(s.at("a/note.md"))).toBe(false);
     expect(existsSync(s.at("a/note.md.meta"))).toBe(false);
-    expect(s.resolved).toEqual([s.conflicts[0]!.standoff]);
+    expect(s.tree().bases(syncedTreeKey(BAG, URI))).toEqual([]);
   });
 
   test("a vessel that restarted before the records dropped the carrier still reads the ruled path: the base names it", async () => {
@@ -234,8 +259,8 @@ describe("the records dropped a carrier whose file a hand edited", () => {
     await s.reboot();                                           // no siting memory, and no tiddler to re-run the rule
     await s.projector.sense([URI]);
     expect(read(s.at("a/note.md"))).toBe(HAND);
-    expect(s.conflicts).toHaveLength(1);
-    expect(s.conflicts[0]!.reason).toContain(s.at("a/note.md"));
+    expect(s.captures.length).toBeGreaterThan(0);
+    expect(s.captures.every((c) => c.path === s.at("a/note.md"))).toBe(true);
   });
 
   test("a foreign title the address siting rule sites nowhere still gets read at its base's path after a restart", async () => {
@@ -244,13 +269,13 @@ describe("the records dropped a carrier whose file a hand edited", () => {
     const live = { on: true };
     await s.projector.stop();
     const tree = new SyncedTree(join(root, ".projection", "foreign-tree.json"));
-    const conflicts: string[] = [];
+    const captured: string[] = [];
     const make = (): LarDiskProjector => {
       const p = new LarDiskProjector({
         mirrors: [{ bagId: BAG, mirrorRoot: join(root, "foreign") }],
         carrierFileFn: async () => ({ ext: ".tid", body: `title: ${TITLE}\n\nwhat the records say\n`, defaultRelPath: "My Notes.tid", encoding: "utf8" }),
         syncedTree: tree,
-        onConflict: (info) => { conflicts.push(info.reason); },
+        capture: async (moved) => { captured.push(moved.path); return { kind: "refused", why: "the vector's door refuses" }; },
       });
       p.start({ $tw: { wiki: { getTiddler: (t: string) => (t === TITLE && live.on ? { fields: { title: t, "$origin-bag": BAG } } : undefined), allTitles: () => (live.on ? [TITLE] : []), addEventListener: () => {}, removeEventListener: () => {} } } } as unknown as TW5Engine);
       return p;
@@ -265,8 +290,8 @@ describe("the records dropped a carrier whose file a hand edited", () => {
     const second = make();
     await second.sense([TITLE]);
     expect(read(file)).toContain("A HAND'S OWN WORDS");
-    expect(conflicts).toHaveLength(1);
-    expect(conflicts[0]).toContain(file);
+    expect(captured.length).toBeGreaterThan(0);
+    expect(captured.every((path) => path === file)).toBe(true);
   });
 
   test("an untouched file a checkout never tracked stays, one alert names it and the cure; a commit lets it leave", async () => {
@@ -286,7 +311,7 @@ describe("the records dropped a carrier whose file a hand edited", () => {
     const alert = s.alerts.get(untrackedCarrierAlertTitle(file));
     expect(alert).toMatchObject({ tags: "$:/tags/Alert", "alert-kind": "untracked-carrier", path: file, uri: URI, bag: BAG });
     expect(String(alert!["text"])).toMatch(/Commit it, or remove it by hand/);
-    expect(s.conflicts).toEqual([]);
+    expect(s.captures).toEqual([]);
     // Committed, the file holds a copy elsewhere: the next pass lets it leave and the alert clears.
     git("add", "-A"); git("commit", "-q", "-m", "lar:///probe.keeps.the-note/commit");
     await s.projector.sense([URI]);
@@ -310,7 +335,7 @@ describe("the records dropped a carrier whose file a hand edited", () => {
     await s.projector.sense([URI]);
     expect(existsSync(s.at("a/note.md"))).toBe(false);
     expect(existsSync(s.at("a/note.md.meta"))).toBe(false);
-    expect(s.conflicts).toEqual([]);
+    expect(s.captures).toEqual([]);
   });
 
   test("a base a sibling pinned inside the mirror after this projector loaded gets read before the homes settle", async () => {
@@ -329,7 +354,7 @@ describe("the records dropped a carrier whose file a hand edited", () => {
     expect(existsSync(sited)).toBe(false);                      // agreed with its base, so it left with the carrier
     expect(existsSync(`${sited}.meta`)).toBe(false);
     expect(new SyncedTree(join(root, ".projection", "synced-tree")).bases(syncedTreeKey(BAG, URI))).toEqual([]);
-    expect(s.conflicts).toEqual([]);
+    expect(s.captures).toEqual([]);
   });
 
   test("CONTROL: a file a second bag still projects to the same path stays, whatever the first bag's base says", async () => {
@@ -338,7 +363,7 @@ describe("the records dropped a carrier whose file a hand edited", () => {
     s.owner.bag = null; s.holding.clear(); s.holding.add(OTHER);   // the first bag dropped it; the second holds it
     await s.projector.sense([URI]);
     expect(read(s.at("a/note.md"))).toBe(BODY);
-    expect(s.conflicts).toEqual([]);
+    expect(s.captures).toEqual([]);
   });
 });
 
@@ -370,7 +395,7 @@ describe("a base that names a file outside the mirror names no home of it", () =
     expect(read(held)).toBe(BODY);
     expect(read(`${held}.meta`)).toBe(META);
     expect(read(s.at("a/note.md"))).toBe(BODY);
-    expect(s.conflicts).toEqual([]);
+    expect(s.captures).toEqual([]);
   });
 
   test("the records drop the carrier: the source beside the mirror still stays", async () => {
@@ -383,7 +408,7 @@ describe("a base that names a file outside the mirror names no home of it", () =
     await s.projector.sense([URI]);
     expect(read(held)).toBe(BODY);
     expect(read(`${held}.meta`)).toBe(META);
-    expect(s.conflicts).toEqual([]);
+    expect(s.captures).toEqual([]);
   });
 
   test("CONTROL: a base that names a ruled path inside the mirror still gets read and unlinked after a restart", async () => {
@@ -393,12 +418,12 @@ describe("a base that names a file outside the mirror names no home of it", () =
     await s.reboot();
     expect(existsSync(s.at("a/note.md"))).toBe(false);
     expect(read(s.at("b/note.md"))).toBe(BODY);
-    expect(s.conflicts).toEqual([]);
+    expect(s.captures).toEqual([]);
   });
 });
 
 describe("a carrier left one mirror for another", () => {
-  test("a hand-edited file in the mirror it left stays and stands off; an untouched one leaves", async () => {
+  test("a hand-edited file in the mirror it left stays and goes to capture; an untouched one leaves", async () => {
     const s = stand();
     await s.projector.idle();
     writeFileSync(s.at("a/note.md"), HAND, "utf-8");
@@ -406,9 +431,10 @@ describe("a carrier left one mirror for another", () => {
     await s.projector.sense([URI]);
     expect(read(s.at("a/note.md", OTHER))).toBe(BODY);
     expect(read(s.at("a/note.md"))).toBe(HAND);
-    expect(s.conflicts.map((c) => c.bagId)).toEqual([BAG]);
+    expect(s.captures.map((c) => c.bagId)).toEqual([BAG]);
     await s.projector.sense([URI]);
-    expect(s.conflicts).toHaveLength(1);
+    expect(new Set(s.captures.map((c) => c.path))).toEqual(new Set([s.at("a/note.md")]));
+    expect(read(s.at("a/note.md"))).toBe(HAND);
     rmSync(root, { recursive: true, force: true });
 
     const clean = stand();
@@ -417,7 +443,7 @@ describe("a carrier left one mirror for another", () => {
     await clean.projector.sense([URI]);
     expect(read(clean.at("a/note.md", OTHER))).toBe(BODY);
     expect(existsSync(clean.at("a/note.md"))).toBe(false);
-    expect(clean.conflicts).toEqual([]);
+    expect(clean.captures).toEqual([]);
   });
 
   test("the mirror it moved into already holds its bytes: nothing writes there, and the untouched file it left still leaves", async () => {
@@ -435,7 +461,7 @@ describe("a carrier left one mirror for another", () => {
     expect(read(s.at("a/note.md", OTHER))).toBe(BODY);
     expect(existsSync(s.at("a/note.md"))).toBe(false);
     expect(existsSync(s.at("a/note.md.meta"))).toBe(false);
-    expect(s.conflicts).toEqual([]);
+    expect(s.captures).toEqual([]);
   });
 
   test("CONTROL: the bag it shadows still holds it: the file in that mirror stays when the other flush writes nothing", async () => {
@@ -447,7 +473,7 @@ describe("a carrier left one mirror for another", () => {
     s.owner.bag = OTHER; s.holding.add(OTHER);
     await s.projector.sense([URI]);
     expect(read(s.at("a/note.md"))).toBe(BODY);
-    expect(s.conflicts).toEqual([]);
+    expect(s.captures).toEqual([]);
   });
 });
 
@@ -457,7 +483,7 @@ describe("a file answers only to the document whose records its base read", () =
   // document never judges that file.
   const KEY = syncedTreeKey(BAG, URI);
 
-  test("another document's pass finds the carrier in a second bag: the first document's file stays, its base stands, and nothing stands off", async () => {
+  test("another document's pass finds the carrier in a second bag: the first document's file stays, its base stands, and nothing goes to capture", async () => {
     const s = stand();
     s.docs[BAG] = "automerge:face-a";
     await s.projector.idle();
@@ -471,7 +497,7 @@ describe("a file answers only to the document whose records its base read", () =
     expect(read(s.at("a/note.md"))).toBe(BODY);
     expect(existsSync(s.at("a/note.md.meta"))).toBe(true);
     expect(s.tree().baseAt(KEY, s.at("a/note.md"))?.doc).toBe("automerge:face-a");
-    expect(s.conflicts).toEqual([]);
+    expect(s.captures).toEqual([]);
   });
 
   test("CONTROL: the same document's pass finds the carrier in a second bag: its own untouched file leaves", async () => {
@@ -495,10 +521,10 @@ describe("a file answers only to the document whose records its base read", () =
     await s.projector.sense([URI]);
     expect(read(s.at("a/note.md"))).toBe(BODY);
     expect(s.tree().baseAt(KEY, s.at("a/note.md"))?.doc).toBe("automerge:face-a");
-    expect(s.conflicts).toEqual([]);
+    expect(s.captures).toEqual([]);
   });
 
-  test("two documents hold one title: the second writes nothing over the first's file and stands off by name", async () => {
+  test("two documents hold one title: the second writes nothing over the first's file and hands it to no capture", async () => {
     const s = stand();
     s.docs[BAG] = "automerge:face-a";
     await s.projector.idle();
@@ -507,9 +533,8 @@ describe("a file answers only to the document whose records its base read", () =
     await s.reboot();
     expect(read(s.at("a/note.md"))).toBe(BODY);
     expect(s.tree().baseAt(KEY, s.at("a/note.md"))?.doc).toBe("automerge:face-a");
-    expect(s.conflicts).toHaveLength(1);
-    expect(s.conflicts[0]!.reason).toContain("another document");
-    expect(s.conflicts[0]!.reason).toContain(s.at("a/note.md"));
+    // The file mirrors the first document's records: this document's pass neither writes over it nor captures it.
+    expect(s.captures).toEqual([]);
   });
 
   test("CONTROL: one document's records move: its own file takes the new render", async () => {
@@ -519,7 +544,7 @@ describe("a file answers only to the document whose records its base read", () =
     s.file = { ...s.file, body: "# what the records say now\n" };
     await s.reboot();
     expect(read(s.at("a/note.md"))).toBe("# what the records say now\n");
-    expect(s.conflicts).toEqual([]);
+    expect(s.captures).toEqual([]);
   });
 });
 
@@ -546,35 +571,27 @@ describe("a base names the history its records side read: records that fell behi
     return s;
   };
 
-  test("the document reads back without the agreed write: the file keeps its newer words and one standoff names the cure", async () => {
+  test("the document reads back without the agreed write: the file keeps its newer words and goes to capture, behind", async () => {
     const s = await agreeThenFallBehind();
     await s.reboot();
     expect(read(s.at("a/note.md"))).toBe(NEWER);
     expect(s.tree().baseAt(KEY, s.at("a/note.md"))?.heads).toEqual(["h2"]);
-    expect(s.conflicts).toHaveLength(1);
-    expect(s.conflicts[0]!.reason).toContain("fell behind");
-    expect(s.conflicts[0]!.reason).toContain(`lares shore keep-disk ${URI} --key ${s.conflicts[0]!.standoff}`);
-    expect(s.conflicts[0]!.reason).toContain(`lares shore take-records ${URI} --key ${s.conflicts[0]!.standoff}`);
-    // Level-triggered: the same states raise nothing more and still write nothing.
+    expect(s.captures.length).toBeGreaterThan(0);
+    // The door hears that the file holds the newer words: its base agrees with the file, and the records fell behind it.
+    expect(s.captures[0]).toMatchObject({ path: s.at("a/note.md"), disk: carrierHash(NEWER, META), behind: true });
+    expect(s.captures[0]!.base?.disk).toBe(carrierHash(NEWER, META));
+    // A refused capture writes nothing, reading after reading.
     await s.projector.sense([URI]);
-    expect(s.conflicts).toHaveLength(1);
     expect(read(s.at("a/note.md"))).toBe(NEWER);
   });
 
-  test("the standoff names what the keeper needs to keep the disk: the document, the heads it lacks, and whether it stood quiet since it mounted", async () => {
-    const s = await agreeThenFallBehind();
-    await s.reboot();
-    expect(s.projector.standing().find((x) => x.uri === URI)?.behind).toEqual({ doc: "automerge:working", heads: ["h2"], quiet: true });
-  });
-
-  test("the file moved too while the records fell behind: still no both-moved, the file holds the newest words", async () => {
+  test("the file moved too while the records fell behind: it still goes to capture behind, and the hand's words stay", async () => {
     const s = await agreeThenFallBehind();
     writeFileSync(s.at("a/note.md"), HAND, "utf-8");
     await s.reboot();
     expect(read(s.at("a/note.md"))).toBe(HAND);
-    expect(s.conflicts).toHaveLength(1);
-    expect(s.conflicts[0]!.reason).toContain("fell behind");
-    expect(s.projector.standing().find((x) => x.uri === URI)?.behind?.heads).toEqual(["h2"]);
+    expect(s.captures.length).toBeGreaterThan(0);
+    expect(s.captures.at(-1)).toMatchObject({ disk: carrierHash(HAND, META), behind: true });
   });
 
   test("the file vanished while the records fell behind: the carrier pends and asks, nothing re-projects and nothing tombstones", async () => {
@@ -584,18 +601,20 @@ describe("a base names the history its records side read: records that fell behi
     expect(existsSync(s.at("a/note.md"))).toBe(false);
     expect(s.projector.pendingRemovals().map((p) => p.uri)).toEqual([URI]);
     expect(s.tree().baseAt(KEY, s.at("a/note.md"))?.heads).toEqual(["h2"]);
-    expect(s.conflicts).toEqual([]);
+    expect(s.captures).toEqual([]);
   });
 
-  test("a person who names that standoff and takes the records' side lands the older render, by their own word", async () => {
+  test("a capture that lands the file's words moves the base to them at the records' new heads, and nothing writes over the file", async () => {
     const s = await agreeThenFallBehind();
+    // The door lands the newer words in the records, as the island's capture does for a file whose records fell behind.
+    s.answer = async () => { s.file = { ...s.file, body: NEWER }; s.lineage[BAG] = { heads: ["h3"], holds: ["h1", "h3"] }; return { kind: "landed" }; };
     await s.reboot();
-    expect((await s.projector.takeRecords(BAG, URI, s.conflicts[0]!.standoff)).took).toBe(true);
-    expect(read(s.at("a/note.md"))).toBe(BODY);
-    expect(s.tree().baseAt(KEY, s.at("a/note.md"))?.heads).toEqual(["h1"]);
+    await s.projector.idle();
+    expect(read(s.at("a/note.md"))).toBe(NEWER);
+    expect(s.tree().baseAt(KEY, s.at("a/note.md"))).toMatchObject({ disk: carrierHash(NEWER, META), heads: ["h3"] });
   });
 
-  test("a blank document stands in for one that failed to load: the file its base agrees with stays, and one standoff names it", async () => {
+  test("a blank document stands in for one that failed to load: the file its base agrees with stays, and goes to capture behind", async () => {
     const s = await agreeThenFallBehind();
     s.owner.bag = null; s.holding.clear();                      // the stand-in holds no such carrier
     s.lineage[BAG] = { heads: ["blank"], holds: ["blank"] };
@@ -603,19 +622,20 @@ describe("a base names the history its records side read: records that fell behi
     await s.projector.sense([URI]);
     expect(read(s.at("a/note.md"))).toBe(NEWER);
     expect(s.tree().baseAt(KEY, s.at("a/note.md"))?.heads).toEqual(["h2"]);
-    expect(s.conflicts).toHaveLength(1);
-    expect(s.conflicts[0]!.reason).toContain("fell behind");
+    expect(s.captures.length).toBeGreaterThan(0);
+    expect(s.captures.every((c) => c.behind === true)).toBe(true);
   });
 
-  test("the lost history returns (the document hydrates late): the standoff clears and nothing wrote meanwhile", async () => {
+  test("the lost history returns (the document hydrates late): the file reads agreed and nothing wrote meanwhile", async () => {
     const s = await agreeThenFallBehind();
     await s.reboot();
-    expect(s.conflicts).toHaveLength(1);
+    expect(s.captures.length).toBeGreaterThan(0);
     s.file = { ...s.file, body: NEWER };
     s.lineage[BAG] = { heads: ["h2"], holds: ["h1", "h2"] };
+    const before = s.captures.length;
     await s.projector.sense([URI]);
     expect(read(s.at("a/note.md"))).toBe(NEWER);
-    expect(s.resolved).toEqual([s.conflicts[0]!.standoff]);
+    expect(s.captures).toHaveLength(before);
   });
 
   test("CONTROL: records that moved on from the agreement still hold its heads: the file takes the new render", async () => {
@@ -627,7 +647,7 @@ describe("a base names the history its records side read: records that fell behi
     s.lineage[BAG] = { heads: ["h2"], holds: ["h1", "h2"] };
     await s.reboot();
     expect(read(s.at("a/note.md"))).toBe(NEWER);
-    expect(s.conflicts).toEqual([]);
+    expect(s.captures).toEqual([]);
   });
 
   test("CONTROL: records that dropped a carrier after the agreement still hold its heads: the untouched file leaves", async () => {
@@ -639,7 +659,7 @@ describe("a base names the history its records side read: records that fell behi
     s.lineage[BAG] = { heads: ["h2"], holds: ["h1", "h2"] };
     await s.projector.sense([URI]);
     expect(existsSync(s.at("a/note.md"))).toBe(false);
-    expect(s.conflicts).toEqual([]);
+    expect(s.captures).toEqual([]);
   });
 
   test("CONTROL: a base that names no heads vouches as before, and a store that answers no history pins none", async () => {
@@ -651,6 +671,6 @@ describe("a base names the history its records side read: records that fell behi
     s.lineage[BAG] = { heads: ["h9"], holds: ["h9"] };
     await s.reboot();
     expect(read(s.at("a/note.md"))).toBe(NEWER);
-    expect(s.conflicts).toEqual([]);
+    expect(s.captures).toEqual([]);
   });
 });

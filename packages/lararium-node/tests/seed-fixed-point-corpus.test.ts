@@ -10,7 +10,7 @@
  *
  * The law it holds: disk and records co-project, and a projection of an unchanged carrier writes
  * nothing. So after the seed every file reads byte for byte as it arrived, no file arrived or left,
- * no standoff surfaced, a second scan reads every carrier `unchanged`, and a second projection pass
+ * no file went to capture, a second scan reads every carrier `unchanged`, and a second projection pass
  * writes nothing. A carrier whose render differs from its bytes on disk says the same thing in another
  * framing: the projector pins the base and leaves the file, and the vector names which framing class
  * each such carrier falls in. A carrier outside every named class fails the vector.
@@ -154,7 +154,7 @@ describe.skipIf(coreBlobSkip)(
   const firstWaveRows = new Map<string, Array<Record<string, unknown>>>();
   const settlements = new Map<string, { waves: number; refused: number; conflicts: number; recorded: number; submitted: number }>();
   let pinnedByGesture: Record<string, unknown> = {};
-  const conflicts: string[] = [];
+  const captured: string[] = [];
   const refusals: string[] = [];
   const stores = new Map<string, MemoryTiddlerStore>();
 
@@ -222,7 +222,7 @@ describe.skipIf(coreBlobSkip)(
       canonicalizeFn: canonicalizeCarrierText,
       canonicalizeNativeFn: (uri, ext, body, meta) => canonicalizeNativeCarrierText(deserializer, uri, ext, body, meta),
       syncedTree: tree,
-      onConflict: (info) => { conflicts.push(`${info.uri}: ${info.reason}`); },
+      capture: async (moved) => { captured.push(`${moved.uri}: ${moved.path}`); return { kind: "refused", why: "the corpus vector captures nothing" }; },
       onRefusal: (info) => { refusals.push(`${info.uri}: ${info.reason}`); },
     });
     const stop = projector.start(engine);
@@ -276,8 +276,8 @@ describe.skipIf(coreBlobSkip)(
     }
   });
 
-  test("no standoff and no ward refusal surfaced", () => {
-    expect(conflicts).toEqual([]);
+  test("no file went to capture and no ward refusal surfaced", () => {
+    expect(captured).toEqual([]);
     expect(refusals).toEqual([]);
   });
 
@@ -298,10 +298,10 @@ describe.skipIf(coreBlobSkip)(
     expect(touched).toEqual([]);
   }, 600_000);
 
-  test("a vessel that lost its tree meets the whole corpus with no base: no file moves, no standoff surfaces, and every base pins anew", async () => {
+  test("a vessel that lost its tree meets the whole corpus with no base: no file moves, none goes to capture, and every base pins anew", async () => {
     // The projector first meets every file on disk with the records standing and NO base at all. With no
-    // base a real difference stands off, so this pass measures every carrier class the congruences read
-    // (framed memes, native text, sidecar pairs, binary bodies) for a false standoff over an unchanged corpus.
+    // base a real difference goes to capture, so this pass measures every carrier class the congruences read
+    // (framed memes, native text, sidecar pairs, binary bodies) for a false capture over an unchanged corpus.
     const lost = new SyncedTree(path.join(scratch, "state", "synced-tree-lost"));
     const deserializer = makeTw5Deserializer(engine);
     const raised: string[] = [];
@@ -312,7 +312,7 @@ describe.skipIf(coreBlobSkip)(
       canonicalizeFn: canonicalizeCarrierText,
       canonicalizeNativeFn: (uri, ext, body, meta) => canonicalizeNativeCarrierText(deserializer, uri, ext, body, meta),
       syncedTree: lost,
-      onConflict: (info) => { raised.push(`${info.uri}: ${info.reason}`); },
+      capture: async (moved) => { raised.push(`capture ${moved.uri}: ${moved.path}`); return { kind: "refused", why: "the corpus vector captures nothing" }; },
       onRefusal: (info) => { raised.push(`${info.uri}: ${info.reason}`); },
       onPendingRemoval: (info) => { pending.push(`${info.bagId}: ${info.count}`); },
     });
