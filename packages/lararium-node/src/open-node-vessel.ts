@@ -3235,6 +3235,9 @@ async function prepareNodeBootOn(
     refresh();
     daemon.on("change", refresh);
   };
+  // THE VESSEL'S FIXED-TITLE STATE (`vessel-state`): its secret home, opened through the vessel's custody each time it is
+  // asked, so a locked custody refuses by name and an unlock answers the home at the next read.
+  const readStateDoc = async (): Promise<DocHandle<LarDoc>> => (await openVesselSecretHome(repo)).handle;
   // The vessel's control document, named by the daemon document (`control-home`): minted with the face, beside the secret home.
   const readControlDoc = async (): Promise<DocHandle<LarDoc>> => {
     const handle = await standControlHome(repo, await readDaemonDoc());
@@ -4508,7 +4511,7 @@ async function prepareNodeBootOn(
       readJoinedFaces,
       resolvePlugins: async () => resolveNodeIslandPluginCids({
         islandBlobs: assembly.islandHandle.doc()?.blobs,
-        floorCid: await vesselMountFloorCid({ control: readControlDoc, islandDoc: () => assembly.islandHandle.doc() }),
+        floorCid: await vesselMountFloorCid({ state: readStateDoc, islandDoc: () => assembly.islandHandle.doc() }),
         onFloorFallback: logFloorFallback,
         recipe: { wikiSlug: "daemon" },
         lookup: nodeOfferingLookup(offerings.doc()),
@@ -4518,6 +4521,8 @@ async function prepareNodeBootOn(
       }),
       open: async ({ pluginCids, joinedFaces }) => openDaemonVm({
         repo,
+        // The vessel's fixed-title state: the island mounts the floor its pin names; a state that will not open mounts genesis.
+        stateHandle: await readStateDoc().catch(() => null),
         caps: islandCaps,
         casData,
         daemonUrl: bootstrap.daemonUrl,
@@ -5519,13 +5524,13 @@ async function prepareNodeBootOn(
       mountSilenceMs: 120_000,
       mountStallMs:   360_000,
       // THE FLOOR THE VESSEL ACCEPTED (`floor-pin`): each mount reads the pin afresh; no pin mounts genesis.
-      floorCid: () => vesselFloorCid({ control: readControlDoc, islandDoc: () => assembly.islandHandle.doc() }),
+      floorCid: () => vesselFloorCid({ state: readStateDoc, islandDoc: () => assembly.islandHandle.doc() }),
       foundingRecord: () => assembly.islandHandle.doc(), // the floor shadow read: each mount reads its floor beside the founding record, serving unchanged
       resolvePluginCids: async (recipe) => resolveNodeIslandPluginCids({
         islandBlobs: assembly.islandHandle.doc()?.blobs,
         recipe,
         // THE FLIP (3c): the floor this mount stands on supplies its plugin set; the founding record's boot set serves only where none resolves.
-        floorCid: await vesselMountFloorCid({ control: readControlDoc, islandDoc: () => assembly.islandHandle.doc() }),
+        floorCid: await vesselMountFloorCid({ state: readStateDoc, islandDoc: () => assembly.islandHandle.doc() }),
         onFloorFallback: logFloorFallback,
         lookup:      nodeOfferingLookup(publicationHandle?.doc()),
         readBytes:   (cid) => readCasBlobFromFs(cid, casDir),

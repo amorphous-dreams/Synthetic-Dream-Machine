@@ -702,6 +702,7 @@ export * from "./published-bag-key.js";
 export * from "./held-rest-key.js";
 export { floorRegistryOf, floorRefusalOf, FloorUnavailable, FLOOR_UNAVAILABLE, FLOOR_UNKEYED, type FloorRegistry, type FloorKeyRefusal } from "./floor-registry.js";
 export * from "./secret-home.js";
+export * from "./vessel-state.js";
 export * from "./memory-section.js";
 export * from "./face-bundle.js";
 export * from "./face-log-view.js";

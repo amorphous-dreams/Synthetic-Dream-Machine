@@ -1032,6 +1032,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     refresh();
     daemon.on("change", refresh);
   };
+  // THE VESSEL'S FIXED-TITLE STATE (`vessel-state`): its secret home, opened from the keystore at each asking; the last one that
+  // opened answers the synchronous reads (the floor pin's doors).
+  let stateHome: DocHandle<LarDoc> | null = null;
+  const readStateDoc = async (): Promise<DocHandle<LarDoc>> => (stateHome = (await openBrowserSecretHome(idbName, repo)).handle);
   let watchedControl: DocHandle<LarDoc> | null = null;
   const watchControl = async (daemon: DocHandle<LarDoc>): Promise<DocHandle<LarDoc>> => {
     const handle = await standControlHome(repo, daemon);
@@ -2140,7 +2144,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       const resolveDaemonPlugins = async () => {
         const daemonPluginResolution = await resolveBrowserIslandPluginCids({
           islandBlobs: assembly.islandHandle.doc()?.blobs,
-          floorCid: await vesselMountFloorCid({ control: async () => watchedControl, islandDoc: () => assembly.islandHandle.doc() }),
+          floorCid: await vesselMountFloorCid({ state: () => readStateDoc().catch(() => null), islandDoc: () => assembly.islandHandle.doc() }),
           recipe: { wikiSlug: "daemon" },
           lookup: browserOfferingLookup(publicationHandle!.doc()),
           promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
@@ -2299,8 +2303,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         held.stood.push({ what: "the island's lift", down: lockThenDrop });
         held.stood.push({ what: "the lift's lock", down: onBrowserCustodyLock(idbName, () => { void lockThenDrop(); }) });
       }
+      const daemonState = await readStateDoc().catch(() => null);
       const openOnce = (pluginCids: readonly string[]) => openBrowserDaemonVm({
         caps: islandCaps,
+        stateHandle: daemonState,
         repo, daemonUrl: social.daemonUrl, coreHash: assembly.coreHash, ownedDocument: true,
         // The persona plane rides only when a face stands. A browser vessel normally holds one — it IS
         // a person's face — so absence here names an unfinished founding rather than a crossroads, and
@@ -2679,13 +2685,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),
         ...(opts.onRest ? { onRest: opts.onRest } : {}),
         // THE FLOOR THE VESSEL ACCEPTED (`floor-pin`): the same pick the node binds; no pin mounts genesis.
-        floorCid: () => vesselFloorCid({ control: async () => watchedControl, islandDoc: () => assembly.islandHandle.doc() }),
+        floorCid: () => vesselFloorCid({ state: () => readStateDoc().catch(() => null), islandDoc: () => assembly.islandHandle.doc() }),
         foundingRecord: () => assembly.islandHandle.doc(), // the floor shadow read: each mount reads its floor beside the founding record, serving unchanged
         resolvePluginCids: async (recipe) => {
           publicationHandle ??= await materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey), "board:publication");
           return resolveBrowserIslandPluginCids({
             islandBlobs: assembly.islandHandle.doc()?.blobs,
-            floorCid: await vesselMountFloorCid({ control: async () => watchedControl, islandDoc: () => assembly.islandHandle.doc() }),
+            floorCid: await vesselMountFloorCid({ state: () => readStateDoc().catch(() => null), islandDoc: () => assembly.islandHandle.doc() }),
             recipe,
             lookup: browserOfferingLookup(publicationHandle.doc()),
             promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
@@ -2813,12 +2819,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   if (result.wikiHandle) connectionState.setWikiDocUrl(result.wikiHandle.url);
 
   const bootedFace = social.personaGroupId ?? null;
-  // THE VESSEL'S FLOOR PIN on the browser (w26-floor-lane#/the-vessel-pin): the same Nexus the porch read names, the control
-  // document the boot stood, the genesis floor its island document witnesses, and the live wikis the alert reaches.
+  // THE VESSEL'S FLOOR PIN on the browser (w26-floor-lane#/the-vessel-pin): the same Nexus the porch read names, the vessel's
+  // fixed-title state the boot opened, the genesis floor its island document witnesses, and the live wikis the alert reaches.
   const floorBinding = (baseUrl: string): BrowserFloorBinding => ({
     baseUrl,
     nexusPin: flowNexusFor(baseUrl, { relayUrl, nexus: sovereignNexus ?? carriedCard?.pin.nexus ?? null }),
-    home: () => watchedControl,
+    home: () => stateHome,
     genesisManifest: genesisFloorCidOf(result.assembly.islandHandle?.doc()),
     requiredBlobIds: floorRequiredBlobIds(result.assembly.islandHandle?.doc()?.blobs),
     raiseAlert: (remount) => raiseFloorAlert(vmManager, remount),

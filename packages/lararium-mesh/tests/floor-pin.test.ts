@@ -209,7 +209,7 @@ describe("the vessel's pin", () => {
     // A face's store carrying a forged pin row stands outside the control home and moves no mount.
     const faceStore = emptyLarDoc();
     writeFloorPin(faceStore, { kind: "floor-pin", nexus: c.aid, release: "9".repeat(64), manifest: "8".repeat(64) });
-    expect(floorCidToMount({ controlDoc: control.doc(), nexus: c.aid, genesis: GENESIS.manifestCid })).toEqual({ cid: f1.manifestCid, source: "pin" });
+    expect(floorCidToMount({ stateDoc: control.doc(), nexus: c.aid, genesis: GENESIS.manifestCid })).toEqual({ cid: f1.manifestCid, source: "pin" });
   });
 });
 
@@ -234,12 +234,12 @@ describe("the remount, by capability", () => {
 
   test("the mount pick: the named Nexus's pin; the sole pin; genesis where two pins disagree and no Nexus is named", () => {
     const doc = emptyLarDoc();
-    expect(floorCidToMount({ controlDoc: doc, nexus: null, genesis: GENESIS.manifestCid })).toEqual({ cid: GENESIS.manifestCid, source: "genesis" });
+    expect(floorCidToMount({ stateDoc: doc, nexus: null, genesis: GENESIS.manifestCid })).toEqual({ cid: GENESIS.manifestCid, source: "genesis" });
     writeFloorPin(doc, { kind: "floor-pin", nexus: "nexus-a", release: "1".repeat(64), manifest: "a".repeat(64) });
-    expect(floorCidToMount({ controlDoc: doc, nexus: null, genesis: GENESIS.manifestCid })).toEqual({ cid: "a".repeat(64), source: "pin" });
+    expect(floorCidToMount({ stateDoc: doc, nexus: null, genesis: GENESIS.manifestCid })).toEqual({ cid: "a".repeat(64), source: "pin" });
     writeFloorPin(doc, { kind: "floor-pin", nexus: "nexus-b", release: "2".repeat(64), manifest: "b".repeat(64) });
-    expect(floorCidToMount({ controlDoc: doc, nexus: null, genesis: GENESIS.manifestCid })).toMatchObject({ cid: GENESIS.manifestCid, source: "genesis", note: expect.stringMatching(/2 Nexuses/) });
-    expect(floorCidToMount({ controlDoc: doc, nexus: "nexus-b", genesis: GENESIS.manifestCid })).toEqual({ cid: "b".repeat(64), source: "pin" });
+    expect(floorCidToMount({ stateDoc: doc, nexus: null, genesis: GENESIS.manifestCid })).toMatchObject({ cid: GENESIS.manifestCid, source: "genesis", note: expect.stringMatching(/2 Nexuses/) });
+    expect(floorCidToMount({ stateDoc: doc, nexus: "nexus-b", genesis: GENESIS.manifestCid })).toEqual({ cid: "b".repeat(64), source: "pin" });
   });
 
   test("decideFloorAccept is pure: the same pin and standing decide the same way, and an empty board refuses `floor-no-release`", () => {

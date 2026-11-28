@@ -1,12 +1,12 @@
 /**
  * floor — `lares vessel floor status|accept`: the node vessel's binding of the ONE floor pin seam (`@lararium/mesh` `floor-pin`).
  *
- * The vessel pins the floor (operator ruling 2026-11-11): one pin per (vessel, Nexus), resting in the vessel's control home,
+ * The vessel pins the floor (operator ruling 2026-11-11): one pin per (vessel, Nexus), resting in the vessel's fixed-title state,
  * moved only by this vessel's own accept along `prior`. The decisions (status, the accept, the remount) live in the mesh;
  * this module binds the node's substrate to the capability-named ports alone:
  *
- *   · `home`     — the vessel's control document (`readControlHome`: it fails closed on a locked vessel by name), found through
- *                  the daemon document the bootstrap names (the bootstrap holds the social planes' address book, the daemon among them);
+ *   · `home`     — the vessel's fixed-title state (`vessel-state`: its secret home, `openVesselSecretHome`), opened through the
+ *                  vessel's custody: a locked custody refuses by name;
  *   · `genesis`  — the oracle island at its deterministic address (`oracleGenesisDocUrl`, the address the boot materializes it
  *                  under): no file names it, so this door reads the same source the standing vessel's composition reads;
  *   · `rows`     — the Nexus's publication board, as this vessel's replica carries it (a member holding the charter reads it);
@@ -26,7 +26,7 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin
  */
-import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
+import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   acceptFloorRelease,
   genesisFloorCidOf,
@@ -41,7 +41,7 @@ import { floorRequiredBlobIds, readFloorOffering } from "@lararium/mesh/floor-of
 import { materializeSharedLarDoc, publicationDocUrl } from "@lararium/mesh/deterministic-doc";
 import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
 import { oracleGenesisDocUrl } from "@lararium/mesh/genesis-doc";
-import { readControlHome } from "@lararium/mesh/control-home";
+import { openVesselSecretHome } from "../secret-home-store.js";
 import { readFloorDriftReading, type FloorDrift, type FloorDriftReading } from "@lararium/mesh/floor-drift";
 import { readFloorManifest } from "@lararium/mesh/floor-manifest";
 import { resolveBootDoc } from "@lararium/mesh/boot-resolver";
@@ -75,7 +75,7 @@ function bootstrapDaemonUrl(): string {
   const entries = readBootTiddlers(larBootstrapPath());
   if (entries === null) throw new FloorRefused("floor-no-vessel", "this place holds no bootstrap, so no vessel pins a floor here: found the place first");
   const daemonUrl = bootDaemonUrl(entries);
-  if (!daemonUrl) throw new FloorRefused("floor-no-vessel", "the bootstrap names no daemon document, so this door finds no control home: found the place first");
+  if (!daemonUrl) throw new FloorRefused("floor-no-vessel", "the bootstrap names no daemon document, so this door finds no vessel: found the place first");
   return daemonUrl;
 }
 
@@ -118,19 +118,20 @@ export async function nodeFloorPorts(opts: NodeFloorOptions): Promise<FloorPinPo
   }
   const nexus = nexusAidOf(readNexusDoc(home));
   if (nexus === null) throw new FloorRefused("floor-no-charter", "this vessel stands in no Nexus charter, so it holds no floor pin past genesis");
-  const daemonUrl = bootstrapDaemonUrl();
+  // A place with no bootstrap holds no vessel to pin a floor: it refuses `floor-no-vessel` before any read.
+  bootstrapDaemonUrl();
   const island = (await storedGenesisIsland(opts.repo)).doc();
   const genesisManifest = genesisFloorCidOf(island);
   if (genesisManifest === null) throw new FloorRefused("floor-no-genesis", "this vessel's genesis seed names no floor");
-  let control;
-  try { control = await readControlHome(opts.repo, await opts.repo.find<LarDoc>(daemonUrl as AutomergeUrl)); }
-  catch (e) { throw new FloorRefused("floor-control-unread", `the vessel's control home reads unread: ${e instanceof Error ? e.message : String(e)}`); }
+  let state;
+  try { state = (await openVesselSecretHome(opts.repo)).handle; }
+  catch (e) { throw new FloorRefused("floor-state-unread", `the vessel's fixed-title state reads unread: ${e instanceof Error ? e.message : String(e)}`); }
   const board = await materializeSharedLarDoc(opts.repo, publicationDocUrl(nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: home })), "board:publication");
   const doFetch = opts.fetchFn ?? globalThis.fetch.bind(globalThis);
   const alerted: string[] = [];
   return {
     alerted,
-    home: control, nexus, genesisManifest,
+    home: state, nexus, genesisManifest,
     requiredBlobIds: floorRequiredBlobIds(island?.blobs),
     rows: async () => floorReleaseEntriesFromBoard(board.doc()),
     fetchCas: async (cid) => {

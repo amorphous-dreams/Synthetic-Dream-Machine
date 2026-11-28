@@ -58,6 +58,8 @@ export interface BrowserDaemonVmOptions {
   daemonAuth?:       IslandMsg_Manifest["daemonAuth"];
   /** D-VR-C: persist only the explicit daemon document in its owned scope. */
   ownedDocument?:    boolean;
+  /** The vessel's fixed-title state (`vessel-state`: its secret home), read for the accepted floor pin; absent, genesis mounts. */
+  stateHandle?:     DocHandle<LarDoc> | null;
   /** URL of the compiled browser daemon island Worker script. */
   workerScriptUrl:  URL;
   /** The spawn seam. ABSENT → a dedicated module Worker at `workerScriptUrl` (today's path). PRESENT → the
@@ -163,12 +165,12 @@ export async function openBrowserDaemonVm(
       documentUrl: daemonUrl,
       storage: { type: "idb" as const, dbName: ownedDaemonDbName(daemonUrl) },
     } } : {}),
-    // THE VESSEL'S FLOOR PIN, off the control document (one shape with the node host): the daemon island mounts the floor this
-    // vessel accepted; a control document that reads nothing names no pin, and the island reads its genesis seed's floor.
+    // THE VESSEL'S FLOOR PIN, off its fixed-title state (one shape with the node host): the daemon island mounts the floor this
+    // vessel accepted; a state that does not open names no pin, and the island reads its genesis seed's floor.
     floorCid: () => {
       let doc: LarDoc | undefined;
-      try { doc = controlHandle.doc(); } catch { return null; }
-      const pick = floorCidToMount({ controlDoc: doc, nexus: null, genesis: null });
+      try { doc = opts.stateHandle?.doc(); } catch { return null; }
+      const pick = floorCidToMount({ stateDoc: doc, nexus: null, genesis: null });
       return pick.source === "pin" ? pick.cid : null;
     },
     workerScriptUrl,

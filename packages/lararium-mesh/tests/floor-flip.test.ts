@@ -113,14 +113,14 @@ describe("the mount's floor pick: the pin, else the genesis floor the founding r
   test("RED: no pin mounts the genesis floor's CID; a pin mounts its own manifest", async () => {
     const genesis = "9".repeat(64), pinned = "8".repeat(64);
     const islandDoc = () => ({ tiddlers: { [GENESIS_FLOOR_TIDDLER]: storedLarRecord(GENESIS_FLOOR_TIDDLER, { cid: genesis }, "test") } }) as never;
-    expect(await vesselMountFloorCid({ control: async () => ({ doc: () => ({ tiddlers: {} }) as never }), islandDoc })).toBe(genesis);
+    expect(await vesselMountFloorCid({ state: async () => ({ doc: () => ({ tiddlers: {} }) as never }), islandDoc })).toBe(genesis);
     const withPin = { tiddlers: {} } as never as LarDoc;
     writeFloorPin(withPin, { kind: FLOOR_PIN_KIND, nexus: "aid", release: "7".repeat(64), manifest: pinned });
-    expect(await vesselMountFloorCid({ control: async () => ({ doc: () => withPin }), islandDoc })).toBe(pinned);
-    expect(await vesselMountFloorCid({ control: async () => { throw new Error("locked"); }, islandDoc })).toBe(genesis);
-    expect(await vesselMountFloorCid({ control: async () => null, islandDoc: () => null })).toBeNull();
+    expect(await vesselMountFloorCid({ state: async () => ({ doc: () => withPin }), islandDoc })).toBe(pinned);
+    expect(await vesselMountFloorCid({ state: async () => { throw new Error("locked"); }, islandDoc })).toBe(genesis);
+    expect(await vesselMountFloorCid({ state: async () => null, islandDoc: () => null })).toBeNull();
     // An island read that throws falls back, never rejects the mount (cold read #578, finding 5).
-    expect(await vesselMountFloorCid({ control: async () => ({ doc: () => withPin }), islandDoc: () => { throw new Error("torn"); } })).toBe(pinned);
-    expect(await vesselMountFloorCid({ control: async () => null, islandDoc: () => { throw new Error("torn"); } })).toBeNull();
+    expect(await vesselMountFloorCid({ state: async () => ({ doc: () => withPin }), islandDoc: () => { throw new Error("torn"); } })).toBe(pinned);
+    expect(await vesselMountFloorCid({ state: async () => null, islandDoc: () => { throw new Error("torn"); } })).toBeNull();
   });
 });

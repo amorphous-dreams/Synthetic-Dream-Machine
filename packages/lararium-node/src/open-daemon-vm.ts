@@ -95,6 +95,9 @@ export interface DaemonVmOptions {
    * stands the floor key too). Absent, `grants.floorKey` rides as handed.
    */
   floorKey?:         () => NonNullable<IslandGrants["floorKey"]>;
+  /** The vessel's fixed-title state (`vessel-state`: its secret home), read for the accepted floor pin. Absent or null (a locked
+   *  vessel, a place with no face), the island mounts its genesis seed's floor. */
+  stateHandle?:      DocHandle<LarDoc> | null;
   /** Optional canon bag URIs for the daemon recipe. Empty by default. */
   libraryBags?:        readonly string[];
   /**
@@ -217,13 +220,13 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     // source where one stands; the control document and the daemon document hold none. The pet name names the folder (it carries
     // across a re-found), the verified founding relation the bags; no daemon mount projects no private layer.
     ...(projectionRoot ? { diskMirrors: daemonDiskMirrors({ projectionRoot, canonBags: daemonBagsDir(), face: faceRelation && faceSegment ? { relation: faceRelation, segment: faceSegment } : null, canon: canonBag !== undefined, temp: tempMirror }) } : {}),
-    // THE VESSEL'S FLOOR PIN, off the control document that just stood: the daemon island mounts the accepted floor, so every
-    // face's `lares get title=… meme=true` and `meme list` over `bag=<house canon>` answers the released canon from its next composition on. A control document
-    // that reads nothing (a locked floor) names no pin, and the island reads its genesis seed's floor.
+    // THE VESSEL'S FLOOR PIN, off its fixed-title state: the daemon island mounts the accepted floor, so every face's
+    // `lares get title=… meme=true` and `meme list` over `bag=<house canon>` answers the released canon from its next composition
+    // on. A state that does not open (a locked floor) names no pin, and the island reads its genesis seed's floor.
     floorCid: () => {
       let doc: LarDoc | undefined;
-      try { doc = controlHandle.doc(); } catch { return null; }
-      const pick = floorCidToMount({ controlDoc: doc, nexus: null, genesis: null });
+      try { doc = opts.stateHandle?.doc(); } catch { return null; }
+      const pick = floorCidToMount({ stateDoc: doc, nexus: null, genesis: null });
       if (pick.note) console.info(`[floor] ${pick.note}`);
       return pick.source === "pin" ? pick.cid : null;
     },

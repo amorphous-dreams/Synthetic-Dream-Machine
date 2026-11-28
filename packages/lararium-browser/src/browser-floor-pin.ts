@@ -4,8 +4,8 @@
  * The vessel pins the floor (w26-floor-lane#/the-vessel-pin): the browser reads the same pin, from the same control-home
  * row, and decides status and accept through the same mesh functions the node calls. Only the substrate forks:
  *
- *   · `home`     — the vessel's control document, as the boot stood it; none stood (a locked or faceless vessel) refuses
- *                  `floor-control-unread` by name, saying why;
+ *   · `home`     — the vessel's fixed-title state (`vessel-state`: its secret home), as the boot opened it; none opened (a locked
+ *                  or faceless vessel) refuses `floor-state-unread` by name, saying why;
  *   · `rows`     — the hearth's porch answer (`GET <origin>/floor/<AID>`), read by the mesh's own row reader;
  *   · `fetchCas` — this vessel's OPFS CAS, then the porch's (`<origin>/cas/<cid>`); every byte re-hashes in the mesh;
  *   · `stage`    — the OPFS CAS the wiki islands read, so the next island boot resolves the accepted floor;
@@ -31,7 +31,7 @@ import { floorNexusOf, porchOriginOf } from "./browser-floor-read.js";
 /** A floor door the browser cannot run, and why. */
 export interface BrowserFloorRefusal {
   readonly ok: false;
-  readonly refusal: "floor-no-nexus" | "floor-control-unread" | "floor-no-genesis" | "floor-porch-silent";
+  readonly refusal: "floor-no-nexus" | "floor-state-unread" | "floor-no-genesis" | "floor-porch-silent";
   readonly detail: string;
 }
 
@@ -69,7 +69,7 @@ export function browserFloorPorts(b: BrowserFloorBinding): (FloorPinPorts & { re
   const origin = porchOriginOf(b.baseUrl);
   if (nexus === null || origin === null) return { ok: false, refusal: "floor-no-nexus", detail: "no Nexus AID is known for this hearth: the URL carries no floor card, and no face joined here names one" };
   const home = b.home();
-  if (home === null) return { ok: false, refusal: "floor-control-unread", detail: "this vessel stood no control document: it stands locked, or wears no face, so it holds no pin to read or move" };
+  if (home === null) return { ok: false, refusal: "floor-state-unread", detail: "this vessel opened no fixed-title state: it stands locked, or wears no face, so it holds no pin to read or move" };
   if (b.genesisManifest === null) return { ok: false, refusal: "floor-no-genesis", detail: "this vessel's genesis seed names no floor" };
   const doFetch = b.fetchFn ?? globalThis.fetch.bind(globalThis);
   const readLocal = b.readLocal ?? readCasBlobFromOpfs;

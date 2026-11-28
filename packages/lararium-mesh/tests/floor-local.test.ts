@@ -61,7 +61,7 @@ describe("the local floor's shape", () => {
     const doc = emptyLarDoc();
     writeFloorPin(doc, local);
     expect(floorPinOf(doc, NEXUS, BASE.cid)).toEqual({ pin: local, source: "accepted" });
-    expect(floorCidToMount({ controlDoc: doc, nexus: NEXUS, genesis: BASE.cid })).toEqual({ cid: "9".repeat(64), source: "pin" });
+    expect(floorCidToMount({ stateDoc: doc, nexus: NEXUS, genesis: BASE.cid })).toEqual({ cid: "9".repeat(64), source: "pin" });
   });
 });
 

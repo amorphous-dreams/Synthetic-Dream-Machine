@@ -93,10 +93,10 @@ export function vesselConsoleRows(ctx: VesselConsoleCtx): ConsoleVerbRow[] {
           orWhy(readBrowserCustody(idbName).then((c) => c.reading === "sealed" ? { reading: c.reading, ...(admitted ? { unlocked: c.unlocked } : {}), slots: c.slots.length } : c)),
           face === null ? null : orWhy(readFaceCustody(idbName, face).then((c) => admitted ? c : atRest(c))),
           orWhy(ctx.seedRest(face)),
-          // THE FLOOR PIN rests in the control document the lit vessel stood, so a vessel at its floor names the refusal the pin door itself names.
+          // THE FLOOR PIN rests in the fixed-title state the lit vessel opened, so a vessel at its floor names the refusal the pin door itself names.
           lit && worn
             ? orWhy(lit.floorStatus(ctx.readFace))
-            : { ok: false as const, refusal: "floor-control-unread", detail: "this vessel stands at its floor for this tab, so it holds no pin to read: the pin rests in the control document a lit vessel stands" },
+            : { ok: false as const, refusal: "floor-state-unread", detail: "this vessel stands at its floor for this tab, so it holds no pin to read: the pin rests in the fixed-title state a lit vessel opens" },
         ]);
         return {
           standing: house.floor(),

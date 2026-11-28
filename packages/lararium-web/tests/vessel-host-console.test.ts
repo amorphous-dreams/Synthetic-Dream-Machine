@@ -126,7 +126,7 @@ describe("the vessel worker answers the console door over the page's own port", 
     expect(at.standing).toBe("floor");
     expect(at.session).toMatchObject({ admission: "asking", face: tab.face });
     expect(at.custody.face, "an unadmitted session reads how its face rests, never whether it stands unlocked").toEqual({ reading: "bound" });
-    expect(at.floorPin).toMatchObject({ ok: false, refusal: "floor-control-unread" });
+    expect(at.floorPin).toMatchObject({ ok: false, refusal: "floor-state-unread" });
     expect(at.place).toEqual({ aid: null, kel: "unfounded" });
     expect(at.faces, "the face a lit vessel wears reaches an admitted session alone").not.toHaveProperty("worn");
     expect(at.vessel).toBeNull();

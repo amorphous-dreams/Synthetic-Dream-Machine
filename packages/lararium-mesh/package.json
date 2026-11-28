@@ -1224,6 +1224,10 @@
       "import": "./dist/secret-home.js",
       "types": "./dist/secret-home.d.ts"
     },
+    "./vessel-state": {
+      "import": "./dist/vessel-state.js",
+      "types": "./dist/vessel-state.d.ts"
+    },
     "./secret-shapes": {
       "import": "./dist/secret-shapes.js",
       "types": "./dist/secret-shapes.d.ts"

@@ -135,7 +135,7 @@ describe("the browser vessel's floor pin", () => {
     const f1 = floor("one");
     const r1 = await released(c, f1);
     const unstood = browserBinding(c, [r1], f1.cas, null).binding;
-    expect(await browserFloorStatus(unstood)).toMatchObject({ ok: false, refusal: "floor-control-unread", detail: expect.stringMatching(/no control document/) });
+    expect(await browserFloorStatus(unstood)).toMatchObject({ ok: false, refusal: "floor-state-unread", detail: expect.stringMatching(/no control document/) });
     expect(await browserFloorAccept({ ...unstood, nexusPin: null })).toMatchObject({ ok: false, refusal: "floor-no-nexus" });
   });
 });
