@@ -108,7 +108,7 @@ describe("digestsEqual — one digest, every tagged spelling", () => {
 
 describe("R3 PIN — the two SHA-256 implementations must stay byte-equal", () => {
   // The stack carries TWO sha256 impls: the mesh `sha256HexSync` (@noble/hashes)
-  // and `synced-tree.ts` `contentHash` (node `crypto.createHash`). The Confluence
+  // and `synced-tree.ts` `contentHash` (node `crypto.createHash`). The three-way gate
   // echo gate compares a value hashed by one against a value hashed by the other,
   // so a divergence would silently read every carrier as `changed`. This test
   // pins them EQUAL over UTF-8 text — a future drift (an impl bump, an encoding

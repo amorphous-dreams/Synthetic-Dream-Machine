@@ -277,7 +277,7 @@ def dial_assignment(planes: dict, black: dict, lam: float,
 def dial_spectrum(planes: dict, black: dict, views: "dict | None" = None) -> dict:
     """Per dialled plane, the exact affine centrality lines and every lam* in (0,1) where
     two of them cross — the rank order stands constant between consecutive lam*, so this
-    exhausts what the dial can show. A DEGENERATE CONFLUENCE (many crossings piled on one
+    exhausts what the dial can show. A DEGENERATE CONCURRENCE (many crossings piled on one
     lam*, as the wrapped bed piles them on lam = 1) reads here as a coincident cut, not as
     a cliff: the sweep's ladder merges it to one boundary."""
     v = views or channel_views(planes, black)

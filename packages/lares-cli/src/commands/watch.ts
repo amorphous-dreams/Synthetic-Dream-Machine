@@ -4,12 +4,12 @@
  *
  *   lares ingest --watch --source <dir> --to <bagUri> [--apply] [--debounce ms]
  *
- * A nalu-builder for the disk peer. Disk events are HINTS (Confluence); the watcher
+ * A nalu-builder for the disk peer. Disk events are HINTS; the watcher
  * coalesces a settle-window into ONE wave — one scan, one INGEST verb, one
  * projection — never per-file dribbles. Default posture previews (logs what a
- * wave WOULD carry); --apply submits each wave through the island's Confluence gate.
+ * wave WOULD carry); --apply submits each wave through the island's three-way gate.
  *
- * Settle, by the Confluence law: a buffered path drains only after the events quiet
+ * Settle, by the ingest law: a buffered path drains only after the events quiet
  * (trailing debounce) AND the scan's own hash gate confirms a real change — a
  * no-op save drops at the gate, never a timer alone. Every wave rides one line
  * over the daemon's sock — the watcher holds no replica of its own.

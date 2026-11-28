@@ -57,7 +57,7 @@ export function _surfacePending(core: ProjectorCore): void {
     core.pendingSurfaced.set(bagId, key);
     const named = uris.slice(0, 5);
     const reason = `${uris.length} carrier(s) vanished from disk where a base stands (${named.join(", ")}${uris.length > named.length ? ", …" : ""}); nothing writes back and nothing tombstones until a person answers: \`lares shore remove\` or \`lares shore restore\``;
-    console.error(`[confluence] pending removal (${bagId}): ${reason}`);
+    console.error(`[shore] pending removal (${bagId}): ${reason}`);
     core.onPendingRemoval?.({ bagId, key, count: uris.length, uris: named, reason });
   }
 }

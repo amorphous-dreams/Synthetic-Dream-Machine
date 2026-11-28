@@ -31,7 +31,7 @@ export function atomicWrite(core: ProjectorCore, candidate: string, body: string
 }
 
 /**
- * WHAT STANDS ON DISK, in the CARRIER'S OWN TEXT FORM — the one shape the Confluence
+ * WHAT STANDS ON DISK, in the CARRIER'S OWN TEXT FORM — the one shape the three-way gate
  * hashes on both legs. A binary filetype reads its raw bytes and re-encodes to base64,
  * because the Synced-tree observation and the ingest gesture both hash that base64 text
  * (the carrier text), never the decoded bytes; only the physical file holds those.

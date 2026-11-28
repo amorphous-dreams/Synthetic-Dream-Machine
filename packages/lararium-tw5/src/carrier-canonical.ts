@@ -2,7 +2,7 @@
  * carrier-canonical — ONE question, asked from the OTHER shore: what canonical
  * text do these disk bytes SAY?
  *
- * `render(parse(disk))` is the seat of the Confluence's congruence `≈`: two
+ * `render(parse(disk))` is the seat of the three-way gate's congruence `≈`: two
  * carriers that render alike say the same thing, whatever framing their bytes
  * wear. The ingest leg computes it inside `decideIngest` (its rule 3, the
  * canonical-equivalence gate) because it already holds the parse it needs for

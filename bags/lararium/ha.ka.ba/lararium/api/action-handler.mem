@@ -46,7 +46,7 @@ Six residency verbs (SPARQL set-algebra) + a ''non-residency tier'' (INGEST, CRE
 | ''CLEAR'' | enumerate live titles in bag, tombstone each | disposition (bag-level) | bag |
 | ''DROP'' | tombstone every live title in bag + write the retirement marker into the bag's own doc; the registry entry stays (see Handler Law 6) | disposition (`bag-retired`, under the fixed marker id) | bag |
 | ''LOAD'' | land operator-supplied carriers into `to-bag` (carrier-borne; islands never fetch — `source-uri` = provenance) | accession (`to-bag`) | source-uri, to-bag, change-id, carriers |
-| ''INGEST'' | disk→records through the Confluence — the three-way reconcile gate (disk · synced · records meet; replace-by-group, NFC; + whole-carrier `deletions`; surface-never-overwrite) — the non-residency precedent | accession (`to-bag`) | source-uri, to-bag, change-id, carriers |
+| ''INGEST'' | disk→records through the three-way reconcile gate (disk · synced · records meet; replace-by-group, NFC; + whole-carrier `deletions`; surface-never-overwrite) — the non-residency precedent | accession (`to-bag`) | source-uri, to-bag, change-id, carriers |
 | ''CREATE'' | mint a new record into a PLANE rather than move one between bags — the plane grades the cap: the catalog plane (household) takes `read`, the oracle plane (temple) takes `admin`. Handled in the REACTOR, never `executeAction`, because the gate must read the plane before the mint | accession (the plane's doc) | plane, title, and the record to mint |
 | ''RECONCILE'' //(design)// | fold a newer engine genesis forward into `@oracle` (operator-admin engine rite; preview → conflict-surface → confirm → idempotent) | engine-version record (`@oracle` ledger) | see residency-model #non-residency-verbs |
 
@@ -134,6 +134,6 @@ is shared, not duplicated (Sprint 6 parity).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NHOHlIIPwn5Y9i9rsqqJ8Ldf4I5ndtw5CcuaUsM_NHo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JjQmmA0f6P9qxFvD_4kM9iT9euAZ9X9KKzKxEZkMIjI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

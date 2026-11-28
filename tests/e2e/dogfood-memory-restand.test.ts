@@ -2,7 +2,7 @@
  * LEAD RUNS: this proof founds and boots two staged vessels and exercises the daemon's projection journal.
  * The stage path keeps the same memory title across a state-home re-stand; a changed path makes a new title.
  * Road L9: a stage meme's title carries its stage path (`lar:///ha.ka.ba/kahua/memory/<stage-path>`), the
- * Confluence gate refuses a path that reads no one or two lowercase segments (`stage-path-shape`), and `lares put`
+ * three-way gate refuses a path that reads no one or two lowercase segments (`stage-path-shape`), and `lares put`
  * re-pours an exported projection byte for byte. The projection aligns its meta, so the fields read by name, never by spacing.
  */
 import { afterAll, beforeAll, describe, expect, test } from "vitest";

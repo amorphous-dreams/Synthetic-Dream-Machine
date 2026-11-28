@@ -12,7 +12,7 @@
  *   WP2 the seat arms off the boot path, watches the whole folder (its `.git/`, `temp/`, `recovery/` and litter wake no wave),
  *       and downs at lock with the final wave, then a commit whose subject names no face
  *   WP3 the ports land a clean edit as an UNATTENDED INGEST wave in the wiki's working layer, run IN that wiki's island, under
- *       the worn face's actor; a stand-off goes to that wiki's shore
+ *       the worn face's actor; a conflict goes to that wiki's shore
  *   WP4 the witness on a scratch house: a user wiki bound to a workspace (as `notes` would be) flows a disk edit back by itself
  *       and commits at lock
  *   WP2b a realm's wiki folder commits into its realm's one tree (`realms/<pet>/`), its own paths alone
@@ -215,7 +215,7 @@ describe("WP3 — the workspace's ports: an unattended wave in the wiki's own is
     expect(waves).toHaveLength(1);
   });
 
-  test("a stand-off goes to the shore by name; the catch-up reads the whole workspace but its tooling", async () => {
+  test("a conflict goes to the shore by name; the catch-up reads the whole workspace but its tooling", async () => {
     const plain = put("My Notes.tid", tid("My Notes", "the disk's words"));
     agreed(NOTES_WORKING, "My Notes", plain, tid("My Notes", "the old words"));
     put("temp/scratch.tid", tid("scratch"));

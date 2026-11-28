@@ -974,7 +974,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   /**
    * Where a hand's save of `title` would land, asked as a probe: no alert stands and no console line prints. Null where the
    * cascade routes the title to no layer this composition mounts (a save of it would refuse). A writer that lands words on
-   * a person's behalf (the stand-off keeper) asks first, and writes only where the save lands in the bag it means.
+   * a person's behalf (the shore's keeper) asks first, and writes only where the save lands in the bag it means.
    */
   saveBagOf(title: string): SlotUri | null {
     try { return this._saveBag(title, true); }
@@ -1095,7 +1095,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * discards it; its deletion uses the landed ledger's bag and heads.
    *
    * Nothing here decides: the live value stays the CRDT's merge, and the winner's own draft (every
-   * conflicted field live) is the live record, so it is never copied. A disk stand-off's drafts arrive by
+   * conflicted field live) is the live record, so it is never copied. A disk conflict's drafts arrive by
    * another road (the disk capture's own wiki writes, `@lararium/node` disk-capture). A surfacing ON the draft bag itself persists nothing —
    * a draft of a draft is two edit buffers racing, and copying it would mint drafts of drafts.
    */

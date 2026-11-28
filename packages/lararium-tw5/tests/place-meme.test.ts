@@ -2,7 +2,7 @@
  * PLACE A MEME — one function, every skin.
  *
  * A meme arrives as TEXT (a PUT body, an MCP argument, a CLI stdin) and lands as its records: the
- * root and its ahu children, stale children tombstoned, the Confluence gate deciding. The plain
+ * root and its ahu children, stale children tombstoned, the three-way gate deciding. The plain
  * TW5 server route and the island's INGEST verb both call this one function through a sink; the
  * tests here drive it over an in-memory sink so the placement law reads without a wiki beneath it.
  */

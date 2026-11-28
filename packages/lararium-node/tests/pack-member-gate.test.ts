@@ -1,5 +1,5 @@
 /**
- * pack-member-gate — a PACK reconciles PER MEMBER through the ONE Confluence gate
+ * pack-member-gate — a PACK reconciles PER MEMBER through the ONE three-way gate
  * (the operator's #40 Fork A ruling): the pack-skip is gone. Each member runs the
  * single-carrier triangle (echo · canonical-equivalent · conflict) at member grain,
  * its content-hash the leg (aside in `$:/config/OriginalTiddlerHashes`, sibling to
@@ -102,7 +102,7 @@ async function wikiEdit(composite: CompositeStore, title: string, text: string):
 }
 
 describe.skipIf(coreBlobSkip)(
-  `pack member-gate — each member reconciles through the ONE Confluence gate${coreBlobSkip ? ` [SKIPPED: ${coreBlobSkip}]` : ""}`,
+  `pack member-gate — each member reconciles through the ONE three-way gate${coreBlobSkip ? ` [SKIPPED: ${coreBlobSkip}]` : ""}`,
 () => {
   let engine: TW5Engine;
   beforeAll(async () => {

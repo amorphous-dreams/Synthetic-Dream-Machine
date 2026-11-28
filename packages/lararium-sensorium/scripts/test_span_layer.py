@@ -1,4 +1,4 @@
-"""span_layer — the standoff keel: spans are offset-views over one content source, holding NO bytes.
+"""span_layer — the span keel: spans are offset-views over one content source, holding NO bytes.
 
     PYTHONPATH=<repo>/mempalace ~/.venv/bin/python -m pytest \
       packages/lararium-sensorium/scripts/test_span_layer.py -q

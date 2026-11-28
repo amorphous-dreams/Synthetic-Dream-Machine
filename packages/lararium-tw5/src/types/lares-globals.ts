@@ -34,7 +34,7 @@ export interface MemeCheck {
  * A wiki-side caller gets the placement, the read, the pure laws and the projection with no binary.
  */
 export interface LaresMemeFace {
-  /** Place a framed meme through the Confluence gate; `base` = the canonical hash last read. */
+  /** Place a framed meme through the three-way gate; `base` = the canonical hash last read. */
   place(uri: string, text: string, base?: string | null): Promise<PlaceMemeReceipt | PlaceMemeOwed>;
   /** The whole meme recomposed + the canonical hash a writer hands back; null under no record. */
   read(uri: string): Promise<{ text: string; canonicalHash: string } | null>;

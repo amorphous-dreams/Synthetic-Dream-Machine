@@ -9,7 +9,7 @@
  * written. A body that fails to parse passes through untouched: stock answers it as stock does.
  *
  * THE TWO DOORS. A FRAMED MEME ROOT — the carrier type, a SOH head still in its text — belongs to the
- * `/memes/` door, where the Confluence splits it into its records. Landed here it would sit whole and
+ * `/memes/` door, where the three-way gate splits it into its records. Landed here it would sit whole and
  * unsplit, so the gate refuses it: 422, the body naming the door for that URI. A plain tiddler, a split
  * root and a slot child pass.
  */

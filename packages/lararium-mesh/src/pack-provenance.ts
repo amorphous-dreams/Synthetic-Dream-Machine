@@ -95,7 +95,7 @@ export function forgetPack(p: PackProvenance, packPath: string): PackProvenance 
 // an upstream-PR-clean diff), while the hash map carries what the path map cannot —
 // which member's CONTENT moved. Presence-tracking (adds/drops) alone lets a member
 // land last-write-wins whenever the pack file re-lands; the content-hash lets each
-// member reconcile through the single-carrier Confluence gate at member grain
+// member reconcile through the single-carrier three-way gate at member grain
 // (echo · canonical-equivalent · conflict), so a concurrent wiki-edit + disk-change
 // names WHICH member conflicts and the rest flow clean.
 //

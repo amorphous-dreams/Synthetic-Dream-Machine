@@ -279,7 +279,7 @@ Explain the seven-day clock and offer the install, never require it, which reads
 
 !! 7 · The two doors — a stock client saves a meme root through the native door
 
-''The tension.'' The house rides TiddlyWiki's own registry and deserializer chain, and a stock server with the plugin reads the island's files and writes them back byte-identical (`blob-carriage.mem:186-187`, `nonmeme-parity`). "Every CRDT slot registers `writable:true` — the island refuses nothing at the store; the cascade alone decides where a save lands" (`bags/lares/ha.ka.ba/lares/docs/pono/recipe-layer-model.mem:72`). A stock client saves through the tiddlyweb adaptor's own contract (`outbound-bridge.mem:53`, `tiddlywebadaptor.js:26-275`), and a meme root saved that way lands as a tiddler without the Confluence — the reconcile gate INGEST rides (`bags/lararium/ha.ka.ba/lararium/api/action-handler.mem:55`) — ever running: no canonical hash re-stamped, no ahu children split, no `$origin-bag` law. A precedent stands for one lean: `refuseInlinePointerKind` "walls the native leg" for a pointer-kind carrier (`blob-carriage.mem:191`, `action-handler.ts:650`). Three leans wait: a ''server listener'' that catches the native save after it lands and runs the gate late; a ''client adaptor'' the stock client carries so the gate runs before the save leaves; ''refuse'' — the native door declines a meme root outright and names the front gate.
+''The tension.'' The house rides TiddlyWiki's own registry and deserializer chain, and a stock server with the plugin reads the island's files and writes them back byte-identical (`blob-carriage.mem:186-187`, `nonmeme-parity`). "Every CRDT slot registers `writable:true` — the island refuses nothing at the store; the cascade alone decides where a save lands" (`bags/lares/ha.ka.ba/lares/docs/pono/recipe-layer-model.mem:72`). A stock client saves through the tiddlyweb adaptor's own contract (`outbound-bridge.mem:53`, `tiddlywebadaptor.js:26-275`), and a meme root saved that way lands as a tiddler without the three-way gate — the reconcile gate INGEST rides (`bags/lararium/ha.ka.ba/lararium/api/action-handler.mem:55`) — ever running: no canonical hash re-stamped, no ahu children split, no `$origin-bag` law. A precedent stands for one lean: `refuseInlinePointerKind` "walls the native leg" for a pointer-kind carrier (`blob-carriage.mem:191`, `action-handler.ts:650`). Three leans wait: a ''server listener'' that catches the native save after it lands and runs the gate late; a ''client adaptor'' the stock client carries so the gate runs before the save leaves; ''refuse'' — the native door declines a meme root outright and names the front gate.
 
 !!! At the human / household scale
 
@@ -439,6 +439,6 @@ Six code sites cite this carrier: `packages/lararium-mesh/src/realm-bag.ts:4` an
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Jc-7ja3yDZFugYDeHwHXUd2Q14t1ysEsiIe4yp5IRO4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iN8EgBNEuhA652Md8NM6yS04kuuVrt-D--Pd7KoYDz8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

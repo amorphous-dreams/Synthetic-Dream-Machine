@@ -8,7 +8,7 @@
 
 import { describe, test, expect } from "vitest";
 
-// The scanner's law is read through the surfaces that CONSUME it — the Confluence gate's
+// The scanner's law is read through the surfaces that CONSUME it — the three-way gate's
 // `declaredStructure` and the deserializer's split — never by reaching into `meme-ast` directly
 // (the grammar boundary, `tests/vm-grammar-boundary.test.ts`). Those two are where the law bites.
 import { memeticIngestOps } from "../src/ingest-gate.js";
@@ -23,7 +23,7 @@ import {
 
 const URI = "lar:///t/a";
 
-/** The structural slot-set the Confluence gate grades a round-trip against. */
+/** The structural slot-set the three-way gate grades a round-trip against. */
 const declared = (text: string): ReadonlySet<string> => memeticIngestOps.declaredStructure(text);
 
 /** A framed carrier declaring one `ahu` block per name. */

@@ -1,5 +1,5 @@
 /**
- * ingest-verb.test.ts — the INGEST verb (island side): the Confluence gate composed
+ * ingest-verb.test.ts — the INGEST verb (island side): the three-way gate composed
  * with replace-by-group apply, riding the summons/outcome record-pair physics.
  *
  * Driven by the live boot meme (real carrier, real shore). The verb:

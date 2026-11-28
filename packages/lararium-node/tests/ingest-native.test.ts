@@ -1,10 +1,10 @@
 /**
- * ingest-native — the Confluence gate for a NATIVE filetype carrier (.md/.tid/.json).
+ * ingest-native — the three-way gate for a NATIVE filetype carrier (.md/.tid/.json).
  *
  * A native carrier runs the SAME triangle a memetic one does, via the registry's
  * own render (the file-info body): echo-noop · canonical-equivalent · ingest ·
  * conflict. The conflict leg is the load-bearing one — without it a native carrier
- * read last-write-wins over a wiki-side edit (a silent overwrite the Confluence forbids).
+ * read last-write-wins over a wiki-side edit (a silent overwrite the three-way gate forbids).
  */
 
 import { houseSkins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
@@ -81,7 +81,7 @@ async function runIngest(composite: CompositeStore, engine: TW5Engine, a: Record
 }
 
 describe.skipIf(coreBlobSkip)(
-  `INGEST — the native filetype Confluence triangle${coreBlobSkip ? ` [SKIPPED: ${coreBlobSkip}]` : ""}`,
+  `INGEST — the native filetype three-way gate${coreBlobSkip ? ` [SKIPPED: ${coreBlobSkip}]` : ""}`,
 () => {
   let engine: TW5Engine;
   beforeAll(async () => {

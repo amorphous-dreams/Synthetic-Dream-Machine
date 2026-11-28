@@ -25,7 +25,7 @@ A put patches one record: it sets and unsets fields, adds and removes tags, and 
 
 `replace` names one exact span of the standing text and `with` the words it turns into (an empty `with` removes the span); the rest of the text never crosses the wire. The span counts as written, never trimmed, overlaps counted: zero refuses `replace-absent`, more than one `replace-ambiguous`, each naming the count and the read that cures it, and nothing moves. The result lands as a text put does, under the same base, and the receipt names `replaced`.
 
-A meme family moves by the same put. A whole carrier as a root's text lands the family through the Confluence gate (the family re-splits and reseals; the answer adds `canonicalHash`, `landed`, `kept`, `tombstoned`); `slot` folds into the title (`<root>#/x`), so a slot's text lands with no base and an append honours the slot's standing postamble. Absence never deletes: a slot the new text omits stays standing by reference, named under `kept`, and `cut-slot` names each slot that leaves (a cut naming no standing omitted slot refuses `cut-not-omitted`). A family under `lar:///ha.ka.ba/kahua/memory/<class>/<slug>` follows `stage-path-shape`.
+A meme family moves by the same put. A whole carrier as a root's text lands the family through the three-way gate (the family re-splits and reseals; the answer adds `canonicalHash`, `landed`, `kept`, `tombstoned`); `slot` folds into the title (`<root>#/x`), so a slot's text lands with no base and an append honours the slot's standing postamble. Absence never deletes: a slot the new text omits stays standing by reference, named under `kept`, and `cut-slot` names each slot that leaves (a cut naming no standing omitted slot refuses `cut-not-omitted`). A family under `lar:///ha.ka.ba/kahua/memory/<class>/<slug>` follows `stage-path-shape`.
 
 The fences refuse by name: a family's `type` and carriage fields derive from its text (`family-carriage-derives`); a new slot joins through its parent's text (`family-joins-by-text`); a text the gate cannot read as one carrier refuses `family-gate-refused`; a title that stays home refuses `tiddler-withheld`; a put over a rendered tiddler, or one carrying `rendered-from`, refuses `rendered-derives`, since only the renderer writes it: edit the source records. Every other shape lands natively, a `$:/` title or tag, a module or plugin field and a script type alike. A put writes the face it wears and never another (`cross-face-write-refused`).
 
@@ -110,7 +110,7 @@ Testimony: the door checks; this slot grants nothing.
 <<has entity=`refusal` name=`slot-beside-fragment` params=`~ the title already names a slot; drop slot, or name the root`>>
 <<has entity=`refusal` name=`family-carriage-derives` params=`~ a family's type and carriage fields derive from its text`>>
 <<has entity=`refusal` name=`family-joins-by-text` params=`~ a new slot joins through its parent's text`>>
-<<has entity=`refusal` name=`family-gate-refused` params=`~ the Confluence gate reads the text as no one carrier`>>
+<<has entity=`refusal` name=`family-gate-refused` params=`~ the three-way gate reads the text as no one carrier`>>
 <<has entity=`refusal` name=`stage-path-shape` params=`~ a title under the memory stage reads one or two lowercase, hyphen-joined path segments`>>
 <<has entity=`refusal` name=`tiddler-withheld` params=`~ the title stays home: temp, state, a control or secret home, cap/**`>>
 <<has entity=`refusal` name=`rendered-derives` params=`~ only the renderer writes a rendered tiddler; edit its source records`>>
@@ -127,7 +127,7 @@ Testimony: the door checks; this slot grants nothing.
 ```memetic-wikitext
 <<has entity=`band` name=`put` params=`exit/0 fields/[[title decision bag layer created changed hash textHash position appended replaced]] ~ the record landed; decision reads put`>>
 <<has entity=`band` name=`noop` params=`exit/0 ~ the record already says it; nothing moved`>>
-<<has entity=`band` name=`family` params=`exit/0 fields/[[canonicalHash landed kept tombstoned]] ~ a family text landed through the Confluence gate and resealed`>>
+<<has entity=`band` name=`family` params=`exit/0 fields/[[canonicalHash landed kept tombstoned]] ~ a family text landed through the three-way gate and resealed`>>
 <<has entity=`band` name=`conflict` params=`exit/4 fields/[[hash canonicalHash]] ~ the base read stale; the live hash rides the answer and nothing landed`>>
 <<has entity=`band` name=`dry` params=`exit/0 fields/[[dry needs diff hints]] ~ a dry put: the answer the real put would give, the base it needs and the carrier's seat hints; nothing landed`>>
 <<has entity=`band` name=`exists` params=`exit/4 ~ create met a standing record; nothing landed`>>
@@ -181,6 +181,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;G-jos3eIv5E1kasdhOCpKd-tLCpaG19666THbIupEuc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RaRF01LKJUBX3ZpOCZ7hbhlsjLyC0s3um0gxSAhwdqo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -168,7 +168,7 @@ export function readCarrierText(file: string): { text: string; binary: boolean }
  * of its own), a single file lists itself. Returns null when the source does
  * not resolve. Filetype routing is the ISLAND's job (TW5's registry); the Node
  * gesture only enumerates + carries the extension. Observations only, never a
- * work queue (Confluence: scan is truth, events are hints).
+ * work queue (scan reads truth, events carry hints).
  */
 export function listCarriers(source: string): string[] | null {
   const listed = listSourceFiles(source);
@@ -1425,7 +1425,7 @@ export function ridesInline(row: ScanRow): boolean {
 }
 
 /**
- * THE INGEST VERB'S ARGS for one wave — hashes travel WITH the content; the island runs the full Confluence gate and answers
+ * THE INGEST VERB'S ARGS for one wave — hashes travel WITH the content; the island runs the full three-way gate and answers
  * per-carrier decisions. THE BLOB LAW rides `stage`: a pointer-kind or flagged body staged to the CAS rides a skinny
  * `textCid`, a utf8 body under the wall rides INLINE `text`, an oversized un-flagged body stages for transport but rides no
  * `skinny`, so the island faults it (a verb rides a reference, never a body).
@@ -1653,7 +1653,7 @@ export interface PoolIngestOptions {
   readonly bags: PoolPlaneBags;
   /** The submit port (`islandIngestSubmit` in the vessel). */
   readonly submit: IngestSubmit;
-  /** The disk shore's look (`shore` op `sense`): a stand-off, a vanish, a personal-layer file, a pointer body and a refused wave go there. */
+  /** The disk shore's look (`shore` op `sense`): a conflict, a vanish, a personal-layer file, a pointer body and a refused wave go there. */
   readonly sense: (uris?: readonly string[]) => Promise<unknown>;
   readonly did: string;
   /** The Synced tree each wave reads afresh; absent, the projection checkpoint's (`openSyncedTree`). */
@@ -1673,8 +1673,8 @@ type PoolWavePlane = typeof POOL_WAVE_PLANES[number];
  * THE VESSEL'S WAVE OVER THE WORN FACE'S POOL: each settle's touched files land as UNATTENDED INGEST waves, one per granted
  * plane, through the submit port, so an edit made in the pool flows back into the house by itself. The island's gate decides
  * each carrier: a moved file lands and pins its base; a file that holds no base over records that say something else, and one
- * whose records moved too, stand off, and those go to the disk shore's look (`sense`), where the keyed alert rises and a person
- * settles each (`lares shore`; W4 merges a both-moved stand-off per slot). A vanished file tombstones nothing: it stays in the
+ * whose records moved too, conflict, and those go to the disk shore's look (`sense`), where the keyed alert rises and a person
+ * settles each (`lares shore`; W4 merges a both-moved carrier per slot). A vanished file tombstones nothing: it stays in the
  * vanished set (a later arrival of its bytes re-links it, paired by content), and the shore's whole look sees it pending. A
  * personal-layer file (a wiki island's overlay), a recovery draft, a plane no mirror grants and a body that rides a pointer (the vessel
  * stages no CAS blob) take the shore's look too.
@@ -1701,7 +1701,7 @@ type FolderWaveReading = { readonly sense: string[]; readonly vanishedNow: boole
 
 /**
  * ONE FOLDER'S UNATTENDED WAVE (a face pool's plane, a workspace): the touched files and every vanished one re-statted, scanned
- * against the synced base, the clean carriers landed through the submit port, each stand-off, refusal, pointer body and vanish
+ * against the synced base, the clean carriers landed through the submit port, each conflict, refusal, pointer body and vanish
  * owed to the shore. A vanished file tombstones nothing: it waits in `gone` until its bytes arrive elsewhere (paired by content).
  */
 async function folderWave(
@@ -1835,7 +1835,7 @@ export interface WorkspaceIngestOptions {
   readonly submit: IngestSubmit;
   /** A5: where the synced tree holds no base (after a re-found), the base read from the workspace's git HEAD (`poolHeads`). */
   readonly heads?: BaseFromGit;
-  /** The wiki island's disk shore look (`shore` op `sense`): a stand-off, a vanish, a pointer body and a refused wave go there. */
+  /** The wiki island's disk shore look (`shore` op `sense`): a conflict, a vanish, a pointer body and a refused wave go there. */
   readonly sense: (uris?: readonly string[]) => Promise<unknown>;
   /** The worn face's actor: every wave lands under it, whichever face last wrote the shared copy. */
   readonly did: string;

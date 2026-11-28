@@ -3,7 +3,7 @@
  * ISLAND stamped, and never from anything content can write (house ruling 2026-10-29).
  *
  * An island event's top-level payload is built by island code: the reaction router stamps `content` or `surface`,
- * and the island's own host code (the disk ward, the projection's Confluence) stamps `channel`. Content reaches the
+ * and the island's own host code (the disk ward, the disk shore) stamps `channel`. Content reaches the
  * payload only through `verb`, `listenable` and the `verb-args` JSON, so an `origin` inside the args never counts.
  *
  * RED today: the node and browser bridges each read `{verb, args, requestedBy}` inline and carry no origin at all,

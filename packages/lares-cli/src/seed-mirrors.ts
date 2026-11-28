@@ -3,7 +3,7 @@
  * mirrors, through INGEST's three-way gate.
  *
  * THE LAW. A lay lays every disk mirror back into the one layer it mirrors (disk equal to the base: nothing; the disk
- * moved: it lands; both moved: a stand-off at the shore, within that one layer), and a second lay lands nothing:
+ * moved: it lands; both moved: a conflict at the shore, within that one layer), and a second lay lands nothing:
  *
  *   projections/faces/<pet name>/wikis/daemon -> that face's daemon WORKING (`wikis/daemon/working`); a kāpae shadow raises as a kāpae
  *   projections/faces/<pet name>/bags/daemon  -> that face's daemon canon (`bags/daemon-<F>`)
@@ -33,7 +33,7 @@
  * THE LIT SET. One lay lays every OPEN face's working and face-canon folders, each into that face's own layer: the daemon mount's through the ordinary wave, every other open face's through a wave naming that face
  * (`MirrorWave.face`), which the island lands only where the vessel's device table names that face as the document's owner and
  * never on the daemon mount. A face that stands SHUT places nothing into any layer: the lay names it ("<pet-name> stays shut:
- * `lares vault unlock --face N`, then lay again"), an expected state rather than a stand-off, and its root stays as it stands
+ * `lares vault unlock --face N`, then lay again"), an expected state rather than a conflict, and its root stays as it stands
  * until its own lay lands it. No face's private memory ever lands in another face. Kahua lifts sign per face under that
  * face's own grant, so they ride every face.
  *

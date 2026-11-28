@@ -1,5 +1,5 @@
 /**
- * watch-core — THE DRAIN, ONE SEAT (face-pools #/lanes W1, W2). Disk events carry HINTS (Confluence): the seat coalesces a
+ * watch-core — THE DRAIN, ONE SEAT (face-pools #/lanes W1, W2). Disk events carry HINTS: the seat coalesces a
  * settle window into ONE wave, runs one wave at a time, and queues exactly one rerun for hints that land mid-wave. The
  * CLI's `lares ingest --watch` fills the wave with its INGEST settle; the vessel fills it over the WORN face's pool.
  *
@@ -531,4 +531,4 @@ function armSeat(o: SeatOptions): FacePoolWatch {
 }
 
 // The vessel's ports over the worn face's pool stand beside the ingest machinery (`poolIngestPorts`, `ingest-scan`): each wave
-// lands as an unattended INGEST wave, and a stand-off, a vanish and a personal-layer file go to the disk shore's look.
+// lands as an unattended INGEST wave, and a conflict, a vanish and a personal-layer file go to the disk shore's look.

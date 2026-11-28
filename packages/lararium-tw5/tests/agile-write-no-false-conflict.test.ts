@@ -1,5 +1,5 @@
 /**
- * agile-write — the Confluence's echo gate reads TAGGED digests only.
+ * agile-write — the echo gate reads TAGGED digests only.
  *
  * The producers that feed the gate — `carrierHash` (the disk `diskHash` + the projector's synced-tree
  * `obsHash`) and the render leg (`currentRenderHash`) — emit `sha256:<hex>`. A bare hex names no

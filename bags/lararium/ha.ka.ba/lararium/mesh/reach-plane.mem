@@ -46,7 +46,7 @@ The whole design turns on ''one split, held absolutely'': a foreign credential b
 
 The flow reuses instruments already standing — no new gate, no new distribution mechanism:
 
-<<~flows name=`author-in-the-wiki` path=`the-content-already-declares-its-cap-tier -> the-Confluence-gate-checks-declared∧floor -> render-to-the-target-native-form -> sign-and-post-with-THAT-target-reach-cap`>>
+<<~flows name=`author-in-the-wiki` path=`the-content-already-declares-its-cap-tier -> the-three-way-gate-checks-declared∧floor -> render-to-the-target-native-form -> sign-and-post-with-THAT-target-reach-cap`>>
 
 ''Posting outward reads as another projection sink.'' The disk-projection law already names bags as canon and `wikis/` as a render of them (`disk-projection-law.mem`); a foreign surface joins that list as a target, never as a second source. ''One genuinely new subsystem falls out of the whole design: the credential vault.''
 
@@ -306,6 +306,6 @@ A chainless face establishes `no store` through that door: no path can stand one
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wMBVoi095oAhwzXtqNJbl2rApKNBylXSD1c0LSnUfjc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BSeKC7JTrFQorQbrq06yHZ7JMxqQje9rFLG4lEWVkRg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

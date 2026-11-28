@@ -918,7 +918,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(await put({ ...A, title: "Note 04", fields: { status: "done" }, base: live }, ctx())).toMatchObject({ decision: "put" });
   });
 
-  test("tiddler-put fences: the face's write cap decides, a family member's text lands through the Confluence gate inside the put, a title that stays home refuses by name", async () => {
+  test("tiddler-put fences: the face's write cap decides, a family member's text lands through the three-way gate inside the put, a title that stays home refuses by name", async () => {
     const r = await rig();
     await placeMeme({ uri: MEME, text: memeText(["a"]) }, wikiMemeSink(r.engine.wiki));
     const put = makeTiddlerPutReactor(r.opts);
@@ -1049,7 +1049,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(placed.decision).toBe("ingest");
     const put = makeTiddlerPutReactor(r.opts);
     // SEALED, AND THE GATE'S OWN FIXED POINT: the render the meme door hands out verifies its block check (the render mints the
-    // check over the bytes it frames), and that render put back under its own hash reads a clean noop at the Confluence gate.
+    // check over the bytes it frames), and that render put back under its own hash reads a clean noop at the three-way gate.
     const sealedNow = async (): Promise<boolean> => {
       const now = (await readMeme(MEME, wikiMemeSink(r.engine.wiki)))!;
       const gate = await evaluateMeme({ uri: MEME, text: now.text, baseHash: now.canonicalHash }, wikiMemeSink(r.engine.wiki));
@@ -2161,7 +2161,7 @@ describe.skipIf(wikiSkip)(`a bag takes the plain put and the delete through its 
     expect(await store.get("x")).toBeNull();
   });
 
-  test("a family's text lands in the bag through the Confluence gate: a framed root founds, a slot's text and append move it, a slot the text omits stays until `cut` names it, a stale carrier base answers `conflict`", async () => {
+  test("a family's text lands in the bag through the three-way gate: a framed root founds, a slot's text and append move it, a slot the text omits stays until `cut` names it, a stale carrier base answers `conflict`", async () => {
     const r = await rig();
     const put = makeTiddlerPutReactor(r.opts);
     const store = r.composite.storeForBag(DAEMON)!;

@@ -95,7 +95,7 @@ export { readOwnHand, ownPeerKind, askerRefusal, handRefusalOf, handCodeOf, HAND
 // browser — reaches the same organs; py mirrors them by contract). Import them from `@lararium/mesh`.
 
 // The memetic-wikitext SENSORIUM — the concrete neither-top, co-located-peers instance: the reader
-// (island-scan → standoff strata + skeletal tier + typed association graph, TWO axes span×channel), the
+// (island-scan → span strata + skeletal tier + typed association graph, TWO axes span×channel), the
 // fractal FFZ-aligned coupler (stratum red↔black ≅ corpus formal↔informal through the mesh keel's
 // windowed-coupling runtime + linearity screen), and the `#has {formal, informal}` compose (coupling.
 // children, neither top). LI (理 pattern) ⊥ KI (氣 flow).

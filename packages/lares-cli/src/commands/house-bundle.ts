@@ -36,7 +36,7 @@
  *   3. maps each bundle face's pet-name to the ONE face on this vessel that carries it, refusing by name where none or
  *      two do (never a silent merge into another face's memory);
  *   4. re-pours working rows into the new face's daemon wiki through the ingest gesture (unattended, so a diverged id
- *      stands off through the Confluence gate and never overwrites), raising each kāpae a shadow speaks;
+ *      stands off through the three-way gate and never overwrites), raising each kāpae a shadow speaks;
  *   5. re-lifts each kahua head under the new face's grant, keyed by title + body digest (a title already holding that
  *      digest reads landed, a title holding a body the bundle never carried stands off);
  *   6. lands draft and temp files back in the face's root (`faces/<pet name>/recovery/<slug>`, `temp/<slug>`) where none
@@ -154,7 +154,7 @@ export const FACE_LAYER_WAITS = /\bface-unresolved\b|\bdocument-unavailable\b/;
  */
 export { foldWaveRefusal };
 
-/** The words a SHUT face reads: unlock it, then lay (or import) again. A named expected state, never a stand-off, and it
+/** The words a SHUT face reads: unlock it, then lay (or import) again. A named expected state, never a conflict, and it
  *  never blocks the faces that stand open (THE LIT SET: one lay lays every open face, each in its own layer). */
 export function unlockItLine(face: { readonly handleIndex: number; readonly petname: string | null }, verb: "lay" | "import"): string {
   return `${face.petname ?? `h${face.handleIndex}`} stays shut: \`lares vault unlock --face ${face.handleIndex}\`, then ${verb} again`;
@@ -1038,7 +1038,7 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
 
   // An import restores each file into its mirror, then ingest reads it there so the placement ward sees the bag's own mirror.
   const wave = async (sourceDir: string, uriDir: string, mirrorDir: string, toBag: string, carried: readonly string[], keyPrefix: string, workTally: BundleTally, kapaeTally: BundleTally | null, wiki: string | null = null, freshLayer = false, faceArg: { face?: number } = {}): Promise<void> => {
-    // HOUSE_IGNORED: a bundle an older export wrote may carry a mirror's `.git/` or a stand-off render; none of it restores.
+    // HOUSE_IGNORED: a bundle an older export wrote may carry a mirror's `.git/` or a shore render; none of it restores.
     const files: string[] = [];
     for (const f of carried) { if (houseIgnored(relative(sourceDir, join(bundle.root, ...f.split("/")))) === null) files.push(f); else skipped.push(join(bundle.root, ...f.split("/"))); }
     if (files.length === 0) return;
@@ -1054,7 +1054,7 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
     const wanted = new Set([...candidates.map((r) => r.uri), ...kapae]);
     // A MIRROR FILE THAT DIFFERS IN BYTES reads by the RECORD it holds, never by its bytes: one record in another framing
     // (a field order, a trailing newline) reads already landed, and a different record rides on to INGEST's three-way gate
-    // with the mirror's file left as it stands. No stand-off ever rests on byte drift alone. A preview reads the same.
+    // with the mirror's file left as it stands. No conflict ever rests on byte drift alone. A preview reads the same.
     const differing = new Map<string, { from: string; to: string }>();
     const pending: Array<{ uri: string; to: string; bytes: Buffer }> = [];
     /** Each wanted uri, and whether the mirror holds every one of its files. */

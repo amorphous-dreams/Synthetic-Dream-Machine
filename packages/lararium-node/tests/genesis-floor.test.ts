@@ -221,7 +221,7 @@ describe("the genesis floor against live canon INGEST laid from the same carrier
   const crest = readFileSync(join(REPO, "bags/lararium/ha.ka.ba/lararium/mesh/wave-crest.mem"), "utf8");
   const CREST = "lar:///ha.ka.ba/lararium/mesh/wave-crest";
 
-  /** One slug's live canon: its own canon document, each carrier laid through the Confluence gate into the bag's store skin. */
+  /** One slug's live canon: its own canon document, each carrier laid through the three-way gate into the bag's store skin. */
   async function layLive(repo: Repo, slug: string, texts: readonly string[]): Promise<AutomergeDocStore> {
     const bag = bagUri(slug);
     const store = new AutomergeDocStore(repo.create<LarDoc>(emptyLarDoc()), bag);

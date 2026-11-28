@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""span_layer — the STANDOFF keel of the derived-recall model.
+"""span_layer — the SPAN keel of the derived-recall model.
 
 A recall segmentation rides as `(cid, start, end)` SPANS over the ONE verbatim content source, never a
 second byte-copy. A span carries only offsets into a content block; the verbatim bytes resolve on READ
 from the content plane by cid + slice. So many segmentations (turn-window, fixed lexical chunk, section)
-coexist as LAYERS over one source — the shape standoff annotation (BRAT / STAM / TEI) and Lucene's
+coexist as LAYERS over one source — the shape span annotation (BRAT / STAM / TEI) and Lucene's
 positions+offsets have carried for decades.
 
 The kupono law this keel enforces (the one-bit test, made structural): a span stores NO bytes, so any
@@ -24,7 +24,7 @@ from typing import Callable, Iterator
 
 @dataclass(frozen=True)
 class Span:
-    """A standoff span — a rebuildable pointer into a content block. NO verbatim bytes ride here.
+    """A span — a rebuildable pointer into a content block. NO verbatim bytes ride here.
 
     `cid` names the content block (the sensorium content-id); `[start, end)` are char offsets into that
     block's verbatim text; `layer` names the segmentation this span belongs to ("chunk" · "turn" · …).

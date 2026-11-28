@@ -1,5 +1,5 @@
 /**
- * synced-tree — the per-carrier merge base (the Confluence's third leg; handoff
+ * synced-tree — the per-carrier merge base (the three-way gate's third leg; handoff
  * #pattern-integrities §6, the Nucleus triangle).
  *
  * For every file the two legs last agreed on, this tree persists the BASE: the

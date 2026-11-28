@@ -5,7 +5,7 @@
  * The contract: at most one of `recipe` / `bag` (both refuse as `no-container`; neither reads `recipe: "default"`); `recipe: "default"` names the host's ANCHOR,
  * the daemon's own wiki, read through its live `$tw.wiki`. A named recipe reads AS THAT WIKI: the whole stack, top-down,
  * the first bag that holds a record answering. A named bag names that one bag's own store: a put lands a family there
- * through the Confluence gate, a delete removes it there, and a bag the island cannot write fails loud, naming the bag.
+ * through the three-way gate, a delete removes it there, and a bag the island cannot write fails loud, naming the bag.
  * `base` carries the writer's merge base; a stale one answers `conflict`.
  */
 import { describe, test, expect } from "vitest";

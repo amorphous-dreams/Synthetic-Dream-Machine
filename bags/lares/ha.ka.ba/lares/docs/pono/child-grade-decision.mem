@@ -64,7 +64,7 @@ That refutation names the shape any new proposal must survive. ''A cure that han
 
 ''None of them.'' The grading path reads ''`text`'' and nothing else — `memeticIngestOps.deserialize(uri, text, frame)` (`ingest-gate.ts`) takes a URI for addressing, the text for parsing and the frame verdict read over that same text; the diagnostics come off the parse and the shore. Measured (#/measured rows 5-6): the same bytes grade identically under a root URI and under a child URI. ''The grade reads bytes, never records, never parentage, never address.''
 
-The fields that DO decide things decide ADDRESS, not grade: `isMemeRoot` (`place-meme.ts:234-236`) reads `type` + no `#` in title + no `$fragment-parent`, and `framedRootOf` (`place-meme.ts:123-129`) reads that predicate first and a SOH head second. Those choose a DOOR. The Confluence gate chooses a VERDICT. `syncer-seams-roundtable.mem` `#/refusals` already forbids fusing them.
+The fields that DO decide things decide ADDRESS, not grade: `isMemeRoot` (`place-meme.ts:234-236`) reads `type` + no `#` in title + no `$fragment-parent`, and `framedRootOf` (`place-meme.ts:123-129`) reads that predicate first and a SOH head second. Those choose a DOOR. The three-way gate chooses a VERDICT. `syncer-seams-roundtable.mem` `#/refusals` already forbids fusing them.
 
 !! How the two remembered rulings bear
 
@@ -303,7 +303,7 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 !! ALREADY DECIDED — the grade may not choose a door
 
-`#/refusals`, second bullet: the Confluence gate grades CONTENT, the root law decides ADDRESS, and ''a cure that reads a grade to choose a door has fused two instruments that exist to be able to contradict each other.'' This forbids the shape "grade the child, and route it by the result" in any spelling.
+`#/refusals`, second bullet: the three-way gate grades CONTENT, the root law decides ADDRESS, and ''a cure that reads a grade to choose a door has fused two instruments that exist to be able to contradict each other.'' This forbids the shape "grade the child, and route it by the result" in any spelling.
 
 !! DECIDES THE SHAPE, NOT THE ANSWER — write-open, read-certified
 
@@ -349,7 +349,7 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 | 16 | `placeMeme({uri: child, text})` with a sub-block | `ingest`; lands `lar:///t/a#/a#/z`; ''strips `$fragment-parent`, `$slot`, `uri-path` from the child'' |
 | 17 | re-deserialize the served root of row 13 at the root URI | `grade: clean`; ''3 records against the store's 2'' (a `#/$postamble` appears) — and row 3's `noop` keeps it from landing |
 
-''What row 17 says'': the canonical render reaches its fixed point while the RECORD SET does not. The equivalence noop (`ingest-gate.ts:167-178`) compares hashes of the render and never the records behind it, so a divergence at that grain passes unread. ''Named as a standing observation, not as part of the fork'' — it belongs to whoever next opens the Confluence gate.
+''What row 17 says'': the canonical render reaches its fixed point while the RECORD SET does not. The equivalence noop (`ingest-gate.ts:167-178`) compares hashes of the render and never the records behind it, so a divergence at that grain passes unread. ''Named as a standing observation, not as part of the fork'' — it belongs to whoever next opens the three-way gate.
 
 !! What no probe here settled
 
@@ -393,6 +393,6 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;PwCIhZHUfM2RwgA873rv-oBtQT9zqOxmt9USGAvITbs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5NBdMQesdScNBnqeK9L5gGGZpu8JaFJWau4Hkv6PRYg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -255,7 +255,7 @@ def spectrum_rungs(spectrum: list, *, lo: float = 0.0, hi: float = 1.0,
     every open interval the crossings carve out of [lo, hi]. The rank order stands
     constant on each interval, so this ladder reads EVERY distinct ordering the dial can
     produce and no ordering twice — nobody hand-picked a rung. Coincident crossings (the
-    degenerate confluences) merge, so a mass of lines meeting at one lam* contributes ONE
+    degenerate concurrences) merge, so a mass of lines meeting at one lam* contributes ONE
     boundary, never a nest of empty intervals."""
     cuts: list = []
     for r in spectrum:

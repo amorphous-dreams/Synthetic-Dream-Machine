@@ -93,7 +93,7 @@ The multi-tiddler ''pack'' (hold-a-set) crossing rides the same //working ↔ ca
 * ''COW-overlay PACK/UNPACK + atomic PROMOTE'' — LOWER (canon, read-only) + UPPER (`@working`) + WORK; copy-up-on-first-write CONSTITUTES UNPACK; overlay never destroys lower = //working shadows canon// in fs primitives. PACK = ONE atomic reconcile (shadow-paging root-swap) coalescing MOVE's two halves — the missing verb. VCS vocab NOT adopted (''rite not drift'').
 * ''Agile algorithm-tagged digest'' — identity = `algorithm:hex` content digest, SRI strongest-wins (no flag-day), identity-hash SEPARATED from location/attestation (referrers OVER digests, the chain links digests never re-hashes locations).
 
-Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired (content-addressing reframe); the Confluence already stands as ONE gate over a semantic congruence `≈`.
+Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired (content-addressing reframe); the three-way gate already stands as ONE gate over a semantic congruence `≈`.
 
 <<~/ahu>>
 
@@ -146,6 +146,6 @@ The 2026-09-02 ruling read that `@daemon` "will likely seed a canon-bag layer of
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;g0AMM7G474NpZMzds-11ecv0_RCezF-qFdKugBvFXFM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KdsJMCrFanWz-lLTTM8tyY_U3TDePfybSFJ9iEYJPC8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

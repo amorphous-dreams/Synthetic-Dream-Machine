@@ -16,7 +16,7 @@
  * ({@link corpusSignals}).
  *
  * THE READER (NO new parser): the meme-ast island scanner (`collectEvents`, disjoint-match) +
- * a tree-sitter INJECTION config ({@link sigilInjectionQuery}) + a source-CID-pinned STANDOFF stratum
+ * a tree-sitter INJECTION config ({@link sigilInjectionQuery}) + a source-CID-pinned SPAN stratum
  * table (per byte-range `{span, tag, sourceCid}`). Strata ASSOCIATE to a SKELETAL TIER (the prose/char
  * stream) via association edges — autosegmental, NOT position-identity.
  *
@@ -71,13 +71,13 @@ export function bandForSpanLength(len: number): FfzBand {
   return "Theme";
 }
 
-// ── the standoff stratum table + skeletal tier + association graph ─────────────────────────────────
+// ── the span stratum table + skeletal tier + association graph ─────────────────────────────────
 
 /** A source byte-range, half-open [start, end). */
 export type Span = readonly [number, number];
 
 /**
- * One STANDOFF stratum — a byte-range tagged on both axes, source-CID-pinned. Held BESIDE the text
+ * One SPAN stratum — a byte-range tagged on both axes, source-CID-pinned. Held BESIDE the text
  * (rust-analyzer style), never woven into it, so the same source can carry many strata tables.
  */
 export interface Stratum {
@@ -96,7 +96,7 @@ export interface Stratum {
    * frames (the No-Crossing Constraint) — a steer that would reach past a frame FLOATS + DOCKS instead.
    */
   readonly frame: boolean;
-  /** the verbatim island text — the OCP identity key + standoff self-description. */
+  /** the verbatim island text — the OCP identity key + span self-description. */
   readonly raw: string;
   /** the span axis — the aperture band of this stratum's OWN byte-range. */
   readonly band: FfzBand;
@@ -158,7 +158,7 @@ export interface Stratification {
   readonly associations: readonly AssociationEdge[];
 }
 
-/** Content-address a source (sha-256, hex) — the pin every standoff stratum carries. The hash rides
+/** Content-address a source (sha-256, hex) — the pin every span stratum carries. The hash rides
  *  TextEncoder; a sandbox without one (the TW5 VM) gets a NAMED refusal, never a bare ReferenceError. */
 export function sourceCidOf(text: string): string {
   if (typeof TextEncoder === "undefined") {
@@ -211,7 +211,7 @@ export function isFrameSigil(sigilName: string): boolean {
 }
 
 /**
- * STRATIFY a memetic-wikitext source into the standoff table + skeletal tier + association graph.
+ * STRATIFY a memetic-wikitext source into the span table + skeletal tier + association graph.
  *
  * The island scanner ({@link collectEvents}) yields the disjoint `<<~…>>` islands (the RED classifier
  * register); the gaps between them are the BLACK skeletal anchors (the prose the red steers). Each red

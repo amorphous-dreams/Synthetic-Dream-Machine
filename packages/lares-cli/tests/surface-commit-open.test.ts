@@ -40,7 +40,7 @@ beforeEach(async () => {
 afterEach(() => { stub.restore(); rig.close(); });
 
 describe("lares surface commit", () => {
-  test("★ stages only what the house agrees with; a stand-off reads apart by name and stays unstaged ★", async () => {
+  test("★ stages only what the house agrees with; a conflict reads apart by name and stays unstaged ★", async () => {
     carrier("wiki/Room 4.tid", "Room 4", "title: Room 4\n\nbody\n", { meta: "tags: x\n" });
     carrier("canon/note.mem", "lar:///ha.ka.ba/notes/one", "a meme\n");
     carrier("wiki/Drifted.tid", "Drifted", "title: Drifted\n\nhand edit\n", { agreed: "title: Drifted\n\nhouse words\n" });

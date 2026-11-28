@@ -6,7 +6,7 @@ bytes at rest. A side `spans` table holds each chunk's `(cid, start, end)` offse
 query matches tokens → span rowids (BM25-ranked) → spans → verbatim resolved from the content plane by
 cid + slice. So the mempalace gains an INDEPENDENT chunk-segmented lexical surface — a segmentation
 DISTINCT from the content plane's turns — that duplicates NO source bytes and rebuilds from content alone
-(the one-bit test). This is the standoff + external-content-FTS form the kupono data-model research named:
+(the one-bit test). This is the span-annotation + external-content-FTS form the kupono data-model research named:
 content is the single writable arbiter; this index is a disposable projection over it.
 """
 from __future__ import annotations

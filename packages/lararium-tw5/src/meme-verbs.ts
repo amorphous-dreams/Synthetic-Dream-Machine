@@ -9,7 +9,7 @@
  *   meme-project  { recipe?, bag?, uri, to, dialect?, tongue? } → { uri, to, text, contentType, meta? }
  *
  * A FAMILY WRITES AND LEAVES AS TIDDLERS. The tiddler door carries every write (`tiddler-verbs`: `tiddler-put` lands a
- * family's text through the Confluence gate, in a wiki's engine or a bag's own store; `tiddler-delete` removes a family or
+ * family's text through the three-way gate, in a wiki's engine or a bag's own store; `tiddler-delete` removes a family or
  * cuts a slot). This module lends that door its reach: the container law, a bag's store by the three reaches, the Kahu
  * predicate and the cap gate.
  *

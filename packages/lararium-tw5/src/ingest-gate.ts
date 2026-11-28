@@ -1,9 +1,9 @@
 /**
- * ingest-gate — THE CONFLUENCE: the pure three-way decision at the heart of
+ * ingest-gate — THE THREE-WAY GATE: the pure three-way decision at the heart of
  * disk→records ingest, where three streams (disk · last-synced · records) meet
  * and reconcile — a conflict SURFACES rather than one stream drowning another
  * (Unison's law: surface, never overwrite). The human-facing name for this flow
- * is "the Confluence" (the Nucleus triangle; handoff #pattern-integrities §6).
+ * reads "the three-way gate" (the Nucleus triangle; handoff #pattern-integrities §6).
  *
  * ONE gate, parameterized by a semantic congruence `≈` (Unison + SafeMerge: a
  * merge stays conflict-free BECAUSE it reads through a congruence, never raw

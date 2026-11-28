@@ -12,7 +12,7 @@ module-type: library
  *
  *   1. the meme's current FAMILY in the sink: the root and its component slots, by the one family law
  *      (`@lararium/mesh/family`). A `uri/path` title stands as its own meme and never joins it,
- *   2. the Confluence gate (`decideIngest`) over the family's present render vs the new text,
+ *   2. the three-way gate (`decideIngest`) over the family's present render vs the new text,
  *   3. land every fresh record, tombstone every family member the new text leaves undeclared.
  *
  * A `MemeSink` is the only thing a skin supplies: four verbs over whatever holds tiddlers — a live
@@ -518,7 +518,7 @@ function stageMemeRefusal(uri: string): MemeDiagnostic | null {
   return { from: 0, to: 0, severity: "error", source: MEMETIC_SOURCE, code: STAGE_PATH_SHAPE_CODE, message: `${STAGE_PATH_SHAPE_CODE}: ${uri}: ${fault}` };
 }
 
-/** The Confluence gate's own verdict, read once — shared by `placeMeme` (which lands it) and
+/** The three-way gate's own verdict, read once — shared by `placeMeme` (which lands it) and
  *  `evaluateMeme` (which never does). Internal: callers get the two typed entry points below. */
 async function evaluate(
   input: PlaceMemeInput, sink: Pick<MemeSink, "titles" | "read">,
@@ -572,7 +572,7 @@ function receiptOfNonIngest(
 }
 
 /**
- * Place one meme into a sink through the Confluence gate. Never throws on a bad meme — the receipt
+ * Place one meme into a sink through the three-way gate. Never throws on a bad meme — the receipt
  * carries the refusal; a sink verb that throws propagates.
  */
 export function placeMeme(input: PlaceMemeInput & { readonly holdAnswer: true }, sink: MemeSink): Promise<PlaceMemeReceipt>;
@@ -749,7 +749,7 @@ export function dropKaheaCalls(text: string, slots: ReadonlySet<string>): string
 }
 
 /**
- * Read the Confluence gate's verdict WITHOUT landing or tombstoning anything — `placeMeme`'s read
+ * Read the three-way gate's verdict WITHOUT landing or tombstoning anything — `placeMeme`'s read
  * half, for a caller that must grade a meme (surface an alert, refuse a save) but never write on its
  * own account. An `ingest`-graded verdict still answers `decision: "ingest"` with its diagnostics and
  * the canonical hash the records WOULD carry; `landed`/`tombstoned` stand empty always, because this
@@ -819,7 +819,7 @@ export type MemberCarrierReading =
  * A MEMBER'S WRITE RECOMPOSES THE FAMILY. A family reads as tiddlers: the root, its slots, their carriage. A writer that moves
  * one member's record (its text, a field) hands that record here; it takes its place in a copy of the family and the one
  * recompose (`expandMemeRefs`) frames the whole carrier, minting the block check over the bytes it frames. The caller lands
- * that text through `placeMeme` under `canonicalHash`, so the member's write passes the Confluence gate, re-splits the family
+ * that text through `placeMeme` under `canonicalHash`, so the member's write passes the three-way gate, re-splits the family
  * (a slot the new text stops calling leaves by the consequence) and reseals, in the family's own turn. A record of the
  * carrier type at a root address nothing holds yet founds its family the same way.
  */

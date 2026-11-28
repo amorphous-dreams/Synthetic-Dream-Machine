@@ -1,7 +1,7 @@
 /**
- * ingest-seat-unattended — A STAND-OFF SETTLES BY A PERSON, ON THE INGEST LEG TOO. A wave's `unattended` flag comes from its
+ * ingest-seat-unattended — A CONFLICT SETTLES BY A PERSON, ON THE INGEST LEG TOO. A wave's `unattended` flag comes from its
  * caller, so a seat's `lares ingest --apply` (or a spirit's) would adopt a file that holds no base over records that say
- * something else, settling a stand-off with no person. Inside the vessel a wave whose asker reads `seat` rides unattended
+ * something else, settling a conflict with no person. Inside the vessel a wave whose asker reads `seat` rides unattended
  * whatever it claims: the gate answers `conflict` and lands nothing. (The socket stamps an unread peer's wave unattended before
  * it places, `uds-seat-proposes-never-lifts`; a wave with no asker here is the vessel's own.)
  *
@@ -47,7 +47,7 @@ async function rig() {
   return { composite, wave };
 }
 
-describe("a seat's wave never settles a stand-off", () => {
+describe("a seat's wave never settles a conflict", () => {
   test("U1 RED — a seat's no-base wave over differing records stands off, and the records stay", async () => {
     const r = await rig();
     expect(await r.wave(carrier("a file's other words"), "seat")).toBe("conflict");

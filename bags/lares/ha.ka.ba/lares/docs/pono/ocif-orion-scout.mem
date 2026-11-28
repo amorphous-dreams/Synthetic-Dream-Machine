@@ -835,7 +835,7 @@ Repo README, Current Issues: "**cycles of `change` propagators cause infinite re
 
 The *topological* insight is genuinely right, and it is the one thing we should take: **put the coupling on the relation, and you stop needing a closed type registry.** That is the same insight that makes OCIF's extension bag work (§2), the same one behind `folk-base-connection`'s addressable endpoints, and the same one behind our own `#has` capability edges. It is a real contribution and it generalises.
 
-The *implementation* model does not hold up. Imperative last-write-wins partial updates, fired by ad-hoc event scopes, with no termination proof, no confluence, no merge semantics, and an acknowledged infinite-recursion bug — that is a demo-grade evaluator, and the essay says as much in its own Open Questions. The decisive evidence is what he did next: **he abandoned all three distinguishing features.** Scopes vanished in folkjs. Edges-as-computation vanished in bireactive, where he went and fetched the orthodox lattice. What he *kept* is edges-as-first-class-persistent-objects, in edge-handles.
+The *implementation* model does not hold up. Imperative last-write-wins partial updates, fired by ad-hoc event scopes, with no termination proof, no Church-Rosser property, no merge semantics, and an acknowledged infinite-recursion bug — that is a demo-grade evaluator, and the essay says as much in its own Open Questions. The decisive evidence is what he did next: **he abandoned all three distinguishing features.** Scopes vanished in folkjs. Edges-as-computation vanished in bireactive, where he went and fetched the orthodox lattice. What he *kept* is edges-as-first-class-persistent-objects, in edge-handles.
 
 **How it composes with an Automerge source of truth — badly, in its 2024 form, and `edge-handles` exists because of that.** A last-write-wins object spread over a shared replica is a merge-conflict generator: two peers firing the same propagator produce two different `updateShape` calls with no join, and Automerge will happily merge them into something neither peer computed. `_` **If we want this shape, we want `bireactive`'s lattice — monotone narrowing, which composes with a CRDT *because it is order-independent by construction* — carried on `edge-handles`' persistent edges. Not Scoped Propagators.** Worth noting the cycle problem is still open at the lab too: `patchwork-system/core/filesystem/directory-map.md` says "**cycle detection isn't done here. the service worker has a 5s timeout; that's the backstop.**"
 
@@ -1079,6 +1079,6 @@ The format itself is sufficient. §Extension Mechanism grants a URI-identified p
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YunLO4GzE-Lm2Xc8Z04-zmrACWNW7n3Ywnw1m_-tbto`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UP7UICdQtIJzdA9fjNFhwqrBdBzjkWmIGAu7X-g69M0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

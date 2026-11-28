@@ -22,7 +22,7 @@
  *   wiki-status    { recipe }                                             → { recipe, working, layers: [{ bag, mounted: writable|read-only|promotion-only, read, write, working?, why? }] }
  *
  * A DRY WRITE LANDS NOTHING (comms-ux-enacts landing 7; `mu=_` on the call, `dry: "summary" | "diff"` here). Put, delete and
- * rename walk the same law to the last step: every fence, the ocap, the base, the family law and the Confluence gate. A put
+ * rename walk the same law to the last step: every fence, the ocap, the base, the family law and the three-way gate. A put
  * runs whole over a DRY SEAT (`drySeatOf`), the real seat beneath an overlay that takes every landing and every tombstone, so
  * its answer names what the real put then lands, hash for hash; a delete and a rename stop at the step before their first
  * write. The answer adds `dry` (the depth), `needs` (the base the real call takes: `base`, and `carrierBase` on a family) and,
@@ -72,7 +72,7 @@
  * that names `<root>#/<slot>` lands as the put on the slot's parent with `cut` naming it (`cutSlot`), so the parent's text sheds
  * the call, the family reseals, and the answer (`mode: "cut"`) names what the cut tombstoned.
  *
- * A PUT MOVES A FAMILY'S TEXT THROUGH THE CONFLUENCE GATE. A root and its slots stand as tiddlers; a text put on one lands as
+ * A PUT MOVES A FAMILY'S TEXT THROUGH THE THREE-WAY GATE. A root and its slots stand as tiddlers; a text put on one lands as
  * the family (the record takes its place, the carrier recomposes, the gate re-splits and reseals in the root's turn), and a
  * first record of the carrier type founds its family the same way. The answer adds `canonicalHash`, `landed`, `kept`, `tombstoned`. ABSENCE NEVER
  * DELETES: a slot the new text omits stays standing by reference (`kept`); `cut` names the slots that leave.
@@ -1358,7 +1358,7 @@ const PLAIN_PLACE: Place = { position: "plain", family: null, orphan: false };
  * WHERE A PUT LANDS, as the one put law reads it. A wiki's seat stands over that wiki's live engine: the record reads off
  * `$tw.wiki` and lands through it, so the in-wiki cascade routes it to the working layer as a person's edit would. A bag's
  * seat stands over that one bag's own store, no engine running. The law above the seat (the patch, the base, the family's
- * walls, the Confluence gate, the pointer, the executable wall) reads the same on both.
+ * walls, the three-way gate, the pointer, the executable wall) reads the same on both.
  */
 interface PutSeat {
   /** The container an answer names first: `recipe` for a wiki; a bag's answer names its `bag` alone. */
@@ -1371,7 +1371,7 @@ interface PutSeat {
   readonly provenance: string;
   /** The wiki a seat's executable record names to its exec lei. */
   readonly wiki: string;
-  /** The family's sink: the Confluence gate reads and lands through it. */
+  /** The family's sink: the three-way gate reads and lands through it. */
   readonly sink: MemeSink;
   /** The record under a title, its fields as strings, or null where none stands; a record this face may not read refuses. */
   read(title: string): Promise<Record<string, string> | null>;
@@ -1589,7 +1589,7 @@ async function putThrough(opts: TiddlerVerbOptions, seat: PutSeat, title: string
     const writesText = cut.length > 0 || append !== null || replace !== null || typeof args["text"] === "string" || Object.prototype.hasOwnProperty.call(patchArg(args["fields"]), "text") || (namesArg(args["unset"]) ?? []).includes("text");
     const base = await putBaseOf(optionalStringArg(args, "base"), title, writesText, seat);
     // TWO BASES, ONE DOOR: a record's hash (`sha256-…`, the record lens) guards the record; a carrier's canonical hash
-    // (`sha256:…`, the meme lens) guards the family, and the Confluence gate reads it below where the put moves a family's text.
+    // (`sha256:…`, the meme lens) guards the family, and the three-way gate reads it below where the put moves a family's text.
     const carrierBase = base !== null && base.startsWith("sha256:") ? base : null;
     if (base !== null && carrierBase === null && base !== liveHash) return answer("conflict", unmoved);
 
@@ -1628,7 +1628,7 @@ async function putThrough(opts: TiddlerVerbOptions, seat: PutSeat, title: string
     if (bytesOf(next) > 1_048_576) throw new VerbRefusal("fields-malformed", "fields-malformed: one record carries at most 1048576 bytes through this door.");
 
     // A FAMILY READS AS TIDDLERS. A meme root and its slots stand as ordinary records, and a put moves any of them: a field or
-    // tag patch lands as it lands anywhere; a text write lands THROUGH the Confluence gate (below), which re-splits the
+    // tag patch lands as it lands anywhere; a text write lands THROUGH the three-way gate (below), which re-splits the
     // family and reseals its block check. A family's `type` and `$` carriage fields derive from the text at each split, so
     // no put sets them; a new slot joins through its parent's text, and a fragment address founds no meme.
     const moved = (name: string): boolean => (before?.[name] ?? undefined) !== (next[name] ?? undefined);
@@ -1660,7 +1660,7 @@ async function putThrough(opts: TiddlerVerbOptions, seat: PutSeat, title: string
     const changed = Object.keys({ ...(before ?? {}), ...next }).filter(moved);
     if (standing && changed.length === 0 && cut.length === 0 && joined === null) return answer("noop", { ...unmoved, ...(pointer ? { pointer } : {}) });
 
-    // THE CONFLUENCE GATE, INSIDE THE PUT. A text write on a family member, or a first record that founds, lands as the
+    // THE THREE-WAY GATE, INSIDE THE PUT. A text write on a family member, or a first record that founds, lands as the
     // family: the member's record takes its place in a copy of the family, the one recompose frames the carrier
     // (`composeMemberCarrier`), and `placeMeme` lands it in the root's own turn under the hash it composed over. A root
     // text that frames a whole carrier (its own head mark) speaks for the family as it stands. ABSENCE NEVER DELETES: a slot
@@ -1749,7 +1749,7 @@ interface DrySeat extends PutSeat { readonly overlay: ReadonlyMap<string, Settle
 /**
  * THE DRY SEAT: the real seat beneath an overlay. Every read sees the overlay first; every landing (`swap`, the sink's `land`)
  * and every removal (`tombstone`, `leaveFamily`) writes the overlay alone, settled as the real seat would read it back. So the
- * one put law, the family recompose and the Confluence gate run whole over it and answer what the real call lands, while the
+ * one put law, the family recompose and the three-way gate run whole over it and answer what the real call lands, while the
  * store, the wiki and the shore take nothing (no face rides `wikiWearsNext`, no alert rail rises).
  */
 function drySeatOf(seat: PutSeat): DrySeat {
@@ -2052,7 +2052,7 @@ export const RENDERING_MESSAGES: ReadonlySet<string> = new Set(["tm-download-fil
  *   the reach  the act reads through the face's reader view (`viewFor`), live and dry alike, so a record the face may not read
  *              reaches no write and no answer;
  *   the title  every title the act would write meets the put door's own refusals first (`tiddler-withheld`, the effect ledger,
- *              `rendered-derives`, a collapse rule's hand, and a meme family, which moves through the Confluence gate of the put
+ *              `rendered-derives`, a collapse rule's hand, and a meme family, which moves through the three-way gate of the put
  *              door alone): the act runs once over a capture view, every title it would move meets them, and a refusal there
  *              lands nothing. The live run meets them again at each write.
  *
@@ -2103,7 +2103,7 @@ export const makeCarrierActReactor = everyWiki(CARRIER_ACT_VERB, true, (opts: Ti
     const before = standing ? readRecord(standing).fields : null;
     refuseRenderedWrite(title, before, incoming, "carrier act");
     if (title.includes("#/") || before?.["type"] === CARRIER_TYPE || incoming?.["type"] === CARRIER_TYPE) {
-      throw new CallRefusal("act-family-write", `the act ${act} would move "${title}", a meme family's record, and a family moves through the put door's Confluence gate alone (it re-splits and reseals); nothing landed`, cureCall("put", { title, text: "<the whole carrier>" }));
+      throw new CallRefusal("act-family-write", `the act ${act} would move "${title}", a meme family's record, and a family moves through the put door's three-way gate alone (it re-splits and reseals); nothing landed`, cureCall("put", { title, text: "<the whole carrier>" }));
     }
   };
 
@@ -2477,7 +2477,7 @@ export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts:
 
 // ── tiddler-delete ────────────────────────────────────────────────────────────────────────────────────
 
-/** True where a title stands as a slot the Confluence gate named (`$slot`, a rooted path) under a parent that stands: the delete that cuts. */
+/** True where a title stands as a slot the three-way gate named (`$slot`, a rooted path) under a parent that stands: the delete that cuts. */
 function cutsAsSlot(reading: { readonly position: string; readonly orphan: boolean; readonly parent: string | null }, fields: Record<string, string>): boolean {
   const slot = fields["$slot"];
   return reading.position === "slot" && !reading.orphan && reading.parent !== null && typeof slot === "string" && slot.startsWith("#/");
@@ -2485,7 +2485,7 @@ function cutsAsSlot(reading: { readonly position: string; readonly orphan: boole
 
 /**
  * A SLOT LEAVES BY THE EXPLICIT CUT. A delete that names `<root>#/<slot>` lands as the put on the slot's parent with `cut`
- * naming that slot: the parent's text sheds the slot's call, the Confluence gate re-splits and reseals the family in the
+ * naming that slot: the parent's text sheds the slot's call, the three-way gate re-splits and reseals the family in the
  * root's turn, and the slot (with the slots and carriage beneath it) leaves by name. The answer names what the cut
  * tombstoned, the parent whose text moved, and the carrier hash the family reads now. `base` guards the slot's own record
  * (`sha256-…`) or the family's carrier (`sha256:…`). A cut names no layer, so a `mode` refuses `delete-mode-unread`.

@@ -153,17 +153,17 @@ its own copy, and no door skips it. The order runs fixed:
 
 ''The seat.'' `quoteblockFloor` (`packages/lararium-tw5/src/deserializer.ts`), laid by `memeticWikitextDeserializer` itself, reads each carrier's framed body through the family split's own machine reader — `scanAhu` over the fence mask, never the grammar: ONE stack whose top-level blocks the split cuts and whose balance faults the floor fences on — where an ERROR reads as `ahu-orphan-close` (a closer that closes nothing) and a MISSING as `ahu-unbalanced-open` (an opener whose closer never arrives). The head, the frame and the root meta stay outside the fence, a check that matched re-stamps over the fenced body, and the fenced root record carries `$quoteblocked` — the floor's own account of what it fenced and why (`$`-opening, so it never re-emits into the meta fence or moves the canonical render). A fenced body masks every sigil it holds, so a second pass finds nothing left to fence.
 
-''One reading.'' The deserializer reads the frame's shape (`frameShape`) and takes its digest only where a fence lands, to decide whether a matching check re-stamps. The reader divides each carrier and scans its ahu stack ONCE, and the floor, the split and the carrier check (`checkCarrier`) all read that one reading (`CarrierReading`). The Confluence gate reads the frame verdict once and hands it to the family's `deserialize`, and reads the structure the disk declares off the text the floor already laid, never laying it twice.
+''One reading.'' The deserializer reads the frame's shape (`frameShape`) and takes its digest only where a fence lands, to decide whether a matching check re-stamps. The reader divides each carrier and scans its ahu stack ONCE, and the floor, the split and the carrier check (`checkCarrier`) all read that one reading (`CarrierReading`). The three-way gate reads the frame verdict once and hands it to the family's `deserialize`, and reads the structure the disk declares off the text the floor already laid, never laying it twice.
 
 ''Every door, one fence.'' Each reads the carrier through that deserializer:
 
-* the Confluence gate (`decideIngest`, through `deserializeCarrier`), and with it `placeMeme` on every door that places — the meme face, the `/memes/` routes, the syncer INGEST, the backstop — and `canonicalizeCarrierText` on the projecting leg;
+* the three-way gate (`decideIngest`, through `deserializeCarrier`), and with it `placeMeme` on every door that places — the meme face, the `/memes/` routes, the syncer INGEST, the backstop — and `canonicalizeCarrierText` on the projecting leg;
 * the bag doors: LOAD, a native single-carrier INGEST and each pack member, whenever TiddlyWiki's registry hands the bytes to the memetic type;
 * TiddlyWiki's own doors — import, drag-drop, paste and the boot-folder load — through the registered `text/memetic-wikitext+tiddlywiki` deserializer.
 
 ''The tear, door by door.''
 
-* ''REFUSE'' — the Confluence gate (on the frame's own error grade, so `placeMeme` lands and tombstones nothing); LOAD, which reads every carrier first and lands none when any one reads torn; and a native INGEST, whose receipt reads `refuse` for the torn carrier, a pack included, before any member lands or tombstones. A family standing under the carrier's title stands byte-identical.
+* ''REFUSE'' — the three-way gate (on the frame's own error grade, so `placeMeme` lands and tombstones nothing); LOAD, which reads every carrier first and lands none when any one reads torn; and a native INGEST, whose receipt reads `refuse` for the torn carrier, a pack included, before any member lands or tombstones. A family standing under the carrier's title stands byte-identical.
 * ''HOLD VERBATIM'' — TiddlyWiki's own doors (import, drop, paste: the hold waits in `$:/Import` for the operator's review, never over a family; and the boot-folder load, where `$torn` rides the record itself).
 
 ''Every door, surfaced.'' A fence nobody sees reads as a drop wearing a cure's face:
@@ -192,6 +192,6 @@ This law lifts [[graceful-parsing|lar:///ha.ka.ba/lararium/api/graceful-parsing#
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Tdc6qiGVifsW3b1uu-TT2g7zirOdFOEsD0Lp5k6bav4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2yJPwEDNZjnYWy1pTwTVXOqB_xuD0UsXDziQIYQYjkM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

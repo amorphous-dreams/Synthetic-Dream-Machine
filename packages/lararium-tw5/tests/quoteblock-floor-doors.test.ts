@@ -9,7 +9,7 @@
  * `$:/Import`'s listing message for the TW5 import doors. A torn frame holds verbatim as ONE flagged
  * record through TW5's own doors (their contract has no refuse channel). Every bag door has one and
  * REFUSES the tear before it writes: LOAD and a native INGEST leave a family standing under the carrier's
- * title byte-identical, and the Confluence gate refuses on the frame's own grade.
+ * title byte-identical, and the three-way gate refuses on the frame's own grade.
  *
  * CONTROLS: a clean carrier decomposes, carries no flag, and its receipts carry no `warnings` key.
  */

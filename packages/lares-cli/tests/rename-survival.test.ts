@@ -1,6 +1,6 @@
 /**
  * rename-survival (R2) — a carrier that MOVES with byte-identical content keeps its
- * Synced observation, so the Confluence echo gate reads the move as a NOOP, never a
+ * Synced observation, so the echo gate reads the move as a NOOP, never a
  * fresh re-land (which would duplicate records + reset the change-id) and never a
  * phantom conflict. The observation is content-addressed (the rename-invariant handle
  * is `carrierHash`, agile-tagged post-#46), so a full scan recovers the moved

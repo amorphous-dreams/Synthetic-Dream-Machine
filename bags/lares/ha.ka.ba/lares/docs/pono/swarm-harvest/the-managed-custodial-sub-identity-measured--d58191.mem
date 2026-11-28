@@ -118,7 +118,7 @@ Cost of leaving as an adult (https://support.apple.com/en-us/102652): you keep p
 - **Aries RFC 0289** (the ToIP stack RFC the whitepaper cites as its technical anchor): **Status STALLED since 2024-04-03**, status note *"No recent progress and **no implementations have been created**."* Implementations section empty.
 - OpenWallet Foundation `architecture-sig#36` "Power of Attorney / Mandating / Guardianship": open since 2022-10-19, **2 comments, both on day one, untouched since**.
 - The V2 paper asserts *"Deployment of Guardianship credentials for real world applications is happening"* — **with no footnote, and no named deployment anywhere in the document.**
-- The whitepaper's footnotes 22/23 cite the Implementation Guidelines and Technical Requirements **without URLs**; neither is on sovrin.org's library, and Wayback shows only whitepaper PDFs ever archived from that host. The Guardianship WG Confluence wiki 404s. Archived WG meeting pages span **2020-12-11 to 2021-06-25** (Wayback coverage caveat).
+- The whitepaper's footnotes 22/23 cite the Implementation Guidelines and Technical Requirements **without URLs**; neither is on sovrin.org's library, and Wayback shows only whitepaper PDFs ever archived from that host. The Guardianship WG wiki 404s. Archived WG meeting pages span **2020-12-11 to 2021-06-25** (Wayback coverage caveat).
 
 **The named pilots are all dead:**
 - **Kiva Protocol**: banner on https://www.kiva.org/protocol — *"Kiva will sunset operations of Kiva Protocol, **effective June 30, 2022**."*
@@ -243,6 +243,6 @@ Miller's *Robust Composition* is genuinely rootless **in the model**. §9.2.5: *
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;CN-2WRcyyutV7kW_ESTxkW-gETXw_eIxkjbBVgkTLqQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KiyWtdM8shGoTmlqVn8cA-wj61kUF_5-e9tqq6tooXE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

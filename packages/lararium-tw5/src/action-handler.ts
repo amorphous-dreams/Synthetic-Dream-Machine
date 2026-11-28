@@ -122,7 +122,7 @@ import { pairRenames } from "./delete-gate.js";
 
 
 /**
- * The render-leg digest the Confluence gate keys on — a native record's canonical
+ * The render-leg digest the three-way gate keys on — a native record's canonical
  * carrier text hashed and ALGORITHM-TAGGED (`sha256:hex`), so it sits in the SAME
  * digest-space as `carrierHash` (the disk `diskHash` + the projector's synced-tree
  * `obsHash`). The gate's candidate-render leg (`hash`) and its current-render leg
@@ -158,7 +158,7 @@ export interface Tw5Deserializer {
   /** Render a native record to its carrier BODY + `.meta` sidecar (the file-info
    *  the projector + the ingest echo gate share). The INGEST gate reads this join as
    *  the native congruence's `render` — its tagged digest equals `carrierHash(body, meta)` — so
-   *  a native filetype runs the SAME `decideIngest` Confluence gate a memetic carrier does
+   *  a native filetype runs the SAME `decideIngest` three-way gate a memetic carrier does
    *  (echo · canonical-equivalent · conflict · ingest), never a silent last-write-wins
    *  overwrite. Native declares ∅ structure and never grades error, so the gate's
    *  ahu-fidelity + refuse legs ride dormant for it — one shape, two families. The `.meta`
@@ -1239,7 +1239,7 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
   // in, so a bulk LOAD would hold the island's thread until its last record landed. LOAD decides nothing
   // between its slices (it reads no standing record and removes none), so a hand edit or another verb that
   // takes the turn in between cannot be overwritten by a decision made before the yield. The executors
-  // that DO decide before they write (INGEST's Confluence gate, MOVE's read-then-retract) take no yield.
+  // that DO decide before they write (INGEST's three-way gate, MOVE's read-then-retract) take no yield.
   const o = origin(action);
   // THE FORK REMEMBERS ITS BASE: LOAD writes the layer's own store, around `CompositeStore.put`, so a LOAD into a wiki's
   // working layer names each copy's override base itself (`forkingOverrideBase`).
@@ -1264,7 +1264,7 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
 
 
 /**
- * INGEST — disk -> records through the Confluence gate, replace-by-group apply.
+ * INGEST — disk -> records through the three-way gate, replace-by-group apply.
  * The gesture supplies diskHash + syncedHash with each carrier (it holds the
  * disk grant and the Synced tree); the island computes only the
  * currentRenderHash from its own merge seat. On an ingest decision the fresh
@@ -1462,7 +1462,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, opts: Acti
       continue;
     }
     // The verb rode a reference, never a body: resolve the carrier body from the
-    // corpus CAS (or take an inline `text`) BEFORE the Confluence gate reads it. This
+    // corpus CAS (or take an inline `text`) BEFORE the three-way gate reads it. This
     // keeps a 16MB body out of the daemon command doc; it lands here, per-carrier, in
     // the TARGET bag doc (each scalar-string field under the automerge capacity wall).
     const carrierText = await resolveCarrierText(carrier, resolveByCid);
@@ -1492,7 +1492,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, opts: Acti
     }
 
     // Route by content, mirroring LOAD: a memetic carrier (SOH heading / no
-    // native bridge) decomposes at the shore through the Confluence gate; ANY other
+    // native bridge) decomposes at the shore through the three-way gate; ANY other
     // legal TW5 filetype rides TW5's OWN deserializer registry, keyed by its
     // extension. The registry — not a CLI-side reimplementation — owns the
     // filetype routing; the island hands the bytes to it.
@@ -1590,7 +1590,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, opts: Acti
       };
 
       if (packInfo) {
-        // A PACK reconciles PER MEMBER through the ONE Confluence gate. Each member
+        // A PACK reconciles PER MEMBER through the ONE three-way gate. Each member
         // runs the single-carrier triangle (echo · canonical-equivalent ·
         // conflict) at member grain, its content-hash the leg, REUSING `decideIngest` (no
         // new comparison logic). The aside hash map (`$:/config/OriginalTiddlerHashes`) holds
@@ -1701,7 +1701,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, opts: Acti
         continue;
       }
 
-      // A SINGLE native carrier runs the SAME `decideIngest` Confluence gate a memetic carrier
+      // A SINGLE native carrier runs the SAME `decideIngest` three-way gate a memetic carrier
       // does, parameterized by the NATIVE congruence (the shared `nativeRender` above IS the
       // `≈`). Native declares ∅ structure (the ahu-fidelity guard no-ops) and never grades
       // error (a native deserialize throws), so the gate's refuse + ahu legs ride dormant —

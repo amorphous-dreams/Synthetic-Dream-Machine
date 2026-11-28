@@ -1,5 +1,5 @@
 /**
- * synced-tree — vectors for the Confluence merge base: atomic persistence, corrupt
+ * synced-tree — vectors for the three-way gate's merge base: atomic persistence, corrupt
  * recovery, and the projector's hash-gate contract.
  */
 

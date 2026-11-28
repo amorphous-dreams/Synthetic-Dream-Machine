@@ -3,7 +3,7 @@
  *
  * THE SYNCED TREE OUTLIVES NO RE-FOUND. It rests in `hearth/checkpoints/projection`, which a re-found clears, while the face
  * pools under `projections/faces/<pet name>/` outlive it with their git history. With no base, every edited file would meet a
- * `no-base` stand-off. The pool's HEAD names the last sitting's close (`poolCommitSeam`), so where no synced base stands the
+ * `no-base` conflict. The pool's HEAD names the last sitting's close (`poolCommitSeam`), so where no synced base stands the
  * blob at HEAD hands both gates a base: its bytes the disk side, their canonical render the records side (`baseFromGit` in
  * the projector and the watch core's scan). The four states then resolve as any base resolves them: both at HEAD pins, the
  * records moved alone projects, the disk moved alone goes to capture, and both moved stands the file's words as parallel
@@ -108,7 +108,7 @@ export type PoolBase = { readonly text: string; readonly commit: string } | { re
 
 /**
  * THE BASE'S WORDS FROM THE FILE'S OWN GIT HISTORY: the blob of `file` at the newest commit (within `POOL_BASE_DEPTH`)
- * whose bytes hash to `baseDisk`, the disk side of the base a stand-off's key folded. Clear text rests in the live wiki
+ * whose bytes hash to `baseDisk`, the disk side of the base the synced tree pinned. Clear text rests in the live wiki
  * and the operator's projected files alone (the synced tree holds hashes), so the base reads from the history the
  * projected file itself rests in: a face pool, a realm's tree, or any repository a mirror stands inside.
  */

@@ -9,7 +9,7 @@ module-type: startup
  * A wiki-side caller — a widget, an action, a filter, a button — holds `$tw` and no `lares` binary.
  * This face hands it the same verbs the daemon reactors and the HTTP routes carry:
  *
- *   place(uri, text, base?)   the placement through the Confluence gate, over `wikiMemeSink($tw.wiki)`
+ *   place(uri, text, base?)   the placement through the three-way gate, over `wikiMemeSink($tw.wiki)`
  *   read(uri)                 the whole meme recomposed + the canonical hash a writer hands back
  *   list({ tree? })           every root with its canonical hash; `tree` nests each root's slot tree
  *   remove(uri, base?)        the whole group leaves; a stale base answers `conflict` and moves nothing

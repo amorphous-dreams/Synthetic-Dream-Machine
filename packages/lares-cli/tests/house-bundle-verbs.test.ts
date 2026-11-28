@@ -187,7 +187,7 @@ describe("the house bundle verbs", () => {
     expect(readFileSync(join(root, `${FACE}/wikis/daemon/ha.ka.ba/memory/gone.kapae`), "utf8")).toBe(kapaeShadowBody(gone));
   });
 
-  test("a mirror file holding a different record is left as it stands, and the row rides on to INGEST's three-way gate — no byte-drift stand-off", async () => {
+  test("a mirror file holding a different record is left as it stands, and the row rides on to INGEST's three-way gate — no byte-drift conflict", async () => {
     await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound();
     const path = join(root, "projections/realms/garden/bags/garden/ha.ka.ba/garden/rose.tid");
@@ -200,7 +200,7 @@ describe("the house bundle verbs", () => {
     expect(result.tallies.bag.stoodOff).toEqual(["lar:///ha.ka.ba/garden/rose (no-base)"]);
   });
 
-  test("G2 — a mirror file holding the SAME record in another framing reads already landed: no stand-off, no wave", async () => {
+  test("G2 — a mirror file holding the SAME record in another framing reads already landed: no conflict, no wave", async () => {
     await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound();
     const path = join(root, "projections/realms/garden/bags/garden/ha.ka.ba/garden/rose.tid");

@@ -136,7 +136,7 @@ ANALYZE_LENS_READS = {
 # by `slug`, mirroring the `lares wiki <verb>` CLI namespace. Each is a low-trust · reversible · LOCAL residency op.
 
 # The MEME render (lar:///engine.meme.projects) — a family writes through the plain record tools: `put(title=<root>,
-# text=<carrier>)` lands a meme's text at a `lar:` uri through the island's Confluence gate inside the put,
+# text=<carrier>)` lands a meme's text at a `lar:` uri through the island's three-way gate inside the put,
 # `put(title="<root>#/x", text=…)` one slot, `delete(title=<root>, family=True)` the whole group (a stale `base` reads
 # `conflict` and moves nothing); a meme READS through the one door, `get(title=<root>, aperture="arc")`, which carries the text
 # and the canonical hash a write hands back as `base`. `meme_project` renders the meme the island holds to a target (`md` ·

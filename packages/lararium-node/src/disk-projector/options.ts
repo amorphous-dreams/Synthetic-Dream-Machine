@@ -172,7 +172,7 @@ export interface LarDiskProjectorOptions {
    *  projector's own artifact, rewritten whole at every write: it carries no hand's words and meets no gate. */
   readonly debugJson?: boolean;
   /**
-   * The Synced tree (Confluence merge base): records the content hash of every
+   * The Synced tree (the three-way gate's merge base): records the content hash of every
    * projected carrier; arms the projection-side hash gate — a write whose
    * bytes match disk skips silently (no event, no churn). Absent → the projector holds
    * its bases in memory for its own life: a base still names every agreement it reached,

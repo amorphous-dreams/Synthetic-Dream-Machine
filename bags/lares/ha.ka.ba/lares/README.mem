@@ -34,7 +34,7 @@ On Gaia, the Lares served as Rome's guardian spirits of place — not gods of va
 
 * ''Household lararia'' — small private nodes, often a single inscribed orichalcum figure in a home or workshop, stabilized by regular offerings from one family or crew
 * ''Crossroads and Marketplace lararia'' — district-scale nodes serving travelers, merchants, and neighborhoods; fed by collective offering at public feast days
-* ''Temple lararia'' — major civic nodes at ley-line confluences, maintained by dedicated attendants, anchoring whole cities to the DreamNet
+* ''Temple lararia'' — major civic nodes at ley-line junctions, maintained by dedicated attendants, anchoring whole cities to the DreamNet
 
 ''The offering compact:'' Feeding a node — food, drink, incense, first-fruits, or coin — grants the operator one bonus, chosen from the options available at that node. The standard compact offers three to operators, only the first two to known users:
 
@@ -140,6 +140,6 @@ file, a browser agent takes the carrier pasted in.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3-l9GrPKgBDL2ABf2Yz9G_NA27rYGwQD1LQlcjeBJEM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;U3-80f49vvmLi0iPc3nYK_Mfp775q6SEJh8aMlQ9Qlw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

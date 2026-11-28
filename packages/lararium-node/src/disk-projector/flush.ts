@@ -58,7 +58,7 @@ export async function flush(core: ProjectorCore, bagId: string, tiddlerUri: stri
   }
   const candidate = gate.path;
 
-  // Projection-side hash gate (Confluence): bytes already on disk == would-write
+  // Projection-side hash gate: bytes already on disk == would-write
   // bytes → skip the write entirely (no event for any watcher, no mtime
   // churn) — but still record the observation in the Synced tree. The gate
   // reads the MAIN body per-file; the Synced-tree OBSERVATION folds the `.meta`

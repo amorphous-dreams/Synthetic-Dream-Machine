@@ -144,7 +144,7 @@ export function scanSource(
 
 /**
  * Submit NEW+CHANGED carriers as ONE INGEST verb over the verb socket — hashes travel WITH the content; the island runs the
- * full Confluence gate and answers per-carrier decisions (`ingestWaveArgs`). One call = one wave, one line over the sock. The
+ * full three-way gate and answers per-carrier decisions (`ingestWaveArgs`). One call = one wave, one line over the sock. The
  * one-shot gesture and the watcher's every wave submit identically; the daemon holds the warm replica across both.
  *
  * THE BLOB LAW (cas-stage.ts): a pointer-kind `type` (the `.meta` declaration first, else TW5's registry by extension) or the

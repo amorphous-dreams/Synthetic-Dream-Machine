@@ -5519,8 +5519,6 @@ async function prepareNodeBootOn(
         onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
       }),
       diskMirrorGrant,
-      // THE PERSON'S STAND-OFF COLLAPSE RULES, read afresh at each mount from the worn face's own daemon working layer
-      // (`$:/config/lares/shore/collapse/<rule>`), never from a wiki another writer shares; no worn face, no rule.
       onWorkerEvent: (wikiId, msg) => {
         if (msg.type !== "event") return;   // a camera's frame or answer from an island outside any session has no ring to ride on this vessel
         eventBus.enqueueToRing("vm-ring", "worker.event", { wikiId, listenable: msg.listenable, payload: msg.payload });
@@ -5586,7 +5584,7 @@ async function prepareNodeBootOn(
     // `faces/<pet name>/`. It names the wake's stage edits, catches up once, and lands each settled wave by itself
     // (`poolIngestPorts`): an UNATTENDED INGEST wave per plane on the daemon island (`islandIngestSubmit`), the working layer
     // under `wikis/daemon/`, the face's daemon canon under `bags/daemon/`, the kahua stage under `bags/kahua/`, each where the island grants
-    // its mirror. A stand-off (both moved, or no base over records that say something else), a vanish and a personal-layer file go to the
+    // its mirror. A conflict (both moved, or no base over records that say something else), a vanish and a personal-layer file go to the
     // island's disk shore (`shore` op `sense`). A teardown (a lock, or a wear that moves the mount) sets the face down: the
     // final wave, then the pool's commit seam; the stand-down runs the same as a down (`facePoolStandDown`).
     // Where no synced base stands (a re-found cleared the tree), the pool's HEAD names the base (`poolHeads`, face-pools A5).
@@ -5616,7 +5614,7 @@ async function prepareNodeBootOn(
       // THE WATCH OVER EACH SHARED WIKI'S WORKBENCH (a workbench serves as a pool): a wiki's one disk copy whichever face wears,
       // `<projections>/realms/<realm pet name>/wikis/<slug>` or the workspace its share row names (`workbenchFolders`, read afresh here). The same seat
       // stands over it, off the boot path: each settle lands as ONE unattended INGEST wave in that wiki's working layer, run in the
-      // wiki's own island (activated on reference, as `wiki-act` does) under the WORN face's actor, and a stand-off goes to that
+      // wiki's own island (activated on reference, as `wiki-act` does) under the WORN face's actor, and a conflict goes to that
       // wiki's shore. A lock or a wear downs it with the final wave and the commit seam (naming no face, the folder's own paths
       // alone) into the one tree of the entity root holding it (a realm wiki folder's realm root, founded at the lay and the
       // re-stand's heal; a bound workspace's own top, by `lares surface init`; the seat founds none, and a folder whose root holds

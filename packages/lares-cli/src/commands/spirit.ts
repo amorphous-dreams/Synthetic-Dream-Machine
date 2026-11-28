@@ -564,7 +564,7 @@ async function newShrine(args: ParsedArgs, pet: string): Promise<number> {
   if (shapes > 0) throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: the shrine holds ${shapes} secret-shaped string(s), so nothing landed; clear them, then land it again: \`lares spirit ah ${pet} --new --file <scrubbed path>\``, 4);
   const carrier = shrineCarrier(pet, words);
   const uri = spiritOf(pet);
-  // A WHOLE SHRINE RIDES AS THE ROOT'S TEXT: the put lands the family through the Confluence gate, only where none stands.
+  // A WHOLE SHRINE RIDES AS THE ROOT'S TEXT: the put lands the family through the three-way gate, only where none stands.
   const receipt = await door(args, "ah", "tiddler-put", { recipe: RECIPE, title: uri, text: carrier, create: true });
   const decision = String(receipt["decision"] ?? "");
   if (decision !== "put" && decision !== "noop") {

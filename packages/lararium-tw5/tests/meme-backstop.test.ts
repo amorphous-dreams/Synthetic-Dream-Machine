@@ -343,7 +343,7 @@ describe("★ the child gate writes only on a bag this hearth keeps ★", () => 
  * The round-trip `placeMeme(root, readMeme(root))` is not a fixed point everywhere, so it does not
  * surface every fault a slot child's save can carry. Closing seam (b) — a slot child that moved
  * re-places its ROOT, grading the whole carrier as one — relies on that mechanism: `readMeme` is
- * `render(records)`, handed back to `placeMeme`, so the Confluence gate reads
+ * `render(records)`, handed back to `placeMeme`, so the three-way gate reads
  * `render(parse(render(r)))` against `render(r)`. For FIVE of the seven shapes below that is the
  * canonical form's own fixed point: `decision=noop`, `grade=clean`, zero diagnostics, nothing
  * landed, the record set unmoved — a tautology, reporting no fault because none of its three reads
@@ -351,7 +351,7 @@ describe("★ the child gate writes only on a bag this hearth keeps ★", () => 
  *
  * TWO shapes break the tautology: a child holding a stray ETX, and a child holding a whole pasted
  * frame. Both mint a SECOND live ETX once rendered back into the root's own STX..ETX span (the root's
- * own close, plus the child's), and the frame reader refuses that shape before the Confluence gate
+ * own close, plus the child's), and the frame reader refuses that shape before the three-way gate
  * ever reaches an equivalence question — `decision=refuse`, `grade=error`, diagnostics named
  * `frame-malformed` ("2 live ETX marks follow the STX…") and, for the bare stray ETX,
  * `postamble-content` besides. The round-trip launders nothing the root's own door would not already

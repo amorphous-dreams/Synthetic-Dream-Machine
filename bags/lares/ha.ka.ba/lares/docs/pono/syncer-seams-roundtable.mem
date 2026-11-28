@@ -338,7 +338,7 @@ The eight answers the operator ruled on 2026-09-12 rest verbatim at <<~ loulou u
 
 * ''No cure may answer 4xx on a path the stock syncer drives.'' `syncer.js:431-442` + `:26` + `:482-500` + `:542-545`: a refused save never updates `tiddlerInfo`, so the same task re-runs every five seconds forever, ahead of every load, poll and delete. One 422 is a permanent stall, not a retry. This refusal eats (b′-2), (b′-4)-in-place-of-(b′-3), and (c′-4).
 ** ''The population it binds'' (operator ruling, 2026-09-13) rests verbatim at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity#/rulings`>>.
-* ''No gate gets fused.'' The Confluence gate (`src/ingest-gate.ts:120`) grades CONTENT; the root law decides ADDRESS. Phase 1 moves the address law and MUST NOT read a diagnostic; Phase 5 grades content and MUST NOT decide a door. A cure that reads a grade to choose a door has fused two instruments that exist to be able to contradict each other.
+* ''No gate gets fused.'' The three-way gate (`src/ingest-gate.ts:120`) grades CONTENT; the root law decides ADDRESS. Phase 1 moves the address law and MUST NOT read a diagnostic; Phase 5 grades content and MUST NOT decide a door. A cure that reads a grade to choose a door has fused two instruments that exist to be able to contradict each other.
 * ''No stock route gets re-implemented.'' Both standing skins hand stock the work (`routes/native-door.ts:68`, `routes/native-delete-door.ts:88`). Phase 3 keeps that shape by decorating the response; a re-derived copy of `get-tiddlers-json.js`'s filter, its `ExternalFilters` guard or its system clause would drift the day upstream moved.
 * ''No client law where a server law reaches.'' `syncer-back-parity.mem` `#/charm-reach`. This eats (d′-4) and holds (b′-5) unbuilt. The charm gains nothing in this plan but a narrower root law it already shares.
 * ''No invented bytes on a member's death.'' `deserializer.ts:1013` and <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/graceful-parsing`>> both rule AUGMENT + WRAP. Phase 4 adds a reading; it removes no authored line, unless the operator rules otherwise.
@@ -405,6 +405,6 @@ When (b) rules and lands in `syncer-back-parity`, this carrier checks in once as
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ap_4XXKGOyojZIfDhWTGp2Hmdvk2ntjdlq4lcA1rMqs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DuEwoF3dKT07BvYXr3PEB-R19fDAbj9u_dPWS7sloN4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -9,7 +9,7 @@
  * decides NONE of that: it mints the frame through `@lararium/memetic-frame`'s shared `frameCarrier`
  * (the one hand that spells SOH/STX/ETX+check/EOT, so this never re-derives that law either) and then
  * hands the whole draft to `@lararium/tw5/carrier-canonical`'s `canonicalizeCarrierText` —
- * `render(parse(draftText))`, the SAME door `projection-gate` reads for the Confluence's congruence
+ * `render(parse(draftText))`, the SAME door `projection-gate` reads for the three-way gate's congruence
  * `≈`. Whatever this module's own draft gets wrong about padding, key order, or ahu spacing, that
  * render corrects; the bytes that reach disk are tw5's render, never a second renderer's guess at it.
  *

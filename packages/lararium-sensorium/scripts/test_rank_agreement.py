@@ -173,8 +173,8 @@ def test_crossing_spectrum_finds_the_rank_changes_and_nothing_else():
         assert lo != hi
 
 
-def test_spectrum_rungs_visit_every_interval_and_merge_a_confluence():
-    # three lines meeting at one lam* — the degenerate confluence — must cut ONCE.
+def test_spectrum_rungs_visit_every_interval_and_merge_a_concurrence():
+    # three lines meeting at one lam* — the degenerate concurrence — must cut ONCE.
     spec = [{"lambda": 0.4, "a": "x", "b": "y"},
             {"lambda": 0.4, "a": "x", "b": "z"},
             {"lambda": 0.4, "a": "y", "b": "z"}]

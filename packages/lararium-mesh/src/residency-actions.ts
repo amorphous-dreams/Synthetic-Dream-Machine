@@ -212,7 +212,7 @@ export interface LoadAction extends ResidencyActionBase {
   readonly carriers?:   readonly LoadCarrier[];
 }
 
-/** One carrier riding an INGEST verb — the Confluence triangle's inputs travel WITH
+/** One carrier riding an INGEST verb — the three-way gate's inputs travel WITH
  *  the content: the gesture (which holds the disk grant + the Synced tree)
  *  computes diskHash and reads syncedHash; the island computes only the
  *  currentRenderHash from its own merge seat (readiness reads local). */
@@ -224,7 +224,7 @@ export interface IngestCarrier {
   /** The settled carrier body (quiet + stat-stable + hash-confirmed by the gesture).
    *  A verb NEVER inlines a body: the gesture stages it to the corpus CAS and rides
    *  `textCid` instead. `text` carries a small in-line carrier, and the island
-   *  resolves `textCid` → `text` before the Confluence gate. Exactly one of `text` /
+   *  resolves `textCid` → `text` before the three-way gate. Exactly one of `text` /
    *  `textCid` MUST hold. */
   readonly text?:      string;
   /** Content-address (hex sha256) of the carrier body staged in the corpus CAS. The
@@ -237,7 +237,7 @@ export interface IngestCarrier {
   /** The MERGE BASE — the hash the writer last read, whichever door it wrote
    *  through: a disk gesture carries the Synced tree's last-projected hash; a
    *  text-writer (`lares put`) carries the `canonicalHash` it read back from
-   *  `lares get title=… meme=true`. One slot, one truth: the Confluence gate reads it as the base
+   *  `lares get title=… meme=true`. One slot, one truth: the three-way gate reads it as the base
    *  a writer stood on, so a stale base surfaces as a conflict rather than a
    *  silent overwrite. null = the writer read nothing (never projected / never
    *  read) → the gate adopts. */
@@ -292,7 +292,7 @@ export interface IngestDeletion {
   readonly syncedHash: string;
 }
 
-/** INGEST — disk → records through the Confluence gate, replace-by-group apply.
+/** INGEST — disk → records through the three-way gate, replace-by-group apply.
  *  LOAD lands unconditionally and never removes; INGEST decides (echo-noop ·
  *  refuse · canonical-equivalent · ingest · conflict) and tombstones group
  *  members that vanished from the re-parsed carrier. A wave MAY also carry

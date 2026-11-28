@@ -120,7 +120,7 @@ def test_red_shore_reads_both_islands_every_page_as_one_shore(daemon):
     assert daemon.lines[1]["args"]["args"] == {"op": "list", "after": "c1"}
     assert [(r["uri"], r["island"]) for r in out["pending"]] == [("lar:///a.b.c/w", "wiki"), ("lar:///a.b.c/w2", "wiki"), ("lar:///a.b.c/gone", "daemon")]
     assert out["pendingCount"] == 3
-    assert "standoffs" not in out
+    assert sorted(out) == ["pending", "pendingCount"]
 
 
 def test_red_shore_face_reads_a_lit_siblings_shore_at_the_daemon_island_alone(daemon):

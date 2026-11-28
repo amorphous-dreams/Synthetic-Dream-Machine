@@ -50,7 +50,7 @@
  *   in, and the wiki raises `$:/temp/lares/alert/meme-orphan/<root>`. A root that returns takes its slots
  *   back: the folder's files leave and the flag clears. The flag lives in `$:/temp` and re-derives at boot.
  *
- * Echo suppression ranks (Confluence): the CONTENT-HASH gates carry the law —
+ * Echo suppression ranks: the CONTENT-HASH gates carry the law —
  * ingest drops disk-hash == synced-hash; projection skips byte-identical
  * writes. The `writing` Set survives beneath them as a latency
  * optimization only (skip re-statting our own in-flight writes); no

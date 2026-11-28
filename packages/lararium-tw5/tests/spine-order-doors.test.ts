@@ -5,7 +5,7 @@
  * before the text closes, or a second heading inside the first carrier's frame, is a frame no reader
  * divides without choosing — the frame verdict names it torn. The registered deserializer (every TW5
  * door, every bag door through it) then holds the bytes as ONE flagged record rather than dividing
- * them one way or another, and the Confluence gate refuses on the frame's own grade.
+ * them one way or another, and the three-way gate refuses on the frame's own grade.
  *
  * CONTROL: the same carrier in spine order decomposes and ingests.
  */

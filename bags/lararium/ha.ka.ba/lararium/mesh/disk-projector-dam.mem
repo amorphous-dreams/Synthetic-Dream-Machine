@@ -18,7 +18,7 @@ uri-path  = "ha.ka.ba/lararium/mesh/disk-projector-dam"
 The split moved `LarDiskProjector` (2,536 lines) into modules under `packages/lararium-node/src/disk-projector/`, each wrapped by a heleuma code-meme; the class stays as the composer and its public surface carries every caller unchanged. Line counts name the files as the shore cut left them. The "pono?" column records what the split SAW; it prescribes no change.
 
 |!module (code-meme) |!lines |!does, holds, carries |!callers |!pono? (seen) |
-| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-composer`>> `disk-projector.ts` | 369 | composes the modules; holds the shared state; carries every public method as a one-line hand-off | island-behaviors, shore-verb, index barrel, node tests | Held state: the shore cut burned the standoff lifecycle's four maps and its `readings` counter, so the projector's memory of a file rests in the base alone. Internal fields moved from `private` to `protected` so the modules reach them through one cast (`core()`, `as unknown as ProjectorCore`); tests reach internals by cast (`flush`, `reconcile`, `atomicWrite`, `gate`, `_tw5`, `reconcileWatches`, `settleWakes`, `settleInboxes`), so those stay instance members, and `_scheduleUnlinkByTitle` keeps an instance hand-off because tests call it on the instance. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-composer`>> `disk-projector.ts` | 369 | composes the modules; holds the shared state; carries every public method as a one-line hand-off | island-behaviors, shore-verb, index barrel, node tests | Held state: the projector's memory of a file rests in the base alone; no per-file lifecycle map or reading counter stands in the composer. Internal fields moved from `private` to `protected` so the modules reach them through one cast (`core()`, `as unknown as ProjectorCore`); tests reach internals by cast (`flush`, `reconcile`, `atomicWrite`, `gate`, `_tw5`, `reconcileWatches`, `settleWakes`, `settleInboxes`), so those stay instance members, and `_scheduleUnlinkByTitle` keeps an instance hand-off because tests call it on the instance. |
 | <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-options`>> `disk-projector/options.ts` | 206 | names every construction port | composer, core | Exception list: optional ports, each with its own "Absent →" fallback sentence. The alert rail splits by kind: `onRefusal` (a disk-ward refusal, a refused capture riding it) and `onPendingRemoval` / `onPendingRemovalResolved`; `capture` names the island's capture door. |
 | <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-core`>> `disk-projector/core.ts` | 86 | names the shared state and the instance methods modules call back through | every module | Patch seam: the interface restates each field type by hand; the composer types most fields as `ProjectorCore[...]` to close the drift, and the cast through `unknown` would hide any mismatch that remains. |
 | <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-entries`>> `disk-projector/entries.ts` | 85 | holds shared shapes (the moved file, the capture outcome), keys, alert title, file mode, path readers | every module, composer re-exports | `keepSpares` (the static `kept` renamed, since a local `let kept` shadowed it) takes `string or set`: two call shapes for one question. `rootOf` wraps `rootAddressOf` and adds nothing. |
@@ -46,11 +46,10 @@ The split moved `LarDiskProjector` (2,536 lines) into modules under `packages/la
 The operator's ruling (2026-11-28) holds the projector to rendering: siting, render, byte-identity skip, atomic write, unlink, and the hash before each write (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/projection-law`>>). A file a hand moved goes to the island's capture door (`packages/lararium-node/src/disk-capture.ts`), and the CRDT merges from there.
 
 ''Closes.''
-* The standoff lifecycle's held state (four maps and a `readings` counter in the composer) burned with `standoffs.ts`; the base alone carries what the projector knows of a file.
-* The weighing module carries its work's name: `confluence.ts` became `capture.ts` (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-capture`>>), and `recovery.ts` became `agreement.ts` (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-agreement`>>), holding `pinAgreement` and `recordsRenderOf` alone.
+* The composer holds no per-file lifecycle maps and no reading counter; the base alone carries what the projector knows of a file.
+* Each module carries its work's name: `capture.ts` weighs a moved file (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-capture`>>), and `agreement.ts` (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-agreement`>>) holds `pinAgreement` and `recordsRenderOf` alone.
 * The recovery pass ahead of the view pass, and the loop fix it carried, left reconcile: the draft and temp layers project as ordinary mirrors, and no `mirrorClass` stands.
 * The three-port alert split (`onRefusal`, `onConflict`, `onConflictResolved`) narrowed to `onRefusal` and the pending-removal pair; a refused capture rides `onRefusal`.
-* The stale doc blocks that stood above `_leaveStandoff` left with it.
 
 ''Stays open.''
 * The weigh-twice patch in `capture.ts` (a tree reread between two weighings) and the `headed` closure state.
@@ -68,6 +67,6 @@ The operator's ruling (2026-11-28) holds the projector to rendering: siting, ren
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7ppUMasLnsY4EgZQQRNsZ-kowQL7a51JmaeYhZcvBhs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iBwOn1CiPWoZHStgsFs5CmAQD4PMfxvDPy6NFJTisLY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

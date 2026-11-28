@@ -4,7 +4,7 @@
  * INGEST/LOAD carriers carry a corpus-CAS `textCid` (a skinny content-address), never
  * an inline body. The daemon-side handler resolves the ref via `resolveByCid` — the
  * fs-less worker's shore onto the process-shared byte plane — re-verifies cid==hash(bytes),
- * then runs the Confluence gate on the resolved body and lands it in the TARGET bag.
+ * then runs the three-way gate on the resolved body and lands it in the TARGET bag.
  *
  * This is what keeps an oversized carrier (a whole book) OUT of the daemon command doc,
  * whose automerge scalar-string value overflows past ~2^24 chars. The summons stays lean;

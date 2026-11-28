@@ -34,7 +34,7 @@ module-type: startup
  * This listener closes that hole WITHOUT touching the standing law above: on a child-slot title
  * (`uri#/slot…`), it resolves the ROOT, reads the root's CURRENT recomposed render (the child's new
  * bytes already live in the sink by the time `change` fires), and runs that render back through
- * `evaluateMeme` — the Confluence gate's read half, which grades the text but never lands or
+ * `evaluateMeme` — the three-way gate's read half, which grades the text but never lands or
  * tombstones anything. An `error`-graded verdict raises a `$:/tags/Alert` tiddler naming the child,
  * the root, and the diagnostic codes; a clean one clears any alert this root already carries. The
  * child's own record is never touched by this path — refusing it is what the ruling forbids.
@@ -159,7 +159,7 @@ export function armBackstop(tw: TwBackstop, options: BackstopOptions = {}): void
       const why = receipt.warnings[0] ?? receipt.diagnostics[0]?.message ?? "the carrier does not hold together";
       return { codes, why };
     }
-    // WIDENING (#/quoteblock-floor, option (iv)): the Confluence gate's NOOP-equivalence leg grades
+    // WIDENING (#/quoteblock-floor, option (iv)): the three-way gate's NOOP-equivalence leg grades
     // below error here even though an unclosed ahu or a stray closer corrupted the COMPOSED root —
     // the dangling opener eats the parent's closer, or the orphan closes the parent early. The
     // ahu-scan stack already knows both shapes; raise them on the SAME rail, at the SAME composed

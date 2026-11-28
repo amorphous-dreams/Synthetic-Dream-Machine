@@ -114,7 +114,7 @@ export interface CarrierReading {
   readonly slotText: string;
 }
 
-/** The deserializer with its floor in hand — for a reader (the Confluence gate) that grades the fence too. */
+/** The deserializer with its floor in hand — for a reader (the three-way gate) that grades the fence too. */
 export function deserializeCarrier(
   text:   string,
   fields: Record<string, unknown>,
@@ -130,7 +130,7 @@ export function deserializeCarrier(
   if (text.includes("\r")) text = text.replace(/\r\n?/g, "\n");
   const baseUri = String(fields?.["title"] ?? "");
   // THE FRAME READS FIRST, AND THE QUOTEBLOCK FLOOR SITS RIGHT BEHIND IT (`ahu.mem#/quoteblock-floor`).
-  // Every door that reads a carrier — the bag doors, the Confluence gate, and TW5's own import, drop,
+  // Every door that reads a carrier — the bag doors, the three-way gate, and TW5's own import, drop,
   // paste and boot-folder load through this registered deserializer — reads the same fence, because the
   // fence is laid here. TW5's contract is synchronous fields-out with no refuse channel, so a torn frame
   // holds verbatim as ONE flagged record (a gate above refuses it on its own grade), and a fence carries
