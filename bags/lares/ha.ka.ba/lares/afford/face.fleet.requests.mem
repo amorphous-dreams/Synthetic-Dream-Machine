@@ -1,0 +1,109 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.fleet.requests`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "mint a joining place's face-scoped keys and request the join"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.fleet.requests", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.fleet.requests"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.fleet.requests"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.fleet.requests ~ the joining place mints its keys and asks
+
+`lares fleet join request <offer-file>` runs on the joining place with no vessel standing: its face-scoped keys mint here and stay here, and the join stands pending until its answer lands. It writes the request (`--out`) or prints it for the courier to carry back. Another pending join for the face refuses.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ request
+
+```memetic-wikitext
+<<has entity=`example` name=`request` params=`offer/offer.json out/request.json ~ request the join`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ offer · out
+
+```memetic-wikitext
+<<has entity=`arg` name=`offer` params=`takes/host-path needs/required seat/1 as/<offer-file> ~ the offer file the root holder wrote`>>
+<<has entity=`arg` name=`out` params=`takes/host-path ~ write the file the next vessel reads; absent, print it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/hand ~ runs in this process on the joining vessel, no vessel standing; its keys mint and stay here`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ offer-absent · offer-unread · join-pending · face-joinee · refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`offer-absent` params=`cure/[[face.fleet.requests offer/offer.json]] ~ name the offer file`>>
+<<has entity=`refusal` name=`offer-unread` params=`~ the file reads as no JSON`>>
+<<has entity=`refusal` name=`join-pending` params=`~ another join stands pending; land it or abandon it`>>
+<<has entity=`refusal` name=`face-joinee` params=`~ the joinee names no face; the face rides the offer, and --face belongs to offer and answer`>>
+<<has entity=`refusal` name=`refused` params=`~ the request refused by name (FleetJoinRefused, a store door refusal, or StoreHeld); the line names the code`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ requested · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`requested` params=`exit/0 ~ the request, written or printed; the join stands pending`>>
+<<has entity=`band` name=`refused` params=`exit/1 ~ refused by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares fleet join request
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares fleet join request]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LsMozC5I_jlW3_eOgO0eu_hZ88erIh3BEStbmVbB6Z0`>>
+
+<<^ code=`&#x0004;` to=`?`>>
