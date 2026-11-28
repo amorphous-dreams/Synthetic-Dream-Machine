@@ -37,7 +37,7 @@ export const REBOOT_ALERT_TITLE = "$:/temp/lares/alert/reboot-pending";
 
 /**
  * The title an alert stands at. A kind holds ONE coalescing alert; a KEY names one instance of a kind
- * (a projection standoff), which stands at its own title so two instances show two alerts.
+ * (a bag's pending removals), which stands at its own title so two instances show two alerts.
  */
 export function systemAlertTitle(kind: string, key?: string): string {
   if (kind === "reboot-pending") return REBOOT_ALERT_TITLE;

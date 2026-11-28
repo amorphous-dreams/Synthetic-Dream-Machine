@@ -64,8 +64,8 @@ describe("W4 · every example and cure parses at its own door", () => {
     expect(misparse(line)).toBeNull();
   });
 
-  test("a keep spelling and the draft pull parse where their doors read them; CONTROL: a flag or a bare word beside the act reads red", () => {
-    expect(misparse("lares shore keep-records 'lar:///ha.ka.ba/lares/docs/pono/example' --key k")).toBeNull();
+  test("a shore answer and the draft pull parse where their doors read them; CONTROL: a flag or a bare word beside the act reads red", () => {
+    expect(misparse("lares shore restore 'lar:///ha.ka.ba/lares/docs/pono/example'")).toBeNull();
     expect(misparse("lares act lar:///carriage.draft.pulls uri=lar:///ha.ka.ba/lares/docs/pono/example")).toBeNull();
     expect(misparse("lares act lar:///carriage.draft.pulls uri=lar:///ha.ka.ba/lares/docs/pono/example --draft")).toMatch(/unknown flag\(s\): --draft/);
     expect(misparse("lares act lar:///carriage.draft.pulls lar:///ha.ka.ba/lares/docs/pono/example")).toMatch(/names no param/);

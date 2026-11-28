@@ -246,7 +246,7 @@ export function makeVesselResidency(
       const wikiId = wikiSlug;
       const verbOpts: VesselAlertVerbOpts = {
         verb: "system-alert",
-        // A keyed alert (a projection standoff) carries its key, and its clear, to the wiki that shows it.
+        // A keyed alert (a bag's pending removals) carries its key, and its clear, to the wiki that shows it.
         args: { message, cause: cause ?? "", ...(hooks.alertArgs?.(kind) ?? {}), ...(instance?.key ? { key: instance.key } : {}), ...(instance?.clear === true ? { clear: true } : {}) },
         requestedBy: "daemon",
       };

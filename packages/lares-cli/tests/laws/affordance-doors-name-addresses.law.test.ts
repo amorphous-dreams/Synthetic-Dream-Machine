@@ -74,10 +74,8 @@ describe("W1 · every door names one address; every skin names a live door", () 
     expect(cli["ingest"], REBAKE).toBe("lar:///carriage.capture.ingests");
     expect(cli["export"], REBAKE).toBe("lar:///carriage.bundle.exports");
     expect(cli["import"], REBAKE).toBe("lar:///carriage.bundle.imports");
-    expect(cli["shore take-records"], REBAKE).toBe("lar:///carriage.record.wins");
-    expect(cli["shore keep-records"], REBAKE).toBe("lar:///carriage.record.wins");
-    expect(cli["shore take-disk"], REBAKE).toBe("lar:///carriage.disk.wins");
-    expect(cli["shore keep-disk"], REBAKE).toBe("lar:///carriage.disk.wins");
+    expect(cli["shore restore"], REBAKE).toBe("lar:///carriage.disk.restores");
+    expect(cli["shore remove"], REBAKE).toBe("lar:///carriage.disk.removes");
     expect(cli["shore flush"], REBAKE).toBe("lar:///carriage.disk.flushes");
     expect(cli["bag compact"], REBAKE).toBe("lar:///carriage.bag.compacts");
     expect(cli["bag share"], REBAKE).toBe("lar:///realm.bag.shares");

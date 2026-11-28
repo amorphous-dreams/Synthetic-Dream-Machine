@@ -43,8 +43,10 @@ import { memeticIngestOps } from "./ingest-gate.js";
  *
  * The null carries a FACT: "no trustworthy canonical view of these bytes
  * exists". It does NOT mean "equivalent" — `projection-gate`'s clause reads
- * presence first, so an absent view falls through to the standoff rather than
- * silently licensing a write (the null-as-default inversion).
+ * presence first, so an absent view falls through to the base clauses (a write
+ * only where the file stands as the projector left it, the capture door
+ * otherwise) rather than silently licensing a write (the null-as-default
+ * inversion).
  *
  * THE AHU-FIDELITY GUARD RIDES, AND IT BITES HARDER HERE THAN ON THE INGEST
  * SHORE. Ingest's rule 3 guards it because a lossy render makes an edit inside a
@@ -69,7 +71,7 @@ export function canonicalizeCarrierText(uri: string, diskText: string): string |
 
 /**
  * THE TIDDLERS a memetic carrier's words SAY — `parse(diskText)`, the same deserialize `render(parse(·))` reads above, so
- * the disk side of a stand-off loads as drafts through the one congruence the gates weigh it by. Null where the parse
+ * the words of a file a hand moved land, or stand as parallel drafts, through the one congruence the gates weigh it by. Null where the parse
  * grades `error` (the ingest leg refuses those bytes, and nothing here loads them either).
  */
 export function carrierRecords(uri: string, diskText: string): ReadonlyArray<Readonly<Record<string, unknown>>> | null {

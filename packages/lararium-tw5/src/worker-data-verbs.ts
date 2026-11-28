@@ -280,9 +280,9 @@ export async function fileWardRefusal(
       ? `Disk ward refused a write (${bagId})`
       : `${wardKind} refused a write (${bagId})`;
     const ts     = new Date().toISOString();
-    // A STANDOFF CARRIES ITS KEY (bag, carrier and the two hashes, folded by the projector). The key names
-    // the audit row and the live alert, so one standoff files one row however often the rail hears of it,
-    // two standoffs show two alerts, and a resolution clears exactly its own.
+    // A KEYED ALERT CARRIES ITS KEY in the `standoff` field (a bag's pending-removal set names one, folded by the
+    // projector). The key names the audit row and the live alert, so one keyed condition files one row however often
+    // the rail hears of it, two show two alerts, and a resolution clears exactly its own.
     const standoff = typeof args["standoff"] === "string" && /^[0-9a-f]{8,64}$/.test(args["standoff"]) ? args["standoff"] : null;
     const slug   = readHomeWikiSlug(await composite.get(HOME_WIKI_TITLE));
 
@@ -292,7 +292,7 @@ export async function fileWardRefusal(
     }
 
     // (a) Durable audit in the vessel's control document: append-only, never coalesced, never in a mirrored layer.
-    // A standoff's row carries its key as its title and lands on ENTERING the standoff, once.
+    // A keyed row carries its key as its title and lands on ENTERING the condition, once.
     const auditTitle = `${WARD_AUDIT_URI_PREFIX}${standoff ?? crypto.randomUUID()}`;
     if (standoff === null || (await control.get(auditTitle)) === null) {
       await control.put(
@@ -302,7 +302,7 @@ export async function fileWardRefusal(
     }
 
     // (b) Alert the face's home wiki (its home preference record in the daemon wiki's working layer, read at light). A row filed for the record
-    // alone (`auditOnly`: a stand-off the person's own collapse rule settled) raises no alert: nothing awaits anyone.
+    // alone (`auditOnly`) raises no alert: nothing awaits anyone.
     if (args["auditOnly"] === true) return { audited: auditTitle, alerted: "none", bagId, uri };
     if (slug) {
       post(mkDaemonWikiAlert({

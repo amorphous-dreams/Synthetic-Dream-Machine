@@ -22,8 +22,8 @@
  * declares NO structural slots (`declaredStructure` returns ∅ on both legs today),
  * so there is no per-slot drop this function can detect — the SAME trust level the
  * ingest leg already extends to a native round trip. Two shapes it refuses to
- * canonicalize rather than guess at, both returning `null` (the standoff, never a
- * guess):
+ * canonicalize rather than guess at, both returning `null` (the base clauses decide,
+ * never a guess):
  *   - a BUNDLE (a `.multids`/`.json` file whose deserialize yields more than one
  *     tiddler, or whose sole member's own title differs from `uri`) — a pack's
  *     members are reconciled per-member by the INGEST leg only; the projector
@@ -88,6 +88,6 @@ export function canonicalizeNativeCarrierText(
     const rendered = deserializer.renderCarrier(uri, merged);
     return { body: rendered.body, ...(rendered.metaBody !== undefined ? { metaBody: rendered.metaBody } : {}) };
   } catch {
-    return null;   // a malformed disk file / unregistered filetype — the standoff, never a guess
+    return null;   // a malformed disk file / unregistered filetype — the base clauses decide, never a guess
   }
 }
