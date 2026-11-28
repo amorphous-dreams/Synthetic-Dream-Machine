@@ -1,6 +1,6 @@
 /**
  * The law harness — what every law module shares. A law draws its inputs from the LIVE tables (the
- * command table, the help registry, the declared verb tables), so a new door joins every law the day
+ * command table, the baked pack's doors, the declared verb tables), so a new door joins every law the day
  * it lands; the literal cases a fixed bug once left stay as the law's SEEDS; and every law stands a
  * known-positive CONTROL beside its zero, so a law that cannot fail reads red.
  *
@@ -8,7 +8,7 @@
  */
 import { vi } from "vitest";
 import { COMMANDS, dispatch, type Command } from "../../src/bin/lares.js";
-import { COMMAND_HELP } from "../../src/command-help.js";
+import { affordancePack } from "@lararium/tw5/affordance-pack";
 import { flattenVerbs } from "../../src/verb-table.js";
 
 export interface DoorRun {
@@ -43,8 +43,8 @@ export const flagReadingCommands = (): readonly Command[] => COMMANDS.filter((c)
 export const verbTables = (): ReadonlyArray<{ door: string; verbs: readonly string[] }> =>
   COMMANDS.flatMap((c) => (c.verbs === null ? [] : flattenVerbs(c.name, c.verbs)));
 
-/** Every help registry key: a door, or a `"<door> <sub>"` sub-door. */
-export const helpKeys = (): readonly string[] => Object.keys(COMMAND_HELP);
+/** Every door the baked pack gathers an entry for: the keys `helpLines` answers a door's help from, one home each. */
+export const helpKeys = (): readonly string[] => Object.keys(affordancePack().doors).sort();
 
 /** A spelling no table declares: the law's generated unknown. */
 export const UNKNOWN = "zz-no-such-name";

@@ -28,7 +28,7 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 !! takes ~ uris · bag · nexus
 
 ```memetic-wikitext
-<<has entity=`arg` name=`uris` params=`takes/json needs/required ~ the memes offered`>>
+<<has entity=`arg` name=`uris` params=`takes/json needs/required seat/1 as/<lar:uri…> ~ the memes offered`>>
 <<has entity=`arg` name=`bag` params=`takes/word needs/required ~ one bag`>>
 <<has entity=`arg` name=`nexus` params=`takes/word ~ the Nexus whose offer table takes the row`>>
 ```
@@ -49,7 +49,17 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ mcp
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares meme offer
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares meme offer]] ~ the terminal; the memes ride as <lar:uri…>`>>
+```
+
+<<~/ahu>>
 
 <<~ ahu slot=`#/skins/mcp`>>
 
@@ -72,6 +82,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8u2gZnTPXomRWWRotah9qyhsGMsnZplb6w86daBKzRA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aiDzRvMdxDWtFUcznFFG1z-MjggMgwLUbJeAXTiss3k`>>
 
 <<^ code=`&#x0004;` to=`?`>>

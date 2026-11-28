@@ -83,7 +83,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares sense un-retire
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense un-retire]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares sense un-retire]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -99,6 +99,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;tz-lQNMBy-m-bShpLMoG0rI4z4jB_lZd5-Cpm2drUQo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DcoILWwLQ6UZQ1slRPUPLsSNnIFWvvamMz9wiQYDCmA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

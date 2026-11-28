@@ -104,7 +104,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares wiki retire
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares wiki retire]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares wiki retire]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -120,6 +120,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;39Q3OqQHraxVSm9B48ohTfwOMQH5NagpFCPJyN7Dzqw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;y3pHgesgUwGWULwu-Z-h70vEThx_3xJNzYbNGoSTEtA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

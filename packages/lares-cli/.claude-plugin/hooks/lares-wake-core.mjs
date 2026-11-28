@@ -288,7 +288,7 @@ function renderRows(answer, { head: label, filter, cap, lineCap = cap, rows: ord
     ? `cut at the wake's byte cap after ${lines.length} of ${total} rows; read the whole view: ${view})`
     : next
       ? `read further: ${view}, after="${next}")`
-      : `read a row: get(title=<title>, recipe="default", mu="assert"); the same view: ${view})`;
+      : `read a row: get(title=<title>, recipe="default", aperture="arc"); the same view: ${view})`;
   return [head, ...lines, further].join("\n");
 }
 
@@ -340,7 +340,7 @@ const LAW_VIEW = `${viewOf(LAW_INDEX_FILTER).replace('"fields": "title,descripti
 const LAW_FURTHER = `read the rest: act(address="lar:///engine.law.indexes", args={"after": <next>}) or lares law index --all; the filter: ${LAW_VIEW}; pin or unpin: act(address="lar:///engine.law.pins", args={"uri": <title>}) · act(address="lar:///engine.law.unpins", args={"uri": <title>}) (lares law pin|unpin <uri>)`;
 
 /** The line that frames the rows by provenance and weight: canon grounds each one, the five tools turn it, and both hands hold the frame. */
-export const LAW_WEIGHT_LINE = "these rows come from canon, the house's settled ground (🜃); read one whole (get(title=<title>, recipe=\"default\", mu=\"assert\")) and turn it through the five tools beside the live work; operator and node hold the frame together";
+export const LAW_WEIGHT_LINE = "these rows come from canon, the house's settled ground (🜃); read one whole (get(title=<title>, recipe=\"default\", aperture=\"arc\")) and turn it through the five tools beside the live work; operator and node hold the frame together";
 /** A title prints only as one `lar:` address with no whitespace, within its byte cap. */
 const printableTitle = (title) => typeof title === "string" && /^lar:\/\/\/\S+$/.test(title) && bytes(title) <= LAW_TITLE_BYTES;
 

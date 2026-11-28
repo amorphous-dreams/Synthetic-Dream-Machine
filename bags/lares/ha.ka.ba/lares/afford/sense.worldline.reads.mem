@@ -25,11 +25,13 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ selector · sensorium
+!! takes ~ selector · sensorium · palace · as-of
 
 ```memetic-wikitext
-<<has entity=`arg` name=`selector` params=`takes/word ~ the run or handle to walk`>>
-<<has entity=`arg` name=`sensorium` params=`takes/word ~ the sensorium by name; absent, memory`>>
+<<has entity=`arg` name=`selector` params=`takes/word seat/1 as/<selector> ~ the run or handle to walk`>>
+<<has entity=`arg` name=`sensorium` params=`takes/word skins/mcp ~ the sensorium by name; absent, memory (the terminal names it before the verb: lares sense <sensorium> <verb>)`>>
+<<has entity=`arg` name=`palace` params=`takes/host-path skins/cli ~ the palace the walk reads; else the resolved palace path`>>
+<<has entity=`arg` name=`as-of` params=`takes/time skins/cli ~ read the tree as it stood then`>>
 ```
 
 <<~/ahu>>
@@ -48,7 +50,17 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ mcp
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense worldline
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares sense worldline]] ~ the terminal`>>
+```
+
+<<~/ahu>>
 
 <<~ ahu slot=`#/skins/mcp`>>
 
@@ -71,6 +83,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EeCz5TIDj8QN-vm00POiN3QuOCam3dgQiLkXBfoy5Rc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_v5xolcu_QaCmYGhwyNdeKkGbqUJtpIxFNDHFeYREkI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

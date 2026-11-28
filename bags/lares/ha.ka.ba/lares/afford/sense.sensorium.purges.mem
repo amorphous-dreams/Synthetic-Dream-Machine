@@ -84,7 +84,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares sense purge
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense purge]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares sense purge]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -100,6 +100,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;H_FokQmJ-BB9KyxRlIt6aX_VgM4EbfgzbYS9RpMy-QM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;34MXMAXLBzbfmUmXHbXzUKbpkw6NnsejuQE5nhM5Mnc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

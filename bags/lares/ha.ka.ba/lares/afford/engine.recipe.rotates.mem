@@ -83,7 +83,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares wiki rotate-recipe
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares wiki rotate-recipe]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares wiki rotate-recipe]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -99,6 +99,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TGl_cfvwTJuJ6mVF5lBegWrSKdo_bVKs2VJHkDunHWc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lvsuMXsBelvHFfidfd4zjNZOWKmD1fRPxDaZJ7UwnlE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

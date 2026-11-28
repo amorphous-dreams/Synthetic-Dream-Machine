@@ -19,13 +19,31 @@ uri-path  = "ha.ka.ba/lares/afford/sense.rhythm.analyzes"
 
 `lens` chooses the instrument: changes, rhythm, couple (house name ki), cohere (house name li), square, lead, forecast, mismatch. The first five read the poured sensorium; lead, forecast and mismatch read the `rows` matrix the caller hands in (`names` labels its columns) and touch no plane. A missing or unknown lens refuses naming every lens, and an argument the lens reads none of refuses by name.
 
+On the terminal the matrix rides `--signal <ndjson>`; each lens reads its own flags:
+
+changes    where the poured content changes hands (--spectral, --halves <w,w>, --span <n>)
+
+rhythm     the landed regimes and their couples (--repour re-derives first, --channel <c>)
+
+couple     do the sensorium's coupled peers reconcile (the H¹ gate); also ki
+
+cohere     do the sensorium's planes glue into one section; also li
+
+square     do a child-host's lobes round-trip to one self (bare: the mesh)
+
+lead       who leads whom across signals, the R reference (--signal <ndjson>, --names <a,b>)
+
+forecast   does a regime shift approach, the R early-warning read (--signal <ndjson>)
+
+mismatch   do couple and lead agree over the same signals (--signal <ndjson>, --names <a,b>)
+
 The address stands ''candidate'' until the operator reads the landing's list. The MCP seat runs this act in its own process: the vessel's `call` binds the params against this carrier's live `#/takes` and answers `handler/seat` with the bound params, and the seat runs them (`act(address="lar:///sense.rhythm.analyzes", args={…})`).
 
 <<~/ahu>>
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ lens · spectral · halves · span · repour · channel · rows · names · sensorium
+!! takes ~ lens · spectral · halves · span · repour · channel · rows · signal · names · sensorium
 
 ```memetic-wikitext
 <<has entity=`arg` name=`lens` params=`takes/word ~ the plane or instrument`>>
@@ -34,9 +52,10 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 <<has entity=`arg` name=`span` params=`takes/count ~ the change-point span`>>
 <<has entity=`arg` name=`repour` params=`~ re-derive the rhythm plane first`>>
 <<has entity=`arg` name=`channel` params=`takes/word ~ one channel stratum (speech, thought, tool)`>>
-<<has entity=`arg` name=`rows` params=`takes/json ~ the signal matrix, rows as time and columns as signals`>>
+<<has entity=`arg` name=`rows` params=`takes/json skins/mcp ~ the signal matrix, rows as time and columns as signals`>>
 <<has entity=`arg` name=`names` params=`takes/json ~ the column labels`>>
-<<has entity=`arg` name=`sensorium` params=`takes/word ~ the sensorium by name; absent, memory`>>
+<<has entity=`arg` name=`sensorium` params=`takes/word skins/mcp ~ the sensorium by name; absent, memory (the terminal names it before the verb: lares sense <sensorium> <verb>)`>>
+<<has entity=`arg` name=`signal` params=`takes/host-path skins/cli ~ the signal matrix as ndjson (lead, forecast, mismatch)`>>
 ```
 
 <<~/ahu>>
@@ -55,7 +74,17 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ mcp
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense analyze
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares sense analyze]] ~ the terminal; --lens names the instrument`>>
+```
+
+<<~/ahu>>
 
 <<~ ahu slot=`#/skins/mcp`>>
 
@@ -78,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;QKBIy0ShmJj15lwjqHeG_JTMKyX6of0wCEpYe-LwaIU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fAZgGnstslAUi6-9OF5Y19GcqwwqkByu9d4_BwcYbkM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

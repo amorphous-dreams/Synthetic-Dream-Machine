@@ -34,13 +34,14 @@ uri-path  = "ha.ka.ba/lares/afford/sense.sovereign.tears"
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ groups · confirm · drain · force
+!! takes ~ groups · confirm · drain · force · keep-hooks
 
 ```memetic-wikitext
 <<has entity=`arg` name=`groups` params=`takes/names seat/1 as/<group…> ~ the sensorium groups; none names every group`>>
 <<has entity=`arg` name=`confirm` params=`~ remove instead of previewing`>>
 <<has entity=`arg` name=`drain` params=`~ quiesce the blocking holders first`>>
 <<has entity=`arg` name=`force` params=`~ tear even where a holder blocks`>>
+<<has entity=`arg` name=`keep-hooks` params=`skins/cli ~ a word the door's row shares with the guest repave (lares mempalace repave), which the sovereign tear leaves unread`>>
 ```
 
 <<~/ahu>>
@@ -89,7 +90,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares sense teardown
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense teardown]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares sense teardown]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -105,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KNdyGjzRhgvEXLXvt7N-wMdCd3x9sWrscbjO6VywXTw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5A5loT4Tl6maXT0StNFcmeQ_FTAE_38Cx0PUsxGxhNI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

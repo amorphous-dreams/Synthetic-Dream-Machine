@@ -1,25 +1,21 @@
 /**
  * THE VERB DOOR KEEPS ONE HOME FOR ITS WORDS, AND NAMES THE MEME BEHIND IT.
  *
- * Two homes for one door's help text drift, and the reader never learns which half lies. Measured before
- * this weld stood: TEN command modules hand-rolled a `usage()` text the help registry never held, so
- * `lares <cmd> --help` rendered a one-line dispatch summary while the better words sat unreachable in the
- * same binary. This file fences BOTH directions —
+ * Two homes for one door's help text drift, and the reader never learns which half lies. Every door's words ride its carriers
+ * through the baked pack, so this file fences BOTH directions —
  *
- *   1. a door that carries a `meme` carries a WELL-FORMED `lar:` URI, harvested from the module's own
- *      `Meme:` header (never invented here),
- *   2. a module that still hand-rolls help text names a door the registry ALSO holds — so the words have
- *      one home and the refusal path draws from it.
+ *   1. a door's help names the memes behind it in its carriers' `Law:` lines, each a WELL-FORMED `lar:` URI,
+ *   2. no module hand-rolls help text: the refusal path draws from the pack, the one home.
  *
- * The registry stays PURE DATA: no `node:fs`, no imports, so any vessel that can hold the module can read
- * the door. The `--meme` reach rides the one read door (`lares get title=<uri> recipe=lares aperture=arc`), never a file read.
+ * The help module stays PURE DATA: no `node:fs`, so any vessel that can hold the module can read the door. A carrier reads
+ * whole through the one read door (`lares get title=<carrier> recipe=lares aperture=arc`), never a file read.
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { COMMAND_HELP, memeForDoor, helpLines, renderCommandHelp } from "../src/command-help.js";
-import { COMMAND_NAMES, COMMANDS } from "../src/bin/lares.js";
+import * as commandHelp from "../src/command-help.js";
+import { helpLines } from "../src/command-help.js";
 
 const CLI = join(repoRoot, "packages", "lares-cli", "src");
 const CMD_DIR = join(CLI, "commands");
@@ -43,36 +39,28 @@ function wellFormed(uri: string): boolean {
   return m[1]!.split(".").length === 3 && m[1]!.split(".").every((t) => t.length > 0);
 }
 
-describe("★ the help registry names the meme behind each verb door ★", () => {
-  test("store usage and examples require an explicit container", () => {
-    const meme = COMMAND_HELP.meme!;
-    expect(meme.usage).toContain("(--recipe <slug> | --bag <slug>)");
-    // The family verbs moved to the call door: no meme example teaches a retired spelling.
-    for (const verb of ["put", "patch", "list", "delete"]) {
-      expect(meme.examples?.some((line) => new RegExp(`\\blares meme ${verb}\\b`).test(line)), `meme ${verb} example`).toBe(false);
+describe("★ a door's help names the meme behind it, in its carriers' law lines ★", () => {
+  test("store verbs name their container on the carrier: `meme project --help` reads --recipe and --bag", () => {
+    const text = helpLines("meme project").join("\n");
+    expect(text).toMatch(/--recipe/);
+    expect(text).toMatch(/--bag/);
+    // The family verbs moved to the call door: no meme line teaches a retired spelling.
+    for (const verb of ["put", "patch", "list", "delete"]) expect(helpLines("meme").join("\n"), `meme ${verb}`).not.toMatch(new RegExp(`\\blares meme ${verb}\\b`));
+  });
+
+  test("★ each law line a door's carriers name reads as a well-formed lar: URI, and the vessel and meme doors name theirs ★", () => {
+    const laws = (door: string): string[] => {
+      const lines = helpLines(door);
+      const out: string[] = [];
+      for (let i = lines.indexOf("Law:") + 1; i > 0 && i < lines.length && lines[i]!.startsWith("  "); i++) out.push(lines[i]!.trim());
+      return out;
+    };
+    expect(laws("vessel request")).toContain("lar:///ha.ka.ba/lares/cli/vessel-door");
+    expect(laws("meme check")).toContain("lar:///ha.ka.ba/lares/api/pono/meme");
+    for (const door of ["vessel request", "meme check", "sense search", "wiki init"]) {
+      const bad = laws(door).filter((uri) => !wellFormed(uri.split("#")[0]!));
+      expect(bad, door).toEqual([]);
     }
-    expect(meme.examples?.some((line) => /\blares (?:tiddler|wiki filter)\b/.test(line)), "a burned door's example").toBe(false);
-    expect(meme.synopsis).not.toMatch(/anchor|default wiki/i);
-    const summary = COMMANDS.find((command) => command.name === "meme")!.summary;
-    expect(summary).toContain("(--recipe <slug> | --bag <slug>)");
-    expect(summary).not.toMatch(/anchor|default wiki/i);
-  });
-
-  test("every `meme` a door carries reads as a well-formed lar: URI", () => {
-    const bad = Object.entries(COMMAND_HELP)
-      .filter(([, h]) => h.meme !== undefined)
-      .filter(([, h]) => !h.meme!.trim() || !wellFormed(h.meme!))
-      .map(([k, h]) => `${k} → ${JSON.stringify(h.meme)}`);
-    expect(bad, `malformed door memes: ${bad.join(" · ")}`).toEqual([]);
-  });
-
-  test("★ every door meme was HARVESTED — each one appears in some module's own `Meme:` header ★", () => {
-    const declared = declaredMemes();
-    const invented = Object.entries(COMMAND_HELP)
-      .filter(([, h]) => h.meme !== undefined)
-      .filter(([, h]) => !declared.has(h.meme!))
-      .map(([k, h]) => `${k} → ${h.meme}`);
-    expect(invented, `door memes no module declares: ${invented.join(" · ")}`).toEqual([]);
   });
 
   test("CONTROL — the harvest reads real headers, and a made-up URI would FAIL that check", () => {
@@ -89,10 +77,6 @@ describe("★ the help registry names the meme behind each verb door ★", () =>
     expect(wellFormed("lar:///ha.ka.ba/lararium/mesh/membership-doctrine#the-two-stacks")).toBe(true);
   });
 
-  test("a door with no meme answers `undefined`, never an empty string", () => {
-    expect(memeForDoor("vessel")).toBe("lar:///ha.ka.ba/lares/cli/vessel-door");
-    expect(memeForDoor("no-such-door")).toBeUndefined();
-  });
 });
 
 describe("★ ONE HOME for a verb door's words ★", () => {
@@ -114,13 +98,10 @@ describe("★ ONE HOME for a verb door's words ★", () => {
     return out;
   }
 
-    test("★ no module hand-rolls help text the registry does not hold ★", () => {
-    const split = [...handRolled()]
-      .filter(([door]) => !(door in COMMAND_HELP));
-
+  test("★ no module hand-rolls help text: the pack holds every door's words ★", () => {
     expect(
-      split.map(([d, f]) => `${d} (${f})`),
-      "these doors keep a SECOND home for their words — migrate the text into COMMAND_HELP",
+      [...handRolled()].map(([d, f]) => `${d} (${f})`),
+      "these doors keep a SECOND home for their words; move the text into the door's carriers",
     ).toEqual([]);
   });
 
@@ -133,10 +114,8 @@ describe("★ ONE HOME for a verb door's words ★", () => {
     expect(scanDoors('console.error("usage: lares bag <pin|unpin>");')).toEqual([]);
   });
 
-  test("every registry key names a live command (a sub-door keys on its parent verb)", () => {
-    const live = new Set(COMMAND_NAMES);
-    const orphans = Object.keys(COMMAND_HELP).filter((k) => !live.has(k.split(" ")[0]!));
-    expect(orphans).toEqual([]);
+  test("no registry stands beside the pack", () => {
+    expect(Object.keys(commandHelp)).not.toContain("COMMAND_HELP");
   });
 
 });
@@ -151,10 +130,6 @@ describe("★ the core verbs' help reads their carriers, one home ★", () => {
     return out;
   }
 
-  test("the registry holds no tiddler entry: the door flipped to its carriers", () => {
-    expect(COMMAND_HELP).not.toHaveProperty("tiddler");
-    expect(Object.keys(COMMAND_HELP).filter((k) => k.startsWith("tiddler "))).toEqual([]);
-  });
 
   test("★ each call verb's help prints its carrier whole, its call-shaped usage spine first ★", async () => {
     for (const [verb, carrier] of [["get", "engine.record.reads"], ["put", "engine.record.puts"], ["delete", "engine.record.removes"], ["rename", "engine.record.renames"]] as const) {
@@ -180,54 +155,16 @@ describe("★ the core verbs' help reads their carriers, one home ★", () => {
   });
 });
 
-describe("★ `--help --meme` reaches the wiki through the meme rail ★", () => {
-  test("a door that names NO meme says so plainly and exits clean", async () => {
-    const { dispatch } = await import("../src/bin/lares.js");
-    const errs: string[] = [];
-    vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { errs.push(a.map(String).join(" ")); });
-    vi.spyOn(console, "log").mockImplementation(() => {});
-    vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-    const code = await dispatch(["persona", "raise-sign", "--help", "--meme"]);
-    expect(code, "naming no meme is not a failure").toBe(0);
-    expect(errs.join("\n")).toMatch(/names no meme/i);
-  });
-
-  test("★ a door that names one hands its lares wiki target and URI to the meme rail ★", async () => {
-    const { reachHelpMeme } = await import("../src/help-meme.js");
-    const seen: { command: string | null; positional: readonly string[]; options: Readonly<Record<string, string>> }[] = [];
-    const code = await reachHelpMeme(
-      "vessel",
-      { command: "vessel", positional: [], options: {}, flags: { help: true, meme: true } },
-      async (a) => { seen.push(a); return 0; },
-    );
-    expect(code).toBe(0);
-    expect(seen, "the help path never wrote a second meme reader").toHaveLength(1);
-    expect(seen[0]!.command).toBe("get");
-    expect(seen[0]!.positional).toEqual(["title=lar:///ha.ka.ba/lares/cli/vessel-door", "recipe=lares", "aperture=arc"]);
-    expect(seen[0]!.options).toEqual({});
-  });
-
-  test("`--json` on the help call rides through to the meme rail; a bare call carries no flag", async () => {
-    const { reachHelpMeme } = await import("../src/help-meme.js");
-    const seen: { flags: Readonly<Record<string, boolean>> }[] = [];
-    const push = async (a: { flags: Readonly<Record<string, boolean>> }) => { seen.push(a); return 0; };
-    await reachHelpMeme("vessel", { command: "vessel", positional: [], options: {}, flags: { help: true, meme: true, json: true } }, push);
-    await reachHelpMeme("vessel", { command: "vessel", positional: [], options: {}, flags: { help: true, meme: true } }, push);
-    expect(seen[0]!.flags).toEqual({ json: true });
-    expect(seen[1]!.flags, "CONTROL — nothing invents a --json the operator never typed").toEqual({});
-  });
-
-  test("CONTROL — a plain `--help` (no `--meme`) touches the meme rail not at all", async () => {
+describe("★ `--help` reads the door's carriers, each naming its law ★", () => {
+  test("`vessel --help` lists the door's verbs off the pack, `request` and `roster` among them", async () => {
     const { dispatch } = await import("../src/bin/lares.js");
     const out: string[] = [];
     vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { out.push(a.map(String).join(" ")); });
     vi.spyOn(console, "error").mockImplementation(() => {});
-    vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     expect(await dispatch(["vessel", "--help"])).toBe(0);
-    // The help names the meme and stops there — reading it takes the deliberate `--meme`.
     const text = out.join("\n");
-    expect(text).toContain("lar:///ha.ka.ba/lares/cli/vessel-door");
-    expect(text).toContain("lares vessel --help --meme");
+    expect(text).toContain("lares vessel request");
+    expect(text).toContain("lares vessel roster");
   });
 
   test("a SUB-DOOR carries its own entry — `vessel rite --help` renders the rite door, not the vessel one", async () => {

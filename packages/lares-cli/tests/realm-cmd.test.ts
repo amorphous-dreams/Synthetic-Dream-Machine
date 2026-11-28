@@ -22,7 +22,6 @@ import { join } from "node:path";
 import { ensureRealmLabel, readRealmLabels, writeFaceLabel } from "@lararium/node";
 import { cmdRealm, ensureWikiRealm, placeWikiInRealm, type RealmDoors } from "../src/commands/realm.js";
 import { COMMANDS, dispatch } from "../src/bin/lares.js";
-import { COMMAND_HELP } from "../src/command-help.js";
 import { packDoor, packRoute } from "@lararium/tw5/affordance-pack";
 import type { ParsedArgs } from "../src/parse-args.js";
 
@@ -126,11 +125,10 @@ describe("lares realm", () => {
     const row = COMMANDS.find((c) => c.name === "realm");
     expect(row).toBeDefined();
     expect(row!.accepts).toEqual(["to"]);
-    // The realm door flipped to its carriers (comms landings 10 + 23): the pack holds its words, the registry none.
+    // The realm door flipped to its carriers (comms landings 10 + 23): the pack holds its words, no registry beside it.
     expect(packDoor("realm"), "the realm door reads its carriers").toBeDefined();
     for (const verb of ["realm rename", "realm move", "realm list"]) {
       expect(packRoute("cli", verb), verb).toBeDefined();
-      expect(COMMAND_HELP[verb], verb).toBeUndefined();
     }
     for (const gone of ["realm name", "realm add"]) expect(packRoute("cli", gone), gone).toBeUndefined();
     const out: string[] = [];

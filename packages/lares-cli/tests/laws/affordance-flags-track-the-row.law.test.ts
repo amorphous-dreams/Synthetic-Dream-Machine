@@ -19,8 +19,8 @@ import { REBAKE, SEED_ADDRESS, cliRoutes, pack, partDoors } from "./affordance-h
 
 /**
  * A door's carrier flags (the union over every route the door skins) and its row's accepts, both bare and sorted. A part door
- * (`wiki`, whose `filter` holds a carrier beside the door's own table) reads each routed verb's own path (`pathAccepts`), since
- * its row's `accepts` also names the flags of the verbs no carrier skins yet.
+ * (one whose verbs some carrier leaves unskinned; none stands) would read each routed verb's own path (`pathAccepts`), since
+ * its row's `accepts` would also name the flags of the verbs no carrier skins.
  */
 function sides(door: string, takesOf: (address: string) => readonly string[] = (a) => pack().carriers[a]?.takes["cli"] ?? []): { carrier: string[]; row: string[] } {
   const routes = cliRoutes().filter((r) => r.door === door);
@@ -65,8 +65,8 @@ describe("W2 · a door's carrier flags equal its row's accepts", () => {
 
   test.each(DOORS.map((d) => [d] as const))("`lares %s`", (door) => {
     const { carrier, row } = sides(door);
-    // A PART DOOR (meme, sense, wiki: landings 10 + 23) still reads the verbs no carrier skins yet off its own table, so its row
-    // names their flags too: every carried flag sits in the row, and the two read equal once the door flips whole.
+    // A PART DOOR would read the verbs no carrier skins off its own table, so its row would name their flags too: every carried
+    // flag sits in the row, and the two read equal once the door flips whole. Every door reads whole now (the census reads zero).
     if (partDoors().includes(door)) expect(carrier.filter((f) => !row.includes(f)), door).toEqual([]);
     else expect(carrier).toEqual(row);
   });

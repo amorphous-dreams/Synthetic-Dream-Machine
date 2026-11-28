@@ -25,10 +25,10 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ title · text · recipe · form · type · after · max-bytes · target · output
+!! takes ~ title · text · recipe · form · type · after · max-bytes · target · output · bag · face · filename · template · variables · overwrite
 
 ```memetic-wikitext
-<<has entity=`arg` name=`title` params=`takes/word ~ the tiddler to render`>>
+<<has entity=`arg` name=`title` params=`takes/word seat/1 as/<title> ~ the tiddler to render; with --output workbench, the source filter`>>
 <<has entity=`arg` name=`text` params=`takes/word ~ a wikitext span to render`>>
 <<has entity=`arg` name=`recipe` params=`takes/word default/default ~ the wiki (default names the worn face's daemon wiki)`>>
 <<has entity=`arg` name=`form` params=`takes/word ~ text or html`>>
@@ -36,7 +36,13 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 <<has entity=`arg` name=`after` params=`takes/word ~ the cursor a prior page answered as next`>>
 <<has entity=`arg` name=`max-bytes` params=`takes/count ~ the byte cap on the text`>>
 <<has entity=`arg` name=`target` params=`takes/word ~ another lit face to visit (h1, or a pet name)`>>
-<<has entity=`arg` name=`output` params=`takes/word ~ refused on the seat (the terminal holds the workbench grant)`>>
+<<has entity=`arg` name=`output` params=`takes/word ~ workbench: land the render under rendered/ in the wiki's bound workbench; the seat refuses it (the terminal holds the workbench grant)`>>
+<<has entity=`arg` name=`bag` params=`takes/slug skins/cli ~ one bag, read alone`>>
+<<has entity=`arg` name=`face` params=`takes/handle skins/cli ~ the lit face this call wears, by handle or pet name`>>
+<<has entity=`arg` name=`filename` params=`takes/filter skins/cli ~ (output workbench) the filter that names each written file`>>
+<<has entity=`arg` name=`template` params=`takes/title skins/cli ~ (output workbench) the template each title renders through`>>
+<<has entity=`arg` name=`variables` params=`takes/json skins/cli ~ (output workbench) the variables the template reads`>>
+<<has entity=`arg` name=`overwrite` params=`skins/cli ~ (output workbench) replace files standing at the names; absent, a standing file refuses`>>
 ```
 
 <<~/ahu>>
@@ -55,7 +61,17 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ mcp
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares wiki render
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares wiki render]] ~ the terminal; --output workbench lands the render in the wiki's bound workbench`>>
+```
+
+<<~/ahu>>
 
 <<~ ahu slot=`#/skins/mcp`>>
 
@@ -78,6 +94,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6iqnPVla9jB9JbtmfLwZGXFzhLo_9qZPIxHm6ekTgVs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0C3HlHyTPVrUp71LOVoAvRFwi53p_ZWDcSsMjwdvfnM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

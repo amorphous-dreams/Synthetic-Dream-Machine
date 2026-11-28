@@ -5,11 +5,11 @@
   "moduleManifestPath": "dist-plugin/lararium/module-manifest.json",
   "moduleManifestSha256": "f59b9ca7d81cbf65ff836f18e2554f2caa7f41c53c726f528370744122a63ac7",
   "sourceManifestPath": "dist-plugin/lararium/plugin-source-manifest.json",
-  "sourceManifestSha256": "3a0432251e6f97ed125b97d72175eeb82298001e124f5519269282bb2321f9b7",
+  "sourceManifestSha256": "dcd6199da3e6d9a009ffce05d85fac967656fc1bc4317c4d448e1a6f7f2dd2d3",
   "packTranscriptPath": "dist-plugin/lararium/pack-transcript.json",
-  "packTranscriptSha256": "2caccdb319b5555c2aec925c87f0f9c6660e2f3bfbb204df7912bf58568bf45c",
+  "packTranscriptSha256": "11eb7040965b42106ab1a79bb5520a0b85d8c16c5fa74855c36a8913b2e0ba5a",
   "moduleCount": 36,
   "packedTiddlerCount": 58,
-  "pluginJsonSha256": "124ec20bfd7b8a84778c7e84d16c93573622ded42cdec6a601f6a858a71be1d7",
-  "pluginTw5Sha256": "5f2eb091683993c6cb3e6c9cd1f64a170df81e2da9667a3421d5b9a2d2cbc424"
+  "pluginJsonSha256": "013d96b376470aa2b3338fe3ceefc8db0f529136c91b7b528d9a5a82a382d994",
+  "pluginTw5Sha256": "570962cf18f830f34b3f34228e22ff30ab1c2c5472c88118489e9e5317a1079e"
 }
