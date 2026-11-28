@@ -70,6 +70,8 @@ import { ORACLE_BAG } from "./wiki-recipe.js";
 import { verifyCidBytes } from "./cas-transit.js";
 import { answerReceiptWithHeads } from "./receipt-with-heads.js";
 import { receiptSettlement } from "./capability-record.js";
+import { serveVesselWork } from "./vessel-work.js";
+import type { CompositeStore } from "./composite-store.js";
 import { makePortDoor, type PortPlacement, type PortPolicy } from "./port-lease.js";
 import { isPortKind, type PortIslandToVesselMsg } from "./record-port.js";
 import type { IslandGrants, IslandMsg_ReceiptRequest, IslandMsg_ViewCatalog, IslandMsg_ViewContent, IslandMsg_ViewSettle } from "./island-protocol.js";
@@ -82,6 +84,7 @@ interface IslandSlot {
   /** The slot's key: a wiki id for an island outside any session, the whole session key for a surface. */
   wikiId:      string;
   worker:      VesselWorkerHandle;
+  stopWork:    () => void;
   /** Vessel side of the island sync channel. Close on unmount (Law §7). */
   mainPort:    MessagePort;
   /** True from the moment a teardown begins: an island on its way down takes no new placement. */
@@ -326,6 +329,8 @@ export interface VesselIslandPoolCoreOptions {
   onPortDrop?: (islandKey: string, type: string, reason: "no-port-lease") => void;
   /** Vessel main Repo — each island's mainPort wires to it for CRDT sync. */
   mainRepo?: Repo | null;
+  /** The vessel owns request decisions; every receiving island asks through its worker port. */
+  work?: CompositeStore;
   /** Held disk-write capability — bag → mirror configs this pool MAY project. */
   diskMirrorGrant?: DiskMirrorGrant;
   /**
@@ -423,6 +428,7 @@ export class VesselIslandPoolCore {
   private readonly _bootInputs = new Map<string, { coreCid: string; pluginCids: readonly string[] }>();
   private readonly _host:           VesselIslandHost;
   private readonly _mainRepo:       Repo | null;
+  private readonly _work: CompositeStore | null;
   /** The sync peer each wiki island's channel carries, so a receipt request reads a closed channel as a fact. */
   private readonly _islandPeerOf = new Map<string, string>();
   private _restState: VesselRestState = { asked: 0, rested: 0, stalled: 0 };
@@ -478,6 +484,7 @@ export class VesselIslandPoolCore {
     }
     this._host            = opts.host;
     this._mainRepo        = opts.mainRepo ?? null;
+    this._work            = opts.work ?? null;
     this._diskMirrorGrant = opts.diskMirrorGrant ?? [];
     this._shoreCollapse   = opts.shoreCollapse ?? null;
     this._onWorkerEvent   = opts.onWorkerEvent ?? null;
@@ -855,6 +862,8 @@ export class VesselIslandPoolCore {
 
     // A session's island spawns without the vessel's own doors: its view answers what it may ask.
     const worker = this._host.spawnWorker(plan.surface ? { session: true } : undefined);
+    const stopWork = this._work ? serveVesselWork({ post: msg => worker.post(msg), listen: fn => worker.listen(fn) }, { store: this._work }) : () => {};
+    worker.onExit?.(() => stopWork());
     this._wireWorkerListeners(wikiId, worker, view, standing, plan.surface?.parts ?? null);
 
     // Disk-mirror = designation ∩ grant: the recipe (synced) DESIGNATES bags;
@@ -871,7 +880,7 @@ export class VesselIslandPoolCore {
     const shoreCollapse = diskMirrors.length > 0 && this._shoreCollapse !== null ? await (async () => this._shoreCollapse!())().catch(() => null) : null;
 
     const manifestMsg = mkManifest(
-      plan.wikiUri, syncPort, plan.recipe, plan.grants, plan.coreHash,
+      plan.wikiUri, syncPort, plan.recipe, { ...plan.grants, workGranted: !!this._work }, plan.coreHash,
       {
         ...(diskMirrors.length ? { diskMirrors } : {}),
         ...(shoreCollapse ? { shoreCollapse } : {}),
@@ -909,6 +918,7 @@ export class VesselIslandPoolCore {
       // A failed mount cleans up after itself: the spawned worker dies, the
       // sync port closes, the failure lands in the intensity ledger. Without
       // the terminate, every ea timeout stranded a live worker thread.
+      stopWork();
       worker.terminate();
       view?.close();
       mainPort.close();
@@ -922,13 +932,14 @@ export class VesselIslandPoolCore {
     if (fenced) {
       view?.close();
       mainPort.close();
+      stopWork();
       worker.terminate();
       throw new SurfaceMountError(fenced);
     }
 
     this._mountFailures.delete(wikiId);   // a clean mount clears the ledger
     this._slots.set(wikiId, {
-      temperature: "wela", pinned, wikiId, worker, mainPort, closing: false,
+      temperature: "wela", pinned, wikiId, worker, stopWork, mainPort, closing: false,
       surface: plan.surface && view ? { parts: plan.surface.parts, view, standing } : null,
     });
     // The breath of an island outside any session drains that wiki's mailbox. A session's island answers to
@@ -991,6 +1002,7 @@ export class VesselIslandPoolCore {
     // The scoped view closes with its island: the leg stands down and every gate refuses from here on.
     workerSlot.surface?.view.close();
     workerSlot.mainPort.close();
+    workerSlot.stopWork();
     workerSlot.worker.terminate();
     // A session's island never cools for a later reference to wake: its lease drops with it.
     if (workerSlot.surface) this._slots.delete(wikiId);
@@ -1039,12 +1051,12 @@ export class VesselIslandPoolCore {
   /** Place a wiki-scope job into a live island and await the result. */
   placeWikiVerb(
     wikiId: string,
-    opts: { verb: string; args: Record<string, unknown>; requestedBy: string; targets?: string[]; batchMode?: string; asker?: Hand },
+    opts: { requestId?: string; verb: string; args: Record<string, unknown>; requestedBy: string; targets?: string[]; batchMode?: string; asker?: Hand },
     session?: PlacingSession,
   ): Promise<Record<string, unknown>> {
     const slot = this._placeable(wikiId, session);
     if (typeof slot === "string") return Promise.reject(new Error(`[vessel-pool] ${slot} for ${wikiId}`));
-    const requestId = crypto.randomUUID();
+    const requestId = opts.requestId ?? crypto.randomUUID();
     const worker = slot.worker;
     return new Promise<Record<string, unknown>>((resolve, reject) => {
       // The verb ends on the island's answer, its unmount (a lease that dropped), or its exit or error (`_failParkedVerbs`);

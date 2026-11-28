@@ -5,7 +5,7 @@
  * stage come up empty under a new face relation F. This pair carries what the operator wrote across that line as
  * CONTENT, never as identity: no key, signature, CRDT history or AID travels, and the import writes NEW changes under
  * the new face's authority. The sensoriums (captured conversation memory, `<root>/sensoriums`) survive by where they
- * stand and never enter a bundle. Control records rest in the vessel control document and never travel in a bundle;
+ * stand and never enter a bundle. Vessel records rest in the registry and work snapshot and never travel in a bundle;
  * the daemon wiki travels through the face's root (`faces/<pet name>/`): its working (`wikis/daemon/`) and canon (`bags/daemon/`)
  * mirrors, and kahua through its `bags/kahua/`.
  *
@@ -232,8 +232,8 @@ export interface BundleDoors {
    *  (`liveKeepRoute`), and a root a harness staged with no terminal offers the published test route. */
   readonly keepRoute?: () => Promise<readonly Credential[]>;
   /**
-   * Write one share row into the standing vessel's control document (`share-set`), its owner by pet-name beside it. The vessel
-   * reconciles `config/share.tid` only at its boot and the landing (`share-apply`) reads the control document, so a row written
+   * Write one share row into the standing vessel's vessel registry (`share-set`), its owner by pet-name beside it. The vessel
+   * reconciles `config/share.tid` only at its boot and the landing (`share-apply`) reads the vessel registry, so a row written
    * to the file alone owes no grant until the next boot, when the owner's half may stand shut. Absent: the file alone.
    */
   readonly shareSet?: (row: ShareEntry) => Promise<void>;
@@ -995,7 +995,7 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
   const carriedShares = (redeclare.shares ?? []).filter((r) => !standingShares.some((x) => x.slug === r.slug));
   const allShares: ShareEntry[] = [...standingShares, ...carriedShares.map((r): ShareEntry => ({ ...r }))];
   if (apply && carriedShares.length > 0 && doors.shareRows) doors.shareRows.write(allShares);
-  // THE CARRIED ROWS REACH THE CONTROL DOCUMENT NOW, beside the file: this wear's landing reads them, so the owner's own wear
+  // THE CARRIED ROWS REACH THE VESSEL REGISTRY NOW, beside the file: this wear's landing reads them, so the owner's own wear
   // owes each grant and carries each reader's catalog row to that reader's next wear, before its personal layer mounts the wiki.
   if (apply && doors.shareSet !== undefined) {
     for (const r of carriedShares) {

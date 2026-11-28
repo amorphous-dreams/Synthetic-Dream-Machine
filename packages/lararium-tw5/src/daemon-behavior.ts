@@ -54,7 +54,7 @@ import { writeShoreLog } from "./shore-log-island.js";
 import { VerbDispatcher, VerbTable } from "./verb-dispatcher.js";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandContext, IslandBehavior, WritableOutcome } from "./island-context.js";
-import { controlOf } from "./island-context.js";
+import { workStoreOf } from "./island-context.js";
 import type { RunnableHulls } from "@lararium/mesh/flow";
 import { seedDaemonProtocol } from "./daemon-protocol-seed.js";
 import { canonicalJson } from "@lararium/mesh/crypto";
@@ -203,11 +203,11 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
       // verify-then-delegate gate FOR FREE (a gate a main-thread jobRegistry
       // lacks). Pool-touching reactors command main via ctx.post (daemon:evict-request).
       opts.wireWorkerVerbs?.(registry, ctx);
-      // The control families rest in the vessel's control document alone; a daemon island granted none stands no dispatcher.
+      // The state families rest in the vessel's state document alone; a daemon island granted none stands no dispatcher.
       _dispatcher = new VerbDispatcher({
         daemonVm:  tw5,
         daemon:    composite,
-        control:   controlOf(ctx),
+        state:   workStoreOf(ctx),
         registry,
         routeFn:  (invocation, signal) => delegations.route(invocation, signal),
         ...(verifier ? { verifier } : {}),

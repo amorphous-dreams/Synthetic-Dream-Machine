@@ -73,7 +73,7 @@ import { charterHomeFor, primaryNexusAid, readCarriedCharters } from "./carried-
 import { readNexusDoc } from "./nexus-doc.js";
 import { nodeNexusIsland } from "./nexus-standing.js";
 import { verifyEd25519 } from "@lararium/mesh/ed25519-door";
-import { controlHomeRefusal } from "@lararium/mesh/control-home";
+import { vesselStateRefusal } from "@lararium/mesh/vessel-state";
 
 export interface RaiseDoorOptions {
   /** This vessel's own verifying key — a grant for any other vessel answers nothing here. */
@@ -168,8 +168,8 @@ export function standRaiseDoor(opts: RaiseDoorOptions): RaiseDoor {
  * Read only signed quorum advances under the charter lineage this vessel verified.
  */
 export function leaseEpochOnBoard(handle: DocHandle<LarDoc>, resource: string, lineage: HandLineage | null): number | null {
-  // A stand-in control handle (the key shut, or no face) holds no epoch: the fence reads unread, never genesis 0.
-  return lineage === null || controlHomeRefusal(handle) !== null ? null : quorumLeaseEpochOnBoard(handle.doc(), resource, lineage);
+  // A stand-in state handle (the key shut, or no face) holds no epoch: the fence reads unread, never genesis 0.
+  return lineage === null || vesselStateRefusal(handle) !== null ? null : quorumLeaseEpochOnBoard(handle.doc(), resource, lineage);
 }
 
 /**

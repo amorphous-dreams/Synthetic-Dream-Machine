@@ -4,7 +4,7 @@ import type { CompositeStore } from "@lararium/mesh/composite-store";
 import type { Verb } from "@lararium/mesh/verb-tiddler";
 import type { LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { OUTCOME_ERROR_BOUND, OUTCOME_URI_PREFIX, VERB_RESULT_KEY, VERB_URI_PREFIX, buildVerb, parseVerb, verbInputDigest, verdictRowOf } from "@lararium/mesh/verb-tiddler";
-import { answerRingOf } from "@lararium/mesh/control-home";
+import {  answerRingOf  } from "@lararium/mesh/answer-ring";
 import { addCallTouches } from "@lararium/mesh/call-touches";
 import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import {
@@ -59,7 +59,7 @@ class FakeDaemonStore {
   }
 }
 
-/** The whole answer's stored `results` text: it rides the control store's answer ring, memory alone, and rests in no row. */
+/** The whole answer's stored `results` text: it rides the state store's answer ring, memory alone, and rests in no row. */
 const answerResults = (daemon: object, requestId: string): string =>
   String(answerRingOf(daemon).get(requestId)?.tiddler["results"]);
 /** The whole answer's results map, parsed. */

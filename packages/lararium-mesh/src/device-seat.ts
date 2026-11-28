@@ -53,7 +53,7 @@ export interface DeviceSeatInput<P extends { readonly deviceEdge: Parameters<typ
   readonly kelEpoch: number;
   /** The face's signed persona records as this replica holds them. */
   readonly records: readonly unknown[];
-  /** The lease slot values read off the vessel's control document. */
+  /** The lease slot values read off the vessel's vessel registry. */
   readonly leaseSlotValues: readonly string[];
   /** The PersonaGroup root's seed, open for this one act; the caller zero-fills it. */
   readonly signerSeed: Uint8Array;
@@ -62,7 +62,7 @@ export interface DeviceSeatInput<P extends { readonly deviceEdge: Parameters<typ
   /** The joining atom's verifying key, 64 lower-case hex. */
   readonly deviceKey: string;
   readonly vesselTag: { readonly vesselTag?: unknown; readonly vesselSig?: unknown; readonly wardKey?: unknown; readonly wardPop?: unknown };
-  /** The daemon working document this hearth projects for the face (`hearthDaemonOf` over its control document), or null/absent
+  /** The daemon working document this hearth projects for the face (`hearthDaemonOf` over its vessel registry), or null/absent
    *  where the root holder stands none. The root signs it into the device's edge act (road row `L4f`). */
   readonly hearthDaemon?: string | null;
   /** The root's signature over the joinee's edge (`buildDeviceDelegationRootHalf`), handed in so the caller's own import signs. */

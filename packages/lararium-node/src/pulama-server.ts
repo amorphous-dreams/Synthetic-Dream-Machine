@@ -163,6 +163,7 @@ export function servePulama(a: {
   readonly gate: PulamaGate;
   /** The registered domains a session's children derive under. */
   readonly derives: readonly string[];
+  readonly records?: import("@lararium/mesh/swarm-tiddlers").SwarmWikiPort;
   readonly onLog?: (line: string) => void;
 }): PulamaServer {
   const { holder } = a;
@@ -304,6 +305,17 @@ export function servePulama(a: {
 
   const run = async (s: Session, op: string, args: Record<string, unknown>): Promise<unknown> => {
     switch (op) {
+      case "swarm.read": case "swarm.write": case "swarm.write-new": case "swarm.list": {
+        const records = a.records;
+        if (!records) throw new PulamaRefused("swarm-custody-unavailable");
+        const title = op === "swarm.list" ? args["prefix"] : args["title"];
+        if (typeof title !== "string") throw new PulamaRefused("swarm-name-malformed");
+        if (op === "swarm.read") return records.read(title);
+        if (op === "swarm.list") return records.list(title);
+        if (typeof args["text"] !== "string") throw new PulamaRefused("swarm-record-malformed");
+        if (op === "swarm.write-new") return records.writeNew(title, args["text"]);
+        return records.write(title, args["text"]);
+      }
       case "record.read": { const { home, file } = recordOf(args); await guard(s, home, file, "hot"); return holder.readRecord(home, file); }
       case "record.write": { const { home, file } = recordOf(args); await guard(s, home, file, "cold-write"); return holder.writeRecord(home, file, bytesOf(args["plaintext"])); }
       case "record.standing": {

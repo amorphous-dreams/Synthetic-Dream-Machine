@@ -137,7 +137,7 @@ export function islandPeersOf(repo: Repo): { has(peerId: string): boolean } {
 }
 /**
  * THE WIKI ISLANDS AMONG THE HOUSE'S ISLANDS. A wiki island renders pages and never needs a custody document (the secret
- * home, the control document and what it names): only the daemon island, which holds the keys, syncs those. The pool marks
+ * home, the vessel registry and what it names): only the daemon island, which holds the keys, syncs those. The pool marks
  * each wiki island's peer as it arrives on the leg the pool attached (before the leg joins the network, so the mark
  * precedes every share decision), and a vessel-only share verdict refuses such a peer while it still serves it every page
  * document a house island reads. The mark keys on the peer id the island's own leg proved; a fresh island mints a fresh id.

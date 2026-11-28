@@ -7,55 +7,55 @@
  *
  *   D1  RED: `lares persona list` beside a standing, unlocked vessel opens NO key session of its own: the
  *       published test route never fires, the command's seat stays locked, and the roster it prints came through
- *       act frames.               control: with no vessel standing the same command opens its own session once
+ *       act frames.               state: with no vessel standing the same command opens its own session once
  *   D2  RED: a sealed row read in the command's own process beside a standing vessel refuses by name and opens
  *       nothing: an unlocked vessel "holds the key session", a locked one names `lares vault unlock`.
- *                                 control: with no vessel standing the same read opens by the test route
+ *                                 state: with no vessel standing the same read opens by the test route
  *   D3  a vessel's refusal returns under the class the same act throws in process (`CustodyLocked`,
  *       `CustodyRecordUnavailable`, `SealedActRefused`), and the frame a command sends holds `op`, `act` and `args`
  *       alone.
  *   D4  another command holding the store for one act answers no custody door: the act runs in this process.
  *   D5  RED: a root split never rides a standing vessel: `persona new --split-root` beside one, unlocked or locked,
  *       refuses before anything founds, and the vessel hears a `custody` probe and nothing else.
- *                                 control: the table names no act that answers a share
+ *                                 state: the table names no act that answers a share
  *   D6  RED: THE FLEET MIRROR SENDS NO VERB. A pet-name set and a Handle declared through the fleet-mirroring stores
  *       beside a standing vessel reach it as act frames alone, and the carry frames hold a face's index and which
  *       name, never the name. No source file of the command line names a verb that takes or answers a face's own
- *       name.                     control: the sealed write's own frame holds the name (the search finds it there),
+ *       name.                     state: the sealed write's own frame holds the name (the search finds it there),
  *                                 and with no vessel standing the carry refuses by name while the sealed row keeps
  *                                 the name
  *   D7  `lares persona sync` FILLS: each held name rides one `selves.carry` frame marked `fill`, so a name the
  *       face's plane already holds stands, and the command says which names landed and which the fleet kept.
- *                                 control: a rename (`makeFleetPetnameStore.set`) sends its carry with no `fill`
+ *                                 state: a rename (`makeFleetPetnameStore.set`) sends its carry with no `fill`
  *   D11 RED: A CLEAR PLANE OUTRANKS NO SEALED ROW. While `selves.read` names its rest `clear`, the fleet stores read
  *       the sealed row first, so a re-lit label reads over a name an older vessel left on the plane.
- *                                 control: with the rest `sealed`, the plane's name outranks the device's copy
+ *                                 state: with the rest `sealed`, the plane's name outranks the device's copy
  *   D8  RED: A SEAT'S KEY NEVER CROSSES THE DOOR. `lares nexus seal seat` beside a standing vessel sends an arming
  *       frame that carries no key; this CLI process holds the harness's explicit read-back seat. It takes public halves back, mints each
  *       chair's cold card in its own process, and opens no key session of its own. No frame carries a card.
- *                                 control: the charter the command wrote seats exactly the halves the door answered
+ *                                 state: the charter the command wrote seats exactly the halves the door answered
  *   D9  RED: A CARRIED INVITE RIDES NO VERB. `lares walk`, `walk take` and `walk invite` beside a standing vessel
  *       send act frames alone (`walk.state`, `walk.take`, `walk.invite`); the invite a person carries in, and the
  *       one the wallet hands out, appear in no frame that names a verb, and the command opens no key session.
  *       A vessel's refusal of a take reads as the walk door's own refusal (exit code and words).
- *                                 control: the take's act frame holds the carried invite, and the command
+ *                                 state: the take's act frame holds the carried invite, and the command
  *                                 prints `via: daemon` as every store door does
  *   D10 RED: A HOST INVITE RIDES NO VERB. `lares host`, `host roll` and `host invite` beside a standing vessel send
  *       act frames alone (`host.state`, `host.roll`, `host.invite`); the invite the hearth mints appears in no
  *       frame, and the command opens no key session. A vessel's refusal of a roll reads as the hosting door's own
  *       refusal (exit code and words).
- *                                 control: the roll's act frame holds its Nexus and its cap, and nothing else
+ *                                 state: the roll's act frame holds its Nexus and its cap, and nothing else
  *   D12 RED: A FACE'S HANDLE BOOK RIDES A SESSION OF THAT FACE. `handle-book.load` and `handle-book.save` read and write
  *       one face's book, so each rides `session:act` on a session of the face it names, and the custody door's own
  *       act frame refuses either `face-act-rides-a-session`.
- *                                 control: the book a load answers is the book the save sends back
+ *                                 state: the book a load answers is the book the save sends back
  *   D13 RED: EVERY ACT THAT SIGNS, OPENS OR WRITES AS A FACE RIDES A SESSION OF THAT FACE. The acts that name their face
  *       by `handleIndex` (a crossing's hand and witness, the carriage consent, the first recovery contacts, a restored face's
  *       confirm, the fleet mirror's carry and clear) ride `session:act` on a session of the face they name, carrying
  *       `handleIndex` alone; the custody door's own act frame refuses each.
- *                                 control: an act of the place (`petname.set`) keeps the custody door's frame
+ *                                 state: an act of the place (`petname.set`) keeps the custody door's frame
  */
-import { controlStoreOf } from "@lararium/mesh/control-home";
+import { stateStoreOf } from "@lararium/mesh/vessel-state";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import type { Socket } from "node:net";
@@ -133,7 +133,7 @@ async function standVessel(opts: { unlocked: boolean; table?: (act: string, args
   const composite = new CompositeStore();
   composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(daemonHandle as never, DAEMON_BAG_ID), writable: true, defaultWritable: false });
   composite.addLayer({ bagId: wikiSlotUri("daemon", "working"), store: new AutomergeDocStore(workingHandle, wikiSlotUri("daemon", "working")), writable: true });
-  const seat = makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo, placeVerb: () => {},
+  const seat = makeUdsSeat({ stateHandle: daemonHandle, state: stateStoreOf(daemonHandle), claim, repo, placeVerb: () => {},
     sessionActs: { names: SESSION_ACTS, run: async (act, args) => ({ ...(await door.act(act, args)) }) },
     sessions: { anchorNow: async () => PLACE, open: async ({ faceRef }) => {
       const ordinal = Number(/^h(\d+)$/.exec(faceRef)?.[1] ?? NaN);

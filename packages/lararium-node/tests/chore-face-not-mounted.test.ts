@@ -7,7 +7,7 @@
  * Reads keep their path, and a place row acts as the place.
  */
 import { CHORE_FREE_VERBS } from "../src/chore-face.js";
-import { controlStoreOf } from "@lararium/mesh/control-home";
+import { stateStoreOf } from "@lararium/mesh/vessel-state";
 import { afterEach, expect, test, vi } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -81,7 +81,7 @@ async function stand(lane: { readonly faceDark?: (face: number) => string | null
   const placed: Array<{ verb: string; requestId: string; ordinal?: number; args: Record<string, unknown>; requestedBy: string }> = [];
   const held: Array<() => void> = [];
   const front = serveUdsFront({ claim });
-  front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
+  front.attach(makeUdsSeat({ stateHandle: daemonHandle, state: stateStoreOf(daemonHandle), claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
     switchActs: { write: async () => {} },
     mountOrdinal: () => 0,
     lentOrdinals: async () => [0, 1],
@@ -512,7 +512,7 @@ test("ONE-SHOT WORK RIDES THE WORK GATE (writes enter during the drain, the main
   expect(await v.oneShot({ verb: "tiddler-get", args: { recipe: "default", title: MEME.uri }, requestedBy: "0xop", requestId: "read-during" }))
     .toMatchObject({ status: "done" });
   expect(v.placed.map((p) => p.requestId)).toEqual(["one-before", "read-during"]);
-  // A CHORE-FREE WRITE STILL TAKES THE GATE: realm-feed rolls a lease slot and lands its receipt in the daemon layer.
+  // A CHORE-FREE WRITE STILL TAKES THE GATE: realm-feed rolls a lease slot in the daemon layer.
   expect(await v.oneShot({ verb: "realm-feed", args: { realm: "r", writer: "w" }, requestedBy: "0xop", requestId: "feed-during" }))
     .toMatchObject({ status: "error", refusal: { reason: "face-closing" } });
   expect(v.placed.map((p) => p.requestId)).toEqual(["one-before", "read-during"]);

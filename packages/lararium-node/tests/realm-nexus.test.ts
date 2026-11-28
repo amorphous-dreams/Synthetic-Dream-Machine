@@ -61,7 +61,7 @@ import { atomKeyOf, atomSeedOf, seedFaceAtom, actingAtomKey } from "./atom-fixtu
 import { seedFleet } from "./fleet-seed-fixture.js";
 import { scratchRoot as root, scratchHome, it } from "./support/scratch-fixture.js";
 import { keepHouse } from "./support/kept-house.js";
-import { seedFoundedDaemonDoc } from "./daemon-control-fixture.js";
+import { seedFoundedDaemonDoc } from "./daemon-work-fixture.js";
 
 const REALM = "b1".repeat(32), OTHER_REALM = "b2".repeat(32), MEMBER = "c3".repeat(32), JOINER = "d4".repeat(32);
 

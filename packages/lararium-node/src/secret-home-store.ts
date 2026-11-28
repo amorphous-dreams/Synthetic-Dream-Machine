@@ -11,7 +11,7 @@
  *   · the row never leaves its vessel (bundle `stays`): each vessel holds its own dyad, its own device's group-secret seal
  *     and the cap events it ingested, and a fleet-join carries what a joinee needs on its own payload.
  *
- * THE CONTROL DOCUMENT RIDES THE SAME ROW (operator ruling A6, 2026-11-09): the founding mints it beside the home, under the
+ * THE VESSEL STATE DOCUMENT RIDES THE SAME ROW (operator ruling A6, 2026-11-09): the founding mints it beside the home, under the
  * same vessel key bound to its own bag, and the row names its id; the daemon document names it too, for the floor's stand.
  *
  * ORDER (placement-over-patterns, the founding order): the custody seats first; the home enrolls on the Repo's bound
@@ -26,6 +26,7 @@ import {
   decodeSecretHomeAddress,
   encodeSecretHomeAddress,
   enrollSecretHome,
+  enrollVesselState,
   mintSecretHomeAddress,
   mintVesselDocumentId,
   openSecretHome,
@@ -66,7 +67,7 @@ async function keepSecretHomeAddress(address: SecretHomeAddress): Promise<void> 
 export async function openVesselSecretHome(repo: Repo): Promise<SecretHome> {
   const address = await readSecretHomeAddress();
   if (address === null) throw new SecretHomeUnavailable("this vessel's custody names no secret home; found the place first");
-  return openSecretHome(repo, address);
+  return ensureState(repo, address);
 }
 
 /** Open the home this vessel's custody names, or answer null where it names none (a reader with nothing to read there). */
@@ -81,14 +82,31 @@ export async function openVesselSecretHomeIfNamed(repo: Repo): Promise<SecretHom
  */
 export async function standVesselSecretHome(repo: Repo): Promise<VesselSecretHome> {
   const standing = await readSecretHomeAddress();
-  if (standing !== null) return { ...await openSecretHome(repo, standing), controlUrl: standing.controlId ? `automerge:${standing.controlId}` : null };
-  // THE CONTROL DOCUMENT MINTS BESIDE THE HOME (operator ruling A6): one custody row names both, one key seals both.
-  const address = { ...mintSecretHomeAddress(), controlId: mintVesselDocumentId() };
+  if (standing !== null) return ensureState(repo, standing);
+  // THE VESSEL STATE DOCUMENT MINTS BESIDE THE HOME (operator ruling A6): one custody row names both, one key seals both.
+  const address = { ...mintSecretHomeAddress(), stateId: mintVesselDocumentId() };
   const home = await enrollSecretHome(repo, address);
-  await repo.flush([home.handle.documentId, ...(home.control ? [home.control.documentId] : [])]);
+  await repo.flush([home.handle.documentId, ...(home.state ? [home.state.documentId] : [])]);
   await keepSecretHomeAddress(address);
-  return { ...home, controlUrl: `automerge:${address.controlId}` };
+  return { ...home, stateUrl: `automerge:${address.stateId}` };
 }
 
-/** The vessel's secret home, and the url of the control document its custody row names beside it (null: none). */
-export type VesselSecretHome = SecretHome & { readonly controlUrl: string | null };
+/** The vessel's secret home, and the url of the state document its custody row names beside it (null: none). */
+export type VesselSecretHome = SecretHome & { readonly stateUrl: string | null };
+
+/** An old address supplies the existing secret key, never the retired document or its history. */
+async function ensureState(repo: Repo, address: SecretHomeAddress): Promise<VesselSecretHome> {
+  const home = await openSecretHome(repo, address);
+  if (address.stateId) return { ...home, stateUrl: `automerge:${address.stateId}` };
+  const stateId = mintVesselDocumentId();
+  await enrollVesselState(repo, stateId);
+  const named = await updateCustodyRecord("identity", SECRET_HOME_FILE, bytes => {
+    const current = bytes && decodeSecretHomeAddress(bytes);
+    if (!current || current.documentId !== address.documentId || !bytesEqual(current.key, address.key)) throw new SecretHomeUnavailable("the secret home's custody changed while naming its registry");
+    if (current.stateId) return { plaintext: null, value: current };
+    const fresh = { ...current, stateId };
+    return { plaintext: encodeSecretHomeAddress(fresh), value: fresh };
+  });
+  const opened = await openSecretHome(repo, named);
+  return { ...opened, stateUrl: `automerge:${named.stateId}` };
+}

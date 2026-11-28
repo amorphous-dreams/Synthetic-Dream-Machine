@@ -89,7 +89,7 @@ import {
 } from "@lararium/mesh/sealed-writer";
 import { constantTimeBytesEqual } from "@lararium/mesh/crypto";
 import { isWalkRecord } from "@lararium/mesh/walk-client";
-import { VESSEL_LOCKED } from "@lararium/mesh/control-home";
+import { VESSEL_LOCKED } from "@lararium/mesh/vessel-state";
 import { openVesselIdb } from "./browser-vessel-identity.js";
 import { clearCustodyQuestion } from "@lararium/mesh/lar-uris";
 import { readFaceRecord, removeFaceRecord, writeFaceRecord } from "./browser-face-custody.js";
@@ -102,7 +102,7 @@ export const KEYSTORE_CARRIER_PREFIX = "browser-keystore/";
 const DEVICE_SEED_RECORD = "vessel-key";
 /** The floor's rest seed row (`browser-floor-key.ts` `FLOOR_REST_RECORD`): 32 random bytes the floor's rest key derives from. */
 const FLOOR_REST_RECORD = "floor-rest";
-const CUSTODY_RECORD = /^(?:vessel-key|floor-rest|persona-root-roster|secret-home|walk\/.+)$/;
+const CUSTODY_RECORD = /^(?:vessel-key|floor-rest|persona-root-roster|secret-home|vessel-work|walk\/.+)$/;
 
 /** Is `row` one the place tree wraps: the place seed, the ward's public roster or a walk. */
 export function isCustodyRecord(row: string): boolean { return CUSTODY_RECORD.test(row); }
@@ -197,7 +197,7 @@ export class BrowserCustodyRefused extends Error {
     super(`[browser-custody] ${reading} — "${idbName}"${row ? ` row ${row}` : ""}: ${SAYS[reading]}${detail ? ` (${detail})` : ""}`);
   }
   /** THE NAME A CALLER READS, one across platforms: a sealed keystore this page holds no unlock for refuses `vessel-locked`,
-   *  the name a node vessel's control acts and the CLI's direct holder answer; every other reading names itself. */
+   *  the name a node vessel's state acts and the CLI's direct holder answer; every other reading names itself. */
   get refusal(): string { return this.reading === "sealed-locked" ? VESSEL_LOCKED : this.reading; }
 }
 

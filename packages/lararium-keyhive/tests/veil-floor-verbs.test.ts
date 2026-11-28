@@ -2,10 +2,10 @@
  * THE FLOOR'S VERB GATE NAMES THE FLOOR KEY (in-house ruling 7, 2026-11-12, the-veil-ladder#/the-base-model).
  *
  * The wiki-minting and composing verbs refuse where the vessel cannot seal what they write. The capability: the floor's
- * rest key stands on the vessel (its grant reads `stands`). No control document stands at any floor here: a place holds
+ * rest key stands on the vessel (its grant reads `stands`). No state document stands at any floor here: a place holds
  * none until a face lands (operator ruling 2026-11-09). A face seated passes as before.
  *
- *   G1 — an unlocked veil floor (no face, NO control document, the floor key standing) mints a wiki as the veil: its
+ *   G1 — an unlocked veil floor (no face, NO state document, the floor key standing) mints a wiki as the veil: its
  *        catalog row carries `face-reach = vessel-only`, and its canon document files as the vessel's own (announced
  *        `floor`, then named by a `floor/slot/<slug>/canon` row of the place's daemon document) in the same act
  *   G2 — a locked floor (`vessel-locked`) still refuses by naming the lift, and writes nothing
@@ -14,8 +14,9 @@
 import { describe, test, expect } from "vitest";
 import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { CompositeStore } from "@lararium/mesh/composite-store";
-import { CONTROL_HOME_ID, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
-import { CONTROL_HOME_UNNAMED, ControlHomeUnavailable, floorAnswerStore } from "@lararium/mesh/control-home";
+import { VESSEL_STATE_ID, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { VESSEL_STATE_UNNAMED, VesselStateUnavailable } from "@lararium/mesh/vessel-state";
+import { floorAnswerStore } from "@lararium/mesh/floor-answers";
 import { emptyLarDoc, tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
 import { floorSlotTitle } from "@lararium/mesh/device-daemon-docs";
 import { isVeilBagRow } from "@lararium/mesh/catalog-view";
@@ -27,9 +28,9 @@ import { operatorDaemonOptions } from "../src/operator-daemon-behavior.js";
 const PLACE = "a".repeat(64);
 const FLOOR = /waking floor|persona new 0/i;
 
-/** A faceless place's daemon island: its control store stands as the unnamed stand-in, and `floorKey` reads the vessel's grant. */
+/** A faceless place's daemon island: its state store stands as the unnamed stand-in, and `floorKey` reads the vessel's grant. */
 function floor(floorKey: "stands" | "vessel-locked" | "floor-unkeyed" | undefined) {
-  const control = floorAnswerStore(new ControlHomeUnavailable("this place names no control document", CONTROL_HOME_UNNAMED));
+  const state = floorAnswerStore(new VesselStateUnavailable("this place names no state document", VESSEL_STATE_UNNAMED));
   const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
   const catalog = repo.create<LarDoc>(emptyLarDoc());
   const composite = new CompositeStore();
@@ -37,10 +38,10 @@ function floor(floorKey: "stands" | "vessel-locked" | "floor-unkeyed" | undefine
   const posts: Array<Record<string, unknown>> = [];
   const docStoreDoor = { post: (m: unknown) => { posts.push(m as Record<string, unknown>); }, listen: () => () => {} };
   const registry = new VerbTable();
-  const ctx = { composite, control, ...(floorKey ? { floorKey } : {}), repo, catalogUrl: catalog.url, tw5: {} as never, post: () => {} } as never;
+  const ctx = { composite, state, ...(floorKey ? { floorKey } : {}), repo, catalogUrl: catalog.url, tw5: {} as never, post: () => {} } as never;
   operatorDaemonOptions({ daemonAuth: { placeVerifyingKey: PLACE, registerBags: [] } } as never, { docStoreDoor } as never).wireWorkerVerbs?.(registry, ctx);
   const verbCtx = { daemon: {} as never, invocation: { requestId: "r1" } as never, cap: async () => ({ ok: true }) } as never;
-  return { repo, catalog, control, composite, posts, run: (verb: string, args: Record<string, unknown>) => registry.get(verb)!(args, verbCtx) };
+  return { repo, catalog, state, composite, posts, run: (verb: string, args: Record<string, unknown>) => registry.get(verb)!(args, verbCtx) };
 }
 
 describe("★ the floor's verb gate names the held key, never a seated face ★", () => {
@@ -56,7 +57,7 @@ describe("★ the floor's verb gate names the held key, never a seated face ★"
     expect(f.posts.find((m) => m["type"] === "docstore:slot" && m["bagId"] === wikiBagUri("tabs"))).toMatchObject({ documentId, floor: true });
     expect(tiddlerText(await f.composite.get(floorSlotTitle("tabs", "canon")))).toBe(out.wikiDocUrl);
     expect(floorSlotTitle("tabs", "canon").startsWith(`${DAEMON_BAG_ID}/`)).toBe(true);
-    expect(floorSlotTitle("tabs", "canon").startsWith(CONTROL_HOME_ID)).toBe(false);
+    expect(floorSlotTitle("tabs", "canon").startsWith(VESSEL_STATE_ID)).toBe(false);
     await f.repo.shutdown();
   });
 

@@ -35,7 +35,7 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { CompositeStore } from "@lararium/mesh/composite-store";
-import { DAEMON_BAG_ID, CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { DAEMON_BAG_ID, VESSEL_STATE_ID } from "@lararium/mesh/lar-uris";
 import { concludeVerb } from "@lararium/mesh/verb-tiddler";
 import { deviceEdgeId } from "@lararium/mesh/dyad";
 import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
@@ -254,7 +254,7 @@ describe("the settler's own rules", () => {
     const h = harness();
     await h.settler.idle();
     expect(h.calls).toEqual([]);
-    h.settler.onFold();                                                    // control: a fold runs the three steps in order
+    h.settler.onFold();                                                    // state: a fold runs the three steps in order
     await h.settler.idle();
     expect(h.calls.filter((c) => !c.startsWith("log:"))).toEqual(["facts", "answer", "mark", "after"]);
   });
@@ -355,8 +355,8 @@ describe("the main thread asks its island a verb", () => {
   const stand = () => {
     const repo = new Repo({});
     const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
-    const working = CONTROL_HOME_ID;
-    // The control store as the island writes it: the vessel's control document (the daemon document stays beside it).
+    const working = VESSEL_STATE_ID;
+    // The state store as the island writes it: the vessel's state document (the daemon document stays beside it).
     const composite = new CompositeStore();
     composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(daemonHandle as never, DAEMON_BAG_ID), writable: true, defaultWritable: false });
     composite.addLayer({ bagId: working, store: new AutomergeDocStore(repo.create<LarDoc>(emptyLarDoc()), working), writable: true });
@@ -376,19 +376,19 @@ describe("the main thread asks its island a verb", () => {
     return { composite, listening: () => listening, placed, placedOnce, conclude, place: (o: { verb: string; requestId: string }) => { placed.push({ verb: o.verb, requestId: o.requestId }); onPlace(); } };
   };
 
-  test("A1 — the outcome in the control document answers the ask", async () => {
+  test("A1 — the outcome in the state document answers the ask", async () => {
     const s = stand();
-    const ask = askIslandVerb({ control: s.composite, placeVerb: s.place, verb: "seat-duties", args: { facts: {} }, requestedBy: "vessel", requestId: "ask-1" });
+    const ask = askIslandVerb({ state: s.composite, placeVerb: s.place, verb: "seat-duties", args: { facts: {} }, requestedBy: "vessel", requestId: "ask-1" });
     await s.placedOnce;                                                    // the ask read the composite first, then placed
     expect(s.placed).toEqual([{ verb: "seat-duties", requestId: "ask-1" }]);
-    await s.conclude("another-request", "done", { ran: false });           // control: another request's outcome answers nothing
+    await s.conclude("another-request", "done", { ran: false });           // state: another request's outcome answers nothing
     await s.conclude("ask-1", "done", { ran: true, rolls: [1, 2] });
     expect(await ask.answer).toEqual({ ran: true, rolls: [1, 2] });
   });
 
   test("A2 — an error outcome rejects by the island's own words", async () => {
     const s = stand();
-    const ask = askIslandVerb({ control: s.composite, placeVerb: s.place, verb: "seat-duties", args: {}, requestedBy: "vessel", requestId: "ask-2" });
+    const ask = askIslandVerb({ state: s.composite, placeVerb: s.place, verb: "seat-duties", args: {}, requestedBy: "vessel", requestId: "ask-2" });
     await s.placedOnce;
     await s.conclude("ask-2", "error", {}, "this vessel carries no device edge of its own");
     const refused = await ask.answer.catch((e: unknown) => e);
@@ -399,19 +399,19 @@ describe("the main thread asks its island a verb", () => {
   test("A3 — an outcome that already stands answers with no placement", async () => {
     const s = stand();
     await s.conclude("ask-3", "done", { ran: true });
-    const ask = askIslandVerb({ control: s.composite, placeVerb: s.place, verb: "seat-duties", args: {}, requestedBy: "vessel", requestId: "ask-3" });
+    const ask = askIslandVerb({ state: s.composite, placeVerb: s.place, verb: "seat-duties", args: {}, requestedBy: "vessel", requestId: "ask-3" });
     expect(await ask.answer).toEqual({ ran: true });
     expect(s.placed).toEqual([]);
   });
 
   test("A4 — an abandoned ask rejects by name and stops listening", async () => {
     const s = stand();
-    const first = askIslandVerb({ control: s.composite, placeVerb: s.place, verb: "seat-duties", args: {}, requestedBy: "vessel", requestId: "ask-4a" });
+    const first = askIslandVerb({ state: s.composite, placeVerb: s.place, verb: "seat-duties", args: {}, requestedBy: "vessel", requestId: "ask-4a" });
     first.abandon();
     await expect(first.answer).rejects.toBeInstanceOf(IslandAskAbandoned);
     const before = s.listening();
-    const ask = askIslandVerb({ control: s.composite, placeVerb: s.place, verb: "seat-duties", args: {}, requestedBy: "vessel", requestId: "ask-4" });
-    expect(s.listening()).toBe(before + 1);                                // control: the ask listens while it waits
+    const ask = askIslandVerb({ state: s.composite, placeVerb: s.place, verb: "seat-duties", args: {}, requestedBy: "vessel", requestId: "ask-4" });
+    expect(s.listening()).toBe(before + 1);                                // state: the ask listens while it waits
     ask.abandon();
     await expect(ask.answer).rejects.toBeInstanceOf(IslandAskAbandoned);
     expect(s.listening()).toBe(before);                                    // and no ask leaves a listener behind

@@ -16,7 +16,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
 import { createHash } from "node:crypto";
-import { closeSync, fsyncSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync, writeSync } from "node:fs";
+import { closeSync, fsyncSync, linkSync, unlinkSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { SwarmWikiPort } from "@lararium/mesh/swarm-tiddlers";
 
@@ -24,7 +24,7 @@ const rowName = (title: string): string => `${createHash("sha256").update(title)
 
 function writeWhole(path: string, text: string, flag: "wx" | "w"): void {
   const fd = openSync(path, flag, 0o600);
-  try { writeSync(fd, text); fsyncSync(fd); } finally { closeSync(fd); }
+  try { writeFileSync(fd, text); fsyncSync(fd); } finally { closeSync(fd); }
 }
 
 /** The pūlama's record store over `dir`. */
@@ -43,10 +43,17 @@ export function pulamaRecords(dir: string): SwarmWikiPort {
       const path = join(rows, rowName(title)), tmp = `${path}.${process.pid}.tmp`;
       writeWhole(tmp, JSON.stringify({ title, text }), "w");
       renameSync(tmp, path);
+      const fd = openSync(rows, "r"); try { fsyncSync(fd); } finally { closeSync(fd); }
     },
     async writeNew(title, text) {
-      try { writeWhole(join(rows, rowName(title)), JSON.stringify({ title, text }), "wx"); return true; }
-      catch (err) { if ((err as NodeJS.ErrnoException).code === "EEXIST") return false; throw err; }
+      const path = join(rows, rowName(title)), tmp = `${path}.${crypto.randomUUID()}.tmp`;
+      writeWhole(tmp, JSON.stringify({ title, text }), "wx");
+      try {
+        linkSync(tmp, path);
+        const fd = openSync(rows, "r"); try { fsyncSync(fd); } finally { closeSync(fd); }
+        return true;
+      } catch (err) { if ((err as NodeJS.ErrnoException).code === "EEXIST") return false; throw err; }
+      finally { unlinkSync(tmp); }
     },
     async list(prefix) {
       const out: string[] = [];

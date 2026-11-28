@@ -48,7 +48,7 @@ import { actingAtomKey } from "./atom-fixture.js";
 import { makeEdgeShadowRing } from "../src/edge-shadow-ring.js";
 import { scratchRoot as root, scratchHome, it } from "./support/scratch-fixture.js";
 import { keepHouse } from "./support/kept-house.js";
-import { seedFoundedDaemonDoc } from "./daemon-control-fixture.js";
+import { seedFoundedDaemonDoc } from "./daemon-work-fixture.js";
 
 const REALM = "a".repeat(64);
 

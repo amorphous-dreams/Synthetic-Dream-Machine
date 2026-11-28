@@ -107,6 +107,7 @@ async function serve(): Promise<void> {
   const handKey = (ordinal: number) => loadPersonaGroupRootVerifyingKey(ordinal);
   const log = (line: string): void => console.log(`[pulama] ${line}`);
   const server = servePulama({
+    records,
     holder, derives: PULAMA_SESSION_DERIVES, onLog: log,
     // THE HAND'S KEY reads off the face's own roster row, through this pūlama's seated holder. An offer whose every vouched half
     // reads gone (its face stands here nowhere) reads as no offer: the vessel enters by its image.

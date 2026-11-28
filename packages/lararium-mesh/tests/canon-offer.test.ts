@@ -1,7 +1,7 @@
 /**
  * canon-offer.test.ts — THE OFFERING DOOR into house canon (lar:///ha.ka.ba/lares/docs/pono/offering#/the-canon-offer).
  *
- * REDS, each with its control:
+ * REDS, each with its state:
  *   · an unadmitted face offers, and canon stays unmoved (no canon write, no canon byte);
  *   · a non-steward promote refuses `kahu-reach` before anything lands;
  *   · the steward promotes: canon carries the offered bytes, and the offer retires by a record keyed to its CID (the row stays);
@@ -105,7 +105,7 @@ describe("the offer", () => {
   });
 
   test("RED: withheld and cap/** titles refuse to be offered; a forged row carrying one is set aside", async () => {
-    for (const title of ["lar:///ha.ka.ba/bags/daemon/cap/abc", "lar:///ha.ka.ba/bags/secret/cap/face/x", "$:/temp/scratch", "lar:///ha.ka.ba/bags/control/floor-pin/x", "lar:///ha.ka.ba/bags/lares/../daemon/cap/y"]) {
+    for (const title of ["lar:///ha.ka.ba/bags/daemon/cap/abc", "lar:///ha.ka.ba/bags/secret/cap/face/x", "$:/temp/scratch", "lar:///ha.ka.ba/bags/vessel-state/floor-pin/x", "lar:///ha.ka.ba/bags/lares/../daemon/cap/y"]) {
       expect(offerWithheldTitle(title)).toBe(true);
       const working = memoryStore({ [title]: rec(title, "secret") });
       const board = memoryBoard();
@@ -399,8 +399,8 @@ describe("the loop", () => {
       lineage: c.chain, manifestBytes: cut.manifestBytes, steward: steward!, approvers: [...await c.signers()],
     });
     // 4 · h1's VESSEL ACCEPTS through Leap 1's door.
-    const home = { doc: () => controlDoc, change(fn: (d: LarDoc) => void) { fn(controlDoc); } };
-    const controlDoc = emptyLarDoc();
+    const home = { doc: () => stateDoc, change(fn: (d: LarDoc) => void) { fn(stateDoc); } };
+    const stateDoc = emptyLarDoc();
     const local = new Map<string, Uint8Array>([[gl.cid, gl.bytes], [gr.cid, gr.bytes], [gCid, gBytes]]);
     const pinPorts: FloorPinPorts = {
       home, nexus: c.aid, genesisManifest: gCid, requiredBlobIds: [offering.offering.blobs[0]!.id],

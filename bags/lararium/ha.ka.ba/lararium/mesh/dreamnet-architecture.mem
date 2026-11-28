@@ -268,7 +268,7 @@ The operator's words frame the stories: //"a human carries multiple faces"//, //
 | UE6 | a surface, or a sidecar vessel carrying a store of its own | only as the sidecar |
 | QuickJS without WASM | an engine | no: it runs a wiki and holds no store |
 
-A surface or a bare engine holds no secret home and no control document, since nothing of a face rests there; the vessel it ports onto holds both.
+A surface or a bare engine holds no secret home and no vessel registry, since nothing of a face rests there; the vessel it ports onto holds both.
 
 <<~/ahu>>
 
@@ -724,6 +724,6 @@ The carriage-client fetch item stays OWED (measured 2026-10-22). The vessel-side
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8akObbSSZUemRnAvwStm2VdAGEnRAHjb5V3T44__EAs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;o0p_QF2EOvhhxDSUxWOqEcPzhYuepyfQWCMf5vU-7EU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

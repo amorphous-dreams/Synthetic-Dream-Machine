@@ -119,11 +119,12 @@ export interface IslandContext {
   /** The vessel's concrete disk mirror grants intersected with this recipe; absent for older/test contexts. */
   diskMirrors?: readonly { readonly bagId: string; readonly mirrorRoot: string; readonly scope: string; readonly mirrorClass?: "recovery"; readonly titlePaths?: boolean; readonly tempLayer?: boolean }[];
   /**
-   * The vessel's CONTROL document as a store (`controlStoreOf` over `grants.controlUrl`): the daemon island's control
-   * families rest here (summons, outcomes, the effect index, ward audits). Never a recipe layer and never mirrored; absent
+   * The vessel's vessel state document as a store (`stateStoreOf` over `grants.stateUrl`): the daemon island's state
+   * families rest here (summons, outcomes, the effect index). Never a recipe layer and never mirrored; absent
    * on every wiki island.
    */
-  control?: CompositeStore;
+  state?: CompositeStore;
+  work?: CompositeStore;
   /** The floor's rest key as the vessel granted it (`IslandGrants.floorKey`): the floor registry's gate. Absent: none stands. */
   floorKey?: "stands" | "vessel-locked" | "floor-unkeyed";
   /**
@@ -167,8 +168,13 @@ export interface IslandBehavior {
   onHooAnu(ctx: IslandContext): void | Promise<void>;
 }
 
-/** The daemon island's control store, or a refusal by name: a daemon island granted no control document writes no control family. */
-export function controlOf(ctx: Pick<IslandContext, "control">): CompositeStore {
-  if (!ctx.control) throw new Error("control-home-unavailable: the daemon island carries no control document grant; the vessel stands its control document (`standControlHome`) before it opens the daemon VM");
-  return ctx.control;
+/** The daemon island's state store, or a refusal by name: a daemon island granted no state document writes no state family. */
+export function stateOf(ctx: Pick<IslandContext, "state">): CompositeStore {
+  if (!ctx.state) throw new Error("vessel-state-unavailable: the daemon island carries no state document grant; the vessel stands its state document (`standVesselState`) before it opens the daemon VM");
+  return ctx.state;
+}
+
+export function workStoreOf(ctx: Pick<IslandContext, "work">): CompositeStore {
+  if (!ctx.work) throw new Error("vessel-work-unavailable: stand vessel work and pass its capability when opening this island");
+  return ctx.work;
 }

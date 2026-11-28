@@ -3,7 +3,7 @@
  * band (`rest`), a read never asks the vessel for one, and a reading that fails answers owed by name, never a bare ok.
  * Canon: lar:///ha.ka.ba/kahua/memory/research/signer-refused
  */
-import { controlStoreOf } from "@lararium/mesh/control-home";
+import { memoryWorkOf } from "./work-store-fixture.js";
 import { describe, expect, test } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -86,7 +86,7 @@ describe("no silent loss at the UDS seat: one stamp for every call whose own cha
     const waiting = new Set<string>([heldHandle.documentId, stageHandle.documentId, "island-doc"]);
     const asked: Array<string[]> = [];
     let throws = false;
-    const channel = startUdsChannel({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo, sessions: door,
+    const channel = startUdsChannel({ stateHandle: daemonHandle, state: memoryWorkOf(daemonHandle), claim, repo, sessions: door,
       restOwed: {
         mark: () => 0,
         owed: async (_since, touches) => {

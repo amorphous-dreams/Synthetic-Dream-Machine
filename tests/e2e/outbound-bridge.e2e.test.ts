@@ -92,11 +92,11 @@ describe.skipIf(gaps.length > 0)("★ the outbound bridge and the daemon mirror,
     expect(existsSync(at), `the working wiki did not project ${at}`).toBe(true);
   });
 
-  test("CONTROL: placement keeps every private home off the mirrors — no control, secret or daemon-document title projects", () => {
+  test("CONTROL: placement keeps every private home off the mirrors — no state, secret or daemon-document title projects", () => {
     // The daemon wiki projects in the worn face's root (`faces/<pet name>/wikis/daemon`, `faces/<pet name>/bags/daemon`); the daemon document and the
-    // control document name no mirror (lar:///ha.ka.ba/lararium/mesh/control-home), so <projections>/bags/daemon never
+    // state document name no mirror (lar:///ha.ka.ba/lararium/mesh/vessel-state), so <projections>/bags/daemon never
     // stands and no projected file anywhere names a private home's family.
     expect(existsSync(join(lar.root, "projections", "bags", "daemon")), "the daemon document gained a mirror").toBe(false);
-    expect(privateTitlesProjected(lar.root), "a control, secret or daemon-document title stands in a mirror").toEqual([]);
+    expect(privateTitlesProjected(lar.root), "a state, secret or daemon-document title stands in a mirror").toEqual([]);
   });
 });

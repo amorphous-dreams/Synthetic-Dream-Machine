@@ -60,7 +60,7 @@ describe("the daemon VM's shutdown handshake runs once", () => {
       },
     };
     const core = openDaemonVmCore(host, {
-      repo, daemonHandle, controlHandle: repo.create<LarDoc>(emptyLarDoc()),
+      repo, daemonHandle, stateHandle: repo.create<LarDoc>(emptyLarDoc()),
       recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null,
       workerScriptUrl: new URL("file:///unused-scripted-island"),
       // The mount never settles here (no island answers `ea`); its watchdog stays out of the vectors' way.

@@ -16,8 +16,8 @@
  *   R4 — B restarts over the same root, unlocks and crosses A's gate again: the restart's hydration rests nothing clear
  *        (a sealed document's load waits for its map), and the marker reads back whole
  *   R5 — after the read-back, no store outside the projection holds the marker clear: the verb outcome ledger that carries
- *        the read's answer to the CLI rests in the vessel's control document (`bags/control/outcomes/<id>`), which seals
- *        beside the secret home under the vessel's key, and the daemon document rests no outcome body. The control
+ *        the read's answer to the CLI rests in the vessel's state document (`bags/vessel-state/outcomes/<id>`), which seals
+ *        beside the secret home under the vessel's key, and the daemon document rests no outcome body. The state
  *        document names no mirror (placement over patterns), so every byte of the ledger rests in a store, never in `bags/`
  *   R6 — the face's own catalog (U1's D half of the catalog) rests sealed: it opened only after the daemon island's
  *        holder stood, and the restart read the marker back through it (R4). POSITIVE FIRST: the floor's catalog, which
@@ -150,7 +150,7 @@ test("CONTROL — the scan reads a clear marker in a compacted rest, where the s
 });
 
 describe.runIf(staged)("a sealed wiki write survives a stand-down at once and a restart", () => {
-  test("R1-R3 — the positive control reads a clear marker at rest; the sealed marker rests as no clear byte after a stand-down at once", async () => {
+  test("R1-R3 — the positive state reads a clear marker at rest; the sealed marker rests as no clear byte after a stand-down at once", async () => {
     const B = pair!.B!;
     // The daemon wiki's working slot seals under the lit face (U1's D half); the daemon document beneath stays the floor's.
     const clear = await B.cli(["put", `title=${CLEAR_URI}`, "bag=daemon", `file=${memeFile(CLEAR_URI, CLEAR_MARK)}`, "--json"]);
@@ -182,7 +182,7 @@ describe.runIf(staged)("a sealed wiki write survives a stand-down at once and a 
     expect(text, B2.bootLog().slice(-3000)).toContain(SEALED_MARK);
   }, 300_000);
 
-  test("R5 — after the read-back, no store outside the disk projection holds the marker clear: the outcome ledger rests sealed in the control document, and the daemon document rests no outcome body", async () => {
+  test("R5 — after the read-back, no store outside the disk projection holds the marker clear: the outcome ledger rests sealed in the state document, and the daemon document rests no outcome body", async () => {
     const daemonUrl = bootDocUrl(B2!, "daemon");
     expect(daemonUrl, "the boot names its daemon document").not.toBeNull();
     await B2!.stopDaemonOnly();

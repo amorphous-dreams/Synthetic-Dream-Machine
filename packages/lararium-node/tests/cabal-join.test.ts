@@ -23,7 +23,7 @@ import { writeVouch } from "@lararium/mesh/vouch-board";
 import { realmVouchBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { seedDaemonDoc } from "@lararium/mesh/social-seed";
-import { seedFoundedDaemonDoc } from "./daemon-control-fixture.js";
+import { seedFoundedDaemonDoc } from "./daemon-work-fixture.js";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey,
 } from "../src/node-vessel-identity.js";
@@ -62,7 +62,7 @@ const verify = (bytes: Uint8Array, sigHex: string, did: string) =>
  */
 async function seedDaemonBootstrap(): Promise<void> {
   await ownedStore(larDataDir(), async (repo) => {
-    // The founding mints the control document beside the secret home and names it in the daemon document: the lease fence
+    // The founding mints the state document beside the secret home and names it in the daemon document: the lease fence
     // reads there, and a crossing refuses where it reads none.
     const handle = await seedFoundedDaemonDoc(repo);
     mkdirSync(dirname(larBootstrapPath()), { recursive: true });
@@ -258,8 +258,8 @@ describe("cabal join — the crossing, and what it refuses", () => {
     const joiner = await foreignNym(20);
     // CONTROL: with the bootstrap seeded (beforeEach), a vouch bound at genesis (0) admits against epoch 0.
     await direct(runCabalVouch)({ joiner, realm: REALM, boundEpoch: 0 }, NOW);
-    const control = await direct(runCabalJoin)({ realm: REALM, applicant: joiner });
-    expect(control.admitted).toBe(true);
+    const state = await direct(runCabalJoin)({ realm: REALM, applicant: joiner });
+    expect(state.admitted).toBe(true);
 
     // MUTATION: tear out the bootstrap pointer — this vessel can no longer read ANY daemon doc. The OLD
     // (fail-open) shape fell to `boardEpoch = 0` here and priced the SAME crossing as "standing at
@@ -277,11 +277,11 @@ describe("cabal join — the crossing, and what it refuses", () => {
     expect(explicit.refusal).toBe("no-invite");   // reaches the REAL gate (no vouch for joiner2), not the view refusal
   });
 
-  it("★ M16 ON THE CONTROL DOCUMENT — a daemon doc that names no control document refuses the crossing and the mint, never prices at genesis ★", async () => {
+  it("★ M16 ON THE VESSEL STATE DOCUMENT — a daemon doc that names no state document refuses the crossing and the mint, never prices at genesis ★", async () => {
     const joiner = await foreignNym(22);
     await direct(runCabalVouch)({ joiner, realm: REALM, boundEpoch: 0 }, NOW);
-    // MUTATION: the bootstrap points at a daemon document that names no control document, and the custody row's address
-    // drops its control id: nothing names the control document. The old read priced this at genesis epoch 0 and admitted.
+    // MUTATION: the bootstrap points at a daemon document that names no state document, and the custody row's address
+    // drops its state id: nothing names the state document. The old read priced this at genesis epoch 0 and admitted.
     await ownedStore(larDataDir(), async (repo) => {
       const handle = seedDaemonDoc(repo);
       await repo.flush();
@@ -297,9 +297,9 @@ describe("cabal join — the crossing, and what it refuses", () => {
       return { plaintext: encodeSecretHomeAddress({ documentId: address.documentId, key: address.key }), value: undefined };
     });
     await expect(direct(runCabalJoin)({ realm: REALM, applicant: joiner }))
-      .rejects.toMatchObject({ message: expect.stringMatching(/incomplete-view.*control-home-unavailable/) });
+      .rejects.toMatchObject({ message: expect.stringMatching(/incomplete-view.*vessel-state-unavailable/) });
     await expect(direct(runCabalVouch)({ joiner: await foreignNym(23), realm: REALM }, NOW))
-      .rejects.toMatchObject({ message: expect.stringContaining("control-home-unavailable") });
+      .rejects.toMatchObject({ message: expect.stringContaining("vessel-state-unavailable") });
     // An explicit --epoch still states the caller's own fence.
     const explicit = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, epoch: 0 });
     expect(explicit.admitted).toBe(true);

@@ -7,7 +7,7 @@
  * in the wiki alone: the composite never holds it, and a `kahua-propose` over it answers `kahua-proposal-no-draft`
  * (lararium-web e2e/stage-walk, S4). Driven over a real wiki, the real recipe and the real bridge.
  */
-import { memoryControlStore } from "./control-store-fixture.js";
+import { memoryWorkStore } from "./work-store-fixture.js";
 import { describe, expect, test } from "vitest";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { CompositeStore } from "@lararium/mesh/composite-store";
@@ -76,7 +76,7 @@ async function rig(slug: string, make: (attach: () => Promise<void>) => IslandBe
   };
   const behavior = make(attach);
   const ctx = {
-    wikiUri: `lar:///ha.ka.ba/wikis/${slug}`, composite, control: memoryControlStore(), tw5: engine, handles: new Map(), post: () => {},
+    wikiUri: `lar:///ha.ka.ba/wikis/${slug}`, composite, state: memoryWorkStore(), work: memoryWorkStore(), tw5: engine, handles: new Map(), post: () => {},
     repo: undefined, catalogUrl: null, oracleUrl: null, engine: { sha256: "", version: "" }, recipe: { wikiSlug: slug },
   } as unknown as IslandContext;
   // The working layer stands before the seeds run, as the daemon's attach precedes its protocol seed.
@@ -125,7 +125,7 @@ describe.skipIf(wikiSkip)(`a hand in the daemon surface lands on the island boun
     await r.adaptor.stop();
     r.stop();
   }, 60_000);
-  // THE SAVE RIDES THE ACT ITSELF (stage walk S6): the person's click on the edit frame's save arrives as ONE control
+  // THE SAVE RIDES THE ACT ITSELF (stage walk S6): the person's click on the edit frame's save arrives as ONE state
   // event, and the event's owner applies it to the wiki after the boundary cap has already fired. The hand that act
   // made lands on that same act, never on the next one, which may never come.
   const ownerSaves = (engine: { $tw: { wiki: unknown; Tiddler: unknown } }): IslandCap => ({

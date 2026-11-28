@@ -35,8 +35,8 @@
  *    short, a title standing under other fields) refuses `retire-carry-unlanded` and erases nothing. A re-run carries nothing
  *    new and writes nothing; a forced retire carries the effects beside destroying the authored rows.
  * R13 (red, #433 cold read) the record's home answers only where the face's own daemon working slot rests in a document: a
- *    layer held in memory alone, a slot the control document names for no face, or a handle on another document (the floor's
- *    slot under a face not yet seated) answers none; the face's control-named slot answers its own store. A real retire always
+ *    layer held in memory alone, a slot the state document names for no face, or a handle on another document (the floor's
+ *    slot under a face not yet seated) answers none; the face's state-named slot answers its own store. A real retire always
  *    appends its outcome, even when it adds no record; an effect record that lands between the carry and the erase stays
  *    where it rests and the answer names it (`leftBehind`).
  */
@@ -635,21 +635,21 @@ describe("R13 (#433 cold read) — the home is the face's own slot, every retire
   const FACE_SLOT = "automerge:face-own-working";
   const store = { get: async () => null, put: async () => {} };
   const io = (over: Partial<Parameters<typeof daemonRetiredHome>[0]> = {}): Parameters<typeof daemonRetiredHome>[0] => ({
-    wikiSlug: "daemon", hasBag: () => true, store: () => store as never, handleUrl: () => FACE_SLOT, controlUrl: async () => FACE_SLOT, ...over,
+    wikiSlug: "daemon", hasBag: () => true, store: () => store as never, handleUrl: () => FACE_SLOT, stateUrl: async () => FACE_SLOT, ...over,
   });
 
-  test("a seated face's control-named slot answers its own store", async () => {
+  test("a seated face's state-named slot answers its own store", async () => {
     expect(await daemonRetiredHome(io())).toMatchObject({ bag: BAG });
   });
 
-  test("a layer held in memory alone, no layer, another wiki, a slot the control names for no face, or a handle on another document answers none", async () => {
+  test("a layer held in memory alone, no layer, another wiki, a slot the state names for no face, or a handle on another document answers none", async () => {
     expect(await daemonRetiredHome(io({ handleUrl: () => undefined }))).toBeNull();          // a floor that cannot seal: memory alone
     expect(await daemonRetiredHome(io({ hasBag: () => false }))).toBeNull();
     expect(await daemonRetiredHome(io({ store: () => null }))).toBeNull();
     expect(await daemonRetiredHome(io({ wikiSlug: "elyncia-referee" }))).toBeNull();
-    expect(await daemonRetiredHome(io({ controlUrl: async () => null }))).toBeNull();      // the control names no slot for this face
+    expect(await daemonRetiredHome(io({ stateUrl: async () => null }))).toBeNull();      // the state names no slot for this face
     expect(await daemonRetiredHome(io({ handleUrl: () => "automerge:floor-working" }))).toBeNull();   // pinned, not yet seated: the floor's slot
-    expect(await daemonRetiredHome(io({ controlUrl: async () => { throw new Error("control-home-unavailable"); } }))).toBeNull();
+    expect(await daemonRetiredHome(io({ stateUrl: async () => { throw new Error("vessel-state-unavailable"); } }))).toBeNull();
   });
 
   test("an effect record landing between the carry and the erase stays where it rests, and the answer names it", async () => {

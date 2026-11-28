@@ -1,14 +1,15 @@
+import { memoryWorkOf } from "./work-store-fixture.js";
 /**
- * uds-floor-answers — A PLACE WITH NO READABLE CONTROL DOCUMENT STILL ANSWERS ITS FLOOR (house decision, brief item 1).
+ * uds-floor-answers — A PLACE WITH NO READABLE VESSEL STATE DOCUMENT STILL ANSWERS ITS FLOOR (house decision, brief item 1).
  *
  * Elyncia-5492: the crossroads herm at Saltmere holds no face and never will; the ferry-wardens hand it a carry bundle
  * and ask it where a flow record rests. Gaia-2026: a public relay box on a library shelf, faceless by design. A herm's
- * control document never mints (it mints with the face), so its verb door stood a stand-in that refused EVERY
- * invocation `control-home-unnamed`: the carry bundle, the `where`, and the lift's own founding refusal never answered.
+ * state document never mints (it mints with the face), so its verb door stood a stand-in that refused EVERY
+ * invocation `vessel-state-unnamed`: the carry bundle, the `where`, and the lift's own founding refusal never answered.
  *
  *   F1 — RED: a faceless place answers a read-only `where` and a place row (`nexus-carry-take`) on the maintenance frame;
  *        the answer waits in the floor store's memory, claims no durability and rests no receipt fact
- *   F2 — CONTROL: a verb outside the floor (`memory-write`) refuses `control-home-unnamed` and places nothing
+ *   F2 — CONTROL: a verb outside the floor (`memory-write`) refuses `vessel-state-unnamed` and places nothing
  *   F3 — CONTROL: a locked hearth's place row runs on the floor; its memory write refuses `vessel-locked`
  *   F4 — an id the floor already answered reads back, never runs twice; a receipt the floor never held refuses by name
  */
@@ -29,13 +30,12 @@ import {
 } from "@lararium/mesh/secret-home";
 import { concludeVerb, verbInputDigest, RECEIPT_FACT_URI_PREFIX, OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 import {
-  controlHomeRefusal,
-  controlStoreOf,
-  nameControlHome,
-  standControlHome,
-  CONTROL_HOME_UNNAMED,
+  vesselStateRefusal,
+  nameVesselState,
+  standVesselState,
+  VESSEL_STATE_UNNAMED,
   VESSEL_LOCKED,
-} from "@lararium/mesh/control-home";
+} from "@lararium/mesh/vessel-state";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { type CompositeStore } from "@lararium/mesh/composite-store";
 import { startUdsChannel } from "../src/uds-channel.js";
@@ -43,14 +43,14 @@ import { VEIL_FLOOR_VERBS, floorVerbsFor } from "../src/floor-verbs.js";
 import { FLOOR_VERBS } from "../src/floor-verbs.js";
 import { claimStore } from "../src/owned-store.js";
 
-describe("a place with no readable control document answers its floor", () => {
-  test("F1/F2/F4 — RED (the Saltmere herm): a faceless place answers `where` and a carry take; a memory write refuses `control-home-unnamed`", async () => {
+describe("a place with no readable state document answers its floor", () => {
+  test("F1/F2/F4 — RED (the Saltmere herm): a faceless place answers `where` and a carry take; a memory write refuses `vessel-state-unnamed`", async () => {
     const v = faceless();
-    const control = await standControlHome(v.repo, v.daemon);
-    expect(controlHomeRefusal(control)?.refusal).toBe(CONTROL_HOME_UNNAMED);
-    const store = controlStoreOf(control);
+    const state = await standVesselState(v.repo, v.daemon);
+    expect(vesselStateRefusal(state)?.refusal).toBe(VESSEL_STATE_UNNAMED);
+    const store = memoryWorkOf(state);
     const placed: string[] = [];
-    const seat = await door(control, store, v.repo, (o) => { placed.push(o.verb); answerLater(store, o); });
+    const seat = await door(state, store, v.repo, (o) => { placed.push(o.verb); answerLater(store, o); });
     try {
       const where = await send(seat.socketPath, { verb: "where", args: { tiddler: "$:/lares/flow" }, requestedBy: "did:key:warden", requestId: "saltmere-where" });
       expect(where["status"], JSON.stringify(where)).toBe("done");
@@ -60,7 +60,7 @@ describe("a place with no readable control document answers its floor", () => {
       // F2: a verb outside the floor refuses by the stand-in's name, and nothing is placed for it.
       const write = await send(seat.socketPath, { verb: "memory-write", args: { text: "heron" }, requestedBy: "did:key:warden", requestId: "saltmere-write" });
       expect(write["status"]).toBe("error");
-      expect(write["refusal"]).toEqual({ reason: CONTROL_HOME_UNNAMED });
+      expect(write["refusal"]).toEqual({ reason: VESSEL_STATE_UNNAMED });
       expect(placed).toEqual(["where", "nexus-carry-take"]);
       // F4: the answered id reads back and never runs twice; a receipt the floor never held refuses by name.
       const again = await send(seat.socketPath, { verb: "where", args: { tiddler: "$:/lares/flow" }, requestedBy: "did:key:warden", requestId: "saltmere-where" });
@@ -69,21 +69,21 @@ describe("a place with no readable control document answers its floor", () => {
       const held = await send(seat.socketPath, { op: "receipt", requestId: "saltmere-carry" });
       expect(held["state"]).toBe("done");
       const never = await send(seat.socketPath, { op: "receipt", requestId: "saltmere-write" });
-      expect(never["refusal"]).toEqual({ reason: CONTROL_HOME_UNNAMED });
+      expect(never["refusal"]).toEqual({ reason: VESSEL_STATE_UNNAMED });
       // NOTHING RESTS: the stand-in's document holds no receipt fact and no outcome.
-      expect(titles(control, RECEIPT_FACT_URI_PREFIX)).toEqual([]);
-      expect(titles(control, OUTCOME_URI_PREFIX)).toEqual([]);
+      expect(titles(state, RECEIPT_FACT_URI_PREFIX)).toEqual([]);
+      expect(titles(state, OUTCOME_URI_PREFIX)).toEqual([]);
     } finally { await seat.close(); }
     await v.repo.shutdown();
   });
 
   test("F6 — RED (ledger diet, step 1): the floor compares too: a held answer that names its request's digest refuses a reused id carrying another input, and reads back for the same input", async () => {
     const v = faceless();
-    const control = await standControlHome(v.repo, v.daemon);
-    const store = controlStoreOf(control);
+    const state = await standVesselState(v.repo, v.daemon);
+    const store = memoryWorkOf(state);
     let placed = 0;
     // The island's answer names the digest its request carried, as `writeOutcome` stamps it.
-    const seat = await door(control, store, v.repo, (o) => { placed += 1; setTimeout(() => { void (async () => {
+    const seat = await door(state, store, v.repo, (o) => { placed += 1; setTimeout(() => { void (async () => {
       const asked = o as unknown as { args: Record<string, unknown> };
       const inputDigest = await verbInputDigest({ verb: o.verb, args: asked.args });
       await store.put(concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", cause: "test-island", batchMode: "best-effort",
@@ -104,30 +104,30 @@ describe("a place with no readable control document answers its floor", () => {
   });
 
   test("F5 — RED: an UNLOCKED faceless place (its floor key stands) answers the veil's own mint at the door; a floor whose key does not stand refuses it by name", async () => {
-    // No face landed, so no control document stands (operator ruling 2026-11-09): the door still reads the unnamed stand-in.
+    // No face landed, so no state document stands (operator ruling 2026-11-09): the door still reads the unnamed stand-in.
     // What moves is the floor's rest key: where it stands, the veil mints and composes as itself (in-house ruling 7).
     expect(VEIL_FLOOR_VERBS.every((verb) => floorVerbsFor(true).has(verb))).toBe(true);
     expect(VEIL_FLOOR_VERBS.filter((verb) => floorVerbsFor(false).has(verb)), "a locked hearth and a herm pass none of the four").toEqual([]);
     for (const keyed of [true, false]) {
       const v = faceless();
-      const control = await standControlHome(v.repo, v.daemon);
-      expect(controlHomeRefusal(control)?.refusal).toBe(CONTROL_HOME_UNNAMED);
-      const store = controlStoreOf(control);
+      const state = await standVesselState(v.repo, v.daemon);
+      expect(vesselStateRefusal(state)?.refusal).toBe(VESSEL_STATE_UNNAMED);
+      const store = memoryWorkOf(state);
       const placed: string[] = [];
-      const seat = await door(control, store, v.repo, (o) => { placed.push(o.verb); answerLater(store, o); }, floorVerbsFor(keyed));
+      const seat = await door(state, store, v.repo, (o) => { placed.push(o.verb); answerLater(store, o); }, floorVerbsFor(keyed));
       try {
         const minted = await send(seat.socketPath, { verb: "init-wiki", args: { slug: "veil-own" }, requestedBy: "did:key:veil", requestId: `veil-mint-${keyed}` });
         if (keyed) {
           expect(minted["status"], JSON.stringify(minted)).toBe("done");
           expect(placed).toEqual(["init-wiki"]);
         } else {
-          expect(minted["refusal"]).toEqual({ reason: CONTROL_HOME_UNNAMED });
+          expect(minted["refusal"]).toEqual({ reason: VESSEL_STATE_UNNAMED });
           expect(placed).toEqual([]);
         }
         // A verb that acts as a face still refuses by the stand-in's name on either floor.
         const write = await send(seat.socketPath, { verb: "memory-write", args: { text: "heron" }, requestedBy: "did:key:veil", requestId: `veil-write-${keyed}` });
-        expect(write["refusal"]).toEqual({ reason: CONTROL_HOME_UNNAMED });
-        expect(titles(control, OUTCOME_URI_PREFIX), "nothing rests in the stand-in").toEqual([]);
+        expect(write["refusal"]).toEqual({ reason: VESSEL_STATE_UNNAMED });
+        expect(titles(state, OUTCOME_URI_PREFIX), "nothing rests in the stand-in").toEqual([]);
       } finally { await seat.close(); }
       await v.repo.shutdown();
     }
@@ -135,11 +135,11 @@ describe("a place with no readable control document answers its floor", () => {
 
   test("F3 — CONTROL (Gaia Tuesday, locked): a place row runs on the floor; the memory write still refuses `vessel-locked`", async () => {
     const v = await foundedThenLocked();
-    const control = await standControlHome(v.repo, v.daemon);
-    expect(controlHomeRefusal(control)?.refusal).toBe(VESSEL_LOCKED);
-    const store = controlStoreOf(control);
+    const state = await standVesselState(v.repo, v.daemon);
+    expect(vesselStateRefusal(state)?.refusal).toBe(VESSEL_LOCKED);
+    const store = memoryWorkOf(state);
     const placed: string[] = [];
-    const seat = await door(control, store, v.repo, (o) => { placed.push(o.verb); answerLater(store, o); });
+    const seat = await door(state, store, v.repo, (o) => { placed.push(o.verb); answerLater(store, o); });
     try {
       const carried = await send(seat.socketPath, { verb: "nexus-carry-take", args: { raw: "{}" }, requestedBy: "did:key:gaia", requestId: "tuesday-carry" });
       expect(carried["status"], JSON.stringify(carried)).toBe("done");
@@ -148,7 +148,7 @@ describe("a place with no readable control document answers its floor", () => {
       expect(placed).toEqual(["nexus-carry-take"]);
     } finally { await seat.close(); }
     await v.repo.flush();
-    expect(v.store.waiting(v.address.controlId)).toBe(0);
+    expect(v.store.waiting(v.address.stateId)).toBe(0);
     await v.repo.shutdown();
   });
 
@@ -168,10 +168,10 @@ function answerLater(store: CompositeStore, o: { requestId: string; verb: string
   }, 20);
 }
 
-async function door(controlHandle: Awaited<ReturnType<typeof standControlHome>>, control: CompositeStore, repo: Repo, placeVerb: (o: { requestId: string; verb: string }) => void, floorVerbs?: ReadonlySet<string>) {
+async function door(stateHandle: Awaited<ReturnType<typeof standVesselState>>, state: CompositeStore, repo: Repo, placeVerb: (o: { requestId: string; verb: string }) => void, floorVerbs?: ReadonlySet<string>) {
   const dir = mkdtempSync(join(tmpdir(), "uds-floor-"));
   const claim = await claimStore(dir, { holder: "vessel" });
-  const channel = startUdsChannel({ controlHandle, control, claim, repo, timeoutMs: 3_000, placeVerb, ...(floorVerbs ? { floorVerbs } : {}) });
+  const channel = startUdsChannel({ stateHandle, state, claim, repo, timeoutMs: 3_000, placeVerb, ...(floorVerbs ? { floorVerbs } : {}) });
   for (let i = 0; i < 100 && !existsSync(claim.socketPath); i++) await new Promise((r) => setTimeout(r, 10));
   return { socketPath: claim.socketPath, close: async () => { await channel.close(); await claim.release(); rmSync(dir, { recursive: true, force: true }); } };
 }
@@ -194,23 +194,23 @@ function send(socketPath: string, inv: unknown): Promise<Record<string, unknown>
 const titles = (handle: { doc(): LarDoc | undefined }, prefix: string): string[] =>
   Object.keys(handle.doc()?.tiddlers ?? {}).filter((t) => t.startsWith(prefix));
 
-/** A herm: a sealed rest with no secret home and a daemon document that names no control document. */
+/** A herm: a sealed rest with no secret home and a daemon document that names no state document. */
 function faceless() {
   const held = heldRepo(memoryAdapter());
   return { repo: held.repo, daemon: held.repo.create<LarDoc>(emptyLarDoc()) };
 }
 
-/** A vessel founded with its face (home and control minted, the daemon document naming control), then booted locked. */
+/** A vessel founded with its face (home and state minted, the daemon document naming state), then booted locked. */
 async function foundedThenLocked() {
   const inner = memoryAdapter();
   const founding = heldRepo(inner);
-  const address = { ...mintSecretHomeAddress(), controlId: mintVesselDocumentId() };
+  const address = { ...mintSecretHomeAddress(), stateId: mintVesselDocumentId() };
   await enrollSecretHome(founding.repo, address);
-  const daemonBytes = A.save((() => { const d = founding.repo.create<LarDoc>(emptyLarDoc()); nameControlHome(d, `automerge:${address.controlId}`); return d.doc()!; })());
+  const daemonBytes = A.save((() => { const d = founding.repo.create<LarDoc>(emptyLarDoc()); nameVesselState(d, `automerge:${address.stateId}`); return d.doc()!; })());
   await founding.repo.flush();
   await founding.repo.shutdown();
   const locked = heldRepo(inner);
-  return { address: address as typeof address & { controlId: string }, repo: locked.repo, store: locked.store, daemon: locked.repo.import<LarDoc>(daemonBytes) };
+  return { address: address as typeof address & { stateId: string }, repo: locked.repo, store: locked.store, daemon: locked.repo.import<LarDoc>(daemonBytes) };
 }
 
 function memoryAdapter(): StorageAdapterInterface {

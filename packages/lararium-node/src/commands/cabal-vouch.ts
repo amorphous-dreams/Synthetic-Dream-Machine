@@ -31,7 +31,7 @@ import { vouchDagFromInvites } from "@lararium/mesh/vouch-dag";
 import { realmVouchBoardDocUrl, realmEdgeBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
 import { prepareHolderFrontier, registerHandFrontierInto } from "@lararium/mesh/realm-frontier";
 import { realmAdmitBundle, type RealmAdmitBundle } from "@lararium/mesh/realm-admit-bundle";
-import { readControlHome } from "@lararium/mesh/control-home";
+import { readVesselState } from "@lararium/mesh/vessel-state";
 import { loadFaceAtomKey } from "../face-atom-store.js";
 import { daemonDocUrlFromBootstrap, cabalAdmissionEpoch } from "./cabal-join.js";
 import { actingRealmNexus, noteVesselRealm } from "../edge-board.js";
@@ -111,8 +111,8 @@ async function resolveBoundEpoch(realm: string, repo: Repo, lineage: HandLineage
   }
   try {
     const dh = await materializeSharedLarDoc(repo, daemonUrl as never, "daemon");
-    // The lease slots rest in the control document, read through the vessel's own stand; an unnamed or unread one refuses.
-    return cabalAdmissionEpoch((await readControlHome(repo, dh)).doc(), realm, lineage);
+    // The lease slots rest in the state document, read through the vessel's own stand; an unnamed or unread one refuses.
+    return cabalAdmissionEpoch((await readVesselState(repo, dh)).doc(), realm, lineage);
   } catch (err) {
     throw new CabalVouchError(
       `the realm's lease epoch could not be read off the daemon doc — refusing to mint at a guessed epoch ` +

@@ -2,24 +2,23 @@
  * vessel-mailbox — the durable mailbox of the lane law (§7), keel-resident
  * and substrate-agnostic: node and browser vessels wire the same mechanism.
  *
- * A verb addressed to an island that isn't live PARKS as a record in
- * the vessel's control document (`control-home`) keyed by island identity; the island's next `ea` (its own breath
- * declaration) drains it — deliver-to-IDENTITY: the message survives the
- * island and arrives when the identity breathes again. The record's
- * status transition (parked → delivered) makes one artifact serve as
- * idempotency ledger and audit log both.
+ * The work snapshot retains pending payload, request identity and delivery state. A drain
+ * records its claim before delivery and removes the row only after acknowledgement. Restart
+ * retries the same request identity (at-least-once delivery); a receiving operation must use
+ * that identity for any effect requiring deduplication across a lost acknowledgement.
  *
  * Lane law: this rides the merge seat. Nothing here touches workers or
  * ports — the caller supplies `placeVerb` (its own live-delivery path).
  */
 
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { VESSEL_WORK_ID } from "@lararium/mesh/lar-uris";
 import { MAILBOX_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 import { type CompositeStore } from "@lararium/mesh/composite-store";
 
 const MAILBOX_PREFIX = MAILBOX_URI_PREFIX;
 
 export interface MailboxVerb {
+  readonly requestId?: string;
   readonly verb:        string;
   readonly args:        Record<string, unknown>;
   readonly requestedBy: string;
@@ -33,18 +32,20 @@ export interface DurableMailbox {
 }
 
 export function makeDurableMailbox(
-  /** The vessel's control document as a store (`DaemonVmCore.control`): every parked verb rests there. */
+  /** The durable vessel work capability. */
   composite: CompositeStore,
   placeVerb: (wikiId: string, v: MailboxVerb) => Promise<unknown>,
   log: (line: string) => void = () => {},
 ): DurableMailbox {
-  return {
+  const draining = new Map<string, Promise<void>>();
+  const mailbox: DurableMailbox = {
     async park(wikiId, v): Promise<void> {
-      const id = crypto.randomUUID();
+      const id = v.requestId ?? crypto.randomUUID();
       await composite.put({
         tiddler: {
           title: `${MAILBOX_PREFIX}${wikiId}/${id}`,
           "wiki-id": wikiId,
+          "request-id": id,
           verb: v.verb,
           args: JSON.stringify(v.args),
           "requested-by": v.requestedBy,
@@ -52,30 +53,38 @@ export function makeDurableMailbox(
           "parked-at": new Date().toISOString(),
         },
         meta: {},
-      }, { kind: "lares-verb", requestId: id }, { bag: CONTROL_HOME_ID });
+      }, { kind: "lares-verb", requestId: id }, { bag: VESSEL_WORK_ID });
       log(`[mailbox] parked ${v.verb} for ${wikiId} (island not live)`);
     },
 
     async drain(wikiId): Promise<void> {
+      const held = draining.get(wikiId); if (held) return held;
+      const task = deliver(wikiId); draining.set(wikiId, task);
+      try { await task; } finally { draining.delete(wikiId); }
+    },
+  };
+  async function deliver(wikiId: string): Promise<void> {
       const prefix = `${MAILBOX_PREFIX}${wikiId}/`;
       const titles = (await composite.listVisible()).filter((t) => t.startsWith(prefix));
       for (const title of titles) {
         const rec = await composite.get(title);
         const f = rec?.tiddler as Record<string, string> | undefined;
-        if (!rec || !f || f["status"] !== "parked") continue;
+        if (!rec || !f || !["parked", "delivering"].includes(f["status"] ?? "")) continue;
         try {
+          const requestId = f["request-id"] ?? title.slice(prefix.length);
+          await composite.put({ ...rec, tiddler: { ...rec.tiddler, status: "delivering" } }, { kind: "lares-verb", requestId });
           await placeVerb(wikiId, {
+            requestId,
             verb: f["verb"]!,
             args: JSON.parse(f["args"] ?? "{}") as Record<string, unknown>,
             requestedBy: f["requested-by"] ?? "mailbox",
           });
-          await composite.put({
-            tiddler: { ...f, title, status: "delivered", "delivered-at": new Date().toISOString() },
-            meta: rec.meta ?? {},
-          }, { kind: "lares-verb", requestId: `${title}#delivered` }, { bag: CONTROL_HOME_ID });
+          await composite.remove(title, { kind: "lares-verb", requestId: `${title}#delivered` });
           log(`[mailbox] delivered ${f["verb"]} to ${wikiId}`);
-        } catch { /* island died mid-drain — record stays parked for the next ea */ }
+        } catch (cause) {
+          log(`[mailbox] kept ${f["verb"]} for ${wikiId}: ${cause instanceof Error ? cause.message : String(cause)}; inspect the request, then drain again`);
+        }
       }
-    },
-  };
+  }
+  return mailbox;
 }

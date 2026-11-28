@@ -4,7 +4,7 @@
  * The vessel reads its own stores (the root and each island store standing beside it) through the custody door's
  * `doc-census` frame, read-only and asking no custody: each document by id, its store, bytes, clear and sealed chunks,
  * and the names that reach it (the catalog pointer and its rows, a slot pointer, a binding mint, a binding, a keyhive
- * bag-doc row, a derived address, the control home and its rows, a cap's mint at compose, a live handle, or another
+ * bag-doc row, a derived address, the vessel registry and its rows, a cap's mint at compose, a live handle, or another
  * document's content). Each row reads one class: `current`, `duplicate` (an island copy of a root document), `orphan`
  * (no live name reaches it), `last-version` (a shape the current house does not read) or `sealed-unread` (sealed, and the vessel
  * could not open it: never guessed an orphan). The host never reads the hearth itself.

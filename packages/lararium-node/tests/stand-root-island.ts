@@ -19,7 +19,7 @@ import type { IslandSessionProof } from "@lararium/keyhive";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { DAEMON_BAG_ID, SECRET_HOME_ID } from "@lararium/mesh/lar-uris";
-import { controlStoreOf, standControlHome } from "@lararium/mesh/control-home";
+import { stateStoreOf, standVesselState } from "@lararium/mesh/vessel-state";
 import { attachMessageChannelSync, makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
 import { hex } from "@lararium/mesh/crypto";
@@ -98,7 +98,7 @@ export async function standRootIsland(args: { repo: Repo; handleIndex: number; b
     repo: islandRepo, catalogUrl: catalog.url, oracleUrl: oracle.url, engine: { sha256: "", version: "" },
     recipe: { wikiSlug: "daemon" },
     secretStore: new AutomergeDocStore(secret.handle, SECRET_HOME_ID), secretRest: secret.rest,
-    control: controlStoreOf(await standControlHome(repo, daemonHandle)),
+    state: stateStoreOf(await standVesselState(repo, daemonHandle)),
   } as never;
   const daemonAuth = {
     placeVerifyingKey: vesselKey, archiveOpens: true,

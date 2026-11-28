@@ -11,7 +11,7 @@
  * under a plain shell (no mark anywhere on its branch) reads `cli`, so the operator's own terminal keeps its hand, and a
  * run of this suite inside a harness reads as CI does (the harness stands above the vessel too, so the door never judges it).
  */
-import { controlStoreOf } from "@lararium/mesh/control-home";
+import { memoryWorkOf } from "./work-store-fixture.js";
 import { afterEach, expect, test } from "vitest";
 import { spawn } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -55,7 +55,7 @@ async function stand(opts: { peerKind?: (sock: Socket) => Promise<PeerKind> } = 
     anchor: { kind: "nexus", aid: "nexus-one.synthetic" }, mint: async () => ({ ok: true, signer: { drop() {} } as unknown as UdsSessionSigner }) } }) };
   const placed: Array<{ verb: string; requestId: string; asker?: string }> = [];
   const front = serveUdsFront({ claim });
-  front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
+  front.attach(makeUdsSeat({ stateHandle: daemonHandle, state: memoryWorkOf(daemonHandle), claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
     handOnlyActs: STORE_DOOR_HAND_ONLY_ACTS, handOnlyCodes: STORE_DOOR_HAND_CODES, ...(opts.peerKind ? { peerKind: opts.peerKind } : {}),
     switchActs: { write: async () => {} },
     mountOrdinal: () => 0,

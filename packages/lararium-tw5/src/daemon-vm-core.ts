@@ -1,3 +1,6 @@
+import { serveVesselWork, type VesselWork } from "@lararium/mesh/vessel-work";
+import { VesselStateUnavailable } from "@lararium/mesh/vessel-state";
+import { floorAnswerStore } from "@lararium/mesh/floor-answers";
 /**
  * daemon-vm-core — the platform-blind daemon-island vessel lifecycle.
  *
@@ -31,7 +34,8 @@ import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { computeRecipeFingerprint, wikiSlotUri, kahuaRecipe, type WikiRecipe } from "@lararium/mesh/wiki-recipe";
 import { documentIdOfUrl, mountedDocumentId, rebindWorkingLayer } from "@lararium/mesh/sealed-rest";
 import { attachMessageChannelSync } from "@lararium/mesh/island-repo-door";
-import { controlStoreOf, controlHomeRefusal, answerRingOf } from "@lararium/mesh/control-home";
+import {  stateStoreOf, vesselStateRefusal } from "@lararium/mesh/vessel-state";
+import {  answerRingOf  } from "@lararium/mesh/answer-ring";
 import { floorRefusalOf } from "@lararium/mesh/floor-registry";
 import { awaitIslandMsg, type VesselWorkerHandle } from "@lararium/mesh/vessel-host";
 import {
@@ -150,6 +154,7 @@ export interface DaemonVmHost {
 }
 
 export interface DaemonVmCoreOptions {
+  work?: VesselWork;
   /** Vessel main Repo — gains the island sync leg. */
   repo:            Repo;
   /** Daemon doc handle, already resolved by the platform wrapper. */
@@ -159,9 +164,9 @@ export interface DaemonVmCoreOptions {
   personaHandle?:   DocHandle<LarDoc>;
   /** The mounted plane's bag id, derived from its PersonaGroup's own doc id — one name, everywhere. */
   personaBagId?:    string;
-  /** The vessel's CONTROL document (`standControlHome`), resolved by the platform wrapper: granted to the island as
-   *  `controlUrl` and stood here as the host's control store, where the outcome ledger and the receipt facts read. */
-  controlHandle:    DocHandle<LarDoc>;
+  /** The vessel's vessel state document (`standVesselState`), resolved by the platform wrapper: granted to the island as
+   *  `stateUrl` and stood here as the host's state store, where the outcome ledger and the receipt facts read. */
+  stateHandle:    DocHandle<LarDoc>;
   /** One-recipe model for the daemon island. */
   recipe:          WikiRecipe;
   /** Typed structural capabilities (engine doc, daemon bag, the lares bag, catalog registry access). */
@@ -246,11 +251,12 @@ export class HostWorkingBindingRefusal extends Error {
 export interface DaemonVmCore {
   daemonHandle:    DocHandle<LarDoc>;
   composite:      CompositeStore;
-  /** The vessel's control document as a store (`controlStoreOf`): the outcome ledger, the effect index and the receipt
+  /** The vessel's state document as a store (`stateStoreOf`): the outcome ledger, the effect index and the receipt
    *  facts read and write here, never in a layer a mirror reads. */
-  control:        CompositeStore;
-  /** The control document beneath `control` (its heads name a receipt's durability). */
-  controlHandle:  DocHandle<LarDoc>;
+  state:        CompositeStore;
+  work:         CompositeStore;
+  /** The state document beneath `state` (its heads name a receipt's durability). */
+  stateHandle:  DocHandle<LarDoc>;
   /** Direct access for proof readers; never a composite layer. */
   personaPlane: { bagId: string; handle: DocHandle<LarDoc> } | null;
   /** Resolve the worker's daemon binding and mount that exact document as the host default. */
@@ -259,7 +265,7 @@ export interface DaemonVmCore {
    * The island named `url` as the daemon working slot's document (the seat's lift moves it from the floor's document to
    * the face's derived one): the host's mounted working layer follows, so a main-side write to the daemon wiki lands on
    * the document the island reads. Nothing moves before the host mounts its layer, or where it stands on that document
-   * already. The outcome ledger rests in the control store (`control`), never in this layer.
+   * already. The outcome ledger rests in the state store (`state`), never in this layer.
    */
   followHostWorkingLayer: (url: string) => Promise<void>;
   workerEa:       Promise<void>;
@@ -402,7 +408,7 @@ class DisposedMidHandshake extends Error {
 }
 
 export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions): DaemonVmCore {
-  const { repo, daemonHandle, controlHandle, personaHandle, personaBagId, recipe, coreHash, pluginCids, daemonAuth, storage, ownedDocument, diskMirrors, workerScriptUrl } = opts;
+  const { repo, daemonHandle, stateHandle, personaHandle, personaBagId, recipe, coreHash, pluginCids, daemonAuth, storage, ownedDocument, diskMirrors, workerScriptUrl } = opts;
 
   // Mutable delegation config — set via mountMainVerbs(). The worker gates routed
   // verbs (verify-then-delegate); main trusts the channel, so no main-side verifier.
@@ -437,11 +443,12 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   let _cutDown: (() => void) | null = null;
   let _verbEventHandler: ((e: { verb: string; args: Record<string, unknown>; origin: "channel" | "surface" | "content"; fromUri?: string; listenable?: string }) => void) | null = null;
 
-  // The island reaches the control document by grant alone; the host reads it through its own control store.
+  // The island reaches the state document by grant alone; the host reads it through its own state store.
   // A STAND-IN (the vessel's key shut, or no face named one) grants its refusal, never a document to resolve.
-  const controlRefused = controlHomeRefusal(controlHandle);
-  const grants: IslandGrants = { ...opts.grants, controlUrl: controlHandle.url, ...(controlRefused ? { controlRefusal: controlRefused.refusal } : {}) };
-  const control = controlStoreOf(controlHandle);
+  const stateRefused = vesselStateRefusal(stateHandle);
+  const grants: IslandGrants = { ...opts.grants, stateUrl: stateHandle.url, workGranted: !!opts.work, ...(stateRefused ? { stateRefusal: stateRefused.refusal } : {}) };
+  const state = stateStoreOf(stateHandle);
+  const work = opts.work?.store ?? floorAnswerStore(new VesselStateUnavailable("no durable work capability stands", stateRefused?.refusal ?? "vessel-state-unavailable"));
 
   // ── Vessel composite (cap-event writes) ─────────────────────────────────────
   const composite  = new CompositeStore();
@@ -483,6 +490,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
 
   // ── Spawn daemon island ─────────────────────────────────────────────────────
   const worker = host.spawnWorker(workerScriptUrl);
+  const stopWork = opts.work ? serveVesselWork({ post: msg => worker.post(msg), listen: fn => worker.listen(fn) }, opts.work) : () => {};
 
   // ── askIsland — ONE request/reply correlation primitive ─────────────────────
   // Both vessel→island capability proxies (resolveBinding) compose on
@@ -633,9 +641,9 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     if (raw.type === "daemon:floor-answer") {
       const msg = raw as DaemonMsg_FloorAnswer;
       // A WHOLE ANSWER rides to the vessel's answer ring, memory alone, on every vessel: the door's caller reads it there.
-      if (msg.answer === true) { answerRingOf(control).put(msg.record as unknown as LarTiddlerRecord); return; }
-      if (controlRefused) {
-        void control.put(msg.record as unknown as LarTiddlerRecord, { kind: "lares-verb", requestId: String(msg.record.tiddler["request-id"] ?? "") })
+      if (msg.answer === true) { answerRingOf(work).put(msg.record as unknown as LarTiddlerRecord); return; }
+      if (stateRefused) {
+        void work.put(msg.record as unknown as LarTiddlerRecord, { kind: "lares-verb", requestId: String(msg.record.tiddler["request-id"] ?? "") })
           .catch((e: unknown) => console.warn(`[daemon] a floor answer for ${String(msg.record.tiddler.title)} found no floor: ${e instanceof Error ? e.message : String(e)}`));
       }
       return;
@@ -859,10 +867,10 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       if (composite.defaultWritableBagId() !== slot) throw new NoWorkingLayerRefusal("Mounting the host working layer", "The daemon working layer stands without being the default writable; restart the vessel so it mounts as the default.");
       return;
     }
-    // A LOCKED (OR FACELESS) FLOOR FAILS CLOSED: the daemon working slot is a device document the control document names,
+    // A LOCKED (OR FACELESS) FLOOR FAILS CLOSED: the daemon working slot is a device document the state document names,
     // and a stand-in names none, so the host mounts no working layer and every host write refuses by name until the
-    // unlocked composition stands the control document itself.
-    if (controlRefused) { console.log(`[daemon] host working layer waits: ${controlRefused.message}`); return; }
+    // unlocked composition stands the state document itself.
+    if (stateRefused) { console.log(`[daemon] host working layer waits: ${stateRefused.message}`); return; }
     await workerEa;
     const recipeTrace = { wikiDocId: daemonHandle.url, libraryBagDocIds: [] as readonly string[] };
     const fingerprint = await computeRecipeFingerprint(recipeTrace);
@@ -874,7 +882,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     } catch (cause) {
       // A FLOOR THAT CANNOT SEAL STANDS (operator ruling 2026-11-09): where the island's floor key does not stand (a locked
       // hearth, a herm that derives none), the island holds the daemon's working layer in its memory alone, and the host
-      // mounts none, as for a control stand-in: every host write refuses by name until an unlock composes again.
+      // mounts none, as for a state stand-in: every host write refuses by name until an unlock composes again.
       const floorRefused = cause instanceof Error ? floorRefusalOf(cause.message) : null;
       if (floorRefused) { console.log(`[daemon] host working layer waits: the floor's rest key does not stand (${floorRefused})`); return; }
       throw new HostWorkingBindingRefusal(slot, cause);
@@ -902,8 +910,9 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     daemonHandle,
     personaPlane,
     composite,
-    control,
-    controlHandle,
+    state,
+    work,
+    stateHandle,
     mountHostWorkingLayer,
     followHostWorkingLayer,
     workerEa,
@@ -1037,6 +1046,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       retireReplayCrossing?.();
       retireReplayCrossing = undefined;
       failPendingAsks("the island shut down");
+      stopWork();
       worker.terminate();
       return { acked };
     })()),
@@ -1049,6 +1059,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       retireFirstCrossing(false);
       retireReplayCrossing?.();
       retireReplayCrossing = undefined;
+      stopWork();
       worker.terminate();
     },
   };

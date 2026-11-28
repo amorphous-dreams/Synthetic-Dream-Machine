@@ -1,13 +1,14 @@
+import { memoryWorkOf } from "./work-store-fixture.js";
 /**
  * uds-locked-fails-closed — A LOCKED HEARTH FAILS CLOSED at the verb door (operator ruling 2026-11-09).
  *
  * Gaia boots her node vessel on Tuesday and forgets to unlock it. Her MCP memory write reaches the UDS door while the
- * vessel's key stays shut: the control document stands as a stand-in (`standControlHome`), so the door answers
+ * vessel's key stays shut: the state document stands as a stand-in (`standVesselState`), so the door answers
  * `vessel-locked`, places no verb, writes no receipt fact and claims no durability. She unlocks (the vessel recomposes
  * over the opened key) and retries under the same request id: it lands once. A second retry lands nothing new.
  *
  *   L1 — RED (Gaia Tuesday): locked, the invocation and its receipt read both refuse `vessel-locked`; nothing runs or rests
- *   L2 — RED (midnight petitioner): the receipt ledger over a locked control store answers no fact, durable or otherwise
+ *   L2 — RED (midnight petitioner): the receipt ledger over a locked state store answers no fact, durable or otherwise
  *   L3 — CONTROL: after unlock the same request id lands once, and a retry answers the outcome with no second placement
  */
 import { describe, expect, test } from "vitest";
@@ -28,13 +29,12 @@ import {
 } from "@lararium/mesh/secret-home";
 import { concludeVerb, OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 import {
-  controlHomeRefusal,
-  controlStoreOf,
-  nameControlHome,
-  standControlHome,
+  vesselStateRefusal,
+  nameVesselState,
+  standVesselState,
   VESSEL_LOCKED,
-  CONTROL_HOME_UNNAMED,
-} from "@lararium/mesh/control-home";
+  VESSEL_STATE_UNNAMED,
+} from "@lararium/mesh/vessel-state";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { FactLedger, startUdsChannel } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
@@ -42,11 +42,11 @@ import { claimStore } from "../src/owned-store.js";
 describe("a locked hearth fails closed at the verb door", () => {
   test("L1/L3 — RED (Gaia Tuesday): locked, a memory write refuses `vessel-locked` and nothing runs or rests; after unlock the same id lands once, and a retry lands nothing new", async () => {
     const v = await foundedThenLocked();
-    const control = await standControlHome(v.repo, v.daemon);
-    expect(controlHomeRefusal(control)?.refusal).toBe(VESSEL_LOCKED);
+    const state = await standVesselState(v.repo, v.daemon);
+    expect(vesselStateRefusal(state)?.refusal).toBe(VESSEL_LOCKED);
 
     let placed = 0;
-    const first = await door(control, v.repo, () => { placed += 1; });
+    const first = await door(state, v.repo, () => { placed += 1; });
     try {
       const refused = await send(first.socketPath, { verb: "memory-write", args: { text: "heron" }, requestedBy: "did:key:gaia", requestId: "tuesday-1" });
       expect(refused["status"]).toBe("error");
@@ -57,14 +57,14 @@ describe("a locked hearth fails closed at the verb door", () => {
       expect(placed).toBe(0);
     } finally { await first.close(); }
     await v.repo.flush();
-    expect(v.store.waiting(v.address.controlId)).toBe(0);
+    expect(v.store.waiting(v.address.stateId)).toBe(0);
 
-    // THE UNLOCK: the key opens and the vessel recomposes, standing the control document itself.
+    // THE UNLOCK: the key opens and the vessel recomposes, standing the state document itself.
     await openSecretHome(v.repo, v.address);
-    const opened = await standControlHome(v.repo, v.daemon);
-    expect(controlHomeRefusal(opened)).toBeNull();
+    const opened = await standVesselState(v.repo, v.daemon);
+    expect(vesselStateRefusal(opened)).toBeNull();
     expect(titles(opened, RECEIPT_FACT_URI_PREFIX)).toEqual([]);
-    const openedStore = controlStoreOf(opened);
+    const openedStore = memoryWorkOf(opened);
     const second = await door(opened, v.repo, (o) => {
       placed += 1;
       setTimeout(() => { void openedStore.put(concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", cause: "test-island", batchMode: "best-effort", results: { summary: { ok: true, output: { landed: true } } } }), { kind: "lares-verb", requestId: o.requestId }); }, 20);
@@ -82,39 +82,39 @@ describe("a locked hearth fails closed at the verb door", () => {
   });
 
   test("U1 — an unfounded place's verb door refuses `init-wiki` by name in one round trip: no verb places, no wait runs to the bound", async () => {
-    // A place that founded no face names no control document: the stand-in answers `control-home-unnamed`. A verb whose outcome
+    // A place that founded no face names no state document: the stand-in answers `vessel-state-unnamed`. A verb whose outcome
     // ledger would rest there refuses at the door, before any placement or outcome wait (CI's W4 hang came from an ask at a socket
     // no channel served, never from this door).
     const { repo } = heldRepo(memoryAdapter());
     const daemon = repo.create<LarDoc>(emptyLarDoc());
-    const control = await standControlHome(repo, daemon);
-    expect(controlHomeRefusal(control)?.refusal).toBe(CONTROL_HOME_UNNAMED);
+    const state = await standVesselState(repo, daemon);
+    expect(vesselStateRefusal(state)?.refusal).toBe(VESSEL_STATE_UNNAMED);
     let placed = 0;
-    const gate = await door(control, repo, () => { placed += 1; });
+    const gate = await door(state, repo, () => { placed += 1; });
     try {
       const t0 = performance.now();
       const refused = await send(gate.socketPath, { verb: "init-wiki", args: { slug: "veil-own" }, requestedBy: "did:key:veil", requestId: "unfounded-1" });
       expect(refused["status"]).toBe("error");
-      expect(refused["refusal"]).toEqual({ reason: CONTROL_HOME_UNNAMED });
+      expect(refused["refusal"]).toEqual({ reason: VESSEL_STATE_UNNAMED });
       expect(placed, "no verb placed").toBe(0);
       expect(performance.now() - t0, "one round trip, never the outcome wait's bound").toBeLessThan(2_000);
     } finally { await gate.close(); await repo.shutdown(); }
   });
 
-  test("L2 — RED (midnight petitioner): the receipt ledger over a locked control store answers no fact, durable or absent; it refuses `vessel-locked`", async () => {
+  test("L2 — RED (midnight petitioner): the receipt ledger over a locked state store answers no fact, durable or absent; it refuses `vessel-locked`", async () => {
     const v = await foundedThenLocked();
-    const control = await standControlHome(v.repo, v.daemon);
-    const ledger = new FactLedger(controlStoreOf(control), v.repo, 16, "life-one");
+    const state = await standVesselState(v.repo, v.daemon);
+    const ledger = new FactLedger(memoryWorkOf(state), v.repo, 16, "life-one");
     await expect(ledger.get("midnight-1")).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
     await expect(ledger.arbitrate("midnight-1", "digest", undefined, "memory-write")).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
     await v.repo.shutdown();
   });
 });
 
-async function door(controlHandle: Awaited<ReturnType<typeof standControlHome>>, repo: Repo, placeVerb: (o: { requestId: string; verb: string }) => void, control = controlStoreOf(controlHandle)) {
+async function door(stateHandle: Awaited<ReturnType<typeof standVesselState>>, repo: Repo, placeVerb: (o: { requestId: string; verb: string }) => void, state = memoryWorkOf(stateHandle)) {
   const dir = mkdtempSync(join(tmpdir(), "uds-locked-"));
   const claim = await claimStore(dir, { holder: "vessel" });
-  const channel = startUdsChannel({ controlHandle, control, claim, repo, timeoutMs: 3_000, placeVerb });
+  const channel = startUdsChannel({ stateHandle, state, claim, repo, timeoutMs: 3_000, placeVerb });
   for (let i = 0; i < 100 && !existsSync(claim.socketPath); i++) await new Promise((r) => setTimeout(r, 10));
   return { socketPath: claim.socketPath, close: async () => { await channel.close(); await claim.release(); rmSync(dir, { recursive: true, force: true }); } };
 }
@@ -137,17 +137,17 @@ function send(socketPath: string, inv: unknown): Promise<Record<string, unknown>
 const titles = (handle: { doc(): LarDoc | undefined }, prefix: string): string[] =>
   Object.keys(handle.doc()?.tiddlers ?? {}).filter((t) => t.startsWith(prefix));
 
-/** A vessel founded with its face (home and control minted, the daemon document naming control), then booted locked. */
+/** A vessel founded with its face (home and state minted, the daemon document naming state), then booted locked. */
 async function foundedThenLocked() {
   const inner = memoryAdapter();
   const founding = heldRepo(inner);
-  const address = { ...mintSecretHomeAddress(), controlId: mintVesselDocumentId() };
+  const address = { ...mintSecretHomeAddress(), stateId: mintVesselDocumentId() };
   await enrollSecretHome(founding.repo, address);
-  const daemonBytes = A.save((() => { const d = founding.repo.create<LarDoc>(emptyLarDoc()); nameControlHome(d, `automerge:${address.controlId}`); return d.doc(); })());
+  const daemonBytes = A.save((() => { const d = founding.repo.create<LarDoc>(emptyLarDoc()); nameVesselState(d, `automerge:${address.stateId}`); return d.doc(); })());
   await founding.repo.flush();
   await founding.repo.shutdown();
   const locked = heldRepo(inner);
-  return { address: address as typeof address & { controlId: string }, repo: locked.repo, store: locked.store, daemon: locked.repo.import<LarDoc>(daemonBytes) };
+  return { address: address as typeof address & { stateId: string }, repo: locked.repo, store: locked.store, daemon: locked.repo.import<LarDoc>(daemonBytes) };
 }
 
 function memoryAdapter(): StorageAdapterInterface {

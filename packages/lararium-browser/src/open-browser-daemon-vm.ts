@@ -1,3 +1,5 @@
+import { openBrowserWork } from "./vessel-work-rest.js";
+import { vesselStateRefusal } from "@lararium/mesh/vessel-state";
 /**
  * openBrowserDaemonVm — browser host wrapper over the shared daemon-VM core.
  *
@@ -19,7 +21,7 @@
 
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { daemonFaceCanonBag, type WikiRecipe } from "@lararium/mesh/wiki-recipe";
-import { standControlHome } from "@lararium/mesh/control-home";
+import { standVesselState } from "@lararium/mesh/vessel-state";
 import { floorCidToMount } from "@lararium/mesh/floor-pin";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { type Repo, type AutomergeUrl } from "@lararium/mesh/automerge";
@@ -35,6 +37,7 @@ import {
 import { browserNewSyncChannel, browserSpawnWorker } from "./worker-handle.js";
 
 export interface BrowserDaemonVmOptions {
+  idbName: string;
   repo:             Repo;
   daemonUrl:         string;
   /** The persona plane's doc URL (the PersonaGroup veiled identity) — resolved alongside the daemon doc. */
@@ -128,8 +131,8 @@ export async function openBrowserDaemonVm(
       return repo.create<LarDoc>(emptyLarDoc());
     }
   })();
-  // ── The vessel's control document, named by the daemon document (`control-home`) ──
-  const controlHandle = await standControlHome(repo, daemonHandle);
+  // ── The vessel's state document, named by the daemon document (`vessel-state`) ──
+  const stateHandle = await standVesselState(repo, daemonHandle);
   // ── Persona doc handle (same find-or-create) — the one VM tends both bags ────
   const personaHandle = await (async () => {
     try {
@@ -151,7 +154,8 @@ export async function openBrowserDaemonVm(
   // The wrapper IS the shore — host pieces + find-or-create daemonHandle; the lifecycle and the
   // whole result surface (DaemonVmCore) live once in the core. Return it directly, no re-spread.
   return openDaemonVmCore(host, {
-    repo, daemonHandle, controlHandle, recipe: daemonRecipe, grants, coreHash,
+    repo, daemonHandle, stateHandle, recipe: daemonRecipe, grants, coreHash,
+    ...(vesselStateRefusal(stateHandle) === null ? { work: await openBrowserWork(opts.idbName) } : {}),
     ...(personaHandle ? { personaHandle } : {}),
     ...(personaBagId  ? { personaBagId }  : {}),
     ...(pluginCids?.length ? { pluginCids } : {}),
@@ -163,12 +167,12 @@ export async function openBrowserDaemonVm(
       documentUrl: daemonUrl,
       storage: { type: "idb" as const, dbName: ownedDaemonDbName(daemonUrl) },
     } } : {}),
-    // THE VESSEL'S FLOOR PIN, off the control document (one shape with the node host): the daemon island mounts the floor this
-    // vessel accepted; a control document that reads nothing names no pin, and the island reads its genesis seed's floor.
+    // THE VESSEL'S FLOOR PIN, off the state document (one shape with the node host): the daemon island mounts the floor this
+    // vessel accepted; a state document that reads nothing names no pin, and the island reads its genesis seed's floor.
     floorCid: () => {
       let doc: LarDoc | undefined;
-      try { doc = controlHandle.doc(); } catch { return null; }
-      const pick = floorCidToMount({ controlDoc: doc, nexus: null, genesis: null });
+      try { doc = stateHandle.doc(); } catch { return null; }
+      const pick = floorCidToMount({ stateDoc: doc, nexus: null, genesis: null });
       return pick.source === "pin" ? pick.cid : null;
     },
     workerScriptUrl,

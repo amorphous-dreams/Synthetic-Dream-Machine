@@ -25,7 +25,7 @@ import type { Repo } from "@automerge/automerge-repo";
 import { DAEMON_BAG_ID, PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER } from "@lararium/mesh/lar-uris";
 import { personaMembershipEntries } from "@lararium/mesh/persona-planes";
 import { personaScopedBagIds } from "@lararium/mesh/persona-scope";
-import { nameControlHome } from "@lararium/mesh/control-home";
+import { nameVesselState } from "@lararium/mesh/vessel-state";
 import { seedDaemonDoc } from "@lararium/mesh/social-seed";
 import { nexusIdentity, nexusScopeOrThrow } from "@lararium/mesh/nexus-identity";
 import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
@@ -321,8 +321,8 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
     // THE SECRET HOME STANDS BEFORE THE ADMISSION'S FIRST SECRET WRITE: the joinee's dyad, its group-secret seal and the
     // cap events it ingests rest in this vessel's own sealed home, enrolled on the holder's rest (custody stood above).
     const secret = await standVesselSecretHome(repo);
-    // THE CONTROL DOCUMENT the founding minted beside the home: the daemon document names it, for the floor's stand.
-    if (secret.controlUrl) nameControlHome(admitDaemon, secret.controlUrl);
+    // THE VESSEL STATE DOCUMENT the founding minted beside the home: the daemon document names it, for the floor's stand.
+    if (secret.stateUrl) nameVesselState(admitDaemon, secret.stateUrl);
     const { archive, identitiesUrl, circlesUrl, sessionsUrl, intentsUrl, daemonUrl, personaUrl, deviceEdge } = await runApplyAdmitPayload({
       repo,
       atomSeed: admitSeed,
@@ -424,9 +424,9 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
   // The FACE lands later, by an operator act: `lares persona new 0 --name '<label>'` runs `runFoundTheFace`
   // below. A hearth whose operator stands right here types two commands instead of one, and a crossroads
   // never types the second at all.
-  // THE PLACE MINTS NO SECRET HOME AND NO CONTROL DOCUMENT (operator ruling 2026-11-09): both mint with the FACE, where its
+  // THE PLACE MINTS NO SECRET HOME AND NO VESSEL STATE DOCUMENT (operator ruling 2026-11-09): both mint with the FACE, where its
   // founding or its admission lands (`runFoundTheFace`, the fleet-join land above). The place writes nothing secret and
-  // holds no control family; a herm that never lights a face holds neither, and its custody row names none.
+  // holds no state family; a herm that never lights a face holds neither, and its custody row names none.
   const place = await foundThePlace({ repo });
 
   // THE FLUSH COMES FIRST, and the catalog pointer already carries the reason: a pointer written
@@ -713,9 +713,9 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   // sealed before the Repo reads a byte of it. Its founding checkpoint rests there (A5), so an interrupted founding
   // recovers its seed from the home.
   const secret = await standVesselSecretHome(repo);
-  // THE CONTROL DOCUMENT MINTS WITH THE FACE, beside the secret home (operator ruling 2026-11-09): the daemon document names
+  // THE VESSEL STATE DOCUMENT MINTS WITH THE FACE, beside the secret home (operator ruling 2026-11-09): the daemon document names
   // it, so a locked floor's stand finds it before the custody row opens. The first name the daemon document took holds.
-  if (secret.controlUrl) nameControlHome(daemonHandle, secret.controlUrl);
+  if (secret.stateUrl) nameVesselState(daemonHandle, secret.stateUrl);
   const atomSeed = (anchoredResume !== null ? await loadFaceAtomOfGroup(anchoredResume) : null)
     ?? (await loadPendingFoundingSeed(foundingAsk))
     ?? await recoverFoundingSeedFromGroup(foundingAsk, secret.handle.doc()?.tiddlers ?? {})

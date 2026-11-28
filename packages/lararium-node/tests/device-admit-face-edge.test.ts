@@ -157,11 +157,11 @@ vi.mock("../src/persona-act-store.js", () => ({ readFacePersonaRecords: async ()
 
 import { DeviceAdmitTagRefused, runDeviceAdmit } from "../src/commands/device-admit.js";
 import { actCid } from "@lararium/mesh/signed-act";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { VESSEL_STATE_ID } from "@lararium/mesh/lar-uris";
 import { testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
-// The daemon doc names the vessel's control document, where the lease slots rest (a fence read refuses where it names none).
-const daemonDoc = { tiddlers: { [T.group]: { text: "group-zero" }, [T.kel]: { text: "kel-zero" }, [CONTROL_HOME_ID]: { text: "automerge:control", tiddler: { text: "automerge:control" } } } };
+// The daemon doc names the vessel's state document, where the lease slots rest (a fence read refuses where it names none).
+const daemonDoc = { tiddlers: { [T.group]: { text: "group-zero" }, [T.kel]: { text: "kel-zero" }, [VESSEL_STATE_ID]: { text: "automerge:state", tiddler: { text: "automerge:state" } } } };
 const repo = {
   find: async (url: string) => ({ url, doc: () => (url === "automerge:daemon" ? daemonDoc : {}) }),
   flush: async () => {},
@@ -204,13 +204,13 @@ describe("runDeviceAdmit names the face whose root signs", () => {
     expect(seam.edge).toBeNull();
   });
 
-  test("RED (M16): a daemon doc that names no control document refuses the admission before the root signs, never binds at genesis", async () => {
-    const named = daemonDoc.tiddlers[CONTROL_HOME_ID];
-    delete (daemonDoc.tiddlers as Record<string, unknown>)[CONTROL_HOME_ID];
+  test("RED (M16): a daemon doc that names no state document refuses the admission before the root signs, never binds at genesis", async () => {
+    const named = daemonDoc.tiddlers[VESSEL_STATE_ID];
+    delete (daemonDoc.tiddlers as Record<string, unknown>)[VESSEL_STATE_ID];
     try {
-      await expect(admitAt()).rejects.toThrow(/lease fence reads unread: control-home-unavailable/);
+      await expect(admitAt()).rejects.toThrow(/lease fence reads unread: vessel-state-unavailable/);
       expect(seam.edge).toBeNull();
-    } finally { (daemonDoc.tiddlers as Record<string, unknown>)[CONTROL_HOME_ID] = named; }
+    } finally { (daemonDoc.tiddlers as Record<string, unknown>)[VESSEL_STATE_ID] = named; }
   });
 
   test("RED: a stale daemon doc never signs the joinee below the issuer's sealed lease frontier, and the log projects from the anchor's accepted seq; CONTROL: an honest fresher advance still binds", async () => {

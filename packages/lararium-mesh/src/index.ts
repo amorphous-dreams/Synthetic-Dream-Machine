@@ -143,7 +143,7 @@ export * from "./oracle-cast.js";
 export * from "./oracle-loop.js";
 export * from "./door-band.js";
 export * from "./epoch-lease.js";
-export { controlHomeUrlOf, standControlHome, readControlHome, nameControlHome, ControlHomeUnavailable, controlStoreOf, vesselOnlyDocIds, floorOnlyDocIds, makeVesselOnlyDocs, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, controlHomeRefusal, assertControlHomeOpen, refusingControlStore, floorAnswerStore, isFloorAnswerTitle, FLOOR_ANSWER_RING, answerRingOf, makeAnswerRing, ANSWER_RING_COUNT, ANSWER_RING_BYTES, vesselLockedRefusal, type AnswerRing, type ControlHomeRefusal } from "./control-home.js";
+export { vesselStateUrlOf, standVesselState, readVesselState, nameVesselState, VesselStateUnavailable, stateStoreOf, vesselOnlyDocIds, floorOnlyDocIds, makeVesselOnlyDocs, VESSEL_LOCKED, VESSEL_STATE_UNNAMED, vesselStateRefusal, assertVesselStateOpen, refusingStateStore, vesselLockedRefusal, type VesselStateRefusal } from "./vessel-state.js";
 export { vesselOnlyBook, repoReverdict } from "./vessel-only-book.js";
 export * from "./lar-did.js";
 export * from "./device-delegation.js";
@@ -731,3 +731,8 @@ export * from "./spirit-witness.js";
 
 // A boot step names what it awaits and its measured span: the subpath lends what the barrel lends from its module.
 export * from "./boot-wait.js";
+
+export * from "./answer-ring.js";
+export * from "./vessel-work.js";
+
+export * from "./floor-answers.js";

@@ -9,7 +9,7 @@
  * to the CID it was fetched by.
  *
  * It records NO acceptance. The vessel accepts a release by a person's own act (`browser-floor-pin`, one pin per vessel and
- * Nexus in its control home, road `W26`), on top of this read.
+ * Nexus in its vessel registry, road `W26`), on top of this read.
  *
  * WHERE THE AID COMES FROM. The Nexus the page reads under is the one a VERIFIED floor pin claim names (the card's claim,
  * anchored apart from the card and folded to its KEL head) or the one an admit made it a member of: no unsigned card

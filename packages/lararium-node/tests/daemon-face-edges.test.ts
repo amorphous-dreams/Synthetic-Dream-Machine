@@ -11,7 +11,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
 import { KeyhiveProvider } from "@lararium/keyhive";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
-import { BAG_IDS, DAEMON_BAG_ID, CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { BAG_IDS, DAEMON_BAG_ID, VESSEL_STATE_ID } from "@lararium/mesh/lar-uris";
 import { hex } from "@lararium/mesh/crypto";
 import { kahuRealmGroup, type KahuCabalBoardReader } from "@lararium/mesh/kahu-canon-reach";
 import { openKahuCabalAct, signKahuCabalAct } from "@lararium/mesh/kahu-cabal-admission";
@@ -85,9 +85,9 @@ test("L2: a face's drop waits for a verb past its verify that still holds the fa
   const registry = new VerbTable();
   opts.wireWorkerVerbs!(registry, a.ctx);
   const sibling = `0x${b.daemonAuth.atom.key}`;
-  // The sibling's verb clears its verify, then reads the control layer (the realm's lease slots rest in the vessel's control
+  // The sibling's verb clears its verify, then reads the state layer (the realm's lease slots rest in the vessel's state
   // document): hold that read until the drop has been asked.
-  const daemonStore = (a.ctx as any).control.storeForBag(CONTROL_HOME_ID);
+  const daemonStore = (a.ctx as any).state.storeForBag(VESSEL_STATE_ID);
   let release!: () => void, entered!: () => void;
   const gate = new Promise<void>((resolve) => { release = resolve; });
   const reading = new Promise<void>((resolve) => { entered = resolve; });

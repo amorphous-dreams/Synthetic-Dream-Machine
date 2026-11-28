@@ -28,7 +28,7 @@ import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
 import { buildDeviceDelegationRootHalf } from "@lararium/mesh/device-delegation";
 import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
 import { leaseEpochPrefix } from "@lararium/mesh/epoch-lease";
-import { readControlHome } from "@lararium/mesh/control-home";
+import { readVesselState } from "@lararium/mesh/vessel-state";
 import { readFace } from "@lararium/mesh/face-reading";
 import { seatDeviceInFace, DeviceSeatRefused } from "@lararium/mesh/device-seat";
 import { ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
@@ -368,19 +368,19 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     throw new Error("[lares fleet join answer] no seed charter stands here, so no hearth stands to admit a device to — found the hearth with `lares vessel found --hearth`.");
   }
 
-  // THE LEASE READ — off the vessel's control document the daemon doc above names (`control-home`), the same fold
+  // THE LEASE READ — off the vessel's state document the daemon doc above names (`vessel-state`), the same fold
   // `gateFaceJoin` runs (leaseEpochPrefix → per-writer slot values → signedLeaseEpoch = max). The minted edge binds to
   // THIS PersonaGroup's current epoch, so a device admitted here reads fresh at the door until a later
   // roll leases it stale; its next answer renews the seated edge at the epoch then current (the renewal below).
   const leasePrefix = leaseEpochPrefix(personaGroupId);
   const leaseSlotValues: string[] = [];
   // The admission READS the lease through the vessel's own stand (the secret home's custody row opens first, the key stands
-  // before a byte reads); it mints no control document. FAIL CLOSED (M16): an unnamed or unread control document refuses
+  // before a byte reads); it mints no state document. FAIL CLOSED (M16): an unnamed or unread state document refuses
   // the admission by name, never signs at the genesis epoch.
-  const controlMap = await readControlHome(repo, daemonHandle).then(
-    (control) => (control.doc() as LarDoc | undefined)?.tiddlers ?? {},
+  const stateMap = await readVesselState(repo, daemonHandle).then(
+    (state) => (state.doc() as LarDoc | undefined)?.tiddlers ?? {},
     (e: unknown) => { throw new Error(`[lares fleet join answer] the lease fence reads unread: ${e instanceof Error ? e.message : String(e)}; open the vessel's custody and retry`); });
-  for (const [title, entry] of Object.entries(controlMap)) {
+  for (const [title, entry] of Object.entries(stateMap)) {
     if (!title.startsWith(leasePrefix)) continue;
     const text = tiddlerText(entry);
     if (typeof text === "string") leaseSlotValues.push(text);
@@ -414,10 +414,10 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     personaGroupId, reading, issuerAnchor, records, leaseSlotValues, signerSeed, hearthTrueName, deviceKey,
     kelEpoch: personaKelChain[personaKelChain.length - 1]!.seq,
     vesselTag: opts.vesselTag,
-    // THE HEARTH'S DAEMON WORKING DOCUMENT (road row `L4f`): the working slot this vessel's own control document names for the
+    // THE HEARTH'S DAEMON WORKING DOCUMENT (road row `L4f`): the working slot this vessel's own state document names for the
     // face, read off the map the lease fence read above. The root signs it into the joinee's edge act, so the joinee's page
     // at this hearth mounts the document this hearth projects; a vessel that stands no slot for the face names none.
-    hearthDaemon: hearthDaemonOf(controlMap, personaGroupId),
+    hearthDaemon: hearthDaemonOf(stateMap, personaGroupId),
     rootHalf: buildDeviceDelegationRootHalf,
     enrol: async ({ boundEpoch, personaActs, signedEdge }) => {
       const operation = { store: operationStore, atomSeed,

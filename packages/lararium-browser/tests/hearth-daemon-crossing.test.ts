@@ -12,7 +12,7 @@
 import { describe, expect, test } from "vitest";
 import { generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl, type DocumentId } from "@automerge/automerge-repo";
 import { crossroadsDocUrl } from "@lararium/mesh/deterministic-doc";
-import { makeVesselOnlyDocs } from "@lararium/mesh/control-home";
+import { makeVesselOnlyDocs } from "@lararium/mesh/vessel-state";
 import { oracleGenesisDocUrl } from "@lararium/mesh/genesis-doc";
 import { hearthCrossingOf, provenHearthDaemon } from "../src/hearth-canon.js";
 import { browserShareConfig } from "../src/open-browser-vessel.js";
@@ -65,7 +65,7 @@ describe("the share verdict hands the opened hearth document to the crossing's g
   const OTHER_PRIVATE = idOf(generateAutomergeUrl());
   function vessel(crossing: ReturnType<typeof at>) {
     const vesselOnly = makeVesselOnlyDocs();
-    vesselOnly.add(idOf(WORKING)); vesselOnly.add(OTHER_PRIVATE);   // the leaf's control document names both
+    vesselOnly.add(idOf(WORKING)); vesselOnly.add(OTHER_PRIVATE);   // the leaf's state document names both
     const opened = new Set<string>();
     const id = crossing.openHearthDaemon(WORKING);
     if (id) opened.add(id);

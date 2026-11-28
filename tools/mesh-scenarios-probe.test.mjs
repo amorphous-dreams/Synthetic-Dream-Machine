@@ -1,6 +1,6 @@
 // mesh-scenarios-probe.test.mjs — the held-out mesh-scenarios driver's readiness probe crosses the socket with a verb the
 // probed place ANSWERS. A herm stands as a place with no face, and a faceless place answers only its floor
-// (packages/lararium-node/src/floor-verbs.ts): `wiki status` (`residency`) refuses `control-home-unnamed` there on every poll,
+// (packages/lararium-node/src/floor-verbs.ts): `wiki status` (`residency`) refuses `vessel-state-unnamed` there on every poll,
 // which read as "the relay never answered" in realm-crossing, quorum-realm, meme and board. The probe asks a herm a floor
 // query (`vessel unbound` -> `unbound-docs`) and a hearth `wiki status`, each through `docker compose exec` (the socket).
 import { test } from "node:test";

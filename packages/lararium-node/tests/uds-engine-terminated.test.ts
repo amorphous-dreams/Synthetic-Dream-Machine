@@ -14,7 +14,7 @@
  *   - an INGEST wave past one document's budget refuses `ingest-wave-over-budget` before arbitration, so a direct client
  *     that bypasses the CLI's paging meets the daemon's bound.
  */
-import { controlStoreOf } from "@lararium/mesh/control-home";
+import { memoryWorkOf } from "./work-store-fixture.js";
 import { describe, test, expect } from "vitest";
 import { mkdtempSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -66,8 +66,8 @@ async function withChannel(run: (rig: Rig) => Promise<void>): Promise<void> {
   // THE INJECTED FAULT: the Repo's flush throws the terminated binding's own words while `dead` holds.
   const injected = { flush: async (ids?: Parameters<Repo["flush"]>[0]) => { flushes += 1; if (dead) throw new Error("Module terminated"); await repo.flush(ids); } };
   const channel = startUdsChannel({
-    controlHandle: handle,
-    control: controlStoreOf(handle),
+    stateHandle: handle,
+    state: memoryWorkOf(handle),
     placeVerb: (o) => {
       const p = o as Placed;
       placed.push(p);

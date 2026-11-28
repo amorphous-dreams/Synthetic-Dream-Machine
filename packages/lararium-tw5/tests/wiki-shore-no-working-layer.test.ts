@@ -12,13 +12,12 @@
 import { describe, expect, test } from "vitest";
 import { unroutedSaveAlertTitle } from "../src/island-adaptor.js";
 import { wikiSkip, skipNote } from "./test-wiki.js";
-import { afterDispatch, draftBag, ManualBoundary, personalBag, shoreRig, storeText, tempBag, turns, workingBag, type Rig } from "./wiki-shore-rig.js";
+import { afterDispatch, draftBag, ManualBoundary, personalBag, shoreRig, storeText, tempBag, workingBag, type Rig } from "./wiki-shore-rig.js";
 
 const POINTER = (slot: string): string => `lar:///ha.ka.ba/lararium/config/current-wiki-${slot}`;
 const hand = async (r: Rig, boundary: ManualBoundary): Promise<void> => {
   await afterDispatch();
-  boundary.fire();
-  await turns(48);
+  await boundary.settle();
   await r.adaptor.landingIdle();
 };
 const end = async (r: Rig): Promise<void> => { r.unbridge(); await r.adaptor.stop().catch(() => undefined); await r.repo.shutdown(); };

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { VESSEL_STATE_ID } from "@lararium/mesh/lar-uris";
 import { summon } from "@lararium/mesh/verb-tiddler";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { VerbDispatcher, VerbTable } from "../src/verb-dispatcher.js";
@@ -27,11 +27,11 @@ class FakeWiki {
   };
   readonly $tw = { Tiddler: class { fields: Record<string, unknown>; constructor(fields: Record<string, unknown>) { this.fields = fields; } }, wiki: this.wiki };
 }
-/** The control store a summons rests in (`control-home`). */
+/** The state store a summons rests in (`vessel-state`). */
 function daemonWithWorking() {
-  const control = new CompositeStore();
-  control.addLayer({ bagId: CONTROL_HOME_ID, store: new MemoryTiddlerStore(CONTROL_HOME_ID), writable: true, defaultWritable: true });
-  return control;
+  const state = new CompositeStore();
+  state.addLayer({ bagId: VESSEL_STATE_ID, store: new MemoryTiddlerStore(VESSEL_STATE_ID), writable: true, defaultWritable: true });
+  return state;
 }
 /** Records every summons the dispatcher places, and resolves `firstRun` when a handler first runs. */
 function watch(dispatcher: VerbDispatcher, registry: VerbTable) {
@@ -51,10 +51,10 @@ describe("dispatcher startup summons replay", () => {
     const consumed = summon({ verb: "replayed", args: {}, requestedBy: "did:key:caller", requestId: "persisted-consumed" });
     await daemon.put(pending, { kind: "test" });
     await daemon.put(consumed, { kind: "test" });
-    await daemon.tombstoneInBag(CONTROL_HOME_ID, consumed.tiddler.title, { kind: "test" });
+    await daemon.tombstoneInBag(VESSEL_STATE_ID, consumed.tiddler.title, { kind: "test" });
     const tw5 = new FakeWiki();
     const registry = new VerbTable();
-    const dispatcher = new VerbDispatcher({ daemonVm: tw5 as unknown as TW5Engine, daemon: new CompositeStore(), control: daemon, registry });
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5 as unknown as TW5Engine, daemon: new CompositeStore(), state: daemon, registry });
     const seen = watch(dispatcher, registry);
     dispatcher.start();
     await dispatcher.startupScan;
@@ -63,7 +63,7 @@ describe("dispatcher startup summons replay", () => {
     expect((await daemon.getLive(pending.tiddler.title))).toBeNull();
     dispatcher.stop();
 
-    const fresh = new VerbDispatcher({ daemonVm: new FakeWiki() as unknown as TW5Engine, daemon: new CompositeStore(), control: daemon, registry });
+    const fresh = new VerbDispatcher({ daemonVm: new FakeWiki() as unknown as TW5Engine, daemon: new CompositeStore(), state: daemon, registry });
     const again = watch(fresh, new VerbTable());
     fresh.start();
     await fresh.startupScan;
@@ -75,7 +75,7 @@ describe("dispatcher startup summons replay", () => {
     const daemon = daemonWithWorking();
     const tw5 = new FakeWiki();
     const registry = new VerbTable();
-    const dispatcher = new VerbDispatcher({ daemonVm: tw5 as unknown as TW5Engine, daemon: new CompositeStore(), control: daemon, registry });
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5 as unknown as TW5Engine, daemon: new CompositeStore(), state: daemon, registry });
     const seen = watch(dispatcher, registry);
     dispatcher.start();
     const live = summon({ verb: "replayed", args: {}, requestedBy: "did:key:caller", requestId: "during-scan" });
@@ -94,7 +94,7 @@ describe("dispatcher startup summons replay", () => {
     daemon.listVisible = async () => { const titles = await listVisible(); await held; return titles; };
     const tw5 = new FakeWiki();
     const registry = new VerbTable();
-    const dispatcher = new VerbDispatcher({ daemonVm: tw5 as unknown as TW5Engine, daemon: new CompositeStore(), control: daemon, registry });
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5 as unknown as TW5Engine, daemon: new CompositeStore(), state: daemon, registry });
     const seen = watch(dispatcher, registry);
     dispatcher.start();
     // The summons lands while the scan is held: live delivery heeds it, then the scan meets it again.
@@ -113,7 +113,7 @@ describe("dispatcher startup summons replay", () => {
     const resolved: string[] = [];
     const resolveTopmost = daemon.resolveTopmost.bind(daemon);
     daemon.resolveTopmost = async (title: string) => { resolved.push(title); return resolveTopmost(title); };
-    const dispatcher = new VerbDispatcher({ daemonVm: new FakeWiki() as unknown as TW5Engine, daemon: new CompositeStore(), control: daemon, registry: new VerbTable() });
+    const dispatcher = new VerbDispatcher({ daemonVm: new FakeWiki() as unknown as TW5Engine, daemon: new CompositeStore(), state: daemon, registry: new VerbTable() });
     dispatcher.start();
     await dispatcher.startupScan;
     expect(resolved).toEqual([]);

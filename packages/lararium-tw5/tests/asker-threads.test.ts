@@ -4,7 +4,7 @@
  * act, as it binds locality and the surface; the dispatcher hands it to the reactor as `ctx.asker`. A synced verb tiddler
  * (content) names no asker, and a reused id with other args lends none. Every red pairs with a CONTROL.
  */
-import { memoryControlStore } from "./control-store-fixture.js";
+import { memoryWorkStore } from "./work-store-fixture.js";
 import { describe, test, expect } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
@@ -109,7 +109,7 @@ describe("the asker rides the placed ask", () => {
     const registry = new VerbTable();
     registry.register("probe", async (_args, ctx) => { seen.push([ctx.invocation.requestId, (ctx as { asker?: unknown }).asker]); return {}; });
     const dispatcher = new VerbDispatcher({
-      daemonVm: tw5, daemon: makeDaemon(), control: memoryControlStore(), registry,
+      daemonVm: tw5, daemon: makeDaemon(), state: memoryWorkStore(), work: memoryWorkStore(), registry,
       localOf: (inv) => book.has(inv), surfaceOf: (inv) => book.isSurface(inv), askerOf: (inv) => book.askerOf(inv),
     });
     dispatcher.start();

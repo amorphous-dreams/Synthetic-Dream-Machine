@@ -2,14 +2,14 @@
  * locked-floor-loads-no-sealed — A FACE-LIT HEARTH BOOTED LOCKED STANDS ITS FLOOR WITHOUT REACHING FOR A SEALED DOCUMENT.
  *
  * The staged e2e roads stand a founded vessel and unlock it through the custody door. Measured on CI: at the locked floor
- * the vessel's Repo kept loading vessel- and face-sealed documents (the control document's held seed and what it pointed
+ * the vessel's Repo kept loading vessel- and face-sealed documents (the state document's held seed and what it pointed
  * at), each load refusing `session-absent` with a stack the daemon wrote to its pipe, so a harness blocked on the unlock
- * door filled the pipe and the daemon never answered. A locked floor fails closed (operator ruling 2026-11-09): its control
+ * door filled the pipe and the daemon never answered. A locked floor fails closed (operator ruling 2026-11-09): its state
  * document stands as a stand-in that no Repo holds, so nothing at the floor finds, syncs or loads a sealed document.
  *
  *   F1 — RED: the floor composition of a founded, face-lit vessel stands with custody locked and its storage reports no
- *        sealed load (`SealedDocumentRefusal`), and its control store refuses `vessel-locked`
- *   F2 — CONTROL: the floor tears down, the key opens, and the sovereign composition stands the control document itself
+ *        sealed load (`SealedDocumentRefusal`), and its state store refuses `vessel-locked`
+ *   F2 — CONTROL: the floor tears down, the key opens, and the sovereign composition stands the state document itself
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { EventEmitter } from "node:events";
@@ -18,7 +18,7 @@ import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
-import { VESSEL_LOCKED } from "@lararium/mesh/control-home";
+import { VESSEL_LOCKED } from "@lararium/mesh/vessel-state";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { direct } from "./direct-store.js";
 import { TEST_CUSTODY, TEST_SLOT } from "./found-route.js";
@@ -31,7 +31,7 @@ const leaving: Array<() => Promise<void>> = [];
 afterEach(async () => { while (leaving.length) await leaving.pop()!(); vi.restoreAllMocks(); });
 
 describe("a locked floor reaches for no sealed document", () => {
-  test("F1 — RED: a founded, face-lit vessel composes its floor with custody locked; no sealed load refuses, and its control store refuses `vessel-locked`", async () => {
+  test("F1 — RED: a founded, face-lit vessel composes its floor with custody locked; no sealed load refuses, and its state store refuses `vessel-locked`", async () => {
     const root = mkdtempSync(join(tmpdir(), "locked-floor-"));
     const genesisDir = join(root, "genesis");
     const storageDir = join(root, "hearth", "vessel");
@@ -54,18 +54,18 @@ describe("a locked floor reaches for no sealed document", () => {
     await withLarRoot(root, () => herm!.daemon.workerEa);
     await new Promise((r) => setTimeout(r, 500));
 
-    // THE STRUCTURED PROBE: the floor's control handle names the control document's own id over a private Repo, and the
+    // THE STRUCTURED PROBE: the floor's state handle names the state document's own id over a private Repo, and the
     // vessel's Repo holds no handle for that id, so nothing at the floor found, synced or loaded it.
-    const controlId = herm.daemon.controlHandle.documentId;
-    expect(controlId, "the floor's stand-in names the founded control document").toMatch(/\w{20,}/);
-    expect(Object.keys(herm.repo.handles), "the floor's Repo holds a handle for the sealed control document").not.toContain(controlId);
+    const stateId = herm.daemon.stateHandle.documentId;
+    expect(stateId, "the floor's stand-in names the founded state document").toMatch(/\w{20,}/);
+    expect(Object.keys(herm.repo.handles), "the floor's Repo holds a handle for the sealed state document").not.toContain(stateId);
     expect(said.filter((line) => /SealedDocumentRefusal|session-absent/.test(line))).toEqual([]);
-    // The floor's control store answers a verb answer from its memory alone (none waits here) and refuses every control
+    // The floor's state store answers a verb answer from its memory alone (none waits here) and refuses every state
     // fact by the stand-in's name: a receipt fact never reads off a locked floor.
-    expect(await herm.daemon.control.get(`${OUTCOME_URI_PREFIX}floor`)).toBeNull();
-    await expect(herm.daemon.control.get(`${RECEIPT_FACT_URI_PREFIX}floor`)).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
+    expect(await herm.daemon.state.get(`${OUTCOME_URI_PREFIX}floor`)).toBeNull();
+    await expect(herm.daemon.state.get(`${RECEIPT_FACT_URI_PREFIX}floor`)).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
 
-    // F2 — THE UNLOCK RECOMPOSES: the floor stands down, the key opens, and the sovereign composition reads its control document.
+    // F2 — THE UNLOCK RECOMPOSES: the floor stands down, the key opens, and the sovereign composition reads its state document.
     await withLarRoot(root, () => herm!.teardown());
     herm = null;
     const unlocked = await withLarRoot(root, async () => {
@@ -78,8 +78,8 @@ describe("a locked floor reaches for no sealed document", () => {
     const vessel = await withLarRoot(root, () => openNodeVessel({ hostId: "locked-floor", wikiId: "locked-floor", storageDir, genesisDir, wss: new EventEmitter() as never }));
     leaving.push(async () => { await withLarRoot(root, () => vessel.teardown()); });
     await withLarRoot(root, () => vessel.daemon.workerEa);
-    expect(await vessel.daemon.control.get(`${OUTCOME_URI_PREFIX}floor`)).toBeNull();
-    // The probe above read the REAL control document's id: the unlocked composition stands that very document.
-    expect(vessel.daemon.controlHandle.documentId).toBe(controlId);
+    expect(await vessel.daemon.state.get(`${OUTCOME_URI_PREFIX}floor`)).toBeNull();
+    // The probe above read the REAL state document's id: the unlocked composition stands that very document.
+    expect(vessel.daemon.stateHandle.documentId).toBe(stateId);
   }, 240_000);
 });

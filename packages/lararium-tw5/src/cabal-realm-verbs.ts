@@ -34,8 +34,6 @@ import {
 } from "@lararium/mesh/cabal-realm-clock";
 import { readFaceLeafBond, readRealmFeedAsk } from "@lararium/mesh/face-leaf-bond";
 import { VerbRefusal } from "@lararium/mesh/verb-refusal";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
-import { defaultCryptoProvider, sha256Hex } from "@lararium/mesh/crypto";
 import { type LarTiddlerStore, type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { type LarDoc } from "@lararium/mesh/base-doc";
 import { storedRecord } from "@lararium/mesh/stored-record";
@@ -48,13 +46,6 @@ export type ResolveDaemonStore = () => Promise<LarTiddlerStore>;
 export interface CabalRealmVerbOptions {
   readonly resolveStore: ResolveDaemonStore;
 }
-
-/**
- * THE FEED'S DEVICE-LOCAL RECEIPTS (K20): `<control home>/ledger/realm-feed/<requestId>`, in the vessel's control document,
- * which no peer syncs and no mirror names. Each names the realm, the epoch its roll reached and the sha-256 of the slot it
- * rolled, and never the leaf or the presenting face: the owner who holds the leaf proves the tie by recomputing the digest.
- */
-export const REALM_FEED_RECEIPT_PREFIX = `${CONTROL_HOME_ID}/ledger/realm-feed/`;
 
 /** A 64-hex realm doc id — a stray value never becomes a lease prefix. */
 const REALM_RE = /^[0-9a-f]{64}$/;
@@ -120,15 +111,7 @@ export function makeRealmFeedReactor(opts: CabalRealmVerbOptions): VerbReactor {
     };
     await store.put(next, { kind: "lares-verb", requestId: `realm-feed-${realm.slice(0, 8)}-${feed.epoch}` });
 
-    // THE RECEIPT LANDS RIGHT AFTER THE SLOT, under this feed's own request id, so a receipt that stands says its slot
-    // landed. It rests on this device alone (the control document), and names the roll by the slot's digest, not its leaf.
-    const slotDigest = await sha256Hex(new TextEncoder().encode(feed.slotUri), defaultCryptoProvider);
-    const receipt: LarTiddlerRecord = {
-      tiddler: { title: `${REALM_FEED_RECEIPT_PREFIX}${requestId}`, realm, epoch: String(feed.epoch), "slot-digest": slotDigest } as LarTiddlerRecord["tiddler"],
-      meta: { authority: "lares-verb" },
-    };
-    await store.put(receipt, { kind: "lares-verb", requestId });
-
+    // The clock reads the persistent slot; no per-feed fact needs another CRDT title.
     // THE ANSWER PAIRS NOTHING: an outcome names its presenter, so it carries neither the leaf nor the epoch the slot
     // carries; the clock reads the slots.
     return { verb: "realm-feed", realm, fed: true, federated: false };

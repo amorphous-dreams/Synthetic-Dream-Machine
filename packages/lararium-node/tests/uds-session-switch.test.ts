@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { controlStoreOf } from "@lararium/mesh/control-home";
+import { memoryWorkOf } from "./work-store-fixture.js";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -126,7 +126,7 @@ async function stand(label: string, opts: {
   // The front and its seat stand apart, so a test can unseat the seat and read what it waits out.
   const front = serveUdsFront({ claim });
   const channel = { close: () => front.close(), detach: () => front.detach() };
-  front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: flushing, sessions: door, switchActs, sessionVerbs: new Set(["face-row"]), sessionActs,
+  front.attach(makeUdsSeat({ stateHandle: daemonHandle, state: memoryWorkOf(daemonHandle), claim, repo: flushing, sessions: door, switchActs, sessionVerbs: new Set(["face-row"]), sessionActs,
     placeVerb: (o) => {
       placed.push(o);
       const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done",

@@ -1,3 +1,5 @@
+import { docSwarmWiki } from "@lararium/mesh/doc-swarm-wiki";
+import { swarmOwners } from "@lararium/mesh/swarm-owner";
 /**
  * swarm — the store holder runs the swarm's hand-only rows against the face's pinned board and the daemon wiki.
  *
@@ -78,7 +80,7 @@ export async function runSwarmVerb(opts: {
         ...(opts.args["head"] !== undefined ? { head: opts.args["head"] as string } : {}),
         ...(opts.args["confirm"] === true ? { confirm: true } : {}) };
   return await swarmCommand(request, {
-    group, face: { group, grant }, signer: signing, epoch: () => face.lineage[face.lineage.length - 1]!.epoch, wiki: opts.wiki,
+    group, face: { group, grant }, signer: signing, epoch: () => face.lineage[face.lineage.length - 1]!.epoch, wiki: swarmOwners(opts.wiki, docSwarmWiki(async () => handle)),
     // The vessel and lead trust join at the slices that sign roster and lane state; at S1 the hand alone signs.
     trust: { hand: grant, vessel: () => false, lead: () => false },
     board: { records: async () => swarmBoardRecords(handle.doc(), group), land: async (act) => { handle.change((d) => writeSwarmBoardAct(d, act)); await opts.repo.flush(); } },

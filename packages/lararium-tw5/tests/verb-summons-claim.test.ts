@@ -5,7 +5,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { CompositeStore, NoWorkingLayerRefusal } from "@lararium/mesh/composite-store";
-import { CONTROL_HOME_ID, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { VESSEL_WORK_ID, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { summon } from "@lararium/mesh/verb-tiddler";
 import { heedSummons } from "../src/verb-summons.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
@@ -31,17 +31,17 @@ class FakeWiki {
   readonly $tw = { Tiddler: class { fields: Record<string, unknown>; constructor(fields: Record<string, unknown>) { this.fields = fields; } }, wiki: this.wiki };
 }
 
-/** `daemon` names the store the relay heeds; the control home layer stands unless `withControl` reads false. */
-function composite(withControl = true) {
+/** `daemon` names the store the relay heeds; the work layer stands unless `withWork` reads false. */
+function composite(withWork = true) {
   const daemon = new CompositeStore();
   const daemonBag = new MemoryTiddlerStore(DAEMON_BAG_ID);
   daemon.addLayer({ bagId: DAEMON_BAG_ID, store: daemonBag, writable: true, defaultWritable: false });
-  const workingBag = new MemoryTiddlerStore(CONTROL_HOME_ID);
-  if (withControl) daemon.addLayer({ bagId: CONTROL_HOME_ID, store: workingBag, writable: true });
+  const workingBag = new MemoryTiddlerStore(VESSEL_WORK_ID);
+  if (withWork) daemon.addLayer({ bagId: VESSEL_WORK_ID, store: workingBag, writable: true });
   return { daemon, daemonBag, workingBag };
 }
 
-function change(request: ReturnType<typeof summon>, bag = CONTROL_HOME_ID) {
+function change(request: ReturnType<typeof summon>, bag = VESSEL_WORK_ID) {
   return { title: request.tiddler.title, record: request, origin: { kind: "test" as const }, bag };
 }
 
@@ -52,10 +52,10 @@ describe("heedSummons request-id claim", () => {
     await daemon.put(request, { kind: "test" });
     const seenRequestIds = new Set<string>();
     let placed = 0;
-    const opts = { control: daemon, seenRequestIds, isInFlight: () => false, placeVerb: () => { placed++; } };
+    const opts = { state: daemon, seenRequestIds, isInFlight: () => false, placeVerb: () => { placed++; } };
     await Promise.all([heedSummons(change(request), opts), heedSummons(change(request), opts)]);
     expect(placed).toBe(1);
-    expect((await workingBag.get(request.tiddler.title))?.meta?.deleted).toBe(true);
+    expect(await workingBag.get(request.tiddler.title), "the request stays until its verdict lands").not.toBeNull();
   });
 
   test("CONTROL: different request ids both relay", async () => {
@@ -64,7 +64,7 @@ describe("heedSummons request-id claim", () => {
     for (const request of requests) await daemon.put(request, { kind: "test" });
     const seenRequestIds = new Set<string>();
     const placed: string[] = [];
-    await Promise.all(requests.map((request) => heedSummons(change(request), { control: daemon, seenRequestIds, isInFlight: () => false, placeVerb: (invocation) => { placed.push(invocation.requestId!); } })));
+    await Promise.all(requests.map((request) => heedSummons(change(request), { state: daemon, seenRequestIds, isInFlight: () => false, placeVerb: (invocation) => { placed.push(invocation.requestId!); } })));
     expect(placed.sort()).toEqual(["first-id", "second-id"]);
   });
 
@@ -74,9 +74,9 @@ describe("heedSummons request-id claim", () => {
     await daemon.put(request, { kind: "test" }, { bag: DAEMON_BAG_ID });
     const seenRequestIds = new Set<string>();
     let placed = 0;
-    const opts = { control: daemon, seenRequestIds, isInFlight: () => false, placeVerb: () => { placed++; } };
+    const opts = { state: daemon, seenRequestIds, isInFlight: () => false, placeVerb: () => { placed++; } };
     await expect(heedSummons(change(request, DAEMON_BAG_ID), opts)).rejects.toBeInstanceOf(NoWorkingLayerRefusal);
-    daemon.addLayer({ bagId: CONTROL_HOME_ID, store: workingBag, writable: true });
+    daemon.addLayer({ bagId: VESSEL_WORK_ID, store: workingBag, writable: true });
     expect(placed, "a refused consume placed nothing").toBe(0);
     await heedSummons(change(request, DAEMON_BAG_ID), opts);
     expect(placed).toBe(1);
@@ -89,7 +89,7 @@ describe("heedSummons request-id claim", () => {
     const held = new Promise<void>((resolve) => { release = resolve; });
     daemon.listVisible = async () => { const titles = await visible(); await held; return titles; };
     const registry = new VerbTable();
-    const dispatcher = new VerbDispatcher({ daemonVm: new FakeWiki() as unknown as TW5Engine, daemon: new CompositeStore(), control: daemon, registry });
+    const dispatcher = new VerbDispatcher({ daemonVm: new FakeWiki() as unknown as TW5Engine, daemon: new CompositeStore(), state: daemon, registry });
     const placed: string[] = [];
     const place = dispatcher.placeVerb.bind(dispatcher);
     dispatcher.placeVerb = (request) => { placed.push(request.requestId!); return place(request); };

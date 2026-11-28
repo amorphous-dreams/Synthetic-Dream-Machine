@@ -63,7 +63,7 @@ import { seedFaceAtom } from "./atom-fixture.js";
 import { seedFleet } from "./fleet-seed-fixture.js";
 import { FIXTURE_PASSPHRASE } from "./custody-seat-fixture.js";
 import { seatScratchFaceRoute } from "./support/scratch-custody-setup.js";
-import { seedFoundedDaemonDoc } from "./daemon-control-fixture.js";
+import { seedFoundedDaemonDoc } from "./daemon-work-fixture.js";
 
 // The faces this suite stands are founded under the fixture's route (the last auto-founder seated), so the twin's custody
 // opens them by that route when it first needs a face.

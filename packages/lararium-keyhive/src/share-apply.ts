@@ -4,12 +4,12 @@
  * For every grant the rows owe (`owedGrants` over the one resolver), where the owner face and the grantee face both stand lit
  * here: the bag's catalog row (its document's url, which the owner's catalog half holds) lifts into the grantee's catalog half,
  * so the grantee resolves the ONE document, and the owner's hive delegates the bag to the grantee's. A grant whose owner or
- * grantee stands shut waits behind an opaque flag in the control document (`sharePendingTitle`: no face, no bag, no access),
+ * grantee stands shut waits behind an opaque flag in the vessel registry (`sharePendingTitle`: no face, no bag, no access),
  * and the next light that runs this lands it and clears the flag. A name no face carries waits, named, in the answer.
  *
  * A FACE'S CATALOG HALF OPENS ONLY WHILE THAT FACE STANDS WORN: it rests sealed under the face's own content key, and the
  * island's one holder carries the worn face's. So a lit grantee that stands beside the worn owner takes its grant in two
- * acts, each by an event and none by a clock: the owner's hive delegates NOW and the row CARRIES in the control document
+ * acts, each by an event and none by a clock: the owner's hive delegates NOW and the row CARRIES in the vessel registry
  * (`carry`, a vessel-held row no face reads); the grantee's own wear LIFTS the carried row into its own half and the carry
  * leaves. The landing never asks for a half it cannot open.
  *
@@ -25,7 +25,7 @@
  * catalog half stood the wiki holds) by the one carry and lift a bag row rides, so the grantee's catalog names the wiki and its
  * daemon mount composes it. A house canon wiki's hand-over carries the recipe row alone and delegates nothing; a custom one's
  * carries the canon's row beside it and delegates the bag. Either waits behind its flag while its grantee stands shut, a
- * replay moves nothing, and an unshare or a retraction takes a carry its grantee never wore back out of the control document.
+ * replay moves nothing, and an unshare or a retraction takes a carry its grantee never wore back out of the vessel registry.
  *
  * A HANDED ROW IS NO SNAPSHOT, AND A GRANTEE'S OWN EDIT STANDS: every row a landing hands over carries the digest of what it
  * handed (`meta.shareHanded`, `handedRow`). Where the owner's row changed since, the next landing hands it over again, into the
@@ -63,10 +63,10 @@ export interface ShareApplyDeps {
   readonly rows: () => Promise<readonly ShareEntry[]>;
   readonly faces: readonly ShareLitFace[];
   /**
-   * The rows that wait for a face's wear, in the control document: `put` keeps one catalog row for (grantee group, row title:
+   * The rows that wait for a face's wear, in the vessel registry: `put` keeps one catalog row for (grantee group, row title:
    * a bag's row, or a shared wiki's recipe row), `list` reads
    * a group's, `clear` drops one. Absent: a grantee whose half does not open here waits behind its flag (a composer with no
-   * control document).
+   * vessel registry).
    */
   readonly carry?: {
     put(granteeGroup: string, bag: string, row: StoredLarRecord): Promise<void>;
@@ -134,7 +134,7 @@ export interface ShareApplied {
   readonly moved: number;
   /** How many grants wait behind a shut face (a count; the flags name nothing). */
   readonly pending: number;
-  /** Of the granted, how many rows carry in the control document until their grantee stands worn (its half opens then). */
+  /** Of the granted, how many rows carry in the vessel registry until their grantee stands worn (its half opens then). */
   readonly carried: number;
   /** How many carried rows this landing lifted into a half that opens here (the worn face's). */
   readonly lifted: number;
@@ -158,7 +158,7 @@ export interface ShareApplied {
 }
 
 /**
- * THE WEAR LIFTS WHAT CARRIED: each row the control document carries for `group` lands in that face's own catalog half (by
+ * THE WEAR LIFTS WHAT CARRIED: each row the vessel registry carries for `group` lands in that face's own catalog half (by
  * reference: the row names the owner's ONE document) and the carry leaves. The face's stand runs it once its half opens, and
  * every share landing runs it for the half it holds open. A row the half already names writes nothing; a replay lifts none.
  * Answers how many carries left.

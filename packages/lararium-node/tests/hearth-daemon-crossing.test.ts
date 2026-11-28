@@ -9,11 +9,11 @@
  */
 import { describe, expect, test } from "vitest";
 import { generateAutomergeUrl, interpretAsDocumentId, type DocumentId } from "@automerge/automerge-repo";
-import { CONTROL_HOME_ID, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { VESSEL_STATE_ID, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { DeterministicFederationGate } from "@lararium/mesh/federation-gate";
 import { deviceDaemonDocs } from "@lararium/mesh/device-daemon-docs";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
-import { makeVesselOnlyDocs } from "@lararium/mesh/control-home";
+import { makeVesselOnlyDocs } from "@lararium/mesh/vessel-state";
 import { personaBagIdFor, personaSiblingBagIds } from "@lararium/mesh/persona-scope";
 import { personaMembershipEntries } from "@lararium/mesh/persona-planes";
 import { storedLarRecord } from "@lararium/mesh/stored-record";
@@ -24,13 +24,13 @@ import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from ".
 
 const G1 = "0x" + "11".repeat(16), G2 = "0x" + "22".repeat(16);
 const ISLANDS = new Set(["island"]);
-const slot = (group: string, kind = "working") => `${CONTROL_HOME_ID}/daemon-slot/${kind}/${encodeURIComponent(group)}`;
+const slot = (group: string, kind = "working") => `${VESSEL_STATE_ID}/daemon-slot/${kind}/${encodeURIComponent(group)}`;
 
 function hearth() {
-  const control = emptyLarDoc();
-  for (const [title, id] of Object.entries({ [slot(G1)]: "w1", [slot(G1, "draft")]: "d1", [slot(G2)]: "w2" })) control.tiddlers[title] = storedLarRecord(title, { text: `automerge:${id}` }, "test");
+  const state = emptyLarDoc();
+  for (const [title, id] of Object.entries({ [slot(G1)]: "w1", [slot(G1, "draft")]: "d1", [slot(G2)]: "w2" })) state.tiddlers[title] = storedLarRecord(title, { text: `automerge:${id}` }, "test");
   const device = deviceDaemonDocs({ enrollFloor: () => {} });
-  device.readControl(control as LarDoc);
+  device.readState(state as LarDoc);
   const docs = vesselOnlyClass({ named: makeVesselOnlyDocs(), held: new Set<string>(), device, catalog: () => undefined });
   /** The verdict as the vessel composes it: the peer's proven face against the group that owns the working slot. */
   const verdict = (peer: string, id: string, face: string | null, opts: { socket?: boolean; sibling?: boolean } = {}) =>
@@ -80,11 +80,11 @@ describe("a face's fleet view reads that face's daemon working slot", () => {
   });
 
   test("RED: through the composed share verdict (the vessel-only class, then the lanes) a same-operator session of the face reads its working slot; CONTROL: a session of another face and a peer with no view read none", async () => {
-    const control = emptyLarDoc();
+    const state = emptyLarDoc();
     const w1 = String(idOf(WORKING_ONE));
-    control.tiddlers[slot(G1)] = storedLarRecord(slot(G1), { text: WORKING_ONE }, "test");
+    state.tiddlers[slot(G1)] = storedLarRecord(slot(G1), { text: WORKING_ONE }, "test");
     const device = deviceDaemonDocs({ enrollFloor: () => {} });
-    device.readControl(control as LarDoc);
+    device.readState(state as LarDoc);
     const docs = vesselOnlyClass({ named: makeVesselOnlyDocs(), held: new Set<string>(), device, catalog: () => undefined });
     const views = faceFleetViews(() => bootstrap(ONE, TWO), () => G1, undefined, undefined, undefined, workingOf);
     views.seat("leaf", grant(G1)); views.seat("other", grant(G2));

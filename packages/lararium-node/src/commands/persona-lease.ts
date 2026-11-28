@@ -26,7 +26,7 @@ import { type LarDoc } from "@lararium/mesh/base-doc";
 import { type FaceReading } from "@lararium/mesh/face-reading";
 import { ownEntry } from "@lararium/mesh/stored-value";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
-import { standControlHome } from "@lararium/mesh/control-home";
+import { standVesselState } from "@lararium/mesh/vessel-state";
 import { readFileSync } from "node:fs";
 import { loadIdentityAnchors } from "../identity-anchors.js";
 import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "../face-anchor-store.js";
@@ -110,8 +110,8 @@ export async function runPersonaLease(opts: PersonaLeaseOptions): Promise<Person
   const seated = face.currentSigner;
   if (!seated(key)) throw new PersonaLeaseError("this root holds no seat in the face's KEL lineage");
   const tiddlers = bootstrapTiddlers();
-  // The lease slots rest in the vessel's control document, which the daemon document names (`control-home`).
-  const control = await standControlHome(opts.repo, await opts.repo.find<LarDoc>(daemonUrlOf(tiddlers) as AutomergeUrl));
+  // The lease slots rest in the vessel's state document, which the daemon document names (`vessel-state`).
+  const state = await standVesselState(opts.repo, await opts.repo.find<LarDoc>(daemonUrlOf(tiddlers) as AutomergeUrl));
   const personaUrl = ownEntry(tiddlers, personaBagIdFor(anchors.personaGroupId))?.text;
   const ownEdge = anchors.deviceEdge;
   const ownKey = ownEdge?.deviceVerifyingKey.toLowerCase();
@@ -124,7 +124,7 @@ export async function runPersonaLease(opts: PersonaLeaseOptions): Promise<Person
     const others = seatedEdges.filter((k) => k !== ownKey).length;
     if (own + others > 0) throw new LeaseRollStrandsDevices(own + others, effective, own === 1);
   };
-  const r = await rollSignedLeaseEpochOnBoard(control, anchors.personaGroupId, { key, sign: ed25519SignerFromSeed(seed) }, seated, face.floor, strands);
+  const r = await rollSignedLeaseEpochOnBoard(state, anchors.personaGroupId, { key, sign: ed25519SignerFromSeed(seed) }, seated, face.floor, strands);
   const raised = raiseFaceFrontier(anchor, { leaseEpoch: r.rolled });
   if (raised !== anchor) await keepFaceAnchorOfGroup(raised);
   await opts.repo.flush();

@@ -1,7 +1,7 @@
 /**
  * persona-lease — the production road of a face's signed lease advance, end to end through the store-door verb
  * (`lares persona lease`). Reds: a roll that would leave a seated device's edge stale refuses `lease-roll-strands-devices`
- * and writes nothing; an unsigned slot and a stranger-signed slot in the control document raise nothing, so the verb reads only
+ * and writes nothing; an unsigned slot and a stranger-signed slot in the state document raise nothing, so the verb reads only
  * the anchor's floor and the verb's own advance raises the slot and the frontier. The rolls that succeed stand a face whose
  * edge already halts below the floor (`edgeAlreadyStale`), so they strand no device. Controls: a second advance climbs by
  * one, and a face with no lineage refuses by name.
@@ -13,7 +13,7 @@ import { afterEach, describe, expect } from "vitest";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
-import { standControlHome, nameControlHome } from "@lararium/mesh/control-home";
+import { standVesselState, nameVesselState } from "@lararium/mesh/vessel-state";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 import { leaseEpochSlotUri } from "@lararium/mesh/epoch-lease";
 import { seedDaemonDoc } from "@lararium/mesh/social-seed";
@@ -52,9 +52,9 @@ async function setup(withFleet: boolean, plane: "bare" | "none" = "bare") {
   await ownedStore(larDataDir(), async (repo) => {
     const handle = seedDaemonDoc(repo);
     daemonUrl = handle.url;
-    // As the founding does: the secret home and the control document beside it, the daemon document naming the control.
+    // As the founding does: the secret home and the state document beside it, the daemon document naming the state.
     const secret = await standVesselSecretHome(repo);
-    nameControlHome(handle, secret.controlUrl!);
+    nameVesselState(handle, secret.stateUrl!);
     await repo.flush();
     mkdirSync(dirname(larBootstrapPath()), { recursive: true });
     const packed: Record<string, { title: string; text: string; kind?: string }> = { [DAEMON_BAG_ID]: { title: DAEMON_BAG_ID, text: handle.url, kind: "oracle" } };
@@ -98,8 +98,8 @@ async function standFaceLog(): Promise<void> {
 
 const roll = () => storeDoorDirect("persona-lease", { handleIndex: 0 }, { sealHome: larSealHome() });
 const slotsOf = async (group: string): Promise<string[]> => ownedStore(larDataDir(), async (repo) => {
-  // The lease slots rest in the vessel's control document, which the daemon doc names (`control-home`).
-  const doc = (await standControlHome(repo, await repo.find<LarDoc>(daemonUrl as never))).doc();
+  // The lease slots rest in the vessel's state document, which the daemon doc names (`vessel-state`).
+  const doc = (await standVesselState(repo, await repo.find<LarDoc>(daemonUrl as never))).doc();
   return Object.entries(doc?.tiddlers ?? {}).filter(([t]) => t.includes("/lease-epoch/")).map(([, r]) => tiddlerText(r) ?? "").filter((x) => x.length > 0 || group === "");
 });
 
@@ -137,7 +137,7 @@ describe("lares persona lease", () => {
     const anchors = (await loadIdentityAnchors(0))!;
     const group = anchors.personaGroupId;
     await ownedStore(larDataDir(), async (repo) => {
-      const daemon = await standControlHome(repo, await repo.find<LarDoc>(daemonUrl as never));
+      const daemon = await standVesselState(repo, await repo.find<LarDoc>(daemonUrl as never));
       const stranger = await signLeaseAdvance({ resource: group, epoch: 40 }, { key: "ab".repeat(32), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(8)) });
       daemon.change((d) => {
         for (const [writer, text] of [["unsigned", "50"], ["stranger", stranger]] as const) {
@@ -175,7 +175,7 @@ describe("lares persona lease", () => {
     expect((await loadFaceAnchorOfGroup(group))!.frontier.leaseEpoch).toBe(3);
   }, 120_000);
 
-  it("RED: a stale own edge with no readable persona plane refuses lease-roll-log-unread and writes nothing; CONTROL: a readable bare plane rolls (floor-5 control above)", async () => {
+  it("RED: a stale own edge with no readable persona plane refuses lease-roll-log-unread and writes nothing; CONTROL: a readable bare plane rolls (floor-5 state above)", async () => {
     await setup(true, "none");
     await edgeAlreadyStale();
     const group = (await loadIdentityAnchors(0))!.personaGroupId;

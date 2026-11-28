@@ -21,13 +21,13 @@ import { describe, test, expect } from "vitest";
 import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { type Repo } from "@lararium/mesh/automerge";
 import { CompositeStore } from "@lararium/mesh/composite-store";
-import { CONTROL_HOME_ID, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, slotBindingKey } from "@lararium/mesh/lar-uris";
+import { VESSEL_STATE_ID, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, slotBindingKey } from "@lararium/mesh/lar-uris";
 import { computeRecipeFingerprint, wikiBagUri, wikiDraftDocKey, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { didFromVerifyingKey } from "@lararium/mesh/lar-did";
 import { emptyLarDoc, mutableLarRecord, type LarDoc } from "@lararium/mesh/base-doc";
 import { realmWorkbenchDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
 import { ledgerWorkbenches, workbenchKeyDocs } from "@lararium/mesh/workbench";
-import { refusingControlStore, vesselLockedRefusal, VESSEL_LOCKED } from "@lararium/mesh/control-home";
+import { refusingStateStore, vesselLockedRefusal, VESSEL_LOCKED } from "@lararium/mesh/vessel-state";
 import { floorRegistryOf } from "@lararium/mesh/floor-registry";
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore, makeCatalogAccessor, makeInitWikiReactor, makePruneStaleReactor, makeTiddlerPutReactor, type MemeVerbOptions } from "@lararium/tw5";
@@ -77,17 +77,17 @@ async function rig(opts: { seated: boolean | (() => boolean); faceless?: boolean
 }
 
 describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
-  test("device-scoped slots stay in each control store with a seated face", async () => {
+  test("device-scoped slots stay in each state store with a seated face", async () => {
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
-    const store = () => { const s = new CompositeStore(); s.addLayer({ bagId: CONTROL_HOME_ID, store: new MemoryTiddlerStore(CONTROL_HOME_ID), writable: true, defaultWritable: true }); return s; };
-    const control = store(), otherControl = store();
+    const store = () => { const s = new CompositeStore(); s.addLayer({ bagId: VESSEL_STATE_ID, store: new MemoryTiddlerStore(VESSEL_STATE_ID), writable: true, defaultWritable: true }); return s; };
+    const state = store(), otherControl = store();
     const mints: string[] = [];
-    const resolver = (home: CompositeStore) => makeSlotDocResolver({ repo, daemonStore: home, control: home, catalog: null, vesselDid: () => DID, mintedByHex: () => VERIFYING_KEY, personaGroupId: "face", faceSeated: async () => true, faceDoor: { mint: async (url: string) => { mints.push(url); } } as never, deviceScoped: slug => slug === "daemon" });
-    const a = resolver(control), b = resolver(otherControl);
+    const resolver = (home: CompositeStore) => makeSlotDocResolver({ repo, daemonStore: home, state: home, catalog: null, vesselDid: () => DID, mintedByHex: () => VERIFYING_KEY, personaGroupId: "face", faceSeated: async () => true, faceDoor: { mint: async (url: string) => { mints.push(url); } } as never, deviceScoped: slug => slug === "daemon" });
+    const a = resolver(state), b = resolver(otherControl);
     for (const kind of ["working", "draft", "personal"] as const) {
       const first = await a.slotDoc("daemon", kind);
       expect(first?.reach).toBe("vessel-only");
-      expect((await control.get(`${CONTROL_HOME_ID}/daemon-slot/${kind}/face`))?.tiddler.text).toBe(first?.url);
+      expect((await state.get(`${VESSEL_STATE_ID}/daemon-slot/${kind}/face`))?.tiddler.text).toBe(first?.url);
       expect((await a.slotDoc("daemon", kind))?.url).toBe(first?.url);
       expect((await b.slotDoc("daemon", kind))?.url).not.toBe(first?.url);
     }
@@ -95,10 +95,10 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
     await repo.shutdown();
   });
 
-  test("RED: a device slot's document is named to the vessel's sealed map and in the control document BEFORE its first byte rests", async () => {
+  test("RED: a device slot's document is named to the vessel's sealed map and in the state document BEFORE its first byte rests", async () => {
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
-    const control = new CompositeStore();
-    control.addLayer({ bagId: CONTROL_HOME_ID, store: new MemoryTiddlerStore(CONTROL_HOME_ID), writable: true, defaultWritable: true });
+    const state = new CompositeStore();
+    state.addLayer({ bagId: VESSEL_STATE_ID, store: new MemoryTiddlerStore(VESSEL_STATE_ID), writable: true, defaultWritable: true });
     const events: string[] = [];
     const minter = {
       create: (v: never) => { events.push("create"); return repo.create(v); },
@@ -109,11 +109,11 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
       flush: (ids?: string[]) => { events.push("flush"); return repo.flush(ids as never); },
     };
     const controlNamed: Record<string, boolean> = {};
-    const resolver = makeSlotDocResolver({ repo: minter as never, daemonStore: control, control, catalog: null, vesselDid: () => DID, mintedByHex: () => VERIFYING_KEY,
+    const resolver = makeSlotDocResolver({ repo: minter as never, daemonStore: state, state, catalog: null, vesselDid: () => DID, mintedByHex: () => VERIFYING_KEY,
       personaGroupId: "face", faceSeated: async () => true, faceDoor: { mint: async () => {} } as never, deviceScoped: (slug) => slug === "daemon",
       announceDevice: (kind, documentId) => { events.push(`announce:${kind}:${documentId}`); } });
-    const put = control.put.bind(control);
-    control.put = (async (record: { tiddler: { text?: string } }, ...rest: never[]) => {
+    const put = state.put.bind(state);
+    state.put = (async (record: { tiddler: { text?: string } }, ...rest: never[]) => {
       const id = record.tiddler.text?.replace(/^automerge:/, "");
       if (id) { controlNamed[id] = true; events.push(`pointer:${id}`); }
       return put(record as never, ...rest);
@@ -127,14 +127,14 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
 
   test("RED (locked floor mints no device slot): over a locked vessel's floor (its key stays shut) the device slot refuses `vessel-locked`; no id announces, no document mints", async () => {
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
-    const control = refusingControlStore(vesselLockedRefusal());
+    const state = refusingStateStore(vesselLockedRefusal());
     const events: string[] = [];
     const minter = {
       create: (v: never) => { events.push("create"); return repo.create(v); },
       import: (bytes: Uint8Array, args: { docId: never }) => { events.push("import"); return repo.import(bytes, args as never); },
       flush: (ids?: string[]) => { events.push("flush"); return repo.flush(ids as never); },
     };
-    const resolver = makeSlotDocResolver({ repo: minter as never, daemonStore: control, control, floor: floorRegistryOf(control, () => VESSEL_LOCKED), catalog: null, vesselDid: () => DID, mintedByHex: () => VERIFYING_KEY,
+    const resolver = makeSlotDocResolver({ repo: minter as never, daemonStore: state, state, floor: floorRegistryOf(state, () => VESSEL_LOCKED), catalog: null, vesselDid: () => DID, mintedByHex: () => VERIFYING_KEY,
       faceSeated: async () => false, deviceScoped: (slug) => slug === "daemon", announceDevice: (kind) => { events.push(`announce:${kind}`); } });
     for (const kind of ["working", "draft", "personal"] as const) {
       await expect(resolver.slotDoc("daemon", kind)).rejects.toMatchObject({ refusal: VESSEL_LOCKED });

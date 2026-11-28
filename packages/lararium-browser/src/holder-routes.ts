@@ -61,6 +61,7 @@ export const HOLDER_ROUTES = {
   // The island's holder names when it answers the door and when it stops, so a door with no holder refuses at once.
   "docstore:answering": "owner",
   "docstore:silent": "owner",
+  "work:ask": "owner",
 } as const satisfies Record<IslandToVesselMsg["type"], HolderRoute>;
 
 /** Who may send an island-bound kind through the holder: any admitted session, or only the house's owner (its vessel). */
@@ -115,6 +116,8 @@ export const HOLDER_SENDERS = {
   "view:catalog-result": "owner",
   "view:content-result": "owner",
   "view:settled": "owner",
+  "work:answer": "owner",
+  "work:changed": "owner",
 } as const satisfies Record<Exclude<VesselToIslandMsg["type"], `sensorium:${string}`>, HolderSender>;
 
 /** True when only the house's owner may send this island-bound kind (unknown kinds included). */

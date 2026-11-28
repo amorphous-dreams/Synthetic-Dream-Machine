@@ -6,7 +6,7 @@
  * off an outcome (`island-verb-ask.ts` outcomeOf, the UDS result reader and the dispatcher's dedup read status,
  * output, error, refusal and digest).
  */
-import { answerRingOf } from "@lararium/mesh/control-home";
+import {  answerRingOf  } from "@lararium/mesh/answer-ring";
 import { expect, test } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";

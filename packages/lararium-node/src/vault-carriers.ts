@@ -531,6 +531,7 @@ function buildTable(): readonly CarrierRow[] {
          writer: "intent-relay-ring" }),
     // The vessel's secret home's address (`secret-home-store`): its document id and the held key its rest seals it under. A
     // node-only secret of the vessel, never one face's: it never leaves its vessel. Principal and opener: secret-home-store.
+    id({ row: "vessel-work", target: tgt(["S"]), match: file("vessel-work.json"), custody: "hot", keyClass: "device-minted", writer: "vessel-work-rest" }),
     id({ row: "secret-home", target: tgt(["S"]), match: file(SECRET_HOME_FILE), custody: "hot", keyClass: "device-minted",
          writer: "secret-home-store" }),
     // A hearth's own cadence key and its next key, minted at random on the device for one joint founding

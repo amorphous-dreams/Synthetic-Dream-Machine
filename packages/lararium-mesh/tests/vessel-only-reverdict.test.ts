@@ -2,7 +2,7 @@
  * vessel-only-reverdict — A GROWING DENY SET RE-ASKS THE REPO'S CACHED VERDICTS.
  *
  * automerge-repo 2.6 resolves a document's ACCESS verdict once per (document, peer) and asks again only on
- * `shareConfigChanged`. So a vessel-only document a peer reached before the control document named it (or before the
+ * `shareConfigChanged`. So a vessel-only document a peer reached before the state document named it (or before the
  * secret home enrolled it) keeps flowing unless the growth re-asks. Both vessels stand their deny set through ONE book
  * (`vesselOnlyBook`, open-node-vessel and open-browser-vessel), whose growth calls the vessel Repo's `shareConfigChanged`.
  *
@@ -11,7 +11,7 @@
 import { describe, expect, test } from "vitest";
 import { Repo, type PeerId } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
-import { CONTROL_HOME_ID, emptyLarDoc, makeVesselOnlyDocs, shareConfigOf, storedLarRecord, vesselOnlyBook, type LarDoc } from "../src/index.js";
+import { VESSEL_STATE_ID, emptyLarDoc, makeVesselOnlyDocs, shareConfigOf, storedLarRecord, vesselOnlyBook, type LarDoc } from "../src/index.js";
 
 const tick = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -29,11 +29,11 @@ async function grownAfterAsk(wired: boolean): Promise<string | undefined> {
   const slot = A.create<{ text?: string }>({ text: "before" });
   const seen = await B.find<{ text?: string }>(slot.url);
   expect(seen.doc()?.text).toBe("before");
-  // THE DENY SET GROWS: the control document names the slot as a daemon device slot.
-  const control = emptyLarDoc();
-  const title = `${CONTROL_HOME_ID}/daemon-slot/working/floor`;
-  control.tiddlers[title] = storedLarRecord(title, { text: slot.url }, "test");
-  expect(vesselOnly.refresh(control as LarDoc, null)).toBe(true);
+  // THE DENY SET GROWS: the state document names the slot as a daemon device slot.
+  const state = emptyLarDoc();
+  const title = `${VESSEL_STATE_ID}/daemon-slot/working/floor`;
+  state.tiddlers[title] = storedLarRecord(title, { text: slot.url }, "test");
+  expect(vesselOnly.refresh(state as LarDoc, null)).toBe(true);
   await tick(50);
   slot.change((d) => { d.text = "after"; });
   await tick(300);
@@ -54,8 +54,8 @@ describe("a vessel-only deny set that grows re-asks every cached verdict", () =>
     const docs = makeVesselOnlyDocs({ onGrow: () => { grew++; } });
     expect(docs.add("secret")).toBe(true);
     expect(docs.add("secret")).toBe(false);
-    expect(docs.refresh(emptyLarDoc(), "automerge:control")).toBe(true);
-    expect(docs.refresh(emptyLarDoc(), "automerge:control")).toBe(false);
+    expect(docs.refresh(emptyLarDoc(), "automerge:state")).toBe(true);
+    expect(docs.refresh(emptyLarDoc(), "automerge:state")).toBe(false);
     expect(grew).toBe(2);
   });
   test("the book reads its Repo late: a growth before the Repo stands, or while it closes, answers nothing and throws nothing", () => {

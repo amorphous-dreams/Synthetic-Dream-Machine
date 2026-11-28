@@ -8,7 +8,7 @@
  *   tessera/<tessera>/host     `rite-landed`: the vessel that stands after rests this half, naming the begun half by its cid
  *                              and the head it stands at.
  *
- * Both rest as the vessel's signed records in the control document (`swarm-tiddlers.ts`). `<tessera>` names one return of one
+ * Both rest as the vessel's signed records in the custody records (`swarm-tiddlers.ts`). `<tessera>` names one return of one
  * lei (`tesseraOf`), so each rite takes its own.
  *
  * THE RETURN COMES FIRST. `beginRite` returns the lei before it rests the guest half, and the caller takes the vessel down only

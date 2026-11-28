@@ -113,7 +113,7 @@ export interface RetiredShellHome {
   put(record: LarTiddlerRecord): Promise<void>;
 }
 
-/** What `daemonRetiredHome` reads of the daemon's composition and its control document. */
+/** What `daemonRetiredHome` reads of the daemon's composition and its state document. */
 export interface DaemonRetiredHomeIo {
   /** The slug of the wiki this composition runs (the home stands only in the daemon wiki's). */
   readonly wikiSlug: string;
@@ -121,14 +121,14 @@ export interface DaemonRetiredHomeIo {
   readonly store: (bag: string) => { get(title: string): Promise<LarTiddlerRecord | null>; put(record: LarTiddlerRecord, origin: ChangeOrigin): Promise<void> } | null;
   /** The url of the document the composition holds for `bag`, or undefined where none rests (a layer held in memory alone). */
   readonly handleUrl: (bag: string) => string | undefined;
-  /** The url the vessel's control document names for the worn face's working slot (`daemonSlotTitle("working", group)`), or null. */
-  readonly controlUrl: () => Promise<string | null>;
+  /** The url the vessel's state document names for the worn face's working slot (`daemonSlotTitle("working", group)`), or null. */
+  readonly stateUrl: () => Promise<string | null>;
 }
 
 /**
  * THE FACE'S OWN DAEMON WORKING SLOT, as the home of the record of leaving: the daemon wiki's working layer, only where it rests
- * in a document AND that document is the one the control document names for the worn face (`daemon-slot/working/<group>`).
- * A layer held in memory alone (a floor that cannot seal), a slot the control names for no face, a control read that faults, or
+ * in a document AND that document is the one the state document names for the worn face (`daemon-slot/working/<group>`).
+ * A layer held in memory alone (a floor that cannot seal), a slot the state names for no face, a state read that faults, or
  * a handle on another document (the floor's slot, under a face pinned and not yet seated) answers null, and the carry refuses.
  */
 export async function daemonRetiredHome(io: DaemonRetiredHomeIo): Promise<RetiredShellHome | null> {
@@ -137,7 +137,7 @@ export async function daemonRetiredHome(io: DaemonRetiredHomeIo): Promise<Retire
   const held = io.handleUrl(bag);
   if (!held) return null;
   let named: string | null;
-  try { named = await io.controlUrl(); } catch { return null; }
+  try { named = await io.stateUrl(); } catch { return null; }
   if (named === null || named !== held) return null;
   const store = io.store(bag);
   if (!store) return null;
@@ -153,7 +153,7 @@ export interface WikiShellPortsArgs {
   readonly ledger: () => Promise<LedgerDoc>;
   /** The face plane's bag-to-Document ledger, where one stands. */
   readonly faceLedger?: () => BagDocLedger | null;
-  /** The share rows naming the slug (any kind), by their slug: the control document's `config/share` rows. */
+  /** The share rows naming the slug (any kind), by their slug: the state document's `config/share` rows. */
   readonly shares: (slug: string) => Promise<readonly string[]>;
   /** The face's documents for each layer of the slug, null where none stands. A fault throws. */
   readonly layers: (slug: string) => Promise<Readonly<Record<"working" | "draft" | "personal", ShellLayerDoc | null>>>;
@@ -195,7 +195,7 @@ export function wikiShellPorts(args: WikiShellPortsArgs): WikiShellPorts {
     },
     carry: async (slug, records, outcome) => {
       const home = await args.retiredHome();
-      if (!home) throw new RetiredShellCarryRefusal("retire-carry-unlanded", "the face's own daemon wiki working slot rests in no document here (a floor that cannot seal holds it in memory alone, or the composition holds a document the control names for no face)");
+      if (!home) throw new RetiredShellCarryRefusal("retire-carry-unlanded", "the face's own daemon wiki working slot rests in no document here (a floor that cannot seal holds it in memory alone, or the composition holds a document the state names for no face)");
       const title = retiredShellUri(slug);
       const standing = await home.get(title);
       // A copy the house re-ingested off disk carries no writer's stamp; its body, read whole, stays in the union and takes the

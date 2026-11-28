@@ -806,7 +806,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     vesselId:   selfKey,
     nexus:      raiseNexus ?? "",
     floor:      standing,
-    leaseEpoch: () => (raiseNexus ? leaseEpochOnBoard(herm.daemon.controlHandle, raiseNexus, leaseLineageOfNexus(sealHome, raiseNexus)) : null),
+    leaseEpoch: () => (raiseNexus ? leaseEpochOnBoard(herm.daemon.stateHandle, raiseNexus, leaseLineageOfNexus(sealHome, raiseNexus)) : null),
     readings:   raiseReadings,
     verify:     verifyNymSignature,
     nonce:      () => randomBytes(32).toString("hex"),
@@ -854,8 +854,8 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   console.log(`[herm] phase → daemon-ea`);
   publishStanding(storageDir, standing, faceLit);
   front.attach(makeUdsSeat({
-    controlHandle: herm.daemon.controlHandle,
-    control:      herm.daemon.control,
+    stateHandle: herm.daemon.stateHandle,
+    state:      herm.daemon.work,
     // A veil floor (its rest key stands) also answers the wiki-minting and composing verbs, as the veil.
     floorVerbs:   floorVerbsFor(herm.floorKey === "stands"),
     placeVerb:    (o) => herm.daemon.placeVerb(o),
@@ -1004,9 +1004,9 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   // answers: a marker that outlives what it names repeats the fault this vessel already met.
   publishStanding(storageDir, standing, faceLit);
   front.attach(makeUdsSeat({
-    controlHandle: result.daemon.controlHandle,
-    control:      result.daemon.control,
-    // One reading on every composition: where no control document stands and the floor's rest key does, the veil's four verbs pass.
+    stateHandle: result.daemon.stateHandle,
+    state:      result.daemon.work,
+    // One reading on every composition: where no state document stands and the floor's rest key does, the veil's four verbs pass.
     floorVerbs:   floorVerbsFor(result.floorKey === "stands"),
     placeVerb:    (o) => result.daemon.placeVerb(o),
     retireAsk:    (requestId) => result.daemon.retireAsk(requestId),

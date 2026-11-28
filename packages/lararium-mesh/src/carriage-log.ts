@@ -14,7 +14,7 @@
  * (lamplighters#/under-every-lararium): each receipt is a floor duty of the place signer (`CARRIAGE_RECEIPT_DOMAIN`), framed as
  * every floor duty frames, so a receipt never verifies as any other duty, nor another duty as a receipt.
  *
- * FLOOR CANON, NEVER A CONTROL DOCUMENT. The log rests UNSEALED: it names carriage ids and the place key alone, never a peer,
+ * FLOOR CANON HOLDS THE LOG. The log rests UNSEALED: it names carriage ids and the place key alone, never a peer,
  * a payload or any operator-private content. Every place keeps one, herm and hearth alike (one floor, no second kind of Herm,
  * waking-floor#/the-breaks). A journal the platform supplies keeps it durable; a receipt joins the log only once its journal
  * line landed, so a log never answers "carried" for a receipt a restart would lose.

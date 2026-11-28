@@ -1,3 +1,4 @@
+import { workOf } from "@lararium/mesh/vessel-work";
 /**
  * uds-channel — the co-located fast path of the lares↔lararium binding.
  *
@@ -6,9 +7,9 @@
  * ~3s/command tax) — it only needs to hand the daemon a capability-bearing
  * invocation and await the receipt. This Unix-domain socket carries one-shot maintenance
  * frames and bound session frames. The daemon hands an invocation to its worker, awaits the
- * durable bags/control/outcomes/<id> outcome, and returns it over the socket. The outcome and the
- * receipt facts both rest in the vessel's CONTROL document (`control-home`), which no recipe composes and no
- * mirror names; it seals beside the secret home under the vessel's own key (`control-home`).
+ * durable bags/vessel-state/outcomes/<id> outcome, and returns it over the socket. The outcome and the
+ * receipt facts both rest in the vessel's vessel work snapshot (`vessel-state`), which no recipe composes and no
+ * mirror names; it seals beside the secret home under the vessel's own key (`vessel-state`).
  *
  *   transport  = this socket (kernel-local, authority-agnostic)
  *   authority  = the session's verified face and worker-held profile on a bound socket;
@@ -18,8 +19,8 @@
  * Content routing (the co-located bypass): the CLI and the daemon worker share ONE
  * process, so the carriers (tiddler/meme/blob CONTENT in `args`) ride the DIRECT
  * worker channel (`placeVerb` → postMessage → the worker's volatile invocation),
- * NEVER the daemon Automerge doc. The control document carries only the VERB-record's
- * durable OUTCOME/receipt (`bags/control/outcomes/<id>`, written by the dispatcher) — the
+ * NEVER the daemon Automerge doc. The work snapshot carries only the VERB-record's
+ * durable OUTCOME/receipt (`bags/vessel-state/outcomes/<id>`, written by the dispatcher) — the
  * command's result, never its carriers. A remote peer that lacks the shared process
  * still writes a summons over WS sync (that path keeps content in the CRDT by
  * necessity — no channel bypasses the network); the co-located path skips it.
@@ -55,7 +56,6 @@ import {
   RECEIPT_FACT_URI_PREFIX,
   RECEIPT_RING_DEFAULT,
   RECEIPT_RING_BYTES_DEFAULT,
-  EFFECT_URI_PREFIX,
   buildReceiptFact,
   parseReceiptFact,
   outcomeBytesOf,
@@ -65,8 +65,9 @@ import {
   type ReceiptFactDraft,
 } from "@lararium/mesh/verb-tiddler";
 import { type LarDoc } from "@lararium/mesh/base-doc";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
-import { ControlHomeUnavailable, controlHomeRefusal, assertControlHomeOpen, answerRingOf } from "@lararium/mesh/control-home";
+import { VESSEL_WORK_ID } from "@lararium/mesh/lar-uris";
+import {  VesselStateUnavailable, vesselStateRefusal, assertVesselStateOpen } from "@lararium/mesh/vessel-state";
+import {  answerRingOf  } from "@lararium/mesh/answer-ring";
 import { SessionTable, sessionBinding, type SessionBinding } from "@lararium/mesh/session-contract";
 import { faceScopedId } from "@lararium/mesh/face-scoped-id";
 import { type SessionReceipt } from "@lararium/mesh/session-receipt";
@@ -194,7 +195,7 @@ export interface UdsChannelOptions {
   /**
    * Verbs whose answer on a session rides its socket alone (`session:act`): the face rows and the realm verbs that name a
    * face's key at a realm's Nexus (`REALM_KEY_VERBS`). A `session:call`, whose outcome body rests in the daemon wiki's
-   * control document beside the session's face, refuses one `answers-on-the-socket`, as it refuses every `sessionVerbs` row.
+   * work snapshot beside the session's face, refuses one `answers-on-the-socket`, as it refuses every `sessionVerbs` row.
    */
   readonly socketVerbs?: ReadonlySet<string>;
   /**
@@ -209,18 +210,18 @@ export interface UdsChannelOptions {
   /** NO SILENT LOSS (sealed-store#/owed): a write verb's answer reads, after the Repo's flush, which documents held a save
    *  since its call began and still wait unsealed; a `done` answer then carries `rest: { band: "owed", … }`. */
   readonly restOwed?: { mark(): number; owed(since: number, touches: CallTouches | null): Promise<RestOwedBand | null> };
-  /** The vessel's control document (`standControlHome`): its heads name a receipt's durability. */
-  readonly controlHandle: DocHandle<LarDoc>;
-  /** The verbs a one-shot runs while the control document stands as a stand-in (`floor-verbs`); every other refuses by its name. */
+  /** The vessel's work snapshot (`openVesselWork`): its heads name a receipt's durability. */
+  readonly stateHandle: DocHandle<LarDoc>;
+  /** The verbs a one-shot runs while the work snapshot stands as a stand-in (`floor-verbs`); every other refuses by its name. */
   readonly floorVerbs?: ReadonlySet<string>;
-  /** The control document as a store (result.daemon.control): the outcome ledger and the receipt facts rest here. */
-  readonly control: CompositeStore;
+  /** The work snapshot as a store (result.daemon.state): the outcome ledger and the receipt facts rest here. */
+  readonly state: CompositeStore;
   /**
    * The DIRECT worker channel (result.daemon.placeVerb) — posts the invocation
    * (verb + `args` CONTENT) straight to the daemon worker over the MessageChannel,
    * so the carriers reach the dispatcher WITHOUT riding the daemon Automerge doc.
-   * The worker still writes the durable outcome to `bags/control/outcomes/<id>` in the control
-   * document, which this channel awaits through `control`. For a session call, the seat supplies
+   * The worker still writes the durable outcome to `bags/vessel-state/outcomes/<id>` in the state
+   * document, which this channel awaits through `state`. For a session call, the seat supplies
    * `requestedBy` from the verified presenter and `face` from the verified proof subject.
    */
   readonly placeVerb: (o: { origin: "channel"; verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; face?: string; ordinal?: number; asker?: Hand; chore?: ChoreReceiptMark; effectKey?: string }) => void;
@@ -420,48 +421,16 @@ export class VesselWaitExpired extends Error {
 
 /**
  * AN EVICTED BODY LEAVES THE DOCUMENT'S STANDING STATE. A kāpae tombstone keeps every field its record held, so a ring
- * that evicted by one counted the body out while every replica of the control document went on holding it. The ring's
+ * that evicted by one counted the body out while every replica of the work snapshot went on holding it. The ring's
  * tombstone rides bare: the title and the deleted mark stand, and the body's fields leave.
  */
 const EVICTED_BODY = { bare: true } as const;
 
-/** How many requests leave the control document in one change (`FactLedger.leave`). A count, so a wide shed costs a
- *  handful of changes and no single change grows past a few thousand retracts. */
-const SHED_BATCH = 512;
-
 /**
- * The DURABLE, single-writer request ledger (D1, P2.5 iter 4 — closes H1R + H4 + M1 + M3″). This
- * channel is the receipt fact's ONE writer: it writes `committed` at arbitrate, `abandoned` at
- * EOF-drop/cancel, and `done`/`error` when it OBSERVES the durable outcome land (any path — the
- * co-located worker or a remote summons). The worker never writes a fact, only the outcome tiddler
- * this channel observes — so no two processes ever race one fact's `state` field.
- *
- * A restart loses NOTHING the ring still holds: the fact backing this ledger lives in the vessel's control document
- * (`RECEIPT_FACT_URI_PREFIX<requestId>`), read through an in-memory cache that the seed fills with the LIVE ring alone
- * (the facts not yet evicted) and every write this process makes keeps warm. An evicted fact stays out of the cache: the
- * ledger names its id and seq, and a read of it goes to the store. H1R's proven bug — a
- * same-id, same-args reuse re-running after a restart, and a cancelled id's abandonment not
- * surviving one — closes because the fact this ledger reads back IS the fact a prior process wrote,
- * never a process-local Map that a restart wiped.
- *
- * The ring (M1) holds two bounds, and either evicts: it flips a fact to `evicted` (keeping digest, effect
- * key, terminal) and tombstones the full durable outcome. An evicted id answers `retention-gap`, never a
- * silent re-run and never a bare "unknown" that would invite one.
- *   · COUNT: past `ring` tracked requests (any state), the oldest `seq` leaves first. A torn record that names its
- *     seq counts too and leaves the same way (`evictTorn`), so an unreadable fact refuses only while the ring holds it.
- *   · BYTES: every landed fact names what its kept outcome weighs, and the ledger holds their sum. Past
- *     `ringBytes`, the oldest KEPT BODY leaves first. A fact that keeps no body (in flight, abandoned,
- *     interrupted) weighs nothing and stays, and the body that just landed stays for the caller awaiting it:
- *     a lone outcome heavier than the whole bound leaves when the next body lands.
- * The sum seeds from the facts themselves, so a restart reads the same weight a prior boot left.
- *
- * THE CONTROL DOCUMENT COMPACTS BY COUNT. An evicted fact answers `retention-gap` while the ledger keeps it, and the
- * ledger keeps `ring` of them; past that, the longest-evicted fact LEAVES the document, its outcome row and the effect row
- * that names it beside it, in one change per batch. A fact the excess reaches before it was ever evicted (a boot under a
- * tighter ring than the last) leaves the same way, whole. So the document holds at most `ring` live facts and `ring`
- * evicted ones, each with its rows, whatever the door has answered: every change to a LarDoc costs about a microsecond per
- * title its map holds, on every replica that applies it (measured, `control-document-stays-light.test.ts`). An id past
- * both bounds reads as never seen: the ledger's honest memory ends there, and an effect key past them dedups no more.
+ * One channel writes each request decision into vessel-work before dispatch. Restart reads the
+ * same decision; a pending request never leaves through retention. Completed answers follow the
+ * count and byte bounds, while compact evicted facts retain request identity and refuse replay.
+ * The current snapshot carries these facts without an Automerge change history.
  */
 export class FactLedger {
   private readonly cache = new Map<string, ReceiptFact>();
@@ -470,10 +439,6 @@ export class FactLedger {
    *  absent: `get()` answers `"torn"` for these, never `null`, so a caller cannot mistake an
    *  unreadable record for a fresh id. */
   private readonly torn = new Set<string>();
-  /** The torn records the seed read with a readable `seq`, by requestId: each holds its place in the order and leaves the ring
-   *  by count like any fact, rewritten `evicted` from the fields it still reads. A torn record with no readable seq holds no
-   *  place, and stays torn. */
-  private readonly tornAt = new Map<string, { readonly seq: number; readonly fields: Readonly<Record<string, unknown>> }>();
   /** requestIds in ascending `seq` order — the eviction queue. Seeded from the store at first use,
    *  then kept current by every `record()` this process makes. */
   private readonly order: string[] = [];
@@ -483,9 +448,7 @@ export class FactLedger {
   private readonly weights = new Map<string, { readonly seq: number; readonly bytes: number }>();
   /** What the kept bodies weigh, summed: every entry of `weights`. */
   private heldBytes = 0;
-  /** The evicted facts the document still holds, by requestId to seq, the longest-evicted first: each answers
-   *  `retention-gap` until `ring` later evictions push it out of the document (`shed`). The facts themselves stay in the
-   *  store, read through when asked. */
+  /** Compact decisions retained after answer eviction, indexed by request identity and sequence. */
   private readonly evictedAt = new Map<string, number>();
   private nextSeq = 0;
   private seeded: Promise<void> | null = null;
@@ -553,21 +516,15 @@ export class FactLedger {
     return `${RECEIPT_FACT_URI_PREFIX}${requestId}`;
   }
 
-  /** Receipt facts live in the control document alone; the ledger reads no other layer. */
+  /** Receipt facts live in the work snapshot alone; the ledger reads no other layer. */
   private factStore() {
-    const store = this.composite.storeForBag(CONTROL_HOME_ID);
-    if (!store) throw new NoWorkingLayerRefusal("The receipt ledger read", "Stand the vessel's control document before opening the UDS channel.");
+    const store = this.composite.storeForBag(VESSEL_WORK_ID);
+    if (!store) throw new NoWorkingLayerRefusal("The receipt ledger read", "Stand the vessel's work snapshot before opening the UDS channel.");
     return store;
   }
 
-  /** Seed the cache + eviction order + seq counter from the durable store, once. Every public
-   *  method awaits this first, so a connection arriving before the scan finishes still reads a
-   *  consistent (if momentarily blocked) ledger rather than a false "never seen". `nextSeq`
-   *  advances past the HIGHEST raw `seq` field this scan reads — TORN OR NOT: a torn record still
-   *  claimed that seq when some earlier process minted it, so a fresh mint here must never reuse
-   *  it, even though the torn record itself never joins the cache/order (it is tracked in
-   *  {@link torn} instead, and never seeds). A torn record whose `seq` reads takes its place in the eviction order all the
-   *  same: an unreadable fact never decides a request, but it still leaves the ring by count (`tornAt`). */
+  /** Read durable decisions before answering a request. Every readable raw sequence advances
+   *  the counter, including an unreadable fact's sequence. Unreadable facts refuse replay. */
   private ensureSeeded(): Promise<void> {
     if (this.seeded) return this.seeded;
     this.seeded = (async () => {
@@ -590,7 +547,6 @@ export class FactLedger {
         else {
           const requestId = title.slice(RECEIPT_FACT_URI_PREFIX.length);
           this.torn.add(requestId);
-          if (Number.isSafeInteger(rawSeq) && rawSeq >= 0) this.tornAt.set(requestId, { seq: rawSeq, fields: { ...raw } });
         }
       }
       facts.sort((a, b) => a.seq - b.seq);
@@ -613,14 +569,13 @@ export class FactLedger {
         settledAny = true;
       }
       if (settledAny) await this.repo.flush();
-      // THE CACHE SEEDS WITH THE LIVE RING ALONE: an evicted fact names its place in the shed queue and stays in the store.
+      // The cache holds live facts; compact decisions remain in the snapshot.
       const live = facts.filter((f) => f.state !== "evicted");
       for (const fact of facts) if (fact.state === "evicted") this.evictedAt.set(fact.requestId, fact.seq);
       for (const fact of live) { this.cache.set(fact.requestId, fact); this.hold(fact); }
-      // ONE ORDER, BY SEQ: the live facts and the torn records that still name their place.
+      // Live requests keep sequence order; unreadable decisions stay outside answer eviction.
       const placed: Array<{ readonly requestId: string; readonly seq: number }> = [
         ...live.map((f) => ({ requestId: f.requestId, seq: f.seq })),
-        ...[...this.tornAt].map(([requestId, at]) => ({ requestId, seq: at.seq })),
       ];
       placed.sort((a, b) => a.seq - b.seq);
       for (const at of placed) this.order.push(at.requestId);
@@ -787,15 +742,10 @@ export class FactLedger {
     });
   }
 
-  /** Drop one fact to `evicted` — keep its digest, effect key and terminal (a dedup/replay reader still needs
-   *  those), tombstone the full durable outcome body, and take its weight out of the tally. A victim that never
-   *  named a digest (the id a person cancelled before any request reached this vessel) leaves the same way and
-   *  names none evicted: every fact past the ring reads `evicted`, whatever it read before. Answers whether it
-   *  wrote. */
+  /** Compact a completed request while retaining the decision that prevents replay. */
   private async evict(victimId: string): Promise<boolean> {
-    if (this.tornAt.has(victimId)) return this.evictTorn(victimId);
     const victim = this.cache.get(victimId);
-    if (!victim || victim.state === "evicted") return false;
+    if (!victim || victim.state === "committed" || victim.state === "evicted") return false;
     const evicted: ReceiptFact = {
       requestId: victim.requestId, state: "evicted", seq: victim.seq,
       ...(victim.inputDigest !== undefined && { inputDigest: victim.inputDigest }),
@@ -818,106 +768,25 @@ export class FactLedger {
     return true;
   }
 
-  /**
-   * A TORN FACT LEAVES THE RING BY COUNT. It never decided anything while it stood (every act under its id refused
-   * `receipt-fact-torn`), and it leaves the same way a readable fact does: its body leaves first, then the fact reads
-   * `evicted` at its own seq, keeping only what its fields still read whole (a digest, a face, an action; an effect key and a
-   * terminal beside a digest alone). It guesses no verdict and no life: an id the ring let go answers `retention-gap`, the
-   * honest gap, never a re-run. A committed fact that names a `boot-epoch` field and no `life` reads torn and leaves this way.
-   */
-  private async evictTorn(victimId: string): Promise<boolean> {
-    const at = this.tornAt.get(victimId)!;
-    const read = (key: string): string | undefined => {
-      const v = at.fields[key];
-      return typeof v === "string" && /^\S+$/.test(v) ? v : undefined;
-    };
-    const inputDigest = read("input-digest");
-    const face = read("face"), action = read("action"), effectKey = read("effect-key"), terminalRaw = read("terminal");
-    const terminal = terminalRaw === "done" || terminalRaw === "error" ? terminalRaw : undefined;
-    const evicted: ReceiptFact = {
-      requestId: victimId, state: "evicted", seq: at.seq,
-      ...(face !== undefined && { face }), ...(action !== undefined && { action }),
-      ...(inputDigest !== undefined && { inputDigest, ...(effectKey !== undefined && { effectKey }), ...(terminal !== undefined && { terminal }) }),
-    };
-    const outcomeTitle = `${OUTCOME_URI_PREFIX}${victimId}`;
-    for (const bagId of await this.composite.listBagsHolding(outcomeTitle)) {
-      await this.composite.tombstoneInBag(bagId, outcomeTitle, { kind: "lares-verb", requestId: victimId }, EVICTED_BODY);
-    }
-    await this.composite.put(buildReceiptFact(evicted), { kind: "lares-verb", requestId: victimId });
-    this.tornAt.delete(victimId);
-    this.torn.delete(victimId);
-    this.evictedAt.set(victimId, evicted.seq);
-    return true;
-  }
-
-  /**
-   * Hold both bounds. COUNT: past `ring` tracked requests, the OLDEST (lowest `seq`) leaves the ring, so the
-   * ring bounds storage and never lookups alone. BYTES: while the kept bodies weigh more than `ringBytes`, the
-   * oldest kept body leaves. `justLanded` names the request whose fact this call follows: its body stays
-   * through this pass, since its caller reads the outcome it just wrote.
-   */
+  /** Bound completed answers by count and bytes; pending and unreadable decisions stay intact. */
   private async evictIfNeeded(justLanded?: string): Promise<void> {
     let evictedAny = false;
-    // A WIDE EXCESS LEAVES WHOLE. Victims older than the newest `ring` of the excess would be evicted only to be shed at
-    // once: they leave the document directly, in batches, before the rest evict one by one.
-    const excess = this.order.length - this.ring;
-    if (excess > this.ring) {
-      const direct = this.order.slice(0, excess - this.ring);
-      await this.leave(direct);
-      this.order.splice(0, direct.length);
-      for (const id of direct) { this.release(id); this.cache.delete(id); this.tornAt.delete(id); this.torn.delete(id); }
-      evictedAny = true;
-    }
-    while (this.order.length > this.ring) {
-      // The victim leaves the ring once its eviction ran whole: one that failed midway stays at the head, and
-      // the next pass takes it up again.
-      const victimId = this.order[0]!;
+    while (this.order.filter(id => { const fact = this.cache.get(id); return fact && fact.state !== "committed"; }).length > this.ring) {
+      const at = this.order.findIndex(id => id !== justLanded && this.cache.get(id)?.state !== "committed");
+      if (at < 0) break;
+      const victimId = this.order[at]!;
       if (await this.evict(victimId)) evictedAny = true;
-      this.order.shift();
+      this.order.splice(at, 1);
     }
     while (this.heldBytes > this.ringBytes) {
-      const victimId = this.bodied.find((id) => id !== justLanded);
+      const victimId = this.bodied.find(id => id !== justLanded);
       if (victimId === undefined) break;
       if (await this.evict(victimId)) evictedAny = true;
-      this.release(victimId);   // evicted or not, the victim left the queue: the pass ends
-    }
-    if (this.evictedAt.size > this.ring) {
-      const shed = [...this.evictedAt.keys()].slice(0, this.evictedAt.size - this.ring);
-      await this.leave(shed);
-      for (const id of shed) this.evictedAt.delete(id);
-      evictedAny = true;
+      this.release(victimId);
     }
     if (evictedAny) await this.repo.flush();
   }
 
-  /**
-   * THE FACTS LEAVE THE DOCUMENT, with their rows: each request's fact, its outcome row, and the effect row its effect key
-   * names where that row still names this request (a later request may hold the key now). One change per batch of
-   * {@link SHED_BATCH} requests, so a boot that sheds tens of thousands writes tens of changes, never one per fact. The
-   * rows leave by retract (the key drops, no tombstone stays): the control document never leaves this vessel, so no
-   * replica waits on a kāpae to learn of the removal.
-   */
-  private async leave(requestIds: readonly string[]): Promise<void> {
-    const store = this.factStore();
-    for (let at = 0; at < requestIds.length; at += SHED_BATCH) {
-      const batch = requestIds.slice(at, at + SHED_BATCH);
-      const retracts: string[] = [];
-      for (const requestId of batch) {
-        const factTitle = FactLedger.factTitle(requestId);
-        const fields = (await store.get(factTitle))?.tiddler as Record<string, unknown> | undefined;
-        retracts.push(factTitle, `${OUTCOME_URI_PREFIX}${requestId}`);
-        const effectKey = fields?.["effect-key"];
-        if (typeof effectKey === "string" && effectKey !== "") {
-          const effectTitle = `${EFFECT_URI_PREFIX}${effectKey}`;
-          const effect = (await store.get(effectTitle))?.tiddler as Record<string, unknown> | undefined;
-          if (effect?.["request-id"] === requestId) retracts.push(effectTitle);
-        }
-      }
-      const origin = { kind: "lares-verb", requestId: batch[0]! } as const;
-      if (store.writeFamily) await store.writeFamily([], [], origin, { retracts });
-      else for (const title of retracts) await store.remove(title, origin);
-    }
-  }
 }
 
 /** The invocation's own content — what an honest reused id must match to re-read instead of re-run.
@@ -1125,7 +994,7 @@ export function serveUdsFront(a: {
 }
 
 export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
-  const { controlHandle, claim } = opts;
+  const { stateHandle, claim } = opts;
   const floorVerbs = opts.floorVerbs ?? FLOOR_VERBS;
   const timeoutMs = opts.timeoutMs ?? 30_000;
   const log = opts.onLog ?? (() => { /* quiet */ });
@@ -1141,37 +1010,35 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     log(`slow door call "${verb}" (request ${requestId}): ${Math.round(admittedAt - readAt)} ms from the read to the admitted fact, ${Math.round(landedAt - admittedAt)} ms on the island until its outcome landed`);
   };
 
-  // Outcomes and receipt facts rest in the vessel's control document, the control store's one default writable.
-  const composite = opts.control;
-  if (composite.defaultWritableBagId() !== CONTROL_HOME_ID) {
-    throw new NoWorkingLayerRefusal("Opening the UDS channel", "Stand the vessel's control document (`standControlHome`) as the control store's default writable first.");
+  // Outcomes and receipt facts rest in the vessel's work snapshot, the work store's one default writable.
+  const composite = opts.state;
+  if (composite.defaultWritableBagId() !== VESSEL_WORK_ID) {
+    throw new NoWorkingLayerRefusal("Opening the UDS channel", "Stand the vessel's work snapshot (`openVesselWork`) as the work store's default writable first.");
   }
 
   // The DURABLE arbitration ledger (D1, H1R+H4+M1+M3″) — one winner per request id, backed by the
   // receipt-fact tiddler this channel alone writes; a restart reads the SAME fact a prior process
   // wrote, closing H1R (a same-id reuse re-running after restart) and H4 (a cancelled id's
   // abandonment not surviving one).
-  // THE LEDGER'S FLOOR NAMES ITS OWN DOCUMENT. Every fact rests in the control document and nowhere else, so each record
+  // THE LEDGER'S FLOOR NAMES ITS OWN DOCUMENT. Every fact rests in the work snapshot and nowhere else, so each record
   // flushes that one document. A flush that names none walks every document the Repo holds (each one's heads read and
   // compared, every save another document still paces forced at once), and a door call records two facts: the walk then
   // costs each call twice, and grows with the house. A call's own writes rest by their own road (`restOwed`, per document).
-  const ledgerRest: Pick<Repo, "flush"> = { flush: () => opts.repo.flush([controlHandle.documentId]) };
+  const ledgerRest = { flush: async () => { await workOf(composite).flush(); } };
   const ledger = new FactLedger(composite, ledgerRest, opts.ring ?? RECEIPT_RING_DEFAULT, claim.life, opts.ringBytes ?? RECEIPT_RING_BYTES_DEFAULT, log);
   // THE OWNER'S EPOCH IS THE VESSEL'S LIFE (session-contract): one name for one relation, minted by the store claim.
   const ownerEpoch = claim.life;
-  // NO RECEIPT CLAIMS DURABILITY OVER MEMORY: a stand-in control handle (the vessel's key shut) refuses by name, never
+  // NO RECEIPT CLAIMS DURABILITY OVER MEMORY: a stand-in state handle (the vessel's key shut) refuses by name, never
   // answers heads a save still holds.
   const settleDurably = async (): Promise<DurabilityReceipt> => {
-    assertControlHomeOpen(controlHandle);
-    const heads = controlHandle.heads();
-    await opts.repo.flush([controlHandle.documentId]);
-    return { docUrl: controlHandle.url, heads, ownerEpoch };
+    assertVesselStateOpen(stateHandle);
+    return { ...await workOf(composite).checkpoint(), ownerEpoch };
   };
 
-  // THE ANSWER RING (`control-home` `answerRingOf`): the whole outcomes of the verbs this vessel ran, in memory alone. The
-  // island hands each across as it concludes; the control document rests the verdict row and no body.
+  // THE ANSWER RING (`answer-ring` `answerRingOf`): the whole outcomes of the verbs this vessel ran, in memory alone. The
+  // island hands each across as it concludes; the work snapshot rests the verdict row and no body.
   const ring = answerRingOf(composite);
-  /** The outcome row the control document rests for `requestId` (a verdict row; a whole record where one rests), or null. */
+  /** The outcome row the work snapshot rests for `requestId` (a verdict row; a whole record where one rests), or null. */
   const rowFieldsOf = async (requestId: string): Promise<Record<string, unknown> | null> => {
     const event = await composite.get(`${OUTCOME_URI_PREFIX}${requestId}`);
     if (!event || event.meta?.deleted) return null;
@@ -1234,7 +1101,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const unsubAnswers = ring.subscribe((requestId) => { answerOwed.delete(requestId); });
   /**
    * What a wait on `requestId` may answer now, or null while it still waits. `needsRow` names a ledgered dispatch: its
-   * answer leaves only once its verdict row stands in this vessel's own control document, so the answer never outruns
+   * answer leaves only once its verdict row stands in this vessel's own work snapshot, so the answer never outruns
    * the verdict a receipt would read. A read on the answer-ring road and a floor act wait on the answer alone.
    */
   const settledOutcomeFor = async (requestId: string, needsRow: boolean): Promise<Record<string, unknown> | null> => {
@@ -1265,12 +1132,12 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       // Only a COMPLETION teaches the servo (a timeout/hang never records → can't drag the EWMA to CEIL).
       const check = () => { void settledOutcomeFor(requestId, needsRow).then((r) => { if (r) settle(() => { recordMineDuration(verb, performance.now() - t0); resolve(r); }); }, () => { /* a read that faults answers nothing; the next change reads again */ }); };
       const onChange = () => check();
-      // THE VERDICT RESTS IN THE CONTROL DOCUMENT AND THE ANSWER IN THE RING: the wait hears the control store, the
+      // THE VERDICT RESTS IN THE VESSEL STATE DOCUMENT AND THE ANSWER IN THE RING: the wait hears the state store, the
       // document beneath it, and the ring.
       const unsubscribeStore = composite.subscribe((change) => { if (change.title === `${OUTCOME_URI_PREFIX}${requestId}`) check(); });
       const unsubscribeRing = ring.subscribe((answered) => { if (answered === requestId) check(); });
       const unsubscribe = (): void => { unsubscribeStore(); unsubscribeRing(); };
-      controlHandle.on("change", onChange);
+      stateHandle.on("change", onChange);
       // Fail on a GRADIENT: the wait grows with this verb's learned durations (EWMA·K, clamped
       // FLOOR..CEIL) — headroom for an honest long verb, while a real hang still dies within CEIL.
       // The INVOCATION's own ask raises it within that bound: the servo cannot learn that a first
@@ -1293,13 +1160,13 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         if (answerOwed.has(requestId)) void rowFieldsOf(requestId).then((row) => { if (row !== null) answerOwed.delete(requestId); }, () => { /* unread: the id stays owed */ });
         reject(new VesselWaitExpired(verb, requestId, budget));
       }), budget);
-      const cleanup = () => { controlHandle.off("change", onChange); unsubscribe(); clearTimeout(timer); };
+      const cleanup = () => { stateHandle.off("change", onChange); unsubscribe(); clearTimeout(timer); };
       check(); // the outcome may already exist (idempotent re-submission)
     });
   };
 
   /**
-   * The verb behind `requestId` SETTLED: its verdict landed in the control document, or its answer in the ring. No timer: a caller's own wait may give up
+   * The verb behind `requestId` SETTLED: its verdict landed in the work snapshot, or its answer in the ring. No timer: a caller's own wait may give up
    * while the verb runs on, and the face's close waits on the verb, never on that caller. An island restart ends the verb, and
    * the face actor's supervisor frees its work there.
    */
@@ -1310,16 +1177,16 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     const unsubscribeStore = composite.subscribe((change) => { if (change.title === `${OUTCOME_URI_PREFIX}${requestId}`) check(); });
     // A read on the answer-ring road lands no row: its answer in the ring says it settled.
     const unsubscribeRing = ring.subscribe((answered) => { if (answered === requestId) check(); });
-    controlHandle.on("change", onChange);
-    const cleanup = () => { controlHandle.off("change", onChange); unsubscribeStore(); unsubscribeRing(); };
+    stateHandle.on("change", onChange);
+    const cleanup = () => { stateHandle.off("change", onChange); unsubscribeStore(); unsubscribeRing(); };
     check();
   });
 
   // Hand the invocation (verb + args CONTENT) to the daemon worker over the DIRECT
   // MessageChannel (placeVerb → the worker's volatile invocation), then await the
-  // durable outcome via the control store's change events. The carriers NEVER enter
-  // the daemon's documents — only the worker-written outcome (bags/control/outcomes/<id>)
-  // lands, in the vessel's control document. A co-located CLI shares the worker's process, so the CRDT summons
+  // durable outcome via the work store's change events. The carriers NEVER enter
+  // the daemon's documents — only the worker-written outcome (bags/vessel-state/outcomes/<id>)
+  // lands, in the vessel's work snapshot. A co-located CLI shares the worker's process, so the CRDT summons
   // (the remote-peer transport) would be a pointless content-bloating round-trip.
   const runVerb = async (inv: Invocation, requestId: string, needsRow = false): Promise<Record<string, unknown>> => {
     answerOwed.add(requestId);
@@ -1680,7 +1547,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       return sessionRefuse(sock, "malformed-message", requestId);
     }
     // A FACE ROW'S ANSWER RIDES THE SOCKET ALONE (`session:act`), as does a realm verb's that names a face's key: a call's
-    // outcome body rests in the vessel's control document beside the session's face, so neither rides one.
+    // outcome body rests in the vessel's work snapshot beside the session's face, so neither rides one.
     if (opts.sessionVerbs?.has(frame["verb"]) || opts.socketVerbs?.has(frame["verb"])) return sessionRefuse(sock, "answers-on-the-socket", requestId);
     // A SPIRIT'S HAND PROPOSES on a call too: a hand-only island verb (`retire-wiki`) refuses a seat session by its code.
     if (state.supply.profile === "seat" && opts.handOnlyActs?.has(frame["verb"])) return sessionRefuse(sock, opts.handOnlyCodes?.get(frame["verb"]) ?? "beyond-profile", requestId);
@@ -1897,7 +1764,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       ? (parsed as Record<string, unknown>)["requestId"] as string : undefined;
     sessionTurns.set(sock, next.catch((error) => {
       log(`session frame failed: ${error instanceof Error ? error.message : String(error)}`);
-      sessionRefuse(sock, error instanceof ControlHomeUnavailable ? error.refusal : "session-fault", requestId);
+      sessionRefuse(sock, error instanceof VesselStateUnavailable ? error.refusal : "session-fault", requestId);
     }));
   };
   let arbitrating = 0;
@@ -1912,11 +1779,11 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     if (typeof callId !== "string" || callId.length === 0) return handleCall(parsed, sock, null, sessionRequestId, onSessionReply, mark, gate);
     return inCallScope(callId, () => handleCall(parsed, sock, callId, sessionRequestId, onSessionReply, mark, gate));
   };
-  /** The documents a call changed here and on the island, the control document's own bookkeeping left out. */
+  /** The documents a call changed here and on the island, the work snapshot's own bookkeeping left out. */
   const touchesOf = (callId: string | null, island: unknown): CallTouches | null => {
     const merged = mergeCallTouches(touchedOfField(island), callId !== null ? takeCallTouches(callId) : null);
     if (merged === null) return null;
-    const { [controlHandle.documentId]: _control, ...rest } = merged;
+    const { [stateHandle.documentId]: _state, ...rest } = merged;
     return Object.keys(rest).length > 0 ? rest : null;
   };
   /** The owed band for one call's own changes; a reading that fails answers owed by name, never sealed. A path that ran
@@ -2001,7 +1868,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         const named = choreMark !== undefined ? { ...stamped, chore: choreMark } : stamped;
         const payload = sessionRequestId === undefined ? named : {
           kind: "session:result", ...named, requestId: sessionRequestId,
-          ...((answer["status"] === "done" || answer["status"] === "error") && controlHomeRefusal(controlHandle) === null ? { durable: await settleDurably() } : {}),
+          ...((answer["status"] === "done" || answer["status"] === "error") && vesselStateRefusal(stateHandle) === null ? { durable: await settleDurably() } : {}),
         };
         // THE CHECK AND THE WRITE IN ONE TURN: past every await, the target's actor reads its opening and writes, or refuses.
         answerLine(payload);
@@ -2055,19 +1922,19 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         })().catch((err: unknown) => { if (!sock.destroyed) fail(err instanceof Error ? err.message : String(err)); });
         return;
       }
-      // A LOCKED VESSEL FAILS CLOSED, AND A FACELESS PLACE HOLDS NO CONTROL DOCUMENT: with the control document unread (the
+      // A LOCKED VESSEL FAILS CLOSED, AND A FACELESS PLACE HOLDS NO VESSEL STATE DOCUMENT: with the work snapshot unread (the
       // key shut, or no face named one), a session's act and a cancel refuse by that name before they read or write a fact.
-      // THE FLOOR STILL ANSWERS: a one-shot invocation runs unledgered on the floor (below), and an act that writes a control
+      // THE FLOOR STILL ANSWERS: a one-shot invocation runs unledgered on the floor (below), and an act that writes a state
       // fact refuses by the same name at that write; its answer waits in the floor store's memory and rests nowhere.
-      const controlRefused = controlHomeRefusal(controlHandle);
-      if (controlRefused && (sessionRequestId !== undefined || isCancelQuery(parsed))) return fail(controlRefused.message, controlRefused.refusal);
-      if (controlRefused && isReceiptQuery(parsed)) {
+      const stateRefused = vesselStateRefusal(stateHandle);
+      if (stateRefused && (sessionRequestId !== undefined || isCancelQuery(parsed))) return fail(stateRefused.message, stateRefused.refusal);
+      if (stateRefused && isReceiptQuery(parsed)) {
         // The floor keeps no receipt fact: an answer its memory still holds reads back; any other refuses by name.
         void retrievedOutcome(parsed.requestId).then((held) => held
           ? respond({ requestId: parsed.requestId, state: held["status"], ...(held["results"] !== undefined ? { results: held["results"] } : {}),
             ...(held["body"] !== undefined ? { body: held["body"] } : {}), ...(held["visit"] !== undefined ? { visit: held["visit"] } : {}),
             ...(held["errorMessage"] !== undefined ? { errorMessage: held["errorMessage"] } : {}), ...(held["refusal"] !== undefined ? { refusal: held["refusal"] } : {}) })
-          : fail(controlRefused.message, controlRefused.refusal), (err) => fail(err instanceof Error ? err.message : String(err)));
+          : fail(stateRefused.message, stateRefused.refusal), (err) => fail(err instanceof Error ? err.message : String(err)));
         return;
       }
       // READ-ONLY QUERIES NEVER REACH `placeVerb` (H1 fix item 3).
@@ -2200,10 +2067,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // The worker's own digest formula (`verbInputDigest`, mesh) — async, so computed inside
         // this deferred tick rather than synchronously in the `data` handler above.
         const inputDigest = await inputDigestOf(inv);
-        const floorRefused = controlHomeRefusal(controlHandle);
+        const floorRefused = vesselStateRefusal(stateHandle);
         if (floorRefused) {
           if (!floorVerbs.has(inv.verb)) return fail(floorRefused.message, floorRefused.refusal);
-          // THE FLOOR'S ONE-SHOT: no receipt fact records it (the floor holds no control document to rest one in), so a
+          // THE FLOOR'S ONE-SHOT: no receipt fact records it (the floor holds no work snapshot to rest one in), so a
           // caller gone before dispatch leaves nothing to arbitrate and the act never runs; an id whose answer the floor
           // still holds reads that answer back and never runs twice.
           if (sock.destroyed || sock.readableEnded) {
@@ -2313,7 +2180,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
             else fail(refused.message, refused.refusal);
             return;
           }
-          const named = error instanceof ControlHomeUnavailable ? error.refusal : null;
+          const named = error instanceof VesselStateUnavailable ? error.refusal : null;
           if (sessionRequestId !== undefined) { refuseSession(named ?? "session-fault"); onSessionReply?.(); }
           else fail(named ? (error as Error).message : "this vessel could not record the request durably; nothing ran", named ?? "ledger-unwritten");
           return;
@@ -2346,7 +2213,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           return fail(why, verdict.reason);
         }
         // THE ADMISSION SETTLED DURABLY (its committed fact flushed): the last settled wave a fall names.
-        try { opts.engine?.settled(controlHandle.heads()); } catch { /* heads unread: the admission still landed */ }
+        try { opts.engine?.settled((await workOf(composite).checkpoint()).heads); } catch { /* the admission already landed */ }
         // The work releases when the verb itself settles, never when this caller's wait gives up.
         dispatched = inv.verb;
         const admittedAt = performance.now();

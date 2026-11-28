@@ -2,7 +2,7 @@
  * hearth-daemon-crossing (road row `L4f`) — the face's signed log names the hearth's daemon working document for a device,
  * and the hearth's tables read which of its documents that name may point at.
  *
- * Reds: a root-signed `device-edge` act that names `hearthDaemon` folds into `hearthDaemons` under its device; the control
+ * Reds: a root-signed `device-edge` act that names `hearthDaemon` folds into `hearthDaemons` under its device; the state
  * document's `daemon-slot/working/<group>` row answers the hearth's own working slot; the device table answers the group a
  * working slot belongs to. Controls: an edge that names none folds none; a later edge that names none clears the earlier
  * name; a barred device names none; a draft slot, another group's slot, a canon and a floor slot answer no working group.
@@ -13,7 +13,7 @@ import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed255
 import { makeHandLineage } from "../src/hand-lineage.js";
 import { projectPersonaLog, type PersonaActBody } from "../src/persona-act.js";
 import { actCid, signAct } from "../src/signed-act.js";
-import { CONTROL_HOME_ID } from "../src/lar-uris.js";
+import { VESSEL_STATE_ID } from "../src/lar-uris.js";
 import { wikiSlotUri } from "../src/wiki-recipe.js";
 import { emptyLarDoc, type LarDoc } from "../src/base-doc.js";
 import { storedLarRecord } from "../src/stored-record.js";
@@ -61,28 +61,28 @@ describe("the face's signed log names the hearth's daemon working document for a
   });
 });
 
-function control(entries: Record<string, string>): LarDoc {
+function state(entries: Record<string, string>): LarDoc {
   const doc = emptyLarDoc();
   for (const [title, id] of Object.entries(entries)) doc.tiddlers[title] = storedLarRecord(title, { text: `automerge:${id}` }, "test");
   return doc as LarDoc;
 }
-const slot = (group: string, kind = "working") => `${CONTROL_HOME_ID}/daemon-slot/${kind}/${encodeURIComponent(group)}`;
+const slot = (group: string, kind = "working") => `${VESSEL_STATE_ID}/daemon-slot/${kind}/${encodeURIComponent(group)}`;
 
-describe("the hearth reads its own working slot off its control document", () => {
-  test("RED: the control row of the face's working slot answers its document", () => {
-    expect(hearthDaemonOf(control({ [slot("group one")]: "w1" }).tiddlers, "group one")).toBe("automerge:w1");
+describe("the hearth reads its own working slot off its state document", () => {
+  test("RED: the state row of the face's working slot answers its document", () => {
+    expect(hearthDaemonOf(state({ [slot("group one")]: "w1" }).tiddlers, "group one")).toBe("automerge:w1");
   });
 
-  test("CONTROL: a draft slot, another group's slot and an absent control document answer none", () => {
-    expect(hearthDaemonOf(control({ [slot("g1", "draft")]: "d1", [slot("g2")]: "w2" }).tiddlers, "g1")).toBeNull();
+  test("CONTROL: a draft slot, another group's slot and an absent state document answer none", () => {
+    expect(hearthDaemonOf(state({ [slot("g1", "draft")]: "d1", [slot("g2")]: "w2" }).tiddlers, "g1")).toBeNull();
     expect(hearthDaemonOf(undefined, "g1")).toBeNull();
   });
 
   test("RED: the device table answers the group a working slot belongs to; CONTROL: a draft slot, a canon, a floor slot and an unnamed slot answer none", () => {
     const docs = deviceDaemonDocs({ enrollFloor: () => {} });
     const F1 = "11111111-1111-4111-8111-111111111111";
-    docs.readControl(control({ [slot("g1")]: "w1", [slot("g1", "draft")]: "d1", [`${CONTROL_HOME_ID}/daemon-canon/${F1}`]: "c1" }));
-    docs.readFloor(control({ [floorDaemonSlotTitle("working")]: "f1" }));
+    docs.readState(state({ [slot("g1")]: "w1", [slot("g1", "draft")]: "d1", [`${VESSEL_STATE_ID}/daemon-canon/${F1}`]: "c1" }));
+    docs.readFloor(state({ [floorDaemonSlotTitle("working")]: "f1" }));
     docs.announced(wikiSlotUri("daemon", "working"), "unnamed");
     expect(docs.workingGroupOf("w1")).toBe("g1");
     for (const id of ["d1", "c1", "f1", "unnamed", "stranger"]) expect(docs.workingGroupOf(id), id).toBeNull();

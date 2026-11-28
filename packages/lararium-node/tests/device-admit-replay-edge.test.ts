@@ -15,7 +15,7 @@ const T = vi.hoisted(() => ({
   daemon: "lar:///ha.ka.ba/bags/daemon",
   kel: "lar:///ha.ka.ba/lares/persona-kel-prefix",
 }));
-const seam = vi.hoisted(() => ({ bootstrapPath: "", edge: null as Record<string, unknown> | null, seeds: [] as number[], anchorsAsked: [] as number[], observed: 0, anchorPrefix: "kel-zero", anchorLease: 0, anchorSeq: -1, projectedWith: null as Record<string, unknown> | null, cids: [] as string[], anchorCid: null as string | null, vesselTags: [] as string[], records: [] as unknown[], admissions: [] as Array<{ deviceKey: string; cid: string }>, rootHalves: 0, appended: [] as unknown[], store: null as unknown, control: {} as Record<string, { text: string }> }));
+const seam = vi.hoisted(() => ({ bootstrapPath: "", edge: null as Record<string, unknown> | null, seeds: [] as number[], anchorsAsked: [] as number[], observed: 0, anchorPrefix: "kel-zero", anchorLease: 0, anchorSeq: -1, projectedWith: null as Record<string, unknown> | null, cids: [] as string[], anchorCid: null as string | null, vesselTags: [] as string[], records: [] as unknown[], admissions: [] as Array<{ deviceKey: string; cid: string }>, rootHalves: 0, appended: [] as unknown[], store: null as unknown, state: {} as Record<string, { text: string }> }));
 
 vi.mock("../src/vessel-paths.js", () => ({ larBootstrapPath: () => seam.bootstrapPath, larSealHome: () => "seal-home-under-test" }));
 // The admit pins the Nexus the vessel's sovereign gate stands at (`stoodSovereignPin`, hearth-stood-pin P1-P3); this
@@ -152,14 +152,14 @@ vi.mock("../src/persona-act-store.js", () => ({ readFacePersonaRecords: async ()
 
 import { runDeviceAdmit } from "../src/commands/device-admit.js";
 import { edgeBodyDigest } from "@lararium/mesh/face-anchor";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { VESSEL_STATE_ID } from "@lararium/mesh/lar-uris";
 import { MemoryTiddlerStore } from "@lararium/tw5";
 import { testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
-// The daemon doc names the vessel's control document, where the lease slots rest (a fence read refuses where it names none).
-const daemonDoc = { tiddlers: { [T.group]: { text: "group-zero" }, [T.kel]: { text: "kel-zero" }, [CONTROL_HOME_ID]: { text: "automerge:control", tiddler: { text: "automerge:control" } } } };
+// The daemon doc names the vessel's state document, where the lease slots rest (a fence read refuses where it names none).
+const daemonDoc = { tiddlers: { [T.group]: { text: "group-zero" }, [T.kel]: { text: "kel-zero" }, [VESSEL_STATE_ID]: { text: "automerge:state", tiddler: { text: "automerge:state" } } } };
 const repo = {
-  find: async (url: string) => ({ url, doc: () => (url === "automerge:daemon" ? daemonDoc : url === "automerge:control" ? { tiddlers: seam.control } : {}) }),
+  find: async (url: string) => ({ url, doc: () => (url === "automerge:daemon" ? daemonDoc : url === "automerge:state" ? { tiddlers: seam.state } : {}) }),
   flush: async () => {},
 } as never;
 const JOINEE = "6e7a1cdd29b0b78fd13af4c5598feff4ef2a97166e3ca6f2e4fbfccd80505bf1";
@@ -173,7 +173,7 @@ describe("a replayed answer carries the seated edge, never a re-minted one", () 
   beforeEach(() => {
     seam.observed = 0; seam.anchorPrefix = "kel-zero"; seam.anchorLease = 0; seam.anchorSeq = -1; seam.cids = []; seam.anchorCid = null;
     seam.vesselTags = []; seam.records = []; seam.admissions = []; seam.appended = []; seam.store = new MemoryTiddlerStore("plane:group-zero");
-    seam.control = {};
+    seam.state = {};
     seam.bootstrapPath = join(tmpdir(), `lar-device-admit-replay-${process.pid}.json`);
     writeFileSync(seam.bootstrapPath, JSON.stringify({ text: JSON.stringify({ tiddlers: {
       [T.group]: { text: "group-zero" }, [T.cabal]: { text: "cabal-zero" }, [T.daemon]: { text: "automerge:daemon" },
@@ -221,22 +221,22 @@ describe("a replayed answer carries the seated edge, never a re-minted one", () 
   });
 
   // THE HEARTH'S DAEMON WORKING DOCUMENT RIDES THE SIGNED EDGE ACT (road row `L4f`): the door reads the working slot its own
-  // control document names for the face, and the root signs it into the joinee's `device-edge` act.
-  const WORKING_ROW = `${CONTROL_HOME_ID}/daemon-slot/working/${encodeURIComponent("group-zero")}`;
-  /** A control row in the stored record's own shape (the door reads its text through the mesh's reader). */
+  // state document names for the face, and the root signs it into the joinee's `device-edge` act.
+  const WORKING_ROW = `${VESSEL_STATE_ID}/daemon-slot/working/${encodeURIComponent("group-zero")}`;
+  /** A state row in the stored record's own shape (the door reads its text through the mesh's reader). */
   const row = (text: string) => ({ text, tiddler: { text } });
   const edgeActs = (acts: readonly Act[]) => acts.filter((a) => a.body["act"] === "device-edge");
 
   test("RED (L4f): the hearth's working slot stands, and the seated device's edge act names it under the root's signature", async () => {
-    seam.control = { [WORKING_ROW]: row("automerge:hearth-working") };
+    seam.state = { [WORKING_ROW]: row("automerge:hearth-working") };
     const { acts } = await seatFirst();
     expect(edgeActs(acts).map((a) => a.body["hearthDaemon"])).toEqual(["automerge:hearth-working"]);
   });
 
   test("CONTROL (L4f): a hearth that stands no working slot for the face, only a draft slot or another face's, names none", async () => {
-    seam.control = {
-      [`${CONTROL_HOME_ID}/daemon-slot/draft/${encodeURIComponent("group-zero")}`]: row("automerge:draft"),
-      [`${CONTROL_HOME_ID}/daemon-slot/working/${encodeURIComponent("group-two")}`]: row("automerge:other-working"),
+    seam.state = {
+      [`${VESSEL_STATE_ID}/daemon-slot/draft/${encodeURIComponent("group-zero")}`]: row("automerge:draft"),
+      [`${VESSEL_STATE_ID}/daemon-slot/working/${encodeURIComponent("group-two")}`]: row("automerge:other-working"),
     };
     const { acts } = await seatFirst();
     expect(edgeActs(acts).map((a) => "hearthDaemon" in a.body)).toEqual([false]);
@@ -244,7 +244,7 @@ describe("a replayed answer carries the seated edge, never a re-minted one", () 
 
   test("RED (L4f): a device seated before the hearth's working slot stood takes the name at its next answer: one edge act, the seated digest, no second admission", async () => {
     const { acts } = await seatFirst();
-    seam.control = { [WORKING_ROW]: row("automerge:hearth-working") };
+    seam.state = { [WORKING_ROW]: row("automerge:hearth-working") };
     const replay = await answer("nonce-2");
     const appended = seam.appended as Act[];
     expect(appended.map((a) => a.body["act"])).toEqual(["device-edge"]);
@@ -254,11 +254,11 @@ describe("a replayed answer carries the seated edge, never a re-minted one", () 
   });
 
   test("CONTROL (L4f): a seated device whose edge act already names the hearth's working slot takes no act at a replay, and a renewal keeps the name where the door reads none", async () => {
-    seam.control = { [WORKING_ROW]: row("automerge:hearth-working") };
+    seam.state = { [WORKING_ROW]: row("automerge:hearth-working") };
     await seatFirst();
     await answer("nonce-2");
     expect(seam.appended).toEqual([]);
-    seam.control = {};
+    seam.state = {};
     seam.observed = 4;
     await answer("nonce-3");
     const renewal = seam.appended as Act[];

@@ -1,20 +1,7 @@
 /**
- * compacting-storage — a document's incremental chunks stay bounded by COUNT and by BYTES, whatever its snapshot weighs.
- *
- * The engine's own policy compacts a document once its incremental bytes reach its snapshot's bytes. A document that grew
- * a large snapshot therefore carries thousands of small chunks before its next compaction: measured on a live hearth, the
- * vessel's control document held a 30 MB snapshot beside 4,396 incremental chunks (12 MB), written about one a second
- * under door load, each one more file to seal, open and replay at the next boot. No clock decides here: a document
- * compacts when its incremental chunks reach `maxIncrementals`, or their bytes reach `maxIncrementalBytes`.
- *
- * ONLY WHAT THE REPO MOVED LEAVES. The wrapper stands directly beneath one Repo and counts the chunk keys that Repo
- * loaded (`loadRange` answers) or saved. A compaction saves one snapshot of the Repo's LIVE document, which holds every
- * chunk the Repo loaded or saved, then removes exactly the keys it counted before that snapshot: a chunk the Repo never
- * received (a refused open, a planted key) is never counted and never removed, and a save that lands while the compaction
- * runs stays at rest. A snapshot the inner rest refuses removes nothing. The rest beneath keeps its own laws over each
- * removal (a sealed rest defers a removal while that document's saves wait unsealed).
- *
- * Canon: lar:///ha.ka.ba/kahua/memory/research/vessel-heat-2026-11-26 (row 3)
+ * Compact repo storage by the holder's count and byte thresholds. A compacted snapshot
+ * carries the same document heads while incremental chunks leave the substrate.
+ * No clock decides compaction.
  */
 import * as A from "@automerge/automerge";
 import type { Chunk, StorageAdapterInterface, StorageKey } from "@automerge/automerge-repo";

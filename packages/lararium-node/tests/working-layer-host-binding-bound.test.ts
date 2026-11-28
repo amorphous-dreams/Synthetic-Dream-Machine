@@ -41,7 +41,7 @@ function rig(boundMs: number) {
     },
   };
   const core = openDaemonVmCore(host, {
-    repo, daemonHandle, controlHandle: repo.create<LarDoc>(emptyLarDoc()), recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null,
+    repo, daemonHandle, stateHandle: repo.create<LarDoc>(emptyLarDoc()), recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null,
     workerScriptUrl: new URL("file:///unused-fake-worker"), askLivenessMs: boundMs,
   });
   cleanups.push(() => { core.dispose(); for (const port of ports) port.close(); return repo.shutdown().then(() => {}); });

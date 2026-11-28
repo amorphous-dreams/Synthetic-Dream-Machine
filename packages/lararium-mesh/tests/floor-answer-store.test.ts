@@ -1,15 +1,15 @@
 /**
- * floor-answer-store — the floor's answer channel holds a verb's answer in memory alone and refuses every control fact by
+ * floor-answer-store — the floor's answer channel holds a verb's answer in memory alone and refuses every state fact by
  * the stand-in's name; the island's answer crosses to the vessel as one message the vessel's door reads whole.
  */
 import { describe, expect, test } from "vitest";
 import {
-  ControlHomeUnavailable, floorAnswerStore, isIslandToVesselMsg, mkDaemonFloorAnswer, concludeVerb,
-  CONTROL_HOME_UNNAMED, FLOOR_ANSWER_RING, OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX, SUMMONS_URI_PREFIX,
+  VesselStateUnavailable, floorAnswerStore, isIslandToVesselMsg, mkDaemonFloorAnswer, concludeVerb,
+  VESSEL_STATE_UNNAMED, FLOOR_ANSWER_RING, OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX, SUMMONS_URI_PREFIX,
   ANSWER_RING_BYTES, ANSWER_RING_COUNT, answerRingOf, makeAnswerRing, ridesAnswerRing, releasedBodyOf, verdictRowOf, READ_VERBS,
 } from "../src/index.js";
 
-const refusal = () => new ControlHomeUnavailable("no face here", CONTROL_HOME_UNNAMED);
+const refusal = () => new VesselStateUnavailable("no face here", VESSEL_STATE_UNNAMED);
 const outcome = (id: string) => concludeVerb({ requestId: id, verb: "where", status: "done", cause: "t", batchMode: "best-effort", results: {} });
 
 describe("the floor's answer store", () => {
@@ -22,10 +22,10 @@ describe("the floor's answer store", () => {
     expect((await store.get(`${OUTCOME_URI_PREFIX}a`))?.tiddler["status"]).toBe("done");
     expect(heard).toEqual([`${OUTCOME_URI_PREFIX}a`]);
     expect(seen).toContain(`${OUTCOME_URI_PREFIX}a`);
-    await expect(store.put({ tiddler: { title: `${RECEIPT_FACT_URI_PREFIX}a` } }, { kind: "lares-verb", requestId: "a" })).rejects.toMatchObject({ refusal: CONTROL_HOME_UNNAMED });
-    await expect(store.put({ tiddler: { title: `${SUMMONS_URI_PREFIX}a` } }, { kind: "lares-verb", requestId: "a" })).rejects.toMatchObject({ refusal: CONTROL_HOME_UNNAMED });
-    await expect(store.get(`${RECEIPT_FACT_URI_PREFIX}a`)).rejects.toMatchObject({ refusal: CONTROL_HOME_UNNAMED });
-    await expect(store.listVisible()).rejects.toMatchObject({ refusal: CONTROL_HOME_UNNAMED });
+    await expect(store.put({ tiddler: { title: `${RECEIPT_FACT_URI_PREFIX}a` } }, { kind: "lares-verb", requestId: "a" })).rejects.toMatchObject({ refusal: VESSEL_STATE_UNNAMED });
+    await expect(store.put({ tiddler: { title: `${SUMMONS_URI_PREFIX}a` } }, { kind: "lares-verb", requestId: "a" })).rejects.toMatchObject({ refusal: VESSEL_STATE_UNNAMED });
+    await expect(store.get(`${RECEIPT_FACT_URI_PREFIX}a`)).rejects.toMatchObject({ refusal: VESSEL_STATE_UNNAMED });
+    await expect(store.listVisible()).rejects.toMatchObject({ refusal: VESSEL_STATE_UNNAMED });
   });
 
   test("the oldest answer leaves once the ring fills", async () => {
@@ -72,10 +72,10 @@ describe("the answer ring every vessel runs", () => {
     expect(lone.get("next")).not.toBeNull();
   });
 
-  test("RED: a control store carries one ring; a put under one id replaces, a subscriber hears each answer, and clear lets all go as a restart does", () => {
-    const control = {};
-    const ring = answerRingOf(control);
-    expect(answerRingOf(control), "one ring per store").toBe(ring);
+  test("RED: a state store carries one ring; a put under one id replaces, a subscriber hears each answer, and clear lets all go as a restart does", () => {
+    const state = {};
+    const ring = answerRingOf(state);
+    expect(answerRingOf(state), "one ring per store").toBe(ring);
     expect(answerRingOf({}), "another store, another ring").not.toBe(ring);
     const heard: string[] = [];
     const stop = ring.subscribe((id) => heard.push(id));

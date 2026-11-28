@@ -8,18 +8,18 @@
  *                         Automerge. Tombstoned by the dispatcher after the
  *                         outcome lands. Local intent lives here, not shared truth.
  *
- *   bags/control/outcomes/<id>  DURABLE outcome tiddler in the Automerge-backed
+ *   bags/vessel-state/outcomes/<id>  DURABLE outcome tiddler in the Automerge-backed
  *                         daemon bag. Written by the dispatcher on done/error.
  *                         Syncs to all vessels. CRDT convergence here IS the result.
  *                         Shared aftermath lives here.
  *
  * Verb invocation paths:
  *   Local (in-process):   placeVerb() → wiki.addTiddler() → TW5 change event
- *                         → dispatcher runs → outcome to bags/control/outcomes/
- *   Remote (CLI/vessels): vessel writes bags/control/summons/<id> to Automerge →
+ *                         → dispatcher runs → outcome to bags/vessel-state/outcomes/
+ *   Remote (CLI/vessels): vessel writes bags/vessel-state/summons/<id> to Automerge →
  *                         IslandAdaptor flows it into TW5 wiki →
  *                         dispatcher translates to volatile invocation → processes →
- *                         outcome to bags/control/outcomes/
+ *                         outcome to bags/vessel-state/outcomes/
  *
  * Batch contract:
  *   One invocation tiddler may carry N targets (tiddler URIs, file paths, edge resource
@@ -36,7 +36,7 @@
  *
  * Architecture laws:
  *   - Tiddler-format law: every invocation/outcome is a normal tiddler with lar: URI.
- *   - Web3 law: no HTTP/RPC control plane; verb submission routes through TW5 wiki
+ *   - Web3 law: no HTTP/RPC state plane; verb submission routes through TW5 wiki
  *     events or Automerge sync — never a named server endpoint.
  *   - Causal-island law: each vessel's daemon VM owns its own volatile verb namespace.
  *
@@ -45,7 +45,7 @@
 
 import { mintRandomId } from "./entropy-door.js";
 import {
-  CONTROL_HOME_ID, VOLATILE_VM_PREFIX,
+  VESSEL_WORK_ID, VOLATILE_VM_PREFIX,
   LARES_VERB_EVENT_TAG, LARES_VERB_TAG,
 } from "./lar-uris.js";
 import { sha256Hex, sha256HexBytesSync, canonicalJsonBytes, utf8Bytes, defaultCryptoProvider, type DigestProvider } from "./crypto.js";
@@ -58,12 +58,14 @@ import type { ChoreReceiptMark } from "./chore-ask.js";
 /** Volatile verb invocation tiddlers — daemon TW5 wiki scratch, never synced. */
 export const VERB_URI_PREFIX = `${VOLATILE_VM_PREFIX}verbs/`;
 
-/** Automerge-backed verb summons, resting in the vessel's control document (`control-home`); the dispatcher translates
+/** Automerge-backed verb summons, resting in the vessel's state document (`vessel-state`); the dispatcher translates
  *  each to a volatile invocation and tombstones it after pickup. */
-export const SUMMONS_URI_PREFIX = `${CONTROL_HOME_ID}/summons/`;
+export const SUMMONS_URI_PREFIX = `${VESSEL_WORK_ID}/summons/`;
 
-/** Durable outcome tiddlers, resting in the vessel's control document (`control-home`), never in a mirrored layer. */
-export const OUTCOME_URI_PREFIX = `${CONTROL_HOME_ID}/outcomes/`;
+/** Durable outcome tiddlers, resting in the vessel's state document (`vessel-state`), never in a mirrored layer. */
+export const OUTCOME_URI_PREFIX = `${VESSEL_WORK_ID}/outcomes/`;
+/** Each wiki holds its own delivery decision, separate from its caller's outcome. */
+export const WIKI_OUTCOME_URI_PREFIX = `${VESSEL_WORK_ID}/wiki-outcomes/`;
 
 /** Result map key for single-result (no explicit targets) verbs. */
 export const VERB_RESULT_KEY = "summary" as const;
@@ -116,17 +118,15 @@ export async function taskContentId(
 // outcome tiddler, which the channel observes. One writer per field, so no two
 // processes race a `state` transition.
 
-/** Durable per-request fact tiddlers — `<control home>/receipts/<requestId>`, in the vessel's control document. */
-export const RECEIPT_FACT_URI_PREFIX = `${CONTROL_HOME_ID}/receipts/`;
+/** Durable per-request fact tiddlers — `<state home>/receipts/<requestId>`, in the vessel's state document. */
+export const RECEIPT_FACT_URI_PREFIX = `${VESSEL_WORK_ID}/receipts/`;
 
-/** Durable ward audits: `<control home>/ledger/ward/<id>`, in the vessel's control document. */
-export const WARD_AUDIT_URI_PREFIX = `${CONTROL_HOME_ID}/ledger/ward/`;
 
-/** The durable mailbox: `<control home>/mailbox/<wiki>/<id>`, in the vessel's control document. */
-export const MAILBOX_URI_PREFIX = `${CONTROL_HOME_ID}/mailbox/`;
+/** The durable mailbox: `<state home>/mailbox/<wiki>/<id>`, in the vessel's state document. */
+export const MAILBOX_URI_PREFIX = `${VESSEL_WORK_ID}/mailbox/`;
 
-/** The effect index: `<control home>/effects/<effectKey>`, in the vessel's control document. */
-export const EFFECT_URI_PREFIX = `${CONTROL_HOME_ID}/effects/`;
+/** The effect index: `<state home>/effects/<effectKey>`, in the vessel's state document. */
+export const EFFECT_URI_PREFIX = `${VESSEL_WORK_ID}/effects/`;
 
 export type ReceiptFactState = "committed" | "interrupted" | "abandoned" | "done" | "error" | "evicted";
 
@@ -321,9 +321,9 @@ export async function verbInputDigest(
 /**
  * The default receipt ring: as many ledgered requests as the answer ring holds bodies (`ANSWER_RING_COUNT`, 1,024). A
  * COUNT, never a horizon: the ring once derived 43,456 from a 30-day retention at one verb a minute, and every fact it
- * held (with the facts it evicted, which never left) rode the control document, where each change costs about a
- * microsecond per title the document's map holds, on every replica (`control-document-stays-light.test.ts`). The ledger
- * keeps `ring` live facts and `ring` evicted ones, so the control document's receipts stay near 6,000 titles at most.
+ * held (with the facts it evicted, which never left) rode the state document, where each change costs about a
+ * microsecond per title the document's map holds, on every replica (`state-document-stays-light.test.ts`). The ledger
+ * keeps `ring` live facts and `ring` evicted ones, so the state document's receipts stay near 6,000 titles at most.
  *
  * An operator may still size the ring by rate (`receipts.ring {ratePerMin, horizonDays, burst}` in vessel config, read by
  * `main.ts`): naming any of those dials derives `ratePerMin × 60 × 24 × horizonDays + burst`, the unnamed dials reading
@@ -337,7 +337,7 @@ export function ratedReceiptRing(opts?: { ratePerMin?: number; horizonDays?: num
   return ratePerMin * 60 * 24 * horizonDays + burst;
 }
 
-/** The receipt ring's default count, matched to the answer ring's (`control-home` `ANSWER_RING_COUNT`). */
+/** The receipt ring's default count, matched to the answer ring's (`vessel-state` `ANSWER_RING_COUNT`). */
 const RECEIPT_RING_COUNT = 1024;
 
 export const RECEIPT_RING_DEFAULT = ratedReceiptRing();
@@ -527,12 +527,12 @@ function cutToBytes(text: string, bound: number): string {
 }
 
 /**
- * THE VERDICT ROW: what a whole outcome (`concludeVerb`) rests as in the control document. It keeps the request id, the
+ * THE VERDICT ROW: what a whole outcome (`concludeVerb`) rests as in the state document. It keeps the request id, the
  * verb, the face, the status, the input digest, the effect key and `effect-of`, the refusal, the chore mark, an error
  * message bounded at {@link OUTCOME_ERROR_BOUND} bytes (`error-sha256` names the whole where the cut fell), a `visit` flag
  * where the output carried `visit: true`, and the measure of the body it left behind: `result-sha256` and `result-bytes`
  * over the canonical bytes of the results map. It carries no `results`, `touched`, `cause`, `batch-mode` or completion
- * stamp: a body answers its caller through the vessel's answer ring (`control-home` `answerRingOf`) and rests nowhere.
+ * stamp: a body answers its caller through the vessel's answer ring (`vessel-state` `answerRingOf`) and rests nowhere.
  *
  * A record that carries no `results` (a copy whose body already left, itself a verdict) keeps the measure it names.
  */

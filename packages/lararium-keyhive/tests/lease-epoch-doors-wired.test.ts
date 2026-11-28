@@ -36,7 +36,7 @@ describe("the lease-epoch fence's wiring", () => {
 
   test("★ operator-daemon-behavior.ts ALSO threads it into the boot-time bootDaemonKeyhive call (Binding Gate door) ★", () => {
     const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
-    expect(src).toMatch(/bindingGateLease\s*=\s*await readLeaseEpoch\(ctx\.control\)/);
+    expect(src).toMatch(/bindingGateLease\s*=\s*await readLeaseEpoch\(ctx\.state\)/);
     expect(src).toMatch(/bindingGateLease\.kind\s*===\s*"epoch"\s*\?\s*\{\s*expectedEpoch:\s*bindingGateLease\.n/);
   });
 
@@ -77,7 +77,7 @@ describe("the lease-epoch fence's wiring", () => {
     const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
     expect(src).toMatch(/readLeaseUnderFace\(control,\s*daemonAuth\.personaGroupId,/);
     expect(src).not.toMatch(/storeOf\(DAEMON_BAG_ID\)/);
-    expect(src).toMatch(/resolveDaemonStore = async \(\) => \{\s*const store = controlLayerOf\(ctx\.control\)/);
+    expect(src).toMatch(/resolveDaemonStore = async \(\) => \{\s*const store = stateLayerOf\(ctx\.state\)/);
   });
 
   test("CONTROL — the assertions are not vacuous: every symbol they grep for is real", () => {

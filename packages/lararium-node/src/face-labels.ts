@@ -169,7 +169,7 @@ export interface KeptDoc {
  * KEEP ONE FACE'S BASES SIDECAR TRUE. `docs()` names the face's working documents as the owner table files them (the slots
  * its group owns, never whichever face stands lit later); each change re-reads every one and rewrites the sidecar where it
  * moved, coalesced to one write per turn. A copy whose base a document has dropped leaves the sidecar with it. `refresh`
- * re-reads the owner table (a slot the control document names later); `stop` lets every document go.
+ * re-reads the owner table (a slot the vessel registry names later); `stop` lets every document go.
  */
 export function keepFaceBases(opts: { readonly relation: string; readonly projections: string; readonly docs: () => readonly KeptDoc[] }): { stop(): void; refresh(): void } {
   let scheduled = false, stopped = false;

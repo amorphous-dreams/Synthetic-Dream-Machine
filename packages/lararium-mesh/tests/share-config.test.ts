@@ -77,11 +77,20 @@ describe("the share config", () => {
   });
 
   test("SC6 — the file wins at boot; with no file nothing moves", () => {
-    const control: ShareEntry[] = [{ slug: "notes", kind: "bag", read: "a", write: "" }, { slug: "old", kind: "bag", read: "*", write: "" }];
+    const state: ShareEntry[] = [{ slug: "notes", kind: "bag", read: "a", write: "" }, { slug: "old", kind: "bag", read: "*", write: "" }];
     const file: ShareEntry[] = [{ slug: "notes", kind: "bag", read: "a b", write: "" }, { slug: "new", kind: "bag", read: "*", write: "" }];
-    const r = reconcileShareEntries(file, control);
+    const r = reconcileShareEntries(file, state);
     expect(r.put.map((x) => x.slug).sort()).toEqual(["new", "notes"]);
     expect(r.remove).toEqual(["$:/config/lares/share/old"]);
-    expect(reconcileShareEntries(null, control)).toEqual({ put: [], remove: [] });
+    expect(reconcileShareEntries(null, state)).toEqual({ put: [], remove: [] });
   });
+});
+
+
+test("unchanged file input after a stored-field round trip produces no second-boot writes", () => {
+  const file = parseShareFile(serializeShareFile([{ slug: "notes", kind: "bag", read: "a", write: "", owner: "face-a", workspace: "notes", note: "a note\n" }]));
+  const initial = reconcileShareEntries(file, []);
+  const standing = initial.put.map(entry => shareEntryOf(shareEntryFields(entry))!);
+  expect(reconcileShareEntries(file, standing)).toEqual({ put: [], remove: [] });
+  expect(reconcileShareEntries(file, [{ ...standing[0]!, owner: "face-b" }]).put).toHaveLength(1);
 });

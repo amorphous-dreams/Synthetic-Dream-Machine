@@ -1,3 +1,4 @@
+import { islandWorkStore } from "@lararium/mesh/vessel-work";
 /**
  * sovereign-kernel — the platform-blind OTP gen_island lifecycle.
  *
@@ -70,8 +71,10 @@ import { islandSecretHome } from "@lararium/mesh/secret-home";
 import { type KahuaStageFace } from "@lararium/mesh/kahua-stage-store";
 import { type Repo, type DocHandle, type AutomergeUrl, type StorageAdapterInterface } from "@lararium/mesh/automerge";
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
-import { controlStoreOf, floorAnswerStore, answerRingOf, ControlHomeUnavailable } from "@lararium/mesh/control-home";
+import { VESSEL_STATE_ID } from "@lararium/mesh/lar-uris";
+import { stateStoreOf, refusingStateStore, VesselStateUnavailable } from "@lararium/mesh/vessel-state";
+import { floorAnswerStore } from "@lararium/mesh/floor-answers";
+import {  answerRingOf } from "@lararium/mesh/answer-ring";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { IslandKernel } from "./island-kernel.js";
 import { waitForSlotDocument } from "./slot-wait.js";
@@ -173,8 +176,10 @@ export function runSovereignKernel(
   /** This island has said `receipt:asks-done`: only then may the vessel's `receipt:close` end its receipts. */
   let _asksDonePosted = false;
   let _composite: CompositeStore | null = null;
-  /** The daemon island's control store (`grants.controlUrl`); null on every wiki island. */
-  let _control: CompositeStore | null = null;
+  /** The daemon island's state store (`grants.stateUrl`); null on every wiki island. */
+  let _state: CompositeStore | null = null;
+  let _work: CompositeStore | null = null;
+  let _workClose: (() => void) | undefined;
   let _ctx:       IslandContext | null  = null;
   let _lazyUnsub: (() => void) | null   = null;
   let _bridgeUnsub: (() => void) | null = null;   // the outbound bridge (Road B) — one listener, cancelled at teardown
@@ -453,26 +458,30 @@ export function runSovereignKernel(
       return librarySlotUrl(slot, msg.grants, catalog ? (s) => libraryDocUrl(catalog, s) : null);
     };
 
-    // THE CONTROL DOCUMENT, an access grant the daemon island alone carries: resolved here and held as its own store, never
-    // laid into the recipe's composite, so no control record reaches the engine's wiki or a mirrored layer.
-    _control = null;
-    if (msg.grants.controlRefusal) {
-      // A LOCKED (or faceless) VESSEL FAILS CLOSED: the island resolves no control document and every control act refuses by name.
-      // The floor still answers the acts that write no control fact: each answer crosses to the vessel's own floor store, the
+    // THE VESSEL STATE DOCUMENT, an access grant the daemon island alone carries: resolved here and held as its own store, never
+    // laid into the recipe's composite, so no state record reaches the engine's wiki or a mirrored layer.
+    _state = null;
+    if (msg.grants.stateRefusal) {
+      // A LOCKED (or faceless) VESSEL FAILS CLOSED: the island resolves no state document and every state act refuses by name.
+      // The floor still answers the acts that write no state fact: each answer crosses to the vessel's own floor store, the
       // memory the verb door waits on, and rests nowhere.
-      _control = floorAnswerStore(new ControlHomeUnavailable("the vessel cannot read its control document now", msg.grants.controlRefusal),
-        (record) => _post(mkDaemonFloorAnswer({ tiddler: { ...record.tiddler }, ...(record.meta ? { meta: { ...record.meta } } : {}) })));
-    } else if (msg.grants.controlUrl) {
-      const controlHandle = await _resolveSlot(_repo, msg.grants.controlUrl, CONTROL_HOME_ID, msg.wikiUri);
-      if (!controlHandle) return;
-      _handles.set(CONTROL_HOME_ID, controlHandle);
-      _control = controlStoreOf(controlHandle);
+      _state = refusingStateStore(new VesselStateUnavailable("the vessel cannot read its state registry now", msg.grants.stateRefusal));
+    } else if (msg.grants.stateUrl) {
+      const stateHandle = await _resolveSlot(_repo, msg.grants.stateUrl, VESSEL_STATE_ID, msg.wikiUri);
+      if (!stateHandle) return;
+      _handles.set(VESSEL_STATE_ID, stateHandle);
+      _state = stateStoreOf(stateHandle);
     }
     // EVERY WHOLE ANSWER CROSSES TO THE VESSEL'S ANSWER RING, floor or not: the island's ring holds each outcome its verbs
     // conclude (`writeOutcome`), and hands it to the vessel's own ring over this message, where the verb door's caller
-    // waits. The control document rests the verdict row alone; the body rides here and rests nowhere.
-    if (_control) {
-      answerRingOf(_control).subscribe((_requestId, record) =>
+    // waits. The state document rests the verdict row alone; the body rides here and rests nowhere.
+    _workClose?.();
+    if (msg.grants.workGranted) {
+      const proxy = islandWorkStore({ post: _post, listen: fn => { let active = true; host.listen(raw => { if (active) fn(raw); }); return () => { active = false; }; } });
+      _work = proxy.store; _workClose = proxy.close;
+    } else _work = floorAnswerStore(new VesselStateUnavailable("no work capability stands", msg.grants.stateRefusal ?? "vessel-state-unavailable"), (record) => _post(mkDaemonFloorAnswer(record)));
+    if (_work) {
+      answerRingOf(_work).subscribe((_requestId, record) =>
         _post(mkDaemonFloorAnswer({ tiddler: { ...record.tiddler }, ...(record.meta ? { meta: { ...record.meta } } : {}) }, true)));
     }
 
@@ -660,7 +669,7 @@ export function runSovereignKernel(
               // reconciling the SAME path boot just walked.
               // The CID plane the kernel already pulls engine/plugin bytes from, lifted to
               // behaviors: a residency handler resolves a carrier body a verb rode by reference.
-              _ctx = { wikiUri: msg.wikiUri, composite: _composite!, ...(_control ? { control: _control } : {}), ...(msg.grants.floorKey ? { floorKey: msg.grants.floorKey } : {}), ...(floorCanon ? { floorCanon } : {}), tw5, handles: _handles, post: _post, requestDrain: () => _adaptor?.requestDrain(), saveBagOf: (title: string) => _adaptor?.saveBagOf(title) ?? null, repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, hearthWorkingUrl: msg.grants.hearthWorkingUrl ?? null, kahuaFace, kahuaFaceWatch, ...(_receipt ? { receipt: _receipt } : {}), catalogUrl, faceCatalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, ...(msg.coreHash ? { bootSet: { engineCid: msg.coreHash, pluginCids: [...(msg.pluginCids ?? [])] } } : {}), diskMirrors: msg.diskMirrors ?? [], ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}), ...secretHomeOf(msg) };
+              _ctx = { wikiUri: msg.wikiUri, composite: _composite!, ...(_state ? { state: _state } : {}), ...(_work ? { work: _work } : {}), ...(msg.grants.floorKey ? { floorKey: msg.grants.floorKey } : {}), ...(floorCanon ? { floorCanon } : {}), tw5, handles: _handles, post: _post, requestDrain: () => _adaptor?.requestDrain(), saveBagOf: (title: string) => _adaptor?.saveBagOf(title) ?? null, repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, hearthWorkingUrl: msg.grants.hearthWorkingUrl ?? null, kahuaFace, kahuaFaceWatch, ...(_receipt ? { receipt: _receipt } : {}), catalogUrl, faceCatalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, ...(msg.coreHash ? { bootSet: { engineCid: msg.coreHash, pluginCids: [...(msg.pluginCids ?? [])] } } : {}), diskMirrors: msg.diskMirrors ?? [], ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}), ...secretHomeOf(msg) };
               // Read-side skinny-handle rehydration: answer TW5's own `lazyLoad` event (fired when
               // `getTiddlerText` meets a bodyless `_is_skinny` tiddler) by pulling the body from the corpus
               // CAS through the SAME resolveByCid shore the kernel already rides for engine/plugin blobs. The
@@ -804,6 +813,7 @@ export function runSovereignKernel(
     _lazyUnsub?.();
     _lazyUnsub = null;
     if (_ctx && behavior) await behavior.onHooAnu(_ctx);
+    _workClose?.(); _workClose = undefined;
     handler.teardown();
 
     // DURABLE FLUSH before ack, for an island that keeps a store of its own (the daemon island): automerge-repo persists

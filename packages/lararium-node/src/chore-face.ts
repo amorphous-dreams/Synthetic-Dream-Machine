@@ -52,7 +52,7 @@ export const FACE_LANE_CHORES: ReadonlySet<string> = new Set(["tiddler-put", "ti
  * face's drain.
  */
 export const CHORE_FREE_WRITES: Readonly<Record<string, string>> = Object.freeze({
-  "realm-feed": "rolls the presenter's lease slot and lands its receipt in the daemon layer",
+  "realm-feed": "rolls the presenter's lease slot in the daemon layer",
 });
 
 /** True for a verb whose one-shot dispatch writes into a face's layers: every chore, and each chore-free write. */

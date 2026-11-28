@@ -298,8 +298,8 @@ export function facePersonalRoot(projectionRoot: string, segment: string): strin
 
 /**
  * The daemon wiki's disk mirror: its working layer, bound to the daemon mount, writes files to `<projections>/faces/<pet name>/wikis/daemon/`.
- * The daemon document and the control document have no mirror: every control family rests in the control document
- * (`control-home`), so placement keeps it off these mirrors.
+ * The daemon document and the state document have no mirror: every state family rests in the state document
+ * (`vessel-state`), so placement keeps it off these mirrors.
  */
 export function daemonWorkingMirror(projectionRoot: string, face: FaceSite): BagMirrorConfig {
   return { bagId: wikiSlotUri("daemon", "working"), mirrorRoot: joinPath(faceRoot(projectionRoot, face.segment), FACE_PLANES.wiki) };
@@ -342,7 +342,7 @@ export type DaemonDiskMirror = BagMirrorConfig & { readonly scope: string };
  * THE DAEMON VM'S DISK MIRRORS, the one list its island receives: the daemon mount's working top (`faces/<pet name>/wikis/daemon`), its
  * daemon canon (`faces/<pet name>/bags/daemon`, where the face's catalog names one), its kahua stage (`faces/<pet name>/bags/kahua`, items
  * sited by title), and the public crossroads bag, split by origin back to its canon source where one stands. The daemon
- * document and the control document have no mirror.
+ * document and the state document have no mirror.
  *
  * `face` names the face the composition wears: its relation from the verified founding record, its segment from its pet name.
  * With no face worn (`null`) the list holds no private mirror at all; a later composition wearing a face mirrors under its root.

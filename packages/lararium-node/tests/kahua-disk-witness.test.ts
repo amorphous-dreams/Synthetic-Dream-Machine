@@ -5,7 +5,7 @@
  * THE LAYOUT (operator ruling, 2026-11-01, revised): the kahua wiki's working top (`wikis/daemon/working`) writes flat
  * files to `<projections>/faces/<pet name>/wikis/daemon`, as every wiki writes its working layer; a lift lands in `bags/kahua`, projected at
  * `<projections>/faces/<pet name>/bags/kahua/<title path>`; the daemon bag (`bags/daemon`) projects its AUTHORED records alone as the
- * daemon wiki's canon (`<projections>/bags/daemon`, operator 2026-11-08), so no control or house record (checkpoint,
+ * daemon wiki's canon (`<projections>/bags/daemon`, operator 2026-11-08), so no state or house record (checkpoint,
  * persona act, cap event, group-secret seal, binding) ever reaches disk, and no `bags/daemon` dir stands while the bag
  * holds nothing authored, under the projections root or the workspace, even with the canon source (`LAR_BAGS`) at a
  * checkout-like tree.
@@ -31,7 +31,7 @@ const WORKING = wikiSlotUri("daemon", "working");
 const TAG = "7b0f6c1e-4a52-4d3b-9c18-2e5a6f0d8b31";
 const SITE = { relation: TAG, segment: "Heron" };
 
-/** One record of each control kind, titled as its writer titles it, every one resting in the daemon bag. */
+/** One record of each state kind, titled as its writer titles it, every one resting in the daemon bag. */
 const CONTROL_RECORDS: readonly string[] = [
   "lar:///ha.ka.ba/dreamnet/face-founding-checkpoint/c0ffee",          // a sealed checkpoint (ceremony-core)
   `${PERSONA_ACT_ENTRY_PREFIX}act-0001`,                               // a persona act
@@ -80,7 +80,7 @@ const daemonBagDirs = (dir: string): string[] =>
   walk(dir).filter((p) => basename(p) === "daemon" && basename(dirname(join(dir, p))) === "bags");
 
 describe("the daemon VM's mirror list names the ruled layout", () => {
-  test("the daemon working top, the kahua stage and crossroads mirror; the control families rest in the unmirrored control document", () => {
+  test("the daemon working top, the kahua stage and crossroads mirror; the state families rest in the unmirrored state document", () => {
     const state = "/house/state";
     const mirrors = daemonDiskMirrors({ projectionRoot: state, canonBags: "/house/workspace/bags-absent", face: SITE });
     expect(mirrors.map((m) => [m.bagId, m.mirrorRoot])).toEqual([
@@ -117,7 +117,7 @@ describe("the kahua disk witnesses", () => {
     expect(existsSync(join(state, "bags", "kahua")), "an untagged stage folder").toBe(false);
   });
 
-  test("(c) no control record and no bags/daemon dir reaches disk, under state or the checkout-like workspace", async () => {
+  test("(c) no state record and no bags/daemon dir reaches disk, under state or the checkout-like workspace", async () => {
     const { projector, state, workspace } = rig();
     for (const title of CONTROL_RECORDS) await projector.flush(DAEMON_BAG_ID, title);
     // The live layers beside it still write, so the silence above reads against projections that run.
@@ -128,18 +128,18 @@ describe("the kahua disk witnesses", () => {
     expect(daemonBagDirs(workspace), "a bags/daemon dir under the workspace").toEqual([]);
     const everything = [...walk(state), ...walk(workspace)];
     for (const leaf of ["face-founding-checkpoint", "persona-act", "cap", "group-secret", "personal-bindings"]) {
-      expect(everything.filter((p) => p.split("/").includes(leaf)), `a control record (${leaf}) on disk`).toEqual([]);
+      expect(everything.filter((p) => p.split("/").includes(leaf)), `a state record (${leaf}) on disk`).toEqual([]);
     }
   });
 
-  test("a control-shaped title projects when this selected mirror holds the record", async () => {
+  test("a state-shaped title projects when this selected mirror holds the record", async () => {
     const { projector, state } = rig();
     await projector.flush(WORKING, `${OUTCOME_URI_PREFIX}req-0001`);
     await projector.flush(WORKING, `${DAEMON_BAG_ID}/flows/couple`);
     await projector.flush(WORKING, "Plain Note");
     const kahua = walk(join(state, "faces", "Heron", "wikis", "daemon"));
     expect(kahua).toContain("Plain Note.tid");
-    expect(kahua).toContain("ha.ka.ba/bags/control/outcomes/req-0001.mem");
+    expect(kahua).toContain("ha.ka.ba/bags/vessel-state/outcomes/req-0001.mem");
     expect(kahua).toContain("ha.ka.ba/bags/daemon/flows/couple.mem");
   });
 

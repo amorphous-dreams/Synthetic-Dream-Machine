@@ -42,7 +42,7 @@ function open() {
     },
   };
   const core = openDaemonVmCore(host, {
-    repo, daemonHandle, controlHandle: repo.create<LarDoc>(emptyLarDoc()), recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null,
+    repo, daemonHandle, stateHandle: repo.create<LarDoc>(emptyLarDoc()), recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null,
     workerScriptUrl: new URL("file:///unused-scripted-island"), eaSilenceMs: 2 ** 30,
   });
   core.workerEa.catch(() => {});
@@ -124,7 +124,7 @@ test("RED: a one-shot line's wiki-act delegate carries the hand the door read; C
       },
     };
     const core = openDaemonVmCore(host, {
-      repo, daemonHandle, controlHandle: repo.create<LarDoc>(emptyLarDoc()), recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null,
+      repo, daemonHandle, stateHandle: repo.create<LarDoc>(emptyLarDoc()), recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null,
       workerScriptUrl: new URL("file:///unused-scripted-island"), eaSilenceMs: 2 ** 30,
     });
     core.workerEa.catch(() => {});

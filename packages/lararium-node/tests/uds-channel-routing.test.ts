@@ -10,7 +10,7 @@
  * dispatcher does) and asserts the content never touches daemon.
  */
 
-import { controlStoreOf } from "@lararium/mesh/control-home";
+import { memoryWorkOf } from "./work-store-fixture.js";
 import { describe, test, expect } from "vitest";
 import { mkdtempSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -74,8 +74,8 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
     const placed: Placed[] = [];
 
     const channel = startUdsChannel({
-      controlHandle: daemonHandle,
-      control: controlStoreOf(daemonHandle),
+      stateHandle: daemonHandle,
+      state: memoryWorkOf(daemonHandle),
       // Stand in for the daemon worker: land the carriers in the TARGET bag (as the
       // dispatcher's executeIngest does via access.write(destBag)), then write the
       // durable outcome into daemon — the ONLY thing daemon's doc ever sees.
@@ -144,7 +144,7 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
     const dir = mkdtempSync(join(tmpdir(), "uds-routing-"));
     const claim = await claimStore(dir, { holder: "vessel" });
     const placed: Placed[] = [];
-    const channel = startUdsChannel({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), placeVerb: (o) => { placed.push(o as Placed); }, claim, repo });
+    const channel = startUdsChannel({ stateHandle: daemonHandle, state: memoryWorkOf(daemonHandle), placeVerb: (o) => { placed.push(o as Placed); }, claim, repo });
     try {
       await waitForSocket(claim.socketPath);
       const sock = createConnection(claim.socketPath);
@@ -175,8 +175,8 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
     const claim = await claimStore(dir, { holder: "vessel" });
     const placed: Placed[] = [];
     const channel = startUdsChannel({
-      controlHandle: daemonHandle,
-      control: controlStoreOf(daemonHandle),
+      stateHandle: daemonHandle,
+      state: memoryWorkOf(daemonHandle),
       placeVerb: (o) => {
         placed.push(o as Placed);
         const outcome = concludeVerb({
@@ -215,7 +215,7 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
       const dir = mkdtempSync(join(tmpdir(), "uds-routing-"));
       const claim = await claimStore(dir, { holder: "vessel" });
       const placed: Placed[] = [];
-      const channel = startUdsChannel({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), placeVerb: (o) => { placed.push(o as Placed); }, claim, repo });
+      const channel = startUdsChannel({ stateHandle: daemonHandle, state: memoryWorkOf(daemonHandle), placeVerb: (o) => { placed.push(o as Placed); }, claim, repo });
       try {
         await waitForSocket(claim.socketPath);
         Date.now = () => realNow() + skewMs; // a set-back or a set-forward device clock
@@ -240,7 +240,7 @@ describe("uds-channel — carriers bypass the daemon doc (co-located routing)", 
     const claim = await claimStore(dir, { holder: "vessel" });
     try {
       const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
-      const channel = startUdsChannel({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), placeVerb: () => { /* none */ }, claim, repo });
+      const channel = startUdsChannel({ stateHandle: daemonHandle, state: memoryWorkOf(daemonHandle), placeVerb: () => { /* none */ }, claim, repo });
       channel.close();
       const answer = await sendInvocation(claim.socketPath, { verb: "act", args: {}, requestedBy: "did:key:test-operator" });
       expect(answer["status"]).toBe("error");

@@ -1,12 +1,12 @@
 /**
- * uds-outcome-in-control-home — a CLI verb's answer reads off the outcome ledger where the island writes it: the vessel's
- * control document (`control-home`), which no recipe composes and no mirror names. The daemon wiki's working slot
+ * uds-outcome-in-vessel-work — a CLI verb's answer reads off the outcome ledger where the island writes it: the vessel's
+ * work store (`vessel-work`), which no recipe composes and no mirror names. The daemon wiki's working slot
  * (mirrored at `wikis/daemon-<F>`) and the daemon document rest no outcome body.
  *
- *   O1 — RED: the island lands the outcome in the control document a beat after the verb went out; the channel answers
+ *   O1 — RED: the island lands the outcome in the work store a beat after the verb went out; the channel answers
  *        it, and neither the working slot nor the daemon document holds an outcome body
  *   O2 — CONTROL: an outcome that already stands answers a re-asked id with no second placement
- *   O3 — the main thread's own island ask (`askIslandVerb`) answers off the control store alike
+ *   O3 — the main thread's own island ask (`askIslandVerb`) answers off the state store alike
  */
 import { describe, test, expect } from "vitest";
 import { mkdtempSync, existsSync, rmSync } from "node:fs";
@@ -16,7 +16,8 @@ import { createConnection } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { concludeVerb, OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX, type Verb } from "@lararium/mesh/verb-tiddler";
-import { answerRingOf, controlStoreOf } from "@lararium/mesh/control-home";
+import { memoryWorkOf, reopenWorkOf } from "./work-store-fixture.js";
+import { answerRingOf } from "@lararium/mesh/answer-ring";
 import type { CompositeStore } from "@lararium/mesh/composite-store";
 import type { CallTouches } from "@lararium/mesh/call-touches";
 import { writeOutcome } from "@lararium/tw5";
@@ -28,13 +29,13 @@ function stand() {
   const repo = new Repo({ sharePolicy: async () => true });
   const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
   const workingHandle = repo.create<LarDoc>(emptyLarDoc());
-  const controlHandle = repo.create<LarDoc>(emptyLarDoc());
-  const control = controlStoreOf(controlHandle);
-  /** The island's write: the outcome lands in the control store, the control document. */
+  const stateHandle = repo.create<LarDoc>(emptyLarDoc());
+  const state = memoryWorkOf(stateHandle);
+  /** The island's write: the outcome lands in the state store, the work store. */
   const conclude = (requestId: string, verb: string, output: Record<string, unknown>): Promise<void> =>
-    control.put(concludeVerb({ requestId, verb, status: "done", cause: "test-island", batchMode: "best-effort", results: { summary: { ok: true, output } } }),
+    state.put(concludeVerb({ requestId, verb, status: "done", cause: "test-island", batchMode: "best-effort", results: { summary: { ok: true, output } } }),
       { kind: "lares-verb", requestId });
-  return { repo, daemonHandle, workingHandle, controlHandle, control, conclude };
+  return { repo, daemonHandle, workingHandle, stateHandle, state, conclude };
 }
 
 function send(socketPath: string, inv: unknown): Promise<Record<string, unknown>> {
@@ -60,14 +61,14 @@ async function socketAt(path: string): Promise<void> {
 const outcomeTitles = (handle: { doc(): LarDoc | undefined }): string[] =>
   Object.keys(handle.doc()?.tiddlers ?? {}).filter((t) => t.startsWith(OUTCOME_URI_PREFIX));
 
-describe("a verb's answer reads off the outcome ledger in the control document", () => {
-  test("O1/O2 — the channel answers an outcome the island lands in the control document late, and re-answers it with no second placement", async () => {
+describe("a verb's answer reads off the outcome ledger in the work store", () => {
+  test("O1/O2 — the channel answers an outcome the island lands in the work store late, and re-answers it with no second placement", async () => {
     const s = stand();
     const dir = mkdtempSync(join(tmpdir(), "uds-outcome-slot-"));
     const claim = await claimStore(dir, { holder: "vessel" });
     let placed = 0;
     const channel = startUdsChannel({
-      controlHandle: s.controlHandle, control: s.control, claim, repo: s.repo, timeoutMs: 3_000,
+      stateHandle: s.stateHandle, state: s.state, claim, repo: s.repo, timeoutMs: 3_000,
       // The island answers a beat after the verb reached it, as a real verb does.
       placeVerb: (o) => { placed += 1; setTimeout(() => { void s.conclude(o.requestId, o.verb, { body: "private-heron" }); }, 50); },
     });
@@ -76,7 +77,7 @@ describe("a verb's answer reads off the outcome ledger in the control document",
       const answer = await send(claim.socketPath, { verb: "get", args: {}, requestedBy: "did:key:test-operator", requestId: "req-slot-1" });
       expect(answer["status"], JSON.stringify(answer)).toBe("done");
       expect(JSON.stringify(answer["results"])).toContain("private-heron");
-      expect(outcomeTitles(s.controlHandle), "the outcome rests in the control document").toEqual([`${OUTCOME_URI_PREFIX}req-slot-1`]);
+      expect((await s.state.listVisible()).filter(title => title.startsWith(OUTCOME_URI_PREFIX)), "the outcome rests in the work store").toEqual([`${OUTCOME_URI_PREFIX}req-slot-1`]);
       expect(outcomeTitles(s.workingHandle), "the mirrored working slot rests no outcome").toEqual([]);
       expect(outcomeTitles(s.daemonHandle), "the daemon document rests no outcome").toEqual([]);
       // O2 CONTROL: the stood outcome answers a re-asked id, and the verb never runs twice.
@@ -90,13 +91,13 @@ describe("a verb's answer reads off the outcome ledger in the control document",
     }
   });
 
-  test("O3 — the main thread's own ask answers off the control store", async () => {
+  test("O3 — the main thread's own ask answers off the state store", async () => {
     const s = stand();
     const ask = askIslandVerb({
-      control: s.control, verb: "seat-duties", args: {}, requestedBy: "0xvessel", requestId: "req-slot-ask",
+      state: s.state, verb: "seat-duties", args: {}, requestedBy: "0xvessel", requestId: "req-slot-ask",
       placeVerb: (o) => { setTimeout(() => { void s.conclude(o.requestId, o.verb, { ran: true }); }, 50); },
     });
-    const out = await Promise.race([ask.answer, new Promise((_, reject) => setTimeout(() => reject(new Error("the ask never answered off the control store")), 3_000))]);
+    const out = await Promise.race([ask.answer, new Promise((_, reject) => setTimeout(() => reject(new Error("the ask never answered off the state store")), 3_000))]);
     expect(out).toEqual({ ran: true });
     expect(outcomeTitles(s.daemonHandle)).toEqual([]);
   });
@@ -104,8 +105,8 @@ describe("a verb's answer reads off the outcome ledger in the control document",
 
 // ── the outcome ledger diet (lar:///ha.ka.ba/kahua/memory/plan/outcome-ledger-diet, steps 1 and 2) ──────────────────
 //
-// These proofs run the island's own `writeOutcome` behind the door: the verdict row lands in the control document and
-// the whole answer in the control store's answer ring, exactly as a vessel's island writes them.
+// These proofs run the island's own `writeOutcome` behind the door: the verdict row lands in the work store and
+// the whole answer in the state store's answer ring, exactly as a vessel's island writes them.
 
 type Placed = { requestId: string; verb: string; args: Record<string, unknown>; requestedBy: string; effectKey?: string; face?: string };
 const invocationOf = (o: Placed): Verb => ({
@@ -114,20 +115,20 @@ const invocationOf = (o: Placed): Verb => ({
   ...(o.effectKey !== undefined ? { effectKey: o.effectKey } : {}), ...(o.face !== undefined ? { face: o.face } : {}),
 } as unknown as Verb);
 /** The island concludes one placed verb as done, with `result` and the change report `touched` (empty: it changed nothing). */
-const islandConcludes = (control: CompositeStore, o: Placed, result: Record<string, unknown>, touched: CallTouches = {}): Promise<void> =>
-  writeOutcome(control, { invocation: invocationOf(o), status: "done", result, touched });
-const titlesUnder = (handle: { doc(): LarDoc | undefined }, prefix: string): string[] =>
-  Object.keys(handle.doc()?.tiddlers ?? {}).filter((t) => t.startsWith(prefix));
+const islandConcludes = (state: CompositeStore, o: Placed, result: Record<string, unknown>, touched: CallTouches = {}): Promise<void> =>
+  writeOutcome(state, { invocation: invocationOf(o), status: "done", result, touched });
+const titlesUnder = async (store: CompositeStore, prefix: string): Promise<string[]> =>
+  (await store.listVisible()).filter(title => title.startsWith(prefix));
 const eventually = async (what: () => boolean, label: string): Promise<void> => {
   for (let i = 0; i < 200; i++) { if (what()) return; await new Promise((r) => setTimeout(r, 10)); }
   throw new Error(`never: ${label}`);
 };
 
-async function doorOver(s: ReturnType<typeof stand>, control: CompositeStore, island: (o: Placed) => void, dir = mkdtempSync(join(tmpdir(), "uds-ledger-diet-"))) {
+async function doorOver(s: ReturnType<typeof stand>, state: CompositeStore, island: (o: Placed) => void, dir = mkdtempSync(join(tmpdir(), "uds-ledger-diet-"))) {
   const claim = await claimStore(dir, { holder: "vessel" });
   const lines: string[] = [];
   const channel = startUdsChannel({
-    controlHandle: s.controlHandle, control, claim, repo: s.repo, timeoutMs: 3_000, onLog: (line) => lines.push(line),
+    stateHandle: s.stateHandle, state, claim, repo: s.repo, timeoutMs: 3_000, onLog: (line) => lines.push(line),
     placeVerb: (o) => island(o as unknown as Placed),
   });
   await socketAt(claim.socketPath);
@@ -138,14 +139,14 @@ describe("step 1 — reads leave the ledger alone", () => {
   test("RED: a read leaves no fact and no outcome row; the same id with the same input answers the held answer and places nothing; a changed input refuses by name", async () => {
     const s = stand();
     let placed = 0;
-    const door = await doorOver(s, s.control, (o) => { placed += 1; setTimeout(() => { void islandConcludes(s.control, o, { now: "heron-day" }); }, 20); });
+    const door = await doorOver(s, s.state, (o) => { placed += 1; setTimeout(() => { void islandConcludes(s.state, o, { now: "heron-day" }); }, 20); });
     try {
       const read = { verb: "ddate", args: { of: "today" }, requestedBy: "did:key:test-operator", requestId: "read-1" };
       const first = await send(door.socketPath, read);
       expect(first["status"], JSON.stringify(first)).toBe("done");
       expect(JSON.stringify(first["results"])).toContain("heron-day");
-      expect(titlesUnder(s.controlHandle, RECEIPT_FACT_URI_PREFIX), "no receipt fact").toEqual([]);
-      expect(titlesUnder(s.controlHandle, OUTCOME_URI_PREFIX), "no outcome row").toEqual([]);
+      expect(await titlesUnder(s.state, RECEIPT_FACT_URI_PREFIX), "no receipt fact").toEqual([]);
+      expect(await titlesUnder(s.state, OUTCOME_URI_PREFIX), "no outcome row").toEqual([]);
       // SAME ID, SAME DIGEST: the held answer reads back; the island hears nothing.
       const again = await send(door.socketPath, read);
       expect(again["status"]).toBe("done");
@@ -157,13 +158,13 @@ describe("step 1 — reads leave the ledger alone", () => {
       expect(changed["refusal"]).toEqual({ reason: "request-id-reused-with-changed-input" });
       expect(String(changed["errorMessage"])).toContain("mint a fresh request id");
       expect(placed).toBe(1);
-      expect(titlesUnder(s.controlHandle, RECEIPT_FACT_URI_PREFIX), "the re-asks wrote no fact either").toEqual([]);
+      expect(await titlesUnder(s.state, RECEIPT_FACT_URI_PREFIX), "the re-asks wrote no fact either").toEqual([]);
       // A receipt for the read answers from the ring too.
       const receipt = await send(door.socketPath, { op: "receipt", requestId: "read-1" });
       expect(receipt["state"]).toBe("done");
       expect(JSON.stringify(receipt)).toContain("heron-day");
       // PAST THE RING the read runs afresh, which changes nothing.
-      answerRingOf(s.control).clear();
+      answerRingOf(s.state).clear();
       const afresh = await send(door.socketPath, read);
       expect(afresh["status"]).toBe("done");
       expect(placed).toBe(2);
@@ -173,7 +174,7 @@ describe("step 1 — reads leave the ledger alone", () => {
   test("RED: a same-id read asked while the first runs joins its wait: one placement, two answers", async () => {
     const s = stand();
     let placed = 0;
-    const door = await doorOver(s, s.control, (o) => { placed += 1; setTimeout(() => { void islandConcludes(s.control, o, { now: "slow-heron" }); }, 150); });
+    const door = await doorOver(s, s.state, (o) => { placed += 1; setTimeout(() => { void islandConcludes(s.state, o, { now: "slow-heron" }); }, 150); });
     try {
       const read = { verb: "ddate", args: {}, requestedBy: "did:key:test-operator", requestId: "read-join" };
       const [a, b] = await Promise.all([send(door.socketPath, read), new Promise((r) => setTimeout(r, 40)).then(() => send(door.socketPath, read))]);
@@ -187,7 +188,7 @@ describe("step 1 — reads leave the ledger alone", () => {
   test("RED: a visit's body answers its caller once; a same-id re-ask reads it withheld from the ring", async () => {
     const s = stand();
     let placed = 0;
-    const door = await doorOver(s, s.control, (o) => { placed += 1; setTimeout(() => { void islandConcludes(s.control, o, { visit: true, face: 1, tiddler: { text: "sibling-secret" } }); }, 20); });
+    const door = await doorOver(s, s.state, (o) => { placed += 1; setTimeout(() => { void islandConcludes(s.state, o, { visit: true, face: 1, tiddler: { text: "sibling-secret" } }); }, 20); });
     try {
       const read = { verb: "ddate", args: { of: "a-sibling" }, requestedBy: "did:key:test-operator", requestId: "read-visit" };
       expect(JSON.stringify(await send(door.socketPath, read))).toContain("sibling-secret");
@@ -202,52 +203,52 @@ describe("step 1 — reads leave the ledger alone", () => {
 
   test("RED: a read whose change report comes back non-empty lands a verdict row and a done fact after the fact, and the seat says read-verb-wrote; CONTROL: a write keeps its fact and its row", async () => {
     const s = stand();
-    const door = await doorOver(s, s.control, (o) => { setTimeout(() => { void islandConcludes(s.control, o, { now: "x" }, o.verb === "ddate" ? { "doc-it-wrote": ["head-1"] } : {}); }, 20); });
+    const door = await doorOver(s, s.state, (o) => { setTimeout(() => { void islandConcludes(s.state, o, { now: "x" }, o.verb === "ddate" ? { "doc-it-wrote": ["head-1"] } : {}); }, 20); });
     try {
       const wrote = await send(door.socketPath, { verb: "ddate", args: {}, requestedBy: "did:key:test-operator", requestId: "read-wrote" });
       expect(wrote["status"]).toBe("done");
-      expect(titlesUnder(s.controlHandle, OUTCOME_URI_PREFIX)).toEqual([`${OUTCOME_URI_PREFIX}read-wrote`]);
+      expect(await titlesUnder(s.state, OUTCOME_URI_PREFIX)).toEqual([`${OUTCOME_URI_PREFIX}read-wrote`]);
       expect(door.lines.some((line) => line.includes("read-verb-wrote") && line.includes("ddate"))).toBe(true);
-      await eventually(() => titlesUnder(s.controlHandle, RECEIPT_FACT_URI_PREFIX).includes(`${RECEIPT_FACT_URI_PREFIX}read-wrote`), "the done fact minted after the fact");
+      await eventually(() => await titlesUnder(s.state, RECEIPT_FACT_URI_PREFIX).includes(`${RECEIPT_FACT_URI_PREFIX}read-wrote`), "the done fact minted after the fact");
       // CONTROL: a verb outside the read set rides the ledger as before.
       const write = await send(door.socketPath, { verb: "get", args: {}, requestedBy: "did:key:test-operator", requestId: "write-1" });
       expect(write["status"]).toBe("done");
-      expect(titlesUnder(s.controlHandle, RECEIPT_FACT_URI_PREFIX)).toContain(`${RECEIPT_FACT_URI_PREFIX}write-1`);
-      expect(titlesUnder(s.controlHandle, OUTCOME_URI_PREFIX)).toContain(`${OUTCOME_URI_PREFIX}write-1`);
+      expect(await titlesUnder(s.state, RECEIPT_FACT_URI_PREFIX)).toContain(`${RECEIPT_FACT_URI_PREFIX}write-1`);
+      expect(await titlesUnder(s.state, OUTCOME_URI_PREFIX)).toContain(`${OUTCOME_URI_PREFIX}write-1`);
     } finally { await door.close(); }
   });
 });
 
 describe("step 2 — the verdict row rests, the answer rides the ring", () => {
   const rowOf = (s: ReturnType<typeof stand>, requestId: string): Record<string, unknown> =>
-    JSON.parse(JSON.stringify(s.controlHandle.doc()?.tiddlers[`${OUTCOME_URI_PREFIX}${requestId}`] ?? null)) as Record<string, unknown>;
+    JSON.parse(JSON.stringify(s.stateHandle.doc()?.tiddlers[`${OUTCOME_URI_PREFIX}${requestId}`] ?? null)) as Record<string, unknown>;
 
   test("RED: the durable row holds no results and the live answer rides whole; a re-ask over a fresh channel on the same document answers done + result-sha256 + a released body and places nothing", async () => {
     const s = stand();
     let placed = 0;
-    const island = (control: CompositeStore) => (o: Placed) => { placed += 1; setTimeout(() => { void islandConcludes(control, o, { body: "private-heron" }, { "doc-a": ["h1"] }); }, 20); };
+    const island = (state: CompositeStore) => (o: Placed) => { placed += 1; setTimeout(() => { void islandConcludes(state, o, { body: "private-heron" }, { "doc-a": ["h1"] }); }, 20); };
     const write = { verb: "get", args: { n: 1 }, requestedBy: "did:key:test-operator", requestId: "diet-1" };
-    const door = await doorOver(s, s.control, island(s.control));
+    const door = await doorOver(s, s.state, island(s.state));
     let sha = "";
     try {
       const live = await send(door.socketPath, write);
       expect(live["status"], JSON.stringify(live)).toBe("done");
       expect(JSON.stringify(live["results"]), "the live answer rides whole").toContain("private-heron");
       const stored = JSON.stringify(rowOf(s, "diet-1"));
-      expect(stored, "the control document rests no body").not.toContain("private-heron");
+      expect(stored, "the work store rests no body").not.toContain("private-heron");
       expect(stored).not.toContain("results");
       expect(stored).not.toContain("touched");
       expect(stored).not.toContain("\"cause\"");
       expect(stored).toContain("result-sha256");
-      sha = String((await s.control.get(`${OUTCOME_URI_PREFIX}diet-1`))?.tiddler["result-sha256"]);
+      sha = String((await s.state.get(`${OUTCOME_URI_PREFIX}diet-1`))?.tiddler["result-sha256"]);
       expect(sha).toMatch(/^[0-9a-f]{64}$/);
       // Inside the same vessel life a re-ask reads the ring: the body whole, no second placement.
       const again = await send(door.socketPath, write);
       expect(JSON.stringify(again["results"])).toContain("private-heron");
       expect(placed).toBe(1);
     } finally { await door.close(true); }
-    // A RESTART: a fresh control store over the same document, so a fresh, empty answer ring.
-    const control2 = controlStoreOf(s.controlHandle);
+    // A RESTART: a fresh state store over the same document, so a fresh, empty answer ring.
+    const control2 = reopenWorkOf(s.stateHandle);
     const door2 = await doorOver(s, control2, island(control2), door.dir);
     try {
       const reasked = await send(door2.socketPath, write);
@@ -265,12 +266,12 @@ describe("step 2 — the verdict row rests, the answer rides the ring", () => {
 
   test("RED: a visit's verdict row carries the flag and no body: across a restart the re-ask reads withheld, never a released hash", async () => {
     const s = stand();
-    const island = (control: CompositeStore) => (o: Placed) => { setTimeout(() => { void islandConcludes(control, o, { visit: true, face: 1, tiddler: { text: "sibling-secret" } }); }, 20); };
+    const island = (state: CompositeStore) => (o: Placed) => { setTimeout(() => { void islandConcludes(state, o, { visit: true, face: 1, tiddler: { text: "sibling-secret" } }); }, 20); };
     const visit = { verb: "get", args: { target: 1 }, requestedBy: "did:key:test-operator", requestId: "diet-visit" };
-    const door = await doorOver(s, s.control, island(s.control));
+    const door = await doorOver(s, s.state, island(s.state));
     try { expect(JSON.stringify(await send(door.socketPath, visit))).toContain("sibling-secret"); } finally { await door.close(true); }
     expect(JSON.stringify(rowOf(s, "diet-visit"))).not.toContain("sibling-secret");
-    const control2 = controlStoreOf(s.controlHandle);
+    const control2 = reopenWorkOf(s.stateHandle);
     const door2 = await doorOver(s, control2, island(control2), door.dir);
     try {
       const reasked = await send(door2.socketPath, visit);
@@ -285,16 +286,16 @@ describe("step 2 — the verdict row rests, the answer rides the ring", () => {
     const s = stand();
     const within = <T,>(p: Promise<T>): Promise<T> => Promise.race([p, new Promise<never>((_, reject) => setTimeout(() => reject(new Error("the ask never settled on the answer")), 3_000))]);
     const ledgered = askIslandVerb({
-      control: s.control, verb: "seat-duties", args: {}, requestedBy: "0xvessel", requestId: "ask-ledgered",
-      placeVerb: (o) => { setTimeout(() => { void islandConcludes(s.control, o as Placed, { ran: true }); }, 20); },
+      state: s.state, verb: "seat-duties", args: {}, requestedBy: "0xvessel", requestId: "ask-ledgered",
+      placeVerb: (o) => { setTimeout(() => { void islandConcludes(s.state, o as Placed, { ran: true }); }, 20); },
     });
     expect(await within(ledgered.answer)).toEqual({ ran: true });
-    expect(titlesUnder(s.controlHandle, OUTCOME_URI_PREFIX)).toEqual([`${OUTCOME_URI_PREFIX}ask-ledgered`]);
+    expect(await titlesUnder(s.state, OUTCOME_URI_PREFIX)).toEqual([`${OUTCOME_URI_PREFIX}ask-ledgered`]);
     const read = askIslandVerb({
-      control: s.control, verb: "wiki-status", args: {}, requestedBy: "0xvessel", requestId: "ask-read",
-      placeVerb: (o) => { setTimeout(() => { void islandConcludes(s.control, o as Placed, { wikis: 3 }); }, 20); },
+      state: s.state, verb: "wiki-status", args: {}, requestedBy: "0xvessel", requestId: "ask-read",
+      placeVerb: (o) => { setTimeout(() => { void islandConcludes(s.state, o as Placed, { wikis: 3 }); }, 20); },
     });
     expect(await within(read.answer)).toEqual({ wikis: 3 });
-    expect(titlesUnder(s.controlHandle, OUTCOME_URI_PREFIX), "the read landed no row").toEqual([`${OUTCOME_URI_PREFIX}ask-ledgered`]);
+    expect(await titlesUnder(s.state, OUTCOME_URI_PREFIX), "the read landed no row").toEqual([`${OUTCOME_URI_PREFIX}ask-ledgered`]);
   });
 });

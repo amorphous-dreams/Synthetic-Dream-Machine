@@ -37,7 +37,7 @@ import { readRealmBoardFrontiers, holderHand } from "@lararium/mesh/realm-fronti
 import { readFrontierPins, writeFrontierPin } from "@lararium/mesh/edge-frontier-board";
 import { type AdmissionDials } from "@lararium/mesh/admission-price";
 import { ownEntry } from "@lararium/mesh/stored-value";
-import { readControlHome } from "@lararium/mesh/control-home";
+import { readVesselState } from "@lararium/mesh/vessel-state";
 import { type LarDoc } from "@lararium/mesh/base-doc";
 import { admitOnLineage, type LineageAdmission } from "../realm-admission.js";
 import { larBootstrapPath } from "../vessel-paths.js";
@@ -286,10 +286,10 @@ export async function runCabalJoin(
       const lineage = realmNexus === null ? null : leaseLineageOfNexus(opts.sealHome, realmNexus);
       // A realm whose charter this vessel cannot verify reads no fence: a refusal still narrows, and only an admission waits on it (below).
       epochUnreadable = lineage === null && opts.epoch === undefined;
-      // THE LEASE SLOTS REST IN THE CONTROL DOCUMENT, read through the vessel's own stand (the custody row first, the key
-      // stood before a byte reads). M16 holds there too: a control document unnamed or unread never prices at genesis.
-      let control: LarDoc | undefined;
-      try { control = (await readControlHome(repo, dh)).doc(); }
+      // THE LEASE SLOTS REST IN THE VESSEL STATE DOCUMENT, read through the vessel's own stand (the custody row first, the key
+      // stood before a byte reads). M16 holds there too: a state document unnamed or unread never prices at genesis.
+      let state: LarDoc | undefined;
+      try { state = (await readVesselState(repo, dh)).doc(); }
       catch (e) {
         if (opts.epoch === undefined) {
           throw new CabalJoinError(
@@ -298,7 +298,7 @@ export async function runCabalJoin(
           );
         }
       }
-      if (control !== undefined) boardEpoch = cabalAdmissionEpoch(control, realm, lineage);
+      if (state !== undefined) boardEpoch = cabalAdmissionEpoch(state, realm, lineage);
     } else if (opts.epoch === undefined) {
       throw new CabalJoinError(
         "incomplete-view: this vessel cannot read the realm's lease fence (its daemon doc is unreadable), " +

@@ -85,7 +85,7 @@ describe.skipIf(wikiSkip)(`the island admits a disk wave by placement alone${ski
 
     const foreign = { ...valid, "to-bag": BAG_B, "change-id": "chg-place-b" };
     await expect(r.table.get("INGEST")!(foreign, ctx(r.composite, foreign))).rejects.toMatchObject({ code: "disk-wave-placement" });
-    for (const [home, changeId] of [["lar:///ha.ka.ba/bags/control", "chg-place-control"], ["lar:///ha.ka.ba/bags/secret", "chg-place-secret"]] as const) {
+    for (const [home, changeId] of [["lar:///ha.ka.ba/bags/vessel-state", "chg-place-state"], ["lar:///ha.ka.ba/bags/secret", "chg-place-secret"]] as const) {
       const privateHome = { ...valid, "to-bag": home, "change-id": changeId };
       await expect(r.table.get("INGEST")!(privateHome, ctx(r.composite, privateHome))).rejects.toMatchObject({ code: "disk-wave-placement" });
     }

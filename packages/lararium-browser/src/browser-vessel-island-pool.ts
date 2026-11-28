@@ -44,6 +44,8 @@ export interface BrowserVesselIslandPoolOptions {
   workerScriptUrl?: URL;
   /** Vessel Automerge Repo — each island's mainPort wires to it for CRDT sync. */
   mainRepo?: Repo;
+  /** The vessel retains request decisions for every receiving island. */
+  work?: import("@lararium/mesh/composite-store").CompositeStore;
   portPolicy?: PortPolicy;
   onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
   onPortDrop?: (islandKey: string, type: string, reason: "no-port-lease") => void;
@@ -96,6 +98,7 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
         awaitReady: true,
       },
       mainRepo: opts.mainRepo ?? null,
+      ...(opts.work ? { work: opts.work } : {}),
       // The vessel's content store, as a session island's scoped view reads it: the origin's OPFS plane.
       readContent: (cid) => readCasBlobFromOpfs(cid),
       ...(opts.onWorkerEvent ? { onWorkerEvent: opts.onWorkerEvent } : {}),

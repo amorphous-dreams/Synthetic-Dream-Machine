@@ -77,7 +77,7 @@ import { sha256HexBytesSync, carrierHash } from "@lararium/mesh/crypto";
 import { digestsEqual } from "@lararium/mesh/agile-digest";
 import { emptyLarDoc } from "@lararium/mesh/base-doc";
 import { storedLarRecord } from "@lararium/mesh/stored-record";
-import { CATALOG_DOC_URI, ORACLE_DOC_URI, CONTROL_HOME_ID, SECRET_HOME_ID } from "@lararium/mesh/lar-uris";
+import { CATALOG_DOC_URI, ORACLE_DOC_URI, VESSEL_STATE_ID, SECRET_HOME_ID } from "@lararium/mesh/lar-uris";
 import {
   ORIGINAL_TIDDLER_PATHS,
   parseProvenance,
@@ -255,7 +255,7 @@ export const LOAD_YIELD_QUANTUM = 25;
 
 /**
  * THE FACE-NAMED WAVE'S TARGET (the lit set). The island resolves the named face's own document for `bag` (its daemon working
- * slot by its address secret, its daemon canon by the control document), and reads which face the vessel's device table
+ * slot by its address secret, its daemon canon by the state document), and reads which face the vessel's device table
  * names as that document's OWNER within the lit set. `face: null` asks after the daemon mount's own target. A target that
  * resolves to no document answers `null`.
  */
@@ -640,8 +640,8 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     // a base the gate would trust, so it lands only from a person's line (`take-disk` and `keep-disk` ride exactly such a wave).
     // From any other asker, and whatever the frame says of itself, THAT carrier answers `conflict` and the rest of the wave lands.
     if (action.verb === "INGEST" && askerRefusal(ctx.asker) !== null) holdStandoffsForHand(action);
-    if (action.verb === "LOAD" && (action.toBag === CONTROL_HOME_ID || action.toBag === SECRET_HOME_ID)) {
-      throw new VerbRefusal("private-home-load", "private-home-load: LOAD cannot target the control or secret home; land through a working layer");
+    if (action.verb === "LOAD" && (action.toBag === VESSEL_STATE_ID || action.toBag === SECRET_HOME_ID)) {
+      throw new VerbRefusal("private-home-load", "private-home-load: LOAD cannot target the state or secret home; land through a working layer");
     }
 
     // HOUSE CANON NEVER MINTS. A CREATE over a house canon bag writes nothing: the Kahu realm holds its one live document

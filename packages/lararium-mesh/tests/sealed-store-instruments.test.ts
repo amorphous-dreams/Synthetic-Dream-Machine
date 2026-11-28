@@ -16,7 +16,7 @@ import { faceProofSubjectRef } from "../src/face-proof-subjects.js";
 import { composeSealedRest } from "../src/sealed-rest.js";
 import { mintHeldRestKey } from "../src/held-rest-key.js";
 import { vesselHeldHomes } from "../src/secret-home.js";
-import { CONTROL_HOME_ID } from "../src/lar-uris.js";
+import { VESSEL_STATE_ID } from "../src/lar-uris.js";
 import { vessel, world } from "./content-key-fixture.js";
 
 const BAG = "lar:///ha.ka.ba/@test/bags/garden-notes";
@@ -80,11 +80,11 @@ describe("a vessel-held home whose key has not opened refuses `holder-locked`, a
     const open = vesselHeldHomes();
     const writing = composeSealedRest({ inner, bagOf: (id) => open.bagOf(id) as never, sessionFace: () => null, door: { seal: async () => { throw new Error("no"); }, open: async () => { throw new Error("no"); } }, flushRepo: async () => {} });
     const repo = new Repo({ storage: writing.store, network: [] });
-    const doc = repo.create<{ note?: string }>({ note: "control rows" });
+    const doc = repo.create<{ note?: string }>({ note: "state rows" });
     const openRest = open.rest(async () => false);
     openRest.enroll("secret-home-of-the-test", key);
-    openRest.enrollBeside?.(doc.documentId, CONTROL_HOME_ID);
-    doc.change((d) => { d.note = "control rows, sealed"; });
+    openRest.enrollBeside?.(doc.documentId, VESSEL_STATE_ID);
+    doc.change((d) => { d.note = "state rows, sealed"; });
     await repo.flush();
     await repo.shutdown();
     return { inner, key, documentId: doc.documentId, url: doc.url };
@@ -93,7 +93,7 @@ describe("a vessel-held home whose key has not opened refuses `holder-locked`, a
   it("a store that does not hydrate refuses a locked home's load at once, by name", async () => {
     const { inner, documentId } = await standHome();
     const homes = vesselHeldHomes();
-    homes.rest(async () => true).enrollBeside?.(documentId, CONTROL_HOME_ID);
+    homes.rest(async () => true).enrollBeside?.(documentId, VESSEL_STATE_ID);
     const rest = composeSealedRest({ inner, bagOf: (id) => homes.bagOf(id) as never, sessionFace: () => null, door: { seal: async () => { throw new Error("no"); }, open: async () => { throw new Error("no"); } }, flushRepo: async () => {} });
     const chunks = await inner.loadRange([documentId]);
     expect(chunks.length).toBeGreaterThan(0);
@@ -113,14 +113,14 @@ describe("a vessel-held home whose key has not opened refuses `holder-locked`, a
       onHydrationWait: (w: { documentId: string; refusal: string; bagId: string | null }) => waits.push(w),
     });
     moved = () => rest.store.mapMoved();
-    homeRest.enrollBeside?.(documentId, CONTROL_HOME_ID);
+    homeRest.enrollBeside?.(documentId, VESSEL_STATE_ID);
     const chunks = await inner.loadRange([documentId]);
     const first = rest.store.load(chunks[0]!.key);
     const second = rest.store.load(chunks[0]!.key);
     expect(await settledWithin(first), "the load waits while the key stays shut").toBe(unsettled);
     moved();
     expect(await settledWithin(second)).toBe(unsettled);
-    expect(waits, "named once for the document, with its refusal and its bag").toEqual([{ documentId, refusal: "holder-locked", bagId: CONTROL_HOME_ID }]);
+    expect(waits, "named once for the document, with its refusal and its bag").toEqual([{ documentId, refusal: "holder-locked", bagId: VESSEL_STATE_ID }]);
     // THE KEY OPENS (custody unlocked): the secret home's enroll stands the vessel's key, and the map moves.
     homeRest.enroll("secret-home-of-the-test", key);
     moved();

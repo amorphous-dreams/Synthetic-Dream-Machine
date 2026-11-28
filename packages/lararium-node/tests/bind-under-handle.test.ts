@@ -23,7 +23,7 @@ import { seedDaemonDoc } from "@lararium/mesh/social-seed";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
-import { controlStoreOf, standControlHome } from "@lararium/mesh/control-home";
+import { stateStoreOf, standVesselState } from "@lararium/mesh/vessel-state";
 import { hex } from "@lararium/mesh/crypto";
 import { type LarDoc } from "@lararium/mesh/base-doc";
 import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
@@ -54,8 +54,8 @@ async function bootOver(repo: Repo, daemonUrl: string, secretUrl: string, s: Uin
   const kelBoard = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(verifyingKey), "board:persona-kel");
   const chain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
   if (!chain) throw new Error(`no persona-KEL chain for ${personaKelPrefix} on this vessel's board`);
-  // The lease frontier, by the SAME fold the daemon behaviour runs, over this vessel's OWN control document.
-  const lease = await readLeaseFrontier(controlStoreOf(await standControlHome(repo, handle)), pg.groupId);
+  // The lease frontier, by the SAME fold the daemon behaviour runs, over this vessel's OWN state document.
+  const lease = await readLeaseFrontier(stateStoreOf(await standVesselState(repo, handle)), pg.groupId);
   if (lease.kind !== "epoch") throw new Error(`fixture: lease frontier unavailable (${lease.why})`);
   return bootDaemonKeyhive({
     atomSeed: s, eventStore: new DaemonEventStore({ ...memorySecretStore(await repo.find(secretUrl as AutomergeUrl)), face: pg.groupId }),

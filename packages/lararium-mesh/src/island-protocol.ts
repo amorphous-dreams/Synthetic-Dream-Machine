@@ -1,3 +1,4 @@
+import type { WorkAsk, WorkAnswer, WorkChanged } from "./vessel-work.js";
 /**
  * island-protocol — GP-1 schema: discriminated union for all vessel ↔ causal-island messages.
  *
@@ -180,12 +181,13 @@ export interface IslandGrants {
    *  to the daemon island of a vessel that crosses to its own hearth. The daemon wiki's working slot mounts it. Absent/null:
    *  the slot stays this device's own. */
   hearthWorkingUrl?: string | null;
-  /** The vessel's CONTROL document (`control-home`), granted to the daemon island alone: an access grant, never a recipe
-   *  slot. The island's control store stands over it; absent on every wiki island. */
-  controlUrl?:  string | null;
-  /** The control document's refusal while the vessel cannot read it (`vessel-locked`: the key stays shut; `control-home-unnamed`:
-   *  the place holds no face). The island resolves nothing then: its control store refuses every read and write by this name. */
-  controlRefusal?: "vessel-locked" | "control-home-unnamed" | "control-home-unavailable";
+  /** The vessel's vessel state document (`vessel-state`), granted to the daemon island alone: an access grant, never a recipe
+   *  slot. The island's state store stands over it; absent on every wiki island. */
+  workGranted?: boolean;
+  stateUrl?:  string | null;
+  /** The state document's refusal while the vessel cannot read it (`vessel-locked`: the key stays shut; `vessel-state-unnamed`:
+   *  the place holds no face). The island resolves nothing then: its state store refuses every read and write by this name. */
+  stateRefusal?: "vessel-locked" | "vessel-state-unnamed" | "vessel-state-unavailable";
   /** THE FLOOR'S REST KEY as the vessel holds it for this composition (`floor-registry`): `stands` where the vessel derived
    *  it, else the refusal the floor's registry answers (`vessel-locked`: the key stays shut; `floor-unkeyed`: the place
    *  derives none, a herm). Granted to the daemon island alone; absent reads as `floor-unkeyed` (fail closed). */
@@ -804,7 +806,7 @@ export interface DaemonMsg_ResidencyOpResult {
  */
 /**
  * Island → vessel: one verb ANSWER the daemon island's floor store took (`floorAnswerStore`): an outcome, or the effect
- * index beside a done one, for an act a place answered with no readable control document. The vessel holds it in its own
+ * index beside a done one, for an act a place answered with no readable state document. The vessel holds it in its own
  * floor store for the caller that waits on it; nothing rests.
  */
 export interface DaemonMsg_FloorAnswer {
@@ -812,7 +814,7 @@ export interface DaemonMsg_FloorAnswer {
   /** The answer record, under an outcome or effect title (the vessel's floor store refuses any other). */
   record: { tiddler: Record<string, unknown>; meta?: Record<string, unknown> };
   /**
-   * True where `record` carries a WHOLE outcome for the vessel's answer ring (`control-home` `answerRingOf`): every
+   * True where `record` carries a WHOLE outcome for the vessel's answer ring (`vessel-state` `answerRingOf`): every
    * vessel's island hands each verb's whole answer across this way, floor or not, and the vessel holds it in memory for
    * the caller that waits. Absent, the record rides to the floor store as before.
    */
@@ -865,6 +867,7 @@ export function isSensoriumSignalType(value: unknown): value is SensoriumSignalT
 
 /** All messages the vessel may send to a causal island. */
 export type VesselToIslandMsg =
+  | WorkAnswer | WorkChanged
   | IslandMsg_Manifest
   | { type: "wiki:request-drain" }
   | IslandMsg_HooAnu
@@ -1240,6 +1243,7 @@ export type LarIslandToVesselMsg = LarMsg_Frame | LarMsg_ControlResult | LarMsg_
 
 /** All messages a causal island may send to the vessel. */
 export type IslandToVesselMsg =
+  | WorkAsk
   | IslandMsg_Event
   | IslandMsg_TeardownAck
   | IslandMsg_Ea
@@ -1300,7 +1304,7 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   if (isPortKind(v.type)) return readPortVesselMsg(v) !== null;   // the record port reads whole at the door too
   // The log batch reads whole at the door: every placement a title under the shore-log prefix with string fields.
   if (v.type === "daemon:shore-log") { const records = (v as { records?: unknown }).records; return Array.isArray(records) && records.length <= 4096 && records.every((r) => readShoreLogPlacement(r) !== null); }
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:face-bags", "daemon:shore-log", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "daemon:wear-actor-result", "wiki:place-verb", "cas:block", "dyad:read", "receipt:issued", "rest:answer", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
+  return (["work:answer", "work:changed", "manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:face-bags", "daemon:shore-log", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "daemon:wear-actor-result", "wiki:place-verb", "cas:block", "dyad:read", "receipt:issued", "rest:answer", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
     .includes(v.type as Exclude<VesselToIslandMsg["type"], "receipt:close" | "wiki:request-drain" | SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
 }
 
@@ -1331,7 +1335,7 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
     const whole = (v as Record<string, unknown>).answer;
     return typeof record === "object" && record !== null && typeof tiddler === "object" && tiddler !== null && typeof tiddler.title === "string" && (whole === undefined || whole === true);
   }
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wear-actor-request", "daemon:wiki-alert", "cas:want", "dyad:ask", "receipt:request", "rest:ask", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle", "docstore:sealed", "docstore:opened", "docstore:live", "docstore:slot", "docstore:answering", "docstore:silent"] as const).includes(
+  return (["work:ask", "event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wear-actor-request", "daemon:wiki-alert", "cas:want", "dyad:ask", "receipt:request", "rest:ask", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle", "docstore:sealed", "docstore:opened", "docstore:live", "docstore:slot", "docstore:answering", "docstore:silent"] as const).includes(
     v.type as Exclude<IslandToVesselMsg["type"], "receipt:asks-done" | "daemon:floor-answer" | LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
   );
 }

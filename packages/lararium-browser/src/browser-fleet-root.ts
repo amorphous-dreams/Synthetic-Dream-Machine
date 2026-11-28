@@ -49,7 +49,7 @@ import { leaseEpochPrefix } from "@lararium/mesh/epoch-lease";
 import { faceRecordsOf, readFace } from "@lararium/mesh/face-reading";
 import { personaBagIdFor } from "@lararium/mesh/persona-scope";
 import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
-import { readControlHome } from "@lararium/mesh/control-home";
+import { readVesselState } from "@lararium/mesh/vessel-state";
 import { readFrontierPins } from "@lararium/mesh/edge-frontier-board";
 import { readLedgeredEdgeBoard } from "@lararium/mesh/edge-ledger";
 import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
@@ -164,7 +164,7 @@ export interface BrowserSeatFace {
   readonly personaKelPrefix:  string;
   /** The face's shared persona plane: its signed log rests there. */
   readonly personaUrl:        string;
-  /** This vessel's daemon document: it names the control document the lease slots rest in. */
+  /** This vessel's daemon document: it names the state document the lease slots rest in. */
   readonly daemonUrl:         string;
 }
 
@@ -205,14 +205,14 @@ export async function browserSeatDevice(input: BrowserSeatInput): Promise<FleetJ
   const reading = readFace(personaKelChain, issuerAnchor);
   if (!reading) return refuse("face-proof", "the face's KEL reads no lineage; re-found the face.");
 
-  // THE LEASE READ, off the vessel's control document: fail closed, so an unread fence signs no edge at the genesis epoch.
+  // THE LEASE READ, off the vessel's state document: fail closed, so an unread fence signs no edge at the genesis epoch.
   const daemonHandle = await repo.find<LarDoc>(face.daemonUrl as AutomergeUrl);
-  const controlMap = await readControlHome(repo, daemonHandle).then(
-    (control) => (control.doc() as LarDoc | undefined)?.tiddlers ?? {},
+  const stateMap = await readVesselState(repo, daemonHandle).then(
+    (state) => (state.doc() as LarDoc | undefined)?.tiddlers ?? {},
     (e: unknown) => refuse("lease-unread", `the lease fence reads unread: ${e instanceof Error ? e.message : String(e)}; unlock this browser and retry.`));
   const leasePrefix = leaseEpochPrefix(group);
   const leaseSlotValues: string[] = [];
-  for (const [title, entry] of Object.entries(controlMap)) {
+  for (const [title, entry] of Object.entries(stateMap)) {
     if (!title.startsWith(leasePrefix)) continue;
     const text = tiddlerText(entry);
     if (typeof text === "string") leaseSlotValues.push(text);

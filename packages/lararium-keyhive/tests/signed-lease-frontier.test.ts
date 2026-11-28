@@ -1,6 +1,6 @@
 import { describe, test, expect } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { VESSEL_STATE_ID } from "@lararium/mesh/lar-uris";
 import { leaseEpochSlotUri } from "@lararium/mesh/epoch-lease";
 import { currentSignerOf, makeHandLineage } from "@lararium/mesh/hand-lineage";
 import { signLeaseAdvance } from "@lararium/mesh/lease-advance";
@@ -17,12 +17,12 @@ const rootSeed = new Uint8Array(32).fill(4);
 const strangerSeed = new Uint8Array(32).fill(5);
 
 describe("signed PersonaGroup lease frontier", () => {
-  test("unsigned, stranger-signed, and foreign-group slots raise nothing; root-signed control raises", async () => {
+  test("unsigned, stranger-signed, and foreign-group slots raise nothing; root-signed state raises", async () => {
     const root = { key: await ed25519VerifyingKeyFromSeed(rootSeed), sign: ed25519SignerFromSeed(rootSeed) };
     const stranger = { key: await ed25519VerifyingKeyFromSeed(strangerSeed), sign: ed25519SignerFromSeed(strangerSeed) };
     const composite = new CompositeStore();
-    const store = new MemoryTiddlerStore(CONTROL_HOME_ID);
-    composite.addLayer({ bagId: CONTROL_HOME_ID, store, writable: true });
+    const store = new MemoryTiddlerStore(VESSEL_STATE_ID);
+    composite.addLayer({ bagId: VESSEL_STATE_ID, store, writable: true });
     const put = async (resource: string, writer: string, value: string) => {
       const title = leaseEpochSlotUri(resource, writer);
       await store.put({ tiddler: { title, text: value }, meta: { authority: "test" } } as never, { kind: "test" } as never);
@@ -41,8 +41,8 @@ describe("signed PersonaGroup lease frontier", () => {
     const newK = { key: await ed25519VerifyingKeyFromSeed(strangerSeed), sign: ed25519SignerFromSeed(strangerSeed) };
     const lineage = makeHandLineage([{ epoch: 0, signers: [oldK.key], threshold: 1 }, { epoch: 1, signers: [newK.key], threshold: 1 }])!;
     const composite = new CompositeStore();
-    const store = new MemoryTiddlerStore(CONTROL_HOME_ID);
-    composite.addLayer({ bagId: CONTROL_HOME_ID, store, writable: true });
+    const store = new MemoryTiddlerStore(VESSEL_STATE_ID);
+    composite.addLayer({ bagId: VESSEL_STATE_ID, store, writable: true });
     const put = async (writer: string, value: string) => {
       await store.put({ tiddler: { title: leaseEpochSlotUri(group, writer), text: value }, meta: { authority: "test" } } as never, { kind: "test" } as never);
     };
@@ -57,8 +57,8 @@ describe("signed PersonaGroup lease frontier", () => {
     const chain = (await realKel([root.key])).chain;
     const anchor = raiseFaceFrontier(mintFaceAnchor({ personaGroup: group, personaKelPrefix: chain[0]!.prefix, personaRootDid: `0x${root.key}`, edge: {}, leaseEpoch: 0 }), { leaseEpoch: 7 });
     const composite = new CompositeStore();
-    const store = new MemoryTiddlerStore(CONTROL_HOME_ID);
-    composite.addLayer({ bagId: CONTROL_HOME_ID, store, writable: true });
+    const store = new MemoryTiddlerStore(VESSEL_STATE_ID);
+    composite.addLayer({ bagId: VESSEL_STATE_ID, store, writable: true });
     const put = async (value: string) => { await store.put({ tiddler: { title: leaseEpochSlotUri(group, root.key), text: value }, meta: { authority: "test" } } as never, { kind: "test" } as never); };
     await put(await signLeaseAdvance({ resource: group, epoch: 2 }, root));      // a replayed OLDER slot
     const face = readFace(chain, anchor);

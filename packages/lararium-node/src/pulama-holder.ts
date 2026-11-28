@@ -68,6 +68,7 @@ export interface PulamaStanding {
 export interface PulamaSessionScope { readonly faces: LentFaces }
 
 export interface PulamaHolder extends CustodyHolder {
+  readonly swarmRecords: import("@lararium/mesh/swarm-tiddlers").SwarmWikiPort;
   /** Hear the session drop (the channel closed, the pūlama locked, this side left). Returns the unsubscribe. */
   onClosed(listener: () => void): () => void;
   /** The ordinals the standing session's lend names, lit or waiting; empty with no session. */
@@ -292,6 +293,12 @@ export function makePulamaHolder(a: {
 
   return {
     homes: a.homes,
+    swarmRecords: {
+      read: async title => await call("swarm.read", { title }) as string | null,
+      write: async (title, text) => { await call("swarm.write", { title, text }); },
+      writeNew: async (title, text) => await call("swarm.write-new", { title, text }) === true,
+      list: async prefix => await call("swarm.list", { prefix }) as string[],
+    },
     unlock() {
       if (session !== null) return Promise.resolve({ reading: "already-unlocked" });
       return dialing ??= doDial().catch((err: unknown) => {

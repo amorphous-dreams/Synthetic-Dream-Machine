@@ -14,6 +14,8 @@ import {
   decodeSecretHomeAddress,
   encodeSecretHomeAddress,
   enrollSecretHome,
+  enrollVesselState,
+  type SecretHomeAddress,
   mintSecretHomeAddress,
   mintVesselDocumentId,
   openSecretHome,
@@ -30,26 +32,44 @@ export async function openBrowserSecretHome(idbName: string, repo: Repo): Promis
   const held = await readKeystoreRecord(idbName, SECRET_HOME_RECORD);
   const address = held instanceof Uint8Array ? decodeSecretHomeAddress(held) : null;
   if (address === null) throw new SecretHomeUnavailable("this browser's keystore names no secret home");
-  return openSecretHome(repo, address);
+  return ensureState(idbName, repo, address);
 }
 
 /** Stand the browser's secret home: open the one its keystore names, or enroll a fresh one and keep its address after
  *  the document rests sealed. */
-export async function standBrowserSecretHome(idbName: string, repo: Repo): Promise<SecretHome & { readonly controlUrl: string | null }> {
+export async function standBrowserSecretHome(idbName: string, repo: Repo): Promise<SecretHome & { readonly stateUrl: string | null }> {
   const held = await readKeystoreRecord(idbName, SECRET_HOME_RECORD);
   if (held !== undefined) {
     const address = held instanceof Uint8Array ? decodeSecretHomeAddress(held) : null;
     if (address === null) throw new SecretHomeUnavailable("the keystore's secret-home row reads malformed");
-    return { ...await openSecretHome(repo, address), controlUrl: address.controlId ? `automerge:${address.controlId}` : null };
+    return ensureState(idbName, repo, address);
   }
-  // THE CONTROL DOCUMENT MINTS BESIDE THE HOME (operator ruling A6): one row names both, one vessel key seals both.
-  const address = { ...mintSecretHomeAddress(), controlId: mintVesselDocumentId() };
+  // THE VESSEL STATE DOCUMENT MINTS BESIDE THE HOME (operator ruling A6): one row names both, one vessel key seals both.
+  const address = { ...mintSecretHomeAddress(), stateId: mintVesselDocumentId() };
   const home = await enrollSecretHome(repo, address);
-  await repo.flush([home.handle.documentId, ...(home.control ? [home.control.documentId] : [])]);
+  await repo.flush([home.handle.documentId, ...(home.state ? [home.state.documentId] : [])]);
   await withCustodyRecords(idbName, async (rows) => {
     const standing = await rows.read(SECRET_HOME_RECORD);
     if (standing !== undefined) throw new SecretHomeUnavailable("another secret home's address landed first");
     await rows.write(SECRET_HOME_RECORD, encodeSecretHomeAddress(address));
   });
-  return { ...home, controlUrl: `automerge:${address.controlId}` };
+  return { ...home, stateUrl: `automerge:${address.stateId}` };
+}
+
+async function ensureState(idbName: string, repo: Repo, address: SecretHomeAddress): Promise<SecretHome & { readonly stateUrl: string }> {
+  const home = await openSecretHome(repo, address);
+  if (address.stateId) return { ...home, stateUrl: `automerge:${address.stateId}` };
+  const stateId = mintVesselDocumentId();
+  await enrollVesselState(repo, stateId);
+  const named = await withCustodyRecords(idbName, async rows => {
+    const bytes = await rows.read(SECRET_HOME_RECORD);
+    const current = bytes instanceof Uint8Array ? decodeSecretHomeAddress(bytes) : null;
+    if (!current || current.documentId !== address.documentId) throw new SecretHomeUnavailable("the secret home's custody changed while naming its registry");
+    if (current.stateId) return current;
+    const fresh = { ...current, stateId };
+    await rows.write(SECRET_HOME_RECORD, encodeSecretHomeAddress(fresh));
+    return fresh;
+  });
+  const opened = await openSecretHome(repo, named);
+  return { ...opened, stateUrl: `automerge:${named.stateId}` };
 }

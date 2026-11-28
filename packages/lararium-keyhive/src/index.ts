@@ -60,8 +60,8 @@ export type { DaemonEventStoreOptions, SecretRestCapability } from "./daemon-eve
 export { bootDaemonKeyhive, FacelessKeyhiveRefused, FaceHoldsNoPrekeySecret, FaceRecardRefused, recardCommand } from "./boot-daemon-keyhive.js";
 export type { BootDaemonKeyhiveInput, BootDaemonKeyhiveResult, BootDaemonKeyhiveRecard } from "./boot-daemon-keyhive.js";
 // THE ONE ROAD a daemon island reads its lease frontier by — its own daemon layer, two verdicts never merged.
-export { readLeaseFrontier, controlLayerOf } from "./lease-frontier.js";
-export type { LeaseFrontier, ControlLayerHolder } from "./lease-frontier.js";
+export { readLeaseFrontier, stateLayerOf } from "./lease-frontier.js";
+export type { LeaseFrontier, StateLayerHolder } from "./lease-frontier.js";
 // THE ONE DOOR that lands the sovereign identity archive — and the standing gate standing on it.
 export { persistArchiveFloor } from "./archive-floor-write.js";
 export type {

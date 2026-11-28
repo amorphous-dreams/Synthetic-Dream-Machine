@@ -35,8 +35,9 @@ import { VerbTable } from "./verb-dispatcher.js";
 /** The daemon VM surface the orchestrator drives (node + browser both satisfy it). */
 export interface VesselDaemonVm {
   workerEa:       Promise<void>;
-  /** The vessel's control document as a store (`control-home`): the durable mailbox parks here. */
-  control:        CompositeStore;
+  /** The vessel's state document as a store (`vessel-state`): the durable mailbox parks here. */
+  state:        CompositeStore;
+  work:         CompositeStore;
   mountMainVerbs: (registry: VerbTable) => void;
   resolveBinding: BindingResolver;
 }

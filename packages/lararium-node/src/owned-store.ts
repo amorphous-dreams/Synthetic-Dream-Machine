@@ -375,7 +375,7 @@ export async function ownedStore<T>(storageDir: string, act: (repo: Repo) => Pro
     const wire = wireIdentityOf({ store: storage, face: null });
     await wire.storeId();
     const repo = new Repo({ storage: wire.storage, peerId: wire.peerId });
-    // The vessel's key stands on demand: an act that reaches the control document opens the secret home's custody row first.
+    // The vessel's key stands on demand: an act that reaches the vessel registry opens the secret home's custody row first.
     // A REFUSED OPEN NAMES ITS REASON (a locked custody, a place that names no home): the act refuses by it, and no
     // stand-in stands in its place. The map moving (a home opened) wakes every load waiting on it and reseals what waits.
     bindSecretHomeRest(repo, held.rest((documentId) => storage.holdsSealed(documentId), () => {

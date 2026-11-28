@@ -11,7 +11,7 @@ import { runFoundingCeremony } from "@lararium/keyhive";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { DAEMON_BAG_ID, SECRET_HOME_ID } from "@lararium/mesh/lar-uris";
-import { controlStoreOf, standControlHome } from "@lararium/mesh/control-home";
+import { stateStoreOf, standVesselState } from "@lararium/mesh/vessel-state";
 import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
 import { hex } from "@lararium/mesh/crypto";
 import { makeIslandRepo, attachMessageChannelSync } from "@lararium/mesh/island-repo-door";
@@ -72,8 +72,8 @@ export async function standFoundedIsland(teardown: Array<() => void>, opts: { co
     repo: islandRepo, catalogUrl: catalog.url, oracleUrl: oracle.url, engine: { sha256: "", version: "" },
     recipe: { wikiSlug: "daemon" },
     secretStore: new AutomergeDocStore(secret.secretHandle, SECRET_HOME_ID), secretRest: secret.secretRest,
-    // The vessel's control document, as the host stands it beside the daemon VM (`control-home`).
-    control: controlStoreOf(await standControlHome(vesselRepo, daemonHandle)),
+    // The vessel's state document, as the host stands it beside the daemon VM (`vessel-state`).
+    state: stateStoreOf(await standVesselState(vesselRepo, daemonHandle)),
   } as never;
   const atom = faceAtomKeyFromSeed(cer.atomSeed, cer.personaGroupId);
   const veil = { atom: { seed: hex(cer.atomSeed), key: atom.key }, veilArchiveBytes: cer.veilArchive };

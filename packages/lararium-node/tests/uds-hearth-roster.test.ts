@@ -5,7 +5,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/hearth-roster
  */
-import { controlStoreOf } from "@lararium/mesh/control-home";
+import { memoryWorkOf } from "./work-store-fixture.js";
 import { afterEach, expect, test } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -61,7 +61,7 @@ async function stand(opts: { planes?: boolean; read?: (face: number) => Promise<
     anchor: { kind: "nexus", aid: "nexus-one.synthetic" }, mint: async () => ({ ok: true, signer: { dropped: false, drop() {}, certificate: null, sign: async () => ({ refusal: "test-signs-nothing" }) } }) } }) };
   const placed: string[] = [];
   const front = serveUdsFront({ claim });
-  front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
+  front.attach(makeUdsSeat({ stateHandle: daemonHandle, state: memoryWorkOf(daemonHandle), claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
     mountOrdinal: () => 0, litOrdinals: () => [1], lentOrdinals: opts.lent ?? (async () => [1, 0]),
     ...(opts.planes === false ? {} : { hearthPlanes: hearthPlanesOver(opts.read ?? (async (f) => { if (f === 1) throw new Error("face-not-held: h1"); return plane(f); })) }),
     placeVerb: (o) => { placed.push(o.verb); } }));

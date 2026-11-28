@@ -71,10 +71,10 @@ describe.skipIf(!stagedTarget)("promotion publish-diff — the cap-gated carrier
     const r = await lar.cli(["act", "MOVE", "--title", BOOT_URI, "--from", LARES_URI, "--to", LARARIUM_URI, "--yes", "--json"]);
     expect(r.json?.["ok"]).toBe(true);
     const data = r.json?.["data"] as Record<string, unknown>;
-    // THE AUDIT NAMES THE OUTCOME BY THE BUILT PREFIX: `OUTCOME_URI_PREFIX = `${CONTROL_HOME_ID}/outcomes/`` (the outcome
-    // rests in the vessel's control document, placement over patterns), so the record reads under `bags/control/outcomes/`.
+    // THE AUDIT NAMES THE OUTCOME BY THE BUILT PREFIX: `OUTCOME_URI_PREFIX = `${VESSEL_STATE_ID}/outcomes/`` (the outcome
+    // rests in the vessel's state document, placement over patterns), so the record reads under `bags/vessel-state/outcomes/`.
     expect(String(data?.["audit"]).startsWith(OUTCOME_URI_PREFIX), String(data?.["audit"])).toBe(true);
-    expect(String(data?.["audit"])).toMatch(/^lar:\/\/\/ha\.ka\.ba\/bags\/control\/outcomes\/\S+$/);  // the effect-record audit URI
+    expect(String(data?.["audit"])).toMatch(/^lar:\/\/\/ha\.ka\.ba\/bags\/state\/outcomes\/\S+$/);  // the effect-record audit URI
     expect(Number(data?.["moved"])).toBeGreaterThan(1);             // the WHOLE carrier group, not one title
   }, 60_000);
 

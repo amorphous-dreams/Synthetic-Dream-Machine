@@ -30,7 +30,7 @@
  * Canon: lar:///ha.ka.ba/lararium/api/personal-slot · lar:///ha.ka.ba/lares/api/pono/recipe-layer-model
  */
 
-import { CONTROL_HOME_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, slotBindingKey } from "@lararium/mesh/lar-uris";
+import { VESSEL_STATE_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, slotBindingKey } from "@lararium/mesh/lar-uris";
 import { FloorUnavailable, floorRegistryOf, type FloorRegistry } from "@lararium/mesh/floor-registry";
 import { floorDaemonSlotTitle, floorSlotTitle } from "@lararium/mesh/device-daemon-docs";
 import {
@@ -81,7 +81,7 @@ export interface SlotDocResolverArgs {
    * one, the face's working device slot mounts that document; null or absent, the slot stays this device's own.
    */
   readonly hearthWorking?: () => string | null;
-  readonly control?: CompositeStore;
+  readonly state?: CompositeStore;
   /**
    * THE FLOOR'S REGISTRY (`floorRegistryOf` over the daemon composite): where the floor's own documents take their names,
    * gated on the floor's rest key. Absent, this resolver stands no floor document and its floor acts refuse `floor-unkeyed`
@@ -318,17 +318,17 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     // session that stands only once the face seats, so its bytes would wait in memory and a reload would lose them; the
     // floor's slot rests under the floor's key, and the Lift carries it into the face's slot when the seat lands.
     const owner = args.personaGroupId && await seated() ? args.personaGroupId : null;
-    // A FACE'S SLOT takes its name in the control document (it mints with the face); THE FLOOR'S takes its name in the floor
+    // A FACE'S SLOT takes its name in the state document (it mints with the face); THE FLOOR'S takes its name in the floor
     // registry, in the place's daemon document, and refuses by name where the floor's rest key does not stand.
     let names: { readonly title: string; get(): Promise<string | null>; put(url: string): Promise<void> };
     if (owner !== null) {
-      if (!args.control) throw new Error("slot-doc: device-scoped slots require control store");
-      const control = args.control;
-      const title = `${CONTROL_HOME_ID}/daemon-slot/${kind}/${encodeURIComponent(owner)}`;
+      if (!args.state) throw new Error("slot-doc: device-scoped slots require state store");
+      const state = args.state;
+      const title = `${VESSEL_STATE_ID}/daemon-slot/${kind}/${encodeURIComponent(owner)}`;
       names = {
         title,
-        get: async () => tiddlerText(await control.get(title)),
-        put: async (url) => { await control.put(mutableLarRecord(title, { text: url, kind: "oracle", "face-reach": "vessel-only" }, "slot-doc:device"), { kind: "lares-verb", requestId: "slot-doc:device" }); },
+        get: async () => tiddlerText(await state.get(title)),
+        put: async (url) => { await state.put(mutableLarRecord(title, { text: url, kind: "oracle", "face-reach": "vessel-only" }, "slot-doc:device"), { kind: "lares-verb", requestId: "slot-doc:device" }); },
       };
     } else {
       const registry = floorRegistry;
@@ -338,7 +338,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     const title = names.title;
     const named = await names.get();
     // AT ITS OWN HEARTH A LEAF MOUNTS THE HEARTH'S WORKING DOCUMENT (road row `L4f`): the vessel hands the document its worn
-    // face's signed log names for this device, and the face's working slot answers it. The control row takes that name (the
+    // face's signed log names for this device, and the face's working slot answers it. The state row takes that name (the
     // vessel's sealed map hears the id first), so the document files under the face that owns the slot and seals under its
     // key like a slot minted here; a slot this device stood before the name arrived stays in the repo, unnamed by the row.
     const hearth = owner !== null && kind === "working" ? (args.hearthWorking?.() ?? null) : null;
@@ -397,7 +397,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     const registry = floorRegistry;
     const title = floorSlotTitle(slug, kind);
     let named: string | null;
-    // THE GATE RESTS ON THE FLOOR'S OWN KEY, never on a host's name and never on a control document: the registry answers
+    // THE GATE RESTS ON THE FLOOR'S OWN KEY, never on a host's name and never on a state document: the registry answers
     // only where the floor's rest key stands. A locked hearth refuses `vessel-locked` and a place that derives no floor key
     // (a herm, which never unlocks) refuses `floor-unkeyed`; either refusal means no floor stands, and nothing mints.
     // Any other fault of the registry surfaces as itself.
@@ -541,7 +541,7 @@ export interface LitFaceSlotDocs {
 /**
  * THE LIT SET'S SLOTS (sealed-store#/the-lit-set): every LIT face resolves its own instance slots under its OWN group, hive and
  * door, never the worn face's. A lit sibling stands no floor document, so its resolver takes no floor registry. A sibling's working slot reads the realm workbench its own hive holds a seat in, and its daemon
- * wiki's device slots stand under the sibling's group in the control document (`daemon-slot/<kind>/<group>`), so each face's
+ * wiki's device slots stand under the sibling's group in the state document (`daemon-slot/<kind>/<group>`), so each face's
  * memory lands in its own documents. A lit face is seated by being lit: its hive holds its group.
  */
 export function litFaceSlotDocs(base: Omit<SlotDocResolverArgs, "floor" | "personaGroupId" | "faceDoor" | "keyhive" | "faceSeated" | "seatSettled" | "workbenchRealm" | "workbenchWrites" | "workbenchFounds" | "mintedByHex" | "vesselDid">): LitFaceSlotDocs {

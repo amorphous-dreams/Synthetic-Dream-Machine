@@ -29,7 +29,7 @@
  *   W4  an UNLOCKED VEIL (no face founded, the vessel key open by the test custody route) mints a wiki over its own verb
  *       channel (`init-wiki`, as `lares wiki init` asks it), stands down, boots again asking for that wiki, and mounts it
  *       with none waiting: the row's `vessel-only` mark carries it across the restart.
- *       No control document stands for it (the place mints none until a face lands, operator ruling 2026-11-09): the veil's
+ *       No state document stands for it (the place mints none until a face lands, operator ruling 2026-11-09): the veil's
  *       wiki takes its name in the floor's registry, in the place's daemon document, and seals under the floor's rest key
  *       the custody root derives. The vector asks through a served front (`serveUdsFront` over the composition's own claim,
  *       seated with the veil's verbs), as main.ts serves it; `openNodeVessel` claims the socket and serves none itself.
@@ -178,11 +178,11 @@ describe("a floor asked for a user wiki stands and names the wiki that waits", (
     expect(first.vessel.activeWikiId, "the veil stands on its floor wiki").toBe("lares");
     const requestedBy = await withLarRoot(at.root, async () => `0x${await loadVesselVerifyingKey()}`);
     expect(first.vessel.floorKey, "the unlocked veil's floor key stands").toBe("stands");
-    // THE SERVED FRONT, as main.ts stands it: the composition's own claim, its daemon's control stand-in and place door, and
+    // THE SERVED FRONT, as main.ts stands it: the composition's own claim, its daemon's state stand-in and place door, and
     // the verbs a floor answers where its rest key stands.
     const front = serveUdsFront({ claim: first.vessel.storeClaim });
     front.attach(makeUdsSeat({
-      controlHandle: first.vessel.daemon.controlHandle, control: first.vessel.daemon.control,
+      stateHandle: first.vessel.daemon.stateHandle, state: first.vessel.daemon.state,
       placeVerb: (o) => first.vessel.daemon.placeVerb(o), claim: first.vessel.storeClaim, repo: first.vessel.repo,
       floorVerbs: floorVerbsFor(first.vessel.floorKey === "stands"),
     }));

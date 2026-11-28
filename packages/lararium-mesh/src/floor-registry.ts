@@ -7,11 +7,11 @@
  * stands on the vessel. A locked hearth holds the key shut (`vessel-locked`); a herm never unlocks, so it derives none and
  * registers none (`floor-unkeyed`). Either refuses by name before any row moves: a floor that cannot seal writes nothing.
  *
- * NO CONTROL DOCUMENT STANDS HERE. A place holds no control document until a face lands (operator ruling 2026-11-09). The
+ * NO VESSEL STATE DOCUMENT STANDS HERE. A place holds no state document until a face lands (operator ruling 2026-11-09). The
  * rows rest in the daemon document, which the place founds with itself, rests clear and mirrors nowhere; each names a
  * document id and nothing of its content.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/control-home
+ * Meme: lar:///ha.ka.ba/lararium/mesh/vessel-state
  */
 import { DAEMON_BAG_ID } from "./lar-uris.js";
 import { mutableLarRecord, tiddlerText } from "./base-doc.js";

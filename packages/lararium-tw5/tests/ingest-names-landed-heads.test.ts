@@ -59,14 +59,14 @@ describe("the ingest door binds a disk wave to its resting mirror", () => {
     expect(await store.get(title)).not.toBeNull();
   });
 
-  test("a source under one mirror cannot land into another bag or an unmirrored control home", async () => {
+  test("a source under one mirror cannot land into another bag or an unmirrored state home", async () => {
     const composite = new CompositeStore();
     const foreignBag = "lar:///ha.ka.ba/wikis/other/working";
     composite.addLayer({ bagId: foreignBag, store: new MemoryTiddlerStore(), writable: true, defaultWritable: true });
     const grant = [{ bagId: BAG, mirrorRoot: "/mirror/notes", scope: "notes" }];
     await expect(ingestWithGrant(composite, { title: URI, bag: foreignBag, source: "/mirror/notes", mirrors: grant }))
       .rejects.toMatchObject({ code: "disk-wave-placement" });
-    await expect(ingestWithGrant(composite, { title: URI, bag: "lar:///ha.ka.ba/bags/control", source: "/mirror/notes", mirrors: grant }))
+    await expect(ingestWithGrant(composite, { title: URI, bag: "lar:///ha.ka.ba/bags/vessel-state", source: "/mirror/notes", mirrors: grant }))
       .rejects.toMatchObject({ code: "disk-wave-placement" });
   });
 });

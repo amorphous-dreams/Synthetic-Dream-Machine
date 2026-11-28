@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { memoryControlStore } from "./control-store-fixture.js";
+import { memoryWorkStore } from "./work-store-fixture.js";
 import { CompositeStore, NoWorkingLayerRefusal } from "@lararium/mesh/composite-store";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
@@ -61,21 +61,21 @@ describe("a write into the daemon's own wiki without a working layer", () => {
     expect(await daemon.defaultWritableBagId()).toBeNull();
   });
 
-  test("through the dispatcher, the refused write rests its outcome in the control document; the clear daemon bag holds no outcome and no content", async () => {
+  test("through the dispatcher, the refused write rests its outcome in the state document; the clear daemon bag holds no outcome and no content", async () => {
     const { daemon, daemonBag, tw5, options } = stand();
     const registry = new VerbTable();
     registry.register("tiddler-put", makeTiddlerPutReactor(options));
-    const control = memoryControlStore();
-    const dispatcher = new VerbDispatcher({ daemonVm: tw5 as unknown as TW5Engine, daemon, control, registry });
+    const state = memoryWorkStore();
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5 as unknown as TW5Engine, daemon, state, registry });
     const landed = new Promise<void>((resolve) => {
-      control.subscribe((change) => { if (change.title === `${OUTCOME_URI_PREFIX}meme-no-working`) resolve(); });
+      state.subscribe((change) => { if (change.title === `${OUTCOME_URI_PREFIX}meme-no-working`) resolve(); });
     });
     try {
       dispatcher.start();
       dispatcher.placeVerb({ verb: "tiddler-put", args: { recipe: "default", title: "lar:///t/no-working", text: "content" }, requestedBy: "did:key:test", requestId: "meme-no-working" });
       await landed;
-      const outcome = await control.getLive(`${OUTCOME_URI_PREFIX}meme-no-working`);
-      expect(outcome?.tiddler["status"], "the refused write's outcome rests in the control document").toBe("error");
+      const outcome = await state.getLive(`${OUTCOME_URI_PREFIX}meme-no-working`);
+      expect(outcome?.tiddler["status"], "the refused write's outcome rests in the state document").toBe("error");
       expect(await daemonBag.get(`${OUTCOME_URI_PREFIX}meme-no-working`), "an outcome landed in the clear daemon bag").toBeNull();
       expect(await daemonBag.get("lar:///t/no-working")).toBeNull();
     } finally {

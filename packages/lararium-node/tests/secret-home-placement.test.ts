@@ -20,7 +20,7 @@ import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
 import { groupSecretSealTitle } from "@lararium/mesh/persona-group-secret";
 import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
-import { controlHomeUrlOf, controlHomeRefusal, standControlHome, CONTROL_HOME_UNNAMED } from "@lararium/mesh/control-home";
+import { vesselStateUrlOf, vesselStateRefusal, standVesselState, VESSEL_STATE_UNNAMED } from "@lararium/mesh/vessel-state";
 import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
 import { plainRecord } from "@lararium/mesh/stored-value";
 import { type HeldRestKey } from "@lararium/mesh/held-rest-key";
@@ -166,7 +166,7 @@ describe("the vessel's secret home, by placement", () => {
     });
   }, 180_000);
 
-  test("RED (Gaia Thursday): a place founding (a herm, no face) mints no secret home and no control document; its custody row names none, and a control act refuses `control-home-unnamed`", async () => {
+  test("RED (Gaia Thursday): a place founding (a herm, no face) mints no secret home and no state document; its custody row names none, and a state act refuses `vessel-state-unnamed`", async () => {
     const { root, genesisDir } = scratchRoot();
     await inScratchRoot(root, async () => {
       await foundDirect({ storageDir: larDataDir(), genesisDir });
@@ -175,29 +175,29 @@ describe("the vessel's secret home, by placement", () => {
       const daemonUrl = packedBootstrap()[DAEMON_BAG_ID]!.text;
       const refused = await ownedStore(larDataDir(), async (repo) => {
         const daemon = await repo.find<LarDoc>(daemonUrl as AutomergeUrl);
-        expect(controlHomeUrlOf(daemon.doc())).toBeNull();
-        return standControlHome(repo, daemon).catch((e: unknown) => e);
+        expect(vesselStateUrlOf(daemon.doc())).toBeNull();
+        return standVesselState(repo, daemon).catch((e: unknown) => e);
       });
-      expect(refused).toMatchObject({ name: "ControlHomeUnavailable", refusal: CONTROL_HOME_UNNAMED });
+      expect(refused).toMatchObject({ name: "VesselStateUnavailable", refusal: VESSEL_STATE_UNNAMED });
     });
   }, 180_000);
 
-  test("CONTROL (hearth founding): the face's founding mints the secret home and the control document together; the custody row and the daemon document name the same control document", async () => {
+  test("CONTROL (hearth founding): the face's founding mints the secret home and the state document together; the custody row and the daemon document name the same state document", async () => {
     const { root, genesisDir } = scratchRoot();
     await inScratchRoot(root, async () => {
       await foundDirect({ storageDir: larDataDir(), genesisDir });
       await seatSeedCharter();
       await foundFace({ storageDir: larDataDir(), genesisDir });
       const address = await readSecretHomeAddress();
-      expect(address?.controlId).toBeDefined();
+      expect(address?.stateId).toBeDefined();
       const daemonUrl = packedBootstrap()[DAEMON_BAG_ID]!.text;
       const named = await ownedStore(larDataDir(), async (repo) => {
         const daemon = await repo.find<LarDoc>(daemonUrl as AutomergeUrl);
-        const control = await standControlHome(repo, daemon);
-        return { pointer: controlHomeUrlOf(daemon.doc()), control: control.documentId, refused: controlHomeRefusal(control) };
+        const state = await standVesselState(repo, daemon);
+        return { pointer: vesselStateUrlOf(daemon.doc()), state: state.documentId, refused: vesselStateRefusal(state) };
       });
-      expect(named.pointer).toBe(`automerge:${address!.controlId}`);
-      expect(named.control).toBe(address!.controlId);
+      expect(named.pointer).toBe(`automerge:${address!.stateId}`);
+      expect(named.state).toBe(address!.stateId);
       expect(named.refused).toBeNull();
     });
   }, 180_000);

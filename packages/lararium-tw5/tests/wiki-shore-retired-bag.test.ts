@@ -20,8 +20,8 @@ const SAVED = "lar:///t/retired/saved";
 const KEPT = "lar:///t/retired/kept";
 const hand = async (r: Rig, boundary: ManualBoundary): Promise<void> => {
   await afterDispatch();
-  boundary.fire();
-  await turns(48);
+  // The boundary awaited, never counted in turns: under a loaded run the drain's refusal lands past any fixed count.
+  await boundary.settle();
   await r.adaptor.landingIdle();
 };
 const end = async (r: Rig): Promise<void> => { r.unbridge(); await r.adaptor.stop().catch(() => undefined); await r.repo.shutdown(); };

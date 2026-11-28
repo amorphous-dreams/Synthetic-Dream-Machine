@@ -1,14 +1,14 @@
 /**
- * floor-pin.test.ts — the VESSEL pins the floor: one pin per (vessel, Nexus), in the vessel's control home, moved only by
+ * floor-pin.test.ts — the VESSEL pins the floor: one pin per (vessel, Nexus), in the vessel's state home, moved only by
  * the vessel's own accept along `prior` (lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin).
  *
- * REDS, each with its control:
+ * REDS, each with its state:
  *   · the pin starts at genesis's baked floor, and a status read writes nothing;
  *   · an accept fast-forwards over two releases, staging the floor whole before the pin moves;
  *   · a release that does not descend from the pin (a rollback) refuses `floor-not-descendant`;
  *   · two heads refuse `floor-fork-unsettled`, naming both;
  *   · a replayed accept lands nothing (no stage, no change, no remount);
- *   · the status reads the same after a reboot (the control document saved and loaded into a fresh Repo);
+ *   · the status reads the same after a reboot (the state document saved and loaded into a fresh Repo);
  *   · a face switch moves no pin: the pin keys on the Nexus alone, and a row in a face's own store moves nothing;
  *   · the remount: a live swap where the island can, the reboot-pending alert naming why where it cannot.
  */
@@ -57,7 +57,7 @@ async function released(c: SeatedCharter, f: ReturnType<typeof floor>, prior: st
   });
 }
 
-/** A plain control home that counts its changes, standing in for a DocHandle. */
+/** A plain state home that counts its changes, standing in for a DocHandle. */
 function memoryHome(doc: LarDoc = emptyLarDoc()): { changes: number; doc(): LarDoc; change(fn: (draft: LarDoc) => void): void } {
   return { changes: 0, doc: () => doc, change(fn) { this.changes += 1; fn(doc); } };
 }
@@ -175,7 +175,7 @@ describe("the vessel's pin", () => {
     expect(writeFloorPin(doc, floorPinOf(doc, c.aid, GENESIS.manifestCid).pin)).toBe(false);
   });
 
-  test("RED: the status reads the same after a reboot (the control document saved, loaded into a fresh Repo)", async () => {
+  test("RED: the status reads the same after a reboot (the state document saved, loaded into a fresh Repo)", async () => {
     const c = await seatedCharter({ seats: 3, threshold: 1 });
     const f1 = floor("one"), f2 = floor("two");
     const r1 = await released(c, f1);
@@ -198,18 +198,18 @@ describe("the vessel's pin", () => {
     const c = await seatedCharter({ seats: 3, threshold: 1 });
     const f1 = floor("one");
     const r1 = await released(c, f1);
-    const control = memoryHome();
-    await acceptFloorRelease(portsOver({ home: control, nexus: c.aid, releases: [r1], cas: f1.cas }).ports);
-    expect(Object.keys(control.doc().tiddlers)).toEqual([floorPinTitle(c.aid)]);
+    const state = memoryHome();
+    await acceptFloorRelease(portsOver({ home: state, nexus: c.aid, releases: [r1], cas: f1.cas }).ports);
+    expect(Object.keys(state.doc().tiddlers)).toEqual([floorPinTitle(c.aid)]);
     expect(floorPinTitle(c.aid)).toBe(`${FLOOR_PIN_PREFIX}${c.aid}`);
-    // Face A and face B read through the same control home: one pin.
-    const asFaceA = await readFloorStatus(portsOver({ home: control, nexus: c.aid, releases: [r1], cas: f1.cas }).ports);
-    const asFaceB = await readFloorStatus(portsOver({ home: control, nexus: c.aid, releases: [r1], cas: f1.cas }).ports);
+    // Face A and face B read through the same state home: one pin.
+    const asFaceA = await readFloorStatus(portsOver({ home: state, nexus: c.aid, releases: [r1], cas: f1.cas }).ports);
+    const asFaceB = await readFloorStatus(portsOver({ home: state, nexus: c.aid, releases: [r1], cas: f1.cas }).ports);
     expect(asFaceB.pinned).toEqual(asFaceA.pinned);
-    // A face's store carrying a forged pin row stands outside the control home and moves no mount.
+    // A face's store carrying a forged pin row stands outside the state home and moves no mount.
     const faceStore = emptyLarDoc();
     writeFloorPin(faceStore, { kind: "floor-pin", nexus: c.aid, release: "9".repeat(64), manifest: "8".repeat(64) });
-    expect(floorCidToMount({ controlDoc: control.doc(), nexus: c.aid, genesis: GENESIS.manifestCid })).toEqual({ cid: f1.manifestCid, source: "pin" });
+    expect(floorCidToMount({ stateDoc: state.doc(), nexus: c.aid, genesis: GENESIS.manifestCid })).toEqual({ cid: f1.manifestCid, source: "pin" });
   });
 });
 
@@ -234,12 +234,12 @@ describe("the remount, by capability", () => {
 
   test("the mount pick: the named Nexus's pin; the sole pin; genesis where two pins disagree and no Nexus is named", () => {
     const doc = emptyLarDoc();
-    expect(floorCidToMount({ controlDoc: doc, nexus: null, genesis: GENESIS.manifestCid })).toEqual({ cid: GENESIS.manifestCid, source: "genesis" });
+    expect(floorCidToMount({ stateDoc: doc, nexus: null, genesis: GENESIS.manifestCid })).toEqual({ cid: GENESIS.manifestCid, source: "genesis" });
     writeFloorPin(doc, { kind: "floor-pin", nexus: "nexus-a", release: "1".repeat(64), manifest: "a".repeat(64) });
-    expect(floorCidToMount({ controlDoc: doc, nexus: null, genesis: GENESIS.manifestCid })).toEqual({ cid: "a".repeat(64), source: "pin" });
+    expect(floorCidToMount({ stateDoc: doc, nexus: null, genesis: GENESIS.manifestCid })).toEqual({ cid: "a".repeat(64), source: "pin" });
     writeFloorPin(doc, { kind: "floor-pin", nexus: "nexus-b", release: "2".repeat(64), manifest: "b".repeat(64) });
-    expect(floorCidToMount({ controlDoc: doc, nexus: null, genesis: GENESIS.manifestCid })).toMatchObject({ cid: GENESIS.manifestCid, source: "genesis", note: expect.stringMatching(/2 Nexuses/) });
-    expect(floorCidToMount({ controlDoc: doc, nexus: "nexus-b", genesis: GENESIS.manifestCid })).toEqual({ cid: "b".repeat(64), source: "pin" });
+    expect(floorCidToMount({ stateDoc: doc, nexus: null, genesis: GENESIS.manifestCid })).toMatchObject({ cid: GENESIS.manifestCid, source: "genesis", note: expect.stringMatching(/2 Nexuses/) });
+    expect(floorCidToMount({ stateDoc: doc, nexus: "nexus-b", genesis: GENESIS.manifestCid })).toEqual({ cid: "b".repeat(64), source: "pin" });
   });
 
   test("decideFloorAccept is pure: the same pin and standing decide the same way, and an empty board refuses `floor-no-release`", () => {

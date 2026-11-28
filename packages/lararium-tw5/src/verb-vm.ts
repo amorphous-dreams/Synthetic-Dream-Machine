@@ -1,8 +1,9 @@
+import { OUTCOME_URI_PREFIX, SUMMONS_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 /**
  * verb-vm — volatile verb invocation lifecycle for the daemon causal island.
  *
  * Manages the in-TW5-wiki invocation tiddlers (volatile scratch, never synced)
- * and writes each outcome two ways: a VERDICT ROW into the vessel's CONTROL document (`control-home`: a store no recipe
+ * and writes each outcome two ways: a VERDICT ROW into the vessel's work snapshot (`vessel-work`: a store no recipe
  * composes and no mirror names, sealed under the lit face like the daemon wiki's slots,
  * lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed, U1), and the WHOLE ANSWER into the vessel's answer ring
  * (`answerRingOf`), memory alone. No outcome body rests anywhere, and a read with no effect key leaves no row at all.
@@ -25,11 +26,12 @@ import {
 } from "@lararium/mesh/verb-tiddler";
 import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
-import { ControlHomeUnavailable, answerRingOf } from "@lararium/mesh/control-home";
+import {  VesselStateUnavailable } from "@lararium/mesh/vessel-state";
+import {  answerRingOf  } from "@lararium/mesh/answer-ring";
 import type { TW5Engine } from "./tw5-vm.js";
 
 // ── Effect index — single writer: the daemon worker (D1, P2.5 iter 4) ──────
-// `<control home>/effects/<effectKey>` (`EFFECT_URI_PREFIX`) names the ONE prior `done` attempt that produced
+// `<state home>/effects/<effectKey>` (`EFFECT_URI_PREFIX`) names the ONE prior `done` attempt that produced
 // this effect, so a later attempt under a NEW requestId with the SAME effectKey can
 // find it (verb-dispatcher.ts owns the reuse decision; this module owns the write).
 export { EFFECT_URI_PREFIX };
@@ -38,7 +40,7 @@ export { EFFECT_URI_PREFIX };
 //
 // A verb's whole answer embeds the handler's FULL return value under `results[summary].output`. For a batch verb (e.g.
 // INGEST) that means a per-carrier result array, unbounded across a corpus seed (214 entries measured for one lararium
-// ingest). The control document rests none of it (the verdict row carries a hash and a byte count), yet the answer
+// ingest). The work snapshot rests none of it (the verdict row carries a hash and a byte count), yet the answer
 // still crosses the island's message, rides the socket and waits in the answer ring's bounded memory.
 //
 // So any top-level array field in the answer's `output` that crosses AUDIT_ARRAY_CAP entries gives way to a BOUNDED
@@ -168,7 +170,7 @@ function reportsChange(touched: CallTouches | undefined): boolean {
  * CONCLUDE ONE VERB: the verdict row rests, the whole answer rides the ring.
  *
  * The whole outcome (`concludeVerb`: results, the change report, the cause) goes to the vessel's answer ring, memory
- * alone, for the caller that waits. The control document takes the VERDICT ROW (`verdictRowOf`): no `results`, no
+ * alone, for the caller that waits. The work snapshot takes the VERDICT ROW (`verdictRowOf`): no `results`, no
  * `touched`, no `cause`; a hash and a byte count stand for the body. The row lands first, then the effect index, then
  * the answer, so a caller that hears the answer finds its verdict already standing.
  *
@@ -177,7 +179,7 @@ function reportsChange(touched: CallTouches | undefined): boolean {
  * verdict row lands after the fact and the island says `read-verb-wrote` by the verb's name.
  */
 export async function writeOutcome(
-  control: CompositeStore,
+  state: CompositeStore,
   opts: {
     invocation:    Verb;
     status:        "done" | "error";
@@ -227,9 +229,9 @@ export async function writeOutcome(
   const read = ridesAnswerRing(opts.invocation.action, opts.invocation.effectKey);
   const wrote = read && reportsChange(opts.touched);
   if (wrote) console.warn(`[verb-vm] read-verb-wrote: "${opts.invocation.action}" (request ${opts.invocation.requestId}) stands in the read set and its call changed ${Object.keys(opts.touched!).length} document(s); its verdict row lands after the fact. Take "${opts.invocation.action}" out of READ_VERBS (mesh call-touches) or end the write in its handler.`);
-  // THE LEDGER RESTS IN THE CONTROL DOCUMENT: the control store's one layer, never a layer any mirror reads. It rests the
+  // THE LEDGER RESTS IN THE VESSEL STATE DOCUMENT: the state store's one layer, never a layer any mirror reads. It rests the
   // verdict alone, and a read that changed nothing rests none.
-  if (!read || wrote) await control.put(row, origin);
+  const puts = (!read || wrote) ? [row] : [];
 
   // Effect index — single writer (the daemon worker). Only a `done` outcome with an
   // effect key indexes; an `error` outcome indexes nothing, so a failed effect may be
@@ -238,7 +240,7 @@ export async function writeOutcome(
   // later attempt under the same effect key decides against this row alone and joins no outcome row.
   if (opts.status === "done" && opts.invocation.effectKey !== undefined && opts.result?.["visit"] !== true) {
     const measure = row.tiddler as Record<string, unknown>;
-    await control.put({
+    puts.push({
       tiddler: {
         title:          `${EFFECT_URI_PREFIX}${opts.invocation.effectKey}`,
         "effect-key":   opts.invocation.effectKey,
@@ -249,11 +251,12 @@ export async function writeOutcome(
         ...(typeof measure["result-bytes"] === "string" && { "result-bytes": measure["result-bytes"] }),
       },
       meta: { authority: "lares-dispatcher" },
-    }, origin);
+    });
   }
+  await state.writeFamily(puts, [`${SUMMONS_URI_PREFIX}${opts.invocation.requestId}`], origin);
 
   // THE WHOLE ANSWER, LAST: it waits in memory for its caller and rests nowhere.
-  answerRingOf(control).put(answer);
+  answerRingOf(state).put(answer);
 }
 
 /**
@@ -269,7 +272,7 @@ export async function writeOutcome(
  */
 export async function copyEffectOutcome(
   tw5: TW5Engine,
-  control: CompositeStore,
+  state: CompositeStore,
   invocation: Verb,
   opts: {
     priorRequestId: string;
@@ -306,8 +309,8 @@ export async function copyEffectOutcome(
       ...(opts.resultBytes !== undefined && { "result-bytes": opts.resultBytes }),
     } as typeof whole.tiddler,
   };
-  await control.put(verdictRowOf(answer), origin);
-  answerRingOf(control).put(answer);
+  await state.writeFamily([verdictRowOf(answer)], [`${SUMMONS_URI_PREFIX}${invocation.requestId}`], origin);
+  answerRingOf(state).put(answer);
   removeVerb(tw5, invocation.title);
 }
 
@@ -331,13 +334,25 @@ function errorText(err: unknown): string {
 
 export async function dispatchVerb(
   tw5: TW5Engine,
-  control: CompositeStore,
+  state: CompositeStore,
   invocation: Verb,
   run: () => Promise<Record<string, unknown>>,
   chore?: ChoreReceiptMark,
 ): Promise<void> {
   patchVerb(tw5, invocation.title, buildRunningPatch());
   const mark = chore !== undefined ? { chore } : {};
+  // Rest the claim before the handler: a restart cannot infer whether an interrupted act landed its effect.
+  if (!ridesAnswerRing(invocation.action, invocation.effectKey)) {
+    await state.put({ tiddler: {
+      title: OUTCOME_URI_PREFIX + invocation.requestId,
+      "request-id": invocation.requestId,
+      verb: invocation.action,
+      status: "running",
+      "input-digest": await verbInputDigest({ verb: invocation.action, args: invocation.args,
+        ...(invocation.face !== undefined && { face: invocation.face }),
+        ...(invocation.effectKey !== undefined && { effectKey: invocation.effectKey }) }),
+    } }, { kind: "lares-verb", requestId: invocation.requestId });
+  }
 
   // THE CALL'S OWN CHANGES TAG AT THE CHANGE (`call-touches`): the handler runs inside its call's scope, and the outcome
   // names the documents it changed, so the seat owes this call's writes alone (sealed-store#/owed).
@@ -345,15 +360,15 @@ export async function dispatchVerb(
   const touchedOf = (): { touched: CallTouches } => ({ touched: takeCallTouches(invocation.requestId) ?? {} });
   try {
     const result = await inCallScope(invocation.requestId, run);
-    await writeOutcome(control, { invocation, status: "done", result, ...mark, ...touchedOf() });
+    await writeOutcome(state, { invocation, status: "done", result, ...mark, ...touchedOf() });
   } catch (err) {
-    await writeOutcome(control, {
+    await writeOutcome(state, {
       invocation, status: "error", errorMessage: errorText(err), ...mark, ...touchedOf(),
       // A reactor that refuses by name hands its machine-read reason to the outcome; a plain
-      // failure carries none. An act that wrote a control fact on a place with no readable control
-      // document refuses by that document's name (`control-home-unnamed`, `vessel-locked`).
+      // failure carries none. An act that wrote a state fact on a place with no readable state
+      // document refuses by that document's name (`vessel-state-unnamed`, `vessel-locked`).
       ...(isVerbRefusal(err) && { refusal: err.reason }),
-      ...(err instanceof ControlHomeUnavailable && { refusal: err.refusal }),
+      ...(err instanceof VesselStateUnavailable && { refusal: err.refusal }),
     });
   }
 

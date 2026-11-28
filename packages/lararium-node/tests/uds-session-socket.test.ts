@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { controlStoreOf } from "@lararium/mesh/control-home";
+import { memoryWorkOf } from "./work-store-fixture.js";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -73,7 +73,7 @@ describe("UDS session socket", () => {
       face: face(faceRef === "hint-b" ? "b" : "a"), ordinal: Math.max(0, "abc".indexOf(faceRef.slice(-1))), profile: "seat", presenter: `verified-${faceRef}`, anchor: { kind: "place" as const, aid: "place-fixture", head: "place-head" }, caps: ["load"], mint: fixtureMint,
     } }) };
     const start = (sessions?: UdsSessionDoor) => startUdsChannel({
-      controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo, ...(sessions && { sessions }),
+      stateHandle: daemonHandle, state: memoryWorkOf(daemonHandle), claim, repo, ...(sessions && { sessions }),
       placeVerb: (o) => {
         placed.push(o);
         const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done",
@@ -124,7 +124,7 @@ describe("UDS session socket", () => {
     composite.addLayer({ bagId: wikiSlotUri("daemon", "working"), store: new AutomergeDocStore(workingHandle, wikiSlotUri("daemon", "working")), writable: true });
     const dir = mkdtempSync(join(tmpdir(), "uds-no-door-"));
     const claim = await claimStore(dir, { holder: "vessel" });
-    const channel = startUdsChannel({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo, placeVerb: () => { throw new Error("no verb should run"); } });
+    const channel = startUdsChannel({ stateHandle: daemonHandle, state: memoryWorkOf(daemonHandle), claim, repo, placeVerb: () => { throw new Error("no verb should run"); } });
     const peer = await Peer.connect(claim.socketPath);
     try {
       expect(await peer.ask({ op: "session:open", requestId: "no-door", faceRef: "hint-a", hand: "seat" }))

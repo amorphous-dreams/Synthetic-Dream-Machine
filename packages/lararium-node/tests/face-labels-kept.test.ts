@@ -15,7 +15,7 @@ import { mkdtempSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deviceDaemonDocs } from "@lararium/mesh/device-daemon-docs";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { VESSEL_STATE_ID } from "@lararium/mesh/lar-uris";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { writeFaceLabel, readFaceLabel, keepFaceBases, readFaceBases, writeFaceBases, faceBasesPath, faceLabelPath, type KeptDoc, type KeptDocState } from "../src/face-labels.js";
@@ -71,11 +71,11 @@ describe("the vessel keeps each face's label and bases", () => {
 
   test("K3 — two faces: each keeper reads its own group's working slot through the owner table", async () => {
     const table = deviceDaemonDocs({ enrollFloor: () => {} });
-    const control: LarDoc = emptyLarDoc();
+    const state: LarDoc = emptyLarDoc();
     const G1 = "group-one", G3 = "group-three";
-    control.tiddlers[`${CONTROL_HOME_ID}/daemon-slot/working/${G1}`] = storedLarRecord(`${CONTROL_HOME_ID}/daemon-slot/working/${G1}`, { text: "automerge:2DrjgbFdhNzMs7KwYv3jcFpqxH3L" }, "t") as never;
-    control.tiddlers[`${CONTROL_HOME_ID}/daemon-slot/working/${G3}`] = storedLarRecord(`${CONTROL_HOME_ID}/daemon-slot/working/${G3}`, { text: "automerge:3TzPkAHbW2dVcYgnJ1ofoaJv7mNS" }, "t") as never;
-    table.readControl(control);
+    state.tiddlers[`${VESSEL_STATE_ID}/daemon-slot/working/${G1}`] = storedLarRecord(`${VESSEL_STATE_ID}/daemon-slot/working/${G1}`, { text: "automerge:2DrjgbFdhNzMs7KwYv3jcFpqxH3L" }, "t") as never;
+    state.tiddlers[`${VESSEL_STATE_ID}/daemon-slot/working/${G3}`] = storedLarRecord(`${VESSEL_STATE_ID}/daemon-slot/working/${G3}`, { text: "automerge:3TzPkAHbW2dVcYgnJ1ofoaJv7mNS" }, "t") as never;
+    table.readState(state);
     const docs: Record<string, Doc> = {
       "2DrjgbFdhNzMs7KwYv3jcFpqxH3L": new Doc({ tiddlers: { pond: { meta: { overrideBase: B1 } } } }),
       "3TzPkAHbW2dVcYgnJ1ofoaJv7mNS": new Doc({ tiddlers: { pond: { meta: { overrideBase: B3 } } } }),

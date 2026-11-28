@@ -55,7 +55,7 @@ export interface MeshPalaceComponent { readonly handle: DocHandle<MeshPalaceDoc>
  *  ONE MAP PER VESSEL, FOUND AGAIN AT EVERY COMPOSE. The map stands at an address derived from the vessel's own key
  *  (`meshPalaceDocUrl`, the `deterministicDocUrl` road a vessel's edge ledger takes): a compose finds the map a prior
  *  boot rested and materializes it only when none stands. No pointer row stands between, so the map stands at every
- *  tier — a herm and the waking floor too, where the control home stays shut. */
+ *  tier — a herm and the waking floor too, where the vessel registry stays shut. */
 export function meshPalaceCap(deps: { repo: Repo; /** The vessel's own key: the map's address derives from it. */ vesselKey: string; seed?: readonly DialEntry[]; selfCoord?: Coord }): CapModule {
   return {
     id: CARRIAGE_CAP.meshpalace, requires: [SUBSTRATE_CAP_ID],

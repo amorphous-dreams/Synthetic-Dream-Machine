@@ -5,8 +5,8 @@
  * a seat writes into two wikis, and each outcome carries the mark beside the bag and layer its put named. A synced verb tiddler
  * (content) carries none.
  */
-import { memoryControlStore } from "./control-store-fixture.js";
-import { answerRingOf } from "@lararium/mesh/control-home";
+import { memoryWorkStore } from "./work-store-fixture.js";
+import {  answerRingOf  } from "@lararium/mesh/answer-ring";
 import { describe, test, expect } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
@@ -92,12 +92,12 @@ type Book = ReturnType<typeof makeLocalAskBook>;
 
 async function stand(register: (registry: VerbTable) => void) {
   const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
-  const control = memoryControlStore();
+  const state = memoryWorkStore();
   const book = makeLocalAskBook() as Book;
   const registry = new VerbTable();
   register(registry);
   const dispatcher = new VerbDispatcher({
-    daemonVm: tw5, daemon: makeDaemon(), control, registry,
+    daemonVm: tw5, daemon: makeDaemon(), state, registry,
     localOf: (inv) => book.has(inv), surfaceOf: (inv) => book.isSurface(inv), choreOf: (inv) => book.choreOf(inv),
   });
   dispatcher.start();
@@ -106,8 +106,8 @@ async function stand(register: (registry: VerbTable) => void) {
     dispatcher.placeVerb({ verb, args, requestedBy: "me", requestId });
     await settle();
     // The row rests the verdict and the chore mark; the whole answer's results ride the store's answer ring.
-    const row = await control.getLive(OUTCOME_URI_PREFIX + requestId);
-    const results = answerRingOf(control).get(requestId)?.tiddler["results"];
+    const row = await state.getLive(OUTCOME_URI_PREFIX + requestId);
+    const results = answerRingOf(state).get(requestId)?.tiddler["results"];
     return row && results !== undefined ? { ...row, tiddler: { ...row.tiddler, results } } as typeof row : row;
   };
   return { place, stop: () => dispatcher.stop() };

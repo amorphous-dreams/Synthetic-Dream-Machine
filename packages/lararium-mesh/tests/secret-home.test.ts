@@ -17,7 +17,7 @@ import { SECRET_HOME_ID } from "../src/lar-uris.js";
 import { storedRecord } from "../src/stored-record.js";
 import { attachMessageChannelSync, makeIslandRepo } from "../src/island-repo.js";
 import { islandSecretHome, vesselHeldHomes, enrollBesideSecretHome, releaseBesideSecretHome } from "../src/secret-home.js";
-import { CONTROL_HOME_ID } from "../src/lar-uris.js";
+import { VESSEL_STATE_ID } from "../src/lar-uris.js";
 
 const WORD = "the-group-secret-seal-rides-here";
 const MAGIC = [0x85, 0x6f, 0x4a, 0x83];
@@ -176,33 +176,33 @@ describe("the vessel's secret home rests sealed from its first byte", () => {
     } finally { detach(); port1.close(); port2.close(); await island.shutdown(); await vessel.shutdown(); }
   });
 
-  it("VESSEL-SCOPED CLASSIFICATION BESIDE THE HOME: the control document maps under the vessel's held key, bound to its own bag, only once the home's key stands", async () => {
+  it("VESSEL-SCOPED CLASSIFICATION BESIDE THE HOME: the state document maps under the vessel's held key, bound to its own bag, only once the home's key stands", async () => {
     const inner = memoryAdapter();
     const homes = vesselHeldHomes();
     const refuse = async () => ({ refusal: "signer-unavailable" }) as never;
     const store = new SealedDocumentStore({ inner, bagOf: (id) => homes.bagOf(id), sessionFace: () => null, sessionOf: () => null, seal: refuse, open: refuse, refuseClearOverSealed: true });
     const repo = new Repo({ storage: store, network: [] });
     bindSecretHomeRest(repo, homes.rest((id) => store.holdsSealed(id)));
-    const control = mintSecretHomeAddress().documentId;
+    const state = mintSecretHomeAddress().documentId;
     // No home's key stands yet: it maps sealed with no key, locked (saves wait in memory, loads refuse `holder-locked` or wait named), never clear.
-    expect(enrollBesideSecretHome(repo, control, CONTROL_HOME_ID)).toBe(false);
-    expect(homes.bagOf(control)).toEqual({ bagId: CONTROL_HOME_ID, face: null, locked: true });
+    expect(enrollBesideSecretHome(repo, state, VESSEL_STATE_ID)).toBe(false);
+    expect(homes.bagOf(state)).toEqual({ bagId: VESSEL_STATE_ID, face: null, locked: true });
     const home = await enrollSecretHome(repo, mintSecretHomeAddress());
-    expect(enrollBesideSecretHome(repo, control, CONTROL_HOME_ID)).toBe(true);
-    expect(homes.bagOf(control)?.bagId).toBe(CONTROL_HOME_ID);
-    expect(homes.has(control)).toBe(true);
-    expect([...homes.ids()].sort()).toEqual([home.handle.documentId, control].sort());
+    expect(enrollBesideSecretHome(repo, state, VESSEL_STATE_ID)).toBe(true);
+    expect(homes.bagOf(state)?.bagId).toBe(VESSEL_STATE_ID);
+    expect(homes.has(state)).toBe(true);
+    expect([...homes.ids()].sort()).toEqual([home.handle.documentId, state].sort());
     // The secret home's own bag never re-enrolls beside itself.
     expect(enrollBesideSecretHome(repo, mintSecretHomeAddress().documentId, SECRET_HOME_ID)).toBe(false);
-    const handle = repo.import<{ tiddlers: Record<string, unknown> }>((await import("@automerge/automerge")).save((await import("@automerge/automerge")).from({ tiddlers: {} })), { docId: control as never });
+    const handle = repo.import<{ tiddlers: Record<string, unknown> }>((await import("@automerge/automerge")).save((await import("@automerge/automerge")).from({ tiddlers: {} })), { docId: state as never });
     writeSecret(handle as never);
     await repo.flush();
     await repo.shutdown();
-    expect(restsClear(inner, control)).toBe(false);
+    expect(restsClear(inner, state)).toBe(false);
     expect(restsClear(inner, home.handle.documentId)).toBe(false);
   });
 
-  it("THE LIFT RELEASES A FLOOR DOCUMENT: one enrolled beside the home leaves the held homes; the secret home and the control document never do", async () => {
+  it("THE LIFT RELEASES A FLOOR DOCUMENT: one enrolled beside the home leaves the held homes; the secret home and the state document never do", async () => {
     const inner = memoryAdapter();
     const homes = vesselHeldHomes();
     const refuse = async () => ({ refusal: "signer-unavailable" }) as never;
@@ -214,8 +214,8 @@ describe("the vessel's secret home rests sealed from its first byte", () => {
     const home = await enrollSecretHome(repo, mintSecretHomeAddress());
     // The secret home's key stands and the floor's does not: a face's secret home never keys a floor document.
     expect(homes.floorKey()).toBeNull();
-    const control = mintSecretHomeAddress().documentId, canon = mintSecretHomeAddress().documentId;
-    enrollBesideSecretHome(repo, control, CONTROL_HOME_ID);
+    const state = mintSecretHomeAddress().documentId, canon = mintSecretHomeAddress().documentId;
+    enrollBesideSecretHome(repo, state, VESSEL_STATE_ID);
     enrollBesideSecretHome(repo, canon, "lar:///ha.ka.ba/bags/tabs");
     expect(homes.has(canon)).toBe(true);
     const before = moves;
@@ -224,9 +224,9 @@ describe("the vessel's secret home rests sealed from its first byte", () => {
     expect(homes.bagOf(canon)).toBeNull();
     expect(moves).toBe(before + 1);
     expect(releaseBesideSecretHome(repo, canon), "a replay releases nothing").toBe(false);
-    expect(releaseBesideSecretHome(repo, control)).toBe(false);
+    expect(releaseBesideSecretHome(repo, state)).toBe(false);
     expect(releaseBesideSecretHome(repo, home.handle.documentId)).toBe(false);
-    expect(homes.has(control) && homes.has(home.handle.documentId)).toBe(true);
+    expect(homes.has(state) && homes.has(home.handle.documentId)).toBe(true);
     await repo.shutdown();
   });
 });

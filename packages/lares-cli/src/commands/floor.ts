@@ -2,7 +2,7 @@
  * `lares vessel floor status|accept [<release-cid>]|seed [--genesis <dir>]|adopt [--apply|--commit|--revert] [--genesis <dir>] [--nexus <aid>] [--porch <origin>]` — the vessel's pin on its Nexus's floor.
  * It rides the VESSEL door (the pin belongs to the vessel), never a top-level verb (the help's one-screen law).
  *
- * The VESSEL pins the floor (w26-floor-lane#/the-vessel-pin): one pin per (vessel, Nexus), in the vessel's control home.
+ * The VESSEL pins the floor (w26-floor-lane#/the-vessel-pin): one pin per (vessel, Nexus), in the vessel's vessel registry.
  * `status` names the pinned release (or the genesis floor), the newest release the board shows, whether it descends from
  * the pin (a fast-forward) and whether a fork stands. `accept` fast-forwards along `prior` from the pin to the named
  * release, or the sole newest, verifying each one (the steward's seal, the cabal's approval, the epoch lineage); it refuses a

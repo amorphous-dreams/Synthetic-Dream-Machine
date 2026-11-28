@@ -1,26 +1,26 @@
 /**
  * device-daemon-docs — the per-device daemon documents, each filed by the face that OWNS it, never by the face lit now.
  *
- * The control document names the daemon wiki's device slots (`daemon-slot/<kind>/<group>`) and each face's daemon canon
+ * The state document names the daemon wiki's device slots (`daemon-slot/<kind>/<group>`) and each face's daemon canon
  * (`daemon-canon/<face>`). A slot's group, or a canon's face, owns the document: a group's slot seals under that group's
  * face key, and only while that face stands lit. A document of a face that does not stand lit now (an earlier face after an
  * in-process face change, or a face not yet lit) maps held: its saves wait in memory and its loads wait, never clear and
  * never under another face's key. A slot the daemon island announces before its registry names it maps held until it does.
  *
  * THE FLOOR'S REGISTRY RESTS IN THE PLACE'S DAEMON DOCUMENT (the-veil-ladder#/the-base-model, in-house ruling 2026-11-12). A
- * place holds no control document until a face lands (operator ruling 2026-11-09), and the floor stands before any face,
+ * place holds no state document until a face lands (operator ruling 2026-11-09), and the floor stands before any face,
  * so the floor's own documents take their names where the place already keeps its pointers: the daemon document, under
  * `FLOOR_REGISTRY_ROOT`. A floor row names a document id and nothing of its content; the document itself seals under the
- * floor's rest key (`floorRestKey`), lit or not. `readFloor` files those rows; `readControl` files a face's.
+ * floor's rest key (`floorRestKey`), lit or not. `readFloor` files those rows; `readState` files a face's.
  *
  * A document keeps its first owner: a later entry naming it under another group or face moves nothing.
  *
  * ONE TABLE, EVERY VESSEL CLASS (operator ruling: idempotent-by-intent and isomorphic-by-intent parity). The node and the
  * browser vessel both file their device documents here, so the two cannot drift on which key seals which document.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/control-home
+ * Meme: lar:///ha.ka.ba/lararium/mesh/vessel-state
  */
-import { CONTROL_HOME_ID, DAEMON_BAG_ID, bagUri } from "./lar-uris.js";
+import { VESSEL_STATE_ID, DAEMON_BAG_ID, bagUri } from "./lar-uris.js";
 import { daemonFaceCanonBag, wikiSlotUri } from "./wiki-recipe.js";
 import { tiddlerText, type LarDoc } from "./base-doc.js";
 import { documentIdOfUrl, type SealedBag } from "./sealed-rest.js";
@@ -56,16 +56,16 @@ export const DAEMON_SLOT_PREFIX = wikiSlotUri("daemon", "working").replace(/work
 /** The daemon wiki's working device slot bag (`wikis/daemon/working`). */
 const DAEMON_WORKING_BAG = wikiSlotUri("daemon", "working");
 
-/** The control row naming `group`'s `kind` device slot of the daemon wiki. */
-export function daemonSlotTitle(kind: string, group: string): string { return `${CONTROL_HOME_ID}/daemon-slot/${kind}/${encodeURIComponent(group)}`; }
+/** The state row naming `group`'s `kind` device slot of the daemon wiki. */
+export function daemonSlotTitle(kind: string, group: string): string { return `${VESSEL_STATE_ID}/daemon-slot/${kind}/${encodeURIComponent(group)}`; }
 
 /**
- * THE HEARTH'S DAEMON WORKING DOCUMENT FOR A FACE (road row `L4f`): the url the vessel's control document names for
+ * THE HEARTH'S DAEMON WORKING DOCUMENT FOR A FACE (road row `L4f`): the url the vessel's state document names for
  * `group`'s working slot of the daemon wiki, or null where it names none. The root holder's admit door reads it here and
  * signs it into a joining device's `device-edge` act, so a leaf at its own hearth mounts the document the hearth projects.
  */
-export function hearthDaemonOf(controlTiddlers: StoredTiddlers | null | undefined, group: string): string | null {
-  const url = tiddlerText(ownEntry(controlTiddlers, daemonSlotTitle("working", group)));
+export function hearthDaemonOf(stateTiddlers: StoredTiddlers | null | undefined, group: string): string | null {
+  const url = tiddlerText(ownEntry(stateTiddlers, daemonSlotTitle("working", group)));
   return typeof url === "string" && url.length > 0 ? url : null;
 }
 
@@ -91,18 +91,18 @@ export interface LitDeviceFace {
 export type LitDeviceFaces = readonly LitDeviceFace[];
 
 export interface DeviceDaemonDocs {
-  /** Read every face's device slot and canon the control document names; answers whether any filing moved. */
-  readControl(controlDoc: LarDoc | null | undefined): boolean;
+  /** Read every face's device slot and canon the state document names; answers whether any filing moved. */
+  readState(stateDoc: LarDoc | null | undefined): boolean;
   /** Read every floor document the place's daemon document names (`FLOOR_REGISTRY_ROOT`); answers whether any filing moved. */
   readFloor(daemonDoc: LarDoc | null | undefined): boolean;
-  /** The daemon island announced a device slot's document before its first byte: held until the control document names its owner. */
+  /** The daemon island announced a device slot's document before its first byte: held until the state document names its owner. */
   announced(bagId: string, documentId: string): boolean;
   /** A face's daemon canon minted (its document named before its first byte), owned by `relation`. */
   canonMinted(bagId: string, documentId: string, relation: string): boolean;
-  /** The group whose daemon WORKING slot `documentId` holds, as the control document names it; null for every other document
+  /** The group whose daemon WORKING slot `documentId` holds, as the state document names it; null for every other document
    *  (a draft or personal slot, a canon, a floor slot, a slot no registry names yet). The hearth's share verdict reads it. */
   workingGroupOf(documentId: string): string | null;
-  /** The document the control document's latest read names as `group`'s daemon WORKING slot, or null: the CURRENT binding, never
+  /** The document the state document's latest read names as `group`'s daemon WORKING slot, or null: the CURRENT binding, never
    *  a document an earlier row named. The hearth's fleet gate reads it. */
   workingOf(group: string): string | null;
   /** The sealed bag of a device document under the lit set: the OWNER's face where the owner stands in `lit`, else a null face
@@ -124,7 +124,7 @@ export interface DeviceDaemonDocs {
    * THE LIFT RELEASES A FLOOR DOCUMENT (the-veil-ladder#/the-base-model, in-house Ruling 2): a wiki's canon document the veil
    * floor minted leaves the vessel's class when a face lifts it with the same document id, so the vessel's sealed map files
    * it under the face. Only a veil floor's WIKI document releases (never a daemon device slot, a group's slot or a canon of a
-   * face); a released document never files as the floor's again in this process, whatever a stale control row still names.
+   * face); a released document never files as the floor's again in this process, whatever a stale state row still names.
    * Answers the bag it stood filed under, or null where nothing released.
    */
   release(documentId: string): string | null;
@@ -137,7 +137,7 @@ export function deviceDaemonDocs(io: {
 }): DeviceDaemonDocs {
   const owners = new Map<string, { readonly bagId: string; readonly owner: Owner }>();
   const released = new Set<string>();
-  // THE CURRENT WORKING BINDING per group (road row `L4f`): the latest control read's `daemon-slot/working/<group>` row. A slot the
+  // THE CURRENT WORKING BINDING per group (road row `L4f`): the latest state read's `daemon-slot/working/<group>` row. A slot the
   // row moves leaves its old document filed (its sealed bag still answers) yet outside the group's working slot.
   const working = new Map<string, string>();
   const floorWikiFiled = (documentId: string): { readonly bagId: string; readonly owner: Owner } | null => {
@@ -159,16 +159,16 @@ export function deviceDaemonDocs(io: {
   // The member of the lit set that owns a document, or null: never a member that does not own it.
   const ownerIn = (owner: Owner, lit: LitDeviceFaces): LitDeviceFace | null => lit.find((l) => ownedBy(owner, l)) ?? null;
   return {
-    readControl(controlDoc) {
+    readState(stateDoc) {
       let moved = false;
-      const slotPrefix = `${CONTROL_HOME_ID}/daemon-slot/`;
-      const canonPrefix = `${CONTROL_HOME_ID}/daemon-canon/`;
-      for (const [title, record] of Object.entries(controlDoc?.tiddlers ?? {})) {
+      const slotPrefix = `${VESSEL_STATE_ID}/daemon-slot/`;
+      const canonPrefix = `${VESSEL_STATE_ID}/daemon-canon/`;
+      for (const [title, record] of Object.entries(stateDoc?.tiddlers ?? {})) {
         const documentId = documentIdOfUrl(tiddlerText(record));
         if (!documentId) continue;
         if (title.startsWith(slotPrefix)) {
           const [kind, group] = title.slice(slotPrefix.length).split("/");
-          // No control row names the floor: its registry rests in the daemon document (`readFloor`), and no group answers that word.
+          // No state row names the floor: its registry rests in the daemon document (`readFloor`), and no group answers that word.
           if (!kind || !group || group === "floor") continue;
           if (kind === "working") working.set(decodeURIComponent(group), documentId);
           moved = file(documentId, wikiSlotUri("daemon", kind as never), { kind: "group", group: decodeURIComponent(group) }) || moved;
@@ -231,7 +231,7 @@ export function deviceDaemonDocs(io: {
 /**
  * THE VESSEL-HELD BAG OF A DOCUMENT, in the one order every vessel class reads it: a device document by its owner first (the
  * held homes' table never forgets, so a group's slot never reads from it), then the held homes (the secret home and the
- * control document under the secret home's key, the floor's slots under the floor's rest key). Undefined: neither files it,
+ * state document under the secret home's key, the floor's slots under the floor's rest key). Undefined: neither files it,
  * and the vessel's sealed map decides.
  */
 export function vesselHeldBagOf(

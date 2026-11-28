@@ -5,7 +5,7 @@ import { generateOrLoadBrowserVesselIdentity } from "../src/browser-vessel-ident
 import { holdVesselLock, type LockHost } from "../src/vessel-lock.js";
 import { clearCustodyVerb, standBrowserCustody, standFounderFace } from "../src/browser-boot-custody.js";
 import { CLEAR_CUSTODY_CLEARS, CLEAR_CUSTODY_QUESTION } from "../src/browser-custody.js";
-import { VESSEL_LOCKED, vesselLockedRefusal } from "@lararium/mesh/control-home";
+import { VESSEL_LOCKED, vesselLockedRefusal } from "@lararium/mesh/vessel-state";
 
 let serial = 0;
 const vessel = () => `lares:test-boot-custody:${Date.now()}:${serial++}`;
@@ -76,7 +76,7 @@ describe("browser boot custody asks before secret rows rest", () => {
     const refused = await openBrowserVessel({ wikiId: "w", idbName, locks: host, teardownBudgetMs: 5_000 } as never).catch((e: unknown) => e);
     expect(refused, String(refused)).toBeInstanceOf(BrowserCustodyRefused);
     expect((refused as BrowserCustodyRefused).reading).toBe("sealed-locked");
-    // BROWSER PARITY: the locked boot answers the one name a node vessel's control acts and the CLI's direct holder answer.
+    // BROWSER PARITY: the locked boot answers the one name a node vessel's state acts and the CLI's direct holder answer.
     expect((refused as BrowserCustodyRefused).refusal).toBe(VESSEL_LOCKED);
     expect((refused as BrowserCustodyRefused).refusal).toBe(vesselLockedRefusal().refusal);
     expect(held.size, "the refused boot gave the store lock back").toBe(0);

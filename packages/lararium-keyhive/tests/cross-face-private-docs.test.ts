@@ -3,16 +3,16 @@
  * against every document a private slot names on this island, so a label never carries a private document past it.
  *
  *   P1  RED: the deny set names every lit face's daemon personal and draft documents (the worn face's mounted ones, each face's
- *       as the control document names it), and every personal or draft binding the daemon document records for any wiki
+ *       as the state document names it), and every personal or draft binding the daemon document records for any wiki
  *   P2  RED: working, canon and other binding kinds stay out of the set; a torn url names nothing
  *   P3  RED (Sol 407c H3): the kinds the resolver really writes: a binding row and its mint row, minted through
  *       `resolveOrMintBinding` itself for a personal and a draft slot, both land in the set, so the scan cannot drift
  *       from the rows production writes
  *   P4  RED (fail closed): what the deny set could not read stands by name (`unread`): a private row whose url names no
- *       document, no control reader while faces stand lit, no daemon store; a face whose private slot never minted reads whole
+ *       document, no state reader while faces stand lit, no daemon store; a face whose private slot never minted reads whole
  */
 import { describe, expect, it } from "vitest";
-import { CONTROL_HOME_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX } from "@lararium/mesh/lar-uris";
+import { VESSEL_STATE_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX } from "@lararium/mesh/lar-uris";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { type CompositeStore } from "@lararium/mesh/composite-store";
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
@@ -20,10 +20,10 @@ import { crossFacePrivateDocs } from "../src/face-engine-source.js";
 import { resolveOrMintBinding } from "../src/resolve-binding.js";
 
 const rec = (fields: Record<string, string>) => ({ tiddler: fields });
-const slotTitle = (kind: string, group: string) => `${CONTROL_HOME_ID}/daemon-slot/${kind}/${encodeURIComponent(group)}`;
+const slotTitle = (kind: string, group: string) => `${VESSEL_STATE_ID}/daemon-slot/${kind}/${encodeURIComponent(group)}`;
 
 describe("a lit face receives visits: the documents a view refuses by identity", () => {
-  const control = new Map<string, unknown>([
+  const state = new Map<string, unknown>([
     [slotTitle("personal", "group-0"), rec({ title: slotTitle("personal", "group-0"), text: "automerge:worn-personal" })],
     [slotTitle("personal", "group-1"), rec({ title: slotTitle("personal", "group-1"), text: "automerge:sib-personal" })],
     [slotTitle("draft", "group-1"), rec({ title: slotTitle("draft", "group-1"), text: "automerge:sib-draft" })],
@@ -38,7 +38,7 @@ describe("a lit face receives visits: the documents a view refuses by identity",
   const deps = {
     faces: [{ handleIndex: 0, group: "group-0", relation: null }, { handleIndex: 1, group: "group-1", relation: null }],
     mounted: (slot: string) => (slot === wikiSlotUri("daemon", "personal") ? { documentId: "mounted-personal" } : slot === wikiSlotUri("daemon", "draft") ? { documentId: "mounted-draft" } : slot === wikiSlotUri("daemon", "working") ? { documentId: "mounted-working" } : null),
-    control: { get: async (title: string) => control.get(title) ?? null },
+    state: { get: async (title: string) => state.get(title) ?? null },
     daemon: { listVisible: async () => [...daemon.keys()], get: async (title: string) => (daemon.get(title) as never) ?? null },
   };
 
@@ -52,14 +52,14 @@ describe("a lit face receives visits: the documents a view refuses by identity",
     for (const id of ["mounted-working", "sib-working", "garden-working", "not a url"]) expect(docs.has(id), id).toBe(false);
   });
 
-  it("P4 RED (fail closed): a private row naming no document, an absent control reader with faces lit, and an absent daemon store each stand unread by name; a face whose private slot never minted reads whole", async () => {
+  it("P4 RED (fail closed): a private row naming no document, an absent state reader with faces lit, and an absent daemon store each stand unread by name; a face whose private slot never minted reads whole", async () => {
     const torn = await crossFacePrivateDocs(deps as never);
     expect(torn.unread, "the torn personal binding stands unread").toEqual(["b/torn names no document"]);
-    const blind = await crossFacePrivateDocs({ ...deps, control: null, daemon: null } as never);
-    expect(blind.unread).toEqual(["the control document (each face's daemon slots)", "the daemon document (each wiki's slot bindings)"]);
+    const blind = await crossFacePrivateDocs({ ...deps, state: null, daemon: null } as never);
+    expect(blind.unread).toEqual(["the state document (each face's daemon slots)", "the daemon document (each wiki's slot bindings)"]);
     // A face that never minted a private slot names no row: nothing private to guard, and the set reads whole.
     const fresh = await crossFacePrivateDocs({ faces: [{ handleIndex: 2, group: "group-2", relation: null }], mounted: () => null,
-      control: { get: async () => null }, daemon: { listVisible: async () => [], get: async () => null } } as never);
+      state: { get: async () => null }, daemon: { listVisible: async () => [], get: async () => null } } as never);
     expect(fresh.unread).toEqual([]);
     expect([...fresh.docs]).toEqual([]);
   });
@@ -78,13 +78,13 @@ describe("a lit face receives visits: the documents a view refuses by identity",
     const draft = await resolveOrMintBinding({ ...base, kind: "draft-binding", prefix: DRAFT_BINDINGS_PREFIX, fingerprint: "b".repeat(64) });
     // Both rows each mint wrote: the binding row keyed by fingerprint, and the mint row beside it.
     expect([...records.values()].map((r) => r.tiddler["kind"]).sort()).toEqual(["binding-mint", "binding-mint", "draft-binding", "personal-binding"]);
-    const { docs, unread } = await crossFacePrivateDocs({ faces: [], mounted: () => null, control: null, daemon: store });
-    expect(unread, "no lit face needs the control reader, and every private row names its document").toEqual([]);
+    const { docs, unread } = await crossFacePrivateDocs({ faces: [], mounted: () => null, state: null, daemon: store });
+    expect(unread, "no lit face needs the state reader, and every private row names its document").toEqual([]);
     expect(docs.has(personal.url.slice("automerge:".length)), "the personal binding's document").toBe(true);
     expect(docs.has(draft.url.slice("automerge:".length)), "the draft binding's document").toBe(true);
     // A mint row alone (its binding row not yet written) still names its document.
     for (const [title, record] of [...records]) if (record.tiddler["kind"] !== "binding-mint") records.delete(title);
-    const minted = (await crossFacePrivateDocs({ faces: [], mounted: () => null, control: null, daemon: store })).docs;
+    const minted = (await crossFacePrivateDocs({ faces: [], mounted: () => null, state: null, daemon: store })).docs;
     expect([...minted].sort()).toEqual(["real-1", "real-2"]);
   });
 });

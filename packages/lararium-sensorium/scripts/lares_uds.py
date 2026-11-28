@@ -58,7 +58,7 @@ def owed_error(what: str, rest: object, receipt: object) -> "LaresVerbError | No
 
 class LaresVerbError(Exception):
     """The daemon ran the verb and it failed, or refused it by name. Carries the daemon's own message, and the
-    refusal's name in `refusal` where the vessel gave one (`vessel-locked`, `control-home-unnamed`, ...)."""
+    refusal's name in `refusal` where the vessel gave one (`vessel-locked`, `vessel-state-unnamed`, ...)."""
 
     def __init__(self, message: str, refusal: "str | None" = None) -> None:
         super().__init__(message)
@@ -68,7 +68,7 @@ class LaresVerbError(Exception):
 # The one next step each refusal a person can clear names, leading the message so a reader meets it first.
 _REFUSAL_NEXT = {
     "vessel-locked": "run `lares vault unlock`, then ask again",
-    "control-home-unnamed": "this place holds no face; light one with `lares persona new 0 --name '<label>'`",
+    "vessel-state-unnamed": "this place holds no face; light one with `lares persona new 0 --name '<label>'`",
 }
 
 
@@ -222,7 +222,7 @@ def output(verb: str, args: "dict | None" = None, **kw) -> dict:
     """`call` unwrapped to the verb's own payload.
 
     The daemon returns a RECEIPT, not a bare value: `{status, requestId, results: {summary: {ok,
-    output}}}`. The receipt carries the durable record (it lands at bags/control/outcomes/<id>, in the vessel's control document); `output` carries
+    output}}}`. The receipt carries the durable record (it lands at bags/vessel-work/outcomes/<id>, in the sealed work snapshot); `output` carries
     what the verb actually computed. Callers want the latter, so the envelope peels HERE — once — rather
     than in every caller, each reaching through four keys and each getting it subtly wrong.
     """

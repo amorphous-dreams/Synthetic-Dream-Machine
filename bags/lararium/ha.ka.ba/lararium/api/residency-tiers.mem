@@ -103,7 +103,7 @@ One word carries five unlike acts. Only the select sense assumes one lit daemon:
 * ''A faceless herm stamps what it carries.'' It shows the newest release its leyline carries, stamped ''carried-unaccepted'', as of its last sync.
 * ''The home serves the accept alone.'' It claims nothing about where the system wiki lives; herm-caps Q5 stays the operator's (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/herm-caps#/open`>>).
 
-''As built:'' the floor pin (`packages/lararium-mesh/src/floor-pin.ts`) rests in the control document, which mints with a face, and mounts the one pin the vessel holds; its code header keeps the pin's name until kaula#4 moves it onto the place home.
+''As built:'' the floor pin (`packages/lararium-mesh/src/floor-pin.ts`) rests in the vessel registry, which mints with a face, and mounts the one pin the vessel holds; its code header keeps the pin's name until kaula#4 moves it onto the place home.
 
 <<~/ahu>>
 
@@ -182,6 +182,6 @@ through #third-tier-gate, and only after the research that meme charges.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hRFlKheeHGhO3SBuc1hsB05YYZV_X5wKS-fn2ZQkQsg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Dee9sChWLj7BNHlArJNVWZ2EC_6hZhwUjP-FFy7SjU0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

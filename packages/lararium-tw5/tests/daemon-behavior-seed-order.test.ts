@@ -6,7 +6,7 @@
  * empty pointer and refuses as unrouted. Driven over a real wiki and the real recipe, with the attach
  * released by hand after the pending attach has been observed.
  */
-import { memoryControlStore } from "./control-store-fixture.js";
+import { memoryWorkStore } from "./work-store-fixture.js";
 import { describe, expect, test } from "vitest";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { CompositeStore } from "@lararium/mesh/composite-store";
@@ -74,7 +74,7 @@ async function rig(releaseAttach: Promise<void>, attach: boolean) {
     },
   });
   const ctx = {
-    wikiUri: "lar:///ha.ka.ba/wikis/daemon", composite, control: memoryControlStore(), tw5: engine, handles: new Map(), post: () => {},
+    wikiUri: "lar:///ha.ka.ba/wikis/daemon", composite, state: memoryWorkStore(), work: memoryWorkStore(), tw5: engine, handles: new Map(), post: () => {},
     repo: undefined, catalogUrl: null, oracleUrl: null, engine: { sha256: "", version: "" }, recipe: { wikiSlug: slug },
   } as unknown as IslandContext;
   return { engine, composite, canon, working, behavior, ctx, stop, adaptor };

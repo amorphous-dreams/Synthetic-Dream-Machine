@@ -125,7 +125,7 @@ import { proveFaceFromLog } from "@lararium/mesh/face-boot-proof";
 import { signLeaseAdvance } from "@lararium/mesh/lease-advance";
 import { leaseEpochSlotUri } from "@lararium/mesh/epoch-lease";
 import { readFace } from "@lararium/mesh/face-reading";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { VESSEL_STATE_ID } from "@lararium/mesh/lar-uris";
 import { countersignDeviceDelegation, buildDeviceDelegation } from "@lararium/mesh/device-delegation";
 import { verifyEdgeAgainstPersonaKel, type PersonaKelEvent } from "@lararium/mesh/persona-kel";
 import { deviceEdgeId } from "@lararium/mesh/dyad";
@@ -144,12 +144,12 @@ let chain: PersonaKelEvent[];
 let rootKey: string;
 let joinee: string;
 let daemonDoc: { tiddlers: Record<string, { text?: string }> };
-/** The vessel's control document (`control-home`), named by the daemon doc: the lease slots rest here. */
-let controlDoc: { tiddlers: Record<string, { text?: string }> };
+/** The vessel's state document (`vessel-state`), named by the daemon doc: the lease slots rest here. */
+let stateDoc: { tiddlers: Record<string, { text?: string }> };
 
 const repo = () => ({
   find: async (url: string) => (url === "automerge:daemon" ? { url, doc: () => daemonDoc }
-    : url === "automerge:control" ? { url, doc: () => controlDoc } : planes.find(url as never)),
+    : url === "automerge:state" ? { url, doc: () => stateDoc } : planes.find(url as never)),
   flush: async () => {},
 }) as never;
 const request = (nonce: string) => new TextEncoder().encode(JSON.stringify({ atomKey: joinee, nonce }));
@@ -160,7 +160,7 @@ const actsOf = (acts: readonly Act[], kind: string) => acts.filter((a) => a.body
 /** The lease rolls: the root signs the next epoch into its own slot, as `lares persona lease` does. */
 const rollLease = async (epoch: number) => {
   const signed = await signLeaseAdvance({ resource: group, epoch }, { key: rootKey, sign: ed25519SignerFromSeed(seam.rootSeed) });
-  controlDoc.tiddlers[leaseEpochSlotUri(group, rootKey)] = { text: signed };
+  stateDoc.tiddlers[leaseEpochSlotUri(group, rootKey)] = { text: signed };
 };
 /** The joinee's boot over what the answer served: the face proof from the log, then the Binding Gate's lease. */
 const joineeBoots = async (payload: Awaited<ReturnType<typeof answer>>, epoch: number) => {
@@ -194,8 +194,8 @@ describe("a seated joinee's retry across a lease roll renews its edge", () => {
       planes: { persona: personaUrl }, deviceKey: issuerAtomKey, edgeDigest: edgeBodyDigest(founderEdge),
       vesselTag: await testVesselTag(1, group, issuerAtomKey) }, { key: rootKey, sign: ed25519SignerFromSeed(seam.rootSeed) }));
     seam.anchor = mintFaceAnchor({ personaGroup: group, personaKelPrefix: inception.prefix, personaRootDid: rootDid, edge: founderEdge, leaseEpoch: 0 });
-    daemonDoc = { tiddlers: { [T.group]: { text: group }, [T.kel]: { text: inception.prefix }, [CONTROL_HOME_ID]: { text: "automerge:control", tiddler: { text: "automerge:control" } } as never } };
-    controlDoc = { tiddlers: {} };
+    daemonDoc = { tiddlers: { [T.group]: { text: group }, [T.kel]: { text: inception.prefix }, [VESSEL_STATE_ID]: { text: "automerge:state", tiddler: { text: "automerge:state" } } as never } };
+    stateDoc = { tiddlers: {} };
     seam.bootstrapPath = join(tmpdir(), `lar-device-admit-renewal-${process.pid}.json`);
     writeFileSync(seam.bootstrapPath, JSON.stringify({ text: JSON.stringify({ tiddlers: {
       [T.group]: { text: group }, [T.cabal]: { text: "cabal-zero" }, [T.daemon]: { text: "automerge:daemon" },
@@ -225,7 +225,7 @@ describe("a seated joinee's retry across a lease roll renews its edge", () => {
     const first = await answer("nonce-1");
     const seated = await logged();
     await rollLease(1);
-    expect(readFace(chain, seam.anchor as never)!.leaseEpoch(group, Object.values(controlDoc.tiddlers).map((t) => t.text)), "the roll took").toBe(1);
+    expect(readFace(chain, seam.anchor as never)!.leaseEpoch(group, Object.values(stateDoc.tiddlers).map((t) => t.text)), "the roll took").toBe(1);
     expect((await joineeBoots(first, 1)).gate, "the first answer's edge strands at the rolled lease").toMatch(/stale/);
     const retry = await answer("nonce-2");
     expect(retry.deviceEdge.boundEpoch, "the served edge binds the current epoch").toBe("1");

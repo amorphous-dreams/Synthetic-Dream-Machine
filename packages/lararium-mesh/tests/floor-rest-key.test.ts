@@ -9,7 +9,7 @@
 import { describe, expect, test } from "vitest";
 import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import {
-  ALL_DOMAINS, CONTROL_HOME_ID, DAEMON_BAG_ID, FLOOR_REST_KEY_INFO, FLOOR_UNKEYED, FloorUnavailable, VESSEL_LOCKED,
+  ALL_DOMAINS, VESSEL_STATE_ID, DAEMON_BAG_ID, FLOOR_REST_KEY_INFO, FLOOR_UNKEYED, FloorUnavailable, VESSEL_LOCKED,
   AutomergeDocStore, CompositeStore, SealedDocumentStore, bindSecretHomeRest, emptyLarDoc, enrollBesideSecretHome, enrollSecretHome,
   floorDaemonSlotTitle, floorKeyStandsOn, floorRegistryOf, floorRestKey, floorSlotTitle, mintHeldRestKey, mintSecretHomeAddress, openHeld,
   sealHeld, seedFloorDoor, standFloorKeyOn, vesselHeldHomes, wikiSlotUri, type FloorKeyRefusal, type LarDoc,
@@ -72,9 +72,9 @@ describe("the floor's rest key: one helper, each host's own door", () => {
 });
 
 describe("the held homes keep two keys apart", () => {
-  test("RED FK4: a floor document seals with NO secret home standing, and the control document does not", async () => {
+  test("RED FK4: a floor document seals with NO secret home standing, and the state document does not", async () => {
     const { homes, repo } = heldRepo();
-    const floorDoc = mintSecretHomeAddress().documentId, control = mintSecretHomeAddress().documentId;
+    const floorDoc = mintSecretHomeAddress().documentId, state = mintSecretHomeAddress().documentId;
     expect(enrollBesideSecretHome(repo, floorDoc, GARDEN), "mapped, held: no floor key stands yet").toBe(false);
     expect(homes.bagOf(floorDoc)).toEqual({ bagId: GARDEN, face: null, locked: true });
     expect(floorKeyStandsOn(repo)).toBe(false);
@@ -82,9 +82,9 @@ describe("the held homes keep two keys apart", () => {
     expect(standFloorKeyOn(repo, floor)).toBe(true);
     expect(floorKeyStandsOn(repo)).toBe(true);
     expect([...(homes.bagOf(floorDoc)?.held ?? [])]).toEqual([...floor]);
-    // No face landed: no secret home's key stands, so a control document maps held and reads no key.
-    expect(enrollBesideSecretHome(repo, control, CONTROL_HOME_ID)).toBe(false);
-    expect(homes.bagOf(control)).toEqual({ bagId: CONTROL_HOME_ID, face: null, locked: true });
+    // No face landed: no secret home's key stands, so a state document maps held and reads no key.
+    expect(enrollBesideSecretHome(repo, state, VESSEL_STATE_ID)).toBe(false);
+    expect(homes.bagOf(state)).toEqual({ bagId: VESSEL_STATE_ID, face: null, locked: true });
     await repo.shutdown();
   });
 
@@ -94,10 +94,10 @@ describe("the held homes keep two keys apart", () => {
     standFloorKeyOn(repo, floor);
     const floorDoc = mintSecretHomeAddress().documentId;
     enrollBesideSecretHome(repo, floorDoc, GARDEN);
-    // A face lands: its secret home mints with a random key of its own, and the control document files beside it.
-    const address = { ...mintSecretHomeAddress(), controlId: mintSecretHomeAddress().documentId };
+    // A face lands: its secret home mints with a random key of its own, and the state document files beside it.
+    const address = { ...mintSecretHomeAddress(), stateId: mintSecretHomeAddress().documentId };
     const home = await enrollSecretHome(repo, address);
-    const secretHeld = homes.bagOf(home.handle.documentId)?.held, controlHeld = homes.bagOf(address.controlId)?.held, floorHeld = homes.bagOf(floorDoc)?.held;
+    const secretHeld = homes.bagOf(home.handle.documentId)?.held, controlHeld = homes.bagOf(address.stateId)?.held, floorHeld = homes.bagOf(floorDoc)?.held;
     expect([...(secretHeld ?? [])]).toEqual([...address.key]);
     expect([...(controlHeld ?? [])]).toEqual([...address.key]);
     expect([...(floorHeld ?? [])], "the floor document still answers the floor's key").toEqual([...floor]);
@@ -160,7 +160,7 @@ describe("the floor registry's gate names the floor key", () => {
     await registry.remove(title, "test");
     expect(await registry.get(title)).toBeNull();
     expect(Object.keys(handle.doc()?.tiddlers ?? {})).toEqual([floorDaemonSlotTitle("working")]);
-    await expect(registry.put(`${CONTROL_HOME_ID}/floor-slot/garden/working`, { text: "automerge:x" }, "test"), "a control title names no floor row").rejects.toThrow(/names no floor row/);
+    await expect(registry.put(`${VESSEL_STATE_ID}/floor-slot/garden/working`, { text: "automerge:x" }, "test"), "a state title names no floor row").rejects.toThrow(/names no floor row/);
     await repo.shutdown();
   });
 });

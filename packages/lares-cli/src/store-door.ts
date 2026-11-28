@@ -13,7 +13,7 @@
 
 import { owedLine } from "./verb-result.js";
 import { wardTicketFor } from "./ward-door.js";
-import { ControlHomeUnavailable, VESSEL_LOCKED } from "@lararium/mesh/control-home";
+import { VesselStateUnavailable, VESSEL_LOCKED } from "@lararium/mesh/vessel-state";
 import { newRequestId } from "@lararium/mesh/verb-tiddler";
 import { type Credential } from "@lararium/mesh/keyslot-door";
 import { type SessionReceipt } from "@lararium/mesh/session-receipt";
@@ -604,7 +604,7 @@ const REFUSAL_NAMES = new WeakMap<Error, string>();
  *
  *   a row's refusal                 → the name its row answered (`nexus-kapae-refused`, `cabal-join-refused`, …)
  *   the vessel refused by name      → that name's code (`waking-floor`, `bag-retired`, `request-abandoned`, …)
- *   the control document unread     → `vessel-locked` (the key did not open) or `control-home-unnamed` (no face)
+ *   the state document unread     → `vessel-locked` (the key did not open) or `vessel-state-unnamed` (no face)
  *   another holder holds the store  → `store-held`
  *   the door's wait named a holder  → `store-door-timeout` (a silent door whose holder showed no work carries its own cure)
  *   this process stopped listening  → `outcome-unknown`, with the request id and its cure
@@ -627,9 +627,9 @@ export function storeFailure(err: unknown, fallback = "error"): { readonly code:
   if (err instanceof VesselComposing) return { code: "vessel-composing", message, hint: "an unlock still recomposes the vessel; run again when `lares vault status` reads ready." };
   if (err instanceof VesselSilent) return { code: "vessel-silent", message, hint: "something holds the store and answers nothing; `lares vessel read` names the holder." };
   if (err instanceof VesselLocked) return { code: VESSEL_LOCKED, message, hint: "open the vessel key with `lares vault unlock`, then run again." };
-  // THE DIRECT HOLDER'S REFUSED UNLOCK, by name: a row that needs the control document and could not open the vessel's key.
-  if (err instanceof ControlHomeUnavailable) {
-    return { code: err.refusal, message, ...(err.refusal === VESSEL_LOCKED ? { hint: "open the vessel key with `lares vault unlock`, then run again." } : err.refusal === "control-home-unnamed" ? { hint: "this place holds no face; light one with `lares persona new 0 --name '<label>'`." } : {}) };
+  // THE DIRECT HOLDER'S REFUSED UNLOCK, by name: a row that needs the state document and could not open the vessel's key.
+  if (err instanceof VesselStateUnavailable) {
+    return { code: err.refusal, message, ...(err.refusal === VESSEL_LOCKED ? { hint: "open the vessel key with `lares vault unlock`, then run again." } : err.refusal === "vessel-state-unnamed" ? { hint: "this place holds no face; light one with `lares persona new 0 --name '<label>'`." } : {}) };
   }
   if (err instanceof StoreHeld) return { code: "store-held", message, hint: "another holder holds this store: a standing vessel, or a command mid-act. Run again once it has gone." };
   if (err instanceof StoreDoorSilent) return { code: "store-door-timeout", message, hint: silentCure(err) };

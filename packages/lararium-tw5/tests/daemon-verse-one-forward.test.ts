@@ -7,7 +7,7 @@
  * proposals (lararium-web e2e/stage-walk, S4: "the outcome names no proposal id: expected 2 to be 1"). Driven over the
  * kernel's real engine, the real daemon behavior and the real router.
  */
-import { memoryControlStore } from "./control-store-fixture.js";
+import { memoryWorkStore } from "./work-store-fixture.js";
 import { describe, expect, test } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { HULLS_TS_ONLY } from "@lararium/mesh/flow";
@@ -30,7 +30,7 @@ async function standIsland(slug: string, behavior: IslandBehavior) {
   await kernel.bootTw5(wikiUri, vendoredCore(), houseSkins());
   const tw5 = kernel.tw5()!;
   const ctx = {
-    wikiUri, composite: new CompositeStore(), control: memoryControlStore(), tw5, handles: new Map(), post,
+    wikiUri, composite: new CompositeStore(), state: memoryWorkStore(), work: memoryWorkStore(), tw5, handles: new Map(), post,
     repo: undefined, catalogUrl: null, oracleUrl: null, engine: { sha256: "", version: "" }, recipe: { wikiSlug: slug },
   } as unknown as IslandContext;
   await behavior.onEa(ctx);

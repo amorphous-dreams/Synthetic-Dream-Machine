@@ -46,7 +46,7 @@ export const DOC_REF_KINDS = [
   "binding",       // a personal or draft binding row
   "keyhive-bag",   // a keyhive bag-doc row (`lar:///ha.ka.ba/keyhive/bag-doc/…`)
   "derived",       // a derived address the composition computed (`deterministicDocUrl`)
-  "control",       // the control home, or a row of the vessel's control document
+  "state",       // the vessel registry, or a row of the vessel's vessel registry
   "pointer",       // a pointer the composition reads back (the bootstrap's daemon document, and kin)
   "cap-mint",      // a document a cap created while the live composition built
   "live-handle",   // a document the live Repo holds open
@@ -196,7 +196,7 @@ export function refKindOf(role: string | undefined, title: string, fields: Reado
   if (title.startsWith(KEYHIVE_BAG_DOC)) return "keyhive-bag";
   if (SLOT_TITLE.test(title) || kind.endsWith("slot")) return "slot";
   if (role === "catalog") return "catalog";
-  if (role === "control") return "control";
+  if (role === "state") return "state";
   return "doc";
 }
 

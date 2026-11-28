@@ -6,7 +6,7 @@
  * the flush stands again, and the log holds the detail the wire never carried.
  * The harness borrows uds-session-switch.test.ts's.
  */
-import { controlStoreOf } from "@lararium/mesh/control-home";
+import { memoryWorkOf } from "./work-store-fixture.js";
 import { describe, expect, test } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -116,7 +116,7 @@ async function stand(label: string, opts: {
     logged.push(act);
   } };
   const lines: string[] = [];
-  const channel = startUdsChannel({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: flushing, sessions: door, switchActs, sessionVerbs: new Set(["face-row"]),
+  const channel = startUdsChannel({ stateHandle: daemonHandle, state: memoryWorkOf(daemonHandle), claim, repo: flushing, sessions: door, switchActs, sessionVerbs: new Set(["face-row"]),
     onLog: (line) => { lines.push(line); },
     placeVerb: (o) => {
       placed.push(o);
@@ -152,7 +152,7 @@ const switchTo = (env: Record<string, unknown>, faceRef: string, requestId: stri
 describe("UDS session fault", () => {
   test("RED: a reply whose durable settle throws answers session-fault under the call's requestId, and no fault text reaches the wire", async () => {
     let failing = false;
-    // The ledger and the durable settle each flush the control document by name; the ledger's flush lands before the
+    // The ledger and the durable settle each flush the state document by name; the ledger's flush lands before the
     // verb is placed, so a flush that fails only once the call is placed fails the reply's settle alone.
     let placedBefore = Number.POSITIVE_INFINITY;
     const v = await stand("reply", { failFlush: () => failing && v.placed.length > placedBefore });
@@ -173,7 +173,7 @@ describe("UDS session fault", () => {
 
   test("RED: a call whose fact ledger's whole-Repo flush rejects mid-arbitration answers session-fault under its requestId, and nothing runs", async () => {
     let failing = false;
-    // The fact ledger flushes the control document before it answers "run"; that flush, the call's first, rejects here.
+    // The fact ledger flushes the state document before it answers "run"; that flush, the call's first, rejects here.
     const v = await stand("ledger", { failFlush: () => failing });
     try {
       const a = await v.connect();

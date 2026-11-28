@@ -89,7 +89,7 @@ runSovereignWorker((manifest) => {
   // plus the Ui/Persona/Circle seeds, from the single site, into the daemon wiki's shadow layer. This entry seeds nothing of its own.
   const base = makeOperatorDaemonBehavior(manifest, {
     // The daemon wiki projects to `<projections>/faces/<pet name>/wikis/daemon/` through the same projector a wiki island mounts: its working
-    // layer's records reach disk, and the control document, which no recipe composes and no mirror names, never does; the
+    // layer's records reach disk, and the vessel registry, which no recipe composes and no mirror names, never does; the
     // option also lights the daemon's projection cap.
     onBoot:         (ctx: IslandContext) => mountDiskProjection(manifest, ctx, { journal, rulesFromOwnWiki: true }),
     // EVERY LIT FACE PROJECTS ITS OWN WRITES: a sibling lit beside the worn face projects through its own engine into its own

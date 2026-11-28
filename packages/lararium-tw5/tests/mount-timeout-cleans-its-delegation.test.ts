@@ -8,7 +8,7 @@
  * AbortSignal that aborts once the ask settles, and the book drops an aborted entry. CONTROL: an answered ask leaves
  * the book empty by its own settle, and an ask still awaiting its answer holds one entry.
  */
-import { memoryControlStore } from "./control-store-fixture.js";
+import { memoryWorkStore } from "./work-store-fixture.js";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
@@ -70,7 +70,7 @@ describe("the delegation book", () => {
 });
 
 describe("a mount the gate waits on ends on main's answer, never on a clock", () => {
-  test("RED: the ask stands past any clock and main's late answer lands the act; the settled ask then drops its entry (control)", async () => {
+  test("RED: the ask stands past any clock and main's late answer lands the act; the settled ask then drops its entry (state)", async () => {
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     const WORKING = "lar:///ha.ka.ba/wikis/orchard/working";
     const daemon = new CompositeStore();
@@ -81,7 +81,7 @@ describe("a mount the gate waits on ends on main's answer, never on a clock", ()
     const routed: string[] = [];
     let answerMount: (answer: Record<string, unknown>) => void = () => {};
     const dispatcher = new VerbDispatcher({
-      daemonVm: new FakeWiki() as unknown as TW5Engine, daemon, control: memoryControlStore(), registry: new VerbTable(), verifier, localOf: () => true,
+      daemonVm: new FakeWiki() as unknown as TW5Engine, daemon, state: memoryWorkStore(), registry: new VerbTable(), verifier, localOf: () => true,
       routeFn: (inv, signal) => {
         routed.push(inv.action);
         if (inv.action !== "wiki-switch") return Promise.resolve({ landed: true });

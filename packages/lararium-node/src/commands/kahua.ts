@@ -25,7 +25,7 @@ import { faceRelationOf } from "@lararium/mesh/face-relation";
 import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
 import { ownEntry } from "@lararium/mesh/stored-value";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { VESSEL_STATE_ID } from "@lararium/mesh/lar-uris";
 import { findOrThrow, DocumentUnavailableRefusal } from "@lararium/mesh/find-or-throw";
 import { type KahuaSource } from "@lararium/mesh/kahua-stage";
 import { loadIntentFace, IntentRefused } from "./intent.js";
@@ -93,13 +93,13 @@ export interface KahuaCommandOptions {
 }
 
 /**
- * The face's local canon `bags/daemon-<F>` through a vessel's control document: the row `daemon-canon/<F>` names its
+ * The face's local canon `bags/daemon-<F>` through a vessel's state document: the row `daemon-canon/<F>` names its
  * document (`standFaceDaemonCanon`), and the Repo opens it (the sealed rest unseals it while the face stands lit). Null
- * where the control document names none.
+ * where the state document names none.
  */
-export function faceCanonThroughControl(repo: Repo, control: () => Promise<DocHandle<LarDoc>>): (relation: string) => Promise<DocHandle<LarDoc> | null> {
+export function faceCanonThroughState(repo: Repo, state: () => Promise<DocHandle<LarDoc>>): (relation: string) => Promise<DocHandle<LarDoc> | null> {
   return async (relation) => {
-    const named = tiddlerText(ownEntry((await control()).doc()?.tiddlers, `${CONTROL_HOME_ID}/daemon-canon/${encodeURIComponent(relation)}`));
+    const named = tiddlerText(ownEntry((await state()).doc()?.tiddlers, `${VESSEL_STATE_ID}/daemon-canon/${encodeURIComponent(relation)}`));
     if (!named || !named.startsWith("automerge:")) return null;
     // THE ONE BOUNDED RESOLVE (`findOrThrow`): a canon no peer answers for refuses by name and never holds a session's act
     // open. The chore check (`chore-face-not-mounted`) decides first; this bound stands under it as the resolve's own liveness floor.

@@ -59,6 +59,8 @@ export interface VesselIslandPoolOptions {
   onEa?: (wikiId: string) => void;
   /** Vessel Automerge Repo — each island's mainPort wires to it for CRDT sync. */
   mainRepo?: Repo;
+  /** The vessel retains request decisions for every receiving island. */
+  work?: import("@lararium/mesh/composite-store").CompositeStore;
   portPolicy?: PortPolicy;
   onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
   onPortDrop?: (islandKey: string, type: string, reason: "no-port-lease") => void;
@@ -110,6 +112,7 @@ export class VesselIslandPool extends VesselIslandPoolCore {
         newSyncChannel: nodeNewSyncChannel,
       },
       mainRepo: options.mainRepo ?? null,
+      ...(options.work ? { work: options.work } : {}),
       readContent: nodeContentReader(options.cidDir ?? null, options.caps),
       diskMirrorGrant: options.diskMirrorGrant ?? [],
       ...(options.shoreCollapse ? { shoreCollapse: options.shoreCollapse } : {}),

@@ -24,7 +24,6 @@ import {
 import { bagStackFromRec } from "@lararium/mesh/bag-stack-from-rec";
 import { recipeUri } from "@lararium/mesh/lar-uris";
 import { wikiBagUri, wikiSlotUri, type WikiSlotKind } from "@lararium/mesh/wiki-recipe";
-import { WARD_AUDIT_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 import { type CompositeStore } from "@lararium/mesh/composite-store";
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { type Repo } from "@lararium/mesh/automerge";
@@ -230,21 +229,16 @@ export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: Catalo
 
 // ── ward-alert — the disk ward's signal surfaces in the daemon VM ────────────
 //
-// A wiki island's projector refused a write (sovereign-island disk ward,
-// disk-projection#write-ward). The signal rides the generic worker.event →
-// placeVerb bridge into the daemon VM, which (a) writes a DURABLE audit record
-// into the composite's default writable working layer and (b) injects a
-// $:/tags/Alert into the operator's currently PINNED VM via the existing
-// wiki-alert rail (kind "disk-ward"). No cap-gate: the signal originates from
-// the island's own mechanism, grants nothing, and only writes audit + alert.
+// The face wiki keeps a keyed alert in its invariant store. The process remembers active
+// standoffs only while it lives; no unread CRDT record needs to survive it.
+const activeWardStandoffs = new WeakMap<CompositeStore, Set<string>>();
 
 /** Register as "ward-alert". `post` = ctx.post (DaemonMsg_WikiAlert rides it). */
 export function makeWardAlertReactor(
   composite: CompositeStore,
-  control: CompositeStore,
   post: (msg: DaemonMsg_WikiAlert) => void,
 ): VerbReactor {
-  return async (args) => fileWardRefusal(composite, control, post, args);
+  return async (args) => fileWardRefusal(composite, post, args);
 }
 
 /**
@@ -257,8 +251,6 @@ export function makeWardAlertReactor(
  */
 export async function fileWardRefusal(
   composite: CompositeStore,
-  /** The vessel's control document as a store (`controlStoreOf`): the audit row rests there, never in a wiki layer. */
-  control: CompositeStore,
   post: (msg: DaemonMsg_WikiAlert) => void,
   args: Readonly<Record<string, unknown>>,
 ): Promise<Record<string, unknown>> {
@@ -269,8 +261,8 @@ export async function fileWardRefusal(
     // WHICH WARD REFUSED. The disk projector is one caller among others: the
     // M3 archive-floor write files its own refusals here rather than minting a fourth rail
     // (`archive-floor-write`, waking-floor). A seal refusal recorded as a disk-ward refusal would
-    // send an operator to the wrong mechanism, so the LEDGER record and the operator-facing message
-    // name the ward that actually refused. Absent → "disk-ward", the disk projector's ward.
+    // send an operator to the wrong mechanism, so the operator-facing message
+    // names the ward that actually refused. Absent → "disk-ward", the disk projector's ward.
     //
     // THE WIRE KIND STAYS `disk-ward` DELIBERATELY. `kind`/`cause` are Rail A's TRANSPORT names, and
     // the residency delivery keys off them (`hooks.alertArgs?.(kind)`, the browser drop diagnostics).
@@ -279,31 +271,20 @@ export async function fileWardRefusal(
     const headline = wardKind === "disk-ward"
       ? `Disk ward refused a write (${bagId})`
       : `${wardKind} refused a write (${bagId})`;
-    const ts     = new Date().toISOString();
-    // A STANDOFF CARRIES ITS KEY (bag, carrier and the two hashes, folded by the projector). The key names
-    // the audit row and the live alert, so one standoff files one row however often the rail hears of it,
-    // two standoffs show two alerts, and a resolution clears exactly its own.
+    // The wiki rewrites one title per standoff; memory suppresses duplicate posts during this process.
     const standoff = typeof args["standoff"] === "string" && /^[0-9a-f]{8,64}$/.test(args["standoff"]) ? args["standoff"] : null;
-    const slug   = readHomeWikiSlug(await composite.get(HOME_WIKI_TITLE));
-
+    const slug = readHomeWikiSlug(await composite.get(HOME_WIKI_TITLE));
+    let active = activeWardStandoffs.get(composite);
+    if (!active) { active = new Set(); activeWardStandoffs.set(composite, active); }
+    const key = standoff && slug ? `${slug}/${standoff}` : null;
     if (standoff !== null && args["resolved"] === true) {
+      if (key) active.delete(key);
       if (slug) post(mkDaemonWikiAlert({ wikiSlug: slug, message: `${headline}: resolved`, cause: "disk-ward", kind: "disk-ward", key: standoff, clear: true }));
       return { cleared: standoff, alerted: slug ?? "none", bagId, uri };
     }
-
-    // (a) Durable audit in the vessel's control document: append-only, never coalesced, never in a mirrored layer.
-    // A standoff's row carries its key as its title and lands on ENTERING the standoff, once.
-    const auditTitle = `${WARD_AUDIT_URI_PREFIX}${standoff ?? crypto.randomUUID()}`;
-    if (standoff === null || (await control.get(auditTitle)) === null) {
-      await control.put(
-        { tiddler: { title: auditTitle, "alert-kind": wardKind, bag: bagId, uri, reason, ts, ...(standoff !== null ? { standoff } : {}), ...(typeof args["rule"] === "string" && args["rule"] ? { rule: args["rule"] } : {}) }, meta: { authority: "disk-ward" } },
-        { kind: "lares-verb", requestId: `ward-${ts}` },
-      );
-    }
-
-    // (b) Alert the face's home wiki (its home preference record in the daemon wiki's working layer, read at light). A row filed for the record
-    // alone (`auditOnly`: a stand-off the person's own collapse rule settled) raises no alert: nothing awaits anyone.
-    if (args["auditOnly"] === true) return { audited: auditTitle, alerted: "none", bagId, uri };
+    // A collapse needs no operator action, and therefore no persistent fact or alert.
+    if (args["auditOnly"] === true) return { alerted: "none", bagId, uri };
+    if (key && active.has(key)) return { alerted: slug, bagId, uri };
     if (slug) {
       post(mkDaemonWikiAlert({
         wikiSlug: slug,
@@ -312,8 +293,9 @@ export async function fileWardRefusal(
         kind:     "disk-ward",
         ...(standoff !== null ? { key: standoff } : {}),
       }));
+      if (key) active.add(key);
     }
-    return { audited: auditTitle, alerted: slug ?? "none", bagId, uri };
+    return { alerted: slug ?? "none", bagId, uri };
   }
 }
 

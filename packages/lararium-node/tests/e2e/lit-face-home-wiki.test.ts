@@ -121,7 +121,7 @@ async function askVerb(at: Staged, vessel: NodeVesselResult, verb: string, args:
   const requestedBy = await withLarRoot(at.root, async () => `0x${await loadVesselVerifyingKey()}`);
   const front = serveUdsFront({ claim: vessel.storeClaim });
   front.attach(makeUdsSeat({
-    controlHandle: vessel.daemon.controlHandle, control: vessel.daemon.control,
+    stateHandle: vessel.daemon.stateHandle, state: vessel.daemon.state,
     placeVerb: (o) => vessel.daemon.placeVerb(o), claim: vessel.storeClaim, repo: vessel.repo,
     floorVerbs: floorVerbsFor(vessel.floorKey === "stands"),
   }));

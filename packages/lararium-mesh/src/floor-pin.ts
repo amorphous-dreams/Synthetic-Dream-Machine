@@ -3,8 +3,8 @@
  *
  * The operator's ruling (2026-11-11, "the vessel pins the floor"): a release gets CUT and published (`floor-release`); each
  * vessel ACCEPTS it, and acceptance moves its floor. Faces pin nothing; the engine keeps its own adoption at reboot, per
- * device. So the pin rests in the vessel's CONTROL HOME (`control-home`: the document no recipe mounts and no mirror names),
- * under `<control>/floor-pin/<Nexus AID>`, never in a face's store, and a face switch moves no pin.
+ * device. So the pin rests in the vessel's VESSEL STATE (`vessel-state`: the document no recipe mounts and no mirror names),
+ * under `<state>/floor-pin/<Nexus AID>`, never in a face's store, and a face switch moves no pin.
  *
  * THE PIN STARTS AT GENESIS. A vessel that holds no pin row for a Nexus stands on the floor its genesis baked
  * (`GENESIS_FLOOR_TIDDLER`): the pin DERIVES (`release: null`, the genesis manifest) and nothing writes at boot, so a reboot
@@ -32,7 +32,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin
  */
 import { tiddlerText, type LarDoc } from "./base-doc.js";
-import { CONTROL_HOME_ID } from "./lar-uris.js";
+import { VESSEL_STATE_ID } from "./lar-uris.js";
 import { storedLarRecord } from "./stored-record.js";
 import { ownEntry, plainRecordOrNull } from "./stored-value.js";
 import { GENESIS_FLOOR_TIDDLER, floorBlobCids, floorManifestBytes, readFloorManifest, type FloorManifest } from "./floor-manifest.js";
@@ -43,8 +43,8 @@ import { foldFloorReleases, type FloorRelease, type FloorReleaseRefused, type Fl
 /** The pin record's shape name: a reader tells a pin by `kind`, never by a counter. */
 import { FLOOR_PIN_KIND } from "./wire-names.js";
 export { FLOOR_PIN_KIND };
-/** Where the pins rest in the vessel's control document: one row per Nexus, keyed by its AID. */
-export const FLOOR_PIN_PREFIX = `${CONTROL_HOME_ID}/floor-pin/` as const;
+/** Where the pins rest in the vessel's state document: one row per Nexus, keyed by its AID. */
+export const FLOOR_PIN_PREFIX = `${VESSEL_STATE_ID}/floor-pin/` as const;
 
 const HEX64 = /^[0-9a-f]{64}$/;
 const PIN_KEYS = ["kind", "nexus", "release", "manifest"] as const;
@@ -151,10 +151,10 @@ function pinText(pin: FloorPin): string {
   return JSON.stringify({ ...plain, local: { base: l.base, receipt: l.receipt, prior, state: l.state } });
 }
 
-/** The vessel's pin at `nexus` off its control document, or the genesis pin where it holds none (a torn row names itself). */
-export function floorPinOf(controlDoc: LarDoc | null | undefined, nexus: string, genesisManifest: string):
+/** The vessel's pin at `nexus` off its state document, or the genesis pin where it holds none (a torn row names itself). */
+export function floorPinOf(stateDoc: LarDoc | null | undefined, nexus: string, genesisManifest: string):
   { readonly pin: FloorPin; readonly source: FloorPinSource } {
-  const text = tiddlerText(ownEntry(controlDoc?.tiddlers, floorPinTitle(nexus)));
+  const text = tiddlerText(ownEntry(stateDoc?.tiddlers, floorPinTitle(nexus)));
   if (text === null) return { pin: genesisFloorPin(nexus, genesisManifest), source: "genesis" };
   let parsed: unknown;
   try { parsed = JSON.parse(text); } catch { parsed = null; }
@@ -162,10 +162,10 @@ export function floorPinOf(controlDoc: LarDoc | null | undefined, nexus: string,
   return pin ? { pin, source: "accepted" } : { pin: genesisFloorPin(nexus, genesisManifest), source: "torn" };
 }
 
-/** Every pin the control document holds, one per Nexus; a torn row drops. */
-export function floorPinsOf(controlDoc: LarDoc | null | undefined): FloorPin[] {
+/** Every pin the state document holds, one per Nexus; a torn row drops. */
+export function floorPinsOf(stateDoc: LarDoc | null | undefined): FloorPin[] {
   const out: FloorPin[] = [];
-  for (const [title, row] of Object.entries(controlDoc?.tiddlers ?? {})) {
+  for (const [title, row] of Object.entries(stateDoc?.tiddlers ?? {})) {
     if (!title.startsWith(FLOOR_PIN_PREFIX)) continue;
     const text = tiddlerText(row);
     if (text === null) continue;
@@ -174,7 +174,7 @@ export function floorPinsOf(controlDoc: LarDoc | null | undefined): FloorPin[] {
   return out;
 }
 
-/** Land a pin on a control-document draft. Call INSIDE a `handle.change()` callback; the same pin writes nothing. */
+/** Land a pin on a state-document draft. Call INSIDE a `handle.change()` callback; the same pin writes nothing. */
 export function writeFloorPin(draft: LarDoc, pin: FloorPin): boolean {
   const title = floorPinTitle(pin.nexus);
   const text = pinText(pin);
@@ -391,15 +391,15 @@ export function floorRemountDecision(caps: FloorMountCaps, manifest: string): Fl
  * holds; else genesis. Two pins naming different floors with no Nexus named mount genesis and say so: the pick never
  * chooses between two Nexuses by itself.
  */
-export function floorCidToMount(args: { readonly controlDoc: LarDoc | null | undefined; readonly nexus: string | null; readonly genesis: string | null }):
+export function floorCidToMount(args: { readonly stateDoc: LarDoc | null | undefined; readonly nexus: string | null; readonly genesis: string | null }):
   { readonly cid: string | null; readonly source: "pin" | "genesis"; readonly note?: string } {
   if (args.nexus !== null) {
-    const text = tiddlerText(ownEntry(args.controlDoc?.tiddlers, floorPinTitle(args.nexus)));
+    const text = tiddlerText(ownEntry(args.stateDoc?.tiddlers, floorPinTitle(args.nexus)));
     let pin: FloorPin | null = null;
     try { pin = text === null ? null : readFloorPin(JSON.parse(text), args.nexus); } catch { pin = null; }
     return pin ? { cid: pin.manifest, source: "pin" } : { cid: args.genesis, source: "genesis" };
   }
-  const floors = [...new Set(floorPinsOf(args.controlDoc).map((p) => p.manifest))];
+  const floors = [...new Set(floorPinsOf(args.stateDoc).map((p) => p.manifest))];
   if (floors.length === 1) return { cid: floors[0]!, source: "pin" };
   if (floors.length > 1) return { cid: args.genesis, source: "genesis", note: `pins at ${floors.length} Nexuses name different floors and no Nexus was named; the genesis floor mounts` };
   return { cid: args.genesis, source: "genesis" };
@@ -407,7 +407,7 @@ export function floorCidToMount(args: { readonly controlDoc: LarDoc | null | und
 
 // ── the composed doors (ports bound per host) ───────────────────────────────────────────────────────
 
-/** The control document as the pin doors need it: a DocHandle satisfies it. */
+/** The state document as the pin doors need it: a DocHandle satisfies it. */
 export interface FloorPinHome {
   doc(): LarDoc | undefined;
   change(fn: (draft: LarDoc) => void): void;
@@ -539,17 +539,17 @@ export async function settleLocalFloor(ports: Pick<FloorPinPorts, "home" | "nexu
 
 /**
  * The floor manifest a vessel's next island mounts, or null where it stands on genesis (the island then reads its seed's
- * own witness). Both hosts bind this one read into the pool (`VesselIslandPoolCoreOptions.floorCid`); a control document
+ * own witness). Both hosts bind this one read into the pool (`VesselIslandPoolCoreOptions.floorCid`); a state document
  * that will not stand (a locked vessel) mounts genesis. No Nexus is named: the vessel's sole pin moves its mount, and two
  * pins naming different floors mount genesis (`floorCidToMount`).
  */
 export async function vesselFloorCid(args: {
-  readonly control:   () => Promise<{ doc(): LarDoc | undefined } | null>;
+  readonly state:   () => Promise<{ doc(): LarDoc | undefined } | null>;
   readonly islandDoc: () => LarDoc | null | undefined;
 }): Promise<string | null> {
-  let controlDoc: LarDoc | undefined;
-  try { controlDoc = (await args.control())?.doc(); } catch { return null; }
-  const pick = floorCidToMount({ controlDoc, nexus: null, genesis: genesisFloorCidOf(args.islandDoc()) });
+  let stateDoc: LarDoc | undefined;
+  try { stateDoc = (await args.state())?.doc(); } catch { return null; }
+  const pick = floorCidToMount({ stateDoc, nexus: null, genesis: genesisFloorCidOf(args.islandDoc()) });
   if (pick.note) console.info(`[floor] ${pick.note}`);
   return pick.source === "pin" ? pick.cid : null;
 }
@@ -562,7 +562,7 @@ export async function vesselMountFloorCid(args: Parameters<typeof vesselFloorCid
   let island: LarDoc | null | undefined;
   try { island = args.islandDoc(); } catch { island = null; }
   // An island read that throws never fails the mount: the pick reads the one value read above, and no pin then mounts no floor.
-  return (await vesselFloorCid({ control: args.control, islandDoc: () => island })) ?? genesisFloorCidOf(island);
+  return (await vesselFloorCid({ state: args.state, islandDoc: () => island })) ?? genesisFloorCidOf(island);
 }
 
 /** The pool doors the floor alert rides: the live islands outside any session, and a wiki verb's placement. */

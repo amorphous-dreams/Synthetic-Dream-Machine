@@ -11,7 +11,7 @@
  *       requester names the vessel.
  *   Q2  RED: an ask with no proof refuses (the parent commit's verb ran it); a proof under another key refuses (an
  *       island or a peer holds no vessel key); a true proof replayed under another request id refuses; a true
- *       proof beside other facts refuses; a malformed proof refuses.          control: the true ask reads licensed
+ *       proof beside other facts refuses; a malformed proof refuses.          state: the true ask reads licensed
  *   Q3  RED: THE VERB CHECKS FIRST, AND ONE ROAD PLACES IT. In the island's source the check stands ahead of every
  *       other read inside the one `seat-duties` registration; across every package's source, the verb's name
  *       gets placed by the main thread's asker alone.
@@ -32,7 +32,7 @@ import * as ed from "@noble/ed25519";
 import { describe, expect, test } from "vitest";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { CompositeStore } from "@lararium/mesh/composite-store";
-import { DAEMON_BAG_ID, CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { DAEMON_BAG_ID, VESSEL_STATE_ID } from "@lararium/mesh/lar-uris";
 import { concludeVerb } from "@lararium/mesh/verb-tiddler";
 import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
@@ -52,10 +52,10 @@ const PLACE_SEED = new Uint8Array(32).fill(43);
 const FACTS = { fleetRoot: "ab".repeat(32), acts: [{ kind: "a-synthetic-act", n: 1 }], rolled: ["cd".repeat(32)] };
 const pub = async (seed: Uint8Array): Promise<string> => hex(await ed.getPublicKeyAsync(seed));
 
-/** The control store (the control document the island writes outcomes into) and a main-thread channel that records what got placed. */
+/** The state store (the state document the island writes outcomes into) and a main-thread channel that records what got placed. */
 function island() {
   const repo = new Repo({});
-  const working = CONTROL_HOME_ID;
+  const working = VESSEL_STATE_ID;
   const composite = new CompositeStore();
   composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(repo.create<LarDoc>(emptyLarDoc()) as never, DAEMON_BAG_ID), writable: true, defaultWritable: false });
   composite.addLayer({ bagId: working, store: new AutomergeDocStore(repo.create<LarDoc>(emptyLarDoc()), working), writable: true });
@@ -73,7 +73,7 @@ describe("who may ask the island's seat-duties verb", () => {
   test("Q1/Q2 — the vessel's own ask reads licensed; every other ask refuses", async () => {
     const vesselKey = await pub(VESSEL_SEED);
     const s = island();
-    const ask = askSeatDuties({ control: s.composite, placeVerb: s.place, facts: FACTS, vesselKey, sign: ed25519SignerFromSeed(VESSEL_SEED) });
+    const ask = askSeatDuties({ state: s.composite, placeVerb: s.place, facts: FACTS, vesselKey, sign: ed25519SignerFromSeed(VESSEL_SEED) });
     await s.placedOnce;
     expect(s.placed).toHaveLength(1);
     const sent = s.placed[0]!;
@@ -155,7 +155,7 @@ describe("who may ask the island's seat-duties verb", () => {
   test("Q5 — an ask abandoned while its proof signs places nothing", async () => {
     const s = island();
     let signed!: (sig: string) => void;
-    const ask = askSeatDuties({ control: s.composite, placeVerb: s.place, facts: FACTS, vesselKey: await pub(VESSEL_SEED), sign: () => new Promise((resolve) => { signed = resolve; }) });
+    const ask = askSeatDuties({ state: s.composite, placeVerb: s.place, facts: FACTS, vesselKey: await pub(VESSEL_SEED), sign: () => new Promise((resolve) => { signed = resolve; }) });
     ask.abandon();
     signed("00".repeat(64));
     await expect(ask.answer).rejects.toBeInstanceOf(IslandAskAbandoned);

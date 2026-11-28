@@ -428,9 +428,9 @@
       "import": "./dist/content-key-lineage.js",
       "types": "./dist/content-key-lineage.d.ts"
     },
-    "./control-home": {
-      "import": "./dist/control-home.js",
-      "types": "./dist/control-home.d.ts"
+    "./vessel-state": {
+      "import": "./dist/vessel-state.js",
+      "types": "./dist/vessel-state.d.ts"
     },
     "./conviction-dial": {
       "import": "./dist/conviction-dial.js",
@@ -1531,6 +1531,22 @@
     "./ws-dial-socket-door": {
       "import": "./dist/ws-dial-socket-door.js",
       "types": "./dist/ws-dial-socket-door.d.ts"
+    },
+    "./answer-ring": {
+      "import": "./dist/answer-ring.js",
+      "types": "./dist/answer-ring.d.ts"
+    },
+    "./floor-answers": {
+      "import": "./dist/floor-answers.js",
+      "types": "./dist/floor-answers.d.ts"
+    },
+    "./vessel-work": {
+      "import": "./dist/vessel-work.js",
+      "types": "./dist/vessel-work.d.ts"
+    },
+    "./swarm-owner": {
+      "import": "./dist/swarm-owner.js",
+      "types": "./dist/swarm-owner.d.ts"
     }
   },
   "main": "./dist/index.js",

@@ -43,7 +43,7 @@ import {
 } from "@lararium/mesh/sealed-rest";
 import { facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal } from "@lararium/mesh/catalog-view";
 import { bindSecretHomeRest, SecretHomeUnavailable, type SecretHome } from "@lararium/mesh/secret-home";
-import { nameControlHome } from "@lararium/mesh/control-home";
+import { nameVesselState } from "@lararium/mesh/vessel-state";
 import { daemonFaceCanonBag } from "@lararium/mesh/wiki-recipe";
 import { DAEMON_SLOT_PREFIX, type LitDeviceFaces } from "@lararium/mesh/device-daemon-docs";
 import { selvesRecordBagOf } from "@lararium/mesh/persona-planes";
@@ -79,7 +79,7 @@ import {
 } from "@lararium/mesh/sibling-channel";
 import { groupSecretSealTitle, verifyGroupSecretSeal } from "@lararium/mesh/persona-group-secret";
 import { leaseEpochPrefix } from "@lararium/mesh/epoch-lease";
-import { controlHomeUrlOf } from "@lararium/mesh/control-home";
+import { vesselStateUrlOf } from "@lararium/mesh/vessel-state";
 import { vesselOnlyBook } from "@lararium/mesh/vessel-only-book";
 import { islandPeersOf, wikiIslandPeersOf } from "@lararium/mesh/island-repo-door";
 import { slugFromUri, recipeHostFacets } from "@lararium/mesh/wiki-recipe";
@@ -163,7 +163,7 @@ import type { CoherenceFrameWithRev } from "./wiki-coherence-frame.js";
 import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { foundTheFace, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
-import { standControlHome } from "@lararium/mesh/control-home";
+import { standVesselState } from "@lararium/mesh/vessel-state";
 import { vesselFloorCid, vesselMountFloorCid, raiseFloorAlert, genesisFloorCidOf } from "@lararium/mesh/floor-pin";
 import { floorRequiredBlobIds } from "@lararium/mesh/floor-offering";
 import { promotePanelApi, isQuietSnapshot } from "@lararium/mesh/promote-panel-api";
@@ -596,7 +596,7 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
    *  manifest's exact bytes, and each fetched blob hashes to its CID. It records no acceptance: the vessel accepts a release by
    *  a person's own act (`acceptFloor`), and the vessel mounts the floor its pin names. */
   readFloor: (baseUrl: string) => Promise<HearthFloorRead>;
-  /** The vessel's pin on that hearth's Nexus floor (w26-floor-lane#/the-vessel-pin): the same control-home row and the same
+  /** The vessel's pin on that hearth's Nexus floor (w26-floor-lane#/the-vessel-pin): the same vessel-state row and the same
    *  mesh read the node runs (`floor-pin`); a door this vessel cannot run refuses by name, saying why. */
   floorStatus: (baseUrl: string) => ReturnType<typeof browserFloorStatus>;
   /** Accept a release (or the sole newest) for that Nexus: the same mesh decision the node runs. The floor stages into the OPFS
@@ -814,7 +814,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // gate the relay is the operator's OWN node (same-operator leaf, own DID) → full device sync.
   const relayPeers = new Set<string>();
   // automerge-repo asks a document's access verdict once per peer and again only on `shareConfigChanged`: every growth of the
-  // vessel-only deny set (the control document's names, a held home filed) re-asks, so a peer handed a document before it
+  // vessel-only deny set (the state document's names, a held home filed) re-asks, so a peer handed a document before it
   // grew meets the new answer. `repo` reads late: no growth comes before it stands.
   const reverdict = (): void => { try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ } };
   const vesselOnly = vesselOnlyBook(() => repo);
@@ -866,10 +866,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // draft binding), then the catalog's row.
   // Each slot document the daemon island's resolver named, by bag (`announceSlotDoc`).
   const slotDocsNamed = new Map<string, Set<string>>();
-  // THE PER-DEVICE DAEMON DOCUMENTS the control document names (the daemon wiki's device slots, each face's daemon canon),
+  // THE PER-DEVICE DAEMON DOCUMENTS the state document names (the daemon wiki's device slots, each face's daemon canon),
   // filed by the face that OWNS each through the one table the node files by (`deviceDaemonDocs`, isomorphic by intent): a
   // group's slot or a face's canon seals under that face's key while its lift stands and waits held otherwise; the floor's
-  // slot seals beside the control document under the vessel's key. `litDevices` names the lit set: the browser's one face whose
+  // slot seals beside the state document under the vessel's key. `litDevices` names the lit set: the browser's one face whose
   // lift stands (a set of one, the node's table read at its smallest), or none.
   let litDeviceGroup: string | null = null;
   let litDeviceRelation: string | null = null;
@@ -905,10 +905,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // THE LIFT CARRIED A FLOOR WIKI'S CANON IN PLACE (the node's one order, Ruling 2): the document leaves the vessel's
       // class and files under the face's bag below, where `sealMapped` re-files its seal from the vessel's key to the face's.
       if (lifted && deviceDocs.release(documentId) !== null) { sealedRest.store.mapMoved(); reverdict(); }
-      // A daemon device slot named before its first byte files by the group the control document names for it, never by
+      // A daemon device slot named before its first byte files by the group the state document names for it, never by
       // the face lit as it announces: it waits held (never clear, never under another face's key) until then.
       // A VEIL FLOOR'S WIKI SLOT (`floor`) files the same way (the node's one order): the vessel owns it, so it waits held and
-      // then seals beside the control document under the vessel's key, never under a lit face's.
+      // then seals beside the state document under the vessel's key, never under a lit face's.
       if (bagId.startsWith(DAEMON_SLOT_PREFIX) || floor) {
         if (deviceDocs.announced(bagId, documentId)) { sealedRest.store.mapMoved(); reverdict(); }
         const session = sealedCells.session;
@@ -998,7 +998,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     void sealedRest.store.reseal().catch(() => { /* each keeps waiting, never clear */ });
     reverdict();
   }, async () => {
-    // The key stands where this browser's keystore stands open; a locked keystore answers false and control writes wait held.
+    // The key stands where this browser's keystore stands open; a locked keystore answers false and state writes wait held.
     try { await openBrowserSecretHome(idbName, repo); return true; } catch { return false; }
   }));
   // THE FLOOR'S REST KEY (the-veil-ladder#/the-base-model, in-house rulings 6 and 7): derived from this browser's own
@@ -1006,10 +1006,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // row rests clear before the place tree binds and under the seal after; a sealed keystore with no unlock yet answers
   // `vessel-locked`, and the daemon island's open asks again once the boot's unlock stood.
   const standFloorKey = () => standBrowserFloorKey(idbName, repo);
-  // THE DEVICE DAEMON DOCUMENTS the control document names, filed by their owners (answers whether any filing moved): the
+  // THE DEVICE DAEMON DOCUMENTS the state document names, filed by their owners (answers whether any filing moved): the
   // map re-reads, and the lifted session seals what now maps to its face.
-  const classDeviceDaemonDocs = (controlDoc: LarDoc | undefined): void => {
-    if (!deviceDocs.readControl(controlDoc)) return;
+  const classDeviceDaemonDocs = (stateDoc: LarDoc | undefined): void => {
+    if (!deviceDocs.readState(stateDoc)) return;
     sealedRest.store.mapMoved();
     reverdict();
     const session = sealedCells.session;
@@ -1018,7 +1018,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   houseIslands = islandPeersOf(repo);
   wikiIslands = wikiIslandPeersOf(repo);
   // THE FLOOR'S REGISTRY rests in the place's daemon document (`device-daemon-docs` `readFloor`): each row files a floor
-  // document under the floor's rest key and keeps it on this vessel, with no control document standing.
+  // document under the floor's rest key and keeps it on this vessel, with no state document standing.
   const floorWatched = new Set<string>();
   const watchFloorRegistry = (daemon: DocHandle<LarDoc>): void => {
     if (floorWatched.has(daemon.documentId)) return;
@@ -1032,11 +1032,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     refresh();
     daemon.on("change", refresh);
   };
-  let watchedControl: DocHandle<LarDoc> | null = null;
-  const watchControl = async (daemon: DocHandle<LarDoc>): Promise<DocHandle<LarDoc>> => {
-    const handle = await standControlHome(repo, daemon);
-    if (watchedControl !== handle) {
-      watchedControl = handle;
+  let watchedState: DocHandle<LarDoc> | null = null;
+  const watchState = async (daemon: DocHandle<LarDoc>): Promise<DocHandle<LarDoc>> => {
+    const handle = await standVesselState(repo, daemon);
+    if (watchedState !== handle) {
+      watchedState = handle;
       const refresh = () => { vesselOnly.refresh(handle.doc(), handle.url); classDeviceDaemonDocs(handle.doc()); };
       refresh();
       handle.on("change", refresh);
@@ -1186,7 +1186,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // THE VEIL FLOOR (the-veil-ladder#/the-base-model: "every vessel stands anon at its floor … its own veiled-key, its own
     // local content, no group"). No admit and no record: the place stands on the vessel's own key and asks nobody. The
     // place's daemon document seeds, and the floor's rest key (stood above from the `floor-rest` seed, the pre-bind
-    // window, `browser-custody`) seals what the floor writes. THE PLACE MINTS NO SECRET HOME AND NO CONTROL DOCUMENT
+    // window, `browser-custody`) seals what the floor writes. THE PLACE MINTS NO SECRET HOME AND NO VESSEL STATE DOCUMENT
     // (operator ruling 2026-11-09, whole on both hosts): each mints with the face, where its founding or its admit lands.
     // No PersonaGroup, no root, no ward, no card and no passphrase ask: a face lands later as an overlay (the fleet-join
     // door), and its landing lifts what this floor wrote.
@@ -1226,8 +1226,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       const standing = firstOverlay ? await repo.find<LarDoc>(bootstrap.daemonUrl as AutomergeUrl) : null;
       if (standing) await standing.whenReady();
       const place = standing ? { daemonHandle: standing as unknown as Awaited<ReturnType<typeof foundThePlace>>["daemonHandle"] } : await foundThePlace({ repo });
-      // The control document minted beside the home: the daemon document names it, for a locked boot's stand.
-      if (secret.controlUrl) nameControlHome(place.daemonHandle, secret.controlUrl);
+      // The state document minted beside the home: the daemon document names it, for a locked boot's stand.
+      if (secret.stateUrl) nameVesselState(place.daemonHandle, secret.stateUrl);
       a = await runApplyAdmitPayload({
         repo,
         daemonHandle:       place.daemonHandle,
@@ -1324,8 +1324,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         ? await repo.find<LarDoc>(floor.daemonUrl as AutomergeUrl)
         : (await foundThePlace({ repo })).daemonHandle as unknown as DocHandle<LarDoc>;
       await floorDaemon.whenReady();
-      // THE CONTROL DOCUMENT MINTS WITH THE FACE, beside its secret home, and the face's daemon document takes its name here.
-      if (secret.controlUrl) nameControlHome(floorDaemon, secret.controlUrl);
+      // THE VESSEL STATE DOCUMENT MINTS WITH THE FACE, beside its secret home, and the face's daemon document takes its name here.
+      if (secret.stateUrl) nameVesselState(floorDaemon, secret.stateUrl);
       f = { daemonUrl: floorDaemon.url as string, secretUrl: secret.handle.url as string, ...await foundTheFace({
         repo,
         daemonHandle: floorDaemon as unknown as Parameters<typeof foundTheFace>[0]["daemonHandle"],
@@ -1911,7 +1911,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           });
           if (!proof.ok) throw new Error(`[lararium-browser] Face proof: ${proof.refusal.why}${"plane" in proof.refusal ? ` ${proof.refusal.plane}` : ""}; re-found or re-admit the face`);
           wornRelation = faceRelationOf(proof.projection);
-          if (wornRelation) daemonCanon = await standFaceDaemonCanon({ repo, control: await watchControl(await repo.find<LarDoc>(social.daemonUrl as AutomergeUrl)), faceRelation: wornRelation,
+          if (wornRelation) daemonCanon = await standFaceDaemonCanon({ repo, state: await watchState(await repo.find<LarDoc>(social.daemonUrl as AutomergeUrl)), faceRelation: wornRelation,
             beforeFirstByte: (bagId, documentId) => { if (deviceDocs.canonMinted(bagId, documentId, wornRelation!)) reverdict(); sealedRest.store.mapMoved(); } });
           const kahua = adoptKahuaPlane(proof.projection, wornGroup, kahuaCatalogRow(assembly.catalogHandle.doc()));
           if (kahua.staleRow) console.warn(`[lararium-browser] kahua stage: the catalog row names ${kahua.staleRow}, a stale hint (the face pins ${"mount" in kahua ? kahua.mount : "none"}); the pin decides`);
@@ -1922,7 +1922,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           // missing or replayed older slot never lowers the epoch this device already accepted.
           const head = proof.projection.head;
           const leasePrefix = leaseEpochPrefix(wornGroup);
-          const controlUrl = controlHomeUrlOf(daemonDoc), leaseDoc = controlUrl ? heldDocOf(repo, controlUrl) : undefined;
+          const stateUrl = vesselStateUrlOf(daemonDoc), leaseDoc = stateUrl ? heldDocOf(repo, stateUrl) : undefined;
           const leaseSlots = Object.entries(leaseDoc?.tiddlers ?? {}).filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
           const observedLease = readFace(personaKelChain)?.observedLease(wornGroup, leaseSlots) ?? 0;
           const pinned = raiseFaceFrontier(faceAnchor, { leaseEpoch: observedLease, ...(head ? { actSeq: head.seq, actCid: head.cid } : {}) });
@@ -2102,7 +2102,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // THE ATOM rides to the island as the face's own Individual: hex seed and its key. The island holds it for
         // the boot and the seed leaves this closure with the manifest.
         // THE VEIL FLOOR RIDES NONE OF THE FACE PINS (the node's floor shape, `daemonAuthNow`): no atom, no group, no anchor,
-        // no KEL and no edge. The island then boots faceless on the place key, and its floor verbs gate on the control document.
+        // no KEL and no edge. The island then boots faceless on the place key, and its floor verbs gate on the state document.
         ...(wornAtomSeed && wornAtom ? { atom: { seed: hex(wornAtomSeed), key: wornAtom.key } } : {}),
         ...(wornAddressSecret ? { faceAddressSecret: wornAddressSecret } : {}),
         ...(secretHome ? { secretUrl: secretHome.url } : {}),
@@ -2140,7 +2140,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       const resolveDaemonPlugins = async () => {
         const daemonPluginResolution = await resolveBrowserIslandPluginCids({
           islandBlobs: assembly.islandHandle.doc()?.blobs,
-          floorCid: await vesselMountFloorCid({ control: async () => watchedControl, islandDoc: () => assembly.islandHandle.doc() }),
+          floorCid: await vesselMountFloorCid({ state: async () => watchedState, islandDoc: () => assembly.islandHandle.doc() }),
           recipe: { wikiSlug: "daemon" },
           lookup: browserOfferingLookup(publicationHandle!.doc()),
           promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
@@ -2299,7 +2299,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         held.stood.push({ what: "the island's lift", down: lockThenDrop });
         held.stood.push({ what: "the lift's lock", down: onBrowserCustodyLock(idbName, () => { void lockThenDrop(); }) });
       }
-      const openOnce = (pluginCids: readonly string[]) => openBrowserDaemonVm({
+      const openOnce = (pluginCids: readonly string[]) => openBrowserDaemonVm({ idbName,
         caps: islandCaps,
         repo, daemonUrl: social.daemonUrl, coreHash: assembly.coreHash, ownedDocument: true,
         // The persona plane rides only when a face stands. A browser vessel normally holds one — it IS
@@ -2346,7 +2346,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         },
         daemonAuth,
       });
-      await watchControl(await repo.find<LarDoc>(social.daemonUrl as AutomergeUrl));
+      await watchState(await repo.find<LarDoc>(social.daemonUrl as AutomergeUrl));
       // The boot's unlock stood by now where the keystore rests sealed: the floor's key stands, and its registry files.
       floorKeyGrant = await standFloorKey();
       watchFloorRegistry(await repo.find<LarDoc>((bootstrap?.floor?.daemonUrl ?? social.daemonUrl) as AutomergeUrl));
@@ -2421,10 +2421,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         if (!seal) {
           console.warn("[sibling] this face holds no PersonaGroup secret sealed to this device — its enrolment delivered none, so no sibling channel stands.");
         } else {
-          // THE LEASE READER: the face reading over the control document's lease slots, read at every licensing act, so a
+          // THE LEASE READER: the face reading over the state document's lease slots, read at every licensing act, so a
           // roll that lands after the channel stood refuses an edge bound below it at the next act.
           const leasePrefix = leaseEpochPrefix(group);
-          const leaseSlotsNow = (): Array<string | null> => Object.entries(daemon.controlHandle.doc()?.tiddlers ?? {})
+          const leaseSlotsNow = (): Array<string | null> => Object.entries(daemon.stateHandle.doc()?.tiddlers ?? {})
             .filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
           siblings = await standSiblingChannel({
             // THE CHANNEL SEATS AS THE WIRE LEG OF THIS FACE AT THIS NEXUS: a sibling reads the pair's alias store id.
@@ -2436,7 +2436,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           });
         }
       }
-      return { workerEa: daemon.workerEa, mountMainVerbs: daemon.mountMainVerbs, resolveBinding: daemon, control: daemon.control };
+      return { workerEa: daemon.workerEa, mountMainVerbs: daemon.mountMainVerbs, resolveBinding: daemon, state: daemon.state, work: daemon.work };
     },
 
     wireVerbs: (registry, _assembly) => {
@@ -2667,25 +2667,26 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // NB: no inbound WS gate — a browser cannot listen on a socket (substrate floor).
     },
 
-    makePool: (_a, assembly) => {
+    makePool: (daemonForPool, assembly) => {
       // R4 — TWO WIKIS IN ONE VESSEL: each mount resolves its OWN recipe's plugin-offerings
       // through the selector + OPFS CAS (`resolveBrowserIslandPluginCids`), never one vessel-wide
       // floor. The Crossroads board materializes once (lazily,
       // shared with the daemon VM's own resolution above) and is read fresh per mount.
       vmManager = new BrowserVesselIslandPool({
         mainRepo: repo,
+        work: daemonForPool.work,
         // D4 lends the actor grant; this vessel opens a read-only port until then.
         portPolicy: opts.portPolicy ?? ((binding, islandKey) => pagePortGrant({ binding, islandKey, faceId: portFaceId, daemonKey: DAEMON_SURFACE_ID })),
         ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),
         ...(opts.onRest ? { onRest: opts.onRest } : {}),
         // THE FLOOR THE VESSEL ACCEPTED (`floor-pin`): the same pick the node binds; no pin mounts genesis.
-        floorCid: () => vesselFloorCid({ control: async () => watchedControl, islandDoc: () => assembly.islandHandle.doc() }),
+        floorCid: () => vesselFloorCid({ state: async () => watchedState, islandDoc: () => assembly.islandHandle.doc() }),
         foundingRecord: () => assembly.islandHandle.doc(), // the floor shadow read: each mount reads its floor beside the founding record, serving unchanged
         resolvePluginCids: async (recipe) => {
           publicationHandle ??= await materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey), "board:publication");
           return resolveBrowserIslandPluginCids({
             islandBlobs: assembly.islandHandle.doc()?.blobs,
-            floorCid: await vesselMountFloorCid({ control: async () => watchedControl, islandDoc: () => assembly.islandHandle.doc() }),
+            floorCid: await vesselMountFloorCid({ state: async () => watchedState, islandDoc: () => assembly.islandHandle.doc() }),
             recipe,
             lookup: browserOfferingLookup(publicationHandle.doc()),
             promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
@@ -2813,12 +2814,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   if (result.wikiHandle) connectionState.setWikiDocUrl(result.wikiHandle.url);
 
   const bootedFace = social.personaGroupId ?? null;
-  // THE VESSEL'S FLOOR PIN on the browser (w26-floor-lane#/the-vessel-pin): the same Nexus the porch read names, the control
+  // THE VESSEL'S FLOOR PIN on the browser (w26-floor-lane#/the-vessel-pin): the same Nexus the porch read names, the state
   // document the boot stood, the genesis floor its island document witnesses, and the live wikis the alert reaches.
   const floorBinding = (baseUrl: string): BrowserFloorBinding => ({
     baseUrl,
     nexusPin: flowNexusFor(baseUrl, { relayUrl, nexus: sovereignNexus ?? carriedCard?.pin.nexus ?? null }),
-    home: () => watchedControl,
+    home: () => watchedState,
     genesisManifest: genesisFloorCidOf(result.assembly.islandHandle?.doc()),
     requiredBlobIds: floorRequiredBlobIds(result.assembly.islandHandle?.doc()?.blobs),
     raiseAlert: (remount) => raiseFloorAlert(vmManager, remount),
@@ -2911,12 +2912,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
  */
 export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, siblings?: SiblingShare | null, vesselOnly?: { has(id: string): boolean }, islands?: { has(id: string): boolean }, wikiIslands?: { has(id: string): boolean }, floorWiki?: { has(id: string): boolean }, hearthDaemon?: { has(id: string): boolean }) {
   // `siblings.aside` carries the dyad's shadow: mesh's one law reads it ahead of the sibling gate.
-  // VESSEL-ONLY DOCUMENTS (the secret home, the control document and what it names) reach only this vessel's own DAEMON
+  // VESSEL-ONLY DOCUMENTS (the secret home, the state document and what it names) reach only this vessel's own DAEMON
   // island: a wiki island renders pages and never needs a custody document, so it never receives one (`wikiIslands`).
   // A VEIL FLOOR'S WIKI SLOT (`floorWiki`) alone reaches a wiki island too: it holds the wiki's own working layer, the vessel's
   // own content, and the wiki island mounts it. It still reaches no relay peer and no sibling.
   // THE HEARTH'S DAEMON WORKING DOCUMENT (`hearthDaemon`, road row `L4f`) alone reaches a relay peer: the own-hearth crossing
-  // opened it off the worn face's signed log, this vessel's control row names it as the face's working slot, and the
+  // opened it off the worn face's signed log, this vessel's state row names it as the face's working slot, and the
   // crossing's gate decides it like any plane that crossing opened. A sibling and a wiki island still read none of it.
   return shareConfigOf(async (peerId, documentId) => {
     if (documentId && hearthDaemon?.has(documentId) && relayPeers.has(peerId) && !siblings?.isSibling(peerId)) return federationShareDecision(relayPeers, fedGateOf(), peerId, documentId, siblings ?? null);

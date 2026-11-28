@@ -1,31 +1,5 @@
-/**
- * seal-refusal-reaches-the-ledger — CURE 4. THE REFUSAL REACHES A DURABLE AUDIENCE.
- *
- * The M3 archive export swallowed its own failure into `console.warn`:
- *   `catch (err) { console.warn("[daemon] keyhive archive export skipped: …") }`
- *
- * A GREEN BOOT IS NOT A WRITTEN ARCHIVE. `disk-projection` #/refusals rules the shape:
- *   "Refusals surface LOUDLY — a silent skip would hide it from the operator."
- * A seal refusal at 3am, on a daemon nobody is watching, left nothing behind at all: stdout on an
- * unattended vessel reaches no audience, and the next boot warns again over the same hole.
- *
- * REUSE RAIL A; MINT NO FOURTH. The rail already runs, end to end:
- *   island-behaviors `onRefusal` → IslandMsg_Event "ward-alert"
- *     → the reactor registered at `operator-daemon-behavior` (the SAME registry, three frames from
- *       the export)
- *     → a DURABLE `@daemon` audit record + a $:/tags/Alert into the operator's pinned VM
- *     → and, where a wiki is named but cold, `vessel-residency-wiring` parks the verb durably
- *       (`unmounted-no-mailbox`) rather than dropping it.
- *
- * ★ WHY IT WORKS ON A FLOOR BOOT — the objection that would otherwise sink it. The reactor writes
- * the `@daemon` audit FIRST and UNCONDITIONALLY, before it looks for a pinned VM at all. So the
- * refusal is RECORDED whether or not any wiki stands, whether or not anybody is watching.
- *
- * RAIL B'S DISCIPLINE HOLDS (`graceful-parsing` #/rails): DECIDE IN THE READING, SURFACE OUT OF IT.
- * `persistArchiveFloor` decides the refusal and returns it; the boot frame surfaces it here. Nothing
- * raises from inside the read.
- */
-import { memoryControlStore } from "./control-store-fixture.js";
+/** Seal refusals reach the face-wiki alert rail; absent a home wiki the answer names none. */
+import { memoryWorkStore } from "./work-store-fixture.js";
 import { describe, expect, test } from "vitest";
 
 import { CompositeStore } from "@lararium/mesh/composite-store";
@@ -39,14 +13,14 @@ import type { DaemonMsg_WikiAlert } from "../src/index.js";
 const DAEMON_WORKING = wikiSlotUri("daemon", "working");
 const workingLayers = new WeakMap<CompositeStore, MemoryTiddlerStore>();
 
-/** The daemon bag, in memory — the ledger this cure writes into is an ordinary bag write — under the daemon's working layer. */
+/** The daemon bag under the face wiki working layer. */
 async function daemonStore(): Promise<CompositeStore> {
   const composite = new CompositeStore();
   composite.addLayer({ bagId: DAEMON_BAG_ID, store: new MemoryTiddlerStore(DAEMON_BAG_ID), writable: true });
   const working = new MemoryTiddlerStore(DAEMON_WORKING);
   composite.addLayer({ bagId: DAEMON_WORKING, store: working, writable: true });
   workingLayers.set(composite, working);
-  controls.set(composite, memoryControlStore());
+  controls.set(composite, memoryWorkStore());
   return composite;
 }
 
@@ -56,93 +30,29 @@ async function putHomePreference(composite: CompositeStore, slug: string): Promi
   expect(await workingLayers.get(composite)!.get(HOME_WIKI_TITLE), "the home preference rests in the daemon's working layer").toBeTruthy();
 }
 
-/** The ward ledger rests in the vessel's control document, one per daemon store here. */
+/** A state document stands beside each daemon store. */
 const controls = new WeakMap<CompositeStore, CompositeStore>();
 const controlFor = (composite: CompositeStore): CompositeStore => controls.get(composite)!;
 
-/** Every ward-ledger record standing in the control document; the daemon bag holds none. */
-async function wardLedger(daemon: CompositeStore): Promise<Record<string, unknown>[]> {
-  expect((await daemon.listVisible()).filter((t) => t.includes("/ledger/ward/")), "a ward row reached the daemon bag").toEqual([]);
-  const composite = controlFor(daemon);
-  const titles = await composite.listVisible();
-  const out: Record<string, unknown>[] = [];
-  for (const t of titles) {
-    if (!t.includes("/ledger/ward/")) continue;
-    const rec = await composite.get(t);
-    if (rec) out.push(rec.tiddler as unknown as Record<string, unknown>);
-  }
-  return out;
-}
-
-describe("CURE 4 — the refusal reaches a durable audience", () => {
-  // ── RED 1 · A DURABLE RECORD, NOT ONLY A WARN ───────────────────────────────────────────────────
-  test("RED — an archive-export refusal lands a durable @daemon ledger record", async () => {
+describe("seal refusals reach the face-wiki alert", () => {
+  test("without a home wiki the answer names none and no state row lands", async () => {
     const composite = await daemonStore();
     const posted: DaemonMsg_WikiAlert[] = [];
-
-    const react = makeWardAlertReactor(composite, controlFor(composite), (m) => posted.push(m));
-    await react({
-      bagId:    DAEMON_BAG_ID,
-      uri:      "lar:///ha.ka.ba/identity/keyhive-archive.bin",
-      reason:   "the vessel key in hand does not open it",
-      wardKind: "archive-seal",
-    });
-
-    const ledger = await wardLedger(composite);
-    expect(ledger.length, "a green boot is not a written archive").toBe(1);
-    expect(ledger[0]?.["reason"]).toMatch(/does not open it/);
-    expect(ledger[0]?.["uri"]).toMatch(/keyhive-archive\.bin/);
-    // The record must NAME what refused. A seal refusal filed as a disk-ward refusal sends the
-    // operator to the wrong mechanism.
-    expect(ledger[0]?.["alert-kind"]).toBe("archive-seal");
-  });
-
-  // ── RED 2 · NEGATIVE — NO WIKI MOUNTED, AND THE AUDIT STILL LANDS ───────────────────────────────
-  // This is the whole reason Rail A works at the floor: the audit is written FIRST and
-  // UNCONDITIONALLY, before the reactor looks for a pinned VM. A floor boot mounts no wiki.
-  test("RED — with NO wiki mounted the audit still lands, and nothing is posted", async () => {
-    const composite = await daemonStore();
-    const posted: DaemonMsg_WikiAlert[] = [];
-
-    // No home-preference record stands — a Herm/floor boot with no lit face.
-    expect(await composite.get(HOME_WIKI_TITLE)).toBeFalsy();
-
     const out = await react(composite, (m) => posted.push(m));
-    expect((await wardLedger(composite)).length, "recorded even with nobody watching").toBe(1);
-    expect(posted.length, "there is no mailbox to post into").toBe(0);
-    expect(out["alerted"]).toBe("none");
+    expect(out.alerted).toBe("none");
+    expect(posted).toEqual([]);
+    expect(await controlFor(composite).listVisible()).toEqual([]);
   });
-
-  // ── CONTROL · A PINNED VM STILL GETS ITS ALERT, AND THE WIRE KIND STAYS RAIL A'S ─────────────────
-  // `wardKind` names the LEDGER record. The wire `kind`/`cause` stay "disk-ward" on purpose: that is
-  // the transport Rail A's downstream already keys off (`hooks.alertArgs?.(kind)`, the browser drop
-  // diagnostics). Minting a fourth kind here would be minting a fourth rail.
-  test("CONTROL — a pinned VM receives the alert, on Rail A's own wire kind", async () => {
+  test("the home wiki receives the seal refusal on the ward rail", async () => {
     const composite = await daemonStore();
     const posted: DaemonMsg_WikiAlert[] = [];
     await putHomePreference(composite, "home");
-
-    await react(composite, (m) => posted.push(m));
-    expect(posted.length).toBe(1);
-    expect(posted[0]?.kind).toBe("disk-ward");
-    expect(posted[0]?.message).toMatch(/does not open it/);
-    expect((await wardLedger(composite)).length).toBe(1);
-  });
-
-  // ── CONTROL · THE DISK-WARD CALLER IS UNCHANGED ─────────────────────────────────────────────────
-  // `island-behaviors.onRefusal` posts no `wardKind`. It must keep filing as "disk-ward" and
-  // keep its own message wording, or this cure has moved a rail instead of reusing one.
-  test("CONTROL — a call with NO wardKind still files as `disk-ward`", async () => {
-    const composite = await daemonStore();
-    const posted: DaemonMsg_WikiAlert[] = [];
-    await putHomePreference(composite, "home");
-
-    const reactor = makeWardAlertReactor(composite, controlFor(composite), (m) => posted.push(m));
-    await reactor({ bagId: "bag:x", uri: "lar:///x", reason: "shadowed canon copy" });
-
-    const ledger = await wardLedger(composite);
-    expect(ledger[0]?.["alert-kind"]).toBe("disk-ward");
-    expect(posted[0]?.message).toMatch(/^Disk ward refused a write/);
+    const out = await react(composite, (m) => posted.push(m));
+    expect(out.alerted).toBe("home");
+    expect(posted).toHaveLength(1);
+    expect(posted[0]).toMatchObject({ wikiSlug: "home", kind: "disk-ward" });
+    expect(posted[0]?.message).toMatch(/archive-seal.*does not open it/);
+    expect(await controlFor(composite).listVisible()).toEqual([]);
   });
 
   /**
@@ -196,15 +106,15 @@ describe("CURE 4 — the refusal reaches a durable audience", () => {
     const loop = blockAfter(src, ANCHOR);
     expect(loop, `the refusal-surfacing loop stands (anchor: ${ANCHOR})`).not.toBeNull();
     // NOT ONLY A WARN. stdout may stay — an operator at a terminal should see it — but the refusal
-    // must ALSO reach the durable `@daemon` ledger, which is the only audience a 3am boot has.
-    expect(loop!, "the refusal rides Rail A, not stdout alone").toMatch(/fileWardRefusal\(ctx\.composite, controlOf\(ctx\), ctx\.post,/);
+    // must ALSO reach the ward alert rail.
+    expect(loop!, "the refusal rides Rail A, not stdout alone").toMatch(/fileWardRefusal\(ctx\.composite, stateOf\(ctx\), ctx\.post,/);
     expect(loop!, "and it names the seal, not the disk ward").toMatch(/wardKind:\s*"archive-seal"/);
     // AND THE CALL IS THE LOOP'S OWN, not a dead sibling the old window reached: exactly one such
     // call stands in the whole file, so it cannot be both inside the loop and duplicated outside it.
-    expect([...src.matchAll(/fileWardRefusal\(ctx\.composite, controlOf\(ctx\), ctx\.post,[\s\S]{0,300}?wardKind:\s*"archive-seal"/g)].length,
+    expect([...src.matchAll(/fileWardRefusal\(ctx\.composite, stateOf\(ctx\), ctx\.post,[\s\S]{0,300}?wardKind:\s*"archive-seal"/g)].length,
       "exactly one archive-seal refusal call stands — a second would let one of them go dead unnoticed").toBe(1);
     // ONE BODY, TWO DOORS — the same act the registered "ward-alert" verb performs, never a second rail.
-    expect(src).toMatch(/registry\.register\("ward-alert", makeWardAlertReactor\(ctx\.composite, controlOf\(ctx\), ctx\.post\)\)/);
+    expect(src).toMatch(/registry\.register\("ward-alert", makeWardAlertReactor\(ctx\.composite, ctx\.post\)\)/);
   });
 });
 
@@ -213,7 +123,7 @@ async function react(
   composite: CompositeStore,
   post: (m: DaemonMsg_WikiAlert) => void,
 ): Promise<Record<string, unknown>> {
-  const reactor = makeWardAlertReactor(composite, controlFor(composite), post);
+  const reactor = makeWardAlertReactor(composite, post);
   return (await reactor({
     bagId:    DAEMON_BAG_ID,
     uri:      "lar:///ha.ka.ba/identity/keyhive-archive.bin",

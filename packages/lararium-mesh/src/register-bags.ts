@@ -222,7 +222,7 @@ export function wornFaceWikiBags(input: { readonly slot?: WikiSlotBags | undefin
   const personal = input.slot ? facePersonalBeside(input.slot.draftBagId) : null;
   const named = input.lit ? [...new Set([...(personal ? [personal] : []), ...(input.announced ?? [])].filter(isFaceSlotBag))] : [];
   // The face's own catalog (U1's D half of the catalog) rides with the daemon wiki's slots: the island registers it at
-  // boot, so its holder holds the catalog's key before the lift opens the sealed document. The vessel's control document
+  // boot, so its holder holds the catalog's key before the lift opens the sealed document. The vessel's vessel registry
   // seals beside the secret home under the vessel's own key (`secret-home`), never under one face.
   // The worn face's daemon canon (`bags/daemon-<F>`, `daemonFaceCanonBag`) rides with them too: a face's daemon wiki content.
   const faceOwn = input.lit ? [...DAEMON_WIKI_SLOT_BAGS, ...(input.daemonCanon ? [input.daemonCanon] : []), FACE_CATALOG_BAG_ID] : [];

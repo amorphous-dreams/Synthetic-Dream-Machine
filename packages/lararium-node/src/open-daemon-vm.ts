@@ -1,3 +1,5 @@
+import { openNodeWork } from "./vessel-work-rest.js";
+import { vesselStateRefusal } from "@lararium/mesh/vessel-state";
 /**
  * openDaemonVm — node host wrapper over the shared daemon-VM core.
  *
@@ -37,7 +39,7 @@ import { nodeNewSyncChannel, nodeSpawnDaemonWorker } from "./worker-handle.js";
 import type { IslandCasData } from "./node-cas.js";
 import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
 import { personaScopeTag } from "@lararium/mesh/persona-scope";
-import { standControlHome } from "@lararium/mesh/control-home";
+import { standVesselState } from "@lararium/mesh/vessel-state";
 import { daemonFaceCanonBag } from "@lararium/mesh/wiki-recipe";
 import { floorCidToMount } from "@lararium/mesh/floor-pin";
 import { type CapabilityRecord } from "@lararium/mesh/capability-record";
@@ -90,8 +92,8 @@ export interface DaemonVmOptions {
    *  catalog registry access. Library bags resolve island-side from the catalog registry. */
   grants:            IslandGrants;
   /**
-   * THE FLOOR KEY, READ WHERE THE CONTROL DOCUMENT READS: asked once the control document stands, so the island's floor gate
-   * and the host's working layer read the key this composition reads (a custody that opened at the control document's stand
+   * THE FLOOR KEY, READ WHERE THE VESSEL STATE DOCUMENT READS: asked once the state document stands, so the island's floor gate
+   * and the host's working layer read the key this composition reads (a custody that opened at the state document's stand
    * stands the floor key too). Absent, `grants.floorKey` rides as handed.
    */
   floorKey?:         () => NonNullable<IslandGrants["floorKey"]>;
@@ -147,9 +149,9 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     // flight rather than as an absent doc, and earns the grace before it gets believed.
     { tideline: "hearth-private", label: PLANE_LABELS.daemon, settled: () => repo.flush() },
   );
-  // ── The vessel's control document, beside the daemon document that names it (`control-home`) ──
-  const controlHandle = await standControlHome(repo, daemonHandle);
-  // ONE READING: the floor's key reads after the control document stood, never before it.
+  // ── The vessel's state document, beside the daemon document that names it (`vessel-state`) ──
+  const stateHandle = await standVesselState(repo, daemonHandle);
+  // ONE READING: the floor's key reads after the state document stood, never before it.
   const grants: IslandGrants = opts.floorKey ? { ...opts.grants, floorKey: opts.floorKey() } : opts.grants;
   // ── Persona doc handle (same strategy) — the one VM tends both bags ──────────
   // A plane this replica already HOLDS (a joinee's admit landed it, or a sync delivered it) is read where it stands: the
@@ -202,7 +204,8 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
   // The wrapper IS the shore — host pieces + recipe/storage + merge-on-arrival daemonHandle;
   // the lifecycle and the whole result surface (DaemonVmCore) live once in the core.
   return openDaemonVmCore(host, {
-    repo, daemonHandle, controlHandle, recipe, grants, coreHash,
+    repo, daemonHandle, stateHandle, recipe, grants, coreHash,
+    ...(vesselStateRefusal(stateHandle) === null ? { work: await openNodeWork() } : {}),
     ...(personaHandle ? { personaHandle } : {}),
     ...(personaBagId  ? { personaBagId }  : {}),
     ...(pluginCids?.length ? { pluginCids } : {}),
@@ -214,16 +217,16 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     } } : {}),
     // The daemon VM's mirrors, one list (`daemonDiskMirrors`): the worn face's root `<projections>/faces/<pet name>/` (its daemon
     // working top under `wikis/daemon/`, its daemon canon under `bags/daemon/`, its kahua stage under `bags/kahua/`), crossroads back to its canon
-    // source where one stands; the control document and the daemon document hold none. The pet name names the folder (it carries
+    // source where one stands; the state document and the daemon document hold none. The pet name names the folder (it carries
     // across a re-found), the verified founding relation the bags; no daemon mount projects no private layer.
     ...(projectionRoot ? { diskMirrors: daemonDiskMirrors({ projectionRoot, canonBags: daemonBagsDir(), face: faceRelation && faceSegment ? { relation: faceRelation, segment: faceSegment } : null, canon: canonBag !== undefined, temp: tempMirror }) } : {}),
-    // THE VESSEL'S FLOOR PIN, off the control document that just stood: the daemon island mounts the accepted floor, so every
-    // face's `lares get title=… meme=true` and `meme list` over `bag=<house canon>` answers the released canon from its next composition on. A control document
+    // THE VESSEL'S FLOOR PIN, off the state document that just stood: the daemon island mounts the accepted floor, so every
+    // face's `lares get title=… meme=true` and `meme list` over `bag=<house canon>` answers the released canon from its next composition on. A state document
     // that reads nothing (a locked floor) names no pin, and the island reads its genesis seed's floor.
     floorCid: () => {
       let doc: LarDoc | undefined;
-      try { doc = controlHandle.doc(); } catch { return null; }
-      const pick = floorCidToMount({ controlDoc: doc, nexus: null, genesis: null });
+      try { doc = stateHandle.doc(); } catch { return null; }
+      const pick = floorCidToMount({ stateDoc: doc, nexus: null, genesis: null });
       if (pick.note) console.info(`[floor] ${pick.note}`);
       return pick.source === "pin" ? pick.cid : null;
     },

@@ -185,7 +185,7 @@ export function answersUntracked(verb: string, reported: boolean): boolean {
 }
 
 /**
- * A READ RIDES THE ANSWER RING (`control-home` `answerRingOf`): a verb the house names READ, asked with no effect key,
+ * A READ RIDES THE ANSWER RING (`vessel-state` `answerRingOf`): a verb the house names READ, asked with no effect key,
  * writes no receipt fact and no outcome row. Its answer reaches its caller through the vessel's memory alone, and a
  * re-ask past that memory runs the read afresh, which changes nothing. An effect key names an effect to land once, so a
  * read that carries one keeps the ledger's road. The door and the island both read this one predicate, so neither waits

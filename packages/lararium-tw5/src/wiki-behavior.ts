@@ -1,21 +1,14 @@
 /**
- * wiki-behavior — the shared primary-wiki island behavior (isomorphic).
- *
- * Both vessels ran a wiki behavior: node's `makeWikiPrimaryBehavior` carried the
- * full surface (ACTION verb registry + wiki:place-verb dispatch + disk
- * projection), while the browser ran a stub whose onSignal returned false. This
- * holds the shared behavior ONCE: the ACTION verb registry + the full
- * wiki:place-verb dispatch. Platform side-effects (node disk projection, which
- * needs fs) compose IN via the `onBoot` capability hook — node supplies it,
- * browser supplies none. No fs, no node coupling here.
- *
- * Meme: lar:///ha.ka.ba/lararium/tw5/wiki-behavior
+ * Both vessels compose the same primary-wiki ACTION registry and verb dispatch.
+ * The vessel owns durable request decisions; each island asks through its work capability.
+ * Platform effects compose through onBoot and carry their own teardown.
  */
 
 import { inCallScope, takeCallTouches } from "@lararium/mesh/call-touches";
-import { mkWikiVerbResult, type WikiMsg_PlaceVerb } from "@lararium/mesh/island-protocol";
+import { mkWikiVerbResult, type WikiMsg_PlaceVerb, type WikiMsg_VerbResult } from "@lararium/mesh/island-protocol";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
-import { type BatchMode, type Verb } from "@lararium/mesh/verb-tiddler";
+import { type BatchMode, type Verb, WIKI_OUTCOME_URI_PREFIX, VERB_RESULT_KEY, concludeVerb, verdictRowOf, verbInputDigest, releasedBodyOf } from "@lararium/mesh/verb-tiddler";
+import { makeAnswerRing } from "@lararium/mesh/answer-ring";
 import { type ChangeOrigin } from "@lararium/mesh/tiddler-store";
 import type { CompositeStore } from "@lararium/mesh/composite-store";
 import { registerActionReactors, makeTw5Deserializer } from "./action-handler.js";
@@ -24,6 +17,7 @@ import { composeIsland } from "./island-caps.js";
 import { hasEngineWatch, hasHandBoundary, hasRecipeWatch, hasProjection } from "./has-island-watches.js";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandBehavior, IslandContext } from "./island-context.js";
+import { workStoreOf } from "./island-context.js";
 import type { RecordPortOptions } from "./record-port-handler.js";
 import { hasPortLease } from "./record-port-lease.js";
 import { hasRenderedTiddlers } from "./rendered-tiddler.js";
@@ -103,6 +97,8 @@ export interface WikiBehaviorOptions {
 /** The isomorphic primary-wiki island behavior. */
 export function makeWikiBehavior(opts: WikiBehaviorOptions = {}): IslandBehavior {
   let _registry: VerbTable | null = null;
+  const answers = makeAnswerRing();
+  const inFlight = new Map<string, { digest: Promise<string>; task: Promise<WikiMsg_VerbResult> }>();
 
   // #has wiki-dispatch — the ACTION verb registry + the wiki:place-verb channel (the synapse).
   const dispatchCap: IslandCap = {
@@ -163,15 +159,49 @@ export function makeWikiBehavior(opts: WikiBehaviorOptions = {}): IslandBehavior
         requestedBy: msg.requestedBy,
         requestedAt: new Date().toISOString(),
       };
-      // THE WIKI ISLAND'S VERB TAGS ITS CALL (`call-touches`): its answer reports what it changed, even nothing.
-      void inCallScope(requestId, () => handler(msg.args, {
-        daemon: ctx.composite,
-        invocation,
-        cap:   async () => ({ ok: true, reason: "worker-trust" }),
-      })).then((result) => {
-        if (msg.requestId) ctx.post(mkWikiVerbResult({ requestId, result, touched: takeCallTouches(requestId) ?? {} }));
-      }).catch((err: unknown) => {
-        if (msg.requestId) ctx.post(mkWikiVerbResult({ requestId, error: String(err), touched: takeCallTouches(requestId) ?? {} }));
+      const title = `${WIKI_OUTCOME_URI_PREFIX}${ctx.recipe.wikiSlug}/${requestId}`;
+      const input = verbInputDigest({ verb: msg.verb, args: { args: msg.args, targets: msg.targets ?? [], batchMode: invocation.batchMode } });
+      const held = inFlight.get(title);
+      let task = held?.task;
+      if (!task) {
+        task = (async (): Promise<WikiMsg_VerbResult> => {
+          const work = workStoreOf(ctx);
+          const origin: ChangeOrigin = { kind: "lares-verb", requestId };
+          const digest = await input;
+          const prior = await work.getLive(title);
+          if (prior) {
+            const fields = prior.tiddler;
+            if (fields["input-digest"] !== digest) throw new Error(`request-input-changed: ${requestId}; inspect the recorded act before choosing a fresh request id`);
+            if (fields["status"] === "running") throw new Error(`request-interrupted: ${requestId}; inspect what the act left before choosing a fresh request id`);
+            if (fields["status"] === "error") return mkWikiVerbResult({ requestId, error: String(fields["error-message"] ?? "the recorded act failed; inspect its result"), touched: {} });
+            const held = answers.get(requestId);
+            const results = held ? JSON.parse(String(held.tiddler["results"])) as Record<string, { output?: Record<string, unknown> }> : null;
+            return mkWikiVerbResult({ requestId, result: results?.[VERB_RESULT_KEY]?.output ?? { completed: true, ...releasedBodyOf(fields) }, touched: {} });
+          }
+          await work.put({ tiddler: { title, "request-id": requestId, verb: msg.verb, status: "running", "input-digest": digest } }, origin);
+          let result: Record<string, unknown> | undefined;
+          let error: string | undefined;
+          try {
+            result = await inCallScope(requestId, () => handler(msg.args, {
+              daemon: ctx.composite, invocation, cap: async () => ({ ok: true, reason: "worker-trust" }),
+            }));
+          } catch (cause) { error = cause instanceof Error ? cause.message : String(cause); }
+          const touched = takeCallTouches(requestId) ?? {};
+          const answer = concludeVerb({ requestId, verb: msg.verb, status: error === undefined ? "done" : "error", inputDigest: digest, cause: invocation.title, batchMode: invocation.batchMode,
+            results: { [VERB_RESULT_KEY]: { ok: error === undefined, ...(result !== undefined && { output: result }) } },
+            ...(error !== undefined && { errorMessage: error }), touched });
+          const row = verdictRowOf(answer);
+          await work.put({ ...row, tiddler: { ...row.tiddler, title } }, origin);
+          answers.put(answer);
+          return mkWikiVerbResult({ requestId, ...(error !== undefined ? { error } : { result: result ?? {} }), touched });
+        })().finally(() => { inFlight.delete(title); });
+        inFlight.set(title, { digest: input, task });
+      }
+      void task.then(async (answer) => {
+        if (held && await held.digest !== await input) throw new Error(`request-input-changed: ${requestId}; inspect the recorded act before choosing a fresh request id`);
+        if (msg.requestId) ctx.post(answer);
+      }).catch((cause: unknown) => {
+        if (msg.requestId) ctx.post(mkWikiVerbResult({ requestId, error: cause instanceof Error ? cause.message : String(cause), touched: {} }));
       });
       return true;
     },

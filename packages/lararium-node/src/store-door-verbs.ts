@@ -202,7 +202,7 @@ export interface StoreDoorDeps {
    */
   readonly floorAlert?: (remount: Extract<FloorRemount, { act: "alert" }>) => Promise<readonly string[]>;
   /**
-   * A face's local canon `bags/daemon-<F>` by relation, as the standing vessel opens it (`faceCanonThroughControl`): a kahua
+   * A face's local canon `bags/daemon-<F>` by relation, as the standing vessel opens it (`faceCanonThroughState`): a kahua
    * lift reads its staged row there and `kahua-stage` writes one. Absent on a direct act, whose lift refuses
    * `kahua-lift-unstaged`.
    */
@@ -683,7 +683,7 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
         ...(Array.isArray(args["thin"]) ? { thin: (args["thin"] as unknown[]).filter((s): s is string => typeof s === "string") } : {}) })),
     })),
 
-    // THE VESSEL'S FLOOR PIN (w26-floor-lane#/the-vessel-pin): one pin per (vessel, Nexus) in the control home, moved only by
+    // THE VESSEL'S FLOOR PIN (w26-floor-lane#/the-vessel-pin): one pin per (vessel, Nexus) in the state home, moved only by
     // the accept, which walks `prior` from the pin. Both rows answer the mesh's own decision; a refusal rides as data.
     "floor-status": (args) => answer("floor-status", async () => ({
       ...(await runFloorStatus({ repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), storageDir, ...opt("aid", str(args["aid"])), ...opt("porch", str(args["porch"])), ...opt("catalogUrl", deps.catalogUrl) })),

@@ -19,7 +19,7 @@
  */
 import { afterEach, describe, expect, test } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
-import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { VESSEL_STATE_ID } from "@lararium/mesh/lar-uris";
 import { announceSlotDoc, docStorePortCell } from "@lararium/mesh/sealed-rest";
 import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { MemoryTiddlerStore } from "@lararium/tw5";
@@ -41,8 +41,8 @@ const SENTINEL = "lar:///ha.ka.ba/wikis/sentinel/working";
 
 function stand() {
   const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
-  const control = new CompositeStore();
-  control.addLayer({ bagId: CONTROL_HOME_ID, store: new MemoryTiddlerStore(CONTROL_HOME_ID), writable: true, defaultWritable: true });
+  const state = new CompositeStore();
+  state.addLayer({ bagId: VESSEL_STATE_ID, store: new MemoryTiddlerStore(VESSEL_STATE_ID), writable: true, defaultWritable: true });
   const channel = new MessageChannel();
   const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
   // THE VESSEL HALF: the host's working layer, its follower, and the log it writes.
@@ -76,8 +76,8 @@ function stand() {
   // THE ISLAND HALF: one lit set; each face's resolver names its documents as the worn face's or a sibling's.
   const worn = slotAnnouncer(islandSide, "worn");
   const sibling = slotAnnouncer(islandSide, "sibling");
-  const wornSlots = litFaceSlotDocs({ repo, daemonStore: control, control, catalog: null, deviceScoped: (slug) => slug === "daemon", announceDevice: worn.device });
-  const siblingSlots = litFaceSlotDocs({ repo, daemonStore: control, control, catalog: null, deviceScoped: (slug) => slug === "daemon", announceDevice: sibling.device });
+  const wornSlots = litFaceSlotDocs({ repo, daemonStore: state, state, catalog: null, deviceScoped: (slug) => slug === "daemon", announceDevice: worn.device });
+  const siblingSlots = litFaceSlotDocs({ repo, daemonStore: state, state, catalog: null, deviceScoped: (slug) => slug === "daemon", announceDevice: sibling.device });
   const door = { mint: async () => {} } as never;
   return {
     host, logged, drain,

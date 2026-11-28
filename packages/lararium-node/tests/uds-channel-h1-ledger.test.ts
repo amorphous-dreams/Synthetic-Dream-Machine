@@ -15,7 +15,7 @@
  *   - `{op:"cancel"}` withdraws an id before it is read, so it cannot be dispatched later (M8);
  *   - a set-back/set-forward `Date.now()` moves none of it — the ledger reads no clock at all.
  */
-import { controlStoreOf } from "@lararium/mesh/control-home";
+import { memoryWorkOf } from "./work-store-fixture.js";
 import { describe, test, expect } from "vitest";
 import { mkdtempSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -84,8 +84,8 @@ async function withChannel(
   const claim = await claimStore(dir, { holder: "vessel" });
   const placed: Placed[] = [];
   const channel = startUdsChannel({
-    controlHandle: daemonHandle,
-    control: controlStoreOf(daemonHandle),
+    stateHandle: daemonHandle,
+    state: memoryWorkOf(daemonHandle),
     placeVerb: (o) => { const p = o as Placed; placed.push(p); placeVerbImpl(p, daemonHandle); },
     claim,
     repo,
@@ -117,7 +117,7 @@ describe("uds-channel — H1 arbitration ledger", () => {
       await writeThenHangUp(socketPath, inv);
       // Give the server's deferred (double setImmediate) EOF check its turn.
       await new Promise((r) => setTimeout(r, 100));
-      expect(placed).toHaveLength(0); // dropped, not dispatched — the control half of this proof
+      expect(placed).toHaveLength(0); // dropped, not dispatched — the state half of this proof
 
       // THE PROVEN BUG: a fresh connection carries the SAME request id as a "read-back".
       const retry = await sendLine(socketPath, inv);

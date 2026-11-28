@@ -1,9 +1,9 @@
 /**
  * harness/placement-mirrors — what a staged hearth's disk mirrors hold, read the way the placement contract states it.
  *
- * PLACEMENT DECIDES RESIDENCY (lar:///ha.ka.ba/lararium/mesh/control-home). The worn face's daemon wiki projects its working
+ * PLACEMENT DECIDES RESIDENCY (lar:///ha.ka.ba/lararium/mesh/vessel-state). The worn face's daemon wiki projects its working
  * top to `<projections>/faces/<pet name>/wikis/daemon` and its canon `bags/daemon-<F>` to `<projections>/faces/<pet name>/bags/daemon`; the daemon
- * document (`bags/daemon`) and the control document (`bags/control`) name no mirror, and neither does the secret home. So a
+ * document (`bags/daemon`) and the state document (`bags/vessel-state`) name no mirror, and neither does the secret home. So a
  * witness reads every file the projections tree holds and asks which titles name a private home: none may.
  *
  * A title reads off the file itself (a `.tid` or `.meta` header's `title:` line, a meme's `title = "…"` meta row) and, for a
@@ -11,7 +11,7 @@
  */
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, sep } from "node:path";
-import { CONTROL_HOME_ID, DAEMON_BAG_ID, SECRET_HOME_ID, SWARM_URI_PREFIX } from "../../packages/lararium-mesh/src/lar-uris.js";
+import { VESSEL_STATE_ID, VESSEL_WORK_ID, DAEMON_BAG_ID, SECRET_HOME_ID, SWARM_URI_PREFIX } from "../../packages/lararium-mesh/src/lar-uris.js";
 import { FACE_PLANES } from "../../packages/lararium-node/src/bag-paths.js";
 import { stagedFaceRoot } from "./instance.js";
 
@@ -40,9 +40,9 @@ export function titlesUnder(dir: string): string[] {
   return [...titles];
 }
 
-const PRIVATE_HOMES = [CONTROL_HOME_ID, SECRET_HOME_ID, DAEMON_BAG_ID];
+const PRIVATE_HOMES = [VESSEL_STATE_ID, VESSEL_WORK_ID, SECRET_HOME_ID, DAEMON_BAG_ID];
 
-/** True for a title of a private home's families: the control document's, the secret home's, the daemon document's, the swarm's. */
+/** True for a title of a private home's families: the state document's, the secret home's, the daemon document's, the swarm's. */
 export function namesPrivateHome(title: string): boolean {
   if (title.startsWith(SWARM_URI_PREFIX)) return true;
   return PRIVATE_HOMES.some((home) => title === home || title.startsWith(`${home}/`));

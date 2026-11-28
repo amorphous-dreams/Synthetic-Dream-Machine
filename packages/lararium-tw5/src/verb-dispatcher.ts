@@ -8,15 +8,15 @@
  *                 directly to the daemon TW5 wiki. The dispatcher watches wiki
  *                 change events and picks these up immediately.
  *
- *   REMOTE path — a verb-summons tiddler at bags/control/summons/<id> lands in the
- *                 vessel's control document (`control-home`). IslandAdaptor flows
+ *   REMOTE path — a verb-summons tiddler at bags/vessel-work/summons/<id> lands in the
+ *                 vessel's work snapshot (`vessel-work`). IslandAdaptor flows
  *                 it into the TW5 wiki. The dispatcher's Automerge subscriber
  *                 sees the summons, calls placeVerb() to create the volatile
  *                 invocation, then tombstones the summons tiddler.
  *                 The summons carries edge transport, not durable coordination state.
  *
- * Outcome flow: handler result → concludeVerb → the control store (the vessel's control document, no recipe layer and
- *   no mirror, sealed under the lit face) → bags/control/outcomes/<id> in Automerge.
+ * Outcome flow: handler result → concludeVerb → the state store (the vessel's work snapshot, no recipe layer and
+ *   no mirror, sealed under the lit face) → bags/vessel-state/outcomes/<id> in Automerge.
  *   Durable shared meaning begins at the outcome, not at the summons.
  *
  * Daemon-only law: ONLY the daemon VM runs a VerbDispatcher. Pinned wiki and
@@ -33,7 +33,7 @@
  *
  * Architecture laws:
  *   - TW5 vm primacy: handlers may invoke vm action-widgets.
- *   - Web3 law: no HTTP/RPC control plane. Coordination is TW5 wiki events + CRDT sync.
+ *   - Web3 law: no HTTP/RPC state plane. Coordination is TW5 wiki events + CRDT sync.
  *   - Capability hooks: ctx.cap is bound per-invocation to requestedBy DID.
  *
  * Isomorphic: no Node or browser platform APIs. Runs in any sovereign Worker.
@@ -55,7 +55,8 @@ import { type CompositeStore } from "@lararium/mesh/composite-store";
 import { type CapabilityVerifier } from "@lararium/mesh/capability";
 import { type LarTiddlerChange } from "@lararium/mesh/tiddler-store";
 import { wikiSlugOfBag } from "@lararium/mesh/surface-recipe-door";
-import { ControlHomeUnavailable, answerRingOf } from "@lararium/mesh/control-home";
+import {  VesselStateUnavailable } from "@lararium/mesh/vessel-state";
+import {  answerRingOf  } from "@lararium/mesh/answer-ring";
 import type { Hand } from "@lararium/mesh/session-contract";
 import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, isVisitResults, EFFECT_URI_PREFIX } from "./verb-vm.js";
 import type { TW5Engine } from "./tw5-vm.js";
@@ -360,11 +361,11 @@ export interface VerbDispatcherOptions {
   readonly daemonVm:   TW5Engine;
   readonly daemon:    CompositeStore;
   /**
-   * The vessel's CONTROL document as a store (`controlStoreOf`): the summons this dispatcher heeds, the outcome ledger and
-   * effect index it writes and reads. No recipe composes it and no mirror names it, so no control record reaches a
+   * The vessel's work snapshot as a store (`workStoreOf`): the summons this dispatcher heeds, the outcome ledger and
+   * effect index it writes and reads. No recipe composes it and no mirror names it, so no state record reaches a
    * projected layer by placement.
    */
-  readonly control:   CompositeStore;
+  readonly state:   CompositeStore;
   readonly registry:  VerbTable;
   readonly verifier?: CapabilityVerifier;
   /** Who a verb presents as. Absent: the invocation's own `requestedBy`. The one place every cap check resolves it. */
@@ -402,10 +403,10 @@ export class VerbDispatcher {
   startupScan: Promise<void> = Promise.resolve();
 
   private async scanSummons(): Promise<void> {
-    const titles = (await this.opts.control.listVisible()).filter((title) => title.startsWith(SUMMONS_URI_PREFIX));
+    const titles = (await this.opts.state.listVisible()).filter((title) => title.startsWith(SUMMONS_URI_PREFIX));
     for (const title of titles) {
       if (!this.unsubAutomerge) return;
-      const top = await this.opts.control.resolveTopmost(title);
+      const top = await this.opts.state.resolveTopmost(title);
       if (!top) continue;
       await this.receiveSummons({
         title,
@@ -418,7 +419,7 @@ export class VerbDispatcher {
 
   private receiveSummons(change: LarTiddlerChange): Promise<void> {
     return heedSummons(change, {
-      control: this.opts.control,
+      state: this.opts.state,
       isInFlight: (requestId) => this.inFlight.has(requestId),
       seenRequestIds: this.seenSummons,
       placeVerb: (invocation) => { this.placeVerb(invocation); },
@@ -515,7 +516,7 @@ export class VerbDispatcher {
   }
 
   /**
-   * Effect dedup (D1, P2.5 iter 4) — before running, read `<control home>/effects/<effectKey>`.
+   * Effect dedup (D1, P2.5 iter 4) — before running, read `<state home>/effects/<effectKey>`.
    * A prior `done` attempt under a DIFFERENT requestId with a MATCHING input digest (the digest the
    * effect row itself names) answers this attempt as a copy (`effect-of: priorRequestId`) and never
    * runs the handler: the copy carries the prior body where this island's answer ring still holds
@@ -562,74 +563,58 @@ export class VerbDispatcher {
       verb: invocation.action, args: invocation.args, face: invocation.face, effectKey,
     });
 
-    const priorFact = await this.opts.control.getLive(EFFECT_URI_PREFIX + effectKey);
+    const priorFact = await this.opts.state.getLive(EFFECT_URI_PREFIX + effectKey);
     const priorRequestId = priorFact ? String(priorFact.tiddler["request-id"] ?? "") : "";
     if (priorRequestId) {
       const field = (fields: Record<string, unknown> | undefined, key: string): string | undefined =>
         typeof fields?.[key] === "string" && (fields[key] as string).length > 0 ? fields[key] as string : undefined;
       const effectRow = priorFact!.tiddler as Record<string, unknown>;
-      // THE EFFECT ROW ANSWERS BY ITSELF where it names its attempt's digest: the decision joins no outcome row, so a
-      // prior verdict the ring let go changes nothing here. A row that names none (written before rows carried one)
-      // reads the prior outcome row for it, as it always did.
-      let priorDigest = field(effectRow, "input-digest");
-      let resultSha256 = field(effectRow, "result-sha256");
-      let resultBytes = field(effectRow, "result-bytes");
-      let priorVisit = false;
-      let restedResults: string | undefined;
+      // The effect decision carries the input digest and result measure independently of an answer body.
+      const priorDigest = field(effectRow, "input-digest");
+      const resultSha256 = field(effectRow, "result-sha256");
+      const resultBytes = field(effectRow, "result-bytes");
       if (priorDigest === undefined) {
-        const priorOutcome = await this.opts.control.getLive(OUTCOME_URI_PREFIX + priorRequestId);
-        if (!priorOutcome) {
-          // The effect index still names a prior requestId, the row names no digest of its own, and that attempt's
-          // outcome is GONE (evicted by the ring's retention bound): nothing stands to compare against, and a
-          // fresh-run fallthrough would silently re-perform an effect whose prior record a caller cannot check.
-          // Conclude THIS attempt as refused; never run the handler.
-          console.log(`[verb-dispatcher] effect "${effectKey}" indexes prior request "${priorRequestId}" whose outcome is evicted — refusing (retention-gap), handler not run`);
-          await writeOutcome(this.opts.control, {
-            invocation, status: "error",
-            errorMessage: `effect "${effectKey}" indexes a prior outcome ("${priorRequestId}") that is no longer retained; nothing ran. Read what the effect left where it landed, and to land it again mint a fresh effect key`,
-            refusal: "retention-gap",
-            ...this.markOf(invocation),
-          });
-          removeVerb(this.opts.daemonVm, invocation.title);
-          return;
-        }
-        const outcomeRow = priorOutcome.tiddler as Record<string, unknown>;
-        priorDigest = String(outcomeRow["input-digest"] ?? "");
-        resultSha256 = field(outcomeRow, "result-sha256");
-        resultBytes = field(outcomeRow, "result-bytes");
-        priorVisit = outcomeRow["visit"] === "true";
-        restedResults = field(outcomeRow, "results");
+        await writeOutcome(this.opts.state, {
+          invocation, status: "error", refusal: "retention-gap",
+          errorMessage: `effect "${effectKey}" names no input digest; inspect what the act left before choosing a fresh effect key`,
+          ...this.markOf(invocation),
+        });
+        removeVerb(this.opts.daemonVm, invocation.title);
+        return;
       }
       if (priorDigest === inputDigest) {
-        // THE BODY, WHERE THIS ISLAND STILL HOLDS IT: the answer ring first, then a row that rests a whole record. A body
-        // that will not parse matches nothing, and a body that left answers by its measure alone.
-        const held = answerRingOf(this.opts.control).get(priorRequestId)?.tiddler as Record<string, unknown> | undefined;
+        // A held answer supplies the body; a released answer supplies only its durable measure.
+        const held = answerRingOf(this.opts.state).get(priorRequestId)?.tiddler as Record<string, unknown> | undefined;
         const heldResults = held?.["status"] === "done" ? field(held, "results") : undefined;
         let priorResults: Record<string, VerbTargetResult> | null = null;
-        let torn = false;
-        const stored = heldResults ?? restedResults;
+        const stored = heldResults;
         if (stored !== undefined) {
           try { priorResults = JSON.parse(stored) as Record<string, VerbTargetResult>; }
-          catch { torn = true; console.log(`[verb-dispatcher] effect "${effectKey}" indexes prior request "${priorRequestId}" whose results do not parse — no body rides this copy`); }
+          catch { console.log(`[verb-dispatcher] effect "${effectKey}" indexes prior request "${priorRequestId}" whose results do not parse — no body rides this copy`); }
         }
         // A VISIT NEVER REPLAYS: an index naming a visit's outcome copies nothing, and the reactor runs afresh.
-        const visit = priorVisit || (priorResults !== null && isVisitResults(priorResults));
-        // A copy answers a body or the measure of one: a prior that offers neither (a torn body beside no hash) runs fresh.
+        const visit = effectRow["visit"] === "true" || (priorResults !== null && isVisitResults(priorResults));
+        // A copy answers a body or the measure of one: a prior that offers neither (a torn body beside no hash) refuses replay.
         const answerable = priorResults !== null || resultSha256 !== undefined;
         if (!visit && answerable && this.replayAdmitted(invocation)) {
-          await copyEffectOutcome(this.opts.daemonVm, this.opts.control, invocation, {
+          await copyEffectOutcome(this.opts.daemonVm, this.opts.state, invocation, {
             priorRequestId, priorResults, inputDigest, ...this.markOf(invocation),
             ...(resultSha256 !== undefined && { resultSha256 }), ...(resultBytes !== undefined && { resultBytes }),
           });
           return;
         }
-        if (torn && !answerable) console.log(`[verb-dispatcher] effect "${effectKey}" (request=${invocation.requestId}, prior=${priorRequestId}) names no readable body and no measure — running fresh, no dedup`);
+        if (!visit && !answerable) {
+          await writeOutcome(this.opts.state, { invocation, status: "error", refusal: "retention-gap",
+            errorMessage: `effect "${effectKey}" completed under "${priorRequestId}"; its result cannot be read; inspect what the act left before choosing a fresh effect key`,
+            ...this.markOf(invocation) });
+          return;
+        }
       } else {
         console.log(`[verb-dispatcher] effect "${effectKey}" reused with a changed digest (request=${invocation.requestId}, prior=${priorRequestId}) — running fresh, no dedup`);
       }
     }
 
-    await dispatchVerb(this.opts.daemonVm, this.opts.control, invocation, () => this.runHandler(invocation, signal), this.opts.choreOf?.(invocation));
+    await dispatchVerb(this.opts.daemonVm, this.opts.state, invocation, () => this.runHandler(invocation, signal), this.opts.choreOf?.(invocation));
   }
 
   /** The chore mark the island booked for this act, as an outcome's spread (empty where none). */
@@ -657,11 +642,16 @@ export class VerbDispatcher {
         const abort = new AbortController();
         this.inFlight.add(invocation.requestId);
         this.inFlightAbort.set(invocation.requestId, abort);
-        void this.opts.control.getLive(OUTCOME_URI_PREFIX + invocation.requestId).then(async (prior) => {
+        void this.opts.state.getLive(OUTCOME_URI_PREFIX + invocation.requestId).then(async (prior) => {
           // Durable idempotency — the CRDT is the dedup store: a verb whose
           // outcome already landed has already taken effect, so skip re-execution
           // (exactly-once EFFECT, not delivery). See project_asymmetric_peer_handoff.
           if (prior) {
+            if (prior.tiddler["status"] === "running") {
+              await writeOutcome(this.opts.state, { invocation, status: "error", refusal: "request-interrupted",
+                errorMessage: `request "${invocation.requestId}" holds an interrupted claim; inspect what its act left before choosing a fresh request id`,
+                ...this.markOf(invocation) });
+            }
             // Redelivery check: this requestId already has a landed outcome, which stamped
             // its own input digest. A REDELIVERED invocation carrying the SAME requestId but
             // DIFFERENT content never matches it — never a legitimate re-send, so it's worth
@@ -678,13 +668,14 @@ export class VerbDispatcher {
               }
             }
             // The redelivery leaves the VM as a concluded verb does, so no stamp rides a standing invocation.
+            if (await this.opts.state.get(`${SUMMONS_URI_PREFIX}${invocation.requestId}`).catch(() => null)) await this.opts.state.remove(`${SUMMONS_URI_PREFIX}${invocation.requestId}`, { kind: "lares-verb", requestId: invocation.requestId });
             removeVerb(this.opts.daemonVm, invocation.title);
             return undefined;
           }
           // Effect dedup (D1): a distinct requestId naming the SAME effect skips the
           // handler entirely when a prior done attempt's digest matches; see above.
           if (invocation.effectKey) return this.dispatchWithEffectDedup(invocation, abort.signal);
-          return dispatchVerb(this.opts.daemonVm, this.opts.control, invocation, () => this.runHandler(invocation, abort.signal), this.opts.choreOf?.(invocation));
+          return dispatchVerb(this.opts.daemonVm, this.opts.state, invocation, () => this.runHandler(invocation, abort.signal), this.opts.choreOf?.(invocation));
         }).catch((err) => {
           console.error("[verb-dispatcher] verb dispatch crashed:", err);
         }).finally(() => {
@@ -696,7 +687,7 @@ export class VerbDispatcher {
     wiki.addEventListener("change", onWikiChange);
     this.unsubWiki = () => wiki.removeEventListener("change", onWikiChange);
 
-    this.unsubAutomerge = this.opts.control.subscribe((change) => {
+    this.unsubAutomerge = this.opts.state.subscribe((change) => {
       this.receiveSummons(change).catch((err) => {
         console.error("[verb-dispatcher] summons relay crashed:", err);
       });
@@ -705,9 +696,9 @@ export class VerbDispatcher {
     // Startup scan: persisted pending summons are heeded once. The request-id set shared with live
     // delivery keeps a record that also arrives as a change from firing twice.
     this.startupScan = this.scanSummons().catch((err) => {
-      // A FLOOR HOLDS NO SUMMONS: a place with no readable control document (no face landed, or its key stays shut) rests none,
+      // A FLOOR HOLDS NO SUMMONS: a place with no readable work snapshot (no face landed, or its key stays shut) rests none,
       // so its scan reads the stand-in's refusal by name and nothing waits. Any other fault of the scan surfaces as itself.
-      if (err instanceof ControlHomeUnavailable) { console.log(`[verb-dispatcher] no summons scan at the floor (${err.refusal})`); return; }
+      if (err instanceof VesselStateUnavailable) { console.log(`[verb-dispatcher] no summons scan at the floor (${err.refusal})`); return; }
       console.error("[verb-dispatcher] summons startup scan crashed:", err);
     });
 
