@@ -1,0 +1,109 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.approval.checks`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "check an approval's verdict over a file's bytes"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.approval.checks", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.approval.checks"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.approval.checks"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.approval.checks ~ the verdict against this vault's charter head
+
+`lares nexus approve check <approval> <file> [--nexus <aid>]` reads the verdict over the file's bytes against this vault's charter head; exit 0 only on ok.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ check
+
+```memetic-wikitext
+<<has entity=`example` name=`check` params=`approval/a.json file/manifest.json ~ check one approval`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ approval · file · nexus
+
+```memetic-wikitext
+<<has entity=`arg` name=`approval` params=`takes/host-path needs/required seat/1 as/<approval> ~ the approval`>>
+<<has entity=`arg` name=`file` params=`takes/host-path needs/required seat/2 as/<file> ~ the bytes`>>
+<<has entity=`arg` name=`nexus` params=`takes/aid ~ the Nexus, by AID; absent, the primary charter's`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat-or-hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat-or-hand` params=`who/seat-or-hand ~ reads the charter head; signs nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · vessel-composing · vessel-silent · vessel-locked · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.approval.checks approval/a.json file/manifest.json]] ~ name the approval and the file`>>
+<<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
+<<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
+<<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
+<<has entity=`refusal` name=`error` params=`~ the store refused; the message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ ok
+
+```memetic-wikitext
+<<has entity=`band` name=`ok` params=`exit/0 ~ the approval counts over these bytes`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares nexus approve check
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares nexus approve check]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · founding-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nsF4Xdt3G-QADzcrE9tAK9zr-wqm3EFsLT-ZoZOAM4s`>>
+
+<<^ code=`&#x0004;` to=`?`>>

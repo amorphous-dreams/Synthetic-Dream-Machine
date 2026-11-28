@@ -1,0 +1,112 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.plugins.publishes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "publish this operator's own plugin collection as an offering"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.plugins.publishes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.plugins.publishes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.plugins.publishes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.plugins.publishes ~ a gift, not a collective act
+
+`lares nexus publish plugins --source <dir> [--face N] [--apply | --terms | --land '<answer>']` declares this operator's own plugin collection, verified by hash by any taker. `--apply` publishes; under a pūlama `--terms` prints the one unsigned act its root signs and `--land` lands the signed answer.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ publish
+
+```memetic-wikitext
+<<has entity=`example` name=`publish` params=`what/plugins source/plugins apply/true ~ publish the collection`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ what · source · face · apply · terms · land
+
+```memetic-wikitext
+<<has entity=`arg` name=`what` params=`takes/word needs/required seat/1 as/<plugins> ~ what to publish`>>
+<<has entity=`arg` name=`source` params=`takes/host-path needs/required ~ the collection directory`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ the face that signs`>>
+<<has entity=`arg` name=`apply` params=`needs/one-of:apply,terms,land ~ publish`>>
+<<has entity=`arg` name=`terms` params=`needs/one-of:apply,terms,land ~ print the terms line a pūlama signs`>>
+<<has entity=`arg` name=`land` params=`takes/answer needs/one-of:apply,terms,land ~ land the pūlama's signed answer`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/face-root ~ signs under the face's root`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · vessel-composing · vessel-silent · vessel-locked · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.plugins.publishes what/plugins source/plugins apply/true]] ~ no --source, a malformed --face, or not one of --apply, --terms, --land`>>
+<<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
+<<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
+<<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
+<<has entity=`refusal` name=`error` params=`~ the store refused; the message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ published
+
+```memetic-wikitext
+<<has entity=`band` name=`published` params=`exit/0 ~ the offering landed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares nexus publish
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares nexus publish]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · founding-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ndfxC9zOAuBrNPsUQdV35LJyCqa97uzYSQqZI8TQ_SU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

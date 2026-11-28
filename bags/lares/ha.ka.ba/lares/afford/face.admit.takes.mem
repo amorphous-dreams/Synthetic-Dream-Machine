@@ -1,0 +1,104 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.admit.takes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "verify and keep an admit bundle offline against the held charter"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.admit.takes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.admit.takes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.admit.takes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.admit.takes ~ the joinee's half of the admit
+
+`lares nexus admit-take <bundle-file>` verifies an admit bundle offline against the charter this vessel holds, keeps it, and the dial presents it at that hearth alone.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ take
+
+```memetic-wikitext
+<<has entity=`example` name=`take` params=`file/admit.json ~ take an admit bundle`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ file
+
+```memetic-wikitext
+<<has entity=`arg` name=`file` params=`takes/host-path needs/required seat/1 as/<bundle-file> ~ the admit bundle`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat-or-hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat-or-hand` params=`who/seat-or-hand ~ writes this vessel's own replica`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.admit.takes file/admit.json]] ~ name the bundle file`>>
+<<has entity=`refusal` name=`error` params=`~ the bundle reads unreadable or fails verification; the message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ kept
+
+```memetic-wikitext
+<<has entity=`band` name=`kept` params=`exit/0 ~ the admit stands kept`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares nexus admit-take
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares nexus admit-take]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_PGBssGCZxBycp6ZZI5h-pwxyHJd3G0biRogewR34DY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,111 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.member.revokes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "revoke an operator's admit from the carriage board"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.member.revokes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.member.revokes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.member.revokes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.member.revokes ~ an operator leaves the carriage board
+
+`lares nexus revoke <operator-pubkey>` revokes an operator's admit under the founding-kahu quorum; `--out` and `--from` carry a partial between vaults.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ revoke
+
+```memetic-wikitext
+<<has entity=`example` name=`revoke` params=`nym/<operator-pubkey> ~ revoke an operator`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ nym · nexus · out · from
+
+```memetic-wikitext
+<<has entity=`arg` name=`nym` params=`takes/key seat/1 as/<operator-pubkey> ~ the operator revoked`>>
+<<has entity=`arg` name=`nexus` params=`takes/aid ~ the Nexus, by AID; absent, the primary charter's`>>
+<<has entity=`arg` name=`out` params=`takes/host-path ~ write the partial for the next vault`>>
+<<has entity=`arg` name=`from` params=`takes/host-path ~ judge and cosign a partial another vault wrote`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ quorum
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`quorum` params=`who/hand key/seat ~ the founding-kahu quorum signs`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · vessel-composing · vessel-silent · vessel-locked · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.member.revokes nym/<operator-pubkey>]] ~ no operator key named`>>
+<<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
+<<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
+<<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
+<<has entity=`refusal` name=`error` params=`~ the store refused; the message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ revoked
+
+```memetic-wikitext
+<<has entity=`band` name=`revoked` params=`exit/0 ~ the revoke landed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares nexus revoke
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares nexus revoke]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · founding-runbook · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;d_VcMQrfYXQ5rWDyeYO8ZLw86XAVIRmLCIs3SqQJ1BU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

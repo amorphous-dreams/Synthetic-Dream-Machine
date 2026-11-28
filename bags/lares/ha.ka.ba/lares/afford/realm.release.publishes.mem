@@ -1,0 +1,112 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.release.publishes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "publish the Nexus floor release with the seats' approval"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.release.publishes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.release.publishes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.release.publishes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.release.publishes ~ one porch body naming the released floor manifest
+
+`lares nexus release <manifest-file> --approval <file> [--nexus <aid>]` seals the floor release as steward with the seats' approval of the manifest's exact bytes attached; it lands on the publication board once it counts, and a release that counts nothing lands nothing and says why. `--cut` cuts a release manifest instead (`--thin` names what it leaves out). A herm signs none.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ release · cut
+
+```memetic-wikitext
+<<has entity=`example` name=`release` params=`file/manifest.json approval/a.json ~ publish the floor release`>>
+<<has entity=`example` name=`cut` params=`file/manifest.json cut/true ~ cut a manifest`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ file · approval · nexus · cut · thin
+
+```memetic-wikitext
+<<has entity=`arg` name=`file` params=`takes/host-path needs/required seat/1 as/<manifest-file> ~ the manifest`>>
+<<has entity=`arg` name=`approval` params=`takes/host-path ~ the seats' approval file`>>
+<<has entity=`arg` name=`nexus` params=`takes/aid ~ the Nexus, by AID; absent, the primary charter's`>>
+<<has entity=`arg` name=`cut` params=`~ cut a release manifest`>>
+<<has entity=`arg` name=`thin` params=`takes/list ~ beside --cut, what the manifest leaves out`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ quorum
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`quorum` params=`who/hand key/seat ~ a seat held in this vault seals as steward`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · vessel-composing · vessel-silent · vessel-locked · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.release.publishes file/manifest.json approval/a.json]] ~ no manifest, or no approval`>>
+<<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
+<<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
+<<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
+<<has entity=`refusal` name=`error` params=`~ the store refused; the message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ released
+
+```memetic-wikitext
+<<has entity=`band` name=`released` params=`exit/0 ~ the release landed, or why it counts nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares nexus release
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares nexus release]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · founding-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;a17I9Auivcx48z_uk0FtjcuorcD5SYny-PL2mGebBhU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

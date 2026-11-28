@@ -1,0 +1,114 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.antigen.raises`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "raise a quorum-signed kāpae ban on a nym, or fold the board"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.antigen.raises", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.antigen.raises"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.antigen.raises"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.antigen.raises ~ a ban on the always-carried antigen board
+
+`lares nexus kapae <nym> [--reason <text>] [--nexus <aid>]` raises a quorum-signed ban; a banned presenter draws Mu. `--list` folds the currently-kāpae'd set. Where the seats rest in two vaults, `--out <partial>` signs with the seats held here and `--from <partial>` cosigns and lands. Fail closed: a sub-quorum or unseated charter refuses and writes nothing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ raise · list
+
+```memetic-wikitext
+<<has entity=`example` name=`raise` params=`nym/<nym> reason/[[spam ring]] ~ raise a ban`>>
+<<has entity=`example` name=`list` params=`list/true ~ fold the kāpae'd set`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ nym · reason · list · nexus · out · from
+
+```memetic-wikitext
+<<has entity=`arg` name=`nym` params=`takes/nym seat/1 as/<nym> ~ the presenter set aside`>>
+<<has entity=`arg` name=`reason` params=`takes/words ~ why`>>
+<<has entity=`arg` name=`list` params=`~ fold the currently-kāpae'd set`>>
+<<has entity=`arg` name=`nexus` params=`takes/aid ~ the Nexus, by AID; absent, the primary charter's`>>
+<<has entity=`arg` name=`out` params=`takes/host-path ~ write the partial for the next vault`>>
+<<has entity=`arg` name=`from` params=`takes/host-path ~ judge and cosign a partial another vault wrote`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ quorum
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`quorum` params=`who/hand key/seat ~ the seat quorum signs; a sub-quorum refuses`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · vessel-composing · vessel-silent · vessel-locked · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.antigen.raises list/true]] ~ no nym, or a malformed one`>>
+<<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
+<<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
+<<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
+<<has entity=`refusal` name=`error` params=`~ the store refused; the message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ raised
+
+```memetic-wikitext
+<<has entity=`band` name=`raised` params=`exit/0 ~ the ban landed, or the partial written, or the folded set`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares nexus kapae
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares nexus kapae]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · founding-runbook · kapae
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eJQrQXN4gJX2cfWRrxhrrZ-z8gxXdGA3uJjF61q6MZQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

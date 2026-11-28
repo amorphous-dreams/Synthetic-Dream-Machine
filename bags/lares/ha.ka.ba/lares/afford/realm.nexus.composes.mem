@@ -1,0 +1,103 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.nexus.composes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "run a pet-named procedure over the nexus primitives"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.nexus.composes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.nexus.composes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.nexus.composes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.nexus.composes ~ a rite orders primitives; it holds no behaviour of its own
+
+`lares nexus rite <petname>` runs one pet-named procedure over the nexus primitives (`quorum` seats the kahu quorum on this node so the Nexus stands ready to contract; `kahuli` composes the overturn). Bare, it lists the rites; an unknown petname exits 2.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ quorum
+
+```memetic-wikitext
+<<has entity=`example` name=`quorum` params=`petname/quorum ~ seat the quorum`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ petname
+
+```memetic-wikitext
+<<has entity=`arg` name=`petname` params=`takes/name seat/1 as/<petname> ~ the rite`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ quorum
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`quorum` params=`who/hand key/seat ~ each primitive keeps its own gate`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.nexus.composes petname/quorum]] ~ no rite of that petname`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ ran
+
+```memetic-wikitext
+<<has entity=`band` name=`ran` params=`exit/0 ~ the rite's primitives ran`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares nexus rite
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares nexus rite]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · founding-runbook
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fNXoIwAU8BNj5CTbkJjVEoGmOo_eUStjDgSHHswXtto`>>
+
+<<^ code=`&#x0004;` to=`?`>>
