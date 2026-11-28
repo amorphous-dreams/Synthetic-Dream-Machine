@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-entries`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-entries"
+role          = "code-meme: holds the projector's shared shapes, keys and path readers"
+source-file   = "packages/lararium-node/src/disk-projector/entries.ts"
+source-sha256 = "sha256:c4dcea9ff07c934223a26dde5780ab8aea791999d6ca81afd80888d2a5657fa2"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-entries"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-entries"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+The module holds the standoff entry, the settle inbox and reconcile watch, the orphan pass's slice of the wiki, the siting key, the untracked-carrier alert title, the projected file mode, and the small path readers every module calls. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/entries.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-entries"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iALFLpnZK0WviExaoI4a4aX8M7knj4QvdZ67vQc6pUs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

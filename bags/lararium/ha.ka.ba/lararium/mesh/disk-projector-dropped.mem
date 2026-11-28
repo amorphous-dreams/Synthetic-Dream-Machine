@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dropped`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-dropped"
+role          = "code-meme: unlinks a dropped carrier and keeps its kāpae shadow"
+source-file   = "packages/lararium-node/src/disk-projector/dropped.ts"
+source-sha256 = "sha256:121e58321f0911a1d4097c061446d18d8f25541cea2840d5cfd594ee3e926cb4"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-dropped"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-dropped"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`_scheduleUnlinkByTitle` settles every home a dropped carrier left in each mirror whose bag no longer holds it. `settleShadow` and `lowerShadowAt` keep the `.kapae` shadow following the layer. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/dropped.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-dropped"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OZcS5Zi3EdyUjEoosSJoxZSVGjGZmkxrs383aIZsCUU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

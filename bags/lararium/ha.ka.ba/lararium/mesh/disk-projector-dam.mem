@@ -1,0 +1,57 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+role      = "working checklist: the disk projector split into tiddler-sized modules, and what each one showed"
+title     = "lar:///ha.ka.ba/lararium/mesh/disk-projector-dam"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/mesh/disk-projector-dam"
+```
+
+<<~ ahu slot=`#/checklist`>>
+
+!! DAM checklist
+
+The split moved `LarDiskProjector` (2,536 lines) into modules under `packages/lararium-node/src/disk-projector/`, each wrapped by a heleuma code-meme; the class stays as the composer and its public surface carries every caller unchanged. Line counts name the files at this landing. The "pono?" column records what the split SAW; it prescribes no change.
+
+|!module (code-meme) |!lines |!does, holds, carries |!callers |!pono? (seen) |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-composer`>> `disk-projector.ts` | 429 | composes the modules; holds ~59 members of shared state; carries every public method as a one-line hand-off | island-behaviors, shore-verb, index barrel, 40 node tests | Held state: the standoff lifecycle alone spans four maps (`standoffs`, `leaving`, `surfaced`, `standoffRenders`) plus a `readings` counter. Internal fields moved from `private` to `protected` so the modules reach them through one cast (`core()`, `as unknown as ProjectorCore`); tests reach nine internals by cast (`flush`, `reconcile`, `atomicWrite`, `gate`, `_tw5`, `onConflict`, `reconcileWatches`, `settleWakes`, `settleInboxes`), so those stay instance members. 429 lines, mostly field docs. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-options`>> `disk-projector/options.ts` | 226 | names every construction port | composer, core | Exception list: 30 optional ports, each with its own "Absent →" fallback sentence; three ports (`onRefusal`, `onConflict`, `onConflictResolved`) split one alert rail by kind on purpose. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-core`>> `disk-projector/core.ts` | 98 | names the shared state and the instance methods modules call back through | every module | Patch seam: the interface restates each field type by hand; the composer types most fields as `ProjectorCore[...]` to close the drift, and the cast through `unknown` would hide any mismatch that remains. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-entries`>> `disk-projector/entries.ts` | 92 | holds shared shapes, keys, alert title, file mode, path readers | every module, composer re-exports | `keepSpares` (the static `kept` renamed, since a local `let kept` shadowed it) takes `string or set`: two call shapes for one question. `rootOf` wraps `rootAddressOf` and adds nothing. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-start`>> `disk-projector/start.ts` | 152 | subscribes, opens the queue, marks mount-scan roots; stops | composer | Clock: the change handler stamps `performance.now()` into the measure; it annotates and never decides. Seven mount-scan sources mark roots (recovery stores, own-record stores, tombstones, synced rows, every wiki title, orphan flags, orphan folders). Duck-typed `listTombstoned` and `as never` casts reach past the store and wiki types. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-reconcile`>> `disk-projector/reconcile.ts` | 176 | reconciles one root; holds the residency bar and pack suppress | composer, recovery, standoffs, dropped, orphans, flush, start | Exception list: `neverOnDisk` bars effect records and the temp class; the pack-member suppress rides first as a loop-stopper. The recovery pass runs before the view pass so its standoffs survive the view pass (a fix for a reconcile loop, stated in place). |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-flush`>> `disk-projector/flush.ts` | 211 | renders, sites, settles left homes, skips identical bytes, writes, sweeps | composer, confluence | A ladder of ten early returns. `debugJson` writes a peek beside the carrier outside every gate (stated as the projector's own artifact). `_firstFlushDone` latches once. `metaBody!` asserts what `metaPath !== null` implies. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-confluence`>> `disk-projector/confluence.ts` | 178 | weighs one carrier through the three-way gate and acts on its answer | flush | Patch-on-patch: the gate weighs twice, with a tree reread between, because a sibling may have moved the base. `headed` mutates inside the `baseOf` closure (held state in a closure). The conflict reason picks among four sentences. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-siting`>> `disk-projector/siting.ts` | 109 | sites a carrier; lists the files a siting holds | flush, dropped, recovery | The uniquifier caps its walk at 1000 tries. `sited` (in the composer) holds the last siting per mirror for the session alone; the base answers across a restart. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-write`>> `disk-projector/write.ts` | 77 | writes atomically; reads disk text; resolves pointer bytes | flush, confluence, recovery, settle-word, composer | Clock: `noteFirstWrite` reads `performance.now()` to print one diagnostic line past a second; nothing paces on it. Read errors collapse to null (absent). |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-bases`>> `disk-projector/bases.ts` | 91 | answers document, lineage and base questions; pins and forgets | flush, confluence, homes, pending, dropped, orphans, recovery | `docOf` coerces an empty document id to undefined with `||`. HEAD stands in for a base the re-found cleared, and pins nothing itself. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-homes`>> `disk-projector/homes.ts` | 120 | judges each unlink; settles and unlinks agreed homes | flush, dropped | `judgeHome` answers four verdicts plus a `behind` flag. Binary detection reads a utf8 round trip. An unreadable file reads `held: unreadable`, so it stays. A lone sidecar proves nothing and stays. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-standoffs`>> `disk-projector/standoffs.ts` | 125 | enters, leaves, resolves standoffs; the take-records door | flush, confluence, homes, dropped, reconcile, composer | Held state: flicker suppression rests on the `readings` counter and the `leaving` map; a standoff speaks once per key via `surfaced`. A stale doc ("a reconcile found no standoff") stood stacked above `_leaveStandoff`; the split dropped it. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-pending`>> `disk-projector/pending.ts` | 113 | holds pending removals; surfaces each set at drain; senses the disk | composer, removals, confluence, flush, reconcile | No clock: surfacing waits on the queue's idle handshake behind a `pendingMoved` latch. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-removals`>> `disk-projector/removals.ts` | 110 | answers remove or restore for pending carriers | composer | A seven-member refusal union. The count check refuses an answer over carriers its giver never read; the removal reads back from the view rather than trusting the door. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dropped`>> `disk-projector/dropped.ts` | 118 | unlinks a dropped carrier per mirror; follows the kāpae shadow | reconcile, flush | Name drift: `_scheduleUnlinkByTitle` schedules nothing; it runs awaited in line. The "Unlink by trying all mirrors" doc stood above `_leaveStandoff` in the class; the split moved it here. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-orphans`>> `disk-projector/orphans.ts` | 151 | writes orphan slot files, raises the flag, gives the folder back | start, reconcile | Swallowed errors: `unlinkSync` and `rmdirSync` failures pass silent (best-effort, a hand cleans up). |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-untracked`>> `disk-projector/untracked.ts` | 67 | keeps untracked files with one alert each; lists them for the census | dropped, composer | CRUD on `$:/temp` alert tiddlers straight through `addTiddler` and `deleteTiddler` on the wiki. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-recovery`>> `disk-projector/recovery.ts` | 166 | proves recovery at rest; pins agreements it reads itself | composer | Thrown `Error` strings carry the answer ("recovery record superseded"); `stableFields` compares records by sorted JSON. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-settle-word`>> `disk-projector/settle-word.ts` | 188 | waits until a gesture's projection ran | composer | No clock: a handshake with change events and the drain. One look loop of ~64 lines ends on two breaks (every carrier answered or the projector stopping; a look after the far side closed); `closed = false as boolean` defeats narrowing on purpose. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-watches`>> `disk-projector/watches.ts` | 72 | arms wakes; watches the next reconcile; lists what the queue owes | start, settle-word, composer | `failedRoots` holds every root whose last reconcile threw until one lands; `reconcileWatched` rethrows after marking. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-disk-files`>> `disk-projector/disk-files.ts` | 85 | lists a carrier's files; reads which title owns a path | flush, siting, composer re-exports | Directory and parse errors collapse to empty or unknown; `.kapae` and `.orphans` take explicit exclusions. |
+| <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-orphan-files`>> `disk-projector/orphan-files.ts` | 30 | serializes an orphan record; maps its slot path | orphans, composer re-exports | A deny set strips host and draft fields; a newline in a value or a colon in a name routes the record to JSON. |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/registration`>>
+
+!! Heleuma registration
+
+`packages/lararium-tw5/scripts/sync-heleuma.ts` reads every mesh anchor whose `source-file` names a node-package module: the window check (module-ref declared, window standing, window facing the ref) and a `source-sha256` check against the file's bytes. Drift warns and never blocks; `build:heleuma:commit` restamps. Each window faces `lar:///ha.ka.ba/lararium/mesh/source/disk-projector-…`, a source tiddler no carrier ships yet: the wave crest ships its source as a `.tid` in the TW5 plugin, and packing the projector's node-only source into the browser plugin waits on its own decision.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5lAIfElFbye-YuXYer8APsn8yrGW9av-PxGutP1GlHE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

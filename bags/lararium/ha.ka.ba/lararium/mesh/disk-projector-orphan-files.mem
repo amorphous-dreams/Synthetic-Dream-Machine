@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-orphan-files`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-orphan-files"
+role          = "code-meme: serializes orphan records and maps their slot paths"
+source-file   = "packages/lararium-node/src/disk-projector/orphan-files.ts"
+source-sha256 = "sha256:9a2bef2f28c1dba92bc204301e9fd547eef36f1fb077184c0323281b7280fcfa"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-orphan-files"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-orphan-files"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+The module serializes orphan records and maps their slot paths. `disk-projector.ts` calls its exports and re-exports them for existing callers. Node filesystem and projector dependencies keep this compiled module outside the meme graph; its source window names the code-file seat. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/orphan-files.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-orphan-files"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;N049uFGS2arutix2Jc6iBWBtvkdVq3E8qOs3Evg--ZM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

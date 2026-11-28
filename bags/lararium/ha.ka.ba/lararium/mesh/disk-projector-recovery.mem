@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-recovery`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-recovery"
+role          = "code-meme: proves recovery at rest and pins agreements it reads itself"
+source-file   = "packages/lararium-node/src/disk-projector/recovery.ts"
+source-sha256 = "sha256:0e5db89eea917913226bdee2bbb4589497d2d4e504cc255cba6ebb5af95f3437"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-recovery"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-recovery"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`recoveryAtRest` proves a captured recovery record stands in its granted mirror's bytes. `pinAgreement` pins a base only where this island's own render and the file agree; `recordsRenderOf` folds the render both read. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/recovery.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-recovery"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bK6CwMOwNIW5stl436fdyxFc3bGlcFl44EBe8F4giLE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

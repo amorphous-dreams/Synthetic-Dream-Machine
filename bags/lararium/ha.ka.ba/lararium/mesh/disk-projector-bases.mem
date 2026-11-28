@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-bases`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-bases"
+role          = "code-meme: reads and moves the bases this document owns"
+source-file   = "packages/lararium-node/src/disk-projector/bases.ts"
+source-sha256 = "sha256:c93f6ac449de9661a94ba38520d0507bd515cc013f77e7dd73d07889adae9870"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-bases"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-bases"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+The module answers which document a bag's records rest in, whether a base still holds that document's history, which base stands at a path, and where HEAD stands in for a missing base; `pin` and `forgetAt` move a base. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/bases.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-bases"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YtIdXN8m_Q1OBGiqfVUIUoQCPOBr30pHTYxQa-orU-o`>>
+
+<<^ code=`&#x0004;` to=`?`>>

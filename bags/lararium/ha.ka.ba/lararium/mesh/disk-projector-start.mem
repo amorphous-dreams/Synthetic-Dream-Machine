@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/disk-projector-start`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/disk-projector-start"
+role          = "code-meme: wires the projector to the wiki and stops it"
+source-file   = "packages/lararium-node/src/disk-projector/start.ts"
+source-sha256 = "sha256:1bc45535f90243e495b3a58490826f50f23259bae87cb20976dc7baae7a1a610"
+title         = "lar:///ha.ka.ba/lararium/mesh/disk-projector-start"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/disk-projector-start"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`start` subscribes to the wiki's change events, opens the keyed reconcile queue, hears each mirrored bag's own store and marks every root a mount scan finds. `stop` ends the settle waits and drains the queue. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/disk-projector-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/disk-projector/start.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/disk-projector-start"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nYY7CIkuJHmsrpFLkAOChqdB9s8xKV5N1Fe4AP78AKc`>>
+
+<<^ code=`&#x0004;` to=`?`>>
