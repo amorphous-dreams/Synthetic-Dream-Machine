@@ -71,7 +71,7 @@ The crew lines that bind a running lane stand at <<~ loulou uri=`lar:///ha.ka.ba
 <<~ ahu slot=`#/the-seat-law`>>
 !! The seat law ~ the brief section every Codex seat carries
 
-`tools/launch-codex.mjs` preflights each Codex seat and appends the bullets below to its brief, once, reading them from this section. It refuses a model missing from Codex's models cache, `gpt-6-sol`, a pool at or under its weekly floor (10% for a build or research seat, 0% for a read seat, the operator letting readers spend the pool to its end for now), a pool line unreadable twice (never read as zero), a seat directory outside `~/.lares-scratch/<lane>/`, a build seat on the main checkout, and a build seat over a stale dist. It logs each attempt.
+`tools/launch-codex.mjs` preflights each Codex seat and appends the bullets below to its brief, once, reading them from this section. It refuses a model missing from Codex's models cache, `gpt-6-sol`, a reported reached limit or an exhausted window, a pool line unreadable twice (never read as zero), a prompt past 120 KiB (it rides codex's argv, which Linux caps at 128 KiB per string), a seat directory outside `~/.lares-scratch/<lane>/`, a build seat on the main checkout, and a build seat over a stale dist. A window at or under its floor (10% for a build or research seat, 0% for a read seat, the operator letting readers spend the pool to its end for now; each reported window reads alone, `5h` and `7d`) prints a loud warning naming the window and still launches. It logs each attempt.
 
 * A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
 * Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
@@ -277,6 +277,7 @@ A lane closes with an o-takiage pass before its branch hands back, and the contr
 # 2026-11-06, the spend balance raised (operator's words): "Let's go 80/20 Codex/Claude spends on tasked spirits, please." (#/the-tiers)
 # 2026-11-07, the pool line (operator's words): "Set the codex pool limit down to 20% (its really a soft limit)." Lead, build and research seats launch until 20% of the weekly pool remains; read seats keep their 0% floor (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>> #/the-spend-guard).
 # 2026-11-27, the pool line moves (operator's words): "Set pool lower limit to a 'fuzzy' 10%." Lead, build and research seats launch until 10% of the weekly pool remains (90% used), still soft; read seats keep their 0% floor (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>> #/the-spend-guard).
+# 2026-11-28, the floor warns: the operator ruled the 10% floor a warning, not a wall. The launcher reads both Codex windows (`5h`, `7d`) and, at or past either window's floor or used line, prints a loud warning naming that window and still launches (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>> #/the-spend-guard).
 <<~/ahu>>
 
 <<~ ahu slot=`#/owed`>>
@@ -309,6 +310,6 @@ Ruled by the operator, 2026-11-05: "Does it apply to all tasked spirits... all l
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6pyU3TabYYZElzw887PxBml0F8Lpp1-EwRGNUmSFRFY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3B1AaCuHk81-Wtj-O81Bnz8tpF7-uZqnj0hps3WkDno`>>
 
 <<^ code=`&#x0004;` to=`?`>>
