@@ -1,0 +1,116 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.vessel.founds`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "mint the vessel identity, persona root and bootstrap, idempotent"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.vessel.founds", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.vessel.founds"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.vessel.founds"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.vessel.founds ~ the founding: identity, persona zero, the planes and the bootstrap
+
+`lares vessel found` mints the vessel identity, the social planes and the bootstrap and skips what already stands. `--hearth --name '<label>'` founds a hearth with persona zero and its one-seat seed charter; `--hearth --restore <bundle>` founds it with a restored face as persona zero; bare, it founds a place with no face, which joins one by `lares fleet join`. `--chair <label>` names persona zero's private chair label; `--genesis <dir>` the genesis it founds from; `--storage <dir>` the store; `--root <dir>` the vessel root. The human route reads on a terminal (passphrase, paper pin); with none the founding refuses by name. `--force` over a founded hearth re-seeds the bootstrap, so the house hand gate reads the branch first.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ hearth · place · restore
+
+```memetic-wikitext
+<<has entity=`example` name=`hearth` params=`hearth/true name/[[Mara]] ~ found a hearth with persona zero`>>
+<<has entity=`example` name=`place` params=`~ found a place with no face`>>
+<<has entity=`example` name=`restore` params=`hearth/true restore/backup.json ~ found from a backup bundle`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ hearth · name · restore · chair · genesis · storage · root · force
+
+```memetic-wikitext
+<<has entity=`arg` name=`hearth` params=`~ found a hearth with persona zero and its seed charter`>>
+<<has entity=`arg` name=`name` params=`takes/label ~ persona zero's private label; a hearth founding needs it unless --restore names a bundle`>>
+<<has entity=`arg` name=`restore` params=`takes/host-path ~ found with a restored face from this backup bundle as persona zero`>>
+<<has entity=`arg` name=`chair` params=`takes/label ~ persona zero's private chair label`>>
+<<has entity=`arg` name=`genesis` params=`takes/dir ~ the genesis dir the founding reads`>>
+<<has entity=`arg` name=`storage` params=`takes/dir ~ the store the founding writes`>>
+<<has entity=`arg` name=`root` params=`takes/dir ~ the vessel root (LAR_ROOT) this call reads`>>
+<<has entity=`arg` name=`force` params=`~ re-seed the bootstrap over a founded hearth; a hand act`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand ~ mints keys on this host; the human route reads a terminal, and --force reads the hand gate`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ HearthFoundingRefused · OccupiedStoreRefusal · hand-act-only · hand-unattested
+
+```memetic-wikitext
+<<has entity=`refusal` name=`HearthFoundingRefused` params=`cure/[[engine.vessel.founds hearth/true name/<label>]] ~ persona zero needs a label, or the bundle reads unreadable, malformed or opens no route; nothing landed`>>
+<<has entity=`refusal` name=`OccupiedStoreRefusal` params=`~ the store holds a carrier and no tree; nothing mints over it`>>
+<<has entity=`refusal` name=`hand-act-only` params=`~ an AI seat stands on the branch; --force runs on a person's own terminal`>>
+<<has entity=`refusal` name=`hand-unattested` params=`~ the hand gate read no chain for the branch`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ founded · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`founded` params=`exit/0 ~ the vessel stands founded, or already stood`>>
+<<has entity=`band` name=`refused` params=`exit/1 ~ the founding refused by name; the act wrote nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vessel found
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares vessel found]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · vessel-door
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Opox6bHNq5z9SsI_xB7wa-0YiesZHKy9McSE2WIUuok`>>
+
+<<^ code=`&#x0004;` to=`?`>>

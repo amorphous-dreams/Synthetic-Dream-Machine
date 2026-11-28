@@ -1,0 +1,116 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.holding.lays`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "lay every bags holding back into its doc, diff-gated"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.holding.lays", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.holding.lays"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.holding.lays"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.holding.lays ~ each bags/* holding, laid back into its doc by kind
+
+`lares vessel lay` walks every holding under the canon source and lays it into its doc, kind-routed and diff-gated, by the act CREATE and the ingest it runs (so it passes `--change-id`, `--dry-run`, `--in-wiki`, `--shadow` and `--tag-blobs` through to them). Bare it previews; `--apply` lands, asking at a terminal, `--yes` with none (an apply with neither refuses `usage`). `--lag` reads how far canon lags the source and the floor's drift, writing nothing; `--workbench` walks the workbench folders alone; `--lift-kahua <N>` lifts kahua items; `--verbose` prints each line.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ preview · apply · lag
+
+```memetic-wikitext
+<<has entity=`example` name=`preview` params=`~ preview the lay`>>
+<<has entity=`example` name=`apply` params=`apply/true ~ land it`>>
+<<has entity=`example` name=`lag` params=`lag/true ~ read the lag`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ apply · lag · workbench · lift-kahua · verbose · change-id · dry-run · in-wiki · shadow · tag-blobs
+
+```memetic-wikitext
+<<has entity=`arg` name=`apply` params=`~ land the lay; preview bare`>>
+<<has entity=`arg` name=`lag` params=`~ read canon's lag and the floor drift, writing nothing`>>
+<<has entity=`arg` name=`workbench` params=`~ walk the checkout's workbench folders alone`>>
+<<has entity=`arg` name=`lift-kahua` params=`takes/index ~ lift kahua items for this face`>>
+<<has entity=`arg` name=`verbose` params=`~ print every line`>>
+<<has entity=`arg` name=`change-id` params=`takes/id ~ passed to the act and ingest beneath`>>
+<<has entity=`arg` name=`dry-run` params=`~ passed to the act and ingest beneath`>>
+<<has entity=`arg` name=`in-wiki` params=`~ passed to the act beneath`>>
+<<has entity=`arg` name=`shadow` params=`~ passed to the act and ingest beneath`>>
+<<has entity=`arg` name=`tag-blobs` params=`~ passed to the ingest beneath`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ the act CREATE and ingest gates beneath check the face's caps`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · house-canon-unseated
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.holding.lays apply/true]] ~ an apply with no terminal needs the operator's relayed approval: --yes`>>
+<<has entity=`refusal` name=`house-canon-unseated` params=`~ the holding landed after the vessel booted; re-stand to seat it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ laid · lag
+
+```memetic-wikitext
+<<has entity=`band` name=`laid` params=`exit/0 ~ each holding laid, skipped or floored, named`>>
+<<has entity=`band` name=`lag` params=`exit/0 fields/[[holdings benches lag floorDrift]] ~ canon's lag and the floor drift`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vessel lay
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares vessel lay]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · vessel-door
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7NBajQt4x2C2yxLuI36xsG5uJfaowhO2tboNTAuMPqo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

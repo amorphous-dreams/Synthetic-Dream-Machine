@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/carriage.fresher.reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "name working copies that shadow fresher canon in one bag"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///carriage.fresher.reads", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/carriage.fresher.reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/carriage.fresher.reads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carriage.fresher.reads ~ working copies over a canon bag that moved past their base
+
+`lares vessel fresher --bag <slug>` reads each working copy over that canon bag that shadows fresher canon, its base hash beside canon's, then each copy with no base that differs from canon. It writes nothing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ fresher
+
+```memetic-wikitext
+<<has entity=`example` name=`fresher` params=`bag/lares ~ the copies shadowing fresher lares canon`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ bag
+
+```memetic-wikitext
+<<has entity=`arg` name=`bag` params=`takes/slug needs/required ~ the canon bag, a slug or lar:///ha.ka.ba/bags/<slug>`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ runs on this host's own vessel root; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ bag-unnamed · fresher-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`bag-unnamed` params=`cure/[[carriage.fresher.reads bag/lares]] ~ --bag names the canon bag`>>
+<<has entity=`refusal` name=`fresher-refused` params=`~ the daemon refused the read`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ read · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`read` params=`exit/0 ~ one line per copy`>>
+<<has entity=`band` name=`refused` params=`exit/2 ~ refused by name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vessel fresher
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares vessel fresher]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · vessel-door
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yT-gokVShtWklE76WHCGVTRzNtnC63l9srfCSvFQd5Y`>>
+
+<<^ code=`&#x0004;` to=`?`>>

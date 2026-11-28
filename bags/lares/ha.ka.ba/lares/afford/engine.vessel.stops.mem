@@ -1,0 +1,94 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.vessel.stops`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "halt the daemon on its port, graceful, never a forced kill"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.vessel.stops", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.vessel.stops"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.vessel.stops"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.vessel.stops ~ the daemon halts on its port; a free port reads stopped
+
+`lares vessel stop` ends the daemon on the port (LAR_PORT): SIGTERM, then waits on its own exit, reporting past the grace who still holds it. `--cut` delivers the operator's one further signal past that grace. A free port reads as stopped.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ stop · cut
+
+```memetic-wikitext
+<<has entity=`example` name=`stop` params=`~ halt the daemon`>>
+<<has entity=`example` name=`cut` params=`cut/true ~ cut a hung teardown`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ cut
+
+```memetic-wikitext
+<<has entity=`arg` name=`cut` params=`~ past the grace, deliver the holder one further signal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ runs on this host's own vessel root; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ stopped
+
+```memetic-wikitext
+<<has entity=`band` name=`stopped` params=`exit/0 fields/[[port stopped]] ~ stopped, or the port stood free`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vessel stop
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares vessel stop]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · vessel-door
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QTt9dsyX2iqsQ-dhm24v6ds2tKlLN1WAGibmS2Dle9E`>>
+
+<<^ code=`&#x0004;` to=`?`>>

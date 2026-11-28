@@ -1,0 +1,107 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.census.counts`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "name what a stop would drop before it happens"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.census.counts", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.census.counts"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.census.counts"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.census.counts ~ what a stop would drop, counted before it happens
+
+`lares vessel census` asks the custody door's census frame and each island's shore census for saves held in memory and carriers the projector owes, plus untracked files under a checkout's mirror; each item names the act that lands it. `--docs` reads the document census instead: every stored document, its class and who names it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ census · docs
+
+```memetic-wikitext
+<<has entity=`example` name=`census` params=`~ what a stop would drop`>>
+<<has entity=`example` name=`docs` params=`docs/true ~ the document census`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ docs
+
+```memetic-wikitext
+<<has entity=`arg` name=`docs` params=`~ read every stored document, its class and who names it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ runs on this host's own vessel root; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ census-unanswered · vessel-locked
+
+```memetic-wikitext
+<<has entity=`refusal` name=`census-unanswered` params=`~ a line could not answer; named, never read clean`>>
+<<has entity=`refusal` name=`vessel-locked` params=`~ the vessel stands locked`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ clean · census-items · unanswered
+
+```memetic-wikitext
+<<has entity=`band` name=`clean` params=`exit/0 ~ nothing would drop`>>
+<<has entity=`band` name=`census-items` params=`exit/3 ~ items stand, one per line, each with its act`>>
+<<has entity=`band` name=`unanswered` params=`exit/2 ~ the census could not answer whole`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vessel census
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares vessel census]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · vessel-door
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uOOgz_mbnSiSfzOudryoeZnCPxAjAhfpGLPcDsgyr-o`>>
+
+<<^ code=`&#x0004;` to=`?`>>
