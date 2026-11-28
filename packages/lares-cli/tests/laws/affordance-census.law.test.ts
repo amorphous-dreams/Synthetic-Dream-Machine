@@ -5,7 +5,7 @@
  * A door FLIPS when every affordance it skins holds a carrier: the baked pack then carries its help (`doors.<door>`), and the
  * flipping commit burns its `COMMAND_HELP` entry and every `"<door> <sub>"` key with it. LEGACY_CEILING records the legacy
  * count as it stands; a commit that flips a door lowers it by hand in the same act, and no commit may raise it. At zero,
- * `command-help.ts` leaves and the seam's second branch burns. Seed: `oracle` flipped first, `ddate` and `law` with wave 1a, `act` · `ingest` · `export` · `import` · `shore` · `bag` · `flow` with wave 2, `kahua` · `trust` · `kapae` · `events` · `hooks` · `mcp` with wave 3a, `get` · `put` · `delete` · `rename` with the comms course's call shape (`get` chooses its carrier by the param a call names, so it claims no route of its own; its door gathers both choices). Control: a door planted in both
+ * `command-help.ts` leaves and the seam's second branch burns. Seed: `oracle` flipped first, `ddate` and `law` with wave 1a, `act` · `ingest` · `export` · `import` · `shore` · `bag` · `flow` with wave 2, `kahua` · `trust` · `kapae` · `events` · `hooks` · `mcp` with wave 3a, `get` · `put` · `delete` · `rename` with the comms course's call shape (`get` chooses its carrier by the param a call names, so it claims no route of its own; its door gathers both choices), and the comms course's landings 10 + 23 the twenty-four doors whose every verb holds a carrier (`realm` · `herm` · `wear` · `library` · `vault` · `sensorium` · `mempalace` · `home` · `repo` · `cabal` · `circle` · `edge` · `fleet` · `handle` · `spirit` · `surface` · `rite` · `intent` · `intent-relay` · `lei` · `walk` · `host` · `persona` · `nexus`). Four doors stay legacy, each holding `door/part` carriers beside its own table: `meme`, `wiki` and `sense` until landing 9's carriers take their cli skins, and `vessel` until `face.roster.reads` takes `vessel roster`. Control: a door planted in both
  * homes reads red, and a census over a pack that flips nothing breaks the ceiling.
  *
  * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-laws
@@ -15,8 +15,11 @@ import { COMMAND_HELP } from "../../src/command-help.js";
 import { COMMAND_NAMES } from "../../src/bin/lares.js";
 import { REBAKE, pack } from "./affordance-harness.js";
 
-/** The legacy count today: `oracle`, `ddate`, `law`, wave 2's seven, wave 3a's six and the call verbs flipped. Lower it in the commit that flips the next door; never raise it. */
-const LEGACY_CEILING = 28;
+/** The legacy count today: `meme`, `wiki`, `sense` and `vessel`, every other door flipped. Lower it in the commit that flips the next door; never raise it. */
+const LEGACY_CEILING = 4;
+
+/** The doors landings 10 + 23 flipped whole. */
+const FLIPPED_10_23 = ["realm", "herm", "wear", "library", "vault", "sensorium", "mempalace", "home", "repo", "cabal", "circle", "edge", "fleet", "handle", "spirit", "surface", "rite", "intent", "intent-relay", "lei", "walk", "host", "persona", "nexus"];
 
 function census(flippedDoors: readonly string[], help: Readonly<Record<string, unknown>> = COMMAND_HELP) {
   const flipped = COMMAND_NAMES.filter((d) => flippedDoors.includes(d));
@@ -29,9 +32,9 @@ function census(flippedDoors: readonly string[], help: Readonly<Record<string, u
 describe("the census ratchet: flipped + legacy = doors; legacy only falls; one home per door", () => {
   const c = census(Object.keys(pack().doors));
 
-  test("SEED: oracle, ddate, law, wave 2's seven, wave 3a's six and the call verbs get, put, delete and rename read flipped; wiki reads legacy", () => {
-    for (const door of ["oracle", "ddate", "law", "act", "ingest", "export", "import", "shore", "bag", "flow", "kahua", "trust", "kapae", "events", "hooks", "mcp", "get", "put", "delete", "rename"]) expect(c.flipped, `the pack flips no ${door} door; ${REBAKE}`).toContain(door);
-    expect(c.legacy).toContain("wiki");
+  test("SEED: oracle, ddate, law, wave 2's seven, wave 3a's six, the call verbs and landings 10 + 23's twenty-four read flipped; meme, wiki, sense and vessel read legacy", () => {
+    for (const door of ["oracle", "ddate", "law", "act", "ingest", "export", "import", "shore", "bag", "flow", "kahua", "trust", "kapae", "events", "hooks", "mcp", "get", "put", "delete", "rename", ...FLIPPED_10_23]) expect(c.flipped, `the pack flips no ${door} door; ${REBAKE}`).toContain(door);
+    expect([...c.legacy].sort()).toEqual(["meme", "sense", "vessel", "wiki"]);
     expect(Object.keys(pack().doors), `the burned tiddler door holds no pack entry; ${REBAKE}`).not.toContain("tiddler");
   });
 

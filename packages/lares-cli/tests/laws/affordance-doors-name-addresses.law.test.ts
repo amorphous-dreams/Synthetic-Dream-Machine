@@ -112,7 +112,11 @@ describe("W1 · every door names one address; every skin names a live door", () 
     });
     expect(pack().doors["tiddler"], REBAKE).toBeUndefined();
     expect(pack().doors["wiki"], "the wiki door keeps its own table").toBeUndefined();
-    expect(partDoors(), "no `door/part` skin stands once `wiki filter` burned").toEqual([]);
+    // FOUR DOORS HOLD `door/part` SKINS beside their own tables (comms course landings 10 + 23): `meme`, `wiki` and `sense` keep
+    // the verbs landing 9's carriers own (engine.meme.projects, realm.offer.signs · shows, engine.layer.reads, engine.wiki.*,
+    // render.sidebar.lays, the sense.* reads) until those carriers take their cli skins, and `vessel` keeps `roster` until
+    // face.roster.reads takes it. Each flips whole in the commit that routes its last verb, and leaves this list then.
+    expect(partDoors(), "the part doors wait on landing 9's cli skins").toEqual(["meme", "sense", "vessel", "wiki"]);
   });
 
   test("★ every skin in the pack names a door a live table holds ★", () => {
