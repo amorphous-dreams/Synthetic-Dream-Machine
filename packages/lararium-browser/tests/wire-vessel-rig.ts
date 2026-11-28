@@ -74,15 +74,26 @@ export function admitNaming(hearthGatePubKey: string, hearthCanonDocs: Record<st
   } as unknown as CarriedAdmitPayload;
 }
 
-/** The result a faked admit ceremony returns: fresh document urls and a card, no ceremony run. */
-export function fakeAdmitResult(input?: { readonly payload?: { readonly deviceEdge?: unknown } }): Record<string, unknown> {
+/**
+ * The result a faked admit ceremony returns: fresh document urls and a card, no ceremony run, and a REAL Archive minted from the
+ * admit's own atom seed. The opener proves the Archive against the face's atom before it rests (requireArchiveOf, the identity
+ * seal of 0effd0948), so four placeholder bytes refuse in keyhive's decoder; the seal stays, and the fake carries what a real
+ * ceremony returns. The provider loads at call time, so a test that mocks `@lararium/keyhive` reads its own module, no cycle.
+ */
+export async function fakeAdmitResult(input?: { readonly atomSeed?: Uint8Array; readonly payload?: { readonly deviceEdge?: unknown } }): Promise<Record<string, unknown>> {
+  if (!input?.atomSeed) throw new Error("wire-vessel-rig: fakeAdmitResult mints the Archive from the admit's atomSeed; pass the admit input");
+  const { KeyhiveProvider, InMemoryEventStore } = await import("@lararium/keyhive");
+  const provider = new KeyhiveProvider();
+  await provider.init({ seed: Uint8Array.from(input.atomSeed), eventStore: new InMemoryEventStore() });
+  const archive = await provider.exportArchiveAfterTheCard();
+  await provider.dispose();
   return {
     // The complete edge the ceremony returns; the faked ceremony carries the payload's own.
     ...(input?.payload?.deviceEdge ? { deviceEdge: input.payload.deviceEdge } : {}),
     identitiesUrl: generateAutomergeUrl(), circlesUrl: generateAutomergeUrl(), sessionsUrl: generateAutomergeUrl(), intentsUrl: generateAutomergeUrl(),
     daemonUrl: generateAutomergeUrl(), personaUrl: generateAutomergeUrl(), personaBagId: "persona-wire-rig",
     contactCardJson: "{\"wire\":\"rig\"}", hearthDaemonUrl: null,
-    archive: new Uint8Array([0x77, 0x69, 0x72, 0x65]),
+    archive,
   };
 }
 
