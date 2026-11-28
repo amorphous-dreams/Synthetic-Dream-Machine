@@ -1,0 +1,108 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.relay.opens`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "open the intent relay for a face and print its knock path"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.relay.opens", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.relay.opens"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.relay.opens"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.relay.opens ~ enable ~ the face answers on the relay
+
+`lares intent-relay enable` mints the relay key where none stands, enables the relay for the face's persona group and answers the face's knock path and gate pin beside the relay's public admission key. `--json` prints the answer as data.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ enable
+
+```memetic-wikitext
+<<has entity=`example` name=`enable` params=`~ the face answers on the relay`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ json · face
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/json`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`face` params=`takes/index ~ the face whose relay switch moves, a whole persona index from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/seat-or-hand ~ the operator's switch over this vessel's own relay, through the store door`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · face-malformed · face-not-held
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ an unknown sub-verb, or no sub-verb named`>>
+<<has entity=`refusal` name=`face-malformed` params=`~ --face names a whole persona index from 0`>>
+<<has entity=`refusal` name=`face-not-held` params=`~ this vessel holds no such face`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ state · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`state` params=`exit/0 fields/[[face enabled standing path pin key]] ~ the face's relay state, its knock path and the relay's public key`>>
+<<has entity=`band` name=`refused` params=`exit/1 ~ [lares intent-relay] refused: names the code`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares intent-relay enable
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares intent-relay enable]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · face-intent-plane
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zr2-el_hpIugOE5fzVhOhsQhysINr5yVszayCjj0y88`>>
+
+<<^ code=`&#x0004;` to=`?`>>

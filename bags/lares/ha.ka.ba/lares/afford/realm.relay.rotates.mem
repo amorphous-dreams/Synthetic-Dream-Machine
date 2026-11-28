@@ -1,0 +1,102 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.relay.rotates`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "rotate the intent relay's public admission key"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.relay.rotates", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.relay.rotates"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.relay.rotates"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.relay.rotates ~ rotate ~ a fresh relay key
+
+`lares intent-relay rotate` replaces the relay's admission key and answers the new public key; every face the relay serves answers under it after the roll.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ rotate
+
+```memetic-wikitext
+<<has entity=`example` name=`rotate` params=`~ a fresh relay key`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ json
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/json`>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/seat-or-hand ~ the operator's switch over this vessel's own relay, through the store door`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ an unknown sub-verb, or no sub-verb named`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ rotated · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`rotated` params=`exit/0 ~ the new relay key`>>
+<<has entity=`band` name=`refused` params=`exit/1 ~ [lares intent-relay] refused: names the code`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares intent-relay rotate
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares intent-relay rotate]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · face-intent-plane
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6J6PT-Py4G_Av2rUuV5saki2bfTK6MDdAVYkC7PxtuI`>>
+
+<<^ code=`&#x0004;` to=`?`>>
