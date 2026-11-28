@@ -33,8 +33,9 @@ export async function _scheduleUnlinkByTitle(core: ProjectorCore, title: string,
   for (const mirror of core.mirrors) {
     if (!holdingBags?.has(mirror.bagId)) continue;
     // A carrier the resolved view shadows stops projecting here, unless its own record does: the standoff between
-    // its sides names a conflict nobody weighs.
-    if (!spare?.has(mirror.bagId)) _leaveStandoff(core, mirror.bagId, title, "sides", true);
+    // its sides names a conflict nobody weighs. An unlink scoped to one bag (a recovery mirror's dropped record) speaks for
+    // that bag alone: it leaves no other bag's standoff, which the view's own pass weighs.
+    if (onlyBag === undefined && !spare?.has(mirror.bagId)) _leaveStandoff(core, mirror.bagId, title, "sides", true);
     keptRoots.add(resolvePath(mirror.mirrorRoot));
   }
   for (const mirror of core.mirrors) {

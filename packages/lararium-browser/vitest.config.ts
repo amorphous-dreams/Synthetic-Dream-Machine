@@ -22,13 +22,9 @@ const cryptoStubForCodeUnderTest = {
 };
 
 /**
- * THE BROWSER LAMPS STAND DIM (operator, 2026-11-20: "disable all browser tests for now, while we move quickly to settle the
- * road"; the browser side gets a deep Mu from scratch later, lar:///ha.ka.ba/kahua/memory/project/browser-mu-from-scratch).
- * The default run is `browser-node` alone: the files below run green in Node (isomorphic-by-intent code needs no real
- * browser). Every other test file here stays in the tree, untouched, and goes unrun until the browser Mu relights it. The
- * account of what went dark and how to relight stands in tools/ci-cells.mjs (BROWSER_LAMPS_DIM).
- *
- * TO RELIGHT: `projects: [browserNode, ...browserProjects]` below.
+ * THE BROWSER RUN STANDS BEHIND ONE FLAG. The default run is `browser-node` alone: the files below run green in Node
+ * (isomorphic-by-intent code needs no real browser). `LAR_BROWSER=1` joins `chromium` and `firefox` (browserProjects) to the
+ * run, whole; CI runs none until its engines return (tools/ci-cells.mjs BROWSER_DIM).
  */
 const browserNode = {
   extends: true as const,
@@ -135,7 +131,7 @@ export default defineConfig({
     isolate: true,
     // Chromium runs every test; Firefox runs the production holder's lifecycle alone, since only its SharedWorker scope
     // can spawn the island Worker (the engine where the real peer path stands).
-    projects: [browserNode],
+    projects: [browserNode, ...(process.env.LAR_BROWSER === "1" ? browserProjects : [])],
     testTimeout: 30_000,
   },
 });
