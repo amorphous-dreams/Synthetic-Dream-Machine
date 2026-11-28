@@ -764,6 +764,10 @@
       "import": "./dist/intent-verbs.js",
       "types": "./dist/intent-verbs.d.ts"
     },
+    "./shore-votum": {
+      "import": "./dist/shore-votum.js",
+      "types": "./dist/shore-votum.d.ts"
+    },
     "./intent-view": {
       "import": "./dist/intent-view.js",
       "types": "./dist/intent-view.d.ts"

@@ -251,7 +251,7 @@ export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed: Pi
     }
   });
   seedCheckpoints.set(tw5, checkpoint);
-  adaptors.set(tw5, adaptor);
+  seatShore(tw5, adaptor);
 
   return { adaptor, stores };
 }
@@ -279,6 +279,11 @@ const seedCheckpoints = new WeakMap<TW5Engine, Promise<void>>();
 /** The shore each engine's recipe mounted, so a behavior the island composes reads what the shore landed. */
 const adaptors = new WeakMap<TW5Engine, IslandAdaptor>();
 
+/** Seat a shore over its engine: the doors that tag a write's face and act, stamp receipts, or seat custody reach it here. */
+export function seatShore(tw5: TW5Engine, adaptor: IslandAdaptor): void {
+  adaptors.set(tw5, adaptor);
+}
+
 /**
  * True where the engine's shore has landed, in the wiki, every change of `bag`'s document up to the heads
  * `named`. An engine whose recipe mounted no shore answers false.
@@ -304,6 +309,11 @@ export function wikiReceiptsOf(tw5: object): readonly ShoreReceipt[] {
 /** Hear each receipt the shore over this engine stamps; returns the unsubscribe (a no-op where no shore stands). */
 export function onWikiReceipt(tw5: object, hear: (receipt: ShoreReceipt) => void): () => void {
   return adaptors.get(tw5 as TW5Engine)?.onReceipt(hear) ?? (() => {});
+}
+
+/** A door write that passes by the shore (a bag's own store, a layer's one change) stamps its receipt on this engine's shore. */
+export function wikiStampsReceipt(tw5: object, receipt: Parameters<IslandAdaptor["stampDoorWrite"]>[0]): void {
+  adaptors.get(tw5 as TW5Engine)?.stampDoorWrite(receipt);
 }
 
 /** Name the face the engine wears: each receipt with no door-named face names it. */

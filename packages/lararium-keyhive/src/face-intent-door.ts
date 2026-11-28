@@ -9,6 +9,8 @@ import type { IntentEntryBody, SignedIntentEntry } from "@lararium/mesh/intent-e
 import type { IntentPaneModel } from "@lararium/mesh/intent-view";
 import type { IntentRelayResult } from "@lararium/mesh/intent-relay-door";
 import { buildIntent, buildOutcome, faceRosterForIntents } from "@lararium/mesh/intent-issue";
+import { readShoreVotum, vowShoreVotum } from "@lararium/mesh/shore-votum";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
 import { choreReceiptMark, choreReceiptMarkOf } from "@lararium/mesh/chore-ask";
 import { intentEntryCid, intentEntryRecordsOfGroup, intentId, writeIntentEntry } from "@lararium/mesh/intent-entry";
 import { intentPaneModel } from "@lararium/mesh/intent-view";
@@ -412,21 +414,49 @@ export interface ShoreVowInput {
 /**
  * CUSTODY FACE AGAINST FACE (comms-ux-enacts landing 13): the shore's vow, written as a votum on the HOLDER's own intent plane,
  * pinned to the holder's atom on this vessel, so the holder's own door drains it under mayAct and pays it through its declared
- * door verb (`tiddler-put` / `tiddler-delete`, idempotent: the base each carries makes a second answer converge). The vower and
- * the act ride the arguments, so the outcome answers who asked and by which act. A holder no seat of this vessel reaches refuses
- * by name and lands nothing (the shore keeps the write owed on its alert rail).
+ * door verb (`tiddler-put` / `tiddler-delete`, idempotent: the base each carries makes a second answer converge). THE VOWER
+ * SIGNS ITS OWN WORD: its atom signs the holder, the verb and the arguments (`vowShoreVotum`), and the drain checks that proof
+ * and the vower's own grant on the bag before it pays (`readShoreVotum`), so the plane never reads a vow as the holder's own
+ * assent. The act rides the arguments, so the outcome answers by which act. A holder or a vower no seat of this vessel reaches
+ * refuses by name and lands nothing (the shore keeps the write owed on its alert rail).
  */
-export function faceShoreVow(input: { readonly seatOf: (holder: string) => FaceVowSeat | null; readonly verbs: IntentVerbRegistry }): (votum: ShoreVowInput) => Promise<string> {
+export function faceShoreVow(input: { readonly seatOf: (holder: string) => FaceVowSeat | null; readonly vowerOf: (vower: string | null) => IntentSigner | null; readonly verbs: IntentVerbRegistry }): (votum: ShoreVowInput) => Promise<string> {
   return async (votum) => {
     const seat = input.seatOf(votum.holder);
     if (seat === null) throw new Error(`votum-holder-unreached: no intent plane of face ${votum.holder.slice(0, 12)}… stands on this vessel, so the write into its layer waits owed; \`lares wear\` lights that face, then the write leaves again`);
-    const args = { ...votum.args, vower: votum.vower, act: votum.act };
+    const signer = input.vowerOf(votum.vower);
+    if (signer === null) throw new Error(`votum-vower-unseated: the face that wrote (${votum.vower === null ? "no face" : `${votum.vower.slice(0, 12)}…`}) holds no atom on this vessel to sign its vow, so the write into ${votum.holder.slice(0, 12)}…'s layer waits owed; \`lares wear\` lights that face, then the write leaves again`);
+    const args = await vowShoreVotum(signer, votum.vower, votum.holder, votum.verb, { ...votum.args, act: votum.act });
     const atom = seat.atom.key.toLowerCase();
     const entry = await buildIntent({ group: seat.group, signer: seat.atom, verb: votum.verb, args, nonce: "", audience: { mode: "pinned", atom }, verbs: input.verbs });
     const id = intentId(entry.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string });
     seat.plane.change((draft) => writeIntentEntry(draft, entry));
     return id;
   };
+}
+
+/** The vower's grant on a bag, as the house's capability verifier answers for the vower's own key. */
+export type VowerGrant = (vowerKey: string, bag: string) => Promise<{ readonly ok: boolean; readonly reason?: string | undefined }>;
+
+/**
+ * THE DRAIN READS THE VOWER (landing 13): before the holder's door pays a `tiddler-put` / `tiddler-delete` votum, the vower's
+ * proof must verify over the holder, the verb and the arguments as they stand, no agent may have relayed it, and the VOWER
+ * must hold the write on the bag the votum names. Answers the arguments the door verb takes (the proof left out), or throws
+ * the refusal by name; nothing pays.
+ */
+export async function admitShoreVotum(holder: string, verb: string, args: Readonly<Record<string, unknown>>, agent: unknown, grant: VowerGrant): Promise<Record<string, unknown>> {
+  const read = readShoreVotum(holder, verb, args, agent);
+  if (!read.ok) {
+    const why = read.refusal === "votum-agent-relayed" ? "an agent's relayed intent carries no face's vow; the agent acts as itself under its own delegation"
+      : read.refusal === "votum-vower-missing" ? "the votum carries no vower's proof, so no face stands behind the write"
+      : "the vower's proof does not verify over this holder, verb and arguments";
+    throw new VerbRefusal(read.refusal, `${read.refusal}: ${verb} on ${holder.slice(0, 12)}…'s plane — ${why}; nothing paid. \`lares intent show\` reads the plane.`);
+  }
+  const bag = typeof read.args["bag"] === "string" ? read.args["bag"] : "";
+  if (bag === "") throw new VerbRefusal("votum-bag-unnamed", `votum-bag-unnamed: ${verb} names no bag, so the vower's grant cannot be read; nothing paid. \`lares intent show\` reads the plane.`);
+  const proof = await grant(read.vower.key, bag);
+  if (!proof.ok) throw new VerbRefusal("votum-vower-ungranted", `votum-vower-ungranted: the vower ${read.vower.key.slice(0, 12)}… holds no write on ${bag} (${proof.reason ?? "no grant"}), so the holder pays nothing it asked; \`lares trust list\` names the grants.`);
+  return read.args;
 }
 
 /** The joinee issues one invocation through the shared plane, keyed by its atom and the hearth it pins. */

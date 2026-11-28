@@ -2242,6 +2242,65 @@ describe.skipIf(wikiSkip)(`a bag takes the plain put and the delete through its 
   });
 });
 
+// ── a carrier's own act keeps the door's guards (comms-ux-enacts landing 13) ─────────────────────────
+
+describe.skipIf(wikiSkip)(`a carrier's own act keeps the door's guards${skipNote}`, () => {
+  /** The anchor rig with one act tiddler standing. */
+  async function actRig(text: string) {
+    const r = await rig();
+    r.engine.wiki.addTiddler({ title: "acts/probe", text });
+    return { ...r, act: makeCarrierActReactor(r.opts) };
+  }
+
+  test("RED: a face that reads the wiki but holds no write on its layer refuses cap-denied and lands nothing; CONTROL: the writer lands it", async () => {
+    const r = await actRig("<$action-setfield $tiddler=\"Guarded\" text=\"moved\"/>");
+    await expect(r.act({ ...A, act: "acts/probe" }, ctx(reader))).rejects.toThrow(/cap-denied/);
+    await expect(r.act({ ...A, act: "acts/probe", dry: "summary" }, ctx(reader))).rejects.toThrow(/cap-denied/);
+    expect(r.engine.wiki.getTiddler("Guarded")).toBeUndefined();
+    expect(await r.act({ ...A, act: "acts/probe" }, ctx())).toMatchObject({ decision: "acted", wrote: ["Guarded"] });
+    expect(r.engine.wiki.getTiddler("Guarded")?.fields["text"]).toBe("moved");
+  });
+
+  test("RED: an act writing a shore collapse rule with no hand refuses hand-unattested and lands nothing, its earlier writes included", async () => {
+    const rule = `${SHORE_COLLAPSE_CONFIG_PREFIX}every-title`;
+    const r = await actRig(`<$action-setfield $tiddler="Before the rule" text="x"/><$action-setfield $tiddler="${rule}" text="[all[]]"/>`);
+    await expect(r.act({ ...A, act: "acts/probe" }, ctx())).rejects.toMatchObject({ reason: "hand-unattested" });
+    expect(r.engine.wiki.getTiddler(rule)).toBeUndefined();
+    expect(r.engine.wiki.getTiddler("Before the rule"), "the capture run refused before anything landed").toBeUndefined();
+  });
+
+  test("RED: a dry act transcluding a withheld title answers no withheld text; the live act copies none either", async () => {
+    const r = await actRig("<$action-setfield $tiddler=\"Visible copy\" text={{$:/temp/lares/secret}}/>");
+    const dry = await r.act({ ...A, act: "acts/probe", dry: "summary" }, ctx());
+    expect(JSON.stringify(dry)).not.toContain("device-local");
+    expect(dry).toMatchObject({ decision: "dry", writes: [{ title: "Visible copy" }] });
+    await r.act({ ...A, act: "acts/probe" }, ctx());
+    expect(r.engine.wiki.getTiddler("Visible copy")?.fields["text"] ?? "").not.toContain("device-local");
+  });
+
+  test("RED: an act refuses a meme family's record (act-family-write, cure the put door) and a verb tiddler (tiddler-withheld); nothing lands", async () => {
+    const family = await actRig(`<$action-setfield $tiddler="lar:///t/act-family#/a" text="slot body"/>`);
+    await expect(family.act({ ...A, act: "acts/probe" }, ctx())).rejects.toThrow(/act-family-write: .*cure: <<~ put title=`lar:\/\/\/t\/act-family#\/a`/);
+    expect(family.engine.wiki.getTiddler("lar:///t/act-family#/a")).toBeUndefined();
+    const verb = await actRig(`<$action-setfield $tiddler="lar:///lararium.local.vm/verb/minted" verb="custody-clear" lares-dispatch="1"/>`);
+    await expect(verb.act({ ...A, act: "acts/probe" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    expect(verb.engine.wiki.getTiddler("lar:///lararium.local.vm/verb/minted")).toBeUndefined();
+  });
+
+  test("RED: messages that reach a hand or a host door meet that door's check: a clear-password with no hand refuses hand-unattested, a download whose template reads a withheld title refuses act-message-withheld", async () => {
+    const r = await actRig([
+      "<$action-sendmessage $message=\"tm-clear-password\" $param=\"vault\"/>",
+      "<$action-sendmessage $message=\"tm-download-file\" $param=\"Leaky template\" filename=\"out.txt\"/>",
+    ].join(""));
+    r.engine.wiki.addTiddler({ title: "Leaky template", text: "{{$:/temp/lares/secret}}" });
+    const out = await r.act({ ...A, act: "acts/probe" }, ctx());
+    expect(out["messages"]).toEqual([
+      expect.objectContaining({ type: "tm-clear-password", refused: "hand-unattested" }),
+      expect.objectContaining({ type: "tm-download-file", refused: "act-message-withheld" }),
+    ]);
+  });
+});
+
 // ── the one call (comms-ux-enacts landing 4) ─────────────────────────────────────────────────────────
 
 /** One canon file, read off the checkout itself: the rig stands canon's words, never a copy. */

@@ -12,7 +12,7 @@ import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { type DocHandle } from "@lararium/mesh/automerge";
 import { type LarDoc } from "@lararium/mesh/base-doc";
 import { faceDoors } from "../src/face-doors.js";
-import { faceShoreVow, makeFaceIntentDoor, requestFaceJoin, witnessedStandings } from "../src/face-intent-door.js";
+import { admitShoreVotum, faceShoreVow, makeFaceIntentDoor, requestFaceJoin, witnessedStandings } from "../src/face-intent-door.js";
 import { taggedAdmission } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const signer = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
@@ -753,29 +753,52 @@ describe("each lit face stands its own door: the lit life bounds it, and every w
 });
 
 describe("a write into another face's layer rides as a votum (comms-ux-enacts landing 13)", () => {
-  test("RED: the shore's vow lands one votum on the holder's own plane, and the holder's door drains it through its declared put once; CONTROL: the vower's plane holds no entry; POSITIVE: the same vow again keeps one id and one effect", async () => {
-    const f = await faceOf(), holder = plane(), vower = plane();
-    const effect = vi.fn(async (_verb: string, _args: unknown) => ({ decision: "put" }));
+  const BAG = "lar:///ha.ka.ba/wikis/shared/working";
+  const votumOf = (vower: string | null) => ({ holder: "face-a", vower, verb: "tiddler-put" as const, act: "acts/stamp#r1",
+    args: { bag: BAG, title: "Shared note", fields: { title: "Shared note", text: "from b" }, create: true } });
+
+  test("RED: the vow lands one votum on the holder's own plane carrying the VOWER's proof, and the holder's door pays it only through the vower's grant on the bag, once; CONTROL: the vower's plane holds no entry; POSITIVE: the same vow again keeps one id and one effect", async () => {
+    const f = await faceOf(), holder = plane(), vowerPlane = plane(), vowerAtom = await signer(44);
+    const paid = vi.fn(async (_args: Record<string, unknown>) => ({ decision: "put" }));
+    const asked: string[] = [];
     const door = makeFaceIntentDoor({ group: f.group, plane: holder.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs: faceIntentVerbs(), log: () => {},
-      atom: f.h1, standing: () => "stands", runDeclaredEffect: effect });
-    const vow = faceShoreVow({ seatOf: (group) => (group === f.group ? { group: f.group, plane: holder.handle, atom: f.h1 } : null), verbs: faceIntentVerbs() });
-    const votum = { holder: f.group, vower: "face-b", verb: "tiddler-put" as const, act: "acts/stamp#r1",
-      args: { bag: "lar:///ha.ka.ba/wikis/shared/working", title: "Shared note", fields: { title: "Shared note", text: "from b" }, create: true } };
-    const id = await vow(votum);
-    expect(intentEntryRecordsOfGroup(vower.doc, f.group)).toHaveLength(0);
+      atom: f.h1, standing: () => "stands",
+      runDeclaredEffect: async (verb, args, at) => paid(await admitShoreVotum(f.group, verb, args as Record<string, unknown>, at.agent, async (key, bag) => { asked.push(`${key}@${bag}`); return { ok: true }; })) });
+    const vow = faceShoreVow({ seatOf: (group) => (group === f.group ? { group: f.group, plane: holder.handle, atom: f.h1 } : null),
+      vowerOf: (vower) => (vower === "face-b" ? vowerAtom : null), verbs: faceIntentVerbs() });
+    const id = await vow(votumOf("face-b"));
+    expect(intentEntryRecordsOfGroup(vowerPlane.doc, f.group)).toHaveLength(0);
     await door.heed();
-    expect(effect).toHaveBeenCalledTimes(1);
-    expect(effect.mock.calls[0]![0]).toBe("tiddler-put");
-    expect(effect.mock.calls[0]![1]).toMatchObject({ title: "Shared note", fields: { text: "from b" }, vower: "face-b", act: "acts/stamp#r1" });
+    expect(paid).toHaveBeenCalledTimes(1);
+    expect(paid.mock.calls[0]![0]).toMatchObject({ title: "Shared note", fields: { text: "from b" }, act: "acts/stamp#r1" });
+    expect(paid.mock.calls[0]![0], "the proof leaves before the door verb runs").not.toHaveProperty("vower");
+    expect(asked, "the VOWER's grant decides, never the holder's reach").toEqual([`${vowerAtom.key.toLowerCase()}@${BAG}`]);
     expect((await door.describe()).view.intents.find((i) => i.id === id)?.status).toBe("answered");
-    expect(await vow(votum)).toBe(id);
+    expect(await vow(votumOf("face-b"))).toBe(id);
     await door.heed();
-    expect(effect).toHaveBeenCalledTimes(1);
+    expect(paid).toHaveBeenCalledTimes(1);
   });
 
-  test("RED: a holder no seat of this vessel reaches refuses by name with a cure and lands nothing", async () => {
-    const vow = faceShoreVow({ seatOf: () => null, verbs: faceIntentVerbs() });
-    await expect(vow({ holder: "face-far", vower: null, verb: "tiddler-delete", act: "hand", args: { bag: "b", title: "t" } }))
+  test("RED: the drain refuses a votum whose vower holds no write on the bag, a proof over moved arguments, no proof at all, and an agent's relayed intent; CONTROL: the granted, unmoved vow pays", async () => {
+    const vowerAtom = await signer(44), shared = plane();
+    await faceShoreVow({ seatOf: () => ({ group: "face-a", plane: shared.handle, atom: vowerAtom }), vowerOf: () => vowerAtom, verbs: faceIntentVerbs() })(votumOf("face-b"));
+    const carried = (intentEntryRecordsOfGroup(shared.doc, "face-a")[0] as { body: { args: Record<string, unknown> } }).body.args;
+    const granted = async () => ({ ok: true });
+    expect(await admitShoreVotum("face-a", "tiddler-put", carried, null, granted)).toMatchObject({ title: "Shared note", bag: BAG });
+    await expect(admitShoreVotum("face-a", "tiddler-put", carried, null, async () => ({ ok: false, reason: "no-grant" }))).rejects.toMatchObject({ reason: "votum-vower-ungranted" });
+    await expect(admitShoreVotum("face-a", "tiddler-put", { ...carried, title: "Another note" }, null, granted)).rejects.toMatchObject({ reason: "votum-vower-forged" });
+    await expect(admitShoreVotum("face-b", "tiddler-put", carried, null, granted), "a proof over another holder").rejects.toMatchObject({ reason: "votum-vower-forged" });
+    const { vower: _proof, ...bare } = carried;
+    await expect(admitShoreVotum("face-a", "tiddler-put", bare, null, granted)).rejects.toMatchObject({ reason: "votum-vower-missing" });
+    await expect(admitShoreVotum("face-a", "tiddler-put", carried, { key: "agent", delegation: "d" }, granted)).rejects.toMatchObject({ reason: "votum-agent-relayed" });
+  });
+
+  test("RED: a holder or a vower no seat of this vessel reaches refuses by name with a cure and lands nothing", async () => {
+    const atom = await signer(44);
+    await expect(faceShoreVow({ seatOf: () => null, vowerOf: () => atom, verbs: faceIntentVerbs() })(votumOf("face-b")))
       .rejects.toThrow(/votum-holder-unreached: .*`lares wear`/);
+    await expect(faceShoreVow({ seatOf: () => ({ group: "face-a", plane: plane().handle, atom }), vowerOf: () => null, verbs: faceIntentVerbs() })(votumOf(null)))
+      .rejects.toThrow(/votum-vower-unseated: .*`lares wear`/);
   });
 });
+

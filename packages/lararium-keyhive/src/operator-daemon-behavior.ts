@@ -36,6 +36,7 @@ import {
   registerCanonOfferVerbs, CANON_OFFER_VERBS,
   faceEngines, type FaceEngines, composeCrossFaceView, enginePool, type EnginePool, type FaceEngine,
   composeWikiEngineSource, wikiEngines, type WikiEngines, type MemeVerbOptions, type TiddlerVerbOptions,
+  bindShoreCustody, wikiWearsFace,
 } from "@lararium/tw5";
 import { applyShares, liftCarriedShares } from "./share-apply.js";
 import { grantShare } from "./share-grant.js";
@@ -227,7 +228,8 @@ import { announceSeatRoll } from "./seat-duty-executor.js";
 import { verifyFaceGrantRecord } from "./face-grant-record.js";
 import { makeFaceSeat, makeGroupDocListener, watchFaceSeatFleet, type GroupDocHandle } from "./face-seat.js";
 import { runFaceJoinOperation } from "./face-join-operation.js";
-import { makeFaceIntentDoor } from "./face-intent-door.js";
+import { admitShoreVotum, faceShoreVow, makeFaceIntentDoor, type FaceVowSeat } from "./face-intent-door.js";
+import { SHORE_VOTUM_VERBS } from "@lararium/mesh/shore-votum";
 import { faceDoors } from "./face-doors.js";
 import { readSiblingFacePlanes, recheckSiblingPlanes } from "@lararium/mesh/sibling-plane-mount";
 import { intentPlaneSelf } from "@lararium/mesh/intent-entry";
@@ -575,6 +577,31 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
    */
   const intentDoors = faceDoors((line) => console.log(`[daemon] ${line}`));
   /**
+   * CUSTODY FACE AGAINST FACE AT THE SHORE (comms-ux-enacts landing 13): each lit face's intent plane and its atom on this vessel,
+   * by PersonaGroup, kept while its door stands. The daemon engine's shore reads them: a write that routes into a layer another
+   * lit face holds rides as a votum onto THAT face's plane, signed by the vower's own atom, and the holder's door drains it.
+   */
+  const vowSeats = new Map<string, FaceVowSeat>();
+  const seatShoreCustody = (ctx: IslandContext, worn: string): void => {
+    wikiWearsFace(ctx.tw5, worn);
+    bindShoreCustody(ctx.tw5, {
+      // WHAT THE HOUSE KNOWS TODAY: a bag the worn face's own composition mounts writable is its own write; a bag the lit set
+      // resolves as another lit face's own lane (its control document naming that face the owner) belongs to that face. A shared
+      // wiki's workbench steward is named by no record this island reads, so such a bag answers no holder here (the write stands
+      // as the face's own, and its cap decides at the store).
+      holderOf: async (bag, face) => {
+        if (ctx.composite.writableStoreForBag(bag)) return null;
+        for (const sibling of litSiblings.values()) {
+          if (sibling.personaGroupId === face || typeof sibling.handleIndex !== "number") continue;
+          const lane = await litFaceTargetOf(ctx)(sibling.handleIndex, bag).catch(() => null);
+          if (lane && lane.owner === sibling.handleIndex) return sibling.personaGroupId;
+        }
+        return null;
+      },
+      vow: faceShoreVow({ seatOf: (holder) => vowSeats.get(holder) ?? null, vowerOf: (vower) => (vower === null ? null : vowSeats.get(vower)?.atom ?? null), verbs: faceIntentVerbs() }),
+    });
+  };
+  /**
    * ONE DOOR SHAPE FOR EVERY FACE: the door reads live authority (the face's lineage off this island's own replica of the
    * persona-KEL board, and each device's standing off the board fold over the island's OWN replicas of the face's fleet edge
    * board and edge ledger, under a witness over those documents and the KEL board), answers on the face's own turn, and pays a
@@ -605,9 +632,15 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const table = intentRegistry, verifier = intentVerifier;
         if (!table?.get(verb) || !verifier) throw new Error(`intent effect ${verb}: daemon handler or verifier absent`);
         if (!args || typeof args !== "object" || Array.isArray(args)) throw new Error(`intent effect ${verb}: arguments must be a record`);
+        // A SHORE VOTUM PAYS ONLY ON THE VOWER'S WORD (landing 13): its proof verifies, no agent relayed it, and the VOWER holds
+        // the write on the bag it names; the holder's door then lands it in the holder's own layer, the proof left out.
+        const paid = SHORE_VOTUM_VERBS.has(verb)
+          ? await admitShoreVotum(face.group, verb, args as Record<string, unknown>, at.agent,
+            (vowerKey, bag) => verifier.verify({ presenter: vowerKey, bagUrl: bag, access: "admin", channel: "local" }))
+          : args as Record<string, unknown>;
         const invocation: Verb = {
           requestId: at.intentId, title: `lar:///lararium.local.vm/verbs/intent-${at.intentId}`,
-          action: verb, args: args as Record<string, unknown>, targets: [], batchMode: "atomic", status: "pending",
+          action: verb, args: paid, targets: [], batchMode: "atomic", status: "pending",
           requestedBy: face.atom.key, requestedAt: "",
         };
         const run = runLocalVerb(invocation, { daemon: ctx.composite, registry: table, verifier, presenterOf: () => face.atom.key, localOf: () => true });
@@ -656,6 +689,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         kelPrefix: face.personaKel.prefix, anchor: face.faceAnchor, fleetRoot: face.deviceEdge.personaRootDid, ledger,
         acting: typeof face.handleIndex === "number" ? face.handleIndex : null, hold: (pending) => holding(provider, pending) });
       if (!litSiblings.has(key)) return refuse("it closed while its door stood");
+      // Its plane and atom seat its vows (a write the worn face makes into its lane rides here), until its drop.
+      vowSeats.set(group, { group, plane, atom: { key: atom.key, sign: atom.sign } });
       // THE LIT LIFE BOUNDS WHAT THE DOOR OPENED: at the face's drop both planes leave this island's Repo cache, so nothing of
       // the sibling's plane pair stays decrypted here or keeps replicating while the face stands dark; a repeat light keeps
       // what the new door holds.
@@ -2311,6 +2346,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             litInputs.delete(key);
             const dropped = litSiblings.get(key);
             litSiblings.delete(key);
+            if (dropped?.personaGroupId) vowSeats.delete(dropped.personaGroupId);
             // Its projection stops first: nothing reads its engine past the drop.
             await litProjections?.drop(key).catch((error: unknown) => console.warn(`[daemon] face ${key.slice(0, 12)}…'s projection stopped with a fault: ${error instanceof Error ? error.message : String(error)}`));
             // Its own engine closes with it: owed saves drain, the bridge detaches, the VM releases.
@@ -2447,6 +2483,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               kelPrefix: kel.prefix, anchor: daemonAuth.faceAnchor ?? null, fleetRoot: edge.personaRootDid, ledger,
               ...(restDyadLedger ? { restLedger: restDyadLedger } : {}), effects: new Map([["face-join", faceJoinVia]]),
               acting: typeof daemonAuth.handleIndex === "number" ? daemonAuth.handleIndex : null });
+            // THE SHORE KNOWS ITS FACE AND ITS CUSTODY (landing 13): the mounted face's plane and atom seat its vows, and the daemon
+            // engine's receipts name it as the worn face.
+            vowSeats.set(group, { group, plane, atom: { key: atom.key, sign: atom.sign } });
+            seatShoreCustody(ctx, group);
             registerIntentView = () => {
               if (intentRegistry && !intentRegistry.has("intent-view"))
                 intentRegistry.register("intent-view", makeIntentViewReactor(ctx.tw5, intentsBag, async () => (await door.describe()).pane));

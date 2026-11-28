@@ -59,7 +59,10 @@
  * wiki (a person's click, a door's put, a carrier's act running live, a message an act sent): the face the write wore (the
  * door's named face, else the engine's worn face), the title, the record hash before (the value the store last landed) and
  * after (what left; null for a delete), the bag, and the act or verb that moved it (`wearNext`'s act, tagged as the write
- * crosses into the wiki; `hand` where none named one). `receipts()` reads the latest, `onReceipt` hears each as it stamps.
+ * crosses into the wiki; `hand` where none named one). The tag binds to the exact tiddler value the tagged write left (the
+ * dispatch that carries it), never the title alone, so a later hand of the title stamps as its own. An act's removal, a parallel
+ * draft the shore persists, and a door write that passes by the shore (`stampDoorWrite`: a `bag=` put, a delete's per-layer
+ * change) stamp too. `receipts()` reads the latest, `onReceipt` hears each as it stamps.
  *
  * CUSTODY ONLY FACE AGAINST FACE (landing 13). Where the island seats a custody port (`caps.custody`) and it names another
  * face holding the bag a write routes to, the write never saves as the worn face: it rides as a VOTUM addressed to that face
@@ -79,6 +82,7 @@ import type { IslandSeed } from "./island-seed.js";
 import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
 import { toLarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { fieldStringsOf } from "@lararium/mesh/carrier-form";
 import { isVolatileVmUri } from "@lararium/mesh/lar-uris";
 import { draftsOffLive, parallelDraftTitle } from "@lararium/mesh/parallel-drafts";
 import { edgeDescendantsOf, rootAddressOf, type FamilyView } from "@lararium/mesh/family";
@@ -228,6 +232,9 @@ function extractFields(tw5: TW5Engine, tiddler: unknown): Record<string, string>
 /** The act a receipt names where no door or act tagged the write: a hand in the wiki (a person's edit, a startup action). */
 export const HAND_ACT = "hand";
 
+/** The act a parallel draft's receipt names where no act tagged the hand it keeps: the shore surfacing a conflict. */
+export const PARALLEL_DRAFT_ACT = "parallel-draft";
+
 /** How many receipts the shore keeps for a read (`receipts()`); each one also reaches every `onReceipt` listener as it stamps. */
 export const SHORE_RECEIPTS_KEPT = 512;
 
@@ -344,6 +351,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   private readonly handFaces = new Map<string, string | null>();
   /** THE ACT A WRITE CROSSED WITH, by title (`wearNext`'s third word): the receipt of the title's next write names it. */
   private readonly handActs = new Map<string, string>();
+  /** The act and face bound to the exact tiddler value a tagged write left in the wiki (keyed by the value, never the title). */
+  private readonly valueTags = new WeakMap<object, { readonly act: string; readonly face: string | null }>();
   /** The receipts the shore stamped, latest last (at most `SHORE_RECEIPTS_KEPT`), and who hears each. */
   private readonly receiptLog: ShoreReceipt[] = [];
   private readonly receiptHearers = new Set<(receipt: ShoreReceipt) => void>();
@@ -1130,8 +1139,12 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       // A draft with no bag to land in already stands refused on the alert rail; the next draft still gets its turn.
       try { bag = this._draftDestination(draft); } catch (err) { if (err instanceof UnroutedSaveRefusal) { unheld.push(draft); continue; } throw err; }
       if (bag === null || bag === change.bag) { unheld.push(draft); continue; }
-      try { await this.store.writeFamily([draft], [], origin, { bag }); }
-      catch (err: unknown) { this._surfaceUnkeptDraft(draft, bag, err); }
+      try {
+        await this.store.writeFamily([draft], [], origin, { bag });
+        // A PARALLEL DRAFT THE SHORE PERSISTS STAMPS ITS RECEIPT: the hand it keeps, under the act that hand crossed with.
+        const of = String(draft.tiddler["draft.of"] ?? "");
+        this._stamp({ kind: "save", title: draft.tiddler.title, face: this._receiptFace(of), before: null, after: shoreRecordHash(fieldStringsOf(draft.tiddler as never)), bag, act: this.handActs.get(of) ?? PARALLEL_DRAFT_ACT });
+      } catch (err: unknown) { this._surfaceUnkeptDraft(draft, bag, err); }
     }
     return unheld;
   }
@@ -1662,6 +1675,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
         this._raiseUnsaved(title, removal.bag, error);
         throw error;
       }
+      this._stamp({ kind: "save", title, face: this._receiptFace(title), before: this._landedHash(title), after: shoreRecordHash(fieldStringsOf(removal.recovery.tiddler as never)), bag: removal.bag, act: this.handActs.get(title) ?? HAND_ACT });
       delete removal.recovery;
       this.lastWriteBag.set(title, removal.bag);
       if ((this.writeAcks.get(title) ?? 0) > ackBefore) this.unlanded.add(title);
@@ -1669,6 +1683,17 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       this.drain.markAfter(title, removal.target, removal.targetGeneration);
       return;
     }
+    // CUSTODY HOLDS FOR AN ACT'S REMOVAL TOO: a rename's source tombstone in a layer another face holds rides as a votum there.
+    if (this.caps.custody && await this._rodeAsVotum(title, removal.bag, null, this._receiptFace(title), this.handActs.get(title) ?? HAND_ACT)) {
+      if (this.actRemovals.get(title) === removal) this.actRemovals.delete(title);
+      this.lastFlushWrote.set(title, false);
+      this.failedAtTeardown.delete(title);
+      this._clearUnsaved(title);
+      return;
+    }
+    const removalBefore = this._landedHash(title);
+    const removalFace = this._receiptFace(title);
+    const removalAct = this.handActs.get(title) ?? HAND_ACT;
     this.sent.set(title, null);
     try { await this._issueGroup(removal.bag, removal.base, [], [title], origin); }
     catch (error) {
@@ -1683,6 +1708,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       throw error;
     }
     const acknowledged = (this.writeAcks.get(title) ?? 0) > ackBefore;
+    this._stamp({ kind: "delete", title, face: removalFace, before: removalBefore, after: null, bag: removal.bag, act: removalAct });
     if (this.actRemovals.get(title) === removal) this.actRemovals.delete(title);
     this.lastFlushWrote.set(title, acknowledged);
     this.lastWriteBag.set(title, removal.bag);
@@ -1790,8 +1816,10 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId, ...this._handFace(title) };
     const ackBefore = this.writeAcks.get(title) ?? 0;
     // THE RECEIPT'S WITNESSES, read before the write leaves: the face it wears, the act it crossed with, the value it replaces.
-    const receiptFace = this._receiptFace(title);
-    const receiptAct = this.handActs.get(title) ?? HAND_ACT;
+    // The tag the state's own value carries wins; a state no tagged write left reads the title's pending tag, else a hand's.
+    const tag = state !== null && typeof state === "object" ? this.valueTags.get(state) : undefined;
+    const receiptFace = tag ? tag.face : this._receiptFace(title);
+    const receiptAct = tag?.act ?? this.handActs.get(title) ?? HAND_ACT;
     const receiptBefore = this._landedHash(title);
     let receiptAfter: string | null = null;
     let writeBag: string | undefined;
@@ -1816,7 +1844,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       }
       writeBag = dest;
       // Only a seated custody port takes a turn here: with none, the write leaves in the same turn as ever.
-      if (this.caps.custody && await this._votumLeaves(title, dest, fields, state)) return;
+      if (this.caps.custody && await this._votumLeaves(title, dest, fields, state, receiptFace, receiptAct)) return;
       receiptAfter = shoreRecordHash(fields);
       // The base, and the cross-bag read behind it, are settled immediately before the write is issued.
       const plan = this._basePlan(title, dest);
@@ -1843,7 +1871,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       }
       const bag = this._tombstoneBag(title, landedBag);
       writeBag = bag;
-      if (this.caps.custody && await this._votumLeaves(title, bag, null, null)) return;
+      if (this.caps.custody && await this._votumLeaves(title, bag, null, null, receiptFace, receiptAct)) return;
       this.sent.set(title, null);
       const base = this._handBaseFor(title, bag);
       // THE FAMILY LEAVES AS ONE CHANGE. A record's delete takes every component beneath it: root and slots
@@ -1938,6 +1966,15 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     return () => { this.receiptHearers.delete(hear); };
   }
 
+  /**
+   * A WRITE THAT PASSES BY THE SHORE STILL STAMPS HERE: a door that lands through a bag's own store or a layer's one change (a
+   * `bag=` put, a delete's per-layer change) names what it moved, and the receipt joins this engine's. A face left unnamed reads
+   * as the engine's worn face.
+   */
+  stampDoorWrite(receipt: Omit<ShoreReceipt, "face"> & { readonly face?: string | null | undefined }): void {
+    this._stamp({ ...receipt, face: receipt.face === undefined ? this.wornFace : receipt.face });
+  }
+
   /** Stamp one receipt: kept for a read, and told to every hearer (a hearer's fault never stops the write it records). */
   private _stamp(receipt: ShoreReceipt): void {
     this.receiptLog.push(receipt);
@@ -1952,9 +1989,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * holder's standing record lands back in the wiki; the votum's outcome reaches the wiki as the holder's own wave. A vow that
    * fails leaves the title owed on the alert rail, as a refused store write does.
    */
-  private async _votumLeaves(title: string, bag: string, fields: Record<string, string> | null, state: unknown): Promise<boolean> {
+  private async _votumLeaves(title: string, bag: string, fields: Record<string, string> | null, state: unknown, face: string | null, act: string): Promise<boolean> {
     let rode: boolean;
-    try { rode = await this._rodeAsVotum(title, bag, fields); }
+    try { rode = await this._rodeAsVotum(title, bag, fields, face, act); }
     catch (error) {
       this.lastFlushWrote.set(title, false);
       this.failedAtTeardown.set(title, error);
@@ -1989,13 +2026,11 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * CUSTODY FACE AGAINST FACE: where the custody port names another face holding `bag`, the write rides as a votum to that face
    * and never saves here. Answers true where it rode (the receipt stamped, the holder's record landing back in the wiki).
    */
-  private async _rodeAsVotum(title: string, bag: string, fields: Record<string, string> | null): Promise<boolean> {
+  private async _rodeAsVotum(title: string, bag: string, fields: Record<string, string> | null, face: string | null, act: string): Promise<boolean> {
     const custody = this.caps.custody;
     if (!custody) return false;
-    const face = this._receiptFace(title);
     const holder = await custody.holderOf(bag, face);
     if (holder === null || holder === face) return false;
-    const act = this.handActs.get(title) ?? HAND_ACT;
     const before = this._landedHash(title);
     let bare: Record<string, string> | null = null;
     if (fields !== null) {
@@ -2025,6 +2060,14 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
     // THE VOLATILE VM PLANE NEVER PERSISTS, and no cascade edit may lift that.
     if (neverPersists(title)) return Promise.resolve();
+
+    // THE ACT BINDS TO THE VALUE IT WROTE: a door's or an act's tag rides the exact tiddler this dispatch carries, so a later
+    // hand of the same title (a new value) never wears it, and the receipt names who made the state that leaves.
+    const pendingAct = this.handActs.get(title);
+    if (pendingAct !== undefined && tiddler !== null && typeof tiddler === "object") {
+      this.valueTags.set(tiddler, { act: pendingAct, face: this._receiptFace(title) });
+      this.handActs.delete(title);
+    }
 
     // A draft's base is captured at its first write; a title that carries no `draft.of` is no draft.
     if (fields["draft.of"] !== undefined) {

@@ -11,7 +11,8 @@ import type { CompositeStore } from "@lararium/mesh/composite-store";
 import { afterDispatch, plainDoc, shoreRig, turns, workingBag, type Rig } from "./wiki-shore-rig.js";
 import { wikiSkip, skipNote } from "./test-wiki.js";
 import { HAND_ACT, shoreRecordHash, type ShoreVotum } from "../src/island-adaptor.js";
-import { makeCarrierActReactor, type TiddlerVerbOptions } from "../src/tiddler-verbs.js";
+import { makeCarrierActReactor, makeTiddlerPutReactor, type TiddlerVerbOptions } from "../src/tiddler-verbs.js";
+import { seatShore } from "../src/island-recipe.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 
 const FACE = "face-a";
@@ -69,6 +70,39 @@ describe.skipIf(wikiSkip)(`the receipt at the shore${skipNote}`, () => {
     } finally { await r.stop(); }
   }, 120_000);
 
+  test("RED: the act binds to the value it wrote: a person's hand of the same title before the flush stamps as `hand`; CONTROL: with no later hand the act's own value stamps as the act", async () => {
+    for (const later of [true, false]) {
+      const r = await shoreRig();
+      try {
+        r.unbridge();
+        const title = later ? "Shared title" : "Act title";
+        r.adaptor.wearNext(title, undefined, "acts/stamp#r3");
+        const byAct = new r.Tiddler({ title, text: "by the act" });
+        r.wiki.addTiddler(byAct);
+        void r.adaptor.saveTiddler(byAct).catch(() => {});
+        if (later) {
+          const byHand = new r.Tiddler({ title, text: "by a person" });
+          r.wiki.addTiddler(byHand);
+          void r.adaptor.saveTiddler(byHand).catch(() => {});
+        }
+        await r.adaptor.boundary();
+        expect(receiptsOf(r, title).at(-1), later ? "the person's state" : "the act's state").toMatchObject({ kind: "save", act: later ? HAND_ACT : "acts/stamp#r3" });
+      } finally { await r.stop(); }
+    }
+  }, 120_000);
+
+  test("RED: a bag= put passes by the shore and still stamps a receipt naming its act and hashes", async () => {
+    const r = await shoreRig();
+    try {
+      seatShore(r.engine, r.adaptor);
+      r.adaptor.wornFace = FACE;
+      const opts: TiddlerVerbOptions = { composite: r.composite, tw5: r.engine };
+      const out = await makeTiddlerPutReactor(opts)({ bag: workingBag, title: "Bag note", text: "through the bag" }, ctx("r5"));
+      expect(out).toMatchObject({ decision: "put", bag: workingBag });
+      expect(receiptsOf(r, "Bag note")).toEqual([expect.objectContaining({ kind: "save", face: FACE, before: null, after: out["hash"], bag: workingBag, act: "call#r5" })]);
+    } finally { await r.stop(); }
+  }, 120_000);
+
   test("RED: a write into a layer another face holds saves nothing as the worn face and rides as a votum to the holder; CONTROL: with no holder named, the same write saves", async () => {
     const r = await shoreRig();
     try {
@@ -100,6 +134,7 @@ describe.skipIf(wikiSkip)(`a carrier's own act runs live${skipNote}`, () => {
     try {
       r.wiki.addTiddler(new r.Tiddler({ title: ACT, text: "<$action-setfield $tiddler=<<target>> status=<<status>>/>" }));
       await settle(r);
+      seatShore(r.engine, r.adaptor);
       const opts: TiddlerVerbOptions = { composite: r.composite, tw5: r.engine };
       const out = await makeCarrierActReactor(opts)({ act: ACT, address: "lar:///lantern.wick.trims", params: { target: "Acted note", status: "done" } }, ctx("r7"));
       expect(out).toMatchObject({ decision: "acted", act: ACT, wrote: ["Acted note"], receipt: `${ACT}#r7` });
@@ -116,6 +151,7 @@ describe.skipIf(wikiSkip)(`a carrier's own act runs live${skipNote}`, () => {
       r.wiki.addTiddler(new r.Tiddler({ title: "acts/rename", text: "<$action-sendmessage $message=\"tm-rename-tiddler\" from=<<from>> to=<<to>>/>" }));
       await settle(r);
       expect(r.wiki.getTiddler("Old name")?.fields["$origin-bag"], "the record rests in the working layer by its stamp").toBe(workingBag);
+      seatShore(r.engine, r.adaptor);
       const opts: TiddlerVerbOptions = { composite: r.composite, tw5: r.engine };
       const out = await makeCarrierActReactor(opts)({ act: "acts/rename", params: { from: "Old name", to: "New name" } }, ctx("r8"));
       expect(out["messages"]).toEqual([expect.objectContaining({ type: "tm-rename-tiddler", from: "Old name", to: "New name", decision: "renamed" })]);
@@ -132,6 +168,7 @@ describe.skipIf(wikiSkip)(`a carrier's own act runs live${skipNote}`, () => {
       await settle(r);
       const before = r.adaptor.receipts().length;
       const calls = r.calls.length;
+      seatShore(r.engine, r.adaptor);
       const opts: TiddlerVerbOptions = { composite: r.composite, tw5: r.engine };
       const out = await makeCarrierActReactor(opts)({ act: ACT, params: { target: "Dry note" }, dry: "summary" }, ctx());
       expect(out).toMatchObject({ decision: "dry", writes: [{ title: "Dry note", fields: expect.objectContaining({ status: "done" }) }],
@@ -147,6 +184,7 @@ describe.skipIf(wikiSkip)(`a carrier's own act runs live${skipNote}`, () => {
   test("RED: an act no tiddler holds refuses act-missing with a cure naming the carrier's skins", async () => {
     const r = await shoreRig();
     try {
+      seatShore(r.engine, r.adaptor);
       const opts: TiddlerVerbOptions = { composite: r.composite, tw5: r.engine };
       await expect(makeCarrierActReactor(opts)({ act: "acts/none", address: "lar:///lantern.wick.trims" }, ctx()))
         .rejects.toThrow(/act-missing: .*cure: <<~ get title=`lar:\/\/\/lantern\.wick\.trims#\/skins`>>/);
