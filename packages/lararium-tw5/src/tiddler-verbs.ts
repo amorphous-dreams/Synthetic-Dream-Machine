@@ -2457,7 +2457,7 @@ export const makeWikiStatusReactor = everyWiki("wiki-status", false, (opts: Tidd
 export const TIDDLER_CALL_SEATS: Readonly<Record<string, CallSeat>> = Object.freeze({
   "lar:///engine.record.reads": {
     verb: "tiddler-get",
-    // THE RANGE (the keypad head): the plan's `aperture` rank turns into the read's lens and grain (`readRangeArgs`: the card at
+    // THE RANGE (the keyword head): the plan's `aperture` rank turns into the read's lens and grain (`readRangeArgs`: the card at
     // pulse to measure, the whole at arc and theme); none keeps the gradient. The `mu` lens leaves the reactor's args (its cell
     // names how the answer reads; the read's bytes stand the same). `form=text` (a terminal's text alone, landing 8) asks the
     // whole text at the lens's grain where no range or cursor names one; the form itself shapes the terminal's print.
@@ -2486,7 +2486,7 @@ export const TIDDLER_CALL_SEATS: Readonly<Record<string, CallSeat>> = Object.fre
       return typeof slot === "string" && slot !== "" && typeof args["title"] === "string" ? { ...args, title: `${args["title"]}${slot}` } : args;
     },
   },
-  // A delete's choice rides its own key, `way=kapae|reveal` (the set panel's `mode` stays the shared key, the keypad head); the
+  // A delete's choice rides its own key, `way=kapae|reveal` (the set panel's `mode` stays the shared key, the keyword head); the
   // reactor reads it as `mode`.
   "lar:///engine.record.removes": { verb: "tiddler-delete", dry: true, args: { way: "mode" }, fold: (args) => dryArgs(args, "delete") },
   "lar:///engine.record.renames": { verb: "tiddler-rename", dry: true, fold: (args) => dryArgs(args, "rename") },

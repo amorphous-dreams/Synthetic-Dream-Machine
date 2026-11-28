@@ -6,7 +6,7 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-role      = "the house's one status line, then its pins layered house to face to mandate, then the keys the keypad routes"
+role      = "the house's one status line, then its pins layered house to face to mandate, then the act keywords a call may name"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///lares.lararium.status", "candidate"]
 title     = "lar:///ha.ka.ba/lares/afford/lares.lararium.status"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -15,7 +15,7 @@ uri-path  = "ha.ka.ba/lares/afford/lares.lararium.status"
 
 <<~ ahu slot=`#/head`>>
 
-! lares.lararium.status ~ the bare door: how the house stands, what it pins, which keys it routes
+! lares.lararium.status ~ the bare door: how the house stands, what it pins, which act keywords a call may name
 
 The bare `lares` reads `lares mu=00 aperture=beat`, this carrier's terminal spelling. It answers in three parts and moves nothing, ever: where an act waits it names the door that takes it.
 
@@ -23,7 +23,7 @@ The status line stands the same for every caller: the revision the checkout stan
 
 The pins layer as TiddlyWiki stacks layers, so the asker's context picks: the house list (canon, lar:///ha.ka.ba/lares/lararium/pins), then the worn face's own (its daemon wiki, lar:///ha.ka.ba/kahua/lararium/pins), then a mandate's (the mandate record's `pins` field; a spirit's summons names its mandate). A person sees house and face; a summoned spirit sees house, face and mandate. Every pin rides as a runnable call sigil, one per line: a person reads it, a spirit copies and runs it as written. Any hand re-pins by writing the list record in its own layer.
 
-The keys line names the act keys the keypad routes (`keys: get= put= delete= rename= filter= act= rite= bag= …`); the full door list moved behind `lares help`.
+The keys line names the act keywords a call may name (`keys: get= put= delete= rename= filter= act= rite= bag= …`); the full door list moved behind `lares help`.
 
 The two dials read as the `set` panel reads them (lar:///ha.ka.ba/lares/api/noosphere-boot #/set-and-setting): `mu` the lens, its cells below naming each view and the door it runs until the carriers of the next landings fold them into one call; `aperture` the range, defaulting to `beat`. The terminal's own door walks the views; these rows stand as its testimony.
 
@@ -84,12 +84,12 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/refuses`>>
 
-!! refuses ~ mu-malformed · aperture-malformed · act-key-unnamed
+!! refuses ~ mu-malformed · aperture-malformed · act-keyword-unnamed
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`mu-malformed` params=`~ mu names a tool-carry: *0 ?0 !0 _0 00 *! *? _! _? *_ ?! or the seed's word (exit 2)`>>
 <<has entity=`refusal` name=`aperture-malformed` params=`~ aperture names N/rank, the rank or the number on 0 to 20 (exit 2)`>>
-<<has entity=`refusal` name=`act-key-unnamed` params=`~ a key beside the dials names no act; an act key names the act (exit 2)`>>
+<<has entity=`refusal` name=`act-keyword-unnamed` params=`~ a keyword beside the dials names no act; an act keyword names the act (exit 2)`>>
 ```
 
 <<~/ahu>>
@@ -115,7 +115,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares]] grammar/call ~ the terminal; the bare line, its dials as keys (lares mu=_0 aperture=arc)`>>
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares]] grammar/call ~ the terminal; the bare line, its dials as keywords (lares mu=_0 aperture=arc)`>>
 ```
 
 <<~/ahu>>
@@ -131,6 +131,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;RlRdRvNJ9673fYqsLExY2odcGXGLJ9mNSbY9hwSrLYs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QjDtdof0kAez8d0geoukxqrSuw8ZGoOAtTEWoH8HCnk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

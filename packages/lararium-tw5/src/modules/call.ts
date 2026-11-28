@@ -28,7 +28,7 @@ module-type: startup
  * macro-call parser in the VM (`callOfSigil`), and every cure renders as a call sigil a reader runs as written (`cureCall`), the
  * triple quote carrying any value that holds a substitution mark (`sigilQuote` in `affordance-rows`).
  *
- * TWO DIALS (landing 6, re-cut by the keypad head to the boot seed's own values): `mu` names the LENS (`modules/mu.ts`: a
+ * TWO DIALS (landing 6, re-cut by the keyword head to the boot seed's own values): `mu` names the LENS (`modules/mu.ts`: a
  * tool-carry, `?0` `*!` `00`, a lone glyph or the seed's word reading pono), meets the cells the carrier's `#/takes` tables,
  * and rides the plan as its canonical carry for the seat to turn into its reactor's args; Rest (`00`) needs no cell. A
  * conflict carry answers its first tool and names the second as the next call (`mu.then`); a carry outside the table refuses
@@ -105,7 +105,7 @@ export interface CallPlan {
   readonly dryWalks?: boolean | undefined;
   /** The lens a `mu` param asked and the cell that answers it (landing 6); absent where the call names no `mu`. */
   readonly mu?: MuCall | undefined;
-  /** The range an `aperture` param asked, read to its band (the keypad head); absent where the call names none. */
+  /** The range an `aperture` param asked, read to its band (the keyword head); absent where the call names none. */
   readonly aperture?: Aperture | undefined;
   /** True where the `mu` came from a carrier's `default/` row rather than the call. */
   readonly muDefaulted?: boolean | undefined;
@@ -427,7 +427,7 @@ export function planCall(reader: CallReader, word: string, params: Readonly<Reco
   };
 }
 
-/** THE RANGE A CALL ASKS (the keypad head): the bound `aperture` read to its band; a fault refuses with the call's cure. */
+/** THE RANGE A CALL ASKS (the keyword head): the bound `aperture` read to its band; a fault refuses with the call's cure. */
 export function apertureOfCall(word: string, bound: Readonly<Record<string, unknown>>): Aperture {
   const read = readAperture(bound["aperture"]);
   if (!isApertureFault(read)) return read;

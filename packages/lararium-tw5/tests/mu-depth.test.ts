@@ -1,6 +1,6 @@
 /**
  * THE TWO DIALS — mu the lens, aperture the range (lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts landing 6, re-cut by the
- * keypad head to the boot seed's own values: lar:///ha.ka.ba/lares/api/noosphere-boot #/mu-five-tools and #/aperture). A
+ * keyword head to the boot seed's own values: lar:///ha.ka.ba/lares/api/noosphere-boot #/mu-five-tools and #/aperture). A
  * `lares` call and a `set` firing share one param set, so every carry and every rank reads here character for character as the
  * seed writes it. Pure; the call's own suite (`tiddler-verbs.test.ts`) drives the same rows through a booted engine.
  */

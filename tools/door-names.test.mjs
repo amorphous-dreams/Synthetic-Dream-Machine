@@ -63,9 +63,9 @@ test('the handler map reads the CLI table\'s own imports, aliases included', () 
   assert.equal(m.get('b'), 'flow-run');
 });
 
-test('a keypad line answers where a key names a door, a call key, or the bare door alone; a line naming no act key reads red', () => {
+test('a keyword line answers where a keyword names a door, an act keyword, or the bare door alone; a line naming no act keyword reads red', () => {
   for (const line of ['lares vessel=request mu=!0', 'lares get=<title> aperture=arc', 'lares mu=_0 aperture=beat', 'lares act=lar:///engine.law.indexes', 'lares aperture=measure meme=check']) {
     assert.equal(deadDoor(line), null, line);
   }
-  assert.match(deadDoor('lares title=x mu=00'), /no act key/);
+  assert.match(deadDoor('lares title=x mu=00'), /no act keyword/);
 });

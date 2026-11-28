@@ -1,6 +1,6 @@
 /**
  * The bare `lares` — THE HOUSE SPEAKS (lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts "The bare `lares` speaks the house";
- * the keypad head). Bare `lares` reads `lares mu=00 aperture=beat`, the CLI spelling of the canon carrier
+ * the keyword head). Bare `lares` reads `lares mu=00 aperture=beat`, the CLI spelling of the canon carrier
  * lar:///lares.lararium.status (`bags/lares/ha.ka.ba/lares/afford/lares.lararium.status.mem`, whose cells and default rows name
  * every view below as testimony; the code here walks them, as every host door's code decides what it walks).
  *
@@ -12,7 +12,7 @@
  *   face's own (its daemon wiki, lar:///ha.ka.ba/kahua/lararium/pins) → a mandate's (`mandate=<title>` or LARES_MANDATE: the
  *   mandate record's `pins` field). Every pin a runnable call sigil, one per line: a person reads it, a spirit runs it.
  *
- *   THE KEYS: one line naming the act keys the keypad routes (`keys: get= put= … rite= bag= …`). The full door list moved
+ *   THE KEYS: one line naming the act keywords a call may name (`keys: get= put= … rite= bag= …`). The full door list moved
  *   behind `lares help`.
  *
  * READ-ONLY: it moves nothing; where an act waits it names the door that takes it. A dark house answers as a REPORT ("the
@@ -130,7 +130,7 @@ function textOf(output: Record<string, unknown> | null, field = "text"): string 
   return typeof value === "string" ? value : undefined;
 }
 
-/** The act keys the keypad routes: the call door's, then every door word. */
+/** The act keywords a call may name: the call door's, then every door word. */
 export function keysLine(doors: readonly string[]): string {
   const calls = ["get", "put", "delete", "rename", "filter", "act"];
   return `keys: ${[...calls, ...doors.filter((d) => !calls.includes(d))].map((k) => `${k}=`).join(" ")}  (lares help: every door · lares help mu=?0)`;

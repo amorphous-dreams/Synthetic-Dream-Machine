@@ -1,5 +1,5 @@
 /**
- * mu — THE LENS OF EVERY CALL (lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts landing 6, re-cut by the keypad head to the
+ * mu — THE LENS OF EVERY CALL (lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts landing 6, re-cut by the keyword head to the
  * boot seed's own values: lar:///ha.ka.ba/lares/api/noosphere-boot #/mu-five-tools). A `lares` call and a `set` firing share
  * one param set, so `mu` takes the seed's TOOL-CARRIES, character for character: always two hands, the active tool first and
  * the empty hand (`0`) second.

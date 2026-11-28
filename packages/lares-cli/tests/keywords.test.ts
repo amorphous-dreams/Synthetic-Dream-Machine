@@ -1,10 +1,11 @@
 /**
- * keypad.test.ts — ONE DOOR, A KEYPAD (lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts "One door, a keypad"; the keypad
- * head): `lares` plus key=value pairs in any order, exactly one act key, the shaping keys sharing the `set` panel's params, the
- * flag zoo burned into the two dials, and a positional spelling answering a teaching refusal that names the keypad line.
+ * keywords.test.ts — ONE DOOR, KEYWORD PARAMS (lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts, its "One door"
+ * section, as the operator meant it; the keyword head): `lares` plus key=value keywords in any order, exactly one act keyword, the
+ * shaping keywords sharing the `set` panel's params, the flag zoo burned into the two dials, and a positional spelling
+ * answering a teaching refusal that names the keyword line.
  *
- * The keypad reads in `src/keypad.ts` (pure); `bin/lares.ts` runs the line it reads. The call door half rides the same
- * vessel mock as `tiddler-door.test.ts`, so a keypad call and its call-shape spelling send one plan.
+ * The keyword line reads in `src/keywords.ts` (pure); `bin/lares.ts` runs the line it reads. The call door half rides the same
+ * vessel mock as `tiddler-door.test.ts`, so a keyword call and its call-shape spelling send one plan.
  */
 import { afterEach, describe, test, expect, vi } from "vitest";
 
@@ -26,55 +27,55 @@ vi.mock("../src/env.js", async (orig) => ({
   vesselDid: async () => "0x" + "ab".repeat(32),
 }));
 
-import { BURNED_FLAGS, KeypadUsage, isKeypadLine, positionalCure, readKeypad, type KeypadLine } from "../src/keypad.js";
-import { COMMANDS, dispatch, keypadArgv } from "../src/bin/lares.js";
+import { BURNED_FLAGS, KeywordUsage, isKeywordLine, positionalCure, readKeywords, type KeywordLine } from "../src/keywords.js";
+import { COMMANDS, dispatch, keywordArgv } from "../src/bin/lares.js";
 import { MU_CARRY_ORDER, MU_CARRIES, APERTURE_RANKS } from "@lararium/tw5";
 
 const DOORS = { names: COMMANDS.map((c) => c.name), accepts: (d: string): readonly string[] => COMMANDS.find((c) => c.name === d)?.accepts ?? [] };
-const read = (...tokens: string[]): KeypadLine => readKeypad(tokens, DOORS);
-const refusal = (...tokens: string[]): KeypadUsage => {
-  try { read(...tokens); } catch (err) { if (err instanceof KeypadUsage) return err; throw err; }
+const read = (...tokens: string[]): KeywordLine => readKeywords(tokens, DOORS);
+const refusal = (...tokens: string[]): KeywordUsage => {
+  try { read(...tokens); } catch (err) { if (err instanceof KeywordUsage) return err; throw err; }
   throw new Error(`${tokens.join(" ")} read without a refusal`);
 };
 
 afterEach(() => { h.calls.length = 0; h.reply = {}; });
 
-describe("one door, a keypad: key=value in any order, exactly one act key", () => {
-  test("RED: a line whose first token names a key speaks the keypad; a door word or an address does not", () => {
-    expect(isKeypadLine(["rite=kukulu"])).toBe(true);
-    expect(isKeypadLine(["mu=_0"])).toBe(true);
-    expect(isKeypadLine(["rite", "kukulu"])).toBe(false);
-    expect(isKeypadLine(["lar:///engine.record.reads", "title=x"])).toBe(false);
-    expect(isKeypadLine([])).toBe(false);
+describe("one door, keyword params: key=value keywords in any order, exactly one act keyword", () => {
+  test("RED: a line whose first token names a keyword is a keyword line; a door word or an address is not", () => {
+    expect(isKeywordLine(["rite=kukulu"])).toBe(true);
+    expect(isKeywordLine(["mu=_0"])).toBe(true);
+    expect(isKeywordLine(["rite", "kukulu"])).toBe(false);
+    expect(isKeywordLine(["lar:///engine.record.reads", "title=x"])).toBe(false);
+    expect(isKeywordLine([])).toBe(false);
   });
 
-  test("RED: the call door's act keys route as the call shape: get= put= delete= rename= filter= act=, in any order beside their shaping keys", () => {
+  test("RED: the call door's act keywords route as the call shape: get= put= delete= rename= filter= act=, in any order beside their shaping keywords", () => {
     expect(read("get=Room 4", "aperture=arc")).toEqual({ kind: "call", verb: "get", params: { title: "Room 4", aperture: "arc" }, set: {} });
     expect(read("aperture=measure", "mu=?0", "get=lar:///t/x")).toEqual({ kind: "call", verb: "get", params: { aperture: "measure", mu: "?0", title: "lar:///t/x" }, set: {} });
     expect(read("put=T", "text=new words", "mu=_!")).toMatchObject({ kind: "call", verb: "put", params: { title: "T", text: "new words", mu: "_!" } });
     expect(read("rename=Old", "to=New")).toMatchObject({ kind: "call", verb: "rename", params: { title: "Old", to: "New" } });
     expect(read("filter=[tag[x]]", "aperture=measure")).toMatchObject({ kind: "call", verb: "get", params: { filter: "[tag[x]]", aperture: "measure" } });
     expect(read("act=lar:///engine.law.indexes")).toMatchObject({ kind: "call", verb: "lar:///engine.law.indexes", params: {} });
-    // A container word beside a call key reads as the container, never a second act.
+    // A container word beside an act keyword reads as the container, never a second act.
     expect(read("get=Room 4", "bag=lares", "realm=r1")).toMatchObject({ kind: "call", params: { title: "Room 4", bag: "lares", realm: "r1" } });
   });
 
-  test("RED: the set panel's keys ride every line as testimony, a delete's included; its own choice rides way=", () => {
+  test("RED: the set panel's keywords ride every line as testimony, a delete's included; its own choice rides way=", () => {
     expect(read("get=T", "stance=poet", "mood=wry", "note=chasing an adjacency")).toMatchObject({ kind: "call", params: { title: "T" }, set: { stance: "poet", mood: "wry", note: "chasing an adjacency" } });
     expect(read("get=T", "mode=sketch")).toMatchObject({ params: { title: "T" }, set: { mode: "sketch" } });
     expect(read("delete=T", "mode=sketch")).toEqual({ kind: "call", verb: "delete", params: { title: "T" }, set: { mode: "sketch" } });
     expect(read("delete=T", "way=kapae")).toEqual({ kind: "call", verb: "delete", params: { title: "T", way: "kapae" }, set: {} });
   });
 
-  test("RED: two act keys refuse, naming both lines", () => {
+  test("RED: two act keywords refuse, naming both lines", () => {
     const both = refusal("get=x", "rite=kukulu");
-    expect(both.code).toBe("act-keys-doubled");
+    expect(both.code).toBe("act-keywords-doubled");
     expect(both.message).toContain("lares get=x");
     expect(both.message).toContain("lares rite=kukulu");
-    expect(refusal("put=a", "delete=b").code).toBe("act-keys-doubled");
+    expect(refusal("put=a", "delete=b").code).toBe("act-keywords-doubled");
   });
 
-  test("RED: a door the command table runs takes its key's value as its sub-verb words, its shaping keys as its flags, with= whole", () => {
+  test("RED: a door the command table runs takes its act keyword's value as its sub-verb words, its shaping keys as its flags, with= whole", () => {
     expect(read("rite=kukulu")).toEqual({ kind: "door", door: "rite", argv: ["rite", "kukulu"], set: {}, notes: [] });
     expect(read("lei=show", "rite=kukulu", "branch=develop")).toMatchObject({ kind: "door", door: "lei", argv: ["lei", "show", "--rite=kukulu", "--branch=develop"] });
     expect(read("bag=show")).toMatchObject({ kind: "door", door: "bag", argv: ["bag", "show"] });
@@ -101,13 +102,13 @@ describe("one door, a keypad: key=value in any order, exactly one act key", () =
     expect(refusal("rite=kukulu", "aperture=3/measure").code).toBe("aperture-malformed");
   });
 
-  test("RED: no act key reads the house (the bare door), its dials and face beside it; any other key refuses naming the act keys", () => {
+  test("RED: no act keyword reads the house (the bare door), its dials and face beside it; any other keyword refuses naming the act keywords", () => {
     expect(read("mu=00", "aperture=beat")).toEqual({ kind: "bare", params: { mu: "00", aperture: "beat" }, set: {} });
     expect(read("mu=*", "face=h1", "stance=philosopher")).toEqual({ kind: "bare", params: { mu: "*", face: "h1" }, set: { stance: "philosopher" } });
-    expect(refusal("title=x").code).toBe("act-key-unnamed");
+    expect(refusal("title=x").code).toBe("act-keyword-unnamed");
   });
 
-  test("RED: every seed carry and every aperture rank reads on a keypad line, the two dials crossing", () => {
+  test("RED: every seed carry and every aperture rank reads on a keyword line, the two dials crossing", () => {
     for (const carry of MU_CARRY_ORDER) {
       for (const rank of APERTURE_RANKS) {
         expect(read("get=T", `mu=${carry}`, `aperture=${rank}`), `${carry} ${rank}`).toMatchObject({ kind: "call", params: { title: "T", mu: carry, aperture: rank } });
@@ -118,10 +119,10 @@ describe("one door, a keypad: key=value in any order, exactly one act key", () =
 });
 
 describe("the flag zoo burns into the dials", () => {
-  test("RED: each burned flag answers a teaching refusal naming the keypad line with its dial", () => {
+  test("RED: each burned flag answers a teaching refusal naming the keyword line with its dial", () => {
     for (const [flag, dial] of Object.entries(BURNED_FLAGS)) {
       const said = refusal("get=T", `--${flag}`);
-      expect(said.code, flag).toBe("keypad-flag");
+      expect(said.code, flag).toBe("keyword-flag");
       expect(said.cure, flag).toBe(`lares get=T ${dial}`);
     }
     expect(BURNED_FLAGS).toEqual({ "dry-run": "mu=_0", json: "mu=!0", quiet: "mu=!0", meme: "aperture=measure", skinny: "aperture=measure", all: "aperture=arc", grain: "aperture=arc" });
@@ -129,15 +130,15 @@ describe("the flag zoo burns into the dials", () => {
     expect(refusal("rite=kukulu", "--rollback").cure).toBe("lares rite=kukulu rollback=true");
   });
 
-  test("RED: a bare word on a keypad line refuses, naming the key whose value carries it", () => {
+  test("RED: a bare word on a keyword line refuses, naming the act keyword whose value carries it", () => {
     const said = refusal("rite=kukulu", "now");
-    expect(said.code).toBe("keypad-positional");
+    expect(said.code).toBe("keyword-positional");
     expect(said.cure).toBe("lares rite='kukulu now'");
   });
 });
 
-describe("a positional spelling teaches the keypad line", () => {
-  test("RED: a call word's bare title reads as its act key; the call shape and a help ask stand", () => {
+describe("a positional spelling teaches the keyword line", () => {
+  test("RED: a call word's bare title reads as its act keyword; the call shape and a help ask stand", () => {
     expect(positionalCure("get", ["Room4"])).toBe("lares get=Room4");
     expect(positionalCure("get", ["Room 4", "recipe=kahu"])).toBe("lares get='Room 4' recipe=kahu");
     expect(positionalCure("rename", ["Old", "New"])).toBe("lares rename=Old to=New");
@@ -157,9 +158,9 @@ describe("a positional spelling teaches the keypad line", () => {
   });
 });
 
-describe("the keypad runs the line it reads", () => {
+describe("the keyword line runs the line it reads", () => {
   test("RED: `lares get=<title> aperture=arc` sends the plan `lares get title=<title> aperture=arc` sends", async () => {
-    const keyed = keypadArgv(["get=lar:///t/x", "aperture=arc", "mu=!0"]);
+    const keyed = keywordArgv(["get=lar:///t/x", "aperture=arc", "mu=!0"]);
     expect(keyed).toMatchObject({ argv: ["get", "title=lar:///t/x", "aperture=arc", "mu=!0"] });
     const out = vi.spyOn(console, "log").mockImplementation(() => {});
     try {
@@ -172,7 +173,7 @@ describe("the keypad runs the line it reads", () => {
     expect(h.calls[0]!.args).toMatchObject({ verb: "get", params: { title: "lar:///t/x", aperture: "arc", mu: "!0" }, surface: "cli" });
   });
 
-  test("RED: a keypad refusal exits 2 before anything runs", async () => {
+  test("RED: a keyword refusal exits 2 before anything runs", async () => {
     const err = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
       expect(await dispatch(["get=x", "rite=kukulu"])).toBe(2);

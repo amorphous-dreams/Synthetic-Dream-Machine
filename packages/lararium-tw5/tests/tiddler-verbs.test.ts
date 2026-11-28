@@ -2599,7 +2599,7 @@ describe.skipIf(wikiSkip)(`a terminal's call: words turn by their row's kind, an
   });
 });
 
-// ── the two dials, mu the lens and aperture the range (landing 6, re-cut by the keypad head) ─────────────
+// ── the two dials, mu the lens and aperture the range (landing 6, re-cut by the keyword head) ─────────────
 
 describe.skipIf(wikiSkip)(`the two dials: mu reads the seed's carries against the carrier's cells, aperture sets the range${skipNote}`, () => {
   /** The call rig with the standing meme fixture placed: a root and two slots. */

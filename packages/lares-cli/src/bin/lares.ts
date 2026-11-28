@@ -40,7 +40,7 @@ import { cmdBag }                                   from "../commands/bag.js";
 import { cmdEvents }                  from "../commands/events.js";
 import { cmdWiki, wikiHelpLines }                  from "../commands/wiki.js";
 import { cmdCall, isCallHead, CALL_VERBS as CALL_WORDS } from "../commands/call.js";
-import { BURNED_FLAGS, KeypadUsage, isKeypadLine, positionalCure, readKeypad, type KeypadLine } from "../keypad.js";
+import { BURNED_FLAGS, KeywordUsage, isKeywordLine, positionalCure, readKeywords, type KeywordLine } from "../keywords.js";
 import { BARE_ADDRESS, cmdBare, liveReaders } from "../commands/bare.js";
 import { cmdIngest }                  from "../commands/ingest.js";
 import { cmdExport }                  from "../commands/export.js";
@@ -455,21 +455,21 @@ function movedTo(args: ParsedArgs): string | null {
   return args.command === "sense" && retiredSensePromote(args) ? "lares sense harden" : null;
 }
 
-/** The door table as the keypad reads it: each door's name and the flags its handlers read. */
-const KEYPAD_DOORS = { names: COMMANDS.map((c) => c.name), accepts: (door: string): readonly string[] => COMMANDS.find((c) => c.name === door)?.accepts ?? [] };
+/** The door table as the keyword reader takes it: each door's name and the flags its handlers read. */
+const KEYWORD_DOORS = { names: COMMANDS.map((c) => c.name), accepts: (door: string): readonly string[] => COMMANDS.find((c) => c.name === door)?.accepts ?? [] };
 
 /**
- * ONE DOOR, A KEYPAD (the keypad head, `../keypad.ts`): a line whose first token names a key (`lares rite=kukulu mu=_0`,
- * `lares get=<title> aperture=arc`) reads to the line it runs: a call through the call door in the call shape (`get title=…`),
- * or a door the command table runs by position with its dials folded into its own flags. The set panel's own keys (stance ·
- * mode · mood · note) echo on stderr as the set line the call rode. A line the keypad refuses answers its teaching refusal and
- * exits 2. Null where the line speaks no keypad.
+ * ONE DOOR, KEYWORD PARAMS (the keyword head, `../keywords.ts`): a keyword line, whose first token names a keyword
+ * (`lares rite=kukulu mu=_0`, `lares get=<title> aperture=arc`), reads to the line it runs: a call through the call door in
+ * the call shape (`get title=…`), or a door the command table runs by position with its dials folded into its own flags. The
+ * set panel's own keywords (stance · mode · mood · note) echo on stderr as the set line the call rode. A keyword line the reader refuses answers its teaching
+ * refusal and exits 2. Null where the line names no keyword.
  */
-export function keypadArgv(argv: readonly string[]): { readonly line: KeypadLine; readonly argv: readonly string[] } | { readonly refused: string } | null {
-  if (!isKeypadLine(argv)) return null;
-  let line: KeypadLine;
-  try { line = readKeypad(argv, KEYPAD_DOORS); }
-  catch (err) { if (err instanceof KeypadUsage) return { refused: err.message }; throw err; }
+export function keywordArgv(argv: readonly string[]): { readonly line: KeywordLine; readonly argv: readonly string[] } | { readonly refused: string } | null {
+  if (!isKeywordLine(argv)) return null;
+  let line: KeywordLine;
+  try { line = readKeywords(argv, KEYWORD_DOORS); }
+  catch (err) { if (err instanceof KeywordUsage) return { refused: err.message }; throw err; }
   if (line.kind === "call") return { line, argv: [line.verb, ...Object.entries(line.params).map(([k, v]) => `${k}=${v}`)] };
   if (line.kind === "door") return { line, argv: line.argv };
   return { line, argv: [BARE_ADDRESS, ...Object.entries(line.params).map(([k, v]) => `${k}=${v}`)] };
@@ -484,15 +484,15 @@ async function bareDoor(params: Readonly<Record<string, string>>): Promise<numbe
   return await cmdBare(params, liveReaders((argv) => dispatch(argv)), COMMAND_NAMES, async () => { printHelp(); return 0; });
 }
 
-/** The set line a keypad call rode, echoed on stderr where it names any of the panel's own keys. */
-function echoSet(line: KeypadLine): void {
+/** The set line a keyword call rode, echoed on stderr where it names any of the panel's own keywords. */
+function echoSet(line: KeywordLine): void {
   const keys = Object.entries(line.set);
   if (keys.length > 0) console.error(`<<~ set ${keys.map(([k, v]) => `${k}=\`${v}\``).join(" ")}>>`);
   if (line.kind === "door") for (const note of line.notes) console.error(`lares: ${note}`);
 }
 
 export async function dispatch(rawArgv: readonly string[]): Promise<number> {
-  const keyed = keypadArgv(rawArgv);
+  const keyed = keywordArgv(rawArgv);
   if (keyed !== null) {
     if ("refused" in keyed) { console.error(`lares: ${keyed.refused}`); return 2; }
     echoSet(keyed.line);
@@ -515,11 +515,11 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
   // `lares <name> --help` cannot tell a live verb from a name no door answers, and the collapse's own law
   // (one spelling per door) stops being checkable from outside. The unknown-command refusal
   // below therefore owns EVERY unknown name, flags included.
-  // BARE `lares` SPEAKS THE HOUSE (the keypad head): the status line, the layered pins, the keys; the full door list moved behind
+  // BARE `lares` SPEAKS THE HOUSE (the keyword head): the status line, the layered pins, the keys; the full door list moved behind
   // `lares help`. A bare line that names a flag (`lares --json`, `--surface`) still asks the menu's machine shape.
   const bareFlags = [...Object.keys(args.options), ...Object.keys(args.flags)];
   if (args.command === null && bareFlags.length === 0) return await bareDoor({});
-  // The bare door's address, as the bridge forwards a bare line or a keypad line naming no act key into the vessel's host.
+  // The bare door's address, as the bridge forwards a bare line or a keyword line naming no act keyword into the vessel's host.
   if (args.command === BARE_ADDRESS) {
     const params: Record<string, string> = {};
     for (const token of args.positional) { const eq = token.indexOf("="); if (eq > 0) params[token.slice(0, eq)] = token.slice(eq + 1); }
@@ -539,10 +539,10 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
   }
   const moved = movedTo(args);
   if (moved) { console.error(`usage: this command moved to \`${moved}\``); return 2; }
-  // A CALL WORD'S POSITIONAL SPELLING BURNED (the keypad head): `lares get Room4` reads as `lares get=Room4`; run that.
+  // A CALL WORD'S POSITIONAL SPELLING BURNED (the keyword head): `lares get Room4` reads as `lares get=Room4`; run that.
   const keyed = args.flags["help"] === true ? null : positionalCure(args.command, args.positional);
   if (keyed !== null) {
-    console.error(`lares: keypad-positional: \`lares ${[args.command, ...args.positional].join(" ")}\` reads as \`${keyed}\`; run that`);
+    console.error(`lares: keyword-positional: \`lares ${[args.command, ...args.positional].join(" ")}\` reads as \`${keyed}\`; run that`);
     return 2;
   }
   // AN ADDRESS NAMES ITS OWN VERB (comms-ux-enacts landing 8): `lares lar:///<address> name=value…`, `lares act lar:///<address> …`
@@ -551,7 +551,7 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
     const flags = [...Object.keys(args.options), ...Object.keys(args.flags)].filter((n) => !GLOBAL_FLAGS.includes(n) || n === "meme");
     if (flags.length > 0) {
       for (const name of flags) {
-        // THE FLAG ZOO BURNED INTO THE DIALS (the keypad head): a burned flag names the dial it reads as.
+        // THE FLAG ZOO BURNED INTO THE DIALS (the keyword head): a burned flag names the dial it reads as.
         const dial = BURNED_FLAGS[name];
         console.error(dial !== undefined ? `lares: --${name} burned into the dials: it reads as ${dial} on a call` : `lares: unknown flag --${name} for a call; a call takes name=value params (${name}=…)`);
       }
@@ -680,9 +680,9 @@ async function drainStdout(): Promise<void> {
 export function runCli(): void {
   const { argv, budgetMs, retiredAsk } = takeEntryAsks(process.argv.slice(2));
   const disarm = armAskBudget(budgetMs);
-  // A KEYPAD LINE ROUTES AS THE LINE IT READS: the host reads it once (its set line echoed here), and the line it runs crosses the
+  // A KEYWORD LINE ROUTES AS THE LINE IT READS: the host reads it once (its set line echoed here), and the line it runs crosses the
   // bridge, so `lares rite=kukulu` stands where `lares rite kukulu` stands and `lares get=<title>` forwards into the vessel.
-  const keyed = keypadArgv(argv);
+  const keyed = keywordArgv(argv);
   if (keyed !== null && !("refused" in keyed)) echoSet(keyed.line);
   // A BARE LINE ROUTES AS THE BARE DOOR'S ADDRESS, so a container house answers it from the vessel's own host.
   const routed = keyed !== null && !("refused" in keyed) ? [...keyed.argv] : argv.length === 0 ? [BARE_ADDRESS] : argv;

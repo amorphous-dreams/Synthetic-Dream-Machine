@@ -1,5 +1,5 @@
 /**
- * aperture — THE RANGE OF EVERY CALL (the keypad head, lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts "Two dials"; the
+ * aperture — THE RANGE OF EVERY CALL (the keyword head, lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts "Two dials"; the
  * boot seed's own scale, lar:///ha.ka.ba/lares/api/noosphere-boot #/aperture and #/set-and-setting). `mu=` names how a call
  * looks; `aperture=` names how much it answers, in the set panel's own `N/rank` spelling:
  *

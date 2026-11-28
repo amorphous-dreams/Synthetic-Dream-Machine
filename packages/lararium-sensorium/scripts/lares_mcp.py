@@ -1769,7 +1769,7 @@ def build_mcp(coordinator: LaresCoordinator):
                          "after": after}, params)
         address = record_address("get", bound)
         first = _door(address, bound, "get")
-        # THE WHOLE RIDES THE RANGE DIAL (the keypad head): aperture arc or theme (13 and past) follows every page; mu names the lens.
+        # THE WHOLE RIDES THE RANGE DIAL (the keyword head): aperture arc or theme (13 and past) follows every page; mu names the lens.
         if address != RECORD_ADDRESSES["get"][0] or not aperture_reaches_whole(bound.get("aperture")):
             return first
         return whole_carrier(first, lambda cursor: _door(address, {**bound, "after": cursor}, "get"))

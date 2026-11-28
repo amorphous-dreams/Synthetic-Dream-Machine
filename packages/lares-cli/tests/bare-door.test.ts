@@ -1,5 +1,5 @@
 /**
- * bare-door.test.ts — THE BARE `lares` SPEAKS THE HOUSE (the keypad head; carrier lar:///lares.lararium.status): bare `lares`
+ * bare-door.test.ts — THE BARE `lares` SPEAKS THE HOUSE (the keyword head; carrier lar:///lares.lararium.status): bare `lares`
  * reads `lares mu=00 aperture=beat`, the status line, the pins layered house → face → mandate, the keys; read-only; a dark
  * house answers as a report; each lens names the doors its view runs, and the Sword's verdict rides the exit code.
  *
@@ -163,7 +163,7 @@ describe("bare `lares` reads mu=00 aperture=beat", () => {
     expect(pinsOf(undefined)).toEqual([]);
   });
 
-  test("the keys line names the call door's act keys, then every door word, and points at lares help", () => {
+  test("the keys line names the call door's act keywords, then every door word, and points at lares help", () => {
     expect(keysLine(["rite", "get", "bag"])).toBe("keys: get= put= delete= rename= filter= act= rite= bag=  (lares help: every door · lares help mu=?0)");
   });
 });
