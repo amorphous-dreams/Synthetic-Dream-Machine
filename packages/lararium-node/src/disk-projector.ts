@@ -541,6 +541,21 @@ export class LarDiskProjector {
    * file at a path the carrier left (or of a carrier the records dropped) that holds bytes no agreement covers.
    */
   private readonly standoffs = new Map<string, StandoffEntry>();
+  /**
+   * THE STANDOFFS ONE READING LEFT, by (bag, carrier), each with the reconcile count it left at. A reading that finds the
+   * disk and the records agreed (or the carrier projecting elsewhere) proves the standoff ended only once a LATER reading
+   * of the same carrier says so too: that reading resolves it. A reading that finds the very same standoff again re-seats
+   * it with no word, so a carrier that flickers between two readings raises nothing and clears nothing.
+   */
+  private readonly leaving = new Map<string, { readonly bagId: string; readonly uri: string; readonly entry: StandoffEntry; readonly at: number }>();
+  /**
+   * THE LAST STANDOFF SURFACED for each (bag, carrier), by its key. The key folds the file's bytes, the records' render and
+   * the base they stand against, so a standoff that returns under the key it surfaced under names states nobody moved:
+   * it re-seats as a standing row and speaks no second time. A standoff surfaces again only under a new key.
+   */
+  private readonly surfaced = new Map<string, string>();
+  /** How many reconciles this projector has begun: a leave remembers the count it left at. */
+  private readings = 0;
   /** The standoff a person answered for each (bag, carrier), by the key they named. Read once, by the reconcile the answer starts. */
   private readonly answered = new Map<string, string>();
   /**
@@ -1003,8 +1018,15 @@ export class LarDiskProjector {
   }
 
   private async reconcile(rootUri: string): Promise<void> {
+    const reading = ++this.readings;
     await this.reconcileCarrier(rootUri);
     await this.reconcileOrphans(rootUri);
+    // A STANDOFF AN EARLIER READING LEFT, AND THIS ONE FOUND NOWHERE, ENDED: it resolves now, once.
+    for (const [key, left] of [...this.leaving]) {
+      if (left.uri !== rootUri || left.at >= reading || this.standoffs.has(key)) continue;
+      this.leaving.delete(key);
+      this._resolveStandoff(left.bagId, left.uri, left.entry);
+    }
   }
 
   /** Roots whose slot records left, or stand with a broken chain, since their last orphan pass. */
@@ -1297,24 +1319,57 @@ export class LarDiskProjector {
    *  from the resolved view by a shadowing tombstone still lives in its lower
    *  bag; each mirror reflects its OWN bag's content, never the resolved view). */
   /** A reconcile found no standoff for this carrier: clear the one it surfaced, if any, and say so once. */
-  private _leaveStandoff(bagId: string, uri: string, kind?: "sides" | "home"): void {
+  /**
+   * Leave the standoff this carrier stands in. An ACT that settled it (a write, an unlink, a new standoff under another
+   * key) resolves it at once. A READING (`reading`: the gate found the two sides agreed, or the carrier projecting
+   * elsewhere) proves less: the standoff steps aside, the carrier marks for one more reading, and that reading resolves it
+   * where it finds no standoff again (`reconcile`), or re-seats it where it finds the same one (`_enterStandoff`).
+   */
+  private _leaveStandoff(bagId: string, uri: string, kind?: "sides" | "home", reading = false): void {
     const key = sitedKey(bagId, uri);
     const entry = this.standoffs.get(key);
-    if (entry === undefined || (kind !== undefined && entry.kind !== kind)) return;
-    this.standoffs.delete(key);
-    this.standoffRenders.delete(key);
+    if (entry !== undefined) {
+      if (kind !== undefined && entry.kind !== kind) return;
+      this.standoffs.delete(key);
+      if (reading) {
+        this.leaving.set(key, { bagId, uri, entry, at: this.readings });
+        if (this.gate !== null && !this.stopping) this.gate.mark(uri);
+        return;
+      }
+      this._resolveStandoff(bagId, uri, entry);
+      return;
+    }
+    const left = this.leaving.get(key);
+    if (left === undefined || reading || (kind !== undefined && left.entry.kind !== kind)) return;
+    this.leaving.delete(key);
+    this._resolveStandoff(bagId, uri, left.entry);
+  }
+
+  /** A standoff ended: its render leaves and its alert clears, once. */
+  private _resolveStandoff(bagId: string, uri: string, entry: StandoffEntry): void {
+    const key = sitedKey(bagId, uri);
+    if (this.standoffRenders.get(key)?.standoff === entry.standoff) this.standoffRenders.delete(key);
     this.onConflictResolved?.({ bagId, uri, standoff: entry.standoff });
   }
 
   /**
-   * Enter a standoff, once per key: a reconcile that meets the standoff it already raised stays quiet. A
-   * standoff whose states moved ends (its alert clears) and the new one enters under its own key.
+   * Enter a standoff, once per key: a reconcile that meets the standoff it already raised stays quiet, and so does one
+   * that meets, under the same key, a standoff a reading had stepped aside from or one that surfaced before. A standoff
+   * whose states moved ends (its alert clears) and the new one enters under its own key, and speaks.
    */
   private _enterStandoff(bagId: string, uri: string, standoff: string, kind: "sides" | "home", reason: string, sides?: StandoffSides): void {
     const key = sitedKey(bagId, uri);
     if (this.standoffs.get(key)?.standoff === standoff) return;
+    const entry: StandoffEntry = { standoff, kind, reason, ...(sides ?? {}) };
+    if (this.leaving.get(key)?.entry.standoff === standoff) {
+      this.leaving.delete(key);
+      this.standoffs.set(key, entry);
+      return;
+    }
     this._leaveStandoff(bagId, uri);
-    this.standoffs.set(key, { standoff, kind, reason, ...(sides ?? {}) });
+    this.standoffs.set(key, entry);
+    if (this.surfaced.get(key) === standoff) return;
+    this.surfaced.set(key, standoff);
     console.error(`[confluence] projection conflict (${bagId} <- ${uri}): ${reason}`);
     this.onConflict?.({ bagId, uri, reason, standoff });
   }
@@ -1322,11 +1377,11 @@ export class LarDiskProjector {
   /**
    * Leave the SIDES standoff this carrier stands in under every mirror but `keepBag` (none kept when
    * absent): a carrier that stopped projecting there leaves a conflict nobody weighs. A HOME standoff
-   * names a file that still stands on disk, so it leaves only when that file settles.
+   * names a file that still stands on disk, so it leaves only when that file settles. A reading decides it.
    */
   private _leaveStandoffsExcept(uri: string, keep?: string | ReadonlySet<string>): void {
     if (this.standoffs.size === 0) return;
-    for (const mirror of this.mirrors) if (!LarDiskProjector.kept(keep, mirror.bagId)) this._leaveStandoff(mirror.bagId, uri, "sides");
+    for (const mirror of this.mirrors) if (!LarDiskProjector.kept(keep, mirror.bagId)) this._leaveStandoff(mirror.bagId, uri, "sides", true);
   }
 
   /** Whether `bagId` stands among the bags a leave spares. */
@@ -1766,13 +1821,13 @@ export class LarDiskProjector {
       if (!holdingBags?.has(mirror.bagId)) continue;
       // A carrier the resolved view shadows stops projecting here, unless its own record does: the standoff between
       // its sides names a conflict nobody weighs.
-      if (!spare?.has(mirror.bagId)) this._leaveStandoff(mirror.bagId, title, "sides");
+      if (!spare?.has(mirror.bagId)) this._leaveStandoff(mirror.bagId, title, "sides", true);
       keptRoots.add(resolvePath(mirror.mirrorRoot));
     }
     for (const mirror of this.mirrors) {
       if (onlyBag !== undefined && mirror.bagId !== onlyBag) continue;
       if (holdingBags?.has(mirror.bagId)) continue;
-      this._leaveStandoff(mirror.bagId, title, "sides");
+      this._leaveStandoff(mirror.bagId, title, "sides", true);
       if (keptRoots.has(resolvePath(mirror.mirrorRoot))) continue;
       // A title the address siting rule sites nowhere (a foreign title) names no file by itself; the base still may.
       const homes = (this.mirrorCarrierFiles(mirror, title) ?? []).map((f) => LarDiskProjector.contentOf(f));
@@ -2323,7 +2378,7 @@ export class LarDiskProjector {
       if (bodyInSync && metaInSync) {
         // Another document's file already says what these records render: its own base stays, and nothing writes.
         if (!this.otherDocument(bagId, this.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate))) this.pin(bagId, tiddlerUri, candidate, obsHash);
-        this._leaveStandoff(bagId, tiddlerUri);
+        this._leaveStandoff(bagId, tiddlerUri, undefined, true);
         this._leavePending(bagId, tiddlerUri);
         if (mirror.mirrorClass !== "recovery") await this.sweepLeftMirrors(bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
         return;
@@ -2422,7 +2477,7 @@ export class LarDiskProjector {
       if (decision.kind === "pending-removal") {
         // THE FILE VANISHED WHERE A BASE STANDS. Nothing writes back and nothing tombstones; the base stays,
         // and the carrier stands pending until a person answers or the file returns.
-        this._leaveStandoff(bagId, tiddlerUri);
+        this._leaveStandoff(bagId, tiddlerUri, undefined, true);
         this._enterPending(bagId, tiddlerUri, candidate);
         return;
       }
@@ -2442,7 +2497,7 @@ export class LarDiskProjector {
         if (bodyPending && base === null && !another && diskHash !== null && decision.reason === "disk-matches-records") {
           this.pin(bagId, tiddlerUri, candidate, diskHash);
         }
-        this._leaveStandoff(bagId, tiddlerUri);
+        this._leaveStandoff(bagId, tiddlerUri, undefined, true);
         if (mirror.mirrorClass !== "recovery") await this.sweepLeftMirrors(bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
         return;
       }

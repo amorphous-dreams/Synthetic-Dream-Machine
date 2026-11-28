@@ -323,12 +323,17 @@ export async function cmdShore(args: ParsedArgs, hand: ShoreHandRead = ownHand):
     const done = taken;
     emit(args, {
       ok: true, ...(done.requestId !== undefined ? { requestId: done.requestId } : {}),
-      data: { op: act, bag: done.bag, uri: done.uri, key: done.key, path: done.path, took: "disk", decision: done.decision, merge: done.merge },
+      data: {
+        op: act, bag: done.bag, uri: done.uri, key: done.key, path: done.path, took: "disk", decision: done.decision, merge: done.merge,
+        ...(done.cleared !== undefined ? { cleared: done.cleared } : {}), ...(done.stands !== undefined ? { stands: done.stands } : {}),
+      },
       human: () => {
         console.log(done.merge.kind === "slots"
           ? `took the disk's side, merged with the records' slot by slot: ${done.uri} (${done.bag}); the merged words at ${done.path} stand in the records`
           : `took the disk's side: ${done.uri} (${done.bag}); the words at ${done.path} stand in the records`);
         if (done.merge.kind === "whole") console.log(`  landed whole, with no merge: ${done.merge.why}`);
+        if (done.cleared === true) console.log("  the shore reads the standoff gone");
+        if (done.cleared === false) console.log(`  the shore still lists a standoff for it, under key ${done.stands ?? "?"}: \`lares shore\` names it`);
       },
     });
     return 0;
