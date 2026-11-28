@@ -49,8 +49,8 @@ describe("the row reader", () => {
 describe("the skins derive spellings by rule", () => {
   const skin = (maps: string): HasRow => ({ entity: "skin", name: "mcp", params: { spells: "oracle_cast", maps }, bare: [], role: "" });
 
-  test("RED 4: cli --kebab, mcp snake_case, tw5 attribute, console key; a skin row names only its exceptions", () => {
-    expect(spellArg("cli", "dry_run")).toBe("--dry-run");
+  test("RED 4: cli kebab-case, mcp snake_case, tw5 attribute, console key; a skin row names only its exceptions", () => {
+    expect(spellArg("cli", "dry_run")).toBe("dry-run");
     expect(spellArg("mcp", "dry-run")).toBe("dry_run");
     expect(spellArg("tw5", "dryRun")).toBe("dry-run");
     expect(spellArg("console", "asking")).toBe("asking");
@@ -72,7 +72,7 @@ describe("the skins derive spellings by rule", () => {
 
   test("RED 6: the usage spine groups a one-of choice and brackets every optional arg", () => {
     const rows = parseHasRows(TAKES);
-    expect(usageOf("cli", "lares oracle cast", rows)).toBe("usage: lares oracle cast (recipe=<slug> | bag=<slug>) [asking=<words>] [fresh=true]");
+    expect(usageOf("cli", "lares oracle cast", rows)).toBe("usage: lares oracle cast (recipe=<slug> | bag=<slug>) [asking=<words>] [fresh=<true>]");
     expect(usageOf("mcp", "oracle_cast", rows)).toBe("oracle_cast((recipe=<slug> | bag=<slug>), [asking=<words>], [fresh])");
   });
 
@@ -80,14 +80,14 @@ describe("the skins derive spellings by rule", () => {
     const called = (spells: string): HasRow => ({ entity: "skin", name: "cli", params: { spells, grammar: "call" }, bare: [], role: "" });
     expect(spellArg("cli", "max_bytes", called("[[lares get]]"))).toBe("max-bytes");
     expect(renderCall("cli", "lares get", { address: "lar:///engine.record.reads", args: [["title", "x"], ["aperture", "measure"]] }, called("[[lares get]]"))).toBe("lares get title=x aperture=measure");
-    expect(renderCall("cli", "lares put", { address: "lar:///engine.record.puts", args: [["title", "Room 4"], ["create", true]] }, called("[[lares put]]"))).toBe("lares put 'title=Room 4' create=true");
+    expect(renderCall("cli", "lares put", { address: "lar:///engine.record.puts", args: [["title", "Room 4"], ["create", true]] }, called("[[lares put]]"))).toBe("lares put title='Room 4' create=true");
     expect(usageOf("cli", "lares oracle cast", parseHasRows(TAKES), called("[[lares oracle cast]]"))).toBe("usage: lares oracle cast (recipe=<slug> | bag=<slug>) [asking=<words>] [fresh=<true>]");
     // A seat/N row rides by name under the call shape: no position.
     const seated = parseHasRows("<<has entity=`arg` name=`title` params=`takes/title seat/1 as/<title> ~ the record`>>");
     expect(usageOf("cli", "lares get", seated, called("[[lares get]]"))).toBe("usage: lares get [title=<title>]");
     expect(renderCall("cli", "lares get", { address: "lar:///engine.record.reads", args: [["title", "x"]] }, called("[[lares get]]"), seatsOf(seated))).toBe("lares get title=x");
-    // CONTROL: a cli row with no grammar/call keeps its door's --flag table.
-    expect(usageOf("cli", "lares oracle cast", parseHasRows(TAKES))).toBe("usage: lares oracle cast (recipe=<slug> | bag=<slug>) [asking=<words>] [fresh=true]");
+    // CONTROL: a cli row with no grammar/call speaks the same params by name (seats aside), a switch as `<true>`.
+    expect(usageOf("cli", "lares oracle cast", parseHasRows(TAKES))).toBe("usage: lares oracle cast (recipe=<slug> | bag=<slug>) [asking=<words>] [fresh=<true>]");
   });
 
   test("RED 7: the unfold read speaks the read door's own words on each surface", () => {
@@ -114,7 +114,7 @@ describe("addresses and wildcards (DAM law 2)", () => {
     const textOf = (t: string): string | undefined => records[t];
     expect(affordView(textOf, "lar:///library.oracle.speaks", "spells", "cli", "")).toEqual(["lares oracle cast"]);
     expect(affordView(textOf, "lar:///library.oracle.speaks", "spells", "mcp", "")).toEqual([]);
-    expect(JSON.parse(affordView(textOf, "lar:///library.oracle.speaks", "rows", "cli", "#/takes")[2]!)).toMatchObject({ name: "asking", spell: "--asking", value: "words" });
+    expect(JSON.parse(affordView(textOf, "lar:///library.oracle.speaks", "rows", "cli", "#/takes")[2]!)).toMatchObject({ name: "asking", spell: "asking", value: "words" });
     expect(affordView(textOf, "lar:///library.oracle.speaks", "prose", "mcp", "#/head")).toEqual(["cast the coins", "A line sums three coins."]);
     expect(affordView(textOf, "lar:///library.oracle.speaks", "body", "mcp", "#/head")).toEqual(["A line sums three coins."]);
     expect(() => affordView(textOf, "lar:///library.oracle.speaks", "nope", "cli", "")).toThrow(/afford-view-unknown/);

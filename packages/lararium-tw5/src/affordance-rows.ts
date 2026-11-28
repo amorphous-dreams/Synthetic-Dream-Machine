@@ -217,9 +217,17 @@ export function exampleCall(row: HasRow, address: string): NeutralCall {
   return { address, args };
 }
 
-/** A cli value as a shell word: a `<placeholder>` and a plain word stand bare; anything else rides single-quoted. */
-const shellQuote = (v: string): string =>
+/**
+ * A cli value as a shell word: a `<placeholder>` and a plain word stand bare;
+ * anything else rides single-quoted.
+ */
+const shellWord = (v: string): string =>
   /^<[^\s<>]+>$/.test(v) || /^[A-Za-z0-9_./:,=@+-]+$/.test(v) ? v : `'${v.replace(/'/g, "'\\''")}'`;
+/** A `name=value` word quotes its value alone (`asking='which road first?'`), so the name stays readable as the key. */
+const shellQuote = (v: string): string => {
+  const m = /^([a-z][a-z0-9-]*)=([\s\S]*)$/.exec(v);
+  return m ? `${m[1]}=${shellWord(m[2]!)}` : shellWord(v);
+};
 
 /**
  * A positional arg's seat on the cli: the door reads its word by place, never by flag (`lares law pin <uri>`, `lares ddate

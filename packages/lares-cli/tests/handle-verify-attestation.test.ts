@@ -242,8 +242,8 @@ describe("★ `lares handle attest` takes a STRUCTURED edge, and prose mints not
     const { helpLines } = await import("../src/command-help.js");
     // The handle door flipped to its carriers (comms landings 10 + 23): the attest carrier teaches the structured spelling.
     const text = helpLines("handle attest").join("\n");
-    expect(text).toMatch(/--surface/);
-    expect(text).toMatch(/--subject/);
+    expect(text).toMatch(/surface=<kind>/);
+    expect(text).toMatch(/subject=<name>/);
     for (const s of HANDLE_CLAIM_SURFACES) expect(text, `${s} stands spoken`).toContain(s);
   });
 });

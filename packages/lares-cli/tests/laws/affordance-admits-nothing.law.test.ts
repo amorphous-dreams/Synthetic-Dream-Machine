@@ -4,8 +4,8 @@
  * Inputs: every source file that reads the affordance pack or the carrier reader. The pack may feed WORDS alone (help lines,
  * a brief, a tool description); no admission branch may read a pack or carrier field (`gate`, `signs`, a tag) to admit, refuse
  * or route. So the CLI's pack readers stand in five word functions (`helpLines`, `helpDoor`, `verbRole`, `packedBrief`, `packedAccount`)
- * and three shape functions (`carrierTakes`, `doorTakes`, `lineTakes`: a line's params bind against its carriers' `#/takes`, a
- * spelling table that grants nothing), and the in-VM face never names a `gate` row in code. The seat's twin rides `test_affordance_skin.py`. Control: a planted admission branch reads red.
+ * and five shape functions (`carrierTakes`, `carrierKinds`, `doorTakes`, `lineAddresses`, `lineTakes`: a line's params bind
+ * against its carriers' `#/takes` and the kind each row states, a spelling table that grants nothing), and the in-VM face never names a `gate` row in code. The seat's twin rides `test_affordance_skin.py`. Control: a planted admission branch reads red.
  *
  * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-laws
  */
@@ -31,7 +31,7 @@ const code = (text: string): string => text.split("\n").filter((l) => !/^\s*(\/\
 /** The CLI files that import the pack, and the functions that call into it. */
 const PACK_IMPORT = /from\s+"@lararium\/tw5\/affordance-pack"/;
 const PACK_CALL = /\b(packDoor|packRoute|packRender|packTool|packDoors|affordancePack)\(/g;
-const ALLOWED: Readonly<Record<string, readonly string[]>> = { "command-help.ts": ["helpLines", "helpDoor", "verbRole"], "bin/lares.ts": ["packedBrief", "packedAccount", "carrierTakes", "doorTakes", "lineTakes"] };
+const ALLOWED: Readonly<Record<string, readonly string[]>> = { "command-help.ts": ["helpLines", "helpDoor", "verbRole"], "bin/lares.ts": ["packedBrief", "packedAccount", "carrierTakes", "carrierKinds", "doorTakes", "lineAddresses", "lineTakes"] };
 
 /** Every pack call in one file that stands outside the functions allowed to feed words. */
 function strayCalls(rel: string, text: string): string[] {

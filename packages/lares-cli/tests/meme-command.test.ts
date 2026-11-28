@@ -593,11 +593,11 @@ describe("lares meme project to=md check=<dir> — the fold of submission-parity
     expect(mdBefore).toContain("- `law ");
   });
 
-  test("the bare-flag spelling names its target off the normal source position", async () => {
+  test("an empty check= names its target off the normal source position (check takes a value; check=true refuses at dispatch)", async () => {
     const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
     vi.spyOn(console, "log").mockImplementation(() => {});
     await clean(d);
-    const code = await cmdMeme(memeArgs(["project", d], { to: "md" }, { check: true }));
+    const code = await cmdMeme(memeArgs(["project", d], { to: "md", check: "" }));
     vi.restoreAllMocks();
     expect(code).toBe(0);
   });

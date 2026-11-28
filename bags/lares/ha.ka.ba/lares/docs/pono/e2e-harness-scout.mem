@@ -46,7 +46,7 @@ Seven files pass clean: `watcher-cut-c`, `ingest-quiescence`, `wikis-ingest-back
 
 # ① REAL DEFECTS — these matter more than the rest of this document
 
-## D1 — `lares json=true` TRUNCATES ITS OWN RESULT ON A PIPE (2 failures + every agent that pipes it)
+## D1 — a lares verb's `json=true` TRUNCATES ITS OWN RESULT ON A PIPE (2 failures + every agent that pipes it)
 
 `packages/lares-cli/src/bin/lares.ts:230` — `dispatch(...).then((code) => process.exit(code))`. Node's `process.stdout` is **asynchronous on a pipe** and synchronous on a file. `process.exit()` discards the undrained tail.
 
@@ -217,6 +217,6 @@ Finally, two housekeeping notes worth the operator's ear: add a named `test:e2e:
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;XZMuEN8ahk3DEMkFL-0o3byO-N9kb9hcLn4DN3jU8Wo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GAZe2MBupTYrxEO_urqmHz1WTNoSjzKGi3iUuJ4A_Ts`>>
 
 <<^ code=`&#x0004;` to=`?`>>

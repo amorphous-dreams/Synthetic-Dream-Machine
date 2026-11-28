@@ -791,7 +791,7 @@ function projectMdCheck(args: ParsedArgs): number {
   // `check=` takes a value (`takes/host-path`): `check=<dir>` names the target, and a bare `check=` reads the target from the
   // normal source position (`project <dir> to=md check=`).
   const checkOpt = args.options["check"];
-  const target = typeof checkOpt === "string" ? checkOpt : args.positional[1];
+  const target = typeof checkOpt === "string" && checkOpt !== "" ? checkOpt : args.positional[1];
   if (!target) throw new UsageError("lares meme project to=md check=<file.md|dir> — name a projected pair or a shelf of them");
   const to = typeof args.options["to"] === "string" ? args.options["to"].trim() : "md";
   if (to !== "md") throw new UsageError(`check= proves the md pair's currency alone; got to=${to}`);

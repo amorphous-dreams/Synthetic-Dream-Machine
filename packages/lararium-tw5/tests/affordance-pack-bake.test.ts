@@ -21,7 +21,7 @@ describe.skipIf(wikiSkip)(`the affordance bake over the fixture carrier${skipNot
     const carrier = pack.carriers[FIXTURE_ADDRESS];
     expect(carrier).toBeDefined();
     const whole = carrier!.renders["cli"]!["whole"]!.join("\n");
-    expect(carrier!.renders["cli"]!["whole"]![0]).toBe("usage: lares oracle cast (recipe=<slug> | bag=<slug>) [asking=<words>] [fresh=true] [seed=<words>] [coins=<values>] [caster=<name>]");
+    expect(carrier!.renders["cli"]!["whole"]![0]).toBe("usage: lares oracle cast (recipe=<slug> | bag=<slug>) [asking=<words>] [fresh=<true>] [seed=<words>] [coins=<values>] [caster=<name>]");
     expect(whole).toContain("lares oracle cast — Cast the I Ching by three coins; the cast lands as a tiddler.");
     expect(whole).toContain(FIXTURE_LIMIT);
     expect(whole).toContain("guess");
@@ -31,7 +31,7 @@ describe.skipIf(wikiSkip)(`the affordance bake over the fixture carrier${skipNot
     expect(whole).toContain("Gate (the carrier's testimony; the door checks):");
     expect(whole).toContain("  lar:///ha.ka.ba/lares/api/pono/oracle-loop");
     expect(whole).toContain("  lares oracle cast recipe=default asking='which road first?' fresh=true    # a person asks the same words anew");
-    expect(whole).toContain("    cure: tiddler.get.reads --title <cast>");
+    expect(whole).toContain("    cure: tiddler.get.reads title=<cast>");
     expect(whole).not.toContain("--at");   // `at` skins mcp, tw5 and console alone: the cli reads the time once
     expect(whole).toContain(`lares get title=${FIXTURE_TITLE} recipe=lares aperture=measure`);
     expect(carrier!.title).toBe(FIXTURE_TITLE);
@@ -62,7 +62,9 @@ describe.skipIf(wikiSkip)(`the affordance bake over the fixture carrier${skipNot
     expect(c.renders["mcp"]!["whole"]!.join("\n")).toContain("Refuses: query-unnamed · record-torn.");   // the skin names every refusal row, the foreign cure's too
     expect(c.params["asking"]).toBe("the question, named before the throw");
     expect(Object.keys(c.params).sort()).toEqual(["asking", "at", "bag", "caster", "coins", "recipe"]);   // the mcp skin omits fresh, seed
-    expect(c.takes["cli"]).toEqual(["--recipe", "--bag", "--asking", "--fresh", "--seed", "--coins", "--caster"]);
+    expect(c.takes["cli"]).toEqual(["recipe", "bag", "asking", "fresh", "seed", "coins", "caster"]);
+    // The kind rides the pack as each row states it: fresh a switch, every other arg its takes/ shape.
+    expect(c.kinds["cli"]).toEqual({ recipe: "slug", bag: "slug", asking: "words", fresh: "switch", seed: "words", coins: "values", caster: "name" });
     expect(c.params["coins"]).toBe("six line values, bottom first (a person's hand alone; a seat reads asks)");
     expect(c.renders["tw5"]!["#/shows"]!.join("\n")).toContain(`<$action-oracle-cast recipe="default" coins="7,8,9,6,7,7"/>`);
   });
@@ -162,7 +164,8 @@ describe.skipIf(wikiSkip)(`the core verbs bake from canon${skipNote}`, () => {
     for (const old of ["tiddler get", "tiddler put", "tiddler delete", "tiddler rename", "wiki filter"]) expect(pack.routes["cli"]![old], old).toBeUndefined();
     for (const [address, cli, chosen] of CORE_ROUTES) if (!chosen) expect(pack.doors[cli]!.addresses, cli).toEqual([address]);
     expect(pack.doors["tiddler"]).toBeUndefined();
-    expect(pack.doors["wiki"]).toBeUndefined();
+    // The wiki door gathers its own carriers, never a core verb's.
+    for (const [address] of CORE_ROUTES) expect(pack.doors["wiki"]?.addresses ?? [], address).not.toContain(address);
     // THE MACHINA'S VOICE (landing 21): her shrine's templates bake as the floor a sleeping vessel renders through.
     expect(pack.voice?.["answer"]).toBe("<$text text=<<has>>/>");
     expect(pack.voice?.["refusal"]).toContain("<$text text=<<reason>>/>: <$text text=<<detail>>/>");
@@ -173,7 +176,7 @@ describe.skipIf(wikiSkip)(`the core verbs bake from canon${skipNote}`, () => {
     expect(pack.doors["get"]!.help).toEqual(expect.arrayContaining([...pack.carriers["lar:///engine.record.reads"]!.renders["cli"]!["whole"]!, ...pack.carriers["lar:///engine.filter.pages"]!.renders["cli"]!["whole"]!]));
     for (const file of CORE_FILES) expect(readFileSync(path.join(REPO, "bags/lares/ha.ka.ba/lares/afford", `${file}.mem`), "utf8"), file).not.toContain("door/part");
     // The persona hearing rides the filter's examples: a literal search beside the line lens, each param a shell word.
-    expect(pack.carriers["lar:///engine.filter.pages"]!.calls["cli"]).toContain("lares get 'filter=[all[tiddlers]search:text:literal[Lares (Stranger)]]' 'match=Lares (Stranger)' recipe=default");
+    expect(pack.carriers["lar:///engine.filter.pages"]!.calls["cli"]).toContain("lares get filter='[all[tiddlers]search:text:literal[Lares (Stranger)]]' match='Lares (Stranger)' recipe=default");
     // The seat spells every param by the one rule (snake case), with no map beside it: the seat hands each back to its neutral name.
     expect(Object.keys(pack.carriers["lar:///engine.record.puts"]!.params).sort()).toEqual(
       ["append", "bag", "base", "create", "cut_slot", "fields", "recipe", "replace", "slot", "tag_add", "tag_remove", "text", "title", "unset", "with"]);
