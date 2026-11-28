@@ -67,7 +67,7 @@ export const BROWSER_LAMPS_LIT = Object.freeze([
   {
     pkg: "@lararium/web", dir: "packages/lararium-web", project: "lamp-hearth-e2e", from: "golden-whole-road-e2e",
     holds: "two tabs, one house; a mirror boot that asks the network nothing",
-    files: [lit("tests/e2e/glass-tabs.e2e.test.ts", "floor run 2026-11-27 (#00001, 103dd6daf + develop): lamp-hearth-e2e 3/3"), lit("tests/e2e/mirror-boot-makes-no-request.e2e.test.ts", "floor-lamps-rerun 2026-11-28 (#00001, c8ab21635, the fresh-base house): 2/2 alone; the widened run's red read as the slow boot the fresh base cured"): read red inside the widened lamp-hearth-e2e, after 2026-11-27 read it 3/3 alone; whether the cause is load from the walks that joined or the vessel boot stays open until a run alone reads it"), unproven("tests/e2e/golden-whole-road.e2e.test.ts"), unproven("tests/e2e/rest-before-reload.e2e.test.ts"), unproven("tests/e2e/glass-mirror.e2e.test.ts")],
+    files: [lit("tests/e2e/glass-tabs.e2e.test.ts", "floor run 2026-11-27 (#00001, 103dd6daf + develop): lamp-hearth-e2e 3/3"), lit("tests/e2e/mirror-boot-makes-no-request.e2e.test.ts", "floor-lamps-rerun 2026-11-28 (#00001, c8ab21635, the fresh-base house): 2/2 alone; the widened run's red read as the slow boot the fresh base cured"), unproven("tests/e2e/golden-whole-road.e2e.test.ts"), unproven("tests/e2e/rest-before-reload.e2e.test.ts"), unproven("tests/e2e/glass-mirror.e2e.test.ts")],
   },
   {
     pkg: "@lararium/web", dir: "packages/lararium-web", project: "lamp-web-browser", from: "web-browser",
