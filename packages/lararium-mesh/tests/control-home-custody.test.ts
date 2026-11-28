@@ -221,9 +221,9 @@ describe("a control document past its change bound fresh-bases at its stand", ()
     control.change((d) => { d.tiddlers[gone] = storedRecord({ tiddler: { title: gone }, meta: { authority: "test", deleted: true } }); });
     control.change((d) => { delete d.tiddlers[`${CONTROL_HOME_ID}/ledger/row-63`]; });
     control.change((d) => { (d as { blobs?: unknown }).blobs = { kernel: { id: "kernel", version: "1", sha256: "00", mimeType: "application/octet-stream", blob: new Uint8Array([1, 2, 3]) } }; });
-    const before = plainEntries(control.doc().tiddlers).sort(([a], [b]) => a.localeCompare(b));
-    const changesBefore = A.stats(control.doc()).numChanges;
-    const daemonBytes = A.save((() => { const d = first.repo.create<LarDoc>(emptyLarDoc()); nameControlHome(d, `automerge:${address.controlId}`); return d.doc(); })());
+    const before = plainEntries(control.doc()!.tiddlers).sort(([a], [b]) => a.localeCompare(b));
+    const changesBefore = A.stats(control.doc()!).numChanges;
+    const daemonBytes = A.save((() => { const d = first.repo.create<LarDoc>(emptyLarDoc()); nameControlHome(d, `automerge:${address.controlId}`); return d.doc()!; })());
     await first.repo.flush();
     await first.repo.shutdown();
     return { inner, address, before, changesBefore, daemonBytes };
@@ -244,10 +244,10 @@ describe("a control document past its change bound fresh-bases at its stand", ()
     expect(changesBefore).toBeGreaterThan(CONTROL_FRESH_BASE_AT_CHANGES);
     const { repo, control } = await standAgain(inner, address, daemonBytes);
     expect(control.documentId).toBe(address.controlId);
-    expect(A.stats(control.doc()).numChanges).toBeLessThanOrEqual(2);
-    expect(plainEntries(control.doc().tiddlers).sort(([a], [b]) => a.localeCompare(b))).toEqual(before);
+    expect(A.stats(control.doc()!).numChanges).toBeLessThanOrEqual(2);
+    expect(plainEntries(control.doc()!.tiddlers).sort(([a], [b]) => a.localeCompare(b))).toEqual(before);
     expect(before.some(([, r]) => r.meta?.deleted === true)).toBe(true);
-    expect(Array.from(control.doc().blobs?.["kernel"]?.blob ?? [])).toEqual([1, 2, 3]);
+    expect(Array.from(control.doc()!.blobs?.["kernel"]?.blob ?? [])).toEqual([1, 2, 3]);
     // The old history leaves the rest: one snapshot stands for the document, no incremental beside it.
     const chunks = chunksOf(inner, address.controlId!);
     expect(chunks.filter((k) => k[1] === "snapshot")).toHaveLength(1);
@@ -256,23 +256,23 @@ describe("a control document past its change bound fresh-bases at its stand", ()
 
     // A reboot reads the same facts off the fresh base, and fresh-bases nothing again.
     const rebooted = await standAgain(inner, address, daemonBytes);
-    expect(A.stats(rebooted.control.doc()).numChanges).toBeLessThanOrEqual(2);
-    expect(plainEntries(rebooted.control.doc().tiddlers).sort(([a], [b]) => a.localeCompare(b))).toEqual(before);
+    expect(A.stats(rebooted.control.doc()!).numChanges).toBeLessThanOrEqual(2);
+    expect(plainEntries(rebooted.control.doc()!.tiddlers).sort(([a], [b]) => a.localeCompare(b))).toEqual(before);
     // A write after the base lands on it and survives the next stand.
     const after = `${CONTROL_HOME_ID}/ledger/after`;
     rebooted.control.change((d) => { d.tiddlers[after] = storedLarRecord(after, { text: "after" }, "test"); });
     await rebooted.repo.flush();
     await rebooted.repo.shutdown();
     const third = await standAgain(inner, address, daemonBytes);
-    expect(plainEntries(third.control.doc().tiddlers).find(([t]) => t === after)?.[1].tiddler["text"]).toBe("after");
+    expect(plainEntries(third.control.doc()!.tiddlers).find(([t]) => t === after)?.[1].tiddler["text"]).toBe("after");
     await third.repo.shutdown();
   }, 60_000);
 
   test("CONTROL: a control document under the bound keeps its history whole", async () => {
     const { inner, address, before, changesBefore, daemonBytes } = await foundedWith(32);
     const { repo, control } = await standAgain(inner, address, daemonBytes);
-    expect(A.stats(control.doc()).numChanges).toBe(changesBefore);
-    expect(plainEntries(control.doc().tiddlers).sort(([a], [b]) => a.localeCompare(b))).toEqual(before);
+    expect(A.stats(control.doc()!).numChanges).toBe(changesBefore);
+    expect(plainEntries(control.doc()!.tiddlers).sort(([a], [b]) => a.localeCompare(b))).toEqual(before);
     await repo.shutdown();
   });
 });

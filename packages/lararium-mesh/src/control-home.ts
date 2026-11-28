@@ -421,15 +421,15 @@ async function freshBaseOnce(repo: Repo, documentId: string): Promise<void> {
  * THE SAME ID, SO NO READER FOLLOWS ANYWHERE. The custody row, the daemon document's pointer, the daemon island's control grant
  * and every slot and manifest that names the control document name it by its id; the base rests under that id, so each
  * keeps reading what it named. A fresh document under a new id would ask the custody row (sealed under the S key) and the
- * daemon document to re-point, and break whoever held the old url.
+ * daemon document to re-point, and break whoever holds the url it names now.
  *
  * THE FOUNDING SEED BEGINS IT. The base opens on the control document's own deterministic seed (`heldHomeSeed`), the change
  * its founding began with, then ONE change writes every record and tombstone (`storedRecord`, as a catalog bag's compaction
- * copies them) and every blob. A copy of the old history that merged back would meet the base on shared root maps, and only
+ * copies them) and every blob. A copy of the shed history that merged back would meet the base on shared root maps, and only
  * record against record. No such copy rests: the control document never leaves this vessel, and the base replaces its rest.
  *
  * BEFORE ANY READER HOLDS IT. The base runs through the Repo's own storage, ahead of the Repo's first find: a document this
- * Repo already holds keeps its history (its live handle would merge the old history back on its next save). The storage
+ * Repo already holds keeps its history (its live handle would merge the shed history back on its next save). The storage
  * saves the base as one snapshot and then removes every chunk it loaded, so a stop between the two leaves both readable.
  *
  * Answers what the base carried, or null where it rested nothing (no storage, a held handle, no stored document, a history
@@ -446,22 +446,26 @@ export async function freshBaseControlDoc(repo: Repo, documentId: string, atChan
   }
   const stored = await storage.loadDocData(documentId as DocumentId);
   if (stored === null) return null;
-  const old = A.loadIncremental(A.init<LarDoc>(), stored);
-  const changesBefore = A.stats(old).numChanges;
+  const loaded = A.loadIncremental(A.init<LarDoc>(), stored);
+  const changesBefore = A.stats(loaded).numChanges;
   if (changesBefore < atChanges) return null;
-  const entries = plainEntries(old.tiddlers);
+  const entries = plainEntries(loaded.tiddlers);
   let tombstones = 0;
   const fresh = A.change(A.load<LarDoc>(heldHomeSeed(documentId)), { message: "control-fresh-base" }, (d) => {
     for (const [title, record] of entries) {
       d.tiddlers[title] = storedRecord(record);
       if (record.meta?.deleted) tombstones++;
     }
-    // Each blob entry copies field by field: an object read off the old document never assigns into another whole.
-    const blobs = old.blobs;
+    // Each blob entry copies field by field, its bytes into fresh bytes of this realm: an object read off the loaded
+    // document never assigns into another whole, and bytes a realm check misses would rest as a map.
+    const blobs = loaded.blobs;
     if (blobs !== undefined) {
-      const into = ((d as { blobs?: Record<string, unknown> }).blobs ??= {});
+      // The map reads back off the document after its assignment: an assignment answers the plain object it took, not the map.
+      const docBlobs = d as { blobs?: Record<string, unknown> };
+      if (docBlobs.blobs === undefined) docBlobs.blobs = {};
+      const into = docBlobs.blobs;
       for (const [key, entry] of Object.entries(blobs)) {
-        into[key] = Object.fromEntries(Object.entries(entry).map(([field, value]) => [field, value instanceof Uint8Array ? Uint8Array.from(value) : value]));
+        into[key] = Object.fromEntries(Object.entries(entry).map(([field, value]) => [field, ArrayBuffer.isView(value) ? Uint8Array.from(value as Uint8Array) : value]));
       }
     }
   });
