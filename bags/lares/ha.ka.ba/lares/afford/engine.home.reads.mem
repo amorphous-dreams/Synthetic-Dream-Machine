@@ -1,0 +1,112 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.home.reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read both diffs of the operator's homes's tunnel, writing nothing"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.home.reads", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.home.reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.home.reads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.home.reads ~ the the operator's homes tunnel read: every item's state, nothing written
+
+`lares home read` reads every operator home the device carries (seats, hooks, the seed rule) against its declaration and the ledger of what the house last wrote, and writes nothing. Each row names its state (aligned, drift, foreign, unreachable, absent), its id, its path and whether a hand touched it since the house wrote it; the exit class carries the worst state. `--brief` prints the one line the wake hook reads, with or without a terminal. The home door keeps no checkout and reads no index: `--root` and `--staged` refuse with exit 2 and name the repo door.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ read · brief
+
+```memetic-wikitext
+<<has entity=`example` name=`read` params=`~ read the operator's homes's tunnel`>>
+<<has entity=`example` name=`brief` params=`brief/true ~ the one line a hook reads`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ familiar · brief · root · staged
+
+```memetic-wikitext
+<<has entity=`arg` name=`familiar` params=`takes/pet-name ~ the familiar whose hooks a home tend seats; absent, the one already seated stands`>>
+<<has entity=`arg` name=`brief` params=`~ print the one line a hook reads, terminal or none`>>
+<<has entity=`arg` name=`root` params=`takes/dir ~ refused here: only lares repo keeps a checkout`>>
+<<has entity=`arg` name=`staged` params=`~ refused here: only lares repo read reads the index`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ reads this host's files and the ledger; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · root-repo-only · staged-repo-read-only
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ name one of read, tend, verify, undo`>>
+<<has entity=`refusal` name=`root-repo-only` params=`~ --root names a checkout, and only lares repo keeps one`>>
+<<has entity=`refusal` name=`staged-repo-read-only` params=`~ --staged reads the index, and only lares repo read reads it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ aligned · drift · foreign · unreachable
+
+```memetic-wikitext
+<<has entity=`band` name=`aligned` params=`exit/0 fields/[[radius root rows exit]] ~ every item holds as declared`>>
+<<has entity=`band` name=`drift` params=`exit/1 fields/[[radius root rows exit]] ~ an item drifts from its declaration; tend converges it`>>
+<<has entity=`band` name=`foreign` params=`exit/3 fields/[[radius root rows exit]] ~ a hand changed a target the house last wrote`>>
+<<has entity=`band` name=`unreachable` params=`exit/4 fields/[[radius root rows exit]] ~ a target reads unreachable`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares home read
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares home read]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · reality-tunnel
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/reality-tunnel`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nNpJQkVCh546QAVePlY3PupBIZepUO60vhtMxtBa35s`>>
+
+<<^ code=`&#x0004;` to=`?`>>
