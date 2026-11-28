@@ -225,6 +225,12 @@ export interface UdsChannelOptions {
   readonly placeVerb: (o: { origin: "channel"; verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; face?: string; ordinal?: number; asker?: Hand; chore?: ChoreReceiptMark; effectKey?: string }) => void;
   /** The ask under this id concluded here (its outcome read, or its wait ended): main's booking for it retires. */
   readonly retireAsk?: (requestId: string) => void;
+  /**
+   * THE CALLER LEFT A DISPATCHED ASK: its socket closed while the ask ran, or it sent a cancel (`session:cancel`, `{op:"cancel"}`).
+   * The island withdraws the ask's invocation and the dispatcher aborts the handler's signal, so a held handler (a watch) stops
+   * and drops what it held; a handler that heeds no signal runs on and its outcome lands, as the ledger's commit promised.
+   */
+  readonly withdrawAsk?: (requestId: string) => void;
   /** The vessel's claim on its store — the rendezvous socket (`/tmp/lares-<uid>/<digest>.sock`) both sides derive. */
   readonly claim: StoreClaim & { readonly holder: "vessel" };
   /**
@@ -1600,7 +1606,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     if (frame["op"] === "session:receipt" || frame["op"] === "session:cancel") {
       if (!requestId) return sessionRefuse(sock, "malformed-message", requestId);
       const face = checked.session.face.proofSubject;
-      if (frame["op"] === "session:cancel") await ledger.cancel(faceScopedId(face, requestId), face);
+      if (frame["op"] === "session:cancel") {
+        await ledger.cancel(faceScopedId(face, requestId), face);
+        opts.withdrawAsk?.(faceScopedId(face, requestId));
+      }
       sessionReply(sock, { kind: "session:receipt", requestId, receipt: await sessionReceipt(requestId, face) });
       return;
     }
@@ -1898,6 +1907,15 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     const releaseWhenSettled = (run: Promise<unknown>, requestId: string): void => {
       run.then(() => settled(), (err: unknown) => { if (err instanceof VesselWaitExpired) void outcomeLanded(requestId).then(() => settled()); else settled(); });
     };
+    /** A DROPPED LINE WITHDRAWS ITS ASK: a socket that closes while the dispatched ask still runs tells the island, once. */
+    const withdrawOnHangUp = (run: Promise<unknown>, requestId: string): void => {
+      const withdraw = opts.withdrawAsk;
+      if (withdraw === undefined) return;
+      const gone = (): void => withdraw(requestId);
+      sock.once("close", gone);
+      const off = (): void => { sock.off("close", gone); };
+      run.then(off, off);
+    };
     /**
      * THE CALL ADMITS ON THE FACE'S ACTOR before its arbitration, with no await between the actor's yes and the ledger's turn: a
      * refusal answers and nothing commits or runs. Admitted work holds the face's close (its drain waits) until it settles, so no
@@ -2024,6 +2042,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // caller withdrew. What it asks back: the verdict this vessel holds for the id after the cancel took its
         // turn. A cancel that met no fact reads `abandoned`; one that met a commit reads what the vessel holds for
         // that act, which runs on.
+        opts.withdrawAsk?.(parsed.requestId);
         tended(ledger.cancel(parsed.requestId).then(() => answerReceipt(parsed.requestId)).then(
           (answer) => { respond(answer as unknown as Record<string, unknown>); },
           (err) => fail(err instanceof Error ? err.message : String(err)),
@@ -2202,6 +2221,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           dispatched = inv.verb;
           const admittedAt = performance.now();
           const running = runVerb(inv, requestId);
+          withdrawOnHangUp(running, requestId);
           const flight = { digest: inputDigest, run: running };
           readsInFlight.set(requestId, flight);
           void running.then(() => {}, () => {}).then(() => { if (readsInFlight.get(requestId) === flight) readsInFlight.delete(requestId); });
@@ -2282,6 +2302,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         const admittedAt = performance.now();
         // A LEDGERED DISPATCH answers once its verdict row stands beside its answer (`settledOutcomeFor`).
         const running = runVerb(inv, requestId, true);
+        withdrawOnHangUp(running, requestId);
         releaseWhenSettled(running, requestId);
         running.then(
           (outcome) => { noteSlowCall(inv.verb, requestId, readAt, admittedAt); respond(outcome); },

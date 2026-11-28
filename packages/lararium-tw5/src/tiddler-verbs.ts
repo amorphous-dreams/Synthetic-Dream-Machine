@@ -133,6 +133,7 @@ import { wornOrigin } from "./verb-dispatcher.js";
 import { CallRefusal, callReaderOf, cureCall, floorReaderOf, type CallFloor, type CallSeat, type MacroCallParse } from "./modules/call.js";
 import type { AffordancePack } from "./affordance-pack.js";
 import { dryDepthOf, filterDepthArgs, muWordsOf, readDepthArgs } from "./modules/mu.js";
+import { newWatchId, watchBookOf, watchTitleOf, WATCH_ID, type WatchWiki } from "./modules/watch.js";
 import { wikiWearsNext } from "./island-recipe.js";
 import { isTw5DocsBag, refuseTw5DocsWrite } from "./tw5-docs-library.js";
 import type { CallSource, VerbContext, VerbReactor } from "./verb-dispatcher.js";
@@ -433,13 +434,16 @@ function readerView(wiki: EngineWiki, visible: Visible, house?: { text: string; 
  * each bag any record names answers the face's reach once, so the predicate itself reads no cap and stays synchronous
  * inside the engine.
  */
-async function viewFor(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"]): Promise<{ view: EngineWiki; visible: Visible; mayRead: (bag: string | null) => Promise<boolean>; pragmas: string }> {
+async function viewFor(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"], lasting = false): Promise<{ view: EngineWiki; visible: Visible; mayRead: (bag: string | null) => Promise<boolean>; pragmas: string }> {
   const mayRead = await reachOf(opts, anchor, cap);
   const wiki = anchor.engine.wiki;
   const bags = new Set<string>();
   wiki.each((tiddler) => { const bag = tiddler.fields[ORIGIN_BAG]; if (typeof bag === "string" && bag !== "") bags.add(bag); });
   const hidden = new Set<string>();
   for (const bag of bags) if (!(await mayRead(bag))) hidden.add(bag);
+  // A LASTING VIEW (a watch, which outlives this call's turn) reads a bag it never weighed as hidden: a record that lands later
+  // in a bag the reach never answered stays out until the caller's next call weighs it.
+  const weighed = (bag: string): boolean => !lasting || bag === "" || bag === anchor.bag || bags.has(bag);
   // AN ALERT ANSWERS ONLY A READER OF WHAT IT NAMES: each open alert that names a record reads absent where that record stands
   // in a bag this reader may not read, or stands nowhere this reader can weigh (a title the wiki does not hold names no bag
   // the door can check, so it shuts). The alert holds no bag of its own, so `hidden` alone never reaches it.
@@ -452,7 +456,10 @@ async function viewFor(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContex
       if (!record || (typeof bag === "string" && bag !== "" && hidden.has(bag))) { shutAlerts.add(title); break; }
     }
   }
-  const visible: Visible = (title, tiddler) => !withheldFromReads(title) && !shutAlerts.has(title) && !hidden.has(String(tiddler?.fields[ORIGIN_BAG] ?? ""));
+  const visible: Visible = (title, tiddler) => {
+    const bag = String(tiddler?.fields[ORIGIN_BAG] ?? "");
+    return !withheldFromReads(title) && !shutAlerts.has(title) && !hidden.has(bag) && weighed(bag);
+  };
   const text = await canonFiltersText(opts.composite, wiki, mayRead);
   const document = (engineOf(opts) as unknown as { fakeDocument?: { createElement(tag: string): unknown } }).fakeDocument;
   return { view: readerView(wiki, visible, document ? { text, document } : null), visible, mayRead, pragmas: functionPragmasOf(text) };
@@ -648,6 +655,116 @@ export const makeWikiFilterReactor = everyWiki("wiki-filter", false, (opts: Tidd
       total: page.total, next: page.next, asOf: page.asOf,
       ...(withheld > 0 ? { withheld } : {}),
     };
+  };
+});
+
+// ── filter-watch ──────────────────────────────────────────────────────────────────────────────────────
+
+/** The hold a watch call keeps by default, and the bounds a caller's `hold` meets (milliseconds). Pacing alone: the answer at
+ *  the end of a hold reads `unchanged`, and the caller's next call carries its cursor; no clock decides what moved. */
+export const WATCH_HOLD_MS = 25_000;
+export const WATCH_HOLD_MIN_MS = 1_000;
+export const WATCH_HOLD_MAX_MS = 110_000;
+
+/**
+ * THE WATCH (lar:///engine.filter.watches, comms-ux-enacts landing 16): a filter subscription that stands as a tiddler
+ * (`$:/state/lares/watch/<id>`) the wiki's own `change` event moves (`modules/watch.ts`, the watch book). One call binds the watch
+ * over the caller's reader view and HOLDS: it answers `changed` when its watch tiddler's digest moves, at once where the caller's
+ * `asOf` already reads stale, `ended` where `until` answers any title (the watch then drops), `removed` where the watch left
+ * meanwhile, and `unchanged` when its hold runs out. The answer's `asOf` is the cursor the next call hands back, so a loop of
+ * held calls misses no change between them: the watch tiddler keeps moving while no call holds it.
+ *
+ * A DROPPED LINE DROPS THE WATCH: the call's own signal (the dispatcher aborts it when the vessel withdraws the ask, on a socket
+ * that closed or a `session:cancel`) ends the hold, drops the watch and its record, and refuses `watch-withdrawn`. `mu=unask`
+ * (`unask: true` here) drops the watch `id` names. The caller's face rides the record; a watch another face bound refuses
+ * `watch-other-face`.
+ */
+export const makeFilterWatchReactor = everyWiki("filter-watch", false, (opts: TiddlerVerbOptions): VerbReactor => {
+  return async (args, ctx) => {
+    const anchor = anchorOf(opts, args, "filter-watch");
+    const wiki = anchor.engine.wiki;
+    const book = watchBookOf(wiki as unknown as WatchWiki);
+    const named = optionalStringArg(args, "id");
+    if (named !== null && !WATCH_ID.test(named)) throw new VerbRefusal("watch-id-malformed", `watch-id-malformed: a watch id reads lower-case words and dashes, 64 at most (got ${JSON.stringify(named.slice(0, 80))}); hand back the \`id\` a watch answered, or drop \`id\` to start one.`);
+    const face = ctx.worn !== undefined ? `h${ctx.worn.ordinal}` : (ctx.presenter ?? "");
+    const held = named === null ? undefined : wiki.getTiddler(watchTitleOf(named));
+    const heldFace = held === undefined ? null : String(held.fields["face"] ?? "");
+    if (heldFace !== null && heldFace !== face) {
+      throw new VerbRefusal("watch-other-face", `watch-other-face: watch ${named} rides face ${heldFace}, and this call wears ${face || "no face"}; start your own with \`lares watch filter=<filter>\`, nothing moved.`);
+    }
+    if (flagOn(args["unask"])) {
+      if (named === null) throw new VerbRefusal("watch-unnamed", "watch-unnamed: unask drops the watch its id names; `lares watch id=<id> mu=unask` (list live watches: `lares get filter='[prefix[$:/state/lares/watch/]]'`).");
+      const gone = book.drop(named);
+      return { has: hasLine("lar:///engine.filter.watches", [param("band", gone ? "removed" : "absent"), param("id", named)]), recipe: anchor.recipe, id: named, title: watchTitleOf(named), band: gone ? "removed" : "absent" };
+    }
+    const filter = stringArg(args, "filter");
+    if (!filter.trim()) throw new VerbRefusal("param-needed", "param-needed: a watch names its `filter` (a TiddlyWiki filter, e.g. `lares watch filter='[tag[memory]]'`).");
+    const until = optionalStringArg(args, "until") ?? undefined;
+    const lasting = await viewFor(opts, anchor, ctx.cap, true);
+    checkFilter(lasting.view, filter);
+    if (until !== undefined) checkFilter(lasting.view, until);
+    // A VIEW THAT OUTLIVES ITS TURN READS FRESH CACHES ON EVERY RUN: the engine clears its own caches on each change, never a view's.
+    const fresh = lasting.view as unknown as Record<string, unknown>;
+    const view = {
+      filterTiddlers: (f: string): string[] => { fresh["caches"] = Object.create(null); fresh["globalCache"] = Object.create(null); return lasting.view.filterTiddlers(f); },
+      getTiddler: (t: string) => lasting.view.getTiddler(t),
+    };
+    const id = named ?? newWatchId();
+    const bound = book.bind({ id, filter, recipe: anchor.recipe, face, until, view, visible: (t, tiddler) => lasting.visible(t, tiddler as EngineTiddler | undefined) });
+    // The entry the book holds now: a later call under the same id re-binds it, and this hold answers what that one reads.
+    const current = () => book.entry(id) ?? bound;
+    const answer = (band: "changed" | "unchanged" | "ended" | "removed"): Record<string, unknown> => {
+      const entry = current();
+      const page = pageFilterAnswer(entry.titles, { limit: WIKI_FILTER_ROWS });
+      return {
+        has: hasLine("lar:///engine.filter.watches", [param("band", band), param("id", id), param("asOf", entry.digest), param("total", entry.titles.length)]),
+        recipe: anchor.recipe, id, title: entry.title, filter, band, asOf: entry.digest,
+        ...(band === "removed" ? {} : { titles: page.titles, total: page.total }),
+        ...(until !== undefined ? { until } : {}),
+      };
+    };
+    const ends = (): boolean => {
+      if (book.untilAnswers(current()).length === 0) return false;
+      book.drop(id);
+      return true;
+    };
+    if (ends()) return answer("ended");
+    const asOf = optionalStringArg(args, "asOf");
+    if (asOf !== null && asOf !== bound.digest) return answer("changed");
+    const baseline = bound.digest;
+    const holdMs = countArg(args["hold"], WATCH_HOLD_MS, WATCH_HOLD_MIN_MS, WATCH_HOLD_MAX_MS);
+    book.hold(id, 1);
+    try {
+      return await new Promise<Record<string, unknown>>((resolve, reject) => {
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const watchWiki = wiki as unknown as WatchWiki;
+        const finish = (): void => {
+          if (timer !== undefined) clearTimeout(timer);
+          watchWiki.removeEventListener?.("change", heard);
+          ctx.signal?.removeEventListener("abort", withdrawn);
+        };
+        // THE HELD CALL HEARS ITS OWN WATCH TIDDLER through the wiki's change event, as a widget's refresh does.
+        function heard(changed: Record<string, { deleted?: boolean }>): void {
+          if (!Object.hasOwn(changed, bound.title)) return;
+          const now = book.entry(id);
+          if (changed[bound.title]?.deleted === true || now === undefined) { finish(); resolve(answer("removed")); return; }
+          if (now.digest === baseline) return;
+          finish();
+          resolve(ends() ? answer("ended") : answer("changed"));
+        }
+        function withdrawn(): void {
+          finish();
+          book.drop(id);
+          reject(new VerbRefusal("watch-withdrawn", `watch-withdrawn: the caller left (its line dropped, or it cancelled the ask), so watch ${id} dropped with its record; start again with \`lares watch filter=<filter>\`.`));
+        }
+        if (ctx.signal?.aborted === true) { withdrawn(); return; }
+        watchWiki.addEventListener("change", heard);
+        ctx.signal?.addEventListener("abort", withdrawn, { once: true });
+        timer = setTimeout(() => { finish(); resolve(answer("unchanged")); }, holdMs);
+      });
+    } finally {
+      book.hold(id, -1);
+    }
   };
 });
 
@@ -2472,6 +2589,8 @@ export const TIDDLER_CALL_SEATS: Readonly<Record<string, CallSeat>> = Object.fre
   },
   // `all` (a terminal following every cursor) shapes the terminal's walk and leaves the reactor's args.
   "lar:///engine.filter.pages": { verb: "wiki-filter", fold: ({ mu, all: _all, ...args }) => (typeof mu === "string" ? { ...args, ...filterDepthArgs(mu) } : args) },
+  // THE WATCH (landing 16): `as-of` reads as the reactor's `asOf`; the unask carry (`0`) drops the watch `id` names.
+  "lar:///engine.filter.watches": { verb: "filter-watch", fold: ({ mu, ...args }) => (mu === "0" ? { ...args, unask: true } : args) },
   "lar:///engine.record.puts": {
     verb: "tiddler-put",
     dry: true,

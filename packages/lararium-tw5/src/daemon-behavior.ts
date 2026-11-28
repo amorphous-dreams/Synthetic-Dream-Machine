@@ -45,7 +45,8 @@ import { type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
 import { type CapabilityVerifier } from "@lararium/mesh/capability";
 import { type CaptureEngine, type CapturePost } from "@lararium/mesh/capture/capture-engine";
 import type { Hand } from "@lararium/mesh/session-contract";
-import { placeVerb } from "./verb-vm.js";
+import { placeVerb, removeVerb } from "./verb-vm.js";
+import type { TW5Engine } from "./tw5-vm.js";
 import { composeIsland } from "./island-caps.js";
 import { hasEngineWatch, hasHandBoundary, hasProjection } from "./has-island-watches.js";
 import { hasRenderedTiddlers } from "./rendered-tiddler.js";
@@ -272,6 +273,14 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
         return true;
       }
 
+      // A CALLER THAT LEFT WITHDRAWS ITS ASK: the volatile invocation leaves where it still stands, and the dispatcher aborts
+      // the handler's signal (its own delete path), so a held handler stops; a finished ask stands nowhere and nothing moves.
+      if (type === "daemon:withdraw-verb") {
+        const requestId = (raw as { requestId?: unknown }).requestId;
+        if (tw5 && typeof requestId === "string") withdrawPlacedAsk(tw5, requestId);
+        return true;
+      }
+
       if (type === "daemon:wear-actor-result") {
         _wear?.answer(raw as DaemonMsg_WearActorResult);
         return true;
@@ -463,3 +472,15 @@ export function makeLocalAskBook(bound = 4096): {
 }
 
 export function placedAskIsLocal(msg: Pick<DaemonMsg_PlaceVerb, "origin">): boolean { return msg.origin === "channel" || msg.origin === "surface"; }
+
+/**
+ * WITHDRAW A PLACED ASK (`daemon:withdraw-verb`): the ask's volatile invocation leaves the wiki where it still stands, and the
+ * dispatcher's own delete path aborts the handler's signal. Answers whether an invocation stood; a finished ask stands nowhere.
+ */
+export function withdrawPlacedAsk(tw5: TW5Engine, requestId: string): boolean {
+  if (requestId === "") return false;
+  const title = `${VERB_URI_PREFIX}${requestId}`;
+  if (tw5.$tw.wiki.getTiddler(title) === undefined) return false;
+  removeVerb(tw5, title);
+  return true;
+}

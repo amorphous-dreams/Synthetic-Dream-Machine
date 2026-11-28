@@ -1,0 +1,152 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.filter.watches`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "watch a TiddlyWiki filter over the reader's view; the watch stands as a tiddler the wiki's own change event moves"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.filter.watches", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.filter.watches"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.filter.watches"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.filter.watches ~ a filter subscription that stands as a tiddler
+
+A watch stands as a TIDDLER, never a side table: `$:/state/lares/watch/<id>` holds its filter, its caller's view (face, recipe) and its last digest. One startup module in the wiki hears the wiki's own `change` event, the same `changedTiddlers` map every widget's refresh reads, re-runs only the watches a changed title could touch (a record the caller's view can read, moved past the hash the watch last read), and writes the new digest into the watch tiddler. The digest covers the answering titles and each record's hash over the caller's view, so an edit moves it, and the shore's echo, which moves only the residency stamp, moves nothing. The address stays a candidate until the operator reads the landing's list.
+
+One call binds the watch and HOLDS: it answers `band/changed` when its watch tiddler's digest moves, at once where the caller's `as-of` already reads stale, `band/ended` where `until` answers any title (the watch then drops), `band/removed` where the watch left meanwhile, and `band/unchanged` before the caller's own wait runs out (`hold`, in milliseconds, 25000 by default). Hand the answer's `id` and `as-of` back to continue: the watch tiddler keeps moving while no call holds it, so a loop of calls misses no change. The terminal's `lares watch` loops those calls and prints one has line per change.
+
+A watch reads, lists and dies like any record: `lares get filter='[prefix[$:/state/lares/watch/]]'` lists every live watch; `lares watch id=<id> mu=unask` drops one; a dropped line or a cancel drops the watch its held call stood on (`watch-withdrawn`). A stream wakes on `lares watch filter='[lares.inbox[]]'` once that function stands: a msg lands, the watch wakes, once per change.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ hold-a-line · until-it-lands · continue-a-watch · list-the-watches · drop-a-watch
+
+```memetic-wikitext
+<<has entity=`example` name=`hold-a-line` params=`filter/[tag[memory]] recipe/default ~ one has line per change until you stop it`>>
+<<has entity=`example` name=`until-it-lands` params=`filter/[tag[memory]] until/[[[[Room 4]]is[tiddler]]] ~ the watch ends once Room 4 stands`>>
+<<has entity=`example` name=`continue-a-watch` params=`id/<id> as-of/<as-of> filter/[tag[memory]] ~ a stale cursor answers at once; a fresh one holds`>>
+<<has entity=`example` name=`list-the-watches` params=`filter/[prefix[$:/state/lares/watch/]] ~ every live watch, read through the filter door`>>
+<<has entity=`example` name=`drop-a-watch` params=`id/<id> mu/unask ~ the watch and its record leave`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ filter · until · id · as-of · hold · recipe · face · mu
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
+
+```memetic-wikitext
+<<has entity=`cell` name=`*` params=`mu/many implied/true ~ a watch reads a filter, many already`>>
+<<has entity=`cell` name=`0` params=`mu/unask ~ the caller withdraws its own watch: the one id names leaves with its record`>>
+<<has entity=`arg` name=`filter` params=`takes/filter seat/1 as/<filter> ~ a TiddlyWiki filter, run by the wiki's own engine over the caller's view; every bind names it`>>
+<<has entity=`arg` name=`until` params=`takes/filter ~ the watch ends once this filter answers any title`>>
+<<has entity=`arg` name=`id` params=`takes/watch-id ~ the watch a prior answer named; absent, the call starts one`>>
+<<has entity=`arg` name=`as-of` params=`takes/digest ~ the digest a prior answer named; a stale one answers at once`>>
+<<has entity=`arg` name=`hold` params=`takes/count ~ milliseconds one call holds before it answers unchanged, 1000 to 110000; 25000 by default`>>
+<<has entity=`arg` name=`recipe` params=`takes/slug needs/required default/default ~ the wiki whose engine runs the watch; default names the worn face's daemon wiki`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ read
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`read` params=`who/seat-or-hand ~ the filter computes over the reader's view, so the gate stands inside the engine; the watch's one record never persists`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ param-needed · filter-malformed · watch-id-malformed · watch-unnamed · watch-other-face · watch-withdrawn · wiki-unreached
+
+```memetic-wikitext
+<<has entity=`refusal` name=`param-needed` params=`cure/[[engine.filter.watches filter/<filter>]] ~ a bind names its filter`>>
+<<has entity=`refusal` name=`filter-malformed` params=`cure/[[engine.filter.watches filter/<filter>]] ~ the engine cannot parse the filter or the until; its words ride the refusal`>>
+<<has entity=`refusal` name=`watch-id-malformed` params=`cure/[[engine.filter.watches filter/<filter>]] ~ an id reads lower-case words and dashes, 64 at most; drop it to start a watch`>>
+<<has entity=`refusal` name=`watch-unnamed` params=`cure/[[engine.filter.watches id/<id> mu/unask]] ~ unask drops the watch its id names`>>
+<<has entity=`refusal` name=`watch-other-face` params=`cure/[[engine.filter.watches filter/<filter>]] ~ the id names a watch another face bound; start your own`>>
+<<has entity=`refusal` name=`watch-withdrawn` params=`cure/[[engine.filter.watches filter/<filter>]] ~ the caller left mid-hold, so the watch dropped with its record`>>
+<<has entity=`refusal` name=`wiki-unreached` params=`cure/[[engine.filter.watches filter/<filter> recipe/default]] ~ no wiki this face hosts or holds a share of answers the slug`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ changed · unchanged · ended · removed · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`changed` params=`exit/0 fields/[[recipe id title filter band asOf titles total]] ~ the digest moved; asOf names the cursor the next call hands back`>>
+<<has entity=`band` name=`unchanged` params=`exit/0 fields/[[recipe id title filter band asOf titles total]] ~ the hold ran out with the digest unmoved`>>
+<<has entity=`band` name=`ended` params=`exit/0 fields/[[recipe id title filter band asOf titles total until]] ~ until answered; the watch dropped`>>
+<<has entity=`band` name=`removed` params=`exit/0 fields/[[recipe id title band]] ~ the watch left: an unask, or the book's bound let it go`>>
+<<has entity=`band` name=`refused` params=`exit/4 ~ the engine or the door refused by name; nothing moved past it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli · mcp · console
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares watch
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares watch]] grammar/call ~ the terminal holds the line: held calls in a loop on one session, one has line per change`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! watch
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`spells/watch omits/face ~ the seat answers at the first change, or unchanged when the hold runs out, with the cursor to continue`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins/console`>>
+
+!!! watch
+
+```memetic-wikitext
+<<has entity=`skin` name=`console` params=`spells/watch ~ the one call; one held call, its answer the band and the cursor`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · filter-pages · filters
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/afford/engine.filter.pages`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/filters`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ctsnSQW5NSVr97ZIy9t4Z75M-MCGWPyrtQumhlV9SAI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -105,9 +105,10 @@ export function landingFailedAlertTitle(title: string): string {
   return `$:/temp/lares/alert/landing-failed/${title}`;
 }
 
-/** True for a title that never persists: the volatile VM plane, alert rail, and TW5 core prompts. */
+/** True for a title that never persists: the volatile VM plane, the watch records (`stay-home`'s `WATCH_RECORD_PREFIX`: a watch
+ *  lives as long as the engine that answers it), alert rail, and TW5 core prompts. */
 export function neverPersists(title: string): boolean {
-  return isVolatileVmUri(title) || title.startsWith("$:/temp/lares/alert/") || title.startsWith("$:/temp/confirm/") || title.startsWith("$:/temp/alerts/") || title.startsWith(KAHUA_SHADOW_PREFIX);
+  return isVolatileVmUri(title) || title.startsWith("$:/state/lares/watch/") || title.startsWith("$:/temp/lares/alert/") || title.startsWith("$:/temp/confirm/") || title.startsWith("$:/temp/alerts/") || title.startsWith(KAHUA_SHADOW_PREFIX);
 }
 
 /**

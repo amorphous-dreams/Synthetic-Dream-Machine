@@ -222,8 +222,10 @@ export type { MemeVerbOptions } from "./meme-verbs.js";
 // The tiddler door: every TiddlyWiki act over one record or one wiki's engine, on the anchor (wiki-surface-scout, lane 1).
 export {
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor, makeWikiStatusReactor, makeWikiActionReactor, SHORE_COLLAPSE_CONFIG_PREFIX,
+  makeFilterWatchReactor, WATCH_HOLD_MS, WATCH_HOLD_MAX_MS,
   TIDDLER_CALL_SEATS, tiddlerCallSource,
 } from "./tiddler-verbs.js";
+export { WatchBook, watchBookOf, WATCH_PREFIX } from "./modules/watch.js";
 export type { NamedWikiEngine, TiddlerVerbOptions } from "./tiddler-verbs.js";
 // The oracle cast: one I Ching cast written as one tiddler through the tiddler door's own put.
 export { makeOracleCastReactor, ORACLE_CALL_SEATS } from "./oracle-cast-verb.js";

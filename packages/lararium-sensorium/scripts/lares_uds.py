@@ -176,8 +176,11 @@ def _seat_mark() -> dict:
 
 
 def call(verb: str, args: "dict | None" = None, *, timeout: float = 30.0,
-         requested_by: "str | None" = None) -> dict:
+         requested_by: "str | None" = None, vessel_wait_ms: "int | None" = None) -> dict:
     """Run one verb through the @daemon and return its `output`.
+
+    `vessel_wait_ms` rides the line as the vessel's own wait for the outcome (`timeoutMs`), for a verb that holds on purpose
+    (a watch); the socket's `timeout` stays this side's own wait, and closing the socket withdraws a held ask.
 
     Raises LaresDaemonUnreachable when no daemon holds the socket, and LaresVerbError when the daemon
     ran the verb and it failed. NEITHER falls back to opening a store: a fallback would put a second
@@ -192,6 +195,7 @@ def call(verb: str, args: "dict | None" = None, *, timeout: float = 30.0,
         "verb": verb,
         "args": args or {},
         "requestedBy": requested_by or operator_did(),
+        **({"timeoutMs": int(vessel_wait_ms)} if vessel_wait_ms is not None else {}),
         **_seat_mark(),
     }) + "\n"
 

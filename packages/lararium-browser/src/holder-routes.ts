@@ -79,6 +79,8 @@ export const HOLDER_SENDERS = {
   "hooanu": "owner",
   "teardown": "owner",
   "daemon:place-verb": "any",
+  // A withdrawal ends a placed ask's handler: the vessel's own door sends it for a caller that left, never a tab.
+  "daemon:withdraw-verb": "owner",
   "telemetry:place-verb": "owner",
   "structurepalace:kapae": "owner",
   "daemon:worldline-compare-request": "any",

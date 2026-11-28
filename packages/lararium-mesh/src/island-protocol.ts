@@ -455,6 +455,20 @@ export interface DaemonMsg_PlaceVerb {
 }
 
 /**
+ * Vessel → island: WITHDRAW one placed ask whose caller left (its socket closed while the ask ran, or it sent a cancel). The
+ * island removes the ask's volatile invocation where it still stands, and the dispatcher aborts the handler's signal, so a held
+ * handler (a watch, a waiting events read) stops; a handler that heeds no signal runs on and its outcome lands as before.
+ */
+export interface DaemonMsg_WithdrawVerb {
+  type: "daemon:withdraw-verb";
+  requestId: string;
+}
+
+export function mkDaemonWithdrawVerb(requestId: string): DaemonMsg_WithdrawVerb {
+  return { type: "daemon:withdraw-verb", requestId };
+}
+
+/**
  * Vessel → island: FEED one captured turn to the daemon's idempotent telemetry capture cap.
  * The cap (hasCapture) claims this signal type and enqueues (turnText, sourceFile) into the nalu
  * (accumulate IN → WAL → flush via `mine --source ndjson`). Distinct from daemon:place-verb (which
@@ -870,6 +884,7 @@ export type VesselToIslandMsg =
   | IslandMsg_HooAnu
   | IslandMsg_Teardown
   | DaemonMsg_PlaceVerb
+  | DaemonMsg_WithdrawVerb
   | DaemonMsg_TelemetryPlaceVerb
   | DaemonMsg_StructurepalaceKapae
   | DaemonMsg_WorldlineCompareRequest
@@ -1300,8 +1315,10 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   if (isPortKind(v.type)) return readPortVesselMsg(v) !== null;   // the record port reads whole at the door too
   // The log batch reads whole at the door: every placement a title under the shore-log prefix with string fields.
   if (v.type === "daemon:shore-log") { const records = (v as { records?: unknown }).records; return Array.isArray(records) && records.length <= 4096 && records.every((r) => readShoreLogPlacement(r) !== null); }
+  // A withdrawal reads whole at the door: one request id, nothing else.
+  if (v.type === "daemon:withdraw-verb") { const id = (v as { requestId?: unknown }).requestId; return typeof id === "string" && id.length > 0 && id.length <= 512 && Object.keys(v).length === 2; }
   return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:face-bags", "daemon:shore-log", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "daemon:wear-actor-result", "wiki:place-verb", "cas:block", "dyad:read", "receipt:issued", "rest:answer", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
-    .includes(v.type as Exclude<VesselToIslandMsg["type"], "receipt:close" | "wiki:request-drain" | SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
+    .includes(v.type as Exclude<VesselToIslandMsg["type"], "receipt:close" | "wiki:request-drain" | "daemon:withdraw-verb" | SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
 }
 
 /** The prefix an island's teardown fault carries (`answerTeardown`): the one fault that answers a teardown. */

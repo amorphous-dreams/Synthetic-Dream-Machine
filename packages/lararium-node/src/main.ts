@@ -1010,6 +1010,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     floorVerbs:   floorVerbsFor(result.floorKey === "stands"),
     placeVerb:    (o) => result.daemon.placeVerb(o),
     retireAsk:    (requestId) => result.daemon.retireAsk(requestId),
+    withdrawAsk:  (requestId) => result.daemon.withdrawAsk(requestId),
     claim:        floor.storeClaim,
     repo:         result.repo,
     engine:       engineWatch,

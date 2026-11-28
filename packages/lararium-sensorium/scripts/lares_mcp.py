@@ -174,6 +174,16 @@ MEME_VERBS = ("meme_project",)
 # the switcher keeps its one `wiki` tool until that phase renames it.
 TIDDLER_VERBS = ("tiddler_get", "tiddler_put", "tiddler_delete", "wiki_filter", "wiki_render", "wiki_status")
 
+# THE WATCH (lar:///engine.filter.watches, comms-ux-enacts landing 16) — one tool, `watch`, the MCP skin of the daemon's
+# `filter-watch` verb: a filter subscription that stands as a tiddler (`$:/state/lares/watch/<id>`) the wiki's own change event
+# moves. One call holds and answers at the first change (`band: changed`), or `unchanged` when its `hold` runs out, with the
+# `id` and `asOf` cursor a next call hands back; `mu="unask"` drops the watch `id` names. The seat's wait rises above the
+# watch's hold for this tool alone (the vessel's own wait rides the line), and a seat that hangs up withdraws the hold.
+WATCH_VERBS = ("watch",)
+# The hold a watch call keeps when it names none (the VM's own default, milliseconds), and the slack each wait adds beyond it.
+WATCH_HOLD_MS = 25_000
+WATCH_WAIT_SLACK_S = 15.0
+
 # THE DISCORDIAN CALENDAR — one tool, `ddate`, the MCP skin of the `ddate` verb every vessel answers (the house's own isomorphic
 # calendar core; no host `ddate` binary stands behind it). It mirrors `lares ddate [+FORMAT] [day month year]`, a host verb the CLI
 # runs with no vessel. THE CLOCK SEAM rides this seat: a call that names no date carries `today`, the seat's own local day, and the
@@ -254,7 +264,7 @@ SEAT_INSTRUCTIONS = (
 
 # Each tool declares its verb nature once; the seat and its weld derive hints from this table.
 TOOL_NATURE = {
-    **dict.fromkeys(('recall', 'status', 'worldline', 'flow', 'plane_record', 'meme_project', 'wiki_filter', 'tiddler_get', 'wiki_render', 'wiki_status', 'ddate', 'law_index', 'vessel_roster', 'meme_offer_show', 'kahua_get', 'roster', 'shore'), 'reads'),
+    **dict.fromkeys(('recall', 'status', 'worldline', 'flow', 'plane_record', 'meme_project', 'wiki_filter', 'tiddler_get', 'wiki_render', 'wiki_status', 'ddate', 'law_index', 'vessel_roster', 'meme_offer_show', 'kahua_get', 'roster', 'shore', 'watch'), 'reads'),
     **dict.fromkeys(('kapae', 'un_kapae', 'wiki', 'law_pin', 'law_unpin', 'kahua_stage', 'reconcile', 'analyze', 'shore_flush'), 'patches'),
     **dict.fromkeys(('tiddler_delete',), 'removes'),
     **dict.fromkeys(('pour', 'oracle_cast', 'meme_offer', 'kahua_propose', 'build'), 'casts'),
@@ -355,6 +365,7 @@ VERB_SEATS = {
     # face's own daemon wiki → HOTL. The vessel's own gates decide reach (the face's cap, the Kahu predicate, the
     # Confluence gate on a family's text, and the one wall a seat keeps: its startup action offers); the seat adds none of its own.
     "wiki_filter": (True, False),       # run a TiddlyWiki filter, one bounded page — a read → HOTL
+    "watch": (True, False),             # hold a filter subscription until it moves — a read; its one record never persists → HOTL
     "tiddler_get": (True, False),       # one record with its fields and its base hash — a read → HOTL
     "wiki_render": (True, False),       # wikify a title or a span to text or html — a read → HOTL
     "wiki_status": (True, False),       # each layer's writeability for the session's face — a read → HOTL
@@ -1173,10 +1184,10 @@ def build_mcp(coordinator: LaresCoordinator):
             raise SeatArgumentRefused(f"{verb}: `recipe` names no slug — pass one (`sdm`, `lares`)")
         return {"recipe": recipe}
 
-    def _meme_wire(verb: str, args: dict):
+    def _meme_wire(verb: str, args: dict, **wire):
         """Ride `lares_uds.call` and peel the receipt to the verb's own payload — a `null` output stays
         `None` (an absent meme reads null, never the receipt envelope `uds.output` would hand back)."""
-        out = uds.call(verb, args)
+        out = uds.call(verb, args, **wire)
         summary = ((out.get("results") or {}).get("summary")) or {}
         if summary.get("ok") is False:
             raise uds.LaresVerbError(str(summary.get("error") or f"verb {verb!r} failed"))
@@ -1263,6 +1274,34 @@ def build_mcp(coordinator: LaresCoordinator):
         if max_bytes is not None:
             args["maxBytes"] = max_bytes
         return _meme_wire("wiki-filter", args)
+
+    @mcp.tool(annotations=_annotations("watch"))
+    def watch(filter: "str | None" = None, recipe: "str | None" = None, until: "str | None" = None,  # noqa: A002 — TiddlyWiki's own word
+              id: "str | None" = None, as_of: "str | None" = None, hold: "int | None" = None,  # noqa: A002 — the watch's own word
+              mu: "str | None" = None) -> dict:
+        # THE WORDS LIVE IN THE CARRIER (lar:///engine.filter.watches, a candidate address): `_dress_from_pack` hands this tool its
+        # description and each parameter's, so this function keeps behaviour alone and holds no docstring.
+        args: dict = {**_wiki_container("watch", recipe)}
+        unask = isinstance(mu, str) and mu.strip().lower() in ("0", "00", "unask")
+        if mu is not None and not unask:
+            raise SeatArgumentRefused(f"watch: `mu` reads unask (or 0) alone, got {mu!r}; drop it to hold a watch")
+        if unask:
+            if not id:
+                raise SeatArgumentRefused("watch: unask drops the watch its `id` names; pass the `id` a watch answered")
+            return _meme_wire("filter-watch", {**args, "id": id, "unask": True})
+        if not filter:
+            raise SeatArgumentRefused("watch: a watch names its `filter` (a TiddlyWiki filter, e.g. \"[tag[memory]]\")")
+        args["filter"] = filter
+        if until:
+            args["until"] = until
+        if id:
+            args["id"] = id
+        if as_of:
+            args["asOf"] = as_of
+        held = int(hold) if hold is not None else WATCH_HOLD_MS
+        args["hold"] = held
+        return _meme_wire("filter-watch", args, timeout=held / 1000.0 + WATCH_WAIT_SLACK_S,
+                          vessel_wait_ms=held + int(WATCH_WAIT_SLACK_S * 500))
 
     @mcp.tool(annotations=_annotations("tiddler_get"))
     def tiddler_get(title: "str | None" = None, recipe: "str | None" = None, bag: "str | None" = None, meme: bool = False,
