@@ -306,7 +306,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     const d = openDraft(r, x, "abandoned");
     await afterDispatch();
     boundary.fire();
-    await boundary.settle();
+    await turns(24);
     const dHeads = r.adaptor.ledger.landedOf(d)!.heads!;
     const workingChanges = r.changes(workingBag);
 
@@ -321,7 +321,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     expect(cancel[0]!.bag).toBe(draftBag);
     expect(cancel[0]!.deletes).toEqual([d]);
     expect(cancel[0]!.base, "D's own landed base").toEqual(dHeads);
-    await boundary.settle();
+    await turns(16);
     expect(storeDeleted(r, draftBag, d)).toBe(true);
     expect(r.changes(workingBag)).toBe(workingChanges);
 
@@ -332,7 +332,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     r.wiki.deleteTiddler(dQuick);
     await afterDispatch();
     boundary.fire();
-    await boundary.settle();
+    await turns(16);
     expect(touching(r, markQuick, quick)).toEqual([]);
     expect(storeDeleted(r, draftBag, dQuick)).toBe(true);
     expect(boundary.pending()).toBe(0);
@@ -695,7 +695,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     const d = openDraft(r, x, "hand text");
     await afterDispatch();
     boundary.fire();
-    await boundary.settle();
+    await turns(24);
     let open!: () => void;
     const draftOpenBase = r.adaptor.ledger.landedOf(x)!.heads!;
     await peerWrite(r, workingBag, [{ tiddler: { title: x, text: "peer before" } }]);
@@ -709,7 +709,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     await peerWrite(r, workingBag, [{ tiddler: { title: x, text: "peer text" } }]);
     r.failures.family = null;
     open();
-    await boundary.settle();
+    await turns(48);
     expect(r.wiki.getTiddler(`$:/temp/lares/alert/unsaved/${x}`), "the acknowledged retry clears the alert").toBeUndefined();
     expect(r.adaptor.holdsHand(x)).toBe(false);
     expect(await textsOf(r, x), "the saved value reached the store and meets the peer's as a conflict").toContain("hand text");
@@ -974,7 +974,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     await turns(32);
     hold = false;
     releaseHeld();
-    await boundary.settle();
+    await turns(32);
     const alert = r.wiki.getTiddler(parallelDraftAlertTitle(`Draft of '${x}' by shore-road`));
     expect(alert, "the hand's text survives on the rail").toBeDefined();
     expect(String(alert!.fields["draft-text"])).toBe("hand text");
