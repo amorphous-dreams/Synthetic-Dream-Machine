@@ -52,6 +52,8 @@ export class ManualBoundary {
   bind(adaptor: IslandAdaptor): void { this.adaptor = adaptor; }
   pending(): number { return this.adaptor?.pendingTitles().length ?? 0; }
   fire(): void { if (!this.adaptor) throw new Error("boundary has no adaptor"); void this.adaptor.boundary().catch(() => {}); }
+  /** The boundary, awaited: resolves once the drain it started rests, a refusal and its alert included (a refused drain answers, never throws). */
+  settle(): Promise<void> { if (!this.adaptor) throw new Error("boundary has no adaptor"); return this.adaptor.boundary().catch(() => {}); }
 }
 
 export interface StoreCall {
