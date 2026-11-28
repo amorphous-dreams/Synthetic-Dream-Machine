@@ -19,7 +19,6 @@ import { removeMeme, renameFamilyInWiki, wikiMemeSink } from "../src/place-meme.
 const CARRIER = "text/memetic-wikitext+tiddlywiki";
 const hand = async (r: Rig, boundary: ManualBoundary): Promise<void> => {
   await afterDispatch();
-  boundary.fire();
   await boundary.settle();
   await r.adaptor.landingIdle();
 };
@@ -141,7 +140,7 @@ describe.skipIf(wikiSkip)(`the family leaves as one change${skipNote}`, () => {
     const text = "renamed root\n\n<<~ kahea ahu slot=`#/a`>>\n\n<<~ kahea ahu slot=`#/b`>>\n\n<<~ kahea ahu slot=`#/c`>>\n";
     const d = openDraft(r, root, text);
     typeInto(r, d, text, { "draft.title": to });
-    await afterDispatch(); boundary.fire(); await boundary.settle();
+    await afterDispatch(); await boundary.settle();
     saveSequence(r, d);
     await afterDispatch(); await turns(48);
     // The slots land under the target as a hand's own writes, after the source's removal stood acknowledged.

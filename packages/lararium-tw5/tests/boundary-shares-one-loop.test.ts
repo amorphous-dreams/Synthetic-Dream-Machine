@@ -31,7 +31,6 @@ describe.skipIf(wikiSkip)(`boundaries under a hung receipt share one resting loo
     await turns(16);
     expect(asks, "one resting loop asks the Drain; every later caller joins it").toBeLessThanOrEqual(2);
     release();
-    boundary.fire();
     await boundary.settle();
     await Promise.all(callers);   // control: the one loop settles every caller
     await save;
