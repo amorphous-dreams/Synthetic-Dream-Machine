@@ -1,0 +1,113 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.checkout.reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read both diffs of the checkout's tunnel, writing nothing"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.checkout.reads", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.checkout.reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.checkout.reads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.checkout.reads ~ the the checkout tunnel read: every item's state, nothing written
+
+`lares repo read` reads the checkout it runs in (its declared reality tunnel and seat) against its declaration and the ledger of what the house last wrote, and writes nothing. Each row names its state (aligned, drift, foreign, unreachable, absent), its id, its path and whether a hand touched it since the house wrote it; the exit class carries the worst state. `--brief` prints the one line the wake hook reads, with or without a terminal. `--staged` reads the index: the carrier and seed the commit carries, as the commit gate reads them. `--familiar` names a home's familiar and refuses here with exit 2, naming the home door.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ read · brief · staged
+
+```memetic-wikitext
+<<has entity=`example` name=`read` params=`~ read the checkout's tunnel`>>
+<<has entity=`example` name=`brief` params=`brief/true ~ the one line a hook reads`>>
+<<has entity=`example` name=`staged` params=`staged/true ~ read what the commit carries`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ root · brief · staged · familiar
+
+```memetic-wikitext
+<<has entity=`arg` name=`root` params=`takes/dir ~ the checkout this door keeps; absent, the checkout the CLI lives in`>>
+<<has entity=`arg` name=`brief` params=`~ print the one line a hook reads, terminal or none`>>
+<<has entity=`arg` name=`staged` params=`~ read the carrier and seed the commit carries (the index), never the working tree`>>
+<<has entity=`arg` name=`familiar` params=`takes/pet-name ~ refused here: only lares home seats a familiar's hooks`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ reads this host's files and the ledger; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · familiar-home-only · root-no-directory
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ name one of read, tend, verify, undo`>>
+<<has entity=`refusal` name=`familiar-home-only` params=`~ --familiar names a home's familiar; lares home takes it`>>
+<<has entity=`refusal` name=`root-no-directory` params=`~ --root names no directory; name the checkout's top level`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ aligned · drift · foreign · unreachable
+
+```memetic-wikitext
+<<has entity=`band` name=`aligned` params=`exit/0 fields/[[radius root rows exit]] ~ every item holds as declared`>>
+<<has entity=`band` name=`drift` params=`exit/1 fields/[[radius root rows exit]] ~ an item drifts from its declaration; tend converges it`>>
+<<has entity=`band` name=`foreign` params=`exit/3 fields/[[radius root rows exit]] ~ a hand changed a target the house last wrote`>>
+<<has entity=`band` name=`unreachable` params=`exit/4 fields/[[radius root rows exit]] ~ a target reads unreachable`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares repo read
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares repo read]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · reality-tunnel
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/reality-tunnel`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_pNvT-I1zmtfj5VbLzNVoNbuiPRlsJghPzJlqpSaO_U`>>
+
+<<^ code=`&#x0004;` to=`?`>>
