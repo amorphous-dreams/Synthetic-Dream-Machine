@@ -77,6 +77,40 @@ describe("take-disk answers at the island that listed the standoff", () => {
     expect(s.waves[0]!.inWiki).toBeUndefined();
   });
 
+  test("★ a standoff the active wiki's island lists over a CANON bag ingests inside that island, where its projector holds the row ★", async () => {
+    // The live fire: `bags/lararium` stood off in the active wiki's island, the wave rode to the daemon island (which holds no
+    // projector of that row), read back `committed`, and the same key kept standing.
+    const uri = "lar:///ha.ka.ba/lararium/api/save-path";
+    const s = standing("save-path.md", "words\n", uri, (one) => [{ ...one, bagId: "lar:///ha.ka.ba/bags/lararium", island: "wiki" }]);
+    await takeDisk({ uri, key: KEY }, s.deps(landing));
+    expect(s.waves).toHaveLength(1);
+    expect(s.waves[0]!.toBag).toBe("lar:///ha.ka.ba/bags/lararium");
+    expect(s.waves[0]!.inWiki).toBe(true);
+  });
+
+  test("★ once the words land the door reads the shore again: a row gone reads cleared, a row that stands names its key ★", async () => {
+    const uri = "lar:///ha.ka.ba/x/clears";
+    tmp = mkdtempSync(join(tmpdir(), "take-disk-"));
+    const dir = join(tmp, "bags", "x", "ha.ka.ba", "x");
+    mkdirSync(dir, { recursive: true });
+    const path = join(dir, "clears.md");
+    writeFileSync(path, "words\n");
+    const row = { bagId: BAG, uri, standoff: KEY, kind: "sides", reason: "r", path, disk: carrierHash("words\n"), records: "sha256:" + "0".repeat(64), island: "wiki" };
+    const shoreWith = (rows: () => Array<Record<string, unknown>>) => async (): Promise<ShoreAnswer> => {
+      const standoffs = rows();
+      return { ok: true, refusal: null, why: null, output: { ok: true, standoffs, standoffCount: standoffs.length, pending: [], pendingCount: 0, mark: "one-shore", next: null } };
+    };
+    let landed = false;
+    const submit = async (o: SubmitIngestOpts): Promise<SubmitResult> => { landed = true; return landing(o); };
+    const cleared = await takeDisk({ uri, key: KEY }, { ask: shoreWith(() => (landed ? [] : [row])), tree: new SyncedTree(join(tmp, "synced")), root: tmp, did: "did:test", submit });
+    expect(cleared).toMatchObject({ ok: true, cleared: true });
+    expect((cleared as { stands?: string }).stands).toBeUndefined();
+
+    landed = false;
+    const stands = await takeDisk({ uri, key: KEY }, { ask: shoreWith(() => [row]), tree: new SyncedTree(join(tmp, "synced-2")), root: tmp, did: "did:test", submit });
+    expect(stands, "a row the landing did not clear is never claimed cleared").toMatchObject({ ok: true, cleared: false, stands: KEY });
+  });
+
   test("CONTROL: a standoff a wiki's own working slot holds at the active wiki's island ingests inside that island", async () => {
     const uri = "lar:///ha.ka.ba/x/wiki-note";
     const s = standing("wiki-note.md", "words\n", uri, (one) => [{ ...one, bagId: "lar:///ha.ka.ba/wikis/garden/working", island: "wiki" }]);
