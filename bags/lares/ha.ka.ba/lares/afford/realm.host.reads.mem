@@ -1,0 +1,90 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.host.reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read what this hearth hosts: epochs, cap and redeemed counts"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.host.reads", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.host.reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.host.reads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.host.reads ~ host ~ what this hearth hosts
+
+Bare `lares host` reads, per Nexus this hearth hosts in: the live epoch and the one before, the cap (invites per lineage per epoch), and how many invites each epoch redeemed (counts, never rows). The act runs inside the standing vessel, else here under this command's own key session.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ none
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ custody
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`custody` params=`who/seat-or-hand ~ one sealed act frame on the custody door under the vessel key; the hosting state never rests in the clear`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ refused · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`refused` params=`~ the custody door refused the act; the message names why`>>
+<<has entity=`refusal` name=`error` params=`~ the act failed outside the door's refusals`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ hosted
+
+```memetic-wikitext
+<<has entity=`band` name=`hosted` params=`exit/0 fields/[[nexuses via]] ~ each Nexus hosted in, and via naming daemon or direct`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares host
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares host]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MCGVwAOnpm_0odDSFmBzNADzNUX2BpYIKpB1y95aY2g`>>
+
+<<^ code=`&#x0004;` to=`?`>>

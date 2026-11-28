@@ -1,0 +1,106 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.invite.mints`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "mint this hearth's own invite at the current epoch; nothing kept"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.invite.mints", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.invite.mints"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.invite.mints"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.invite.mints ~ invite ~ one string to carry
+
+`lares host invite` mints this hearth's own invite at the current epoch (`--nexus <aid>`, else this hearth's own charter; `--relay <ws-url>` names the relay it dials) and prints the one string to carry to one newcomer; it redeems once, at this hearth's own gate, and nothing about it stays here.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ invite · relayed
+
+```memetic-wikitext
+<<has entity=`example` name=`invite` params=`~ mint an invite on this hearth's own charter`>>
+<<has entity=`example` name=`relayed` params=`nexus/<aid> relay/wss://relay.example ~ mint one naming a relay`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ nexus · relay
+
+```memetic-wikitext
+<<has entity=`arg` name=`nexus` params=`takes/aid ~ the Nexus to act in; absent, this hearth's own charter`>>
+<<has entity=`arg` name=`relay` params=`takes/ws-url ~ the relay the invite names`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ custody
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`custody` params=`who/seat-or-hand ~ one sealed act frame on the custody door under the vessel key; the hosting state never rests in the clear`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ refused · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`refused` params=`~ the custody door refused the act; the message names why`>>
+<<has entity=`refusal` name=`error` params=`~ the act failed outside the door's refusals`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ minted
+
+```memetic-wikitext
+<<has entity=`band` name=`minted` params=`exit/0 fields/[[nexusAid epoch invite via]] ~ the invite string`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares host invite
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares host invite]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · membership-doctrine
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BS1s590LiR5SpHasJEvxxoinfwuo94bT1ArYoR6ONqg`>>
+
+<<^ code=`&#x0004;` to=`?`>>
