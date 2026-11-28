@@ -1,0 +1,108 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.restore.confirms`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "confirm a restored face by one party's own view line"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.restore.confirms", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.restore.confirms"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.restore.confirms"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.restore.confirms ~ one party's view confirms the restore
+
+`lares persona confirm <index> <lar-log-view:…>` confirms a provisional restored face by one party's own view of its head.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ confirm
+
+```memetic-wikitext
+<<has entity=`example` name=`confirm` params=`index/1 view/lar-log-view:<line> ~ confirm face h1`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ index · view
+
+```memetic-wikitext
+<<has entity=`arg` name=`index` params=`takes/handle-index needs/required seat/1 as/<index> ~ the face's handle index, a whole number from 0`>>
+<<has entity=`arg` name=`view` params=`takes/view-line needs/required seat/2 as/<lar-log-view:…> ~ one party's view line`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/face-root ~ lands the confirmation on the face's sealed record`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · vessel-composing · vessel-silent · vessel-locked · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.restore.confirms index/1 view/lar-log-view:<line>]] ~ the index or the view line reads malformed`>>
+<<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
+<<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
+<<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
+<<has entity=`refusal` name=`error` params=`~ the store refused; the message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ confirmed
+
+```memetic-wikitext
+<<has entity=`band` name=`confirmed` params=`exit/0 ~ the face stands confirmed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares persona confirm
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares persona confirm]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · persona-policy
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;J9XCoo8-UhVMSVOpptQdOvKV550bybUX0V-raQkv5VQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,107 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.persona.reissues`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "hand a face's key at one Nexus on to a fresh random key"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.persona.reissues", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.persona.reissues"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.persona.reissues"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.persona.reissues ~ both keys sign one hand-over
+
+`lares persona reissue [--nexus <aid>] [--face N]` hands the face's key at one Nexus on to a fresh random key; both keys sign one hand-over that lands on that Nexus's carriage board, where every gate reads it beside the face's admit, and the outgoing key leaves this vessel. The admit keeps naming the key the Nexus admitted. A compromised key takes the face-key roll instead.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ reissue
+
+```memetic-wikitext
+<<has entity=`example` name=`reissue` params=`nexus/<aid> face/1 ~ reissue face h1's key at one Nexus`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ nexus · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`nexus` params=`takes/aid ~ the Nexus whose key the face hands on`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ the face; absent, the one standing open`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/face-root ~ signs under the face's key out of sealed custody`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ vessel-composing · vessel-silent · vessel-locked · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
+<<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
+<<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
+<<has entity=`refusal` name=`error` params=`~ the store refused; the message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ reissued
+
+```memetic-wikitext
+<<has entity=`band` name=`reissued` params=`exit/0 fields/[[handleIndex nexusAid from to admitted handOver]] ~ the hand-over landed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares persona reissue
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares persona reissue]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · persona-policy
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Sw1fuZIto9b-DBBkVHvrRssofaUILNOLn3vXlV2RNvs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

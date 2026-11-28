@@ -1,0 +1,108 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.raise.signs`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "sign a vessel's raise challenge with one of your persona leaves"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.raise.signs", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.raise.signs"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.raise.signs"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.raise.signs ~ the recogniser's half of the raise ceremony
+
+`lares persona raise-sign <challenge-json> [--as <index>]` signs a floor vessel's raise challenge with your persona's per-Nexus leaf, never the root, and hands back a grant carrying that leaf's admit read off this vessel's own replica of the Nexus board. The caps that arrive ride your key, and the grant stands only until that Nexus's lease epoch rolls past it. It needs no daemon.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ sign
+
+```memetic-wikitext
+<<has entity=`example` name=`sign` params=`challenge/<challenge-json> as/1 ~ sign a challenge as face h1`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ challenge · as
+
+```memetic-wikitext
+<<has entity=`arg` name=`challenge` params=`takes/json needs/required seat/1 as/<challenge-json> ~ the challenge the vessel emitted`>>
+<<has entity=`arg` name=`as` params=`takes/handle-index ~ the face whose leaf signs`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/face-root ~ signs with your persona leaf on your own machine`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · vessel-composing · vessel-silent · vessel-locked · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.raise.signs challenge/<challenge-json>]] ~ no challenge, a malformed one, or a malformed --as`>>
+<<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
+<<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
+<<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
+<<has entity=`refusal` name=`error` params=`~ the store refused; the message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ granted
+
+```memetic-wikitext
+<<has entity=`band` name=`granted` params=`exit/0 ~ the grant to hand back`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares persona raise-sign
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares persona raise-sign]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · persona-policy
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7c0gIxuB35bpqX-5kHRNjTm-rbX3U7nhBMS_Xim962Y`>>
+
+<<^ code=`&#x0004;` to=`?`>>
