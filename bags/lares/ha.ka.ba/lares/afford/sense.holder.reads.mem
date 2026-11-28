@@ -1,0 +1,93 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.holder.reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read the sovereign holder topology and the daemon socket"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.holder.reads", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.holder.reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.holder.reads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.holder.reads ~ who holds the store, who spawned them, and whether the socket answers
+
+`lares sense holders` reads every holder of the sensorium's store beside its spawner, and whether this vessel's own daemon socket answers (the end of the capture route). A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ holders
+
+```memetic-wikitext
+<<has entity=`example` name=`holders` params=`~ the topology`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ sensorium-root
+
+```memetic-wikitext
+<<has entity=`arg` name=`sensorium-root` params=`takes/host-path ~ the sensorium's root; the leading sensorium name threads it, absent the memory sensorium`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ reads this host's process table; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ read
+
+```memetic-wikitext
+<<has entity=`band` name=`read` params=`exit/0 fields/[[daemonOpen]] ~ the topology and the socket`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense holders
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense holders]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · lararium-memory
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2Yf77bB0hY1AfS4tAYZR2e2MzmUX-5znwhudq1vIW6c`>>
+
+<<^ code=`&#x0004;` to=`?`>>

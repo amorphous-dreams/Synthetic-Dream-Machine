@@ -1,0 +1,108 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.trial.runs`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "supervise one receipt-bearing frozen trial operation"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.trial.runs", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.trial.runs"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.trial.runs"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.trial.runs ~ a frozen trial, supervised end to end
+
+`lares sense trial-run --trial-root <root>` supervises one receipt-bearing operation under a disposable absolute root: intake, the typed content frontier and the semantic view, each leaving a receipt `search` and `status --trial-root` read later. `--freeze-receipt`, `--intent`, `--source-host`, `--model-home` and `--device` (auto, cpu or cuda) shape it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ trial
+
+```memetic-wikitext
+<<has entity=`example` name=`trial` params=`trial-root/tmp/trial-1 model-home/models device/cpu ~ run one frozen trial on the cpu`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ trial-root · freeze-receipt · intent · source-host · model-home · device
+
+```memetic-wikitext
+<<has entity=`arg` name=`trial-root` params=`takes/host-path needs/required ~ the disposable absolute operation root`>>
+<<has entity=`arg` name=`freeze-receipt` params=`takes/host-path ~ the freeze receipt it runs under`>>
+<<has entity=`arg` name=`intent` params=`takes/words ~ the operation's intent`>>
+<<has entity=`arg` name=`source-host` params=`takes/name ~ the host the source came from`>>
+<<has entity=`arg` name=`model-home` params=`takes/host-path ~ the pinned model's home`>>
+<<has entity=`arg` name=`device` params=`takes/word ~ auto, cpu or cuda`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ writes a disposable operation root; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ verb-error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`verb-error` params=`~ no --trial-root, or the trial refused; the message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ ran
+
+```memetic-wikitext
+<<has entity=`band` name=`ran` params=`exit/0 ~ the trial's receipts`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense trial-run
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense trial-run]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · lararium-memory
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_gd252ByuVk_cwsDl9YOoaodxjV_4QuljoPETMzcGM8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

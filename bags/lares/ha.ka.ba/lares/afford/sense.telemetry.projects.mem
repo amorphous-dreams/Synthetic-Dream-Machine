@@ -1,0 +1,106 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.telemetry.projects`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "project a wing's turn readings as lar_* fields on its drawers"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.telemetry.projects", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.telemetry.projects"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.telemetry.projects"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.telemetry.projects ~ telemetry through the seat, verbatim first
+
+`lares sense telemetry --wing <w>` runs lar-telemetry over a wing through the daemon seat, projecting the turn's instrument readings as `lar_*` onto its drawers; `--limit N` caps the drawers one pass touches. Idempotent: the lar_hv gate skips current drawers, and a down daemon no-ops, the verbatim capture already landed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ telemetry
+
+```memetic-wikitext
+<<has entity=`example` name=`telemetry` params=`wing/claude limit/200 ~ project readings onto a wing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ wing · limit
+
+```memetic-wikitext
+<<has entity=`arg` name=`wing` params=`takes/name needs/required ~ the wing`>>
+<<has entity=`arg` name=`limit` params=`takes/count ~ the drawers this pass touches`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ rides the daemon's composed caps, the single-owner law; this handler checks no ocap of its own`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ not-found · verb-error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`not-found` params=`~ no daemon seat answers`>>
+<<has entity=`refusal` name=`verb-error` params=`~ the projection refused; its message names why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ projected
+
+```memetic-wikitext
+<<has entity=`band` name=`projected` params=`exit/0 ~ the drawers projected`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense telemetry
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense telemetry]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · lararium-memory · lar-telemetry
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/lar-telemetry`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qSJY1vXGO3pHcyPRwV3RR4bwmizUyClbWr1uRh3gDvQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

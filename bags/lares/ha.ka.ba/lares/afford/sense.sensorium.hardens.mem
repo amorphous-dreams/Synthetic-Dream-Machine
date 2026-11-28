@@ -1,0 +1,106 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.sensorium.hardens`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "harden an ephemeral sensorium durable, a person's hand alone"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.sensorium.hardens", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.sensorium.hardens"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.sensorium.hardens"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.sensorium.hardens ~ an ephemeral sensorium turns durable
+
+`lares sense harden <name> --approve` runs on a person's hand at a real terminal: the house hand gate reads the command's own branch, and `--approve` names the intent. It hardens the named sensorium durable in its manifest, `--store-swap <target>` swapping its store as it does.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ harden
+
+```memetic-wikitext
+<<has entity=`example` name=`harden` params=`name/pioneer-1 approve/true ~ harden a sensorium`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ name · approve · store-swap
+
+```memetic-wikitext
+<<has entity=`arg` name=`name` params=`takes/name needs/required seat/1 as/<name> ~ the sensorium named in the manifest`>>
+<<has entity=`arg` name=`approve` params=`~ name the intent`>>
+<<has entity=`arg` name=`store-swap` params=`takes/host-path ~ swap the store to this target as it hardens`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand ~ runs direct over manifest.json; a person at a real terminal, and the verb names its intent with --approve where it asks one`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ verb-error · hand-act-only
+
+```memetic-wikitext
+<<has entity=`refusal` name=`verb-error` params=`~ no name, no --approve, or the harden refused`>>
+<<has entity=`refusal` name=`hand-act-only` params=`~ a seat reached a hand verb; name the command for the operator`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ hardened
+
+```memetic-wikitext
+<<has entity=`band` name=`hardened` params=`exit/0 ~ the manifest after`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense harden
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense harden]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · lararium-memory
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;olspSphoNMUkooAdP79w6s_iD0GwA66oDRS7EXs18BI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

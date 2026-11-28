@@ -1,0 +1,104 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.sensorium.unretires`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "restore a retired sensorium, a person's hand alone"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.sensorium.unretires", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.sensorium.unretires"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.sensorium.unretires"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.sensorium.unretires ~ a retirement reverses
+
+`lares sense un-retire <name>` runs on a person's hand at a real terminal and returns a retired sensorium to its lifecycle; it asks no --approve.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ un-retire
+
+```memetic-wikitext
+<<has entity=`example` name=`un-retire` params=`name/pioneer-1 ~ restore a sensorium`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ name
+
+```memetic-wikitext
+<<has entity=`arg` name=`name` params=`takes/name needs/required seat/1 as/<name> ~ the sensorium named in the manifest`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand ~ runs direct over manifest.json; a person at a real terminal, and the verb names its intent with --approve where it asks one`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ verb-error · hand-act-only
+
+```memetic-wikitext
+<<has entity=`refusal` name=`verb-error` params=`~ no name, or the un-retire refused`>>
+<<has entity=`refusal` name=`hand-act-only` params=`~ a seat reached a hand verb; name the command for the operator`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ restored
+
+```memetic-wikitext
+<<has entity=`band` name=`restored` params=`exit/0 ~ the manifest after`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense un-retire
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense un-retire]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · lararium-memory
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tz-lQNMBy-m-bShpLMoG0rI4z4jB_lZd5-Cpm2drUQo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

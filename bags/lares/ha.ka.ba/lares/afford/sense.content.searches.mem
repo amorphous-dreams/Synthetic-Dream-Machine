@@ -1,0 +1,115 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.content.searches`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "search a sensorium plane by hybrid recall"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.content.searches", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.content.searches"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.content.searches"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.content.searches ~ hybrid recall over one plane, the plane a parameter
+
+`lares sense search <query…>` runs hybrid recall over one plane (`--lens`, default content; `crossplane` widens content hits across form and structure by the cid join), `--k` hits (default 5), narrowed by `--wing` and `--room`. `--not-root` (else `LARES_SESSION_ROOT`) down-weights the caller's own session by `--self-weight` (default 0.25). A frozen trial (`--trial-root`, with `--model-home` for the pinned query model) reads its owned Content and frontiers, filtered to its receipts, `--source-key` and `--revision` narrowing it. A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ search · structure-plane
+
+```memetic-wikitext
+<<has entity=`example` name=`search` params=`query/[[harbor lights]] ~ recall over the content plane`>>
+<<has entity=`example` name=`structure-plane` params=`query/harbor lens/structure k/10 ~ ten hits over the structure plane`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ query · lens · k · wing · room · not-root · self-weight · trial-root · model-home · source-key · revision
+
+```memetic-wikitext
+<<has entity=`arg` name=`query` params=`takes/words needs/required seat/1 as/<query…> ~ the query`>>
+<<has entity=`arg` name=`lens` params=`takes/plane default/content ~ the plane: content, structure, form, persistence, a named sensorium's own, or crossplane`>>
+<<has entity=`arg` name=`k` params=`takes/count default/5 ~ how many hits`>>
+<<has entity=`arg` name=`wing` params=`takes/name ~ one wing alone`>>
+<<has entity=`arg` name=`room` params=`takes/name ~ one room alone`>>
+<<has entity=`arg` name=`not-root` params=`takes/host-path ~ the session root to down-weight; else LARES_SESSION_ROOT`>>
+<<has entity=`arg` name=`self-weight` params=`takes/number default/0.25 ~ the weight a hit from that root keeps`>>
+<<has entity=`arg` name=`trial-root` params=`takes/host-path ~ a frozen trial's operation root`>>
+<<has entity=`arg` name=`model-home` params=`takes/host-path ~ the pinned query model's home, which a trial search needs`>>
+<<has entity=`arg` name=`source-key` params=`takes/key ~ narrow a trial search to one source key`>>
+<<has entity=`arg` name=`revision` params=`takes/sha256 ~ narrow a trial search to one revision`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ rides the daemon's composed caps, the single-owner law; this handler checks no ocap of its own`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · verb-error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[sense.content.searches query/harbor]] ~ no verb or no query named`>>
+<<has entity=`refusal` name=`verb-error` params=`~ an unknown lens, a trial flag without --trial-root, a trial with no --model-home, or the read failed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ hits
+
+```memetic-wikitext
+<<has entity=`band` name=`hits` params=`exit/0 fields/[[results]] ~ the hits; a trial adds total_after_filter and its status`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense search
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense search]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · lararium-memory
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JgyYMbeivmP46DMQmrPEX-K9LYDADAbUomDYefjv7tg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

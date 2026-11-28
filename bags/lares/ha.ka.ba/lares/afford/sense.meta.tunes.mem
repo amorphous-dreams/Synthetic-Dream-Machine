@@ -1,0 +1,106 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.meta.tunes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "view and tune the sensorium's ingest meta-schema"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.meta.tunes", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.meta.tunes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.meta.tunes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.meta.tunes ~ which annotators compose, and the room taxonomy
+
+`lares sense meta [show]` prints the ingest meta-schema: the annotators the meta-model composes (entities, hall, room) and the room topic taxonomy. `seed` materializes the seed taxonomy; `annotators <csv>` sets the annotators; `room-add <topic> <kw,kw…>` sets one room's keywords; `room-rm <topic>` removes one. It reads and writes `<config-home>/meta.json` directly, no daemon.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ show · room-add
+
+```memetic-wikitext
+<<has entity=`example` name=`show` params=`~ the meta-schema`>>
+<<has entity=`example` name=`room-add` params=`sub/room-add topic/liturgy keywords/shrine,incense,libation ~ set one room's keywords`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ sub · topic · keywords
+
+```memetic-wikitext
+<<has entity=`arg` name=`sub` params=`takes/word seat/1 as/<show|seed|annotators|room-add|room-rm> ~ the meta act; absent, show`>>
+<<has entity=`arg` name=`topic` params=`takes/words seat/2 as/<csv|topic> ~ the annotators csv, or the room topic`>>
+<<has entity=`arg` name=`keywords` params=`takes/list seat/3 as/<kw,kw…> ~ room-add's keywords`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ writes this host's meta.json; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[sense.meta.tunes]] ~ an unknown sub-verb, annotator or room, or an act missing its words`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ meta
+
+```memetic-wikitext
+<<has entity=`band` name=`meta` params=`exit/0 ~ the meta-schema, or what the act set`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense meta
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense meta]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · lararium-memory
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1yRmIrFF8E63swEgmUaZh-WWZQqXhnRixvnx7htvpl4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

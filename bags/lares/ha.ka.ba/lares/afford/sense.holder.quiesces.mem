@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.holder.quiesces`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "pause the sovereign hooks, drain its holders, confirm zero"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.holder.quiesces", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.holder.quiesces"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.holder.quiesces"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.holder.quiesces ~ the sovereign parallel of the guest quiesce
+
+`lares sense quiesce` pauses the hook legs (the memory sensorium alone owns them) and drains every holder sitting under the sensorium's root, confirming zero; `--hold` keeps the hooks paused. A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ quiesce · hold
+
+```memetic-wikitext
+<<has entity=`example` name=`quiesce` params=`~ drain the memory sensorium`>>
+<<has entity=`example` name=`hold` params=`hold/true ~ drain and keep the hooks paused`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ hold · sensorium-root
+
+```memetic-wikitext
+<<has entity=`arg` name=`hold` params=`~ keep the hooks paused after the drain`>>
+<<has entity=`arg` name=`sensorium-root` params=`takes/host-path ~ the sensorium's root; the leading sensorium name threads it, absent the memory sensorium`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ signals this host's sensorium processes; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ conflict
+
+```memetic-wikitext
+<<has entity=`refusal` name=`conflict` params=`cure/[[sense.holder.reads]] ~ a holder survived SIGTERM and SIGKILL; read the holders`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ quiet
+
+```memetic-wikitext
+<<has entity=`band` name=`quiet` params=`exit/0 ~ zero holders stand`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense quiesce
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares sense quiesce]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · lararium-memory
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jyieHO7pCACkssg0gjlqt90lRBpnxykHufv0zpKi26M`>>
+
+<<^ code=`&#x0004;` to=`?`>>
