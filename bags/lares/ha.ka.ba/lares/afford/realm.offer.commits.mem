@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.offer.commits"
 
 ! realm.offer.commits ~ the hand commits, and the promoted rite stands
 
-Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON.
+Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The wiki rides `wiki=` (absent: the daemon wiki), the face `face=N`, and every answer prints as JSON.
 
 `trust commit <digest>` promotes the item the digest names. It signs under the face's grant and a ward route, so a person runs it at a real terminal; an AI seat prepares and names the command.
 
@@ -104,6 +104,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BeGHX6Tzh2p6-nuGm2_SYMxiBHN_aO8LbrFx0u7OrKI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;G1LoqjCsUlMfMFaZw7sGgnLP8ui2UfzOuGUXl6tp0lo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

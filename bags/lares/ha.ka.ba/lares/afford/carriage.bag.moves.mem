@@ -17,9 +17,9 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.bag.moves"
 
 ! carriage.bag.moves ~ the residency MOVE: an atomic ADD to the destination and a CLEAR from the source
 
-`MOVE` pairs an ADD to the destination with a CLEAR of the title from the source, as one transfer: a live source lands its whole family in the destination (the root and its component slots) and retracts the family to absent in the source; the change-id travels, and one transfer-id ties the accession to the deaccession. A MOVE that names `--from` and `--to` and no `--title` promotes the WHOLE source layer, every live title it holds, in one act.
+`MOVE` pairs an ADD to the destination with a CLEAR of the title from the source, as one transfer: a live source lands its whole family in the destination (the root and its component slots) and retracts the family to absent in the source; the change-id travels, and one transfer-id ties the accession to the deaccession. A MOVE that names `from=` and `to=` and no `title=` promotes the WHOLE source layer, every live title it holds, in one act.
 
-A MOVE of a tombstone carries a delete down: `--title` and `--from` with `--to` name the bag where the delete takes place; with no `--to` the bags holding the title print as candidates (and the line asks for --to). `--shadow` hides a title from a bag that holds none, a delete that shadows the lower layers, and rides a title-grain MOVE alone: a layer move, or any other verb, refuses it.
+A MOVE of a tombstone carries a delete down: `title=` and `from=` with `to=` name the bag where the delete takes place; with no `to=` the bags holding the title print as candidates (and the line asks for to=). `shadow=true` hides a title from a bag that holds none, a delete that shadows the lower layers, and rides a title-grain MOVE alone: a layer move, or any other verb, refuses it.
 
 A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent off a terminal, `mu=pentacle` previews and commits nothing, `in-wiki=true` runs the act in the active wiki's island.
 
@@ -73,7 +73,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · slot-without-root · cap-denied · outcome-unknown
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[carriage.bag.moves title/<title> from/<bag> to/<bag>]] ~ --title, --from and --to stand required, or --from and --to alone to move the whole layer; --shadow names one tombstoned title and refuses a layer move`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.bag.moves title/<title> from/<bag> to/<bag>]] ~ title=, from= and to= stand required, or from= and to= alone to move the whole layer; shadow=true names one tombstoned title and refuses a layer move`>>
 <<has entity=`refusal` name=`slot-without-root` params=`~ a slot subject refuses; a slot moves with its root (a root/path title stays)`>>
 <<has entity=`refusal` name=`cap-denied` params=`~ the writer's cap on the destination or the source bag falls short; nothing moved`>>
 <<has entity=`refusal` name=`outcome-unknown` params=`~ this process stopped waiting after the vessel answered; a short read found no receipt for this attempt's request id; read it back with lares vessel request <id> before any re-run`>>
@@ -89,7 +89,7 @@ Testimony: the door checks; this slot grants nothing.
 <<has entity=`band` name=`done` params=`exit/0 fields/[[verb status requestId receipt]] ~ the vessel ran the action and wrote its effect record; the receipt names the outcome tiddler`>>
 <<has entity=`band` name=`preview` params=`exit/0 ~ with mu=pentacle the vessel names the effect it would land and commits nothing`>>
 <<has entity=`band` name=`refused` params=`~ the vessel refused by name (cap-denied or a verb-error); the line carries its reason and cure`>>
-<<has entity=`band` name=`candidates` params=`exit/0 ~ no destination named: the bags holding the title print, and the line asks for --to`>>
+<<has entity=`band` name=`candidates` params=`exit/0 ~ no destination named: the bags holding the title print, and the line asks for to=`>>
 ```
 
 <<~/ahu>>
@@ -119,6 +119,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;H9UmS83t5YtLfZewyaS10uWSpuuoxgcWOw9KgsLjB9A`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ugUnC8NQYKquzLasp0k1viVtS_3JjfqPr8t4400tdX8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

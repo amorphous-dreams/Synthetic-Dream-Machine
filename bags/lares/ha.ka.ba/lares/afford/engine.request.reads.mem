@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.request.reads"
 
 ! engine.request.reads ~ a request's receipt, read without dispatching
 
-`lares vessel request <requestId>` reads a verb request's receipt and dispatches nothing. `--cancel` withdraws it before it is read: the operator's own withdrawal, marking the id abandoned so a later line under it refuses; no automated path sends it on a timeout.
+`lares vessel request <requestId>` reads a verb request's receipt and dispatches nothing. `cancel=true` withdraws it before it is read: the operator's own withdrawal, marking the id abandoned so a later line under it refuses; no automated path sends it on a timeout.
 
 <<~/ahu>>
 
@@ -50,7 +50,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.request.reads"
 Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
-<<has entity=`gate` name=`hand` params=`who/hand ~ --cancel stays the operator's own withdrawal`>>
+<<has entity=`gate` name=`hand` params=`who/hand ~ cancel=true stays the operator's own withdrawal`>>
 ```
 
 <<~/ahu>>
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Q-zcyaHY-r90IsjE2RjgJ6hNLzFdevUNtRFfupAvZuw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nFnokZEmrEor5jP2gVGxG5m7BfU2eyIJG3lDMdRCP7M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

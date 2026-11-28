@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.hallway.reads"
 
 ! sense.hallway.reads ~ the hallways: entity pairs that recur together
 
-`lares sense structure <wing>` reads the entity-pair hallways of one wing on one plane (`--lens`, default content), each pair seen at least `--min-count` times (default 2). A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
+`lares sense structure <wing>` reads the entity-pair hallways of one wing on one plane (`lens=`, default content), each pair seen at least `min-count=` times (default 2). A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
 
 <<~/ahu>>
 
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;tvcHzpluUtFQ6IQLZ4H9rwONJkfQMbJPrn43PVZEJ_0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PI5CXI5Gzm2oSPZY9pPkLdOze4-0rVoqCMWWG1cpaQQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

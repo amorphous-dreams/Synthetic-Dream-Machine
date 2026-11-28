@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.cabal.joins"
 
 ! realm.cabal.joins ~ the applicant's crossing, priced and read
 
-`lares cabal join realm=<id>` reads whether an applicant (`--applicant <nym>`, else the acting face's key there, read and never minted) crosses into the realm, writing nothing; a refusal bans nobody. `--bundle` hands a vouch bundle (a JSON file or inline), `--cap N` a per-voucher out-degree ceiling. The answer names the voucher, the capped edges and every shadow the crossing met.
+`lares cabal join realm=<id>` reads whether an applicant (`applicant=<nym>`, else the acting face's key there, read and never minted) crosses into the realm, writing nothing; a refusal bans nobody. `bundle=` hands a vouch bundle (a JSON file or inline), `cap=N` a per-voucher out-degree ceiling. The answer names the voucher, the capped edges and every shadow the crossing met.
 
 <<~/ahu>>
 
@@ -63,9 +63,9 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · cap-not-integer · bundle-unreadable · CabalJoinError · store-refused
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[realm.cabal.joins realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef]] ~ --realm expects a 64-hex cabal-realm doc id`>>
-<<has entity=`refusal` name=`cap-not-integer` params=`cure/[[realm.cabal.joins realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef cap/3]] ~ --cap expects an integer`>>
-<<has entity=`refusal` name=`bundle-unreadable` params=`~ --bundle reads as no JSON`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.cabal.joins realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef]] ~ realm= expects a 64-hex cabal-realm doc id`>>
+<<has entity=`refusal` name=`cap-not-integer` params=`cure/[[realm.cabal.joins realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef cap/3]] ~ cap= expects an integer`>>
+<<has entity=`refusal` name=`bundle-unreadable` params=`~ bundle= reads as no JSON`>>
 <<has entity=`refusal` name=`CabalJoinError` params=`~ the join read refused by name`>>
 <<has entity=`refusal` name=`store-refused` params=`~ the store door refused, or no vessel answers; the line names why`>>
 ```
@@ -108,6 +108,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_p3PvRHpwvWZAJB0ar_SV8hje-pdi4kcbHC4INTa45s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OFNN2jDcER0TuKwv8k1Vb3wY35y-AeYJA7tvZZSJnFc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

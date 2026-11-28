@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.residue.lands"
 
 ! face.residue.lands ~ residue ~ a handback keyed idempotently
 
-`lares spirit residue <pet>` lands a report (`--file <path|->` or `--text <words>`) as residue under the pet's own name, keyed by `--key <session:agent>` so the same report lands once. `--witness` reads every landed handback (and `--transcripts <dir|file>`) for the frame and the Personas: one receipt line each, one tally, exit 0.
+`lares spirit residue <pet>` lands a report (`file=<path|->` or `text=<words>`) as residue under the pet's own name, keyed by `key=<session:agent>` so the same report lands once. `witness=true` reads every landed handback (and `transcripts=<dir|file>`) for the frame and the Personas: one receipt line each, one tally, exit 0.
 
 
 The witness reads each hand-back for the seed's frame and Personas: one receipt line per reading and one tally, exit 0 on every reading, a dropped frame named as a tell with the seed slot that re-stands it (`no-aim → #/exchange-protocol`).
@@ -113,6 +113,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hIW_ixpJHMTKa81q_5soRr02wTnG3d4Bx6oYiAmFS0s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nERN1FjrSQ9CEGmJ_S3LZx6dLT2GwH4A7BukJf4kNNs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

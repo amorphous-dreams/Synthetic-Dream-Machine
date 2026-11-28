@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.handle.publishes"
 
 ! face.handle.publishes ~ a persona's public here-I-am note, announced
 
-`lares handle publish <glamour>` mints the persona's Handle (its self-certifying card on the handle-KEL, anchored to the persona-KEL prefix) under the glamour (display name) and announces it onto the Nexus WHO board. The glamour rides seat 1 or `--glamour`; `--persona <index>` names the persona.
+`lares handle publish <glamour>` mints the persona's Handle (its self-certifying card on the handle-KEL, anchored to the persona-KEL prefix) under the glamour (display name) and announces it onto the Nexus WHO board. The glamour rides seat 1 or `glamour=`; `persona=<index>` names the persona.
 
 <<~/ahu>>
 
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BfxTyezudqJ4n2ALNJFf0wY5Zf7gJmMnIHRn0KftmCQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vqQC0kUnleyczk7Dz5jndQQsB-YBw2cHjUP-Vo_dIkA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;Jm8CjEZ0VpYK6joisu0xkhIpkCJ0--lSKqvdZo-C1iA"
+source-check: "ni:///sha-256;56FoILPHmxxqxelh76-O7GIJd6uGOuzHOV_KrqiIWG4"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -923,7 +923,7 @@ channel, one id scheme, one tongue-marking, one grammar per span.
 
 A woven artifact declares its **dialect** as an RFC 7764-registered Markdown variant — CommonMark, GFM,
 kramdown-rfc2629, or another registered name — never an unnamed house flavour, carried as a
-`WeaveProfile` (`kaheaMarker`, `frontmatter`, `requiredMeta`) the weave path selects on `--dialect`.
+`WeaveProfile` (`kaheaMarker`, `frontmatter`, `requiredMeta`) the weave path selects on `dialect=`.
 Metadata travels per RFC 7763: a `.md.meta` sidecar when the woven file sits on a shelf beside others
 (the CommonMark shelf pair's standing shape), YAML frontmatter when a profile travels standalone. The
 frontmatter writer keeps a strict subset — every value double-quoted, every key sorted — defending the
@@ -964,7 +964,7 @@ fragment reads as a JSON Pointer (RFC 6901), reused per RFC 8820, whose referenc
 
 ### Tongue
 
-**Weave direction.** A woven file declares `lang` (BCP 47) for the reader's tongue under a `--tongue`
+**Weave direction.** A woven file declares `lang` (BCP 47) for the reader's tongue under a `tongue=`
 selection and `tongue: "x-lares>en"` for its own authoring lineage — the private-use `x-lares` subtag
 marking a Lares-authored source, `>en` marking the tongue it wove into; `tongue` joins the frontmatter
 ONLY when a tongue wove, and its absence weaves every sigil head canonical, byte-identical to a

@@ -17,9 +17,9 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.record.wins"
 
 ! carriage.record.wins ~ a person settles one standoff toward the records
 
-A standoff names a carrier whose file and records disagree while no rule picks. `take-records <uri> --key <key>` writes the records' render over that file; `keep-records` does the same where drafts stand, and lets the drafts go. The key comes from the alert (`lares shore` prints it), and an answer that names a state that moved takes nothing: the island refuses by name.
+A standoff names a carrier whose file and records disagree while no rule picks. `take-records <uri> key=<key>` writes the records' render over that file; `keep-records` does the same where drafts stand, and lets the drafts go. The key comes from the alert (`lares shore` prints it), and an answer that names a state that moved takes nothing: the island refuses by name.
 
-SETTLING STAYS A HAND ACT: the verb reads the hand behind this command before it asks or runs anything; an AI harness on its branch refuses `hand-act-only`, an unreadable branch `hand-unattested`, each naming the command the operator runs, and `yes=true` approves nothing by itself. A terminal asks `Proceed? [y/N]` (the file's present bytes give way to the records' render); a JSON call off a terminal needs `yes=true`. `face=N` answers a lit sibling's standoff without wearing it; `--bag` narrows the carrier's bag.
+SETTLING STAYS A HAND ACT: the verb reads the hand behind this command before it asks or runs anything; an AI harness on its branch refuses `hand-act-only`, an unreadable branch `hand-unattested`, each naming the command the operator runs, and `yes=true` approves nothing by itself. A terminal asks `Proceed? [y/N]` (the file's present bytes give way to the records' render); a JSON call off a terminal needs `yes=true`. `face=N` answers a lit sibling's standoff without wearing it; `bag=` narrows the carrier's bag.
 
 <<~/ahu>>
 
@@ -108,6 +108,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;razP81IGovSTdA_QimR_epYrk-gpMY376hA-xPfZjdA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QwOrBIvHIWSgbTcNfYPBw8vk7szmdIlLpcoK5HS_Jzc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

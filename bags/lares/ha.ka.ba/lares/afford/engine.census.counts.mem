@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.census.counts"
 
 ! engine.census.counts ~ what a stop would drop, counted before it happens
 
-`lares vessel census` asks the custody door's census frame and each island's shore census for saves held in memory and carriers the projector owes, plus untracked files under a checkout's mirror; each item names the act that lands it. `--docs` reads the document census instead: every stored document, its class and who names it.
+`lares vessel census` asks the custody door's census frame and each island's shore census for saves held in memory and carriers the projector owes, plus untracked files under a checkout's mirror; each item names the act that lands it. `docs=true` reads the document census instead: every stored document, its class and who names it.
 
 <<~/ahu>>
 
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;COFNWdr3NR8mpOeTlcbYAsxrTbGpEuzGtM_OLBQoxwg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;b0IeF-w2QLOH6aqLxyjnBkYRP2K6RadaZc91PkYgYTQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

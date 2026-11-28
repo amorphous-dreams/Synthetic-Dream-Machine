@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.pool.lays"
 
 ! face.pool.lays ~ init ~ one git working tree per pool, idempotent
 
-`lares surface init` makes the worn (or `--face N`) face's root at `projections/faces/<pet name>/` a pool: `.git` at 0700, the house's ignore list, a local author `<pet name> <slug>@face.invalid` and a pre-commit pool-check hook. It changes only what does not already stand as the house writes it, and a second run says already. `--realm <realm pet name>` makes the realm's root its one pool under the realm's identity, never a face's, lifting any tree nested below it with its history kept, and each share row's workspace a pool under its wiki's identity; a wiki whose folder stands nowhere yet reads unlaid. `--workspace <name>` makes a bound workspace folder a pool under a workspace author. It runs on this machine; with no LAR_ROOT it reads the container house's pools under LARES_HOUSE.
+`lares surface init` makes the worn (or `face=N`) face's root at `projections/faces/<pet name>/` a pool: `.git` at 0700, the house's ignore list, a local author `<pet name> <slug>@face.invalid` and a pre-commit pool-check hook. It changes only what does not already stand as the house writes it, and a second run says already. `realm=<realm pet name>` makes the realm's root its one pool under the realm's identity, never a face's, lifting any tree nested below it with its history kept, and each share row's workspace a pool under its wiki's identity; a wiki whose folder stands nowhere yet reads unlaid. `workspace=<name>` makes a bound workspace folder a pool under a workspace author. It runs on this machine; with no LAR_ROOT it reads the container house's pools under LARES_HOUSE.
 
 <<~/ahu>>
 
@@ -114,6 +114,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;b7tBGYQWmZsVsneD1oEqPRg7ldwZLOF8DZ9VPxIsX38`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aT7mfXq1yagkcByYMnYOnvJXJ8XTDZx2RhB1d6GK-wQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -137,7 +137,7 @@ payload on stdout off-TTY or under `json=true`); the progress stream reads UNBUI
   and polls; it never holds a blocking call across its context.
 * `wait --timeout` returns ''"PROCESSING: job <id> still running (original ask: …)"''
   — carrying the context so the agent needn't hold it.
-* ''`yes=true` / `--force`'' (an agent cannot type `y`; a prompt-hang kills its workflow).
+* ''`yes=true` / `force=true`'' (an agent cannot type `y`; a prompt-hang kills its workflow).
 * ''Parseable error CODES, not prose'' (`not-found`, not "Error occurred").
 
 <<~/ahu>>
@@ -173,6 +173,6 @@ write toward; it describes no current emission.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;w7cC-e12gO7Sdd976IGO0SZwSvCVZf1WTfGv3-Y-LSc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gbZ3fJWlWfLZ8bHG2Yu-HgmFsArzW3NweEvoOq223Zs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

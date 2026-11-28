@@ -37,7 +37,6 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     await afterDispatch();
     typeInto(r, d, "the edit that must not be lost");
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     expect(storeText(r, draftBag, d), "the draft record stands in the draft layer before the save").toBe("the edit that must not be lost");
     r.failures.family = new Error("the target write was refused");
@@ -100,7 +99,6 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     const d = openDraft(r, x, "keystroke 0");
     await afterDispatch();
     for (let i = 1; i <= 20; i++) { typeInto(r, d, `keystroke ${i}`); await turns(1); }
-    boundary.fire();
     await boundary.settle();
     expect(touching(r, 0, x), "no write for X before the save").toEqual([]);
     const draftRecord = r.doc(draftBag).tiddlers[d]!.tiddler;
@@ -129,7 +127,6 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     r.wiki.addTiddler(new r.Tiddler({ title: z, text: "ordinary hand" }));
     await afterDispatch();
     expect(touching(r, markZ, z), "an ordinary hand leaves at its batch boundary").toHaveLength(1);
-    boundary.fire();
     await boundary.settle();
     expect(touching(r, markZ, z)).toHaveLength(1);
     await r.stop();
@@ -146,7 +143,6 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     const d = openDraft(r, x, "hand value");
     const dClean = openDraft(r, clean, "hand value");
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     await peerWrite(r, workingBag, [{ tiddler: { title: x, text: "remote value" } }, { tiddler: { title: clean, text: "landed", type: "text/x-other" } }]);
     await turns(16);
@@ -180,7 +176,6 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     typeInto(r, d, "renamed text", { "draft.title": y });
     const dPlain = openDraft(r, plain, "plain text");
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
 
     const working = r.changes(workingBag);
@@ -413,7 +408,6 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     saveSequence(r, d);
     await afterDispatch();
     expect(touching(r, mark, x)).toHaveLength(1);
-    boundary.fire();
     await boundary.settle();
     expect(storeDeleted(r, draftBag, d)).toBe(true);
     expect(r.wiki.getTiddler(d)).toBeUndefined();
@@ -433,7 +427,6 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     await afterDispatch();
     typeInto(r, d, body);
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     const working = r.changes(workingBag);
     const mark = r.calls.length;
@@ -478,7 +471,6 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     const d = draftTitleOf(x);
     await afterDispatch();
     typeInto(r, d, "edited through the navigator", { "draft.title": y });
-    boundary.fire();
     await boundary.settle();
     const mark = r.calls.length;
     navigator.dispatchEvent(event("tm-save-tiddler", d));
@@ -493,7 +485,6 @@ describe.skipIf(wikiSkip)(`wiki shore draft road${skipNote}`, () => {
     navigator.dispatchEvent(event("tm-edit-tiddler", z));
     const dz = draftTitleOf(z);
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     const markCancel = r.calls.length;
     navigator.dispatchEvent(event("tm-cancel-tiddler", dz));
@@ -568,7 +559,6 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     for (const target of [volatile, rail]) {
       const d = openDraft(r, target, "typed");
       await afterDispatch();
-      boundary.fire();
       await boundary.settle();
       const mark = r.calls.length;
       saveSequence(r, d);
@@ -580,7 +570,6 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     const d = openDraft(r, source, "renamed");
     typeInto(r, d, "renamed", { "draft.title": volatile });
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     const mark = r.calls.length;
     saveSequence(r, d);
@@ -648,7 +637,6 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     navigator.dispatchEvent(event("tm-edit-tiddler", x));
     const d = draftTitleOf(x);
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     expect(storeText(r, workingBag, d), "the draft reached the store and its wave returned").toBeDefined();
     expect(r.doc(workingBag).tiddlers[d]!.tiddler["lar-draft-base-bag"], "the store record carries the base").toBe(workingBag);
@@ -730,7 +718,6 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
       const d = openDraft(r, x, "renamed");
       typeInto(r, d, "renamed", { "draft.title": y });
       await afterDispatch();
-      boundary.fire();
       await boundary.settle();
       // The store refuses every write while the refusal stands, a retry included: a wave the store redelivers
       // late lawfully retries the owed tombstone, and the vector reads the refused state, never that retry.
@@ -760,7 +747,7 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     await r.adaptor.armSeedCheckpoint();
     const d = openDraft(r, x, "renamed");
     typeInto(r, d, "renamed", { "draft.title": y });
-    await afterDispatch(); boundary.fire(); await boundary.settle();
+    await afterDispatch(); await boundary.settle();
     r.failures.deleteTitle = x;
     saveSequence(r, d);
     await afterDispatch(); await boundary.settle(); await r.adaptor.landingIdle();
@@ -992,7 +979,6 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     const d = openDraft(r, x, "fresh");
     typeInto(r, d, "fresh", { "draft.title": y });
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     const mark = r.calls.length;
     saveSequence(r, d);
@@ -1013,7 +999,6 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     r.failures.family = new Error("refused");
     const d = openDraft(r, x, "typing");
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     expect(r.wiki.getTiddler(`$:/temp/lares/alert/unsaved/${d}`)).toBeDefined();
     r.failures.family = null;
@@ -1032,7 +1017,6 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, bases and acts${skipNote}`, ()
     const x = "lar:///t/road/unroutable-target";
     const d = openDraft(r, x, "typing");
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     expect(storeText(r, draftBag, d)).toBe("typing");
     expect(r.doc(draftBag).tiddlers[d]!.tiddler["lar-draft-base-bag"]).toBeUndefined();
@@ -1088,12 +1072,10 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, retries and shadows${skipNote}
     const d = openDraft(r, x, "renamed");
     typeInto(r, d, "renamed", { "draft.title": y });
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     saveSequence(r, d);
     await afterDispatch();
     expect(String(r.wiki.getTiddler(x)!.fields.text), "the delete reveals the shadow").toBe("shadow text");
-    boundary.fire();
     await boundary.settle();
     expect(storeText(r, workingBag, y)).toBe("renamed");
     expect(storeAbsent(r, workingBag, x), "the source's override leaves plainly, never as a copy of the shadow").toBe(true);
@@ -1115,7 +1097,6 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, retries and shadows${skipNote}
     await afterDispatch();
     typeInto(r, d, body);
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     r.failures.tombstone = new Error("stray refused");
     saveSequence(r, d);
@@ -1140,7 +1121,6 @@ describe.skipIf(wikiSkip)(`wiki shore draft road, retries and shadows${skipNote}
     await r.adaptor.armSeedCheckpoint();
     const d = openDraft(r, x, "phone draft");
     await afterDispatch();
-    boundary.fire();
     await boundary.settle();
     r.failures.family = new Error("refused");
     saveSequence(r, d);

@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.edge.raises"
 
 ! realm.edge.raises ~ one relationship, set aside; neither party falls
 
-`lares edge kapae` sets one relationship aside: name exactly one of an edge id, `--member <key>` or `--device <key>`, with `--realm <id>` where the relationship rides a realm. The act signs with a persona root (`--as <index>`) or, under `--quorum`, the seats this vessel holds; it asserts no authority, and whichever reader consults the shadow decides whether that hand holds the edge. The marker rides the edge, never a party. Raising wins the fold under partition, so an eviction never quietly reverses. `--quorum --partial` signs with the seats held here and prints a partial for the next seat's vessel instead (`--member`, or `--voucher` with `--joiner`, under `--realm`); `lares edge cosign` lands it.
+`lares edge kapae` sets one relationship aside: name exactly one of an edge id, `member=<key>` or `device=<key>`, with `realm=<id>` where the relationship rides a realm. The act signs with a persona root (`as=<index>`) or, under `quorum=true`, the seats this vessel holds; it asserts no authority, and whichever reader consults the shadow decides whether that hand holds the edge. The marker rides the edge, never a party. Raising wins the fold under partition, so an eviction never quietly reverses. `quorum=true partial=true` signs with the seats held here and prints a partial for the next seat's vessel instead (`member=`, or `voucher=` with `joiner=`, under `realm=`); `lares edge cosign` lands it.
 
 <<~/ahu>>
 
@@ -70,8 +70,8 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · as-not-index · EdgeKapaeError · EdgeCosignError
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[realm.edge.raises edge/<edge-id>]] ~ name one relationship (an edge id, --member or --device); --partial needs --quorum and --realm`>>
-<<has entity=`refusal` name=`as-not-index` params=`cure/[[realm.edge.raises edge/<edge-id> as/0]] ~ --as expects a persona-root index`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.edge.raises edge/<edge-id>]] ~ name one relationship (an edge id, member= or device=); partial=true needs quorum=true and realm=`>>
+<<has entity=`refusal` name=`as-not-index` params=`cure/[[realm.edge.raises edge/<edge-id> as/0]] ~ as= expects a persona-root index`>>
 <<has entity=`refusal` name=`EdgeKapaeError` params=`~ the act refused by name`>>
 <<has entity=`refusal` name=`EdgeCosignError` params=`~ the partial refused by name`>>
 ```
@@ -115,6 +115,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SAS8rR_JWkdNQmVXAb4pnLSkLwgkhnN8Ed6Q7U9JxFg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;P9QlR2-Vq_1-pkjkEBGhnqfsluRrWPLNssjjmih3_0o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

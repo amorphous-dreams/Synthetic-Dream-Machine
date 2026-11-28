@@ -49,7 +49,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.sensorium.purges"
 Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
-<<has entity=`gate` name=`hand` params=`who/hand ~ runs direct over manifest.json; a person at a real terminal, and the verb names its intent with --approve where it asks one`>>
+<<has entity=`gate` name=`hand` params=`who/hand ~ runs direct over manifest.json; a person at a real terminal, and the verb names its intent with approve=true where it asks one`>>
 ```
 
 <<~/ahu>>
@@ -59,7 +59,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ verb-error · hand-act-only
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`verb-error` params=`~ no name, no --approve, or the purge refused`>>
+<<has entity=`refusal` name=`verb-error` params=`~ no name, no approve=true, or the purge refused`>>
 <<has entity=`refusal` name=`hand-act-only` params=`~ a seat reached a hand verb; name the command for the operator`>>
 ```
 
@@ -100,6 +100,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;au5hUCIRZz7FquEL_DQvqqqiNfsDBAANPdHj4g6VxN8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BsKLZDl_AicYQhpJD7OYwBLHBL5FPLtRNMVqdYZyGkQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

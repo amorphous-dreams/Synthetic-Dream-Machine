@@ -68,7 +68,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares wiki render
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares wiki render]] ~ the terminal; --output workbench lands the render in the wiki's bound workbench`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares wiki render]] ~ the terminal; output=workbench lands the render in the wiki's bound workbench`>>
 ```
 
 <<~/ahu>>
@@ -94,6 +94,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NJc_a7hgjCv3ux-xwZGJ9-JcW3lXdMUS9pTZT4GiNwU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HOizQDkvEMel7ElJJ0-OQjFsrKukbdfceyRftPSpKXo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.disk.settles"
 
 ! carriage.disk.settles ~ a stalled settle word asked again, over its pending carriers alone
 
-`lares ingest apply=true` leaves the carriers still waiting as the bag's record under the house's run dir (`settlePendingPath`) when no page settled within the stall window. `settle --bag <bag> --pending` asks the word again over those carriers alone, then clears the record (settled whole) or rewrites it (still waiting). It reads no face, so `--face` refuses as usage, and it asks no confirmation.
+`lares ingest apply=true` leaves the carriers still waiting as the bag's record under the house's run dir (`settlePendingPath`) when no page settled within the stall window. `settle bag=<bag> pending=true` asks the word again over those carriers alone, then clears the record (settled whole) or rewrites it (still waiting). It reads no face, so `face=` refuses as usage, and it asks no confirmation.
 
 <<~/ahu>>
 
@@ -59,7 +59,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[carriage.disk.settles bag/<bag> pending/true]] ~ settle resumes a stalled settle word from its record, and needs the bag and --pending`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.disk.settles bag/<bag> pending/true]] ~ settle resumes a stalled settle word from its record, and needs the bag and pending=true`>>
 ```
 
 <<~/ahu>>
@@ -99,6 +99,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YVN6BrYoabcCmo_OrquuRrEZl4qdL2x6lJz09VPJlVU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ygX-Dp-66i2IXmwFWrmzMmqIJD6kAlOdFLrJgJpHieI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

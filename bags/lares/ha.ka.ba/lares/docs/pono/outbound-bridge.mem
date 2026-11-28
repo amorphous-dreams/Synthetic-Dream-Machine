@@ -98,7 +98,7 @@ Two facts the stock adaptors carry that the island's shape already mirrors: the 
 
 ''Why no flag can serve, MEASURED'' (`packages/lararium-tw5/tests/outbound-bridge.test.ts` "CONTROL (5b)"): `change` dispatches on `nextTick`, AFTER an apply lowered `isApplyingNalu()`. Inside a `change` listener the flag reads `false` for every inbound apply, so it tells a SYNCHRONOUS caller alone. TW5's own `changeCount` lives in memory and a set of expected titles goes stale across a multi-change apply; the landed ledger asks only what stands, so one answer serves a live wave, a seed and a restart.
 
-''The anchor placement.'' `packages/lararium-tw5/src/meme-verbs.ts` `anchorBagOf` names the daemon's mounted working layer from `current-wiki-bag` and sinks through `wikiMemeSink(opts.tw5.$tw.wiki)` — a wiki write, which the bridge carries outward like any other. Witnessed through the daemon's own door (`tests/e2e/outbound-bridge.e2e.test.ts` B1): after `lares put title=<uri>`, `meme get <uri> --bag lar:///ha.ka.ba/wikis/daemon/working` answers the meme.
+''The anchor placement.'' `packages/lararium-tw5/src/meme-verbs.ts` `anchorBagOf` names the daemon's mounted working layer from `current-wiki-bag` and sinks through `wikiMemeSink(opts.tw5.$tw.wiki)` — a wiki write, which the bridge carries outward like any other. Witnessed through the daemon's own door (`tests/e2e/outbound-bridge.e2e.test.ts` B1): after `lares put title=<uri>`, `meme get <uri> bag=lar:///ha.ka.ba/wikis/daemon/working` answers the meme.
 
 <<~/ahu>>
 
@@ -168,7 +168,7 @@ Every vector below runs as a plain `test` and stands GREEN; each carries, as its
 
 The shore law's own vectors stand beside these in `packages/lararium-tw5/tests/`: `wiki-shore-vectors` (foam, the base, the wave that meets a hand, the seed checkpoint, the returning hand) · `wiki-shore-draft-road` (save, rename, cancel, the draft-open base across devices) · `wiki-shore-field-grain` · `wiki-shore-cross-bag` · `wiki-shore-shadow` and `wiki-shore-route` (where a hand's save and delete land) · `wiki-shore-returning-hand`, `wiki-shore-faults` and `wiki-shore-landing-failed` (the alerts and what stays owed) · `wiki-shore-residue` · `draft-reads-unmodified`.
 
-CONTROLS standing green beside them: an explicit `--recipe default` put lands in the daemon's wiki and reads back · a DIRECT put into `wikis/daemon/working` lands and reads back through the same bag · `bags/daemon/` never appears under the root · the MOVE out of the daemon wiki answers `ok` and the carrier reads back from crossroads.
+CONTROLS standing green beside them: an explicit `recipe=default` put lands in the daemon's wiki and reads back · a DIRECT put into `wikis/daemon/working` lands and reads back through the same bag · `bags/daemon/` never appears under the root · the MOVE out of the daemon wiki answers `ok` and the carrier reads back from crossroads.
 
 <<~/ahu>>
 
@@ -199,6 +199,6 @@ CONTROLS standing green beside them: an explicit `--recipe default` put lands in
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;IYUylG5z67pepI6dhk58YUZeeKMs4w36u4s169ATphY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;haY4dZCE-OQl9F2Z_NDB6tUMc7Sgy7BY8ZgRR4JPzTA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

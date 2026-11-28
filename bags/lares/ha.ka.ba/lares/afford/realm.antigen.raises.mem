@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.antigen.raises"
 
 ! realm.antigen.raises ~ a ban on the always-carried antigen board
 
-`lares nexus kapae <nym> [reason=<text>] [nexus=<aid>]` raises a quorum-signed ban; a banned presenter draws Mu. `--list` folds the currently-kāpae'd set. Where the seats rest in two vaults, `--out <partial>` signs with the seats held here and `--from <partial>` cosigns and lands. Fail closed: a sub-quorum or unseated charter refuses and writes nothing.
+`lares nexus kapae <nym> [reason=<text>] [nexus=<aid>]` raises a quorum-signed ban; a banned presenter draws Mu. `list=true` folds the currently-kāpae'd set. Where the seats rest in two vaults, `out=<partial>` signs with the seats held here and `from=<partial>` cosigns and lands. Fail closed: a sub-quorum or unseated charter refuses and writes nothing.
 
 <<~/ahu>>
 
@@ -109,6 +109,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1vlVLCIHB-Kz5uXwrECsUjqdaJyIqICgSK0LnLoCEO4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qSWGUz3VDHmCygJ-WaGwfXEJjBWMg73LJM4sJ8HbyUw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

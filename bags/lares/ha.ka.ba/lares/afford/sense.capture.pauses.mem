@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.capture.pauses"
 
 The hook-lever stands on its own: a marker file a capture hook checks and steps aside on when present (whatever runs the `lares sense capture` and `lares sense telemetry` legs on a session event). A migration or a `lares sense teardown` then runs WITHOUT daemon-spawn contention: the minting stops at the source, with no whack-a-mole against spawned children. `lares mempalace quiesce` pauses AND drains the warm daemons in one gesture; this lever suppresses minting alone, touching no live daemon.
 
-`hooks pause [--reason <t>]` writes the marker (the reason defaults to `manual`) and answers {wasPaused, hooksPaused, marker, since, reason}; pausing again refreshes the reason. Run `lares mempalace quiesce` to drain the warm daemons, and `hooks resume` to un-pause.
+`hooks pause [reason=<t>]` writes the marker (the reason defaults to `manual`) and answers {wasPaused, hooksPaused, marker, since, reason}; pausing again refreshes the reason. Run `lares mempalace quiesce` to drain the warm daemons, and `hooks resume` to un-pause.
 
 <<~/ahu>>
 
@@ -90,6 +90,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;il2GyJ8KeKp6UR8Ksua79kle-KpY0J_C7IVHGXyhjBU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HpAI3cS0tTZj_yp03mkOAJaFWP7H8lbasNJf1UdknJo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

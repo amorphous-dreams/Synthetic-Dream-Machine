@@ -17,9 +17,9 @@ uri-path  = "ha.ka.ba/lares/afford/face.carry.restands"
 
 ! face.carry.restands ~ after a root rotation the earlier items stand again once carried
 
-After a root rotation the earlier items read in history alone until the operator's hand carries them: `kahua carry <cid>…` names the revision cids that keep standing, or `--all` names every earlier head the history reads (never both). One root-signed act at the current epoch stands them again. It runs on a person's hand alone, and no tool carries it. Every answer prints as JSON.
+After a root rotation the earlier items read in history alone until the operator's hand carries them: `kahua carry <cid>…` names the revision cids that keep standing, or `all=true` names every earlier head the history reads (never both). One root-signed act at the current epoch stands them again. It runs on a person's hand alone, and no tool carries it. Every answer prints as JSON.
 
-Under a pūlama the root signs at the pūlama's hand door, since the vessel there holds no face root: `--terms` runs every gate and prints ONE stdout line (the one unsigned act its root signs) and opens no route; the pūlama's `sign '<terms>'` checks it and signs; `--land '<answer>'` lands the signed record, where the door builds the act afresh and lands it only over a byte-equal body. Neither asks the passphrase on the vessel, and the host shim walks the pattern (`tools/lares-container.sh kahua lift|withdraw|carry`).
+Under a pūlama the root signs at the pūlama's hand door, since the vessel there holds no face root: `terms=true` runs every gate and prints ONE stdout line (the one unsigned act its root signs) and opens no route; the pūlama's `sign '<terms>'` checks it and signs; `land='<answer>'` lands the signed record, where the door builds the act afresh and lands it only over a byte-equal body. Neither asks the passphrase on the vessel, and the host shim walks the pattern (`tools/lares-container.sh kahua lift|withdraw|carry`).
 
 <<~/ahu>>
 
@@ -65,9 +65,9 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ carry-cids-or-all · kahua-hand-malformed · face-malformed
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`carry-cids-or-all` params=`cure/[[face.carry.restands all]] ~ the door says 'carry: name the revision cids that keep standing, or --all (never both)'`>>
-<<has entity=`refusal` name=`kahua-hand-malformed` params=`~ the pūlama's answer names the wrong kind, the wrong face, or both --terms and --land stood on one line`>>
-<<has entity=`refusal` name=`face-malformed` params=`~ --face names a persona index, a whole number from 0`>>
+<<has entity=`refusal` name=`carry-cids-or-all` params=`cure/[[face.carry.restands all]] ~ the door says 'carry: name the revision cids that keep standing, or all=true (never both)'`>>
+<<has entity=`refusal` name=`kahua-hand-malformed` params=`~ the pūlama's answer names the wrong kind, the wrong face, or both terms=true and land=stood on one line`>>
+<<has entity=`refusal` name=`face-malformed` params=`~ face= names a persona index, a whole number from 0`>>
 ```
 
 <<~/ahu>>
@@ -108,6 +108,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;PMhSrr57luIEC41yPOgWPvAQTBLyXfeLj_UPwNjljY0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_1A8Zeqmb9jg-QFRFWnVavRslORmBrkbzDyLHkz3oy4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

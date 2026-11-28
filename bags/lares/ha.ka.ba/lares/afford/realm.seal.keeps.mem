@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.seal.keeps"
 
 ! realm.seal.keeps ~ the founding-kahu roster and its pre-rotated charter-epoch chain
 
-`lares nexus seal <sub>` keeps the Nexus seal, the quorum that governs carriage membership, the antigen and its own succession. `seat` gives each persona that stood for a chair a seat key of its own and establishes the genesis epoch, each chair's next key printed once on a cold-key card the operator types back (`--threshold <k>`); `rotate` takes the cards back and advances the chain, failing closed on a roll the law refuses; `show` reads the roster, chain head and quorum verdict; `export` and `import <file>` carry a charter (`--carry` lands a partner's beside yours); `grow` and `cold rehearse` read cards against the committed digests (`--note` marks a witness); `cofound open|join|seal` founds a fresh two-of-two Nexus with a second operator (`--release`, `--charter-law`, `--heard`, `--heard-threshold`, `--out`, `--face`); `roll open|join|sign|file|abandon` rolls a joint Nexus across vaults (`--added`, `--cold-key` on a staged test root, `--index`); `anchor` signs a two-vault roll's anchor (`--edge`, `--from`, `--out`). A cold-key card rides a terminal alone.
+`lares nexus seal <sub>` keeps the Nexus seal, the quorum that governs carriage membership, the antigen and its own succession. `seat` gives each persona that stood for a chair a seat key of its own and establishes the genesis epoch, each chair's next key printed once on a cold-key card the operator types back (`threshold=<k>`); `rotate` takes the cards back and advances the chain, failing closed on a roll the law refuses; `show` reads the roster, chain head and quorum verdict; `export` and `import <file>` carry a charter (`carry=<path>` lands a partner's beside yours); `grow` and `cold rehearse` read cards against the committed digests (`note=` marks a witness); `cofound open|join|seal` founds a fresh two-of-two Nexus with a second operator (`release=`, `charter-law=`, `heard=`, `heard-threshold=`, `out=`, `face=`); `roll open|join|sign|file|abandon` rolls a joint Nexus across vaults (`added=`, `cold-key=` on a staged test root, `index=`); `anchor` signs a two-vault roll's anchor (`edge=true`, `from=`, `out=`). A cold-key card rides a terminal alone.
 
 <<~/ahu>>
 
@@ -123,6 +123,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;B-T3pUXYykSnXdyUWecDOZgJGK6mcCwNnwR_Z0fSM2E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_Qx-8prAiDxqo67IxbQqktIo1qQzuTgT4bvMEDUZcQc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

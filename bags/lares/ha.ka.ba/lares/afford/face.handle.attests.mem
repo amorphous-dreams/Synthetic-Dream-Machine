@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.handle.attests"
 
 ! face.handle.attests ~ a structured edge: this Handle stands in a named relation
 
-`lares handle attest surface=<kind> subject=<name>` mints a signed statement that this Handle stands in a named relation to a named foreign subject (surfaces: dns-control, atproto-account, kowloon-actor, loopback-address) and prints it for the operator to carry. `--return-locator` names where the surface half looks; `--persona` the persona. A closed vocabulary refuses an unknown surface by name.
+`lares handle attest surface=<kind> subject=<name>` mints a signed statement that this Handle stands in a named relation to a named foreign subject (surfaces: dns-control, atproto-account, kowloon-actor, loopback-address) and prints it for the operator to carry. `return-locator=` names where the surface half looks; `persona=` the persona. A closed vocabulary refuses an unknown surface by name.
 
 <<~/ahu>>
 
@@ -61,7 +61,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · store-refused
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[face.handle.attests surface/dns-control subject/example.net]] ~ attest wants --surface and --subject, and an adapter that answers them`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[face.handle.attests surface/dns-control subject/example.net]] ~ attest wants surface= and subject=, and an adapter that answers them`>>
 <<has entity=`refusal` name=`store-refused` params=`~ the store door refused; the line names why`>>
 ```
 
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SAC4Bh4zg3wuJlT8BSx4Ksiswl8-Elhik_qirThBNvQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MLOb2Ss4kHJQ3pIndAvZM8cafZzBnMlPix0lJt_bSvI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

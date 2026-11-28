@@ -56,19 +56,19 @@ The lifecycle models three battle-proven idioms:
 and ''mktemp + trap EXIT'' (the scratch dir guaranteed-swept on success OR error). The noun-verb tree the
 `lares sensorium` door carries (its help registry names each verb):
 
-<<~ has entity=`Verb` name=`run` params=```args/<path> [-- <analysis>] ~ EPHEMERAL-DEFAULT: open→ingest→analyze→DISSOLVE; `--keep` retains it```>>
-<<~ has entity=`Verb` name=`open` params=`args/<path> [--name] ~ stand a scratch sensorium, hold it open for queries`>>
+<<~ has entity=`Verb` name=`run` params=```args/<path> [-- <analysis>] ~ EPHEMERAL-DEFAULT: open→ingest→analyze→DISSOLVE; `keep=true` retains it```>>
+<<~ has entity=`Verb` name=`open` params=`args/<path> [name=] ~ stand a scratch sensorium, hold it open for queries`>>
 <<~ has entity=`Verb` name=`query` params=`args/<id> <kw> ~ ask an open scratch sensorium`>>
 <<~ has entity=`Verb` name=`ls` params=`args/ ~ list the live scratch instances`>>
 <<~ has entity=`Verb` name=`keep` params=`args/<id> ~ EXPLICIT promote — retain an ephemeral scratch as durable`>>
-<<~ has entity=`Verb` name=`dissolve` params=`args/<id | --all | --orphans> ~ idempotent reap + orphan-reaping`>>
+<<~ has entity=`Verb` name=`dissolve` params=`args/<id | all=true | orphans=true> ~ idempotent reap + orphan-reaping`>>
 
 !!! The lifecycle law
 
 Each ephemeral sensorium stands as a ''scratch instance under `.corpus/<id>/`'', resolved-never-ambient and
 sweepable. Three holds bind it:
 
-<<~ scale name=`law` ranks=```ephemeral-by-default ~ `run` reaps on exit unless `--keep` retains it -> keep-explicit ~ durability NEVER happens by accident; the operator promotes -> trap-EXIT ~ dissolve fires on success OR error; an interrupted run leaves no half-paved scratch```>>
+<<~ scale name=`law` ranks=```ephemeral-by-default ~ `run` reaps on exit unless `keep=true` retains it -> keep-explicit ~ durability NEVER happens by accident; the operator promotes -> trap-EXIT ~ dissolve fires on success OR error; an interrupted run leaves no half-paved scratch```>>
 
 ''Two independent reapers close the leak.'' The trap reaps on exit, and an interrupted run the trap missed
 (SIGKILL, a crashed host) falls to `lares sensorium dissolve orphans=true` and to `lares sense teardown`, whose
@@ -226,6 +226,6 @@ global-now it cannot ground. The reconciliation cost `R*_sem = log₂ dim H¹` g
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yHUdcSPEPdu9YhjUZwGa3cDPL8XNnlYaTye5RCgGDE4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6t6JatWjnvvfZUzt2md8za_cQ_O_kAV5o2mOmkWGnfI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.hold.releases"
 
 ! engine.hold.releases ~ one held document id, released over the stopped store
 
-`lares vessel release <documentId>` ends one quarantine hold while no holder answers for the store: bare the held bytes return; `--keep` keeps what stands under the id; `--fresh` starts a plane no sibling carries empty. A holder or a fallen vessel over the store refuses, naming the stop that frees it.
+`lares vessel release <documentId>` ends one quarantine hold while no holder answers for the store: bare the held bytes return; `keep=true` keeps what stands under the id; `fresh=true` starts a plane no sibling carries empty. A holder or a fallen vessel over the store refuses, naming the stop that frees it.
 
 <<~/ahu>>
 
@@ -63,7 +63,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`usage` params=`cure/[[engine.hold.releases document/<documentId>]] ~ name one document id`>>
-<<has entity=`refusal` name=`one-act` params=`~ --keep and --fresh name two acts; name one`>>
+<<has entity=`refusal` name=`one-act` params=`~ keep=true and fresh=true name two acts; name one`>>
 <<has entity=`refusal` name=`store-held` params=`~ a holder answers for the store; lares vessel stop first`>>
 <<has entity=`refusal` name=`refused` params=`~ the release refused; the line names why`>>
 ```
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;tOSRYQAIl5ffXpa5qqHSYw0pfH5bQlOB89lQNervP38`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RO5A0sp7TSw6SK_Y1PWCRZF2kdRx0kgr2G8RVf_8GLo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -59,7 +59,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[library.index.writes collection/mark-twain out/library/mark-twain.mem]] ~ no collection named, or no --out`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[library.index.writes collection/mark-twain out/library/mark-twain.mem]] ~ no collection named, or no out=`>>
 ```
 
 <<~/ahu>>
@@ -99,6 +99,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0T7ZHfeKC1KoJvqPw2ZLzsMQp_30lqmLbejW-1KRmbc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cL0PIpY3VZ2GMO5DZcOjJxus19qSYchRwXJUaBl-wuU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

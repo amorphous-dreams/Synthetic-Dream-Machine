@@ -6,7 +6,7 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-role      = "read an edge partial, and with --act add this vessel's seats"
+role      = "read an edge partial, and with act= add this vessel's seats"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.edge.cosigns", "candidate"]
 title     = "lar:///ha.ka.ba/lares/afford/realm.edge.cosigns"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.edge.cosigns"
 
 ! realm.edge.cosigns ~ a quorum partial, read and cosigned by the next seat
 
-`lares edge cosign (<partial-json> | from=<file>)` reads ONE partial and prints only what its verified bytes say, signing nothing, so a person reads whom the act sets aside first. `--act <act-cid>` names the act id that read printed; then this vessel's seats sign, and the act lands once it counts. Any other act id refuses.
+`lares edge cosign (<partial-json> | from=<file>)` reads ONE partial and prints only what its verified bytes say, signing nothing, so a person reads whom the act sets aside first. `act=<act-cid>` names the act id that read printed; then this vessel's seats sign, and the act lands once it counts. Any other act id refuses.
 
 <<~/ahu>>
 
@@ -52,7 +52,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.edge.cosigns"
 Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
-<<has entity=`gate` name=`hand` params=`who/hand key/seats ~ the seats this vessel holds sign once --act names the act read`>>
+<<has entity=`gate` name=`hand` params=`who/hand key/seats ~ the seats this vessel holds sign once act= names the act read`>>
 ```
 
 <<~/ahu>>
@@ -105,6 +105,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BiPWyHiIaUp8r2jSNwHHkGHxAdMm1Om0JctKIh003oI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xT5KmXjnHhumQTk3tInKwHfcuP5j3uG6x46b4-6-jTU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

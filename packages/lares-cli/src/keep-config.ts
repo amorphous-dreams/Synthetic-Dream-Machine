@@ -6,7 +6,7 @@
  * outside the workspace grammar: nothing guesses which clone holds the operator's repo.
  *
  * `LARES_KEEP_SESSIONS` (the same two places) switches the device's Claude Code sessions off a keep: `0`, `off`, `false` or `no`
- * keeps the house alone, and so does the line's `--no-sessions`. Unset, a keep carries the sessions (`./keep-sessions.ts`).
+ * keeps the house alone, and so does the line's `sessions=false`. Unset, a keep carries the sessions (`./keep-sessions.ts`).
  *
  * The wake hook reads the same rule in plain JavaScript (`.claude-plugin/hooks/lares-wake-core.mjs#keepWorkspaceOf`); a change
  * here changes there.

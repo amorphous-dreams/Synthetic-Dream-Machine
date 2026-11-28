@@ -62,7 +62,7 @@ Testimony: the door checks; this slot grants nothing.
 <<has entity=`refusal` name=`usage` params=`cure/[[face.bundle.backs-up face/2 out/h2.bundle]] ~ name the face's index and the file`>>
 <<has entity=`refusal` name=`no-vessel` params=`~ no vessel stands on this store`>>
 <<has entity=`refusal` name=`daemon-unreachable` params=`cure/[[face.bundle.backs-up face/2 out/h2.bundle]] ~ the vessel stopped answering`>>
-<<has entity=`refusal` name=`out-exists` params=`~ a file already stands at --out`>>
+<<has entity=`refusal` name=`out-exists` params=`~ a file already stands at out=`>>
 <<has entity=`refusal` name=`error` params=`~ the custody door's named refusals lead the line by class (OccupiedStoreRefusal, CustodyRefusal, TreeKeyRefusal, CensusRefusal, CustodyLockRefused, CustodyFoundingRefused, CredentialTtyRefusal, RotationSlotsRefused), exit 1`>>
 ```
 
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3gYmO795tAgvHXIhiiIfPGh_bul3Fs03HM-qqWiShcc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;K5MOeljzOmybP3FHhkbVQ2uvL4G-ehzx5Xm7Gt19LM0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

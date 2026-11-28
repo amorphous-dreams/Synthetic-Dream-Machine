@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.place.uncarries"
 
 ! realm.place.uncarries ~ a place leaves the carriage
 
-`lares nexus uncarry <place-key>` takes a carried place back off the carriage board under the quorum; `--out` and `--from` carry a partial between vaults.
+`lares nexus uncarry <place-key>` takes a carried place back off the carriage board under the quorum; `out=` and `from=` carry a partial between vaults.
 
 <<~/ahu>>
 
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uGeHMPyzw_v4NNghCjkFDNMJrIBSsmbei5t_jjsCP6s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Nv1r_fZmQqg0YHND1Cr3JbgA9Zobc7XvPjoJIMHh9II`>>
 
 <<^ code=`&#x0004;` to=`?`>>

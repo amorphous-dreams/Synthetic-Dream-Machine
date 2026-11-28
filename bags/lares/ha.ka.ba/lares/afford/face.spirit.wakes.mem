@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.spirit.wakes"
 
 ! face.spirit.wakes ~ om ~ the wake reads the record the pet name answers
 
-`lares spirit om <pet>` wakes the one record the pet name answers (`lar:///ha.ka.ba/lares/spirit/<pet>`, else `familiar/<pet>` or `spirit/<pet>` on the memory stage, else a card), folded in the wiki at `--aperture` (default `measure`) and bound to the face that answered, so every command it hands back names `--face N`. It reads the skinny, `#/open`, the titles `#/attention` names, and the latest carry as testimony. `--source` names the wake's turn: a resume reads one line, a fork wakes framed as a fork, a compaction names the carry it inherits, a precompact marks the crossing and hands back `#/carry-shape`. `--instance` joins the presence on the sibling record, stamps a wake epoch and hands back each slot's digest; `--held` says the session's own counter holds it. `--title` wakes onto another record the shrine names. `--mandate <uri>@<hash>` wakes a summoned instance under its mandate, verified first. A pet with no record reads the starter skeleton.
+`lares spirit om <pet>` wakes the one record the pet name answers (`lar:///ha.ka.ba/lares/spirit/<pet>`, else `familiar/<pet>` or `spirit/<pet>` on the memory stage, else a card), folded in the wiki at `aperture=` (default `measure`) and bound to the face that answered, so every command it hands back names `face=N`. It reads the skinny, `#/open`, the titles `#/attention` names, and the latest carry as testimony. `source=` names the wake's turn: a resume reads one line, a fork wakes framed as a fork, a compaction names the carry it inherits, a precompact marks the crossing and hands back `#/carry-shape`. `instance=` joins the presence on the sibling record, stamps a wake epoch and hands back each slot's digest; `held=true` says the session's own counter holds it. `title=` wakes onto another record the shrine names. `mandate= <uri>@<hash>` wakes a summoned instance under its mandate, verified first. A pet with no record reads the starter skeleton.
 
 <<~/ahu>>
 
@@ -68,13 +68,13 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · spirit-pet-malformed · spirit-ambiguous · mandate-unknown · mandate-moved · mandate-names-another · mandate-face-turned
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[face.spirit.wakes pet/lares-alpha]] ~ a malformed --aperture, --source, --instance, --mandate or a missing pet`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[face.spirit.wakes pet/lares-alpha]] ~ a malformed aperture=, source=, instance=, mandate= or a missing pet`>>
 <<has entity=`refusal` name=`spirit-pet-malformed` params=`cure/[[face.spirit.wakes pet/lares-alpha]] ~ the word reads as no pet name`>>
 <<has entity=`refusal` name=`spirit-ambiguous` params=`~ both familiar/<pet> and spirit/<pet> stand; the door names both and guesses neither`>>
 <<has entity=`refusal` name=`mandate-unknown` params=`~ no mandate stands at the uri the line names`>>
 <<has entity=`refusal` name=`mandate-moved` params=`~ the mandate reads another hash than the line names; the wake stops`>>
 <<has entity=`refusal` name=`mandate-names-another` params=`~ the mandate names another pet or instance`>>
-<<has entity=`refusal` name=`mandate-face-turned` params=`~ the mandate echoes another face than the one answering; name it with --face`>>
+<<has entity=`refusal` name=`mandate-face-turned` params=`~ the mandate echoes another face than the one answering; name it with face=`>>
 ```
 
 <<~/ahu>>
@@ -116,6 +116,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9mFwKFmOMzHmD5eusOfoH_bdnoE9_aBE4qRPj09XV84`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AXIQ9xGLL3zinOiIbnYn_-L9TrKh_L7oC0pLwdcPal4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

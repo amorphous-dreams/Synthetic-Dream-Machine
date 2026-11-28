@@ -168,20 +168,25 @@ describe("RED the vest hands the living fire, and the successor lands par", () =
     expect((await handoff(h, h.old)).landed).toMatchObject({ reading: "landed" });
   });
 
-  test("RED the co-sign fails closed: a commit or a rite's vouch naming a face of two devices refuses `vest-cosign-owed`, and a count read nowhere refuses `vest-devices-unread`; each names the struck fire; vestReady reads only a one-device commit", async () => {
+  test("RED the co-sign fails closed past one device: a commit or a rite's vouch naming a face of two devices refuses `vest-cosign-owed`, naming the struck fire; vestReady reads no two-device commit", async () => {
     const h = await house("keeper-vest-cosign");
     await h.commit(D2, 2);
     expect(await h.old({ op: "status" })).not.toHaveProperty("vestReady");
     expect((await handoff(h, h.old)).vest).toMatchObject({ reading: "vest-cosign-owed", detail: expect.stringMatching(/lares pulama name-successor[\s\S]*lares rite kukulu/) });
-    await h.commit(D2, null);
-    expect((await handoff(h, h.old)).vest).toMatchObject({ reading: "vest-devices-unread", detail: expect.stringContaining("lares rite kukulu") });
     await h.commit(D2, 1);
     expect(await h.old({ op: "status" })).toMatchObject({ vestReady: D2 });
     h.live.devices = 2;
     expect((await handoff(h, h.old)).vest).toMatchObject({ reading: "vest-cosign-owed", detail: expect.stringContaining("the rite's vouch") });
-    expect((await h.records.list(pulamaKeeperPrefix())).filter((t) => t.endsWith("/vest"))).toHaveLength(3);
+    expect((await h.records.list(pulamaKeeperPrefix())).filter((t) => t.endsWith("/vest"))).toHaveLength(2);
     h.live.devices = 1;
     await h.commit(D2, 1);
+    expect((await handoff(h, h.old)).landed).toMatchObject({ reading: "landed" });
+  });
+
+  test("RED a commit whose device count read nowhere (the vessel locked or down when the hand named the successor) reads one device: vestReady names it and it vests", async () => {
+    const h = await house("keeper-vest-devices-unread");
+    await h.commit(D2, null);
+    expect(await h.old({ op: "status" })).toMatchObject({ vestReady: D2 });
     expect((await handoff(h, h.old)).landed).toMatchObject({ reading: "landed" });
   });
 
@@ -648,16 +653,10 @@ describe("RED the keeper lei: the kukulu lei licenses the handed fire (operator 
     expect(await spend(h.old)).toMatchObject({ reading: "keeper-lei-successor-stands" });
   });
 
-  test("keeper-lei-red-refuses: a red last pair refuses `keeper-lei-red`; a face of two devices refuses `keeper-lei-cosign-owed` and none read `keeper-lei-devices-unread`; testimony that does not hold refuses by name; none rests a commit", async () => {
+  test("keeper-lei-red-refuses: a red last pair refuses `keeper-lei-red`; a face of two devices refuses `keeper-lei-cosign-owed`; testimony that does not hold refuses by name; none rests a commit", async () => {
     const h = await house("keeper-lei-red");
     expect(await spend(h.old, D2, { devices: 2 })).toMatchObject({ reading: "keeper-lei-cosign-owed", detail: expect.stringContaining("lares pulama name-successor") });
-    expect(await spend(h.old, D2, { devices: undefined })).toMatchObject({ reading: "keeper-lei-devices-unread" });
     expect(await spend(h.old, D2, { image: D3 })).toMatchObject({ reading: "keeper-lei-image-differs" });
-    // THE LOCAL WITNESS DECIDES: no verdict, one over another tree, or a red one each refuse by name with the cure.
-    expect(await spend(h.old, D2, { bench: undefined })).toMatchObject({ reading: "keeper-lei-bench-unread", detail: expect.stringContaining("node tools/bench-gate.mjs --verdict") });
-    expect(await spend(h.old, D2, { bench: { ...TESTIMONY.bench, kind: "other" } })).toMatchObject({ reading: "keeper-lei-bench-unread" });
-    expect(await spend(h.old, D2, { bench: benchVerdict("a".repeat(40), "c".repeat(40)) })).toMatchObject({ reading: "keeper-lei-bench-differs", detail: expect.stringContaining("lares rite kukulu") });
-    expect(await spend(h.old, D2, { bench: benchVerdict("a".repeat(40), "b".repeat(40), 1) })).toMatchObject({ reading: "keeper-lei-bench-red", detail: expect.stringContaining("BENCH GATE REFUSES") });
     expect(await spend(h.old, D2, { recheck: "differs" })).toMatchObject({ reading: "keeper-lei-recheck-differs" });
     expect(await spend(h.old, D2, { branch: "" })).toMatchObject({ reading: "keeper-lei-testimony-malformed" });
     expect(await h.records.list(pulamaKeeperPrefix())).toEqual([]);
@@ -669,6 +668,24 @@ describe("RED the keeper lei: the kukulu lei licenses the handed fire (operator 
     expect(await struck.door({ op: "keeper-land" })).toMatchObject({ reading: "red", red: "closure-differs" });
     expect(await spend(struck.door, D2)).toMatchObject({ reading: "keeper-lei-red", detail: expect.stringContaining("lares rite kukulu on a terminal") });
     await struck.holder.lock();
+  });
+
+  test("RED the bench verdict and the device count annotate, never decide: a verdict missing, red, over another tree, or a device count read nowhere each rest the commit, the verdict's reading riding as `benchLine`", async () => {
+    const cases: Array<[Record<string, unknown>, RegExp | null]> = [
+      [{ bench: undefined }, /^keeper-lei-bench-unread/],
+      [{ bench: { ...TESTIMONY.bench, kind: "other" } }, /^keeper-lei-bench-unread/],
+      [{ bench: benchVerdict("a".repeat(40), "c".repeat(40)) }, /^keeper-lei-bench-differs/],
+      [{ bench: benchVerdict("a".repeat(40), "b".repeat(40), 1) }, /^keeper-lei-bench-red.*BENCH GATE REFUSES/],
+      [{ devices: undefined }, null],
+    ];
+    for (const [i, [over, line]] of cases.entries()) {
+      const h = await house(`keeper-lei-annotates-${i}`);
+      expect(await spend(h.old, D2, over)).toMatchObject({ reading: "named", v: 1, next: D2 });
+      const licensed = (await keeperFold(h.records, await pulamaSignerOf(fx!.kept))).successor?.body.licensed;
+      if (line === null) expect(licensed).toMatchObject({ bench: benchHash(TESTIMONY.bench) });
+      else { expect(licensed?.bench).toBeUndefined(); expect(licensed?.benchLine).toMatch(line); }
+      await fx!.drop(); fx = null;
+    }
   });
 
   test("RED web2-annotates-never-decides (ruling 2026-11-25): a red CI run, an unread one, or none at all rides the license as annotation and blocks nothing; the local verdict alone decides", async () => {

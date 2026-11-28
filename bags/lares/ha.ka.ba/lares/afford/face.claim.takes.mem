@@ -60,7 +60,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`usage` params=`~ an unknown sub-verb, or no sub-verb named`>>
-<<has entity=`refusal` name=`face-malformed` params=`~ --face names a whole persona index from 0`>>
+<<has entity=`refusal` name=`face-malformed` params=`~ face= names a whole persona index from 0`>>
 <<has entity=`refusal` name=`face-not-held` params=`~ this vessel holds no such face`>>
 <<has entity=`refusal` name=`claim-cid-absent` params=`~ name the claim's cid`>>
 ```
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WtfajkiiWvtZpE2VDDCCWstMzP5YnFo_Bv7lVKMf9_w`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aeEbesTxGUBNcamRhmG5YAdIsA0MFr8CvTdnHYuJ3H4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

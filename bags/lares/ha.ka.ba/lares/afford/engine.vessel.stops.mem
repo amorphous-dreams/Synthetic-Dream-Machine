@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.vessel.stops"
 
 ! engine.vessel.stops ~ the daemon halts on its port; a free port reads stopped
 
-`lares vessel stop` ends the daemon on the port (LAR_PORT): SIGTERM, then waits on its own exit, reporting past the grace who still holds it. `--cut` delivers the operator's one further signal past that grace. A free port reads as stopped.
+`lares vessel stop` ends the daemon on the port (LAR_PORT): SIGTERM, then waits on its own exit, reporting past the grace who still holds it. `cut=true` delivers the operator's one further signal past that grace. A free port reads as stopped.
 
 <<~/ahu>>
 
@@ -89,6 +89,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GVj68DH-yCJZPyF_3tEM1uNrbQw8wfQ8ydpURfyY4Ag`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;e3I-Gl9-Ucpi0Yep2me1fqbeEATatzU2BPCR9hX9Pjc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

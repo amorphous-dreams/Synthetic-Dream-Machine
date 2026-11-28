@@ -64,7 +64,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares meme project
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares meme project]] ~ the terminal; a file with --to md renders in-process, any other target or a lar: source rides the vessel`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares meme project]] ~ the terminal; a file with to=md renders in-process, any other target or a lar: source rides the vessel`>>
 ```
 
 <<~/ahu>>
@@ -90,6 +90,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;fahZ3fjt4p1p4Imp1cM_CNJSwmyn5q9P_ZWZ5491rCA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;obz8NdFLxfsp_7yiKcumokUdPhkeL9HyIwOgDDYYxJQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

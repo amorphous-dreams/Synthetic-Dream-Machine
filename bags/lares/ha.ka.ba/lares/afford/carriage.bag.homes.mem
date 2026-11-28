@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.bag.homes"
 
 ! carriage.bag.homes ~ the move that relocates bytes and re-anchors the declaration together
 
-`home <bag> --to <home>` MOVES the bytes to a declared home and re-anchors the declaration together. It plans before it touches anything (the DRY-RUN default prints the plan and the command that performs it) and refuses an occupied destination rather than merging. `--approve` performs the move, and no source-control verb ever runs: the bytes land in a working tree, and what enters a history stays the hand's own act. `--repo` names the registered repo id where the home reads repository.
+`home <bag> to=<home>` MOVES the bytes to a declared home and re-anchors the declaration together. It plans before it touches anything (the DRY-RUN default prints the plan and the command that performs it) and refuses an occupied destination rather than merging. `approve=true` performs the move, and no source-control verb ever runs: the bytes land in a working tree, and what enters a history stays the hand's own act. `repo=` names the registered repo id where the home reads repository.
 
 The move relocates an operator's bytes across a boundary that matters (into a tracked history, or out of one), so it earns the explicit approval.
 
@@ -54,7 +54,7 @@ The move relocates an operator's bytes across a boundary that matters (into a tr
 Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
-<<has entity=`gate` name=`write` params=`who/hand ~ the move relocates bytes across a boundary that matters; a plan runs unapproved, and the move itself asks --approve`>>
+<<has entity=`gate` name=`write` params=`who/hand ~ the move relocates bytes across a boundary that matters; a plan runs unapproved, and the move itself asks approve=true`>>
 ```
 
 <<~/ahu>>
@@ -64,7 +64,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ home-unknown · destination-occupied · repo-unregistered
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`home-unknown` params=`cure/[[carriage.bag.homes bag/<bag> to/repository]] ~ --to expects one of the homes a bag may name`>>
+<<has entity=`refusal` name=`home-unknown` params=`cure/[[carriage.bag.homes bag/<bag> to/repository]] ~ to= expects one of the homes a bag may name`>>
 <<has entity=`refusal` name=`destination-occupied` params=`cure/[[carriage.bag.homes bag/<bag> to/repository]] ~ the destination stands occupied; the plan names it, and nothing merges`>>
 <<has entity=`refusal` name=`repo-unregistered` params=`cure/[[carriage.bag.registers]] ~ the repo id stands registered on no vessel here; register it first`>>
 ```
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;dp9kvcMrtilcbMdfZZbjXTnmqanadnsdUqgNDmEHsFs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fdbLbg40XVMphizCYJSVP7lHBD2n5y04ZEfGg_rC_mw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

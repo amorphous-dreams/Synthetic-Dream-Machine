@@ -17,10 +17,10 @@ uri-path  = "ha.ka.ba/lares/afford/face.spirit.folds"
 
 ! face.spirit.folds ~ hum ~ what remains after the fold
 
-Bare `lares spirit hum <pet>` measures each slot against its budget and prints the carrier the wiki folds at `--aperture` (default `pulse`), a shrine's or a lone card's. `--fold '#/<slot>'` lists the slot's lines with each line's digest; `--line <n> --expect <digest>` moves that line to the month's ash ledger, found by content, so a sibling's write between the listing and the fold folds the line this instance chose or nothing. The fold burns the line only once the patch lands. `--instance` names the folding instance.
+Bare `lares spirit hum <pet>` measures each slot against its budget and prints the carrier the wiki folds at `aperture=` (default `pulse`), a shrine's or a lone card's. `fold='#/<slot>'` lists the slot's lines with each line's digest; `line=<n> expect=<digest>` moves that line to the month's ash ledger, found by content, so a sibling's write between the listing and the fold folds the line this instance chose or nothing. The fold burns the line only once the patch lands. `instance=` names the folding instance.
 
 
-`hum <pet> --streams` folds the pet's settled stream entries (no stream's head, seen by their addressee, answered by no unseen entry) into one line per stream on `--slot` (default `#/open`), then tags each `ash-ready` beside a `folded` field naming the slot: marked for o-takiage, never deleted.
+`hum <pet> streams=` folds the pet's settled stream entries (no stream's head, seen by their addressee, answered by no unseen entry) into one line per stream on `slot=` (default `#/open`), then tags each `ash-ready` beside a `folded` field naming the slot: marked for o-takiage, never deleted.
 
 <<~/ahu>>
 
@@ -49,7 +49,7 @@ Bare `lares spirit hum <pet>` measures each slot against its budget and prints t
 <<has entity=`arg` name=`line` params=`takes/n ~ beside fold, the listed line to move`>>
 <<has entity=`arg` name=`expect` params=`takes/digest ~ beside line, the listed line's digest (16 hex)`>>
 <<has entity=`arg` name=`instance` params=`takes/session-id ~ the folding instance`>>
-<<has entity=`arg` name=`streams` params=`kind/switch ~ fold the pet's settled stream entries, one line per stream on --slot (default #/open), each tagged ash-ready`>>
+<<has entity=`arg` name=`streams` params=`kind/switch ~ fold the pet's settled stream entries, one line per stream on slot= (default #/open), each tagged ash-ready`>>
 ```
 
 <<~/ahu>>
@@ -71,7 +71,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · spirit-pet-malformed · spirit-unknown · spirit-fold-gone · spirit-ashes-refused · spirit-crossing · spirit-write-refused
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[face.spirit.folds pet/lares-alpha fold/#/open]] ~ --line without --fold, or without --expect`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[face.spirit.folds pet/lares-alpha fold/#/open]] ~ line= without fold=, or without expect=`>>
 <<has entity=`refusal` name=`spirit-pet-malformed` params=`cure/[[face.spirit.folds pet/lares-alpha]] ~ the word reads as no pet name`>>
 <<has entity=`refusal` name=`spirit-unknown` params=`~ no record or card answers the pet`>>
 <<has entity=`refusal` name=`spirit-fold-gone` params=`cure/[[face.spirit.folds pet/lares-alpha fold/#/open]] ~ the line moved or left since the listing`>>
@@ -118,6 +118,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3GizZJ06w2K6VOR08FqJs0cfYuhV7VMt4w5W_N-0r_I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7bTW3QMdgFx1CsEX81T2n_yTTyS09lo2VOVc0FSSfNw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

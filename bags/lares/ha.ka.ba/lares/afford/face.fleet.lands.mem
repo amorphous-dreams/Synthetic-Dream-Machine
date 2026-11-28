@@ -66,7 +66,7 @@ Testimony: the door checks; this slot grants nothing.
 <<has entity=`refusal` name=`charter-refused` params=`~ the seed charter refused`>>
 <<has entity=`refusal` name=`admit-refused` params=`~ the admit refused`>>
 <<has entity=`refusal` name=`bootstrap-torn` params=`~ the bootstrap reads torn; nothing written over it`>>
-<<has entity=`refusal` name=`face-joinee` params=`~ the joinee names no face; the face rides the offer, and --face belongs to offer and answer`>>
+<<has entity=`refusal` name=`face-joinee` params=`~ the joinee names no face; the face rides the offer, and face= belongs to offer and answer`>>
 <<has entity=`refusal` name=`refused` params=`~ the land refused by name (FleetJoinRefused, a store door refusal, or StoreHeld); the line names the code`>>
 ```
 
@@ -108,6 +108,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5j1fcCNFdKfWmptWR_tRkWJ6QmcDChqBf57id3wpoyI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WS5sihCkatmIqkD1gGu46Y_aTnAOXFGiU0kt64Jd3NE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

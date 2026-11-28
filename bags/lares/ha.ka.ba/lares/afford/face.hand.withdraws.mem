@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.hand.withdraws"
 
 `kahua withdraw <cid>` withdraws one lifted revision of the face's stage, an act signed under the face's root out of sealed custody (the lōkahi cap and the operator's grant). It runs on a person's hand alone: an AI seat proposes and stages, and its session never withdraws; no tool carries it. Every answer prints as JSON.
 
-Under a pūlama the root signs at the pūlama's hand door, since the vessel there holds no face root: `--terms` runs every gate and prints ONE stdout line (the one unsigned act its root signs) and opens no route; the pūlama's `sign '<terms>'` checks it and signs; `--land '<answer>'` lands the signed record, where the door builds the act afresh and lands it only over a byte-equal body. Neither asks the passphrase on the vessel, and the host shim walks the pattern (`tools/lares-container.sh kahua lift|withdraw|carry`).
+Under a pūlama the root signs at the pūlama's hand door, since the vessel there holds no face root: `terms=true` runs every gate and prints ONE stdout line (the one unsigned act its root signs) and opens no route; the pūlama's `sign '<terms>'` checks it and signs; `land='<answer>'` lands the signed record, where the door builds the act afresh and lands it only over a byte-equal body. Neither asks the passphrase on the vessel, and the host shim walks the pattern (`tools/lares-container.sh kahua lift|withdraw|carry`).
 
 <<~/ahu>>
 
@@ -64,8 +64,8 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`withdraw-needs-a-cid` params=`cure/[[face.hand.withdraws cid/<cid>]] ~ the door says 'withdraw: name a revision cid'`>>
-<<has entity=`refusal` name=`kahua-hand-malformed` params=`~ the pūlama's answer names the wrong kind, the wrong face, or both --terms and --land stood on one line`>>
-<<has entity=`refusal` name=`face-malformed` params=`~ --face names a persona index, a whole number from 0`>>
+<<has entity=`refusal` name=`kahua-hand-malformed` params=`~ the pūlama's answer names the wrong kind, the wrong face, or both terms=true and land=stood on one line`>>
+<<has entity=`refusal` name=`face-malformed` params=`~ face= names a persona index, a whole number from 0`>>
 ```
 
 <<~/ahu>>
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xGP0VW9YTqFdeaEg8u8IULi22YJ1xD29NsMRL_oPDxk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PEiwSZR6YSwIddUqGVgB61Wmyw3Sb12xvNy7iJcciR4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

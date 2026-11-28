@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.lei.lands"
 
 ! face.lei.lands ~ land ~ the pūlama's signed record lands
 
-`lares lei land '<answer>'` lands a record the hand signed at the pūlama's hand door, where a vessel under a pūlama sends its lei acts: the line names the pūlama's printed answer (its record and face) or a bare record with `--face`. A lei rides the kui row, an unstring the unstring row; the vessel verifies the record and asks no route. An answer for every face lands each face's record by its own face and names where the pūlama's signing stopped (`stopped`).
+`lares lei land '<answer>'` lands a record the hand signed at the pūlama's hand door, where a vessel under a pūlama sends its lei acts: the line names the pūlama's printed answer (its record and face) or a bare record with `face=`. A lei rides the kui row, an unstring the unstring row; the vessel verifies the record and asks no route. An answer for every face lands each face's record by its own face and names where the pūlama's signing stopped (`stopped`).
 
 <<~/ahu>>
 
@@ -59,7 +59,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`~ the record reads as no JSON object, names no lei, or its face differs from --face`>>
+<<has entity=`refusal` name=`usage` params=`~ the record reads as no JSON object, names no lei, or its face differs from face=`>>
 ```
 
 <<~/ahu>>
@@ -100,6 +100,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;d-RhDkgcSyjd_e0fggvWfKS_Zzb46Two77DJJ-7xgco`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FB_TL16L1-y5T5B4BHSVnzlelx11TsLMqFevslB_DWU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

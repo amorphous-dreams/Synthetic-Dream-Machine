@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.scratch.runs"
 
 ! sense.scratch.runs ~ the docker-run-rm of memory: ephemeral by default
 
-`lares sensorium run <path> [<analysis…>]` opens a scratch mempalace under `<cache>/scratch/sensoriums/<id>/`, ingests the path, runs the analysis the trailing words name, and dissolves the instance on exit, on success or error alike; `--keep` retains it, and `--name` labels it. The deep ingest (bands, structure, form) stands documented and unbuilt.
+`lares sensorium run <path> [<analysis…>]` opens a scratch mempalace under `<cache>/scratch/sensoriums/<id>/`, ingests the path, runs the analysis the trailing words name, and dissolves the instance on exit, on success or error alike; `keep=true` retains it, and `name=` labels it. The deep ingest (bands, structure, form) stands documented and unbuilt.
 
 <<~/ahu>>
 
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;LO-4_GlQJU92JdGrMO7jRYnITulsUKX8LmdQuPOQQTI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;r4v6sHgFNiGQaQsAqlpmPBfv8lFZxg-reB-pza-3vlY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

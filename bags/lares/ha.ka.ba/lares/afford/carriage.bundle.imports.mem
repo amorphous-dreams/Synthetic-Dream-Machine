@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.bundle.imports"
 
 ! carriage.bundle.imports ~ the return: an exported bundle verifies whole, previews, then lands as fresh acts
 
-`import <dest>` verifies every hash and path in the bundle before anything moves, then PREVIEWS and stops. `--apply` replays the re-declare list as fresh acts, maps each bundle face to the ONE face here that carries its pet-name (none or two refuse by name), re-pours the working and face canon rows through the ingest gesture (a diverged id stands off and never overwrites), re-lifts the kahua heads under the new face's grant, keyed by title and body digest, and lands draft and temp files where none stands.
+`import <dest>` verifies every hash and path in the bundle before anything moves, then PREVIEWS and stops. `apply=true` replays the re-declare list as fresh acts, maps each bundle face to the ONE face here that carries its pet-name (none or two refuse by name), re-pours the working and face canon rows through the ingest gesture (a diverged id stands off and never overwrites), re-lifts the kahua heads under the new face's grant, keyed by title and body digest, and lands draft and temp files where none stands.
 
 A journal under `<root>/config` lets an interrupted import re-enter to the same end, and a second import lands nothing. A face standing shut waits: the lines name `lares vault unlock face=N`, then import again; a workbench lands at the wear of a face that holds a writer's seat there. The exit reads 0 clean, `verb-error` where a row refused, `conflict` where a row stood off.
 
@@ -52,7 +52,7 @@ A journal under `<root>/config` lets an interrupted import re-enter to the same 
 Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
-<<has entity=`gate` name=`write` params=`who/hand ~ --apply writes records and re-lifts kahua heads, each lift signing under the new face's grant; a person runs it at their own terminal`>>
+<<has entity=`gate` name=`write` params=`who/hand ~ apply=true writes records and re-lifts kahua heads, each lift signing under the new face's grant; a person runs it at their own terminal`>>
 <<has entity=`gate` name=`signs` params=`key/face-grant ~ the re-lifts sign kahua acts under the face's grant`>>
 ```
 
@@ -108,6 +108,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7bqHbAi_8LsAWhUi6KfqKk00GNum_gOazof5s4L-o34`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Di6ptjZhBo--bCg_b5lXfSxHsiO7KEcVMkOtsHQBBp4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

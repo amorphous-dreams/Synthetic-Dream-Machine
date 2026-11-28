@@ -25,7 +25,7 @@ import { armBackstop } from "../src/modules/meme-backstop.js";
 import { placeMeme, type MemeSink } from "../src/place-meme.js";
 import { installLazyResolver } from "../src/lazy-resolver.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { landWhole } from "./wiki-shore-rig.js";
+import { landWhole, ManualBoundary } from "./wiki-shore-rig.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import { standIslandOverSeed } from "./island-over-seed.js";
 
@@ -49,14 +49,6 @@ async function settleTurns(r: Awaited<ReturnType<typeof rig>>, titles: readonly 
 const Repo = createRequire(import.meta.resolve("@lararium/mesh"))("@automerge/automerge-repo").Repo as new (options: { network: unknown[] }) => RepoType;
 const saveDoc = createRequire(import.meta.resolve("@lararium/mesh"))("@automerge/automerge").save as (doc: LarDoc) => Uint8Array;
 const framed = (uri: string): string => `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${uri.slice(7)}"\n\`\`\`\n\n<<~ ahu slot=\`#/a\`>>\n\n! body\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
-
-class ManualBoundary {
-  private adaptor: IslandAdaptor | null = null;
-  bind(adaptor: IslandAdaptor): void { this.adaptor = adaptor; }
-  fire(): void { if (!this.adaptor) throw new Error("boundary has no adaptor"); void this.adaptor.boundary().catch(() => {}); }
-  /** The boundary, awaited: resolves once the drain it started rests (a refused drain answers, never throws). */
-  settle(): Promise<void> { if (!this.adaptor) throw new Error("boundary has no adaptor"); return this.adaptor.boundary().catch(() => {}); }
-}
 
 async function rig(boundary?: ManualBoundary, yieldHost?: () => Promise<void>) {
   const engine = await bootTestWiki();
@@ -316,14 +308,12 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     expect(landedHeads).toBeDefined();
     r.wiki.addTiddler(new r.Tiddler({ title, text: "hand after landing" }));
     await turns(1);
-    boundary.fire();
     await boundary.settle();
     expect(bases).toHaveLength(3);
     expect(bases[2]).toEqual(landedHeads);
     const control = "lar:///t/shore/P-control";
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "control changed" }));
     await turns(1);
-    boundary.fire();
     await boundary.settle();
     expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("control changed");
     expect(writeTitles.filter((writtenTitle) => writtenTitle === control)).toHaveLength(1);
@@ -358,7 +348,6 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     const remoteFields = (r.wiki.getTiddler(title) as { fields: Record<string, unknown> }).fields;
     r.wiki.addTiddler(new r.Tiddler({ ...remoteFields, text: "hand text" }));
     await turns();
-    boundary.fire();
     await boundary.settle();
     const saved = plainDoc(r.workingHandle.doc()).tiddlers[title]?.tiddler;
     expect(writes).toHaveLength(1);
@@ -421,7 +410,6 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     const control = "lar:///t/shore/Q-control";
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "changed" }));
     await turns(1);
-    boundary.fire();
     await boundary.settle();
     expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("changed");
     r.unbridge();

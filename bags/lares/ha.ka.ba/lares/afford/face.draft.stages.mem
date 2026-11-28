@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.draft.stages"
 
 `kahua stage <title>` writes ONE row into the face's local canon `bags/daemon-<F>`: local to this device, unsigned, and it lifts nothing. The operator's hand carries a staged row to the fleet with `lares kahua lift <title>`, reading its preview first. `text` carries the row's whole body; `fields` carries its string-valued fields (`title`, `text` and any `kahua-` field never ride). A row already standing at the title gives way to this one.
 
-The answer is {title, digest, relation, staged}. `digest` names the ROW digest (sha-256 over the body and the carried fields), the one a lift's `--digest` takes, never the BODY digest a proposal carries (`face.draft.proposes`); `staged` reads false where the row already stood at that digest and nothing moved. The terminal prints the same note on stderr beside the door's JSON. A face with no local canon standing refuses `kahua-stage-no-canon`. The seat's tool rides a `seat` session over the @daemon wire.
+The answer is {title, digest, relation, staged}. `digest` names the ROW digest (sha-256 over the body and the carried fields), the one a lift's `digest=` takes, never the BODY digest a proposal carries (`face.draft.proposes`); `staged` reads false where the row already stood at that digest and nothing moved. The terminal prints the same note on stderr beside the door's JSON. A face with no local canon standing refuses `kahua-stage-no-canon`. The seat's tool rides a `seat` session over the @daemon wire.
 
 <<~/ahu>>
 
@@ -121,6 +121,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;fhPx6RIvcYXZSXCba2WPj-yj-85_FKmgM3mTrKWEbEE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ikLfF9EJ0uUaVkxwEcvTYq8fbUykQ20ingf08bM_-_k`>>
 
 <<^ code=`&#x0004;` to=`?`>>

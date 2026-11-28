@@ -59,7 +59,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · vessel-composing · vessel-silent · vessel-locked · error
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[face.raise.signs challenge/<challenge-json>]] ~ no challenge, a malformed one, or a malformed --as`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[face.raise.signs challenge/<challenge-json>]] ~ no challenge, a malformed one, or a malformed as=`>>
 <<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
 <<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
 <<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JmVE5CrpMb823gaeSXH9Zf7ZUAt8x5rlQ4XxXbz8bIs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KK61mzyCcQWsYAoqhX3R3iG-lJNo1EM0d2Cbt8xeBdw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

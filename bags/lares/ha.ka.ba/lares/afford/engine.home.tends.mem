@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.home.tends"
 
 ! engine.home.tends ~ the the operator's homes tunnel converges, each write a ledger generation
 
-`lares home tend` reads first, then writes only the items that drift (and, with `--force`, the foreign ones, the ledger keeping the bytes it replaced), under the host lock and the radius lock; each tend that writes records one ledger generation `undo` restores. A home tend writes the operator's homes, so it asks at a terminal and takes `yes=true` with none; withheld consent exits 2. `--familiar <pet>` names the familiar whose hooks it seats.
+`lares home tend` reads first, then writes only the items that drift (and, with `force=true`, the foreign ones, the ledger keeping the bytes it replaced), under the host lock and the radius lock; each tend that writes records one ledger generation `undo` restores. A home tend writes the operator's homes, so it asks at a terminal and takes `yes=true` with none; withheld consent exits 2. `familiar=<pet>` names the familiar whose hooks it seats.
 
 <<~/ahu>>
 
@@ -61,8 +61,8 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`usage` params=`~ name one of read, tend, verify, undo`>>
-<<has entity=`refusal` name=`root-repo-only` params=`~ --root names a checkout, and only lares repo keeps one`>>
-<<has entity=`refusal` name=`staged-repo-read-only` params=`~ --staged reads the index, and only lares repo read reads it`>>
+<<has entity=`refusal` name=`root-repo-only` params=`~ root= names a checkout, and only lares repo keeps one`>>
+<<has entity=`refusal` name=`staged-repo-read-only` params=`~ staged=true reads the index, and only lares repo read reads it`>>
 <<has entity=`refusal` name=`consent-withheld` params=`cure/[[engine.home.tends]] ~ the home tend writes the operator's homes; answer y at the terminal, or pass yes=true`>>
 ```
 
@@ -75,7 +75,7 @@ Testimony: the door checks; this slot grants nothing.
 ```memetic-wikitext
 <<has entity=`band` name=`tended` params=`exit/0 fields/[[radius wrote set stores lifted refused generation rows exit]] ~ every item holds after the write; generation names the ledger entry`>>
 <<has entity=`band` name=`drift` params=`exit/1 fields/[[radius rows exit]] ~ an item still drifts`>>
-<<has entity=`band` name=`foreign` params=`exit/3 fields/[[radius refused rows exit]] ~ a foreign target refused; --force takes it`>>
+<<has entity=`band` name=`foreign` params=`exit/3 fields/[[radius refused rows exit]] ~ a foreign target refused; force=true takes it`>>
 <<has entity=`band` name=`unreachable` params=`exit/4 fields/[[radius rows exit]] ~ a store write failed`>>
 ```
 
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JrSnUvh70NPrmd_aGOH71ituMxlachNAMrRCIe62Pms`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-C3S2lgYIl4ws1pu89vDi1INdGpq7ghbZX2HsQzuO5E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

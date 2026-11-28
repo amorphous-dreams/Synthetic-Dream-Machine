@@ -67,7 +67,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · cap-denied · outcome-unknown
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[carriage.bag.loads source-uri/<path> to/<bag>]] ~ --source-uri and --to both stand required`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.bag.loads source-uri/<path> to/<bag>]] ~ source-uri= and to= both stand required`>>
 <<has entity=`refusal` name=`cap-denied` params=`~ the writer's cap on the destination bag falls short; nothing landed`>>
 <<has entity=`refusal` name=`outcome-unknown` params=`~ this process stopped waiting after the vessel answered; a short read found no receipt for this attempt's request id; read it back with lares vessel request <id> before any re-run`>>
 ```
@@ -111,6 +111,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;cM0HYqmav9eNU9DQChSh1l8H0Z4tVV6uC1eX6ioMw_Y`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UI87l12PK9RtUNyKSzUw6jAV5-Zd6oxqXGfFvGZRXV4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

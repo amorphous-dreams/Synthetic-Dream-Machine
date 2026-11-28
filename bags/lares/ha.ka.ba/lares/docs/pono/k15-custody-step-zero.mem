@@ -82,10 +82,10 @@ This table covers every `buildTable()` entry in `packages/lararium-node/src/vaul
 | `vessel-face-tag-ask` `vessel-face-tag-store.ts` | face-hot | ''D:'' the same secret while a founding's ask names the face, `vessel-face-tag-ask-<ask digest>.bin`; the founding's settle moves it onto the group's record. It stays on its vessel. |
 | `fleet-join-pending` `fleet-join-custody.ts` | face-hot | ''D:'' one pending join per target face, `fleet-join-pending-g<group digest>.json` in that face (its X25519 secret and request); the joiner founds the face's custody at its request, so a pending join with no face refuses by name. |
 | `face-join-record` `fleet-join-custody.ts` | face-hot | ''D:'' the joined face's private record and grants, `face-join-record-g<group digest>.json` in that face. |
-| `handle-book` `node-circle-store.ts` | face-hot | ''D:'' each face keeps its own recognition book in its own record (`.handle-book-h<N>.json`): the nyms it recognised and the private labels it keeps for them. A recognition reads and writes the book of the face the command acts as (`--face N`, else the one face standing open); a face whose root this vessel does not hold recognises nobody, and a flat `.handle-book.json` reads as an earlier shape (refused by name, with the fresh-start runbook). `bundle: whole` carries the face's book. |
+| `handle-book` `node-circle-store.ts` | face-hot | ''D:'' each face keeps its own recognition book in its own record (`.handle-book-h<N>.json`): the nyms it recognised and the private labels it keeps for them. A recognition reads and writes the book of the face the command acts as (`face=N`, else the one face standing open); a face whose root this vessel does not hold recognises nobody, and a flat `.handle-book.json` reads as an earlier shape (refused by name, with the fresh-start runbook). `bundle: whole` carries the face's book. |
 | `recovery-contact-set` `:337-338` | face-hot | ''D:'' each face's recovery contact/recovery commitments under that face; its intended local record rides its one-face bundle. Recovery contacts keep their own secret shares. |
 | `face-provisional` `:341-342` | face-hot | ''D:'' local provisional restore state for that face; it does not ride a bundle. |
-| `hosting-state` `hosting-store.ts` | face-hot | ''D:'' the hosting face is the face whose hosting leaf authorizes the service. Its state rests in that face, `hosting-h<N>/<aid digest>/state.json`; the Nexus AID proves no face, so the binding is the face's own directory for that AID (never the floor index), found by directory name across the face directories. The first roll founds it under the face it names (`--face N`), else the one face standing open, and refuses by name (`FaceNotNamed`) where several stand and it named none. |
+| `hosting-state` `hosting-store.ts` | face-hot | ''D:'' the hosting face is the face whose hosting leaf authorizes the service. Its state rests in that face, `hosting-h<N>/<aid digest>/state.json`; the Nexus AID proves no face, so the binding is the face's own directory for that AID (never the floor index), found by directory name across the face directories. The first roll founds it under the face it names (`face=N`), else the one face standing open, and refuses by name (`FaceNotNamed`) where several stand and it named none. |
 | `hosting-spent` `hosting-store.ts` | face-hot | ''D:'' per-face replay and spend authority beside its state, `hosting-h<N>/<aid digest>/spent-*`. |
 | `hosting-carry` `hosting-carry.ts` | face-hot | ''D:'' the hosting face's rhythm records and the guests' sealed ciphertext rest in that face, `hosting-h<N>/<aid digest>/carry/...`; the walker, a different face, owns the inner ciphertext's content key, and no guest key lands at the host. |
 | `walk` `node-walk-store.ts` | face-hot | ''D:'' the walking face owns its private walk record, `walk-h<N>-<gate digest>.json` in that face; a vessel still walks at one hearth (every face's names are read), and the daemon lists only the unlocked faces' walks. |
@@ -258,7 +258,7 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 
 ''The face tree'' (`faces/<fcid>/fk-slots.bin`) wraps that face's FCK under the face's routes. The three trees stay independent whatever route they share: a rotation or unbind on one leaves the others opening (`face-s-independence.test.ts`).
 
-''One typed credential per unlock.'' `lares vault unlock` opens S and the face the composition mounts; `--face N` names the face; `--all` tries the credential on every face tree. A vessel holding several faces and told none refuses `face-not-named`. The credential reaches only the trees it fits; a face it does not fit stays shut.
+''One typed credential per unlock.'' `lares vault unlock` opens S and the face the composition mounts; `face=N` names the face; `all=true` tries the credential on every face tree. A vessel holding several faces and told none refuses `face-not-named`. The credential reaches only the trees it fits; a face it does not fit stays shut.
 
 ''The sovereign gate.'' The daemon composes sovereign when S stands held AND the mounted face stands unlocked (a place with no face needs S alone); otherwise the floor composes. `sovereignStands()` reads this as a pure query. `lares vault lock face=N` drops one face; locking the mounted face, or locking S, stands the vessel back at the floor through the same gate, and a sibling's lock leaves sovereign standing. The founding sweep of seeds runs under the gate only.
 
@@ -282,6 +282,6 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_tCuwzRvlZtk-aR5Hdaq-0Y5Uv18DPsQOCfOLX6PZlA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;btf2OoVPHcfHLGZgQFtmyjrXdwc3d71Y2ynKQ1-Ikuo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

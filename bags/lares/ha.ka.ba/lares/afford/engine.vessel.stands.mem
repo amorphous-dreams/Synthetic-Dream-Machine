@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.vessel.stands"
 
 ! engine.vessel.stands ~ the boot entry point: attach or stand, then report
 
-`lares vessel stand` attaches to a live node or stands one detached (never a restart), checks the sidecar and emits a hydration frame; it writes `LAR_ROOT` alone and never hard-fails the session (`ok` carries the verdict). Postures ride flags: `--foreground` owns the terminal, `--with-web` adds the web face beside it, `--restart` frees the port first. `--observe` reports and touches nothing; `--init` founds what lacks; `--page` lights the page; `--port`, `--wiki` and `--root` reach the posture that reads them, and a flag the chosen posture cannot carry names itself on stderr. `--observe` or `--page` beside another posture refuses with exit 2.
+`lares vessel stand` attaches to a live node or stands one detached (never a restart), checks the sidecar and emits a hydration frame; it writes `LAR_ROOT` alone and never hard-fails the session (`ok` carries the verdict). Postures ride flags: `foreground=true` owns the terminal, `with-web=true` adds the web face beside it, `restart=true` frees the port first. `observe=true` reports and touches nothing; `init=true` founds what lacks; `page=true` lights the page; `port=`, `wiki=` and `root=` reach the posture that reads them, and a flag the chosen posture cannot carry names itself on stderr. `observe=true` or `page=true` beside another posture refuses with exit 2.
 
 <<~/ahu>>
 
@@ -68,7 +68,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ posture-refused
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`posture-refused` params=`cure/[[engine.vessel.stands observe/true]] ~ --observe or --page beside another posture; drop one`>>
+<<has entity=`refusal` name=`posture-refused` params=`cure/[[engine.vessel.stands observe/true]] ~ observe=true or page=true beside another posture; drop one`>>
 ```
 
 <<~/ahu>>
@@ -109,6 +109,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;fqznY7wJJcwPW-_3MbpcgbbfJXtWjS5sC7p56goIPmM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Q1i8jQY24R0zSr4HRqcKpbbiiKghLWNLOoFt4QdY1uM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

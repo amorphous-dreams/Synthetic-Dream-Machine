@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.intent.answers"
 
 ! face.intent.answers ~ answer ~ the answer shows the act it approves
 
-`lares intent answer <ask-cid> executor=<atom>` signs the answer to an ask, approving (or with `--deny`, denying) the act it names, and prints the act it approves from the fold's own bytes: the verb, who asked, and the digest.
+`lares intent answer <ask-cid> executor=<atom>` signs the answer to an ask, approving (or with `deny=true`, denying) the act it names, and prints the act it approves from the fold's own bytes: the verb, who asked, and the digest.
 
 <<~/ahu>>
 
@@ -62,7 +62,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`usage` params=`~ an unknown sub-verb, or no sub-verb named`>>
-<<has entity=`refusal` name=`face-malformed` params=`~ --face names a whole persona index from 0`>>
+<<has entity=`refusal` name=`face-malformed` params=`~ face= names a whole persona index from 0`>>
 <<has entity=`refusal` name=`face-not-held` params=`~ this vessel holds no such face`>>
 <<has entity=`refusal` name=`ask-or-executor-absent` params=`~ name the ask and the executor`>>
 ```
@@ -104,6 +104,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;f1UXJbb_GJrgghaKgsA3XbbksSTXa2JWA3dmAHDOKDA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iCxMza9t3yNJH9Ow664LSWU1ptwF1HYfjDsIoUf5dA8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

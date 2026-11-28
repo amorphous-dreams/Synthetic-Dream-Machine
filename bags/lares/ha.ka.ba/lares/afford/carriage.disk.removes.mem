@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.disk.removes"
 
 ! carriage.disk.removes ~ a pending removal answered toward the disk: the carrier leaves the wiki
 
-`remove <uri>…` takes the vanished carrier out of its own bag's layer and retracts it to absent. Only where a lower layer holds the title too does the removal raise a kāpae: the confirmation line names that layer, the person's `y` approves it (the verb sends `kapae: true`), and `yes=true` alone leaves the island refusing `remove-raises-kapae` by name. Name one or more carriers, or `--all --count <n>`; an answer over more than one carrier names the count that stands pending. Where a commit took the file from the checkout, the answer names that commit and where its message says the substance went.
+`remove <uri>…` takes the vanished carrier out of its own bag's layer and retracts it to absent. Only where a lower layer holds the title too does the removal raise a kāpae: the confirmation line names that layer, the person's `y` approves it (the verb sends `kapae: true`), and `yes=true` alone leaves the island refusing `remove-raises-kapae` by name. Name one or more carriers, or `all=true count=<n>`; an answer over more than one carrier names the count that stands pending. Where a commit took the file from the checkout, the answer names that commit and where its message says the substance went.
 
 A terminal asks `Proceed? [y/N]`; a JSON call off a terminal needs `yes=true`. `face=N` answers a lit sibling's pending row without wearing it.
 
@@ -68,7 +68,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`remove-raises-kapae` params=`cure/[[carriage.disk.removes uri/<uri>]] ~ a lower layer holds the title too; answer y at a terminal to raise the kāpae`>>
-<<has entity=`refusal` name=`usage` params=`cure/[[carriage.disk.removes uri/<uri>]] ~ name a carrier, or --all with --count; --all beside carriers refuses`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.disk.removes uri/<uri>]] ~ name a carrier, or all=true with count=; all=true beside carriers refuses`>>
 <<has entity=`refusal` name=`count-missing` params=`cure/[[carriage.disk.removes all/true count/3]] ~ an answer over more than one carrier names the count that stands pending`>>
 <<has entity=`refusal` name=`a-state-that-moved` params=`~ an answer names the state its giver read (a standoff's key, or the count that stands pending); where that state moved, the island refuses by name and nothing changes`>>
 ```
@@ -110,6 +110,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vVuR5Kj4HGPS0TOakl6avmD5Oup0Ka9HPZhq5o5D4pE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PhP671ee91Wiktsjh_VPDSHfsifUimkp8NRlNSAcsIk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

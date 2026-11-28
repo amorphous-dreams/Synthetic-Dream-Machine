@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.route.unbinds"
 
 ! face.route.unbinds ~ one route leaves; a rotation moves the key in the same act
 
-`lares vault unbind <slot-id>` removes one slot from the vessel key's tree (`--face N`: from that face's tree) once the hand proves a route that opens it; `--rotate` moves the key itself in the same act, so the slot that leaves opens nothing ever again. Slot ids print under `lares vault status`. A credential rides a TTY alone: no flag, no environment variable and no pipe carries one, nothing echoes one, and it drops the instant the act returns. Rotation never repairs the loss of a relation carrier.
+`lares vault unbind <slot-id>` removes one slot from the vessel key's tree (`face=N`: from that face's tree) once the hand proves a route that opens it; `rotate=true` moves the key itself in the same act, so the slot that leaves opens nothing ever again. Slot ids print under `lares vault status`. A credential rides a TTY alone: no flag, no environment variable and no pipe carries one, nothing echoes one, and it drops the instant the act returns. Rotation never repairs the loss of a relation carrier.
 
 <<~/ahu>>
 
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Q9CtHum73ztYUH64OMiI07LAh4fRZeOn6ALVw5jho_0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OC5uZRTWiyOVsAFKBr_ncaSCSdJy3sbUtVYNCdNSjRc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

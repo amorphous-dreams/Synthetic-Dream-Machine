@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.handle.burns"
 
 ! face.handle.burns ~ a Handle's end: its nym stops here
 
-`lares handle burn` ends the persona's Handle: readers refuse its nym after. The seated key buries it, or with `--from-persona` the persona buries it from above (an owner-burn).
+`lares handle burn` ends the persona's Handle: readers refuse its nym after. The seated key buries it, or with `from-persona=true` the persona buries it from above (an owner-burn).
 
 <<~/ahu>>
 
@@ -100,6 +100,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;MEwQyNWCKpI9ZqIY3RvuGczZctBdzU0U3ZK3RGLxT-4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eHYMTPdvBIM1gG-Kh6nMe_e2yAiQlwOXjVskH7kecLk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

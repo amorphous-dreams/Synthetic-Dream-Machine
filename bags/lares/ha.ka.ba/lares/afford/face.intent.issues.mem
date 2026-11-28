@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.intent.issues"
 
 ! face.intent.issues ~ issue ~ a votum names a verb and its audience
 
-`lares intent issue <verb>` signs one intent (a votum) naming the verb, its JSON `--args` and its audience: `--to` pins one atom, `--prefer` names a preference, `--class` a class, `--every` every holder. `--void-at` and `--through` bound it. An idempotent verb names its votum by its word alone (the empty nonce), so the same word twice reads one votum; any other takes a fresh `--nonce` unless the line names one. A `face-join` asks the face's founding hearth to seat this vessel and carries its own ContactCard. The answer prints the intent id.
+`lares intent issue <verb>` signs one intent (a votum) naming the verb, its JSON `args=` and its audience: `to=` pins one atom, `prefer=` names a preference, `class=` a class, `every=true` every holder. `void-at=` and `through=` bound it. An idempotent verb names its votum by its word alone (the empty nonce), so the same word twice reads one votum; any other takes a fresh `nonce=` unless the line names one. A `face-join` asks the face's founding hearth to seat this vessel and carries its own ContactCard. The answer prints the intent id.
 
 <<~/ahu>>
 
@@ -68,12 +68,12 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`usage` params=`~ an unknown sub-verb, or no sub-verb named`>>
-<<has entity=`refusal` name=`face-malformed` params=`~ --face names a whole persona index from 0`>>
+<<has entity=`refusal` name=`face-malformed` params=`~ face= names a whole persona index from 0`>>
 <<has entity=`refusal` name=`face-not-held` params=`~ this vessel holds no such face`>>
-<<has entity=`refusal` name=`args-malformed` params=`~ --args reads as no JSON`>>
+<<has entity=`refusal` name=`args-malformed` params=`~ args= reads as no JSON`>>
 <<has entity=`refusal` name=`verb-absent` params=`~ name the verb`>>
 <<has entity=`refusal` name=`intent-id-taken` params=`~ the same word stands under another audience or bound`>>
-<<has entity=`refusal` name=`hearth-absent` params=`~ the face's log names no founding hearth; name one with --to`>>
+<<has entity=`refusal` name=`hearth-absent` params=`~ the face's log names no founding hearth; name one with to=`>>
 ```
 
 <<~/ahu>>
@@ -114,6 +114,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8Pi42Z2Ac9jU-KXMUjA-8_WOcspRjcnsHzBksCVSzq4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gPR4DTG38_JmEby5E4wCOmCXKJ5G24RvKkpNQknk7tg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

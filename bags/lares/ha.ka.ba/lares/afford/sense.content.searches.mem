@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.content.searches"
 
 ! sense.content.searches ~ hybrid recall over one plane, the plane a parameter
 
-`lares sense search <query…>` runs hybrid recall over one plane (`--lens`, default content; `crossplane` widens content hits across form and structure by the cid join), `--k` hits (default 5), narrowed by `--wing` and `--room`. `--not-root` (else `LARES_SESSION_ROOT`) down-weights the caller's own session by `--self-weight` (default 0.25). A frozen trial (`--trial-root`, with `--model-home` for the pinned query model) reads its owned Content and frontiers, filtered to its receipts, `--source-key` and `--revision` narrowing it. A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
+`lares sense search <query…>` runs hybrid recall over one plane (`lens=`, default content; `crossplane` widens content hits across form and structure by the cid join), `k=` hits (default 5), narrowed by `wing=` and `room=`. `not-root=` (else `LARES_SESSION_ROOT`) down-weights the caller's own session by `self-weight=` (default 0.25). A frozen trial (`trial-root=`, with `model-home=` for the pinned query model) reads its owned Content and frontiers, filtered to its receipts, `source-key=` and `revision=` narrowing it. A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
 
 <<~/ahu>>
 
@@ -70,7 +70,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`usage` params=`cure/[[sense.content.searches query/harbor]] ~ no verb or no query named`>>
-<<has entity=`refusal` name=`verb-error` params=`~ an unknown lens, a trial flag without --trial-root, a trial with no --model-home, or the read failed`>>
+<<has entity=`refusal` name=`verb-error` params=`~ an unknown lens, a trial flag without trial-root=, a trial with no model-home=, or the read failed`>>
 ```
 
 <<~/ahu>>
@@ -110,6 +110,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EHcwTTdDoE08gITzxVb8E8Pac2dLagn1LW7OX2DllQg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uDrMX8CtqtNET79Y6rFubiviMe-vhBNzOjD3NZpQyX8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

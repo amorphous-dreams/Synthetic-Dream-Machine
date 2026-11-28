@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.genesis.overturns"
 
 ! realm.genesis.overturns ~ kāhuli: the tier as the argument
 
-`lares nexus kahuli <engine | grammar>` reports and advances one ratchet tier of the Nexus's genesis composition: engine (slow, signed into every delegation edge, held until the forward-rebind rules) or grammar (the required memetic-wikitext grammar alone). `--apply` stands held while the overturn's payload waits to be wired. An operator's own plugins move through `nexus publish`, never here.
+`lares nexus kahuli <engine | grammar>` reports and advances one ratchet tier of the Nexus's genesis composition: engine (slow, signed into every delegation edge, held until the forward-rebind rules) or grammar (the required memetic-wikitext grammar alone). `apply=true` stands held while the overturn's payload waits to be wired. An operator's own plugins move through `nexus publish`, never here.
 
 <<~/ahu>>
 
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;tKXLRIUIjGfUG8tqoCz4AGK9QgvR0P66yFlD9Y3Zsr0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dC1Mw3bsqnypYA4C7tiDYtyXmkhz7dYOHlOiE_VTZaI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

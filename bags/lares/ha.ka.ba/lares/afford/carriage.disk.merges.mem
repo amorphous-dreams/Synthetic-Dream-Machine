@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.disk.merges"
 
 ! carriage.disk.merges ~ a person keeps the file's words as parallel drafts and the records' render on disk
 
-`keep-both <uri> --key <key>` writes the records' render over the file and keeps the file's words as parallel drafts in the worn face's draft layer. It appears in the standoff alert where drafts stand; `drafts <uri>` names them by title, and `lares get` reads each. SETTLING STAYS A HAND ACT: an AI harness on its branch refuses `hand-act-only`, an unreadable branch `hand-unattested`, and `yes=true` approves nothing by itself.
+`keep-both <uri> key=<key>` writes the records' render over the file and keeps the file's words as parallel drafts in the worn face's draft layer. It appears in the standoff alert where drafts stand; `drafts <uri>` names them by title, and `lares get` reads each. SETTLING STAYS A HAND ACT: an AI harness on its branch refuses `hand-act-only`, an unreadable branch `hand-unattested`, and `yes=true` approves nothing by itself.
 
 <<~/ahu>>
 
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;CHcFjUm7Fo4i0r6c0Pp72uG7unLVllfCT-kYBHUPlPg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KjuNkmO8Q9-pWC5T0RnMN7kCCxH350jX3Dv8wo4-Ipc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

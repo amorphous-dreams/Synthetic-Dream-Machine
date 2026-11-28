@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.checkout.reads"
 
 ! engine.checkout.reads ~ the the checkout tunnel read: every item's state, nothing written
 
-`lares repo read` reads the checkout it runs in (its declared reality tunnel and seat) against its declaration and the ledger of what the house last wrote, and writes nothing. Each row names its state (aligned, drift, foreign, unreachable, absent), its id, its path and whether a hand touched it since the house wrote it; the exit class carries the worst state. `--brief` prints the one line the wake hook reads, with or without a terminal. `--staged` reads the index: the carrier and seed the commit carries, as the commit gate reads them. `--familiar` names a home's familiar and refuses here with exit 2, naming the home door.
+`lares repo read` reads the checkout it runs in (its declared reality tunnel and seat) against its declaration and the ledger of what the house last wrote, and writes nothing. Each row names its state (aligned, drift, foreign, unreachable, absent), its id, its path and whether a hand touched it since the house wrote it; the exit class carries the worst state. `brief=true` prints the one line the wake hook reads, with or without a terminal. `staged=true` reads the index: the carrier and seed the commit carries, as the commit gate reads them. `familiar=` names a home's familiar and refuses here with exit 2, naming the home door.
 
 <<~/ahu>>
 
@@ -64,8 +64,8 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`usage` params=`~ name one of read, tend, verify, undo`>>
-<<has entity=`refusal` name=`familiar-home-only` params=`~ --familiar names a home's familiar; lares home takes it`>>
-<<has entity=`refusal` name=`root-no-directory` params=`~ --root names no directory; name the checkout's top level`>>
+<<has entity=`refusal` name=`familiar-home-only` params=`~ familiar= names a home's familiar; lares home takes it`>>
+<<has entity=`refusal` name=`root-no-directory` params=`~ root= names no directory; name the checkout's top level`>>
 ```
 
 <<~/ahu>>
@@ -108,6 +108,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jtYr3Xrk5HW8x-s5Bua7Ry41UZVPwa79QYNIEivDWCE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TPdxYs7Bnwj8rNVML4MlmpL9UywhVTrCmf4iaNmbdmQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

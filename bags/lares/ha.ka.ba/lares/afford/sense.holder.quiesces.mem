@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.holder.quiesces"
 
 ! sense.holder.quiesces ~ the sovereign parallel of the guest quiesce
 
-`lares sense quiesce` pauses the hook legs (the memory sensorium alone owns them) and drains every holder sitting under the sensorium's root, confirming zero; `--hold` keeps the hooks paused. A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
+`lares sense quiesce` pauses the hook legs (the memory sensorium alone owns them) and drains every holder sitting under the sensorium's root, confirming zero; `hold=true` keeps the hooks paused. A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
 
 <<~/ahu>>
 
@@ -100,6 +100,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vcYaBl0hcFragSHz_xzyWFAiW4GAzRL6BJJe_ctxGWA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VDE5DFmeAjRLpC5Pd2nFLjwdiLbioOywO98ohIvKogI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

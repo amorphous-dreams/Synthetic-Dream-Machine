@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.kahu.admits"
 
 ! realm.kahu.admits ~ admission takes the seat quorum
 
-`lares nexus cabal <admit | remove | cosign | standing>` admits a PersonaGroup into a Nexus's Kahu cabal at the seat quorum, or takes it out; short of the threshold the act stays a partial (`--out`), and another vault's `cosign <partial> --act <cid>` adds its seats once a person reads the act CID aloud. `standing <group>` reads where the group stands as of the last sync.
+`lares nexus cabal <admit | remove | cosign | standing>` admits a PersonaGroup into a Nexus's Kahu cabal at the seat quorum, or takes it out; short of the threshold the act stays a partial (`out=`), and another vault's `cosign <partial> act=<cid>` adds its seats once a person reads the act CID aloud. `standing <group>` reads where the group stands as of the last sync.
 
 <<~/ahu>>
 
@@ -63,7 +63,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · vessel-composing · vessel-silent · vessel-locked · error
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[realm.kahu.admits sub/standing group/<group>]] ~ an unknown act, or a missing group or --act`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.kahu.admits sub/standing group/<group>]] ~ an unknown act, or a missing group or act=`>>
 <<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
 <<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
 <<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;68SDPW8p4t2ngDCSZhPfFuI5yQkZVlTBNQwSWZsCXvs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7T0EtVybvyTH6ZqVgAjTevl6qx1Smqv_avDUaCW5BNo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

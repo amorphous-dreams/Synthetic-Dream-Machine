@@ -127,7 +127,7 @@ export function keepPlan(args: ParsedArgs): { readonly workspace?: string; reado
   const ifDue = args.positional[0] === "keep" && args.flags["if-due"] === true;
   if (workspace === undefined && !ifDue) throw new RiteUsage("keep names the workspace it lays the bundle into: workspace=<name> [into=<path>] (or `keep if-due=true`, which reads LARES_KEEP_WORKSPACE)");
   if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("face= takes a whole persona index from 0");
-  // `sessions=true` / `--no-sessions` (keep alone); with neither, the host half reads LARES_KEEP_SESSIONS and keeps them.
+  // `sessions=true` / `sessions=false` (keep alone); with neither, the host half reads LARES_KEEP_SESSIONS and keeps them.
   const sessions = args.positional[0] === "keep" && typeof args.flags["sessions"] === "boolean" ? args.flags["sessions"] : undefined;
   return { ...(workspace !== undefined ? { workspace } : {}), ...(into !== undefined ? { into } : {}), acceptOmissions: args.flags["accept-omissions"] === true, ...(faceWord !== undefined ? { face: Number(faceWord) } : {}), ...(ifDue ? { ifDue: true as const } : {}), ...(sessions !== undefined ? { sessions } : {}) };
 }
@@ -594,6 +594,8 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
     },
     // THE COMMIT THE KUKULU LEI LICENSES: the shim's guards, then the keeper rests it; its lines name any refusal.
     keeperLeiSpend: async (revision, branch) => (await runShim(shim, ["pulama", "name-successor", "--lei", revision, branch])) === 0,
+    // THE PRE-RAISE ADMIT: with no terminal the shim's `pulama admit` admits the tag's image under the hoʻāla lei.
+    admitByLei: async () => (await runShim(shim, ["pulama", "admit"])) === 0,
     tty: () => process.stdin.isTTY === true && process.stdout.isTTY === true,
     row: (verb, rowArgs) => cliVerb(hostRowLine(verb, rowArgs)),
     standing: async (branch, face) => {

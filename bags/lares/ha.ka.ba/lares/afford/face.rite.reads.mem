@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.rite.reads"
 
 ! face.rite.reads ~ receipts ~ rite-receipts
 
-`lares rite receipts` runs `rite-receipts`: every half that verifies (`data.receipts`) and conferre's read of them (`data.conferre`). `--rite kukulu` reads every lent face's begun halves resting unlanded and the resting offer's hash (`offerBase`); `--branch` narrows them to its line.
+`lares rite receipts` runs `rite-receipts`: every half that verifies (`data.receipts`) and conferre's read of them (`data.conferre`). `rite=kukulu` reads every lent face's begun halves resting unlanded and the resting offer's hash (`offerBase`); `branch=` narrows them to its line.
 
 <<~/ahu>>
 
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6ijD1ljRV3BawC00PjJYeOufN_RCxPDw8aa6lxCKDjQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lWIhcc7cGFaDeJgrcRKxUevft0feNUu8KhJ5x1Vi7As`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.lei.strings"
 
 ! face.lei.strings ~ kui ~ swarm-lei-kui
 
-`lares lei kui rite=<rite> branch=<name>` strings a lei: wide by default (`--returns <n>`), or `--reach head --head <h>` to pin one head. With no `--after` it follows the line's own tip (the first on an empty line); a named `--after` that is no tip refuses as forked, before any route or signature. More than twelve returns asks `yes=true`. `--all` (push, kukulu) strings one lei for every open face under one route, each face's own record by its own hand at its own line's tip; a keep lei names one face and never rides `--all`.
+`lares lei kui rite=<rite> branch=<name>` strings a lei: wide by default (`returns=<n>`), or `reach=head head=<h>` to pin one head. With no `after=` it follows the line's own tip (the first on an empty line); a named `after=` that is no tip refuses as forked, before any route or signature. More than twelve returns asks `yes=true`. `all=true` (push, kukulu) strings one lei for every open face under one route, each face's own record by its own hand at its own line's tip; a keep lei names one face and never rides `all=true`.
 
 <<~/ahu>>
 
@@ -68,7 +68,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`usage` params=`~ a missing rite, branch or lei, a stray flag, or a malformed count`>>
-<<has entity=`refusal` name=`swarm-lei-forked` params=`~ the named --after names no tip; name the chain's tip`>>
+<<has entity=`refusal` name=`swarm-lei-forked` params=`~ the named after= names no tip; name the chain's tip`>>
 <<has entity=`refusal` name=`face-none-open` params=`~ no face stands open to string for`>>
 <<has entity=`refusal` name=`hand-act-only` params=`~ an AI seat strung a lei; a person runs the line`>>
 ```
@@ -111,6 +111,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;FXtxb-QGlKxJLQw3mH1OQU4VhzH6BRzwAMLsjkaE3UQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ehy-eUx8CMFjMSDIu2XmC2qPE35130qfQrTJzMnt0uc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

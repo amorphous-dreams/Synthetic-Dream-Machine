@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.persona.mints"
 
 ! face.persona.mints ~ a persona root at one handle index
 
-`lares persona new <index> name='<petname>'` mints a persona root at that handle index, or loads the one standing there, and keeps its private label. `--handle '<Handle>'` declares its outward name apart from the label; `--seat [--chair <label>]` stands it for a Kahu chair on this node, with a private chair label and no Handle needed; `--split-root` opts into the 2-of-3 recovery split. The index reads within the derivation's range and this vessel's slot ceiling (`LAR_PERSONA_SLOTS`); a herm mints no root, and a place with no face yet founds one first.
+`lares persona new <index> name='<petname>'` mints a persona root at that handle index, or loads the one standing there, and keeps its private label. `handle='<Handle>'` declares its outward name apart from the label; `seat=true [chair=<label>]` stands it for a Kahu chair on this node, with a private chair label and no Handle needed; `split-root=true` opts into the 2-of-3 recovery split. The index reads within the derivation's range and this vessel's slot ceiling (`LAR_PERSONA_SLOTS`); a herm mints no root, and a place with no face yet founds one first.
 
 <<~/ahu>>
 
@@ -65,7 +65,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · vessel-composing · vessel-silent · vessel-locked · error
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[face.persona.mints index/1 name/garden]] ~ no index, an index out of range or past the slot ceiling, no --name, --chair without --seat, a herm, or no face founded yet`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[face.persona.mints index/1 name/garden]] ~ no index, an index out of range or past the slot ceiling, no name=, chair= without seat=true, a herm, or no face founded yet`>>
 <<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
 <<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
 <<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
@@ -109,6 +109,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;t3bytTVFge4R1fa--5OTLpLoc-xMMNZIIsMRh-FmLIM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yoedk_r6QU2IRkAAJjOLwxJtHdQNIwapWYWrO7adFaE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

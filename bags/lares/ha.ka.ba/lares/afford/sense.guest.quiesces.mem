@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.guest.quiesces"
 
 ! sense.guest.quiesces ~ graceful stop-the-world, idempotent
 
-`lares mempalace quiesce` pauses the hooks first (stops the minting), then SIGTERM-drains the warm daemons with a bounded SIGKILL, and confirms zero holders; a second run on a quiet system reads a clean no-op. `--hold` keeps the hooks paused for a later resume.
+`lares mempalace quiesce` pauses the hooks first (stops the minting), then SIGTERM-drains the warm daemons with a bounded SIGKILL, and confirms zero holders; a second run on a quiet system reads a clean no-op. `hold=true` keeps the hooks paused for a later resume.
 
 <<~/ahu>>
 
@@ -99,6 +99,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ckyY9XYVcSVUSNKC3BCFY02HwnyMavN_VjKiKfozSQ4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VR0Qrh35_oNvmDwTJpWUIhy2cxBBogXcRR-UymzXMas`>>
 
 <<^ code=`&#x0004;` to=`?`>>

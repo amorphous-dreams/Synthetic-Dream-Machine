@@ -1365,6 +1365,17 @@ function OfferCarries([string]$digest) {
   # It reads the vouch's own `image` field, never a digest that merely begins another.
   return (Get-Content -Raw -LiteralPath $f).Contains("`"image`":`"$digest`"")
 }
+# AN OFFER OUTLIVES NO IMAGE: a resting offer whose vouches name no image the tag holds owns nothing for the next vessel (the pūlama
+# reads it as no offer), so the stage and the raise set it down by name before any vessel carries it.
+function OfferDropStale {
+  $f = Join-Path (Join-Path $House 'config') 'kukulu-offer.json'
+  if (-not (Test-Path -LiteralPath $f)) { return }
+  $img = ImageId
+  if (-not $img -or (OfferCarries $img)) { return }
+  Remove-Item -LiteralPath $f -Force -ErrorAction SilentlyContinue
+  if (Test-Path -LiteralPath $f) { return }
+  [Console]::Error.WriteLine("lares-container: the kūkulu offer that rested vouches for another image than $ImageRef holds ($img); it owned nothing for the next vessel, and it goes")
+}
 # Does a vessel run the image the tag names? VoRunning reads true wherever a vessel runs at all.
 $script:VoRunning = $false
 function VesselOnImage {
@@ -1629,6 +1640,7 @@ function RebuildVerb([string[]]$rargs) {
   if ($prior -and $atGiven) { Die 'rebuild takes --at <rev> or --prior, never both' }
   $script:InRebuild = $true
   if ($prior) { ResolveImage '' } else { ResolveImage $at }
+  OfferDropStale
   if ($imageOnly) { PrintReading; return }
   StandHouse
 }
@@ -1748,7 +1760,7 @@ switch ($verb) {
           if (-not $m.Success) { $unread = $true } elseif ([int]$m.Groups[1].Value -gt $most) { $most = [int]$m.Groups[1].Value }
         }
         $devArgs = @()
-        if ($unread -or $most -lt 1) { [Console]::Error.WriteLine('lares-container: name-successor: the vessel read no device count for every lit face, so the commit carries none and the vest will refuse (vest-devices-unread); commit with the vessel standing to hand the fire unattended') }
+        if ($unread -or $most -lt 1) { [Console]::Error.WriteLine('lares-container: name-successor: the vessel read no device count for every lit face, so the commit carries none and the vest reads one device (unknown, annotated here)') }
         else {
           [Console]::Error.WriteLine("lares-container: name-successor: the lit faces hold at most $most device(s)")
           $devArgs = @('--devices', "$most")

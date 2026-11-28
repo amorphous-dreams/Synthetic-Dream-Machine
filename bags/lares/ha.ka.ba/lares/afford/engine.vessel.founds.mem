@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.vessel.founds"
 
 ! engine.vessel.founds ~ the founding: identity, persona zero, the planes and the bootstrap
 
-`lares vessel found` mints the vessel identity, the social planes and the bootstrap and skips what already stands. `--hearth --name '<label>'` founds a hearth with persona zero and its one-seat seed charter; `--hearth --restore <bundle>` founds it with a restored face as persona zero; bare, it founds a place with no face, which joins one by `lares fleet join`. `--chair <label>` names persona zero's private chair label; `--genesis <dir>` the genesis it founds from; `--storage <dir>` the store; `--root <dir>` the vessel root. The human route reads on a terminal (passphrase, paper pin); with none the founding refuses by name. `--force` over a founded hearth re-seeds the bootstrap, so the house hand gate reads the branch first.
+`lares vessel found` mints the vessel identity, the social planes and the bootstrap and skips what already stands. `hearth=true name='<label>'` founds a hearth with persona zero and its one-seat seed charter; `hearth=true restore=<bundle>` founds it with a restored face as persona zero; bare, it founds a place with no face, which joins one by `lares fleet join`. `chair=<label>` names persona zero's private chair label; `genesis=<dir>` the genesis it founds from; `storage=<dir>` the store; `root=<dir>` the vessel root. The human route reads on a terminal (passphrase, paper pin); with none the founding refuses by name. `force=true` over a founded hearth re-seeds the bootstrap, so the house hand gate reads the branch first.
 
 <<~/ahu>>
 
@@ -57,7 +57,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.vessel.founds"
 Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
-<<has entity=`gate` name=`hand` params=`who/hand ~ mints keys on this host; the human route reads a terminal, and --force reads the hand gate`>>
+<<has entity=`gate` name=`hand` params=`who/hand ~ mints keys on this host; the human route reads a terminal, and force=true reads the hand gate`>>
 ```
 
 <<~/ahu>>
@@ -69,7 +69,7 @@ Testimony: the door checks; this slot grants nothing.
 ```memetic-wikitext
 <<has entity=`refusal` name=`HearthFoundingRefused` params=`cure/[[engine.vessel.founds hearth/true name/<label>]] ~ persona zero needs a label, or the bundle reads unreadable, malformed or opens no route; nothing landed`>>
 <<has entity=`refusal` name=`OccupiedStoreRefusal` params=`~ the store holds a carrier and no tree; nothing mints over it`>>
-<<has entity=`refusal` name=`hand-act-only` params=`~ an AI seat stands on the branch; --force runs on a person's own terminal`>>
+<<has entity=`refusal` name=`hand-act-only` params=`~ an AI seat stands on the branch; force=true runs on a person's own terminal`>>
 <<has entity=`refusal` name=`hand-unattested` params=`~ the hand gate read no chain for the branch`>>
 ```
 
@@ -111,6 +111,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;MSFUo9s2qwew17KvRQVTmslsVoWXXOtaRjYQa-u69EI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Oa6iop6boPABKSgLGCOgfDpXtOCqXEqS9-s-XP7mdYY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

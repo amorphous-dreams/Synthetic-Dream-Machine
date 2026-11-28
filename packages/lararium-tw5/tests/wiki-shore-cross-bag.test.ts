@@ -66,7 +66,6 @@ describe.skipIf(wikiSkip)(`wiki shore cross-bag check${skipNote}`, () => {
       await r.adaptor.armSeedCheckpoint();
       const d = openDraft(r, x, "draft text");
       await afterDispatch();
-      boundary.fire();
       await boundary.settle();
       if (moved) await peerWrite(r, canonBag, [{ tiddler: { title: x, text: "canon moved" } }]);
       const workingChanges = r.changes(workingBag);

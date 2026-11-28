@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.telemetry.projects"
 
 ! sense.telemetry.projects ~ telemetry through the seat, verbatim first
 
-`lares sense telemetry wing=<w>` runs lar-telemetry over a wing through the daemon seat, projecting the turn's instrument readings as `lar_*` onto its drawers; `--limit N` caps the drawers one pass touches. Idempotent: the lar_hv gate skips current drawers, and a down daemon no-ops, the verbatim capture already landed.
+`lares sense telemetry wing=<w>` runs lar-telemetry over a wing through the daemon seat, projecting the turn's instrument readings as `lar_*` onto its drawers; `limit=N` caps the drawers one pass touches. Idempotent: the lar_hv gate skips current drawers, and a down daemon no-ops, the verbatim capture already landed.
 
 <<~/ahu>>
 
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0lGQC2ZlGIC9wTlUf7HPaZ-6SIRvqJ_mzxsUKDPALno`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FazEh898pwLgVVh7_dw3Jxax7h9KJ8-z5j_WW4kWkxU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

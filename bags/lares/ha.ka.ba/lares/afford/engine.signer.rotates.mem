@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.signer.rotates"
 
 ! engine.signer.rotates ~ the place's online signer, replaced by its founding card
 
-`lares vessel rotate` reads the place's founding card on a terminal, mints the replacement signer and reads its card back before anything lands. A standing vessel refuses (its signer would outlive the rotation), as does a card that opens no commitment or a read-back that differs. `--cold-key <card>` stands in for the terminal on a staged test root alone.
+`lares vessel rotate` reads the place's founding card on a terminal, mints the replacement signer and reads its card back before anything lands. A standing vessel refuses (its signer would outlive the rotation), as does a card that opens no commitment or a read-back that differs. `cold-key=<card>` stands in for the terminal on a staged test root alone.
 
 <<~/ahu>>
 
@@ -61,7 +61,7 @@ Testimony: the door checks; this slot grants nothing.
 ```memetic-wikitext
 <<has entity=`refusal` name=`vessel-stands` params=`~ a vessel stands here; stop it with lares vessel stop, then rotate`>>
 <<has entity=`refusal` name=`no-terminal` params=`~ the rite reads the card on a terminal`>>
-<<has entity=`refusal` name=`cold-key-staged-only` params=`~ --cold-key stands in on a staged test root alone`>>
+<<has entity=`refusal` name=`cold-key-staged-only` params=`~ cold-key= stands in on a staged test root alone`>>
 <<has entity=`refusal` name=`ColdKeyCardError` params=`~ the card reads malformed`>>
 <<has entity=`refusal` name=`CardReadBackRefused` params=`~ the replacement card read back otherwise`>>
 <<has entity=`refusal` name=`place-card-refused` params=`~ the card opens no commitment; nothing moved`>>
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_i-kd3fU972Cp8YV1qhaTdbrMRzZrKgqDs9NRxZ1K54`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lGWtVV0wE2aqfz3FiBj-MG6-YCGyhHEXrISfsf2a9jY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

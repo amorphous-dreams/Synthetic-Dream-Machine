@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.invite.mints"
 
 ! realm.invite.mints ~ invite ~ one string to carry
 
-`lares host invite` mints this hearth's own invite at the current epoch (`--nexus <aid>`, else this hearth's own charter; `--relay <ws-url>` names the relay it dials) and prints the one string to carry to one newcomer; it redeems once, at this hearth's own gate, and nothing about it stays here.
+`lares host invite` mints this hearth's own invite at the current epoch (`nexus=<aid>`, else this hearth's own charter; `relay=<ws-url>` names the relay it dials) and prints the one string to carry to one newcomer; it redeems once, at this hearth's own gate, and nothing about it stays here.
 
 <<~/ahu>>
 
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iaEr4xOkMWPzHP3ZWUWgPxaQvnDRFve7Y6ekrChzG5o`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BRmCJ8QNsSP7dpxWDF-JA_JKd2hxvxQzwT5MZc9E48Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

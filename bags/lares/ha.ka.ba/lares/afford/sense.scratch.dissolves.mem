@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.scratch.dissolves"
 
 ! sense.scratch.dissolves ~ idempotent removal: already gone reads ok
 
-`lares sensorium dissolve <id>` removes one scratch sensorium; `--all` every live one; `--orphans` reaps the orphans alone. An instance already gone answers ok.
+`lares sensorium dissolve <id>` removes one scratch sensorium; `all=true` every live one; `orphans=true` reaps the orphans alone. An instance already gone answers ok.
 
 <<~/ahu>>
 
@@ -62,7 +62,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[sense.scratch.dissolves id/s-1]] ~ name an id, --all or --orphans`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[sense.scratch.dissolves id/s-1]] ~ name an id, all=true or orphans=true`>>
 ```
 
 <<~/ahu>>
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TTdTLG43HClS2-7OI7DecLRTY3QGyY0QMX3kqLMrnXM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4dFpfZ-foG9bJL_8ONxY_QS75H0Ycszdx8pGeiwVicU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

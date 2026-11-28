@@ -188,7 +188,7 @@ the `bags/nexus` charter home                         nexus-refresh.ts:42 · ope
 
 <ol start="7">
 <li>''`RealmGlamour` → a Nexus/heraldry name.'' Pure projection (#/realm-shaped-nexus §1). ⚠ Canon at `cabal-realm.mem:163` ENACTED the name, so this wants an operator ruling to reopen — never a unilateral sweep.</li>
-<li>''The CLI verb surface'' — `nexus realm-bag` / `nexus realm-bags` · `cabal vouch --realm` · the tw5 `realm-feed` / `realm-clock` verbs. User-facing and alias-free under the vessel-door law, so a rename breaks a door and costs a witness — but re-keys nothing.</li>
+<li>''The CLI verb surface'' — `nexus realm-bag` / `nexus realm-bags` · `cabal vouch realm=` · the tw5 `realm-feed` / `realm-clock` verbs. User-facing and alias-free under the vessel-door law, so a rename breaks a door and costs a witness — but re-keys nothing.</li>
 </ol>
 
 !!! MUST NOT MOVE
@@ -201,6 +201,6 @@ the `bags/nexus` charter home                         nexus-refresh.ts:42 · ope
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wDGAUAJSdGI6U15r4FxD4aOqAgTs1fdwuTG7BMOA4bY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bLX1keuTgGJJrBDNydbraCjoS8VelWAVKcji-WDPFQg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

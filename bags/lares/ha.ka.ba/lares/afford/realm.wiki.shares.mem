@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.wiki.shares"
 
 ! realm.wiki.shares ~ one shared workbench every member face syncs
 
-`lares wiki share <wiki>` writes the slug's share row: its canon by reference and its working layer as one shared workbench every member face syncs, through a private cabal realm the landing founds once. A line names its delta: `--read` and `--write` add names, `--read-remove` and `--write-remove` take names out (revoking each taken-out face's landed grant), and what the line leaves unnamed stands. `--workspace <name>` rests the workbench's mirror in an operator-configured directory; `--list` shows the resolved answer; `--remove` unshares. The row writes through to `config/share.tid` and, with a vessel standing, the control document; the daemon wiki never shares.
+`lares wiki share <wiki>` writes the slug's share row: its canon by reference and its working layer as one shared workbench every member face syncs, through a private cabal realm the landing founds once. A line names its delta: `read=` and `write=` add names, `read-remove=` and `write-remove=` take names out (revoking each taken-out face's landed grant), and what the line leaves unnamed stands. `workspace=<name>` rests the workbench's mirror in an operator-configured directory; `list=true` shows the resolved answer; `remove=true` unshares. The row writes through to `config/share.tid` and, with a vessel standing, the control document; the daemon wiki never shares.
 
 <<~/ahu>>
 
@@ -112,6 +112,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;89RJQE6GPw012BRVPavp7MwbWBDQC7DymgDA5XYwYM0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QKC5hWTrPU0hplveFtUy6iYROaYDk3eLXvWFQTnZG_4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

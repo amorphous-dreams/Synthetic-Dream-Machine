@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.offer.drops"
 
 ! realm.offer.drops ~ the hand takes a promoted item back out
 
-Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON.
+Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The wiki rides `wiki=` (absent: the daemon wiki), the face `face=N`, and every answer prints as JSON.
 
 `trust drop <digest>` unpromotes the item the digest names. A person runs it at a real terminal.
 
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gBjkXXsj0Lw2_g9m_6u5gDsYT5TVXZUg0jOM210bhHg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9Eky47dCg1DL1UiXHLCeNXTedIIsLH2MKnN81aXMx4M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

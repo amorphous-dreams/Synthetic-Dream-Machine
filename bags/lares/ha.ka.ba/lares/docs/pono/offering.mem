@@ -8,8 +8,8 @@ cacheable  = true
 l-space    = "stable"
 namespace  = "&#x1F381;"
 revised-on = "2026-09-28"
-role       = "the OFFERING as a LAMPLIGHTER capability, collided with the software-supply-chain field. Names the immutable signed offering record, its additive CID-keyed announcement, the causal quorum antigen, and the receiver's own install hand. The public record passes a shape filter first and independent certification after; nothing here implies a receiver caller. The proposed bounded `kahuli grammar --from <offering CID>` reader remains held behind an operator contract fork. Carries the security table (freeze · rollback · mix-and-match · handle-squat · maintainer takeover · dependency confusion · captured Union · withdrawal), the remaining source-local and receiver closure queue, the anti-roster proof, and the gift boundary."
-status-why = "DESIGN, partially implemented. `PluginOffering` stands as an immutable signed record with a content CID and recomputed region; `offering-announce.ts` adds the complete record under a CID-keyed public projection; `offering-antigen.ts` folds quorum acts with semantic CIDs and causal parents, returning held/withdrawn/unsettled/unavailable or no authority verdict while retaining rejected candidates as audit evidence. No production receiver caller exists. Source-local `publish plugins --apply`, bounded read-only `kahuli grammar --from <offering CID>`, the receiver consultant/enforcement input contract and cap placement, and the Node/Web plus Docker multi-vessel story remain queued."
+role       = "the OFFERING as a LAMPLIGHTER capability, collided with the software-supply-chain field. Names the immutable signed offering record, its additive CID-keyed announcement, the causal quorum antigen, and the receiver's own install hand. The public record passes a shape filter first and independent certification after; nothing here implies a receiver caller. The proposed bounded `kahuli grammar from=<offering CID>` reader remains held behind an operator contract fork. Carries the security table (freeze · rollback · mix-and-match · handle-squat · maintainer takeover · dependency confusion · captured Union · withdrawal), the remaining source-local and receiver closure queue, the anti-roster proof, and the gift boundary."
+status-why = "DESIGN, partially implemented. `PluginOffering` stands as an immutable signed record with a content CID and recomputed region; `offering-announce.ts` adds the complete record under a CID-keyed public projection; `offering-antigen.ts` folds quorum acts with semantic CIDs and causal parents, returning held/withdrawn/unsettled/unavailable or no authority verdict while retaining rejected candidates as audit evidence. No production receiver caller exists. Source-local `publish plugins apply=true`, bounded read-only `kahuli grammar from=<offering CID>`, the receiver consultant/enforcement input contract and cap placement, and the Node/Web plus Docker multi-vessel story remain queued."
 tags       = ["docs/pono/talk-story", "lifecycle/designed"]
 title      = "lar:///ha.ka.ba/lares/docs/pono/offering"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -26,16 +26,16 @@ uri-path   = "ha.ka.ba/lares/docs/pono/offering"
 
 ''The lean the charge agreed with, stated as the thing this carrier tests to destruction:''
 
-# `--apply` ''signs and announces'' on the crossroads plane, its record resting on the Nexus's publication board (`publicationDocUrl`), which the federation gate carries beside the crossroads document and no recipe mounts, and does nothing else.
+# `apply=true` ''signs and announces'' on the crossroads plane, its record resting on the Nexus's publication board (`publicationDocUrl`), which the federation gate carries beside the crossroads document and no recipe mounts, and does nothing else.
 # The receiving hearth's `kāhuli grammar` — the fast ratchet — remains intended as ''the only door that installs''; no offering reader runs live yet.
-# `--apply` ''never ratchets''. A gift announces itself; the receiver ratchets.
+# `apply=true` ''never ratchets''. A gift announces itself; the receiver ratchets.
 # ''The lamplighter carries the basket; the kahu decides to plant.''
 
 ''What the collision did to the lean.'' It held, and the field supplied a stronger argument for it than the house had: the separation of ANNOUNCE from INSTALL reads as the ''one mitigation that survives a maintainer-key takeover'', which every other control in the stack fails (#/security). The implementation makes the offering an immutable signed record named by its complete record CID. That CID preserves historical identity; it does not invent a global currentness or freshness verdict. Receiver-local causal antigen consultation remains a separate authority relation (#/security, #/closure).
 
 ''And it took one warrant away.'' The clause the house leans on — //the obligation to receive is not the obligation to use// — does not appear in Mauss, who argues the other way; and the hoʻokupu reading the house likes did not resolve to a citable source. ''The lean survives on its own security argument and MUST stop borrowing the anthropology's authority'' (#/the-gift).
 
-''What this carrier does'': it names the caps, prices the attacks, bounds `--apply`, proves the anti-roster stance against the systems that took the other road, and plans the lift red-by-red. It changes no code.
+''What this carrier does'': it names the caps, prices the attacks, bounds `apply=true`, proves the anti-roster stance against the systems that took the other road, and plans the lift red-by-red. It changes no code.
 
 <<~/ahu>>
 
@@ -45,7 +45,7 @@ uri-path   = "ha.ka.ba/lares/docs/pono/offering"
 
 !!! The source-local door, read-only, with the offering HELD
 
-`lares nexus publish plugins` reads the operator's own collection and builds nothing. `--apply` remains a loud held refusal in the CLI; the source-local closure must mint the signed record, verify it, write one additive announcement, and report the resulting offering CID. A tier named at the wrong door still draws a refusal that points rather than shrugs.
+`lares nexus publish plugins` reads the operator's own collection and builds nothing. `apply=true` remains a loud held refusal in the CLI; the source-local closure must mint the signed record, verify it, write one additive announcement, and report the resulting offering CID. A tier named at the wrong door still draws a refusal that points rather than shrugs.
 
 !!! The immutable record — one offeror, one region, one signature, one record CID
 
@@ -79,8 +79,8 @@ The offering record stands immutable and content-addressed; no scalar currentnes
 
 !!! What stands HELD
 
-<<~ has entity=`Held` name=`PublishApply` params=```the mesh mint + announcement exist, but source-local `publish plugins --apply` has no caller```>>
-<<~ has entity=`Held` name=`Take` params=```no bounded read-only `kahuli grammar --from <offering CID>` reader exists```>>
+<<~ has entity=`Held` name=`PublishApply` params=```the mesh mint + announcement exist, but source-local `publish plugins apply=true` has no caller```>>
+<<~ has entity=`Held` name=`Take` params=```no bounded read-only `kahuli grammar from=<offering CID>` reader exists```>>
 <<~ has entity=`Held` name=`Consultant` params=`no receiver-local consultant/enforcement input contract or cap placement has been selected`>>
 <<~ has entity=`Held` name=`Vessels` params=`Node/Web and Docker multi-vessel replication, partition, rejoin, and custody story remains unclaimed`>>
 
@@ -203,7 +203,7 @@ And the house's own prior scout already measured the ceiling: ''no live system s
 
 <<~ has entity=`Cap` name=`kahuli-grammar` params=`verb/RATCHET subject/this hearth's grammarCid holder/the operator's OWN hand, at the receiving hearth does/recompute the region · verify the sig against the offeror's published Handle · THEN bake and bind ratchets/YES — this is the ratchet reaches/this hearth and the peers that follow it`>>
 
-''The proposed spelling'': `lares nexus kahuli grammar from=<offering-cid> apply=true`. The CLI accepts no such command. The read-only `--from` contract and its relationship to the generic PluginOffering gift remain operator-held; any future `--apply` payload stays a separate receiver-held action rather than an offer-side effect.
+''The proposed spelling'': `lares nexus kahuli grammar from=<offering-cid> apply=true`. The CLI accepts no such command. The read-only `from=` contract and its relationship to the generic PluginOffering gift remain operator-held; any future `apply=true` payload stays a separate receiver-held action rather than an offer-side effect.
 
 ''The three motions, in order, all fail-closed:''
 
@@ -249,9 +249,9 @@ Read the ''Gap'' column first. Four rows answer structurally, two answer partial
 
 ''The takeover row carries the argument for the split, the only argument that survives contact.'' Every other control — signature, recompute, provenance, reproducibility — assumes the signing hand stays the offeror's. xz and Shai-Hulud mark the class where it does not, and ''both shipped through registries with strictly more machinery than this house has''.
 
-Against that class exactly two things help. ''First'': a human decides, per hearth, per act — which a future bounded `kahuli grammar --from <offering CID>` reader may report, subject to the grammar-ratchet contract still held by the operator. ''Second'': a quorum can set a region aside after the fact — the causal antigen's work, ready for a receiver-local consult but not wired to any receiver yet. ''Everything else in the stack amounts to hygiene.''
+Against that class exactly two things help. ''First'': a human decides, per hearth, per act — which a future bounded `kahuli grammar from=<offering CID>` reader may report, subject to the grammar-ratchet contract still held by the operator. ''Second'': a quorum can set a region aside after the fact — the causal antigen's work, ready for a receiver-local consult but not wired to any receiver yet. ''Everything else in the stack amounts to hygiene.''
 
-<<~moves name=`--apply` params=`MUST-NOT-INSTALL on/the-takeover-row ~ a push-install converts one stolen key into every follower's disk`>>
+<<~moves name=`apply=true` params=`MUST-NOT-INSTALL on/the-takeover-row ~ a push-install converts one stolen key into every follower's disk`>>
 <<~moves name=`the-antigen` params=`OWES-A-CALLER on/the-takeover-row ~ causally folded, tested, and consulted by no production receiver yet`>>
 
 !!! And one honest note on what an offering does NOT carry
@@ -262,9 +262,9 @@ Against that class exactly two things help. ''First'': a human decides, per hear
 
 <<~ ahu slot=`#/apply`>>
 
-!! `--apply` — what it MUST do, and what it MUST NOT
+!! `apply=true` — what it MUST do, and what it MUST NOT
 
-The CLI verb remains HELD. This section bounds the source-local `publish plugins --apply` closure.
+The CLI verb remains HELD. This section bounds the source-local `publish plugins apply=true` closure.
 
 !!! MUST
 
@@ -365,9 +365,9 @@ registry.
 * ''CONTROL'': authority folding returns only `held`, `withdrawn`, `unsettled`, `unavailable`, or no verdict.
   `rejected` remains audit evidence and never becomes authority.
 
-!!! Queue 1 · Source-local `publish plugins --apply`
+!!! Queue 1 · Source-local `publish plugins apply=true`
 
-* ''RED'': the CLI still refuses `--apply`; no production caller mints `PluginOffering` or writes
+* ''RED'': the CLI still refuses `apply=true`; no production caller mints `PluginOffering` or writes
   `writeOfferingAnnounce`.
 * ''CURE'': read the local plugin collection, sign one immutable offering, independently verify it, write one
   CID-keyed additive announcement, and report both the offering CID and declared `pluginsCid`. No island bake,
@@ -375,11 +375,11 @@ registry.
 * ''CONTROL'': the read path remains read-only; a failed self-verification writes nothing; rerunning the same
   signed record writes byte-identical bytes.
 
-!!! Queue 2 · Bounded read-only `kahuli grammar --from <offering CID>`
+!!! Queue 2 · Bounded read-only `kahuli grammar from=<offering CID>`
 
 * ''RED'': no bounded reader fetches an offering by its complete record CID and reports what it would adopt.
 * ''CURE'': fetch the named immutable record, verify its CID/signature/region fold, and report the declared
-  region without changing local grammar or island state. `--apply` remains a separate receiver-held action.
+  region without changing local grammar or island state. `apply=true` remains a separate receiver-held action.
 * ''CONTROL'': malformed, wrong-region, or unavailable input refuses with its own evidence; no caller treats a
   raw announcement or an unknown offeror as authority.
 
@@ -427,7 +427,7 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying entry gran
 !!! The promotion — the steward's hand, the Kahu reach first
 
 * `promoteCanonOffer` clears `requireKahuReach` on the offer's bag ''before'' any canon read decides anything; a non-steward face refuses `kahu-reach` and moves no byte.
-* Freshness ''warns'', never refuses a read: a record whose base no longer names canon's carrier reads "canon is fresher" in every listing. A promotion over it takes the steward's explicit choice (`--over-fresher`); the retire records the fresher canon digests it overrode. No auto-merge.
+* Freshness ''warns'', never refuses a read: a record whose base no longer names canon's carrier reads "canon is fresher" in every listing. A promotion over it takes the steward's explicit choice (`over-fresher=true`); the retire records the fresher canon digests it overrode. No auto-merge.
 * The promotion writes the offered bytes; until a retire lands, the offer reads open and a replayed promotion writes nothing (every record reads `landed`).
 * ''The retire seals under a seat of the Nexus's charter'' (`retireCanonOffer`), and only once canon carries every offered digest (`offer-not-landed` otherwise). It carries the charter's epoch lineage, as a floor release does, so every reader proves the seat off the record alone: the genesis epoch's address IS the Nexus AID, each step verifies under the prior threshold, and the signer stands a seat of the named epoch. A retire any other key sealed reads `retire-unauthorised`, retires nothing, and `offer show` names it. The retire entry keys to the offer's CID and then its own (`<offer cid>/<retire cid>`), so a forgery written first takes no key the steward needs. The offer entry stays; never a deletion.
 * The seat keys rest in the steward's vault beside the store door, never in the daemon island that writes canon: the canon write rides the daemon verb `offer-promote` (under the Kahu reach), and the retire rides the store-door verb `offer-retire`. ''The seat's law stands at the verb, for every caller'': after the reach and before any canon read, `promoteCanonOffer` asks the charter seat this vessel holds (the shore reads it by name and opens no key) and refuses `offer-retire-unseated` where it holds none, having written nothing; a host that lends no seat reader (a browser page) promotes nothing. ''The retire waits on causes, never on a clock'': the promotion answers the canon document's heads after its write (`canonHeads`), and the retire's door waits until its own replica of that document contains those heads. A clock bounds that wait and decides nothing: past the bound the answer reads `canon-trails` (the canon write stands, the retire pends, and the answer names the re-run that completes it), never a refusal of a landed act. A retire that names no promotion decides on one read. A promotion resolves its canon store once and decides and writes through it; a read that fails refuses `offer-canon-unread`, so a failed read never passes for "canon holds no such record". `lares meme offer promote` runs both doors as one outcome.
@@ -435,19 +435,19 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying entry gran
 
 !!! The release wiring
 
-`cutReleaseFloor` cuts the floor the next release names from live canon: each slug the prior floor names re-cuts off its canon document, a slug with no document here keeps the prior snapshot, a slug whose bag declares a tier under `public` in its own `meta.mem` leaves the manifest (`dropped`; the public floor carries public bags alone, `floorCarriesTier`), and the blobs stage before the manifest answers. ''A thin snapshot refuses'': a slug whose live records count under half its prior snapshot's (`floorCutReadsThin`; a prior under 16 records weighs nothing), or whose prior snapshot the CAS cannot answer for the weighing, refuses the whole cut `floor-cut-thin` by slug with both counts, and nothing stages; `--thin <slug[,slug]>` carries the steward's word that the bag shrank on purpose. A canon document seeded while another document answered its doors holds none or a handful of records, and a lawful release sheds a few memes of hundreds, so half parts the two. `lares nexus release <manifest-file> cut=true` writes the manifest the seats then approve; an unmoved canon answers the prior's own CID. The cut and the retire find the canon documents through the catalog the store door holds (the standing vessel's own handle, or the `catalog-url` pointer beside a store a direct act opens) and the genesis floor through the oracle island at its deterministic address; the bootstrap names neither. The seed keeps the canon document the one the doors read: its CREATE names every disk-sourced holding but the board house canon, and an island that never seated that bag (the holding landed under the canon source after the vessel booted) refuses `house-canon-unseated` and mints nothing, so no catalog entry ever holds records the realm's document lacks.
+`cutReleaseFloor` cuts the floor the next release names from live canon: each slug the prior floor names re-cuts off its canon document, a slug with no document here keeps the prior snapshot, a slug whose bag declares a tier under `public` in its own `meta.mem` leaves the manifest (`dropped`; the public floor carries public bags alone, `floorCarriesTier`), and the blobs stage before the manifest answers. ''A thin snapshot refuses'': a slug whose live records count under half its prior snapshot's (`floorCutReadsThin`; a prior under 16 records weighs nothing), or whose prior snapshot the CAS cannot answer for the weighing, refuses the whole cut `floor-cut-thin` by slug with both counts, and nothing stages; `thin=<slug[,slug]>` carries the steward's word that the bag shrank on purpose. A canon document seeded while another document answered its doors holds none or a handful of records, and a lawful release sheds a few memes of hundreds, so half parts the two. `lares nexus release <manifest-file> cut=true` writes the manifest the seats then approve; an unmoved canon answers the prior's own CID. The cut and the retire find the canon documents through the catalog the store door holds (the standing vessel's own handle, or the `catalog-url` pointer beside a store a direct act opens) and the genesis floor through the oracle island at its deterministic address; the bootstrap names neither. The seed keeps the canon document the one the doors read: its CREATE names every disk-sourced holding but the board house canon, and an island that never seated that bag (the holding landed under the canon source after the vessel booted) refuses `house-canon-unseated` and mints nothing, so no catalog entry ever holds records the realm's document lacks.
 
 !!! The surfaces — one door, both hosts
 
 * ''Shared seam'': `@lararium/mesh` `canon-offer` holds every decision; the daemon island registers `offer-make` · `offer-list` · `offer-show` · `offer-promote` (`@lararium/tw5` `canon-offer-verbs`) on node and browser alike. Only the Nexus binding forks: the shore's charter (node), else the Nexus the call names (a browser page, whose island reads no charter).
-* ''CLI'': `lares meme offer <uri…> bag=<slug>` · `offer show [<cid>] [--bag] [--all]` · `offer promote <cid> [--over-fresher]` — under the meme door, the one-screen help holding.
+* ''CLI'': `lares meme offer <uri…> bag=<slug>` · `offer show [<cid>] [bag=] [all=true]` · `offer promote <cid> [over-fresher=true]` — under the meme door, the one-screen help holding.
 * ''MCP'': `act(address="lar:///realm.offer.signs")` · `act(address="lar:///realm.offer.shows")`. The promotion holds no seat act: the steward's hand alone lands canon (the kahua lift's shape).
 
 !!! Moʻolelo — the forks this door decided (each overrulable)
 
 # ''Where an offer rests.'' Three homes stood: realm drafts (Fable's earlier lean), the offerer's own outbox, an offer table beside the realm. //Gaia 2026//: a kernel contributor mails a patch to the subsystem list — anyone posts, the maintainer applies, and the list itself holds no tree; a pull request from a personal fork, by contrast, makes the maintainer go find each fork. //Elyncia 5492//: a pilgrim at the crossroads shrine sets a votive on the offering table at the temple's door; only the temple's priest carries it inside, and no pilgrim walks into the sanctum to place it. Realm drafts would seat the offerer inside the Kahu realm — the very admission the ruling withholds from h1 and h2 — or fork that ruling. An outbox keeps the offerer's writes on its own doc but leaves the steward no derivable place to look across vessels. ''Ruled: the offer table, one per Nexus, beside the realm.'' Reopens if realm drafts gain an append-only, non-member write class.
 # ''The fork base.'' The base reads the working copy's own `overrideBase`, and none where it names none — never canon's current carrier at offer time, which would hide a move canon made after the fork. A working copy that never forked from canon therefore reads "canon is fresher" wherever canon holds the title.
-# ''A stale promotion refuses without the choice.'' The listing warns; the promotion refuses `offer-base-moved` until the steward says `--over-fresher`. The steward's choice, never an automatic merge, decides what canon says.
+# ''A stale promotion refuses without the choice.'' The listing warns; the promotion refuses `offer-base-moved` until the steward says `over-fresher=true`. The steward's choice, never an automatic merge, decides what canon says.
 # ''The retire's authority (re-ruled by the controller, 2026-11-11).'' The first cut honoured any signed retire, so a forgery could hide an offer. ''Ruled'': a reader honours a retire only where a seat of the Nexus's charter sealed it, proven by the lineage the record carries (the way a floor release proves its steward); any other retire reads `retire-unauthorised` and the offer stays open. The charter seat stands for "the steward's hand" here because an atom key names no group a reader can verify without a persona KEL; a seat names itself in the lineage. Known edge: a retire names its own epoch, so a seat a later roll removed could still retire under the epoch it held; a reader holding the charter head could close that.
 # ''The verb's home.'' `lares meme promote` already names the residency crossing with a receipt, so the offering door rides `lares meme offer …`, keeping one word for one act.
 # ''The browser's Nexus.'' A browser island reads no charter, so the call may name the Nexus; a named Nexus other than the charter's refuses `offer-foreign-nexus`. The browser holds no Kahu board, so a promotion there fails closed — the steward promotes from the vessel that holds the charter.
@@ -468,7 +468,7 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying entry gran
 # ''Q1 — does an immutable offering need a generic currentness field?'' The complete signed offering CID already names historical bytes and prevents one record from rewriting another. A relation-specific currentness or freshness observation would form a separate contract and must not become a hidden version register. ''Lean: no generic scalar; defer the operator's relation policy.''
 # ''Q2 — does the house build an ordered `witness` at all?'' The current announcement stays additive and CID-keyed; it carries no order or withholding verdict. A witness would add only partial-order evidence and a new subsystem. ''Lean: defer'' until a real withholding story selects its reader and retention policy.
 # ''Q3 — what does a taker name: the OFFERING's CID, or the REGION's?'' The offering CID addresses the complete signed record; `pluginsCid` names the declared region printed beside it and independently recomputed. ''Lean: name the OFFERING CID.''
-# ''Q4 — does `kahuli grammar --from <offering CID>` serve semantically as the right ratchet reader?'' The source-local reader stands unbuilt, and the generic `PluginOffering` gift versus grammar-ratchet contract stands unsettled. ''The operator holds this fork.'' Do not treat the queue item as a valid command.
+# ''Q4 — does `kahuli grammar from=<offering CID>` serve semantically as the right ratchet reader?'' The source-local reader stands unbuilt, and the generic `PluginOffering` gift versus grammar-ratchet contract stands unsettled. ''The operator holds this fork.'' Do not treat the queue item as a valid command.
 # ''Q5 — does the antigen consult opt in per NEXUS or per OPERATOR?'' A receiver needs an explicit local consultant and enforcement input contract: offering record, causal antigen material, roster/fence relation, and cap placement. ''The operator rules the receiving scope and any refusal/override policy; the offer path never consults its own condemnation.''
 # ''Q6 — may a PLACE offer?'' `heraldry.mem` seats a Handle owned by a Place DID with no persona root, so a faceless Herm could sign an offering. ''Lean: YES, and the reader's petname carries the whole weight.''
 # ''Q7 — where does the receiver cap live?'' The install hand belongs at the receiving Nexus; the public announcement and source-local publish path grant no install authority. The exact consultant/enforcement adapter remains open.
@@ -515,6 +515,6 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying entry gran
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;y1lvLOiPf1x6GC8ykmYN8UrvoJ2wp4KXeAbMIJlewDE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qMd_dLt54VcpwWx8zBxC7kxA1FopMheV4n6J5uQR4Lk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

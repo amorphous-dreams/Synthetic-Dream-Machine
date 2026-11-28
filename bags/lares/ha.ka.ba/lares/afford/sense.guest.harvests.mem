@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.guest.harvests"
 
 ! sense.guest.harvests ~ the comparator built through the vendored miner's own path
 
-`lares mempalace harvest` builds the guest comparator from every harness transcript through the plain vendored miner (`mine --mode convos --wing <wing>`), carrying no Lares vocabulary. The discovery and staging live in python; this leg shells the lane and renders its report. `--dry-run` previews; `--wing` and `--project` narrow it.
+`lares mempalace harvest` builds the guest comparator from every harness transcript through the plain vendored miner (`mine --mode convos --wing <wing>`), carrying no Lares vocabulary. The discovery and staging live in python; this leg shells the lane and renders its report. `dry-run=true` previews; `wing=` and `project=` narrow it.
 
 <<~/ahu>>
 
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;UwFZVIjVvG2yjEdrIEugxbjeVHEnIzy6689jZpraKgs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UNKQ1kVJiozOnXpVOcmj8FS6VyHvpOCYSCEwhMnYw6s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

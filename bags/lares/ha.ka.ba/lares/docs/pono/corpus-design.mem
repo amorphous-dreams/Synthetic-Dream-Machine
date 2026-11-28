@@ -8,7 +8,7 @@ cacheable = true
 hydrate   = true
 l-space   = "stable"
 namespace = "&#x0950; &#x0901;"
-role      = "the lares-corpus design of record (the law it serves reads at api/corpus; the door it designed stands as `lares sensorium`): the lares-corpus — the design-of-record for the EPHEMERAL astral-multipalace CLI (`lares sensorium`) + the corpus-self-learns-its-planes tool-stack + the build #/backlog the kahu workbench takes. ONE move: `compose_palace(caps)` instantiated EPHEMERALLY over any text/code corpus — the mempalace machina generalized into a sensorium-for-FORM. The structure plane is ALREADY corpus-general (content-free shape vectors); content is stock (nomic); the new ground is FORM — the corpus's OWN learned grammar, induced blind, named LAST. THE CAPS: content=stock embedder · structure=our content-free structurepalace encoder + a tree-sitter parse-ROUTER (+ a thin grammar for our own <<~…>> sigils) · bands=no plane — the band slot names the GRAIN (the FFZ membership-tree address, a prefix code stored inside li) + the BOUNDARY tree engine (ecp::e.divisive's nested multivariate changepoint hierarchy, which IS the membership tree, with per-chunk cosine-drift the boundary signal); no wavelet spine, no EWT/ssqueezepy servo and no per-band BOCPD, since a frequency ladder reads energy, never a regime turn · form=the induction stack (TreeMiner + PrefixSpan/BIDE + c2xg constructicon, EM-iterated, MDL-stopped, LLM-names-LAST) · coupling=the base-cap H¹-gated fusion over child sub-sensoria (read on demand; fuse vs hold-open, never a silent average). THE CLI: dep-free arg-walker kept; SETUP wires all five organs via ONE shared palaceOrgans() registry (one enumerator, two consumers — setup + teardown can't drift); `lares sensorium run` ephemeral-DEFAULT modeled on `docker run --rm` + nix-shell + mktemp/trap-EXIT (open→ingest→analyze→DISSOLVE, --keep lands it); scratch instances = a 4th mempalace instance under ~/.lares/.corpus/<id>/, resolved-never-ambient, registered into the teardown sweep. THE GATE: heleuma-anchored — when the CLI help-registry text drifts from this meme, the audit trips. RESONANCES: aperture-ladder=the grain tree (Pulse·Beat·Measure·Arc·Theme as containment LEVELS, not frequency bands) · boundary=ecp changepoint tree · Canon-vs-Provisional=resampling-consensus · MDL-stop=our MDL lifted to grammar · nameless-discipline=miners-surface/LLM-names-last. LIVE boundary signal: the per-chunk cosine-drift over content embeddings reads a regime-turn (Measure=cosine-drop), witnessed against the baseline before it locks Canon. The validation baseline (a known-grammar gold-standard corpus, our-tools-vs-ground-truth) rides a placeholder — a corpus-finder spirit selects it; the coordinator appends."
+role      = "the lares-corpus design of record (the law it serves reads at api/corpus; the door it designed stands as `lares sensorium`): the lares-corpus — the design-of-record for the EPHEMERAL astral-multipalace CLI (`lares sensorium`) + the corpus-self-learns-its-planes tool-stack + the build #/backlog the kahu workbench takes. ONE move: `compose_palace(caps)` instantiated EPHEMERALLY over any text/code corpus — the mempalace machina generalized into a sensorium-for-FORM. The structure plane is ALREADY corpus-general (content-free shape vectors); content is stock (nomic); the new ground is FORM — the corpus's OWN learned grammar, induced blind, named LAST. THE CAPS: content=stock embedder · structure=our content-free structurepalace encoder + a tree-sitter parse-ROUTER (+ a thin grammar for our own <<~…>> sigils) · bands=no plane — the band slot names the GRAIN (the FFZ membership-tree address, a prefix code stored inside li) + the BOUNDARY tree engine (ecp::e.divisive's nested multivariate changepoint hierarchy, which IS the membership tree, with per-chunk cosine-drift the boundary signal); no wavelet spine, no EWT/ssqueezepy servo and no per-band BOCPD, since a frequency ladder reads energy, never a regime turn · form=the induction stack (TreeMiner + PrefixSpan/BIDE + c2xg constructicon, EM-iterated, MDL-stopped, LLM-names-LAST) · coupling=the base-cap H¹-gated fusion over child sub-sensoria (read on demand; fuse vs hold-open, never a silent average). THE CLI: dep-free arg-walker kept; SETUP wires all five organs via ONE shared palaceOrgans() registry (one enumerator, two consumers — setup + teardown can't drift); `lares sensorium run` ephemeral-DEFAULT modeled on `docker run --rm` + nix-shell + mktemp/trap-EXIT (open→ingest→analyze→DISSOLVE, keep=true lands it); scratch instances = a 4th mempalace instance under ~/.lares/.corpus/<id>/, resolved-never-ambient, registered into the teardown sweep. THE GATE: heleuma-anchored — when the CLI help-registry text drifts from this meme, the audit trips. RESONANCES: aperture-ladder=the grain tree (Pulse·Beat·Measure·Arc·Theme as containment LEVELS, not frequency bands) · boundary=ecp changepoint tree · Canon-vs-Provisional=resampling-consensus · MDL-stop=our MDL lifted to grammar · nameless-discipline=miners-surface/LLM-names-last. LIVE boundary signal: the per-chunk cosine-drift over content embeddings reads a regime-turn (Measure=cosine-drop), witnessed against the baseline before it locks Canon. The validation baseline (a known-grammar gold-standard corpus, our-tools-vs-ground-truth) rides a placeholder — a corpus-finder spirit selects it; the coordinator appends."
 tags      = ["api/pono/meme", "api/corpus"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/corpus-design"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -84,12 +84,12 @@ The lifecycle models three battle-proven idioms:
 ''`docker run --rm`'' (run-then-reap), ''nix-shell'' ephemeral environments (a derived env that exists for the duration),
 and ''mktemp + trap EXIT'' (the scratch dir guaranteed-swept on success OR error). The noun-verb tree:
 
-<<~ has entity=`Verb` name=`run` params=```args/<path> [-- <analysis>] ~ EPHEMERAL-DEFAULT: open→ingest→analyze→DISSOLVE; `--keep` lands it durable```>>
-<<~ has entity=`Verb` name=`open` params=`args/<path> [--name] ~ stand a scratch palace, hold it open for queries`>>
+<<~ has entity=`Verb` name=`run` params=```args/<path> [-- <analysis>] ~ EPHEMERAL-DEFAULT: open→ingest→analyze→DISSOLVE; `keep=true` lands it durable```>>
+<<~ has entity=`Verb` name=`open` params=`args/<path> [name=] ~ stand a scratch palace, hold it open for queries`>>
 <<~ has entity=`Verb` name=`query` params=`args/<id> <kw> ~ ask an open scratch palace`>>
 <<~ has entity=`Verb` name=`ls` params=`args/ ~ list the live scratch instances`>>
 <<~ has entity=`Verb` name=`keep` params=`args/<id> ~ EXPLICIT promote — land a scratch palace into the durable store`>>
-<<~ has entity=`Verb` name=`dissolve` params=`args/<id | --all | --orphans> ~ idempotent reap + orphan-reaping`>>
+<<~ has entity=`Verb` name=`dissolve` params=`args/<id | all=true | orphans=true> ~ idempotent reap + orphan-reaping`>>
 <<~ has entity=`Verb` name=`help` params=`args/ ~ examples-first cheat from the help registry`>>
 
 !!! The lifecycle law
@@ -99,7 +99,7 @@ Each ephemeral palace stands as a ''scratch instance under''
 the teardown already names ([[palace-teardown|lar:///ha.ka.ba/lares/cli/commands/palace-teardown]]).
 Resolved-never-ambient, sweepable. Three holds bind it:
 
-<<~ scale name=`law` ranks=```ephemeral-by-default ~ `run` reaps on exit unless `--keep` lands it -> keep-explicit ~ durability NEVER happens by accident; the operator promotes -> trap-EXIT ~ dissolve fires on success OR error; an interrupted run leaves no half-paved scratch```>>
+<<~ scale name=`law` ranks=```ephemeral-by-default ~ `run` reaps on exit unless `keep=true` lands it -> keep-explicit ~ durability NEVER happens by accident; the operator promotes -> trap-EXIT ~ dissolve fires on success OR error; an interrupted run leaves no half-paved scratch```>>
 
 ''The sweep registration closes the leak.'' Register `~/.lares/.corpus/*` into the teardown
 `palaceOrgans()` enumerator (#/the-cli) — so an interrupted run that the trap missed (SIGKILL, a crashed
@@ -515,6 +515,6 @@ A 3-research-scout synthesis, grounded on:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ptJALUvbHwtdD0vo8kSF19fFaspSd91h5--6HupvoCs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Kb5DK_Tb2hVCvGHWyCATwF-K4iCsDmkgGau9v6M0yvE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.lei.frames"
 
 ! face.lei.frames ~ terms ~ one stdout line for the pūlama
 
-`lares lei terms <kui|restring|unstring>` prints one stdout line: the terms JSON the pūlama's `lei <act>` takes, in its order, since the pūlama opens no document. `face` comes from `--face`, else for a keep the keep's face (whose keep lei stands, else h0), else the daemon mount; a restring's `after` from the line's tip. `kui --all` prints `{ "faces": [ … ] }`, one terms object per open face at its own tip. Each act takes only its own flags. It writes nothing and asks no route.
+`lares lei terms <kui|restring|unstring>` prints one stdout line: the terms JSON the pūlama's `lei <act>` takes, in its order, since the pūlama opens no document. `face` comes from `face=`, else for a keep the keep's face (whose keep lei stands, else h0), else the daemon mount; a restring's `after` from the line's tip. `kui all=true` prints `{ "faces": [ … ] }`, one terms object per open face at its own tip. Each act takes only its own flags. It writes nothing and asks no route.
 
 <<~/ahu>>
 
@@ -72,7 +72,7 @@ Testimony: the door checks; this slot grants nothing.
 <<has entity=`refusal` name=`swarm-lei-forked` params=`~ the line forks; name one tip`>>
 <<has entity=`refusal` name=`swarm-lei-after-moved` params=`~ no lei stands on the line to follow`>>
 <<has entity=`refusal` name=`swarm-lei-nothing-to-restring` params=`~ no lei stands to restring`>>
-<<has entity=`refusal` name=`keep-lei-unseen` params=`~ a keep lei may stand on a face shut or unread; open it or name --face`>>
+<<has entity=`refusal` name=`keep-lei-unseen` params=`~ a keep lei may stand on a face shut or unread; open it or name face=`>>
 ```
 
 <<~/ahu>>
@@ -112,6 +112,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lqcNruRkWBbtkrdBWZ2-vFg2z0a-T-0Cbg3HTdr8W2M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fF4GdNqZotTUuRZeKcl5InnSr6tqt-Dq0SwXxyhcO6Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

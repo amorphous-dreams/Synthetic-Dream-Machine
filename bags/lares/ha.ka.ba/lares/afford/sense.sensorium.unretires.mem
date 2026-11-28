@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.sensorium.unretires"
 
 ! sense.sensorium.unretires ~ a retirement reverses
 
-`lares sense un-retire <name>` runs on a person's hand at a real terminal and returns a retired sensorium to its lifecycle; it asks no --approve.
+`lares sense un-retire <name>` runs on a person's hand at a real terminal and returns a retired sensorium to its lifecycle; it asks no approve=true.
 
 <<~/ahu>>
 
@@ -48,7 +48,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.sensorium.unretires"
 Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
-<<has entity=`gate` name=`hand` params=`who/hand ~ runs direct over manifest.json; a person at a real terminal, and the verb names its intent with --approve where it asks one`>>
+<<has entity=`gate` name=`hand` params=`who/hand ~ runs direct over manifest.json; a person at a real terminal, and the verb names its intent with approve=true where it asks one`>>
 ```
 
 <<~/ahu>>
@@ -99,6 +99,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;DcoILWwLQ6UZQ1slRPUPLsSNnIFWvvamMz9wiQYDCmA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;o-Nl4tuwEq6BeKGWKx_z1BF3wWNcuvMQ_sebnWjJMb8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

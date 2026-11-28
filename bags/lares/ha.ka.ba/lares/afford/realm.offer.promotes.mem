@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.offer.promotes"
 
 ! realm.offer.promotes ~ the steward lands an offer toward canon
 
-`lares meme offer promote <cid>` lands one offer (its 64-hex cid, as `meme offer show` lists it) into the house-canon bag it offered toward, through the daemon, retiring the offer behind it. `--over-fresher` lands it over a fresher record standing there. A retire the charter seats did not seal stays pending and names why.
+`lares meme offer promote <cid>` lands one offer (its 64-hex cid, as `meme offer show` lists it) into the house-canon bag it offered toward, through the daemon, retiring the offer behind it. `over-fresher=true` lands it over a fresher record standing there. A retire the charter seats did not seal stays pending and names why.
 
 <<~/ahu>>
 
@@ -104,6 +104,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;sPZbMx2O6IIvoo2f4F96-7U8n5nHXXSiueKlFsAW2yU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PQesD9AjcQU6K7PyKwZ_NXS3GDtuWu7glMs-RaIVCEM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

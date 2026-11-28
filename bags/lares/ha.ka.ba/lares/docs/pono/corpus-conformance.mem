@@ -181,7 +181,7 @@ digest travel together, or the claim travels alone.
 !! The door
 
 ```
-lares corpus conform [--seed <carrier>] [--exempt <glob>…] [--emit <record>] [--cross-check]
+lares corpus conform [seed=<carrier>] [exempt=<glob>…] [emit=<record>] [cross-check=true]
 ```
 
 ''Staged, each stage standing alone:''
@@ -204,6 +204,6 @@ moved.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/graceful-parsing`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;QKqRkuXwOWj8wBAZgElO5kbYCrJH87viI9C-z5Au_Qo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;b050UtBW62uMAPjyMAE9MoEJydEzAfOVZKSYNngqNKY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

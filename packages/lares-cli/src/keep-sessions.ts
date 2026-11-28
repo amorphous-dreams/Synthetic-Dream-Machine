@@ -76,7 +76,7 @@ export function sessionSources(env: Readonly<Record<string, string | undefined>>
   const set = (k: string): string | undefined => { const v = env[k]; return v !== undefined && v !== "" ? v : undefined; };
   const home = set("HOME");
   const under = (rel: string): string => {
-    if (home === undefined) throw new SessionsRefused("keep-sessions-home-unnamed", "HOME names no home, so the keep finds no Claude Code state to mirror; name CLAUDE_HOME, CLAUDE_JSON and XDG_CONFIG_HOME, or keep with --no-sessions");
+    if (home === undefined) throw new SessionsRefused("keep-sessions-home-unnamed", "HOME names no home, so the keep finds no Claude Code state to mirror; name CLAUDE_HOME, CLAUDE_JSON and XDG_CONFIG_HOME, or keep with sessions=false");
     return join(home, rel);
   };
   const machineId = set("LARES_MACHINE_ID_FILE");
@@ -93,7 +93,7 @@ export function sessionSources(env: Readonly<Record<string, string | undefined>>
     now: () => Date.now(),
     zstd: (src, dest) => {
       const r = spawnSync("zstd", ["-q", "-9", "-T0", "-f", src, "-o", dest], { stdio: "ignore" });
-      if (r.error !== undefined) throw new SessionsRefused("keep-sessions-zstd-absent", `the \`zstd\` binary did not run (${r.error.message}); the mirror compresses each transcript through it, so install zstd or keep with --no-sessions`);
+      if (r.error !== undefined) throw new SessionsRefused("keep-sessions-zstd-absent", `the \`zstd\` binary did not run (${r.error.message}); the mirror compresses each transcript through it, so install zstd or keep with sessions=false`);
       return r.status === 0;
     },
     unzstd: (path) => {

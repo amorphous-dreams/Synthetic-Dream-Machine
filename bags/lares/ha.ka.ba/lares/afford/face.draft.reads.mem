@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.draft.reads"
 
 ! face.draft.reads ~ the list of verified items, or one title and its history
 
-`kahua get` reads the stage's VERIFIED items, the fold, never a raw tiddler. Without a title it lists bounded items with source, count, relation and continuation (`--after` and `--limit` page it); a fresh face answers `stage: "none"`. With a title it returns the verified item or null, and with `--history` every revision of that title. A staged row rests in `bags/daemon-<F>` and lists here once its lift lands. The bare list stands for the old `kahua list`, which now answers only to name its move here. Reads alone: it writes nothing, and the seat's tool rides a `seat` session.
+`kahua get` reads the stage's VERIFIED items, the fold, never a raw tiddler. Without a title it lists bounded items with source, count, relation and continuation (`after=` and `limit=` page it); a fresh face answers `stage: "none"`. With a title it returns the verified item or null, and with `history=true` every revision of that title. A staged row rests in `bags/daemon-<F>` and lists here once its lift lands. The bare list stands for the old `kahua list`, which now answers only to name its move here. Reads alone: it writes nothing, and the seat's tool rides a `seat` session.
 
 <<~/ahu>>
 
@@ -64,7 +64,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ history-needs-a-title · title-refuses-pagination · limit-malformed
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`history-needs-a-title` params=`cure/[[face.draft.reads title/T history]] ~ the door says 'get --history needs a title': history names one title's revisions, and the list carries none`>>
+<<has entity=`refusal` name=`history-needs-a-title` params=`cure/[[face.draft.reads title/T history]] ~ the door says 'get history=true needs a title': history names one title's revisions, and the list carries none`>>
 <<has entity=`refusal` name=`title-refuses-pagination` params=`cure/[[face.draft.reads title/T]] ~ a title answers one item and takes no after or limit: 'a title refuses list pagination'`>>
 <<has entity=`refusal` name=`limit-malformed` params=`cure/[[face.draft.reads limit/20]] ~ limit takes a positive whole row count`>>
 ```
@@ -117,6 +117,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;fAc6heCPMKGpKyy0dhIakNKKWHuIaS-NbOtM5qxw_DA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2eC3XUENwHQ-Vj8Hm7LOGtdGC2QwBqn4dJEE7zhPi_0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

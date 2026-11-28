@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.sensorium.hardens"
 
 ! sense.sensorium.hardens ~ an ephemeral sensorium turns durable
 
-`lares sense harden <name> approve=true` runs on a person's hand at a real terminal: the house hand gate reads the command's own branch, and `--approve` names the intent. It hardens the named sensorium durable in its manifest, `--store-swap <target>` swapping its store as it does.
+`lares sense harden <name> approve=true` runs on a person's hand at a real terminal: the house hand gate reads the command's own branch, and `approve=true` names the intent. It hardens the named sensorium durable in its manifest, `store-swap=<target>` swapping its store as it does.
 
 <<~/ahu>>
 
@@ -50,7 +50,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.sensorium.hardens"
 Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
-<<has entity=`gate` name=`hand` params=`who/hand ~ runs direct over manifest.json; a person at a real terminal, and the verb names its intent with --approve where it asks one`>>
+<<has entity=`gate` name=`hand` params=`who/hand ~ runs direct over manifest.json; a person at a real terminal, and the verb names its intent with approve=true where it asks one`>>
 ```
 
 <<~/ahu>>
@@ -60,7 +60,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ verb-error · hand-act-only
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`verb-error` params=`~ no name, no --approve, or the harden refused`>>
+<<has entity=`refusal` name=`verb-error` params=`~ no name, no approve=true, or the harden refused`>>
 <<has entity=`refusal` name=`hand-act-only` params=`~ a seat reached a hand verb; name the command for the operator`>>
 ```
 
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;y6mylSJZV3epFqYUkqwGUAF-_TyvmTff9z3vTNCBJMo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UFHR_1pOKi0cdFaRLy_KbMdhqkLl2f9HE-gdTOaakVg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

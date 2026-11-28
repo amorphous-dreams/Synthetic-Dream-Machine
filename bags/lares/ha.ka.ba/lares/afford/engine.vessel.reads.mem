@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.vessel.reads"
 
 ! engine.vessel.reads ~ the pure read: bootstrap, storage, port, falls, held ids
 
-`lares vessel read` inspects the bootstrap, the storage, the port, the resting engine's falls and every held id from the files beside the store, and starts nothing, so it answers a fallen vessel too. `--palaces` reads the palaces' doctor report; `--root` names the vessel root.
+`lares vessel read` inspects the bootstrap, the storage, the port, the resting engine's falls and every held id from the files beside the store, and starts nothing, so it answers a fallen vessel too. `palaces=true` reads the palaces' doctor report; `root=` names the vessel root.
 
 <<~/ahu>>
 
@@ -89,6 +89,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Wrbf7Vt1FbFkihlEDBEUqnSPgbF4ccDT5bltbE2IZCA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FscXoWW8cpNTN4U6x9RBdnOoUit6WBe7JVaEqcC9vgk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

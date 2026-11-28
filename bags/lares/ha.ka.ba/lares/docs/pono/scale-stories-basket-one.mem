@@ -115,7 +115,7 @@ Fetch-on-read keeps the road light and the absence honest, which reads as the po
 
 !! 3 · The shared bag — two operators keep one ledger through a relation
 
-''The tension.'' Two operators each found their own `lar:///ha.ka.ba/bags/lares` doc, `nexus contract` writes the members board and never a bag, and B's `meme get --bag lares` answers `not-found` (measured over `tools/mesh-scenarios.sh meme`; `realm-bag-brief.mem` #/ground). A relation-carried bag needs one doc id both sides name and a place it REGISTERS: each vessel's private `@catalog`, the realm's shared CRDT, or the public `@crossroads` (`realm-bag-brief.mem` #/what-a-relation-bag-needs). The law under it: a cabal holds NO name of its own; the realm holds the shared CRDT and resources; the nexus federates hardware; "fusing cabal and realm once made feeding a realm stale its own invites" (`realm-bag-brief.mem` #/ground). The read and the write each need a cap-tier — PERSONAGROUP and CONTRACT ride the SAME mechanism, a bag's content key delivered to a recipient set, and differ ONLY in which set (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier#/the-chain`>>).
+''The tension.'' Two operators each found their own `lar:///ha.ka.ba/bags/lares` doc, `nexus contract` writes the members board and never a bag, and B's `meme get bag=lares` answers `not-found` (measured over `tools/mesh-scenarios.sh meme`; `realm-bag-brief.mem` #/ground). A relation-carried bag needs one doc id both sides name and a place it REGISTERS: each vessel's private `@catalog`, the realm's shared CRDT, or the public `@crossroads` (`realm-bag-brief.mem` #/what-a-relation-bag-needs). The law under it: a cabal holds NO name of its own; the realm holds the shared CRDT and resources; the nexus federates hardware; "fusing cabal and realm once made feeding a realm stale its own invites" (`realm-bag-brief.mem` #/ground). The read and the write each need a cap-tier — PERSONAGROUP and CONTRACT ride the SAME mechanism, a bag's content key delivered to a recipient set, and differ ONLY in which set (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier#/the-chain`>>).
 
 !!! At the human / household scale
 
@@ -439,6 +439,6 @@ Six code sites cite this carrier: `packages/lararium-mesh/src/realm-bag.ts:4` an
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Jc-7ja3yDZFugYDeHwHXUd2Q14t1ysEsiIe4yp5IRO4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zYZ-bWnPggwfq89ofDXco34Zrhmh9kQ_sJySmZxIE5c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

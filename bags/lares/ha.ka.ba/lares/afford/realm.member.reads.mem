@@ -59,7 +59,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · vessel-composing · vessel-silent · vessel-locked · error
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[realm.member.reads list/true]] ~ name --list`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.member.reads list/true]] ~ name list=true`>>
 <<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
 <<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
 <<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iesLM45xDfthw_BsNKiPuZ__j1EF02BdS4yco_S7XU4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RxNCcPa8uMTBKxora8_19nNqv6kicytnM6jOZ6MQTWQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

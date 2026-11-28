@@ -17,9 +17,9 @@ uri-path  = "ha.ka.ba/lares/afford/face.spirit.trues"
 
 ! face.spirit.trues ~ ah ~ one slot replaced or one line added, base-checked
 
-`lares spirit ah <pet> slot='#/<name>'` replaces the slot's whole body from one source (`--file <path|->` or `--text <words>`) or adds one line at its end (`--add <line>`). A whole-slot write from an AI seat names the slot digest it read (`--base`, 16 hex); where the slot moved since, both versions land in a marked conflict stanza for hum to settle, and an `--add` re-reads past a conflict so a sibling's line survives. The stack slot `#/has` takes one cap per `--add`. `--instance` names the writer, joins the presence, and refuses during that instance's crossing.
+`lares spirit ah <pet> slot='#/<name>'` replaces the slot's whole body from one source (`file=<path|->` or `text=<words>`) or adds one line at its end (`add=<line>`). A whole-slot write from an AI seat names the slot digest it read (`base=`, 16 hex); where the slot moved since, both versions land in a marked conflict stanza for hum to settle, and an `add=` re-reads past a conflict so a sibling's line survives. The stack slot `#/has` takes one cap per `add=`. `instance=` names the writer, joins the presence, and refuses during that instance's crossing.
 
-Three other modes ride the verb. `--new` lands a whole shrine from one source. `--offer` lands an offering (ʻālana) on the spirit's shelf before any instance wakes: the mandate words (else the card's own `lane`), `--lane` its memory pointer, `--grant` the grant's slice; a seat names its own `--instance`. `--echo <hash> --instance <id>` lands an instance's echo of the mandate om handed it. Words pass the strict secret-shape guard first.
+Three other modes ride the verb. `new=true` lands a whole shrine from one source. `offer=true` lands an offering (ʻālana) on the spirit's shelf before any instance wakes: the mandate words (else the card's own `lane`), `lane=` its memory pointer, `grant=` the grant's slice; a seat names its own `instance=`. `echo=<hash> instance=<id>` lands an instance's echo of the mandate om handed it. Words pass the strict secret-shape guard first.
 
 <<~/ahu>>
 
@@ -84,13 +84,13 @@ Testimony: the door checks; this slot grants nothing.
 <<has entity=`refusal` name=`spirit-slot-held` params=`~ a card answers through its fields; the slot names no card field`>>
 <<has entity=`refusal` name=`spirit-slot-over-budget` params=`~ the waking slot would grow past its cap; fold first`>>
 <<has entity=`refusal` name=`spirit-crossing` params=`~ the instance stands between its precompact mark and its next wake`>>
-<<has entity=`refusal` name=`spirit-face-turned` params=`~ the instance echoed under another face; name it with --face`>>
+<<has entity=`refusal` name=`spirit-face-turned` params=`~ the instance echoed under another face; name it with face=`>>
 <<has entity=`refusal` name=`spirit-unoffered` params=`~ an echo names a mandate the shelf never offered`>>
 <<has entity=`refusal` name=`spirit-echo-mismatch` params=`~ the echo names another hash than the standing mandate`>>
 <<has entity=`refusal` name=`spirit-offer-held` params=`~ a re-offer over a standing mandate comes from neither its offerer nor a hand`>>
 <<has entity=`refusal` name=`spirit-offering-damaged` params=`~ the shelf reads damaged`>>
 <<has entity=`refusal` name=`spirit-lane-sealed` params=`cure/[[face.spirit.trues pet/lares-alpha offer/true file/<mandate>]] ~ the card seals its lane, so a bare offer never copies it`>>
-<<has entity=`refusal` name=`spirit-exists` params=`~ --new meets a shrine already standing`>>
+<<has entity=`refusal` name=`spirit-exists` params=`~ new=true meets a shrine already standing`>>
 <<has entity=`refusal` name=`spirit-secret-shaped` params=`~ the words hold secret-shaped strings; nothing landed`>>
 <<has entity=`refusal` name=`spirit-write-refused` params=`~ the tiddler door answered no put; read the record`>>
 ```
@@ -134,6 +134,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yqHovZ5d1O4RSWo7IdkEhXiSb4RN7qGHf9SlsoOdzKU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;brF971xZd2TfVAflETOm9vZIWGETbJ7zbVN2CtGVCGc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

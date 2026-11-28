@@ -29,7 +29,7 @@ uri-path   = "ha.ka.ba/lararium/api/sensorium-runbook"
 
 ''The intake seam now carries a bounded trial.'' Frozen-source custody, scoped receipts, typed-content and semantic-view frontiers, and owned model-backed Content and li witnesses have landed; live host collection and reconciled coverage still await witnesses at <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/mempalace-integration#/provisional-roadmap`>>. A green `pour` or an empty source scan cannot certify complete capture, and the movement below remains a proposed rite rather than a deployed drain guarantee.
 
-The one-operator alpha trial at #/alpha-trial precedes any `pour --all`. Its bounded frozen evidence now travels as an explicit repository test fixture. The frozen Claude parent/child pair has landed `/state` intake, typed-content, owned MiniLM Content and full-constituency li receipts over 1,717 matched occurrences. The complete Liliʻuokalani digital witness has its own book ledger, 40 exact typed spans and 38 selected literary occurrences matched across owned Content and li. Both remain disposable trials; neither claims complete native history, live reconciliation or a founded memory Sensorium. The operator has now authorized backfill of all discoverable existing AI–operator conversations plus capture of new live conversations into both the owned Memory Sensorium and the independently mined guest MemPalace comparator. Each backfill batch still needs its own inventory horizon, receipts and explicit gaps; this authorization does not turn a bounded trial into a full-history witness.
+The one-operator alpha trial at #/alpha-trial precedes any `pour all=true`. Its bounded frozen evidence now travels as an explicit repository test fixture. The frozen Claude parent/child pair has landed `/state` intake, typed-content, owned MiniLM Content and full-constituency li receipts over 1,717 matched occurrences. The complete Liliʻuokalani digital witness has its own book ledger, 40 exact typed spans and 38 selected literary occurrences matched across owned Content and li. Both remain disposable trials; neither claims complete native history, live reconciliation or a founded memory Sensorium. The operator has now authorized backfill of all discoverable existing AI–operator conversations plus capture of new live conversations into both the owned Memory Sensorium and the independently mined guest MemPalace comparator. Each backfill batch still needs its own inventory horizon, receipts and explicit gaps; this authorization does not turn a bounded trial into a full-history witness.
 
 ''Two rites stand, and they never merge.'' The founding rite consecrates: irreversible, once, governed by
 quorum and custody and succession. This rite tends: repeatable, operational, governed by measurement and
@@ -225,7 +225,7 @@ applied, and a missing or unknown lens refuses with the list. Bare `lares sense 
   only as well as its thinnest plane is fed.
 * ''SIGNAL'' — lenses `lead` (who leads whom, the R transfer-entropy reference) · `forecast` (does a regime
   shift approach) · `mismatch` (do `couple` and `lead` agree). These read a signal matrix the caller hands in
-  (`--signal`, the tool's `rows`) and touch no plane; their figure claims only what that matrix holds.
+  (`signal=`, the tool's `rows`) and touch no plane; their figure claims only what that matrix holds.
 * ''SELF'' — lens `square` extends the lobes to a reconciled self, restricts back, and coheres iff the
   round-trip equals the identity. A round-trip that fails names a real incoherence rather than a bug.
 * ''LINEAGE'' — `worldline` (the fork-DAG: parent → spirit spawn → handback).
@@ -332,7 +332,7 @@ Run every check before the first deletion:
   baseline the new pour gets compared against. It costs kilobytes.
 # ''The operator's hand named the store.'' `lares sense teardown`, `purge` and `rederive.py` reach into
   `<root>/sensoriums` ''on purpose'' — a dev-time re-pour wants exactly that, and no guard belongs on
-  the operator's hand. `teardown --confirm` and `purge` read that hand at a real terminal, and an AI
+  the operator's hand. `teardown confirm=true` and `purge` read that hand at a real terminal, and an AI
   harness on the command's branch refuses `hand-act-only` (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands`>>):
   a seat names the command, never runs it. The structural protection covers the machine's rites, never the operator's own hand, so the reading
   the operator must not lose stands at #catastrophe ⑥: capture the machine took once and cannot take again.
@@ -495,6 +495,6 @@ reports whether they carry a flow between them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Wpj5PJoD7hYTWN6FPdf5H5CPNYIjPkd1n9e6aIrsCko`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;omSG3wI8mHAwU59fMJaaz8S-pVsr-ERowB9xt_lRbLo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

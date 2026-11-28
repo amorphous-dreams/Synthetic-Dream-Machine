@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.meme.checks"
 
 ! engine.meme.checks ~ the normalize law read alone, or a sibling reading
 
-`lares meme check <file.mem…>` reads the normalize law over each named carrier and writes nothing; any drift exits 1, the reading CI and the pre-commit hook run. `--format=problems` prints one `path:line:col: severity: code: message` line per diagnostic for a problem matcher. `--gradient`, `--edges` and `--sitting` read a sibling survey in the law's place (a file the flag ate as its value still counts as named), and none rides beside `--format=problems`. `--grammar` reads the grammar clauses too.
+`lares meme check <file.mem…>` reads the normalize law over each named carrier and writes nothing; any drift exits 1, the reading CI and the pre-commit hook run. `format=problems` prints one `path:line:col: severity: code: message` line per diagnostic for a problem matcher. `gradient=true`, `edges=true` and `sitting=true` read a sibling survey in the law's place (a file the flag ate as its value still counts as named), and none rides beside `format=problems`. `grammar=true` reads the grammar clauses too.
 
 <<~/ahu>>
 
@@ -65,7 +65,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[engine.meme.checks files/draft.mem]] ~ no carrier named, an unreadable file, a format other than problems, or a survey beside --format=problems`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.meme.checks files/draft.mem]] ~ no carrier named, an unreadable file, a format other than problems, or a survey beside format=problems`>>
 ```
 
 <<~/ahu>>
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2p7MK_jXHjslqasKaYB9ZGeBDEC9l4LTmIbpIP4ZwjE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hFACIEq4yByonNhyYbKFZEU9IBScm8dKxW5rDlTel3I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

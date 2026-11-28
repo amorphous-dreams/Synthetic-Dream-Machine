@@ -62,7 +62,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`usage` params=`~ an unknown sub-verb, or no sub-verb named`>>
-<<has entity=`refusal` name=`face-malformed` params=`~ --face names a whole persona index from 0`>>
+<<has entity=`refusal` name=`face-malformed` params=`~ face= names a whole persona index from 0`>>
 <<has entity=`refusal` name=`face-not-held` params=`~ this vessel holds no such face`>>
 <<has entity=`refusal` name=`keeper-cosign-prev-malformed` params=`~ the chain head reads 64 hex, or none`>>
 <<has entity=`refusal` name=`keeper-cosign-nonce-malformed` params=`~ the nonce reads 64 hex`>>
@@ -105,6 +105,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KoLNW72uXIzJ4OnEXF_PFEry-ZsXDHaJjUOFmBGEwQU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QALeavXoMNoeV4pAWuX1HrFRHO6XNtfdmOIbEq-rlKY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

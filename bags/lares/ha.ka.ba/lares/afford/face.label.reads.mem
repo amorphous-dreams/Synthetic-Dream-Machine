@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.label.reads"
 
 ! face.label.reads ~ face ~ the one line the host asks the vessel
 
-`lares surface face` answers the face the house resolves (the worn face, or `--face N`) and its pet name, as `h<N> <pet name>`. The host shim asks this line only for a face no label settles.
+`lares surface face` answers the face the house resolves (the worn face, or `face=N`) and its pet name, as `h<N> <pet name>`. The host shim asks this line only for a face no label settles.
 
 <<~/ahu>>
 
@@ -56,7 +56,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · surface-face-unnamed · surface-face-unanswered
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[face.label.reads]] ~ a malformed --face`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[face.label.reads]] ~ a malformed face=`>>
 <<has entity=`refusal` name=`surface-face-unnamed` params=`~ no face label settles the face`>>
 <<has entity=`refusal` name=`surface-face-unanswered` params=`~ the vessel answered no face`>>
 ```
@@ -98,6 +98,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;dqO0nh6dNt2ylXQnTd6FHIz3kZEVBVAHgCVy4BcmNeg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QKu26lvMComCYet_Q7V6-c14Cl0iHT_zrgZZtAULjQ4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

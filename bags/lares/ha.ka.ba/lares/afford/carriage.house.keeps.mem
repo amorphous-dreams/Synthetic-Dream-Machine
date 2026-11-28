@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.house.keeps"
 
 ! carriage.house.keeps ~ keep ~ the host half of the keep rite
 
-`lares rite keep workspace=<name>` runs on the host and carries the house as a bundle sealed under the house's keep key: it guards the bound workspace, flushes the shore, runs `keep-cut` in the vessel, then commits `<into>`, rebases, pushes, and lands the tessera at the bundle id the pushed tree holds. `--if-due` keeps only where the house moved since the bundle its remote-tracking branch holds (or a keep still waits for its push or landing), and with no `--workspace` reads the configured keep workspace: the one call `down` makes. `--sessions` / `--no-sessions` keeps the sensoriums or leaves them; with neither, LARES_KEEP_SESSIONS decides. A keep run by hand offers a spent lei's refill.
+`lares rite keep workspace=<name>` runs on the host and carries the house as a bundle sealed under the house's keep key: it guards the bound workspace, flushes the shore, runs `keep-cut` in the vessel, then commits `<into>`, rebases, pushes, and lands the tessera at the bundle id the pushed tree holds. `if-due=true` keeps only where the house moved since the bundle its remote-tracking branch holds (or a keep still waits for its push or landing), and with no `workspace=` reads the configured keep workspace: the one call `down` makes. `sessions=true` / `sessions=false` keeps the sensoriums or leaves them; with neither, LARES_KEEP_SESSIONS decides. A keep run by hand offers a spent lei's refill.
 
 <<~/ahu>>
 
@@ -118,6 +118,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Wo_kLW5BGLk-iEwa7OzwgZA9_B74__1aeD8PxbGI7Ic`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;puCivTDZhXiGjIh-gcdq_UYtbGk785XP1RCgldhguIQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -50,7 +50,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.sensorium.retires"
 Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
-<<has entity=`gate` name=`hand` params=`who/hand ~ runs direct over manifest.json; a person at a real terminal, and the verb names its intent with --approve where it asks one`>>
+<<has entity=`gate` name=`hand` params=`who/hand ~ runs direct over manifest.json; a person at a real terminal, and the verb names its intent with approve=true where it asks one`>>
 ```
 
 <<~/ahu>>
@@ -60,7 +60,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ verb-error · hand-act-only
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`verb-error` params=`~ no name, no --approve, unknown grounds, or the retire refused; the hint lists the grounds`>>
+<<has entity=`refusal` name=`verb-error` params=`~ no name, no approve=true, unknown grounds, or the retire refused; the hint lists the grounds`>>
 <<has entity=`refusal` name=`hand-act-only` params=`~ a seat reached a hand verb; name the command for the operator`>>
 ```
 
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;igtV7YCVqB_OWATizKV8Pk2wMgUONvv5aLE_D-XiqGQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Tfi6mgcAhP_0A8Q7dAsxM3aK_E06PZt96VL8PM6FAuo`>>
 
 <<^ code=`&#x0004;` to=`?`>>
