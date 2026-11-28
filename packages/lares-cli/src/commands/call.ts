@@ -1,5 +1,5 @@
 /**
- * `lares get · put · delete · rename name=value…`, `lares lar:///<address> name=value…`, `lares act lar:///<address> …` and
+ * `lares get · put · delete · rename · msg name=value…`, `lares lar:///<address> name=value…`, `lares act lar:///<address> …` and
  * `lares -` — THE CLI SPEAKS THE CALL SHAPE (lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts landing 8).
  *
  * ONE SPLIT, AND EVERYTHING ELSE IN THE VM. The line splits by one token rule (`splitCall`: a token matching
@@ -32,7 +32,7 @@ import { landedFace } from "./meme-shared.js";
 import { ArgsError, splitCall, type CallLine, type ParsedArgs } from "../parse-args.js";
 
 /** The verb words the CLI answers as commands of their own; an address (`lar:///…`) and `-` answer beside them. */
-export const CALL_VERBS = ["get", "put", "delete", "rename"] as const;
+export const CALL_VERBS = ["get", "put", "delete", "rename", "msg"] as const;
 
 /** True where a command line's head names the call door: a verb word, an address, the stdin sigil, or `act <address>`. */
 export function isCallHead(command: string | null, positional: readonly string[] = []): boolean {

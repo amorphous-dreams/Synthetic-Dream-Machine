@@ -180,6 +180,11 @@ TIDDLER_VERBS = ("tiddler_get", "tiddler_put", "tiddler_delete", "wiki_filter", 
 # verb reads no clock. Rides the @daemon wire like every routed read.
 DDATE_VERBS = ("ddate",)
 
+# THE MSG DOOR (lar:///engine.msg.lands, comms-ux-enacts landings 14 and 15) — one tool, `msg`, riding the one call: one entry
+# lands in its stream (`stream` names it, `<pet>#<n>`), `mu="?0"` reads the stream's inbox as has lines, `mu="00"` withdraws the
+# caller's own unanswered entry. It mirrors `lares msg name=value…`; the carrier the stack seats binds the params.
+MSG_VERBS = ("msg",)
+
 # THE ORACLE CAST — one tool, `oracle_cast`, the MCP skin of the `oracle-cast` verb every vessel answers: one I Ching cast
 # by three coins a line, written by the vessel as one tiddler under `casts/`. It mirrors `lares oracle cast`. The draw
 # lives in the vessel, never in the prompt: the seat that asks never picks the figure. THE CLOCK SEAM rides this seat:
@@ -257,7 +262,7 @@ TOOL_NATURE = {
     **dict.fromkeys(('recall', 'status', 'worldline', 'flow', 'plane_record', 'meme_project', 'wiki_filter', 'tiddler_get', 'wiki_render', 'wiki_status', 'ddate', 'law_index', 'vessel_roster', 'meme_offer_show', 'kahua_get', 'roster', 'shore'), 'reads'),
     **dict.fromkeys(('kapae', 'un_kapae', 'wiki', 'law_pin', 'law_unpin', 'kahua_stage', 'reconcile', 'analyze', 'shore_flush'), 'patches'),
     **dict.fromkeys(('tiddler_delete',), 'removes'),
-    **dict.fromkeys(('pour', 'oracle_cast', 'meme_offer', 'kahua_propose', 'build'), 'casts'),
+    **dict.fromkeys(('pour', 'oracle_cast', 'meme_offer', 'kahua_propose', 'build', 'msg'), 'casts'),
     # A put replaces named text whole (destructive) and an append lands its words again on each call (never idempotent).
     **dict.fromkeys(('tiddler_put',), 'puts'),
 }
@@ -372,6 +377,7 @@ VERB_SEATS = {
     "oracle_cast": (True, False),       # one cast written as one new tiddler in the working layer — reversible, trusted → HOTL
     "tiddler_put": (True, False),       # write fields, tags, or named text (a family's root or slot too) in the working layer or one bag — reversible, trusted → HOTL
     "tiddler_delete": (True, False),    # remove one plain tiddler plainly, or a meme family where `family=True` names the act; a lower layer asks `mode` → HOTL
+    "msg": (True, False),               # one entry lands in its stream (a retract withdraws an unanswered one), the inbox reads — reversible, trusted → HOTL
     # The offering door — an offer appends a signed row to the Nexus's offer table and moves no canon byte; the reads fold
     # the table → HOTL. The promotion never seats here: no MCP tool carries it.
     "meme_offer": (True, False),        # one signed offer toward a house-canon bag — grants nothing, trusted → HOTL
@@ -1802,6 +1808,22 @@ def build_mcp(coordinator: LaresCoordinator):
                                      f"{receipt.get('hash') or 'absent'} now: tiddler_get, then delete with that base",
                                      "tiddler-delete-conflict")
         return receipt
+
+    @mcp.tool(annotations=_annotations("msg"))
+    def msg(stream: str, note: "str | None" = None, to: "str | None" = None, re: "str | list | None" = None,
+            about: "str | None" = None, slug: "str | None" = None, prev: "str | None" = None, carry: "str | None" = None,
+            mode: "str | None" = None, mood: "str | None" = None, stance: "str | None" = None, aperture: "str | None" = None,
+            drift_ward: "str | None" = None, seat: "str | None" = None, model: "str | None" = None, mandate: "str | None" = None,
+            title: "str | None" = None, mu: "str | None" = None, recipe: "str | None" = None) -> dict:
+        # THE WORDS LIVE IN THE CARRIER (lar:///engine.msg.lands, a candidate address): `_dress_from_pack` hands this tool its
+        # description and each parameter's from the baked affordance pack. The tool rides the one call, so the carrier the
+        # stack seats binds the params, `mu` reads its cells (`?0` the inbox, `00` a retract, `_` a dry landing), and the
+        # answer names the carrier that shaped it.
+        given = {"stream": stream, "note": note, "to": to, "re": re, "about": about, "slug": slug, "prev": prev,
+                 "carry": carry, "mode": mode, "mood": mood, "stance": stance, "aperture": aperture, "drift-ward": drift_ward,
+                 "seat": seat, "model": model, "mandate": mandate, "title": title, "mu": mu, "recipe": recipe}
+        params = {name: value for name, value in given.items() if value is not None}
+        return _meme_wire("call", {"verb": "lar:///engine.msg.lands", "params": params, "surface": "mcp"}) or {}
 
     # ── the OFFERING door — an AI seat offers toward house canon; the steward's hand alone promotes ──
 

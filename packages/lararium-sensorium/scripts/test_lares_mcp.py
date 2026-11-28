@@ -11,7 +11,7 @@ import os
 import pytest
 
 from lares_mcp import (LIFECYCLE_VERBS, PLANE_VERBS, WIKI_VERBS, SENSE_LIFECYCLE_VERBS,
-                       MEME_VERBS, KAHUA_VERBS, OFFER_VERBS, TIDDLER_VERBS, DDATE_VERBS, ORACLE_VERBS, LAW_VERBS, HEARTH_VERBS, SHORE_VERBS,
+                       MEME_VERBS, KAHUA_VERBS, OFFER_VERBS, TIDDLER_VERBS, DDATE_VERBS, ORACLE_VERBS, LAW_VERBS, HEARTH_VERBS, SHORE_VERBS, MSG_VERBS,
                        SENSE_HAND_VERBS, VERB_SEATS, DaemonCoordinator,
                        LaresCoordinator, build_mcp, seat_of)
 from worldline_veil import veiled_root
@@ -219,7 +219,7 @@ def test_mcp_tools_mirror_the_cli_lifecycle_verbs(tmp_path):
                                          | set(SENSE_LIFECYCLE_VERBS)
                                          | set(MEME_VERBS) | set(KAHUA_VERBS) | set(OFFER_VERBS) | set(TIDDLER_VERBS)
                                          | set(DDATE_VERBS) | set(ORACLE_VERBS) | set(LAW_VERBS) | set(HEARTH_VERBS)
-                                         | set(SHORE_VERBS))
+                                         | set(SHORE_VERBS) | set(MSG_VERBS))
 
 
 def test_recall_tool_args_are_isomorphic_with_the_recall_api(tmp_path):
@@ -842,7 +842,7 @@ def test_registered_tools_carry_seat_annotations_and_plain_first_lines():
     tools = asyncio.run(build_mcp(DaemonCoordinator(wing="w")).list_tools())
     assert next(t for t in tools if t.name == "analyze").annotations.read_only_hint is False
     assert set(TOOL_NATURE) == {t.name for t in tools}
-    verbs = set("capture recall report render mute restore read run switch wikify survey cast pin unpin patch remove offer show propose stage get roster build reconcile consult".split())
+    verbs = set("capture recall report render mute restore read run switch wikify survey cast pin unpin patch remove offer show propose stage get roster build reconcile consult land".split())
 
     def check(tool):
         assert tool.name in VERB_SEATS and VERB_SEATS[tool.name] == (True, False)

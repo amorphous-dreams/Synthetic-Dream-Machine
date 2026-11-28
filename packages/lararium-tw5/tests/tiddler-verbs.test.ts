@@ -27,6 +27,8 @@ import { AUDIT_ARRAY_CAP, boundOutcomeOutput, placeVerb, removeVerb } from "../s
 import { VerbTable, callDoorOf, makeCallReactor, type VerbContext } from "../src/verb-dispatcher.js";
 import { TIDDLER_CALL_SEATS, tiddlerCallSource } from "../src/tiddler-verbs.js";
 import { ORACLE_CALL_SEATS } from "../src/oracle-cast-verb.js";
+import { MSG_CALL_SEATS, birthHashOf, makeMsgReactor } from "../src/msg-verbs.js";
+import { STREAM_STAGE } from "../src/stream-entries.js";
 import { CallRefusal, callFaceOf, callReaderOf, hostHandled, type CallFloor, type MacroCallParse } from "../src/modules/call.js";
 import { bakeAffordancePack } from "../scripts/build-affordance-pack.js";
 import { skinRows } from "../src/affordance-read.js";
@@ -2839,5 +2841,192 @@ describe("lineDiff: a dry diff reads text line by line", () => {
     const after = before.map((line, i) => (i === 1 ? "second" : i === 17 ? "eighteenth" : line));
     const hunks = lineDiff(before.join("\n"), after.join("\n")).filter((line) => line.startsWith("@@"));
     expect(hunks).toEqual(["@@ -1,5 +1,5 @@", "@@ -15,6 +15,6 @@"]);
+  });
+});
+
+// ── msg, streams, heads and the inbox (comms-ux-enacts landings 14 and 15) ──────────────────────────────
+
+/**
+ * The call rig with the msg carrier standing in canon beside the core verbs', and the msg door seated by address. Every msg
+ * rides the one call, so the carrier the stack seats binds it; each answer waits for the store's landings.
+ */
+async function msgRig() {
+  const r = await callRig();
+  const text = canonFile("afford/engine.msg.lands.mem");
+  r.engine.ingestCarrier(headTitleOf(text), text, { "$origin-bag": CANON });
+  r.table.register("msg", makeMsgReactor(r.opts));
+  for (const [address, seat] of Object.entries(MSG_CALL_SEATS)) r.table.answer(address, seat);
+  const msg = async (params: Record<string, unknown>, c: VerbContext = ctx()): Promise<Record<string, unknown>> => {
+    const out = await r.call("msg", params, c);
+    await r.landed();
+    return out;
+  };
+  const titles = async (filter: string, c: VerbContext = ctx()): Promise<string[]> =>
+    (await makeWikiFilterReactor(r.opts)({ ...A, filter }, c))["titles"] as string[];
+  const fieldsOf = (title: string): Record<string, string> | undefined => r.engine.wiki.getTiddler(title)?.getFieldStrings();
+  const inbox = async (stream: string, c: VerbContext = ctx()): Promise<string[]> =>
+    ((await msg({ stream, mu: "?0" }, c))["inbox"] as Array<{ title: string }>).map((row) => row.title);
+  return { ...r, msg, titles, fieldsOf, inbox };
+}
+
+/** A record another face holds: the island lands it stamped with that face's bag, which a reader may or may not read. */
+const SEALED = bagUri("sealed");
+const sealedReader: Cap = async (access, bag) => (bag === SEALED ? { ok: false, reason: "no-grant" } : access === "read" || bag === DAEMON ? { ok: true } : { ok: false, reason: "no-grant" });
+/** A title written as a pattern: every regexp mark escaped. */
+const literally = (text: string): string => text.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+
+describe.skipIf(wikiSkip)(`msg lands an entry; a stream takes a root${skipNote}`, () => {
+  test("RED: a first msg founds its stream's root and lands one entry; a second names the first as prev", async () => {
+    const r = await msgRig();
+    const root = `${STREAM_STAGE}skein-1`;
+    const mandate = "lar:///ha.ka.ba/kahua/memory/course/comms-ux-enacts";
+    const first = await r.msg({ stream: "skein#1", note: "the first thought", seat: "claude-code", model: "opus", mandate });
+    expect(first).toMatchObject({ decision: "put", created: true, stream: "skein#1", prev: null, root, founded: true });
+    expect(String(first["title"])).toMatch(new RegExp(`^${literally(root)}-[0-9a-f]{8}-the-first-thought$`));
+    expect(r.fieldsOf(root)).toMatchObject({ stream: "skein#1", seat: "claude-code", model: "opus", mandate });
+    expect(r.fieldsOf(String(first["title"]))).toMatchObject({ stream: "skein#1", note: "the first thought" });
+    expect(r.fieldsOf(String(first["title"]))?.["prev"]).toBeUndefined();
+    // The has line names the entry; the call stamps the carrier that shaped it.
+    expect(String(first["has"])).toContain(`name=\`${first["title"]}\``);
+    expect(String(first["has"])).toContain("carrier/lar:///ha.ka.ba/lares/afford/engine.msg.lands");
+    const second = await r.msg({ stream: "skein#1", note: "the second thought" });
+    expect(second).toMatchObject({ decision: "put", prev: first["title"], founded: false });
+    expect(r.fieldsOf(String(second["title"]))?.["prev"]).toBe(first["title"]);
+    // CONTROL: the root never reads as an entry, so it heads nothing and no entry names it as prev.
+    expect((await r.titles(`[prefix[${STREAM_STAGE}]has[note]]`)).sort()).toEqual([String(first["title"]), String(second["title"])].sort());
+  });
+
+  test("RED: a msg with to lands beside its cross-stream re; the writer's panel rides as fields, the carry as mu", async () => {
+    const r = await msgRig();
+    const mandate = await r.msg({ stream: "lares-alpha#3", note: "the batched head, 14 15 16a" });
+    const back = await r.msg({
+      stream: "skein#1", to: "lares-alpha#3", re: mandate["title"], about: "lar:///ha.ka.ba/kahua/memory/x@sha256-ab", note: "built; floor ticket inside",
+      carry: "*!", mode: "draft", mood: "patient", stance: "philosopher satirist", aperture: "16/arc", "drift-ward": "the floor never ran it",
+    });
+    expect(back).toMatchObject({ decision: "put", stream: "skein#1", prev: null });
+    expect(r.fieldsOf(String(back["title"]))).toMatchObject({
+      stream: "skein#1", to: "lares-alpha#3", re: String(mandate["title"]), about: "lar:///ha.ka.ba/kahua/memory/x@sha256-ab", note: "built; floor ticket inside",
+      mu: "*!", mode: "draft", mood: "patient", stance: "philosopher satirist", aperture: "16/arc", "drift-ward": "the floor never ran it",
+    });
+    // CONTROL: the reply lands on the writer's stream alone; the addressee's entry keeps its own.
+    expect(r.fieldsOf(String(mandate["title"]))?.["stream"]).toBe("lares-alpha#3");
+  });
+
+  test("RED: an entry's title survives an edit of its note: the birth hash never recomputes, and the next msg still follows it", async () => {
+    const r = await msgRig();
+    const first = await r.msg({ stream: "skein#1", note: "a note to edit" });
+    const title = String(first["title"]);
+    const h8 = birthHashOf({ stream: "skein#1", prev: null, re: [], to: null, about: null, note: "a note to edit" });
+    expect(title).toBe(`${STREAM_STAGE}skein-1-${h8}-a-note-to-edit`);
+    expect(await makeTiddlerPutReactor(r.opts)({ ...A, title, fields: { note: "the note, edited" } }, ctx())).toMatchObject({ decision: "put" });
+    await r.landed();
+    expect(r.fieldsOf(title)?.["note"]).toBe("the note, edited");
+    const next = await r.msg({ stream: "skein#1", note: "after the edit" });
+    expect(next["prev"]).toBe(title);
+  });
+
+  test("RED: a note past 72 characters refuses with a cure, and nothing lands; a call naming no stream refuses stream-unnamed", async () => {
+    const r = await msgRig();
+    const long = "a".repeat(73);
+    await expect(r.msg({ stream: "skein#1", note: long })).rejects.toMatchObject({ reason: "note-too-long" });
+    expect(await cureOf(r.msg({ stream: "skein#1", note: long }))).toBe(`<<~ msg stream=\`skein#1\` note=\`${"a".repeat(72)}\`>>`);
+    await expect(r.msg({ stream: "skein#1", note: "two\nlines" })).rejects.toMatchObject({ reason: "note-one-line" });
+    await expect(r.msg({ stream: "skein#1" })).rejects.toMatchObject({ reason: "note-needed" });
+    await expect(r.msg({ note: "who writes this" })).rejects.toMatchObject({ reason: "param-needed" });
+    await expect(r.msg({ stream: "Skein 1", note: "a name with no instance" })).rejects.toMatchObject({ reason: "stream-malformed" });
+    await expect(r.msg({ stream: "skein#1", to: "Lares Alpha", note: "to nowhere" })).rejects.toMatchObject({ reason: "to-malformed" });
+    expect(await r.titles(`[prefix[${STREAM_STAGE}]]`)).toEqual([]);
+    // The door itself, reached with no carrier binding, names the stream it needs.
+    await expect(makeMsgReactor(r.opts)({ ...A, note: "who writes this" }, ctx())).rejects.toMatchObject({ reason: "stream-unnamed" });
+    // CONTROL: exactly 72 characters lands.
+    expect(await r.msg({ stream: "skein#1", note: "a".repeat(72) })).toMatchObject({ decision: "put" });
+  });
+
+  test("RED: a stream showing two heads refuses stream-forked and names each head as a call; naming prev lands", async () => {
+    const r = await msgRig();
+    const a = String((await r.msg({ stream: "skein#1", note: "the fork point" }))["title"]);
+    const b = String((await r.msg({ stream: "skein#1", note: "one branch" }))["title"]);
+    const c = String((await r.msg({ stream: "skein#1", prev: a, note: "another branch" }))["title"]);
+    expect(r.fieldsOf(c)?.["prev"]).toBe(a);
+    await expect(r.msg({ stream: "skein#1", note: "which one" })).rejects.toMatchObject({ reason: "stream-forked" });
+    const cure = await cureOf(r.msg({ stream: "skein#1", note: "which one" }));
+    expect(cure).toContain(`prev=\`${b}\``);
+    expect(cure).toContain(`prev=\`${c}\``);
+    await expect(r.msg({ stream: "skein#1", prev: "lar:///nowhere", note: "a stranger" })).rejects.toMatchObject({ reason: "prev-unknown" });
+    expect(await r.msg({ stream: "skein#1", prev: b, note: "the merge" })).toMatchObject({ decision: "put", prev: b });
+  });
+
+  test("RED: a dry msg walks the entry's put to the last step and lands nothing, its root included", async () => {
+    const r = await msgRig();
+    const dry = await r.msg({ stream: "skein#1", note: "only a preview", mu: "_" });
+    expect(dry).toMatchObject({ dry: "summary", decision: "put", stream: "skein#1", founds: true, founded: false });
+    expect(await r.titles(`[prefix[${STREAM_STAGE}]]`)).toEqual([]);
+    // A carry the door tables no cell for refuses, its cure the nearest cell.
+    await expect(r.msg({ stream: "skein#1", note: "a sword", mu: "!" })).rejects.toMatchObject({ reason: "mu-cell-empty" });
+  });
+});
+
+describe.skipIf(wikiSkip)(`lares.heads[] and lares.inbox[]: the log graph's two reads${skipNote}`, () => {
+  test("RED: the inbox reads entries addressed to the stream or its entity; a reply naming one in re clears it", async () => {
+    const r = await msgRig();
+    const x = String((await r.msg({ stream: "skein#1", to: "lares-alpha#3", note: "to the instance" }))["title"]);
+    const y = String((await r.msg({ stream: "skein#1", to: "lares-alpha", note: "to the entity" }))["title"]);
+    await r.msg({ stream: "skein#1", to: "tern#1", note: "to another" });
+    await r.msg({ stream: "lares-alpha#3", note: "a thought on its own stream" });
+    expect(await r.inbox("lares-alpha#3")).toEqual([x, y].sort());
+    const asked = await r.msg({ stream: "lares-alpha#3", mu: "?0" });
+    expect(asked).toMatchObject({ stream: "lares-alpha#3", total: 2 });
+    expect((asked["inbox"] as Array<{ has: string }>).map((row) => row.has).join("\n")).toContain("from/skein#1");
+    await r.msg({ stream: "lares-alpha#3", re: x, note: "read; landing next" });
+    expect(await r.inbox("lares-alpha#3")).toEqual([y]);
+    // The operator reads the same graph the door reads.
+    expect(await r.titles("[lares.inbox[lares-alpha#3]]")).toEqual([y]);
+    // An entity's inbox reads every instance's address, unseen by every instance's stream.
+    expect(await r.titles("[lares.inbox[lares-alpha]]")).toEqual([y]);
+    // CONTROL: a sibling instance of the same entity reads the entity's msg and never the other instance's.
+    expect(await r.inbox("lares-alpha#4")).toEqual([y]);
+  });
+
+  test("RED: two writers fork a stream and heads shows two; no clock moves a head, and !heads answers the rest", async () => {
+    const r = await msgRig();
+    const a = String((await r.msg({ stream: "skein#1", note: "the fork point" }))["title"]);
+    const b = String((await r.msg({ stream: "skein#1", note: "one branch" }))["title"]);
+    const c = String((await r.msg({ stream: "skein#1", prev: a, note: "another branch" }))["title"]);
+    const t = String((await r.msg({ stream: "tern#1", note: "a second stream" }))["title"]);
+    expect(await r.titles("[lares.heads[skein#1]]")).toEqual([b, c].sort());
+    expect(await r.titles("[lares.heads[]]")).toEqual([...[b, c].sort(), t]);
+    expect(await r.titles(`[prefix[${STREAM_STAGE}skein-1-]!lares.heads[]]`)).toEqual([a]);
+    // A newer modified stamp on the fork point moves no head: the graph alone decides.
+    await makeTiddlerPutReactor(r.opts)({ ...A, title: a, fields: { mood: "touched" } }, ctx());
+    await r.landed();
+    expect(await r.titles("[lares.heads[skein#1]]")).toEqual([b, c].sort());
+  });
+
+  test("RED: an entry in a withheld layer never counts as seen", async () => {
+    const r = await msgRig();
+    const x = String((await r.msg({ stream: "skein#1", to: "lares-alpha#3", note: "to the instance" }))["title"]);
+    // A reply another face holds: stamped with a bag the reader cannot read.
+    r.engine.wiki.addTiddler({ title: `${STREAM_STAGE}lares-alpha-3-00000000-sealed`, stream: "lares-alpha#3", re: x, note: "behind the wall", "$origin-bag": SEALED });
+    expect(await r.inbox("lares-alpha#3", ctx(sealedReader))).toEqual([x]);
+    expect(await r.titles("[lares.inbox[lares-alpha#3]]", ctx(sealedReader))).toEqual([x]);
+    // CONTROL: a reader of that bag reads the reply, and the entry reads seen.
+    expect(await r.inbox("lares-alpha#3")).toEqual([]);
+  });
+
+  test("RED: an answered msg refuses retraction with a cure; an unanswered head withdraws, counting what the view withholds", async () => {
+    const r = await msgRig();
+    const m1 = String((await r.msg({ stream: "skein#1", to: "lares-alpha#3", note: "answer me" }))["title"]);
+    await r.msg({ stream: "lares-alpha#3", re: m1, note: "answered" });
+    await expect(r.msg({ stream: "skein#1", mu: "00", title: m1 })).rejects.toMatchObject({ reason: "msg-answered" });
+    expect(await cureOf(r.msg({ stream: "skein#1", mu: "00", title: m1 }))).toBe(`<<~ msg stream=\`skein#1\` re=\`${m1}\` note=\`<the correction>\`>>`);
+    const m2 = String((await r.msg({ stream: "skein#1", to: "lares-alpha#3", note: "never mind" }))["title"]);
+    // Another's entry never leaves by this door.
+    await expect(r.msg({ stream: "lares-alpha#3", mu: "00", title: m2 })).rejects.toMatchObject({ reason: "msg-not-yours" });
+    r.engine.wiki.addTiddler({ title: `${STREAM_STAGE}tern-1-00000000-sealed`, stream: "tern#1", re: m2, note: "behind the wall", "$origin-bag": SEALED });
+    const gone = await r.msg({ stream: "skein#1", mu: "00" }, ctx(sealedReader));
+    expect(gone).toMatchObject({ decision: "retracted", stream: "skein#1", title: m2, withheld: 1 });
+    expect(r.engine.wiki.tiddlerExists(m2)).toBe(false);
+    // CONTROL: m1, answered, still stands.
+    expect(r.engine.wiki.tiddlerExists(m1)).toBe(true);
   });
 });
