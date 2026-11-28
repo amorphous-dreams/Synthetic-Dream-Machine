@@ -124,7 +124,7 @@ import { carrierOf } from "./affordance-read.js";
 import { AFFORDANCE_TAG, bareAddressOf } from "./affordance-rows.js";
 import { readCarrierShape } from "./carrier-shape.js";
 import type { TiddlerFields } from "./deserializer.js";
-import { alertNamedTitles, isHouseAlert, isOpenAlert, redactedAlertFields, staysHome, withheldFromReads } from "./stay-home.js";
+import { alertNamedTitles, isHouseAlert, isOpenAlert, isWatchRecord, redactedAlertFields, staysHome, withheldFromReads } from "./stay-home.js";
 import { canonFiltersText, functionPragmasOf, houseWidgetOf, refuseUnknownHouseOperators } from "./house-filters.js";
 import { pageFilterAnswer, filterCursor, checkFilter, lineLensOf, matchingLines, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
@@ -133,7 +133,7 @@ import { wornOrigin } from "./verb-dispatcher.js";
 import { CallRefusal, callReaderOf, cureCall, floorReaderOf, type CallFloor, type CallSeat, type MacroCallParse } from "./modules/call.js";
 import type { AffordancePack } from "./affordance-pack.js";
 import { dryDepthOf, filterDepthArgs, muWordsOf, readDepthArgs } from "./modules/mu.js";
-import { newWatchId, watchBookOf, watchTitleOf, WATCH_ID, type WatchWiki } from "./modules/watch.js";
+import { newWatchId, otherOwner, watchBookOf, watchTitleOf, WATCH_ID, type WatchWiki } from "./modules/watch.js";
 import { wikiWearsNext } from "./island-recipe.js";
 import { isTw5DocsBag, refuseTw5DocsWrite } from "./tw5-docs-library.js";
 import type { CallSource, VerbContext, VerbReactor } from "./verb-dispatcher.js";
@@ -434,35 +434,61 @@ function readerView(wiki: EngineWiki, visible: Visible, house?: { text: string; 
  * each bag any record names answers the face's reach once, so the predicate itself reads no cap and stays synchronous
  * inside the engine.
  */
-async function viewFor(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"], lasting = false): Promise<{ view: EngineWiki; visible: Visible; mayRead: (bag: string | null) => Promise<boolean>; pragmas: string }> {
+/** Who reads through a view: the verified presenter of the face a session wore (a watch record answers its owner alone), and
+ *  whether the view outlives its call (a watch's). */
+interface ViewReader { readonly owner?: string | null; readonly lasting?: boolean }
+
+/** The owner a watch names and a reader's view matches: the presenter the session door verified for the face worn, never a
+ *  free-text claim or a bare ordinal; null where the call rode no session. */
+export const watchOwnerOf = (ctx: Pick<VerbContext, "worn">): string | null => ctx.worn?.presenter ?? null;
+
+async function viewFor(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"], reader: ViewReader = {}): Promise<{ view: EngineWiki; visible: Visible; mayRead: (bag: string | null) => Promise<boolean>; pragmas: string; reweigh: () => Promise<void> }> {
   const mayRead = await reachOf(opts, anchor, cap);
   const wiki = anchor.engine.wiki;
+  const lasting = reader.lasting === true;
+  const owner = reader.owner ?? null;
   const bags = new Set<string>();
-  wiki.each((tiddler) => { const bag = tiddler.fields[ORIGIN_BAG]; if (typeof bag === "string" && bag !== "") bags.add(bag); });
   const hidden = new Set<string>();
-  for (const bag of bags) if (!(await mayRead(bag))) hidden.add(bag);
-  // A LASTING VIEW (a watch, which outlives this call's turn) reads a bag it never weighed as hidden: a record that lands later
-  // in a bag the reach never answered stays out until the caller's next call weighs it.
-  const weighed = (bag: string): boolean => !lasting || bag === "" || bag === anchor.bag || bags.has(bag);
-  // AN ALERT ANSWERS ONLY A READER OF WHAT IT NAMES: each open alert that names a record reads absent where that record stands
-  // in a bag this reader may not read, or stands nowhere this reader can weigh (a title the wiki does not hold names no bag
-  // the door can check, so it shuts). The alert holds no bag of its own, so `hidden` alone never reaches it.
   const shutAlerts = new Set<string>();
-  for (const title of wiki.allTitles()) {
-    if (!isOpenAlert(title)) continue;
-    for (const named of alertNamedTitles(title, wiki.getTiddler(title)?.fields ?? {})) {
-      const record = wiki.getTiddler(named);
-      const bag = record ? record.fields[ORIGIN_BAG] : undefined;
-      if (!record || (typeof bag === "string" && bag !== "" && hidden.has(bag))) { shutAlerts.add(title); break; }
+  /**
+   * WEIGH THE READER'S REACH: each bag any record names answers once, and each open alert that names a record reads absent
+   * where that record stands in a bag this reader may not read, or stands nowhere this reader can weigh (a title the wiki does
+   * not hold names no bag the door can check, so it shuts). The alert holds no bag of its own, so `hidden` alone never reaches it.
+   */
+  const weigh = async (may: (bag: string | null) => Promise<boolean>): Promise<void> => {
+    const seen = new Set<string>();
+    wiki.each((tiddler) => { const bag = tiddler.fields[ORIGIN_BAG]; if (typeof bag === "string" && bag !== "") seen.add(bag); });
+    const hiding = new Set<string>();
+    for (const bag of seen) if (!(await may(bag))) hiding.add(bag);
+    const shut = new Set<string>();
+    for (const title of wiki.allTitles()) {
+      if (!isOpenAlert(title)) continue;
+      for (const named of alertNamedTitles(title, wiki.getTiddler(title)?.fields ?? {})) {
+        const record = wiki.getTiddler(named);
+        const bag = record ? record.fields[ORIGIN_BAG] : undefined;
+        if (!record || (typeof bag === "string" && bag !== "" && hiding.has(bag))) { shut.add(title); break; }
+      }
     }
-  }
+    // The sets the predicate reads move together, after every await, so no run reads a half-weighed reach.
+    bags.clear(); for (const b of seen) bags.add(b);
+    hidden.clear(); for (const b of hiding) hidden.add(b);
+    shutAlerts.clear(); for (const t of shut) shutAlerts.add(t);
+  };
+  await weigh(mayRead);
+  // A LASTING VIEW (a watch, which outlives this call's turn) reads a bag it never weighed as hidden: a record that lands in a
+  // bag the reach has not answered stays out until the view weighs again (`reweigh`, before each re-run of a watch).
+  const weighed = (bag: string): boolean => !lasting || bag === "" || bag === anchor.bag || bags.has(bag);
   const visible: Visible = (title, tiddler) => {
+    // A WATCH RECORD ANSWERS ITS OWNER ALONE: its filter, its digest and its count read over the owner's own view.
+    if (isWatchRecord(title)) return owner !== null && tiddler !== undefined && String(tiddler.fields["face"] ?? "") === owner;
     const bag = String(tiddler?.fields[ORIGIN_BAG] ?? "");
     return !withheldFromReads(title) && !shutAlerts.has(title) && !hidden.has(bag) && weighed(bag);
   };
   const text = await canonFiltersText(opts.composite, wiki, mayRead);
   const document = (engineOf(opts) as unknown as { fakeDocument?: { createElement(tag: string): unknown } }).fakeDocument;
-  return { view: readerView(wiki, visible, document ? { text, document } : null), visible, mayRead, pragmas: functionPragmasOf(text) };
+  // THE REACH ASKED AGAIN: the door's own gate first (a face that lost the anchor's read refuses here), then every bag.
+  const reweigh = async (): Promise<void> => { await weigh(await reachOf(opts, anchor, cap)); };
+  return { view: readerView(wiki, visible, document ? { text, document } : null), visible, mayRead, pragmas: functionPragmasOf(text), reweigh };
 }
 
 /**
@@ -588,7 +614,7 @@ export const makeWikiFilterReactor = everyWiki("wiki-filter", false, (opts: Tidd
     const anchor = anchorOf(opts, args, "wiki-filter");
     const filter = stringArg(args, "filter");
     if (!filter.trim()) throw new Error("wiki-filter: args.filter is required (a TiddlyWiki filter, e.g. \"[tag[memory]sort[title]]\")");
-    const { view, visible } = await viewFor(opts, anchor, ctx.cap);
+    const { view, visible } = await viewFor(opts, anchor, ctx.cap, { owner: watchOwnerOf(ctx) });
     const wiki = anchor.engine.wiki;
     checkFilter(view, filter);
     // A misspelt lines lens refuses by name before the filter runs (`filter-context-alone`, `filter-context-range`, `filter-match-*`).
@@ -676,8 +702,9 @@ export const WATCH_HOLD_MAX_MS = 110_000;
  *
  * A DROPPED LINE DROPS THE WATCH: the call's own signal (the dispatcher aborts it when the vessel withdraws the ask, on a socket
  * that closed or a `session:cancel`) ends the hold, drops the watch and its record, and refuses `watch-withdrawn`. `mu=unask`
- * (`unask: true` here) drops the watch `id` names. The caller's face rides the record; a watch another face bound refuses
- * `watch-other-face`.
+ * (`unask: true` here) drops the watch `id` names. The OWNER is the presenter the session door verified for the face worn
+ * (`watchOwnerOf`): its record reads to that face alone, an id another face holds refuses `watch-other-face`, and a call that rode
+ * no session refuses `watch-faceless`.
  */
 export const makeFilterWatchReactor = everyWiki("filter-watch", false, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
@@ -686,21 +713,20 @@ export const makeFilterWatchReactor = everyWiki("filter-watch", false, (opts: Ti
     const book = watchBookOf(wiki as unknown as WatchWiki);
     const named = optionalStringArg(args, "id");
     if (named !== null && !WATCH_ID.test(named)) throw new VerbRefusal("watch-id-malformed", `watch-id-malformed: a watch id reads lower-case words and dashes, 64 at most (got ${JSON.stringify(named.slice(0, 80))}); hand back the \`id\` a watch answered, or drop \`id\` to start one.`);
-    const face = ctx.worn !== undefined ? `h${ctx.worn.ordinal}` : (ctx.presenter ?? "");
-    const held = named === null ? undefined : wiki.getTiddler(watchTitleOf(named));
-    const heldFace = held === undefined ? null : String(held.fields["face"] ?? "");
-    if (heldFace !== null && heldFace !== face) {
-      throw new VerbRefusal("watch-other-face", `watch-other-face: watch ${named} rides face ${heldFace}, and this call wears ${face || "no face"}; start your own with \`lares watch filter=<filter>\`, nothing moved.`);
-    }
+    // THE OWNER IS THE FACE THE SESSION DOOR VERIFIED: a call that rode no session names no face a watch could answer to.
+    const owner = watchOwnerOf(ctx);
+    if (owner === null) throw new VerbRefusal("watch-faceless", "watch-faceless: a watch answers to the face that holds it, and this call rode no session of a face; call it on one (`lares watch face=<N> filter=<filter>`; the CLI's line opens one for the worn face).");
+    // A FAST REFUSAL before the reach's awaits; `bind` checks the owner again in its own turn.
+    if (named !== null) { const claimed = book.ownerOf(named); if (claimed !== undefined && claimed !== owner) throw otherOwner(named); }
     if (flagOn(args["unask"])) {
-      if (named === null) throw new VerbRefusal("watch-unnamed", "watch-unnamed: unask drops the watch its id names; `lares watch id=<id> mu=unask` (list live watches: `lares get filter='[prefix[$:/state/lares/watch/]]'`).");
-      const gone = book.drop(named);
+      if (named === null) throw new VerbRefusal("watch-unnamed", "watch-unnamed: unask drops the watch its id names; `lares watch id=<id> mu=unask` (list your live watches: `lares get filter='[prefix[$:/state/lares/watch/]]'`).");
+      const gone = book.unask(named, owner);
       return { has: hasLine("lar:///engine.filter.watches", [param("band", gone ? "removed" : "absent"), param("id", named)]), recipe: anchor.recipe, id: named, title: watchTitleOf(named), band: gone ? "removed" : "absent" };
     }
     const filter = stringArg(args, "filter");
     if (!filter.trim()) throw new VerbRefusal("param-needed", "param-needed: a watch names its `filter` (a TiddlyWiki filter, e.g. `lares watch filter='[tag[memory]]'`).");
     const until = optionalStringArg(args, "until") ?? undefined;
-    const lasting = await viewFor(opts, anchor, ctx.cap, true);
+    const lasting = await viewFor(opts, anchor, ctx.cap, { owner, lasting: true });
     checkFilter(lasting.view, filter);
     if (until !== undefined) checkFilter(lasting.view, until);
     // A VIEW THAT OUTLIVES ITS TURN READS FRESH CACHES ON EVERY RUN: the engine clears its own caches on each change, never a view's.
@@ -710,7 +736,7 @@ export const makeFilterWatchReactor = everyWiki("filter-watch", false, (opts: Ti
       getTiddler: (t: string) => lasting.view.getTiddler(t),
     };
     const id = named ?? newWatchId();
-    const bound = book.bind({ id, filter, recipe: anchor.recipe, face, until, view, visible: (t, tiddler) => lasting.visible(t, tiddler as EngineTiddler | undefined) });
+    const bound = book.bind({ id, filter, recipe: anchor.recipe, owner, until, view, visible: (t, tiddler) => lasting.visible(t, tiddler as EngineTiddler | undefined), reweigh: lasting.reweigh });
     // The entry the book holds now: a later call under the same id re-binds it, and this hold answers what that one reads.
     const current = () => book.entry(id) ?? bound;
     const answer = (band: "changed" | "unchanged" | "ended" | "removed"): Record<string, unknown> => {
@@ -725,7 +751,7 @@ export const makeFilterWatchReactor = everyWiki("filter-watch", false, (opts: Ti
     };
     const ends = (): boolean => {
       if (book.untilAnswers(current()).length === 0) return false;
-      book.drop(id);
+      book.end(id);
       return true;
     };
     if (ends()) return answer("ended");
@@ -754,7 +780,7 @@ export const makeFilterWatchReactor = everyWiki("filter-watch", false, (opts: Ti
         }
         function withdrawn(): void {
           finish();
-          book.drop(id);
+          book.end(id);
           reject(new VerbRefusal("watch-withdrawn", `watch-withdrawn: the caller left (its line dropped, or it cancelled the ask), so watch ${id} dropped with its record; start again with \`lares watch filter=<filter>\`.`));
         }
         if (ctx.signal?.aborted === true) { withdrawn(); return; }
@@ -1128,7 +1154,7 @@ export const makeTiddlerGetReactor = everyWiki("tiddler-get", false, (opts: Tidd
     // AN OPEN HOUSE ALERT READS here (`withheldFromReads`): the wiki's own engine holds it; a bag's store never does. The meme
     // lens never reads one: an alert holds no meme, so the lens keeps the door's whole stay-home law.
     refuseWithheld(title, "tiddler-get", !lens);
-    const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
+    const { view, mayRead } = await viewFor(opts, anchor, ctx.cap, { owner: watchOwnerOf(ctx) });
     const engine = anchor.engine;
     const wiki = engine.wiki;
     // A BARE ROOT RESOLVES, AND THE STACK DECIDES (`carrierTitleOf`): an affordance address no record titles reads the carrier

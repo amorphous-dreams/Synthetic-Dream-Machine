@@ -272,8 +272,9 @@ export interface DaemonVmCore {
   placeVerb:      (opts: VesselPlaceVerbRequest) => void;
   /** The ask under this id concluded (its outcome landed, or its caller left): a booking for it lends nothing more. */
   retireAsk:      (requestId: string) => void;
-  /** The caller of the ask under this id left (its socket closed while the ask ran, or it cancelled): the island withdraws the
-   *  ask's invocation, so a handler that heeds its signal (a watch's hold) stops. A finished ask moves nothing. */
+  /** The caller of the HELD ask under this id left (its socket closed while the ask held, or its face cancelled it): the island
+   *  withdraws the ask's invocation, so the held handler (a watch's hold) stops. The seat sends it for held asks alone; a finished
+   *  ask moves nothing. */
   withdrawAsk:    (requestId: string) => void;
   /**
    * RUN ONE FACE ROW AS A SESSION'S FACE, its answer returned here alone (K20): the keyholder island clears the row as it

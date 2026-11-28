@@ -8,24 +8,33 @@ module-type: startup
  * TIDDLER, moved by the wiki's own `change` event (the operator, 2026-11-27: "re-use the existing TW5 listen-for-changes
  * patterns; the TW5 wikis serve as the memory state machine").
  *
- *   $:/state/lares/watch/<id>   filter · recipe · face · until? · digest · count
+ *   $:/state/lares/watch/<id>   filter · recipe · face (the owner) · until? · digest · count
  *
  * ONE LISTENER PER WIKI. The book hears `change` with the same `changedTiddlers` map every widget's `refresh()` reads, and re-runs
- * only the watches a changed title could touch: a title the watch's reader view can see (its caller's face and recipe), whose
+ * only the watches a changed title could touch: a title the watch's reader view can see (its owner's face and recipe), whose
  * record moved past the hash the watch last read. A title that stays home (the verb trail, a temp title, the watch records'
- * own digests), a record in a bag the caller holds no read on, and the shore's echo (which moves only `$origin-bag`) re-run
+ * own digests), a record in a bag the owner holds no read on, and the shore's echo (which moves only `$origin-bag`) re-run
  * nothing; N watchers cost at most N filter runs per change, counted (`runs`). No clock decides anything here.
  *
- * THE DIGEST: the answering titles, each beside its record's hash over the caller's view (`answerDigestOf`), so an edit moves it
+ * THE VIEW WEIGHS AGAIN BEFORE EACH RE-RUN (`reweigh`): a bag the owner lost leaves the watch's answer, and a watch whose owner
+ * lost the wiki's own read stops tracking and drops with its record.
+ *
+ * THE DIGEST: the answering titles, each beside its record's hash over the owner's view (`answerDigestOf`), so an edit moves it
  * and the stamp never does. A watch record's own digest and count leave its hash, so a watch that lists watches settles.
  *
- * A WATCH READS, LISTS AND DIES LIKE ANY RECORD: `[prefix[$:/state/lares/watch/]]` lists every live watch, and `drop` (the call's
- * `mu=unask`) deletes one. The held call (`filter-watch` in `tiddler-verbs.ts`) answers when its watch tiddler moves. The book
- * holds at most `WATCH_BOOK_MAX` watches per wiki; a bind past it lets go the longest-bound watch no call holds.
+ * CUSTODY SITS FACE AGAINST FACE: each watch names its OWNER, the presenter the session door verified for the face worn. The
+ * record reads to its owner alone (the door's reader view), an id stays its owner's until that owner unasks it (`claims`),
+ * and the bound counts per owner: `WATCH_BOOK_MAX` watches each, a bind past it letting go that owner's own longest-bound
+ * watch no call holds, and refusing (`watch-bound`) where every one stands held. No face's bind moves another face's watch.
+ *
+ * A WATCH READS, LISTS AND DIES LIKE ANY RECORD: `[prefix[$:/state/lares/watch/]]` lists the reader's own live watches, and
+ * `unask` (the call's `mu=unask`) deletes one. The held call (`filter-watch` in `tiddler-verbs.ts`) answers when its watch
+ * tiddler moves.
  *
  * Meme: lar:///ha.ka.ba/lares/afford/engine.filter.watches
  */
 import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
 import { answerDigestOf } from "../filter-page.js";
 import type { LaresTw5Extension } from "../types/lares-globals.js";
 import type { TW5Instance } from "../types/tiddlywiki.js";
@@ -40,7 +49,7 @@ declare const $tw: (Partial<TW5Instance> & LaresTw5Extension) | undefined;
 export const WATCH_PREFIX = "$:/state/lares/watch/";
 /** The spelling an id takes: lower-case words and dashes, at most 64. */
 export const WATCH_ID = /^[a-z0-9][a-z0-9-]{0,63}$/;
-/** The watches one wiki's book holds at most. */
+/** The watches one owner holds in one wiki's book at most. */
 export const WATCH_BOOK_MAX = 64;
 /** The fields a watch record moves on every re-run; its hash leaves them out, so a watch that lists watches settles. */
 const WATCH_MOVING_FIELDS = ["digest", "count"] as const;
@@ -49,30 +58,34 @@ export const watchTitleOf = (id: string): string => `${WATCH_PREFIX}${id}`;
 
 /** One tiddler as the book reads it. */
 interface BookTiddler { readonly fields: Readonly<Record<string, unknown>>; getFieldStrings?(): Record<string, string> }
+type ChangeMap = Record<string, { deleted?: boolean; modified?: boolean }>;
 /** The slice of a TiddlyWiki wiki the book reads and writes. */
 export interface WatchWiki {
   getTiddler(title: string): BookTiddler | undefined;
   addTiddler(fields: Record<string, unknown>): void;
   deleteTiddler(title: string): void;
-  addEventListener(type: "change", listener: (changed: Record<string, { deleted?: boolean; modified?: boolean }>) => void): void;
-  removeEventListener?(type: "change", listener: (changed: Record<string, { deleted?: boolean; modified?: boolean }>) => void): void;
+  addEventListener(type: "change", listener: (changed: ChangeMap) => void): void;
+  removeEventListener?(type: "change", listener: (changed: ChangeMap) => void): void;
 }
-/** The caller's reader view a watch computes over: it holds only what the caller's face may read. */
+/** The owner's reader view a watch computes over: it holds only what the owner's face may read. */
 export interface WatchView {
   filterTiddlers(filter: string): string[];
   getTiddler(title: string): BookTiddler | undefined;
 }
 
-/** What a watch binds: its id, its filter and caller, the view it reads, and the reader's visibility predicate. */
+/** What a watch binds: its id, its filter and owner, the view it reads, and the reader's visibility predicate. */
 export interface WatchSpec {
   readonly id: string;
   readonly filter: string;
   readonly recipe: string;
-  readonly face: string;
+  /** The verified presenter of the face that bound the watch: the one reader its record answers, the one hand that unasks it. */
+  readonly owner: string;
   readonly until?: string | undefined;
   readonly view: WatchView;
-  /** True for a title the caller's view may read (the door's own predicate, a missing record included). */
+  /** True for a title the owner's view may read (the door's own predicate, a missing record included). */
   readonly visible: (title: string, tiddler: BookTiddler | undefined) => boolean;
+  /** Ask the owner's reach again before a re-run; a rejection (the owner lost the wiki's read) drops the watch. */
+  readonly reweigh?: (() => Promise<void>) | undefined;
 }
 
 /** One watch as the book holds it. */
@@ -83,6 +96,8 @@ export interface WatchEntry extends WatchSpec {
   hashes: Map<string, string | null>;
   /** The filter runs this watch cost, counted. */
   runs: number;
+  /** The re-run this watch waits on (a reweigh in flight), so its runs land in change order. */
+  pending: Promise<void>;
 }
 
 /** A record's hash as a watch reads it: every field but the residency stamp (a watch record's digest and count left out too). */
@@ -94,17 +109,23 @@ export function watchHashOf(title: string, tiddler: BookTiddler | undefined): st
   return `sha256-${sha256HexBytesSync(canonicalJsonBytes(own))}`;
 }
 
+/** The refusal a call meets where its id names a watch another owner holds. */
+export const otherOwner = (id: string): VerbRefusal =>
+  new VerbRefusal("watch-other-face", `watch-other-face: watch ${id} rides another face; start your own with \`lares watch filter=<filter>\`, nothing moved.`);
+
 const BOOK_KEY = Symbol.for("lararium.watch.book");
 
 export class WatchBook {
   private readonly entries = new Map<string, WatchEntry>();
   /** The held calls standing on each watch now, by id. */
   private readonly holding = new Map<string, number>();
+  /** Each id's owner, standing until that owner unasks it (or its own watch ends): no other face takes a freed id. */
+  private readonly claims = new Map<string, string>();
   /** Watch records the book last moved by their digest alone: their next change re-runs no watch. */
   private readonly quiet = new Set<string>();
   /** Every filter run the book made, across its watches. */
   runs = 0;
-  private readonly listener = (changed: Record<string, { deleted?: boolean; modified?: boolean }>): void => this.heard(changed);
+  private readonly listener = (changed: ChangeMap): void => this.heard(changed);
 
   constructor(private readonly wiki: WatchWiki) {
     wiki.addEventListener("change", this.listener);
@@ -114,45 +135,63 @@ export class WatchBook {
   entry(id: string): WatchEntry | undefined { return this.entries.get(id); }
   /** Every live watch's id, bound order. */
   ids(): string[] { return [...this.entries.keys()]; }
+  /** The owner an id stays bound to, or undefined where none claims it. */
+  ownerOf(id: string): string | undefined { return this.claims.get(id); }
 
   /**
-   * BIND (or re-bind) a watch: its spec replaces any it held (a new view each held call, so a bag the caller gains or loses
-   * reads at the next call), the filter runs once, and the record lands where the digest moved. A bind past the book's bound
-   * lets go the longest-bound watch no call holds.
+   * BIND (or re-bind) a watch: the owner check runs here, in the same turn as the bind, so no await stands between them; the
+   * spec replaces any the watch held (a new view each held call), the filter runs once, and the record lands where the digest
+   * moved. A new watch past its owner's bound lets go that owner's longest-bound watch no call holds, or refuses `watch-bound`.
    */
   bind(spec: WatchSpec): WatchEntry {
+    const claimed = this.claims.get(spec.id);
+    if (claimed !== undefined && claimed !== spec.owner) throw otherOwner(spec.id);
     const prior = this.entries.get(spec.id);
-    if (prior === undefined && this.entries.size >= WATCH_BOOK_MAX) {
-      const idle = [...this.entries.values()].find((e) => (this.holding.get(e.id) ?? 0) === 0);
-      if (idle !== undefined) this.drop(idle.id);
+    if (prior === undefined) {
+      const own = [...this.entries.values()].filter((e) => e.owner === spec.owner);
+      if (own.length >= WATCH_BOOK_MAX) {
+        const idle = own.find((e) => (this.holding.get(e.id) ?? 0) === 0);
+        if (idle === undefined) {
+          throw new VerbRefusal("watch-bound", `watch-bound: this face holds ${own.length} watches in this wiki, every one held by a call; let one answer, or drop one with \`lares watch id=<id> mu=unask\` (list yours: \`lares get filter='[prefix[${WATCH_PREFIX}]]'\`).`);
+        }
+        this.let(idle.id);
+      }
     }
     if (prior !== undefined) this.entries.delete(spec.id);
-    const entry: WatchEntry = { ...spec, title: watchTitleOf(spec.id), digest: prior?.digest ?? "", titles: [], hashes: new Map(), runs: prior?.runs ?? 0 };
+    this.claims.set(spec.id, spec.owner);
+    const entry: WatchEntry = { ...spec, title: watchTitleOf(spec.id), digest: prior?.digest ?? "", titles: [], hashes: new Map(), runs: prior?.runs ?? 0, pending: Promise.resolve() };
     this.entries.set(spec.id, entry);
-    this.rerun(entry, prior === undefined || prior.filter !== spec.filter || prior.until !== spec.until || prior.face !== spec.face);
+    this.rerun(entry, prior === undefined || prior.filter !== spec.filter || prior.until !== spec.until || prior.owner !== spec.owner);
     return entry;
   }
 
-  /** A held call takes its stand on a watch (`+1`) or leaves it (`-1`); a held watch never leaves for the book's bound. */
+  /** A held call takes its stand on a watch (`+1`) or leaves it (`-1`); a held watch never leaves for the bound. */
   hold(id: string, step: 1 | -1): void {
     const n = Math.max(0, (this.holding.get(id) ?? 0) + step);
     if (n === 0) this.holding.delete(id);
     else this.holding.set(id, n);
   }
 
-  /** DROP a watch: its record leaves the wiki and the book forgets it. Answers whether one stood. */
-  drop(id: string): boolean {
-    const entry = this.entries.get(id);
-    this.entries.delete(id);
-    const title = watchTitleOf(id);
-    const stood = entry !== undefined || this.wiki.getTiddler(title) !== undefined;
-    if (this.wiki.getTiddler(title) !== undefined) this.wiki.deleteTiddler(title);
-    return stood;
+  /**
+   * UNASK: the owner drops its own watch, record and claim. Answers whether one stood; another owner's id refuses
+   * `watch-other-face` and moves nothing.
+   */
+  unask(id: string, owner: string): boolean {
+    const claimed = this.claims.get(id);
+    if (claimed !== undefined && claimed !== owner) throw otherOwner(id);
+    this.claims.delete(id);
+    return this.let(id);
+  }
+
+  /** The watch's own end (its `until` answered, or its caller left): the watch, its record and its claim leave. */
+  end(id: string): void {
+    this.claims.delete(id);
+    this.let(id);
   }
 
   /** Stop hearing the wiki: every watch drops with its record. */
   close(): void {
-    for (const id of this.ids()) this.drop(id);
+    for (const id of this.ids()) this.end(id);
     this.wiki.removeEventListener?.("change", this.listener);
   }
 
@@ -164,22 +203,40 @@ export class WatchBook {
     return entry.view.filterTiddlers(entry.until).filter((t) => entry.visible(t, this.wiki.getTiddler(t)));
   }
 
+  /** Let a watch go (its record leaves the wiki; its claim stays where the caller keeps it). Answers whether one stood. */
+  private let(id: string): boolean {
+    const entry = this.entries.get(id);
+    this.entries.delete(id);
+    const title = watchTitleOf(id);
+    const stood = entry !== undefined || this.wiki.getTiddler(title) !== undefined;
+    if (this.wiki.getTiddler(title) !== undefined) this.wiki.deleteTiddler(title);
+    return stood;
+  }
+
   /** A changed title this watch could see: never its own record, never one its view withholds, never a record unmoved. */
   private couldSee(entry: WatchEntry, title: string, deleted: boolean): boolean {
     if (title === entry.title) return false;
     const tiddler = this.wiki.getTiddler(title);
     if (deleted || tiddler === undefined) return entry.hashes.has(title) || entry.visible(title, undefined);
-    if (!entry.visible(title, tiddler)) return false;
+    // A listed record the view no longer reads (a reach that moved) still re-runs, so it leaves the answer.
+    if (!entry.visible(title, tiddler)) return entry.hashes.has(title);
     // THE SHORE'S ECHO MOVES NOTHING: a listed record whose hash still reads as the watch last read it re-runs no filter.
     return !(entry.hashes.has(title) && entry.hashes.get(title) === watchHashOf(title, tiddler));
   }
 
-  private heard(changed: Record<string, { deleted?: boolean; modified?: boolean }>): void {
+  private heard(changed: ChangeMap): void {
     // A WATCH RECORD THE BOOK MOVED BY ITS DIGEST ALONE re-runs no watch: only a watch that joins, leaves or changes its spec does.
     const titles = Object.keys(changed).filter((t) => !this.quiet.delete(t));
     for (const entry of [...this.entries.values()]) {
-      if (!this.entries.has(entry.id)) continue;
-      if (titles.some((t) => this.couldSee(entry, t, changed[t]?.deleted === true))) this.rerun(entry, false);
+      if (this.entries.get(entry.id) !== entry) continue;
+      if (!titles.some((t) => this.couldSee(entry, t, changed[t]?.deleted === true))) continue;
+      const reweigh = entry.reweigh;
+      if (reweigh === undefined) { this.rerun(entry, false); continue; }
+      // THE REACH WEIGHS AGAIN FIRST: a watch whose owner lost the wiki's read stops tracking and drops with its record.
+      entry.pending = entry.pending.then(reweigh).then(
+        () => { if (this.entries.get(entry.id) === entry) this.rerun(entry, false); },
+        () => { if (this.entries.get(entry.id) === entry) this.end(entry.id); },
+      );
     }
   }
 
@@ -196,7 +253,7 @@ export class WatchBook {
     if (digest === entry.digest && !force && this.wiki.getTiddler(entry.title) !== undefined) return;
     entry.digest = digest;
     const fields = {
-      title: entry.title, filter: entry.filter, recipe: entry.recipe, face: entry.face,
+      title: entry.title, filter: entry.filter, recipe: entry.recipe, face: entry.owner,
       ...(entry.until !== undefined && entry.until !== "" ? { until: entry.until } : {}),
       digest, count: String(titles.length),
     };

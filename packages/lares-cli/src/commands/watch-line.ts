@@ -8,18 +8,16 @@
  * when `until` answers (`band/ended`), when the watch leaves (`band/removed`), or when the caller stops it: an interrupt closes
  * the socket, and the vessel withdraws the held ask, which drops the watch and its record.
  *
- * ONE SESSION: a line that names `face=N` opens one session of that face and holds every call on it; a line that names none
- * rides one-shot calls for the worn face. Nothing here polls a filter on a timer: each call holds in the VM until its watch moves
+ * ONE SESSION: a line opens one session of the face `face=N` names (else the face the vessel resolves) and holds every call on
+ * it; the watch answers to that face alone. Nothing here polls a filter on a timer: each call holds in the VM until its watch moves
  * or its `hold` (pacing alone) runs out, and an `unchanged` answer re-arms the next call with the same cursor.
  *
  * Meme: lar:///ha.ka.ba/lares/afford/engine.filter.watches
  */
 
-import { vesselDid } from "../env.js";
-import { runVerb } from "../verb-call.js";
 import { openLocalSession } from "../session-connector.js";
 import { readVerbOutcome, type SubmitResult } from "../verb-result.js";
-import { faceOption, FaceOptionMalformed } from "../face-option.js";
+import { actingFace, faceOption, FaceOptionMalformed } from "../face-option.js";
 import { emit, exitFor } from "../render.js";
 import { DoorUsage, type DoorPlan } from "./door-call.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -31,16 +29,15 @@ const WATCH_WAIT_SLACK_MS = 15_000;
 /** One held call's ask: the `call` verb's args, and how long this side waits for its answer. */
 export type WatchAsk = (args: Record<string, unknown>, timeoutMs: number) => Promise<SubmitResult>;
 
-/** The asker a line rides: one session of the face it names, or one-shot calls for the worn face. */
+/**
+ * The asker a line rides: ONE session of the face it names, else of the face the vessel resolves (the worn face). A watch answers
+ * to the face its session door verified, so a line never rides a one-shot call (the vessel refuses one `watch-faceless`).
+ */
 export async function watchAsker(args: ParsedArgs): Promise<{ readonly ask: WatchAsk; readonly close: () => Promise<void> }> {
-  let face: { face?: number };
-  try { face = faceOption(args); }
+  let face: number;
+  try { face = faceOption(args).face ?? await actingFace(args); }
   catch (error) { if (error instanceof FaceOptionMalformed) throw new DoorUsage(error.message); throw error; }
-  if (face.face === undefined) {
-    const did = await vesselDid();
-    return { ask: (callArgs, timeoutMs) => runVerb("call", callArgs, did, { timeoutMs }), close: async () => {} };
-  }
-  const session = await openLocalSession({ faceRef: `h${face.face}`, hand: "cli" });
+  const session = await openLocalSession({ faceRef: `h${face}`, hand: "cli" });
   return {
     ask: async (callArgs, timeoutMs) => {
       const { kind: _kind, ...rest } = await session.call("call", callArgs, { timeoutMs });

@@ -455,9 +455,10 @@ export interface DaemonMsg_PlaceVerb {
 }
 
 /**
- * Vessel → island: WITHDRAW one placed ask whose caller left (its socket closed while the ask ran, or it sent a cancel). The
- * island removes the ask's volatile invocation where it still stands, and the dispatcher aborts the handler's signal, so a held
- * handler (a watch, a waiting events read) stops; a handler that heeds no signal runs on and its outcome lands as before.
+ * Vessel → island: WITHDRAW one HELD ask (a watch, a waiting events read) whose caller left: its socket closed while the ask
+ * held, or a session of its face cancelled it. The seat sends it for held asks alone (`heldAsk` in the node's uds-channel), never
+ * for a write. The island removes the ask's volatile invocation where it still stands, and the dispatcher aborts the handler's
+ * signal, so the held handler stops.
  */
 export interface DaemonMsg_WithdrawVerb {
   type: "daemon:withdraw-verb";

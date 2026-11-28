@@ -4,7 +4,7 @@
  * A held handler (a watch) stops only where the island hears that its caller left: a socket that closes while the dispatched ask
  * still runs, or a cancel under the ask's id (`session:cancel`), tells the vessel's seat, which hands the island the ask's id
  * (`withdrawAsk`, the `daemon:withdraw-verb` message); the island removes the ask's invocation and the dispatcher aborts the
- * handler's signal. The island half reads in `packages/lararium-tw5/tests/withdraw-placed-ask.test.ts`; this file reads the seat.
+ * handler's signal. Only a HELD ask withdraws: a write runs on past its caller's hang-up. The island half reads in `packages/lararium-tw5/tests/withdraw-placed-ask.test.ts`; this file reads the seat.
  */
 import { describe, expect, test } from "vitest";
 import { controlStoreOf } from "@lararium/mesh/control-home";
@@ -17,7 +17,7 @@ import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { concludeVerb } from "@lararium/mesh/verb-tiddler";
 import { faceScopedId } from "@lararium/mesh/face-scoped-id";
 import type { SessionFace } from "@lararium/mesh/session-contract";
-import { makeUdsSeat, serveUdsFront, type UdsSessionDoor } from "../src/uds-channel.js";
+import { heldAsk, makeUdsSeat, serveUdsFront, type UdsSessionDoor } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
 
 const fixtureMint = async () => ({ ok: true as const, signer: { dropped: false, drop() { (this as { dropped: boolean }).dropped = true; } } });
@@ -65,7 +65,7 @@ async function rig() {
   const dir = mkdtempSync(join(tmpdir(), "uds-withdraw-ask-"));
   const claim = await claimStore(dir, { holder: "vessel" });
   const door: UdsSessionDoor = { anchorNow: async () => ({ kind: "place" as const, aid: "place-fixture", head: "place-head" }), open: async ({ faceRef }) => ({ ok: true, supply: {
-    face: face(faceRef), ordinal: 0, profile: "seat", presenter: `verified-${faceRef}`, anchor: { kind: "place" as const, aid: "place-fixture", head: "place-head" }, caps: ["hold"], mint: fixtureMint } }) };
+    face: face(faceRef), ordinal: 0, profile: "seat", presenter: `verified-${faceRef}`, anchor: { kind: "place" as const, aid: "place-fixture", head: "place-head" }, caps: ["filter-watch", "tiddler-put"], mint: fixtureMint } }) };
   const placed = new Map<string, { requestId: string; verb: string; face?: string }>();
   const placedWaits = new Map<string, () => void>();
   const withdrawn: string[] = [];
@@ -96,15 +96,58 @@ async function rig() {
     await claim.release();
     rmSync(dir, { recursive: true, force: true });
   };
-  return { open, placedOnce, withdrawnOnce, withdrawn, land, close };
+  /** A raw `{op:"cancel"}` line on a socket of its own, answered by the vessel's receipt. */
+  const rawCancel = async (requestId: string): Promise<void> => {
+    const peer = await Peer.connect(claim.socketPath);
+    peers.push(peer);
+    await peer.ask({ op: "cancel", requestId });
+  };
+  return { open, placedOnce, withdrawnOnce, withdrawn, land, close, rawCancel };
 }
 
 describe("a caller that leaves a held ask withdraws it", () => {
+  test("RED: only an ask that holds reads as held: a watch, a call naming the watch, a waiting events read; never a write", () => {
+    expect(heldAsk("filter-watch", { filter: "[tag[x]]" })).toBe(true);
+    expect(heldAsk("call", { verb: "watch", params: {} })).toBe(true);
+    expect(heldAsk("call", { verb: "lar:///engine.filter.watches", params: {} })).toBe(true);
+    expect(heldAsk("call", { sigil: "<<~ watch filter=`[tag[x]]`>>" })).toBe(true);
+    expect(heldAsk("events", { wait: true })).toBe(true);
+    expect(heldAsk("events", {})).toBe(false);
+    expect(heldAsk("call", { verb: "put", params: {} })).toBe(false);
+    expect(heldAsk("call", { sigil: "<<~ put title=`watch`>>" })).toBe(false);
+    expect(heldAsk("tiddler-put", { title: "x" })).toBe(false);
+  });
+
+  test("CONTROL: a write whose socket closes mid-ask withdraws nothing; its outcome stays owed", async () => {
+    const r = await rig();
+    try {
+      const line = await r.open("a");
+      void line.peer.ask({ op: "session:call", ...line.env, requestId: "write-1", verb: "tiddler-put", args: { title: "x" } });
+      await r.placedOnce(faceScopedId("proof-a", "write-1"));
+      line.peer.destroy();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(r.withdrawn).toEqual([]);
+    } finally { await r.close(); }
+  });
+
+  test("CONTROL: a raw cancel rides its own socket, which placed no ask, and withdraws nothing", async () => {
+    const r = await rig();
+    try {
+      const line = await r.open("a");
+      void line.peer.ask({ op: "session:call", ...line.env, requestId: "watch-4", verb: "filter-watch", args: { filter: "[tag[x]]" } });
+      const scoped = faceScopedId("proof-a", "watch-4");
+      await r.placedOnce(scoped);
+      await r.rawCancel(scoped);
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(r.withdrawn).toEqual([]);
+    } finally { await r.close(); }
+  });
+
   test("RED: a socket that closes while its ask runs hands the island the ask's id", async () => {
     const r = await rig();
     try {
       const line = await r.open("a");
-      void line.peer.ask({ op: "session:call", ...line.env, requestId: "watch-1", verb: "hold", args: {} });
+      void line.peer.ask({ op: "session:call", ...line.env, requestId: "watch-1", verb: "filter-watch", args: { filter: "[tag[x]]" } });
       const scoped = faceScopedId("proof-a", "watch-1");
       await r.placedOnce(scoped);
       expect(r.withdrawn).toEqual([]);
@@ -118,7 +161,7 @@ describe("a caller that leaves a held ask withdraws it", () => {
     const r = await rig();
     try {
       const line = await r.open("a");
-      void line.peer.ask({ op: "session:call", ...line.env, requestId: "watch-2", verb: "hold", args: {} });
+      void line.peer.ask({ op: "session:call", ...line.env, requestId: "watch-2", verb: "filter-watch", args: { filter: "[tag[x]]" } });
       const scoped = faceScopedId("proof-a", "watch-2");
       await r.placedOnce(scoped);
       const other = await r.open("a");
@@ -132,7 +175,7 @@ describe("a caller that leaves a held ask withdraws it", () => {
     const r = await rig();
     try {
       const line = await r.open("a");
-      const answered = line.peer.ask({ op: "session:call", ...line.env, requestId: "watch-3", verb: "hold", args: {} });
+      const answered = line.peer.ask({ op: "session:call", ...line.env, requestId: "watch-3", verb: "filter-watch", args: { filter: "[tag[x]]" } });
       const scoped = faceScopedId("proof-a", "watch-3");
       await r.placedOnce(scoped);
       r.land(scoped);

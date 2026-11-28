@@ -11,7 +11,8 @@ import { bagUri } from "@lararium/mesh/lar-uris";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeFilterWatchReactor, makeTiddlerPutReactor, makeWikiFilterReactor, type TiddlerVerbOptions } from "../src/tiddler-verbs.js";
 import { TIDDLER_CALL_SEATS } from "../src/tiddler-verbs.js";
-import { watchBookOf, WATCH_PREFIX, type WatchWiki } from "../src/modules/watch.js";
+import { watchBookOf, WATCH_BOOK_MAX, WATCH_PREFIX, type WatchSpec, type WatchWiki } from "../src/modules/watch.js";
+import { makeTiddlerGetReactor } from "../src/tiddler-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
 
@@ -60,7 +61,7 @@ describe.skipIf(wikiSkip)(`a watch stands as a tiddler the wiki's change event m
     expect(out).toMatchObject({ band: "changed", recipe: "default", filter: "[tag[memory]]" });
     const id = String(out["id"]);
     const record = r.wiki.getTiddler(`${WATCH_PREFIX}${id}`);
-    expect(record?.fields).toMatchObject({ filter: "[tag[memory]]", recipe: "default", face: "h0", digest: out["asOf"], count: "8" });
+    expect(record?.fields).toMatchObject({ filter: "[tag[memory]]", recipe: "default", face: "did:witness", digest: out["asOf"], count: "8" });
     expect(out["titles"]).toContain("Note 07");
     expect(String(out["has"])).toContain("band/changed");
   });
@@ -176,4 +177,85 @@ describe.skipIf(wikiSkip)(`a watch stands as a tiddler the wiki's change event m
     expect(runs() - base).toBe(5);
     expect(r.book.ids().map((id) => r.wiki.getTiddler(`${WATCH_PREFIX}${id}`)?.fields["digest"])).toEqual(digests);
   }, 15_000);
+});
+
+/** A spec over a stub view, for the book's own custody: no engine run reads it. */
+const stub = (id: string, owner: string): WatchSpec => ({
+  id, owner, filter: "[tag[memory]]", recipe: "default",
+  view: { filterTiddlers: () => [], getTiddler: () => undefined }, visible: () => true,
+});
+const other = (presenter: string, ordinal = 1): VerbContext => ({ ...ctxOf(), worn: { ordinal, presenter } });
+
+describe.skipIf(wikiSkip)(`custody sits face against face${skipNote}`, () => {
+  test("RED: a watch record reads to its owner alone; another face's filter and get find nothing", async () => {
+    const r = await rig();
+    const first = await r.watch({ ...A, filter: "[tag[memory]]", hold: 1_000 }, ctxOf());
+    const title = `${WATCH_PREFIX}${String(first["id"])}`;
+    expect((await makeWikiFilterReactor(r.opts)({ ...A, filter: `[prefix[${WATCH_PREFIX}]]` }, ctxOf()))["titles"]).toEqual([title]);
+    expect((await makeWikiFilterReactor(r.opts)({ ...A, filter: `[prefix[${WATCH_PREFIX}]]` }, other("did:other")))["titles"]).toEqual([]);
+    // Absent to another face: the door answers no record (or refuses the read); either way no field crosses.
+    const got = await makeTiddlerGetReactor(r.opts)({ ...A, title }, other("did:other")).catch(() => ({} as Record<string, unknown>));
+    expect(got["tiddler"] ?? null).toBeNull();
+    // A call that rode no session reads no watch record either.
+    const faceless: VerbContext = { daemon: {} as CompositeStore, invocation: { requestId: "w9" } as VerbContext["invocation"], cap: reader };
+    expect((await makeWikiFilterReactor(r.opts)({ ...A, filter: `[prefix[${WATCH_PREFIX}]]` }, faceless))["titles"]).toEqual([]);
+  });
+
+  test("RED: a call that rode no session refuses watch-faceless; a free-text presenter names no owner", async () => {
+    const r = await rig();
+    const faceless: VerbContext = { daemon: {} as CompositeStore, invocation: { requestId: "w9" } as VerbContext["invocation"], cap: reader, presenter: "h0" };
+    await expect(r.watch({ ...A, filter: "[tag[memory]]", hold: 1_000 }, faceless)).rejects.toThrow(/watch-faceless/);
+    expect(r.book.ids()).toEqual([]);
+  });
+
+  test("RED: the bound counts per owner; a bind past it lets go that owner's own idle watch and never another face's", async () => {
+    const r = await rig();
+    for (let i = 0; i < WATCH_BOOK_MAX; i++) r.book.bind(stub(`a-${i}`, "did:a"));
+    for (let i = 0; i < WATCH_BOOK_MAX; i++) r.book.bind(stub(`b-${i}`, "did:b"));
+    expect(r.book.ids().filter((id) => id.startsWith("a-"))).toHaveLength(WATCH_BOOK_MAX);
+    r.book.bind(stub("b-past", "did:b"));
+    expect(r.book.ids().filter((id) => id.startsWith("a-"))).toHaveLength(WATCH_BOOK_MAX);
+    expect(r.book.entry("b-0"), "the owner's own longest-bound idle watch left").toBeUndefined();
+    expect(r.book.entry("b-past")).toBeDefined();
+  });
+
+  test("RED: a freed id stays its owner's until that owner unasks it; another face's bind refuses watch-other-face", async () => {
+    const r = await rig();
+    for (let i = 0; i <= WATCH_BOOK_MAX; i++) r.book.bind(stub(`a-${i}`, "did:a"));
+    expect(r.book.entry("a-0")).toBeUndefined();
+    expect(() => r.book.bind(stub("a-0", "did:b"))).toThrow(/watch-other-face/);
+    expect(() => r.book.unask("a-1", "did:b")).toThrow(/watch-other-face/);
+    expect(r.book.unask("a-0", "did:a")).toBe(false);
+    expect(r.book.bind(stub("a-0", "did:b")).owner).toBe("did:b");
+  });
+
+  test("RED: the bound holds while every watch is held: a face past it refuses watch-bound by name", async () => {
+    const r = await rig();
+    for (let i = 0; i < WATCH_BOOK_MAX; i++) { r.book.bind(stub(`c-${i}`, "did:c")); r.book.hold(`c-${i}`, 1); }
+    expect(() => r.book.bind(stub("c-past", "did:c"))).toThrow(/watch-bound/);
+    expect(r.book.ids().filter((id) => id.startsWith("c-"))).toHaveLength(WATCH_BOOK_MAX);
+    // CONTROL: a re-bind of a watch the face holds already lands.
+    expect(r.book.bind(stub("c-0", "did:c")).id).toBe("c-0");
+  });
+
+  test("RED: the view weighs again before each re-run: a bag the owner lost leaves the answer, and a lost wiki read drops the watch", async () => {
+    const r = await rig();
+    let grant: "all" | "no-secret" | "none" = "all";
+    const moving: Cap = async (access, bag) => {
+      if (access !== "read" || grant === "none") return { ok: false, reason: "revoked" };
+      return grant === "no-secret" && bag === SECRET ? { ok: false, reason: "revoked" } : { ok: true };
+    };
+    const first = await r.watch({ ...A, filter: "[tag[memory]]", hold: 1_000 }, ctxOf(moving));
+    const id = String(first["id"]);
+    expect(r.book.entry(id)!.titles).toContain("Secret 1");
+    grant = "no-secret";
+    r.wiki.addTiddler({ title: "Note 02", tags: "memory", text: "note 2, edited" });
+    await settle();
+    expect(r.book.entry(id)!.titles).not.toContain("Secret 1");
+    grant = "none";
+    r.wiki.addTiddler({ title: "Note 04", tags: "memory", text: "note 4, edited" });
+    await settle();
+    expect(r.book.entry(id)).toBeUndefined();
+    expect(r.wiki.getTiddler(`${WATCH_PREFIX}${id}`)).toBeUndefined();
+  });
 });

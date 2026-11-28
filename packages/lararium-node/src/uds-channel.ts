@@ -226,9 +226,11 @@ export interface UdsChannelOptions {
   /** The ask under this id concluded here (its outcome read, or its wait ended): main's booking for it retires. */
   readonly retireAsk?: (requestId: string) => void;
   /**
-   * THE CALLER LEFT A DISPATCHED ASK: its socket closed while the ask ran, or it sent a cancel (`session:cancel`, `{op:"cancel"}`).
-   * The island withdraws the ask's invocation and the dispatcher aborts the handler's signal, so a held handler (a watch) stops
-   * and drops what it held; a handler that heeds no signal runs on and its outcome lands, as the ledger's commit promised.
+   * THE CALLER LEFT A HELD ASK (`heldAsk`: a watch, a waiting events read): its socket closed while the ask held, or a session of
+   * its face sent `session:cancel` under its id. The island withdraws the ask's invocation and the dispatcher aborts the handler's
+   * signal, so the held handler stops and drops what it held. Every other ask, a ledgered write above all, never meets a
+   * withdrawal: its signal never aborts, and its outcome lands as the ledger's commit promised. A raw `{op:"cancel"}` rides its
+   * own socket, which placed no ask, so it withdraws nothing.
    */
   readonly withdrawAsk?: (requestId: string) => void;
   /** The vessel's claim on its store — the rendezvous socket (`/tmp/lares-<uid>/<digest>.sock`) both sides derive. */
@@ -1060,6 +1062,25 @@ export function serveUdsFront(a: {
   };
 }
 
+/** The spellings a `call` names the watch by: its verb word, its address in either spelling. */
+const HELD_CALL_WORDS: ReadonlySet<string> = new Set(["watch", "lar:///engine.filter.watches", "engine.filter.watches", "lar:///ha.ka.ba/lares/afford/engine.filter.watches"]);
+
+/**
+ * TRUE FOR AN ASK THAT HOLDS (a watch, a waiting events read), whose caller leaving withdraws it. A `call` holds where it names
+ * the watch (its word, its address, or a sigil that leads with `watch`); `events` holds where it asks `wait`. Every other ask
+ * (every write) answers false, so a hang-up never aborts its signal.
+ */
+export function heldAsk(verb: string, args: Readonly<Record<string, unknown>> | undefined): boolean {
+  const a = args ?? {};
+  if (verb === "filter-watch") return true;
+  if (verb === "events") return a["wait"] === true;
+  if (verb !== "call") return false;
+  const word = typeof a["verb"] === "string" ? a["verb"].trim() : "";
+  if (HELD_CALL_WORDS.has(word)) return true;
+  const sigil = typeof a["sigil"] === "string" ? a["sigil"] : word.startsWith("<<") ? word : "";
+  return /^<<~?\s*watch(?:\s|>)/.test(sigil.trim());
+}
+
 export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const { controlHandle, claim } = opts;
   const floorVerbs = opts.floorVerbs ?? FLOOR_VERBS;
@@ -1374,6 +1395,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
 
   /** The reads on the answer-ring road still running, by request id: a same-id ask joins the wait, and a changed input refuses. */
   const readsInFlight = new Map<string, { readonly digest: string; readonly run: Promise<Record<string, unknown>> }>();
+  /** The held asks (`heldAsk`) dispatched here and still holding, by their scoped request id: a withdrawal reaches these alone. */
+  const heldInFlight = new Set<string>();
   /** What a reused id that carries another input hears: nothing ran under this ask, and the cure reads a fresh id. */
   const reusedWithChangedInput = (requestId: string): string =>
     `request ${requestId} was already used with different arguments — mint a fresh request id`;
@@ -1608,7 +1631,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       const face = checked.session.face.proofSubject;
       if (frame["op"] === "session:cancel") {
         await ledger.cancel(faceScopedId(face, requestId), face);
-        opts.withdrawAsk?.(faceScopedId(face, requestId));
+        // Only a HELD ask this face placed withdraws: the id is scoped to the session's verified face.
+        if (heldInFlight.has(faceScopedId(face, requestId))) opts.withdrawAsk?.(faceScopedId(face, requestId));
       }
       sessionReply(sock, { kind: "session:receipt", requestId, receipt: await sessionReceipt(requestId, face) });
       return;
@@ -1907,13 +1931,17 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     const releaseWhenSettled = (run: Promise<unknown>, requestId: string): void => {
       run.then(() => settled(), (err: unknown) => { if (err instanceof VesselWaitExpired) void outcomeLanded(requestId).then(() => settled()); else settled(); });
     };
-    /** A DROPPED LINE WITHDRAWS ITS ASK: a socket that closes while the dispatched ask still runs tells the island, once. */
-    const withdrawOnHangUp = (run: Promise<unknown>, requestId: string): void => {
+    /**
+     * A DROPPED LINE WITHDRAWS ITS HELD ASK: a socket that closes while a held ask (`heldAsk`) still holds tells the island, once.
+     * Any other ask runs on past its caller's hang-up, its outcome owed to a later read, as the ledger's commit promised.
+     */
+    const withdrawOnHangUp = (run: Promise<unknown>, inv: Invocation, requestId: string): void => {
       const withdraw = opts.withdrawAsk;
-      if (withdraw === undefined) return;
+      if (withdraw === undefined || !heldAsk(inv.verb, inv.args)) return;
+      heldInFlight.add(requestId);
       const gone = (): void => withdraw(requestId);
       sock.once("close", gone);
-      const off = (): void => { sock.off("close", gone); };
+      const off = (): void => { sock.off("close", gone); heldInFlight.delete(requestId); };
       run.then(off, off);
     };
     /**
@@ -2042,7 +2070,6 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // caller withdrew. What it asks back: the verdict this vessel holds for the id after the cancel took its
         // turn. A cancel that met no fact reads `abandoned`; one that met a commit reads what the vessel holds for
         // that act, which runs on.
-        opts.withdrawAsk?.(parsed.requestId);
         tended(ledger.cancel(parsed.requestId).then(() => answerReceipt(parsed.requestId)).then(
           (answer) => { respond(answer as unknown as Record<string, unknown>); },
           (err) => fail(err instanceof Error ? err.message : String(err)),
@@ -2221,7 +2248,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           dispatched = inv.verb;
           const admittedAt = performance.now();
           const running = runVerb(inv, requestId);
-          withdrawOnHangUp(running, requestId);
+          withdrawOnHangUp(running, inv, requestId);
           const flight = { digest: inputDigest, run: running };
           readsInFlight.set(requestId, flight);
           void running.then(() => {}, () => {}).then(() => { if (readsInFlight.get(requestId) === flight) readsInFlight.delete(requestId); });
@@ -2302,7 +2329,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         const admittedAt = performance.now();
         // A LEDGERED DISPATCH answers once its verdict row stands beside its answer (`settledOutcomeFor`).
         const running = runVerb(inv, requestId, true);
-        withdrawOnHangUp(running, requestId);
+        withdrawOnHangUp(running, inv, requestId);
         releaseWhenSettled(running, requestId);
         running.then(
           (outcome) => { noteSlowCall(inv.verb, requestId, readAt, admittedAt); respond(outcome); },

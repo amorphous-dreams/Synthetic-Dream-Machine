@@ -1184,10 +1184,11 @@ def build_mcp(coordinator: LaresCoordinator):
             raise SeatArgumentRefused(f"{verb}: `recipe` names no slug — pass one (`sdm`, `lares`)")
         return {"recipe": recipe}
 
-    def _meme_wire(verb: str, args: dict, **wire):
-        """Ride `lares_uds.call` and peel the receipt to the verb's own payload — a `null` output stays
-        `None` (an absent meme reads null, never the receipt envelope `uds.output` would hand back)."""
-        out = uds.call(verb, args, **wire)
+    def _meme_wire(verb: str, args: dict, *, session: bool = False, **wire):
+        """Ride `lares_uds.call` (or, for a verb that answers to its session's face, `lares_uds.session_call`) and peel the
+        receipt to the verb's own payload — a `null` output stays `None` (an absent meme reads null, never the receipt envelope
+        `uds.output` would hand back)."""
+        out = uds.session_call(verb, args, **wire) if session else uds.call(verb, args, **wire)
         summary = ((out.get("results") or {}).get("summary")) or {}
         if summary.get("ok") is False:
             raise uds.LaresVerbError(str(summary.get("error") or f"verb {verb!r} failed"))
@@ -1288,7 +1289,7 @@ def build_mcp(coordinator: LaresCoordinator):
         if unask:
             if not id:
                 raise SeatArgumentRefused("watch: unask drops the watch its `id` names; pass the `id` a watch answered")
-            return _meme_wire("filter-watch", {**args, "id": id, "unask": True})
+            return _meme_wire("filter-watch", {**args, "id": id, "unask": True}, session=True)
         if not filter:
             raise SeatArgumentRefused("watch: a watch names its `filter` (a TiddlyWiki filter, e.g. \"[tag[memory]]\")")
         args["filter"] = filter
@@ -1300,7 +1301,8 @@ def build_mcp(coordinator: LaresCoordinator):
             args["asOf"] = as_of
         held = int(hold) if hold is not None else WATCH_HOLD_MS
         args["hold"] = held
-        return _meme_wire("filter-watch", args, timeout=held / 1000.0 + WATCH_WAIT_SLACK_S,
+        # A WATCH ANSWERS TO ITS FACE: it rides a session of the seat's face, never the one-shot line (`watch-faceless`).
+        return _meme_wire("filter-watch", args, session=True, timeout=held / 1000.0 + WATCH_WAIT_SLACK_S,
                           vessel_wait_ms=held + int(WATCH_WAIT_SLACK_S * 500))
 
     @mcp.tool(annotations=_annotations("tiddler_get"))
