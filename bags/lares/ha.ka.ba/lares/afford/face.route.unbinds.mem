@@ -1,0 +1,108 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.route.unbinds`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "unbind one route's slot, rotating the key where asked"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.route.unbinds", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.route.unbinds"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.route.unbinds"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.route.unbinds ~ one route leaves; a rotation moves the key in the same act
+
+`lares vault unbind <slot-id>` removes one slot from the vessel key's tree (`--face N`: from that face's tree) once the hand proves a route that opens it; `--rotate` moves the key itself in the same act, so the slot that leaves opens nothing ever again. Slot ids print under `lares vault status`. A credential rides a TTY alone: no flag, no environment variable and no pipe carries one, nothing echoes one, and it drops the instant the act returns. Rotation never repairs the loss of a relation carrier.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ unbind · rotate
+
+```memetic-wikitext
+<<has entity=`example` name=`unbind` params=`slot-id/s2 ~ remove slot s2 from the vessel key`>>
+<<has entity=`example` name=`rotate` params=`slot-id/s2 rotate/true ~ remove slot s2 and rotate the key`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ slot-id · face · rotate
+
+```memetic-wikitext
+<<has entity=`arg` name=`slot-id` params=`takes/slot needs/required seat/1 as/<slot-id> ~ the slot that leaves, as vault status names it`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ unbind from that face's own tree, by persona index`>>
+<<has entity=`arg` name=`rotate` params=`~ move the key itself in the same act`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/route ~ a person types the route at their own terminal; an AI seat names the command`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · face-not-named · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.custody.reads]] ~ no slot id, no such slot, a tree that does not read, or a typed route that opens nothing; read the slots`>>
+<<has entity=`refusal` name=`face-not-named` params=`~ no face of that index stands in the floor index`>>
+<<has entity=`refusal` name=`error` params=`~ the custody door's named refusals lead the line by class (OccupiedStoreRefusal, CustodyRefusal, TreeKeyRefusal, CensusRefusal, CustodyLockRefused, CustodyFoundingRefused, CredentialTtyRefusal, RotationSlotsRefused), exit 1`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ unbound
+
+```memetic-wikitext
+<<has entity=`band` name=`unbound` params=`exit/0 fields/[[slotId rotated slots]] ~ the slot left; rotated names whether the key moved`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vault unbind
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares vault unbind]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · custody
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kPMOHNsbf006UKoOPYcnkRfD8GZYOF6yY1RiBdzdEhQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

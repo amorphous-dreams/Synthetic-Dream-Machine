@@ -1,0 +1,106 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.custody.locks`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "drop the vessel key, or one face's, and confirm by census"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.custody.locks", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.custody.locks"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.custody.locks"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.custody.locks ~ lock drops the key the standing vessel holds
+
+`lares vault lock` asks the standing vessel to drop its key, so every sovereign act waits on the next unlock; `--face N` drops that face's key alone, and the vessel stands at the floor only where N was the face it wore. Where the door's answer goes missing, a census confirms the lock; a lock nothing confirms refuses. No vessel on the store locks nothing and says so.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ lock · one-face
+
+```memetic-wikitext
+<<has entity=`example` name=`lock` params=`~ drop the vessel key`>>
+<<has entity=`example` name=`one-face` params=`face/2 ~ drop face h2's key`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face
+
+```memetic-wikitext
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ the face whose key drops, by persona index`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat-or-hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat-or-hand` params=`who/seat-or-hand ~ drops a held key; it opens nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · lock-unconfirmed · error
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.custody.locks face/2]] ~ --face names a handle index, a whole number from 0`>>
+<<has entity=`refusal` name=`lock-unconfirmed` params=`cure/[[face.custody.locks]] ~ neither the door nor a census confirms the lock; read lares vault status`>>
+<<has entity=`refusal` name=`error` params=`~ the custody door's named refusals lead the line by class (OccupiedStoreRefusal, CustodyRefusal, TreeKeyRefusal, CensusRefusal, CustodyLockRefused, CustodyFoundingRefused, CredentialTtyRefusal, RotationSlotsRefused), exit 1`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ locked
+
+```memetic-wikitext
+<<has entity=`band` name=`locked` params=`exit/0 fields/[[locked was face confirmedBy standing]] ~ the key dropped; confirmedBy names the census where the door went quiet`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vault lock
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares vault lock]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · custody
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yRkCJjdU_BOwBEpwtAUkEg4es9KwxMhb8elKKN_g8Z4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

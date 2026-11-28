@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.hive.restands`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "stand a shut face's hive again from its own seed"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.hive.restands", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.hive.restands"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.hive.restands"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.hive.restands ~ a face whose archive row holds another identity stands from its seed
+
+`lares vault rehive --face N` reads the face's own route on a TTY and hands it to the custody door in a `rehive` frame. The door refuses a face worn or lit, opens the face's key for this act alone, moves the foreign archive row aside (never deleted) and leaves the face to stand from its seed at its next wear. The answer names what moved, what was lost, and the acts that come next.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ rehive
+
+```memetic-wikitext
+<<has entity=`example` name=`rehive` params=`face/2 ~ rehive shut face h2`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face
+
+```memetic-wikitext
+<<has entity=`arg` name=`face` params=`takes/handle-index needs/required ~ the shut face, by persona index`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand key/route ~ a person types the face's route at their own terminal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · daemon-unreachable · rehive-refused
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.hive.restands face/2]] ~ name the face's handle index`>>
+<<has entity=`refusal` name=`daemon-unreachable` params=`cure/[[face.hive.restands face/2]] ~ no vessel answers its custody door`>>
+<<has entity=`refusal` name=`rehive-refused` params=`~ the door refused the rehive; its reason rides the code`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ rehived
+
+```memetic-wikitext
+<<has entity=`band` name=`rehived` params=`exit/0 ~ what moved, what was lost, and the next acts`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares vault rehive
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares vault rehive]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · custody
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eh6DFzWmzRTsqGnOFSDqZe_ojTT5UURDUdDQAZum06I`>>
+
+<<^ code=`&#x0004;` to=`?`>>
