@@ -10,11 +10,11 @@
  *   P2  RED: an unlocked self-founded browser mints its face's place session, the island signs a booked seal under it, the
  *       sealed value reads back after a restart of the holder; the relock drops the signer and the next ask refuses.
  *   P3  a browser that armed no place KEL mints no place session (it refuses by name) and lifts nothing.
- *   P4  the boot's lift seam: the self-founded branch stands the place lift through the same lift stack and lock as the
- *       Nexus lift, and the lock closes the place session's table.
+ *   (P4 burned 2026-11-28: it read the opener's source text, not its behaviour.)
  *   P5  RED: the daemon island rests a wrap's Archive through the vessel's custody door while the lift stands (mesh
  *       `islandCustodyWriter`, the node's `sealOnVessel`); at the floor the write answers unwritten and the wrap refuses by name. The browser's daemon island
- *       hands its behaviour that writer (a lift with no writer refused every wrap `wrap-failed`).
+ *       hands its behaviour that writer (a lift with no writer refused every wrap `wrap-failed`); the worn-face routing
+ *       reads in browser-veil-archive-route.test.ts.
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store · lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift
  */
@@ -33,7 +33,6 @@ import { utf8Bytes } from "../../lararium-mesh/src/crypto.js";
 
 const GROUP = "b7f1c2a9d4e60381";
 const BAG = "lar:///ha.ka.ba/wikis/daemon/working";
-const SOURCES = import.meta.glob(["../src/open-browser-vessel.ts", "../src/daemon-island-start.ts"], { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 
 /** A vessel-to-island wire in one thread (as browser-island-caps.test). */
 function wire() {
@@ -131,15 +130,6 @@ describe("a self-founded browser face lifts at its own place", () => {
     expect(await mintBrowserPlaceSession({ idbName, personaGroup: GROUP, atomKey })).toEqual({ refusal: "place-unfounded" });
   });
 
-  test("P4 — the boot's lift seam: the self-founded branch stands the place lift through the one lift stack and lock", () => {
-    const open = (SOURCES["../src/open-browser-vessel.ts"] ?? "").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-    expect(open).toMatch(/browserLiftsAtPlace\(/);
-    expect(open).toMatch(/mintBrowserPlaceSession\(/);
-    // One lift stack serves both anchors: exactly one `islandLiftStack(` call and one lock registration on custody.
-    expect(open.match(/islandLiftStack\(/g)?.length).toBe(1);
-    expect(open.match(/onBrowserCustodyLock\(idbName, \(\) => \{ void lockThenDrop\(\); \}\)/g)?.length).toBe(1);
-  });
-
   test("P5 — RED: the island rests a wrap's Archive through the vessel's custody door while the lift stands, and the floor refuses it", async () => {
     const { idbName, atomKey } = await browser(true);
     const minted = await mintBrowserPlaceSession({ idbName, personaGroup: GROUP, atomKey });
@@ -158,9 +148,5 @@ describe("a self-founded browser face lifts at its own place", () => {
     await lifted.dispose();
     minted.close();
     await expect(write("veil", utf8Bytes("after the lock"), GROUP)).rejects.toThrow(/did not seal/);
-    const island = (SOURCES["../src/daemon-island-start.ts"] ?? "").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-    // The mounted face's Archive rests through the custody door, named by its own PersonaGroup; any other face's refuses by name,
-    // never the worn row.
-    expect(island).toMatch(/persistVeilArchive: \(bytes: Uint8Array, face: string\) => face === manifest\.daemonAuth\?\.personaGroupId\s*\? custodyOnVessel\("veil", bytes, face\)\s*: Promise\.reject\(new Error\("face-archive-unrouted/);
   });
 });
