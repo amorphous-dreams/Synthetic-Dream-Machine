@@ -2278,17 +2278,17 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
         ?? read.leaves.find((row) => row.why.startsWith("reveal-keeps:"))?.title;
       if (kept !== undefined) {
         const rests = layers.of.get(kept)?.find((layer) => layer.state === "live")?.bag ?? bag ?? "a lower layer";
-        return refused("delete-mode-needed", `"${kept}" rests in ${rests}, a layer this face's delete cannot remove it from, so a plain delete would leave it standing. \`mode=kapae\` (\`mode: "kapae"\`) raises a tombstone in ${anchor.bag} that hides it; ${rests} keeps its record. Nothing moved.`);
+        return refused("delete-mode-needed", `"${kept}" rests in ${rests}, a layer this face's delete cannot remove it from, so a plain delete would leave it standing. \`way=kapae\` raises a tombstone in ${anchor.bag} that hides it; ${rests} keeps its record. Nothing moved.`);
       }
       const beneath = read.acts.find((row) => row.act === "retract" && typeof row.reveals === "string");
       if (beneath !== undefined) {
-        return refused("delete-mode-needed", `"${beneath.title}" also stands in ${beneath.reveals} beneath the record in ${beneath.bag}, so this delete must name what happens to it: \`mode=kapae\` (\`mode: "kapae"\`) raises a tombstone that keeps it hidden; \`mode=reveal\` (\`mode: "reveal"\`) removes the record in ${beneath.bag} and lets ${beneath.reveals}'s surface. Nothing moved.`);
+        return refused("delete-mode-needed", `"${beneath.title}" also stands in ${beneath.reveals} beneath the record in ${beneath.bag}, so this delete must name what happens to it: \`way=kapae\` raises a tombstone that keeps it hidden; \`way=reveal\` removes the record in ${beneath.bag} and lets ${beneath.reveals}'s surface. Nothing moved.`);
       }
       // AN UNREAD LAYER BENEATH COUNTS AS HOLDING THE TITLE: a recipe slot the composer could not reach, or a stand-in for a
       // document the vessel has not read, may hold any record (recipe-layer-model#/the-delete), so the plain delete asks.
       const unread = read.acts.find((row) => row.act === "retract" && opts.composite.unknownBeneath?.(row.bag ?? anchor.bag) === true);
       if (unread !== undefined) {
-        return refused("delete-mode-needed", `"${unread.title}" may also stand in an unread layer beneath ${unread.bag ?? anchor.bag} (a recipe slot this composition could not reach, or a document this vessel has not read yet), so this delete must name what happens to it: \`mode=kapae\` (\`mode: "kapae"\`) raises a tombstone that keeps any such record hidden; \`mode=reveal\` (\`mode: "reveal"\`) removes the record in ${unread.bag ?? anchor.bag} and lets whatever stands beneath surface. Nothing moved.`);
+        return refused("delete-mode-needed", `"${unread.title}" may also stand in an unread layer beneath ${unread.bag ?? anchor.bag} (a recipe slot this composition could not reach, or a document this vessel has not read yet), so this delete must name what happens to it: \`way=kapae\` raises a tombstone that keeps any such record hidden; \`way=reveal\` removes the record in ${unread.bag ?? anchor.bag} and lets whatever stands beneath surface. Nothing moved.`);
       }
     }
     if (read.refusals.length > 0) {
@@ -2389,7 +2389,7 @@ async function retractBareKapae(
   }
   const surfacing = acts.find((row) => row.reveals !== null);
   if (surfacing !== undefined && named !== "reveal") {
-    return refused("delete-mode-needed", `the kāpae over "${surfacing.title}" in ${surfacing.bag} hides a record in ${surfacing.reveals}; \`mode=reveal\` (\`mode: "reveal"\`) retracts the kāpae and lets ${surfacing.reveals}'s surface, and \`mode=kapae\` keeps it hidden (it already stands). Nothing moved.`);
+    return refused("delete-mode-needed", `the kāpae over "${surfacing.title}" in ${surfacing.bag} hides a record in ${surfacing.reveals}; \`way=reveal\` retracts the kāpae and lets ${surfacing.reveals}'s surface, and \`way=kapae\` keeps it hidden (it already stands). Nothing moved.`);
   }
   const dry = dryOf(args);
   if (dry !== null) {
@@ -2486,7 +2486,9 @@ export const TIDDLER_CALL_SEATS: Readonly<Record<string, CallSeat>> = Object.fre
       return typeof slot === "string" && slot !== "" && typeof args["title"] === "string" ? { ...args, title: `${args["title"]}${slot}` } : args;
     },
   },
-  "lar:///engine.record.removes": { verb: "tiddler-delete", dry: true, fold: (args) => dryArgs(args, "delete") },
+  // A delete's choice rides its own key, `way=kapae|reveal` (the set panel's `mode` stays the shared key, the keypad head); the
+  // reactor reads it as `mode`.
+  "lar:///engine.record.removes": { verb: "tiddler-delete", dry: true, args: { way: "mode" }, fold: (args) => dryArgs(args, "delete") },
   "lar:///engine.record.renames": { verb: "tiddler-rename", dry: true, fold: (args) => dryArgs(args, "rename") },
   // THE SIDEBAR ACT (landing 9): `wiki(verb="act")`'s one admitted action seats as a carrier and rides `call` by its address; the
   // reactor's own table names the action (`sidebar-layout`), so the call carries values alone, never action text.

@@ -59,10 +59,11 @@ describe("one door, a keypad: key=value in any order, exactly one act key", () =
     expect(read("get=Room 4", "bag=lares", "realm=r1")).toMatchObject({ kind: "call", params: { title: "Room 4", bag: "lares", realm: "r1" } });
   });
 
-  test("RED: the set panel's keys ride every line as testimony; a delete keeps its own mode", () => {
+  test("RED: the set panel's keys ride every line as testimony, a delete's included; its own choice rides way=", () => {
     expect(read("get=T", "stance=poet", "mood=wry", "note=chasing an adjacency")).toMatchObject({ kind: "call", params: { title: "T" }, set: { stance: "poet", mood: "wry", note: "chasing an adjacency" } });
     expect(read("get=T", "mode=sketch")).toMatchObject({ params: { title: "T" }, set: { mode: "sketch" } });
-    expect(read("delete=T", "mode=kapae")).toMatchObject({ params: { title: "T", mode: "kapae" }, set: {} });
+    expect(read("delete=T", "mode=sketch")).toEqual({ kind: "call", verb: "delete", params: { title: "T" }, set: { mode: "sketch" } });
+    expect(read("delete=T", "way=kapae")).toEqual({ kind: "call", verb: "delete", params: { title: "T", way: "kapae" }, set: {} });
   });
 
   test("RED: two act keys refuse, naming both lines", () => {

@@ -17,11 +17,11 @@ uri-path  = "ha.ka.ba/lares/afford/engine.record.removes"
 
 ! engine.record.removes ~ a delete by the family law, plain unless a lower layer makes it a choice
 
-A delete deletes plainly: with no `mode`, each record leaves its own layer to absent and no tombstone rises (the receipt reads `mode: "plain"` and names each title under `retracted`). `base` carries the hash last read: a record that moved past it moves nothing and answers `conflict`, naming the live hash. A title the wiki reads absent answers `absent`, and a plain delete there retracts a kāpae that hides nothing (its `.kapae` shadow leaves the disk). The address stays a candidate until the operator reads the landing's list.
+A delete deletes plainly: with no `way`, each record leaves its own layer to absent and no tombstone rises (the receipt reads `mode: "plain"` and names each title under `retracted`). `base` carries the hash last read: a record that moved past it moves nothing and answers `conflict`, naming the live hash. A title the wiki reads absent answers `absent`, and a plain delete there retracts a kāpae that hides nothing (its `.kapae` shadow leaves the disk). The address stays a candidate until the operator reads the landing's list.
 
 The family law decides what moves, read over the reader's view before anything lands. A plain tiddler leaves alone. A meme root answers the consequence the delete would land (every title it would move, what it would leave) and refuses `tiddler-delete-in-a-family` unless `family` names the family act, which lands the root and its slots as one change per layer (the answer adds `canonicalHash`). A slot's title (`<root>#/x`) leaves as the explicit cut on its parent, and the family reseals.
 
-Only a lower layer makes a delete a choice. A wiki composes layers (canon under working under personal), and one title may stand in several. Where a lower layer holds the title too, or the record rests in a layer this face cannot remove it from, a delete naming no mode refuses `delete-mode-needed` and names both meanings: `mode` kapae raises a tombstone in a writable layer that shadows every record beneath (the wiki reads the title gone, the lower layers keep theirs); `mode` reveal retracts the topmost record so the one beneath surfaces, refusing `reveal-top-unwritable` where the face cannot write that layer. Each act in `consequence.acts` names `bag` (the layer written), `holds` (every layer holding the title) and what the wiki reads afterward: `shadowed: [bags]` or `reveals: bag | null`.
+Only a lower layer makes a delete a choice. A wiki composes layers (canon under working under personal), and one title may stand in several. Where a lower layer holds the title too, or the record rests in a layer this face cannot remove it from, a delete naming no way refuses `delete-mode-needed` and names both meanings: `way=kapae` raises a tombstone in a writable layer that shadows every record beneath (the wiki reads the title gone, the lower layers keep theirs); `way=reveal` retracts the topmost record so the one beneath surfaces, refusing `reveal-top-unwritable` where the face cannot write that layer. Each act in `consequence.acts` names `bag` (the layer written), `holds` (every layer holding the title) and what the wiki reads afterward: `shadowed: [bags]` or `reveals: bag | null`.
 
 A rendered tiddler (one carrying `rendered-from`) refuses `rendered-derives`: only the renderer writes it, and it leaves when its source drops `projection: rendered`. A `$:/` title refuses too. `recipe` removes through that wiki's engine; `bag` removes from that one bag through its store, `family` taking the family there too. A delete writes the face it wears and never another (`cross-face-write-refused`).
 
@@ -34,8 +34,8 @@ A rendered tiddler (one carrying `rendered-from`) refuses `rendered-derives`: on
 ```memetic-wikitext
 <<has entity=`example` name=`a-plain-delete` params=`title/[[Old Note]] recipe/default base/<hash> ~ the record leaves; a stale base moves nothing`>>
 <<has entity=`example` name=`a-family` params=`title/lar:///ha.ka.ba/kahua/memory/x recipe/default family/true ~ a meme root and its slots, one change`>>
-<<has entity=`example` name=`reveal` params=`title/[[Room 4]] recipe/default mode/reveal ~ drop my copy; the layer beneath surfaces`>>
-<<has entity=`example` name=`kapae` params=`title/[[Room 4]] recipe/default mode/kapae ~ hide the title; the layers beneath keep theirs`>>
+<<has entity=`example` name=`reveal` params=`title/[[Room 4]] recipe/default way/reveal ~ drop my copy; the layer beneath surfaces`>>
+<<has entity=`example` name=`kapae` params=`title/[[Room 4]] recipe/default way/kapae ~ hide the title; the layers beneath keep theirs`>>
 <<has entity=`example` name=`one-bag` params=`title/[[Old Note]] bag/notes ~ that one bag's record leaves through its store`>>
 ```
 
@@ -43,7 +43,7 @@ A rendered tiddler (one carrying `rendered-from`) refuses `rendered-derives`: on
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ title · container · face · base · family · mode · mu
+!! takes ~ title · container · face · base · family · way · mu
 
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container`>>
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
@@ -59,7 +59,7 @@ A rendered tiddler (one carrying `rendered-from`) refuses `rendered-derives`: on
 <<has entity=`arg` name=`title` params=`takes/title needs/required seat/1 as/<title> ~ the record removed; a slot title <root>#/x leaves as the cut on its parent`>>
 <<has entity=`arg` name=`base` params=`takes/hash ~ the hash last read; a stale one answers conflict and nothing moves`>>
 <<has entity=`arg` name=`family` params=`~ name the family act: a meme root leaves with its slots, one change`>>
-<<has entity=`arg` name=`mode` params=`takes/kapae-or-reveal ~ over a lower layer's record: kapae hides it, reveal surfaces it; none, a plain delete`>>
+<<has entity=`arg` name=`way` params=`takes/kapae-or-reveal ~ the delete's own choice (the set panel's mode stays the shared key); over a lower layer's record: kapae hides it, reveal surfaces it; none, a plain delete`>>
 ```
 
 <<~/ahu>>
@@ -84,8 +84,8 @@ Testimony: the door checks; this slot grants nothing.
 <<has entity=`refusal` name=`wiki-unreached` params=`cure/[[engine.record.removes title/<title> recipe/default]] ~ no wiki this face hosts or holds a share of answers the slug`>>
 <<has entity=`refusal` name=`conflict` params=`cure/[[engine.record.reads title/<title> recipe/default]] ~ the record moved past the base; read again, then delete with the live base`>>
 <<has entity=`refusal` name=`tiddler-delete-in-a-family` params=`cure/[[engine.record.removes title/<title> recipe/default family/true]] ~ the title stands in a meme family; the answer quotes the consequence, and family names the act`>>
-<<has entity=`refusal` name=`delete-mode-needed` params=`cure/[[engine.record.removes title/<title> recipe/default mode/reveal]] ~ a lower layer holds the title too; kapae hides it, reveal surfaces it`>>
-<<has entity=`refusal` name=`reveal-top-unwritable` params=`cure/[[engine.record.removes title/<title> recipe/default mode/kapae]] ~ the face cannot write the layer holding the top record, so a reveal retracts nothing`>>
+<<has entity=`refusal` name=`delete-mode-needed` params=`cure/[[engine.record.removes title/<title> recipe/default way/reveal]] ~ a lower layer holds the title too; kapae hides it, reveal surfaces it`>>
+<<has entity=`refusal` name=`reveal-top-unwritable` params=`cure/[[engine.record.removes title/<title> recipe/default way/kapae]] ~ the face cannot write the layer holding the top record, so a reveal retracts nothing`>>
 <<has entity=`refusal` name=`rendered-derives` params=`~ only the renderer writes a rendered tiddler; it leaves when its source drops projection: rendered`>>
 <<has entity=`refusal` name=`cross-face-write-refused` params=`~ a delete writes the face it wears; target names a face to read`>>
 ```
@@ -152,6 +152,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qpEnKf9AJwVbC1yKvG7bLiD3qClcdm4eAcm1r2h4SEc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;H_jLO0uym3-3DyQDlolvcj2BfRQlnR_GdP0nrUiC_PQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

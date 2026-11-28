@@ -1782,9 +1782,9 @@ def build_mcp(coordinator: LaresCoordinator):
                                                         "create": create, "mu": mu, "recipe": recipe, "bag": bag}, params), "put")
 
     @mcp.tool(annotations=writes)
-    def delete(title: str, mode: "str | None" = None, family: "bool | None" = None, base: "str | None" = None,
+    def delete(title: str, way: "str | None" = None, family: "bool | None" = None, base: "str | None" = None,
                mu: "str | None" = None, recipe: "str | None" = None, bag: "str | None" = None, params: "dict | None" = None) -> dict:
-        return _door(RECORD_ADDRESSES["delete"][0], _params({"title": title, "mode": mode, "family": family, "base": base, "mu": mu,
+        return _door(RECORD_ADDRESSES["delete"][0], _params({"title": title, "way": way, "family": family, "base": base, "mu": mu,
                                                            "recipe": recipe, "bag": bag}, params), "delete")
 
     @mcp.tool(annotations=writes)

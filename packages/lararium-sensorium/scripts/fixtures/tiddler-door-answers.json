@@ -641,12 +641,12 @@
     },
     {
       "tool": "delete",
-      "cli": {"command": "delete", "positional": ["title=Room 4", "mode=reveal"], "options": {}, "flags": {}},
-      "call": {"verb": "delete", "params": {"title": "Room 4", "mode": "reveal"}},
+      "cli": {"command": "delete", "positional": ["title=Room 4", "way=reveal"], "options": {}, "flags": {}},
+      "call": {"verb": "delete", "params": {"title": "Room 4", "way": "reveal"}},
       "mcp": {
         "title": "Room 4",
         "recipe": "default",
-        "mode": "reveal"
+        "way": "reveal"
       },
       "wire": {
         "verb": "tiddler-delete",

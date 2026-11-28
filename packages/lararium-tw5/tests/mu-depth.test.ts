@@ -57,11 +57,19 @@ describe("mu takes the seed's tool-carries, always two hands", () => {
     expect(carry("?*").carry).toBe("*?");
     expect(carry("!_").carry).toBe("_!");
     expect(carry("?_").carry).toBe("_?");
-    expect(carry("0?").carry).toBe("?0");
     expect(carry("_*")).toEqual({ carry: "*_", tools: ["_", "*"], axis: "conflict" });
     expect(carry("!?")).toEqual({ carry: "?!", tools: ["!", "?"], axis: "conflict" });
     expect(canonicalCarry(["!", "*"])).toBe("*!");
     expect(canonicalCarry([])).toBe("00");
+  });
+
+  test("RED: the active hand leads: an empty hand written first (0*, 0?, 0!, 0_) refuses mu-malformed naming the seed carry", () => {
+    for (const [raw, cure] of [["0*", "wand"], ["0?", "cup"], ["0!", "sword"], ["0_", "pentacle"]] as const) {
+      expect(readMu(raw), raw).toMatchObject({ reason: "mu-malformed", cure, message: expect.stringContaining("active tool first") });
+    }
+    // CONTROL: the seed's own spellings stand.
+    expect(carry("*0").carry).toBe("*0");
+    expect(carry("00").carry).toBe("00");
   });
 
   test("RED: landing 6's words burned: each refuses mu-malformed and names the seed carry standing for it", () => {

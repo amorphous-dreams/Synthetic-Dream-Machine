@@ -1572,8 +1572,8 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(await r.composite.storeForBag(DAEMON)!.get("Solo")).toBeNull();
     const needed = await del({ ...A, title: "Dup" }, ctx());
     expect(needed).toMatchObject({ decision: "refused", refusal: "delete-mode-needed", tombstoned: [], retracted: [] });
-    expect(String(needed["why"])).toContain("mode=kapae");
-    expect(String(needed["why"])).toContain("mode=reveal");
+    expect(String(needed["why"])).toContain("way=kapae");
+    expect(String(needed["why"])).toContain("way=reveal");
     expect(String(needed["why"])).toContain(CANON);
     expect(r.engine.wiki.getTiddlerText("Dup")).toBe("my words");
     // A record that rests beneath the working layer alone (canon) leaves only by a kāpae: no mode named refuses toward it.
@@ -1581,7 +1581,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     await r.landed();
     const canonOnly = await del({ ...A, title: "Canon Only" }, ctx());
     expect(canonOnly).toMatchObject({ decision: "refused", refusal: "delete-mode-needed" });
-    expect(String(canonOnly["why"])).toContain("mode=kapae");
+    expect(String(canonOnly["why"])).toContain("way=kapae");
     expect(r.engine.wiki.tiddlerExists("Canon Only")).toBe(true);
   });
 
@@ -1649,7 +1649,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect([await working.get(MEME), await working.get(`${MEME}#/a`)]).toEqual([null, null]);
     const veiled = await del({ ...A, title: "Veiled" }, ctx());
     expect(veiled).toMatchObject({ decision: "refused", refusal: "delete-mode-needed" });
-    expect(String(veiled["why"])).toContain("mode=reveal");
+    expect(String(veiled["why"])).toContain("way=reveal");
     expect(r.engine.wiki.tiddlerExists("Veiled")).toBe(false);
     expect(await del({ ...A, title: "Veiled", mode: "reveal" }, ctx())).toMatchObject({ decision: "removed", mode: "reveal", retracted: ["Veiled"],
       consequence: { acts: [{ title: "Veiled", act: "retract", bag: DAEMON, reveals: CANON }] } });

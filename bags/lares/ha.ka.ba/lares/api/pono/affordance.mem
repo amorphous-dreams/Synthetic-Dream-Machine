@@ -150,7 +150,7 @@ Rows ride the `has` grammar and its `key/value` params; `[[…]]` brackets a val
 
 A `lares` call and a `set` firing share one param set (lar:///ha.ka.ba/lares/api/noosphere-boot #/set-and-setting), so `mu` takes the seed's own TOOL-CARRIES (#/mu-five-tools), character for character: always two hands, the active tool first and the empty hand second. Single tools: `*0` wand (fire, visual feed, ignition) · `?0` cup (water, macro zoom, relation) · `!0` sword (air, micro zoom, certainty) · `_0` pentacle (earth, hidden feed, ground: match without binding). Rest: `00`, the ground state (`arcana` reads it too). Complementary carries across the axes: `*!` detail · `*?` relation · `_!` precision · `_?` overview. Conflict carries on one axis, observable and useful: `*_` signal-jam · `?!` dubious-move; a conflict answers its first tool as written and names the second as the next call, under `mu.next` (the seed's recovery: drop one tool).
 
-A lone glyph, word or value reads pono: `?` reads `?0`, `!` `!0`, `*` `*0`, `_` `_0`, `0` reads `00`; a lone word names its tool or carry; two glyphs read their canonical carry in either order. The glyph stays canonical in sigils and the wiki, the word rides a terminal (a shell globs `*` and `?`, and history-expands `!`). Every answer echoes the full carry it read. Landing 6's words (relate · assert · many · dry · unask) burned: each refuses `mu-malformed` naming its seed carry.
+A lone glyph, word or value reads pono: `?` reads `?0`, `!` `!0`, `*` `*0`, `_` `_0`, `0` reads `00`; a lone word names its tool or carry; two tools read their canonical carry in either order, while an empty hand written first (`0*`) refuses naming the seed carry: the active hand leads. The glyph stays canonical in sigils and the wiki, the word rides a terminal (a shell globs `*` and `?`, and history-expands `!`). Every answer echoes the full carry it read. Landing 6's words (relate · assert · many · dry · unask) burned: each refuses `mu-malformed` naming its seed carry.
 
 Mu names how a call looks, never how much: the range rides `aperture` (`#/takes/aperture`). The zoom axis runs certainty (sword) against relation (cup), never size.
 
@@ -203,6 +203,6 @@ A verb that lands an act record MUST read its slot names, their order and their 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;HbdPpLQ7LE-cMZ1UPWzEW8vLf8lPgX3VsbnT0Q7EQZ0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;K3LM3937ETOyN3JPMe2imtInkA3VCizeXUyNaRdsqqc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

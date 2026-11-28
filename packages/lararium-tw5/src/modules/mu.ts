@@ -15,7 +15,8 @@
  *   *_  signal-jam   conflict on the feed axis          ?!  dubious-move   conflict on the zoom axis
  *
  * A LONE GLYPH, WORD OR VALUE READS PONO: `?` reads `?0`, `!` reads `!0`, `*` `*0`, `_` `_0`, and `0` reads `00` (Rest); a
- * lone word names its tool or its carry; two glyphs in either order read their canonical carry (`!*` reads `*!`). Every answer
+ * lone word names its tool or its carry; two tools in either order read their canonical carry (`!*` reads `*!`), while an empty
+ * hand written first (`0*`) refuses naming the seed carry (`*0`): the active hand leads. Every answer
  * echoes the full carry it read. Landing 6's words (relate · assert · many · dry · unask) burned in this head: each refuses
  * `mu-malformed` naming the seed's carry that stands for it.
  *
@@ -143,6 +144,12 @@ export function readMu(raw: unknown): MuCarry | MuFault {
     const held = glyphs.filter((g): g is MuGlyph => isGlyph(g) && g !== "0");
     const cure = glyphs.every(isGlyph) && held.length > 2 ? muWordsOf(canonicalCarry(held.slice(0, 2))) : null;
     return { reason: "mu-malformed", message: glyphs.every(isGlyph) ? `mu carries two hands at most; "${text}" names ${glyphs.join(" ")}` : `mu reads no tool-carry in "${text}"; it reads ${TABLE}`, cure };
+  }
+  // THE ACTIVE HAND LEADS (the seed's single-tool carries read `*0`, never `0*`): an empty hand written first refuses, naming the
+  // seed carry it meant.
+  if (glyphs.length === 2 && glyphs[0] === "0" && glyphs[1] !== "0") {
+    const meant = `${glyphs[1]}0`;
+    return { reason: "mu-malformed", message: `mu writes the active tool first and the empty hand second: "${text}" reads as ${meant} (${muWordsOf(meant)})`, cure: muWordsOf(meant) };
   }
   const written = (glyphs as MuGlyph[]).filter((g) => g !== "0");
   if (written.length === 2 && written[0] === written[1]) return { reason: "mu-malformed", message: `mu holds one tool per hand; "${text}" names ${written[0]} twice (it reads ${written[0]}0, ${muWordsOf(`${written[0]}0`)})`, cure: muWordsOf(`${written[0]}0`) };

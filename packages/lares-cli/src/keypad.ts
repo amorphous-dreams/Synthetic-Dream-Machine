@@ -174,8 +174,8 @@ export function readKeypad(tokens: readonly string[], doors: KeypadDoors): Keypa
     }
     for (const [k, v] of pairs) {
       if (k === act) continue;
-      // `mode` names a delete's own param (kapae or reveal); on every other call it rides the set panel.
-      if (SET_KEYS.includes(k) && !(k === "mode" && act === "delete")) { set[k] = v; continue; }
+      // The set panel's keys stay shared on every call, a delete's included: its own choice rides `way=kapae|reveal`.
+      if (SET_KEYS.includes(k)) { set[k] = v; continue; }
       params[k] = v;
     }
     return { kind: "call", verb, params, set };
