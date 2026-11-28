@@ -15,7 +15,7 @@
  *   · `from=` and `to=` ride in either order (lookaheads), the slot word rides as `slot=\`#…\``;
  *   · no pattern field keeps a `"`, an arrow, or the `[=:]` alternation;
  *   · no worked specimen in a comment keeps a quoted value or an arrow between values;
- *   · `sigil-set.tid` fires `lares=`, and `sigil-lares.tid` stands as the house's own act line. The burn
+ *   · `sigil-set.tid` fires `lares=`, and `sigil-lares.tid` stands as the house's own stage direction. The burn
  *     (no retired name keeps a tiddler) rides `seed-kupono-cut`, which reads the retired names off the
  *     canon row at grammar-watch#/the-kupono-cut; this file keeps no list of them.
  *
@@ -206,8 +206,9 @@ const CASES: Case[] = [
   { head: "moolelo", field: "lar-pattern", call: "<<~ moolelo held=`the direction`>>", groups: ["the direction"] },
   { head: "talk-story", field: "lar-pattern", call: "<<~ talk-story slot=`#floor` ground=`the surface`>>", groups: ["#floor", "the surface"] },
   { head: "status", field: "lar-pattern", call: "<<~ status text=`harvest read-only`>>", groups: ["harvest read-only"] },
-  // the house's own act line: ONE ticked verb phrase on the `lares` head
-  { head: "lares", field: "lar-pattern", call: "<<~ lares action=`refreshes the libation dish`>>", groups: ["refreshes the libation dish"] },
+  // the house's stage direction: ONE ticked verb phrase on the `lares` head, and the operator's on its own head
+  { head: "lares", field: "lar-pattern", call: "<<~ lares emote=`refreshes the libation dish`>>", groups: ["refreshes the libation dish"] },
+  { head: "operator", field: "lar-pattern", call: "<<~ operator emote=`sets down the cup`>>", groups: ["sets down the cup"] },
 ];
 
 describe("the capture groups the builder indexes stay put", () => {
@@ -314,15 +315,15 @@ describe("the Cut 4 frame sigils", () => {
     expect(firstLine(t.fields["lar-example"]!)).toMatch(/^<<~ set lares=`(aim|steer|yield)`/);
   });
 
-  test("★ sigil-lares.tid stands as the act line: the action key alone, and no firing ★", () => {
+  test("★ sigil-lares.tid stands as the stage direction: the emote key alone, and no firing ★", () => {
     const t = byHead.get("lares")!;
     expect(t, "sigil-lares.tid stands").toBeTruthy();
     expect(t.fields["lar-pono-uri"]).toBe("lar:///ha.ka.ba/lares/api/noosphere-boot#/spirit-swarm");
-    expect(t.text).toMatch(/^\\procedure ~lares\(action[:)]/m);
-    expect(firstLine(t.fields["lar-example"]!)).toMatch(/^<<~ lares action=`/);
-    // The old frame rode this head with a firing; a firing rides `set` alone, so the act pattern reads none.
+    expect(t.text).toMatch(/^\\procedure ~lares\(emote[:)]/m);
+    expect(firstLine(t.fields["lar-example"]!)).toMatch(/^<<~ lares emote=`/);
+    // The old frame rode this head with a firing; a firing rides `set` alone, so the pattern reads none, and the retired `action=` key reads none.
     const act = new RegExp(t.fields["lar-pattern"]!);
-    for (const old of ["<<~ lares aim from=`a`>>", "<<~ lares fires=`aim`>>", "<<~ lares action=`a` fires=`yield`>>", "<<~ lares>>"])
+    for (const old of ["<<~ lares aim from=`a`>>", "<<~ lares fires=`aim`>>", "<<~ lares emote=`a` fires=`yield`>>", "<<~ lares action=`a`>>", "<<~ lares>>"])
       expect(act.test(old), old).toBe(false);
   });
 

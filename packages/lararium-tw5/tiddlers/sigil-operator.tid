@@ -1,0 +1,15 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-operator
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: frame
+lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot#/working-agreement
+lar-pattern: <<~\s*operator\s+emote=`([^`]*)`\s*>>
+lar-example: <<~ operator emote=`sets down the cup, reads the course aloud`>>
+type: text/vnd.tiddlywiki
+
+<!-- operator — the operator's own stage direction. `emote=` rides as ONE ticked value, the fiction-action,
+     and renders as prose beside the operator's words: it presses nothing and calls no door (operator ruling
+     2026-11-27, the slot `<<~ lares emote=…>>` gives the house). -->
+
+\procedure ~operator(emote:"")
+<span class="lar-operator"><$text text=<<emote>>/></span>
+\end

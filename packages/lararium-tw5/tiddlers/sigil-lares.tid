@@ -2,15 +2,16 @@ title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-lares
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: frame
 lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot#/spirit-swarm
-lar-pattern: <<~\s*lares\s+action=`([^`]*)`\s*>>
-lar-example: <<~ lares action=`refreshes the libation dish, the shrine incense burns`>>
+lar-pattern: <<~\s*lares\s+emote=`([^`]*)`\s*>>
+lar-example: <<~ lares emote=`refreshes the libation dish, the shrine incense burns`>>
 type: text/vnd.tiddlywiki
 
-<!-- lares — the house's own act line, a verb phrase. The spirit libation opens a tasked spirit's brief
-     with one: `<<~ lares action=`refreshes the libation dish, the shrine incense burns`>> ${pet-name}
-     (Lares Spirit) …`. The action rides as ONE ticked value and reads as the verb the house performs.
-     The head carries the act alone: a firing (aim, steer, yield) rides `set`, never this sigil. -->
+<!-- lares — the house's stage direction, a verb phrase. The spirit libation opens a tasked spirit's brief
+     with one: `<<~ lares emote=`refreshes the libation dish, the shrine incense burns`>> ${pet-name}
+     (Lares Spirit) …`. `emote=` rides as ONE ticked value, the fiction-action, and renders as prose: it
+     presses nothing and calls no door (operator ruling 2026-11-27; `act=` carries the code path, and
+     `action=` retires). A firing (aim, steer, yield) rides `set`, never this sigil. -->
 
-\procedure ~lares(action:"")
-<span class="lar-lares"><$text text=<<action>>/></span>
+\procedure ~lares(emote:"")
+<span class="lar-lares"><$text text=<<emote>>/></span>
 \end
