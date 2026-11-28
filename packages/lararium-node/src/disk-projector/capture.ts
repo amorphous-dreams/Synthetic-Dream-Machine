@@ -74,7 +74,7 @@ export async function captureMoved(core: ProjectorCore, moved: MovedFile): Promi
  * itself: a pending removal entered, a congruent agreement pinned (or already standing), or a moved file handed to capture.
  */
 export async function projectingLeg(core: ProjectorCore, leg: LegCarrier): Promise<boolean> {
-  const { mirror, bagId, tiddlerUri, file, candidate, metaPath, isBinary, bodyPending, gateRecords, obsHash } = leg;
+  const { bagId, tiddlerUri, file, candidate, metaPath, isBinary, bodyPending, gateRecords, obsHash } = leg;
   const onDisk  = bodyPending ? null : diskCarrierText(candidate, metaPath, isBinary);
   // A SIDECAR STANDING WITH NO BODY BESIDE IT names a disk state of its own (the empty body and the sidecar's bytes)
   // under a pending pointer, and where the base itself names such a state, or none stands.

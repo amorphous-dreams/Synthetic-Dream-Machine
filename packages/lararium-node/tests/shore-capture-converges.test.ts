@@ -2,7 +2,7 @@
  * shore-capture-converges — the incident of 2026-11-28, read as a red test: an island whose ordinary mirror holds a
  * carrier both sides moved, beside the wiki's draft and temp slots, drains its projection queue and rests.
  *
- * The cut it proves: the projector holds no standoff machine and no recovery-class pass. Before each write it reads the
+ * The cut it proves: the projector holds no held-carrier machine and no recovery-class pass. Before each write it reads the
  * file against the base at its path; a file a hand moved goes to the capture door (`disk-capture.ts`), whose words land
  * in the records where only the disk moved and stand as a parallel draft where both moved. The base moves to the
  * captured bytes, the next reading renders what the records say, and the draft layer projects the draft as a file of its
