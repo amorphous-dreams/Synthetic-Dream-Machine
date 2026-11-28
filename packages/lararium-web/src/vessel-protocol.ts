@@ -39,13 +39,13 @@
  * The hello names the face the tab selected (`face`, a PersonaGroup); the session wears it and admits by THAT face's own
  * unlock, and `status{face}` hands the admitted face back for the tab to keep as its selection.
  *
- * THE PROTOCOL NAMES ITSELF BY ITS CONTENT, NEVER BY A COUNT. A deploy can leave one tab on an older build beside a tab on a
- * newer one, and a follower tab's port reaches the owner tab's vessel worker. So the hello carries `protocol` and the greeting
+ * THE PROTOCOL NAMES ITSELF BY ITS CONTENT, NEVER BY A COUNT. Two tabs can run different builds after a deploy, and a
+ * follower tab's port reaches the owner tab's vessel worker. So the hello carries `protocol` and the greeting
  * answers with its own: the SHA-256 of the declared message table (`VESSEL_PROTOCOL_TABLE`), every tag with every field it
  * carries. Two builds whose tables hash alike speak; two that differ refuse `protocol-skew` on whichever side reads the other's
  * name first, and the refusal names a cure a person can act on in the moment (reload or close the other tabs, so every tab
  * runs one build). Tabs that carry different lands of this table refuse each other BY DESIGN: each land that adds or removes
- * a field moves the hash. A hash orders nothing, so neither side claims the newer build; no clock and no
+ * a field moves the hash. A hash orders nothing, so neither side ranks its build above the other's; no clock and no
  * counter enters. `VESSEL_PROTOCOL` pins that hash in source, so a moved table shows in the diff, and
  * `tests/vessel-protocol-version.test.ts` holds the pin to the table.
  *
