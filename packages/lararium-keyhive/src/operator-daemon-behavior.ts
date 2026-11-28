@@ -636,7 +636,14 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // the write on the bag it names; the holder's door then lands it in the holder's own layer, the proof left out.
         const paid = SHORE_VOTUM_VERBS.has(verb)
           ? await admitShoreVotum(face.group, verb, args as Record<string, unknown>, at.agent,
-            (vowerKey, bag) => verifier.verify({ presenter: vowerKey, bagUrl: bag, access: "admin", channel: "local" }))
+            (vowerKey, bag) => verifier.verify({ presenter: vowerKey, bagUrl: bag, access: "admin", channel: "local" }),
+            // THIS PLANE'S FACE MUST HOLD THE BAG: the mounted face's own writable layers, or a lit sibling's own lane by the lit set's owner.
+            async (bag) => {
+              if (face.group === daemonAuth.personaGroupId) return ctx.composite.writableStoreForBag(bag) !== null;
+              if (face.acting === null) return false;
+              const lane = await litFaceTargetOf(ctx)(face.acting, bag).catch(() => null);
+              return lane !== null && lane.owner === face.acting;
+            })
           : args as Record<string, unknown>;
         const invocation: Verb = {
           requestId: at.intentId, title: `lar:///lararium.local.vm/verbs/intent-${at.intentId}`,

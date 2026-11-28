@@ -24,16 +24,19 @@ export const SHORE_VOTUM_VERBS: ReadonlySet<string> = new Set(["tiddler-put", "t
 /** The vower's proof riding a votum's arguments (`vower`): its face, the atom key that signed, the signature. */
 export interface ShoreVowerProof { readonly face: string | null; readonly key: string; readonly sig: string }
 
-/** The bytes a vower signs: the domain, the holder, the verb and every argument but the proof itself. */
-export function shoreVotumBytes(holder: string, verb: string, args: Readonly<Record<string, unknown>>): Uint8Array {
+/**
+ * The bytes a vower signs: the domain, the holder, the verb, every argument but the proof itself, and the vower's own face and
+ * key, so the face a proof names rides signed with the key (two vota differing only in the face named carry two signatures).
+ */
+export function shoreVotumBytes(holder: string, verb: string, args: Readonly<Record<string, unknown>>, vower: { readonly face: string | null; readonly key: string }): Uint8Array {
   const { vower: _proof, ...rest } = args;
-  return canonicalJsonBytes({ domain: SHORE_VOTUM_DOMAIN, holder, verb, args: rest });
+  return canonicalJsonBytes({ domain: SHORE_VOTUM_DOMAIN, holder, verb, args: rest, vower: { face: vower.face, key: vower.key.toLowerCase() } });
 }
 
 /** The arguments a votum carries, the vower's proof joined: the vower's atom signs the holder, the verb and the arguments. */
 export async function vowShoreVotum(signer: IntentSigner, face: string | null, holder: string, verb: string, args: Readonly<Record<string, unknown>>): Promise<Record<string, unknown>> {
   const { vower: _stale, ...rest } = args;
-  const sig = await signer.sign(shoreVotumBytes(holder, verb, rest));
+  const sig = await signer.sign(shoreVotumBytes(holder, verb, rest, { face, key: signer.key }));
   return { ...rest, vower: { face, key: signer.key.toLowerCase(), sig } satisfies ShoreVowerProof };
 }
 
@@ -49,7 +52,8 @@ export function readShoreVotum(holder: string, verb: string, args: Readonly<Reco
   const proof = args["vower"] as Partial<ShoreVowerProof> | undefined;
   if (!proof || typeof proof !== "object" || typeof proof.key !== "string" || typeof proof.sig !== "string") return { ok: false, refusal: "votum-vower-missing" };
   let verified = false;
-  try { verified = verifyEd25519(proof.sig, shoreVotumBytes(holder, verb, args), proof.key); } catch { verified = false; }
+  const face = typeof proof.face === "string" ? proof.face : null;
+  try { verified = verifyEd25519(proof.sig, shoreVotumBytes(holder, verb, args, { face, key: proof.key }), proof.key); } catch { verified = false; }
   if (!verified) return { ok: false, refusal: "votum-vower-forged" };
   const { vower: _proof, ...rest } = args;
   return { ok: true, vower: { face: typeof proof.face === "string" ? proof.face : null, key: proof.key, sig: proof.sig }, args: rest };

@@ -306,6 +306,8 @@ interface ActRemoval {
   readonly source: boolean;
   /** A draft that never reached the store: its recovery copy leaves first, and the removal waits behind the target after it. */
   recovery?: LarTiddlerRecord;
+  /** The face and act the removal's receipt names, bound when the act took the title (never re-read by title at the flush). */
+  readonly tag?: { readonly face: string | null; readonly act: string } | undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -1139,11 +1141,15 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       // A draft with no bag to land in already stands refused on the alert rail; the next draft still gets its turn.
       try { bag = this._draftDestination(draft); } catch (err) { if (err instanceof UnroutedSaveRefusal) { unheld.push(draft); continue; } throw err; }
       if (bag === null || bag === change.bag) { unheld.push(draft); continue; }
+      const of = String(draft.tiddler["draft.of"] ?? "");
+      const draftFace = this._receiptFace(of);
+      const draftAct = this.handActs.get(of) ?? PARALLEL_DRAFT_ACT;
       try {
+        // CUSTODY HOLDS FOR A SURFACED DRAFT TOO: a draft bag another face holds takes it as a votum there, never as the worn face.
+        if (this.caps.custody && await this._rodeAsVotum(draft.tiddler.title, bag, fieldStringsOf(draft.tiddler as never), draftFace, draftAct)) continue;
         await this.store.writeFamily([draft], [], origin, { bag });
         // A PARALLEL DRAFT THE SHORE PERSISTS STAMPS ITS RECEIPT: the hand it keeps, under the act that hand crossed with.
-        const of = String(draft.tiddler["draft.of"] ?? "");
-        this._stamp({ kind: "save", title: draft.tiddler.title, face: this._receiptFace(of), before: null, after: shoreRecordHash(fieldStringsOf(draft.tiddler as never)), bag, act: this.handActs.get(of) ?? PARALLEL_DRAFT_ACT });
+        this._stamp({ kind: "save", title: draft.tiddler.title, face: draftFace, before: null, after: shoreRecordHash(fieldStringsOf(draft.tiddler as never)), bag, act: draftAct });
       } catch (err: unknown) { this._surfaceUnkeptDraft(draft, bag, err); }
     }
     return unheld;
@@ -1592,6 +1598,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     let targetGeneration = 0;
     const draftBase = entry.baseBag ? { bag: entry.baseBag, heads: entry.baseHeads } : undefined;
     const behind = (title: string): number => targetGeneration > 0 ? this.drain.markAfter(title, target, targetGeneration) : this.drain.mark(title);
+    // THE ACT'S ATTRIBUTION BINDS TO ITS REMOVALS HERE, as a save's binds to its value: a later hand of the title supersedes the
+    // removal and leaves as its own write, so the receipt of what the act removes names the act alone.
+    const tag = { face: this._receiptFace(target), act: this.handActs.get(target) ?? this.handActs.get(draftTitle) ?? HAND_ACT };
     try {
       // A title that never persists (the volatile plane, the alert rail) takes no store call as a member.
       if (saves && !neverPersists(target)) {
@@ -1612,7 +1621,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
         if (landedBag) {
           const bag = this._tombstoneBag(entry.of, landedBag);
           const base = bag === entry.baseBag ? entry.baseHeads : standing?.bag === bag ? standing.heads : undefined;
-          this.actRemovals.set(entry.of, { bag, base: base && base.length > 0 ? base : undefined, target, targetGeneration, before: standing?.tiddler ?? null, source: true });
+          this.actRemovals.set(entry.of, { bag, base: base && base.length > 0 ? base : undefined, target, targetGeneration, before: standing?.tiddler ?? null, source: true, tag });
           behind(entry.of);
         }
       }
@@ -1620,13 +1629,13 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       const snapshot = this.draftSnapshots.get(draftTitle);
       if (this._reachedStore(draftTitle) && bag) {
         const draftBag = this._tombstoneBag(draftTitle, bag);
-        this.actRemovals.set(draftTitle, { bag: draftBag, base: this._handBaseFor(draftTitle, draftBag), target, targetGeneration, before: null, source: false });
+        this.actRemovals.set(draftTitle, { bag: draftBag, base: this._handBaseFor(draftTitle, draftBag), target, targetGeneration, before: null, source: false, tag });
         behind(draftTitle);
       } else if (!this._reachedStore(draftTitle) && snapshot && bag && targetGeneration > 0) {
         // The draft never reached the store before the save dispatch: its recovery copy leaves first, its removal behind the target after.
         const { "$origin-bag": _originBag, ...persisted } = snapshot;
         const recovery = toLarTiddlerRecord({ ...withoutDraftBase(persisted), ...draftBaseFields(entry), title: draftTitle });
-        this.actRemovals.set(draftTitle, { bag, base: this._handBaseFor(draftTitle, bag), target, targetGeneration, before: null, source: false, recovery });
+        this.actRemovals.set(draftTitle, { bag, base: this._handBaseFor(draftTitle, bag), target, targetGeneration, before: null, source: false, recovery, tag });
         this.drain.mark(draftTitle);
       } else {
         // Nothing of the draft stands in the store: the act supersedes whatever it still owed.
@@ -1668,14 +1677,24 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   private async _flushRemoval(title: string, removal: ActRemoval): Promise<void> {
     const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId, ...this._handFace(title) };
     const ackBefore = this.writeAcks.get(title) ?? 0;
+    // The act's own attribution, bound when it took the title; a removal no act registered reads the title's.
+    const removalFace = removal.tag ? removal.tag.face : this._receiptFace(title);
+    const removalAct = removal.tag?.act ?? this.handActs.get(title) ?? HAND_ACT;
     if (removal.recovery) {
+      // CUSTODY HOLDS FOR THE RECOVERY COPY: a draft's copy into a layer another face holds rides as a votum there.
+      if (this.caps.custody && await this._rodeAsVotum(title, removal.bag, fieldStringsOf(removal.recovery.tiddler as never), removalFace, removalAct)) {
+        delete removal.recovery;
+        this.lastFlushWrote.set(title, false);
+        this.drain.markAfter(title, removal.target, removal.targetGeneration);
+        return;
+      }
       try { await this._issueGroup(removal.bag, this._handBaseFor(title, removal.bag), [removal.recovery], [], origin); }
       catch (error) {
         this.failedAtTeardown.set(title, error);
         this._raiseUnsaved(title, removal.bag, error);
         throw error;
       }
-      this._stamp({ kind: "save", title, face: this._receiptFace(title), before: this._landedHash(title), after: shoreRecordHash(fieldStringsOf(removal.recovery.tiddler as never)), bag: removal.bag, act: this.handActs.get(title) ?? HAND_ACT });
+      this._stamp({ kind: "save", title, face: removalFace, before: this._landedHash(title), after: shoreRecordHash(fieldStringsOf(removal.recovery.tiddler as never)), bag: removal.bag, act: removalAct });
       delete removal.recovery;
       this.lastWriteBag.set(title, removal.bag);
       if ((this.writeAcks.get(title) ?? 0) > ackBefore) this.unlanded.add(title);
@@ -1684,7 +1703,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       return;
     }
     // CUSTODY HOLDS FOR AN ACT'S REMOVAL TOO: a rename's source tombstone in a layer another face holds rides as a votum there.
-    if (this.caps.custody && await this._rodeAsVotum(title, removal.bag, null, this._receiptFace(title), this.handActs.get(title) ?? HAND_ACT)) {
+    if (this.caps.custody && await this._rodeAsVotum(title, removal.bag, null, removalFace, removalAct)) {
       if (this.actRemovals.get(title) === removal) this.actRemovals.delete(title);
       this.lastFlushWrote.set(title, false);
       this.failedAtTeardown.delete(title);
@@ -1692,8 +1711,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       return;
     }
     const removalBefore = this._landedHash(title);
-    const removalFace = this._receiptFace(title);
-    const removalAct = this.handActs.get(title) ?? HAND_ACT;
     this.sent.set(title, null);
     try { await this._issueGroup(removal.bag, removal.base, [], [title], origin); }
     catch (error) {

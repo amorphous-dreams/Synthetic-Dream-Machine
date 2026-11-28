@@ -8,9 +8,10 @@
  */
 import { describe, expect, test } from "vitest";
 import type { CompositeStore } from "@lararium/mesh/composite-store";
-import { afterDispatch, plainDoc, shoreRig, turns, workingBag, type Rig } from "./wiki-shore-rig.js";
+import { afterDispatch, draftBag, plainDoc, shoreRig, turns, workingBag, type Rig } from "./wiki-shore-rig.js";
+import { toLarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { wikiSkip, skipNote } from "./test-wiki.js";
-import { HAND_ACT, shoreRecordHash, type ShoreVotum } from "../src/island-adaptor.js";
+import { HAND_ACT, PARALLEL_DRAFT_ACT, shoreRecordHash, type ShoreVotum } from "../src/island-adaptor.js";
 import { makeCarrierActReactor, makeTiddlerPutReactor, type TiddlerVerbOptions } from "../src/tiddler-verbs.js";
 import { seatShore } from "../src/island-recipe.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -103,6 +104,28 @@ describe.skipIf(wikiSkip)(`the receipt at the shore${skipNote}`, () => {
     } finally { await r.stop(); }
   }, 120_000);
 
+  test("RED: a surfaced parallel draft bound for a draft bag another face holds rides as a votum there, nothing persisted as the worn face; CONTROL: with no holder it persists with a receipt", async () => {
+    for (const held of [true, false]) {
+      const r = await shoreRig();
+      try {
+        r.adaptor.wornFace = FACE;
+        const vota: ShoreVotum[] = [];
+        r.adaptor.caps = { ...r.adaptor.caps, custody: { holderOf: (bag) => (held && bag === draftBag ? "face-b" : null), vow: async (votum) => { vota.push(votum); return "votum-draft"; } } };
+        const title = "Draft of 'Conflicted' by peer";
+        const draft = toLarTiddlerRecord({ title, "draft.of": "Conflicted", "draft.title": "Conflicted", text: "theirs", "lar-conflict-fields": "text", "lar-conflict-live": "" });
+        await r.adaptor.onParallelDrafts({ title: "Conflicted", bag: workingBag, drafts: [draft] });
+        if (held) {
+          expect(plainDoc(r.draftHandle.doc()).tiddlers[title], "nothing persisted as the worn face").toBeUndefined();
+          expect(vota).toEqual([expect.objectContaining({ holder: "face-b", verb: "tiddler-put", args: expect.objectContaining({ bag: draftBag, title }) })]);
+          expect(receiptsOf(r, title)).toEqual([expect.objectContaining({ kind: "votum", votum: { id: "votum-draft", holder: "face-b" } })]);
+        } else {
+          expect(plainDoc(r.draftHandle.doc()).tiddlers[title]?.tiddler["text"]).toBe("theirs");
+          expect(receiptsOf(r, title)).toEqual([expect.objectContaining({ kind: "save", bag: draftBag, act: PARALLEL_DRAFT_ACT })]);
+        }
+      } finally { await r.stop(); }
+    }
+  }, 120_000);
+
   test("RED: a write into a layer another face holds saves nothing as the worn face and rides as a votum to the holder; CONTROL: with no holder named, the same write saves", async () => {
     const r = await shoreRig();
     try {
@@ -164,7 +187,7 @@ describe.skipIf(wikiSkip)(`a carrier's own act runs live${skipNote}`, () => {
   test("RED: a dry act lands nothing: it lists the write it would make and runs no message; CONTROL: the wiki and the store stay as they stood", async () => {
     const r = await shoreRig();
     try {
-      r.wiki.addTiddler(new r.Tiddler({ title: ACT, text: "<$action-setfield $tiddler=<<target>> status=\"done\"/><$action-sendmessage $message=\"tm-rename-tiddler\" from=<<target>> to=\"Elsewhere\"/>" }));
+      r.wiki.addTiddler(new r.Tiddler({ title: ACT, text: "<$action-setfield $tiddler=<<target>> status=\"done\"/><$action-sendmessage $message=\"tm-notify\" $param=\"Elsewhere\"/>" }));
       await settle(r);
       const before = r.adaptor.receipts().length;
       const calls = r.calls.length;
@@ -172,7 +195,7 @@ describe.skipIf(wikiSkip)(`a carrier's own act runs live${skipNote}`, () => {
       const opts: TiddlerVerbOptions = { composite: r.composite, tw5: r.engine };
       const out = await makeCarrierActReactor(opts)({ act: ACT, params: { target: "Dry note" }, dry: "summary" }, ctx());
       expect(out).toMatchObject({ decision: "dry", writes: [{ title: "Dry note", fields: expect.objectContaining({ status: "done" }) }],
-        messages: [expect.objectContaining({ type: "tm-rename-tiddler", to: "Elsewhere" })] });
+        messages: [expect.objectContaining({ type: "tm-notify" })] });
       await settle(r);
       expect(r.wiki.getTiddler("Dry note")).toBeUndefined();
       expect(r.wiki.getTiddler("Elsewhere")).toBeUndefined();

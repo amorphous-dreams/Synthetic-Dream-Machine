@@ -444,7 +444,7 @@ export type VowerGrant = (vowerKey: string, bag: string) => Promise<{ readonly o
  * must hold the write on the bag the votum names. Answers the arguments the door verb takes (the proof left out), or throws
  * the refusal by name; nothing pays.
  */
-export async function admitShoreVotum(holder: string, verb: string, args: Readonly<Record<string, unknown>>, agent: unknown, grant: VowerGrant): Promise<Record<string, unknown>> {
+export async function admitShoreVotum(holder: string, verb: string, args: Readonly<Record<string, unknown>>, agent: unknown, grant: VowerGrant, holds: (bag: string) => boolean | Promise<boolean>): Promise<Record<string, unknown>> {
   const read = readShoreVotum(holder, verb, args, agent);
   if (!read.ok) {
     const why = read.refusal === "votum-agent-relayed" ? "an agent's relayed intent carries no face's vow; the agent acts as itself under its own delegation"
@@ -454,6 +454,9 @@ export async function admitShoreVotum(holder: string, verb: string, args: Readon
   }
   const bag = typeof read.args["bag"] === "string" ? read.args["bag"] : "";
   if (bag === "") throw new VerbRefusal("votum-bag-unnamed", `votum-bag-unnamed: ${verb} names no bag, so the vower's grant cannot be read; nothing paid. \`lares intent show\` reads the plane.`);
+  // THE HOLDER'S ACTOR DECIDES ITS OWN LAYER ALONE: a plane pays a door write only into a bag its own face holds. A write naming a
+  // bag another face holds rides the shore's votum route to THAT face's plane, never through this one.
+  if (!(await holds(bag))) throw new VerbRefusal("votum-bag-unheld", `votum-bag-unheld: ${verb} names ${bag}, a bag face ${holder.slice(0, 12)}… does not hold, so its plane pays nothing; a write into another face's layer rides the island shore's votum route to the face that holds it (write it through the wiki, \`lares put title=<title> recipe=<slug>\`).`);
   const proof = await grant(read.vower.key, bag);
   if (!proof.ok) throw new VerbRefusal("votum-vower-ungranted", `votum-vower-ungranted: the vower ${read.vower.key.slice(0, 12)}… holds no write on ${bag} (${proof.reason ?? "no grant"}), so the holder pays nothing it asked; \`lares trust list\` names the grants.`);
   return read.args;

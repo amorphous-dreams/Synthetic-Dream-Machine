@@ -763,7 +763,7 @@ describe("a write into another face's layer rides as a votum (comms-ux-enacts la
     const asked: string[] = [];
     const door = makeFaceIntentDoor({ group: f.group, plane: holder.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs: faceIntentVerbs(), log: () => {},
       atom: f.h1, standing: () => "stands",
-      runDeclaredEffect: async (verb, args, at) => paid(await admitShoreVotum(f.group, verb, args as Record<string, unknown>, at.agent, async (key, bag) => { asked.push(`${key}@${bag}`); return { ok: true }; })) });
+      runDeclaredEffect: async (verb, args, at) => paid(await admitShoreVotum(f.group, verb, args as Record<string, unknown>, at.agent, async (key, bag) => { asked.push(`${key}@${bag}`); return { ok: true }; }, (bag) => bag === BAG)) });
     const vow = faceShoreVow({ seatOf: (group) => (group === f.group ? { group: f.group, plane: holder.handle, atom: f.h1 } : null),
       vowerOf: (vower) => (vower === "face-b" ? vowerAtom : null), verbs: faceIntentVerbs() });
     const id = await vow(votumOf("face-b"));
@@ -784,13 +784,39 @@ describe("a write into another face's layer rides as a votum (comms-ux-enacts la
     await faceShoreVow({ seatOf: () => ({ group: "face-a", plane: shared.handle, atom: vowerAtom }), vowerOf: () => vowerAtom, verbs: faceIntentVerbs() })(votumOf("face-b"));
     const carried = (intentEntryRecordsOfGroup(shared.doc, "face-a")[0] as { body: { args: Record<string, unknown> } }).body.args;
     const granted = async () => ({ ok: true });
-    expect(await admitShoreVotum("face-a", "tiddler-put", carried, null, granted)).toMatchObject({ title: "Shared note", bag: BAG });
-    await expect(admitShoreVotum("face-a", "tiddler-put", carried, null, async () => ({ ok: false, reason: "no-grant" }))).rejects.toMatchObject({ reason: "votum-vower-ungranted" });
-    await expect(admitShoreVotum("face-a", "tiddler-put", { ...carried, title: "Another note" }, null, granted)).rejects.toMatchObject({ reason: "votum-vower-forged" });
-    await expect(admitShoreVotum("face-b", "tiddler-put", carried, null, granted), "a proof over another holder").rejects.toMatchObject({ reason: "votum-vower-forged" });
+    const held = (bag: string): boolean => bag === BAG;
+    expect(await admitShoreVotum("face-a", "tiddler-put", carried, null, granted, held)).toMatchObject({ title: "Shared note", bag: BAG });
+    await expect(admitShoreVotum("face-a", "tiddler-put", carried, null, async () => ({ ok: false, reason: "no-grant" }), held)).rejects.toMatchObject({ reason: "votum-vower-ungranted" });
+    await expect(admitShoreVotum("face-a", "tiddler-put", { ...carried, title: "Another note" }, null, granted, held)).rejects.toMatchObject({ reason: "votum-vower-forged" });
+    await expect(admitShoreVotum("face-b", "tiddler-put", carried, null, granted, held), "a proof over another holder").rejects.toMatchObject({ reason: "votum-vower-forged" });
     const { vower: _proof, ...bare } = carried;
-    await expect(admitShoreVotum("face-a", "tiddler-put", bare, null, granted)).rejects.toMatchObject({ reason: "votum-vower-missing" });
-    await expect(admitShoreVotum("face-a", "tiddler-put", carried, { key: "agent", delegation: "d" }, granted)).rejects.toMatchObject({ reason: "votum-agent-relayed" });
+    await expect(admitShoreVotum("face-a", "tiddler-put", bare, null, granted, held)).rejects.toMatchObject({ reason: "votum-vower-missing" });
+    await expect(admitShoreVotum("face-a", "tiddler-put", carried, { key: "agent", delegation: "d" }, granted, held)).rejects.toMatchObject({ reason: "votum-agent-relayed" });
+    // THE FACE A PROOF NAMES RIDES SIGNED: the same proof under another face's name reads forged.
+    const proof = carried["vower"] as Record<string, unknown>;
+    await expect(admitShoreVotum("face-a", "tiddler-put", { ...carried, vower: { ...proof, face: "face-c" } }, null, granted, held)).rejects.toMatchObject({ reason: "votum-vower-forged" });
+  });
+
+  test("RED: a face's own plane carrying a proof-bearing put that names a bag another face holds pays nothing (votum-bag-unheld, the shore's route named); CONTROL: the same put naming its own bag pays", async () => {
+    const f = await faceOf(), own = plane(), atom = await signer(44);
+    const paid = vi.fn(async (_args: Record<string, unknown>) => ({ decision: "put" }));
+    const OTHERS = "lar:///ha.ka.ba/wikis/someone-else/working";
+    const door = makeFaceIntentDoor({ group: f.group, plane: own.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs: faceIntentVerbs(), log: () => {},
+      atom: f.h1, standing: () => "stands",
+      runDeclaredEffect: async (verb, args, at) => paid(await admitShoreVotum(f.group, verb, args as Record<string, unknown>, at.agent, async () => ({ ok: true }), (bag) => bag === BAG)) });
+    const issue = faceShoreVow({ seatOf: () => ({ group: f.group, plane: own.handle, atom: f.h1 }), vowerOf: () => atom, verbs: faceIntentVerbs() });
+    await issue({ ...votumOf("face-a"), args: { ...votumOf("face-a").args, bag: OTHERS } });
+    await door.heed();
+    expect(paid, "the plane's face holds no such bag, so its actor pays nothing").not.toHaveBeenCalled();
+    await expect(admitShoreVotum(f.group, "tiddler-put", (intentEntryRecordsOfGroup(own.doc, f.group)[0] as { body: { args: Record<string, unknown> } }).body.args, null, async () => ({ ok: true }), (bag) => bag === BAG))
+      .rejects.toThrow(/votum-bag-unheld: .*votum route/);
+    const clean = plane();
+    const control = makeFaceIntentDoor({ group: f.group, plane: clean.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs: faceIntentVerbs(), log: () => {},
+      atom: f.h1, standing: () => "stands",
+      runDeclaredEffect: async (verb, args, at) => paid(await admitShoreVotum(f.group, verb, args as Record<string, unknown>, at.agent, async () => ({ ok: true }), (bag) => bag === BAG)) });
+    await faceShoreVow({ seatOf: () => ({ group: f.group, plane: clean.handle, atom: f.h1 }), vowerOf: () => atom, verbs: faceIntentVerbs() })(votumOf("face-a"));
+    await control.heed();
+    expect(paid).toHaveBeenCalledTimes(1);
   });
 
   test("RED: a holder or a vower no seat of this vessel reaches refuses by name with a cure and lands nothing", async () => {

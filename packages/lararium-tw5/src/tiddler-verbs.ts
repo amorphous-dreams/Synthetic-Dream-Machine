@@ -1919,7 +1919,8 @@ export const RENDERING_MESSAGES: ReadonlySet<string> = new Set(["tm-download-fil
  * it, and custody holds face against face at the shore (a write into another face's layer rides as a votum there).
  *
  * MESSAGES FLOW THROUGH THEIR DOORS. A writing message (`tm-rename-tiddler`, `tm-relink-tiddler`) runs through the rename door,
- * in the order the act sent it, once the action string returns. A hand's prompt (`HAND_MESSAGES`) meets the hand gate's reading
+ * in the order the act sent it, once the action string returns; each walks that door dry in the capture pass first, so a rename
+ * the door refuses refuses the act before anything lands (`act-message-refused`). A hand's prompt (`HAND_MESSAGES`) meets the hand gate's reading
  * of the asker (a seat refuses `hand-act-only`, an unread line `hand-unattested`). A host's render (`RENDERING_MESSAGES`) passes
  * only where the template renders the same through the face's reader view as through the whole wiki (else `act-message-withheld`).
  * A verb tiddler an act would mint stays home at the title guard. Every other message passes untouched.
@@ -1980,6 +1981,20 @@ export const makeCarrierActReactor = everyWiki(CARRIER_ACT_VERB, true, (opts: Ti
   preview.invokeActionString(actions, preview, undefined, variables);
   const writes = [...captured].map(([title, t]) => ({ title, fields: t === null ? null : readRecord(t).fields }));
   for (const { title, fields } of writes) guard(title, fields);
+  // EVERY RENAME THE ACT WOULD SEND WALKS THE RENAME DOOR DRY FIRST: a rename the door refuses refuses the act, so no earlier
+  // write or rename lands before a later one refuses. Each walks the wiki as it stands (a rename that leans on an earlier one in
+  // the same act reads absent here and refuses: send the second from a later act).
+  const rename = makeTiddlerRenameReactor(opts);
+  for (const message of sent) {
+    if (!WRITING_MESSAGES.has(message.type)) continue;
+    if (message.from === undefined || message.to === undefined) {
+      throw new CallRefusal("message-malformed", `the act ${act} sends ${message.type} without both a from and a to; nothing landed`, cureCall("get", { title: act }));
+    }
+    const walked = await rename({ recipe: anchor.recipe, title: message.from, to: message.to, dry: "summary" }, actCtx);
+    if (walked["decision"] !== "renamed") {
+      throw new CallRefusal("act-message-refused", `the act ${act} sends ${message.type} "${message.from}" → "${message.to}", which the rename door answers ${String(walked["decision"])}${walked["refusal"] ? ` (${String(walked["refusal"])})` : ""}; nothing landed`, cureCall("rename", { title: message.from, to: message.to, mu: "_" }));
+    }
+  }
   if (dry !== null) {
     return { has: hasLine(address, [param("recipe", anchor.recipe), param("act", act), param("decision", "dry")]),
       recipe: anchor.recipe, address, act, decision: "dry", dry, writes, messages: sent };
@@ -2040,7 +2055,6 @@ export const makeCarrierActReactor = everyWiki(CARRIER_ACT_VERB, true, (opts: Ti
   }
   widget.eventListeners = own;
   widget.invokeActionString(actions, widget, undefined, variables);
-  const rename = makeTiddlerRenameReactor(opts);
   for (const event of owed) {
     const message = messageOf(event);
     if (message.from === undefined || message.to === undefined) { messages.push({ ...message, refused: "message-malformed" }); continue; }

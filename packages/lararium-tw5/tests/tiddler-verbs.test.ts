@@ -2287,6 +2287,23 @@ describe.skipIf(wikiSkip)(`a carrier's own act keeps the door's guards${skipNote
     expect(verb.engine.wiki.getTiddler("lar:///lararium.local.vm/verb/minted")).toBeUndefined();
   });
 
+  test("RED: an act whose later rename the door refuses lands nothing, its earlier write and rename included (act-message-refused); CONTROL: the act with the one good rename lands it", async () => {
+    const r = await actRig([
+      "<$action-setfield $tiddler=\"Written first\" text=\"x\"/>",
+      "<$action-sendmessage $message=\"tm-rename-tiddler\" from=\"Note 02\" to=\"Renamed two\"/>",
+      "<$action-sendmessage $message=\"tm-rename-tiddler\" from=\"Nowhere at all\" to=\"Renamed nothing\"/>",
+    ].join(""));
+    await r.hold(DAEMON, ["Note 02"]);
+    await expect(r.act({ ...A, act: "acts/probe" }, ctx())).rejects.toMatchObject({ reason: "act-message-refused" });
+    await r.landed();
+    expect(r.engine.wiki.getTiddler("Written first")).toBeUndefined();
+    expect(r.engine.wiki.getTiddler("Renamed two")).toBeUndefined();
+    expect(r.engine.wiki.getTiddler("Note 02")?.fields["text"]).toBe("see [[Note 01]] and note 2");
+    r.engine.wiki.addTiddler({ title: "acts/probe", text: "<$action-sendmessage $message=\"tm-rename-tiddler\" from=\"Note 02\" to=\"Renamed two\"/>" });
+    const out = await r.act({ ...A, act: "acts/probe" }, ctx());
+    expect(out["messages"]).toEqual([expect.objectContaining({ type: "tm-rename-tiddler", decision: "renamed" })]);
+  });
+
   test("RED: messages that reach a hand or a host door meet that door's check: a clear-password with no hand refuses hand-unattested, a download whose template reads a withheld title refuses act-message-withheld", async () => {
     const r = await actRig([
       "<$action-sendmessage $message=\"tm-clear-password\" $param=\"vault\"/>",
