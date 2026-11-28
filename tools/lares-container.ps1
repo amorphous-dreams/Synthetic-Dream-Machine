@@ -392,6 +392,63 @@ function UnlockOrName {
   }
 }
 
+# THE VESSEL'S OWN READINESS DECIDES THE STAND, never a fixed clock. Compose's `--wait` reads Docker's health verdict, and a
+# fixed clock makes that verdict (the healthcheck's start_period plus retries x interval, about 195 s): a slow boot that still
+# works reads "unhealthy" there (measured 2026-11-27). Where compose's wait refuses on a health verdict, the shim asks the
+# vessel itself: its container's state, and the CPU work its cgroup spent (a counter the vessel's kernel keeps). A vessel that
+# still works keeps the stand waiting until its health answers; one that stopped refuses, naming its status and exit; one that
+# stands running and spent under a quarter second of work since the read before ($VesselWorkUsec) rests idle, and refuses.
+# The pace spaces the reads and decides nothing.
+$VesselPaceSeconds = if ($env:LARES_VESSEL_PACE_SECONDS) { [int]$env:LARES_VESSEL_PACE_SECONDS } else { 5 }
+$VesselWorkUsec = 250000
+function VesselPulse {
+  $pulse = [ordered]@{ status = 'absent'; health = 'none'; exitCode = $null; cpuUsec = $null }
+  $id = ((& docker compose @Base ps -q lares 2>$null) | Select-Object -First 1)
+  if ($LASTEXITCODE -ne 0 -or -not $id) { return $pulse }
+  $id = "$id".Trim()
+  $state = ((& docker inspect --format '{{.State.Status}} {{.State.ExitCode}} {{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' $id 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0) { $state = '' }
+  $parts = @($state -split '\s+' | Where-Object { $_ })
+  $pulse.status = if ($parts.Count -gt 0) { $parts[0] } else { 'unread' }
+  if ($parts.Count -gt 1 -and $parts[1] -match '^[0-9]+$' -and $pulse.status -ne 'running') { $pulse.exitCode = [int]$parts[1] }
+  $pulse.health = if ($parts.Count -gt 2) { $parts[2] } else { 'none' }
+  if ($pulse.status -eq 'running') {
+    $stat = (& docker exec $id cat /sys/fs/cgroup/cpu.stat 2>$null)
+    if ($LASTEXITCODE -eq 0) {
+      foreach ($line in @($stat)) { if ("$line" -match '^usage_usec ([0-9]+)') { $pulse.cpuUsec = [long]$Matches[1]; break } }
+    }
+  }
+  return $pulse
+}
+function AwaitVesselReady {
+  $p = VesselPulse
+  # COMPOSE'S OWN REFUSAL STANDS where it gave no health verdict: no vessel running, or one whose health reads neither
+  # starting nor unhealthy (an image that never stood, a port held, a container gone).
+  if ($p.status -eq 'running' -and $p.health -eq 'healthy') { return $true }
+  if (-not ($p.status -eq 'running' -and ($p.health -eq 'starting' -or $p.health -eq 'unhealthy'))) { return $false }
+  $last = $null; $rounds = 0
+  while ($true) {
+    if ($p.status -ne 'running') {
+      $exit = if ($null -ne $p.exitCode) { ", exit $($p.exitCode)" } else { '' }
+      [Console]::Error.WriteLine("lares-container: the vessel stopped while it booted (its container reads $($p.status)$exit); ``tools/lares-container.sh logs`` names why")
+      return $false
+    }
+    if ($p.health -eq 'healthy') { [Console]::Error.WriteLine('lares-container: the vessel answers healthy on its own readiness'); return $true }
+    if ($null -eq $p.cpuUsec) {
+      [Console]::Error.WriteLine("lares-container: Docker reads the vessel $($p.health) and its work reads nowhere (no cgroup cpu.stat), so nothing here can say it still boots; ``tools/lares-container.sh logs`` names where it rests")
+      return $false
+    }
+    if ($null -ne $last -and ($p.cpuUsec - $last) -lt $VesselWorkUsec) {
+      [Console]::Error.WriteLine("lares-container: the vessel stands running, reads $($p.health), and spent $([math]::Floor(($p.cpuUsec - $last) / 1000)) ms of work since the read before: it rests idle, and no boot carries it on; ``tools/lares-container.sh logs`` names where it rests")
+      return $false
+    }
+    if ($rounds % 6 -eq 0) { [Console]::Error.WriteLine("lares-container: Docker reads the vessel $($p.health), and it still works ($([math]::Floor($p.cpuUsec / 1000000)) s of CPU spent); the stand waits on its own readiness") }
+    $rounds++; $last = $p.cpuUsec
+    Start-Sleep -Seconds $VesselPaceSeconds
+    $p = VesselPulse
+  }
+}
+
 function LiftVessel([string[]]$output) {
   $reason = 'the standing requires a re-stand'
   try { $reason = (ConvertFrom-Json -InputObject ($output -join "`n")).data.standing.reason } catch {}
@@ -415,7 +472,8 @@ function LiftVessel([string[]]$output) {
   } else {
     & docker compose @Base up -d --wait lares
   }
-  if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel did not answer healthy after its restart'); exit $LASTEXITCODE }
+  $upRc = $LASTEXITCODE
+  if ($upRc -ne 0 -and -not (AwaitVesselReady)) { [Console]::Error.WriteLine('lares-container: the vessel did not answer healthy after its restart'); exit $upRc }
   WarnImageRevision
   UnlockOrName
 }
@@ -1222,11 +1280,13 @@ function UpVerb([string[]]$upArgs) {
     try {
       Set-Content -Path $override -Value ("services:`n  lares:`n    volumes:`n" + ($binds -join "`n")) -Encoding utf8
       & docker compose @Base -f $override up -d --wait lares
-      if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again'); exit $LASTEXITCODE }
+      $upRc = $LASTEXITCODE
+      if ($upRc -ne 0 -and -not (AwaitVesselReady)) { [Console]::Error.WriteLine('lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again'); exit $upRc }
     } finally { Remove-Item -Force $override -ErrorAction SilentlyContinue }
   } else {
     & docker compose @Base up -d --wait lares
-    if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again'); exit $LASTEXITCODE }
+    $upRc = $LASTEXITCODE
+    if ($upRc -ne 0 -and -not (AwaitVesselReady)) { [Console]::Error.WriteLine('lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again'); exit $upRc }
   }
   WarnImageRevision
   WarnPulamaSkew
@@ -1683,6 +1743,12 @@ switch ($verb) {
     if (-not $PulamaMode) { Die 'keeper-stand needs LARES_PULAMA=1' }
     KeeperStand
   }
+  'vessel-pulse' {
+    # THE VESSEL'S PULSE, one JSON line: its container's state and exit, Docker's health (annotation), and the cumulative CPU its
+    # cgroup spent in µs (null where none reads). The rite reads it after a stand while a door answers silent: the work decides.
+    if ($rest.Count -gt 0) { Die 'vessel-pulse takes no argument' }
+    [Console]::Out.WriteLine(((VesselPulse) | ConvertTo-Json -Compress))
+  }
   'vessel-image' {
     # THE IMAGE THE RUNNING VESSEL RUNS, by digest (the rite lands over it, never over a tag that may have moved); none prints nothing.
     if ($rest.Count -gt 0) { Die 'vessel-image takes no argument' }
@@ -1903,7 +1969,7 @@ switch ($verb) {
     $sub = if ($rest.Count -gt 0) { $rest[0] } else { '' }
     if ($sub -eq 'stand' -and -not $observing -and $rest.Count -eq 1) {
       # The no-argument acting stand belongs to the host: it stands, restarts on a `restand` verdict, or prints the standing.
-      if (-not (HasRunningVessel)) { EnsureHouse; StandPulama; Compose @('up', '-d', '--wait', 'lares'); WarnImageRevision; UnlockOrName }
+      if (-not (HasRunningVessel)) { EnsureHouse; StandPulama; & docker compose @Base up -d --wait lares; $upRc = $LASTEXITCODE; if ($upRc -ne 0 -and -not (AwaitVesselReady)) { exit $upRc }; WarnImageRevision; UnlockOrName }
       else {
         $answer = ObserveStanding
         if ($script:ObserveFailed -or (VerdictAct $answer) -eq '') { Die 'the standing vessel answered no verdict' }

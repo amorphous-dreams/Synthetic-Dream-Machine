@@ -64,6 +64,7 @@
  * founding record it reloads, and the line only names what waits.
  */
 import { compareGenesisDigests, ratchetWords, ratchetsDiffer, type GenesisDigests, seedRatchetStances, seedStanceWords } from "@lararium/mesh/genesis-compare";
+import { awaitVesselAnswer, type VesselPulse } from "./vessel-readiness-wait.js";
 
 export type RiteVerbAnswer =
   | { readonly ok: true; readonly output: Record<string, unknown> }
@@ -187,6 +188,14 @@ export interface RitePorts {
    * where the operator names one (the worn face otherwise). Absent, the rite reads none and begins as it did.
    */
   standing?(branch: string, face?: number): Promise<StandingAnswer>;
+  /**
+   * THE NEW VESSEL'S PULSE (the shim's `vessel-pulse`): its container's state and the CPU work it spent. After the raise, a door
+   * that answers silent, composing or unreached sends the rite here, and the rite waits while the vessel works
+   * (`vessel-readiness-wait`). Absent, a door's first refusal stands as it did.
+   */
+  vesselPulse?(): Promise<VesselPulse | null>;
+  /** PACING between two post-stand reads; it decides nothing. Absent, the reads follow one another at once. */
+  pace?(): Promise<void>;
   /** The keep a down left owed, run after the landing (`keep-owed`); absent, the raise runs it itself. */
   keepOwed?(): Promise<number>;
   /** The image the raised vessel runs, by digest, as the vessel's container reports it (null where none reads); absent, the rite lands over the digest it staged. */
@@ -730,6 +739,14 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
     if (out.code === 0 && out.data["awaits"] === undefined && ports.keepOwed) await ports.keepOwed();
     return out;
   };
+  /**
+   * AFTER THE STAND, THE VESSEL'S OWN READINESS DECIDES: a door that answers silent, composing or unreached while the new vessel
+   * still works (its pulse) keeps the rite waiting, as long as it works; a vessel that stopped or rests idle refuses by name.
+   */
+  const afterStand = async <T extends { readonly ok: boolean }>(read: () => Promise<T>) => {
+    if (!ports.vesselPulse) return read();
+    return awaitVesselAnswer(read, { pulse: () => ports.vesselPulse!(), pace: () => (ports.pace ? ports.pace() : Promise.resolve()), say: (line) => ports.say(line), what: "the new vessel" });
+  };
   /** Land each begun face in the vessel that stands now; the rite reads par only where every pair reads par. */
   const landAll = async (faces: readonly StandingBegin[], data: Record<string, unknown>): Promise<{ code: number; data: Record<string, unknown> }> => {
     if (ranUnread) {
@@ -739,7 +756,7 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
     let par = true;
     const differs: string[] = [];
     for (const f of faces) {
-      const landed = await ports.row("rite-land", { tessera: f.tessera, head, ...(landImage === "" ? {} : { image: landImage }), ...(f.ordinal === undefined ? {} : { face: f.ordinal }) });
+      const landed = await afterStand(() => ports.row("rite-land", { tessera: f.tessera, head, ...(landImage === "" ? {} : { image: landImage }), ...(f.ordinal === undefined ? {} : { face: f.ordinal }) }));
       if (landed.ok) { par = landed.output["par"] === true && par; continue; }
       // THE BEGUN HALF NAMES WHAT LANDS: a vessel that runs another head or image than the half began at (a tag that moved between
       // the stage and the raise) lands nothing; the half stays red (landed-absent) and the rite reports it unlanded below.
@@ -777,7 +794,7 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
    */
   const landWhatStands = async (data: Record<string, unknown>): Promise<{ code: number; data: Record<string, unknown> }> => {
     if (!ports.standing) return kept({ code: 0, data });
-    const read = await ports.standing(branch, opts.face);
+    const read = await afterStand(() => ports.standing!(branch, opts.face));
     if (!read.ok) {
       ports.say(`kūkulu: the new vessel reads no begun halves (${read.message}); once it opens, \`${HAND_ACT}\` lands any that rest and spends no lei`);
       return { code: 1, data: { ...data, refusal: read.code, ...(read.code === "vessel-locked" ? { awaits: "unlock" } : {}) } };

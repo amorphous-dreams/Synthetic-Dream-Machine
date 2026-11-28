@@ -40,6 +40,7 @@ import { emitAnswer, exitFor, refuseUsage } from "../render.js";
 import { INTERRUPTED, priorImageRef, riteKukulu, type HouseLag, type PermanentMark, syncPlan, type PriorImage, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer, type OfferVouch, type PendingBegin, type StageTarget, type StandingBegin, type StandReading, type SyncAnswer } from "../rite-kukulu.js";
 import { foundingRecordFromStatus, hostSeedOfferPort } from "../seed-offered.js";
 import { storeFailure, storeVerb } from "../store-door.js";
+import { vesselPulseOf } from "../vessel-readiness-wait.js";
 import { KeepRefused, keepWorkspaceDir, keepFaceLine, riteKeep, type KeepPorts } from "../rite-keep.js";
 import { houseFaces } from "../custody-door.js";
 import { riteKeepHost, workspaceFromPairs, type GitAnswer, type KeepHostPorts } from "../rite-keep-host.js";
@@ -576,6 +577,9 @@ export function writePermanentMark(mark: PermanentMark, path: string | null = pe
   renameSync(`${path}.next`, path);
 }
 
+/** PACING between two post-stand reads of the new vessel (`vessel-readiness-wait`): spaces the reads, decides nothing. */
+const POST_STAND_PACE_MS = 5_000;
+
 /** The host's ports: git in this checkout, this CLI again for a vessel row (the bridge forwards it), and the checkout's shim. */
 function hostPorts(shim: string, say: (line: string) => void): RitePorts {
   return {
@@ -604,6 +608,10 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
       return read.ok ? { ok: true, ...standingOf(read.output, branch) } : read;
     },
     ranImage: () => shimRead(shim, ["vessel-image"]),
+    // THE NEW VESSEL'S PULSE: its container's state and cgroup CPU work (`vessel-pulse`); the rite waits while it works.
+    vesselPulse: async () => vesselPulseOf(await shimRead(shim, ["vessel-pulse"])),
+    // PACING: five seconds between two post-stand reads; the pulse's work counter decides, never this span.
+    pace: () => new Promise<void>((resolve) => { setTimeout(resolve, POST_STAND_PACE_MS); }),
     // THE PERMANENT MARK: written at par, read by the next run's supersede.
     markPermanent: async (mark) => writePermanentMark(mark),
     permanent: async () => readPermanentMark(),

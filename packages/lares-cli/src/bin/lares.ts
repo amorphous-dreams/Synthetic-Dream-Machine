@@ -118,6 +118,7 @@ import { WALK_VERBS } from "../commands/walk-cmd.js";
 import { WIKI_VERBS } from "../commands/wiki.js";
 import { freshBuildGate, needsFreshBuild } from "../build-freshness.js";
 import { VERB_SURFACE, projectOntoSurface } from "@lararium/tw5";
+import { exitAfterStreams, guardClosedStreams } from "../closed-stream.js";
 
 type Handler = (args: ParsedArgs) => Promise<number>;
 
@@ -614,12 +615,14 @@ async function drainStdout(): Promise<void> {
 export function runCli(): void {
   const { argv, budgetMs, retiredAsk } = takeEntryAsks(process.argv.slice(2));
   const disarm = armAskBudget(budgetMs);
+  // A READER THAT LEFT ENDS NOTHING BY CRASH: an EPIPE on stdout or stderr names itself once and the exit reads 141 (`closed-stream`).
+  const pipes = guardClosedStreams([{ name: "stdout", stream: process.stdout }, { name: "stderr", stream: process.stderr }]);
   bridge(forwardedArgv(argv, budgetMs), COMMAND_NAMES).then((forwarded) => forwarded ?? dispatch(argv)).then(
     async (code) => {
       disarm?.();
       try { await drainStdout(); }
-      catch (err) { console.error(err); process.exitCode = 1; return; }
-      process.exitCode = code;
+      catch (err) { if (pipes.closed() === null) console.error(err); process.exitCode = exitAfterStreams(pipes, 1); return; }
+      process.exitCode = exitAfterStreams(pipes, code);
       // A forwarded call reports nothing here (the shim's exec ran the verb, and that process reports); a call carrying the
       // retired ask comes from a shim that reads no report, so none gets written for it.
       if (!retiredAsk) await reportStanding(code);
