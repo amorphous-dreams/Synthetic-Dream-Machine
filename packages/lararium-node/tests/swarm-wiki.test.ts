@@ -1,29 +1,34 @@
 /**
- * swarm-wiki — the control document as the swarm's wiki: a record reads back what wrote it, carries no residency field (the control
- * document no mirror names keeps it off disk), a
- * `writeNew` claim lands once however many writers race it, and a prototype-keyed title reads as absent. Every red pairs with a CONTROL.
+ * swarm-wiki — the swarm's records rest in ONE sealed custody row on this vessel, never a document: a record reads back what
+ * wrote it and survives a fresh port (a restart), the row rests sealed, a `writeNew` claim lands once however many writers race
+ * it, and a prototype-keyed title reads as absent. Every red pairs with a CONTROL.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
-import { expect, test } from "vitest";
-import { Repo } from "@automerge/automerge-repo";
-import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
-import { ownEntry } from "@lararium/mesh/stored-value";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { swarmLeiRecordTitle, swarmLeiTitle, swarmLeiReturnedTitle } from "@lararium/mesh/swarm-tiddlers";
-import { controlSwarmWiki } from "../src/swarm-wiki.js";
+import { custodySwarmWiki, SWARM_RECORDS_FILE } from "../src/swarm-wiki.js";
+import { larIdentityDir } from "../src/vessel-paths.js";
+import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+
+vi.setConfig({ testTimeout: 120_000 });
+
+let c: SeatedScratchCustody;
+beforeEach(async () => { c = await seatScratchCustody("swarm-wiki"); });
+afterEach(async () => { await c.drop(); });
 
 function stand() {
-  const repo = new Repo();
-  const handle = repo.create<LarDoc>(emptyLarDoc());
-  return { handle, wiki: controlSwarmWiki(async () => handle) };
+  return { wiki: custodySwarmWiki() };
 }
 
-test("RED: a written record reads back and carries no residency field; CONTROL: an unwritten title reads null and a rewrite replaces", async () => {
-  const { handle, wiki } = stand();
+test("RED: a written record reads back through a fresh port and rests sealed; CONTROL: an unwritten title reads null and a rewrite replaces", async () => {
+  const { wiki } = stand();
   const title = swarmLeiTitle("push", "feature/x");
   expect(await wiki.read(title)).toBeNull();
-  await wiki.write(title, "one");
-  expect(await wiki.read(title)).toBe("one");
-  expect(JSON.stringify(ownEntry(handle.doc()?.tiddlers, title))).not.toContain("disk-projection");
+  await wiki.write(title, "one-sealed-text");
+  expect(await custodySwarmWiki().read(title)).toBe("one-sealed-text");   // a fresh port (a restart) reads it back
+  expect(readFileSync(join(larIdentityDir(), SWARM_RECORDS_FILE), "utf8")).not.toContain("one-sealed-text");
   await wiki.write(title, "two");
   expect(await wiki.read(title)).toBe("two");
 });

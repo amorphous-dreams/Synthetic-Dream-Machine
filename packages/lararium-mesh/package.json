@@ -476,10 +476,6 @@
       "import": "./dist/doc-load-probe-contract.js",
       "types": "./dist/doc-load-probe-contract.d.ts"
     },
-    "./doc-swarm-wiki": {
-      "import": "./dist/doc-swarm-wiki.js",
-      "types": "./dist/doc-swarm-wiki.d.ts"
-    },
     "./doctor-sweep": {
       "import": "./dist/doctor-sweep.js",
       "types": "./dist/doctor-sweep.d.ts"

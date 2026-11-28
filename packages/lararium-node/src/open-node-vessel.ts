@@ -434,7 +434,7 @@ import { landEveryHostingAct }                    from "./commands/host.js";
 import { loadNodeWardCosignPort }                  from "./commands/intent.js";
 import { listWalkRecords }        from "./node-walk-store.js";
 import { storeDoorReactors, awaitOnRolled }       from "./store-door-verbs.js";
-import { controlSwarmWiki }                       from "./swarm-wiki.js";
+import { custodySwarmWiki }                       from "./swarm-wiki.js";
 import { carriedSet, readCarriedCharters }       from "./carried-set.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
 import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
@@ -5104,8 +5104,8 @@ async function prepareNodeBootOn(
       onRolled: afterRoll,
       // A floor accept raises the reboot-pending alert in every live wiki: no node island swaps its floor read-face live.
       floorAlert: (remount) => raiseFloorAlert(vmManager, remount),
-      // The swarm's controls rest in the daemon wiki, device-local by the daemon document's anchor.
-      swarmWiki: controlSwarmWiki(readControlDoc),
+      // The swarm's records rest in the vessel's sealed custody row (`swarm-wiki`), never in a document.
+      swarmWiki: custodySwarmWiki(),
       // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
       // floor's island holds no veil.
       ...(sovereign ? { seatDuties: (facts) => askSeatDutiesAsVessel(facts).answer } : {}),

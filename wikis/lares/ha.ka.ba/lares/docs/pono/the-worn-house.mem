@@ -291,7 +291,7 @@ The rite itself writes a `rite-begun` receipt before the vessel goes down and th
 
 Three different things answer to the word "row" in the design's talk-out; this carrier names each by what it holds:
 
-* a ''signed record'' (`SignedSwarmAct` in code): a JSON `{body, signer, sig}` resting as a tiddler's text in the vessel's control document, under `$:/lares/swarm/…`: a lei, its return, a tessera half, a receipt, a roster reading, a vouch. The token family and its receipts live here.
+* a ''signed record'' (`SignedSwarmAct` in code): a JSON `{body, signer, sig}` resting under its `$:/lares/swarm/…` title in the vessel's sealed custody row (`swarm-records`, the pūlama's own holder serving it where the vessel rides one): a lei, its return, a tessera half, a receipt, a roster reading, a vouch. The token family and its receipts live here.
 * a ''stage meme'': a whole memetic carrier under the memory stage, `lar:///ha.ka.ba/kahua/memory/<class>/<slug>`; the code keys it by its title's path beneath the stage, and a path that reads otherwise refuses `stage-path-shape`.
 * a ''road item'': one line of the roadmap carrier's table, named by what it holds: a lane, a ruling, a stride's work.
 
@@ -310,6 +310,6 @@ Three different things answer to the word "row" in the design's talk-out; this c
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uRRyd2_Xi9iU7TKRK6LF76bVaXil_6EGGaUEhGnuKhk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zyYdAk2f5n11Rc3HnRReCPwEdbtAZ1NBcLr0R0DQKMM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

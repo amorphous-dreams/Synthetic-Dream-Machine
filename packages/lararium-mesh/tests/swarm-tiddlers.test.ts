@@ -12,7 +12,7 @@ import { PROMOTE_ACT_DOMAIN, SWARM_ACT_DOMAIN } from "../src/domains.js";
 import { canonicalJsonBytes } from "../src/crypto.js";
 import {
   SwarmRefused, putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmCapRefusal, swarmLeiRecordTitle, swarmLeiReturnedTitle, swarmLeiTitle, swarmHouseCapTitle,
-  swarmLaneStateTitle, swarmRecordFields, swarmRosterTitle, swarmShareRefusal, swarmShareTitle, SWARM_URI_PREFIX,
+  swarmLaneStateTitle, swarmRosterTitle, swarmShareRefusal, swarmShareTitle, SWARM_URI_PREFIX,
   type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
 
@@ -43,10 +43,6 @@ describe("the titles and the signing domain", () => {
     expect(SWARM_ACT_DOMAIN).not.toBe(PROMOTE_ACT_DOMAIN);
     expect(SWARM_ACT_DOMAIN.endsWith("/swarm-act")).toBe(true);
     for (const bad of ["", ".", "..", "a\u0000b"]) expect(() => swarmLeiTitle("push", bad), JSON.stringify(bad)).toThrow(SwarmRefused);
-  });
-
-  test("a swarm record's fields hold its text and no residency field (the control document keeps it off disk)", () => {
-    expect(swarmRecordFields("{}")).toEqual({ text: "{}" });
   });
 });
 

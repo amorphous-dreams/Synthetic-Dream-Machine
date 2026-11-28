@@ -88,11 +88,9 @@ const controlWriters = [
   ["packages/lararium-tw5/src/verb-vm.ts", /await control\.put\(row, origin\)/, /daemon\.put\(/],
   ["packages/lararium-node/src/vessel-mailbox.ts", /updateCustodyRecord\("identity", MAILBOX_FILE/, /CONTROL_HOME_ID|DAEMON_BAG_ID/],
   ["packages/lararium-node/src/uds-channel.ts", /storeForBag\(CONTROL_HOME_ID\)/, /wikiSlotUri\("daemon", "working"\)/],
-  // The swarm wiki writes into the control document it is handed (`docSwarmWiki`, one composition in the mesh), the node
-  // re-exports it as `controlSwarmWiki`, and every node composition hands it the control document, never another.
-  ["packages/lararium-mesh/src/doc-swarm-wiki.ts", /export function docSwarmWiki\(controlDoc: /, /daemonSwarmWiki|DAEMON_BAG_ID/],
-  ["packages/lararium-node/src/swarm-wiki.ts", /export \{ docSwarmWiki as controlSwarmWiki \} from "@lararium\/mesh\/doc-swarm-wiki"/, /daemonSwarmWiki/],
-  ["packages/lararium-node/src/open-node-vessel.ts", /controlSwarmWiki\(readControlDoc\)/, /controlSwarmWiki\((?!readControlDoc\))/],
+  // The swarm's records rest in the vessel's sealed custody row, and the node composition hands the swarm door that row.
+  ["packages/lararium-node/src/swarm-wiki.ts", /updateCustodyRecord\("identity", SWARM_RECORDS_FILE/, /DAEMON_BAG_ID|CONTROL_HOME_ID|DocHandle/],
+  ["packages/lararium-node/src/open-node-vessel.ts", /swarmWiki: custodySwarmWiki\(\)/, /controlSwarmWiki/],
   ["packages/lararium-keyhive/src/lease-frontier.ts", /storeForBag\(CONTROL_HOME_ID\)/, /DAEMON_BAG_ID/],
 ];
 for (const [path, must, mustNot] of controlWriters) {

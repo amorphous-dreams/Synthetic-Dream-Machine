@@ -102,6 +102,7 @@ import { larDataDir, larIdentityDir, larSealHome } from "./vessel-paths.js";
 import { RELAY_GATE_SEED_FILE } from "./relay-gate-seed.js";
 import { SWITCH_ACTS_FILE } from "./switch-act-log.js";
 import { MAILBOX_FILE } from "./vessel-mailbox.js";
+import { SWARM_RECORDS_FILE } from "./swarm-wiki.js";
 import { SECRET_HOME_FILE } from "./secret-home-store.js";
 
 /** The custody classes, closed. */
@@ -423,6 +424,10 @@ function buildTable(): readonly CarrierRow[] {
     // this vessel alone; a delivered verb leaves the row.
     id({ row: "mailbox", target: tgt(["D"]), match: file(MAILBOX_FILE), custody: "hot", keyClass: null,
          writer: "vessel-mailbox (verbs parked for a cold island)" }),
+    // The swarm's records (a lei and its returns, an unstringing, a tessera's halves, the lane board): custody testimony, on
+    // this vessel alone, served by the pūlama's holder where the vessel rides one.
+    id({ row: "swarm-records", target: tgt(["D"]), match: file(SWARM_RECORDS_FILE), custody: "hot", keyClass: null,
+         writer: "swarm-wiki (the swarm door's records)" }),
     // These reserved rows have no writer; a vessel holding one still recognises its carrier at unlock.
     id({ row: "enroll-pending", target: tgt(["D"], LEAD), match: file(".persona-enroll-pending.json"), custody: "hot", keyClass: "relation",
          writer: "none (reserved carrier)" }),
