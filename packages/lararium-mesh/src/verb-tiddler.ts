@@ -319,19 +319,26 @@ export async function verbInputDigest(
 }
 
 /**
- * The default receipt ring size — DERIVED, never a bare literal: a sustained rate of
- * one verb per minute, kept for a 30-day retention horizon, plus a 256-request burst
- * cushion for traffic above the sustained rate. `ratePerMin(1) × 60 × 24 × horizonDays(30)
- * + burst(256)` = 43,200 + 256 = 43,456 (luna-hearth decision 7's settled default).
- * `main.ts` reads an override from vessel config (`receipts.ring {ratePerMin, horizonDays,
- * burst}`); this constant is the floor when no config is present.
+ * The default receipt ring: as many ledgered requests as the answer ring holds bodies (`ANSWER_RING_COUNT`, 1,024). A
+ * COUNT, never a horizon: the ring once derived 43,456 from a 30-day retention at one verb a minute, and every fact it
+ * held (with the facts it evicted, which never left) rode the control document, where each change costs about a
+ * microsecond per title the document's map holds, on every replica (`control-document-stays-light.test.ts`). The ledger
+ * keeps `ring` live facts and `ring` evicted ones, so the control document's receipts stay near 6,000 titles at most.
+ *
+ * An operator may still size the ring by rate (`receipts.ring {ratePerMin, horizonDays, burst}` in vessel config, read by
+ * `main.ts`): naming any of those dials derives `ratePerMin × 60 × 24 × horizonDays + burst`, the unnamed dials reading
+ * 1, 30 and 256. Naming none answers this default.
  */
 export function ratedReceiptRing(opts?: { ratePerMin?: number; horizonDays?: number; burst?: number }): number {
+  if (opts?.ratePerMin === undefined && opts?.horizonDays === undefined && opts?.burst === undefined) return RECEIPT_RING_COUNT;
   const ratePerMin  = opts?.ratePerMin  ?? 1;
   const horizonDays = opts?.horizonDays ?? 30;
   const burst       = opts?.burst       ?? 256;
   return ratePerMin * 60 * 24 * horizonDays + burst;
 }
+
+/** The receipt ring's default count, matched to the answer ring's (`control-home` `ANSWER_RING_COUNT`). */
+const RECEIPT_RING_COUNT = 1024;
 
 export const RECEIPT_RING_DEFAULT = ratedReceiptRing();
 

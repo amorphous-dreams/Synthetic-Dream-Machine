@@ -55,6 +55,7 @@ import {
   RECEIPT_FACT_URI_PREFIX,
   RECEIPT_RING_DEFAULT,
   RECEIPT_RING_BYTES_DEFAULT,
+  EFFECT_URI_PREFIX,
   buildReceiptFact,
   parseReceiptFact,
   outcomeBytesOf,
@@ -424,6 +425,10 @@ export class VesselWaitExpired extends Error {
  */
 const EVICTED_BODY = { bare: true } as const;
 
+/** How many requests leave the control document in one change (`FactLedger.leave`). A count, so a wide shed costs a
+ *  handful of changes and no single change grows past a few thousand retracts. */
+const SHED_BATCH = 512;
+
 /**
  * The DURABLE, single-writer request ledger (D1, P2.5 iter 4 — closes H1R + H4 + M1 + M3″). This
  * channel is the receipt fact's ONE writer: it writes `committed` at arbitrate, `abandoned` at
@@ -431,9 +436,10 @@ const EVICTED_BODY = { bare: true } as const;
  * co-located worker or a remote summons). The worker never writes a fact, only the outcome tiddler
  * this channel observes — so no two processes ever race one fact's `state` field.
  *
- * A restart loses NOTHING: the fact backing this ledger lives in the vessel's control document
- * (`RECEIPT_FACT_URI_PREFIX<requestId>`), read through an in-memory cache that is seeded from the
- * store on first use and kept warm by every write this process makes. H1R's proven bug — a
+ * A restart loses NOTHING the ring still holds: the fact backing this ledger lives in the vessel's control document
+ * (`RECEIPT_FACT_URI_PREFIX<requestId>`), read through an in-memory cache that the seed fills with the LIVE ring alone
+ * (the facts not yet evicted) and every write this process makes keeps warm. An evicted fact stays out of the cache: the
+ * ledger names its id and seq, and a read of it goes to the store. H1R's proven bug — a
  * same-id, same-args reuse re-running after a restart, and a cancelled id's abandonment not
  * surviving one — closes because the fact this ledger reads back IS the fact a prior process wrote,
  * never a process-local Map that a restart wiped.
@@ -448,6 +454,14 @@ const EVICTED_BODY = { bare: true } as const;
  *     interrupted) weighs nothing and stays, and the body that just landed stays for the caller awaiting it:
  *     a lone outcome heavier than the whole bound leaves when the next body lands.
  * The sum seeds from the facts themselves, so a restart reads the same weight a prior boot left.
+ *
+ * THE CONTROL DOCUMENT COMPACTS BY COUNT. An evicted fact answers `retention-gap` while the ledger keeps it, and the
+ * ledger keeps `ring` of them; past that, the longest-evicted fact LEAVES the document, its outcome row and the effect row
+ * that names it beside it, in one change per batch. A fact the excess reaches before it was ever evicted (a boot under a
+ * tighter ring than the last) leaves the same way, whole. So the document holds at most `ring` live facts and `ring`
+ * evicted ones, each with its rows, whatever the door has answered: every change to a LarDoc costs about a microsecond per
+ * title its map holds, on every replica that applies it (measured, `control-document-stays-light.test.ts`). An id past
+ * both bounds reads as never seen: the ledger's honest memory ends there, and an effect key past them dedups no more.
  */
 export class FactLedger {
   private readonly cache = new Map<string, ReceiptFact>();
@@ -469,6 +483,10 @@ export class FactLedger {
   private readonly weights = new Map<string, { readonly seq: number; readonly bytes: number }>();
   /** What the kept bodies weigh, summed: every entry of `weights`. */
   private heldBytes = 0;
+  /** The evicted facts the document still holds, by requestId to seq, the longest-evicted first: each answers
+   *  `retention-gap` until `ring` later evictions push it out of the document (`shed`). The facts themselves stay in the
+   *  store, read through when asked. */
+  private readonly evictedAt = new Map<string, number>();
   private nextSeq = 0;
   private seeded: Promise<void> | null = null;
 
@@ -595,10 +613,13 @@ export class FactLedger {
         settledAny = true;
       }
       if (settledAny) await this.repo.flush();
-      for (const fact of facts) { this.cache.set(fact.requestId, fact); this.hold(fact); }
-      // ONE ORDER, BY SEQ: the readable facts and the torn records that still name their place.
+      // THE CACHE SEEDS WITH THE LIVE RING ALONE: an evicted fact names its place in the shed queue and stays in the store.
+      const live = facts.filter((f) => f.state !== "evicted");
+      for (const fact of facts) if (fact.state === "evicted") this.evictedAt.set(fact.requestId, fact.seq);
+      for (const fact of live) { this.cache.set(fact.requestId, fact); this.hold(fact); }
+      // ONE ORDER, BY SEQ: the live facts and the torn records that still name their place.
       const placed: Array<{ readonly requestId: string; readonly seq: number }> = [
-        ...facts.map((f) => ({ requestId: f.requestId, seq: f.seq })),
+        ...live.map((f) => ({ requestId: f.requestId, seq: f.seq })),
         ...[...this.tornAt].map(([requestId, at]) => ({ requestId, seq: at.seq })),
       ];
       placed.sort((a, b) => a.seq - b.seq);
@@ -617,6 +638,8 @@ export class FactLedger {
    */
   cached(requestId: string): ReceiptFact | "torn" | undefined {
     if (this.torn.has(requestId)) return "torn";
+    const seq = this.evictedAt.get(requestId);
+    if (seq !== undefined) return { requestId, seq, state: "evicted" };
     return this.cache.get(requestId);
   }
 
@@ -632,7 +655,8 @@ export class FactLedger {
     const rec = await this.factStore().get(FactLedger.factTitle(requestId));
     if (!rec) return null;
     const fact = parseReceiptFact(rec.tiddler as Record<string, unknown>);
-    if (fact) { this.cache.set(requestId, fact); return fact; }
+    // An evicted fact answers from the store each time it is asked; the cache holds live facts alone.
+    if (fact) { if (fact.state !== "evicted") this.cache.set(requestId, fact); return fact; }
     this.torn.add(requestId);
     return "torn";
   }
@@ -789,7 +813,8 @@ export class FactLedger {
     }
     await this.composite.put(buildReceiptFact(evicted), { kind: "lares-verb", requestId: victimId });
     this.release(victimId);
-    this.cache.set(victimId, evicted);
+    this.cache.delete(victimId);
+    this.evictedAt.set(victimId, evicted.seq);
     return true;
   }
 
@@ -821,7 +846,7 @@ export class FactLedger {
     await this.composite.put(buildReceiptFact(evicted), { kind: "lares-verb", requestId: victimId });
     this.tornAt.delete(victimId);
     this.torn.delete(victimId);
-    this.cache.set(victimId, evicted);
+    this.evictedAt.set(victimId, evicted.seq);
     return true;
   }
 
@@ -833,6 +858,16 @@ export class FactLedger {
    */
   private async evictIfNeeded(justLanded?: string): Promise<void> {
     let evictedAny = false;
+    // A WIDE EXCESS LEAVES WHOLE. Victims older than the newest `ring` of the excess would be evicted only to be shed at
+    // once: they leave the document directly, in batches, before the rest evict one by one.
+    const excess = this.order.length - this.ring;
+    if (excess > this.ring) {
+      const direct = this.order.slice(0, excess - this.ring);
+      await this.leave(direct);
+      this.order.splice(0, direct.length);
+      for (const id of direct) { this.release(id); this.cache.delete(id); this.tornAt.delete(id); this.torn.delete(id); }
+      evictedAny = true;
+    }
     while (this.order.length > this.ring) {
       // The victim leaves the ring once its eviction ran whole: one that failed midway stays at the head, and
       // the next pass takes it up again.
@@ -846,7 +881,42 @@ export class FactLedger {
       if (await this.evict(victimId)) evictedAny = true;
       this.release(victimId);   // evicted or not, the victim left the queue: the pass ends
     }
+    if (this.evictedAt.size > this.ring) {
+      const shed = [...this.evictedAt.keys()].slice(0, this.evictedAt.size - this.ring);
+      await this.leave(shed);
+      for (const id of shed) this.evictedAt.delete(id);
+      evictedAny = true;
+    }
     if (evictedAny) await this.repo.flush();
+  }
+
+  /**
+   * THE FACTS LEAVE THE DOCUMENT, with their rows: each request's fact, its outcome row, and the effect row its effect key
+   * names where that row still names this request (a later request may hold the key now). One change per batch of
+   * {@link SHED_BATCH} requests, so a boot that sheds tens of thousands writes tens of changes, never one per fact. The
+   * rows leave by retract (the key drops, no tombstone stays): the control document never leaves this vessel, so no
+   * replica waits on a kāpae to learn of the removal.
+   */
+  private async leave(requestIds: readonly string[]): Promise<void> {
+    const store = this.factStore();
+    for (let at = 0; at < requestIds.length; at += SHED_BATCH) {
+      const batch = requestIds.slice(at, at + SHED_BATCH);
+      const retracts: string[] = [];
+      for (const requestId of batch) {
+        const factTitle = FactLedger.factTitle(requestId);
+        const fields = (await store.get(factTitle))?.tiddler as Record<string, unknown> | undefined;
+        retracts.push(factTitle, `${OUTCOME_URI_PREFIX}${requestId}`);
+        const effectKey = fields?.["effect-key"];
+        if (typeof effectKey === "string" && effectKey !== "") {
+          const effectTitle = `${EFFECT_URI_PREFIX}${effectKey}`;
+          const effect = (await store.get(effectTitle))?.tiddler as Record<string, unknown> | undefined;
+          if (effect?.["request-id"] === requestId) retracts.push(effectTitle);
+        }
+      }
+      const origin = { kind: "lares-verb", requestId: batch[0]! } as const;
+      if (store.writeFamily) await store.writeFamily([], [], origin, { retracts });
+      else for (const title of retracts) await store.remove(title, origin);
+    }
   }
 }
 
