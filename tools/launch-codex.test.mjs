@@ -654,7 +654,8 @@ test("row 4: --lead-step reads the lane state, bumps the step, writes the step b
 });
 
 test("row 4: a refused launch does not spend a step; --lead-step needs --lane-root", () => {
-  const w = world({ rolloutLines: () => [rate(95)] });
+  // An exhausted window still refuses (the floor and the used line only warn), so a 100% reading drives the refusal.
+  const w = world({ rolloutLines: () => [rate(100)] });
   const laneRoot = join(w.home, ".lares-scratch", "lane");
   writeFileSync(join(laneRoot, "state.json"), JSON.stringify({ head: "e6aa31a8e", owed: [], seats: [], worktrees: {}, next: "x", step: 0, trailers: ["Claude-Session: https://claude.ai/code/session_01TEST"] }));
   const err = [];
