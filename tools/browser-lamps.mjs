@@ -67,7 +67,7 @@ export const BROWSER_LAMPS_LIT = Object.freeze([
   {
     pkg: "@lararium/web", dir: "packages/lararium-web", project: "lamp-hearth-e2e", from: "golden-whole-road-e2e",
     holds: "two tabs, one house; a mirror boot that asks the network nothing",
-    files: [lit("tests/e2e/glass-tabs.e2e.test.ts", "floor run 2026-11-27 (#00001, 103dd6daf + develop): lamp-hearth-e2e 3/3"), lit("tests/e2e/mirror-boot-makes-no-request.e2e.test.ts", "floor run 2026-11-27 (#00001, 103dd6daf + develop): lamp-hearth-e2e 3/3"), unproven("tests/e2e/golden-whole-road.e2e.test.ts"), unproven("tests/e2e/rest-before-reload.e2e.test.ts"), unproven("tests/e2e/glass-mirror.e2e.test.ts")],
+    files: [lit("tests/e2e/glass-tabs.e2e.test.ts", "floor run 2026-11-27 (#00001, 103dd6daf + develop): lamp-hearth-e2e 3/3"), red("tests/e2e/mirror-boot-makes-no-request.e2e.test.ts", "floor run 2026-11-28 (#00001, 07ad9e9a1 + develop): read red inside the widened lamp-hearth-e2e, after 2026-11-27 read it 3/3 alone; whether the cause is load from the walks that joined or the vessel boot stays open until a run alone reads it"), unproven("tests/e2e/golden-whole-road.e2e.test.ts"), unproven("tests/e2e/rest-before-reload.e2e.test.ts"), unproven("tests/e2e/glass-mirror.e2e.test.ts")],
   },
   {
     pkg: "@lararium/web", dir: "packages/lararium-web", project: "lamp-web-browser", from: "web-browser",
@@ -102,7 +102,7 @@ export const BROWSER_LAMPS_LIT = Object.freeze([
       unproven("tests/glass-theme.page.test.ts"),
       unproven("tests/glass-console-readings.page.test.ts"),
       unproven("tests/glass-boot.page.test.ts"),
-      unproven("tests/glass-doors.page.test.ts"),
+      red("tests/glass-doors.page.test.ts", "floor run 2026-11-28 (#00001, 07ad9e9a1 + develop): red on chromium and firefox; the first floor read of this page since the Luna static read classed it lighting as it stands"),
       unproven("tests/glass-walk.page.test.ts"),
       unproven("tests/interaction-goldens.page.test.ts"),
       unproven("tests/interaction-goldens-offers.page.test.ts"),
