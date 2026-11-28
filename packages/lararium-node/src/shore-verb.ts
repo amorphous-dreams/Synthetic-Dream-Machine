@@ -1,28 +1,27 @@
 /**
  * shore-verb — a person's answers at the disk shore, carried to the projector that holds the mirror.
  *
- * The disk projector surfaces what it will not decide alone: a STANDOFF, where the disk and the records
- * say different things and no rule picks, and a PENDING REMOVAL, where a file vanished from the path its
- * base names. A person reads what stands (`list`) and answers by name. The verb rides `wiki:place-verb`
- * into the island that mounts the projector (`lares shore` sends it through `wiki-act`), and each island
- * answers for the mirrors it holds.
+ * The disk projector decides every file a hand moved by itself: it hands the file to the island's capture door, whose
+ * words land in the records or stand as parallel drafts ("Draft of 'X' by disk/<hash>"), and nothing waits for a hand.
+ * One state alone holds for a person: a PENDING REMOVAL, where a file vanished from the path its base names, since a
+ * vanished file never tombstones its records by itself. A person reads what pends (`list`) and answers by name. The verb
+ * rides `wiki:place-verb` into the island that mounts the projector (`lares shore` sends it through `wiki-act`), and each
+ * island answers for the mirrors it holds.
  *
- *   list           look at the disk, then name what stands: each standoff with its key and its states, each
- *                  pending removal, a page at a time (`after` names the page behind, `next` answers its
- *                  cursor); `uris` narrows the answer to named carriers
+ *   list           look at the disk, then name each pending removal, a page at a time (`after` names the page behind,
+ *                  `next` answers its cursor); `uris` narrows the answer to named carriers
  *   sense          look at the disk for the named carriers (the watcher sends what vanished or returned)
  *   settle         answer once the projection that landed records cause has run (`lares ingest --apply`
  *                  names each carrier it landed, the hash its records render and the causal heads it landed;
  *                  the word ends when the wiki holds them, or by name when the far side closes first)
- *   take-records   take the records' side of one standoff, named by its key
- *   render         answer the records' render one standoff weighed, named by its key (`take-disk` merges it)
  *   restore        write a vanished file back from the records and pin its base
  *   remove         take the vanished carrier out of its own bag's layer: a plain retract where no layer beneath
  *                  holds the title, a kāpae (asked under `kapae: true`) where one does
  *   census         name every carrier the projector has not settled: each its queue still owes (`pending`) and
  *                  each whose latest reconcile threw (`failed`), after a bounded wait for the queue to drain
- *                  (`lares vessel census`, read before a stop); its first page also names, by path, each file a
- *                  mirror's checkout never tracked (`untracked`, an owed commit) and each checkout git could not
+ *                  (`lares vessel census`, read before a stop: a `pending` row rests in the store and names a write
+ *                  still owed, a `failed` row names a file the failure left); its first page also names, by path, each
+ *                  file a mirror's checkout never tracked (`untracked`, an owed commit) and each checkout git could not
  *                  read (`untrackedUnread`)
  *   flush          write what this island holds in memory to its mirrors now: retry each carrier whose reconcile threw,
  *                  wait (bounded) for the queue to drain, then answer what reached disk (`written`), what did not
@@ -31,8 +30,6 @@
  *                  The teardown's flush phase and a fallen engine's exit ask it of every island (`flushEveryShore`);
  *                  `lares shore flush` asks it by hand, through the vessel's own whole-island flush (the custody door's
  *                  `shore-flush` frame), so a hand's flush reaches every island the teardown reaches
- *   drafts         name the drafts the disk side of a carrier's stand-offs loaded (`standoff-drafts.ts`), each with its
- *                  target, its stand-off's key and whether a person kept it; titles alone, never a draft's words
  *   base           pin, in the Synced tree this island's projector owns, each agreement a wave names and THIS ISLAND READS
  *                  ITSELF (`pinAgreement`, `disk-projector.ts`). The wave names the bag (`bag`) and, for each carrier it
  *                  landed, the carrier and its file (`bases`: `{ uri, file, from? }`), and nothing else: no hash, no heads and
@@ -41,43 +38,27 @@
  *                  an agreement a pin already names waits with that pin. An island whose projector holds no mirror of the
  *                  bag refuses `bag-unprojected`, and the door asks the island that projects it. Answers counts
  *                  (`recorded`, `kept`, `waiting`, `unread`, `differs`) and how many pins still wait. A SEAT LANDS NO BASE:
- *                  the socket refuses the act from a seat and from an unread peer, as it refuses the settling acts
+ *                  the socket refuses the act from a seat and from an unread peer, as it refuses `restore` and `remove`
  *                  (`shoreHandCode`), and this door refuses a seat's booked asker by name; the projector pins the same
  *                  agreement by itself at its next reconcile, so a seat's wave loses nothing
- *   keep-both      a person keeps both sides of one stand-off, named by its key: its drafts stay past its end as parallel
- *                  drafts, and the records' render writes over the file, as `take-records` writes it. A stand-off whose
- *                  file loaded no draft holds nothing to keep, and refuses `no-drafts-to-keep`, naming keep-disk and
- *                  keep-records
  *
  * A LIT SIBLING'S SHORE ANSWERS BY ITS FACE. The daemon island mounts one projector for the worn face and one for each lit
  * sibling (`mountLitFaceProjection`), each over its own root. An act that names `face` (a handle index) answers at that
- * face's projector (`answerShoreSeats`): the worn face's own, or a lit sibling's, so a sibling's standoffs read and answer
- * without wearing it. A face that stands no projection here refuses `face-unprojected` by name. A flush that names no face
- * reaches the worn projector and every lit sibling's, each unwritten row naming its face.
+ * face's projector (`answerShoreSeats`): the worn face's own, or a lit sibling's, so a sibling's pending removals read and
+ * answer without wearing it. A face that stands no projection here refuses `face-unprojected` by name. A flush that names no
+ * face reaches the worn projector and every lit sibling's, each unwritten row naming its face.
  *
- * SETTLING A STAND-OFF STAYS A HAND ACT. `take-records` and `keep-both` read the asker the vessel's own door read off the
- * line's peer (`ctx.asker`, the gate's cached reading, which no word of the frame lifts): a seat refuses `hand-act-only`, a line whose peer read nothing
- * refuses `hand-unattested`, and each refusal names the command the operator runs at their own terminal. The CLI reads
- * the hand behind its own process first (`readOwnHand`).
+ * A REMOVAL'S ANSWER STAYS A HAND ACT. The socket refuses `restore`, `remove` and `base` from a seat and from an unread peer
+ * (`shoreHandCode`, read per op), each refusal naming the command the operator runs at their own terminal.
  *
- * ONE STANDOFF, TWO DOORS. `take-records` settles a standoff toward the records, and this island's
- * projector performs it: the records' render writes over the file. Its twin, `lares shore take-disk`,
- * settles toward the disk, and no projector performs that: no disk byte reaches a record through the
- * projecting leg. The CLI reads the standoff's states here (`list`, by carrier), proves the key and the
- * file's bytes still name them, and sends the file through the ingest leg with the records the person
- * read as its base, so the gate lands the disk's words only where those records still stand. Where the
- * records moved one slot and the file another, the CLI first reads the render this island weighed under the
- * key (`render`) and merges it with the file against the base's words, slot by slot, so neither edit drowns.
- *
- * Every answer names the state the person read: a standoff's key, and for more than one pending removal
- * the count that stood pending. An answer that names a state which moved since takes nothing and says so:
- * no answer ever lands on a state its giver never saw.
+ * Every answer names the state the person read: for more than one pending removal, the count that stood pending. An answer
+ * that names a state which moved since takes nothing and says so: no answer ever lands on a state its giver never saw.
  */
 
 import type { ShutdownEntry } from "./composition-shutdown.js";
 import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import type { Hand } from "@lararium/mesh/session-contract";
-import { askerRefusal, handCodesOf, handRefusalOf } from "./hand-act-gate.js";
+import { handCodesOf } from "./hand-act-gate.js";
 import type { LarDiskProjector } from "./disk-projector.js";
 import { basePathsNamed } from "./ingest-scan.js";
 import { PENDING_UNREAD } from "./synced-tree.js";
@@ -86,70 +67,53 @@ import { isHouseCanonBag } from "@lararium/mesh/kahu-canon-reach";
 /** The verb an island answers at its disk shore. */
 export const SHORE_VERB = "shore";
 
-/** The acts that settle a stand-off: a person's hand alone runs them. */
-const HAND_OPS: ReadonlySet<string> = new Set(["take-records", "keep-both"]);
-
 /** The acts the verb carries. */
-export const SHORE_OPS = ["list", "sense", "settle", "take-records", "render", "restore", "remove", "census", "flush", "drafts", "keep-both", "base"] as const;
+export const SHORE_OPS = ["list", "sense", "settle", "restore", "remove", "census", "flush", "base"] as const;
 export type ShoreOp = (typeof SHORE_OPS)[number];
 
 /**
  * THE PAGE A LISTING ANSWERS. A verb's outcome carries at most 32 rows of any array and turns a longer one
  * into a count and a sample (`AUDIT_ARRAY_CAP`, `@lararium/tw5` `verb-vm.ts`). A list that named every row in
- * one answer would lose its rows past that cap, so `list` answers a page at a time: at most this many rows,
- * standoffs and pending removals together, and `next`, the cursor of the page behind it.
+ * one answer would lose its rows past that cap, so `list` answers a page at a time: at most this many pending
+ * removals, and `next`, the cursor of the page behind it.
  */
 export const SHORE_LIST_PAGE = 32;
 
 const text = (v: unknown): string | null => (typeof v === "string" && v !== "" ? v : null);
 
-type StandoffRow = ReturnType<LarDiskProjector["standing"]>[number];
 type PendingRow = ReturnType<LarDiskProjector["pendingRemovals"]>[number];
 
 /**
- * The cursor of one listed row: its kind, its bag and its carrier, spelled as one JSON array, so no two
- * rows share a cursor whatever their names hold. A (bag, carrier) stands in at most one standoff and one
- * pending removal, so the cursor names one row, and the listing orders rows by it, code unit by code unit,
- * so a caller reads a cursor that moves forward page after page.
+ * The cursor of one listed row: its bag and its carrier, spelled as one JSON array, so no two rows share a cursor
+ * whatever their names hold. A (bag, carrier) stands in at most one pending removal, so the cursor names one row, and
+ * the listing orders rows by it, code unit by code unit, so a caller reads a cursor that moves forward page after page.
  */
-export function shoreCursorOf(kind: "standoff" | "pending", row: { readonly bagId: string; readonly uri: string }): string {
-  return JSON.stringify([kind === "standoff" ? "s" : "p", row.bagId, row.uri]);
+export function shoreCursorOf(row: { readonly bagId: string; readonly uri: string }): string {
+  return JSON.stringify([row.bagId, row.uri]);
 }
 
 const byCode = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
 /**
- * What stands for a hand at this island's shore, optionally within one bag and optionally for named
- * carriers alone, one page at a time. The counts name every row that stands, on every page, so a reader
- * knows how many rows its pages owe it. `mark` folds every row that stands (its cursor, and a standoff's
- * key or a pending removal's path), so two pages under one mark read one shore, and a shore that moved
- * between two pages answers another mark, even where its counts held.
+ * What pends for a hand at this island's shore, optionally within one bag and optionally for named carriers alone, one
+ * page at a time. The count names every row that pends, on every page, so a reader knows how many rows its pages owe it.
+ * `mark` folds every row that pends (its cursor and its path), so two pages under one mark read one shore, and a shore
+ * that moved between two pages answers another mark, even where its count held.
  */
 export function shoreList(
   projector: LarDiskProjector, bag: string | null = null, uris: readonly string[] | null = null,
   page: { readonly after?: string | null; readonly limit?: number } = {},
-): { standoffs: StandoffRow[]; standoffCount: number; pending: PendingRow[]; pendingCount: number; mark: string; next: string | null } {
+): { pending: PendingRow[]; pendingCount: number; mark: string; next: string | null } {
   const named = (uri: string): boolean => uris === null || uris.includes(uri);
-  const standing = projector.standing().filter((s) => (bag === null || s.bagId === bag) && named(s.uri));
   const pendingAll = projector.pendingRemovals().filter((p) => (bag === null || p.bagId === bag) && named(p.uri));
-  const rows = [
-    ...standing.map((row) => ({ cursor: shoreCursorOf("standoff", row), standoff: row })),
-    ...pendingAll.map((row) => ({ cursor: shoreCursorOf("pending", row), pending: row })),
-  ].sort((a, b) => byCode(a.cursor, b.cursor));
-  const mark = sha256HexBytesSync(new TextEncoder().encode(JSON.stringify(rows.map((r) =>
-    ("standoff" in r ? [r.cursor, r.standoff.standoff] : [r.cursor, r.pending.path]))))).slice(0, 24);
+  const rows = pendingAll.map((row) => ({ cursor: shoreCursorOf(row), pending: row })).sort((a, b) => byCode(a.cursor, b.cursor));
+  const mark = sha256HexBytesSync(new TextEncoder().encode(JSON.stringify(rows.map((r) => [r.cursor, r.pending.path])))).slice(0, 24);
   const after = page.after ?? null;
   const limit = Math.max(1, Math.min(page.limit ?? SHORE_LIST_PAGE, SHORE_LIST_PAGE));
   const behind = after === null ? rows : rows.filter((r) => r.cursor > after);
   const taken = behind.slice(0, limit);
-  const standoffs: StandoffRow[] = [];
-  const pending: PendingRow[] = [];
-  for (const r of taken) {
-    if ("standoff" in r) standoffs.push(r.standoff);
-    else pending.push(r.pending);
-  }
   const next = behind.length > taken.length ? taken[taken.length - 1]!.cursor : null;
-  return { standoffs, standoffCount: standing.length, pending, pendingCount: pendingAll.length, mark, next };
+  return { pending: taken.map((r) => r.pending), pendingCount: pendingAll.length, mark, next };
 }
 
 /**
@@ -165,10 +129,9 @@ export function pinsWaiting(projector: LarDiskProjector): PinsWaiting {
   return { pendingPinCount: pins.length, pendingPinUnreadCount: pins.filter((p) => p.why === PENDING_UNREAD).length, waitingBaseCount: projector.waitingBases() };
 }
 
-/** The counts alone: what an act that names no rows answers, whatever the shore holds. */
-function shoreCounts(projector: LarDiskProjector, bag: string | null): { standoffCount: number; pendingCount: number } {
-  const { standoffCount, pendingCount } = shoreList(projector, bag, null, { limit: 1 });
-  return { standoffCount, pendingCount };
+/** The count alone: what an act that names no rows answers, whatever the shore holds. */
+function shoreCounts(projector: LarDiskProjector, bag: string | null): { pendingCount: number } {
+  return { pendingCount: shoreList(projector, bag, null, { limit: 1 }).pendingCount };
 }
 
 const uriList = (v: unknown): string[] | null =>
@@ -389,21 +352,21 @@ export function shoreFlushLines(reading: ShoreFlushReading): string[] {
 }
 
 /**
- * THE SHORE'S SETTLING ACTS, A PERSON'S HAND ALONE (the operator's standing law: a standoff settles only by a person). The
- * socket refuses each from a seat (`shoreHandCode`, read per op), on a session and on a one-shot line alike, whether it rides the
- * `shore` verb itself or `wiki-act` into the active wiki. A seat lists, reads a render and flushes; it never takes a side.
+ * THE SHORE'S REMOVAL ANSWERS, A PERSON'S HAND ALONE: `restore` and `remove` (the one hand table's shore rows). The socket
+ * refuses each from a seat (`shoreHandCode`, read per op), on a session and on a one-shot line alike, whether it rides the
+ * `shore` verb itself or `wiki-act` into the active wiki. A seat lists, senses, reads the census and flushes.
  */
 export const SHORE_HAND_OPS: ReadonlySet<string> = new Set([...handCodesOf("shore").keys()].map((act) => act.slice(act.indexOf(" ") + 1)));
 /**
- * THE ACTS THE SOCKET ADMITS FROM A HAND ALONE: the settling acts, and `base`. A base pins an agreement in the Synced tree;
+ * THE ACTS THE SOCKET ADMITS FROM A HAND ALONE: the removal answers, and `base`. A base pins an agreement in the Synced tree;
  * the vessel's own waves ask it on the vessel's own road, past the socket, and a person's gesture asks it from a terminal. A
- * seat's line and an unread peer's refuse at the socket by the same code and sentence as a settling act.
+ * seat's line and an unread peer's refuse at the socket by the same code and sentence as a removal answer.
  */
 export const SHORE_SOCKET_HAND_OPS: ReadonlySet<string> = new Set([...SHORE_HAND_OPS, "base"]);
-/** The refusal a seat's settling act reads: the siblings' code, as every hand act answers an AI seat (the one hand table's shore rows). */
-export const SHORE_HAND_CODE = handCodesOf("shore").get("shore take-records")!;
+/** The refusal a seat's hand act at the shore reads: the siblings' code, as every hand act answers an AI seat (the one hand table's shore rows). */
+export const SHORE_HAND_CODE = handCodesOf("shore").get("shore restore")!;
 
-/** The hand code a call's shore op reads, or null where the call settles nothing: per op, never per verb. */
+/** The hand code a call's shore op reads, or null where the op stands open to a seat: per op, never per verb. */
 export function shoreHandCode(verb: string, args: unknown): string | null {
   const a = (args ?? {}) as Record<string, unknown>;
   // THE GATE READS THE ROUTING FIELDS AS THE HANDLER DOES (`routing-arg`): a string, or a refusal. An inner verb, an op or an
@@ -421,8 +384,9 @@ export function shoreHandCode(verb: string, args: unknown): string | null {
 
 /**
  * AN INGEST NO PERSON ASKED RIDES UNATTENDED: a wave a seat or an unread peer sends (`INGEST`, or `wiki-act` carrying one) takes
- * `unattended: true` before it places, whatever it claims, so the gate's no-base verdict stands off and never adopts a file over
- * records that say something else. A stand-off settles by a person, on the ingest leg as at the shore. Answers the args to place.
+ * `unattended: true` before it places, whatever it claims, so where a file holds no base over records that say something else
+ * the gate answers `conflict` (`no-base`) and never adopts the file over them: only a person's own gesture (`lares ingest`, a
+ * put, a save) names that adoption. Answers the args to place.
  */
 export function stampUnattendedIngest(verb: string, args: unknown): unknown {
   const a = (args ?? {}) as Record<string, unknown>;
@@ -504,17 +468,11 @@ export async function answerShoreSeats(seats: ShoreSeats, args: Readonly<Record<
 export async function answerShore(projector: LarDiskProjector, args: Readonly<Record<string, unknown>>, asker?: Hand): Promise<Record<string, unknown>> {
   const op = text(args["op"]) ?? "list";
   const bag = text(args["bag"]);
-  // THE ASKER THE DOOR BOOKED reads as the hand gate's verdict (`askerRefusal`): the socket's cached reading of the peer.
-  const unhanded = HAND_OPS.has(op) ? askerRefusal(asker) : null;
-  if (unhanded !== null) {
-    const line = `lares shore ${op} ${text(args["uri"]) ?? "<uri>"} --key ${text(args["key"]) ?? "<key>"}${bag !== null ? ` --bag ${bag}` : ""}`;
-    return { ok: false, op, refusal: unhanded, why: handRefusalOf(unhanded, { act: "settling a stand-off", reads: "peer", line }).message };
-  }
   if (op === "list") {
     // WHAT A PERSON READS STANDS TRUE TO THE DISK: the first page looks first, at every carrier that stands
-    // in a standoff or a pending removal, so a file a hand put back or edited since reads as it stands, and
-    // at every carrier whose file left where its base stands, so a file a hand removed with no watcher
-    // running pends by the time the list answers. A later page (`after`, the cursor the page before named)
+    // in a pending removal, so a file a hand put back since reads as it stands, and at every carrier whose
+    // file left where its base stands, so a file a hand removed with no watcher running pends by the time
+    // the list answers. A later page (`after`, the cursor the page before named)
     // reads the shore that look left; its counts let a reader see a shore that moved between two pages.
     // `uris` narrows the answer to the carriers a door names; the look at the disk stays whole.
     const only = args["uris"] === undefined ? null : uriList(args["uris"]);
@@ -522,7 +480,7 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
     const after = args["after"] === undefined ? null : text(args["after"]);
     if (args["after"] !== undefined && after === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "list names the page behind by the cursor the page before answered (`after`), or none for the first page" };
     if (after === null) {
-      await projector.sense([...new Set([...projector.standing().map((s) => s.uri), ...projector.pendingRemovals().map((p) => p.uri), ...projector.vanished(), ...(only ?? [])])]);
+      await projector.sense([...new Set([...projector.pendingRemovals().map((p) => p.uri), ...projector.vanished(), ...(only ?? [])])]);
     }
     // A PENDING ROW NAMES THE LAYERS BENEATH that hold its title (`beneath`), so the confirmation a person reads names
     // the kāpae a removal would raise; a row with none beneath reads as it always did (its removal retracts to absent).
@@ -596,80 +554,6 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
     return answer.ok
       ? { ok: true, op, bag: target, done: answer.done, doneCount: answer.done.length, left: answer.left, leftCount: answer.left.length, ...(answer.unshadowed.length > 0 ? { unshadowed: answer.unshadowed, unshadowedCount: answer.unshadowed.length } : {}), ...(answer.raised.length > 0 ? { raised: answer.raised, raisedCount: answer.raised.length } : {}) }
       : { ok: false, op, bag: target, refusal: answer.refusal, why: answer.why, ...(answer.count !== undefined ? { count: answer.count } : {}), ...(answer.raising !== undefined ? { raising: answer.raising } : {}) };
-  }
-  if (op === "take-records") {
-    const uri = text(args["uri"]);
-    const key = text(args["key"]);
-    if (uri === null || key === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "take-records names a carrier (`uri`) and the standoff's key (`key`)" };
-    // The key names the bag: a person answers by what the alert showed, and the standoff that carries that
-    // key in this island names its own mirror.
-    const stands = projector.standing().filter((s) => s.uri === uri && (text(args["bag"]) === null || s.bagId === args["bag"]));
-    const named = stands.find((s) => s.standoff === key);
-    if (named === undefined) {
-      return {
-        ok: false, op, refusal: stands.length === 0 ? "no-standoff-stands" : "standoff-key-moved",
-        why: stands.length === 0
-          ? `no standoff stands for ${uri} at this island's shore`
-          : `the standoff for ${uri} stands under key ${stands.map((s) => s.standoff).join(", ")}; the answer names ${key}`,
-      };
-    }
-    const answer = await projector.takeRecords(named.bagId, uri, key);
-    return answer.took
-      ? { ok: true, op, bag: named.bagId, uri, key, took: "records" }
-      : { ok: false, op, refusal: "standoff-key-moved", why: answer.why ?? "the states moved while the answer travelled" };
-  }
-  if (op === "render") {
-    const uri = text(args["uri"]);
-    const key = text(args["key"]);
-    if (uri === null || key === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "render names a carrier (`uri`) and the standoff's key (`key`)" };
-    const stands = projector.standing().filter((s) => s.uri === uri && (text(args["bag"]) === null || s.bagId === args["bag"]));
-    const named = stands.find((s) => s.standoff === key);
-    if (named === undefined) {
-      return {
-        ok: false, op, refusal: stands.length === 0 ? "no-standoff-stands" : "standoff-key-moved",
-        why: stands.length === 0
-          ? `no standoff stands for ${uri} at this island's shore`
-          : `the standoff for ${uri} stands under key ${stands.map((s) => s.standoff).join(", ")}; the answer names ${key}`,
-      };
-    }
-    const render = projector.standoffRender(named.bagId, uri, key);
-    return render === null
-      ? { ok: false, op, refusal: "standoff-render-unheld", why: `the standoff for ${uri} holds no text render a merge can read (a sidecar, a pointer or a binary body)` }
-      : { ok: true, op, bag: named.bagId, uri, key, records: render.records, text: render.text };
-  }
-  if (op === "drafts") {
-    const uri = text(args["uri"]);
-    if (uri === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "drafts names a carrier (`uri`)" };
-    const keeper = projector.standoffKeeper;
-    if (keeper === null) return { ok: false, op, refusal: "no-standoff-keeper", why: "this island loads no stand-off as drafts" };
-    const drafts = keeper.draftsOf(uri);
-    return { ok: true, op, uri, drafts: drafts.slice(0, SHORE_LIST_PAGE), draftCount: drafts.length };
-  }
-  if (op === "keep-both") {
-    const uri = text(args["uri"]);
-    const key = text(args["key"]);
-    if (uri === null || key === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "keep-both names a carrier (`uri`) and the standoff's key (`key`)" };
-    const keeper = projector.standoffKeeper;
-    if (keeper === null) return { ok: false, op, refusal: "no-standoff-keeper", why: "this island loads no stand-off as drafts, so nothing stays to keep; `lares shore keep-records` takes the records' side" };
-    const stands = projector.standing().filter((s) => s.uri === uri && (text(args["bag"]) === null || s.bagId === args["bag"]));
-    const named = stands.find((s) => s.standoff === key);
-    if (named === undefined) {
-      return {
-        ok: false, op, refusal: stands.length === 0 ? "no-standoff-stands" : "standoff-key-moved",
-        why: stands.length === 0 ? `no standoff stands for ${uri} at this island's shore` : `the standoff for ${uri} stands under key ${stands.map((s) => s.standoff).join(", ")}; the answer names ${key}`,
-      };
-    }
-    if (!keeper.draftsOf(uri).some((d) => d.standoff === key)) {
-      return {
-        ok: false, op, refusal: "no-drafts-to-keep",
-        why: `the standoff ${key} of ${uri} loaded no draft of the file's words, so keep-both would keep nothing and write the records over the file; \`lares shore keep-disk ${uri} --key ${key}\` lands the file's words, \`lares shore keep-records ${uri} --key ${key}\` writes the records' render`,
-      };
-    }
-    const kept = await keeper.keep(uri, key);
-    const answer = await projector.takeRecords(named.bagId, uri, key);
-    return answer.took
-      ? { ok: true, op, bag: named.bagId, uri, key, took: "records", kept: kept.slice(0, SHORE_LIST_PAGE), keptCount: kept.length }
-      : { ok: false, op, refusal: "standoff-key-moved", why: answer.why ?? "the states moved while the answer travelled", kept: kept.slice(0, SHORE_LIST_PAGE), keptCount: kept.length };
   }
   if (op === "census") {
     const after = args["after"] === undefined ? null : text(args["after"]);

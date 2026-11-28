@@ -841,8 +841,8 @@ export interface DaemonMsg_WikiAlert {
   cause?: string;
   /** Alert kind — selects the alert tiddler ("reboot-pending" default; "disk-ward" etc.). */
   kind?: string;
-  /** One instance of a kind: a projection standoff's key. A keyed alert stands at its own title, so two
-   *  standoffs show two alerts. Absent = the kind's one coalescing alert. */
+  /** One instance of a kind (a pending removal's carrier, say). A keyed alert stands at its own title, so two
+   *  instances show two alerts. Absent = the kind's one coalescing alert. */
   key?: string;
   /** Remove the keyed alert: the condition it named stands resolved. */
   clear?: boolean;

@@ -2204,7 +2204,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // THE AI SEAT PROPOSES on a one-shot line as on a session: a hand-only verb refuses the seat by its code before it places.
         if (sessionRequestId === undefined && seat !== null && opts.handOnlyActs?.has(inv.verb)) return fail(`"${inv.verb}" runs on a person's hand; a seat proposes`, opts.handOnlyCodes?.get(inv.verb) ?? "beyond-profile");
         const opCode = sessionRequestId === undefined && seat !== null ? opts.handOnlyOp?.(inv.verb, inv.args) ?? null : null;
-        if (opCode === "hand-act-only") return fail(handRefusalOf(opCode, { act: `"${inv.verb}" (it settles a stand-off; a seat lists and reads)`, reads: "peer", line: "lares shore <act> <uri> --key <key>" }).message, opCode);
+        if (opCode === "hand-act-only") return fail(handRefusalOf(opCode, { act: `"${inv.verb}" (it answers a pending removal or pins a base; a seat lists, senses and flushes)`, reads: "peer", line: "lares shore <restore|remove> <uri>" }).message, opCode);
         if (opCode !== null) return fail(`"${inv.verb}" names a routing field of the wrong shape`, opCode);
         // A malformed routing field refuses whoever asks: the handler would refuse it too, and no shape slips the gate.
         if (sessionRequestId === undefined && opts.handOnlyOp?.(inv.verb, inv.args) === "routing-arg-malformed") return fail(`"${inv.verb}" names a routing field of the wrong shape`, "routing-arg-malformed");

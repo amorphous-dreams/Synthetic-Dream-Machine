@@ -15,7 +15,7 @@ import { ShoreRig, RIG_BAG, coreBlobSkip } from "./shore-rig.js";
 import { syncedTreeKey } from "../src/synced-tree.js";
 import { answerShore } from "../src/shore-verb.js";
 
-type Listed = { ok: boolean; pending: Array<{ uri: string }>; pendingCount: number; standoffs: unknown[] };
+type Listed = { ok: boolean; pending: Array<{ uri: string }>; pendingCount: number };
 
 describe.skipIf(coreBlobSkip)("the shore list looks at the disk first", () => {
   let rig: ShoreRig;
@@ -28,7 +28,7 @@ describe.skipIf(coreBlobSkip)("the shore list looks at the disk first", () => {
 
   test("CONTROL: with every file standing the list names nothing", async () => {
     const listed = await answerShore(rig.projector, { op: "list" }) as unknown as Listed;
-    expect([listed.ok, listed.pending, listed.standoffs]).toEqual([true, [], []]);
+    expect([listed.ok, listed.pending]).toEqual([true, []]);
   });
 
   test("a file removed by hand with no watcher pends at the next list, and restore answers it", async () => {

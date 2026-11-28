@@ -419,7 +419,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // The booking also keeps the asker's hand the vessel's door read (`cli`, `seat`, …): a delegate of the booked act runs with
   // that asker (`ctx.asker`), so a hand verb answers a terminal's session and refuses every other (hitl-reads-a-hand).
   const sessionAsks = new Map<string, SessionWorn & { readonly act: string; readonly asker?: Hand }>();
-  // THE ONE-SHOT LINE BOOKS ITS HAND THE SAME WAY (hitl-reads-a-hand): a channel ask with no session (`lares shore take-records`,
+  // THE ONE-SHOT LINE BOOKS ITS HAND THE SAME WAY (hitl-reads-a-hand): a channel ask with no session (`lares shore remove`,
   // any hand verb the operator's line places whole) books the asker its door read against the exact act, and the first delegate
   // of that act consumes it. The island delegates what its own table lacks (`wiki-act` into a wiki's island), so without this
   // book a person's terminal reached the wiki's hand gate as no asker and read `hand-unattested`.

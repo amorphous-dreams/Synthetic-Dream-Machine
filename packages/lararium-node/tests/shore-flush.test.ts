@@ -115,8 +115,7 @@ describe("the shore's flush", () => {
 
   test("RED S4 — the op keeps its verb, and the MCP seat reaches the shore through act", () => {
     expect(SHORE_VERB).toBe("shore");
-    // `drafts` reads titles alone; `keep-both` settles a stand-off and rides a person's hand like `take-records`.
-    expect(SHORE_OPS).toEqual(["list", "sense", "settle", "take-records", "render", "restore", "remove", "census", "flush", "drafts", "keep-both", "base"]);
+    expect(SHORE_OPS).toEqual(["list", "sense", "settle", "restore", "remove", "census", "flush", "base"]);
     const here = dirname(fileURLToPath(import.meta.url));
     const fixture = JSON.parse(readFileSync(join(here, "../../lararium-sensorium/scripts/fixtures/cli-verbs.json"), "utf8")) as { mirrored: string[]; cli_forms: Record<string, string> };
     expect(fixture.mirrored).toContain("act");
@@ -229,12 +228,12 @@ describe("the shore's flush", () => {
     await projector.stop();
   });
 
-  test("RED S6 — the shore's settling ops read hand-only per op, on the shore verb and through wiki-act; the stuck faces read off the rows", () => {
-    for (const op of ["take-records", "restore", "remove"]) {
+  test("RED S6 — the shore's removal answers read hand-only per op, on the shore verb and through wiki-act; the stuck faces read off the rows", () => {
+    for (const op of ["restore", "remove"]) {
       expect(shoreHandCode("shore", { op })).toBe(SHORE_HAND_CODE);
       expect(shoreHandCode("wiki-act", { verb: "shore", args: { op } })).toBe(SHORE_HAND_CODE);
     }
-    for (const op of ["list", "sense", "settle", "render", "census", "flush"]) expect(shoreHandCode("shore", { op }), op).toBeNull();
+    for (const op of ["list", "sense", "settle", "census", "flush"]) expect(shoreHandCode("shore", { op }), op).toBeNull();
     expect(shoreHandCode("wiki-act", { verb: "tiddler-get", args: { op: "remove" } })).toBeNull();
     const reading = { whole: false, islands: [
       { island: "daemon", answered: true as const, written: [], writtenCount: 0, unwritten: [{ state: "failed" as const, uri: "u", bagId: null, why: "w", face: 2 } as never], unwrittenCount: 1, fileWrites: 0, drained: true },

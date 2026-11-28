@@ -14,9 +14,9 @@ import { askerRefusal, handRefusalOf } from "../src/hand-refusal.js";
 
 describe("one refusal builder", () => {
   test("hand-act-only off a branch names the harness and the operator's terminal", () => {
-    const r = handRefusalOf("hand-act-only", { act: "`lares shore take-disk`", reads: "branch", line: "lares shore take-disk lar:///a --key k" });
+    const r = handRefusalOf("hand-act-only", { act: "`lares shore remove`", reads: "branch", line: "lares shore remove lar:///a" });
     expect(r.code).toBe("hand-act-only");
-    expect(r.message).toBe("hand-act-only: `lares shore take-disk` runs on a person's hand at a real terminal, and an AI harness stands on this command's branch. Ask the operator to run `lares shore take-disk lar:///a --key k` on their own terminal.");
+    expect(r.message).toBe("hand-act-only: `lares shore remove` runs on a person's hand at a real terminal, and an AI harness stands on this command's branch. Ask the operator to run `lares shore remove lar:///a` on their own terminal.");
   });
 
   test("hand-unattested off a branch names the unread chain and a readable terminal", () => {

@@ -34,7 +34,7 @@ export type HandReads = "branch" | "peer";
 export interface HandRefusal { readonly code: HandRefusalCode; readonly message: string }
 
 /**
- * Word one refused hand act. `act` names what runs on a hand, as the door's own subject (`` `lares shore take-disk` ``,
+ * Word one refused hand act. `act` names what runs on a hand, as the door's own subject (`` `lares shore remove` ``,
  * `a release`); `line` names the command the operator runs, where the door knows it.
  */
 export function handRefusalOf(code: HandRefusalCode, at: { readonly act: string; readonly reads: HandReads; readonly line?: string }): HandRefusal {
@@ -77,13 +77,13 @@ const SHARE = row("share", "share-needs-hand");
  * code moves in one row and every door that answers it moves with it. The codes stay as every caller reads them; the gate's
  * own two (`hand-act-only`, `hand-unattested`) word the sentence (`handRefusalOf`), and a wing's code names the family.
  *
- * An act whose hand-only reach turns on its arguments names its verb and its turn (`shore take-records`),
+ * An act whose hand-only reach turns on its arguments names its verb and its turn (`shore remove`),
  * so no bare op word reaches a verb table. Keys stay disjoint by construction: an object literal refuses a duplicate key.
  *
  *   promote / kapae   the promote panel and the store door's settling rows (a stage's commit, drop or orphan; a kapae's raise, lower)
  *   swarm             the house cap, a lane share, a lei (`swarm-show` stays open to a seat)
  *   sense             the sense lifecycle verbs that move what the house keeps
- *   shore             the shore's settling ops (a standoff settles only by a person); a seat lists, reads and flushes
+ *   shore             the shore's answers to a pending removal (restore, remove); a seat lists, senses and flushes
  *   retire            the daemon island's unmint of a face's wiki shell
  *   share             who reads and writes a bag, and its landing (sealed-store#/the-share-config)
  *   floor             the vessel floor's accept (w26-floor-lane#/the-vessel-pin); a seat reads the status
@@ -94,7 +94,7 @@ export const HAND_ADMITS: Readonly<Record<string, HandAdmitRow>> = Object.freeze
   "kapae-raise": KAPAE, "kapae-lower": KAPAE,
   "swarm-cap-set": SWARM, "swarm-share-set": SWARM, "swarm-lei-kui": SWARM, "swarm-lei-unstring": SWARM, "swarm-lei-restring": SWARM,
   promote: SENSE, retire: SENSE, "un-retire": SENSE, purge: SENSE,
-  "shore take-records": SHORE, "shore keep-both": SHORE, "shore restore": SHORE, "shore remove": SHORE,
+  "shore restore": SHORE, "shore remove": SHORE,
   "retire-wiki": row("retire", "retire-needs-hand"),
   "share-set": SHARE, "share-apply": SHARE,
   "floor-accept": row("floor", "floor-needs-hand"), "floor-adopt-apply": row("floor", "floor-needs-hand"),

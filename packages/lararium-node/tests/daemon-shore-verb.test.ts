@@ -2,7 +2,7 @@
  * daemon-shore-verb — the daemon island answers the shore verb where its shore door stands.
  *
  * `lares shore` asks an island for what stands at its disk shore. The daemon island mounts a projector of its own
- * (the daemon wiki's working layer, crossroads), so a standoff or a pending removal it holds needs an answer from
+ * (the daemon wiki's working layer, crossroads), so a pending removal it holds needs an answer from
  * that island. The node entry injects the door (`shore`), and the daemon registers the verb only where one stands:
  * a shore with no directory of its own (a browser vessel) registers none.
  *

@@ -595,10 +595,10 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
   return async (args, ctx) => {
     const parsed = residencyFromContext(verb, args, ctx.invocation);
     if (!parsed) throw new Error(`action-handler/${verb}: malformed args — required fields missing or wrong type`);
-    // A STAND-OFF SETTLES BY A PERSON, ON THIS LEG TOO: a wave's `unattended` flag comes from its caller, so a wave a seat
-    // asked rides unattended whatever it claims, and the gate's no-base verdict stands off rather than adopting a file over
-    // records that say something else. The socket stamps the same on every INGEST a seat or an unread peer sends
-    // (`stampUnattendedIngest`), so a wave routed into a wiki island, where no asker rides, stands off the same way.
+    // ONLY A PERSON'S GESTURE ADOPTS A FILE OVER RECORDS, ON THIS LEG TOO: a wave's `unattended` flag comes from its caller, so
+    // a wave a seat asked rides unattended whatever it claims, and where the file holds no base over records that say something
+    // else the gate answers `conflict` (`no-base`) rather than adopting it. The socket stamps the same on every INGEST a seat or
+    // an unread peer sends (`stampUnattendedIngest`), so a wave routed into a wiki island, where no asker rides, answers the same.
     const action = parsed.verb === "INGEST" && ctx.asker === "seat" && parsed.unattended !== true ? { ...parsed, unattended: true } : parsed;
     // THE TW5 DOCS LIBRARY'S NAME HOLDS ONE RELATION (`tw5-docs-name`): no CREATE mints a bag under it, and no verb writes it,
     // as a destination or as a source, before any cap ask, placement check or store reach.

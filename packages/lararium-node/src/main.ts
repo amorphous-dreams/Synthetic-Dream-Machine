@@ -1039,9 +1039,9 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     sessionVerbs: STORE_DOOR_FACE_VERBS,
     handOnlyActs: STORE_DOOR_HAND_ONLY_ACTS,
     handOnlyCodes: STORE_DOOR_HAND_CODES,
-    // THE SHORE SETTLES BY A PERSON: a seat's take-records, restore or remove refuses `hand-act-only`, per op (`shoreHandCode`).
+    // A PENDING REMOVAL SETTLES BY A PERSON: a seat's restore, remove or base refuses `hand-act-only`, per op (`shoreHandCode`).
     handOnlyOp:   shoreHandCode,
-    // AN INGEST NO PERSON ASKED RIDES UNATTENDED (`stampUnattendedIngest`): a seat's or an unread peer's wave stands off.
+    // AN INGEST NO PERSON ASKED RIDES UNATTENDED (`stampUnattendedIngest`): a seat's or an unread peer's wave adopts no file over records that say otherwise.
     unattendedIngest: stampUnattendedIngest,
     socketVerbs:  new Set([...STORE_DOOR_FACE_VERBS, ...REALM_KEY_VERBS]),
     // A FACE ROW ANSWERS ON THE SOCKET ALONE (K20): the store door's face rows, and the realm verbs a session runs that

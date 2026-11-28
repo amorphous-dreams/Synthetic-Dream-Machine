@@ -6,7 +6,7 @@
  *   admitted  the door took the act; its outcome follows, read back by the act's id.
  *   owed      the act stands, its outcome has not reached the caller; read it back by id, and a retry sends the same
  *             id and answers from the record, never acting twice.
- *   asks      a person must answer (a hand act, a route, a stand-off); the answer names what answers it and who may.
+ *   asks      a person must answer (a hand act, a route, a pending removal); the answer names what answers it and who may.
  *   void      a named refusal with its runnable cure.
  *
  * NO CLOCK DECIDES A BAND. A wait that ends with no outcome reads "owed", never "timed out": an attacker can set any

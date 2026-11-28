@@ -25,7 +25,7 @@ describe("one table holds every hand code", () => {
   test("a verb reads its code; a verb outside the table reads none", () => {
     expect(handCodeOf("swarm-lei-kui")).toBe("swarm-needs-hand");
     expect(handCodeOf("wiki-render-out")).toBe("render-output-needs-hand");
-    expect(handCodeOf("shore take-records")).toBe("hand-act-only");
+    expect(handCodeOf("shore remove")).toBe("hand-act-only");
     // NO WORD DROPS A HELD SAVE: the table seats no loss act.
     expect(handCodeOf("wear accept-loss")).toBeUndefined();
     for (const open of ["swarm-show", "promote-prepare", "kapae-flag", "floor-status", "rite-begin", "toString", "constructor"]) expect(handCodeOf(open), open).toBeUndefined();
