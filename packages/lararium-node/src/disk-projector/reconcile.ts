@@ -67,6 +67,9 @@ export async function reconcileCarrier(core: ProjectorCore, rootUri: string): Pr
   } else {
     _leavePendingExcept(core, rootUri, keep);
     if (winner !== undefined) await core.flush(winner, rootUri);
+    // THE VIEW ANSWERS FROM A BAG NO MIRROR HOLDS: each mirror whose own bag dropped the carrier (a draft that left, a record
+    // tombstoned beneath another bag's row) settles its file as a dropped carrier's, since no flush of this root sweeps it.
+    else await _scheduleUnlinkByTitle(core, rootUri, keep);
   }
   for (const bagId of shadowed) await core.flush(bagId, rootUri, true);
 }
