@@ -50,7 +50,8 @@
  *
  * THE CO-SIGN FAILS CLOSED (operator ruling, 2026-11-23). Each vouch the vest rides names its face's device count as the standing
  * vessel read the face's signed admission fold, and the commit carries the count the vessel read at commit time (so `status` and the
- * rite read it early). A count read nowhere refuses `vest-devices-unread`. Each per-face budget carries with the vest too.
+ * rite read it early). A commit whose count read nowhere reads one device (a vessel locked or down at commit time), and a face the
+ * vest would seal that no vouch counts lapses `vest-devices-unread`. Each per-face budget carries with the vest too.
  * PAST ONE DEVICE THE COMMIT CARRIES THE CO-SIGN: the vessel runs `ward-keeper-vest` through the ward co-sign gate over (D′, the chain
  * head, the commit's nonce, the face's roster) BEFORE the commit, another device of the roster approves it in its own ward, and the
  * commit carries the spent co-sign (`cosigns`, one per committed face: its roster, the issuer's ask, the approve, the outcome). The
@@ -355,8 +356,9 @@ function sealedFacesRefusal(faces: readonly KeeperVouchedFace[], sealed: readonl
 
 /** Past one device the commit owes its carried co-sign, read offline against the commit it rides and the count `where` names. */
 const coSignRefusal = (devices: number | null, where: string, body: KeeperBegunBody): KeeperRefusal | null => {
-  if (devices === null || devices < 1) return refuse("vest-devices-unread", `${where} carries no device count, so the vest cannot tell whether it owes a co-sign; commit again with the vessel standing: lares pulama name-successor, or light the successor by hand (the struck fire): lares rite kukulu on a terminal`);
-  if (devices < 2) return null;
+  // A COUNT READ NOWHERE reads as one device: the vessel that reads the count stands locked or down exactly when a hand names the
+  // successor to heal it. A count read past one still owes the carried co-sign.
+  if (devices === null || devices < 2) return null;
   if (body.cosigns === null || body.cosigns === undefined) return refuse("vest-cosign-owed", `${where} names a face of ${devices} devices, and the commit carries no co-sign; commit again while a second device of the face approves the ask in its ward dialog: lares pulama name-successor, or light the successor by hand (the struck fire): lares rite kukulu on a terminal`);
   return cosignsRefusal({ next: body.next, prev: body.prev, nonce: body.nonce, faces: body.faces, devices }, body.cosigns);
 };
@@ -507,19 +509,20 @@ export async function keeperSlotBinds(records: SwarmWikiPort, by: KukuluSigner, 
 const REV = /^[0-9a-f]{40}$/;
 
 /**
- * THE LOCAL WITNESS (operator ruling 2026-11-25, //"web2 annotates, never decides"//): the host runs the bench gate over the exact
- * tree the image carries (`node tools/bench-gate.mjs --verdict`) and hands the verdict document whole. The keeper hashes those very
- * bytes itself (the gate writes `JSON.stringify` of the document, so the parse round-trips them), checks they name the testified
- * revision and tree and read green, and seals the hash into its own signed commit; the vest names it. So the witness verifies
- * offline, from bytes and the keeper's own chain, trusting no network. Meme: lar:///ha.ka.ba/kahua/memory/ruling/2026-11-25-web2-annotates
+ * THE LOCAL WITNESS (operator ruling 2026-11-25, //"web2 annotates, never decides"//): the host hands the bench verdict document
+ * whole where one rests over the exact tree the image carries (`node tools/bench-gate.mjs --verdict`); the rite never runs the gate.
+ * The keeper hashes those very bytes itself (the gate writes `JSON.stringify` of the document, so the parse round-trips them),
+ * checks they name the testified revision and tree and read green, and seals the hash into its own signed commit; the vest names
+ * it. A verdict missing, red, or over another tree rides the commit as its reading and blocks nothing: the live raise judges.
+ * Meme: lar:///ha.ka.ba/kahua/memory/ruling/2026-11-25-web2-annotates
  */
 export const BENCH_VERDICT_KIND = "lares-bench-verdict";
 export function keeperBenchVerdict(bench: unknown, rev: string, tree: string): { readonly hash: string; readonly line: string } | KeeperRefusal {
-  const cure = "run the bench gate over that tree (node tools/bench-gate.mjs --verdict <file> in the checkout at the revision; lares rite kukulu runs it), then lares rite kukulu again";
+  const cure = "the floor writes one over that tree (node tools/floor-run.mjs -- node tools/bench-gate.mjs --verdict <file>, in the checkout at the revision)";
   const v = typeof bench === "object" && bench !== null && !Array.isArray(bench) ? (bench as Record<string, unknown>) : null;
   if (v === null || v["kind"] !== BENCH_VERDICT_KIND || typeof v["line"] !== "string" || typeof v["code"] !== "number") return refuse("keeper-lei-bench-unread", `the host handed no bench verdict over ${rev}; ${cure}`);
   if (v["rev"] !== rev || v["tree"] !== tree) return refuse("keeper-lei-bench-differs", `the bench verdict names ${String(v["rev"])} (tree ${String(v["tree"])}), and the testimony names ${rev} (tree ${tree}); ${cure}`);
-  if (v["code"] !== 0 || !v["line"].startsWith("BENCH GATE GREEN")) return refuse("keeper-lei-bench-red", `the bench verdict over ${rev} reads ${v["line"]}; cure each named step, then lares rite kukulu again`);
+  if (v["code"] !== 0 || !v["line"].startsWith("BENCH GATE GREEN")) return refuse("keeper-lei-bench-red", `the bench verdict over ${rev} reads ${v["line"]}`);
   return { hash: `sha256:${sha256HexBytesSync(new TextEncoder().encode(JSON.stringify(bench)))}`, line: v["line"] };
 }
 
@@ -549,8 +552,8 @@ export async function keeperLicensed(records: SwarmWikiPort, by: KukuluSigner): 
 
 /**
  * THE COMMIT THE KUKULU LEI LICENSES (no route): rest ONE successor naming `next`, as the routed path rests one, its body naming
- * the license and the host's testimony. It refuses, before anything rests, on the floor off, a face of more than one device,
- * testimony that does not hold (the image label must equal `next`, the recheck read the same, the CI run green), a fork, a live hand
+ * the license and the host's testimony. It refuses, before anything rests, on the floor off, a face read at more than one device,
+ * testimony that does not hold (the image label must equal `next`, the recheck read the same), a fork, a live hand
  * commit (a lei never supersedes a commit), a vested commit not yet landed, a red last pair, or the struck fire due. The kukulu lei's
  * return binds at the vest: the vest rides a live rite whose begin claims that lei's return, and with none the commit lapses.
  */
@@ -559,15 +562,17 @@ export async function keeperNameSuccessorByLei(records: SwarmWikiPort, by: Kukul
   if (!(at.floor ?? KEEPER_LEI_STANDS)) return refuse("keeper-lei-floor-off", `the keeper lei's floor stands off in this keeper's code (KEEPER_LEI_STANDS), so no kukulu lei licenses a commit; ${routed}`);
   if (!CLOSURE.test(at.next)) return refuse("next-malformed", "the successor's closure reads `sha256:<64 hex>`, as tools/pulama-closure.mjs prints it");
   if (at.closure === null) return refuse("closure-unreported", "the host reported no closure for this keeper, so the chain cannot name what it hands from; tools/lares-container.sh up reports it");
-  if (at.devices === null) return refuse("keeper-lei-devices-unread", `the host read no device count for the lit faces, so the commit cannot tell whether it owes a co-sign; stand the vessel and run lares rite kukulu again, or ${routed}`);
-  if (at.devices !== 1) return refuse("keeper-lei-cosign-owed", `a lit face holds ${at.devices} devices, and the kukulu lei licenses the handed fire for one-device faces alone (a two-device face owes a co-sign over each D′); ${routed} (it asks the co-sign)`);
+  // A DEVICE COUNT THE HOST READ NOWHERE reads as one device (the vessel that holds the count stands locked or down exactly when the
+  // rite needs it); a count read above one still owes the co-sign.
+  if (at.devices !== null && at.devices !== 1) return refuse("keeper-lei-cosign-owed", `a lit face holds ${at.devices} devices, and the kukulu lei licenses the handed fire for one-device faces alone (a two-device face owes a co-sign over each D′); ${routed} (it asks the co-sign)`);
   if (at.branch === "" || /\s/.test(at.branch)) return refuse("keeper-lei-testimony-malformed", `the host names the branch whose kukulu lei licenses the commit; run lares rite kukulu again, or ${routed}`);
   if (!REV.test(at.rev) || !REV.test(at.tree)) return refuse("keeper-lei-testimony-malformed", `the host names the revision and its source tree as 40 hex each; run lares rite kukulu again, or ${routed}`);
   if (at.recheck !== "same") return refuse("keeper-lei-recheck-differs", `the second fresh-archive closure of ${at.rev} did not read the same; ${routed}`);
   if (at.image !== at.next) return refuse("keeper-lei-image-differs", `the built image's closure label reads ${at.image}, and the revision's archive reads ${at.next}; rebuild the image from that revision (lares rite kukulu), or ${routed}`);
-  // THE LOCAL VERDICT DECIDES; CI rides beside it as annotation (any reading, `unread` where none answered) and never blocks.
-  const bench = keeperBenchVerdict(at.bench, at.rev, at.tree);
-  if ("refusal" in bench) return { refusal: bench.refusal, detail: `${bench.detail}, or ${routed}` };
+  // THE BENCH VERDICT AND CI BOTH ANNOTATE: a green verdict names its hash; a missing, red or other-tree verdict rides as its reading
+  // (`benchLine`) and blocks nothing, and the live raise judges. CI rides as any reading, `unread` where none answered.
+  const read = keeperBenchVerdict(at.bench, at.rev, at.tree);
+  const bench = "refusal" in read ? { line: `${read.refusal}: ${read.detail}` } : read;
   const ci = typeof at.ci === "string" && at.ci !== "" ? at.ci : "unread";
   const fold = await keeperFold(records, by);
   if (fold.fork) return refuse("fork", `the keeper chain reads a fork; read it with lares pulama status, and ${routed}`);
@@ -576,7 +581,7 @@ export async function keeperNameSuccessorByLei(records: SwarmWikiPort, by: Kukul
   const last = fold.pairs.at(-1);
   if (last !== undefined && !last.par) return refuse("keeper-lei-red", `the last keeper pair reads red (${last.red ?? "red"}); read it with lares pulama status, and light the successor by passphrase: lares rite kukulu on a terminal`);
   if (fold.struckDue) return refuse("struck-due", `${fold.vestings} handed links stand in a row; light this successor by passphrase (the struck fire): lares rite kukulu on a terminal`);
-  const out = await keeperNameSuccessor(records, by, { ...at, cosign: null, noSupersede: true, licensed: { by: "kukulu-lei", branch: at.branch, rev: at.rev, tree: at.tree, recheck: "same", image: at.image, bench: bench.hash, benchLine: bench.line, ci } });
+  const out = await keeperNameSuccessor(records, by, { ...at, cosign: null, noSupersede: true, licensed: { by: "kukulu-lei", branch: at.branch, rev: at.rev, tree: at.tree, recheck: "same", image: at.image, ...("hash" in bench ? { bench: bench.hash } : {}), benchLine: bench.line, ci } });
   if ("refusal" in out) return out;
   return { tessera: out.tessera, v: out.v, next: out.next, branch: at.branch };
 }

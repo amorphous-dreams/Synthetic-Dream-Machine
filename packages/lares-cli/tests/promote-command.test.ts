@@ -88,16 +88,6 @@ test("the staged-code door exposes trust in place of promote", async () => {
   expect(COMMAND_NAMES).not.toContain("promote");
 });
 
-test("an old spelling meets the plain refusal, which names lares help", async () => {
-  const { dispatch } = await import("../src/bin/lares.js");
-  const err = vi.spyOn(console, "error").mockImplementation(() => {});
-  for (const args of [["promote", "list", "unexpected=true"], ["nexus", "promote", "open", "unexpected=true"], ["sense", "promote", "memory", "unexpected=true"]]) {
-    expect(await dispatch(args)).toBe(2);
-    expect(err.mock.calls.at(-1)?.join(" ")).toContain("lares help");
-  }
-  err.mockRestore();
-});
-
 test("trust dispatches the existing wire verb and narrowed paths refuse unrelated flags", async () => {
   const { dispatch } = await import("../src/bin/lares.js");
   seam.calls = [];

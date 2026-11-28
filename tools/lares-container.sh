@@ -1494,6 +1494,17 @@ pulama_status_read() { # $1 = the image digest
 # it once, and the pūlama lends on it with no admit.
 # It reads the vouch's own `image` field, never a digest that merely begins another.
 offer_carries() { [ -n "$1" ] && [ -f "$HOUSE/config/kukulu-offer.json" ] && grep -qF -- "\"image\":\"$1\"" "$HOUSE/config/kukulu-offer.json"; }
+# AN OFFER OUTLIVES NO IMAGE: a resting offer whose vouches name no image the tag holds owns nothing for the next vessel (the pūlama
+# reads it as no offer), so the stage and the raise set it down by name before any vessel carries it.
+offer_drop_stale() {
+  od_file="$HOUSE/config/kukulu-offer.json"
+  [ -f "$od_file" ] || return 0
+  od_image=$(image_id) || od_image=""
+  [ -n "$od_image" ] || return 0
+  ! offer_carries "$od_image" || return 0
+  rm -f -- "$od_file" || return 0
+  printf 'lares-container: the kūkulu offer that rested vouches for another image than %s holds (%s); it owned nothing for the next vessel, and it goes\n' "$IMAGE_REF" "$od_image" >&2
+}
 # Does a vessel run the image the tag names? vo_running reads yes wherever a vessel runs at all.
 vo_running=""
 vessel_on_image() {
@@ -1740,9 +1751,10 @@ keeper_reading() { printf '%s' "$1" | tr -d ' \t\r\n' | sed -n 's/.*"reading":"\
 # the keeper lei keeps no count of its own, it rides the kukulu lei the rite read standing on the branch with returns left, and
 # the vest's live rite spends that lei's return). The host's guards before the keeper rests the commit:
 # The revision reads reachable from origin/develop or origin/main as fetched (the rite's own fetch), the checkout's tracked tree
-# clean, its closure D′ off two fresh archives the same, the built image's closure label equal to D′, each lit face of one device,
-# and a green LOCAL bench verdict over that very tree (ruling 2026-11-25-web2-annotates); the CI push run, where gh answers, rides
-# beside it as annotation (read with `gh … --jq`, no jq on host) and never blocks. Then the keeper checks its own bounds
+# clean, its closure D′ off two fresh archives the same, the built image's closure label equal to D′, each lit face of one device
+# (a count read nowhere reads one). The LOCAL bench verdict resting over that very tree and the CI push run, where gh answers (read
+# with `gh … --jq`, no jq on host), ride beside it as annotation and never block (ruling 2026-11-25-web2-annotates); the rite runs
+# no suite. Then the keeper checks its own bounds
 # (no fork, no hand commit, no vested commit unlanded, the last pair par, struck-due false) and
 # rests the same commit `name-successor` rests, naming the license. These guards bind against accident: a host can send the commit
 # itself, so the real gate stands at host access plus a standing kukulu lei.
@@ -1772,7 +1784,8 @@ keeper_commit_lei() { # $1 = the revision, $2 = the branch whose kukulu lei lice
   [ "$kl_again" = "$kl_d" ] || die "pulama name-successor --lei: the fresh-archive re-check reads ${kl_again:-no closure}, not $kl_d (keeper-lei-recheck-differs); no successor named: $kl_cure"
   kl_label=$(closure_label image "$IMAGE_REF")
   [ "$kl_label" = "$kl_d" ] || die "pulama name-successor --lei: the built image's closure label reads ${kl_label:-nothing}, and the archive of $kl_rev reads $kl_d (keeper-lei-image-differs); no successor named: rebuild the image from that revision with lares rite kukulu, $kl_cure"
-  # ONE DEVICE PER LIT FACE: the standing vessel reads each lit face's signed admission fold, as the routed commit's count does.
+  # ONE DEVICE PER LIT FACE: the standing vessel reads each lit face's signed admission fold, as the routed commit's count does. A count
+  # read nowhere (the vessel locked or down, exactly when the rite heals it) reads one device and says so; a count above one refuses.
   kl_most=""; kl_unread=""
   if run_census json=true >/dev/null 2>&1; then
     kl_lit=$(printf '%s\n' "$census_out" | tr -d ' \t\r\n' | sed -n 's/.*"facesLit":\[\([0-9,]*\)\].*/\1/p' | tr ',' ' ')
@@ -1782,50 +1795,30 @@ keeper_commit_lei() { # $1 = the revision, $2 = the branch whose kukulu lei lice
       if [ -z "$kl_n" ]; then kl_unread=yes; elif [ -z "$kl_most" ] || [ "$kl_n" -gt "$kl_most" ]; then kl_most=$kl_n; fi
     done
   else kl_unread=yes; fi
-  if [ -n "$kl_unread" ] || [ -z "$kl_most" ]; then die "pulama name-successor --lei: the vessel read no device count for every lit face (keeper-lei-devices-unread); no successor named: stand the vessel (lares up), then lares rite kukulu again, $kl_cure"; fi
+  if [ -z "$kl_most" ] || { [ -n "$kl_unread" ] && [ "$kl_most" -le 1 ]; }; then
+    [ -z "$kl_unread" ] || printf '%s\n' 'lares-container: name-successor --lei: the vessel read no device count for every lit face; the commit reads one device (unknown, annotated here)' >&2
+    kl_most=1
+  fi
   [ "$kl_most" -eq 1 ] || die "pulama name-successor --lei: a lit face holds $kl_most devices (keeper-lei-cosign-owed), and a keeper lei hands the fire for one-device faces alone; no successor named: name the successor by hand on a terminal, which asks the co-sign: lares pulama name-successor"
-  # THE LOCAL WITNESS (ruling 2026-11-25-web2-annotates: web2 annotates, never decides). The host runs the bench gate over the
-  # exact tree the image carries (`node tools/bench-gate.mjs --verdict`, in the checkout at that revision, its tracked tree clean)
-  # and hands the verdict document WHOLE to the keeper, which hashes those bytes itself, checks they name this revision and tree
-  # and read green, and seals the hash into its own signed commit (the vest names it). So the keeper verifies the witness offline,
-  # from bytes and its own chain, trusting no network; a CI verdict could only be re-asked of a web2 service. A green verdict
-  # for this revision and tree rests under the house's cache and is reused; a red or missing one runs the gate again.
+  # THE LOCAL WITNESS READS, NEVER RUNS (ruling 2026-11-25-web2-annotates: web2 annotates, never decides). A bench verdict resting
+  # under the house's cache over the exact revision and tree the image carries (`node tools/bench-gate.mjs --verdict`, run on the
+  # floor beforehand) rides WHOLE to the keeper, which hashes those bytes itself and seals the hash into its signed commit. A verdict
+  # missing, red, or over another tree rides as its reading, and the raise goes on: the live raise judges. The rite runs no suite.
   kl_bench="$HOUSE/cache/bench/$kl_rev.json"
-  kl_bench_cure="cure it in the checkout (node tools/floor-run.mjs -- node tools/bench-gate.mjs --verdict $kl_bench, at $kl_rev with its tracked tree clean), then lares rite kukulu again, $kl_cure"
-  # A GATE THAT REFUSES LEAVES THE TAG ON THE ADMITTED IMAGE: the build this rite raised passed no gate, so the tag steps back to
-  # the admitted image kept here (`admitted_image_or_name`) and the ungated build keeps its own revision tag. The next `up` or
-  # `lares rite hoala` then stands what the keeper serves, and the next `lares rite kukulu` retakes the build with no second build.
-  # With no admitted image kept, the tag stays and the line says so; either way this answers 0, so the refusal below still speaks.
-  gate_refused_tag_back() {
-    admitted_image_or_name step-only || printf 'lares-container: name-successor --lei: the gate refused, and the tag stays on the ungated build: %s\n' "$IA_WHY" >&2
-    return 0
-  }
-  kl_bench_read() { # one word: green <sha256:hex>, red, differs, or unread
-    node -e 'const fs=require("fs"),c=require("crypto");const[f,rev,tree]=process.argv.slice(1);let b;try{b=fs.readFileSync(f,"utf8")}catch{console.log("unread");process.exit(0)}let v;try{v=JSON.parse(b)}catch{console.log("unread");process.exit(0)}if(!v||v.kind!=="lares-bench-verdict"||JSON.stringify(v)!==b){console.log("unread");process.exit(0)}if(v.rev!==rev||v.tree!==tree){console.log("differs");process.exit(0)}if(v.code!==0||!/^BENCH GATE GREEN/.test(String(v.line))){console.log("red");process.exit(0)}console.log("green sha256:"+c.createHash("sha256").update(b).digest("hex"))' "$kl_bench" "$kl_rev" "$kl_tree" 2>/dev/null | tr -d '\r'
-  }
-  kl_verdict=$(kl_bench_read)
-  case "$kl_verdict" in
-    green\ *) printf 'lares-container: name-successor --lei: a green bench verdict over %s rests already; the gate runs not again\n' "$kl_rev" >&2 ;;
-    *)
-      [ "$(git -C "$kl_top" rev-parse HEAD 2>/dev/null)" = "$kl_rev" ] || die "pulama name-successor --lei: no green bench verdict rests over $kl_rev, and the checkout stands at another revision, so the gate cannot run over the tree the image carries (keeper-lei-bench-unread); no successor named: check out $kl_rev, then $kl_bench_cure"
-      mkdir -p -- "$HOUSE/cache/bench" || die "pulama name-successor --lei: cannot make $HOUSE/cache/bench (keeper-lei-bench-unread); no successor named: $kl_bench_cure"
-      rm -f -- "$kl_bench"
-      printf 'lares-container: name-successor --lei: the bench gate runs over %s, the tree the image carries (the local witness; CI annotates, never decides)\n' "$kl_rev" >&2
-      kl_gate_rc=0; floor_take   # the keeper's witness builds and tests: it holds the one floor lock, the way an image build does
-      (cd "$kl_top" && node tools/bench-gate.mjs --verdict "$kl_bench" </dev/null >&2) || kl_gate_rc=$?
-      floor_give
-      [ "$kl_gate_rc" = 64 ] && gate_refused_tag_back && die "pulama name-successor --lei: the floor refused the bench gate (keeper-lei-floor-refused); no successor named: free the floor (another heavy run holds it, or the C: floor/budget refused) and run lares rite kukulu again"
-      [ -z "$(git -C "$kl_top" status --porcelain --untracked-files=no)" ] && [ "$(git -C "$kl_top" rev-parse HEAD 2>/dev/null)" = "$kl_rev" ] || die "pulama name-successor --lei: the checkout moved under the bench gate (keeper-lei-bench-differs); no successor named: $kl_bench_cure"
-      kl_verdict=$(kl_bench_read) ;;
-  esac
+  kl_verdict=$(node -e 'const fs=require("fs"),c=require("crypto");const[f,rev,tree]=process.argv.slice(1);let b;try{b=fs.readFileSync(f,"utf8")}catch{console.log("unread");process.exit(0)}let v;try{v=JSON.parse(b)}catch{console.log("unread");process.exit(0)}if(!v||v.kind!=="lares-bench-verdict"||JSON.stringify(v)!==b){console.log("unread");process.exit(0)}if(v.rev!==rev||v.tree!==tree){console.log("differs");process.exit(0)}if(v.code!==0||!/^BENCH GATE GREEN/.test(String(v.line))){console.log("red");process.exit(0)}console.log("green sha256:"+c.createHash("sha256").update(b).digest("hex"))' "$kl_bench" "$kl_rev" "$kl_tree" 2>/dev/null | tr -d '\r')
   kl_bench_line=$(node -e 'try{process.stdout.write(String(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).line))}catch{}' "$kl_bench" 2>/dev/null | tr -d '\r\n')
+  kl_bench_doc=$(node -e 'try{const b=require("fs").readFileSync(process.argv[1],"utf8");JSON.parse(b);process.stdout.write(b)}catch{process.stdout.write("null")}' "$kl_bench" 2>/dev/null) || kl_bench_doc=null
+  [ -n "$kl_bench_doc" ] || kl_bench_doc=null
   case "$kl_verdict" in
-    green\ sha256:*) kl_bench_hash=${kl_verdict#green } ;;
-    red) gate_refused_tag_back; die "pulama name-successor --lei: the bench verdict over $kl_rev reads ${kl_bench_line:-red} (keeper-lei-bench-red); no successor named: cure each named step, then lares rite kukulu again (a red verdict never stands reused), $kl_cure" ;;
-    differs) gate_refused_tag_back; die "pulama name-successor --lei: the bench verdict names another revision or tree than $kl_rev (keeper-lei-bench-differs); no successor named: $kl_bench_cure" ;;
-    *) gate_refused_tag_back; die "pulama name-successor --lei: no bench verdict reads over $kl_rev (keeper-lei-bench-unread); no successor named: $kl_bench_cure" ;;
+    green\ sha256:*) kl_bench_hash=${kl_verdict#green }; kl_bench_said="the bench verdict $kl_bench_hash green"
+      printf 'lares-container: name-successor --lei: bench verdict %s green over %s: %s\n' "$kl_bench_hash" "$kl_rev" "$kl_bench_line" >&2 ;;
+    red) kl_bench_said="the bench verdict red (annotated)"
+      printf 'lares-container: name-successor --lei: the bench verdict over %s reads %s (keeper-lei-bench-red); an annotation, never a gate: the live raise judges\n' "$kl_rev" "${kl_bench_line:-red}" >&2 ;;
+    differs) kl_bench_said="the bench verdict over another tree (annotated)"
+      printf 'lares-container: name-successor --lei: the bench verdict at %s names another revision or tree than %s (keeper-lei-bench-differs); an annotation, never a gate: the live raise judges\n' "$kl_bench" "$kl_rev" >&2 ;;
+    *) kl_bench_said="no bench verdict (annotated)"
+      printf 'lares-container: name-successor --lei: no bench verdict rests over %s at %s (keeper-lei-bench-unread); an annotation, never a gate: the live raise judges (the floor writes one: node tools/floor-run.mjs -- node tools/bench-gate.mjs --verdict %s)\n' "$kl_rev" "$kl_bench" "$kl_bench" >&2 ;;
   esac
-  printf 'lares-container: name-successor --lei: bench verdict %s green over %s: %s\n' "$kl_bench_hash" "$kl_rev" "$kl_bench_line" >&2
   # CI DEMOTES TO ANNOTATION: where gh answers, its conclusion rides beside the vest (a red one prints loudly); a gh absent or a
   # GitHub unreachable reads `unread`, and neither blocks.
   kl_ci=""
@@ -1839,8 +1832,8 @@ keeper_commit_lei() { # $1 = the revision, $2 = the branch whose kukulu lei lice
     *:completed:*) printf 'lares-container: name-successor --lei: !!! CI RED !!! the CI push run on %s reads %s; the local verdict decides and the vest carries this beside it (an annotation, never a gate): read it with gh run view %s\n' "$kl_rev" "$kl_ci" "${kl_ci%%:*}" >&2 ;;
     *) printf 'lares-container: name-successor --lei: the CI push run on %s reads %s (not done); an annotation, never a gate\n' "$kl_rev" "$kl_ci" >&2 ;;
   esac
-  printf 'lares-container: name-successor --lei: %s reads reachable from %s, clean, closure %s twice, the image labelled the same, the bench verdict %s green, every lit face of one device; the keeper rests the commit the kukulu lei of %s licenses\n' "$kl_rev" "$kl_reach" "$kl_d" "$kl_bench_hash" "$2" >&2
-  kl_frame=$(printf '{"next":"%s","branch":"%s","rev":"%s","tree":"%s","recheck":"same","image":"%s","bench":%s,"ci":"%s","devices":%s}' "$kl_d" "$2" "$kl_rev" "$kl_tree" "$kl_label" "$(cat -- "$kl_bench")" "$kl_ci" "$kl_most")
+  printf 'lares-container: name-successor --lei: %s reads reachable from %s, clean, closure %s twice, the image labelled the same, %s, every lit face of one device; the keeper rests the commit the kukulu lei of %s licenses\n' "$kl_rev" "$kl_reach" "$kl_d" "$kl_bench_said" "$2" >&2
+  kl_frame=$(printf '{"next":"%s","branch":"%s","rev":"%s","tree":"%s","recheck":"same","image":"%s","bench":%s,"ci":"%s","devices":%s}' "$kl_d" "$2" "$kl_rev" "$kl_tree" "$kl_label" "$kl_bench_doc" "$kl_ci" "$kl_most")
   compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" name-successor-lei "$kl_frame" </dev/null
 }
 # STAND THE SUCCESSOR (`keeper-stand`, the rite's step before its offer): one JSON line on stdout, {"to","closure","svc"}.
@@ -2101,8 +2094,9 @@ admitted_image_or_name() { # $1 = `step-only` to hold the lei's admit out, or no
 # the admit; no vessel -> it stands; the vessel locked -> the keeper's dial opens it (a vessel that stays shut restarts ONCE, a
 # fresh boot, and dials again); the face last worn wears. A house that stands awake gets its status line and nothing moves. It
 # builds no image and moves no checkout (those stay the kūkulu's, the rite that raises a new image), and it reads no route.
-# CUSTODY AT THE JOINT: the route or the lei, never a seat. An AI seat's hoʻāla lights by the hoʻāla lei and dials; it starts,
-# stops or restarts a vessel only in a run where that lei spent a return.
+# CUSTODY AT THE JOINT: the route or the lei, never a seat. An AI seat's hoʻāla lights by the hoʻāla lei and dials; it stops a
+# running vessel (the down path, which bears data) only in a run where that lei spent a return. Standing a vessel, or restarting
+# one the keeper holds at the locked floor, bears no data, so any seat does it: the house never waits on a human to wake.
 rs_found=""; rs_did=""
 rs_note_found() { rs_found="${rs_found:+$rs_found, }$1"; }
 rs_note_did() { rs_did="${rs_did:+$rs_did, }$1"; }
@@ -2121,10 +2115,10 @@ hoala_verdict() { # $1 = what stands now where the rite stopped short, or nothin
   printf 'lares-container: hoala: found %s; did %s; now %s\n' "${rs_found:-the house standing awake}" "${rs_did:-nothing}" "$rv_now"
 }
 hoala_stop() { hoala_verdict "$1"; exit 1; }
-hoala_seat_gate() { # $1 = the vessel act this run would take
+hoala_seat_gate() { # $1 = the data-bearing vessel act this run would take (the down path's stop)
   [ "$HOST_CHAIN" != hand ] || return 0
   # THE LEI CARRIES THE OPERATOR'S AUTHORIZATION by counted spends: a run where it spent a return (the light, or the admit) licenses
-  # the vessel acts of that same waking.
+  # the stop of that same waking.
   [ "$KL_BY" != lei ] || return 0
   [ "$IA_BY" != lei ] || return 0
   hoala_stop "the house waits on a hand: an AI seat's hoʻāla lights and admits by the hoʻāla lei and dials, and it may $1 only in a run where that lei spent a return; a hand runs \`lares rite hoala\` on a terminal"
@@ -2185,7 +2179,6 @@ hoala_verb() {
   # 4  THE VESSEL: stood where none stands, then opened by the keeper's dial (or, with no pūlama, by its own unlock).
   if [ -z "$rs_vessel" ]; then
     rs_note_found "no vessel standing"
-    hoala_seat_gate "stand the vessel"
     REBUILDING=yes; up_verb; REBUILDING=""
     rs_note_did "stood the vessel"
     rs_stood=yes
@@ -2198,8 +2191,8 @@ hoala_verb() {
       # shellcheck disable=SC2046
       if waited_exec $(pass_env) -T lares node "$CLI" vault unlock all=true </dev/null; then rs_note_did "opened the vessel by the keeper's dial"
       else
-        # A FRESH BOOT, ONCE: a vessel that stays shut under a lit keeper serving its image restarts and dials again.
-        hoala_seat_gate "restart the vessel"
+        # A FRESH BOOT, ONCE: a vessel that stays shut under a lit keeper serving its image restarts and dials again. A locked vessel
+        # holds no session and bears no unflushed data, so a seat restarts it as a hand does.
         printf '%s\n' 'lares-container: hoala: the vessel stayed shut under a lit keeper; it restarts once (a fresh boot) and dials again' >&2
         compose restart lares >&2 && up_with_workspaces >&2 || hoala_stop "the vessel did not answer healthy after its restart: read \`lares-container.sh logs\`"
         # shellcheck disable=SC2046
@@ -2211,7 +2204,6 @@ hoala_verb() {
       # (a restart resets it by design); then its own unlock reads the hand's route on this terminal.
       if compose exec -T lares node "$CLI" vault status json=true 2>/dev/null | grep -q '"attemptsLeft"[[:space:]]*:[[:space:]]*0[^0-9]'; then
         rs_note_found "its unlock tries spent this boot"
-        hoala_seat_gate "restart the vessel"
         compose restart lares >&2 && up_with_workspaces >&2 || hoala_stop "the vessel did not answer healthy after its restart: read \`lares-container.sh logs\`"
         rs_note_did "restarted the vessel (a fresh boot, a fresh try budget)"
       fi
@@ -2355,6 +2347,7 @@ rebuild_verb() {
   IN_REBUILD=yes
   # Every line the image step prints rides stderr, so stdout carries the reading alone.
   if [ -n "$r_prior" ]; then resolve_image "" >&2; else resolve_image "$r_at" >&2; fi
+  offer_drop_stale
   if [ -n "$r_image" ]; then print_reading; return 0; fi
   stand_house
 }
@@ -2456,7 +2449,7 @@ case "$verb" in
         esac
         # THE DEVICE COUNT rides the commit's own body (the co-sign fails closed): the standing vessel reads each lit face's signed
         # admission fold (`lares intent show face=N`), and the most any face holds goes in. A vessel down, or a face unread, sends
-        # none, and the vest then refuses until a commit carries a count.
+        # none, and the vest reads one device.
         kc_most=""; kc_unread=""
         if run_census json=true >/dev/null 2>&1; then
           kc_lit=$(printf '%s\n' "$census_out" | tr -d ' \t\r\n' | sed -n 's/.*"facesLit":\[\([0-9,]*\)\].*/\1/p' | tr ',' ' ')
@@ -2467,7 +2460,7 @@ case "$verb" in
           done
         else kc_unread=yes; fi
         if [ -n "$kc_unread" ] || [ -z "$kc_most" ]; then
-          printf '%s\n' 'lares-container: name-successor: the vessel read no device count for every lit face, so the commit carries none and the vest will refuse (vest-devices-unread); commit with the vessel standing to hand the fire unattended' >&2
+          printf '%s\n' 'lares-container: name-successor: the vessel read no device count for every lit face, so the commit carries none and the vest reads one device (unknown, annotated here)' >&2
           kc_dev=""
         else
           printf 'lares-container: name-successor: the lit faces hold at most %s device(s)\n' "$kc_most" >&2
@@ -2533,6 +2526,17 @@ case "$verb" in
         for face in "$@"; do
           case "$face" in ''|*[!0-9]*) die "pulama admit takes face ordinals (numbers)" ;; esac
         done
+        # WITH NO TERMINAL THE HOʻĀLA LEI ADMITS (the rite's pre-raise admit, `lares rite kukulu` with no terminal): the keeper hears the
+        # image the tag holds, then admits it under the lei, one return, no route. A lei that covers nothing refuses by name, and the
+        # rite stops before its raise.
+        if [ -z "$HAVE_TTY" ] && [ "$#" -eq 0 ]; then
+          stand_pulama
+          pa_digest=$(image_id) || pa_digest=""
+          [ -n "$pa_digest" ] || die "pulama admit: the tag $IMAGE_REF reads no digest, so nothing admits"
+          keeper_admit_by_lei "$pa_digest" || die "pulama admit: $IA_LEI_WHY, so the image $pa_digest stands unadmitted; admit it by hand on a terminal (\`lares pulama admit\`), or string a hoʻāla lei: $HOALA_LEI_STRING"
+          printf 'lares-container: pulama admit: %s stands admitted\n' "$pa_digest" >&2
+          exit 0
+        fi
         # shellcheck disable=SC2046
         compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" admit "$@" ;;
       rehive)

@@ -19,11 +19,9 @@ async function newTiddlerCycle(r: Awaited<ReturnType<typeof shoreRig>>, boundary
   await afterDispatch();
   typeInto(r, d, text, { "draft.title": title });
   await afterDispatch();
-  boundary.fire();
   await boundary.settle();
   saveSequence(r, d);
   await afterDispatch();
-  boundary.fire();
   await boundary.settle();
 }
 
