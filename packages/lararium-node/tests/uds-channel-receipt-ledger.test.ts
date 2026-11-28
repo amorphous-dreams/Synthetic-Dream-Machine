@@ -1186,18 +1186,21 @@ describe("a cancelled id leaves the ring as every other fact does", () => {
     /** The fields of the fact the store holds for `id`, as a later boot would read them. */
     const stored = (id: string): Record<string, unknown> =>
       plainRecord((workingHandle.doc() as LarDoc).tiddlers[`${RECEIPT_FACT_URI_PREFIX}${id}`]!).tiddler as Record<string, unknown>;
-    return { repo, ledgerAt, stored };
+    return { repo, ledgerAt, stored, workingHandle };
   }
   const IDS = ["req-c1", "req-c2", "req-c3", "req-c4", "req-c5"];
 
-  test("★ ring 2, five cancels: three facts read `evicted`, and at most the ring's count keep a standing verdict ★", async () => {
+  test("★ ring 2, five cancels: the ring keeps two standing verdicts and two evicted facts, and the oldest left the document ★", async () => {
     const s = stores();
     const b = s.ledgerAt(2);
     for (const id of IDS) await b.ledger.cancel(id);
-    expect(IDS.map((id) => s.stored(id)["state"])).toEqual(["evicted", "evicted", "evicted", "abandoned", "abandoned"]);
+    // The control document compacts by count: `ring` evicted facts stay to answer the gap, and an older one leaves whole.
+    expect((s.workingHandle.doc() as LarDoc).tiddlers[`${RECEIPT_FACT_URI_PREFIX}req-c1`]).toBeUndefined();
+    expect(IDS.slice(1).map((id) => s.stored(id)["state"])).toEqual(["evicted", "evicted", "abandoned", "abandoned"]);
     // What a stored record holds once a cancelled id left the ring: its id, its place in the order, its state.
-    expect(Object.keys(s.stored("req-c1")).sort()).toEqual(["request-id", "seq", "state", "title"]);
-    expect(await b.ledger.arbitrate("req-c1", "sha256:any")).toEqual({ verdict: "refuse", reason: "retention-gap" });
+    expect(Object.keys(s.stored("req-c2")).sort()).toEqual(["request-id", "seq", "state", "title"]);
+    expect(await b.ledger.get("req-c1")).toBeNull();
+    expect(await b.ledger.arbitrate("req-c2", "sha256:any")).toEqual({ verdict: "refuse", reason: "retention-gap" });
     expect(await b.ledger.arbitrate("req-c5", "sha256:any")).toEqual({ verdict: "refuse", reason: "abandoned" });
     await s.repo.shutdown();
   });
@@ -1207,10 +1210,11 @@ describe("a cancelled id leaves the ring as every other fact does", () => {
     const first = s.ledgerAt(2);
     for (const id of IDS) await first.ledger.cancel(id);
     const second = s.ledgerAt(2);
-    const read = await second.ledger.get("req-c1");
+    const read = await second.ledger.get("req-c2");
     expect(read).not.toBe("torn");
-    expect(read).toMatchObject({ requestId: "req-c1", state: "evicted", seq: 0 });
-    expect(await second.ledger.arbitrate("req-c1", "sha256:any")).toEqual({ verdict: "refuse", reason: "retention-gap" });
+    expect(read).toMatchObject({ requestId: "req-c2", state: "evicted", seq: 1 });
+    expect(second.ledger.cached("req-c2")).toMatchObject({ requestId: "req-c2", state: "evicted", seq: 1 });
+    expect(await second.ledger.arbitrate("req-c2", "sha256:any")).toEqual({ verdict: "refuse", reason: "retention-gap" });
     await s.repo.shutdown();
   });
 
@@ -1234,7 +1238,9 @@ describe("a cancelled id leaves the ring as every other fact does", () => {
     const b = s.ledgerAt(8);
     // An abandoned id that carries its digest (a caller that hung up before the read) evicts with the digest kept.
     await b.ledger.abandonDrop("req-d1", "sha256:d1");
-    const tight = s.ledgerAt(0);
+    await b.ledger.abandonDrop("req-d2", "sha256:d2");
+    // A ring of one evicts the older and keeps its evicted fact (a ring of none keeps no evicted fact at all).
+    const tight = s.ledgerAt(1);
     expect(await tight.ledger.get("req-d1")).toMatchObject({ state: "evicted", inputDigest: "sha256:d1" });
     // A landed fact with no digest still reads torn.
     await tight.composite.put({ tiddler: { title: `${RECEIPT_FACT_URI_PREFIX}req-t1`, "request-id": "req-t1", state: "done", seq: "9", "outcome-bytes": "1" }, meta: {} } as never, ORIGIN);
