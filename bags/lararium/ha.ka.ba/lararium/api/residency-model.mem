@@ -81,11 +81,10 @@ ALL-CAPS by deliberate convention — the action surface SHOULD read at a glance
 
 ''URI grammar:''
 
-The M.2 verb-as-tiddler-field pipeline carries the action surface. ACTION verbs compose ON TOP of `verb-tiddler.ts` rather than living under a separate URI prefix — the action identity travels as the `verb` field value within an existing verb-tiddler. Three URI prefixes already exist:
+The M.2 verb-as-tiddler-field pipeline carries the action surface. ACTION verbs compose ON TOP of `verb-tiddler.ts` rather than living under a separate URI prefix — the action identity travels as the `verb` field value within an existing verb-tiddler. Two URI prefixes already exist:
 
 ```
 lar:///lararium.local.vm/verbs/<requestId>   # volatile local invocation (admin VM scratch)
-lar:///ha.ka.ba/bags/control/summons/<requestId>   # remote vessel summons, in the vessel control document
 lar:///ha.ka.ba/bags/control/outcomes/<requestId>  # durable outcome, in the vessel control document
 ```
 
@@ -301,6 +300,6 @@ rhymes with this model's thermal residency yet stays distinct (retrieval grain, 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0woiT20KhvA0h4NzMri02qnKSY9lffW4upVZIGilV8g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;za7re0ffiNVej2g9moLJ4pQdOWTCpicxAsyDmcI6Iws`>>
 
 <<^ code=`&#x0004;` to=`?`>>

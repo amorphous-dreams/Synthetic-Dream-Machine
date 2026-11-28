@@ -41,7 +41,7 @@ Road item `W26` carries the build of two operator rulings: //the system wikis re
 
   REGISTRIES, each written by its own scope's owner alone
     vessel bootstrap    this vessel: its daemon url, its own document pointers, its face planes,
-                        its control home: the accepted floor pin, one per Nexus
+                        its fixed-title state: the accepted floor pin, one per Nexus
     catalog-plane            the operator's documents, at the operator's scope
     Kahu realm          the cabal: the LIVE house-canon documents and their drafts, at contract
     crossroads board    the Nexus: its one public answer, the release
@@ -128,7 +128,7 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 
 //"The pull/push tension can go the way the memegraph/code leans"//: a release gets CUT and published; each vessel ACCEPTS it, and the accept moves its floor. ''The VESSEL pins the floor'': one pin per (vessel, Nexus). Faces pin nothing; the engine keeps its own adoption at reboot, per device.
 
-* ''Where the pin rests.'' The vessel's control home (`control-home`), under `<control>/floor-pin/<Nexus AID>`, as `{ kind: "floor-pin", nexus, release, manifest }`. No recipe mounts that document and no mirror names it; no face store carries a pin, so a face switch reaches none.
+* ''Where the pin rests.'' The vessel's fixed-title state (`vessel-state`, its secret home), under `<secret home>/floor-pin/<Nexus AID>`, as `{ kind: "floor-pin", nexus, release, manifest }`. No recipe mounts that document and no mirror names it; no face store carries a pin, so a face switch reaches none.
 * ''Where it starts.'' A vessel holding no pin record stands on its genesis floor (`GENESIS_FLOOR_TIDDLER`, `release: null`): the pin derives, nothing writes at boot, and a reboot lands nothing.
 * ''What orders it.'' The `prior` link alone. A release descends from the pin where its chain, walked through the releases that COUNT (`foldFloorReleases`: the steward's seal, the cabal's approval over the manifest's exact bytes, the epoch lineage, a chain reaching the Nexus's first), meets the pinned release, or meets the chain's opening where the pin stands at genesis. No clock, integer or arrival order decides.
 * ''The status'' (`lares vessel floor status`, the browser's `floorStatus`) names the pinned release, the newest the board shows, whether it descends (a fast-forward, with the path it walks), and any fork, its heads named.
@@ -216,6 +216,6 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;OF6nchzOQkvQVGcxdXQu3L_BwN6noLvS9AjXSGnhWz8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nenqs2ec28QKeKth_ISNgBdcqZwCKglvjhcIotGwsn4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

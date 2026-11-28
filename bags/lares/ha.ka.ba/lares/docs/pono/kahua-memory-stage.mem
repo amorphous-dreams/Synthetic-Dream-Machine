@@ -64,7 +64,7 @@ The Two Organs law binds the quine and the Memory Sensorium as cortex and hippoc
 ''The ruled stack'' (operator, 2026-11-01: //"We enact this design now, no 'A now, b later' for the live Lararium standing."//). The `kahua` wiki and recipe stack three layers over the floor, the topmost shadowing those beneath it:
 
 # ''the working top'' — draft and private, writable on this device alone; it projects as flat files to the face's root, `<projections>/faces/<pet name>/wikis/daemon`, as every wiki's working layer projects;
-# ''`bags/daemon-<F>`'' — the face's LOCAL canon on this device: minted at the face's first worn stand, named in the vessel's control home (`daemon-canon/<F>`), sealed under the face (`standFaceDaemonCanon`), projected at `<projections>/faces/<pet name>/bags/daemon`;
+# ''`bags/daemon-<F>`'' — the face's LOCAL canon on this device: minted at the face's first worn stand, named in the vessel's fixed-title state (`daemon-canon/<F>`, its secret home), sealed under the face (`standFaceDaemonCanon`), projected at `<projections>/faces/<pet name>/bags/daemon`;
 # ''`bags/kahua`'' — ONE fleet-synced, lift-only bag, projected at `<projections>/faces/<pet name>/bags/kahua`; a project rides inside it as `$(project)$/**` tiddler paths, never as a bag of its own; no hand edits it in place;
 # ''the lares canon'' — read-only, the floor.
 
@@ -372,6 +372,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xUEMXamgGtVJvy0_-uBJTw2h96toiwuz4sSvrK7d3RA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QjWz--e6kEdofxTAXa_uGxz60tp8Y22Qc2bjA7VUz7U`>>
 
 <<^ code=`&#x0004;` to=`?`>>

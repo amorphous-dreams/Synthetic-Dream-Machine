@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.bag.shares"
 
 A share row says who reads and who writes a bag, by face PET-NAME as a title list (`a b [[c d]]`), `*` for every face, or empty; `hN` and `--face N` resolve to that face's pet-name (`--face` adds face N to the readers), so a row always names faces by pet-name. A line names its DELTA: `--read` and `--write` add names beside the standing ones and never replace a list, `--read-remove` and `--write-remove` take names out (each taken-out face's landed grant revokes; a face standing shut keeps the row as it stood, named), and what the line leaves unnamed (the other list, the note, the owner) stands, so the same line twice changes nothing. `--list` shows every row and the one resolver's answer per bag (with `--json`, each row AS WRITTEN beside the resolver's answer); `--remove` unshares the row.
 
-The row writes through to `$LAR_ROOT/config/share.tid` (it survives a re-founding; a person edits it by hand, and the next boot reconciles it in, the file winning) and, with a vessel standing, into the control document (`share-set`); then the operator's hand lands it (`share-apply`): each lit grantee takes the bag's row by reference and a delegation from the owner's hive, and a grant whose face stands shut waits behind an opaque flag until it lights. ONE ROW PER SLUG: a wiki row standing for the slug refuses `share-kind-standing`, and nothing writes. Sharing rides by reference and delegation, never a copy.
+The row writes through to `$LAR_ROOT/config/share.tid` (it survives a re-founding; a person edits it by hand, and the next boot reconciles it in, the file winning) and, with a vessel standing, into the vessel's fixed-title state (`share-set`); then the operator's hand lands it (`share-apply`): each lit grantee takes the bag's row by reference and a delegation from the owner's hive, and a grant whose face stands shut waits behind an opaque flag until it lights. ONE ROW PER SLUG: a wiki row standing for the slug refuses `share-kind-standing`, and nothing writes. Sharing rides by reference and delegation, never a copy.
 
 <<~/ahu>>
 
@@ -31,7 +31,7 @@ The row writes through to `$LAR_ROOT/config/share.tid` (it survives a re-foundin
 <<has entity=`example` name=`share-with-a-face` params=`bag/lares read/[[Lares Alpha]] note/[[the review face reads the lares bag]] ~ add one reader beside the standing ones`>>
 <<has entity=`example` name=`narrow-a-list` params=`bag/lares read-remove/[[Lares Alpha]] ~ take a name out; its landed grant revokes`>>
 <<has entity=`example` name=`read-the-rows` params=`list/true ~ every row and the resolver's answer per bag`>>
-<<has entity=`example` name=`unshare` params=`bag/lares remove/true ~ the row leaves the file and the control document`>>
+<<has entity=`example` name=`unshare` params=`bag/lares remove/true ~ the row leaves the file and the vessel state`>>
 ```
 
 <<~/ahu>>
@@ -49,7 +49,7 @@ The row writes through to `$LAR_ROOT/config/share.tid` (it survives a re-foundin
 <<has entity=`arg` name=`note` params=`takes/words ~ why the row stands`>>
 <<has entity=`arg` name=`face` params=`takes/handle-index ~ add face N to the readers, by its handle index`>>
 <<has entity=`arg` name=`list` params=`~ show every row and the resolver's answer per bag`>>
-<<has entity=`arg` name=`remove` params=`~ unshare: the row leaves the file and the control document`>>
+<<has entity=`arg` name=`remove` params=`~ unshare: the row leaves the file and the vessel state`>>
 <<has entity=`arg` name=`workspace` params=`~ refused on a bag (a wiki's workbench rests there); a bag takes none`>>
 ```
 
@@ -115,6 +115,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;eG19nuQ5TcIkkhhGkdCC6pSdKBXpuxq_5xn0fucxzP0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tn7HAcBPvXpkn2oapMuCfi6YDSdoAieYcmYWvJEOnxk`>>
 
 <<^ code=`&#x0004;` to=`?`>>
