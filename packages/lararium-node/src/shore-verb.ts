@@ -2,7 +2,7 @@
  * shore-verb — a person's answers at the disk shore, carried to the projector that holds the mirror.
  *
  * The disk projector decides every file a hand moved by itself: it hands the file to the island's capture door, whose
- * words land in the records or stand as parallel drafts ("Draft of 'X' by disk/<hash>"), and nothing waits for a hand.
+ * words land in the records or stand as parallel drafts ("Draft of 'X' by disk"), and nothing waits for a hand.
  * One state alone holds for a person: a PENDING REMOVAL, where a file vanished from the path its base names, since a
  * vanished file never tombstones its records by itself. A person reads what pends (`list`) and answers by name. The verb
  * rides `wiki:place-verb` into the island that mounts the projector (`lares shore` sends it through `wiki-act`), and each

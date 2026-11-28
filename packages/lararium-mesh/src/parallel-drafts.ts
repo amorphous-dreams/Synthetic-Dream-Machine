@@ -18,7 +18,7 @@
  * its island adaptor, registered as a `ParallelDraftsReader`, persists every draft off the live value
  * into the wiki's draft bag, where it stands as a quiet badge until a human discards it. The disk shore
  * drafts in the same shape: the island's capture door stands a moved file's words that the records cannot
- * take as `Draft of '<title>' by disk/<hash>` (`@lararium/node` disk-capture), so the two conflict surfaces
+ * take as `Draft of '<title>' by disk` (`@lararium/node` disk-capture), so the two conflict surfaces
  * meet as drafts beside their target. Each keeps its own source: this module reads concurrent CRDT values,
  * the capture door reads disk against records.
  *

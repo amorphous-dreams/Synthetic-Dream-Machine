@@ -1873,13 +1873,13 @@ run_wikis() {
 # question before a write: did a hand move the file since the projector last wrote it or last saw it
 # captured? Where it did, the projector writes nothing over it and hands it to the island's capture
 # door (`disk-capture.ts`). Where the records moved too, the file's words stand as parallel drafts
-# (`Draft of '<title>' by disk/<hash>`) beside the records, the base moves to the file's bytes, and the
+# (`Draft of '<title>' by disk`) beside the records, the base moves to the file's bytes, and the
 # next reading renders what the records say. The CRDT merges; no wave waits for a hand.
 #
 # What this scenario walks: the capture fires, the disk hand's words reach the house as a draft before
 # any render writes over them, and a cold boot captures nothing across the hand-authored carriers.
 #
-# THE GREPPABLE HANDLES: `[capture] <uri>` · `parallel draft(s): Draft of '<uri>' by disk/`.
+# THE GREPPABLE HANDLES: `[capture] <uri>` · `parallel draft(s) beside the records: Draft of '<uri>' by disk`.
 # COVERS: private/seed/unfed
 run_conflict() {
   say "CAPTURE — both hands move one carrier, and the disk hand's words reach the house as a draft before any render writes"
@@ -1940,7 +1940,7 @@ run_conflict() {
     $COMPOSE exec -T lararium-a $LARES put "title=$URI" recipe=lares file=/tmp/conf2.mem >/dev/null 2>&1
     local d=$((SECONDS + 60))
     while ! logs_have "[capture] $URI" lararium-a && [ "$SECONDS" -lt "$d" ]; do sleep 5; done
-    if logs_have "parallel draft(s): Draft of '$URI' by disk/" lararium-a; then ok
+    if logs_have "parallel draft(s) beside the records: Draft of '$URI' by disk" lararium-a; then ok
     else
       bad "no capture draft stood — the projector wrote over the file, or the capture door never ran"
       $COMPOSE logs --since 3m lararium-a 2>&1 | grep -iE "capture|project" | tail -4 | cut -c1-200 | sed 's/^/      /'
@@ -1952,7 +1952,7 @@ run_conflict() {
     step "NEG c — the disk hand's words stand in the house as a draft, and the records keep the record hand's"
     local DRAFT_OUTPUT
     DRAFT_OUTPUT=$($COMPOSE exec -T lararium-a $LARES get "title=$URI" recipe=lares --json 2>&1 || true)
-    if logs_have "Draft of '$URI' by disk/" lararium-a && printf '%s' "$DRAFT_OUTPUT" | grep -qF 'the RECORD hand moved this'; then ok
+    if logs_have "Draft of '$URI' by disk" lararium-a && printf '%s' "$DRAFT_OUTPUT" | grep -qF 'the RECORD hand moved this'; then ok
     else bad "the disk hand's words reached no draft, or the records lost the record hand's words"; fi
   fi
 

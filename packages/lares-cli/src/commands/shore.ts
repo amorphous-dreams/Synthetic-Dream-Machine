@@ -10,7 +10,7 @@
  *   lares shore log [--kind <k>] [--held] [--boot <id>]
  *
  * The disk projector decides every file a hand moved by itself: the island's capture door lands its words in the records,
- * or stands them as parallel drafts ("Draft of 'X' by disk/<hash>") where the records moved too, and nothing waits for a
+ * or stands them as parallel drafts ("Draft of 'X' by disk") where the records moved too, and nothing waits for a
  * hand. A draft reads and settles as any parallel draft does, in the wiki. One state alone holds for a person:
  *
  *   · A PENDING REMOVAL: a file vanished from the path its base names. Nothing writes it back and nothing
