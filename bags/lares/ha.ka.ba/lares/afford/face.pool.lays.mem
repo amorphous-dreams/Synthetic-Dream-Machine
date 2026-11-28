@@ -1,0 +1,119 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.pool.lays`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "make a face's root, a realm or a workspace one git pool"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.pool.lays", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.pool.lays"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.pool.lays"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.pool.lays ~ init ~ one git working tree per pool, idempotent
+
+`lares surface init` makes the worn (or `--face N`) face's root at `projections/faces/<pet name>/` a pool: `.git` at 0700, the house's ignore list, a local author `<pet name> <slug>@face.invalid` and a pre-commit pool-check hook. It changes only what does not already stand as the house writes it, and a second run says already. `--realm <realm pet name>` makes the realm's root its one pool under the realm's identity, never a face's, lifting any tree nested below it with its history kept, and each share row's workspace a pool under its wiki's identity; a wiki whose folder stands nowhere yet reads unlaid. `--workspace <name>` makes a bound workspace folder a pool under a workspace author. It runs on this machine; with no LAR_ROOT it reads the container house's pools under LARES_HOUSE.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ face · realm · workspace
+
+```memetic-wikitext
+<<has entity=`example` name=`face` params=`~ the worn face's root becomes its pool`>>
+<<has entity=`example` name=`realm` params=`realm/notes ~ the realm's one tree and its workspaces`>>
+<<has entity=`example` name=`workspace` params=`workspace/garden ~ a bound workspace folder`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face · realm · workspace
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`realm` params=`takes/pet-name ~ the realm whose one tree becomes the pool; never beside face`>>
+<<has entity=`arg` name=`workspace` params=`takes/name ~ a bound workspace to found; never beside face or realm`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/hand ~ writes git trees under this host's projections; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · surface-face-unnamed · surface-house-unnamed · surface-face-unanswered · surface-realm-unnamed · surface-realm-workspace-unbound · surface-realm-unlaid · surface-realm-in-face · surface-house-root · surface-workspace-unbound · surface-workspace-in-tree
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.pool.lays]] ~ a stray word, a malformed realm or workspace name, or two pools named`>>
+<<has entity=`refusal` name=`surface-face-unnamed` params=`~ no face label settles the face`>>
+<<has entity=`refusal` name=`surface-house-unnamed` params=`~ no house root stands to read`>>
+<<has entity=`refusal` name=`surface-face-unanswered` params=`~ the vessel answered no face`>>
+<<has entity=`refusal` name=`surface-realm-unnamed` params=`~ no realm wears the pet name`>>
+<<has entity=`refusal` name=`surface-realm-workspace-unbound` params=`~ a share row's workspace binds no directory here`>>
+<<has entity=`refusal` name=`surface-realm-unlaid` params=`~ no folder of the realm stands yet; the house lays it at the wiki's next mount`>>
+<<has entity=`refusal` name=`surface-realm-in-face` params=`~ the realm's root rests inside a face root`>>
+<<has entity=`refusal` name=`surface-house-root` params=`~ the root would hold projections/ or config/`>>
+<<has entity=`refusal` name=`surface-workspace-unbound` params=`~ the workspace binds no directory here`>>
+<<has entity=`refusal` name=`surface-workspace-in-tree` params=`~ the workspace rests inside another git work tree`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ laid · realm
+
+```memetic-wikitext
+<<has entity=`band` name=`laid` params=`exit/0 fields/[[face root changed left already]] ~ the pool stands; already where nothing changed`>>
+<<has entity=`band` name=`realm` params=`exit/0 fields/[[realm unlaid already pools]] ~ each realm pool and what it set, lifted and left`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares surface init
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares surface init]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · disk-projection
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;djjJFdgrgPjHlGJ49p5Baq0dDTNPa4VLTTZVm-NKy90`>>
+
+<<^ code=`&#x0004;` to=`?`>>

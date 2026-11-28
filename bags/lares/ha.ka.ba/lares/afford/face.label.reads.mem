@@ -1,0 +1,103 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.label.reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "name the face the house resolves and the pet name it wears"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.label.reads", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.label.reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.label.reads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.label.reads ~ face ~ the one line the host asks the vessel
+
+`lares surface face` answers the face the house resolves (the worn face, or `--face N`) and its pet name, as `h<N> <pet name>`. The host shim asks this line only for a face no label settles.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ worn
+
+```memetic-wikitext
+<<has entity=`example` name=`worn` params=`~ name the worn face`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ reads face labels, asking the vessel where none settles; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · surface-face-unnamed · surface-face-unanswered
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.label.reads]] ~ a malformed --face`>>
+<<has entity=`refusal` name=`surface-face-unnamed` params=`~ no face label settles the face`>>
+<<has entity=`refusal` name=`surface-face-unanswered` params=`~ the vessel answered no face`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ face
+
+```memetic-wikitext
+<<has entity=`band` name=`face` params=`exit/0 fields/[[face petname]] ~ the face index and its pet name`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares surface face
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares surface face]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · disk-projection
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;T02srAID7ECHuxJdfHrecnxfzt2h_HwHAB15SRrFN_k`>>
+
+<<^ code=`&#x0004;` to=`?`>>

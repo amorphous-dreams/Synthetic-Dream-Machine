@@ -1,0 +1,108 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.pool.opens`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "print the editor line over a face's root and its realm pools"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.pool.opens", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.pool.opens"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.pool.opens"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.pool.opens ~ open ~ the editor line, and no workspace file
+
+`lares surface open` prints `<editor> -n` over the face's root and its realm pools and writes no workspace file. The editor reads from the house config tiddler `$:/config/lares/surface/Editor`, else `code`; `--launch` runs the line. A face with no root yet refuses until `surface init` lays it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ print · launch
+
+```memetic-wikitext
+<<has entity=`example` name=`print` params=`~ print the editor line`>>
+<<has entity=`example` name=`launch` params=`launch/true ~ run the editor line`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face · launch
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`launch` params=`~ run the editor line instead of printing it alone`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/hand ~ launches a host editor; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ surface-no-pool · surface-editor-absent · surface-launch-failed
+
+```memetic-wikitext
+<<has entity=`refusal` name=`surface-no-pool` params=`cure/[[face.pool.lays]] ~ the face holds no root yet`>>
+<<has entity=`refusal` name=`surface-editor-absent` params=`~ this machine holds no such editor; name one in the config tiddler`>>
+<<has entity=`refusal` name=`surface-launch-failed` params=`~ the editor line answered a non-zero exit`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ printed
+
+```memetic-wikitext
+<<has entity=`band` name=`printed` params=`exit/0 fields/[[face argv editor launched exit]] ~ the line, and its exit where launched`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares surface open
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares surface open]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · disk-projection
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ingpMiqety0ICtaIBviFZdi1L6ANKSMh4yxmMS5s4Yc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

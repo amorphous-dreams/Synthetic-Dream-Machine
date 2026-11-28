@@ -1,0 +1,110 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.pool.checks`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "check that a pool holds one face's planes, or one realm, alone"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.pool.checks", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.pool.checks"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.pool.checks"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.pool.checks ~ check ~ a pool holds its own identity alone
+
+`lares surface check` reads the repo at the working directory (or the `--face N` pool) and refuses an index file or another face's root in the pool, a repo at projections/ or config/, and an author or signing key another face's pool carries. A realm tree reads under the realm check; `--realm <realm pet name>` checks every tree the realm's wikis rest in. A breach exits 1 and names each, with its pool.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ here · realm
+
+```memetic-wikitext
+<<has entity=`example` name=`here` params=`~ check the repo at the working directory`>>
+<<has entity=`example` name=`realm` params=`realm/notes ~ check every pool of the realm`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ face · realm
+
+<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
+
+```memetic-wikitext
+<<has entity=`arg` name=`realm` params=`takes/pet-name ~ the realm whose pools to check; never beside face`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ local
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`local` params=`who/seat-or-hand ~ reads git trees on this host; this handler checks no ocap`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · surface-no-repo · surface-no-pool · surface-check-breach
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[face.pool.checks]] ~ a stray word, a malformed realm, or realm beside face`>>
+<<has entity=`refusal` name=`surface-no-repo` params=`~ no git repository stands there`>>
+<<has entity=`refusal` name=`surface-no-pool` params=`cure/[[face.pool.lays]] ~ no pool of the realm stands yet`>>
+<<has entity=`refusal` name=`surface-check-breach` params=`~ the pool holds what another face or the house owns; each breach named`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ clean · breach
+
+```memetic-wikitext
+<<has entity=`band` name=`clean` params=`exit/0 fields/[[top realm breaches warnings]] ~ the pool holds its own identity alone`>>
+<<has entity=`band` name=`breach` params=`exit/1 fields/[[top realm pools breaches warnings]] ~ each breach with its code and pool`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares surface check
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares surface check]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · disk-projection
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Tvf4ZRkHuGpIHN263vbiBcQYCTMkp1wi43tF2j-anFc`>>
+
+<<^ code=`&#x0004;` to=`?`>>
