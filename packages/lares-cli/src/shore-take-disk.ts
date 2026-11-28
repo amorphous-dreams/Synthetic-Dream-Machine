@@ -26,9 +26,10 @@
  *      lands the disk's words where the records still stand at that state (rule 4), and answers `conflict`
  *      where they moved since: nothing lands, and the standoff that stands keeps its own key.
  *
- * So an answer under a key reaches the one state its giver read, on both sides. The gesture pins the
- * base at the file; the projector's next reconcile finds the disk and the records agreed, and the alert
- * clears. The file's bytes stay as the hand left them.
+ * So an answer under a key reaches the one state its giver read, on both sides. The wave rides to the island
+ * that listed the standoff, whose projector holds the row; the gesture pins the base at the file through that
+ * island, and its next reconcile finds the disk and the records agreed, and the row leaves. The door reads
+ * the shore again and says whether it did (`cleared`). The file's bytes stay as the hand left them.
  *
  * A person's gesture alone: nothing calls this door by itself, and no flag makes a wave take it.
  */
@@ -77,7 +78,15 @@ export type TakeDiskMerge =
   | { readonly kind: "whole"; readonly why: string };
 
 export type TakeDiskResult =
-  | { readonly ok: true; readonly uri: string; readonly bag: string; readonly key: string; readonly path: string; readonly decision: string; readonly merge: TakeDiskMerge; readonly requestId?: string }
+  | {
+    readonly ok: true; readonly uri: string; readonly bag: string; readonly key: string; readonly path: string; readonly decision: string; readonly merge: TakeDiskMerge; readonly requestId?: string;
+    /**
+     * WHAT THE SHORE READS ONCE THE WORDS LANDED: the island that listed the standoff looks at the disk again. `true` where no
+     * standoff stands for the carrier there any more; `false` where one still stands, its key in `stands`. Absent where the
+     * look itself was refused (`lares shore` reads it by hand).
+     */
+    readonly cleared?: boolean; readonly stands?: string;
+  }
   | { readonly ok: false; readonly refusal: string; readonly why: string; readonly requestId?: string };
 
 /** A wiki's instance slot addressed as a bag: its INGEST runs inside that wiki's island. */
@@ -204,7 +213,10 @@ export async function takeDisk(req: TakeDiskRequest, deps: TakeDiskDeps): Promis
   const settled = await settleIngest(
     // A wiki's instance slot ingests inside the active wiki's island; the daemon island's own working layer
     // ingests daemon-side, in the island that listed its standoff.
-    { source: path, toBag: bag, candidates: [candidate], did: deps.did, ...(WIKI_SLOT_BAG_RE.test(bag) && named["island"] !== "daemon" ? { inWiki: true } : {}) },
+    // THE WAVE RIDES TO THE ISLAND THAT LISTED THE STANDOFF: its projector holds the row and pins the base the gate compares,
+    // whatever the bag's shape (a canon bag the active wiki mirrors stands there too). A wiki's instance slot no island named
+    // ingests inside the active wiki's island; the daemon island's own rows ingest daemon-side.
+    { source: path, toBag: bag, candidates: [candidate], did: deps.did, ...(named["island"] === "wiki" || (WIKI_SLOT_BAG_RE.test(bag) && named["island"] !== "daemon") ? { inWiki: true } : {}) },
     deps.tree, deps.submit,
   );
   const requestId = settled.first.requestId;
@@ -222,5 +234,10 @@ export async function takeDisk(req: TakeDiskRequest, deps: TakeDiskDeps): Promis
   }
   if (settled.refused.length > 0) return { ok: false, refusal: "disk-refused", why: settled.refused[0]!.why, requestId };
   if (!settled.landed.has(uri)) return { ok: false, refusal: "verb-error", why: `the island answered the wave without a row for ${uri}`, requestId };
-  return { ok: true, uri, bag, key, path, decision: String(settled.named.get(uri)?.["decision"] ?? "ingest"), merge: merged.merge, requestId };
+  // 4 — THE SHORE READS AGAIN: the list looks at the disk first, so the row the landing settled reads gone, and one still
+  // standing reads under its present key. The answer says which; it never claims a cleared row it did not read.
+  const after = await readShoreList(deps.ask, { uris: [uri], bag }).catch(() => null);
+  const still = after !== null && after.ok ? after.standoffs.filter((s) => s["uri"] === uri && s["bagId"] === bag) : null;
+  const shore = still === null ? {} : still.length === 0 ? { cleared: true } : { cleared: false, stands: String(still[0]!["standoff"]) };
+  return { ok: true, uri, bag, key, path, decision: String(settled.named.get(uri)?.["decision"] ?? "ingest"), merge: merged.merge, requestId, ...shore };
 }

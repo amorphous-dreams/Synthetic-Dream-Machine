@@ -27,7 +27,8 @@ import { AUDIT_ARRAY_CAP, boundOutcomeOutput, placeVerb, removeVerb } from "../s
 import { VerbTable, callDoorOf, makeCallReactor, type VerbContext } from "../src/verb-dispatcher.js";
 import { TIDDLER_CALL_SEATS, tiddlerCallSource } from "../src/tiddler-verbs.js";
 import { ORACLE_CALL_SEATS } from "../src/oracle-cast-verb.js";
-import { CallRefusal, IRIS_SHRINE, callFaceOf, callReaderOf, hostHandled, type MacroCallParse } from "../src/modules/call.js";
+import { CallRefusal, IRIS_SHRINE, callFaceOf, callReaderOf, hostHandled, type CallFloor, type MacroCallParse } from "../src/modules/call.js";
+import { bakeAffordancePack } from "../scripts/build-affordance-pack.js";
 import { skinRows } from "../src/affordance-read.js";
 import { AFFORDANCE_TAG, addressOfTitle } from "../src/affordance-rows.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
@@ -2250,10 +2251,14 @@ const READS_SEAT = "lar:///ha.ka.ba/lares/afford/engine.record.reads";
 const PUTS_SEAT = "lar:///ha.ka.ba/lares/afford/engine.record.puts";
 const CALL_CANON = ["api/pono/affordance.mem", "afford/engine.record.reads.mem", "afford/engine.record.puts.mem", "afford/engine.record.removes.mem", "afford/engine.record.renames.mem", "afford/engine.filter.pages.mem"];
 
-/** The anchor rig with the core verbs' canon carriers (and the affordance law their container row rides) standing in canon. */
-async function callRig(named?: Awaited<ReturnType<typeof rig>>) {
+/**
+ * The anchor rig with the core verbs' canon carriers (and the affordance law their container row rides) standing in canon.
+ * `canon: false` stands none of them (a house whose canon lags its checkout); `floor` seats the pack beneath the stack (absent,
+ * none: the call reads the stack alone).
+ */
+async function callRig(named?: Awaited<ReturnType<typeof rig>>, more: { canon?: boolean; floor?: CallFloor } = {}) {
   const r = await rig();
-  for (const e of named ? [r.engine, named.engine] : [r.engine]) {
+  for (const e of more.canon === false ? [] : named ? [r.engine, named.engine] : [r.engine]) {
     for (const rel of CALL_CANON) { const text = canonFile(rel); e.ingestCarrier(headTitleOf(text), text, { "$origin-bag": CANON }); }
   }
   // A NAMED WIKI (`recipe: "lares"`) answers in its own engine, its own stack seating its own carriers.
@@ -2265,7 +2270,7 @@ async function callRig(named?: Awaited<ReturnType<typeof rig>>) {
   table.register("tiddler-rename", makeTiddlerRenameReactor(opts));
   table.register("wiki-filter", makeWikiFilterReactor(opts));
   for (const [address, seat] of Object.entries(TIDDLER_CALL_SEATS)) table.answer(address, seat);
-  const reactor = makeCallReactor(table, tiddlerCallSource(opts));
+  const reactor = makeCallReactor(table, tiddlerCallSource(opts, () => more.floor ?? null));
   const call = (verb: string, params: Record<string, unknown> = {}, c: VerbContext = ctx()) => reactor({ verb, params }, c);
   const sigil = (text: string, c: VerbContext = ctx()) => reactor({ sigil: text }, c);
   /** A terminal's call: the same reactor on the cli surface, every value a word as the shell hands it over. */
@@ -2505,6 +2510,44 @@ describe.skipIf(wikiSkip)(`the one call: resolve, bind and dispatch through the 
     expect(await r.call("trim", { wick: "long" })).toMatchObject({ handler: "host", address: spirit });
     const unsealed: Cap = async (access, bag) => (bag === sealed ? { ok: false, reason: "no-grant" } : writer(access, bag));
     await expect(r.call("trim", { wick: "long" }, ctx(unsealed))).rejects.toMatchObject({ reason: "call-unrouted" });
+  });
+
+  test("RED: a stack that holds no engine.record.* carrier routes `get` through the baked pack, the floor rung, and the answer names bag/pack", { timeout: 60_000 }, async () => {
+    // A load budget past vitest's default: the floor bakes canon's carriers through a whole engine, as affordance-pack-fresh does.
+    const pack = await bakeAffordancePack(CALL_CANON.map(canonFile));
+    const floor: CallFloor = { records: pack.records, hash: pack.hash };
+    const bare = await callRig(undefined, { canon: false });
+    expect(bare.engine.wiki.getTiddler(READS_SEAT), "the stack holds no carrier of its own").toBeUndefined();
+    await expect(bare.call("get", { title: "Note 04" })).rejects.toMatchObject({ reason: "call-unrouted" });
+    const r = await callRig(undefined, { canon: false, floor });
+    const direct = await makeTiddlerGetReactor(r.opts)({ ...A, title: "Note 04" }, ctx());
+    const called = await r.call("get", { title: "Note 04" });
+    const { has: _has, ...plain } = direct;
+    // The container defaults through the pack's shared #/takes/container row, and the read answers as tiddler-get answers.
+    expect(called).toMatchObject(plain);
+    expect(called["carrier"]).toEqual({ carrier: READS_SEAT, bag: "pack", base: pack.hash });
+    expect(String(called["has"])).toContain(`carrier/${READS_SEAT} bag/pack base/${pack.hash}`);
+    // The pack's skins spell every surface the stack's would: the filter choice and a terminal's words reach their doors too.
+    expect(await r.call("get", { filter: "[tag[memory]limit[2]]" })).toMatchObject({ titles: ["Note 01", "Note 02"], carrier: { bag: "pack" } });
+    expect(await r.cli("get", { title: "Note 04" })).toMatchObject({ title: "Note 04", carrier: { bag: "pack" } });
+    // A cure still names a runnable call, read off the pack's #/takes.
+    await expect(r.call("get", { title: "Note 04", titel: "x" })).rejects.toThrow(/the nearest: title.*cure: <<~ get title=`x`>>$/);
+  });
+
+  test("CONTROL: a carrier the stack seats re-spells its address and wins over the pack; the pack fills only the slot the stack leaves silent", { timeout: 60_000 }, async () => {
+    const pack = await bakeAffordancePack(CALL_CANON.map(canonFile));
+    const r = await callRig(undefined, { canon: false, floor: { records: pack.records, hash: pack.hash } });
+    const own = "lar:///engine.record.reads";
+    // A working layer seats the read at its bare root, spelling it `fetch`; its #/takes calls the law's shared slots, which the
+    // stack holds none of, so those rows read the pack's.
+    r.engine.wiki.addTiddler({ title: own, text: "! engine.record.reads ~ a layer's read", tags: `[[${AFFORDANCE_TAG}]]`, "$origin-bag": DAEMON });
+    r.engine.wiki.addTiddler({ title: `${own}#/takes`, text: pack.records[`${READS_SEAT}#/takes`]!, "$origin-bag": DAEMON });
+    r.engine.wiki.addTiddler({ title: `${own}#/skins/console`, text: "<<has entity=`skin` name=`console` params=`spells/fetch ~ fetch`>>", "$origin-bag": DAEMON });
+    const fetched = await r.call("fetch", { title: "Note 04" });
+    expect(fetched).toMatchObject({ recipe: "default", title: "Note 04", carrier: { carrier: own, bag: DAEMON } });
+    // The stack decides the address: the pack's `get by/title` skin no longer reaches the read, so `get` names its one choice left.
+    await expect(r.call("get", { title: "Note 04" })).rejects.toMatchObject({ reason: "call-ambiguous" });
+    expect(await r.call("get", { filter: "[tag[memory]limit[1]]" })).toMatchObject({ titles: ["Note 01"], carrier: { bag: "pack" } });
   });
 
   test("WELD: every canon carrier finds a registered reactor, an acts/ row, handler/host or handler/seat; every seat names a carrier canon holds", async () => {

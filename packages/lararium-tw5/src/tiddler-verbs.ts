@@ -130,7 +130,8 @@ import { pageFilterAnswer, filterCursor, checkFilter, lineLensOf, matchingLines,
 import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { wornOrigin } from "./verb-dispatcher.js";
-import { CallRefusal, VOICE_SLOTS, callReaderOf, cureCall, type CallSeat, type CallVoice, type MacroCallParse, type VoiceSlot } from "./modules/call.js";
+import { CallRefusal, VOICE_SLOTS, callReaderOf, cureCall, floorReaderOf, type CallFloor, type CallSeat, type CallVoice, type MacroCallParse, type VoiceSlot } from "./modules/call.js";
+import type { AffordancePack } from "./affordance-pack.js";
 import { dryDepthOf, filterDepthArgs, muWordsOf, readDepthArgs } from "./modules/mu.js";
 import { wikiWearsNext } from "./island-recipe.js";
 import { isTw5DocsBag, refuseTw5DocsWrite } from "./tw5-docs-library.js";
@@ -2507,8 +2508,12 @@ function dryArgs(args: Record<string, unknown>, word: string): Record<string, un
  * wiki its params name (`recipe`, else `default`; a call naming a `bag` reads the daemon wiki's), through that wiki's own engine
  * and the face's reader view (`viewFor`), so a carrier that wiki's layers seat shapes the call and a record the face may not read
  * enters no route and no `#/takes`. A sigil reads through the same engine's own macro-call parser.
+ *
+ * THE PACK BENEATH THE STACK (`floorReaderOf`): where that view holds no record for a title the plan reads (a house whose canon
+ * lags its checkout holds none of the newer carriers), the baked pack's record answers, and the answer names `bag/pack`. A
+ * carrier the stack holds still wins. `floor` seats another floor (a test's own bake); absent, the vessel's baked pack.
  */
-export function tiddlerCallSource(opts: TiddlerVerbOptions): CallSource {
+export function tiddlerCallSource(opts: TiddlerVerbOptions, floor: () => CallFloor | null | Promise<CallFloor | null> = packFloor): CallSource {
   return {
     // The parser reads at the call, never at registration: a host that seats the verb before its engine boots (or a rig that
     // boots none) registers cleanly, and a sigil met with no engine answers `sigil-malformed` through callOfSigil's own path.
@@ -2521,7 +2526,7 @@ export function tiddlerCallSource(opts: TiddlerVerbOptions): CallSource {
       const container = { recipe: typeof asked === "string" && asked.trim() !== "" ? asked.trim() : "default" };
       const wiki = (await namedWikiOptions(opts, container, "call", false)) ?? opts;
       const { view } = await viewFor(wiki, anchorOf(wiki, container, "call"), ctx.cap);
-      return callReaderOf(view as never);
+      return floorReaderOf(callReaderOf(view as never), await floor());
     },
     // THE MACHINA'S VOICE (landing 21): Iris-Sprite's templates render in the anchor's own engine, read at the call; a rig that
     // boots no engine renders none and the plain words stand. The baked pack carries canon's templates as the floor.
@@ -2538,18 +2543,23 @@ export function tiddlerCallSource(opts: TiddlerVerbOptions): CallSource {
 }
 
 /**
- * THE PACK, LOADED LAZILY AND BY A NAME NO BUNDLER FOLLOWS (as the consult's): the floor templates a node vessel's own binary
- * baked; a browser island reads none, and its stack answers.
+ * THE PACK, LOADED LAZILY AND BY A NAME NO BUNDLER FOLLOWS (as the oracle's consult reads it): the pack reader requires its JSON
+ * through `node:module`, which a browser island never loads, so there the stack answers alone, and a node vessel reads the pack
+ * its own binary baked. A pack that carries no records, or none at all, seats no floor.
  */
-const VOICE_PACK_MODULE = "./affordance-pack.js";
+const PACK_MODULE = "./affordance-pack.js";
+let packModule: Promise<{ affordancePack(): AffordancePack } | null> | null = null;
+async function packFloor(): Promise<CallFloor | null> {
+  packModule ??= (import(/* @vite-ignore */ PACK_MODULE) as Promise<{ affordancePack(): AffordancePack }>).catch(() => null);
+  const pack = (await packModule)?.affordancePack();
+  return pack?.records !== undefined ? { records: pack.records, hash: pack.hash } : null;
+}
+
+/** Iris-Sprite's floor templates, read off the same lazily loaded pack (its `voice`); none where no pack stands. */
 async function packedVoice(): Promise<Partial<Record<VoiceSlot, string>>> {
-  try {
-    const mod = await import(/* @vite-ignore */ VOICE_PACK_MODULE) as { affordancePack(): { voice?: Partial<Record<string, string>> } };
-    const voice = mod.affordancePack().voice ?? {};
-    const out: Partial<Record<VoiceSlot, string>> = {};
-    for (const slot of VOICE_SLOTS) { const t = voice[slot]; if (typeof t === "string") out[slot] = t; }
-    return out;
-  } catch {
-    return {};
-  }
+  packModule ??= (import(/* @vite-ignore */ PACK_MODULE) as Promise<{ affordancePack(): AffordancePack }>).catch(() => null);
+  const voice = ((await packModule)?.affordancePack() as { voice?: Partial<Record<string, string>> } | undefined)?.voice ?? {};
+  const out: Partial<Record<VoiceSlot, string>> = {};
+  for (const slot of VOICE_SLOTS) { const t = voice[slot]; if (typeof t === "string") out[slot] = t; }
+  return out;
 }
