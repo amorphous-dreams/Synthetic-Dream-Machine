@@ -30,6 +30,7 @@ import { ENGINE_TERMINATED, engineTerminatedRefusal } from "../engine-watch.js";
 import { AskBook } from "./ask-book.js";
 import { serveUdsFront } from "./front.js";
 import { makeOutcomeReads } from "./outcome-reads.js";
+import { boundVerdictRows } from "./row-bound.js";
 import { heldAsk, inputDigestOf, isCancelQuery, isReceiptQuery, mergeCallTouches, reusedWithChangedInput, toldOutcome, touchedOfField, VesselWaitExpired, withheldVisit } from "./outcome.js";
 import { makeDoorReceipts } from "./receipts.js";
 import { sameAnchor, SLOW_DOOR_CALL_MS, type DoorGate, type Invocation, type RestOwedBand, type SessionAnchor, type UdsChannel, type UdsChannelOptions, type UdsSeat, type UdsSessionSigner, type UdsSessionSupply } from "./shapes.js";
@@ -77,6 +78,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const book = new AskBook();
   const unsubLanded = reads.onAnswer((requestId) => book.landed(requestId));
   const { answerReceipt, settledReceipt, sessionReceipt } = makeDoorReceipts({ reads, book, ownerEpoch, settleDurably, log });
+  // THE VERDICT ROWS HOLD A COUNT (`row-bound`): the newest rows stay, the oldest leave whole with their effect rows.
+  const rowBound = boundVerdictRows({ composite, bagId: CONTROL_HOME_ID, open: () => controlHomeRefusal(controlHandle) === null, onFault: log });
 
   // Hand the invocation (verb + args CONTENT) to the daemon worker over the DIRECT
   // MessageChannel (placeVerb → the worker's volatile invocation), then await the
@@ -956,6 +959,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       }
       if (!idle()) await new Promise<void>((resolve) => { drained = resolve; });
       unsubLanded();
+      rowBound.close();
       reads.close();
     },
   };

@@ -9,7 +9,7 @@ heleuma       = "ha"
 module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/uds-channel-composer"
 role          = "code-meme: names the verb door's surface: every type, helper and seat a caller imports, re-exported from the modules under `uds-channel/`"
 source-file   = "packages/lararium-node/src/uds-channel.ts"
-source-sha256 = "sha256:dfc36588a5e01ce66b146523d4714fc822e8068b169a789be8fa2a0e7a5e0c55"
+source-sha256 = "sha256:ea4b3b7da42a7336fce76c9b7447fe98015bf7c2ecda10035d594991c417ce68"
 title         = "lar:///ha.ka.ba/lararium/mesh/uds-channel-composer"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/mesh/uds-channel-composer"
@@ -29,6 +29,6 @@ uri-path      = "ha.ka.ba/lararium/mesh/uds-channel-composer"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;o31JCmVaXlnz3ZMsgAx31yYcUEUsU2yh1J6FMO3Zv7Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LgvsvcZIb2ZXmhNqFLuUT03iPtCFTXoRbiXB8yFUPo8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

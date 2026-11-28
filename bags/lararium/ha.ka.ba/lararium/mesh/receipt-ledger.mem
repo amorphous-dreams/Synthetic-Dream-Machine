@@ -52,7 +52,7 @@ No receipt record rests. What the vessel holds about a request id lives in three
 | Holder | What it holds | How long |
 | the ''answer ring'' (`answerRingOf`, `packages/lararium-mesh/src/control-home.ts`) | each verb's whole outcome: status, results, refusal, input digest, the change report | memory alone; a count and a byte bound, the oldest leaving first; a restart empties it |
 | the ''ask book'' (`AskBook`, `packages/lararium-node/src/uds-channel/ask-book.ts`) | per request id: an ask still `running` (with its input digest), an id the door `abandoned` before dispatch, a landed ask's input digest, a session act's verdict (its answer rode the socket alone) | memory alone; one count bound, the oldest leaving first; a restart empties it |
-| the ''act record'' in the control document | a write's ''verdict row'' (`verdictRowOf`: status, digest, refusal, the measure of the body, never the body) and, under an effect key, the ''effect row'' naming the attempt and its digest | rests with the vessel; a read leaves none |
+| the ''act record'' in the control document | a write's ''verdict row'' (`verdictRowOf`: status, digest, refusal, the measure of the body, never the body) and, under an effect key, the ''effect row'' naming the attempt and its digest | rests with the vessel, the newest `VERDICT_ROW_COUNT` rows kept (#/past-memory); a read leaves none |
 
 * ''One synchronous turn decides.'' The door reads the ring and the book and books an id `running` in one turn, so two asks under one id never both run. No write, flush or clock decides.
 * ''The input digest names what the request asked'': verb, arguments, face and effect key (`verbInputDigest`, `packages/lararium-mesh/src/verb-tiddler.ts`). The worker stamps the same digest on the outcome, the verdict row and the effect row.
@@ -105,11 +105,13 @@ Three things never abandon a request:
 
 The answer ring and the ask book each hold a count, and neither reads a clock. Past them, a re-ask meets what rests:
 
-* ''A write'' left its verdict row: the re-ask reads the verdict, its body released with the measure and the cure, and runs nothing.
+* ''A write'' left its verdict row: while the row stands, the re-ask reads the verdict, its body released with the measure and the cure, and runs nothing.
 * ''An effect'' left its effect row: a retry under a fresh id draws that result by its digest and runs nothing twice.
 * ''A read'' left nothing: the re-ask runs again, and changes nothing.
 
-No `evicted`, `interrupted` or torn state answers: no receipt rests to evict, interrupt or tear. The verdict rows rest as the act records; their own compaction rides the control document's diet.
+''The act records hold a count.'' The control document keeps the newest `VERDICT_ROW_COUNT` verdict rows (four answer rings' worth); past it the oldest batch leaves whole, each row with the effect row that still names its request, by retract in one change (`packages/lararium-node/src/uds-channel/row-bound.ts`). A count, never a clock or a dial: every change to the document costs per title it holds. A re-ask past the kept rows runs fresh, or refuses on a changed input the ask book still holds.
+
+No `evicted`, `interrupted` or torn state answers: no receipt rests to evict, interrupt or tear.
 
 <<~/ahu>>
 
@@ -182,6 +184,6 @@ A herm carries sealed frames between keys it proved, reads none of them, and hol
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;eJTtVOk1L58ElxCDgIs5-6y1Mguw0u2cdGfCoanDT_s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qQeoK7LA170vxjj-o-a_zZbltC-9clj31PRZWdeGDw0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

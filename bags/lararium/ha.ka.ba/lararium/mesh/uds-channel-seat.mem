@@ -9,7 +9,7 @@ heleuma       = "ha"
 module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/uds-channel-seat"
 role          = "code-meme: seats one composition on the verb socket: gates each line and session frame, arbitrates its id in the ask book, dispatches to the island and answers once the outcome lands"
 source-file   = "packages/lararium-node/src/uds-channel/seat.ts"
-source-sha256 = "sha256:b3238b7bd3b05e0817adc30db787ee6ffa0e7b9141adb6ab4cb21930e8e4a88b"
+source-sha256 = "sha256:1435831576f6a8afa8356fefec7d6db57289cdb2f1907c8d15268dee31fff432"
 title         = "lar:///ha.ka.ba/lararium/mesh/uds-channel-seat"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/mesh/uds-channel-seat"
@@ -29,6 +29,6 @@ uri-path      = "ha.ka.ba/lararium/mesh/uds-channel-seat"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;b_WVA-C85-J8zh3JOVdl5aBjXJqYLVjcYt2FbNeyZms`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sriIl0jpxDZOJKttdbp_FkzWiwzljnJEj3dU9zjrc_E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -33,5 +33,6 @@ export {
 } from "./uds-channel/shapes.js";
 export { mergeCallTouches, touchedOfField, heldAsk, VesselWaitExpired, toldOutcome, withheldVisit } from "./uds-channel/outcome.js";
 export { AskBook, type AskEntry, type AskVerdict } from "./uds-channel/ask-book.js";
+export { boundVerdictRows, VERDICT_ROW_COUNT, VERDICT_ROW_SHED, type VerdictRowBound } from "./uds-channel/row-bound.js";
 export { serveUdsFront } from "./uds-channel/front.js";
 export { makeUdsSeat, startUdsChannel } from "./uds-channel/seat.js";

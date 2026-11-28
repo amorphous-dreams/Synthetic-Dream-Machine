@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/uds-channel-row-bound`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/uds-channel-row-bound"
+role          = "code-meme: keeps the newest verdict rows by count and sheds the oldest whole with their effect rows"
+source-file   = "packages/lararium-node/src/uds-channel/row-bound.ts"
+source-sha256 = "sha256:96d6bb81583990f4dedd13598fa187da128d9aa0a597618f583e955ed6e7eae3"
+title         = "lar:///ha.ka.ba/lararium/mesh/uds-channel-row-bound"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/uds-channel-row-bound"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+`row-bound.ts` keeps the newest `VERDICT_ROW_COUNT` verdict rows in the control document and sheds the oldest batch whole, each row with the effect row that still names its request, by retract in one change. A count, never a clock. The DAM checklist (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/uds-channel-dam`>>) carries its observations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/uds-channel/row-bound.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/uds-channel-row-bound"/>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UnubfvcY9mQ2CvveF3y7c3OACM6hnpEod-uKUxt8K8Q`>>
+
+<<^ code=`&#x0004;` to=`?`>>

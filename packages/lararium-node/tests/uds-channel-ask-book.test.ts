@@ -10,6 +10,8 @@
  *   R2 — past the ring, a write's re-ask reads its verdict row (the act record, its effect row beside it): released body,
  *        nothing placed; a read's re-ask runs again, honestly.
  *   R3 — 2,000 door calls leave no receipt title in the control document.
+ *   R4 — 5,000 writes leave at most VERDICT_ROW_COUNT verdict rows (and as many effect rows): the oldest leave whole, and
+ *        a re-ask of one runs fresh.
  *   plus the book's own laws: a cancel that meets nothing marks the id abandoned for this life (and a restart forgets it),
  *   a cancel that meets a running ask changes nothing, a same id with changed input refuses by name.
  */
@@ -25,7 +27,7 @@ import type { CompositeStore } from "@lararium/mesh/composite-store";
 import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
 import { EFFECT_URI_PREFIX, OUTCOME_URI_PREFIX, type Verb } from "@lararium/mesh/verb-tiddler";
 import { writeOutcome } from "@lararium/tw5";
-import { AskBook, startUdsChannel, type UdsChannel } from "../src/uds-channel.js";
+import { AskBook, boundVerdictRows, startUdsChannel, VERDICT_ROW_COUNT, type UdsChannel } from "../src/uds-channel.js";
 import { claimStore, type StoreClaim } from "../src/owned-store.js";
 
 /** Where receipt facts rested before they burned: no title stands under it. */
@@ -238,5 +240,54 @@ describe("AskBook — one synchronous turn decides, one count bounds it", () => 
     book.abandon("y");
     expect(book.get("act-1")).toBeUndefined();
     expect(book.size).toBe(2);
+  });
+});
+
+describe("the verdict rows hold a count", () => {
+  test("★ R4 — 5,000 writes through the door leave at most VERDICT_ROW_COUNT verdict rows and effect rows; the oldest left whole and a re-ask of it runs fresh ★", async () => {
+    const v = await Vessel.boot();
+    try {
+      for (let i = 0; i < 5_000; i++) {
+        const answer = await v.ask(WRITE, `r4-${i}`, { n: i }, `effect-r4-${i}`);
+        if (answer["status"] !== "done") throw new Error(`write ${i} answered ${JSON.stringify(answer).slice(0, 200)}`);
+      }
+      const under = (prefix: string): number => v.titles().filter((t) => t.startsWith(prefix)).length;
+      for (let i = 0; i < 300 && under(OUTCOME_URI_PREFIX) > VERDICT_ROW_COUNT; i++) await new Promise((r) => setTimeout(r, 10));
+      expect(under(OUTCOME_URI_PREFIX)).toBeLessThanOrEqual(VERDICT_ROW_COUNT);
+      expect(under(OUTCOME_URI_PREFIX)).toBeGreaterThan(VERDICT_ROW_COUNT / 2);
+      expect(under(EFFECT_URI_PREFIX)).toBeLessThanOrEqual(VERDICT_ROW_COUNT);
+      expect(v.titles()).toContain(`${OUTCOME_URI_PREFIX}r4-4999`);
+      expect(v.titles()).not.toContain(`${OUTCOME_URI_PREFIX}r4-0`);
+      expect(v.titles()).not.toContain(`${EFFECT_URI_PREFIX}effect-r4-0`);
+      const ran = v.ran.length;
+      expect((await v.ask(WRITE, "r4-0", { n: 0 }, "effect-r4-0"))["status"]).toBe("done");
+      expect(v.ran.length, "past the kept rows, the re-ask runs fresh").toBe(ran + 1);
+    } finally { await v.teardown(); }
+  }, 600_000);
+
+  test("the bound sheds the oldest rows in one batch with their effect rows, keeps an effect row a newer request took, and reads a prior life's rows as the oldest", async () => {
+    const repo = new Repo({ sharePolicy: async () => true });
+    const handle = repo.create<LarDoc>(emptyLarDoc());
+    const control = controlStoreOf(handle);
+    const origin = { kind: "lares-verb", requestId: "t" } as const;
+    const row = (id: string, effectKey?: string) => control.put({ tiddler: { title: `${OUTCOME_URI_PREFIX}${id}`, "request-id": id, status: "done", ...(effectKey ? { "effect-key": effectKey } : {}) } }, origin);
+    const effect = (key: string, id: string) => control.put({ tiddler: { title: `${EFFECT_URI_PREFIX}${key}`, "effect-key": key, "request-id": id } }, origin);
+    await row("prior-0", "k-prior");
+    await effect("k-prior", "prior-0");
+    const bound = boundVerdictRows({ composite: control, bagId: CONTROL_HOME_ID, open: () => true, count: 4, shed: 2 });
+    try {
+      for (let i = 1; i <= 4; i++) await row(`n-${i}`, i === 1 ? "k-shared" : undefined);
+      await effect("k-shared", "n-4");   // a newer request took the key: its row stays when n-1 leaves
+      await bound.idle();
+      const outcomes = (): string[] => Object.keys(handle.doc()?.tiddlers ?? {}).filter((t) => t.startsWith(OUTCOME_URI_PREFIX)).sort();
+      expect(outcomes()).toEqual([`${OUTCOME_URI_PREFIX}n-3`, `${OUTCOME_URI_PREFIX}n-4`]);
+      const titles = Object.keys(handle.doc()?.tiddlers ?? {});
+      expect(titles).not.toContain(`${EFFECT_URI_PREFIX}k-prior`);
+      expect(titles).toContain(`${EFFECT_URI_PREFIX}k-shared`);
+      // CONTROL: under the count, nothing leaves.
+      await row("n-5");
+      await bound.idle();
+      expect(outcomes()).toHaveLength(3);
+    } finally { bound.close(); await repo.shutdown(); }
   });
 });
