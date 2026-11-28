@@ -101,6 +101,7 @@ import { OUTBOX_KEY_FILE } from "./outbox-key.js";
 import { larDataDir, larIdentityDir, larSealHome } from "./vessel-paths.js";
 import { RELAY_GATE_SEED_FILE } from "./relay-gate-seed.js";
 import { SWITCH_ACTS_FILE } from "./switch-act-log.js";
+import { MAILBOX_FILE } from "./vessel-mailbox.js";
 import { SECRET_HOME_FILE } from "./secret-home-store.js";
 
 /** The custody classes, closed. */
@@ -418,6 +419,10 @@ function buildTable(): readonly CarrierRow[] {
     // A session switch's acts name two faces together, so they rest on this vessel alone and never in a document.
     id({ row: "switch-acts", target: tgt(["D"]), match: file(SWITCH_ACTS_FILE), custody: "hot", keyClass: null,
          writer: "switch-act-log (the session socket's switch acts)" }),
+    // The durable mailbox (lane law §7): verbs parked for an island that is not live, until its identity breathes. It rests on
+    // this vessel alone; a delivered verb leaves the row.
+    id({ row: "mailbox", target: tgt(["D"]), match: file(MAILBOX_FILE), custody: "hot", keyClass: null,
+         writer: "vessel-mailbox (verbs parked for a cold island)" }),
     // These reserved rows have no writer; a vessel holding one still recognises its carrier at unlock.
     id({ row: "enroll-pending", target: tgt(["D"], LEAD), match: file(".persona-enroll-pending.json"), custody: "hot", keyClass: "relation",
          writer: "none (reserved carrier)" }),

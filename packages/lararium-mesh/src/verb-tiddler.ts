@@ -114,9 +114,6 @@ export async function taskContentId(
 export const RECEIPT_FACT_URI_PREFIX = `${CONTROL_HOME_ID}/receipts/`;
 
 
-/** The durable mailbox: `<control home>/mailbox/<wiki>/<id>`, in the vessel's control document. */
-export const MAILBOX_URI_PREFIX = `${CONTROL_HOME_ID}/mailbox/`;
-
 /** The effect index: `<control home>/effects/<effectKey>`, in the vessel's control document. */
 export const EFFECT_URI_PREFIX = `${CONTROL_HOME_ID}/effects/`;
 

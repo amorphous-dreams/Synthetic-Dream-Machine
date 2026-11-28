@@ -5362,7 +5362,6 @@ async function prepareNodeBootOn(
     // substrate-agnostic); this vessel supplies only its live-delivery path. Assigned to the
     // forward-declared ref so the shared residency wiring's undeliverable-alert hook parks here.
     mailbox = makeDurableMailbox(
-      daemonForPool.control,
       // Delivery activates on reference: a drain to a cold grain re-mounts it first
       // (on `ea` the grain is already live → a cheap no-op; this covers a drain raced
       // ahead of the breath). A grain that cannot activate rejects → stays parked.
@@ -5541,7 +5540,7 @@ async function prepareNodeBootOn(
         if (msg.type !== "event") return;   // a camera's frame or answer from an island outside any session has no ring to ride on this vessel
         eventBus.enqueueToRing("vm-ring", "worker.event", { wikiId, listenable: msg.listenable, payload: msg.payload });
       },
-      // breath → parked verbs deliver. A locked (or faceless) floor's mailbox refuses by name: its parked verbs wait for the
+      // breath → parked verbs deliver. A locked custody refuses the mailbox row by name: its parked verbs wait for the
       // unlocked composition, and the refusal says so once rather than rejecting unheard.
       onEa: (wikiId) => { void mailbox.drain(wikiId).catch((e: unknown) => { console.log(`[mailbox] ${wikiId} drains nothing: ${e instanceof Error ? e.message : String(e)}`); }); },
     });

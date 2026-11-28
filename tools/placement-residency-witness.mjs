@@ -60,7 +60,7 @@ const mesh = await import("../packages/lararium-mesh/dist/index.js");
 const { daemonDiskMirrors } = await import("../packages/lararium-node/dist/src/bag-paths.js");
 const families = {
   outcomes: mesh.OUTCOME_URI_PREFIX, effects: mesh.EFFECT_URI_PREFIX,
-  receipts: mesh.RECEIPT_FACT_URI_PREFIX, mailbox: mesh.MAILBOX_URI_PREFIX,
+  receipts: mesh.RECEIPT_FACT_URI_PREFIX,
   "lease epochs": mesh.leaseEpochPrefix("witness"),
 };
 for (const [family, prefix] of Object.entries(families)) {
@@ -86,7 +86,7 @@ if (/SUMMONS_URI_PREFIX|heedSummons/.test(read("packages/lararium-tw5/src/verb-d
 // Each control writer names the control store, never a wiki layer or the daemon document.
 const controlWriters = [
   ["packages/lararium-tw5/src/verb-vm.ts", /await control\.put\(row, origin\)/, /daemon\.put\(/],
-  ["packages/lararium-node/src/vessel-mailbox.ts", /\{ bag: CONTROL_HOME_ID \}/, /DAEMON_BAG_ID/],
+  ["packages/lararium-node/src/vessel-mailbox.ts", /updateCustodyRecord\("identity", MAILBOX_FILE/, /CONTROL_HOME_ID|DAEMON_BAG_ID/],
   ["packages/lararium-node/src/uds-channel.ts", /storeForBag\(CONTROL_HOME_ID\)/, /wikiSlotUri\("daemon", "working"\)/],
   // The swarm wiki writes into the control document it is handed (`docSwarmWiki`, one composition in the mesh), the node
   // re-exports it as `controlSwarmWiki`, and every node composition hands it the control document, never another.
