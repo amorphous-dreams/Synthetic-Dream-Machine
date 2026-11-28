@@ -308,7 +308,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 ''The operator calls; any hand may carry.'' The two halves separate deliberately.
 
-''Why a call at all, against the house's own grain.'' <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-lifecycle`>> rules that "''The correct admin capability here reads as NONE''" for ending a Nexus, because a Nexus "goes quiet" and liveness "reads off the traffic itself". ''That ruling holds, and a carrier differs in the one way that matters:'' a Nexus lives on traffic, so its silence ends it, self-executing and costless. A `.mem` file sits at a fixed path in git and ''never goes quiet''. It keeps rendering, keeps answering `get mu=assert`, keeps being read as current — ''a stale carrier reads exactly like a standing one'', which gives `status-why` its purpose. Cooling has no mechanism over a file. So the house faces a choice between an act and an accumulation, and the accumulation already costs 198 dangling edges. ''The capability answers NONE where quiet does the work, and answers OPERATOR where quiet does nothing.''
+''Why a call at all, against the house's own grain.'' <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-lifecycle`>> rules that "''The correct admin capability here reads as NONE''" for ending a Nexus, because a Nexus "goes quiet" and liveness "reads off the traffic itself". ''That ruling holds, and a carrier differs in the one way that matters:'' a Nexus lives on traffic, so its silence ends it, self-executing and costless. A `.mem` file sits at a fixed path in git and ''never goes quiet''. It keeps rendering, keeps answering `get aperture=arc`, keeps being read as current — ''a stale carrier reads exactly like a standing one'', which gives `status-why` its purpose. Cooling has no mechanism over a file. So the house faces a choice between an act and an accumulation, and the accumulation already costs 198 dangling edges. ''The capability answers NONE where quiet does the work, and answers OPERATOR where quiet does nothing.''
 
 ''Why not a spirit's own authority.'' A spirit can close a lean, run the weld, and prepare the fold whole. It MUST NOT rule that the argument has ended, for the same reason it may not witness its own block (`hoike.mem:77`): a mark on one's own finding reads as signature, never witness. ''The house's own precedent already runs this way'' — every burn in the log rode an operator's call, and the one carrier that authored its own ending did so through a ruling the operator had already made (`cc3f85022`: "The work-order's own frontmatter ruled this end: retain = false, enact-then-delete"). ''An authored ending, ruled at pour time, reads exactly like NARA's disposition instruction attached at creation'' — and stays the one shape that legitimately skips a fresh call.
 
@@ -513,6 +513,6 @@ A whole meme or an ahu slot carries its full title. A family put reads `lares pu
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;aDG5RaynGHCbhrvB8wR6E0BoLaoSXArKwLg8SOeksBs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2ZA882LZr7pS8Keh1t-PcIMVn3Us_C8tlz81TUq0Jec`>>
 
 <<^ code=`&#x0004;` to=`?`>>

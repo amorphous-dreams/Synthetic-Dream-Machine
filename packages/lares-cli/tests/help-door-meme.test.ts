@@ -12,7 +12,7 @@
  *      one home and the refusal path draws from it.
  *
  * The registry stays PURE DATA: no `node:fs`, no imports, so any vessel that can hold the module can read
- * the door. The `--meme` reach rides the one read door (`lares get title=<uri> recipe=lares mu=assert`), never a file read.
+ * the door. The `--meme` reach rides the one read door (`lares get title=<uri> recipe=lares aperture=arc`), never a file read.
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
@@ -202,7 +202,7 @@ describe("★ `--help --meme` reaches the wiki through the meme rail ★", () =>
     expect(code).toBe(0);
     expect(seen, "the help path never wrote a second meme reader").toHaveLength(1);
     expect(seen[0]!.command).toBe("get");
-    expect(seen[0]!.positional).toEqual(["title=lar:///ha.ka.ba/lares/cli/vessel-door", "recipe=lares", "mu=assert"]);
+    expect(seen[0]!.positional).toEqual(["title=lar:///ha.ka.ba/lares/cli/vessel-door", "recipe=lares", "aperture=arc"]);
     expect(seen[0]!.options).toEqual({});
   });
 

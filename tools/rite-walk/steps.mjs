@@ -359,7 +359,7 @@ export const STEPS = Object.freeze([
     run: cli(["wiki", "share", "lares", "--write", FACES.engineer, "--read", FACES.referee, "--no-json"], ["workbench: wiki lares rides realm", "(2 member face(s))"]) },
 
   // Memory, the lift, another face.
-  { id: "memory", prose: "''Memory.''", via: "seat-stdio", needs: ["wear-steward"], expect: "put lands a stage meme; get(mu=assert) reads it back",
+  { id: "memory", prose: "''Memory.''", via: "seat-stdio", needs: ["wear-steward"], expect: "put lands a stage meme; get(aperture=arc) reads it back",
     run: async (ctx) => {
       const text = memeText(MEMORY, MEMORY_LINE);
       const seat = await ctx.seat([

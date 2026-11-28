@@ -268,10 +268,10 @@ const foldData = (f: Fold): Record<string, unknown> => ({
 /** No fold stands: the line names which of the three reasons, and the read that shows or cures it. */
 function unfoldedLine(f: Fold, uri: string): string {
   if (typeof f.unfolded === "object") {
-    return `The wiki's render door refused the fold (${redactedText(f.unfolded.refused).replace(/\s+/g, " ").slice(0, 240)}), so this read stands unfolded. Read the carrier itself: lares get title=${shq(uri)} recipe=${RECIPE} mu=assert`;
+    return `The wiki's render door refused the fold (${redactedText(f.unfolded.refused).replace(/\s+/g, " ").slice(0, 240)}), so this read stands unfolded. Read the carrier itself: lares get title=${shq(uri)} recipe=${RECIPE} aperture=arc`;
   }
   if (f.unfolded === "truncated") {
-    return `The fold ran past the render's ${FOLD_RENDER_BYTES}-byte ceiling even with every slot folded (truncated at the cap), so this read stands unfolded. Read the carrier by page: lares get title=${shq(uri)} recipe=${RECIPE} mu=assert`;
+    return `The fold ran past the render's ${FOLD_RENDER_BYTES}-byte ceiling even with every slot folded (truncated at the cap), so this read stands unfolded. Read the carrier by page: lares get title=${shq(uri)} recipe=${RECIPE} aperture=arc`;
   }
   return `This wiki's lares-lararium skin answered no ${FOLD_OPERATOR} (a house skin adopted before the fold holds none), so this read stands unfolded. Read whether the skin holds it: lares get filter='[[${FOLD_MODULE}]is[shadow]]' recipe=${RECIPE}`;
 }
@@ -303,7 +303,7 @@ async function casFields(args: ParsedArgs, label: string, uri: string, change: (
     });
     const decision = String(receipt["decision"] ?? "");
     if (decision === "put" || decision === "noop") return fields;
-    if (decision !== "conflict") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${uri}'s fields; read it: \`lares get title=${shq(uri)} mu=relate\``, 4);
+    if (decision !== "conflict") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${uri}'s fields; read it: \`lares get title=${shq(uri)} aperture=measure\``, 4);
   }
   throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: ${uri} kept moving under ${CAS_ROUNDS} reads, so its fields took nothing; run the act again once the record settles`, 4);
 }
@@ -828,7 +828,7 @@ async function mergeSlot(args: ParsedArgs, rec: Record_, slot: string, write: Sl
     if (decision === "put" || decision === "noop") return { ...receipt, bytes: bytesOf(body), was: bytesOf(first.body), digest: slotDigest(body), ...(clash ? { conflict: true } : {}) };
     if (decision !== "conflict") {
       const warnings = Array.isArray(receipt["warnings"]) ? (receipt["warnings"] as string[]) : [];
-      throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${rec.uri}${slot}${warnings[0] ? ` (${warnings[0]})` : ""}; read the record (\`lares get title=${rec.uri} mu=assert\`) before you true it again`, 4);
+      throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${rec.uri}${slot}${warnings[0] ? ` (${warnings[0]})` : ""}; read the record (\`lares get title=${rec.uri} aperture=arc\`) before you true it again`, 4);
     }
     const again = await readSlot(args, "ah", rec, slot);
     if (again === null) throw slotMissing(rec, slot);
@@ -847,7 +847,7 @@ async function foldLine(args: ParsedArgs, rec: Record_, slot: string, line: stri
     const receipt = await patchSlot(args, "hum", rec, slot, body, read.base);
     const decision = String(receipt["decision"] ?? "");
     if (decision === "put" || decision === "noop") return { ...receipt, bytes: bytesOf(body), was: bytesOf(read.body), digest: slotDigest(body) };
-    if (decision !== "conflict") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${rec.uri}${slot}; read the record (\`lares get title=${rec.uri} mu=assert\`) before you fold again`, 4);
+    if (decision !== "conflict") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${rec.uri}${slot}; read the record (\`lares get title=${rec.uri} aperture=arc\`) before you fold again`, 4);
   }
   throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: ${rec.uri}${slot} kept moving under ${CAS_ROUNDS} reads, so nothing folded; run the fold again once the record settles`, 4);
 }

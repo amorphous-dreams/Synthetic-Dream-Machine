@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.meme.projects"
 
 ! engine.meme.projects ~ render a meme to a target
 
-`uri` names the meme and `to` the target (md, the submission markdown; html; tid; json); the target rides as a param, never a suffix. The carrier text itself reads through `get title=<uri> mu=assert`. Deterministic and clock-free: currency proves by re-projecting.
+`uri` names the meme and `to` the target (md, the submission markdown; html; tid; json); the target rides as a param, never a suffix. The carrier text itself reads through `get title=<uri> aperture=arc`. Deterministic and clock-free: currency proves by re-projecting.
 
 The address stands ''candidate'' until the operator reads the landing's list. The MCP seat runs this act in its own process: the vessel's `call` binds the params against this carrier's live `#/takes` and answers `handler/seat` with the bound params, and the seat runs them (`act(address="lar:///engine.meme.projects", args={…})`).
 
@@ -73,6 +73,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;CvIUByvrPl4Vw8-DmKeqG7aByJPxQ8SMRWgwo7YZGXw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vSDSYA3qpqRbz_nISig_1Fzf4tgalZKDrqcvemsUtDU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

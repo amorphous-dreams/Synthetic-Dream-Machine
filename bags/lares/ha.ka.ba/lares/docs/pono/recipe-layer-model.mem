@@ -38,7 +38,7 @@ The ruling names FOUR strata per recipe — ''canon bags'' ← ''named wiki bag'
 
 # Draft doc — "One doc -> fleet IF a PersonaGroup sync-fleet cap available, ELSE this is a 'private device so far'. Pono? Our caps stack 'falls back to the floor' never fails/reds in production."
 # `personal` — "Keep as its own layer, as we iterate on what 'needs fleet sync' vs what doesn't after the browser UX stands up."
-# `get mu=assert recipe=<slug>` (the meme read) — "The stack."
+# `get aperture=arc recipe=<slug>` (the meme read) — "The stack."
 # The daemon wiki — "Approve `working` layers for all wikis (Daemon reads as a wiki with specific caps to the vessel, instead of 'user content')."
 # The draft switch — "Approve moving to `draft.of` as the switch".
 
@@ -76,7 +76,7 @@ The ruling names FOUR strata per recipe — ''canon bags'' ← ''named wiki bag'
 # ''What "volatile / per-device" holds: temp ALONE.'' Presence stands unbuilt — no `presence` slot, no `$:/status/` beyond what TW5 writes; `$:/status/*` and `$:/boot/*` and most `$:/state/*` route to temp (`lar-bag-paths.tid:8-10`, `:15`). `personal` syncs across the face's own devices by design (its view state and what it keeps for itself), so the ruling's "all here don't [sync]" holds for temp and not for personal. Per-device state that MUST survive a reboot (a device's own window layout, a local-only bag pin) has no home: temp forgets at boot, personal follows the face's devices.
 # ''A draft routes by its `draft.of` FIELD on SAVE; DELETE placement follows the landed ledger and layer order.'' RULED (the field drives the switch). The cascade's `[is[draft]…]` reads the tiddler the save carries; `_flushHand` takes the bag of this shore's last acknowledged write of the title first, then the landed ledger's bag, and falls back to the cascade's title read when neither knows the title. `_tombstoneBag` chooses the eligible layer by composition order; a draft's own deletion in a save, rename or cancel starts from its draft-book bag (`_actBody`), and `_tombstoneBag` chooses the layer. Witness: `tests/lar-kind.test.ts`.
 # ''A non-meme file enters by three doors and leaves by one, and foreign titles leave by none.'' Enter: (a) `lares ingest --source --to` scans `.mem` and any extension, pairs a `.meta` sidecar, derives the URI by the address siting rule (`ingest-core.ts:83-88`, `:111-113`, `:171-181`); the island runs `tw5.parseFields(meta)` then `tw5.deserialize(ext, text, base)` (`action-handler.ts:863-873`) and packs foreign-titled members into `$:/config/OriginalTiddlerPaths` (`:815-833`). (b) `act LOAD --to` takes carriers with the verb, same registry route (`:641-707`). (c) the in-wiki drag-drop / `$:/Import` ride TW5's own DOM deserializer and then the cascade — no house code touches it. Leave: the ONE render shore `exportCarrierFile` (`meme-write.ts:40-77`) → `makeTw5FileInfo` (`tw5-file-info.ts:88-176`) picks `.tid` / content + `.meta` / `.json` exactly as `generateTiddlerFileInfo` does, base64 for a binary type (`:140`), and the projector sites it at `<uri-path><ext>` (`disk-projector.ts` `flush`). But `carrierBaseRelPath` sites only `lar:///w.w.w/…` names (`bag-paths.ts:84-99`): a `.png` ingested under a `lar:` URI round-trips; a `HelloThere.tid` pack member reaches disk only through REPACK of its pack (`action-handler.ts:352-370`).
-# ''The meme read over a recipe (`get mu=assert recipe=<slug>`) reads the designated bag, not the stack'' — DISSOLVED by ruling ("The stack."). GET walks the whole cascade top-down and answers from the first bag holding a record under the root, where a tombstone answers the meme absent; PUT writes the designated bag alone. Witness: `tests/meme-verbs.test.ts` "READS THE STACK"; two-vessel e2e ⑦ ★ (canon answers through `--recipe` on B).
+# ''The meme read over a recipe (`get aperture=arc recipe=<slug>`) reads the designated bag, not the stack'' — DISSOLVED by ruling ("The stack."). GET walks the whole cascade top-down and answers from the first bag holding a record under the root, where a tombstone answers the meme absent; PUT writes the designated bag alone. Witness: `tests/meme-verbs.test.ts` "READS THE STACK"; two-vessel e2e ⑦ ★ (canon answers through `--recipe` on B).
 # ''Two recipe shapes, one name'' — DISSOLVED. `recipeRecordFields` ⇆ `recipeFromRecord` (`@lararium/mesh` wiki-recipe.ts); `catalog` leaves the user stack; the live lares bag mounts as a library like the lararium bag (a record that names it mounts it), and the system recipes alone name either: every other wiki reads both through the floor's snapshots. The libraries a record names lay at boot AND reconcile live.
 # ''`working` and `personal` against the four strata'' — RULED. "named wiki bag" = `working`; `personal` keeps its own layer. The daemon wiki also mounts a working layer.
 
@@ -90,7 +90,7 @@ The ruling names FOUR strata per recipe — ''canon bags'' ← ''named wiki bag'
 # ''Does `personal` survive as a layer?'' RULED: its own layer, while the browser UX stands up.
 # ''Which per-device state MUST survive a reboot?'' OPEN. Temp forgets; personal follows the fleet; the draft floor of an unseated vessel stands as the one per-device CRDT doc.
 # ''Does "named wiki bag" mean `working`?'' RULED by the disk sentence: `working`; the shore-law MOVE stays the promotion door.
-# ''Does the meme read over a recipe (`get mu=assert recipe=<slug>`) read the stack?'' RULED: "The stack."
+# ''Does the meme read over a recipe (`get aperture=arc recipe=<slug>`) read the stack?'' RULED: "The stack."
 # ''Does the `draft.of` FIELD decide routing?'' RULED: `draft.of` drives draft routing; DELETE placement follows the landed ledger and layer order.
 # ''Which non-meme file types enter through `lares ingest`?'' Every extension, through TW5's registry; binaries under `bags/` read OPEN (talk-story).
 # ''Does the daemon wiki gain its `working` layer?'' RULED: working layers for all wikis; the late attach stands.
@@ -217,6 +217,6 @@ The bag meta law owes the `derived` key beside `cap-tier` and `home` (<<~ loulou
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;99eF5lGXK9uio7HA-UuFYLaYr5bVaGlRgrcq0KKIu68`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yr5_WPTWMBGmqNUB4kNh52FYT7hKvvUDXgP_6KKCcns`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -380,7 +380,7 @@ export function usageOf(surface: AffordSurface, spells: string, takes: readonly 
 export function unfoldRead(surface: AffordSurface, address: string, slot?: string): string {
   const title = slot ? `${address}${slot}` : address;
   switch (surface) {
-    case "cli": return `lares get title=${title} recipe=lares${slot ? " mu=assert" : " mu=relate"}`;
+    case "cli": return `lares get title=${title} recipe=lares${slot ? " aperture=arc" : " aperture=measure"}`;
     case "mcp": return `tiddler_get(title=${JSON.stringify(address)}, recipe="lares", meme=True, grain=${slot ? `"slot", slot=${JSON.stringify(slot)}` : `"skinny"`})`;
     case "tw5": return `[[${title}]]`;
     case "console": return slot ? `$tw.lares.afford.slot(${JSON.stringify(address.replace(/^lar:\/\/\//, ""))}, ${JSON.stringify(slot)})` : `$tw.lares.afford.whole(${JSON.stringify(address.replace(/^lar:\/\/\//, ""))})`;

@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.bag.clears"
 
 `CLEAR` empties one bag and preserves its identity; the effect log keeps a deaccession for each title it took out, so the history reads whole. It takes the bag and a change-id (CLEAR carries no content to tell one change from the next, so the change-id folds into the effect key's nonce: two separate CLEARs of one bag take two ids, and the same id on a re-send reads as the same change).
 
-A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent off a terminal, `mu=dry` previews and commits nothing, `in-wiki=true` runs the act in the active wiki's island.
+A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent off a terminal, `mu=pentacle` previews and commits nothing, `in-wiki=true` runs the act in the active wiki's island.
 
 <<~/ahu>>
 
@@ -29,7 +29,7 @@ A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent 
 
 ```memetic-wikitext
 <<has entity=`example` name=`clear-a-bag` params=`bag/lar:///ha.ka.ba/wikis/lares/working ~ empty the bag; its identity and its log stand`>>
-<<has entity=`example` name=`preview-first` params=`bag/lar:///ha.ka.ba/wikis/lares/working mu/dry ~ name the effect and commit nothing`>>
+<<has entity=`example` name=`preview-first` params=`bag/lar:///ha.ka.ba/wikis/lares/working mu/pentacle ~ name the effect and commit nothing`>>
 ```
 
 <<~/ahu>>
@@ -44,7 +44,7 @@ A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent 
 <<has entity=`arg` name=`in-wiki` params=`~ run the act in the active wiki's island`>>
 <<has entity=`arg` name=`yes` params=`~ the intent a call off a terminal names in place of the y/N a terminal asks`>>
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
-<<has entity=`cell` name=`_` params=`mu/dry ~ a dry run: the island walks the act through a capturing access and names the effect it would land, committing nothing`>>
+<<has entity=`cell` name=`_0` params=`mu/pentacle ~ a dry run: the island walks the act through a capturing access and names the effect it would land, committing nothing`>>
 ```
 
 <<~/ahu>>
@@ -79,7 +79,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`band` name=`done` params=`exit/0 fields/[[verb status requestId receipt]] ~ the vessel ran the action and wrote its effect record; the receipt names the outcome tiddler`>>
-<<has entity=`band` name=`preview` params=`exit/0 ~ with mu=dry the vessel names the effect it would land and commits nothing`>>
+<<has entity=`band` name=`preview` params=`exit/0 ~ with mu=pentacle the vessel names the effect it would land and commits nothing`>>
 <<has entity=`band` name=`refused` params=`~ the vessel refused by name (cap-denied or a verb-error); the line carries its reason and cure`>>
 ```
 
@@ -110,6 +110,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;q3Kd3ABV-D2C2jPuRh7Xs2qZfb5llAJKfovWvaC4to8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;N6AeFhuUBcV0Zu0JOPE3YjHOI5ZCgueEh7z6gATiowk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

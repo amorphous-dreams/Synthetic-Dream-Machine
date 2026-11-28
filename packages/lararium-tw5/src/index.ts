@@ -160,6 +160,9 @@ export type { CaptureCapOptions } from "./capture/has-capture.js";
 export { VerbDispatcher, VerbTable, VERB_SURFACE, projectOntoSurface, makeCallReactor, runPlan, callDoorOf, type CallSource } from "./verb-dispatcher.js";
 // The one call (comms-ux-enacts landing 4): a verb and named params, resolved, bound and dispatched by one rule.
 export { planCall, resolveCall, bindCall, stampAnswer, callReaderOf, callOfSigil, cureCall, CallRefusal, type CallPlan, type CallReader, type CallReceipt, type CallSeat, type MacroCallParse } from "./modules/call.js";
+// The two dials (the keypad head): mu names the lens (the seed's tool-carries), aperture the range (N/rank).
+export { readMu, isMuFault, muWordsOf, canonicalCarry, MU_CARRIES, MU_CARRY_ORDER, MU_TOOLS, type MuCarry, type MuFault } from "./modules/mu.js";
+export { readAperture, isApertureFault, apertureWords, reachesWhole, APERTURE_RANKS, APERTURE_BANDS, type Aperture, type ApertureFault, type ApertureRank } from "./modules/aperture.js";
 export type { VerbContext, VerbReactor, VerbDispatcherOptions, VerbSpec, VerbFence, SurfaceDeclared, SessionWorn } from "./verb-dispatcher.js";
 export { heedSummons } from "./verb-summons.js";
 export type { SummonsRequest, SummonsRelayOptions } from "./verb-summons.js";

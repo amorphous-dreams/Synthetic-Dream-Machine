@@ -79,7 +79,7 @@ describe("the skins derive spellings by rule", () => {
   test("RED: a cli skin row reading grammar/call speaks the call shape: name=value, a flag name=true, a spaced value shell-quoted, no position; its usage reads name=<kind>", () => {
     const called = (spells: string): HasRow => ({ entity: "skin", name: "cli", params: { spells, grammar: "call" }, bare: [], role: "" });
     expect(spellArg("cli", "max_bytes", called("[[lares get]]"))).toBe("max-bytes");
-    expect(renderCall("cli", "lares get", { address: "lar:///engine.record.reads", args: [["title", "x"], ["mu", "relate"]] }, called("[[lares get]]"))).toBe("lares get title=x mu=relate");
+    expect(renderCall("cli", "lares get", { address: "lar:///engine.record.reads", args: [["title", "x"], ["aperture", "measure"]] }, called("[[lares get]]"))).toBe("lares get title=x aperture=measure");
     expect(renderCall("cli", "lares put", { address: "lar:///engine.record.puts", args: [["title", "Room 4"], ["create", true]] }, called("[[lares put]]"))).toBe("lares put 'title=Room 4' create=true");
     expect(usageOf("cli", "lares oracle cast", parseHasRows(TAKES), called("[[lares oracle cast]]"))).toBe("usage: lares oracle cast (recipe=<slug> | bag=<slug>) [asking=<words>] [fresh=<true>]");
     // A seat/N row rides by name under the call shape: no position.
@@ -91,8 +91,8 @@ describe("the skins derive spellings by rule", () => {
   });
 
   test("RED 7: the unfold read speaks the read door's own words on each surface", () => {
-    expect(unfoldRead("cli", "lar:///library.oracle.speaks", "#/refuses")).toBe("lares get title=lar:///library.oracle.speaks#/refuses recipe=lares mu=assert");
-    expect(unfoldRead("cli", "lar:///library.oracle.speaks")).toBe("lares get title=lar:///library.oracle.speaks recipe=lares mu=relate");
+    expect(unfoldRead("cli", "lar:///library.oracle.speaks", "#/refuses")).toBe("lares get title=lar:///library.oracle.speaks#/refuses recipe=lares aperture=arc");
+    expect(unfoldRead("cli", "lar:///library.oracle.speaks")).toBe("lares get title=lar:///library.oracle.speaks recipe=lares aperture=measure");
     expect(unfoldRead("mcp", "lar:///library.oracle.speaks", "#/refuses")).toContain(`grain="slot", slot="#/refuses"`);
   });
 });

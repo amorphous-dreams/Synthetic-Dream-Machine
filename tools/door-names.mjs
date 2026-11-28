@@ -55,6 +55,10 @@ export function flatten(path, table, out = new Map()) {
 
 const isWord = (w) => w !== undefined && /^[a-z][a-z0-9_-]*$/.test(w);
 
+/** The keypad's call keys and the keys the bare door reads (the keypad head: packages/lares-cli/src/keypad.ts). */
+export const KEYPAD_CALL_KEYS = new Set(['get', 'put', 'delete', 'rename', 'filter', 'act']);
+export const KEYPAD_BARE_KEYS = new Set(['mu', 'aperture', 'face', 'mandate', 'stance', 'mode', 'mood', 'note']);
+
 /**
  * A reader of command lines over one registry: `{ rows: [{name, verbs, passes, leads}], shim: [verb…] }`. It answers why a
  * line names no door, or null where it does. Each word past the door reads against the table at its path until a word reads
@@ -70,6 +74,13 @@ export function deadDoorOver({ rows, shim }) {
     const words = line.split(/\s+/).slice(1).map((w) => w.split('${')[0]);
     const door = words[0];
     if (door === '') return null;
+    // A KEYPAD LINE (`lares rite=kukulu mu=_0`, `lares get=<title>`, `lares mu=*0`): each word names a key; the line answers
+    // where some key names a door, a call key, or the bare door's own shaping (packages/lares-cli/src/keypad.ts).
+    if (/^[a-z][a-z0-9-]*=/.test(door)) {
+      const keys = words.filter((w) => /^[a-z][a-z0-9-]*=/.test(w)).map((w) => w.slice(0, w.indexOf('=')));
+      if (keys.some((k) => doors.has(k) || KEYPAD_CALL_KEYS.has(k))) return null;
+      return keys.every((k) => KEYPAD_BARE_KEYS.has(k)) ? null : `no act key on the keypad line (keys: ${keys.join(' ')})`;
+    }
     if (!doors.has(door)) return `no door "${door}"`;
     if (passes.has(door)) return null;
     let path = door;

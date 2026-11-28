@@ -448,7 +448,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(fetched).toEqual([]);
     const resolved = await get({ ...A, title: "Pointer", grain: "resolved" }, ctx());
     expect(resolved).toMatchObject({ grain: { applied: "resolved" }, tiddler: { fields: { text: "the body the handle names" } } });
-    // `whole` on a pointer (the CLI's `mu=assert`) reads the body grain's whole: resolved.
+    // `whole` on a pointer (the CLI's `aperture=arc`) reads the body grain's whole: resolved.
     expect(await get({ ...A, title: "Pointer", grain: "whole" }, ctx())).toMatchObject({ grain: { asked: "whole", applied: "resolved" } });
     const web = await get({ ...A, title: "Web", grain: "resolved" }, ctx());
     expect(web).toMatchObject({ grain: { applied: "handle", why: expect.stringMatching(/never fetch/) }, next: null });
@@ -456,13 +456,13 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(fetched).toEqual([cid, cid]);
   });
 
-  test("RED M2 base-from-skinny: a skinny answer's base names the card, so a text put against it refuses by name (naming mu=assert); a field patch against it lands", async () => {
+  test("RED M2 base-from-skinny: a skinny answer's base names the card, so a text put against it refuses by name (naming aperture=arc); a field patch against it lands", async () => {
     const r = await rig();
     const get = makeTiddlerGetReactor(r.opts);
     const put = makeTiddlerPutReactor(r.opts);
     const card = (await get({ ...A, title: "Note 04", grain: "skinny" }, ctx()))["tiddler"] as { hash: string };
     expect(card.hash).toMatch(/^skinny:sha256-/);
-    await expect(put({ ...A, title: "Note 04", text: "a blind rewrite", base: card.hash }, ctx())).rejects.toMatchObject({ reason: "base-from-skinny", message: expect.stringMatching(/mu=assert/) });
+    await expect(put({ ...A, title: "Note 04", text: "a blind rewrite", base: card.hash }, ctx())).rejects.toMatchObject({ reason: "base-from-skinny", message: expect.stringMatching(/aperture=arc/) });
     expect(await put({ ...A, title: "Note 04", fields: { status: "seen" }, base: card.hash }, ctx())).toMatchObject({ decision: "put" });
     // CONTROL: a fat answer's base authorizes the text write.
     const fat = (await get({ ...A, title: "Note 04" }, ctx()))["tiddler"] as { hash: string };
@@ -693,7 +693,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(capped).toMatchObject({ grain: { applied: "skinny" }, tiddler: { omitted: expect.arrayContaining(["text"]) } });
   });
 
-  test("RED two-skinnies: `grain: skinny` (the CLI's mu=relate) leaves a record's text home; `_is_skinny` marks a POINTER, which answers its handle, never the tiddler grain's card", async () => {
+  test("RED two-skinnies: `grain: skinny` (the CLI's aperture=measure) leaves a record's text home; `_is_skinny` marks a POINTER, which answers its handle, never the tiddler grain's card", async () => {
     const r = await rig();
     r.engine.setTiddler({ title: "Handle", _is_skinny: "yes", textCid: "ab".repeat(32), type: "text/plain" });
     const get = makeTiddlerGetReactor(r.opts);
@@ -2017,7 +2017,7 @@ describe.skipIf(wikiSkip)(`a family's slot moves by the plain put${skipNote}`, (
     const put = makeTiddlerPutReactor(r.opts);
     const base = ((await get({ ...A, title: MEME, meme: true, slot: "#/a" }, ctx()))["meme"] as { canonicalHash: string }).canonicalHash;
     expect(base).toMatch(/^partial:#\/a:sha256:/);
-    await expect(put({ ...A, title: `${MEME}#/b`, text: "b moved", base }, ctx())).rejects.toMatchObject({ reason: "base-outside-span", message: expect.stringMatching(/lares get title="lar:\/\/\/t\/x#\/b" recipe=default mu=assert.*Nothing moved\.$/) });
+    await expect(put({ ...A, title: `${MEME}#/b`, text: "b moved", base }, ctx())).rejects.toMatchObject({ reason: "base-outside-span", message: expect.stringMatching(/lares get title="lar:\/\/\/t\/x#\/b" recipe=default aperture=arc.*Nothing moved\.$/) });
     await expect(put({ ...A, title: `${MEME}#/a`, text: "x", base: "partial:no-span" }, ctx())).rejects.toMatchObject({ reason: "base-outside-span" });
     await expect(put({ ...A, title: MEME, text: memeText(["a"]), base }, ctx())).rejects.toMatchObject({ reason: "base-from-partial" });
     expect(r.engine.wiki.getTiddlerText(`${MEME}#/a`)).toContain("body of a");
@@ -2333,13 +2333,13 @@ describe.skipIf(wikiSkip)(`who runs the door: handler/host, handler/seat and dry
     const ADDS = "lar:///carriage.record.adds";
     const bound = { title: "T", from: "lar:///a", to: "lar:///b" };
     expect(await on("cli", ADDS, bound)).toMatchObject({ handler: "host", address: ADDS, params: bound });
-    expect(await on("cli", ADDS, { ...bound, mu: "dry" })).toMatchObject({ handler: "host", address: ADDS, mu: { carry: "_" } });
+    expect(await on("cli", ADDS, { ...bound, mu: "pentacle" })).toMatchObject({ handler: "host", address: ADDS, mu: { carry: "_0" } });
     const RECALLS = "lar:///sense.memory.recalls";
     expect(await on("mcp", RECALLS, { query: "q" })).toMatchObject({ handler: "seat", address: RECALLS, params: { query: "q" } });
     await expect(on("console", RECALLS, { query: "q" })).rejects.toMatchObject({ reason: "affordance-unhandled" });
     const skin = r.engine.wiki.getTiddler("lar:///ha.ka.ba/lares/afford/carriage.record.adds#/skins/cli")!.getFieldStrings();
     r.engine.wiki.addTiddler({ ...skin, "$origin-bag": DAEMON, text: skin["text"]!.replace("dry/walks ", "") });
-    await expect(on("cli", ADDS, { ...bound, mu: "dry" })).rejects.toMatchObject({ reason: "mu-cell-empty" });
+    await expect(on("cli", ADDS, { ...bound, mu: "pentacle" })).rejects.toMatchObject({ reason: "mu-cell-empty" });
   });
 });
 
@@ -2585,10 +2585,10 @@ describe.skipIf(wikiSkip)(`a terminal's call: words turn by their row's kind, an
     expect(whole["form"]).toBeUndefined();
   });
 
-  test("RED: mu binds on the cli surface: get title=… mu=relate answers the card", async () => {
+  test("RED: both dials bind on the cli surface: get title=… aperture=measure mu=? answers the card, echoing the full carry and N/rank", async () => {
     const r = await callRig();
-    const card = await r.cli("get", { title: "Note 04", mu: "relate" });
-    expect(card).toMatchObject({ mu: { carry: "?", words: "relate" } });
+    const card = await r.cli("get", { title: "Note 04", aperture: "measure", mu: "?" });
+    expect(card).toMatchObject({ mu: { asked: "?", carry: "?0", words: "cup" }, aperture: { words: "10/measure" } });
     expect((card["tiddler"] as { fields: Record<string, string> }).fields["text"]).toBeUndefined();
   });
 
@@ -2599,9 +2599,9 @@ describe.skipIf(wikiSkip)(`a terminal's call: words turn by their row's kind, an
   });
 });
 
-// ── mu, the depth of every call (comms-ux-enacts landing 6) ──────────────────────────────────────────
+// ── the two dials, mu the lens and aperture the range (landing 6, re-cut by the keypad head) ─────────────
 
-describe.skipIf(wikiSkip)(`mu sets the depth: glyphs and words meet the carrier's cells${skipNote}`, () => {
+describe.skipIf(wikiSkip)(`the two dials: mu reads the seed's carries against the carrier's cells, aperture sets the range${skipNote}`, () => {
   /** The call rig with the standing meme fixture placed: a root and two slots. */
   async function muRig() {
     const r = await callRig();
@@ -2610,36 +2610,54 @@ describe.skipIf(wikiSkip)(`mu sets the depth: glyphs and words meet the carrier'
   }
   const hasLines = (out: Record<string, unknown>): number => (String(out["has"]).match(/<<~ has name=/g) ?? []).length;
 
-  test("RED: each cell of get on the meme fixture: none keeps the gradient, ? (relate) the card, ! (assert) the whole, assert beside slot one span", async () => {
+  test("RED: each range of get on the meme fixture: none keeps the gradient, pulse to measure the card, arc and theme the whole, arc beside slot one span", async () => {
     const r = await muRig();
     const none = await r.call("get", { title: MEME });
     expect(none).toMatchObject({ lens: "record", tiddler: { position: "root" } });
-    expect(none["mu"], "no mu names no depth").toBeUndefined();
-    for (const mu of ["?", "relate"]) {
-      const card = await r.call("get", { title: MEME, mu });
-      expect(card, mu).toMatchObject({ lens: "meme", grain: { applied: "skinny" }, mu: { asked: mu, carry: "?", words: "relate", axis: "single" } });
-      expect((card["meme"] as { text?: string }).text, `${mu}: the card leaves the text home`).toBeUndefined();
-      expect(hasLines(card), `${mu}: the root's line and one per slot`).toBe(3);
+    expect(none["mu"], "a defaulted Rest stays silent").toBeUndefined();
+    expect(none["aperture"], "no aperture names no range").toBeUndefined();
+    for (const aperture of ["pulse", "beat", "measure", "10/measure", "10"]) {
+      const card = await r.call("get", { title: MEME, aperture });
+      expect(card, aperture).toMatchObject({ lens: "meme", grain: { applied: "skinny" }, aperture: { asked: aperture } });
+      expect((card["meme"] as { text?: string }).text, `${aperture}: the card leaves the text home`).toBeUndefined();
+      expect(hasLines(card), `${aperture}: the root's line and one per slot`).toBe(3);
     }
-    for (const mu of ["!", "assert"]) {
-      const whole = await r.call("get", { title: MEME, mu });
-      expect(whole, mu).toMatchObject({ lens: "meme", grain: { applied: "whole" }, mu: { carry: "!", words: "assert" } });
+    expect(await r.call("get", { title: MEME, aperture: "measure" })).toMatchObject({ aperture: { n: 10, rank: "measure", words: "10/measure" } });
+    for (const aperture of ["arc", "16/arc", "theme", "18"]) {
+      const whole = await r.call("get", { title: MEME, aperture });
+      expect(whole, aperture).toMatchObject({ lens: "meme", grain: { applied: "whole" } });
       const text = String((whole["meme"] as { text?: string }).text);
-      expect(text, mu).toContain("body of a");
-      expect(text, mu).toContain("body of b");
+      expect(text, aperture).toContain("body of a");
+      expect(text, aperture).toContain("body of b");
     }
-    const span = await r.call("get", { title: MEME, mu: "assert", slot: "#/b" });
+    const span = await r.call("get", { title: MEME, aperture: "arc", slot: "#/b" });
     expect(span).toMatchObject({ grain: { applied: "slot" }, meme: { slot: "#/b" } });
     expect(String((span["meme"] as { slotText?: string }).slotText)).toContain("body of b");
     expect(String((span["meme"] as { slotText?: string }).slotText)).not.toContain("body of a");
+    await expect(r.call("get", { title: MEME, aperture: "3/measure" })).rejects.toMatchObject({ reason: "aperture-malformed" });
   });
 
-  test("RED: a filter call reads as many already: ? reads *? (a page of has lines), *! a page whose rows carry their text, and beside match their lines", async () => {
+  test("RED: mu names the lens on get, never the range: ?0 and !0 answer their cells at the asked range, echoing the full carry", async () => {
+    const r = await muRig();
+    for (const mu of ["?", "?0", "cup"]) {
+      const out = await r.call("get", { title: MEME, mu, aperture: "measure" });
+      expect(out, mu).toMatchObject({ grain: { applied: "skinny" }, mu: { asked: mu, carry: "?0", words: "cup", axis: "single" } });
+    }
+    for (const mu of ["!", "!0", "sword"]) {
+      const out = await r.call("get", { title: MEME, mu, aperture: "arc" });
+      expect(out, mu).toMatchObject({ grain: { applied: "whole" }, mu: { carry: "!0", words: "sword" }, aperture: { rank: "arc" } });
+    }
+    // The lens alone keeps the gradient: mu moves no range.
+    expect(await r.call("get", { title: MEME, mu: "!0" })).toMatchObject({ lens: "record", mu: { carry: "!0" } });
+    for (const mu of ["0", "00", "rest", "arcana"]) expect(await r.call("get", { title: MEME, mu }), mu).toMatchObject({ lens: "record", mu: { carry: "00", axis: "rest" } });
+  });
+
+  test("RED: a filter call reads as the wand already: ?0 reads *?, the range sets the depth: measure a page of has lines, arc rows whole, and beside match their lines", async () => {
     const r = await muRig();
     const filter = `[[${MEME}]] [[Note 04]]`;
-    for (const mu of ["*?", "many-relate", "?", "relate"]) {
-      const page = await r.call("get", { filter, mu });
-      expect(page, mu).toMatchObject({ mu: { carry: "*?", words: "many-relate" } });
+    for (const mu of ["*?", "?*", "relation", "?", "?0", "cup"]) {
+      const page = await r.call("get", { filter, mu, aperture: "measure" });
+      expect(page, mu).toMatchObject({ mu: { carry: "*?", words: "relation" } });
       const rows = page["rows"] as Array<{ title: string; has?: string; fields: Record<string, string> }>;
       expect(rows.map((x) => x.title), mu).toEqual([MEME, "Note 04"]);
       for (const row of rows) {
@@ -2647,67 +2665,74 @@ describe.skipIf(wikiSkip)(`mu sets the depth: glyphs and words meet the carrier'
         expect(row.fields["text"], `${mu}: a card row carries no text`).toBeUndefined();
       }
     }
-    const detail = await r.call("get", { filter: "[[Note 04]]", mu: "many-assert" });
+    const detail = await r.call("get", { filter: "[[Note 04]]", mu: "detail", aperture: "arc" });
+    expect(detail).toMatchObject({ mu: { carry: "*!", words: "detail" } });
     const [row] = detail["rows"] as Array<{ has?: string; fields: Record<string, string> }>;
     expect(String(row!.has).startsWith("<<~ has name=`Note 04`")).toBe(true);
     expect(row!.fields["text"]).toBe(r.engine.wiki.getTiddler("Note 04")!.fields["text"]);
-    const heard = await r.call("get", { filter: "[[Note 04]]", mu: "*!", match: "Note 01" });
+    const heard = await r.call("get", { filter: "[[Note 04]]", aperture: "arc", match: "Note 01" });
     const [lined] = heard["rows"] as Array<{ has?: string; fields: Record<string, string>; lines?: Array<{ text: string }>; matches?: number }>;
     expect(lined!.fields["text"], "beside match the lines ride, never the whole text").toBeUndefined();
     expect(lined).toMatchObject({ matches: 1, lines: [{ n: 1, text: "see [[Note 01]] and note 4" }] });
     expect(String(lined!.has).startsWith("<<~ has name=`Note 04`")).toBe(true);
-    // CONTROL: many alone reads the page of titles, as the plain filter does.
-    expect(await r.call("get", { filter, mu: "many" })).toMatchObject({ titles: [MEME, "Note 04"], mu: { carry: "*" } });
+    // CONTROL: the wand alone, and pulse or beat, read the page of titles, as the plain filter does.
+    expect(await r.call("get", { filter, mu: "wand" })).toMatchObject({ titles: [MEME, "Note 04"], mu: { carry: "*0" } });
+    for (const aperture of ["pulse", "beat"]) expect(await r.call("get", { filter, aperture }), aperture).toMatchObject({ titles: [MEME, "Note 04"] });
   });
 
   test("RED: a conflict carry answers its first tool and names the second as the next call; feeding that call back answers the second", async () => {
     const r = await muRig();
-    for (const mu of ["?!", "relate-assert"]) {
-      const out = await r.call("get", { title: MEME, mu });
-      expect(out, mu).toMatchObject({ grain: { applied: "skinny" }, mu: { carry: "?", axis: "conflict" } });
+    for (const mu of ["?!", "dubious-move"]) {
+      const out = await r.call("get", { title: MEME, mu, aperture: "measure" });
+      expect(out, mu).toMatchObject({ grain: { applied: "skinny" }, mu: { carry: "?0", axis: "conflict" } });
       const next = String((out["mu"] as { next?: string }).next);
       expect(next.startsWith("<<~ get title=`lar:///t/x`"), next).toBe(true);
-      expect(next, mu).toContain("mu=`assert`");
-      expect(await r.sigil(next), mu).toMatchObject({ grain: { applied: "whole" }, mu: { carry: "!", axis: "single" } });
+      expect(next, mu).toContain("mu=`sword`");
+      expect(await r.sigil(next), mu).toMatchObject({ grain: { applied: "skinny" }, mu: { carry: "!0", axis: "single" } });
     }
-    // The other order answers the whole first and names the card.
+    // The other order answers the Sword first and names the Cup.
     const flipped = await r.call("get", { title: MEME, mu: "!?" });
-    expect(flipped).toMatchObject({ grain: { applied: "whole" }, mu: { carry: "!", axis: "conflict", next: expect.stringContaining("mu=`relate`") } });
+    expect(flipped).toMatchObject({ mu: { carry: "!0", axis: "conflict", next: expect.stringContaining("mu=`cup`") } });
   });
 
-  test("RED: a depth outside the table refuses mu-cell-empty with a cure sigil: dry on get names the plain call, and the cure lands", async () => {
+  test("RED: a carry outside the table refuses mu-cell-empty with a cure sigil: the Pentacle on get names the plain call, and the cure lands; a burned word refuses naming its seed carry", async () => {
     const r = await muRig();
-    for (const mu of ["dry", "_", "unask"]) {
+    for (const mu of ["_", "_0", "pentacle", "*!", "signal-jam"]) {
       const cure = await cureOf(r.call("get", { title: MEME, mu }));
-      expect(cure, mu).not.toContain("mu=");
       expect(cure.startsWith("<<~ get title=`lar:///t/x`"), cure).toBe(true);
-      expect(await r.sigil(cure), mu).toMatchObject({ lens: "record", title: MEME });
+      expect(await r.sigil(cure), mu).toMatchObject({ title: MEME });
     }
-    await expect(r.call("get", { title: MEME, mu: "dry" })).rejects.toMatchObject({ reason: "mu-cell-empty" });
+    await expect(r.call("get", { title: MEME, mu: "_0" })).rejects.toMatchObject({ reason: "mu-cell-empty" });
     await expect(r.call("get", { title: MEME, mu: "deep" })).rejects.toMatchObject({ reason: "mu-malformed" });
     await expect(r.call("get", { title: MEME, mu: "*?!" })).rejects.toMatchObject({ reason: "mu-malformed" });
+    for (const [word, seed] of [["relate", "cup"], ["assert", "sword"], ["dry", "pentacle"], ["many", "wand"], ["unask", "rest"]] as const) {
+      const cure = await cureOf(r.call("get", { title: MEME, mu: word }));
+      expect(cure, word).toContain(`mu=\`${seed}\``);
+    }
   });
 
-  test("RED: a write door answers the dry depths alone: a layer that tables a read depth on the put refuses it and lands no write", async () => {
+  test("RED: a write door answers its receipt and the dry band alone: ?0 the default, a layer that tables a lens the put walks none of refuses and lands no write", async () => {
     const r = await muRig();
-    // MUTABILITY AT THE ROOT: a working layer tables `?` on the put; the put door walks no read depth, so it refuses and names the plain call.
+    // The write's default reads ?0 (cup): the receipt's has line, echoed.
+    expect(await r.call("put", { title: "Cup one", text: "x", create: true })).toMatchObject({ decision: "put", mu: { carry: "?0", words: "cup" } });
+    // MUTABILITY AT THE ROOT: a working layer tables `*?` on the put; the put door walks no such lens, so it refuses and names the plain call.
     const takes = r.engine.wiki.getTiddler(`${PUTS_SEAT}#/takes`)!.getFieldStrings();
-    const moved = `${takes["text"]!}\n<<has entity=\`cell\` name=\`?\` params=\`mu/relate ~ a card the put never answers\`>>\n`;
+    const moved = `${takes["text"]!}\n<<has entity=\`cell\` name=\`*?\` params=\`mu/relation ~ a page the put never answers\`>>\n`;
     r.engine.wiki.addTiddler({ ...takes, text: moved, "$origin-bag": DAEMON });
-    const cure = await cureOf(r.call("put", { title: "Dry one", text: "x", create: true, mu: "relate" }));
+    const cure = await cureOf(r.call("put", { title: "Dry one", text: "x", create: true, mu: "relation" }));
     expect(cure).not.toContain("mu=");
     await r.landed();
-    expect(r.engine.wiki.getTiddler("Dry one"), "a depth never lands as a write").toBeUndefined();
+    expect(r.engine.wiki.getTiddler("Dry one"), "a lens never lands as a write").toBeUndefined();
   });
 
-  test("RED: the cells rest in carrier rows: a working layer that drops the get's relate cell refuses relate, and assert still answers", async () => {
+  test("RED: the cells rest in carrier rows: a working layer that drops the get's cup cell refuses ?0, and the sword still answers", async () => {
     const r = await muRig();
     const takes = r.engine.wiki.getTiddler(`${READS_SEAT}#/takes`)!.getFieldStrings();
-    const moved = takes["text"]!.replace(/<<has entity=`cell` name=`\?`[^\n]*\n/, "");
+    const moved = takes["text"]!.replace(/<<has entity=`cell` name=`\?0`[^\n]*\n/, "");
     expect(moved).not.toBe(takes["text"]);
     r.engine.wiki.addTiddler({ ...takes, text: moved, "$origin-bag": DAEMON });
-    await expect(r.call("get", { title: MEME, mu: "relate" })).rejects.toMatchObject({ reason: "mu-cell-empty" });
-    expect(await r.call("get", { title: MEME, mu: "assert" })).toMatchObject({ grain: { applied: "whole" } });
+    await expect(r.call("get", { title: MEME, mu: "cup" })).rejects.toMatchObject({ reason: "mu-cell-empty" });
+    expect(await r.call("get", { title: MEME, mu: "sword", aperture: "arc" })).toMatchObject({ grain: { applied: "whole" } });
   });
 
   test("RED: a seat chooses its verb by params: a get with meme and no title reaches the family listing", async () => {
@@ -2720,13 +2745,13 @@ describe.skipIf(wikiSkip)(`mu sets the depth: glyphs and words meet the carrier'
     expect(await r.call("lares get", { title: MEME, meme: true })).toMatchObject({ lens: "meme", title: MEME });
   });
 
-  test("REACH: $tw.lares.call(\"get\", {title, mu: \"relate\"}) answers one has line; the same with assert answers every slot", async () => {
+  test("REACH: $tw.lares.call(\"get\", {title, aperture: \"measure\"}) answers one has line; the same at arc answers every slot", async () => {
     const r = await muRig();
     const call = callFaceOf(r.engine.wiki as never, () => callDoorOf(r.table, ctx()));
-    const card = await call("get", { title: "Note 04", mu: "relate" });
+    const card = await call("get", { title: "Note 04", aperture: "measure" });
     expect(hasLines(card)).toBe(1);
     expect((card["tiddler"] as { fields: Record<string, string> }).fields["text"]).toBeUndefined();
-    const whole = await call("get", { title: MEME, mu: "assert" });
+    const whole = await call("get", { title: MEME, aperture: "arc" });
     expect((whole["meme"] as { slots: Array<{ slot: string }> }).slots.map((s) => s.slot)).toEqual(["#/a", "#/b"]);
     expect(String((whole["meme"] as { text?: string }).text)).toContain("body of b");
   });
@@ -2774,12 +2799,12 @@ describe.skipIf(wikiSkip)(`dry previews every write and act: the door walks its 
       { params: { title: "Fresh note", text: "first words", create: true }, needs: { base: null } },
     ];
     for (const { params, needs } of cases) {
-      for (const mu of ["dry", "_", "dry-relate", "_?"]) {
+      for (const mu of ["pentacle", "_", "_0", "overview", "_?", "?_"]) {
         const dry = await dryly(r, "put", { ...params, mu });
         expect(dry, `${params["title"]} ${mu}`).toMatchObject({ dry: "summary", decision: "put", bag: DAEMON, needs });
         expect(dry["diff"], `${mu}: the summary carries no diff`).toBeUndefined();
       }
-      const dry = await dryly(r, "put", { ...params, mu: "dry" });
+      const dry = await dryly(r, "put", { ...params, mu: "pentacle" });
       const real = await r.call("put", params);
       await r.landed();
       expect(real["dry"], "the real put lands").toBeUndefined();
@@ -2790,13 +2815,13 @@ describe.skipIf(wikiSkip)(`dry previews every write and act: the door walks its 
     // The family's base moved with the real slot put; a dry put now names the carrier's new base.
     const resealed = (await readMeme(MEME, wikiMemeSink(r.engine.wiki)))!.canonicalHash;
     expect(resealed).not.toBe(carrier);
-    expect(await dryly(r, "put", { title: `${MEME}#/b`, text: "! b\n\nagain", mu: "dry" })).toMatchObject({ needs: { carrierBase: resealed } });
+    expect(await dryly(r, "put", { title: `${MEME}#/b`, text: "! b\n\nagain", mu: "pentacle" })).toMatchObject({ needs: { carrierBase: resealed } });
   });
 
   test("RED: a dry diff (_!) names each record the put would move, its fields before and after and its text line by line; the answer carries the carrier's seat hints", async () => {
     const r = await dryRig();
-    const dry = await dryly(r, "put", { title: "Note 04", text: "a dry rewrite", "tag-add": "reviewed", mu: "dry-assert" });
-    expect(dry).toMatchObject({ dry: "diff", decision: "put", mu: { carry: "_!", words: "dry-assert" } });
+    const dry = await dryly(r, "put", { title: "Note 04", text: "a dry rewrite", "tag-add": "reviewed", mu: "precision" });
+    expect(dry).toMatchObject({ dry: "diff", decision: "put", mu: { carry: "_!", words: "precision" } });
     expect(dry["diff"]).toEqual([{
       title: "Note 04", act: "change", fields: { tags: { before: "memory", after: "memory reviewed" } },
       text: ["@@ -1,1 +1,1 @@", "-see [[Note 01]] and note 4", "+a dry rewrite"],
@@ -2815,7 +2840,7 @@ describe.skipIf(wikiSkip)(`dry previews every write and act: the door walks its 
     const r = await dryRig();
     const refused = await r.call("delete", { title: MEME });
     expect(refused).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family" });
-    const dry = await dryly(r, "delete", { title: MEME, family: true, mu: "dry-assert" });
+    const dry = await dryly(r, "delete", { title: MEME, family: true, mu: "precision" });
     expect(dry).toMatchObject({ dry: "diff", decision: "removed", mode: "plain", needs: { base: expect.stringMatching(/^sha256-/) } });
     expect(dry["consequence"]).toEqual(refused["consequence"]);
     const leaving = [...(dry["tombstoned"] as string[]), ...(dry["retracted"] as string[])].sort();
@@ -2824,13 +2849,13 @@ describe.skipIf(wikiSkip)(`dry previews every write and act: the door walks its 
     expect(removals.map((row) => row.title).sort()).toEqual(leaving);
     expect(new Set(removals.map((row) => row.act))).toEqual(new Set(["remove"]));
     // A slot leaves by the cut of its parent's text: the dry cut answers what the real cut then tombstones and the base it reseals to.
-    const cut = await dryly(r, "delete", { title: `${MEME}#/b`, mu: "dry" });
+    const cut = await dryly(r, "delete", { title: `${MEME}#/b`, mu: "pentacle" });
     expect(cut).toMatchObject({ dry: "summary", decision: "removed", mode: "cut" });
     const realCut = await r.call("delete", { title: `${MEME}#/b` });
     await r.landed();
     for (const key of ["decision", "mode", "tombstoned", "canonicalHash", "parent"]) expect(cut[key], key).toEqual(realCut[key]);
     // The real family delete removes what the dry one named.
-    const again = await dryly(r, "delete", { title: MEME, family: true, mu: "dry" });
+    const again = await dryly(r, "delete", { title: MEME, family: true, mu: "pentacle" });
     const real = await r.call("delete", { title: MEME, family: true });
     await r.landed();
     for (const key of ["decision", "mode", "tombstoned", "retracted", "consequence"]) expect(again[key], key).toEqual(real[key]);
@@ -2839,7 +2864,7 @@ describe.skipIf(wikiSkip)(`dry previews every write and act: the door walks its 
   test("RED: a dry rename answers the move, the forwarder and the hash the real rename lands, landing nothing", async () => {
     const r = await dryRig();
     await r.hold(DAEMON, ["Note 03"]);
-    const dry = await dryly(r, "rename", { title: "Note 03", to: "Note 03b", mu: "dry-assert" });
+    const dry = await dryly(r, "rename", { title: "Note 03", to: "Note 03b", mu: "precision" });
     expect(dry).toMatchObject({ dry: "diff", decision: "renamed", forwarder: "Note 03", needs: { base: expect.stringMatching(/^sha256-/) } });
     const rows = dry["diff"] as Array<{ title: string; act: string; fields: Record<string, { before: string | null; after: string | null }> }>;
     expect(rows.find((row) => row.title === "Note 03b")?.act).toBe("create");
@@ -2863,7 +2888,7 @@ describe.skipIf(wikiSkip)(`dry previews every write and act: the door walks its 
     r.table.register("wick-trim", async () => { ran++; return { trimmed: true }; });
     r.table.answer(wick, { verb: "wick-trim" });
     expect(await r.call("trim", { wick: "long" })).toMatchObject({ trimmed: true });
-    const cure = await cureOf(r.call("trim", { wick: "long", mu: "dry-relate" }));
+    const cure = await cureOf(r.call("trim", { wick: "long", mu: "overview" }));
     expect(ran, "the reactor never ran for the dry call").toBe(1);
     expect(cure).not.toContain("mu=");
     expect(await r.sigil(cure), "the cure lands the plain call").toMatchObject({ trimmed: true });
@@ -2871,7 +2896,7 @@ describe.skipIf(wikiSkip)(`dry previews every write and act: the door walks its 
     const oil = "lar:///lantern.oil.pours";
     seat(oil, "spells/pour handler/host ~ the host pours");
     expect(await r.call("pour", { wick: "long" })).toMatchObject({ handler: "host", address: oil });
-    await expect(r.call("pour", { wick: "long", mu: "dry-relate" })).rejects.toMatchObject({ reason: "mu-cell-empty" });
+    await expect(r.call("pour", { wick: "long", mu: "overview" })).rejects.toMatchObject({ reason: "mu-cell-empty" });
   });
 });
 

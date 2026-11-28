@@ -53,8 +53,8 @@
     },
     {
       "tool": "get",
-      "cli": {"command": "get", "positional": ["filter=[prefix[lar:///ha.ka.ba/kahua/memory/road/]sort[title]]", "limit=5", "mu=many-relate"], "options": {}, "flags": {}},
-      "call": {"verb": "get", "params": {"filter": "[prefix[lar:///ha.ka.ba/kahua/memory/road/]sort[title]]", "limit": "5", "mu": "many-relate"}},
+      "cli": {"command": "get", "positional": ["filter=[prefix[lar:///ha.ka.ba/kahua/memory/road/]sort[title]]", "limit=5", "aperture=measure"], "options": {}, "flags": {}},
+      "call": {"verb": "get", "params": {"filter": "[prefix[lar:///ha.ka.ba/kahua/memory/road/]sort[title]]", "limit": "5", "aperture": "measure"}},
       "mcp": {
         "filter": "[prefix[lar:///ha.ka.ba/kahua/memory/road/]sort[title]]",
         "recipe": "default",
@@ -152,8 +152,8 @@
     },
     {
       "tool": "get",
-      "cli": {"command": "get", "positional": ["title=Note 02", "mu=relate"], "options": {}, "flags": {}},
-      "call": {"verb": "get", "params": {"title": "Note 02", "mu": "relate"}},
+      "cli": {"command": "get", "positional": ["title=Note 02", "aperture=measure"], "options": {}, "flags": {}},
+      "call": {"verb": "get", "params": {"title": "Note 02", "aperture": "measure"}},
       "mcp": {
         "title": "Note 02",
         "recipe": "default",
@@ -267,8 +267,8 @@
     },
     {
       "tool": "get",
-      "cli": {"command": "get", "positional": ["title=lar:///t/x", "mu=relate"], "options": {}, "flags": {}},
-      "call": {"verb": "get", "params": {"title": "lar:///t/x", "mu": "relate"}},
+      "cli": {"command": "get", "positional": ["title=lar:///t/x", "aperture=measure"], "options": {}, "flags": {}},
+      "call": {"verb": "get", "params": {"title": "lar:///t/x", "aperture": "measure"}},
       "mcp": {
         "title": "lar:///t/x",
         "recipe": "default",
@@ -310,8 +310,8 @@
     },
     {
       "tool": "get",
-      "cli": {"command": "get", "positional": ["title=lar:///t/x", "after=1.0123456789abcdef", "mu=assert"], "options": {}, "flags": {}},
-      "call": {"verb": "get", "params": {"title": "lar:///t/x", "after": "1.0123456789abcdef", "mu": "assert"}},
+      "cli": {"command": "get", "positional": ["title=lar:///t/x", "after=1.0123456789abcdef", "aperture=arc"], "options": {}, "flags": {}},
+      "call": {"verb": "get", "params": {"title": "lar:///t/x", "after": "1.0123456789abcdef", "aperture": "arc"}},
       "mcp": {
         "title": "lar:///t/x",
         "recipe": "default",

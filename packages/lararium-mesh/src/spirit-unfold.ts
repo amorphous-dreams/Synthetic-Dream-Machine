@@ -94,9 +94,9 @@ const faceFlag = (face: string | null | undefined): string => (face && FACE.test
 /** The call's own face param: `face=N` rides a call as any other param. */
 const faceParam = (face: string | null | undefined): string => (face && FACE.test(face) ? ` face=${face}` : "");
 /** The command that reads one slot of a carrier whole. */
-export const slotCommand = (uri: string, slot: string, face?: string | null): string => `lares get title=${shellWord(uri)} recipe=default${faceParam(face)} slot=${shellWord(slot)} mu=assert`;
+export const slotCommand = (uri: string, slot: string, face?: string | null): string => `lares get title=${shellWord(uri)} recipe=default${faceParam(face)} slot=${shellWord(slot)} aperture=arc`;
 /** The command that reads a whole carrier. */
-export const wholeCommand = (uri: string, face?: string | null): string => `lares get title=${shellWord(uri)} recipe=default${faceParam(face)} mu=assert`;
+export const wholeCommand = (uri: string, face?: string | null): string => `lares get title=${shellWord(uri)} recipe=default${faceParam(face)} aperture=arc`;
 /** The command that reads one plain record. */
 export const recordCommand = (uri: string, face?: string | null): string => `lares get title=${shellWord(uri)} recipe=default${faceParam(face)}`;
 /** The command that renders a card through the template its text transcludes. */

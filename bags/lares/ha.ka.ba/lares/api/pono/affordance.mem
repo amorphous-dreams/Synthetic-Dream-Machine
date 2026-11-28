@@ -86,7 +86,7 @@ Rows ride the `has` grammar and its `key/value` params; `[[…]]` brackets a val
 ```memetic-wikitext
 <<has entity=`arg` name=`asking` params=`takes/words needs/seat ~ the query, named before the throw`>>
 <<has entity=`arg` name=`fresh` params=`gate/hand ~ throw anew for the same words`>>
-<<has entity=`cell` name=`?` params=`mu/relate ~ the card: the has line, its size and its base`>>
+<<has entity=`cell` name=`?0` params=`mu/cup ~ the relation read: the has line beside what it reaches`>>
 <<has entity=`band` name=`asks` params=`exit/5 ~ a seat asked what a hand alone gives; the line a person runs rides the answer`>>
 <<has entity=`refusal` name=`oracle-cast-untimed` params=`cure/[[library.oracle.speaks at/<time>]] ~ the verb reads no clock`>>
 <<has entity=`example` name=`first-cast` params=`recipe/default asking/[[which lane lands first]] ~ a seat's cast at its own open fork`>>
@@ -100,7 +100,7 @@ Rows ride the `has` grammar and its `key/value` params; `[[…]]` brackets a val
 * ''An example and a cure ride as neutral calls'' (an address and bound args), so every skin renders its own runnable line from one row. A call binding an arg a skin never takes (`skins/`, `omits/`) runs on no door of that skin, so that skin renders no line for it: the example drops there, and the refusal keeps its words without a cure. A lesson that lives in shell composition rides a literal fenced line inside `#/skins/cli`.
 * ''A skin row may name more than its spelling.'' `also/` names further spellings the one door answers, comma-joined (`also/[[lares shore keep-records]]`), each routed to the same address. `door/part` marks a cli skin as one verb of a door whose other verbs keep the door's own table: the spelling routes to its carrier and its own `--help` reads the carrier whole, while the door gathers no pack entry until every verb it answers holds a carrier and the door flips whole.
 * ''A skin row names how a call reaches its door.'' `by/<param>` marks a spelling several carriers share (the verb word `get` skins `engine.record.reads` `by/title` and `engine.filter.pages` `by/filter`): the call picks the carrier whose `by` param it names, and a call naming none takes the one row reading `default/true` (a bare `get meme=true` lists the families through `engine.record.reads`), so the choice rests in rows a layer above may move. `handler/host` marks a door the terminal runs and `handler/seat` an act whose handler rests in the MCP seat's own process, each outside the call's registry: the call answers its bound params (`handler/host` or `handler/seat` on the answer) for that host or seat to run. The call's own surface row decides; a surface with no row of its own takes `handler/host` where any row names it. `dry/walks` on that row says the door walks a dry path, and only then does a `_` carry reach it. A carrier with neither a registered reactor nor a handler refuses `affordance-unhandled`. ''The hand stays at the door:'' a seated address runs through the registry's own hand check, so a hand act refuses every asker but a hand's path by its own code, whatever a carrier's `#/gate` or `#/skins` rows say.
-* ''A `cell` row tables one depth the door answers'' (`#/takes`, beside the args): its name holds the carry in the seed's glyphs (`?`, `*!`), `mu/` the words a shell writes (`relate`, `many-assert`), and the tagline what that depth reads. `implied/true` on a one-tool cell joins that tool to every carry that lacks its axis (a filter call reads as `*` already, so `?` there reads `*?`); `owed/<why>` tables a depth whose door answers it in a later landing, and it refuses as an empty cell. The `mu` arg itself stands once, in `#/takes/mu`.
+* ''A `cell` row tables one lens the door answers'' (`#/takes`, beside the args): its name holds the tool-carry in the seed's glyphs, always two hands (`?0`, `*!`, `_?`), `mu/` the seed's word a shell writes (`cup`, `detail`, `overview`), and the tagline what that lens reads. Rest (`00`) needs no cell: it reads the door's own default. `implied/true` on a single-tool cell joins that tool to every single-tool carry on the other axis (a filter call reads as `*0` already, so `?0` there reads `*?`); `owed/<why>` tables a lens whose door answers it in a later landing, and it refuses as an empty cell. The `mu` arg stands once, in `#/takes/mu`, and the `aperture` arg once, in `#/takes/aperture`; a carrier seats its own dial default by an arg row of the same name carrying `default/` in its own `#/takes`, read before the shared row.
 * ''A call binds against `#/takes` as the stack resolves it.'' `default/` fills a param the call leaves out (a `needs/one-of` member's default only where no member rides), so the container defaults to `recipe/default` through this law's own `#/takes/container` row, and a layer above re-shapes the default by seating a row. A param no row names refuses `param-unknown` and names the nearest; naming two members of a `one-of` refuses `one-of-doubled`.
 * The surface words read `cli` · `mcp` · `tw5` · `console`. `mcp` names the protocol every seat speaks.
 
@@ -108,7 +108,7 @@ Rows ride the `has` grammar and its `key/value` params; `[[…]]` brackets a val
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ container · face · json · mu
+!! takes ~ container · face · json · mu · aperture
 
 ''Shared args stand once, here.'' A carrier calls one by reference, never by copy: ``<<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container`>>``.
 
@@ -146,16 +146,34 @@ Rows ride the `has` grammar and its `key/value` params; `[[…]]` brackets a val
 
 <<~ ahu slot=`#/takes/mu`>>
 
-!!! mu ~ the depth of the answer
+!!! mu ~ the lens of the answer
 
-`mu` takes the seed's five pattern-match operators, each beside the word a shell carries (a nomatch shell refuses a bare `?`): `?` relate · `!` assert · `*` many · `_` dry · `0` unask. Two tools across the axes carry together (`*?` a page of has lines, `*!` a page whose rows carry their lines, `_?` a dry summary, `_!` a dry diff), written in glyphs or in words joined by a dash (`many-relate`). Two on one axis (`*_`, `?!`) answer the first tool's depth and name the second as the next call, under `mu.next`. `0` beside a tool reads as the empty hand. With no `mu`, the door's own default stands (a read's gradient). Mu names depth alone and never repeats a param: `filter` already means many, `match` already adds lines.
+A `lares` call and a `set` firing share one param set (lar:///ha.ka.ba/lares/api/noosphere-boot #/set-and-setting), so `mu` takes the seed's own TOOL-CARRIES (#/mu-five-tools), character for character: always two hands, the active tool first and the empty hand second. Single tools: `*0` wand (fire, visual feed, ignition) · `?0` cup (water, macro zoom, relation) · `!0` sword (air, micro zoom, certainty) · `_0` pentacle (earth, hidden feed, ground: match without binding). Rest: `00`, the ground state (`arcana` reads it too). Complementary carries across the axes: `*!` detail · `*?` relation · `_!` precision · `_?` overview. Conflict carries on one axis, observable and useful: `*_` signal-jam · `?!` dubious-move; a conflict answers its first tool as written and names the second as the next call, under `mu.next` (the seed's recovery: drop one tool).
 
-Each carrier tables the depths it answers as `cell` rows in its own `#/takes`; a carry outside its table refuses `mu-cell-empty` and names the nearest cell as a call, or the plain call with no `mu`.
+A lone glyph, word or value reads pono: `?` reads `?0`, `!` `!0`, `*` `*0`, `_` `_0`, `0` reads `00`; a lone word names its tool or carry; two glyphs read their canonical carry in either order. The glyph stays canonical in sigils and the wiki, the word rides a terminal (a shell globs `*` and `?`, and history-expands `!`). Every answer echoes the full carry it read. Landing 6's words (relate · assert · many · dry · unask) burned: each refuses `mu-malformed` naming its seed carry.
 
-''Dry previews every write and act.'' A carry holding `_` walks the door's whole law (every fence, the ocap, the base, the family law) to the last step and lands nothing: `_` and `_?` answer what the real call would land, the bag and layer, and `needs` (the base it takes); `_!` adds `diff`, each record it would move with its fields before and after and its text line by line. A dry answer carries the carrier's seat hints (`hints`: its `#/gate` rows and any `signs` row). A door that walks no dry path refuses a dry carry `mu-cell-empty` and names the plain call, whatever a layer above tables.
+Mu names how a call looks, never how much: the range rides `aperture` (`#/takes/aperture`). The zoom axis runs certainty (sword) against relation (cup), never size.
+
+Each carrier tables the lenses it answers as `cell` rows in its own `#/takes`; a carry outside its table refuses `mu-cell-empty` and names the nearest cell as a call, or the plain call with no `mu`. Rest answers with no cell. The shared row's default reads `00`; a write door seats its own `default/?0` (the receipt's has line).
+
+''The dry band rides the Pentacle's hidden feed.'' A carry holding `_` (`_0`, `_?`, `_!`) walks the door's whole law (every fence, the ocap, the base, the family law) to the last step and lands nothing: `_0` and `_?` answer what the real call would land, the bag and layer, and `needs` (the base it takes); `_!` adds `diff`, each record it would move with its fields before and after and its text line by line. A dry answer carries the carrier's seat hints (`hints`: its `#/gate` rows and any `signs` row). A door that walks no dry path refuses a dry carry `mu-cell-empty` and names the plain call, whatever a layer above tables.
 
 ```memetic-wikitext
-<<has entity=`arg` name=`mu` params=`takes/depth skins/console,cli ~ the depth: relate ?, assert !, many *, dry _, unask 0; the carrier's cell rows table what each reads`>>
+<<has entity=`arg` name=`mu` params=`takes/carry skins/console,cli default/00 ~ the lens, a tool-carry: *0 wand · ?0 cup · !0 sword · _0 pentacle · 00 rest · *! detail · *? relation · _! precision · _? overview · *_ signal-jam · ?! dubious-move; the carrier's cell rows table what each reads`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes/aperture`>>
+
+!!! aperture ~ the range of the answer
+
+`aperture` takes the set panel's `N/rank` on the seed's own scale (lar:///ha.ka.ba/lares/api/noosphere-boot #/aperture): `pulse` 0–4 one has line · `beat` 5–8 the tagline · `measure` 9–12 the card (each slot's first line, a record's text left home) · `arc` 13–16 the whole record (a meme's carrier paged on slot boundaries and joined) · `theme` 17–20 the record and its family. It reads `10/measure`, the rank alone (`measure`) or the number alone (`10`), each resolving to the same band; a rank alone seats its band's canonical number (pulse 2 · beat 6 · measure 10 · arc 16 · theme 18), and the answer echoes the `N/rank` it read. A number and a rank that disagree refuse `aperture-malformed`.
+
+The two dials cross: `aperture=pulse mu=!0` one line asserted · `aperture=measure mu=?0` the card read for relations · `aperture=arc mu=!0` the whole record, every claim checked (a cold read) · `aperture=theme mu=_0` the family's hidden residue. Absent, the door's own default stands: a carrier seats one by its own `aperture` row carrying `default/` (the bare door reads `beat`), and a read with none keeps its gradient.
+
+```memetic-wikitext
+<<has entity=`arg` name=`aperture` params=`takes/range skins/console,cli ~ the range, N/rank: pulse 0–4 · beat 5–8 · measure 9–12 the card · arc 13–16 the whole · theme 17–20 the family`>>
 ```
 
 <<~/ahu>>
@@ -185,6 +203,6 @@ A verb that lands an act record MUST read its slot names, their order and their 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;C-Hx7y5iCPAGpVs8V_g2zXKoO3LyQNQmP9FeYZURwnA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HbdPpLQ7LE-cMZ1UPWzEW8vLf8lPgX3VsbnT0Q7EQZ0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

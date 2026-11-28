@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.bag.drops"
 
 `DROP` retires one bag entirely and writes a disposition record (`bag-retired` on each deaccession). It takes the bag and a change-id (the same nonce rule as CLEAR: two separate DROPs of one bag take two ids).
 
-A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent off a terminal, `mu=dry` previews and commits nothing, `in-wiki=true` runs the act in the active wiki's island.
+A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent off a terminal, `mu=pentacle` previews and commits nothing, `in-wiki=true` runs the act in the active wiki's island.
 
 <<~/ahu>>
 
@@ -29,7 +29,7 @@ A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent 
 
 ```memetic-wikitext
 <<has entity=`example` name=`drop-a-bag` params=`bag/lar:///ha.ka.ba/bags/lares ~ retire the bag from memory, with its disposition record`>>
-<<has entity=`example` name=`preview-first` params=`bag/lar:///ha.ka.ba/bags/lares mu/dry ~ name the effect and commit nothing`>>
+<<has entity=`example` name=`preview-first` params=`bag/lar:///ha.ka.ba/bags/lares mu/pentacle ~ name the effect and commit nothing`>>
 ```
 
 <<~/ahu>>
@@ -44,7 +44,7 @@ A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent 
 <<has entity=`arg` name=`in-wiki` params=`~ run the act in the active wiki's island`>>
 <<has entity=`arg` name=`yes` params=`~ the intent a call off a terminal names in place of the y/N a terminal asks`>>
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
-<<has entity=`cell` name=`_` params=`mu/dry ~ a dry run: the island walks the act through a capturing access and names the effect it would land, committing nothing`>>
+<<has entity=`cell` name=`_0` params=`mu/pentacle ~ a dry run: the island walks the act through a capturing access and names the effect it would land, committing nothing`>>
 ```
 
 <<~/ahu>>
@@ -79,7 +79,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`band` name=`done` params=`exit/0 fields/[[verb status requestId receipt]] ~ the vessel ran the action and wrote its effect record; the receipt names the outcome tiddler`>>
-<<has entity=`band` name=`preview` params=`exit/0 ~ with mu=dry the vessel names the effect it would land and commits nothing`>>
+<<has entity=`band` name=`preview` params=`exit/0 ~ with mu=pentacle the vessel names the effect it would land and commits nothing`>>
 <<has entity=`band` name=`refused` params=`~ the vessel refused by name (cap-denied or a verb-error); the line carries its reason and cure`>>
 ```
 
@@ -110,6 +110,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-v9cnibSgddzGgj3uVWZ9HavcPLSdsHKctPy0DE7SW4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IxhgmrilTcdyHxV7phswIkmiV6dO30xERSMkYzSmmog`>>
 
 <<^ code=`&#x0004;` to=`?`>>

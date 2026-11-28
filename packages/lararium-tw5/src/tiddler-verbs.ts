@@ -131,7 +131,8 @@ import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { wornOrigin } from "./verb-dispatcher.js";
 import { CallRefusal, VOICE_SLOTS, callReaderOf, cureCall, type CallSeat, type CallVoice, type MacroCallParse, type VoiceSlot } from "./modules/call.js";
-import { dryDepthOf, filterDepthArgs, muWordsOf, readDepthArgs } from "./modules/mu.js";
+import { dryDepthOf, muWordsOf } from "./modules/mu.js";
+import { APERTURE_RANKS, filterRangeArgs, readRangeArgs, type ApertureRank } from "./modules/aperture.js";
 import { wikiWearsNext } from "./island-recipe.js";
 import { isTw5DocsBag, refuseTw5DocsWrite } from "./tw5-docs-library.js";
 import type { CallSource, VerbContext, VerbReactor } from "./verb-dispatcher.js";
@@ -551,8 +552,8 @@ async function requireWrite(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbC
 
 /**
  * ONE ROW'S COLLAPSED FORM. A meme root answers the bytes of its whole carrier and its slots (`{slot, bytes, first}`), built by the
- * skinny grain of `memeGradient`, the builder `lares get title=… mu=relate` reads; a pointer answers the `size` it names; any other
- * record answers the bytes of its text. The slots unfold one at a time by `lares get title=<root> slot=#/<name> mu=assert`.
+ * skinny grain of `memeGradient`, the builder `lares get title=… aperture=measure` reads; a pointer answers the `size` it names; any other
+ * record answers the bytes of its text. The slots unfold one at a time by `lares get title=<root> slot=#/<name> aperture=arc`.
  */
 async function collapseOf(
   sink: Pick<MemeSink, "titles" | "read">, title: string, fields: Record<string, string>,
@@ -572,7 +573,7 @@ async function collapseOf(
 function filterDepthOf(raw: unknown): "card" | "whole" | null {
   if (raw === undefined || raw === null || raw === "") return null;
   if (raw === "card" || raw === "whole") return raw;
-  throw new VerbRefusal("filter-depth-unknown", `filter-depth-unknown: a filter's depth reads card or whole (got ${JSON.stringify(raw)}); a call names it as \`mu=many-relate\` or \`mu=many-assert\`.`);
+  throw new VerbRefusal("filter-depth-unknown", `filter-depth-unknown: a filter's depth reads card or whole (got ${JSON.stringify(raw)}); a call names it as \`aperture=measure\` or \`aperture=arc\`.`);
 }
 
 export const makeWikiFilterReactor = everyWiki("wiki-filter", false, (opts: TiddlerVerbOptions): VerbReactor => {
@@ -599,7 +600,7 @@ export const makeWikiFilterReactor = everyWiki("wiki-filter", false, (opts: Tidd
     const limit = countArg(args["limit"], WIKI_FILTER_ROWS, 1, WIKI_FILTER_ROWS);
     const after = optionalStringArg(args, "after");
     // THE COLLAPSE LENS: each row of the page's window carries its bytes, and a meme root its slots, read through the one skinny
-    // builder (`collapseOf`: `readMeme` and `memeGradient` at the skinny grain, the has-stack `lares get title=… mu=relate` answers).
+    // builder (`collapseOf`: `readMeme` and `memeGradient` at the skinny grain, the has-stack `lares get title=… aperture=measure` answers).
     // The window reads ahead of the page law, which stays sync; a row the byte cap leaves for the next page costs one wasted read.
     const collapsed = new Map<string, { bytes: number; slots?: CarrierSlot[]; withheld?: number }>();
     if (collapse) {
@@ -968,7 +969,7 @@ async function bagGet(
 function refuseUnreadWords(args: Readonly<Record<string, unknown>>, title: string, lens: boolean, asked: ReadGrain | null, slot: string | null): void {
   const unread = (word: string, why: string): VerbRefusal =>
     new VerbRefusal("read-word-unread", `read-word-unread: tiddler-get reads no \`${word}\` here; ${why}. Nothing was read.`);
-  if (!lens && optionalStringArg(args, "after")) throw unread("after", "a cursor continues a meme's whole carrier (`meme: true`, `mu=assert`), and a record answers in one");
+  if (!lens && optionalStringArg(args, "after")) throw unread("after", "a cursor continues a meme's whole carrier (`meme: true`, `aperture=arc`), and a record answers in one");
   if (lens && args["fields"] !== undefined) throw unread("fields", "the meme lens answers the carrier, never a field subset; drop `meme` to narrow the record");
   if (lens && args["maxBytes"] !== undefined) throw unread("maxBytes", "the meme lens pages its carrier on slot boundaries; the byte cap narrows a record alone");
   const slotted = slot !== null || (title.includes("#/") && rootAddressOf(title) !== title);
@@ -1346,10 +1347,10 @@ async function putBaseOf(raw: string | null, title: string, writesText: boolean,
   if (raw === null || slot === null || !raw.startsWith("partial:")) return readBase(raw, "tiddler-put", writesText);
   const span = partialSpanOf(raw);
   if (!span || !/^partial:(?:#\/[^:]+|p[1-9][0-9]*):.+$/.test(raw)) {
-    throw new VerbRefusal("base-outside-span", `base-outside-span: this partial base names no readable span; read the slot again (\`lares get title="${title}" ${seat.where} mu=assert\`) or the whole carrier (\`lares get title="${root}" ${seat.where} mu=assert\`) and put against that base. The span guards honest base reuse and grants no authorization. Nothing moved.`);
+    throw new VerbRefusal("base-outside-span", `base-outside-span: this partial base names no readable span; read the slot again (\`lares get title="${title}" ${seat.where} aperture=arc\`) or the whole carrier (\`lares get title="${root}" ${seat.where} aperture=arc\`) and put against that base. The span guards honest base reuse and grants no authorization. Nothing moved.`);
   }
   const base = readBase(raw, "tiddler-put", true, "accept");
-  const outside = (why: string): VerbRefusal => new VerbRefusal("base-outside-span", `base-outside-span: this base came from ${why}, and ${slot} lies outside it; read ${slot} (\`lares get title="${title}" ${seat.where} mu=assert\`) or the whole carrier (\`lares get title="${root}" ${seat.where} mu=assert\`) and put against that base. Nothing moved.`);
+  const outside = (why: string): VerbRefusal => new VerbRefusal("base-outside-span", `base-outside-span: this base came from ${why}, and ${slot} lies outside it; read ${slot} (\`lares get title="${title}" ${seat.where} aperture=arc\`) or the whole carrier (\`lares get title="${root}" ${seat.where} aperture=arc\`) and put against that base. Nothing moved.`);
   if ("slot" in span) {
     if (slot !== span.slot && !slot.startsWith(`${span.slot}/`)) throw outside(`a read of the slot ${span.slot}`);
   } else {
@@ -1530,7 +1531,7 @@ async function putThrough(opts: TiddlerVerbOptions, seat: PutSeat, title: string
         if (receipt.decision === "refuse") {
           const cutWall = receipt.diagnostics.find((d) => d.code === CUT_NOT_OMITTED_CODE);
           if (cutWall) throw new VerbRefusal(CUT_NOT_OMITTED_CODE, cutWall.message);
-          throw new VerbRefusal("family-gate-refused", `family-gate-refused: with this text the family of "${root}" no longer reads as one carrier: ${receipt.warnings.join("; ") || "the gate named no finding"}. Mend the text and put again; \`lares get title="${root}" ${seat.where} mu=assert\` shows the carrier as it stands. Nothing moved.`);
+          throw new VerbRefusal("family-gate-refused", `family-gate-refused: with this text the family of "${root}" no longer reads as one carrier: ${receipt.warnings.join("; ") || "the gate named no finding"}. Mend the text and put again; \`lares get title="${root}" ${seat.where} aperture=arc\` shows the carrier as it stands. Nothing moved.`);
         }
         const landed = await seat.read(title);
         const family = { canonicalHash: receipt.canonicalHash ?? null, landed: receipt.landed, kept: receipt.kept ?? [], tombstoned: receipt.tombstoned, ...(receipt.warnings.length > 0 ? { warnings: receipt.warnings } : {}) };
@@ -2456,13 +2457,15 @@ export const makeWikiStatusReactor = everyWiki("wiki-status", false, (opts: Tidd
 export const TIDDLER_CALL_SEATS: Readonly<Record<string, CallSeat>> = Object.freeze({
   "lar:///engine.record.reads": {
     verb: "tiddler-get",
-    // THE DEPTH (landing 6): the plan's `mu` carry turns into the read's lens and grain (`readDepthArgs`); none keeps the gradient.
-    // `form=text` (a terminal's text alone, landing 8) asks the whole text at the lens's grain where no depth or cursor names one;
-    // the form itself shapes the terminal's print and leaves the reactor's args.
-    fold: ({ form, mu, ...args }) => {
+    // THE RANGE (the keypad head): the plan's `aperture` rank turns into the read's lens and grain (`readRangeArgs`: the card at
+    // pulse to measure, the whole at arc and theme); none keeps the gradient. The `mu` lens leaves the reactor's args (its cell
+    // names how the answer reads; the read's bytes stand the same). `form=text` (a terminal's text alone, landing 8) asks the
+    // whole text at the lens's grain where no range or cursor names one; the form itself shapes the terminal's print.
+    fold: ({ form, mu: _mu, aperture, ...args }) => {
       const titled = typeof args["title"] === "string" && args["title"] !== "";
       const slotted = (typeof args["slot"] === "string" && args["slot"] !== "") || (titled && String(args["title"]).includes("#/"));
-      const read = typeof mu === "string" && titled ? { ...args, ...readDepthArgs(mu, slotted) } : args;
+      const rank = rankArg(aperture);
+      const read = rank !== null && titled ? { ...args, ...readRangeArgs(rank, slotted) } : args;
       const alone = form === "text" && read["grain"] === undefined && read["after"] === undefined && !(flagOn(read["meme"]) && slotted);
       return alone ? { ...read, grain: "whole" } : read;
     },
@@ -2470,7 +2473,10 @@ export const TIDDLER_CALL_SEATS: Readonly<Record<string, CallSeat>> = Object.fre
     verbOf: (args) => (!(typeof args["title"] === "string" && args["title"] !== "") && flagOn(args["meme"]) ? "meme-list" : "tiddler-get"),
   },
   // `all` (a terminal following every cursor) shapes the terminal's walk and leaves the reactor's args.
-  "lar:///engine.filter.pages": { verb: "wiki-filter", fold: ({ mu, all: _all, ...args }) => (typeof mu === "string" ? { ...args, ...filterDepthArgs(mu) } : args) },
+  "lar:///engine.filter.pages": {
+    verb: "wiki-filter",
+    fold: ({ mu: _mu, aperture, all: _all, ...args }) => { const rank = rankArg(aperture); return rank !== null ? { ...args, ...filterRangeArgs(rank) } : args; },
+  },
   "lar:///engine.record.puts": {
     verb: "tiddler-put",
     dry: true,
@@ -2494,12 +2500,18 @@ export const TIDDLER_CALL_SEATS: Readonly<Record<string, CallSeat>> = Object.fre
  */
 function dryArgs(args: Record<string, unknown>, word: string): Record<string, unknown> {
   const { mu, ...rest } = args;
-  if (typeof mu !== "string") return rest;
+  // Rest, the Cup (`?0`, the write's default: the receipt's has line) and the Sword (`!0`, the receipt asserted) land the write.
+  if (typeof mu !== "string" || mu === "00" || mu === "?0" || mu === "!0") return rest;
   const depth = dryDepthOf(mu);
   if (depth !== null) return { ...rest, dry: depth };
   // The fold reads reactor spellings; the cure names the title alone, the plain call a reader completes.
   const title = typeof rest["title"] === "string" ? { title: rest["title"] } : {};
-  throw new CallRefusal("mu-cell-empty", `the ${word} door answers the dry depths alone (_ dry · _? dry-relate · _! dry-assert), and ${mu} (${muWordsOf(mu)}) names none, so it lands nothing`, cureCall(word, title));
+  throw new CallRefusal("mu-cell-empty", `the ${word} door answers its receipt (?0 cup · !0 sword) and the dry band alone (_0 pentacle · _? overview · _! precision), and ${mu} (${muWordsOf(mu)}) names none, so it lands nothing`, cureCall(word, title));
+}
+
+/** The aperture rank a plan carried (the call seats the rank word), or null where none rides. */
+function rankArg(raw: unknown): ApertureRank | null {
+  return typeof raw === "string" && (APERTURE_RANKS as readonly string[]).includes(raw) ? raw as ApertureRank : null;
 }
 
 /**

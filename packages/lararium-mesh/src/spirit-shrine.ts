@@ -193,7 +193,7 @@ export function spiritRecordOf(hit: { pet: string; kind: string; uri: string; ou
 
 /** Two records answer one pet name: the door guesses neither. */
 export const spiritAmbiguous = (pet: string, uris: readonly string[]): SpiritRefusal =>
-  new SpiritRefusal("spirit-ambiguous", `spirit-ambiguous: the pet name "${pet}" answers at ${uris.join(" and ")}; the door guesses neither. Read both (\`lares get title=<uri> mu=relate\`), then rename one: one pet name, one record`, 4);
+  new SpiritRefusal("spirit-ambiguous", `spirit-ambiguous: the pet name "${pet}" answers at ${uris.join(" and ")}; the door guesses neither. Read both (\`lares get title=<uri> aperture=measure\`), then rename one: one pet name, one record`, 4);
 /** No record answers a pet name. */
 export const spiritUnknown = (pet: string): SpiritRefusal =>
   new SpiritRefusal("spirit-unknown", `spirit-unknown: no record answers the pet name "${pet}" at ${spiritOf(pet)}, nor at ${MEMORY_PREFIX}familiar/${pet}, ${MEMORY_PREFIX}spirit/${pet} or a card naming it at ${MEMORY_PREFIX}spirit-card/${pet} or ${maskCardOf(pet)}; list the records: \`lares get filter='[prefix[${SPIRIT_PREFIX}]!regexp[#]] [prefix[${MEMORY_PREFIX}familiar/]!regexp[#]] [prefix[${MEMORY_PREFIX}spirit/]!regexp[#]] [prefix[${MEMORY_PREFIX}spirit-card/]] [prefix[${MEMORY_PREFIX}mask-card/]]'\``, 3);
@@ -326,7 +326,7 @@ export function testimonyLines(rec: Pick<SpiritRecord, "base">, carry: SpiritCar
 /** Fit the wake's sections under the cap: the fixed lines whole, then #/open, then the attention unfold, each cut where it runs over. */
 export function omText(rec: Pick<SpiritRecord, "pet" | "uri" | "has">, parts: { open: string | null; testimony?: readonly string[]; attention?: string | null; lead?: string | null }, cap = OM_CAP_CHARS): string {
   const head = `Lares spirit om · ${rec.pet} (${rec.uri}): the card a waking instance reads first, before any summary.`;
-  const doors = `Read a slot whole: lares get title=${rec.uri} recipe=default slot='#/<name>' mu=assert · true one: lares spirit ah ${rec.pet} --slot '#/<name>' --file <path> (or --add <line>) · fold: lares spirit hum ${rec.pet}`;
+  const doors = `Read a slot whole: lares get title=${rec.uri} recipe=default slot='#/<name>' aperture=arc · true one: lares spirit ah ${rec.pet} --slot '#/<name>' --file <path> (or --add <line>) · fold: lares spirit hum ${rec.pet}`;
   const fixed = [parts.lead ?? null, head, rec.has, ...(parts.testimony ?? [])].flatMap((l) => (l === null ? [] : [l])).join("\n");
   let room = cap - fixed.length - doors.length - 4;
   const fit = (text: string | null | undefined, what: string): string | null => {

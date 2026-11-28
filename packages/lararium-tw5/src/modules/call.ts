@@ -28,10 +28,14 @@ module-type: startup
  * macro-call parser in the VM (`callOfSigil`), and every cure renders as a call sigil a reader runs as written (`cureCall`), the
  * triple quote carrying any value that holds a substitution mark (`sigilQuote` in `affordance-rows`).
  *
- * MU SETS THE DEPTH (landing 6, `modules/mu.ts`): a `mu` param (a glyph or its word) reads to a carry, meets the cells the
- * carrier's `#/takes` tables, and rides the plan as its canonical carry for the seat to turn into its reactor's args; no `mu`
- * keeps the read gradient. A conflict carry answers its first tool and names the second as the next call (`mu.then`); a carry
- * outside the table refuses `mu-cell-empty` with the nearest cell as a cure sigil.
+ * TWO DIALS (landing 6, re-cut by the keypad head to the boot seed's own values): `mu` names the LENS (`modules/mu.ts`: a
+ * tool-carry, `?0` `*!` `00`, a lone glyph or the seed's word reading pono), meets the cells the carrier's `#/takes` tables,
+ * and rides the plan as its canonical carry for the seat to turn into its reactor's args; Rest (`00`) needs no cell. A
+ * conflict carry answers its first tool and names the second as the next call (`mu.then`); a carry outside the table refuses
+ * `mu-cell-empty` with the nearest cell as a cure sigil. `aperture` names the RANGE (`modules/aperture.ts`: `N/rank`, the
+ * rank or the number) and rides the plan as its rank: the card at `measure`, the whole at `arc`. A carrier's `default/` rows
+ * seat each dial's default (reads `00`, writes `?0`; the bare door `beat`); every answer echoes the carry and the `N/rank` it
+ * read, a defaulted Rest left silent.
  *
  * DRY PREVIEWS EVERY WRITE AND ACT (landing 7): a carry holding `_` reaches a seat that walks its door's law to the last step
  * and lands nothing (`CallSeat.dry`), and the answer carries the carrier's seat hints (`hints`: its `#/gate` rows and any
@@ -66,6 +70,7 @@ import { AFFORDANCE_TAG, AFFORD_SURFACES, type AffordSurface, type HasRow, bareA
 import { argOnSurface, carrierOf, routeOfCall, routesOf, seatHintRows, skinRows, takesRows, type AffordRoutes, type CarrierView, type TextOf } from "../affordance-read.js";
 import { param } from "../has-line.js";
 import { isDryCarry, isMuFault, lookupMu, muCellsOf, muWordsOf, readMu, type MuFault, type MuReading } from "./mu.js";
+import { apertureWords, isApertureFault, readAperture, type Aperture } from "./aperture.js";
 
 export const name        = "lararium-call";
 export const after       = ["startup"];
@@ -98,8 +103,12 @@ export interface CallPlan {
   readonly seat?: boolean | undefined;
   /** True where the host or seat door names `dry/walks`: a `_` carry reaches it, and it lands nothing. */
   readonly dryWalks?: boolean | undefined;
-  /** The depth a `mu` param asked and the cell that answers it (landing 6); absent where the call names no `mu`. */
+  /** The lens a `mu` param asked and the cell that answers it (landing 6); absent where the call names no `mu`. */
   readonly mu?: MuCall | undefined;
+  /** The range an `aperture` param asked, read to its band (the keypad head); absent where the call names none. */
+  readonly aperture?: Aperture | undefined;
+  /** True where the `mu` came from a carrier's `default/` row rather than the call. */
+  readonly muDefaulted?: boolean | undefined;
 }
 
 /** One seat hint a carrier tables: a `gate` row (who may ask, the ocap the door checks) or a `signs` row. */
@@ -403,19 +412,44 @@ export function planCall(reader: CallReader, word: string, params: Readonly<Reco
   const { address, carrier } = resolveCall(reader, word, params);
   const bound = bindCall(reader, address, carrier, word, params, surface);
   const mu = bound["mu"] === undefined ? undefined : muOfCall(reader, carrier, word, bound);
+  const aperture = bound["aperture"] === undefined ? undefined : apertureOfCall(word, bound);
   const handler = handlerOf(reader, carrier, surface);
+  const shaped: Record<string, unknown> = { ...bound };
+  // REST IS THE GROUND: a `00` carry leaves the bound params, so no seat or host door ever reads a lens it never asked.
+  if (mu !== undefined && mu.carry !== "00") shaped["mu"] = mu.carry;
+  else delete shaped["mu"];
+  if (aperture !== undefined) shaped["aperture"] = aperture.rank;
   return {
-    address, carrier, surface, params: mu === undefined ? bound : { ...bound, mu: mu.carry },
+    address, carrier, surface, params: shaped,
     host: handler !== null, seat: handler === "seat", dryWalks: handler !== null && walksDry(reader, carrier, surface),
-    ...(mu !== undefined ? { mu } : {}),
+    ...(mu !== undefined ? { mu, muDefaulted: params["mu"] === undefined } : {}),
+    ...(aperture !== undefined ? { aperture } : {}),
   };
 }
 
-/** An answer beside the depth that shaped it: `mu: {asked, carry, axis, next?}`, a conflict's second tool named as the next call. */
+/** THE RANGE A CALL ASKS (the keypad head): the bound `aperture` read to its band; a fault refuses with the call's cure. */
+export function apertureOfCall(word: string, bound: Readonly<Record<string, unknown>>): Aperture {
+  const read = readAperture(bound["aperture"]);
+  if (!isApertureFault(read)) return read;
+  const { aperture: _drop, ...plain } = bound;
+  throw new CallRefusal(read.reason, read.message, cureCall(word, read.cure === null ? plain : { ...plain, aperture: read.cure }));
+}
+
+/**
+ * An answer beside the dials that shaped it: `mu: {asked, carry, words, axis, next?}` (a conflict's second tool named as the next
+ * call) and `aperture: {asked, n, rank, words}`. A Rest the carrier's default seated stays silent: the ground needs no echo.
+ */
 export function muAnswer(answer: Record<string, unknown>, plan: CallPlan): Record<string, unknown> {
-  if (plan.mu === undefined) return answer;
-  const { asked, carry, axis, next, hints } = plan.mu;
-  return { ...answer, mu: { asked, carry, words: muWordsOf(carry), axis, ...(next !== null ? { next } : {}) }, ...(hints !== undefined ? { hints } : {}) };
+  let out = answer;
+  if (plan.mu !== undefined && !(plan.muDefaulted === true && plan.mu.carry === "00")) {
+    const { asked, carry, axis, next, hints } = plan.mu;
+    out = { ...out, mu: { asked, carry, words: muWordsOf(carry), axis, ...(next !== null ? { next } : {}) }, ...(hints !== undefined ? { hints } : {}) };
+  }
+  if (plan.aperture !== undefined) {
+    const { asked, n, rank } = plan.aperture;
+    out = { ...out, aperture: { asked, n, rank, words: apertureWords(plan.aperture) } };
+  }
+  return out;
 }
 
 /** The camelCase a reactor reads for a neutral param (`max-bytes` → `maxBytes`). */
@@ -444,7 +478,7 @@ export const isDryPlan = (plan: CallPlan): boolean => plan.mu !== undefined && i
  */
 export function dryUnwalked(plan: CallPlan): CallRefusal {
   const { mu: _drop, ...plain } = plan.params;
-  const carry = plan.mu?.carry ?? "_";
+  const carry = plan.mu?.carry ?? "_0";
   return new CallRefusal("mu-cell-empty", `${bare(plan.address)} walks no dry path, so a ${carry} (${muWordsOf(carry)}) call lands nothing; the plain call lands the act`, cureCall(plan.address, plain));
 }
 

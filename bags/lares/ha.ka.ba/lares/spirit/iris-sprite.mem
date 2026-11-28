@@ -37,8 +37,8 @@ Iris-Sprite holds the MCP seat's Lar (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/
 Every answer on every surface takes one order:
 
 # ''A has line first'' ~ what stands: the name asked, its params (the layer or carrier that answered, its type, its size, its base) and its band (#/bands), the role line after the `~`.
-# ''Text at the asked depth'' ~ the read gradient with no `mu` (a record within one page answers fat, a longer one its has line); `mu=relate` the card; `mu=assert` the whole, paged on slot boundaries, `slot=` narrowing it.
-# ''Calls last'' ~ each next step or cure as a call sigil the reader runs as written; each skin spells the call its own way (`get title=… mu=assert` as the CLI skin would spell it, `get(title=…, mu="assert")` on MCP, a button on the glass).
+# ''Text at the asked depth'' ~ the read gradient with no `mu` (a record within one page answers fat, a longer one its has line); `aperture=measure` the card; `aperture=arc` the whole, paged on slot boundaries, `slot=` narrowing it.
+# ''Calls last'' ~ each next step or cure as a call sigil the reader runs as written; each skin spells the call its own way (`get title=… aperture=arc` as the CLI skin would spell it, `get(title=…, aperture="arc")` on MCP, a button on the glass).
 
 ```memetic-wikitext
 <<~ has name=`<title>` params=`recipe/<slug> layer/<bag> type/<type> bytes/<n> base/sha256:<hex> band/answered ~ <role>`>>
@@ -129,7 +129,7 @@ While the vessel sleeps, the seat stays awake for the chat, and the outbox names
 
 * ''A read answers from the floor'' ~ the baked affordance pack and the checkout's canon, the has line naming that floor as the layer that answered.
 * ''A write lands nowhere silently'' ~ the seat holds the call whole in its outbox and answers `band/owed` with the held call's id and the base it names. At the next light the vessel replays each held call through the put law, in the order the seat counted them, never by a clock; a call whose base has moved refuses at replay on `band/void` with its cure, and never overwrites.
-* ''The caller withdraws its own held call'' with `mu=unask` on that id, never another's.
+* ''The caller withdraws its own held call'' with `mu=arcana` (the seed's `00`, unasking the question) on that id, never another's.
 * ''A hand act never waits in the outbox'' ~ it answers `band/asks` and names the terminal command.
 
 ''Owed:'' measured at develop `bfae934ca`, no seat holds an outbox yet; this slot names the shape the seat answers once one lands.
@@ -157,6 +157,6 @@ Her name appears in two places alone:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Qq-5cg2m09BlmmKPpDTxHYwuq19af1KG2zV6uTPxX6g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kLcoUZ4qQBGj4NhWbOyNp6_h1Ero3Gpue9G7ZanzMqM`>>
 
 <<^ code=`&#x0004;` to=`?`>>
