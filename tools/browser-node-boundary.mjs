@@ -64,7 +64,7 @@ export function browserCells(workflowText) {
       if (cd) { quickDirs.add(cd[1]); break; }
     }
   });
-  // With the browser lamps dim (tools/ci-cells.mjs BROWSER_LAMPS_DIM) no quick step runs pw-container.sh and no row names a container: no cell stands to judge.
+  // With the browser cells dim (tools/ci-cells.mjs BROWSER_DIM) no quick step runs pw-container.sh and no row names a container: no cell stands to judge.
   return quickDirs.size > 0 ? [...named, { cell: "quick", dirs: [...quickDirs] }] : named;
 }
 

@@ -268,7 +268,7 @@ test("WL3 RED: no workflow installs Playwright, and every image field of every w
   }
   assert.deepEqual(found, []);
   assert.equal(literal, 0, "no workflow restates the pin: the capability probe holds it alone");
-  assert.equal(byRef, 0, "CONTROL: with the browser lamps dim (tools/ci-cells.mjs BROWSER_LAMPS_DIM) no image field reads the pin; relit, ci.yml's two matrix rows and held-out's weld driver read it by reference again (three or more)");
+  assert.equal(byRef, 0, "CONTROL: with the browser cells dim (tools/ci-cells.mjs BROWSER_DIM) no image field reads the pin; relit, ci.yml's two matrix rows and held-out's weld driver read it by reference again (three or more)");
 });
 
 test("WL4 CONTROL: an unpinned reference, a changed digest, a second image, a docker run and an install each fail; comments never count", () => {
@@ -312,7 +312,7 @@ const withFixture = (range, dependency) => ({
   [webManifest]: JSON.stringify({ ...originalWeb, devDependencies: { ...originalWeb.devDependencies, [fixtureName]: "workspace:*" } }),
   [`${fixtureDir}/package.json`]: JSON.stringify({ name: fixtureName, version: "1.0.0", engines: { node: range }, dependencies: dependency ?? {} }),
 });
-// THE BROWSER LAMPS STAND DIM (tools/ci-cells.mjs BROWSER_LAMPS_DIM): ci.yml names no container row and no quick-job pw-container step now.
+// THE BROWSER CELLS STAND DIM (tools/ci-cells.mjs BROWSER_DIM): ci.yml names no container row and no quick-job pw-container step now.
 // The closure laws below keep their teeth by reading ci.yml RELIT (the two rows' containers and one quick step restored in memory), so
 // relighting the real file finds the witness exact; `G55 dim CONTROL` reads the real file and finds no browser cell to judge.
 const relitCi = () => readFileSync(join(boundaryRoot, ".github/workflows/ci.yml"), "utf8")
