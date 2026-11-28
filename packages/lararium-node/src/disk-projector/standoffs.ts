@@ -72,8 +72,8 @@ export function _leaveStandoff(core: ProjectorCore, bagId: string, uri: string, 
     if (kind !== undefined && entry.kind !== kind) return;
     core.standoffs.delete(key);
     if (reading) {
+      // The reading's own tail marks the carrier for its second reading, once, and only if nothing in this reading re-seated it.
       core.leaving.set(key, { bagId, uri, entry, at: core.readings });
-      if (core.gate !== null && !core.stopping) core.gate.mark(uri);
       return;
     }
     _resolveStandoff(core, bagId, uri, entry);

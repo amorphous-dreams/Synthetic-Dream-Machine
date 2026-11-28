@@ -44,6 +44,10 @@ export async function reconcile(core: ProjectorCore, rootUri: string): Promise<v
     core.leaving.delete(key);
     _resolveStandoff(core, left.bagId, left.uri, left.entry);
   }
+  // A STANDOFF THIS READING STEPPED ASIDE, AND NOTHING LATER IN IT RE-SEATED, ASKS ONE MORE READING: the mark rides the tail, so a
+  // pass that re-seats the same key in the same reading (the view after a recovery unlink, the view after the recovery flush) sends no
+  // mark it cannot withdraw, and the gate comes to rest.
+  if (core.gate !== null && !core.stopping && [...core.leaving.values()].some((l) => l.uri === rootUri && l.at === reading)) core.gate.mark(rootUri);
 }
 
 export async function reconcileCarrier(core: ProjectorCore, rootUri: string): Promise<void> {
