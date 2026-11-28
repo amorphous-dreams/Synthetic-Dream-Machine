@@ -1,0 +1,119 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.intent.issues`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "issue a signed intent for a verb on the face's intent plane"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.intent.issues", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.intent.issues"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.intent.issues"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.intent.issues ~ issue ~ a votum names a verb and its audience
+
+`lares intent issue <verb>` signs one intent (a votum) naming the verb, its JSON `--args` and its audience: `--to` pins one atom, `--prefer` names a preference, `--class` a class, `--every` every holder. `--void-at` and `--through` bound it. An idempotent verb names its votum by its word alone (the empty nonce), so the same word twice reads one votum; any other takes a fresh `--nonce` unless the line names one. A `face-join` asks the face's founding hearth to seat this vessel and carries its own ContactCard. The answer prints the intent id.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ issue
+
+```memetic-wikitext
+<<has entity=`example` name=`issue` params=`verb/face-join ~ ask the founding hearth to seat this vessel`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ verb · args · to · prefer · class · every · void-at · through · nonce · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`verb` params=`takes/verb needs/required seat/1 as/<verb> ~ the verb the intent names`>>
+<<has entity=`arg` name=`args` params=`takes/json ~ the verb's args as JSON`>>
+<<has entity=`arg` name=`to` params=`takes/atom ~ pin the audience to one atom`>>
+<<has entity=`arg` name=`prefer` params=`takes/atom ~ name a preferred executor`>>
+<<has entity=`arg` name=`class` params=`takes/class ~ address a class of executors`>>
+<<has entity=`arg` name=`every` params=`~ address every holder`>>
+<<has entity=`arg` name=`void-at` params=`takes/cite ~ the intent voids at this point`>>
+<<has entity=`arg` name=`through` params=`takes/cite ~ the intent stands through this point`>>
+<<has entity=`arg` name=`nonce` params=`takes/hex ~ the nonce; an idempotent verb takes the empty one`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the face whose intent plane this reads or writes, a whole persona index from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand key/face-atom ~ signs under the face's own atom key through the store door`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · face-malformed · face-not-held · args-malformed · verb-absent · intent-id-taken · hearth-absent
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ an unknown sub-verb, or no sub-verb named`>>
+<<has entity=`refusal` name=`face-malformed` params=`~ --face names a whole persona index from 0`>>
+<<has entity=`refusal` name=`face-not-held` params=`~ this vessel holds no such face`>>
+<<has entity=`refusal` name=`args-malformed` params=`~ --args reads as no JSON`>>
+<<has entity=`refusal` name=`verb-absent` params=`~ name the verb`>>
+<<has entity=`refusal` name=`intent-id-taken` params=`~ the same word stands under another audience or bound`>>
+<<has entity=`refusal` name=`hearth-absent` params=`~ the face's log names no founding hearth; name one with --to`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ issued · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`issued` params=`exit/0 fields/[[id cid]] ~ the intent id prints`>>
+<<has entity=`band` name=`refused` params=`exit/1 ~ [lares intent] refused: names the code`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares intent issue
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares intent issue]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · face-intent-plane
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;S7OKDEMF8yvllRN7jvjaidrUraLIDZ_Gk7Jl-poVyKM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

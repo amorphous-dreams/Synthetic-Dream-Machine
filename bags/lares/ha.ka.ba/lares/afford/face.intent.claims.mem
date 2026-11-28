@@ -1,0 +1,107 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.intent.claims`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "claim an intent to execute it"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.intent.claims", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.intent.claims"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.intent.claims"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.intent.claims ~ claim ~ a holder steps forward
+
+`lares intent claim <intent-id>` signs a claim on the intent, by id or a claim's cid.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ claim
+
+```memetic-wikitext
+<<has entity=`example` name=`claim` params=`target/<intent-id> ~ claim the intent`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ target · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`target` params=`takes/id needs/required seat/1 as/<target> ~ the intent's id`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the face whose intent plane this reads or writes, a whole persona index from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand key/face-atom ~ signs under the face's own atom key through the store door`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · face-malformed · face-not-held · intent-id-absent
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ an unknown sub-verb, or no sub-verb named`>>
+<<has entity=`refusal` name=`face-malformed` params=`~ --face names a whole persona index from 0`>>
+<<has entity=`refusal` name=`face-not-held` params=`~ this vessel holds no such face`>>
+<<has entity=`refusal` name=`intent-id-absent` params=`~ name the intent`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ cid
+
+```memetic-wikitext
+<<has entity=`band` name=`cid` params=`exit/0 ~ the signed entry's cid prints`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares intent claim
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares intent claim]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · face-intent-plane
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GFmXPafqlQwsRdALCevHuGEq1B1Sv2rve4J-BIDB-NQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

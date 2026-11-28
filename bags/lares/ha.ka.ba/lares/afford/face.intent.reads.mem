@@ -1,0 +1,106 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.intent.reads`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read the face's intent plane: each votum, its winner, its outcomes"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.intent.reads", "candidate"]
+title     = "lar:///ha.ka.ba/lares/afford/face.intent.reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.intent.reads"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.intent.reads ~ show ~ the intent pane
+
+`lares intent show [<id>]` reads the face's intent plane: each intent's status, winner, duplicates, void-after-act and outcome count, then the standing, stray answers and refusals, and each delegation. An id narrows the rows to one. `--json` prints the fold as data.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ all
+
+```memetic-wikitext
+<<has entity=`example` name=`all` params=`~ the whole pane`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ target · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`target` params=`takes/id seat/1 as/<target> ~ one intent's id to narrow the rows to`>>
+<<has entity=`arg` name=`face` params=`takes/index ~ the face whose intent plane this reads or writes, a whole persona index from 0`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand key/face-atom ~ signs under the face's own atom key through the store door`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · face-malformed · face-not-held
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`~ an unknown sub-verb, or no sub-verb named`>>
+<<has entity=`refusal` name=`face-malformed` params=`~ --face names a whole persona index from 0`>>
+<<has entity=`refusal` name=`face-not-held` params=`~ this vessel holds no such face`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ pane
+
+```memetic-wikitext
+<<has entity=`band` name=`pane` params=`exit/0 fields/[[rows outcomes strayAnswers refused standing delegations devices]] ~ the pane, one line per intent`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares intent show
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares intent show]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · face-intent-plane
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TXobsNS7WDhSy_nQafiL62mplPsSjCV4VRWmmNO0jPs`>>
+
+<<^ code=`&#x0004;` to=`?`>>
