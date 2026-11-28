@@ -59,8 +59,8 @@
  * WITHOUT the write an agreement saw (a save that never rested, a snapshot restored, a blank doc standing in for one
  * that failed to load) looks exactly like records that moved on. The heads tell the two apart by causal identity, no
  * clock: a document that still holds the base's heads moved forward from the agreement, and one that lacks them fell
- * behind it. The projector reads the second as a standoff and writes nothing over the file (`disk-projector.ts`,
- * `pastRecords`). A row with no heads vouches as it always did.
+ * behind it. The projector reads the second as a file the records never captured: it writes nothing over it and hands
+ * it to capture, which lands its words back (`disk-projector.ts`, `pastRecords`). A row with no heads vouches as it always did.
  *
  * THE BASE PINS ONLY WHAT SEALED. A tree handed a rest (`rests`: the vessel's reading of a document's heads at rest) holds a
  * row that names a document and its heads in memory as PENDING, and lands it in the directory only once those heads rest in

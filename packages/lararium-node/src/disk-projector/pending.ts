@@ -71,7 +71,7 @@ export function pendingRemovals(core: ProjectorCore): Array<{ readonly bagId: st
  * LOOK AT THE DISK NOW. The projector reads the disk only when a reconcile runs, and a file a hand
  * moved raises no change in the wiki. `sense` reconciles the named carrier roots (every root this
  * projector mirrors, when none get named) and returns once the queue drains: a vanished file enters the
- * pending set, a returned one leaves it, and every standoff reads against the bytes that stand.
+ * pending set, a returned one leaves it, and every moved file reads against the base at its path.
  */
 export async function sense(core: ProjectorCore, uris?: readonly string[]): Promise<void> {
   const roots = uris ?? mirroredRoots(core);

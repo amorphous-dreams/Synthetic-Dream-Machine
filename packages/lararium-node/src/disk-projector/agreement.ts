@@ -1,12 +1,11 @@
 /**
- * RECOVERY AT REST AND THE PINNED AGREEMENT: `recoveryAtRest` proves a captured recovery record stands in its granted
- * mirror's bytes; `pinAgreement` pins a base only where this island's own render and the file agree; `recordsRenderOf`
- * folds the render both read.
- * Heleuma ha: see lararium/mesh/disk-projector-recovery.
+ * THE PINNED AGREEMENT: `pinAgreement` pins a base only where this island's own render and the file agree;
+ * `recordsRenderOf` folds the render it reads.
+ * Heleuma ha: see lararium/mesh/disk-projector-agreement.
  */
 
-import { existsSync, readFileSync } from "fs";
-import { relative as relativePath, resolve as resolvePath } from "path";
+import { existsSync } from "fs";
+import { relative as relativePath } from "path";
 import { digestsEqual } from "@lararium/mesh/agile-digest";
 import { carrierHash } from "@lararium/mesh/crypto";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
@@ -14,69 +13,10 @@ import type { CarrierFile } from "@lararium/tw5";
 import { confineMirrorWrite } from "../bag-paths.js";
 import { syncedTreeKey } from "../synced-tree.js";
 import type { ProjectorCore } from "./core.js";
-import { realPathOf, contentOf } from "./entries.js";
-import { otherDocument, ownBases, pin, forgetAt, basedHomes } from "./bases.js";
-import { reconcileNow, isPackMember, shadowedOwnRecords, neverOnDisk } from "./reconcile.js";
-import { mirrorCarrierFiles } from "./siting.js";
+import { realPathOf } from "./entries.js";
+import { otherDocument, ownBases, pin, forgetAt } from "./bases.js";
+import { isPackMember, shadowedOwnRecords, neverOnDisk } from "./reconcile.js";
 import { diskCarrierText, renderedOutput } from "./write.js";
-
-/** Confirm the captured recovery record against the actual bytes at its granted mirror. */
-export async function recoveryAtRest(core: ProjectorCore, bagId: string, title: string, written: Record<string, unknown> | null): Promise<void> {
-  const mirrors = core.mirrors.filter((m) => m.bagId === bagId && m.mirrorClass === "recovery");
-  if (!mirrors.length) return;
-  const store = core.recoveryStore?.(bagId);
-  if (!store || !core.recoveryFileFn || core.stopping) throw new Error("recovery projection unavailable");
-  if (written === null) {
-    const absent = async (): Promise<boolean> => {
-      const record = await store.get(title);
-      return !record || !!record.meta?.deleted;
-    };
-    if (!await absent()) throw new Error("recovery deletion superseded");
-    const key = syncedTreeKey(bagId, title);
-    core.syncedTree.reread(key);
-    const homes = new Set(mirrors.flatMap((mirror) => [
-      ...basedHomes(core, mirror, title),
-      ...(mirrorCarrierFiles(core, mirror, title) ?? []).map((file) => contentOf(file)),
-    ]));
-    await reconcileNow(core, title);
-    if (core.stopping) throw new Error("recovery projection stopped");
-    if (!await absent()) throw new Error("recovery deletion superseded");
-    core.syncedTree.reread(key);
-    for (const mirror of mirrors) for (const home of basedHomes(core, mirror, title)) homes.add(home);
-    if ([...homes].some((home) => existsSync(home) || existsSync(`${home}.meta`))) {
-      throw new Error("recovery file still present or conflicting");
-    }
-    return;
-  }
-  const record = await store.get(title);
-  if (!record || record.meta?.deleted) throw new Error("recovery record missing");
-  const stableFields = (fields: Record<string, unknown>): string => JSON.stringify(Object.fromEntries(Object.entries(fields).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)));
-  const captured = stableFields(written);
-  if (stableFields(record.tiddler) !== captured) throw new Error("recovery record superseded");
-  const file = await core.recoveryFileFn(written);
-  if (!file || typeof file.body !== "string") throw new Error("recovery render unavailable");
-  const expected = carrierHash(file.body, file.metaBody);
-  await core.idle();
-  if (core.stopping) throw new Error("recovery projection stopped");
-  const current = await store.get(title);
-  if (!current || current.meta?.deleted || stableFields(current.tiddler) !== captured) throw new Error("recovery record superseded");
-  core.syncedTree.reread(syncedTreeKey(bagId, title));
-  const bases = ownBases(core, bagId, title);
-  for (const mirror of mirrors) {
-    const candidates = bases.filter((base) => {
-      const rel = relativePath(resolvePath(mirror.mirrorRoot), base.path);
-      return rel !== "" && rel !== ".." && !rel.startsWith("../") && !rel.startsWith("..\\");
-    });
-    if (!candidates.some((base) => {
-      if (!digestsEqual(base.records, expected)) return false;
-      try {
-        const body = readFileSync(base.path, "utf8");
-        const meta = file.metaBody === undefined ? undefined : readFileSync(base.path + ".meta", "utf8");
-        return digestsEqual(carrierHash(body, meta), expected);
-      } catch { return false; }
-    })) throw new Error("recovery file missing, conflicting, or not written");
-  }
-}
 
 /**
  * The render this island's records hold for one carrier of a bag, folded as the projecting leg folds it (`flush`) and
@@ -86,13 +26,13 @@ export async function recoveryAtRest(core: ProjectorCore, bagId: string, title: 
  * whose bytes the tier lacks.
  */
 export async function recordsRenderOf(core: ProjectorCore, bagId: string, uri: string): Promise<{ readonly file: CarrierFile; readonly hash: string } | null> {
-  const mirror = core.mirrors.find((m) => m.bagId === bagId && m.mirrorClass !== "recovery");
+  const mirror = core.mirrors.find((m) => m.bagId === bagId);
   if (!mirror || await neverOnDisk(core, mirror, uri)) return null;
   // A pack member lives inside its pack file and projects no file of its own.
   if (isPackMember(core, uri)) return null;
   const fields = core._tw5?.$tw.wiki.getTiddler?.(uri)?.fields as Record<string, unknown> | undefined;
   const origin = typeof fields?.["$origin-bag"] === "string" ? fields["$origin-bag"] : undefined;
-  const winner = origin !== undefined && core.mirrors.some((m) => m.bagId === origin && m.mirrorClass !== "recovery") ? origin : undefined;
+  const winner = origin !== undefined && core.mirrors.some((m) => m.bagId === origin) ? origin : undefined;
   if (winner !== bagId && !(await shadowedOwnRecords(core, uri, winner)).includes(bagId)) return null;
   const file = winner === bagId ? await core.carrierFileFn(uri) : await core.recordFileFn?.(bagId, uri) ?? null;
   if (file === null) return null;
@@ -126,7 +66,7 @@ export async function pinAgreement(core: ProjectorCore, bagId: string, uri: stri
   // symlinked root weighs a realpath'd file as the projecting leg does.
   const realFile = realPathOf(file);
   const within = core.mirrors.some((m) => {
-    if (m.bagId !== bagId || m.mirrorClass === "recovery") return false;
+    if (m.bagId !== bagId) return false;
     const realRoot = realPathOf(m.mirrorRoot);
     return confineMirrorWrite(realRoot, relativePath(realRoot, realFile), m.allowBagsRootFiles).ok;
   });

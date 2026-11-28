@@ -4,7 +4,7 @@
  * The projecting leg already reads a native carrier's congruence (`canonicalizeNativeCarrierText`, `@lararium/tw5`): TW5's
  * own deserializer over the body, the `.meta` sidecar merged over the result. This hands back that merged record instead
  * of its render, so the stand-off keeper lands a `.tid` or a file with its `.meta` as the hand's `lares shore keep-disk`
- * lands it (`standoff-drafts.ts`, `keepDisk`).
+ * lands it (`disk-capture.ts`).
  *
  * Meme: lar:///ha.ka.ba/lararium/api/disk-projection#/write-ward
  */

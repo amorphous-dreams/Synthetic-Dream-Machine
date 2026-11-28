@@ -17,30 +17,21 @@ import { forgetAt, basedHomes } from "./bases.js";
 import { settleHomes } from "./homes.js";
 import { neverOnDisk } from "./reconcile.js";
 import { mirrorCarrierFiles } from "./siting.js";
-import { _leaveStandoff } from "./standoffs.js";
 import { keepUntracked } from "./untracked.js";
 
 /** Unlink by trying all mirrors whose path strategy resolves the URI — but a
  *  mirror whose bag STILL HOLDS the carrier keeps its file (a carrier hidden
  *  from the resolved view by a shadowing tombstone still lives in its lower
  *  bag; each mirror reflects its OWN bag's content, never the resolved view). */
-export async function _scheduleUnlinkByTitle(core: ProjectorCore, title: string, onlyBag?: string, spare?: ReadonlySet<string>): Promise<void> {
+export async function _scheduleUnlinkByTitle(core: ProjectorCore, title: string, spare?: ReadonlySet<string>): Promise<void> {
   if (core.bagsHolding) core.measure.holdsSinceChange++;
   const holdingBags = core.bagsHolding ? new Set(await core.bagsHolding(title)) : null;
   // A MIRROR ROOT A HOLDING BAG SHARES STAYS WHOLE. Two mirrors over one root resolve one carrier to one
   // file; the bag that dropped the carrier proves nothing about a file its neighbour still owns.
   const keptRoots = new Set<string>();
+  for (const mirror of core.mirrors) if (holdingBags?.has(mirror.bagId) || spare?.has(mirror.bagId)) keptRoots.add(resolvePath(mirror.mirrorRoot));
   for (const mirror of core.mirrors) {
-    if (!holdingBags?.has(mirror.bagId)) continue;
-    // A carrier the resolved view shadows stops projecting here, unless its own record does: the standoff between
-    // its sides names a conflict nobody weighs.
-    if (!spare?.has(mirror.bagId)) _leaveStandoff(core, mirror.bagId, title, "sides", true);
-    keptRoots.add(resolvePath(mirror.mirrorRoot));
-  }
-  for (const mirror of core.mirrors) {
-    if (onlyBag !== undefined && mirror.bagId !== onlyBag) continue;
-    if (holdingBags?.has(mirror.bagId)) continue;
-    _leaveStandoff(core, mirror.bagId, title, "sides", true);
+    if (holdingBags?.has(mirror.bagId) || spare?.has(mirror.bagId)) continue;
     if (keptRoots.has(resolvePath(mirror.mirrorRoot))) continue;
     // A title the address siting rule sites nowhere (a foreign title) names no file by itself; the base still may.
     const homes = (mirrorCarrierFiles(core, mirror, title) ?? []).map((f) => contentOf(f));
@@ -55,9 +46,8 @@ export async function _scheduleUnlinkByTitle(core: ProjectorCore, title: string,
     // A FILE GIT NEVER TRACKED STAYS: in a checkout it holds the only copy, so no proof of agreement lets it leave.
     // Its base stays with it, so the next scan reads the file where its agreement left it, never as an arrival.
     if (keepUntracked(core, mirror.bagId, title, homes)) continue;
-    // The records hold no such carrier, so the base alone can vouch for a file. A held one stays.
-    if (!settleHomes(core, mirror.bagId, title, homes, null, null, `the records dropped ${title}`)) continue;
-    _leaveStandoff(core, mirror.bagId, title);
+    // The records hold no such carrier, so the base alone can vouch for a file. A held one goes to capture first.
+    if (!await settleHomes(core, mirror.bagId, title, homes, null, null, `the records dropped ${title}`)) continue;
     // KĀPAE SHADOWS, ABSENT FALLS THROUGH, on disk too: a kāpae raised in this mirror's bag leaves its
     // shadow where the carrier stood; a record that left the bag (a MOVE, a promotion) leaves none.
     if (shadowBase !== null) await settleShadow(core, mirror, title, shadowBase);
@@ -84,7 +74,7 @@ export async function settleShadow(core: ProjectorCore, mirror: BagMirrorConfig,
     core.onRefusal?.({ bagId: mirror.bagId, uri: title, reason: gate.reason });
     return;
   }
-  const store = core.recoveryStore?.(mirror.bagId);
+  const store = core.bagStore?.(mirror.bagId);
   const record = store ? await store.get(title) : null;
   if (record?.meta?.deleted === true) {
     const body = kapaeShadowBody(title);

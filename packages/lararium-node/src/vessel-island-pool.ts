@@ -84,8 +84,6 @@ export interface VesselIslandPoolOptions {
   foundingRecord?: () => LarDoc | null | undefined;
   /** Held disk-write capability: canon bag → mirror configs this pool MAY project. */
   diskMirrorGrant?: readonly { bagId: string; mirrorRoot: string; scope: string; perWikiSlug?: boolean; selfCanon?: boolean }[];
-  /** The person's stand-off collapse rules, read from the worn face's daemon wiki at each mount (`IslandMsg_Manifest.shoreCollapse`). */
-  shoreCollapse?: () => Readonly<Record<string, readonly string[]>> | null | Promise<Readonly<Record<string, readonly string[]>> | null>;
   /** Override the mount silence budget in ms (tests). */
   mountSilenceMs?: number;
   /** Override the mount progress-stall budget in ms (default 3x silence). */
@@ -112,7 +110,6 @@ export class VesselIslandPool extends VesselIslandPoolCore {
       mainRepo: options.mainRepo ?? null,
       readContent: nodeContentReader(options.cidDir ?? null, options.caps),
       diskMirrorGrant: options.diskMirrorGrant ?? [],
-      ...(options.shoreCollapse ? { shoreCollapse: options.shoreCollapse } : {}),
       resolvePluginCids: options.resolvePluginCids,
       ...(options.floorCid ? { floorCid: options.floorCid } : {}),
       // The shadow tally rests beside the vessel store, where `lares vessel read` prints it.

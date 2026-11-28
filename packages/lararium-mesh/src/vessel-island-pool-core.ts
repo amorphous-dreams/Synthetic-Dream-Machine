@@ -205,7 +205,7 @@ type Slot = IslandSlot | ColdSlot;
  *  under in place of `mirrorRoot`: a wiki whose bag stands in the canon source writes back beside that source, while every
  *  other slug keeps `mirrorRoot` (the mirror root splits by origin; the host derives the map from its source tree). */
 export type DiskMirrorGrant = readonly {
-  bagId: string; mirrorRoot: string; scope: string; perWikiSlug?: boolean; selfCanon?: boolean; wikiSlot?: WikiSlotKind; mirrorClass?: "recovery";
+  bagId: string; mirrorRoot: string; scope: string; perWikiSlug?: boolean; selfCanon?: boolean; wikiSlot?: WikiSlotKind;
   sourcedRoots?: Readonly<Record<string, string>>; consentSlugs?: readonly string[]; tempLayer?: boolean;
   /** A wiki's WORKING grant: the operator's workspace dir per slug (`/lar/workspaces/<name>`), where its share row names one. */
   workspaceRoots?: Readonly<Record<string, string>>;
@@ -292,7 +292,7 @@ export function resolveDiskMirrors(
         return { ...held, bagId: perWikiBag(g), mirrorRoot: `${g.mirrorRoot}/${g.faceFolder()}/${plane}/${wikiSlug}`, ...(g.wikiSlot === "temp" ? { tempLayer: true } : {}) };
       }
       if (g.wikiSlot === "working" && Object.hasOwn(g.workspaceRoots ?? {}, wikiSlug)) return { ...held, bagId: perWikiBag(g), mirrorRoot: g.workspaceRoots![wikiSlug]! };
-      const leaf = g.wikiSlot === "temp" ? "/temp" : g.mirrorClass === "recovery" ? "/recovery" : "";
+      const leaf = g.wikiSlot === "temp" ? "/temp" : g.wikiSlot === "draft" ? "/recovery" : "";
       return (g.selfCanon || g.wikiSlot)
         ? { ...held, bagId: perWikiBag(g), mirrorRoot: `${base}/${wikiSlug}${leaf}`, ...(g.wikiSlot === "temp" ? { tempLayer: true } : {}) }
         : g.perWikiSlug
@@ -328,11 +328,6 @@ export interface VesselIslandPoolCoreOptions {
   mainRepo?: Repo | null;
   /** Held disk-write capability — bag → mirror configs this pool MAY project. */
   diskMirrorGrant?: DiskMirrorGrant;
-  /**
-   * The person's stand-off collapse rules (rule → bags), read afresh from the worn face's daemon wiki at each mount and
-   * carried in the manifest (`IslandMsg_Manifest.shoreCollapse`). Absent or null = no rule enabled.
-   */
-  shoreCollapse?: () => Readonly<Record<string, readonly string[]>> | null | Promise<Readonly<Record<string, readonly string[]>> | null>;
   /** Called when an island OUTSIDE any session emits a verse-event reaction, a camera frame, a control
    *  result or a host-door ask. */
   onWorkerEvent?: (wikiId: string, msg: IslandMsg_Event | LarIslandToVesselMsg) => void;
@@ -428,7 +423,6 @@ export class VesselIslandPoolCore {
   private _restState: VesselRestState = { asked: 0, rested: 0, stalled: 0 };
   private readonly _onRest: ((state: VesselRestState) => void) | null;
   private readonly _diskMirrorGrant: DiskMirrorGrant;
-  private readonly _shoreCollapse: VesselIslandPoolCoreOptions["shoreCollapse"] | null;
   private readonly _onWorkerEvent:  ((wikiId: string, msg: IslandMsg_Event | LarIslandToVesselMsg) => void) | null;
   private readonly _onSurfaceEvent: ((surface: IslandKeyParts, msg: IslandMsg_Event | LarIslandToVesselMsg) => void) | null;
   private readonly _resolvePluginCids: VesselIslandPoolCoreOptions["resolvePluginCids"];
@@ -479,7 +473,6 @@ export class VesselIslandPoolCore {
     this._host            = opts.host;
     this._mainRepo        = opts.mainRepo ?? null;
     this._diskMirrorGrant = opts.diskMirrorGrant ?? [];
-    this._shoreCollapse   = opts.shoreCollapse ?? null;
     this._onWorkerEvent   = opts.onWorkerEvent ?? null;
     this._onRest          = opts.onRest ?? null;
     this._onSurfaceEvent  = opts.onSurfaceEvent ?? null;
@@ -867,14 +860,11 @@ export class VesselIslandPoolCore {
     // vessel's Repo rests every document once (single-owner law), and the island relays through it. A session island
     // carries no disk mirror either.
     const diskMirrors = plan.surface ? [] : resolveDiskMirrors(this._diskMirrorGrant, plan.recipe.mirrorBags, plan.recipe.wikiSlug);
-    // THE PERSON'S COLLAPSE RULES ride only with a mirror: an island that projects nothing weighs no stand-off.
-    const shoreCollapse = diskMirrors.length > 0 && this._shoreCollapse !== null ? await (async () => this._shoreCollapse!())().catch(() => null) : null;
 
     const manifestMsg = mkManifest(
       plan.wikiUri, syncPort, plan.recipe, plan.grants, plan.coreHash,
       {
         ...(diskMirrors.length ? { diskMirrors } : {}),
-        ...(shoreCollapse ? { shoreCollapse } : {}),
         ...(pluginCids.length ? { pluginCids } : {}),
         ...(floorCid ? { floorCid } : {}),
         ...(plan.surface && view ? { view: { peerId: view.peerId }, resolved: resolvedSlotsOf(plan.surface.mount.recipe) } : {}),

@@ -204,7 +204,6 @@ import {
   shareEntryTitle,
   type ShareEntry,
 } from "@lararium/mesh/share-config";
-import { collapseConfigOf } from "./standoff-collapse.js";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh/federation-gate";
 import type { CapabilityRecord, CustodyWriter, DyadReader, ReceiptIssuer } from "@lararium/mesh/capability-record";
@@ -3169,21 +3168,6 @@ async function prepareNodeBootOn(
     if (receipt && receipt.cut.length > 0) throw new IslandShutdownCut(`islands cut (${receipt.cut.join(", ")})`);
   } });
 
-  /** The worn face's stand-off collapse rules (rule → bags), from its daemon working documents; null where no face stands worn. */
-  const wornShoreCollapse = (): Readonly<Record<string, readonly string[]>> | null => {
-    if (wornDeviceGroup === null || wornDeviceRelation === null) return null;
-    const docs = deviceDocs.docsOf(DAEMON_WORKING_SLOT, [{ group: wornDeviceGroup, relation: wornDeviceRelation, face: null }])
-      .map((id) => repo.handles[id as keyof typeof repo.handles]).filter((h): h is NonNullable<typeof h> => h !== undefined && h.isReady());
-    const config = collapseConfigOf((title) => {
-      for (const handle of docs) {
-        const record = ownEntry((handle.doc() as LarDoc | undefined)?.tiddlers, title) as { tiddler?: unknown; meta?: { deleted?: unknown } } | undefined;
-        if (record && record.meta?.deleted !== true) return plainValue(record.tiddler) as Record<string, unknown>;
-      }
-      return null;
-    });
-    return Object.keys(config).length > 0 ? config : null;
-  };
-
   // Read the daemon doc (idempotent re-resolve; openDaemonVm finds the same handle).
   const readDaemonDoc = async (): Promise<DocHandle<LarDoc>> =>
     resolveBootDoc<LarDoc>(repo, bootstrap.daemonUrl as AutomergeUrl,
@@ -5471,11 +5455,12 @@ async function prepareNodeBootOn(
       // face-private lands in a checkout or a realm pool. No face worn (or one whose pet name makes no folder): none stands.
       // A wiki's personal slot holds the daemon mount's own overlay over the workbench: `personal/<slug>`.
       { bagId: "personal",       mirrorRoot: join(projectionRoot, FACES_PROJECTION_DIR), scope: "personal", wikiSlot: "personal", faceFolder: () => wornDeviceRelation === null ? null : wornFaceSegment },
-      // Recovery remains an explicit, recipe-designated grant: a draft holds one face's unsaved hand, `recovery/<slug>`.
-      { bagId: "draft",          mirrorRoot: join(projectionRoot, FACES_PROJECTION_DIR), scope: "draft", wikiSlot: "draft", mirrorClass: "recovery", faceFolder: () => wornDeviceRelation === null ? null : wornFaceSegment },
+      // A wiki's draft layer projects as a layer of its own, each draft its own file under the face's `recovery/<slug>`: a
+      // draft holds one face's unsaved hand, and drafts stand apart as their own tiddlers.
+      { bagId: "draft",          mirrorRoot: join(projectionRoot, FACES_PROJECTION_DIR), scope: "draft", wikiSlot: "draft", faceFolder: () => wornDeviceRelation === null ? null : wornFaceSegment },
       // The USER temp layer projects to `temp/<slug>` beside recovery, and only for a slug the operator's consent row names
       // (`projection.temp.<slug>`); absent, nothing lands.
-      { bagId: "temp",           mirrorRoot: join(projectionRoot, FACES_PROJECTION_DIR), scope: "temp", wikiSlot: "temp", mirrorClass: "recovery", consentSlugs: tempConsentedSlugs(loadLaresConfig()), faceFolder: () => wornDeviceRelation === null ? null : wornFaceSegment },
+      { bagId: "temp",           mirrorRoot: join(projectionRoot, FACES_PROJECTION_DIR), scope: "temp", wikiSlot: "temp", consentSlugs: tempConsentedSlugs(loadLaresConfig()), faceFolder: () => wornDeviceRelation === null ? null : wornFaceSegment },
       // self-canon = the per-wiki CANON authority: a minted user wiki's own
       // @{slug} bag projects to realms/<realm pet name>/bags/{slug} (both bagId and leaf fill from the
       // slug at mount), in the realm that holds it (its default label minted on first read). System wikis (lares/lararium) carry literal grants
@@ -5536,7 +5521,6 @@ async function prepareNodeBootOn(
       diskMirrorGrant,
       // THE PERSON'S STAND-OFF COLLAPSE RULES, read afresh at each mount from the worn face's own daemon working layer
       // (`$:/config/lares/shore/collapse/<rule>`), never from a wiki another writer shares; no worn face, no rule.
-      shoreCollapse: () => wornShoreCollapse(),
       onWorkerEvent: (wikiId, msg) => {
         if (msg.type !== "event") return;   // a camera's frame or answer from an island outside any session has no ring to ride on this vessel
         eventBus.enqueueToRing("vm-ring", "worker.event", { wikiId, listenable: msg.listenable, payload: msg.payload });

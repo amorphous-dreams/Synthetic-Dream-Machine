@@ -180,7 +180,7 @@ export interface DaemonVmCoreOptions {
   ownedDocument?:  { documentUrl: string; storage?: IslandStorageConfig };
   /** The daemon wiki's disk mirrors (its working layer → `<projections>/faces/<pet name>/wikis/daemon/`); a node host mints them, a browser passes none. Rides the manifest's
    *  `diskMirrors` so the worker's `onBoot` can mount the same projector a wiki island mounts. */
-  diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean }[];
+  diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; titlePaths?: boolean; tempLayer?: boolean }[];
   /**
    * The floor manifest the vessel's accepted pin names (`floor-pin` `floorCidToMount`), or a read of it: the daemon island's
    * manifest carries it, so the island mounts the floor the vessel accepted. Absent or null: the island reads its genesis

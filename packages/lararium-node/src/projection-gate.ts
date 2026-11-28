@@ -1,124 +1,50 @@
 /**
- * projection-gate — THE CONFLUENCE, SECOND LEG: the pure three-way decision at
- * the heart of records→disk projection, where the same three streams
- * (records · the last agreement · disk) meet and reconcile — a conflict SURFACES
- * rather than one stream drowning another (Unison's law: surface, never
- * overwrite). The mirror of `@lararium/tw5`'s `ingest-gate`, which decides the
- * disk→records leg; BOTH legs of the round trip reconcile, neither
- * overwrites (the operator's ruling: "conflict-surfacing in BOTH legs").
+ * projection-gate — the pure decision at the heart of records→disk projection: what the projector does with one carrier
+ * before a single byte writes. Three states meet per carrier:
+ *   - the RECORDS' canonical render (what the doc would write),
+ *   - the BASE (the last agreement AT THIS PATH: the bytes this projector last wrote there or last saw captured, and the
+ *     render the records carried then),
+ *   - the DISK bytes (what stands there now),
+ * read through a fourth input that serves as a LENS on the third: the canonical text those disk bytes SAY
+ * (`render(parse(disk))`, the congruence `≈`). Without it the gate can only ask "same bytes?"; with it, "same thing?".
  *
- * Three states meet per carrier — the SAME triangle the ingest leg reads, seen
- * from the other shore:
- *   - the RECORDS' canonical render (what the doc would write; the merge seat),
- *   - the BASE (the last agreement AT THIS PATH: what the disk held and what the records rendered),
- *   - the DISK bytes (what the operator's hands left),
- * read through a fourth input that is not a stream but a LENS on the third — the
- * canonical text those disk bytes SAY (`render(parse(disk))`, the congruence `≈`).
- * Without it the gate can only ask "same bytes?"; with it, "same thing?".
+ * THE PROJECTOR RENDERS; THE CRDT MERGES. Merge authority routes through the CRDT alone, so this gate never weighs two
+ * sides against each other and never holds a carrier for a person. It asks one question before a write: did a hand move
+ * the file since the projector last wrote it or last saw it captured? Where it did, the write waits and the file goes to
+ * the capture door (`capture`): its words enter the records through the ingest grade (or stand as parallel drafts where
+ * the records moved too), the base moves to those bytes, and the next reconcile projects whatever the records then say.
+ * No bytes a hand left on disk get overwritten before the house holds them.
  *
- * DISK AND RECORDS CO-PROJECT, AND NEITHER STANDS AS CANON. A carrier whose disk
- * bytes and whose records say the same thing stands UNCHANGED, whatever framing the
- * bytes wear, and a projection of an unchanged carrier writes nothing. So the base
- * holds TWO hashes: the disk side and the records side. They read equal where the
- * disk holds the canonical render, and differ where the disk stands in another
- * framing. "The disk stands where the base left it" reads the disk side; "the
- * records stand where the base left them" reads the records side.
- *
- * The gate decides; it never writes. `LarDiskProjector.flush` owns every I/O
- * and every alert — it consults this gate on every flush the byte-identity skip
- * does not already answer, pins the base on an equivalence, and routes a
- * `conflict` out on the ward-alert rail (`onConflict`), named for the mechanism
- * that stood down. Hashes arrive as opaque strings — the gate compares, never
- * computes, so it stays isomorphic and hash-agnostic (ingest-gate's law).
- *
- * Decision law (in order — each clause mirrors the ingest leg's):
- *   1. disk == records          → NOOP `disk-matches-records`
- *      (the bytes already stand there; ingest's rule 1 `disk-matches-synced`,
- *       read from the projecting side — the echo gate. RIDES FIRST, so a
- *       corpus whose anchors went stale but whose disk and doc agree projects
- *       nothing and conflicts on nothing.)
+ * Decision law (in order):
+ *   1. disk == records                 → NOOP `disk-matches-records` (the echo gate: the bytes already stand there)
  *   2. no content file on disk:
- *        a base stands at this path → PENDING-REMOVAL `vanished`
- *          (the file stood here at the last agreement and left. That may name a
- *           delete, a branch switch, a checkout or a slip, and the bytes cannot
- *           say which: nothing writes back and nothing tombstones until a person
- *           answers. `answer: "restore"` → PROJECT `restore-answered`.)
- *        no base at this path     → PROJECT `absent-on-disk`
- *          (the path never held an agreement: a first projection, or a carrier a
- *           siting rule moved here. No file stands there to lose.)
- *      A content file that stands with its declared `.meta` gone reads as a disk
- *      state of its own (the caller hashes the body alone and hands in no
- *      canonical view), so the base clauses decide it and no body gets replaced
- *      on the strength of a missing sidecar.
- *   3. render(parse(disk)) == records → NOOP `canonical-equivalent`
- *      (ingest's rule 3, transposed — the `≈` clause. The disk and the records
- *       SAY THE SAME THING and differ only in framing: the carrier stands
- *       unchanged, so nothing writes. The caller PINS THE BASE at this agreement
- *       — the disk's bytes on one side, the records' render on the other — which
- *       lets the ingest scan read the file `unchanged` and lets both gates still
- *       tell a later disk edit from a later record edit. RIDES AHEAD OF THE BASE
- *       CLAUSES: a first seed holds no base, and a fresh adoption that rewrote
- *       every file standing in another framing would dirty a person's working
- *       tree with edits no person made.)
- *   4. no base                  → CONFLICT `no-base`
- *      (THE OPERATOR'S MIND ORIGINATES. The disk says one thing, the records say
- *       another, and no agreement names which moved last: a hand may have edited
- *       the file while the vessel rested. Neither leg picks. This leg writes
- *       nothing and the difference surfaces for a person, who settles it by
- *       ingesting the file, by saving in the wiki until both sides say the same
- *       thing, or by taking the records' side by name (`answer`). Clauses 2 and 3
- *       ride ahead, so a first projection onto an empty path still writes, and a
- *       first seed of an unchanged corpus pins its bases and surfaces nothing.)
- *   5. disk == base's disk side:
- *        the records fell BEHIND the base → CONFLICT `records-behind-base`
- *          (the caller holds the base's heads and the document lacks them: it reads back without the
- *           write the agreement saw. The records did not move on; they lost history, so their render
- *           over the file would drown the newer words the file alone still carries. Surface it.)
- *        otherwise                → PROJECT `disk-unmoved`
- *      (the operator's hands never touched the file since the last agreement;
- *       only the records moved, so the write applies cleanly, and it writes the
- *       canonical render: a real change normalizes the framing as it lands.
- *       Ingest's rule 4 `current render == base → INGEST`, transposed.)
- *   6. records == base's records side → NOOP `records-unmoved`
- *      (the disk moved ALONE. The ingest leg's answer for this exact state is
- *       INGEST — it ADOPTS the disk edit — so the projecting leg MUST stand
- *       down rather than race it. Deciding otherwise would make the two legs
- *       disagree about one state, which is how a round trip eats an edit.)
- *   7. both moved               → CONFLICT `both-moved` (surface, never overwrite); where the records fell behind
- *      the base they moved backwards, so this reads `records-behind-base` too: the file holds the newest words
+ *        a base stands at this path    → PENDING-REMOVAL `vanished` (the file left where an agreement stood; nothing writes
+ *                                        back and nothing tombstones until a person answers; `answer: "restore"` → PROJECT)
+ *        no base at this path          → PROJECT `absent-on-disk` (no file stands there to lose)
+ *      A content file whose declared `.meta` left reads as a disk state of its own (the caller hashes the body alone and
+ *      hands in no canonical view), so the base clauses decide it.
+ *   3. render(parse(disk)) == records  → NOOP `canonical-equivalent` (the two say the same thing in two framings; the caller
+ *                                        pins the base at this agreement, so a first seed of an unchanged corpus writes
+ *                                        nothing and dirties no working tree)
+ *   4. disk == base's disk side, and the records still hold the history that base read
+ *                                      → PROJECT `disk-unmoved` (the file stands as the projector last wrote or last saw it
+ *                                        captured: nothing a hand left rests there, and the canonical render writes)
+ *   5. anything else                   → CAPTURE, naming why: `no-base` (a file no agreement covers), `disk-moved` (only the
+ *                                        disk moved), `both-moved`, or `records-behind-base` (the document read back without
+ *                                        the write the base saw, so the file holds the newer words)
  *
- * A PERSON'S ANSWER TAKES A SIDE. Where a standoff stands (clause 4 or 7) and the
- * caller hands in `answer: "take-records"`, the gate answers PROJECT `records-taken`.
- * The caller admits that answer only for the standoff the person named by its key, so
- * an answer given for one pair of states never writes over another.
- *
- * THE AHU-FIDELITY GUARD RIDES — inside the CANONICALIZER, not here. Ingest
- * guards its rule 3 with a structural-slot check because a lossy render makes an
- * edit inside a dropped slot read as framing-only and never land. Here an
- * equivalence pins a base, and a base pinned over a lossy round trip would let a
- * later write replace the operator's bytes with a text that drops the
- * slot. The guard therefore belongs where the text still exists:
- * `canonicalizeCarrierText` answers null on a lossy round trip, and this gate —
- * which holds no text to scan and must stay pure — reads that null as "no
- * equivalence stands" and falls through to the base clauses.
- *
- * The ingest leg's fourth verdict, `refuse`, has NO analogue here and rides
- * ABSENT rather than dormant: `refuse` grades a PARSE of untrusted disk bytes,
- * and the RENDER this leg writes arrives from the VM registry, whose faults
- * surface as a null `CarrierFile` before the gate is ever consulted. The parse
- * of disk bytes that clause 3 reads through is the CALLER's, and its own
- * error grade folds into a null `diskCanonicalHash` — which never reads as an
- * equivalence.
+ * THE AHU-FIDELITY GUARD RIDES INSIDE THE CANONICALIZER: `canonicalizeCarrierText` answers null on a lossy round trip, and
+ * this gate reads that null as "no equivalence stands". Hashes arrive as opaque strings: the gate compares and never
+ * computes, so it stays isomorphic and hash-agnostic.
  */
 
 import { digestsEqual } from "@lararium/mesh/agile-digest";
 
 export type ProjectionDecision =
-  | { readonly kind: "noop"; readonly reason: "disk-matches-records" | "canonical-equivalent" | "records-unmoved" }
-  | { readonly kind: "project"; readonly reason: "absent-on-disk" | "disk-unmoved" | "records-taken" | "restore-answered" }
+  | { readonly kind: "noop"; readonly reason: "disk-matches-records" | "canonical-equivalent" }
+  | { readonly kind: "project"; readonly reason: "absent-on-disk" | "disk-unmoved" | "restore-answered" }
   | { readonly kind: "pending-removal"; readonly reason: "vanished" }
-  | { readonly kind: "conflict"; readonly reason: "no-base" | "both-moved" | "records-behind-base" };
-
+  | { readonly kind: "capture"; readonly reason: "no-base" | "disk-moved" | "both-moved" | "records-behind-base" };
 export interface ProjectionGateInput {
   /**
    * Whole-carrier hash of the bytes STANDING on disk (body + `.meta`, folded the
@@ -150,16 +76,12 @@ export interface ProjectionGateInput {
   readonly diskCanonicalHash?: string | null;
   /**
    * THE RECORDS FELL BEHIND THE BASE: the base names the heads its document stood at, and the document the caller
-   * reads now lacks them (it read back without the write the agreement saw). True turns clause 5's write into a
-   * standoff; absent or false reads as records that moved on from the agreement.
+   * reads now lacks them (it read back without the write the agreement saw). True sends the file to capture where
+   * clause 4 would write; absent or false reads as records that moved on from the agreement.
    */
   readonly recordsBehindBase?: boolean;
-  /**
-   * A person's answer for this carrier. `take-records` settles the standoff these very states stand in
-   * (the caller hands it in only where the person named that standoff by its key); `restore` answers a
-   * pending removal. Absent = no person answered.
-   */
-  readonly answer?: "take-records" | "restore";
+  /** A person's answer to a pending removal (`restore`). Absent = no person answered. */
+  readonly answer?: "restore";
 }
 
 /**
@@ -192,31 +114,16 @@ export function decideProjection(input: ProjectionGateInput): ProjectionDecision
     return { kind: "noop", reason: "canonical-equivalent" };
   }
 
-  // A person who named this standoff and took the records' side settles clauses 4 and 7.
-  const taken = input.answer === "take-records";
-
-  // 4 — no merge base and a real difference: nothing says which side moved last, so neither leg picks.
-  if (syncedHash === null) {
-    return taken ? { kind: "project", reason: "records-taken" } : { kind: "conflict", reason: "no-base" };
-  }
-
-  // 5 — the disk stands where the last agreement left it; only the records moved.
-  // Where the document lacks the history that agreement read, the records fell behind it and nothing writes.
-  if (digestsEqual(diskHash, syncedHash)) {
-    if (input.recordsBehindBase === true) return taken ? { kind: "project", reason: "records-taken" } : { kind: "conflict", reason: "records-behind-base" };
+  // 4 — the file stands as the projector last wrote it or last saw it captured: the write applies cleanly.
+  if (syncedHash !== null && digestsEqual(diskHash, syncedHash) && input.recordsBehindBase !== true) {
     return { kind: "project", reason: "disk-unmoved" };
   }
 
-  // 6 — the records stand where the last agreement left them; the disk moved
-  // alone. The ingest leg owns this state (it adopts the disk edit); this leg
-  // stands down. No write, no observation — the base must keep naming the
-  // last agreement so the ingest leg can still SEE the disk edit.
-  if (digestsEqual(recordsHash, input.syncedRecordsHash ?? syncedHash)) {
-    return { kind: "noop", reason: "records-unmoved" };
-  }
-
-  // 7 — both moved since the merge base: surface, never overwrite. Records that fell behind the base moved backwards,
-  // not on: the file alone holds newer words, and the standoff says so (the keeper then keeps the disk).
-  if (taken) return { kind: "project", reason: "records-taken" };
-  return { kind: "conflict", reason: input.recordsBehindBase === true ? "records-behind-base" : "both-moved" };
+  // 5 — a hand moved the file (or no agreement covers it, or the records lost the history the base read): the file goes
+  // to capture, and nothing writes over it.
+  if (syncedHash === null) return { kind: "capture", reason: "no-base" };
+  if (input.recordsBehindBase === true) return { kind: "capture", reason: "records-behind-base" };
+  return digestsEqual(recordsHash, input.syncedRecordsHash ?? syncedHash)
+    ? { kind: "capture", reason: "disk-moved" }
+    : { kind: "capture", reason: "both-moved" };
 }

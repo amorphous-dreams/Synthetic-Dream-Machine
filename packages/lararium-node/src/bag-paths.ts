@@ -21,8 +21,6 @@ export interface BagMirrorConfig {
   readonly bagId: string;
   /** Absolute filesystem path; all writes are constrained under this root. */
   readonly mirrorRoot: string;
-  /** Marks a grant intended for bag-specific recovery projection. */
-  readonly mirrorClass?: "recovery";
   /**
    * Widened grant (capability, rides the manifest's diskMirrors): the mirror
    * MAY place files DIRECTLY in the root-bags-dir — the nearest ancestor of
@@ -142,11 +140,10 @@ export function carrierBaseRelPath(uri: string): string | null {
  * stable name whole; the mirrorRoot = the bag's residency dir.
  */
 export function namedBagMirror(
-  bagId: string, scope: string, mirrorRoot: string, titlePaths?: boolean, mirrorClass?: "recovery",
-  tempLayer?: boolean,
+  bagId: string, scope: string, mirrorRoot: string, titlePaths?: boolean, tempLayer?: boolean,
 ): BagMirrorConfig {
   void scope;
-  return { bagId, mirrorRoot, ...(titlePaths ? { titlePaths } : {}), ...(mirrorClass ? { mirrorClass } : {}), ...(tempLayer ? { tempLayer } : {}) };
+  return { bagId, mirrorRoot, ...(titlePaths ? { titlePaths } : {}), ...(tempLayer ? { tempLayer } : {}) };
 }
 
 /**
@@ -315,13 +312,12 @@ export function kahuaStageMirror(projectionRoot: string, face: FaceSite): BagMir
 
 /**
  * The daemon wiki's USER temp layer mirror: `wikis/daemon/temp` projects beside its working top, under
- * `<projections>/faces/<pet name>/wikis/daemon/temp`, as a recovery-class mirror the projector reads off the layer's own store.
+ * `<projections>/faces/<pet name>/wikis/daemon/temp`, a mirror like any other: its own bag, its own root.
  */
 export function daemonTempMirror(projectionRoot: string, face: FaceSite): BagMirrorConfig {
   return {
     bagId: wikiSlotUri("daemon", "temp"),
     mirrorRoot: joinPath(faceRoot(projectionRoot, face.segment), FACE_PLANES.wiki, TEMP_LAYER_DIR),
-    mirrorClass: "recovery",
     tempLayer: true,
   };
 }

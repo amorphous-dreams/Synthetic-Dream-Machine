@@ -20,9 +20,9 @@ import { orphanRecordFile, orphanRelPath } from "./orphan-files.js";
 import { ownBaseAt, pin, forgetAt } from "./bases.js";
 import { neverOnDisk } from "./reconcile.js";
 
-/** The ordinary mirrors: every mirror an orphan folder may rest in. */
-export function orphanMirrors(core: ProjectorCore): BagMirrorConfig[] {
-  return core.mirrors.filter((m) => m.mirrorClass !== "recovery");
+/** Every mirror an orphan folder may rest in. */
+export function orphanMirrors(core: ProjectorCore): readonly BagMirrorConfig[] {
+  return core.mirrors;
 }
 
 /** Every root whose orphan folder a mirror holds on disk: `<stem>.orphans/` names `lar:///<stem>`. */

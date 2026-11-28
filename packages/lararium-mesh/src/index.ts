@@ -298,7 +298,6 @@ export * from "./face-scoped-id.js";
 export * from "./durability-receipt.js";
 export * from "./session-receipt.js";
 export * from "./residency-actions.js";
-export { watchStandoffs, standoffOf, type StandoffWatch } from "./standoff-watch.js";
 export * from "./verb-refusal.js";
 export * from "./content-handle.js";
 export * from "./pointer-address.js";

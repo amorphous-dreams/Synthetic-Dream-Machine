@@ -15,15 +15,14 @@ import type { SyncedTree } from "../synced-tree.js";
 import type { BaseFromGit } from "../pool-head.js";
 import type { CarrierTracking } from "../checkout-carriers.js";
 import type { LarDiskProjectorOptions } from "./options.js";
-import type { SettleInbox, ReconcileWatch, StandoffEntry, StandingStandoff } from "./entries.js";
+import type { SettleInbox, ReconcileWatch, MovedFile, CaptureOutcome } from "./entries.js";
 
 export interface ProjectorCore {
   // ── wiring ──
-  unwatchStandoffs: (() => void) | null;
   readonly writing: Set<string>;
   gate: KeyedReconcileGate<string> | null;
   _firstFlushDone: boolean;
-  recoveryScan: Promise<void>;
+  ownScan: Promise<void>;
   _tw5: TW5Engine | null;
   readonly sited: Map<string, string>;
   readonly measure: { changeEvents: number; lastChangeAt: number; holdsSinceChange: number; wroteSinceChange: boolean; writes: number };
@@ -33,8 +32,7 @@ export interface ProjectorCore {
 
   // ── ports (construction options) ──
   readonly mirrors: readonly BagMirrorConfig[];
-  readonly recoveryStore: LarDiskProjectorOptions["recoveryStore"];
-  readonly recoveryFileFn: LarDiskProjectorOptions["recoveryFileFn"];
+  readonly bagStore: LarDiskProjectorOptions["bagStore"];
   readonly recordFileFn: LarDiskProjectorOptions["recordFileFn"];
   readonly topRecordFn: LarDiskProjectorOptions["topRecordFn"];
   readonly carrierFileFn: (tiddlerUri: string) => Promise<CarrierFile | null>;
@@ -45,8 +43,7 @@ export interface ProjectorCore {
   readonly farSideClosed: ((bagId: string) => { readonly promise: Promise<void>; readonly cancel: () => void }) | undefined;
   readonly docHolds: ((bagId: string, heads: readonly string[]) => boolean) | undefined;
   readonly onRefusal: ((info: { bagId: string; uri: string; reason: string }) => void) | undefined;
-  readonly onConflict: ((info: { bagId: string; uri: string; reason: string; standoff: string }) => void) | undefined;
-  readonly onConflictResolved: ((info: { bagId: string; uri: string; standoff: string }) => void) | undefined;
+  readonly capture: ((moved: MovedFile) => Promise<CaptureOutcome>) | undefined;
   readonly onPendingRemoval: LarDiskProjectorOptions["onPendingRemoval"];
   readonly onPendingRemovalResolved: LarDiskProjectorOptions["onPendingRemovalResolved"];
   readonly removeCarrier: LarDiskProjectorOptions["removeCarrier"];
@@ -65,14 +62,6 @@ export interface ProjectorCore {
   readonly journal: VesselJournal | undefined;
   readonly onBagProjected: ((info: { bagId: string; path: string }) => void) | undefined;
 
-  // ── the standoff machine ──
-  readonly standoffs: Map<string, StandoffEntry>;
-  readonly leaving: Map<string, { readonly bagId: string; readonly uri: string; readonly entry: StandoffEntry; readonly at: number }>;
-  readonly surfaced: Map<string, string>;
-  readings: number;
-  readonly answered: Map<string, string>;
-  readonly standoffRenders: Map<string, { readonly standoff: string; readonly text: string }>;
-
   // ── pending removals ──
   readonly pending: Map<string, { readonly bagId: string; readonly uri: string; readonly path: string }>;
   readonly restoreAsked: Set<string>;
@@ -86,12 +75,11 @@ export interface ProjectorCore {
   readonly failedRoots: Set<string>;
 
   // ── instance methods the modules call through the instance ──
-  flush(bagId: string, tiddlerUri: string, recoveryFields?: Record<string, unknown>, ownRecord?: boolean): Promise<void>;
+  flush(bagId: string, tiddlerUri: string, ownRecord?: boolean): Promise<void>;
   reconcile(rootUri: string): Promise<void>;
   atomicWrite(candidate: string, body: string | Buffer): void;
   idle(): Promise<void>;
   sense(uris?: readonly string[]): Promise<void>;
-  standing(): StandingStandoff[];
   stop(): Promise<void>;
   projects(bagId: string): boolean;
   pendingRemovals(): Array<{ readonly bagId: string; readonly uri: string; readonly path: string }>;

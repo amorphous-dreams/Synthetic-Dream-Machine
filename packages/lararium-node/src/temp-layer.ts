@@ -4,8 +4,8 @@
  *
  * A wiki's temp layer (`wikis/{slug}/temp`) lives in the island's memory and comes up empty at every restart. Where the
  * wiki's recipe designates the layer AND the operator's consent row names the wiki's slug (`projection.temp.<slug>` in
- * `<root>/config/config.json`), a recovery-class mirror projects it under the wearing face's root, `<projections>/faces/<pet name>/temp/<slug>/`,
- * one `.tid` per carrier, the shape the draft recovery mirror writes. The projector bars the layer's internal volatile
+ * `<root>/config/config.json`), its mirror projects it like any other layer under the wearing face's root,
+ * `<projections>/faces/<pet name>/temp/<slug>/`, one file per carrier as the one render shore sites it. The projector bars the layer's internal volatile
  * state by namespace (`isTempLayerInternalTitle`); this module carries the rest:
  *
  *   READ-BACK  at mount, ahead of the projector's first pass, every `.tid` under the mirror re-enters the layer's store,
@@ -171,7 +171,7 @@ export class TempLayerHousekeeper {
     readonly lastWritten: (title: string, path: string) => string | null;
     /** Drop the projector's base at `path`: the file left by housekeeping's hand, not a person's. */
     readonly forget: (title: string, path: string) => void;
-    /** True while the projector holds the carrier open: a pending removal, a standing standoff, a write in flight. */
+    /** True while the projector holds the carrier open: a pending removal, a write in flight. */
     readonly holdsOpen: (title: string) => boolean;
     readonly clock?: TempHousekeepingClock;
     readonly onError?: (err: unknown) => void;

@@ -117,7 +117,7 @@ import { wikiSlotKindOf, DAEMON_WIKI_SLUG } from "@lararium/mesh/wiki-recipe";
 import { type ChangeOrigin, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { fieldStringsOf, parseTitleList, stringifyList } from "@lararium/mesh/carrier-form";
-import { askerRefusal, handRefusalOf } from "@lararium/mesh/hand-refusal";
+import { askerRefusal } from "@lararium/mesh/hand-refusal";
 import { consequence, familyOf, retractsOf, rootAddressOf, tombstonesOf, type Consequence, type DeleteMode, type FamilyPosition, type FamilyView } from "@lararium/mesh/family";
 import { anchorBagOf, readBagStore, readContainer, writeBagStore, type MemeVerbOptions } from "./meme-verbs.js";
 import { composeMemberCarrier, CUT_NOT_OMITTED_CODE, dropKaheaCalls, familyReadingIn, framesCarrier, isMemeRoot, joinedParagraph, placeMeme, readMeme, removeMeme, renameFamilyInWiki, slotAppendTarget, wikiFamilyView, wikiMemeSink, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX, type MemeSink } from "./place-meme.js";
@@ -333,24 +333,6 @@ function anchorOf(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknow
  * A read that counted it would move the answer it reads, and a paged filter would refuse its own cursor on every call.
  */
 
-
-/**
- * Where a person's stand-off collapse rules rest (`@lararium/node` standoff-collapse, `COLLAPSE_CONFIG_PREFIX`): a rule
- * there lets the house settle a stand-off with no hand present, so writing one is a hand act like settling one.
- */
-export const SHORE_COLLAPSE_CONFIG_PREFIX = "$:/config/lares/shore/collapse/";
-
-/**
- * A COLLAPSE RULE TAKES A HAND'S WRITE ALONE: the asker the vessel's door booked (the hand gate's cached reading of the line's
- * peer) reads as the gate's verdict (`askerRefusal`): a seat refuses `hand-act-only`, a line no door read (no asker) refuses
- * `hand-unattested`, and the refusal names the command the operator runs. The operator's line (`cli`) and a tab write.
- */
-function refuseUnhandedCollapseRule(title: string, verb: string, asker: VerbContext["asker"]): void {
-  const code = title.startsWith(SHORE_COLLAPSE_CONFIG_PREFIX) ? askerRefusal(asker) : null;
-  if (code === null) return;
-  const refused = handRefusalOf(code, { act: `writing "${title}" (a rule that settles stand-offs with no hand present)`, reads: "peer", line: `lares ${verb.replace(/^tiddler /, "")} title="${title}"` });
-  throw new VerbRefusal(code, refused.message);
-}
 
 function refuseWithheld(title: string, verb: string, read = false): void {
   if (read ? withheldFromReads(title) : staysHome(title)) throw new VerbRefusal("tiddler-withheld", `tiddler-withheld: "${title}" stays home (a temp, state, volatile-VM, control, secret or cap/** title); ${verb} neither reads nor writes it.`);
@@ -1952,7 +1934,6 @@ function tiddlerPut(opts: TiddlerVerbOptions): VerbReactor {
     if (!title) throw new Error("tiddler-put: args.title is required");
     refuseWithheld(title, "tiddler-put");
     refuseEffectLedgerWrite(title, "tiddler-put");
-    refuseUnhandedCollapseRule(title, "tiddler put", ctx.asker);
     const seat = await putSeatOf(opts, args, ctx);
     const dry = dryOf(args);
     return dry === null ? putThrough(opts, seat, title, args, ctx) : dryPut(opts, seat, title, args, ctx, dry);
@@ -2118,7 +2099,6 @@ export const makeCarrierActReactor = everyWiki(CARRIER_ACT_VERB, true, (opts: Ti
   const guard = (title: string, incoming: Record<string, string> | null): void => {
     refuseWithheld(title, "carrier act");
     refuseEffectLedgerWrite(title, CARRIER_ACT_VERB);
-    refuseUnhandedCollapseRule(title, "carrier act", ctx.asker);
     const standing = wiki.getTiddler(title);
     const before = standing ? readRecord(standing).fields : null;
     refuseRenderedWrite(title, before, incoming, "carrier act");
@@ -2310,7 +2290,6 @@ export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts:
     for (const named of [title, to]) {
       refuseWithheld(named, "tiddler-rename");
       refuseEffectLedgerWrite(named, "tiddler-rename");
-      refuseUnhandedCollapseRule(named, "tiddler rename", ctx.asker);
       refuseSystemTitleRename(named, title, to, anchor.recipe);
     }
     await requireWrite(opts, anchor, ctx.cap, "tiddler rename", ctx.asker);
@@ -2554,7 +2533,6 @@ async function bagDelete(opts: TiddlerVerbOptions, container: ReturnType<typeof 
   if (!title) throw new Error("tiddler-delete: args.title is required");
   refuseWithheld(title, "tiddler-delete");
   refuseEffectLedgerWrite(title, "tiddler-delete");
-  refuseUnhandedCollapseRule(title, "tiddler delete", ctx.asker);
   const mode = optionalStringArg(args, "mode");
   const seat = await bagSeat(opts, container, "tiddler delete", ctx);
   const from = { ...seat.landing };
@@ -2615,7 +2593,6 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
     if (!title) throw new Error("tiddler-delete: args.title is required");
     refuseWithheld(title, "tiddler-delete");
     refuseEffectLedgerWrite(title, "tiddler-delete");
-    refuseUnhandedCollapseRule(title, "tiddler delete", ctx.asker);
     const anchor = anchorOf(opts, args, "tiddler-delete", true);
     await requireWrite(opts, anchor, ctx.cap, "tiddler delete", ctx.asker);
     const named = optionalStringArg(args, "mode");

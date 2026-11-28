@@ -1,19 +1,18 @@
 /**
  * THE ONE JUDGE EVERY UNLINK ASKS (`judgeHome`), the unlink it admits (`unlinkHome`), and the settle of every home a
- * carrier left (`settleHomes`): an agreed home leaves; a home holding a hand's bytes stays and the carrier stands off.
+ * carrier left (`settleHomes`): an agreed home leaves; a home holding a hand's bytes goes to capture first.
  * Heleuma ha: see lararium/mesh/disk-projector-homes.
  */
 
 import { unlinkSync, existsSync, readFileSync } from "fs";
 import { extname } from "path";
 import { digestsEqual } from "@lararium/mesh/agile-digest";
-import { carrierHash, sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { carrierHash } from "@lararium/mesh/crypto";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
 import { syncedTreeKey } from "../synced-tree.js";
 import type { ProjectorCore } from "./core.js";
-import { sitedKey } from "./entries.js";
 import { otherDocument, pastRecords } from "./bases.js";
-import { _enterStandoff } from "./standoffs.js";
+import { captureMoved } from "./capture.js";
 
 /**
  * THE ONE JUDGE EVERY UNLINK ASKS. Reads the carrier standing at `contentPath` (body plus its `.meta`
@@ -85,36 +84,28 @@ export function unlinkHome(core: ProjectorCore, bagId: string, uri: string, cont
 }
 
 /**
- * SETTLE THE HOMES A CARRIER LEFT, reading each before anything unlinks. Agreed homes leave. Where one
- * holds bytes no agreement covers, nothing unlinks and nothing writes: the carrier stands off under a key
- * that names every held path (and `toward`, the path the carrier would take), and this answers false.
- * A person who named that key and took the records' side removes the held files. The caller leaves the
- * standoff once every home it weighs has settled. A sidecar standing with no body beside it stays: its
- * bytes alone match no base, so nothing can prove it holds no hand's edit.
+ * SETTLE THE HOMES A CARRIER LEFT, reading each before anything unlinks. Agreed homes leave. A home holding bytes no
+ * agreement covers goes to the capture door (`captureMoved`): once the house holds its words the base moves to them and
+ * the carrier marks for one more reading, whose judge then reads the home agreed and unlinks it. Until then nothing
+ * unlinks and nothing writes, and this answers false. A sidecar standing with no body beside it stays: its bytes alone
+ * match no base, so nothing can prove it holds no hand's edit. `toward` names the path the carrier would take (for the log).
  */
-export function settleHomes(core: ProjectorCore, bagId: string, uri: string, homes: readonly string[], recordsHash: string | null, toward: string | null, why: string): boolean {
+export async function settleHomes(core: ProjectorCore, bagId: string, uri: string, homes: readonly string[], recordsHash: string | null, toward: string | null, why: string): Promise<boolean> {
   const agreed: string[] = [];
-  const held: Array<{ readonly path: string; readonly hash: string; readonly behind?: true }> = [];
+  let held = false;
   for (const home of [...new Set(homes)].sort()) {
     const verdict = judgeHome(core, bagId, uri, home, recordsHash);
-    if (verdict === "agreed") agreed.push(home);
-    else if (verdict === "absent") continue;   // no body stands there; a sidecar left alone proves nothing and stays
-    else if (verdict === "another") continue;  // another document's file: it stays, and nothing stands off
-    else held.push({ path: home, hash: verdict.held, ...(verdict.behind ? { behind: true as const } : {}) });
-  }
-  if (held.length > 0) {
-    const standoff = sha256HexBytesSync(new TextEncoder().encode([bagId, uri, "home", toward ?? "", ...held.map((h) => `${h.path}\n${h.hash}`), recordsHash ?? ""].join("\n"))).slice(0, 24);
-    if (core.answered.get(sitedKey(bagId, uri)) !== standoff) {
-      const where = held.map((h) => h.path).join(", ");
-      const lost = held.every((h) => h.behind === true);
-      _enterStandoff(core, bagId, uri, standoff, "home", lost
-        ? `${why}: the records fell behind their last agreement with the file at ${where} (the document read back without the write that agreement saw: a save that never rested, or a document that failed to load), so the file stays${toward !== null ? ` and nothing writes at ${toward}` : ""}. Land the file's words again through the wiki's own door (a meme: \`lares put title=${uri} recipe=<wiki> file=${where}\`). Or take the records' side under key ${standoff} (the file then leaves)`
-        : `${why}: the file at ${where} holds bytes no agreement covers, so it stays${toward !== null ? ` and nothing writes at ${toward}` : ""}. Ingest that file, or take the records' side under key ${standoff} (the file then leaves)`);
-      return false;
-    }
-    // The person named this very state and took the records' side: the held files give way.
-    for (const h of held) agreed.push(h.path);
+    if (verdict === "agreed") { agreed.push(home); continue; }
+    if (verdict === "absent" || verdict === "another") continue;   // nothing stands, or another document's file: it stays
+    held = true;
+    if (verdict.held === "unreadable") { console.error(`[capture] ${bagId} <- ${uri}: ${why}; the file at ${home} reads no bytes, so it stays${toward !== null ? ` and nothing writes at ${toward}` : ""}`); continue; }
+    const base = core.syncedTree.baseAt(syncedTreeKey(bagId, uri), home);
+    await captureMoved(core, {
+      bagId, uri, path: home, disk: verdict.held, records: recordsHash,
+      base: base !== null ? { disk: base.disk, records: base.records } : null,
+      ...(verdict.behind ? { behind: true as const } : {}),
+    });
   }
   for (const home of agreed) unlinkHome(core, bagId, uri, home);
-  return true;
+  return !held;
 }

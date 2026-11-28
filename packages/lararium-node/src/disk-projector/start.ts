@@ -1,6 +1,6 @@
 /**
  * THE PROJECTOR'S WIRING: `start` subscribes to the wiki's change events, opens the reconcile queue, hears each mirrored
- * bag's own store, and marks every root a mount scan finds (recovery records, shadowed own records, kāpae tombstones,
+ * bag's own store, and marks every root a mount scan finds (each mirror's own records, kāpae tombstones,
  * orphan flags and folders); `stop` ends the settle waits and drains the queue.
  * Heleuma ha: see lararium/mesh/disk-projector-start.
  */
@@ -8,7 +8,6 @@
 import { isEffectRecordUri } from "@lararium/mesh/effect-record";
 import { familyRootOf } from "@lararium/mesh/family";
 import { KeyedReconcileGate } from "@lararium/mesh/projection-nalu";
-import { watchStandoffs } from "@lararium/mesh/standoff-watch";
 import type { LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { tendOrphanAlerts, wikiFamilyView } from "@lararium/tw5";
 import type { TW5Engine } from "@lararium/tw5";
@@ -33,10 +32,6 @@ import { wakeWaiters, reconcileWatched } from "./watches.js";
  */
 export function start(core: ProjectorCore, tw5: TW5Engine): () => Promise<void> {
   core._tw5 = tw5;
-  // THE INGEST DOOR ASKS THIS SHORE whether a wave's carrier stands off (`standoff-watch`, @lararium/mesh): such a wave
-  // lands only from a person's line, while this projector runs.
-  core.unwatchStandoffs?.();
-  core.unwatchStandoffs = watchStandoffs((bagId, uri) => core.standing().find((s) => s.bagId === bagId && s.uri === uri)?.standoff ?? null);
   const wiki = tw5.$tw.wiki;
   // Group routing: a fragment record's change belongs to its carrier root.
   // Climb `$fragment-parent` one hop at a time (the field points one level
@@ -82,23 +77,14 @@ export function start(core: ProjectorCore, tw5: TW5Engine): () => Promise<void> 
     wakeWaiters(core, roots);
   };
   wiki.addEventListener?.("change", handler);
-  const recoveryUnsubs: Array<() => void> = [];
+  const ownUnsubs: Array<() => void> = [];
   const scans: Promise<void>[] = [];
-  for (const mirror of core.mirrors) {
-    if (mirror.mirrorClass !== "recovery") continue;
-    const store = core.recoveryStore?.(mirror.bagId);
-    if (!store) continue;
-    recoveryUnsubs.push(store.subscribe((change) => gate.mark(routeToRoot(change.title))));
-    scans.push(store.listVisible().then((titles) => {
-      for (const title of titles) gate.mark(routeToRoot(title));
-    }));
-  }
   // EACH ORDINARY MIRROR READS ITS OWN BAG TOO. The resolved view hides a record a higher layer shadows, and a record
   // whose change notice never reached the view (a crash between its sealed write and the notification) stands in the
   // bag alone; enumerating the bag's own titles, and hearing its own changes, marks every such carrier root.
   for (const mirror of ownRecordMirrors(core)) {
-    const store = core.recoveryStore!(mirror.bagId)!;
-    recoveryUnsubs.push(store.subscribe((change) => gate.mark(rootOf(change.title))));
+    const store = core.bagStore!(mirror.bagId)!;
+    ownUnsubs.push(store.subscribe((change) => gate.mark(rootOf(change.title))));
     scans.push(store.listVisible().then((titles) => {
       for (const title of titles) gate.mark(rootOf(title));
     }));
@@ -107,18 +93,11 @@ export function start(core: ProjectorCore, tw5: TW5Engine): () => Promise<void> 
   // stood up after the kāpae rose (a face's planes moving to `faces/<pet name>/`, a re-pour into a fresh root) never heard
   // the change that wrote the shadow, so the bag's own tombstones mark their roots: each settles its shadow where it sites.
   for (const mirror of core.mirrors) {
-    if (mirror.mirrorClass === "recovery") continue;
-    const store = core.recoveryStore?.(mirror.bagId) as (LarTiddlerStore & { listTombstoned?: () => string[] }) | null | undefined;
+    const store = core.bagStore?.(mirror.bagId) as (LarTiddlerStore & { listTombstoned?: () => string[] }) | null | undefined;
     if (typeof store?.listTombstoned !== "function") continue;
     for (const title of store.listTombstoned()) if (!isEffectRecordUri(title)) gate.mark(rootOf(title));
   }
-  // listVisible excludes a record tombstoned while stopped. The
-  // persisted agreements name the recovery files that still need a store read.
-  core.syncedTree.reread();
-  for (const { bagId, uri } of core.syncedTree.rows()) {
-    if (core.recoveryStore?.(bagId) && core.mirrors.some((m) => m.bagId === bagId && m.mirrorClass === "recovery")) gate.mark(routeToRoot(uri));
-  }
-  core.recoveryScan = Promise.all(scans).then(() => {});
+  core.ownScan = Promise.all(scans).then(() => {});
   // The scan follows subscription in this synchronous turn. The gate starts in a microtask and
   // yields between roots, so a mounted seed receives a complete, paced projection pass.
   // Every title, system titles included: the residency bar below is the only bar (`getTiddlers`
@@ -129,7 +108,7 @@ export function start(core: ProjectorCore, tw5: TW5Engine): () => Promise<void> 
   for (const rootUri of roots) {
     const fields = wiki.getTiddler?.(rootUri)?.fields as Record<string, unknown> | undefined;
     const bagId = fields?.["$origin-bag"];
-    if ((typeof bagId === "string" && core.mirrors.some((mirror) => mirror.bagId === bagId)) || (!core.recoveryStore && core.mirrors.some((mirror) => mirror.mirrorClass === "recovery"))) gate.mark(rootUri);
+    if (typeof bagId === "string" && core.mirrors.some((mirror) => mirror.bagId === bagId)) gate.mark(rootUri);
   }
   // THE ORPHAN FLAGS RE-DERIVE AT BOOT. The flag lives in `$:/temp` and survives nothing, so each start reads
   // the view afresh: every root that holds orphans raises its flag and reconciles, and every orphan folder
@@ -139,13 +118,11 @@ export function start(core: ProjectorCore, tw5: TW5Engine): () => Promise<void> 
     for (const rootUri of tendOrphanAlerts(orphanWiki as never).keys()) { core.orphanSuspects.add(rootUri); gate.mark(rootUri); }
   }
   for (const rootUri of orphanFolderRoots(core)) { core.orphanSuspects.add(rootUri); gate.mark(rootUri); }
-  return async () => { wiki.removeEventListener?.("change", handler); for (const unsub of recoveryUnsubs) unsub(); await core.recoveryScan; await core.stop(); };
+  return async () => { wiki.removeEventListener?.("change", handler); for (const unsub of ownUnsubs) unsub(); await core.ownScan; await core.stop(); };
 }
 
 export async function stop(core: ProjectorCore): Promise<void> {
   core.stopping = true;
-  core.unwatchStandoffs?.();
-  core.unwatchStandoffs = null;
   wakeWaiters(core);
   await core.gate?.settle();
   core.writing.clear();

@@ -12,6 +12,7 @@ import type { BagMirrorConfig } from "../bag-paths.js";
 import type { SyncedTree } from "../synced-tree.js";
 import type { BaseFromGit } from "../pool-head.js";
 import type { CarrierTracking } from "../checkout-carriers.js";
+import type { MovedFile, CaptureOutcome } from "./entries.js";
 
 export interface LarDiskProjectorOptions {
   /** Bag mirrors. Bags absent from this list never write to disk. */
@@ -24,8 +25,8 @@ export interface LarDiskProjectorOptions {
    * only sites at `<uri-path><ext>` and writes the sidecar. Null skips the write.
    */
   readonly carrierFileFn: (tiddlerUri: string) => Promise<CarrierFile | null>;
-  /** One bag's own store: a recovery grant reads its records here, and with `recordFileFn` so does every ordinary mirror. */
-  readonly recoveryStore?: (bagId: string) => LarTiddlerStore | null;
+  /** One bag's own store: with `recordFileFn`, every mirror reads its own bag's records here (its shadowed records, its kāpae). */
+  readonly bagStore?: (bagId: string) => LarTiddlerStore | null;
   /**
    * THE DOCUMENT A BAG'S RECORDS REST IN, in this composition (null: none named). Several documents may serve one bag
    * id over one mirror root (each face of a vessel mounts its own workbench document for an unshared wiki), so every
@@ -41,10 +42,7 @@ export interface LarDiskProjectorOptions {
   readonly lineageOf?: (bagId: string) => {
     readonly heads: readonly string[] | null;
     holds(heads: readonly string[]): boolean;
-    /** No write landed in the document since it mounted: it reads exactly as it loaded. Absent reads false. */
-    readonly quiet?: boolean;
   } | null;
-  readonly recoveryFileFn?: (fields: Record<string, unknown>) => Promise<CarrierFile | null>;
   /**
    * Render a mirrored bag's OWN record of a carrier root — off that bag's records, never the resolved view. Present, an
    * ordinary mirror projects its own record where a higher layer shadows it (a same-title draft or personal row), and a
@@ -105,30 +103,14 @@ export interface LarDiskProjectorOptions {
   /** Fired on every disk-ward refusal — the island routes it to the daemon VM. */
   readonly onRefusal?: (info: { bagId: string; uri: string; reason: string }) => void;
   /**
-   * Fired whenever the Confluence's projecting leg reads a STANDOFF (`decideProjection`
-   * → `conflict`): the disk and the records BOTH moved past the merge base, so no write
-   * happens and the divergence SURFACES instead (the operator's ruling — conflict-surfacing
-   * in both legs; Unison's law: surface, never overwrite).
-   *
-   * A SEPARATE callback from `onRefusal` on purpose. A ward refusal says "this write was
-   * not allowed"; a conflict says "this write would have drowned an edit". Routing both
-   * through one callback would send an operator to the wrong mechanism — the same reason
-   * `fileWardRefusal` takes a `wardKind` and names the ward that actually refused.
-   * Absent → the conflict still suppresses the write (fail-closed) and logs; the operator
-   * simply learns of it from the console rather than the daemon ledger.
-   *
-   * ONCE PER STANDOFF. A standoff names one carrier in one bag at one pair of states (the disk's
-   * hash and the records' hash); `standoff` carries that key. The reconcile runs level-triggered
-   * and meets a standing standoff at every nudge: this fires on ENTERING one and stays quiet while
-   * it stands. A standoff whose states moved reads as a new one.
+   * THE CAPTURE DOOR: where a hand moved a file since this projector last wrote it or last saw it captured, the projector
+   * writes nothing over it and hands it here. The island lands its words in the records through the ingest grade where
+   * the records stand where the base left them (or lost the history the base read), and as parallel drafts beside the
+   * records where they moved too (`disk-capture.ts`); the CRDT merges from there. A captured file's base moves to its
+   * bytes, and the next reconcile projects whatever the records then say. Absent, a moved file stays as the hand left it
+   * and its refusal rides `onRefusal`: no bytes a hand left get overwritten before the house holds them.
    */
-  readonly onConflict?: (info: { bagId: string; uri: string; reason: string; standoff: string }) => void;
-  /**
-   * Fired once when a reconcile finds a surfaced standoff gone: the streams agree again, one leg
-   * owns the state, or the carrier left. Carries the key `onConflict` carried, so the alert that
-   * key raised can clear.
-   */
-  readonly onConflictResolved?: (info: { bagId: string; uri: string; standoff: string }) => void;
+  readonly capture?: (moved: MovedFile) => Promise<CaptureOutcome>;
   /**
    * Fired when the set of this bag's PENDING REMOVALS settles at a new membership: carriers whose file
    * vanished from the path their base names. The projector writes none of them back and tombstones none;
@@ -154,13 +136,11 @@ export interface LarDiskProjectorOptions {
   /**
    * WHAT THE DISK BYTES SAY — `render(parse(diskText))` for the memetic-wikitext family
    * (`@lararium/tw5/carrier-canonical`, the ONE door; the pure subpath, no wasm). Feeds
-   * `decideProjection`'s canonical-equivalence clause, which is what tells the ORDINARY
-   * post-ingest round trip apart from a genuine standoff.
+   * `decideProjection`'s canonical-equivalence clause, which tells the ORDINARY post-ingest
+   * round trip apart from a file a hand moved.
    *
-   * Null from the function, or the option ABSENT, both mean "no trustworthy canonical view"
-   * — and the gate reads that as the standoff, never as equivalence. So a projector mounted
-   * without this stays fail-closed: it surfaces conflicts it cannot resolve rather than
-   * writing through them.
+   * Null from the function, or the option ABSENT, both mean "no trustworthy canonical view",
+   * and the gate never reads that as equivalence: such a file reads against its base alone.
    */
   readonly canonicalizeFn?: (uri: string, diskText: string) => string | null;
   /**
@@ -173,7 +153,7 @@ export interface LarDiskProjectorOptions {
    *
    * Returns `null` for anything this shore cannot trustworthily canonicalize — a bundle
    * (more than one deserialized member, or a foreign-titled member), a malformed disk
-   * file, an unregistered filetype. Null reads as the standoff here exactly as it does
+   * file, an unregistered filetype. Null reads as no equivalence here exactly as it does
    * for the memetic clause (the null-as-default inversion: absence is never equivalence).
    *
    * Absent, OR the carrier is binary (base64-encoded) → no native congruence is asked —

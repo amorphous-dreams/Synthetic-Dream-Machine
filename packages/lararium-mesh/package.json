@@ -1296,10 +1296,6 @@
       "import": "./dist/social-tiddlers.js",
       "types": "./dist/social-tiddlers.d.ts"
     },
-    "./standoff-watch": {
-      "import": "./dist/standoff-watch.js",
-      "types": "./dist/standoff-watch.d.ts"
-    },
     "./stood-document": {
       "import": "./dist/stood-document.js",
       "types": "./dist/stood-document.d.ts"

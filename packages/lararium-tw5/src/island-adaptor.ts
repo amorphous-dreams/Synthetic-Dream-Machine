@@ -334,7 +334,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   private readonly sent = new Map<string, unknown>();
   private readonly handBase = new Map<string, { bag: string; heads: readonly string[] }>();
   private readonly lastWriteBag = new Map<string, string>();
-  private readonly recoveryWrites = new Map<string, { bag: string; fields: Record<string, unknown> | null }>();
   /** Titles this shore wrote whose wave has not landed: the store stands ahead of the ledger for them. */
   private readonly unlanded = new Set<string>();
   private readonly handed = new Map<string, unknown | null>();
@@ -639,9 +638,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     return { settled };
   }
 
-  /** The projection receipt checks the snapshot handed to the store by this pass. */
-  recoveryAtRest: ((bag: string, title: string, fields: Record<string, unknown> | null) => Promise<void>) | null = null;
-
   /** The written titles' durable receipt. Its ask leaves in this call's own turn (the capability counts it asking until it posts). */
   private _ackDurably(fired: readonly string[]): Promise<void> {
     const receipt = this.caps.receipt;
@@ -649,18 +645,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     if (!receipt && this.receiptRequired && written.length > 0) return Promise.reject(new ReceiptCapabilityUnavailable());
     // A bag the island holds no replica of (the vessel's own temp plane) names no heads here: the store call that wrote it already answered.
     const slots = receipt ? written.filter((bag) => receipt.holds?.(bag) ?? true) : written;
-    const checks = fired.flatMap((title) => {
-      const written = this.recoveryWrites.get(title);
-      return written && this.recoveryAtRest ? [this.recoveryAtRest(written.bag, title, written.fields)] : [];
-    });
-    // Attach rejection handling immediately while the storage receipt remains in flight.
-    const projection = Promise.allSettled(checks);
-    const durable = receipt && slots.length > 0 ? receipt.ack(slots) : Promise.resolve();
-    return durable.then(async () => {
-      const outcomes = await projection;
-      const failed = outcomes.find((outcome): outcome is PromiseRejectedResult => outcome.status === "rejected");
-      if (failed) throw failed.reason;
-    });
+    return receipt && slots.length > 0 ? receipt.ack(slots) : Promise.resolve();
   }
   /** The titles waiting for a write (owed, not in flight at their latest state, not parked behind an act's target). */
   pendingTitles(): string[] { return this.drain.pending(); }
@@ -1111,7 +1096,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    *
    * Nothing here decides: the live value stays the CRDT's merge, and the winner's own draft (every
    * conflicted field live) is the live record, so it is never copied. A disk stand-off's drafts arrive by
-   * another road (the keeper's own wiki writes, `@lararium/node` standoff-drafts). A surfacing ON the draft bag itself persists nothing —
+   * another road (the disk capture's own wiki writes, `@lararium/node` disk-capture). A surfacing ON the draft bag itself persists nothing —
    * a draft of a draft is two edit buffers racing, and copying it would mint drafts of drafts.
    */
   onParallelDrafts(change: ParallelDraftsChange): Promise<void> {
@@ -1259,7 +1244,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     this.sent.clear();
     this.handBase.clear();
     this.lastWriteBag.clear();
-    this.recoveryWrites.clear();
     this.unlanded.clear();
     this.draftSnapshots.clear();
     this.actRemovals.clear();
@@ -1731,7 +1715,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     this.lastFlushWrote.set(title, acknowledged);
     this.lastWriteBag.set(title, removal.bag);
     if (acknowledged) this.unlanded.add(title); else this.sent.delete(title);
-    this.recoveryWrites.set(title, { bag: removal.bag, fields: null });
     this.failedAtTeardown.delete(title);
     this._clearUnsaved(title);
     this.draftBook.delete(title);
@@ -1931,7 +1914,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       this.failedAtTeardown.delete(title);
       this._clearUnsaved(title);
       if (state === null && writeBag) {
-        this.recoveryWrites.set(title, { bag: writeBag, fields: null });
         this.draftBook.delete(title);
       }
     } catch (error) {
@@ -2209,7 +2191,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const wiki = this.tw5.$tw.wiki;
     for (const rider of leaving.riders) {
       this.lastWriteBag.set(rider.uri, bag);
-      this.recoveryWrites.set(rider.uri, { bag, fields: null });
       if (rider.standing && wiki.getTiddler(rider.uri)) wiki.deleteTiddler(rider.uri);
       // A member the store took as a noop raises no envelope, so no return wave will clear its `sent`.
       if ((this.writeAcks.get(rider.uri) ?? 0) === rider.acks && this.sent.get(rider.uri) === null && !rider.standing) this.sent.delete(rider.uri);
@@ -2299,8 +2280,6 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
     try {
       await this.store.writeFamily(puts, tombstones, origin, { bag: targetBag, ...(base ? { base } : {}) });
-      const written = puts.find((record) => record.tiddler.title === title);
-      if (written) this.recoveryWrites.set(title, { bag: targetBag, fields: structuredClone(written.tiddler) });
       for (const { uri, slot } of strays) {
         // A refused stray already has its own absent hand; that hand owns its retry.
         if (this.drain.owes(uri) && this.handed.has(uri) && this.handed.get(uri) === null) continue;

@@ -273,14 +273,7 @@ export interface IslandMsg_Manifest {
    * via `namedBagMirror(scope, mirrorRoot)` from `bag-paths`.
    * Absent = no disk projection for this island.
    */
-  diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean }[];
-  /**
-   * THE PERSON'S STAND-OFF COLLAPSE RULES, read from the worn face's daemon wiki (`$:/config/lares/shore/collapse/<rule>`,
-   * each naming the bags it may collapse in) as the vessel mints this manifest: rule → bags. A wiki island reads its
-   * rules here alone, never from its own wiki, which another writer may share; absent = no rule enabled anywhere.
-   * The daemon island reads its own wiki, the daemon face itself (`@lararium/node` standoff-collapse).
-   */
-  shoreCollapse?: Readonly<Record<string, readonly string[]>>;
+  diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string; titlePaths?: boolean; tempLayer?: boolean }[];
   /**
    * DAEMON-ISLAND ONLY — operator authn/z material for in-worker keyhive boot
    * (isomorphic-vessel epic, Stage 1). The daemon worker's `onEa` calls
@@ -1386,13 +1379,12 @@ export function mkManifest(
   opts?: {
     storage?:        IslandStorageConfig;
     ownedDocument?:  IslandOwnedDocumentScope;
-    diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean }[];
+    diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; titlePaths?: boolean; tempLayer?: boolean }[];
     daemonAuth?:      IslandMsg_Manifest["daemonAuth"];
     pluginCids?:     readonly string[];
     floorCid?:       string | null;
     view?:           IslandViewStanding;
     resolved?:       Readonly<Record<string, string>>;
-    shoreCollapse?:  Readonly<Record<string, readonly string[]>>;
   },
 ): IslandMsg_Manifest {
   const msg: IslandMsg_Manifest = {
@@ -1411,7 +1403,6 @@ export function mkManifest(
   if (opts?.floorCid)            msg.floorCid    = opts.floorCid;
   if (opts?.view)                msg.view        = opts.view;
   if (opts?.resolved)            msg.resolved    = opts.resolved;
-  if (opts?.shoreCollapse && Object.keys(opts.shoreCollapse).length > 0) msg.shoreCollapse = opts.shoreCollapse;
   return msg;
 }
 

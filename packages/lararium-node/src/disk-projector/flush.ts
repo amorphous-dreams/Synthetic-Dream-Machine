@@ -1,6 +1,6 @@
 /**
  * THE FLUSH: render one carrier through the one render shore, site it, settle the homes a siting move left, skip a
- * byte-identical write, meet the projecting leg's gate (`confluence.ts`), write body then sidecar, and sweep the mirrors
+ * byte-identical write, read the file's hash before the write (`capture.ts`), write body then sidecar, and sweep the mirrors
  * the carrier left.
  * Heleuma ha: see lararium/mesh/disk-projector-flush.
  */
@@ -15,28 +15,26 @@ import type { ProjectorCore } from "./core.js";
 import { sitedKey, safeReadEquals, contentOf } from "./entries.js";
 import { carrierDiskFiles } from "./disk-files.js";
 import { otherDocument, pin, basedHomes } from "./bases.js";
-import { projectingLeg } from "./confluence.js";
+import { projectingLeg } from "./capture.js";
 import { lowerShadowAt } from "./dropped.js";
 import { settleHomes } from "./homes.js";
 import { _leavePending } from "./pending.js";
 import { neverOnDisk } from "./reconcile.js";
 import { mirrorCarrierFiles, mirrorCarrierFilesAt, siteBase } from "./siting.js";
-import { _leaveStandoff } from "./standoffs.js";
 import { renderedOutput } from "./write.js";
 
-export async function flush(core: ProjectorCore, bagId: string, tiddlerUri: string, recoveryFields?: Record<string, unknown>, ownRecord = false): Promise<void> {
+export async function flush(core: ProjectorCore, bagId: string, tiddlerUri: string, ownRecord = false): Promise<void> {
   const mirror = core.mirrors.find((m) => m.bagId === bagId);
   if (!mirror) return;
 
-  if (await neverOnDisk(core, mirror, tiddlerUri, recoveryFields)) return;
+  if (await neverOnDisk(core, mirror, tiddlerUri)) return;
 
   // Site the carrier by its own filetype — ONE render shore. The VM registry
   // hands back the chosen extension + bytes + any `.meta` sidecar, so a
   // memetic carrier sites `.mem` and a `.tid`/`.json`/`.md` record projects
   // back as its OWN file. The VM decides the type; the projector only sites.
   // A shadowed own record renders off its bag's own fields (`recordFileFn`), never the resolved view that hides it.
-  const file = recoveryFields ? await core.recoveryFileFn?.(recoveryFields) ?? null
-    : ownRecord ? await core.recordFileFn?.(bagId, tiddlerUri) ?? null
+  const file = ownRecord ? await core.recordFileFn?.(bagId, tiddlerUri) ?? null
     : await core.carrierFileFn(tiddlerUri);
   if (file === null) return;
   const base = siteBase(core, mirror, file, tiddlerUri);
@@ -69,8 +67,6 @@ export async function flush(core: ProjectorCore, bagId: string, tiddlerUri: stri
   const obsHash    = carrierHash(output, metaBody);             // whole-carrier, for the Synced tree
   const metaPath   = metaBody !== undefined ? candidate + ".meta" : null;
   const metaInSync = metaPath === null || (existsSync(metaPath) && safeReadEquals(metaPath, metaBody!));
-  /** The records' render as text a line merge reads: a text carrier with no sidecar alone (`standoffRender`). */
-  const renderText = metaPath === null && !bodyPending && typeof writeBytes === "string" ? writeBytes : undefined;
 
   // ── THE HOMES THIS CARRIER LEFT ─────────────────────────────────────────
   // A siting rule that moved the carrier leaves its files at the earlier path. Two memories name that
@@ -84,7 +80,7 @@ export async function flush(core: ProjectorCore, bagId: string, tiddlerUri: stri
   }
   earlier.push(...basedHomes(core, mirror, tiddlerUri));
   const left = earlier.filter((home) => home !== candidate);
-  if (left.length > 0 && !settleHomes(core, bagId, tiddlerUri, left, bodyPending ? null : obsHash, candidate, `a siting moves ${tiddlerUri}`)) return;
+  if (left.length > 0 && !await settleHomes(core, bagId, tiddlerUri, left, bodyPending ? null : obsHash, candidate, `a siting moves ${tiddlerUri}`)) return;
   core.sited.set(sitedKey(bagId, tiddlerUri), base);
   try {
     // The body-skip reads BYTES for a binary file (a utf8 read would mangle the
@@ -96,34 +92,27 @@ export async function flush(core: ProjectorCore, bagId: string, tiddlerUri: stri
     if (bodyInSync && metaInSync) {
       // Another document's file already says what these records render: its own base stays, and nothing writes.
       if (!otherDocument(core, bagId, core.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate))) pin(core, bagId, tiddlerUri, candidate, obsHash);
-      _leaveStandoff(core, bagId, tiddlerUri, undefined, true);
       _leavePending(core, bagId, tiddlerUri);
-      if (mirror.mirrorClass !== "recovery") await sweepLeftMirrors(core, bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
+      await sweepLeftMirrors(core, bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
       return;
     }
   } catch { /* unreadable existing file — fall through to the gate */ }
   // A pointer whose bytes the tier lacks, and which declares no sidecar, holds nothing to write.
   if (bodyPending && metaPath === null) return;
 
-  // ── THE CONFLUENCE, PROJECTING LEG ──────────────────────────────────────
-  // The byte-skip above answers only the cheap identity (disk bytes == would-write
-  // bytes). Everything it did not answer now meets the three-way gate: the records'
-  // render, the merge base, and WHAT THE OPERATOR'S HANDS LEFT. The gate decides and
-  // never writes; this shore owns every I/O and every alert (projection-gate's law).
-  // A POINTER WHOSE BYTES THE TIER LACKS projects its sidecar alone, and that sidecar meets the same gate:
-  // the carrier it weighs holds an empty body beside the `.meta`, on both sides. So a hand's edit to that
-  // sidecar stands off like any other, and no sidecar gets replaced unread.
+  // ── THE HASH BEFORE THE WRITE ───────────────────────────────────────────
+  // The byte-skip above answers only the cheap identity (disk bytes == would-write bytes). Everything it did not
+  // answer reads the file against the base at its path: a file a hand moved goes to capture, and nothing writes over it.
+  // A POINTER WHOSE BYTES THE TIER LACKS projects its sidecar alone, and that sidecar meets the same read.
   const gateRecords = bodyPending ? carrierHash("", metaBody) : obsHash;
-  if (!await projectingLeg(core, { mirror, bagId, tiddlerUri, file, candidate, metaPath, isBinary, bodyPending, gateRecords, obsHash, renderText })) return;
+  if (!await projectingLeg(core, { mirror, bagId, tiddlerUri, file, candidate, metaPath, isBinary, bodyPending, gateRecords, obsHash })) return;
 
   // ── A SIBLING AT AN EARLIER EXTENSION ───────────────────────────────────
   // A filetype change re-sites the carrier at a new extension (`.md` → `.tid`), and the file at the
   // earlier one would orphan beside the fresh write. It gets READ before this write lands: agreed, it
-  // leaves; holding a hand's bytes, it stays, nothing writes, and the carrier stands off.
+  // leaves; holding a hand's bytes, it goes to capture first, and nothing writes this reading.
   const siblings = (mirrorCarrierFilesAt(mirror, base) ?? []).map((f) => contentOf(f)).filter((home) => home !== candidate);
-  if (siblings.length > 0 && !settleHomes(core, bagId, tiddlerUri, siblings, bodyPending ? null : obsHash, candidate, `a filetype change moves ${tiddlerUri}`)) return;
-  _leaveStandoff(core, bagId, tiddlerUri);
-
+  if (siblings.length > 0 && !await settleHomes(core, bagId, tiddlerUri, siblings, bodyPending ? null : obsHash, candidate, `a filetype change moves ${tiddlerUri}`)) return;
   core.writing.add(tiddlerUri);
   try {
     mkdirSync(dirname(candidate), { recursive: true });
@@ -169,7 +158,7 @@ export async function flush(core: ProjectorCore, bagId: string, tiddlerUri: stri
     core.writing.delete(tiddlerUri);
   }
 
-  if (mirror.mirrorClass !== "recovery") await sweepLeftMirrors(core, bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
+  await sweepLeftMirrors(core, bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
 }
 
 /**
@@ -202,10 +191,9 @@ export async function sweepLeftMirrors(core: ProjectorCore, bagId: string, tiddl
     // rides beside the body under the same guard).
     const homes = staleFiles.map((f) => contentOf(f)).filter((home) => home !== candidate);
     // The carrier left this mirror's bag: each file it left there gets read first. One that says what the
-    // records render (or stands where its base left it) leaves; one a hand edited stays and stands off.
-    if (settleHomes(core, otherMirror.bagId, tiddlerUri, homes, settleHash, null, `${tiddlerUri} left ${otherMirror.bagId} for ${bagId}`)) {
+    // records render (or stands where its base left it) leaves; one a hand edited goes to capture first.
+    if (await settleHomes(core, otherMirror.bagId, tiddlerUri, homes, settleHash, null, `${tiddlerUri} left ${otherMirror.bagId} for ${bagId}`)) {
       core.sited.delete(sitedKey(otherMirror.bagId, tiddlerUri));
-      _leaveStandoff(core, otherMirror.bagId, tiddlerUri, "home");
     }
   }
 }

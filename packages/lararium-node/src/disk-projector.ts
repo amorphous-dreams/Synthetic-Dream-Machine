@@ -6,19 +6,21 @@
  * origin, each in its native grain — disk holds whole markdown memes, the
  * doc holds tid-sized records, the VM decomposes for transclusion. Merge
  * authority routes through the CRDT alone; this projector renders the disk
- * co-projection and never INGESTS from disk — that direction belongs to the
- * ingest path (file watcher → store.put). It does READ disk, for one purpose
- * only: the Confluence gate below needs to know what the operator's hands left
- * there before it is allowed to write over it. A read that decides whether to
- * write is not an ingest — no disk byte ever reaches a record through here.
+ * co-projection and never INGESTS from disk: that direction belongs to the
+ * ingest path. It READS disk for one purpose: before each write it compares the
+ * file's bytes with the hash it last wrote there or last saw captured, and a file
+ * a hand moved goes to the capture door (`capture`, wired by the island to the
+ * ingest grade and the parallel-drafts shape) instead of under the write. No disk
+ * byte reaches a record through this class.
  *
  * Bag-aware: each writable bag may opt into a filesystem mirror via
  * BagMirrorConfig. Bags without a mirror config never write to disk. The two
  * projection surfaces split by bag role (see api/lararium/disk-projection):
  *   - wiki content (@<slug>)      → `wikis/{slug}/...`   (projection / output)
  *   - seed/canon bags (lares/lararium/sdm) → `bags/NAME/...` (seed / canon)
- * State/runtime bags (personal/draft/temp/daemon) carry no ordinary mirror; a recovery-class grant projects a draft
- * bag under `recovery/`, and a consented user temp layer under `temp/` (internal volatile state barred by namespace).
+ * Every mirror projects alike, its own bag to its own root: a wiki's draft layer projects under the face's
+ * `recovery/<slug>` (each draft its own file, as each draft stands as its own tiddler), and a consented user temp
+ * layer under `temp/<slug>` (internal volatile state barred by namespace).
  * A residency MOVE (the canon ACTION verb)
  * that relocates a tiddler between bags has the disk side effect of a file move
  * between surfaces; the git diff IS the operator's signature on the change.
@@ -54,46 +56,42 @@
  * optimization only (skip re-statting our own in-flight writes); no
  * correctness rests on it.
  *
- * THE CONFLUENCE, PROJECTING LEG (`projection-gate.decideProjection`): every flush the
- * byte-identity skip does not answer meets the three-way gate — the records' render, the
- * merge base, and what stands on disk — before a single byte is written. `project`
- * writes; `noop` stands down silently (the ingest leg owns that state); `conflict`
- * stands down LOUDLY on the ward-alert rail (`onConflict`). Both legs of the round trip
- * reconcile and neither overwrites (the operator's ruling: conflict-surfacing in BOTH
- * legs). The gate decides and never writes; this file owns every I/O and every alert.
- *
- * A PERSON ANSWERS A STANDOFF BY ITS KEY (`takeRecords`): the answer admits one write of the
- * records' render over the very states the key names, and no other.
+ * THE HASH BEFORE THE WRITE (`projection-gate.decideProjection`, `capture.ts`): every flush the
+ * byte-identity skip does not answer reads the file against the base at its path. A file that stands
+ * where the base left it takes the write; a file a hand moved goes to capture, its base moves to the
+ * captured bytes, and the next reading projects whatever the records then say. NOTHING HOLDS BETWEEN
+ * READINGS: no standoff, no key, no person's side-taking. Merge authority routes through the CRDT, and a
+ * true concurrent change stands as a parallel draft (FIELDS MERGE, DRAFTS STAND APART).
  *
  * AN UNLINK READS THE FILE FIRST (`judgeHome`). The projector removes a file only where its bytes
  * equal the disk side of the base that stands at that path, or say what the records render. A file
- * that fails the proof stays where a hand left it, and the carrier stands off under a key that names
- * the paths. One judge serves every unlink: a carrier's earlier siting, a sibling at an earlier
- * extension, a mirror the carrier left, and the file of a carrier the records dropped.
+ * that fails the proof goes to capture first. One judge serves every unlink: a carrier's earlier
+ * siting, a sibling at an earlier extension, a mirror the carrier left, and the file of a carrier the
+ * records dropped.
  *
  * A FILE ANSWERS ONLY TO THE DOCUMENT ITS BASE NAMES (`otherDocument`). Several documents may serve one bag id over
  * one mirror root: each face of a vessel mounts its own workbench document for an unshared wiki. Every base this
  * projector pins names the document it read (`documentOf`). A base that names another document reads as no base of
  * this one: the judge leaves its file standing and raises nothing, its row stays in the tree, and a carrier this
- * document also holds writes nothing over it and stands off by name.
+ * document also holds writes nothing over it.
  *
  * A BASE VOUCHES ONLY FOR RECORDS THAT STILL HOLD ITS HISTORY (`pastRecords`). Every base this projector pins names the
  * heads its document stood at (`lineageOf`). A document that reads back WITHOUT those heads lost the write the agreement
  * saw: a save that never rested before the vessel went down, a restored snapshot, a blank document standing in for one
  * that failed to load. Its render (or its silence) says nothing newer than the file, so nothing writes over the file and
- * nothing unlinks it: the carrier stands off, and the alert names the door that lands the file's words back.
+ * nothing unlinks it: the file goes to capture, which lands its words back whole.
  *
  * COMPOSABLE FILES (each tracked by sync-heleuma through its code-meme under lar:///ha.ka.ba/lararium/mesh/): this class
  * holds the shared state and composes the modules under `./disk-projector/`, each a function over that state (`core.ts`).
  *   options.ts      the construction ports            entries.ts    shared shapes, keys, path readers
  *   start.ts        subscribe, mount scans, stop       reconcile.ts  the per-root reconcile and its residency bar
- *   flush.ts        render, site, write, sweep         confluence.ts the projecting leg's three-way gate
+ *   flush.ts        render, site, write, sweep         capture.ts    the hash before the write, the capture hand-off
  *   siting.ts       paths, rules, the uniquifier       write.ts      atomic write, disk reads, the render text
  *   bases.ts        documents, lineage, pins           homes.ts      the one judge every unlink asks
- *   standoffs.ts    the standoff machine               pending.ts    pending removals and the disk look
+ *   pending.ts      pending removals and the disk look
  *   removals.ts     a person's remove/restore answer   dropped.ts    a dropped carrier's unlink and kāpae shadow
  *   orphans.ts      the orphan folder                  untracked.ts  files a checkout never tracked
- *   recovery.ts     recovery at rest, pinned agreement settle-word.ts the settle word
+ *   agreement.ts    the pinned agreement               settle-word.ts the settle word
  *   watches.ts      settle wakes, reconcile watches    disk-files.ts, orphan-files.ts  pure disk readers
  */
 
@@ -102,10 +100,8 @@ import type { TW5Engine } from "@lararium/tw5";
 import { SyncedTree } from "./synced-tree.js";
 import type { LarDiskProjectorOptions } from "./disk-projector/options.js";
 import type { ProjectorCore } from "./disk-projector/core.js";
-import type { StandingStandoff } from "./disk-projector/entries.js";
 import * as wiring from "./disk-projector/start.js";
-import * as recovery from "./disk-projector/recovery.js";
-import * as standoffs from "./disk-projector/standoffs.js";
+import * as agreement from "./disk-projector/agreement.js";
 import * as reconciling from "./disk-projector/reconcile.js";
 import * as pending from "./disk-projector/pending.js";
 import * as removals from "./disk-projector/removals.js";
@@ -117,7 +113,7 @@ import * as flushing from "./disk-projector/flush.js";
 import * as dropped from "./disk-projector/dropped.js";
 
 export type { LarDiskProjectorOptions } from "./disk-projector/options.js";
-export type { StandoffSides, StandingStandoff } from "./disk-projector/entries.js";
+export type { MovedFile, CaptureOutcome } from "./disk-projector/entries.js";
 export { UNTRACKED_CARRIER_ALERT_PREFIX, untrackedCarrierAlertTitle, PROJECTION_FILE_MODE } from "./disk-projector/entries.js";
 export { orphanRecordFile, orphanRelPath } from "./disk-projector/orphan-files.js";
 export { carrierDiskFiles, projectedFileTitle } from "./disk-projector/disk-files.js";
@@ -131,15 +127,6 @@ const core = (projector: LarDiskProjector): ProjectorCore => projector as unknow
  */
 export class LarDiskProjector {
   /**
-   * THE STAND-OFF KEEPER the island wires beside this projector (`standoff-drafts.ts`): the shore verb reads a carrier's
-   * drafts through it and a person's `keep-both` marks them kept. Null where no keeper stands (a bare projector).
-   */
-  standoffKeeper: import("./standoff-drafts.js").StandoffKeeper | null = null;
-
-  /** The ingest door's watch over this projector's stand-offs, while it runs. */
-  protected unwatchStandoffs: ProjectorCore["unwatchStandoffs"] = null;
-
-  /**
    * URIs currently being written to disk.
    * File watcher MUST check writing.has(uri) before ingesting — skip own writes.
    */
@@ -148,7 +135,7 @@ export class LarDiskProjector {
   /** Reconcile queue keyed by carrier-root URI. Born in start(). */
   protected gate: ProjectorCore["gate"] = null;
   protected _firstFlushDone = false;
-  protected recoveryScan: Promise<void> = Promise.resolve();
+  protected ownScan: Promise<void> = Promise.resolve();
 
   protected _tw5: TW5Engine | null = null;
 
@@ -162,8 +149,7 @@ export class LarDiskProjector {
   protected readonly sited = new Map<string, string>();
 
   protected readonly mirrors: ProjectorCore["mirrors"];
-  protected readonly recoveryStore: ProjectorCore["recoveryStore"];
-  protected readonly recoveryFileFn: ProjectorCore["recoveryFileFn"];
+  protected readonly bagStore: ProjectorCore["bagStore"];
   protected readonly recordFileFn: ProjectorCore["recordFileFn"];
   protected readonly topRecordFn: ProjectorCore["topRecordFn"];
   protected readonly carrierFileFn: ProjectorCore["carrierFileFn"];
@@ -174,37 +160,7 @@ export class LarDiskProjector {
   protected readonly farSideClosed: ProjectorCore["farSideClosed"];
   protected readonly docHolds: ProjectorCore["docHolds"];
   protected readonly onRefusal: ProjectorCore["onRefusal"];
-  protected readonly onConflict: ProjectorCore["onConflict"];
-  protected readonly onConflictResolved: ProjectorCore["onConflictResolved"];
-  /**
-   * The standoff each (bag, carrier) stands in right now, by key. Memory only: a fresh boot enters anew.
-   * `sides` names a standoff between the disk and the records at the carrier's own path; `home` names a
-   * file at a path the carrier left (or of a carrier the records dropped) that holds bytes no agreement covers.
-   */
-  protected readonly standoffs: ProjectorCore["standoffs"] = new Map();
-  /**
-   * THE STANDOFFS ONE READING LEFT, by (bag, carrier), each with the reconcile count it left at. A reading that finds the
-   * disk and the records agreed (or the carrier projecting elsewhere) proves the standoff ended only once a LATER reading
-   * of the same carrier says so too: that reading resolves it. A reading that finds the very same standoff again re-seats
-   * it with no word, so a carrier that flickers between two readings raises nothing and clears nothing.
-   */
-  protected readonly leaving: ProjectorCore["leaving"] = new Map();
-  /**
-   * THE LAST STANDOFF SURFACED for each (bag, carrier), by its key. The key folds the file's bytes, the records' render and
-   * the base they stand against, so a standoff that returns under the key it surfaced under names states nobody moved:
-   * it re-seats as a standing row and speaks no second time. A standoff surfaces again only under a new key.
-   */
-  protected readonly surfaced = new Map<string, string>();
-  /** How many reconciles this projector has begun: a leave remembers the count it left at. */
-  protected readings = 0;
-  /** The standoff a person answered for each (bag, carrier), by the key they named. Read once, by the reconcile the answer starts. */
-  protected readonly answered = new Map<string, string>();
-  /**
-   * The records' render each `sides` standoff weighed, by (bag, carrier), beside the key it folded into. A text carrier
-   * with no sidecar alone: `lares shore take-disk` reads it (`standoffRender`) to merge the file and the records slot by
-   * slot against the base's words. Memory only, and it leaves with its standoff.
-   */
-  protected readonly standoffRenders: ProjectorCore["standoffRenders"] = new Map();
+  protected readonly capture: ProjectorCore["capture"];
   /** Every carrier whose file vanished from the path its base names, by (bag, carrier). Memory only: a boot's mount scan finds each anew. */
   protected readonly pending: ProjectorCore["pending"] = new Map();
   /** The pending removals a person answered `restore` for. Read once, by the reconcile the answer starts. */
@@ -254,10 +210,9 @@ export class LarDiskProjector {
   constructor(opts: LarDiskProjectorOptions) {
     this.mirrors      = opts.mirrors.filter((mirror) => !isFaceScopedBag(mirror.bagId));
     this.carrierFileFn = opts.carrierFileFn;
-    this.recoveryStore = opts.recoveryStore;
+    this.bagStore = opts.bagStore;
     this.documentOf = opts.documentOf;
     this.lineageOf = opts.lineageOf;
-    this.recoveryFileFn = opts.recoveryFileFn;
     this.recordFileFn = opts.recordFileFn;
     this.topRecordFn = opts.topRecordFn;
     this.resolveByCid = opts.resolveByCid;
@@ -267,8 +222,7 @@ export class LarDiskProjector {
     this.farSideClosed = opts.farSideClosed;
     this.docHolds = opts.docHolds;
     this.onRefusal    = opts.onRefusal;
-    this.onConflict   = opts.onConflict;
-    this.onConflictResolved = opts.onConflictResolved;
+    this.capture      = opts.capture;
     this.onPendingRemoval = opts.onPendingRemoval;
     this.onPendingRemovalResolved = opts.onPendingRemovalResolved;
     this.removeCarrier = opts.removeCarrier;
@@ -292,15 +246,10 @@ export class LarDiskProjector {
     return wiring.start(core(this), tw5);
   }
 
-  /** Confirm the captured recovery record against the actual bytes at its granted mirror (`recovery.ts`). */
-  recoveryAtRest(bagId: string, title: string, written: Record<string, unknown> | null): Promise<void> {
-    return recovery.recoveryAtRest(core(this), bagId, title, written);
-  }
-
   /** Resolve when no reconcile runs and no root waits in the queue, and every pending-removal set that moved has surfaced.
    *  The settle lands too each Synced base pin whose heads now rest sealed (`SyncedTree.settle`). */
   async idle(): Promise<void> {
-    await this.recoveryScan;
+    await this.ownScan;
     await (this.gate?.idle() ?? Promise.resolve());
     pending._surfacePending(core(this));
     await this.syncedTree.settle();
@@ -316,14 +265,14 @@ export class LarDiskProjector {
     return this.syncedTree.waitingBases;
   }
 
-  /** Whether an ordinary mirror of this projector holds the bag: this island projects its records. */
+  /** Whether a mirror of this projector holds the bag: this island projects its records. */
   projects(bagId: string): boolean {
-    return this.mirrors.some((m) => m.bagId === bagId && m.mirrorClass !== "recovery");
+    return this.mirrors.some((m) => m.bagId === bagId);
   }
 
-  /** THE ISLAND PINS ONLY AN AGREEMENT IT READS ITSELF (the shore's `base` act; `recovery.ts` names each answer). */
+  /** THE ISLAND PINS ONLY AN AGREEMENT IT READS ITSELF (the shore's `base` act; `agreement.ts` names each answer). */
   pinAgreement(bagId: string, uri: string, file: string, from?: string): Promise<"unprojected" | "outside-mirror" | "unread" | "differs" | "waiting" | "kept" | "recorded"> {
-    return recovery.pinAgreement(core(this), bagId, uri, file, from);
+    return agreement.pinAgreement(core(this), bagId, uri, file, from);
   }
 
   /** Ask the rest again for every pin that waits, and land each whose heads now rest (`SyncedTree.settle`). */
@@ -335,29 +284,14 @@ export class LarDiskProjector {
     return wiring.stop(core(this));
   }
 
-  /** Every standoff this projector stands in right now, with the key a person answers by (`standoffs.ts`). */
-  standing(): StandingStandoff[] {
-    return standoffs.standing(core(this));
-  }
-
-  /** A PERSON TAKES THE RECORDS' SIDE of one standoff, named by its key (`standoffs.ts`). */
-  takeRecords(bagId: string, uri: string, standoff: string): Promise<{ readonly took: boolean; readonly why?: string }> {
-    return standoffs.takeRecords(core(this), bagId, uri, standoff);
-  }
-
-  /** THE RECORDS' SIDE OF ONE STANDOFF, AS IT WAS WEIGHED (`standoffs.ts`). */
-  standoffRender(bagId: string, uri: string, standoff: string): { readonly text: string; readonly records: string } | null {
-    return standoffs.standoffRender(core(this), bagId, uri, standoff);
-  }
-
   /** The per-root reconcile (`reconcile.ts`). An instance method, so every internal call reaches an instance's own. */
   protected reconcile(rootUri: string): Promise<void> {
     return reconciling.reconcile(core(this), rootUri);
   }
 
   /** Unlink a carrier the records dropped from each mirror whose bag holds it no more (`dropped.ts`). */
-  protected _scheduleUnlinkByTitle(title: string, onlyBag?: string, spare?: ReadonlySet<string>): Promise<void> {
-    return dropped._scheduleUnlinkByTitle(core(this), title, onlyBag, spare);
+  protected _scheduleUnlinkByTitle(title: string, spare?: ReadonlySet<string>): Promise<void> {
+    return dropped._scheduleUnlinkByTitle(core(this), title, spare);
   }
 
   /** Every carrier that stands pending right now: its bag, its address and the path its file left. */
@@ -429,7 +363,7 @@ export class LarDiskProjector {
   }
 
   /** Render, site and write one carrier into one bag's mirror (`flush.ts`). An instance method, so every internal flush reaches an instance's own. */
-  protected flush(bagId: string, tiddlerUri: string, recoveryFields?: Record<string, unknown>, ownRecord = false): Promise<void> {
-    return flushing.flush(core(this), bagId, tiddlerUri, recoveryFields, ownRecord);
+  protected flush(bagId: string, tiddlerUri: string, ownRecord = false): Promise<void> {
+    return flushing.flush(core(this), bagId, tiddlerUri, ownRecord);
   }
 }

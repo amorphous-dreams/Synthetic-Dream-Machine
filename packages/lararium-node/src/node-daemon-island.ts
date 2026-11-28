@@ -117,7 +117,7 @@ runSovereignWorker((manifest) => {
     // answered from the projector this island mounts. `lares shore` reaches it by this verb, beside the
     // `wiki-act` line into the active wiki's island (`shore-core.ts`).
     // A LIT SIBLING'S SHORE ANSWERS BY ITS FACE (`answerShoreSeats`): an act naming `face` reaches that face's projector, so its
-    // standoffs read and answer without wearing it; a flush naming no face reaches the worn projector and every lit sibling's.
+    // shore reads and answers without wearing it; a flush naming no face reaches the worn projector and every lit sibling's.
     shore:          async (args, asker) => answerShoreSeats({
       own: mountedDiskProjector(), worn: manifest.daemonAuth?.handleIndex ?? null,
       lit: litFaceProjector, litFaces: litFaceProjectorFaces,

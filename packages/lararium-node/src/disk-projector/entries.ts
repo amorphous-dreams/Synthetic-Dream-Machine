@@ -1,5 +1,5 @@
 /**
- * The disk projector's shared shapes and small pure helpers: the standoff entry, the settle inbox and reconcile watch, the
+ * The disk projector's shared shapes and small pure helpers: the moved file a capture reads, the settle inbox and reconcile watch, the
  * slice of the wiki the orphan pass reads, the keys and alert titles every module names, and the path readers.
  * Heleuma ha: see lararium/mesh/disk-projector-entries.
  */
@@ -29,31 +29,24 @@ export interface OrphanWiki {
   getChangeCount?(title: string): number;
 }
 
-/** The states a `sides` standoff folds into its key: the file weighed, the disk's hash, the records' hash, and the base where one stands. */
-export interface StandoffSides {
-  readonly path: string;
-  readonly disk: string | null;
-  readonly records: string;
-  readonly base?: { readonly disk: string; readonly records: string };
-  /**
-   * THE RECORDS FELL BEHIND THE BASE (`pastRecords`): the document the base names, the heads it lacks, and whether the
-   * document stood quiet since it mounted (no write landed, so it holds nothing newer than what it loaded). The keeper
-   * reads this to keep the disk with no hand (`standoff-drafts.ts`).
-   */
-  readonly behind?: { readonly doc?: string; readonly heads: readonly string[]; readonly quiet: boolean };
-}
-
-export interface StandoffEntry extends Partial<StandoffSides> {
-  readonly standoff: string;
-  readonly kind: "sides" | "home";
-  readonly reason: string;
-}
-
-/** One standoff as `standing()` names it. */
-export interface StandingStandoff extends StandoffEntry {
+/**
+ * ONE FILE A HAND MOVED, as the projector hands it to the capture door (`LarDiskProjectorOptions.capture`): the bag and the
+ * carrier, the path and the hash of the bytes that stand there, the base that stood at that path (what this projector last
+ * wrote or last saw captured), the hash of the render the records hold now (null where the records hold no such carrier),
+ * and `behind` where the records lost the history that base read (the file then holds the newer words).
+ */
+export interface MovedFile {
   readonly bagId: string;
   readonly uri: string;
+  readonly path: string;
+  readonly disk: string;
+  readonly base: { readonly disk: string; readonly records: string } | null;
+  readonly records: string | null;
+  readonly behind?: true;
 }
+
+/** What the capture door did with a moved file: its words landed in the records, stood as parallel drafts, or did not land (and why). */
+export type CaptureOutcome = { readonly kind: "landed" } | { readonly kind: "drafted"; readonly drafts: readonly string[] } | { readonly kind: "refused"; readonly why: string };
 
 /** Read a file and compare it byte-for-byte against `body`; a missing or
  *  unreadable file reads as unequal (the caller then writes). */
