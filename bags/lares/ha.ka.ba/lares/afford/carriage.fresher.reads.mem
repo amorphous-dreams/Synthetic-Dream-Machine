@@ -84,7 +84,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares vessel fresher
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares vessel fresher]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares vessel fresher]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -100,6 +100,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yT-gokVShtWklE76WHCGVTRzNtnC63l9srfCSvFQd5Y`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gAUjX9vh1HzHMpC4hLtfU-rqP69lMDHwif7kBU5_ptU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

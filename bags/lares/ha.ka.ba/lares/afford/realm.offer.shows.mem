@@ -28,7 +28,7 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 !! takes ~ cid · bag · all · after · limit · nexus
 
 ```memetic-wikitext
-<<has entity=`arg` name=`cid` params=`takes/word ~ the record's content id`>>
+<<has entity=`arg` name=`cid` params=`takes/word seat/1 as/<cid> ~ the offer's content id; absent, every open offer`>>
 <<has entity=`arg` name=`bag` params=`takes/word ~ one bag`>>
 <<has entity=`arg` name=`all` params=`~ every one`>>
 <<has entity=`arg` name=`after` params=`takes/word ~ the cursor a prior page answered as next`>>
@@ -52,7 +52,17 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ mcp
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares meme offer show
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares meme offer show]] ~ the terminal; bare lists the open offers, a cid reads one`>>
+```
+
+<<~/ahu>>
 
 <<~ ahu slot=`#/skins/mcp`>>
 
@@ -75,6 +85,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;MRPkoohxuvmWratcBkuGqSELOGOMXaOd0CRQphURIho`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;91iBuMfckU9BsAHKXA4AYnX26YaO3GBCrbh3klD_PGg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

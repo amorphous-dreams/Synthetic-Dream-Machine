@@ -32,7 +32,7 @@ function runCliBody(): string {
   const src = readFileSync(BUILT, "utf8");
   const at = src.indexOf("function runCli");
   expect(at, "runCli not found in the built entry point").toBeGreaterThan(-1);
-  return src.slice(at, at + 600);
+  return src.slice(at, at + 1600);
 }
 
 describe("the CLI sets its exit code and lets stdout drain", () => {

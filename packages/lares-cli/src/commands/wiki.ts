@@ -35,6 +35,7 @@ import { wikiSlotKindOf } from "@lararium/mesh/wiki-recipe";
 import { engineContainerArgs } from "../container-target.js";
 import { DoorUsage, countOf, guardDoor, runDoor, wordOf, type DoorPlan } from "./door-call.js";
 import { targetOf } from "../target-option.js";
+import { helpLines } from "../command-help.js";
 import { stdout } from "node:process";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -876,50 +877,41 @@ export function wikiStatusLines(out: Record<string, unknown>, consented: readonl
   return lines;
 }
 
-const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: string }>> = {
-  "init":  { handler: (a) => cmdWikiInit(a),  summary: "Mint a fresh wiki: wiki canonical + per-wiki draft + recipe. Idempotent: over a shell a partial init left it stands what is missing (the recipe row, this face's bag registrations, its workbench) and answers `completed` naming each; run again, it answers `already-exists` and changes nothing. Its workbench lays at projections/realms/<slug>/wikis/<slug>/ (the realm's default pet name, the slug); `--realm <pet>` places it in an existing realm instead (`lares realm list`)." },
-  "retire": { handler: (a) => cmdWikiRetire(a), summary: "Unmint a wiki shell the worn face minted (`lares wiki retire <slug> [--face N] [--dry-run] [--force --count <records>]`), a person's hand alone (a seat session refuses): its catalog rows, its workbench's ledger rows and its slot and Keyhive bindings leave, its workbench folder steps aside by rename, the slug's realm label forgets the realm id, and the slug mints again under another face. The canon bag and its files stay. A face that does not own the shell refuses `not-the-owner`; a shared shell refuses `wiki-shared` (remove the shares first); `--dry-run` reads the record counts, the authored records apart from the house's effect records (a gated ingest's residency rows, which the retire carries, verbatim, into one retirement record per slug in the face's daemon wiki working layer before the shell goes, refusing `retire-carry-unlanded` with nothing erased where that carry cannot land); a shell holding authored records refuses `wiki-not-empty` unless `--force --count` names that count." },
-  "share": { handler: cmdShare("wiki"), summary: "Share a wiki with sibling faces through a private cabal: its canon by reference and its working layer as ONE shared workbench every member face syncs (--read <names> --write <names> --note <why> --face N --workspace <name>). A line names its delta: --read and --write add names beside the standing ones, --read-remove and --write-remove take names out, and what it leaves unnamed stands, so the same line twice changes nothing. --read and --write add and never replace a list: narrowing one takes the -remove pair, which revokes each taken-out face's landed grant (a face standing shut keeps the row as it stood, named); --list shows the resolved answer; --remove unshares it. A bag row standing for the slug refuses (share-kind-standing). The daemon wiki never shares." },
-  "switch": { handler: cmdWikiSwitch, summary: "Switch a live wiki." },
-  "sync":  { handler: cmdWikiSync,  summary: "Walk wikis/<slug>/memes/** and ingest into the canonical bag. Idempotent." },
-  "keep":       { handler: cmdWikiKeep,      summary: "Keep a wiki warm on the worn face's keep list: `lares wiki keep <slug>`; a full keep-warm cap refuses by name and drops no keep." },
-  "unkeep":     { handler: cmdWikiUnkeep,    summary: "Drop a wiki from the worn face's keep list: `lares wiki unkeep <slug>`." },
-  "add-bag":    { handler: cmdWikiAddBag,    summary: "Add a bag to the wiki's recipe at runtime. Hot-reload via composite.addLayer." },
-  "remove-bag": { handler: cmdWikiRemoveBag, summary: "Remove a bag from the wiki's recipe (soft remove; F-arc adds StoryList drain)." },
-  "true-floor": { handler: cmdWikiTrueFloor, summary: "True one recipe to the canon floor by place (`lares wiki true-floor <slug>`): every wiki's floor stacks `lares`, the herm/hearth wiki's stacks `lararium` and `lares`; the door drops the libraries the rule withholds (`lararium` outside the herm/hearth wiki) and prints the receipt the record keeps (`floor-trued-from`). A recipe already true answers `already-true` and changes nothing." },
-  "compact":       { handler: cmdWikiCompact,         summary: "DXOS-style snapshot-restart on one of the wiki's bags. Bounds history." },
-  "rotate-recipe": { handler: cmdWikiRotateRecipe,  summary: "Nix-generations: mint fresh canonical; retain old as previous-canon underlay." },
-  "prune-stale":   { handler: cmdWikiPruneStale,    summary: "Surface stale draft tiddlers (no recent activity) for residency-action-or-prune." },
-  "which":      { handler: cmdWikiWhich,     summary: "Recipe-presence query — list bags holding a tiddler. Needs `lares vessel stand --foreground`." },
-  "resolve":    { handler: cmdWikiResolve,   summary: "Residency Model coordinate-inspection — list all Manifestations of a tiddler across bags; highlight winning bag per recipe priority. Needs `lares vessel stand --foreground`." },
-  "render":     { handler: cmdWikiRender,    summary: "Wikify a title or a span through the wiki's own engine (the daemon wiki or any wiki this face reaches): `lares wiki render <title> --recipe default [--form text|html] [--max-bytes N] [--after <cursor>]`, or `--text '<wikitext>' [--type <mime>]`. The read reaches stdout; `--target` visits another lit face's read view. `render '<source-filter>' --recipe <slug> --output workbench [--filename <filter>] [--type <mime>] [--template <title>] [--variables <json>] [--overwrite]` writes under rendered/ in that wiki's bound workbench, then answers a manifest. A writer's seat must hold the workbench; existing files refuse without --overwrite." },
-  "status":     { handler: cmdWikiStatus,    summary: "Survey catalog, activation and residency; --recipe names each layer and its write reach: `lares wiki status --recipe default` (or `--recipe <slug>`, any wiki this face reaches). The working layer takes every write (this face's personal layer of a wiki where it holds no writer's seat). A wiki's temp layer reads `temp (opt-in, off)` until `projection.temp.<slug>` consents to it. `--target <h1|pet name>` names another lit face's view, whose layers read `write: false`." },
+/** The wiki door's verbs, each to its handler; each verb's words ride its carrier (`lares wiki <verb> --help`). */
+const SUBCOMMANDS: Readonly<Record<string, WikiSubcommand>> = {
+  "init":         (a) => cmdWikiInit(a),
+  "retire":       (a) => cmdWikiRetire(a),
+  "share":        cmdShare("wiki"),
+  "switch":       cmdWikiSwitch,
+  "sync":         cmdWikiSync,
+  "keep":         cmdWikiKeep,
+  "unkeep":       cmdWikiUnkeep,
+  "add-bag":      cmdWikiAddBag,
+  "remove-bag":   cmdWikiRemoveBag,
+  "true-floor":   cmdWikiTrueFloor,
+  "compact":      cmdWikiCompact,
+  "rotate-recipe": cmdWikiRotateRecipe,
+  "prune-stale":  cmdWikiPruneStale,
+  "which":        cmdWikiWhich,
+  "resolve":      cmdWikiResolve,
+  "render":       cmdWikiRender,
+  "status":       cmdWikiStatus,
 };
 
-/** Every verb the wiki door answers (`help` prints this table). */
+/** Every verb the wiki door answers; `help` prints the door's carriers. */
 export const WIKI_VERBS: readonly string[] = ["help", ...Object.keys(SUBCOMMANDS)];
-
-/** The wiki door's help, drawn from the sub-verb table: `lares wiki help` and `lares wiki --help` print these lines. */
-export function wikiHelpLines(): string[] {
-  const width = Math.max(...Object.keys(SUBCOMMANDS).map((v) => v.length));
-  return ["lares wiki <verb> [args...]", "", "Verbs:", ...Object.entries(SUBCOMMANDS).map(([verb, entry]) => `  ${verb.padEnd(width)} ${entry.summary}`)];
-}
-
-function printWikiHelp(): void {
-  for (const line of wikiHelpLines()) console.log(line);
-}
 
 export async function cmdWiki(args: ParsedArgs): Promise<number> {
   const verb = args.positional[0];
   if (!verb || verb === "help" || args.flags["help"]) {
-    printWikiHelp();
+    for (const line of helpLines("wiki")) console.log(line);
     return verb ? 0 : 2;
   }
   // The dispatcher's one MOVED table answers `wiki list` and kin before this door runs.
   const entry = SUBCOMMANDS[verb];
   if (!entry) {
     console.error(`lares wiki: unknown verb "${verb}"`);
-    for (const line of wikiHelpLines()) console.error(line);
+    for (const line of helpLines("wiki")) console.error(line);
     return 2;
   }
   const inner: ParsedArgs = {
@@ -928,5 +920,5 @@ export async function cmdWiki(args: ParsedArgs): Promise<number> {
     options:    args.options,
     flags:      args.flags,
   };
-  return await entry.handler(inner);
+  return await entry(inner);
 }

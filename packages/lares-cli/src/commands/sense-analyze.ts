@@ -68,14 +68,14 @@ export async function cmdSenseAnalyze(args: ParsedArgs): Promise<number> {
   const asked = args.options["lens"];
   const names = Object.keys(SENSE_LENSES).join(" · ");
   if (asked === undefined) {
-    return refuseUsage(args, "sense analyze", helpLines("sense"), `name a lens: ${names}`);
+    return refuseUsage(args, "sense analyze", helpLines("sense analyze"), `name a lens: ${names}`);
   }
   const lens = resolveLens(asked);
   if (lens === undefined) {
-    return refuseUsage(args, "sense analyze", helpLines("sense"), `no lens named '${asked}'; the lenses: ${names}`);
+    return refuseUsage(args, "sense analyze", helpLines("sense analyze"), `no lens named '${asked}'; the lenses: ${names}`);
   }
   if (args.positional.length > 0) {
-    return refuseUsage(args, "sense analyze", helpLines("sense"), `--lens ${lens} takes no word after it (got '${args.positional.join(" ")}')`);
+    return refuseUsage(args, "sense analyze", helpLines("sense analyze"), `--lens ${lens} takes no word after it (got '${args.positional.join(" ")}')`);
   }
   // A flag the lens does not read never reaches here: the door's `pathAccepts` (sensePathAccepts) refuses it by name.
   return await SENSE_LENSES[lens]!.run(args);

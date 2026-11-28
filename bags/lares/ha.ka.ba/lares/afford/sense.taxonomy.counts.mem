@@ -25,10 +25,12 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ sensorium
+!! takes ~ sensorium · lens · trial-root
 
 ```memetic-wikitext
-<<has entity=`arg` name=`sensorium` params=`takes/word ~ the sensorium by name; absent, memory`>>
+<<has entity=`arg` name=`sensorium` params=`takes/word skins/mcp ~ the sensorium by name; absent, memory (the terminal names it before the verb: lares sense <sensorium> <verb>)`>>
+<<has entity=`arg` name=`lens` params=`takes/plane skins/cli ~ the plane: content, structure, form, persistence`>>
+<<has entity=`arg` name=`trial-root` params=`takes/host-path skins/cli ~ a frozen trial's operation root, its typed and semantic frontiers`>>
 ```
 
 <<~/ahu>>
@@ -47,7 +49,17 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ mcp
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense status
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares sense status]] ~ the terminal`>>
+```
+
+<<~/ahu>>
 
 <<~ ahu slot=`#/skins/mcp`>>
 
@@ -70,6 +82,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1IfYU3JdBm0EfI66e6Mq5CKcniQHbTHYz2dFdVXureY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fcRpUVGaq4F1wn2Ahv5gWWxupdHoPU2kFb-oVzll7U8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

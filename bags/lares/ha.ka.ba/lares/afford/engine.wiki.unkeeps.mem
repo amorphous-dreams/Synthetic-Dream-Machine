@@ -28,7 +28,7 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 !! takes ~ slug
 
 ```memetic-wikitext
-<<has entity=`arg` name=`slug` params=`takes/word needs/required ~ the wiki by slug`>>
+<<has entity=`arg` name=`slug` params=`takes/word needs/required seat/1 as/<slug> ~ the wiki by slug`>>
 ```
 
 <<~/ahu>>
@@ -47,7 +47,17 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ mcp
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares wiki unkeep
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares wiki unkeep]] ~ the terminal`>>
+```
+
+<<~/ahu>>
 
 <<~ ahu slot=`#/skins/mcp`>>
 
@@ -70,6 +80,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;OtbEGHtvHn2jHr83Fztizdat2JZOHjUr8REI3djSVxI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7cii-QQOo8lOdDC2cuMeVUNGQ4qNHA1Q_xT8krgvoa8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -9,7 +9,7 @@
     "lararium-sensorium": 46,
     "lararium-tw5": 15,
     "lararium-web": 1,
-    "lares-cli": 65
+    "lares-cli": 55
   },
   "auxiliary": {
     "lararium-browser": 14,
@@ -21,7 +21,7 @@
     "lararium-sensorium": 12,
     "lararium-tw5": 34,
     "lararium-web": 4,
-    "lares-cli": 29
+    "lares-cli": 28
   },
   "silent": [
     "tree-sitter-memetic-wikitext"

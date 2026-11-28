@@ -79,7 +79,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares vessel unbound
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares vessel unbound]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares vessel unbound]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -95,6 +95,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GlWHvnCPVHBK_YuCeOvfNmr2E0-hBUrVXVRw7VS-ikg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YeT1XXjt_causoLyXEfYPj48PIJQZRDnulfast-zFuA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

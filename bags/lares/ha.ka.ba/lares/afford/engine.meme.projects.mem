@@ -25,13 +25,20 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 
 <<~ ahu slot=`#/takes`>>
 
-!! takes ~ uri · to · recipe · bag
+!! takes ~ uri · to · recipe · bag · realm · target · out · dialect · tongue · check · root
 
 ```memetic-wikitext
-<<has entity=`arg` name=`uri` params=`takes/word needs/required ~ the meme's lar: address`>>
+<<has entity=`arg` name=`uri` params=`takes/word needs/required seat/1 as/<source> ~ the meme: its lar: address, or on the terminal a carrier file`>>
 <<has entity=`arg` name=`to` params=`takes/word needs/required ~ the target: md, html, tid or json`>>
 <<has entity=`arg` name=`recipe` params=`takes/word ~ the wiki (default names the worn face's daemon wiki)`>>
 <<has entity=`arg` name=`bag` params=`takes/word ~ one bag`>>
+<<has entity=`arg` name=`realm` params=`takes/id skins/cli ~ beside bag, the realm whose registration resolves it`>>
+<<has entity=`arg` name=`target` params=`takes/handle skins/cli ~ another lit face whose daemon wiki the read visits, by handle or pet name`>>
+<<has entity=`arg` name=`out` params=`takes/host-path skins/cli ~ the md pair's directory, or the rendered file; stdout otherwise`>>
+<<has entity=`arg` name=`dialect` params=`takes/word skins/cli ~ (to md) a standalone RFC 7764 variant, its frontmatter carried inside the pair`>>
+<<has entity=`arg` name=`tongue` params=`takes/bcp47 skins/cli ~ (to md) the BCP 47 tongue the sigil head names weave in`>>
+<<has entity=`arg` name=`check` params=`takes/host-path skins/cli ~ (to md) prove a pair's currency by re-projection over a file.md or a shelf; writes nothing, exits 1 on drift`>>
+<<has entity=`arg` name=`root` params=`takes/host-path skins/cli ~ (with check) the tree a pair's source resolves from; else the checkout`>>
 ```
 
 <<~/ahu>>
@@ -50,7 +57,17 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ mcp
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares meme project
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares meme project]] ~ the terminal; a file with --to md renders in-process, any other target or a lar: source rides the vessel`>>
+```
+
+<<~/ahu>>
 
 <<~ ahu slot=`#/skins/mcp`>>
 
@@ -73,6 +90,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WT4AeqhgCEsw7xLo0VZuPb80bjwLty93-5RpJJYLzCo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fahZ3fjt4p1p4Imp1cM_CNJSwmyn5q9P_ZWZ5491rCA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

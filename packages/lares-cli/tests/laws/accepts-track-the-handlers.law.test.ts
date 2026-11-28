@@ -55,7 +55,7 @@ const HANDLER_FILE: Readonly<Record<string, string>> = {
 };
 
 /** Files whose reads are not a command's own: the renderer (json), help, and the table itself. */
-const NOT_A_READER = new Set(["render", "env", "parse-args", "command-help", "help-meme", "bin/lares"]);
+const NOT_A_READER = new Set(["render", "env", "parse-args", "command-help", "bin/lares"]);
 
 const code = (f: string): string =>
   readFileSync(f, "utf8").split("\n").filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join("\n");

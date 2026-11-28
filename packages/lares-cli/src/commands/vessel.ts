@@ -40,6 +40,7 @@
  */
 
 import type { ParsedArgs } from "../parse-args.js";
+import { helpLines } from "../command-help.js";
 import { cmdFound }     from "./found.js";
 import { cmdStand }     from "./stand.js";
 import { posturePlan, posturePlanNotice } from "./posture-plan.js";
@@ -175,25 +176,25 @@ async function runRite(args: ParsedArgs): Promise<number> {
 export const VESSEL_CENSUS_ROUTE = (args: ParsedArgs): "docs" | "stop" => (args.flags["docs"] === true ? "docs" : "stop");
 
 /** The door's map. Every entry names a primitive, a read, or the one composed sub-door. */
-const SUBS: Readonly<Record<string, { readonly summary: string; readonly run: Sub }>> = {
-  unbound: { summary: "list minted documents with no binding; removes nothing", run: async () => {
+const SUBS: Readonly<Record<string, { readonly run: Sub }>> = {
+  unbound: { run: async () => {
     const result = await runVerb("unbound-docs", {}, await vesselDid());
     if (result.status === "error") { console.error(result.errorMessage ?? "daemon refused the read"); return 2; }
     const output = summaryOutput(result);
     console.log(JSON.stringify(output?.unbound ?? [], null, 2));
     return 0;
   } },
-  found: { summary: "mint the vessel identity, persona root, social planes and bootstrap (idempotent)", run: (a) => cmdFound(under(a)) },
-  rotate: { summary: "rotate the place's online signer by its founding card — reads the card, prints and reads back the replacement", run: (a) => cmdRotatePlace(under(a)) },
-  stand: { summary: "bring the daemon up and report — [--foreground] [--with-web] [--restart]", run: standVessel },
-  stop:  { summary: "halt the daemon on the port (graceful → forced); a free port reads as stopped",     run: (a) => cmdStop(under(a)) },
-  lay:   { summary: "lay every bags/* holding back into its doc, kind-routed and diff-gated",           run: (a) => cmdLay(under(a)) },
-  read:  { summary: "inspect and start nothing — bootstrap, storage, port, resting engine falls and held ids (no verb, so it answers a fallen vessel)", run: (a) => cmdRead(under(a)) },
-  release: { summary: "end one quarantine hold, with the vessel stopped: <documentId> returns the bytes · --keep keeps what stands · --fresh starts the id empty", run: (a) => cmdRelease(under(a)) },
-  floor: { summary: "the vessel's floor pin, one per Nexus: `status` (pinned, newest seen, fast-forward, fork) · `accept [<release>]` walks prior from the pin · `seed [--genesis <dir>]` the seed a genesis dir offers beside the founding record · `adopt [--apply|--commit|--revert]` the seed's plugins over the pin's base as a local floor (preview bare; the hand applies) — [--grain canon|seed|shadow|lag|all] [--nexus <aid>] [--porch <origin>]", run: (a) => cmdFloor(under(a)) },
-  roster: { summary: "who is home: the worn face and who holds it, the seats here (by presence) and far (by last signed act), the lanes and the open vota — [--json]", run: (a) => cmdHearthRoster(under(a)) },
-  census: { summary: "name what a stop would drop: saves held in memory, carriers the projector owes — [--json]; --docs: every stored document, its class and who names it", run: (a) => (VESSEL_CENSUS_ROUTE(a) === "docs" ? cmdDocCensus(under(a)) : cmdCensus(under(a))) },
-  fresher: { summary: "each working copy over a canon bag that shadows fresher canon: its base hash beside canon's; then each copy with no base that differs from canon (base unknown) — --bag <slug>", run: async (a) => {
+  found: { run: (a) => cmdFound(under(a)) },
+  rotate: { run: (a) => cmdRotatePlace(under(a)) },
+  stand: { run: standVessel },
+  stop:  { run: (a) => cmdStop(under(a)) },
+  lay:   { run: (a) => cmdLay(under(a)) },
+  read:  { run: (a) => cmdRead(under(a)) },
+  release: { run: (a) => cmdRelease(under(a)) },
+  floor: { run: (a) => cmdFloor(under(a)) },
+  roster: { run: (a) => cmdHearthRoster(under(a)) },
+  census: { run: (a) => (VESSEL_CENSUS_ROUTE(a) === "docs" ? cmdDocCensus(under(a)) : cmdCensus(under(a))) },
+  fresher: { run: async (a) => {
     const named = a.options["bag"];
     if (!named) { console.error("lares vessel fresher: --bag <slug|lar:///ha.ka.ba/bags/<slug>> names the canon bag"); return 2; }
     const bag = fresherBagOf(named);
@@ -216,15 +217,13 @@ const SUBS: Readonly<Record<string, { readonly summary: string; readonly run: Su
     for (const line of fresherLines(bag, read.rows, unknown.rows)) console.log(line);
     return 0;
   } },
-  request: { summary: "read a verb request's receipt, dispatching nothing: <requestId>; --cancel withdraws it before it is read (your own hand, never a timeout's)", run: (a) => cmdRequest(under(a)) },
-  rite:  { summary: "the pet-named procedures: founding · refresh · rebuild",                            run: runRite },
+  request: { run: (a) => cmdRequest(under(a)) },
+  rite:  { run: runRite },
 };
 
 function printVesselHelp(): void {
-  console.log("lares vessel — the vessel's own door (one namespace, one causal island)\n");
-  for (const [name, s] of Object.entries(SUBS)) {
-    console.log(`  ${name.padEnd(7)} ${s.summary}`);
-  }
+  // Each verb's words ride its carrier: the door's index reads the baked pack, one home.
+  for (const line of helpLines("vessel")) console.log(line);
   // THE WHOLE ARC, not the third of it this door owns. A founding leaves a vessel standing at the
   // WAKING FLOOR — carrying, serving the public shelf, every sovereign act waiting — and the two acts
   // that follow live at other doors. A reader who meets only the first stops there and reads the floor

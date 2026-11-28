@@ -83,7 +83,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares wiki true-floor
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host door/part spells/[[lares wiki true-floor]] ~ the terminal`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares wiki true-floor]] ~ the terminal`>>
 ```
 
 <<~/ahu>>
@@ -99,6 +99,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;o1Xldk1KlWgLCjPTIujkuxsJnRZje_ALNUwHsCEKZwg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GhVlhVm0XGvMaWZneL2fl4eXWqTVtXSag0tpuWuFdmY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

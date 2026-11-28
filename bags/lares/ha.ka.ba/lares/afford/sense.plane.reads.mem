@@ -28,8 +28,8 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 !! takes ~ cid · sensorium
 
 ```memetic-wikitext
-<<has entity=`arg` name=`cid` params=`takes/word needs/required ~ the record's content id`>>
-<<has entity=`arg` name=`sensorium` params=`takes/word ~ the sensorium by name; absent, memory`>>
+<<has entity=`arg` name=`cid` params=`takes/word needs/required seat/1 as/<cid> ~ the record's content id`>>
+<<has entity=`arg` name=`sensorium` params=`takes/word skins/mcp ~ the sensorium by name; absent, memory (the terminal names it before the verb: lares sense <sensorium> <verb>)`>>
 ```
 
 <<~/ahu>>
@@ -48,7 +48,17 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~ ahu slot=`#/skins`>>
 
-!! skins ~ mcp
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares sense plane-record
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares sense plane-record]] ~ the terminal`>>
+```
+
+<<~/ahu>>
 
 <<~ ahu slot=`#/skins/mcp`>>
 
@@ -71,6 +81,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;RdqmnB0Z6alJ8FizXWi1onJcr4Q4G2yXTvwrXJSAZKM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gM326Kfx9BE4KyZnAueEfqiWjDt0YF6CXqx7x_6jPic`>>
 
 <<^ code=`&#x0004;` to=`?`>>

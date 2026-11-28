@@ -4,7 +4,7 @@
  */
 import { describe, expect, test, vi, afterEach } from "vitest";
 import { COMMANDS, dispatch } from "../src/bin/lares.js";
-import { COMMAND_HELP, helpLines } from "../src/command-help.js";
+import { helpLines } from "../src/command-help.js";
 import { affordancePack, packRoute } from "@lararium/tw5/affordance-pack";
 
 async function run(argv: string[]): Promise<{ code: number; out: string }> {
@@ -22,7 +22,7 @@ describe("lares surface help", () => {
     for (const f of ["face", "launch", "message", "realm"]) expect(row!.accepts).toContain(f);
   });
 
-  // The surface door flipped to its carriers (comms landings 10 + 23): each verb's carrier holds its words, the registry none.
+  // The surface door flipped to its carriers (comms landings 10 + 23): each verb's carrier holds its words, no registry beside it.
   test.each(["surface init", "surface check", "surface commit"])("%s takes --realm on its carrier, and its help names it", (spelling) => {
     const address = packRoute("cli", spelling);
     expect(address, spelling).toBeDefined();
@@ -33,7 +33,6 @@ describe("lares surface help", () => {
   test.each(["surface init", "surface check", "surface open", "surface commit", "surface face"])("%s holds a carrier whose examples run at the surface door", (spelling) => {
     const address = packRoute("cli", spelling);
     expect(address, spelling).toBeDefined();
-    expect(COMMAND_HELP[spelling], `${spelling}: one home, the carrier`).toBeUndefined();
     const calls = affordancePack().carriers[address!]!.calls["cli"] ?? [];
     expect(calls.length, spelling).toBeGreaterThan(0);
     expect(calls.every((e) => e.startsWith("lares surface"))).toBe(true);
