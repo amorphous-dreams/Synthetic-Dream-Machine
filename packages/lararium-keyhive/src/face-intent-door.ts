@@ -453,7 +453,7 @@ export async function admitShoreVotum(holder: string, verb: string, args: Readon
     throw new VerbRefusal(read.refusal, `${read.refusal}: ${verb} on ${holder.slice(0, 12)}…'s plane — ${why}; nothing paid. \`lares intent show\` reads the plane.`);
   }
   const bag = typeof read.args["bag"] === "string" ? read.args["bag"] : "";
-  if (bag === "") throw new VerbRefusal("votum-bag-unnamed", `votum-bag-unnamed: ${verb} names no bag, so the vower's grant cannot be read; nothing paid. \`lares intent show\` reads the plane.`);
+  if (bag === "") throw new VerbRefusal("votum-bag-unnamed", `votum-bag-unnamed: ${verb} names no bag, so no vower's grant reads for it; nothing paid. \`lares intent show\` reads the plane.`);
   // THE HOLDER'S ACTOR DECIDES ITS OWN LAYER ALONE: a plane pays a door write only into a bag its own face holds. A write naming a
   // bag another face holds rides the shore's votum route to THAT face's plane, never through this one.
   if (!(await holds(bag))) throw new VerbRefusal("votum-bag-unheld", `votum-bag-unheld: ${verb} names ${bag}, a bag face ${holder.slice(0, 12)}… does not hold, so its plane pays nothing; a write into another face's layer rides the island shore's votum route to the face that holds it (write it through the wiki, \`lares put title=<title> recipe=<slug>\`).`);

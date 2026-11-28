@@ -80,7 +80,7 @@ export const shellWord = (value: string): string => (/^[A-Za-z0-9_@%+=:,./#*?!-]
 /** One key=value keyword as a token a shell reads back. */
 export const keyWord = (key: string, value: string): string => `${key}=${shellWord(value)}`;
 
-/** A keyword line spelled back: `lares k=v …`. */
+/** A keyword line spelled back: `lares` then each `k=v`. */
 export const keywordLine = (pairs: ReadonlyArray<readonly [string, string]>): string => ["lares", ...pairs.map(([k, v]) => keyWord(k, v))].join(" ");
 
 /** The flag a token names (`--dry-run`, `--grain=whole`), or null. */

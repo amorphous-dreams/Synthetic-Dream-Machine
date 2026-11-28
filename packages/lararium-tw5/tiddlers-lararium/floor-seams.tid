@@ -361,3 +361,8 @@ MOVES island-vessel-boot m boot-wait*
 MOVES sealed-store-rest m compacting-storage*
 MOVES shore-standoff n shore-remove-door*
 MOVES cli-door-table c ask-budget* standing-report*
+# the comms-ux doors (comms-ux-enacts landings 9–17): the keyword head, the bare door, the msg and watch carriers, the shore votum
+MOVES cli-door-table c commands/bare* keywords* summoned-stream*
+MOVES verb-dispatch t msg-verbs* stream-entries* modules/watch* filters/stream*
+MOVES island-vessel-boot t host-globals-now*
+MOVES shore-standoff m shore-votum*

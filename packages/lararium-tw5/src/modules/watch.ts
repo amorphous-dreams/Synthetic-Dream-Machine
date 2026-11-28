@@ -199,7 +199,7 @@ export class WatchBook {
     if (title === entry.title) return false;
     const tiddler = this.wiki.getTiddler(title);
     if (deleted || tiddler === undefined) return entry.hashes.has(title) || entry.visible(title, undefined);
-    // A listed record the view no longer reads (a reach that moved) still re-runs, so it leaves the answer.
+    // A listed record the view cannot read re-runs, so it leaves the answer.
     if (!entry.visible(title, tiddler)) return entry.hashes.has(title);
     // THE SHORE'S ECHO MOVES NOTHING: a listed record whose hash still reads as the watch last read it re-runs no filter.
     return !(entry.hashes.has(title) && entry.hashes.get(title) === watchHashOf(title, tiddler));

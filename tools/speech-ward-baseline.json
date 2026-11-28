@@ -6,10 +6,10 @@
     "lararium-memetic-frame": 1,
     "lararium-mesh": 105,
     "lararium-node": 132,
-    "lararium-sensorium": 49,
+    "lararium-sensorium": 46,
     "lararium-tw5": 15,
     "lararium-web": 1,
-    "lares-cli": 89
+    "lares-cli": 65
   },
   "auxiliary": {
     "lararium-browser": 14,
@@ -18,10 +18,10 @@
     "lararium-mempalace": 1,
     "lararium-mesh": 39,
     "lararium-node": 52,
-    "lararium-sensorium": 13,
+    "lararium-sensorium": 12,
     "lararium-tw5": 34,
     "lararium-web": 4,
-    "lares-cli": 37
+    "lares-cli": 29
   },
   "silent": [
     "tree-sitter-memetic-wikitext"

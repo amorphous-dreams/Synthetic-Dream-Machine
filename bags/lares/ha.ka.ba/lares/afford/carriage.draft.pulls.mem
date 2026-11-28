@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.draft.pulls"
 
 ! carriage.draft.pulls ~ the pull-into-draft ceremony: a lower bag's tiddler gains a writable copy above it
 
-`lares act lar:///carriage.draft.pulls uri=<uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `to=` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act MOVE`, `lares act COPY`).
+`lares act lar:///carriage.draft.pulls uri=<uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `to=` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act lar:///carriage.bag.moves`, `lares act lar:///carriage.bag.copies`).
 
 The verb first asks the vessel which bags hold the tiddler (a title no bag holds answers `not found in any bag` and exits 5), then asks a terminal `Proceed? [y/N]` (a call off a terminal names `yes=true`). The draft rides the door with no verb word: the flag names the pull, and an ACTION verb beside it refuses.
 
@@ -105,6 +105,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Fqn-gTNvbJkFe4nHAl7cmI4kzt8ePxE1Q1B8AVhWAJE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;s-ZsCnPqodio4DUXr18S0hoWKuVUEhJGmKBos_ekB3k`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -82,6 +82,18 @@ export function deadDoorOver({ rows, shim }) {
       if (keys.some((k) => doors.has(k) || ACT_KEYWORDS.has(k))) return null;
       return keys.every((k) => BARE_KEYWORDS.has(k)) ? null : `no act keyword on the keyword line (keywords: ${keys.join(' ')})`;
     }
+    // THE ONE ACT (comms-ux-enacts landing 9): `lares act lar:///<address> …` and `lares lar:///<address> …` ride the call
+    // door, which takes the address and params alone (packages/lares-cli/src/commands/call.ts isCallHead); a verb word or a
+    // flag after `act` names a spelling the call door refuses.
+    if (door.startsWith('lar:///')) return null;
+    if (door === 'act' && !doors.has('act')) {
+      // A word past `act` that ends in `:` opens the act's own message (`lares act REPACK: …`); an interpolated word reads as
+      // unchecked; `--help` prints the act carriers' call shapes.
+      const next = words[1];
+      if (next === '' || next === '--help' || next?.endsWith(':')) return null;
+      if (next === '…' && words.slice(2).every((w) => !w.startsWith('-'))) return null;
+      return next?.startsWith('lar:///') || /^<[^>]+>$/.test(next ?? '') ? null : `\`act\` takes a carrier address (\`lares act lar:///<address> …\`), never "${next ?? '(nothing)'}"`;
+    }
     if (!doors.has(door)) return `no door "${door}"`;
     if (passes.has(door)) return null;
     let path = door;

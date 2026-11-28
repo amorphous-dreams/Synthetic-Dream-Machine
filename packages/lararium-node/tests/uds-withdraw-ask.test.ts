@@ -20,7 +20,8 @@ import type { SessionFace } from "@lararium/mesh/session-contract";
 import { heldAsk, makeUdsSeat, serveUdsFront, type UdsSessionDoor } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
 
-const fixtureMint = async () => ({ ok: true as const, signer: { dropped: false, drop() { (this as { dropped: boolean }).dropped = true; } } });
+const fixtureMint = async () => ({ ok: true as const, signer: { dropped: false, drop() { (this as { dropped: boolean }).dropped = true; },
+  certificate: null, sign: async () => ({ refusal: "test-signs-nothing" }) } });
 
 const face = (name: string): SessionFace => ({ personaGroup: `group-${name}`, proofSubject: `proof-${name}`,
   admitRef: `admit-${name}`, causalRevision: `revision-${name}`,

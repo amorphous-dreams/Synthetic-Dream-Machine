@@ -69,3 +69,13 @@ test('a keyword line answers where a keyword names a door, an act keyword, or th
   }
   assert.match(deadDoor('lares title=x mu=00'), /no act keyword/);
 });
+
+test('the one act: `act` and a bare address ride the call door by a carrier address; a verb word or a flag after `act` reads red', () => {
+  for (const line of ['lares act lar:///carriage.bag.moves title=<uri> from=<bag> to=<bag>', 'lares lar:///carriage.draft.pulls uri=<uri>',
+    'lares act --help', 'lares act REPACK: request abandoned', 'lares act ${verb}: bag= required', 'lares act lar:///<address> … yes=true']) {
+    assert.equal(deadDoor(line), null, line);
+  }
+  for (const line of ['lares act MOVE --title x --from a --to b', 'lares act', 'lares act --in-wiki', 'lares act … --yes']) {
+    assert.match(deadDoor(line) ?? '', /takes a carrier address/, line);
+  }
+});

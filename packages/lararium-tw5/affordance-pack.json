@@ -7966,7 +7966,7 @@
       "title": "lar:///ha.ka.ba/lares/afford/carriage.draft.lifts"
     },
     "lar:///carriage.draft.pulls": {
-      "bcc": "ni:///sha-256;Fqn-gTNvbJkFe4nHAl7cmI4kzt8ePxE1Q1B8AVhWAJE",
+      "bcc": "ni:///sha-256;s-ZsCnPqodio4DUXr18S0hoWKuVUEhJGmKBos_ekB3k",
       "calls": {
         "cli": [
           "lares act lar:///carriage.draft.pulls draft=true uri=lar:///ha.ka.ba/lares/docs/pono/example",
@@ -7994,7 +7994,7 @@
           ],
           "#/head": [
             "  the pull-into-draft ceremony: a lower bag's tiddler gains a writable copy above it",
-            "  `lares act lar:///carriage.draft.pulls uri=<uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `to=` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act MOVE`, `lares act COPY`).",
+            "  `lares act lar:///carriage.draft.pulls uri=<uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `to=` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act lar:///carriage.bag.moves`, `lares act lar:///carriage.bag.copies`).",
             "  The verb first asks the vessel which bags hold the tiddler (a title no bag holds answers `not found in any bag` and exits 5), then asks a terminal `Proceed? [y/N]` (a call off a terminal names `yes=true`). The draft rides the door with no verb word: the flag names the pull, and an ACTION verb beside it refuses."
           ],
           "#/loop": [],
@@ -8024,7 +8024,7 @@
             "lares act lar:///carriage.draft.pulls — pull a tiddler from a lower bag into a writable draft",
             "",
             "  the pull-into-draft ceremony: a lower bag's tiddler gains a writable copy above it",
-            "  `lares act lar:///carriage.draft.pulls uri=<uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `to=` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act MOVE`, `lares act COPY`).",
+            "  `lares act lar:///carriage.draft.pulls uri=<uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `to=` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act lar:///carriage.bag.moves`, `lares act lar:///carriage.bag.copies`).",
             "  The verb first asks the vessel which bags hold the tiddler (a title no bag holds answers `not found in any bag` and exits 5), then asks a terminal `Proceed? [y/N]` (a call off a terminal names `yes=true`). The draft rides the door with no verb word: the flag names the pull, and an ACTION verb beside it refuses.",
             "",
             "Examples:",
@@ -8073,7 +8073,7 @@
           ],
           "#/head": [
             "  the pull-into-draft ceremony: a lower bag's tiddler gains a writable copy above it",
-            "  `lares act lar:///carriage.draft.pulls uri=<uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `to=` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act MOVE`, `lares act COPY`).",
+            "  `lares act lar:///carriage.draft.pulls uri=<uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `to=` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act lar:///carriage.bag.moves`, `lares act lar:///carriage.bag.copies`).",
             "  The verb first asks the vessel which bags hold the tiddler (a title no bag holds answers `not found in any bag` and exits 5), then asks a terminal `Proceed? [y/N]` (a call off a terminal names `yes=true`). The draft rides the door with no verb word: the flag names the pull, and an ACTION verb beside it refuses."
           ],
           "#/loop": [],
@@ -8103,7 +8103,7 @@
             " — pull a tiddler from a lower bag into a writable draft",
             "",
             "  the pull-into-draft ceremony: a lower bag's tiddler gains a writable copy above it",
-            "  `lares act lar:///carriage.draft.pulls uri=<uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `to=` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act MOVE`, `lares act COPY`).",
+            "  `lares act lar:///carriage.draft.pulls uri=<uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `to=` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act lar:///carriage.bag.moves`, `lares act lar:///carriage.bag.copies`).",
             "  The verb first asks the vessel which bags hold the tiddler (a title no bag holds answers `not found in any bag` and exits 5), then asks a terminal `Proceed? [y/N]` (a call off a terminal names `yes=true`). The draft rides the door with no verb word: the flag names the pull, and an ACTION verb beside it refuses.",
             "",
             "Examples:",
@@ -8144,7 +8144,7 @@
           ],
           "whole": [
             "Pull a tiddler from a lower bag into a writable draft",
-            "`lares act lar:///carriage.draft.pulls uri=<uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `to=` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act MOVE`, `lares act COPY`).",
+            "`lares act lar:///carriage.draft.pulls uri=<uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `to=` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act lar:///carriage.bag.moves`, `lares act lar:///carriage.bag.copies`).",
             "The verb first asks the vessel which bags hold the tiddler (a title no bag holds answers `not found in any bag` and exits 5), then asks a terminal `Proceed? [y/N]` (a call off a terminal names `yes=true`). The draft rides the door with no verb word: the flag names the pull, and an ACTION verb beside it refuses.",
             "Gate (the carrier's testimony; the door checks): write: a write into the draft layer; a terminal asks y/N unless yes=true rides, and a JSON call off a terminal refuses without it.",
             "Refuses: usage · not-found.",
@@ -8167,7 +8167,7 @@
           ],
           "#/head": [
             "  the pull-into-draft ceremony: a lower bag's tiddler gains a writable copy above it",
-            "  `lares act lar:///carriage.draft.pulls uri=<uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `to=` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act MOVE`, `lares act COPY`).",
+            "  `lares act lar:///carriage.draft.pulls uri=<uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `to=` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act lar:///carriage.bag.moves`, `lares act lar:///carriage.bag.copies`).",
             "  The verb first asks the vessel which bags hold the tiddler (a title no bag holds answers `not found in any bag` and exits 5), then asks a terminal `Proceed? [y/N]` (a call off a terminal names `yes=true`). The draft rides the door with no verb word: the flag names the pull, and an ACTION verb beside it refuses."
           ],
           "#/loop": [],
@@ -8197,7 +8197,7 @@
             " — pull a tiddler from a lower bag into a writable draft",
             "",
             "  the pull-into-draft ceremony: a lower bag's tiddler gains a writable copy above it",
-            "  `lares act lar:///carriage.draft.pulls uri=<uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `to=` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act MOVE`, `lares act COPY`).",
+            "  `lares act lar:///carriage.draft.pulls uri=<uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `to=` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act lar:///carriage.bag.moves`, `lares act lar:///carriage.bag.copies`).",
             "  The verb first asks the vessel which bags hold the tiddler (a title no bag holds answers `not found in any bag` and exits 5), then asks a terminal `Proceed? [y/N]` (a call off a terminal names `yes=true`). The draft rides the door with no verb word: the flag names the pull, and an ACTION verb beside it refuses.",
             "",
             "Examples:",
@@ -84608,7 +84608,7 @@
       ]
     }
   },
-  "hash": "sha256-f963cba59488e3e9b8dc0e9ef369ad3a4db382c155e1d77205f5d5799bd6eda8",
+  "hash": "sha256-3203231a5e2443824e09a77cd6ef97df8ee8cd658a27e283c50bb2ecb55d2223",
   "index": {
     "cli": [
       "  lares act lar:///carriage.bag.clears  empty a bag but keep its identity; the effect log stays",
@@ -85211,7 +85211,7 @@
     "lar:///ha.ka.ba/lares/afford/carriage.draft.pulls#/answers": "!! answers ~ drafted · aborted\n\n```memetic-wikitext\n<<has entity=`band` name=`drafted` params=`exit/0 fields/[[tiddler fromBag toBag status receipt]] ~ the copy landed in the draft bag; the source stays intact`>>\n<<has entity=`band` name=`aborted` params=`exit/0 ~ the person answered no at the prompt`>>\n```",
     "lar:///ha.ka.ba/lares/afford/carriage.draft.pulls#/edges": "!! edges ~ affordance · residency-model\n\n<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>\n<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>",
     "lar:///ha.ka.ba/lares/afford/carriage.draft.pulls#/gate": "!! gate ~ write\n\nTestimony: the door checks; this slot grants nothing.\n\n```memetic-wikitext\n<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ a write into the draft layer; a terminal asks y/N unless yes=true rides, and a JSON call off a terminal refuses without it`>>\n```",
-    "lar:///ha.ka.ba/lares/afford/carriage.draft.pulls#/head": "! carriage.draft.pulls ~ the pull-into-draft ceremony: a lower bag's tiddler gains a writable copy above it\n\n`lares act lar:///carriage.draft.pulls uri=<uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `to=` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act MOVE`, `lares act COPY`).\n\nThe verb first asks the vessel which bags hold the tiddler (a title no bag holds answers `not found in any bag` and exits 5), then asks a terminal `Proceed? [y/N]` (a call off a terminal names `yes=true`). The draft rides the door with no verb word: the flag names the pull, and an ACTION verb beside it refuses.",
+    "lar:///ha.ka.ba/lares/afford/carriage.draft.pulls#/head": "! carriage.draft.pulls ~ the pull-into-draft ceremony: a lower bag's tiddler gains a writable copy above it\n\n`lares act lar:///carriage.draft.pulls uri=<uri>` copies a tiddler that currently resolves from a lower bag into a writable draft bag (the active wiki's draft by default, or the bag `to=` names). The source bag stays intact and writes no tombstone; the new copy overlays the original through the composite's priority. Edit the draft, then land it in another bag with a residency action (`lares act lar:///carriage.bag.moves`, `lares act lar:///carriage.bag.copies`).\n\nThe verb first asks the vessel which bags hold the tiddler (a title no bag holds answers `not found in any bag` and exits 5), then asks a terminal `Proceed? [y/N]` (a call off a terminal names `yes=true`). The draft rides the door with no verb word: the flag names the pull, and an ACTION verb beside it refuses.",
     "lar:///ha.ka.ba/lares/afford/carriage.draft.pulls#/refuses": "!! refuses ~ usage · not-found\n\n```memetic-wikitext\n<<has entity=`refusal` name=`usage` params=`cure/[[carriage.draft.pulls uri/<uri>]] ~ the tiddler's address stands required`>>\n<<has entity=`refusal` name=`not-found` params=`~ no bag holds the tiddler; the verb exits 5 and names it`>>\n```",
     "lar:///ha.ka.ba/lares/afford/carriage.draft.pulls#/shows": "!! shows ~ pull-a-draft · pull-into-a-bag\n\n```memetic-wikitext\n<<has entity=`example` name=`pull-a-draft` params=`draft/true uri/lar:///ha.ka.ba/lares/docs/pono/example ~ copy the tiddler into the active wiki's draft`>>\n<<has entity=`example` name=`pull-into-a-bag` params=`draft/true uri/lar:///ha.ka.ba/lares/docs/pono/example to/lar:///ha.ka.ba/wikis/lares/working ~ copy it into the draft bag named`>>\n```",
     "lar:///ha.ka.ba/lares/afford/carriage.draft.pulls#/skins": "!! skins ~ cli\n\n<<~ kahea ahu slot=`#/skins/cli`>>",

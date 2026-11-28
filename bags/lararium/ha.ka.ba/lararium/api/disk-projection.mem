@@ -233,7 +233,7 @@ Ward vectors: `packages/lararium-node/tests/disk-confinement.test.ts` (traversal
 
 !! CLI capability
 
-The operator drives the disk-projection Artifact through the `@lares/cli` surface (alongside `lares wiki` / `lares bag` / `lares act`). The live projector runs inside the vessel (TW5 change → level-triggered reconcile → render → write); the CLI exposes the deliberate snapshot/inspect verbs. `namedBagMirror(bagId, scope, mirrorRoot)` configures a bag mirror; the island reconstructs it from the serializable `diskMirrors` manifest field.
+The operator drives the disk-projection Artifact through the `@lares/cli` surface (alongside `lares wiki` / `lares bag` / `lares act lar:///<address>`). The live projector runs inside the vessel (TW5 change → level-triggered reconcile → render → write); the CLI exposes the deliberate snapshot/inspect verbs. `namedBagMirror(bagId, scope, mirrorRoot)` configures a bag mirror; the island reconstructs it from the serializable `diskMirrors` manifest field.
 
 <<~/ahu>>
 
@@ -264,6 +264,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lNbAL6oL5FZBSpMtY0FMYvwh19Yn1p2IngKPbqrYWeI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;C3npqHVIMLfgUgGeeZNumBCY7_Ua_3lYU8-joraXV_4`>>
 
 <<^ code=`&#x0004;` to=`?`>>
