@@ -2377,7 +2377,7 @@ describe.skipIf(wikiSkip)(`the one act keeps the hand at the door${skipNote}`, (
 });
 
 describe.skipIf(wikiSkip)(`who runs the door: handler/host, handler/seat and dry/walks read per surface${skipNote}`, () => {
-  test("RED: a residency act binds by its address and answers handler/host with its bound params, a dry carry reaching it through dry/walks; a seat act answers handler/seat on the seat's surface alone; CONTROL: a layer that drops dry/walks makes the dry call refuse mu-cell-empty", async () => {
+  test("RED: a residency act binds by its address and answers handler/host with its bound params, a dry carry reaching it through dry/walks; a seat act answers handler/seat on the seat's surface, and a surface with no row takes the host row; CONTROL: a layer that drops dry/walks makes the dry call refuse mu-cell-empty", async () => {
     const r = await callRig();
     for (const rel of ["afford/carriage.record.adds.mem", "afford/sense.memory.recalls.mem"]) { const text = canonFile(rel); r.engine.ingestCarrier(headTitleOf(text), text, { "$origin-bag": CANON }); }
     const reactor = makeCallReactor(r.table, tiddlerCallSource(r.opts));
@@ -2388,7 +2388,8 @@ describe.skipIf(wikiSkip)(`who runs the door: handler/host, handler/seat and dry
     expect(await on("cli", ADDS, { ...bound, mu: "pentacle" })).toMatchObject({ handler: "host", address: ADDS, mu: { carry: "_0" } });
     const RECALLS = "lar:///sense.memory.recalls";
     expect(await on("mcp", RECALLS, { query: "q" })).toMatchObject({ handler: "seat", address: RECALLS, params: { query: "q" } });
-    await expect(on("console", RECALLS, { query: "q" })).rejects.toMatchObject({ reason: "affordance-unhandled" });
+    // A surface with no row of its own takes `handler/host` where any row names it: the recall's terminal row (`lares sense recall`) answers the console.
+    expect(await on("console", RECALLS, { query: "q" })).toMatchObject({ handler: "host", address: RECALLS, params: { query: "q" } });
     const skin = r.engine.wiki.getTiddler("lar:///ha.ka.ba/lares/afford/carriage.record.adds#/skins/cli")!.getFieldStrings();
     r.engine.wiki.addTiddler({ ...skin, "$origin-bag": DAEMON, text: skin["text"]!.replace("dry/walks ", "") });
     await expect(on("cli", ADDS, { ...bound, mu: "pentacle" })).rejects.toMatchObject({ reason: "mu-cell-empty" });

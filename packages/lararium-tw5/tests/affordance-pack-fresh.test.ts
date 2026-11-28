@@ -23,7 +23,7 @@ import { routesOf } from "../src/affordance-read.js";
 const WAVE_2 = [
   "carriage.record.adds", "carriage.bag.copies", "carriage.bag.moves", "carriage.bag.clears", "carriage.bag.drops", "carriage.bag.loads",
   "carriage.bag.creates", "carriage.bundle.repacks", "carriage.draft.pulls", "carriage.capture.ingests", "carriage.bundle.exports",
-  "carriage.bundle.imports", "carriage.disk.reads", "carriage.record.wins", "carriage.disk.wins", "carriage.disk.merges", "carriage.draft.reads",
+  "carriage.bundle.imports", "carriage.disk.reads",
   "carriage.disk.restores", "carriage.disk.removes", "carriage.disk.settles", "face.hand.lifts", "carriage.disk.flushes", "carriage.disk.logs",
   "carriage.bag.reads", "carriage.bag.declares", "carriage.bag.homes", "carriage.bag.registers", "carriage.bag.cools", "carriage.bag.compacts",
   "carriage.bag.tends", "realm.bag.shares", "sense.record.flows",

@@ -1275,7 +1275,7 @@ for (const [name, shim] of shims) {
     const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_RC: "3" } });
     assert.equal(r.status, 2);
     assert.match(r.stderr, /held-save {2}save-unbooked {2}doc doc-heron/);
-    assert.match(r.stderr, /carrier {2}pending {2}lar:\/\/\/ha\.ka\.ba\/notes\/pond/);
+    assert.match(r.stderr, /carrier {2}failed {2}lar:\/\/\/ha\.ka\.ba\/notes\/pond/);
     assert.match(r.stderr, /vault unlock/);
     assert.match(r.stderr, /the vessel stands until what the census names lands/);
     assert.doesNotMatch(r.stderr + r.stdout, /accept-loss|Type /);
