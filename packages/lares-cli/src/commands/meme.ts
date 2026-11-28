@@ -4,8 +4,8 @@
  *   (a family's writes ride the plain record calls: `lares put title=<uri> file=<path>` lands the whole carrier, `lares put
  *    title=<uri> slot='#/x' text=|file=|append=` one slot, `lares delete title=<uri> family=true` the family; `lares get meme=true
  *    [tree=true]` lists)
- *   normalize <file.mem ...> [grammar=]
- *   check <file.mem ...> [gradient= | edges= | grammar=]
+ *   normalize <file.mem ...> [grammar=true]
+ *   check <file.mem ...> [gradient=true | edges=true | sitting=true | grammar=true]
  *   project <file.mem> to=md [out=<path>]
  *   project <file.mem | lar:uri> to=<md|html|tid|json> (recipe=<slug> | bag=<slug>) [out=<path>]
  *   project <file.mem> to=md [dialect=CommonMark|GFM|kramdown-rfc2629]   — RFC 7764 variant; CommonMark default
@@ -54,18 +54,18 @@
  * DOCTYPE address, sigil spellings, child-slot roots, meta columns, the block check) carry exactly one
  * right answer and ALWAYS apply. GRAMMAR clauses (authored bytes — today, only the named-parameter
  * separator: a call site's `:` vs `=`) are a PREFERENCE, never an answer — both spellings build the
- * identical attribute — so they apply ONLY with `grammar=`; by default they are named per site
- * ("N call site(s) would take the equals sign — rerun with grammar= to apply") and move no byte.
+ * identical attribute — so they apply ONLY with `grammar=true`; by default they are named per site
+ * ("N call site(s) would take the equals sign — rerun with grammar=true to apply") and move no byte.
  *
  * `check` reads the same law and writes nothing: FRAME drift alone exits 1 (CI / pre-commit); GRAMMAR
  * drift is reported as a named preference and never fails the gate. Its other readings share the seat —
  * read alone, write nothing — so they ride it as flags:
- *   gradient=  how far down the ingest gradient each file sits: the KIND a file declares itself to be,
+ *   gradient=true how far down the ingest gradient each file sits: the KIND a file declares itself to be,
  *               and the marks that kind requires and lacks. Graceful parsing hides files — a carrier
  *               missing its address, declaration or body frame still parses, renders and round-trips,
  *               as something smaller than a meme, and every `if (!uri) continue` gate skips it. This
  *               reading fails on a fault, never on a kind.
- *   edges=     the addresses these carriers point AT, and which of them answer. A `lar:` uri names and
+ *   edges=true the addresses these carriers point AT, and which of them answer. A `lar:` uri names and
  *               does not fetch, so a carrier whose target moved keeps passing every other gate. Run it
  *               before a move and after: equal counts prove the weld held.
  *
@@ -231,22 +231,14 @@ function readNamed(f: string): string {
 }
 
 /**
- * `check`: the normalize law read alone, or one of its two sibling readings.
- *
- * parse-args reads `gradient=` as a boolean only when the next token is another option or the end;
- * `gradient=<file>` binds the file as its value instead. Read each reading from both, and recover any
- * file it ate, so flag position stays free.
+ * `check`: the normalize law read alone, or one of its sibling readings. `gradient`, `edges` and `sitting` each state
+ * `kind/switch` on the carrier, so the dispatcher refuses a word there before this runs, and each reads `true` alone.
  */
 function checkFiles(args: ParsedArgs): number {
-  const reading = (name: "gradient" | "edges" | "sitting"): { on: boolean; ate?: string } => {
-    const opt = args.options[name];
-    return typeof opt === "string" ? { on: true, ate: opt } : { on: name in args.flags };
-  };
-  const gradient = reading("gradient");
-  const edges = reading("edges");
-  const sitting = reading("sitting");
-  const ate = [gradient.ate, edges.ate, sitting.ate].filter((f): f is string => typeof f === "string");
-  const files = [...(ate.length > 0 ? args.positional.slice(1) : namedFiles(args, "check")), ...ate];
+  const gradient = { on: args.flags["gradient"] === true };
+  const edges = { on: args.flags["edges"] === true };
+  const sitting = { on: args.flags["sitting"] === true };
+  const files = namedFiles(args, "check");
   const problems = problemsFormat(args);
   if (problems && (gradient.on || edges.on || sitting.on)) {
     throw new UsageError("lares meme check format=problems reads the normalize law alone — drop gradient=, edges= and sitting=");
@@ -293,16 +285,11 @@ function normalizeFiles(args: ParsedArgs, write: boolean, problems = false): num
   const report = (f: string, src: string, offset: number | null, severity: ProblemSeverity, code: string, message: string): void => {
     if (problems) console.log(problemLine(f, src, offset, severity, code, message));
   };
-  // `grammar=` applies GRAMMAR-authority clauses (authored bytes — e.g. a call site's `:` vs `=`
+  // `grammar=true` applies GRAMMAR-authority clauses (authored bytes — e.g. a call site's `:` vs `=`
   // separator) alongside the FRAME clauses that always apply. Default: grammar clauses are
-  // PROPOSED, named per site, and move no byte — parse-args eats a following bare token as the
-  // flag's value the same way `gradient=`/`edges=`/`sitting=` do, so recover it the same way.
-  const grammarOpt = args.options["grammar"];
-  const grammar = typeof grammarOpt === "string" ? true : Boolean(args.flags["grammar"]);
-  const files = [
-    ...(typeof grammarOpt === "string" ? args.positional.slice(1) : namedFiles(args, write ? "normalize" : "check")),
-    ...(typeof grammarOpt === "string" ? [grammarOpt] : []),
-  ];
+  // PROPOSED, named per site, and move no byte. The carrier states `grammar` a switch, so it reads `true` alone.
+  const grammar = args.flags["grammar"] === true;
+  const files = namedFiles(args, write ? "normalize" : "check");
   let drifted = 0;
   let grammarDrifted = 0;
   let flagged = 0;
@@ -335,7 +322,7 @@ function normalizeFiles(args: ParsedArgs, write: boolean, problems = false): num
 
     // GRAMMAR-authority drift reads and reports SEPARATELY from FRAME drift — a preference named
     // aloud, never a failure. `res.grammarNotes` already carries the per-site "would take the
-    // equals sign — rerun with grammar= to apply" wording (or, with grammar= on, the applied
+    // equals sign — rerun with grammar=true to apply" wording (or, with grammar= on, the applied
     // wording) from the clause itself.
     if (res.grammarChanged) {
       grammarDrifted++;
@@ -472,7 +459,7 @@ function normalizeFiles(args: ParsedArgs, write: boolean, problems = false): num
 
   const tail = (flagged > 0 ? ` (${flagged} flagged for triage)` : "")
     + (faulted > 0 ? ` (${faulted} standing off its declared stage)` : "")
-    + (grammarDrifted > 0 ? ` (${grammarDrifted} carrying a grammar preference${grammar ? "" : " — rerun with grammar= to apply"})` : "");
+    + (grammarDrifted > 0 ? ` (${grammarDrifted} carrying a grammar preference${grammar ? "" : " — rerun with grammar=true to apply"})` : "");
   if (drifted === 0) {
     say(faulted === 0
       ? `all ${files.length} carrier(s) canonical.${tail}`
@@ -650,7 +637,7 @@ function surveySitting(files: string[]): number {
 // ── project: the seat law decides local or daemon ──────────────────────────────────────────────
 
 async function memeProject(args: ParsedArgs): Promise<number> {
-  if ("check" in args.options || args.flags["check"] !== undefined) return projectMdCheck(args);
+  if ("check" in args.options) return projectMdCheck(args);
   const plan = projectPlan(args);
   if (plan.seat === "local") return projectMdLocal(args, plan.file as string);
 
@@ -801,10 +788,8 @@ function projectMdLocal(args: ParsedArgs, file: string): number {
  * this seat.
  */
 function projectMdCheck(args: ParsedArgs): number {
-  // `check=` rides either spelling `checkFiles`'s `gradient=`/`edges=` already use: a bare flag
-  // with the target in the normal source position (`project <dir> to=md check=`), or an eaten
-  // value (`check=<dir>`) when it lands last on the line — parse-args cannot tell a flag from an
-  // option apart from what follows it, so both spellings answer the same target.
+  // `check=` takes a value (`takes/host-path`): `check=<dir>` names the target, and a bare `check=` reads the target from the
+  // normal source position (`project <dir> to=md check=`).
   const checkOpt = args.options["check"];
   const target = typeof checkOpt === "string" ? checkOpt : args.positional[1];
   if (!target) throw new UsageError("lares meme project to=md check=<file.md|dir> — name a projected pair or a shelf of them");

@@ -47,10 +47,10 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 
 ```memetic-wikitext
 <<has entity=`arg` name=`lens` params=`takes/word ~ the plane or instrument`>>
-<<has entity=`arg` name=`spectral` params=`~ read change-points spectrally`>>
+<<has entity=`arg` name=`spectral` params=`kind/switch ~ read change-points spectrally`>>
 <<has entity=`arg` name=`halves` params=`takes/word ~ the halving scales, e.g. 4,8,16`>>
 <<has entity=`arg` name=`span` params=`takes/count ~ the change-point span`>>
-<<has entity=`arg` name=`repour` params=`~ re-derive the rhythm plane first`>>
+<<has entity=`arg` name=`repour` params=`kind/switch ~ re-derive the rhythm plane first`>>
 <<has entity=`arg` name=`channel` params=`takes/word ~ one channel stratum (speech, thought, tool)`>>
 <<has entity=`arg` name=`rows` params=`takes/json skins/mcp ~ the signal matrix, rows as time and columns as signals`>>
 <<has entity=`arg` name=`names` params=`takes/json ~ the column labels`>>
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bSMSMcZ_Shvy1HoKezcMt5r5ARTqVM4qZfe6n6gFujQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;thhasHzNOvDLZ0oBzNtFNEc6vTFeLeWHCAwHqnEaFKw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

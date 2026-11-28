@@ -38,7 +38,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.intent.answers"
 ```memetic-wikitext
 <<has entity=`arg` name=`target` params=`takes/id needs/required seat/1 as/<target> ~ the ask's cid`>>
 <<has entity=`arg` name=`executor` params=`takes/atom needs/required ~ the executor the answer names`>>
-<<has entity=`arg` name=`deny` params=`~ deny instead of approve`>>
+<<has entity=`arg` name=`deny` params=`kind/switch ~ deny instead of approve`>>
 <<has entity=`arg` name=`face` params=`takes/index ~ the face whose intent plane this reads or writes, a whole persona index from 0`>>
 ```
 
@@ -104,6 +104,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;aa-IEswwdid1xjuC-Fo4zZvY3jxPVOWpyiWOajYr5x4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;f1UXJbb_GJrgghaKgsA3XbbksSTXa2JWA3dmAHDOKDA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

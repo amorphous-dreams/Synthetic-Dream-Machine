@@ -36,7 +36,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.vessel.reads"
 !! takes ~ palaces · root
 
 ```memetic-wikitext
-<<has entity=`arg` name=`palaces` params=`~ read the palaces' doctor report`>>
+<<has entity=`arg` name=`palaces` params=`kind/switch ~ read the palaces' doctor report`>>
 <<has entity=`arg` name=`root` params=`takes/dir ~ the vessel root (LAR_ROOT) this call reads`>>
 ```
 
@@ -89,6 +89,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KvTLjxvCxiynxgOm1fnItsN_ikoob_rI5epDyJxtlmA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Wrbf7Vt1FbFkihlEDBEUqnSPgbF4ccDT5bltbE2IZCA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

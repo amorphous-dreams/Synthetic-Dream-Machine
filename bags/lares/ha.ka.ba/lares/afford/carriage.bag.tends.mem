@@ -43,15 +43,15 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.bag.tends"
 !! takes ~ all · fetch · pin · tier · holder · held · release · sweep · dry-run
 
 ```memetic-wikitext
-<<has entity=`arg` name=`all` params=`~ list each blob`>>
+<<has entity=`arg` name=`all` params=`kind/switch ~ list each blob`>>
 <<has entity=`arg` name=`fetch` params=`takes/cid ~ read one cid through the running vessel's fetch door`>>
 <<has entity=`arg` name=`pin` params=`takes/cid ~ hold a blob past the grace until released`>>
 <<has entity=`arg` name=`tier` params=`takes/cap-tier ~ the tier a pin carries`>>
 <<has entity=`arg` name=`holder` params=`takes/name ~ who holds the pin`>>
-<<has entity=`arg` name=`held` params=`~ a held pin that ends with the vessel's life`>>
+<<has entity=`arg` name=`held` params=`kind/switch ~ a held pin that ends with the vessel's life`>>
 <<has entity=`arg` name=`release` params=`takes/cid ~ free a held blob`>>
-<<has entity=`arg` name=`sweep` params=`~ sweep the unreferenced blobs past their grace where the composite stands`>>
-<<has entity=`arg` name=`dry-run` params=`~ with --sweep, name the blobs and move nothing`>>
+<<has entity=`arg` name=`sweep` params=`kind/switch ~ sweep the unreferenced blobs past their grace where the composite stands`>>
+<<has entity=`arg` name=`dry-run` params=`kind/switch ~ with sweep=true, name the blobs and move nothing`>>
 ```
 
 <<~/ahu>>
@@ -117,6 +117,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NUAydw9BIVtm0YquJnHw5QdS9sgAX1C1uPNO7Q89Z4s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;90WrwcS8-y2cEUEGlZ78sWmCFeDq8CIlNbAOpuw2yvM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

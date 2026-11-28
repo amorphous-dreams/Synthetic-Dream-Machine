@@ -28,7 +28,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.seal.keeps"
 ```memetic-wikitext
 <<has entity=`example` name=`show` params=`sub/show ~ read the roster and chain head`>>
 <<has entity=`example` name=`seat` params=`sub/seat threshold/2 ~ seat the chairs at two of three`>>
-<<has entity=`example` name=`import-carry` params=`sub/import file/partner-charter.json carry/true ~ land a partner's charter beside yours`>>
+<<has entity=`example` name=`import-carry` params=`sub/import carry/partner-charter.json ~ land a partner's charter beside yours`>>
 ```
 
 <<~/ahu>>
@@ -44,14 +44,14 @@ uri-path  = "ha.ka.ba/lares/afford/realm.seal.keeps"
 <<has entity=`arg` name=`cold-key` params=`takes/card ~ stands in for the terminal on a staged test root alone`>>
 <<has entity=`arg` name=`index` params=`takes/handle-index ~ the face whose seat acts`>>
 <<has entity=`arg` name=`note` params=`takes/words ~ a witness mark's note`>>
-<<has entity=`arg` name=`carry` params=`~ import a partner's charter beside yours under its AID`>>
+<<has entity=`arg` name=`carry` params=`takes/host-path ~ import a partner's charter beside yours under its AID`>>
 <<has entity=`arg` name=`heard` params=`takes/list ~ the seat fingerprints as heard`>>
 <<has entity=`arg` name=`heard-threshold` params=`takes/count ~ the rule as heard`>>
 <<has entity=`arg` name=`charter-law` params=`takes/uri ~ the charter law a cofounding names`>>
 <<has entity=`arg` name=`release` params=`takes/uri ~ the release manifest record a cofounding names`>>
-<<has entity=`arg` name=`added` params=`takes/chair ~ a chair a roll adds`>>
+<<has entity=`arg` name=`added` params=`kind/switch ~ a chair a roll adds`>>
 <<has entity=`arg` name=`nexus` params=`takes/aid ~ the Nexus, by AID; absent, the primary charter's`>>
-<<has entity=`arg` name=`edge` params=`~ sign the realm edge anchors of the roll`>>
+<<has entity=`arg` name=`edge` params=`kind/switch ~ sign the realm edge anchors of the roll`>>
 <<has entity=`arg` name=`from` params=`takes/host-path ~ judge a carried partial before any signature`>>
 <<has entity=`arg` name=`out` params=`takes/host-path ~ write the offer, join or partial file`>>
 <<has entity=`arg` name=`face` params=`takes/handle-index ~ the face whose seat signs`>>
@@ -123,6 +123,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;DRnaH4O7tVxRC_50ySbaTGeQTLpikA0GDGsyfZzZAwI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;B-T3pUXYykSnXdyUWecDOZgJGK6mcCwNnwR_Z0fSM2E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

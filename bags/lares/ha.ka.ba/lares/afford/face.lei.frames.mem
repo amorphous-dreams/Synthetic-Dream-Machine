@@ -44,7 +44,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.lei.frames"
 <<has entity=`arg` name=`head` params=`takes/commit ~ beside kui or restring`>>
 <<has entity=`arg` name=`after` params=`takes/cid ~ beside kui`>>
 <<has entity=`arg` name=`lei` params=`takes/cid ~ beside unstring`>>
-<<has entity=`arg` name=`all` params=`~ beside kui: every open face's terms`>>
+<<has entity=`arg` name=`all` params=`kind/switch ~ beside kui: every open face's terms`>>
 <<has entity=`arg` name=`face` params=`takes/index ~ the face whose line this reads or strings, a whole count from 0`>>
 ```
 
@@ -112,6 +112,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;W-OBxoix194EJ60QzOmsKtRGOKmKYl94xrEJu7eNdq4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lqcNruRkWBbtkrdBWZ2-vFg2z0a-T-0Cbg3HTdr8W2M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

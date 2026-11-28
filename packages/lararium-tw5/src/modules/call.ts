@@ -271,33 +271,34 @@ export function resolveCall(reader: CallReader, word: string, params: Readonly<R
 }
 
 /**
- * A TERMINAL'S VALUES ARRIVE AS WORDS (landing 8): on the cli surface each string value turns by its row's `takes/` kind before
- * the bind reads it. `takes/json` parses to the value it spells, `takes/count` to a whole number, `takes/names` splits on commas,
- * and a row naming no `takes/` (a flag: `create`, `family`, `tree`) reads `true` or `false`; every other kind rides as written.
- * A value its kind refuses answers `param-malformed` with the call's cure. The conversion runs here, in the VM, so a layer that
- * re-tables a row's kind moves what a terminal's word means.
+ * A TERMINAL'S VALUES ARRIVE AS WORDS (landing 8): on the cli surface each string value turns by its row's stated kind before the
+ * bind reads it. A row stating `kind/switch` (`create`, `family`, `tree`) reads `true` or `false` alone, and a word there refuses
+ * with the cure `name=true`. A value row turns by its `takes/` shape: `takes/json` parses to the value it spells, `takes/count`
+ * to a whole number, `takes/names` splits on commas, and every other shape rides as written. The kind rides the row as stated
+ * carrier law, never inferred from a missing `takes/`. A value its kind refuses answers `param-malformed` with the call's cure.
+ * The conversion runs here, in the VM, so a layer that re-tables a row's kind moves what a terminal's word means.
  */
 export function cliValuesOf(address: string, word: string, params: Readonly<Record<string, unknown>>, rows: readonly HasRow[]): Record<string, unknown> {
-  const kinds = new Map<string, string>();
-  for (const row of rows) if (!kinds.has(row.name)) kinds.set(row.name, row.params["takes"] ?? "");
+  const kinds = new Map<string, { readonly switch: boolean; readonly shape: string }>();
+  for (const row of rows) if (!kinds.has(row.name)) kinds.set(row.name, { switch: row.params["kind"] === "switch", shape: row.params["takes"] ?? "" });
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(params)) {
     const kind = kinds.get(key);
     if (typeof value !== "string" || kind === undefined) { out[key] = value; continue; }
-    const malformed = (why: string): never => {
+    const malformed = (why: string, cure: string = `<${key}>`): never => {
       const { [key]: _drop, ...rest } = params;
-      throw new CallRefusal("param-malformed", `${bare(address)} reads ${key} as ${why} (got ${JSON.stringify(value)})`, cureCall(word, { ...rest, [key]: `<${key}>` }));
+      throw new CallRefusal("param-malformed", `${bare(address)} reads ${key} as ${why} (got ${JSON.stringify(value)})`, cureCall(word, { ...rest, [key]: cure }));
     };
-    if (kind === "json") {
+    if (kind.switch) {
+      if (value !== "true" && value !== "false") malformed("a switch, true or false", "true");
+      out[key] = value === "true";
+    } else if (kind.shape === "json") {
       try { out[key] = JSON.parse(value); } catch { malformed("JSON (e.g. {\"status\":\"done\"})"); }
-    } else if (kind === "count") {
+    } else if (kind.shape === "count") {
       if (!/^[0-9]+$/.test(value.trim())) malformed("a whole count");
       out[key] = Number(value.trim());
-    } else if (kind === "names") {
+    } else if (kind.shape === "names") {
       out[key] = value.split(",").map((s) => s.trim()).filter((s) => s !== "");
-    } else if (kind === "") {
-      if (value !== "true" && value !== "false") malformed("a flag, true or false");
-      out[key] = value === "true";
     } else out[key] = value;
   }
   return out;

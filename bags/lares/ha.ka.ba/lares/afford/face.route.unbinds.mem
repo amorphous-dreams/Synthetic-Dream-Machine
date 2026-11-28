@@ -39,7 +39,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.route.unbinds"
 ```memetic-wikitext
 <<has entity=`arg` name=`slot-id` params=`takes/slot needs/required seat/1 as/<slot-id> ~ the slot that leaves, as vault status names it`>>
 <<has entity=`arg` name=`face` params=`takes/handle-index ~ unbind from that face's own tree, by persona index`>>
-<<has entity=`arg` name=`rotate` params=`~ move the key itself in the same act`>>
+<<has entity=`arg` name=`rotate` params=`kind/switch ~ move the key itself in the same act`>>
 ```
 
 <<~/ahu>>
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xuY_rc2jmhPlHPncm9QWF3ysXSKnJdtDqSqfuwkn9fY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Q9CtHum73ztYUH64OMiI07LAh4fRZeOn6ALVw5jho_0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

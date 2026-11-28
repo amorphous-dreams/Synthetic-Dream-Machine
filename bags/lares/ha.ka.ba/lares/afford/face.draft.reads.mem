@@ -39,7 +39,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.draft.reads"
 
 ```memetic-wikitext
 <<has entity=`arg` name=`title` params=`takes/title seat/1 as/<title> ~ one title's verified item; absent, the list`>>
-<<has entity=`arg` name=`history` params=`~ every revision of the title; needs a title`>>
+<<has entity=`arg` name=`history` params=`kind/switch ~ every revision of the title; needs a title`>>
 <<has entity=`arg` name=`after` params=`takes/cursor ~ the continuation a list answered; a title refuses list pagination`>>
 <<has entity=`arg` name=`limit` params=`takes/count ~ a positive whole row count for the list page`>>
 <<has entity=`arg` name=`face` params=`takes/handle-index ~ any face inside the lent set, by persona index (a whole number from 0); absent, the worn face`>>
@@ -117,6 +117,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lPKjQrAyXkdJmOtGmmEr1eQ6SAIOMbHQU3nL0_-mbkg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fAc6heCPMKGpKyy0dhIakNKKWHuIaS-NbOtM5qxw_DA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

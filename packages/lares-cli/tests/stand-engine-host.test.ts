@@ -150,15 +150,17 @@ describe("a verb's own process REPORTS the standing to the host shim, and never 
     expect(await standingLine({ ...readers(true), marker: () => { throw new Error("unreadable"); } })).toBe("unread");
   });
 
-  it("RED no word asks for the standing: the entry reads the budget alone, and the retired --standing-report (an older shim's) comes off and changes nothing", async () => {
+  it("RED no word asks for the standing: the entry reads the budget param alone, as name=value", async () => {
     const { takeEntryAsks } = await import("../src/standing-report.js");
-    expect(takeEntryAsks(["get", "title=lar:///x", "--ask-budget-ms=3500"])).toEqual({ argv: ["get", "title=lar:///x"], budgetMs: 3500 });
-    expect(takeEntryAsks(["--ask-budget-ms", "40", "vessel", "read"])).toEqual({ argv: ["vessel", "read"], budgetMs: 40 });
-    expect(takeEntryAsks(["vessel", "read", "--ask-budget-ms=soon"])).toEqual({ argv: ["vessel", "read"], budgetMs: null });
+    expect(takeEntryAsks(["get", "title=lar:///x", "ask-budget-ms=3500"])).toEqual({ argv: ["get", "title=lar:///x"], budgetMs: 3500 });
+    expect(takeEntryAsks(["ask-budget-ms=40", "vessel", "read"])).toEqual({ argv: ["vessel", "read"], budgetMs: 40 });
+    expect(takeEntryAsks(["vessel", "read", "ask-budget-ms=soon"])).toEqual({ argv: ["vessel", "read"], budgetMs: null });
     expect(takeEntryAsks(["vessel", "read", "json=true"])).toEqual({ argv: ["vessel", "read", "json=true"], budgetMs: null });
-    // HOST/IMAGE SKEW BREAKS NO CALL: a shim from before the report still appends the word; the verb never meets it, and the
-    // exit stays the verb's own (that shim then reads a bare 0 and takes its own observe reading).
-    expect(takeEntryAsks(["vessel", "read", "--standing-report"])).toEqual({ argv: ["vessel", "read"], budgetMs: null, retiredAsk: true });
+    // Past a `--` every token rides the verb whole, a budget-shaped one included.
+    expect(takeEntryAsks(["put", "--", "ask-budget-ms=9"])).toEqual({ argv: ["put", "--", "ask-budget-ms=9"], budgetMs: null });
+    // The dash spellings burned: the entry takes neither, and the dispatcher refuses them as every dash flag (dash-flag-burned).
+    expect(takeEntryAsks(["vessel", "read", "--ask-budget-ms=40"])).toEqual({ argv: ["vessel", "read", "--ask-budget-ms=40"], budgetMs: null });
+    expect(takeEntryAsks(["vessel", "read", "--standing-report"])).toEqual({ argv: ["vessel", "read", "--standing-report"], budgetMs: null });
     const mod: Record<string, unknown> = await import("../src/standing-report.js");
     expect(mod["STANDING_REPORT_FLAG"]).toBeUndefined();
     expect(mod["STANDING_EXIT"]).toBeUndefined();

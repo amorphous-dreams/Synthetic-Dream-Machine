@@ -37,7 +37,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.sensorium.purges"
 
 ```memetic-wikitext
 <<has entity=`arg` name=`name` params=`takes/name needs/required seat/1 as/<name> ~ the sensorium named in the manifest`>>
-<<has entity=`arg` name=`approve` params=`~ name the intent`>>
+<<has entity=`arg` name=`approve` params=`kind/switch ~ name the intent`>>
 ```
 
 <<~/ahu>>
@@ -100,6 +100,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;N3PdE-QFDGoQQ3z8t1nvzzsunm3i9r5eKXkXjG16QTg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;au5hUCIRZz7FquEL_DQvqqqiNfsDBAANPdHj4g6VxN8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

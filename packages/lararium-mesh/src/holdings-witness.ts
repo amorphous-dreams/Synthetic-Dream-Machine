@@ -74,6 +74,15 @@ function isCrossroads(bagId: string): boolean {
 }
 
 /**
+ * THE DOOR THAT PLACES A FILE INTO A BAG: `lares ingest`, which takes a file under the bags mirror tree as `source=` and the
+ * bag it lands in as `to=` (its carrier takes no `bag=`), and sends it through the island's INGEST gate under `apply=true`.
+ * The reading holds bag-relative paths alone, so the cure names the mirror root as `<mirror>` for the operator to fill.
+ */
+function ingestCure(bagId: string, path: string): string {
+  return `lares ingest source=<mirror>/${path} to=${bagId} apply=true`;
+}
+
+/**
  * Compare what a vessel holds against what it has declared.
  *
  * Order stays stable — bag by bag, then subject — so two runs on an unchanged vessel read identically and a
@@ -93,7 +102,7 @@ export function witnessHoldings(reading: HoldingsReading): HoldingFinding[] {
           : "held on this vessel, absent from the bag's own index",
         correction: isCrossroads(bagId)
           ? "no verb stands for admitting content to a Nexus crossroads yet — the crossing is a declaring act and waits on one"
-          : `lares ingest --bag ${bagId}`,
+          : ingestCure(bagId, path),
       });
     }
   }
@@ -104,7 +113,7 @@ export function witnessHoldings(reading: HoldingsReading): HoldingFinding[] {
       out.push({
         bagId, kind: "dangling", subject: entry.name,
         reading: "declared here, and its bytes rest in no content store this vessel can reach",
-        correction: `lares ingest --bag ${bagId} — or withdraw the entry; a name that resolves to nothing tells a reader only that something once stood there`,
+        correction: `${ingestCure(bagId, entry.name)} — or withdraw the entry; a name that resolves to nothing tells a reader only that something once stood there`,
       });
     }
   }

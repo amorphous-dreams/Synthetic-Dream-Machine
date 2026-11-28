@@ -39,7 +39,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.disk.logs"
 
 ```memetic-wikitext
 <<has entity=`arg` name=`kind` params=`takes/kind ~ one kind of record`>>
-<<has entity=`arg` name=`held` params=`~ the unacknowledged records`>>
+<<has entity=`arg` name=`held` params=`kind/switch ~ the unacknowledged records`>>
 <<has entity=`arg` name=`boot` params=`takes/boot-id ~ one boot's ring`>>
 ```
 
@@ -91,6 +91,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;I4n3fnuVpN-SwB4_N2uMSbV7xKAIbzgTjciWIrXkHKI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0gnNBs83omltk3j9-45ZA7L4QgLs97mWQvWAXEpsufE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

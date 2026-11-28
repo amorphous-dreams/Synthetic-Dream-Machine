@@ -42,8 +42,8 @@ The pack path derives from the file's mirror-relative address plus its extension
 <<has entity=`arg` name=`source` params=`takes/file needs/required ~ the disk bundle (.json or .multids) whose pack the island collects`>>
 <<has entity=`arg` name=`from` params=`takes/bag-uri needs/required ~ the bag holding the pack's members, whose aside provenance names them`>>
 <<has entity=`arg` name=`out` params=`takes/file ~ where the re-rendered bundle lands; defaults to the source`>>
-<<has entity=`arg` name=`in-wiki` params=`~ run the act in the active wiki's island`>>
-<<has entity=`arg` name=`yes` params=`~ the intent a call off a terminal names in place of the y/N a terminal asks`>>
+<<has entity=`arg` name=`in-wiki` params=`kind/switch ~ run the act in the active wiki's island`>>
+<<has entity=`arg` name=`yes` params=`kind/switch ~ the intent a call off a terminal names in place of the y/N a terminal asks`>>
 ```
 
 <<~/ahu>>
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;93RfKzuoJkSGQmXvME-I7FqQXyjdykfxObMBvXCwT4o`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TFB7FIZpVBuO-pu_0AF9TcOXwAVeJ8SmgKD3Cw6l1gg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

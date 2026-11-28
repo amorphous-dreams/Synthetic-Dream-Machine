@@ -1177,7 +1177,7 @@ prune_rev_tags() {
 # already inside a held run (a kukulu run under tools/floor-run.mjs) runs on: tools/floor-lock.mjs reads an ancestor's lock
 # off the kernel's table. With no host node to read the table or the headroom, it takes its run lock unread. After each build
 # the build CACHE prunes (`docker builder prune --all`): cache only, never an image, so the kept revision tags still back
-# `lares rite kukulu rollback=true`.
+# `lares rite kukulu rollback=` (the image before) and `rollback=<rev>`.
 FLOOR_TAKEN=""
 FLOOR_RUN=""
 floor_take() {

@@ -881,7 +881,7 @@ async function sealImport(args: ParsedArgs): Promise<number> {
 async function sealImportCarry(args: ParsedArgs, from: string): Promise<number> {
   let raw: string;
   try { raw = readFileSync(from, "utf8"); }
-  catch { console.error(`lares nexus seal import carry=true: cannot read ${from}`); return 4; }
+  catch { console.error(`lares nexus seal import carry=${from}: cannot read it`); return 4; }
   try {
     const r = importCarriedCharter(larSealHome(), raw);
     // H2: the carried set just grew beside the seal home, never on this vessel's Repo — poke a standing
@@ -903,7 +903,7 @@ async function sealImportCarry(args: ParsedArgs, from: string): Promise<number> 
   } catch (err) {
     if (!(err instanceof CarriedCharterError)) throw err;
     emit(args, { ok: false, error: { code: "refused", message: err.message },
-                 data: { from }, human: () => console.error(`lares nexus seal import carry=true: ${err.message}`) });
+                 data: { from }, human: () => console.error(`lares nexus seal import carry=${from}: ${err.message}`) });
     return 3;
   }
 }

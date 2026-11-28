@@ -41,7 +41,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.intent.issues"
 <<has entity=`arg` name=`to` params=`takes/atom ~ pin the audience to one atom`>>
 <<has entity=`arg` name=`prefer` params=`takes/atom ~ name a preferred executor`>>
 <<has entity=`arg` name=`class` params=`takes/class ~ address a class of executors`>>
-<<has entity=`arg` name=`every` params=`~ address every holder`>>
+<<has entity=`arg` name=`every` params=`kind/switch ~ address every holder`>>
 <<has entity=`arg` name=`void-at` params=`takes/cite ~ the intent voids at this point`>>
 <<has entity=`arg` name=`through` params=`takes/cite ~ the intent stands through this point`>>
 <<has entity=`arg` name=`nonce` params=`takes/hex ~ the nonce; an idempotent verb takes the empty one`>>
@@ -114,6 +114,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EbKp_fEKATHYl2sZ6o4KszQtKJXoqXpnfo6g93lOYKE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8Pi42Z2Ac9jU-KXMUjA-8_WOcspRjcnsHzBksCVSzq4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

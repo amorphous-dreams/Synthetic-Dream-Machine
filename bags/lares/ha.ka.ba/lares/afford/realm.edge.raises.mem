@@ -42,8 +42,8 @@ uri-path  = "ha.ka.ba/lares/afford/realm.edge.raises"
 <<has entity=`arg` name=`member` params=`takes/key ~ a member's place in the realm`>>
 <<has entity=`arg` name=`device` params=`takes/key ~ one device's relationship`>>
 <<has entity=`arg` name=`realm` params=`takes/id ~ the realm the relationship rides`>>
-<<has entity=`arg` name=`quorum` params=`~ sign with the seat quorum this vessel holds`>>
-<<has entity=`arg` name=`partial` params=`~ with --quorum: sign the seats held here and print a partial`>>
+<<has entity=`arg` name=`quorum` params=`kind/switch ~ sign with the seat quorum this vessel holds`>>
+<<has entity=`arg` name=`partial` params=`kind/switch ~ with quorum=true: sign the seats held here and print a partial`>>
 <<has entity=`arg` name=`voucher` params=`takes/key ~ partial: the vouch's voucher`>>
 <<has entity=`arg` name=`joiner` params=`takes/key ~ partial: the vouch's joiner`>>
 <<has entity=`arg` name=`as` params=`takes/index ~ the persona root that signs`>>
@@ -115,6 +115,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-2whdu05e6xrScIdRKUBLGVGT4EVjQV5gzXVwCLZ77s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SAS8rR_JWkdNQmVXAb4pnLSkLwgkhnN8Ed6Q7U9JxFg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

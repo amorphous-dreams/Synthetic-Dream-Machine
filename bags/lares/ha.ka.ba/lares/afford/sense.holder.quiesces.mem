@@ -37,7 +37,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.holder.quiesces"
 !! takes ~ hold · sensorium-root
 
 ```memetic-wikitext
-<<has entity=`arg` name=`hold` params=`~ keep the hooks paused after the drain`>>
+<<has entity=`arg` name=`hold` params=`kind/switch ~ keep the hooks paused after the drain`>>
 <<has entity=`arg` name=`sensorium-root` params=`takes/host-path ~ the sensorium's root; the leading sensorium name threads it, absent the memory sensorium`>>
 ```
 
@@ -100,6 +100,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4pkbs9RWMEcsf4lIcqUJtupHUck53PSM8JUSuiLAALM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vcYaBl0hcFragSHz_xzyWFAiW4GAzRL6BJJe_ctxGWA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

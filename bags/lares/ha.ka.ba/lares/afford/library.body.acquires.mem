@@ -43,7 +43,7 @@ uri-path  = "ha.ka.ba/lares/afford/library.body.acquires"
 <<has entity=`arg` name=`licence` params=`takes/words ~ the licence it travels under`>>
 <<has entity=`arg` name=`license` params=`takes/words ~ the same licence, the other spelling`>>
 <<has entity=`arg` name=`note` params=`takes/words ~ a note on the entry`>>
-<<has entity=`arg` name=`keep` params=`~ copy the body and leave the source standing`>>
+<<has entity=`arg` name=`keep` params=`kind/switch ~ copy the body and leave the source standing`>>
 ```
 
 <<~/ahu>>
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qBDNwcv-Ieff7wmQPATFD87SbH-n-d1JR0WhgptylkA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1tRBHwNSg9E9y2W7TenUbt8zSbUcIDS8NhzryM3PO0o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

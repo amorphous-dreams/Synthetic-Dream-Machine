@@ -28,7 +28,7 @@ import { parseArgs, ArgsError, GLOBAL_PARAMS, isCallWord, type ParsedArgs } from
 import { CustodyLocked, CustodyRecordUnavailable, SealedActRefused } from "@lararium/node";
 import { bridge, commandScope, shimHelpLines, HOUSE_ABSENT_EXIT } from "../host-bridge.js";
 import { armAskBudget } from "../local-connector.js";
-import { ASK_BUDGET_FLAG } from "../ask-budget.js";
+import { ASK_BUDGET_PARAM } from "../ask-budget.js";
 import { reportStanding, takeEntryAsks } from "../standing-report.js";
 import { seatOfflineCustody, OfflineCustodyRefused } from "../offline-custody.js";
 import { seatNewFaceRoute } from "../face-route-prompt.js";
@@ -218,24 +218,78 @@ function carrierTakes(address: string): string[] {
   return (affordancePack().carriers[address]?.takes["cli"] ?? []).map(takeName).filter(Boolean);
 }
 
+/** The kind each param one carrier takes on the terminal states, by bare name: `switch`, or the value shape it names. */
+function carrierKinds(address: string): Map<string, string> {
+  const kinds = affordancePack().carriers[address]?.kinds?.["cli"] ?? {};
+  return new Map(Object.entries(kinds).map(([spell, kind]) => [takeName(spell), kind]));
+}
+
 /** THE PARAMS A DOOR TAKES: the union of its carriers' cli `#/takes` (the baked pack), so the carriers hold the one list. */
 export function doorTakes(door: string): readonly string[] {
   return [...new Set((packDoor(door)?.addresses ?? []).flatMap(carrierTakes))];
 }
 
 /**
- * THE PARAMS THIS LINE TAKES: the carrier the line's leading words route to (`vessel request`, `persona raise-sign`), so a
- * sibling verb's param never rides a verb that ignores it; a line whose words route to no carrier of the door takes the
- * door's union.
+ * THE CARRIERS THIS LINE BINDS AGAINST: the one its leading words route to (`vessel request`, `persona raise-sign`), so a
+ * sibling verb's param never rides a verb that ignores it; a line whose words route to no carrier of the door binds against
+ * every carrier of the door.
  */
-export function lineTakes(cmd: Command, args: ParsedArgs): readonly string[] {
+function lineAddresses(cmd: Command, args: ParsedArgs): readonly string[] {
   const words = [cmd.name, ...args.positional];
   const own = packDoor(cmd.name)?.addresses ?? [];
   for (let n = words.length; n > 0; n--) {
     const address = packRoute("cli", words.slice(0, n).join(" "));
-    if (address !== undefined && own.includes(address)) return carrierTakes(address);
+    if (address !== undefined && own.includes(address)) return [address];
   }
-  return doorTakes(cmd.name);
+  return own;
+}
+
+/** THE PARAMS THIS LINE TAKES: its carriers' cli `#/takes` (`lineAddresses`). */
+export function lineTakes(cmd: Command, args: ParsedArgs): readonly string[] {
+  return [...new Set(lineAddresses(cmd, args).flatMap(carrierTakes))];
+}
+
+/** One param whose value its stated kind refuses, with the token that cures it. */
+export interface KindMismatch { readonly name: string; readonly kind: "switch" | "value"; readonly given: string; readonly cure: string }
+
+/**
+ * THE KIND RIDES THE CARRIER (comms-ux-enacts landing 24c): each `#/takes` row states `kind/switch` (true or false alone) or
+ * takes a value, and the pack carries each kind (`kinds`). A switch given a word (`rotate=abc`) would land in `args.options`,
+ * where its handler never looks, and a value given `true` would land in `args.flags`, where its handler never looks either; so
+ * each refuses by name before anything runs, with the token that cures it. A name counts as a switch where every carrier of the
+ * line taking it states one, and as a value where none does; a name the carriers split on passes, and the handler reads it.
+ * The global params all ride as switches (`json=true`).
+ */
+export function kindMismatches(cmd: Command, args: ParsedArgs): KindMismatch[] {
+  if (cmd.passesThrough?.(args) === true) return [];
+  const switches = new Set<string>(GLOBAL_PARAMS);
+  const shapes = new Map<string, string>();
+  for (const address of lineAddresses(cmd, args)) {
+    for (const [name, kind] of carrierKinds(address)) {
+      if (kind === "switch") switches.add(name);
+      else if (!shapes.has(name)) shapes.set(name, kind);
+    }
+  }
+  const out: KindMismatch[] = [];
+  for (const [name, given] of Object.entries(args.options)) {
+    if (switches.has(name) && !shapes.has(name)) out.push({ name, kind: "switch", given, cure: `${name}=true` });
+  }
+  for (const [name, given] of Object.entries(args.flags)) {
+    const shape = switches.has(name) ? undefined : shapes.get(name);
+    if (shape !== undefined) out.push({ name, kind: "value", given: String(given), cure: `${name}=<${shape}>` });
+  }
+  return out;
+}
+
+/** The caller's own line with one param's tokens turned to its cure: the first token of that name takes it, and a repeat drops. */
+export function curedLine(argv: readonly string[], name: string, cure: string): string {
+  let cured = false;
+  return argv.flatMap((tok) => {
+    if (!tok.startsWith(`${name}=`)) return [tok];
+    if (cured) return [];
+    cured = true;
+    return [cure];
+  }).join(" ");
 }
 
 /**
@@ -519,6 +573,18 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
     console.error(`Run \`lares help ${[cmd.name, ...args.positional.slice(0, 1)].join(" ")}\` for the params it takes.`);
     return 2;
   }
+  // A param its stated kind refuses (a switch given a word, a value given true or false) refuses BY NAME, before anything runs,
+  // and the cure rewrites the caller's own line with the one token turned.
+  const mismatched = kindMismatches(cmd, args);
+  if (mismatched.length > 0) {
+    for (const { name, kind, given, cure } of mismatched) {
+      const line = curedLine(argv, name, cure);
+      console.error(kind === "switch"
+        ? `lares: ${name}= names a switch for \`lares ${cmd.name}\`, true or false alone; ${JSON.stringify(given)} names neither: run \`lares ${line}\``
+        : `lares: ${name}= takes a value for \`lares ${cmd.name}\`, never ${given} alone: run \`lares ${line}\``);
+    }
+    return 2;
+  }
   // Fresh-Build Invariant — a daemon-lifecycle verb (found/boot/mutate-identity) never runs
   // from stale dist: build the workspace, then re-exec this command in a fresh process.
   if (needsFreshBuild(args)) {
@@ -592,14 +658,14 @@ async function drainStdout(): Promise<void> {
 
 /**
  * ONE WORD RIDES THE ARGV INTO THIS ENTRY, and the entry takes it off before any verb reads it (`takeEntryAsks`), so no
- * verb's parser meets it and no child a verb spawns inherits it: a caller's declared budget (`--ask-budget-ms=<N>`) bounds
+ * verb's parser meets it and no child a verb spawns inherits it: a caller's declared budget (`ask-budget-ms=<N>`) bounds
  * this process's own wait (`armAskBudget`: the verb's answer disarms it, and a budget that runs out first leaves at once,
  * since nothing answered and so nothing waits to drain). THE STANDING RIDES NO WORD AND NO EXIT CODE: a verb that succeeded
  * under a shim's exec tag REPORTS the standing verdict into the house's config bind as it leaves (`reportStanding`), and
  * the exit code stays the verb's own, so one process serves one call and no caller reads a changed code.
  */
 export function runCli(): void {
-  const { argv, budgetMs, retiredAsk } = takeEntryAsks(process.argv.slice(2));
+  const { argv, budgetMs } = takeEntryAsks(process.argv.slice(2));
   const disarm = armAskBudget(budgetMs);
   // A KEYWORD LINE ROUTES AS THE LINE IT READS: the host reads it once (its set line echoed here), and the line it runs crosses the
   // bridge, so `lares rite=kukulu` stands where `lares rite kukulu` stands and `lares get=<title>` forwards into the vessel.
@@ -613,9 +679,8 @@ export function runCli(): void {
       try { await drainStdout(); }
       catch (err) { console.error(err); process.exitCode = 1; return; }
       process.exitCode = code;
-      // A forwarded call reports nothing here (the shim's exec ran the verb, and that process reports); a call carrying the
-      // retired ask comes from a shim that reads no report, so none gets written for it.
-      if (!retiredAsk) await reportStanding(code);
+      // A forwarded call reports nothing here (the shim's exec ran the verb, and that process reports).
+      await reportStanding(code);
     },
     (err)  => { disarm?.(); console.error(crashReading(err)); process.exitCode = houseRootUnnamed(err) ? HOUSE_ABSENT_EXIT : 1; },
   );
@@ -625,7 +690,7 @@ export function runCli(): void {
  * A FORWARDED CALL KEEPS ITS BUDGET (the process that reaches the vessel leaves under it too).
  */
 function forwardedArgv(argv: string[], budgetMs: number | null): string[] {
-  return budgetMs === null ? argv : [...argv, `${ASK_BUDGET_FLAG}=${budgetMs}`];
+  return budgetMs === null ? argv : [...argv, `${ASK_BUDGET_PARAM}=${budgetMs}`];
 }
 
 /** By name: the node and the mempalace packages each raise their own HouseRootUnnamed class. */

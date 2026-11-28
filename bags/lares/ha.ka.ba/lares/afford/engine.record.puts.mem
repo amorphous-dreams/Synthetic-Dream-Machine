@@ -75,7 +75,7 @@ The fences refuse by name: a family's `type` and carriage fields derive from its
 <<has entity=`arg` name=`cut-slot` params=`takes/slots ~ the slots that leave, each a rooted path #/name; absence never cuts`>>
 <<has entity=`arg` name=`slot` params=`takes/slot-path ~ folds into the title as <root>#/x`>>
 <<has entity=`arg` name=`base` params=`takes/hash ~ the hash last read; a stale one answers conflict and nothing lands`>>
-<<has entity=`arg` name=`create` params=`~ land only where no record stands, a family's root included`>>
+<<has entity=`arg` name=`create` params=`kind/switch ~ land only where no record stands, a family's root included`>>
 ```
 
 <<~/ahu>>
@@ -181,6 +181,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;G-jos3eIv5E1kasdhOCpKd-tLCpaG19666THbIupEuc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lOx6UPu0LC3JZaQZDYZUrsSJggipFkm8dR577QLk85E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

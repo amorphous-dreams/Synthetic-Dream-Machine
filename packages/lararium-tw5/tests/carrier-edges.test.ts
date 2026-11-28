@@ -84,7 +84,7 @@ describe("carrier-edges — every address a carrier points at", () => {
    * A rise is only allowed to be absorbed here for the second reason, and only with the cause named;
    * absorbing the first one silently is how a ceiling stops measuring anything.
    *
-   * TWO READERS, ONE CORPUS WHEN THEY AGREE: `lares meme check edges=$(git ls-files 'bags/*.mem')`
+   * TWO READERS, ONE CORPUS WHEN THEY AGREE: `lares meme check edges=true $(git ls-files 'bags/*.mem')`
    * reads over `bags/` alone; this test walks `carrierFiles` — every declared carrier, tiddlers and
    * memory included — and can read higher when a tiddler outside `bags/` carries edges the CLI never
    * sees. The ceiling here is THIS reader's number, lowered to match the CLI's whenever nothing

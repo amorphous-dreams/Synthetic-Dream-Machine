@@ -38,7 +38,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.handle.burns"
 
 ```memetic-wikitext
 <<has entity=`arg` name=`persona` params=`takes/index ~ the persona whose Handle acts; absent, the store door's default`>>
-<<has entity=`arg` name=`from-persona` params=`~ the persona burns it from above, an owner-burn`>>
+<<has entity=`arg` name=`from-persona` params=`kind/switch ~ the persona burns it from above, an owner-burn`>>
 ```
 
 <<~/ahu>>
@@ -100,6 +100,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GNov_y-hKhJAA1hBPdnYe_a5nQlYnCGNckEXuZ0i_Kk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MEwQyNWCKpI9ZqIY3RvuGczZctBdzU0U3ZK3RGLxT-4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

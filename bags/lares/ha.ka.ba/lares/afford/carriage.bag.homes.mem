@@ -42,7 +42,7 @@ The move relocates an operator's bytes across a boundary that matters (into a tr
 <<has entity=`arg` name=`bag` params=`takes/slug needs/required seat/1 as/<bag> ~ the bag to move`>>
 <<has entity=`arg` name=`to` params=`takes/home needs/required ~ the home the bag moves to`>>
 <<has entity=`arg` name=`repo` params=`takes/repo-id ~ a registered repo's id, where the home reads repository`>>
-<<has entity=`arg` name=`approve` params=`~ perform the move; absent, only the plan prints`>>
+<<has entity=`arg` name=`approve` params=`kind/switch ~ perform the move; absent, only the plan prints`>>
 ```
 
 <<~/ahu>>
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;LhRzcCEz5baAwMEgJs4JVgt4S4J73Q_nKizBimxA114`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dp9kvcMrtilcbMdfZZbjXTnmqanadnsdUqgNDmEHsFs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

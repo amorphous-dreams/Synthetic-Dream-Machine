@@ -38,8 +38,8 @@ uri-path  = "ha.ka.ba/lares/afford/realm.steward.seals"
 ```memetic-wikitext
 <<has entity=`arg` name=`bag` params=`takes/uri needs/required seat/1 as/<bag-uri> ~ the realm bag`>>
 <<has entity=`arg` name=`realm` params=`takes/id ~ a cabal realm (64 hex); absent, the charter-derived realm`>>
-<<has entity=`arg` name=`join` params=`~ ask to keep a bag another hand keeps`>>
-<<has entity=`arg` name=`cosign` params=`~ consent to a record naming this vessel's steward`>>
+<<has entity=`arg` name=`join` params=`kind/switch ~ ask to keep a bag another hand keeps`>>
+<<has entity=`arg` name=`cosign` params=`kind/switch ~ consent to a record naming this vessel's steward`>>
 <<has entity=`arg` name=`with` params=`takes/key ~ beside cosign, the key consented with`>>
 <<has entity=`arg` name=`steward` params=`takes/list ~ hands that already sealed a record of this realm`>>
 <<has entity=`arg` name=`tier` params=`takes/word ~ the bag's tier`>>
@@ -111,6 +111,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SG_QYSCQucBIeFl9upG27YaqZ9x2xbKBfPGSKvg5Z9Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HWyUbGDhPKOoVYeMy1zciidS5oQn8mvp_PXCyDLR3vY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

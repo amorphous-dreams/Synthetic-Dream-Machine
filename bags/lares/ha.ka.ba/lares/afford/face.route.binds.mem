@@ -38,8 +38,8 @@ uri-path  = "ha.ka.ba/lares/afford/face.route.binds"
 
 ```memetic-wikitext
 <<has entity=`arg` name=`face` params=`takes/handle-index ~ bind into that face's own tree, by persona index`>>
-<<has entity=`arg` name=`passphrase` params=`needs/one-of:passphrase,paper ~ the new slot opens by passphrase (the default)`>>
-<<has entity=`arg` name=`paper` params=`needs/one-of:passphrase,paper ~ the new slot opens by a paper sheet`>>
+<<has entity=`arg` name=`passphrase` params=`kind/switch needs/one-of:passphrase,paper ~ the new slot opens by passphrase (the default)`>>
+<<has entity=`arg` name=`paper` params=`kind/switch needs/one-of:passphrase,paper ~ the new slot opens by a paper sheet`>>
 ```
 
 <<~/ahu>>
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;PxUkE5jz9GOr8Ri_2eKNfEz4xfeWTwK9LTpkyFRr6eU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;H7T-I63qQIy3AC-Bd_7LE9RYKXpq75-EfrXqOgWMSRU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

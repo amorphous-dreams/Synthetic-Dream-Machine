@@ -38,7 +38,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.checkout.tends"
 
 ```memetic-wikitext
 <<has entity=`arg` name=`root` params=`takes/dir ~ the checkout this door keeps; absent, the checkout the CLI lives in`>>
-<<has entity=`arg` name=`force` params=`~ take a foreign target too; the ledger keeps its bytes`>>
+<<has entity=`arg` name=`force` params=`kind/switch ~ take a foreign target too; the ledger keeps its bytes`>>
 ```
 
 <<~/ahu>>
@@ -105,6 +105,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4a9gcolnDeQy1AwziHbf4QrUcw7SDiOE9RIGqLoVS38`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mHyzHJCKhB885sAcaiZUXVOlOT_POrrWqBKvKXq-Fuo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

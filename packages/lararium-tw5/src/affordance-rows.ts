@@ -235,6 +235,9 @@ export function seatOf(row: HasRow): Seat | null {
   return row.entity === "arg" && Number.isInteger(n) && n > 0 ? { seat: n, as: row.params["as"] ?? `<${row.name}>`, lead: row.params["lead"] ?? "" } : null;
 }
 
+/** True where an arg row states `kind/switch` (it takes `true` or `false` alone); every other arg takes a value. */
+export const switchOf = (row: HasRow): boolean => row.entity === "arg" && row.params["kind"] === "switch";
+
 /** The seats of every positional arg among a slot's rows, by neutral name. */
 export function seatsOf(rows: readonly HasRow[]): Map<string, Seat> {
   const out = new Map<string, Seat>();
@@ -351,9 +354,9 @@ export function usageOf(surface: AffordSurface, spells: string, takes: readonly 
       const own = surface === "cli" && !called ? seatOf(r) : null;
       if (own !== null) return own.as;
       const flag = spellArg(surface, r.name, skin);
-      const value = r.params["takes"];
-      if (surface === "cli") return `${flag}=<${value ?? "true"}>`;
-      return value ? `${flag}=<${value}>` : flag;
+      // THE ROW STATES ITS KIND: a switch spells `<true>` on the cli and stands bare elsewhere; a value spells its `takes/` shape.
+      if (switchOf(r)) return surface === "cli" ? `${flag}=<true>` : flag;
+      return `${flag}=<${r.params["takes"] ?? "value"}>`;
     };
     const choice = oneOf(row);
     if (choice !== null) {

@@ -691,8 +691,6 @@ async function vaultUnbindFace(args: ParsedArgs, homes: CustodyHomes, io: FsCust
 async function vaultUnbind(args: ParsedArgs): Promise<number> {
   const slotId = args.positional[1];
   if (!slotId) throw new UsageError("unbind needs a slot id: `lares vault unbind <slot-id> [rotate=true]` (ids print under `lares vault status`; rotate=true takes no value and stands before or after the id)");
-  // ROTATE NAMES A SWITCH: a word in its value never reads as the switch, so it refuses here instead of unbinding unrotated.
-  if (args.options["rotate"] !== undefined) throw new UsageError(`rotate= names a switch: run \`lares vault unbind ${slotId} rotate=true\` (or leave it out to keep the key); "${args.options["rotate"]}" names neither true nor false`);
   const rotate = args.flags["rotate"] === true;
   const homes = custodyHomes();
   const io = new FsCustodyIo(homes);

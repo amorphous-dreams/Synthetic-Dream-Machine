@@ -48,9 +48,9 @@ The row writes through to `$LAR_ROOT/config/share.tid` (it survives a re-foundin
 <<has entity=`arg` name=`write-remove` params=`takes/names ~ face pet-names taken out of the writers`>>
 <<has entity=`arg` name=`note` params=`takes/words ~ why the row stands`>>
 <<has entity=`arg` name=`face` params=`takes/handle-index ~ add face N to the readers, by its handle index`>>
-<<has entity=`arg` name=`list` params=`~ show every row and the resolver's answer per bag`>>
-<<has entity=`arg` name=`remove` params=`~ unshare: the row leaves the file and the control document`>>
-<<has entity=`arg` name=`workspace` params=`~ refused on a bag (a wiki's workbench rests there); a bag takes none`>>
+<<has entity=`arg` name=`list` params=`kind/switch ~ show every row and the resolver's answer per bag`>>
+<<has entity=`arg` name=`remove` params=`kind/switch ~ unshare: the row leaves the file and the control document`>>
+<<has entity=`arg` name=`workspace` params=`takes/name ~ refused on a bag (a wiki's workbench rests there); a bag takes none`>>
 ```
 
 <<~/ahu>>
@@ -115,6 +115,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3QeOsutzEQ3PZodoTqNSlUDDFCd7Q1n_1vWW9lCsD40`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6J7w-9z1Ple7r-YQKv5jgh4RTrUgjM1VahDTNz8aVK0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -40,11 +40,11 @@ A terminal asks `Proceed? [y/N]`; a JSON call off a terminal needs `yes=true`. `
 
 ```memetic-wikitext
 <<has entity=`arg` name=`uri` params=`takes/lar-address seat/1 as/<uri>… ~ one or more carriers a pending removal names`>>
-<<has entity=`arg` name=`all` params=`~ every pending row of the named bag; rides --count`>>
+<<has entity=`arg` name=`all` params=`kind/switch ~ every pending row of the named bag; rides count=`>>
 <<has entity=`arg` name=`count` params=`takes/number ~ the count that stands pending, read from lares shore; an answer over more than one carrier names it`>>
 <<has entity=`arg` name=`bag` params=`takes/bag-uri ~ narrow to one bag`>>
 <<has entity=`arg` name=`face` params=`takes/handle-index ~ a lit sibling's shore, by handle index`>>
-<<has entity=`arg` name=`yes` params=`~ name the intent for a call off a terminal; approves nothing by itself`>>
+<<has entity=`arg` name=`yes` params=`kind/switch ~ name the intent for a call off a terminal; approves nothing by itself`>>
 ```
 
 <<~/ahu>>
@@ -110,6 +110,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;tommSgr1zL0qAN1cwuabNeMGasALgQ-9mq7b3kRcM7I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vVuR5Kj4HGPS0TOakl6avmD5Oup0Ka9HPZhq5o5D4pE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

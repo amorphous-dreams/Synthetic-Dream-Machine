@@ -39,7 +39,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.custody.unlocks"
 
 ```memetic-wikitext
 <<has entity=`arg` name=`face` params=`takes/handle-index ~ the face to open under its own route, by persona index`>>
-<<has entity=`arg` name=`all` params=`~ open every face the gathered routes open`>>
+<<has entity=`arg` name=`all` params=`kind/switch ~ open every face the gathered routes open`>>
 ```
 
 <<~/ahu>>
@@ -116,6 +116,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TaGxQLd9zGXKFDxhBiLv0OgSb33KnLHoAnHfJrvP73k`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nbSpZfQgEhGtjkw5SlF9P8rEWELr4qYzJH0qyIP0x1E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

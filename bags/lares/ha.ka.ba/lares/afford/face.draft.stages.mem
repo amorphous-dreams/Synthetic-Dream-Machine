@@ -41,7 +41,7 @@ The answer is {title, digest, relation, staged}. `digest` names the ROW digest (
 
 ```memetic-wikitext
 <<has entity=`arg` name=`title` params=`takes/title needs/required seat/1 as/<title> ~ the row's title`>>
-<<has entity=`arg` name=`text` params=`takes/body ~ the row's whole body; the terminal names it by --text or --file (one of them), the seat's tool by text`>>
+<<has entity=`arg` name=`text` params=`takes/body ~ the row's whole body; the terminal names it by text= or file= (one of them), the seat's tool by text`>>
 <<has entity=`arg` name=`file` params=`takes/path skins/cli ~ the terminal's other way to name the body: a file the door reads`>>
 <<has entity=`arg` name=`fields` params=`takes/json-object ~ the row's string-valued fields (an object of strings on the seat, JSON on the terminal); 'title', 'text' and any 'kahua-' field never ride`>>
 <<has entity=`arg` name=`face` params=`takes/handle-index ~ any face inside the lent set, by persona index (a whole number from 0); absent, the worn face; a face outside the set refuses 'face-not-lent', a shut one 'face-not-open'`>>
@@ -121,6 +121,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9Debz-JajCO9IfDjuos6dX3jVkIgLDFRYXiVgP0UOmw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fhPx6RIvcYXZSXCba2WPj-yj-85_FKmgM3mTrKWEbEE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

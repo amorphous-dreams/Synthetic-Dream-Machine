@@ -40,8 +40,8 @@ uri-path  = "ha.ka.ba/lares/afford/realm.release.publishes"
 <<has entity=`arg` name=`file` params=`takes/host-path needs/required seat/1 as/<manifest-file> ~ the manifest`>>
 <<has entity=`arg` name=`approval` params=`takes/host-path ~ the seats' approval file`>>
 <<has entity=`arg` name=`nexus` params=`takes/aid ~ the Nexus, by AID; absent, the primary charter's`>>
-<<has entity=`arg` name=`cut` params=`~ cut a release manifest`>>
-<<has entity=`arg` name=`thin` params=`takes/list ~ beside --cut, what the manifest leaves out`>>
+<<has entity=`arg` name=`cut` params=`kind/switch ~ cut a release manifest`>>
+<<has entity=`arg` name=`thin` params=`takes/list ~ beside cut=true, what the manifest leaves out`>>
 ```
 
 <<~/ahu>>
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;pMavnKdfTtKTZryoPBJDndeZ9HvGsqml-D5mWnSfois`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;G8ZamtxNX-qVzl9tTiSdYYfnocykEr2JMl2pPcXW2Hk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

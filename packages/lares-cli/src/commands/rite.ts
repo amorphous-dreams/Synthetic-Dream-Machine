@@ -691,7 +691,8 @@ export function rollbackOf(args: ParsedArgs): { readonly rollback?: true | strin
     if (!/^[A-Za-z0-9._/@^~][A-Za-z0-9._/@^~-]*$/.test(word)) throw new RiteUsage("rollback= takes a revision (a commit, or a kept image's 12 hex), or nothing for the image that ran before");
     return { rollback: word };
   }
-  return args.flags["rollback"] === true || word === "" ? { rollback: true } : {};
+  // `rollback` takes a value (its carrier states no `kind/switch`), so `rollback=true` refuses at the dispatcher; the empty word names the image before.
+  return word === "" ? { rollback: true } : {};
 }
 
 export async function cmdRite(args: ParsedArgs): Promise<number> {

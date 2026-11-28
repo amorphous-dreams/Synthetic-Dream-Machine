@@ -39,7 +39,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.antigen.raises"
 ```memetic-wikitext
 <<has entity=`arg` name=`nym` params=`takes/nym seat/1 as/<nym> ~ the presenter set aside`>>
 <<has entity=`arg` name=`reason` params=`takes/words ~ why`>>
-<<has entity=`arg` name=`list` params=`~ fold the currently-kāpae'd set`>>
+<<has entity=`arg` name=`list` params=`kind/switch ~ fold the currently-kāpae'd set`>>
 <<has entity=`arg` name=`nexus` params=`takes/aid ~ the Nexus, by AID; absent, the primary charter's`>>
 <<has entity=`arg` name=`out` params=`takes/host-path ~ write the partial for the next vault`>>
 <<has entity=`arg` name=`from` params=`takes/host-path ~ judge and cosign a partial another vault wrote`>>
@@ -109,6 +109,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GyGjH5E-fyD0OQ30x3wS5khlYy1A-G_0H9X_i3Gw3O4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1vlVLCIHB-Kz5uXwrECsUjqdaJyIqICgSK0LnLoCEO4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

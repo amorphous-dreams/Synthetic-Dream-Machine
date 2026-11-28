@@ -42,8 +42,8 @@ Every wiki wears promotion capability; its edge holds (face, wiki, digest). The 
 <<has entity=`arg` name=`digest` params=`takes/hex64 needs/required seat/1 as/<digest> ~ the promotion's digest, 64 lowercase hex`>>
 <<has entity=`arg` name=`wiki` params=`takes/wiki-name ~ the wiki the promotion belongs to; absent, the daemon wiki`>>
 <<has entity=`arg` name=`face` params=`takes/handle-index ~ which face's promotion plane this call reads or acts on, by persona index (a whole number from 0)`>>
-<<has entity=`arg` name=`keep` params=`~ keep the orphan standing`>>
-<<has entity=`arg` name=`drop` params=`~ drop the orphan`>>
+<<has entity=`arg` name=`keep` params=`kind/switch ~ keep the orphan standing`>>
+<<has entity=`arg` name=`drop` params=`kind/switch ~ drop the orphan`>>
 ```
 
 <<~/ahu>>
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;XLa_fBw4pKQbiBek_5AUZKUlyFEvBvl2tYdZTE_FZPI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jl-aLEjMQjD_zUCEUrJBSTXnaR_ccA-FB2limmJUaT4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

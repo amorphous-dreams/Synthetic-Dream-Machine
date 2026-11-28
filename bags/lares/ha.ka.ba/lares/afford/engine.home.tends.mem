@@ -38,7 +38,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.home.tends"
 
 ```memetic-wikitext
 <<has entity=`arg` name=`familiar` params=`takes/pet-name ~ the familiar whose hooks a home tend seats; absent, the one already seated stands`>>
-<<has entity=`arg` name=`force` params=`~ take a foreign target too; the ledger keeps its bytes`>>
+<<has entity=`arg` name=`force` params=`kind/switch ~ take a foreign target too; the ledger keeps its bytes`>>
 ```
 
 <<~/ahu>>
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;giJGAhfjWC-gigGLqH1fH8DI_yh21ijQdUb5xShjCps`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JrSnUvh70NPrmd_aGOH71ituMxlachNAMrRCIe62Pms`>>
 
 <<^ code=`&#x0004;` to=`?`>>

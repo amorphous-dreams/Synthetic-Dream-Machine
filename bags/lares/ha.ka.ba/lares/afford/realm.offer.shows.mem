@@ -30,7 +30,7 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 ```memetic-wikitext
 <<has entity=`arg` name=`cid` params=`takes/word seat/1 as/<cid> ~ the offer's content id; absent, every open offer`>>
 <<has entity=`arg` name=`bag` params=`takes/word ~ one bag`>>
-<<has entity=`arg` name=`all` params=`~ every one`>>
+<<has entity=`arg` name=`all` params=`kind/switch ~ every one`>>
 <<has entity=`arg` name=`after` params=`takes/word ~ the cursor a prior page answered as next`>>
 <<has entity=`arg` name=`limit` params=`takes/count ~ cap each surface's transcripts, oldest first`>>
 <<has entity=`arg` name=`nexus` params=`takes/word ~ the Nexus whose offer table takes the row`>>
@@ -85,6 +85,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;91iBuMfckU9BsAHKXA4AYnX26YaO3GBCrbh3klD_PGg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-oKTP7da7Zsh5XX7zyy_0zLYSx-DjCmbf2xSHRYcoGE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

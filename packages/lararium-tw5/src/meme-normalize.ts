@@ -222,7 +222,7 @@ export interface NormalizeOptions {
    * never applied. FRAME-authority clauses (the envelope the house mints and owns — DOCTYPE
    * address, sigil spellings, child-slot roots, meta columns) always apply; they carry exactly
    * one right answer and the house may fix them unasked. See the FRAME/GRAMMAR split doctrine
-   * at the top of this file's sibling doc (`lares meme normalize`/`check` grammar=).
+   * at the top of this file's sibling doc (`lares meme normalize`/`check` grammar=true).
    */
   readonly grammar?: boolean;
 }
@@ -404,13 +404,13 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
   // CALL site (measured against the TiddlyWiki fork and pinned 5.4.1: only the recorded `assignmentOperator`
   // differs), so rewriting it changes no reading — which is exactly why it must never apply unasked. The
   // house holds a PREFERENCE here, never an answer: it proposes (named per site, below) and only a hand
-  // — or an explicit `grammar=` — disposes.
+  // — or an explicit `grammar=true` — disposes.
   {
     const sep = normalizeParamSeparators(seat.text);
     if (sep.moved > 0) {
       seat.apply("grammar", sep.text, (applied) => applied
         ? `named parameter separator: ${sep.moved} call site${sep.moved === 1 ? "" : "s"} took the equals sign`
-        : `named parameter separator: ${sep.moved} call site${sep.moved === 1 ? "" : "s"} would take the equals sign — rerun with grammar= to apply`);
+        : `named parameter separator: ${sep.moved} call site${sep.moved === 1 ? "" : "s"} would take the equals sign — rerun with grammar=true to apply`);
     }
   }
 

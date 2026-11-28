@@ -37,7 +37,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.disk.settles"
 
 ```memetic-wikitext
 <<has entity=`arg` name=`bag` params=`takes/bag-uri-or-slug needs/required ~ the bag whose pending settle record to resume`>>
-<<has entity=`arg` name=`pending` params=`needs/required ~ name the resume; settle takes no other posture`>>
+<<has entity=`arg` name=`pending` params=`kind/switch needs/required ~ name the resume; settle takes no other posture`>>
 ```
 
 <<~/ahu>>
@@ -99,6 +99,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;DA1Omtzh77gqG7uk6gWBwVbsJN1D0E2dJ60WE1NPIpU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YVN6BrYoabcCmo_OrquuRrEZl4qdL2x6lJz09VPJlVU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

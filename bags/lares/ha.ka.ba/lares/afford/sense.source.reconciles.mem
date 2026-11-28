@@ -29,7 +29,7 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 
 ```memetic-wikitext
 <<has entity=`arg` name=`name` params=`takes/word seat/1 as/<name> ~ the sensorium by name`>>
-<<has entity=`arg` name=`all` params=`~ every one`>>
+<<has entity=`arg` name=`all` params=`kind/switch ~ every one`>>
 ```
 
 <<~/ahu>>
@@ -81,6 +81,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-gdaAumixg05_3HSUkt41_Ts3OypGfJdzu0n-HOeCWk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zByUWruVy7WycUf1sA_DZWLizqN4d_y0oDpxpMryMmE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

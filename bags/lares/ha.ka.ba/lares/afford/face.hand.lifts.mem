@@ -51,7 +51,7 @@ Under a pūlama the root signs at the pūlama's hand door, since the vessel ther
 <<has entity=`arg` name=`sources` params=`takes/json ~ further daemon sources the item distils (the staged row always rides)`>>
 <<has entity=`arg` name=`proposal` params=`takes/intent-id ~ the proposal this lift answers; its body digest must equal the staged body's`>>
 <<has entity=`arg` name=`face` params=`takes/handle-index ~ which face's stage this call reads or writes, by persona index (a whole number from 0); absent, the one face standing open or the worn face`>>
-<<has entity=`arg` name=`terms` params=`~ run every gate and print the one terms line a pūlama signs; opens no route and asks no passphrase here; name it or --land, never both`>>
+<<has entity=`arg` name=`terms` params=`kind/switch ~ run every gate and print the one terms line a pūlama signs; opens no route and asks no passphrase here; name it or land=, never both`>>
 <<has entity=`arg` name=`land` params=`takes/answer ~ land the signed record from a pūlama's sign answer; the door builds the act afresh and lands it only over a byte-equal body`>>
 ```
 
@@ -122,6 +122,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2vvQlmzjCTDg2_JTT9F9W2JHDv23dNkYDPmMPAY8WTI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bdqAv3t1gh9Y5OiomGkmh79XeW_lK6rUS9M65s-L4uM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

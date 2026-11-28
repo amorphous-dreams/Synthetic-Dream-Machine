@@ -50,8 +50,8 @@ Three other modes ride the verb. `--new` lands a whole shrine from one source. `
 <<has entity=`arg` name=`add` params=`takes/line ~ one line at the slot's end; a cap line on #/has`>>
 <<has entity=`arg` name=`base` params=`takes/digest ~ the slot digest this instance read (16 hex); an AI seat's whole write needs it`>>
 <<has entity=`arg` name=`instance` params=`takes/session-id ~ the writing instance; joins the presence`>>
-<<has entity=`arg` name=`new` params=`~ land a whole shrine from one source`>>
-<<has entity=`arg` name=`offer` params=`~ land an offering on the spirit's shelf`>>
+<<has entity=`arg` name=`new` params=`kind/switch ~ land a whole shrine from one source`>>
+<<has entity=`arg` name=`offer` params=`kind/switch ~ land an offering on the spirit's shelf`>>
 <<has entity=`arg` name=`lane` params=`takes/uri ~ beside offer, the lane's memory pointer`>>
 <<has entity=`arg` name=`grant` params=`takes/slice ~ beside offer, the grant's slice`>>
 <<has entity=`arg` name=`echo` params=`takes/hash ~ the mandate hash om handed this instance (64 hex)`>>
@@ -134,6 +134,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;FHMlzQZsFD6GH_g_09_XbXByaBleo_KGr9HyqNVv_a0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yqHovZ5d1O4RSWo7IdkEhXiSb4RN7qGHf9SlsoOdzKU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

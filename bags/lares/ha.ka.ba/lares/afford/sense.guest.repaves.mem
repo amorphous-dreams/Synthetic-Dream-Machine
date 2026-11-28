@@ -37,8 +37,8 @@ uri-path  = "ha.ka.ba/lares/afford/sense.guest.repaves"
 !! takes ~ confirm · keep-hooks
 
 ```memetic-wikitext
-<<has entity=`arg` name=`confirm` params=`~ enact the rite instead of previewing`>>
-<<has entity=`arg` name=`keep-hooks` params=`~ leave the hooks paused afterward`>>
+<<has entity=`arg` name=`confirm` params=`kind/switch ~ enact the rite instead of previewing`>>
+<<has entity=`arg` name=`keep-hooks` params=`kind/switch ~ leave the hooks paused afterward`>>
 ```
 
 <<~/ahu>>
@@ -100,6 +100,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-yl10v_9OF3bchWSxSXcqGs2SXpVnQMBjCfg7HLHAoA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nOu9ehbQcx2uMm6TWuq8lipTjbdlegNDaq4b15gFRRM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

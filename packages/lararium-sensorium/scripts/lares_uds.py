@@ -68,7 +68,7 @@ class LaresVerbError(Exception):
 # The one next step each refusal a person can clear names, leading the message so a reader meets it first.
 _REFUSAL_NEXT = {
     "vessel-locked": "run `lares vault unlock`, then ask again",
-    "control-home-unnamed": "this place holds no face; light one with `lares persona new 0 --name '<label>'`",
+    "control-home-unnamed": "this place holds no face; light one with `lares persona new 0 name='<label>'`",
 }
 
 
@@ -160,7 +160,7 @@ def operator_did() -> str:
         if key:
             return "0x" + key
     raise LaresDaemonUnreachable(
-        f"no vessel identity under {ident} — run `lares vessel stand --init` to found this node"
+        f"no vessel identity under {ident} — run `lares vessel stand init=true` to found this node"
     )
 
 
@@ -189,7 +189,7 @@ def call(verb: str, args: "dict | None" = None, *, timeout: float = 30.0,
     path = socket_path()
     if not os.path.exists(path):
         # A fall during boot closes the socket: the step-in reading names what the fall left, where it left anything.
-        raise LaresDaemonUnreachable(_stepped_in(f"no lares daemon at {path} — start one with `lares vessel stand --foreground`"))
+        raise LaresDaemonUnreachable(_stepped_in(f"no lares daemon at {path} — start one with `lares vessel stand foreground=true`"))
 
     line = json.dumps({
         "verb": verb,
@@ -258,7 +258,7 @@ def custody_frame(frame: dict, *, timeout: float = 30.0) -> dict:
     answer itself (`status: "error"` with its `refusal`), for the caller to name."""
     path = socket_path()
     if not os.path.exists(path):
-        raise LaresDaemonUnreachable(f"no lares daemon at {path} — start one with `lares vessel stand --foreground`")
+        raise LaresDaemonUnreachable(f"no lares daemon at {path} — start one with `lares vessel stand foreground=true`")
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     s.settimeout(timeout)
     try:
@@ -279,11 +279,11 @@ def resolve_face(face: "int | None" = None, *, timeout: float = 30.0) -> int:
     """The face a seat acts as: the custody door's `face.resolve` act under the seat's reading (`worn`), one frame, one answer.
 
     Named none, the vessel answers the one face standing open, else the face the operator WEARS (the mounted face,
-    `lares vault unlock --face N`), never a refusal for several open. Named one, the vessel answers it only while it
+    `lares vault unlock face=N`), never a refusal for several open. Named one, the vessel answers it only while it
     stands open, else refuses `face-not-open` by name (LaresVerbError)."""
     path = socket_path()
     if not os.path.exists(path):
-        raise LaresDaemonUnreachable(f"no lares daemon at {path} — start one with `lares vessel stand --foreground`")
+        raise LaresDaemonUnreachable(f"no lares daemon at {path} — start one with `lares vessel stand foreground=true`")
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     s.settimeout(timeout)
     try:
@@ -317,7 +317,7 @@ def session_act(act: str, args: "dict | None" = None, *, face: "int | None" = No
     """
     path = socket_path()
     if not os.path.exists(path):
-        raise LaresDaemonUnreachable(f"no lares daemon at {path} — start one with `lares vessel stand --foreground`")
+        raise LaresDaemonUnreachable(f"no lares daemon at {path} — start one with `lares vessel stand foreground=true`")
     # EACH SESSION WEARS ONE FACE INSIDE THE LENT SET: named none, the vessel answers the face it resolves; named one, it
     # answers that face only while it stands open (`face-not-open`). The vessel's own wall judges the lent set at the session's
     # opening and refuses a face outside it `face-not-lent`, naming the set.
@@ -385,7 +385,7 @@ def session_call(verb: str, args: "dict | None" = None, *, face: "int | None" = 
     """
     path = socket_path()
     if not os.path.exists(path):
-        raise LaresDaemonUnreachable(f"no lares daemon at {path} — start one with `lares vessel stand --foreground`")
+        raise LaresDaemonUnreachable(f"no lares daemon at {path} — start one with `lares vessel stand foreground=true`")
     face = resolve_face(face)
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     s.settimeout(timeout)

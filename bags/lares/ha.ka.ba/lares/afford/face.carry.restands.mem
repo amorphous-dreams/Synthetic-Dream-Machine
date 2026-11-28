@@ -39,10 +39,10 @@ Under a pūlama the root signs at the pūlama's hand door, since the vessel ther
 !! takes ~ cid · all · face · terms · land
 
 ```memetic-wikitext
-<<has entity=`arg` name=`cid` params=`takes/cid seat/1 as/<cid> ~ a revision cid that keeps standing; name several in a row, or --all`>>
-<<has entity=`arg` name=`all` params=`~ carry every earlier head the history reads, in place of naming cids`>>
+<<has entity=`arg` name=`cid` params=`takes/cid seat/1 as/<cid> ~ a revision cid that keeps standing; name several in a row, or all=true`>>
+<<has entity=`arg` name=`all` params=`kind/switch ~ carry every earlier head the history reads, in place of naming cids`>>
 <<has entity=`arg` name=`face` params=`takes/handle-index ~ which face's stage this call reads or writes, by persona index (a whole number from 0); absent, the one face standing open or the worn face`>>
-<<has entity=`arg` name=`terms` params=`~ print the one terms line a pūlama signs; opens no route; name it or --land, never both`>>
+<<has entity=`arg` name=`terms` params=`kind/switch ~ print the one terms line a pūlama signs; opens no route; name it or land=, never both`>>
 <<has entity=`arg` name=`land` params=`takes/answer ~ land the signed record from a pūlama's sign answer`>>
 ```
 
@@ -108,6 +108,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;oDRAqTferz0tsCAmHNpVHVyysRup8Rgo0Wm9WwWSuoU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PMhSrr57luIEC41yPOgWPvAQTBLyXfeLj_UPwNjljY0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

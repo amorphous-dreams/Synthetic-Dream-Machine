@@ -42,8 +42,8 @@ Every wiki wears promotion capability; its edge holds (face, wiki, digest). The 
 <<has entity=`arg` name=`wiki` params=`takes/wiki-name ~ the wiki the promotion belongs to; absent, the daemon wiki`>>
 <<has entity=`arg` name=`face` params=`takes/handle-index ~ which face's promotion plane this call reads or acts on, by persona index (a whole number from 0)`>>
 <<has entity=`arg` name=`why` params=`takes/words needs/required ~ the reason the brake should rise`>>
-<<has entity=`arg` name=`keep` params=`~ read by no kapae act: the trust door's orphan decision names it, and a kapae line ignores it`>>
-<<has entity=`arg` name=`drop` params=`~ read by no kapae act: the trust door's orphan decision names it, and a kapae line ignores it`>>
+<<has entity=`arg` name=`keep` params=`kind/switch ~ read by no kapae act: the trust door's orphan decision names it, and a kapae line ignores it`>>
+<<has entity=`arg` name=`drop` params=`kind/switch ~ read by no kapae act: the trust door's orphan decision names it, and a kapae line ignores it`>>
 ```
 
 <<~/ahu>>
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AC8zdHKahVnk4NEEbsSioNZa3yYBErRztSbnM9XCsjA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vGmbqAXOyeLgtxkYPsK4vY9OZnjz__Tek9Hu3UHD2Bg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

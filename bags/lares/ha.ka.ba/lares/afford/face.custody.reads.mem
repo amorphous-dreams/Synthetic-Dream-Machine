@@ -37,7 +37,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.custody.reads"
 !! takes ~ verbose
 
 ```memetic-wikitext
-<<has entity=`arg` name=`verbose` params=`~ print every custody row whole`>>
+<<has entity=`arg` name=`verbose` params=`kind/switch ~ print every custody row whole`>>
 ```
 
 <<~/ahu>>
@@ -99,6 +99,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hZpfEcbPhVuXsBUgr0BkjjpUlDNSI22PyBExZNvLJc8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;23ZBj9BcP5rfbHoWpyJNnRDG5QgneHWm9lBlhE8b1mo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

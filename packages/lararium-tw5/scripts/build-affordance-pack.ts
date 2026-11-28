@@ -104,6 +104,11 @@ export interface AffordancePackCarrier {
   readonly params: Record<string, string>;
   /** Per surface the carrier skins: the argument spellings its door takes (witness W2 reads them against the handler). */
   readonly takes: Record<string, readonly string[]>;
+  /**
+   * Per surface the carrier skins: each spelling in `takes` with the kind its row states, `switch` (true or false alone) or the
+   * value shape its `takes/` names (`value` where it names none). The terminal reads the kind here and infers none.
+   */
+  readonly kinds: Record<string, Record<string, string>>;
   /** Per surface the carrier skins: every example and every cure as a runnable line (witness W4 parses each at its door). */
   readonly calls: Record<string, readonly string[]>;
   /** The `has` rows of the law slot the carrier's `#/loop` calls, resolved at bake; absent where the carrier declares no loop. */
@@ -219,19 +224,23 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
       params[String(row["spell"])] = render("mcp", title, { depth: "param", arg: String(row["name"]) }).join(" ");
     }
     const takes: Record<string, string[]> = {};
+    const kinds: Record<string, Record<string, string>> = {};
     const calls: Record<string, string[]> = {};
     for (const row of skinRows(textOf, title)) {
       const surface = row.name as AffordSurface;
       if (!(surface in routes)) continue;
       // A positional arg (`seat/N`) rides no flag: the door row's `accepts` names flags alone, so W2 reads these apart.
-      takes[surface] = rowsOf(textOf, title, "#/takes", surface).filter((r) => r["entity"] === "arg" && r["positional"] !== true).map((r) => String(r["spell"]));
+      const flagged = rowsOf(textOf, title, "#/takes", surface).filter((r) => r["entity"] === "arg" && r["positional"] !== true);
+      takes[surface] = flagged.map((r) => String(r["spell"]));
+      // THE KIND RIDES THE PACK AS THE ROW STATES IT: the terminal reads it here and infers none from a missing `takes/`.
+      kinds[surface] = Object.fromEntries(flagged.map((r) => [String(r["spell"]), r["kind"] === "switch" ? "switch" : typeof r["value"] === "string" ? r["value"] : "value"]));
       calls[surface] = [
         ...rowsOf(textOf, title, "#/shows", surface).flatMap((r) => (typeof r["call"] === "string" && r["foreign"] !== true ? [r["call"]] : [])),
         ...rowsOf(textOf, title, "#/refuses", surface).flatMap((r) => (typeof r["cure"] === "string" && r["foreign"] !== true ? [r["cure"]] : [])),
       ];
     }
     const loop = resolvedLoop(textOf, title);
-    carriers[address] = { title, bcc: bccs.get(title) ?? null, role, renders, params, takes, calls, ...(loop.length > 0 ? { loop } : {}) };
+    carriers[address] = { title, bcc: bccs.get(title) ?? null, role, renders, params, takes, kinds, calls, ...(loop.length > 0 ? { loop } : {}) };
   }
 
   // A CLI door gathers every address whose cli skin spells beneath it: one address renders its whole, several an index. A

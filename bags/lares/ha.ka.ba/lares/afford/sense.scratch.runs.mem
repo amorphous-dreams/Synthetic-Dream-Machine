@@ -39,7 +39,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.scratch.runs"
 ```memetic-wikitext
 <<has entity=`arg` name=`path` params=`takes/host-path needs/required seat/1 as/<path> ~ the path to ingest`>>
 <<has entity=`arg` name=`analysis` params=`takes/words seat/2 as/<analysis…> ~ the analysis the trailing words name`>>
-<<has entity=`arg` name=`keep` params=`~ retain the sensorium instead of dissolving it`>>
+<<has entity=`arg` name=`keep` params=`kind/switch ~ retain the sensorium instead of dissolving it`>>
 <<has entity=`arg` name=`name` params=`takes/name ~ a label for the sensorium`>>
 ```
 
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nSh-cT8YjePpMjetbRyars616rcrtQKX8GXNMehuzJM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LO-4_GlQJU92JdGrMO7jRYnITulsUKX8LmdQuPOQQTI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

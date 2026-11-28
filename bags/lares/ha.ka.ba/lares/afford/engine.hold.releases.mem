@@ -38,8 +38,8 @@ uri-path  = "ha.ka.ba/lares/afford/engine.hold.releases"
 
 ```memetic-wikitext
 <<has entity=`arg` name=`document` params=`takes/id needs/required seat/1 as/<documentId> ~ the held document id, as lares vessel read lists it`>>
-<<has entity=`arg` name=`keep` params=`~ keep what stands under the id`>>
-<<has entity=`arg` name=`fresh` params=`~ start the id empty`>>
+<<has entity=`arg` name=`keep` params=`kind/switch ~ keep what stands under the id`>>
+<<has entity=`arg` name=`fresh` params=`kind/switch ~ start the id empty`>>
 <<has entity=`arg` name=`root` params=`takes/dir ~ the vessel root (LAR_ROOT) this call reads`>>
 ```
 
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YHFOOHFW6Zyazln6LoMvGc-0BKGe_qUpNXItI7cJ1mo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tOSRYQAIl5ffXpa5qqHSYw0pfH5bQlOB89lQNervP38`>>
 
 <<^ code=`&#x0004;` to=`?`>>

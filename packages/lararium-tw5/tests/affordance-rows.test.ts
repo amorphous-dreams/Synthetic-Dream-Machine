@@ -17,7 +17,7 @@ const TAKES = [
   "<<has entity=`arg` name=`recipe` params=`takes/slug needs/one-of:recipe,bag ~ the wiki that takes the cast`>>",
   "<<has entity=`arg` name=`bag` params=`takes/slug needs/one-of:recipe,bag ~ the bag that takes the cast`>>",
   "<<~ has entity=`arg` name=`asking` params=`takes/words needs/seat ~ the question, named before the throw`>>",
-  "<<has entity=`arg` name=`fresh` params=`gate/hand ~ a new throw for the same words`>>",
+  "<<has entity=`arg` name=`fresh` params=`kind/switch gate/hand ~ a new throw for the same words`>>",
 ].join("\n");
 
 describe("the row reader", () => {
@@ -142,7 +142,7 @@ describe("a positional arg (`seat/N`)", () => {
     "<<has entity=`arg` name=`day` params=`takes/number seat/2 as/<day> needs/all-of:day,month,year ~ the day`>>",
     "<<has entity=`arg` name=`month` params=`takes/number seat/3 as/<month> needs/all-of:day,month,year ~ the month`>>",
     "<<has entity=`arg` name=`year` params=`takes/number seat/4 as/<year> needs/all-of:day,month,year ~ the year`>>",
-    "<<has entity=`arg` name=`json` params=`~ the envelope`>>",
+    "<<has entity=`arg` name=`json` params=`kind/switch ~ the envelope`>>",
   ].join("\n");
   const rows = parseHasRows(DATE);
 

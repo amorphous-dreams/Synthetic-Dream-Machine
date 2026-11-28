@@ -210,7 +210,7 @@ describe("vault door — status, unlock, bind, unbind", () => {
     expect(await run("unlock")).toBe(0);               // the staying route still opens
   }, 60_000);
 
-  it("★ `unbind rotate=true <id>` rotates, exactly as `unbind <id> rotate=true` does; `rotate=x` refuses ★", async () => {
+  it("★ `unbind rotate=true <id>` rotates, exactly as `unbind <id> rotate=true` does ★", async () => {
     answers.push("p", PW, "n", PW2);
     await run("bind", "passphrase=true");
     const two = await slots();
@@ -221,10 +221,7 @@ describe("vault door — status, unlock, bind, unbind", () => {
     expect(await slots()).toHaveLength(1);
     answers.push("p", PW2, "n");
     expect(await run("unlock")).toBe(1);               // the removed route opens nothing
-    // `rotate=<a word>` is no spelling of the switch: the door refuses it by name, and nothing unbinds.
-    out.length = 0;
-    expect(await run("unbind", "abc", "rotate=abc")).toBe(2);
-    expect(out.join("")).toMatch(/rotate= names a switch: run `lares vault unbind abc rotate=true`/);
+    // `rotate=<a word>` refuses at the dispatcher by the carrier's stated kind (fold-flags-refuse-by-name), before this door runs.
   }, 60_000);
 
   it("★ status --verbose gives ONE reading of each standing file: a floor row beside its law, a bare hot row as a fault, a private file outside the table by name ★", async () => {

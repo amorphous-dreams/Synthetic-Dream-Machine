@@ -38,7 +38,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.sensorium.retires"
 ```memetic-wikitext
 <<has entity=`arg` name=`name` params=`takes/name needs/required seat/1 as/<name> ~ the sensorium named in the manifest`>>
 <<has entity=`arg` name=`grounds` params=`takes/word needs/required ~ the grounds, one of the named set`>>
-<<has entity=`arg` name=`approve` params=`~ name the intent`>>
+<<has entity=`arg` name=`approve` params=`kind/switch ~ name the intent`>>
 ```
 
 <<~/ahu>>
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AihwkCsZwDY17FIjWn6JC12tVNk9TPnuK4k5zBV57II`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;igtV7YCVqB_OWATizKV8Pk2wMgUONvv5aLE_D-XiqGQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

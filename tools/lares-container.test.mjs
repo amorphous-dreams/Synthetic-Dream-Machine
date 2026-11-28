@@ -886,9 +886,9 @@ for (const [name, shim] of shims) {
   });
 
   test(`${name}: a caller's ask budget rides the call's own argv to the vessel as its last word, and no environment name carries one`, async () => {
-    const r = await run(shim, ["get", "title=lar:///x", "--ask-budget-ms=3500"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", LARES_ASK_BUDGET_MS: "9" } });
+    const r = await run(shim, ["get", "title=lar:///x", "ask-budget-ms=3500"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", LARES_ASK_BUDGET_MS: "9" } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /-T lares node \S+ get title=lar:\/\/\/x --ask-budget-ms=3500$/m);
+    assert.match(r.calls, /-T lares node \S+ get title=lar:\/\/\/x ask-budget-ms=3500$/m);
     assert.doesNotMatch(r.calls, /LARES_ASK_BUDGET_MS/);
   });
 

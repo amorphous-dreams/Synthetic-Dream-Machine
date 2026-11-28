@@ -36,7 +36,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.member.reads"
 !! takes ~ list · nexus
 
 ```memetic-wikitext
-<<has entity=`arg` name=`list` params=`needs/required ~ fold the board`>>
+<<has entity=`arg` name=`list` params=`kind/switch needs/required ~ fold the board`>>
 <<has entity=`arg` name=`nexus` params=`takes/aid ~ a Nexus this vessel holds a charter for; absent, the primary`>>
 ```
 
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZqIbEpgs3YqbW57FNEdHtryQs5_5DDY-yl4cOIQb1Y0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iesLM45xDfthw_BsNKiPuZ__j1EF02BdS4yco_S7XU4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

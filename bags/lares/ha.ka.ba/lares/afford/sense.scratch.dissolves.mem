@@ -39,8 +39,8 @@ uri-path  = "ha.ka.ba/lares/afford/sense.scratch.dissolves"
 
 ```memetic-wikitext
 <<has entity=`arg` name=`id` params=`takes/id needs/one-of:id,all,orphans seat/1 as/<id> ~ the sensorium to dissolve`>>
-<<has entity=`arg` name=`all` params=`needs/one-of:id,all,orphans ~ dissolve every live sensorium`>>
-<<has entity=`arg` name=`orphans` params=`needs/one-of:id,all,orphans ~ reap the orphans alone`>>
+<<has entity=`arg` name=`all` params=`kind/switch needs/one-of:id,all,orphans ~ dissolve every live sensorium`>>
+<<has entity=`arg` name=`orphans` params=`kind/switch needs/one-of:id,all,orphans ~ reap the orphans alone`>>
 ```
 
 <<~/ahu>>
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;IiviD1Vf8Mam6bTdrwyk0R4BVVlQ2MPlJW7QAUvEe5k`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TTdTLG43HClS2-7OI7DecLRTY3QGyY0QMX3kqLMrnXM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

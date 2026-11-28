@@ -26,7 +26,7 @@
  */
 import {
   type NeutralCall, AFFORD_SURFACES, type AffordSurface, type HasRow, addressMatcher, addressOfTitle, bareAddressOf, bodyOf, digestOf, edgesOf, exampleCall, kaheaTitles, neutralCallOf,
-  parseHasRows, proseOf, renderCall, seatOf, seatsOf, skinOmits, skinRow, spellArg, unfoldRead, usageOf,
+  parseHasRows, proseOf, renderCall, seatOf, seatsOf, skinOmits, skinRow, spellArg, switchOf, unfoldRead, usageOf,
 } from "./affordance-rows.js";
 
 /** How this module reads one record's text: `undefined` where the wiki holds no such record. */
@@ -155,6 +155,7 @@ export function rowsOf(textOf: TextOf, address: string, slot: string, surface: A
       const seat = surface === "cli" ? seatOf(row) : null;
       out["spell"] = seat !== null ? seat.as : spellArg(surface, row.name, skin);
       if (seat !== null) out["positional"] = true;
+      else if (switchOf(row)) out["kind"] = "switch";
       else if (row.params["takes"]) out["value"] = row.params["takes"];
     }
     if (row.entity === "example") {

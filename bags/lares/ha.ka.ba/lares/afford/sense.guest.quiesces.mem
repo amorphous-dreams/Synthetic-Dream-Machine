@@ -37,7 +37,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.guest.quiesces"
 !! takes ~ hold
 
 ```memetic-wikitext
-<<has entity=`arg` name=`hold` params=`~ keep the hooks paused after the drain`>>
+<<has entity=`arg` name=`hold` params=`kind/switch ~ keep the hooks paused after the drain`>>
 ```
 
 <<~/ahu>>
@@ -99,6 +99,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6TCeD1IT_AcdO0lDNFlM3f9N0VAOyhzkh0mKH_XZT_4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ckyY9XYVcSVUSNKC3BCFY02HwnyMavN_VjKiKfozSQ4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

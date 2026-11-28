@@ -38,12 +38,12 @@ uri-path  = "ha.ka.ba/lares/afford/engine.vessel.stands"
 !! takes ~ foreground · with-web · restart · observe · init · page · port · wiki · root
 
 ```memetic-wikitext
-<<has entity=`arg` name=`foreground` params=`~ stand in the foreground, owning the terminal`>>
-<<has entity=`arg` name=`with-web` params=`~ stand with the web face beside it`>>
-<<has entity=`arg` name=`restart` params=`~ free the port first, then stand`>>
-<<has entity=`arg` name=`observe` params=`~ report what stands and touch nothing`>>
-<<has entity=`arg` name=`init` params=`~ found what the vessel lacks before it stands`>>
-<<has entity=`arg` name=`page` params=`~ stand and light the page`>>
+<<has entity=`arg` name=`foreground` params=`kind/switch ~ stand in the foreground, owning the terminal`>>
+<<has entity=`arg` name=`with-web` params=`kind/switch ~ stand with the web face beside it`>>
+<<has entity=`arg` name=`restart` params=`kind/switch ~ free the port first, then stand`>>
+<<has entity=`arg` name=`observe` params=`kind/switch ~ report what stands and touch nothing`>>
+<<has entity=`arg` name=`init` params=`kind/switch ~ found what the vessel lacks before it stands`>>
+<<has entity=`arg` name=`page` params=`kind/switch ~ stand and light the page`>>
 <<has entity=`arg` name=`port` params=`takes/port default/8080 ~ the daemon port; else LAR_PORT`>>
 <<has entity=`arg` name=`wiki` params=`takes/slug ~ the wiki the foreground or restart posture serves`>>
 <<has entity=`arg` name=`root` params=`takes/dir ~ the vessel root (LAR_ROOT) this call reads`>>
@@ -109,6 +109,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Qdcd85oLvcoWB5SsEzXWw1E79TtqFjCM5w3yKp6lxL0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fqznY7wJJcwPW-_3MbpcgbbfJXtWjS5sC7p56goIPmM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

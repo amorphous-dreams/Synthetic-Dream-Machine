@@ -41,7 +41,7 @@ Where no base stands, `lares ingest` of the file names the same adoption. SETTLI
 <<has entity=`arg` name=`uri` params=`takes/lar-address needs/required seat/1 as/<uri> ~ the carrier at the standoff`>>
 <<has entity=`arg` name=`key` params=`takes/key needs/required ~ the standoff's key, as lares shore printed it`>>
 <<has entity=`arg` name=`bag` params=`takes/bag-uri ~ the bag that holds the carrier`>>
-<<has entity=`arg` name=`yes` params=`~ name the intent for a call off a terminal; approves nothing by itself`>>
+<<has entity=`arg` name=`yes` params=`kind/switch ~ name the intent for a call off a terminal; approves nothing by itself`>>
 ```
 
 <<~/ahu>>
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vljwX2aPj-JL84WtPpOofsL0HjNlS96KzhQkf6XxDYQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LIMqRX2F_hp0Ph0fe5pX1IrUFfHWohCQG2rFs5L3Hek`>>
 
 <<^ code=`&#x0004;` to=`?`>>

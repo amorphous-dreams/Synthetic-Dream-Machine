@@ -38,7 +38,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.checkout.verifies"
 
 ```memetic-wikitext
 <<has entity=`arg` name=`root` params=`takes/dir ~ the checkout this door keeps; absent, the checkout the CLI lives in`>>
-<<has entity=`arg` name=`probe` params=`~ run each host's own load probe`>>
+<<has entity=`arg` name=`probe` params=`kind/switch ~ run each host's own load probe`>>
 ```
 
 <<~/ahu>>
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;pYuh__HbYjwhlQbo8SsSZeOYoK0M1SYeqKj6R8b4MSg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9O0xrr9BxrnNUObNHR7Lk2Ju7TpAHia906iyhhsuMbc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

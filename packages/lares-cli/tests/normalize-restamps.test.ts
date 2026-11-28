@@ -318,7 +318,7 @@ describe("meme normalize/check — FRAME drift and GRAMMAR drift read as two aut
     expect(after).not.toContain('voice="Mischief-Muse"');
     // AND normalize NAMES the site it declined to touch.
     expect(out).toMatch(/would take the equals sign/);
-    expect(out).toMatch(/rerun with grammar= to apply/);
+    expect(out).toMatch(/rerun with grammar=true to apply/);
   });
 
   test("★ RED: check on GRAMMAR-only drift exits ZERO and names the preference — never fails the gate ★", () => {

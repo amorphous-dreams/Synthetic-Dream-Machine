@@ -460,10 +460,9 @@ describe("kukulu-rolls-back", () => {
     expect(g.calls[1]).toBe(`stage ${JSON.stringify({ at: "bbbbbbbbbbbb" })}`);
   });
 
-  it("RED: `--rollback` reads bare as the image that ran before and with a word as that revision; a word that names no revision refuses by usage; CONTROL: absent, the rite runs forward", () => {
+  it("RED: `rollback=` reads empty as the image that ran before and with a word as that revision; a word that names no revision refuses by usage; CONTROL: absent, the rite runs forward", () => {
     const of = (...line: string[]) => rollbackOf(parseArgs(["rite", "kukulu", ...line]));
-    expect(of("rollback=true")).toEqual({ rollback: true });
-    expect(of("rollback=true", "face=0")).toEqual({ rollback: true });
+    expect(of("rollback=", "face=0")).toEqual({ rollback: true });
     expect(of("rollback=0123456789ab")).toEqual({ rollback: "0123456789ab" });
     expect(of("rollback=")).toEqual({ rollback: true });
     expect(of()).toEqual({});
@@ -650,7 +649,7 @@ describe("the rite runs on the host, and its rows in the vessel", () => {
   it("RED: `rite kukulu` (and its spelling `kūkulu`) stays on this machine, where the shim stands; CONTROL: begin, land and receipts forward into the vessel", () => {
     expect(route(["rite", "kukulu"])).toBe("local");
     expect(route(["rite", "kūkulu", "branch=main"])).toBe("local");
-    expect(route(["rite", "kukulu", "rollback=true"])).toBe("local");
+    expect(route(["rite", "kukulu", "rollback="])).toBe("local");
     for (const sub of ["begin", "land", "receipts", "offer"]) expect(route(["rite", sub, "json=true"]), sub).toBe("forward");
   });
 

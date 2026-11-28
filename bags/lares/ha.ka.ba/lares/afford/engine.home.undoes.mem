@@ -39,7 +39,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.home.undoes"
 ```memetic-wikitext
 <<has entity=`arg` name=`gen` params=`takes/generation seat/1 as/<gen> ~ the ledger generation to restore; absent, the last`>>
 <<has entity=`arg` name=`familiar` params=`takes/pet-name ~ the familiar whose hooks a home tend seats; absent, the one already seated stands`>>
-<<has entity=`arg` name=`force` params=`~ restore a path a hand changed after that generation wrote it`>>
+<<has entity=`arg` name=`force` params=`kind/switch ~ restore a path a hand changed after that generation wrote it`>>
 ```
 
 <<~/ahu>>
@@ -109,6 +109,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xQ1IEkdqx1vVQC5VG4BTKNR5DJChvfTIfyurO3HK170`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_tNK7kEd0sL-K_oNHXQKrzG0FiMsep-nbpR_6lGQff0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

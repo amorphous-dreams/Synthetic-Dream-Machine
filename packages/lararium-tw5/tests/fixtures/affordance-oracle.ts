@@ -49,7 +49,7 @@ export const FIXTURE_BODY = [
   "<<has entity=`arg` name=`recipe` params=`takes/slug needs/one-of:recipe,bag ~ the wiki that takes the cast`>>",
   "<<has entity=`arg` name=`bag` params=`takes/slug needs/one-of:recipe,bag ~ the bag that takes the cast`>>",
   "<<has entity=`arg` name=`asking` params=`takes/words needs/seat ~ the question, named before the throw`>>",
-  "<<has entity=`arg` name=`fresh` params=`gate/hand ~ a new throw for the same words`>>",
+  "<<has entity=`arg` name=`fresh` params=`kind/switch gate/hand ~ a new throw for the same words`>>",
   "<<has entity=`arg` name=`seed` params=`takes/words gate/hand ~ coins drawn from these words`>>",
   "<<has entity=`arg` name=`coins` params=`takes/values gate/hand ~ six line values, bottom first`>>",
   "<<has entity=`arg` name=`caster` params=`takes/name ~ who cast`>>",

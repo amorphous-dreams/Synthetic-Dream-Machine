@@ -42,8 +42,8 @@ LOAD mints a fresh change-id unless `change-id=` names one, since external conte
 <<has entity=`arg` name=`source-uri` params=`takes/path-or-uri needs/required ~ the external content source: a host path, or an address whose provenance the record keeps`>>
 <<has entity=`arg` name=`to` params=`takes/bag-uri needs/required ~ the bag the content lands in`>>
 <<has entity=`arg` name=`change-id` params=`takes/id ~ the change's own identity, named once so a re-send reads as the same change; absent, the verb mints one`>>
-<<has entity=`arg` name=`in-wiki` params=`~ run the act in the active wiki's island`>>
-<<has entity=`arg` name=`yes` params=`~ the intent a call off a terminal names in place of the y/N a terminal asks`>>
+<<has entity=`arg` name=`in-wiki` params=`kind/switch ~ run the act in the active wiki's island`>>
+<<has entity=`arg` name=`yes` params=`kind/switch ~ the intent a call off a terminal names in place of the y/N a terminal asks`>>
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
 <<has entity=`cell` name=`_0` params=`mu/pentacle ~ a dry run: the island walks the act through a capturing access and names the effect it would land, committing nothing`>>
 ```
@@ -111,6 +111,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;FiVBzsBIpDGwHv8XblQWLRGNBsUjSbbLK13Pz7bOzng`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cM0HYqmav9eNU9DQChSh1l8H0Z4tVV6uC1eX6ioMw_Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

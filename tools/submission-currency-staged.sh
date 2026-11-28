@@ -124,7 +124,7 @@ for i in "${!INVOLVED_MD[@]}"; do
   NAME_TO_SRC["$name"]="${INVOLVED_SRC[$i]}"
 done
 
-OUT="$(cd "$SCRATCH" && node "$LARES" meme project "$SCRATCH/$SHELF" to=md check=true root="$SCRATCH" 2>&1)"
+OUT="$(cd "$SCRATCH" && node "$LARES" meme project to=md check="$SCRATCH/$SHELF" root="$SCRATCH" 2>&1)"
 CODE=$?
 if [ "$CODE" -eq 0 ]; then
   echo "[submission-currency-staged] ${#INVOLVED_MD[@]} involved submission pair(s) current"

@@ -39,10 +39,10 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.house.keeps"
 ```memetic-wikitext
 <<has entity=`arg` name=`workspace` params=`takes/name ~ the bound workspace the bundle lays into`>>
 <<has entity=`arg` name=`into` params=`takes/path ~ the path inside the workspace`>>
-<<has entity=`arg` name=`accept-omissions` params=`~ land the bundle though some memory stays behind`>>
+<<has entity=`arg` name=`accept-omissions` params=`kind/switch ~ land the bundle though some memory stays behind`>>
 <<has entity=`arg` name=`face` params=`takes/index ~ the keep's face, a whole persona index from 0`>>
-<<has entity=`arg` name=`if-due` params=`~ keep only where the house moved since the last kept bundle`>>
-<<has entity=`arg` name=`sessions` params=`~ keep the sensoriums too; --no-sessions leaves them`>>
+<<has entity=`arg` name=`if-due` params=`kind/switch ~ keep only where the house moved since the last kept bundle`>>
+<<has entity=`arg` name=`sessions` params=`kind/switch ~ keep the sensoriums too; sessions=false leaves them`>>
 ```
 
 <<~/ahu>>
@@ -118,6 +118,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Uhh2Xs4TTEAbMtf9IYE4VsDKPjv_5QMBtV-3gS_gdW8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Wo_kLW5BGLk-iEwa7OzwgZA9_B74__1aeD8PxbGI7Ic`>>
 
 <<^ code=`&#x0004;` to=`?`>>

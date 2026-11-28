@@ -38,9 +38,9 @@ uri-path  = "ha.ka.ba/lares/afford/engine.home.reads"
 
 ```memetic-wikitext
 <<has entity=`arg` name=`familiar` params=`takes/pet-name ~ the familiar whose hooks a home tend seats; absent, the one already seated stands`>>
-<<has entity=`arg` name=`brief` params=`~ print the one line a hook reads, terminal or none`>>
+<<has entity=`arg` name=`brief` params=`kind/switch ~ print the one line a hook reads, terminal or none`>>
 <<has entity=`arg` name=`root` params=`takes/dir ~ refused here: only lares repo keeps a checkout`>>
-<<has entity=`arg` name=`staged` params=`~ refused here: only lares repo read reads the index`>>
+<<has entity=`arg` name=`staged` params=`kind/switch ~ refused here: only lares repo read reads the index`>>
 ```
 
 <<~/ahu>>
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KlTmQDw0IMlrYEI2ZWkytXQIgIBlc4v454150RrAe-c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;u7ZW761Ao85RcKsW6e43y29QhIvCsfLD3PVbacS-qww`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -40,7 +40,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.rite.lands"
 <<has entity=`arg` name=`tessera` params=`takes/id needs/required ~ the begun half's tessera`>>
 <<has entity=`arg` name=`head` params=`takes/commit ~ the head; must match the begun half`>>
 <<has entity=`arg` name=`image` params=`takes/digest ~ the image; must match the begun half`>>
-<<has entity=`arg` name=`abandon` params=`~ set the begun half down instead of landing it`>>
+<<has entity=`arg` name=`abandon` params=`kind/switch ~ set the begun half down instead of landing it`>>
 <<has entity=`arg` name=`face` params=`takes/index ~ one face, a whole persona index from 0`>>
 ```
 
@@ -108,6 +108,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gWbP57foHnLqnKfpJf4CyDzbMS-zXTfCRKSkBLFXAuM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fzMVE8nLpWPjIa2sEYt7bpJa9eFKYcYcLidRvAn03kk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

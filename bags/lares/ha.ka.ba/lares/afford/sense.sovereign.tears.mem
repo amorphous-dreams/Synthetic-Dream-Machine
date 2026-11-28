@@ -38,9 +38,9 @@ uri-path  = "ha.ka.ba/lares/afford/sense.sovereign.tears"
 
 ```memetic-wikitext
 <<has entity=`arg` name=`groups` params=`takes/names seat/1 as/<group…> ~ the sensorium groups; none names every group`>>
-<<has entity=`arg` name=`confirm` params=`~ remove instead of previewing`>>
-<<has entity=`arg` name=`drain` params=`~ quiesce the blocking holders first`>>
-<<has entity=`arg` name=`force` params=`~ tear even where a holder blocks`>>
+<<has entity=`arg` name=`confirm` params=`kind/switch ~ remove instead of previewing`>>
+<<has entity=`arg` name=`drain` params=`kind/switch ~ quiesce the blocking holders first`>>
+<<has entity=`arg` name=`force` params=`kind/switch ~ tear even where a holder blocks`>>
 ```
 
 <<~/ahu>>
@@ -105,6 +105,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BB9RjKjQ8cH90VYGRpveSLiObwZyqKEzX8eauMp4Obs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aveq_-euq7tAwYHSx4d_jJsfLp_MqpIfn8VVBp3TfOs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

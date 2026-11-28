@@ -42,8 +42,8 @@ A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent 
 <<has entity=`arg` name=`bag` params=`takes/bag-uri needs/required ~ the bag the act targets`>>
 <<has entity=`arg` name=`plane` params=`takes/catalog-or-oracle ~ the plane the bag lives on; catalog or oracle`>>
 <<has entity=`arg` name=`change-id` params=`takes/id ~ the change's own identity, named once so a re-send reads as the same change; absent, the verb mints one`>>
-<<has entity=`arg` name=`in-wiki` params=`~ run the act in the active wiki's island`>>
-<<has entity=`arg` name=`yes` params=`~ the intent a call off a terminal names in place of the y/N a terminal asks`>>
+<<has entity=`arg` name=`in-wiki` params=`kind/switch ~ run the act in the active wiki's island`>>
+<<has entity=`arg` name=`yes` params=`kind/switch ~ the intent a call off a terminal names in place of the y/N a terminal asks`>>
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
 <<has entity=`cell` name=`_0` params=`mu/pentacle ~ a dry run: the island walks the act through a capturing access and names the effect it would land, committing nothing`>>
 ```
@@ -111,6 +111,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lO6SiWI_IdaBigZENlXo6ycZiKPAlMJAio_9zdCkQCU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZUBBq_rDI1AhT8KjM7pYGMU4mwUMBTCIUe8Usr5Sv94`>>
 
 <<^ code=`&#x0004;` to=`?`>>

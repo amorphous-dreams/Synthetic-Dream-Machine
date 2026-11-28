@@ -398,7 +398,7 @@ export const STEPS = Object.freeze([
         const worn = await ctx.wear(face);
         if (worn?.wears !== face) return { ok: false, answer: `face ${face} never stood worn: ${JSON.stringify(worn)}` };
         const file = ctx.file(`note-${name}.mem`, memeText(NOTE(name), `the ${name} wrote this page`));
-        const put = await ctx.cli(["tiddler", "put", NOTE(name), "recipe=notes", `file=${file}`, "json=true"]);
+        const put = await ctx.cli(["put", `title=${NOTE(name)}`, "recipe=notes", `file=${file}`, "json=true"]);
         said.push(`${name}: ${put.code === 0 ? landing(put) : refusalOf(put)}`);
         if (put.code !== 0 || !landing(put).startsWith(layer)) return { ok: false, answer: said.join(" · ") };
       }
@@ -412,8 +412,8 @@ export const STEPS = Object.freeze([
       const worn = await ctx.wear(1);
       if (worn?.wears !== 1) return { ok: false, answer: `the engineer never stood worn: ${JSON.stringify(worn)}` };
       const file = ctx.file("offered.mem", memeText(OFFERED, "the engineer offers this record to house canon"));
-      const put = await ctx.cli(["tiddler", "put", OFFERED, "recipe=lares", `file=${file}`, "json=true"]);
-      if (put.code !== 0 || !landing(put).startsWith("layer: working")) return { ok: false, answer: `tiddler put: ${put.code === 0 ? landing(put) : refusalOf(put)}` };
+      const put = await ctx.cli(["put", `title=${OFFERED}`, "recipe=lares", `file=${file}`, "json=true"]);
+      if (put.code !== 0 || !landing(put).startsWith("layer: working")) return { ok: false, answer: `put: ${put.code === 0 ? landing(put) : refusalOf(put)}` };
       const offer = await ctx.cli(["meme", "offer", OFFERED, "bag=lares", "json=false"]);
       return { ok: offer.code === 0, answer: `${landing(put)} · ${offer.code === 0 ? lineOf(`${offer.stdout}\n${offer.stderr}`, "offer") : refusalOf(offer)}` };
     } },
@@ -470,7 +470,7 @@ export const STEPS = Object.freeze([
       for (const [face, name] of [[1, "engineer"], [2, "referee"]]) {
         const worn = await ctx.wear(face);
         if (worn?.wears !== face) return { ok: false, answer: `face ${face} never stood worn: ${JSON.stringify(worn)}` };
-        const got = await ctx.cli(["tiddler", "get", NOTE(name), "recipe=notes", "meme=true", "all=true", "json=false"]);
+        const got = await ctx.cli(["get", `title=${NOTE(name)}`, "recipe=notes", "meme=true", "aperture=arc", "json=false"]);
         const ok = got.code === 0 && got.stdout.includes(`the ${name} wrote this page`);
         said.push(`${name}: ${ok ? "its page reads back" : refusalOf(got)}`);
         if (!ok) return { ok: false, answer: said.join(" · ") };

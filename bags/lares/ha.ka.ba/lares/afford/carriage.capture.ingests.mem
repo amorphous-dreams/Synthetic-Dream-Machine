@@ -46,12 +46,12 @@ The one-shot flags (`yes=true`, `--tag-blobs`, `--in-wiki`, `--change-id`) ride 
 ```memetic-wikitext
 <<has entity=`arg` name=`source` params=`takes/dir-or-file needs/required ~ the disk source to scan: a directory or one file under the bags or wikis mirror tree`>>
 <<has entity=`arg` name=`to` params=`takes/bag-uri needs/required ~ the bag the carriers land in`>>
-<<has entity=`arg` name=`apply` params=`~ send the new and changed carriers through the island's INGEST gate; absent, a preview`>>
-<<has entity=`arg` name=`tag-blobs` params=`~ write the CAS opt-in flag for the large un-flagged carriers; writes no records`>>
-<<has entity=`arg` name=`in-wiki` params=`~ run the INGEST in the active wiki's island`>>
+<<has entity=`arg` name=`apply` params=`kind/switch ~ send the new and changed carriers through the island's INGEST gate; absent, a preview`>>
+<<has entity=`arg` name=`tag-blobs` params=`kind/switch ~ write the CAS opt-in flag for the large un-flagged carriers; writes no records`>>
+<<has entity=`arg` name=`in-wiki` params=`kind/switch ~ run the INGEST in the active wiki's island`>>
 <<has entity=`arg` name=`change-id` params=`takes/id ~ the wave's own change identity; absent, the verb mints one`>>
-<<has entity=`arg` name=`watch` params=`~ fire the gesture per settled wave instead of once`>>
-<<has entity=`arg` name=`debounce` params=`takes/ms ~ the watcher's quiet window in milliseconds; rides --watch alone`>>
+<<has entity=`arg` name=`watch` params=`kind/switch ~ fire the gesture per settled wave instead of once`>>
+<<has entity=`arg` name=`debounce` params=`takes/ms ~ the watcher's quiet window in milliseconds; rides watch=true alone`>>
 ```
 
 <<~/ahu>>
@@ -119,6 +119,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;fMKkprUjKRNKxFVgo8LumtNbQ2xfT-Q_fO-VLa9R9EM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6p-CtVKvMFe2KrDdtOOQJWN5VOm3QDZtkN8uGmpWnXM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

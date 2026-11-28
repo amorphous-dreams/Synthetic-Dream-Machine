@@ -30,15 +30,15 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 ```memetic-wikitext
 <<has entity=`arg` name=`surface` params=`takes/word ~ the transcript surface (claude, codex, copilot; all with bulk)`>>
 <<has entity=`arg` name=`pointer` params=`takes/word skins/mcp ~ the transcript to capture`>>
-<<has entity=`arg` name=`bulk` params=`~ capture every local transcript in one pass`>>
-<<has entity=`arg` name=`writeback` params=`~ re-enrich a wing`>>
-<<has entity=`arg` name=`dry-run` params=`~ preview one pointer's capture`>>
+<<has entity=`arg` name=`bulk` params=`kind/switch ~ capture every local transcript in one pass`>>
+<<has entity=`arg` name=`writeback` params=`kind/switch ~ re-enrich a wing`>>
+<<has entity=`arg` name=`dry-run` params=`kind/switch ~ preview one pointer's capture`>>
 <<has entity=`arg` name=`wing` params=`takes/word ~ the wing`>>
 <<has entity=`arg` name=`room` params=`takes/word ~ the room a capture lands in`>>
 <<has entity=`arg` name=`project` params=`takes/word ~ narrow claude to one project`>>
 <<has entity=`arg` name=`limit` params=`takes/count ~ cap each surface's transcripts, oldest first`>>
 <<has entity=`arg` name=`sensorium` params=`takes/word skins/mcp ~ the sensorium by name; absent, memory (the terminal names it before the verb: lares sense <sensorium> <verb>)`>>
-<<has entity=`arg` name=`all` params=`skins/cli ~ walk the whole tending movement: quiesce, baseline, drawers, bearing, projection, verify, resume`>>
+<<has entity=`arg` name=`all` params=`kind/switch skins/cli ~ walk the whole tending movement: quiesce, baseline, drawers, bearing, projection, verify, resume`>>
 ```
 
 <<~/ahu>>
@@ -90,6 +90,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;P6_rfzy3WJydV7Pxbt3fUQvOf4Hk31uZrgXzSD-Q_aE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XjrGoJ34Z7zibfERXSp0on_hg_ieCUutsSoxGcKE5P0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

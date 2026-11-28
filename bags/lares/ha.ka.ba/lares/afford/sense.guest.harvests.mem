@@ -37,7 +37,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.guest.harvests"
 !! takes ~ dry-run · wing · project
 
 ```memetic-wikitext
-<<has entity=`arg` name=`dry-run` params=`~ preview the harvest and write nothing`>>
+<<has entity=`arg` name=`dry-run` params=`kind/switch ~ preview the harvest and write nothing`>>
 <<has entity=`arg` name=`wing` params=`takes/name ~ one wing alone`>>
 <<has entity=`arg` name=`project` params=`takes/name ~ one project alone`>>
 ```
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;groZAdWWQB8A-M3OiX1xZEgDMLyAn_UFkN91nUWtxqg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UwFZVIjVvG2yjEdrIEugxbjeVHEnIzy6689jZpraKgs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

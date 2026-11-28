@@ -42,7 +42,7 @@ Reads the vessel journal through the daemon. Without `--wait` it returns the mat
 ```memetic-wikitext
 <<has entity=`arg` name=`since` params=`takes/epoch:writer:seq ~ read entries after this cursor; a malformed cursor refuses as usage`>>
 <<has entity=`arg` name=`kind` params=`takes/kind ~ one kind of entry: bag-projected`>>
-<<has entity=`arg` name=`wait` params=`~ hold until the first matching entry lands after the cursor`>>
+<<has entity=`arg` name=`wait` params=`kind/switch ~ hold until the first matching entry lands after the cursor`>>
 ```
 
 <<~/ahu>>
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;V1ByOMea4qmsAwTXK2XNbP__VXwXkLgU4tKZJobzie0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;l0p0mLc4g5RgD-jNxrIqYnfdh-eWUxivYPbJ4yi6PU0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

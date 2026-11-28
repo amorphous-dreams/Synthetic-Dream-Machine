@@ -38,7 +38,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.request.reads"
 
 ```memetic-wikitext
 <<has entity=`arg` name=`request` params=`takes/id needs/required seat/1 as/<requestId> ~ the request id`>>
-<<has entity=`arg` name=`cancel` params=`~ withdraw the request before it is read`>>
+<<has entity=`arg` name=`cancel` params=`kind/switch ~ withdraw the request before it is read`>>
 ```
 
 <<~/ahu>>
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2gDmmWKXoWdTmmV8BYtT2hb1QsAgwfg8VGqvxSpGKTI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Q-zcyaHY-r90IsjE2RjgJ6hNLzFdevUNtRFfupAvZuw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -30,7 +30,7 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 ```memetic-wikitext
 <<has entity=`arg` name=`name` params=`takes/word needs/required seat/1 as/<name> ~ the sensorium by name`>>
 <<has entity=`arg` name=`half-life` params=`takes/count skins/mcp ~ the pioneer's decay`>>
-<<has entity=`arg` name=`ephemeral` params=`skins/cli ~ the pioneer stands ephemeral, the one shape the terminal mints`>>
+<<has entity=`arg` name=`ephemeral` params=`kind/switch skins/cli ~ the pioneer stands ephemeral, the one shape the terminal mints`>>
 ```
 
 <<~/ahu>>
@@ -82,6 +82,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rcW-jxnd3GpBp17X1Vh4Mxidv9HJi5r_3SQyOtRE69o`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5Of2jAxILSVhBE5kdvPSIR2nblurb0rz7Owy9dL3Pt4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

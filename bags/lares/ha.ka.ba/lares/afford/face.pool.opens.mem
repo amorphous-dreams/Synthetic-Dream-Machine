@@ -39,7 +39,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.pool.opens"
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/face`>>
 
 ```memetic-wikitext
-<<has entity=`arg` name=`launch` params=`~ run the editor line instead of printing it alone`>>
+<<has entity=`arg` name=`launch` params=`kind/switch ~ run the editor line instead of printing it alone`>>
 ```
 
 <<~/ahu>>
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bZK0--PvCPvniZWbsNKAPbHOROEoUzKUFyG2q4RocE8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7P0ipa7MrttIbLsLduYaG1YyNQCu2EPK_uIbRZeAQds`>>
 
 <<^ code=`&#x0004;` to=`?`>>

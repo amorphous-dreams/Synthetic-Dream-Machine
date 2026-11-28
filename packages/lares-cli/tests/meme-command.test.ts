@@ -558,7 +558,7 @@ describe("lares meme project to=md — a bare re-project reads the pair's OWN re
  * address (`lar:///ha.ka.ba/lares/api/pono/prism`) resolves back to itself, so a pair projected
  * from it here proves current against the real corpus file, exactly as the shelf's pairs do.
  */
-describe("lares meme project to=md check=true — the fold of submission-parity", () => {
+describe("lares meme project to=md check=<dir> — the fold of submission-parity", () => {
   const clean = (d: string): void => {
     void cmdMeme(memeArgs(["project", PRISM], { to: "md", out: d }));
   };

@@ -39,7 +39,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.disk.merges"
 <<has entity=`arg` name=`uri` params=`takes/lar-address needs/required seat/1 as/<uri> ~ the carrier at the standoff`>>
 <<has entity=`arg` name=`key` params=`takes/key needs/required ~ the standoff's key, as lares shore printed it`>>
 <<has entity=`arg` name=`bag` params=`takes/bag-uri ~ the bag that holds the carrier`>>
-<<has entity=`arg` name=`yes` params=`~ name the intent for a call off a terminal; approves nothing by itself`>>
+<<has entity=`arg` name=`yes` params=`kind/switch ~ name the intent for a call off a terminal; approves nothing by itself`>>
 ```
 
 <<~/ahu>>
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;MrzrvU3YFJCLoN820ez4CiLFqf-7Th5TI761LyEytGo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;CHcFjUm7Fo4i0r6c0Pp72uG7unLVllfCT-kYBHUPlPg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

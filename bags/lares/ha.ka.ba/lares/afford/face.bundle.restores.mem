@@ -38,11 +38,11 @@ uri-path  = "ha.ka.ba/lares/afford/face.bundle.restores"
 !! takes ~ file · as · memory · cards · face
 
 ```memetic-wikitext
-<<has entity=`arg` name=`file` params=`takes/host-path seat/1 as/<file> ~ the bundle file; absent under --cards`>>
+<<has entity=`arg` name=`file` params=`takes/host-path seat/1 as/<file> ~ the bundle file; absent under cards=true`>>
 <<has entity=`arg` name=`as` params=`takes/handle-index ~ the free index the face lands at`>>
-<<has entity=`arg` name=`memory` params=`~ land the keys on the seat of the face the mount runs under`>>
-<<has entity=`arg` name=`cards` params=`~ rebuild a root from paper cards on a terminal`>>
-<<has entity=`arg` name=`face` params=`takes/key-or-prefix ~ under --cards, the root to rebuild by its public key or prefix`>>
+<<has entity=`arg` name=`memory` params=`kind/switch ~ land the keys on the seat of the face the mount runs under`>>
+<<has entity=`arg` name=`cards` params=`kind/switch ~ rebuild a root from paper cards on a terminal`>>
+<<has entity=`arg` name=`face` params=`takes/key-or-prefix ~ under cards=true, the root to rebuild by its public key or prefix`>>
 ```
 
 <<~/ahu>>
@@ -109,6 +109,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;abFA_oWMVocQ2AlbYhPFYyNkJ7alUxnccO7VOp4ZpjQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ac__3ror3ItwSQb0EMxwMRge5w4XR8ZNtiePwOtMOWo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

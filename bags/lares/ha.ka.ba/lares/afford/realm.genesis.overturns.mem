@@ -37,7 +37,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.genesis.overturns"
 
 ```memetic-wikitext
 <<has entity=`arg` name=`tier` params=`takes/word needs/required seat/1 as/<engine|grammar> ~ the tier`>>
-<<has entity=`arg` name=`apply` params=`~ apply the overturn; held today`>>
+<<has entity=`arg` name=`apply` params=`kind/switch ~ apply the overturn; held today`>>
 ```
 
 <<~/ahu>>
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;VLpo-kWze852g92HoJZ7xLKLnGgwMUN-ClL1pDlC8js`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tKXLRIUIjGfUG8tqoCz4AGK9QgvR0P66yFlD9Y3Zsr0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

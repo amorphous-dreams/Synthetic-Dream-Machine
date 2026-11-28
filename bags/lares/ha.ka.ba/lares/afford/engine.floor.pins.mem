@@ -45,9 +45,9 @@ uri-path  = "ha.ka.ba/lares/afford/engine.floor.pins"
 <<has entity=`arg` name=`image` params=`takes/digest ~ seed: print the pūlama frame for this image`>>
 <<has entity=`arg` name=`nexus` params=`takes/aid ~ the Nexus whose floor`>>
 <<has entity=`arg` name=`porch` params=`takes/origin ~ the porch origin read`>>
-<<has entity=`arg` name=`apply` params=`~ adopt: land the local floor`>>
-<<has entity=`arg` name=`commit` params=`~ adopt: commit a staged local floor`>>
-<<has entity=`arg` name=`revert` params=`~ adopt: revert a staged local floor`>>
+<<has entity=`arg` name=`apply` params=`kind/switch ~ adopt: land the local floor`>>
+<<has entity=`arg` name=`commit` params=`kind/switch ~ adopt: commit a staged local floor`>>
+<<has entity=`arg` name=`revert` params=`kind/switch ~ adopt: revert a staged local floor`>>
 ```
 
 <<~/ahu>>
@@ -114,6 +114,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ey6H-o9x7fI6MxJyEE-0SrSptSaK3ahU0E_nbOJNGVw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3iMxfpRUyB7NsoNov-J3uS3mRJ_hFoa8SKAQSuit7tY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

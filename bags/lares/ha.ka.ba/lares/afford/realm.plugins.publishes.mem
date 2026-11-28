@@ -39,8 +39,8 @@ uri-path  = "ha.ka.ba/lares/afford/realm.plugins.publishes"
 <<has entity=`arg` name=`what` params=`takes/word needs/required seat/1 as/<plugins> ~ what to publish`>>
 <<has entity=`arg` name=`source` params=`takes/host-path needs/required ~ the collection directory`>>
 <<has entity=`arg` name=`face` params=`takes/handle-index ~ the face that signs`>>
-<<has entity=`arg` name=`apply` params=`needs/one-of:apply,terms,land ~ publish`>>
-<<has entity=`arg` name=`terms` params=`needs/one-of:apply,terms,land ~ print the terms line a pūlama signs`>>
+<<has entity=`arg` name=`apply` params=`kind/switch needs/one-of:apply,terms,land ~ publish`>>
+<<has entity=`arg` name=`terms` params=`kind/switch needs/one-of:apply,terms,land ~ print the terms line a pūlama signs`>>
 <<has entity=`arg` name=`land` params=`takes/answer needs/one-of:apply,terms,land ~ land the pūlama's signed answer`>>
 ```
 
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SWBsU5LA5vDg3vac1UXm8772lu8Qft7iUQB-WRiElh0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hCMdxVxe-rJBuG3Fl4eHSlJ0VencN_3kaB7rIaJ1n0w`>>
 
 <<^ code=`&#x0004;` to=`?`>>

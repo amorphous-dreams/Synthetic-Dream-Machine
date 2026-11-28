@@ -44,7 +44,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.spirit.wakes"
 <<has entity=`arg` name=`aperture` params=`takes/rank default/measure ~ the fold's grain: a rank, a level 0..20, or the pair 10/measure`>>
 <<has entity=`arg` name=`source` params=`takes/word default/startup ~ the wake's turn: startup, resume, fork, compaction or precompact`>>
 <<has entity=`arg` name=`instance` params=`takes/session-id ~ the waking instance; joins the presence`>>
-<<has entity=`arg` name=`held` params=`~ the session's own counter holds this instance`>>
+<<has entity=`arg` name=`held` params=`kind/switch ~ the session's own counter holds this instance`>>
 <<has entity=`arg` name=`title` params=`takes/title ~ wake onto another record the shrine names`>>
 <<has entity=`arg` name=`mandate` params=`takes/ref ~ a summoned instance's mandate as <uri>@<hash>`>>
 ```
@@ -116,6 +116,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;FGBvOsugRSEDnZtY3qnYZdGnSd8v1aIjnD20fL4CJww`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9mFwKFmOMzHmD5eusOfoH_bdnoE9_aBE4qRPj09XV84`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -27,17 +27,11 @@ import { join } from "node:path";
 import { standingPath, standingVerdict } from "@lararium/mesh/rendezvous-path";
 import { faceStandsOnDisk } from "./floor-cure.js";
 import { larBootstrapPath, larDataDir, larRoot } from "./env.js";
-import { ASK_BUDGET_FLAG, askBudgetMs } from "./ask-budget.js";
+import { ASK_BUDGET_PARAM, askBudgetMs } from "./ask-budget.js";
 import { udsAlive } from "./local-connector.js";
 
 /** The report file's name stem: `standing-report.<tag>` in the house's config bind. The shims read the same name. */
 export const STANDING_REPORT_STEM = "standing-report.";
-/**
- * THE RETIRED ASK. A shim that reads no report appends this word to every followed exec. The entry takes it off and acts on
- * nothing (the exit stays the verb's own, so that shim reads a bare 0 and takes its own observe reading): a skew in that
- * direction breaks no call either. No shim of this house sends it any more.
- */
-const RETIRED_STANDING_ASK = "--standing-report";
 /** A shim's exec tag: eight random bytes in hex (both shims mint it so). Anything else names no report file. */
 const EXEC_TAG = /^[0-9a-f]{16}$/;
 
@@ -49,31 +43,28 @@ export function readStandingMarker(): string | null {
 
 /** What a call declares to the entry itself, beside its verb: a budget on this process's wait. */
 export interface EntryAsks {
-  /** The argv the verb reads: every word but the entry's own budget flag. */
+  /** The argv the verb reads: every token but the entry's own budget param. */
   readonly argv:     string[];
   readonly budgetMs: number | null;
-  /** Set where the call carried the retired standing ask: its shim reads no report, so none gets written. */
-  readonly retiredAsk?: true;
 }
 
 /**
- * Take the entry's own word off the argv. A CALLER'S BUDGET STAYS A WORD: it declares the caller's own wait (an input
+ * Take the entry's own param off the argv. A CALLER'S BUDGET RIDES THE CALL: it declares the caller's own wait (an input
  * the CLI cannot read from anywhere else), so it rides the argv of the one call and no environment, and a child this verb
- * spawns never inherits it. It takes `--ask-budget-ms=<N>` or `--ask-budget-ms <N>`; a value that names no positive whole
- * number declares none. The retired standing ask comes off too and changes no exit; it only marks a shim that reads no report.
+ * spawns never inherits it. It reads `ask-budget-ms=<N>` wherever it stands before a `--`; a value that names no positive
+ * whole number declares none. Past a `--` every token rides the verb whole.
  */
 export function takeEntryAsks(argv: readonly string[]): EntryAsks {
   const kept: string[] = [];
   let budgetMs: number | null = null;
-  let retiredAsk = false;
+  const prefix = `${ASK_BUDGET_PARAM}=`;
   for (let i = 0; i < argv.length; i += 1) {
     const word = argv[i]!;
-    if (word === RETIRED_STANDING_ASK) { retiredAsk = true; continue; }
-    if (word === ASK_BUDGET_FLAG) { budgetMs = askBudgetMs(argv[i + 1]); i += 1; }
-    else if (word.startsWith(`${ASK_BUDGET_FLAG}=`)) budgetMs = askBudgetMs(word.slice(ASK_BUDGET_FLAG.length + 1));
+    if (word === "--") { kept.push(...argv.slice(i)); break; }
+    if (word.startsWith(prefix)) budgetMs = askBudgetMs(word.slice(prefix.length));
     else kept.push(word);
   }
-  return retiredAsk ? { argv: kept, budgetMs, retiredAsk: true } : { argv: kept, budgetMs };
+  return { argv: kept, budgetMs };
 }
 
 /** What the verdict reads: whether a vessel answers, the standing it published, and whether a face stands on disk. */

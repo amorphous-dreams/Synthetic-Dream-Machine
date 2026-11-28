@@ -41,7 +41,7 @@ The verb first asks the vessel which bags hold the tiddler (a title no bag holds
 ```memetic-wikitext
 <<has entity=`arg` name=`uri` params=`takes/lar-address needs/required ~ the tiddler to pull, by its lar: address`>>
 <<has entity=`arg` name=`to` params=`takes/bag-uri ~ the draft bag the copy lands in; absent, the active wiki's draft`>>
-<<has entity=`arg` name=`yes` params=`~ the intent a call off a terminal names in place of the y/N a terminal asks`>>
+<<has entity=`arg` name=`yes` params=`kind/switch ~ the intent a call off a terminal names in place of the y/N a terminal asks`>>
 ```
 
 <<~/ahu>>
@@ -105,6 +105,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Nh7t_56-SOArhSjqH35xjjdy90UsjQ87zZCARcPTwl8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Mh7OIorvI77xtXBya-P5Imf8BuvqwRkqhOnYcUKNVPA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

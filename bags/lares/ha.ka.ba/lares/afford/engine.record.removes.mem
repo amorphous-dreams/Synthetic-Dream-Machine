@@ -58,7 +58,7 @@ A rendered tiddler (one carrying `rendered-from`) refuses `rendered-derives`: on
 <<has entity=`cell` name=`_!` params=`mu/precision ~ the dry diff: the summary and each record it would move, fields before and after and text line by line, landing nothing`>>
 <<has entity=`arg` name=`title` params=`takes/title needs/required seat/1 as/<title> ~ the record removed; a slot title <root>#/x leaves as the cut on its parent`>>
 <<has entity=`arg` name=`base` params=`takes/hash ~ the hash last read; a stale one answers conflict and nothing moves`>>
-<<has entity=`arg` name=`family` params=`~ name the family act: a meme root leaves with its slots, one change`>>
+<<has entity=`arg` name=`family` params=`kind/switch ~ name the family act: a meme root leaves with its slots, one change`>>
 <<has entity=`arg` name=`way` params=`takes/kapae-or-reveal ~ the delete's own choice (the set panel's mode stays the shared key); over a lower layer's record: kapae hides it, reveal surfaces it; none, a plain delete`>>
 ```
 
@@ -152,6 +152,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;H_jLO0uym3-3DyQDlolvcj2BfRQlnR_GdP0nrUiC_PQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sqjf4hjsLMsB4YnJNloPfAnBDfOy7wDed_eM0ruDEKg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

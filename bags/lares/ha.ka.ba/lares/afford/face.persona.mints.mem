@@ -41,9 +41,9 @@ uri-path  = "ha.ka.ba/lares/afford/face.persona.mints"
 <<has entity=`arg` name=`index` params=`takes/handle-index needs/required seat/1 as/<index> ~ the face's handle index, a whole number from 0`>>
 <<has entity=`arg` name=`name` params=`takes/label needs/required ~ the private pet name`>>
 <<has entity=`arg` name=`handle` params=`takes/name ~ the outward Handle`>>
-<<has entity=`arg` name=`seat` params=`~ stand the face for a Kahu chair on this node`>>
-<<has entity=`arg` name=`chair` params=`takes/label ~ beside --seat, the private chair label`>>
-<<has entity=`arg` name=`split-root` params=`~ opt into the 2-of-3 recovery split`>>
+<<has entity=`arg` name=`seat` params=`kind/switch ~ stand the face for a Kahu chair on this node`>>
+<<has entity=`arg` name=`chair` params=`takes/label ~ beside seat=true, the private chair label`>>
+<<has entity=`arg` name=`split-root` params=`kind/switch ~ opt into the 2-of-3 recovery split`>>
 ```
 
 <<~/ahu>>
@@ -109,6 +109,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ItoDUf5y27wTWD7OnaVRy6G30AnQVnmJtc3NDQclnJ0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;t3bytTVFge4R1fa--5OTLpLoc-xMMNZIIsMRh-FmLIM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

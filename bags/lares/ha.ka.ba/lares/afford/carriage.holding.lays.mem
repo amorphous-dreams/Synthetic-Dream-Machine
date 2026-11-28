@@ -38,16 +38,16 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.holding.lays"
 !! takes ~ apply · lag · workbench · lift-kahua · verbose · change-id · dry-run · in-wiki · shadow · tag-blobs
 
 ```memetic-wikitext
-<<has entity=`arg` name=`apply` params=`~ land the lay; preview bare`>>
-<<has entity=`arg` name=`lag` params=`~ read canon's lag and the floor drift, writing nothing`>>
-<<has entity=`arg` name=`workbench` params=`~ walk the checkout's workbench folders alone`>>
+<<has entity=`arg` name=`apply` params=`kind/switch ~ land the lay; preview bare`>>
+<<has entity=`arg` name=`lag` params=`kind/switch ~ read canon's lag and the floor drift, writing nothing`>>
+<<has entity=`arg` name=`workbench` params=`kind/switch ~ walk the checkout's workbench folders alone`>>
 <<has entity=`arg` name=`lift-kahua` params=`takes/index ~ lift kahua items for this face`>>
-<<has entity=`arg` name=`verbose` params=`~ print every line`>>
+<<has entity=`arg` name=`verbose` params=`kind/switch ~ print every line`>>
 <<has entity=`arg` name=`change-id` params=`takes/id ~ passed to the act and ingest beneath`>>
-<<has entity=`arg` name=`dry-run` params=`~ passed to the act and ingest beneath`>>
-<<has entity=`arg` name=`in-wiki` params=`~ passed to the act beneath`>>
-<<has entity=`arg` name=`shadow` params=`~ passed to the act and ingest beneath`>>
-<<has entity=`arg` name=`tag-blobs` params=`~ passed to the ingest beneath`>>
+<<has entity=`arg` name=`dry-run` params=`kind/switch ~ passed to the act and ingest beneath`>>
+<<has entity=`arg` name=`in-wiki` params=`kind/switch ~ passed to the act beneath`>>
+<<has entity=`arg` name=`shadow` params=`kind/switch ~ passed to the act and ingest beneath`>>
+<<has entity=`arg` name=`tag-blobs` params=`kind/switch ~ passed to the ingest beneath`>>
 ```
 
 <<~/ahu>>
@@ -111,6 +111,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wMP0gLUTaAtQum09n9dno5PeVUjOO05NKxKVifVsOAE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ry_k6gtbPhCI58IpvztxPBGXK92bJnR4dSIDu3nl1vs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

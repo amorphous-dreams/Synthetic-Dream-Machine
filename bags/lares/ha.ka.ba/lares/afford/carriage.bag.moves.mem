@@ -43,13 +43,13 @@ A terminal asks `Proceed? [y/N]` before it submits; `yes=true` names the intent 
 !! takes ~ title · from · to · shadow · change-id · in-wiki · yes · mu
 
 ```memetic-wikitext
-<<has entity=`arg` name=`title` params=`takes/title ~ the tiddler's title; absent beside --from and --to, the whole layer moves`>>
+<<has entity=`arg` name=`title` params=`takes/title ~ the tiddler's title; absent beside from= and to=, the whole layer moves`>>
 <<has entity=`arg` name=`from` params=`takes/bag-uri needs/required ~ the source bag (or the layer a promotion empties)`>>
 <<has entity=`arg` name=`to` params=`takes/bag-uri ~ the destination bag; a title-grain MOVE of a tombstone may leave it out and read the candidate holders`>>
-<<has entity=`arg` name=`shadow` params=`~ hide the title from a bag that holds none; names one tombstoned title, so a layer move refuses it`>>
+<<has entity=`arg` name=`shadow` params=`kind/switch ~ hide the title from a bag that holds none; names one tombstoned title, so a layer move refuses it`>>
 <<has entity=`arg` name=`change-id` params=`takes/id ~ the change's own identity, named once so a re-send reads as the same change; absent, the verb mints one`>>
-<<has entity=`arg` name=`in-wiki` params=`~ run the act in the active wiki's island`>>
-<<has entity=`arg` name=`yes` params=`~ the intent a call off a terminal names in place of the y/N a terminal asks`>>
+<<has entity=`arg` name=`in-wiki` params=`kind/switch ~ run the act in the active wiki's island`>>
+<<has entity=`arg` name=`yes` params=`kind/switch ~ the intent a call off a terminal names in place of the y/N a terminal asks`>>
 <<~ kahea uri=`lar:///ha.ka.ba/lares/api/pono/affordance#/takes/mu`>>
 <<has entity=`cell` name=`_0` params=`mu/pentacle ~ a dry run: the island walks the act through a capturing access and names the effect it would land, committing nothing`>>
 ```
@@ -119,6 +119,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;q6lurZrwSgfifUqDIsFRUhBhhuBSvGH9Cakkm6KVZeg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;H9UmS83t5YtLfZewyaS10uWSpuuoxgcWOw9KgsLjB9A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

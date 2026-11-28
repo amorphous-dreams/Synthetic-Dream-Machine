@@ -28,6 +28,8 @@ export interface AffordancePackCarrier {
   readonly params: Readonly<Record<string, string>>;
   /** Per surface the carrier skins: the argument spellings its door takes. */
   readonly takes: Readonly<Record<string, readonly string[]>>;
+  /** Per surface the carrier skins: each spelling in `takes` with its stated kind, `switch` or the value shape its `takes/` names. */
+  readonly kinds?: Readonly<Record<string, Readonly<Record<string, string>>>>;
   /** Per surface the carrier skins: every example and every cure, runnable. */
   readonly calls: Readonly<Record<string, readonly string[]>>;
   /**

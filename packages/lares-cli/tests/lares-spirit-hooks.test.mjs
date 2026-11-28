@@ -191,10 +191,10 @@ test("the pure parts", async (t) => {
 });
 
 test("a read started with a budget hands it to its child as the argv's last word; one started with none hands none", async () => {
-  const { spawnRead, ASK_BUDGET_FLAG } = await import(resolve(sourceDir, "lares-wake-core.mjs"));
+  const { spawnRead, ASK_BUDGET_PARAM } = await import(resolve(sourceDir, "lares-wake-core.mjs"));
   // The child prints the words after its own script: the argv a door would read.
   const echo = ["-e", `process.stdout.write(process.argv.slice(1).join(" ") || "none")`, "--"];
-  assert.equal((await spawnRead(process.execPath, [...echo, "vessel", "read"], null, 3500).done).stdout, `vessel read ${ASK_BUDGET_FLAG}=3500`);
+  assert.equal((await spawnRead(process.execPath, [...echo, "vessel", "read"], null, 3500).done).stdout, `vessel read ${ASK_BUDGET_PARAM}=3500`);
   // CONTROL: no budget, and a value that names none, leave the child's argv as it stands; no environment name carries one.
   assert.equal((await spawnRead(process.execPath, [...echo, "vessel", "read"]).done).stdout, "vessel read");
   assert.equal((await spawnRead(process.execPath, [...echo, "vessel", "read"], null, 0).done).stdout, "vessel read");
@@ -220,7 +220,7 @@ test("the hooks, spawned whole", async (t) => {
   /** A shim that logs each argv (the ask budget, a call's last word, left out), keeps a `file=-` stdin, and answers by the argv's leading words (a key matches a prefix). */
   const plant = (answers) => writeFileSync(shim, [
     "#!/bin/sh",
-    `line=""; for word in "$@"; do case "$word" in --ask-budget-ms=*) ;; *) line="\${line:+$line }$word" ;; esac; done`,
+    `line=""; for word in "$@"; do case "$word" in ask-budget-ms=*) ;; *) line="\${line:+$line }$word" ;; esac; done`,
     `printf '%s\\n' "$line" >> '${log}'`,
     `case " $* " in *" file=- "*) cat > '${fed}' ;; esac`,
     'case "$*" in',
@@ -259,9 +259,9 @@ test("the hooks, spawned whole", async (t) => {
         "",
       ].join("\n"), { mode: 0o755 });
       spawn("lares-om-hook.mjs", ["lares-alpha"], at({ hook_event_name: "SessionStart", source: "startup", session_id: "s-budget", session_title: "lares-alpha" }));
-      assert.match(calls(), new RegExp(`^vessel stand observe=true json=true --ask-budget-ms=${OBSERVE_BUDGET_MS}$`, "m"));
-      assert.match(calls(), new RegExp(`^spirit om lares-alpha .* --ask-budget-ms=${OM_BUDGET_MS}$`, "m"));
-      for (const line of calls().split("\n").filter(Boolean)) assert.match(line, /--ask-budget-ms=\d+$/);
+      assert.match(calls(), new RegExp(`^vessel stand observe=true json=true ask-budget-ms=${OBSERVE_BUDGET_MS}$`, "m"));
+      assert.match(calls(), new RegExp(`^spirit om lares-alpha .* ask-budget-ms=${OM_BUDGET_MS}$`, "m"));
+      for (const line of calls().split("\n").filter(Boolean)) assert.match(line, / ask-budget-ms=\d+$/);
     });
 
     await t.test("om: with the vessel up, the seated familiar wakes in one read beside the title; the counter keeps the pet, epoch, cadence and title", () => {

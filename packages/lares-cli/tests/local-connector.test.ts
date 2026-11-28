@@ -123,7 +123,7 @@ describe("armAskBudget: a caller's declared budget ends this process's own wait"
     expect(disarm).not.toBeNull();
     await settle(150);
     expect(left).toEqual([ASK_BUDGET_EXIT]);
-    expect(said.join("\n")).toMatch(/budget \(--ask-budget-ms=40\) ran out/);
+    expect(said.join("\n")).toMatch(/budget \(ask-budget-ms=40\) ran out/);
     expect(said.join("\n")).toMatch(/lares vessel request/);
   });
 

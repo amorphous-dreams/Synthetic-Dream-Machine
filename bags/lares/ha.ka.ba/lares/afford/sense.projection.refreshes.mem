@@ -39,7 +39,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.projection.refreshes"
 ```memetic-wikitext
 <<has entity=`arg` name=`query` params=`takes/words seat/1 as/<query…> ~ a recall to witness after the pave`>>
 <<has entity=`arg` name=`k` params=`takes/count default/5 ~ the witness's hits`>>
-<<has entity=`arg` name=`all-strata` params=`~ index every stratum, the murmur too`>>
+<<has entity=`arg` name=`all-strata` params=`kind/switch ~ index every stratum, the murmur too`>>
 <<has entity=`arg` name=`sensorium-root` params=`takes/host-path ~ the sensorium's root; the leading sensorium name threads it, absent the memory sensorium`>>
 ```
 
@@ -104,6 +104,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bA-qoJoz1SNPYYcJh39cFxAjira9JLY0piLzW_8UuAw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lIafjptlTmxUZOCzoapG6Bshu6ANLwq0NW27bplFqGQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

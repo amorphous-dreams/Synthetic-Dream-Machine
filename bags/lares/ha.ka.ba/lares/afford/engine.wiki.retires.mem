@@ -39,8 +39,8 @@ uri-path  = "ha.ka.ba/lares/afford/engine.wiki.retires"
 ```memetic-wikitext
 <<has entity=`arg` name=`slug` params=`takes/slug needs/required seat/1 as/<slug> ~ the wiki slug`>>
 <<has entity=`arg` name=`face` params=`takes/handle-index ~ the owner face, by persona index; absent, the worn face`>>
-<<has entity=`arg` name=`dry-run` params=`~ read the counts and write nothing`>>
-<<has entity=`arg` name=`force` params=`needs/all-of:force,count ~ retire a shell holding authored records`>>
+<<has entity=`arg` name=`dry-run` params=`kind/switch ~ read the counts and write nothing`>>
+<<has entity=`arg` name=`force` params=`kind/switch needs/all-of:force,count ~ retire a shell holding authored records`>>
 <<has entity=`arg` name=`count` params=`takes/count needs/all-of:force,count ~ the authored record count the dry run read`>>
 ```
 
@@ -120,6 +120,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;y3pHgesgUwGWULwu-Z-h70vEThx_3xJNzYbNGoSTEtA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BUlOp1OOS0DlJIgPuODcmzkkV_bD-TeLfMq0NQICuuc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

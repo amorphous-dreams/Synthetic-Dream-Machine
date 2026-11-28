@@ -48,7 +48,7 @@ Read one law whole through the read door: `lares get title=<title> aperture=arc`
 ```memetic-wikitext
 <<has entity=`arg` name=`limit` params=`takes/count ~ rows per page; the door's ceiling of 32 holds`>>
 <<has entity=`arg` name=`after` params=`takes/cursor ~ the page behind a cursor a prior answer named in next`>>
-<<has entity=`arg` name=`all` params=`~ follow every cursor to the end and answer every row`>>
+<<has entity=`arg` name=`all` params=`kind/switch ~ follow every cursor to the end and answer every row`>>
 ```
 
 <<~/ahu>>
@@ -110,6 +110,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KmAQqaNEQchbotZboanKXLvtnuazb7ZlwnaRaY-NHsY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-Sgqe3NS5cAvvPVFC9M309cajf-aA6gfgqGBibEG2Ac`>>
 
 <<^ code=`&#x0004;` to=`?`>>

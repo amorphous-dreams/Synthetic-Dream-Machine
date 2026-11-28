@@ -2105,7 +2105,7 @@ def main() -> None:
     else:
         if not uds.available():
             raise SystemExit(
-                f"lares_mcp: no lares daemon at {uds.socket_path()} — start one with `lares vessel stand --foreground`.\n"
+                f"lares_mcp: no lares daemon at {uds.socket_path()} — start one with `lares vessel stand foreground=true`.\n"
                 "  This surface routes every verb through the @daemon so the palace keeps ONE owner.\n"
                 "  For a single-session direct open, pass --standalone --sensorium <dir>."
             )

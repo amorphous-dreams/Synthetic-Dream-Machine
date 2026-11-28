@@ -38,7 +38,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.house.cuts"
 ```memetic-wikitext
 <<has entity=`arg` name=`workspace` params=`takes/name needs/required ~ the bound workspace the bundle lays into`>>
 <<has entity=`arg` name=`into` params=`takes/path ~ the path inside the workspace`>>
-<<has entity=`arg` name=`accept-omissions` params=`~ cut though some memory stays behind`>>
+<<has entity=`arg` name=`accept-omissions` params=`kind/switch ~ cut though some memory stays behind`>>
 <<has entity=`arg` name=`face` params=`takes/index ~ the keep's face, a whole persona index from 0`>>
 ```
 
@@ -108,6 +108,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EAaDxQNAIuIPSEawDf0JYWjjGYWKgTxeMn-GiNJW6AQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FDBt2VmGR-6rYPLhK5sAe_bwiua2bl6vTDLwpsPjHbU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

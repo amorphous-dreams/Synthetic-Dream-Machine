@@ -39,7 +39,7 @@ describe("★ held is not declared ★", () => {
 
   test("an ordinary bag names the verb that DOES stand", () => {
     const f = witnessHoldings(reading({ onDisk: new Map([[NOTES, ["a.mem"]]]) }));
-    expect(f[0]?.correction).toBe(`lares ingest --bag ${NOTES}`);
+    expect(f[0]?.correction).toBe(`lares ingest source=<mirror>/a.mem to=${NOTES} apply=true`);
   });
 
   test("a path already declared raises nothing — agreement is silent", () => {

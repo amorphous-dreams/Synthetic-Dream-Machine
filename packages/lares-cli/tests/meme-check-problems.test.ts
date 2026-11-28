@@ -73,7 +73,7 @@ describe("meme check --format=problems — the goldens", () => {
   });
 
   test("beside a sibling reading, or on normalize, the format refuses as usage", () => {
-    expect(lares(["meme", "check", "format=problems", "gradient=torn.mem"]).code).toBe(2);
+    expect(lares(["meme", "check", "format=problems", "gradient=true", "torn.mem"]).code).toBe(2);
     expect(lares(["meme", "normalize", "format=problems", "torn.mem"]).code).toBe(2);
   });
 });

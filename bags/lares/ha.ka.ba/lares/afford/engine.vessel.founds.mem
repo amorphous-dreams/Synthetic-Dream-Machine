@@ -38,14 +38,14 @@ uri-path  = "ha.ka.ba/lares/afford/engine.vessel.founds"
 !! takes ~ hearth · name · restore · chair · genesis · storage · root · force
 
 ```memetic-wikitext
-<<has entity=`arg` name=`hearth` params=`~ found a hearth with persona zero and its seed charter`>>
-<<has entity=`arg` name=`name` params=`takes/label ~ persona zero's private label; a hearth founding needs it unless --restore names a bundle`>>
+<<has entity=`arg` name=`hearth` params=`kind/switch ~ found a hearth with persona zero and its seed charter`>>
+<<has entity=`arg` name=`name` params=`takes/label ~ persona zero's private label; a hearth founding needs it unless restore= names a bundle`>>
 <<has entity=`arg` name=`restore` params=`takes/host-path ~ found with a restored face from this backup bundle as persona zero`>>
 <<has entity=`arg` name=`chair` params=`takes/label ~ persona zero's private chair label`>>
 <<has entity=`arg` name=`genesis` params=`takes/dir ~ the genesis dir the founding reads`>>
 <<has entity=`arg` name=`storage` params=`takes/dir ~ the store the founding writes`>>
 <<has entity=`arg` name=`root` params=`takes/dir ~ the vessel root (LAR_ROOT) this call reads`>>
-<<has entity=`arg` name=`force` params=`~ re-seed the bootstrap over a founded hearth; a hand act`>>
+<<has entity=`arg` name=`force` params=`kind/switch ~ re-seed the bootstrap over a founded hearth; a hand act`>>
 ```
 
 <<~/ahu>>
@@ -111,6 +111,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;q8LqpuytD0pa6JVUQUL1d-Z8KV4oLRRFP7KpJ8_b4nM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MSFUo9s2qwew17KvRQVTmslsVoWXXOtaRjYQa-u69EI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

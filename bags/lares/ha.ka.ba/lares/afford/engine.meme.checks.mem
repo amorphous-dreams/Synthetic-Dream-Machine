@@ -40,10 +40,10 @@ uri-path  = "ha.ka.ba/lares/afford/engine.meme.checks"
 ```memetic-wikitext
 <<has entity=`arg` name=`files` params=`takes/host-paths needs/required seat/1 as/<file.mem…> ~ the carriers to read, every word past the verb`>>
 <<has entity=`arg` name=`format` params=`takes/word ~ problems, the one format this door reads`>>
-<<has entity=`arg` name=`gradient` params=`~ the gradient survey in the law's place`>>
-<<has entity=`arg` name=`edges` params=`~ the edge survey in the law's place`>>
-<<has entity=`arg` name=`sitting` params=`~ the sitting survey in the law's place`>>
-<<has entity=`arg` name=`grammar` params=`~ read the grammar-authority clauses too`>>
+<<has entity=`arg` name=`gradient` params=`kind/switch ~ the gradient survey in the law's place`>>
+<<has entity=`arg` name=`edges` params=`kind/switch ~ the edge survey in the law's place`>>
+<<has entity=`arg` name=`sitting` params=`kind/switch ~ the sitting survey in the law's place`>>
+<<has entity=`arg` name=`grammar` params=`kind/switch ~ read the grammar-authority clauses too`>>
 ```
 
 <<~/ahu>>
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BXmqqUEBopj1T5vgNEVCfmeHQT5DKrJ7z0y6Cz0IGAs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2p7MK_jXHjslqasKaYB9ZGeBDEC9l4LTmIbpIP4ZwjE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

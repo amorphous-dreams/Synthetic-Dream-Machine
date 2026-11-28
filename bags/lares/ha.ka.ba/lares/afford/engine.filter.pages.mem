@@ -60,13 +60,13 @@ A rendered tiddler's slice: where one read of the whole render (the record carry
 <<has entity=`arg` name=`recipe` params=`takes/slug needs/required default/default ~ the wiki whose engine runs the filter; default names the worn face's daemon wiki`>>
 <<has entity=`arg` name=`bag` params=`takes/slug skins/cli ~ a bag names no wiki and takes no filter; it refuses wiki-not-anchored by name`>>
 <<has entity=`arg` name=`fields` params=`takes/names ~ each row carries these fields`>>
-<<has entity=`arg` name=`collapse` params=`skins/mcp ~ the seat's tool alone, until it folds into the call: each row answers its bytes, and a meme root its slots`>>
+<<has entity=`arg` name=`collapse` params=`kind/switch skins/mcp ~ the seat's tool alone, until it folds into the call: each row answers its bytes, and a meme root its slots`>>
 <<has entity=`arg` name=`match` params=`takes/words ~ each row carries its matching lines; a /source/flags spelling reads as a regexp`>>
 <<has entity=`arg` name=`context` params=`takes/count ~ lines, 0 to 8, around each match, beside match`>>
 <<has entity=`arg` name=`limit` params=`takes/count ~ rows per page; the ceiling of 32 holds`>>
 <<has entity=`arg` name=`max-bytes` params=`takes/count ~ the byte cap on one page, 65536 by default`>>
 <<has entity=`arg` name=`after` params=`takes/cursor ~ the page behind the cursor a prior answer named in next`>>
-<<has entity=`arg` name=`all` params=`skins/cli ~ follow every cursor to the end`>>
+<<has entity=`arg` name=`all` params=`kind/switch skins/cli ~ follow every cursor to the end`>>
 <<has entity=`arg` name=`target` params=`takes/face ~ another lit face this read visits, by handle index or pet name`>>
 ```
 
@@ -157,6 +157,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;mXPUkiy9DRGBKuUc2okDVx1kwsswdgEHEaed8uMxujM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nN86hZKMtGrY2DUCqLnewvYiC3PcKpITwEEowZSsjUM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

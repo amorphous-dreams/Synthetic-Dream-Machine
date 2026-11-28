@@ -6,6 +6,8 @@
  * dispatcher narrows the line to the carrier its words route to (`lineTakes`).
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { dispatch } from "../src/bin/lares.js";
 import { needsFreshBuild } from "../src/build-freshness.js";
 import { parseArgs } from "../src/parse-args.js";
@@ -110,5 +112,37 @@ describe("a folded sub-path refuses the flags it does not read", () => {
       expect(r.code, argv.join(" ")).toBe(2);
       expect(r.err).toContain("dash-flag-burned: dash flags burned; params ride as name=value (lares help get)");
     }
+  });
+});
+
+describe("★ each param binds by the kind its carrier states (kind/switch, or a value) ★", () => {
+  test("a switch given a word refuses by name, and its cure rewrites the caller's own line with name=true", async () => {
+    const r = await run(["vault", "unbind", "abc", "rotate=abc", "json=false"]);
+    expect(r.code).toBe(2);
+    expect(r.err).toContain("rotate= names a switch for `lares vault`");
+    expect(r.err).toContain("run `lares vault unbind abc rotate=true json=false`");
+  });
+  test("a global param rides as a switch: json= given a word refuses likewise", async () => {
+    const r = await run(["vault", "status", "json=yes"]);
+    expect(r.code).toBe(2);
+    expect(r.err).toContain("json= names a switch");
+    expect(r.err).toContain("run `lares vault status json=true`");
+  });
+  test("a value given true refuses by name, and its cure names the value shape the carrier's takes/ states", async () => {
+    const r = await run(["vault", "unlock", "face=true", "json=false"]);
+    expect(r.code).toBe(2);
+    expect(r.err).toContain("face= takes a value for `lares vault`, never true alone");
+    expect(r.err).toContain("face=<handle-index>");
+  });
+  test("★ every cli carrier's arg row states its kind: kind/switch, a takes/ shape, or a seat; none rides inferred ★", () => {
+    const afford = join(import.meta.dirname, "..", "..", "..", "bags", "lares", "ha.ka.ba", "lares", "afford");
+    const unstated: string[] = [];
+    for (const file of readdirSync(afford).filter((f) => f.endsWith(".mem"))) {
+      const text = readFileSync(join(afford, file), "utf8");
+      for (const m of text.matchAll(/<<has entity=`arg` name=`([^`]+)` params=`([^`]*)`>>/g)) {
+        if (!/(^|\s)(kind\/switch|takes\/\S+|seat\/\d+)/.test(m[2]!)) unstated.push(`${file} ${m[1]}`);
+      }
+    }
+    expect(unstated, "state kind/switch or a takes/ shape on each row").toEqual([]);
   });
 });

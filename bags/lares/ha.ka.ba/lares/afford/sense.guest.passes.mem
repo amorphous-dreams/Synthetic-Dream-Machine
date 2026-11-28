@@ -28,7 +28,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.guest.passes"
 ```memetic-wikitext
 <<has entity=`arg` name=`verb` params=`takes/word seat/1 as/<verb> ~ a vendored subverb`>>
 <<has entity=`arg` name=`words` params=`takes/words seat/2 as/<words…> ~ the words the vendored CLI reads`>>
-<<has entity=`arg` name=`help-mempalace` params=`~ print the vendored CLI's own top-level help`>>
+<<has entity=`arg` name=`help-mempalace` params=`kind/switch ~ print the vendored CLI's own top-level help`>>
 ```
 
 <<~/ahu>>
@@ -80,6 +80,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JKf2mNLzgv00ZCMNes81u-O3r9NXen765TUPIhmgV7g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;w6MmqAjKB7vj_ntnpklHe2yFRyF0ANVWSej57Xn-1Ew`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -127,7 +127,7 @@ async function run(a: ParsedArgs): Promise<{ code: number; out: Record<string, u
   } finally { log.mockRestore(); err.mockRestore(); out.mockRestore(); }
 }
 
-describe("lares nexus seal import carry=true · accept-carriage --nexus · seal show (in process)", () => {
+describe("lares nexus seal import carry=<file> · accept-carriage --nexus · seal show (in process)", () => {
   let root: string;
   let prior: string | undefined;
   let scratch: string;

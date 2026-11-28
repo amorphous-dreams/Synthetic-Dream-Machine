@@ -65,7 +65,7 @@ A rendered tiddler answers whole here: a source marked `projection: rendered` de
 <<has entity=`cell` name=`?0` params=`mu/cup ~ the read for relations: the same bytes at the asked range, its has line naming what it reaches (tags, family, base)`>>
 <<has entity=`cell` name=`!0` params=`mu/sword ~ the read asserted: the same bytes at the asked range, a composed carrier's shape checked and a fault exiting 1; a terminal prints the machine answer verbatim`>>
 <<has entity=`arg` name=`title` params=`takes/title seat/1 as/<title> ~ the record, any right-intent string, a lar: title whole; absent beside meme, the family listing`>>
-<<has entity=`arg` name=`meme` params=`~ the carrier lens: a meme's root and slots recomposed into one sealed carrier; with no title, the family listing`>>
+<<has entity=`arg` name=`meme` params=`kind/switch ~ the carrier lens: a meme's root and slots recomposed into one sealed carrier; with no title, the family listing`>>
 <<has entity=`arg` name=`grain` params=`takes/grain skins/mcp ~ the seat's tool alone, until it folds into the call: skinny, fat, handle, resolved, slot or whole; none named, the door picks by size`>>
 <<has entity=`arg` name=`slot` params=`takes/slot-path ~ one slot of the meme the title names, as #/name`>>
 <<has entity=`arg` name=`form` params=`takes/form skins/cli ~ text: the text alone on stdout, the has line and base on stderr; with no range named, the whole text`>>
@@ -73,7 +73,7 @@ A rendered tiddler answers whole here: a source marked `projection: rendered` de
 <<has entity=`arg` name=`max-bytes` params=`takes/count ~ the byte cap on a record answer; the largest fields leave first, named under omitted`>>
 <<has entity=`arg` name=`after` params=`takes/cursor ~ the page behind the cursor a prior answer named in next`>>
 <<has entity=`arg` name=`target` params=`takes/face ~ another lit face this read visits, by handle index or pet name`>>
-<<has entity=`arg` name=`tree` params=`~ with no title beside meme: nest each listed root's slots`>>
+<<has entity=`arg` name=`tree` params=`kind/switch ~ with no title beside meme: nest each listed root's slots`>>
 ```
 
 <<~/ahu>>
@@ -164,6 +164,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rqPNsDOo94omeghXhctpP2DtlwuLXU0Yez21mFaUP4Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OqQU455643s4QeqiV1Vm1yyS2A0dsz7H7T0lw7nQ7HM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

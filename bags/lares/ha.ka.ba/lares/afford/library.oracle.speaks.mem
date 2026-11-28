@@ -57,7 +57,7 @@ The heading `library` names where the consult reads: the oracle shelves rest amo
 <<has entity=`arg` name=`observe` params=`takes/pointers ~ the records, hashes and branches the arm holds; fills #/observe at the first throw`>>
 <<has entity=`arg` name=`caster` params=`takes/name default/operator ~ who cast, as annotation; the throw keys on the booked asker`>>
 <<has entity=`arg` name=`coins` params=`takes/six-values gate/hand ~ six line values of 6 to 9, bottom first: a person's own throw`>>
-<<has entity=`arg` name=`fresh` params=`gate/hand ~ a new throw for the same words`>>
+<<has entity=`arg` name=`fresh` params=`kind/switch gate/hand ~ a new throw for the same words`>>
 <<has entity=`arg` name=`seed` params=`takes/words gate/hand ~ coins drawn from these words; the record names the seed by a 16-hex digest`>>
 <<has entity=`arg` name=`nonce` params=`takes/hex gate/hand skins/mcp,tw5,console ~ minted at the word; the cli mints one for a bare cast`>>
 ```
@@ -176,6 +176,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BWKKUd37p_V7dQPcQaUeTWRkMoyrTV3H50d97DhXBDg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qY5GLHU4YKuyA5ZEUsLvn0689j3NmgUrOD1jacYF6w4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

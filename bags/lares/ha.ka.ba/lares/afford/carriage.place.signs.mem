@@ -37,7 +37,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.place.signs"
 
 ```memetic-wikitext
 <<has entity=`arg` name=`nexus` params=`takes/aid ~ a carried charter this vessel holds; absent, the primary`>>
-<<has entity=`arg` name=`out` params=`takes/host-path ~ the floor pin claim for carry --floor-pin`>>
+<<has entity=`arg` name=`out` params=`takes/host-path ~ the floor pin claim for carry floor-pin=`>>
 ```
 
 <<~/ahu>>
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Gw1u5K5y4J1e_4vyx5qE6atFetDWYOjq6Lw_J-1k3uo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3jM65_xj5XI36peAyboRao2lM52icMAQ1TK8YOnNmSY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

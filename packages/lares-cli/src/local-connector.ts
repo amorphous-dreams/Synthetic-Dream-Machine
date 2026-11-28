@@ -20,7 +20,7 @@ import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
 import { newRequestId } from "@lararium/mesh/verb-tiddler";
 import { larDataDir } from "./env.js";
 import type { SubmitResult, SubmitOptions } from "./verb-result.js";
-import { ASK_BUDGET_FLAG } from "./ask-budget.js";
+import { ASK_BUDGET_PARAM } from "./ask-budget.js";
 
 /** The agreed socket path — both sides derive the rendezvous from the substrate dir (`rendezvousPath`). */
 export function udsSocketPath(dataDir?: string | null): string {
@@ -481,13 +481,13 @@ export async function invokeLocal(
   });
 }
 
-export { ASK_BUDGET_FLAG, askBudgetMs } from "./ask-budget.js";
+export { ASK_BUDGET_PARAM, askBudgetMs } from "./ask-budget.js";
 /** The code a process leaves by when its caller's budget ran out: the `outcome-unknown` family's own (`render.ts`). */
 export const ASK_BUDGET_EXIT = 6;
 
 /**
  * A CALLER GONE LEAVES NO ASK WAITING. A caller that waits a bounded while (a hook under its harness's bound) declares
- * that budget on the call itself (`--ask-budget-ms=<N>`, which the entry takes off the argv), and this process leaves when
+ * that budget on the call itself (`ask-budget-ms=<N>`, which the entry takes off the argv), and this process leaves when
  * it runs out: every socket it holds closes with it, so the vessel reads the hang-up the moment it reaches the line and never runs an ask nobody waits on (a read drops with
  * no work; an act not yet admitted rests `abandoned`). The caller's own signal may arrive late or never (a host shim
  * relays it through a second exec, and a kill of the shim strands the relay); the budget needs no relay.
@@ -508,7 +508,7 @@ export function armAskBudget(
   const say = deps.say ?? ((line: string) => { console.error(line); });
   // LIVENESS: this process's own wait, on its caller's word; the verb's answer disarms it.
   const timer = setTimeout(() => {
-    say(`lares: the caller's budget (${ASK_BUDGET_FLAG}=${budgetMs}) ran out before the vessel answered, so this process leaves and its ask closes with it: a read the vessel had not reached never runs. Read again with a longer budget or none; an act already admitted lands all the same (\`lares vessel request <id>\` reads it).`);
+    say(`lares: the caller's budget (${ASK_BUDGET_PARAM}=${budgetMs}) ran out before the vessel answered, so this process leaves and its ask closes with it: a read the vessel had not reached never runs. Read again with a longer budget or none; an act already admitted lands all the same (\`lares vessel request <id>\` reads it).`);
     leave(ASK_BUDGET_EXIT);
   }, Math.max(0, budgetMs - sinceStartMs()));
   // The budget never holds a finished process open.

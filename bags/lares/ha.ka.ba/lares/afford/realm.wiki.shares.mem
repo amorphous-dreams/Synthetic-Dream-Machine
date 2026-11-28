@@ -46,8 +46,8 @@ uri-path  = "ha.ka.ba/lares/afford/realm.wiki.shares"
 <<has entity=`arg` name=`note` params=`takes/words ~ why the row stands`>>
 <<has entity=`arg` name=`face` params=`takes/handle-index ~ add face N to the readers, by its handle index`>>
 <<has entity=`arg` name=`workspace` params=`takes/name ~ the operator-configured directory the workbench mirror rests in`>>
-<<has entity=`arg` name=`list` params=`~ show every row and the resolver's answer`>>
-<<has entity=`arg` name=`remove` params=`~ unshare: the row leaves the file and the control document`>>
+<<has entity=`arg` name=`list` params=`kind/switch ~ show every row and the resolver's answer`>>
+<<has entity=`arg` name=`remove` params=`kind/switch ~ unshare: the row leaves the file and the control document`>>
 ```
 
 <<~/ahu>>
@@ -112,6 +112,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rlx2n9zRy5rN0vMyepNbikD6Xg0c6EG4ym4O592sS7c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;89RJQE6GPw012BRVPavp7MwbWBDQC7DymgDA5XYwYM0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

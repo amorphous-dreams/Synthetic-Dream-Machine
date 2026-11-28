@@ -37,7 +37,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.census.counts"
 !! takes ~ docs
 
 ```memetic-wikitext
-<<has entity=`arg` name=`docs` params=`~ read every stored document, its class and who names it`>>
+<<has entity=`arg` name=`docs` params=`kind/switch ~ read every stored document, its class and who names it`>>
 ```
 
 <<~/ahu>>
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_xyoJs5ipuNOfzKbaAxhCJWjNLax1_IO5vRpeVkdq-M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;COFNWdr3NR8mpOeTlcbYAsxrTbGpEuzGtM_OLBQoxwg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -49,7 +49,7 @@ Bare `lares spirit hum <pet>` measures each slot against its budget and prints t
 <<has entity=`arg` name=`line` params=`takes/n ~ beside fold, the listed line to move`>>
 <<has entity=`arg` name=`expect` params=`takes/digest ~ beside line, the listed line's digest (16 hex)`>>
 <<has entity=`arg` name=`instance` params=`takes/session-id ~ the folding instance`>>
-<<has entity=`arg` name=`streams` params=`takes/flag ~ fold the pet's settled stream entries, one line per stream on --slot (default #/open), each tagged ash-ready`>>
+<<has entity=`arg` name=`streams` params=`kind/switch ~ fold the pet's settled stream entries, one line per stream on --slot (default #/open), each tagged ash-ready`>>
 ```
 
 <<~/ahu>>
@@ -118,6 +118,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1-NJEDTBtu29E7sryXlrO89cyEDUKcMl2AUpzXKRB6Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3GizZJ06w2K6VOR08FqJs0cfYuhV7VMt4w5W_N-0r_I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

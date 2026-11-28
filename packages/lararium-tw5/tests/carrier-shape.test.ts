@@ -183,7 +183,7 @@ describe("carrier-shape — every source reads as a carrier, with its marks and 
     const uncarried = tracked.filter((f) =>
       !f.endsWith(".mem") && !f.endsWith(".meta") && !declared.has(f));
     expect(tracked.length).toBeGreaterThan(600);
-    expect(uncarried.length, `an uncarried file appeared — run \`lares meme check gradient=$(git ls-files bags)\``)
+    expect(uncarried.length, `an uncarried file appeared — run \`lares meme check gradient=true $(git ls-files bags)\``)
       .toBeLessThanOrEqual(39);
   });
 

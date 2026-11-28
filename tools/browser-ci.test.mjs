@@ -250,7 +250,7 @@ test("BROWSER_CI_WIKI names the wiki without asking the node", async () => {
 test("get reads AS the mounted wiki by default, and takes an explicit --bag or --recipe", async () => {
   const u = "lar:///ha.ka.ba/x/y";
   assert.match((await run(["get", u])).calls, / get title=lar:\/\/\/ha\.ka\.ba\/x\/y recipe=lares aperture=arc json=true/);
-  assert.match((await run(["get", u, "bag=aki-fixture"])).calls, / get title=\S+ bag=aki-fixture aperture=arc json=true/);
+  assert.match((await run(["get", u, "--bag", "aki-fixture"])).calls, / get title=\S+ bag=aki-fixture aperture=arc json=true/);
   assert.equal((await run(["get", u, "tag=z"])).status, 2);
 });
 

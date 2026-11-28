@@ -37,7 +37,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.sensorium.hardens"
 
 ```memetic-wikitext
 <<has entity=`arg` name=`name` params=`takes/name needs/required seat/1 as/<name> ~ the sensorium named in the manifest`>>
-<<has entity=`arg` name=`approve` params=`~ name the intent`>>
+<<has entity=`arg` name=`approve` params=`kind/switch ~ name the intent`>>
 <<has entity=`arg` name=`store-swap` params=`takes/host-path ~ swap the store to this target as it hardens`>>
 ```
 
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uKfeIw-3mBwj9s47fdgLhJ2CZvhB5Uz-2yN0LaJbU24`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;y6mylSJZV3epFqYUkqwGUAF-_TyvmTff9z3vTNCBJMo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

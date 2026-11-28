@@ -46,7 +46,7 @@ The witness reads each hand-back for the seed's frame and Personas: one receipt 
 <<has entity=`arg` name=`file` params=`takes/host-path ~ the report from a host file, or - for stdin`>>
 <<has entity=`arg` name=`text` params=`takes/words ~ the report as words`>>
 <<has entity=`arg` name=`key` params=`takes/key ~ the idempotency key, session:agent`>>
-<<has entity=`arg` name=`witness` params=`~ read the landed handbacks instead of landing one`>>
+<<has entity=`arg` name=`witness` params=`kind/switch ~ read the landed handbacks instead of landing one`>>
 <<has entity=`arg` name=`transcripts` params=`takes/host-path ~ beside witness, a transcript dir or file to read too`>>
 ```
 
@@ -113,6 +113,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;FB4o-nNJKQGXdhk7_wZu4JEAYGybLA06ur_xHHV-dFY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hIW_ixpJHMTKa81q_5soRr02wTnG3d4Bx6oYiAmFS0s`>>
 
 <<^ code=`&#x0004;` to=`?`>>
