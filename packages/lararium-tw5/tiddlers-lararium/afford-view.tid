@@ -22,6 +22,27 @@ caption: affordance carrier · the wiki view
 </$list>
 \end
 
+\procedure presses()
+\whitespace trim
+<div class="lar-afford-presses">
+<$list filter="[<currentTiddler>afford[rows],[#/shows],[tw5]]" variable="row">
+<$let sigil={{{ [<row>jsonget[sigil]] }}} name={{{ [<row>jsonget[name]] }}} result={{{ [[$:/state/lares/call/]addsuffix<currentTiddler>addsuffix[/]addsuffix<name>] }}}>
+<div class="lar-afford-press">
+<$button class="lar-lares-call" tooltip=<<sigil>>><$action-call $word=<<sigil>> $result=<<result>> $request={{{ [<currentTiddler>addsuffix[/]addsuffix<name>] }}}/>▶&#32;<$text text=<<name>>/></$button>
+&#32;<$button class="lar-lares-call lar-lares-preview" tooltip="preview: the door walks its law and lands nothing"><$action-call $word=<<sigil>> mu="_!" $result=<<result>> $request={{{ [<currentTiddler>addsuffix[/]addsuffix<name>] }}}/>preview</$button>
+&#32;<code class="lar-afford-sigil"><$text text=<<sigil>>/></code>
+<$list filter="[<result>is[tiddler]]" variable="_">
+<div class={{{ [<result>get[band]addprefix[lar-call-card lar-call-band-]] }}}>
+<span class="lar-call-band"><$text text={{{ [<result>get[band]] }}}/></span>&#32;<$text text={{{ [<result>get[refused]] }}}/>
+<pre><$text text={{{ [<result>get[text]] }}}/></pre>
+</div>
+</$list>
+</div>
+</$let>
+</$list>
+</div>
+\end
+
 <$list filter="[<currentTiddler>tag[lar:///ha.ka.ba/lares/api/pono/affordance]afford[match]]" variable="-">
 <div class="lar-afford">
 <p class="lar-afford-line"><code><$text text={{{ [<currentTiddler>afford[address]] }}}/></code> <$text text={{{ [<currentTiddler>get[role]] }}}/></p>
@@ -29,6 +50,7 @@ caption: affordance carrier · the wiki view
 <$let depth="slot">
 <$let slot="#/head"><<fold "head">></$let>
 <$let slot="#/shows"><<fold "shows">></$let>
+<<presses>>
 <$let slot="#/takes"><<fold "takes">></$let>
 <$let slot="#/gate"><<fold "gate">></$let>
 <$let slot="#/refuses"><<fold "refuses">></$let>
