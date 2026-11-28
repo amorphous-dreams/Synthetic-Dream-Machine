@@ -99,7 +99,7 @@ function rig(): { wiki: FakeWiki; tree: SyncedTree; roots: { canon: string; draf
   scratch = mkdtempSync(join(tmpdir(), "shore-capture-"));
   const roots = { canon: join(scratch, "bags", "lararium"), draft: join(scratch, "faces", "f", "recovery", "notes"), temp: join(scratch, "faces", "f", "temp", "notes") };
   for (const r of Object.values(roots)) mkdirSync(r, { recursive: true });
-  return { wiki: new FakeWiki(), tree: new SyncedTree(join(scratch, "state", "synced-tree.json")), roots, file: join(roots.canon, "ha.ka.ba/lararium/api/action-handler.mem") };
+  return { wiki: new FakeWiki(), tree: new SyncedTree(join(scratch, "state", "synced-tree.json")), roots, file: join(roots.canon, "ha.ka.ba", "lararium", "api", "action-handler.mem") };
 }
 
 const total = (m: Map<string, number>): number => [...m.values()].reduce((a, b) => a + b, 0);
@@ -113,7 +113,7 @@ test("RED: a both-moved carrier beside draft and temp slots drains: the queue re
   const stopFirst = first.start(wiki.engine as never);
   await first.idle();
   expect(readFileSync(file, "utf8")).toBe("records v0");
-  expect(existsSync(join(roots.temp, "ha.ka.ba/t/notes/scratchpad.mem"))).toBe(true);
+  expect(existsSync(join(roots.temp, "ha.ka.ba", "t", "notes", "scratchpad.mem"))).toBe(true);
   await stopFirst();
 
   // While the house rests, both sides move: a hand edits the file, and the records move on.
@@ -163,7 +163,7 @@ test("a hand's edit while only the disk moved lands in the records, and the file
 test("with no capture door a moved file stays whole, its refusal speaks once per state of the file, and the queue still rests", async () => {
   const { wiki, tree, roots, file } = rig();
   wiki.put({ title: URI, text: "records v0" });
-  mkdirSync(join(roots.canon, "ha.ka.ba/lararium/api"), { recursive: true });
+  mkdirSync(join(roots.canon, "ha.ka.ba", "lararium", "api"), { recursive: true });
   writeFileSync(file, "a file no agreement covers", "utf8");
   const reconciles = new Map<string, number>();
   const refusals: string[] = [];
@@ -185,13 +185,13 @@ test("with no capture door a moved file stays whole, its refusal speaks once per
 });
 
 for (const kind of [
-  { name: "a memetic carrier", ext: undefined, at: "ha.ka.ba/lararium/api/action-handler.mem", edit: (t: string) => t },
-  { name: "a native .tid", ext: ".tid", at: "ha.ka.ba/lararium/api/action-handler.tid", edit: (t: string) => `title: ${URI}\n\n${t}` },
-  { name: "a body beside its sidecar", ext: ".txt", at: "ha.ka.ba/lararium/api/action-handler.txt", edit: (t: string) => t },
+  { name: "a memetic carrier", ext: undefined, at: ["ha.ka.ba", "lararium", "api", "action-handler.mem"], edit: (t: string) => t },
+  { name: "a native .tid", ext: ".tid", at: ["ha.ka.ba", "lararium", "api", "action-handler.tid"], edit: (t: string) => `title: ${URI}\n\n${t}` },
+  { name: "a body beside its sidecar", ext: ".txt", at: ["ha.ka.ba", "lararium", "api", "action-handler.txt"], edit: (t: string) => t },
 ] as const) {
   test(`${kind.name}: a hand's edit captures and the re-read converges within two readings`, async () => {
     const { wiki, tree, roots } = rig();
-    const at = join(roots.canon, kind.at);
+    const at = join(roots.canon, ...kind.at);
     wiki.put({ title: URI, text: "records v0", ...(kind.ext ? { ext: kind.ext } : {}) });
     const reconciles = new Map<string, number>();
     const projector = stand(wiki, tree, roots, reconciles);

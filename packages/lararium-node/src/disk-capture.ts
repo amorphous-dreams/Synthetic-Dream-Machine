@@ -16,7 +16,7 @@
  *   3. LANDS THE WORDS only where the records stand exactly as the base left them (only the disk moved): ONE wiki act writes
  *      each record the file moved, the shape the wiki shore reads as a SAVE, so each merges at field grain through the CRDT
  *      with any hand that moved since. Each target must save into the moved file's own bag. A landing never deletes: a
- *      family record the file no longer says (a truncated save, a rename caught mid-flight) stands as a removal draft
+ *      family record the file omits (a truncated save, a rename caught mid-flight) stands as a removal draft
  *      beside its record, and a deletion rides the vanished-file path alone.
  *   4. STANDS THE WORDS AS PARALLEL DRAFTS everywhere else: both moved, no base, a dropped carrier, records that lost the
  *      history their base read, a save that would land in another bag. Each record the file says differently takes
@@ -118,7 +118,7 @@ async function captureNow(deps: DiskCaptureDeps, moved: MovedFile): Promise<Capt
   const { bagId, uri, path } = moved;
   const refused = (why: string): CaptureOutcome => ({ kind: "refused", why });
   if (!deps.grants(bagId, path)) return refused(`${bagId}'s grant does not reach ${path}`);
-  if (await deps.retired?.(bagId)) return refused(`bag-retired: ${bagId} was DROPped and takes no writes`);
+  if (await deps.retired?.(bagId)) return refused(`bag-retired: a DROP retired ${bagId}, and it takes no writes`);
   const carrier = readCarrierAt(path);
   if (carrier === null) return refused(`no file stands at ${path} any more`);
   if (!digestsEqual(carrierHash(carrier.body, carrier.meta), moved.disk)) return refused(`the file at ${path} changed between the projector's hash and this read; its next change reads afresh`);
@@ -136,7 +136,7 @@ async function captureNow(deps: DiskCaptureDeps, moved: MovedFile): Promise<Capt
   }
   const records = landed.records.filter((r): r is Fields & { title: string } => typeof r["title"] === "string");
   const said = new Set(records.map((r) => r.title));
-  // A FAMILY RECORD THE FILE NO LONGER SAYS never deletes through a capture: it stands as a removal draft beside its record.
+  // A FAMILY RECORD THE FILE OMITS never deletes through a capture: it stands as a removal draft beside its record.
   const omitted = deps.wiki.titles().filter((title) => (title === uri || title.startsWith(`${uri}#`)) && !said.has(title) && !title.startsWith("Draft of "));
 
   // ONLY THE DISK MOVED: the records stand exactly as the base left them, so the words land in the bag, merged at field grain.
@@ -157,7 +157,7 @@ async function captureNow(deps: DiskCaptureDeps, moved: MovedFile): Promise<Capt
         });
       }
       const drafts = await standDrafts(deps, [], omitted, "");
-      deps.notice?.(`[capture] ${uri} (${path}) in ${bagId}: ${writes.length} record(s) took the file's words${drafts.length > 0 ? `; ${drafts.length} record(s) the file no longer says stand as removal drafts` : ""}`);
+      deps.notice?.(`[capture] ${uri} (${path}) in ${bagId}: ${writes.length} record(s) took the file's words${drafts.length > 0 ? `; ${drafts.length} record(s) the file omits stand as removal drafts` : ""}`);
       return drafts.length > 0 ? { kind: "drafted", drafts } : { kind: "landed" };
     }
   }
