@@ -143,7 +143,7 @@ export * from "./oracle-cast.js";
 export * from "./oracle-loop.js";
 export * from "./door-band.js";
 export * from "./epoch-lease.js";
-export { controlHomeUrlOf, standControlHome, readControlHome, nameControlHome, ControlHomeUnavailable, controlStoreOf, vesselOnlyDocIds, floorOnlyDocIds, makeVesselOnlyDocs, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, controlHomeRefusal, assertControlHomeOpen, refusingControlStore, floorAnswerStore, isFloorAnswerTitle, FLOOR_ANSWER_RING, answerRingOf, makeAnswerRing, ANSWER_RING_COUNT, ANSWER_RING_BYTES, vesselLockedRefusal, type AnswerRing, type ControlHomeRefusal } from "./control-home.js";
+export { controlHomeUrlOf, standControlHome, readControlHome, nameControlHome, ControlHomeUnavailable, controlStoreOf, vesselOnlyDocIds, floorOnlyDocIds, makeVesselOnlyDocs, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, controlHomeRefusal, assertControlHomeOpen, refusingControlStore, floorAnswerStore, isFloorAnswerTitle, FLOOR_ANSWER_RING, answerRingOf, makeAnswerRing, ANSWER_RING_COUNT, ANSWER_RING_BYTES, vesselLockedRefusal, freshBaseControlDoc, CONTROL_FRESH_BASE_AT_CHANGES, type ControlFreshBase, type AnswerRing, type ControlHomeRefusal } from "./control-home.js";
 export { vesselOnlyBook, repoReverdict } from "./vessel-only-book.js";
 export * from "./lar-did.js";
 export * from "./device-delegation.js";

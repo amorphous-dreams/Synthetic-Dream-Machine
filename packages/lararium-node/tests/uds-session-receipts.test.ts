@@ -211,7 +211,8 @@ describe("face bound session receipts", () => {
     try {
       const opened = await peer.ask({ op: "session:open", requestId: "open", faceRef: "a", hand: "seat" });
       const env = { ownerEpoch: opened.ownerEpoch, sessionId: opened.sessionId, generation: opened.generation, faceRef: opened.faceRef };
-      for (const id of ["old", "newer", "newest"]) {
+      // A ring of one: the second call evicts the first, and the ledger keeps one evicted fact to answer for it.
+      for (const id of ["old", "newest"]) {
         expect(await peer.ask({ op: "session:call", ...env, requestId: id, verb: "load", args: {} })).toMatchObject({ status: "done" });
       }
       expect(await peer.ask({ op: "session:receipt", ...env, requestId: "old" }))
