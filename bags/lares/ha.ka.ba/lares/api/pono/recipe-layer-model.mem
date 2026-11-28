@@ -67,7 +67,7 @@ Same kernel (`packages/lararium-node/src/open-daemon-vm.ts`; browser `open-brows
 | `bags/oracle` | no | no | fleet · federatable | none |
 | `bags/tw5-docs` · `bags/tw5-dev` (TiddlyWiki5's native docs, the herm/hearth wiki alone, #/canon-floor-by-place) | ''no'' — code-backed read-only faces (`tw5LibraryStackStore`), the editions' `$:/` configuration withheld | no | none — they ride code | none |
 
-The two-vessel e2e witnesses the attach (`[daemon] working layer attached: lar:///ha.ka.ba/wikis/daemon/working`). A draft in the daemon wiki routes to `wikis/daemon/draft` — a bag with NO layer — and `composite.put` refuses loud; the daemon mounts `working` by ruling, never draft or personal. On a node the working layer projects to `<projections>/faces/<pet name>/wikis/daemon/` (`open-daemon-vm.ts` `diskMirrors`, `daemonDiskMirrors` in `bag-paths.ts`); the daemon's receipts, ward audits and summons rest in the vessel control document (`packages/lararium-mesh/src/control-home.ts`), which no recipe composes and no mirror names, so the disk projector never meets them.
+The two-vessel e2e witnesses the attach (`[daemon] working layer attached: lar:///ha.ka.ba/wikis/daemon/working`). A draft in the daemon wiki routes to `wikis/daemon/draft` — a bag with NO layer — and `composite.put` refuses loud; the daemon mounts `working` by ruling, never draft or personal. On a node the working layer projects to `<projections>/faces/<pet name>/wikis/daemon/` (`open-daemon-vm.ts` `diskMirrors`, `daemonDiskMirrors` in `bag-paths.ts`); the daemon's receipts and summons rest in the vessel control document (`packages/lararium-mesh/src/control-home.ts`), which no recipe composes and no mirror names, so the disk projector never meets them.
 
 !!! C. The HOST composite (VM-free, one per vessel)
 
@@ -360,6 +360,6 @@ A meme's root and its component slots leave together (the family law, `packages/
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;sBuKRrb_hmnOV2kUXNeD0A7Ebe5GdVo7XbJSO85-hHg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EoTGWSD9UiyTWcEo_besqlK7EORtWH83cowwf7wMaNo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

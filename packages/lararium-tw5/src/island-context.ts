@@ -120,7 +120,7 @@ export interface IslandContext {
   diskMirrors?: readonly { readonly bagId: string; readonly mirrorRoot: string; readonly scope: string; readonly mirrorClass?: "recovery"; readonly titlePaths?: boolean; readonly tempLayer?: boolean }[];
   /**
    * The vessel's CONTROL document as a store (`controlStoreOf` over `grants.controlUrl`): the daemon island's control
-   * families rest here (summons, outcomes, the effect index, ward audits). Never a recipe layer and never mirrored; absent
+   * families rest here (summons, outcomes, the effect index). Never a recipe layer and never mirrored; absent
    * on every wiki island.
    */
   control?: CompositeStore;

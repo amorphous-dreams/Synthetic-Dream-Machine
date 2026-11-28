@@ -60,7 +60,7 @@ const mesh = await import("../packages/lararium-mesh/dist/index.js");
 const { daemonDiskMirrors } = await import("../packages/lararium-node/dist/src/bag-paths.js");
 const families = {
   summons: mesh.SUMMONS_URI_PREFIX, outcomes: mesh.OUTCOME_URI_PREFIX, effects: mesh.EFFECT_URI_PREFIX,
-  receipts: mesh.RECEIPT_FACT_URI_PREFIX, "ward audits": mesh.WARD_AUDIT_URI_PREFIX, mailbox: mesh.MAILBOX_URI_PREFIX,
+  receipts: mesh.RECEIPT_FACT_URI_PREFIX, mailbox: mesh.MAILBOX_URI_PREFIX,
   "lease epochs": mesh.leaseEpochPrefix("witness"),
 };
 for (const [family, prefix] of Object.entries(families)) {
@@ -77,10 +77,13 @@ for (const face of [{ relation: F, segment: "witness" }, null]) {
     if (PRIVATE_HOMES.has(mirror.bagId)) throw new Error(`a daemon mirror names a private home by placement: ${mirror.bagId} -> ${mirror.mirrorRoot}`);
   }
 }
+// Ward alerts and realm feeds do not append unread per-event ledger titles.
+if (/WARD_AUDIT_URI_PREFIX|auditTitle/.test(read("packages/lararium-tw5/src/worker-data-verbs.ts"))) throw new Error("ward alert writes an audit title");
+if (/REALM_FEED_RECEIPT_PREFIX|ledger\/realm-feed\//.test(read("packages/lararium-tw5/src/cabal-realm-verbs.ts"))) throw new Error("realm feed writes a receipt title");
+
 // Each control writer names the control store, never a wiki layer or the daemon document.
 const controlWriters = [
   ["packages/lararium-tw5/src/verb-vm.ts", /await control\.put\(row, origin\)/, /daemon\.put\(/],
-  ["packages/lararium-tw5/src/worker-data-verbs.ts", /await control\.put\(/, /composite\.put\(\s*\{ tiddler: \{ title: auditTitle/],
   ["packages/lararium-tw5/src/verb-summons.ts", /opts\.control\.tombstoneInBag/, /opts\.daemon\./],
   ["packages/lararium-node/src/vessel-mailbox.ts", /\{ bag: CONTROL_HOME_ID \}/, /DAEMON_BAG_ID/],
   ["packages/lararium-node/src/uds-channel.ts", /storeForBag\(CONTROL_HOME_ID\)/, /wikiSlotUri\("daemon", "working"\)/],

@@ -1874,15 +1874,8 @@ run_wikis() {
 # mirrors it for records→disk, its own header naming the ruling: "BOTH legs of the round trip now
 # reconcile, neither overwrites".
 #
-# ⚠ WHAT IS UNWALKED IS THE RAIL, NOT THE GATE. The verdict is one thing; an operator SEEING it is
-# another, and the rail crosses three hops no unit test spans — `onRefusal` posts an `IslandMsg_Event`,
-# the admin VM's `makeWardAlertReactor` writes a durable audit to the daemon working layer and posts a
-# `$:/tags/Alert` tiddler. The record title starts `lar:///ha.ka.ba/bags/daemon/ledger/ward/`;
-# its title does not choose its storage layer. That is the
-# red: a conflict that decides correctly and tells nobody is the failure this scenario exists to catch.
-#
-# THE GREPPABLE HANDLES: `[disk-ward] write refused` · `projection conflict —` · `disk-ward:refused`
-# · `$:/temp/lares/alert/disk-ward` · the ledger prefix above.
+# The rail carries the refusal to the face wiki as a keyed $:/tags/Alert.
+# The signal leaves no ward ledger row; a missing home wiki answers with none.
 # COVERS: private/seed/unfed
 run_conflict() {
   say "CONFLICT — both hands move one carrier, nothing is overwritten, and the operator is told"
@@ -1956,24 +1949,10 @@ run_conflict() {
     else bad "the disk edit was overwritten — the refusal did not refuse"; fi
   fi
 
-  # THE RAIL. A verdict the operator never sees is the failure this scenario exists to catch.
-  step "the operator is TOLD — a durable daemon working-layer audit under the ward ledger"
-  if logs_have "disk-ward" lararium-a; then
-    local AUD AUDIT_OUTPUT
-    if ! AUDIT_OUTPUT=$($COMPOSE exec -T lararium-a $LARES get meme=true bag=lar:///ha.ka.ba/wikis/daemon/working --json 2>&1); then
-      bad "the ward-ledger read failed: $(printf '%s' "$AUDIT_OUTPUT" | tail -1 | cut -c1-200)"
-    else
-      AUD=$(printf '%s\n' "$AUDIT_OUTPUT" | grep -cF "ledger/ward/" || true)
-      if [ "${AUD:-0}" -gt 0 ]; then ok
-      else
-        gap "the refusal logged but no ward-ledger record stands — the rail stops at the console"
-        printf '      worker-data-verbs.ts writes the ward title into the composite default writable: wikis/daemon/working\n'
-        printf '      wakes when the admin VM reactor runs against a container boot\n'
-      fi
-    fi
-  else
-    gap "no refusal fired, so the rail carried nothing to measure"
-  fi
+  # The log witnesses the refusal; the live face-wiki alert needs a mounted-wiki witness.
+  step "the refusal reaches the ward rail"
+  if logs_have "disk-ward" lararium-a; then ok
+  else gap "no refusal fired, so the rail carried nothing to measure"; fi
 
   # NEGATIVE ⑤a — A CLEAN PROJECT STILL PROJECTS. Without this the family could be "cured" by refusing
   # every write, which is the failure wearing a fix's face.

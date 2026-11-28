@@ -119,8 +119,6 @@ export async function taskContentId(
 /** Durable per-request fact tiddlers — `<control home>/receipts/<requestId>`, in the vessel's control document. */
 export const RECEIPT_FACT_URI_PREFIX = `${CONTROL_HOME_ID}/receipts/`;
 
-/** Durable ward audits: `<control home>/ledger/ward/<id>`, in the vessel's control document. */
-export const WARD_AUDIT_URI_PREFIX = `${CONTROL_HOME_ID}/ledger/ward/`;
 
 /** The durable mailbox: `<control home>/mailbox/<wiki>/<id>`, in the vessel's control document. */
 export const MAILBOX_URI_PREFIX = `${CONTROL_HOME_ID}/mailbox/`;
