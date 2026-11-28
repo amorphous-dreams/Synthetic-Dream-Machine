@@ -717,6 +717,8 @@ function CensusBeforeStop {
     foreach ($l in ($err -split "`r?`n" | Where-Object { $_ -like 'census: unasked*' })) { [Console]::Error.WriteLine($l) }
     # A KEPT ROW (its content at rest under the vessel's key) stays with the house: each line names it, never silent.
     foreach ($l in ($err -split "`r?`n" | Where-Object { $_ -like 'census: kept*' })) { [Console]::Error.WriteLine($l) }
+    # An owed write (a record at rest whose file the projector's queue still owes) stays with the house: each line names it.
+    foreach ($l in ($err -split "`r?`n" | Where-Object { $_ -like 'census: owed*' })) { [Console]::Error.WriteLine($l) }
     return
   }
   # A LOCKED HEARTH: the census names the cure in one line (`census: vessel locked: ...`); say it plainly, not "could not answer".

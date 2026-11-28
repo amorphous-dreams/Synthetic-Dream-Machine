@@ -737,6 +737,8 @@ census_before_stop() {
     printf '%s\n' "$census_err" | grep '^census: unasked' >&2 || true
     # A KEPT ROW (its content at rest under the vessel's key) stays with the house: each line names it, never silent.
     printf '%s\n' "$census_err" | grep '^census: kept' >&2 || true
+    # AN OWED WRITE (a record at rest whose file the projector's queue still owes) stays with the house: each line names it.
+    printf '%s\n' "$census_err" | grep '^census: owed' >&2 || true
     # LOCKED SINCE BOOT: the census read clean because no key ever opened in this vessel's life, so no act wrote. One line says so.
     if printf '%s\n' "$census_out" | grep -q '^census: clean — the vessel stood locked since it booted'; then
       printf '%s\n' 'lares-container: down asks nothing: the vessel stood locked since it booted, so no act wrote and nothing waits in memory to drop' >&2

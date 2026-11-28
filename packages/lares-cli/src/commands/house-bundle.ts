@@ -69,7 +69,7 @@ import {
   foldWaveRefusal, realmFoldersOnDisk, ensureRealmLabel, realmPlacement } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor } from "../render.js";
-import { readCensus, censusLine, type CensusReading } from "./census.js";
+import { readCensus, censusLine, owedLine, type CensusReading } from "./census.js";
 import { scanFiles, candidatesOf, settleIngest, openSyncedTree, carriedBasesOf, type ScanRow } from "../ingest-core.js";
 import { discoverHoldings, canonIsDisk } from "../holdings.js";
 import { summaryOutput } from "../verb-result.js";
@@ -475,11 +475,14 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
 
   // A SETTLED PROJECTION FIRST: what the census names would leave out of the copy.
   const census = await doors.census();
-  if (!census.clean) {
-    const lines = [...census.items.map(censusLine), ...census.unanswered.map((u) => `unanswered  ${u.part}: ${u.why}`)];
+  // AN OWED WRITE STOPS A COPY THOUGH IT STOPS NO STOP: its record rests in the store, and the projection the bundle copies
+  // still lacks its file.
+  const owedWrites = census.owed ?? [];
+  if (!census.clean || owedWrites.length > 0) {
+    const lines = [...census.items.map(censusLine), ...owedWrites.map(owedLine), ...census.unanswered.map((u) => `unanswered  ${u.part}: ${u.why}`)];
     if (!acceptOmissions) throw new BundleRefused("carry-unsettled", `the census names ${lines.length} item(s) the projection has not settled, so a copy now would leave them out:\n  ${lines.join("\n  ")}\nsettle them (unlock the vault, let the projector drain) and export again, or pass --accept-omissions for an explicitly partial bundle`);
     const held = census.items.filter((i) => i.kind === "held-save").map(censusLine);
-    const carriers = census.items.filter((i) => i.kind === "carrier").map(censusLine);
+    const carriers = [...census.items.filter((i) => i.kind === "carrier").map(censusLine), ...owedWrites.map(owedLine)];
     // THE OMISSIONS NAME KINDS AND COUNTS ALONE: a census line names documents, bags and uris that carry a face's relation, and the
     // bundle crosses to a remote; `lares vessel census` reads the lines themselves on the house.
     if (held.length > 0) omissions.push({ kind: "held-saves", detail: "saves the sealed rest holds in memory, never on disk (`lares vessel census` names them on the house)", count: held.length });

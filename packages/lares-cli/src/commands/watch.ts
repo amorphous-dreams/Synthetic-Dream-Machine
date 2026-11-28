@@ -26,10 +26,10 @@
  * ambiguous on either side sends no deletion at all.
  *
  * NO PERSON STANDS BEHIND A WAVE HERE, and every wave says so (`unattended`). The island's gate then never
- * adopts a file that holds no base over records that say something else: it stands off, as it does where
- * the disk and the records both moved past a base. The watcher hands each carrier that stood off to the
- * vessel's shore, where the projector weighs the same states, raises the one keyed alert, and a person
- * settles it by name (`lares shore`).
+ * adopts a file that holds no base over records that say something else: it answers `conflict`, as it does
+ * where the disk and the records both moved past a base. The watcher hands each carrier the gate answered so
+ * to the vessel's shore (`sense`), where the projector reconciles it and its capture door lands the file's
+ * words or stands them as parallel drafts beside the records; nothing waits for a hand.
  *
  * OWED: the file-grain rolling backup (`.stversions`-style) belongs at the
  * PROJECTOR (backup-on-write) — content is gone from disk by the time a delete
@@ -198,8 +198,8 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
         else if (absent.has(d.uri)) { vanished.delete(d.uri); unsensed.add(d.uri); }
         else { unsensed.add(d.uri); seat.carry(d.file); }
       }
-      // A CARRIER THAT STOOD OFF GOES TO THE SHORE. The gate landed nothing for it; the projector weighs
-      // the same disk and records, raises the standoff's one keyed alert, and `lares shore` lists it.
+      // A CARRIER THE GATE ANSWERED `conflict` GOES TO THE SHORE. The gate landed nothing for it; the projector
+      // reconciles it, and its capture door lands the file's words or stands them as parallel drafts.
       for (const c of settled.conflicts) unsensed.add(c.uri);
       // The gesture's bases landed through the island that took the wave (`settleIngest`, `shoreBaseDoor`); the projector
       // pins what it projects; both name the same key and the same base where they agree.
@@ -209,7 +209,7 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
       console.log(`  wave ${n}: ${candidates.length} change(s) + ${ride.length} rename(s) submitted · audit ${OUTCOME_URI_PREFIX}${result.requestId}`);
       for (const c of carriers) console.log(`    ${String(c["decision"]).toUpperCase().padEnd(10)} ${c["uri"]}`);
       for (const r of [...settled.refused, ...settled.conflicts, ...settled.derived]) console.error(`    ⚠ ${r.decision} ${r.uri}: ${r.why}`);
-      if (settled.conflicts.length > 0) console.error(`    ${settled.conflicts.length} carrier(s) stand off: nothing landed for them; \`lares shore\` names each with its key`);
+      if (settled.conflicts.length > 0) console.error(`    ${settled.conflicts.length} carrier(s) stand in a conflict: the wave landed nothing for them, and the vessel's shore reads each (its capture door stands the file's words as parallel drafts where the records moved too)`);
       if (settled.pageError !== undefined) console.error(`    ⚠ a later wave failed (${settled.pageError.message}); ${settled.pageError.unread} carrier(s) stay unread until the next settle`);
       // A file at an address whose records never project refuses by name; the hand removes the file.
       for (const c of carriers) if (c["code"] === "never-projected-path") console.error(`    ⚠ ${String(c["reason"] ?? c["uri"])}`);

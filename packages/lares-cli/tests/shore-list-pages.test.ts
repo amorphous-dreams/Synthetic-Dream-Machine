@@ -11,7 +11,6 @@
 import { describe, test, expect } from "vitest";
 import { readShoreList, type ShoreAnswer } from "../src/shore-core.js";
 import { answeredRows } from "../src/commands/shore.js";
-import { takeDisk } from "../src/shore-take-disk.js";
 
 const row = (n: number): Record<string, unknown> => ({ bagId: "lares", uri: `lar:///a.b.c/v-${String(n).padStart(3, "0")}`, path: `/m/v-${n}.mem` });
 const ok = (output: Record<string, unknown>): ShoreAnswer => ({ ok: true, output, refusal: null, why: null, requestId: "req" });
@@ -29,7 +28,7 @@ function island(n: number, opts: { capAt?: number; stuck?: boolean; moveAfterFir
     const next = start + 32 < all.length ? String(opts.stuck ? 0 : start + 32) : null;
     const pending = opts.capAt !== undefined && page.length > opts.capAt ? { boundedArrayCount: page.length, sample: page.slice(0, 3) } : page;
     const mark = all.map((r) => String(r["uri"])).join("|");
-    return ok({ ok: true, op: "list", standoffs: [], standoffCount: 0, pending, pendingCount: all.length, ...(opts.noMark ? {} : { mark }), next });
+    return ok({ ok: true, op: "list", pending, pendingCount: all.length, ...(opts.noMark ? {} : { mark }), next });
   };
   return { ask, asked };
 }
@@ -68,7 +67,7 @@ describe("the door reads every page", () => {
   });
 
   test("pages that name fewer rows than the counts refuse by name", async () => {
-    const ask = async (): Promise<ShoreAnswer> => ok({ ok: true, op: "list", standoffs: [], standoffCount: 0, pending: [row(1)], pendingCount: 40, mark: "m", next: null });
+    const ask = async (): Promise<ShoreAnswer> => ok({ ok: true, op: "list", pending: [row(1)], pendingCount: 40, mark: "m", next: null });
     expect(await readShoreList(ask, { op: "list" })).toMatchObject({ ok: false, refusal: "shore-list-unpaged" });
   });
 
@@ -80,19 +79,6 @@ describe("the door reads every page", () => {
     expect(i.asked).toEqual([{ op: "list", bag: "lares" }]);
     const refused = await readShoreList(async () => ({ ok: false, output: {}, refusal: "no-disk-shore", why: "no projection" }), { op: "list" });
     expect(refused).toMatchObject({ ok: false, refusal: "no-disk-shore" });
-  });
-});
-
-describe("take-disk reads the key across every page", () => {
-  test("a keyed standoff on the second page gets found: the door weighs it (here, a `home` standoff holds no disk side)", async () => {
-    const uri = "lar:///a.b.c/many";
-    const all = Array.from({ length: 40 }, (_, i) => ({ bagId: `bag-${String(i).padStart(2, "0")}`, uri, standoff: `k${i}`, kind: i === 39 ? "home" : "sides", reason: "r" }));
-    const ask = async (a: Readonly<Record<string, unknown>>): Promise<ShoreAnswer> => {
-      const start = typeof a["after"] === "string" ? Number(a["after"]) : 0;
-      return ok({ ok: true, op: "list", standoffs: all.slice(start, start + 32), standoffCount: 40, pending: [], pendingCount: 0, mark: "one", next: start + 32 < 40 ? String(start + 32) : null });
-    };
-    const taken = await takeDisk({ uri, key: "k39" }, { ask, tree: {} as never, root: "/nowhere", did: "did:test" });
-    expect(taken).toMatchObject({ ok: false, refusal: "standoff-holds-no-disk-side" });
   });
 });
 

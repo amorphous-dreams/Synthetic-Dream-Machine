@@ -2,8 +2,8 @@
  * `lares shore` reaches BOTH islands that mount a disk shore.
  *
  * The active wiki's island answers the shore verb through `wiki-act`; the daemon island mounts a projector
- * of its own (the daemon wiki's working layer, crossroads) and answers the verb itself. A standoff or a
- * pending removal the daemon island holds took no answer while the door sent one line. `askShore` sends the
+ * of its own (the daemon wiki's working layer, crossroads) and answers the verb itself. A pending removal
+ * the daemon island holds took no answer while the door sent one line. `askShore` sends the
  * act to both and answers as one shore: the list names each row's island, the counts add, the settle word
  * stands where both gave it, and an answer goes to the island that holds its state.
  *
@@ -17,9 +17,8 @@ import type { SubmitResult } from "../src/verb-result.js";
 
 type Island = (args: Record<string, unknown>) => Record<string, unknown>;
 
-const page = (rows: { standoffs?: Array<Record<string, unknown>>; pending?: Array<Record<string, unknown>> }): Record<string, unknown> => ({
-  ok: true, op: "list", standoffs: rows.standoffs ?? [], standoffCount: (rows.standoffs ?? []).length,
-  pending: rows.pending ?? [], pendingCount: (rows.pending ?? []).length, mark: "m", next: null,
+const page = (rows: { pending?: Array<Record<string, unknown>> }): Record<string, unknown> => ({
+  ok: true, op: "list", pending: rows.pending ?? [], pendingCount: (rows.pending ?? []).length, mark: "m", next: null,
 });
 const NO_SHORE: Record<string, unknown> = { ok: false, refusal: "no-disk-shore", why: "this island mounts no disk projection" };
 
@@ -55,12 +54,11 @@ const daemonRow = { bagId: "lar:///ha.ka.ba/wikis/daemon/working", uri: "lar:///
 
 describe("the list reads both islands as one shore", () => {
   test("a pending removal the daemon island holds lists beside the active wiki's, each naming its island", async () => {
-    const v = vessel(() => page({ pending: [wikiRow] }), () => page({ pending: [daemonRow], standoffs: [{ ...daemonRow, standoff: "k1", kind: "sides" }] }));
+    const v = vessel(() => page({ pending: [wikiRow] }), () => page({ pending: [daemonRow] }));
     const listed = await readShoreList((a) => askShore(a, "did:test", v.run), {});
     expect(listed.ok).toBe(true);
     if (!listed.ok) return;
     expect(listed.pending).toEqual([{ ...wikiRow, island: "wiki" }, { ...daemonRow, island: "daemon" }]);
-    expect(listed.standoffs).toMatchObject([{ uri: daemonRow.uri, standoff: "k1", island: "daemon" }]);
     expect(v.sent).toEqual([{ island: "wiki", op: "list" }, { island: "daemon", op: "list" }]);
   });
 
@@ -80,8 +78,8 @@ describe("the list reads both islands as one shore", () => {
 
 describe("sense and settle reach both islands", () => {
   test("sense: each island looks, and the counts add", async () => {
-    const v = vessel(() => ({ ok: true, op: "sense", standoffCount: 1, pendingCount: 2 }), () => ({ ok: true, op: "sense", standoffCount: 0, pendingCount: 3 }));
-    expect((await askShore({ op: "sense", uris: ["u"] }, "did:test", v.run)).output).toEqual({ ok: true, op: "sense", standoffCount: 1, pendingCount: 5 });
+    const v = vessel(() => ({ ok: true, op: "sense", pendingCount: 2 }), () => ({ ok: true, op: "sense", pendingCount: 3 }));
+    expect((await askShore({ op: "sense", uris: ["u"] }, "did:test", v.run)).output).toEqual({ ok: true, op: "sense", pendingCount: 5 });
   });
 
   test("settle: the island that mirrors the bag gives the word; the other answers it mirrors nothing", async () => {
@@ -148,32 +146,10 @@ describe("sense and settle reach both islands", () => {
 });
 
 describe("an answer goes to the island whose list holds its state", () => {
-  const standoff = (row: Record<string, unknown>, key: string) => ({ ...row, standoff: key, kind: "sides" });
   /** An island that lists `rows` and answers any act with `act`. */
   const island = (rows: Parameters<typeof page>[0], act: Island = () => { throw new Error("this island never takes the act"); }): Island =>
     (a) => (a["op"] === "list" ? page(rows) : act(a));
   const acts = (sent: Array<{ island: string; op: unknown }>) => sent.filter((s) => s.op !== "list");
-
-  test("take-records under a key the daemon island holds reaches it, though the active wiki's island holds another key for the same carrier", async () => {
-    const v = vessel(island({ standoffs: [standoff({ ...daemonRow, bagId: wikiRow.bagId }, "k-wiki")] }),
-      island({ standoffs: [standoff(daemonRow, "k1")] }, (a) => ({ ok: true, op: "take-records", uri: a["uri"], key: a["key"], bag: daemonRow.bagId, took: "records" })));
-    expect(await askShore({ op: "take-records", uri: daemonRow.uri, key: "k1" }, "did:test", v.run)).toMatchObject({ ok: true, output: { took: "records", bag: daemonRow.bagId } });
-    expect(acts(v.sent)).toEqual([{ island: "daemon", op: "take-records" }]);
-  });
-
-  test("a key that stands at both islands refuses by name, and neither island takes it", async () => {
-    const v = vessel(island({ standoffs: [standoff(daemonRow, "k1")] }), island({ standoffs: [standoff(daemonRow, "k1")] }));
-    expect(await askShore({ op: "take-records", uri: daemonRow.uri, key: "k1" }, "did:test", v.run)).toMatchObject({ ok: false, refusal: "shore-answer-incomplete" });
-    expect(acts(v.sent)).toEqual([]);
-  });
-
-  test("a key that stands at neither island, beside other keys for the carrier, refuses as moved and names the keys that stand", async () => {
-    const v = vessel(island({ standoffs: [standoff(daemonRow, "k-a")] }), island({ standoffs: [standoff(daemonRow, "k-b")] }));
-    const a = await askShore({ op: "take-records", uri: daemonRow.uri, key: "k-old" }, "did:test", v.run);
-    expect(a).toMatchObject({ ok: false, refusal: "standoff-key-moved" });
-    expect(a.why).toContain("k-a");
-    expect(a.why).toContain("k-b");
-  });
 
   test("restore of a carrier the daemon island holds pending reaches it", async () => {
     const v = vessel(island({}), island({ pending: [daemonRow] }, () => ({ ok: true, op: "restore", bag: daemonRow.bagId, done: [daemonRow.uri], doneCount: 1, left: [], leftCount: 0 })));
@@ -197,9 +173,9 @@ describe("an answer goes to the island whose list holds its state", () => {
   });
 
   test("neither island holds the state: the active wiki's island answers, and its refusal names it", async () => {
-    const v = vessel(island({}, () => ({ ok: false, refusal: "no-standoff-stands", why: "none here" })), island({}));
-    const a = await askShore({ op: "take-records", uri: "u", key: "k" }, "did:test", v.run);
-    expect(a).toMatchObject({ ok: false, refusal: "no-standoff-stands" });
+    const v = vessel(island({}, () => ({ ok: false, refusal: "not-pending", why: "none here" })), island({}));
+    const a = await askShore({ op: "restore", uris: ["u"] }, "did:test", v.run);
+    expect(a).toMatchObject({ ok: false, refusal: "not-pending" });
     expect(a.why).toContain("active wiki's island");
   });
 

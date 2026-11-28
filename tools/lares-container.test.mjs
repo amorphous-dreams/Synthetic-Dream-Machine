@@ -1115,8 +1115,8 @@ for (const [name, shim] of shims) {
 
   // THE CENSUS BEFORE A STOP (operator ruling R3): a stop never drops content silently.
   const STANDING = { ...MOUNTS, FAKE_RUNNING_ID: "vessel" };
-  const CLEAN = "census: clean — no save waits in memory, and the disk projector owes no carrier";
-  const ITEMS = "held-save  save-unbooked  doc doc-heron  2 save(s) in memory  bag notes\ncarrier  pending  lar:///ha.ka.ba/notes/pond  bag notes  island wiki";
+  const CLEAN = "census: clean — no save waits in memory, and no carrier's reconcile failed";
+  const ITEMS = "held-save  save-unbooked  doc doc-heron  2 save(s) in memory  bag notes\ncarrier  failed  lar:///ha.ka.ba/notes/pond  bag notes  island wiki";
   const stopped = (calls) => /down --remove-orphans/.test(calls);
 
   test(`${name}: down over a standing vessel asks the census first, and a clean answer stops it`, async () => {

@@ -40,10 +40,9 @@ export function readShoreAnswer(result: SubmitResult): ShoreAnswer {
   };
 }
 
-/** Every row one island's shore listed, read across its pages. */
+/** Every pending removal one island's shore listed, read across its pages. */
 export interface ShoreListing {
   readonly ok:        true;
-  readonly standoffs: ReadonlyArray<Record<string, unknown>>;
   readonly pending:   ReadonlyArray<Record<string, unknown>>;
   readonly requestId?: string;
 }
@@ -53,14 +52,13 @@ export interface ShoreListing {
  * behind (`next`); this hands each cursor back as `after` until none remains. A page that carries a count
  * where its rows belong refuses by name (`shore-list-unpaged`): a list that printed nothing over a full shore
  * would state a thing nobody measured. A cursor that fails to move forward refuses the same way. Each page
- * names the mark of the shore it read (`mark`, folding every row that stands); a mark that moves between two
+ * names the mark of the shore it read (`mark`, folding every row that pends); a mark that moves between two
  * pages refuses as `shore-list-moved`, since the rows read would then name no one shore.
  */
 export async function readShoreList(
   ask: (shoreArgs: Readonly<Record<string, unknown>>) => Promise<ShoreAnswer>,
   listArgs: Readonly<Record<string, unknown>>,
 ): Promise<ShoreListing | (ShoreAnswer & { readonly ok: false })> {
-  const standoffs: Array<Record<string, unknown>> = [];
   const pending: Array<Record<string, unknown>> = [];
   let counts: string | null = null;
   let mark: string | null = null;
@@ -72,31 +70,28 @@ export async function readShoreList(
     requestId = answer.requestId;
     if (!answer.ok) return answer as ShoreAnswer & { readonly ok: false };
     const o = answer.output;
-    for (const name of ["standoffs", "pending"] as const) {
-      if (!Array.isArray(o[name])) {
-        const count = (o[name] as { boundedArrayCount?: unknown } | null | undefined)?.boundedArrayCount;
-        return refuse("shore-list-unpaged", typeof count === "number"
-          ? `the shore's ${name} arrived as a count of ${count} and named none of them; this vessel answers an unpaged list`
-          : `the shore's answer named no ${name} array`);
-      }
+    if (!Array.isArray(o["pending"])) {
+      const count = (o["pending"] as { boundedArrayCount?: unknown } | null | undefined)?.boundedArrayCount;
+      return refuse("shore-list-unpaged", typeof count === "number"
+        ? `the shore's pending arrived as a count of ${count} and named none of them; this vessel answers an unpaged list`
+        : "the shore's answer named no pending array");
     }
-    // The mark folds every row that stands; two pages under one mark read one shore.
-    const told = `${String(o["standoffCount"])}/${String(o["pendingCount"])}`;
+    // The mark folds every row that pends; two pages under one mark read one shore.
+    const told = String(o["pendingCount"]);
     const markNow = typeof o["mark"] === "string" ? o["mark"] : null;
     if (markNow === null) return refuse("shore-list-unpaged", "the shore's page named no mark of the shore it read; this vessel answers an unpaged list");
-    if (mark !== null && markNow !== mark) return refuse("shore-list-moved", `the shore moved while the read walked its pages (${counts} standoffs/pending, then ${told}); read it again`);
+    if (mark !== null && markNow !== mark) return refuse("shore-list-moved", `the shore moved while the read walked its pages (${counts} pending, then ${told}); read it again`);
     mark = markNow;
     counts = told;
-    standoffs.push(...(o["standoffs"] as Array<Record<string, unknown>>));
     pending.push(...(o["pending"] as Array<Record<string, unknown>>));
     const next = o["next"];
     if (typeof next !== "string" || next === "") break;
     if (after !== null && next <= after) return refuse("shore-list-unpaged", "the shore's cursor stood still between two pages");
     after = next;
   }
-  // The pages owe every row the counts name.
-  if (counts !== `${standoffs.length}/${pending.length}`) return refuse("shore-list-unpaged", `the shore counted ${counts} standoffs/pending and its pages named ${standoffs.length}/${pending.length}`);
-  return { ok: true, standoffs, pending, ...(requestId !== undefined ? { requestId } : {}) };
+  // The pages owe every row the count names.
+  if (counts !== String(pending.length)) return refuse("shore-list-unpaged", `the shore counted ${counts} pending and its pages named ${pending.length}`);
+  return { ok: true, pending, ...(requestId !== undefined ? { requestId } : {}) };
 }
 
 /**
@@ -231,7 +226,7 @@ type RunVerb = (name: string, args: Record<string, unknown>, did: string, opts: 
  * THE TWO ISLANDS THAT MOUNT A DISK SHORE. The active wiki's island answers the shore verb for the mirrors its
  * recipe designates, reached through `wiki-act`; the daemon island answers it for the mirrors it mounts (the
  * daemon wiki's working layer and crossroads), reached by the verb itself (`shore`, registered where the
- * node entry injects its door). Each answers for the standoffs and pending removals its own projector holds.
+ * node entry injects its door). Each answers for the pending removals its own projector holds.
  */
 export const SHORE_ISLANDS = ["wiki", "daemon"] as const;
 export type ShoreIsland = (typeof SHORE_ISLANDS)[number];
@@ -271,8 +266,8 @@ const refusedAt = (island: ShoreIsland, a: ShoreAnswer): ShoreAnswer =>
  *            page whose ask ran out this caller's own wait retries while other pages keep settling; the
  *            settle ends `stalled` where no page newly settled for the stall window (`SETTLE_STALL_MS`),
  *            naming what still waits (`pendingCount`, `stalledCount`, `pendingUris`)
- *   answers  (`take-records`, `restore`, `remove`) go to the island whose list holds the state: the standoff
- *            under the named key (and `render`, the records' side that standoff weighed, reads there too), or the pending removals the answer names (by carrier, by bag, or all).
+ *   answers  (`restore`, `remove`) go to the island whose list holds the pending removals the answer names
+ *            (by carrier, by bag, or all).
  *            Where both islands hold it, or a set splits across them, the answer refuses by name
  *            (`shore-answer-incomplete`) and names how to split it: two bags never fold into one answer.
  *            Where neither holds it, the active wiki's island answers and names what stands there.
@@ -289,7 +284,6 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
   const reach: readonly ShoreIsland[] = shoreArgs["face"] !== undefined ? ["daemon"] : SHORE_ISLANDS;
 
   if (op === "list") {
-    const standoffs: Array<Record<string, unknown>> = [];
     const pending: Array<Record<string, unknown>> = [];
     const marks: string[] = [];
     let requestId: string | undefined;
@@ -297,13 +291,12 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
       const listed = await readShoreList(ask(island), { ...shoreArgs, op: "list" });
       if (!listed.ok) { if (holdsNoShore(listed)) { marks.push(`${island}:none`); continue; } return refusedAt(island, listed); }
       requestId ??= listed.requestId;
-      standoffs.push(...listed.standoffs.map((r) => ({ ...r, island })));
       pending.push(...listed.pending.map((r) => ({ ...r, island })));
-      marks.push(`${island}:${listed.standoffs.length}/${listed.pending.length}`);
+      marks.push(`${island}:${listed.pending.length}`);
     }
     return {
       ok: true, refusal: null, why: null, ...(requestId !== undefined ? { requestId } : {}),
-      output: { ok: true, op: "list", standoffs, standoffCount: standoffs.length, pending, pendingCount: pending.length, mark: marks.join(" "), next: null },
+      output: { ok: true, op: "list", pending, pendingCount: pending.length, mark: marks.join(" "), next: null },
     };
   }
 
@@ -314,7 +307,7 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
     if (refused) return refusedAt(refused.island, refused.answer);
     const held = answers.filter((a) => a.answer.ok).map((a) => a.answer.output);
     const sum = (name: string): number => held.reduce((n, o) => n + (typeof o[name] === "number" ? (o[name] as number) : 0), 0);
-    const output: Record<string, unknown> = { ok: true, op, standoffCount: sum("standoffCount"), pendingCount: sum("pendingCount") };
+    const output: Record<string, unknown> = { ok: true, op, pendingCount: sum("pendingCount") };
     const requestId = answers.find((a) => a.answer.requestId !== undefined)?.answer.requestId;
     return { ok: true, output, refusal: null, why: null, ...(requestId !== undefined ? { requestId } : {}) };
   }
@@ -412,51 +405,20 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
     return { ok: true, output, refusal: null, why: null, ...(requestId !== undefined ? { requestId } : {}) };
   }
 
-  // THE DRAFTS A CARRIER'S STAND-OFFS LOADED, read at both islands as one list, each naming its island (titles alone).
-  if (op === "drafts") {
-    const drafts: Array<Record<string, unknown>> = [];
-    let draftCount = 0;
-    let requestId: string | undefined;
-    for (const island of SHORE_ISLANDS) {
-      const answer = await ask(island)(shoreArgs);
-      if (!answer.ok) { if (holdsNoShore(answer) || answer.refusal === "no-standoff-keeper" || answer.refusal === "shore-op-unknown") continue; return refusedAt(island, answer); }
-      requestId ??= answer.requestId;
-      const rows = Array.isArray(answer.output["drafts"]) ? (answer.output["drafts"] as Array<Record<string, unknown>>) : [];
-      drafts.push(...rows.map((r) => ({ ...r, island })));
-      draftCount += typeof answer.output["draftCount"] === "number" ? (answer.output["draftCount"] as number) : rows.length;
-    }
-    return { ok: true, refusal: null, why: null, ...(requestId !== undefined ? { requestId } : {}), output: { ok: true, op, uri: shoreArgs["uri"], drafts, draftCount } };
-  }
-
-  // AN ANSWER GOES TO THE ISLAND THAT HOLDS ITS STATE, read from what each island lists right now: a key
-  // folds the bag and the states, never the island, and a set of carriers may stand at either. Where the
-  // state stands at both islands, or a set splits across them, the answer refuses by name and changes nothing.
-  const uri = typeof shoreArgs["uri"] === "string" ? shoreArgs["uri"] : null;
+  // AN ANSWER GOES TO THE ISLAND THAT HOLDS ITS STATE, read from what each island lists right now: a set of carriers may
+  // stand pending at either. Where the state stands at both islands, or a set splits across them, the answer refuses by
+  // name and changes nothing.
   const uris = Array.isArray(shoreArgs["uris"]) ? (shoreArgs["uris"] as unknown[]).filter((u): u is string => typeof u === "string") : [];
   const bag = typeof shoreArgs["bag"] === "string" ? shoreArgs["bag"] : null;
   const holders: ShoreIsland[] = [];
-  const keysSeen: string[] = [];
-  // A KEYED ACT names one standoff: the records' side taken, or the records' side read.
-  const keyed = op === "take-records" || op === "render" || op === "keep-both";
   for (const island of reach) {
     // THE LISTING READS THE SHORE THE ANSWER NAMES: a face's answer lists that face's own projector, never the worn face's.
-    const listed = await readShoreList(ask(island), { op: "list", ...(keyed && uri !== null ? { uris: [uri] } : uris.length > 0 ? { uris } : {}), ...(bag !== null ? { bag } : {}), ...(shoreArgs["face"] !== undefined ? { face: shoreArgs["face"] } : {}) });
+    const listed = await readShoreList(ask(island), { op: "list", ...(uris.length > 0 ? { uris } : {}), ...(bag !== null ? { bag } : {}), ...(shoreArgs["face"] !== undefined ? { face: shoreArgs["face"] } : {}) });
     if (!listed.ok) { if (holdsNoShore(listed)) continue; return refusedAt(island, listed); }
-    if (keyed) {
-      const stands = listed.standoffs.filter((s) => s["uri"] === uri);
-      keysSeen.push(...stands.map((s) => String(s["standoff"])));
-      if (stands.some((s) => s["standoff"] === shoreArgs["key"])) holders.push(island);
-    } else if (listed.pending.length > 0) {
-      holders.push(island);
-    }
+    if (listed.pending.length > 0) holders.push(island);
   }
   if (holders.length > 1) {
-    return { ok: false, output: {}, refusal: "shore-answer-incomplete", why: keyed
-      ? `the standoff under key ${String(shoreArgs["key"])} stands at both islands over one bag; the door cannot name which one a person read, so it takes neither`
-      : `what the answer names stands pending at both islands; name one bag with \`bag\`, or answer each island's carriers apart` };
-  }
-  if (holders.length === 0 && keyed && keysSeen.length > 0) {
-    return { ok: false, output: {}, refusal: "standoff-key-moved", why: `the standoff for ${uri} stands under key ${keysSeen.join(", ")}; the answer names ${String(shoreArgs["key"])}` };
+    return { ok: false, output: {}, refusal: "shore-answer-incomplete", why: "what the answer names stands pending at both islands; name one bag with `bag`, or answer each island's carriers apart" };
   }
   // No island lists the state: the active wiki's island answers, and names what stands there.
   const island = holders[0] ?? reach[0]!;

@@ -1,7 +1,8 @@
 /**
  * `lares vessel census` — what a stop would drop, named item by item.
  *
- *   V1  a save held in memory and a carrier the projector has not settled each print one line; exit 3.
+ *   V1  a save held in memory and a carrier whose reconcile failed each print one line; exit 3. A carrier the queue
+ *       still owes a write (`pending`, its record at rest in the store) reads under `owed`, never as an item (V1h).
  *   V1b an unnamed row of sync states alone (`save-unnamed`, `contentFree`) reads under `unasked` (document, saves, bytes,
  *       age), never as an item: clean, exit 0; beside it an owed save still blocks (V1c); an unnamed row holding any content
  *       save, whoever made it, or one that names no `contentFree`, blocks as owed and names its ways on (V1d, fail closed).
@@ -38,18 +39,34 @@ function capture(): { out: string[]; err: string[] } {
 }
 
 describe("the vessel census", () => {
-  test("V1 — a held save and an unsettled carrier each print one line, and the census exits 3", async () => {
+  test("V1 — a held save and a failed carrier each print one line, and the census exits 3", async () => {
     const c = capture();
     const code = await cmdCensus(args(false), lines({
       custody: async () => ({ op: "census", held: [{ documentId: "doc-heron", refusal: "save-unbooked", saves: 2, bagId: "lar:///ha.ka.ba/bags/notes" }], standing: "hearth" }),
-      shore: async () => ({ carriers: [{ state: "pending", uri: "lar:///ha.ka.ba/notes/pond", bagId: "notes", island: "wiki" }], unanswered: [] }),
+      shore: async () => ({ carriers: [{ state: "failed", uri: "lar:///ha.ka.ba/notes/pond", bagId: "notes", island: "wiki" }], unanswered: [] }),
     }));
     expect(code).toBe(3);
     expect(c.out).toEqual([
       "held-save  save-unbooked  doc doc-heron  2 save(s) in memory  bag lar:///ha.ka.ba/bags/notes",
-      "carrier  pending  lar:///ha.ka.ba/notes/pond  bag notes  island wiki",
+      "carrier  failed  lar:///ha.ka.ba/notes/pond  bag notes  island wiki",
     ]);
     expect(c.err.join("\n")).toMatch(/2 item\(s\) rest nowhere yet/);
+  });
+
+  test("V1h — a carrier the queue still owes a write reads owed, never an item: its record rests in the store, so the census reads clean and a stop proceeds", async () => {
+    const pending = lines({ shore: async () => ({ carriers: [{ state: "pending", uri: "lar:///ha.ka.ba/notes/pond", bagId: "notes", island: "wiki" }], unanswered: [] }) });
+    const reading = await readCensus(pending);
+    expect([reading.clean, reading.items]).toEqual([true, []]);
+    expect(reading.owed).toEqual([{ uri: "lar:///ha.ka.ba/notes/pond", bagId: "notes", island: "wiki" }]);
+    const c = capture();
+    expect(await cmdCensus(args(false), pending)).toBe(0);
+    expect(c.err.join("\n")).toContain("census: owed  carrier lar:///ha.ka.ba/notes/pond  bag notes  island wiki");
+    // CONTROL: a failed reconcile beside it still blocks.
+    const failed = lines({ shore: async () => ({ carriers: [{ state: "failed", uri: "lar:///a/f", bagId: "b", island: "daemon" }, { state: "pending", uri: "lar:///a/p", bagId: "b", island: "daemon" }], unanswered: [] }) });
+    const both = await readCensus(failed);
+    expect(both.items.map((i) => (i.kind === "carrier" ? i.uri : null))).toEqual(["lar:///a/f"]);
+    expect(both.owed?.map((o) => o.uri)).toEqual(["lar:///a/p"]);
+    expect(await cmdCensus(args(false), failed)).toBe(3);
   });
 
   test("V1b RED — a save-unnamed row of sync states alone (contentFree) reads unasked (document, saves, bytes, age): never an unreadable shape, never an item a stop drops", async () => {
@@ -62,7 +79,7 @@ describe("the vessel census", () => {
     expect(reading.unasked).toEqual([{ documentId: "doc-heads", saves: 3, bytes: 6, heldAcross: 9 }]);
     const c = capture();
     expect(await cmdCensus(args(false), unnamed)).toBe(0);
-    expect(c.out).toEqual(["census: clean — no save waits in memory, and the disk projector owes no carrier"]);
+    expect(c.out).toEqual(["census: clean — no save waits in memory, and no carrier's reconcile failed"]);
     expect(c.err.join("\n")).toContain("census: unasked  doc doc-heads  3 save(s), 6 byte(s), held across 9 later save(s): sync states alone, peers' heads and no change, so a stop drops no content here");
     c.out.length = 0;
     expect(await cmdCensus(args(true), unnamed)).toBe(0);
@@ -127,7 +144,7 @@ describe("the vessel census", () => {
     ]);
     const c = capture();
     expect(await cmdCensus(args(false), census)).toBe(0);
-    expect(c.out).toEqual(["census: clean — no save waits in memory, and the disk projector owes no carrier"]);
+    expect(c.out).toEqual(["census: clean — no save waits in memory, and no carrier's reconcile failed"]);
     expect(c.err.join("\n")).toContain(`census: kept  save-unnamed  doc ${pushed.documentId}  2 save(s)  bag (none mapped): at rest under the vessel's key, so a stop keeps them and the next boot carries them back`);
     expect(c.err.join("\n")).toContain("census: kept  save-unsealed  doc doc-own-write  3 save(s)");
   });
@@ -159,7 +176,7 @@ describe("the vessel census", () => {
   test("V2 — a clean vessel answers clean and exits 0; the JSON names empty lists", async () => {
     const c = capture();
     expect(await cmdCensus(args(false), lines({}))).toBe(0);
-    expect(c.out).toEqual(["census: clean — no save waits in memory, and the disk projector owes no carrier"]);
+    expect(c.out).toEqual(["census: clean — no save waits in memory, and no carrier's reconcile failed"]);
     c.out.length = 0;
     expect(await cmdCensus(args(true), lines({}))).toBe(0);
     expect(JSON.parse(c.out.join(""))).toEqual({ ok: true, data: { census: { clean: true, items: [], unanswered: [] } } });
@@ -183,7 +200,7 @@ describe("the vessel census", () => {
 
   test("V6 census-names-none-worn: faces lit and none worn, the census says so and names the wear; CONTROL: a worn face names none", async () => {
     const c = capture();
-    const unsettled: ShoreCensus = { carriers: [{ state: "pending", uri: "lar:///ha.ka.ba/notes/pond", bagId: "notes", island: "wiki" }], unanswered: [] };
+    const unsettled: ShoreCensus = { carriers: [{ state: "failed", uri: "lar:///ha.ka.ba/notes/pond", bagId: "notes", island: "wiki" }], unanswered: [] };
     const noneWorn = lines({ custody: async () => ({ op: "census", held: [], standing: "hearth", locked: false, facesLit: [0, 1, 2] }), shore: async () => unsettled });
     expect((await readCensus(noneWorn)).worn).toBeNull();
     expect(await cmdCensus(args(false), noneWorn)).toBe(3);

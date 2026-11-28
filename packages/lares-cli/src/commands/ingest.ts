@@ -57,6 +57,14 @@ export interface IngestSink {
 }
 
 /** What one run's settlement reads as: the envelope's verdict, its code, its exit and the headline a person reads. */
+/**
+ * THE WAY ON FROM A CONFLICT. The gate landed nothing, the file stays as the hand left it, and no shore verb takes a side:
+ * the person reads the records and saves what they keep in the wiki, or brings the file into agreement and names it again.
+ * The disk projector never writes over a moved file either: its capture door stands the file's words as parallel drafts
+ * beside the records (`disk-capture`, `@lararium/node`) when the projector next writes that carrier.
+ */
+export const CONFLICT_WAY_ON = "The records and the file both moved past their last agreement, and the file stays as you left it: read the records (`lares get title=<uri>`) and save the words you keep in the wiki, or bring the file into agreement with them and run `lares ingest` again. When the projector next writes the carrier, its capture door stands the file's words as parallel drafts (\"Draft of '<title>' by disk/<hash>\") beside the records.";
+
 export interface IngestRunReading {
   readonly ok: boolean;
   readonly code?: string;
@@ -303,7 +311,7 @@ export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<nu
   // run did not take everything it was handed.
   // A CONFLICT ENDS THE RUN NON-ZERO TOO, under its own exit class. The person named these files and the
   // gate landed nothing for a conflicting one, so an exit of zero would read as "your words landed". Each
-  // one gets named with the two doors that settle it by key.
+  // one gets named, with the way on (`CONFLICT_WAY_ON`).
   const { refused, conflicts } = settled;
   const pageError = settled.pageError;
   const verdict = ingestVerdict(settled);
@@ -316,7 +324,7 @@ export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<nu
     : null;
   const reading = ingestRunReading(settled, { candidates: candidates.length, requestId: result.requestId, kapaeFault });
   const refusedMessage = verdict.message ?? kapaeFault;
-  const conflictMessage = `INGEST landed nothing for ${conflicts.length} of ${candidates.length} carrier(s) that stand in a conflict: ${conflicts.map((r) => r.uri).join(", ")}. \`lares shore\` names each standoff's key; settle one with \`lares shore take-disk <uri> --key <key>\` (the file's words) or \`lares shore take-records <uri> --key <key>\` (the records')`;
+  const conflictMessage = `INGEST landed nothing for ${conflicts.length} of ${candidates.length} carrier(s) that stand in a conflict: ${conflicts.map((r) => r.uri).join(", ")}. ${CONFLICT_WAY_ON}`;
   const data = {
     verb: "INGEST", scanned: rows.length, submitted: candidates.length, ...summary,
     tallies: settled.tallies, refused, conflicts, derived: settled.derived,
@@ -369,7 +377,7 @@ export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<nu
       }
       // The copy keeps shadowing canon (the recipe stack decides what shows); the word names it, nothing writes.
       if (fresher !== undefined) console.error(`  ⚠ canon is fresher than the working copy above it for ${fresher.count} title(s) in ${fresher.working}: ${fresher.titles.slice(0, 8).join(", ")}${fresher.count > 8 ? ", …" : ""} (remove a copy with the ordinary verbs to take the fresher canon)`);
-      if (conflicts.length > 0) console.error(`  ⚠ settle a conflict under its key (\`lares shore\` names it): \`lares shore take-disk <uri> --key <key>\` lands the file's words · \`lares shore take-records <uri> --key <key>\` writes the records' render`);
+      if (conflicts.length > 0) console.error(`  ⚠ ${CONFLICT_WAY_ON}`);
       console.log(`\n  audit: ${auditUri}`);
     },
   });

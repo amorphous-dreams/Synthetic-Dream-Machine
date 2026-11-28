@@ -15,7 +15,7 @@
 import { describe, expect, test } from "vitest";
 import { VERB_RESULT_KEY } from "@lararium/mesh/verb-tiddler";
 import { askShore, askShoreFlush, shoreFlushExit } from "../src/shore-core.js";
-import { cmdShore, shoreArgs, SHORE_ACTS } from "../src/commands/shore.js";
+import { shoreArgs, SHORE_ACTS } from "../src/commands/shore.js";
 import type { CustodyDoorAnswer } from "../src/custody-door.js";
 import type { SubmitResult } from "../src/verb-result.js";
 import type { ParsedArgs } from "../src/parse-args.js";
@@ -76,49 +76,33 @@ describe("lares shore flush", () => {
 
   test("RED D5 — `--face N` names a lit sibling's shore and reaches the daemon island alone; a flush and a settle take no face", async () => {
     expect(shoreArgs("list", parsed(["list"], { face: "2" }))).toEqual({ args: { op: "list", face: 2 } });
-    expect(shoreArgs("take-records", parsed(["take-records", "lar:///a/x"], { key: "k1", face: "2" }))).toEqual({ args: { op: "take-records", uri: "lar:///a/x", key: "k1", face: 2 } });
     expect(shoreArgs("restore", parsed(["restore", "lar:///a/x"], { face: "1" }))).toEqual({ args: { op: "restore", uris: ["lar:///a/x"], face: 1 } });
     expect(shoreArgs("list", parsed(["list"], { face: "h2" }))).toMatchObject({ usage: expect.stringMatching(/--face names a handle index/) });
     expect(shoreArgs("flush", parsed(["flush"], { face: "2" }))).toMatchObject({ usage: expect.stringMatching(/flush takes no --face/) });
-    expect(shoreArgs("take-disk", parsed(["take-disk", "lar:///a/x"], { key: "k", face: "2" }))).toMatchObject({ usage: expect.stringMatching(/take-disk takes no --face/) });
+    expect(shoreArgs("settle", parsed(["settle"], { bag: "b", face: "2" }))).toMatchObject({ usage: expect.stringMatching(/settle takes no --face/) });
     // The face's list reaches the daemon island alone, and each row names its island.
     const asked: string[] = [];
     const run = async (name: string, args: Record<string, unknown>): Promise<SubmitResult> => {
       asked.push(`${name} ${JSON.stringify(args)}`);
-      return { status: "done", requestId: "r", results: { [VERB_RESULT_KEY]: { ok: true, output: { ok: true, op: "list", face: 2, standoffs: [{ uri: "lar:///a/s", bagId: "b", standoff: "k1" }], standoffCount: 1, pending: [], pendingCount: 0, mark: "m1", next: null } } } } as SubmitResult;
+      return { status: "done", requestId: "r", results: { [VERB_RESULT_KEY]: { ok: true, output: { ok: true, op: "list", face: 2, pending: [{ uri: "lar:///a/s", bagId: "b", path: "/m/s.mem" }], pendingCount: 1, mark: "m1", next: null } } } } as SubmitResult;
     };
     const listed = await askShore({ op: "list", face: 2 }, "did:test", run);
     expect(asked).toEqual([`shore ${JSON.stringify({ op: "list", face: 2 })}`]);
-    expect(listed.output["standoffs"]).toEqual([{ uri: "lar:///a/s", bagId: "b", standoff: "k1", island: "daemon" }]);
+    expect(listed.output["pending"]).toEqual([{ uri: "lar:///a/s", bagId: "b", path: "/m/s.mem", island: "daemon" }]);
   });
 
-  test("RED D6 — a face's take-records reads its key at THAT face's shore: the worn face standing off over the same carrier under another key never answers for it", async () => {
+  test("RED D6 — a face's restore reads its pending removals at THAT face's shore, and reaches the daemon island alone", async () => {
     const asked: Array<Record<string, unknown>> = [];
-    const list = (key: string, face?: number) => ({ ok: true, op: "list", ...(face !== undefined ? { face } : {}), standoffs: [{ uri: "lar:///a/s", bagId: "b", standoff: key }], standoffCount: 1, pending: [], pendingCount: 0, mark: `m-${key}`, next: null });
+    const list = (face?: number) => ({ ok: true, op: "list", ...(face !== undefined ? { face } : {}), pending: face === 2 ? [{ uri: "lar:///a/s", bagId: "b", path: "/m/s.mem" }] : [], pendingCount: face === 2 ? 1 : 0, mark: `m-${face ?? "worn"}`, next: null });
     const run = async (name: string, args: Record<string, unknown>): Promise<SubmitResult> => {
       const shore = name === "wiki-act" ? (args["args"] as Record<string, unknown>) : args;
       asked.push({ island: name === "wiki-act" ? "wiki" : "daemon", ...shore });
       const face = shore["face"] as number | undefined;
-      const output = shore["op"] === "list" ? list(face === 2 ? "k-sibling" : "k-worn", face) : { ok: true, op: shore["op"], uri: shore["uri"], face };
+      const output = shore["op"] === "list" ? list(face) : { ok: true, op: shore["op"], uris: shore["uris"], face, done: shore["uris"], doneCount: 1, left: [], leftCount: 0 };
       return { status: "done", requestId: "r", results: { [VERB_RESULT_KEY]: { ok: true, output } } } as SubmitResult;
     };
-    const answer = await askShore({ op: "take-records", uri: "lar:///a/s", key: "k-sibling", face: 2 }, "did:test", run);
-    expect(answer).toMatchObject({ ok: true, output: { op: "take-records", face: 2 } });
+    const answer = await askShore({ op: "restore", uris: ["lar:///a/s"], face: 2 }, "did:test", run);
+    expect(answer).toMatchObject({ ok: true, output: { op: "restore", face: 2, doneCount: 1 } });
     expect(asked.every((a) => a["island"] === "daemon" && a["face"] === 2)).toBe(true);
-    // CONTROL: with no face the worn face's key stands, and the sibling's key reads moved.
-    expect(await askShore({ op: "take-records", uri: "lar:///a/s", key: "k-sibling" }, "did:test", run)).toMatchObject({ ok: false, refusal: "standoff-key-moved" });
-  });
-
-  test("RED D7 — take-disk settles by a person: a harness on the command's own branch refuses `hand-act-only` before anything asks the vessel", async () => {
-    const out: string[] = [];
-    const log = console.log, err = console.error, ow = process.stdout.write, ew = process.stderr.write;
-    console.log = (l: unknown) => { out.push(String(l)); }; console.error = (l: unknown) => { out.push(String(l)); };
-    process.stdout.write = ((c: unknown) => { out.push(String(c)); return true; }) as typeof process.stdout.write;
-    process.stderr.write = ((c: unknown) => { out.push(String(c)); return true; }) as typeof process.stderr.write;
-    try {
-      const code = await cmdShore({ positional: ["take-disk", "lar:///a/s"], flags: { yes: true }, options: { key: "k" } } as unknown as ParsedArgs, () => ({ refusal: "hand-act-only" }));
-      expect(code).toBe(1);
-    } finally { console.log = log; console.error = err; process.stdout.write = ow; process.stderr.write = ew; }
-    expect(out.join("\n")).toContain("hand-act-only");
   });
 });

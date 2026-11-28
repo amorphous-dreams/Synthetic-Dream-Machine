@@ -1020,11 +1020,8 @@
   "tests/share-doors-landing.test.ts": 0,
   "tests/shore-cmd.test.ts": 0,
   "tests/shore-flush-door.test.ts": 0,
-  "tests/shore-keep-acts.test.ts": 0,
   "tests/shore-list-pages.test.ts": 0,
   "tests/shore-retirement.test.ts": 2.7,
-  "tests/shore-take-disk-merge.test.ts": 0.5,
-  "tests/shore-take-disk-refusals.test.ts": 0,
   "tests/shore-two-islands.test.ts": 0,
   "tests/source-alias.test.ts": 0.5,
   "tests/spirit-door.test.ts": 0.4,
@@ -1081,7 +1078,6 @@
   "tests/wiki-retire-cmd.test.ts": 0,
   "tests/wiki-status-lines.test.ts": 0,
   "tests/wing-law.test.ts": 0,
-  "tests/workspace-pool-merge.test.ts": 0.1,
   "tests/worldline-tree.test.ts": 0.1
  },
  "tests": {

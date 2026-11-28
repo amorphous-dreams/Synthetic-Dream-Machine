@@ -3,8 +3,8 @@
  *
  * A person names a file to `lares ingest`. Where the disk and the records both moved past the file's base,
  * the gate lands nothing and answers `conflict`. An exit of zero there reads as "your words landed". The
- * door ends under the `conflict` exit class, names the carrier, and names the two doors that settle the
- * standoff under its key: `lares shore take-disk` and `lares shore take-records`.
+ * door ends under the `conflict` exit class, names the carrier, and names the way on: read the records and
+ * save in the wiki, or bring the file into agreement and ingest again; no shore verb takes a side.
  *
  * Control: a wave whose every carrier landed exits zero.
  */
@@ -33,7 +33,7 @@ vi.mock("../src/env.js", async (orig) => ({
   vesselDid: async () => "0x" + "ab".repeat(32),
 }));
 
-import { cmdIngest } from "../src/commands/ingest.js";
+import { cmdIngest, CONFLICT_WAY_ON } from "../src/commands/ingest.js";
 import { exitFor } from "../src/render.js";
 
 const TO = "lar:///ha.ka.ba/bags/x";
@@ -64,7 +64,7 @@ async function ingestOne(): Promise<{ rc: number; json: Record<string, unknown> 
 }
 
 describe("lares ingest — a conflict lands nothing and the exit says so", () => {
-  test("★ a carrier that stands in a conflict ends the run under the conflict exit class and names both doors ★", async () => {
+  test("★ a carrier that stands in a conflict ends the run under the conflict exit class and names the way on ★", async () => {
     h.decide = (uri) => ({ uri, decision: "conflict", reason: "both-moved", grade: "clean", warnings: [`${uri}: the arriving text and the records both moved past the base the writer read (both-moved)`] });
     const { rc, json } = await ingestOne();
     expect(h.calls.map((c) => c.verb)).toEqual(["INGEST"]);
@@ -74,8 +74,8 @@ describe("lares ingest — a conflict lands nothing and the exit says so", () =>
     const error = json["error"] as { code: string; message: string };
     expect(error.code).toBe("conflict");
     expect(error.message).toContain(URI);
-    expect(error.message).toContain("lares shore take-disk");
-    expect(error.message).toContain("lares shore take-records");
+    expect(error.message).toContain(CONFLICT_WAY_ON);
+    expect(error.message).not.toMatch(/lares shore \S+ <uri> --key/);
     expect((json["data"] as { conflicts: Array<{ uri: string; why: string }> }).conflicts.map((c) => c.uri)).toEqual([URI]);
   });
 

@@ -1,14 +1,18 @@
 /**
  * `lares vessel census` — WHAT A STOP WOULD DROP, read before it happens.
  *
- * A vessel holds two kinds of content that rest nowhere yet: saves its sealed rest keeps in memory (a change no
+ * A vessel holds kinds of content that rest nowhere yet: saves its sealed rest keeps in memory (a change no
  * session booked, a document whose map names no bag now, a seal the holder refused: `save-unbooked`,
- * `save-unmapped`, `save-unsealed`), and carriers its disk projector has not settled (each its queue still owes a
- * reconcile, each whose latest reconcile threw), and files a mirror root inside a checkout holds that git never tracked
- * (`untracked`: each an owed commit, named by path, since a re-found that takes its record leaves it the only copy). A
- * stopped container holds no memory to count, so the host shim
+ * `save-unmapped`, `save-unsealed`), carriers whose latest reconcile threw (`failed`: the file stands as the failure left
+ * it), and files a mirror root inside a checkout holds that git never tracked (`untracked`: each an owed commit, named by
+ * path, since a re-found that takes its record leaves it the only copy). A stopped container holds no memory to count, so
+ * the host shim
  * asks this census at `down`, while the vessel still stands, and refuses a stop over a non-empty answer, naming the act that
  * lands each item. No word drops them: an item lands, or the vessel stands.
+ *
+ * A CARRIER THE PROJECTOR'S QUEUE STILL OWES HAS LANDED. Its record rests in the store; only its file write waits, and the
+ * next boot's projector writes it from the records. The census names each (`owed`: carrier, bag, island) and never counts
+ * it as an item, so a stop proceeds over it.
  *
  * A SAVE AT REST UNDER THE VESSEL'S KEY HAS LANDED. A held row the store reads `kept` (every content save of it rests at its
  * storage key sealed under the vessel's key: sealed-pending under its face, or an unnamed push in the vessel's inbox) survives
@@ -42,6 +46,9 @@ import { emit } from "../render.js";
 /** How long the custody door's census frame may take to answer. It answers at once, beside the custody chain. */
 export const CENSUS_CUSTODY_MS = 10_000;
 
+/** One carrier whose file write the projector's queue still owes: its record rests in the store, so a stop drops nothing. */
+export interface OwedCarrier { readonly uri: string; readonly bagId: string | null; readonly island: string }
+
 /** One unnamed document whose held saves carry no content (sync states alone): its saves and bytes, and its age in saves the store took since. */
 export interface UnaskedPush { readonly documentId: string; readonly saves: number; readonly bytes: number; readonly heldAcross: number }
 
@@ -55,7 +62,7 @@ export type CensusItem =
       readonly pending?: number;
       /** The document's unsealed saves fill their counted ceiling: a further save of it refuses (`held-bound`). */
       readonly atBound?: true }
-  | { readonly kind: "carrier"; readonly state: string; readonly uri: string; readonly bagId: string | null; readonly island: string }
+  | { readonly kind: "carrier"; readonly state: "failed"; readonly uri: string; readonly bagId: string | null; readonly island: string }
   | { readonly kind: "untracked"; readonly path: string; readonly bagId: string | null; readonly island: string };
 
 export interface CensusReading {
@@ -67,6 +74,8 @@ export interface CensusReading {
   readonly unasked?: readonly UnaskedPush[];
   /** THE KEPT ROWS: held saves whose content all rests under the vessel's key, so a stop keeps them (absent where none). */
   readonly kept?: readonly KeptRow[];
+  /** THE OWED WRITES: carriers the projector's queue still owes a file, each record at rest in the store (absent where none). */
+  readonly owed?: readonly OwedCarrier[];
   /** THE LIT SET: each face whose key stands open, each sealing its own memory under its own key (absent where none reads). */
   readonly facesLit?: readonly number[];
   /** THE WORN FACE beside the lit set (present where the lit set reads): the daemon mount, or null where none wears. */
@@ -166,7 +175,13 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
   let shore: ShoreCensus;
   try { shore = await lines.shore(); }
   catch (e) { shore = { carriers: [], unanswered: [{ part: "the disk projector", why: e instanceof Error ? e.message : String(e) }] }; }
-  for (const c of shore.carriers) items.push({ kind: "carrier", state: c.state, uri: c.uri, bagId: c.bagId, island: c.island });
+  // A FAILED RECONCILE STAYS AN ITEM; ANY OTHER STATE (`pending`: the queue owes a write over a record at rest) reads owed.
+  const owed: OwedCarrier[] = [];
+  for (const c of shore.carriers) {
+    if (c.state === "failed") items.push({ kind: "carrier", state: "failed", uri: c.uri, bagId: c.bagId, island: c.island });
+    else owed.push({ uri: c.uri, bagId: c.bagId, island: c.island });
+  }
+  const withOwed = owed.length > 0 ? { owed } : {};
   for (const u of shore.untracked ?? []) items.push({ kind: "untracked", path: u.path, bagId: u.bagId, island: u.island });
   unanswered.push(...shore.unanswered);
   // A LOCKED HEARTH SAYS SO IN ONE LINE. Its key stands shut, so the islands refuse `vessel-locked` and nothing the census
@@ -180,15 +195,15 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
   // opened and shut again, or a held row in any shape this door cannot read stays unread, and the stop asks.
   const sealedRestUnread = unanswered.some((u) => u.part === "the sealed rest" && !/^no composition sits/.test(u.why));
   if (lockedHearth && custody?.["everOpened"] === false && !sealedRestUnread) {
-    if (items.length === 0) return { clean: true, items, unanswered: [], lockedSinceBoot: true, ...(unasked.length > 0 ? { unasked } : {}), ...(kept.length > 0 ? { kept } : {}) };
+    if (items.length === 0) return { clean: true, items, unanswered: [], lockedSinceBoot: true, ...(unasked.length > 0 ? { unasked } : {}), ...(kept.length > 0 ? { kept } : {}), ...withOwed };
     // HELD SAVES OVER A VESSEL THAT NEVER OPENED: the islands' `vessel-locked` refusals name no unread content (no projector ever
     // ran), so they leave the list, and the census answers its items (exit 3): the stop lists exactly what it would drop.
     const moot = (u: { readonly part: string; readonly why: string }): boolean => /\bvessel-locked\b/.test(u.why) || (u.part === "the sealed rest" && /^no composition sits/.test(u.why));
     const rest = unanswered.filter((u) => !moot(u));
-    return { clean: false, items, unanswered: rest, ...(unasked.length > 0 ? { unasked } : {}), ...(kept.length > 0 ? { kept } : {}) };
+    return { clean: false, items, unanswered: rest, ...(unasked.length > 0 ? { unasked } : {}), ...(kept.length > 0 ? { kept } : {}), ...withOwed };
   }
   if (lockedHearth && items.length === 0) {
-    return { clean: false, items, unanswered: [{ part: "the vessel", why: VESSEL_LOCKED_CENSUS }] };
+    return { clean: false, items, unanswered: [{ part: "the vessel", why: VESSEL_LOCKED_CENSUS }], ...withOwed };
   }
   const facesLit = Array.isArray(custody?.["facesLit"]) ? (custody!["facesLit"] as unknown[]).filter((n): n is number => Number.isSafeInteger(n)) : [];
   const worn = Number.isSafeInteger(custody?.["worn"]) ? (custody!["worn"] as number) : null;
@@ -196,7 +211,7 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
     const r = d as { face?: unknown; cause?: unknown; note?: unknown };
     return Number.isSafeInteger(r.face) && typeof r.cause === "string" && typeof r.note === "string" ? [{ face: r.face as number, cause: r.cause, note: r.note }] : [];
   }) : [];
-  return { clean: items.length === 0 && unanswered.length === 0, items, unanswered, ...(facesLit.length > 0 ? { facesLit, worn } : {}), ...(facesDark.length > 0 ? { facesDark } : {}), ...(unasked.length > 0 ? { unasked } : {}), ...(kept.length > 0 ? { kept } : {}) };
+  return { clean: items.length === 0 && unanswered.length === 0, items, unanswered, ...(facesLit.length > 0 ? { facesLit, worn } : {}), ...(facesDark.length > 0 ? { facesDark } : {}), ...(unasked.length > 0 ? { unasked } : {}), ...(kept.length > 0 ? { kept } : {}), ...withOwed };
 }
 
 /** One unasked push as one printed line: its document and count, and why a stop leaves it. Never a body. */
@@ -206,6 +221,10 @@ export const unaskedLine = (u: UnaskedPush): string =>
 /** One kept row as one printed line: its document and count, and why a stop keeps it. Never a body. */
 export const keptLine = (k: KeptRow): string =>
   `census: kept  ${k.refusal}  doc ${k.documentId}  ${k.saves} save(s)  bag ${k.bagId ?? "(none mapped)"}: at rest under the vessel's key, so a stop keeps them and the next boot carries them back`;
+
+/** One owed write as one printed line: its carrier and bag, and why a stop leaves it. */
+export const owedLine = (o: OwedCarrier): string =>
+  `census: owed  carrier ${o.uri}  bag ${o.bagId ?? "(none named)"}  island ${o.island}: the projector's queue still owes its file, and its record rests in the store, so a stop drops nothing and the next boot writes it`;
 
 /** One item as one printed line: kind, state, name, and where it belongs. Never a body. */
 export function censusLine(item: CensusItem): string {
@@ -236,8 +255,10 @@ export async function cmdCensus(args: ParsedArgs, lines: CensusLines = LIVE_LINE
       for (const u of reading.unasked ?? []) console.error(unaskedLine(u));
       // A KEPT ROW (its content at rest under the vessel's key) names itself and never turns the census red: a stop keeps it.
       for (const k of reading.kept ?? []) console.error(keptLine(k));
+      // AN OWED WRITE (a record at rest whose file the queue still owes) names itself and never turns the census red.
+      for (const o of reading.owed ?? []) console.error(owedLine(o));
       if (code === 0 && reading.lockedSinceBoot === true) { console.log(LOCKED_SINCE_BOOT_CENSUS); return; }
-      if (code === 0) { console.log("census: clean — no save waits in memory, and the disk projector owes no carrier"); return; }
+      if (code === 0) { console.log("census: clean — no save waits in memory, and no carrier's reconcile failed"); return; }
       for (const item of reading.items) console.log(censusLine(item));
       for (const u of reading.unanswered) console.error(u.why === VESSEL_LOCKED_CENSUS ? `census: ${u.why}` : `census: unanswered — ${u.part}: ${u.why}`);
       if (reading.items.length > 0) console.error(`census: ${reading.items.length} item(s) rest nowhere yet; a stop now drops them`);
