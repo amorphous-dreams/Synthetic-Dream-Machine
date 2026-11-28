@@ -238,7 +238,31 @@ export function callOfSigil(sigil: string, parse: MacroCallParse | undefined): {
   if (typed.length > 0) {
     throw new CallRefusal("sigil-malformed", `${source} carries a value the parser types for a render: ${typed.join(", ")}; a call reads its values as written`, cureCall(word, params));
   }
-  return { word, params };
+  return word === "lares" ? laresActOf(params, source) : { word, params };
+}
+
+/** The act keys `~lares` carries (comms-ux 12): one per call. */
+export const LARES_ACT_KEYS = ["get", "put", "delete", "rename", "filter", "act"] as const;
+/** The door a keyless `~lares` opens: the house's status. */
+export const LARES_STATUS_DOOR = "lar:///lares.lararium.status";
+
+/**
+ * `<<~ lares get=`Room 4`>>` read as the call it carries, the same fold the `~lares` procedure's button makes (sigil-lares.tid):
+ * get, put, delete and rename name the verb and their value the title (unless `title=` names it); `filter=` rides the get door
+ * as its filter; `act=` names the verb word, spelling or address itself. `emote=` narrates and rides no param. No act key opens
+ * the status door; two refuse `sigil-malformed`.
+ */
+export function laresActOf(given: Readonly<Record<string, unknown>>, source = "<<~ lares …>>"): { word: string; params: Record<string, unknown> } {
+  const { emote: _emote, ...params } = given;
+  const keys = LARES_ACT_KEYS.filter((key) => typeof params[key] === "string" && params[key] !== "");
+  if (keys.length > 1) throw new CallRefusal("sigil-malformed", `${source} carries ${keys.length} act keys (${keys.join(", ")}); one call carries one`, cureCall("lares", { [keys[0]!]: params[keys[0]!] }));
+  if (keys.length === 0) return { word: LARES_STATUS_DOOR, params };
+  const key = keys[0]!;
+  const value = String(params[key]);
+  delete params[key];
+  if (key === "act") return { word: value, params };
+  if (key === "filter") return { word: "get", params: { ...params, filter: value } };
+  return { word: key, params: { title: value, ...params } };
 }
 
 /** The members a `needs/<kind>:a,b` param names on one row, or null. */

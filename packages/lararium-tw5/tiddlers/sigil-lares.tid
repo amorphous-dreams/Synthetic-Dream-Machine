@@ -2,16 +2,44 @@ title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-lares
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: frame
 lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot#/spirit-swarm
-lar-pattern: <<~\s*lares\s+emote=`([^`]*)`\s*>>
+lar-pattern: <<~\s*lares(?:\s+(?:act|get|put|delete|rename|filter|title|text|to|mu|aperture|recipe|face|slot|base|after)=`[^`]*`)*(?:\s+emote=`([^`]*)`)?(?:\s+(?:act|get|put|delete|rename|filter|title|text|to|mu|aperture|recipe|face|slot|base|after)=`[^`]*`)*\s*>>
 lar-example: <<~ lares emote=`refreshes the libation dish, the shrine incense burns`>>
 type: text/vnd.tiddlywiki
 
-<!-- lares — the house's stage direction, a verb phrase. The spirit libation opens a tasked spirit's brief
-     with one: `<<~ lares emote=`refreshes the libation dish, the shrine incense burns`>> ${pet-name}
-     (Lares Spirit) …`. `emote=` rides as ONE ticked value, the fiction-action, and renders as prose: it
-     presses nothing and calls no door (operator ruling 2026-11-27; `act=` carries the code path, and
-     `action=` retires). A firing (aim, steer, yield) rides `set`, never this sigil. -->
+<!-- lares — the house's one act sigil and its stage direction (comms-ux 12; the carrier law at
+     lar:///ha.ka.ba/kahua/memory/research/glass-action-buttons).
 
-\procedure ~lares(emote:"")
-<span class="lar-lares"><$text text=<<emote>>/></span>
+     ACT KEYS: get= put= delete= rename= filter= act= — one per call (two refuse). The value of get, put, delete and
+     rename names the title (unless title= names it); filter= rides the get door as its filter; act= names the verb
+     word, skin spelling or address itself (`act=lar:///lares.lararium.status`, `act=rite kukulu`). The call renders a
+     button; pressing it runs the one door through <$action-call> (the CLI's `lares get title=…` and the seat's call
+     run the same door), and the answer lands at $:/state/lares/call/<request-id>. Shaping keys ride beside: title
+     text to mu aperture recipe face slot base after.
+
+     emote= rides as ONE ticked value, the fiction-action, and renders as prose: it presses nothing and calls no door
+     (operator ruling 2026-11-27; `action=` retires). The spirit libation opens a tasked spirit's brief with one.
+
+     A call with no act key and no emote (`<<~ lares>>`, or one carrying only mu= or aperture=) renders the house's
+     status door. A firing (aim, steer, yield) rides `set`, never this sigil; the pattern reads no firing key. -->
+
+\procedure ~lares(emote:"" act:"" get:"" put:"" delete:"" rename:"" filter:"" title:"" text:"" to:"" mu:"" aperture:"" recipe:"" face:"" slot:"" base:"" after:"")
+\whitespace trim
+<$let keys={{{ [<get>!is[blank]then[get]] [<put>!is[blank]then[put]] [<delete>!is[blank]then[delete]] [<rename>!is[blank]then[rename]] [<filter>!is[blank]then[filter]] [<act>!is[blank]then[act]] +[join[ ]] }}} n={{{ [enlist<keys>count[]] }}} key={{{ [enlist<keys>first[]] }}}>
+<$list filter="[<emote>!is[blank]]" variable="_"><span class="lar-lares"><$text text=<<emote>>/></span></$list>
+<$list filter="[<n>compare:number:gt[1]]" variable="_"><span class="lar-lares lar-lares-refused">two act keys refuse: <$text text=<<keys>>/></span></$list>
+<$list filter="[<n>match[1]]" variable="_">
+<$let word={{{ [<key>match[act]then<act>] :else[<key>match[filter]then[get]] :else[<key>] }}} named={{{ [<key>match[get]then<get>] :else[<key>match[put]then<put>] :else[<key>match[delete]then<delete>] :else[<key>match[rename]then<rename>] }}} t={{{ [<title>!is[blank]] :else[<named>] }}}>
+<$button class="lar-lares-call" tooltip={{{ [[lares ]addsuffix<word>addsuffix[ ]addsuffix<t>addsuffix<filter>trim[]] }}}>
+<$action-call $word=<<word>> title=<<t>> filter=<<filter>> text=<<text>> to=<<to>> mu=<<mu>> aperture=<<aperture>> recipe=<<recipe>> face=<<face>> slot=<<slot>> base=<<base>> after=<<after>>/>
+<$text text={{{ [<word>addsuffix[ ]addsuffix<t>addsuffix<filter>trim[]] }}}/>
+</$button>
+</$let>
+</$list>
+<$list filter="[<n>match[0]] :filter[<emote>is[blank]]" variable="_">
+<$button class="lar-lares-call lar-lares-status">
+<$action-call $word="lar:///lares.lararium.status" mu=<<mu>> aperture=<<aperture>>/>
+lares
+</$button>
+</$list>
+</$let>
 \end

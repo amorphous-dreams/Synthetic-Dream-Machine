@@ -315,7 +315,7 @@ describe("the Cut 4 frame sigils", () => {
     expect(firstLine(t.fields["lar-example"]!)).toMatch(/^<<~ set lares=`(aim|steer|yield)`/);
   });
 
-  test("★ sigil-lares.tid stands as the stage direction: the emote key alone, and no firing ★", () => {
+  test("★ sigil-lares.tid stands as the one act sigil and the stage direction: act keys and emote, and no firing ★", () => {
     const t = byHead.get("lares")!;
     expect(t, "sigil-lares.tid stands").toBeTruthy();
     expect(t.fields["lar-pono-uri"]).toBe("lar:///ha.ka.ba/lares/api/noosphere-boot#/spirit-swarm");
@@ -323,8 +323,11 @@ describe("the Cut 4 frame sigils", () => {
     expect(firstLine(t.fields["lar-example"]!)).toMatch(/^<<~ lares emote=`/);
     // The old frame rode this head with a firing; a firing rides `set` alone, so the pattern reads none, and the retired `action=` key reads none.
     const act = new RegExp(t.fields["lar-pattern"]!);
-    for (const old of ["<<~ lares aim from=`a`>>", "<<~ lares fires=`aim`>>", "<<~ lares emote=`a` fires=`yield`>>", "<<~ lares action=`a`>>", "<<~ lares>>"])
+    for (const old of ["<<~ lares aim from=`a`>>", "<<~ lares fires=`aim`>>", "<<~ lares emote=`a` fires=`yield`>>", "<<~ lares action=`a`>>"])
       expect(act.test(old), old).toBe(false);
+    // comms-ux 12: the act keys and the bare status door read pono (the carrier law, research/glass-action-buttons).
+    for (const live of ["<<~ lares>>", "<<~ lares get=`Room 4`>>", "<<~ lares act=`lar:///lares.lararium.status` mu=`?0`>>", "<<~ lares rename=`a` to=`b` emote=`moves the card`>>"])
+      expect(act.test(live), live).toBe(true);
   });
 
   test("★ sigil-wai.tid stands as the wikispace conditional's head, and its example matches its pattern ★", () => {

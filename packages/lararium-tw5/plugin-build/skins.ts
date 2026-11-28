@@ -99,7 +99,7 @@ export const LARARIUM_MODULES: readonly string[] = Object.freeze([
   "modules/wiki-sense-indexer", "lib/wiki-sense-fold", "filters/wikisense", "filters/kahua-shadow", "filters/meme-fold", "filters/floor-queue", "filters/floor-owes", "filters/security-class",
   "filters/afford", "modules/afford-face", "modules/call", "filters/stream", "modules/watch",
   "macros/ddate", "macros/spirit-unfold",
-  "widgets/action-oracle-cast", "widgets/action-meme-place",
+  "widgets/action-oracle-cast", "widgets/action-meme-place", "widgets/action-call",
 ].map((rest) => `${TW5}${rest}`));
 
 const GRAMMAR_SET = new Set(GRAMMAR_MODULES);

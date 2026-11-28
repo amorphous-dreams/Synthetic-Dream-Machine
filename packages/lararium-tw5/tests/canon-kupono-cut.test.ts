@@ -179,7 +179,7 @@ describe("CONTROLS: each law names the fault planted for it", () => {
     expect(LARES_ACT, "sigil-lares.tid carries a lar-pattern").toContain("lares");
     const example = /^lar-example: (.+)$/m.exec(LARES_TID)![1]!;
     expect(LAWS.flatMap(([, law]) => law(carrier(example + " ${pet-name} (Lares Spirit)")))).toEqual([]);
-    for (const old of ['<<~ lares aim "x">>', "<<~ lares fires=`aim` from=`a`>>", "<<~ lares emote=`a` fires=`yield`>>", "<<~ lares>>", "<<~ lares emote=`a`>> then <<~ lares aim from=`a`>>"])
+    for (const old of ['<<~ lares aim "x">>', "<<~ lares fires=`aim` from=`a`>>", "<<~ lares emote=`a` fires=`yield`>>", "<<~ lares emote=`a`>> then <<~ lares aim from=`a`>>"])
       expect(retiredFrame(carrier(old)).join("\n"), old).toContain("~lares frame call");
   });
   test("an old-form envelope stands outside the body", () => {

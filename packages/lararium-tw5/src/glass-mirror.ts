@@ -9,6 +9,8 @@ import { openDefaultStory } from "./default-story.js";
 import { tendOrphanAlerts } from "./place-meme.js";
 import { bootSetModuleTitles, bootSetOwns, bootSetTitles } from "./boot-census.js";
 import { naluFieldsOf } from "./nalu-form.js";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import type { CallPlan } from "./modules/call.js";
 
 export interface MirrorSeams {
   bootEngine?: () => void | Promise<void>; paint?: () => void;
@@ -176,6 +178,15 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
     adaptor.onLanded(noteLanding);
     if (seams.landed) adaptor.onLanded(seams.landed);
     if (seams.refused) adaptor.onRefused(seams.refused);
+    // THE GLASS SEATS ITS CALL DOOR (comms-ux 12): `$tw.lares.call` plans over the glass's own wiki and dispatches the bound plan
+    // through the record port's `call` ask, so the island runs it under the port's face gate and lent cap, as the CLI's call runs.
+    // The door reads the CURRENT adaptor, so a reopened port carries the next call; a refusal throws the island's code.
+    const lares = ((tw as unknown as { lares?: Record<string, unknown> }).lares ??= {});
+    lares["callDoor"] = async (plan: CallPlan): Promise<Record<string, unknown>> => {
+      const reply = await adaptor!.call(plan.address, plan.params);
+      if (reply.status === "refused") throw new VerbRefusal(reply.reason, `the island's door refused the call: ${reply.reason}`);
+      return reply.answer;
+    };
     // The boot's own records already stand: the flags re-derive from them before any landing.
     tendOrphans();
     if (!options.deferPaint) paint();

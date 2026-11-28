@@ -83,6 +83,11 @@ const ownFields = (wiki: GlassWiki, title: string): Record<string, string> | nul
 const imageOf = (fields: Record<string, string> | null) => JSON.stringify(fields);
 
 /** A glass wiki mirrors port records while its local edits remain optimistic. */
+/** A call's reply on the glass: the island's answer carrier, or the refusal code its door named. */
+export type GlassCallAnswer =
+  | { readonly status: "answered"; readonly answer: Record<string, unknown> }
+  | { readonly status: "refused"; readonly reason: string };
+
 export function makeGlassPortAdaptor(opts: GlassPortOptions) {
   const { wiki, Tiddler, transport, portId } = opts;
   const landed = new Map<string, PortWireRecord | null>();
@@ -91,6 +96,8 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
   const pending = new Map<string, Pending>();
   const settled = new Set<string>();
   const loading = new Map<string, { title: string; generation: number; resolve: (text: string | undefined) => void }>();
+  /** THE ONE CALL ON THE PORT (comms-ux 12): each `call` ask in flight, answered by its askId; the island's record-port handler runs it. */
+  const calling = new Map<string, (answer: GlassCallAnswer) => void>();
   const generations = new Map<string, number>();
   const peerGenerations = new Map<string, number>();
   const tombstones = new Map<string, number>();
@@ -282,6 +289,12 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
           else if (opened.has(tx.title) && omitted.get(tx.title)?.includes("text")) void loadBody(tx.title);
         }
       }
+    } else if (msg.type === "port:answer" && calling.has(msg.askId)) {
+      const settle = calling.get(msg.askId)!;
+      calling.delete(msg.askId);
+      settle(msg.status === "answered"
+        ? { status: "answered", answer: (msg.result ?? {}) as Record<string, unknown> }
+        : { status: "refused", reason: msg.reason ?? "call-refused" });
     } else if (msg.type === "port:answer") {
       const ask = loading.get(msg.askId);
       if (!ask) return;
@@ -336,7 +349,17 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
     return new Promise(resolve => { loading.set(askId, { title, generation: generations.get(title) ?? 0, resolve });
       transport.send({ type: "port:ask", portId, askId, kind: "load", subject: title, fields: ["text"] }); });
   };
+  /** One call through the island's door: `subject` names the verb word, an address or a whole call sigil; `params` its named values. */
+  const call = (subject: string, params: Readonly<Record<string, unknown>> = {}): Promise<GlassCallAnswer> => {
+    if (closed) return Promise.resolve({ status: "refused", reason: "port-closed" });
+    const askId = `${portId}:call:${++askNumber}`;
+    const args: Record<string, string> = {};
+    for (const [key, value] of Object.entries(params)) if (value !== undefined && value !== null) args[key] = typeof value === "string" ? value : JSON.stringify(value);
+    return new Promise(resolve => { calling.set(askId, resolve);
+      transport.send({ type: "port:ask", portId, askId, kind: "call", subject, args }); });
+  };
   return {
+    call,
     deferredTitles(): string[] { return [...deferred]; },
     /** No write stands in flight and no edit waits behind one: the port holds nothing the island has yet to answer. */
     /** How many local writes this port has sent: it only grows, so a test can wait for an edit's write to go out before it waits for quiet. */
@@ -363,6 +386,8 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
     openDraft(title: string) { return this.openBody(title); },
     postPresence(beat: number, state?: unknown) { transport.send({ type: "port:presence", portId, actorKey: opts.actor, beat, state }); },
     close() { if (closed) return; closed = true; wiki.removeEventListener("change", onChange); unsubscribe();
+      for (const settle of calling.values()) settle({ status: "refused", reason: "port-closed" });
+      calling.clear();
       transport.send({ type: "port:close", portId }); },
   };
 }
