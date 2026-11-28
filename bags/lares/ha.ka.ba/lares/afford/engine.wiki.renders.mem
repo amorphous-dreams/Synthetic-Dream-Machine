@@ -28,7 +28,7 @@ The address stands ''candidate'' until the operator reads the landing's list. Th
 !! takes ~ title · text · recipe · form · type · after · max-bytes · target · output · bag · face · filename · template · variables · overwrite
 
 ```memetic-wikitext
-<<has entity=`arg` name=`title` params=`takes/word seat/1 as/<title> ~ the tiddler to render; with --output workbench, the source filter`>>
+<<has entity=`arg` name=`title` params=`takes/word seat/1 as/<title> ~ the tiddler to render; with output=workbench, the source filter`>>
 <<has entity=`arg` name=`text` params=`takes/word ~ a wikitext span to render`>>
 <<has entity=`arg` name=`recipe` params=`takes/word default/default ~ the wiki (default names the worn face's daemon wiki)`>>
 <<has entity=`arg` name=`form` params=`takes/word ~ text or html`>>
@@ -68,7 +68,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares wiki render
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares wiki render]] ~ the terminal; --output workbench lands the render in the wiki's bound workbench`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares wiki render]] ~ the terminal; output=workbench lands the render in the wiki's bound workbench`>>
 ```
 
 <<~/ahu>>
@@ -94,6 +94,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0C3HlHyTPVrUp71LOVoAvRFwi53p_ZWDcSsMjwdvfnM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yXQTz59N0QT1RtP1Ur2FLSkCkf3V0zXqOxHy5Y6jsVI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -153,7 +153,7 @@ The Ostrom principles above still hold ''unchanged'' under the cut; they govern 
 | ''the charter-derived realm'' | the Nexus's own AID, the charter's genesis epoch | the charter's hearth, the registration's own hands, and each contracted member of the Nexus |
 | ''a cabal realm'' | 64 hex, the name its vouch board and its feed already wear | a peer that holds lineage standing in that realm, and nobody else |
 
-* ''A verb names its realm.'' `lares nexus realm-bag`, `realm-bags` and the meme verbs take `--realm <id>`. With none named, a verb routes to the charter-derived realm. A verb that names a realm reads that realm alone: no other realm's registration answers, and the vessel's own bag of that name never stands in.
+* ''A verb names its realm.'' `lares nexus realm-bag`, `realm-bags` and the meme verbs take `realm=<id>`. With none named, a verb routes to the charter-derived realm. A verb that names a realm reads that realm alone: no other realm's registration answers, and the vessel's own bag of that name never stands in.
 * ''A write to one realm never appears in another's plane.'' Each realm keeps its own shared doc, its own standing registrations, its own steward pin and its own gate.
 * ''An act stands the vessel in a realm; a read never does.'' Registering, asking and consenting in a cabal realm stand its plane and note the realm in the vessel's own ledger. Naming a realm the vessel never entered reads empty.
 * ''A cabal takes no key and no roster.'' Standing in a cabal realm reads as a live query over its vouch lineage (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae#/reach`>>). The plane holds no member list, and a steward's key there derives against the Nexus the realm stands under.
@@ -364,6 +364,6 @@ The measurements, walks and owed roads behind these laws: <<~ loulou uri=`lar://
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/multi-fractal`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/carry-contract`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bFCnwh22U_eGEl5xN7m2hOoEOITbo1Tb10llq0nxBKs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;t93eUWl4e_4VpbuAfzrVntTM07ckq5td5akAM2cbM_E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

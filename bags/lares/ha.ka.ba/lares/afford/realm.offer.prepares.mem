@@ -17,9 +17,9 @@ uri-path  = "ha.ka.ba/lares/afford/realm.offer.prepares"
 
 ! realm.offer.prepares ~ the AI prepares; the hand commits
 
-Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON.
+Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The wiki rides `wiki=` (absent: the daemon wiki), the face `face=N`, and every answer prints as JSON.
 
-`trust prepare <digest> --why <reason>` puts a waiting item on the board with the reason it should be promoted; it commits nothing. A digest no waiting item carries refuses `promote-unknown`.
+`trust prepare <digest> why=<reason>` puts a waiting item on the board with the reason it should be promoted; it commits nothing. A digest no waiting item carries refuses `promote-unknown`.
 
 <<~/ahu>>
 
@@ -64,7 +64,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`promote-digest-malformed` params=`cure/[[realm.offer.prepares digest/<digest> why/<reason>]] ~ name a hex64 digest`>>
-<<has entity=`refusal` name=`promote-why-missing` params=`cure/[[realm.offer.prepares digest/<digest> why/<reason>]] ~ name --why`>>
+<<has entity=`refusal` name=`promote-why-missing` params=`cure/[[realm.offer.prepares digest/<digest> why/<reason>]] ~ name why=`>>
 <<has entity=`refusal` name=`promote-unknown` params=`cure/[[realm.offer.reads]] ~ no waiting item carries the digest; list what waits`>>
 ```
 
@@ -105,6 +105,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iq0a99Pdb9yVFQBgzuJHs1Xv_5ZM3s8D47p1QJqcdLo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HpWWLYaAjxOqR-zCo-AKviic4fnfhNv-umljJ9IcrhY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

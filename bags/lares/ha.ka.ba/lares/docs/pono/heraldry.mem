@@ -174,7 +174,7 @@ Ordered so each step's red stands alone and its CONTROL rides beside it. Spirit-
 
 !!! Step 2 · The founder's door accepts a carrier ~ 3 spirit-hours
 
-* ''RED'' (`packages/lararium-node/tests/nexus-contract-carrier.test.ts`, new): `runNexusContract({ action: "carry", nym: <herm vessel key>, carrierSig })` lands an entry the carrier fold counts; `runNexusMembersList().members` does NOT contain it; a `--carrier` admit with NO seal REFUSES with a named error.
+* ''RED'' (`packages/lararium-node/tests/nexus-contract-carrier.test.ts`, new): `runNexusContract({ action: "carry", nym: <herm vessel key>, carrierSig })` lands an entry the carrier fold counts; `runNexusMembersList().members` does NOT contain it; a `carrier=` admit with NO seal REFUSES with a named error.
 * ''CURE'': a `carry` action beside `admit`/`revoke`, resolving its seal through a `resolveCarrierIn` that reads a supplied token ONLY — never `generateOrLoadPersonaGroupRoot`, never `loadPersonaGroupRootSeed` (the whole point; `nexus-contract.ts:124-146` stays untouched for `admit`).
 * ''CONTROL'': `personaSlotCeiling("herm") === 0` and `refuseSlot("herm", …) === "faceless-by-class"` stay green (`packages/lararium-mesh/tests/vessel-standing.test.ts`); `lares persona new 0` on a Herm still refuses (`packages/lares-cli/src/commands/persona.ts:88-91`).
 
@@ -186,8 +186,8 @@ Ordered so each step's red stands alone and its CONTROL rides beside it. Spirit-
 
 !!! Step 4 · The e2e flip ~ 4 spirit-hours
 
-* ''RED'': ⑦ in `tests/e2e/herm-reshares-public-blob.e2e.test.ts` (held as `test.fails`). `openStagedFleet` gains, after A founds: A seats a charter (`nexus rite quorum`), exports it, the Herm imports it, A carries the Herm by its vessel key, the Herm dials A's `/ws`, and A registers `bags/lares --tier public`.
-* ''CURE'': the harness lines above (`tests/harness/instance.ts:311-349`) plus the herm's explicit join (`nexus carry-for`, `nexus carry --floor-pin`, `nexus carry-take`), so its floor gate stands at A's Nexus (`herm-explicit-join.test.ts`, `herm-carriage.ts`).
+* ''RED'': ⑦ in `tests/e2e/herm-reshares-public-blob.e2e.test.ts` (held as `test.fails`). `openStagedFleet` gains, after A founds: A seats a charter (`nexus rite quorum`), exports it, the Herm imports it, A carries the Herm by its vessel key, the Herm dials A's `/ws`, and A registers `bags/lares tier=public`.
+* ''CURE'': the harness lines above (`tests/harness/instance.ts:311-349`) plus the herm's explicit join (`nexus carry-for`, `nexus carry floor-pin=`, `nexus carry-take`), so its floor gate stands at A's Nexus (`herm-explicit-join.test.ts`, `herm-carriage.ts`).
 * ''CONTROL'': the file's three standing CONTROLs hold unchanged — a ghost cid draws the byte-identical 404, the boot CAS still serves at `/bulb/<cid>.bin`, C's ghost fetch reads `held:false` and writes nothing. ''Plus one new'': a CONTRACT-tier registration's pointer draws 404 through the same Herm in the same run.
 
 !!! Step 5 · The publish door seats a non-persona owner ~ 3 spirit-hours
@@ -243,6 +243,6 @@ Ordered so each step's red stands alone and its CONTROL rides beside it. Spirit-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;F0IxZiC2Owx8q7UoMtPDmSDq-tfJ1NH3BHStjK3KlQw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;t4vG_SCacYTI9gDmm1gCJzR1l8V8nbw2dNJHrdbuaco`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -64,7 +64,7 @@ Testimony: the door checks; this slot grants nothing.
 !!! lares sense pour
 
 ```memetic-wikitext
-<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares sense pour]] ~ the terminal; one leg at a time: --all, --bulk or --writeback`>>
+<<has entity=`skin` name=`cli` params=`handler/host spells/[[lares sense pour]] ~ the terminal; one leg at a time: all=true, bulk=true or writeback=true`>>
 ```
 
 <<~/ahu>>
@@ -90,6 +90,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;P6_rfzy3WJydV7Pxbt3fUQvOf4Hk31uZrgXzSD-Q_aE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;spi_fOmmPNhzLJKf0BwjDM4bMPgU5a5-oUugQo5XGLA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

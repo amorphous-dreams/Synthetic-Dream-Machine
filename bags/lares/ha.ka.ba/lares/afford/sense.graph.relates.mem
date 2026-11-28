@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.graph.relates"
 
 ! sense.graph.relates ~ the bitemporal knowledge graph around one entity
 
-`lares sense relate <entity…>` reads the bitemporal knowledge graph of one plane (`--lens`, default content) around one entity, `--as-of` reading it at a past time. A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
+`lares sense relate <entity…>` reads the bitemporal knowledge graph of one plane (`lens=`, default content) around one entity, `as-of=` reading it at a past time. A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
 
 <<~/ahu>>
 
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2OeMhIfP6rPsIvfpyUBD-JIA9bVs53lm2ywCJTAjD3A`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dD5XQbIL_lfOx2cXuCWWfUocv40SbN_uHE6pePqrFnE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.circle.reads"
 
 ! face.circle.reads ~ the follow-view: nyms under the recogniser's own names
 
-`lares circle list [to=<circle>]` reads the private follow-view: each nym under the recogniser's own petname and its last-seen glamour. With no `--to` it lists every circle.
+`lares circle list [to=<circle>]` reads the private follow-view: each nym under the recogniser's own petname and its last-seen glamour. With no `to=` it lists every circle.
 
 <<~/ahu>>
 
@@ -101,6 +101,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;q0ZlCGmZpyZstLvtOwETG0p2-bV5GD--go17g2cQoCE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qXS3ah18CqYR2c0_dHfti5eFDHpxcBaXmPgHJBnqHkE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.antigen.lifts"
 
 ! realm.antigen.lifts ~ a lift supersedes by causal fold, never deletion
 
-`lares nexus un_kapae <nym> [nexus=<aid>]` mints a quorum-signed lift whose causal parents name the ban heads it answers, so it supersedes exactly the raises it read; a concurrent raise and lift fold unsettled. `--out` and `--from` carry a partial between vaults. Nothing leaves the board.
+`lares nexus un_kapae <nym> [nexus=<aid>]` mints a quorum-signed lift whose causal parents name the ban heads it answers, so it supersedes exactly the raises it read; a concurrent raise and lift fold unsettled. `out=` and `from=` carry a partial between vaults. Nothing leaves the board.
 
 <<~/ahu>>
 
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3y5M4_MnJgVe89VONTc_bNbgUlIud7cHYNWqtOtQcNQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cSmcnbh1n3oVgietsZlEibkrIRNMxYfmBJeEoCaKqHY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

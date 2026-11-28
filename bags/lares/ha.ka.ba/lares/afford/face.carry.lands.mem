@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.carry.lands"
 
 ! face.carry.lands ~ hooili ~ the carry, hoʻoili
 
-`lares spirit hooili <pet>` lands a compaction summary (`--file <path|->` or `--text <words>`) as `hooili/<spirit-id>-<hash12>` with its lineage (`parent`, `record-base`, `depth`, `instance`). It writes nothing to the card; each instance keeps its own chain, and an instance with none yet takes the newest carry any instance landed. It hands back the `#/instances` line the next instance files through ah. The words pass the secret-shape guard, read uncut, before they land.
+`lares spirit hooili <pet>` lands a compaction summary (`file=<path|->` or `text=<words>`) as `hooili/<spirit-id>-<hash12>` with its lineage (`parent`, `record-base`, `depth`, `instance`). It writes nothing to the card; each instance keeps its own chain, and an instance with none yet takes the newest carry any instance landed. It hands back the `#/instances` line the next instance files through ah. The words pass the secret-shape guard, read uncut, before they land.
 
 <<~/ahu>>
 
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;HrtpIw6HbSj4VhQsWTlJTQXMBRg9bSzKNanG8kJ2TJc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;g-ypm53FrqDAmYaAP7GKvsTzbgqnY_QQsFYtKlVPmHA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

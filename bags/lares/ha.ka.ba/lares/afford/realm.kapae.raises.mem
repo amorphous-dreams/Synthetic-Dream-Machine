@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.kapae.raises"
 
 ! realm.kapae.raises ~ the hand raises the brake and the promoted item stands aside
 
-Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The brake sets one promoted item aside by a signed marker, and a lower takes the marker down. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON. The word names five doors in the house: the nexus quorum ban (`lares nexus kapae`) and a relation's marker (`lares edge kapae`) stay beside it, the seat's branch mute reads at `sense.kapae.mutes`, and a record's tombstone rides `lares delete`.
+Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The brake sets one promoted item aside by a signed marker, and a lower takes the marker down. The wiki rides `wiki=` (absent: the daemon wiki), the face `face=N`, and every answer prints as JSON. The word names five doors in the house: the nexus quorum ban (`lares nexus kapae`) and a relation's marker (`lares edge kapae`) stay beside it, the seat's branch mute reads at `sense.kapae.mutes`, and a record's tombstone rides `lares delete`.
 
 `kapae raise <digest>` sets the item aside by a signed marker, a move-not-delete: the marker holds until a lower takes it down. A person runs it at a real terminal, and an AI seat flags (`realm.kapae.flags`) and names the command.
 
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;zVyzuriwWjA1zJM2QAlDav2mfZx2u3GITW6iKy5qqyY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Pp0WjJ8wqBpUjTpWEj2dDAY7VZ8u6YsFXoT2LHE1k8U`>>
 
 <<^ code=`&#x0004;` to=`?`>>

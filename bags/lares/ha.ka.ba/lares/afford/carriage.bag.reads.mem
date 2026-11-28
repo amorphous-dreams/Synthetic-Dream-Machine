@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.bag.reads"
 
 With no bag, `show` surveys every bag the survey dir holds: its declared cap-tier and home, and whether it sits where its declaration says. With a bag, it shows that bag's declaration and where it resolves ON THIS VESSEL: tier (a tier only ever tightens against the structural floor), home (and the repo it names), whether a clone of the repo carries it, where its bytes sit, and where it declares they belong, with an ADRIFT mark and the command that re-anchors it where the two differ.
 
-The survey reads `--dir` (default the bags dir); with no `--dir`, a bag with no canon source resolves in the house's projected bags, and a shared wiki's canon bag under its realm folder. A bag absent from every place names each place it read. `--after` and `--limit` page the whole survey; naming one bag takes `--dir` alone.
+The survey reads `dir=` (default the bags dir); with no `dir=`, a bag with no canon source resolves in the house's projected bags, and a shared wiki's canon bag under its realm folder. A bag absent from every place names each place it read. `after=` and `limit=` page the whole survey; naming one bag takes `dir=` alone.
 
 <<~/ahu>>
 
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9IUTu884ybz7Wl5JR3Ia8HqOjcxIIQ1Wgoqp5Am4QRI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1q6aWPoaG-EofkzwBaDLx349cvyGvTtWlFp1vAh-Yx4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

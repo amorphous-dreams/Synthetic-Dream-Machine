@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.home.undoes"
 
 ! engine.home.undoes ~ a tend generation, put back
 
-`lares home undo [gen]` restores the bytes the named generation (else the last) replaced and records the restore as a new generation. A path a hand changed after that generation wrote it refuses unless `--force`. The home undo puts back bytes in the operator's homes (a settings file lacking the doors' deny list among them), so the house hand gate reads the command's branch first: an AI seat refuses `hand-act-only`, an unread chain `hand-unattested`; then a terminal asks, and none needs `yes=true`.
+`lares home undo [gen]` restores the bytes the named generation (else the last) replaced and records the restore as a new generation. A path a hand changed after that generation wrote it refuses unless `force=true`. The home undo puts back bytes in the operator's homes (a settings file lacking the doors' deny list among them), so the house hand gate reads the command's branch first: an AI seat refuses `hand-act-only`, an unread chain `hand-unattested`; then a terminal asks, and none needs `yes=true`.
 
 <<~/ahu>>
 
@@ -62,8 +62,8 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`usage` params=`~ name one of read, tend, verify, undo`>>
-<<has entity=`refusal` name=`root-repo-only` params=`~ --root names a checkout, and only lares repo keeps one`>>
-<<has entity=`refusal` name=`staged-repo-read-only` params=`~ --staged reads the index, and only lares repo read reads it`>>
+<<has entity=`refusal` name=`root-repo-only` params=`~ root= names a checkout, and only lares repo keeps one`>>
+<<has entity=`refusal` name=`staged-repo-read-only` params=`~ staged=true reads the index, and only lares repo read reads it`>>
 <<has entity=`refusal` name=`generation-not-whole` params=`cure/[[engine.home.undoes gen/3]] ~ a generation reads as a whole number`>>
 <<has entity=`refusal` name=`undo-refused` params=`~ the ledger holds no such generation, or the restore threw; the line names why`>>
 <<has entity=`refusal` name=`hand-act-only` params=`~ an AI seat stands on the branch; a person runs the home undo at their own terminal`>>
@@ -79,7 +79,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`band` name=`restored` params=`exit/0 fields/[[radius generation undoes restored refused]] ~ the generation stands restored, recorded as a new one`>>
-<<has entity=`band` name=`foreign` params=`exit/3 fields/[[radius generation undoes restored refused]] ~ a hand changed a path since; --force restores it`>>
+<<has entity=`band` name=`foreign` params=`exit/3 fields/[[radius generation undoes restored refused]] ~ a hand changed a path since; force=true restores it`>>
 ```
 
 <<~/ahu>>
@@ -109,6 +109,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xQ1IEkdqx1vVQC5VG4BTKNR5DJChvfTIfyurO3HK170`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;olpUe29FXlOReVxmZPRQmZhQffKSzzuzwrJ3QneLyto`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -9,8 +9,8 @@ hydrate    = true
 l-space    = "stable"
 namespace  = "&#x2299;"
 revised-on = "2026-09-13"
-role       = "realm-bag-brief — the brief on a relation-carried bag: a bag two operators keep through a relation. Where the bag doc registers (the realm's shared CRDT, ruled), what crossroads-plane carries (that it exists and who keeps it, never content), which cap-tier gates the read (CONTRACT) and the write (the named stewards' set), how B's `meme get --bag <x>` resolves it (reach-by-access, and why), what the realm layer already holds and what stands unbuilt, and the one gated red that waits on the seam. Every claim carries its file:line."
-status-why = "BUILT 2026-09-12: the realm's shared CRDT materializes at boot under one doc id, a bag registers on it steward-signed (`1bf9f0b2d`), and the crossing stands — the dial presents the CONTRACT edge, the share verdict seats on announce and access, B's `meme get --bag lares` answers under two operators (`04895b579`, `be008ef1a`; docker `★ B gets it ★ ok`). Two steps behind it walk red on their own terms (B's md projection wants a `meta` key; B's LOAD lands in her own bag while the stewards alone write A's); the bulb GAP and PARTITION reconnect stand — AND THE ANNOUNCE MOVED 2026-09-13 (`10c878d1d`): a PUBLIC-tier registration's announce carries the book's doc url so a carrier can read which books it may carry, every tighter tier unchanged and byte-identical."
+role       = "realm-bag-brief — the brief on a relation-carried bag: a bag two operators keep through a relation. Where the bag doc registers (the realm's shared CRDT, ruled), what crossroads-plane carries (that it exists and who keeps it, never content), which cap-tier gates the read (CONTRACT) and the write (the named stewards' set), how B's `meme get bag=<x>` resolves it (reach-by-access, and why), what the realm layer already holds and what stands unbuilt, and the one gated red that waits on the seam. Every claim carries its file:line."
+status-why = "BUILT 2026-09-12: the realm's shared CRDT materializes at boot under one doc id, a bag registers on it steward-signed (`1bf9f0b2d`), and the crossing stands — the dial presents the CONTRACT edge, the share verdict seats on announce and access, B's `meme get bag=lares` answers under two operators (`04895b579`, `be008ef1a`; docker `★ B gets it ★ ok`). Two steps behind it walk red on their own terms (B's md projection wants a `meta` key; B's LOAD lands in her own bag while the stewards alone write A's); the bulb GAP and PARTITION reconnect stand — AND THE ANNOUNCE MOVED 2026-09-13 (`10c878d1d`): a PUBLIC-tier registration's announce carries the book's doc url so a carrier can read which books it may carry, every tighter tier unchanged and byte-identical."
 tags       = ["docs/pono/handoff", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -23,7 +23,7 @@ uri-path   = "ha.ka.ba/lares/docs/pono/realm-bag-brief"
 
 ! Ground — the ford and its one book
 
-''Measured'' (over `tools/mesh-scenarios.sh meme`): two operators each found their own `lar:///ha.ka.ba/bags/lares` doc; `nexus contract` writes the carriage-contracts board and B's kept consent, never a bag (`packages/lararium-node/src/nexus-carriage.ts:110` materializes `board:carriage-contracts` off `carriageDocUrl(nexusPubkey)`); B's `meme get --bag lares` answers `not-found`. The crossing that passed rode a FLEET dial — one operator's bag on two devices (`tests/e2e/meme-two-vessel-bag.test.ts`).
+''Measured'' (over `tools/mesh-scenarios.sh meme`): two operators each found their own `lar:///ha.ka.ba/bags/lares` doc; `nexus contract` writes the carriage-contracts board and B's kept consent, never a bag (`packages/lararium-node/src/nexus-carriage.ts:110` materializes `board:carriage-contracts` off `carriageDocUrl(nexusPubkey)`); B's `meme get bag=lares` answers `not-found`. The crossing that passed rode a FLEET dial — one operator's bag on two devices (`tests/e2e/meme-two-vessel-bag.test.ts`).
 
 ''The ruling this brief enacts'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one`>> #/exit, quote license): "the shared bag registers in the realm's shared CRDT, crossroads-plane names only that it exists, read at CONTRACT".
 
@@ -69,7 +69,7 @@ uri-path   = "ha.ka.ba/lares/docs/pono/realm-bag-brief"
 
 !! 3 · The smallest red
 
-`tests/e2e/meme-realm-bag.test.ts` — over the two-vessel harness with A and B founded as DIFFERENT operators (no admit edge; B dials A at the cross-operator floor): A seats its charter (`nexus rite quorum`), the charter crosses by its own doors, B signs its contract-in, A's quorum admits her; A LOADs a carrier into `bags/lares`; the vector reads B's `meme get --bag lares <uri>`. The realm carries the bag, so the vector stands as a plain test with no `test.fails` hold; a refusal at a contract door skips the vector rather than reading as the seam — the same law `blob-follows-pointer` and ⑨ rode.
+`tests/e2e/meme-realm-bag.test.ts` — over the two-vessel harness with A and B founded as DIFFERENT operators (no admit edge; B dials A at the cross-operator floor): A seats its charter (`nexus rite quorum`), the charter crosses by its own doors, B signs its contract-in, A's quorum admits her; A LOADs a carrier into `bags/lares`; the vector reads B's `meme get bag=lares <uri>`. The realm carries the bag, so the vector stands as a plain test with no `test.fails` hold; a refusal at a contract door skips the vector rather than reading as the seam — the same law `blob-follows-pointer` and ⑨ rode.
 
 <<~/ahu>>
 
@@ -84,6 +84,6 @@ uri-path   = "ha.ka.ba/lares/docs/pono/realm-bag-brief"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wApE4cLkweqHksnbXzy8VfPH3vyRhHlqvZ9iS8sGYuQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_kAvWnhzDO1sTCq2PXi15sD0dTGWgRjD8pQlyA_BjYU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

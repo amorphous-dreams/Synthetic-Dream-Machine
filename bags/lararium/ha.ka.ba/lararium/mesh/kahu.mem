@@ -293,7 +293,7 @@ moves, and commits one digest per chair (`nextKeyDigests`); `seal rotate` takes 
 adopts each revealed key as its chair's seat key; the quorum doors sign with the records (`held-quorum.ts`). The
 charter reader reads an epoch's present fields alone: any other field passes unread, and an epoch missing a present
 field reads the charter torn, which licenses nothing. `seal cold rehearse`
-reads a card back against the head's digests, names the chair it would roll, and moves nothing; `--cold-key`
+reads a card back against the head's digests, names the chair it would roll, and moves nothing; `cold-key=`
 stands in for its terminal only on a staged root whose custody proves the published test route. The Stable founding
 act stands in code (`found-hearth.ts`, `hearth-aid.ts`): one seat, its card, the PRIVATE seed charter, persona zero's
 face binding its AID; `seal-ceremony.ts` refuses a re-seat over it (`hearth-bound`). `seal cofound open|join|seal`
@@ -358,7 +358,7 @@ stand beside the gate: an admit proves itself by its quorum signatures and its l
 ''The daemon's carriage decision rides the verifier.'' `nexus-carriage.ts` seats a peer in its leaf map
 only when the socket that peer stands on PRESENTED an admit and `verifyPresentedAdmit` reads it `held`
 against a Nexus this vessel carries; a peer presenting nothing stays a stranger, whatever the board
-records. `foldCarriageSet` reads the board's RECORD (`nexus members --list`) and no enforcement shore
+records. `foldCarriageSet` reads the board's RECORD (`nexus members list=true`) and no enforcement shore
 reads its answer as an allow set.
 
 ''The subject stamp keys on the Nexus scope.'' An admit signed by a PersonaGroup ROOT correlates one
@@ -699,6 +699,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;B3jd5NCJ03gyBWMIoUrP0v-YaTSXWbUvc8cZ__AGlm8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;K_JJicK-fisSMdw42F7VbRQ_J0FDuObsB4cLOOYavTo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

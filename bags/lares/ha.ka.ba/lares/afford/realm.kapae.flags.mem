@@ -17,9 +17,9 @@ uri-path  = "ha.ka.ba/lares/afford/realm.kapae.flags"
 
 ! realm.kapae.flags ~ the AI flags with a reason; the hand raises
 
-Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The brake sets one promoted item aside by a signed marker, and a lower takes the marker down. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON. The word names five doors in the house: the nexus quorum ban (`lares nexus kapae`) and a relation's marker (`lares edge kapae`) stay beside it, the seat's branch mute reads at `sense.kapae.mutes`, and a record's tombstone rides `lares delete`.
+Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The brake sets one promoted item aside by a signed marker, and a lower takes the marker down. The wiki rides `wiki=` (absent: the daemon wiki), the face `face=N`, and every answer prints as JSON. The word names five doors in the house: the nexus quorum ban (`lares nexus kapae`) and a relation's marker (`lares edge kapae`) stay beside it, the seat's branch mute reads at `sense.kapae.mutes`, and a record's tombstone rides `lares delete`.
 
-`kapae flag <digest> --why <reason>` puts a flag on the board for an item, found among the waiting items or the carried rows; it raises nothing. The reason rides the flag.
+`kapae flag <digest> why=<reason>` puts a flag on the board for an item, found among the waiting items or the carried rows; it raises nothing. The reason rides the flag.
 
 <<~/ahu>>
 
@@ -66,7 +66,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`promote-digest-malformed` params=`cure/[[realm.kapae.flags digest/<digest> why/<reason>]] ~ name a hex64 digest`>>
-<<has entity=`refusal` name=`promote-why-missing` params=`cure/[[realm.kapae.flags digest/<digest> why/<reason>]] ~ name --why`>>
+<<has entity=`refusal` name=`promote-why-missing` params=`cure/[[realm.kapae.flags digest/<digest> why/<reason>]] ~ name why=`>>
 ```
 
 <<~/ahu>>
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AC8zdHKahVnk4NEEbsSioNZa3yYBErRztSbnM9XCsjA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;s9VPM375KW_kEA7xP7rWMmauk5W_pLRldfrUw_hfbFE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

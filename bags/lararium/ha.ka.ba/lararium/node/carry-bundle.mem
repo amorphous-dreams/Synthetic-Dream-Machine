@@ -22,7 +22,7 @@ written     = "2026-10-16"
 
 The herm membership relay (herm to hearth board sync) ships SHUT by name, so the quorum's `carry` act never
 crosses a wire to the herm it names. An operator carries it instead, the way an admit bundle travels for a
-person (`admit-bundle`): `nexus carry-for` on the herm, `nexus carry --floor-pin` at a seat, `nexus
+person (`admit-bundle`): `nexus carry-for` on the herm, `nexus carry floor-pin=` at a seat, `nexus
 carry-take` on the herm. This is the explicit act that opens the herm relay (the shut-routes house ruling, stable-founding-road #/rulings): the quorum's counted carry over the herm's key, carried to the herm by hand.
 
 <<~/ahu>>
@@ -63,8 +63,8 @@ nowhere. A running vessel refolds at once; otherwise the next boot stands the ga
 
 !! A cofounded Nexus carries a herm by the two-vault door
 
-`nexus carry <key> --carrier <hex> --floor-pin <file> --nexus <aid> --out <partial>` signs with the seats held here and writes the carry
-as a PARTIAL with the place's floor pin claim and KEL events; `--from <partial>` on the other vault judges it, cosigns and lands the counted
+`nexus carry <key> carrier=<hex> floor-pin=<file> nexus=<aid> out=<partial>` signs with the seats held here and writes the carry
+as a PARTIAL with the place's floor pin claim and KEL events; `from=<partial>` on the other vault judges it, cosigns and lands the counted
 act, the claim and the events in one write, and emits this bundle from there. A partial below the quorum files no pin.
 
 <<~/ahu>>
@@ -81,6 +81,6 @@ act, the claim and the events in one write, and emits this bundle from there. A 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/place-floor-pin`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;VKw-zuGib7fqihqYLfZKi-_e7lnAn8gP9mk6twtftkE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MTDsfDUYp07alb4wqsRAQW0CywQoGFnYPWr1Wskf5GI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

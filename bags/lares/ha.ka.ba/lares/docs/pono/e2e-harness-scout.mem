@@ -46,7 +46,7 @@ Seven files pass clean: `watcher-cut-c`, `ingest-quiescence`, `wikis-ingest-back
 
 # ① REAL DEFECTS — these matter more than the rest of this document
 
-## D1 — `lares --json` TRUNCATES ITS OWN RESULT ON A PIPE (2 failures + every agent that pipes it)
+## D1 — `lares json=true` TRUNCATES ITS OWN RESULT ON A PIPE (2 failures + every agent that pipes it)
 
 `packages/lares-cli/src/bin/lares.ts:230` — `dispatch(...).then((code) => process.exit(code))`. Node's `process.stdout` is **asynchronous on a pipe** and synchronous on a file. `process.exit()` discards the undrained tail.
 
@@ -57,13 +57,13 @@ Measured, same command, same staged vessel, same 2,718-record result:
 | `> file` (sync) | **165,256** | `ok:true`, `count:2718` |
 | pipe (`spawn`) | **146,176** | `SyntaxError: Unterminated string in JSON at position 146176` |
 
-The CLI's own `help` says `--json` "Emit a deterministic JSON result … **for agents/pipes**". It breaks precisely for pipes, at ~146 KB, silently, with exit code **0**.
+The CLI's own `help` says `json=true` "Emit a deterministic JSON result … **for agents/pipes**". It breaks precisely for pipes, at ~146 KB, silently, with exit code **0**.
 
 This is the whole cause of:
 - `tests/e2e/corpus-feed.test.ts:96` — `expect(loadOk).toBe(true)` → false
 - `tests/e2e/vessel-reboot.test.ts:51` — `expect(fed.json?.["ok"]).toBe(true)` → **undefined** (no parseable line at all)
 
-Note what this hid: in `corpus-feed`, F2 and F4 *passed* on the same LOAD — the corpus **did** land, the daemon did the work, and only the answer was lost. An operator watching a large `act LOAD --json` in a pipeline sees a failure for work that succeeded. Do **not** cure this by widening the harness's parser.
+Note what this hid: in `corpus-feed`, F2 and F4 *passed* on the same LOAD — the corpus **did** land, the daemon did the work, and only the answer was lost. An operator watching a large `act LOAD json=true` in a pipeline sees a failure for work that succeeded. Do **not** cure this by widening the harness's parser.
 Cure: `process.exitCode = code` and let the loop drain (or await a stdout drain before exiting).
 
 ## D2 — `invokeLocal` SILENTLY FALLS BACK TO THE OPERATOR'S OWN HOME VESSEL
@@ -207,7 +207,7 @@ The decay cause is structural: `tests/package.json` declares `test:e2e`, not `te
 
 Two more that belong **beside the code, not in the e2e tree** (`packages/lares-cli/tests/`, so they ride `pnpm -r test`):
 
-8. **`--json` pipe integrity** — spawn the built bin over a **pipe** on a command whose JSON exceeds ~256 KB and `JSON.parse` the result. This is the only vector that catches **D1**, it runs in under a second, and it sits where the CLI lives rather than behind a ten-minute daemon suite.
+8. **`json=true` pipe integrity** — spawn the built bin over a **pipe** on a command whose JSON exceeds ~256 KB and `JSON.parse` the result. This is the only vector that catches **D1**, it runs in under a second, and it sits where the CLI lives rather than behind a ten-minute daemon suite.
 9. **`invokeLocal` refuses an absent `dataDir`** — asserts no silent fall-through to `larDataDir()`. Catches **D2**.
 
 Finally, two housekeeping notes worth the operator's ear: add a named `test:e2e:smoke` (one file, ~35s) and say in `TEST-ARCHITECTURE.md` that it is the gate for anyone touching `packages/lares-cli` or `packages/lararium-tw5` — the two packages that moved 44 files under this harness while nothing watched. And the box currently carries **seven stale `lararium-node` daemons** from earlier sessions (ports 8080, 8097, 8098, 8260, 8261, 8262, 8272) plus four orphan sockets under `/tmp/lares-1000/`; that load is real and it is what turned RC-D from a flake into a near-certain red.
@@ -217,6 +217,6 @@ Finally, two housekeeping notes worth the operator's ear: add a named `test:e2e:
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hFXAKLBRkznARl2zB0ufRkBpine1eWqcdpVj72EfvLQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XZMuEN8ahk3DEMkFL-0o3byO-N9kb9hcLn4DN3jU8Wo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

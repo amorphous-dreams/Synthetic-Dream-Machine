@@ -6,7 +6,7 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-role      = "take a body onto the shelf, moving it by default, --keep to copy"
+role      = "take a body onto the shelf, moving it by default, keep=true to copy"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///library.body.acquires", "candidate"]
 title     = "lar:///ha.ka.ba/lares/afford/library.body.acquires"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/library.body.acquires"
 
 ! library.body.acquires ~ a body a human did not author comes onto the shelf
 
-`lares library acquire <file> to=<collection>` digests the file and lands it at `<library>/<collection>/<cid>/<the real filename>`, recording its entry in the collection's index slot. It moves the source by default, since moving keeps the body off every tracked tree; `--keep` copies. `--origin`, `--licence` (or `--license`) and `--note` ride the entry. The same bytes already on the shelf answer held.
+`lares library acquire <file> to=<collection>` digests the file and lands it at `<library>/<collection>/<cid>/<the real filename>`, recording its entry in the collection's index slot. It moves the source by default, since moving keeps the body off every tracked tree; `keep=true` copies. `origin=`, `licence=` (or `license=`) and `note=` ride the entry. The same bytes already on the shelf answer held.
 
 <<~/ahu>>
 
@@ -65,7 +65,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · error
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[library.body.acquires file/book.epub to/mark-twain]] ~ no file, no --to, or no such file on the host`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[library.body.acquires file/book.epub to/mark-twain]] ~ no file, no to=, or no such file on the host`>>
 <<has entity=`refusal` name=`error` params=`~ the shelf could not take the body; the message names why`>>
 ```
 
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qBDNwcv-Ieff7wmQPATFD87SbH-n-d1JR0WhgptylkA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZCQ8CjhhMzikZIZjirr5_z5Ql_rqRajltz-aiWtirV8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

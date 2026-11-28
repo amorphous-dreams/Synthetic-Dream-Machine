@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.bag.registers"
 
 ! carriage.bag.registers ~ the operator's repo registry: an id maps to a root only this vessel knows
 
-A bag that homes at a repository names a REGISTERED id; the operator maps ids to roots once, on their own vessel, so a declaration stays portable and the path stays local. `repo list` (the default) prints the registry, `repo add <id> --root <path> [--vcs git|other]` registers one (`--vcs` defaults to git), and `repo drop <id>` removes one: bags naming it keep their declaration and simply stop resolving here. An unregistered id refuses rather than resolving somewhere convenient.
+A bag that homes at a repository names a REGISTERED id; the operator maps ids to roots once, on their own vessel, so a declaration stays portable and the path stays local. `repo list` (the default) prints the registry, `repo add <id> root=<path> [vcs=git|other]` registers one (`vcs=` defaults to git), and `repo drop <id>` removes one: bags naming it keep their declaration and simply stop resolving here. An unregistered id refuses rather than resolving somewhere convenient.
 
 <<~/ahu>>
 
@@ -63,7 +63,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · op-unknown
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[carriage.bag.registers op/add id/<id> root/<path>]] ~ an add wants the id and --root; a drop wants the id`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.bag.registers op/add id/<id> root/<path>]] ~ an add wants the id and root=; a drop wants the id`>>
 <<has entity=`refusal` name=`op-unknown` params=`cure/[[carriage.bag.registers op/list]] ~ the registry takes list, add or drop`>>
 ```
 
@@ -105,6 +105,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;RHp_F-xuGRwUS-LhFO9WN_A6rBCt483Ga_jtt57LpIw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wU6DmQHCeuVTDNGZ7VZJX8QBwS_PtPIm5_1rc93oI2g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

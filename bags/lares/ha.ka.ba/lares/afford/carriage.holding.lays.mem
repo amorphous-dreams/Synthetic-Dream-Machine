@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.holding.lays"
 
 ! carriage.holding.lays ~ each bags/* holding, laid back into its doc by kind
 
-`lares vessel lay` walks every holding under the canon source and lays it into its doc, kind-routed and diff-gated, by the act CREATE and the ingest it runs (so it passes `--change-id`, `--dry-run`, `--in-wiki`, `--shadow` and `--tag-blobs` through to them). Bare it previews; `apply=true` lands, asking at a terminal, `yes=true` with none (an apply with neither refuses `usage`). `--lag` reads how far canon lags the source and the floor's drift, writing nothing; `--workbench` walks the workbench folders alone; `--lift-kahua <N>` lifts kahua items; `--verbose` prints each line.
+`lares vessel lay` walks every holding under the canon source and lays it into its doc, kind-routed and diff-gated, by the act CREATE and the ingest it runs (so it passes `change-id=`, `dry-run=true`, `in-wiki=true`, `shadow=true` and `tag-blobs=true` through to them). Bare it previews; `apply=true` lands, asking at a terminal, `yes=true` with none (an apply with neither refuses `usage`). `lag=true` reads how far canon lags the source and the floor's drift, writing nothing; `workbench=true` walks the workbench folders alone; `lift-kahua=<N>` lifts kahua items; `verbose=true` prints each line.
 
 <<~/ahu>>
 
@@ -111,6 +111,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wMP0gLUTaAtQum09n9dno5PeVUjOO05NKxKVifVsOAE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3qELy_uVsDKGTf5sugEHRLZpAv0p7gZVGK1Ec-IRPlc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

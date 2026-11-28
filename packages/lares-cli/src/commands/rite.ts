@@ -127,7 +127,7 @@ export function keepPlan(args: ParsedArgs): { readonly workspace?: string; reado
   const ifDue = args.positional[0] === "keep" && args.flags["if-due"] === true;
   if (workspace === undefined && !ifDue) throw new RiteUsage("keep names the workspace it lays the bundle into: workspace=<name> [into=<path>] (or `keep if-due=true`, which reads LARES_KEEP_WORKSPACE)");
   if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("face= takes a whole persona index from 0");
-  // `sessions=true` / `--no-sessions` (keep alone); with neither, the host half reads LARES_KEEP_SESSIONS and keeps them.
+  // `sessions=true` / `sessions=false` (keep alone); with neither, the host half reads LARES_KEEP_SESSIONS and keeps them.
   const sessions = args.positional[0] === "keep" && typeof args.flags["sessions"] === "boolean" ? args.flags["sessions"] : undefined;
   return { ...(workspace !== undefined ? { workspace } : {}), ...(into !== undefined ? { into } : {}), acceptOmissions: args.flags["accept-omissions"] === true, ...(faceWord !== undefined ? { face: Number(faceWord) } : {}), ...(ifDue ? { ifDue: true as const } : {}), ...(sessions !== undefined ? { sessions } : {}) };
 }

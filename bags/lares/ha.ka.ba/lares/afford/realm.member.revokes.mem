@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.member.revokes"
 
 ! realm.member.revokes ~ an operator leaves the carriage board
 
-`lares nexus revoke <operator-pubkey>` revokes an operator's admit under the founding-kahu quorum; `--out` and `--from` carry a partial between vaults.
+`lares nexus revoke <operator-pubkey>` revokes an operator's admit under the founding-kahu quorum; `out=` and `from=` carry a partial between vaults.
 
 <<~/ahu>>
 
@@ -106,6 +106,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;QgCA4Db0J5Ljpd3RqGf1PwWQqt_Q1GjmOpNI-ciBcsg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;T2ekWEvzj67FQ3Y4G-a9umUC5A-mL0w0FKxl4mXylJ8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

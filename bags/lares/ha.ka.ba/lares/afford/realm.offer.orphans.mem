@@ -17,9 +17,9 @@ uri-path  = "ha.ka.ba/lares/afford/realm.offer.orphans"
 
 ! realm.offer.orphans ~ the hand keeps or drops what lost its source
 
-Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON.
+Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The wiki rides `wiki=` (absent: the daemon wiki), the face `face=N`, and every answer prints as JSON.
 
-`trust orphan <digest> --keep|--drop` decides a promoted item whose source went away: `--keep` keeps it standing, `--drop` drops it. Name one, never both or neither. A person runs it at a real terminal.
+`trust orphan <digest> keep=true|drop=true` decides a promoted item whose source went away: `keep=true` keeps it standing, `drop=true` drops it. Name one, never both or neither. A person runs it at a real terminal.
 
 <<~/ahu>>
 
@@ -65,7 +65,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ promote-decision-malformed · promote-digest-malformed · promote-needs-hand
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`promote-decision-malformed` params=`cure/[[realm.offer.orphans digest/<digest> keep]] ~ name --keep or --drop, one of them`>>
+<<has entity=`refusal` name=`promote-decision-malformed` params=`cure/[[realm.offer.orphans digest/<digest> keep]] ~ name keep=true or drop=true, one of them`>>
 <<has entity=`refusal` name=`promote-digest-malformed` params=`cure/[[realm.offer.orphans digest/<digest> keep]] ~ name a hex64 digest`>>
 <<has entity=`refusal` name=`promote-needs-hand` params=`cure/[[realm.offer.reads]] ~ a hand must decide`>>
 ```
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;XLa_fBw4pKQbiBek_5AUZKUlyFEvBvl2tYdZTE_FZPI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;W39abNMFHKD8hiRRkTCUy4S_nFVa4aTTElOrP5QW0pA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

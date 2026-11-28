@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.bundle.restores"
 
 ! face.bundle.restores ~ a bundle comes back onto the vessel
 
-`lares vault restore <file>` opens a backup bundle on a route the hand types and lands its face at the next free index (`--as <N>`: that index); `--memory` lands the keys on the seat of the face the daemon mount runs under and takes no `--as`. `--cards` rebuilds a root from paper cards read on the terminal, with no bundle file and no memory: `--as <N>` the free index and `--face <key|persona-…>` the root to rebuild.
+`lares vault restore <file>` opens a backup bundle on a route the hand types and lands its face at the next free index (`as=<N>`: that index); `memory=true` lands the keys on the seat of the face the daemon mount runs under and takes no `as=`. `cards=true` rebuilds a root from paper cards read on the terminal, with no bundle file and no memory: `as=<N>` the free index and `face=<key|persona-…>` the root to rebuild.
 
 <<~/ahu>>
 
@@ -38,11 +38,11 @@ uri-path  = "ha.ka.ba/lares/afford/face.bundle.restores"
 !! takes ~ file · as · memory · cards · face
 
 ```memetic-wikitext
-<<has entity=`arg` name=`file` params=`takes/host-path seat/1 as/<file> ~ the bundle file; absent under --cards`>>
+<<has entity=`arg` name=`file` params=`takes/host-path seat/1 as/<file> ~ the bundle file; absent under cards=true`>>
 <<has entity=`arg` name=`as` params=`takes/handle-index ~ the free index the face lands at`>>
 <<has entity=`arg` name=`memory` params=`~ land the keys on the seat of the face the mount runs under`>>
 <<has entity=`arg` name=`cards` params=`~ rebuild a root from paper cards on a terminal`>>
-<<has entity=`arg` name=`face` params=`takes/key-or-prefix ~ under --cards, the root to rebuild by its public key or prefix`>>
+<<has entity=`arg` name=`face` params=`takes/key-or-prefix ~ under cards=true, the root to rebuild by its public key or prefix`>>
 ```
 
 <<~/ahu>>
@@ -64,7 +64,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · no-vessel · bundle-unreadable · bundle-malformed · no-slot-opens · error
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[face.bundle.restores file/h2.bundle]] ~ no file; --as beside --memory; --cards beside a file or --memory; --cards with no --as or --face`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[face.bundle.restores file/h2.bundle]] ~ no file; as= beside memory=true; cards=true beside a file or memory=true; cards=true with no as= or face=`>>
 <<has entity=`refusal` name=`no-vessel` params=`~ no vessel stands on this store`>>
 <<has entity=`refusal` name=`bundle-unreadable` params=`cure/[[face.bundle.restores file/h2.bundle]] ~ no bundle reads at the path`>>
 <<has entity=`refusal` name=`bundle-malformed` params=`~ the file reads as no face bundle`>>
@@ -79,7 +79,7 @@ Testimony: the door checks; this slot grants nothing.
 !! answers ~ restored
 
 ```memetic-wikitext
-<<has entity=`band` name=`restored` params=`exit/0 ~ the face landed; the lines name its index, or the keys imported under --memory`>>
+<<has entity=`band` name=`restored` params=`exit/0 ~ the face landed; the lines name its index, or the keys imported under memory=true`>>
 ```
 
 <<~/ahu>>
@@ -109,6 +109,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;abFA_oWMVocQ2AlbYhPFYyNkJ7alUxnccO7VOp4ZpjQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zlHykrjZX3iqFb0ggloh5F36JXMa1W76n1XmlkAGYEg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

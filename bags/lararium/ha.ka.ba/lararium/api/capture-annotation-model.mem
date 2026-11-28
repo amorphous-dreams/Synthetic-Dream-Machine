@@ -277,9 +277,9 @@ tmpfs is the never-touch-disk option). Depth: `agent-worldline#lifecycle`.
 
 !! The Operator Command Surface
 
-<<~ has entity=`Cmd` name=`harvest` params=`does/sweep transcripts → verbatim drawers (--all backfill; lar_hv idempotent) ~ BUILT`>>
+<<~ has entity=`Cmd` name=`harvest` params=`does/sweep transcripts → verbatim drawers (all=true backfill; lar_hv idempotent) ~ BUILT`>>
 <<~ has entity=`Cmd` name=`subagents` params=`does/mine <session>/subagents/* into wing_<w>__spirits, named, both sides ~ BUILT`>>
-<<~ has entity=`Cmd` name=`telemetry` params=`does/read a wing's instruments through daemon-plane → project lar_* (--wing) ~ BUILT (write shore)`>>
+<<~ has entity=`Cmd` name=`telemetry` params=`does/read a wing's instruments through daemon-plane → project lar_* (wing=) ~ BUILT (write shore)`>>
 <<~ has entity=`Cmd` name=`recall` params=`does/read the verbatim PLACE through daemon-plane (search·list·drawer) ~ BUILT (read shore)`>>
 <<~ has entity=`Cmd` name=`ephemeral` params=`does/launch a task into an isolated ephemeral swarm (blind dir; --cleanup off by default) ~ SPECIFIED`>>
 <<~ has entity=`Cmd` name=`track` params=`does/(superseded by ephemeral — capture is on by default, no toggle)`>>
@@ -348,6 +348,6 @@ this model annotates from ([[lar-telemetry|lar:///ha.ka.ba/lararium/api/lar-tele
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GTKOk01V650SyOa8Z-_5exPuQpPEQttT8hn8zQ1kerA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rw8y7fxvrFLzB0YyJ5tBk5mtnbsmLkIgAPNLoOzBAUk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -58,7 +58,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · store-refused
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[realm.cabal.clocks realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef]] ~ --realm expects a 64-hex cabal-realm doc id`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.cabal.clocks realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef]] ~ realm= expects a 64-hex cabal-realm doc id`>>
 <<has entity=`refusal` name=`store-refused` params=`~ the store door refused, or no vessel answers; the line names why`>>
 ```
 
@@ -99,6 +99,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;q5co3gXzPEgCIFjKddk_YDVj3uo0U7Mr73aMFJpL8CE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-XRN-8iTHQi3z5HRvnVsre33ptxn3XRjxDzXvj5Il-Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

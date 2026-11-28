@@ -61,7 +61,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · CabalVouchError
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[realm.cabal.vouches joiner/<joiner-nym> realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef]] ~ vouch wants the joiner nym and --realm`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.cabal.vouches joiner/<joiner-nym> realm/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef]] ~ vouch wants the joiner nym and realm=`>>
 <<has entity=`refusal` name=`CabalVouchError` params=`~ the vouch refused by name`>>
 ```
 
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;r1_LSkrZz3hJC_BSejS4W5y66zralOEh9JV2FMWpz5c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gtpm7jaZduqFqOt8rclhDG2j5ebvEziUY4QYennm2WE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

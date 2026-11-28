@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.bundle.exports"
 
 `export <dest>` carries the operator's AUTHORED memory out before a re-founding. It writes a bundle outside the house root and the workspace: the daemon mount's wiki working carriers, the kāpae shadows and canon carriers, its kahua stage heads, draft recovery files, consented temp carriers, and house-minted bags, with a roster (the re-declare list of pet-names, Handles and chair labels, plus the share rows) sealed under the house's keep key (`<config>/keep-key`). Faces ride by path key, never by a key or a face relation, and the verb reads every byte back against its manifest before it answers.
 
-It waits for a settled projection: an unsettled carrier or a held save refuses by name unless `--accept-omissions` names the bundle partial, and the manifest records each omission. A face whose live stage will not read cuts with no flag: its files travel, its standing heads stay behind as a counted `face-unread` omission, and this terminal alone names the face. Sensoriums never travel (they survive where they stand), and neither does the daemon document or the control document. The bundle rests UNENCRYPTED, private memory as plain files: keep it on a disk only you hold, and remove it once imported.
+It waits for a settled projection: an unsettled carrier or a held save refuses by name unless `accept-omissions=true` names the bundle partial, and the manifest records each omission. A face whose live stage will not read cuts with no flag: its files travel, its standing heads stay behind as a counted `face-unread` omission, and this terminal alone names the face. Sensoriums never travel (they survive where they stand), and neither does the daemon document or the control document. The bundle rests UNENCRYPTED, private memory as plain files: keep it on a disk only you hold, and remove it once imported.
 
 <<~/ahu>>
 
@@ -64,7 +64,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`usage` params=`cure/[[carriage.bundle.exports dest/<dest>]] ~ the destination directory stands required`>>
-<<has entity=`refusal` name=`bundle-refused` params=`cure/[[carriage.bundle.exports dest/<dest> accept-omissions/true]] ~ an unsettled carrier or a held save stands; the line names it, and --accept-omissions cuts a partial bundle that records each omission`>>
+<<has entity=`refusal` name=`bundle-refused` params=`cure/[[carriage.bundle.exports dest/<dest> accept-omissions/true]] ~ an unsettled carrier or a held save stands; the line names it, and accept-omissions=true cuts a partial bundle that records each omission`>>
 ```
 
 <<~/ahu>>
@@ -105,6 +105,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KpwsZ2wcWGI6wGrCcYkAy46jsJmeYXbwjPmJM7U0PHc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;f5VZmJORQkL1kOpwbsz6jO9AHu_R2ZrujQiWc9jTPfY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

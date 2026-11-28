@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.disk.restores"
 
 ! carriage.disk.restores ~ a pending removal answered toward the records: the file returns
 
-A PENDING REMOVAL names a file that vanished from the path its base names; nothing writes it back and nothing tombstones its records. `restore <uri>…` writes the file back from the records. Name one or more carriers, or `--all --count <n>` for every pending row of the named bag; an answer over more than one carrier names the count that stands pending (read it from `lares shore`), and a count that moved takes nothing.
+A PENDING REMOVAL names a file that vanished from the path its base names; nothing writes it back and nothing tombstones its records. `restore <uri>…` writes the file back from the records. Name one or more carriers, or `all=true count=<n>` for every pending row of the named bag; an answer over more than one carrier names the count that stands pending (read it from `lares shore`), and a count that moved takes nothing.
 
 A terminal asks `Proceed? [y/N]`; a JSON call off a terminal needs `yes=true`, and `yes=true` approves nothing by itself. `face=N` answers a lit sibling's pending row without wearing it.
 
@@ -40,7 +40,7 @@ A terminal asks `Proceed? [y/N]`; a JSON call off a terminal needs `yes=true`, a
 
 ```memetic-wikitext
 <<has entity=`arg` name=`uri` params=`takes/lar-address seat/1 as/<uri>… ~ one or more carriers a pending removal names`>>
-<<has entity=`arg` name=`all` params=`~ every pending row of the named bag; rides --count`>>
+<<has entity=`arg` name=`all` params=`~ every pending row of the named bag; rides count=`>>
 <<has entity=`arg` name=`count` params=`takes/number ~ the count that stands pending, read from lares shore; an answer over more than one carrier names it`>>
 <<has entity=`arg` name=`bag` params=`takes/bag-uri ~ narrow to one bag`>>
 <<has entity=`arg` name=`face` params=`takes/handle-index ~ a lit sibling's shore, by handle index`>>
@@ -66,7 +66,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · count-missing · a-state-that-moved
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[carriage.disk.restores uri/<uri>]] ~ name a carrier, or --all with --count; --all beside carriers refuses`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.disk.restores uri/<uri>]] ~ name a carrier, or all=true with count=; all=true beside carriers refuses`>>
 <<has entity=`refusal` name=`count-missing` params=`cure/[[carriage.disk.restores all/true count/3]] ~ an answer over more than one carrier names the count that stands pending`>>
 <<has entity=`refusal` name=`a-state-that-moved` params=`~ an answer names the state its giver read (a standoff's key, or the count that stands pending); where that state moved, the island refuses by name and nothing changes`>>
 ```
@@ -108,6 +108,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6yvHHg4EY9phb7zV2GLMTU72ymOZ5RyQw1bRTl-anw8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KgSdTHmIT_T1GIQxaEduynR-KoJTQpsh7eKMUGUA8Fk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

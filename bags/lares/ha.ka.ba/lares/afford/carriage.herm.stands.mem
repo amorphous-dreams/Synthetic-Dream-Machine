@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.herm.stands"
 
 ! carriage.herm.stands ~ the wiki-less wayfarer stands the carriage crossroads
 
-Bare `lares herm` stands a herm (Lares Viales): it spawns the same node `main.js` the vessel stand runs, routed to the herm by `--recipe herm`, detached, and waits on the node's own attestation (`vessel-ready`, or a `fatal:` line), each later boot milestone renewing a 30-second silence span. The read face listens on `--port` (else `LAR_PORT`, else 8080) and the carriage relay (Socket B) on `--relay-port` (else `LAR_HERM_RELAY_PORT`, else 8090). On a live stand it echoes the node's own dial URLs and relay gate key, so the operator hands a hearth what to dial.
+Bare `lares herm` stands a herm (Lares Viales): it spawns the same node `main.js` the vessel stand runs, routed to the herm by `--recipe herm`, detached, and waits on the node's own attestation (`vessel-ready`, or a `fatal:` line), each later boot milestone renewing a 30-second silence span. The read face listens on `port=` (else `LAR_PORT`, else 8080) and the carriage relay (Socket B) on `relay-port=` (else `LAR_HERM_RELAY_PORT`, else 8090). On a live stand it echoes the node's own dial URLs and relay gate key, so the operator hands a hearth what to dial.
 
 A stand never hard-fails the session: it exits 0 and `ok` carries the verdict. Where the host holds the engine, where the node dist stands unbuilt, or where no bootstrap stands, nothing spawns and the note names the cure. A word the door does not answer refuses before anything stands, so a typo never raises a herm.
 
@@ -92,6 +92,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;VylTe6m6RIxICCh9FWQ53o8V-1l-u9dYvHbWni4j1Jk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AJ5Txd3ZBwkJqdIe4tIT-oGmPNnELBFDyW6BIXhrxvs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

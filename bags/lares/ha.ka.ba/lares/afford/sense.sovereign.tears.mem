@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.sovereign.tears"
 
 ! sense.sovereign.tears ~ a clean tear, preview by default
 
-`lares sense teardown [<group…>]` names every target of the named sensorium groups (none named: every group) and the live holders that block it, touching no disk; `--confirm` removes them. A blocking holder refuses unless `--drain` quiesces it first or `--force` tears anyway. Blocking stays scoped to the selection, and the guest `~/.mempalace` stands untouched.
+`lares sense teardown [<group…>]` names every target of the named sensorium groups (none named: every group) and the live holders that block it, touching no disk; `confirm=true` removes them. A blocking holder refuses unless `drain=true` quiesces it first or `force=true` tears anyway. Blocking stays scoped to the selection, and the guest `~/.mempalace` stands untouched.
 
 <<~/ahu>>
 
@@ -52,7 +52,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.sovereign.tears"
 Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
-<<has entity=`gate` name=`hand` params=`who/hand ~ removes this host's sensorium trees; a person at a real terminal, and the verb names its intent with --approve where it asks one`>>
+<<has entity=`gate` name=`hand` params=`who/hand ~ removes this host's sensorium trees; a person at a real terminal, and the verb names its intent with approve=true where it asks one`>>
 ```
 
 <<~/ahu>>
@@ -63,7 +63,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`usage` params=`cure/[[sense.sovereign.tears]] ~ an unknown group; the preview names every group`>>
-<<has entity=`refusal` name=`conflict` params=`cure/[[sense.holder.reads]] ~ a live holder blocks the tear; read the holders, or --drain`>>
+<<has entity=`refusal` name=`conflict` params=`cure/[[sense.holder.reads]] ~ a live holder blocks the tear; read the holders, or drain=true`>>
 <<has entity=`refusal` name=`error` params=`~ a target failed to remove; the culprits ride the hint`>>
 ```
 
@@ -105,6 +105,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BB9RjKjQ8cH90VYGRpveSLiObwZyqKEzX8eauMp4Obs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0aj5idZpoUzqPzQ8CvdkftNqRS3jW5Q2FmPws-7R3UI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.recovery.enrols"
 
 ! face.recovery.enrols ~ one typed event the face's own key signs
 
-`lares persona recovery-contact enrol <index> threshold=<k> <offer>…` enrols the face's first recovery contact set by one typed event its own key signs, refusing a key another face holds. The rule asks for a threshold of two over three offers: three people each hold a recovery key for one face, and two of the three, together, restore your Handle (your Handle: the public card your face publishes, recognised by its own key). A recovery contact restores your Handle; a custodian card of a `--split-root` returns your memory, and neither stands in for the other.
+`lares persona recovery-contact enrol <index> threshold=<k> <offer>…` enrols the face's first recovery contact set by one typed event its own key signs, refusing a key another face holds. The rule asks for a threshold of two over three offers: three people each hold a recovery key for one face, and two of the three, together, restore your Handle (your Handle: the public card your face publishes, recognised by its own key). A recovery contact restores your Handle; a custodian card of a `split-root=true` returns your memory, and neither stands in for the other.
 
 <<~/ahu>>
 
@@ -60,7 +60,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · vessel-composing · vessel-silent · vessel-locked · error
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[face.recovery.enrols index/1 threshold/2 offers/<offer>]] ~ no number for --threshold, no offers, or an index out of range`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[face.recovery.enrols index/1 threshold/2 offers/<offer>]] ~ no number for threshold=, no offers, or an index out of range`>>
 <<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
 <<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
 <<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
@@ -104,6 +104,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qmetQ4v4r9Se-8Bf5vRVjSTBo-MKTpfLeDm0EvVe1-o`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZM6-kNH2imsK2aaLVVcvAO3jC2-aUwPhf_uzTZdGJRI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

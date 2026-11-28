@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.home.reads"
 
 ! engine.home.reads ~ the the operator's homes tunnel read: every item's state, nothing written
 
-`lares home read` reads every operator home the device carries (seats, hooks, the seed rule) against its declaration and the ledger of what the house last wrote, and writes nothing. Each row names its state (aligned, drift, foreign, unreachable, absent), its id, its path and whether a hand touched it since the house wrote it; the exit class carries the worst state. `--brief` prints the one line the wake hook reads, with or without a terminal. The home door keeps no checkout and reads no index: `--root` and `--staged` refuse with exit 2 and name the repo door.
+`lares home read` reads every operator home the device carries (seats, hooks, the seed rule) against its declaration and the ledger of what the house last wrote, and writes nothing. Each row names its state (aligned, drift, foreign, unreachable, absent), its id, its path and whether a hand touched it since the house wrote it; the exit class carries the worst state. `brief=true` prints the one line the wake hook reads, with or without a terminal. The home door keeps no checkout and reads no index: `root=` and `staged=true` refuse with exit 2 and name the repo door.
 
 <<~/ahu>>
 
@@ -63,8 +63,8 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`usage` params=`~ name one of read, tend, verify, undo`>>
-<<has entity=`refusal` name=`root-repo-only` params=`~ --root names a checkout, and only lares repo keeps one`>>
-<<has entity=`refusal` name=`staged-repo-read-only` params=`~ --staged reads the index, and only lares repo read reads it`>>
+<<has entity=`refusal` name=`root-repo-only` params=`~ root= names a checkout, and only lares repo keeps one`>>
+<<has entity=`refusal` name=`staged-repo-read-only` params=`~ staged=true reads the index, and only lares repo read reads it`>>
 ```
 
 <<~/ahu>>
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KlTmQDw0IMlrYEI2ZWkytXQIgIBlc4v454150RrAe-c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eucv5ewuu5kHL7b22CnR6pc55ISI81dV5ZA-GCrJ4_g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

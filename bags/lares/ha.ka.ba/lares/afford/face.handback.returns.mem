@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.handback.returns"
 
 ! face.handback.returns ~ handback ~ the one return every fire runs
 
-`lares spirit handback <pet>[#<n>]` names exactly one return: `--file <path|->`, `--text <words>`, or `--record <uri>[@<hash>]` (a record already landed, read through the door first). A report lands as residue under the pet's own name, once per key (`--key`, else the instance's tag, else the words alone). The record stands first; then, where a summons edge names the instance, the edge names the record and the coordinator's lane frees (`--mandate <uri>@<hash>` names which edge). A hand-back no edge answers lands all the same; only a line naming its mandate refuses there, and its record stays.
+`lares spirit handback <pet>[#<n>]` names exactly one return: `file=<path|->`, `text=<words>`, or `record= <uri>[@<hash>]` (a record already landed, read through the door first). A report lands as residue under the pet's own name, once per key (`key=`, else the instance's tag, else the words alone). The record stands first; then, where a summons edge names the instance, the edge names the record and the coordinator's lane frees (`mandate= <uri>@<hash>` names which edge). A hand-back no edge answers lands all the same; only a line naming its mandate refuses there, and its record stays.
 
 <<~/ahu>>
 
@@ -113,6 +113,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZatWmKJ7aZR4Q3O9mAAsE5GQz1eOBi6FPG4vbs8ycvE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Wig41LcQnPMFwafPsPXo30HoKyoVvBvYMmtOKi4xpcI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

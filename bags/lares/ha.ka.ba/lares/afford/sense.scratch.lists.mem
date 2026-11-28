@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.scratch.lists"
 
 ! sense.scratch.lists ~ the live scratch sensoria
 
-`lares sensorium ls` lists every live scratch sensorium and counts the orphans a dissolve `--orphans` would reap.
+`lares sensorium ls` lists every live scratch sensorium and counts the orphans a dissolve `orphans=true` would reap.
 
 <<~/ahu>>
 
@@ -84,6 +84,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y12gLfi520rPeLYPgKsTrOhUfevmFnm786FRGawRh8k`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rKHIegeSSAFh_9M6hxcKv2xEkZWfLOEo1rz9YUkAWhQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.draft.prunes"
 
 ! engine.draft.prunes ~ the drafts no one touched lately
 
-`lares wiki prune-stale <slug>` asks the daemon for the wiki's draft tiddlers idle past a threshold (`--days <N>`), each with its last update and days idle, so the operator acts on residency or prunes. It surfaces; it removes nothing.
+`lares wiki prune-stale <slug>` asks the daemon for the wiki's draft tiddlers idle past a threshold (`days=<N>`), each with its last update and days idle, so the operator acts on residency or prunes. It surfaces; it removes nothing.
 
 <<~/ahu>>
 
@@ -100,6 +100,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wi-drje7pikq_cfG-fqtLY0WPooGZ34zoEzFQt2CU-8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ogu_lmnCm3wkPaKXlYg1JsDwBtWrLLiM1z0vDb1C1w0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

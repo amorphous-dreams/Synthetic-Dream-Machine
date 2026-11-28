@@ -28,7 +28,7 @@
  *        mirror rests in the workspace for the keep that follows the `up`);
  *   KH15 sessions that moved over an unmoved house spend a return of their own (`begin` over the standing bundle) before
  *        anything commits; with no return left, nothing commits and nothing pushes; `--if-due` reads moved sessions as due;
- *   KH16 `sessions: false` (`--no-sessions`, LARES_KEEP_SESSIONS=0) keeps the house alone.
+ *   KH16 `sessions: false` (`sessions=false`, LARES_KEEP_SESSIONS=0) keeps the house alone.
  *   KH17 a private-key header trips the guard only with key material after it (a base64 body of real length, in real lines,
  *        CRLF, or escaped `\n` inside JSONL): a header named in prose passes; the other shapes read as before;
  *   KH18 both guards (the sessions and the bundle) pass a header named in prose and refuse a planted header with its body.
@@ -409,10 +409,10 @@ describe("the keep rite, host half", () => {
     expect(must(r.remote, "ls-tree", "-r", "--name-only", "main")).toContain("cccc.jsonl.zst");
   });
 
-  test("KH13b RED: a --no-sessions keep commits the device changes already standing in this device's dir (mirroring nothing), and still refuses changes outside house/ and this dir", async () => {
+  test("KH13b RED: a sessions=false keep commits the device changes already standing in this device's dir (mirroring nothing), and still refuses changes outside house/ and this dir", async () => {
     const r = rig();
     expect((await riteKeepHost(r.ports, { workspace: "backup" })).code).toBe(0);
-    // A refused earlier keep left mirror files standing; a later --no-sessions keep carries the clean ones, never the secret one.
+    // A refused earlier keep left mirror files standing; a later sessions=false keep carries the clean ones, never the secret one.
     writeFileSync(join(r.ws, r.device, "config", "left-behind.md"), "mirrored once, never committed\n");
     writeFileSync(join(r.ws, r.device, "config", "secret.md"), `${"ghp_"}${"q".repeat(30)}\n`);
     r.state.notes = { heron: "remember the heron\n" };

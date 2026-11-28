@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.bundle.repacks"
 
 A multi-tiddler bundle (a `.json` array of tiddlers, or a `.multids`) rides as a PACK: one file, many tiddlers, whose membership rests ASIDE in the bag's `$:/config/OriginalTiddlerPaths`, never on the tiddlers. `REPACK` asks the island to collect the pack's members from that aside map and re-render the bundle through TW5's own serializer, then writes the bytes to disk: the deliberate round trip a foreign bundle takes before an upstream TW5 PR (a `.mem` path recomposes by itself; a foreign pack re-renders on this verb alone).
 
-The pack path derives from the file's mirror-relative address plus its extension, so the source sits under `bags/` or `wikis/`; `--out` names where the bytes land and defaults to the source. REPACK registers as a QUERY verb (read cap, no residency mutation, no effect record), so it asks no `Proceed?` and carries no effect key; only a fresh request id rides each attempt, and a repeat stays safe. Members the bag tombstoned print as missing.
+The pack path derives from the file's mirror-relative address plus its extension, so the source sits under `bags/` or `wikis/`; `out=` names where the bytes land and defaults to the source. REPACK registers as a QUERY verb (read cap, no residency mutation, no effect record), so it asks no `Proceed?` and carries no effect key; only a fresh request id rides each attempt, and a repeat stays safe. Members the bag tombstoned print as missing.
 
 <<~/ahu>>
 
@@ -65,7 +65,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · outcome-unknown
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[carriage.bundle.repacks source/<bundle> from/<bag>]] ~ --source and --from both stand required; a source outside bags/ and wikis/ derives no address`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.bundle.repacks source/<bundle> from/<bag>]] ~ source= and from= both stand required; a source outside bags/ and wikis/ derives no address`>>
 <<has entity=`refusal` name=`outcome-unknown` params=`~ this process stopped waiting after the vessel answered; a short read found no receipt for this attempt's request id; read it back with lares vessel request <id> before any re-run`>>
 ```
 
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;93RfKzuoJkSGQmXvME-I7FqQXyjdykfxObMBvXCwT4o`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tx4zdlvijjh4iOxUum8WGP8ZhRmEx9N1DHimzmgtDgA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

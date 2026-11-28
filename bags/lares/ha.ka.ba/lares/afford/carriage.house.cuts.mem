@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.house.cuts"
 
 ! carriage.house.cuts ~ keep-cut ~ the keep's vessel half
 
-`lares rite keep-cut workspace=<name>` runs in the vessel: it lays the house's authored memory, cut as a cleartext house bundle, into the bound workspace (`--into <path>` inside it), spending a return of the keep lei strung for that workspace and resting the guest half of the tessera. It holds each cold wiki the house lists in turn before the cut, then hands the pins back. A destination that already holds the bundle spends nothing and moves nothing. The bundle rests unencrypted; the host half commits, pushes and lands it.
+`lares rite keep-cut workspace=<name>` runs in the vessel: it lays the house's authored memory, cut as a cleartext house bundle, into the bound workspace (`into=<path>` inside it), spending a return of the keep lei strung for that workspace and resting the guest half of the tessera. It holds each cold wiki the house lists in turn before the cut, then hands the pins back. A destination that already holds the bundle spends nothing and moves nothing. The bundle rests unencrypted; the host half commits, pushes and lands it.
 
 <<~/ahu>>
 
@@ -65,7 +65,7 @@ Testimony: the door checks; this slot grants nothing.
 <<has entity=`refusal` name=`keep-workspace-malformed` params=`~ the workspace name reads malformed`>>
 <<has entity=`refusal` name=`keep-workspace-unbound` params=`~ the workspace binds no directory`>>
 <<has entity=`refusal` name=`keep-workspace-refused` params=`~ the workspace refused the lay`>>
-<<has entity=`refusal` name=`keep-into-unsafe` params=`~ --into leaves the workspace`>>
+<<has entity=`refusal` name=`keep-into-unsafe` params=`~ into= leaves the workspace`>>
 <<has entity=`refusal` name=`keep-dest-foreign` params=`~ the destination holds a foreign tree`>>
 <<has entity=`refusal` name=`keep-lei-unseen` params=`~ no keep lei stands strung for the workspace`>>
 ```
@@ -108,6 +108,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EAaDxQNAIuIPSEawDf0JYWjjGYWKgTxeMn-GiNJW6AQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;X7ZlRpPxa3-U1DBm8jIYfEhYzvnLFRiqGiBpIeiE0QQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.draft.proposes"
 
 `proposals` lists {title, revision, text | digest, taint}: the daemon title and revision the item distils, its body (or the body's sha-256 digest) and every input from outside the face (a web page, tool output, pasted text); an AI summary inherits the taint of what it summarised. ONE batch per call rides the face's intents plane, pinned to this device; it carries digests and never a body, and it GRANTS NOTHING: the operator's hand lifts it with `lares kahua lift <title> proposal=<id>`.
 
-TWO DIGESTS, ONE WORD. A proposal's `digest` names the BODY digest, the sha-256 of the raw body bytes (UTF-8, lowercase hex); the seat's tool computes it from `text`. The ROW digest that `kahua stage` prints and `lift --digest` takes covers the body AND the row's carried fields, so it differs. Hand `text`, or the BODY digest; a proposal built from the ROW digest refuses at the lift with `proposal-digest`, as does one whose body differs by a byte from the staged row's.
+TWO DIGESTS, ONE WORD. A proposal's `digest` names the BODY digest, the sha-256 of the raw body bytes (UTF-8, lowercase hex); the seat's tool computes it from `text`. The ROW digest that `kahua stage` prints and `lift digest=` takes covers the body AND the row's carried fields, so it differs. Hand `text`, or the BODY digest; a proposal built from the ROW digest refuses at the lift with `proposal-digest`, as does one whose body differs by a byte from the staged row's.
 
 Any seat proposes. The seat's tool rides a local `seat` session over the @daemon wire, whose profile the vessel refuses every kahua pin, lift, withdraw and carry; no tool lifts (`face.draft.stages` writes the local row a lift names). Returns {id, cid}.
 
@@ -66,7 +66,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`kahua-proposal-proposals` params=`cure/[[face.draft.proposes proposals/<proposals>]] ~ name proposals as a non-empty list of {title, revision, text | digest, taint}`>>
-<<has entity=`refusal` name=`proposals-malformed` params=`cure/[[face.draft.proposes proposals/<proposals>]] ~ --proposals needs JSON`>>
+<<has entity=`refusal` name=`proposals-malformed` params=`cure/[[face.draft.proposes proposals/<proposals>]] ~ proposals= needs JSON`>>
 <<has entity=`refusal` name=`face-not-lent` params=`~ the face stands outside the lent set the seat may name`>>
 <<has entity=`refusal` name=`face-not-open` params=`~ the face stands shut; open it first`>>
 <<has entity=`refusal` name=`proposal-digest` params=`~ at the lift: a proposal built from the row digest, or whose body differs by a byte from the staged row's, refuses there`>>
@@ -79,7 +79,7 @@ Testimony: the door checks; this slot grants nothing.
 !! answers ~ proposed
 
 ```memetic-wikitext
-<<has entity=`band` name=`proposed` params=`exit/0 fields/[[id cid]] ~ the batch landed on the face's intents plane; the id names it for a lift's --proposal`>>
+<<has entity=`band` name=`proposed` params=`exit/0 fields/[[id cid]] ~ the batch landed on the face's intents plane; the id names it for a lift's proposal=`>>
 ```
 
 <<~/ahu>>
@@ -119,6 +119,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WdVe1zzY4SXOuv6lRiv-2MkAgVhewUHh9Zagcy_-qXE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ke-ofwnr-wb3KPIfzAjvDxe2ihh8FThhr0J23ZafkeM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.checkout.verifies"
 
 ! engine.checkout.verifies ~ the the checkout tunnel's loads, as each host reports them
 
-`lares repo verify` asks what each host reports loading (the seed once per host) and writes nothing. `--probe` runs the hosts' own probe where one stands.
+`lares repo verify` asks what each host reports loading (the seed once per host) and writes nothing. `probe=true` runs the hosts' own probe where one stands.
 
 <<~/ahu>>
 
@@ -61,8 +61,8 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`usage` params=`~ name one of read, tend, verify, undo`>>
-<<has entity=`refusal` name=`familiar-home-only` params=`~ --familiar names a home's familiar; lares home takes it`>>
-<<has entity=`refusal` name=`root-no-directory` params=`~ --root names no directory; name the checkout's top level`>>
+<<has entity=`refusal` name=`familiar-home-only` params=`~ familiar= names a home's familiar; lares home takes it`>>
+<<has entity=`refusal` name=`root-no-directory` params=`~ root= names no directory; name the checkout's top level`>>
 ```
 
 <<~/ahu>>
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;pYuh__HbYjwhlQbo8SsSZeOYoK0M1SYeqKj6R8b4MSg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oTsBw9RyGiz7hbXVrd0rY-qciBSfNUa6lg-5u4W4IqM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

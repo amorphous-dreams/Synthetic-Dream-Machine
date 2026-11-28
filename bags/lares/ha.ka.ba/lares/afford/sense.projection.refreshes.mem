@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.projection.refreshes"
 
 ! sense.projection.refreshes ~ the derived recall view, re-derived through the seat
 
-`lares sense refresh [<query…>]` re-paves the mempalace projection over the sovereign content plane through the daemon seat, on the serialized capture holder's own pipe, so it queues between capture passes and never races the writer. It reads by volume, skipping the low-volume murmur, unless `--all-strata`; trailing words witness a recall afterward, capped at `--k` hits (default 5). A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
+`lares sense refresh [<query…>]` re-paves the mempalace projection over the sovereign content plane through the daemon seat, on the serialized capture holder's own pipe, so it queues between capture passes and never races the writer. It reads by volume, skipping the low-volume murmur, unless `all-strata=true`; trailing words witness a recall afterward, capped at `k=` hits (default 5). A leading sensorium name (`lares sense <sensorium> <verb>`) addresses any named sensorium; bare, the verb reads `memory`.
 
 <<~/ahu>>
 
@@ -104,6 +104,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bA-qoJoz1SNPYYcJh39cFxAjira9JLY0piLzW_8UuAw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2yp06wtpwKIuV7C3H8dkG_SDZgtkhSzY5tAdCu3nzfc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

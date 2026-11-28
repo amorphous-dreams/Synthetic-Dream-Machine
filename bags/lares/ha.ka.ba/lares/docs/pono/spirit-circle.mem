@@ -127,12 +127,12 @@ A parting note states its meaning (thanks, completion, or dismissal) and never r
 
 * The names of the four seams: the operator's ear, their family's, and a kumu's where the operator chooses.
 * The seat minted per summon: a scout measures how the doors resolve a seat today before any build.
-* Until that seat stands, an offering (ʻālana) carries no authority beyond a nudge: the shelf (`alana/<pet>`) records who offered (a hand, or a seat by its instance id), a wake names the offerer, and a re-offer over a standing mandate lands only from the same offerer or a hand. A seat's offerer id stays SELF-CLAIMED (it comes from the caller's own `--instance`, and a wake and the presence show every instance id), so the same-offerer check stops an accidental overwrite, never a deliberate one; a pet with no offering goes to the first offerer. A shelf whose hash disagrees with its words fails closed. The tiddler door still reaches the `alana/` prefix; guarding it there, as the other door-owned prefixes stand guarded, waits as a course item, and that guard also refuses a caller-written `offered-by`.
+* Until that seat stands, an offering (ʻālana) carries no authority beyond a nudge: the shelf (`alana/<pet>`) records who offered (a hand, or a seat by its instance id), a wake names the offerer, and a re-offer over a standing mandate lands only from the same offerer or a hand. A seat's offerer id stays SELF-CLAIMED (it comes from the caller's own `instance=`, and a wake and the presence show every instance id), so the same-offerer check stops an accidental overwrite, never a deliberate one; a pet with no offering goes to the first offerer. A shelf whose hash disagrees with its words fails closed. The tiddler door still reaches the `alana/` prefix; guarding it there, as the other door-owned prefixes stand guarded, waits as a course item, and that guard also refuses a caller-written `offered-by`.
 * The keeping seam's word.
 * Where a masked spirit's home sits (a keeper's face, a shared play wiki, or a home of its own), and the mask template.
 * The summon machinery's own doors (the queue on the face's intent plane, the deterministic launcher, budgets per lane, leases per grant), designed in research/spirits-switchboard and not yet built.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Z7Zi7Y-5xlO9CKbxHP7_-XneJmlyRVGnNEafHQM43eA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7U8TPyYQe9pZCGhQlDWIwVHDh9qkwsxPob0LJK-_2EM`>>
 <<^ code=`&#x0004;` to=`?`>>

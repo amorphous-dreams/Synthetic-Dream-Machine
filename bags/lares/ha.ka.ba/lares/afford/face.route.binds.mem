@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.route.binds"
 
 ! face.route.binds ~ a new slot opens the same key
 
-`lares vault bind` opens the vessel key with a route the hand types, then binds a new slot (`--passphrase`, the default, or `--paper`) that opens the same key; `--face N` binds the slot into that face's own tree, leaving the node tree untouched. A paper sheet just read back joins the keep pair too. A credential rides a TTY alone: no flag, no environment variable and no pipe carries one, nothing echoes one, and it drops the instant the act returns.
+`lares vault bind` opens the vessel key with a route the hand types, then binds a new slot (`passphrase=true`, the default, or `paper=true`) that opens the same key; `face=N` binds the slot into that face's own tree, leaving the node tree untouched. A paper sheet just read back joins the keep pair too. A credential rides a TTY alone: no flag, no environment variable and no pipe carries one, nothing echoes one, and it drops the instant the act returns.
 
 <<~/ahu>>
 
@@ -61,7 +61,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · face-not-named · error
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[face.route.binds passphrase/true]] ~ --passphrase and --paper both stood, or --face names no handle index`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[face.route.binds passphrase/true]] ~ passphrase=true and paper=true both stood, or face= names no handle index`>>
 <<has entity=`refusal` name=`face-not-named` params=`cure/[[face.route.binds face/2]] ~ no face of that index stands in the floor index`>>
 <<has entity=`refusal` name=`error` params=`~ the custody door's named refusals lead the line by class (OccupiedStoreRefusal, CustodyRefusal, TreeKeyRefusal, CensusRefusal, CustodyLockRefused, CustodyFoundingRefused, CredentialTtyRefusal, RotationSlotsRefused), exit 1`>>
 ```
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;PxUkE5jz9GOr8Ri_2eKNfEz4xfeWTwK9LTpkyFRr6eU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;I0PvqQcweCS52DI77I2mMf9OqMZRuOlnoDY1LvBG_Wk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

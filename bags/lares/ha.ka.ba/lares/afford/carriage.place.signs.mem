@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.place.signs"
 
 ! carriage.place.signs ~ a herm signs with its vessel key alone
 
-`lares nexus carry-for [nexus=<aid>] [out=<file>]` runs on the joining place: it reads the vessel key and nothing else (a herm holds no persona root) and mints the carrier seal the kahu supply to `nexus carry --carrier`. `--out` writes the floor pin claim and its KEL rows for `carry --floor-pin`.
+`lares nexus carry-for [nexus=<aid>] [out=<file>]` runs on the joining place: it reads the vessel key and nothing else (a herm holds no persona root) and mints the carrier seal the kahu supply to `nexus carry carrier=`. `out=` writes the floor pin claim and its KEL rows for `carry floor-pin=`.
 
 <<~/ahu>>
 
@@ -37,7 +37,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.place.signs"
 
 ```memetic-wikitext
 <<has entity=`arg` name=`nexus` params=`takes/aid ~ a carried charter this vessel holds; absent, the primary`>>
-<<has entity=`arg` name=`out` params=`takes/host-path ~ the floor pin claim for carry --floor-pin`>>
+<<has entity=`arg` name=`out` params=`takes/host-path ~ the floor pin claim for carry floor-pin=`>>
 ```
 
 <<~/ahu>>
@@ -59,7 +59,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · vessel-composing · vessel-silent · vessel-locked · error
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[carriage.place.signs out/pin.json]] ~ --out names no file`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.place.signs out/pin.json]] ~ out= names no file`>>
 <<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
 <<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
 <<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Gw1u5K5y4J1e_4vyx5qE6atFetDWYOjq6Lw_J-1k3uo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;t1wIW7pcmJ5b4EiwNNFJNrDVoVEVZAdvCtFayEbNKF8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.disk.logs"
 
 ! carriage.disk.logs ~ the shore's own log: counts by kind, then each record
 
-`log` reads the vessel's log as records, one per distinct event: the counts by kind first, then each record. `--kind` names one kind, `--held` the unacknowledged, and `--boot <id>` one boot's ring. With no vessel answering, the verb reads the flat `run/vessel-live.log` and its ash. It writes nothing and asks no hand.
+`log` reads the vessel's log as records, one per distinct event: the counts by kind first, then each record. `kind=` names one kind, `held=true` the unacknowledged, and `boot=<id>` one boot's ring. With no vessel answering, the verb reads the flat `run/vessel-live.log` and its ash. It writes nothing and asks no hand.
 
 <<~/ahu>>
 
@@ -91,6 +91,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;I4n3fnuVpN-SwB4_N2uMSbV7xKAIbzgTjciWIrXkHKI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ti454X7Jrmk5VkKTRg1aYCvCgOjO53V-3ai5a5-itSM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

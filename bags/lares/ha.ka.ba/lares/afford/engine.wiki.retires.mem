@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.wiki.retires"
 
 ! engine.wiki.retires ~ the owner face's unmint; the record of leaving stays
 
-`lares wiki retire <slug>` rides a session of the worn face (or `--face N`) opened by the cli hand, so a seat session refuses. The shell's catalog rows, its workbench's ledger rows and its slot and Keyhive bindings leave; its workbench folder steps aside by rename; the slug's realm label forgets the realm id; the canon bag and its files stay. Its effect records travel verbatim into one retirement record in the face's daemon wiki working layer before anything erases. `--dry-run` reads the counts and writes nothing; a shell holding authored records refuses `wiki-not-empty` unless `--force --count <records>` names that very count. A run that died midway finishes on a second run.
+`lares wiki retire <slug>` rides a session of the worn face (or `face=N`) opened by the cli hand, so a seat session refuses. The shell's catalog rows, its workbench's ledger rows and its slot and Keyhive bindings leave; its workbench folder steps aside by rename; the slug's realm label forgets the realm id; the canon bag and its files stay. Its effect records travel verbatim into one retirement record in the face's daemon wiki working layer before anything erases. `dry-run=true` reads the counts and writes nothing; a shell holding authored records refuses `wiki-not-empty` unless `force=true count=<records>` names that very count. A run that died midway finishes on a second run.
 
 <<~/ahu>>
 
@@ -64,7 +64,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`usage` params=`cure/[[engine.wiki.retires slug/works dry-run/true]] ~ name the slug`>>
-<<has entity=`refusal` name=`face-malformed` params=`~ --face names a persona index`>>
+<<has entity=`refusal` name=`face-malformed` params=`~ face= names a persona index`>>
 <<has entity=`refusal` name=`retire-needs-hand` params=`~ a seat session reached the retire; a person runs it`>>
 <<has entity=`refusal` name=`no-face` params=`~ no face stands worn`>>
 <<has entity=`refusal` name=`system-bag` params=`~ the slug names a house system bag`>>
@@ -72,8 +72,8 @@ Testimony: the door checks; this slot grants nothing.
 <<has entity=`refusal` name=`no-such-wiki` params=`~ the vessel binds no wiki to the slug; the local half still runs`>>
 <<has entity=`refusal` name=`not-the-owner` params=`~ another face owns the shell`>>
 <<has entity=`refusal` name=`wiki-shared` params=`~ the wiki stands shared; remove the shares first`>>
-<<has entity=`refusal` name=`wiki-not-empty` params=`cure/[[engine.wiki.retires slug/works dry-run/true]] ~ the shell holds authored records; read the count, then --force --count`>>
-<<has entity=`refusal` name=`retire-count-missing` params=`~ --force rode with no --count`>>
+<<has entity=`refusal` name=`wiki-not-empty` params=`cure/[[engine.wiki.retires slug/works dry-run/true]] ~ the shell holds authored records; read the count, then force=true count=`>>
+<<has entity=`refusal` name=`retire-count-missing` params=`~ force=true rode with no count=`>>
 <<has entity=`refusal` name=`retire-count-moved` params=`cure/[[engine.wiki.retires slug/works dry-run/true]] ~ the count moved since the dry run`>>
 <<has entity=`refusal` name=`retire-carry-unlanded` params=`~ the retirement record could not land; nothing erased`>>
 <<has entity=`refusal` name=`waking-floor` params=`~ the vessel still wakes`>>
@@ -120,6 +120,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;y3pHgesgUwGWULwu-Z-h70vEThx_3xJNzYbNGoSTEtA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;orMo3LTAAkvNPVv4bfnFHjiZAkffm7YzwDPqBz10PDM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

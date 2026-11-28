@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.bag.declares"
 
 ! carriage.bag.declares ~ a bag names its tier, its home, its repo and its role
 
-`declare <bag>` writes (or amends) the bag's own declaration: `--tier` (its cap-tier), `--home` (one of the homes a bag may name), `--repo` (a REGISTERED repo id, never a directory; an unregistered id refuses), `--role` (one line). It wants at least one of the four. Declaring moves NO bytes: relocation takes `lares bag home`, and a declaration that now disagrees with where the bytes sit marks the bag ADRIFT. A standing daemon re-stamps the catalog row at once (`restamp-bag-tier`), so a tier change takes the row's stamp; with no daemon the next boot stamps it.
+`declare <bag>` writes (or amends) the bag's own declaration: `tier=` (its cap-tier), `home=` (one of the homes a bag may name), `repo=` (a REGISTERED repo id, never a directory; an unregistered id refuses), `role=` (one line). It wants at least one of the four. Declaring moves NO bytes: relocation takes `lares bag home`, and a declaration that now disagrees with where the bytes sit marks the bag ADRIFT. A standing daemon re-stamps the catalog row at once (`restamp-bag-tier`), so a tier change takes the row's stamp; with no daemon the next boot stamps it.
 
 The reserved TW5 docs name refuses (`bag declare`).
 
@@ -65,8 +65,8 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ declare-nothing · home-unknown · repo-unregistered
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`declare-nothing` params=`cure/[[carriage.bag.declares bag/<bag> tier/private]] ~ declare wants something to declare: --tier, --home, --repo or --role`>>
-<<has entity=`refusal` name=`home-unknown` params=`~ --home expects one of the homes a bag may name`>>
+<<has entity=`refusal` name=`declare-nothing` params=`cure/[[carriage.bag.declares bag/<bag> tier/private]] ~ declare wants something to declare: tier=, home=, repo= or role=`>>
+<<has entity=`refusal` name=`home-unknown` params=`~ home= expects one of the homes a bag may name`>>
 <<has entity=`refusal` name=`repo-unregistered` params=`cure/[[carriage.bag.registers]] ~ the repo id stands registered on no vessel here; register it first`>>
 ```
 
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ehuj0_YWlpYPs7C1YiPqDdNcE0L2BMGgAbRWTlqpE3g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mzBtxxlJhJWQBFShSJiFa7tjmEokvh1a4fY0z7VKKJs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

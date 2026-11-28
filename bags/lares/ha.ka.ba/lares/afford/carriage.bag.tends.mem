@@ -17,9 +17,9 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.bag.tends"
 
 ! carriage.bag.tends ~ the cid CAS tier: blobs, references, and the holds that outlast the grace
 
-`cas` is a local read over the cleartext `cid/` CAS tier, with no daemon boot: it lists the blobs the CAS dir holds and DERIVES which the disk projection references (a `.tid` or `.meta` under `bags/` or `wikis/` carrying `textCid`, or a `lar:///…/cid/<hash>` `_canonical_uri`), then reports blobs · referenced · unreferenced · pending · bytes, and names the genesis-manifest blobs as protected (the engine and plugins never sweep). The projection reads as-of-last-projection: a pointer with no loci path reads unreferenced HERE while the daemon holds it, so this read never sweeps. `--all` lists each blob.
+`cas` is a local read over the cleartext `cid/` CAS tier, with no daemon boot: it lists the blobs the CAS dir holds and DERIVES which the disk projection references (a `.tid` or `.meta` under `bags/` or `wikis/` carrying `textCid`, or a `lar:///…/cid/<hash>` `_canonical_uri`), then reports blobs · referenced · unreferenced · pending · bytes, and names the genesis-manifest blobs as protected (the engine and plugins never sweep). The projection reads as-of-last-projection: a pointer with no loci path reads unreferenced HERE while the daemon holds it, so this read never sweeps. `all=true` lists each blob.
 
-`--fetch <cid>` reads ONE cid through the running vessel's fetch door (fleet holders over Socket B). `--pin <cid> [--tier <t>] [--holder <name>]` holds a blob past the grace until released (`--held` names a held pin that ends with the vessel's life, and refuses `held-pin-no-life` where the store names no life), and `--release <cid>` frees it. `--sweep [--dry-run]` sweeps the unreferenced blobs past their grace where the composite stands; dry names them and moves nothing.
+`fetch=<cid>` reads ONE cid through the running vessel's fetch door (fleet holders over Socket B). `pin=<cid> [tier=<t>] [holder=<name>]` holds a blob past the grace until released (`held=true` names a held pin that ends with the vessel's life, and refuses `held-pin-no-life` where the store names no life), and `release=<cid>` frees it. `sweep=true [dry-run=true]` sweeps the unreferenced blobs past their grace where the composite stands; dry names them and moves nothing.
 
 <<~/ahu>>
 
@@ -51,7 +51,7 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.bag.tends"
 <<has entity=`arg` name=`held` params=`~ a held pin that ends with the vessel's life`>>
 <<has entity=`arg` name=`release` params=`takes/cid ~ free a held blob`>>
 <<has entity=`arg` name=`sweep` params=`~ sweep the unreferenced blobs past their grace where the composite stands`>>
-<<has entity=`arg` name=`dry-run` params=`~ with --sweep, name the blobs and move nothing`>>
+<<has entity=`arg` name=`dry-run` params=`~ with sweep=true, name the blobs and move nothing`>>
 ```
 
 <<~/ahu>>
@@ -117,6 +117,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NUAydw9BIVtm0YquJnHw5QdS9sgAX1C1uPNO7Q89Z4s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tboWvvnsCOE_1SJ5VvJ_wfeNqZ97xWb6-ofXQj_5DMU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

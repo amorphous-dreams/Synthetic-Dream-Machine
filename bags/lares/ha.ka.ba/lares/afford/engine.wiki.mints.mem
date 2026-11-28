@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.wiki.mints"
 
 ! engine.wiki.mints ~ a fresh wiki, idempotent over a partial shell
 
-`lares wiki init <slug>` asks the daemon to mint the wiki's canonical bag, its per-wiki draft bag and its recipe, holds the mint and lays its workbench at `projections/realms/<slug>/wikis/<slug>/` (the realm's default pet name, the slug). `--realm <pet>` places it in an existing realm first (`lares realm list`). Over a shell a partial init left, it stands what is missing and answers `completed` naming each; run again, it answers `already-exists` and changes nothing.
+`lares wiki init <slug>` asks the daemon to mint the wiki's canonical bag, its per-wiki draft bag and its recipe, holds the mint and lays its workbench at `projections/realms/<slug>/wikis/<slug>/` (the realm's default pet name, the slug). `realm=<pet>` places it in an existing realm first (`lares realm list`). Over a shell a partial init left, it stands what is missing and answers `completed` naming each; run again, it answers `already-exists` and changes nothing.
 
 <<~/ahu>>
 
@@ -60,7 +60,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · realm-unnamed · realm-slug-malformed · realm-slug-private · daemon-refused
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[engine.wiki.mints slug/works]] ~ name the slug, and a non-empty --realm where one rides`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.wiki.mints slug/works]] ~ name the slug, and a non-empty realm= where one rides`>>
 <<has entity=`refusal` name=`realm-unnamed` params=`cure/[[realm.label.reads]] ~ no realm wears that pet name; read the labels`>>
 <<has entity=`refusal` name=`realm-slug-malformed` params=`~ the slug reads no path-safe name`>>
 <<has entity=`refusal` name=`realm-slug-private` params=`~ the slug falls under the private face projections`>>
@@ -104,6 +104,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5vZSvOKuqcJkvzuBbWqzZDJBLGlskZ8B4pEuPP4MGw8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iCewqLZWxqkLj6ZcY6dmH-LyoE9S4XY_zcOoADCfzyA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

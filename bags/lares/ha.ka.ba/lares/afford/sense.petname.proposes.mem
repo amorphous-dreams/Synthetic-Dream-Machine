@@ -62,7 +62,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[sense.petname.proposes sensorium/memory subject/e-12 label/harbor projection/structure]] ~ name a standing sensorium, a subject, a label and --projection`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[sense.petname.proposes sensorium/memory subject/e-12 label/harbor projection/structure]] ~ name a standing sensorium, a subject, a label and projection=`>>
 ```
 
 <<~/ahu>>
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;cxUif2HGjpHI5zxVulEIebuRzLzQHfDoRfi6X0RZvSY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MuWzagSwrkN8MsYeYt0LaKrqjM0MdEn1GQYwxt8UqGU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.canon.promotes"
 
 ! realm.canon.promotes ~ the priesthood act, performed as a residency move and recorded
 
-`lares meme promote <…/x.mem>` crosses one carrier into a canon bag: a residency move that changes the envelope's bag and nothing else (no rename, no host, no re-stamp), signed by the selected face (`--face N`, named wherever several faces stand) and recorded as a durable receipt. The cap reading rides a rehearsal that moves nothing first. `--from-bag` and `--dest-bag` name the bags; a crossing into `lar:///ha.ka.ba/bags/crossroads` also needs the seats' approval of these exact bytes (`--approval <approval.json>`, checked against `--nexus <aid>` where named).
+`lares meme promote <…/x.mem>` crosses one carrier into a canon bag: a residency move that changes the envelope's bag and nothing else (no rename, no host, no re-stamp), signed by the selected face (`face=N`, named wherever several faces stand) and recorded as a durable receipt. The cap reading rides a rehearsal that moves nothing first. `from-bag=` and `dest-bag=` name the bags; a crossing into `lar:///ha.ka.ba/bags/crossroads` also needs the seats' approval of these exact bytes (`approval=<approval.json>`, checked against `nexus=<aid>` where named).
 
 <<~/ahu>>
 
@@ -64,7 +64,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · verb-error · cap-denied
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[realm.canon.promotes file/x.mem face/0]] ~ no carrier named, a malformed --face, or several faces and none named`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.canon.promotes file/x.mem face/0]] ~ no carrier named, a malformed face=, or several faces and none named`>>
 <<has entity=`refusal` name=`verb-error` params=`~ the approval reads malformed, or the crossing refused; the reason rides the message`>>
 <<has entity=`refusal` name=`cap-denied` params=`~ the face holds no admin cap on the destination bag`>>
 ```
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iZ5lNe45dV7QfxS3kOwepJEbSrGltl-n_Cv8YZWCDT8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0gDqcQLJQI1cY7HOzDe8q0YhfeiN55vPPhdYq8B-UzM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

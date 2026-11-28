@@ -30,7 +30,7 @@
  *
  * NO PUSH WITHOUT A SPENT RETURN. The keep lei lives in the vessel's store, so with the vessel down the vessel half answers
  * nothing: the rite names that (`the keep lei lives in the vessel; up, then keep`), exits non-zero, and commits and pushes
- * nothing; the mirror rests in the workspace for the keep that follows the `up`. `sessions: false` (`--no-sessions`, or
+ * nothing; the mirror rests in the workspace for the keep that follows the `up`. `sessions: false` (`sessions=false`, or
  * LARES_KEEP_SESSIONS=0 in the house config, `./keep-config.ts`) keeps the house alone.
  *
  * A PUSH THAT FAILS leaves the tessera red (`landed-absent`) and names the cure: mend the remote and run the rite again. A
@@ -116,7 +116,7 @@ export function keepFlushLines(reading: ShoreFlushReading | null): string[] {
 
 export interface KeepHostOptions {
   readonly workspace: string; readonly into?: string; readonly acceptOmissions?: boolean; readonly face?: number; readonly ifDue?: boolean;
-  /** `--sessions` / `--no-sessions`: whether the device's sessions ride this keep; unnamed, the ports and the house config decide. */
+  /** `sessions=true` / `sessions=false`: whether the device's sessions ride this keep; unnamed, the ports and the house config decide. */
   readonly sessions?: boolean;
 }
 export interface KeepHostOutcome { readonly code: number; readonly data: Record<string, unknown> }

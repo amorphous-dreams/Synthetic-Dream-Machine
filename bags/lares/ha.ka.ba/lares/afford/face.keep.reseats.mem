@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.keep.reseats"
 
 ! face.keep.reseats ~ the keep pair binds again to a route the vessel proves
 
-`lares vault reseat` proves a typed route against the vessel's held key (against the files where no vessel stands) and reseats the keep pair on the human routes it proved (`--passphrase` or `--paper` names which route to gather). Under a pūlama the route rides the pūlama's own hand door and this door refuses. A credential rides a TTY alone: no flag, no environment variable and no pipe carries one, nothing echoes one, and it drops the instant the act returns.
+`lares vault reseat` proves a typed route against the vessel's held key (against the files where no vessel stands) and reseats the keep pair on the human routes it proved (`passphrase=true` or `paper=true` names which route to gather). Under a pūlama the route rides the pūlama's own hand door and this door refuses. A credential rides a TTY alone: no flag, no environment variable and no pipe carries one, nothing echoes one, and it drops the instant the act returns.
 
 <<~/ahu>>
 
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qGfZWZcooViZ6LsKp-KOxolpkk5wlylPrDyfc6fD3qM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cB2ZRIUe9QtuVgQbFYzJ29We6w6042_0VEs58KRXV6I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

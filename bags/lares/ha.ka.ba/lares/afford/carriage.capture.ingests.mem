@@ -17,11 +17,11 @@ uri-path  = "ha.ka.ba/lares/afford/carriage.capture.ingests"
 
 ! carriage.capture.ingests ~ the disk-to-records gesture: scan, diff, preview, then apply through the gate
 
-The gesture holds the disk grant and the Synced tree (the island holds neither; readiness reads local on both sides of the shore). It scans the source for `.mem` carriers, derives each address by the address-siting rule, and diffs the disk hash against the synced hash per carrier. The default posture PREVIEWS: it prints NEW, UNCHANGED and CHANGED rows and submits nothing. `--apply` sends the NEW and CHANGED carriers, their hashes riding an INGEST verb, and the island runs the full Confluence gate (its currentRenderHash stands as the third leg) and answers per carrier.
+The gesture holds the disk grant and the Synced tree (the island holds neither; readiness reads local on both sides of the shore). It scans the source for `.mem` carriers, derives each address by the address-siting rule, and diffs the disk hash against the synced hash per carrier. The default posture PREVIEWS: it prints NEW, UNCHANGED and CHANGED rows and submits nothing. `apply=true` sends the NEW and CHANGED carriers, their hashes riding an INGEST verb, and the island runs the full Confluence gate (its currentRenderHash stands as the third leg) and answers per carrier.
 
-`--tag-blobs` stamps the CAS opt-in flag (a `.meta` sidecar, or a meme's ahu meta) on the large un-flagged carriers that would fault during LOAD or INGEST; it writes no records, and the preview names the count. `--watch` fires the same gesture per settled wave instead of once: one wave per quiet window (`--debounce` ms), preview by default, `--apply` submits. A file that vanished tombstones nothing: the watcher hands it to the vessel's shore, where it stands pending until a person answers with `lares shore remove` or `lares shore restore`. A file that holds no base never lands over records that say something else, and a file that moved while the records moved never lands: each stands off at the vessel's shore (`lares shore`), and every wave says no person stands behind it (`unattended`). `--in-wiki` runs the INGEST in the active wiki's island, the path for the working write-layer ingest-back (a `wikis/` source derives its URIs off that layer).
+`tag-blobs=true` stamps the CAS opt-in flag (a `.meta` sidecar, or a meme's ahu meta) on the large un-flagged carriers that would fault during LOAD or INGEST; it writes no records, and the preview names the count. `watch=true` fires the same gesture per settled wave instead of once: one wave per quiet window (`debounce=` ms), preview by default, `apply=true` submits. A file that vanished tombstones nothing: the watcher hands it to the vessel's shore, where it stands pending until a person answers with `lares shore remove` or `lares shore restore`. A file that holds no base never lands over records that say something else, and a file that moved while the records moved never lands: each stands off at the vessel's shore (`lares shore`), and every wave says no person stands behind it (`unattended`). `in-wiki=true` runs the INGEST in the active wiki's island, the path for the working write-layer ingest-back (a `wikis/` source derives its URIs off that layer).
 
-The one-shot flags (`yes=true`, `--tag-blobs`, `--in-wiki`, `--change-id`) ride the one-shot ingest and refuse beside `--watch`; `--debounce` rides `--watch` alone. A scan that skipped every carrier answers usage and names the mirror directories it derived against, since the source must sit under the bags dir (LAR_BAGS) or wikis dir (LAR_WIKIS) as `<holding>/<w.w.w>/…/<name>.<ext>`.
+The one-shot flags (`yes=true`, `tag-blobs=true`, `in-wiki=true`, `change-id=`) ride the one-shot ingest and refuse beside `watch=true`; `debounce=` rides `watch=true` alone. A scan that skipped every carrier answers usage and names the mirror directories it derived against, since the source must sit under the bags dir (LAR_BAGS) or wikis dir (LAR_WIKIS) as `<holding>/<w.w.w>/…/<name>.<ext>`.
 
 <<~/ahu>>
 
@@ -51,7 +51,7 @@ The one-shot flags (`yes=true`, `--tag-blobs`, `--in-wiki`, `--change-id`) ride 
 <<has entity=`arg` name=`in-wiki` params=`~ run the INGEST in the active wiki's island`>>
 <<has entity=`arg` name=`change-id` params=`takes/id ~ the wave's own change identity; absent, the verb mints one`>>
 <<has entity=`arg` name=`watch` params=`~ fire the gesture per settled wave instead of once`>>
-<<has entity=`arg` name=`debounce` params=`takes/ms ~ the watcher's quiet window in milliseconds; rides --watch alone`>>
+<<has entity=`arg` name=`debounce` params=`takes/ms ~ the watcher's quiet window in milliseconds; rides watch=true alone`>>
 ```
 
 <<~/ahu>>
@@ -63,7 +63,7 @@ The one-shot flags (`yes=true`, `--tag-blobs`, `--in-wiki`, `--change-id`) ride 
 Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
-<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ --apply writes records through the island's gate, which checks the cap on the destination bag; a preview, --tag-blobs aside, writes none`>>
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ apply=true writes records through the island's gate, which checks the cap on the destination bag; a preview, tag-blobs=true aside, writes none`>>
 <<has entity=`gate` name=`disk` params=`who/caller ~ the command holds the disk grant: it reads the source tree on the host, the island reads none`>>
 ```
 
@@ -74,9 +74,9 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · watch-one-shot · debounce-alone
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[carriage.capture.ingests source/<dir> to/<bag>]] ~ --source and --to both stand required; a source that resolves to no carrier names the mirror directories it derived against`>>
-<<has entity=`refusal` name=`watch-one-shot` params=`cure/[[carriage.capture.ingests source/<dir> to/<bag> watch/true]] ~ yes=true, --tag-blobs, --in-wiki and --change-id ride the one-shot ingest alone`>>
-<<has entity=`refusal` name=`debounce-alone` params=`cure/[[carriage.capture.ingests source/<dir> to/<bag> watch/true debounce/500]] ~ --debounce rides --watch alone`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[carriage.capture.ingests source/<dir> to/<bag>]] ~ source= and to= both stand required; a source that resolves to no carrier names the mirror directories it derived against`>>
+<<has entity=`refusal` name=`watch-one-shot` params=`cure/[[carriage.capture.ingests source/<dir> to/<bag> watch/true]] ~ yes=true, tag-blobs=true, in-wiki=true and change-id= ride the one-shot ingest alone`>>
+<<has entity=`refusal` name=`debounce-alone` params=`cure/[[carriage.capture.ingests source/<dir> to/<bag> watch/true debounce/500]] ~ debounce= rides watch=true alone`>>
 ```
 
 <<~/ahu>>
@@ -119,6 +119,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;fMKkprUjKRNKxFVgo8LumtNbQ2xfT-Q_fO-VLa9R9EM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;chhznaBb7EFoF1t8WtfzPqqVXjI3iCXDGVmVmiub6EI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

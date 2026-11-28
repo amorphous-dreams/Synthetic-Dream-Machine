@@ -33,7 +33,7 @@ path:line:col: severity: code: message
 * ''One line per diagnostic.'' `lares meme check format=problems <file.mem ...>` prints each finding once, in the order the files stand named; a file with no finding prints nothing, and the human lines fall silent. A message holding a newline folds onto one line.
 * ''Positions count from 1 against the file's own text'', as it sits on disk, never the text normalize would leave; the column counts UTF-16 code units, the unit the editor reads. A finding no one mark places (a stage fault, a flag, a frame drift) reads `path:1:1`.
 * ''Severity follows the gate.'' A finding that makes the read-alone seat exit 1 reads `error`; an advisory reading the gate passes (a flag, an unbound head, bare data) reads `warning`; a grammar preference, never a fault, reads `info`.
-* ''The exit stays the human seat's'': `0` canonical, `1` any drift or fault, `2` usage. `--format` names `problems` alone and refuses any other value; it reads the normalize law alone, so it refuses beside `--gradient`, `--edges` or `--sitting`, and `lares meme normalize` takes no `--format`.
+* ''The exit stays the human seat's'': `0` canonical, `1` any drift or fault, `2` usage. `format=` names `problems` alone and refuses any other value; it reads the normalize law alone, so it refuses beside `gradient=true`, `edges=true` or `sitting=true`, and `lares meme normalize` takes no `format=`.
 * ''The unnamed-dirty reading stays human.'' It names files nobody named, so the problems shape never asks git for it.
 
 !!! The codes
@@ -88,10 +88,10 @@ Drop this into the workspace's `.vscode/tasks.json` and run the task over the op
 
 * ''A wider sweep'' keeps the same matcher and names more files: `lares meme check format=problems $(git ls-files '*.mem')` reads every tracked carrier.
 * ''The regexp stands welded'': `packages/lares-cli/tests/meme-check-problems-matcher.test.ts` reads this fence, holds its regexp equal to the door's own (`packages/lares-cli/src/problems.ts`), and parses every golden line through it, so the shape, the door and this sample move together or red.
-* ''Later doors share the shape.'' A `surface log --follow` (not yet a door) and the stand-off and skip readings of the watch core speak the same line when they land, under the same matcher.
+* ''Later doors share the shape.'' A `surface log follow=true` (not yet a door) and the stand-off and skip readings of the watch core speak the same line when they land, under the same matcher.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y54wIgJx6FZ8h8UvTVGyn_ORJnkmgQQbT2l47f0I6qg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vdk-2-9G-2caSq111AaZdgZJi1v99RiBLTGmV7LocJs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

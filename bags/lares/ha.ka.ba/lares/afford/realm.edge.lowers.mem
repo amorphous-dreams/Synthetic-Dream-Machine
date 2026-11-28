@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.edge.lowers"
 
 ! realm.edge.lowers ~ the shadow over one relationship, lowered by a deliberate hand
 
-`lares edge un-kapae` takes the marker over one relationship back down: name exactly one of an edge id, `--member <key>` or `--device <key>`, with `--realm <id>` where the relationship rides a realm. The act signs with a persona root (`--as <index>`) or, under `--quorum`, the seats this vessel holds; it asserts no authority, and whichever reader consults the shadow decides whether that hand holds the edge. The marker rides the edge, never a party. A lower lands beside the raises it cites; a raise it never saw still stands, and the headline reports standing, never the gesture. `--quorum --partial` signs with the seats held here and prints a partial for the next seat's vessel instead (`--member`, or `--voucher` with `--joiner`, under `--realm`); `lares edge cosign` lands it.
+`lares edge un-kapae` takes the marker over one relationship back down: name exactly one of an edge id, `member=<key>` or `device=<key>`, with `realm=<id>` where the relationship rides a realm. The act signs with a persona root (`as=<index>`) or, under `quorum=true`, the seats this vessel holds; it asserts no authority, and whichever reader consults the shadow decides whether that hand holds the edge. The marker rides the edge, never a party. A lower lands beside the raises it cites; a raise it never saw still stands, and the headline reports standing, never the gesture. `quorum=true partial=true` signs with the seats held here and prints a partial for the next seat's vessel instead (`member=`, or `voucher=` with `joiner=`, under `realm=`); `lares edge cosign` lands it.
 
 <<~/ahu>>
 
@@ -43,7 +43,7 @@ uri-path  = "ha.ka.ba/lares/afford/realm.edge.lowers"
 <<has entity=`arg` name=`device` params=`takes/key ~ one device's relationship`>>
 <<has entity=`arg` name=`realm` params=`takes/id ~ the realm the relationship rides`>>
 <<has entity=`arg` name=`quorum` params=`~ sign with the seat quorum this vessel holds`>>
-<<has entity=`arg` name=`partial` params=`~ with --quorum: sign the seats held here and print a partial`>>
+<<has entity=`arg` name=`partial` params=`~ with quorum=true: sign the seats held here and print a partial`>>
 <<has entity=`arg` name=`voucher` params=`takes/key ~ partial: the vouch's voucher`>>
 <<has entity=`arg` name=`joiner` params=`takes/key ~ partial: the vouch's joiner`>>
 <<has entity=`arg` name=`as` params=`takes/index ~ the persona root that signs`>>
@@ -70,8 +70,8 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · as-not-index · EdgeKapaeError · EdgeCosignError
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[realm.edge.lowers edge/<edge-id>]] ~ name one relationship (an edge id, --member or --device); --partial needs --quorum and --realm`>>
-<<has entity=`refusal` name=`as-not-index` params=`cure/[[realm.edge.lowers edge/<edge-id> as/0]] ~ --as expects a persona-root index`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.edge.lowers edge/<edge-id>]] ~ name one relationship (an edge id, member= or device=); partial=true needs quorum=true and realm=`>>
+<<has entity=`refusal` name=`as-not-index` params=`cure/[[realm.edge.lowers edge/<edge-id> as/0]] ~ as= expects a persona-root index`>>
 <<has entity=`refusal` name=`EdgeKapaeError` params=`~ the act refused by name`>>
 <<has entity=`refusal` name=`EdgeCosignError` params=`~ the partial refused by name`>>
 ```
@@ -115,6 +115,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0z_pISCG098OTZoVfNDRm3TA0-MEzKVkcxmgL33EGV0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0oy8lel-HByxdU2CnmwNZ7f5iwXWo38AbcNnHjv0ucU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

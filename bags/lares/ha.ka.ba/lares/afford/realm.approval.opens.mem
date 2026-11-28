@@ -63,7 +63,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · vessel-composing · vessel-silent · vessel-locked · error
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[realm.approval.opens file/manifest.json purpose/floor-release surface/floor-release out/a.json]] ~ a missing file, purpose, surface or --out`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[realm.approval.opens file/manifest.json purpose/floor-release surface/floor-release out/a.json]] ~ a missing file, purpose, surface or out=`>>
 <<has entity=`refusal` name=`vessel-composing` params=`~ an unlock still recomposes the vessel; run again once lares vault status reads ready`>>
 <<has entity=`refusal` name=`vessel-silent` params=`~ something holds the store and answers nothing; lares vessel read names the holder`>>
 <<has entity=`refusal` name=`vessel-locked` params=`~ the vessel key stands shut; lares vault unlock opens it`>>
@@ -107,6 +107,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;MRrUl5y8vvQwdPDVr6csdcbhWjLCbDixUN2bP-Hum2Y`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_Z29EBv6-Twf7Sge9G72_8QzUQ87S9qQul3UvgV1pCo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

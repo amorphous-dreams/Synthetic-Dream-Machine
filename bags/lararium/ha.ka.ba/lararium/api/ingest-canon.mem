@@ -140,7 +140,7 @@ later by a flexible method''; until then no TypeScript or Python reader parses a
 * The two VM harvesters, `capture-annotate-vm` and `query-derive-vm`, with the island channel the
   recall derive rode (`daemon:derive-skeleton-request`/`-result`).
 * `lares sense pour <transcript>` (the bearing index and the rewind diff it fed), the worldline
-  tree's bearing join, and the recall verb's TypeScript stamp post-filter: `--agent`/`--surface`
+  tree's bearing join, and the recall verb's TypeScript stamp post-filter: `agent=`/`surface=`
   ride to the recall coordinator, whose signature holds every filter.
 * The Python turn readers: `form_encoder.py` (the move-skeleton encoder and its serve holder),
   `loci_io.py` (the drawer export/apply writer), and the adapter's nine turn-gradient fields.
@@ -151,7 +151,7 @@ later by a flexible method''; until then no TypeScript or Python reader parses a
   `BranchContext`, `fnv1a8` and `LAR_HV` moved into `branch-frontier.ts`; `@lararium/mesh/harvest`
   trims to the pure barrel of `ffz-project`, `branch-frontier` and `gone-turns`.
 * `FormPalaceStore` moved into `form_store.py`, where the plane caps store and read the FORM plane.
-* `pour --all` (the re-pave) and `pour --writeback` keep their doors; the re-pave's baseline keeps
+* `pour all=true` (the re-pave) and `pour writeback=true` keep their doors; the re-pave's baseline keeps
   its state home.
 
 ''Three placeholders stand, the one ruled exception to the no-shims law:'' the lar-telemetry
@@ -219,6 +219,6 @@ linonetwo's tw-react + TidGi):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;RkojyigKIbRAmWq2_IQDBAbI5Sd1EzC_nTQu2fID_9o`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nxRFTJ7skJTI6LN84I8CeYaHQ1fuxIzkP7tLXAeh54U`>>
 
 <<^ code=`&#x0004;` to=`?`>>

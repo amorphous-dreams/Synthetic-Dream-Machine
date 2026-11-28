@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/engine.meme.normalizes"
 
 ! engine.meme.normalizes ~ the normalize law, sealed to disk
 
-`lares meme normalize <file.mem…>` runs the frame law over each named carrier, re-frames what drifted and re-stamps its block check over the body it follows, writing the result in place. `--grammar` also applies the grammar-authority clauses (authored bytes, such as a call site's `:` against `=`); without it those clauses stand proposed and move no byte. It refuses a glob sweep and takes no `--format`; it names every dirty carrier nobody named and carries on, so one hand never seals another hand's half-finished work unseen. Local, no daemon.
+`lares meme normalize <file.mem…>` runs the frame law over each named carrier, re-frames what drifted and re-stamps its block check over the body it follows, writing the result in place. `grammar=true` also applies the grammar-authority clauses (authored bytes, such as a call site's `:` against `=`); without it those clauses stand proposed and move no byte. It refuses a glob sweep and takes no `format=`; it names every dirty carrier nobody named and carries on, so one hand never seals another hand's half-finished work unseen. Local, no daemon.
 
 <<~/ahu>>
 
@@ -60,7 +60,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[engine.meme.normalizes files/draft.mem]] ~ no carrier named, an unreadable file, or --format beside normalize`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.meme.normalizes files/draft.mem]] ~ no carrier named, an unreadable file, or format= beside normalize`>>
 ```
 
 <<~/ahu>>
@@ -100,6 +100,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WgLRQXkd6adqGZsOcsI1_WcIwKKqLhJ8gZxxnPUCj8I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;K4Gjs78nSzEexUzBgjetOFlVO6eOgWn1clEa9GcBiis`>>
 
 <<^ code=`&#x0004;` to=`?`>>

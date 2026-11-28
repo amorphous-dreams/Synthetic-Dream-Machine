@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.rite.lands"
 
 ! face.rite.lands ~ land ~ rite-land, or rite-abandon
 
-`lares rite land tessera=<id>` runs `rite-land` in the vessel that stands after: it rests the host half, naming the begun half; a `--head` or `--image` named must match what the half began at, or it refuses `rite-land-differs`. `land --abandon --tessera <id>` (`rite-abandon`) sets a stale begun half down instead: a hand act that spends nothing, records no par, and frees the face to begin fresh; it names no head or image.
+`lares rite land tessera=<id>` runs `rite-land` in the vessel that stands after: it rests the host half, naming the begun half; a `head=` or `image=` named must match what the half began at, or it refuses `rite-land-differs`. `land abandon=true tessera=<id>` (`rite-abandon`) sets a stale begun half down instead: a hand act that spends nothing, records no par, and frees the face to begin fresh; it names no head or image.
 
 <<~/ahu>>
 
@@ -108,6 +108,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gWbP57foHnLqnKfpJf4CyDzbMS-zXTfCRKSkBLFXAuM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xLlDZZ39uq8GkwnwjnvQjXA64Mz2CWvvwSN8_8QcAjU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

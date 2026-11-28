@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.lei.reads"
 
 ! face.lei.reads ~ show ~ swarm-show
 
-`lares lei show` reads the board. `--rite <rite> --branch <name>` together read one rite's standing lei (`data.lei`), and `--head` asks after one head. Naming no face with several faces open, it reads every open face's line (`data.faces`).
+`lares lei show` reads the board. `rite=<rite> branch=<name>` together read one rite's standing lei (`data.lei`), and `head=` asks after one head. Naming no face with several faces open, it reads every open face's line (`data.faces`).
 
 <<~/ahu>>
 
@@ -102,6 +102,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;eKEN9a5dRkjqKAFEsV5-Opf6CMVSIof_NI4kvR4mUY8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YPgSxeXF3MhcCSjZalR7HWAsIr0rcdcoBxDuWhFhJlQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -55,7 +55,7 @@ Testimony: the door checks; this slot grants nothing.
 
 ```memetic-wikitext
 <<has entity=`refusal` name=`face-not-named` params=`~ joins stand pending for several faces`>>
-<<has entity=`refusal` name=`face-joinee` params=`~ the joinee names no face; the face rides the offer, and --face belongs to offer and answer`>>
+<<has entity=`refusal` name=`face-joinee` params=`~ the joinee names no face; the face rides the offer, and face= belongs to offer and answer`>>
 <<has entity=`refusal` name=`refused` params=`~ the abandon refused by name (FleetJoinRefused, a store door refusal, or StoreHeld); the line names the code`>>
 ```
 
@@ -97,6 +97,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bZa9emNhz-eo6e0MmXerBsr5NeBBnAm9RDQWpiWCbTg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FCQHfSVDW-NkP1xuFKDZ6_Fu30mXEtc7hI6AJjxt8Vw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

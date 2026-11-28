@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/sense.guest.repaves"
 
 ! sense.guest.repaves ~ the guest rite: quiesce, verify, tear, stand, harvest
 
-`lares mempalace repave` runs five idempotent steps (quiesce the holders, verify nothing holds the store and the worldline KG sits outside it, tear the guest tree, stand it again, harvest vanilla), so a rite that dies halfway re-runs from the top. Preview by default; `--confirm` enacts; `--keep-hooks` leaves the hooks paused afterward. It tears the guest alone.
+`lares mempalace repave` runs five idempotent steps (quiesce the holders, verify nothing holds the store and the worldline KG sits outside it, tear the guest tree, stand it again, harvest vanilla), so a rite that dies halfway re-runs from the top. Preview by default; `confirm=true` enacts; `keep-hooks=true` leaves the hooks paused afterward. It tears the guest alone.
 
 <<~/ahu>>
 
@@ -100,6 +100,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-yl10v_9OF3bchWSxSXcqGs2SXpVnQMBjCfg7HLHAoA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Hy6-rg2vYC7u9s33ZYjAAeQ-0Zp1AnBHaA1rkPF4WqI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

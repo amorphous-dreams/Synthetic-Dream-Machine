@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.pool.opens"
 
 ! face.pool.opens ~ open ~ the editor line, and no workspace file
 
-`lares surface open` prints `<editor> -n` over the face's root and its realm pools and writes no workspace file. The editor reads from the house config tiddler `$:/config/lares/surface/Editor`, else `code`; `--launch` runs the line. A face with no root yet refuses until `surface init` lays it.
+`lares surface open` prints `<editor> -n` over the face's root and its realm pools and writes no workspace file. The editor reads from the house config tiddler `$:/config/lares/surface/Editor`, else `code`; `launch=true` runs the line. A face with no root yet refuses until `surface init` lays it.
 
 <<~/ahu>>
 
@@ -103,6 +103,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bZK0--PvCPvniZWbsNKAPbHOROEoUzKUFyG2q4RocE8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fEV_f8CRxXL2T_wyLueEw1MggkZ2p927ZmTUt4U78mY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

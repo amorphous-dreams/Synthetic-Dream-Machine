@@ -490,7 +490,7 @@ The forks answered different layers all along, and the ruling seats each where i
   ALOUD `SHARES ARE KEYS`. The silent-impersonation evil lives in DISTRIBUTING shares to other
   hands; self-escrow holds a quorum of one — the field's own courierability property, kept where it
   belongs.
-  `persona new` splits nothing by default, and `--split-root` opts in.
+  `persona new` splits nothing by default, and `split-root=true` opts in.
 * ''The CONTEST: FORK C, ON THE CHAIN'' — a recovery rotation enters the prefix's OWN KEL as
   PROVISIONAL and hardens causally. NEVER a pending entry on any board — a board of pending recoveries
   makes a compiled registry of the vulnerable (the registry filter,
@@ -693,6 +693,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YB2qJKmlkws1Du7PHEAXJzw0LxzqCjGucbxXdD7vWRY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AYQnJJxX21F2Lz9WLZEOZ3yUSgFEhddWeBhEagr5M14`>>
 
 <<^ code=`&#x0004;` to=`?`>>

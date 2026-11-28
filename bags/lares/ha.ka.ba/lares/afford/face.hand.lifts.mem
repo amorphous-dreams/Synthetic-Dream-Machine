@@ -17,13 +17,13 @@ uri-path  = "ha.ka.ba/lares/afford/face.hand.lifts"
 
 ! face.hand.lifts ~ the hand reads the preview, names the row digest, and the lift signs
 
-`kahua lift <title>` carries one staged row to every device the face wears: the second crossing of memory. It reads the staged row back first and prints its PREVIEW (title, row digest, fields, body, and whether a head already carries it), then lifts only on that row digest typed back at a terminal (its first eight hex), or on `--digest <hex>` naming the digest the preview printed. A bare `yes=true` names no digest and lifts nothing. A lift signs under the face's root, so a lift always asks the face's passphrase at a terminal; `--digest` spares the typed-back digest alone.
+`kahua lift <title>` carries one staged row to every device the face wears: the second crossing of memory. It reads the staged row back first and prints its PREVIEW (title, row digest, fields, body, and whether a head already carries it), then lifts only on that row digest typed back at a terminal (its first eight hex), or on `digest=<hex>` naming the digest the preview printed. A bare `yes=true` names no digest and lifts nothing. A lift signs under the face's root, so a lift always asks the face's passphrase at a terminal; `digest=` spares the typed-back digest alone.
 
-The lift names its taint list: `--taint none` when every input came from inside the face, else `--taint a,b`. A lift carries the staged row's own body and fields, so stage them first (`face.draft.stages`); a lift naming `--text`, `--file` or `--fields` refuses `kahua-lift-unstaged`. `--parent <cid>` names the revision it supersedes (`none` for a first lift), `--sources` further daemon sources the item distils (the staged row always rides), and `--proposal <id>` the proposal it answers: the proposal's body digest must equal the staged body's. Two digests share one word: the ROW digest (what `kahua stage` answers and a lift names) covers the row's body and fields, while a proposal's `digest` names the BODY digest, the body bytes alone.
+The lift names its taint list: `taint=none` when every input came from inside the face, else `taint=a,b`. A lift carries the staged row's own body and fields, so stage them first (`face.draft.stages`); a lift naming `text=`, `file=` or `fields=` refuses `kahua-lift-unstaged`. `parent=<cid>` names the revision it supersedes (`none` for a first lift), `sources=` further daemon sources the item distils (the staged row always rides), and `proposal=<id>` the proposal it answers: the proposal's body digest must equal the staged body's. Two digests share one word: the ROW digest (what `kahua stage` answers and a lift names) covers the row's body and fields, while a proposal's `digest` names the BODY digest, the body bytes alone.
 
 The door re-reads the row at the act and refuses `kahua-lift-unstaged` (no such row) or `kahua-lift-digest-moved` (the row moved since the preview); a lift the head already carries lands nothing. The lift reads the lōkahi cap off the vessel's island and the operator's grant out of sealed custody, and refuses by name; an AI seat proposes and stages, and its session never lifts. `lares shore lift-kahua` lifts a different thing, the pending set a lay left behind (`carriage.draft.lifts`).
 
-Under a pūlama the root signs at the pūlama's hand door, since the vessel there holds no face root: `--terms` runs every gate and prints ONE stdout line (the one unsigned act its root signs) and opens no route; the pūlama's `sign '<terms>'` checks it and signs; `--land '<answer>'` lands the signed record, where the door builds the act afresh and lands it only over a byte-equal body. Neither asks the passphrase on the vessel, and the host shim walks the pattern (`tools/lares-container.sh kahua lift|withdraw|carry`).
+Under a pūlama the root signs at the pūlama's hand door, since the vessel there holds no face root: `terms=true` runs every gate and prints ONE stdout line (the one unsigned act its root signs) and opens no route; the pūlama's `sign '<terms>'` checks it and signs; `land='<answer>'` lands the signed record, where the door builds the act afresh and lands it only over a byte-equal body. Neither asks the passphrase on the vessel, and the host shim walks the pattern (`tools/lares-container.sh kahua lift|withdraw|carry`).
 
 <<~/ahu>>
 
@@ -51,7 +51,7 @@ Under a pūlama the root signs at the pūlama's hand door, since the vessel ther
 <<has entity=`arg` name=`sources` params=`takes/json ~ further daemon sources the item distils (the staged row always rides)`>>
 <<has entity=`arg` name=`proposal` params=`takes/intent-id ~ the proposal this lift answers; its body digest must equal the staged body's`>>
 <<has entity=`arg` name=`face` params=`takes/handle-index ~ which face's stage this call reads or writes, by persona index (a whole number from 0); absent, the one face standing open or the worn face`>>
-<<has entity=`arg` name=`terms` params=`~ run every gate and print the one terms line a pūlama signs; opens no route and asks no passphrase here; name it or --land, never both`>>
+<<has entity=`arg` name=`terms` params=`~ run every gate and print the one terms line a pūlama signs; opens no route and asks no passphrase here; name it or land=, never both`>>
 <<has entity=`arg` name=`land` params=`takes/answer ~ land the signed record from a pūlama's sign answer; the door builds the act afresh and lands it only over a byte-equal body`>>
 ```
 
@@ -78,9 +78,9 @@ Testimony: the door checks; this slot grants nothing.
 <<has entity=`refusal` name=`kahua-lift-digest-moved` params=`cure/[[face.hand.lifts title/T taint/none]] ~ the staged row moved since the preview, or the digest named differs; read the preview again`>>
 <<has entity=`refusal` name=`kahua-lift-unstaged` params=`cure/[[face.draft.stages title/T text/<body>]] ~ no row stands staged at the title, or the line carried a body or fields: stage them first`>>
 <<has entity=`refusal` name=`kahua-act-refused` params=`cure/[[face.hand.lifts title/T taint/none]] ~ a lift names its taint: none, or a comma-joined list`>>
-<<has entity=`refusal` name=`ward-needs-tty` params=`~ the face's passphrase comes from a person at a terminal; --digest spares the typed-back digest alone`>>
-<<has entity=`refusal` name=`kahua-hand-malformed` params=`~ the pūlama's answer names the wrong kind, the wrong face, or both --terms and --land stood on one line`>>
-<<has entity=`refusal` name=`face-malformed` params=`~ --face names a persona index, a whole number from 0`>>
+<<has entity=`refusal` name=`ward-needs-tty` params=`~ the face's passphrase comes from a person at a terminal; digest= spares the typed-back digest alone`>>
+<<has entity=`refusal` name=`kahua-hand-malformed` params=`~ the pūlama's answer names the wrong kind, the wrong face, or both terms=true and land=stood on one line`>>
+<<has entity=`refusal` name=`face-malformed` params=`~ face= names a persona index, a whole number from 0`>>
 ```
 
 <<~/ahu>>
@@ -122,6 +122,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2vvQlmzjCTDg2_JTT9F9W2JHDv23dNkYDPmMPAY8WTI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qxNakTsByDZuSmlnBHTnq--LXuhSKbphjpk2z9qVGWM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -169,7 +169,7 @@ Write down: `<your-pet-name>` (your first face's private label), an optional pub
 On your own terminal, with no one else's eyes on it and no AI session reading it:
 
 ```sh
-tools/lares-container.sh found --hearth --name '<your-pet-name>' --chair '<your-chair>'
+tools/lares-container.sh found hearth=true name='<your-pet-name>' chair='<your-chair>'
 clear && printf '\033[3J'                         # after the last read-back: the cards leave the scrollback
 ```
 
@@ -184,17 +184,17 @@ The act asks the custody route: `[p]assphrase`, `[s]heet (paper pin)` or `[b]oth
 !! 9 · Stand, lay, check custody
 
 ```sh
-tools/lares-container.sh persona new 0 --name '<your-pet-name>' --handle '<Your Handle>'   # skip for a face with no public Handle
+tools/lares-container.sh persona new 0 name='<your-pet-name>' handle='<Your Handle>'   # skip for a face with no public Handle
 tools/lares-container.sh up                        # unlocks on this terminal, seating the keep pair under that passphrase; answer yes to the keep lei it offers for house-backup
 tools/lares-container.sh vessel lay apply=true yes=true
 tools/lares-container.sh vessel read
 tools/lares-container.sh persona list
 tools/lares-container.sh nexus seal show           # SEED, one seat
 tools/lares-container.sh nexus seal cold rehearse  # type each card back from paper: it reads them and moves nothing
-tools/lares-container.sh vault backup --face 0 --out /lar/config/face-0.bundle
+tools/lares-container.sh vault backup face=0 out=/lar/config/face-0.bundle
 ```
 
-The backup lands at `~/.lares/config/face-0.bundle` on the host, sealed under a NEW route the act asks for; move it off the machine. A face added later (`persona new 1 --name '<another-pet-name>'`) takes a passphrase while the vessel stands; for a paper sheet, `tools/lares-container.sh down` first.
+The backup lands at `~/.lares/config/face-0.bundle` on the host, sealed under a NEW route the act asks for; move it off the machine. A face added later (`persona new 1 name='<another-pet-name>'`) takes a passphrase while the vessel stands; for a paper sheet, `tools/lares-container.sh down` first.
 
 The first keep, on the host:
 
@@ -247,7 +247,7 @@ In the session, `/mcp` lists `lares` connected, and the session opens on the boo
 
 !! 12 · Later: updates, restores, faults
 
-''A code update:'' `lares rite kukulu`, the one verb. It fetches and fast-forwards the checkout's own branch where the tree stands clean and behind its upstream (a dirty tree behind, a diverged branch or a detached head stops with one line, and it never switches a branch or stashes), makes the image of the head (the tag holds it, a kept `rev-<short>` image takes the tag, or a build from the commit; an uncommitted or untracked file never rides it), spends each face's kukulu lei where one stands, then `down` (the keep, the census), `up` and the face you last wore, closing on one line that names the revision, the worn face and the keep. Where the pūlama's own code moved, or it stands unlit, it re-stands and lights the pūlama on that same terminal (the pūlama reads your route) and walks on; an image no admission and no lei carries asks `pulama admit` there too. From a seat with no terminal it flows any day that owes no route, and otherwise stops before anything moves with one line: `your hand: lares rite kukulu` on a terminal. After the raise it names the lag: canon behind the canon source (canon fills through promote and the floor's sealed cut, never from a raise), each wiki's workbench behind the checkout's `wikis/<slug>`, and a newer sealed floor the release carries. Where the canon source stands in the checkout and you hold the terminal, it previews the workbench lay (each title a workbench your worn face mounts would take) and lays it into those working layers only on your yes; a workbench that does not mount stays named, a no or a Ctrl+C leaves every layer as it stood, and a seat, or a source in no checkout, names the lag and lays nothing. It reads where the house stands each run, so a run that stopped picks up there. `--rollback` stands the image that ran before; `--rollback <rev>` an older revision's, with no checkout move. `git submodule update` (no `--remote`) stays a hand act where a pin moved.
+''A code update:'' `lares rite kukulu`, the one verb. It fetches and fast-forwards the checkout's own branch where the tree stands clean and behind its upstream (a dirty tree behind, a diverged branch or a detached head stops with one line, and it never switches a branch or stashes), makes the image of the head (the tag holds it, a kept `rev-<short>` image takes the tag, or a build from the commit; an uncommitted or untracked file never rides it), spends each face's kukulu lei where one stands, then `down` (the keep, the census), `up` and the face you last wore, closing on one line that names the revision, the worn face and the keep. Where the pūlama's own code moved, or it stands unlit, it re-stands and lights the pūlama on that same terminal (the pūlama reads your route) and walks on; an image no admission and no lei carries asks `pulama admit` there too. From a seat with no terminal it flows any day that owes no route, and otherwise stops before anything moves with one line: `your hand: lares rite kukulu` on a terminal. After the raise it names the lag: canon behind the canon source (canon fills through promote and the floor's sealed cut, never from a raise), each wiki's workbench behind the checkout's `wikis/<slug>`, and a newer sealed floor the release carries. Where the canon source stands in the checkout and you hold the terminal, it previews the workbench lay (each title a workbench your worn face mounts would take) and lays it into those working layers only on your yes; a workbench that does not mount stays named, a no or a Ctrl+C leaves every layer as it stood, and a seat, or a source in no checkout, names the lag and lays nothing. It reads where the house stands each run, so a run that stopped picks up there. `rollback=` stands the image that ran before; `rollback=<rev>` an older revision's, with no checkout move. `git submodule update` (no `--remote`) stays a hand act where a pin moved.
 
 ''A restore'' from the keep onto a new machine or a fresh root walks the founding runbook 11a.
 
@@ -263,6 +263,6 @@ In the session, `/mcp` lists `lares` connected, and the session opens on the boo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;djJk3zudoQdJ1fl_Wl9PVEB4OvsxjGs-FNCC8TfUXwc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YZhTPy3bdTlN-C8K-eH6S9Xi3r-1LkVd92_YbgKO-G4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

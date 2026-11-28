@@ -275,7 +275,7 @@ introductions held.
 ''THE BUILT ALLOWANCE READS AS THE PRE-ANSWERED DIAL.'' Of the three dials the code carries one. `allowance`
 (`packages/lararium-mesh/src/hosting.ts`) grants a lineage opened on the hearth's own invite `min(1 + rolls survived, cap)`
 invites per hosting epoch; a lineage opened on a walker's invite counts one roll fewer and holds zero until the
-hearth's next roll. The cap rides the hosting act: `lares host roll cap=<n>` names it, a roll with no `--cap` keeps
+hearth's next roll. The cap rides the hosting act: `lares host roll cap=<n>` names it, a roll with no `cap=` keeps
 the standing cap, and a first roll takes `DEFAULT_HOSTING_CAP`, three (`packages/lararium-node/src/hosting-store.ts`).
 The hearth's own `lares host invite` mints with no count check (`packages/lararium-node/src/commands/host.ts`).
 
@@ -546,6 +546,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WFFza6z1nv6vXRDy2iCGLcKxk2EJaLwiVsOyA_RlZaE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-A1IIBupD8l7jUDBHkHyIRAHXLFvNrjuudW5yqty0tE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

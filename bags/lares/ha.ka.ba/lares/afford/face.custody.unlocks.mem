@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/afford/face.custody.unlocks"
 
 ! face.custody.unlocks ~ unlock opens custody; the route rides a TTY
 
-`lares vault unlock` gathers a route on the terminal and hands it to the standing vessel's custody door, which opens the vessel key (`--face N`: that face's key under its own route; `--all`: every face its routes open). The door reads first: a vessel standing by a pūlama takes no route here and asks the pūlama; a key already held takes no second route and points at `lares wear N`; `--face N` on a held key wears N where it stands open, and refuses a face the vessel holds nowhere. A face that lights lands its shares. A credential rides a TTY alone: no flag, no environment variable and no pipe carries one, nothing echoes one, and it drops the instant the act returns.
+`lares vault unlock` gathers a route on the terminal and hands it to the standing vessel's custody door, which opens the vessel key (`face=N`: that face's key under its own route; `all=true`: every face its routes open). The door reads first: a vessel standing by a pūlama takes no route here and asks the pūlama; a key already held takes no second route and points at `lares wear N`; `face=N` on a held key wears N where it stands open, and refuses a face the vessel holds nowhere. A face that lights lands its shares. A credential rides a TTY alone: no flag, no environment variable and no pipe carries one, nothing echoes one, and it drops the instant the act returns.
 
 <<~/ahu>>
 
@@ -61,7 +61,7 @@ Testimony: the door checks; this slot grants nothing.
 !! refuses ~ usage · custody-probe-unread · pulama-waits · face-not-standing · offline-beside-pulama · daemon-unreachable · no-slot-opens · attempts-spent · face-refused · face-not-named · tree-absent · tree-unreadable · root-unopenable · unlock-incomplete · error
 
 ```memetic-wikitext
-<<has entity=`refusal` name=`usage` params=`cure/[[face.custody.unlocks face/2]] ~ --face names a handle index, a whole number from 0`>>
+<<has entity=`refusal` name=`usage` params=`cure/[[face.custody.unlocks face/2]] ~ face= names a handle index, a whole number from 0`>>
 <<has entity=`refusal` name=`custody-probe-unread` params=`~ the house names a pūlama and its custody probe went unread; nothing was asked`>>
 <<has entity=`refusal` name=`pulama-waits` params=`~ the pūlama keeps custody and waits on its own hand door; the line names its next act`>>
 <<has entity=`refusal` name=`face-not-standing` params=`cure/[[face.custody.unlocks face/2]] ~ the vessel holds no face of that index; nothing was asked`>>
@@ -116,6 +116,6 @@ Testimony: the door checks; this slot grants nothing.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TaGxQLd9zGXKFDxhBiLv0OgSb33KnLHoAnHfJrvP73k`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tWda3lZJzC3rADLrEM70cMnbFUV6VzqrcIGKWnQJoMk`>>
 
 <<^ code=`&#x0004;` to=`?`>>
